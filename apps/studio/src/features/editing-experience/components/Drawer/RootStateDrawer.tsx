@@ -36,7 +36,6 @@ import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { CanManageCollectionFilters } from "~/features/editing-experience/hooks/canManageCollectionFilters"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
-import { useNewCollectionTagsManagement } from "~/hooks/useNewCollectionTagsManagement"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
@@ -88,7 +87,6 @@ const FixedBlock = () => {
     useEditorDrawerContext()
   const pageLayout = previewPageState.layout
   const isHeroFixedBlock = getIsHeroFirstBlock(pageLayout, previewPageState)
-  const isNewCollectionTagsManagementEnabled = useNewCollectionTagsManagement()
 
   if (isHeroFixedBlock) {
     // Assuming only one fixedBlock can exist at a time for now
@@ -110,11 +108,7 @@ const FixedBlock = () => {
     )
   }
 
-  if (
-    pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection &&
-    isNewCollectionTagsManagementEnabled
-  ) {
-    // New collection editing UI introduced in https://github.com/opengovsg/isomer/pull/2002
+  if (pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection) {
     return (
       <>
         <BaseBlock
@@ -140,20 +134,6 @@ const FixedBlock = () => {
           />
         </CanManageCollectionFilters>
       </>
-    )
-  }
-
-  if (pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection) {
-    return (
-      <BaseBlock
-        onClick={() => {
-          setCurrActiveIdx(0)
-          setDrawerState({ state: "collectionEditor", type: "display" })
-        }}
-        label="Collection settings"
-        description="Summary, style, categories and sorting"
-        icon={BiPin}
-      />
     )
   }
 
@@ -387,8 +367,6 @@ export default function RootStateDrawer() {
   // for collection index pages
   const canAddBlocks = pageLayout !== "collection"
 
-  const isNewCollectionTagsManagementEnabled = useNewCollectionTagsManagement()
-
   return (
     <Flex direction="column" h="full">
       <ConfirmConvertIndexPageModal
@@ -462,21 +440,13 @@ export default function RootStateDrawer() {
             </Infobox>
           )}
 
-          {pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection &&
-          isNewCollectionTagsManagementEnabled ? (
-            // New collection editing UI introduced in https://github.com/opengovsg/isomer/pull/2002
+          {pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection ? (
             <Disable when={disableBlocks}>
               <VStack gap="1rem" w="100%" align="start">
                 <VStack gap="0.25rem" align="start">
-                  <Text textStyle="subhead-1">
-                    {pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection
-                      ? "Manage Collection"
-                      : "Fixed blocks"}
-                  </Text>
+                  <Text textStyle="subhead-1">Manage Collection</Text>
                   <Text textStyle="caption-2" color="base.content.medium">
-                    {pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection
-                      ? "Modify the Collection’s look and feel or manage filters."
-                      : "These are built into the layout, so you can’t delete them."}
+                    Modify the Collection’s look and feel or manage filters.
                   </Text>
                 </VStack>
 
@@ -528,17 +498,12 @@ export default function RootStateDrawer() {
                 <VStack gap="1.5rem" w="100%">
                   <VStack w="100%" h="100%" gap="1rem">
                     <Flex flexDirection="row" w="100%">
-                      {pageLayout !== ISOMER_USABLE_PAGE_LAYOUTS.Collection && (
-                        <VStack gap="0.25rem" align="start" flex={1}>
-                          <Text textStyle="subhead-1">Custom blocks</Text>
-                          <Text
-                            textStyle="caption-2"
-                            color="base.content.medium"
-                          >
-                            Use blocks to display your content.
-                          </Text>
-                        </VStack>
-                      )}
+                      <VStack gap="0.25rem" align="start" flex={1}>
+                        <Text textStyle="subhead-1">Custom blocks</Text>
+                        <Text textStyle="caption-2" color="base.content.medium">
+                          Use blocks to display your content.
+                        </Text>
+                      </VStack>
                       {/* TODO: we should swap over to using the `resource.type` */}
                       {/* rather than the `page.layout` but we are unable to do so due */}
                       {/* to the existence of custom index page that are `layout: */}
