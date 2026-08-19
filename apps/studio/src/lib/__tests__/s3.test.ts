@@ -23,7 +23,8 @@ vi.mock("@aws-sdk/client-s3", async (importOriginal) => {
 })
 
 // Imported after the mock is registered so the module-level S3Client is mocked.
-const { copyFile, deleteFile, setAssetAsPublished, getFileSize } = await import("../s3")
+const { copyFile, deleteFile, setAssetAsPublished, getFileSize } =
+  await import("../s3")
 
 const DELETE_TAG = "deletedAt"
 
