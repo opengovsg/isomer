@@ -15,6 +15,7 @@ export interface TagCategory {
   id: string
   label: string
   isRequired: boolean
+  display?: "pills" | "plaintext"
   options: TagCategoryOption[]
 }
 
@@ -110,17 +111,21 @@ export const createCollectionLink = async ({
   collectionId,
   ref,
   siteId,
+  tagged = [],
+  title = "E2E Tags Link",
 }: {
   collectionId: string
   ref: string
   siteId: number
+  tagged?: string[]
+  title?: string
 }) => {
   const blob = await db
     .insertInto("Blob")
     .values({
       content: jsonb({
         layout: "link",
-        page: { ref, summary: "", category: "", date: "01/01/2026" },
+        page: { ref, summary: "", category: "", date: "01/01/2026", tagged },
         content: [],
         version: "0.1.0",
       }),
@@ -134,7 +139,7 @@ export const createCollectionLink = async ({
       permalink: `e2e-tags-link-${uniqueSuffix()}`,
       siteId,
       parentId: collectionId,
-      title: "E2E Tags Link",
+      title,
       type: ResourceType.CollectionLink,
       state: ResourceState.Draft,
       draftBlobId: blob.id,
@@ -147,9 +152,13 @@ export const createCollectionLink = async ({
 export const createCollectionPage = async ({
   collectionId,
   siteId,
+  tagged = [],
+  title = "E2E Tags Page",
 }: {
   collectionId: string
   siteId: number
+  tagged?: string[]
+  title?: string
 }) => {
   const blob = await db
     .insertInto("Blob")
@@ -160,6 +169,7 @@ export const createCollectionPage = async ({
           date: "01/01/2026",
           category: "Feature Articles",
           articlePageHeader: { summary: "E2E test summary" },
+          tagged,
         },
         content: [],
         version: "0.1.0",
@@ -174,7 +184,7 @@ export const createCollectionPage = async ({
       permalink: `e2e-tags-page-${uniqueSuffix()}`,
       siteId,
       parentId: collectionId,
-      title: "E2E Tags Page",
+      title,
       type: ResourceType.CollectionPage,
       state: ResourceState.Draft,
       draftBlobId: blob.id,
@@ -202,3 +212,67 @@ export const getRootPageId = async (siteId: number) => {
     .executeTakeFirstOrThrow()
   return rootPage.id
 }
+
+export const getIndexPageId = async (collectionId: string) => {
+  const indexPage = await db
+    .selectFrom("Resource")
+    .where("parentId", "=", collectionId)
+    .where("type", "=", ResourceType.IndexPage)
+    .select("id")
+    .executeTakeFirstOrThrow()
+  return indexPage.id
+}
+
+interface CollectionIndexPage {
+  tagCategories?: TagCategory[]
+  subtitle?: string
+  variant?: string
+  sortOrder?: string
+  showDate?: boolean
+  showThumbnail?: { fallback?: string }
+}
+
+export const getDraftIndexPage = async (indexPageId: string) => {
+  const row = await db
+    .selectFrom("Resource")
+    .innerJoin("Blob", "Blob.id", "Resource.draftBlobId")
+    .where("Resource.id", "=", indexPageId)
+    .select("Blob.content")
+    .executeTakeFirst()
+  if (!row?.content) return null
+  return (row.content as { page: CollectionIndexPage }).page
+}
+
+export const getCollectionItemTitles = (collectionId: string) =>
+  db
+    .selectFrom("Resource")
+    .where("parentId", "=", collectionId)
+    .where("type", "in", [
+      ResourceType.CollectionPage,
+      ResourceType.CollectionLink,
+    ])
+    .select(["id", "title", "type", "state"])
+    .orderBy("title", "asc")
+    .execute()
+
+export const seedCollectionPages = async ({
+  siteId,
+  collectionId,
+  count,
+  titlePrefix = "E2E Sort Item",
+}: {
+  siteId: number
+  collectionId: string
+  count: number
+  titlePrefix?: string
+}) =>
+  Promise.all(
+    Array.from({ length: count }, (_, i) => {
+      const title = `${titlePrefix} ${String(i + 1).padStart(2, "0")}`
+      return createCollectionPage({
+        collectionId,
+        siteId,
+        title,
+      })
+    }),
+  )

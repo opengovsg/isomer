@@ -360,4 +360,42 @@ export class DashboardPO {
     await expect(resultLink).toBeVisible()
     await resultLink.click()
   }
+
+  async sortCollectionBy(label: "Recently edited" | "Alphabetical" | "URL") {
+    await this.page
+      .getByRole("button", { name: /Recently edited|Alphabetical|URL/ })
+      .click()
+    await this.page.getByRole("menuitem", { name: label }).click()
+  }
+
+  async expectCollectionItemCount(count: number) {
+    const noun = count === 1 ? "item" : "items"
+    await expect(this.page.getByText(`${count} ${noun}`)).toBeVisible()
+  }
+
+  async expectCollectionRowVisible(title: string) {
+    await expect(this.page.getByRole("link", { name: title })).toBeVisible()
+  }
+
+  async expectCollectionRowHidden(title: string) {
+    await expect(this.page.getByRole("link", { name: title })).toHaveCount(0)
+  }
+
+  async expectCollectionRowsInOrder(titles: string[]) {
+    const links = this.page.getByRole("link").filter({
+      hasText: new RegExp(
+        titles
+          .map((title) => title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+          .join("|"),
+      ),
+    })
+    await expect(links).toHaveCount(titles.length)
+    for (const [index, title] of titles.entries()) {
+      await expect(links.nth(index)).toHaveText(title)
+    }
+  }
+
+  async goToCollectionTablePage(pageNumber: number) {
+    await this.page.getByRole("button", { name: String(pageNumber) }).click()
+  }
 }

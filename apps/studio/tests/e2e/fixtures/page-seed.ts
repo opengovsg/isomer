@@ -53,7 +53,7 @@ const seedCollectionIndexPage = async ({
     .returningAll()
     .executeTakeFirstOrThrow()
 
-  await db
+  return db
     .insertInto("Resource")
     .values({
       title,
@@ -311,12 +311,12 @@ export const seedCollection = async ({
     title: collectionTitle,
     permalink: `e2e-collection-${suffix}`,
   })
-  await seedCollectionIndexPage({
+  const indexPage = await seedCollectionIndexPage({
     siteId,
     collectionId: collection.id,
     title: collectionTitle,
   })
-  return { collection }
+  return { collection, indexPage }
 }
 
 export const seedCollectionLink = async ({

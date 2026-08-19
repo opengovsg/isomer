@@ -1,8 +1,11 @@
 import { type Browser, type BrowserContext, type Page } from "@playwright/test"
+import { IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import { type RoleType } from "~prisma/generated/generatedEnums"
 
 import { storageStateFor, type Role } from "./auth"
+import { CollectionPO } from "./collection.po"
 import { DashboardPO } from "./dashboard.po"
+import { enableGrowthBookFeature, resetGrowthBookPage } from "./network"
 import { PageEditorPO } from "./page-editor.po"
 import { getCollectionByTitle, getFolderByTitle } from "./resource.db"
 import { UsersPO } from "./users.po"
@@ -82,6 +85,24 @@ export interface RoleBrowserSession {
   context: BrowserContext
   page: Page
   editor: PageEditorPO
+}
+
+export const openCollectionIndexEditor = async (
+  page: Page,
+  siteId: number,
+  indexPageId: string,
+  opts?: { filtersEnabled?: boolean },
+) => {
+  const filtersEnabled = opts?.filtersEnabled ?? true
+  await enableGrowthBookFeature(
+    page,
+    IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY,
+    filtersEnabled,
+  )
+  await resetGrowthBookPage(page)
+  const collection = new CollectionPO(page)
+  await collection.gotoIndex(siteId, indexPageId)
+  return collection
 }
 
 export const createPageViaWizard = async (
