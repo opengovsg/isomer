@@ -1,12 +1,20 @@
-import type { TokenSet } from "openid-client"
+import type {
+  TokenEndpointResponse,
+  TokenEndpointResponseHelpers,
+} from "openid-client"
 
-export const extractUuid = (tokens: TokenSet) => {
+export const extractUuid = (
+  tokens: TokenEndpointResponse & TokenEndpointResponseHelpers,
+) => {
   if (!tokens.id_token) {
     // No ID token happens when there is an error in communicating with Singpass
     return undefined
   }
 
   const data = tokens.claims()
+  if (!data) {
+    return undefined
+  }
 
   // Sub can be in the form of "s=<uid>,u=<uuid>" or "u=<uuid>" depending on the
   // type of Singpass app configured (NRIC/UUID or UUID only).
