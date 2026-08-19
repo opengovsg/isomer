@@ -135,6 +135,7 @@ export const ResourceTable = ({
 
       <Datatable
         pagination
+        isRowLink
         emptyPlaceholder={
           <EmptyTablePlaceholder
             entityName="page"
