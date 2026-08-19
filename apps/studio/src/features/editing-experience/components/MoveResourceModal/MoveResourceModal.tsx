@@ -153,10 +153,12 @@ const MoveResourceContent = withSuspense(
       isRedirectableType &&
       isDestinationResolved &&
       oldFullPermalink !== newFullPermalink
-    // The URL-change notice shows for any resource once a picked destination
-    // actually changes its URL; the redirect checkbox is the published subset.
+    // CollectionLinks have no URL of their own (their permalink is a hidden
+    // random UUID), so skip the notice even though their permalink changes.
     const showUrlChangeNotice =
-      isDestinationResolved && oldFullPermalink !== newFullPermalink
+      type !== ResourceType.CollectionLink &&
+      isDestinationResolved &&
+      oldFullPermalink !== newFullPermalink
     const { data: existingRedirect } = trpc.redirect.getBySource.useQuery(
       { siteId: Number(siteId), source: newFullPermalink },
       { enabled: showRedirectOption },
