@@ -127,14 +127,18 @@ export const resetGrowthBookPage = async (page: Page) => {
 }
 
 export const failTagOptionsUsageCount = async (page: Page) => {
-  await page.route("**/api/trpc/collection.countTagOptionsUsage*", (route) =>
-    route.fulfill({
-      status: 500,
-      contentType: "application/json",
-      body: JSON.stringify({
-        error: { message: "usage count failed" },
+  await page.route(
+    (url) =>
+      url.pathname.includes("/api/trpc") &&
+      url.pathname.includes("collection.countTagOptionsUsage"),
+    (route) =>
+      route.fulfill({
+        status: 500,
+        contentType: "application/json",
+        body: JSON.stringify({
+          error: { message: "usage count failed" },
+        }),
       }),
-    }),
   )
 }
 

@@ -151,6 +151,40 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     ])
   })
 
+  test("admin can reorder options", async ({ page }) => {
+    const seeded = await createCollectionWithTagCategories(
+      [
+        {
+          id: crypto.randomUUID(),
+          label: "Topic",
+          isRequired: false,
+          options: [option("First option"), option("Second option")],
+        },
+      ],
+      siteId,
+    )
+    const collection = await openCollectionIndexEditor(
+      page,
+      siteId,
+      seeded.indexPageId,
+    )
+
+    // Arrange
+    await collection.openFilters()
+    await collection.openFilterNamed("Topic")
+    await collection.expectOptionOrder(["First option", "Second option"])
+
+    // Act
+    await collection.reorderFirstOptionDown()
+    await collection.saveFilters()
+
+    // Assert
+    const draft = await getDraftIndexPage(seeded.indexPageId)
+    expect(
+      draft?.tagCategories?.[0]?.options.map((item) => item.label),
+    ).toEqual(["Second option", "First option"])
+  })
+
   test("blank or duplicate filter and option names prevent saving", async ({
     page,
   }) => {
@@ -323,8 +357,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     // Act
     await collection.openFilterActions(1)
     await collection.clickDeleteFilterMenuItem()
-
-    // Assert
+    await collection.expectUsedFilterWarning(1)
     await collection.confirmDeleteFilter()
     await collection.saveFilters()
 
