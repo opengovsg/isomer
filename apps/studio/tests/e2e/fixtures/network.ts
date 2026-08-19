@@ -126,6 +126,18 @@ export const resetGrowthBookPage = async (page: Page) => {
   await page.goto("about:blank")
 }
 
+export const failTagOptionsUsageCount = async (page: Page) => {
+  await page.route("**/api/trpc/collection.countTagOptionsUsage*", (route) =>
+    route.fulfill({
+      status: 500,
+      contentType: "application/json",
+      body: JSON.stringify({
+        error: { message: "usage count failed" },
+      }),
+    }),
+  )
+}
+
 interface GrowthBookFeaturesResponse {
   features: Record<string, { defaultValue?: unknown; rules?: unknown[] }>
 }
