@@ -1,5 +1,6 @@
-import { expect, type Page } from "@playwright/test"
-import { type RoleType } from "~prisma/generated/generatedEnums"
+import { type Page } from "@playwright/test"
+import { expect } from "@playwright/test"
+import { RoleType } from "~prisma/generated/generatedEnums"
 
 export const createPageViaWizard = async (
   page: Page,
