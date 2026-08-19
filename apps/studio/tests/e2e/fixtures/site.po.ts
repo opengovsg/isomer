@@ -306,8 +306,14 @@ export class SitePO {
     return this.page.getByRole("button", { name: "Link something..." })
   }
 
-  linkTypeRadio(type: "Page" | "External" | "File" | "Email") {
-    return this.page.getByRole("radio", { name: type })
+  /**
+   * Visible type card in LinkEditorModal ("Page" | "External" | "File" | "Email").
+   * Chakra `useRadio` renders a visually-hidden nameless `<input type="radio">`;
+   * the label text is a sibling paragraph, so `getByRole("radio", { name })`
+   * never matches. Click the dialog-scoped text instead.
+   */
+  linkTypeOption(type: "Page" | "External" | "File" | "Email") {
+    return this.page.getByRole("dialog").getByText(type, { exact: true })
   }
 
   externalLinkUrlInput() {
@@ -322,7 +328,7 @@ export class SitePO {
   /** Set an unset "link" field (BaseLinkControl) to an external https:// URL. */
   async setLinkDestinationExternal(urlWithoutProtocol: string) {
     await this.linkSomethingButton().click()
-    await this.linkTypeRadio("External").click()
+    await this.linkTypeOption("External").click()
     await this.externalLinkUrlInput().fill(urlWithoutProtocol)
     await this.saveLinkButton().click()
   }
