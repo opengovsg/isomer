@@ -74,9 +74,11 @@ export const Wordbreak: Story = {
 export const EditFixedBlockState: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const button = await canvas.findByRole("button", {
-      name: /Content page header/i,
-    })
+    const button = await canvas.findByRole(
+      "button",
+      { name: /Content page header/i },
+      { timeout: 3000 },
+    )
     await userEvent.click(button)
   },
 }
