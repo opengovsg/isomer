@@ -11,7 +11,7 @@ interface BaseCardProps {
   // no legacy fallback.
   tags?: TagGroup[]
   // NOTE: Same as `tags`, but only includes groups shown as pills
-  // (see getPillAndPlaintextTags) — plaintext groups are shown via `plaintextTags`
+  // (see getTagGroupsFromTagged) — plaintext groups are shown via `plaintextTags`
   pillTags?: TagGroup[]
   id: string
   date?: Date

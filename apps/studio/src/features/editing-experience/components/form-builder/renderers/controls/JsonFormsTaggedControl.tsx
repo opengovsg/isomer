@@ -1,5 +1,4 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
-import type { ArticlePagePageProps } from "@opengovsg/isomer-components"
 import { FormControl, Skeleton, VStack } from "@chakra-ui/react"
 import { rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
@@ -8,6 +7,10 @@ import {
   FormLabel,
   MultiSelect,
 } from "@opengovsg/design-system-react"
+import {
+  resolveTagCategoryIsRequired,
+  type ArticlePagePageProps,
+} from "@opengovsg/isomer-components"
 import Suspense from "~/components/Suspense"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useSuspenseCollectionTags } from "~/features/editing-experience/hooks/useCollectionTags"
@@ -74,12 +77,13 @@ const SuspendableJsonFormsTaggedControl = ({
             const tagOptionsIds = options.map(({ id }) => id)
 
             const isInvalid =
-              !!tagIsRequired && currentTagCategoryOptions.length === 0
+              resolveTagCategoryIsRequired(tagIsRequired) &&
+              currentTagCategoryOptions.length === 0
 
             return (
               <FormControl
                 key={label}
-                isRequired={tagIsRequired ?? false}
+                isRequired={resolveTagCategoryIsRequired(tagIsRequired)}
                 isInvalid={isInvalid}
                 gap="0.5rem"
               >

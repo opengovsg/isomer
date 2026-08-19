@@ -51,9 +51,9 @@ export const getFilteredItems = (
     // Take note that we use OR between items within the same filter and AND between filters.
     return remainingFilters
       .map(({ items: activeFilters, id }) => {
-        return item.tags?.some(({ category, selected: itemLabels }) => {
+        return item.tags?.some(({ label, selected: itemLabels }) => {
           return (
-            category === id &&
+            label === id &&
             activeFilters
               .map(({ id }) => id)
               .reduce((prev, cur) => {

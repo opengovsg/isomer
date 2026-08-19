@@ -113,17 +113,17 @@ describe("getFilteredItems", () => {
       {
         title: "A",
         description: "",
-        tags: [{ selected: ["Guides"], category: "Category" }],
+        tags: [{ selected: ["Guides"], label: "Category" }],
       } as ProcessedCollectionCardProps,
       {
         title: "B",
         description: "",
-        tags: [{ selected: ["Articles"], category: "Category" }],
+        tags: [{ selected: ["Articles"], label: "Category" }],
       } as ProcessedCollectionCardProps,
       {
         title: "C",
         description: "",
-        tags: [{ selected: ["Tutorials"], category: "Category" }],
+        tags: [{ selected: ["Tutorials"], label: "Category" }],
       } as ProcessedCollectionCardProps,
     ]
     const appliedFilters: AppliedFilter[] = [
@@ -144,16 +144,16 @@ describe("getFilteredItems", () => {
         title: "A",
         description: "",
         tags: [
-          { selected: ["Guides"], category: "Category" },
-          { selected: ["Health"], category: "Topic" },
+          { selected: ["Guides"], label: "Category" },
+          { selected: ["Health"], label: "Topic" },
         ],
       } as ProcessedCollectionCardProps,
       {
         title: "B",
         description: "",
         tags: [
-          { selected: ["Guides"], category: "Category" },
-          { selected: ["Finance"], category: "Topic" },
+          { selected: ["Guides"], label: "Category" },
+          { selected: ["Finance"], label: "Topic" },
         ],
       } as ProcessedCollectionCardProps,
     ]
@@ -195,12 +195,12 @@ describe("getFilteredItems", () => {
       {
         title: "Guide to Isomer",
         description: "",
-        tags: [{ selected: ["Guides"], category: "Category" }],
+        tags: [{ selected: ["Guides"], label: "Category" }],
       } as ProcessedCollectionCardProps,
       {
         title: "Guide to something else",
         description: "",
-        tags: [{ selected: ["Articles"], category: "Category" }],
+        tags: [{ selected: ["Articles"], label: "Category" }],
       } as ProcessedCollectionCardProps,
     ]
     const appliedFilters: AppliedFilter[] = [

@@ -8,20 +8,26 @@ import {
   TAG_CATEGORY_DISPLAY_OPTIONS,
 } from "~/types/constants"
 
-interface GetPillAndPlaintextTagsResult {
+export interface GetTagGroupsFromTaggedProps {
+  tagged: ArticlePagePageProps["tagged"]
+  tagCategories: CollectionPagePageProps["tagCategories"]
+}
+
+export interface GetTagGroupsFromTaggedResult {
   pillTags: TagGroup[] | undefined
   plaintextTags: TagGroup[] | undefined
+  allTags: TagGroup[] | undefined
 }
 
 // NOTE: Shared by getCollectionItems (cards) and Article (article header) so both
 // split `tagged` into pill/plaintext groups the same way, in a single pass over
-// `tagCategories` rather than filtering + `getTagsFromTagged`-ing it twice.
-export const getPillAndPlaintextTags = (
-  tagged: ArticlePagePageProps["tagged"],
-  tagCategories: CollectionPagePageProps["tagCategories"],
-): GetPillAndPlaintextTagsResult => {
+// `tagCategories`.
+export const getTagGroupsFromTagged = ({
+  tagged,
+  tagCategories,
+}: GetTagGroupsFromTaggedProps): GetTagGroupsFromTaggedResult => {
   if (!tagged || !tagCategories) {
-    return { pillTags: undefined, plaintextTags: undefined }
+    return { pillTags: undefined, plaintextTags: undefined, allTags: undefined }
   }
 
   const pillTags: TagGroup[] = []
@@ -36,7 +42,7 @@ export const getPillAndPlaintextTags = (
       continue
     }
 
-    const group: TagGroup = { id, category: label, selected }
+    const group: TagGroup = { id, label, selected }
 
     if (
       resolveTagCategoryDisplay(display) === TAG_CATEGORY_DISPLAY_OPTIONS.Pills
@@ -47,5 +53,10 @@ export const getPillAndPlaintextTags = (
     }
   }
 
-  return { pillTags, plaintextTags }
+  const allTags =
+    pillTags.length > 0 || plaintextTags.length > 0
+      ? [...pillTags, ...plaintextTags]
+      : []
+
+  return { pillTags, plaintextTags, allTags }
 }

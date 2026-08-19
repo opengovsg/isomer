@@ -2,33 +2,48 @@ import type { CollectionPageSchemaType } from "~/types"
 import { describe, expect, it } from "vitest"
 import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
 
-import { getPillAndPlaintextTags } from "../getPillAndPlaintextTags"
+import { getTagGroupsFromTagged } from "../getTagGroupsFromTagged"
 
-describe("getPillAndPlaintextTags", () => {
+describe("getTagGroupsFromTagged", () => {
   it("returns undefined for both when tagged is undefined", () => {
     // Arrange
     const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
       {
         label: "Topic",
         id: "topic-1",
+        isRequired: true,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [{ label: "Health", id: "topic-opt-1" }],
       },
     ]
 
     // Act
-    const result = getPillAndPlaintextTags(undefined, tagCategories)
+    const result = getTagGroupsFromTagged({
+      tagged: undefined,
+      tagCategories,
+    })
 
     // Assert
-    expect(result).toEqual({ pillTags: undefined, plaintextTags: undefined })
+    expect(result).toEqual({
+      pillTags: undefined,
+      plaintextTags: undefined,
+      allTags: undefined,
+    })
   })
 
   it("returns undefined for both when tagCategories is undefined", () => {
     // Act
-    const result = getPillAndPlaintextTags(["topic-opt-1"], undefined)
+    const result = getTagGroupsFromTagged({
+      tagged: ["topic-opt-1"],
+      tagCategories: undefined,
+    })
 
     // Assert
-    expect(result).toEqual({ pillTags: undefined, plaintextTags: undefined })
+    expect(result).toEqual({
+      pillTags: undefined,
+      plaintextTags: undefined,
+      allTags: undefined,
+    })
   })
 
   it("splits selected groups into pillTags and plaintextTags by display", () => {
@@ -37,50 +52,62 @@ describe("getPillAndPlaintextTags", () => {
       {
         label: "Topic",
         id: "topic-1",
+        isRequired: true,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [{ label: "Health", id: "topic-opt-1" }],
       },
       {
         label: "Category",
         id: "cat-1",
+        isRequired: true,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
         options: [{ label: "Guides", id: "cat-opt-1" }],
       },
     ]
 
     // Act
-    const result = getPillAndPlaintextTags(
-      ["topic-opt-1", "cat-opt-1"],
+    const result = getTagGroupsFromTagged({
+      tagged: ["topic-opt-1", "cat-opt-1"],
       tagCategories,
-    )
+    })
 
     // Assert
     expect(result.pillTags).toEqual([
-      { id: "topic-1", category: "Topic", selected: ["Health"] },
+      { id: "topic-1", label: "Topic", selected: ["Health"] },
     ])
     expect(result.plaintextTags).toEqual([
-      { id: "cat-1", category: "Category", selected: ["Guides"] },
+      { id: "cat-1", label: "Category", selected: ["Guides"] },
+    ])
+    expect(result.allTags).toEqual([
+      { id: "topic-1", label: "Topic", selected: ["Health"] },
+      { id: "cat-1", label: "Category", selected: ["Guides"] },
     ])
   })
 
   it("treats a group without a display value as pills, per the default", () => {
-    // Arrange
-    const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
+    // Arrange — legacy published blobs may omit schema-required fields
+    const tagCategories = [
       {
         label: "Topic",
         id: "topic-1",
         options: [{ label: "Health", id: "topic-opt-1" }],
       },
-    ]
+    ] as CollectionPageSchemaType["page"]["tagCategories"]
 
     // Act
-    const result = getPillAndPlaintextTags(["topic-opt-1"], tagCategories)
+    const result = getTagGroupsFromTagged({
+      tagged: ["topic-opt-1"],
+      tagCategories,
+    })
 
     // Assert
     expect(result.pillTags).toEqual([
-      { id: "topic-1", category: "Topic", selected: ["Health"] },
+      { id: "topic-1", label: "Topic", selected: ["Health"] },
     ])
     expect(result.plaintextTags).toEqual([])
+    expect(result.allTags).toEqual([
+      { id: "topic-1", label: "Topic", selected: ["Health"] },
+    ])
   })
 
   it("excludes a group entirely from both lists when none of its options are selected", () => {
@@ -89,23 +116,29 @@ describe("getPillAndPlaintextTags", () => {
       {
         label: "Topic",
         id: "topic-1",
+        isRequired: true,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [{ label: "Health", id: "topic-opt-1" }],
       },
       {
         label: "Category",
         id: "cat-1",
+        isRequired: true,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
         options: [{ label: "Guides", id: "cat-opt-1" }],
       },
     ]
 
     // Act
-    const result = getPillAndPlaintextTags([], tagCategories)
+    const result = getTagGroupsFromTagged({
+      tagged: [],
+      tagCategories,
+    })
 
     // Assert
     expect(result.pillTags).toEqual([])
     expect(result.plaintextTags).toEqual([])
+    expect(result.allTags).toEqual([])
   })
 
   it("keeps all selected options for a group, uncombined (joining is a render concern)", () => {
@@ -114,6 +147,7 @@ describe("getPillAndPlaintextTags", () => {
       {
         label: "Category",
         id: "cat-1",
+        isRequired: true,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
         options: [
           { label: "Guides", id: "cat-opt-1" },
@@ -123,14 +157,17 @@ describe("getPillAndPlaintextTags", () => {
     ]
 
     // Act
-    const result = getPillAndPlaintextTags(
-      ["cat-opt-1", "cat-opt-2"],
+    const result = getTagGroupsFromTagged({
+      tagged: ["cat-opt-1", "cat-opt-2"],
       tagCategories,
-    )
+    })
 
     // Assert
     expect(result.plaintextTags).toEqual([
-      { id: "cat-1", category: "Category", selected: ["Guides", "Articles"] },
+      { id: "cat-1", label: "Category", selected: ["Guides", "Articles"] },
+    ])
+    expect(result.allTags).toEqual([
+      { id: "cat-1", label: "Category", selected: ["Guides", "Articles"] },
     ])
   })
 })

@@ -113,7 +113,6 @@ const generateArgs = ({
       permalink:
         "/newsroom/news/man-sentenced-to-24-months-imprisonment-for-smuggling-34-7-kg-of-rhinoceros-horns",
       lastModified: "2024-05-02T14:12:57.160Z",
-      category: "Citizen Engagement",
       date: "1 May 2024",
       articlePageHeader: {
         summary,
@@ -260,7 +259,6 @@ export const Default: Story = {
       permalink:
         "/newsroom/news/man-sentenced-to-24-months-imprisonment-for-smuggling-34-7-kg-of-rhinoceros-horns",
       lastModified: "2024-05-02T14:12:57.160Z",
-      category: "Citizen Engagement",
       date: "1 May 2024",
       articlePageHeader: {
         summary:
@@ -466,7 +464,6 @@ export const NoImage: Story = {
       permalink:
         "/newsroom/news/man-sentenced-to-24-months-imprisonment-for-smuggling-34-7-kg-of-rhinoceros-horns",
       lastModified: "2024-05-02T14:12:57.160Z",
-      category: "Citizen Engagement",
       date: "1 May 2024",
       articlePageHeader: {
         summary:
@@ -577,28 +574,11 @@ export const TaggedArticle: Story = {
       permalink:
         "/newsroom/news/man-sentenced-to-24-months-imprisonment-for-smuggling-34-7-kg-of-rhinoceros-horns",
       lastModified: "2024-05-02T14:12:57.160Z",
-      category: "Citizen Engagement",
       date: "1 May 2024",
       articlePageHeader: {
         summary:
           "Singapore is preparing to host its inaugural Citizens' Festival in Marina Boulevard. The festival aims to unite Singaporeans of all backgrounds through cultural showcases, food markets, live music, and wellness activities.",
       },
-      tags: [
-        {
-          category: "Tags",
-          selected: ["NParks Happenings", "Wild dinosaur"],
-        },
-        {
-          category: "Brand",
-          selected: [
-            "Daikin",
-            "TP Link",
-            "Asus",
-            "Something slightly longer like this",
-            "Something really long like this, a whole essay in a tag, although you should be avoiding this",
-          ],
-        },
-      ],
     },
     content: [
       {
@@ -682,6 +662,7 @@ export const TaggedArticleWithTagCategories: Story = {
                     {
                       label: "Tags",
                       id: "tags-group",
+                      isRequired: true,
                       display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
                       options: [
                         {
@@ -693,6 +674,7 @@ export const TaggedArticleWithTagCategories: Story = {
                     {
                       label: "Category",
                       id: "category-group",
+                      isRequired: true,
                       display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
                       options: [
                         {
@@ -704,6 +686,7 @@ export const TaggedArticleWithTagCategories: Story = {
                     {
                       label: "Region",
                       id: "region-group",
+                      isRequired: true,
                       display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
                       options: [
                         { label: "Wildlife", id: TAGGED_REGION_OPTION_ID },
@@ -735,9 +718,6 @@ export const TaggedArticleWithTagCategories: Story = {
       permalink:
         "/newsroom/news/man-sentenced-to-24-months-imprisonment-for-smuggling-34-7-kg-of-rhinoceros-horns",
       lastModified: "2024-05-02T14:12:57.160Z",
-      // NOTE: required by the schema, but ignored at render time since
-      // `tagged` + the parent's `tagCategories` take precedence
-      category: "Citizen Engagement",
       tagged: [
         TAGGED_PILLS_OPTION_ID,
         TAGGED_CATEGORY_OPTION_ID,

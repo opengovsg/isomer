@@ -21,23 +21,23 @@ export const getTagFilters = (
 
   items.forEach(({ tags }) => {
     if (tags) {
-      tags.forEach(({ selected: selectedLabels, category }) => {
-        if (!tagCategoryLabels.has(category)) {
-          tagCategoryLabels.set(category, new Map())
+      tags.forEach(({ selected: selectedLabels, label }) => {
+        if (!tagCategoryLabels.has(label)) {
+          tagCategoryLabels.set(label, new Map())
         }
-        const categoryMap = tagCategoryLabels.get(category) ?? new Map()
-        selectedLabels.forEach((label) => {
-          if (!categoryMap.has(label)) {
-            categoryMap.set(label, 0)
+        const categoryMap = tagCategoryLabels.get(label) ?? new Map()
+        selectedLabels.forEach((optionLabel) => {
+          if (!categoryMap.has(optionLabel)) {
+            categoryMap.set(optionLabel, 0)
           }
-          categoryMap.set(label, (categoryMap.get(label) ?? 0) + 1)
+          categoryMap.set(optionLabel, (categoryMap.get(optionLabel) ?? 0) + 1)
         })
       })
     }
   })
 
-  const filters = Array.from(tagCategoryLabels.entries()).reduce(
-    (acc: Filter[], [category, values]) => {
+  const filters = Array.from(tagCategoryLabels.entries()).map(
+    ([category, values]) => {
       const items: FilterItem[] = Array.from(values.entries()).map(
         ([label, count]) => ({
           label,
@@ -50,49 +50,41 @@ export const getTagFilters = (
         (tagCategory) => tagCategory.label === category,
       )
 
-      const filters: Filter[] = [
-        ...acc,
-        {
-          items,
-          id: category,
-          label: category,
-          display: resolveTagCategoryDisplay(matchedCategory?.display),
-        },
-      ]
-
-      return filters
+      return {
+        items,
+        id: category,
+        label: category,
+        display: resolveTagCategoryDisplay(matchedCategory?.display),
+      }
     },
-    [],
   )
 
   if (!tagCategories || tagCategories.length === 0) {
     return filters
   }
 
-  const tagCategoryIds = tagCategories.map(({ label }) => label)
+  const tagCategoryLabelOrder = new Map(
+    tagCategories.map(({ label }, index) => [label, index]),
+  )
 
-  const sortedFilters = tagCategoryIds
-    ? filters.sort((a, b) => {
-        // NOTE: the label of the filter is the id
-        const indexA = tagCategoryIds.indexOf(a.id)
-        const indexB = tagCategoryIds.indexOf(b.id)
-
-        if (indexA === -1 && indexB === -1) return 0
-        if (indexA === -1) return 1
-        if (indexB === -1) return -1
-
-        return indexA - indexB
-      })
-    : filters
+  const sortedFilters = filters.sort((a, b) => {
+    const indexA = tagCategoryLabelOrder.get(a.id) ?? Infinity
+    const indexB = tagCategoryLabelOrder.get(b.id) ?? Infinity
+    return indexA - indexB
+  })
 
   return sortedFilters.map((filter) => {
+    const category = tagCategories.find((cat) => cat.label === filter.id)
+    const tagOptionLabelOrder = new Map(
+      category?.options?.map((option, index) => [option.label, index]) ?? [],
+    )
+
     return {
       ...filter,
       items: filter.items.sort((a, b) => {
-        const category = tagCategories.find((cat) => cat.label === filter.id)
-        const tagOptionIds =
-          category?.options?.map((option) => option.label) ?? []
-        return tagOptionIds.indexOf(a.id) - tagOptionIds.indexOf(b.id)
+        const indexA = tagOptionLabelOrder.get(a.id) ?? Infinity
+        const indexB = tagOptionLabelOrder.get(b.id) ?? Infinity
+        return indexA - indexB
       }),
     }
   })
