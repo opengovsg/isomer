@@ -20,11 +20,11 @@ export const OrderedList = ({
   site,
 }: OrderedListProps) => {
   return (
-    // `mt-3` matches the item rhythm (`my-3` on ListItem) so a nested sublist
-    // sits in the same vertical rhythm as its siblings. Above a top-level list
-    // the preceding block's bottom margin collapses over this and wins.
+    // Nested sublists (level set) use `mt-3` to match the item rhythm (`my-3`
+    // on ListItem). Top-level lists keep `mt-6` because preceding blocks like
+    // Table or Callout have no bottom margin to collapse over a smaller value.
     <ol
-      className={`mt-3 ps-9 marker:text-base-content ${getOrderedListType(level)}`}
+      className={`${level ? "mt-3" : "mt-6"} ps-9 marker:text-base-content ${getOrderedListType(level)}`}
       start={attrs?.start}
     >
       {content.map((item, index) => (
