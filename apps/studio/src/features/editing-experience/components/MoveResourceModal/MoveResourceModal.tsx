@@ -125,8 +125,6 @@ const MoveResourceContent = withSuspense(
       sourceId: movedItem?.id,
       destinationId: curResourceId ?? null,
     })
-    // movedResourceId: movedItem.id,
-    // destinationResourceId: curResourceId ?? null,
 
     const [shouldCreateRedirect, setShouldCreateRedirect] = useState(true)
     const [{ fullPermalink: movedFullPermalink }] =
@@ -188,11 +186,13 @@ const MoveResourceContent = withSuspense(
               existingResource={movedItem ?? undefined}
               onChange={(resourceId) => setCurResourceId(resourceId)}
             />
-            {curResourceId !== undefined && errorMessage && (
-              <Infobox variant="error" size="sm" w="full">
-                {errorMessage}
-              </Infobox>
-            )}
+            {curResourceId !== undefined &&
+              errorMessage &&
+              !isValidMoveLoading && (
+                <Infobox variant="error" size="sm" w="full">
+                  {errorMessage}
+                </Infobox>
+              )}
             {showUrlChangeNotice && (
               <VStack alignItems="flex-start" spacing="0.75rem" w="full">
                 <Box
