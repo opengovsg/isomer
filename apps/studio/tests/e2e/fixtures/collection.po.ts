@@ -220,6 +220,18 @@ export class CollectionPO {
   }
 
   async reorderFirstFilterDown() {
+    await this.reorderFirstDraggableDown()
+  }
+
+  async reorderFirstOptionDown() {
+    await this.reorderFirstDraggableDown()
+  }
+
+  async expectOptionOrder(names: string[]) {
+    await this.expectFilterOrder(names)
+  }
+
+  async reorderFirstDraggableDown() {
     const handle = this.page
       .locator("[data-rbd-drag-handle-draggable-id]")
       .first()
