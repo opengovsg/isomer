@@ -45,6 +45,7 @@ export const validateUserPermissionsForSite = async ({
 type SiteSearchConfig = IsomerSiteConfigProps["search"]
 
 const EGAZETTE_ALGOLIA_SEARCH_TYPE = "egazette-algolia"
+const SEARCHSG_SEARCH_TYPE = "searchSG"
 
 export const normalizeAskgovConfig = (
   config: IsomerSiteConfigProps,
@@ -83,7 +84,7 @@ export const normalizeAskgovConfig = (
  * a `BAD_REQUEST` when the caller attempts to switch the search type to or from
  * `egazette-algolia`.
  */
-export const resolveEgazetteAlgoliaSearchConfig = (
+const resolveEgazetteAlgoliaSearchConfig = (
   existing: SiteSearchConfig,
   incoming: SiteSearchConfig,
 ): SiteSearchConfig => {
@@ -101,6 +102,51 @@ export const resolveEgazetteAlgoliaSearchConfig = (
   // egazette-algolia is admin-managed; never trust site-admin input for it.
   return wasEgazetteAlgolia ? existing : incoming
 }
+
+/**
+ * The SearchSG `clientId` identifies the site's SearchSG project and is
+ * provisioned out of band, so it may only be set by an Isomer admin via
+ * `setSiteConfigByAdmin` — the field is `readOnly` in the schema and the editor
+ * renders the whole SearchSG control disabled. It must therefore always come
+ * from the DB and never from the request: any valid UUID is accepted downstream
+ * by `updateSearchSGConfig`, so honouring an incoming `clientId` would let a
+ * site admin point this site at another agency's project and rename or restyle
+ * it.
+ *
+ * Returns the search config to persist, with the `clientId` taken from the DB.
+ * Throws a `BAD_REQUEST` when the caller tries to turn SearchSG on, since there
+ * is no provisioned `clientId` to fall back on in that case.
+ */
+const resolveSearchSGSearchConfig = (
+  existing: SiteSearchConfig,
+  incoming: SiteSearchConfig,
+): SiteSearchConfig => {
+  if (incoming?.type !== SEARCHSG_SEARCH_TYPE) return incoming
+
+  if (existing?.type !== SEARCHSG_SEARCH_TYPE) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message:
+        "Cannot enable the SearchSG search integration. Contact Isomer Support to set it up.",
+    })
+  }
+
+  return { ...incoming, clientId: existing.clientId }
+}
+
+/**
+ * Single entry point for reconciling a site admin's search config against the
+ * DB, covering both admin-managed variants. Every caller that persists a search
+ * config from user input must go through this.
+ */
+export const resolveSearchConfig = (
+  existing: SiteSearchConfig,
+  incoming: SiteSearchConfig,
+): SiteSearchConfig =>
+  resolveSearchSGSearchConfig(
+    existing,
+    resolveEgazetteAlgoliaSearchConfig(existing, incoming),
+  )
 
 export const getSiteConfig = async (db: SafeKysely, siteId: number) => {
   const { config } = await db
