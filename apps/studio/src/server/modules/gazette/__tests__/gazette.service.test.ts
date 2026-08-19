@@ -2,6 +2,10 @@ import { TRPCError } from "@trpc/server"
 import { resetTables } from "tests/integration/helpers/db"
 import { setupIsomerAdmin, setupUser } from "tests/integration/helpers/seed"
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import {
+  GAZETTE_CATEGORY_LABEL,
+  GAZETTE_SUBCATEGORY_LABEL,
+} from "~/features/gazettes/constants"
 import * as s3Lib from "~/lib/s3"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
@@ -15,10 +19,14 @@ import * as algoliaLib from "~/lib/algolia"
 
 import {
   assertGazetteAccess,
+  assertGazetteCategoryInput,
+  assertGazetteSubcategoryInput,
   buildGazetteSearchRecords,
   copyFileWithNewName,
   getPresignedPutUrl,
   removeGazetteFromAlgolia,
+  resolveGazetteCategoryLabel,
+  resolveGazetteTagLabels,
 } from "../gazette.service"
 
 describe("gazette.service", () => {
@@ -71,6 +79,204 @@ describe("gazette.service", () => {
       await expect(
         assertGazetteAccess("11111111-1111-1111-1111-111111111111"),
       ).rejects.toThrowError(new TRPCError({ code: "INTERNAL_SERVER_ERROR" }))
+    })
+  })
+
+  describe("resolveGazetteTagLabels", () => {
+    const TAG_CATEGORIES = [
+      {
+        label: GAZETTE_CATEGORY_LABEL,
+        options: [
+          { id: "cat-gov", label: "Government Gazette" },
+          { id: "cat-leg", label: "Legislative Supplements" },
+        ],
+      },
+      {
+        label: GAZETTE_SUBCATEGORY_LABEL,
+        options: [
+          { id: "sub-notices", label: "Notices under other Acts" },
+          { id: "sub-appointments", label: "Appointments" },
+        ],
+      },
+    ]
+
+    it("resolves both labels when tagged contains one uuid from each tagCategory", () => {
+      const result = resolveGazetteTagLabels({
+        tagged: ["sub-appointments", "cat-gov"],
+        tagCategories: TAG_CATEGORIES,
+      })
+
+      expect(result).toEqual({
+        categoryLabel: "Government Gazette",
+        subcategoryLabel: "Appointments",
+      })
+    })
+
+    // The order of `page.tagged` is not part of the contract: post-cutover
+    // rows are written [category, subcategory] while pre-cutover rows hold the
+    // subcategory alone, so any reader keying off an index is wrong. Both
+    // orderings must resolve identically.
+    it("resolves the same labels regardless of the order of tagged", () => {
+      const categoryFirst = resolveGazetteTagLabels({
+        tagged: ["cat-gov", "sub-appointments"],
+        tagCategories: TAG_CATEGORIES,
+      })
+      const subcategoryFirst = resolveGazetteTagLabels({
+        tagged: ["sub-appointments", "cat-gov"],
+        tagCategories: TAG_CATEGORIES,
+      })
+
+      expect(categoryFirst).toEqual({
+        categoryLabel: "Government Gazette",
+        subcategoryLabel: "Appointments",
+      })
+      expect(subcategoryFirst).toEqual(categoryFirst)
+    })
+
+    it("leaves categoryLabel undefined when tagged has no matching category option", () => {
+      const result = resolveGazetteTagLabels({
+        tagged: ["sub-notices"],
+        tagCategories: TAG_CATEGORIES,
+      })
+
+      expect(result).toEqual({
+        categoryLabel: undefined,
+        subcategoryLabel: "Notices under other Acts",
+      })
+    })
+
+    it("returns both undefined when tagCategories has no matching labels", () => {
+      const result = resolveGazetteTagLabels({
+        tagged: ["cat-gov", "sub-notices"],
+        tagCategories: [],
+      })
+
+      expect(result).toEqual({
+        categoryLabel: undefined,
+        subcategoryLabel: undefined,
+      })
+    })
+  })
+
+  describe("resolveGazetteCategoryLabel", () => {
+    const TAG_CATEGORIES = [
+      {
+        label: GAZETTE_CATEGORY_LABEL,
+        options: [
+          { id: "cat-gov", label: "Government Gazette" },
+          { id: "cat-leg", label: "Legislative Supplements" },
+        ],
+      },
+    ]
+
+    it("returns the label for a known category option id", () => {
+      expect(resolveGazetteCategoryLabel("cat-gov", TAG_CATEGORIES)).toBe(
+        "Government Gazette",
+      )
+    })
+
+    it("returns undefined for an unknown category option id", () => {
+      expect(resolveGazetteCategoryLabel("cat-unknown", TAG_CATEGORIES)).toBe(
+        undefined,
+      )
+    })
+  })
+
+  describe("assertGazetteCategoryInput", () => {
+    const TAG_CATEGORIES = [
+      {
+        label: GAZETTE_CATEGORY_LABEL,
+        options: [{ id: "cat-gov", label: "Government Gazette" }],
+      },
+    ]
+
+    it("throws when the submitted label does not match the category id", () => {
+      expect(() =>
+        assertGazetteCategoryInput({
+          categoryId: "cat-gov",
+          categoryLabel: "Legislative Supplements",
+          tagCategories: TAG_CATEGORIES,
+        }),
+      ).toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Category label does not match the selected category",
+        }),
+      )
+    })
+  })
+
+  describe("assertGazetteSubcategoryInput", () => {
+    const TAG_CATEGORIES = [
+      {
+        label: GAZETTE_SUBCATEGORY_LABEL,
+        options: [
+          { id: "sub-1", label: "Advertisements" },
+          { id: "sub-leg-1", label: "Acts Supplement" },
+        ],
+      },
+    ]
+
+    it("does not throw for a subcategory id allowed under the selected category", () => {
+      expect(() =>
+        assertGazetteSubcategoryInput({
+          subcategoryId: "sub-1",
+          categoryId: "cat-gov",
+          categoryLabel: "Government Gazette",
+          tagCategories: TAG_CATEGORIES,
+        }),
+      ).not.toThrow()
+    })
+
+    it("throws when the subcategory id does not resolve to any option", () => {
+      expect(() =>
+        assertGazetteSubcategoryInput({
+          subcategoryId: "invalid-subcat-uuid",
+          categoryId: "cat-gov",
+          categoryLabel: "Government Gazette",
+          tagCategories: TAG_CATEGORIES,
+        }),
+      ).toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Subcategory is not a valid option for this collection",
+        }),
+      )
+    })
+
+    it("throws when the subcategory belongs to a different category", () => {
+      expect(() =>
+        assertGazetteSubcategoryInput({
+          subcategoryId: "sub-leg-1",
+          categoryId: "cat-gov",
+          categoryLabel: "Government Gazette",
+          tagCategories: TAG_CATEGORIES,
+        }),
+      ).toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Subcategory is not valid for the selected category",
+        }),
+      )
+    })
+
+    // Completes the `page.tagged` invariant: the persisted array is exactly
+    // [categoryId, subcategoryId], so equal ids would write a duplicate entry
+    // that resolveGazetteTagLabels reads as both the category and subcategory.
+    it("throws when the subcategory id is the same as the category id", () => {
+      expect(() =>
+        assertGazetteSubcategoryInput({
+          subcategoryId: "sub-1",
+          categoryId: "sub-1",
+          categoryLabel: "Government Gazette",
+          tagCategories: TAG_CATEGORIES,
+        }),
+      ).toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Category and subcategory must be different tag options",
+        }),
+      )
     })
   })
 

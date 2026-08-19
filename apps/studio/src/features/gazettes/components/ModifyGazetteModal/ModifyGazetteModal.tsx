@@ -24,13 +24,16 @@ import { useZodForm } from "~/lib/form"
 import { createGazetteSchema } from "~/schemas/gazette"
 import { trpc } from "~/utils/trpc"
 
-import { useGazetteSubcategoriesContext } from "../../contexts/GazetteSubcategoriesContext"
+import { useResolveGazetteTagLabels } from "../../hooks/useResolveGazetteTagLabels"
 import { GazetteFormFields } from "../GazetteModal"
 
 interface ModifyGazetteInitialData {
   title: string
-  category: string
-  subcategory: string
+  // Option ids, or `null` when `page.tagged` held nothing from the collection
+  // taxonomy. In that case the form starts empty and requires the user to pick
+  // a valid value instead of writing the old tag back unchanged.
+  category: string | null
+  subcategory: string | null
   notificationNumber?: string
   publishDate: Date
   publishTime: string
@@ -90,7 +93,7 @@ const ModifyGazetteModalContent = ({
   const [hasFile, setHasFile] = useState(!!initialData.fileId)
 
   const toast = useToast()
-  const { subcategoryMap } = useGazetteSubcategoriesContext()
+  const resolveTagLabels = useResolveGazetteTagLabels()
   const utils = trpc.useUtils()
 
   const { mutateAsync: uploadFile, isPending: isUploading } =
@@ -114,8 +117,8 @@ const ModifyGazetteModalContent = ({
   } = useZodForm({
     defaultValues: {
       title: initialData.title,
-      category: initialData.category,
-      subcategory: initialData.subcategory,
+      category: initialData.category ?? "",
+      subcategory: initialData.subcategory ?? "",
       notificationNumber: initialData.notificationNumber ?? "",
       publishDate: initialData.publishDate,
       publishTime: initialData.publishTime,
@@ -126,6 +129,15 @@ const ModifyGazetteModalContent = ({
   })
 
   const onSubmit = handleSubmit(async (data) => {
+    const labels = resolveTagLabels({
+      categoryId: data.category,
+      subcategoryId: data.subcategory,
+    })
+    if (!labels) {
+      return
+    }
+    const { categoryLabel, subcategoryLabel } = labels
+
     try {
       // If the user attached a fresh file, upload first and pass the new key
       // to the server. If only the filename changed, hand `desiredFileName` to
@@ -141,8 +153,8 @@ const ModifyGazetteModalContent = ({
           fileName: data.fileId,
           scheduledAt,
           year: data.publishDate.getFullYear(),
-          category: data.category,
-          subcategory: subcategoryMap[data.subcategory] ?? data.subcategory,
+          category: categoryLabel,
+          subcategory: subcategoryLabel,
         })
         newRef = path
       } else if (initialData.fileKey && initialData.fileId !== data.fileId) {
@@ -155,10 +167,11 @@ const ModifyGazetteModalContent = ({
         title: data.title,
         newRef,
         desiredFileName,
-        category: data.category,
+        categoryId: data.category,
+        categoryLabel,
         date: format(data.publishDate, "dd/MM/yyyy"),
         description: data.notificationNumber,
-        tagged: [data.subcategory],
+        subcategoryId: data.subcategory,
         scheduledAt,
       })
 

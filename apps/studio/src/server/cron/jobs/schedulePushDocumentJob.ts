@@ -12,6 +12,7 @@ import {
   generateDocumentId,
   parseFullTextFromPDF,
   pushDocumentsForIngestion,
+  resolveGazetteTagLabels,
 } from "~/server/modules/gazette/gazette.service"
 
 import { registerPgbossJob } from "@isomer/pgboss"
@@ -25,7 +26,6 @@ const logger = createBaseLogger({ path: "cron:schedulePushDocumentJob" })
 const pushDocumentContentSchema = z.object({
   page: z.object({
     ref: z.string(),
-    category: z.string(),
     tagged: z.array(z.string()),
     description: z.string().optional(),
   }),
@@ -36,6 +36,7 @@ const collectionIndexPageContentSchema = z.object({
   page: z.object({
     tagCategories: z.array(
       z.object({
+        label: z.string(),
         options: z.array(z.object({ id: z.string(), label: z.string() })),
       }),
     ),
@@ -43,15 +44,16 @@ const collectionIndexPageContentSchema = z.object({
 })
 
 /**
- * Shared per-resource extraction pipeline used by both the SearchSG and Algolia
- * branches. Performs all I/O (S3 fetch, S3 tag update, PDF parse) and the two
- * schema validations:
+ * Shared extraction pipeline for one resource, used by both SearchSG and
+ * Algolia.
  *
- *   - pushDocumentContentSchema failure  → logs + returns null  (caller skips row)
- *   - collectionIndexPageContentSchema failure → logs + throws   (caller's try/catch skips row)
+ * It does the I/O work here: S3 fetch, S3 tag update, PDF parse, and schema
+ * validation. `pushDocumentContentSchema` failures are logged and return
+ * `null`. `collectionIndexPageContentSchema` failures are logged and thrown so
+ * the caller can skip that row.
  *
- * `setAssetAsPublished` is called exactly once per resource, inside this helper,
- * preserving the existing semantics regardless of which ingestion branch runs.
+ * `setAssetAsPublished` still runs once per resource, no matter which
+ * ingestion branch handles it.
  */
 const extractResourceData = async ({
   resourceId,
@@ -65,11 +67,11 @@ const extractResourceData = async ({
   ref: string
   objectGroup: string
   fileUrl: string
+  categoryLabel: string | undefined
   subcategoryLabel: string | undefined
   pdfTextContent: string
   parsedPage: {
     ref: string
-    category: string
     tagged: string[]
     description?: string
   }
@@ -89,8 +91,8 @@ const extractResourceData = async ({
   const objectGroup = ref.slice(1)
   const fileUrl = encodeURI(`https://${env.S3_GAZETTE_DOMAIN_NAME}${ref}`)
 
-  // NOTE: select the index page published blob also
-  // as we need to derive the subcategory
+  // Read the IndexPage's published blob. It carries the taxonomy labels we use
+  // to resolve the subcategory.
   const { content: indexPageContent } = await db
     .selectFrom("Resource")
     .innerJoin("Version", "Version.id", "Resource.publishedVersionId")
@@ -102,14 +104,13 @@ const extractResourceData = async ({
 
   const blob = await getBlob(env.S3_GAZETTE_BUCKET_NAME, ref.slice(1))
 
-  // NOTE: Remove `scheduledAt` tags from our s3 object
-  // so that the pdf is viewable to MOPs
+  // Remove the `scheduledAt` tag so the PDF is viewable to MOPs.
   await setAssetAsPublished({
     Key: ref.slice(1),
     Bucket: env.S3_GAZETTE_BUCKET_NAME,
   })
 
-  // NOTE: Derive the subcategory from the tagged mapping
+  // Derive category and subcategory labels from the tagged ids.
   const indexParsed =
     collectionIndexPageContentSchema.safeParse(indexPageContent)
   if (!indexParsed.success) {
@@ -121,13 +122,25 @@ const extractResourceData = async ({
       `Failed to parse index page content for resource ${resourceId}`,
     )
   }
-  const { tagCategories } = indexParsed.data.page
-  // reduce the tag category options into a single array then we find
-  const options =
-    tagCategories?.map((category) => category.options).flat() ?? []
-  const subcategory = options.find(
-    (option) => option.id === parsed.data.page.tagged[0],
-  )
+  // The tagged ids are the only source of truth for category resolution. Do
+  // not fall back to parsing labels from the S3 ref shape
+  // (`{year}/{category}/{subcategory}/{file}.pdf`). Older rows that no longer
+  // resolve need a backfill, not a guessed label from the object key.
+  const { categoryLabel, subcategoryLabel } = resolveGazetteTagLabels({
+    tagged: parsed.data.page.tagged,
+    tagCategories: indexParsed.data.page.tagCategories,
+  })
+
+  // Once the ref fallback is gone, this is the main signal for an old row that
+  // still needs backfilling. The job row is deleted either way, so this record
+  // will not retry on its own.
+  if (!categoryLabel) {
+    logger.warn(
+      { resourceId, ref, tagged: parsed.data.page.tagged },
+      "Could not resolve gazette category from tagged ids. Skipping ingestion. This row predates the tagCategories cutover, so backfill it and re-ingest it manually.",
+    )
+    return null
+  }
 
   const pdfTextContent = await parseFullTextFromPDF(blob)
 
@@ -135,7 +148,8 @@ const extractResourceData = async ({
     ref,
     objectGroup,
     fileUrl,
-    subcategoryLabel: subcategory?.label,
+    categoryLabel,
+    subcategoryLabel,
     pdfTextContent,
     parsedPage: parsed.data.page,
   }
@@ -160,15 +174,11 @@ export const schedulePushDocumentJobHandler = async () => {
   try {
     const useSearchSg = gb.isOn(ENABLE_SEARCHSG_GAZETTE_INGESTION)
 
-    // Pick the content to index: prefer the published Version's blob, fall
-    // back to the draft blob. The schedule-publishing cron fires on the same
-    // scheduledAt as this job and publishing clears draftBlobId (the draft
-    // becomes the Version — see version.service.ts), so joining only on the
-    // draft blob silently drops any gazette whose publish won the race. The
-    // draft fallback covers the opposite ordering, where this job runs first
-    // and the identical content is published moments later. A row where both
-    // blobs are somehow missing yields null content, which fails the Zod
-    // parse below and is logged + skipped rather than silently dropped.
+    // Prefer the published blob, then fall back to the draft blob. Publish and
+    // ingestion can run on the same `scheduledAt`, and publish clears
+    // `draftBlobId` when the draft becomes the Version. Looking only at the
+    // draft blob would miss rows where publish won that race. If both blobs are
+    // missing, the Zod parse below fails and the row is logged and skipped.
     const scheduledResources = await db
       .selectFrom("PushDocumentJob")
       .innerJoin("Resource", "Resource.id", "PushDocumentJob.resourceId")
@@ -202,7 +212,7 @@ export const schedulePushDocumentJobHandler = async () => {
             })
             if (extracted === null) return null
 
-            const { ref, pdfTextContent, subcategoryLabel, parsedPage } =
+            const { ref, pdfTextContent, categoryLabel, subcategoryLabel } =
               extracted
 
             return {
@@ -215,7 +225,7 @@ export const schedulePushDocumentJobHandler = async () => {
               url: encodeURI(`https://${env.S3_GAZETTE_DOMAIN_NAME}${ref}`),
               date: scheduledAt.toISOString(),
               categories: subcategoryLabel ? [subcategoryLabel] : [],
-              contentType: parsedPage.category,
+              contentType: categoryLabel ?? "",
             }
           } catch (error) {
             logger.error({ error, resourceId }, "Failed to process document")
@@ -260,6 +270,7 @@ export const schedulePushDocumentJobHandler = async () => {
           const {
             objectGroup,
             fileUrl,
+            categoryLabel,
             subcategoryLabel,
             pdfTextContent,
             parsedPage,
@@ -269,7 +280,7 @@ export const schedulePushDocumentJobHandler = async () => {
             parsedText: pdfTextContent,
             objectGroup,
             title,
-            category: parsedPage.category,
+            category: categoryLabel ?? "",
             subCategory: subcategoryLabel ?? "",
             notificationNum: parsedPage.description,
             fileUrl,

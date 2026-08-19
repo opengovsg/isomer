@@ -1,20 +1,26 @@
 import type { PropsWithChildren } from "react"
-import { filter } from "lodash-es"
 import { createContext, useContext, useMemo } from "react"
 import { trpc } from "~/utils/trpc"
 
-import type { GazettesCategory } from "../types"
-import { GAZETTE_SUBCATEGORY_LABEL } from "../constants"
 import {
-  governmentGazetteSubcategoriesKeys,
-  legislativeSupplementsSubcategoriesKeys,
-  otherSupplementsSubcategoriesKeys,
+  GAZETTE_CATEGORY_LABEL,
+  GAZETTE_SUBCATEGORY_LABEL,
+  getAllowedSubcategoryLabelsForCategory,
 } from "../constants"
 
 interface GazetteSubcategoriesContextValue {
+  categories: { label: string; value: string }[]
+  categoryMap: Record<string, string>
   subcategories: { label: string; value: string }[]
   subcategoryMap: Record<string, string>
-  getSubcategoriesForCategory: (category: GazettesCategory) => {
+  /**
+   * `categoryLabel` is the resolved label for the selected category id, or
+   * `undefined` when the id is not one of this collection's Category options.
+   * Callers must not pass an unresolved id through here. That would return an
+   * empty list and make the dropdown look broken when the real problem is the
+   * category itself.
+   */
+  getSubcategoriesForCategory: (categoryLabel: string | undefined) => {
     label: string
     value: string
   }[]
@@ -39,9 +45,22 @@ export const GazetteSubcategoriesProvider = ({
   })
 
   const value = useMemo(() => {
+    const categoryCategory = tagCategories?.find(
+      (cat) => cat.label === GAZETTE_CATEGORY_LABEL,
+    )
     const subcategoryCategory = tagCategories?.find(
       (cat) => cat.label === GAZETTE_SUBCATEGORY_LABEL,
     )
+
+    const categories =
+      categoryCategory?.options?.map((option) => ({
+        label: option.label,
+        value: option.id,
+      })) ?? []
+
+    const categoryMap = Object.fromEntries(
+      categories.map(({ value, label }) => [value, label]),
+    ) as Record<string, string>
 
     const subcategories =
       subcategoryCategory?.options?.map((option) => ({
@@ -53,33 +72,20 @@ export const GazetteSubcategoriesProvider = ({
       subcategories.map(({ value, label }) => [value, label]),
     ) as Record<string, string>
 
-    const getSubcategoriesForCategory = (category: GazettesCategory) => {
-      switch (category) {
-        case "Government Gazette": {
-          return filter(subcategories, ({ label }) => {
-            return governmentGazetteSubcategoriesKeys.some(
-              (key) => key === label,
-            )
-          })
-        }
-        case "Other Supplements": {
-          return filter(subcategories, ({ label }) => {
-            return otherSupplementsSubcategoriesKeys.some(
-              (key) => key === label,
-            )
-          })
-        }
-
-        case "Legislative Supplements": {
-          return filter(subcategories, ({ label }) => {
-            return legislativeSupplementsSubcategoriesKeys.some(
-              (key) => key === label,
-            )
-          })
-        }
-      }
+    const getSubcategoriesForCategory = (categoryLabel: string | undefined) => {
+      if (!categoryLabel) return []
+      const allowedLabels = new Set(
+        getAllowedSubcategoryLabelsForCategory(categoryLabel),
+      )
+      return subcategories.filter(({ label }) => allowedLabels.has(label))
     }
-    return { subcategories, subcategoryMap, getSubcategoriesForCategory }
+    return {
+      categories,
+      categoryMap,
+      subcategories,
+      subcategoryMap,
+      getSubcategoriesForCategory,
+    }
   }, [tagCategories])
 
   return (

@@ -30,12 +30,19 @@ export type CreateGazetteInput = z.infer<typeof createGazetteSchema>
 
 const gazetteMetadataSchema = z.object({
   title: z.string().min(1).max(255),
-  category: z.string().min(1),
+  categoryId: z.string().min(1, { message: "Category is required" }),
+  categoryLabel: z.string().min(1, { message: "Category is required" }),
   date: z
     .string()
     .regex(/^\d{2}\/\d{2}\/\d{4}$/, { message: "Date must be dd/MM/yyyy" }),
   description: z.string().optional(),
-  tagged: z.array(z.string()).min(1),
+  // Category and subcategory travel as named ids. The server writes them to
+  // `page.tagged` as `[categoryId, subcategoryId]`.
+  //
+  // This is not a positional `tagged` array input. The server owns that shape
+  // so callers cannot slip extra ids into it or send a category id where a
+  // subcategory id should be.
+  subcategoryId: z.string().min(1, { message: "Subcategory is required" }),
   scheduledAt: z.date(),
 })
 
@@ -57,9 +64,8 @@ export const createGazetteServerSchema = gazetteMetadataSchema.extend({
 export const updateGazetteServerSchema = gazetteMetadataSchema.extend({
   siteId: z.number().min(1),
   gazetteId: z.number().min(1),
-  // Exactly one of `newRef` (a fresh upload) or `desiredFileName` (rename the
-  // existing file) is meaningful per call. If both are absent, the existing
-  // ref is kept as-is.
+  // At most one of `newRef` or `desiredFileName` matters per call. If both are
+  // absent, the existing ref stays as-is.
   newRef: z.string().min(1).optional(),
   desiredFileName: z
     .string()
@@ -83,9 +89,8 @@ export const getPresignedGetUrlSchema = z.object({
   fileKey: z
     .string()
     .min(1)
-    // Defence-in-depth against path-traversal-style fileKeys (e.g.
-    // "/SITE_ID/x.pdf" or "../y.pdf"). S3 keys for gazettes are always relative
-    // and have no path traversal segments.
+    // Defense in depth against path-traversal-style fileKeys like
+    // "/SITE_ID/x.pdf" or "../y.pdf". Gazette S3 keys are always relative.
     .refine((s) => !s.startsWith("/") && !s.split("/").includes(".."), {
       message: "Invalid fileKey",
     }),
