@@ -15,6 +15,8 @@ export class PageEditorPO {
    * "This is a prose block".
    */
   async fillBlock(label: string, text: string) {
+    // Block buttons in the root drawer use mixed casing ("Article page header"
+    // vs "This is a prose block") — case-insensitive match on the label arg.
     await this.page
       .getByRole("button", { name: new RegExp(label, "i") })
       .click()

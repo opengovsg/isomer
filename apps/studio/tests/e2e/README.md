@@ -6,7 +6,7 @@
 | ---------------------------- | -------------------------------------------------------------- |
 | `fixtures/user.ts`           | `ensureUserOnboarded(email)` — skip welcome modal              |
 | `fixtures/reset.ts`          | Site-scoped DB reset helpers (`resetSiteAgencySettings`, etc.) |
-| `fixtures/helpers.ts`        | Shared UI flows (create page/folder, invite user)              |
+| `fixtures/helpers.ts`        | Cross-surface UI flows (create page/folder, invite user)       |
 | `fixtures/auth.ts`           | Role storage-state paths and `TEST_EMAILS`                     |
 | `fixtures/seed.ts`           | Idempotent E2E role seeding                                    |
 | `fixtures/site.po.ts`        | Site settings page object                                      |
