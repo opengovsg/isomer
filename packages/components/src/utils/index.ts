@@ -36,6 +36,7 @@ export {
   NON_EMPTY_STRING_REGEX,
   TRIMMED_NON_EMPTY_STRING_REGEX,
   GTM_ID_STRING_REGEX,
+  NO_STYLIZED_UNICODE_REGEX,
 } from "./validation"
 
 export { createChildrenPagesComparator } from "./createChildrenPagesComparator"
