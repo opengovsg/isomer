@@ -122,6 +122,7 @@ const Page = async (props: DynamicPageProps) => {
   const pageJsonLd = getPageJsonLd({
     ...renderSchema,
     site: {
+      siteName: config.site.siteName,
       url: config.site.url,
     },
   })

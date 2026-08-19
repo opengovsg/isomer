@@ -25,7 +25,9 @@ interface GetSiteJsonLdProps {
 type PageSchemaWithoutSite = DistributedOmit<IsomerPageSchemaType, "site">
 
 type GetPageJsonLdProps = PageSchemaWithoutSite & {
-  site: Pick<IsomerSiteConfigProps, "url">
+  // NOTE: `siteName` is the homepage's meta-description fallback, so it is
+  // needed wherever that description is derived.
+  site: Pick<IsomerSiteConfigProps, "siteName" | "url">
 }
 
 const getNonEmptyString = (value?: string) => {
@@ -138,7 +140,7 @@ const getOpenGraphTitle = (props: IsomerPageSchemaType) => {
   return props.page.permalink === "/" ? props.site.siteName : props.page.title
 }
 
-const getMetaDescription = (props: PageSchemaWithoutSite) => {
+const getMetaDescription = (props: GetPageJsonLdProps) => {
   if (props.meta?.description) {
     return props.meta.description
   }
