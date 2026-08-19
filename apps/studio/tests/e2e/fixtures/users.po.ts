@@ -14,6 +14,9 @@ export class UsersPO {
 
   async fillInviteForm(email: string, role: string) {
     await this.page.getByLabel("Email address").fill(email)
+    // Role picker buttons are labelled "Editor — can edit…", "Publisher — can
+    // publish…", etc. Anchor at ^role so "Editor" doesn't also match "Chief
+    // Editor" if that role were added later.
     await this.page
       .getByRole("button", { name: new RegExp(`^${role}`) })
       .click()
