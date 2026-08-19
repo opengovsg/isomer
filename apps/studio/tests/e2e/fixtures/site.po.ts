@@ -397,8 +397,14 @@ export class SitePO {
     return this.page.getByLabel("Button text")
   }
 
+  /**
+   * "Pin Call-to-Action on mobile" Switch. Click the wrapping <label>, not the
+   * visually-hidden checkbox input (same reason as ctaToggle()).
+   */
   ctaPinOnMobileToggle() {
-    return this.page.getByLabel("Pin Call-to-Action on mobile")
+    return this.page
+      .getByLabel("Pin Call-to-Action on mobile")
+      .locator("xpath=..")
   }
 
   addUtilityItemButton() {
