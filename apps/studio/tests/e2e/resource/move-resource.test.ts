@@ -101,6 +101,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await dashboard.gotoFolder(siteId, parentFolder.id)
     await dashboard.openResourceMenu(childTitle)
     await dashboard.clickMove()
+    await dashboard.enterMoveFolder(parentTitle)
     await dashboard.selectMoveToSiteRoot()
     await dashboard.confirmMove()
 
