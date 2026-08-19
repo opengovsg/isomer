@@ -47,12 +47,14 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   })
 
   test("can see and open Filters on the collection index", async ({ page }) => {
+    // Act
     const collection = new CollectionPO(page)
     await page.goto(`/sites/${siteId}/pages/${indexPageId}`)
-
     await collection.expectManageCollectionVisible()
     await collection.expectFiltersVisible()
     await collection.openFilters()
+
+    // Assert
     await collection.expectManageFiltersDrawerOpen()
   })
 })
@@ -80,12 +82,14 @@ for (const role of ["core", "migrator"] as const) {
       test("can see and open Filters on the collection index", async ({
         page,
       }) => {
+        // Act
         const collection = new CollectionPO(page)
         await page.goto(`/sites/${siteId}/pages/${indexPageId}`)
-
         await collection.expectManageCollectionVisible()
         await collection.expectFiltersVisible()
         await collection.openFilters()
+
+        // Assert
         await collection.expectManageFiltersDrawerOpen()
       })
     },
@@ -107,11 +111,13 @@ for (const role of ["editor", "publisher"] as const) {
     })
 
     test("cannot see Filters on the collection index", async ({ page }) => {
+      // Act
       const collection = new CollectionPO(page)
       await page.goto(`/sites/${siteId}/pages/${indexPageId}`)
-
       await collection.expectManageCollectionVisible()
       await collection.expectCollectionDisplayVisible()
+
+      // Assert
       await collection.expectFiltersHidden()
     })
   })
