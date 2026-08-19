@@ -25,6 +25,47 @@ export class DashboardPO {
     ).not.toBeVisible()
   }
 
+  async expectCreateMenuHidden() {
+    await this.expectCreateButtonHidden()
+  }
+
+  async openCreateCollectionModal() {
+    await this.openCreateMenu()
+    await this.clickCreateCollection()
+    await expect(this.page.getByText("Create a new collection")).toBeVisible()
+  }
+
+  async fillCreateCollectionModalTitle(title: string) {
+    await this.page.getByLabel("Collection name").fill(title)
+  }
+
+  async cancelCreateCollectionModal() {
+    // The modal has two "Close"-named buttons: the icon-only `ModalCloseButton`
+    // (aria-label only, no visible text) and this footer action button. Filter
+    // by visible text to target the footer button specifically.
+    await this.page
+      .getByRole("button", { name: "Close" })
+      .filter({ hasText: "Close" })
+      .click()
+    await expect(
+      this.page.getByText("Create a new collection"),
+    ).not.toBeVisible()
+  }
+
+  async openCollectionItemWizard() {
+    await this.clickAddCollectionItem()
+    await expect(
+      this.page.getByText("What kind of collection item are you creating?"),
+    ).toBeVisible()
+  }
+
+  async cancelCollectionItemWizard() {
+    await this.page.getByRole("button", { name: "Cancel" }).click()
+    await expect(
+      this.page.getByText("What kind of collection item are you creating?"),
+    ).not.toBeVisible()
+  }
+
   async openResourceMenu(title: string) {
     await this.page
       .getByRole("button", { name: `Options for ${title}`, exact: true })
@@ -78,13 +119,30 @@ export class DashboardPO {
     await this.page.getByRole("button", { name: "Add new item" }).click()
   }
 
+  async clickAddCollectionItem() {
+    await this.openAddCollectionItem()
+  }
+
   async selectCollectionItemType(type: "Page" | "Link or file") {
     await this.page.getByText(type, { exact: true }).click()
+  }
+
+  async proceedToCollectionItemDetails() {
     await this.page.getByRole("button", { name: "Next: Page details" }).click()
   }
 
   async fillCollectionItemWizard(title: string) {
     await this.page.getByLabel(/Page title|Item title/).fill(title)
+    await this.page.getByRole("button", { name: "Start editing" }).click()
+  }
+
+  async fillCollectionPageWizard(title: string) {
+    await this.page.getByLabel("Page title").fill(title)
+    await this.page.getByRole("button", { name: "Start editing" }).click()
+  }
+
+  async fillCollectionLinkWizard(title: string) {
+    await this.page.getByLabel("Item title").fill(title)
     await this.page.getByRole("button", { name: "Start editing" }).click()
   }
 
