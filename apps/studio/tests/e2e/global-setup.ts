@@ -1,8 +1,8 @@
 import type { FullConfig } from "@playwright/test"
 import { chromium } from "@playwright/test"
 import crypto from "crypto"
-import { db, sql } from "~/server/modules/database"
 import { env } from "~/env.mjs"
+import { db, sql } from "~/server/modules/database"
 
 import { ROLES, storageStateFor, TEST_EMAILS } from "./fixtures/auth"
 import { LoginPage } from "./fixtures/login"
