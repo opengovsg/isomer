@@ -158,9 +158,10 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     // Act: configure a utility link
     await site.utilityLinksToggle().click()
     await site.addUtilityItemButton().click()
+    await site.utilityItemRow(1).click()
     await site.utilityItemNameField().fill("Login")
     await site.setLinkDestinationExternal("example.com/login")
-    await page.getByRole("button", { name: /^Return to/ }).click()
+    await site.nestedDrawerBackButton().click()
 
     await site.clickPublish()
     await site.expectChangesPublishedToast()

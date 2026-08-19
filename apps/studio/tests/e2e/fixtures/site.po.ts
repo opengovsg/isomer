@@ -412,6 +412,22 @@ export class SitePO {
   }
 
   /**
+   * Placeholder row label in JsonFormsArrayControl (DraggableTagButton.Label)
+   * before the nested drawer has a name. Click to open ComplexEditorNestedDrawer.
+   */
+  utilityItemRow(index: number) {
+    return this.page.getByText(`Item ${index}`, { exact: true })
+  }
+
+  /**
+   * Nested-drawer back control. `aria-label` is `Return to ${label}` where
+   * `label` is the array field's JSON Forms label (see ComplexEditorNestedDrawer).
+   */
+  nestedDrawerBackButton() {
+    return this.page.getByRole("button", { name: /^Return to/ })
+  }
+
+  /**
    * The chevron toggle (Chakra AccordionButton) that expands a top-level
    * navbar item's sub-items list. Scoped via the item's `data-id`
    * (`items.<index>`, see JsonFormsNavbarControl/utils.ts getNavbarItemPath)
