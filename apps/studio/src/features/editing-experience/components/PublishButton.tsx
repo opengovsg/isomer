@@ -113,7 +113,7 @@ const SuspendablePublishButton = ({
                 {...publishNowDisclosure}
               />
             )}
-            {currPage.scheduledAt ? (
+            {currPage.scheduledAt && isAllowed ? (
               <CancelSchedulePublishIndicator
                 siteId={siteId}
                 pageId={pageId}
