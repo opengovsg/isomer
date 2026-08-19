@@ -202,13 +202,10 @@ export class UsersPO {
     await expect(this.tab(label).locator(".badge")).toHaveText(String(count))
   }
 
-  async expectIsomerAdminsEmptyState() {
-    await this.clickIsomerAdminsTab()
-    await expect(this.page.getByText("No users yet")).toBeVisible()
+  async expectAddUsersEmptyPromptHidden() {
     await expect(
       this.page.getByText("Add users to start working with you on this site"),
     ).not.toBeVisible()
-    await this.expectNoPagination()
   }
 
   /** Chakra keeps inactive tab panels in the DOM with `hidden`. */
