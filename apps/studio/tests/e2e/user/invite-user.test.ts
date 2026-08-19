@@ -113,18 +113,12 @@ test.describe("invite user", { tag: roleTag("admin") }, () => {
   }) => {
     // Arrange
     const vendorEmail = UNIQUE_VENDOR()
-    await openInviteModal(page, siteId)
-    await page.getByLabel("Email address").fill(vendorEmail)
+    const users = await openInviteModal(page, siteId)
+    await users.fillEmail(vendorEmail)
 
     // Assert
-    await expect(
-      page.getByText(
-        "There are non-gov.sg domains that need to be whitelisted",
-      ),
-    ).toBeVisible({ timeout: 10_000 })
-    await expect(
-      page.getByRole("button", { name: "Send invite" }),
-    ).toBeDisabled()
+    await users.expectVendorWhitelistRequired()
+    await users.expectSendInviteDisabled()
   })
 
   test("admin cannot invite a non-whitelisted vendor collaborator, even as Admin", async ({
@@ -132,19 +126,13 @@ test.describe("invite user", { tag: roleTag("admin") }, () => {
   }) => {
     // Arrange
     const vendorEmail = UNIQUE_VENDOR()
-    await openInviteModal(page, siteId)
-    await page.getByRole("button", { name: /^Admin/ }).click()
-    await page.getByLabel("Email address").fill(vendorEmail)
+    const users = await openInviteModal(page, siteId)
+    await users.selectRole("Admin")
+    await users.fillEmail(vendorEmail)
 
     // Assert
-    await expect(page.getByRole("button", { name: /^Admin/ })).toBeEnabled()
-    await expect(
-      page.getByText(
-        "There are non-gov.sg domains that need to be whitelisted",
-      ),
-    ).toBeVisible({ timeout: 10_000 })
-    await expect(
-      page.getByRole("button", { name: "Send invite" }),
-    ).toBeDisabled()
+    await users.expectRoleEnabled("Admin")
+    await users.expectVendorWhitelistRequired()
+    await users.expectSendInviteDisabled()
   })
 })
