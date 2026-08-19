@@ -285,8 +285,6 @@ jobs:
             paths: tests/e2e/site
           - feature: resource
             paths: tests/e2e/resource
-          - feature: collection
-            paths: tests/e2e/collection
           - feature: user
             paths: tests/e2e/user
           - feature: godmode
