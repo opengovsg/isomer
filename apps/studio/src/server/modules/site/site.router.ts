@@ -42,7 +42,7 @@ import {
   getNotification,
   getSiteConfig,
   getSiteTheme,
-  resolveEgazetteAlgoliaSearchConfig,
+  resolveSearchConfig,
   setSiteNotification,
   validateUserPermissionsForSite,
 } from "./site.service"
@@ -138,13 +138,9 @@ export const siteRouter = router({
       const { config } = site
 
       const updatedConfig = await db.transaction().execute(async (tx) => {
-        // Preserve the existing clientId from DB - only admins can update it via setSiteConfigByAdmin
-        const searchConfig =
-          rest.search?.type === "searchSG" && config.search?.type === "searchSG"
-            ? { ...rest.search, clientId: config.search.clientId }
-            : // egazette-algolia is admin-managed; site admins cannot switch
-              // to/from it or tamper with its Algolia credentials.
-              resolveEgazetteAlgoliaSearchConfig(config.search, rest.search)
+        // searchSG and egazette-algolia are admin-managed; their credentials
+        // always come from the DB, never from site-admin input.
+        const searchConfig = resolveSearchConfig(config.search, rest.search)
 
         const updatedSite = await tx
           .updateTable("Site")
@@ -223,12 +219,9 @@ export const siteRouter = router({
           })
         }
 
-        // egazette-algolia is admin-managed; site admins cannot switch to/from
-        // it or tamper with its Algolia credentials.
-        const search = resolveEgazetteAlgoliaSearchConfig(
-          site.config.search,
-          data.search,
-        )
+        // searchSG and egazette-algolia are admin-managed; their credentials
+        // always come from the DB, never from site-admin input.
+        const search = resolveSearchConfig(site.config.search, data.search)
 
         const updatedSite = await tx
           .updateTable("Site")
