@@ -16,6 +16,7 @@ import { DragDropContext, Droppable } from "@hello-pangea/dnd"
 import { Infobox, useToast } from "@opengovsg/design-system-react"
 import {
   getComponentSchema,
+  ISOMER_PAGE_LAYOUTS,
   ISOMER_USABLE_PAGE_LAYOUTS,
   schema,
 } from "@opengovsg/isomer-components"
@@ -380,12 +381,10 @@ export default function RootStateDrawer() {
       .map(Number),
   )
 
-  // NOTE: if a page has either of these `layouts`,
-  // we should disable them from adding blocks
-  // because folder index pages aren't intended to have
-  // content yet and components don't render content
-  // for collection index pages
-  const canAddBlocks = pageLayout !== "collection"
+  // Collection and system-managed Search pages do not render custom content.
+  const canAddBlocks =
+    pageLayout !== ISOMER_USABLE_PAGE_LAYOUTS.Collection &&
+    pageLayout !== ISOMER_PAGE_LAYOUTS.Search
 
   const isNewCollectionTagsManagementEnabled = useNewCollectionTagsManagement()
 
@@ -528,7 +527,7 @@ export default function RootStateDrawer() {
                 <VStack gap="1.5rem" w="100%">
                   <VStack w="100%" h="100%" gap="1rem">
                     <Flex flexDirection="row" w="100%">
-                      {pageLayout !== ISOMER_USABLE_PAGE_LAYOUTS.Collection && (
+                      {canAddBlocks && (
                         <VStack gap="0.25rem" align="start" flex={1}>
                           <Text textStyle="subhead-1">Custom blocks</Text>
                           <Text
