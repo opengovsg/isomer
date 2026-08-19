@@ -134,8 +134,6 @@ jobs:
 
           TEMPLATE_DEPS_TGZ="isomer-template-deps.tar.zst"
           TEMPLATE_DEPS_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/$UNIQUE_CACHE_KEY/$TEMPLATE_DEPS_TGZ"
-          echo "Fetching cached pnpm store..."
-          aws s3 cp --only-show-errors $TEMPLATE_DEPS_CACHE_PATH $TEMPLATE_DEPS_TGZ || true
           echo "Installing workspace dependencies..."
           start_time=$(date +%s)
           pnpm install --frozen-lockfile
@@ -165,8 +163,6 @@ jobs:
 
           COMPONENTS_DIST_TGZ="isomer-components-dist.tar.zst"
           COMPONENTS_DIST_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/$UNIQUE_CACHE_KEY/$COMPONENTS_DIST_TGZ"
-          echo "Fetching cached isomer-components dist..."
-          aws s3 cp --only-show-errors $COMPONENTS_DIST_CACHE_PATH $COMPONENTS_DIST_TGZ || true
           echo "Building @opengovsg/isomer-components..."
           start_time=$(date +%s)
           pnpm --filter @opengovsg/isomer-components run build
