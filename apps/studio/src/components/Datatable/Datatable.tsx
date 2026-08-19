@@ -3,6 +3,7 @@ import type { Row, Table as ReactTable } from "@tanstack/react-table"
 import {
   Box,
   Flex,
+  LinkBox,
   Spinner,
   Table,
   Tbody,
@@ -28,6 +29,8 @@ interface DatatableProps<D> extends TableProps {
   emptyPlaceholder?: React.ReactElement
   overflow?: LayoutProps["overflow"]
   onRowClick?: (row: Row<D>) => void
+  /** Render each row as a LinkBox for a descendant LinkOverlay. */
+  isRowLink?: boolean
 }
 
 export const Datatable = <T extends object>({
@@ -38,6 +41,7 @@ export const Datatable = <T extends object>({
   emptyPlaceholder,
   overflow = "auto",
   onRowClick,
+  isRowLink,
   ...tableProps
 }: DatatableProps<T>): JSX.Element => {
   const { rows } = instance.getRowModel()
@@ -111,12 +115,19 @@ export const Datatable = <T extends object>({
           <Tbody>
             {rows.length === 0 && emptyPlaceholder}
             {rows.map((row) => {
+              const RowComponent = isRowLink ? LinkBox : Tr
+
               return (
-                <Tr
+                <RowComponent
+                  as={isRowLink ? "tr" : undefined}
                   key={row.id}
                   borderBottomWidth="1px"
+                  // LinkBox rows don't pick up the Table theme's `tr` styles,
+                  // so restate the ones we rely on here.
+                  _last={{ borderBottomWidth: 0 }}
+                  textStyle="body-2"
                   _hover={{ bgColor: "interaction.muted.main.hover" }}
-                  cursor={onRowClick ? "pointer" : undefined}
+                  cursor={onRowClick || isRowLink ? "pointer" : undefined}
                   onClick={() => onRowClick?.(row)}
                 >
                   {row.getVisibleCells().map((cell) => {
@@ -129,7 +140,7 @@ export const Datatable = <T extends object>({
                       </Td>
                     )
                   })}
-                </Tr>
+                </RowComponent>
               )
             })}
           </Tbody>

@@ -594,6 +594,47 @@ describe("resource.router", async () => {
       expect(result).toMatchObject(expected)
     })
 
+    it("should only hide the default Search page when requested", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: "Page",
+        permalink: "search",
+        title: "Search",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: "Page",
+        permalink: "about",
+        title: "About",
+      })
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
+
+      // Act
+      const linkPickerResult = await caller.getChildrenOf({
+        siteId: String(site.id),
+        resourceId: null,
+      })
+      const directorySidebarResult = await caller.getChildrenOf({
+        siteId: String(site.id),
+        resourceId: null,
+        includeSearchPage: false,
+      })
+
+      // Assert
+      expect(linkPickerResult.items.map(({ permalink }) => permalink)).toEqual([
+        "about",
+        "search",
+      ])
+      expect(
+        directorySidebarResult.items.map(({ permalink }) => permalink),
+      ).toEqual(["about"])
+    })
+
     it("should not return FolderMeta, CollectionMeta, and CollectionLink as children", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -2299,6 +2340,33 @@ describe("resource.router", async () => {
       expect(result).toEqual(numberOfPages + numberOfFolders)
     })
 
+    it("should exclude the default Search page from the root count", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupPageResource({
+        siteId: site.id,
+        permalink: "search",
+        title: "Search",
+        resourceType: "Page",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        permalink: "about",
+        title: "About",
+        resourceType: "Page",
+      })
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.countWithoutRoot({ siteId: site.id })
+
+      // Assert
+      expect(result).toBe(1)
+    })
+
     it("should return count of resources nested inside the resourceId", async () => {
       // Arrange
       const { folder: folderToUse, site } = await setupFolder({
@@ -2584,6 +2652,33 @@ describe("resource.router", async () => {
         .sort(testListComparable)
         .slice(0, 10)
       expect(expected).toMatchObject(result)
+    })
+
+    it("should exclude the default Search page from the root resource list", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupPageResource({
+        siteId: site.id,
+        permalink: "search",
+        title: "Search",
+        resourceType: "Page",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        permalink: "about",
+        title: "About",
+        resourceType: "Page",
+      })
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
+
+      // Act
+      const result = await caller.listWithoutRoot({ siteId: site.id })
+
+      // Assert
+      expect(result.map(({ permalink }) => permalink)).toEqual(["about"])
     })
 
     it("should return resources (respecting the limit) nested inside the resourceId", async () => {

@@ -1,6 +1,7 @@
 import type { IsomerSiteConfigProps } from "@opengovsg/isomer-components"
 import type { Notification } from "~/schemas/site"
 import { TRPCError } from "@trpc/server"
+import { SEARCH_PAGE_PERMALINK } from "~/constants/sitemap"
 import { ResourceState, ResourceType } from "~/server/modules/database"
 
 import type {
@@ -380,7 +381,7 @@ export const createSite = async ({ siteName, userId }: CreateSiteProps) => {
       .insertInto("Resource")
       .values({
         draftBlobId: String(blobId),
-        permalink: "search",
+        permalink: SEARCH_PAGE_PERMALINK,
         siteId,
         type: ResourceType.Page,
         title: "Search",
