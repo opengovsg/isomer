@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest"
 import {
   doAllFileKeysBelongToSite,
   getContentDispositionForKey,
+  getContentDispositionForTitle,
   getContentTypeFromKey,
   getFileKey,
   sanitizeSvg,
@@ -48,14 +49,55 @@ describe("asset.service", () => {
   describe("getContentDispositionForKey", () => {
     it("should return inline with filename from key segment", () => {
       const result = getContentDispositionForKey("1/abc-uuid/test.png")
-      expect(result).toMatch(/^inline; filename\*=UTF-8''/)
-      expect(result).toContain(encodeURIComponent("test.png"))
+      expect(result).toBe(`inline; filename="test.png"`)
     })
 
-    it("should encode special characters in filename", () => {
+    it("should encode non-latin1 characters via RFC 5987 with a latin1 fallback", () => {
       const result = getContentDispositionForKey("1/abc/测试文件.pdf")
-      expect(result).toMatch(/^inline; filename\*=UTF-8''/)
-      expect(result).toContain(encodeURIComponent("测试文件.pdf"))
+      // filename= fallback for legacy clients, plus a correctly-encoded filename*
+      expect(result).toBe(
+        `inline; filename="????.pdf"; filename*=UTF-8''%E6%B5%8B%E8%AF%95%E6%96%87%E4%BB%B6.pdf`,
+      )
+    })
+  })
+
+  describe("getContentDispositionForTitle", () => {
+    it("should use the title as filename, keeping the key's extension", () => {
+      const result = getContentDispositionForTitle(
+        "Government Gazette No. 1",
+        "2024/category/sub/file.pdf",
+      )
+      expect(result).toBe(`inline; filename="Government Gazette No. 1.pdf"`)
+    })
+
+    it("should encode non-latin1 titles via RFC 5987 with a latin1 fallback", () => {
+      const result = getContentDispositionForTitle("测试文件", "1/abc/doc.pdf")
+      expect(result).toBe(
+        `inline; filename="????.pdf"; filename*=UTF-8''%E6%B5%8B%E8%AF%95%E6%96%87%E4%BB%B6.pdf`,
+      )
+    })
+
+    it("should omit the extension when the key has none", () => {
+      const result = getContentDispositionForTitle("My Title", "1/abc/blob")
+      expect(result).toBe(`inline; filename="My Title"`)
+    })
+
+    it("should preserve titles with path separators instead of truncating them", () => {
+      // content-disposition runs path.basename internally, which would truncate
+      // "A/B\\C" to "C"; path separators must be replaced before it is called.
+      const result = getContentDispositionForTitle("A/B\\C", "1/abc/doc.pdf")
+      expect(result).toBe(`inline; filename="A-B-C.pdf"`)
+    })
+
+    it("should emit valid headers for titles with RFC 5987 attr-chars ' ( ) *", () => {
+      // encodeURIComponent leaves ' ( ) * unescaped, which is invalid inside a
+      // filename* ext-value; the content-disposition package keeps them in a
+      // quoted filename= instead, which is well-formed.
+      const result = getContentDispositionForTitle(
+        "O'Brien (No. 1)*",
+        "1/abc/doc.pdf",
+      )
+      expect(result).toBe(`inline; filename="O'Brien (No. 1)*.pdf"`)
     })
   })
 
