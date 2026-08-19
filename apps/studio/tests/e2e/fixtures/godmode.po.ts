@@ -37,8 +37,18 @@ export class GodmodePO {
     await this.page.getByLabel("Site name").fill(siteName)
   }
 
+  siteNameInput() {
+    return this.page.getByLabel("Site name")
+  }
+
   async clickCreateSite() {
     await this.page.getByRole("button", { name: "Create Site" }).click()
+  }
+
+  async expectCreateSiteFailedToast() {
+    await this.page
+      .getByText("Failed to create site")
+      .waitFor({ state: "visible" })
   }
 
   async expectSiteCreatedToast(siteName: string) {
@@ -68,15 +78,52 @@ export class GodmodePO {
     ).toBeVisible()
   }
 
+  siteRow(siteId: number) {
+    return this.page.getByRole("row").filter({
+      has: this.page.getByRole("cell", { name: String(siteId), exact: true }),
+    })
+  }
+
+  async expectSiteListed(opts: {
+    siteId: number
+    siteName: string
+    codeBuildId: string
+  }) {
+    const row = this.siteRow(opts.siteId)
+    await expect(row).toBeVisible()
+    await expect(row).toContainText(opts.siteName)
+    await expect(row).toContainText(opts.codeBuildId)
+  }
+
   async clickPublishForSite(siteId: number) {
-    const row = this.page.getByRole("row").filter({ hasText: String(siteId) })
-    await row.getByRole("button", { name: "Publish" }).click()
+    await this.siteRow(siteId).getByRole("button", { name: "Publish" }).click()
+  }
+
+  async expectPublishButtonVisible(siteId: number) {
+    await expect(
+      this.siteRow(siteId).getByRole("button", { name: "Publish" }),
+    ).toBeVisible()
+  }
+
+  async expectPublishButtonHidden(siteId: number) {
+    await expect(
+      this.siteRow(siteId).getByRole("button", { name: "Publish" }),
+    ).toHaveCount(0)
   }
 
   async expectSitePublishedToast() {
     await this.page
       .getByText("Site published successfully")
       .waitFor({ state: "visible" })
+  }
+
+  async expectPublishFailedToast(message?: string) {
+    await this.page
+      .getByText("Failed to publish site")
+      .waitFor({ state: "visible" })
+    if (message) {
+      await this.page.getByText(message).waitFor({ state: "visible" })
+    }
   }
 
   async gotoWhitelist() {
@@ -87,8 +134,12 @@ export class GodmodePO {
     ).toBeVisible()
   }
 
+  vendorEmailsTextarea() {
+    return this.page.locator("textarea").nth(1)
+  }
+
   async fillVendorEmails(emails: string[]) {
-    await this.page.locator("textarea").nth(1).fill(emails.join("\n"))
+    await this.vendorEmailsTextarea().fill(emails.join("\n"))
   }
 
   async clickWhitelistSubmit() {
@@ -101,6 +152,10 @@ export class GodmodePO {
         `Successfully whitelisted ${adminCount} admin(s) and ${vendorCount} vendor(s)`,
       )
       .waitFor({ state: "visible" })
+  }
+
+  async expectWhitelistErrorToast() {
+    await this.page.getByText(/invalid email/i).waitFor({ state: "visible" })
   }
 }
 
