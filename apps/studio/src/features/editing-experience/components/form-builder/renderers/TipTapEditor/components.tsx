@@ -2,7 +2,7 @@ import type { BoxProps } from "@chakra-ui/react"
 import type { EditorContentProps, Editor as TiptapEditor } from "@tiptap/react"
 import type { PropsWithChildren } from "react"
 import type { EditorMenuBar } from "~/components/PageEditor/MenuBar/MenuBar"
-import { Box, useToken, VStack } from "@chakra-ui/react"
+import { Box, VStack } from "@chakra-ui/react"
 import { EditorContent } from "@tiptap/react"
 import { useMemo } from "react"
 
@@ -45,11 +45,6 @@ const EditorContainer = ({
 const EditorContentWrapper = ({
   editor,
 }: Pick<EditorContentProps, "editor">) => {
-  const [linkColor, linkHoverColor] = useToken("colors", [
-    "interaction.links.default",
-    "interaction.links.hover",
-  ])
-
   return (
     <Box
       as={EditorContent}
@@ -62,14 +57,6 @@ const EditorContentWrapper = ({
       backgroundColor="white"
       onClick={() => editor?.chain().focus().run()}
       cursor="text"
-      sx={{
-        "& a": {
-          color: linkColor,
-          _hover: {
-            color: linkHoverColor,
-          },
-        },
-      }}
     />
   )
 }
