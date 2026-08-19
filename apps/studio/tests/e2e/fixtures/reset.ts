@@ -40,3 +40,18 @@ export const resetSiteNotification = (siteId: number) =>
 /** Reset theme column to seed default (null) for colours settings tests. */
 export const resetSiteTheme = (siteId: number) =>
   db.updateTable("Site").set({ theme: null }).where("id", "=", siteId).execute()
+
+/** Delete a single resource row created during a test. */
+export const deleteResource = (resourceId: string) =>
+  db.deleteFrom("Resource").where("id", "=", resourceId).execute()
+
+/** Delete resources on a site whose title matches a SQL LIKE pattern. */
+export const deleteResourcesByTitleLike = (
+  siteId: number,
+  titlePattern: string,
+) =>
+  db
+    .deleteFrom("Resource")
+    .where("siteId", "=", siteId)
+    .where("title", "like", titlePattern)
+    .execute()

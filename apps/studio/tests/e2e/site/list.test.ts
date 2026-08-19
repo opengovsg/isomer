@@ -15,8 +15,10 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
   test("editor sees their provisioned site on the dashboard", async ({
     page,
   }) => {
+    // Act
     await page.goto("/")
 
+    // Assert
     await expect(
       page.getByRole("heading", { name: "Your sites" }),
     ).toBeVisible()
@@ -26,8 +28,10 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
 
 test.describe("nomember", { tag: roleTag("nomember") }, () => {
   test("user with no permissions sees empty state", async ({ page }) => {
+    // Act
     await page.goto("/")
 
+    // Assert
     await expect(
       page.getByText("You don't have access to any sites yet."),
     ).toBeVisible()
