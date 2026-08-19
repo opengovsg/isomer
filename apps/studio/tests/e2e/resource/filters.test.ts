@@ -200,11 +200,11 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await collection.addFilter()
     await collection.addFilter()
 
-    // Act / Assert — duplicate filter names
+    // Act / Assert — duplicate filter names (live caption; drawer Save stays
+    // enabled because duplicates are not AJV errors)
     await collection.expectFilterNameError(
       "A filter with this name already exists.",
     )
-    await collection.expectDrawerSaveDisabled()
 
     await collection.openFilterNamed("New filter")
     await collection.fillFilterName("")
@@ -219,11 +219,11 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await collection.expectOptionNameError(
       "An option with this name already exists.",
     )
-    await collection.expectDrawerSaveDisabled()
+    await collection.expectInlineOptionSaveDisabled()
 
     await collection.fillOptionName(1, "")
     await collection.expectOptionNameError("Option name cannot be empty.")
-    await collection.expectDrawerSaveDisabled()
+    await collection.expectInlineOptionSaveDisabled()
   })
 
   test("deleting an unused option can be cancelled or confirmed", async ({
