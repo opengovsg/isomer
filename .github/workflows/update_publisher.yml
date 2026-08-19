@@ -70,4 +70,5 @@ jobs:
         env:
           PUBLISHER_SCRIPT_BUCKET: ${{ inputs.publisher-script-bucket }}
         run: |
-          aws s3 cp tooling/build/scripts/publisher.sh "s3://$PUBLISHER_SCRIPT_BUCKET/publisher.sh"
+          aws s3 cp tooling/build/scripts/publisher.sh "s3://$PUBLISHER_SCRIPT_BUCKET/publisher.sh" \
+            --cache-control "no-cache, no-store, must-revalidate"
