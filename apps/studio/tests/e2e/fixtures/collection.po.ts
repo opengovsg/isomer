@@ -139,45 +139,45 @@ export class CollectionPO {
     const toggle = this.page.getByLabel("This filter is required")
     const isChecked = await toggle.isChecked()
     if (isChecked !== required) {
-      await toggle.click()
+      await toggle.click({ force: true })
     }
   }
 
   async chooseFilterPresentation(presentation: "Pills" | "Plaintext") {
-    await this.page.getByRole("radio", { name: presentation }).click()
+    await this.page
+      .getByRole("radio", { name: presentation })
+      .click({ force: true })
   }
 
   async addOption() {
     await this.page.getByRole("button", { name: /^Add option$/i }).click()
   }
 
-  async renameOptionAtIndex(index0Based: number, name: string) {
-    const optionName = `Option ${index0Based + 1}`
-    const namedRow = this.page.getByText(
-      new RegExp(`^Option ${index0Based + 1}$`),
-    )
-    const newOption = this.page.getByText(/^New option$/).first()
-    if (await namedRow.isVisible().catch(() => false)) {
-      await namedRow.click()
-    } else {
-      await newOption.click()
-    }
-    const nameInput = this.page.getByRole("textbox", {
-      name: `${optionName} name`,
-    })
-    await nameInput.fill(name)
-    await nameInput.press("Enter")
+  optionRow(index0Based: number) {
+    return this.page
+      .locator("[data-rfd-draggable-id], [data-rbd-draggable-id]")
+      .nth(index0Based)
   }
 
   async openOptionInlineEdit(index0Based: number) {
     const optionName = `Option ${index0Based + 1}`
-    const namedRow = this.page.getByText(
-      new RegExp(`^${optionName}$|^New option$`),
-    )
-    await namedRow.first().click()
+    const row = this.optionRow(index0Based)
+    await row
+      .getByRole("button")
+      .filter({ hasNotText: "actions" })
+      .first()
+      .click()
     await this.page
       .getByRole("textbox", { name: `${optionName} name` })
       .waitFor()
+  }
+
+  async renameOptionAtIndex(index0Based: number, name: string) {
+    await this.openOptionInlineEdit(index0Based)
+    await this.fillOptionName(index0Based, name)
+    await this.page
+      .getByRole("textbox", { name: `Option ${index0Based + 1} name` })
+      .press("Enter")
   }
 
   async fillOptionName(index0Based: number, name: string) {
@@ -188,11 +188,11 @@ export class CollectionPO {
   }
 
   async expectOptionNameError(message: string | RegExp) {
-    await expect(this.page.getByText(message)).toBeVisible()
+    await expect(this.page.getByText(message).first()).toBeVisible()
   }
 
   async expectFilterNameError(message: string | RegExp) {
-    await expect(this.page.getByText(message)).toBeVisible()
+    await expect(this.page.getByText(message).first()).toBeVisible()
   }
 
   async expectFilterNamedVisible(name: string) {
@@ -233,8 +233,11 @@ export class CollectionPO {
 
   async reorderFirstDraggableDown() {
     const handle = this.page
-      .locator("[data-rbd-drag-handle-draggable-id]")
+      .locator(
+        "[data-rfd-drag-handle-draggable-id], [data-rbd-drag-handle-draggable-id]",
+      )
       .first()
+    await expect(handle).toBeVisible()
     await handle.focus()
     await this.page.keyboard.press("Space")
     await this.page.keyboard.press("ArrowDown")
@@ -281,9 +284,7 @@ export class CollectionPO {
   async confirmDeleteOption() {
     const dialog = this.deleteOptionDialog()
     await dialog
-      .getByRole("checkbox", {
-        name: /Yes, delete this filter option permanently/i,
-      })
+      .getByText(/Yes, delete this filter option permanently/i)
       .click()
     await dialog
       .getByRole("button", { name: /^Delete filter option$/i })
@@ -300,9 +301,7 @@ export class CollectionPO {
 
   async confirmDeleteFilter() {
     await this.page
-      .getByRole("checkbox", {
-        name: /Yes, delete the entire filter permanently/i,
-      })
+      .getByText(/Yes, delete the entire filter permanently/i)
       .click()
     await this.page.getByRole("button", { name: /^Delete filter$/i }).click()
     await expect(
@@ -382,7 +381,7 @@ export class CollectionPO {
   }
 
   async chooseLayout(layout: "1-column" | "2-column") {
-    await this.page.getByRole("radio", { name: layout }).click()
+    await this.page.getByRole("radio", { name: layout }).click({ force: true })
   }
 
   async chooseSortOrder(label: string) {
@@ -394,19 +393,20 @@ export class CollectionPO {
     const toggle = this.page.getByLabel("Show date on all items")
     const isChecked = await toggle.isChecked()
     if (isChecked !== show) {
-      await toggle.click()
+      await toggle.click({ force: true })
     }
   }
 
   async enableThumbnails(fallback: "Use site logo" | "Use first image") {
+    // ODS Switch is unlabeled; the title sits in a sibling FormControl.
     const thumbnailSwitch = this.page
-      .getByText("Display thumbnail on all items")
-      .locator("xpath=ancestor::div[1]/following-sibling::*")
-      .getByRole("checkbox")
+      .getByText("Display thumbnail on all items", { exact: true })
+      .locator("xpath=ancestor::div[.//input[@type='checkbox']][1]")
+      .locator("input[type='checkbox']")
     if (!(await thumbnailSwitch.isChecked())) {
-      await thumbnailSwitch.click()
+      await thumbnailSwitch.click({ force: true })
     }
-    await this.page.getByText(fallback, { exact: false }).click()
+    await this.page.getByText(fallback, { exact: false }).click({ force: true })
   }
 
   async expectLayoutSelected(layout: "1-column" | "2-column") {

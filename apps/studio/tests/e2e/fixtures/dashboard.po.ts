@@ -396,6 +396,10 @@ export class DashboardPO {
   }
 
   async goToCollectionTablePage(pageNumber: number) {
-    await this.page.getByRole("button", { name: String(pageNumber) }).click()
+    const nav = this.page.getByRole("navigation", { name: "Pagination" })
+    await expect(nav).toBeVisible()
+    await nav
+      .getByRole("button", { name: String(pageNumber), exact: true })
+      .click()
   }
 }
