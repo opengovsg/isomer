@@ -43,6 +43,16 @@ export class DashboardPO {
     ).toBeVisible()
   }
 
+  async expectHomepageRowVisible() {
+    await expect(
+      this.page.getByRole("link", { name: "Home Published" }),
+    ).toBeVisible()
+  }
+
+  async expectCreateButtonVisible() {
+    await expect(this.createNewButton()).toBeVisible()
+  }
+
   async openResourceMenu(title: string) {
     await this.page
       .getByRole("button", { name: `Options for ${title}`, exact: true })
