@@ -161,12 +161,12 @@ export class CollectionPO {
 
   async openOptionInlineEdit(index0Based: number) {
     const optionName = `Option ${index0Based + 1}`
-    const row = this.optionRow(index0Based)
-    await row
-      .getByRole("button")
-      .filter({ hasNotText: "actions" })
+    // EditableLabel is Chakra Text-as-button. The wrapping Body `as="button"`
+    // has no onClick and intercepts a click on the first button in the row.
+    await this.optionRow(index0Based)
+      .locator(".chakra-text")
       .first()
-      .click()
+      .click({ force: true })
     await this.page
       .getByRole("textbox", { name: `${optionName} name` })
       .waitFor()
@@ -330,11 +330,13 @@ export class CollectionPO {
   }
 
   async expectUsageCountFallback() {
+    // ErrorBoundary copy when countTagOptionsUsage fails; matches the option
+    // delete warning, not the "recreate this filter" variant.
     await expect(
       this.page.getByText(
-        /To undo this change, you will need to (create and re-assign this option|recreate this filter)/i,
+        /To undo this change, you will need to create and re-assign this option/i,
       ),
-    ).toBeVisible()
+    ).toBeVisible({ timeout: 20_000 })
     await expect(
       this.page.getByText(/This option is being used in|It’s being used on/),
     ).toHaveCount(0)
@@ -354,7 +356,21 @@ export class CollectionPO {
     await expect(this.drawerSaveButton()).toBeEnabled()
   }
 
+  async expectInlineOptionSaveDisabled() {
+    await expect(
+      this.page
+        .locator("[data-rfd-draggable-id], [data-rbd-draggable-id]")
+        .filter({ has: this.page.getByRole("textbox") })
+        .getByRole("button", { name: "Save changes" }),
+    ).toBeDisabled()
+  }
+
   async saveFilters() {
+    const back = this.page.getByRole("button", { name: /Return to Filters/i })
+    if (await back.isVisible()) {
+      await back.click()
+      await this.expectManageFiltersDrawerOpen()
+    }
     await this.drawerSaveButton().click()
     await expect(
       this.page.getByText(
@@ -385,7 +401,13 @@ export class CollectionPO {
   }
 
   async chooseSortOrder(label: string) {
-    await this.page.getByRole("combobox", { name: "Sort items by" }).click()
+    // ODS SingleSelect is not labelled by the FormLabel (same as tagged
+    // MultiSelect — see selectTagOption). Scope via the FormControl group.
+    await this.page
+      .getByRole("group")
+      .filter({ hasText: "Sort items by" })
+      .getByRole("combobox")
+      .click()
     await this.page.getByRole("option", { name: label }).click()
   }
 
