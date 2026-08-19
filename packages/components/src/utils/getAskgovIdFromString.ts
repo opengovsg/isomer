@@ -1,33 +1,16 @@
-const ASKGOV_HOSTNAMES = new Set(["ask.gov.sg", "www.ask.gov.sg"])
-const SCHEMELESS_ASKGOV_DOMAIN_PATTERN =
-  /^(?:[a-z0-9-]+\.)*ask\.gov\.sg(?:[./?#]|$)/i
+import { ASKGOV_AGENCY_ID_REGEX, ASKGOV_URL_REGEX } from "./validation"
+
+const AGENCY_ID = new RegExp(`^${ASKGOV_AGENCY_ID_REGEX}$`)
+const ASKGOV_URL = new RegExp(`^${ASKGOV_URL_REGEX}$`)
 
 /**
- * Returns an AskGov agency ID unchanged, or extracts it from a supported URL.
- * URL inputs must use HTTP(S), have an accepted hostname, and include the
- * agency ID as the first path segment.
+ * Normalises an AskGov agency ID or an ask.gov.sg link down to the bare agency
+ * ID that the widget script expects, or `null` if the value is neither.
  */
 export const getAskgovIdFromString = (value: string): string | null => {
-  const valueToParse = value.includes("://")
-    ? value
-    : SCHEMELESS_ASKGOV_DOMAIN_PATTERN.test(value)
-      ? `https://${value}`
-      : null
+  const trimmed = value.trim()
 
-  if (!valueToParse) return value
+  if (AGENCY_ID.test(trimmed)) return trimmed
 
-  try {
-    const url = new URL(valueToParse)
-
-    if (
-      !["http:", "https:"].includes(url.protocol) ||
-      !ASKGOV_HOSTNAMES.has(url.hostname)
-    ) {
-      return null
-    }
-
-    return url.pathname.split("/")[1] || null
-  } catch {
-    return null
-  }
+  return ASKGOV_URL.exec(trimmed)?.[1] ?? null
 }
