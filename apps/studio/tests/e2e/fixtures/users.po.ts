@@ -211,8 +211,15 @@ export class UsersPO {
     await this.expectNoPagination()
   }
 
+  /** Chakra keeps inactive tab panels in the DOM with `hidden`. */
+  private activeTabPanel() {
+    return this.page.locator('[role="tabpanel"]:not([hidden])')
+  }
+
   paginationNav() {
-    return this.page.getByRole("navigation", { name: "Pagination" })
+    return this.activeTabPanel().getByRole("navigation", {
+      name: "Pagination",
+    })
   }
 
   async expectNoPagination() {

@@ -2,6 +2,7 @@ import { test } from "@playwright/test"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
+import { SEEDED_ISOMER_ADMIN_COUNT } from "../fixtures/seed"
 import { provisionE2ESite } from "../fixtures/site"
 import {
   deleteUsersByEmail,
@@ -45,17 +46,24 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
     // Assert: the site admin plus every bulk-seeded editor
     await users.expectTabCount("Your users", BULK_EDITOR_COUNT + 1)
-    await users.expectTabCount("Isomer admins", 0)
+    // seedRolesForE2E provisions global core + migrator Isomer admins on every run
+    await users.expectTabCount("Isomer admins", SEEDED_ISOMER_ADMIN_COUNT)
   })
 
-  test("Isomer admins tab shows an empty state with no add-user prompt", async ({
+  test("Isomer admins tab lists seeded godmode admins without pagination", async ({
     page,
   }) => {
     const users = new UsersPO(page)
 
-    // Arrange / Act / Assert
+    // Arrange / Act
     await users.goto(siteId)
-    await users.expectIsomerAdminsEmptyState()
+    await users.clickIsomerAdminsTab()
+
+    // Assert
+    await users.expectIsomerAdminBanner()
+    await users.expectUserInTable(TEST_EMAILS.core)
+    await users.expectUserInTable(TEST_EMAILS.migrator)
+    await users.expectNoPagination()
   })
 
   test("Your users table paginates once there are more than 25 users", async ({
