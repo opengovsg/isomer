@@ -21,6 +21,7 @@ export const getChildrenSchema = z
   .object({
     resourceId: z.union([bigIntSchema, z.null()]),
     siteId: z.string().min(0),
+    includeSearchPage: z.boolean().optional().default(true),
   })
   .merge(infiniteOffsetPaginationSchema)
 

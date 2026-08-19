@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server"
 import { jsonObjectFrom } from "kysely/helpers/postgres"
 import { get } from "lodash-es"
 import { USER_LINKABLE_RESOURCE_TYPES } from "~/constants/resources"
-import { IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
+import { SEARCH_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   countResourceSchema,
   deleteResourceSchema,
@@ -209,7 +209,10 @@ export const resourceRouter = router({
     .input(getChildrenSchema)
     .output(getChildrenOutputSchema)
     .query(
-      async ({ ctx, input: { resourceId, siteId, cursor: offset, limit } }) => {
+      async ({
+        ctx,
+        input: { resourceId, siteId, cursor: offset, limit, includeSearchPage },
+      }) => {
         await bulkValidateUserPermissionsForResources({
           action: "read",
           resourceIds: [resourceId],
@@ -250,6 +253,13 @@ export const resourceRouter = router({
 
         if (resourceId === null) {
           query = query.where("parentId", "is", null)
+          if (!includeSearchPage) {
+            query = query.where(
+              "Resource.permalink",
+              "!=",
+              SEARCH_PAGE_PERMALINK,
+            )
+          }
         } else {
           query = query.where("Resource.parentId", "=", String(resourceId))
         }
@@ -380,7 +390,10 @@ export const resourceRouter = router({
 
             // Prevent users from moving the search page (permalink /search, no parent)
             // This is a special page that is used to display the SearchSG results
-            if (toMove.permalink === "search" && toMove.parentId === null) {
+            if (
+              toMove.permalink === SEARCH_PAGE_PERMALINK &&
+              toMove.parentId === null
+            ) {
               throw new TRPCError({
                 code: "BAD_REQUEST",
                 message: "The search page cannot be moved",
@@ -572,9 +585,7 @@ export const resourceRouter = router({
             // A Folder/Collection has no URL of its own, but the move changes
             // every descendant's URL — preserve them with one wildcard redirect
             // ("/old-folder/*"), and validate no descendant lands on a URL an
-            // existing redirect already covers. Shadow validation always runs on
-            // a move; only redirect creation is gated behind the advanced-
-            // redirects flag so it stays dark until the edge resolver ships.
+            // existing redirect already covers.
             if (
               (toMove.type === ResourceType.Folder ||
                 toMove.type === ResourceType.Collection) &&
@@ -585,9 +596,7 @@ export const resourceRouter = router({
                 oldFullPermalink,
                 newFullPermalink,
                 resourceId: movedResourceId,
-                shouldCreateRedirect:
-                  shouldCreateRedirect &&
-                  ctx.gb.isOn(IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY),
+                shouldCreateRedirect,
                 hasLiveContent: await hasPublishedDescendant(tx, {
                   siteId,
                   resourceId: movedResourceId,
@@ -651,7 +660,9 @@ export const resourceRouter = router({
       if (resourceId) {
         query = query.where("Resource.parentId", "=", String(resourceId))
       } else {
-        query = query.where("Resource.parentId", "is", null)
+        query = query
+          .where("Resource.parentId", "is", null)
+          .where("Resource.permalink", "!=", SEARCH_PAGE_PERMALINK)
       }
 
       const result = await query.executeTakeFirst()
@@ -683,7 +694,9 @@ export const resourceRouter = router({
         if (resourceId) {
           query = query.where("Resource.parentId", "=", String(resourceId))
         } else {
-          query = query.where("Resource.parentId", "is", null)
+          query = query
+            .where("Resource.parentId", "is", null)
+            .where("Resource.permalink", "!=", SEARCH_PAGE_PERMALINK)
         }
 
         query = applyResourceOrderBy(query, orderBy)
@@ -746,7 +759,10 @@ export const resourceRouter = router({
 
         // Prevent users from deleting the search page (permalink /search, no parent)
         // This is a special page that is used to display the SearchSG results
-        if (before.permalink === "search" && before.parentId === null) {
+        if (
+          before.permalink === SEARCH_PAGE_PERMALINK &&
+          before.parentId === null
+        ) {
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: "The search page cannot be deleted",

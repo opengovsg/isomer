@@ -2,8 +2,6 @@ import { TRPCError } from "@trpc/server"
 import { omit, pick } from "lodash-es"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
-import { mockFeatureFlags } from "tests/integration/helpers/growthbook/mockFeatureFlags"
-import { mockGrowthBook } from "tests/integration/helpers/growthbook/mockInstance"
 import {
   applyAuthedSession,
   applySession,
@@ -25,7 +23,6 @@ import {
   setUpWhitelist,
 } from "tests/integration/helpers/seed"
 import { USER_VIEWABLE_RESOURCE_TYPES } from "~/constants/resources"
-import { IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import { MAX_BATCH_RESOURCE_IDS } from "~/schemas/resource"
 import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
@@ -595,6 +592,47 @@ describe("resource.router", async () => {
         nextOffset: null,
       }
       expect(result).toMatchObject(expected)
+    })
+
+    it("should only hide the default Search page when requested", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: "Page",
+        permalink: "search",
+        title: "Search",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: "Page",
+        permalink: "about",
+        title: "About",
+      })
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
+
+      // Act
+      const linkPickerResult = await caller.getChildrenOf({
+        siteId: String(site.id),
+        resourceId: null,
+      })
+      const directorySidebarResult = await caller.getChildrenOf({
+        siteId: String(site.id),
+        resourceId: null,
+        includeSearchPage: false,
+      })
+
+      // Assert
+      expect(linkPickerResult.items.map(({ permalink }) => permalink)).toEqual([
+        "about",
+        "search",
+      ])
+      expect(
+        directorySidebarResult.items.map(({ permalink }) => permalink),
+      ).toEqual(["about"])
     })
 
     it("should not return FolderMeta, CollectionMeta, and CollectionLink as children", async () => {
@@ -2081,20 +2119,6 @@ describe("resource.router", async () => {
       })
 
       describe("folder/collection", () => {
-        const enableAdvancedRedirects = () => {
-          mockGrowthBook.setForcedFeatures(
-            new Map([
-              ...mockFeatureFlags,
-              [IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY, true],
-            ]),
-          )
-        }
-
-        afterEach(() => {
-          // Restore the baseline forced features so the flag doesn't leak.
-          mockGrowthBook.setForcedFeatures(mockFeatureFlags)
-        })
-
         // A folder ("/dest/src-folder") with one published child page,
         // alongside a sibling destination folder ("/dest") to move it into.
         const setupMoveWithPublishedChild = async () => {
@@ -2116,7 +2140,6 @@ describe("resource.router", async () => {
         }
 
         it("creates a wildcard redirect from the old path for a published folder", async () => {
-          enableAdvancedRedirects()
           const { site, sourceFolder, destinationFolder } =
             await setupMoveWithPublishedChild()
 
@@ -2135,24 +2158,7 @@ describe("resource.router", async () => {
           )
         })
 
-        it("does not create a redirect when the advanced flag is off", async () => {
-          // Arrange — flag left at its (off) baseline.
-          const { site, sourceFolder, destinationFolder } =
-            await setupMoveWithPublishedChild()
-
-          await caller.move({
-            siteId: site.id,
-            movedResourceId: sourceFolder.id,
-            destinationResourceId: destinationFolder.id,
-            shouldCreateRedirect: true,
-          })
-
-          expect(await liveRedirects(site.id)).toHaveLength(0)
-        })
-
-        it("still blocks the move when a descendant would be shadowed, even with the flag off", async () => {
-          // Only redirect CREATION is gated behind the flag; validating
-          // against an already-existing redirect must not be.
+        it("still blocks the move when a descendant would be shadowed, even when shouldCreateRedirect is false", async () => {
           const { site, rootPage, sourceFolder, destinationFolder } =
             await setupMoveWithPublishedChild()
           await db
@@ -2332,6 +2338,33 @@ describe("resource.router", async () => {
 
       // Assert
       expect(result).toEqual(numberOfPages + numberOfFolders)
+    })
+
+    it("should exclude the default Search page from the root count", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupPageResource({
+        siteId: site.id,
+        permalink: "search",
+        title: "Search",
+        resourceType: "Page",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        permalink: "about",
+        title: "About",
+        resourceType: "Page",
+      })
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.countWithoutRoot({ siteId: site.id })
+
+      // Assert
+      expect(result).toBe(1)
     })
 
     it("should return count of resources nested inside the resourceId", async () => {
@@ -2619,6 +2652,33 @@ describe("resource.router", async () => {
         .sort(testListComparable)
         .slice(0, 10)
       expect(expected).toMatchObject(result)
+    })
+
+    it("should exclude the default Search page from the root resource list", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupPageResource({
+        siteId: site.id,
+        permalink: "search",
+        title: "Search",
+        resourceType: "Page",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        permalink: "about",
+        title: "About",
+        resourceType: "Page",
+      })
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
+
+      // Act
+      const result = await caller.listWithoutRoot({ siteId: site.id })
+
+      // Assert
+      expect(result.map(({ permalink }) => permalink)).toEqual(["about"])
     })
 
     it("should return resources (respecting the limit) nested inside the resourceId", async () => {

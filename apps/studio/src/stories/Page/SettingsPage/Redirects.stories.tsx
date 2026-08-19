@@ -6,7 +6,6 @@ import { sitesHandlers } from "tests/msw/handlers/sites"
 import RedirectsSettingsPage from "~/pages/sites/[siteId]/settings/redirects"
 import { MAX_BULK_REDIRECT_CSV_BYTES } from "~/schemas/redirect"
 import { ADMIN_HANDLERS } from "~/stories/handlers"
-import { createAdvancedRedirectsEnabledGbParameters } from "~/stories/utils/growthbook"
 
 const COMMON_HANDLERS = [
   ...ADMIN_HANDLERS,
@@ -72,7 +71,9 @@ export const Empty: Story = {
 // so the server's response drives the inline error states below.
 const submitNewRedirect = async (canvasElement: HTMLElement) => {
   const screen = within(canvasElement.ownerDocument.body)
-  const sourceInput = await screen.findByPlaceholderText("redirect-from")
+  const sourceInput = await screen.findByPlaceholderText(
+    "redirect-from or path/*",
+  )
   await userEvent.type(sourceInput, "old-page")
   await userEvent.type(
     screen.getByPlaceholderText("/path-to-page or https://www.google.com"),
@@ -158,7 +159,6 @@ const openModalAndUpload = async (canvasElement: HTMLElement) => {
 // Clicking the inline bulk-upload CTA opens the modal at its initial upload state.
 export const BulkUploadModal: Story = {
   parameters: {
-    growthbook: [createAdvancedRedirectsEnabledGbParameters(true)],
     msw: {
       handlers: [
         redirectHandlers.list.default(),
@@ -182,7 +182,6 @@ export const BulkUploadModal: Story = {
 // A fully valid file lands on the ready-to-publish screen.
 export const BulkUploadReadyToPublish: Story = {
   parameters: {
-    growthbook: [createAdvancedRedirectsEnabledGbParameters(true)],
     msw: {
       handlers: [
         redirectHandlers.list.default(),
@@ -224,7 +223,6 @@ export const BulkUploadReadyToPublish: Story = {
 // slow machine.
 export const BulkUploadFileSwappedWhileProcessing: Story = {
   parameters: {
-    growthbook: [createAdvancedRedirectsEnabledGbParameters(true)],
     msw: {
       handlers: [
         redirectHandlers.list.default(),
@@ -275,7 +273,6 @@ export const BulkUploadFileSwappedWhileProcessing: Story = {
 // A file with a bad row lands on the errors screen with the download affordance.
 export const BulkUploadWithErrors: Story = {
   parameters: {
-    growthbook: [createAdvancedRedirectsEnabledGbParameters(true)],
     msw: {
       handlers: [
         redirectHandlers.list.default(),
@@ -303,7 +300,6 @@ const OVERSIZE_MESSAGE =
 
 export const BulkUploadOversizeFile: Story = {
   parameters: {
-    growthbook: [createAdvancedRedirectsEnabledGbParameters(true)],
     msw: {
       handlers: [
         redirectHandlers.list.default(),
@@ -347,10 +343,9 @@ export const BulkUploadOversizeFile: Story = {
   },
 }
 
-// Advanced flag on: wildcard source typed — shows the live preview help text.
+// Wildcard source typed — shows the live preview help text.
 export const AdvancedWildcardPreview: Story = {
   parameters: {
-    growthbook: [createAdvancedRedirectsEnabledGbParameters(true)],
     msw: {
       handlers: [
         redirectHandlers.list.default(),
@@ -375,11 +370,10 @@ export const AdvancedWildcardPreview: Story = {
   },
 }
 
-// Advanced flag on: a destination pasted with surrounding whitespace still
-// previews the trimmed value the schema submits, not the raw padded input.
+// A destination pasted with surrounding whitespace still previews the
+// trimmed value the schema submits, not the raw padded input.
 export const AdvancedWildcardPreviewTrimsDestination: Story = {
   parameters: {
-    growthbook: [createAdvancedRedirectsEnabledGbParameters(true)],
     msw: {
       handlers: [
         redirectHandlers.list.default(),

@@ -44,7 +44,12 @@ export default async () => {
       POSTGRES_DB: DB_NAME,
     })
     .withStartupTimeout(60_000)
-    .withWaitStrategy(Wait.forListeningPorts())
+    // The Postgres image starts a temporary server during initialization before
+    // launching the final server. Wait for both readiness messages so clients
+    // cannot connect in between those two phases.
+    .withWaitStrategy(
+      Wait.forLogMessage("database system is ready to accept connections", 2),
+    )
     .start()
 
   const client = new Client({

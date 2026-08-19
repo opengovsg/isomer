@@ -65,7 +65,7 @@ Never write your own auth middleware in a router. If you need a new auth shape, 
 - Kysely (`db`) is the default. Prefer it for new queries.
 - Prisma (`ctx.prisma`) is used for legacy queries and where Kysely lacks parity.
 - Mix in one router only when necessary, and prefer one transaction owner per mutation.
-- Migrations and schema live under `apps/studio/prisma/` — see `apps/studio/prisma/CLAUDE.md`.
+- Migrations and schema live under `packages/db/prisma/` — see `packages/db/prisma/CLAUDE.md`. Studio-owned seed data, JSON-column types, and one-off scripts remain under `apps/studio/prisma/`.
 
 ## Testing
 

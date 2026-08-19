@@ -195,7 +195,10 @@ function JsonFormsNavbarControl({
               <Button
                 variant="outline"
                 leftIcon={<Icon as={BiPlusCircle} fontSize="1.25rem" />}
-                onClick={addItem(path, createDefaultValue(schema, rootSchema))}
+                onClick={() => {
+                  addItem(path, createDefaultValue(schema, rootSchema))()
+                  setSelectedPath(composePaths(path, String(data)))
+                }}
               >
                 Add a link
               </Button>
@@ -228,10 +231,10 @@ function JsonFormsNavbarControl({
                   variant="clear"
                   size="xs"
                   leftIcon={<Icon as={BiPlusCircle} />}
-                  onClick={addItem(
-                    path,
-                    createDefaultValue(schema, rootSchema),
-                  )}
+                  onClick={() => {
+                    addItem(path, createDefaultValue(schema, rootSchema))()
+                    setSelectedPath(composePaths(path, String(data)))
+                  }}
                 >
                   Add a link
                 </Button>
