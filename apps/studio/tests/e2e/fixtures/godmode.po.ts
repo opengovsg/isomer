@@ -20,9 +20,19 @@ export class GodmodePO {
   }
 
   async expectRedirectToDashboard(path: string) {
+    const responsePromise = this.page.waitForResponse((response) => {
+      const url = new URL(response.url())
+      return url.pathname === path && response.request().isNavigationRequest()
+    })
+
     await this.page.goto(path)
-    await this.page.waitForURL("/")
+    const response = await responsePromise
+
+    expect(response.status()).toBe(307)
     await expect(this.page).toHaveURL(/\/$/)
+    await expect(
+      this.page.getByRole("heading", { name: /God Mode/ }),
+    ).not.toBeVisible()
   }
 
   async gotoCreateSite() {
