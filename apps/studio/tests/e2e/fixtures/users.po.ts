@@ -12,14 +12,42 @@ export class UsersPO {
     await this.page.getByRole("button", { name: "Add new user" }).click()
   }
 
-  async fillInviteForm(email: string, role: string) {
+  async fillEmail(email: string) {
     await this.page.getByLabel("Email address").fill(email)
+  }
+
+  async selectRole(role: string) {
     // Role picker buttons are labelled "Editor — can edit…", "Publisher — can
     // publish…", etc. Anchor at ^role so "Editor" doesn't also match "Chief
     // Editor" if that role were added later.
-    await this.page
-      .getByRole("button", { name: new RegExp(`^${role}`) })
-      .click()
+    await this.roleButton(role).click()
+  }
+
+  roleButton(role: string) {
+    return this.page.getByRole("button", { name: new RegExp(`^${role}`) })
+  }
+
+  async fillInviteForm(email: string, role: string) {
+    await this.fillEmail(email)
+    await this.selectRole(role)
+  }
+
+  async expectVendorWhitelistRequired() {
+    await expect(
+      this.page.getByText(
+        "There are non-gov.sg domains that need to be whitelisted",
+      ),
+    ).toBeVisible({ timeout: 10_000 })
+  }
+
+  async expectSendInviteDisabled() {
+    await expect(
+      this.page.getByRole("button", { name: "Send invite" }),
+    ).toBeDisabled()
+  }
+
+  async expectRoleEnabled(role: string) {
+    await expect(this.roleButton(role)).toBeEnabled()
   }
 
   async sendInvite() {

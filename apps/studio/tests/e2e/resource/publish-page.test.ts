@@ -5,7 +5,7 @@ import { ResourceState, RoleType } from "~prisma/generated/generatedEnums"
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import {
   openSeededPageEditor,
-  openSeededPageEditorAsRole,
+  withSeededPageEditorAsRole,
 } from "../fixtures/helpers"
 import {
   SEEDED_PROSE_BLOCK_LABEL,
@@ -183,25 +183,24 @@ test.describe("separation of duties", { tag: roleTag("editor") }, () => {
 
     // Act: a publisher signs in with their own session and publishes the
     // editor's draft
-    const { context: publisherContext, editor: publisherEditor } =
-      await openSeededPageEditorAsRole(
-        browser,
-        "publisher",
-        siteId,
-        seededPage.id,
-      )
-    await publisherEditor.clickPublish()
-    await publisherEditor.expectPublishedToast()
+    await withSeededPageEditorAsRole(
+      browser,
+      "publisher",
+      siteId,
+      seededPage.id,
+      async (publisher) => {
+        await publisher.editor.clickPublish()
+        await publisher.editor.expectPublishedToast()
 
-    // Assert
-    await expect
-      .poll(async () => (await getResource(seededPage.id))?.state)
-      .toBe(ResourceState.Published)
-    await expect
-      .poll(async () => (await getResource(seededPage.id))?.draftBlobId)
-      .toBeNull()
-    await publisherEditor.expectBlockPreview(editedText)
-
-    await publisherContext.close()
+        // Assert
+        await expect
+          .poll(async () => (await getResource(seededPage.id))?.state)
+          .toBe(ResourceState.Published)
+        await expect
+          .poll(async () => (await getResource(seededPage.id))?.draftBlobId)
+          .toBeNull()
+        await publisher.editor.expectBlockPreview(editedText)
+      },
+    )
   })
 })

@@ -1,4 +1,14 @@
 import { db } from "~/server/modules/database"
+import { ResourceType } from "~prisma/generated/generatedEnums"
+
+export const getFolderByTitle = (opts: { siteId: number; title: string }) =>
+  db
+    .selectFrom("Resource")
+    .where("siteId", "=", opts.siteId)
+    .where("title", "=", opts.title)
+    .where("type", "=", ResourceType.Folder)
+    .select("id")
+    .executeTakeFirstOrThrow()
 
 export const getResourceByTitle = (opts: { siteId: number; title: string }) =>
   db
