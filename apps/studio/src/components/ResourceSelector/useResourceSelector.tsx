@@ -135,8 +135,17 @@ export const useResourceSelector = ({
       }
 
       setResourceStack(resourceItemWithAncestryStack)
+      // The backend represents "root" as `parentId: null`, not the RootPage
+      // row's own id — sending the real id here for a move would make the
+      // moved resource a child of the RootPage row instead of a top-level
+      // resource. Link mode still needs the real id to build the reference
+      // link, so only translate to `null` for the move destination.
+      const destinationResourceId =
+        interactionType === "move" && lastChild.type === ResourceType.RootPage
+          ? null
+          : lastChild.id
       onChange(
-        lastChild.id,
+        destinationResourceId,
         resourceItemWithAncestryStack
           .map((resource) => resource.permalink)
           .join("/"),
@@ -144,6 +153,7 @@ export const useResourceSelector = ({
       setIsResourceHighlighted(true)
     },
     [
+      interactionType,
       onChange,
       setIsResourceHighlighted,
       setResourceStack,
