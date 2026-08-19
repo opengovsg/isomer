@@ -20,6 +20,7 @@ import {
   ModalCloseButton,
 } from "@opengovsg/design-system-react"
 import { getResourceIdFromReferenceLink } from "@opengovsg/isomer-components"
+import DOMPurify from "isomorphic-dompurify"
 import { isEmpty } from "lodash-es"
 import { z } from "zod"
 import { LinkHrefEditor } from "~/features/editing-experience/components/LinkEditor"
@@ -46,24 +47,6 @@ import { AttachmentData } from "../AttachmentData"
 import { ResourceSelector } from "../ResourceSelector"
 import { FileAttachment } from "./FileAttachment"
 
-// Explicit, tested backstop alongside Tiptap's own `isAllowedUri` link-mark
-// guard — keeps the allowlist visible here rather than relying solely on
-// upstream library defaults.
-const DISALLOWED_HREF_SCHEMES = ["javascript:", "data:", "vbscript:"]
-
-// Browsers strip C0 control chars (tabs, newlines, CRs) and various unicode
-// whitespace from URLs before parsing the scheme, so "java\tscript:" is
-// interpreted as "javascript:". Same char class Tiptap's own isAllowedUri
-// uses (borrowed from DOMPurify) — must strip it too or this check is a
-// no-op against that bypass.
-const URL_WHITESPACE_REGEX =
-  /[\u0000-\u0020\u00A0\u1680\u180E\u2000-\u2029\u205F\u3000]/g
-
-const hasDisallowedHrefScheme = (href: string) => {
-  const normalized = href.replace(URL_WHITESPACE_REGEX, "").toLowerCase()
-  return DISALLOWED_HREF_SCHEMES.some((scheme) => normalized.startsWith(scheme))
-}
-
 export const linkEditorSchema = z.object({
   linkText: z.string().min(1, "Link text cannot be empty."),
   linkHref: z
@@ -75,8 +58,10 @@ export const linkEditorSchema = z.object({
       (href) => !["https://", "mailto:"].includes(href),
       "Link destination cannot be empty.",
     )
+    // Delegates scheme/attribute validation to DOMPurify rather than
+    // hand-rolling our own allowlist/denylist -- see PR #3171 review.
     .refine(
-      (href) => !hasDisallowedHrefScheme(href),
+      (href) => DOMPurify.isValidAttribute("a", "href", href),
       "Link destination is not allowed.",
     ),
 })
