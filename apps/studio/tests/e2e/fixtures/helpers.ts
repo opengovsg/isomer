@@ -1,10 +1,10 @@
 import { type Browser, type BrowserContext, type Page } from "@playwright/test"
-import { db } from "~/server/modules/database"
-import { ResourceType, type RoleType } from "~prisma/generated/generatedEnums"
+import { type RoleType } from "~prisma/generated/generatedEnums"
 
 import { storageStateFor, type Role } from "./auth"
 import { DashboardPO } from "./dashboard.po"
 import { PageEditorPO } from "./page-editor.po"
+import { getFolderByTitle } from "./resource.db"
 import { UsersPO } from "./users.po"
 
 export const openSeededPageEditor = async (
@@ -33,7 +33,52 @@ export const openSeededPageEditorAsRole = async (
   return { context, page, editor }
 }
 
-export type RoleBrowserSession = {
+/**
+ * Secondary browser context for a different role. The context is always closed
+ * in `finally` — prefer this over `openSeededPageEditorAsRole` when you only
+ * need a short-lived second session.
+ */
+export const withRoleSession = async <T>(
+  browser: Browser,
+  role: Role,
+  fn: (session: { context: BrowserContext; page: Page }) => Promise<T>,
+): Promise<T> => {
+  const context = await browser.newContext({
+    storageState: storageStateFor(role),
+  })
+  const page = await context.newPage()
+  try {
+    return await fn({ context, page })
+  } finally {
+    await context.close()
+  }
+}
+
+/**
+ * Cross-role page-editor flows. Opens the editor under `role`'s session, runs
+ * `fn`, then closes the context — use for editor-then-publisher handoffs.
+ */
+export const withSeededPageEditorAsRole = async <T>(
+  browser: Browser,
+  role: Role,
+  siteId: number,
+  pageId: string,
+  fn: (session: RoleBrowserSession) => Promise<T>,
+): Promise<T> => {
+  const session = await openSeededPageEditorAsRole(
+    browser,
+    role,
+    siteId,
+    pageId,
+  )
+  try {
+    return await fn(session)
+  } finally {
+    await session.context.close()
+  }
+}
+
+export interface RoleBrowserSession {
   context: BrowserContext
   page: Page
   editor: PageEditorPO
@@ -72,14 +117,7 @@ export const createFolderViaWizard = async (
   await dashboard.clickCreateFolder()
   await dashboard.fillFolderWizard(title)
 
-  const folder = await db
-    .selectFrom("Resource")
-    .where("siteId", "=", siteId)
-    .where("title", "=", title)
-    .where("type", "=", ResourceType.Folder)
-    .select("id")
-    .executeTakeFirstOrThrow()
-
+  const folder = await getFolderByTitle({ siteId, title })
   return { folderId: folder.id }
 }
 
@@ -87,6 +125,7 @@ export const openInviteModal = async (page: Page, siteId: number) => {
   const users = new UsersPO(page)
   await users.goto(siteId)
   await users.openAddUser()
+  return users
 }
 
 export const inviteCollaborator = async (
