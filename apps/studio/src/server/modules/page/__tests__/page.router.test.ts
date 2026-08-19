@@ -716,64 +716,6 @@ describe("page.router", async () => {
     })
   })
 
-  describe("getCategories", () => {
-    it("should throw 401 if not logged in", async () => {
-      const unauthedSession = applySession()
-      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
-
-      const result = unauthedCaller.getCategories({ siteId: 1, pageId: 1 })
-
-      await expect(result).rejects.toThrow(
-        new TRPCError({ code: "UNAUTHORIZED" }),
-      )
-    })
-
-    it("should throw 403 if user does not have read access to the site", async () => {
-      // Arrange
-      const { page, site } = await setupPageResource({
-        resourceType: ResourceType.CollectionPage,
-      })
-
-      // Act
-      const result = caller.getCategories({
-        siteId: site.id,
-        pageId: Number(page.id),
-      })
-
-      // Assert
-      await expect(result).rejects.toThrow(
-        new TRPCError({
-          code: "FORBIDDEN",
-          message:
-            "You do not have sufficient permissions to perform this action",
-        }),
-      )
-    })
-
-    it("should return 200", async () => {
-      // Arrange
-      const { collection, site } = await setupCollection()
-      const { page } = await setupPageResource({
-        siteId: site.id,
-        parentId: collection.id,
-        resourceType: ResourceType.CollectionPage,
-      })
-      await setupEditorPermissions({
-        userId: session.userId ?? undefined,
-        siteId: site.id,
-      })
-
-      // Act
-      const result = await caller.getCategories({
-        siteId: site.id,
-        pageId: Number(page.id),
-      })
-
-      // Assert
-      expect(result).toBeDefined()
-    })
-  })
-
   describe("readPage", () => {
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()

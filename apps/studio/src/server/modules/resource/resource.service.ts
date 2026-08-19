@@ -427,13 +427,6 @@ export const getLocalisedSitemap = async (
   const thumbnailSql = sql<string>`
         published.content->'page'->'image'->> 'src'
     `.as("thumbnail")
-  const categorySql = sql<string>`
-    CASE
-      WHEN (published.content ->> 'layout') IN ('article','link')
-      THEN (published.content -> 'page' ->> 'category')
-      ELSE ''
-    END
-`.as("category")
   const dateSql = sql<string>`
     CASE
       WHEN (published.content ->> 'layout') IN ('article','link')
@@ -474,7 +467,6 @@ export const getLocalisedSitemap = async (
         .select(() => [
           headerSql,
           thumbnailSql,
-          categorySql,
           dateSql,
           contentSql,
           taggedSql,
@@ -493,7 +485,6 @@ export const getLocalisedSitemap = async (
             .select(({ eb }) => [
               eb.cast<string>(eb.val(""), "text").as("summary"),
               eb.cast<string>(eb.val(""), "text").as("thumbnail"),
-              eb.cast<string>(eb.val(""), "text").as("category"),
               eb.cast<string>(eb.val(""), "text").as("date"),
               eb.cast<string>(eb.val(""), "text").as("content"),
               eb.cast<string | null>(eb.val(null), "text").as("tagged"),
@@ -521,7 +512,6 @@ export const getLocalisedSitemap = async (
         .select(() => [
           headerSql,
           thumbnailSql,
-          categorySql,
           dateSql,
           contentSql,
           taggedSql,
@@ -544,7 +534,6 @@ export const getLocalisedSitemap = async (
         .select(({ eb }) => [
           headerSql,
           thumbnailSql,
-          categorySql,
           dateSql,
           contentSql,
           eb.cast<string | null>(eb.val(null), "text").as("tagged"),
@@ -570,7 +559,6 @@ export const getLocalisedSitemap = async (
             .select(({ eb }) => [
               headerSql,
               thumbnailSql,
-              categorySql,
               dateSql,
               contentSql,
               eb.cast<string | null>(eb.val(null), "text").as("tagged"),
@@ -583,7 +571,6 @@ export const getLocalisedSitemap = async (
     .select([
       "summary",
       "thumbnail",
-      "category",
       "date",
       "content",
       "tagged",
@@ -595,7 +582,6 @@ export const getLocalisedSitemap = async (
         .select([
           "summary",
           "thumbnail",
-          "category",
           "date",
           "content",
           "tagged",
@@ -608,7 +594,6 @@ export const getLocalisedSitemap = async (
         .select([
           "summary",
           "thumbnail",
-          "category",
           "date",
           "content",
           "tagged",

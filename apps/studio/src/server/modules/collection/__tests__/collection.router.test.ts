@@ -1367,7 +1367,6 @@ describe("collection.router", async () => {
       const { site } = await setupCollection()
       const result = unauthedCaller.updateCollectionLink({
         siteId: site.id,
-        category: "category",
         ref: "1",
         linkId: 999,
       })
@@ -1388,7 +1387,6 @@ describe("collection.router", async () => {
       // Act
       const expected = caller.updateCollectionLink({
         siteId: site.id,
-        category: "category",
         ref: "1",
         linkId: 999,
       })
@@ -1412,7 +1410,6 @@ describe("collection.router", async () => {
       // Act
       const expected = caller.updateCollectionLink({
         siteId: site.id,
-        category: "category",
         ref: "1",
         linkId: Number(collection.id),
       })
@@ -1437,7 +1434,6 @@ describe("collection.router", async () => {
       // Act
       const expected = caller.updateCollectionLink({
         siteId: 999,
-        category: "category",
         ref: "1",
         linkId: Number(page.id),
       })
@@ -1463,7 +1459,6 @@ describe("collection.router", async () => {
       // Act
       const expected = caller.updateCollectionLink({
         siteId: site.id,
-        category: "category",
         ref: "1",
         linkId: Number(page.id),
       })
@@ -1498,7 +1493,6 @@ describe("collection.router", async () => {
       // Assert
       const expected = await caller.updateCollectionLink({
         siteId: site.id,
-        category: "category",
         ref: "1",
         linkId: Number(page.id),
       })
@@ -1540,7 +1534,6 @@ describe("collection.router", async () => {
       // Act
       const expected = await caller.updateCollectionLink({
         siteId: site.id,
-        category: "category",
         ref: "1",
         linkId: Number(page.id),
       })
@@ -1580,7 +1573,6 @@ describe("collection.router", async () => {
       // Act
       const expected = await caller.updateCollectionLink({
         siteId: site.id,
-        category: "category",
         ref: "1",
         linkId: Number(page.id),
         date: "31/01/2024",
@@ -1603,7 +1595,6 @@ describe("collection.router", async () => {
       // 29 Feb 2023 is invalid as 2023 is not a leap year.
       const result = caller.updateCollectionLink({
         siteId: site.id,
-        category: "category",
         ref: "1",
         linkId: Number(page.id),
         date: "29/02/2023",
@@ -2351,7 +2342,7 @@ describe("collection.router", async () => {
       expect(result[0]).toMatchObject({ id: TAG_CATEGORY_ID, label: "Topic" })
     })
 
-    it("should return empty array when collection has no published version", async () => {
+    it("should return draft tag categories when collection index is not published", async () => {
       // Arrange
       const { collection, site, indexBlob } =
         await setupCollectionWithIndexPage()
@@ -2374,8 +2365,10 @@ describe("collection.router", async () => {
         resourceId: Number(collectionPage.id),
       })
 
-      // Assert: always published-only, no draft fallback
-      expect(result).toHaveLength(0)
+      // Assert: editor flows read draft index config so required-tag validation
+      // matches unpublished filter changes.
+      expect(result).toHaveLength(1)
+      expect(result[0]).toMatchObject({ id: TAG_CATEGORY_ID, label: "Topic" })
     })
   })
 })
