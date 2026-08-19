@@ -17,6 +17,7 @@ import {
   normalizeRedirectSource,
 } from "~/schemas/redirect"
 import {
+  type FirstImage,
   getSitemapTree,
   injectTagMappings,
   isCollectionItem,
@@ -441,13 +442,26 @@ export const getLocalisedSitemap = async (
       ELSE ''
     END
 `.as("date")
-  const contentSql = sql<string>`
+  // Only the first top-level image block is ever consumed (as the collection
+  // card thumbnail fallback), so project it here instead of returning the
+  // entire page body, which is unbounded in the size of a collection.
+  const firstImageSql = sql<FirstImage | null>`
     CASE
       WHEN (published.content ->> 'layout') IN ('article','link')
-      THEN published.content ->> 'content'
-      ELSE ''
+       AND jsonb_typeof(published.content -> 'content') = 'array'
+      THEN (
+        /* ORDER BY ord makes document order explicit; a bare LIMIT 1 would
+           rely on the function scan's emission order */
+        SELECT jsonb_build_object('src', block ->> 'src', 'alt', block ->> 'alt')
+        FROM jsonb_array_elements(published.content -> 'content')
+          WITH ORDINALITY AS t(block, ord)
+        WHERE block ->> 'type' = 'image'
+        ORDER BY ord
+        LIMIT 1
+      )
+      ELSE NULL
     END
-`.as("content")
+`.as("firstImage")
   const taggedSql = sql<string | null>`
     CASE
       WHEN (published.content ->> 'layout') IN ('article','link')
@@ -476,7 +490,7 @@ export const getLocalisedSitemap = async (
           thumbnailSql,
           categorySql,
           dateSql,
-          contentSql,
+          firstImageSql,
           taggedSql,
           ...defaultResourceSelect,
         ])
@@ -495,7 +509,9 @@ export const getLocalisedSitemap = async (
               eb.cast<string>(eb.val(""), "text").as("thumbnail"),
               eb.cast<string>(eb.val(""), "text").as("category"),
               eb.cast<string>(eb.val(""), "text").as("date"),
-              eb.cast<string>(eb.val(""), "text").as("content"),
+              eb
+                .cast<FirstImage | null>(eb.val(null), "jsonb")
+                .as("firstImage"),
               eb.cast<string | null>(eb.val(null), "text").as("tagged"),
               ...defaultResourceSelect,
             ]),
@@ -523,7 +539,7 @@ export const getLocalisedSitemap = async (
           thumbnailSql,
           categorySql,
           dateSql,
-          contentSql,
+          firstImageSql,
           taggedSql,
           ...defaultResourceSelect,
         ]),
@@ -546,7 +562,7 @@ export const getLocalisedSitemap = async (
           thumbnailSql,
           categorySql,
           dateSql,
-          contentSql,
+          firstImageSql,
           eb.cast<string | null>(eb.val(null), "text").as("tagged"),
           ...defaultResourceSelect,
         ])
@@ -572,7 +588,7 @@ export const getLocalisedSitemap = async (
               thumbnailSql,
               categorySql,
               dateSql,
-              contentSql,
+              firstImageSql,
               eb.cast<string | null>(eb.val(null), "text").as("tagged"),
               ...defaultResourceSelect,
             ]),
@@ -585,7 +601,7 @@ export const getLocalisedSitemap = async (
       "thumbnail",
       "category",
       "date",
-      "content",
+      "firstImage",
       "tagged",
       ...defaultResourceSelect,
     ])
@@ -597,7 +613,7 @@ export const getLocalisedSitemap = async (
           "thumbnail",
           "category",
           "date",
-          "content",
+          "firstImage",
           "tagged",
           ...defaultResourceSelect,
         ]),
@@ -610,7 +626,7 @@ export const getLocalisedSitemap = async (
           "thumbnail",
           "category",
           "date",
-          "content",
+          "firstImage",
           "tagged",
           ...defaultResourceSelect,
         ]),
