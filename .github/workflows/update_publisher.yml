@@ -1,9 +1,12 @@
 name: Update publisher script
 
 # Reusable workflow: uploads tooling/build/scripts/publisher.sh to the S3 bucket
-# that CodeBuild site-publish projects fetch it from, but only when the script
-# has actually changed. No direct trigger of its own (yet) - wire this up from
-# a caller (workflow_call) or run it manually (workflow_dispatch).
+# that CodeBuild site-publish projects fetch it from. Always uploads
+# unconditionally - the upload is a cheap, idempotent aws s3 cp, and detecting
+# "did it change" reliably across every trigger type (push, release,
+# workflow_dispatch) isn't worth the complexity. No direct trigger of its own
+# (yet) - wire this up from a caller (workflow_call) or run it manually
+# (workflow_dispatch).
 on:
   workflow_dispatch:
     inputs:
@@ -55,19 +58,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          # tj-actions/changed-files needs enough history to diff against the
-          # previous commit; a shallow checkout only fetches the current one.
-          fetch-depth: 0
-
-      - name: Check if publisher.sh changed
-        id: changed-files
-        uses: tj-actions/changed-files@9426d40962ed5378910ee2e21d5f8c6fcbf2dd96 # v47.0.6
-        with:
-          files: tooling/build/scripts/publisher.sh
 
       - name: Configure AWS credentials
-        if: steps.changed-files.outputs.any_changed == 'true'
         uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c # v6.2.3
         with:
           role-to-assume: ${{ inputs.cicd-role }}
@@ -75,7 +67,6 @@ jobs:
           aws-region: ${{ inputs.aws-region }}
 
       - name: Upload publisher.sh to S3
-        if: steps.changed-files.outputs.any_changed == 'true'
         env:
           PUBLISHER_SCRIPT_BUCKET: ${{ inputs.publisher-script-bucket }}
         run: |
