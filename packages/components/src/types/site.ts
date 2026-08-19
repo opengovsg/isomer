@@ -70,6 +70,10 @@ export const SiteEntitySettingsSchema = Type.Object(
               title: "Country code",
               description: "Use a two-letter country code, such as SG.",
               maxLength: 2,
+              pattern: "^[A-Za-z]{2}$",
+              errorMessage: {
+                pattern: "must be two letters, such as SG",
+              },
             }),
           ),
         },

@@ -37,6 +37,15 @@ describe("SiteEntitySettingsSchema", () => {
     ).toBe(true)
   })
 
+  it.each(["S", "SGP", "S1", "  "])(
+    "rejects %s as a country code",
+    (addressCountry) => {
+      expect(
+        Value.Check(SiteEntitySettingsSchema, { address: { addressCountry } }),
+      ).toBe(false)
+    },
+  )
+
   it("allows the organisation type to be derived at render time", () => {
     expect(Value.Check(SiteEntitySettingsSchema, {})).toBe(true)
   })

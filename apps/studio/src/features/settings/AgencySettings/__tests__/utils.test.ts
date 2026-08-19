@@ -1,6 +1,18 @@
 import { normalizeSiteEntity } from "../utils"
 
 describe("normalizeSiteEntity", () => {
+  it("removes blank strings alongside undefined values", () => {
+    expect(
+      normalizeSiteEntity({
+        description: "   ",
+        address: {
+          streetAddress: "",
+          addressCountry: "SG",
+        },
+      }),
+    ).toEqual({ address: { addressCountry: "SG" } })
+  })
+
   it("removes empty nested objects and undefined values", () => {
     expect(
       normalizeSiteEntity({
