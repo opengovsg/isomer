@@ -1461,7 +1461,7 @@ describe("resource.router", async () => {
       )
     })
 
-    it("should return 403 if source and destination resources belong to different sites", async () => {
+    it("should return 400 if source and destination resources belong to different sites", async () => {
       // Arrange
       const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
       const { page: originPage, site: originSite } = await setupPageResource({
