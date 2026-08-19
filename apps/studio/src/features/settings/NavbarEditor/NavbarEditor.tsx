@@ -21,7 +21,7 @@ import {
   NavbarAddonsSchema,
   NavbarItemsSchema,
 } from "@opengovsg/isomer-components"
-import { isEqual, uniq } from "lodash-es"
+import { isEqual } from "lodash-es"
 import { useCallback, useMemo } from "react"
 import { BiDirections } from "react-icons/bi"
 import {
@@ -31,6 +31,8 @@ import {
 import FormBuilder from "~/features/editing-experience/components/form-builder/FormBuilder"
 import { Can } from "~/features/permissions"
 import { ajv } from "~/utils/ajv"
+
+import { getUniqueErrorMessages } from "./utils"
 
 const validateItemsFn =
   ajv.compile<Static<typeof NavbarItemsSchema>>(NavbarItemsSchema)
@@ -192,16 +194,7 @@ const PublishButton = ({
   onClick: () => void
 }) => {
   const { errors } = useBuilderErrors()
-  const errorMessages = useMemo(
-    () =>
-      uniq(
-        Object.values(errors)
-          .flat()
-          .map((error) => error.message)
-          .filter((message): message is string => !!message),
-      ),
-    [errors],
-  )
+  const errorMessages = useMemo(() => getUniqueErrorMessages(errors), [errors])
   const isSchemaValid = errorMessages.length === 0
 
   return (

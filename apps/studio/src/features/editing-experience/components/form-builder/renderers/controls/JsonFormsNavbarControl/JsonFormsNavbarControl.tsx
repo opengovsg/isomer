@@ -35,7 +35,7 @@ import type { NavbarItems } from "./types"
 import { getParentPath } from "../utils"
 import { EditNavbarItem } from "./EditNavbarItem"
 import { StackableNavbarItem } from "./StackableNavbarItem"
-import { handleMoveItem } from "./utils"
+import { handleMoveItem, isFirstLevelLinksOverLimit } from "./utils"
 
 export const jsonFormsNavbarControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.NavbarControl,
@@ -104,7 +104,7 @@ function JsonFormsNavbarControl({
     [arraySchema.maxItems, ctx, data, path],
   )
 
-  const isOverMaxItems = !!(arraySchema.maxItems && data > arraySchema.maxItems)
+  const isOverMaxItems = isFirstLevelLinksOverLimit(data, arraySchema.maxItems)
 
   const getChildUiSchema = useCallback(
     (subPath: string) =>
