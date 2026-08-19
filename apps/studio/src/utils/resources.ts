@@ -100,8 +100,6 @@ export const isResourceMoveValid = (
 
   if (
     !destination ||
-    // NOTE: we only allow moves to folders/root.
-    // for moves to root, we only allow this for admin
     (destination.type !== ResourceType.RootPage &&
       destination.type !== ResourceType.Folder &&
       destination.type !== ResourceType.Collection)
@@ -134,7 +132,7 @@ export const isResourceMoveValid = (
   }
 
   if (source.id === destination.id) {
-    return new Error("You cannot move a resource to the same folder")
+    return new Error("You cannot move a folder into itself")
   }
 
   if (source.siteId !== destination.siteId) {
