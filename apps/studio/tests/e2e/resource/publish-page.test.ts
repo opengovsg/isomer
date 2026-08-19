@@ -2,8 +2,11 @@ import { expect, test } from "@playwright/test"
 import crypto from "crypto"
 import { ResourceState, RoleType } from "~prisma/generated/generatedEnums"
 
-import { TEST_EMAILS, roleTag, storageStateFor } from "../fixtures/auth"
-import { openSeededPageEditor } from "../fixtures/helpers"
+import { TEST_EMAILS, roleTag } from "../fixtures/auth"
+import {
+  openSeededPageEditor,
+  openSeededPageEditorAsRole,
+} from "../fixtures/helpers"
 import {
   SEEDED_PROSE_BLOCK_LABEL,
   seedFolderWithPage,
@@ -180,15 +183,13 @@ test.describe("separation of duties", { tag: roleTag("editor") }, () => {
 
     // Act: a publisher signs in with their own session and publishes the
     // editor's draft
-    const publisherContext = await browser.newContext({
-      storageState: storageStateFor("publisher"),
-    })
-    const publisherPage = await publisherContext.newPage()
-    const publisherEditor = await openSeededPageEditor(
-      publisherPage,
-      siteId,
-      seededPage.id,
-    )
+    const { context: publisherContext, editor: publisherEditor } =
+      await openSeededPageEditorAsRole(
+        browser,
+        "publisher",
+        siteId,
+        seededPage.id,
+      )
     await publisherEditor.clickPublish()
     await publisherEditor.expectPublishedToast()
 

@@ -1,7 +1,8 @@
-import { type Page } from "@playwright/test"
+import { type Browser, type BrowserContext, type Page } from "@playwright/test"
 import { db } from "~/server/modules/database"
 import { ResourceType, type RoleType } from "~prisma/generated/generatedEnums"
 
+import { storageStateFor, type Role } from "./auth"
 import { DashboardPO } from "./dashboard.po"
 import { PageEditorPO } from "./page-editor.po"
 import { UsersPO } from "./users.po"
@@ -15,6 +16,27 @@ export const openSeededPageEditor = async (
   await editor.gotoPage(siteId, pageId)
   await editor.expectLoaded()
   return editor
+}
+
+/** Cross-role flows: open the page editor under a different role's session. */
+export const openSeededPageEditorAsRole = async (
+  browser: Browser,
+  role: Role,
+  siteId: number,
+  pageId: string,
+): Promise<RoleBrowserSession> => {
+  const context = await browser.newContext({
+    storageState: storageStateFor(role),
+  })
+  const page = await context.newPage()
+  const editor = await openSeededPageEditor(page, siteId, pageId)
+  return { context, page, editor }
+}
+
+export type RoleBrowserSession = {
+  context: BrowserContext
+  page: Page
+  editor: PageEditorPO
 }
 
 export const createPageViaWizard = async (

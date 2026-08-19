@@ -25,3 +25,20 @@ export const getResourceDraftBlobContent = async (resourceId: string) => {
   if (!row?.content) return ""
   return JSON.stringify(row.content)
 }
+
+export const getResourceDraftTagged = async (resourceId: string) => {
+  const resource = await db
+    .selectFrom("Resource")
+    .where("id", "=", resourceId)
+    .select("draftBlobId")
+    .executeTakeFirst()
+  if (!resource?.draftBlobId) return undefined
+
+  const blob = await db
+    .selectFrom("Blob")
+    .where("id", "=", resource.draftBlobId)
+    .select("content")
+    .executeTakeFirstOrThrow()
+
+  return (blob.content as { page?: { tagged?: string[] } }).page?.tagged
+}

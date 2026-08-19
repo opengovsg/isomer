@@ -27,9 +27,11 @@ for (const role of ROLES) {
   if (siteAdminAccessByRole[role] === "allowed") {
     test.describe(role, { tag: roleTag(role) }, () => {
       test("can view the site admin config page", async ({ page }) => {
+        // Act
         await page.goto(`/sites/${siteId}/admin`)
         await page.waitForURL(/\/admin$/)
 
+        // Assert
         await expect(page.getByText("Manage site configurations")).toBeVisible()
         await expect(
           page.getByText("Site config", { exact: true }),
@@ -53,6 +55,7 @@ for (const role of ROLES) {
       test("is redirected away from the site admin config page", async ({
         page,
       }) => {
+        // Arrange
         const adminResponsePromise = page.waitForResponse((response) => {
           const url = new URL(response.url())
           return (
@@ -61,9 +64,11 @@ for (const role of ROLES) {
           )
         })
 
+        // Act
         await page.goto(`/sites/${siteId}/admin`)
         const adminResponse = await adminResponsePromise
 
+        // Assert
         expect(adminResponse.status()).toBe(307)
         await expect(page).toHaveURL(new RegExp(`/sites/${siteId}$`))
         await expect(
