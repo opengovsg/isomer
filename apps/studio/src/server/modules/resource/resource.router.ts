@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server"
 import { jsonObjectFrom } from "kysely/helpers/postgres"
 import { get } from "lodash-es"
 import { USER_LINKABLE_RESOURCE_TYPES } from "~/constants/resources"
+import { SEARCH_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   countResourceSchema,
   deleteResourceSchema,
@@ -253,7 +254,11 @@ export const resourceRouter = router({
         if (resourceId === null) {
           query = query.where("parentId", "is", null)
           if (!includeSearchPage) {
-            query = query.where("Resource.permalink", "!=", "search")
+            query = query.where(
+              "Resource.permalink",
+              "!=",
+              SEARCH_PAGE_PERMALINK,
+            )
           }
         } else {
           query = query.where("Resource.parentId", "=", String(resourceId))
@@ -385,7 +390,10 @@ export const resourceRouter = router({
 
             // Prevent users from moving the search page (permalink /search, no parent)
             // This is a special page that is used to display the SearchSG results
-            if (toMove.permalink === "search" && toMove.parentId === null) {
+            if (
+              toMove.permalink === SEARCH_PAGE_PERMALINK &&
+              toMove.parentId === null
+            ) {
               throw new TRPCError({
                 code: "BAD_REQUEST",
                 message: "The search page cannot be moved",
@@ -654,7 +662,7 @@ export const resourceRouter = router({
       } else {
         query = query
           .where("Resource.parentId", "is", null)
-          .where("Resource.permalink", "!=", "search")
+          .where("Resource.permalink", "!=", SEARCH_PAGE_PERMALINK)
       }
 
       const result = await query.executeTakeFirst()
@@ -688,7 +696,7 @@ export const resourceRouter = router({
         } else {
           query = query
             .where("Resource.parentId", "is", null)
-            .where("Resource.permalink", "!=", "search")
+            .where("Resource.permalink", "!=", SEARCH_PAGE_PERMALINK)
         }
 
         query = applyResourceOrderBy(query, orderBy)
@@ -751,7 +759,10 @@ export const resourceRouter = router({
 
         // Prevent users from deleting the search page (permalink /search, no parent)
         // This is a special page that is used to display the SearchSG results
-        if (before.permalink === "search" && before.parentId === null) {
+        if (
+          before.permalink === SEARCH_PAGE_PERMALINK &&
+          before.parentId === null
+        ) {
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: "The search page cannot be deleted",
