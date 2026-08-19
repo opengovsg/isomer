@@ -2,6 +2,7 @@ import type { FullConfig } from "@playwright/test"
 import { chromium } from "@playwright/test"
 import crypto from "crypto"
 import { db, sql } from "~/server/modules/database"
+import { env } from "~/env.mjs"
 
 import { ROLES, storageStateFor, TEST_EMAILS } from "./fixtures/auth"
 import { LoginPage } from "./fixtures/login"
@@ -13,7 +14,20 @@ import { seedRolesForE2E } from "./fixtures/seed"
 // so wiping it completely at the start of every run is safe. The table list
 // is derived dynamically from information_schema so this doesn't silently
 // go stale as the schema evolves.
+const E2E_DATABASE_NAME = "test"
+
 const resetE2EDatabase = async (): Promise<void> => {
+  // dotenv (used to load .env.test) does not override an already-set
+  // DATABASE_URL by default, so a shell that already has the dev DATABASE_URL
+  // exported would otherwise cause this to silently truncate the dev
+  // database instead of the disposable e2e one.
+  const databaseName = new URL(env.DATABASE_URL).pathname.replace(/^\//, "")
+  if (databaseName !== E2E_DATABASE_NAME) {
+    throw new Error(
+      `Refusing to reset database: expected DATABASE_URL to point at the disposable "${E2E_DATABASE_NAME}" database, but it points at "${databaseName}". Check that .env.test is loaded before running e2e tests.`,
+    )
+  }
+
   const { rows: tables } = await sql<{
     table_name: string
   }>`
