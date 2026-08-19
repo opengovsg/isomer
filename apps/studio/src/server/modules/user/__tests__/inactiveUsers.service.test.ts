@@ -8,6 +8,7 @@ import {
   setupUser,
 } from "tests/integration/helpers/seed"
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import { env } from "~/env.mjs"
 import {
   sendAccountDeactivationEmail,
   sendAccountDeactivationWarningEmail,
@@ -16,7 +17,7 @@ import { db } from "~/server/modules/database"
 import { RoleType } from "~/server/modules/database/types"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
-import { MAX_DAYS_FROM_LAST_LOGIN, SYSTEM_USER_EMAIL } from "../constants"
+import { MAX_DAYS_FROM_LAST_LOGIN } from "../constants"
 
 // Mock must be at module level to be hoisted correctly
 vi.mock("~/features/mail/service", () => ({
@@ -135,7 +136,7 @@ describe("inactiveUsers.service", () => {
       const { site: _site } = await setupSite()
       site = _site
 
-      systemUser = await setupUser({ email: SYSTEM_USER_EMAIL })
+      systemUser = await setupUser({ email: env.SYSTEM_USER_EMAIL })
     })
 
     it("should successfully deactivate user with permissions", async () => {
@@ -225,7 +226,7 @@ describe("inactiveUsers.service", () => {
       auditLogs.forEach((log) => expect(log.userId).toBe(systemUser.id))
     })
 
-    it("should not remove permissions or send emails if the system user does not exist", async () => {
+    it("should recreate the system user and continue deactivating if it does not exist", async () => {
       // Arrange
       const user = await setupUserWrapper({
         siteId: site.id,
@@ -235,7 +236,7 @@ describe("inactiveUsers.service", () => {
       await db.deleteFrom("User").where("id", "=", systemUser.id).execute()
 
       // Act
-      await expect(bulkDeactivateInactiveUsers()).rejects.toThrow()
+      await bulkDeactivateInactiveUsers()
 
       // Assert
       const deletedPermissions = await db
@@ -243,8 +244,17 @@ describe("inactiveUsers.service", () => {
         .where("userId", "=", user.id)
         .where("deletedAt", "is not", null)
         .execute()
-      expect(deletedPermissions).toHaveLength(0)
-      expect(sendAccountDeactivationEmail).not.toHaveBeenCalled()
+      expect(deletedPermissions).toHaveLength(1)
+
+      const recreatedSystemUser = await db
+        .selectFrom("User")
+        .where("email", "=", env.SYSTEM_USER_EMAIL)
+        .where("deletedAt", "is", null)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(recreatedSystemUser.id).not.toBe(systemUser.id)
+
+      expect(sendAccountDeactivationEmail).toHaveBeenCalled()
     })
 
     it("should return early when user has no permissions to delete", async () => {

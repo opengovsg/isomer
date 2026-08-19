@@ -1,3 +1,4 @@
+import { createId } from "@paralleldrive/cuid2"
 import { startOfDay, subDays } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
 import { env } from "~/env.mjs"
@@ -13,7 +14,7 @@ import type { BulkSendAccountDeactivationWarningEmailsProps } from "./types"
 import { logPermissionEvent } from "../audit/audit.service"
 import { db, RoleType, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
-import { MAX_DAYS_FROM_LAST_LOGIN, SYSTEM_USER_EMAIL } from "./constants"
+import { MAX_DAYS_FROM_LAST_LOGIN } from "./constants"
 
 const logger = createBaseLogger({
   path: "server/modules/user/inactiveUsers.service",
@@ -139,12 +140,24 @@ const deactivateUsers = async ({ userIds }: DeactivateUsersProps) => {
       .transaction()
       .setIsolationLevel("serializable") // for idempotency
       .execute(async (tx) => {
-        // Fetch first so a missing system user row fails the job
-        // immediately, even on a run with nothing to deactivate.
+        // Upsert so the system user is guaranteed to exist for audit-log
+        // attribution, rather than relying on it being created manually.
+        // The no-op doUpdateSet forces RETURNING to yield the existing row
+        // on conflict, rather than doNothing (which returns nothing).
         const systemUser = await tx
-          .selectFrom("User")
-          .where("email", "=", SYSTEM_USER_EMAIL)
-          .selectAll()
+          .insertInto("User")
+          .values({
+            id: createId(),
+            email: env.SYSTEM_USER_EMAIL,
+            name: "System",
+            phone: "",
+          })
+          .onConflict((oc) =>
+            oc.columns(["email", "deletedAt"]).doUpdateSet((eb) => ({
+              email: eb.ref("excluded.email"),
+            })),
+          )
+          .returningAll()
           .executeTakeFirstOrThrow()
 
         const permissionsToDelete = await tx

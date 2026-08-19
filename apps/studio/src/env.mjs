@@ -1,5 +1,7 @@
 import { z } from "zod"
 
+const SYSTEM_USER_EMAIL = "system@isomer.gov.sg"
+
 const s3Schema = z.object({
   NEXT_PUBLIC_S3_REGION: z.string().default("us-east-1"),
   NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME: z.string(),
@@ -89,6 +91,7 @@ const server = z
     ALGOLIA_APP_ID: z.string(),
     ALGOLIA_API_KEY: z.string(),
     ALGOLIA_INDEX_NAME: z.string(),
+    SYSTEM_USER_EMAIL: z.email().optional().default(SYSTEM_USER_EMAIL),
   })
   .extend(s3Schema.shape)
   .extend(r2Schema.shape)
@@ -148,6 +151,7 @@ const server = z
  */
 const processEnv = {
   // Server-side env vars
+  SYSTEM_USER_EMAIL: process.env.SYSTEM_USER_EMAIL,
   DATABASE_URL: process.env.DATABASE_URL,
   DD_DELETION_EMAIL: process.env.DD_DELETION_EMAIL,
   CI: process.env.CI,
