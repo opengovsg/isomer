@@ -84,10 +84,8 @@ const getSiteMapEntry = async (fullPath, relativePath, name) => {
     layout: schemaData.layout,
     title,
     summary,
-    category: schemaData.page.category,
     date: schemaData.page.date,
     image: getResourceImage(schemaData),
-    tags: schemaData.page.tags,
   }
 
   if (schemaData.layout === "collection") {

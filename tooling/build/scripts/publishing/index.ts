@@ -141,8 +141,6 @@ async function main() {
             resource.content.page.subtitle ||
             resource.content.page.description ||
             "",
-          category: resource.content.page.category,
-          tags: resource.content.page.tags,
           tagged: resource.content.page.tagged,
           date: resource.content.page.date,
           image: resource.content.page.image,
