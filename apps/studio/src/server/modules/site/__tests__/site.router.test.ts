@@ -2695,10 +2695,6 @@ describe("site.router", async () => {
       })
       vi.spyOn(awsUtils, "computeBuildChanges").mockResolvedValue({
         isNewBuildNeeded: true,
-        startedBuild: {
-          id: "placeholder-build-id",
-          startTime: new Date("2024-01-01T00:00:00.000Z"),
-        },
       })
       const startProjectByIdSpy = vi
         .spyOn(awsUtils, "startProjectById")
