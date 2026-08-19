@@ -50,7 +50,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await users.expectTabCount("Isomer admins", SEEDED_ISOMER_ADMIN_COUNT)
   })
 
-  test("Isomer admins tab lists seeded godmode admins without pagination", async ({
+  test("Isomer admins tab lists seeded godmode admins without an add-user prompt", async ({
     page,
   }) => {
     const users = new UsersPO(page)
@@ -63,7 +63,9 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await users.expectIsomerAdminBanner()
     await users.expectUserInTable(TEST_EMAILS.core)
     await users.expectUserInTable(TEST_EMAILS.migrator)
-    await users.expectNoPagination()
+    // Datatable always renders pagination when totalRowCount > 0 (even for
+    // a single page of 2). Assert the empty-agency-users CTA is not shown.
+    await users.expectAddUsersEmptyPromptHidden()
   })
 
   test("Your users table paginates once there are more than 25 users", async ({
