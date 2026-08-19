@@ -237,6 +237,17 @@ export class DashboardPO {
     await this.page.getByRole("button").filter({ hasText: title }).click()
   }
 
+  /**
+   * First click selects the folder; second click enters it so
+   * "Back to parent folder" appears. Needed before selectMoveToSiteRoot —
+   * ResourceSelector starts at "/" visually but curResourceId stays
+   * undefined until the user navigates, and Back is what calls onChange(null).
+   */
+  async enterMoveFolder(title: string) {
+    await this.selectMoveDestination(title)
+    await this.selectMoveDestination(title)
+  }
+
   async uncheckCreateRedirectOnMove() {
     // Chakra renders the native checkbox visually hidden behind its styled
     // label, which intercepts pointer events — click the label's own text
