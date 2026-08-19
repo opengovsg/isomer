@@ -73,6 +73,7 @@ const CreateFolderModalContent = ({
     watch,
     formState,
     setValue,
+    setError,
     getFieldState,
   } = useZodForm({
     defaultValues: {
@@ -85,7 +86,6 @@ const CreateFolderModalContent = ({
   const utils = trpc.useUtils()
   const toast = useToast()
   const { mutate, isPending } = trpc.folder.create.useMutation({
-    onSettled: onClose,
     onSuccess: async () => {
       posthog.capture("folder_created", {
         site_id: siteId,
@@ -100,8 +100,13 @@ const CreateFolderModalContent = ({
         status: "success",
         ...BRIEF_TOAST_SETTINGS,
       })
+      onClose()
     },
     onError: (err) => {
+      if (err.data?.code === "CONFLICT") {
+        setError("permalink", { message: err.message }, { shouldFocus: true })
+        return
+      }
       toast({
         title: "Failed to create folder",
         status: "error",
@@ -109,6 +114,7 @@ const CreateFolderModalContent = ({
         description: err.message,
         ...BRIEF_TOAST_SETTINGS,
       })
+      onClose()
     },
   })
 
