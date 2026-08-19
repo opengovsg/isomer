@@ -18,10 +18,17 @@ introduces a **new reusable pattern** — not when merely adding test cases. See
 
 | Layer | File | Use for |
 |-------|------|---------|
-| **Helpers** | `fixtures/helpers.ts` | Multi-step flows crossing pages or modals (wizard, invite) |
-| **Page objects** | `fixtures/*.po.ts` | Locators + actions on one UI surface (`SitePO`, `DashboardPO`, …) |
+| **Helpers** | `fixtures/helpers.ts` | Flows that **cross surfaces** (e.g. create page: dashboard wizard → page editor) |
+| **Page objects** | `fixtures/*.po.ts` | Locators + actions on **one** UI surface, including multi-step modals/forms on that surface (`fillPageWizard`, `fillInviteForm`, …) |
 | **DB setup** | `fixtures/reset.ts`, `fixtures/site.ts` | Non-UI reset and site lifecycle |
 | **DB assertions** | `fixtures/*.db.ts` | Query helpers that fetch persisted state for a test to assert on (`resource.db.ts`, `user.db.ts`, …) |
+
+**Wizards** here means multi-step modals on a single surface (e.g. Create Page:
+"Next: Page title and URL" → fill title → "Start editing"). The step sequence
+lives on the surface's PO (`DashboardPO.fillPageWizard`); a helper in
+`helpers.ts` only wires PO calls together and handles navigation **between**
+surfaces (e.g. `createPageViaWizard` waits for the page-editor URL after the
+dashboard wizard completes).
 
 ## Welcome modal
 
@@ -99,15 +106,31 @@ surface. Prefer them over raw Playwright calls when a locator will be reused.
 Rules:
 
 - Constructor takes `Page`; methods are async actions or locator getters
-- Keep multi-step flows that cross surfaces (create wizard, invite) in
-  `helpers.ts` — helpers may call POs for the surface-specific steps
+- Put modal/form **step sequences** on the PO for that surface
+  (`DashboardPO.fillPageWizard`, `UsersPO.fillInviteForm`) — not raw
+  `page.getByRole` calls in `helpers.ts`
+- Put **cross-surface orchestration** in `helpers.ts` — helpers call POs and
+  handle navigation between surfaces (e.g. `createPageViaWizard`,
+  `inviteCollaborator`)
 - Do not put DB setup in POs — use `provisionE2ESite` / integration seed helpers
 
 ```ts
-const dashboard = new DashboardPO(page)
-await dashboard.gotoSite(siteId)
-await dashboard.openCreateMenu()
-await dashboard.clickCreateFolder()
+// helpers.ts — cross-surface flow
+export const createPageViaWizard = async (page, { startUrl, title, siteId }) => {
+  await page.goto(startUrl)
+  const dashboard = new DashboardPO(page)
+  await dashboard.openCreateMenu()
+  await dashboard.clickCreatePage()
+  await dashboard.fillPageWizard(title) // PO owns the modal steps
+  await page.waitForURL(new RegExp(`/sites/${siteId}/pages/\\d+$`))
+}
+
+// dashboard.po.ts — steps on the dashboard surface only
+async fillPageWizard(title: string) {
+  await this.page.getByRole("button", { name: "Next: Page title and URL" }).click()
+  await this.page.getByLabel("Page title").fill(title)
+  await this.page.getByRole("button", { name: "Start editing" }).click()
+}
 ```
 
 ## DB assertion helpers (PR-5)
@@ -144,7 +167,7 @@ Rules:
 ## How to detect violations
 
 - Asserting "Sample Site", hardcoding a site ID, or calling `teardownE2ESite`/`getSeedSiteId()` (neither exists anymore) → use `provisionE2ESite` and assert on the returned site
-- Duplicated wizard/invite flows in test files → move to `helpers.ts` or a PO
+- Duplicated cross-surface flows in test files → move to `helpers.ts`; duplicated modal/form steps → add a PO method
 - `test.use({ storageState: storageStateFor(...) })` in a test file → use `{ tag: roleTag(...) }` on `test.describe` instead
 - Raw `{ tag: "@admin" }` → use `roleTag("admin")` so unknown roles fail typecheck
 - Raw `page.getByRole("button", { name: "Create new..." })` repeated across files → use `DashboardPO`
