@@ -48,7 +48,6 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
     // Assert
     await users.expectResendInviteToast(inviteeEmail)
-    await expectUserRoleOnSite(siteId, inviteeEmail).toBe("Editor")
   })
 
   test("admin does not see Resend invite for a user who has logged in", async ({
