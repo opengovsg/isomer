@@ -1,18 +1,26 @@
 import type { IframeCallbackFnProps } from "~/types/dom"
-import { Box } from "@chakra-ui/react"
-import { merge } from "lodash-es"
-import { useCallback } from "react"
+import { Box, useDisclosure } from "@chakra-ui/react"
+import { isEqual, merge } from "lodash-es"
+import { useCallback, useState } from "react"
 import { createPortal } from "react-dom"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useBlockFlashHighlight } from "~/features/editing-experience/hooks/useBlockFlashHighlight"
 import { useBlockHighlight } from "~/features/editing-experience/hooks/useBlockHighlight"
+import { usePreviewHoverDetection } from "~/features/editing-experience/hooks/usePreviewHoverDetection"
+import { useSelectBlock } from "~/features/editing-experience/hooks/useSelectBlock"
+import { getDrawerStateForBlock } from "~/features/editing-experience/utils/getDrawerStateForBlock"
 import { withSuspense } from "~/hocs/withSuspense"
 import { trpc } from "~/utils/trpc"
 
+import { DiscardChangesModal } from "../DiscardChangesModal"
 import { BlockHighlightOverlay } from "./BlockHighlightOverlay"
 import { LoadingPreview } from "./LoadingPreview"
 import PreviewWithCustomSitemap from "./PreviewWithCustomSitemap"
 import { ViewportContainer } from "./ViewportContainer"
+
+interface PendingBlockSelection {
+  index: number
+}
 
 const LoadingState = (): JSX.Element => {
   return (
@@ -34,17 +42,29 @@ const LoadingState = (): JSX.Element => {
 const SuspendableEditPagePreview = (): JSX.Element => {
   const {
     previewPageState,
+    setPreviewPageState,
+    savedPageState,
+    currActiveIdx,
     pageId,
     updatedAt,
     siteId,
     permalink,
     title,
     hoveredBlockIndex,
+    setHoveredBlockIndex,
     flashBlockIndex,
     setFlashBlockIndex,
     iframeDocument,
     setIframeDocument,
   } = useEditorDrawerContext()
+
+  const {
+    isOpen: isDiscardChangesModalOpen,
+    onOpen: onDiscardChangesModalOpen,
+    onClose: onDiscardChangesModalClose,
+  } = useDisclosure()
+  const [pendingBlockSelection, setPendingBlockSelection] =
+    useState<PendingBlockSelection | null>(null)
 
   const [siteMap] = trpc.site.getLocalisedSitemap.useSuspenseQuery({
     siteId,
@@ -58,11 +78,71 @@ const SuspendableEditPagePreview = (): JSX.Element => {
     [setIframeDocument],
   )
 
+  usePreviewHoverDetection(
+    iframeDocument,
+    previewPageState.content,
+    setHoveredBlockIndex,
+  )
+
   const { rect: highlightRect, label: highlightLabel } = useBlockHighlight({
     iframeDocument,
     hoveredBlockIndex,
     content: previewPageState.content,
   })
+
+  const selectBlock = useSelectBlock()
+
+  const handleEditClick = useCallback(() => {
+    if (hoveredBlockIndex === null) return
+    const block = previewPageState.content[hoveredBlockIndex]
+    if (!block) return
+    const nextDrawerState = getDrawerStateForBlock(block)
+
+    const hasUnsavedChanges = !isEqual(previewPageState, savedPageState)
+    if (hasUnsavedChanges && hoveredBlockIndex !== currActiveIdx) {
+      setPendingBlockSelection({ index: hoveredBlockIndex })
+      onDiscardChangesModalOpen()
+      return
+    }
+    selectBlock(hoveredBlockIndex, nextDrawerState)
+  }, [
+    hoveredBlockIndex,
+    previewPageState,
+    savedPageState,
+    currActiveIdx,
+    selectBlock,
+    onDiscardChangesModalOpen,
+  ])
+
+  const handleDiscardChangesModalClose = useCallback(() => {
+    setPendingBlockSelection(null)
+    onDiscardChangesModalClose()
+  }, [onDiscardChangesModalClose])
+
+  const handleDiscardChanges = useCallback(() => {
+    setPreviewPageState(savedPageState)
+    onDiscardChangesModalClose()
+    if (pendingBlockSelection) {
+      // Re-derive the target block from the just-restored saved content —
+      // the pending selection's index came from hovering the discarded
+      // preview, whose structure (and therefore block types/positions) may
+      // no longer match `savedPageState` after add/remove/reorder edits.
+      const restoredBlock = savedPageState.content[pendingBlockSelection.index]
+      if (restoredBlock) {
+        selectBlock(
+          pendingBlockSelection.index,
+          getDrawerStateForBlock(restoredBlock),
+        )
+      }
+      setPendingBlockSelection(null)
+    }
+  }, [
+    savedPageState,
+    setPreviewPageState,
+    onDiscardChangesModalClose,
+    pendingBlockSelection,
+    selectBlock,
+  ])
 
   const { rect: flashRect, label: flashLabel } = useBlockHighlight({
     iframeDocument,
@@ -98,7 +178,11 @@ const SuspendableEditPagePreview = (): JSX.Element => {
       {iframeDocument &&
         highlightRect &&
         createPortal(
-          <BlockHighlightOverlay {...highlightRect} label={highlightLabel} />,
+          <BlockHighlightOverlay
+            {...highlightRect}
+            label={highlightLabel}
+            onEditClick={handleEditClick}
+          />,
           iframeDocument.body,
         )}
       {/* Deliberately rendered even when it overlaps the hover overlay above
@@ -117,6 +201,11 @@ const SuspendableEditPagePreview = (): JSX.Element => {
           />,
           iframeDocument.body,
         )}
+      <DiscardChangesModal
+        isOpen={isDiscardChangesModalOpen}
+        onClose={handleDiscardChangesModalClose}
+        onDiscard={handleDiscardChanges}
+      />
     </ViewportContainer>
   )
 }

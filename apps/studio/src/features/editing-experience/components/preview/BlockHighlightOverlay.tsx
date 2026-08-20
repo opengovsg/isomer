@@ -1,5 +1,8 @@
 import { useToken } from "@chakra-ui/react"
+import { BiPencil } from "react-icons/bi"
 import { BLOCK_FLASH_FADE_DURATION_MS } from "~/features/editing-experience/hooks/useBlockFlashHighlight"
+
+const PILL_HEIGHT = "20px"
 
 interface BlockHighlightOverlayProps {
   top: number
@@ -11,6 +14,9 @@ interface BlockHighlightOverlayProps {
   // after a click-to-scroll, as opposed to the hover highlight which just
   // tracks the cursor at full opacity.
   isFading?: boolean
+  // Edit button, placed inside the top-right corner rather than outside it —
+  // outside would sit past the block's DOM bounds and trigger a mouseout.
+  onEditClick?: () => void
 }
 
 export const BlockHighlightOverlay = ({
@@ -20,12 +26,17 @@ export const BlockHighlightOverlay = ({
   height,
   label,
   isFading = false,
+  onEditClick,
 }: BlockHighlightOverlayProps): JSX.Element => {
-  const [outlineColor, overlayBgColor, labelColor] = useToken("colors", [
-    "interaction.main.default",
-    "interaction.tinted.main.active",
-    "base.content.inverse",
-  ])
+  const [outlineColor, overlayBgColor, labelColor, canvasColor] = useToken(
+    "colors",
+    [
+      "interaction.main.default",
+      "interaction.tinted.main.active",
+      "base.content.inverse",
+      "base.canvas.default",
+    ],
+  )
   const [spacing2px, spacing8px] = useToken("space", ["0.5", "2"])
   const [labelBorderRadius] = useToken("radii", ["md"])
   const [labelFontSize] = useToken("fontSizes", ["xs"])
@@ -48,21 +59,62 @@ export const BlockHighlightOverlay = ({
         transition: `opacity ${BLOCK_FLASH_FADE_DURATION_MS}ms ease-out`,
       }}
     >
-      {label && (
+      {(label ?? onEditClick) && (
         <div
+          data-isomer-preview-toolbar
           style={{
             position: "absolute",
             top: 0,
             right: 0,
-            padding: `${spacing2px} ${spacing8px}`,
-            fontSize: labelFontSize,
-            lineHeight: labelLineHeight,
-            color: labelColor,
-            backgroundColor: outlineColor,
-            borderRadius: `0 0 0 ${labelBorderRadius}`,
+            display: "flex",
+            alignItems: "stretch",
+            height: PILL_HEIGHT,
+            pointerEvents: onEditClick ? "auto" : "none",
           }}
         >
-          {label}
+          {onEditClick && (
+            <button
+              type="button"
+              onClick={onEditClick}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "4px",
+                height: PILL_HEIGHT,
+                boxSizing: "border-box",
+                padding: `0 ${spacing8px}`,
+                fontSize: labelFontSize,
+                lineHeight: labelLineHeight,
+                color: outlineColor,
+                backgroundColor: canvasColor,
+                border: `1px solid ${outlineColor}`,
+                borderRadius: `0 0 0 ${labelBorderRadius}`,
+                cursor: "pointer",
+              }}
+            >
+              <BiPencil size={12} />
+              Edit
+            </button>
+          )}
+          {label && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                height: PILL_HEIGHT,
+                padding: `0 ${spacing8px}`,
+                fontSize: labelFontSize,
+                lineHeight: labelLineHeight,
+                color: labelColor,
+                backgroundColor: outlineColor,
+                borderRadius: onEditClick
+                  ? `0 0 ${labelBorderRadius} 0`
+                  : `0 0 0 ${labelBorderRadius}`,
+              }}
+            >
+              {label}
+            </div>
+          )}
         </div>
       )}
     </div>
