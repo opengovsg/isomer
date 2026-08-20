@@ -128,11 +128,8 @@ test.describe("core", { tag: roleTag("core") }, () => {
     await expectNavbarContains(siteId, "Expandable nav item").toBe(true)
   })
 
-  test("unsaved navigation prompts and retry after save failure works", async ({
-    page,
-  }) => {
+  test("unsaved navigation prompts before leaving", async ({ page }) => {
     const admin = new SiteAdminPO(page)
-    const dashboard = new DashboardPO(page)
     const navbarLabel = `Unsaved nav ${crypto.randomUUID().slice(0, 8)}`
 
     // Arrange
@@ -152,8 +149,21 @@ test.describe("core", { tag: roleTag("core") }, () => {
     await admin.expectUnsavedChangesModal()
     await admin.clickGoBackToEditing()
     await expect(admin.jsonField("navbar")).toHaveValue(new RegExp(navbarLabel))
+  })
 
-    // Arrange — fail the next save, then allow retry
+  test("retry after save failure works", async ({ page }) => {
+    const admin = new SiteAdminPO(page)
+    const navbarLabel = `Retry nav ${crypto.randomUUID().slice(0, 8)}`
+
+    // Arrange
+    await admin.goto(siteId)
+    const navbar = (await parseJsonField(admin, "navbar")) as {
+      items?: { name?: string }[]
+    }
+    if (navbar.items?.[0]) {
+      navbar.items[0].name = navbarLabel
+    }
+    await admin.fillJsonField("navbar", JSON.stringify(navbar, null, 2))
     await mockTrpcMutationError(page, "site.setSiteConfigByAdmin", {
       message: "Failed to persist site config",
       times: 1,
@@ -166,14 +176,32 @@ test.describe("core", { tag: roleTag("core") }, () => {
     await admin.expectSaveErrorToast()
     await expect(admin.saveButton()).toBeEnabled()
 
-    // Act
+    // Act — retry hits the real mutation
     await admin.clickSave()
 
     // Assert
     await admin.expectSavedToast()
     await expectNavbarContains(siteId, navbarLabel).toBe(true)
+  })
 
-    // Act — dirty again, then leave
+  test("leaving with unsaved changes discards edits", async ({ page }) => {
+    const admin = new SiteAdminPO(page)
+    const dashboard = new DashboardPO(page)
+    const savedLabel = `Saved nav ${crypto.randomUUID().slice(0, 8)}`
+
+    // Arrange
+    await admin.goto(siteId)
+    const navbar = (await parseJsonField(admin, "navbar")) as {
+      items?: { name?: string }[]
+    }
+    if (navbar.items?.[0]) {
+      navbar.items[0].name = savedLabel
+    }
+    await admin.fillJsonField("navbar", JSON.stringify(navbar, null, 2))
+    await admin.clickSave()
+    await admin.expectSavedToast()
+
+    // Act
     await admin.fillJsonField(
       "navbar",
       JSON.stringify(
@@ -188,6 +216,6 @@ test.describe("core", { tag: roleTag("core") }, () => {
 
     // Assert
     await dashboard.expectHomepageRowVisible()
-    await expectNavbarContains(siteId, navbarLabel).toBe(true)
+    await expectNavbarContains(siteId, savedLabel).toBe(true)
   })
 })

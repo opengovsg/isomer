@@ -1,5 +1,10 @@
 import { expect, type Page } from "@playwright/test"
 
+type GodmodeRoute =
+  | "/godmode/create-site"
+  | "/godmode/publishing"
+  | "/godmode/whitelist"
+
 export class GodmodePO {
   constructor(private readonly page: Page) {}
 
@@ -43,6 +48,20 @@ export class GodmodePO {
     ).toBeVisible()
   }
 
+  async gotoRoute(path: GodmodeRoute) {
+    switch (path) {
+      case "/godmode/create-site":
+        await this.gotoCreateSite()
+        break
+      case "/godmode/publishing":
+        await this.gotoPublishing()
+        break
+      case "/godmode/whitelist":
+        await this.gotoWhitelist()
+        break
+    }
+  }
+
   async fillSiteName(siteName: string) {
     await this.page.getByLabel("Site name").fill(siteName)
   }
@@ -64,6 +83,8 @@ export class GodmodePO {
   async expectSiteCreatedToast(siteName: string) {
     await this.page
       .getByText(
+        // Match the success toast copy, escaping the dynamic site name so
+        // punctuation in the name cannot break the pattern.
         new RegExp(
           `Site ${escapeRegExp(siteName)} \\(id: \\d+\\) created successfully`,
         ),
@@ -169,5 +190,6 @@ export class GodmodePO {
   }
 }
 
+// Escape user-supplied text before embedding it in a RegExp source.
 const escapeRegExp = (value: string) =>
   value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
