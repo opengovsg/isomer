@@ -38,15 +38,25 @@ does not block tests (singpass global-setup can blank profiles).
 
 ## Test pattern
 
-Per UI surface: **one happy-path** + **one permission-gate** where the UI shows a
-signal (hidden button, redirect, disabled control). Do not translate audit-log or
-validation-edge-case scenarios — those stay in integration tests.
+Per UI surface:
 
-**Exception — site settings (PR-7):** `tests/e2e/site/settings-*.test.ts` carries
-expanded P0/P1 coverage per the stack spec, including validation scenarios (empty
-fields, invalid URLs, upload rejection, etc.) that would normally stay in
-integration tests. New settings sections should still follow PO/network/AAA
-conventions below; permission gates stay in `settings-permissions.test.ts` only.
+1. **One happy-path** E2E test (admin completes the primary flow end-to-end).
+2. **One permission-gate** E2E test where the UI shows a signal (hidden button,
+   redirect, disabled control). For settings Publish gates, centralize in
+   `site/settings-permissions.test.ts` instead of repeating per file.
+3. **User-visible validation signals** belong in E2E when the assertion is what
+   the admin *sees* — inline error copy, a disabled Publish button, a toast, a
+   rejected upload state. Integration tests cannot substitute for these; they
+   exercise schema/router logic without a browser.
+
+**Integration tests** own exhaustive validation: every schema rule, edge case, and
+error code path. **E2E** picks one representative scenario per visible signal per
+surface (e.g. one invalid-input message, one required-field message) — not a
+full matrix duplicating integration coverage.
+
+Do not translate **audit-log** scenarios or **non-UI** backend-only behavior to
+E2E.
+
 When iterating the same Act/Assert over multiple sections, register **one
 `test()` per section** (a `for` loop around `test(...)`) — not multiple Acts in
 one test body.
