@@ -3,6 +3,7 @@ import { TRPCError } from "@trpc/server"
 import { get, pick } from "lodash-es"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
+  countDateFilterUsageSchema,
   countTagOptionsUsageSchema,
   createCollectionSchema,
   editLinkSchema,
@@ -392,6 +393,87 @@ export const collectionRouter = router({
                 COALESCE("publishedBlob"."content"->'page'->'tagged', '[]'::jsonb)
               ) AS tag
               WHERE tag = ANY(${tagOptionIdArray})
+            )
+          )`,
+        )
+        .select(sql<number>`cast(count(*) as int)`.as("count"))
+        .executeTakeFirstOrThrow()
+
+      return { count: row.count }
+    }),
+
+  countDateFilterUsage: protectedProcedure
+    .input(countDateFilterUsageSchema)
+    .query(async ({ ctx, input: { siteId, pageId, dateFilterId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
+
+      const indexPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", String(pageId))
+        .where("siteId", "=", siteId)
+        .where("type", "=", ResourceType.IndexPage)
+        .select(["parentId"])
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              code: "NOT_FOUND",
+              message: "Collection index page not found",
+            }),
+        )
+
+      const { parentId } = indexPage
+      if (!parentId) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Collection index page has no parent collection",
+        })
+      }
+      const collection = await getSiteResourceById({
+        siteId,
+        resourceId: parentId,
+        type: ResourceType.Collection,
+      })
+      if (!collection) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Collection not found",
+        })
+      }
+
+      const row = await db
+        .selectFrom("Resource as r")
+        .leftJoin("Blob as draftBlob", "r.draftBlobId", "draftBlob.id")
+        .leftJoin("Version as v", "r.publishedVersionId", "v.id")
+        .leftJoin("Blob as publishedBlob", "v.blobId", "publishedBlob.id")
+        .where("r.parentId", "=", parentId)
+        .where("r.siteId", "=", siteId)
+        .where("r.type", "in", [
+          ResourceType.CollectionPage,
+          ResourceType.CollectionLink,
+        ])
+        // Match child resources with a `dateTagged` entry for this
+        // filter id — unlike `tagged` (a flat array of plain uuids), each
+        // entry is an object, so we unnest with jsonb_array_elements (not
+        // the _text variant) and read its `id` key.
+        .where(
+          sql<boolean>`(
+            EXISTS (
+              SELECT 1
+              FROM jsonb_array_elements(
+                COALESCE("draftBlob"."content"->'page'->'dateTagged', '[]'::jsonb)
+              ) AS entry
+              WHERE entry->>'id' = ${dateFilterId}
+            )
+            OR EXISTS (
+              SELECT 1
+              FROM jsonb_array_elements(
+                COALESCE("publishedBlob"."content"->'page'->'dateTagged', '[]'::jsonb)
+              ) AS entry
+              WHERE entry->>'id' = ${dateFilterId}
             )
           )`,
         )
