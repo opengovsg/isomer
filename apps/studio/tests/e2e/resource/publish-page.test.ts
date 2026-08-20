@@ -127,7 +127,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await ensureUserOnboarded(TEST_EMAILS.editor)
   })
 
-  test("editor does not see the Publish button on the page editor", async ({
+  test("editor sees a disabled Publish button on the page editor", async ({
     page,
   }) => {
     // Arrange
@@ -137,7 +137,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
 
     // Assert
-    await editor.expectPublishButtonHidden()
+    await editor.expectPublishButtonDisabled()
   })
 })
 
@@ -176,7 +176,7 @@ test.describe("separation of duties", { tag: roleTag("editor") }, () => {
     // Act: editor edits and saves a draft, but has no publish access
     const editorPO = await openSeededPageEditor(page, siteId, seededPage.id)
     await editorPO.editProseBlock(SEEDED_PROSE_BLOCK_LABEL, editedText)
-    await editorPO.expectPublishButtonHidden()
+    await editorPO.expectPublishButtonDisabled()
     await expect
       .poll(async () => (await getResource(seededPage.id))?.draftBlobId)
       .not.toBeNull()
