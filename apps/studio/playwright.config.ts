@@ -17,7 +17,9 @@ const baseUse = {
 }
 
 export default defineConfig({
-  reporter: process.env.CI ? "github" : "list",
+  // "github" alone only emits error annotations — pair it with "list" so CI
+  // logs also show each test's pass/fail line with its duration.
+  reporter: process.env.CI ? [["github"], ["list"]] : "list",
   testDir: "./tests/e2e",
   outputDir: "./tests/e2e/test-results", // CI uploads this path as the e2e-test-results artifact (.github/workflows/ci.yml)
   timeout: 35e3,
