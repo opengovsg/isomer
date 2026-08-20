@@ -18,6 +18,19 @@ export class PageEditorPO {
     await this.page.reload()
   }
 
+  async addTextBlock() {
+    await this.page.getByRole("button", { name: "Add block" }).click()
+    await this.page
+      .getByRole("button", { name: /^Text Add text, links, lists/i })
+      .click()
+  }
+
+  async addAndFillTextBlock(text: string) {
+    await this.addTextBlock()
+    await this.page.getByRole("textbox").first().fill(text)
+    await this.saveBlockChanges()
+  }
+
   // Open block drawer by accessible name; fill the first textbox.
   async fillBlock(label: string, text: string) {
     await this.page
@@ -83,6 +96,14 @@ export class PageEditorPO {
     await this.page.getByRole("button", { name: "No, don't publish" }).click()
   }
 
+  async cancelPublishConfirmation() {
+    await this.page
+      .getByRole("button", { name: "Publish", exact: true })
+      .click()
+    await this.page.getByRole("button", { name: "No, don't publish" }).click()
+    await expect(this.page.getByText("Publish this page?")).not.toBeVisible()
+  }
+
   async expectPublishButtonVisible() {
     await expect(
       this.page.getByRole("button", { name: "Publish", exact: true }),
@@ -123,15 +144,19 @@ export class PageEditorPO {
     ).toBeVisible()
   }
 
-  async schedulePublishForToday() {
+  /** `quickSelectLabel` must match one of QUICK_SELECT_TIMES' rendered labels
+   * exactly (e.g. "9:00 AM", "5:00 PM") — pass a different label than a prior
+   * call to reschedule to a distinct time. Matching by exact label, rather
+   * than position, avoids ambiguity with the (also form-scoped) TimeSelect
+   * control, which renders the same label text once a time is selected. */
+  async schedulePublishForToday(quickSelectLabel = "5:00 PM") {
     await this.page
       .getByRole("button", { name: "Select from date picker." })
       .click()
     await this.page.getByRole("button", { name: "Today" }).click()
     await this.page
       .locator("form")
-      .getByText(/\d{1,2}:\d{2} (AM|PM)/)
-      .last()
+      .getByText(quickSelectLabel, { exact: true })
       .click()
     await this.page.getByRole("button", { name: "Schedule publish" }).click()
   }
@@ -155,6 +180,14 @@ export class PageEditorPO {
       .click()
     await expect(
       this.page.getByText("Schedule cancelled successfully"),
+    ).toBeVisible()
+  }
+
+  async expectScheduledEditingRestrictionBanner() {
+    await expect(
+      this.page.getByText(
+        "This page is scheduled for publishing. To make changes, cancel the schedule first.",
+      ),
     ).toBeVisible()
   }
 }

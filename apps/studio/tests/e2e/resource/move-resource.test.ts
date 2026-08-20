@@ -1,23 +1,27 @@
 import { test } from "@playwright/test"
 import crypto from "crypto"
+import { normalizeRedirectSource } from "~/schemas/redirect/utils"
+import { getReferenceLink } from "~/utils/link"
 import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
 import { DashboardPO } from "~e2e/fixtures/po"
 import {
   expectResourceParentId,
   seedFolder,
+  seedFolderWithPage,
+  seedNestedFolder,
   seedRootCollection,
   seedRootPage,
   seedTwoCollections,
 } from "~e2e/fixtures/resource"
-import { provisionE2ESite } from "~e2e/fixtures/site"
-import { ensureUserOnboarded } from "~e2e/fixtures/user"
-import { RoleType } from "~prisma/generated/generatedEnums"
+import { expectRedirectDestination, provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded, getE2EUserId } from "~e2e/fixtures/user"
+import { ResourceState, RoleType } from "~prisma/generated/generatedEnums"
 
 let siteId: number
 
 test.beforeAll(async () => {
   const site = await provisionE2ESite({
-    roles: [RoleType.Admin, RoleType.Editor],
+    roles: [RoleType.Admin, RoleType.Editor, RoleType.Publisher],
   })
   siteId = site.siteId
 })
@@ -77,6 +81,32 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await expectResourceParentId(sourceFolder.id).toBe(destFolder.id)
     await dashboard.gotoFolder(siteId, destFolder.id)
     await dashboard.expectResourceLinkVisible(sourceTitle)
+  })
+
+  test("admin can move a nested folder to the site root", async ({ page }) => {
+    // Arrange
+    const suffix = crypto.randomUUID().slice(0, 8)
+    const parentTitle = `Move Parent Folder ${suffix}`
+    const childTitle = `Move Nested Folder ${suffix}`
+    const { parentFolder, childFolder } = await seedNestedFolder({
+      siteId,
+      parentFolderTitle: parentTitle,
+      childFolderTitle: childTitle,
+    })
+
+    // Act
+    const dashboard = new DashboardPO(page)
+    await dashboard.gotoFolder(siteId, parentFolder.id)
+    await dashboard.openResourceMenu(childTitle)
+    await dashboard.clickMove()
+    await dashboard.enterMoveFolder(parentTitle)
+    await dashboard.selectMoveToSiteRoot()
+    await dashboard.confirmMove()
+
+    // Assert
+    await expectResourceParentId(childFolder.id).toBeNull()
+    await dashboard.gotoSite(siteId)
+    await dashboard.expectResourceLinkVisible(childTitle)
   })
 
   test("admin can move a collection into a folder", async ({ page }) => {
@@ -153,6 +183,77 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     // Assert
     await expectResourceParentId(seededPage.id).toBeNull()
     await dashboard.expectResourceLinkVisible(pageTitle)
+  })
+
+  test("admin can move a published page and create a redirect from the old URL", async ({
+    page,
+  }) => {
+    // Arrange
+    const suffix = crypto.randomUUID().slice(0, 8)
+    const folderTitle = `Move Redirect Folder ${suffix}`
+    const pageTitle = `Move Redirect Page ${suffix}`
+    const publisherId = await getE2EUserId(TEST_EMAILS.publisher)
+    const { folder: sourceFolder, page: seededPage } = await seedFolderWithPage(
+      {
+        siteId,
+        state: ResourceState.Published,
+        userId: publisherId,
+        pageTitle,
+      },
+    )
+    const { folder: destFolder } = await seedFolder({ siteId, folderTitle })
+    const oldSource = normalizeRedirectSource(
+      `/${sourceFolder.permalink}/${seededPage.permalink}`,
+    )
+
+    // Act
+    const dashboard = new DashboardPO(page)
+    await dashboard.gotoFolder(siteId, sourceFolder.id)
+    await dashboard.openResourceMenu(pageTitle)
+    await dashboard.clickMove()
+    await dashboard.selectMoveDestination(folderTitle)
+    await dashboard.confirmMove()
+
+    // Assert
+    await expectResourceParentId(seededPage.id).toBe(destFolder.id)
+    await expectRedirectDestination(siteId, oldSource).toBe(
+      getReferenceLink({ siteId: String(siteId), resourceId: seededPage.id }),
+    )
+  })
+
+  test("admin can move a published page without creating a redirect", async ({
+    page,
+  }) => {
+    // Arrange
+    const suffix = crypto.randomUUID().slice(0, 8)
+    const folderTitle = `Move No Redirect Folder ${suffix}`
+    const pageTitle = `Move No Redirect Page ${suffix}`
+    const publisherId = await getE2EUserId(TEST_EMAILS.publisher)
+    const { folder: sourceFolder, page: seededPage } = await seedFolderWithPage(
+      {
+        siteId,
+        state: ResourceState.Published,
+        userId: publisherId,
+        pageTitle,
+      },
+    )
+    const { folder: destFolder } = await seedFolder({ siteId, folderTitle })
+    const oldSource = normalizeRedirectSource(
+      `/${sourceFolder.permalink}/${seededPage.permalink}`,
+    )
+
+    // Act
+    const dashboard = new DashboardPO(page)
+    await dashboard.gotoFolder(siteId, sourceFolder.id)
+    await dashboard.openResourceMenu(pageTitle)
+    await dashboard.clickMove()
+    await dashboard.selectMoveDestination(folderTitle)
+    await dashboard.uncheckCreateRedirectOnMove()
+    await dashboard.confirmMove()
+
+    // Assert
+    await expectResourceParentId(seededPage.id).toBe(destFolder.id)
+    await expectRedirectDestination(siteId, oldSource).toBeNull()
   })
 })
 

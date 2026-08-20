@@ -1,10 +1,13 @@
 import { db } from "~/server/modules/database"
 
-export const getWhitelistExpiry = async (email: string) => {
-  const row = await db
+export const getWhitelistEntry = (email: string) =>
+  db
     .selectFrom("Whitelist")
     .where("email", "=", email.toLowerCase())
-    .select("expiry")
+    .selectAll()
     .executeTakeFirst()
+
+export const getWhitelistExpiry = async (email: string) => {
+  const row = await getWhitelistEntry(email)
   return row?.expiry ?? null
 }

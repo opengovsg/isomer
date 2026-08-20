@@ -49,3 +49,20 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await users.expectNoRowActionsMenus()
   })
 })
+
+test.describe("nomember", { tag: roleTag("nomember") }, () => {
+  test.beforeEach(async () => {
+    await ensureUserOnboarded(TEST_EMAILS.nomember)
+  })
+
+  test("nomember cannot access the collaborators page without site permission", async ({
+    page,
+  }) => {
+    const users = new UsersPO(page)
+
+    // Arrange / Act / Assert
+    await users.goto(siteId)
+    await users.expectNoSiteAccessError()
+    await users.expectCollaboratorsPageHidden()
+  })
+})
