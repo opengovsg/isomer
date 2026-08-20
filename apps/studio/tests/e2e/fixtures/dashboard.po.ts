@@ -116,32 +116,20 @@ export class DashboardPO {
     await moveByAriaLabel.or(moveByVisibleText).click()
   }
 
-  async expectDeleteMenuHidden() {
+  async expectDeleteMenuDisabled() {
     await expect(
       this.page.getByRole("menuitem", { name: "Delete", exact: true }),
-    ).not.toBeVisible()
+    ).toBeDisabled()
   }
 
-  async expectMoveMenuHidden() {
+  async expectMoveMenuDisabled() {
     const moveByVisibleText = this.page.getByRole("menuitem", {
       name: "Move to...",
     })
     const moveByAriaLabel = this.page.getByRole("menuitem", {
       name: /Move resource to another location for/,
     })
-    await expect(moveByAriaLabel.or(moveByVisibleText)).not.toBeVisible()
-  }
-
-  async expectSearchPageMenuItemsDisabled() {
-    await expect(
-      this.page.getByRole("menuitem", { name: "Edit settings" }),
-    ).toBeDisabled()
-    await expect(
-      this.page.getByRole("menuitem", { name: "Move to..." }),
-    ).toBeDisabled()
-    await expect(
-      this.page.getByRole("menuitem", { name: "Delete", exact: true }),
-    ).toBeDisabled()
+    await expect(moveByAriaLabel.or(moveByVisibleText)).toBeDisabled()
   }
 
   async expectResourceLinkVisible(title: string) {

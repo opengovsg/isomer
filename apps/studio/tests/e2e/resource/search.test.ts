@@ -89,15 +89,14 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await dashboard.expectPageHeading(collectionTitle)
   })
 
-  test("admin sees disabled delete, move, and settings on the Search system page", async ({
+  test("admin does not list the Search system page on the site dashboard", async ({
     page,
   }) => {
     // Arrange / Act
     const dashboard = new DashboardPO(page)
     await dashboard.gotoSite(siteId)
-    await dashboard.openResourceMenu(SEARCH_PAGE_TITLE)
 
     // Assert
-    await dashboard.expectSearchPageMenuItemsDisabled()
+    await dashboard.expectResourceLinkHidden(SEARCH_PAGE_TITLE)
   })
 })
