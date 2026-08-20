@@ -816,6 +816,10 @@ export const getDescendantResourceIds = async (
 // is nothing to preserve for a subtree that was never live). Keys on
 // publishedVersionId, not `state`: nothing unpublishes a resource today, so the
 // two only ever change together (see version.service.ts).
+// Excludes FolderMeta/CollectionMeta: some rows carry a stray publishedVersionId,
+// but neither type is ever built into a visitor-facing page (they're excluded
+// from PAGE_RESOURCE_TYPES in the static-site build), so a stray value there
+// must not block a delete/move that would otherwise be safe.
 export const hasPublishedDescendant = async (
   trx: SafeKysely,
   { siteId, resourceId }: { siteId: number; resourceId: string },
@@ -827,6 +831,10 @@ export const hasPublishedDescendant = async (
     .selectFrom("subtree")
     .innerJoin("Resource", "Resource.id", "subtree.id")
     .where("Resource.publishedVersionId", "is not", null)
+    .where("Resource.type", "not in", [
+      ResourceType.FolderMeta,
+      ResourceType.CollectionMeta,
+    ])
     .select("Resource.id")
     .executeTakeFirst()
   return published !== undefined
@@ -836,6 +844,7 @@ export const hasPublishedDescendant = async (
 // container itself is excluded — its own URL is validated separately). Used to
 // check that a folder move/rename doesn't drop a live descendant onto a path an
 // existing redirect already covers.
+// Excludes FolderMeta/CollectionMeta for the same reason as hasPublishedDescendant.
 export const getPublishedDescendantResourceIds = async (
   trx: SafeKysely,
   { siteId, resourceId }: { siteId: number; resourceId: string },
@@ -845,6 +854,10 @@ export const getPublishedDescendantResourceIds = async (
     .innerJoin("Resource", "Resource.id", "subtree.id")
     .where("Resource.id", "!=", resourceId)
     .where("Resource.publishedVersionId", "is not", null)
+    .where("Resource.type", "not in", [
+      ResourceType.FolderMeta,
+      ResourceType.CollectionMeta,
+    ])
     .select("Resource.id")
     .execute()
   return rows.map((row) => String(row.id))

@@ -3074,6 +3074,57 @@ describe("resource.router", async () => {
       expect(actual).toBeUndefined()
     })
 
+    it("should allow deleting a folder whose FolderMeta has a stray publishedVersionId", async () => {
+      // Arrange — FolderMeta is internal ordering metadata that never renders
+      // as visitor-facing content; a stray publishedVersionId on it (seen in
+      // production) must not block deleting an otherwise fully-unpublished folder
+      const { site, folder } = await setupFolder({})
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Draft,
+      })
+      const { folderMeta } = await setupFolderMeta({
+        siteId: site.id,
+        folderId: folder.id,
+      })
+      const blob = await setupBlob()
+      const version = await db
+        .insertInto("Version")
+        .values({
+          versionNum: 1,
+          resourceId: folderMeta.id,
+          blobId: blob.id,
+          publishedBy: session.userId,
+        })
+        .returning("id")
+        .executeTakeFirstOrThrow()
+      await db
+        .updateTable("Resource")
+        .where("id", "=", folderMeta.id)
+        .set({ publishedVersionId: version.id })
+        .execute()
+
+      // Act
+      const result = await caller.delete({
+        resourceId: folder.id,
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result).toBeDefined()
+      const actual = await db
+        .selectFrom("Resource")
+        .where("id", "=", folder.id)
+        .executeTakeFirst()
+      expect(actual).toBeUndefined()
+    })
+
     it("should block deleting a folder whose IndexPage is unpublished but has a live nested page", async () => {
       // Arrange — `parentId` is `onDelete: Cascade`, so deleting the folder
       // would silently take the nested page down with it if this weren't blocked
