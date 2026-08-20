@@ -44,12 +44,15 @@ export const mockAssetUploadRoutes = async (page: Page) => {
 export const mockPresignedPutUrl = async (page: Page) => {
   await page.route("**/api/trpc/asset.getPresignedPutUrl*", async (route) => {
     const input = route.request().postDataJSON() as {
-      json: { fileName: string }
+      json: { fileName: string; siteId: number }
     }
     // Mirror the real key shape (server/modules/asset/asset.service.ts
-    // getFileKey): the UI reads the uploaded filename back off the last path
-    // segment, so it must match what was actually uploaded, not a random one.
-    const fileKey = `e2e-mock/${crypto.randomUUID()}/${input.json.fileName}`
+    // getFileKey: `${siteId}/${folderName}/${sanitizedFileName}`) — the UI
+    // reads the uploaded filename back off the last path segment, and the
+    // link editor's file-link detection (LinkEditor/utils.ts getLinkHrefType)
+    // requires a leading numeric siteId segment to classify the href as a
+    // file link, so a non-numeric prefix here would silently break that.
+    const fileKey = `${input.json.siteId}/${crypto.randomUUID()}/${input.json.fileName}`
     await route.fulfill({
       status: 200,
       contentType: "application/json",
