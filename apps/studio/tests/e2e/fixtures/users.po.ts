@@ -38,7 +38,7 @@ export class UsersPO {
     })
     await this.page.goto(`/sites/${siteId}/users`)
     const usersResponse = await usersResponsePromise
-    await expect(usersResponse.status()).toBe(307)
+    expect(usersResponse.status()).toBe(307)
     await expect(this.page).toHaveURL(new RegExp(`/sites/${siteId}$`))
   }
 
