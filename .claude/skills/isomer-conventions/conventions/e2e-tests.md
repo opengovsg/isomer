@@ -42,6 +42,15 @@ Per UI surface: **one happy-path** + **one permission-gate** where the UI shows 
 signal (hidden button, redirect, disabled control). Do not translate audit-log or
 validation-edge-case scenarios — those stay in integration tests.
 
+**Exception — site settings (PR-7):** `tests/e2e/site/settings-*.test.ts` carries
+expanded P0/P1 coverage per the stack spec, including validation scenarios (empty
+fields, invalid URLs, upload rejection, etc.) that would normally stay in
+integration tests. New settings sections should still follow PO/network/AAA
+conventions below; permission gates stay in `settings-permissions.test.ts` only.
+When iterating the same Act/Assert over multiple sections, register **one
+`test()` per section** (a `for` loop around `test(...)`) — not multiple Acts in
+one test body.
+
 ## Per-site isolation (PR-2)
 
 Every test file gets a dedicated site via `provisionE2ESite` in `beforeAll` —
@@ -76,7 +85,8 @@ test.beforeAll(async () => {
 
 Publisher permission gates for settings Publish buttons live in **one** file:
 `site/settings-permissions.test.ts`. Individual settings happy-path files do not
-repeat the gate — add new Publish-gated sections to `PUBLISH_GATED_SECTIONS` there.
+repeat the gate — add new Publish-gated sections to `PUBLISH_GATED_SETTINGS_SECTIONS`
+in `fixtures/site.po.ts` and extend `settings-permissions.test.ts`.
 
 ## Role projects and tags (PR-3)
 
