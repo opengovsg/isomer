@@ -53,12 +53,57 @@ test.describe("migrator", { tag: roleTag("migrator") }, () => {
   })
 })
 
+test.describe("editor", { tag: roleTag("editor") }, () => {
+  test.beforeEach(async () => {
+    await ensureUserOnboarded(TEST_EMAILS.editor)
+  })
+
+  test("editor without godmode access is redirected", async ({ page }) => {
+    const godmode = new GodmodePO(page)
+
+    // Act / Assert
+    for (const path of RESTRICTED_GODMODE_PATHS) {
+      await godmode.expectRedirectToDashboard(path)
+    }
+  })
+})
+
+test.describe("publisher", { tag: roleTag("publisher") }, () => {
+  test.beforeEach(async () => {
+    await ensureUserOnboarded(TEST_EMAILS.publisher)
+  })
+
+  test("publisher without godmode access is redirected", async ({ page }) => {
+    const godmode = new GodmodePO(page)
+
+    // Act / Assert
+    for (const path of RESTRICTED_GODMODE_PATHS) {
+      await godmode.expectRedirectToDashboard(path)
+    }
+  })
+})
+
 test.describe("admin", { tag: roleTag("admin") }, () => {
   test.beforeEach(async () => {
     await ensureUserOnboarded(TEST_EMAILS.admin)
   })
 
   test("site admin without godmode access is redirected", async ({ page }) => {
+    const godmode = new GodmodePO(page)
+
+    // Act / Assert
+    for (const path of RESTRICTED_GODMODE_PATHS) {
+      await godmode.expectRedirectToDashboard(path)
+    }
+  })
+})
+
+test.describe("nomember", { tag: roleTag("nomember") }, () => {
+  test.beforeEach(async () => {
+    await ensureUserOnboarded(TEST_EMAILS.nomember)
+  })
+
+  test("nomember without godmode access is redirected", async ({ page }) => {
     const godmode = new GodmodePO(page)
 
     // Act / Assert

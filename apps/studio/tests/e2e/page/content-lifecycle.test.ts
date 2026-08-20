@@ -60,6 +60,24 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     expect(resource?.parentId).toBe(folderId)
   })
 
+  test("admin can add a new block to a page and publish it", async ({
+    page,
+  }) => {
+    // Arrange
+    const newBlockText = `Lifecycle ${crypto.randomUUID().slice(0, 8)}`
+    const { page: seededPage } = await seedFolderWithPage({ siteId })
+
+    // Act
+    const editor = await openSeededPageEditor(page, siteId, seededPage.id)
+    await editor.addAndFillTextBlock(newBlockText)
+    await editor.clickPublish()
+    await editor.expectPublishedToast()
+
+    // Assert
+    await expectResourceState(seededPage.id).toBe(ResourceState.Published)
+    await editor.expectBlockPreview(newBlockText)
+  })
+
   test("admin can edit and publish seeded page in folder", async ({ page }) => {
     // Arrange
     const editedText = `Lifecycle ${crypto.randomUUID().slice(0, 8)}`

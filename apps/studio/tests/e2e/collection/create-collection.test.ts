@@ -3,10 +3,15 @@ import crypto from "crypto"
 import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
 import { createCollectionViaWizard } from "~e2e/fixtures/helpers"
 import { DashboardPO } from "~e2e/fixtures/po"
-import { deleteCollectionsByTitlePrefix } from "~e2e/fixtures/reset"
 import {
+  deleteCollectionsByTitlePrefix,
+  deleteResourceById,
+} from "~e2e/fixtures/reset"
+import {
+  getResource,
   getResourceByTitle,
   getResourceByTitleAndType,
+  seedFolder,
 } from "~e2e/fixtures/resource"
 import { provisionE2ESite } from "~e2e/fixtures/site"
 import { ensureUserOnboarded } from "~e2e/fixtures/user"
@@ -68,5 +73,33 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     // Assert
     const created = await getResourceByTitle({ siteId, title })
     expect(created).toBeUndefined()
+  })
+
+  test("admin can create a new collection inside a folder", async ({
+    page,
+  }) => {
+    // Arrange
+    const title = UNIQUE_TITLE()
+    const { folder } = await seedFolder({
+      siteId,
+      folderTitle: "E2E Test Folder",
+    })
+
+    try {
+      // Act
+      const { collectionId } = await createCollectionViaWizard(page, {
+        startUrl: `/sites/${siteId}/folders/${folder.id}`,
+        title,
+        siteId,
+      })
+
+      // Assert
+      const created = await getResource(collectionId)
+      expect(created).toBeTruthy()
+      expect(created?.type).toBe("Collection")
+      expect(created?.parentId).toBe(folder.id)
+    } finally {
+      await deleteResourceById(folder.id)
+    }
   })
 })
