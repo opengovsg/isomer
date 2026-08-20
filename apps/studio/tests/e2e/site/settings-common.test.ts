@@ -47,16 +47,21 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await ensureUserOnboarded(TEST_EMAILS.admin)
   })
 
-  test("clean settings forms keep Publish disabled", async ({ page }) => {
-    const site = new SitePO(page)
+  for (const section of PUBLISH_GATED_SETTINGS_SECTIONS) {
+    test(`clean ${section} settings form keeps Publish disabled`, async ({
+      page,
+    }) => {
+      const site = new SitePO(page)
 
-    for (const section of PUBLISH_GATED_SETTINGS_SECTIONS) {
+      // Arrange
       await RESET_BY_SECTION[section](siteId)
       await site.gotoSettingsSection(siteId, section)
+
+      // Assert
       await expect(site.publishButton()).toBeVisible()
       await expect(site.publishButton()).toBeDisabled()
-    }
-  })
+    })
+  }
 
   test("unsaved navigation can stay on the current page", async ({ page }) => {
     const site = new SitePO(page)

@@ -20,17 +20,19 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     await ensureUserOnboarded(TEST_EMAILS.publisher)
   })
 
-  test("publisher does not see Publish on settings sections that use it", async ({
-    page,
-  }) => {
-    const site = new SitePO(page)
+  for (const section of PUBLISH_GATED_SETTINGS_SECTIONS) {
+    test(`publisher does not see Publish on ${section} settings`, async ({
+      page,
+    }) => {
+      const site = new SitePO(page)
 
-    // Arrange / Act / Assert
-    for (const section of PUBLISH_GATED_SETTINGS_SECTIONS) {
+      // Arrange / Act
       await site.gotoSettingsSection(siteId, section)
+
+      // Assert
       await expect(site.publishButton()).not.toBeVisible()
-    }
-  })
+    })
+  }
 })
 
 test.describe("editor", { tag: roleTag("editor") }, () => {
@@ -49,15 +51,17 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await expect(site.publishButton()).not.toBeVisible()
   })
 
-  test("editor does not see Publish on settings sections that use it", async ({
-    page,
-  }) => {
-    const site = new SitePO(page)
+  for (const section of PUBLISH_GATED_SETTINGS_SECTIONS) {
+    test(`editor does not see Publish on ${section} settings`, async ({
+      page,
+    }) => {
+      const site = new SitePO(page)
 
-    // Arrange / Act / Assert
-    for (const section of PUBLISH_GATED_SETTINGS_SECTIONS) {
+      // Arrange / Act
       await site.gotoSettingsSection(siteId, section)
+
+      // Assert
       await expect(site.publishButton()).not.toBeVisible()
-    }
-  })
+    })
+  }
 })

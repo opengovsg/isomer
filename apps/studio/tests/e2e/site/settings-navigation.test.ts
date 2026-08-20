@@ -37,23 +37,25 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await ensureUserOnboarded(TEST_EMAILS.admin)
   })
 
-  test("admin can navigate settings sections via the side nav", async ({
-    page,
-  }) => {
-    const site = new SitePO(page)
+  for (const section of ALL_SETTINGS_SECTIONS) {
+    test(`admin can open ${section} settings via the side nav`, async ({
+      page,
+    }) => {
+      const site = new SitePO(page)
 
-    // Arrange
-    await site.gotoSettingsSection(siteId, "agency")
-    await expect(SECTION_VISIBLE_ELEMENT.agency(site)).toBeVisible()
+      if (section === "agency") {
+        // Arrange / Act
+        await site.gotoSettingsSection(siteId, section)
+      } else {
+        // Arrange
+        await site.gotoSettingsSection(siteId, "agency")
 
-    for (const section of ALL_SETTINGS_SECTIONS) {
-      if (section === "agency") continue
-
-      // Act
-      await site.openSettingsSection(section)
+        // Act
+        await site.openSettingsSection(section)
+      }
 
       // Assert
       await expect(SECTION_VISIBLE_ELEMENT[section](site)).toBeVisible()
-    }
-  })
+    })
+  }
 })
