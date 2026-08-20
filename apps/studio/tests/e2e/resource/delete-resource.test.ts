@@ -161,7 +161,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await ensureUserOnboarded(TEST_EMAILS.editor)
   })
 
-  test("editor cannot delete a root-level page when the menu hides delete", async ({
+  test("editor cannot delete a root-level page when the menu disables delete", async ({
     page,
   }) => {
     // Arrange
@@ -174,10 +174,10 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await dashboard.openResourceMenu(pageTitle)
 
     // Assert
-    await dashboard.expectDeleteMenuHidden()
+    await dashboard.expectDeleteMenuDisabled()
   })
 
-  test("editor cannot delete a root-level folder when the menu hides delete", async ({
+  test("editor cannot delete a root-level folder when the menu disables delete", async ({
     page,
   }) => {
     // Arrange
@@ -194,11 +194,11 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await dashboard.openResourceMenu(folderTitle)
 
     // Assert
-    await dashboard.expectDeleteMenuHidden()
+    await dashboard.expectDeleteMenuDisabled()
     await expectResourcePresent(folder.id).not.toBeNull()
   })
 
-  test("editor cannot delete a root-level collection when the menu hides delete", async ({
+  test("editor cannot delete a root-level collection when the menu disables delete", async ({
     page,
   }) => {
     // Arrange
@@ -214,7 +214,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await dashboard.openResourceMenu(collectionTitle)
 
     // Assert
-    await dashboard.expectDeleteMenuHidden()
+    await dashboard.expectDeleteMenuDisabled()
     await expectResourcePresent(collection.id).not.toBeNull()
   })
 })
