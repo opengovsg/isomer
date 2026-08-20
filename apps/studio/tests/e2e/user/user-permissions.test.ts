@@ -10,8 +10,8 @@ import { UsersPO } from "../fixtures/users.po"
  * Permission gates for the collaborators page — who cannot manage users.
  *
  * `userManageAccessByRole` classifies every Playwright role for exhaustiveness,
- * but this file only implements denied cases (read-only UI or redirect). Roles
- * marked `"allowed"` exercise happy paths in sibling `user/*.test.ts` files
+ * but this file only implements denied cases (read-only UI or no site access).
+ * Roles marked `"allowed"` exercise happy paths in sibling `user/*.test.ts` files
  * (e.g. `invite-user.test.ts` for agency admin invite flows).
  *
  * Godmode (`core` / `migrator`) manage-users coverage is deferred to a follow-up
@@ -24,8 +24,8 @@ const userManageAccessByRole = {
   editor: "read_only",
   publisher: "read_only",
   admin: "allowed",
-  nomember: "redirected",
-} as const satisfies Record<Role, "allowed" | "read_only" | "redirected">
+  nomember: "no_site_access",
+} as const satisfies Record<Role, "allowed" | "read_only" | "no_site_access">
 
 let siteId: number
 
@@ -57,21 +57,22 @@ for (const role of ROLES) {
         await users.expectNoRowActionsMenus()
       })
     })
-  } else if (userManageAccessByRole[role] === "redirected") {
+  } else if (userManageAccessByRole[role] === "no_site_access") {
     test.describe(role, { tag: roleTag(role) }, () => {
       test.beforeEach(async () => {
         await ensureUserOnboarded(TEST_EMAILS[role])
       })
 
-      test("is redirected away from the collaborators page", async ({
+      test("cannot access the collaborators page without site permission", async ({
         page,
       }) => {
         const users = new UsersPO(page)
 
         // Arrange / Act
-        await users.expectRedirectedFromUsersPage(siteId)
+        await users.goto(siteId)
 
         // Assert
+        await users.expectNoSiteAccessError()
         await users.expectCollaboratorsPageHidden()
       })
     })
