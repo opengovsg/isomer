@@ -1,7 +1,7 @@
 import { db } from "~/server/modules/database"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
-import type { TagCategory } from "./collection"
+import type { TagCategory } from "./seed"
 
 interface CollectionIndexPage {
   tagCategories?: TagCategory[]

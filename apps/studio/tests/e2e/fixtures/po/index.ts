@@ -1,3 +1,4 @@
+export { CollectionPO } from "./collection"
 export { CollectionLinkPO } from "./collection-link"
 export { DashboardPO } from "./dashboard"
 export { FolderSettingsPO } from "./folder-settings"

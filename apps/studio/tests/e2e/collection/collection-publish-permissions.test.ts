@@ -1,4 +1,6 @@
 import { test } from "@playwright/test"
+import { TEST_EMAILS, roleTag } from "~e2e/fixtures/auth"
+import { openCollectionIndexEditor } from "~e2e/fixtures/helpers"
 import { CollectionLinkPO } from "~e2e/fixtures/po"
 import { PageEditorPO } from "~e2e/fixtures/po"
 import {
@@ -9,9 +11,6 @@ import {
 import { provisionE2ESite } from "~e2e/fixtures/site"
 import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { openCollectionIndexEditor } from "../fixtures/helpers"
 
 let siteId: number
 let collectionId: string

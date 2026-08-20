@@ -2,7 +2,7 @@ import crypto from "crypto"
 import { db, jsonb } from "~/server/modules/database"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 
-import { TEST_EMAILS } from "./auth"
+import { TEST_EMAILS } from "../auth"
 
 export const uniqueSuffix = () => crypto.randomUUID().slice(0, 8)
 

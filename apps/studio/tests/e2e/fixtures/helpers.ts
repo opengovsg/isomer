@@ -3,8 +3,8 @@ import { IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY } from "~/lib/gro
 import { type RoleType } from "~prisma/generated/generatedEnums"
 
 import { storageStateFor, type Role } from "./auth"
-import { CollectionPO } from "./collection.po"
 import { enableGrowthBookFeature, resetGrowthBookPage } from "./network"
+import { CollectionPO } from "./po/collection"
 import { DashboardPO } from "./po/dashboard"
 import { PageEditorPO } from "./po/page-editor"
 import { UsersPO } from "./po/users"
