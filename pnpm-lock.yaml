@@ -423,8 +423,8 @@ catalogs:
       specifier: ^2.7.2
       version: 2.7.2
     pg:
-      specifier: ^8.22.0
-      version: 8.22.0
+      specifier: ^8.23.0
+      version: 8.23.0
     pg-cursor:
       specifier: ^2.21.0
       version: 2.21.0
@@ -945,7 +945,7 @@ importers:
         version: 3.0.8
       pg:
         specifier: catalog:pg
-        version: 8.22.0
+        version: 8.23.0
       posthog-js:
         specifier: 'catalog:'
         version: 1.416.0
@@ -1126,7 +1126,7 @@ importers:
         version: 9.0.3
       pg-cursor:
         specifier: catalog:pg
-        version: 2.21.0(pg@8.22.0)
+        version: 2.21.0(pg@8.23.0)
       playwright:
         specifier: catalog:playwright
         version: 1.62.1
@@ -1392,10 +1392,10 @@ importers:
         version: 0.29.4
       pg:
         specifier: catalog:pg
-        version: 8.22.0
+        version: 8.23.0
       pg-cursor:
         specifier: catalog:pg
-        version: 2.21.0(pg@8.22.0)
+        version: 2.21.0(pg@8.23.0)
     devDependencies:
       '@isomer/oxlint-config':
         specifier: workspace:*
@@ -1575,7 +1575,7 @@ importers:
         version: 16.6.1
       pg:
         specifier: catalog:pg
-        version: 8.22.0
+        version: 8.23.0
       tsx:
         specifier: 'catalog:'
         version: 4.23.11
@@ -1606,7 +1606,7 @@ importers:
         version: 16.6.1
       pg:
         specifier: catalog:pg
-        version: 8.22.0
+        version: 8.23.0
     devDependencies:
       '@isomer/tsconfig':
         specifier: workspace:*
@@ -1703,7 +1703,7 @@ importers:
         version: 11.0.0
       pg:
         specifier: catalog:pg
-        version: 8.22.0
+        version: 8.23.0
       tsx:
         specifier: 'catalog:'
         version: 4.23.11
@@ -1809,7 +1809,7 @@ importers:
         version: 16.6.1
       pg:
         specifier: catalog:pg
-        version: 8.22.0
+        version: 8.23.0
       tsx:
         specifier: 'catalog:'
         version: 4.23.11
@@ -10550,12 +10550,24 @@ packages:
   pg-protocol@1.15.0:
     resolution: {integrity: sha512-cq9sECI5s0+uPUXjbz8ioyPJni6RzsRib0US67i5IoTZKw8fNeYlVE7u8F4dG7vEJJtc5wdD1K189lCCUwqWTQ==}
 
+  pg-protocol@1.16.0:
+    resolution: {integrity: sha512-sILXutLVjCLjcDuOmvhX5e2Z4cS5qG/6Bu3VkpFwdf/633ElGLpEh9bgmuI5I4sqKqkifQiGyiCcx1HdtrK7tg==}
+
   pg-types@2.2.0:
     resolution: {integrity: sha512-qTAAlrEsl8s4OiEQY69wDvcMIdQN6wdz5ojQiOy6YRMuynxenON0O5oCpJI6lshc6scgAY8qvJ2On/p+CXY0GA==}
     engines: {node: '>=4'}
 
   pg@8.22.0:
     resolution: {integrity: sha512-8wih1vVIBMxoUM2oB4soJsD9tDnDpLv4OXBJ+EJzFsvycD+lfyIreC2gGHq78f8jbLLt+bvlPTFdFZfJkOuzAA==}
+    engines: {node: '>= 16.0.0'}
+    peerDependencies:
+      pg-native: '>=3.0.1'
+    peerDependenciesMeta:
+      pg-native:
+        optional: true
+
+  pg@8.23.0:
+    resolution: {integrity: sha512-Ip2EQCngowJLGOfCwkFhPXU7/ljlhn6Rxlmy4XYfL2Y+vyRM59+8uR2xqRWKdYmbXmxCFOAmKxBuSUCdF34qLg==}
     engines: {node: '>= 16.0.0'}
     peerDependencies:
       pg-native: '>=3.0.1'
@@ -22144,9 +22156,9 @@ snapshots:
 
   pg-connection-string@2.14.0: {}
 
-  pg-cursor@2.21.0(pg@8.22.0):
+  pg-cursor@2.21.0(pg@8.23.0):
     dependencies:
-      pg: 8.22.0
+      pg: 8.23.0
 
   pg-int8@1.0.1: {}
 
@@ -22154,7 +22166,13 @@ snapshots:
     dependencies:
       pg: 8.22.0
 
+  pg-pool@3.14.0(pg@8.23.0):
+    dependencies:
+      pg: 8.23.0
+
   pg-protocol@1.15.0: {}
+
+  pg-protocol@1.16.0: {}
 
   pg-types@2.2.0:
     dependencies:
@@ -22169,6 +22187,16 @@ snapshots:
       pg-connection-string: 2.14.0
       pg-pool: 3.14.0(pg@8.22.0)
       pg-protocol: 1.15.0
+      pg-types: 2.2.0
+      pgpass: 1.0.5
+    optionalDependencies:
+      pg-cloudflare: 1.4.0
+
+  pg@8.23.0:
+    dependencies:
+      pg-connection-string: 2.14.0
+      pg-pool: 3.14.0(pg@8.23.0)
+      pg-protocol: 1.16.0
       pg-types: 2.2.0
       pgpass: 1.0.5
     optionalDependencies:
