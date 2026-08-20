@@ -1,12 +1,12 @@
 import { expect, test } from "@playwright/test"
 import crypto from "crypto"
-import { db } from "~/server/modules/database"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { DashboardPO } from "../fixtures/dashboard.po"
 import { createCollectionViaWizard } from "../fixtures/helpers"
 import { seedFolder } from "../fixtures/page-seed"
+import { deleteResource, deleteResourcesByTitleLike } from "../fixtures/reset"
 import { getResource } from "../fixtures/resource.db"
 import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
@@ -23,20 +23,13 @@ test.beforeAll(async () => {
   siteId = site.siteId
 })
 
-const deleteFolder = (folderId: string) =>
-  db.deleteFrom("Resource").where("id", "=", folderId).execute()
-
 test.describe("admin", { tag: roleTag("admin") }, () => {
   test.beforeEach(async () => {
     await ensureUserOnboarded(TEST_EMAILS.admin)
   })
 
   test.afterEach(async () => {
-    await db
-      .deleteFrom("Resource")
-      .where("siteId", "=", siteId)
-      .where("title", "like", "E2E Test Collection %")
-      .execute()
+    await deleteResourcesByTitleLike(siteId, "E2E Test Collection %")
   })
 
   test("admin can create a new collection via the wizard", async ({ page }) => {
@@ -103,7 +96,7 @@ test.describe(
     })
 
     test.afterEach(async () => {
-      await deleteFolder(folderId)
+      await deleteResource(folderId)
     })
 
     test("admin can create a new collection inside a folder", async ({

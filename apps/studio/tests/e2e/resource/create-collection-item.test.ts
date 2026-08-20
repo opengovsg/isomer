@@ -1,12 +1,12 @@
 import { expect, test } from "@playwright/test"
 import crypto from "crypto"
-import { db } from "~/server/modules/database"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { createCollectionItemViaWizard } from "../fixtures/helpers"
 import { seedRootCollection } from "../fixtures/page-seed"
-import { getResourceByTitle } from "../fixtures/resource.db"
+import { deleteResource } from "../fixtures/reset"
+import { getResource } from "../fixtures/resource.db"
 import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
 
@@ -31,7 +31,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   })
 
   test.afterEach(async () => {
-    await db.deleteFrom("Resource").where("id", "=", collectionId).execute()
+    await deleteResource(collectionId)
   })
 
   test("admin can create a collection page via the wizard", async ({
@@ -41,7 +41,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     const title = UNIQUE_TITLE("Collection Page")
 
     // Act
-    await createCollectionItemViaWizard(page, {
+    const { itemId } = await createCollectionItemViaWizard(page, {
       siteId,
       collectionId,
       type: "Page",
@@ -49,7 +49,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     })
 
     // Assert
-    const created = await getResourceByTitle({ siteId, title })
+    const created = await getResource(itemId)
     expect(created).toBeTruthy()
     expect(created?.type).toBe("CollectionPage")
     expect(created?.parentId).toBe(collectionId)
@@ -62,7 +62,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     const title = UNIQUE_TITLE("Collection Link")
 
     // Act
-    await createCollectionItemViaWizard(page, {
+    const { itemId } = await createCollectionItemViaWizard(page, {
       siteId,
       collectionId,
       type: "Link or file",
@@ -70,7 +70,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     })
 
     // Assert
-    const created = await getResourceByTitle({ siteId, title })
+    const created = await getResource(itemId)
     expect(created).toBeTruthy()
     expect(created?.type).toBe("CollectionLink")
     expect(created?.parentId).toBe(collectionId)

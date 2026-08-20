@@ -10,6 +10,8 @@ import {
 import { db } from "~/server/modules/database"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 
+import { getRedirectDestination } from "./redirect.db"
+
 /** Prose preview label from the default integration seed blob. */
 export const SEEDED_PROSE_BLOCK_LABEL = "Test block"
 
@@ -242,13 +244,4 @@ export const expectResourceTitle = (resourceId: string) =>
 
 /** `source` should already be normalized (see `normalizeRedirectSource`). */
 export const expectRedirectDestination = (siteId: number, source: string) =>
-  expect.poll(async () => {
-    const row = await db
-      .selectFrom("Redirect")
-      .where("siteId", "=", siteId)
-      .where("source", "=", source)
-      .where("deletedAt", "is", null)
-      .select("destination")
-      .executeTakeFirst()
-    return row?.destination ?? null
-  })
+  expect.poll(async () => getRedirectDestination({ siteId, source }))
