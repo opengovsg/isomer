@@ -159,10 +159,7 @@ export class GodmodePO {
   }
 
   private publishButtonForSite(siteId: number) {
-    return this.page
-      .getByRole("row")
-      .filter({ hasText: e2eCodeBuildIdForSite(siteId) })
-      .getByRole("button", { name: "Publish" })
+    return this.siteRow(siteId).getByRole("button", { name: "Publish" })
   }
 
   async expectSitePublishedToast() {
