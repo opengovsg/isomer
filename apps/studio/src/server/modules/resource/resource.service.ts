@@ -810,16 +810,24 @@ export const getDescendantResourceIds = async (
   return rows.map((row) => String(row.id))
 }
 
+// The following published-descendant checks (hasPublishedDescendant,
+// getPublishedDescendantResourceIds) both exclude FolderMeta/CollectionMeta
+// from counting as "published". Some rows of these types carry a stray
+// publishedVersionId in production, despite neither type ever being built
+// into a visitor-facing page — they're excluded from PAGE_RESOURCE_TYPES in
+// the static-site build (tooling/build/scripts/publishing/constants.ts) and
+// only ever read for internal ordering bookkeeping (see the `@deprecated
+// pageOrderFromIndex` migration in that build script). Both types are
+// themselves candidates for deprecation/removal once that migration is
+// complete. Until then, a stray publishedVersionId on either must not block
+// a delete/move that would otherwise be safe.
+
 // True when `resourceId` or any descendant is published — the folder analogue of
 // a page's `publishedVersionId !== null`, used to decide whether a folder/
 // collection move or rename should preserve its old URLs with a redirect (there
 // is nothing to preserve for a subtree that was never live). Keys on
 // publishedVersionId, not `state`: nothing unpublishes a resource today, so the
 // two only ever change together (see version.service.ts).
-// Excludes FolderMeta/CollectionMeta: some rows carry a stray publishedVersionId,
-// but neither type is ever built into a visitor-facing page (they're excluded
-// from PAGE_RESOURCE_TYPES in the static-site build), so a stray value there
-// must not block a delete/move that would otherwise be safe.
 export const hasPublishedDescendant = async (
   trx: SafeKysely,
   { siteId, resourceId }: { siteId: number; resourceId: string },
@@ -844,7 +852,6 @@ export const hasPublishedDescendant = async (
 // container itself is excluded — its own URL is validated separately). Used to
 // check that a folder move/rename doesn't drop a live descendant onto a path an
 // existing redirect already covers.
-// Excludes FolderMeta/CollectionMeta for the same reason as hasPublishedDescendant.
 export const getPublishedDescendantResourceIds = async (
   trx: SafeKysely,
   { siteId, resourceId }: { siteId: number; resourceId: string },
