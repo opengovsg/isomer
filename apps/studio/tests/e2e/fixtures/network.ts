@@ -139,12 +139,14 @@ export const failTagOptionsUsageCount = async (page: Page) => {
         contentType: "application/json",
         body: JSON.stringify({
           error: {
-            message: "usage count failed",
-            code: -32003,
-            data: {
-              code: "FORBIDDEN",
-              httpStatus: 403,
-              path: "collection.countTagOptionsUsage",
+            json: {
+              message: "usage count failed",
+              code: -32003,
+              data: {
+                code: "FORBIDDEN",
+                httpStatus: 403,
+                path: "collection.countTagOptionsUsage",
+              },
             },
           },
         }),

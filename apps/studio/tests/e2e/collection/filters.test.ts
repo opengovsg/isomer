@@ -176,6 +176,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
     // Act
     await collection.reorderFirstOptionDown()
+    await collection.expectOptionOrder(["Second option", "First option"])
     await collection.saveFilters()
 
     // Assert
