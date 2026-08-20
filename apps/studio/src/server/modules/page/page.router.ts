@@ -682,7 +682,7 @@ export const pageRouter = router({
           userId: user.id,
         })
 
-        // Allow-list rather than deny-list: only these three types are real,
+        // Allow-list rather than deny-list: only these four types are real,
         // independently unpublishable content pages.
         // - Folder/Collection ids belong to the dedicated unpublishFolder/
         //   unpublishCollection mutations (getFullPageById would otherwise
@@ -690,9 +690,11 @@ export const pageRouter = router({
         // - FolderMeta/CollectionMeta are internal ordering metadata, not
         //   user-facing pages (see their exclusion from listing/move/redirect
         //   logic elsewhere, e.g. resource.service.ts, redirect.service.ts).
-        // - CollectionLink's draft/published tracking isn't wired up yet
-        //   (see the comment in updateCollectionLink), so its publish state
-        //   isn't meaningfully defined.
+        // - CollectionLink shares this same publishPage/unpublishPage path
+        //   (see LinkEditNavbar's use of PublishButton) and is built into a
+        //   real sitemap entry by the static-site build (PAGE_RESOURCE_TYPES
+        //   in tooling/build/scripts/publishing/constants.ts), so it needs a
+        //   symmetric unpublish path just like Page/CollectionPage/IndexPage.
         // - RootPage is publishable but deliberately excluded here as a
         //   protection, matching the existing delete guard that also refuses
         //   to touch RootPage (resource.router.ts).
@@ -704,6 +706,7 @@ export const pageRouter = router({
             ResourceType.Page,
             ResourceType.CollectionPage,
             ResourceType.IndexPage,
+            ResourceType.CollectionLink,
           ])
           .select("Resource.id")
           .executeTakeFirst()

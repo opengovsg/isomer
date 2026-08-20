@@ -2485,15 +2485,43 @@ describe("page.router", async () => {
       )
     })
 
-    it.each([
-      ResourceType.FolderMeta,
-      ResourceType.CollectionMeta,
-      ResourceType.CollectionLink,
-    ])("should throw 404 if pageId refers to a %s", async (resourceType) => {
-      // Arrange — none of these are user-facing content pages with a
-      // meaningfully tracked publish state
+    it.each([ResourceType.FolderMeta, ResourceType.CollectionMeta])(
+      "should throw 404 if pageId refers to a %s",
+      async (resourceType) => {
+        // Arrange — neither of these are user-facing content pages; they're
+        // internal ordering metadata with no meaningfully tracked publish
+        // state
+        const { site, page } = await setupPageResource({
+          resourceType,
+          state: ResourceState.Published,
+          userId: session.userId ?? undefined,
+        })
+        await setupPublisherPermissions({
+          userId: session.userId ?? undefined,
+          siteId: site.id,
+        })
+
+        // Act
+        const result = caller.unpublishPage({
+          siteId: site.id,
+          pageId: Number(page.id),
+        })
+
+        // Assert
+        await expect(result).rejects.toThrow(
+          new TRPCError({
+            code: "NOT_FOUND",
+            message: "This page does not exist",
+          }),
+        )
+      },
+    )
+
+    it("should unpublish a live CollectionLink", async () => {
+      // Arrange — CollectionLink shares the same publish/unpublish path as
+      // a regular page (see LinkEditNavbar's use of PublishButton)
       const { site, page } = await setupPageResource({
-        resourceType,
+        resourceType: ResourceType.CollectionLink,
         state: ResourceState.Published,
         userId: session.userId ?? undefined,
       })
@@ -2503,18 +2531,16 @@ describe("page.router", async () => {
       })
 
       // Act
-      const result = caller.unpublishPage({
-        siteId: site.id,
-        pageId: Number(page.id),
-      })
+      await caller.unpublishPage({ siteId: site.id, pageId: Number(page.id) })
 
       // Assert
-      await expect(result).rejects.toThrow(
-        new TRPCError({
-          code: "NOT_FOUND",
-          message: "This page does not exist",
-        }),
-      )
+      const updated = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updated.publishedVersionId).toBeNull()
+      expect(updated.state).toEqual(ResourceState.Draft)
     })
 
     it("should unpublish a live page while retaining its draft", async () => {
