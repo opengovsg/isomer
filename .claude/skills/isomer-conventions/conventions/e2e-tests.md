@@ -14,6 +14,9 @@ Fixture import paths and onboarding: `apps/studio/tests/e2e/README.md`.
 - `tests/e2e/<module>/<surface>.test.ts` — one file per UI surface
 - `fixtures/` — shared infrastructure; import via `~e2e/fixtures/<subpath>` (no root barrel)
 - Import `test` / `expect` from `@playwright/test` directly
+- A topic folder (e.g. `dashboard/`) is also allowed when a set of tests spans multiple
+  resource types around one user-facing area (nav, search, sidebar) rather than fitting
+  one resource-type module — don't force those into an existing `<resource-type>/` folder.
 
 ## Fixture layers
 

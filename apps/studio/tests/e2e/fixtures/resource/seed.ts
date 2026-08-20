@@ -154,6 +154,53 @@ export const seedFolderWithPage = async ({
   return { folder, page }
 }
 
+export const seedPagesInFolder = async ({
+  siteId,
+  folderId,
+  count,
+  titlePrefix = "E2E Sort Item",
+}: {
+  siteId: number
+  folderId: string
+  count: number
+  titlePrefix?: string
+}) =>
+  Promise.all(
+    Array.from({ length: count }, (_, i) => {
+      const suffix = crypto.randomUUID().slice(0, 8)
+      const title = `${titlePrefix} ${String(i + 1).padStart(2, "0")}`
+      return setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        parentId: folderId,
+        title,
+        permalink: `e2e-sort-item-${i + 1}-${suffix}`,
+      })
+    }),
+  )
+
+export const seedPageInFolder = async ({
+  siteId,
+  folderId,
+  pageTitle = "E2E Nested Page",
+  pagePermalink,
+}: {
+  siteId: number
+  folderId: string
+  pageTitle?: string
+  pagePermalink?: string
+}) => {
+  const suffix = crypto.randomUUID().slice(0, 8)
+  const { page } = await setupPageResource({
+    siteId,
+    resourceType: ResourceType.Page,
+    parentId: folderId,
+    title: pageTitle,
+    permalink: pagePermalink ?? `e2e-nested-page-${suffix}`,
+  })
+  return { page }
+}
+
 export const seedFolderWithChildPage = async ({
   siteId,
   folderTitle = "E2E Seed Folder",
