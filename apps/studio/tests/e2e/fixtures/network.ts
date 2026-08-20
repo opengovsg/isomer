@@ -202,7 +202,7 @@ export const mockGodmodeSitePublish = async (
   await page.route("**/api/trpc/**", async (route) => {
     const url = route.request().url()
     if (!url.includes("site.publish")) {
-      await route.continue()
+      await route.fallback()
       return
     }
 
