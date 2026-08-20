@@ -1,10 +1,15 @@
 import { test } from "@playwright/test"
 
-// TODO: EditUserModal, RemoveUserModal, and AddUserModal all close the modal
-// via React Query's `onSettled` (see EditUserModal.tsx:67), which fires on
-// both success AND error. So a failed mutation today closes the modal the
-// same as a successful one, rather than keeping it open for the admin to
-// retry — the opposite of what this test is meant to cover. Un-skip and
-// implement once the modals are changed to stay open (and preserve form
-// state) when their mutation errors.
+/**
+ * TODO(user-modals): Un-skip once user mutation modals keep the dialog open on
+ * error so the admin can read the failure and retry without re-opening the form.
+ *
+ * Today AddUserModal, EditUserModal, and RemoveUserModal all wire `onSettled`
+ * to close the modal (e.g. EditUserModal.tsx — `onSettled: onClose`). React
+ * Query runs `onSettled` after both success and failure, so a failed invite,
+ * edit, or remove closes the modal the same as a successful one.
+ *
+ * This test should cover: mutation error → modal stays open, form state
+ * preserved, admin can fix input and submit again.
+ */
 test.skip("mutation failures keep the modal open and permit retry", async () => {})
