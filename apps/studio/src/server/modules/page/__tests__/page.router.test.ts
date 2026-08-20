@@ -2457,9 +2457,11 @@ describe("page.router", async () => {
       )
     })
 
-    it("should throw 404 if pageId refers to the RootPage", async () => {
-      // Arrange — RootPage is publishable but deliberately excluded here as
-      // a protection, matching the existing delete guard for RootPage
+    it("should unpublish a live RootPage", async () => {
+      // Arrange — RootPage shares the same publish/unpublish path as a
+      // regular page (see RootpageRow's link to /pages/[pageId]); unlike
+      // delete, unpublishing it isn't destructive since the static-site
+      // build falls back to a generic homepage when unpublished
       const { site, page } = await setupPageResource({
         resourceType: ResourceType.RootPage,
         state: ResourceState.Published,
@@ -2471,18 +2473,16 @@ describe("page.router", async () => {
       })
 
       // Act
-      const result = caller.unpublishPage({
-        siteId: site.id,
-        pageId: Number(page.id),
-      })
+      await caller.unpublishPage({ siteId: site.id, pageId: Number(page.id) })
 
       // Assert
-      await expect(result).rejects.toThrow(
-        new TRPCError({
-          code: "NOT_FOUND",
-          message: "This page does not exist",
-        }),
-      )
+      const updated = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updated.publishedVersionId).toBeNull()
+      expect(updated.state).toEqual(ResourceState.Draft)
     })
 
     it.each([ResourceType.FolderMeta, ResourceType.CollectionMeta])(
