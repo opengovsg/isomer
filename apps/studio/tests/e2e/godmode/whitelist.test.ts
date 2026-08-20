@@ -7,10 +7,8 @@ import {
   ensureUserOnboarded,
   uniqueVendorEmail,
 } from "../fixtures/user"
-import {
-  expectWhitelistedVendorEmail,
-  getWhitelistEntry,
-} from "../fixtures/whitelist.db"
+import { expectWhitelistedVendorEmail } from "../fixtures/whitelist-expect"
+import { getWhitelistEntry } from "../fixtures/whitelist.db"
 
 test.describe("migrator", { tag: roleTag("migrator") }, () => {
   test.beforeEach(async () => {
