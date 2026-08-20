@@ -4,11 +4,7 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { SEEDED_ISOMER_ADMIN_COUNT } from "../fixtures/seed"
 import { provisionE2ESite } from "../fixtures/site"
-import {
-  deleteUsersByEmail,
-  ensureUserOnboarded,
-  seedManyEditorsOnSite,
-} from "../fixtures/user"
+import { ensureUserOnboarded, seedManyEditorsOnSite } from "../fixtures/user"
 import { UsersPO } from "../fixtures/users.po"
 
 // Plus the site's seeded admin, this puts the table one row past the
@@ -16,20 +12,15 @@ import { UsersPO } from "../fixtures/users.po"
 const BULK_EDITOR_COUNT = 25
 
 let siteId: number
-let bulkEmails: string[]
 
 test.describe("admin", { tag: roleTag("admin") }, () => {
   test.beforeAll(async () => {
     const site = await provisionE2ESite({ roles: [RoleType.Admin] })
     siteId = site.siteId
-    bulkEmails = await seedManyEditorsOnSite({
+    await seedManyEditorsOnSite({
       siteId,
       count: BULK_EDITOR_COUNT,
     })
-  })
-
-  test.afterAll(async () => {
-    await deleteUsersByEmail(...bulkEmails)
   })
 
   test.beforeEach(async () => {
@@ -68,7 +59,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await users.expectAddUsersEmptyPromptHidden()
   })
 
-  test("Your users table paginates once there are more than 25 users", async ({
+  test("Your users table starts on page 1 with previous page disabled", async ({
     page,
   }) => {
     const users = new UsersPO(page)
@@ -76,18 +67,36 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     // Arrange / Act
     await users.goto(siteId)
 
-    // Assert: page 1 of 2
+    // Assert
     await users.expectCurrentPage(1)
     await users.expectPreviousPageDisabled()
+  })
 
-    // Act: advance to the last page
+  test("Your users table advances to the last page", async ({ page }) => {
+    const users = new UsersPO(page)
+
+    // Arrange
+    await users.goto(siteId)
+
+    // Act
     await users.goToNextPage()
 
-    // Assert: page 2 of 2
+    // Assert
     await users.expectCurrentPage(2)
     await users.expectNextPageDisabled()
+  })
 
-    // Act: go back
+  test("Your users table returns to page 1 from the last page", async ({
+    page,
+  }) => {
+    const users = new UsersPO(page)
+
+    // Arrange
+    await users.goto(siteId)
+    await users.goToNextPage()
+    await users.expectCurrentPage(2)
+
+    // Act
     await users.goToPreviousPage()
 
     // Assert

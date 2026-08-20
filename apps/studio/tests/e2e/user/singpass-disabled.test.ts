@@ -10,16 +10,11 @@ import {
   resetGrowthBookPage,
 } from "../fixtures/network"
 import { provisionE2ESite } from "../fixtures/site"
-import {
-  deleteUsersByEmail,
-  ensureUserOnboarded,
-  expectUserRoleOnSite,
-  uniqueInviteeEmail,
-} from "../fixtures/user"
+import { ensureUserOnboarded, uniqueInviteeEmail } from "../fixtures/user"
+import { expectUserRoleOnSite } from "../fixtures/user-expect"
 import { UsersPO } from "../fixtures/users.po"
 
 let siteId: number
-let inviteeEmail: string
 
 test.describe("admin", { tag: roleTag("admin") }, () => {
   test.beforeAll(async () => {
@@ -31,16 +26,12 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await ensureUserOnboarded(TEST_EMAILS.admin)
   })
 
-  test.afterEach(async () => {
-    await deleteUsersByEmail(inviteeEmail)
-  })
-
   test("add, edit, remove, and resend controls are disabled with an explanation when Singpass is unavailable", async ({
     page,
   }) => {
-    inviteeEmail = uniqueInviteeEmail()
+    const inviteeEmail = uniqueInviteeEmail()
 
-    // Arrange: invite a pending user while Singpass is enabled (the default)
+    // Arrange
     await inviteCollaborator(page, {
       email: inviteeEmail,
       role: "Editor",
@@ -49,7 +40,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await expectUserRoleOnSite(siteId, inviteeEmail).toBe("Editor")
     const users = new UsersPO(page)
 
-    // Act: disable Singpass and reload the users page
+    // Act
     await enableGrowthBookFeature(page, IS_SINGPASS_ENABLED_FEATURE_KEY, false)
     await resetGrowthBookPage(page)
     await users.goto(siteId)
