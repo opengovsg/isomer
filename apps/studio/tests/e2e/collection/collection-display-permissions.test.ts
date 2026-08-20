@@ -50,16 +50,17 @@ for (const role of ["editor", "publisher"] as const) {
     test("can open Collection display on the collection index", async ({
       page,
     }) => {
-      // Act
+      // Arrange
       const collection = await openCollectionIndexEditor(
         page,
         siteId,
         indexPageId,
       )
-      await collection.openCollectionDisplay()
-
-      // Assert
+      await collection.expectManageCollectionVisible()
       await collection.expectCollectionDisplayVisible()
+
+      // Act / Assert — opening the drawer also waits for its heading
+      await collection.openCollectionDisplay()
     })
   })
 }
