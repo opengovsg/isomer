@@ -371,7 +371,7 @@ export class SitePO {
   }
 
   navbarLinksCountText() {
-    return this.page.getByText(/\d+\/8 links added/)
+    return this.page.getByText(/\d+\/8 first-level links added/)
   }
 
   navbarCustomiseTab() {
@@ -557,7 +557,7 @@ export class SitePO {
 
   async addNavbarLink(label: string, externalUrl: string) {
     await this.addNavbarLinkButton().click()
-    await this.navbarItemText("Navbar item").click()
+    // Add both appends a default item and opens its editor (setSelectedPath).
     await this.fillNavbarMenuItemLabel(label)
     await this.setLinkDestinationExternal(externalUrl)
     await this.backToNavigationBarButton().click()
@@ -575,7 +575,7 @@ export class SitePO {
     externalUrl: string,
   ) {
     await this.addFooterLinkButtonForColumn(columnHeading).click()
-    await this.footerLinkButton("No title").click()
+    // Add opens the new item's editor immediately (setSelectedIndex).
     await this.linkLabelField().fill(label)
     await this.setLinkDestinationExternal(externalUrl)
     await this.backToFooterButton().click()

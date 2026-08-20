@@ -76,7 +76,6 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
     // Act
     await site.addSocialMediaLinkButton().click()
-    await site.footerLinkButton("Facebook").click()
     await site.socialMediaLinkField().fill("not-a-url")
 
     // Assert
@@ -92,7 +91,6 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     // Arrange
     await site.gotoSettingsSection(siteId, "footer")
     await site.addSocialMediaLinkButton().click()
-    await site.footerLinkButton("Facebook").click()
 
     // Act
     await site.socialMediaLinkField().fill("https://www.facebook.com/isomer")
