@@ -8,6 +8,7 @@ import { isAppliedFilters } from "../../types/Filter"
 import {
   getFilteredItems,
   getPaginatedItems,
+  updateAppliedDateRange,
   updateAppliedFilters,
 } from "./utils"
 
@@ -75,6 +76,18 @@ export const useCollection = ({
     [appliedFilters, setAppliedFilters],
   )
 
+  const handleDateRangeChange = useCallback(
+    (id: string, dateRange: AppliedFilter["dateRange"]) => {
+      return updateAppliedDateRange(
+        appliedFilters,
+        setAppliedFilters,
+        id,
+        dateRange,
+      )
+    },
+    [appliedFilters, setAppliedFilters],
+  )
+
   const filteredItems = getFilteredItems(items, appliedFilters, searchValue)
   const paginatedItems = useMemo(
     () => getPaginatedItems(filteredItems, ITEMS_PER_PAGE, currPage),
@@ -96,6 +109,7 @@ export const useCollection = ({
     handleClearFilter,
     appliedFilters,
     handleFilterToggle,
+    handleDateRangeChange,
     setAppliedFilters,
     currPage,
     setCurrPage,

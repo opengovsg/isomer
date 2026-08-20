@@ -7,6 +7,7 @@ import {
   resolveTagCategoryDisplay,
   TAG_CATEGORY_DISPLAY_OPTIONS,
 } from "~/types/constants"
+import { isTextFilter } from "~/types/page"
 
 interface GetPillAndPlaintextTagsResult {
   pillTags: TagGroup[] | undefined
@@ -27,7 +28,15 @@ export const getPillAndPlaintextTags = (
   const pillTags: TagGroup[] = []
   const plaintextTags: TagGroup[] = []
 
-  for (const { id, label, options, display } of tagCategories) {
+  for (const tagCategory of tagCategories) {
+    // NOTE: date filters have no `options`/`tagged` membership — their
+    // status pill is derived separately (see getDateFilterValues) and never
+    // flows through pillTags/plaintextTags.
+    if (!isTextFilter(tagCategory)) {
+      continue
+    }
+    const { id, label, options, display } = tagCategory
+
     const selected = options
       .filter(({ id: optionId }) => tagged.includes(optionId))
       .map(({ label }) => label)

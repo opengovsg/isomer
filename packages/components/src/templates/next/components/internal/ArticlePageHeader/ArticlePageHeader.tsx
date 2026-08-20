@@ -2,6 +2,8 @@ import type { ArticlePageHeaderProps } from "~/interfaces"
 import { getFormattedDate } from "~/utils/getFormattedDate"
 
 import { Breadcrumb } from "../Breadcrumb"
+import { EventDateFilterDates } from "../CollectionCard/EventDateFilterDates"
+import { EventStatusPill } from "../CollectionCard/EventStatusPill"
 import { PillTags, PlaintextTags } from "../Tags"
 
 export const ArticlePageHeader = ({
@@ -11,6 +13,7 @@ export const ArticlePageHeader = ({
   date,
   summary,
   pillTags,
+  dateFilterCards,
 }: ArticlePageHeaderProps) => {
   return (
     <div className="mx-auto w-full">
@@ -25,9 +28,19 @@ export const ArticlePageHeader = ({
 
       <div className="flex flex-col gap-5">
         <div className="flex flex-col gap-4">
+          {dateFilterCards && dateFilterCards.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2">
+              {dateFilterCards.map(({ id, status, statusLabel }) => (
+                <EventStatusPill key={id} status={status} label={statusLabel} />
+              ))}
+            </div>
+          )}
           <h1 className="prose-display-md break-words text-base-content-strong">
             {title}
           </h1>
+          {dateFilterCards && dateFilterCards.length > 0 && (
+            <EventDateFilterDates entries={dateFilterCards} />
+          )}
           <PillTags
             tags={pillTags}
             className="flex flex-wrap items-center gap-2"

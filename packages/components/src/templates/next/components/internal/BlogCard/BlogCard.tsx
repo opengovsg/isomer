@@ -2,6 +2,8 @@ import type { CollectionCardProps } from "~/interfaces"
 import type { CollectionPageSchemaType } from "~/types"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 
+import { EventDateFilterDates } from "../CollectionCard/EventDateFilterDates" // Reusing since the logic is the same for both
+import { EventStatusPill } from "../CollectionCard/EventStatusPill" // Reusing since the logic is the same for both
 import { Title } from "../CollectionCard/Title" // Reusing since the logic is the same for both
 import { ImageClient } from "../ImageClient"
 import { Link } from "../Link"
@@ -19,6 +21,7 @@ export const BlogCard = ({
   shouldShowDate = true,
   pillTags,
   formattedDate,
+  dateFilterCards,
 }: CollectionCardProps & {
   shouldShowDate?: boolean
   siteAssetsBaseUrl: string | undefined
@@ -52,7 +55,17 @@ export const BlogCard = ({
         </p>
       )}
       <div className="flex flex-grow flex-col gap-3 text-base-content">
+        {dateFilterCards && dateFilterCards.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2">
+            {dateFilterCards.map(({ id, status, statusLabel }) => (
+              <EventStatusPill key={id} status={status} label={statusLabel} />
+            ))}
+          </div>
+        )}
         <Title title={itemTitle} isExternalLink={isExternalLink} />
+        {dateFilterCards && dateFilterCards.length > 0 && (
+          <EventDateFilterDates entries={dateFilterCards} />
+        )}
         <PillTags
           tags={pillTags}
           className="flex w-full flex-wrap items-center gap-1.5"

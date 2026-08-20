@@ -5,6 +5,7 @@ import { getIndexByPermalink } from "~/utils/getIndexByPermalink"
 import { ArticlePageHeader } from "../../components/internal/ArticlePageHeader"
 import { BackToTopLink } from "../../components/internal/BackToTopLink"
 import { renderPageContent } from "../../render"
+import { getDateFilterValues } from "../Collection/utils/getDateFilterValues"
 import { getPillAndPlaintextTags } from "../Collection/utils/getPillAndPlaintextTags"
 import { Skeleton } from "../Skeleton"
 
@@ -33,6 +34,11 @@ export const ArticleLayout = ({
     parentTagCategories,
   )
 
+  const { dateFilterCards } = getDateFilterValues(
+    page.dateTagged,
+    parentTagCategories,
+  )
+
   return (
     <Skeleton site={site} page={page} layout={layout}>
       <div className="mx-auto flex max-w-[47.8rem] flex-col gap-7 px-6 md:px-10">
@@ -43,6 +49,7 @@ export const ArticleLayout = ({
           title={page.title}
           date={page.date}
           pillTags={pillTags}
+          dateFilterCards={dateFilterCards}
         />
 
         <div className="mx-auto w-full gap-10 pb-20">
