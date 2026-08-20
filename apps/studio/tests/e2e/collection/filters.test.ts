@@ -185,9 +185,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     ).toEqual(["Second option", "First option"])
   })
 
-  test("blank or duplicate filter and option names prevent saving", async ({
-    page,
-  }) => {
+  test("duplicate filter names show a validation error", async ({ page }) => {
     const { indexPage } = await seedCollection({ siteId })
     const collection = await openCollectionIndexEditor(
       page,
@@ -200,35 +198,86 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await collection.addFilter()
     await collection.addFilter()
 
-    // Act / Assert — duplicate filter names (live caption; drawer Save stays
-    // enabled because duplicates are not AJV errors)
+    // Act / Assert — live caption; drawer Save stays enabled because duplicates
+    // are not AJV errors.
     await collection.expectFilterNameError(
       "A filter with this name already exists.",
     )
+  })
 
+  test("blank filter names disable drawer save", async ({ page }) => {
+    const { indexPage } = await seedCollection({ siteId })
+    const collection = await openCollectionIndexEditor(
+      page,
+      siteId,
+      indexPage.id,
+    )
+
+    // Arrange
+    await collection.openFilters()
+    await collection.addFilter()
     await collection.openFilterNamed("New filter")
-    await collection.fillFilterName("")
-    await collection.expectDrawerSaveDisabled()
 
+    // Act
+    await collection.fillFilterName("")
+
+    // Assert
+    await collection.expectDrawerSaveDisabled()
+  })
+
+  test("duplicate option names show a validation error", async ({ page }) => {
+    const { indexPage } = await seedCollection({ siteId })
+    const collection = await openCollectionIndexEditor(
+      page,
+      siteId,
+      indexPage.id,
+    )
+
+    // Arrange
+    await collection.openFilters()
+    await collection.addFilter()
+    await collection.openFilterNamed("New filter")
     await collection.fillFilterName("Topic")
     await collection.addOption()
     await collection.addOption()
     await collection.renameOptionAtIndex(0, "Same name")
     await collection.openOptionInlineEdit(1)
+
+    // Act
     await collection.fillOptionName(1, "Same name")
+
+    // Assert
     await collection.expectOptionNameError(
       "An option with this name already exists.",
     )
     await collection.expectInlineOptionSaveDisabled()
+  })
 
-    await collection.fillOptionName(1, "")
+  test("blank option names show a validation error", async ({ page }) => {
+    const { indexPage } = await seedCollection({ siteId })
+    const collection = await openCollectionIndexEditor(
+      page,
+      siteId,
+      indexPage.id,
+    )
+
+    // Arrange
+    await collection.openFilters()
+    await collection.addFilter()
+    await collection.openFilterNamed("New filter")
+    await collection.fillFilterName("Topic")
+    await collection.addOption()
+    await collection.openOptionInlineEdit(0)
+
+    // Act
+    await collection.fillOptionName(0, "")
+
+    // Assert
     await collection.expectOptionNameError("Option name cannot be empty.")
     await collection.expectInlineOptionSaveDisabled()
   })
 
-  test("deleting an unused option can be cancelled or confirmed", async ({
-    page,
-  }) => {
+  test("deleting an unused option can be cancelled", async ({ page }) => {
     const unused = option("Unused option")
     const kept = option("Kept option")
     const seeded = await createCollectionWithTagCategories(
@@ -252,15 +301,40 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await collection.openFilters()
     await collection.openFilterNamed("Topic")
 
-    // Act — cancel
+    // Act
     await collection.openOptionActions(1)
     await collection.clickDeleteOptionMenuItem()
     await collection.cancelDeleteOption()
 
     // Assert
     await collection.expectOptionNamedVisible("Unused option")
+  })
 
-    // Act — confirm
+  test("deleting an unused option can be confirmed", async ({ page }) => {
+    const unused = option("Unused option")
+    const kept = option("Kept option")
+    const seeded = await createCollectionWithTagCategories(
+      [
+        {
+          id: crypto.randomUUID(),
+          label: "Topic",
+          isRequired: false,
+          options: [unused, kept],
+        },
+      ],
+      siteId,
+    )
+    const collection = await openCollectionIndexEditor(
+      page,
+      siteId,
+      seeded.indexPageId,
+    )
+
+    // Arrange
+    await collection.openFilters()
+    await collection.openFilterNamed("Topic")
+
+    // Act
     await collection.openOptionActions(1)
     await collection.clickDeleteOptionMenuItem()
     await collection.confirmDeleteOption()
