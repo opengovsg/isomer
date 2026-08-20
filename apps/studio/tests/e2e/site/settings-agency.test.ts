@@ -56,9 +56,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await site.fillSiteName("   ")
 
     // Assert
-    await expect(
-      page.getByText("Site name cannot be empty or contain only spaces"),
-    ).toBeVisible()
+    await expect(site.siteNameEmptyValidationError()).toBeVisible()
     await expect(site.publishButton()).toBeDisabled()
     await expectSiteName(siteId).toBe(siteName)
   })

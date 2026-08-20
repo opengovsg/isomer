@@ -4,7 +4,11 @@ import { fileURLToPath } from "url"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { mockAssetUploadRoutes, mockPresignedPutUrl } from "../fixtures/network"
+import {
+  mockAssetUploadRoutes,
+  mockFailedAssetUpload,
+  mockPresignedPutUrl,
+} from "../fixtures/network"
 import { resetSiteLogoSettings } from "../fixtures/reset"
 import { provisionE2ESite } from "../fixtures/site"
 import {
@@ -52,9 +56,26 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await expect(site.logoFilenameText(LOGO_FILENAME)).toBeVisible()
   })
 
-  test("admin can upload and then replace a favicon, publish, and reload", async ({
-    page,
-  }) => {
+  test("admin can upload a favicon and publish", async ({ page }) => {
+    const site = new SitePO(page)
+
+    // Arrange
+    await site.gotoSettingsSection(siteId, "logo")
+    await expect(site.faviconUploadGroup()).toBeVisible()
+
+    // Act
+    await site.uploadFavicon(LOGO_FIXTURE)
+    await site.expectLogoFilenameVisible(LOGO_FILENAME)
+    await site.clickPublish()
+    await site.expectChangesPublishedToast()
+
+    // Assert
+    await expectSiteFaviconUrl(siteId).toMatch(/.+/)
+    await site.reloadSettingsSection("logo")
+    await expect(site.logoFilenameText(LOGO_FILENAME)).toBeVisible()
+  })
+
+  test("admin can replace a favicon before publishing", async ({ page }) => {
     const site = new SitePO(page)
     const secondFavicon = {
       name: "second-favicon.png",
@@ -64,17 +85,13 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
     // Arrange
     await site.gotoSettingsSection(siteId, "logo")
-    await expect(site.faviconUploadGroup()).toBeVisible()
-
-    // Act: upload
     await site.uploadFavicon(LOGO_FIXTURE)
     await site.expectLogoFilenameVisible(LOGO_FILENAME)
 
-    // Act: replace — remove, then upload a different file
+    // Act
     await site.removeUploadedFileButton(site.faviconUploadGroup()).click()
     await site.uploadFavicon(secondFavicon)
     await site.expectLogoFilenameVisible(secondFavicon.name)
-
     await site.clickPublish()
     await site.expectChangesPublishedToast()
 
@@ -135,16 +152,8 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   test("a failed upload does not commit a logo", async ({ page }) => {
     const site = new SitePO(page)
 
-    // Arrange: force the S3 PUT to fail after the presigned URL is minted
-    await page.route(
-      (url) => url.hostname === "user-content.example.com",
-      (route) =>
-        route.fulfill({
-          status: 500,
-          contentType: "application/json",
-          body: JSON.stringify({ error: "Upload failed" }),
-        }),
-    )
+    // Arrange
+    await mockFailedAssetUpload(page)
     await site.gotoSettingsSection(siteId, "logo")
 
     // Act

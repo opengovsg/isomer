@@ -24,63 +24,78 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await resetSiteFooter(siteId)
   })
 
-  test("admin can edit both footer link columns and publish", async ({
+  test("admin can edit a footer link in column 1 and publish", async ({
     page,
   }) => {
     const site = new SitePO(page)
     const column1UpdatedLabel = "About E2E"
-    const column2NewLabel = "Column 2 E2E Link"
 
     // Arrange
     await site.gotoSettingsSection(siteId, "footer")
 
-    // Act: edit an existing link in column 1
+    // Act
     await site.editFooterLinkLabel("About us", column1UpdatedLabel)
-
-    // Act: add a new link to column 2 (empty by default) — adding just
-    // appends a collapsed "No title" row, so it must be opened before its
-    // fields are editable
-    await site.addFooterLinkButtonForColumn("Footer column 2").click()
-    await site.footerLinkButton("No title").click()
-    await site.linkLabelField().fill(column2NewLabel)
-    await site.setLinkDestinationExternal("example.com/column-two")
-    await site.backToFooterButton().click()
-
     await site.clickPublish()
     await site.expectChangesPublishedToast()
 
     // Assert
     await expectFooterContains(siteId, column1UpdatedLabel).toBe(true)
-    await expectFooterContains(siteId, column2NewLabel).toBe(true)
     await site.reloadSettingsSection("footer")
     await expect(site.footerLinkButton(column1UpdatedLabel)).toBeVisible()
+  })
+
+  test("admin can add a footer link to column 2 and publish", async ({
+    page,
+  }) => {
+    const site = new SitePO(page)
+    const column2NewLabel = "Column 2 E2E Link"
+
+    // Arrange
+    await site.gotoSettingsSection(siteId, "footer")
+
+    // Act
+    await site.addFooterLinkToColumn(
+      "Footer column 2",
+      column2NewLabel,
+      "example.com/column-two",
+    )
+    await site.clickPublish()
+    await site.expectChangesPublishedToast()
+
+    // Assert
+    await expectFooterContains(siteId, column2NewLabel).toBe(true)
+    await site.reloadSettingsSection("footer")
     await expect(site.footerLinkButton(column2NewLabel)).toBeVisible()
   })
 
-  test("admin can add a social media link, and an invalid URL is rejected", async ({
+  test("invalid social media URL is rejected", async ({ page }) => {
+    const site = new SitePO(page)
+
+    // Arrange
+    await site.gotoSettingsSection(siteId, "footer")
+
+    // Act
+    await site.addSocialMediaLinkButton().click()
+    await site.footerLinkButton("Facebook").click()
+    await site.socialMediaLinkField().fill("not-a-url")
+
+    // Assert
+    await expect(site.invalidLinkFormatError()).toBeVisible()
+    await expect(site.publishButton()).toBeDisabled()
+  })
+
+  test("admin can add a valid social media link and publish", async ({
     page,
   }) => {
     const site = new SitePO(page)
 
     // Arrange
     await site.gotoSettingsSection(siteId, "footer")
-
-    // Act: adding a social link with an invalid URL is rejected live —
-    // adding just appends a collapsed row (defaulting to "Facebook"), so it
-    // must be opened before its fields are editable
     await site.addSocialMediaLinkButton().click()
     await site.footerLinkButton("Facebook").click()
-    await site.socialMediaLinkField().fill("not-a-url")
-    await expect(
-      page.getByText("Link is not in the correct format"),
-    ).toBeVisible()
-    await expect(site.publishButton()).toBeDisabled()
 
-    // Act: fixing the URL clears the error and allows publishing
+    // Act
     await site.socialMediaLinkField().fill("https://www.facebook.com/isomer")
-    await expect(
-      page.getByText("Link is not in the correct format"),
-    ).not.toBeVisible()
     await site.backToFooterButton().click()
     await site.clickPublish()
     await site.expectChangesPublishedToast()
@@ -98,7 +113,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     // must be cleared before a new one can be set (BaseLinkControl only
     // exposes "Link something..." when the field is empty).
     await site.gotoSettingsSection(siteId, "footer")
-    await expect(page.getByText("Contact and feedback form")).toBeVisible()
+    await expect(site.contactAndFeedbackHeading()).toBeVisible()
     await site.removeLinkButtonByLabel("Contact us page").click()
 
     // Act
@@ -117,15 +132,13 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
     // Arrange: both fields are pre-populated by the default fixture data
     await site.gotoSettingsSection(siteId, "footer")
-    await expect(page.getByText("Legal pages")).toBeVisible()
+    await expect(site.legalPagesHeading()).toBeVisible()
 
-    // Act: clear the privacy statement link
+    // Act
     await site.removeLinkButtonByLabel("Privacy statement page").click()
 
     // Assert
-    await expect(
-      page.getByText("Privacy statement page cannot be empty"),
-    ).toBeVisible()
+    await expect(site.privacyStatementEmptyError()).toBeVisible()
     await expect(site.publishButton()).toBeDisabled()
   })
 
@@ -137,7 +150,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await site.gotoSettingsSection(siteId, "footer")
 
     // Assert
-    await expect(page.getByText("8/8 links added")).toBeVisible()
+    await expect(site.footerLinksCountText("8/8")).toBeVisible()
     await expect(
       site.addFooterLinkButtonForColumn("Footer column 1"),
     ).toBeDisabled()

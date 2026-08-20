@@ -1,22 +1,10 @@
 import { expect, test } from "@playwright/test"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
-import type { SettingsSection } from "../fixtures/site.po"
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { provisionE2ESite } from "../fixtures/site"
-import { SitePO } from "../fixtures/site.po"
+import { PUBLISH_GATED_SETTINGS_SECTIONS, SitePO } from "../fixtures/site.po"
 import { ensureUserOnboarded } from "../fixtures/user"
-
-/** Settings sections that render a Publish CTA (redirects publish inline instead). */
-const PUBLISH_GATED_SECTIONS: SettingsSection[] = [
-  "agency",
-  "colours",
-  "footer",
-  "integrations",
-  "logo",
-  "navbar",
-  "notification",
-]
 
 let siteId: number
 
@@ -38,7 +26,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     const site = new SitePO(page)
 
     // Arrange / Act / Assert
-    for (const section of PUBLISH_GATED_SECTIONS) {
+    for (const section of PUBLISH_GATED_SETTINGS_SECTIONS) {
       await site.gotoSettingsSection(siteId, section)
       await expect(site.publishButton()).not.toBeVisible()
     }
@@ -53,7 +41,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
   test("editor can view agency settings but not publish", async ({ page }) => {
     const site = new SitePO(page)
 
-    // Arrange
+    // Arrange / Act
     await site.gotoSettingsSection(siteId, "agency")
 
     // Assert
@@ -67,7 +55,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     const site = new SitePO(page)
 
     // Arrange / Act / Assert
-    for (const section of PUBLISH_GATED_SECTIONS) {
+    for (const section of PUBLISH_GATED_SETTINGS_SECTIONS) {
       await site.gotoSettingsSection(siteId, section)
       await expect(site.publishButton()).not.toBeVisible()
     }

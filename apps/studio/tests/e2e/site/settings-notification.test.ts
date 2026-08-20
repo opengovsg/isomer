@@ -58,8 +58,8 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await site.expectChangesPublishedToast()
     await expectSiteNotificationTitle(siteId).toBe(notificationTitle)
 
-    // Act: turn the banner off and publish the removal
-    await site.notificationBannerToggle().locator("xpath=..").click()
+    // Act
+    await site.disableNotificationBanner()
     await site.clickPublish()
     await site.expectChangesPublishedToast()
 
