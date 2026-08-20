@@ -28,18 +28,10 @@ export class UsersPO {
     ).not.toBeVisible()
   }
 
-  async expectRedirectedFromUsersPage(siteId: number) {
-    const usersResponsePromise = this.page.waitForResponse((response) => {
-      const url = new URL(response.url())
-      return (
-        url.pathname === `/sites/${siteId}/users` &&
-        response.request().isNavigationRequest()
-      )
-    })
-    await this.page.goto(`/sites/${siteId}/users`)
-    const usersResponse = await usersResponsePromise
-    expect(usersResponse.status()).toBe(307)
-    await expect(this.page).toHaveURL(new RegExp(`/sites/${siteId}$`))
+  async expectNoSiteAccessError() {
+    await expect(
+      this.page.getByText("You don't have access to edit this site."),
+    ).toBeVisible()
   }
 
   async expectNoRowActionsMenus() {

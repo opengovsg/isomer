@@ -1,8 +1,7 @@
-import { test } from "@playwright/test"
+import { expect, test } from "@playwright/test"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { SEEDED_ISOMER_ADMIN_COUNT } from "../fixtures/seed"
 import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded, seedManyEditorsOnSite } from "../fixtures/user"
 import { UsersPO } from "../fixtures/users.po"
@@ -35,10 +34,11 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     // Arrange / Act
     await users.goto(siteId)
 
-    // Assert: the site admin plus every bulk-seeded editor
+    // Assert: the site admin plus every bulk-seeded editor on this site
     await users.expectTabCount("Your users", BULK_EDITOR_COUNT + 1)
-    // seedRolesForE2E provisions global core + migrator Isomer admins on every run
-    await users.expectTabCount("Isomer admins", SEEDED_ISOMER_ADMIN_COUNT)
+    // Isomer-admin badge count is run-scoped (other tests may seed admins); tab
+    // content is asserted in the Isomer admins tab test below.
+    await expect(users.tab("Isomer admins").locator(".badge")).toBeVisible()
   })
 
   test("Isomer admins tab lists seeded godmode admins without an add-user prompt", async ({
