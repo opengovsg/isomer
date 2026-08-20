@@ -22,6 +22,26 @@ export class UsersPO {
     ).toBeVisible()
   }
 
+  async expectCollaboratorsPageHidden() {
+    await expect(
+      this.page.getByText("View users that work with you on this site."),
+    ).not.toBeVisible()
+  }
+
+  async expectRedirectedFromUsersPage(siteId: number) {
+    const usersResponsePromise = this.page.waitForResponse((response) => {
+      const url = new URL(response.url())
+      return (
+        url.pathname === `/sites/${siteId}/users` &&
+        response.request().isNavigationRequest()
+      )
+    })
+    await this.page.goto(`/sites/${siteId}/users`)
+    const usersResponse = await usersResponsePromise
+    await expect(usersResponse.status()).toBe(307)
+    await expect(this.page).toHaveURL(new RegExp(`/sites/${siteId}$`))
+  }
+
   async expectNoRowActionsMenus() {
     await expect(
       this.page.getByRole("button", { name: /Options for/ }),

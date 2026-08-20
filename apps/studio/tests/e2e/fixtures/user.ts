@@ -1,4 +1,3 @@
-import { expect } from "@playwright/test"
 import crypto from "crypto"
 import {
   setupAdminPermissions,
@@ -23,35 +22,6 @@ export const uniqueLoggedInUserEmail = () =>
 
 export const uniqueIsomerAdminEmail = () =>
   `e2e-isomer-admin-${crypto.randomUUID().slice(0, 8)}@open.gov.sg`
-
-/** Delete listed users and their permission/admin rows.
- * Exact emails only; a LIKE on e2e-invitee-% can wipe another test's user
- * when fullyParallel is on.
- */
-export const deleteUsersByEmail = async (...emails: (string | undefined)[]) => {
-  const list = emails.filter((email): email is string => !!email)
-  if (list.length === 0) return
-
-  const users = await db
-    .selectFrom("User")
-    .where("email", "in", list)
-    .select(["id"])
-    .execute()
-  if (users.length === 0) return
-
-  const ids = users.map((u) => u.id)
-  await db.deleteFrom("IsomerAdmin").where("userId", "in", ids).execute()
-  await db.deleteFrom("ResourcePermission").where("userId", "in", ids).execute()
-  await db.deleteFrom("User").where("id", "in", ids).execute()
-}
-
-export const deleteWhitelistedVendorEmails = async (
-  ...emails: (string | undefined)[]
-) => {
-  const list = emails.filter((email): email is string => !!email)
-  if (list.length === 0) return
-  await db.deleteFrom("Whitelist").where("email", "in", list).execute()
-}
 
 export const whitelistVendorEmail = async (email: string) => {
   const expiry = new Date()
@@ -124,33 +94,6 @@ export const seedIsomerAdminOnSite = async ({
     .execute()
   return { email, userId: user.id }
 }
-
-export const expectUserRoleOnSite = (siteId: number, email: string) =>
-  expect.poll(async () => {
-    const row = await db
-      .selectFrom("User as u")
-      .innerJoin("ResourcePermission as rp", "rp.userId", "u.id")
-      .where("u.email", "=", email)
-      .where("rp.siteId", "=", siteId)
-      .where("rp.deletedAt", "is", null)
-      .select(["rp.role"])
-      .executeTakeFirst()
-    return row?.role ?? null
-  })
-
-/** Active sitewide permission absent (e.g. after remove-user). */
-export const expectUserAbsentOnSite = (siteId: number, email: string) =>
-  expect.poll(async () => {
-    const row = await db
-      .selectFrom("User as u")
-      .innerJoin("ResourcePermission as rp", "rp.userId", "u.id")
-      .where("u.email", "=", email)
-      .where("rp.siteId", "=", siteId)
-      .where("rp.deletedAt", "is", null)
-      .select(["rp.id"])
-      .executeTakeFirst()
-    return row ?? null
-  })
 
 /** Skip the welcome modal by ensuring name + phone are set on the user. */
 export const ensureUserOnboarded = (email: string) =>
