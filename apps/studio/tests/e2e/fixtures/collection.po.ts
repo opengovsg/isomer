@@ -231,28 +231,44 @@ export class CollectionPO {
   }
 
   async reorderFirstFilterDown() {
-    await this.reorderFirstDraggableDown()
+    await this.reorderDraggableDown(
+      this.page
+        .locator(
+          "[data-rfd-drag-handle-draggable-id], [data-rbd-drag-handle-draggable-id]",
+        )
+        .first(),
+    )
   }
 
   async reorderFirstOptionDown() {
-    await this.reorderFirstDraggableDown()
+    const row = this.optionRow(0)
+    const draggableId =
+      (await row.getAttribute("data-rfd-draggable-id")) ??
+      (await row.getAttribute("data-rbd-draggable-id"))
+    if (!draggableId) {
+      throw new Error("Expected option row to expose a draggable id")
+    }
+    await this.reorderDraggableDown(
+      this.page.locator(
+        `[data-rfd-drag-handle-draggable-id="${draggableId}"], [data-rbd-drag-handle-draggable-id="${draggableId}"]`,
+      ),
+    )
   }
 
   async expectOptionOrder(names: string[]) {
     await this.expectFilterOrder(names)
   }
 
-  async reorderFirstDraggableDown() {
-    const handle = this.page
-      .locator(
-        "[data-rfd-drag-handle-draggable-id], [data-rbd-drag-handle-draggable-id]",
-      )
-      .first()
+  async reorderDraggableDown(handle: ReturnType<Page["locator"]>) {
     await expect(handle).toBeVisible()
     await handle.focus()
     await this.page.keyboard.press("Space")
     await this.page.keyboard.press("ArrowDown")
     await this.page.keyboard.press("Space")
+  }
+
+  async reorderFirstDraggableDown() {
+    await this.reorderFirstFilterDown()
   }
 
   async openOptionActions(index1Based: number) {
