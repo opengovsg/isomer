@@ -1,13 +1,12 @@
 import { test } from "@playwright/test"
+import { TEST_EMAILS, roleTag } from "~e2e/fixtures/auth"
+import { seedCollectionPages } from "~e2e/fixtures/collection"
 import { DashboardPO } from "~e2e/fixtures/po"
+import { CollectionPO } from "~e2e/fixtures/po"
 import { seedCollection } from "~e2e/fixtures/resource"
 import { provisionE2ESite } from "~e2e/fixtures/site"
 import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { seedCollectionPages } from "../fixtures/collection"
-import { CollectionPO } from "../fixtures/collection.po"
 
 let siteId: number
 let collectionId: string

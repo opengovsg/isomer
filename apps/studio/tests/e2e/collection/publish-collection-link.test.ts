@@ -1,17 +1,18 @@
-import { expect, test } from "@playwright/test"
-import { CollectionLinkPO } from "~e2e/fixtures/po"
-import { PageEditorPO } from "~e2e/fixtures/po"
-import { getResource } from "~e2e/fixtures/resource"
-import { provisionE2ESite } from "~e2e/fixtures/site"
-import { ensureUserOnboarded } from "~e2e/fixtures/user"
-import { ResourceState, RoleType } from "~prisma/generated/generatedEnums"
-
-import { roleTag, TEST_EMAILS } from "../fixtures/auth"
+import { test } from "@playwright/test"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
 import {
   createCollectionLink,
   createCollectionWithTagCategories,
   deleteCollection,
-} from "../fixtures/collection"
+} from "~e2e/fixtures/collection"
+import { CollectionLinkPO, PageEditorPO } from "~e2e/fixtures/po"
+import {
+  expectResourceDraftBlobId,
+  expectResourceState,
+} from "~e2e/fixtures/resource"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
+import { ResourceState, RoleType } from "~prisma/generated/generatedEnums"
 
 let siteId: number
 
@@ -46,12 +47,8 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
       await editor.expectPublishedToast()
 
       // Assert
-      await expect
-        .poll(async () => (await getResource(link.id))?.state)
-        .toBe(ResourceState.Published)
-      await expect
-        .poll(async () => (await getResource(link.id))?.draftBlobId)
-        .toBeNull()
+      await expectResourceState(link.id).toBe(ResourceState.Published)
+      await expectResourceDraftBlobId(link.id).toBeNull()
     } finally {
       await deleteCollection(collectionId)
     }

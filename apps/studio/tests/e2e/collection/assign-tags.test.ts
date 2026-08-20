@@ -1,19 +1,18 @@
 import { expect, test } from "@playwright/test"
-import { CollectionLinkPO } from "~e2e/fixtures/po"
-import { PageEditorPO } from "~e2e/fixtures/po"
-import { getResourceDraftTagged } from "~e2e/fixtures/resource"
-import { provisionE2ESite } from "~e2e/fixtures/site"
-import { ensureUserOnboarded } from "~e2e/fixtures/user"
-import { RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
+import { TEST_EMAILS, roleTag } from "~e2e/fixtures/auth"
 import {
   createCollectionLink,
   createCollectionPage,
   createCollectionWithTagCategories,
-} from "../fixtures/collection"
-import { getRootPageId } from "../fixtures/collection.db"
-import { CollectionPO } from "../fixtures/collection.po"
+} from "~e2e/fixtures/collection"
+import { getRootPageId } from "~e2e/fixtures/collection"
+import { CollectionLinkPO } from "~e2e/fixtures/po"
+import { PageEditorPO } from "~e2e/fixtures/po"
+import { CollectionPO } from "~e2e/fixtures/po"
+import { getResourceDraftTagged } from "~e2e/fixtures/resource"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
+import { RoleType } from "~prisma/generated/generatedEnums"
 
 const REQUIRED_CATEGORY_ID = "11111111-1111-4111-8111-111111111111"
 const REQUIRED_OPTION_ID = "22222222-2222-4222-8222-222222222222"

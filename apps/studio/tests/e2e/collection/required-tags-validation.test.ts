@@ -1,21 +1,20 @@
 import { expect, test } from "@playwright/test"
 import crypto from "crypto"
-import { CollectionLinkPO } from "~e2e/fixtures/po"
-import { PageEditorPO } from "~e2e/fixtures/po"
-import { getResourceDraftTagged } from "~e2e/fixtures/resource"
-import { provisionE2ESite } from "~e2e/fixtures/site"
-import { ensureUserOnboarded } from "~e2e/fixtures/user"
-import { RoleType } from "~prisma/generated/generatedEnums"
-
-import { roleTag, TEST_EMAILS } from "../fixtures/auth"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
 import {
   createCollectionLink,
   createCollectionPage,
   createCollectionWithTagCategories,
   deleteCollection,
-} from "../fixtures/collection"
-import { getRootPageId } from "../fixtures/collection.db"
-import { CollectionPO } from "../fixtures/collection.po"
+} from "~e2e/fixtures/collection"
+import { getRootPageId } from "~e2e/fixtures/collection"
+import { CollectionLinkPO } from "~e2e/fixtures/po"
+import { PageEditorPO } from "~e2e/fixtures/po"
+import { CollectionPO } from "~e2e/fixtures/po"
+import { getResourceDraftTagged } from "~e2e/fixtures/resource"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
+import { RoleType } from "~prisma/generated/generatedEnums"
 
 let siteId: number
 
