@@ -160,6 +160,33 @@ export class DashboardPO {
     await this.page.waitForURL(new RegExp(`/sites/${siteId}/pages/${pageId}`))
   }
 
+  async capturePageEditorIdFromUrl(siteId: number) {
+    await this.page.waitForURL(new RegExp(`/sites/${siteId}/pages/\\d+$`))
+    const pageId = this.page.url().match(/\/pages\/(\d+)$/)?.[1]
+    if (!pageId) {
+      throw new Error(
+        `Expected page editor URL after wizard, got ${this.page.url()}`,
+      )
+    }
+    return pageId
+  }
+
+  async captureCollectionItemIdFromUrl(
+    siteId: number,
+    type: "Page" | "Link or file",
+  ) {
+    const subpath = type === "Page" ? "pages" : "links"
+    const pattern = new RegExp(`/sites/${siteId}/${subpath}/(\\d+)$`)
+    await this.page.waitForURL(pattern)
+    const itemId = this.page.url().match(pattern)?.[1]
+    if (!itemId) {
+      throw new Error(
+        `Expected ${subpath} URL after wizard, got ${this.page.url()}`,
+      )
+    }
+    return itemId
+  }
+
   async expectOnFolder(siteId: number, folderId: string) {
     await this.page.waitForURL(
       new RegExp(`/sites/${siteId}/folders/${folderId}$`),
