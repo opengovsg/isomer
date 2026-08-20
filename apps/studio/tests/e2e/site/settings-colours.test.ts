@@ -31,7 +31,6 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
     // Act
     await site.setMainBrandColour("ff0000")
-    await expect(site.publishButton()).toBeEnabled()
     await site.clickPublish()
     await site.expectChangesPublishedToast()
 

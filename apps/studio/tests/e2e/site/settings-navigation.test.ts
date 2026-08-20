@@ -2,22 +2,14 @@ import type { Locator } from "@playwright/test"
 import { expect, test } from "@playwright/test"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
-import type { SettingsSection } from "../fixtures/site.po"
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { provisionE2ESite } from "../fixtures/site"
-import { SitePO } from "../fixtures/site.po"
+import {
+  ALL_SETTINGS_SECTIONS,
+  SitePO,
+  type SettingsSection,
+} from "../fixtures/site.po"
 import { ensureUserOnboarded } from "../fixtures/user"
-
-const SETTINGS_SECTIONS: SettingsSection[] = [
-  "agency",
-  "colours",
-  "footer",
-  "integrations",
-  "logo",
-  "navbar",
-  "notification",
-  "redirects",
-]
 
 const SECTION_VISIBLE_ELEMENT: Record<
   SettingsSection,
@@ -54,7 +46,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await site.gotoSettingsSection(siteId, "agency")
     await expect(SECTION_VISIBLE_ELEMENT.agency(site)).toBeVisible()
 
-    for (const section of SETTINGS_SECTIONS) {
+    for (const section of ALL_SETTINGS_SECTIONS) {
       if (section === "agency") continue
 
       // Act

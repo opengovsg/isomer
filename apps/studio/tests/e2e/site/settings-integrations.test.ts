@@ -69,60 +69,62 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await site.fillGtmId("not-a-valid-gtm-id")
 
     // Assert
-    await expect(
-      page.getByText(
-        "Google Tag Manager (GTM) ID is not in the correct format",
-      ),
-    ).toBeVisible()
+    await expect(site.gtmIdValidationError()).toBeVisible()
     await expect(site.publishButton()).toBeDisabled()
     await expectSiteGtmId(siteId).toBeNull()
   })
 
-  test("admin can configure and remove AskGov", async ({ page }) => {
+  test("admin can configure AskGov", async ({ page }) => {
     const site = new SitePO(page)
 
     // Arrange
     await site.gotoSettingsSection(siteId, "integrations")
 
-    // Act: enable and configure
-    await site.askgovToggle().click()
-    await site.askgovIdField().fill("e2e-agency")
-    await site.clickPublish()
-    await site.expectChangesPublishedToast()
+    // Act
+    await site.configureAskgov("e2e-agency")
 
     // Assert
     await expectSiteAskgovId(siteId).toBe("e2e-agency")
+  })
 
-    // Act: remove
+  test("admin can remove AskGov", async ({ page }) => {
+    const site = new SitePO(page)
+
+    // Arrange
+    await site.gotoSettingsSection(siteId, "integrations")
+    await site.configureAskgov("e2e-agency")
+
+    // Act
     await site.reloadSettingsSection("integrations")
-    await site.askgovToggle().click()
-    await site.clickPublish()
-    await site.expectChangesPublishedToast()
+    await site.removeAskgov()
 
     // Assert
     await expectSiteAskgovId(siteId).toBeNull()
   })
 
-  test("admin can configure and remove VICA", async ({ page }) => {
+  test("admin can configure VICA", async ({ page }) => {
     const site = new SitePO(page)
 
     // Arrange
     await site.gotoSettingsSection(siteId, "integrations")
 
-    // Act: enable and configure
-    await site.vicaToggle().click()
-    await site.vicaIdField().fill("e2e-vica-app")
-    await site.clickPublish()
-    await site.expectChangesPublishedToast()
+    // Act
+    await site.configureVica("e2e-vica-app")
 
     // Assert
     await expectSiteVicaId(siteId).toBe("e2e-vica-app")
+  })
 
-    // Act: remove
+  test("admin can remove VICA", async ({ page }) => {
+    const site = new SitePO(page)
+
+    // Arrange
+    await site.gotoSettingsSection(siteId, "integrations")
+    await site.configureVica("e2e-vica-app")
+
+    // Act
     await site.reloadSettingsSection("integrations")
-    await site.vicaToggle().click()
-    await site.clickPublish()
-    await site.expectChangesPublishedToast()
+    await site.removeVica()
 
     // Assert
     await expectSiteVicaId(siteId).toBeNull()

@@ -1,8 +1,11 @@
 import { expect, test } from "@playwright/test"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
-import type { SettingsSection } from "../fixtures/site.po"
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
+import {
+  mockSiteUpdateConfigFailure,
+  unmockSiteUpdateConfigFailure,
+} from "../fixtures/network"
 import {
   resetSiteAgencySettings,
   resetSiteFooter,
@@ -14,22 +17,21 @@ import {
 } from "../fixtures/reset"
 import { provisionE2ESite } from "../fixtures/site"
 import { expectSiteName } from "../fixtures/site-expect"
-import { SitePO } from "../fixtures/site.po"
+import { PUBLISH_GATED_SETTINGS_SECTIONS, SitePO } from "../fixtures/site.po"
 import { ensureUserOnboarded } from "../fixtures/user"
 
-/** Settings sections that render a Publish CTA (redirects publish inline instead). */
-const PUBLISH_GATED_SECTIONS: {
-  section: SettingsSection
-  reset: (siteId: number) => Promise<unknown>
-}[] = [
-  { section: "agency", reset: (id) => resetSiteAgencySettings(id) },
-  { section: "colours", reset: resetSiteTheme },
-  { section: "footer", reset: resetSiteFooter },
-  { section: "integrations", reset: resetSiteIntegrations },
-  { section: "logo", reset: resetSiteLogoSettings },
-  { section: "navbar", reset: resetSiteNavbar },
-  { section: "notification", reset: resetSiteNotification },
-]
+const RESET_BY_SECTION: Record<
+  (typeof PUBLISH_GATED_SETTINGS_SECTIONS)[number],
+  (siteId: number) => Promise<unknown>
+> = {
+  agency: (id) => resetSiteAgencySettings(id),
+  colours: resetSiteTheme,
+  footer: resetSiteFooter,
+  integrations: resetSiteIntegrations,
+  logo: resetSiteLogoSettings,
+  navbar: resetSiteNavbar,
+  notification: resetSiteNotification,
+}
 
 let siteId: number
 let siteName: string
@@ -48,17 +50,15 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   test("clean settings forms keep Publish disabled", async ({ page }) => {
     const site = new SitePO(page)
 
-    for (const { section, reset } of PUBLISH_GATED_SECTIONS) {
-      await reset(siteId)
+    for (const section of PUBLISH_GATED_SETTINGS_SECTIONS) {
+      await RESET_BY_SECTION[section](siteId)
       await site.gotoSettingsSection(siteId, section)
       await expect(site.publishButton()).toBeVisible()
       await expect(site.publishButton()).toBeDisabled()
     }
   })
 
-  test("unsaved navigation supports both stay and discard", async ({
-    page,
-  }) => {
+  test("unsaved navigation can stay on the current page", async ({ page }) => {
     const site = new SitePO(page)
     await resetSiteAgencySettings(siteId, siteName)
 
@@ -66,26 +66,35 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await site.gotoSettingsSection(siteId, "agency")
     await site.fillSiteName(`${siteName} unsaved edit`)
 
-    // Act: navigate away, then choose to stay
-    await page.getByRole("link", { name: "Colours" }).click()
+    // Act
+    await site.clickSettingsSidebarSection("colours")
     await expect(site.unsavedChangesModalHeading()).toBeVisible()
     await site.goBackToEditingButton().click()
 
-    // Assert: still on agency page, edit intact
-    await expect(page).toHaveURL(/\/settings\/agency$/)
+    // Assert
+    await site.waitForSettingsSection("agency")
     await expect(site.siteNameField()).toHaveValue(`${siteName} unsaved edit`)
+  })
 
-    // Act: navigate away again, this time discard
-    await page.getByRole("link", { name: "Colours" }).click()
+  test("unsaved navigation can discard changes", async ({ page }) => {
+    const site = new SitePO(page)
+    await resetSiteAgencySettings(siteId, siteName)
+
+    // Arrange
+    await site.gotoSettingsSection(siteId, "agency")
+    await site.fillSiteName(`${siteName} unsaved edit`)
+
+    // Act
+    await site.clickSettingsSidebarSection("colours")
     await expect(site.unsavedChangesModalHeading()).toBeVisible()
     await site.yesLeaveThisPageButton().click()
 
-    // Assert: navigated away, and the unpublished edit never persisted
-    await expect(page).toHaveURL(/\/settings\/colours$/)
+    // Assert
+    await site.waitForSettingsSection("colours")
     await expectSiteName(siteId).toBe(siteName)
   })
 
-  test("failed save keeps form values and allows retry", async ({ page }) => {
+  test("failed save keeps form values", async ({ page }) => {
     const site = new SitePO(page)
     await resetSiteAgencySettings(siteId, siteName)
     const renamedSiteName = `${siteName} retry`
@@ -93,32 +102,31 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     // Arrange
     await site.gotoSettingsSection(siteId, "agency")
     await site.fillSiteName(renamedSiteName)
+    await mockSiteUpdateConfigFailure(page)
 
-    // Act: first publish attempt fails
-    await page.route("**/api/trpc/site.updateSiteConfig*", (route) =>
-      route.fulfill({
-        status: 500,
-        contentType: "application/json",
-        body: JSON.stringify({
-          error: {
-            json: {
-              message: "Internal server error",
-              code: -32603,
-              data: { httpStatus: 500 },
-            },
-          },
-        }),
-      }),
-    )
+    // Act
     await site.clickPublish()
-    await expect(page.getByText("Failed to update site")).toBeVisible()
 
-    // Assert: value is retained and DB is unchanged
+    // Assert
+    await expect(site.siteUpdateFailureText()).toBeVisible()
     await expect(site.siteNameField()).toHaveValue(renamedSiteName)
     await expectSiteName(siteId).toBe(siteName)
+  })
 
-    // Act: retry succeeds once the failure is no longer forced
-    await page.unroute("**/api/trpc/site.updateSiteConfig*")
+  test("admin can publish after a transient save failure", async ({ page }) => {
+    const site = new SitePO(page)
+    await resetSiteAgencySettings(siteId, siteName)
+    const renamedSiteName = `${siteName} retry`
+
+    // Arrange
+    await site.gotoSettingsSection(siteId, "agency")
+    await site.fillSiteName(renamedSiteName)
+    await mockSiteUpdateConfigFailure(page)
+    await site.clickPublish()
+    await expect(site.siteUpdateFailureText()).toBeVisible()
+    await unmockSiteUpdateConfigFailure(page)
+
+    // Act
     await site.clickPublish()
     await site.expectChangesPublishedToast()
 
@@ -139,7 +147,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     // Act
     await site.fillSiteName(editedSiteName)
 
-    // Assert: the form (and its live preview) reflects the edit immediately...
+    // Assert: the form reflects the edit immediately...
     await expect(site.siteNameField()).toHaveValue(editedSiteName)
     // ...while the persisted value is untouched until Publish is clicked.
     await expectSiteName(siteId).toBe(siteName)
