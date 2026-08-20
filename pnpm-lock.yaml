@@ -303,8 +303,8 @@ catalogs:
       specifier: ^11.3.2
       version: 11.3.2
     posthog-js:
-      specifier: ^1.414.0
-      version: 1.416.0
+      specifier: ^1.416.1
+      version: 1.416.1
     posthog-node:
       specifier: ^5.47.9
       version: 5.48.1
@@ -948,7 +948,7 @@ importers:
         version: 8.23.0
       posthog-js:
         specifier: 'catalog:'
-        version: 1.416.0
+        version: 1.416.1
       posthog-node:
         specifier: 'catalog:'
         version: 5.48.1(rxjs@7.8.2)
@@ -10934,8 +10934,8 @@ packages:
     resolution: {integrity: sha512-Jtc2612XINuBjIl/QTWsV5UvE8UHuNblcO3vVADSrKsrc6RqGX6lOW1cEo3CM2v0XG4Nat8nI+YM7/f26VxXLw==}
     engines: {node: '>=12'}
 
-  posthog-js@1.416.0:
-    resolution: {integrity: sha512-9Rd0tq2WTA1U07VucWuCMwlzr+YvODglyN4mOf61TVrxPeMA7KVBiOEAThqaIvAv2kHbZvwTjbd8Ww2oTs221w==}
+  posthog-js@1.416.1:
+    resolution: {integrity: sha512-/4tFG0As9A/Wyi5dJ0F+/z1vkpndWl9uQtT+6TCD6snIkTZ/MMRiOjJHzY6b38cCQuy5zatr+kTKAuQB/BL1eA==}
 
   posthog-node@5.48.1:
     resolution: {integrity: sha512-BxLX2SqGEQhPqCPTalpyo0RRv1NMbf7UaN7q9d/ED77ksD6XOmE7ko2vIKO8F0zPL1NtKxIi+DYXap9lvR0RaA==}
@@ -16581,7 +16581,7 @@ snapshots:
   '@posthog/browser-common@0.5.0':
     dependencies:
       '@posthog/core': 1.48.0
-      '@posthog/types': 1.402.2
+      '@posthog/types': 1.403.1
 
   '@posthog/core@1.46.9':
     dependencies:
@@ -22614,7 +22614,7 @@ snapshots:
 
   postgres@3.4.7: {}
 
-  posthog-js@1.416.0:
+  posthog-js@1.416.1:
     dependencies:
       '@posthog/browser-common': 0.5.0
       '@posthog/core': 1.48.0
