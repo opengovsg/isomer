@@ -1486,7 +1486,7 @@ describe("resource.router", async () => {
       expect(auditSpy).not.toHaveBeenCalled()
       await expect(result).rejects.toThrow(
         new TRPCError({
-          code: "FORBIDDEN",
+          code: "BAD_REQUEST",
           message: "You cannot move a resource to a different site",
         }),
       )
