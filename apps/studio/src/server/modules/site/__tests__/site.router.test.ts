@@ -571,6 +571,30 @@ describe("site.router", async () => {
         .executeTakeFirstOrThrow()
       expect(updatedSite.name).toEqual(MOCK_SITE_NAME)
     })
+    it("should normalize an AskGov URL when updating the site config", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.updateSiteConfig({
+        siteName: MOCK_SITE_NAME,
+        logoUrl: MOCK_LOGO_URL,
+        url: "https://www.isomer.gov.sg",
+        theme: "isomer-next",
+        siteId: site.id,
+        askgov: {
+          "data-agency":
+            "https://www.ask.gov.sg/mha/questions/question-id?from=widget",
+        },
+      })
+
+      // Assert
+      expect(result.askgov).toEqual({ "data-agency": "mha" })
+    })
     it("should generate an audit log entry", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -899,6 +923,41 @@ describe("site.router", async () => {
       // Assert
       expect(result.config).toEqual(MOCK_INTEGRATION_DATA)
     })
+    it.each([
+      {
+        input: "http://ask.gov.sg/mom/?topic=employment#contact",
+        expected: "mom",
+        description: "URL",
+      },
+      {
+        input: "www.ask.gov.sg/help/questions/question-id",
+        expected: "help",
+        description: "scheme-less URL",
+      },
+      { input: "mha", expected: "mha", description: "ID" },
+    ])(
+      "should store an AskGov $description as the agency ID when updating site integrations",
+      async ({ input, expected }) => {
+        // Arrange
+        const { site } = await setupSite()
+        await setupAdminPermissions({
+          userId: session.userId,
+          siteId: site.id,
+        })
+
+        // Act
+        const result = await caller.updateSiteIntegrations({
+          data: {
+            ...MOCK_INTEGRATION_DATA,
+            askgov: { "data-agency": input },
+          },
+          siteId: site.id,
+        })
+
+        // Assert
+        expect(result.config.askgov).toEqual({ "data-agency": expected })
+      },
+    )
     it("should generate an audit log entry", async () => {
       // Arrange
       const { site } = await setupSite()
