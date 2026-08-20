@@ -141,6 +141,7 @@ test.describe("core", { tag: roleTag("core") }, () => {
       navbar.items[0].name = navbarLabel
     }
     await admin.fillJsonField("navbar", JSON.stringify(navbar, null, 2))
+    await expect(admin.saveButton()).toBeEnabled()
 
     // Act
     await admin.clickSiteContentNav()
@@ -210,6 +211,7 @@ test.describe("core", { tag: roleTag("core") }, () => {
         2,
       ),
     )
+    await expect(admin.saveButton()).toBeEnabled()
     await admin.clickSiteContentNav()
     await admin.expectUnsavedChangesModal()
     await admin.clickLeavePage()

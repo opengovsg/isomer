@@ -59,9 +59,7 @@ export class SiteAdminPO {
 
   async expectUnsavedChangesModal() {
     await expect(
-      this.page.getByRole("heading", {
-        name: "Leave this page without saving your settings?",
-      }),
+      this.page.getByText("Leave this page without saving your settings?"),
     ).toBeVisible()
   }
 
