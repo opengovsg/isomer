@@ -71,6 +71,18 @@ export class PageEditorPO {
       .waitFor({ state: "visible" })
   }
 
+  async expectPublishConflictError(permalink: string) {
+    await expect(
+      this.page.getByText(
+        `Can't publish — a redirect already exists at ${permalink}. Remove it on the Redirections page first.`,
+      ),
+    ).toBeVisible()
+  }
+
+  async dismissPublishConfirmation() {
+    await this.page.getByRole("button", { name: "No, don't publish" }).click()
+  }
+
   async expectPublishButtonVisible() {
     await expect(
       this.page.getByRole("button", { name: "Publish", exact: true }),

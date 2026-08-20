@@ -1,7 +1,15 @@
 import { expect, test } from "@playwright/test"
 import crypto from "crypto"
+import { TEST_EMAILS, roleTag } from "~e2e/fixtures/auth"
+import { mockTrpcMutationError } from "~e2e/fixtures/network"
 import { DashboardPO } from "~e2e/fixtures/po"
 import { SiteAdminPO } from "~e2e/fixtures/po"
+import {
+  resetSiteAgencySettings,
+  resetSiteFooter,
+  resetSiteNavbar,
+  resetSiteTheme,
+} from "~e2e/fixtures/reset"
 import { provisionE2ESite } from "~e2e/fixtures/site"
 import {
   expectFooterContains,
@@ -11,15 +19,6 @@ import {
 } from "~e2e/fixtures/site"
 import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { mockTrpcMutationError } from "../fixtures/network"
-import {
-  resetSiteAgencySettings,
-  resetSiteFooter,
-  resetSiteNavbar,
-  resetSiteTheme,
-} from "../fixtures/reset"
 
 let siteId: number
 let siteName: string

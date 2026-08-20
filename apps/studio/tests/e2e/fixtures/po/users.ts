@@ -214,6 +214,10 @@ export class UsersPO {
     await expect(this.tab(label).locator(".badge")).toHaveText(String(count))
   }
 
+  async expectTabBadgeVisible(label: "Your users" | "Isomer admins") {
+    await expect(this.tab(label).locator(".badge")).toBeVisible()
+  }
+
   async expectAddUsersEmptyPromptHidden() {
     await expect(
       this.page.getByText("Add users to start working with you on this site"),

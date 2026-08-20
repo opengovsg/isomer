@@ -1,20 +1,9 @@
 import { expect, test } from "@playwright/test"
 import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
-import { type SettingsSection, SitePO } from "~e2e/fixtures/po"
+import { PUBLISH_GATED_SETTINGS_SECTIONS, SitePO } from "~e2e/fixtures/po"
 import { provisionE2ESite } from "~e2e/fixtures/site"
 import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { RoleType } from "~prisma/generated/generatedEnums"
-
-/** Settings sections that render a Publish CTA (redirects publish inline instead). */
-const PUBLISH_GATED_SECTIONS: SettingsSection[] = [
-  "agency",
-  "colours",
-  "footer",
-  "integrations",
-  "logo",
-  "navbar",
-  "notification",
-]
 
 let siteId: number
 
@@ -36,7 +25,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     const site = new SitePO(page)
 
     // Arrange / Act / Assert
-    for (const section of PUBLISH_GATED_SECTIONS) {
+    for (const section of PUBLISH_GATED_SETTINGS_SECTIONS) {
       await site.gotoSettingsSection(siteId, section)
       await expect(site.publishButton()).not.toBeVisible()
     }
@@ -65,7 +54,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     const site = new SitePO(page)
 
     // Arrange / Act / Assert
-    for (const section of PUBLISH_GATED_SECTIONS) {
+    for (const section of PUBLISH_GATED_SETTINGS_SECTIONS) {
       await site.gotoSettingsSection(siteId, section)
       await expect(site.publishButton()).not.toBeVisible()
     }
