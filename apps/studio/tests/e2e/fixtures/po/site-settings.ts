@@ -368,18 +368,22 @@ export class SitePO {
   }
 
   /**
-   * Primary Call-to-Action section's on/off Switch (JsonFormsBoxedGroupControl)
-   * — first checkbox on the Customise tab. Scoped to the wrapping <label>
-   * (see askgovToggle() for why — clicking the checkbox input directly gets
-   * blocked by the label intercepting the pointer event).
+   * Primary Call-to-Action section's on/off Switch (JsonFormsBoxedGroupControl),
+   * matched by its aria-label rather than position. Scoped to the wrapping
+   * <label> (see askgovToggle() for why — clicking the checkbox input directly
+   * gets blocked by the label intercepting the pointer event).
    */
   ctaToggle() {
-    return this.page.getByRole("checkbox").first().locator("xpath=..")
+    return this.page
+      .getByRole("checkbox", { name: "Primary Call-to-Action" })
+      .locator("xpath=..")
   }
 
-  /** Utility links section's on/off Switch — always the last checkbox on the Customise tab, regardless of whether CTA is expanded. */
+  /** Utility links section's on/off Switch, matched by its aria-label. */
   utilityLinksToggle() {
-    return this.page.getByRole("checkbox").last().locator("xpath=..")
+    return this.page
+      .getByRole("checkbox", { name: "Utility links" })
+      .locator("xpath=..")
   }
 
   ctaButtonTextField() {
