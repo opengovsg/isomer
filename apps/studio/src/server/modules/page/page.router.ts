@@ -682,7 +682,7 @@ export const pageRouter = router({
           userId: user.id,
         })
 
-        // Allow-list rather than deny-list: only these four types are real,
+        // Allow-list rather than deny-list: only these five types are real,
         // independently unpublishable content pages.
         // - Folder/Collection ids belong to the dedicated unpublishFolder/
         //   unpublishCollection mutations (getFullPageById would otherwise
@@ -695,9 +695,11 @@ export const pageRouter = router({
         //   real sitemap entry by the static-site build (PAGE_RESOURCE_TYPES
         //   in tooling/build/scripts/publishing/constants.ts), so it needs a
         //   symmetric unpublish path just like Page/CollectionPage/IndexPage.
-        // - RootPage is publishable but deliberately excluded here as a
-        //   protection, matching the existing delete guard that also refuses
-        //   to touch RootPage (resource.router.ts).
+        // - RootPage shares this same publishPage/unpublishPage path too (see
+        //   RootpageRow's link to /pages/[pageId]), and unlike delete,
+        //   unpublishing it isn't destructive — the static-site build already
+        //   falls back to a generic homepage when it has no publishedVersionId
+        //   (see the sitemap fallback in tooling/build/scripts/publishing/index.ts).
         const page = await db
           .selectFrom("Resource")
           .where("Resource.id", "=", String(pageId))
@@ -707,6 +709,7 @@ export const pageRouter = router({
             ResourceType.CollectionPage,
             ResourceType.IndexPage,
             ResourceType.CollectionLink,
+            ResourceType.RootPage,
           ])
           .select("Resource.id")
           .executeTakeFirst()
