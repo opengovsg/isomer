@@ -1,10 +1,9 @@
-import { expect, test } from "@playwright/test"
+import { test } from "@playwright/test"
+import { TEST_EMAILS, roleTag } from "~e2e/fixtures/auth"
 import { UsersPO } from "~e2e/fixtures/po"
 import { provisionE2ESite } from "~e2e/fixtures/site"
 import { ensureUserOnboarded, seedManyEditorsOnSite } from "~e2e/fixtures/user"
 import { RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 
 // Plus the site's seeded admin, this puts the table one row past the
 // 25-row page size (UserTable.tsx), forcing a second page.
@@ -38,7 +37,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await users.expectTabCount("Your users", BULK_EDITOR_COUNT + 1)
     // Isomer-admin badge count is run-scoped (other tests may seed admins); tab
     // content is asserted in the Isomer admins tab test below.
-    await expect(users.tab("Isomer admins").locator(".badge")).toBeVisible()
+    await users.expectTabBadgeVisible("Isomer admins")
   })
 
   test("Isomer admins tab lists seeded godmode admins without an add-user prompt", async ({

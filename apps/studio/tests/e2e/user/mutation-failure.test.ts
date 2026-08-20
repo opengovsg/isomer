@@ -12,4 +12,8 @@ import { test } from "@playwright/test"
  * This test should cover: mutation error → modal stays open, form state
  * preserved, admin can fix input and submit again.
  */
-test.skip("mutation failures keep the modal open and permit retry", async () => {})
+test.skip("mutation failures keep the modal open and permit retry", async () => {
+  // Arrange
+  // Act
+  // Assert
+})

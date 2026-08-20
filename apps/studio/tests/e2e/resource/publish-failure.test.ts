@@ -1,13 +1,15 @@
-import { expect, test } from "@playwright/test"
-import { seedFolderWithPage } from "~e2e/fixtures/resource"
-import { getResource } from "~e2e/fixtures/resource"
+import { test } from "@playwright/test"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
+import { openSeededPageEditor } from "~e2e/fixtures/helpers"
+import {
+  expectResourceDraftBlobId,
+  expectResourceState,
+  seedFolderWithPage,
+} from "~e2e/fixtures/resource"
 import { deleteRedirectBySource, seedRedirect } from "~e2e/fixtures/site"
 import { provisionE2ESite } from "~e2e/fixtures/site"
 import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { ResourceState, RoleType } from "~prisma/generated/generatedEnums"
-
-import { roleTag, TEST_EMAILS } from "../fixtures/auth"
-import { openSeededPageEditor } from "../fixtures/helpers"
 
 let siteId: number
 
@@ -39,21 +41,13 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     // modal only auto-closes on success, so it's still open behind the toast.
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
     await editor.clickPublish()
-    await expect(
-      page.getByText(
-        `Can't publish — a redirect already exists at ${fullPermalink}. Remove it on the Redirections page first.`,
-      ),
-    ).toBeVisible()
-    await page.getByRole("button", { name: "No, don't publish" }).click()
+    await editor.expectPublishConflictError(fullPermalink)
+    await editor.dismissPublishConfirmation()
 
     // Assert: the draft is untouched by the failed attempt
     await editor.expectPublishButtonEnabled()
-    await expect
-      .poll(async () => (await getResource(seededPage.id))?.state)
-      .toBe(ResourceState.Draft)
-    await expect
-      .poll(async () => (await getResource(seededPage.id))?.draftBlobId)
-      .not.toBeNull()
+    await expectResourceState(seededPage.id).toBe(ResourceState.Draft)
+    await expectResourceDraftBlobId(seededPage.id).not.toBeNull()
   })
 
   test("publish succeeds after removing the blocking redirect", async ({
@@ -69,12 +63,8 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     })
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
     await editor.clickPublish()
-    await expect(
-      page.getByText(
-        `Can't publish — a redirect already exists at ${fullPermalink}. Remove it on the Redirections page first.`,
-      ),
-    ).toBeVisible()
-    await page.getByRole("button", { name: "No, don't publish" }).click()
+    await editor.expectPublishConflictError(fullPermalink)
+    await editor.dismissPublishConfirmation()
     await deleteRedirectBySource({ siteId, source: fullPermalink })
 
     // Act
@@ -82,11 +72,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     await editor.expectPublishedToast()
 
     // Assert
-    await expect
-      .poll(async () => (await getResource(seededPage.id))?.state)
-      .toBe(ResourceState.Published)
-    await expect
-      .poll(async () => (await getResource(seededPage.id))?.draftBlobId)
-      .toBeNull()
+    await expectResourceState(seededPage.id).toBe(ResourceState.Published)
+    await expectResourceDraftBlobId(seededPage.id).toBeNull()
   })
 })

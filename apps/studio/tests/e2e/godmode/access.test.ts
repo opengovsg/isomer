@@ -1,6 +1,7 @@
 import { test } from "@playwright/test"
-import { roleTag } from "~e2e/fixtures/auth"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
 import { GodmodePO } from "~e2e/fixtures/po"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
 
 const RESTRICTED_GODMODE_PATHS = [
   "/godmode",
@@ -10,6 +11,10 @@ const RESTRICTED_GODMODE_PATHS = [
 ] as const
 
 test.describe("core", { tag: roleTag("core") }, () => {
+  test.beforeEach(async () => {
+    await ensureUserOnboarded(TEST_EMAILS.core)
+  })
+
   test("core admin can access the godmode hub", async ({ page }) => {
     const godmode = new GodmodePO(page)
 
@@ -24,6 +29,10 @@ test.describe("core", { tag: roleTag("core") }, () => {
 })
 
 test.describe("migrator", { tag: roleTag("migrator") }, () => {
+  test.beforeEach(async () => {
+    await ensureUserOnboarded(TEST_EMAILS.migrator)
+  })
+
   test("migrator can only access whitelist godmode routes", async ({
     page,
   }) => {
@@ -45,6 +54,10 @@ test.describe("migrator", { tag: roleTag("migrator") }, () => {
 })
 
 test.describe("admin", { tag: roleTag("admin") }, () => {
+  test.beforeEach(async () => {
+    await ensureUserOnboarded(TEST_EMAILS.admin)
+  })
+
   test("site admin without godmode access is redirected", async ({ page }) => {
     const godmode = new GodmodePO(page)
 
