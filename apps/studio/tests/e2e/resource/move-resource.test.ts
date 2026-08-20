@@ -161,7 +161,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await ensureUserOnboarded(TEST_EMAILS.editor)
   })
 
-  test("editor cannot move a root-level page when the menu hides move", async ({
+  test("editor cannot move a root-level page when the menu disables move", async ({
     page,
   }) => {
     // Arrange
@@ -174,10 +174,10 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await dashboard.openResourceMenu(pageTitle)
 
     // Assert
-    await dashboard.expectMoveMenuHidden()
+    await dashboard.expectMoveMenuDisabled()
   })
 
-  test("editor cannot move a root-level folder when the menu hides move", async ({
+  test("editor cannot move a root-level folder when the menu disables move", async ({
     page,
   }) => {
     // Arrange
@@ -190,11 +190,11 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await dashboard.openResourceMenu(folderTitle)
 
     // Assert
-    await dashboard.expectMoveMenuHidden()
+    await dashboard.expectMoveMenuDisabled()
     await expectResourceParentId(folder.id).toBeNull()
   })
 
-  test("editor cannot move a root-level collection when the menu hides move", async ({
+  test("editor cannot move a root-level collection when the menu disables move", async ({
     page,
   }) => {
     // Arrange
@@ -210,7 +210,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await dashboard.openResourceMenu(collectionTitle)
 
     // Assert
-    await dashboard.expectMoveMenuHidden()
+    await dashboard.expectMoveMenuDisabled()
     await expectResourceParentId(collection.id).toBeNull()
   })
 })
