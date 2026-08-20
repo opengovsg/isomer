@@ -1,8 +1,9 @@
 import type { IsomerSiteConfigProps } from "@opengovsg/isomer-components"
 import { sql } from "kysely"
 import { db, jsonb } from "~/server/modules/database"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
-export { ensureUserOnboarded } from "./user"
+export { ensureUserOnboarded } from "./user/mutations"
 
 const DEFAULT_AGENCY_SITE_NAME = "Isomer"
 
@@ -63,21 +64,6 @@ export const resetSiteTheme = (siteId: number) =>
     .updateTable("Site")
     .set({ theme: jsonb(DEFAULT_SITE_THEME) })
     .where("id", "=", siteId)
-    .execute()
-
-/** Delete a single resource row created during a test. */
-export const deleteResource = (resourceId: string) =>
-  db.deleteFrom("Resource").where("id", "=", resourceId).execute()
-
-/** Delete resources on a site whose title matches a SQL LIKE pattern. */
-export const deleteResourcesByTitleLike = (
-  siteId: number,
-  titlePattern: string,
-) =>
-  db
-    .deleteFrom("Resource")
-    .where("siteId", "=", siteId)
-    .where("title", "like", titlePattern)
     .execute()
 
 // Defaults mirror tests/integration/helpers/seed/index.ts setupSite().
@@ -146,42 +132,11 @@ export const resetSiteNavbar = (siteId: number) =>
     .where("siteId", "=", siteId)
     .execute()
 
-/** Seed 8 top-level navbar items (the schema's maxItems) for max-limit tests. */
-export const resetSiteNavbarAtMaxItems = (siteId: number) =>
-  db
-    .updateTable("Navbar")
-    .set({
-      content: jsonb({
-        items: Array.from({ length: 8 }, (_, i) => ({
-          name: `Max item ${i + 1}`,
-          url: `/max-item-${i + 1}`,
-        })),
-      }),
-    })
-    .where("siteId", "=", siteId)
-    .execute()
-
 /** Restore footer content to the provisioned-site default. */
 export const resetSiteFooter = (siteId: number) =>
   db
     .updateTable("Footer")
     .set({ content: jsonb(DEFAULT_FOOTER_CONTENT) })
-    .where("siteId", "=", siteId)
-    .execute()
-
-/** Seed footer column 1 with 8 links (the schema's maxItems) for max-limit tests. */
-export const resetSiteFooterColumn1AtMaxItems = (siteId: number) =>
-  db
-    .updateTable("Footer")
-    .set({
-      content: jsonb({
-        ...DEFAULT_FOOTER_CONTENT,
-        siteNavItems: Array.from({ length: 8 }, (_, i) => ({
-          url: `/max-item-${i + 1}`,
-          title: `Max item ${i + 1}`,
-        })),
-      }),
-    })
     .where("siteId", "=", siteId)
     .execute()
 
@@ -239,3 +194,37 @@ export const resetSiteLogoSettings = async (siteId: number) => {
 /** Remove all redirects for a site (used between mutating redirect tests). */
 export const resetSiteRedirects = (siteId: number) =>
   db.deleteFrom("Redirect").where("siteId", "=", siteId).execute()
+
+/** Delete Resource rows whose title starts with the given prefix. */
+export const deleteResourcesByTitlePrefix = (
+  siteId: number,
+  titlePrefix: string,
+) =>
+  db
+    .deleteFrom("Resource")
+    .where("siteId", "=", siteId)
+    .where("title", "like", `${titlePrefix}%`)
+    .execute()
+
+/** Delete Collection resources (and their children) whose title starts with the given prefix. */
+export const deleteCollectionsByTitlePrefix = async (
+  siteId: number,
+  titlePrefix: string,
+) => {
+  const collections = await db
+    .selectFrom("Resource")
+    .where("siteId", "=", siteId)
+    .where("title", "like", `${titlePrefix}%`)
+    .where("type", "=", ResourceType.Collection)
+    .select("id")
+    .execute()
+
+  for (const { id } of collections) {
+    await db.deleteFrom("Resource").where("parentId", "=", id).execute()
+    await db.deleteFrom("Resource").where("id", "=", id).execute()
+  }
+}
+
+/** Delete a single Resource row by id. */
+export const deleteResourceById = (resourceId: string) =>
+  db.deleteFrom("Resource").where("id", "=", resourceId).execute()

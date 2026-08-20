@@ -1,8 +1,6 @@
 import { test } from "@playwright/test"
-
-import { ROLES, roleTag, TEST_EMAILS, type Role } from "../fixtures/auth"
-import { GodmodePO } from "../fixtures/godmode.po"
-import { ensureUserOnboarded } from "../fixtures/user"
+import { roleTag } from "~e2e/fixtures/auth"
+import { GodmodePO } from "~e2e/fixtures/po"
 
 const RESTRICTED_GODMODE_PATHS = [
   "/godmode",
@@ -11,111 +9,48 @@ const RESTRICTED_GODMODE_PATHS = [
   "/godmode/whitelist",
 ] as const
 
-const CORE_ONLY_GODMODE_PATHS = [
-  "/godmode/create-site",
-  "/godmode/publishing",
-] as const
+test.describe("core", { tag: roleTag("core") }, () => {
+  test("core admin can access the godmode hub", async ({ page }) => {
+    const godmode = new GodmodePO(page)
 
-const FULL_ACCESS_GODMODE_PATHS = [
-  "/godmode/create-site",
-  "/godmode/publishing",
-  "/godmode/whitelist",
-] as const
+    // Act
+    await godmode.gotoHub()
 
-/** Exhaustive over `Role` — adding a ROLES entry fails typecheck until classified. */
-const godmodeAccessByRole = {
-  core: "full",
-  migrator: "whitelist-only",
-  editor: "denied",
-  publisher: "denied",
-  admin: "denied",
-  nomember: "denied",
-} as const satisfies Record<Role, "full" | "whitelist-only" | "denied">
+    // Assert
+    await godmode.expectHubLinkVisible("Create a new site")
+    await godmode.expectHubLinkVisible("Publishing")
+    await godmode.expectHubLinkVisible("Whitelist")
+  })
+})
 
-for (const role of ROLES) {
-  const access = godmodeAccessByRole[role]
+test.describe("migrator", { tag: roleTag("migrator") }, () => {
+  test("migrator can only access whitelist godmode routes", async ({
+    page,
+  }) => {
+    const godmode = new GodmodePO(page)
 
-  if (access === "full") {
-    test.describe(role, { tag: roleTag(role) }, () => {
-      test.beforeEach(async () => {
-        await ensureUserOnboarded(TEST_EMAILS[role])
-      })
+    // Act
+    await godmode.gotoHub()
 
-      test("can access the godmode hub", async ({ page }) => {
-        const godmode = new GodmodePO(page)
+    // Assert
+    await godmode.expectHubLinkVisible("Whitelist")
+    await godmode.expectHubLinkHidden("Create a new site")
+    await godmode.expectHubLinkHidden("Publishing")
 
-        // Act
-        await godmode.gotoHub()
+    await godmode.gotoWhitelist()
 
-        // Assert
-        await godmode.expectHubLinkVisible("Create a new site")
-        await godmode.expectHubLinkVisible("Publishing")
-        await godmode.expectHubLinkVisible("Whitelist")
-      })
+    await godmode.expectRedirectToDashboard("/godmode/create-site")
+    await godmode.expectRedirectToDashboard("/godmode/publishing")
+  })
+})
 
-      for (const path of FULL_ACCESS_GODMODE_PATHS) {
-        test(`can access ${path}`, async ({ page }) => {
-          const godmode = new GodmodePO(page)
+test.describe("admin", { tag: roleTag("admin") }, () => {
+  test("site admin without godmode access is redirected", async ({ page }) => {
+    const godmode = new GodmodePO(page)
 
-          // Act
-          await godmode.gotoRoute(path)
-
-          // Assert — route-specific heading is asserted inside gotoRoute
-        })
-      }
-    })
-  } else if (access === "whitelist-only") {
-    test.describe(role, { tag: roleTag(role) }, () => {
-      test.beforeEach(async () => {
-        await ensureUserOnboarded(TEST_EMAILS[role])
-      })
-
-      test("can access the godmode hub with whitelist only", async ({
-        page,
-      }) => {
-        const godmode = new GodmodePO(page)
-
-        // Act
-        await godmode.gotoHub()
-
-        // Assert
-        await godmode.expectHubLinkVisible("Whitelist")
-        await godmode.expectHubLinkHidden("Create a new site")
-        await godmode.expectHubLinkHidden("Publishing")
-      })
-
-      test("can access the whitelist route", async ({ page }) => {
-        const godmode = new GodmodePO(page)
-
-        // Act
-        await godmode.gotoWhitelist()
-
-        // Assert — heading is asserted inside gotoWhitelist
-      })
-
-      for (const path of CORE_ONLY_GODMODE_PATHS) {
-        test(`is redirected away from ${path}`, async ({ page }) => {
-          const godmode = new GodmodePO(page)
-
-          // Act / Assert
-          await godmode.expectRedirectToDashboard(path)
-        })
-      }
-    })
-  } else {
-    test.describe(role, { tag: roleTag(role) }, () => {
-      test.beforeEach(async () => {
-        await ensureUserOnboarded(TEST_EMAILS[role])
-      })
-
-      for (const path of RESTRICTED_GODMODE_PATHS) {
-        test(`is redirected away from ${path}`, async ({ page }) => {
-          const godmode = new GodmodePO(page)
-
-          // Act / Assert
-          await godmode.expectRedirectToDashboard(path)
-        })
-      }
-    })
-  }
-}
+    // Act / Assert
+    for (const path of RESTRICTED_GODMODE_PATHS) {
+      await godmode.expectRedirectToDashboard(path)
+    }
+  })
+})

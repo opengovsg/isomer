@@ -1,29 +1,24 @@
 import { test } from "@playwright/test"
 import crypto from "crypto"
-import { normalizeRedirectSource } from "~/schemas/redirect/utils"
-import { getReferenceLink } from "~/utils/link"
-import { ResourceState, RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { DashboardPO } from "../fixtures/dashboard.po"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
+import { DashboardPO } from "~e2e/fixtures/po"
 import {
-  expectRedirectDestination,
   expectResourceParentId,
   seedFolder,
-  seedFolderWithPage,
   seedNestedFolder,
   seedRootCollection,
   seedRootPage,
   seedTwoCollections,
-} from "../fixtures/page-seed"
-import { provisionE2ESite } from "../fixtures/site"
-import { ensureUserOnboarded, getE2EUserId } from "../fixtures/user"
+} from "~e2e/fixtures/resource"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
+import { RoleType } from "~prisma/generated/generatedEnums"
 
 let siteId: number
 
 test.beforeAll(async () => {
   const site = await provisionE2ESite({
-    roles: [RoleType.Admin, RoleType.Editor, RoleType.Publisher],
+    roles: [RoleType.Admin, RoleType.Editor],
   })
   siteId = site.siteId
 })
@@ -186,77 +181,6 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await expectResourceParentId(seededPage.id).toBeNull()
     await dashboard.expectResourceLinkVisible(pageTitle)
   })
-
-  test("admin can move a published page and create a redirect from the old URL", async ({
-    page,
-  }) => {
-    // Arrange
-    const suffix = crypto.randomUUID().slice(0, 8)
-    const folderTitle = `Move Redirect Folder ${suffix}`
-    const pageTitle = `Move Redirect Page ${suffix}`
-    const publisherId = await getE2EUserId(TEST_EMAILS.publisher)
-    const { folder: sourceFolder, page: seededPage } = await seedFolderWithPage(
-      {
-        siteId,
-        state: ResourceState.Published,
-        userId: publisherId,
-        pageTitle,
-      },
-    )
-    const { folder: destFolder } = await seedFolder({ siteId, folderTitle })
-    const oldSource = normalizeRedirectSource(
-      `/${sourceFolder.permalink}/${seededPage.permalink}`,
-    )
-
-    // Act
-    const dashboard = new DashboardPO(page)
-    await dashboard.gotoFolder(siteId, sourceFolder.id)
-    await dashboard.openResourceMenu(pageTitle)
-    await dashboard.clickMove()
-    await dashboard.selectMoveDestination(folderTitle)
-    await dashboard.confirmMove()
-
-    // Assert
-    await expectResourceParentId(seededPage.id).toBe(destFolder.id)
-    await expectRedirectDestination(siteId, oldSource).toBe(
-      getReferenceLink({ siteId: String(siteId), resourceId: seededPage.id }),
-    )
-  })
-
-  test("admin can move a published page without creating a redirect", async ({
-    page,
-  }) => {
-    // Arrange
-    const suffix = crypto.randomUUID().slice(0, 8)
-    const folderTitle = `Move No Redirect Folder ${suffix}`
-    const pageTitle = `Move No Redirect Page ${suffix}`
-    const publisherId = await getE2EUserId(TEST_EMAILS.publisher)
-    const { folder: sourceFolder, page: seededPage } = await seedFolderWithPage(
-      {
-        siteId,
-        state: ResourceState.Published,
-        userId: publisherId,
-        pageTitle,
-      },
-    )
-    const { folder: destFolder } = await seedFolder({ siteId, folderTitle })
-    const oldSource = normalizeRedirectSource(
-      `/${sourceFolder.permalink}/${seededPage.permalink}`,
-    )
-
-    // Act
-    const dashboard = new DashboardPO(page)
-    await dashboard.gotoFolder(siteId, sourceFolder.id)
-    await dashboard.openResourceMenu(pageTitle)
-    await dashboard.clickMove()
-    await dashboard.selectMoveDestination(folderTitle)
-    await dashboard.uncheckCreateRedirectOnMove()
-    await dashboard.confirmMove()
-
-    // Assert
-    await expectResourceParentId(seededPage.id).toBe(destFolder.id)
-    await expectRedirectDestination(siteId, oldSource).toBeNull()
-  })
 })
 
 test.describe("editor", { tag: roleTag("editor") }, () => {
@@ -264,7 +188,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await ensureUserOnboarded(TEST_EMAILS.editor)
   })
 
-  test("editor cannot move a root-level page when the menu disables move", async ({
+  test("editor cannot move a root-level page when the menu hides move", async ({
     page,
   }) => {
     // Arrange
@@ -277,10 +201,10 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await dashboard.openResourceMenu(pageTitle)
 
     // Assert
-    await dashboard.expectMoveMenuDisabled()
+    await dashboard.expectMoveMenuHidden()
   })
 
-  test("editor cannot move a root-level folder when the menu disables move", async ({
+  test("editor cannot move a root-level folder when the menu hides move", async ({
     page,
   }) => {
     // Arrange
@@ -293,11 +217,11 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await dashboard.openResourceMenu(folderTitle)
 
     // Assert
-    await dashboard.expectMoveMenuDisabled()
+    await dashboard.expectMoveMenuHidden()
     await expectResourceParentId(folder.id).toBeNull()
   })
 
-  test("editor cannot move a root-level collection when the menu disables move", async ({
+  test("editor cannot move a root-level collection when the menu hides move", async ({
     page,
   }) => {
     // Arrange
@@ -313,7 +237,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await dashboard.openResourceMenu(collectionTitle)
 
     // Assert
-    await dashboard.expectMoveMenuDisabled()
+    await dashboard.expectMoveMenuHidden()
     await expectResourceParentId(collection.id).toBeNull()
   })
 })

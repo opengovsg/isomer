@@ -1,23 +1,23 @@
 import { expect, test } from "@playwright/test"
 import crypto from "crypto"
+import { CollectionLinkPO } from "~e2e/fixtures/po"
+import { DashboardPO } from "~e2e/fixtures/po"
+import { PageEditorPO } from "~e2e/fixtures/po"
+import { getResource } from "~e2e/fixtures/resource"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { ResourceState, RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { CollectionLinkPO } from "../fixtures/collection-link.po"
 import {
   getCollectionItemTitles,
   getIndexPageId,
 } from "../fixtures/collection.db"
-import { DashboardPO } from "../fixtures/dashboard.po"
 import {
   createCollectionLinkViaWizard,
   createCollectionPageViaWizard,
   createCollectionViaWizard,
 } from "../fixtures/helpers"
-import { PageEditorPO } from "../fixtures/page-editor.po"
-import { getResource } from "../fixtures/resource.db"
-import { provisionE2ESite } from "../fixtures/site"
-import { ensureUserOnboarded } from "../fixtures/user"
 
 const UNIQUE = (label: string) =>
   `E2E ${label} ${crypto.randomUUID().slice(0, 8)}`

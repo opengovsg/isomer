@@ -1,9 +1,7 @@
 import { test } from "@playwright/test"
 import crypto from "crypto"
-import { RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { DashboardPO } from "../fixtures/dashboard.po"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
+import { DashboardPO } from "~e2e/fixtures/po"
 import {
   expectResourceAbsent,
   expectResourcePresent,
@@ -13,9 +11,10 @@ import {
   seedFolderWithPage,
   seedRootCollection,
   seedRootPage,
-} from "../fixtures/page-seed"
-import { provisionE2ESite } from "../fixtures/site"
-import { ensureUserOnboarded } from "../fixtures/user"
+} from "~e2e/fixtures/resource"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
+import { RoleType } from "~prisma/generated/generatedEnums"
 
 let siteId: number
 
@@ -162,7 +161,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await ensureUserOnboarded(TEST_EMAILS.editor)
   })
 
-  test("editor cannot delete a root-level page when the menu disables delete", async ({
+  test("editor cannot delete a root-level page when the menu hides delete", async ({
     page,
   }) => {
     // Arrange
@@ -175,10 +174,10 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await dashboard.openResourceMenu(pageTitle)
 
     // Assert
-    await dashboard.expectDeleteMenuDisabled()
+    await dashboard.expectDeleteMenuHidden()
   })
 
-  test("editor cannot delete a root-level folder when the menu disables delete", async ({
+  test("editor cannot delete a root-level folder when the menu hides delete", async ({
     page,
   }) => {
     // Arrange
@@ -195,11 +194,11 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await dashboard.openResourceMenu(folderTitle)
 
     // Assert
-    await dashboard.expectDeleteMenuDisabled()
+    await dashboard.expectDeleteMenuHidden()
     await expectResourcePresent(folder.id).not.toBeNull()
   })
 
-  test("editor cannot delete a root-level collection when the menu disables delete", async ({
+  test("editor cannot delete a root-level collection when the menu hides delete", async ({
     page,
   }) => {
     // Arrange
@@ -215,7 +214,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await dashboard.openResourceMenu(collectionTitle)
 
     // Assert
-    await dashboard.expectDeleteMenuDisabled()
+    await dashboard.expectDeleteMenuHidden()
     await expectResourcePresent(collection.id).not.toBeNull()
   })
 })

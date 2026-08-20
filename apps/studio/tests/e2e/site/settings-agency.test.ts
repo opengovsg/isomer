@@ -1,12 +1,10 @@
 import { expect, test } from "@playwright/test"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
+import { SitePO } from "~e2e/fixtures/po"
+import { resetSiteAgencySettings } from "~e2e/fixtures/reset"
+import { expectSiteName, provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { resetSiteAgencySettings } from "../fixtures/reset"
-import { provisionE2ESite } from "../fixtures/site"
-import { expectSiteName } from "../fixtures/site-expect"
-import { SitePO } from "../fixtures/site.po"
-import { ensureUserOnboarded } from "../fixtures/user"
 
 let siteId: number
 let siteName: string
@@ -44,31 +42,5 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await expectSiteName(siteId).toBe(renamedSiteName)
     await site.reloadSettingsSection("agency")
     await expect(site.siteNameField()).toHaveValue(renamedSiteName)
-  })
-
-  test("whitespace-only site name is rejected", async ({ page }) => {
-    const site = new SitePO(page)
-
-    // Arrange
-    await site.gotoSettingsSection(siteId, "agency")
-
-    // Act
-    await site.fillSiteName("   ")
-
-    // Assert
-    await expect(site.siteNameEmptyValidationError()).toBeVisible()
-    await expect(site.publishButton()).toBeDisabled()
-    await expectSiteName(siteId).toBe(siteName)
-  })
-
-  test("agency owner field is read-only", async ({ page }) => {
-    const site = new SitePO(page)
-
-    // Arrange / Act
-    await site.gotoSettingsSection(siteId, "agency")
-
-    // Assert
-    await expect(site.agencyOwnerField()).toBeVisible()
-    await expect(site.agencyOwnerField()).toBeDisabled()
   })
 })

@@ -1,13 +1,13 @@
 import { expect, test } from "@playwright/test"
+import { seedFolderWithPage } from "~e2e/fixtures/resource"
+import { getResource } from "~e2e/fixtures/resource"
+import { deleteRedirectBySource, seedRedirect } from "~e2e/fixtures/site"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { ResourceState, RoleType } from "~prisma/generated/generatedEnums"
 
 import { roleTag, TEST_EMAILS } from "../fixtures/auth"
 import { openSeededPageEditor } from "../fixtures/helpers"
-import { seedFolderWithPage } from "../fixtures/page-seed"
-import { deleteRedirectBySource, seedRedirect } from "../fixtures/redirect.db"
-import { getResource } from "../fixtures/resource.db"
-import { provisionE2ESite } from "../fixtures/site"
-import { ensureUserOnboarded } from "../fixtures/user"
 
 let siteId: number
 
