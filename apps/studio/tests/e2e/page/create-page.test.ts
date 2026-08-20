@@ -3,10 +3,7 @@ import crypto from "crypto"
 import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
 import { createPageViaWizard } from "~e2e/fixtures/helpers"
 import { DashboardPO, PageEditorPO } from "~e2e/fixtures/po"
-import {
-  deleteResourceById,
-  deleteResourcesByTitlePrefix,
-} from "~e2e/fixtures/reset"
+import { deleteResourceById } from "~e2e/fixtures/reset"
 import { getResourceByTitle, seedFolder } from "~e2e/fixtures/resource"
 import { provisionE2ESite } from "~e2e/fixtures/site"
 import { ensureUserOnboarded } from "~e2e/fixtures/user"
@@ -24,12 +21,17 @@ test.beforeAll(async () => {
 })
 
 test.describe("admin", { tag: roleTag("admin") }, () => {
+  let createdPageId: string | undefined
+
   test.beforeEach(async () => {
     await ensureUserOnboarded(TEST_EMAILS.admin)
+    createdPageId = undefined
   })
 
   test.afterEach(async () => {
-    await deleteResourcesByTitlePrefix(siteId, "E2E Test Page ")
+    if (createdPageId) {
+      await deleteResourceById(createdPageId)
+    }
   })
 
   test("admin can create a new page via the wizard", async ({ page }) => {
@@ -50,6 +52,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     expect(created?.state).toBe("Draft")
     expect(created?.type).toBe("Page")
     expect(created?.parentId).toBeNull()
+    createdPageId = created?.id
   })
 })
 

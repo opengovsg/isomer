@@ -30,6 +30,8 @@ test.beforeAll(async () => {
 })
 
 test.describe("admin", { tag: roleTag("admin") }, () => {
+  test.describe.configure({ mode: "serial" })
+
   test.beforeEach(async ({ page }) => {
     await mockAssetUploadRoutes(page)
     await mockPresignedPutUrl(page)

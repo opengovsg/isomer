@@ -57,6 +57,38 @@ test.beforeAll(async () => {
 - Use `resetSite*` from `~e2e/fixtures/reset` in `beforeEach` for idempotent settings state
 - `provisionE2ESite` creates root + search pages so the dashboard loads
 
+### Serial mode for shared mutable settings
+
+When 2+ tests in the same `describe` mutate the **same** `siteId`'s persisted settings (e.g. fill a form + publish, then assert the saved value), add `test.describe.configure({ mode: "serial" })` right after the `describe` opens. Playwright may otherwise run those tests in different workers/order, racing writes to the same row. Not needed when tests only read, or when a `describe` has a single test — see `site/settings-common.test.ts`, `settings-footer.test.ts`, `settings-logo.test.ts`, `settings-navbar.test.ts`, `settings-notification.test.ts`, `settings-colours.test.ts`, `settings-integrations.test.ts`, `settings-redirects.test.ts`, `admin-save.test.ts` for the pattern.
+
+## Resource cleanup
+
+Track the exact resource(s) a test creates and delete by ID in `afterEach` — do not delete by title prefix scoped to `siteId`. A title-prefix delete removes every matching row for the site, including ones a concurrently-running test (same file, parallel worker) just created and hasn't asserted on yet.
+
+```ts
+test.describe("admin", { tag: roleTag("admin") }, () => {
+  let createdPageId: string | undefined
+
+  test.beforeEach(async () => {
+    await ensureUserOnboarded(TEST_EMAILS.admin)
+    createdPageId = undefined
+  })
+
+  test.afterEach(async () => {
+    if (createdPageId) {
+      await deleteResourceById(createdPageId)
+    }
+  })
+
+  test("admin can create a new page via the wizard", async ({ page }) => {
+    // ...
+    createdPageId = created?.id
+  })
+})
+```
+
+`deleteResourcesByTitlePrefix` / `deleteCollectionsByTitlePrefix` were removed for this reason — don't reintroduce title-prefix cleanup helpers.
+
 ## Settings publisher gate
 
 Publisher permission gates for settings Publish buttons live in **one** file: `site/settings-permissions.test.ts`. Add new Publish-gated sections to `PUBLISH_GATED_SETTINGS_SECTIONS` in `fixtures/po/site-settings.ts` — do not repeat permission-gate tests in individual settings happy-path files.
@@ -86,6 +118,10 @@ POs live in `fixtures/po/` (`import from "~e2e/fixtures/po"`). One PO per UI sur
 | `UsersPO`          | `users.ts`            | Collaborators page         |
 
 Constructor takes `Page`. No DB setup in POs.
+
+### Locators: match by label, not position
+
+Prefer `getByRole(role, { name })` / `getByLabel(...)` matched against the control's visible/aria label over positional locators like `getByRole("checkbox").first()/.last()` or `page.locator("textarea").nth(1)`. Positional locators silently point at the wrong element the moment a sibling control is added, reordered, or conditionally rendered. If the underlying component has no accessible name yet, add `aria-label={label}` to it (see `JsonFormsBoxedGroupControl.tsx`, `godmode/whitelist.tsx`) rather than falling back to position in the PO.
 
 ### `page.*` in test files
 
@@ -127,3 +163,6 @@ Examples: `expectResourceAbsent`, `expectResourceTitle`, `expectSiteName`, `expe
 | Inline `db.selectFrom` in `*.test.ts`   | `fixtures/<entity>/db.ts` or `expect.ts`            |
 | `page.waitForURL` for dashboard nav     | `DashboardPO.expectOnFolder` / `expectOnPageEditor` |
 | Any other `page.*` in `*.test.ts`       | PO or helper for that surface                       |
+| Delete-by-title-prefix in `afterEach`   | Track created ID(s), `deleteResourceById`           |
+| `.first()`/`.last()`/`.nth()` on a labeled control | `getByRole(role, { name })` / `getByLabel`, adding `aria-label` if missing |
+| 2+ tests in one `describe` mutating the same shared `siteId` settings, no serial mode | `test.describe.configure({ mode: "serial" })` |

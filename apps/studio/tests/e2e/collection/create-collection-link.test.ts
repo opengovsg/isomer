@@ -3,7 +3,7 @@ import crypto from "crypto"
 import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
 import { createCollectionLinkViaWizard } from "~e2e/fixtures/helpers"
 import { CollectionLinkPO } from "~e2e/fixtures/po"
-import { deleteResourcesByTitlePrefix } from "~e2e/fixtures/reset"
+import { deleteResourceById } from "~e2e/fixtures/reset"
 import { getResource, seedCollection } from "~e2e/fixtures/resource"
 import { provisionE2ESite } from "~e2e/fixtures/site"
 import { ensureUserOnboarded } from "~e2e/fixtures/user"
@@ -25,12 +25,17 @@ test.beforeAll(async () => {
 })
 
 test.describe("admin", { tag: roleTag("admin") }, () => {
+  let createdLinkId: string | undefined
+
   test.beforeEach(async () => {
     await ensureUserOnboarded(TEST_EMAILS.admin)
+    createdLinkId = undefined
   })
 
   test.afterEach(async () => {
-    await deleteResourcesByTitlePrefix(siteId, "E2E Collection Link ")
+    if (createdLinkId) {
+      await deleteResourceById(createdLinkId)
+    }
   })
 
   test("admin can create a collection link via the wizard", async ({
@@ -44,6 +49,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
       collectionId,
       title,
     })
+    createdLinkId = linkId
     await new CollectionLinkPO(page).expectLoaded()
 
     // Assert
@@ -56,12 +62,17 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 })
 
 test.describe("editor", { tag: roleTag("editor") }, () => {
+  let createdLinkId: string | undefined
+
   test.beforeEach(async () => {
     await ensureUserOnboarded(TEST_EMAILS.editor)
+    createdLinkId = undefined
   })
 
   test.afterEach(async () => {
-    await deleteResourcesByTitlePrefix(siteId, "E2E Collection Link ")
+    if (createdLinkId) {
+      await deleteResourceById(createdLinkId)
+    }
   })
 
   test("editor can create a collection link via the wizard", async ({
@@ -75,6 +86,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
       collectionId,
       title,
     })
+    createdLinkId = linkId
     await new CollectionLinkPO(page).expectLoaded()
 
     // Assert

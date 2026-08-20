@@ -3,10 +3,7 @@ import crypto from "crypto"
 import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
 import { createCollectionViaWizard } from "~e2e/fixtures/helpers"
 import { DashboardPO } from "~e2e/fixtures/po"
-import {
-  deleteCollectionsByTitlePrefix,
-  deleteResourceById,
-} from "~e2e/fixtures/reset"
+import { deleteResourceById } from "~e2e/fixtures/reset"
 import {
   getResource,
   getResourceByTitle,
@@ -23,6 +20,8 @@ const UNIQUE_TITLE = () =>
 let siteId: number
 
 test.describe("admin", { tag: roleTag("admin") }, () => {
+  let createdCollectionId: string | undefined
+
   test.beforeAll(async () => {
     const site = await provisionE2ESite({ roles: [RoleType.Admin] })
     siteId = site.siteId
@@ -30,10 +29,13 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
   test.beforeEach(async () => {
     await ensureUserOnboarded(TEST_EMAILS.admin)
+    createdCollectionId = undefined
   })
 
   test.afterEach(async () => {
-    await deleteCollectionsByTitlePrefix(siteId, "E2E Test Collection ")
+    if (createdCollectionId) {
+      await deleteResourceById(createdCollectionId)
+    }
   })
 
   test("admin can create a collection via the Create new wizard", async ({
@@ -54,6 +56,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     })
     expect(created).toBeTruthy()
     expect(created?.type).toBe("Collection")
+    createdCollectionId = created?.id
   })
 
   test("admin can close the create collection modal without creating a collection", async ({
