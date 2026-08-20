@@ -89,7 +89,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await ensureUserOnboarded(TEST_EMAILS.editor)
   })
 
-  test("editor does not see the Publish button on the page editor", async ({
+  test("editor sees a disabled Publish button on the page editor", async ({
     page,
   }) => {
     // Arrange
@@ -99,6 +99,6 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
 
     // Assert
-    await editor.expectPublishButtonHidden()
+    await editor.expectPublishButtonDisabled()
   })
 })

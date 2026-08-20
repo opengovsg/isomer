@@ -89,12 +89,6 @@ export class PageEditorPO {
     ).toBeVisible()
   }
 
-  async expectPublishButtonHidden() {
-    await expect(
-      this.page.getByRole("button", { name: "Publish", exact: true }),
-    ).not.toBeVisible()
-  }
-
   async expectPublishButtonDisabled() {
     await expect(
       this.page.getByRole("button", { name: "Publish", exact: true }),
@@ -107,10 +101,10 @@ export class PageEditorPO {
     ).toBeEnabled()
   }
 
-  async expectScheduleOptionsHidden() {
+  async expectScheduleOptionsDisabled() {
     await expect(
       this.page.getByRole("button", { name: "More options" }),
-    ).not.toBeVisible()
+    ).toBeDisabled()
   }
 
   async openScheduleModal() {
