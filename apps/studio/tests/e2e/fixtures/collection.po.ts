@@ -11,6 +11,15 @@ export class CollectionPO {
     )
   }
 
+  async expectIndexAccessDenied() {
+    await expect(
+      this.page.getByText("You don't have access to edit this page."),
+    ).toBeVisible()
+    await expect(
+      this.page.getByRole("button", { name: "Back to Site Content" }),
+    ).toBeVisible()
+  }
+
   async reload() {
     await this.page.reload()
   }

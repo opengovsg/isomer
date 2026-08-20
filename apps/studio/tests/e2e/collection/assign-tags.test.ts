@@ -6,13 +6,12 @@ import {
   createCollectionLink,
   createCollectionPage,
   createCollectionWithTagCategories,
-  getRootPageId,
-  readBlobContent,
 } from "../fixtures/collection"
 import { CollectionLinkPO } from "../fixtures/collection-link.po"
+import { getRootPageId } from "../fixtures/collection.db"
 import { CollectionPO } from "../fixtures/collection.po"
 import { PageEditorPO } from "../fixtures/page-editor.po"
-import { getResource } from "../fixtures/resource.db"
+import { getResourceDraftTagged } from "../fixtures/resource.db"
 import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
 
@@ -72,9 +71,8 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await collection.saveArticleHeaderChanges()
 
     // Assert
-    const resource = await getResource(collectionPage.id)
-    const content = await readBlobContent(resource?.draftBlobId ?? "")
-    expect(content.page.tagged).toEqual(
+    const tagged = await getResourceDraftTagged(collectionPage.id)
+    expect(tagged).toEqual(
       expect.arrayContaining([REQUIRED_OPTION_ID, OPTIONAL_OPTION_ID]),
     )
   })
@@ -104,8 +102,8 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await collection.saveCollectionLink()
 
     // Assert
-    const content = await readBlobContent(link.draftBlobId!)
-    expect(content.page.tagged).toEqual(
+    const tagged = await getResourceDraftTagged(link.id)
+    expect(tagged).toEqual(
       expect.arrayContaining([REQUIRED_OPTION_ID, OPTIONAL_OPTION_ID]),
     )
   })
