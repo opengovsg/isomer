@@ -6,6 +6,17 @@ import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
 import { UsersPO } from "../fixtures/users.po"
 
+/**
+ * Permission gates for the collaborators page — who cannot manage users.
+ *
+ * `userManageAccessByRole` classifies every Playwright role for exhaustiveness,
+ * but this file only implements denied cases (read-only UI or redirect). Roles
+ * marked `"allowed"` exercise happy paths in sibling `user/*.test.ts` files
+ * (e.g. `invite-user.test.ts` for agency admin invite flows).
+ *
+ * Godmode (`core` / `migrator`) manage-users coverage is deferred to a follow-up
+ * outside this PR.
+ */
 /** Exhaustive over `Role` — adding a ROLES entry fails typecheck until classified. */
 const userManageAccessByRole = {
   core: "allowed",
