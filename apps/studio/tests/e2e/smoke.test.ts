@@ -1,8 +1,6 @@
 import { expect, test } from "@playwright/test"
 import { LoginPage } from "~e2e/fixtures/login"
 
-import { LoginPage } from "./fixtures/login"
-
 test("go to /sign-in", async ({ page }) => {
   const loginPage = new LoginPage(page)
 
