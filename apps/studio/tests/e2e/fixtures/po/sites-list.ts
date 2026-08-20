@@ -21,6 +21,10 @@ export class SitesListPO {
     await expect(this.page.getByRole("link", { name })).not.toBeVisible()
   }
 
+  async clickSiteLink(name: string) {
+    await this.page.getByRole("link", { name }).click()
+  }
+
   async expectEmptyState() {
     await expect(
       this.page.getByText("You don't have access to any sites yet."),
