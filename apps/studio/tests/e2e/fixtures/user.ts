@@ -37,6 +37,18 @@ export const whitelistVendorEmail = async (email: string) => {
     .execute()
 }
 
+export const deleteWhitelistedVendorEmails = async (...emails: string[]) => {
+  if (emails.length === 0) return
+  await db
+    .deleteFrom("Whitelist")
+    .where(
+      "email",
+      "in",
+      emails.map((email) => email.toLowerCase()),
+    )
+    .execute()
+}
+
 export const seedLoggedInEditorOnSite = async ({
   siteId,
   email = uniqueLoggedInUserEmail(),
