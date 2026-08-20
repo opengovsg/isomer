@@ -208,6 +208,8 @@ export class CollectionPO {
   }
 
   async expectFilterOrder(names: string[]) {
+    // Match filter/option labels exactly (anchored alternation) so list order
+    // assertions don't pick up partial text elsewhere in the drawer.
     const list = this.page.getByText(
       new RegExp(
         `^(${names.map((name) => name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})$`,
@@ -462,13 +464,25 @@ export class CollectionPO {
     await expect(this.itemSaveButton()).toBeEnabled()
   }
 
+  articleHeaderSaveButton() {
+    return this.page.getByRole("button", { name: "Save changes", exact: true })
+  }
+
+  async expectArticleHeaderSaveDisabled() {
+    await expect(this.articleHeaderSaveButton()).toBeDisabled()
+  }
+
+  async expectArticleHeaderSaveEnabled() {
+    await expect(this.articleHeaderSaveButton()).toBeEnabled()
+  }
+
   async saveCollectionLink() {
     await this.itemSaveButton().click()
     await expect(this.page.getByText("Link updated!")).toBeVisible()
   }
 
   async saveArticleHeaderChanges() {
-    await this.page.getByRole("button", { name: "Save changes" }).click()
+    await this.articleHeaderSaveButton().click()
     await expect(
       this.page.getByText(
         "Changes saved. Click 'Publish' when you're ready to go live.",
