@@ -71,6 +71,42 @@ export const mockPresignedPutUrl = async (page: Page) => {
   })
 }
 
+/** Force `site.updateSiteConfig` to fail so settings Publish error handling can be exercised. */
+export const mockSiteUpdateConfigFailure = async (page: Page) => {
+  await page.route("**/api/trpc/site.updateSiteConfig*", (route) =>
+    route.fulfill({
+      status: 500,
+      contentType: "application/json",
+      body: JSON.stringify({
+        error: {
+          json: {
+            message: "Internal server error",
+            code: -32603,
+            data: { httpStatus: 500 },
+          },
+        },
+      }),
+    }),
+  )
+}
+
+export const unmockSiteUpdateConfigFailure = async (page: Page) => {
+  await page.unroute("**/api/trpc/site.updateSiteConfig*")
+}
+
+/** Override the asset CDN handler so S3 PUT fails after presigning succeeds. */
+export const mockFailedAssetUpload = async (page: Page) => {
+  await page.route(
+    (url) => url.hostname === "user-content.example.com",
+    (route) =>
+      route.fulfill({
+        status: 500,
+        contentType: "application/json",
+        body: JSON.stringify({ error: "Upload failed" }),
+      }),
+  )
+}
+
 /**
  * Drop the in-memory GrowthBook singleton before the next app navigation, and
  * clear its localStorage feature cache ("gbFeaturesCache"). The GrowthBook JS

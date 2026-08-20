@@ -493,6 +493,120 @@ export class SitePO {
     await this.notificationBannerToggle().locator("xpath=..").click()
   }
 
+  async disableNotificationBanner() {
+    await this.notificationBannerToggle().locator("xpath=..").click()
+  }
+
+  navbarMenuItemLabelField() {
+    return this.page.getByLabel("Menu item label")
+  }
+
+  async fillNavbarMenuItemLabel(label: string) {
+    await this.navbarMenuItemLabelField().fill(label)
+  }
+
+  navbarMenuItemLabelEmptyError() {
+    return this.page.getByText("Menu item label cannot be empty")
+  }
+
+  siteNameEmptyValidationError() {
+    return this.page.getByText(
+      "Site name cannot be empty or contain only spaces",
+    )
+  }
+
+  gtmIdValidationError() {
+    return this.page.getByText(
+      "Google Tag Manager (GTM) ID is not in the correct format",
+    )
+  }
+
+  invalidLinkFormatError() {
+    return this.page.getByText("Link is not in the correct format")
+  }
+
+  contactAndFeedbackHeading() {
+    return this.page.getByText("Contact and feedback form")
+  }
+
+  legalPagesHeading() {
+    return this.page.getByText("Legal pages")
+  }
+
+  footerLinksCountText(count: string) {
+    return this.page.getByText(`${count} links added`)
+  }
+
+  privacyStatementEmptyError() {
+    return this.page.getByText("Privacy statement page cannot be empty")
+  }
+
+  siteUpdateFailureText() {
+    return this.page.getByText("Failed to update site")
+  }
+
+  /** Click a settings side-nav link without waiting for navigation to finish. */
+  async clickSettingsSidebarSection(section: SettingsSection) {
+    const label = SETTINGS_SECTION_LABELS[section]
+    await this.page.getByRole("link", { name: label }).click()
+  }
+
+  async waitForSettingsSection(section: SettingsSection) {
+    await this.page.waitForURL(new RegExp(`/settings/${section}$`))
+  }
+
+  async addNavbarLink(label: string, externalUrl: string) {
+    await this.addNavbarLinkButton().click()
+    await this.navbarItemText("Navbar item").click()
+    await this.fillNavbarMenuItemLabel(label)
+    await this.setLinkDestinationExternal(externalUrl)
+    await this.backToNavigationBarButton().click()
+  }
+
+  async deleteNavbarLink(label: string) {
+    await this.navbarItemText(label).click()
+    await this.deleteThisLinkButton().click()
+    await this.confirmDeleteLinkButton().click()
+  }
+
+  async addFooterLinkToColumn(
+    columnHeading: "Footer column 1" | "Footer column 2",
+    label: string,
+    externalUrl: string,
+  ) {
+    await this.addFooterLinkButtonForColumn(columnHeading).click()
+    await this.footerLinkButton("No title").click()
+    await this.linkLabelField().fill(label)
+    await this.setLinkDestinationExternal(externalUrl)
+    await this.backToFooterButton().click()
+  }
+
+  async configureAskgov(agencyId: string) {
+    await this.askgovToggle().click()
+    await this.askgovIdField().fill(agencyId)
+    await this.clickPublish()
+    await this.expectChangesPublishedToast()
+  }
+
+  async removeAskgov() {
+    await this.askgovToggle().click()
+    await this.clickPublish()
+    await this.expectChangesPublishedToast()
+  }
+
+  async configureVica(appId: string) {
+    await this.vicaToggle().click()
+    await this.vicaIdField().fill(appId)
+    await this.clickPublish()
+    await this.expectChangesPublishedToast()
+  }
+
+  async removeVica() {
+    await this.vicaToggle().click()
+    await this.clickPublish()
+    await this.expectChangesPublishedToast()
+  }
+
   async fillNotificationTitle(title: string) {
     await this.notificationTitleField().fill(title)
   }
@@ -518,11 +632,9 @@ export class SitePO {
 
   async editNavbarItemLabel(itemName: string, newLabel: string) {
     await this.navbarItemText(itemName).click()
-    await this.page.getByLabel("Menu item label").fill(newLabel)
+    await this.fillNavbarMenuItemLabel(newLabel)
     // The edit panel overlays the header Publish button until dismissed.
-    await this.page
-      .getByRole("button", { name: "Back to navigation bar" })
-      .click()
+    await this.backToNavigationBarButton().click()
   }
 
   async addRedirect(source: string, destination: string) {
@@ -606,3 +718,19 @@ const SETTINGS_SECTION_LABELS: Record<SettingsSection, string> = {
   notification: "Notification banner", // spec said "Notification" — actual label is "Notification banner"
   redirects: "Redirects",
 }
+
+/** Settings sections that render a Publish CTA (redirects publish inline instead). */
+export const PUBLISH_GATED_SETTINGS_SECTIONS = [
+  "agency",
+  "colours",
+  "footer",
+  "integrations",
+  "logo",
+  "navbar",
+  "notification",
+] as const satisfies readonly SettingsSection[]
+
+export const ALL_SETTINGS_SECTIONS = [
+  ...PUBLISH_GATED_SETTINGS_SECTIONS,
+  "redirects",
+] as const satisfies readonly SettingsSection[]
