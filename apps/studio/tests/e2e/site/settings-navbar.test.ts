@@ -145,7 +145,9 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await site.gotoSettingsSection(siteId, "navbar")
 
     // Assert
-    await expect(site.navbarLinksCountText()).toHaveText("8/8 links added")
+    await expect(site.navbarLinksCountText()).toHaveText(
+      "8/8 first-level links added",
+    )
     await expect(site.addNavbarLinkButton()).toBeDisabled()
   })
 
@@ -181,7 +183,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     // Act
     await site.utilityLinksToggle().click()
     await site.addUtilityItemButton().click()
-    await site.utilityItemRow(1).click()
+    // Add opens the nested drawer immediately (setSelectedIndex).
     await site.utilityItemNameField().fill("Login")
     await site.setLinkDestinationExternal("example.com/login")
     await site.nestedDrawerBackButton().click()
