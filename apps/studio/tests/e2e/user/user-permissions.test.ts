@@ -1,10 +1,20 @@
 import { test } from "@playwright/test"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
+import { ROLES, TEST_EMAILS, roleTag, type Role } from "../fixtures/auth"
 import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
 import { UsersPO } from "../fixtures/users.po"
+
+/** Exhaustive over `Role` — adding a ROLES entry fails typecheck until classified. */
+const userManageAccessByRole = {
+  core: "allowed",
+  migrator: "allowed",
+  editor: "read_only",
+  publisher: "read_only",
+  admin: "allowed",
+  nomember: "redirected",
+} as const satisfies Record<Role, "allowed" | "read_only" | "redirected">
 
 let siteId: number
 
@@ -15,38 +25,44 @@ test.beforeAll(async () => {
   siteId = site.siteId
 })
 
-test.describe("publisher", { tag: roleTag("publisher") }, () => {
-  test.beforeEach(async () => {
-    await ensureUserOnboarded(TEST_EMAILS.publisher)
-  })
+for (const role of ROLES) {
+  if (userManageAccessByRole[role] === "read_only") {
+    test.describe(role, { tag: roleTag(role) }, () => {
+      test.beforeEach(async () => {
+        await ensureUserOnboarded(TEST_EMAILS[role])
+      })
 
-  test("publisher cannot manage users on the collaborators page", async ({
-    page,
-  }) => {
-    const users = new UsersPO(page)
+      test("cannot manage users on the collaborators page", async ({
+        page,
+      }) => {
+        const users = new UsersPO(page)
 
-    // Arrange / Act / Assert
-    await users.goto(siteId)
-    await users.expectReadOnlyCollaboratorsDescription()
-    await users.expectCannotAddNewUser()
-    await users.expectNoRowActionsMenus()
-  })
-})
+        // Arrange / Act
+        await users.goto(siteId)
 
-test.describe("editor", { tag: roleTag("editor") }, () => {
-  test.beforeEach(async () => {
-    await ensureUserOnboarded(TEST_EMAILS.editor)
-  })
+        // Assert
+        await users.expectReadOnlyCollaboratorsDescription()
+        await users.expectCannotAddNewUser()
+        await users.expectNoRowActionsMenus()
+      })
+    })
+  } else if (userManageAccessByRole[role] === "redirected") {
+    test.describe(role, { tag: roleTag(role) }, () => {
+      test.beforeEach(async () => {
+        await ensureUserOnboarded(TEST_EMAILS[role])
+      })
 
-  test("editor cannot manage users on the collaborators page", async ({
-    page,
-  }) => {
-    const users = new UsersPO(page)
+      test("is redirected away from the collaborators page", async ({
+        page,
+      }) => {
+        const users = new UsersPO(page)
 
-    // Arrange / Act / Assert
-    await users.goto(siteId)
-    await users.expectReadOnlyCollaboratorsDescription()
-    await users.expectCannotAddNewUser()
-    await users.expectNoRowActionsMenus()
-  })
-})
+        // Arrange / Act
+        await users.expectRedirectedFromUsersPage(siteId)
+
+        // Assert
+        await users.expectCollaboratorsPageHidden()
+      })
+    })
+  }
+}

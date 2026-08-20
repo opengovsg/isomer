@@ -3,11 +3,7 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { provisionE2ESite } from "../fixtures/site"
-import {
-  deleteUsersByEmail,
-  ensureUserOnboarded,
-  seedIsomerAdminOnSite,
-} from "../fixtures/user"
+import { ensureUserOnboarded, seedIsomerAdminOnSite } from "../fixtures/user"
 import { UsersPO } from "../fixtures/users.po"
 
 let siteId: number
@@ -20,10 +16,6 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
     const isomerAdmin = await seedIsomerAdminOnSite({ siteId })
     isomerAdminEmail = isomerAdmin.email
-  })
-
-  test.afterAll(async () => {
-    await deleteUsersByEmail(isomerAdminEmail)
   })
 
   test.beforeEach(async () => {
