@@ -12,6 +12,7 @@ import {
 import { TRPCError } from "@trpc/server"
 import { format, isBefore } from "date-fns"
 import { get, isEmpty, isEqual, pick } from "lodash-es"
+import { PUBLISHABLE_RESOURCE_TYPES } from "~/constants/resources"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   sendCancelSchedulePageEmail,
@@ -682,35 +683,16 @@ export const pageRouter = router({
           userId: user.id,
         })
 
-        // Allow-list rather than deny-list: only these five types are real,
-        // independently unpublishable content pages.
-        // - Folder/Collection ids belong to the dedicated unpublishFolder/
-        //   unpublishCollection mutations (getFullPageById would otherwise
-        //   silently resolve them to their child IndexPage).
-        // - FolderMeta/CollectionMeta are internal ordering metadata, not
-        //   user-facing pages (see their exclusion from listing/move/redirect
-        //   logic elsewhere, e.g. resource.service.ts, redirect.service.ts).
-        // - CollectionLink shares this same publishPage/unpublishPage path
-        //   (see LinkEditNavbar's use of PublishButton) and is built into a
-        //   real sitemap entry by the static-site build (PAGE_RESOURCE_TYPES
-        //   in tooling/build/scripts/publishing/constants.ts), so it needs a
-        //   symmetric unpublish path just like Page/CollectionPage/IndexPage.
-        // - RootPage shares this same publishPage/unpublishPage path too (see
-        //   RootpageRow's link to /pages/[pageId]), and unlike delete,
-        //   unpublishing it isn't destructive — the static-site build already
-        //   falls back to a generic homepage when it has no publishedVersionId
-        //   (see the sitemap fallback in tooling/build/scripts/publishing/index.ts).
+        // Allow-list rather than deny-list: only PUBLISHABLE_RESOURCE_TYPES
+        // are real, independently unpublishable content pages — see that
+        // constant for why Folder/Collection/FolderMeta/CollectionMeta are
+        // excluded (Folder/Collection ids belong to the dedicated
+        // unpublishFolder/unpublishCollection mutations instead).
         const page = await db
           .selectFrom("Resource")
           .where("Resource.id", "=", String(pageId))
           .where("Resource.siteId", "=", siteId)
-          .where("Resource.type", "in", [
-            ResourceType.Page,
-            ResourceType.CollectionPage,
-            ResourceType.IndexPage,
-            ResourceType.CollectionLink,
-            ResourceType.RootPage,
-          ])
+          .where("Resource.type", "in", PUBLISHABLE_RESOURCE_TYPES)
           .select("Resource.id")
           .executeTakeFirst()
 
