@@ -3,8 +3,11 @@ import crypto from "crypto"
 import { ResourceState, RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { getCollectionItemTitles, getIndexPageId } from "../fixtures/collection"
 import { CollectionLinkPO } from "../fixtures/collection-link.po"
+import {
+  getCollectionItemTitles,
+  getIndexPageId,
+} from "../fixtures/collection.db"
 import { DashboardPO } from "../fixtures/dashboard.po"
 import {
   createCollectionLinkViaWizard,

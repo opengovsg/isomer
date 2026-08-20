@@ -153,6 +153,15 @@ export class DashboardPO {
     )
   }
 
+  async expectCollectionAccessDenied() {
+    await expect(
+      this.page.getByText("You don't have access to edit this collection."),
+    ).toBeVisible()
+    await expect(
+      this.page.getByRole("button", { name: "Back to My Sites" }),
+    ).toBeVisible()
+  }
+
   /** Collection table uses the same options menu as the resource table. */
   async openCollectionResourceMenu(title: string) {
     await this.openResourceMenu(title)

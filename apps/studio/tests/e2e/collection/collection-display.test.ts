@@ -3,7 +3,7 @@ import crypto from "crypto"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { getDraftIndexPage } from "../fixtures/collection"
+import { getDraftIndexPage } from "../fixtures/collection.db"
 import { openCollectionIndexEditor } from "../fixtures/helpers"
 import { seedCollection } from "../fixtures/page-seed"
 import { provisionE2ESite } from "../fixtures/site"

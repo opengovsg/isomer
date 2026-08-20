@@ -7,8 +7,8 @@ import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import {
   createCollectionPage,
   createCollectionWithTagCategories,
-  getDraftIndexPage,
 } from "../fixtures/collection"
+import { getDraftIndexPage } from "../fixtures/collection.db"
 import { openCollectionIndexEditor } from "../fixtures/helpers"
 import { failTagOptionsUsageCount } from "../fixtures/network"
 import { PageEditorPO } from "../fixtures/page-editor.po"
