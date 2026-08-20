@@ -1,10 +1,20 @@
 import { expect, test } from "@playwright/test"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
+import { type SettingsSection, SitePO } from "~e2e/fixtures/po"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { provisionE2ESite } from "../fixtures/site"
-import { PUBLISH_GATED_SETTINGS_SECTIONS, SitePO } from "../fixtures/site.po"
-import { ensureUserOnboarded } from "../fixtures/user"
+/** Settings sections that render a Publish CTA (redirects publish inline instead). */
+const PUBLISH_GATED_SECTIONS: SettingsSection[] = [
+  "agency",
+  "colours",
+  "footer",
+  "integrations",
+  "logo",
+  "navbar",
+  "notification",
+]
 
 let siteId: number
 
@@ -20,19 +30,17 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     await ensureUserOnboarded(TEST_EMAILS.publisher)
   })
 
-  for (const section of PUBLISH_GATED_SETTINGS_SECTIONS) {
-    test(`publisher does not see Publish on ${section} settings`, async ({
-      page,
-    }) => {
-      const site = new SitePO(page)
+  test("publisher does not see Publish on settings sections that use it", async ({
+    page,
+  }) => {
+    const site = new SitePO(page)
 
-      // Arrange / Act
+    // Arrange / Act / Assert
+    for (const section of PUBLISH_GATED_SECTIONS) {
       await site.gotoSettingsSection(siteId, section)
-
-      // Assert
       await expect(site.publishButton()).not.toBeVisible()
-    })
-  }
+    }
+  })
 })
 
 test.describe("editor", { tag: roleTag("editor") }, () => {
@@ -43,7 +51,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
   test("editor can view agency settings but not publish", async ({ page }) => {
     const site = new SitePO(page)
 
-    // Arrange / Act
+    // Act
     await site.gotoSettingsSection(siteId, "agency")
 
     // Assert
@@ -51,17 +59,15 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await expect(site.publishButton()).not.toBeVisible()
   })
 
-  for (const section of PUBLISH_GATED_SETTINGS_SECTIONS) {
-    test(`editor does not see Publish on ${section} settings`, async ({
-      page,
-    }) => {
-      const site = new SitePO(page)
+  test("editor does not see Publish on settings sections that use it", async ({
+    page,
+  }) => {
+    const site = new SitePO(page)
 
-      // Arrange / Act
+    // Arrange / Act / Assert
+    for (const section of PUBLISH_GATED_SECTIONS) {
       await site.gotoSettingsSection(siteId, section)
-
-      // Assert
       await expect(site.publishButton()).not.toBeVisible()
-    })
-  }
+    }
+  })
 })

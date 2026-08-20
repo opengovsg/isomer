@@ -1,10 +1,10 @@
 import { expect, test } from "@playwright/test"
+import { UsersPO } from "~e2e/fixtures/po"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded, seedManyEditorsOnSite } from "~e2e/fixtures/user"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { provisionE2ESite } from "../fixtures/site"
-import { ensureUserOnboarded, seedManyEditorsOnSite } from "../fixtures/user"
-import { UsersPO } from "../fixtures/users.po"
 
 // Plus the site's seeded admin, this puts the table one row past the
 // 25-row page size (UserTable.tsx), forcing a second page.

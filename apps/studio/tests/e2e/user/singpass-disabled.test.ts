@@ -1,6 +1,10 @@
 import { test } from "@playwright/test"
 import { SINGPASS_DISABLED_ERROR_MESSAGE } from "~/constants/customErrorMessage"
 import { IS_SINGPASS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
+import { UsersPO } from "~e2e/fixtures/po"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded, uniqueInviteeEmail } from "~e2e/fixtures/user"
+import { expectUserRoleOnSite } from "~e2e/fixtures/user"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
@@ -9,10 +13,6 @@ import {
   enableGrowthBookFeature,
   resetGrowthBookPage,
 } from "../fixtures/network"
-import { provisionE2ESite } from "../fixtures/site"
-import { ensureUserOnboarded, uniqueInviteeEmail } from "../fixtures/user"
-import { expectUserRoleOnSite } from "../fixtures/user-expect"
-import { UsersPO } from "../fixtures/users.po"
 
 let siteId: number
 

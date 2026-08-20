@@ -1,6 +1,10 @@
 import { expect, test } from "@playwright/test"
 import crypto from "crypto"
 import { MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT } from "~/schemas/collection"
+import { PageEditorPO } from "~e2e/fixtures/po"
+import { seedCollection } from "~e2e/fixtures/resource"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
@@ -11,10 +15,6 @@ import {
 import { getDraftIndexPage } from "../fixtures/collection.db"
 import { openCollectionIndexEditor } from "../fixtures/helpers"
 import { failTagOptionsUsageCount } from "../fixtures/network"
-import { PageEditorPO } from "../fixtures/page-editor.po"
-import { seedCollection } from "../fixtures/page-seed"
-import { provisionE2ESite } from "../fixtures/site"
-import { ensureUserOnboarded } from "../fixtures/user"
 
 const option = (label: string) => ({
   id: crypto.randomUUID(),

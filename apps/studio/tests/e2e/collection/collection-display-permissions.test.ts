@@ -1,5 +1,7 @@
 import { test } from "@playwright/test"
 import crypto from "crypto"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
@@ -8,8 +10,6 @@ import {
   deleteCollection,
 } from "../fixtures/collection"
 import { openCollectionIndexEditor } from "../fixtures/helpers"
-import { provisionE2ESite } from "../fixtures/site"
-import { ensureUserOnboarded } from "../fixtures/user"
 
 let siteId: number
 

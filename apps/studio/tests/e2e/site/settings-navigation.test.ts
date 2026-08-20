@@ -1,15 +1,21 @@
 import type { Locator } from "@playwright/test"
 import { expect, test } from "@playwright/test"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
+import { type SettingsSection, SitePO } from "~e2e/fixtures/po"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { provisionE2ESite } from "../fixtures/site"
-import {
-  ALL_SETTINGS_SECTIONS,
-  SitePO,
-  type SettingsSection,
-} from "../fixtures/site.po"
-import { ensureUserOnboarded } from "../fixtures/user"
+const SETTINGS_SECTIONS: SettingsSection[] = [
+  "agency",
+  "colours",
+  "footer",
+  "integrations",
+  "logo",
+  "navbar",
+  "notification",
+  "redirects",
+]
 
 const SECTION_VISIBLE_ELEMENT: Record<
   SettingsSection,
@@ -37,25 +43,23 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await ensureUserOnboarded(TEST_EMAILS.admin)
   })
 
-  for (const section of ALL_SETTINGS_SECTIONS) {
-    test(`admin can open ${section} settings via the side nav`, async ({
-      page,
-    }) => {
-      const site = new SitePO(page)
+  test("admin can navigate settings sections via the side nav", async ({
+    page,
+  }) => {
+    const site = new SitePO(page)
 
-      if (section === "agency") {
-        // Arrange / Act
-        await site.gotoSettingsSection(siteId, section)
-      } else {
-        // Arrange
-        await site.gotoSettingsSection(siteId, "agency")
+    // Arrange
+    await site.gotoSettingsSection(siteId, "agency")
+    await expect(SECTION_VISIBLE_ELEMENT.agency(site)).toBeVisible()
 
-        // Act
-        await site.openSettingsSection(section)
-      }
+    for (const section of SETTINGS_SECTIONS) {
+      if (section === "agency") continue
+
+      // Act
+      await site.openSettingsSection(section)
 
       // Assert
       await expect(SECTION_VISIBLE_ELEMENT[section](site)).toBeVisible()
-    })
-  }
+    }
+  })
 })

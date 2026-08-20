@@ -1,17 +1,17 @@
 import { test } from "@playwright/test"
-import { RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { CollectionLinkPO } from "../fixtures/collection-link.po"
-import { openCollectionIndexEditor } from "../fixtures/helpers"
-import { PageEditorPO } from "../fixtures/page-editor.po"
+import { CollectionLinkPO } from "~e2e/fixtures/po"
+import { PageEditorPO } from "~e2e/fixtures/po"
 import {
   seedCollection,
   seedCollectionLink,
   seedCollectionWithPage,
-} from "../fixtures/page-seed"
-import { provisionE2ESite } from "../fixtures/site"
-import { ensureUserOnboarded } from "../fixtures/user"
+} from "~e2e/fixtures/resource"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
+import { RoleType } from "~prisma/generated/generatedEnums"
+
+import { TEST_EMAILS, roleTag } from "../fixtures/auth"
+import { openCollectionIndexEditor } from "../fixtures/helpers"
 
 let siteId: number
 let collectionId: string
