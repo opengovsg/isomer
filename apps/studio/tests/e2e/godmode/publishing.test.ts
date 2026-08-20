@@ -38,8 +38,6 @@ test.describe("core", { tag: roleTag("core") }, () => {
     // Arrange
     await mockGodmodeSitePublish(page)
     await godmode.gotoPublishing()
-
-    // Assert
     await godmode.expectSiteListed({
       siteId: publishableSiteId,
       siteName: publishableSiteName,
