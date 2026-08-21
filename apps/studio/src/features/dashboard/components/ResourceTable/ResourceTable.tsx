@@ -1,11 +1,11 @@
+import type { StockFeatures } from "@tanstack/react-table"
 import type { ResourceOrderByOption } from "~/schemas/resource"
 import { HStack, Text } from "@chakra-ui/react"
 import { keepPreviousData } from "@tanstack/react-query"
 import {
   createColumnHelper,
-  getCoreRowModel,
-  getPaginationRowModel,
-  useReactTable,
+  stockFeatures,
+  useTable,
 } from "@tanstack/react-table"
 import { useMemo, useState } from "react"
 import { TableHeader } from "~/components/Datatable"
@@ -19,39 +19,40 @@ import { ResourceSortMenu } from "./ResourceSortMenu"
 import { ResourceTableMenu } from "./ResourceTableMenu"
 import { TitleCell } from "./TitleCell"
 
-const columnsHelper = createColumnHelper<ResourceTableData>()
+const columnsHelper = createColumnHelper<StockFeatures, ResourceTableData>()
 
-const getColumns = ({ siteId }: ResourceTableProps) => [
-  columnsHelper.accessor("title", {
-    minSize: 300,
-    header: () => <TableHeader>Title</TableHeader>,
-    cell: ({ row }) => (
-      <TitleCell
-        siteId={siteId}
-        id={row.original.id}
-        title={row.original.title}
-        permalink={`/${row.original.permalink}`}
-        type={row.original.type}
-        scheduledAt={row.original.scheduledAt}
-      />
-    ),
-  }),
-  columnsHelper.display({
-    id: "resource_menu",
-    header: () => <TableHeader>Actions</TableHeader>,
-    cell: ({ row }) => (
-      <ResourceTableMenu
-        parentId={row.original.parentId}
-        title={row.original.title}
-        resourceId={row.original.id}
-        type={row.original.type}
-        permalink={row.original.permalink}
-        resourceType={row.original.type}
-      />
-    ),
-    size: 24,
-  }),
-]
+const getColumns = ({ siteId }: ResourceTableProps) =>
+  columnsHelper.columns([
+    columnsHelper.accessor("title", {
+      minSize: 300,
+      header: () => <TableHeader>Title</TableHeader>,
+      cell: ({ row }) => (
+        <TitleCell
+          siteId={siteId}
+          id={row.original.id}
+          title={row.original.title}
+          permalink={`/${row.original.permalink}`}
+          type={row.original.type}
+          scheduledAt={row.original.scheduledAt}
+        />
+      ),
+    }),
+    columnsHelper.display({
+      id: "resource_menu",
+      header: () => <TableHeader>Actions</TableHeader>,
+      cell: ({ row }) => (
+        <ResourceTableMenu
+          parentId={row.original.parentId}
+          title={row.original.title}
+          resourceId={row.original.id}
+          type={row.original.type}
+          permalink={row.original.permalink}
+          resourceType={row.original.type}
+        />
+      ),
+      size: 24,
+    }),
+  ])
 
 interface ResourceTableProps {
   siteId: number
@@ -97,14 +98,13 @@ export const ResourceTable = ({
       },
     )
 
-  const tableInstance = useReactTable<ResourceTableData>({
+  const tableInstance = useTable({
+    features: stockFeatures,
     columns,
     data: resources ?? [],
-    getCoreRowModel: getCoreRowModel(),
     manualFiltering: true,
     manualPagination: true,
     autoResetPageIndex: false,
-    getPaginationRowModel: getPaginationRowModel(),
     onPaginationChange,
     state: {
       pagination,

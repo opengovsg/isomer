@@ -1,9 +1,10 @@
+import type { StockFeatures } from "@tanstack/react-table"
 import { LinkOverlay } from "@chakra-ui/react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import {
   createColumnHelper,
-  getCoreRowModel,
-  useReactTable,
+  stockFeatures,
+  useTable,
 } from "@tanstack/react-table"
 import { cleanup, render, screen } from "@testing-library/react"
 import { afterEach, describe, expect, it } from "vitest"
@@ -11,12 +12,12 @@ import { theme } from "~/theme"
 
 import { Datatable } from "./Datatable"
 
-interface RowData {
+interface TestRowData {
   title: string
 }
 
-const columnsHelper = createColumnHelper<RowData>()
-const columns = [
+const columnsHelper = createColumnHelper<StockFeatures, TestRowData>()
+const columns = columnsHelper.columns([
   columnsHelper.accessor("title", {
     header: "Title",
     cell: ({ getValue }) => (
@@ -25,17 +26,17 @@ const columns = [
       </LinkOverlay>
     ),
   }),
-]
+])
 
 const LinkedRowTable = ({
   data = [{ title: "Test page" }],
 }: {
-  data?: RowData[]
+  data?: TestRowData[]
 }) => {
-  const instance = useReactTable({
+  const instance = useTable({
+    features: stockFeatures,
     columns,
     data,
-    getCoreRowModel: getCoreRowModel(),
   })
 
   return (
