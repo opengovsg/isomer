@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { AuditLogExportRequestedReportType } from "~/schemas/audit"
 
-import { getMonthOptions, toggleReportType } from "../utils"
-
-const { Access, Activity, Both } = AuditLogExportRequestedReportType
+import { getMonthOptions } from "../utils"
 
 describe("getMonthOptions", () => {
   it("returns the current month first, newest to oldest, with no future months", () => {
@@ -44,31 +41,5 @@ describe("getMonthOptions", () => {
 
     expect(options).toHaveLength(1)
     expect(options[0]).toEqual({ value: "2026-06", label: "June 2026" })
-  })
-})
-
-describe("toggleReportType", () => {
-  it("selects a type from the empty state", () => {
-    // Arrange / Act / Assert
-    expect(toggleReportType(null, Access)).toBe(Access)
-    expect(toggleReportType(null, Activity)).toBe(Activity)
-  })
-
-  it("combines the two selections into Both", () => {
-    // Arrange / Act / Assert
-    expect(toggleReportType(Access, Activity)).toBe(Both)
-    expect(toggleReportType(Activity, Access)).toBe(Both)
-  })
-
-  it("drops one selection out of Both, keeping the other", () => {
-    // Arrange / Act / Assert
-    expect(toggleReportType(Both, Access)).toBe(Activity)
-    expect(toggleReportType(Both, Activity)).toBe(Access)
-  })
-
-  it("clears the last remaining selection back to null", () => {
-    // Arrange / Act / Assert
-    expect(toggleReportType(Access, Access)).toBeNull()
-    expect(toggleReportType(Activity, Activity)).toBeNull()
   })
 })

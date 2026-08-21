@@ -47,15 +47,11 @@ export const validateIsMonthInPastYear = (
   return true
 }
 
-// What the user may ask for. `Both` is UX vocabulary only — the service
-// fans it out into two AuditLogExportRequest rows (Access + Activity);
-// the DB enum has no Both member.
-export const AuditLogExportRequestedReportType = {
-  ...AuditLogExportReportType,
-  Both: "Both",
-} as const
-export type AuditLogExportRequestedReportType =
-  (typeof AuditLogExportRequestedReportType)[keyof typeof AuditLogExportRequestedReportType]
+// What the user may ask for — matches the DB enum 1:1. Kept as a distinct
+// alias (rather than importing `AuditLogExportReportType` everywhere) so
+// client/service code isn't coupled directly to the Prisma-generated enum.
+export const AuditLogExportRequestedReportType = AuditLogExportReportType
+export type AuditLogExportRequestedReportType = AuditLogExportReportType
 
 // A calendar month in ISO `yyyy-MM` form, e.g. "2026-03". This is the shape
 // every month value in the audit-export flow is passed around in (picker →
