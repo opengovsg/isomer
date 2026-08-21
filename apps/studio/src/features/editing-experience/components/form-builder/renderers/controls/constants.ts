@@ -28,8 +28,6 @@ export const createDefaultDateFilter = (): DateFilterSchemaType => ({
   type: TAG_CATEGORY_TYPE.Date,
   isRequired: true,
   statusLabels: DEFAULT_DATE_FILTER_STATUS_LABELS,
-  showStatusLabels: true,
-  showDateRange: true,
 })
 
 type TagOption = TextFilterSchemaType["options"][number]
