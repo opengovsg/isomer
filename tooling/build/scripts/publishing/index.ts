@@ -29,6 +29,8 @@ const DB_PASSWORD = process.env.DB_PASSWORD
 const DB_HOST = process.env.DB_HOST
 const DB_PORT = process.env.DB_PORT
 const DB_NAME = process.env.DB_NAME
+const DB_IAM_AUTH = process.env.DB_IAM_AUTH === "true"
+const DB_SSL_SERVERNAME = process.env.DB_SSL_SERVERNAME
 const SITE_ID = Number(process.env.SITE_ID)
 // Defaults to this package's directory, which publisher.sh expects in production
 const OUTPUT_DIR = process.env.OUTPUT_DIR ?? __dirname
@@ -71,8 +73,21 @@ async function main() {
     user: DB_USERNAME,
     host: DB_HOST,
     database: DB_NAME,
-    password: decodeURIComponent(DB_PASSWORD ?? ""),
+    password: DB_IAM_AUTH
+      ? (DB_PASSWORD ?? "")
+      : decodeURIComponent(DB_PASSWORD ?? ""),
     port: Number(DB_PORT),
+    ...(DB_IAM_AUTH && DB_SSL_SERVERNAME
+      ? {
+          ssl: {
+            // IAM requires TLS. Node does not trust the Amazon RDS CA, and the
+            // SSM tunnel presents that cert on localhost, so we encrypt without
+            // verifying the issuer.
+            rejectUnauthorized: false,
+            servername: DB_SSL_SERVERNAME,
+          },
+        }
+      : {}),
   })
 
   const start = performance.now() // Start profiling
