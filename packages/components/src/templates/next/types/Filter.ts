@@ -1,4 +1,5 @@
 import type { TagCategoryDisplay } from "~/types/constants"
+import type { DateFilterSidebarVisibility } from "~/types/page"
 
 export interface FilterItem {
   id: string
@@ -6,7 +7,7 @@ export interface FilterItem {
   count: number
 }
 
-export interface Filter {
+export interface Filter extends Partial<DateFilterSidebarVisibility> {
   id: string
   label: string
   items: FilterItem[]

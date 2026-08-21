@@ -16,6 +16,7 @@ import {
 
 import {
   DATE_FILTER_STATUS_ID,
+  DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY,
   TAG_CATEGORY_DISPLAY_OPTIONS,
   TAG_CATEGORY_TYPE,
   type TagCategoryDisplay,
@@ -156,12 +157,35 @@ const DateFilterSchema = Type.Object(
         maxItems: 3,
       },
     ),
+    // Hidden in Studio until editors can toggle each sidebar control.
+    showStatusLabels: Type.Optional(
+      Type.Boolean({
+        title: "Show status labels filter",
+        description:
+          "Let visitors filter by status labels (e.g. Upcoming, Ongoing, Ended).",
+        format: "hidden",
+        default: DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showStatusLabels,
+      }),
+    ),
+    showDateRange: Type.Optional(
+      Type.Boolean({
+        title: "Show date range filter",
+        description: "Let visitors filter by a custom date range.",
+        format: "hidden",
+        default: DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showDateRange,
+      }),
+    ),
   },
   { title: "Date filter" },
 )
 
 export type TextFilterSchemaType = Static<typeof TextFilterSchema>
 export type DateFilterSchemaType = Static<typeof DateFilterSchema>
+
+export type DateFilterSidebarVisibility = Pick<
+  DateFilterSchemaType,
+  "showStatusLabels" | "showDateRange"
+>
 
 export const isDateFilter = (
   tagCategory: TextFilterSchemaType | DateFilterSchemaType,

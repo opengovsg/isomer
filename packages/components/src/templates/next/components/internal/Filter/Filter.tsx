@@ -6,6 +6,7 @@ import { mergeProps } from "@react-aria/utils"
 import { useRef, useState } from "react"
 import { BiChevronDown, BiChevronRight } from "react-icons/bi"
 import { tv } from "~/lib/tv"
+import { DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY } from "~/types/constants"
 import { groupFocusVisibleHighlight } from "~/utils/tailwind"
 
 import type { FilterProps } from "../../../types/Filter"
@@ -114,40 +115,51 @@ export const Filter = ({
             </Button>
           )}
         </div>
-        {filters.map(({ id, label, items, type }) => (
-          <CheckboxGroup
-            className="border-b border-b-divider-medium py-4"
-            key={id}
-            value={appliedItemsById[id] ?? []}
-          >
-            <FilterSectionButton
-              label={label}
-              isOpen={showFilter[id] ?? false}
-              onToggle={() => updateFilterToggle(id)}
-            />
+        {filters.map(
+          ({ id, label, items, type, showStatusLabels, showDateRange }) => (
+            <CheckboxGroup
+              className="border-b border-b-divider-medium py-4"
+              key={id}
+              value={appliedItemsById[id] ?? []}
+            >
+              <FilterSectionButton
+                label={label}
+                isOpen={showFilter[id] ?? false}
+                onToggle={() => updateFilterToggle(id)}
+              />
 
-            <div className={showFilter[id] ? "flex flex-col gap-2" : "hidden"}>
-              {items.map(({ id: itemId, label: itemLabel, count }) => (
-                <Checkbox
-                  key={itemId}
-                  className="w-fit cursor-pointer p-2"
-                  value={itemId}
-                  onChange={() => handleFilterToggle(id, itemId)}
-                >
-                  {itemLabel} ({count.toLocaleString()})
-                </Checkbox>
-              ))}
-              {type === "date" && (
-                <DateRangeFilterInput
-                  value={
-                    appliedFilters.find((filter) => filter.id === id)?.dateRange
-                  }
-                  onChange={(dateRange) => handleDateRangeChange(id, dateRange)}
-                />
-              )}
-            </div>
-          </CheckboxGroup>
-        ))}
+              <div
+                className={showFilter[id] ? "flex flex-col gap-2" : "hidden"}
+              >
+                {(showStatusLabels ??
+                  DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showStatusLabels) &&
+                  items.map(({ id: itemId, label: itemLabel, count }) => (
+                    <Checkbox
+                      key={itemId}
+                      className="w-fit cursor-pointer p-2"
+                      value={itemId}
+                      onChange={() => handleFilterToggle(id, itemId)}
+                    >
+                      {itemLabel} ({count.toLocaleString()})
+                    </Checkbox>
+                  ))}
+                {type === "date" &&
+                  (showDateRange ??
+                    DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showDateRange) && (
+                    <DateRangeFilterInput
+                      value={
+                        appliedFilters.find((filter) => filter.id === id)
+                          ?.dateRange
+                      }
+                      onChange={(dateRange) =>
+                        handleDateRangeChange(id, dateRange)
+                      }
+                    />
+                  )}
+              </div>
+            </CheckboxGroup>
+          ),
+        )}
       </aside>
     </>
   )

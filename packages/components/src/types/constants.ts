@@ -73,3 +73,8 @@ export const DEFAULT_DATE_FILTER_STATUS_LABELS: {
   { id: DATE_FILTER_STATUS_ID.Ongoing, label: "Ongoing" },
   { id: DATE_FILTER_STATUS_ID.Upcoming, label: "Upcoming" },
 ]
+
+export const DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY = {
+  showStatusLabels: true,
+  showDateRange: true,
+} as const
