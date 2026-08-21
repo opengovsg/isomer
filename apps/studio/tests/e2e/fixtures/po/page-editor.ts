@@ -346,10 +346,12 @@ export class PageEditorPO {
   // Distinct from prose blocks: these blocks render via `ComplexEditorStateDrawer`,
   // whose Save button reads "Save block" (prose's own drawer says "Save changes").
 
-  async openBlockEditor(previewLabel: string) {
-    await this.page
-      .getByRole("button", { name: new RegExp(previewLabel, "i") })
-      .click({ force: true })
+  async openBlockEditor(previewLabel: string | RegExp) {
+    const name =
+      typeof previewLabel === "string"
+        ? new RegExp(previewLabel, "i")
+        : previewLabel
+    await this.page.getByRole("button", { name }).first().click({ force: true })
   }
 
   async fillFormFieldByLabel(label: string, text: string) {
@@ -449,6 +451,9 @@ export class PageEditorPO {
 
   async cancelDeleteBlock() {
     await this.page.getByRole("button", { name: "Go back to editing" }).click()
+    // Delete modal is scoped to the open block drawer — returning to the block
+    // list is required before block-row preview buttons are queryable again.
+    await this.clickDrawerBack()
   }
 
   async expectBlockAbsent(previewLabel: string) {
@@ -614,6 +619,7 @@ export class PageEditorPO {
   async openGalleryItem(nameOrRegex: string | RegExp) {
     await this.page
       .getByRole("button", { name: nameOrRegex })
+      .first()
       .click({ force: true })
   }
 
@@ -696,6 +702,7 @@ export class PageEditorPO {
     // as its label rather than the idle "Text styles" default.
     await this.page
       .getByRole("button", { name: /Text styles|Paragraph/ })
+      .first()
       .click()
     await this.page
       .getByRole("menuitem", { name: HEADING_MENU_ITEM[level] })
@@ -789,13 +796,13 @@ export class PageEditorPO {
 
   async expectPreviewBoldVisible(text: string) {
     await expect(
-      this.previewFrame().locator("b", { hasText: text }),
+      this.previewFrame().locator("b, strong", { hasText: text }),
     ).toBeVisible()
   }
 
   async expectPreviewItalicVisible(text: string) {
     await expect(
-      this.previewFrame().locator("i", { hasText: text }),
+      this.previewFrame().locator("i, em", { hasText: text }),
     ).toBeVisible()
   }
 
@@ -1007,8 +1014,9 @@ export class PageEditorPO {
   // so focus doesn't matter; any wrong key in between resets progress to 0.
 
   async pressRawJsonEditorCombo() {
+    await this.page.locator("body").click({ position: { x: 0, y: 0 } })
     for (const key of RAW_JSON_EDITOR_COMBO) {
-      await this.page.keyboard.press(key)
+      await this.page.keyboard.press(key, { delay: 50 })
     }
   }
 
