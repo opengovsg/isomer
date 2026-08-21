@@ -314,9 +314,21 @@ export const seedHomepageHero = async ({
     .select("id")
     .executeTakeFirstOrThrow()
 
-  const resolvedBackgroundUrl =
-    backgroundUrl ??
-    (variant === "searchbar" ? undefined : "/placeholder_no_image.png")
+  const heroContent =
+    variant === "searchbar"
+      ? {
+          type: "hero" as const,
+          variant: "searchbar" as const,
+          title: heroTitle,
+          ...(subtitle ? { subtitle } : {}),
+        }
+      : {
+          type: "hero" as const,
+          variant,
+          title: heroTitle,
+          backgroundUrl: backgroundUrl ?? "/placeholder_no_image.png",
+          ...(subtitle ? { subtitle } : {}),
+        }
 
   const blob = await db
     .insertInto("Blob")
@@ -324,17 +336,7 @@ export const seedHomepageHero = async ({
       content: jsonb({
         layout: "homepage",
         page: {},
-        content: [
-          {
-            type: "hero",
-            variant,
-            title: heroTitle,
-            ...(subtitle ? { subtitle } : {}),
-            ...(resolvedBackgroundUrl
-              ? { backgroundUrl: resolvedBackgroundUrl }
-              : {}),
-          },
-        ],
+        content: [heroContent],
         version: "0.1.0",
       } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>),
     })
