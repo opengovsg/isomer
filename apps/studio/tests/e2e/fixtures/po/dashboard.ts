@@ -462,9 +462,15 @@ export class DashboardPO {
   }
 
   async openSearchViaShortcut() {
-    await this.page.keyboard.press(
-      process.platform === "darwin" ? "Meta+k" : "Control+k",
+    await expect(
+      this.page.getByRole("button", { name: "search-button" }),
+    ).toBeVisible()
+    const shortcut = await this.page.evaluate(() =>
+      (navigator.userAgent || navigator.platform).toLowerCase().includes("mac")
+        ? "Meta+k"
+        : "Control+k",
     )
+    await this.page.keyboard.press(shortcut)
     await expect(
       this.page.getByPlaceholder(
         /Search pages, collections, or folders by name/,
@@ -490,7 +496,7 @@ export class DashboardPO {
   async expectNoSearchResults() {
     await expect(
       this.page.getByText(
-        "We've looked everywhere, but we're getting nothing.",
+        /We[\u2019']ve looked everywhere, but we[\u2019']re getting nothing\./,
       ),
     ).toBeVisible()
   }
@@ -520,7 +526,9 @@ export class DashboardPO {
 
   async expectRecentlyViewedSearchResult(title: string) {
     const dialog = this.page.getByRole("dialog")
-    await expect(dialog.getByText("Pages you've recently opened")).toBeVisible()
+    await expect(
+      dialog.getByText(/Pages you[\u2019']ve recently opened/),
+    ).toBeVisible()
     await expect(dialog.getByRole("link", { name: title })).toBeVisible()
   }
 
