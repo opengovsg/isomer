@@ -4,6 +4,7 @@ import { Type } from "@sinclair/typebox"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "~/constants/image"
 
 import { ARRAY_RADIO_FORMAT } from "../format"
+import { IsomerString } from "../primitives/IsomerString"
 
 export const generateImageSrcSchema = ({
   title = "Image",
@@ -33,7 +34,7 @@ export const ImageSrcSchema = generateImageSrcSchema({})
 export const ALT_TEXT_REGEX_PATTERN =
   "^(?=.*\\S)(?!(?:[Ii][Mm][Aa][Gg][Ee]|[Pp][Ii][Cc][Tt][Uu][Rr][Ee]|[Pp][Hh][Oo][Tt][Oo]|[Ll][Oo][Gg][Oo]|[Ss][Cc][Rr][Ee][Ee][Nn][Ss][Hh][Oo][Tt]|[Gg][Rr][Aa][Pp][Hh]|[Cc][Hh][Aa][Rr][Tt]|[Dd][Ii][Aa][Gg][Rr][Aa][Mm]|[Ii][Cc][Oo][Nn])$).*$"
 
-export const AltTextSchema = Type.String({
+export const AltTextSchema = IsomerString({
   title: "Alternate text",
   description:
     "Add a descriptive text so that visually impaired users can understand your image",
@@ -50,7 +51,7 @@ export const ImageSchema = Type.Object(
     src: ImageSrcSchema,
     alt: AltTextSchema,
     caption: Type.Optional(
-      Type.String({
+      IsomerString({
         title: "Caption",
         description:
           "Describe the image or add attributions. To make sure your caption is readable, keep it under 250 characters.",
