@@ -2,7 +2,7 @@ import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { z } from "zod"
 import type { reorderBlobSchema, updatePageBlobSchema } from "~/schemas/page"
 import { TRPCError } from "@trpc/server"
-import { addDays, set, subDays } from "date-fns"
+import { addDays, format, set, subDays } from "date-fns"
 import { omit, pick } from "lodash-es"
 import MockDate from "mockdate"
 import { auth } from "tests/integration/helpers/auth"
@@ -2375,6 +2375,41 @@ describe("page.router", async () => {
         new TRPCError({
           code: "PRECONDITION_FAILED",
           message: "This page is not currently published",
+        }),
+      )
+    })
+
+    it("should throw if the page has a pending scheduled publish", async () => {
+      // Arrange — the schedule cron only checks scheduledAt, not the page's
+      // current state, so unpublishing without cancelling the schedule
+      // would let the cron silently republish this page later
+      const scheduledAt = new Date("2999-01-01T00:00:00Z")
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+        scheduledAt,
+        scheduledBy: session.userId ?? undefined,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.unpublishPage({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: `This page is scheduled to be published at ${format(
+            scheduledAt,
+            "yyyy-MM-dd HH:mm",
+          )}. Cancel the schedule before unpublishing.`,
         }),
       )
     })
