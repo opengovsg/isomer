@@ -38,7 +38,9 @@ export class PageSeoSettingsPO {
   }
 
   async expectMetaImageFilename(filename: string) {
-    await expect(this.page.getByText(filename)).toBeVisible()
+    // ODS Attachment also renders "File attached: <filename>…" — exact
+    // match avoids the strict-mode collision with that prefix text.
+    await expect(this.page.getByText(filename, { exact: true })).toBeVisible()
   }
 
   noIndexSwitch() {

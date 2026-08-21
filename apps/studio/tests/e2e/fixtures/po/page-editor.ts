@@ -571,11 +571,23 @@ export class PageEditorPO {
     await expect(this.page.getByPlaceholder("DD/MM/YYYY")).toHaveValue(date)
   }
 
+  /**
+   * Optional `page.image` is not mounted until its object switch is on —
+   * FileAttachment (`file-upload`) is not in the DOM otherwise.
+   */
+  async enableThumbnail() {
+    const toggle = this.page.getByLabel("Set a thumbnail image")
+    if (!(await toggle.isChecked())) {
+      await toggle.click({ force: true })
+    }
+  }
+
   /** `page.image` (thumbnail) on Content/Article/Index/Database headers. */
   async uploadThumbnail(
     file: string | { name: string; mimeType: string; buffer: Buffer },
     alt: string,
   ) {
+    await this.enableThumbnail()
     await this.uploadImage(file)
     await this.fillFormFieldByLabel("Alternate text", alt)
   }
@@ -593,7 +605,9 @@ export class PageEditorPO {
   }
 
   async selectHeroVariant(name: string) {
-    await this.page.getByRole("radio", { name }).click()
+    // Chakra radio's visual control intercepts pointer events on the
+    // native input — same as `CollectionPO.chooseLayout`.
+    await this.page.getByRole("radio", { name }).click({ force: true })
   }
 
   async openDatabaseEditor() {
@@ -603,8 +617,10 @@ export class PageEditorPO {
 
   async openDgsDatasetModal() {
     const dgsRadio = this.page.getByRole("radio", { name: /DGS/i })
-    if (await dgsRadio.isVisible()) {
-      await dgsRadio.click()
+    if ((await dgsRadio.isVisible()) && !(await dgsRadio.isChecked())) {
+      // Chakra radio's visual control intercepts pointer events on the
+      // native input — same as `CollectionPO.chooseLayout`.
+      await dgsRadio.click({ force: true })
     }
     await this.page.getByRole("button", { name: "Edit" }).click()
     await expect(
@@ -671,7 +687,7 @@ export class PageEditorPO {
   }
 
   imageFilenameText(filename: string) {
-    return this.page.getByText(filename)
+    return this.page.getByText(filename, { exact: true })
   }
 
   // --- Image gallery array items (nested item drawer) ---
