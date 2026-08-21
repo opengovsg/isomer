@@ -186,10 +186,6 @@ export type DateFilterSidebarVisibility = Pick<
   "showStatusLabels" | "showDateRange"
 >
 
-// Booleans after getDateFilters applies `?? true` for publish-time JSON.
-export type ResolvedDateFilterSidebarVisibility =
-  Required<DateFilterSidebarVisibility>
-
 export const isDateFilter = (
   tagCategory: TextFilterSchemaType | DateFilterSchemaType,
 ): tagCategory is DateFilterSchemaType =>
