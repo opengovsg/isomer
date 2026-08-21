@@ -12,7 +12,7 @@ import {
 import { TRPCError } from "@trpc/server"
 import { format, isBefore } from "date-fns"
 import { get, isEmpty, isEqual, pick } from "lodash-es"
-import { PUBLISHABLE_RESOURCE_TYPES } from "~/constants/resources"
+import { UNPUBLISHABLE_RESOURCE_TYPES } from "~/constants/resources"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   sendCancelSchedulePageEmail,
@@ -642,6 +642,10 @@ export const pageRouter = router({
       return rootPage
     }),
 
+  // No resourceType guard here on purpose: a site must always be able to
+  // (re-)publish its homepage, even though unpublishPage below blocks the
+  // reverse for RootPage — see UNPUBLISHABLE_RESOURCE_TYPES in
+  // ~/constants/resources for why that asymmetry is intentional.
   publishPage: protectedProcedure
     .input(publishPageSchema)
     .mutation(
@@ -683,23 +687,23 @@ export const pageRouter = router({
           userId: user.id,
         })
 
-        // Allow-list rather than deny-list: only PUBLISHABLE_RESOURCE_TYPES
+        // Allow-list rather than deny-list: only UNPUBLISHABLE_RESOURCE_TYPES
         // are real, independently unpublishable content pages — see that
-        // constant for why Folder/Collection/FolderMeta/CollectionMeta are
-        // excluded (Folder/Collection ids belong to the dedicated
-        // unpublishFolder/unpublishCollection mutations instead).
+        // constant for why Folder/Collection/FolderMeta/CollectionMeta/
+        // RootPage are excluded (Folder/Collection ids belong to the
+        // dedicated unpublishFolder/unpublishCollection mutations instead).
         const page = await db
           .selectFrom("Resource")
           .where("Resource.id", "=", String(pageId))
           .where("Resource.siteId", "=", siteId)
-          .where("Resource.type", "in", PUBLISHABLE_RESOURCE_TYPES)
+          .where("Resource.type", "in", UNPUBLISHABLE_RESOURCE_TYPES)
           .select("Resource.id")
           .executeTakeFirst()
 
         if (!page) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "This page does not exist",
+            message: "This page either does not exist or cannot be unpublished",
           })
         }
 
