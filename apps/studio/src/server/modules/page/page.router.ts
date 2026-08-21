@@ -10,7 +10,7 @@ import {
   schema,
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
-import { format, isBefore } from "date-fns"
+import { format } from "date-fns"
 import { get, isEmpty, isEqual, pick } from "lodash-es"
 import { UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS } from "~/constants/resources"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
@@ -54,7 +54,6 @@ import {
   ScheduledAction,
 } from "~prisma/generated/generatedEnums"
 
-import type { Resource } from "../database"
 import { logResourceEvent } from "../audit/audit.service"
 import { alertPublishWhenSingpassDisabled } from "../auth/email/email.service"
 import { db, jsonb, sql } from "../database"
@@ -74,10 +73,14 @@ import {
   publishResource,
   unpublishPageResource,
   updateBlobById,
-  updatePageById,
 } from "../resource/resource.service"
 import { getSiteConfig } from "../site/site.service"
-import { createDefaultPage, createFolderIndexPage } from "./page.service"
+import {
+  cancelScheduleAction,
+  createDefaultPage,
+  createFolderIndexPage,
+  scheduleAction,
+} from "./page.service"
 
 const schemaValidator = ajv.compile<IsomerSchema>(schema)
 
@@ -115,202 +118,6 @@ const validatedPageProcedure = protectedProcedure.use(
 // error — the dark-launch trick depends on them being indistinguishable.
 const UNPUBLISH_PAGE_NOT_FOUND_MESSAGE =
   "This page either does not exist or cannot be unpublished"
-
-interface ScheduleActionParams {
-  userId: string
-  siteId: number
-  pageId: number
-  scheduledAt: Date
-  action: ScheduledAction
-  permissionAction: "publish" | "unpublish"
-  // whether the page must currently be published for this action to be schedulable (true for unpublish, false for publish)
-  requiresPublished: boolean
-  auditEvent:
-    | typeof AuditLogEvent.SchedulePublish
-    | typeof AuditLogEvent.ScheduleUnpublish
-  alreadyScheduledMessage: (scheduledAt: Date) => string
-  failedMessage: string
-  sendConfirmationEmail: (args: {
-    resource: Resource
-    scheduledAt: Date
-    recipientEmail: string
-  }) => Promise<void>
-}
-
-// Shared body for schedulePage/scheduleUnpublish: they differ only in the
-// scheduled action, permission, published-state precondition, audit event,
-// error copy, and confirmation email.
-const scheduleAction = async ({
-  userId,
-  siteId,
-  pageId,
-  scheduledAt,
-  action,
-  permissionAction,
-  requiresPublished,
-  auditEvent,
-  alreadyScheduledMessage,
-  failedMessage,
-  sendConfirmationEmail,
-}: ScheduleActionParams) => {
-  await bulkValidateUserPermissionsForResources({
-    siteId,
-    action: permissionAction,
-    userId,
-  })
-
-  if (isBefore(scheduledAt, new Date())) {
-    throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: "Scheduled time must be in the future",
-    })
-  }
-  const by = await db
-    .selectFrom("User")
-    .where("id", "=", userId)
-    .selectAll()
-    .executeTakeFirstOrThrow()
-
-  const updatedPage = await db.transaction().execute(async (tx) => {
-    // fetch the resource to be scheduled inside the transaction, to guard against concurrent update issues (race conditions)
-    const resource = await getPageById(tx, { resourceId: pageId, siteId })
-    if (!resource) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "Resource not found",
-      })
-    }
-    if (requiresPublished && !resource.publishedVersionId) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "This page is not currently published",
-      })
-    }
-    if (resource.scheduledAt) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: alreadyScheduledMessage(resource.scheduledAt),
-      })
-    }
-    // update the resource's scheduled field
-    const updatedPage = await updatePageById(
-      {
-        id: pageId,
-        siteId,
-        scheduledAt,
-        scheduledBy: by.id,
-        scheduledAction: action,
-      },
-      tx,
-    )
-    // verify that the update was successful
-    if (!updatedPage) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: failedMessage,
-      })
-    }
-    await logResourceEvent(tx, {
-      siteId,
-      by,
-      delta: { before: resource, after: updatedPage },
-      eventType: auditEvent,
-    })
-    return updatedPage
-  })
-  await sendConfirmationEmail({
-    resource: updatedPage,
-    scheduledAt,
-    recipientEmail: by.email,
-  })
-}
-
-interface CancelScheduleActionParams {
-  userId: string
-  siteId: number
-  pageId: number
-  action: ScheduledAction
-  permissionAction: "publish" | "unpublish"
-  auditEvent:
-    | typeof AuditLogEvent.CancelSchedulePublish
-    | typeof AuditLogEvent.CancelScheduleUnpublish
-  notScheduledMessage: string
-  failedMessage: string
-  sendConfirmationEmail: (args: {
-    resource: Resource
-    recipientEmail: string
-  }) => Promise<void>
-}
-
-// Shared body for cancelSchedulePage/cancelScheduleUnpublish: they differ
-// only in the scheduled action being cancelled, permission, audit event,
-// error copy, and confirmation email.
-const cancelScheduleAction = async ({
-  userId,
-  siteId,
-  pageId,
-  action,
-  permissionAction,
-  auditEvent,
-  notScheduledMessage,
-  failedMessage,
-  sendConfirmationEmail,
-}: CancelScheduleActionParams) => {
-  await bulkValidateUserPermissionsForResources({
-    siteId,
-    action: permissionAction,
-    userId,
-  })
-  const by = await db
-    .selectFrom("User")
-    .where("id", "=", userId)
-    .selectAll()
-    .executeTakeFirstOrThrow()
-  const updatedPage = await db.transaction().execute(async (tx) => {
-    const resource = await getPageById(tx, { resourceId: pageId, siteId })
-    if (!resource) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "Resource not found",
-      })
-    }
-    if (!resource.scheduledAt || resource.scheduledAction !== action) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: notScheduledMessage,
-      })
-    }
-
-    // update the resource's scheduled field
-    const updatedPage = await updatePageById(
-      {
-        id: pageId,
-        siteId,
-        scheduledAt: null,
-        scheduledBy: null,
-        scheduledAction: null,
-      },
-      tx,
-    )
-    if (!updatedPage) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: failedMessage,
-      })
-    }
-    await logResourceEvent(tx, {
-      siteId,
-      by,
-      delta: { before: resource, after: updatedPage },
-      eventType: auditEvent,
-    })
-    return updatedPage
-  })
-  await sendConfirmationEmail({
-    resource: updatedPage,
-    recipientEmail: by.email,
-  })
-}
 
 export const pageRouter = router({
   getPrefill: protectedProcedure

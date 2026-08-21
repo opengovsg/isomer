@@ -1,6 +1,5 @@
 import type { MockInstance } from "vitest"
 import type { User } from "~prisma/generated/prisma/client"
-import { TRPCError } from "@trpc/server"
 import { addSeconds } from "date-fns"
 import MockDate from "mockdate"
 import { auth } from "tests/integration/helpers/auth"
@@ -14,6 +13,7 @@ import {
 import * as emailService from "~/features/mail/service"
 import * as awsUtils from "~/server/modules/aws/utils"
 import { db } from "~/server/modules/database"
+import { PageAlreadyUnpublishedError } from "~/server/modules/resource/resource.error"
 import * as publishPageResourceModule from "~/server/modules/resource/resource.service"
 import {
   AuditLogEvent,
@@ -545,10 +545,7 @@ describe("schedulePublishingJob", async () => {
         publishPageResourceModule,
         "unpublishPageResource",
       ).mockImplementation(() => {
-        throw new TRPCError({
-          code: "PRECONDITION_FAILED",
-          message: "This page is not currently published",
-        })
+        throw new PageAlreadyUnpublishedError()
       })
       const sendFailedUnpublishEmailSpy = vi
         .spyOn(emailService, "sendFailedUnpublishEmail")
