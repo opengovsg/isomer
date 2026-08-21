@@ -15,7 +15,7 @@ won't boot under `.env.test`. Everything here was verified via `tsgo --noEmit` (
 `fixtures/po/*.ts`/`fixtures/helpers.ts` (grepped across every new file), and close reading
 of the actual component/schema source for every locator and required-field claim — but
 **not** against a running browser. Please run
-`pnpm exec playwright test tests/e2e/page --project=admin --project=editor --project=core`
+`pnpm exec playwright test tests/e2e/page/blocks tests/e2e/page/settings tests/e2e/page/flows --project=admin --project=editor --project=core`
 yourself before merging.
 
 ## Real bugs found and fixed along the way (not spec issues — actual latent bugs)
