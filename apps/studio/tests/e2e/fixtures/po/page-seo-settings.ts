@@ -44,9 +44,11 @@ export class PageSeoSettingsPO {
   }
 
   noIndexSwitch() {
-    return this.page.getByRole("switch", {
-      name: "Prevent search engines from indexing this page?",
-    })
+    // ODS Switch is a checkbox input; `aria-label` on JsonFormsBooleanControl
+    // is the accessible name (htmlFor association is unreliable on this widget).
+    return this.page.getByLabel(
+      "Prevent search engines from indexing this page?",
+    )
   }
 
   async setNoIndex(checked: boolean) {

@@ -88,10 +88,9 @@ const DgsDatasetIdModal = ({
 
   const {
     register,
-    handleSubmit,
     setError,
     clearErrors,
-    formState: { errors, isValid },
+    formState: { errors },
   } = useZodForm({
     mode: "onChange",
     schema: z.object({
@@ -133,13 +132,15 @@ const DgsDatasetIdModal = ({
     clearErrors,
   ])
 
-  const onSubmit = handleSubmit(() => {
+  const onSubmit = (event: { preventDefault: () => void }) => {
+    event.preventDefault()
+    if (isLoading || !isValidDataset) return
     const extractedId = getDgsIdFromString({ string: debouncedInputValue })
     if (extractedId) {
       onClose()
       onSave(extractedId) // Save only the ID, not the full URL
     }
-  })
+  }
 
   const FeedbackMessage = () => {
     if (errors.datasetId) {
@@ -204,7 +205,7 @@ const DgsDatasetIdModal = ({
               <Button
                 type="submit"
                 onClick={onSubmit}
-                isDisabled={!isValid || isLoading || !isValidDataset}
+                isDisabled={!datasetId || isLoading || !isValidDataset}
                 isLoading={isLoading}
               >
                 Save Dataset ID
