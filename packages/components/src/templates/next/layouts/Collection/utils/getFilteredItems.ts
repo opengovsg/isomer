@@ -2,7 +2,6 @@ import type { ProcessedCollectionCardProps } from "~/interfaces"
 
 import type { AppliedFilter } from "../../../types/Filter"
 import { FILTER_ID_YEAR, NO_SPECIFIED_YEAR_FILTER_ID } from "./constants"
-import { getDateFilterStatus, getTodayInSingapore } from "./getDateFilterStatus"
 import { normalizeCollectionSearchText } from "./normalizeCollectionSearchText"
 
 export const getFilteredItems = (
@@ -12,8 +11,6 @@ export const getFilteredItems = (
 ): ProcessedCollectionCardProps[] => {
   const normalizedSearchValue =
     searchValue !== "" ? normalizeCollectionSearchText(searchValue) : ""
-
-  const today = getTodayInSingapore()
 
   // NOTE: a filter id counts as "date-type" if any item carries a raw
   // `dateTagged` entry for it. Date filters are handled entirely in
@@ -94,11 +91,14 @@ export const getFilteredItems = (
         return false
       }
 
+      const status = item.dateFilterCards?.find(
+        ({ id }) => id === appliedFilter.id,
+      )?.status
+
       const matchesBucket =
         appliedFilter.items.length === 0 ||
-        appliedFilter.items.some(
-          ({ id: statusId }) => getDateFilterStatus(value, today) === statusId,
-        )
+        (status !== undefined &&
+          appliedFilter.items.some(({ id: statusId }) => status === statusId))
 
       const matchesRange =
         !appliedFilter.dateRange ||

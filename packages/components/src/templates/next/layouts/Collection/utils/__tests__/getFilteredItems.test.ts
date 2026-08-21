@@ -294,11 +294,8 @@ describe("getFilteredItems", () => {
   describe("date filters", () => {
     const EVENT_DATE_FILTER_ID = "event-date-filter-id"
 
-    // NOTE: getFilteredItems always computes "today" internally (Asia/Singapore,
-    // real clock) rather than accepting an override, so these fixtures are
-    // built relative to `new Date()` at test-run time rather than hardcoded
-    // dates — a hardcoded "ongoing" range would silently become "ended" once
-    // that date passes.
+    // NOTE: bucket status comes from each item's precomputed `dateFilterCards`
+    // (stamped at build time), not a live "today" — see getDateFilterValues.
     const toDateString = (date: Date) => date.toISOString().slice(0, 10)
     const daysFromNow = (days: number) => {
       const date = new Date()
@@ -315,11 +312,29 @@ describe("getFilteredItems", () => {
           title: "Ongoing event",
           description: "",
           dateTagged: [{ id: EVENT_DATE_FILTER_ID, ...ONGOING_RANGE }],
+          dateFilterCards: [
+            {
+              id: EVENT_DATE_FILTER_ID,
+              label: "Event date",
+              status: "ONGOING",
+              statusLabel: "Ongoing",
+              dateText: "ongoing",
+            },
+          ],
         } as ProcessedCollectionCardProps,
         {
           title: "Ended event",
           description: "",
           dateTagged: [{ id: EVENT_DATE_FILTER_ID, ...ENDED_RANGE }],
+          dateFilterCards: [
+            {
+              id: EVENT_DATE_FILTER_ID,
+              label: "Event date",
+              status: "ENDED",
+              statusLabel: "Ended",
+              dateText: "ended",
+            },
+          ],
         } as ProcessedCollectionCardProps,
       ]
       const appliedFilters: AppliedFilter[] = [
@@ -382,11 +397,29 @@ describe("getFilteredItems", () => {
           title: "Matches both",
           description: "",
           dateTagged: [{ id: EVENT_DATE_FILTER_ID, ...ONGOING_RANGE }],
+          dateFilterCards: [
+            {
+              id: EVENT_DATE_FILTER_ID,
+              label: "Event date",
+              status: "ONGOING",
+              statusLabel: "Ongoing",
+              dateText: "ongoing",
+            },
+          ],
         } as ProcessedCollectionCardProps,
         {
           title: "Matches range only, already ended",
           description: "",
           dateTagged: [{ id: EVENT_DATE_FILTER_ID, ...ENDED_RANGE }],
+          dateFilterCards: [
+            {
+              id: EVENT_DATE_FILTER_ID,
+              label: "Event date",
+              status: "ENDED",
+              statusLabel: "Ended",
+              dateText: "ended",
+            },
+          ],
         } as ProcessedCollectionCardProps,
       ]
       const appliedFilters: AppliedFilter[] = [
@@ -413,6 +446,15 @@ describe("getFilteredItems", () => {
           title: "Has a value",
           description: "",
           dateTagged: [{ id: EVENT_DATE_FILTER_ID, ...ONGOING_RANGE }],
+          dateFilterCards: [
+            {
+              id: EVENT_DATE_FILTER_ID,
+              label: "Event date",
+              status: "ONGOING",
+              statusLabel: "Ongoing",
+              dateText: "ongoing",
+            },
+          ],
         } as ProcessedCollectionCardProps,
         {
           title: "No value at all",

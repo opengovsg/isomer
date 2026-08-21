@@ -72,7 +72,8 @@ export const RangeCalendar = ({
         </CalendarNavButton>
       </div>
       <CalendarGrid state={state} />
-      <div className="mt-3 flex justify-end">
+      <div className="mt-3 flex justify-end gap-2">
+        {defaultValue && <ClearButton onPress={() => onApply(null)} />}
         <ApplyButton
           onPress={() => {
             // A single click only sets `anchorDate` (selection in progress)
@@ -91,6 +92,22 @@ export const RangeCalendar = ({
         />
       </div>
     </div>
+  )
+}
+
+const ClearButton = (props: Parameters<typeof useButton>[0]) => {
+  const ref = useRef<HTMLButtonElement>(null)
+  const { buttonProps } = useButton(props, ref)
+
+  return (
+    <button
+      {...buttonProps}
+      ref={ref}
+      type="button"
+      className="prose-label-sm-medium rounded px-4 py-2.5 text-link outline-0"
+    >
+      Clear
+    </button>
   )
 }
 
