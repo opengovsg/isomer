@@ -97,6 +97,7 @@ const InfoBoxes = ({
         ({ title, icon, description, buttonUrl, buttonLabel }, idx) => {
           const hasLink = !!buttonUrl
           const isExternalLink = isExternalUrl(buttonUrl)
+          const showTitleArrow = hasLink && !buttonLabel
           return (
             <Link
               href={getReferenceLinkHref(
@@ -116,6 +117,14 @@ const InfoBoxes = ({
                 })}
               >
                 {title}
+                {showTitleArrow && (
+                  <BiRightArrowAlt
+                    aria-hidden
+                    className={compoundStyles.infoBoxButtonIcon({
+                      isExternalLink,
+                    })}
+                  />
+                )}
               </h3>
 
               {description && (
@@ -124,7 +133,7 @@ const InfoBoxes = ({
                 </p>
               )}
 
-              {buttonLabel && hasLink && (
+              {hasLink && !showTitleArrow && (
                 <div className={compoundStyles.infoBoxButton()}>
                   {buttonLabel}
                   <BiRightArrowAlt
