@@ -730,6 +730,17 @@ export class PageEditorPO {
     await this.page.getByRole("button", { name: "Underline" }).click()
   }
 
+  /** Applies bold, italic, and underline on one text run without re-selecting
+   * between toolbar clicks — triple-clicking text already wrapped in `<strong>`
+   * is flaky in CI, so subsequent `applyItalic`/`applyUnderline` calls can
+   * silently miss the intended paragraph. */
+  async applyInlineFormatting(text: string) {
+    await this.#selectProseLine(text)
+    await this.page.getByRole("button", { name: "Bold" }).click()
+    await this.page.getByRole("button", { name: "Italicise" }).click()
+    await this.page.getByRole("button", { name: "Underline" }).click()
+  }
+
   async insertBulletedList(text: string) {
     await this.#selectProseLine(text)
     await this.page.getByRole("button", { name: "Lists" }).click()
