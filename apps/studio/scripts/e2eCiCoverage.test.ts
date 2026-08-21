@@ -56,6 +56,7 @@ function pathsDeclaredInCi(): string[] {
 
 describe("e2e-tests CI matrix", () => {
   it("declares every tests/e2e feature directory and root test file exactly once", () => {
+    // Arrange / Act / Assert
     expect(
       pathsDeclaredInCi(),
       "Missing or duplicate `paths:` in .github/workflows/ci.yml for a tests/e2e " +
