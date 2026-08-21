@@ -14,10 +14,12 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 import type {
   AccountDeactivationEmailTemplateData,
   AccountDeactivationWarningEmailTemplateData,
+  AlreadyUnpublishedTemplateData,
   AuditLogExportDownloadLink,
   AuditLogExportFailedEmailTemplateData,
   AuditLogExportReadyEmailTemplateData,
   CancelSchedulePageTemplateData,
+  CancelScheduleUnpublishTemplateData,
   EmailTemplate,
   EmailTemplateFunction,
   FailedPublishTemplateData,
@@ -28,6 +30,7 @@ import type {
   PublishAlertContentPublisherEmailTemplateData,
   PublishAlertSiteAdminEmailTemplateData,
   SchedulePageTemplateData,
+  ScheduleUnpublishTemplateData,
   SuccessfulPublishTemplateData,
 } from "./types"
 import { escapeHtml, escapeTemplateArguments, unescapeHtml } from "../utils"
@@ -148,6 +151,36 @@ const cancelSchedulePageTemplate = (
   }
 }
 
+const scheduleUnpublishTemplate = (
+  data: ScheduleUnpublishTemplateData,
+): EmailTemplate => {
+  const { recipientEmail, scheduledAt, resource } = data
+  const studioResourceUrl = getStudioResourceUrl(resource)
+  return {
+    subject: `[Isomer Studio] You scheduled a page to be unpublished`,
+    body: `<p>Hi ${recipientEmail},</p>
+    <p>You’ve scheduled a page to be unpublished at a later time. Your page will be unpublished at: <strong>${formatScheduledAtDate(toZonedTime(scheduledAt, "Asia/Singapore"), false)} (SGT)</strong>.</p>
+    <p>Log in to Isomer Studio at ${studioResourceUrl} to modify or cancel your schedule.</p>
+    <p>Best,</p>
+    <p>Isomer team</p>`,
+  }
+}
+
+const cancelScheduleUnpublishTemplate = (
+  data: CancelScheduleUnpublishTemplateData,
+): EmailTemplate => {
+  const { recipientEmail, resource } = data
+  const studioResourceUrl = getStudioResourceUrl(resource)
+  return {
+    subject: `[Isomer Studio] Schedule to unpublish was cancelled`,
+    body: `<p>Hi ${recipientEmail},</p>
+    <p>Your schedule to unpublish "${resource.title}" has been cancelled. The page remains published.</p>
+    <p>Log in to Isomer Studio at ${studioResourceUrl} to manage changes to your page.</p>
+    <p>Best,</p>
+    <p>Isomer team</p>`,
+  }
+}
+
 const failedPublishTemplate = (
   data: FailedPublishTemplateData,
 ): EmailTemplate => {
@@ -202,6 +235,25 @@ const failedUnpublishTemplate = (
   }
 }
 
+const alreadyUnpublishedTemplate = (
+  data: AlreadyUnpublishedTemplateData,
+): EmailTemplate => {
+  const { recipientEmail, resource } = data
+  const studioResourceUrl = getStudioResourceUrl(resource)
+  return {
+    subject: `[Isomer Studio] Your scheduled unpublish was skipped`,
+    body: `<p>Hi ${recipientEmail},</p>
+    <p>Your scheduled unpublish for the page ${resource.title} was skipped because the page had already been unpublished.</p>
+    <p>Log in to Isomer Studio at ${studioResourceUrl} if you'd like to make further changes.</p>
+    <p>Best,</p>
+    <p>Isomer team</p>`,
+  }
+}
+
+// NOTE: this is sent for both publish and unpublish scheduled/manual actions
+// (this is the only call site, in webhook.utils.ts, and it doesn't know which
+// action a given CodeBuild job was for), so the copy is intentionally generic
+// rather than claiming the page is now live.
 const successfulPublishTemplate = (
   data: SuccessfulPublishTemplateData,
 ): EmailTemplate => {
@@ -210,19 +262,19 @@ const successfulPublishTemplate = (
   switch (rest.isScheduled) {
     case true:
       return {
-        subject: `[Isomer Studio] Your scheduled page was published`,
+        subject: `[Isomer Studio] Your scheduled page was successfully updated`,
         body: `<p>Hi ${recipientEmail},</p>
-        <p>Your page ${resource.title} was successfully published as scheduled. It will be live on your site in approximately 5-10 minutes.</p>
-        <p> You can view or edit your published content on Isomer Studio at ${studioResourceUrl}.</p>
+        <p>Your page ${resource.title} was successfully updated as scheduled.</p>
+        <p> You can view the current status of your page on Isomer Studio at ${studioResourceUrl}.</p>
         <p>Best,</p>
         <p>Isomer team</p>`,
       }
     case false:
       return {
-        subject: `[Isomer Studio] Changes you published are now live`,
+        subject: `[Isomer Studio] Your changes were successfully updated`,
         body: `<p>Hi ${recipientEmail},</p>
-        <p>Your changes to page ${resource.title} have been successfully published and will be live on your site in approximately 5-10 minutes.</p>
-        <p> You can view or edit your published content on Isomer Studio at ${studioResourceUrl}.</p>
+        <p>Your changes to page ${resource.title} have been successfully updated.</p>
+        <p> You can view the current status of your page on Isomer Studio at ${studioResourceUrl}.</p>
         <p>Best,</p>
         <p>Isomer team</p>`,
       }
@@ -366,10 +418,16 @@ const _templates = {
     publishAlertContentPublisherTemplate satisfies EmailTemplateFunction<PublishAlertContentPublisherEmailTemplateData>,
   cancelSchedulePage:
     cancelSchedulePageTemplate satisfies EmailTemplateFunction<CancelSchedulePageTemplateData>,
+  scheduleUnpublish:
+    scheduleUnpublishTemplate satisfies EmailTemplateFunction<ScheduleUnpublishTemplateData>,
+  cancelScheduleUnpublish:
+    cancelScheduleUnpublishTemplate satisfies EmailTemplateFunction<CancelScheduleUnpublishTemplateData>,
   failedPublish:
     failedPublishTemplate satisfies EmailTemplateFunction<FailedPublishTemplateData>,
   failedUnpublish:
     failedUnpublishTemplate satisfies EmailTemplateFunction<FailedUnpublishTemplateData>,
+  alreadyUnpublished:
+    alreadyUnpublishedTemplate satisfies EmailTemplateFunction<AlreadyUnpublishedTemplateData>,
   successfulPublish:
     successfulPublishTemplate satisfies EmailTemplateFunction<SuccessfulPublishTemplateData>,
   schedulePage:

@@ -4,10 +4,12 @@ import { isValidEmail } from "~/utils/email"
 import type {
   AccountDeactivationEmailTemplateData,
   AccountDeactivationWarningEmailTemplateData,
+  AlreadyUnpublishedTemplateData,
   AuditLogExportFailedEmailTemplateData,
   AuditLogExportReadyEmailTemplateData,
   BaseEmailTemplateData,
   CancelSchedulePageTemplateData,
+  CancelScheduleUnpublishTemplateData,
   EmailTemplate,
   FailedPublishTemplateData,
   FailedUnpublishTemplateData,
@@ -17,6 +19,7 @@ import type {
   PublishAlertContentPublisherEmailTemplateData,
   PublishAlertSiteAdminEmailTemplateData,
   SchedulePageTemplateData,
+  ScheduleUnpublishTemplateData,
   SuccessfulPublishTemplateData,
 } from "./templates"
 import { sendMail } from "../../lib/mail"
@@ -109,6 +112,26 @@ export async function sendCancelSchedulePageEmail(
   })
 }
 
+export async function sendScheduledUnpublishEmail(
+  data: ScheduleUnpublishTemplateData,
+): Promise<void> {
+  await sendEmailWithTemplate({
+    data,
+    template: templates.scheduleUnpublish(data),
+    emailType: "scheduled unpublish",
+  })
+}
+
+export async function sendCancelScheduleUnpublishEmail(
+  data: CancelScheduleUnpublishTemplateData,
+): Promise<void> {
+  await sendEmailWithTemplate({
+    data,
+    template: templates.cancelScheduleUnpublish(data),
+    emailType: "cancel scheduled unpublish",
+  })
+}
+
 export async function sendFailedPublishEmail(
   data: FailedPublishTemplateData,
 ): Promise<void> {
@@ -126,6 +149,16 @@ export async function sendFailedUnpublishEmail(
     data,
     template: templates.failedUnpublish(data),
     emailType: "failed unpublish",
+  })
+}
+
+export async function sendAlreadyUnpublishedEmail(
+  data: AlreadyUnpublishedTemplateData,
+): Promise<void> {
+  await sendEmailWithTemplate({
+    data,
+    template: templates.alreadyUnpublished(data),
+    emailType: "already unpublished",
   })
 }
 
