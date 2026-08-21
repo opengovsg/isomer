@@ -2634,6 +2634,62 @@ describe("page.router", async () => {
         .executeTakeFirstOrThrow()
       expect(draftBlob.content).toEqual(blob.content)
     })
+
+    it("should leave existing redirects untouched", async () => {
+      // Arrange — one redirect pointing away from the page (by literal path),
+      // and one redirect whose destination references the page being
+      // unpublished. unpublishPageResource never writes to the Redirect
+      // table, so neither row's source/destination/deletedAt should change —
+      // the build-time exclusion of unpublished targets from redirects.json
+      // (tooling/build/scripts/publishing/queries.ts) is a separate, later
+      // concern from the DB row itself.
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      await db
+        .insertInto("Redirect")
+        .values([
+          {
+            siteId: site.id,
+            source: "/old-url",
+            destination: "/some-other-page",
+          },
+          {
+            siteId: site.id,
+            source: "/another-old-url",
+            destination: `[resource:${site.id}:${page.id}]`,
+          },
+        ])
+        .execute()
+
+      // Act
+      await caller.unpublishPage({ siteId: site.id, pageId: Number(page.id) })
+
+      // Assert — both redirects are exactly as they were, and not soft-deleted
+      const redirects = await db
+        .selectFrom("Redirect")
+        .selectAll()
+        .where("siteId", "=", site.id)
+        .orderBy("source", "asc")
+        .execute()
+      expect(redirects).toHaveLength(2)
+      expect(redirects[0]).toMatchObject({
+        source: "/another-old-url",
+        destination: `[resource:${site.id}:${page.id}]`,
+        deletedAt: null,
+      })
+      expect(redirects[1]).toMatchObject({
+        source: "/old-url",
+        destination: "/some-other-page",
+        deletedAt: null,
+      })
+    })
   })
 
   describe("updateMeta", () => {
