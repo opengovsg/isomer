@@ -2,12 +2,12 @@ import { test } from "@playwright/test"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { inviteCollaborator, openInviteModal } from "../fixtures/helpers"
+import { inviteCollaborator } from "../fixtures/helpers"
 import { provisionE2ESite } from "../fixtures/site"
 import {
   ensureUserOnboarded,
+  seedLoggedInEditorOnSite,
   uniqueInviteeEmail,
-  uniqueVendorEmail,
 } from "../fixtures/user"
 import { expectUserRoleOnSite } from "../fixtures/user-expect"
 import { UsersPO } from "../fixtures/users.po"
@@ -24,45 +24,38 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await ensureUserOnboarded(TEST_EMAILS.admin)
   })
 
-  test("admin can invite a new collaborator as Editor", async ({ page }) => {
+  test("admin can resend an invite to a pending user", async ({ page }) => {
     const inviteeEmail = uniqueInviteeEmail()
 
-    // Arrange / Act
+    // Arrange
     await inviteCollaborator(page, {
       email: inviteeEmail,
       role: "Editor",
       siteId,
     })
-
-    // Assert
     await expectUserRoleOnSite(siteId, inviteeEmail).toBe("Editor")
-  })
-
-  test("admin sees AddAdminWarning when selecting Admin role in invite modal", async ({
-    page,
-  }) => {
     const users = new UsersPO(page)
+    await users.goto(siteId)
 
-    // Arrange / Act
-    await openInviteModal(page, siteId)
-    await users.selectInviteRole("Admin")
+    // Act
+    await users.clickResendInvite(inviteeEmail)
 
     // Assert
-    await users.expectAddAdminWarningVisible()
+    await users.expectResendInviteToast(inviteeEmail)
   })
 
-  test("admin cannot invite a non-whitelisted vendor collaborator", async ({
+  test("admin does not see Resend invite for a user who has logged in", async ({
     page,
   }) => {
-    const vendorEmail = uniqueVendorEmail()
+    // Arrange
+    const { email } = await seedLoggedInEditorOnSite({ siteId })
+    await expectUserRoleOnSite(siteId, email).toBe("Editor")
     const users = new UsersPO(page)
 
-    // Arrange / Act
-    await openInviteModal(page, siteId)
-    await users.fillInviteForm(vendorEmail, "Editor")
+    // Act
+    await users.goto(siteId)
 
     // Assert
-    await users.expectNonGovSgWhitelistWarning()
-    await users.expectSendInviteDisabled()
+    await users.expectResendInviteNotVisible(email)
   })
 })
