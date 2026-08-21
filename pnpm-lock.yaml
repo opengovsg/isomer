@@ -406,8 +406,8 @@ catalogs:
       specifier: ^1.2.0
       version: 1.6.5
     '@growthbook/growthbook-react':
-      specifier: ^1.2.0
-      version: 1.6.5
+      specifier: ^1.7.0
+      version: 1.7.0
   jsonforms:
     '@jsonforms/core':
       specifier: ^3.8.0
@@ -723,7 +723,7 @@ importers:
         version: 1.6.5
       '@growthbook/growthbook-react':
         specifier: catalog:growthbook
-        version: 1.6.5(react@18.3.1)
+        version: 1.7.0(react@18.3.1)
       '@hello-pangea/dnd':
         specifier: 'catalog:'
         version: 18.0.1(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -4148,14 +4148,18 @@ packages:
   '@formkit/auto-animate@0.10.0':
     resolution: {integrity: sha512-KGomRttjUfORuPUaR/ZGQw+6xfMrTM+sxnILv7JAd9AmabU9rg9i6gF/iC0Ih+QpKCubJpCA/1DX9UHKE8cX+A==}
 
-  '@growthbook/growthbook-react@1.6.5':
-    resolution: {integrity: sha512-afi/RUbwazVNKv2acn6wDQz4BJNRAEpwIuHfggQup2/aE5PLAxy3+95gjjRMgCcPR0Pf3sFmhYGvOmxLD0ZRbQ==}
+  '@growthbook/growthbook-react@1.7.0':
+    resolution: {integrity: sha512-7TU0Yjmkl2Me8LKpG5cjqIsLSK+sz9T/1vocJAm49KsBeTvse6QwR9544KB9sU7eJF9qYVGr4GekW/r9bqmaWg==}
     engines: {node: '>=10'}
     peerDependencies:
       react: ^16.8.0-0 || ^17.0.0-0 || ^18.0.0-0 || ^19.0.0-0
 
   '@growthbook/growthbook@1.6.5':
     resolution: {integrity: sha512-mUaMsgeUTpRIUOTn33EUXHRK6j7pxBjwqH4WpQyq+pukjd1AIzWlEa6w7i6bInJUcweGgP2beXZmaP6b6UPn7A==}
+    engines: {node: '>=10'}
+
+  '@growthbook/growthbook@1.7.0':
+    resolution: {integrity: sha512-Vmad3fWRh1XaFH4q+AS62ofX6Q3IxSTD7sBGuhEHCaad8VyZerxrVdojucjzlnJDUocfrnZFUSpEkR6R/wCV+A==}
     engines: {node: '>=10'}
 
   '@grpc/grpc-js@1.14.4':
@@ -8620,6 +8624,7 @@ packages:
   eslint@9.39.4:
     resolution: {integrity: sha512-XoMjdBOwe/esVgEvLmNsD3IRHkm7fbKIUGvrleloJXUZgDHig2IPWNniv+GwjyJXzuNqVjlr5+4yVUZjycJwfQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
     peerDependencies:
       jiti: '*'
@@ -15437,12 +15442,16 @@ snapshots:
 
   '@formkit/auto-animate@0.10.0': {}
 
-  '@growthbook/growthbook-react@1.6.5(react@18.3.1)':
+  '@growthbook/growthbook-react@1.7.0(react@18.3.1)':
     dependencies:
-      '@growthbook/growthbook': 1.6.5
+      '@growthbook/growthbook': 1.7.0
       react: 18.3.1
 
   '@growthbook/growthbook@1.6.5':
+    dependencies:
+      dom-mutator: 0.6.0
+
+  '@growthbook/growthbook@1.7.0':
     dependencies:
       dom-mutator: 0.6.0
 
