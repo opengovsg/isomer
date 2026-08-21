@@ -272,14 +272,9 @@ jobs:
     strategy:
       fail-fast: false # so all shards run and one shard failing doesn't cancel the rest
       matrix:
-        # One job per tests/e2e/<feature> directory, except smoke/singpass
-        # (grouped as "root" since neither is role-tagged) and modules sharded
-        # into subdirs (e.g. page/blocks — no *.test.ts at page/ root). `paths`
-        # are passed straight to `playwright test <paths>`; role/project grep
-        # filtering still applies on top. When you add a new tests/e2e/<feature>
-        # directory, add an entry for it here — the "declares every tests/e2e
-        # path" test in apps/studio/scripts/e2eCiCoverage.test.ts fails if you
-        # forget.
+        # One matrix job per tests/e2e path. Smoke/singpass share "root".
+        # page/ has no root tests, so CI lists page/blocks, page/settings, page/flows.
+        # e2eCiCoverage.test.ts checks every path exists and is listed once.
         include:
           - feature: site
             paths: tests/e2e/site
