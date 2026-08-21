@@ -46,6 +46,7 @@ import { db, jsonb, ResourceState, ResourceType, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { getUserById } from "../user/user.service"
 import { incrementVersion } from "../version/version.service"
+import { PageAlreadyUnpublishedError } from "./resource.error"
 import { type Page } from "./resource.types"
 import { tokenizeSearchQuery } from "./resource.utils"
 
@@ -1409,11 +1410,8 @@ export const unpublishPageResource = async ({
       })
     }
 
-    if (fullResource.publishedVersionId === null) {
-      throw new TRPCError({
-        code: "PRECONDITION_FAILED",
-        message: "This page is not currently published",
-      })
+    if (!fullResource.publishedVersionId) {
+      throw new PageAlreadyUnpublishedError()
     }
 
     // A scheduled publish isn't cleared by unpublishing — the schedule cron

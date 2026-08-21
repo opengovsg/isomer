@@ -3145,7 +3145,7 @@ describe("resource.router", async () => {
           versionNum: 1,
           resourceId: folderMeta.id,
           blobId: blob.id,
-          publishedBy: session.userId!,
+          publishedBy: session.userId as string,
         })
         .returning("id")
         .executeTakeFirstOrThrow()
