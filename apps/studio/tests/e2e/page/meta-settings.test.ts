@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test"
 import crypto from "crypto"
-import { fileURLToPath } from "url"
+import { E2E_LOGO_FILENAME, E2E_LOGO_FIXTURE } from "~e2e/fixtures/assets"
 import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
 import {
   openCollectionIndexEditor,
@@ -21,10 +21,8 @@ import { provisionE2ESite } from "~e2e/fixtures/site"
 import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
-const LOGO_FIXTURE = fileURLToPath(
-  new URL("../fixtures/e2e-logo.png", import.meta.url),
-)
-const LOGO_FILENAME = "e2e-logo.png"
+const LOGO_FIXTURE = E2E_LOGO_FIXTURE
+const LOGO_FILENAME = E2E_LOGO_FILENAME
 
 // In-editor page-header drawer (`MetadataEditorStateDrawer`) via
 // `PageEditorPO.openMetaSettings()` — not the top-nav SEO route
