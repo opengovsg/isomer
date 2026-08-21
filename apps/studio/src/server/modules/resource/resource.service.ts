@@ -44,6 +44,7 @@ import { db, jsonb, ResourceState, ResourceType, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { getUserById } from "../user/user.service"
 import { incrementVersion } from "../version/version.service"
+import { PageAlreadyUnpublishedError } from "./resource.error"
 import { type Page } from "./resource.types"
 import { tokenizeSearchQuery } from "./resource.utils"
 
@@ -1393,10 +1394,7 @@ export const unpublishPageResource = async ({
     }
 
     if (!fullResource.publishedVersionId) {
-      throw new TRPCError({
-        code: "PRECONDITION_FAILED",
-        message: "This page is not currently published",
-      })
+      throw new PageAlreadyUnpublishedError()
     }
 
     const previousVersionId = fullResource.publishedVersionId
@@ -1453,6 +1451,29 @@ export const unpublishPageResource = async ({
           }
         : undefined,
     })
+}
+
+/**
+ * A live page must be unpublished before it can be deleted, so its removal
+ * is always preceded by an audited Unpublish event.
+ * TODO: Folders and Collections have no unpublish path yet (open design
+ * item), so they're exempt from this guard for now — deleting a published
+ * folder/collection today skips the Unpublish audit event that pages get.
+ * Revisit once folder/collection unpublish is designed.
+ */
+export const assertResourceDeletable = (
+  resource: Pick<Resource, "publishedVersionId" | "type">,
+) => {
+  if (
+    resource.publishedVersionId !== null &&
+    resource.type !== ResourceType.Folder &&
+    resource.type !== ResourceType.Collection
+  ) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "This page must be unpublished before it can be deleted",
+    })
+  }
 }
 
 /**

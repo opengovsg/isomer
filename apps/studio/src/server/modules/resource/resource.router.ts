@@ -47,6 +47,7 @@ import {
 import { validateUserPermissionsForSite } from "../site/site.service"
 import {
   applyResourceOrderBy,
+  assertResourceDeletable,
   defaultResourceSelect,
   getBatchAncestryWithSelfQuery,
   getResourceFullPermalink,
@@ -753,23 +754,7 @@ export const resourceRouter = router({
           })
         }
 
-        // A live page must be unpublished before it can be deleted, so its
-        // removal is always preceded by an audited Unpublish event.
-        // TODO: Folders and Collections have no unpublish path yet (open
-        // design item), so they're exempt from this guard for now — deleting
-        // a published folder/collection today skips the Unpublish audit
-        // event that pages get. Revisit once folder/collection unpublish is
-        // designed.
-        if (
-          before.publishedVersionId !== null &&
-          before.type !== ResourceType.Folder &&
-          before.type !== ResourceType.Collection
-        ) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "This page must be unpublished before it can be deleted",
-          })
-        }
+        assertResourceDeletable(before)
 
         await logResourceEvent(tx, {
           siteId,
