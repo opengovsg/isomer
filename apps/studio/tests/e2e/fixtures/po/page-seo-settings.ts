@@ -54,7 +54,8 @@ export class PageSeoSettingsPO {
   async setNoIndex(checked: boolean) {
     const toggle = this.noIndexSwitch()
     if ((await toggle.isChecked()) !== checked) {
-      await toggle.click()
+      // Chakra switch label intercepts pointer events on the checkbox input.
+      await toggle.click({ force: true })
     }
   }
 

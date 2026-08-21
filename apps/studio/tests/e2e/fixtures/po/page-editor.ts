@@ -247,10 +247,13 @@ export class PageEditorPO {
    * "Callout content" vs. the integration seed's default callout block,
    * whose text is "Test Callout content" — a non-exact match would resolve
    * to both blocks' paragraphs and violate Playwright's strict mode). */
-  async expectPreviewContains(text: string, options?: { exact?: boolean }) {
+  async expectPreviewContains(
+    text: string,
+    options?: { exact?: boolean; timeout?: number },
+  ) {
     await expect(
-      this.previewFrame().getByText(text, options).first(),
-    ).toBeVisible()
+      this.previewFrame().getByText(text, { exact: options?.exact }).first(),
+    ).toBeVisible({ timeout: options?.timeout })
   }
 
   /** `map`/`formsg` render a plain `<iframe title={title}>` directly (no

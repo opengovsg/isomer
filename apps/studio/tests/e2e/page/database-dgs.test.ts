@@ -47,8 +47,21 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await editor.saveDgsDatasetId()
     await editor.fillFormFieldByLabel("Title", tableTitle)
     await editor.saveMetaSettings()
+    const dgsPreviewReady = Promise.all([
+      page.waitForResponse(
+        (response) =>
+          response.url().includes("api-production.data.gov.sg") &&
+          response.url().includes("/metadata") &&
+          response.ok(),
+      ),
+      page.waitForResponse(
+        (response) =>
+          response.url().includes("datastore_search") && response.ok(),
+      ),
+    ])
     await editor.reload()
     await editor.expectLoaded()
+    await dgsPreviewReady
 
     // Assert — preview iframe (mocked DGS metadata + datastore_search)
     await editor.expectPreviewContains(tableTitle)
