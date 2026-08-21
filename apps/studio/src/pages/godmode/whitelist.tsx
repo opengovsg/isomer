@@ -84,6 +84,7 @@ const GodModeWhitelistPage: NextPageWithLayout = () => {
           <b>No expiry</b>
         </h1>
         <Textarea
+          aria-label="No expiry"
           value={adminEmails.join("\n")}
           onChange={(e) => {
             const newEmails = e.target.value.split(/\r?\n/).map((s) => s.trim())
@@ -94,6 +95,7 @@ const GodModeWhitelistPage: NextPageWithLayout = () => {
           <b>Vendors (90 day expiry)</b>
         </h1>
         <Textarea
+          aria-label="Vendors (90 day expiry)"
           value={vendorEmails.join("\n")}
           onChange={(e) => {
             const newEmails = e.target.value.split(/\r?\n/).map((s) => s.trim())

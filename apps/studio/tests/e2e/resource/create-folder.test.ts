@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test"
 import crypto from "crypto"
 import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
 import { createFolderViaWizard } from "~e2e/fixtures/helpers"
-import { deleteResourcesByTitlePrefix } from "~e2e/fixtures/reset"
+import { deleteResourceById } from "~e2e/fixtures/reset"
 import { getResourceByTitleAndType } from "~e2e/fixtures/resource"
 import { provisionE2ESite } from "~e2e/fixtures/site"
 import { ensureUserOnboarded } from "~e2e/fixtures/user"
@@ -12,6 +12,7 @@ const UNIQUE_TITLE = () => `E2E Test Folder ${crypto.randomUUID().slice(0, 8)}`
 
 test.describe("create folder", { tag: roleTag("admin") }, () => {
   let siteId: number
+  let createdFolderId: string | undefined
 
   test.beforeAll(async () => {
     const site = await provisionE2ESite({ roles: [RoleType.Admin] })
@@ -20,10 +21,13 @@ test.describe("create folder", { tag: roleTag("admin") }, () => {
 
   test.beforeEach(async () => {
     await ensureUserOnboarded(TEST_EMAILS.admin)
+    createdFolderId = undefined
   })
 
   test.afterEach(async () => {
-    await deleteResourcesByTitlePrefix(siteId, "E2E Test Folder ")
+    if (createdFolderId) {
+      await deleteResourceById(createdFolderId)
+    }
   })
 
   test("admin can create a folder via the Create new wizard", async ({
@@ -45,5 +49,6 @@ test.describe("create folder", { tag: roleTag("admin") }, () => {
     })
     expect(created).toBeTruthy()
     expect(created?.type).toBe(ResourceType.Folder)
+    createdFolderId = created?.id
   })
 })

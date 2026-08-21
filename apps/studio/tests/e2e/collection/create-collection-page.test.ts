@@ -3,7 +3,7 @@ import crypto from "crypto"
 import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
 import { createCollectionPageViaWizard } from "~e2e/fixtures/helpers"
 import { DashboardPO, PageEditorPO } from "~e2e/fixtures/po"
-import { deleteResourcesByTitlePrefix } from "~e2e/fixtures/reset"
+import { deleteResourceById } from "~e2e/fixtures/reset"
 import {
   countResourcesByParent,
   getResource,
@@ -29,12 +29,17 @@ test.beforeAll(async () => {
 })
 
 test.describe("admin", { tag: roleTag("admin") }, () => {
+  let createdPageId: string | undefined
+
   test.beforeEach(async () => {
     await ensureUserOnboarded(TEST_EMAILS.admin)
+    createdPageId = undefined
   })
 
   test.afterEach(async () => {
-    await deleteResourcesByTitlePrefix(siteId, "E2E Collection Page ")
+    if (createdPageId) {
+      await deleteResourceById(createdPageId)
+    }
   })
 
   test("admin can create a collection page via the wizard", async ({
@@ -48,6 +53,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
       collectionId,
       title,
     })
+    createdPageId = pageId
     await new PageEditorPO(page).expectLoaded()
 
     // Assert
@@ -86,12 +92,17 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 })
 
 test.describe("editor", { tag: roleTag("editor") }, () => {
+  let createdPageId: string | undefined
+
   test.beforeEach(async () => {
     await ensureUserOnboarded(TEST_EMAILS.editor)
+    createdPageId = undefined
   })
 
   test.afterEach(async () => {
-    await deleteResourcesByTitlePrefix(siteId, "E2E Collection Page ")
+    if (createdPageId) {
+      await deleteResourceById(createdPageId)
+    }
   })
 
   test("editor can create a collection page via the wizard", async ({
@@ -105,6 +116,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
       collectionId,
       title,
     })
+    createdPageId = pageId
     await new PageEditorPO(page).expectLoaded()
 
     // Assert
