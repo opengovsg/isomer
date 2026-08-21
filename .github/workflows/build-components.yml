@@ -17,10 +17,6 @@ on:
         required: true
         default: "ap-southeast-1"
         type: string
-      aws-account-id:
-        description: "AWS account ID to use"
-        required: true
-        type: string
       cicd-role:
         description: "AWS IAM role to assume by GitHub action runner"
         required: true
@@ -39,10 +35,6 @@ on:
         description: "AWS region to use"
         required: false
         default: "ap-southeast-1"
-        type: string
-      aws-account-id:
-        description: "AWS account ID to use"
-        required: true
         type: string
       cicd-role:
         description: "AWS IAM role to assume by GitHub action runner"
@@ -72,14 +64,12 @@ jobs:
           REQUESTED_REF: ${{ inputs.isomer-build-repo-branch }}
         run: |
           # Assumption: all production builds use release tags. If a ref is passed in
-          # explicitly, treat it as a feature branch for cache-key purposes below.
+          # explicitly, use it as-is instead of resolving the latest tag.
           if [ -n "$REQUESTED_REF" ]; then
             echo "ref=$REQUESTED_REF" >> "$GITHUB_OUTPUT"
-            echo "is_release_tag=false" >> "$GITHUB_OUTPUT"
           else
             LATEST_TAG=$(git ls-remote --tags --sort='v:refname' https://github.com/opengovsg/isomer.git | tail -n1 | awk '{print $2}' | sed -E 's|refs/tags/||; s/\^.*$//')
             echo "ref=$LATEST_TAG" >> "$GITHUB_OUTPUT"
-            echo "is_release_tag=true" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Checkout ${{ steps.resolve-ref.outputs.ref }}
@@ -103,23 +93,6 @@ jobs:
           # Do not set storeDir in pnpm-workspace.yaml: local dev keeps the default global store.
           pnpm config set store-dir .pnpm-store --location project
 
-      ### Create a cache key for the current build ###
-      - name: Resolve cache key
-        id: cache-key
-        env:
-          RESOLVED_REF: ${{ steps.resolve-ref.outputs.ref }}
-          IS_RELEASE_TAG: ${{ steps.resolve-ref.outputs.is_release_tag }}
-        run: |
-          if [ "$IS_RELEASE_TAG" = "true" ]; then
-            echo "key=$RESOLVED_REF" >> "$GITHUB_OUTPUT"
-          else
-            # Not a release tag, so it's a feature branch - use a combination of branch name
-            # and commit hash E.g. feat-buildsupercoolfeature-1a2b3c4d. This ensures that each
-            # unique feature branch and commit will have its own cache, reducing manual cache
-            # invalidation and human factor when testing on staging.
-            echo "key=$RESOLVED_REF-$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Install pnpm dependencies
         run: pnpm install --frozen-lockfile
 
@@ -127,11 +100,18 @@ jobs:
       # Rather than caching the pnpm store and a built dist separately, archive the whole
       # repository (source + node_modules) as a single tarball so downstream per-site
       # CodeBuild projects can pull it down instead of cloning/installing themselves.
-      # .git is excluded since only the working tree is needed.
+      #
+      # publisher.sh (the consumer) downloads this from isomer/latest/isomer.tar.zst, extracts it with
+      # `tar --use-compress-program=zstd -xf`, then `cd isomer/` - mirroring what
+      # `git clone .../isomer.git` would have produced. So the archive must be
+      # zstd-compressed and rooted at an `isomer/` directory, not the bare working tree.
+      # A symlink lets tar rename the root on the fly without copying the whole tree;
+      # `-h` dereferences it so the symlink itself isn't archived.
       - name: Archive and publish repository
         env:
           S3_CACHE_BUCKET_NAME: ${{ inputs.s3-cache-bucket-name }}
-          UNIQUE_CACHE_KEY: ${{ steps.cache-key.outputs.key }}
+          REQUESTED_REF: ${{ inputs.isomer-build-repo-branch }}
+          RESOLVED_REF: ${{ steps.resolve-ref.outputs.ref }}
         run: |
           calculate_duration() {
             local start_time=$1
@@ -140,17 +120,35 @@ jobs:
             echo "Time taken: $((end_time - start_time)) seconds"
           }
 
-          REPO_TGZ="isomer-repo.tar.zst"
-          REPO_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/isomer/latest/$REPO_TGZ"
+          REPO_TGZ="isomer.tar.zst"
+          # publisher.sh's production path only ever reads isomer/latest/. Manual/test
+          # dispatches with an explicit ref get their own prefix so they can never
+          # clobber the artifact a concurrent real deploy is about to consume.
+          if [ -n "$REQUESTED_REF" ]; then
+            REPO_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/isomer/refs/$REQUESTED_REF/$REPO_TGZ"
+          else
+            REPO_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/isomer/latest/$REPO_TGZ"
+          fi
 
           echo "Archiving repository..."
           start_time=$(date +%s)
-          tar --exclude=.git --use-compress-program="zstd -6" -cf $REPO_TGZ .
+          # Record the resolved ref inside the archive so publisher.sh's production
+          # path - which has no branch input and no .git to inspect - can key its
+          # isomer-components dist cache by the actual release instead of a fixed
+          # string, which would otherwise never invalidate across releases.
+          echo "$RESOLVED_REF" > .isomer-release-ref
+          # Stage the rename-symlink in a fresh temp dir rather than the checkout's
+          # parent: actions/checkout's default workspace path is
+          # /home/runner/work/isomer/isomer, so "../isomer" there is the checkout
+          # directory itself and `ln -s` would fail with "File exists".
+          ARCHIVE_STAGING=$(mktemp -d)
+          ln -s "$(pwd)" "$ARCHIVE_STAGING/isomer"
+          tar --exclude=.git -h --use-compress-program="zstd -6" -cf "$ARCHIVE_STAGING/$REPO_TGZ" -C "$ARCHIVE_STAGING" isomer
           calculate_duration $start_time
 
           echo "Uploading repository archive to S3..."
           start_time=$(date +%s)
-          aws s3 cp --only-show-errors $REPO_TGZ $REPO_CACHE_PATH
-          rm $REPO_TGZ
+          aws s3 cp --only-show-errors "$ARCHIVE_STAGING/$REPO_TGZ" $REPO_CACHE_PATH
+          rm -rf "$ARCHIVE_STAGING"
           echo "Uploaded repository archive"
           calculate_duration $start_time
