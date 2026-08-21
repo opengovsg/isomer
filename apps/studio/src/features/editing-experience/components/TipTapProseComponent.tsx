@@ -3,6 +3,7 @@ import type { JSONContent } from "@tiptap/react"
 import { Box, HStack, useDisclosure, VStack } from "@chakra-ui/react"
 import { Button, IconButton, useToast } from "@opengovsg/design-system-react"
 import { isEqual } from "lodash-es"
+import { useState } from "react"
 import { BiTrash } from "react-icons/bi"
 import { PROSE_COMPONENT_NAME } from "~/constants/formBuilder"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
@@ -12,6 +13,7 @@ import { trpc } from "~/utils/trpc"
 
 import { useTextEditor } from "../hooks/useTextEditor"
 import { pageSchema } from "../schema"
+import { isValidProse } from "../utils/isValidProse"
 import { CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE } from "./constants"
 import { DeleteBlockModal } from "./DeleteBlockModal"
 import { DiscardChangesModal } from "./DiscardChangesModal"
@@ -44,6 +46,10 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
     setAddedBlockIndex,
   } = useEditorDrawerContext()
 
+  const [isContentValid, setIsContentValid] = useState(() =>
+    isValidProse(content),
+  )
+
   const toast = useToast()
   const { pageId, siteId } = useQueryParse(pageSchema)
   const { mutate, isPending } = trpc.page.updatePageBlob.useMutation({
@@ -60,13 +66,13 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
 
   const updatePageState = (editorContent: JSONContent | undefined) => {
     const updatedBlocks = Array.from(previewPageState.content)
-    // TODO: actual validation
     updatedBlocks[currActiveIdx] = editorContent as ProseProps
     const newPageState = {
       ...previewPageState,
       content: updatedBlocks,
     }
     setPreviewPageState(newPageState)
+    setIsContentValid(isValidProse(editorContent))
   }
 
   const editor = useTextEditor({ data: content, handleChange: updatePageState })
@@ -179,6 +185,7 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
                   )
                 }}
                 isLoading={isPending}
+                isDisabled={!isContentValid}
               >
                 Save changes
               </Button>
