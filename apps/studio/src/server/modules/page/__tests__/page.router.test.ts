@@ -38,6 +38,7 @@ import {
 import type { User } from "../../database"
 import { assertAuditLogRows } from "../../audit/__tests__/utils"
 import { db, jsonb } from "../../database"
+import { PageAlreadyUnpublishedError } from "../../resource/resource.error"
 import {
   getBlobOfResource,
   getPageById,
@@ -2366,12 +2367,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrow(
-        new TRPCError({
-          code: "PRECONDITION_FAILED",
-          message: "This page is not currently published",
-        }),
-      )
+      await expect(result).rejects.toThrow(new PageAlreadyUnpublishedError())
     })
 
     it("should throw if the page has a pending scheduled publish", async () => {

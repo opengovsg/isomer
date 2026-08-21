@@ -1,5 +1,4 @@
 import type { Resource } from "~/server/modules/database"
-import { TRPCError } from "@trpc/server"
 import { env } from "~/env.mjs"
 import {
   sendAlreadyUnpublishedEmail,
@@ -14,6 +13,7 @@ import { createBaseLogger } from "~/lib/logger"
 import { createGrowthBookContext } from "~/server/context"
 import { publishSite } from "~/server/modules/aws/codebuild.service"
 import { db, ScheduledAction } from "~/server/modules/database"
+import { PageAlreadyUnpublishedError } from "~/server/modules/resource/resource.error"
 import {
   defaultResourceSelect,
   publishPageResource,
@@ -105,11 +105,6 @@ const getScheduledActionHandler = (
   }
 }
 
-const isAlreadyUnpublishedError = (error: unknown) =>
-  error instanceof TRPCError &&
-  error.code === "PRECONDITION_FAILED" &&
-  error.message === "This page is not currently published"
-
 export const publishScheduledResources = async (
   enableEmailsForScheduledPublishes: boolean,
   scheduledAtCutoff: Date,
@@ -166,7 +161,7 @@ export const publishScheduledResources = async (
       // the schedule) — that's the desired end state, not a failure.
       if (
         scheduledAction === ScheduledAction.Unpublish &&
-        isAlreadyUnpublishedError(error)
+        error instanceof PageAlreadyUnpublishedError
       ) {
         logger.warn(
           `Resource ${resourceId} was already unpublished, skipping scheduled unpublish`,
