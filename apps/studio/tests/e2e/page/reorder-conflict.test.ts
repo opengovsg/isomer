@@ -40,11 +40,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
       // Arrange: session 1 reorders and its change is persisted. Session 2
       // (opened above, before this reorder happened) still holds the
       // pre-reorder order in memory, since it never reloaded.
-      await session1.reorderBlockDown(SEEDED_PROSE_BLOCK_LABEL)
-      await session1.expectBlockOrder([
-        SEEDED_CALLOUT_BLOCK_LABEL,
-        SEEDED_PROSE_BLOCK_LABEL,
-      ])
+      await session1.reorderBlockDownAndWaitForPersist(SEEDED_PROSE_BLOCK_LABEL)
 
       // Act: session 2 attempts a reorder based on its now-stale state —
       // this conflicts with the DB state session 1 already changed.

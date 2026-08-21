@@ -423,6 +423,19 @@ export class PageEditorPO {
     await this.page.keyboard.press("Space")
   }
 
+  /** RootStateDrawer fires `page.reorderBlock` without awaiting — wait for the
+   * mutation response before a second session acts on stale block order. */
+  async reorderBlockDownAndWaitForPersist(previewLabel: string) {
+    const reorderSaved = this.page.waitForResponse(
+      (response) =>
+        response.request().method() === "POST" &&
+        response.url().includes("page.reorderBlock") &&
+        response.ok(),
+    )
+    await this.reorderBlockDown(previewLabel)
+    await reorderSaved
+  }
+
   async reorderBlockUp(previewLabel: string) {
     const handle = this.#blockDragHandle(previewLabel)
     await expect(handle).toBeVisible()
