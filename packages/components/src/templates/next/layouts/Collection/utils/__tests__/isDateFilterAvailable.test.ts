@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest"
+import { DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY } from "~/types/constants"
 
 import type { Filter } from "../../../../types/Filter"
 import {
@@ -10,8 +11,8 @@ const dateFilter = (overrides: Partial<Filter> = {}): Filter => ({
   id: "event-date-filter-id",
   label: "Event Date",
   type: "date",
-  showStatusLabels: true,
-  showDateRange: true,
+  showStatusLabels: DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showStatusLabels,
+  showDateRange: DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showDateRange,
   items: [{ id: "ONGOING", label: "Ongoing", count: 1 }],
   ...overrides,
 })

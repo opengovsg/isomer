@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react"
 import { BiChevronDown, BiX } from "react-icons/bi"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
+import { DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY } from "~/types/constants"
 import { focusRing } from "~/utils/tailwind"
 
 import type { AppliedFilter, FilterProps } from "../../../types/Filter"
@@ -161,7 +162,8 @@ const FilterDrawerContent = ({
               <div
                 className={showFilter[id] ? "flex flex-col gap-2" : "hidden"}
               >
-                {showStatusLabels !== false &&
+                {(showStatusLabels ??
+                  DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showStatusLabels) &&
                   items.map(({ id: itemId, label: itemLabel, count }) => (
                     <Checkbox
                       value={itemId}
@@ -171,17 +173,19 @@ const FilterDrawerContent = ({
                       {itemLabel} ({count.toLocaleString()})
                     </Checkbox>
                   ))}
-                {type === "date" && showDateRange !== false && (
-                  <DateRangeFilterInput
-                    value={holdingDateRangesById[id]}
-                    onChange={(dateRange) =>
-                      setHoldingDateRangesById((prev) => ({
-                        ...prev,
-                        [id]: dateRange,
-                      }))
-                    }
-                  />
-                )}
+                {type === "date" &&
+                  (showDateRange ??
+                    DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showDateRange) && (
+                    <DateRangeFilterInput
+                      value={holdingDateRangesById[id]}
+                      onChange={(dateRange) =>
+                        setHoldingDateRangesById((prev) => ({
+                          ...prev,
+                          [id]: dateRange,
+                        }))
+                      }
+                    />
+                  )}
               </div>
             </CheckboxGroup>
           ),

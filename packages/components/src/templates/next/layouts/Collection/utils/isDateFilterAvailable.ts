@@ -1,4 +1,7 @@
-import { TAG_CATEGORY_TYPE } from "~/types/constants"
+import {
+  DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY,
+  TAG_CATEGORY_TYPE,
+} from "~/types/constants"
 
 import type { Filter } from "../../../types/Filter"
 
@@ -7,8 +10,11 @@ export const isDateFilterAvailable = (filter: Filter): boolean => {
     return false
   }
 
-  const showStatusLabels = filter.showStatusLabels !== false
-  const showDateRange = filter.showDateRange !== false
+  const showStatusLabels =
+    filter.showStatusLabels ??
+    DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showStatusLabels
+  const showDateRange =
+    filter.showDateRange ?? DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showDateRange
 
   if (!showStatusLabels && !showDateRange) {
     return false

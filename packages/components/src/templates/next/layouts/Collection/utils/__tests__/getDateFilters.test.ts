@@ -1,6 +1,7 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { CollectionPageSchemaType } from "~/types"
 import { describe, expect, it } from "vitest"
+import { DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY } from "~/types/constants"
 
 import { getDateFilters } from "../getDateFilters"
 
@@ -81,8 +82,9 @@ describe("getDateFilters", () => {
         id: EVENT_DATE_FILTER_ID,
         label: "Event Date",
         type: "date",
-        showStatusLabels: true,
-        showDateRange: true,
+        showStatusLabels:
+          DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showStatusLabels,
+        showDateRange: DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showDateRange,
         items: [
           { id: "ONGOING", label: "Ongoing", count: 2 },
           { id: "UPCOMING", label: "Upcoming", count: 1 },
@@ -131,8 +133,9 @@ describe("getDateFilters", () => {
         id: EVENT_DATE_FILTER_ID,
         label: "Event Date",
         type: "date",
-        showStatusLabels: true,
-        showDateRange: true,
+        showStatusLabels:
+          DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showStatusLabels,
+        showDateRange: DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showDateRange,
         items: [],
       },
     ])

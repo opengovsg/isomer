@@ -16,6 +16,7 @@ import {
 
 import {
   DATE_FILTER_STATUS_ID,
+  DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY,
   TAG_CATEGORY_DISPLAY_OPTIONS,
   TAG_CATEGORY_TYPE,
   type TagCategoryDisplay,
@@ -163,7 +164,7 @@ const DateFilterSchema = Type.Object(
         description:
           "Let visitors filter by status labels (e.g. Upcoming, Ongoing, Ended).",
         format: "hidden",
-        default: true,
+        default: DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showStatusLabels,
       }),
     ),
     showDateRange: Type.Optional(
@@ -171,7 +172,7 @@ const DateFilterSchema = Type.Object(
         title: "Show date range filter",
         description: "Let visitors filter by a custom date range.",
         format: "hidden",
-        default: true,
+        default: DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showDateRange,
       }),
     ),
   },
