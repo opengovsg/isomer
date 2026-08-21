@@ -6,11 +6,21 @@ const E2E_DIR = "tests/e2e"
 const CI_WORKFLOW = "../../.github/workflows/ci.yml"
 const NON_TEST_DIRS = new Set(["fixtures", "storage-state", "test-results"])
 
+// `tests/e2e/page/` is CI-sharded into blocks/settings/flows subdirs — each
+// subdir is its own matrix job, not the parent `page/` directory.
+const PAGE_E2E_SHARD_SUBDIRS = ["blocks", "settings", "flows"] as const
+
 function discoveredUnits(): string[] {
   const units: string[] = []
   for (const entry of readdirSync(E2E_DIR)) {
     if (NON_TEST_DIRS.has(entry)) continue
     const full = join(E2E_DIR, entry)
+    if (entry === "page" && statSync(full).isDirectory()) {
+      for (const sub of PAGE_E2E_SHARD_SUBDIRS) {
+        units.push(join(full, sub))
+      }
+      continue
+    }
     if (statSync(full).isDirectory() || entry.endsWith(".test.ts")) {
       units.push(full)
     }
