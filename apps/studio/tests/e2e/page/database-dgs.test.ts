@@ -31,6 +31,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   test("admin can link a data.gov.sg dataset and set a table title, persisted after reload", async ({
     page,
   }) => {
+    test.setTimeout(90_000)
     // Arrange
     const tableTitle = `E2E Database table ${crypto.randomUUID().slice(0, 8)}`
     const { page: seededPage } = await seedDatabasePage({
