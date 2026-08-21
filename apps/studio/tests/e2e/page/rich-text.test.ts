@@ -37,10 +37,16 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await editor.clearProseContent()
     await editor.typeProseLine(headingText)
     await editor.typeProseLastLine(formattedText)
-    await editor.applyHeading(headingText, 2)
+    // Apply inline marks before block-level heading conversion — converting
+    // the first line to H2 can leave TipTap's selection on the heading, which
+    // makes subsequent triple-click formatting on the next line flaky in CI.
     await editor.applyBold(formattedText)
     await editor.applyItalic(formattedText)
     await editor.applyUnderline(formattedText)
+    await editor.applyHeading(headingText, 2)
+    await editor.expectEditorBoldVisible(formattedText)
+    await editor.expectEditorItalicVisible(formattedText)
+    await editor.expectEditorUnderlineVisible(formattedText)
     await editor.saveBlockChanges()
     await editor.reload()
     await editor.expectLoaded()

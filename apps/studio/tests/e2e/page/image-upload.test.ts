@@ -100,6 +100,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
       const editor = await openSeededPageEditor(page, siteId, seededPage.id)
       await editor.addBlockByLabel("Image")
       await editor.uploadImage(LOGO_FIXTURE)
+      await expect(editor.imageFilenameText(LOGO_FILENAME)).toBeVisible()
       await editor.fillFormFieldByLabel(
         "Alternate text",
         "A view of the site's landing page from above",
@@ -107,7 +108,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
       await editor.saveComplexBlock()
       await editor.reload()
       await editor.expectLoaded()
-      await editor.openBlockEditor(/e2e-logo\.png/i)
+      await editor.openBlockEditor(LOGO_FILENAME)
       await expect(editor.imageFilenameText(LOGO_FILENAME)).toBeVisible()
 
       // Act
@@ -138,17 +139,19 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
       const alt2 = "A view of the community garden in spring"
       const caption2 = "Taken during the spring open house."
 
-      // Act: first gallery item
+      // Act: replace the first two default placeholder items — newly-added
+      // blocks already seed three schema-valid images (`DEFAULT_BLOCKS.imagegallery`).
       await editor.addBlockByLabel("Image gallery")
-      await editor.addGalleryItem()
+      await editor.openGalleryItem(/placeholder_no_image|Item 1/)
       await editor.uploadImage(LOGO_FIXTURE)
+      await expect(editor.imageFilenameText(LOGO_FILENAME)).toBeVisible()
       await editor.fillFormFieldByLabel("Alternate text", alt1)
       await editor.fillFormFieldByLabel("Caption", caption1)
       await editor.returnFromNestedItem("Images")
 
-      // Act: second gallery item (imagegallery requires at least 2 images)
-      await editor.addGalleryItem()
+      await editor.openGalleryItem(/placeholder_no_image|Item 2/)
       await editor.uploadImage(galleryImage2)
+      await expect(editor.imageFilenameText(galleryImage2.name)).toBeVisible()
       await editor.fillFormFieldByLabel("Alternate text", alt2)
       await editor.fillFormFieldByLabel("Caption", caption2)
       await editor.returnFromNestedItem("Images")
