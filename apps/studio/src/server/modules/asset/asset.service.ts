@@ -2,7 +2,7 @@ import type { z } from "zod"
 import type { getPresignedPutUrlSchema } from "~/schemas/asset"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
-import contentDisposition from "content-disposition"
+import { create as createContentDisposition } from "content-disposition"
 import { randomUUID } from "crypto"
 import filenamify from "filenamify"
 import { env } from "~/env.mjs"
@@ -62,7 +62,7 @@ export const getContentTypeFromKey = (key: string): string => {
  * Build Content-Disposition for signed upload (inline; filename for download hint).
  */
 export const getContentDispositionForKey = (key: string): string => {
-  return contentDisposition(getFilenameFromKey(key), { type: "inline" })
+  return createContentDisposition(getFilenameFromKey(key), { type: "inline" })
 }
 
 /**
@@ -75,11 +75,10 @@ export const getContentDispositionForTitle = (
   key: string,
 ): string => {
   const extension = getExtensionFromFilename(getFilenameFromKey(key))
-  // content-disposition runs path.basename on the filename, which would
-  // truncate a title containing "/" or "\" (e.g. "A/B" -> "B"). Replace path
-  // separators up front so the full title survives in the download filename.
+  // Strip path separators so a title like "A/B" can't be misread as a path
+  // segment in the resulting filename.
   const filename = `${title}${extension}`.replace(/[/\\]/g, "-")
-  return contentDisposition(filename, { type: "inline" })
+  return createContentDisposition(filename, { type: "inline" })
 }
 
 // Permissions for assets share the same permissions as resources preferentially
