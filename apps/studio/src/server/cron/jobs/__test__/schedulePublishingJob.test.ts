@@ -1,5 +1,6 @@
 import type { MockInstance } from "vitest"
 import type { User } from "~prisma/generated/prisma/client"
+import { TRPCError } from "@trpc/server"
 import { addSeconds } from "date-fns"
 import MockDate from "mockdate"
 import { auth } from "tests/integration/helpers/auth"
@@ -525,6 +526,46 @@ describe("schedulePublishingJob", async () => {
         .selectAll()
         .executeTakeFirstOrThrow()
       expect(updated.publishedVersionId).not.toBeNull()
+    })
+
+    it("sends an already-unpublished email (not a failed-unpublish email) when the page was already unpublished before the scheduled job ran", async () => {
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId,
+        scheduledAt: FIXED_NOW,
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      vi.spyOn(
+        publishPageResourceModule,
+        "unpublishPageResource",
+      ).mockImplementation(() => {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: "This page is not currently published",
+        })
+      })
+      const sendFailedUnpublishEmailSpy = vi
+        .spyOn(emailService, "sendFailedUnpublishEmail")
+        .mockResolvedValue()
+      const sendAlreadyUnpublishedEmailSpy = vi
+        .spyOn(emailService, "sendAlreadyUnpublishedEmail")
+        .mockResolvedValue()
+
+      const result = await publishScheduledResources(true, FIXED_NOW)
+
+      expect(result[site.id]).toBeUndefined()
+      expect(sendFailedUnpublishEmailSpy).not.toHaveBeenCalled()
+      expect(sendAlreadyUnpublishedEmailSpy).toHaveBeenCalledTimes(1)
+      expect(sendAlreadyUnpublishedEmailSpy).toHaveBeenCalledWith({
+        recipientEmail: user.email,
+        resource: expect.objectContaining({ id: page.id }),
+      })
     })
 
     it("does not send a failed-unpublish email when the feature flag is off", async () => {

@@ -1,6 +1,8 @@
 import type { Resource } from "~/server/modules/database"
+import { TRPCError } from "@trpc/server"
 import { env } from "~/env.mjs"
 import {
+  sendAlreadyUnpublishedEmail,
   sendFailedPublishEmail,
   sendFailedUnpublishEmail,
 } from "~/features/mail/service"
@@ -75,6 +77,39 @@ type ResourceWithUser = Omit<Resource, "scheduledBy"> & {
   userDeletedAt: Date | null
 }
 
+// Dispatch table so publish/unpublish share one code path instead of
+// parallel if/else branches — adding a third scheduled action only means
+// adding a case here. Resolved lazily (not a module-scope constant) so it
+// always calls through the current `publishPageResource`/`unpublishPageResource`
+// bindings, which tests replace via `vi.spyOn`.
+const getScheduledActionHandler = (
+  action: ScheduledAction,
+): {
+  run: typeof publishPageResource
+  verb: "publish" | "unpublish"
+  sendFailedEmail: typeof sendFailedPublishEmail
+} => {
+  switch (action) {
+    case ScheduledAction.Unpublish:
+      return {
+        run: unpublishPageResource,
+        verb: "unpublish",
+        sendFailedEmail: sendFailedUnpublishEmail,
+      }
+    case ScheduledAction.Publish:
+      return {
+        run: publishPageResource,
+        verb: "publish",
+        sendFailedEmail: sendFailedPublishEmail,
+      }
+  }
+}
+
+const isAlreadyUnpublishedError = (error: unknown) =>
+  error instanceof TRPCError &&
+  error.code === "PRECONDITION_FAILED" &&
+  error.message === "This page is not currently published"
+
 export const publishScheduledResources = async (
   enableEmailsForScheduledPublishes: boolean,
   scheduledAtCutoff: Date,
@@ -104,74 +139,77 @@ export const publishScheduledResources = async (
       )
       continue
     }
-    const isUnpublish = resource.scheduledAction === ScheduledAction.Unpublish
+    const scheduledAction = resource.scheduledAction ?? ScheduledAction.Publish
+    const handler = getScheduledActionHandler(scheduledAction)
     try {
       // publish/unpublish the resource WITHOUT publishing the site yet
-      if (isUnpublish) {
-        await unpublishPageResource({
-          logger,
-          resourceId,
-          siteId,
-          userId: scheduledBy,
-        })
-        logger.info(`Successfully unpublished page for resource: ${resourceId}`)
-      } else {
-        await publishPageResource({
-          logger,
-          resourceId,
-          siteId,
-          userId: scheduledBy,
-        })
-        logger.info(`Successfully published page for resource: ${resourceId}`)
-      }
+      await handler.run({ logger, resourceId, siteId, userId: scheduledBy })
+      logger.info(
+        `Successfully ${handler.verb}ed page for resource: ${resourceId}`,
+      )
       // Group resources by siteId for site publishing later
       siteResourcesMap[siteId] = siteResourcesMap[siteId] ?? []
       siteResourcesMap[siteId].push({ ...resource, scheduledBy })
     } catch (error) {
-      logger.error(
-        { error },
-        `Failed to ${isUnpublish ? "unpublish" : "publish"} page for resource: ${resourceId}`,
-      )
       if (resource.userDeletedAt || !resource.email) {
+        logger.error(
+          { error },
+          `Failed to ${handler.verb} page for resource: ${resourceId}`,
+        )
         logger.warn(
-          `Resource ${resourceId} is missing user email information or deleted, cannot send failed ${isUnpublish ? "unpublish" : "publish"} email`,
+          `Resource ${resourceId} is missing user email information or deleted, cannot send failed ${handler.verb} email`,
         )
         continue
       }
-      if (!enableEmailsForScheduledPublishes) {
-        continue
-      }
-      if (isUnpublish) {
+      // The unpublish precondition throws this when the page was already
+      // unpublished by the time the cron ran (e.g. a manual unpublish beat
+      // the schedule) — that's the desired end state, not a failure.
+      if (
+        scheduledAction === ScheduledAction.Unpublish &&
+        isAlreadyUnpublishedError(error)
+      ) {
+        logger.warn(
+          `Resource ${resourceId} was already unpublished, skipping scheduled unpublish`,
+        )
+        if (!enableEmailsForScheduledPublishes) {
+          continue
+        }
         try {
-          await sendFailedUnpublishEmail({
+          await sendAlreadyUnpublishedEmail({
             recipientEmail: resource.email,
-            isScheduled: true,
             resource,
           })
           logger.warn(
-            `Sent failed unpublish email to ${resource.email} for resource: ${resourceId}`,
+            `Sent already-unpublished email to ${resource.email} for resource: ${resourceId}`,
           )
         } catch (emailError) {
           logger.error(
             { error: emailError },
-            `Failed to send failed unpublish email to ${resource.email} for resource: ${resourceId}`,
+            `Failed to send already-unpublished email to ${resource.email} for resource: ${resourceId}`,
           )
         }
         continue
       }
+      logger.error(
+        { error },
+        `Failed to ${handler.verb} page for resource: ${resourceId}`,
+      )
+      if (!enableEmailsForScheduledPublishes) {
+        continue
+      }
       try {
-        await sendFailedPublishEmail({
+        await handler.sendFailedEmail({
           recipientEmail: resource.email,
           isScheduled: true,
           resource,
         })
         logger.warn(
-          `Sent failed publish email to ${resource.email} for resource: ${resourceId}`,
+          `Sent failed ${handler.verb} email to ${resource.email} for resource: ${resourceId}`,
         )
       } catch (emailError) {
         logger.error(
           { error: emailError },
-          `Failed to send failed publish email to ${resource.email} for resource: ${resourceId}`,
+          `Failed to send failed ${handler.verb} email to ${resource.email} for resource: ${resourceId}`,
         )
       }
     }
@@ -208,37 +246,22 @@ export const publishScheduledSites = async (
           )
           continue
         }
-        if (resource.scheduledAction === ScheduledAction.Unpublish) {
-          try {
-            await sendFailedUnpublishEmail({
-              recipientEmail: resource.email,
-              isScheduled: true,
-              resource,
-            })
-            logger.warn(
-              `Sent failed unpublish email to ${resource.email} for resource: ${resource.id}, since site publish failed for site ${siteId}`,
-            )
-          } catch (emailError) {
-            logger.error(
-              { error: emailError },
-              `Failed to send failed unpublish email to ${resource.email} for resource: ${resource.id}, since site publish failed for site ${siteId}`,
-            )
-          }
-          continue
-        }
+        const handler = getScheduledActionHandler(
+          resource.scheduledAction ?? ScheduledAction.Publish,
+        )
         try {
-          await sendFailedPublishEmail({
+          await handler.sendFailedEmail({
             recipientEmail: resource.email,
             isScheduled: true,
             resource,
           })
           logger.warn(
-            `Sent failed publish email to ${resource.email} for resource: ${resource.id}, since site publish failed for site ${siteId}`,
+            `Sent failed ${handler.verb} email to ${resource.email} for resource: ${resource.id}, since site publish failed for site ${siteId}`,
           )
         } catch (emailError) {
           logger.error(
             { error: emailError },
-            `Failed to send failed publish email to ${resource.email} for resource: ${resource.id}, since site publish failed for site ${siteId}`,
+            `Failed to send failed ${handler.verb} email to ${resource.email} for resource: ${resource.id}, since site publish failed for site ${siteId}`,
           )
         }
       }
