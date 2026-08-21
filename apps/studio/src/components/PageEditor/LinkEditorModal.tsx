@@ -51,6 +51,10 @@ export const linkEditorSchema = z.object({
   linkText: z.string().min(1, "Link text cannot be empty."),
   linkHref: z
     .string()
+    // Strips stray leading/trailing whitespace (e.g. from a paste) before
+    // any other check runs -- LinkHrefEditor's `curHref.startsWith(...)`
+    // display logic otherwise breaks on a leading space.
+    .trim()
     .min(1, "Link destination cannot be empty.")
     // A cleared External/Email field still lands here as a bare scheme
     // ("https://"/"mailto:"), not "", so `.min(1)` alone won't catch it.

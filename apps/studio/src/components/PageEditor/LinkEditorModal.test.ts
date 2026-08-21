@@ -27,6 +27,25 @@ describe("linkEditorSchema", () => {
     expect(result.success).toBe(false)
   })
 
+  it("trims stray leading/trailing whitespace from a valid linkHref", () => {
+    const result = linkEditorSchema.safeParse({
+      linkText: "Isomer",
+      linkHref: "  https://isomer.gov.sg  ",
+    })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.linkHref).toBe("https://isomer.gov.sg")
+    }
+  })
+
+  it("rejects a linkHref that is only whitespace", () => {
+    const result = linkEditorSchema.safeParse({
+      linkText: "Isomer",
+      linkHref: "   ",
+    })
+    expect(result.success).toBe(false)
+  })
+
   it("does not reject a valid link containing internal whitespace-like characters", () => {
     const result = linkEditorSchema.safeParse({
       linkText: "Isomer",

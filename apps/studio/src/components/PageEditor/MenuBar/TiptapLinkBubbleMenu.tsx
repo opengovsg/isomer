@@ -1,10 +1,12 @@
 import type { Editor } from "@tiptap/react"
 import { Box, HStack } from "@chakra-ui/react"
 import { BubbleMenu } from "@tiptap/react/menus"
-import { useCallback, useMemo } from "react"
+import { useCallback } from "react"
 import { BiPencil, BiUnlink } from "react-icons/bi"
 
 import { MenuItem } from "../MenuItem"
+
+const options = { placement: "bottom" as const }
 
 interface TiptapLinkBubbleMenuProps {
   editor: Editor
@@ -17,7 +19,6 @@ export const TiptapLinkBubbleMenu = ({
   onEdit,
   isLinkModalOpen,
 }: TiptapLinkBubbleMenuProps) => {
-  const options = useMemo(() => ({ placement: "bottom" as const }), [])
   const shouldShow = useCallback(
     ({ editor }: { editor: Editor }) =>
       !isLinkModalOpen && editor.isActive("link"),
