@@ -20,8 +20,8 @@ export const isDateFilterAvailable = (filter: Filter): boolean => {
     return false
   }
 
-  if (showStatusLabels && filter.items.length >= 1) {
-    return true
+  if (showStatusLabels) {
+    return filter.items.length >= 1
   }
 
   return showDateRange
