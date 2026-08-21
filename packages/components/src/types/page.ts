@@ -156,9 +156,7 @@ const DateFilterSchema = Type.Object(
         maxItems: 3,
       },
     ),
-    // Hidden until collection-index editors can toggle sidebar controls per
-    // date filter. Default `true` — date filters are unreleased, so no legacy
-    // rows omit these keys.
+    // Hidden in Studio until editors can toggle each sidebar control.
     showStatusLabels: Type.Optional(
       Type.Boolean({
         title: "Show status labels filter",
@@ -188,7 +186,7 @@ export type DateFilterSidebarVisibility = Pick<
   "showStatusLabels" | "showDateRange"
 >
 
-/** After resolving optional schema fields (missing → true). */
+// Booleans after getDateFilters applies `?? true` for publish-time JSON.
 export type ResolvedDateFilterSidebarVisibility =
   Required<DateFilterSidebarVisibility>
 
