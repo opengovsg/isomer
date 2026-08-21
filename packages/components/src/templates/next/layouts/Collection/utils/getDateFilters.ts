@@ -5,7 +5,10 @@ import {
   resolveDateFilterShowStatusLabels,
   TAG_CATEGORY_TYPE,
 } from "~/types/constants"
-import { isDateFilter } from "~/types/page"
+import {
+  isDateFilter,
+  type ResolvedDateFilterSidebarVisibility,
+} from "~/types/page"
 
 import type { Filter } from "../../../types/Filter"
 
@@ -34,14 +37,18 @@ export const getDateFilters = (
       }
     })
 
-    return {
-      id: category.id,
-      label: category.label,
-      type: TAG_CATEGORY_TYPE.Date,
+    const visibility: ResolvedDateFilterSidebarVisibility = {
       showStatusLabels: resolveDateFilterShowStatusLabels(
         category.showStatusLabels,
       ),
       showDateRange: resolveDateFilterShowDateRange(category.showDateRange),
+    }
+
+    return {
+      id: category.id,
+      label: category.label,
+      type: TAG_CATEGORY_TYPE.Date,
+      ...visibility,
       items: category.statusLabels
         .map((statusLabel) => ({
           id: statusLabel.id,

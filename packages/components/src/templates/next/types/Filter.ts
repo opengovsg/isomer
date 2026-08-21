@@ -1,4 +1,5 @@
 import type { TagCategoryDisplay } from "~/types/constants"
+import type { DateFilterSidebarVisibility } from "~/types/page"
 
 export interface FilterItem {
   id: string
@@ -6,7 +7,7 @@ export interface FilterItem {
   count: number
 }
 
-export interface Filter {
+export interface Filter extends Partial<DateFilterSidebarVisibility> {
   id: string
   label: string
   items: FilterItem[]
@@ -18,10 +19,6 @@ export interface Filter {
   // control for this filter (see Filter.tsx), whose value lives in
   // `AppliedFilter.dateRange`, not `items`.
   type?: "date"
-  // NOTE: only set for date-type filters — resolved from the date filter's
-  // `showStatusLabels` / `showDateRange` schema fields (default true).
-  showStatusLabels?: boolean
-  showDateRange?: boolean
 }
 
 interface AppliedFilterItem {

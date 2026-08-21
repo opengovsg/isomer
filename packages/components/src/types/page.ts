@@ -182,6 +182,15 @@ const DateFilterSchema = Type.Object(
 export type TextFilterSchemaType = Static<typeof TextFilterSchema>
 export type DateFilterSchemaType = Static<typeof DateFilterSchema>
 
+export type DateFilterSidebarVisibility = Pick<
+  DateFilterSchemaType,
+  "showStatusLabels" | "showDateRange"
+>
+
+/** After resolving optional schema fields (missing → true). */
+export type ResolvedDateFilterSidebarVisibility =
+  Required<DateFilterSidebarVisibility>
+
 export const isDateFilter = (
   tagCategory: TextFilterSchemaType | DateFilterSchemaType,
 ): tagCategory is DateFilterSchemaType =>
