@@ -1,7 +1,12 @@
 export { AccordionSchema, type AccordionProps } from "./Accordion"
 export { BlockquoteSchema, type BlockquoteProps } from "./Blockquote"
 export { LogoCloudSchema, type LogoCloudProps } from "./LogoCloud"
-export { CalloutSchema, type CalloutProps } from "./Callout"
+export {
+  CalloutSchema,
+  DEFAULT_CALLOUT_VARIANT,
+  type CalloutProps,
+  type CalloutVariant,
+} from "./Callout"
 export { type CardsProps } from "./Cards"
 export { ContentpicSchema, type ContentpicProps } from "./Contentpic"
 export { FormSGSchema, type FormSGProps } from "./FormSG"
