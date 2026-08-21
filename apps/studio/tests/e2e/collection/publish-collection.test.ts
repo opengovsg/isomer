@@ -1,23 +1,20 @@
 import { expect, test } from "@playwright/test"
 import crypto from "crypto"
-import { ResourceState, RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { CollectionLinkPO } from "../fixtures/collection-link.po"
+import { TEST_EMAILS, roleTag } from "~e2e/fixtures/auth"
 import {
   getCollectionItemTitles,
   getIndexPageId,
-} from "../fixtures/collection.db"
-import { DashboardPO } from "../fixtures/dashboard.po"
+} from "~e2e/fixtures/collection"
 import {
   createCollectionLinkViaWizard,
   createCollectionPageViaWizard,
   createCollectionViaWizard,
-} from "../fixtures/helpers"
-import { PageEditorPO } from "../fixtures/page-editor.po"
-import { getResource } from "../fixtures/resource.db"
-import { provisionE2ESite } from "../fixtures/site"
-import { ensureUserOnboarded } from "../fixtures/user"
+} from "~e2e/fixtures/helpers"
+import { CollectionLinkPO, DashboardPO, PageEditorPO } from "~e2e/fixtures/po"
+import { expectResourceState } from "~e2e/fixtures/resource"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
+import { ResourceState, RoleType } from "~prisma/generated/generatedEnums"
 
 const UNIQUE = (label: string) =>
   `E2E ${label} ${crypto.randomUUID().slice(0, 8)}`
@@ -74,15 +71,9 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await editor.expectPublishedToast()
 
     // Assert
-    await expect
-      .poll(async () => (await getResource(pageId))?.state)
-      .toBe(ResourceState.Published)
-    await expect
-      .poll(async () => (await getResource(linkId))?.state)
-      .toBe(ResourceState.Published)
-    await expect
-      .poll(async () => (await getResource(indexPageId))?.state)
-      .toBe(ResourceState.Published)
+    await expectResourceState(pageId).toBe(ResourceState.Published)
+    await expectResourceState(linkId).toBe(ResourceState.Published)
+    await expectResourceState(indexPageId).toBe(ResourceState.Published)
 
     const items = await getCollectionItemTitles(collectionId)
     expect(items.map((item) => item.title).sort()).toEqual(

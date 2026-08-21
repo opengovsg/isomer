@@ -1,10 +1,13 @@
 import { test } from "@playwright/test"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
+import { UsersPO } from "~e2e/fixtures/po"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import {
+  deleteUsersByEmail,
+  ensureUserOnboarded,
+  seedIsomerAdminOnSite,
+} from "~e2e/fixtures/user"
 import { RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { provisionE2ESite } from "../fixtures/site"
-import { ensureUserOnboarded, seedIsomerAdminOnSite } from "../fixtures/user"
-import { UsersPO } from "../fixtures/users.po"
 
 let siteId: number
 let isomerAdminEmail: string
@@ -16,6 +19,10 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
     const isomerAdmin = await seedIsomerAdminOnSite({ siteId })
     isomerAdminEmail = isomerAdmin.email
+  })
+
+  test.afterAll(async () => {
+    await deleteUsersByEmail(isomerAdminEmail)
   })
 
   test.beforeEach(async () => {

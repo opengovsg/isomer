@@ -1,6 +1,5 @@
 import { defineConfig, devices } from "@playwright/test"
-
-import { ROLES, storageStateFor } from "./tests/e2e/fixtures/auth"
+import { ROLES, storageStateFor } from "~e2e/fixtures/auth"
 
 const baseUrl = process.env.PLAYWRIGHT_TEST_BASE_URL || "http://localhost:3000"
 
@@ -31,13 +30,7 @@ export default defineConfig({
   projects: [
     {
       name: "unauthenticated",
-      testMatch: /smoke\.test\.ts/,
-      use: { ...baseUse },
-    },
-    // singpass.test.ts stays skipped; isolated project so it never runs under role greps
-    {
-      name: "singpass",
-      testMatch: /singpass\.test\.ts/,
+      testMatch: /(smoke|singpass)\.test\.ts/,
       use: { ...baseUse },
     },
     ...ROLES.map((role) => ({

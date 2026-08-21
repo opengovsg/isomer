@@ -1,39 +1,39 @@
 import { expect, test } from "@playwright/test"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { GodmodePO } from "../fixtures/godmode.po"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
+import { GodmodePO } from "~e2e/fixtures/po"
+import { ensureUserOnboarded, uniqueVendorEmail } from "~e2e/fixtures/user"
 import {
   deleteWhitelistedVendorEmails,
-  ensureUserOnboarded,
-  uniqueVendorEmail,
-} from "../fixtures/user"
-import { expectWhitelistedVendorEmail } from "../fixtures/whitelist-expect"
-import { getWhitelistEntry } from "../fixtures/whitelist.db"
+  expectWhitelistedVendorEmail,
+  getWhitelistEntry,
+} from "~e2e/fixtures/whitelist"
+
+let vendorEmails: string[] = []
 
 test.describe("migrator", { tag: roleTag("migrator") }, () => {
   test.beforeEach(async () => {
     await ensureUserOnboarded(TEST_EMAILS.migrator)
+    vendorEmails = [uniqueVendorEmail(), uniqueVendorEmail()]
+  })
+
+  test.afterEach(async () => {
+    await deleteWhitelistedVendorEmails(...vendorEmails)
   })
 
   test("migrator can bulk-whitelist vendor emails", async ({ page }) => {
     const godmode = new GodmodePO(page)
-    const vendorEmails = [uniqueVendorEmail(), uniqueVendorEmail()]
 
-    try {
-      // Arrange
-      await godmode.gotoWhitelist()
+    // Arrange
+    await godmode.gotoWhitelist()
 
-      // Act
-      await godmode.fillVendorEmails(vendorEmails)
-      await godmode.clickWhitelistSubmit()
+    // Act
+    await godmode.fillVendorEmails(vendorEmails)
+    await godmode.clickWhitelistSubmit()
 
-      // Assert
-      await godmode.expectWhitelistSuccessToast(0, vendorEmails.length)
-      for (const email of vendorEmails) {
-        await expectWhitelistedVendorEmail(email).toBe(true)
-      }
-    } finally {
-      await deleteWhitelistedVendorEmails(...vendorEmails)
+    // Assert
+    await godmode.expectWhitelistSuccessToast(0, vendorEmails.length)
+    for (const email of vendorEmails) {
+      await expectWhitelistedVendorEmail(email).toBe(true)
     }
   })
 

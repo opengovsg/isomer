@@ -2,12 +2,9 @@ import { test } from "@playwright/test"
 import crypto from "crypto"
 import { normalizeRedirectSource } from "~/schemas/redirect/utils"
 import { getReferenceLink } from "~/utils/link"
-import { ResourceState, RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { DashboardPO } from "../fixtures/dashboard.po"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
+import { DashboardPO } from "~e2e/fixtures/po"
 import {
-  expectRedirectDestination,
   expectResourceParentId,
   seedFolder,
   seedFolderWithPage,
@@ -15,9 +12,10 @@ import {
   seedRootCollection,
   seedRootPage,
   seedTwoCollections,
-} from "../fixtures/page-seed"
-import { provisionE2ESite } from "../fixtures/site"
-import { ensureUserOnboarded, getE2EUserId } from "../fixtures/user"
+} from "~e2e/fixtures/resource"
+import { expectRedirectDestination, provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded, getE2EUserId } from "~e2e/fixtures/user"
+import { ResourceState, RoleType } from "~prisma/generated/generatedEnums"
 
 let siteId: number
 
