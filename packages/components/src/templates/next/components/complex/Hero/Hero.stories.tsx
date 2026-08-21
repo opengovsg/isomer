@@ -111,6 +111,14 @@ export const LargeImage: Story = {
   },
 }
 
+export const LargeImageFit: Story = {
+  args: {
+    ...LargeImage.args,
+    variant: "largeImage",
+    imageFit: "contain",
+  },
+}
+
 export const Floating: Story = {
   args: {
     headingLevel: 1,
