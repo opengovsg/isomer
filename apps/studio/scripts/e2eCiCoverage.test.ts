@@ -27,18 +27,11 @@ function discoveredUnits(): string[] {
     if (NON_TEST_DIRS.has(entry)) continue
     const full = join(E2E_DIR, entry)
     if (statSync(full).isDirectory()) {
-      // Top-level dirs with their own *.test.ts files are one CI unit (site/,
-      // collection/, …). Dirs sharded into sub-jobs (e.g. page/blocks/) have
-      // no tests at the parent — only in immediate child subdirs.
       if (hasDirectTestFiles(full)) {
         units.push(full)
       } else {
         const shards = subdirsWithTests(full)
-        if (shards.length > 0) {
-          units.push(...shards)
-        } else {
-          units.push(full)
-        }
+        units.push(...(shards.length > 0 ? shards : [full]))
       }
       continue
     }
@@ -65,12 +58,9 @@ describe("e2e-tests CI matrix", () => {
   it("declares every tests/e2e feature directory and root test file exactly once", () => {
     expect(
       pathsDeclaredInCi(),
-      "A tests/e2e directory or root test file isn't listed in any `paths:` " +
-        "entry in the e2e-tests CI matrix in .github/workflows/ci.yml, " +
-        "or is listed more than once. Top-level dirs with no `*.test.ts` at " +
-        "their root (e.g. page/ split into page/blocks/) must list each child " +
-        "subdir that contains tests. If you added a new tests/e2e/<feature> " +
-        "directory, add an entry for it there.",
+      "Missing or duplicate `paths:` in .github/workflows/ci.yml for a tests/e2e " +
+        "directory. Dirs without root-level *.test.ts (e.g. page/) need one CI " +
+        "entry per child subdir that has tests.",
     ).toEqual(discoveredUnits())
   })
 })
