@@ -14,7 +14,12 @@ import * as emailService from "~/features/mail/service"
 import * as awsUtils from "~/server/modules/aws/utils"
 import { db } from "~/server/modules/database"
 import * as publishPageResourceModule from "~/server/modules/resource/resource.service"
-import { AuditLogEvent, ResourceType } from "~prisma/generated/prisma/client"
+import {
+  AuditLogEvent,
+  ResourceState,
+  ResourceType,
+  ScheduledAction,
+} from "~prisma/generated/prisma/client"
 
 import {
   publishScheduledResources,
@@ -378,6 +383,176 @@ describe("schedulePublishingJob", async () => {
         resourceId: page2.id,
         versionNum: 1,
       })
+    })
+  })
+
+  describe("schedulePublishJobHandler - scheduled unpublish", () => {
+    it("unpublishes a resource which has scheduledAction Unpublish and scheduledAt in the past", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId,
+        scheduledAt: FIXED_NOW,
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const resourceSiteMap = await publishScheduledResources(true, FIXED_NOW)
+
+      // Assert — the resource is unpublished, not republished
+      const updated = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updated.publishedVersionId).toBeNull()
+      expect(updated.state).toEqual(ResourceState.Draft)
+
+      const auditLogs = await db
+        .selectFrom("AuditLog")
+        .where("siteId", "=", site.id)
+        .where("eventType", "=", AuditLogEvent.Unpublish)
+        .selectAll()
+        .execute()
+      expect(auditLogs).toHaveLength(1)
+
+      expect(resourceSiteMap[site.id]).toBeDefined()
+      expect(resourceSiteMap[site.id]?.[0]!.id).toBe(page.id)
+    })
+
+    it("does not call publishPageResource for a resource scheduled for unpublish", async () => {
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId,
+        scheduledAt: FIXED_NOW,
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      const publishPageResourceSpy = vi.spyOn(
+        publishPageResourceModule,
+        "publishPageResource",
+      )
+      const unpublishPageResourceSpy = vi.spyOn(
+        publishPageResourceModule,
+        "unpublishPageResource",
+      )
+
+      await publishScheduledResources(true, FIXED_NOW)
+
+      expect(publishPageResourceSpy).not.toHaveBeenCalled()
+      expect(unpublishPageResourceSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ resourceId: page.id }),
+      )
+    })
+
+    it("resets scheduledAction along with scheduledAt/scheduledBy after processing", async () => {
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId,
+        scheduledAt: FIXED_NOW,
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      await publishScheduledResources(true, FIXED_NOW)
+
+      const updated = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updated.scheduledAt).toBeNull()
+      expect(updated.scheduledBy).toBeNull()
+      expect(updated.scheduledAction).toBeNull()
+    })
+
+    it("sends a failed-unpublish email (not the failed-publish template) when a scheduled unpublish fails", async () => {
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId,
+        scheduledAt: FIXED_NOW,
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      vi.spyOn(
+        publishPageResourceModule,
+        "unpublishPageResource",
+      ).mockImplementation(() => {
+        throw new Error("Failed to unpublish page resource")
+      })
+      const sendFailedPublishEmailSpy = vi
+        .spyOn(emailService, "sendFailedPublishEmail")
+        .mockResolvedValue()
+      const sendFailedUnpublishEmailSpy = vi
+        .spyOn(emailService, "sendFailedUnpublishEmail")
+        .mockResolvedValue()
+
+      const result = await publishScheduledResources(true, FIXED_NOW)
+
+      expect(result[site.id]).toBeUndefined()
+      expect(sendFailedPublishEmailSpy).not.toHaveBeenCalled()
+      expect(sendFailedUnpublishEmailSpy).toHaveBeenCalledTimes(1)
+      expect(sendFailedUnpublishEmailSpy).toHaveBeenCalledWith({
+        recipientEmail: user.email,
+        isScheduled: true,
+        resource: expect.objectContaining({ id: page.id }),
+      })
+
+      const updated = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updated.publishedVersionId).not.toBeNull()
+    })
+
+    it("does not send a failed-unpublish email when the feature flag is off", async () => {
+      const { site } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId,
+        scheduledAt: FIXED_NOW,
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      vi.spyOn(
+        publishPageResourceModule,
+        "unpublishPageResource",
+      ).mockImplementation(() => {
+        throw new Error("Failed to unpublish page resource")
+      })
+      const sendFailedUnpublishEmailSpy = vi
+        .spyOn(emailService, "sendFailedUnpublishEmail")
+        .mockResolvedValue()
+
+      await publishScheduledResources(false, FIXED_NOW)
+
+      expect(sendFailedUnpublishEmailSpy).not.toHaveBeenCalled()
     })
   })
 

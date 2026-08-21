@@ -29,6 +29,7 @@ import {
   AuditLogEvent,
   ResourceState,
   ResourceType,
+  ScheduledAction,
 } from "~prisma/generated/generatedEnums"
 
 import type { User } from "../../database"
@@ -3503,6 +3504,7 @@ describe("page.router", async () => {
               ...expectedPage,
               scheduledAt: expectedDate.toISOString(),
               scheduledBy: session.userId,
+              scheduledAction: ScheduledAction.Publish,
             },
             ["updatedAt", "createdAt"],
           ),
@@ -3668,7 +3670,8 @@ describe("page.router", async () => {
       ).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
-          message: "Unable to cancel schedule for a page that is not scheduled",
+          message:
+            "Unable to cancel schedule for a page that is not scheduled to be published",
         }),
       )
     })
@@ -3753,6 +3756,296 @@ describe("page.router", async () => {
       await expect(cancelScheduleCaller).rejects.toThrow(
         new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
       )
+    })
+  })
+
+  describe("scheduleUnpublish", () => {
+    const FIXED_NOW = new Date("2024-01-01T00:00:00.000Z")
+    const futureDate = set(addDays(FIXED_NOW, 1), {
+      hours: 10,
+      minutes: 0,
+      seconds: 0,
+      milliseconds: 0,
+    })
+    beforeEach(() => {
+      MockDate.set(FIXED_NOW)
+    })
+    afterEach(() => {
+      MockDate.reset()
+    })
+
+    it("should throw 401 if not logged in", async () => {
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      const result = unauthedCaller.scheduleUnpublish({
+        siteId: 1,
+        pageId: 1,
+        scheduledAt: futureDate,
+      })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user does not have unpublish access", async () => {
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      const result = caller.scheduleUnpublish({
+        siteId: site.id,
+        pageId: Number(page.id),
+        scheduledAt: futureDate,
+      })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should throw if the scheduled time is in the past", async () => {
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      const result = caller.scheduleUnpublish({
+        siteId: site.id,
+        pageId: Number(page.id),
+        scheduledAt: addDays(FIXED_NOW, -1),
+      })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Scheduled time must be in the future",
+        }),
+      )
+    })
+
+    it("should throw if the page is not currently published", async () => {
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      const result = caller.scheduleUnpublish({
+        siteId: site.id,
+        pageId: Number(page.id),
+        scheduledAt: futureDate,
+      })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "This page is not currently published",
+        }),
+      )
+    })
+
+    it("should throw if the page already has a scheduled action", async () => {
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+        scheduledAt: futureDate,
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Publish,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      const result = caller.scheduleUnpublish({
+        siteId: site.id,
+        pageId: Number(page.id),
+        scheduledAt: futureDate,
+      })
+
+      await expect(result).rejects.toThrow(
+        expect.objectContaining({ code: "BAD_REQUEST" }),
+      )
+    })
+
+    it("should schedule the page for unpublish", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.scheduleUnpublish({
+        siteId: site.id,
+        pageId: Number(page.id),
+        scheduledAt: futureDate,
+      })
+
+      // Assert
+      const updated = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updated.scheduledAt).toEqual(futureDate)
+      expect(updated.scheduledBy).toEqual(session.userId)
+      expect(updated.scheduledAction).toEqual(ScheduledAction.Unpublish)
+
+      const auditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", AuditLogEvent.ScheduleUnpublish)
+        .selectAll()
+        .execute()
+      expect(auditLogs.length).toEqual(1)
+    })
+  })
+
+  describe("cancelScheduleUnpublish", () => {
+    const FIXED_NOW = new Date("2024-01-01T00:00:00.000Z")
+    const futureDate = set(addDays(FIXED_NOW, 1), {
+      hours: 10,
+      minutes: 0,
+      seconds: 0,
+      milliseconds: 0,
+    })
+    beforeEach(() => {
+      MockDate.set(FIXED_NOW)
+    })
+    afterEach(() => {
+      MockDate.reset()
+    })
+
+    it("should throw 401 if not logged in", async () => {
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      const result = unauthedCaller.cancelScheduleUnpublish({
+        siteId: 1,
+        pageId: 1,
+      })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user does not have unpublish access", async () => {
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+        scheduledAt: futureDate,
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      const result = caller.cancelScheduleUnpublish({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should throw if the page has no scheduled unpublish (e.g. scheduled for publish instead)", async () => {
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        scheduledAt: futureDate,
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Publish,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      const result = caller.cancelScheduleUnpublish({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "Unable to cancel schedule for a page that is not scheduled to be unpublished",
+        }),
+      )
+    })
+
+    it("should cancel a scheduled unpublish", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+        scheduledAt: futureDate,
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.cancelScheduleUnpublish({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      const updated = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updated.scheduledAt).toBeNull()
+      expect(updated.scheduledBy).toBeNull()
+      expect(updated.scheduledAction).toBeNull()
+
+      const auditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", AuditLogEvent.CancelScheduleUnpublish)
+        .selectAll()
+        .execute()
+      expect(auditLogs.length).toEqual(1)
     })
   })
 })

@@ -37,7 +37,10 @@ import {
   updatePageBlobSchema,
   updatePageMetaSchema,
 } from "~/schemas/page"
-import { scheduledPublishServerSchema } from "~/schemas/schedule"
+import {
+  scheduledPublishServerSchema,
+  scheduledUnpublishServerSchema,
+} from "~/schemas/schedule"
 import { protectedProcedure, router } from "~/server/trpc"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
@@ -45,6 +48,7 @@ import {
   AuditLogEvent,
   ResourceState,
   ResourceType,
+  ScheduledAction,
 } from "~prisma/generated/generatedEnums"
 
 import { logResourceEvent } from "../audit/audit.service"
@@ -412,7 +416,13 @@ export const pageRouter = router({
         }
         // update the resource's scheduled field
         const updatedPage = await updatePageById(
-          { id: pageId, siteId, scheduledAt, scheduledBy: by.id },
+          {
+            id: pageId,
+            siteId,
+            scheduledAt,
+            scheduledBy: by.id,
+            scheduledAction: ScheduledAction.Publish,
+          },
           tx,
         )
         // verify that the update was successful
@@ -457,17 +467,26 @@ export const pageRouter = router({
             message: "Resource not found",
           })
         }
-        if (!resource.scheduledAt) {
+        if (
+          !resource.scheduledAt ||
+          resource.scheduledAction !== ScheduledAction.Publish
+        ) {
           throw new TRPCError({
             code: "BAD_REQUEST",
             message:
-              "Unable to cancel schedule for a page that is not scheduled",
+              "Unable to cancel schedule for a page that is not scheduled to be published",
           })
         }
 
         // update the resource's scheduled field
         const updatedPage = await updatePageById(
-          { id: pageId, siteId, scheduledAt: null, scheduledBy: null },
+          {
+            id: pageId,
+            siteId,
+            scheduledAt: null,
+            scheduledBy: null,
+            scheduledAction: null,
+          },
           tx,
         )
         if (!updatedPage) {
@@ -487,6 +506,131 @@ export const pageRouter = router({
       await sendCancelSchedulePageEmail({
         resource: updatedPage,
         recipientEmail: by.email,
+      })
+    }),
+  scheduleUnpublish: protectedProcedure
+    .input(scheduledUnpublishServerSchema)
+    .mutation(async ({ ctx, input: { scheduledAt, siteId, pageId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "unpublish",
+        userId: ctx.user.id,
+      })
+
+      if (isBefore(scheduledAt, new Date())) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Scheduled time must be in the future",
+        })
+      }
+      const by = await db
+        .selectFrom("User")
+        .where("id", "=", ctx.user.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+
+      await db.transaction().execute(async (tx) => {
+        // fetch the resource to be scheduled inside the transaction, to guard against concurrent update issues (race conditions)
+        const resource = await getPageById(tx, { resourceId: pageId, siteId })
+        if (!resource) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Resource not found",
+          })
+        }
+        if (!resource.publishedVersionId) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "This page is not currently published",
+          })
+        }
+        if (resource.scheduledAt) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Page already has a scheduled action at ${format(
+              resource.scheduledAt,
+              "yyyy-MM-dd HH:mm",
+            )}`,
+          })
+        }
+        const updatedPage = await updatePageById(
+          {
+            id: pageId,
+            siteId,
+            scheduledAt,
+            scheduledBy: by.id,
+            scheduledAction: ScheduledAction.Unpublish,
+          },
+          tx,
+        )
+        if (!updatedPage) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to schedule unpublish",
+          })
+        }
+        await logResourceEvent(tx, {
+          siteId,
+          by,
+          delta: { before: resource, after: updatedPage },
+          eventType: AuditLogEvent.ScheduleUnpublish,
+        })
+      })
+    }),
+  cancelScheduleUnpublish: protectedProcedure
+    .input(basePageSchema)
+    .mutation(async ({ ctx, input: { siteId, pageId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "unpublish",
+        userId: ctx.user.id,
+      })
+      const by = await db
+        .selectFrom("User")
+        .where("id", "=", ctx.user.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      await db.transaction().execute(async (tx) => {
+        const resource = await getPageById(tx, { resourceId: pageId, siteId })
+        if (!resource) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Resource not found",
+          })
+        }
+        if (
+          !resource.scheduledAt ||
+          resource.scheduledAction !== ScheduledAction.Unpublish
+        ) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message:
+              "Unable to cancel schedule for a page that is not scheduled to be unpublished",
+          })
+        }
+
+        const updatedPage = await updatePageById(
+          {
+            id: pageId,
+            siteId,
+            scheduledAt: null,
+            scheduledBy: null,
+            scheduledAction: null,
+          },
+          tx,
+        )
+        if (!updatedPage) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to cancel scheduled unpublish",
+          })
+        }
+        await logResourceEvent(tx, {
+          siteId,
+          by,
+          delta: { before: resource, after: updatedPage },
+          eventType: AuditLogEvent.CancelScheduleUnpublish,
+        })
       })
     }),
   updatePageBlob: validatedPageProcedure

@@ -1,6 +1,9 @@
 import type { Resource } from "~/server/modules/database"
 import { env } from "~/env.mjs"
-import { sendFailedPublishEmail } from "~/features/mail/service"
+import {
+  sendFailedPublishEmail,
+  sendFailedUnpublishEmail,
+} from "~/features/mail/service"
 import {
   ENABLE_CODEBUILD_JOBS,
   ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY,
@@ -8,10 +11,11 @@ import {
 import { createBaseLogger } from "~/lib/logger"
 import { createGrowthBookContext } from "~/server/context"
 import { publishSite } from "~/server/modules/aws/codebuild.service"
-import { db } from "~/server/modules/database"
+import { db, ScheduledAction } from "~/server/modules/database"
 import {
   defaultResourceSelect,
   publishPageResource,
+  unpublishPageResource,
 } from "~/server/modules/resource/resource.service"
 
 import { registerPgbossJob } from "@isomer/pgboss"
@@ -100,45 +104,75 @@ export const publishScheduledResources = async (
       )
       continue
     }
+    const isUnpublish = resource.scheduledAction === ScheduledAction.Unpublish
     try {
-      // publish the resources WITHOUT publishing the site yet
-      await publishPageResource({
-        logger,
-        resourceId,
-        siteId,
-        userId: scheduledBy,
-      })
-      logger.info(`Successfully published page for resource: ${resourceId}`)
+      // publish/unpublish the resource WITHOUT publishing the site yet
+      if (isUnpublish) {
+        await unpublishPageResource({
+          logger,
+          resourceId,
+          siteId,
+          userId: scheduledBy,
+        })
+        logger.info(`Successfully unpublished page for resource: ${resourceId}`)
+      } else {
+        await publishPageResource({
+          logger,
+          resourceId,
+          siteId,
+          userId: scheduledBy,
+        })
+        logger.info(`Successfully published page for resource: ${resourceId}`)
+      }
       // Group resources by siteId for site publishing later
       siteResourcesMap[siteId] = siteResourcesMap[siteId] ?? []
       siteResourcesMap[siteId].push({ ...resource, scheduledBy })
     } catch (error) {
       logger.error(
         { error },
-        `Failed to publish page for resource: ${resourceId}`,
+        `Failed to ${isUnpublish ? "unpublish" : "publish"} page for resource: ${resourceId}`,
       )
       if (resource.userDeletedAt || !resource.email) {
         logger.warn(
-          `Resource ${resourceId} is missing user email information or deleted, cannot send failed publish email`,
+          `Resource ${resourceId} is missing user email information or deleted, cannot send failed ${isUnpublish ? "unpublish" : "publish"} email`,
         )
         continue
       }
-      if (enableEmailsForScheduledPublishes) {
+      if (!enableEmailsForScheduledPublishes) {
+        continue
+      }
+      if (isUnpublish) {
         try {
-          await sendFailedPublishEmail({
+          await sendFailedUnpublishEmail({
             recipientEmail: resource.email,
             isScheduled: true,
             resource,
           })
           logger.warn(
-            `Sent failed publish email to ${resource.email} for resource: ${resourceId}`,
+            `Sent failed unpublish email to ${resource.email} for resource: ${resourceId}`,
           )
         } catch (emailError) {
           logger.error(
             { error: emailError },
-            `Failed to send failed publish email to ${resource.email} for resource: ${resourceId}`,
+            `Failed to send failed unpublish email to ${resource.email} for resource: ${resourceId}`,
           )
         }
+        continue
+      }
+      try {
+        await sendFailedPublishEmail({
+          recipientEmail: resource.email,
+          isScheduled: true,
+          resource,
+        })
+        logger.warn(
+          `Sent failed publish email to ${resource.email} for resource: ${resourceId}`,
+        )
+      } catch (emailError) {
+        logger.error(
+          { error: emailError },
+          `Failed to send failed publish email to ${resource.email} for resource: ${resourceId}`,
+        )
       }
     }
   }
@@ -174,6 +208,24 @@ export const publishScheduledSites = async (
           )
           continue
         }
+        if (resource.scheduledAction === ScheduledAction.Unpublish) {
+          try {
+            await sendFailedUnpublishEmail({
+              recipientEmail: resource.email,
+              isScheduled: true,
+              resource,
+            })
+            logger.warn(
+              `Sent failed unpublish email to ${resource.email} for resource: ${resource.id}, since site publish failed for site ${siteId}`,
+            )
+          } catch (emailError) {
+            logger.error(
+              { error: emailError },
+              `Failed to send failed unpublish email to ${resource.email} for resource: ${resource.id}, since site publish failed for site ${siteId}`,
+            )
+          }
+          continue
+        }
         try {
           await sendFailedPublishEmail({
             recipientEmail: resource.email,
@@ -205,7 +257,7 @@ const resetScheduledAtForPublishedResources = async (
 ) => {
   await db
     .updateTable("Resource")
-    .set({ scheduledAt: null, scheduledBy: null })
+    .set({ scheduledAt: null, scheduledBy: null, scheduledAction: null })
     .where("scheduledAt", "<=", scheduledAtCutoff)
     .execute()
 }

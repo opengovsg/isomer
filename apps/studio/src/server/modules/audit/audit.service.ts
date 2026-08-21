@@ -57,6 +57,14 @@ interface ResourceEventDeltaMap {
         before: WithoutMeta<PushDocumentJob>
         after: null
       }
+  ScheduleUnpublish: {
+    before: FullResource
+    after: FullResource
+  }
+  CancelScheduleUnpublish: {
+    before: FullResource
+    after: FullResource
+  }
 }
 
 interface BaseResourceEventLogProps {
