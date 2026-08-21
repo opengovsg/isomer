@@ -95,8 +95,8 @@ export const publishPageSchema = z.object({
 })
 
 export const unpublishPageSchema = z.object({
-  pageId: z.number().min(1),
-  siteId: z.number().min(1),
+  pageId: z.number().min(1, { message: "Select a page to unpublish" }),
+  siteId: z.number().min(1, { message: "Select a site" }),
 })
 
 export const createCollectionPageFormSchema = z
