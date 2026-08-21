@@ -45,7 +45,9 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
       "Primary Call-to-Action text",
       buttonLabel,
     )
-    await editor.fillButtonDestination(buttonUrl)
+    await editor.fillButtonDestination(buttonUrl, {
+      sectionHeading: "Primary Call-to-Action",
+    })
     await editor.saveMetaSettings()
     await editor.reload()
     await editor.expectLoaded()

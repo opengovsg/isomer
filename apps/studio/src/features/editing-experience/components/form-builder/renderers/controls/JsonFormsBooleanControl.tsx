@@ -49,6 +49,7 @@ function JsonFormsBooleanControl({
             size="md"
             defaultChecked={!!schema.default}
             id={id}
+            aria-label={label}
             isDisabled={!enabled}
             isChecked={!!data}
             onChange={(e) => handleChange(path, e.target.checked)}

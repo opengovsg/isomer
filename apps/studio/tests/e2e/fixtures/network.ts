@@ -133,6 +133,7 @@ export const mockDgsApis = async (
       route.fulfill({
         status: 200,
         contentType: "application/json",
+        headers: { "Access-Control-Allow-Origin": "*" },
         body: JSON.stringify({
           data: {
             name: E2E_DGS_DATASET_NAME,
@@ -165,6 +166,7 @@ export const mockDgsApis = async (
       route.fulfill({
         status: 200,
         contentType: "application/json",
+        headers: { "Access-Control-Allow-Origin": "*" },
         body: JSON.stringify({
           success: true,
           result: {
@@ -183,6 +185,7 @@ export const mockDgsApis = async (
       route.fulfill({
         status: 200,
         contentType: "application/json",
+        headers: { "Access-Control-Allow-Origin": "*" },
         body: JSON.stringify({
           data: { url: `https://user-content.example.com/${datasetId}.csv` },
         }),

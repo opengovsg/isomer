@@ -543,9 +543,27 @@ export class PageEditorPO {
   /** The "Button destination" field (`format: "link"`) renders via
    * `BaseLinkControl`/`LinkEditorModal` — not a plain input — so it can't be
    * filled via `fillFormFieldByLabel`. Mirrors `CollectionLinkPO.addExternalLink`,
-   * the same underlying component. */
-  async fillButtonDestination(url: string) {
-    await this.page.getByRole("button", { name: "Link something..." }).click()
+   * the same underlying component.
+   *
+   * Hero (and any grouped schema) can render more than one of these — pass
+   * `sectionHeading` (the JsonForms Group heading, e.g. "Primary Call-to-Action")
+   * to pick the right control. */
+  async fillButtonDestination(
+    url: string,
+    options?: { sectionHeading?: string },
+  ) {
+    const trigger = options?.sectionHeading
+      ? this.page
+          .getByRole("heading", {
+            name: options.sectionHeading,
+            exact: true,
+          })
+          .locator(
+            "xpath=ancestor::div[.//button[contains(., 'Link something')]][1]",
+          )
+          .getByRole("button", { name: "Link something..." })
+      : this.page.getByRole("button", { name: "Link something..." })
+    await trigger.click()
     const dialog = this.page.getByRole("dialog")
     await dialog.getByText("External", { exact: true }).click()
     await dialog.getByPlaceholder("www.isomer.gov.sg").fill(url)
@@ -589,6 +607,9 @@ export class PageEditorPO {
   ) {
     await this.enableThumbnail()
     await this.uploadImage(file)
+    const filename =
+      typeof file === "string" ? (file.split("/").pop() ?? "") : file.name
+    await expect(this.imageFilenameText(filename)).toBeVisible()
     await this.fillFormFieldByLabel("Alternate text", alt)
   }
 
@@ -631,6 +652,7 @@ export class PageEditorPO {
   async fillDgsDatasetUrl(url: string) {
     const input = this.page.getByPlaceholder("Paste dataset URL here")
     await input.fill(url)
+    await input.blur()
   }
 
   async expectValidCsvDataset() {
@@ -638,7 +660,9 @@ export class PageEditorPO {
   }
 
   async saveDgsDatasetId() {
-    await this.page.getByRole("button", { name: "Save Dataset ID" }).click()
+    const save = this.page.getByRole("button", { name: "Save Dataset ID" })
+    await expect(save).toBeEnabled()
+    await save.click()
     await expect(this.page.getByRole("dialog")).toBeHidden()
   }
 
