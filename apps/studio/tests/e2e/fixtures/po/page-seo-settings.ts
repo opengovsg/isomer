@@ -70,6 +70,9 @@ export class PageSeoSettingsPO {
   /** Blur the autosave form so `updateMeta` fires, then wait for the toast. */
   async saveByBlur() {
     await this.page.getByRole("heading", { name: "Meta settings" }).click()
-    await expect(this.page.getByText("Saved page metadata")).toBeVisible()
+    // Multiple autosaves in one test can leave overlapping success toasts.
+    await expect(
+      this.page.getByText("Saved page metadata", { exact: true }).first(),
+    ).toBeVisible()
   }
 }
