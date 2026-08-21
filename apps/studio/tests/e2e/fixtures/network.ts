@@ -44,12 +44,15 @@ export const mockAssetUploadRoutes = async (page: Page) => {
 export const mockPresignedPutUrl = async (page: Page) => {
   await page.route("**/api/trpc/asset.getPresignedPutUrl*", async (route) => {
     const input = route.request().postDataJSON() as {
-      json: { fileName: string }
+      json: { fileName: string; siteId: number }
     }
     // Mirror the real key shape (server/modules/asset/asset.service.ts
-    // getFileKey): the UI reads the uploaded filename back off the last path
-    // segment, so it must match what was actually uploaded, not a random one.
-    const fileKey = `e2e-mock/${crypto.randomUUID()}/${input.json.fileName}`
+    // getFileKey: `${siteId}/${folderName}/${sanitizedFileName}`) — the UI
+    // reads the uploaded filename back off the last path segment, and the
+    // link editor's file-link detection (LinkEditor/utils.ts getLinkHrefType)
+    // requires a leading numeric siteId segment to classify the href as a
+    // file link, so a non-numeric prefix here would silently break that.
+    const fileKey = `${input.json.siteId}/${crypto.randomUUID()}/${input.json.fileName}`
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -103,6 +106,89 @@ export const mockFailedAssetUpload = async (page: Page) => {
         status: 500,
         contentType: "application/json",
         body: JSON.stringify({ error: "Upload failed" }),
+      }),
+  )
+}
+
+export const E2E_DGS_DATASET_ID = "d_e2ecsvdatasetid0000000000000001"
+export const E2E_DGS_DATASET_NAME = "E2E CSV Dataset"
+export const E2E_DGS_COLUMN_A = "Column A"
+export const E2E_DGS_ROW_VALUE = "Alpha row"
+
+/**
+ * Stub data.gov.sg metadata + datastore_search so Database-layout E2E can
+ * link a dataset without hitting the real (egress-blocked) DGS APIs.
+ */
+export const mockDgsApis = async (
+  page: Page,
+  options?: { datasetId?: string },
+) => {
+  const datasetId = options?.datasetId ?? E2E_DGS_DATASET_ID
+
+  await page.route(
+    (url) =>
+      url.hostname === "api-production.data.gov.sg" &&
+      url.pathname.includes("/metadata"),
+    (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        headers: { "Access-Control-Allow-Origin": "*" },
+        body: JSON.stringify({
+          data: {
+            name: E2E_DGS_DATASET_NAME,
+            format: "CSV",
+            datasetSize: 1024,
+            columnMetadata: {
+              metaMapping: {
+                col_a: {
+                  name: "col_a",
+                  columnTitle: E2E_DGS_COLUMN_A,
+                  index: "0",
+                },
+                col_b: {
+                  name: "col_b",
+                  columnTitle: "Column B",
+                  index: "1",
+                },
+              },
+            },
+          },
+        }),
+      }),
+  )
+
+  await page.route(
+    (url) =>
+      url.hostname === "data.gov.sg" &&
+      url.pathname.includes("/datastore_search"),
+    (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        headers: { "Access-Control-Allow-Origin": "*" },
+        body: JSON.stringify({
+          success: true,
+          result: {
+            records: [{ col_a: E2E_DGS_ROW_VALUE, col_b: "Beta" }],
+            total: 1,
+          },
+        }),
+      }),
+  )
+
+  await page.route(
+    (url) =>
+      url.hostname === "api-open.data.gov.sg" &&
+      url.pathname.includes(`/datasets/${datasetId}`),
+    (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        headers: { "Access-Control-Allow-Origin": "*" },
+        body: JSON.stringify({
+          data: { url: `https://user-content.example.com/${datasetId}.csv` },
+        }),
       }),
   )
 }
