@@ -518,18 +518,26 @@ export class DashboardPO {
 
   async expectRecentlyEditedSearchResult(title: string) {
     const dialog = this.page.getByRole("dialog")
+    const recentlyEditedHeader = dialog.getByText(
+      "Pages recently edited on your site",
+    )
+    await expect(recentlyEditedHeader).toBeVisible()
+    const recentlyEditedSection = recentlyEditedHeader.locator("xpath=..")
     await expect(
-      dialog.getByText("Pages recently edited on your site"),
+      recentlyEditedSection.getByRole("link", { name: title }),
     ).toBeVisible()
-    await expect(dialog.getByRole("link", { name: title })).toBeVisible()
   }
 
   async expectRecentlyViewedSearchResult(title: string) {
     const dialog = this.page.getByRole("dialog")
+    const recentlyOpenedHeader = dialog.getByText(
+      /Pages you[\u2019']ve recently opened/,
+    )
+    await expect(recentlyOpenedHeader).toBeVisible()
+    const recentlyOpenedSection = recentlyOpenedHeader.locator("xpath=..")
     await expect(
-      dialog.getByText(/Pages you[\u2019']ve recently opened/),
+      recentlyOpenedSection.getByRole("link", { name: title }),
     ).toBeVisible()
-    await expect(dialog.getByRole("link", { name: title })).toBeVisible()
   }
 
   // --- DirectorySidebar ---
