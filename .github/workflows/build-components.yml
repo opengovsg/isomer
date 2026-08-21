@@ -4,8 +4,11 @@ name: Build and publish site
 # entrypoint of a per-site AWS CodeBuild project. CodeBuild supplied SITE_NAME /
 # S3_BUCKET_NAME / CLOUDFRONT_DISTRIBUTION_ID / S3_CACHE_BUCKET_NAME etc. as
 # project-level env vars; those become workflow_dispatch inputs here. The
-# git-clone-from-scratch step becomes actions/checkout; the S3 pnpm-store/dist
-# tarball caching is otherwise kept as-is.
+# git-clone-from-scratch step becomes actions/checkout. Rather than building
+# isomer-components and caching the pnpm store/dist as separate tarballs, this
+# workflow installs dependencies and publishes a single tarball of the whole
+# repository (source + node_modules) to S3, which downstream per-site
+# CodeBuild projects pull down instead of cloning/installing themselves.
 on:
   workflow_dispatch:
     inputs:
@@ -117,10 +120,15 @@ jobs:
             echo "key=$RESOLVED_REF-$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
           fi
 
-      # Shared S3 dependency cache (same bucket/prefix pattern is used by multiple CodeBuild projects).
-      # pnpm keeps package bytes in a content-addressable store; `store-dir` is set above for this run only.
-      # We archive only `.pnpm-store`; `pnpm install` recreates node_modules from the store + lockfile.
       - name: Install pnpm dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Shared S3 cache (same bucket/prefix pattern is used by multiple CodeBuild projects).
+      # Rather than caching the pnpm store and a built dist separately, archive the whole
+      # repository (source + node_modules) as a single tarball so downstream per-site
+      # CodeBuild projects can pull it down instead of cloning/installing themselves.
+      # .git is excluded since only the working tree is needed.
+      - name: Archive and publish repository
         env:
           S3_CACHE_BUCKET_NAME: ${{ inputs.s3-cache-bucket-name }}
           UNIQUE_CACHE_KEY: ${{ steps.cache-key.outputs.key }}
@@ -132,46 +140,17 @@ jobs:
             echo "Time taken: $((end_time - start_time)) seconds"
           }
 
-          TEMPLATE_DEPS_TGZ="isomer-template-deps.tar.zst"
-          TEMPLATE_DEPS_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/$UNIQUE_CACHE_KEY/$TEMPLATE_DEPS_TGZ"
-          echo "Installing workspace dependencies..."
+          REPO_TGZ="isomer-repo.tar.zst"
+          REPO_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/isomer/latest/$REPO_TGZ"
+
+          echo "Archiving repository..."
           start_time=$(date +%s)
-          pnpm install --frozen-lockfile
+          tar --exclude=.git --use-compress-program="zstd -6" -cf $REPO_TGZ .
           calculate_duration $start_time
 
-          echo "Caching pnpm store to S3..."
+          echo "Uploading repository archive to S3..."
           start_time=$(date +%s)
-          tar --use-compress-program="zstd -6" -cf $TEMPLATE_DEPS_TGZ .pnpm-store
-          aws s3 cp --only-show-errors $TEMPLATE_DEPS_TGZ $TEMPLATE_DEPS_CACHE_PATH
-          rm $TEMPLATE_DEPS_TGZ
-          echo "Cached pnpm store"
-          calculate_duration $start_time
-
-      # packages/components/dist is gitignored; Next resolves @opengovsg/isomer-components via workspace.
-      # Cache dist separately from .pnpm-store: restoring plain files does not affect the content-addressable store or node_modules linking.
-      - name: Build isomer-components dist
-        env:
-          S3_CACHE_BUCKET_NAME: ${{ inputs.s3-cache-bucket-name }}
-          UNIQUE_CACHE_KEY: ${{ steps.cache-key.outputs.key }}
-        run: |
-          calculate_duration() {
-            local start_time=$1
-            local end_time
-            end_time=$(date +%s)
-            echo "Time taken: $((end_time - start_time)) seconds"
-          }
-
-          COMPONENTS_DIST_TGZ="isomer-components-dist.tar.zst"
-          COMPONENTS_DIST_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/$UNIQUE_CACHE_KEY/$COMPONENTS_DIST_TGZ"
-          echo "Building @opengovsg/isomer-components..."
-          start_time=$(date +%s)
-          pnpm --filter @opengovsg/isomer-components run build
-          calculate_duration $start_time
-
-          echo "Caching isomer-components dist to S3..."
-          start_time=$(date +%s)
-          tar --use-compress-program="zstd -6" -cf $COMPONENTS_DIST_TGZ -C packages/components dist
-          aws s3 cp --only-show-errors $COMPONENTS_DIST_TGZ $COMPONENTS_DIST_CACHE_PATH
-          rm $COMPONENTS_DIST_TGZ
-          echo "Cached isomer-components dist"
+          aws s3 cp --only-show-errors $REPO_TGZ $REPO_CACHE_PATH
+          rm $REPO_TGZ
+          echo "Uploaded repository archive"
           calculate_duration $start_time
