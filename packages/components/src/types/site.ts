@@ -16,6 +16,109 @@ import { GTM_ID_STRING_REGEX, NON_EMPTY_STRING_REGEX } from "~/utils/validation"
 
 import type { IsomerSitemap } from "./sitemap"
 
+export const SITE_ENTITY_TYPES = [
+  "Organization",
+  "GovernmentOrganization",
+  "EducationalOrganization",
+  "NGO",
+] as const
+
+export type SiteEntityType = (typeof SITE_ENTITY_TYPES)[number]
+
+// TODO: Change this to Type.Enum when we upgrade to TypeBox v1
+const SiteEntityTypeSchema = Type.Unsafe<SiteEntityType>(
+  Type.String({
+    title: "Organisation type",
+    description:
+      "Choose the Schema.org type that best describes the organisation that owns this site. Leave this blank to derive the type from whether this is a government site.",
+    enum: SITE_ENTITY_TYPES,
+  }),
+)
+
+export const SiteEntitySettingsSchema = Type.Object(
+  {
+    type: Type.Optional(SiteEntityTypeSchema),
+    description: Type.Optional(
+      Type.String({
+        title: "Organisation description",
+        description:
+          "A short description of the organisation, not the website.",
+        format: "textarea",
+      }),
+    ),
+    address: Type.Optional(
+      Type.Object(
+        {
+          streetAddress: Type.Optional(
+            Type.String({
+              title: "Street address",
+              description: "Include the building name and unit number, if any.",
+            }),
+          ),
+          addressLocality: Type.Optional(
+            Type.String({
+              title: "City or locality",
+            }),
+          ),
+          postalCode: Type.Optional(
+            Type.String({
+              title: "Postal code",
+            }),
+          ),
+          addressCountry: Type.Optional(
+            Type.String({
+              title: "Country code",
+              description: "Use a two-letter country code, such as SG.",
+              maxLength: 2,
+              pattern: "^[A-Za-z]{2}$",
+              errorMessage: {
+                pattern: "must be two letters, such as SG",
+              },
+            }),
+          ),
+        },
+        {
+          title: "Address",
+          description: "The organisation's primary physical address.",
+        },
+      ),
+    ),
+    contactPoint: Type.Optional(
+      Type.Object(
+        {
+          contactType: Type.Optional(
+            Type.String({
+              title: "Contact type",
+              description: "For example, customer service or media enquiries.",
+            }),
+          ),
+          telephone: Type.Optional(
+            Type.String({
+              title: "Telephone",
+              description: "Include the country code, such as +65 6123 4567.",
+            }),
+          ),
+          email: Type.Optional(
+            Type.String({
+              title: "Email address",
+            }),
+          ),
+        },
+        {
+          title: "Contact point",
+          description:
+            "The public contact details for the organisation. The contact page configured in the footer is also reused.",
+        },
+      ),
+    ),
+  },
+  {
+    title: "Organisation structured data",
+    description:
+      "Help search engines understand the organisation that owns this site.",
+  },
+)
+
 export const AgencySettingsSchema = Type.Object({
   siteName: Type.String({
     title: "Site name",
@@ -34,6 +137,7 @@ export const AgencySettingsSchema = Type.Object({
       tooltip: "To change the agency name, contact Isomer Support",
     }),
   ),
+  siteEntity: Type.Optional(SiteEntitySettingsSchema),
 })
 
 export const SimpleIntegrationsSettingsSchema = Type.Object({
@@ -138,6 +242,7 @@ export type IsomerSiteProps = IsomerGeneratedSiteProps &
   IsomerSiteConfigProps
 
 export type AgencySettings = Static<typeof AgencySettingsSchema>
+export type SiteEntitySettings = Static<typeof SiteEntitySettingsSchema>
 export type IntegrationsSettings = Static<typeof IntegrationsSettingsSchema>
 export type SimpleIntegrationsSettings = Static<
   typeof SimpleIntegrationsSettingsSchema
