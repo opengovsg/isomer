@@ -11,6 +11,8 @@ introduces a **new reusable pattern** — not when merely adding test cases. See
 ## File layout
 
 - `tests/e2e/<module>/<surface>.test.ts` — one file per UI surface
+- `tests/e2e/resource/` — site tree (pages, folders, delete/move/search, normal page lifecycle)
+- `tests/e2e/collection/` — collection wizard, items, filters, tags, display, table (one CI shard)
 - `fixtures/` — shared infrastructure (auth, seed, helpers, page objects)
 - Import `test` / `expect` from `@playwright/test` directly (no `fixtures/test.ts` re-export)
 
