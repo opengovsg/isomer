@@ -51,6 +51,15 @@ export const editLinkSchema = z.object({
     )
     .optional(),
   tagged: z.array(z.string()).optional(),
+  dateTagged: z
+    .array(
+      z.object({
+        id: z.string().uuid(),
+        date: z.string(),
+        endDate: z.string().optional(),
+      }),
+    )
+    .optional(),
   image: z
     .object({
       src: z.string(),
