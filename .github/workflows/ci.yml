@@ -290,6 +290,8 @@ jobs:
             paths: tests/e2e/folder
           - feature: collection
             paths: tests/e2e/collection
+          - feature: dashboard
+            paths: tests/e2e/dashboard
           - feature: user
             paths: tests/e2e/user
           - feature: godmode
