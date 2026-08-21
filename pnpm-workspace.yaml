@@ -199,7 +199,7 @@ catalogs:
     "@chakra-ui/theme-tools": ^2.2.6
     "@chakra-ui/utils": ^2.2.2
   growthbook:
-    "@growthbook/growthbook": ^1.2.0
+    "@growthbook/growthbook": ^1.7.0
     "@growthbook/growthbook-react": ^1.7.0
   jsonforms:
     "@jsonforms/core": ^3.8.0
