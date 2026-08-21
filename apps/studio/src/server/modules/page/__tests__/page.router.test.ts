@@ -2405,7 +2405,7 @@ describe("page.router", async () => {
       // Assert
       await expect(result).rejects.toThrow(
         new TRPCError({
-          code: "BAD_REQUEST",
+          code: "PRECONDITION_FAILED",
           message: `This page is scheduled to be published at ${format(
             scheduledAt,
             "yyyy-MM-dd HH:mm",
