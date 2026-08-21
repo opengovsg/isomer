@@ -4,6 +4,7 @@ import { ThemeProvider } from "@opengovsg/design-system-react"
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { UserManagementContext } from "~/features/users"
+import { SITE_ID } from "~/lib/testing/constants"
 import { AuditLogExportRequestedReportType } from "~/schemas/audit"
 import { buildUserManagementPermissions } from "~/server/modules/permissions/permissions.util"
 import { theme } from "~/theme"
@@ -66,7 +67,7 @@ const renderWith = (ability: UserManagementAbility) =>
   render(
     <ThemeProvider theme={theme}>
       <UserManagementContext.Provider value={ability}>
-        <AuditLogExportSection siteId={42} />
+        <AuditLogExportSection siteId={SITE_ID} />
       </UserManagementContext.Provider>
     </ThemeProvider>,
   )
@@ -90,7 +91,7 @@ describe("AuditLogExportSection", () => {
       screen
         .getByRole("link", { name: "User management" })
         .getAttribute("href"),
-    ).toBe("/sites/42/users")
+    ).toBe(`/sites/${SITE_ID}/users`)
     const submit = screen.getByRole("button", { name: "Export logs" })
     expect((submit as HTMLButtonElement).disabled).toBe(false)
   })
@@ -109,7 +110,7 @@ describe("AuditLogExportSection", () => {
       { siteId: number; month: string; reportType: string },
     ]
     expect(payload).toEqual({
-      siteId: 42,
+      siteId: SITE_ID,
       month: getMonthOptions()[0]!.value,
       reportType: AuditLogExportRequestedReportType.Activity,
     })
@@ -151,7 +152,7 @@ describe("AuditLogExportSection", () => {
     await waitFor(() => expect(posthogCapture).toHaveBeenCalledTimes(1))
     expect(posthogCapture).toHaveBeenCalledWith(
       "audit_log_requested",
-      expect.objectContaining({ site_id: 42 }),
+      expect.objectContaining({ site_id: SITE_ID }),
     )
 
     // Ask again, identically.

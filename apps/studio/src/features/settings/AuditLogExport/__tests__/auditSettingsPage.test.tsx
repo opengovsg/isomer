@@ -4,6 +4,7 @@ import { ThemeProvider } from "@opengovsg/design-system-react"
 import { render, screen, waitFor } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { UserManagementContext } from "~/features/users"
+import { SITE_ID } from "~/lib/testing/constants"
 import AuditLogExportSettingsPage from "~/pages/sites/[siteId]/settings/audit-log"
 import { buildUserManagementPermissions } from "~/server/modules/permissions/permissions.util"
 import { theme } from "~/theme"
@@ -24,8 +25,6 @@ Object.defineProperty(window, "matchMedia", {
     dispatchEvent: vi.fn(),
   }),
 })
-
-const SITE_ID = 42
 
 const replace = vi.fn()
 

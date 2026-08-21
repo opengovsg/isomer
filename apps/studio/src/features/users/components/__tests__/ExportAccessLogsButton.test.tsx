@@ -4,14 +4,13 @@ import { ThemeProvider } from "@opengovsg/design-system-react"
 import { fireEvent, render, screen } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { UserManagementContext } from "~/features/users"
+import { SITE_ID } from "~/lib/testing/constants"
 import { getCurrentSingaporeMonth } from "~/schemas/audit"
 import { buildUserManagementPermissions } from "~/server/modules/permissions/permissions.util"
 import { theme } from "~/theme"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { ExportAccessLogsButton } from "../ExportAccessLogsButton"
-
-const SITE_ID = 42
 
 // The button is hidden while the is-audit-log-enabled flag is off (or not yet
 // loaded) — drive the flag per-test.
