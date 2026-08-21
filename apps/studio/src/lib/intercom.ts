@@ -26,28 +26,25 @@ export const trackEvent = (eventName: string): void => {
   trackEventSdk(eventName)
 }
 
-interface TriggerSurveyOnceProps {
-  surveyId: string
+export const COLLECTION_TAG_CSAT_SURVEY_ID = "65029624"
+
+export const getFirstTagEditedTrackedStorageKey = ({
+  userId,
+}: {
   userId: string
-}
+}): string => `intercom_event_first_tag_edited_${userId}_tracked`
 
-const triggerSurveyOnce = ({
-  surveyId,
+export const getCollectionTagCsatSurveyStorageKey = ({
   userId,
-}: TriggerSurveyOnceProps): void => {
-  const key = `intercom_survey_${surveyId}_${userId}_shown`
-  if (localStorage.getItem(key)) return
+}: {
+  userId: string
+}): string => `intercom_survey_${COLLECTION_TAG_CSAT_SURVEY_ID}_${userId}_shown`
 
+export const startCollectionTagCsatSurvey = (): void => {
   if (!env.NEXT_PUBLIC_INTERCOM_APP_ID) {
-    console.log("[Intercom mock] startSurvey", surveyId)
-  } else {
-    startSurvey(surveyId)
+    console.log("[Intercom mock] startSurvey", COLLECTION_TAG_CSAT_SURVEY_ID)
+    return
   }
-  localStorage.setItem(key, "1")
-}
 
-export const triggerCollectionTagCsatSurveyOnce = ({
-  userId,
-}: Omit<TriggerSurveyOnceProps, "surveyId">): void => {
-  triggerSurveyOnce({ surveyId: "65029624", userId })
+  startSurvey(COLLECTION_TAG_CSAT_SURVEY_ID)
 }
