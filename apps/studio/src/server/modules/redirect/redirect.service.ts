@@ -30,11 +30,13 @@ import {
 import { parseRedirectCsv } from "~/lib/redirectCsv"
 import {
   isValidExternalDestination,
-  normalizeRedirectPath,
-  normalizeRedirectSource,
   redirectKind,
   redirectRowSchema,
 } from "~/schemas/redirect"
+import {
+  normalizeRedirectPath,
+  normalizeRedirectSource,
+} from "~/schemas/redirect/utils"
 import { getReferenceLink } from "~/utils/link"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 

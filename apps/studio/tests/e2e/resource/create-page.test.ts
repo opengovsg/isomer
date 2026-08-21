@@ -1,16 +1,13 @@
 import { expect, test } from "@playwright/test"
 import crypto from "crypto"
-import { db } from "~/server/modules/database"
-import {
-  ResourceState,
-  ResourceType,
-  RoleType,
-} from "~prisma/generated/generatedEnums"
+import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { DashboardPO } from "../fixtures/dashboard.po"
 import { createPageViaWizard } from "../fixtures/helpers"
 import { PageEditorPO } from "../fixtures/page-editor.po"
+import { seedFolder } from "../fixtures/page-seed"
+import { deleteResource, deleteResourcesByTitleLike } from "../fixtures/reset"
 import { getResourceByTitle } from "../fixtures/resource.db"
 import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
@@ -26,40 +23,20 @@ test.beforeAll(async () => {
   siteId = site.siteId
 })
 
-const createSeedFolder = () =>
-  db
-    .insertInto("Resource")
-    .values({
-      permalink: `e2e-test-folder-${crypto.randomUUID().slice(0, 8)}`,
-      siteId,
-      parentId: null,
-      title: "E2E Test Folder",
-      draftBlobId: null,
-      state: ResourceState.Draft,
-      type: ResourceType.Folder,
-      publishedVersionId: null,
-    })
-    .returning("id")
-    .executeTakeFirstOrThrow()
-
-const deleteFolder = (folderId: string) =>
-  db.deleteFrom("Resource").where("id", "=", folderId).execute()
-
 test.describe("admin", { tag: roleTag("admin") }, () => {
   test.beforeEach(async () => {
     await ensureUserOnboarded(TEST_EMAILS.admin)
   })
 
   test.afterEach(async () => {
-    await db
-      .deleteFrom("Resource")
-      .where("siteId", "=", siteId)
-      .where("title", "like", "E2E Test Page %")
-      .execute()
+    await deleteResourcesByTitleLike(siteId, "E2E Test Page %")
   })
 
   test("admin can create a new page via the wizard", async ({ page }) => {
+    // Arrange
     const title = UNIQUE_TITLE()
+
+    // Act
     await createPageViaWizard(page, {
       startUrl: `/sites/${siteId}`,
       title,
@@ -67,6 +44,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     })
     await new PageEditorPO(page).expectLoaded()
 
+    // Assert
     const created = await getResourceByTitle({ siteId, title })
     expect(created).toBeTruthy()
     expect(created?.state).toBe("Draft")
@@ -81,10 +59,12 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
   })
 
   test("publisher does not see the Create new button", async ({ page }) => {
-    await new DashboardPO(page).gotoSite(siteId)
-    await expect(
-      page.getByRole("button", { name: "Create new..." }),
-    ).not.toBeVisible()
+    // Arrange / Act
+    const dashboard = new DashboardPO(page)
+    await dashboard.gotoSite(siteId)
+
+    // Assert
+    await dashboard.expectCreateButtonHidden()
   })
 })
 
@@ -94,10 +74,12 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
   })
 
   test("editor does not see the Create new button", async ({ page }) => {
-    await new DashboardPO(page).gotoSite(siteId)
-    await expect(
-      page.getByRole("button", { name: "Create new..." }),
-    ).not.toBeVisible()
+    // Arrange / Act
+    const dashboard = new DashboardPO(page)
+    await dashboard.gotoSite(siteId)
+
+    // Assert
+    await dashboard.expectCreateButtonHidden()
   })
 })
 
@@ -111,21 +93,26 @@ test.describe(
 
     test.beforeEach(async () => {
       await ensureUserOnboarded(TEST_EMAILS.admin)
-      folderId = (await createSeedFolder()).id
+      folderId = (await seedFolder({ siteId, folderTitle: "E2E Test Folder" }))
+        .folder.id
     })
 
     test.afterEach(async () => {
-      await deleteFolder(folderId)
+      await deleteResource(folderId)
     })
 
     test("admin can create a new page inside a folder", async ({ page }) => {
+      // Arrange
       const title = UNIQUE_TITLE()
+
+      // Act
       await createPageViaWizard(page, {
         startUrl: `/sites/${siteId}/folders/${folderId}`,
         title,
         siteId,
       })
 
+      // Assert
       const created = await getResourceByTitle({ siteId, title })
       expect(created).toBeTruthy()
       expect(created?.state).toBe("Draft")
@@ -144,23 +131,28 @@ test.describe(
 
     test.beforeEach(async () => {
       await ensureUserOnboarded(TEST_EMAILS.publisher)
-      folderId = (await createSeedFolder()).id
+      folderId = (await seedFolder({ siteId, folderTitle: "E2E Test Folder" }))
+        .folder.id
     })
 
     test.afterEach(async () => {
-      await deleteFolder(folderId)
+      await deleteResource(folderId)
     })
 
     test("publisher can create a new page inside a folder", async ({
       page,
     }) => {
+      // Arrange
       const title = UNIQUE_TITLE()
+
+      // Act
       await createPageViaWizard(page, {
         startUrl: `/sites/${siteId}/folders/${folderId}`,
         title,
         siteId,
       })
 
+      // Assert
       const created = await getResourceByTitle({ siteId, title })
       expect(created).toBeTruthy()
       expect(created?.state).toBe("Draft")
@@ -179,21 +171,26 @@ test.describe(
 
     test.beforeEach(async () => {
       await ensureUserOnboarded(TEST_EMAILS.editor)
-      folderId = (await createSeedFolder()).id
+      folderId = (await seedFolder({ siteId, folderTitle: "E2E Test Folder" }))
+        .folder.id
     })
 
     test.afterEach(async () => {
-      await deleteFolder(folderId)
+      await deleteResource(folderId)
     })
 
     test("editor can create a new page inside a folder", async ({ page }) => {
+      // Arrange
       const title = UNIQUE_TITLE()
+
+      // Act
       await createPageViaWizard(page, {
         startUrl: `/sites/${siteId}/folders/${folderId}`,
         title,
         siteId,
       })
 
+      // Assert
       const created = await getResourceByTitle({ siteId, title })
       expect(created).toBeTruthy()
       expect(created?.state).toBe("Draft")
