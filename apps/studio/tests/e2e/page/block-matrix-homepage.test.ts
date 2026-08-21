@@ -143,8 +143,11 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await editor.reload()
     await editor.expectLoaded()
 
-    // Assert
-    await editor.expectPreviewContains(collectionTitle)
+    // Assert — collection heading uses the selected collection's title; card
+    // titles on RootPage previews are stubbed to "Article title" (see above).
+    await expect(
+      editor.previewFrame().getByRole("heading", { name: collectionTitle }),
+    ).toBeVisible()
     await editor.expectPreviewContains("Article title")
   })
 

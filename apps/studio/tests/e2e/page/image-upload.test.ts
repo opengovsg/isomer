@@ -107,7 +107,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
       await editor.saveComplexBlock()
       await editor.reload()
       await editor.expectLoaded()
-      await editor.openBlockEditor(LOGO_FILENAME)
+      await editor.openBlockEditor(/e2e-logo\.png/i)
       await expect(editor.imageFilenameText(LOGO_FILENAME)).toBeVisible()
 
       // Act
@@ -156,18 +156,16 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
       await editor.saveComplexBlock()
       await editor.reload()
       await editor.expectLoaded()
-      // `imagegallery`'s block-list preview label is the constant
-      // "Image Gallery" regardless of content (`renderComponentPreviewText`).
       await editor.openBlockEditor("Image Gallery")
 
       // Assert: first item persisted
-      await editor.openGalleryItem(LOGO_FILENAME)
+      await editor.openGalleryItem(/e2e-logo\.png|Item 1/)
       await editor.expectFormFieldValue("Alternate text", alt1)
       await editor.expectFormFieldValue("Caption", caption1)
       await editor.returnFromNestedItem("Images")
 
       // Assert: second item persisted
-      await editor.openGalleryItem(galleryImage2.name)
+      await editor.openGalleryItem(/gallery-image-2\.png|Item 2/)
       await editor.expectFormFieldValue("Alternate text", alt2)
       await editor.expectFormFieldValue("Caption", caption2)
     })
