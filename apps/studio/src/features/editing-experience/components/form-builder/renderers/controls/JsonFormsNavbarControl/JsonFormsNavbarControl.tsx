@@ -13,6 +13,7 @@ import {
   HStack,
   Icon,
   Text,
+  Tooltip,
   VStack,
 } from "@chakra-ui/react"
 import {
@@ -35,7 +36,11 @@ import type { NavbarItems } from "./types"
 import { getParentPath } from "../utils"
 import { EditNavbarItem } from "./EditNavbarItem"
 import { StackableNavbarItem } from "./StackableNavbarItem"
-import { handleMoveItem, isFirstLevelLinksOverLimit } from "./utils"
+import {
+  handleMoveItem,
+  isFirstLevelLinksAtLimit,
+  isFirstLevelLinksOverLimit,
+} from "./utils"
 
 export const jsonFormsNavbarControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.NavbarControl,
@@ -92,7 +97,7 @@ function JsonFormsNavbarControl({
         Actions.update(path, (prevData) =>
           handleMoveItem(
             prevData as NavbarItems["items"],
-            !!(arraySchema.maxItems && data >= arraySchema.maxItems),
+            isFirstLevelLinksAtLimit(data, arraySchema.maxItems),
             originalPath,
             newPath,
             instruction,
@@ -105,6 +110,7 @@ function JsonFormsNavbarControl({
   )
 
   const isOverMaxItems = isFirstLevelLinksOverLimit(data, arraySchema.maxItems)
+  const isAtMaxItems = isFirstLevelLinksAtLimit(data, arraySchema.maxItems)
 
   const getChildUiSchema = useCallback(
     (subPath: string) =>
@@ -227,17 +233,27 @@ function JsonFormsNavbarControl({
                   )}
                 </Text>
 
-                <Button
-                  variant="clear"
-                  size="xs"
-                  leftIcon={<Icon as={BiPlusCircle} />}
-                  onClick={() => {
-                    addItem(path, createDefaultValue(schema, rootSchema))()
-                    setSelectedPath(composePaths(path, String(data)))
-                  }}
+                <Tooltip
+                  label={
+                    isAtMaxItems
+                      ? `You can only have up to ${arraySchema.maxItems} first-level links.`
+                      : undefined
+                  }
+                  hasArrow
                 >
-                  Add a link
-                </Button>
+                  <Button
+                    variant="clear"
+                    size="xs"
+                    leftIcon={<Icon as={BiPlusCircle} />}
+                    isDisabled={isAtMaxItems}
+                    onClick={() => {
+                      addItem(path, createDefaultValue(schema, rootSchema))()
+                      setSelectedPath(composePaths(path, String(data)))
+                    }}
+                  >
+                    Add a link
+                  </Button>
+                </Tooltip>
               </HStack>
 
               {isOverMaxItems && (
