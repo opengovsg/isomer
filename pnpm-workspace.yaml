@@ -104,7 +104,7 @@ catalog:
   tsc-alias: ^1.9.0
   "@typescript/native-preview": 7.0.0-dev.20260707.2
   type-fest: ^5.8.0
-  tsx: ^4.23.5
+  tsx: ^4.23.12
   turbo: ^2.10.7
   typescript: ^6.0.3
   usehooks-ts: ^3.1.1
