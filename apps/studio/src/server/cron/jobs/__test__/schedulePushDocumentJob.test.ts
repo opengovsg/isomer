@@ -393,13 +393,13 @@ describe("schedulePushDocumentJobHandler", async () => {
       // Act
       await schedulePushDocumentJobHandler()
 
-      // Assert — saveObjects not called, but job row still deleted.
+      // Assert — saveObjects was not called, so the job remains for retry.
       expect(algoliaLib.saveObjectsToSearchIndex).not.toHaveBeenCalled()
       const remaining = await db
         .selectFrom("PushDocumentJob")
         .selectAll()
         .execute()
-      expect(remaining).toHaveLength(0)
+      expect(remaining).toHaveLength(1)
     })
 
     it("isolates failures: one bad resource does not prevent others from being saved", async () => {
@@ -453,12 +453,53 @@ describe("schedulePushDocumentJobHandler", async () => {
 
       // Assert — saveObjects was called twice (once per resource).
       expect(algoliaLib.saveObjectsToSearchIndex).toHaveBeenCalledTimes(2)
-      // Both rows cleaned up regardless.
+      // Only the successfully pushed row is cleaned up; the failed row is
+      // retained for the next tick.
       const remaining = await db
         .selectFrom("PushDocumentJob")
         .selectAll()
         .execute()
-      expect(remaining).toHaveLength(0)
+      expect(remaining).toHaveLength(1)
+      expect(remaining[0]?.resourceId).toBe(String(badId))
+    })
+
+    it("preserves a job that is rescheduled while Algolia ingestion is in flight", async () => {
+      // Arrange
+      const { resourceId } = await seedDocumentReadyForIngestion({
+        parentTitle: "Notices",
+        ref: "/rescheduled/gazette.pdf",
+        category: "Government Gazettes",
+        publishedBy: user.id,
+      })
+      const rescheduledAt = addMinutes(FIXED_NOW, 30)
+      await db
+        .insertInto("PushDocumentJob")
+        .values({
+          resourceId: String(resourceId),
+          scheduledAt: FIXED_NOW,
+          scheduledBy: user.id,
+        })
+        .execute()
+
+      vi.mocked(algoliaLib.saveObjectsToSearchIndex).mockImplementation(
+        async () => {
+          await db
+            .updateTable("PushDocumentJob")
+            .set({ scheduledAt: rescheduledAt })
+            .where("resourceId", "=", String(resourceId))
+            .execute()
+        },
+      )
+
+      // Act
+      await schedulePushDocumentJobHandler()
+
+      // Assert — cleanup must not delete the updated schedule.
+      const remaining = await db
+        .selectFrom("PushDocumentJob")
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(remaining.scheduledAt).toEqual(rescheduledAt)
     })
 
     it("dispatches a resource that was already published (publishing cron won the race)", async () => {
@@ -643,13 +684,12 @@ describe("schedulePushDocumentJobHandler", async () => {
       // Assert — Algolia and SearchSG both skipped (no valid documents).
       expect(algoliaLib.saveObjectsToSearchIndex).not.toHaveBeenCalled()
       expect(global.fetch).not.toHaveBeenCalled()
-      // Row still cleaned up — the worker treats malformed content as a
-      // permanent failure for that row, not a transient error.
+      // The malformed row was not pushed, so it remains for retry.
       const remaining = await db
         .selectFrom("PushDocumentJob")
         .selectAll()
         .execute()
-      expect(remaining).toHaveLength(0)
+      expect(remaining).toHaveLength(1)
     })
   })
 
@@ -719,6 +759,116 @@ describe("schedulePushDocumentJobHandler", async () => {
           ContentDisposition: `inline; filename="Document Title.pdf"`,
         }),
       )
+    })
+
+    it("deletes only rows successfully included in the SearchSG batch", async () => {
+      // Arrange
+      const { resourceId: goodId } = await seedDocumentReadyForIngestion({
+        parentTitle: "Notices",
+        ref: "/good/gazette.pdf",
+        category: "Government Gazettes",
+        publishedBy: user.id,
+      })
+      const { resourceId: badId, ref: badRef } =
+        await seedDocumentReadyForIngestion({
+          parentTitle: "Notices2",
+          ref: "/bad/gazette.pdf",
+          category: "Government Gazettes",
+          publishedBy: user.id,
+        })
+
+      await db
+        .insertInto("PushDocumentJob")
+        .values([
+          {
+            resourceId: String(goodId),
+            scheduledAt: FIXED_NOW,
+            scheduledBy: user.id,
+          },
+          {
+            resourceId: String(badId),
+            scheduledAt: FIXED_NOW,
+            scheduledBy: user.id,
+          },
+        ])
+        .execute()
+
+      vi.mocked(s3Lib.getBlob).mockImplementation((_bucket, key) => {
+        if (key === badRef.slice(1)) {
+          return Promise.reject(new Error("S3 error"))
+        }
+        return Promise.resolve(new Uint8Array([1, 2, 3]))
+      })
+
+      // Act
+      await schedulePushDocumentJobHandler()
+
+      // Assert — the successful document was pushed and removed from the
+      // queue, while the failed row remains for the next tick.
+      const ingestCall = vi
+        .mocked(global.fetch)
+        .mock.calls.find(([u]) => urlToString(u).includes("/documents"))
+      expect(ingestCall).toBeDefined()
+      const ingestBody = ingestCall![1]?.body as string
+      const body = JSON.parse(ingestBody) as {
+        documentsToAdd: Record<string, unknown>[]
+      }
+      expect(body.documentsToAdd).toHaveLength(1)
+
+      const remaining = await db
+        .selectFrom("PushDocumentJob")
+        .selectAll()
+        .execute()
+      expect(remaining).toHaveLength(1)
+      expect(remaining[0]?.resourceId).toBe(String(badId))
+    })
+
+    it("preserves a job that is rescheduled while SearchSG ingestion is in flight", async () => {
+      // Arrange
+      const { resourceId } = await seedDocumentReadyForIngestion({
+        parentTitle: "Notices",
+        ref: "/rescheduled/gazette.pdf",
+        category: "Government Gazettes",
+        publishedBy: user.id,
+      })
+      const rescheduledAt = addMinutes(FIXED_NOW, 30)
+      await db
+        .insertInto("PushDocumentJob")
+        .values({
+          resourceId: String(resourceId),
+          scheduledAt: FIXED_NOW,
+          scheduledBy: user.id,
+        })
+        .execute()
+
+      vi.mocked(global.fetch).mockImplementation(async (input) => {
+        const u = urlToString(input)
+        if (u.endsWith("/v1/auth/token")) {
+          return new Response(
+            JSON.stringify({ accessToken: "test-token", tokenType: "Bearer" }),
+            { status: 200 },
+          )
+        }
+        if (u.includes("/documents")) {
+          await db
+            .updateTable("PushDocumentJob")
+            .set({ scheduledAt: rescheduledAt })
+            .where("resourceId", "=", String(resourceId))
+            .execute()
+          return new Response("{}", { status: 200 })
+        }
+        throw new Error(`Unexpected fetch: ${u}`)
+      })
+
+      // Act
+      await schedulePushDocumentJobHandler()
+
+      // Assert — cleanup must not delete the updated schedule.
+      const remaining = await db
+        .selectFrom("PushDocumentJob")
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(remaining.scheduledAt).toEqual(rescheduledAt)
     })
 
     it("skips rows scheduled for the future", async () => {
