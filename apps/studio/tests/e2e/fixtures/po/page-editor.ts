@@ -514,7 +514,7 @@ export class PageEditorPO {
   async openMetaSettings() {
     await this.page
       .getByRole("button", {
-        name: /^(Content page header|Article page header|Page header|Header)\b/,
+        name: /^(Content page header|Article page header|Page header|Header|Database page header)\b/,
       })
       .click({ force: true })
   }
@@ -554,6 +554,80 @@ export class PageEditorPO {
 
   async expectButtonDestinationHref(href: string) {
     await expect(this.page.getByText(href, { exact: true })).toBeVisible()
+  }
+
+  /**
+   * ODS DatePicker (`allowManualInput`) — the FormLabel is not wired via
+   * `htmlFor`, so match the visible "DD/MM/YYYY" placeholder instead of
+   * `getByLabel("Article date")`.
+   */
+  async fillArticleDate(date: string) {
+    const input = this.page.getByPlaceholder("DD/MM/YYYY")
+    await input.fill(date)
+    await input.blur()
+  }
+
+  async expectArticleDate(date: string) {
+    await expect(this.page.getByPlaceholder("DD/MM/YYYY")).toHaveValue(date)
+  }
+
+  /** `page.image` (thumbnail) on Content/Article/Index/Database headers. */
+  async uploadThumbnail(
+    file: string | { name: string; mimeType: string; buffer: Buffer },
+    alt: string,
+  ) {
+    await this.uploadImage(file)
+    await this.fillFormFieldByLabel("Alternate text", alt)
+  }
+
+  async openSeoSettings() {
+    await this.page.getByRole("link", { name: "Meta Settings" }).click()
+    await this.page.waitForURL(/\/pages\/\d+\/settings$/)
+  }
+
+  async openHeroEditor() {
+    await this.page
+      .getByRole("button", { name: /^Hero banner\b/ })
+      .click({ force: true })
+    await expect(this.page.getByText("Edit Hero banner")).toBeVisible()
+  }
+
+  async selectHeroVariant(name: string) {
+    await this.page.getByRole("radio", { name }).click()
+  }
+
+  async openDatabaseEditor() {
+    await this.openBlockEditor("Database")
+    await this.expectDatabaseEditorOpen()
+  }
+
+  async openDgsDatasetModal() {
+    const dgsRadio = this.page.getByRole("radio", { name: /DGS/i })
+    if (await dgsRadio.isVisible()) {
+      await dgsRadio.click()
+    }
+    await this.page.getByRole("button", { name: "Edit" }).click()
+    await expect(
+      this.page.getByRole("dialog").getByText("Link a dataset"),
+    ).toBeVisible()
+  }
+
+  async fillDgsDatasetUrl(url: string) {
+    const input = this.page.getByPlaceholder("Paste dataset URL here")
+    await input.fill(url)
+  }
+
+  async expectValidCsvDataset() {
+    await expect(this.page.getByText("Valid CSV dataset")).toBeVisible()
+  }
+
+  async saveDgsDatasetId() {
+    await this.page.getByRole("button", { name: "Save Dataset ID" }).click()
+    await expect(this.page.getByRole("dialog")).toBeHidden()
+  }
+
+  async expectDgsDatasetUrlContains(datasetId: string) {
+    await expect(this.page.getByText(datasetId, { exact: false })).toBeVisible()
   }
 
   // --- Image / Image gallery blocks: upload, replace, remove ---

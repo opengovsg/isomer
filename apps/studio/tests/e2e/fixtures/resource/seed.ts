@@ -297,9 +297,15 @@ export const seedFolderLegacyContentIndexPage = async ({
 export const seedHomepageHero = async ({
   siteId,
   heroTitle = "E2E Homepage Hero",
+  variant = "searchbar",
+  subtitle,
+  backgroundUrl,
 }: {
   siteId: number
   heroTitle?: string
+  variant?: "searchbar" | "gradient" | "block" | "largeImage" | "floating"
+  subtitle?: string
+  backgroundUrl?: string
 }) => {
   const rootPage = await db
     .selectFrom("Resource")
@@ -308,13 +314,27 @@ export const seedHomepageHero = async ({
     .select("id")
     .executeTakeFirstOrThrow()
 
+  const resolvedBackgroundUrl =
+    backgroundUrl ??
+    (variant === "searchbar" ? undefined : "/placeholder_no_image.png")
+
   const blob = await db
     .insertInto("Blob")
     .values({
       content: jsonb({
         layout: "homepage",
         page: {},
-        content: [{ type: "hero", variant: "searchbar", title: heroTitle }],
+        content: [
+          {
+            type: "hero",
+            variant,
+            title: heroTitle,
+            ...(subtitle ? { subtitle } : {}),
+            ...(resolvedBackgroundUrl
+              ? { backgroundUrl: resolvedBackgroundUrl }
+              : {}),
+          },
+        ],
         version: "0.1.0",
       } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>),
     })
