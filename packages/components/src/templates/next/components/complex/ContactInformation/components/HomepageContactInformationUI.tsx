@@ -1,5 +1,6 @@
 import type { ContactInformationUIProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
+import { getHeadingTag } from "~/utils/getHeadingTag"
 
 import { BaseParagraph } from "../../../internal/BaseParagraph"
 import { LinkButton } from "../../../internal/LinkButton"
@@ -99,7 +100,9 @@ export const HomepageContactInformationUI = ({
   label,
   isLoading,
   acceptHtmlTags = false,
+  headingLevel,
 }: ContactInformationUIProps) => {
+  const TitleTag = getHeadingTag(headingLevel)
   const filteredMethods = filterContactMethods({ methods, whitelistedMethods })
 
   const numberOfContactMethods: NumberOfContactMethods = isLoading
@@ -148,7 +151,9 @@ export const HomepageContactInformationUI = ({
       <div className={compoundStyles.container()}>
         <div className={compoundStyles.titleAndDescriptionContainer()}>
           {(title || isLoading) && (
-            <h3 className={compoundStyles.title()}>{isLoading ? "" : title}</h3>
+            <TitleTag className={compoundStyles.title()}>
+              {isLoading ? "" : title}
+            </TitleTag>
           )}
           {(!!description || isLoading) &&
             (acceptHtmlTags ? (

@@ -15,6 +15,7 @@ const meta: Meta<InfoColsProps> = {
   },
   args: {
     site: generateSiteConfig(),
+    headingLevel: 2,
   },
 }
 export default meta

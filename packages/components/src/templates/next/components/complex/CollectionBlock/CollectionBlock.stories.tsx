@@ -118,6 +118,7 @@ const generateArgs = ({
     displayThumbnail,
     displayCategory,
     buttonLabel,
+    headingLevel: 2,
     site: generateSiteConfig({
       siteMap: {
         id: "1",

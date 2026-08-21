@@ -21,6 +21,7 @@ type Story = StoryObj<typeof Callout>
 export const Default: Story = {
   args: {
     site: generateSiteConfig(),
+    headingLevel: 2,
     content: {
       type: "prose",
       content: [
@@ -41,6 +42,7 @@ export const Default: Story = {
 export const UnorderedListFirst: Story = {
   args: {
     site: generateSiteConfig(),
+    headingLevel: 2,
     content: {
       type: "prose",
       content: [
@@ -94,6 +96,7 @@ export const UnorderedListFirst: Story = {
 export const UnorderedListOnly: Story = {
   args: {
     site: generateSiteConfig(),
+    headingLevel: 2,
     content: {
       type: "prose",
       content: [
@@ -138,6 +141,7 @@ export const UnorderedListOnly: Story = {
 export const OrderedListFirst: Story = {
   args: {
     site: generateSiteConfig(),
+    headingLevel: 2,
     content: {
       type: "prose",
       content: [
@@ -191,6 +195,7 @@ export const OrderedListFirst: Story = {
 export const OrderedListOnly: Story = {
   args: {
     site: generateSiteConfig(),
+    headingLevel: 2,
     content: {
       type: "prose",
       content: [
@@ -235,6 +240,7 @@ export const OrderedListOnly: Story = {
 export const ListInMiddle: Story = {
   args: {
     site: generateSiteConfig(),
+    headingLevel: 2,
     content: {
       type: "prose",
       content: [

@@ -78,4 +78,5 @@ export type InfoColsProps = Static<typeof InfoColsSchema> & {
   sectionIdx?: number // TODO: Remove this property, only used in classic theme
   layout: IsomerPageLayoutType
   site: IsomerSiteProps
+  headingLevel: number
 }

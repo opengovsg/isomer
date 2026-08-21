@@ -3,6 +3,7 @@ import type { InfoColsProps } from "~/interfaces"
 import { BiRightArrowAlt } from "react-icons/bi"
 import { SUPPORTED_ICONS_MAP } from "~/common/icons"
 import { tv } from "~/lib/tv"
+import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
 import { isExternalUrl } from "~/utils/isExternalUrl"
@@ -148,8 +149,10 @@ export const InfoCols = ({
   infoBoxes,
   layout,
   site,
+  headingLevel,
 }: InfoColsProps) => {
   const simplifiedLayout = getTailwindVariantLayout(layout)
+  const Tag = getHeadingTag(headingLevel)
 
   return (
     <section id={id} className={compoundStyles.section()}>
@@ -158,7 +161,7 @@ export const InfoCols = ({
       >
         <div className={compoundStyles.innerContainer()}>
           <div className={compoundStyles.header({ layout: simplifiedLayout })}>
-            <h2 className={compoundStyles.headerTitle()}>{title}</h2>
+            <Tag className={compoundStyles.headerTitle()}>{title}</Tag>
 
             {subtitle && (
               <p

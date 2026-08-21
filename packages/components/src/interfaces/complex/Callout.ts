@@ -17,4 +17,5 @@ export const CalloutSchema = Type.Object(
 
 export type CalloutProps = Static<typeof CalloutSchema> & {
   site: IsomerSiteProps
+  headingLevel: number
 }
