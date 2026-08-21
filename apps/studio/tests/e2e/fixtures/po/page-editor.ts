@@ -248,7 +248,9 @@ export class PageEditorPO {
    * whose text is "Test Callout content" — a non-exact match would resolve
    * to both blocks' paragraphs and violate Playwright's strict mode). */
   async expectPreviewContains(text: string, options?: { exact?: boolean }) {
-    await expect(this.previewFrame().getByText(text, options)).toBeVisible()
+    await expect(
+      this.previewFrame().getByText(text, options).first(),
+    ).toBeVisible()
   }
 
   /** `map`/`formsg` render a plain `<iframe title={title}>` directly (no
@@ -617,8 +619,12 @@ export class PageEditorPO {
    * "Item 1", "Item 2", etc. (`DraggableTagButton`'s `childLabel` fallback).
    */
   async openGalleryItem(nameOrRegex: string | RegExp) {
+    // Row labels render as visible text inside a nested `<button>`; matching on
+    // `hasText` is more reliable than `getByRole('button', { name })` once the
+    // label is a full upload path rather than a short "Item N" fallback.
     await this.page
-      .getByRole("button", { name: nameOrRegex })
+      .locator("button")
+      .filter({ hasText: nameOrRegex })
       .first()
       .click({ force: true })
   }
