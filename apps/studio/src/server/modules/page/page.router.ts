@@ -697,13 +697,28 @@ export const pageRouter = router({
           .where("Resource.id", "=", String(pageId))
           .where("Resource.siteId", "=", siteId)
           .where("Resource.type", "in", UNPUBLISHABLE_RESOURCE_TYPES)
-          .select("Resource.id")
+          .select(["Resource.id", "Resource.scheduledAt"])
           .executeTakeFirst()
 
         if (!page) {
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "This page either does not exist or cannot be unpublished",
+          })
+        }
+
+        // A scheduled publish isn't cleared by unpublishing — the schedule
+        // cron (schedulePublishingJob.ts) only checks scheduledAt, not the
+        // page's current state, so it would silently republish this page
+        // later from its draft blob. Make the user cancel the schedule first
+        // instead of unpublish quietly clobbering it.
+        if (page.scheduledAt) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `This page is scheduled to be published at ${format(
+              page.scheduledAt,
+              "yyyy-MM-dd HH:mm",
+            )}. Cancel the schedule before unpublishing.`,
           })
         }
 
