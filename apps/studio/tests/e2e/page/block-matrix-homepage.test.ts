@@ -63,12 +63,10 @@ const SIMPLE_HOMEPAGE_BLOCKS: {
   {
     pickerLabel: "Logo cloud",
     previewText: "Our partners",
-    // Default logocloud seeds three partner links sharing the same label text
-    // as the block title — scope to the title `<p>` to avoid strict-mode dupes.
+    // LogoCloud is a `role="region"` whose accessible name is its title
+    // (`aria-label={title}`), matching the imagegallery smoke check.
     assertPreview: async (editor) => {
-      await expect(
-        editor.previewFrame().locator("p", { hasText: "Our partners" }).first(),
-      ).toBeVisible()
+      await editor.expectPreviewRegionVisible("Our partners")
     },
   },
 ]
