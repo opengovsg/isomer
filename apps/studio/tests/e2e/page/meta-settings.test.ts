@@ -1,27 +1,37 @@
-import { test } from "@playwright/test"
+import { expect, test } from "@playwright/test"
 import crypto from "crypto"
+import { fileURLToPath } from "url"
 import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
 import {
   openCollectionIndexEditor,
   openSeededPageEditor,
 } from "~e2e/fixtures/helpers"
 import {
+  mockAssetUploadRoutes,
+  mockPresignedPutUrl,
+} from "~e2e/fixtures/network"
+import {
   seedArticlePage,
   seedCollection,
+  seedDatabasePage,
+  seedFolderIndexPage,
   seedRootPage,
 } from "~e2e/fixtures/resource"
 import { provisionE2ESite } from "~e2e/fixtures/site"
 import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
-// Meta Settings persistence (PAGE_EDITOR_E2E_SPEC.md 3.1). Reaches
-// `MetadataEditorStateDrawer` via `PageEditorPO.openMetaSettings()`'s
-// layout-specific "page header" block — see that method's doc comment for
-// why this isn't the top-nav "Meta Settings" tab. The Collection-layout case
-// below is a different surface (`CollectionEditorStateDrawer`'s "Collection
-// display"): `MetadataEditorStateDrawer`'s Collection branch (subtitle-only
-// schema) is unreachable from any UI path today, so this instead exercises
-// the actual UI editors would use to set a Collection Index's summary.
+const LOGO_FIXTURE = fileURLToPath(
+  new URL("../fixtures/e2e-logo.png", import.meta.url),
+)
+const LOGO_FILENAME = "e2e-logo.png"
+
+// In-editor page-header drawer (`MetadataEditorStateDrawer`) via
+// `PageEditorPO.openMetaSettings()` — not the top-nav SEO route
+// (`seo-meta-settings.test.ts`) and not the dashboard PageSettingsModal.
+// Tagged filters on Article only render for Collection items (see
+// `JsonFormsTaggedControl`); that path is covered by
+// `collection/assign-tags.test.ts`.
 
 let siteId: number
 
@@ -31,7 +41,9 @@ test.beforeAll(async () => {
 })
 
 test.describe("admin", { tag: roleTag("admin") }, () => {
-  test.beforeEach(async () => {
+  test.beforeEach(async ({ page }) => {
+    await mockAssetUploadRoutes(page)
+    await mockPresignedPutUrl(page)
     await ensureUserOnboarded(TEST_EMAILS.admin)
   })
 
@@ -140,5 +152,116 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
     // Assert
     await editor.expectSaveMetaSettingsEnabled()
+  })
+
+  test("Content layout: page thumbnail persists after reload", async ({
+    page,
+  }) => {
+    // Arrange
+    const alt = "A view of the site's landing page from above"
+    const { page: seededPage } = await seedRootPage({
+      siteId,
+      pageTitle: `E2E Thumbnail Content ${crypto.randomUUID().slice(0, 8)}`,
+    })
+    const editor = await openSeededPageEditor(page, siteId, seededPage.id)
+
+    // Act
+    await editor.openMetaSettings()
+    await editor.uploadThumbnail(LOGO_FIXTURE, alt)
+    await editor.saveMetaSettings()
+    await editor.reload()
+    await editor.expectLoaded()
+    await editor.openMetaSettings()
+
+    // Assert
+    await expect(editor.imageFilenameText(LOGO_FILENAME)).toBeVisible()
+    await editor.expectFormFieldValue("Alternate text", alt)
+  })
+
+  test("Article layout: article date and thumbnail persist after reload", async ({
+    page,
+  }) => {
+    // Arrange
+    const date = "21/08/2026"
+    const alt = "A view of the article's hero photograph from the archive"
+    const { page: seededPage } = await seedArticlePage({
+      siteId,
+      pageTitle: `E2E Article Date ${crypto.randomUUID().slice(0, 8)}`,
+    })
+    const editor = await openSeededPageEditor(page, siteId, seededPage.id)
+
+    // Act
+    await editor.openMetaSettings()
+    await editor.fillArticleDate(date)
+    await editor.uploadThumbnail(LOGO_FIXTURE, alt)
+    await editor.saveMetaSettings()
+    await editor.reload()
+    await editor.expectLoaded()
+    await editor.openMetaSettings()
+
+    // Assert
+    await editor.expectArticleDate(date)
+    await expect(editor.imageFilenameText(LOGO_FILENAME)).toBeVisible()
+    await editor.expectFormFieldValue("Alternate text", alt)
+  })
+
+  test("Index layout: summary, button label, and button destination persist after reload", async ({
+    page,
+  }) => {
+    // Arrange
+    const suffix = crypto.randomUUID().slice(0, 8)
+    const summary = `E2E index summary ${suffix}`
+    const buttonLabel = `E2E index button ${suffix}`
+    const buttonUrl = `example-index-${suffix}.com`
+    const { indexPage } = await seedFolderIndexPage({
+      siteId,
+      folderTitle: `E2E Index Header ${suffix}`,
+    })
+    const editor = await openSeededPageEditor(page, siteId, indexPage.id)
+
+    // Act
+    await editor.openMetaSettings()
+    await editor.fillFormFieldByLabel("Page summary", summary)
+    await editor.fillFormFieldByLabel("Button label", buttonLabel)
+    await editor.fillButtonDestination(buttonUrl)
+    await editor.saveMetaSettings()
+    await editor.reload()
+    await editor.expectLoaded()
+    await editor.openMetaSettings()
+
+    // Assert
+    await editor.expectFormFieldValue("Page summary", summary)
+    await editor.expectFormFieldValue("Button label", buttonLabel)
+    await editor.expectButtonDestinationHref(`https://${buttonUrl}`)
+  })
+
+  test("Database layout: page-header summary, button label, and destination persist after reload", async ({
+    page,
+  }) => {
+    // Arrange
+    const suffix = crypto.randomUUID().slice(0, 8)
+    const summary = `E2E database summary ${suffix}`
+    const buttonLabel = `E2E database button ${suffix}`
+    const buttonUrl = `example-db-${suffix}.com`
+    const { page: seededPage } = await seedDatabasePage({
+      siteId,
+      pageTitle: `E2E Database Header ${suffix}`,
+    })
+    const editor = await openSeededPageEditor(page, siteId, seededPage.id)
+
+    // Act
+    await editor.openMetaSettings()
+    await editor.fillFormFieldByLabel("Page summary", summary)
+    await editor.fillFormFieldByLabel("Button label", buttonLabel)
+    await editor.fillButtonDestination(buttonUrl)
+    await editor.saveMetaSettings()
+    await editor.reload()
+    await editor.expectLoaded()
+    await editor.openMetaSettings()
+
+    // Assert
+    await editor.expectFormFieldValue("Page summary", summary)
+    await editor.expectFormFieldValue("Button label", buttonLabel)
+    await editor.expectButtonDestinationHref(`https://${buttonUrl}`)
   })
 })
