@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server"
+import { format } from "date-fns"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
 import { mockFeatureFlags } from "tests/integration/helpers/growthbook/mockFeatureFlags"
@@ -541,6 +542,41 @@ describe("folder.router", async () => {
         new TRPCError({
           code: "PRECONDITION_FAILED",
           message: "This page is not currently published",
+        }),
+      )
+    })
+
+    it("should throw if the folder's IndexPage has a pending scheduled publish", async () => {
+      // Arrange — this guard lives in the shared unpublishPageResource
+      // service, so it applies here too, not just unpublishPage
+      const scheduledAt = new Date("2999-01-01T00:00:00Z")
+      const { site, folder } = await setupFolder()
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId,
+        scheduledAt,
+        scheduledBy: session.userId,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      const result = caller.unpublishFolder({
+        siteId: site.id,
+        resourceId: Number(folder.id),
+      })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: `This page is scheduled to be published at ${format(
+            scheduledAt,
+            "yyyy-MM-dd HH:mm",
+          )}. Cancel the schedule before unpublishing.`,
         }),
       )
     })

@@ -9,6 +9,7 @@ import {
   type IsomerSitemap,
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
+import { format } from "date-fns"
 import chunk from "lodash-es/chunk"
 import get from "lodash-es/get"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
@@ -1420,6 +1421,20 @@ export const unpublishPageResource = async ({
       throw new TRPCError({
         code: "PRECONDITION_FAILED",
         message: "This page is not currently published",
+      })
+    }
+
+    // A scheduled publish isn't cleared by unpublishing — the schedule cron
+    // (schedulePublishingJob.ts) only checks scheduledAt, not the page's
+    // current state, so it would silently republish this page later from its
+    // draft blob. Make the caller cancel the schedule first.
+    if (fullResource.scheduledAt) {
+      throw new TRPCError({
+        code: "PRECONDITION_FAILED",
+        message: `This page is scheduled to be published at ${format(
+          fullResource.scheduledAt,
+          "yyyy-MM-dd HH:mm",
+        )}. Cancel the schedule before unpublishing.`,
       })
     }
 
