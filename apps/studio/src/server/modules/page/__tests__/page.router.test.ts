@@ -2397,7 +2397,7 @@ describe("page.router", async () => {
       await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
-          message: "This page does not exist",
+          message: "This page either does not exist or cannot be unpublished",
         }),
       )
     })
@@ -2428,7 +2428,7 @@ describe("page.router", async () => {
       await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
-          message: "This page does not exist",
+          message: "This page either does not exist or cannot be unpublished",
         }),
       )
     })
@@ -2452,18 +2452,23 @@ describe("page.router", async () => {
       await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
-          message: "This page does not exist",
+          message: "This page either does not exist or cannot be unpublished",
         }),
       )
     })
 
-    it("should unpublish a live RootPage", async () => {
-      // Arrange — RootPage shares the same publish/unpublish path as a
-      // regular page (see RootpageRow's link to /pages/[pageId]); unlike
-      // delete, unpublishing it isn't destructive since the static-site
-      // build falls back to a generic homepage when unpublished
+    it.each([
+      ResourceType.RootPage,
+      ResourceType.FolderMeta,
+      ResourceType.CollectionMeta,
+    ])("should throw 404 if pageId refers to a %s", async (resourceType) => {
+      // Arrange — RootPage has a real publish state but the static-site
+      // build has no "unpublished homepage" case (see
+      // UNPUBLISHABLE_RESOURCE_TYPES in ~/constants/resources); FolderMeta/
+      // CollectionMeta are internal ordering metadata with no meaningfully
+      // tracked publish state
       const { site, page } = await setupPageResource({
-        resourceType: ResourceType.RootPage,
+        resourceType,
         state: ResourceState.Published,
         userId: session.userId ?? undefined,
       })
@@ -2473,49 +2478,19 @@ describe("page.router", async () => {
       })
 
       // Act
-      await caller.unpublishPage({ siteId: site.id, pageId: Number(page.id) })
+      const result = caller.unpublishPage({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
 
       // Assert
-      const updated = await db
-        .selectFrom("Resource")
-        .where("id", "=", page.id)
-        .selectAll()
-        .executeTakeFirstOrThrow()
-      expect(updated.publishedVersionId).toBeNull()
-      expect(updated.state).toEqual(ResourceState.Draft)
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "This page either does not exist or cannot be unpublished",
+        }),
+      )
     })
-
-    it.each([ResourceType.FolderMeta, ResourceType.CollectionMeta])(
-      "should throw 404 if pageId refers to a %s",
-      async (resourceType) => {
-        // Arrange — neither of these are user-facing content pages; they're
-        // internal ordering metadata with no meaningfully tracked publish
-        // state
-        const { site, page } = await setupPageResource({
-          resourceType,
-          state: ResourceState.Published,
-          userId: session.userId ?? undefined,
-        })
-        await setupPublisherPermissions({
-          userId: session.userId ?? undefined,
-          siteId: site.id,
-        })
-
-        // Act
-        const result = caller.unpublishPage({
-          siteId: site.id,
-          pageId: Number(page.id),
-        })
-
-        // Assert
-        await expect(result).rejects.toThrow(
-          new TRPCError({
-            code: "NOT_FOUND",
-            message: "This page does not exist",
-          }),
-        )
-      },
-    )
 
     it("should unpublish a live CollectionLink", async () => {
       // Arrange — CollectionLink shares the same publish/unpublish path as
