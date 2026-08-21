@@ -18,6 +18,10 @@ export interface Filter {
   // control for this filter (see Filter.tsx), whose value lives in
   // `AppliedFilter.dateRange`, not `items`.
   type?: "date"
+  // NOTE: only set for date-type filters — resolved from the date filter's
+  // `showStatusLabels` / `showDateRange` schema fields (default true).
+  showStatusLabels?: boolean
+  showDateRange?: boolean
 }
 
 interface AppliedFilterItem {

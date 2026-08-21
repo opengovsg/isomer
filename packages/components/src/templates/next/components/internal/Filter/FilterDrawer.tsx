@@ -139,48 +139,53 @@ const FilterDrawerContent = ({
     <>
       {/* Filters */}
       <form className="flex-1 px-6 md:px-10">
-        {filters.map(({ id, label, items, type }) => (
-          <CheckboxGroup
-            className="border-b border-b-divider-medium py-4 last:border-0"
-            key={id}
-            value={holdingFiltersById[id] ?? []}
-            onChange={(values) => {
-              setHoldingFiltersById((prev) => ({
-                ...prev,
-                [id]: values,
-              }))
-            }}
-          >
-            <ExpandFilterButton
-              label={label}
-              isExpanded={showFilter[id] ?? false}
-              onPress={() => updateFilterToggle(id)}
-            />
+        {filters.map(
+          ({ id, label, items, type, showStatusLabels, showDateRange }) => (
+            <CheckboxGroup
+              className="border-b border-b-divider-medium py-4 last:border-0"
+              key={id}
+              value={holdingFiltersById[id] ?? []}
+              onChange={(values) => {
+                setHoldingFiltersById((prev) => ({
+                  ...prev,
+                  [id]: values,
+                }))
+              }}
+            >
+              <ExpandFilterButton
+                label={label}
+                isExpanded={showFilter[id] ?? false}
+                onPress={() => updateFilterToggle(id)}
+              />
 
-            <div className={showFilter[id] ? "flex flex-col gap-2" : "hidden"}>
-              {items.map(({ id: itemId, label: itemLabel, count }) => (
-                <Checkbox
-                  value={itemId}
-                  key={itemId}
-                  className="w-fit cursor-pointer p-2"
-                >
-                  {itemLabel} ({count.toLocaleString()})
-                </Checkbox>
-              ))}
-              {type === "date" && (
-                <DateRangeFilterInput
-                  value={holdingDateRangesById[id]}
-                  onChange={(dateRange) =>
-                    setHoldingDateRangesById((prev) => ({
-                      ...prev,
-                      [id]: dateRange,
-                    }))
-                  }
-                />
-              )}
-            </div>
-          </CheckboxGroup>
-        ))}
+              <div
+                className={showFilter[id] ? "flex flex-col gap-2" : "hidden"}
+              >
+                {showStatusLabels !== false &&
+                  items.map(({ id: itemId, label: itemLabel, count }) => (
+                    <Checkbox
+                      value={itemId}
+                      key={itemId}
+                      className="w-fit cursor-pointer p-2"
+                    >
+                      {itemLabel} ({count.toLocaleString()})
+                    </Checkbox>
+                  ))}
+                {type === "date" && showDateRange !== false && (
+                  <DateRangeFilterInput
+                    value={holdingDateRangesById[id]}
+                    onChange={(dateRange) =>
+                      setHoldingDateRangesById((prev) => ({
+                        ...prev,
+                        [id]: dateRange,
+                      }))
+                    }
+                  />
+                )}
+              </div>
+            </CheckboxGroup>
+          ),
+        )}
       </form>
       {/* Sticky action bottom bar */}
       <div className="sticky bottom-0 left-0 right-0 flex flex-col gap-3 border-t border-t-divider-medium bg-white px-6 pb-12 pt-8 md:px-10">

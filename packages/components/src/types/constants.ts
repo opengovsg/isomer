@@ -73,3 +73,14 @@ export const DEFAULT_DATE_FILTER_STATUS_LABELS: {
   { id: DATE_FILTER_STATUS_ID.Ongoing, label: "Ongoing" },
   { id: DATE_FILTER_STATUS_ID.Upcoming, label: "Upcoming" },
 ]
+
+// Optional for backward compatibility. Missing/`undefined` must be read as
+// `true` — both sidebar controls default on. Omit JSON Schema `default`: Studio
+// AJV runs with useDefaults, which would apply the same default to legacy rows
+// that omit these keys. New date filters set both to `true` in
+// createDefaultDateFilter.
+export const resolveDateFilterShowStatusLabels = (value?: boolean): boolean =>
+  value !== false
+
+export const resolveDateFilterShowDateRange = (value?: boolean): boolean =>
+  value !== false

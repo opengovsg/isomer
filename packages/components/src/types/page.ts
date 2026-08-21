@@ -156,6 +156,25 @@ const DateFilterSchema = Type.Object(
         maxItems: 3,
       },
     ),
+    // Optional for backward compatibility — see resolveDateFilterShowStatusLabels.
+    // Hidden until collection-index editors can toggle sidebar controls per
+    // date filter; new filters set `true` in createDefaultDateFilter.
+    showStatusLabels: Type.Optional(
+      Type.Boolean({
+        title: "Show status labels filter",
+        description:
+          "Let visitors filter by status labels (e.g. Upcoming, Ongoing, Ended).",
+        format: "hidden",
+      }),
+    ),
+    // Optional for backward compatibility — see resolveDateFilterShowDateRange.
+    showDateRange: Type.Optional(
+      Type.Boolean({
+        title: "Show date range filter",
+        description: "Let visitors filter by a custom date range.",
+        format: "hidden",
+      }),
+    ),
   },
   { title: "Date filter" },
 )

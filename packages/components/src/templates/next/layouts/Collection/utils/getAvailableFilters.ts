@@ -6,6 +6,7 @@ import type { Filter } from "../../../types/Filter"
 import { getDateFilters } from "./getDateFilters"
 import { getTagFilters } from "./getTagFilters"
 import { getYearFilter } from "./getYearFilter"
+import { isAvailableFilter } from "./isDateFilterAvailable"
 
 export const getAvailableFilters = (
   items: ProcessedCollectionCardProps[],
@@ -20,7 +21,7 @@ export const getAvailableFilters = (
   // reassembled here in that array's order instead of being grouped by type.
   if (!tagCategories || tagCategories.length === 0) {
     return [...tagFilters, ...dateFilters, getYearFilter(items)].filter(
-      (filter) => filter.items.length >= 1,
+      isAvailableFilter,
     )
   }
 
@@ -35,6 +36,6 @@ export const getAvailableFilters = (
     .filter((filter): filter is Filter => filter !== undefined)
 
   return [...orderedCategoryFilters, getYearFilter(items)].filter(
-    (filter) => filter.items.length >= 1,
+    isAvailableFilter,
   )
 }

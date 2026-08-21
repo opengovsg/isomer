@@ -81,10 +81,42 @@ describe("getDateFilters", () => {
         id: EVENT_DATE_FILTER_ID,
         label: "Event Date",
         type: "date",
+        showStatusLabels: true,
+        showDateRange: true,
         items: [
           { id: "ONGOING", label: "Ongoing", count: 2 },
           { id: "UPCOMING", label: "Upcoming", count: 1 },
         ],
+      },
+    ])
+  })
+
+  it("resolves visibility flags from the date filter schema", () => {
+    const categories: NonNullable<
+      CollectionPageSchemaType["page"]["tagCategories"]
+    > = [
+      {
+        id: EVENT_DATE_FILTER_ID,
+        label: "Event Date",
+        type: "date",
+        showStatusLabels: false,
+        showDateRange: false,
+        statusLabels: [
+          { id: "ENDED", label: "Event ended" },
+          { id: "ONGOING", label: "Ongoing" },
+          { id: "UPCOMING", label: "Upcoming" },
+        ],
+      },
+    ]
+
+    expect(getDateFilters([], categories)).toEqual([
+      {
+        id: EVENT_DATE_FILTER_ID,
+        label: "Event Date",
+        type: "date",
+        showStatusLabels: false,
+        showDateRange: false,
+        items: [],
       },
     ])
   })
@@ -99,6 +131,8 @@ describe("getDateFilters", () => {
         id: EVENT_DATE_FILTER_ID,
         label: "Event Date",
         type: "date",
+        showStatusLabels: true,
+        showDateRange: true,
         items: [],
       },
     ])

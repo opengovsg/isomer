@@ -181,4 +181,76 @@ describe("getAvailableFilters", () => {
     // Assert
     expect(result).toEqual([])
   })
+
+  it("includes a date filter with only the date-range control when status labels are hidden", () => {
+    const items: ProcessedCollectionCardProps[] = [
+      {
+        title: "Item 1",
+        dateFilterCards: undefined,
+        date: new Date("2023-01-01"),
+      } as ProcessedCollectionCardProps,
+    ]
+    const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
+      {
+        id: "event-date-filter-id",
+        label: "Event Date",
+        type: "date",
+        showStatusLabels: false,
+        showDateRange: true,
+        statusLabels: [
+          { id: "ENDED", label: "Event ended" },
+          { id: "ONGOING", label: "Ongoing" },
+          { id: "UPCOMING", label: "Upcoming" },
+        ],
+      },
+    ]
+
+    const result = getAvailableFilters(items, tagCategories)
+
+    expect(result.map((filter) => filter.id)).toEqual([
+      "event-date-filter-id",
+      "year",
+    ])
+    expect(result[0]).toMatchObject({
+      showStatusLabels: false,
+      showDateRange: true,
+      items: [],
+    })
+  })
+
+  it("omits a date filter when both sidebar controls are hidden", () => {
+    const items: ProcessedCollectionCardProps[] = [
+      {
+        title: "Item 1",
+        dateFilterCards: [
+          {
+            id: "event-date-filter-id",
+            label: "Event Date",
+            status: "ONGOING",
+            statusLabel: "Ongoing",
+            dateText: "1 Jun - 30 Jun 2026",
+          },
+        ],
+        date: new Date("2023-01-01"),
+      } as ProcessedCollectionCardProps,
+    ]
+    const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
+      {
+        id: "event-date-filter-id",
+        label: "Event Date",
+        type: "date",
+        showStatusLabels: false,
+        showDateRange: false,
+        statusLabels: [
+          { id: "ENDED", label: "Event ended" },
+          { id: "ONGOING", label: "Ongoing" },
+          { id: "UPCOMING", label: "Upcoming" },
+        ],
+      },
+    ]
+
+    const result = getAvailableFilters(items, tagCategories)
+
+    expect(result.map((filter) => filter.id)).toEqual(["year"])
+  })
 })
