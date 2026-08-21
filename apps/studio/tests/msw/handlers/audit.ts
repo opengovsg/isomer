@@ -25,7 +25,9 @@ export const auditHandlers = {
               id: "audit-export-1",
               // `siteId` input is `unknown` because the schema uses z.coerce.number();
               // it's a number at runtime, so coerce it for the mocked row.
-              siteId: Number(siteId),
+              // Falls back to a fixed id for the `allSites` scope, where the
+              // request never carries one — no story currently exercises it.
+              siteId: siteId === undefined ? 1 : Number(siteId),
               userId: "cljcnahpn0000xlwynuea40lv",
               auditLogDateRange,
               reportType,

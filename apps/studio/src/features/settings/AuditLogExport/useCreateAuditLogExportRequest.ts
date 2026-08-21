@@ -24,11 +24,15 @@ export const useCreateAuditLogExportRequest = ({
   const toast = useToast(BRIEF_TOAST_SETTINGS)
 
   return trpc.audit.createExportRequest.useMutation({
-    onSuccess: (_data, { reportType: requestedReportType, month }) => {
+    onSuccess: (_data, { scope, reportType: requestedReportType, month }) => {
       if (requestedReportType === AuditLogExportRequestedReportType.Access) {
-        posthog.capture("user_access_log_requested", { site_id: siteId })
+        posthog.capture("user_access_log_requested", { site_id: siteId, scope })
       } else {
-        posthog.capture("audit_log_requested", { site_id: siteId, month })
+        posthog.capture("audit_log_requested", {
+          site_id: siteId,
+          month,
+          scope,
+        })
       }
 
       onSuccess?.()

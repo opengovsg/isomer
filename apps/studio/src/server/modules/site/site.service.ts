@@ -14,8 +14,11 @@ import type {
 } from "../database"
 import type { UserPermissionsProps } from "../permissions/permissions.type"
 import { logConfigEvent } from "../audit/audit.service"
-import { AuditLogEvent, db, jsonb } from "../database"
-import { definePermissionsForSite } from "../permissions/permissions.service"
+import { AuditLogEvent, db, jsonb, RoleType } from "../database"
+import {
+  definePermissionsForSite,
+  isActiveIsomerAdmin,
+} from "../permissions/permissions.service"
 import {
   FOOTER,
   NAVBAR_CONTENT,
@@ -40,6 +43,36 @@ export const validateUserPermissionsForSite = async ({
       message: "You do not have sufficient permissions to perform this action",
     })
   }
+}
+
+// Every site the given user may Admin: every site if they're an active
+// Isomer Admin (implicit Admin on all sites, mirroring `siteRouter.list`),
+// otherwise only sites where they hold an explicit Admin `ResourcePermission`.
+// Resolved server-side (never trusted from client input) so cross-site
+// actions — e.g. the "all sites I have Admin access to" audit-log export
+// scope — can't be pointed at a site the caller doesn't actually administer.
+export const getAdminSiteIds = async (userId: string): Promise<number[]> => {
+  const isIsomerAdmin = await isActiveIsomerAdmin(userId)
+  if (isIsomerAdmin) {
+    const sites = await db
+      .selectFrom("Site")
+      .select("id")
+      .orderBy("id", "asc")
+      .execute()
+    return sites.map((site) => site.id)
+  }
+
+  const sites = await db
+    .selectFrom("Site")
+    .innerJoin("ResourcePermission", "Site.id", "ResourcePermission.siteId")
+    .where("ResourcePermission.deletedAt", "is", null)
+    .where("ResourcePermission.resourceId", "is", null)
+    .where("ResourcePermission.userId", "=", userId)
+    .where("ResourcePermission.role", "=", RoleType.Admin)
+    .select("Site.id")
+    .orderBy("Site.id", "asc")
+    .execute()
+  return sites.map((site) => site.id)
 }
 
 type SiteSearchConfig = IsomerSiteConfigProps["search"]

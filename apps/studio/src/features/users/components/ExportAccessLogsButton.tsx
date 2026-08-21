@@ -1,26 +1,20 @@
 import type { ButtonProps } from "@chakra-ui/react"
 import { Button } from "@chakra-ui/react"
 import { useFeatureValue } from "@growthbook/growthbook-react"
+import { useSetAtom } from "jotai"
 import { useContext } from "react"
 import { BiDownload } from "react-icons/bi"
-import { useCreateAuditLogExportRequest } from "~/features/settings/AuditLogExport/useCreateAuditLogExportRequest"
 import { UserManagementContext } from "~/features/users"
+import { exportAccessLogsModalAtom } from "~/features/users/atoms"
 import { IS_AUDIT_LOG_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
-import {
-  AuditLogExportRequestedReportType,
-  getCurrentSingaporeMonth,
-} from "~/schemas/audit"
 
 interface ExportAccessLogsButtonProps extends Omit<ButtonProps, "onClick"> {
   siteId: number
 }
 
-// One-click export of the user access review logs from the user-management
-// pane. Fires the same createExportRequest mutation as the settings page's
-// export form (shared hook: same toasts, same PostHog captures); the CSV is
-// generated async and emailed. Access reports are always a point-in-time
-// snapshot pinned to the current month server-side, so the current Singapore
-// month is submitted.
+// Opens the "Export access history" modal (ExportAccessLogsModal, rendered
+// once at the page level), which lets the admin pick the export scope before
+// firing the request.
 export const ExportAccessLogsButton = ({
   siteId,
   ...buttonProps
@@ -36,8 +30,7 @@ export const ExportAccessLogsButton = ({
     false,
   )
 
-  const { mutate: createExportRequest, isPending } =
-    useCreateAuditLogExportRequest({ siteId })
+  const setExportAccessLogsModalState = useSetAtom(exportAccessLogsModalAtom)
 
   // Exporting access logs is admin-only: the button is not rendered at all
   // for other roles (unlike AddNewUserButton's disabled-with-tooltip, there
@@ -49,14 +42,7 @@ export const ExportAccessLogsButton = ({
     <Button
       variant="outline"
       leftIcon={<BiDownload />}
-      isLoading={isPending}
-      onClick={() =>
-        createExportRequest({
-          siteId,
-          month: getCurrentSingaporeMonth(),
-          reportType: AuditLogExportRequestedReportType.Access,
-        })
-      }
+      onClick={() => setExportAccessLogsModalState({ siteId, isOpen: true })}
       {...buttonProps}
     >
       Export access logs

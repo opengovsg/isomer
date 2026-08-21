@@ -2,9 +2,10 @@
 import type { UserManagementAbility } from "~/server/modules/permissions/permissions.type"
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import { fireEvent, render, screen } from "@testing-library/react"
+import { createStore, Provider } from "jotai"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { UserManagementContext } from "~/features/users"
-import { getCurrentSingaporeMonth } from "~/schemas/audit"
+import { exportAccessLogsModalAtom } from "~/features/users/atoms"
 import { buildUserManagementPermissions } from "~/server/modules/permissions/permissions.util"
 import { theme } from "~/theme"
 import { RoleType } from "~prisma/generated/generatedEnums"
@@ -21,55 +22,47 @@ vi.mock("@growthbook/growthbook-react", () => ({
     isAuditLogFlagOn || fallback,
 }))
 
-// The shared export hook fires PostHog captures on success; the mutation mock
-// below never resolves, so only the submitted payload matters here.
-vi.mock("posthog-js", () => ({ default: { capture: vi.fn() } }))
-
-const mutate = vi.fn()
-vi.mock("~/utils/trpc", () => ({
-  trpc: {
-    audit: {
-      createExportRequest: {
-        useMutation: () => ({ mutate, isPending: false }),
-      },
-    },
-  },
-}))
-
 const adminAbility = buildUserManagementPermissions([{ role: RoleType.Admin }])
 const editorAbility = buildUserManagementPermissions([
   { role: RoleType.Editor },
 ])
 
-const renderWith = (ability: UserManagementAbility) =>
+const renderWith = (
+  ability: UserManagementAbility,
+  store: ReturnType<typeof createStore>,
+) =>
   render(
-    <ThemeProvider theme={theme}>
-      <UserManagementContext.Provider value={ability}>
-        <ExportAccessLogsButton siteId={SITE_ID} />
-      </UserManagementContext.Provider>
-    </ThemeProvider>,
+    <Provider store={store}>
+      <ThemeProvider theme={theme}>
+        <UserManagementContext.Provider value={ability}>
+          <ExportAccessLogsButton siteId={SITE_ID} />
+        </UserManagementContext.Provider>
+      </ThemeProvider>
+    </Provider>,
   )
 
 describe("ExportAccessLogsButton", () => {
+  let store: ReturnType<typeof createStore>
+
   beforeEach(() => {
-    mutate.mockClear()
+    store = createStore()
     isAuditLogFlagOn = true
   })
 
-  it("requests a current-month Access export on click", () => {
+  // The button itself no longer requests an export directly — it opens
+  // ExportAccessLogsModal (rendered once at the page level), which lets the
+  // admin pick a scope before firing the request.
+  it("opens the export access logs modal for this site on click", () => {
     // Arrange
-    renderWith(adminAbility)
+    renderWith(adminAbility, store)
 
     // Act
     fireEvent.click(screen.getByRole("button", { name: "Export access logs" }))
 
-    // Assert: same mutation the settings export form issues — Access report,
-    // pinned to the current Singapore month.
-    expect(mutate).toHaveBeenCalledTimes(1)
-    expect(mutate).toHaveBeenCalledWith({
+    // Assert
+    expect(store.get(exportAccessLogsModalAtom)).toEqual({
       siteId: SITE_ID,
-      month: getCurrentSingaporeMonth(),
-      reportType: "Access",
+      isOpen: true,
     })
   })
 
@@ -78,7 +71,7 @@ describe("ExportAccessLogsButton", () => {
     isAuditLogFlagOn = false
 
     // Act
-    renderWith(adminAbility)
+    renderWith(adminAbility, store)
 
     // Assert
     expect(
@@ -88,12 +81,15 @@ describe("ExportAccessLogsButton", () => {
 
   it("renders nothing for non-admins — exporting access logs is admin-only", () => {
     // Arrange / Act
-    renderWith(editorAbility)
+    renderWith(editorAbility, store)
 
     // Assert
     expect(
       screen.queryByRole("button", { name: "Export access logs" }),
     ).toBeNull()
-    expect(mutate).not.toHaveBeenCalled()
+    expect(store.get(exportAccessLogsModalAtom)).toEqual({
+      siteId: 0,
+      isOpen: false,
+    })
   })
 })
