@@ -84,7 +84,7 @@ describe("asset.service", () => {
 
     it("should preserve titles with path separators instead of truncating them", () => {
       const result = getContentDispositionForTitle("A/B\\C", "1/abc/doc.pdf")
-      expect(result).toBe(`inline; filename="A-B-C.pdf"`)
+      expect(result).toBe(`inline; filename=A-B-C.pdf`)
     })
 
     it("should emit valid headers for titles with RFC 5987 attr-chars ' ( ) *", () => {
