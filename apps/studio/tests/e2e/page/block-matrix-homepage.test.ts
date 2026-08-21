@@ -1,5 +1,4 @@
-import type { Page } from "@playwright/test"
-import { test } from "@playwright/test"
+import { expect, test, type Page } from "@playwright/test"
 import crypto from "crypto"
 import { IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
@@ -44,7 +43,11 @@ const openHomepageEditor = async (page: Page) => {
  * the preview iframe. `collectionblock` and `antiscambanner` need bespoke
  * handling (see the two dedicated tests below) so aren't in this table.
  */
-const SIMPLE_HOMEPAGE_BLOCKS: { pickerLabel: string; previewText: string }[] = [
+const SIMPLE_HOMEPAGE_BLOCKS: {
+  pickerLabel: string
+  previewText: string
+  assertPreview?: (editor: PageEditorPO) => Promise<void>
+}[] = [
   { pickerLabel: "Cards", previewText: "Enter a title for your first card." },
   { pickerLabel: "Statistics", previewText: "Show growth numbers" },
   {
@@ -57,7 +60,17 @@ const SIMPLE_HOMEPAGE_BLOCKS: { pickerLabel: string; previewText: string }[] = [
     previewText: "Enter a strong message or call-to-action.",
   },
   { pickerLabel: "Quote", previewText: "Enter your quote here." },
-  { pickerLabel: "Logo cloud", previewText: "Our partners" },
+  {
+    pickerLabel: "Logo cloud",
+    previewText: "Our partners",
+    // Default logocloud seeds three partner links sharing the same label text
+    // as the block title — scope to the title `<p>` to avoid strict-mode dupes.
+    assertPreview: async (editor) => {
+      await expect(
+        editor.previewFrame().locator("p", { hasText: "Our partners" }).first(),
+      ).toBeVisible()
+    },
+  },
 ]
 
 test.describe("admin", { tag: roleTag("admin") }, () => {
@@ -65,7 +78,11 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await ensureUserOnboarded(TEST_EMAILS.admin)
   })
 
-  for (const { pickerLabel, previewText } of SIMPLE_HOMEPAGE_BLOCKS) {
+  for (const {
+    pickerLabel,
+    previewText,
+    assertPreview,
+  } of SIMPLE_HOMEPAGE_BLOCKS) {
     test(`${pickerLabel} block renders in the preview after save and reload`, async ({
       page,
     }) => {
@@ -80,7 +97,11 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
       await editor.expectLoaded()
 
       // Assert
-      await editor.expectPreviewContains(previewText)
+      if (assertPreview) {
+        await assertPreview(editor)
+      } else {
+        await editor.expectPreviewContains(previewText)
+      }
     })
   }
 
@@ -91,9 +112,11 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
    * seeded Collection, selecting it via the dropdown, before it's
    * schema-valid. It also needs a *published* Collection page: `CollectionBlock`
    * (`packages/components`) renders nothing if its collection has zero
-   * published children, since the studio preview iframe's sitemap
-   * (`getLocalisedSitemap`) only includes `Published` resources when listing
-   * a collection's children.
+   * `getLocalisedSitemap` on a RootPage intentionally overwrites every
+   * Collection node's children with three placeholder cards titled
+   * `"Article title"` (`overwriteCollectionChildrenForCollectionBlock` in
+   * `resource.service.ts`) — so the preview shows that stub title, not the
+   * real published collection page's title.
    */
   test("collectionblock renders the selected collection's page after save and reload", async ({
     page,
@@ -121,7 +144,8 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await editor.expectLoaded()
 
     // Assert
-    await editor.expectPreviewContains(collectionPageTitle)
+    await editor.expectPreviewContains(collectionTitle)
+    await editor.expectPreviewContains("Article title")
   })
 
   /**

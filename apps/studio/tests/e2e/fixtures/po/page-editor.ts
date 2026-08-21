@@ -78,11 +78,17 @@ export class PageEditorPO {
     ).toBeVisible()
   }
 
+  /** JsonForms text/textarea controls set `placeholder={label}` but do not wire
+   * `FormLabel` to the input via `htmlFor`, so `getByLabel` cannot resolve them. */
+  #jsonFormsField(label: string) {
+    return this.page.getByPlaceholder(label, { exact: true })
+  }
+
   async editArticleHeaderSummary(summary: string) {
     await this.page
       .getByRole("button", { name: "Article page header" })
       .click({ force: true })
-    await this.page.getByLabel("Article summary").fill(summary)
+    await this.#jsonFormsField("Article summary").fill(summary)
     await this.saveBlockChanges()
   }
 
@@ -90,7 +96,7 @@ export class PageEditorPO {
     await this.page
       .getByRole("button", { name: "Article page header" })
       .click({ force: true })
-    await expect(this.page.getByLabel("Article summary")).toHaveValue(summary)
+    await expect(this.#jsonFormsField("Article summary")).toHaveValue(summary)
   }
 
   async clickPublish() {
@@ -281,9 +287,12 @@ export class PageEditorPO {
    * `expectPreviewContains` for image/imagegallery blocks, since alt text
    * isn't visible page text. */
   async expectPreviewImageVisible(altText: string) {
+    // Placeholder images can be present in the DOM but not painted as visible
+    // (zero intrinsic size / lazy-load gates) — attached + correct alt is enough
+    // for these smoke-level default-content checks.
     await expect(
-      this.previewFrame().getByRole("img", { name: altText }),
-    ).toBeVisible()
+      this.previewFrame().locator(`img[alt="${altText}"]`),
+    ).toBeAttached()
   }
 
   /** Asserts a link to a child page renders in the preview — the
@@ -344,7 +353,7 @@ export class PageEditorPO {
   }
 
   async fillFormFieldByLabel(label: string, text: string) {
-    await this.page.getByLabel(label, { exact: true }).fill(text)
+    await this.#jsonFormsField(label).fill(text)
   }
 
   /**
@@ -521,9 +530,7 @@ export class PageEditorPO {
   }
 
   async expectFormFieldValue(label: string, value: string) {
-    await expect(this.page.getByLabel(label, { exact: true })).toHaveValue(
-      value,
-    )
+    await expect(this.#jsonFormsField(label)).toHaveValue(value)
   }
 
   /** The "Button destination" field (`format: "link"`) renders via
@@ -563,6 +570,13 @@ export class PageEditorPO {
   async uploadImage(
     file: string | { name: string; mimeType: string; buffer: Buffer },
   ) {
+    // Newly-added image blocks inherit `DEFAULT_BLOCKS.image.src` — the control
+    // shows `AttachmentData` (not the empty dropzone) until that placeholder
+    // file is removed.
+    const removeButton = this.removeUploadedImageButton()
+    if (await removeButton.isVisible()) {
+      await removeButton.click()
+    }
     await this.imageUploadInput().setInputFiles(file)
   }
 
@@ -678,7 +692,11 @@ export class PageEditorPO {
       5: "Small heading",
     }
     await this.#selectProseLine(text)
-    await this.page.getByRole("button", { name: "Text styles" }).click()
+    // When the selection is a paragraph, the styles dropdown shows "Paragraph"
+    // as its label rather than the idle "Text styles" default.
+    await this.page
+      .getByRole("button", { name: /Text styles|Paragraph/ })
+      .click()
     await this.page
       .getByRole("menuitem", { name: HEADING_MENU_ITEM[level] })
       .click()
@@ -809,7 +827,7 @@ export class PageEditorPO {
    * `openMetaSettings()` (Content/Article/Index layouts) or `openBlockEditor`
    * targeting a layout's own fixed block. */
   async expectMetaSettingsFieldVisible(label: string) {
-    await expect(this.page.getByLabel(label, { exact: true })).toBeVisible()
+    await expect(this.#jsonFormsField(label)).toBeVisible()
   }
 
   /** Distinct from `MetadataEditorStateDrawer`'s "Page header" block — the

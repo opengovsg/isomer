@@ -557,6 +557,10 @@ export const seedCollectionWithPage = async ({
     siteId,
     title: collectionTitle,
     permalink: `e2e-collection-${suffix}`,
+    state:
+      state === ResourceState.Published
+        ? ResourceState.Published
+        : ResourceState.Draft,
   })
   await seedCollectionIndexPage({
     siteId,

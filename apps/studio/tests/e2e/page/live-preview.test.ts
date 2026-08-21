@@ -63,7 +63,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     const { page: seededPage } = await seedFolderWithPage({ siteId })
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
     await editor.editProseBlock(SEEDED_PROSE_BLOCK_LABEL, savedText)
-    await editor.fillBlock(SEEDED_PROSE_BLOCK_LABEL, abandonedText)
+    await editor.fillBlock(savedText, abandonedText)
     await editor.expectPreviewContains(abandonedText)
 
     // Act
