@@ -67,7 +67,19 @@ export const linkEditorSchema = z.object({
     .refine(
       (href) => DOMPurify.isValidAttribute("a", "href", href),
       "Link destination is not allowed.",
-    ),
+    )
+    // Page/File hrefs aren't real URLs ([resource:...], /uuid/path) -- only
+    // External/Email are expected to be well-formed URLs. Catches
+    // malformed-but-scheme-safe input (e.g. a stray space in the host)
+    // that DOMPurify doesn't check, since it only validates scheme safety,
+    // not URL structure.
+    .refine((href) => {
+      const type = getLinkHrefType(href)
+      if (type === LINK_TYPES.External || type === LINK_TYPES.Email) {
+        return z.url().safeParse(href).success
+      }
+      return true
+    }, "Link destination is not a valid URL."),
 })
 
 interface PageLinkElementProps {
