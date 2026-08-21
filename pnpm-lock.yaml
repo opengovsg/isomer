@@ -303,8 +303,8 @@ catalogs:
       specifier: ^11.3.2
       version: 11.3.2
     posthog-js:
-      specifier: ^1.416.1
-      version: 1.416.1
+      specifier: ^1.417.1
+      version: 1.417.1
     posthog-node:
       specifier: ^5.47.9
       version: 5.48.1
@@ -948,7 +948,7 @@ importers:
         version: 8.23.0
       posthog-js:
         specifier: 'catalog:'
-        version: 1.416.1
+        version: 1.417.1
       posthog-node:
         specifier: 'catalog:'
         version: 5.48.1(rxjs@7.8.2)
@@ -5639,11 +5639,14 @@ packages:
   '@posthog/core@1.48.0':
     resolution: {integrity: sha512-ezKjVLw9y3Q235PUY+2hRr5DN9t6j2jF1mFAvnvhCCu/Ha6/qBv3zmVJBaHu9PnqqSNtx2St3ggN8Z3TTu/12A==}
 
-  '@posthog/types@1.402.2':
-    resolution: {integrity: sha512-ZZTiS4dLwF4/D0YTzS3gGSLFnhuNOY5yu4d9VGS9trGe5GW6FjIXo20p18K5BPW2RZSYSld8sdnSAY3AUXleUQ==}
+  '@posthog/core@1.48.1':
+    resolution: {integrity: sha512-mxw31XdYgt/SnlwqLPAcltK67q+QmsiYjVLGQ4GbBc8OJ7O4yRFSDwAXt8QsokHokeyEZtTRWM6jDHL7LYMx1A==}
 
   '@posthog/types@1.403.1':
     resolution: {integrity: sha512-0U9Xastjyy17cmtjtNai3d/+xf8bRJgPMYyu8svyWQRQsBULoPzqz5mTXm6l2dsj9dFoj+sezGjoe5yi5xOP4w==}
+
+  '@posthog/types@1.404.1':
+    resolution: {integrity: sha512-i2Gei6ARfOSBeTN4s2yUP1p97s2UNI+1NWmtLjhnR/V6t3RFOfI1sBWKcJNWHjtoOCCWoAFU+PNPY6SgT2VtEQ==}
 
   '@prisma/adapter-pg@7.9.1':
     resolution: {integrity: sha512-Ho2RK1KanQxLNSC0sR5bpiiVep10sWPLXCcxK+KXfI/Q69TMRbiafSvLPv3V9snimX72rMCqGlyJ4sBO4lKTAw==}
@@ -10947,8 +10950,8 @@ packages:
     resolution: {integrity: sha512-Jtc2612XINuBjIl/QTWsV5UvE8UHuNblcO3vVADSrKsrc6RqGX6lOW1cEo3CM2v0XG4Nat8nI+YM7/f26VxXLw==}
     engines: {node: '>=12'}
 
-  posthog-js@1.416.1:
-    resolution: {integrity: sha512-/4tFG0As9A/Wyi5dJ0F+/z1vkpndWl9uQtT+6TCD6snIkTZ/MMRiOjJHzY6b38cCQuy5zatr+kTKAuQB/BL1eA==}
+  posthog-js@1.417.1:
+    resolution: {integrity: sha512-QpZnHA2PieGq9+W03LBw23DnN9CD1zM37DcXnpZkg+C5iAwYXLiZs8qof0Yi/BhY35PYuhVmv93nhztyHjVaJw==}
 
   posthog-node@5.48.1:
     resolution: {integrity: sha512-BxLX2SqGEQhPqCPTalpyo0RRv1NMbf7UaN7q9d/ED77ksD6XOmE7ko2vIKO8F0zPL1NtKxIi+DYXap9lvR0RaA==}
@@ -16598,15 +16601,19 @@ snapshots:
 
   '@posthog/core@1.46.9':
     dependencies:
-      '@posthog/types': 1.402.2
+      '@posthog/types': 1.403.1
 
   '@posthog/core@1.48.0':
     dependencies:
       '@posthog/types': 1.403.1
 
-  '@posthog/types@1.402.2': {}
+  '@posthog/core@1.48.1':
+    dependencies:
+      '@posthog/types': 1.404.1
 
   '@posthog/types@1.403.1': {}
+
+  '@posthog/types@1.404.1': {}
 
   '@prisma/adapter-pg@7.9.1':
     dependencies:
@@ -22642,11 +22649,11 @@ snapshots:
 
   postgres@3.4.7: {}
 
-  posthog-js@1.416.1:
+  posthog-js@1.417.1:
     dependencies:
       '@posthog/browser-common': 0.5.0
-      '@posthog/core': 1.48.0
-      '@posthog/types': 1.403.1
+      '@posthog/core': 1.48.1
+      '@posthog/types': 1.404.1
       core-js: 3.49.0
       dompurify: 3.4.13
       fflate: 0.4.9
