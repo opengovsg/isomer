@@ -1,5 +1,4 @@
 import type { ButtonProps } from "~/interfaces"
-import { BUTTON_VARIANT } from "~/interfaces/complex/Button"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
 import { LinkButton } from "../../internal/LinkButton"
@@ -9,8 +8,15 @@ const ALIGNMENT_STYLES = {
   center: "justify-center",
 } as const
 
-export const Button = (props: ButtonProps) => {
-  const { alignment, buttonLabel, buttonUrl, site } = props
+export const Button = ({
+  alignment,
+  buttonLabel,
+  buttonUrl,
+  secondaryButtonLabel,
+  secondaryButtonUrl,
+  site,
+}: ButtonProps) => {
+  const hasSecondaryCTA = !!secondaryButtonLabel && !!secondaryButtonUrl
 
   return (
     <div
@@ -28,17 +34,17 @@ export const Button = (props: ButtonProps) => {
         {buttonLabel}
       </LinkButton>
 
-      {props.variant === BUTTON_VARIANT.pair && (
+      {hasSecondaryCTA && (
         <LinkButton
           href={getReferenceLinkHref(
-            props.secondaryButtonUrl,
+            secondaryButtonUrl,
             site.siteMapArray,
             site.assetsBaseUrl,
           )}
           size="base"
           variant="outline"
         >
-          {props.secondaryButtonLabel}
+          {secondaryButtonLabel}
         </LinkButton>
       )}
     </div>

@@ -20,34 +20,68 @@ const meta: Meta<ButtonProps> = {
 export default meta
 type Story = StoryObj<typeof Button>
 
-export const SingleButton: Story = {
+export const Default: Story = {
+  name: "One button",
   args: {
-    variant: "single",
     alignment: "left",
     buttonLabel: "Apply now",
     buttonUrl: "/permits/apply",
   },
 }
 
-export const PairOfButtons: Story = {
+export const SingleCentreAligned: Story = {
+  name: "One button, aligned centre",
   args: {
-    variant: "pair",
-    alignment: "left",
-    buttonLabel: "Apply now",
-    buttonUrl: "/permits/apply",
-    secondaryButtonLabel: "Learn more",
-    secondaryButtonUrl: "https://www.isomer.gov.sg",
-  },
-}
-
-export const CenterAligned: Story = {
-  name: "Pair of buttons, aligned centre",
-  args: {
-    variant: "pair",
     alignment: "center",
     buttonLabel: "Apply now",
     buttonUrl: "/permits/apply",
+  },
+}
+
+export const TwoButtons: Story = {
+  name: "Two buttons",
+  args: {
+    alignment: "left",
+    buttonLabel: "Apply now",
+    buttonUrl: "/permits/apply",
     secondaryButtonLabel: "Learn more",
     secondaryButtonUrl: "https://www.isomer.gov.sg",
+  },
+}
+
+export const TwoButtonsCentreAligned: Story = {
+  name: "Two buttons, aligned centre",
+  args: {
+    ...TwoButtons.args,
+    alignment: "center",
+  },
+}
+
+export const LongLabels: Story = {
+  name: "Two buttons, long text",
+  args: {
+    alignment: "left",
+    buttonLabel: "Apply for the Enhanced CPF Housing Grant",
+    buttonUrl: "/permits/apply",
+    secondaryButtonLabel: "Check your eligibility before applying",
+    secondaryButtonUrl: "https://www.isomer.gov.sg",
+  },
+}
+
+export const ExternalLink: Story = {
+  name: "External destination",
+  args: {
+    alignment: "left",
+    buttonLabel: "Go to the national portal",
+    buttonUrl: "https://www.isomer.gov.sg",
+  },
+}
+
+export const InternalReferenceLink: Story = {
+  name: "Internal page reference",
+  args: {
+    alignment: "left",
+    buttonLabel: "Read the guidelines",
+    buttonUrl: "[resource:1:2]",
   },
 }

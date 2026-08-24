@@ -34,7 +34,6 @@ export const DEFAULT_BLOCKS = {
   },
   button: {
     type: "button",
-    variant: "single",
     alignment: "left",
     buttonLabel: "Enter your button text.",
     buttonUrl: "https://www.google.com",
@@ -446,8 +445,10 @@ export const BLOCK_TO_META: Record<
   },
   button: {
     label: "Button",
-    description: "Add a single button or a pair of buttons to drive action.",
-    // TODO: Add imageSrc
+    description: "Add one or two buttons that link somewhere.",
+    usageText:
+      "Use when you want to show a clear next step or two, without a heading or coloured background.",
+    imageSrc: "/assets/block-images/Button.png",
   },
   contactinformation: {
     label: "Contact information",
