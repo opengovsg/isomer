@@ -1,7 +1,10 @@
 import { TRPCError } from "@trpc/server"
 import { get, pick } from "lodash-es"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
-import { ENABLE_CODEBUILD_JOBS } from "~/lib/growthbook"
+import {
+  ENABLE_CODEBUILD_JOBS,
+  IS_UNPUBLISH_ENABLED_FEATURE_KEY,
+} from "~/lib/growthbook"
 import {
   createFolderSchema,
   editFolderSchema,
@@ -213,6 +216,15 @@ export const folderRouter = router({
           action: "unpublish",
           userId: user.id,
         })
+
+        // Dark-launched: same NOT_FOUND as the not-found check below, so a
+        // caller can't distinguish "flag off" from "folder doesn't exist".
+        if (!gb.isOn(IS_UNPUBLISH_ENABLED_FEATURE_KEY)) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "This folder does not exist",
+          })
+        }
 
         // Reject non-Folder ids so this endpoint can't be used to unpublish
         // an arbitrary page under a folder-only contract (getFullPageById
