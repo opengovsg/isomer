@@ -9,6 +9,7 @@ import {
   DGS_SMALL_DATASET_RESOURCE_ID,
 } from "~/stories/helpers"
 
+import { SearchableTableClient } from "../shared"
 import { DGSSearchableTable } from "./DGSSearchableTable"
 
 const meta: Meta<DGSSearchableTableProps> = {
@@ -145,22 +146,16 @@ export const LargeDatasetNoSearchResults: Story = {
 }
 
 export const Loading: Story = {
-  args: commonArgs,
-  parameters: {
-    msw: {
-      handlers: [
-        http.get(
-          generateDgsUrl({
-            resourceId: DGS_SMALL_DATASET_RESOURCE_ID,
-          }),
-          () => {
-            return new Promise(() => {
-              // Never resolve the promise
-            })
-          },
-        ),
-      ],
-    },
+  render: () => (
+    <SearchableTableClient
+      title={commonArgs.title}
+      headers={[]}
+      items={[]}
+      isLoading
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByText("Loading...")).toBeVisible()
   },
 }
 
