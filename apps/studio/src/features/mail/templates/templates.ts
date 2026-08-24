@@ -14,7 +14,6 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 import type {
   AccountDeactivationEmailTemplateData,
   AccountDeactivationWarningEmailTemplateData,
-  AlreadyUnpublishedTemplateData,
   AuditLogExportDownloadLink,
   AuditLogExportFailedEmailTemplateData,
   AuditLogExportReadyEmailTemplateData,
@@ -235,21 +234,6 @@ const failedUnpublishTemplate = (
   }
 }
 
-const alreadyUnpublishedTemplate = (
-  data: AlreadyUnpublishedTemplateData,
-): EmailTemplate => {
-  const { recipientEmail, resource } = data
-  const studioResourceUrl = getStudioResourceUrl(resource)
-  return {
-    subject: `[Isomer Studio] Your scheduled unpublish was skipped`,
-    body: `<p>Hi ${recipientEmail},</p>
-    <p>Your scheduled unpublish for the page ${resource.title} was skipped because the page had already been unpublished.</p>
-    <p>Log in to Isomer Studio at ${studioResourceUrl} if you'd like to make further changes.</p>
-    <p>Best,</p>
-    <p>Isomer team</p>`,
-  }
-}
-
 // NOTE: this is sent for both publish and unpublish scheduled/manual actions
 // (this is the only call site, in webhook.utils.ts, and it doesn't know which
 // action a given CodeBuild job was for), so the copy is intentionally generic
@@ -426,8 +410,6 @@ const _templates = {
     failedPublishTemplate satisfies EmailTemplateFunction<FailedPublishTemplateData>,
   failedUnpublish:
     failedUnpublishTemplate satisfies EmailTemplateFunction<FailedUnpublishTemplateData>,
-  alreadyUnpublished:
-    alreadyUnpublishedTemplate satisfies EmailTemplateFunction<AlreadyUnpublishedTemplateData>,
   successfulPublish:
     successfulPublishTemplate satisfies EmailTemplateFunction<SuccessfulPublishTemplateData>,
   schedulePage:

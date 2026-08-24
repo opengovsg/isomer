@@ -4,7 +4,6 @@ import { isValidEmail } from "~/utils/email"
 import type {
   AccountDeactivationEmailTemplateData,
   AccountDeactivationWarningEmailTemplateData,
-  AlreadyUnpublishedTemplateData,
   AuditLogExportFailedEmailTemplateData,
   AuditLogExportReadyEmailTemplateData,
   BaseEmailTemplateData,
@@ -149,16 +148,6 @@ export async function sendFailedUnpublishEmail(
     data,
     template: templates.failedUnpublish(data),
     emailType: "failed unpublish",
-  })
-}
-
-export async function sendAlreadyUnpublishedEmail(
-  data: AlreadyUnpublishedTemplateData,
-): Promise<void> {
-  await sendEmailWithTemplate({
-    data,
-    template: templates.alreadyUnpublished(data),
-    emailType: "already unpublished",
   })
 }
 
