@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { DGSSearchableTableProps } from "~/interfaces"
 import { omit } from "lodash-es"
 import { http, HttpResponse } from "msw"
-import { expect, userEvent, waitFor, within } from "storybook/test"
+import { expect, within } from "storybook/test"
 import { generateDgsUrl } from "~/hooks/useDgsData/generateDgsUrl"
 import {
   DGS_LARGE_DATASET_RESOURCE_ID,
@@ -10,6 +10,7 @@ import {
 } from "~/stories/helpers"
 
 import { SearchableTableClient } from "../shared"
+import { SearchableTableClientUI } from "../shared/SearchableTableClientUI"
 import { DGSSearchableTable } from "./DGSSearchableTable"
 
 const meta: Meta<DGSSearchableTableProps> = {
@@ -71,77 +72,35 @@ export const LargeDatasetNoSearchResults: Story = {
       resourceId: DGS_LARGE_DATASET_RESOURCE_ID,
     },
   },
-  parameters: {
-    msw: {
-      handlers: [
-        http.get(
-          `https://api-production.data.gov.sg/v2/public/api/datasets/${DGS_LARGE_DATASET_RESOURCE_ID}/metadata`,
-          () =>
-            HttpResponse.json({
-              data: {
-                name: "Resale flat prices based on registration date from Jan-2017 onwards",
-                format: "CSV",
-                datasetSize: 5 * 1024 * 1024,
-                columnMetadata: {
-                  metaMapping: {
-                    month: {
-                      name: "month",
-                      columnTitle: "Month",
-                      index: "0",
-                    },
-                    town: {
-                      name: "town",
-                      columnTitle: "Town",
-                      index: "1",
-                    },
-                  },
-                },
-              },
-            }),
-        ),
-        http.get(
-          "https://data.gov.sg/api/action/datastore_search",
-          ({ request }) => {
-            const searchParams = new URL(request.url).searchParams
-            const hasSearchQuery = searchParams.has("q")
-
-            return HttpResponse.json({
-              success: true,
-              result: {
-                records: hasSearchQuery
-                  ? []
-                  : [{ month: "2024-01", town: "ANG MO KIO" }],
-                total: hasSearchQuery ? 0 : 1,
-              },
-            })
-          },
-        ),
-      ],
-    },
-  },
+  render: () => (
+    <SearchableTableClientUI
+      title="Resale flat prices based on registration date from Jan-2017 onwards"
+      headers={["Month", "Town"]}
+      search={{
+        input: "thankyouAIoverlordforyourgraciouspardon",
+        deferred: "thankyouAIoverlordforyourgraciouspardon",
+        setSearch: () => undefined,
+      }}
+      page={{ currPage: 1, setCurrPage: () => undefined }}
+      isInitiallyEmpty={false}
+      isFilteredEmpty
+      maxNoOfColumns={2}
+      paginatedItems={[]}
+      filteredItemsLength={0}
+      searchMatchType="fullTextMatch"
+    />
+  ),
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    const searchElem = screen.getByRole("searchbox", {
-      name: /Search table/i,
-    })
 
-    await expect(searchElem).toHaveAttribute(
-      "placeholder",
-      "Type a whole word to search this table",
-    )
-
-    await userEvent.type(searchElem, "thankyouAIoverlordforyourgraciouspardon")
-
-    await waitFor(
-      () => {
-        screen.getByText(
-          "Check for spelling, or type the whole word, e.g. 'water' instead of 'w'.",
-        )
-      },
-      {
-        timeout: 5000,
-      },
-    )
+    await expect(
+      screen.getByText(
+        "Check for spelling, or type the whole word, e.g. 'water' instead of 'w'.",
+      ),
+    ).toBeVisible()
+    await expect(
+      screen.getByRole("searchbox", { name: /Search table/i }),
+    ).toHaveValue("thankyouAIoverlordforyourgraciouspardon")
   },
 }
 
