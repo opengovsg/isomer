@@ -2501,12 +2501,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrow(
-        new TRPCError({
-          code: "PRECONDITION_FAILED",
-          message: "This page is not currently published",
-        }),
-      )
+      await expect(result).rejects.toThrow(new PageAlreadyUnpublishedError())
     })
 
     it("should unpublish a Folder's IndexPage, leaving the Folder's own row untouched", async () => {
@@ -2702,12 +2697,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrow(
-        new TRPCError({
-          code: "PRECONDITION_FAILED",
-          message: "This page is not currently published",
-        }),
-      )
+      await expect(result).rejects.toThrow(new PageAlreadyUnpublishedError())
     })
 
     it("should unpublish a Collection's IndexPage, leaving the Collection's own row untouched", async () => {
@@ -4269,6 +4259,73 @@ describe("page.router", async () => {
           }),
         )
       })
+    })
+
+    it("should throw 404 if pageId refers to the RootPage — otherwise it could be scheduled for unpublish and executed unchecked by the cron", async () => {
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.RootPage,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      const result = caller.scheduleUnpublish({
+        siteId: site.id,
+        pageId: Number(page.id),
+        scheduledAt: futureDate,
+      })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "This page either does not exist or cannot be unpublished",
+        }),
+      )
+    })
+
+    it("should throw 404 if pageId refers to a Folder", async () => {
+      const { site, folder } = await setupFolder()
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      const result = caller.scheduleUnpublish({
+        siteId: site.id,
+        pageId: Number(folder.id),
+        scheduledAt: futureDate,
+      })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "This page either does not exist or cannot be unpublished",
+        }),
+      )
+    })
+
+    it("should throw 404 if pageId refers to a Collection", async () => {
+      const { site, collection } = await setupCollection()
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      const result = caller.scheduleUnpublish({
+        siteId: site.id,
+        pageId: Number(collection.id),
+        scheduledAt: futureDate,
+      })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "This page either does not exist or cannot be unpublished",
+        }),
+      )
     })
 
     it("should throw if the page is not currently published", async () => {
