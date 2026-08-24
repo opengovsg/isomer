@@ -24,7 +24,10 @@ import {
   isCollectionItem,
   overwriteCollectionChildrenForCollectionBlock,
 } from "~/utils/sitemap"
-import { AuditLogEvent } from "~prisma/generated/generatedEnums"
+import {
+  AuditLogEvent,
+  ScheduledAction,
+} from "~prisma/generated/generatedEnums"
 import { type DB } from "~prisma/generated/generatedTypes"
 
 import type { Logger } from "@isomer/logging"
@@ -1414,14 +1417,17 @@ export const unpublishPageResource = async ({
       throw new PageAlreadyUnpublishedError()
     }
 
-    // A scheduled publish isn't cleared by unpublishing — the schedule cron
-    // (schedulePublishingJob.ts) only checks scheduledAt, not the page's
-    // current state, so it would silently republish this page later from its
-    // draft blob. Make the caller cancel the schedule first.
+    // A pending schedule (publish or unpublish) isn't cleared by manually
+    // unpublishing — the schedule cron (schedulePublishingJob.ts) only
+    // checks scheduledAt, not the page's current state, so it would still
+    // fire later and silently republish/re-unpublish this page out from
+    // under the caller. Make the caller cancel the schedule first.
     if (fullResource.scheduledAt) {
+      const scheduledAction =
+        fullResource.scheduledAction ?? ScheduledAction.Publish
       throw new TRPCError({
         code: "PRECONDITION_FAILED",
-        message: `This page is scheduled to be published at ${format(
+        message: `This page is scheduled to be ${scheduledAction === ScheduledAction.Unpublish ? "unpublished" : "published"} at ${format(
           fullResource.scheduledAt,
           "yyyy-MM-dd HH:mm",
         )}. Cancel the schedule before unpublishing.`,
