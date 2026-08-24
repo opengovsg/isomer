@@ -197,6 +197,10 @@ describe("schedulePublishingJob", async () => {
         userId: session.userId,
         siteId: site.id,
       })
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site2.id,
+      })
       // mock the publishPageResource to throw an error to simulate failure
       // the second call should use the original function implementation
       const originalPublishPageResource =
@@ -272,6 +276,10 @@ describe("schedulePublishingJob", async () => {
         userId: session.userId,
         siteId: site.id,
       })
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site2.id,
+      })
       const publishPageResourceSpy = vi.spyOn(
         publishPageResourceModule,
         "publishPageResource",
@@ -306,6 +314,79 @@ describe("schedulePublishingJob", async () => {
         versionNum: 1,
       })
     })
+    it("does not execute the scheduled action when the scheduling user has been deactivated since scheduling", async () => {
+      // Arrange
+      const deletedUser = await setupUser({
+        email: "deleted@mock.com",
+        isDeleted: true,
+      })
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        scheduledAt: FIXED_NOW,
+        scheduledBy: deletedUser.id,
+      })
+      await setupPublisherPermissions({
+        userId: deletedUser.id,
+        siteId: site.id,
+      })
+      const publishPageResourceSpy = vi.spyOn(
+        publishPageResourceModule,
+        "publishPageResource",
+      )
+      const sendFailedPublishEmailSpy = vi
+        .spyOn(emailService, "sendFailedPublishEmail")
+        .mockResolvedValue()
+
+      // Act
+      const result = await publishScheduledResources(true, FIXED_NOW)
+
+      // Assert — the action never runs on behalf of a deactivated user
+      expect(publishPageResourceSpy).not.toHaveBeenCalled()
+      expect(sendFailedPublishEmailSpy).not.toHaveBeenCalled()
+      expect(result[site.id]).not.toBeDefined()
+      const updated = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updated.publishedVersionId).toBeNull()
+    })
+    it("does not execute the scheduled action when the scheduling user no longer has permission on the site", async () => {
+      // Arrange — permissions revoked after scheduling: no
+      // setupPublisherPermissions call for this user/site.
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        scheduledAt: FIXED_NOW,
+        scheduledBy: session.userId,
+      })
+      const publishPageResourceSpy = vi.spyOn(
+        publishPageResourceModule,
+        "publishPageResource",
+      )
+      const sendFailedPublishEmailSpy = vi
+        .spyOn(emailService, "sendFailedPublishEmail")
+        .mockResolvedValue()
+
+      // Act
+      const result = await publishScheduledResources(true, FIXED_NOW)
+
+      // Assert — the action never runs without a fresh permission check,
+      // and it's handled like any other failure (logged + failure email)
+      expect(publishPageResourceSpy).not.toHaveBeenCalled()
+      expect(result[site.id]).not.toBeDefined()
+      expect(sendFailedPublishEmailSpy).toHaveBeenCalledTimes(1)
+      expect(sendFailedPublishEmailSpy).toHaveBeenCalledWith({
+        recipientEmail: user.email,
+        isScheduled: true,
+        resource: expect.objectContaining({ id: page.id }),
+      })
+      const updated = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updated.publishedVersionId).toBeNull()
+    })
     it("throwing an error when sending an email for a resource still processes the next resource correctly", async () => {
       // Arrange
       const { site, page } = await setupPageResource({
@@ -324,6 +405,10 @@ describe("schedulePublishingJob", async () => {
       await setupPublisherPermissions({
         userId: session.userId,
         siteId: site.id,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site2.id,
       })
 
       // mock the publishPageResource to throw an error to simulate failure
@@ -425,6 +510,41 @@ describe("schedulePublishingJob", async () => {
 
       expect(resourceSiteMap[site.id]).toBeDefined()
       expect(resourceSiteMap[site.id]?.[0]!.id).toBe(page.id)
+    })
+
+    it("does not execute a scheduled unpublish when the scheduling user no longer has permission on the site", async () => {
+      // Arrange — permissions revoked after scheduling: no
+      // setupPublisherPermissions call for this user/site.
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId,
+        scheduledAt: FIXED_NOW,
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      const unpublishPageResourceSpy = vi.spyOn(
+        publishPageResourceModule,
+        "unpublishPageResource",
+      )
+      const sendFailedUnpublishEmailSpy = vi
+        .spyOn(emailService, "sendFailedUnpublishEmail")
+        .mockResolvedValue()
+
+      // Act
+      const result = await publishScheduledResources(true, FIXED_NOW)
+
+      // Assert
+      expect(unpublishPageResourceSpy).not.toHaveBeenCalled()
+      expect(result[site.id]).not.toBeDefined()
+      expect(sendFailedUnpublishEmailSpy).toHaveBeenCalledTimes(1)
+      const updated = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      // still published — the unpublish never ran
+      expect(updated.publishedVersionId).not.toBeNull()
     })
 
     it("does not call publishPageResource for a resource scheduled for unpublish", async () => {
