@@ -210,6 +210,36 @@ describe("getSiteJsonLd", () => {
     })
   })
 
+  it("prepends the assets base URL to internal file links", () => {
+    const jsonLd = getSerializedJsonLd({
+      site: {
+        siteName: "Community Site",
+        url: "https://community.example.com",
+        assetsBaseUrl: "https://assets.example.com/",
+        isGovernment: false,
+      },
+      footer: {
+        contactUsLink: "/1/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee/contact-us.pdf",
+        socialMediaLinks: [
+          {
+            type: "facebook",
+            url: "/1/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee/poster.png",
+          },
+        ],
+      },
+    })
+
+    expect(jsonLd["@graph"][1]).toMatchObject({
+      contactPoint: {
+        "@type": "ContactPoint",
+        url: "https://assets.example.com/1/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee/contact-us.pdf",
+      },
+      sameAs: [
+        "https://assets.example.com/1/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee/poster.png",
+      ],
+    })
+  })
+
   it("uses existing site settings as fallbacks and omits empty metadata", () => {
     const jsonLd = getSerializedJsonLd({
       site: {

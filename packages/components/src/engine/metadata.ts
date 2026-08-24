@@ -35,11 +35,27 @@ const getNonEmptyString = (value?: string) => {
   return trimmedValue || undefined
 }
 
-const getAbsoluteHttpUrl = (value: string | undefined, siteUrl: string) => {
+// NOTE: This is taken with reference from `convertAssetLinks` in
+// `getReferenceLinkHref.ts` and should remain in sync. Asset links are
+// site-relative (e.g. `/{siteId}/{uuid}/file.pdf`) and need the assets base
+// URL prepended, or they resolve to a broken path on the site's own domain.
+const ASSET_LINK_REGEX =
+  /^\/\d+\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\//
+
+const getAbsoluteHttpUrl = (
+  value: string | undefined,
+  siteUrl: string,
+  assetsBaseUrl?: string,
+) => {
   if (!value || value.startsWith("[resource:")) return undefined
 
+  const resolvedValue =
+    assetsBaseUrl && ASSET_LINK_REGEX.test(value)
+      ? `${assetsBaseUrl.replace(/\/$/, "")}${value}`
+      : value
+
   try {
-    const url = new URL(value, siteUrl)
+    const url = new URL(resolvedValue, siteUrl)
     return url.protocol === "http:" || url.protocol === "https:"
       ? url.toString()
       : undefined
@@ -82,12 +98,12 @@ export const getSiteJsonLd = ({ site, footer }: GetSiteJsonLdProps) => {
     contactType: getNonEmptyString(entity?.contactPoint?.contactType),
     telephone: getNonEmptyString(entity?.contactPoint?.telephone),
     email: getNonEmptyString(entity?.contactPoint?.email),
-    url: getAbsoluteHttpUrl(footer.contactUsLink, siteUrl),
+    url: getAbsoluteHttpUrl(footer.contactUsLink, siteUrl, site.assetsBaseUrl),
   }
   const hasContactPoint = Object.values(contactPointValues).some(Boolean)
 
   const sameAs = footer.socialMediaLinks
-    ?.map(({ url }) => getAbsoluteHttpUrl(url, siteUrl))
+    ?.map(({ url }) => getAbsoluteHttpUrl(url, siteUrl, site.assetsBaseUrl))
     .filter((url): url is string => url !== undefined)
 
   const organisation = {
