@@ -11,6 +11,7 @@ import type {
   CancelScheduleUnpublishTemplateData,
   EmailTemplate,
   FailedPublishTemplateData,
+  FailedSiteRebuildTemplateData,
   FailedUnpublishTemplateData,
   GazetteDeletionEmailTemplateData,
   InvitationEmailTemplateData,
@@ -148,6 +149,16 @@ export async function sendFailedUnpublishEmail(
     data,
     template: templates.failedUnpublish(data),
     emailType: "failed unpublish",
+  })
+}
+
+export async function sendFailedSiteRebuildEmail(
+  data: FailedSiteRebuildTemplateData,
+): Promise<void> {
+  await sendEmailWithTemplate({
+    data,
+    template: templates.failedSiteRebuild(data),
+    emailType: "failed site rebuild",
   })
 }
 
