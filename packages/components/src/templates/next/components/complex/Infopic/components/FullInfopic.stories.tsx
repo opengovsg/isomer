@@ -32,6 +32,7 @@ const meta: Meta<InfopicProps> = {
     buttonLabel: "Sign up",
     buttonUrl: "/",
     site: generateSiteConfig(),
+    headingLevel: 2,
   },
 }
 export default meta

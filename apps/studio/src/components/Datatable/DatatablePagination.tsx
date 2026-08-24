@@ -1,16 +1,16 @@
+import type { ReactTable, RowData, StockFeatures } from "@tanstack/react-table"
 import { Pagination } from "@opengovsg/design-system-react"
-import { type Table } from "@tanstack/react-table"
 
-interface DataTablePaginationProps<D> {
-  instance: Table<D>
+interface DataTablePaginationProps<D extends RowData> {
+  instance: ReactTable<StockFeatures, D>
   totalRowCount?: number
 }
 
-export const DatatablePagination = <T extends object>({
+export const DatatablePagination = <T extends RowData>({
   instance,
   totalRowCount: totalRowCountProp,
 }: DataTablePaginationProps<T>): JSX.Element => {
-  const paginationState = instance.getState().pagination
+  const paginationState = instance.state.pagination
   const totalRowCount =
     totalRowCountProp ?? instance.getFilteredRowModel().rows.length
 

@@ -26,6 +26,7 @@ import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { moveResourceAtom } from "../../atoms"
+import { useValidateResourceMove } from "../../hooks/useValidateResourceMove"
 
 export const MoveResourceModal = () => {
   // NOTE: This is what we are trying to move
@@ -116,6 +117,14 @@ const MoveResourceContent = withSuspense(
     })
 
     const movedItem = useAtomValue(moveResourceAtom)
+    const {
+      isLoading: isValidMoveLoading,
+      isValidMove,
+      errorMessage,
+    } = useValidateResourceMove({
+      sourceId: movedItem?.id,
+      destinationId: curResourceId ?? null,
+    })
 
     const [shouldCreateRedirect, setShouldCreateRedirect] = useState(true)
     const [{ fullPermalink: movedFullPermalink }] =
@@ -177,6 +186,13 @@ const MoveResourceContent = withSuspense(
               existingResource={movedItem ?? undefined}
               onChange={(resourceId) => setCurResourceId(resourceId)}
             />
+            {curResourceId !== undefined &&
+              errorMessage &&
+              !isValidMoveLoading && (
+                <Infobox variant="error" size="sm" w="full">
+                  {errorMessage}
+                </Infobox>
+              )}
             {showUrlChangeNotice && (
               <VStack alignItems="flex-start" spacing="0.75rem" w="full">
                 <Box
@@ -242,9 +258,12 @@ const MoveResourceContent = withSuspense(
               ability.cannot("move", {
                 parentId: curResourceId ?? null,
               }) ||
-              ability.cannot("move", { parentId: movedItem?.parentId ?? null })
+              ability.cannot("move", {
+                parentId: movedItem?.parentId ?? null,
+              }) ||
+              isValidMove !== true
             }
-            isLoading={isPending}
+            isLoading={isPending || isValidMoveLoading}
             onClick={() =>
               movedItem?.id &&
               mutate({

@@ -1461,7 +1461,7 @@ describe("resource.router", async () => {
       )
     })
 
-    it("should return 403 if source and destination resources belong to different sites", async () => {
+    it("should return 400 if source and destination resources belong to different sites", async () => {
       // Arrange
       const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
       const { page: originPage, site: originSite } = await setupPageResource({
@@ -1486,7 +1486,7 @@ describe("resource.router", async () => {
       expect(auditSpy).not.toHaveBeenCalled()
       await expect(result).rejects.toThrow(
         new TRPCError({
-          code: "FORBIDDEN",
+          code: "BAD_REQUEST",
           message: "You cannot move a resource to a different site",
         }),
       )

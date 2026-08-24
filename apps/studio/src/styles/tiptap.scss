@@ -171,8 +171,12 @@ $max-depth: 13;
   }
 
   a {
-    color: #68cef8;
+    color: var(--chakra-colors-interaction-links-default);
     text-decoration: underline;
+
+    &:hover {
+      color: var(--chakra-colors-interaction-links-hover);
+    }
   }
 
   ul,

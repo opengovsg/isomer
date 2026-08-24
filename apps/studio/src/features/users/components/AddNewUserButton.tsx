@@ -47,7 +47,7 @@ export const AddNewUserButton = ({
 
   if (!canManageUsers) {
     return (
-      <Tooltip label="Only admins can add users." placement="bottom">
+      <Tooltip label="You need to be an Admin to add users." placement="bottom">
         {button}
       </Tooltip>
     )

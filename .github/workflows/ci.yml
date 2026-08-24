@@ -30,7 +30,7 @@ jobs:
       template_or_components: ${{ steps.filter.outputs.template_or_components }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d
         id: filter
         with:
           filters: |
@@ -59,7 +59,7 @@ jobs:
           - name: Lint
             run: pnpm run lint && pnpm run lint:ws
           - name: Lint Dockerfile
-            uses: hadolint/hadolint-action@2332a7b74a6de0dda2e2221d575162eba76ba5e5
+            uses: hadolint/hadolint-action@2a66e89f53d0771bb131a7fa31f3136336094aa6
             with:
               dockerfile: "./apps/studio/Dockerfile"
               failure-threshold: "error"

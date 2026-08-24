@@ -18,9 +18,11 @@ export const CollectionCard = ({
   shouldShowDate = true,
   pillTags,
   formattedDate,
+  headingLevel,
 }: CollectionCardProps & {
   shouldShowDate?: boolean
   siteAssetsBaseUrl: string | undefined
+  headingLevel: number
 }): JSX.Element => {
   const isExternalLink = !!referenceLinkHref && isExternalUrl(referenceLinkHref)
 
@@ -36,7 +38,11 @@ export const CollectionCard = ({
         </p>
       )}
       <div className="flex flex-grow flex-col gap-3 text-base-content md:gap-2">
-        <Title title={itemTitle} isExternalLink={isExternalLink} />
+        <Title
+          title={itemTitle}
+          isExternalLink={isExternalLink}
+          headingLevel={headingLevel}
+        />
         <PillTags
           tags={pillTags}
           className="flex w-full flex-wrap items-center gap-2"

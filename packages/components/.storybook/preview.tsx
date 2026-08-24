@@ -130,6 +130,19 @@ const MockDateDecorator: Decorator = (Story) => {
   return <Story />
 }
 
+// Storybook's preview iframe is a single persistent document — switching
+// stories re-renders the story tree in place rather than reloading the
+// page, so anything a previous story's `play()` wrote via `history` (e.g.
+// `useQueryParams`' `?filters=...`) is still on `window.location` when the
+// next story mounts. Reset the search string per story so filter/query
+// state never leaks across stories, the same way `MockDateDecorator`
+// isolates `Date`.
+const ResetQueryParamsDecorator: Decorator = (Story) => {
+  window.history.replaceState({}, "", window.location.pathname)
+
+  return <Story />
+}
+
 export const decorators: Decorator[] = [
   withThemeByDataAttribute({
     themes: {
@@ -139,6 +152,7 @@ export const decorators: Decorator[] = [
   }),
   LayoutDecorator,
   MockDateDecorator,
+  ResetQueryParamsDecorator,
 ]
 
 export default preview

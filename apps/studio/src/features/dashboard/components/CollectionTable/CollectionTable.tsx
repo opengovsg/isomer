@@ -1,11 +1,11 @@
+import type { StockFeatures } from "@tanstack/react-table"
 import type { ResourceOrderByOption } from "~/schemas/resource"
 import { HStack, Text } from "@chakra-ui/react"
 import { keepPreviousData } from "@tanstack/react-query"
 import {
   createColumnHelper,
-  getCoreRowModel,
-  getPaginationRowModel,
-  useReactTable,
+  stockFeatures,
+  useTable,
 } from "@tanstack/react-table"
 import { useMemo, useState } from "react"
 import { TableHeader } from "~/components/Datatable"
@@ -20,42 +20,43 @@ import { ResourceSortMenu } from "../ResourceTable/ResourceSortMenu"
 import { TitleCell } from "../ResourceTable/TitleCell"
 import { CollectionTableMenu } from "./CollectionTableMenu"
 
-const columnsHelper = createColumnHelper<CollectionTableData>()
+const columnsHelper = createColumnHelper<StockFeatures, CollectionTableData>()
 
-const getColumns = ({ siteId }: CollectionTableProps) => [
-  columnsHelper.accessor("title", {
-    minSize: 300,
-    header: () => <TableHeader>Title</TableHeader>,
-    cell: ({ row }) => (
-      <TitleCell
-        scheduledAt={row.original.scheduledAt}
-        siteId={siteId}
-        id={row.original.id}
-        title={row.original.title}
-        permalink={
-          row.original.type === ResourceType.CollectionLink
-            ? ""
-            : `/${row.original.permalink}`
-        }
-        type={row.original.type}
-      />
-    ),
-  }),
-  columnsHelper.display({
-    id: "resource_menu",
-    header: () => <TableHeader>Actions</TableHeader>,
-    cell: ({ row }) => (
-      <CollectionTableMenu
-        permalink={row.original.permalink}
-        parentId={row.original.parentId}
-        resourceType={row.original.type}
-        title={row.original.title}
-        resourceId={row.original.id}
-      />
-    ),
-    size: 24,
-  }),
-]
+const getColumns = ({ siteId }: CollectionTableProps) =>
+  columnsHelper.columns([
+    columnsHelper.accessor("title", {
+      minSize: 300,
+      header: () => <TableHeader>Title</TableHeader>,
+      cell: ({ row }) => (
+        <TitleCell
+          scheduledAt={row.original.scheduledAt}
+          siteId={siteId}
+          id={row.original.id}
+          title={row.original.title}
+          permalink={
+            row.original.type === ResourceType.CollectionLink
+              ? ""
+              : `/${row.original.permalink}`
+          }
+          type={row.original.type}
+        />
+      ),
+    }),
+    columnsHelper.display({
+      id: "resource_menu",
+      header: () => <TableHeader>Actions</TableHeader>,
+      cell: ({ row }) => (
+        <CollectionTableMenu
+          permalink={row.original.permalink}
+          parentId={row.original.parentId}
+          resourceType={row.original.type}
+          title={row.original.title}
+          resourceId={row.original.id}
+        />
+      ),
+      size: 24,
+    }),
+  ])
 
 interface CollectionTableProps {
   siteId: number
@@ -100,14 +101,13 @@ export const CollectionTable = ({
     },
   )
 
-  const tableInstance = useReactTable<CollectionTableData>({
+  const tableInstance = useTable({
+    features: stockFeatures,
     columns,
     data: resources ?? [],
-    getCoreRowModel: getCoreRowModel(),
     manualFiltering: true,
     manualPagination: true,
     autoResetPageIndex: false,
-    getPaginationRowModel: getPaginationRowModel(),
     onPaginationChange,
     state: {
       pagination,

@@ -1,5 +1,10 @@
 import type { LayoutProps, TableProps } from "@chakra-ui/react"
-import type { Row, Table as ReactTable } from "@tanstack/react-table"
+import type {
+  ReactTable,
+  Row,
+  RowData,
+  StockFeatures,
+} from "@tanstack/react-table"
 import {
   Box,
   Flex,
@@ -17,8 +22,8 @@ import { flexRender } from "@tanstack/react-table"
 
 import { DatatablePagination } from "./DatatablePagination"
 
-interface DatatableProps<D> extends TableProps {
-  instance: ReactTable<D>
+interface DatatableProps<D extends RowData> extends TableProps {
+  instance: ReactTable<StockFeatures, D>
   /**
    * If provided, this number will be used for pagination instead of retrieving
    * from react-table's filtered row count.
@@ -28,12 +33,12 @@ interface DatatableProps<D> extends TableProps {
   isFetching?: boolean
   emptyPlaceholder?: React.ReactElement
   overflow?: LayoutProps["overflow"]
-  onRowClick?: (row: Row<D>) => void
+  onRowClick?: (row: Row<StockFeatures, D>) => void
   /** Render each row as a LinkBox for a descendant LinkOverlay. */
   isRowLink?: boolean
 }
 
-export const Datatable = <T extends object>({
+export const Datatable = <T extends RowData>({
   instance,
   isFetching,
   pagination,
