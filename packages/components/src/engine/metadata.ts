@@ -3,6 +3,7 @@ import type { IsomerPageSchemaType } from "~/types/schema"
 import type { IsomerSiteConfigProps } from "~/types/site"
 import type { IsomerSitemap } from "~/types/sitemap"
 import { ISOMER_PAGE_LAYOUTS } from "~/types/constants"
+import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
 
 const DEFAULT_SITE_NAME = "Isomer"
@@ -20,6 +21,7 @@ interface GetSiteJsonLdProps {
     contactUsLink?: string
     socialMediaLinks?: readonly { type?: string; url: string }[]
   }
+  sitemap?: IsomerSitemap
 }
 
 type PageSchemaWithoutSite = DistributedOmit<IsomerPageSchemaType, "site">
@@ -35,24 +37,19 @@ const getNonEmptyString = (value?: string) => {
   return trimmedValue || undefined
 }
 
-// NOTE: This is taken with reference from `convertAssetLinks` in
-// `getReferenceLinkHref.ts` and should remain in sync. Asset links are
-// site-relative (e.g. `/{siteId}/{uuid}/file.pdf`) and need the assets base
-// URL prepended, or they resolve to a broken path on the site's own domain.
-const ASSET_LINK_REGEX =
-  /^\/\d+\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\//
-
 const getAbsoluteHttpUrl = (
   value: string | undefined,
   siteUrl: string,
   assetsBaseUrl?: string,
+  sitemapArray: IsomerSitemap[] = [],
 ) => {
-  if (!value || value.startsWith("[resource:")) return undefined
+  const resolvedValue = getReferenceLinkHref(
+    value,
+    sitemapArray,
+    assetsBaseUrl?.replace(/\/$/, ""),
+  )
 
-  const resolvedValue =
-    assetsBaseUrl && ASSET_LINK_REGEX.test(value)
-      ? `${assetsBaseUrl.replace(/\/$/, "")}${value}`
-      : value
+  if (!resolvedValue || resolvedValue.startsWith("[resource:")) return undefined
 
   try {
     const url = new URL(resolvedValue, siteUrl)
@@ -74,8 +71,13 @@ const getSiteUrl = (configuredUrl: string) => {
  * template. The WebSite node represents the website itself, while the linked
  * Organization node represents the agency or organisation that publishes it.
  */
-export const getSiteJsonLd = ({ site, footer }: GetSiteJsonLdProps) => {
+export const getSiteJsonLd = ({
+  site,
+  footer,
+  sitemap,
+}: GetSiteJsonLdProps) => {
   const siteUrl = getSiteUrl(site.url)
+  const sitemapArray = sitemap ? getSitemapAsArray(sitemap) : []
   const websiteId = new URL("#website", siteUrl).toString()
   const organisationId = new URL("#organization", siteUrl).toString()
   const siteName = getNonEmptyString(site.siteName) ?? DEFAULT_SITE_NAME
@@ -98,12 +100,19 @@ export const getSiteJsonLd = ({ site, footer }: GetSiteJsonLdProps) => {
     contactType: getNonEmptyString(entity?.contactPoint?.contactType),
     telephone: getNonEmptyString(entity?.contactPoint?.telephone),
     email: getNonEmptyString(entity?.contactPoint?.email),
-    url: getAbsoluteHttpUrl(footer.contactUsLink, siteUrl, site.assetsBaseUrl),
+    url: getAbsoluteHttpUrl(
+      footer.contactUsLink,
+      siteUrl,
+      site.assetsBaseUrl,
+      sitemapArray,
+    ),
   }
   const hasContactPoint = Object.values(contactPointValues).some(Boolean)
 
   const sameAs = footer.socialMediaLinks
-    ?.map(({ url }) => getAbsoluteHttpUrl(url, siteUrl, site.assetsBaseUrl))
+    ?.map(({ url }) =>
+      getAbsoluteHttpUrl(url, siteUrl, site.assetsBaseUrl, sitemapArray),
+    )
     .filter((url): url is string => url !== undefined)
 
   const organisation = {

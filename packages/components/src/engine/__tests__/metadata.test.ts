@@ -1,4 +1,5 @@
 import type { IsomerPageSchemaType } from "~/types/schema"
+import type { IsomerSitemap } from "~/types/sitemap"
 import { describe, expect, it } from "vitest"
 import { generateSiteConfig } from "~/stories/helpers"
 import { ISOMER_PAGE_LAYOUTS } from "~/types/constants"
@@ -240,6 +241,45 @@ describe("getSiteJsonLd", () => {
     })
   })
 
+  it("resolves a resource contact link using the sitemap", () => {
+    const sitemap: IsomerSitemap = {
+      id: "1",
+      title: "Home",
+      summary: "",
+      lastModified: "",
+      permalink: "/",
+      layout: "homepage",
+      children: [
+        {
+          id: "2",
+          title: "Contact us",
+          summary: "",
+          lastModified: "",
+          permalink: "/contact-us",
+          layout: "content",
+        },
+      ],
+    }
+    const jsonLd = getSerializedJsonLd({
+      site: {
+        siteName: "Community Site",
+        url: "https://community.example.com",
+        isGovernment: false,
+      },
+      footer: {
+        contactUsLink: "[resource:1:2]",
+      },
+      sitemap,
+    })
+
+    expect(jsonLd["@graph"][1]).toMatchObject({
+      contactPoint: {
+        "@type": "ContactPoint",
+        url: "https://community.example.com/contact-us",
+      },
+    })
+  })
+
   it("uses existing site settings as fallbacks and omits empty metadata", () => {
     const jsonLd = getSerializedJsonLd({
       site: {
@@ -249,7 +289,7 @@ describe("getSiteJsonLd", () => {
         isGovernment: false,
       },
       footer: {
-        contactUsLink: "[resource:1:2]",
+        contactUsLink: "[resource:1:999]",
         socialMediaLinks: [],
       },
     })

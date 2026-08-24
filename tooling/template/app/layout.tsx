@@ -5,6 +5,7 @@ import "@/styles/globals.css"
 import sitemap from "@/sitemap.json"
 import {
   getSiteJsonLd,
+  type IsomerSitemap,
   RenderApplicationHeadScripts,
   RenderApplicationScripts,
 } from "@opengovsg/isomer-components"
@@ -30,6 +31,7 @@ const jsonLd = getSiteJsonLd({
     assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,
   },
   footer,
+  sitemap: sitemap as IsomerSitemap,
 })
 
 export const dynamic = "force-static"
