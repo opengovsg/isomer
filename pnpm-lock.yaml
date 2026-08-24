@@ -369,8 +369,8 @@ catalogs:
       specifier: ^2.6.1
       version: 2.6.1
     tsc-alias:
-      specifier: ^1.9.0
-      version: 1.9.1
+      specifier: ^1.9.2
+      version: 1.9.2
     tsx:
       specifier: ^4.23.12
       version: 4.23.12
@@ -1371,7 +1371,7 @@ importers:
         version: 3.4.19(tsx@4.23.12)(yaml@2.8.3)
       tsc-alias:
         specifier: 'catalog:'
-        version: 1.9.1
+        version: 1.9.2
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -12217,8 +12217,8 @@ packages:
   ts-interface-checker@0.1.13:
     resolution: {integrity: sha512-Y/arvbn+rrz3JCKl9C4kVNfTfSm2/mEp5FSz5EsZSANGPSlQrpRI5M4PKF+mJnE52jOO90PnPSc3Ur3bTQw0gA==}
 
-  tsc-alias@1.9.1:
-    resolution: {integrity: sha512-sFZdVFthH8uvdplPJrOYGOHcxu6UPtcAcY678JPwEQiMzgLZYFO7Qc/rzELp7ingTc+OxtzH6n+8Pn2eVQep6w==}
+  tsc-alias@1.9.2:
+    resolution: {integrity: sha512-VTWQGMv0xXCEyHDLpmV2DEvGYHMxwsyx87dZeou2ynkM0+WOFdHe+KWiRucavMPUEdQysr7xSu60Y/WY0R4YKA==}
     engines: {node: '>=16.20.2'}
     hasBin: true
 
@@ -24119,7 +24119,7 @@ snapshots:
 
   ts-interface-checker@0.1.13: {}
 
-  tsc-alias@1.9.1:
+  tsc-alias@1.9.2:
     dependencies:
       chokidar: 3.6.0
       commander: 9.5.0
