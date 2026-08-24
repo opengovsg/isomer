@@ -701,7 +701,10 @@ describe("schedulePublishingJob", async () => {
       expect(computeBuildChangesSpy).toHaveBeenCalledOnce()
       expect(startProjectByIdSpy).toHaveBeenCalledOnce()
     })
-    it("a failed site publish leads to an email being sent for each resource under the site", async () => {
+    it("a failed site publish sends a failed-site-rebuild email (not a failed-publish email) for each resource under the site", async () => {
+      // NOTE: every resource passed into publishScheduledSites already had
+      // its own publish/unpublish succeed — only the site rebuild fails
+      // here — so the email must not claim the page-level action failed.
       // Arrange
       const { site, page } = await setupPageResource({
         resourceType: ResourceType.Page,
@@ -722,6 +725,9 @@ describe("schedulePublishingJob", async () => {
       const sendFailedPublishEmailSpy = vi
         .spyOn(emailService, "sendFailedPublishEmail")
         .mockResolvedValue()
+      const sendFailedSiteRebuildEmailSpy = vi
+        .spyOn(emailService, "sendFailedSiteRebuildEmail")
+        .mockResolvedValue()
 
       // Act
       await publishScheduledSites(
@@ -739,10 +745,11 @@ describe("schedulePublishingJob", async () => {
       )
 
       // Assert
-      expect(sendFailedPublishEmailSpy).toHaveBeenCalledTimes(1)
-      expect(sendFailedPublishEmailSpy).toHaveBeenCalledWith({
+      expect(sendFailedPublishEmailSpy).not.toHaveBeenCalled()
+      expect(sendFailedSiteRebuildEmailSpy).toHaveBeenCalledTimes(1)
+      expect(sendFailedSiteRebuildEmailSpy).toHaveBeenCalledWith({
         recipientEmail: user.email,
-        isScheduled: true,
+        verb: "publish",
         resource: expect.objectContaining({ id: page.id }),
       })
     })
@@ -764,8 +771,8 @@ describe("schedulePublishingJob", async () => {
         new Error("Failed to start codebuild project"),
       )
 
-      const sendFailedPublishEmailSpy = vi
-        .spyOn(emailService, "sendFailedPublishEmail")
+      const sendFailedSiteRebuildEmailSpy = vi
+        .spyOn(emailService, "sendFailedSiteRebuildEmail")
         .mockResolvedValue()
 
       // Act
@@ -784,7 +791,7 @@ describe("schedulePublishingJob", async () => {
       )
 
       // Assert
-      expect(sendFailedPublishEmailSpy).not.toHaveBeenCalled()
+      expect(sendFailedSiteRebuildEmailSpy).not.toHaveBeenCalled()
     })
     it("a failed site publish does NOT send emails if user is missing an email", async () => {
       // Arrange
@@ -804,8 +811,8 @@ describe("schedulePublishingJob", async () => {
         new Error("Failed to start codebuild project"),
       )
 
-      const sendFailedPublishEmailSpy = vi
-        .spyOn(emailService, "sendFailedPublishEmail")
+      const sendFailedSiteRebuildEmailSpy = vi
+        .spyOn(emailService, "sendFailedSiteRebuildEmail")
         .mockResolvedValue()
 
       // Act
@@ -824,7 +831,7 @@ describe("schedulePublishingJob", async () => {
       )
 
       // Assert
-      expect(sendFailedPublishEmailSpy).not.toHaveBeenCalled()
+      expect(sendFailedSiteRebuildEmailSpy).not.toHaveBeenCalled()
     })
   })
 })

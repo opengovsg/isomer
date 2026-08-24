@@ -41,6 +41,14 @@ export interface FailedUnpublishTemplateData extends BaseEmailTemplateData {
   resource: Resource // the resource that failed to be unpublished
 }
 
+export interface FailedSiteRebuildTemplateData extends BaseEmailTemplateData {
+  // whether the page-level action that succeeded was a publish or unpublish —
+  // distinct from FailedPublish/FailedUnpublish, which are for when that
+  // action itself failed. Here it succeeded; only the site rebuild didn't.
+  verb: "publish" | "unpublish"
+  resource: Resource
+}
+
 export interface CancelSchedulePageTemplateData extends BaseEmailTemplateData {
   resource: Resource
 }
