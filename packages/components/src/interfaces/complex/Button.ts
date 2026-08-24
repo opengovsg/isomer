@@ -32,7 +32,6 @@ export const ButtonSchema = Type.Object(
         "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
       maxLength: 50,
       pattern: NON_EMPTY_STRING_REGEX,
-      default: "Enter your button text.",
       errorMessage: {
         pattern: "cannot be empty or contain only spaces",
       },
@@ -42,7 +41,6 @@ export const ButtonSchema = Type.Object(
       description: "When this is clicked, open:",
       format: "link",
       pattern: LINK_HREF_PATTERN,
-      default: "https://www.google.com",
     }),
     secondaryButtonLabel: Type.Optional(
       Type.String({
