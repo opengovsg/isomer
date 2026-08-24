@@ -53,6 +53,13 @@ const meta: Meta<typeof HomepageLayout> = {
 export default meta
 type Story = StoryObj<typeof HomepageLayout>
 
+const chromaticWithoutMobileSmall = {
+  modes: {
+    // Chromatic stacks story modes with the modes inherited from meta.
+    mobileSmall: { disable: true },
+  },
+}
+
 // Category is now an ordinary tagCategories group — the option a card is
 // tagged with is what CollectionBlock displays under its title.
 const HOMEPAGE_CATEGORY_OPTION_ID = "homepage-category-option"
@@ -685,6 +692,8 @@ export const Dark: Story = {
 }
 
 export const HeroBlock: Story = {
+  // The full page exceeds Chromatic's capture pixel limit at 320px wide.
+  parameters: { chromatic: chromaticWithoutMobileSmall },
   args: generateArgs({
     heroProps: {
       type: "hero",
@@ -702,6 +711,8 @@ export const HeroBlock: Story = {
 }
 
 export const HeroLargeImage: Story = {
+  // The full page exceeds Chromatic's capture pixel limit at 320px wide.
+  parameters: { chromatic: chromaticWithoutMobileSmall },
   args: generateArgs({
     heroProps: {
       type: "hero",
@@ -719,6 +730,8 @@ export const HeroLargeImage: Story = {
 }
 
 export const HeroFloating: Story = {
+  // The full page exceeds Chromatic's capture pixel limit at 320px wide.
+  parameters: { chromatic: chromaticWithoutMobileSmall },
   args: generateArgs({
     heroProps: {
       type: "hero",

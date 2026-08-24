@@ -1,8 +1,11 @@
 import type { Metadata } from "next"
 import config from "@/data/config.json"
+import footer from "@/data/footer.json"
 import "@/styles/globals.css"
 import sitemap from "@/sitemap.json"
 import {
+  getSiteJsonLd,
+  type IsomerSitemap,
   RenderApplicationHeadScripts,
   RenderApplicationScripts,
 } from "@opengovsg/isomer-components"
@@ -22,12 +25,14 @@ const inter = Inter({
   variable: "--font-inter",
 })
 
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  name: config.site.siteName || "Isomer",
-  url: config.site.url || "https://www.isomer.gov.sg",
-}
+const jsonLd = getSiteJsonLd({
+  site: {
+    ...config.site,
+    assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,
+  },
+  footer,
+  sitemap: sitemap as IsomerSitemap,
+})
 
 export const dynamic = "force-static"
 
