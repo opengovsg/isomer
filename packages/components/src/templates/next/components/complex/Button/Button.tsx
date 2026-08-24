@@ -30,6 +30,7 @@ export const Button = ({
         )}
         size="base"
         variant="solid"
+        isWithFocusVisibleHighlight
       >
         {buttonLabel}
       </LinkButton>
@@ -43,6 +44,7 @@ export const Button = ({
           )}
           size="base"
           variant="outline"
+          isWithFocusVisibleHighlight
         >
           {secondaryButtonLabel}
         </LinkButton>

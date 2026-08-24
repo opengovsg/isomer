@@ -48,6 +48,10 @@ export const ButtonSchema = Type.Object(
         description:
           "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
         maxLength: 50,
+        pattern: NON_EMPTY_STRING_REGEX,
+        errorMessage: {
+          pattern: "cannot be empty or contain only spaces",
+        },
       }),
     ),
     secondaryButtonUrl: Type.Optional(
