@@ -1,7 +1,6 @@
 import type { Resource } from "~/server/modules/database"
 import { env } from "~/env.mjs"
 import {
-  sendAlreadyUnpublishedEmail,
   sendFailedPublishEmail,
   sendFailedUnpublishEmail,
 } from "~/features/mail/service"
@@ -13,7 +12,6 @@ import { createBaseLogger } from "~/lib/logger"
 import { createGrowthBookContext } from "~/server/context"
 import { publishSite } from "~/server/modules/aws/codebuild.service"
 import { db, ScheduledAction } from "~/server/modules/database"
-import { PageAlreadyUnpublishedError } from "~/server/modules/resource/resource.error"
 import {
   defaultResourceSelect,
   publishPageResource,
@@ -154,35 +152,6 @@ export const publishScheduledResources = async (
         logger.warn(
           `Resource ${resourceId} is missing user email information or deleted, cannot send failed ${handler.verb} email`,
         )
-        continue
-      }
-      // The unpublish precondition throws this when the page was already
-      // unpublished by the time the cron ran (e.g. a manual unpublish beat
-      // the schedule) — that's the desired end state, not a failure.
-      if (
-        scheduledAction === ScheduledAction.Unpublish &&
-        error instanceof PageAlreadyUnpublishedError
-      ) {
-        logger.warn(
-          `Resource ${resourceId} was already unpublished, skipping scheduled unpublish`,
-        )
-        if (!enableEmailsForScheduledPublishes) {
-          continue
-        }
-        try {
-          await sendAlreadyUnpublishedEmail({
-            recipientEmail: resource.email,
-            resource,
-          })
-          logger.warn(
-            `Sent already-unpublished email to ${resource.email} for resource: ${resourceId}`,
-          )
-        } catch (emailError) {
-          logger.error(
-            { error: emailError },
-            `Failed to send already-unpublished email to ${resource.email} for resource: ${resourceId}`,
-          )
-        }
         continue
       }
       logger.error(

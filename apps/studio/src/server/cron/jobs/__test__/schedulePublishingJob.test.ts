@@ -528,7 +528,14 @@ describe("schedulePublishingJob", async () => {
       expect(updated.publishedVersionId).not.toBeNull()
     })
 
-    it("sends an already-unpublished email (not a failed-unpublish email) when the page was already unpublished before the scheduled job ran", async () => {
+    it("sends a failed-unpublish email when the page was already unpublished before the scheduled job ran", async () => {
+      // NOTE: this can no longer happen via a manual unpublish beating the
+      // schedule — unpublishPageResource now blocks manual unpublishing
+      // while any schedule is pending (see resource.service.ts) — so this
+      // only covers the (very narrow) case of unpublishPageResource still
+      // throwing PageAlreadyUnpublishedError for some other reason. There is
+      // no dedicated "already unpublished" email/log path anymore; it's
+      // treated like any other failure.
       const { site, page } = await setupPageResource({
         resourceType: ResourceType.Page,
         state: ResourceState.Published,
@@ -550,17 +557,14 @@ describe("schedulePublishingJob", async () => {
       const sendFailedUnpublishEmailSpy = vi
         .spyOn(emailService, "sendFailedUnpublishEmail")
         .mockResolvedValue()
-      const sendAlreadyUnpublishedEmailSpy = vi
-        .spyOn(emailService, "sendAlreadyUnpublishedEmail")
-        .mockResolvedValue()
 
       const result = await publishScheduledResources(true, FIXED_NOW)
 
       expect(result[site.id]).toBeUndefined()
-      expect(sendFailedUnpublishEmailSpy).not.toHaveBeenCalled()
-      expect(sendAlreadyUnpublishedEmailSpy).toHaveBeenCalledTimes(1)
-      expect(sendAlreadyUnpublishedEmailSpy).toHaveBeenCalledWith({
+      expect(sendFailedUnpublishEmailSpy).toHaveBeenCalledTimes(1)
+      expect(sendFailedUnpublishEmailSpy).toHaveBeenCalledWith({
         recipientEmail: user.email,
+        isScheduled: true,
         resource: expect.objectContaining({ id: page.id }),
       })
     })
