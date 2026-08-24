@@ -130,15 +130,26 @@ const MockDateDecorator: Decorator = (Story) => {
   return <Story />
 }
 
-// Storybook's preview iframe is a single persistent document — switching
-// stories re-renders the story tree in place rather than reloading the
-// page, so anything a previous story's `play()` wrote via `history` (e.g.
-// `useQueryParams`' `?filters=...`) is still on `window.location` when the
-// next story mounts. Reset the search string per story so filter/query
-// state never leaks across stories, the same way `MockDateDecorator`
-// isolates `Date`.
+const ISOMER_QUERY_PARAM_KEYS = ["filters", "page", "search"] as const
+
+// Storybook's preview iframe is a single persistent document, so query state
+// written by a previous story can leak into the next one. Remove only the
+// Isomer query params: Storybook also uses the search string for its story ID
+// and render mode, and clearing those parameters makes Chromatic unable to
+// render the story.
 const ResetQueryParamsDecorator: Decorator = (Story) => {
-  window.history.replaceState({}, "", window.location.pathname)
+  const url = new URL(window.location.href)
+  const previousSearch = url.search
+
+  ISOMER_QUERY_PARAM_KEYS.forEach((key) => url.searchParams.delete(key))
+
+  if (url.search !== previousSearch) {
+    window.history.replaceState(
+      window.history.state,
+      "",
+      `${url.pathname}${url.search}${url.hash}`,
+    )
+  }
 
   return <Story />
 }
