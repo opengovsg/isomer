@@ -13,6 +13,7 @@ import { createBaseLogger } from "~/lib/logger"
 import { createGrowthBookContext } from "~/server/context"
 import { publishSite } from "~/server/modules/aws/codebuild.service"
 import { db, ScheduledAction } from "~/server/modules/database"
+import { bulkValidateUserPermissionsForResources } from "~/server/modules/permissions/permissions.service"
 import {
   defaultResourceSelect,
   publishPageResource,
@@ -86,6 +87,7 @@ const getScheduledActionHandler = (
 ): {
   run: typeof publishPageResource
   verb: "publish" | "unpublish"
+  permissionAction: "publish" | "unpublish"
   sendFailedEmail: typeof sendFailedPublishEmail
 } => {
   switch (action) {
@@ -93,12 +95,14 @@ const getScheduledActionHandler = (
       return {
         run: unpublishPageResource,
         verb: "unpublish",
+        permissionAction: "unpublish",
         sendFailedEmail: sendFailedUnpublishEmail,
       }
     case ScheduledAction.Publish:
       return {
         run: publishPageResource,
         verb: "publish",
+        permissionAction: "publish",
         sendFailedEmail: sendFailedPublishEmail,
       }
   }
@@ -135,7 +139,25 @@ export const publishScheduledResources = async (
     }
     const scheduledAction = resource.scheduledAction ?? ScheduledAction.Publish
     const handler = getScheduledActionHandler(scheduledAction)
+
+    // The user who scheduled this may have been deactivated since — don't
+    // execute an authenticated action on their behalf if so.
+    if (resource.userDeletedAt) {
+      logger.warn(
+        `Resource ${resourceId}'s scheduling user has been deactivated since scheduling, skipping ${handler.verb}`,
+      )
+      continue
+    }
+
     try {
+      // Permissions may have been revoked since this was scheduled — the
+      // check made at schedule time doesn't hold at execution time, so
+      // re-validate rather than trusting it.
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: handler.permissionAction,
+        userId: scheduledBy,
+      })
       // publish/unpublish the resource WITHOUT publishing the site yet
       await handler.run({ logger, resourceId, siteId, userId: scheduledBy })
       logger.info(
@@ -145,13 +167,13 @@ export const publishScheduledResources = async (
       siteResourcesMap[siteId] = siteResourcesMap[siteId] ?? []
       siteResourcesMap[siteId].push({ ...resource, scheduledBy })
     } catch (error) {
-      if (resource.userDeletedAt || !resource.email) {
+      if (!resource.email) {
         logger.error(
           { error },
           `Failed to ${handler.verb} page for resource: ${resourceId}`,
         )
         logger.warn(
-          `Resource ${resourceId} is missing user email information or deleted, cannot send failed ${handler.verb} email`,
+          `Resource ${resourceId} is missing user email information, cannot send failed ${handler.verb} email`,
         )
         continue
       }
