@@ -2,7 +2,10 @@ import { TRPCError } from "@trpc/server"
 import { jsonObjectFrom } from "kysely/helpers/postgres"
 import { get } from "lodash-es"
 import { USER_LINKABLE_RESOURCE_TYPES } from "~/constants/resources"
-import { IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
+import {
+  IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY,
+  IS_UNPUBLISH_ENABLED_FEATURE_KEY,
+} from "~/lib/growthbook"
 import {
   countResourceSchema,
   deleteResourceSchema,
@@ -759,24 +762,32 @@ export const resourceRouter = router({
         // and `parentId` is `onDelete: Cascade`, so deleting a container also
         // wipes every descendant — so check the whole subtree for anything
         // still live, not just the container's own (always-null) field.
-        const isContainer =
-          before.type === ResourceType.Folder ||
-          before.type === ResourceType.Collection
+        //
+        // Gated behind IS_UNPUBLISH_ENABLED_FEATURE_KEY: this guard only
+        // makes sense once unpublish is reachable. With the flag off, a live
+        // resource has no way to stop being live, so enforcing it here would
+        // make every currently-published resource permanently undeletable —
+        // fall back to the pre-unpublish behaviour (delete unconditionally).
+        if (ctx.gb.isOn(IS_UNPUBLISH_ENABLED_FEATURE_KEY)) {
+          const isContainer =
+            before.type === ResourceType.Folder ||
+            before.type === ResourceType.Collection
 
-        const isLive = isContainer
-          ? await hasPublishedDescendant(tx, {
-              siteId: Number(siteId),
-              resourceId,
+          const isLive = isContainer
+            ? await hasPublishedDescendant(tx, {
+                siteId: Number(siteId),
+                resourceId,
+              })
+            : before.publishedVersionId !== null
+
+          if (isLive) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: isContainer
+                ? `This ${before.type === ResourceType.Folder ? "folder" : "collection"} has live pages inside it — unpublish them before deleting`
+                : "This page must be unpublished before it can be deleted",
             })
-          : before.publishedVersionId !== null
-
-        if (isLive) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: isContainer
-              ? `This ${before.type === ResourceType.Folder ? "folder" : "collection"} has live pages inside it — unpublish them before deleting`
-              : "This page must be unpublished before it can be deleted",
-          })
+          }
         }
 
         await logResourceEvent(tx, {
