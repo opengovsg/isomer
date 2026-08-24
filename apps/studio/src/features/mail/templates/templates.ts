@@ -22,6 +22,7 @@ import type {
   EmailTemplate,
   EmailTemplateFunction,
   FailedPublishTemplateData,
+  FailedSiteRebuildTemplateData,
   FailedUnpublishTemplateData,
   GazetteDeletionEmailTemplateData,
   InvitationEmailTemplateData,
@@ -234,6 +235,26 @@ const failedUnpublishTemplate = (
   }
 }
 
+// Distinct from failedPublish/failedUnpublish: here the page-level action
+// (publish or unpublish) already succeeded — only the follow-up site rebuild
+// failed. The copy must not tell the reader to retry the page action, since
+// retrying e.g. unpublish on an already-unpublished page just throws
+// PageAlreadyUnpublishedError.
+const failedSiteRebuildTemplate = (
+  data: FailedSiteRebuildTemplateData,
+): EmailTemplate => {
+  const { recipientEmail, resource, verb } = data
+  const studioResourceUrl = getStudioResourceUrl(resource)
+  return {
+    subject: `[Isomer Studio] Your site may not reflect recent changes`,
+    body: `<p>Hi ${recipientEmail},</p>
+    <p>Your page ${resource.title} was successfully ${verb}ed, but we ran into an issue updating your live site to reflect this change.</p>
+    <p>Please check your site directly at ${studioResourceUrl}, and contact ${ISOMER_SUPPORT_EMAIL} if it still hasn't updated after a while.</p>
+    <p>Best,</p>
+    <p>Isomer team</p>`,
+  }
+}
+
 // NOTE: this is sent for both publish and unpublish scheduled/manual actions
 // (this is the only call site, in webhook.utils.ts, and it doesn't know which
 // action a given CodeBuild job was for), so the copy is intentionally generic
@@ -410,6 +431,8 @@ const _templates = {
     failedPublishTemplate satisfies EmailTemplateFunction<FailedPublishTemplateData>,
   failedUnpublish:
     failedUnpublishTemplate satisfies EmailTemplateFunction<FailedUnpublishTemplateData>,
+  failedSiteRebuild:
+    failedSiteRebuildTemplate satisfies EmailTemplateFunction<FailedSiteRebuildTemplateData>,
   successfulPublish:
     successfulPublishTemplate satisfies EmailTemplateFunction<SuccessfulPublishTemplateData>,
   schedulePage:
