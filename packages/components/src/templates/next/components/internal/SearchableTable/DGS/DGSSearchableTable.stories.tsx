@@ -70,6 +70,54 @@ export const LargeDatasetNoSearchResults: Story = {
       resourceId: DGS_LARGE_DATASET_RESOURCE_ID,
     },
   },
+  parameters: {
+    msw: {
+      handlers: [
+        http.get(
+          `https://api-production.data.gov.sg/v2/public/api/datasets/${DGS_LARGE_DATASET_RESOURCE_ID}/metadata`,
+          () =>
+            HttpResponse.json({
+              data: {
+                name: "Resale flat prices based on registration date from Jan-2017 onwards",
+                format: "CSV",
+                datasetSize: 5 * 1024 * 1024,
+                columnMetadata: {
+                  metaMapping: {
+                    month: {
+                      name: "month",
+                      columnTitle: "Month",
+                      index: "0",
+                    },
+                    town: {
+                      name: "town",
+                      columnTitle: "Town",
+                      index: "1",
+                    },
+                  },
+                },
+              },
+            }),
+        ),
+        http.get(
+          "https://data.gov.sg/api/action/datastore_search",
+          ({ request }) => {
+            const searchParams = new URL(request.url).searchParams
+            const hasSearchQuery = searchParams.has("q")
+
+            return HttpResponse.json({
+              success: true,
+              result: {
+                records: hasSearchQuery
+                  ? []
+                  : [{ month: "2024-01", town: "ANG MO KIO" }],
+                total: hasSearchQuery ? 0 : 1,
+              },
+            })
+          },
+        ),
+      ],
+    },
+  },
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
     const searchElem = screen.getByRole("searchbox", {
