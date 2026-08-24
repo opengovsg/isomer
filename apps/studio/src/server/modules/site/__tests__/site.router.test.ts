@@ -42,10 +42,11 @@ const createCaller = createCallerFactory(siteRouter)
 const MOCK_SITE_NAME = "isobad"
 const MOCK_LOGO_URL = "https://isobad.com/logo.png"
 const MOCK_SEARCHSG_CLIENT_ID = "550e8400-e29b-41d4-a716-446655440000"
-// A valid UUID that belongs to a different site's SearchSG project. Passing the
-// format check is what makes this dangerous: it reaches the SearchSG API.
+// A UUID belonging to a different site's SearchSG project. It has to satisfy
+// `isValidSearchSGClientId` (RFC 4122, so version 4 and variant 8 here), because
+// clearing that check is what lets a tampered clientId reach the SearchSG API.
 const MOCK_OTHER_SITE_SEARCHSG_CLIENT_ID =
-  "11111111-2222-3333-4444-555555555555"
+  "11111111-2222-4333-8444-555555555555"
 const MOCK_EGAZETTE_ALGOLIA_SEARCH = {
   type: "egazette-algolia",
   appId: "MOCK_APP_ID",
@@ -742,6 +743,19 @@ describe("site.router", async () => {
         existingClientId,
         result.url,
       )
+    })
+    it("uses clientId fixtures that pass the SearchSG format check", () => {
+      // Guards the premise of the tampering tests below: a malformed clientId
+      // is rejected downstream anyway, so the fixtures have to be well-formed
+      // for those tests to cover the case that actually reaches SearchSG.
+      expect(
+        searchSgService.isValidSearchSGClientId(MOCK_SEARCHSG_CLIENT_ID),
+      ).toBe(true)
+      expect(
+        searchSgService.isValidSearchSGClientId(
+          MOCK_OTHER_SITE_SEARCHSG_CLIENT_ID,
+        ),
+      ).toBe(true)
     })
     it("should not allow a site admin to enable searchSG with a supplied clientId", async () => {
       // Arrange - no search integration, so there is no clientId in the DB to
