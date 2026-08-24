@@ -422,8 +422,16 @@ export const pageRouter = router({
     ),
   scheduleUnpublish: protectedProcedure
     .input(scheduledUnpublishServerSchema)
-    .mutation(({ ctx, input: { scheduledAt, siteId, pageId } }) =>
-      scheduleAction({
+    .mutation(({ ctx, input: { scheduledAt, siteId, pageId } }) => {
+      // Dark-launched, same flag as unpublishPage — scheduling an unpublish
+      // presupposes the unpublish feature itself is enabled.
+      if (!ctx.gb.isOn(IS_UNPUBLISH_ENABLED_FEATURE_KEY)) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "This page either does not exist or cannot be unpublished",
+        })
+      }
+      return scheduleAction({
         userId: ctx.user.id,
         siteId,
         pageId,
@@ -436,12 +444,18 @@ export const pageRouter = router({
           `Page already has a scheduled action at ${format(at, "yyyy-MM-dd HH:mm")}`,
         failedMessage: "Failed to schedule unpublish",
         sendConfirmationEmail: sendScheduledUnpublishEmail,
-      }),
-    ),
+      })
+    }),
   cancelScheduleUnpublish: protectedProcedure
     .input(basePageSchema)
-    .mutation(({ ctx, input: { siteId, pageId } }) =>
-      cancelScheduleAction({
+    .mutation(({ ctx, input: { siteId, pageId } }) => {
+      if (!ctx.gb.isOn(IS_UNPUBLISH_ENABLED_FEATURE_KEY)) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "This page either does not exist or cannot be unpublished",
+        })
+      }
+      return cancelScheduleAction({
         userId: ctx.user.id,
         siteId,
         pageId,
@@ -452,8 +466,8 @@ export const pageRouter = router({
           "Unable to cancel schedule for a page that is not scheduled to be unpublished",
         failedMessage: "Failed to cancel scheduled unpublish",
         sendConfirmationEmail: sendCancelScheduleUnpublishEmail,
-      }),
-    ),
+      })
+    }),
   updatePageBlob: validatedPageProcedure
     .input(updatePageBlobSchema)
     .mutation(async ({ input, ctx }) => {
