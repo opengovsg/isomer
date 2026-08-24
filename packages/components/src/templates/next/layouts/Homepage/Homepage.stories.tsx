@@ -53,11 +53,12 @@ const meta: Meta<typeof HomepageLayout> = {
 export default meta
 type Story = StoryObj<typeof HomepageLayout>
 
-const chromaticWithoutMobileSmall = withChromaticModes([
-  "mobile",
-  "tablet",
-  "desktop",
-])
+const chromaticWithoutMobileSmall = {
+  modes: {
+    // Chromatic stacks story modes with the modes inherited from meta.
+    mobileSmall: { disable: true },
+  },
+}
 
 // Category is now an ordinary tagCategories group — the option a card is
 // tagged with is what CollectionBlock displays under its title.
