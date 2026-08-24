@@ -2,6 +2,7 @@ import type { Resource } from "~/server/modules/database"
 import { env } from "~/env.mjs"
 import {
   sendFailedPublishEmail,
+  sendFailedSiteRebuildEmail,
   sendFailedUnpublishEmail,
 } from "~/features/mail/service"
 import {
@@ -206,26 +207,32 @@ export const publishScheduledSites = async (
       for (const resource of resources) {
         if (resource.userDeletedAt || !resource.email) {
           logger.warn(
-            `Resource ${resource.id} is missing user email information or deleted, cannot send failed publish email`,
+            `Resource ${resource.id} is missing user email information or deleted, cannot send failed site rebuild email`,
           )
           continue
         }
-        const handler = getScheduledActionHandler(
+        // Every resource here already had its own publish/unpublish succeed
+        // (that's why it's in siteResourcesMap) — only the site rebuild
+        // failed. Use the site-rebuild-specific email, not the "we couldn't
+        // {verb} your page" one: that would tell the user to retry an action
+        // that already succeeded (and for unpublish, retrying would just
+        // throw PageAlreadyUnpublishedError).
+        const { verb } = getScheduledActionHandler(
           resource.scheduledAction ?? ScheduledAction.Publish,
         )
         try {
-          await handler.sendFailedEmail({
+          await sendFailedSiteRebuildEmail({
             recipientEmail: resource.email,
-            isScheduled: true,
+            verb,
             resource,
           })
           logger.warn(
-            `Sent failed ${handler.verb} email to ${resource.email} for resource: ${resource.id}, since site publish failed for site ${siteId}`,
+            `Sent failed site rebuild email to ${resource.email} for resource: ${resource.id}, since site publish failed for site ${siteId}`,
           )
         } catch (emailError) {
           logger.error(
             { error: emailError },
-            `Failed to send failed ${handler.verb} email to ${resource.email} for resource: ${resource.id}, since site publish failed for site ${siteId}`,
+            `Failed to send failed site rebuild email to ${resource.email} for resource: ${resource.id}, since site publish failed for site ${siteId}`,
           )
         }
       }

@@ -399,7 +399,7 @@ export const pageRouter = router({
         requiresPublished: false,
         auditEvent: AuditLogEvent.SchedulePublish,
         alreadyScheduledMessage: (at) =>
-          `Page is already scheduled to be updated at ${format(at, "yyyy-MM-dd HH:mm")}`,
+          `Page already has a scheduled action at ${format(at, "yyyy-MM-dd HH:mm")}`,
         failedMessage: "Failed to schedule page",
         sendConfirmationEmail: sendScheduledPageEmail,
       }),
