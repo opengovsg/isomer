@@ -61,6 +61,7 @@ import { PG_ERROR_CODES } from "../database/constants"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 import { applyPermalinkChangeRedirects } from "../redirect/redirect.service"
 import {
+  assertPageIsUnpublishable,
   createResourceWithBlob,
   getBlobOfResource,
   getFooter,
@@ -422,7 +423,7 @@ export const pageRouter = router({
     ),
   scheduleUnpublish: protectedProcedure
     .input(scheduledUnpublishServerSchema)
-    .mutation(({ ctx, input: { scheduledAt, siteId, pageId } }) => {
+    .mutation(async ({ ctx, input: { scheduledAt, siteId, pageId } }) => {
       // Dark-launched, same flag as unpublishPage — scheduling an unpublish
       // presupposes the unpublish feature itself is enabled.
       if (!ctx.gb.isOn(IS_UNPUBLISH_ENABLED_FEATURE_KEY)) {
@@ -431,6 +432,11 @@ export const pageRouter = router({
           message: "This page either does not exist or cannot be unpublished",
         })
       }
+      // Same allow-list as unpublishPage — otherwise a RootPage/Folder/
+      // Collection could be scheduled for unpublish here even though
+      // unpublishing it directly is rejected, and the cron would run
+      // unpublishPageResource on it with no type check at all.
+      await assertPageIsUnpublishable(db, { resourceId: pageId, siteId })
       return scheduleAction({
         userId: ctx.user.id,
         siteId,
@@ -680,10 +686,10 @@ export const pageRouter = router({
           })
         }
 
-        // Allow-list: Page-like types, plus Folder/Collection (resolved to
-        // their child IndexPage below). See
-        // UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS for what's excluded
-        // and why.
+        // Wider allow-list than scheduleUnpublish's assertPageIsUnpublishable:
+        // unpublishPageResource (unlike scheduleAction) resolves a Folder/
+        // Collection id to its child IndexPage, so this accepts those too —
+        // see UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS.
         const page = await db
           .selectFrom("Resource")
           .where("Resource.id", "=", String(pageId))
