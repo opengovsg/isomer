@@ -4,6 +4,8 @@ import { omit } from "lodash-es"
 import { randomUUID } from "node:crypto"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
+import { mockFeatureFlags } from "tests/integration/helpers/growthbook/mockFeatureFlags"
+import { mockGrowthBook } from "tests/integration/helpers/growthbook/mockInstance"
 import {
   applyAuthedSession,
   applySession,
@@ -22,6 +24,7 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
+import { IS_UNPUBLISH_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
 
@@ -1274,6 +1277,38 @@ describe("collection.router", async () => {
             "You do not have sufficient permissions to perform this action",
         }),
       )
+    })
+
+    describe("when IS_UNPUBLISH_ENABLED_FEATURE_KEY is off", () => {
+      afterEach(() => {
+        mockGrowthBook.setForcedFeatures(mockFeatureFlags)
+      })
+
+      it("should throw 404 as if the collection cannot be unpublished, even for an otherwise-valid collection", async () => {
+        mockGrowthBook.setForcedFeatures(
+          new Map([
+            ...mockFeatureFlags,
+            [IS_UNPUBLISH_ENABLED_FEATURE_KEY, false],
+          ]),
+        )
+        const { site, collection } = await setupCollection()
+        await setupPublisherPermissions({
+          userId: session.userId,
+          siteId: site.id,
+        })
+
+        const result = caller.unpublishCollection({
+          siteId: site.id,
+          resourceId: Number(collection.id),
+        })
+
+        await expect(result).rejects.toThrow(
+          new TRPCError({
+            code: "NOT_FOUND",
+            message: "This collection does not exist",
+          }),
+        )
+      })
     })
 
     it("should throw 404 if resourceId does not exist", async () => {
