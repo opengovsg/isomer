@@ -12,7 +12,10 @@ import { TRPCError } from "@trpc/server"
 import { format } from "date-fns"
 import chunk from "lodash-es/chunk"
 import get from "lodash-es/get"
-import { UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS } from "~/constants/resources"
+import {
+  UNPUBLISHABLE_RESOURCE_TYPES,
+  UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS,
+} from "~/constants/resources"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   normalizeRedirectPath,
@@ -1379,6 +1382,35 @@ interface UnpublishPageResourceArgs {
   resourceId: string
   sitePublish?: {
     enableCodebuildJobs: boolean
+  }
+}
+
+/**
+ * Only a narrow set of resource types are unpublishable via scheduleUnpublish
+ * — see UNPUBLISHABLE_RESOURCE_TYPES for why RootPage/Folder/Collection/
+ * FolderMeta/CollectionMeta are excluded. Unlike unpublishPageResource,
+ * scheduleAction resolves `pageId` with getPageById, which doesn't redirect
+ * a Folder/Collection id to its child IndexPage — so a scheduled unpublish
+ * can't support containers the way an immediate unpublishPage call can (see
+ * UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS for that wider allow-list).
+ */
+export const assertPageIsUnpublishable = async (
+  db: SafeKysely,
+  { resourceId, siteId }: { resourceId: number; siteId: number },
+) => {
+  const page = await db
+    .selectFrom("Resource")
+    .where("Resource.id", "=", String(resourceId))
+    .where("Resource.siteId", "=", siteId)
+    .where("Resource.type", "in", UNPUBLISHABLE_RESOURCE_TYPES)
+    .select("Resource.id")
+    .executeTakeFirst()
+
+  if (!page) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "This page either does not exist or cannot be unpublished",
+    })
   }
 }
 
