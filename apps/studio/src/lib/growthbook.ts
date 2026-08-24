@@ -22,6 +22,11 @@ export const IS_AUDIT_LOG_ENABLED_FEATURE_KEY = "is-audit-log-enabled"
 // When ON: gazette ingestion is routed to SearchSG instead.
 export const ENABLE_SEARCHSG_GAZETTE_INGESTION =
   "enable-searchsg-gazette-ingestion"
+// Gates the whole unpublish feature — manual (unpublishPage/unpublishFolder/
+// unpublishCollection) and scheduled (scheduleUnpublish/cancelScheduleUnpublish)
+// alike, since the latter presupposes the former exists. OFF by default so the
+// feature can ship dark and be enabled per-environment.
+export const IS_UNPUBLISH_ENABLED_FEATURE_KEY = "is-unpublish-enabled"
 
 export const IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE = true
 

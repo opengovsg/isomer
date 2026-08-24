@@ -18,7 +18,10 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
-import { IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
+import {
+  IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY,
+  IS_UNPUBLISH_ENABLED_FEATURE_KEY,
+} from "~/lib/growthbook"
 import { createCallerFactory } from "~/server/trpc"
 import { getReferenceLink } from "~/utils/link"
 
@@ -472,6 +475,45 @@ describe("folder.router", async () => {
             "You do not have sufficient permissions to perform this action",
         }),
       )
+    })
+
+    describe("when IS_UNPUBLISH_ENABLED_FEATURE_KEY is off", () => {
+      afterEach(() => {
+        mockGrowthBook.setForcedFeatures(mockFeatureFlags)
+      })
+
+      it("should throw 404 as if the folder cannot be unpublished, even for an otherwise-valid folder", async () => {
+        mockGrowthBook.setForcedFeatures(
+          new Map([
+            ...mockFeatureFlags,
+            [IS_UNPUBLISH_ENABLED_FEATURE_KEY, false],
+          ]),
+        )
+        const { site, folder } = await setupFolder()
+        await setupPageResource({
+          siteId: site.id,
+          parentId: folder.id,
+          resourceType: ResourceType.IndexPage,
+          state: ResourceState.Published,
+          userId: session.userId,
+        })
+        await setupPublisherPermissions({
+          userId: session.userId,
+          siteId: site.id,
+        })
+
+        const result = caller.unpublishFolder({
+          siteId: site.id,
+          resourceId: Number(folder.id),
+        })
+
+        await expect(result).rejects.toThrow(
+          new TRPCError({
+            code: "NOT_FOUND",
+            message: "This folder does not exist",
+          }),
+        )
+      })
     })
 
     it("should throw 404 if resourceId does not exist", async () => {

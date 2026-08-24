@@ -2,7 +2,10 @@ import type { UnwrapTagged } from "type-fest"
 import { TRPCError } from "@trpc/server"
 import { get, pick } from "lodash-es"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
-import { ENABLE_CODEBUILD_JOBS } from "~/lib/growthbook"
+import {
+  ENABLE_CODEBUILD_JOBS,
+  IS_UNPUBLISH_ENABLED_FEATURE_KEY,
+} from "~/lib/growthbook"
 import {
   countTagOptionsUsageSchema,
   createCollectionSchema,
@@ -78,6 +81,15 @@ export const collectionRouter = router({
           action: "unpublish",
           userId: user.id,
         })
+
+        // Dark-launched: same NOT_FOUND as the not-found check below, so a
+        // caller can't distinguish "flag off" from "collection doesn't exist".
+        if (!gb.isOn(IS_UNPUBLISH_ENABLED_FEATURE_KEY)) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "This collection does not exist",
+          })
+        }
 
         // Reject non-Collection ids so this endpoint can't be used to
         // unpublish an arbitrary page under a collection-only contract

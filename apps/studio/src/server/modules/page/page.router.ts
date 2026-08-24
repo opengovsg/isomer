@@ -21,6 +21,7 @@ import {
 import {
   ENABLE_CODEBUILD_JOBS,
   getIsSingpassDisabledInNonPreview,
+  IS_UNPUBLISH_ENABLED_FEATURE_KEY,
 } from "~/lib/growthbook"
 import {
   basePageSchema,
@@ -686,6 +687,16 @@ export const pageRouter = router({
           action: "unpublish",
           userId: user.id,
         })
+
+        // Dark-launched: same NOT_FOUND as the type-guard below, so a caller
+        // can't distinguish "flag off" from "wrong resource type" and infer
+        // the feature exists before it's rolled out.
+        if (!gb.isOn(IS_UNPUBLISH_ENABLED_FEATURE_KEY)) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "This page either does not exist or cannot be unpublished",
+          })
+        }
 
         // Allow-list rather than deny-list: only UNPUBLISHABLE_RESOURCE_TYPES
         // are real, independently unpublishable content pages — see that
