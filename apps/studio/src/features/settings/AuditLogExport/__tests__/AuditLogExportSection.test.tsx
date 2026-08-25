@@ -5,7 +5,10 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { UserManagementContext } from "~/features/users"
 import { SITE_ID } from "~/lib/testing/constants"
-import { AuditLogExportRequestedReportType } from "~/schemas/audit"
+import {
+  AuditLogExportRequestedReportType,
+  AuditLogExportScope,
+} from "~/schemas/audit"
 import { buildUserManagementPermissions } from "~/server/modules/permissions/permissions.util"
 import { theme } from "~/theme"
 import { RoleType } from "~prisma/generated/generatedEnums"
@@ -120,6 +123,7 @@ describe("AuditLogExportSection", () => {
       { scope: string; siteId: number; month: string; reportType: string },
     ]
     expect(payload).toEqual({
+      scope: AuditLogExportScope.Site,
       siteId: SITE_ID,
       month: getMonthOptions()[0]!.value,
       reportType: AuditLogExportRequestedReportType.Activity,
