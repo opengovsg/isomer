@@ -59,7 +59,7 @@ export const ExportAccessLogsButton = ({
       }
       {...buttonProps}
     >
-      Export access logs
+      Export user access
     </Button>
   )
 }

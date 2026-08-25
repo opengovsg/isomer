@@ -133,7 +133,8 @@ export const AuditLogExportSection = ({
           borderRadius="4px"
         >
           <Text>
-            Looking for access history instead? You can export it on{" "}
+            Reviewing who has access to manage your site? You can view and
+            export it on{" "}
             <Link
               as={NextLink}
               href={`/sites/${siteId}/users`}
