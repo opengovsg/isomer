@@ -10,7 +10,7 @@ import { protectedProcedure, router } from "../../trpc"
 import { validateUserIsSiteAdmin } from "../permissions/permissions.service"
 import { getAdminSiteIds } from "../site/site.service"
 import {
-  createAuditLogExportRequest,
+  createAuditLogExportRequestsForSites,
   getAuditLogExportWindow,
 } from "./auditLogExport.service"
 
@@ -40,8 +40,11 @@ export const auditRouter = router({
       // Permission check FIRST, before any mutation, resolved into the
       // concrete site IDs this ask covers. "site" is always exactly the one
       // requested site (Site Admin-only); "allSites" is resolved server-side
-      // from the caller's own Admin access — never trusted from client input
-      // — and is authorised as long as they Admin at least one site.
+      // from the caller's own Admin access — never trusted from client input.
+      // Whether that resolves to at least one site, and everything about
+      // fanning the ask out into per-site requests, is the service's call
+      // (see `createAuditLogExportRequestsForSites`) — the router's job ends
+      // at authorising and wiring.
       let siteIds: number[]
       if (scope === AuditLogExportScope.Site) {
         const { siteId } = input
@@ -57,55 +60,14 @@ export const auditRouter = router({
         siteIds = [siteId]
       } else {
         siteIds = await getAdminSiteIds(ctx.user.id)
-        if (siteIds.length === 0) {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: "You are not an Admin on any site",
-          })
-        }
       }
 
-      try {
-        // One independent export request per site: for `scope: "site"` this
-        // is exactly the pre-existing single-site path (a one-element fan-out);
-        // for "allSites" it fans out across every site resolved above, reusing
-        // that same path unchanged — its own dedupe, audit event, and CSV job
-        // per site, mirroring how the removed "Both" report type used to fan
-        // out one row per report type.
-        const ip = getIP(ctx.req)
-        const results = await Promise.all(
-          siteIds.map((siteId) =>
-            createAuditLogExportRequest({
-              siteId,
-              userId: ctx.user.id,
-              month,
-              reportType,
-              ip,
-            }),
-          ),
-        )
-        return results.flat()
-      } catch (error) {
-        // Permission / validation failures are already typed TRPCErrors with
-        // safe, user-facing messages — let them through. (Duplicate asks no
-        // longer error: they are accepted idempotently by the service.)
-        if (error instanceof TRPCError) {
-          throw error
-        }
-
-        // Anything else (e.g. a DB error) may leak request internals; log it
-        // with the request context and surface a generic error to the client.
-        ctx.logger.error({
-          error,
-          message: "Failed to create audit log export request",
-          scope,
-          month,
-          reportType,
-        })
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to create audit log export request",
-        })
-      }
+      return createAuditLogExportRequestsForSites({
+        siteIds,
+        userId: ctx.user.id,
+        month,
+        reportType,
+        ip: getIP(ctx.req),
+      })
     }),
 })
