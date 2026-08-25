@@ -104,6 +104,7 @@ export interface PushDocumentJob {
   resourceId: string
   scheduledAt: Timestamp
   scheduledBy: string
+  attempts: Generated<number | null>
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }

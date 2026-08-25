@@ -583,6 +583,7 @@ export const gazetteRouter = router({
                 .set({
                   scheduledAt,
                   scheduledBy: user.id,
+                  attempts: 0,
                 })
                 .where("resourceId", "=", String(gazetteId))
                 .where("resourceId", "in", (eb) =>

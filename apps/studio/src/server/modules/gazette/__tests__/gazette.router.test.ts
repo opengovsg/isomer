@@ -584,6 +584,48 @@ describe("gazette.router", async () => {
       expect(after.scheduledAt).toEqual(PAST_DATE)
     })
 
+    it("resets document ingestion attempts when a gazette is rescheduled", async () => {
+      // Arrange
+      const { site, collection } = await seedToppanWithCollection()
+      const { gazetteId } = await caller.create({
+        siteId: site.id,
+        collectionId: Number(collection.id),
+        title: "Retrying Gazette",
+        permalink: crypto.randomUUID(),
+        ref: "/1/abc/retrying.pdf",
+        category: "Government Gazette",
+        date: "30/04/2026",
+        tagged: ["sub-1"],
+        scheduledAt: PAST_DATE,
+      })
+      await db
+        .updateTable("PushDocumentJob")
+        .set({ attempts: 2 })
+        .where("resourceId", "=", String(gazetteId))
+        .execute()
+      const rescheduledAt = subMinutes(PAST_DATE, 1)
+
+      // Act
+      await caller.update({
+        siteId: site.id,
+        gazetteId: Number(gazetteId),
+        title: "Retrying Gazette",
+        category: "Government Gazette",
+        date: "30/04/2026",
+        tagged: ["sub-1"],
+        scheduledAt: rescheduledAt,
+      })
+
+      // Assert
+      const pushJob = await db
+        .selectFrom("PushDocumentJob")
+        .where("resourceId", "=", String(gazetteId))
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(pushJob.scheduledAt).toEqual(rescheduledAt)
+      expect(pushJob.attempts).toBe(0)
+    })
+
     it("rejects update when changing to a file ID that already exists", async () => {
       // Arrange
       const { site, collection } = await seedToppanWithCollection()

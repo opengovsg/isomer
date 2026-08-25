@@ -362,6 +362,8 @@ model PushDocumentJob {
   scheduledAt DateTime
   scheduledBy String
   scheduler   User     @relation(fields: [scheduledBy], references: [id], onDelete: Restrict)
+  // Nullable for backwards-compatible rollout; new and migrated rows default to zero.
+  attempts Int? @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt

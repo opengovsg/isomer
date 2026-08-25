@@ -372,7 +372,7 @@ describe("schedulePushDocumentJobHandler", async () => {
       expect(records[0]).toMatchObject({ notificationNum: "12345" })
     })
 
-    it("skips save when PDF text is empty (no records built)", async () => {
+    it("drops an empty PDF job after three failed attempts", async () => {
       // Arrange
       vi.spyOn(gazetteService, "parseFullTextFromPDF").mockResolvedValue("")
       const { resourceId } = await seedDocumentReadyForIngestion({
@@ -393,13 +393,28 @@ describe("schedulePushDocumentJobHandler", async () => {
       // Act
       await schedulePushDocumentJobHandler()
 
-      // Assert — saveObjects was not called, so the job remains for retry.
+      // Assert — the first two failures are retained for retry.
       expect(algoliaLib.saveObjectsToSearchIndex).not.toHaveBeenCalled()
+      const firstAttempt = await db
+        .selectFrom("PushDocumentJob")
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(firstAttempt.attempts).toBe(1)
+
+      await schedulePushDocumentJobHandler()
+      const secondAttempt = await db
+        .selectFrom("PushDocumentJob")
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(secondAttempt.attempts).toBe(2)
+
+      // The third failure exhausts the job instead of retrying forever.
+      await schedulePushDocumentJobHandler()
       const remaining = await db
         .selectFrom("PushDocumentJob")
         .selectAll()
         .execute()
-      expect(remaining).toHaveLength(1)
+      expect(remaining).toHaveLength(0)
     })
 
     it("isolates failures: one bad resource does not prevent others from being saved", async () => {
@@ -461,6 +476,7 @@ describe("schedulePushDocumentJobHandler", async () => {
         .execute()
       expect(remaining).toHaveLength(1)
       expect(remaining[0]?.resourceId).toBe(String(badId))
+      expect(remaining[0]?.attempts).toBe(1)
     })
 
     it("preserves a job that is rescheduled while Algolia ingestion is in flight", async () => {
@@ -635,6 +651,7 @@ describe("schedulePushDocumentJobHandler", async () => {
         .selectAll()
         .execute()
       expect(remaining).toHaveLength(1)
+      expect(remaining[0]?.attempts).toBe(0)
     })
 
     it("logs and skips a row whose blob content does not match the expected shape", async () => {
@@ -690,6 +707,7 @@ describe("schedulePushDocumentJobHandler", async () => {
         .selectAll()
         .execute()
       expect(remaining).toHaveLength(1)
+      expect(remaining[0]?.attempts).toBe(1)
     })
   })
 
@@ -821,6 +839,117 @@ describe("schedulePushDocumentJobHandler", async () => {
         .execute()
       expect(remaining).toHaveLength(1)
       expect(remaining[0]?.resourceId).toBe(String(badId))
+      expect(remaining[0]?.attempts).toBe(1)
+    })
+
+    it("bounds each SearchSG tick and processes duplicate-resource jobs", async () => {
+      // Arrange — one more row than the per-tick batch size also proves that
+      // duplicate jobs for a resource are not collapsed by the source query.
+      const { resourceId } = await seedDocumentReadyForIngestion({
+        parentTitle: "Notices",
+        ref: "/backlog/gazette.pdf",
+        category: "Government Gazettes",
+        publishedBy: user.id,
+      })
+      await db
+        .insertInto("PushDocumentJob")
+        .values(
+          Array.from({ length: 21 }, () => ({
+            resourceId: String(resourceId),
+            scheduledAt: FIXED_NOW,
+            scheduledBy: user.id,
+          })),
+        )
+        .execute()
+
+      // Act — the first tick processes only the bounded batch.
+      await schedulePushDocumentJobHandler()
+
+      // Assert
+      const afterFirstTick = await db
+        .selectFrom("PushDocumentJob")
+        .selectAll()
+        .execute()
+      expect(afterFirstTick).toHaveLength(1)
+
+      await schedulePushDocumentJobHandler()
+      const afterSecondTick = await db
+        .selectFrom("PushDocumentJob")
+        .selectAll()
+        .execute()
+      expect(afterSecondTick).toHaveLength(0)
+
+      const ingestBatchSizes = vi
+        .mocked(global.fetch)
+        .mock.calls.filter(([u]) => urlToString(u).includes("/documents"))
+        .map(([, init]) => {
+          const body = JSON.parse(init?.body as string) as {
+            documentsToAdd: Record<string, unknown>[]
+          }
+          return body.documentsToAdd.length
+        })
+      expect(ingestBatchSizes).toEqual([20, 1])
+    })
+
+    it("drops a SearchSG job after three failed ingestion attempts", async () => {
+      // Arrange
+      const { resourceId } = await seedDocumentReadyForIngestion({
+        parentTitle: "Notices",
+        ref: "/failed/gazette.pdf",
+        category: "Government Gazettes",
+        publishedBy: user.id,
+      })
+      await db
+        .insertInto("PushDocumentJob")
+        .values({
+          resourceId: String(resourceId),
+          scheduledAt: FIXED_NOW,
+          scheduledBy: user.id,
+        })
+        .execute()
+
+      vi.mocked(global.fetch).mockImplementation((input) => {
+        const u = urlToString(input)
+        if (u.endsWith("/v1/auth/token")) {
+          return Promise.resolve(
+            new Response(
+              JSON.stringify({
+                accessToken: "test-token",
+                tokenType: "Bearer",
+              }),
+              { status: 200 },
+            ),
+          )
+        }
+        if (u.includes("/documents")) {
+          return Promise.resolve(
+            new Response("SearchSG unavailable", { status: 503 }),
+          )
+        }
+        return Promise.reject(new Error(`Unexpected fetch: ${u}`))
+      })
+
+      // Act + Assert — failures are persisted and capped.
+      await schedulePushDocumentJobHandler()
+      const firstAttempt = await db
+        .selectFrom("PushDocumentJob")
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(firstAttempt.attempts).toBe(1)
+
+      await schedulePushDocumentJobHandler()
+      const secondAttempt = await db
+        .selectFrom("PushDocumentJob")
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(secondAttempt.attempts).toBe(2)
+
+      await schedulePushDocumentJobHandler()
+      const remaining = await db
+        .selectFrom("PushDocumentJob")
+        .selectAll()
+        .execute()
+      expect(remaining).toHaveLength(0)
     })
 
     it("preserves a job that is rescheduled while SearchSG ingestion is in flight", async () => {

@@ -20,12 +20,17 @@ import { registerPgbossJob } from "@isomer/pgboss"
 const JOB_NAME = "schedule-push-document"
 const CRON_SCHEDULE = "* * * * *" // every minute
 const SEARCHSG_CONTENT_LENGTH = 50000
+// Retain transient failures, but discard a poison job after three attempts.
+const MAX_ATTEMPTS = 3
+// Bound extraction, external requests, and cleanup-query size for each tick.
+const BATCH_SIZE = 20
 
 const logger = createBaseLogger({ path: "cron:schedulePushDocumentJob" })
 
 interface ProcessedJob {
   jobId: string
   scheduledAt: Date
+  attempts: number
 }
 
 const pushDocumentContentSchema = z.object({
@@ -186,8 +191,9 @@ export const schedulePushDocumentJobHandler = async () => {
       .leftJoin("Blob as PublishedBlob", "PublishedBlob.id", "Version.blobId")
       .leftJoin("Blob as DraftBlob", "DraftBlob.id", "Resource.draftBlobId")
       .where("PushDocumentJob.scheduledAt", "<=", scheduledAtCutoff)
-      .distinctOn("Resource.id")
-      .orderBy("Resource.id")
+      .orderBy("PushDocumentJob.scheduledAt")
+      .orderBy("PushDocumentJob.id")
+      .limit(BATCH_SIZE)
       .select([
         (eb) =>
           eb.fn
@@ -198,6 +204,7 @@ export const schedulePushDocumentJobHandler = async () => {
         "Resource.parentId",
         "PushDocumentJob.id as jobId",
         "PushDocumentJob.scheduledAt",
+        "PushDocumentJob.attempts",
       ])
       .execute()
 
@@ -207,11 +214,17 @@ export const schedulePushDocumentJobHandler = async () => {
         async ({
           jobId,
           scheduledAt,
+          attempts,
           resourceId,
           title,
           parentId,
           content,
         }) => {
+          const job = {
+            jobId,
+            scheduledAt,
+            attempts: attempts ?? 0,
+          }
           try {
             const extracted = await extractResourceData({
               resourceId,
@@ -219,14 +232,13 @@ export const schedulePushDocumentJobHandler = async () => {
               title,
               content,
             })
-            if (extracted === null) return null
+            if (extracted === null) return { job, document: null }
 
             const { ref, pdfTextContent, subcategoryLabel, parsedPage } =
               extracted
 
             return {
-              jobId,
-              scheduledAt,
+              job,
               document: {
                 // SearchSG dedupes on documentId, so derive a stable id from the
                 // S3 key + resourceId. Re-uploads of the same key produce the
@@ -242,20 +254,33 @@ export const schedulePushDocumentJobHandler = async () => {
             }
           } catch (error) {
             logger.error({ error, resourceId }, "Failed to process document")
-            return null
+            return { job, document: null }
           }
         },
       )
 
       const resolvedDocuments = await Promise.all(documentPromises)
       const processedDocuments = resolvedDocuments.filter(
-        (result): result is ProcessedJob & { document: PushDocument } =>
-          result !== null,
+        (result): result is { job: ProcessedJob; document: PushDocument } =>
+          result.document !== null,
       )
       const documents = processedDocuments.map(({ document }) => document)
+      const failedJobs = resolvedDocuments
+        .filter(({ document }) => document === null)
+        .map(({ job }) => job)
 
-      await pushDocumentsForIngestion(documents)
-      await deleteProcessedJobs(processedDocuments)
+      await recordFailedJobs(failedJobs)
+      try {
+        await pushDocumentsForIngestion(documents)
+      } catch (error) {
+        logger.error(
+          { error, count: processedDocuments.length },
+          "Failed to push SearchSG document batch",
+        )
+        await recordFailedJobs(processedDocuments.map(({ job }) => job))
+        return
+      }
+      await deleteProcessedJobs(processedDocuments.map(({ job }) => job))
       logger.info(
         { count: documents.length, documents },
         "Completed schedule push document job (SearchSG)",
@@ -271,11 +296,18 @@ export const schedulePushDocumentJobHandler = async () => {
       for (const {
         jobId,
         scheduledAt,
+        attempts,
         resourceId,
         title,
         parentId,
         content,
       } of scheduledResources) {
+        const job = {
+          jobId,
+          scheduledAt,
+          attempts: attempts ?? 0,
+        }
+        let succeeded = false
         try {
           const extracted = await extractResourceData({
             resourceId,
@@ -283,7 +315,9 @@ export const schedulePushDocumentJobHandler = async () => {
             title,
             content,
           })
-          if (extracted === null) continue
+          if (extracted === null) {
+            continue
+          }
 
           const {
             objectGroup,
@@ -313,7 +347,8 @@ export const schedulePushDocumentJobHandler = async () => {
           }
 
           await saveObjectsToSearchIndex(records)
-          processedJobs.push({ jobId, scheduledAt })
+          processedJobs.push(job)
+          succeeded = true
           savedCount++
           logger.info({ resourceId, count: records.length }, "Saved to Algolia")
         } catch (error) {
@@ -321,6 +356,10 @@ export const schedulePushDocumentJobHandler = async () => {
             { error, resourceId },
             "Failed to process document for Algolia",
           )
+        } finally {
+          if (!succeeded) {
+            await recordFailedJobs([job])
+          }
         }
       }
 
@@ -340,14 +379,64 @@ const deleteProcessedJobs = async (jobs: ProcessedJob[]) => {
 
   // A user can reschedule the same row while external ingestion is in flight.
   // Match the selected timestamp as well as the id so the updated job survives.
-  await db
-    .deleteFrom("PushDocumentJob")
-    .where((eb) =>
-      eb.or(
-        jobs.map(({ jobId, scheduledAt }) =>
-          eb.and([eb("id", "=", jobId), eb("scheduledAt", "=", scheduledAt)]),
+  for (let offset = 0; offset < jobs.length; offset += BATCH_SIZE) {
+    const batch = jobs.slice(offset, offset + BATCH_SIZE)
+    await db
+      .deleteFrom("PushDocumentJob")
+      .where((eb) =>
+        eb.or(
+          batch.map(({ jobId, scheduledAt }) =>
+            eb.and([eb("id", "=", jobId), eb("scheduledAt", "=", scheduledAt)]),
+          ),
         ),
-      ),
+      )
+      .execute()
+  }
+}
+
+const recordFailedJobs = async (jobs: ProcessedJob[]) => {
+  if (jobs.length === 0) return
+
+  const exhaustedJobs: ProcessedJob[] = []
+  const retryableJobsByAttempt = new Map<number, ProcessedJob[]>()
+
+  for (const job of jobs) {
+    const nextAttempt = job.attempts + 1
+    if (nextAttempt >= MAX_ATTEMPTS) {
+      exhaustedJobs.push(job)
+      continue
+    }
+
+    const retryableJobs = retryableJobsByAttempt.get(nextAttempt) ?? []
+    retryableJobs.push(job)
+    retryableJobsByAttempt.set(nextAttempt, retryableJobs)
+  }
+
+  for (const [attempts, retryableJobs] of retryableJobsByAttempt) {
+    for (let offset = 0; offset < retryableJobs.length; offset += BATCH_SIZE) {
+      const batch = retryableJobs.slice(offset, offset + BATCH_SIZE)
+      await db
+        .updateTable("PushDocumentJob")
+        .set({ attempts, updatedAt: new Date() })
+        .where((eb) =>
+          eb.or(
+            batch.map(({ jobId, scheduledAt }) =>
+              eb.and([
+                eb("id", "=", jobId),
+                eb("scheduledAt", "=", scheduledAt),
+              ]),
+            ),
+          ),
+        )
+        .execute()
+    }
+  }
+
+  if (exhaustedJobs.length > 0) {
+    logger.error(
+      { jobIds: exhaustedJobs.map(({ jobId }) => jobId) },
+      "Dropping document ingestion jobs after maximum attempts",
     )
-    .execute()
+    await deleteProcessedJobs(exhaustedJobs)
+  }
 }
