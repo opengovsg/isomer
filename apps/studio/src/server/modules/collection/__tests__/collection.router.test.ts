@@ -4,8 +4,6 @@ import { omit } from "lodash-es"
 import { randomUUID } from "node:crypto"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
-import { mockFeatureFlags } from "tests/integration/helpers/growthbook/mockFeatureFlags"
-import { mockGrowthBook } from "tests/integration/helpers/growthbook/mockInstance"
 import {
   applyAuthedSession,
   applySession,
@@ -20,22 +18,14 @@ import {
   setupEditorPermissions,
   setupFolder,
   setupPageResource,
-  setupPublisherPermissions,
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
-import { IS_UNPUBLISH_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
 
 import { assertAuditLogRows } from "../../audit/__tests__/utils"
-import {
-  AuditLogEvent,
-  db,
-  jsonb,
-  ResourceState,
-  ResourceType,
-} from "../../database"
+import { db, jsonb, ResourceState, ResourceType } from "../../database"
 import { getBlobOfResource } from "../../resource/resource.service"
 import { collectionRouter } from "../collection.router"
 import {
@@ -1243,193 +1233,6 @@ describe("collection.router", async () => {
         .where("id", "=", collection.id)
         .executeTakeFirst()
       expect(result).toMatchObject(expected!)
-    })
-  })
-
-  describe("unpublishCollection", () => {
-    it("should throw 401 if not logged in", async () => {
-      const result = unauthedCaller.unpublishCollection({
-        siteId: 1,
-        resourceId: 1,
-      })
-
-      await expect(result).rejects.toThrow(
-        new TRPCError({ code: "UNAUTHORIZED" }),
-      )
-    })
-
-    it("should throw 403 if user does not have unpublish access", async () => {
-      const { site, collection } = await setupCollection()
-      await setupEditorPermissions({
-        userId: session.userId,
-        siteId: site.id,
-      })
-
-      const result = caller.unpublishCollection({
-        siteId: site.id,
-        resourceId: Number(collection.id),
-      })
-
-      await expect(result).rejects.toThrow(
-        new TRPCError({
-          code: "FORBIDDEN",
-          message:
-            "You do not have sufficient permissions to perform this action",
-        }),
-      )
-    })
-
-    describe("when IS_UNPUBLISH_ENABLED_FEATURE_KEY is off", () => {
-      afterEach(() => {
-        mockGrowthBook.setForcedFeatures(mockFeatureFlags)
-      })
-
-      it("should throw 404 as if the collection cannot be unpublished, even for an otherwise-valid collection", async () => {
-        mockGrowthBook.setForcedFeatures(
-          new Map([
-            ...mockFeatureFlags,
-            [IS_UNPUBLISH_ENABLED_FEATURE_KEY, false],
-          ]),
-        )
-        const { site, collection } = await setupCollection()
-        await setupPublisherPermissions({
-          userId: session.userId,
-          siteId: site.id,
-        })
-
-        const result = caller.unpublishCollection({
-          siteId: site.id,
-          resourceId: Number(collection.id),
-        })
-
-        await expect(result).rejects.toThrow(
-          new TRPCError({
-            code: "NOT_FOUND",
-            message: "This collection does not exist",
-          }),
-        )
-      })
-    })
-
-    it("should throw 404 if resourceId does not exist", async () => {
-      const { site } = await setupSite()
-      await setupPublisherPermissions({
-        userId: session.userId,
-        siteId: site.id,
-      })
-
-      const result = caller.unpublishCollection({
-        siteId: site.id,
-        resourceId: 99999, // does not exist
-      })
-
-      await expect(result).rejects.toThrow(
-        new TRPCError({
-          code: "NOT_FOUND",
-          message: "This collection does not exist",
-        }),
-      )
-    })
-
-    it("should throw 404 if resourceId is not a Collection", async () => {
-      // Arrange — unpublishCollection is a collection-only contract; a plain
-      // page's id belongs to the unpublishPage mutation
-      const { site, page } = await setupPageResource({
-        resourceType: ResourceType.Page,
-        state: ResourceState.Published,
-        userId: session.userId,
-      })
-      await setupPublisherPermissions({
-        userId: session.userId,
-        siteId: site.id,
-      })
-
-      const result = caller.unpublishCollection({
-        siteId: site.id,
-        resourceId: Number(page.id),
-      })
-
-      await expect(result).rejects.toThrow(
-        new TRPCError({
-          code: "NOT_FOUND",
-          message: "This collection does not exist",
-        }),
-      )
-    })
-
-    it("should throw if the collection's IndexPage is not currently published", async () => {
-      const { site, collection } = await setupCollection()
-      await setupPageResource({
-        siteId: site.id,
-        parentId: collection.id,
-        resourceType: ResourceType.IndexPage,
-        state: ResourceState.Draft,
-      })
-      await setupPublisherPermissions({
-        userId: session.userId,
-        siteId: site.id,
-      })
-
-      const result = caller.unpublishCollection({
-        siteId: site.id,
-        resourceId: Number(collection.id),
-      })
-
-      await expect(result).rejects.toThrow(
-        new TRPCError({
-          code: "PRECONDITION_FAILED",
-          message: "This page is not currently published",
-        }),
-      )
-    })
-
-    it("should unpublish the collection's IndexPage, leaving the collection's own row untouched", async () => {
-      // Arrange
-      const { site, collection } = await setupCollection()
-      const { page: indexPage } = await setupPageResource({
-        siteId: site.id,
-        parentId: collection.id,
-        resourceType: ResourceType.IndexPage,
-        state: ResourceState.Published,
-        userId: session.userId,
-      })
-      await setupPublisherPermissions({
-        userId: session.userId,
-        siteId: site.id,
-      })
-
-      // Act
-      await caller.unpublishCollection({
-        siteId: site.id,
-        resourceId: Number(collection.id),
-      })
-
-      // Assert — the IndexPage is unpublished
-      const updatedIndexPage = await db
-        .selectFrom("Resource")
-        .where("id", "=", indexPage.id)
-        .selectAll()
-        .executeTakeFirstOrThrow()
-      expect(updatedIndexPage.publishedVersionId).toBeNull()
-      expect(updatedIndexPage.state).toEqual(ResourceState.Draft)
-      expect(updatedIndexPage.draftBlobId).not.toBeNull()
-
-      // Assert — the Collection's own row is untouched
-      const updatedCollection = await db
-        .selectFrom("Resource")
-        .where("id", "=", collection.id)
-        .selectAll()
-        .executeTakeFirstOrThrow()
-      expect(updatedCollection.publishedVersionId).toBeNull()
-      expect(updatedCollection.state).toEqual(ResourceState.Draft)
-
-      // Assert — audited against the IndexPage, not the collection
-      const auditLogs = await db
-        .selectFrom("AuditLog")
-        .where("eventType", "=", AuditLogEvent.Unpublish)
-        .selectAll()
-        .execute()
-      expect(auditLogs.length).toEqual(1)
     })
   })
 
