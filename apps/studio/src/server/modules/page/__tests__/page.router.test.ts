@@ -2551,6 +2551,139 @@ describe("page.router", async () => {
       expect(updatedFolder.state).toEqual(ResourceState.Draft)
     })
 
+    it("should throw if a sibling page inside the Folder is still published", async () => {
+      // Arrange — the Folder's IndexPage is live, but so is a sibling Page
+      // directly under the same Folder; unpublishing the landing page would
+      // otherwise leave that sibling reachable with no live IndexPage above it
+      const { site, folder } = await setupFolder({})
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      const { page: siblingPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.Page,
+        permalink: "sibling-page",
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.unpublishPage({
+        siteId: site.id,
+        pageId: Number(folder.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message:
+            "This folder or collection has other live pages inside it — unpublish them before unpublishing its landing page",
+        }),
+      )
+      const actualSiblingPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", siblingPage.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(actualSiblingPage.publishedVersionId).not.toBeNull()
+    })
+
+    it("should throw if a live page is nested inside a subfolder of the Folder", async () => {
+      // Arrange — the live descendant is two levels down, not a direct child
+      const { site, folder } = await setupFolder({})
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      const { folder: subfolder } = await setupFolder({
+        siteId: site.id,
+        parentId: folder.id,
+        permalink: "subfolder",
+      })
+      const { page: nestedPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: subfolder.id,
+        resourceType: ResourceType.Page,
+        permalink: "nested-page",
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.unpublishPage({
+        siteId: site.id,
+        pageId: Number(folder.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message:
+            "This folder or collection has other live pages inside it — unpublish them before unpublishing its landing page",
+        }),
+      )
+      const actualNestedPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", nestedPage.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(actualNestedPage.publishedVersionId).not.toBeNull()
+    })
+
+    it("should unpublish a Folder's IndexPage when a sibling page exists but is not live", async () => {
+      // Arrange — a sibling Page exists but was never published, so it
+      // shouldn't count against the landing-page unpublish guard
+      const { site, folder } = await setupFolder({})
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.Page,
+        permalink: "draft-sibling-page",
+        state: ResourceState.Draft,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.unpublishPage({ siteId: site.id, pageId: Number(folder.id) })
+
+      // Assert
+      const updatedIndexPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", indexPage.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updatedIndexPage.publishedVersionId).toBeNull()
+      expect(updatedIndexPage.state).toEqual(ResourceState.Draft)
+    })
+
     it("should throw if a Collection's IndexPage is not currently published", async () => {
       // Arrange — same resolve-to-child-IndexPage behaviour as Folder
       const { site, collection } = await setupCollection()
@@ -2619,6 +2752,51 @@ describe("page.router", async () => {
         .executeTakeFirstOrThrow()
       expect(updatedCollection.publishedVersionId).toBeNull()
       expect(updatedCollection.state).toEqual(ResourceState.Draft)
+    })
+
+    it("should throw if a sibling page inside the Collection is still published", async () => {
+      // Arrange — same resolve-to-child-IndexPage behaviour as Folder
+      const { site, collection } = await setupCollection()
+      await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      const { page: siblingPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.CollectionPage,
+        permalink: "sibling-collection-page",
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.unpublishPage({
+        siteId: site.id,
+        pageId: Number(collection.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message:
+            "This folder or collection has other live pages inside it — unpublish them before unpublishing its landing page",
+        }),
+      )
+      const actualSiblingPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", siblingPage.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(actualSiblingPage.publishedVersionId).not.toBeNull()
     })
 
     it.each([

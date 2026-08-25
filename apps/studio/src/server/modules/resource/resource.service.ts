@@ -1438,6 +1438,32 @@ export const unpublishPageResource = async ({
       })
     }
 
+    // fullResource is an IndexPage whenever `resourceId` was (or resolved to)
+    // a Folder/Collection's landing page — mirroring the delete guard in
+    // resource.router.ts, unpublishing it is blocked while any other page in
+    // its container's subtree is still live, since that would otherwise leave
+    // live pages hanging off a container with no live landing page. Reuses
+    // getPublishedDescendantResourceIds (already walks the container's whole
+    // subtree, e.g. nested subfolders) and filters out fullResource's own id,
+    // which is still published at this point in the transaction and would
+    // otherwise always trip the check.
+    if (fullResource.type === ResourceType.IndexPage && fullResource.parentId) {
+      const publishedDescendantIds = (
+        await getPublishedDescendantResourceIds(tx, {
+          siteId,
+          resourceId: fullResource.parentId,
+        })
+      ).filter((id) => id !== fullResource.id)
+
+      if (publishedDescendantIds.length > 0) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message:
+            "This folder or collection has other live pages inside it — unpublish them before unpublishing its landing page",
+        })
+      }
+    }
+
     const previousVersionId = fullResource.publishedVersionId
 
     let draftBlobId = fullResource.draftBlobId
