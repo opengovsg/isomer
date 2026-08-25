@@ -47,40 +47,11 @@ describe("createAuditLogExportRequestSchema", () => {
       },
     )
 
-    it("should accept the current Singapore month (in window)", () => {
-      // Arrange / Act
-      const result = createAuditLogExportRequestSchema.safeParse({
-        ...VALID_INPUT,
-        month: CURRENT_MONTH,
-      })
-
-      // Assert
-      expect(result.success).toBe(true)
-    })
-
-    it("should accept the earliest month in the window", () => {
-      // Arrange / Act
-      const result = createAuditLogExportRequestSchema.safeParse({
-        ...VALID_INPUT,
-        month: getEarliestExportableMonth(CURRENT_MONTH),
-      })
-
-      // Assert
-      expect(result.success).toBe(true)
-    })
-
-    it("should reject a month in the future", () => {
-      // Arrange / Act
-      const result = createAuditLogExportRequestSchema.safeParse({
-        ...VALID_INPUT,
-        month: "2999-12",
-      })
-
-      // Assert
-      expect(result.success).toBe(false)
-    })
-
-    it("should reject a month older than the 12-month window", () => {
+    // The future/past-year window is not enforced on the plain object schema
+    // at all — only on `createAuditLogExportRequestServerSchema`, and only
+    // for Activity exports (see that describe block below) — so a
+    // well-formed but out-of-window month still parses here.
+    it("should accept a well-formed month regardless of the export window", () => {
       // Arrange / Act
       const result = createAuditLogExportRequestSchema.safeParse({
         ...VALID_INPUT,
@@ -88,7 +59,7 @@ describe("createAuditLogExportRequestSchema", () => {
       })
 
       // Assert
-      expect(result.success).toBe(false)
+      expect(result.success).toBe(true)
     })
   })
 
@@ -205,6 +176,76 @@ describe("createAuditLogExportRequestSchema", () => {
 
       // Assert
       expect(result.success).toBe(true)
+    })
+
+    // The future/past-year window is enforced here (not on the plain object
+    // schema) and only for Activity — an Access export always uses the
+    // server's current month regardless of what's submitted (see
+    // `resolveAuditLogDateRange`), so bounding it would reject an otherwise-
+    // fine request over a discarded value (e.g. browser clock skew nudging
+    // it into "next month").
+    describe("month window", () => {
+      it("accepts the current Singapore month for an Activity export", () => {
+        // Arrange / Act
+        const result = createAuditLogExportRequestServerSchema.safeParse({
+          ...VALID_INPUT,
+          month: CURRENT_MONTH,
+        })
+
+        // Assert
+        expect(result.success).toBe(true)
+      })
+
+      it("accepts the earliest month in the window for an Activity export", () => {
+        // Arrange / Act
+        const result = createAuditLogExportRequestServerSchema.safeParse({
+          ...VALID_INPUT,
+          month: getEarliestExportableMonth(CURRENT_MONTH),
+        })
+
+        // Assert
+        expect(result.success).toBe(true)
+      })
+
+      it("rejects a future month for an Activity export", () => {
+        // Arrange / Act
+        const result = createAuditLogExportRequestServerSchema.safeParse({
+          ...VALID_INPUT,
+          month: "2999-12",
+        })
+
+        // Assert
+        expect(result.success).toBe(false)
+      })
+
+      it("rejects a month older than the 12-month window for an Activity export", () => {
+        // Arrange / Act
+        const result = createAuditLogExportRequestServerSchema.safeParse({
+          ...VALID_INPUT,
+          month: "2000-01",
+        })
+
+        // Assert
+        expect(result.success).toBe(false)
+      })
+
+      it("accepts a future or out-of-window month for an Access export", () => {
+        // Arrange / Act
+        const future = createAuditLogExportRequestServerSchema.safeParse({
+          ...VALID_INPUT,
+          reportType: AuditLogExportRequestedReportType.Access,
+          month: "2999-12",
+        })
+        const tooOld = createAuditLogExportRequestServerSchema.safeParse({
+          ...VALID_INPUT,
+          reportType: AuditLogExportRequestedReportType.Access,
+          month: "2000-01",
+        })
+
+        // Assert
+        expect(future.success).toBe(true)
+        expect(tooOld.success).toBe(true)
+      })
     })
   })
 

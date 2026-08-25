@@ -73,6 +73,18 @@ const resolveAuditLogDateRange = (
   month: CreateAuditLogExportRequestFields["month"],
   reportType: CreateAuditLogExportRequestFields["reportType"],
 ): string => {
+  const now = new Date()
+
+  // An Access export always covers the server's current month regardless of
+  // what was submitted, so validating the submitted month's window here
+  // would reject an otherwise-fine request over a value that's discarded
+  // anyway (e.g. browser clock skew nudging it into "next month"). The
+  // schema-level check (createAuditLogExportRequestServerSchema) is likewise
+  // scoped to Activity only.
+  if (reportType === AuditLogExportReportType.Access) {
+    return getMonthDateRange(getCurrentSingaporeMonth(), now)
+  }
+
   const futureMonthCheck = validateIsNotFutureMonth(month)
   const possibleError =
     futureMonthCheck !== true
@@ -86,10 +98,7 @@ const resolveAuditLogDateRange = (
     })
   }
 
-  const now = new Date()
-  return reportType === AuditLogExportReportType.Access
-    ? getMonthDateRange(getCurrentSingaporeMonth(), now)
-    : getMonthDateRange(month, now)
+  return getMonthDateRange(month, now)
 }
 
 // Create one audit-log export request per site this ask covers (already

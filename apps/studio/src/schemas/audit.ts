@@ -163,28 +163,17 @@ export const createAuditLogExportRequestSchema = z.object({
         .positive({ message: "Select a valid site" }),
     )
     .optional(),
+  // The future/past-year window is enforced below, on
+  // `createAuditLogExportRequestServerSchema`, scoped to Activity exports
+  // only — an Access export always uses the server's current month
+  // regardless of what's submitted here (see `resolveAuditLogDateRange`), so
+  // bounding this field unconditionally would reject an otherwise-fine
+  // Access request over nothing more than browser clock skew.
   month: z
     .string()
     .regex(MONTH_REGEX, {
       message: "Enter a month in the format YYYY-MM, e.g. 2026-03",
     })
-    .refine(
-      (month) => {
-        const possibleError = validateIsNotFutureMonth(month)
-        return possibleError === true
-      },
-      {
-        message:
-          "You cannot export audit logs for a month that is in the future",
-      },
-    )
-    .refine(
-      (month) => {
-        const possibleError = validateIsMonthInPastYear(month)
-        return possibleError === true
-      },
-      { message: "You can only export audit logs from the past 12 months" },
-    )
     // The regex above guarantees the shape at runtime; narrow the inferred
     // output from `string` to `IsoMonth` so consumers get the real type.
     .transform((month) => month as IsoMonth),
@@ -198,11 +187,35 @@ export const createAuditLogExportRequestSchema = z.object({
 // `.omit()`/`.extend()`, e.g. features/settings/AuditLogExport/schema.ts)
 // because `.refine()` no longer returns an object schema.
 export const createAuditLogExportRequestServerSchema =
-  createAuditLogExportRequestSchema.refine(
-    (input) =>
-      input.scope !== AuditLogExportScope.Site || input.siteId !== undefined,
-    { message: "Select a valid site", path: ["siteId"] },
-  )
+  createAuditLogExportRequestSchema
+    .refine(
+      (input) =>
+        input.scope !== AuditLogExportScope.Site || input.siteId !== undefined,
+      { message: "Select a valid site", path: ["siteId"] },
+    )
+    // Scoped to Activity: an Access export always uses the server's current
+    // month regardless of what's submitted (see `resolveAuditLogDateRange`),
+    // so this window check must not apply to it — see the `month` field's
+    // comment above.
+    .refine(
+      (input) =>
+        input.reportType !== AuditLogExportRequestedReportType.Activity ||
+        validateIsNotFutureMonth(input.month) === true,
+      {
+        message:
+          "You cannot export audit logs for a month that is in the future",
+        path: ["month"],
+      },
+    )
+    .refine(
+      (input) =>
+        input.reportType !== AuditLogExportRequestedReportType.Activity ||
+        validateIsMonthInPastYear(input.month) === true,
+      {
+        message: "You can only export audit logs from the past 12 months",
+        path: ["month"],
+      },
+    )
 
 export type CreateAuditLogExportRequestInput = z.infer<
   typeof createAuditLogExportRequestSchema
