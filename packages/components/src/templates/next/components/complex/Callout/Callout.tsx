@@ -47,7 +47,7 @@ const calloutStyles = tv({
         icon: "text-utility-feedback-alert",
       },
       note: {
-        container: "border-base-divider-medium bg-[#EEF0F3]",
+        container: "border-base-divider-medium bg-base-canvas-backdrop",
       },
     },
     hasIcon: {
