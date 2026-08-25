@@ -62,12 +62,36 @@ export const auditRouter = router({
         siteIds = await getAdminSiteIds(ctx.user.id)
       }
 
-      return createAuditLogExportRequestsForSites({
-        siteIds,
-        userId: ctx.user.id,
-        month,
-        reportType,
-        ip: getIP(ctx.req),
-      })
+      try {
+        return await createAuditLogExportRequestsForSites({
+          siteIds,
+          userId: ctx.user.id,
+          month,
+          reportType,
+          ip: getIP(ctx.req),
+        })
+      } catch (error) {
+        // Permission / validation failures are already typed TRPCErrors with
+        // safe, user-facing messages — let them through. (Duplicate asks no
+        // longer error: they are accepted idempotently by the service.)
+        if (error instanceof TRPCError) {
+          throw error
+        }
+
+        // Anything else (e.g. a DB error) may leak request internals; log it
+        // with the request context and surface a generic error to the client.
+        ctx.logger.error({
+          error,
+          message: "Failed to create audit log export request",
+          scope,
+          siteCount: siteIds.length,
+          month,
+          reportType,
+        })
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to create audit log export request",
+        })
+      }
     }),
 })
