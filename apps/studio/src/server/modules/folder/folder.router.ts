@@ -1,18 +1,13 @@
 import { TRPCError } from "@trpc/server"
 import { get, pick } from "lodash-es"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
-import {
-  ENABLE_CODEBUILD_JOBS,
-  IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY,
-  IS_UNPUBLISH_ENABLED_FEATURE_KEY,
-} from "~/lib/growthbook"
+import { IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import {
   createFolderSchema,
   editFolderSchema,
   getIndexpageSchema,
   listChildPagesSchema,
   readFolderSchema,
-  unpublishFolderSchema,
 } from "~/schemas/folder"
 import { protectedProcedure, router } from "~/server/trpc"
 
@@ -30,10 +25,8 @@ import { bulkValidateUserPermissionsForResources } from "../permissions/permissi
 import { applyFolderPermalinkChangeRedirects } from "../redirect/redirect.service"
 import {
   getResourceFullPermalink,
-  getSiteResourceById,
   hasPublishedDescendant,
   publishResource,
-  unpublishPageResource,
 } from "../resource/resource.service"
 import { defaultFolderSelect } from "./folder.select"
 
@@ -208,52 +201,6 @@ export const folderRouter = router({
 
       return data
     }),
-  unpublishFolder: protectedProcedure
-    .input(unpublishFolderSchema)
-    .mutation(
-      async ({ ctx: { user, gb, logger }, input: { siteId, resourceId } }) => {
-        await bulkValidateUserPermissionsForResources({
-          siteId,
-          action: "unpublish",
-          userId: user.id,
-        })
-
-        // Dark-launched: same NOT_FOUND as the not-found check below, so a
-        // caller can't distinguish "flag off" from "folder doesn't exist".
-        if (!gb.isOn(IS_UNPUBLISH_ENABLED_FEATURE_KEY)) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "This folder does not exist",
-          })
-        }
-
-        // Reject non-Folder ids so this endpoint can't be used to unpublish
-        // an arbitrary page under a folder-only contract (getFullPageById
-        // would otherwise operate on whatever resource id it's given).
-        const folder = await getSiteResourceById({
-          siteId,
-          resourceId: String(resourceId),
-          type: ResourceType.Folder,
-        })
-
-        if (!folder) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "This folder does not exist",
-          })
-        }
-
-        await unpublishPageResource({
-          logger,
-          siteId,
-          resourceId: String(resourceId),
-          userId: user.id,
-          sitePublish: {
-            enableCodebuildJobs: gb.isOn(ENABLE_CODEBUILD_JOBS),
-          },
-        })
-      },
-    ),
   editFolder: protectedProcedure
     .input(editFolderSchema)
     .mutation(

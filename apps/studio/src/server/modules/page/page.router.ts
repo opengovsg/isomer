@@ -12,7 +12,7 @@ import {
 import { TRPCError } from "@trpc/server"
 import { format, isBefore } from "date-fns"
 import { get, isEmpty, isEqual, pick } from "lodash-es"
-import { UNPUBLISHABLE_RESOURCE_TYPES } from "~/constants/resources"
+import { UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS } from "~/constants/resources"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   sendCancelSchedulePageEmail,
@@ -698,16 +698,20 @@ export const pageRouter = router({
           })
         }
 
-        // Allow-list rather than deny-list: only UNPUBLISHABLE_RESOURCE_TYPES
-        // are real, independently unpublishable content pages — see that
-        // constant for why Folder/Collection/FolderMeta/CollectionMeta/
-        // RootPage are excluded (Folder/Collection ids belong to the
-        // dedicated unpublishFolder/unpublishCollection mutations instead).
+        // Allow-list rather than deny-list: unpublishPage accepts Page-like
+        // types plus Folder/Collection (which unpublishPageResource resolves
+        // to their child IndexPage) — see
+        // UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS for why FolderMeta/
+        // CollectionMeta/RootPage are excluded.
         const page = await db
           .selectFrom("Resource")
           .where("Resource.id", "=", String(pageId))
           .where("Resource.siteId", "=", siteId)
-          .where("Resource.type", "in", UNPUBLISHABLE_RESOURCE_TYPES)
+          .where(
+            "Resource.type",
+            "in",
+            UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS,
+          )
           .select("Resource.id")
           .executeTakeFirst()
 

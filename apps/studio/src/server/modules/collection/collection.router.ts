@@ -3,10 +3,6 @@ import { TRPCError } from "@trpc/server"
 import { get, pick } from "lodash-es"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
-  ENABLE_CODEBUILD_JOBS,
-  IS_UNPUBLISH_ENABLED_FEATURE_KEY,
-} from "~/lib/growthbook"
-import {
   countTagOptionsUsageSchema,
   createCollectionSchema,
   editLinkSchema,
@@ -14,7 +10,6 @@ import {
   getCollectionTagsSchema,
   readCollectionSchema,
   readLinkSchema,
-  unpublishCollectionSchema,
 } from "~/schemas/collection"
 import { readFolderSchema } from "~/schemas/folder"
 import { createCollectionPageSchema } from "~/schemas/page"
@@ -37,7 +32,6 @@ import {
   getBlobOfResource,
   getSiteResourceById,
   publishResource,
-  unpublishPageResource,
   updateBlobById,
 } from "../resource/resource.service"
 import { validateUserPermissionsForSite } from "../site/site.service"
@@ -72,53 +66,6 @@ export const collectionRouter = router({
       }
       return resource
     }),
-  unpublishCollection: protectedProcedure
-    .input(unpublishCollectionSchema)
-    .mutation(
-      async ({ ctx: { user, gb, logger }, input: { siteId, resourceId } }) => {
-        await bulkValidateUserPermissionsForResources({
-          siteId,
-          action: "unpublish",
-          userId: user.id,
-        })
-
-        // Dark-launched: same NOT_FOUND as the not-found check below, so a
-        // caller can't distinguish "flag off" from "collection doesn't exist".
-        if (!gb.isOn(IS_UNPUBLISH_ENABLED_FEATURE_KEY)) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "This collection does not exist",
-          })
-        }
-
-        // Reject non-Collection ids so this endpoint can't be used to
-        // unpublish an arbitrary page under a collection-only contract
-        // (getFullPageById would otherwise operate on whatever resource id
-        // it's given).
-        const collection = await getSiteResourceById({
-          siteId,
-          resourceId: String(resourceId),
-          type: ResourceType.Collection,
-        })
-
-        if (!collection) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "This collection does not exist",
-          })
-        }
-
-        await unpublishPageResource({
-          logger,
-          siteId,
-          resourceId: String(resourceId),
-          userId: user.id,
-          sitePublish: {
-            enableCodebuildJobs: gb.isOn(ENABLE_CODEBUILD_JOBS),
-          },
-        })
-      },
-    ),
   create: protectedProcedure
     .input(createCollectionSchema)
     .mutation(

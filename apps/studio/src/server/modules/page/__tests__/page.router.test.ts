@@ -2482,16 +2482,15 @@ describe("page.router", async () => {
       )
     })
 
-    it("should throw 404 if pageId refers to a Folder", async () => {
-      // Arrange — unpublishPage is a page-only contract; Folder ids belong
-      // to the dedicated unpublishFolder mutation
+    it("should throw if a Folder's IndexPage is not currently published", async () => {
+      // Arrange — a Folder has no content of its own; unpublishPage resolves
+      // its id to the child IndexPage, so the precondition check applies there
       const { site, folder } = await setupFolder({})
       await setupPageResource({
         siteId: site.id,
         parentId: folder.id,
         resourceType: ResourceType.IndexPage,
-        state: ResourceState.Published,
-        userId: session.userId ?? undefined,
+        state: ResourceState.Draft,
       })
       await setupPublisherPermissions({
         userId: session.userId ?? undefined,
@@ -2507,16 +2506,60 @@ describe("page.router", async () => {
       // Assert
       await expect(result).rejects.toThrow(
         new TRPCError({
-          code: "NOT_FOUND",
-          message: "This page either does not exist or cannot be unpublished",
+          code: "PRECONDITION_FAILED",
+          message: "This page is not currently published",
         }),
       )
     })
 
-    it("should throw 404 if pageId refers to a Collection", async () => {
-      // Arrange — unpublishPage is a page-only contract; Collection ids
-      // belong to the dedicated unpublishCollection mutation
+    it("should unpublish a Folder's IndexPage, leaving the Folder's own row untouched", async () => {
+      // Arrange
+      const { site, folder } = await setupFolder({})
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.unpublishPage({ siteId: site.id, pageId: Number(folder.id) })
+
+      // Assert — the IndexPage is unpublished
+      const updatedIndexPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", indexPage.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updatedIndexPage.publishedVersionId).toBeNull()
+      expect(updatedIndexPage.state).toEqual(ResourceState.Draft)
+      expect(updatedIndexPage.draftBlobId).not.toBeNull()
+
+      // Assert — the Folder's own row is untouched (it never had a
+      // publishedVersionId to begin with)
+      const updatedFolder = await db
+        .selectFrom("Resource")
+        .where("id", "=", folder.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updatedFolder.publishedVersionId).toBeNull()
+      expect(updatedFolder.state).toEqual(ResourceState.Draft)
+    })
+
+    it("should throw if a Collection's IndexPage is not currently published", async () => {
+      // Arrange — same resolve-to-child-IndexPage behaviour as Folder
       const { site, collection } = await setupCollection()
+      await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Draft,
+      })
       await setupPublisherPermissions({
         userId: session.userId ?? undefined,
         siteId: site.id,
@@ -2531,10 +2574,51 @@ describe("page.router", async () => {
       // Assert
       await expect(result).rejects.toThrow(
         new TRPCError({
-          code: "NOT_FOUND",
-          message: "This page either does not exist or cannot be unpublished",
+          code: "PRECONDITION_FAILED",
+          message: "This page is not currently published",
         }),
       )
+    })
+
+    it("should unpublish a Collection's IndexPage, leaving the Collection's own row untouched", async () => {
+      // Arrange
+      const { site, collection } = await setupCollection()
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.unpublishPage({
+        siteId: site.id,
+        pageId: Number(collection.id),
+      })
+
+      // Assert — the IndexPage is unpublished
+      const updatedIndexPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", indexPage.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updatedIndexPage.publishedVersionId).toBeNull()
+      expect(updatedIndexPage.state).toEqual(ResourceState.Draft)
+      expect(updatedIndexPage.draftBlobId).not.toBeNull()
+
+      // Assert — the Collection's own row is untouched
+      const updatedCollection = await db
+        .selectFrom("Resource")
+        .where("id", "=", collection.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updatedCollection.publishedVersionId).toBeNull()
+      expect(updatedCollection.state).toEqual(ResourceState.Draft)
     })
 
     it.each([
