@@ -1669,6 +1669,42 @@ describe("redirect.router", async () => {
       ])
     })
 
+    it("should warn for an unpublished page even when a page nested under it is published", async () => {
+      // Arrange — only a container is served by what it holds. A page renders
+      // at its own URL and nowhere else, so a published child at
+      // "/parent/child" does nothing for "/parent", which is still a draft.
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.RootPage,
+        parentId: null,
+      })
+      const { page: parent } = await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        parentId: null,
+        permalink: "parent",
+      })
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        parentId: parent.id,
+        permalink: "child",
+        state: ResourceState.Published,
+        userId,
+      })
+
+      // Act
+      const result = await caller.resolveReferences({
+        siteId,
+        references: ["/parent"],
+      })
+
+      // Assert
+      expect(result).toEqual([
+        { reference: "/parent", permalink: null, warn: true },
+      ])
+    })
+
     it("terminates for a folder whose subtree contains a parent-chain cycle", async () => {
       // Arrange — nothing creates a cycle today (moving a folder into its own
       // descendant is rejected), but a malformed chain must not be able to spin

@@ -144,21 +144,23 @@ const isContainerType = (type: ResourceType) =>
 // This is the question the source-shadowing guards ask — a redirect may only be
 // refused when a page really renders at that URL. It is deliberately NOT the
 // question the destination warning asks; see getDestinationLiveStateByResourceIds.
-const getPublishedStateByResourceIds = async (
-  siteId: number,
-  resourceIds: number[],
-): Promise<Map<number, boolean>> => {
-  const result = new Map<number, boolean>()
-  if (resourceIds.length === 0) {
-    return result
-  }
-  const ids = resourceIds.map(String)
-  const resources = await db
+const getResourcesForLiveness = async (siteId: number, resourceIds: number[]) =>
+  db
     .selectFrom("Resource")
     .where("Resource.siteId", "=", siteId)
-    .where("Resource.id", "in", ids)
+    .where("Resource.id", "in", resourceIds.map(String))
     .select(["Resource.id", "Resource.type", "Resource.publishedVersionId"])
     .execute()
+
+type ResourceForLiveness = Awaited<
+  ReturnType<typeof getResourcesForLiveness>
+>[number]
+
+const buildPublishedState = async (
+  siteId: number,
+  resources: ResourceForLiveness[],
+): Promise<Map<number, boolean>> => {
+  const result = new Map<number, boolean>()
 
   const containerIds = resources
     .filter((r) => isContainerType(r.type))
@@ -191,6 +193,19 @@ const getPublishedStateByResourceIds = async (
   return result
 }
 
+const getPublishedStateByResourceIds = async (
+  siteId: number,
+  resourceIds: number[],
+): Promise<Map<number, boolean>> => {
+  if (resourceIds.length === 0) {
+    return new Map()
+  }
+  return buildPublishedState(
+    siteId,
+    await getResourcesForLiveness(siteId, resourceIds),
+  )
+}
+
 // How many destination-liveness lookups may be in flight at once. Each is a
 // short-circuiting subtree existence check, so a small window keeps a single
 // request off the connection pool while still overlapping the round-trips.
@@ -210,18 +225,23 @@ const getDestinationLiveStateByResourceIds = async (
   siteId: number,
   resourceIds: number[],
 ): Promise<Map<number, boolean>> => {
-  const state = await getPublishedStateByResourceIds(siteId, resourceIds)
-  if (state.size === 0) {
-    return state
+  if (resourceIds.length === 0) {
+    return new Map()
   }
+  const resources = await getResourcesForLiveness(siteId, resourceIds)
+  const state = await buildPublishedState(siteId, resources)
 
-  // Only a resource the index-page check already ruled out can be revived by
-  // its contents, so this asks about the smallest set that could still change
-  // the answer — usually none. Non-containers are left in: a page has no
-  // children, so the check simply comes back false for them, and filtering
-  // them out first would cost a query to learn their types.
-  const undecidedIds = [...state.entries()].flatMap(([id, isLive]) =>
-    isLive ? [] : [id],
+  // Only a *container* is served by what it holds, so only a container can be
+  // revived by its contents. A page renders at its own URL and nowhere else —
+  // reviving it because something nested under it is published would suppress
+  // the warning for a draft page whose child lives at a different URL. Narrowed
+  // to the containers the index-page check already ruled out, which is the
+  // smallest set that could still change the answer — usually none. The types
+  // come from the fetch above, so this costs no extra query.
+  const undecidedContainerIds = resources.flatMap((resource) =>
+    isContainerType(resource.type) && !state.get(Number(resource.id))
+      ? [Number(resource.id)]
+      : [],
   )
 
   // A request may carry up to MAX_REDIRECT_REFERENCES destinations, and a
@@ -229,7 +249,10 @@ const getDestinationLiveStateByResourceIds = async (
   // resources. Run the lookups a few at a time so one request can't put its
   // whole batch on the connection pool at once — the table only ever has a
   // page's worth in flight, so this costs it nothing.
-  for (const batch of chunk(undecidedIds, LIVENESS_LOOKUP_CONCURRENCY)) {
+  for (const batch of chunk(
+    undecidedContainerIds,
+    LIVENESS_LOOKUP_CONCURRENCY,
+  )) {
     const revived = await Promise.all(
       batch.map(async (id) => ({
         id,
