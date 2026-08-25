@@ -9,7 +9,6 @@ import {
   type IsomerSitemap,
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
-import { format } from "date-fns"
 import chunk from "lodash-es/chunk"
 import get from "lodash-es/get"
 import {
@@ -52,7 +51,10 @@ import { db, jsonb, ResourceState, ResourceType, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { getUserById } from "../user/user.service"
 import { incrementVersion } from "../version/version.service"
-import { PageAlreadyUnpublishedError } from "./resource.error"
+import {
+  PageAlreadyUnpublishedError,
+  ScheduledActionConflictError,
+} from "./resource.error"
 import { type Page } from "./resource.types"
 import { tokenizeSearchQuery } from "./resource.utils"
 
@@ -1254,6 +1256,24 @@ export const publishPageResource = async ({
       })
     }
 
+    // A schedule pending in the opposite direction (unpublish) would conflict
+    // with publishing now, so block and make the caller cancel it first. A
+    // same-direction schedule (publish) isn't a conflict — this manual
+    // publish is just doing early what was already going to happen, so it
+    // proceeds and clears the now-redundant schedule below.
+    let clearsSchedule = false
+    if (fullResource.scheduledAt) {
+      const scheduledAction =
+        fullResource.scheduledAction ?? ScheduledAction.Publish
+      if (scheduledAction === ScheduledAction.Unpublish) {
+        throw new ScheduledActionConflictError(
+          "unpublished",
+          fullResource.scheduledAt,
+        )
+      }
+      clearsSchedule = true
+    }
+
     // Only the first publish needs the redirect handling below: the shadow
     // guard (re-publishing an already-live page is fine) and the reference
     // back-fill (a page that has published before was already back-filled). The
@@ -1290,6 +1310,19 @@ export const publishPageResource = async ({
         `No draft found for resource ${resourceId} in site ${siteId}. Publish aborted.`,
       )
       return
+    }
+
+    if (clearsSchedule) {
+      await updatePageById(
+        {
+          id: Number(resourceId),
+          siteId,
+          scheduledAt: null,
+          scheduledBy: null,
+          scheduledAction: null,
+        },
+        tx,
+      )
     }
 
     // Reference back-fill: a redirect created to this resource's URL before it
@@ -1449,21 +1482,22 @@ export const unpublishPageResource = async ({
       throw new PageAlreadyUnpublishedError()
     }
 
-    // A pending schedule (publish or unpublish) isn't cleared by manually
-    // unpublishing — the schedule cron (schedulePublishingJob.ts) only
-    // checks scheduledAt, not the page's current state, so it would still
-    // fire later and silently republish/re-unpublish this page out from
-    // under the caller. Make the caller cancel the schedule first.
+    // A schedule pending in the opposite direction (publish) would conflict
+    // with unpublishing now, so block and make the caller cancel it first.
+    // A same-direction schedule (unpublish) isn't a conflict — this manual
+    // unpublish is just doing early what was already going to happen, so it
+    // proceeds and clears the now-redundant schedule below.
+    let clearsSchedule = false
     if (fullResource.scheduledAt) {
       const scheduledAction =
         fullResource.scheduledAction ?? ScheduledAction.Publish
-      throw new TRPCError({
-        code: "PRECONDITION_FAILED",
-        message: `This page is scheduled to be ${scheduledAction === ScheduledAction.Unpublish ? "unpublished" : "published"} at ${format(
+      if (scheduledAction === ScheduledAction.Publish) {
+        throw new ScheduledActionConflictError(
+          "published",
           fullResource.scheduledAt,
-          "yyyy-MM-dd HH:mm",
-        )}. Cancel the schedule before unpublishing.`,
-      })
+        )
+      }
+      clearsSchedule = true
     }
 
     // Block unpublishing a container's landing page while a sibling or
@@ -1514,6 +1548,11 @@ export const unpublishPageResource = async ({
         publishedVersionId: null,
         draftBlobId,
         state: ResourceState.Draft,
+        ...(clearsSchedule && {
+          scheduledAt: null,
+          scheduledBy: null,
+          scheduledAction: null,
+        }),
       },
       tx,
     )
