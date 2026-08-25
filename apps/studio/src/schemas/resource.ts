@@ -21,6 +21,7 @@ export const getChildrenSchema = z
   .object({
     resourceId: z.union([bigIntSchema, z.null()]),
     siteId: z.string().min(0),
+    includeSearchPage: z.boolean().optional().default(true),
   })
   .merge(infiniteOffsetPaginationSchema)
 
@@ -62,7 +63,11 @@ export const getParentSchema = z.object({
   resourceId: bigIntSchema,
 })
 
-export const resourceOrderByOptions = ["updated-desc", "title-asc"] as const
+export const resourceOrderByOptions = [
+  "updated-desc",
+  "title-asc",
+  "permalink-asc",
+] as const
 
 export type ResourceOrderByOption = (typeof resourceOrderByOptions)[number]
 

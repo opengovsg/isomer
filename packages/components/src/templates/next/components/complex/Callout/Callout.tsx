@@ -64,6 +64,7 @@ const calloutStyles = tv({
 export const Callout = ({
   content,
   site,
+  headingLevel,
   variant = DEFAULT_CALLOUT_VARIANT,
 }: CalloutProps) => {
   const { icon: Icon, label } = CALLOUT_CONFIG[variant]
@@ -73,7 +74,7 @@ export const Callout = ({
     <div className={styles.container()} role="group" aria-label={label}>
       {Icon && <Icon aria-hidden className={styles.icon()} />}
       <div className={styles.content()} tabIndex={0}>
-        <Prose {...content} site={site} />
+        <Prose {...content} site={site} headingLevel={headingLevel} />
       </div>
     </div>
   )

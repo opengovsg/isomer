@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server"
 import { jsonObjectFrom } from "kysely/helpers/postgres"
 import { get } from "lodash-es"
 import { USER_LINKABLE_RESOURCE_TYPES } from "~/constants/resources"
+import { SEARCH_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   countResourceSchema,
   deleteResourceSchema,
@@ -27,6 +28,7 @@ import {
   searchWithResourceIdsSchema,
 } from "~/schemas/resource"
 import { protectedProcedure, router } from "~/server/trpc"
+import { isResourceMoveValid } from "~/utils/resources"
 import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 
 import type { PermissionsProps } from "../permissions/permissions.type"
@@ -39,6 +41,7 @@ import {
   getResourcePermission,
 } from "../permissions/permissions.service"
 import {
+  applyFolderPermalinkChangeRedirects,
   applyPermalinkChangeRedirects,
   softDeleteRedirectsPointingToResource,
 } from "../redirect/redirect.service"
@@ -52,6 +55,7 @@ import {
   getSearchResults,
   getSearchWithResourceIds,
   getWithFullPermalink,
+  hasPublishedDescendant,
   publishResource,
 } from "./resource.service"
 
@@ -206,7 +210,10 @@ export const resourceRouter = router({
     .input(getChildrenSchema)
     .output(getChildrenOutputSchema)
     .query(
-      async ({ ctx, input: { resourceId, siteId, cursor: offset, limit } }) => {
+      async ({
+        ctx,
+        input: { resourceId, siteId, cursor: offset, limit, includeSearchPage },
+      }) => {
         await bulkValidateUserPermissionsForResources({
           action: "read",
           resourceIds: [resourceId],
@@ -247,6 +254,13 @@ export const resourceRouter = router({
 
         if (resourceId === null) {
           query = query.where("parentId", "is", null)
+          if (!includeSearchPage) {
+            query = query.where(
+              "Resource.permalink",
+              "!=",
+              SEARCH_PAGE_PERMALINK,
+            )
+          }
         } else {
           query = query.where("Resource.parentId", "=", String(resourceId))
         }
@@ -375,15 +389,6 @@ export const resourceRouter = router({
               throw new TRPCError({ code: "BAD_REQUEST" })
             }
 
-            // Prevent users from moving the search page (permalink /search, no parent)
-            // This is a special page that is used to display the SearchSG results
-            if (toMove.permalink === "search" && toMove.parentId === null) {
-              throw new TRPCError({
-                code: "BAD_REQUEST",
-                message: "The search page cannot be moved",
-              })
-            }
-
             let query = tx.selectFrom("Resource")
             query = !!destinationResourceId
               ? query.where("id", "=", destinationResourceId)
@@ -391,17 +396,10 @@ export const resourceRouter = router({
                   .where("type", "=", ResourceType.RootPage)
                   .where("siteId", "=", siteId)
             const parent = await query
-              .select(["id", "type", "siteId"])
+              .select(["id", "type", "siteId", "permalink", "parentId"])
               .executeTakeFirst()
 
-            if (
-              !parent ||
-              // NOTE: we only allow moves to folders/root.
-              // for moves to root, we only allow this for admin
-              (parent.type !== ResourceType.RootPage &&
-                parent.type !== ResourceType.Folder &&
-                parent.type !== ResourceType.Collection)
-            ) {
+            if (!parent) {
               throw new TRPCError({
                 code: "BAD_REQUEST",
                 message:
@@ -409,46 +407,11 @@ export const resourceRouter = router({
               })
             }
 
-            if (toMove.parentId === parent.id) {
+            const moveValidity = isResourceMoveValid(toMove, parent)
+            if (moveValidity instanceof Error) {
               throw new TRPCError({
                 code: "BAD_REQUEST",
-                message: "You cannot move a resource to the same folder",
-              })
-            }
-
-            // NOTE: If the users are trying to move into a collection,
-            // check that the resource first belongs to a collection
-            if (
-              parent.type !== ResourceType.Collection &&
-              (toMove.type === ResourceType.CollectionPage ||
-                toMove.type === ResourceType.CollectionLink)
-            ) {
-              throw new TRPCError({
-                code: "BAD_REQUEST",
-                message:
-                  "Collection items can only be moved to another collection",
-              })
-            }
-
-            if (
-              parent.type === ResourceType.Collection &&
-              toMove.type !== ResourceType.CollectionPage &&
-              toMove.type !== ResourceType.CollectionLink
-            ) {
-              throw new TRPCError({
-                code: "BAD_REQUEST",
-                message: "Folder items can only be moved to another folder",
-              })
-            }
-
-            if (movedResourceId === destinationResourceId) {
-              throw new TRPCError({ code: "BAD_REQUEST" })
-            }
-
-            if (toMove.siteId !== parent.siteId) {
-              throw new TRPCError({
-                code: "FORBIDDEN",
-                message: "You cannot move a resource to a different site",
+                message: moveValidity.message,
               })
             }
 
@@ -548,8 +511,8 @@ export const resourceRouter = router({
               by: user,
             })
 
-            // Keep redirects consistent with the new URL — Page/CollectionPage
-            // only (folders/collection links have no URL of their own).
+            // Keep redirects consistent with the new URL. Page/CollectionPage
+            // get a single exact redirect for their own URL.
             if (
               (toMove.type === ResourceType.Page ||
                 toMove.type === ResourceType.CollectionPage) &&
@@ -562,6 +525,29 @@ export const resourceRouter = router({
                 resourceId: movedResourceId,
                 isPublished: toMove.publishedVersionId !== null,
                 shouldCreateRedirect,
+                byUserId: user.id,
+              })
+            }
+
+            // A Folder/Collection has no URL of its own, but the move changes
+            // every descendant's URL — preserve them with one wildcard redirect
+            // ("/old-folder/*"), and validate no descendant lands on a URL an
+            // existing redirect already covers.
+            if (
+              (toMove.type === ResourceType.Folder ||
+                toMove.type === ResourceType.Collection) &&
+              oldFullPermalink !== null
+            ) {
+              await applyFolderPermalinkChangeRedirects(tx, {
+                siteId,
+                oldFullPermalink,
+                newFullPermalink,
+                resourceId: movedResourceId,
+                shouldCreateRedirect,
+                hasLiveContent: await hasPublishedDescendant(tx, {
+                  siteId,
+                  resourceId: movedResourceId,
+                }),
                 byUserId: user.id,
               })
             }
@@ -621,7 +607,9 @@ export const resourceRouter = router({
       if (resourceId) {
         query = query.where("Resource.parentId", "=", String(resourceId))
       } else {
-        query = query.where("Resource.parentId", "is", null)
+        query = query
+          .where("Resource.parentId", "is", null)
+          .where("Resource.permalink", "!=", SEARCH_PAGE_PERMALINK)
       }
 
       const result = await query.executeTakeFirst()
@@ -653,7 +641,9 @@ export const resourceRouter = router({
         if (resourceId) {
           query = query.where("Resource.parentId", "=", String(resourceId))
         } else {
-          query = query.where("Resource.parentId", "is", null)
+          query = query
+            .where("Resource.parentId", "is", null)
+            .where("Resource.permalink", "!=", SEARCH_PAGE_PERMALINK)
         }
 
         query = applyResourceOrderBy(query, orderBy)
@@ -716,7 +706,10 @@ export const resourceRouter = router({
 
         // Prevent users from deleting the search page (permalink /search, no parent)
         // This is a special page that is used to display the SearchSG results
-        if (before.permalink === "search" && before.parentId === null) {
+        if (
+          before.permalink === SEARCH_PAGE_PERMALINK &&
+          before.parentId === null
+        ) {
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: "The search page cannot be deleted",

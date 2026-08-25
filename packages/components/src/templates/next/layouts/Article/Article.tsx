@@ -52,6 +52,8 @@ export const ArticleLayout = ({
               layout,
               content,
               permalink: page.permalink,
+              // ArticlePageHeader above already owns the page's h1.
+              headingLevel: 2,
             })}
           </div>
           <BackToTopLink />

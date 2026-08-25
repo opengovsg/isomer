@@ -50,6 +50,9 @@ export const TiptapLinkEditorModal = ({
           .insertContent(`<a href="${linkHref}">${linkText}</a>`)
           .run()
       }}
+      onRemove={() => {
+        editor.chain().focus().extendMarkRange("link").unsetLink().run()
+      }}
       isOpen={isOpen}
       onClose={onClose}
     />

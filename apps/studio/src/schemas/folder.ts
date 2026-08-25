@@ -47,6 +47,10 @@ export const baseEditFolderSchema = baseFolderSchema.extend({
     .max(MAX_FOLDER_TITLE_LENGTH, {
       message: `Folder title should be shorter than ${MAX_FOLDER_TITLE_LENGTH} characters.`,
     }),
+  // When the permalink changes, preserve the old URLs of everything under this
+  // folder with a wildcard redirect. Defaults true (matches the move flow); the
+  // UI only surfaces the choice when the permalink actually changes.
+  shouldCreateRedirect: z.boolean().optional().default(true),
 })
 
 export const editFolderSchema = baseEditFolderSchema.superRefine(

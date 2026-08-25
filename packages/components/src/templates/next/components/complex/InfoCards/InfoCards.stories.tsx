@@ -122,6 +122,7 @@ const generateArgs = ({
     maxColumns: maxColumns,
     variant,
     cards: allCards,
+    headingLevel: 2,
     ...(hasCTA ? { label: "This is a CTA", url: "/" } : {}),
   } as InfoCardsProps
 }

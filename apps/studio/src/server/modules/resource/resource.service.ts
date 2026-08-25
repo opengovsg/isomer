@@ -17,6 +17,7 @@ import {
   normalizeRedirectSource,
 } from "~/schemas/redirect"
 import {
+  type FirstImage,
   getSitemapTree,
   injectTagMappings,
   isCollectionItem,
@@ -75,6 +76,15 @@ export const applyResourceOrderBy = <O>(
     case "title-asc":
       return query
         .orderBy(sql`lower("Resource"."title")`, "asc")
+        .orderBy("Resource.id", "asc")
+    case "permalink-asc":
+      // CollectionLink permalinks are random UUIDs and hidden in the CMS, so
+      // sort links by title and pages by permalink in one combined list.
+      return query
+        .orderBy(
+          sql`lower(CASE WHEN "Resource"."type" = ${ResourceType.CollectionLink} THEN "Resource"."title" ELSE "Resource"."permalink" END)`,
+          "asc",
+        )
         .orderBy("Resource.id", "asc")
     case "updated-desc":
     default:
@@ -432,13 +442,26 @@ export const getLocalisedSitemap = async (
       ELSE ''
     END
 `.as("date")
-  const contentSql = sql<string>`
+  // Only the first top-level image block is ever consumed (as the collection
+  // card thumbnail fallback), so project it here instead of returning the
+  // entire page body, which is unbounded in the size of a collection.
+  const firstImageSql = sql<FirstImage | null>`
     CASE
       WHEN (published.content ->> 'layout') IN ('article','link')
-      THEN published.content ->> 'content'
-      ELSE ''
+       AND jsonb_typeof(published.content -> 'content') = 'array'
+      THEN (
+        /* ORDER BY ord makes document order explicit; a bare LIMIT 1 would
+           rely on the function scan's emission order */
+        SELECT jsonb_build_object('src', block ->> 'src', 'alt', block ->> 'alt')
+        FROM jsonb_array_elements(published.content -> 'content')
+          WITH ORDINALITY AS t(block, ord)
+        WHERE block ->> 'type' = 'image'
+        ORDER BY ord
+        LIMIT 1
+      )
+      ELSE NULL
     END
-`.as("content")
+`.as("firstImage")
   const taggedSql = sql<string | null>`
     CASE
       WHEN (published.content ->> 'layout') IN ('article','link')
@@ -467,7 +490,7 @@ export const getLocalisedSitemap = async (
           thumbnailSql,
           categorySql,
           dateSql,
-          contentSql,
+          firstImageSql,
           taggedSql,
           ...defaultResourceSelect,
         ])
@@ -486,7 +509,9 @@ export const getLocalisedSitemap = async (
               eb.cast<string>(eb.val(""), "text").as("thumbnail"),
               eb.cast<string>(eb.val(""), "text").as("category"),
               eb.cast<string>(eb.val(""), "text").as("date"),
-              eb.cast<string>(eb.val(""), "text").as("content"),
+              eb
+                .cast<FirstImage | null>(eb.val(null), "jsonb")
+                .as("firstImage"),
               eb.cast<string | null>(eb.val(null), "text").as("tagged"),
               ...defaultResourceSelect,
             ]),
@@ -514,7 +539,7 @@ export const getLocalisedSitemap = async (
           thumbnailSql,
           categorySql,
           dateSql,
-          contentSql,
+          firstImageSql,
           taggedSql,
           ...defaultResourceSelect,
         ]),
@@ -537,7 +562,7 @@ export const getLocalisedSitemap = async (
           thumbnailSql,
           categorySql,
           dateSql,
-          contentSql,
+          firstImageSql,
           eb.cast<string | null>(eb.val(null), "text").as("tagged"),
           ...defaultResourceSelect,
         ])
@@ -563,7 +588,7 @@ export const getLocalisedSitemap = async (
               thumbnailSql,
               categorySql,
               dateSql,
-              contentSql,
+              firstImageSql,
               eb.cast<string | null>(eb.val(null), "text").as("tagged"),
               ...defaultResourceSelect,
             ]),
@@ -576,7 +601,7 @@ export const getLocalisedSitemap = async (
       "thumbnail",
       "category",
       "date",
-      "content",
+      "firstImage",
       "tagged",
       ...defaultResourceSelect,
     ])
@@ -588,7 +613,7 @@ export const getLocalisedSitemap = async (
           "thumbnail",
           "category",
           "date",
-          "content",
+          "firstImage",
           "tagged",
           ...defaultResourceSelect,
         ]),
@@ -601,7 +626,7 @@ export const getLocalisedSitemap = async (
           "thumbnail",
           "category",
           "date",
-          "content",
+          "firstImage",
           "tagged",
           ...defaultResourceSelect,
         ]),
@@ -729,7 +754,9 @@ export const getResourcePermalinkTree = async (
           .where("Resource.siteId", "=", siteId)
           .where("Resource.id", "=", String(resourceId))
           .select(defaultResourceSelect)
-          .unionAll((fb) =>
+          // `union` (not `unionAll`) dedupes rows so a malformed parent chain with
+          // a cycle can't drive the recursion forever.
+          .union((fb) =>
             fb
               // Recursive case: Get all the ancestors of the resource
               .selectFrom("Resource")
@@ -763,6 +790,28 @@ export const getResourceFullPermalink = async (
   return `/${permalinkTree.join("/")}`
 }
 
+// The `subtree` CTE shared by the walks below; callers continue with their own
+// `.selectFrom("subtree")`. `union` (not `unionAll`) dedupes rows so a malformed
+// parent chain with a cycle can't drive the recursion forever.
+const withResourceSubtree = (
+  trx: SafeKysely,
+  { siteId, resourceId }: { siteId: number; resourceId: string },
+) =>
+  trx.withRecursive("subtree", (eb) =>
+    eb
+      .selectFrom("Resource")
+      .where("Resource.siteId", "=", siteId)
+      .where("Resource.id", "=", resourceId)
+      .select("Resource.id")
+      .union((fb) =>
+        fb
+          .selectFrom("Resource")
+          .innerJoin("subtree", "subtree.id", "Resource.parentId")
+          .where("Resource.siteId", "=", siteId)
+          .select("Resource.id"),
+      ),
+  )
+
 // Returns the id of `resourceId` plus every descendant in its subtree — the
 // rows a cascading delete (Resource.parentId is onDelete: Cascade) removes.
 // Accepts a tx so the delete path and the count path resolve the same set.
@@ -770,25 +819,49 @@ export const getDescendantResourceIds = async (
   trx: SafeKysely,
   { siteId, resourceId }: { siteId: number; resourceId: string },
 ): Promise<string[]> => {
-  const rows = await trx
-    .withRecursive("subtree", (eb) =>
-      eb
-        .selectFrom("Resource")
-        .where("Resource.siteId", "=", siteId)
-        .where("Resource.id", "=", resourceId)
-        .select("Resource.id")
-        // `union` (not `unionAll`) dedupes rows so a malformed parent chain with
-        // a cycle can't drive the recursion forever.
-        .union((fb) =>
-          fb
-            .selectFrom("Resource")
-            .innerJoin("subtree", "subtree.id", "Resource.parentId")
-            .where("Resource.siteId", "=", siteId)
-            .select("Resource.id"),
-        ),
-    )
+  const rows = await withResourceSubtree(trx, { siteId, resourceId })
     .selectFrom("subtree")
     .select("id")
+    .execute()
+  return rows.map((row) => String(row.id))
+}
+
+// True when `resourceId` or any descendant is published — the folder analogue of
+// a page's `publishedVersionId !== null`, used to decide whether a folder/
+// collection move or rename should preserve its old URLs with a redirect (there
+// is nothing to preserve for a subtree that was never live). Keys on
+// publishedVersionId, not `state`: nothing unpublishes a resource today, so the
+// two only ever change together (see version.service.ts).
+export const hasPublishedDescendant = async (
+  trx: SafeKysely,
+  { siteId, resourceId }: { siteId: number; resourceId: string },
+): Promise<boolean> => {
+  // Fold the published filter into the recursive walk and stop at the first
+  // hit — an existence check that never materialises the full subtree id list
+  // or issues a second `WHERE id IN (...)` query.
+  const published = await withResourceSubtree(trx, { siteId, resourceId })
+    .selectFrom("subtree")
+    .innerJoin("Resource", "Resource.id", "subtree.id")
+    .where("Resource.publishedVersionId", "is not", null)
+    .select("Resource.id")
+    .executeTakeFirst()
+  return published !== undefined
+}
+
+// Ids of the published resources strictly within `resourceId`'s subtree (the
+// container itself is excluded — its own URL is validated separately). Used to
+// check that a folder move/rename doesn't drop a live descendant onto a path an
+// existing redirect already covers.
+export const getPublishedDescendantResourceIds = async (
+  trx: SafeKysely,
+  { siteId, resourceId }: { siteId: number; resourceId: string },
+): Promise<string[]> => {
+  const rows = await withResourceSubtree(trx, { siteId, resourceId })
+    .selectFrom("subtree")
+    .innerJoin("Resource", "Resource.id", "subtree.id")
+    .where("Resource.id", "!=", resourceId)
+    .where("Resource.publishedVersionId", "is not", null)
+    .select("Resource.id")
     .execute()
   return rows.map((row) => String(row.id))
 }
@@ -888,6 +961,7 @@ export const getResourceByFullPermalink = async ({
 export const getResourceFullPermalinks = async (
   siteId: number,
   resourceIds: number[],
+  trx: SafeKysely = db,
 ): Promise<Map<number, string>> => {
   if (resourceIds.length === 0) {
     return new Map()
@@ -896,8 +970,9 @@ export const getResourceFullPermalinks = async (
   // One recursive walk collects every node on the requested ids' ancestor
   // chains. A node's permalink and parentId are intrinsic to its id (not to
   // which chain reached it), so a single id-keyed map lets each requested id
-  // walk from itself up to the root.
-  const rows = await db
+  // walk from itself up to the root. Pass a `trx` to read uncommitted changes
+  // (e.g. a rename mid-transaction) rather than the committed tree.
+  const rows = await trx
     .withRecursive("PermalinkChain", (eb) =>
       eb
         // Base case: the resources we want permalinks for
@@ -905,7 +980,10 @@ export const getResourceFullPermalinks = async (
         .where("Resource.siteId", "=", siteId)
         .where("Resource.id", "in", resourceIds.map(String))
         .select(["Resource.id", "Resource.permalink", "Resource.parentId"])
-        .unionAll((fb) =>
+        // `union` (not `unionAll`) dedupes rows so a malformed parent chain
+        // with a cycle can't drive the recursion forever, matching
+        // getResourcePermalinkTree and withResourceSubtree above.
+        .union((fb) =>
           fb
             // Recursive case: walk up to each node's parent
             .selectFrom("Resource")
@@ -940,12 +1018,17 @@ export const getResourceFullPermalinks = async (
   const result = new Map<number, string>()
   for (const resourceId of resourceIds) {
     const segments: string[] = []
+    // The query above terminates on a cyclic chain, but the walk it feeds would
+    // still loop between the cycle's members forever — stop at the first id
+    // seen twice.
+    const visited = new Set<string>()
     let currentId: string | null = String(resourceId)
     while (currentId !== null) {
       const node = nodeById.get(currentId)
-      if (node === undefined) {
+      if (node === undefined || visited.has(currentId)) {
         break
       }
+      visited.add(currentId)
       segments.push(node.permalink)
       currentId = node.parentId
     }

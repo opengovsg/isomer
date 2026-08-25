@@ -2,6 +2,7 @@ import type { z } from "zod"
 import type { getPresignedPutUrlSchema } from "~/schemas/asset"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
+import { create as createContentDisposition } from "content-disposition"
 import { randomUUID } from "crypto"
 import filenamify from "filenamify"
 import { env } from "~/env.mjs"
@@ -43,14 +44,17 @@ export const generateTagsQueryString = (
   return entries.join("&")
 }
 
+const getFilenameFromKey = (key: string): string => key.split("/").pop() ?? ""
+
+const getExtensionFromFilename = (filename: string): string =>
+  filename.includes(".") ? filename.substring(filename.lastIndexOf(".")) : ""
+
 /**
  * Derive trusted Content-Type from key. Key is only produced after schema validation,
  * so the file extension is always from the allowlist.
  */
 export const getContentTypeFromKey = (key: string): string => {
-  const segment = key.split("/").pop() ?? ""
-  const lower = segment.toLowerCase()
-  const ext = lower.includes(".") ? lower.substring(lower.lastIndexOf(".")) : ""
+  const ext = getExtensionFromFilename(getFilenameFromKey(key).toLowerCase())
   return EXTENSION_TO_MIME[ext] ?? "application/octet-stream"
 }
 
@@ -58,9 +62,23 @@ export const getContentTypeFromKey = (key: string): string => {
  * Build Content-Disposition for signed upload (inline; filename for download hint).
  */
 export const getContentDispositionForKey = (key: string): string => {
-  const segment = key.split("/").pop() ?? ""
-  const encoded = encodeURIComponent(segment)
-  return `inline; filename*=UTF-8''${encoded}`
+  return createContentDisposition(getFilenameFromKey(key), { type: "inline" })
+}
+
+/**
+ * Build Content-Disposition using a human-readable title as the download
+ * filename, keeping the key's extension so the saved file still opens in
+ * the right application.
+ */
+export const getContentDispositionForTitle = (
+  title: string,
+  key: string,
+): string => {
+  const extension = getExtensionFromFilename(getFilenameFromKey(key))
+  // Strip path separators so a title like "A/B" can't be misread as a path
+  // segment in the resulting filename.
+  const filename = `${title}${extension}`.replace(/[/\\]/g, "-")
+  return createContentDisposition(filename, { type: "inline" })
 }
 
 // Permissions for assets share the same permissions as resources preferentially

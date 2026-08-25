@@ -1,6 +1,7 @@
 import type { DelayMode } from "msw"
 import { DEFAULT_TAG_CATEGORY_DISPLAY } from "@opengovsg/isomer-components"
 import { delay } from "msw"
+import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { MOCK_STORY_DATE } from "../constants"
 import { trpcMsw } from "../mockTrpc"
@@ -33,6 +34,7 @@ const siteListQuery = ({
           search: undefined,
           isGovernment: true,
         } as PrismaJson.SiteJsonConfig,
+        role: RoleType.Admin,
       },
       {
         id: 2,
@@ -45,6 +47,7 @@ const siteListQuery = ({
           search: undefined,
           isGovernment: true,
         } as PrismaJson.SiteJsonConfig,
+        role: RoleType.Admin,
       },
       {
         id: 3,
@@ -57,6 +60,7 @@ const siteListQuery = ({
           search: undefined,
           isGovernment: true,
         } as PrismaJson.SiteJsonConfig,
+        role: RoleType.Admin,
       },
     ]
   })

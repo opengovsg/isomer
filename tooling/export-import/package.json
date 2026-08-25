@@ -10,7 +10,7 @@
   "devDependencies": {
     "@isomer/tsconfig": "workspace:*",
     "@types/node": "catalog:",
-    "@types/pg": "catalog:",
+    "@types/pg": "catalog:pg",
     "dotenv-cli": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:"
@@ -20,6 +20,6 @@
   "dependencies": {
     "@inquirer/prompts": "catalog:",
     "dotenv": "catalog:",
-    "pg": "catalog:"
+    "pg": "catalog:pg"
   }
 }

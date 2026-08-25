@@ -19,7 +19,7 @@ import {
 } from "tests/integration/helpers/seed"
 import * as searchSgService from "~/server/modules/searchsg/searchsg.service"
 import { createCallerFactory } from "~/server/trpc"
-import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
+import { IsomerAdminRole, RoleType } from "~prisma/generated/generatedEnums"
 
 import type { User } from "../../database"
 import { AuditLogEvent, db, jsonb, ResourceType } from "../../database"
@@ -185,6 +185,7 @@ describe("site.router", async () => {
         {
           id: site.id,
           config: site.config,
+          role: RoleType.Editor,
         },
       ])
     })
@@ -206,6 +207,7 @@ describe("site.router", async () => {
         {
           id: site1.id,
           config: site1.config,
+          role: RoleType.Editor,
         },
       ])
     })
@@ -242,6 +244,7 @@ describe("site.router", async () => {
         {
           id: site2.id,
           config: site2.config,
+          role: RoleType.Editor,
         },
       ])
     })
@@ -262,8 +265,37 @@ describe("site.router", async () => {
       expect(result).toEqual(
         [site1, site2]
           .sort((a, b) => a.id - b.id)
-          .map((site) => ({ id: site.id, config: site.config })),
+          .map((site) => ({
+            id: site.id,
+            config: site.config,
+            role: RoleType.Admin,
+          })),
       )
+    })
+
+    it("should return the Admin role even if the user also has an explicit lower role on the site", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      await setupIsomerAdmin({
+        userId: session.userId!,
+        role: IsomerAdminRole.Core,
+      })
+
+      // Act
+      const result = await caller.list()
+
+      // Assert
+      expect(result).toEqual([
+        {
+          id: site.id,
+          config: site.config,
+          role: RoleType.Admin,
+        },
+      ])
     })
   })
 
@@ -538,6 +570,30 @@ describe("site.router", async () => {
         .select("name")
         .executeTakeFirstOrThrow()
       expect(updatedSite.name).toEqual(MOCK_SITE_NAME)
+    })
+    it("should normalize an AskGov URL when updating the site config", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.updateSiteConfig({
+        siteName: MOCK_SITE_NAME,
+        logoUrl: MOCK_LOGO_URL,
+        url: "https://www.isomer.gov.sg",
+        theme: "isomer-next",
+        siteId: site.id,
+        askgov: {
+          "data-agency":
+            "https://www.ask.gov.sg/mha/questions/question-id?from=widget",
+        },
+      })
+
+      // Assert
+      expect(result.askgov).toEqual({ "data-agency": "mha" })
     })
     it("should generate an audit log entry", async () => {
       // Arrange
@@ -867,6 +923,41 @@ describe("site.router", async () => {
       // Assert
       expect(result.config).toEqual(MOCK_INTEGRATION_DATA)
     })
+    it.each([
+      {
+        input: "http://ask.gov.sg/mom/?topic=employment#contact",
+        expected: "mom",
+        description: "URL",
+      },
+      {
+        input: "www.ask.gov.sg/help/questions/question-id",
+        expected: "help",
+        description: "scheme-less URL",
+      },
+      { input: "mha", expected: "mha", description: "ID" },
+    ])(
+      "should store an AskGov $description as the agency ID when updating site integrations",
+      async ({ input, expected }) => {
+        // Arrange
+        const { site } = await setupSite()
+        await setupAdminPermissions({
+          userId: session.userId,
+          siteId: site.id,
+        })
+
+        // Act
+        const result = await caller.updateSiteIntegrations({
+          data: {
+            ...MOCK_INTEGRATION_DATA,
+            askgov: { "data-agency": input },
+          },
+          siteId: site.id,
+        })
+
+        // Assert
+        expect(result.config.askgov).toEqual({ "data-agency": expected })
+      },
+    )
     it("should generate an audit log entry", async () => {
       // Arrange
       const { site } = await setupSite()

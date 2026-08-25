@@ -46,6 +46,9 @@ _Avoid_: survey cooldown, quarter (the period is configurable, not fixed)
 **Isomer Admin**: A user with the Core or Migrator role. The only role that can manage taxonomy (create, edit, delete Tag Categories and Tag Options) via the Manage Filters panel.
 _Avoid_: admin, site admin (different concept — refers to site-level admin permissions)
 
+**Site Admin**: A user holding the `Admin` role on a specific site (`ResourcePermission.role = Admin`). Can manage that site's users and permissions. Distinct from Isomer Admin.
+_Avoid_: admin (ambiguous), Isomer Admin (a different, platform-level role)
+
 ### Redirects
 
 **Redirect**: A rule that sends a visitor from an old path on this site to another location. Created and published by a site admin; publishing rebuilds the site so the rule goes live.
@@ -65,3 +68,35 @@ _Avoid_: sample file, example CSV
 
 **Bulk upload**: Creating many Redirects at once by uploading a filled-in Redirects template — every row is validated, and the whole batch publishes in one step.
 _Avoid_: import, mass create, batch add
+
+### Audit and access logging
+
+**Audit Log** (`AuditLog`): The append-only record of site events — resource create/update/delete, publish, login/logout, permission and config changes — each carrying a `delta` (before/after) and `metadata`, scoped by `siteId` and `createdAt`.
+_Avoid_: access log (a derived view, not the raw record), history
+
+**Audit Log Export**: The Site-Admin-initiated, asynchronous workflow that produces a downloadable report of a site's audit/access data for a selected month and emails the requester a link. Comprises one or both report types below.
+_Avoid_: audit log (the underlying record, not the export), download
+
+**Export Request** (`AuditLogExportRequest`): A Site Admin's recorded ask for an Audit Log Export — who asked, for which Export Range and report type, and its fulfilment status. Every ask is recorded both as an Export Request and as an Audit Log event; a request may be fulfilled by generating a new Export Artifact or by delivering an existing one.
+_Avoid_: audit log request (ambiguous with the Audit Log itself), job (the queue mechanics, not the domain ask)
+
+**Export Artifact**: The generated CSV file for one report type over one Export Range of a site, stored durably and delivered by emailed link. Identified by site, Export Range, and report type — never by who requested it; identical asks reuse the same Artifact.
+_Avoid_: the export (ambiguous with the request or the workflow), file, link (the delivery mechanism, not the artifact)
+
+**Export Range**: The half-open span of SGT calendar days an Export covers. A full past month, or — for the in-progress month — the month's start through the day of the request (inclusive).
+_Avoid_: month (the picker's input, not the stored span), start/duration
+
+**Complete Artifact**: An Export Artifact generated after its Export Range had fully elapsed. Its content is final — audit records are append-only, so no later event can fall inside the range. Only Complete Artifacts may be reused to fulfil later Export Requests; an artifact generated mid-range (any in-progress-month export) is a point-in-time snapshot and is never reused.
+_Avoid_: cached export (reuse is a correctness rule, not a cache), stale/fresh (snapshots aren't stale — they're complete-as-of-generation)
+
+**Access report** (`type: "users"`): The export view answering *who has access* to a site — derived from `ResourcePermission` joined with `User` (email, role, date added, last login).
+_Avoid_: user list, access log
+
+**Activity report** (`type: "events"`): The export view answering *what happened* on a site during the selected month — derived from `AuditLog` events.
+_Avoid_: event log (ambiguous with the table), audit report
+
+**Download Token**: The sealed, tamper-proof credential embedded in the export-ready email link. Identifies exactly one Audit Log Export request; possession of the link suffices to download — no Studio login. Opaque to the recipient and unforgeable.
+_Avoid_: presigned URL (the short-lived S3 URL minted at download time, a different thing), encrypted URL (the token is sealed — encrypted *and* authenticated)
+
+**Download Window**: The period during which a Download Token is honoured — 3 days from the request's fulfilment (`completedAt`), not from the CSV file's creation. Under Complete-Artifact reuse, each request gets its own Download Window even when several requests share one CSV.
+_Avoid_: URL expiry (conflates the emailed link with the S3 URL's lifetime), CSV creation time (wrong anchor under reuse)

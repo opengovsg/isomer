@@ -36,6 +36,7 @@ const content: CalloutProps["content"] = {
 export const Default: Story = {
   args: {
     site: generateSiteConfig(),
+    headingLevel: 2,
     content,
   },
 }
@@ -43,6 +44,7 @@ export const Default: Story = {
 export const GoodToKnow: Story = {
   args: {
     site: generateSiteConfig(),
+    headingLevel: 2,
     content,
     variant: "goodToKnow",
   },
@@ -51,6 +53,7 @@ export const GoodToKnow: Story = {
 export const Warning: Story = {
   args: {
     site: generateSiteConfig(),
+    headingLevel: 2,
     content,
     variant: "warning",
   },
@@ -59,6 +62,7 @@ export const Warning: Story = {
 export const Urgent: Story = {
   args: {
     site: generateSiteConfig(),
+    headingLevel: 2,
     content,
     variant: "urgent",
   },
@@ -67,6 +71,7 @@ export const Urgent: Story = {
 export const Note: Story = {
   args: {
     site: generateSiteConfig(),
+    headingLevel: 2,
     content,
     variant: "note",
   },
@@ -75,6 +80,7 @@ export const Note: Story = {
 export const UnorderedListFirst: Story = {
   args: {
     site: generateSiteConfig(),
+    headingLevel: 2,
     content: {
       type: "prose",
       content: [
@@ -128,6 +134,7 @@ export const UnorderedListFirst: Story = {
 export const UnorderedListOnly: Story = {
   args: {
     site: generateSiteConfig(),
+    headingLevel: 2,
     content: {
       type: "prose",
       content: [
@@ -172,6 +179,7 @@ export const UnorderedListOnly: Story = {
 export const OrderedListFirst: Story = {
   args: {
     site: generateSiteConfig(),
+    headingLevel: 2,
     content: {
       type: "prose",
       content: [
@@ -225,6 +233,7 @@ export const OrderedListFirst: Story = {
 export const OrderedListOnly: Story = {
   args: {
     site: generateSiteConfig(),
+    headingLevel: 2,
     content: {
       type: "prose",
       content: [
@@ -269,6 +278,7 @@ export const OrderedListOnly: Story = {
 export const ListInMiddle: Story = {
   args: {
     site: generateSiteConfig(),
+    headingLevel: 2,
     content: {
       type: "prose",
       content: [

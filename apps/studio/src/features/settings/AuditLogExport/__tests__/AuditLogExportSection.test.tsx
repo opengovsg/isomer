@@ -1,0 +1,179 @@
+// @vitest-environment jsdom
+import type { UserManagementAbility } from "~/server/modules/permissions/permissions.type"
+import { ThemeProvider } from "@opengovsg/design-system-react"
+import { fireEvent, render, screen, waitFor } from "@testing-library/react"
+import { beforeEach, describe, expect, it, vi } from "vitest"
+import { UserManagementContext } from "~/features/users"
+import { AuditLogExportRequestedReportType } from "~/schemas/audit"
+import { buildUserManagementPermissions } from "~/server/modules/permissions/permissions.util"
+import { theme } from "~/theme"
+import { RoleType } from "~prisma/generated/generatedEnums"
+
+import { AuditLogExportSection } from "../AuditLogExportSection"
+import { getMonthOptions } from "../utils"
+
+// PostHog capture calls run inside the mutation's onSuccess — mock the client
+// so they can be asserted on instead of hitting an uninitialised instance.
+const { posthogCapture } = vi.hoisted(() => ({ posthogCapture: vi.fn() }))
+vi.mock("posthog-js", () => ({
+  default: { capture: posthogCapture },
+}))
+
+// Capture what the component passes to the mutation so we can assert on the
+// submitted payload and drive the onSuccess/onError branches ourselves.
+// react-query invokes onSuccess(data, variables, context), and the component
+// destructures the variables — so the harness must pass them too.
+const mutate = vi.fn()
+let capturedOptions:
+  | {
+      onSuccess?: (data: unknown, variables: unknown) => void
+      onError?: (error: unknown) => void
+    }
+  | undefined
+
+// Replays the component's own submitted payload back through onSuccess, the
+// way react-query would after a successful mutation.
+const fireOnSuccessForLastMutation = () => {
+  const variables: unknown = mutate.mock.lastCall?.[0]
+  capturedOptions?.onSuccess?.(undefined, variables)
+}
+
+vi.mock("~/utils/trpc", () => ({
+  trpc: {
+    audit: {
+      // The full window, as if the site were old enough to offer it — the
+      // capped-window behaviour itself is covered by getMaxExportableMonths'
+      // and getMonthOptions' own unit tests.
+      getExportWindow: {
+        useQuery: () => ({ data: { maxMonths: 12 } }),
+      },
+      createExportRequest: {
+        useMutation: (options: typeof capturedOptions) => {
+          capturedOptions = options
+          return { mutate, isPending: false }
+        },
+      },
+    },
+  },
+}))
+
+const adminAbility = buildUserManagementPermissions([{ role: RoleType.Admin }])
+const editorAbility = buildUserManagementPermissions([
+  { role: RoleType.Editor },
+])
+
+const renderWith = (ability: UserManagementAbility) =>
+  render(
+    <ThemeProvider theme={theme}>
+      <UserManagementContext.Provider value={ability}>
+        <AuditLogExportSection siteId={42} />
+      </UserManagementContext.Provider>
+    </ThemeProvider>,
+  )
+
+describe("AuditLogExportSection", () => {
+  beforeEach(() => {
+    mutate.mockClear()
+    posthogCapture.mockClear()
+    capturedOptions = undefined
+  })
+
+  it("does not render for non-admins", () => {
+    renderWith(editorAbility)
+    expect(screen.queryByRole("heading", { name: "Logs" })).toBeNull()
+  })
+
+  it("renders the heading and a disabled submit for admins", () => {
+    renderWith(adminAbility)
+    expect(screen.queryByRole("heading", { name: "Logs" })).not.toBeNull()
+    // With nothing selected the submit is the disabled call-to-action.
+    const submit = screen.getByRole("button", {
+      name: "Select log types to export",
+    })
+    expect((submit as HTMLButtonElement).disabled).toBe(true)
+  })
+
+  // Each selectable card maps onto a report type; picking both yields `Both`.
+  // The month picker defaults to the most recent (current, partial) month, so
+  // the submitted payload proves the cards + month + site id are wired through.
+  it("submits the selected report types and month with the site id", async () => {
+    renderWith(adminAbility)
+
+    fireEvent.click(
+      screen.getByRole("checkbox", { name: /User access review logs/ }),
+    )
+    fireEvent.click(screen.getByRole("checkbox", { name: /Audit logs/ }))
+
+    fireEvent.click(screen.getByRole("button", { name: "Export log" }))
+
+    await waitFor(() => expect(mutate).toHaveBeenCalledTimes(1))
+    const [payload] = mutate.mock.calls[0] as [
+      { siteId: number; month: string; reportType: string },
+    ]
+    expect(payload).toEqual({
+      siteId: 42,
+      month: getMonthOptions()[0]!.value,
+      reportType: AuditLogExportRequestedReportType.Both,
+    })
+  })
+
+  // NOTE: there is no duplicate-request failure path any more — the server
+  // accepts duplicate asks idempotently (ADR docs/adr/0005) — so the error
+  // surface only exists for genuine rejections like an out-of-window month.
+  it("surfaces the server error message on failure", async () => {
+    renderWith(adminAbility)
+
+    fireEvent.click(screen.getByRole("checkbox", { name: /Audit logs/ }))
+    fireEvent.click(screen.getByRole("button", { name: "Export log" }))
+    await waitFor(() => expect(capturedOptions?.onError).toBeDefined())
+
+    capturedOptions?.onError?.({
+      message: "You cannot export audit logs for a month that is in the future",
+      data: { code: "BAD_REQUEST" },
+    })
+
+    expect(
+      await screen.findByText(
+        "You cannot export audit logs for a month that is in the future",
+      ),
+    ).not.toBeNull()
+  })
+
+  // A duplicate ask is a success, not an error: submitting the same form
+  // twice issues two identical mutations and the success handler runs for each.
+  it("treats a repeated identical submission as a plain success", async () => {
+    renderWith(adminAbility)
+
+    // First ask: pick a log type and submit.
+    fireEvent.click(screen.getByRole("checkbox", { name: /Audit logs/ }))
+    fireEvent.click(screen.getByRole("button", { name: "Export log" }))
+    await waitFor(() => expect(mutate).toHaveBeenCalledTimes(1))
+
+    // Success resets the form (see the section's onSuccess), returning the
+    // disabled call-to-action; wait for that before asking again.
+    fireOnSuccessForLastMutation()
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("button", {
+          name: "Select log types to export",
+        }),
+      ).not.toBeNull(),
+    )
+
+    // The success handler also reports the requested log type to PostHog —
+    // an Audit-logs (Activity) ask emits exactly the audit event.
+    expect(posthogCapture).toHaveBeenCalledTimes(1)
+    expect(posthogCapture).toHaveBeenCalledWith(
+      "audit_log_requested",
+      expect.objectContaining({ site_id: 42 }),
+    )
+
+    // Ask again, identically.
+    fireEvent.click(screen.getByRole("checkbox", { name: /Audit logs/ }))
+    fireEvent.click(screen.getByRole("button", { name: "Export log" }))
+    await waitFor(() => expect(mutate).toHaveBeenCalledTimes(2))
+    // Identical payload both times — the duplicate is sent as-is; the server
+    // idempotent-accepts it rather than erroring.
+    expect(mutate.mock.calls[1]).toEqual(mutate.mock.calls[0])
+  })
+})

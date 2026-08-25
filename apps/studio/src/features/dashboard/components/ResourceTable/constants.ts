@@ -6,4 +6,5 @@ export const RESOURCE_TABLE_SORT_OPTIONS: Record<
 > = {
   "updated-desc": "Recently edited",
   "title-asc": "Alphabetical",
+  "permalink-asc": "URL",
 }

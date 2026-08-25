@@ -1,4 +1,5 @@
 import type { HeroLargeImageProps } from "~/interfaces/complex/Hero"
+import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
 import { ComponentContent } from "../../../internal/customCssClass"
@@ -14,7 +15,9 @@ export const HeroLargeImage = ({
   secondaryButtonUrl,
   backgroundUrl,
   site,
+  headingLevel,
 }: HeroLargeImageProps) => {
+  const Tag = getHeadingTag(headingLevel)
   return (
     <section className="flex w-full flex-col">
       {/* Text and button container */}
@@ -23,7 +26,7 @@ export const HeroLargeImage = ({
       >
         {/* Text container */}
         <div className="flex flex-col items-center gap-5 text-base-content-strong sm:items-start md:gap-6 md:text-center lg:mx-auto lg:max-w-[66.67%]">
-          <h1 className="prose-display-xl w-full">{title}</h1>
+          <Tag className="prose-display-xl w-full">{title}</Tag>
           {subtitle && (
             <p className="prose-title-lg-regular w-full">{subtitle}</p>
           )}

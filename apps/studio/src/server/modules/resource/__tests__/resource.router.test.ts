@@ -594,6 +594,47 @@ describe("resource.router", async () => {
       expect(result).toMatchObject(expected)
     })
 
+    it("should only hide the default Search page when requested", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: "Page",
+        permalink: "search",
+        title: "Search",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: "Page",
+        permalink: "about",
+        title: "About",
+      })
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
+
+      // Act
+      const linkPickerResult = await caller.getChildrenOf({
+        siteId: String(site.id),
+        resourceId: null,
+      })
+      const directorySidebarResult = await caller.getChildrenOf({
+        siteId: String(site.id),
+        resourceId: null,
+        includeSearchPage: false,
+      })
+
+      // Assert
+      expect(linkPickerResult.items.map(({ permalink }) => permalink)).toEqual([
+        "about",
+        "search",
+      ])
+      expect(
+        directorySidebarResult.items.map(({ permalink }) => permalink),
+      ).toEqual(["about"])
+    })
+
     it("should not return FolderMeta, CollectionMeta, and CollectionLink as children", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -1420,7 +1461,7 @@ describe("resource.router", async () => {
       )
     })
 
-    it("should return 403 if source and destination resources belong to different sites", async () => {
+    it("should return 400 if source and destination resources belong to different sites", async () => {
       // Arrange
       const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
       const { page: originPage, site: originSite } = await setupPageResource({
@@ -1445,7 +1486,7 @@ describe("resource.router", async () => {
       expect(auditSpy).not.toHaveBeenCalled()
       await expect(result).rejects.toThrow(
         new TRPCError({
-          code: "FORBIDDEN",
+          code: "BAD_REQUEST",
           message: "You cannot move a resource to a different site",
         }),
       )
@@ -2076,6 +2117,75 @@ describe("resource.router", async () => {
           `[resource:${site.id}:${page.id}]`,
         )
       })
+
+      describe("folder/collection", () => {
+        // A folder ("/dest/src-folder") with one published child page,
+        // alongside a sibling destination folder ("/dest") to move it into.
+        const setupMoveWithPublishedChild = async () => {
+          const { site, rootPage, folder: destinationFolder } = await setup()
+          const { folder: sourceFolder } = await setupFolder({
+            siteId: site.id,
+            parentId: rootPage.id,
+            permalink: "src-folder",
+          })
+          await setupPageResource({
+            siteId: site.id,
+            resourceType: ResourceType.Page,
+            parentId: sourceFolder.id,
+            permalink: "child",
+            state: ResourceState.Published,
+            userId: session.userId,
+          })
+          return { site, rootPage, sourceFolder, destinationFolder }
+        }
+
+        it("creates a wildcard redirect from the old path for a published folder", async () => {
+          const { site, sourceFolder, destinationFolder } =
+            await setupMoveWithPublishedChild()
+
+          await caller.move({
+            siteId: site.id,
+            movedResourceId: sourceFolder.id,
+            destinationResourceId: destinationFolder.id,
+            shouldCreateRedirect: true,
+          })
+
+          const redirects = await liveRedirects(site.id)
+          expect(redirects).toHaveLength(1)
+          expect(redirects[0]!.source).toBe("/src-folder/*")
+          expect(redirects[0]!.destination).toBe(
+            `[resource:${site.id}:${sourceFolder.id}]`,
+          )
+        })
+
+        it("still blocks the move when a descendant would be shadowed, even when shouldCreateRedirect is false", async () => {
+          const { site, rootPage, sourceFolder, destinationFolder } =
+            await setupMoveWithPublishedChild()
+          await db
+            .insertInto("Redirect")
+            .values({
+              siteId: site.id,
+              source: "/dest/src-folder/child",
+              destination: "https://example.gov.sg/elsewhere",
+            })
+            .execute()
+
+          const result = caller.move({
+            siteId: site.id,
+            movedResourceId: sourceFolder.id,
+            destinationResourceId: destinationFolder.id,
+            shouldCreateRedirect: false,
+          })
+
+          await expect(result).rejects.toMatchObject({ code: "CONFLICT" })
+          const stillThere = await db
+            .selectFrom("Resource")
+            .select("parentId")
+            .where("id", "=", sourceFolder.id)
+            .executeTakeFirstOrThrow()
+          expect(String(stillThere.parentId)).toBe(String(rootPage.id))
+        })
+      })
     })
   })
 
@@ -2228,6 +2338,33 @@ describe("resource.router", async () => {
 
       // Assert
       expect(result).toEqual(numberOfPages + numberOfFolders)
+    })
+
+    it("should exclude the default Search page from the root count", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupPageResource({
+        siteId: site.id,
+        permalink: "search",
+        title: "Search",
+        resourceType: "Page",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        permalink: "about",
+        title: "About",
+        resourceType: "Page",
+      })
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.countWithoutRoot({ siteId: site.id })
+
+      // Assert
+      expect(result).toBe(1)
     })
 
     it("should return count of resources nested inside the resourceId", async () => {
@@ -2517,6 +2654,33 @@ describe("resource.router", async () => {
       expect(expected).toMatchObject(result)
     })
 
+    it("should exclude the default Search page from the root resource list", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupPageResource({
+        siteId: site.id,
+        permalink: "search",
+        title: "Search",
+        resourceType: "Page",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        permalink: "about",
+        title: "About",
+        resourceType: "Page",
+      })
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
+
+      // Act
+      const result = await caller.listWithoutRoot({ siteId: site.id })
+
+      // Assert
+      expect(result.map(({ permalink }) => permalink)).toEqual(["about"])
+    })
+
     it("should return resources (respecting the limit) nested inside the resourceId", async () => {
       // Arrange
       const { folder: folderToUse, site } = await setupFolder({
@@ -2672,6 +2836,95 @@ describe("resource.router", async () => {
 
       // Assert
       expect(result.map((r) => r.title)).toEqual(["apple", "Banana", "cherry"])
+    })
+
+    it("should sort by permalink ascending when orderBy is permalink-asc", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
+
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: "Page",
+        title: "Zulu",
+        permalink: "charlie",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: "Page",
+        title: "Alpha",
+        permalink: "alpha",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: "Page",
+        title: "Mike",
+        permalink: "bravo",
+      })
+
+      // Act
+      const result = await caller.listWithoutRoot({
+        siteId: site.id,
+        orderBy: "permalink-asc",
+      })
+
+      // Assert
+      expect(result.map((r) => r.permalink)).toEqual([
+        "alpha",
+        "bravo",
+        "charlie",
+      ])
+    })
+
+    it("should sort folder children by permalink ascending when orderBy is permalink-asc", async () => {
+      // Arrange
+      const { folder, site } = await setupFolder({
+        permalink: "parent-folder",
+        title: "Parent folder",
+      })
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
+
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: "Page",
+        title: "Zulu",
+        permalink: "charlie",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: "Page",
+        title: "Alpha",
+        permalink: "alpha",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: "Page",
+        title: "Mike",
+        permalink: "bravo",
+      })
+
+      // Act
+      const result = await caller.listWithoutRoot({
+        siteId: site.id,
+        resourceId: Number(folder.id),
+        orderBy: "permalink-asc",
+      })
+
+      // Assert
+      expect(result.map((r) => r.permalink)).toEqual([
+        "alpha",
+        "bravo",
+        "charlie",
+      ])
     })
 
     it("should throw 403 if user does not have read access to site", async () => {

@@ -252,7 +252,7 @@ export const pageHandlers = {
   },
   updateSettings: {
     collection: () => {
-      trpcMsw.page.updateSettings.mutation(() => {
+      return trpcMsw.page.updateSettings.mutation(() => {
         return {
           id: "1",
           title: "Press Releases",
@@ -1617,6 +1617,10 @@ export const pageHandlers = {
     collection: () =>
       trpcMsw.page.getFullPermalink.query(() => {
         return "/collection"
+      }),
+    nestedCollectionLink: () =>
+      trpcMsw.page.getFullPermalink.query(() => {
+        return "/resources/circulars/my-link"
       }),
     index: () =>
       trpcMsw.page.getFullPermalink.query(() => {

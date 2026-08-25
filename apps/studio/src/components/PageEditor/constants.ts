@@ -390,6 +390,7 @@ export const BLOCK_TO_META: Record<
     label: "Audio",
     description: "Embed an audio from Spotify or Apple Podcast.",
     usageText: "The audio will be playable directly on the page.",
+    imageSrc: "/assets/block-images/Podcast.png",
   },
   video: {
     label: "Video",
@@ -417,7 +418,6 @@ export const BLOCK_TO_META: Record<
     imageSrc: "/assets/block-images/LogoCloud.png",
   },
   collectionblock: {
-    // TODO: Add image source
     label: "Link a Collection",
     description: "Automatically display recent items from a Collection.",
     usageText:
@@ -425,10 +425,10 @@ export const BLOCK_TO_META: Record<
     imageSrc: "/assets/block-images/CollectionBlock.png",
   },
   imagegallery: {
-    // TODO: Add image source
     label: "Image gallery",
     description: "Display up to 30 images in a slideshow.",
     usageText: "Share memorable moments from an event.",
+    imageSrc: "/assets/block-images/ImageGallery.png",
   },
   blockquote: {
     label: "Quote",
@@ -441,7 +441,7 @@ export const BLOCK_TO_META: Record<
     label: "Contact information",
     description: "Display contact information.",
     usageText: "Let people know how they can reach you.",
-    // TODO: Add imageSrc
+    imageSrc: "/assets/block-images/ContactInformation.png",
   },
   dynamiccomponentlist: {
     label: "Dynamic component list",

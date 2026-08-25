@@ -8,6 +8,7 @@
   "globalEnv": [
     "NODE_ENV",
     "DATABASE_URL",
+    "ENABLE_CRON_WORKERS",
     "CI",
     "SESSION_SECRET",
     "NEXT_PUBLIC_S3_REGION",
@@ -23,7 +24,10 @@
     "DD_DELETION_EMAIL",
     "ALGOLIA_APP_ID",
     "ALGOLIA_API_KEY",
-    "ALGOLIA_INDEX_NAME"
+    "ALGOLIA_INDEX_NAME",
+    "NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN",
+    "NEXT_PUBLIC_POSTHOG_HOST",
+    "NEXT_PUBLIC_POSTHOG_ASSETS_HOST"
   ],
   "tasks": {
     "build": {

@@ -10,6 +10,7 @@ import {
   ISOMER_USABLE_PAGE_LAYOUTS,
 } from "@opengovsg/isomer-components"
 import { isEmpty, isEqual } from "lodash-es"
+import posthog from "posthog-js"
 import { useCallback, useMemo } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
@@ -60,6 +61,7 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
 
   const { mutate, isPending } = trpc.page.updatePageBlob.useMutation({
     onSuccess: async () => {
+      posthog.capture("page_changes_saved", { site_id: siteId })
       await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
       await utils.page.readPage.invalidate({ pageId, siteId })
       toast({
@@ -88,13 +90,22 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
     }
   }, [drawerStateType, canManageFilters])
 
-  const metadataSchema = getScopedSchema({
-    layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,
-    scope: "page",
-    ...schemaFields,
-  })
-  const validateFn =
-    ajv.compile<Static<ReturnType<typeof getLayoutPageSchema>>>(metadataSchema)
+  const metadataSchema = useMemo(
+    () =>
+      getScopedSchema({
+        layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,
+        scope: "page",
+        ...schemaFields,
+      }),
+    [schemaFields],
+  )
+  const validateFn = useMemo(
+    () =>
+      ajv.compile<Static<ReturnType<typeof getLayoutPageSchema>>>(
+        metadataSchema,
+      ),
+    [metadataSchema],
+  )
 
   const handleSaveChanges = useCallback(() => {
     const hadNoTagsBefore = !(savedPageState.page as CollectionPagePageProps)

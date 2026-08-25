@@ -1,5 +1,7 @@
 import { z } from "zod"
 
+const SYSTEM_USER_EMAIL = "system@isomer.gov.sg"
+
 const s3Schema = z.object({
   NEXT_PUBLIC_S3_REGION: z.string().default("us-east-1"),
   NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME: z.string(),
@@ -46,6 +48,9 @@ const client = z
     NEXT_PUBLIC_APP_VERSION: z.string().default("0.0.0"),
     NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY: z.string().optional(),
     NEXT_PUBLIC_INTERCOM_APP_ID: z.string().optional(),
+    NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN: z.string().optional(),
+    NEXT_PUBLIC_POSTHOG_HOST: z.string().url().optional(),
+    NEXT_PUBLIC_POSTHOG_ASSETS_HOST: z.string().url().optional(),
   })
   .extend(s3Schema.shape)
   .extend(cronHeartbeatSchema.shape)
@@ -68,6 +73,7 @@ const server = z
   .object({
     DATABASE_URL: z.string().url(),
     CI: z.coerce.boolean().default(false),
+    ENABLE_CRON_WORKERS: z.stringbool().optional().default(false),
     NODE_ENV: z.enum(["development", "test", "production"]),
     OTP_EXPIRY: z.coerce.number().positive().optional().default(600),
     // WARNING: Setting this bypasses OTP security. For preview environments only — never set in staging or production.
@@ -78,12 +84,14 @@ const server = z
     STUDIO_SSM_WEBHOOK_API_KEY: z.string().optional(),
     S3_GAZETTE_BUCKET_NAME: z.string(),
     S3_GAZETTE_DOMAIN_NAME: z.string(),
+    S3_STUDIO_ASSETS_BUCKET_NAME: z.string().optional(),
     EGAZETTE_DOCUMENT_INDEX: z.string().optional(),
     DD_DELETION_EMAIL: z.email(),
     SEARCHSG_API_KEY: z.string(),
     ALGOLIA_APP_ID: z.string(),
     ALGOLIA_API_KEY: z.string(),
     ALGOLIA_INDEX_NAME: z.string(),
+    SYSTEM_USER_EMAIL: z.email().optional().default(SYSTEM_USER_EMAIL),
   })
   .extend(s3Schema.shape)
   .extend(r2Schema.shape)
@@ -143,9 +151,11 @@ const server = z
  */
 const processEnv = {
   // Server-side env vars
+  SYSTEM_USER_EMAIL: process.env.SYSTEM_USER_EMAIL,
   DATABASE_URL: process.env.DATABASE_URL,
   DD_DELETION_EMAIL: process.env.DD_DELETION_EMAIL,
   CI: process.env.CI,
+  ENABLE_CRON_WORKERS: process.env.ENABLE_CRON_WORKERS,
   NODE_ENV: process.env.NODE_ENV,
   OTP_EXPIRY: process.env.OTP_EXPIRY,
   POSTMAN_API_KEY: process.env.POSTMAN_API_KEY,
@@ -165,6 +175,7 @@ const processEnv = {
   R2_ACCOUNT_ID: process.env.R2_ACCOUNT_ID,
   R2_ACCESS_KEY_ID: process.env.R2_ACCESS_KEY_ID,
   R2_SECRET_ACCESS_KEY: process.env.R2_SECRET_ACCESS_KEY,
+  S3_STUDIO_ASSETS_BUCKET_NAME: process.env.S3_STUDIO_ASSETS_BUCKET_NAME,
   SINGPASS_CLIENT_ID: process.env.SINGPASS_CLIENT_ID,
   SINGPASS_ISSUER_ENDPOINT: process.env.SINGPASS_ISSUER_ENDPOINT,
   SINGPASS_REDIRECT_URI: process.env.SINGPASS_REDIRECT_URI,
@@ -185,6 +196,14 @@ const processEnv = {
     process.env.NEXT_PUBLIC_APP_VERSION ??
     process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA,
   NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+  // The reusable AWS deploy workflow always forwards these as Docker
+  // build-args, so an unset input arrives here as "" rather than absent —
+  // normalize to undefined so `.optional()` in the schema still applies.
+  NEXT_PUBLIC_POSTHOG_ASSETS_HOST:
+    process.env.NEXT_PUBLIC_POSTHOG_ASSETS_HOST || undefined,
+  NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST || undefined,
+  NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN:
+    process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN || undefined,
   NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY:
     process.env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY,
   NEXT_PUBLIC_INTERCOM_APP_ID: process.env.NEXT_PUBLIC_INTERCOM_APP_ID,

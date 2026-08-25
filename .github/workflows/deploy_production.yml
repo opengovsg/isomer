@@ -45,3 +45,6 @@ jobs:
       app-s3-assets-domain-name: "isomer-user-content.by.gov.sg"
       app-growthbook-client-key: "sdk-r07MHTLLgfdVDThi"
       app-intercom-app-id: "jv2tjc3g"
+      posthog-host: "https://rpfs.isomer.gov.sg"
+      posthog-assets-host: "https://us-assets.i.posthog.com"
+      posthog-project-token: "phc_uZuYdUk5MvkoNAzxvh9TXdGXXjSL684XAHBjR5r74Ra8"

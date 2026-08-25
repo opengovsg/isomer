@@ -24,7 +24,7 @@ pnpm dev:e2e          # Start dev server + run E2E tests
 # From apps/studio
 pnpm test:unit        # Run Vitest unit tests
 pnpm test:watch       # Watch mode for unit tests
-pnpm exec playwright test tests/e2e/specific-test.spec.ts  # Run single E2E test
+pnpm exec playwright test tests/e2e/smoke.test.ts          # Run single E2E test
 pnpm test:unit -- src/path/to/test.test.ts                 # Run single unit test
 ```
 
@@ -57,7 +57,7 @@ pnpm clean            # Clean build artifacts
 ## Architecture
 
 ### Monorepo Structure
-- `apps/studio` - Main Next.js 15 application (CMS/site builder)
+- `apps/studio` - Main Next.js 16 application (CMS/site builder)
 - `packages/components` - Reusable component library (@opengovsg/isomer-components)
 - `packages/pgboss` - Job queue wrapper (@isomer/pgboss)
 - `tooling/*` - Shared configs (TypeScript, Oxlint, Storybook)
@@ -73,7 +73,7 @@ pnpm clean            # Clean build artifacts
 - `theme/` - Chakra UI theme configuration
 
 ### Key Technologies
-- **Framework**: Next.js 15, React 18
+- **Framework**: Next.js 16, React 18
 - **API**: tRPC for type-safe client-server communication
 - **Database**: PostgreSQL with Prisma ORM
 - **Styling**: Tailwind CSS + Chakra UI
@@ -84,9 +84,10 @@ pnpm clean            # Clean build artifacts
 - **Formatting**: Oxfmt
 
 ### Database
-- Schema: `apps/studio/prisma/schema.prisma`
-- Migrations: `apps/studio/prisma/migrations/`
-- Custom migrations: `apps/studio/prisma/custom/`
+- Schema: `packages/db/prisma/schema.prisma`
+- Migrations: `packages/db/prisma/migrations/`
+- Custom migrations: `packages/db/prisma/custom/`
+- Generated Kysely types: `packages/db/src/generated/`
 
 ## Testing Notes
 
