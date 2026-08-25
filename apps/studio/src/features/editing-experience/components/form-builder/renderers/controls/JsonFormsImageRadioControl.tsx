@@ -30,6 +30,7 @@ const IMAGE_RADIO_ICONS: Record<string, typeof IconTagCategoryPills> = {
 interface ImageRadioSchema {
   oneOf?: {
     const: string
+    title?: string
     image: string
   }[]
 }
@@ -93,6 +94,7 @@ const ImageRadioOption = ({
 const getImageRadioOptions = (schema: ControlProps["schema"]) =>
   ((schema as ImageRadioSchema).oneOf ?? []).map((option) => ({
     value: option.const,
+    title: option.title,
     image: option.image,
   }))
 
@@ -138,8 +140,12 @@ function JsonFormsImageRadioControl({
           gap="1rem"
           alignItems="start"
         >
-          {options.map((option) => {
-            const isSelected = data === option.value
+          {options.map((option, index) => {
+            // Display-only fallback: when no value is stored yet, show the
+            // first option as selected without writing it (schema `default`
+            // is avoided because AJV's `useDefaults` would dirty saved pages).
+            const isSelected =
+              data === undefined ? index === 0 : data === option.value
 
             return (
               <ImageRadioOption
@@ -148,6 +154,7 @@ function JsonFormsImageRadioControl({
                 image={option.image}
                 isSelected={isSelected}
                 ariaLabel={
+                  option.title ??
                   option.value.charAt(0).toUpperCase() + option.value.slice(1)
                 }
               />

@@ -25,27 +25,35 @@ export const CalloutSchema = Type.Object(
         oneOf: [
           {
             const: CALLOUT_VARIANT_OPTIONS.Information,
+            title: "Information",
             image: "callout/information",
           },
           {
             const: CALLOUT_VARIANT_OPTIONS.GoodToKnow,
+            title: "Good to know",
             image: "callout/goodToKnow",
           },
           {
             const: CALLOUT_VARIANT_OPTIONS.Warning,
+            title: "Warning",
             image: "callout/warning",
           },
           {
             const: CALLOUT_VARIANT_OPTIONS.Urgent,
+            title: "Urgent",
             image: "callout/urgent",
           },
           {
             const: CALLOUT_VARIANT_OPTIONS.Note,
+            title: "Note",
             image: "callout/note",
           },
         ],
         title: "Message type",
-        default: DEFAULT_CALLOUT_VARIANT,
+        // NOTE: intentionally no `default` here — Studio runs AJV with
+        // `useDefaults: true`, which would write the default into existing
+        // pages on open and mark them dirty. The renderer and the image-radio
+        // control both fall back to the first option for display instead.
         format: "image-radio/1col",
       }),
     ),
