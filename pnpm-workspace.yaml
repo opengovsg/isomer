@@ -175,14 +175,14 @@ catalogs:
     "@atlaskit/pragmatic-drag-and-drop": ^2.0.2
     "@atlaskit/pragmatic-drag-and-drop-hitbox": ^2.0.0
   "aws-sdk":
-    "@aws-sdk/client-acm": ^3.1111.0
-    "@aws-sdk/client-amplify": ^3.1111.0
-    "@aws-sdk/client-cloudfront": ^3.1111.0
-    "@aws-sdk/client-codebuild": ^3.1111.0
-    "@aws-sdk/client-s3": ^3.1111.0
-    "@aws-sdk/lib-storage": ^3.1111.0
-    "@aws-sdk/s3-request-presigner": ^3.1111.0
-    "@aws-sdk/credential-providers": ^3.1111.0
+    "@aws-sdk/client-acm": ^3.1112.0
+    "@aws-sdk/client-amplify": ^3.1112.0
+    "@aws-sdk/client-cloudfront": ^3.1112.0
+    "@aws-sdk/client-codebuild": ^3.1112.0
+    "@aws-sdk/client-s3": ^3.1112.0
+    "@aws-sdk/lib-storage": ^3.1112.0
+    "@aws-sdk/s3-request-presigner": ^3.1112.0
+    "@aws-sdk/credential-providers": ^3.1112.0
     "@aws-sdk/rds-signer": ^3.1111.0
   babel:
     "@babel/plugin-transform-class-properties": ^8.0.1
