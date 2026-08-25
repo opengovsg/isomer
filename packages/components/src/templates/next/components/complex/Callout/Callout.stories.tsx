@@ -17,25 +17,63 @@ const meta: Meta<CalloutProps> = {
 export default meta
 type Story = StoryObj<typeof Callout>
 
+const content: CalloutProps["content"] = {
+  type: "prose",
+  content: [
+    {
+      type: "paragraph",
+      content: [
+        {
+          type: "text",
+          text: `As of December 1, 2024, the scheme is being reviewed for new criteria in 2025. To view the new criteria please refer to <a href="/faq">New Idea Scheme Proposal</a> while it is being updated.`,
+        },
+      ],
+    },
+  ],
+}
+
 // Default scenario
 export const Default: Story = {
   args: {
     site: generateSiteConfig(),
     headingLevel: 2,
-    content: {
-      type: "prose",
-      content: [
-        {
-          type: "paragraph",
-          content: [
-            {
-              type: "text",
-              text: `As of December 1, 2024, the scheme is being reviewed for new criteria in 2025. To view the new criteria please refer to <a href="/faq">New Idea Scheme Proposal</a> while it is being updated.`,
-            },
-          ],
-        },
-      ],
-    },
+    content,
+  },
+}
+
+export const GoodToKnow: Story = {
+  args: {
+    site: generateSiteConfig(),
+    headingLevel: 2,
+    content,
+    variant: "goodToKnow",
+  },
+}
+
+export const Warning: Story = {
+  args: {
+    site: generateSiteConfig(),
+    headingLevel: 2,
+    content,
+    variant: "warning",
+  },
+}
+
+export const Urgent: Story = {
+  args: {
+    site: generateSiteConfig(),
+    headingLevel: 2,
+    content,
+    variant: "urgent",
+  },
+}
+
+export const Note: Story = {
+  args: {
+    site: generateSiteConfig(),
+    headingLevel: 2,
+    content,
+    variant: "note",
   },
 }
 
