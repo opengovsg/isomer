@@ -62,14 +62,20 @@ const ImageRadioOption = ({
         borderColor={
           isSelected ? "interaction.main.default" : "base.divider.medium"
         }
-        bg={isSelected ? "white" : undefined}
+        bg="white"
         boxShadow={
           isSelected ? "0 0 10px 0 rgba(191, 191, 191, 0.50)" : undefined
         }
         overflow="hidden"
+        padding="12px"
       >
         {ImageRadioIcon && (
-          <ImageRadioIcon width="100%" display="block" aria-hidden />
+          <ImageRadioIcon
+            width="100%"
+            height="auto"
+            display="block"
+            aria-hidden
+          />
         )}
         <ImageRadioIndicator
           isSelected={isSelected}
@@ -130,6 +136,7 @@ function JsonFormsImageRadioControl({
           display="grid"
           gridTemplateColumns={`repeat(${schema.format === "image-radio/1col" ? 1 : 2}, 1fr)`}
           gap="1rem"
+          alignItems="start"
         >
           {options.map((option) => {
             const isSelected = data === option.value
