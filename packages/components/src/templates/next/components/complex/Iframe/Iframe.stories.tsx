@@ -47,3 +47,14 @@ export const FormSG: Story = {
     title: "Isomer Contact Us Form",
   },
 }
+
+// Simulates a blank title (e.g. legacy content saved before `title` was
+// required, which arrives as `undefined` and hits the same fallback).
+// The rendered iframe should still get a non-empty, descriptive title.
+export const MissingTitle: Story = {
+  args: {
+    content:
+      '<iframe style="border:0" height="450" width="600" src="https://www.onemap.gov.sg/minimap/minimap.html"></iframe>',
+    title: "",
+  },
+}

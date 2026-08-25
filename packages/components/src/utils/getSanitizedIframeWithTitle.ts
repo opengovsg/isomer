@@ -22,9 +22,18 @@ const IFRAME_LAYOUT_ATTRIBUTES = {
   class: "absolute top-0 left-0 bottom-0 right-0",
 } as const
 
+// Fallback for iframe embeds saved before `title` existed on the schema, or
+// saved with a blank value — without this, legacy embeds render with no
+// accessible name (or literally `title="undefined"`), which a11y scanners
+// flag as "Frames and iframes must have descriptive titles".
+const DEFAULT_IFRAME_TITLE = "Embedded content"
+
 // Sanitize iframe embeds to remove any potentially harmful attributes
 // and to insert the minimal accessibility
-export const getSanitizedIframeWithTitle = (content: string, title: string) => {
+export const getSanitizedIframeWithTitle = (
+  content: string,
+  title: string | undefined,
+) => {
   const sanitizedFragment = DOMPurify.sanitize(content, {
     ALLOWED_TAGS: ["iframe"],
     ALLOWED_ATTR: IFRAME_ALLOWED_ATTRIBUTES,
@@ -37,7 +46,7 @@ export const getSanitizedIframeWithTitle = (content: string, title: string) => {
     return null
   }
 
-  iframe.setAttribute("title", title)
+  iframe.setAttribute("title", title || DEFAULT_IFRAME_TITLE)
   iframe.setAttribute("height", IFRAME_LAYOUT_ATTRIBUTES.height)
   iframe.setAttribute("width", IFRAME_LAYOUT_ATTRIBUTES.width)
   iframe.setAttribute("class", IFRAME_LAYOUT_ATTRIBUTES.class)

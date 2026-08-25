@@ -39,6 +39,24 @@ describe("getSanitizedIframeWithTitle", () => {
     expect(getSanitizedIframeWithTitle("plain text", "Text embed")).toBeNull()
   })
 
+  it("falls back to a default title when title is an empty string", () => {
+    const iframe = getSanitizedIframeWithTitle(
+      '<iframe src="https://example.com"></iframe>',
+      "",
+    )
+
+    expect(iframe?.getAttribute("title")).toBe("Embedded content")
+  })
+
+  it("falls back to a default title when title is missing (legacy content)", () => {
+    const iframe = getSanitizedIframeWithTitle(
+      '<iframe src="https://example.com"></iframe>',
+      undefined,
+    )
+
+    expect(iframe?.getAttribute("title")).toBe("Embedded content")
+  })
+
   it("does not leak hooks across multiple calls", () => {
     for (let i = 0; i < 10; i++) {
       getSanitizedIframeWithTitle(
