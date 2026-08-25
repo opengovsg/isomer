@@ -2,7 +2,7 @@ import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { z } from "zod"
 import type { reorderBlobSchema, updatePageBlobSchema } from "~/schemas/page"
 import { TRPCError } from "@trpc/server"
-import { addDays, format, set, subDays } from "date-fns"
+import { addDays, set, subDays } from "date-fns"
 import { omit, pick } from "lodash-es"
 import MockDate from "mockdate"
 import { auth } from "tests/integration/helpers/auth"
@@ -38,7 +38,10 @@ import {
 import type { User } from "../../database"
 import { assertAuditLogRows } from "../../audit/__tests__/utils"
 import { db, jsonb } from "../../database"
-import { PageAlreadyUnpublishedError } from "../../resource/resource.error"
+import {
+  PageAlreadyUnpublishedError,
+  ScheduledActionConflictError,
+} from "../../resource/resource.error"
 import {
   getBlobOfResource,
   getPageById,
@@ -2317,6 +2320,69 @@ describe("page.router", async () => {
         .executeTakeFirstOrThrow()
       expect(redirect.destination).toEqual(`[resource:${site.id}:${folder.id}]`)
     })
+
+    it("should throw if the page has a pending scheduled unpublish", async () => {
+      // Arrange — publishing now would conflict with the pending unpublish
+      const scheduledAt = new Date("2999-01-01T00:00:00Z")
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+        scheduledAt,
+        scheduledBy: session.userId ?? undefined,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.publishPage({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new ScheduledActionConflictError("unpublished", scheduledAt),
+      )
+    })
+
+    it("should proceed and clear the schedule when publishing a page with a pending scheduled publish", async () => {
+      // Arrange — same-direction schedule: manually publishing now is just
+      // doing early what the cron would have done later, so it should
+      // proceed and clear the now-redundant schedule rather than block.
+      const scheduledAt = new Date("2999-01-01T00:00:00Z")
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        userId: session.userId ?? undefined,
+        scheduledAt,
+        scheduledBy: session.userId ?? undefined,
+        scheduledAction: ScheduledAction.Publish,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.publishPage({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      const updated = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updated.publishedVersionId).not.toBeNull()
+      expect(updated.scheduledAt).toBeNull()
+      expect(updated.scheduledBy).toBeNull()
+      expect(updated.scheduledAction).toBeNull()
+    })
   })
 
   describe("unpublishPage", () => {
@@ -2446,14 +2512,44 @@ describe("page.router", async () => {
 
       // Assert
       await expect(result).rejects.toThrow(
-        new TRPCError({
-          code: "PRECONDITION_FAILED",
-          message: `This page is scheduled to be published at ${format(
-            scheduledAt,
-            "yyyy-MM-dd HH:mm",
-          )}. Cancel the schedule before unpublishing.`,
-        }),
+        new ScheduledActionConflictError("published", scheduledAt),
       )
+    })
+
+    it("should proceed and clear the schedule when unpublishing a page with a pending scheduled unpublish", async () => {
+      // Arrange — same-direction schedule: manually unpublishing now is just
+      // doing early what the cron would have done later, so it should
+      // proceed and clear the now-redundant schedule rather than block.
+      const scheduledAt = new Date("2999-01-01T00:00:00Z")
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+        scheduledAt,
+        scheduledBy: session.userId ?? undefined,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.unpublishPage({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      const updated = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updated.publishedVersionId).toBeNull()
+      expect(updated.scheduledAt).toBeNull()
+      expect(updated.scheduledBy).toBeNull()
+      expect(updated.scheduledAction).toBeNull()
     })
 
     it("should throw 404 if the page does not exist", async () => {
