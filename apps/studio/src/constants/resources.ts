@@ -19,10 +19,6 @@ export const USER_LINKABLE_RESOURCE_TYPES = [
 
 // Resource types that can be individually unpublished via unpublishPage.
 // Everything else is excluded for its own reason:
-// - Folder/Collection never carry their own publishedVersionId — their
-//   liveness is entirely their child IndexPage's (already a member of this
-//   list), which is why unpublishFolder/unpublishCollection resolve to the
-//   child IndexPage rather than needing their own state.
 // - FolderMeta/CollectionMeta are internal ordering metadata, never built
 //   into a visitor-facing page.
 // - RootPage has a real publish state and can be published via publishPage,
@@ -37,4 +33,14 @@ export const UNPUBLISHABLE_RESOURCE_TYPES: ResourceType[] = [
   ResourceType.CollectionPage,
   ResourceType.IndexPage,
   ResourceType.CollectionLink,
+]
+
+// Folder/Collection ids are also accepted by unpublishPage: they never carry
+// their own publishedVersionId — their liveness is entirely their child
+// IndexPage's — so unpublishPageResource resolves them to that child
+// IndexPage before doing anything else.
+export const UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS: ResourceType[] = [
+  ...UNPUBLISHABLE_RESOURCE_TYPES,
+  ResourceType.Folder,
+  ResourceType.Collection,
 ]

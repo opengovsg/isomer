@@ -10,11 +10,6 @@ import { resourceOrderByOptions } from "./resource"
 
 export type CollectionLinkProps = Static<typeof LinkRefPageSchema>
 
-export const unpublishCollectionSchema = z.object({
-  resourceId: z.number().min(1),
-  siteId: z.number().min(1),
-})
-
 // NOTE: zod's internal date schema uses `YYYY-MM-DD` but our format is
 // dd/MM/yyyy. Hence, we will run a 2 way conversion from
 // our format -> zod then zod -> our format
