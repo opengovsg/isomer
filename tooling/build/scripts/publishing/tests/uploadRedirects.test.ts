@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 
 import {
   buildManifest,
+  isSelfReferentialRedirect,
   normalizeSource,
   parseUploadCliArgs,
   partitionRedirects,
@@ -116,6 +117,50 @@ describe("normalizeSource", () => {
   it("rejects malformed percent-encoding", () => {
     // Arrange / Act / Assert — a lone "%" is not a valid escape sequence
     expect(normalizeSource("/foo%bar")).toBeNull()
+  })
+})
+
+describe("isSelfReferentialRedirect", () => {
+  it("detects an exact redirect whose resource reference resolved back to its source", () => {
+    expect(
+      isSelfReferentialRedirect({
+        source: "/resources/students/class-exam-timetable",
+        destination: "/resources/students/class-exam-timetable",
+      }),
+    ).toBe(true)
+  })
+
+  it("compares the request path after percent-decoding and removing query or fragment suffixes", () => {
+    expect(
+      isSelfReferentialRedirect({
+        source: "/students/class%2Dexam%2Dtimetable",
+        destination: "/students/class-exam-timetable?year=2026#schedule",
+      }),
+    ).toBe(true)
+  })
+
+  it("detects a wildcard that points back at its own prefix", () => {
+    expect(
+      isSelfReferentialRedirect({
+        source: "/resources/students/*",
+        destination: "/resources/students",
+      }),
+    ).toBe(true)
+  })
+
+  it("allows redirects to a different internal path or an external URL", () => {
+    expect(
+      isSelfReferentialRedirect({
+        source: "/resources/students/*",
+        destination: "/resources/alumni",
+      }),
+    ).toBe(false)
+    expect(
+      isSelfReferentialRedirect({
+        source: "/resources/students",
+        destination: "https://www.example.gov.sg/resources/students",
+      }),
+    ).toBe(false)
   })
 })
 

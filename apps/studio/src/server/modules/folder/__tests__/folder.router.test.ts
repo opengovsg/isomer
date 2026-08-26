@@ -881,6 +881,66 @@ describe("folder.router", async () => {
         expect(redirects).toHaveLength(0)
       })
 
+      it("reclaims redirects that point back at descendants after a folder rename", async () => {
+        // Arrange — reproduces the folder-swap sequence from ISOM-2525. Pages
+        // were first moved from /students to /students1, creating exact
+        // /students/... redirects to those pages. Renaming the new folder back
+        // to /students makes those sources the pages' live URLs again.
+        const { site, folder, child } = await setupFolderWithPublishedChild({
+          folderPermalink: "students1",
+          childPermalink: "class-exam-timetable",
+        })
+        const { page: sibling } = await setupPageResource({
+          siteId: site.id,
+          parentId: folder.id,
+          resourceType: ResourceType.Page,
+          permalink: "quick-links-information",
+          state: ResourceState.Published,
+          userId: session.userId,
+        })
+        await db
+          .insertInto("Redirect")
+          .values(
+            [child, sibling].map((page) => ({
+              siteId: site.id,
+              source: `/students/${page.permalink}`,
+              destination: getReferenceLink({
+                siteId: String(site.id),
+                resourceId: page.id,
+              }),
+            })),
+          )
+          .execute()
+
+        // Act
+        await caller.editFolder({
+          siteId: String(site.id),
+          resourceId: folder.id,
+          title: "Students",
+          permalink: "students",
+          shouldCreateRedirect: false,
+        })
+
+        // Assert — both self-referential redirects are soft-deleted in the
+        // rename transaction, so neither can shadow its now-live page.
+        const redirects = await db
+          .selectFrom("Redirect")
+          .select(["source", "deletedAt"])
+          .where("siteId", "=", site.id)
+          .orderBy("source")
+          .execute()
+        expect(redirects).toEqual([
+          {
+            source: "/students/class-exam-timetable",
+            deletedAt: expect.any(Date),
+          },
+          {
+            source: "/students/quick-links-information",
+            deletedAt: expect.any(Date),
+          },
+        ])
+      })
+
       it("allows moving a folder back to its old path, reclaiming its own wildcard", async () => {
         // Arrange — first move /old-folder -> /new-folder creates the wildcard
         // /old-folder/* -> folder.
