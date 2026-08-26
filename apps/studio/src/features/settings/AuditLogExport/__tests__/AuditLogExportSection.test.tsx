@@ -4,6 +4,7 @@ import { ThemeProvider } from "@opengovsg/design-system-react"
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { UserManagementContext } from "~/features/users"
+import { SITE_ID } from "~/lib/testing/constants"
 import { AuditLogExportRequestedReportType } from "~/schemas/audit"
 import { buildUserManagementPermissions } from "~/server/modules/permissions/permissions.util"
 import { theme } from "~/theme"
@@ -66,7 +67,7 @@ const renderWith = (ability: UserManagementAbility) =>
   render(
     <ThemeProvider theme={theme}>
       <UserManagementContext.Provider value={ability}>
-        <AuditLogExportSection siteId={42} />
+        <AuditLogExportSection siteId={SITE_ID} />
       </UserManagementContext.Provider>
     </ThemeProvider>,
   )
@@ -80,40 +81,38 @@ describe("AuditLogExportSection", () => {
 
   it("does not render for non-admins", () => {
     renderWith(editorAbility)
-    expect(screen.queryByRole("heading", { name: "Logs" })).toBeNull()
+    expect(screen.queryByRole("heading", { name: "Audit logs" })).toBeNull()
   })
 
-  it("renders the heading and a disabled submit for admins", () => {
+  it("renders the heading, the link to User management, and an enabled submit for admins", () => {
     renderWith(adminAbility)
-    expect(screen.queryByRole("heading", { name: "Logs" })).not.toBeNull()
-    // With nothing selected the submit is the disabled call-to-action.
-    const submit = screen.getByRole("button", {
-      name: "Select log types to export",
-    })
-    expect((submit as HTMLButtonElement).disabled).toBe(true)
+    expect(screen.queryByRole("heading", { name: "Audit logs" })).not.toBeNull()
+    expect(
+      screen
+        .getByRole("link", { name: "User management" })
+        .getAttribute("href"),
+    ).toBe(`/sites/${SITE_ID}/users`)
+    const submit = screen.getByRole("button", { name: "Export logs" })
+    expect((submit as HTMLButtonElement).disabled).toBe(false)
   })
 
-  // Each selectable card maps onto a report type; picking both yields `Both`.
-  // The month picker defaults to the most recent (current, partial) month, so
-  // the submitted payload proves the cards + month + site id are wired through.
-  it("submits the selected report types and month with the site id", async () => {
+  // This section only ever requests the Activity log now — Access-log export
+  // moved to its own button on the Users page — so the month picker defaulting
+  // to the most recent (current, partial) month is what proves the payload is
+  // wired through correctly.
+  it("submits the current month and the Activity report type with the site id", async () => {
     renderWith(adminAbility)
 
-    fireEvent.click(
-      screen.getByRole("checkbox", { name: /User access review logs/ }),
-    )
-    fireEvent.click(screen.getByRole("checkbox", { name: /Audit logs/ }))
-
-    fireEvent.click(screen.getByRole("button", { name: "Export log" }))
+    fireEvent.click(screen.getByRole("button", { name: "Export logs" }))
 
     await waitFor(() => expect(mutate).toHaveBeenCalledTimes(1))
     const [payload] = mutate.mock.calls[0] as [
       { siteId: number; month: string; reportType: string },
     ]
     expect(payload).toEqual({
-      siteId: 42,
+      siteId: SITE_ID,
       month: getMonthOptions()[0]!.value,
-      reportType: AuditLogExportRequestedReportType.Both,
+      reportType: AuditLogExportRequestedReportType.Activity,
     })
   })
 
@@ -123,8 +122,7 @@ describe("AuditLogExportSection", () => {
   it("surfaces the server error message on failure", async () => {
     renderWith(adminAbility)
 
-    fireEvent.click(screen.getByRole("checkbox", { name: /Audit logs/ }))
-    fireEvent.click(screen.getByRole("button", { name: "Export log" }))
+    fireEvent.click(screen.getByRole("button", { name: "Export logs" }))
     await waitFor(() => expect(capturedOptions?.onError).toBeDefined())
 
     capturedOptions?.onError?.({
@@ -144,33 +142,21 @@ describe("AuditLogExportSection", () => {
   it("treats a repeated identical submission as a plain success", async () => {
     renderWith(adminAbility)
 
-    // First ask: pick a log type and submit.
-    fireEvent.click(screen.getByRole("checkbox", { name: /Audit logs/ }))
-    fireEvent.click(screen.getByRole("button", { name: "Export log" }))
+    // First ask.
+    fireEvent.click(screen.getByRole("button", { name: "Export logs" }))
     await waitFor(() => expect(mutate).toHaveBeenCalledTimes(1))
 
-    // Success resets the form (see the section's onSuccess), returning the
-    // disabled call-to-action; wait for that before asking again.
     fireOnSuccessForLastMutation()
-    await waitFor(() =>
-      expect(
-        screen.queryByRole("button", {
-          name: "Select log types to export",
-        }),
-      ).not.toBeNull(),
-    )
 
-    // The success handler also reports the requested log type to PostHog —
-    // an Audit-logs (Activity) ask emits exactly the audit event.
-    expect(posthogCapture).toHaveBeenCalledTimes(1)
+    // The success handler also reports the requested log type to PostHog.
+    await waitFor(() => expect(posthogCapture).toHaveBeenCalledTimes(1))
     expect(posthogCapture).toHaveBeenCalledWith(
       "audit_log_requested",
-      expect.objectContaining({ site_id: 42 }),
+      expect.objectContaining({ site_id: SITE_ID }),
     )
 
     // Ask again, identically.
-    fireEvent.click(screen.getByRole("checkbox", { name: /Audit logs/ }))
-    fireEvent.click(screen.getByRole("button", { name: "Export log" }))
+    fireEvent.click(screen.getByRole("button", { name: "Export logs" }))
     await waitFor(() => expect(mutate).toHaveBeenCalledTimes(2))
     // Identical payload both times — the duplicate is sent as-is; the server
     // idempotent-accepts it rather than erroring.
