@@ -5,7 +5,10 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { UserManagementContext } from "~/features/users"
 import { SITE_ID } from "~/lib/testing/constants"
-import { AuditLogExportRequestedReportType } from "~/schemas/audit"
+import {
+  AuditLogExportRequestedReportType,
+  AuditLogExportScope,
+} from "~/schemas/audit"
 import { buildUserManagementPermissions } from "~/server/modules/permissions/permissions.util"
 import { theme } from "~/theme"
 import { RoleType } from "~prisma/generated/generatedEnums"
@@ -96,24 +99,50 @@ describe("AuditLogExportSection", () => {
     expect((submit as HTMLButtonElement).disabled).toBe(false)
   })
 
+  it("defaults the export scope to 'This site only'", () => {
+    renderWith(adminAbility)
+    const siteOnly = screen.getByRole("radio", { name: "This site only" })
+    const allSites = screen.getByRole("radio", {
+      name: "All sites I have Admin access to",
+    })
+    expect((siteOnly as HTMLInputElement).checked).toBe(true)
+    expect((allSites as HTMLInputElement).checked).toBe(false)
+  })
+
   // This section only ever requests the Activity log now — Access-log export
   // moved to its own button on the Users page — so the month picker defaulting
   // to the most recent (current, partial) month is what proves the payload is
   // wired through correctly.
-  it("submits the current month and the Activity report type with the site id", async () => {
+  it("submits the current month, the Activity report type, and the default 'site' scope with the site id", async () => {
     renderWith(adminAbility)
 
     fireEvent.click(screen.getByRole("button", { name: "Export logs" }))
 
     await waitFor(() => expect(mutate).toHaveBeenCalledTimes(1))
     const [payload] = mutate.mock.calls[0] as [
-      { siteId: number; month: string; reportType: string },
+      { scope: string; siteId: number; month: string; reportType: string },
     ]
     expect(payload).toEqual({
+      scope: AuditLogExportScope.Site,
       siteId: SITE_ID,
       month: getMonthOptions()[0]!.value,
       reportType: AuditLogExportRequestedReportType.Activity,
     })
+  })
+
+  // The site's own id is always sent regardless of scope — the server
+  // ignores it and resolves the caller's admin sites itself for "allSites".
+  it("submits scope 'allSites' when that radio is picked", async () => {
+    renderWith(adminAbility)
+
+    fireEvent.click(
+      screen.getByRole("radio", { name: "All sites I have Admin access to" }),
+    )
+    fireEvent.click(screen.getByRole("button", { name: "Export logs" }))
+
+    await waitFor(() => expect(mutate).toHaveBeenCalledTimes(1))
+    const [payload] = mutate.mock.calls[0] as [{ scope: string }]
+    expect(payload).toMatchObject({ scope: "allSites", siteId: 42 })
   })
 
   // NOTE: there is no duplicate-request failure path any more — the server

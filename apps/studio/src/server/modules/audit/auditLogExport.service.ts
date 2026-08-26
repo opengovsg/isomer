@@ -27,7 +27,7 @@ import type { BaseLogger } from "@isomer/logging"
 
 import { AuditLogExportReportType, db, RoleType } from "../database"
 import { getResourcePermission } from "../permissions/permissions.service"
-import { logAuditLogExportEvent } from "./audit.service"
+import { logAuditLogExportEvents } from "./audit.service"
 import {
   accessReportQuery,
   activityReportQuery,
@@ -38,13 +38,13 @@ import {
 } from "./auditLogExport.query"
 import { sealAuditLogExportToken } from "./auditLogExportToken"
 
-type CreateAuditLogExportRequestProps = CreateAuditLogExportRequestInput & {
-  userId: string
-  // Requester IP, resolved by the router (getIP(ctx.req)) and recorded on the
-  // AuditLogExportCreate event, matching sibling resource/permission/login
-  // events. Optional so non-request callers (tests, future jobs) can omit it.
-  ip?: string
-}
+// The user-facing fields of a create-export ask, independent of which site(s)
+// it resolves to — "scope"/"siteId" are a router-level concept resolved into
+// a list of siteIds before ever reaching the service (see audit.router.ts).
+type CreateAuditLogExportRequestFields = Omit<
+  CreateAuditLogExportRequestInput,
+  "scope" | "siteId"
+>
 
 // Statuses that represent an export that is still in-flight; a duplicate
 // request for the same (site, user, range, report type) is accepted
@@ -64,13 +64,27 @@ const REPORT_BY_TYPE = {
   },
 } as const
 
-export const createAuditLogExportRequest = async ({
-  siteId,
-  userId,
-  month,
-  reportType,
-  ip,
-}: CreateAuditLogExportRequestProps) => {
+// Validates the requested month, then resolves the concrete half-open date
+// range the request covers. The month picker is the user-facing input, but
+// it only ever applies to Activity ("Audit logs") — an Access export always
+// reflects the CURRENT month regardless of what's picked, since its own
+// surface (ExportAccessLogsButton) never shows a month picker at all.
+const resolveAuditLogDateRange = (
+  month: CreateAuditLogExportRequestFields["month"],
+  reportType: CreateAuditLogExportRequestFields["reportType"],
+): string => {
+  const now = new Date()
+
+  // An Access export always covers the server's current month regardless of
+  // what was submitted, so validating the submitted month's window here
+  // would reject an otherwise-fine request over a value that's discarded
+  // anyway (e.g. browser clock skew nudging it into "next month"). The
+  // schema-level check (createAuditLogExportRequestServerSchema) is likewise
+  // scoped to Activity only.
+  if (reportType === AuditLogExportReportType.Access) {
+    return getMonthDateRange(getCurrentSingaporeMonth(), now)
+  }
+
   const futureMonthCheck = validateIsNotFutureMonth(month)
   const possibleError =
     futureMonthCheck !== true
@@ -84,92 +98,177 @@ export const createAuditLogExportRequest = async ({
     })
   }
 
-  // The month picker is the user-facing input, but it only ever applies to
-  // Activity ("Audit logs") — an Access export always reflects the CURRENT
-  // month regardless of what's picked, since its own surface
-  // (ExportAccessLogsButton) never shows a month picker at all.
-  const now = new Date()
-  const auditLogDateRange =
-    reportType === AuditLogExportReportType.Access
-      ? getMonthDateRange(getCurrentSingaporeMonth(), now)
-      : getMonthDateRange(month, now)
+  return getMonthDateRange(month, now)
+}
+
+// Create one audit-log export request per site this ask covers (already
+// permission-vetted by the caller — see audit.router.ts), as ONE transaction
+// with set-based queries rather than one transaction per site. An "allSites"
+// ask resolves to every site the caller Admins — for an Isomer Admin, every
+// site on the platform — so a per-site transaction loop would open one DB
+// transaction per site; batching keeps this to a fixed handful of queries
+// regardless of how many sites are resolved. `scope: "site"` reuses this same
+// path unchanged, as a one-element `siteIds` fan-out.
+export const createAuditLogExportRequestsForSites = async ({
+  siteIds,
+  userId,
+  month,
+  reportType,
+  ip,
+}: {
+  siteIds: number[]
+  userId: string
+  month: CreateAuditLogExportRequestFields["month"]
+  reportType: CreateAuditLogExportRequestFields["reportType"]
+  ip?: string
+}) => {
+  if (siteIds.length === 0) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "You are not an Admin on any site",
+    })
+  }
+
+  const auditLogDateRange = resolveAuditLogDateRange(month, reportType)
 
   // Asking is ALWAYS safe (ADR docs/adr/0005): a duplicate ask is accepted
   // idempotently, never rejected. The PARTIAL UNIQUE INDEX on (siteId, userId,
   // auditLogDateRange, reportType) WHERE status IN ('Pending','Processing')
   // (defined in the PR #2603 migration) is now purely a RACE GUARD — it is
   // what lets two concurrent identical asks resolve to ONE in-flight row
-  // instead of two, not a reason to error.
+  // instead of two, not a reason to error. Resolved for every site in the ask
+  // at once:
   //
-  //   1. Fast path: an in-flight row for the same (site, user, range, type)
-  //      already exists → use it, insert nothing.
-  //   2. Otherwise INSERT ... ON CONFLICT DO NOTHING targeting that partial
-  //      index. Losing the race between the SELECT and the INSERT therefore
-  //      cannot raise a unique-violation; the insert simply returns no row,
-  //      and we SELECT the winner's in-flight row and use that instead. Any
-  //      other insert error still rethrows.
+  //   1. Fast path: one SELECT finds every site in `siteIds` that already has
+  //      an in-flight row for this (user, range, type).
+  //   2. Every remaining site is INSERTed in a single multi-row statement,
+  //      targeting the same partial unique index via ON CONFLICT DO NOTHING.
+  //      Postgres evaluates ON CONFLICT per row within one statement, so one
+  //      site's conflict doesn't block another site's insert in the same
+  //      statement — it just returns no row for that one site.
+  //   3. Any site that lost the race between (1) and (2) — a concurrent
+  //      identical ask inserted its in-flight row in between — is resolved
+  //      with one more SELECT for exactly those sites; the winner's row is
+  //      committed and visible by now.
   //
-  // Recorded as ONE AuditLogExportCreate audit event in the same transaction,
-  // so agencies can always see who asked to export their logs.
+  // All three steps run inside one transaction, so this is a small, fixed
+  // number of queries no matter how many sites are in `siteIds` — the
+  // property that bounds the DoS risk of one transaction per site.
   return db.transaction().execute(async (tx) => {
-    const inFlightRowQuery = tx
+    const inFlightRowsQuery = tx
       .selectFrom("AuditLogExportRequest")
-      .where("siteId", "=", siteId)
+      .where("siteId", "in", siteIds)
       .where("userId", "=", userId)
       .where("auditLogDateRange", "=", auditLogDateRange)
       .where("reportType", "=", reportType)
       .where("status", "in", IN_FLIGHT_STATUSES)
       .selectAll()
 
-    // Fast path: idempotent-accept the common (non-racing) duplicate.
-    const existing = await inFlightRowQuery.executeTakeFirst()
+    const existingRows = await inFlightRowsQuery.execute()
+    const existingSiteIds = new Set(existingRows.map((row) => row.siteId))
+    const siteIdsToInsert = siteIds.filter((id) => !existingSiteIds.has(id))
 
-    const row =
-      existing ??
-      (await tx
-        .insertInto("AuditLogExportRequest")
-        .values({
-          siteId,
-          userId,
-          auditLogDateRange,
-          reportType,
-          status: AuditLogExportStatus.Pending,
-          attempts: 0,
-        })
-        // Target the partial unique index so a race-losing insert is a no-op
-        // rather than a transaction-aborting unique-violation.
-        .onConflict((oc) =>
-          oc
-            .columns(["siteId", "userId", "auditLogDateRange", "reportType"])
-            .where("status", "in", [...IN_FLIGHT_STATUSES])
-            .doNothing(),
-        )
-        .returningAll()
-        .executeTakeFirst()) ??
-      // Race-loser path: a concurrent identical ask inserted its in-flight
-      // row between our SELECT and INSERT, so DO NOTHING swallowed ours.
-      // The winner's row is committed and visible by now — use it.
-      (await inFlightRowQuery.executeTakeFirstOrThrow())
+    const insertedRows =
+      siteIdsToInsert.length === 0
+        ? []
+        : await tx
+            .insertInto("AuditLogExportRequest")
+            .values(
+              siteIdsToInsert.map((siteId) => ({
+                siteId,
+                userId,
+                auditLogDateRange,
+                reportType,
+                status: AuditLogExportStatus.Pending,
+                attempts: 0,
+              })),
+            )
+            // Target the partial unique index so a race-losing row is a
+            // no-op rather than aborting the whole statement.
+            .onConflict((oc) =>
+              oc
+                .columns([
+                  "siteId",
+                  "userId",
+                  "auditLogDateRange",
+                  "reportType",
+                ])
+                .where("status", "in", [...IN_FLIGHT_STATUSES])
+                .doNothing(),
+            )
+            .returningAll()
+            .execute()
+
+    // Race-loser path: a concurrent identical ask may have inserted its
+    // in-flight row for some of `siteIdsToInsert` between the SELECT and the
+    // INSERT above, so DO NOTHING silently skipped exactly those sites — one
+    // more SELECT resolves every winner's row at once. Deliberately NOT
+    // filtered to IN_FLIGHT_STATUSES: the row that caused our conflict was
+    // in-flight at that instant, but by the time this query runs it may
+    // already have been claimed and finished processing (Done/Failed) by a
+    // cron sweep — filtering it out here would silently drop that site from
+    // the response and its audit event despite the ask having been accepted.
+    // A stale row from an unrelated, already-completed past ask for the same
+    // (site, user, range, type) can't be mistaken for the race winner: it
+    // wouldn't have blocked our insert (the partial unique index only covers
+    // in-flight rows), so `raceLoserSiteIds` only contains sites where a
+    // genuinely concurrent insert is racing ours — picking the most recently
+    // created row per site resolves to that one.
+    const insertedSiteIds = new Set(insertedRows.map((row) => row.siteId))
+    const raceLoserSiteIds = siteIdsToInsert.filter(
+      (id) => !insertedSiteIds.has(id),
+    )
+    const raceLoserCandidates =
+      raceLoserSiteIds.length === 0
+        ? []
+        : await tx
+            .selectFrom("AuditLogExportRequest")
+            .where("siteId", "in", raceLoserSiteIds)
+            .where("userId", "=", userId)
+            .where("auditLogDateRange", "=", auditLogDateRange)
+            .where("reportType", "=", reportType)
+            .selectAll()
+            .execute()
+    const latestRaceLoserRowBySiteId = new Map<
+      number,
+      (typeof raceLoserCandidates)[number]
+    >()
+    for (const row of raceLoserCandidates) {
+      const current = latestRaceLoserRowBySiteId.get(row.siteId)
+      if (!current || row.createdAt > current.createdAt) {
+        latestRaceLoserRowBySiteId.set(row.siteId, row)
+      }
+    }
+    const raceLoserRows = [...latestRaceLoserRowBySiteId.values()]
+
+    const rows = [...existingRows, ...insertedRows, ...raceLoserRows]
 
     const requestedBy = await tx
       .selectFrom("User")
       .where("id", "=", userId)
       .selectAll()
       .executeTakeFirstOrThrow()
-    await logAuditLogExportEvent(tx, {
-      eventType: "AuditLogExportCreate",
-      by: requestedBy,
-      siteId,
-      ip,
-      delta: {
-        before: null,
-        after: { auditLogDateRange, reportType },
-      },
-    })
 
-    // Returned as a single-element array so existing callers can keep
-    // treating the result as "every row backing this ask".
-    return [row]
+    // One AuditLogExportCreate event per site, batched into the same
+    // multi-row statement (see `logAuditLogExportEvents`) and the same
+    // transaction as the writes above — every ask (new or idempotent-
+    // accepted) is recorded, so agencies can always see who asked to export
+    // their logs.
+    await logAuditLogExportEvents(
+      tx,
+      rows.map((row) => ({
+        eventType: "AuditLogExportCreate" as const,
+        by: requestedBy,
+        siteId: row.siteId,
+        ip,
+        delta: {
+          before: null,
+          after: { auditLogDateRange, reportType },
+        },
+      })),
+    )
+
+    return rows
   })
 }
 

@@ -8,6 +8,7 @@ import {
   AddUserModal,
   EditUserModal,
   ExportAccessLogsButton,
+  ExportAccessLogsModal,
   RemoveUserModal,
   UserTableTabs,
 } from "~/features/users/components"
@@ -77,6 +78,7 @@ const SiteUsersPage: NextPageWithLayout = () => {
       <AddUserModal />
       <EditUserModal />
       <RemoveUserModal />
+      <ExportAccessLogsModal />
     </>
   )
 }

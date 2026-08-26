@@ -23,9 +23,16 @@ export const auditHandlers = {
           return [
             {
               id: "audit-export-1",
-              // `siteId` input is `unknown` because the schema uses z.coerce.number();
-              // it's a number at runtime, so coerce it for the mocked row.
-              siteId: Number(siteId),
+              // `siteId` is already `number | undefined` per the schema
+              // (a union+transform+pipe, not `z.coerce.number()`); the
+              // `Number()` cast here is just defensive. Both real callers
+              // (AuditLogExportSection, ExportAccessLogsModal) always send
+              // `siteId` alongside `scope`, even for `allSites` — the server
+              // ignores it in that case and resolves the site list itself
+              // (see audit.router.ts). The `undefined` fallback only covers a
+              // handler invoked directly without one — no story currently
+              // does that.
+              siteId: siteId === undefined ? 1 : Number(siteId),
               userId: "cljcnahpn0000xlwynuea40lv",
               auditLogDateRange,
               reportType,
