@@ -123,7 +123,14 @@ export const publishScheduledResources = async (
 ) => {
   // A mapping from siteId to array of resourceIds, to determine which sites need to be published after their resources have been published
   const siteResourcesMap: Record<string, ResourceWithUser[]> = {}
-  // Fetch all resources that are scheduled to be published at or before the current time, along with the user who scheduled them
+  // Fetch all resources that are scheduled to be published at or before the current time, along with the user who scheduled them.
+  // Ordered by scheduledAt: the loop below processes resources sequentially
+  // (one transaction at a time, awaited in order), and the container-siblings
+  // guard on a scheduled IndexPage unpublish only holds if a sibling scheduled
+  // strictly earlier has actually committed its own unpublish first. Without
+  // this order, both being due in the same cron tick would let the DB return
+  // them in an arbitrary order, and the IndexPage's unpublish could spuriously
+  // fail against a sibling that "should" already be down but hasn't run yet.
   const resourcesWithUser = await db
     .selectFrom("Resource")
     .leftJoin("User as u", "Resource.scheduledBy", "u.id")
@@ -133,6 +140,8 @@ export const publishScheduledResources = async (
       "u.email as email",
       "u.deletedAt as userDeletedAt",
     ])
+    .orderBy("Resource.scheduledAt", "asc")
+    .orderBy("Resource.id", "asc")
     .execute()
 
   // Reset the scheduledAt and scheduledBy fields for all resources that are being published
