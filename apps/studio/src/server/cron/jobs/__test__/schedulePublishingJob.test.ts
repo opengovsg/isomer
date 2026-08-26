@@ -547,6 +547,72 @@ describe("schedulePublishingJob", async () => {
       expect(updated.publishedVersionId).not.toBeNull()
     })
 
+    it("does not execute a scheduled unpublish when the unpublish feature flag is off", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId,
+        scheduledAt: FIXED_NOW,
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      const unpublishPageResourceSpy = vi.spyOn(
+        publishPageResourceModule,
+        "unpublishPageResource",
+      )
+      const sendFailedUnpublishEmailSpy = vi
+        .spyOn(emailService, "sendFailedUnpublishEmail")
+        .mockResolvedValue()
+
+      // Act — isUnpublishEnabled explicitly false, as if the flag was
+      // flipped off after this was scheduled
+      const result = await publishScheduledResources(true, FIXED_NOW, false)
+
+      // Assert — skipped entirely, not treated as a failure (no failure
+      // email, since this isn't the scheduling user's fault)
+      expect(unpublishPageResourceSpy).not.toHaveBeenCalled()
+      expect(sendFailedUnpublishEmailSpy).not.toHaveBeenCalled()
+      expect(result[site.id]).not.toBeDefined()
+      const updated = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      // still published — the unpublish never ran
+      expect(updated.publishedVersionId).not.toBeNull()
+    })
+
+    it("still executes a scheduled publish when the unpublish feature flag is off", async () => {
+      // Arrange — flag only gates unpublish, publish is unaffected
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        userId: session.userId,
+        scheduledAt: FIXED_NOW,
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Publish,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      const publishPageResourceSpy = vi.spyOn(
+        publishPageResourceModule,
+        "publishPageResource",
+      )
+
+      // Act
+      const result = await publishScheduledResources(true, FIXED_NOW, false)
+
+      // Assert
+      expect(publishPageResourceSpy).toHaveBeenCalledTimes(1)
+      expect(result[site.id]?.[0]!.id).toBe(page.id)
+    })
+
     it("does not call publishPageResource for a resource scheduled for unpublish", async () => {
       const { site, page } = await setupPageResource({
         resourceType: ResourceType.Page,

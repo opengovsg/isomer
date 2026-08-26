@@ -1222,6 +1222,18 @@ export const getResourceIdsByPermalinks = async (
   return result
 }
 
+// Clears a resource's pending schedule, since a manual publish/unpublish
+// that matches the schedule's direction makes it redundant (see the
+// same-direction-proceeds comments in publishPageResource/unpublishPageResource).
+const clearScheduledResource = (
+  tx: Transaction<DB>,
+  { id, siteId }: { id: number; siteId: number },
+) =>
+  updatePageById(
+    { id, siteId, scheduledAt: null, scheduledBy: null, scheduledAction: null },
+    tx,
+  )
+
 interface PublishPageResourceArgs {
   logger: Logger<string>
   userId: string
@@ -1260,18 +1272,17 @@ export const publishPageResource = async ({
     // with publishing now, so block and make the caller cancel it first. A
     // same-direction schedule (publish) isn't a conflict — this manual
     // publish is just doing early what was already going to happen, so it
-    // proceeds and clears the now-redundant schedule below.
-    let clearsSchedule = false
-    if (fullResource.scheduledAt) {
-      const scheduledAction =
-        fullResource.scheduledAction ?? ScheduledAction.Publish
-      if (scheduledAction === ScheduledAction.Unpublish) {
-        throw new ScheduledActionConflictError(
-          "unpublished",
-          fullResource.scheduledAt,
-        )
-      }
-      clearsSchedule = true
+    // proceeds and clears the now-redundant schedule below. (No null-fallback
+    // needed here: a legacy null scheduledAction defaults to Publish, which
+    // is never the conflicting value for this check.)
+    if (
+      fullResource.scheduledAt &&
+      fullResource.scheduledAction === ScheduledAction.Unpublish
+    ) {
+      throw new ScheduledActionConflictError(
+        "unpublished",
+        fullResource.scheduledAt,
+      )
     }
 
     // Only the first publish needs the redirect handling below: the shadow
@@ -1312,17 +1323,8 @@ export const publishPageResource = async ({
       return
     }
 
-    if (clearsSchedule) {
-      await updatePageById(
-        {
-          id: Number(resourceId),
-          siteId,
-          scheduledAt: null,
-          scheduledBy: null,
-          scheduledAction: null,
-        },
-        tx,
-      )
+    if (fullResource.scheduledAt) {
+      await clearScheduledResource(tx, { id: Number(resourceId), siteId })
     }
 
     // Reference back-fill: a redirect created to this resource's URL before it
@@ -1486,18 +1488,20 @@ export const unpublishPageResource = async ({
     // with unpublishing now, so block and make the caller cancel it first.
     // A same-direction schedule (unpublish) isn't a conflict — this manual
     // unpublish is just doing early what was already going to happen, so it
-    // proceeds and clears the now-redundant schedule below.
-    let clearsSchedule = false
-    if (fullResource.scheduledAt) {
-      const scheduledAction =
-        fullResource.scheduledAction ?? ScheduledAction.Publish
-      if (scheduledAction === ScheduledAction.Publish) {
-        throw new ScheduledActionConflictError(
-          "published",
-          fullResource.scheduledAt,
-        )
-      }
-      clearsSchedule = true
+    // proceeds and clears the now-redundant schedule below. Unlike the
+    // publish-side check, the null-fallback matters here: a resource
+    // scheduled before scheduledAction existed has it stored as null, which
+    // must still be treated as an implicit Publish schedule (see
+    // schedulePublishingJob.ts's null-handling convention) to conflict.
+    if (
+      fullResource.scheduledAt &&
+      (fullResource.scheduledAction ?? ScheduledAction.Publish) ===
+        ScheduledAction.Publish
+    ) {
+      throw new ScheduledActionConflictError(
+        "published",
+        fullResource.scheduledAt,
+      )
     }
 
     // Block unpublishing a container's landing page while a sibling or
@@ -1548,7 +1552,7 @@ export const unpublishPageResource = async ({
         publishedVersionId: null,
         draftBlobId,
         state: ResourceState.Draft,
-        ...(clearsSchedule && {
+        ...(fullResource.scheduledAt && {
           scheduledAt: null,
           scheduledBy: null,
           scheduledAction: null,
