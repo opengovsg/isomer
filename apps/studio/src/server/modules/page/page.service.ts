@@ -8,13 +8,18 @@ import { TRPCError } from "@trpc/server"
 import { format, isBefore } from "date-fns"
 import {
   AuditLogEvent,
+  ResourceType,
   ScheduledAction,
 } from "~prisma/generated/generatedEnums"
 
 import type { Resource } from "../database"
 import { logResourceEvent } from "../audit/audit.service"
 import { db } from "../database"
-import { getPageById, updatePageById } from "../resource/resource.service"
+import {
+  getDescendantResourceIdsUnsafeForScheduledUnpublish,
+  getPageById,
+  updatePageById,
+} from "../resource/resource.service"
 import { getUserById } from "../user/user.service"
 
 export const createDefaultPage = ({
@@ -197,6 +202,34 @@ export const scheduleUnpublish = async ({
         code: "BAD_REQUEST",
         message: `Page already has a scheduled action at ${format(resource.scheduledAt, "yyyy-MM-dd HH:mm")}`,
       })
+    }
+
+    // Schedule-time analogue of unpublishPageResource's container-siblings
+    // guard: block scheduling a folder/collection's landing page to unpublish
+    // while another page inside it won't be safely down by then. The
+    // execution-time guard still runs when this fires (see
+    // unpublishPageResource) — this only gives the caller earlier feedback.
+    if (resource.type === ResourceType.IndexPage && resource.parentId) {
+      // resourceId here is the container (parent) whose subtree is walked;
+      // the IndexPage being scheduled is itself part of that subtree and is
+      // still published/unscheduled at this point, so it must be excluded
+      // from the result the same way getPublishedDescendantResourceIds's
+      // callers exclude the resource being unpublished (see
+      // unpublishPageResource's container-siblings guard).
+      const unsafeDescendantIds = (
+        await getDescendantResourceIdsUnsafeForScheduledUnpublish(tx, {
+          siteId,
+          resourceId: resource.parentId,
+          scheduledAt,
+        })
+      ).filter((id) => id !== resource.id)
+      if (unsafeDescendantIds.length > 0) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message:
+            "This folder or collection has other pages that won't be unpublished by then — unpublish or schedule them first.",
+        })
+      }
     }
 
     const updatedPage = await updatePageById(
