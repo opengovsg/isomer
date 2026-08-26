@@ -202,12 +202,23 @@ export const createAuditLogExportRequestsForSites = async ({
     // Race-loser path: a concurrent identical ask may have inserted its
     // in-flight row for some of `siteIdsToInsert` between the SELECT and the
     // INSERT above, so DO NOTHING silently skipped exactly those sites — one
-    // more SELECT resolves every winner's row at once.
+    // more SELECT resolves every winner's row at once. Deliberately NOT
+    // filtered to IN_FLIGHT_STATUSES: the row that caused our conflict was
+    // in-flight at that instant, but by the time this query runs it may
+    // already have been claimed and finished processing (Done/Failed) by a
+    // cron sweep — filtering it out here would silently drop that site from
+    // the response and its audit event despite the ask having been accepted.
+    // A stale row from an unrelated, already-completed past ask for the same
+    // (site, user, range, type) can't be mistaken for the race winner: it
+    // wouldn't have blocked our insert (the partial unique index only covers
+    // in-flight rows), so `raceLoserSiteIds` only contains sites where a
+    // genuinely concurrent insert is racing ours — picking the most recently
+    // created row per site resolves to that one.
     const insertedSiteIds = new Set(insertedRows.map((row) => row.siteId))
     const raceLoserSiteIds = siteIdsToInsert.filter(
       (id) => !insertedSiteIds.has(id),
     )
-    const raceLoserRows =
+    const raceLoserCandidates =
       raceLoserSiteIds.length === 0
         ? []
         : await tx
@@ -216,9 +227,19 @@ export const createAuditLogExportRequestsForSites = async ({
             .where("userId", "=", userId)
             .where("auditLogDateRange", "=", auditLogDateRange)
             .where("reportType", "=", reportType)
-            .where("status", "in", IN_FLIGHT_STATUSES)
             .selectAll()
             .execute()
+    const latestRaceLoserRowBySiteId = new Map<
+      number,
+      (typeof raceLoserCandidates)[number]
+    >()
+    for (const row of raceLoserCandidates) {
+      const current = latestRaceLoserRowBySiteId.get(row.siteId)
+      if (!current || row.createdAt > current.createdAt) {
+        latestRaceLoserRowBySiteId.set(row.siteId, row)
+      }
+    }
+    const raceLoserRows = [...latestRaceLoserRowBySiteId.values()]
 
     const rows = [...existingRows, ...insertedRows, ...raceLoserRows]
 

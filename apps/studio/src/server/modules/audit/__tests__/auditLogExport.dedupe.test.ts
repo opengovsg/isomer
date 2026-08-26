@@ -262,6 +262,48 @@ describe("createAuditLogExportRequestsForSites — idempotent accept", () => {
     expectExportCreateEvent(tx.auditLogValues[0], 1, "Access", "203.0.113.7")
   })
 
+  it("resolves a race-losing insert to the winner's row even if it has already finished processing", async () => {
+    // Arrange: the winner's row raced past Pending/Processing to Done between
+    // our INSERT losing the conflict and the follow-up SELECT running (e.g. a
+    // cron sweep claimed and finished it in that gap) — it must still be
+    // picked up, not dropped for no longer being "in-flight". A stale Done row
+    // from an earlier, unrelated duplicate ask for the same site/month/type is
+    // also visible to that SELECT; the more recent `createdAt` disambiguates
+    // the real race winner from it.
+    const staleRow = {
+      id: "stale-row",
+      siteId: 1,
+      reportType: "Access",
+      createdAt: new Date("2026-01-01T00:00:00Z"),
+    }
+    const winnerRowNowDone = {
+      id: "winner-row",
+      siteId: 1,
+      reportType: "Access",
+      status: "Done",
+      createdAt: new Date("2026-06-01T00:00:00Z"),
+    }
+    const tx = makeTx({
+      selects: [[], [staleRow, winnerRowNowDone]],
+      inserts: [{ site: 1, outcome: "conflict" }],
+    })
+    useTx(tx)
+
+    // Act
+    const result = await createAuditLogExportRequestsForSites({
+      siteIds: [1],
+      userId: "user-1",
+      month: VALID_MONTH,
+      reportType: "Access",
+    })
+
+    // Assert: the newer (winner's) row wins over the stale one, and it is
+    // still recorded as accepted rather than silently dropped.
+    expect(result).toEqual([winnerRowNowDone])
+    expect(tx.auditLogValues).toHaveLength(1)
+    expectExportCreateEvent(tx.auditLogValues[0], 1, "Access")
+  })
+
   it("re-throws a non-conflict INSERT error unchanged", async () => {
     // Arrange: a genuine DB error must not be masked as an idempotent accept.
     const otherError = new Error("connection reset")
