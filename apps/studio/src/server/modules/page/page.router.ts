@@ -10,7 +10,6 @@ import {
   schema,
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
-import { format } from "date-fns"
 import { get, isEmpty, isEqual, pick } from "lodash-es"
 import { UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS } from "~/constants/resources"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
@@ -51,7 +50,6 @@ import {
   AuditLogEvent,
   ResourceState,
   ResourceType,
-  ScheduledAction,
 } from "~prisma/generated/generatedEnums"
 
 import { logResourceEvent } from "../audit/audit.service"
@@ -77,10 +75,12 @@ import {
 } from "../resource/resource.service"
 import { getSiteConfig } from "../site/site.service"
 import {
-  cancelScheduleAction,
+  cancelSchedulePublish,
+  cancelScheduleUnpublish,
   createDefaultPage,
   createFolderIndexPage,
-  scheduleAction,
+  schedulePublish,
+  scheduleUnpublish,
 } from "./page.service"
 
 const schemaValidator = ajv.compile<IsomerSchema>(schema)
@@ -389,41 +389,50 @@ export const pageRouter = router({
     }),
   schedulePage: protectedProcedure
     .input(scheduledPublishServerSchema)
-    .mutation(({ ctx, input: { scheduledAt, siteId, pageId } }) =>
-      scheduleAction({
+    .mutation(async ({ ctx, input: { scheduledAt, siteId, pageId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "publish",
+        userId: ctx.user.id,
+      })
+      const resource = await schedulePublish({
         userId: ctx.user.id,
         siteId,
         pageId,
         scheduledAt,
-        action: ScheduledAction.Publish,
-        permissionAction: "publish",
-        requiresPublished: false,
-        auditEvent: AuditLogEvent.SchedulePublish,
-        alreadyScheduledMessage: (at) =>
-          `Page already has a scheduled action at ${format(at, "yyyy-MM-dd HH:mm")}`,
-        failedMessage: "Failed to schedule page",
-        sendConfirmationEmail: sendScheduledPageEmail,
-      }),
-    ),
+      })
+      await sendScheduledPageEmail({
+        resource,
+        scheduledAt,
+        recipientEmail: ctx.user.email,
+      })
+    }),
   cancelSchedulePage: protectedProcedure
     .input(basePageSchema)
-    .mutation(({ ctx, input: { siteId, pageId } }) =>
-      cancelScheduleAction({
+    .mutation(async ({ ctx, input: { siteId, pageId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "publish",
+        userId: ctx.user.id,
+      })
+      const resource = await cancelSchedulePublish({
         userId: ctx.user.id,
         siteId,
         pageId,
-        action: ScheduledAction.Publish,
-        permissionAction: "publish",
-        auditEvent: AuditLogEvent.CancelSchedulePublish,
-        notScheduledMessage:
-          "Unable to cancel schedule for a page that is not scheduled to be published",
-        failedMessage: "Failed to cancel page schedule",
-        sendConfirmationEmail: sendCancelSchedulePageEmail,
-      }),
-    ),
+      })
+      await sendCancelSchedulePageEmail({
+        resource,
+        recipientEmail: ctx.user.email,
+      })
+    }),
   scheduleUnpublish: protectedProcedure
     .input(scheduledUnpublishServerSchema)
     .mutation(async ({ ctx, input: { scheduledAt, siteId, pageId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "unpublish",
+        userId: ctx.user.id,
+      })
       // Dark-launched, same flag as unpublishPage — scheduling an unpublish
       // presupposes the unpublish feature itself is enabled.
       if (!ctx.gb.isOn(IS_UNPUBLISH_ENABLED_FEATURE_KEY)) {
@@ -437,41 +446,40 @@ export const pageRouter = router({
       // unpublishing it directly is rejected, and the cron would run
       // unpublishPageResource on it with no type check at all.
       await assertPageIsUnpublishable(db, { resourceId: pageId, siteId })
-      return scheduleAction({
+      const resource = await scheduleUnpublish({
         userId: ctx.user.id,
         siteId,
         pageId,
         scheduledAt,
-        action: ScheduledAction.Unpublish,
-        permissionAction: "unpublish",
-        requiresPublished: true,
-        auditEvent: AuditLogEvent.ScheduleUnpublish,
-        alreadyScheduledMessage: (at) =>
-          `Page already has a scheduled action at ${format(at, "yyyy-MM-dd HH:mm")}`,
-        failedMessage: "Failed to schedule unpublish",
-        sendConfirmationEmail: sendScheduledUnpublishEmail,
+      })
+      await sendScheduledUnpublishEmail({
+        resource,
+        scheduledAt,
+        recipientEmail: ctx.user.email,
       })
     }),
   cancelScheduleUnpublish: protectedProcedure
     .input(basePageSchema)
-    .mutation(({ ctx, input: { siteId, pageId } }) => {
+    .mutation(async ({ ctx, input: { siteId, pageId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "unpublish",
+        userId: ctx.user.id,
+      })
       if (!ctx.gb.isOn(IS_UNPUBLISH_ENABLED_FEATURE_KEY)) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "This page either does not exist or cannot be unpublished",
         })
       }
-      return cancelScheduleAction({
+      const resource = await cancelScheduleUnpublish({
         userId: ctx.user.id,
         siteId,
         pageId,
-        action: ScheduledAction.Unpublish,
-        permissionAction: "unpublish",
-        auditEvent: AuditLogEvent.CancelScheduleUnpublish,
-        notScheduledMessage:
-          "Unable to cancel schedule for a page that is not scheduled to be unpublished",
-        failedMessage: "Failed to cancel scheduled unpublish",
-        sendConfirmationEmail: sendCancelScheduleUnpublishEmail,
+      })
+      await sendCancelScheduleUnpublishEmail({
+        resource,
+        recipientEmail: ctx.user.email,
       })
     }),
   updatePageBlob: validatedPageProcedure
