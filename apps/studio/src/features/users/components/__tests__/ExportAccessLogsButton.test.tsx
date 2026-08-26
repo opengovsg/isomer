@@ -60,7 +60,7 @@ describe("ExportAccessLogsButton", () => {
     renderWith(adminAbility)
 
     // Act
-    fireEvent.click(screen.getByRole("button", { name: "Export access logs" }))
+    fireEvent.click(screen.getByRole("button", { name: "Export user access" }))
 
     // Assert: same mutation the settings export form issues — Access report,
     // pinned to the current Singapore month.
@@ -81,7 +81,7 @@ describe("ExportAccessLogsButton", () => {
 
     // Assert
     expect(
-      screen.queryByRole("button", { name: "Export access logs" }),
+      screen.queryByRole("button", { name: "Export user access" }),
     ).toBeNull()
   })
 
@@ -91,7 +91,7 @@ describe("ExportAccessLogsButton", () => {
 
     // Assert
     expect(
-      screen.queryByRole("button", { name: "Export access logs" }),
+      screen.queryByRole("button", { name: "Export user access" }),
     ).toBeNull()
     expect(mutate).not.toHaveBeenCalled()
   })

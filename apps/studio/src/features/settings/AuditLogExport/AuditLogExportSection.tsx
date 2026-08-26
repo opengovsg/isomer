@@ -71,7 +71,7 @@ export const AuditLogExportSection = ({
   const selectedMonth = form.watch("month")
   const isCurrentMonthSelected = selectedMonth === monthOptions[0]?.value
 
-  // Shared with the user-management "Export access logs" button: success and
+  // Shared with the user-management "Export user access" button: success and
   // error toasts plus the per-log-type PostHog captures live in the hook.
   const { mutate: createExportRequest, isPending } =
     useCreateAuditLogExportRequest({

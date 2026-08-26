@@ -138,7 +138,7 @@ export const AdminWithAuditLogExport: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
     await expect(
-      await screen.findByRole("button", { name: "Export access logs" }),
+      await screen.findByRole("button", { name: "Export user access" }),
     ).toBeEnabled()
   },
 }
@@ -164,7 +164,7 @@ export const EditorWithAuditLogExport: Story = {
     // Anchor on the page having rendered before asserting the absence.
     await screen.findByRole("button", { name: "Add new user" })
     await expect(
-      screen.queryByRole("button", { name: "Export access logs" }),
+      screen.queryByRole("button", { name: "Export user access" }),
     ).toBeNull()
   },
 }
