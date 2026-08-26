@@ -756,18 +756,12 @@ export const resourceRouter = router({
           })
         }
 
-        // A live page must be unpublished before it can be deleted, so its
-        // removal is always preceded by an audited Unpublish event. Folder
-        // and Collection rows never carry their own publishedVersionId —
-        // and `parentId` is `onDelete: Cascade`, so deleting a container also
-        // wipes every descendant — so check the whole subtree for anything
-        // still live, not just the container's own (always-null) field.
-        //
-        // Gated behind IS_UNPUBLISH_ENABLED_FEATURE_KEY: this guard only
-        // makes sense once unpublish is reachable. With the flag off, a live
-        // resource has no way to stop being live, so enforcing it here would
-        // make every currently-published resource permanently undeletable —
-        // fall back to the pre-unpublish behaviour (delete unconditionally).
+        // Block deleting anything still live. Deletion cascades (`parentId`
+        // is `onDelete: Cascade`), so a Folder/Collection needs its whole
+        // subtree checked, not just its own (always-null) publishedVersionId.
+        // Gated on the flag: with unpublish unreachable, a live resource
+        // could never become deletable, so skip the guard entirely rather
+        // than lock it out permanently.
         if (ctx.gb.isOn(IS_UNPUBLISH_ENABLED_FEATURE_KEY)) {
           const isContainer =
             before.type === ResourceType.Folder ||

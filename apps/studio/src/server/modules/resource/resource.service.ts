@@ -812,28 +812,14 @@ export const getDescendantResourceIds = async (
   return rows.map((row) => String(row.id))
 }
 
-// The following published-descendant checks (hasPublishedDescendant,
-// getPublishedDescendantResourceIds) both restrict to
-// UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS rather than just excluding
-// FolderMeta/CollectionMeta, reusing the existing allow-list instead of a
-// bespoke deny-list. The types excluded by that allow-list and why:
-// - FolderMeta/CollectionMeta: internal ordering metadata, never built into
-//   a visitor-facing page — they're excluded from PAGE_RESOURCE_TYPES in the
-//   static-site build (tooling/build/scripts/publishing/constants.ts) and
-//   only ever read for internal ordering bookkeeping (see the `@deprecated
-//   pageOrderFromIndex` migration in that build script). Some rows of these
-//   types carry a stray publishedVersionId in production despite that, so a
-//   type exclusion (not just relying on the join below) is needed to stop a
-//   stray value from blocking a delete/move that would otherwise be safe.
-//   Both types are themselves candidates for deprecation/removal once that
-//   migration is complete.
-// - RootPage: never a descendant of anything (it has no parent), so its
-//   exclusion here has no practical effect — it's just along for the ride on
-//   the shared allow-list.
-// Folder/Collection are also in that allow-list, but excluding them here
-// would be a no-op either way — they never carry their own
-// publishedVersionId (see the module-level note on containers), so the
-// `publishedVersionId is not null` filter below already keeps them out.
+// Both checks below filter by UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS
+// (the same allow-list unpublishPage validates against) rather than denying
+// FolderMeta/CollectionMeta by name. Those two are excluded because they're
+// ordering metadata that can carry a stray publishedVersionId despite never
+// being a real page (see `@deprecated pageOrderFromIndex` in the static-site
+// build script); RootPage's exclusion is moot since it's never a descendant.
+// Folder/Collection are in the allow-list too but never match here anyway —
+// they never carry their own publishedVersionId.
 
 // True when `resourceId` or any descendant is published — the folder analogue of
 // a page's `publishedVersionId !== null`, used to decide whether a folder/
@@ -1403,10 +1389,8 @@ export const unpublishPageResource = async ({
   userId,
   sitePublish,
 }: UnpublishPageResourceArgs) => {
-  // For a Folder/Collection `resourceId`, this is resolved to the child
-  // IndexPage once `fullResource` is fetched below — that's the resource
-  // actually being unpublished. Declared here so the post-transaction
-  // `publishSite` call below can reference the correct id.
+  // May get swapped to the resolved IndexPage id below; declared out here so
+  // the post-transaction `publishSite` call uses the right id.
   let targetResourceId = resourceId
 
   await db.transaction().execute(async (tx) => {
@@ -1444,15 +1428,10 @@ export const unpublishPageResource = async ({
       })
     }
 
-    // fullResource is an IndexPage whenever `resourceId` was (or resolved to)
-    // a Folder/Collection's landing page — mirroring the delete guard in
-    // resource.router.ts, unpublishing it is blocked while any other page in
-    // its container's subtree is still live, since that would otherwise leave
-    // live pages hanging off a container with no live landing page. Reuses
-    // getPublishedDescendantResourceIds (already walks the container's whole
-    // subtree, e.g. nested subfolders) and filters out fullResource's own id,
-    // which is still published at this point in the transaction and would
-    // otherwise always trip the check.
+    // Block unpublishing a container's landing page while a sibling or
+    // nested page elsewhere in it is still live — mirrors the delete guard's
+    // subtree check. fullResource's own id is filtered out since it's still
+    // published at this point in the transaction.
     if (fullResource.type === ResourceType.IndexPage && fullResource.parentId) {
       const publishedDescendantIds = (
         await getPublishedDescendantResourceIds(tx, {
@@ -1475,13 +1454,10 @@ export const unpublishPageResource = async ({
     let draftBlobId = fullResource.draftBlobId
 
     if (draftBlobId === null) {
-      // There's no pending draft, so `fullResource.content` came from the
-      // published Version's Blob (see getFullPageById). Clone it into a new
-      // Blob for draftBlobId rather than pointing straight at the same row —
-      // that Blob is still referenced by the (now-unpublished) Version, and
-      // future draft edits update a draftBlobId's Blob in place
-      // (see updateBlobById), which would otherwise corrupt that Version's
-      // historical content.
+      // No pending draft, so clone the published Blob into a fresh row
+      // rather than pointing draftBlobId straight at it — draft edits mutate
+      // a Blob in place (see updateBlobById), and the original is still
+      // owned by the now-unpublished, and supposedly immutable, Version.
       const clonedBlob = await tx
         .insertInto("Blob")
         .values({ content: jsonb(fullResource.content) })

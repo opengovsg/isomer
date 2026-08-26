@@ -104,9 +104,8 @@ const validatedPageProcedure = protectedProcedure.use(
   },
 )
 
-// Shared by unpublishPage's flag-off and wrong-resource-type branches so both
-// stay byte-identical — the dark-launch trick below relies on a caller not
-// being able to tell the two apart from the error message alone.
+// Shared so the flag-off and wrong-type branches below throw an identical
+// error — the dark-launch trick depends on them being indistinguishable.
 const UNPUBLISH_PAGE_NOT_FOUND_MESSAGE =
   "This page either does not exist or cannot be unpublished"
 
@@ -684,6 +683,10 @@ export const pageRouter = router({
       },
     ),
 
+  // `pageId` isn't always the resource that ends up mutated: pass a
+  // Folder/Collection id and unpublishPageResource swaps in its child
+  // IndexPage's id first, since that's what's actually live at the
+  // container's URL.
   unpublishPage: protectedProcedure
     .input(unpublishPageSchema)
     .mutation(
@@ -704,11 +707,10 @@ export const pageRouter = router({
           })
         }
 
-        // Allow-list rather than deny-list: unpublishPage accepts Page-like
-        // types plus Folder/Collection (which unpublishPageResource resolves
-        // to their child IndexPage) — see
-        // UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS for why FolderMeta/
-        // CollectionMeta/RootPage are excluded.
+        // Allow-list: Page-like types, plus Folder/Collection (resolved to
+        // their child IndexPage below). See
+        // UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS for what's excluded
+        // and why.
         const page = await db
           .selectFrom("Resource")
           .where("Resource.id", "=", String(pageId))
