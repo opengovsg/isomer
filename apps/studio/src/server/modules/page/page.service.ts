@@ -18,7 +18,7 @@ import { db } from "../database"
 import {
   getDescendantResourceIdsUnsafeForScheduledUnpublish,
   getPageById,
-  resolveContainerToIndexPageId,
+  resolveEffectiveResourceId,
   UNPUBLISH_PAGE_NOT_FOUND_MESSAGE,
   updatePageById,
 } from "../resource/resource.service"
@@ -126,7 +126,7 @@ export const schedulePublish = async ({
     // resolve inside the transaction, same as publishPageResource does via
     // getFullPageById, so the input contract matches the immediate-publish
     // flow exactly.
-    const resolvedResourceId = await resolveContainerToIndexPageId(tx, {
+    const resolvedResourceId = await resolveEffectiveResourceId(tx, {
       resourceId: pageId,
       siteId,
     })
@@ -200,7 +200,7 @@ export const scheduleUnpublish = async ({
     // pageId may be a Folder/Collection id shorthand for its landing page —
     // resolve inside the transaction, same as unpublishPageResource does via
     // getFullPageById, so the input contract matches unpublishPage exactly.
-    const resolvedResourceId = await resolveContainerToIndexPageId(tx, {
+    const resolvedResourceId = await resolveEffectiveResourceId(tx, {
       resourceId: pageId,
       siteId,
     })
@@ -295,7 +295,7 @@ export const cancelSchedulePublish = async ({
   const by = await getUserById(userId)
 
   return db.transaction().execute(async (tx) => {
-    const resolvedResourceId = await resolveContainerToIndexPageId(tx, {
+    const resolvedResourceId = await resolveEffectiveResourceId(tx, {
       resourceId: pageId,
       siteId,
     })
@@ -366,7 +366,7 @@ export const cancelScheduleUnpublish = async ({
   const by = await getUserById(userId)
 
   return db.transaction().execute(async (tx) => {
-    const resolvedResourceId = await resolveContainerToIndexPageId(tx, {
+    const resolvedResourceId = await resolveEffectiveResourceId(tx, {
       resourceId: pageId,
       siteId,
     })
