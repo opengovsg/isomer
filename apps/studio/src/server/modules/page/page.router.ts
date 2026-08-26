@@ -58,7 +58,7 @@ import { PG_ERROR_CODES } from "../database/constants"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 import { applyPermalinkChangeRedirects } from "../redirect/redirect.service"
 import {
-  assertPageIsUnpublishable,
+  assertUnpublishableResourceType,
   createResourceWithBlob,
   getBlobOfResource,
   getFooter,
@@ -440,7 +440,7 @@ export const pageRouter = router({
       // Folder/Collection id, which scheduleUnpublish resolves to its child
       // IndexPage internally (mirroring unpublishPageResource), so the input
       // contract matches unpublishPage's exactly.
-      await assertPageIsUnpublishable(db, { resourceId: pageId, siteId })
+      await assertUnpublishableResourceType(db, { resourceId: pageId, siteId })
       const resource = await scheduleUnpublish({
         userId: ctx.user.id,
         siteId,
@@ -467,7 +467,7 @@ export const pageRouter = router({
           message: UNPUBLISH_PAGE_NOT_FOUND_MESSAGE,
         })
       }
-      await assertPageIsUnpublishable(db, { resourceId: pageId, siteId })
+      await assertUnpublishableResourceType(db, { resourceId: pageId, siteId })
       const resource = await cancelScheduleUnpublish({
         userId: ctx.user.id,
         siteId,
@@ -690,7 +690,10 @@ export const pageRouter = router({
           })
         }
 
-        await assertPageIsUnpublishable(db, { resourceId: pageId, siteId })
+        await assertUnpublishableResourceType(db, {
+          resourceId: pageId,
+          siteId,
+        })
 
         await unpublishPageResource({
           logger,

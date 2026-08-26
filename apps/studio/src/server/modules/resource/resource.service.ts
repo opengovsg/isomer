@@ -151,14 +151,16 @@ const getById = (
     .where("Resource.id", "=", String(resourceId))
     .where("siteId", "=", siteId)
 
+// Accepts any resourceId and returns the effective page id to operate on.
 // A Folder/Collection never carries its own publishedVersionId/draftBlobId —
-// its liveness and content are entirely its child IndexPage's. Resolves to
-// that child's id; any other resource type (including a Folder/Collection
-// with no IndexPage yet) is returned unchanged. Shared by every flow that
-// accepts a container id as shorthand for "its landing page" — publish/
-// unpublish (via getFullPageById below) and scheduling both need this same
-// resolution so their input contract matches.
-export const resolveContainerToIndexPageId = async (
+// its liveness and content are entirely its child IndexPage's — so those are
+// resolved to that child's id. Every other resourceId (including a Folder/
+// Collection with no IndexPage yet, or an ordinary page) is returned
+// unchanged. Shared by every flow that accepts a container id as shorthand
+// for "its landing page" — publish/unpublish (via getFullPageById below)
+// and scheduling both need this same resolution so their input contract
+// matches.
+export const resolveEffectiveResourceId = async (
   db: SafeKysely,
   { resourceId, siteId }: { resourceId: number; siteId: number },
 ): Promise<number> => {
@@ -191,7 +193,7 @@ export const getFullPageById = async (
   db: SafeKysely,
   args: { resourceId: number; siteId: number },
 ) => {
-  const targetResourceId = await resolveContainerToIndexPageId(db, args)
+  const targetResourceId = await resolveEffectiveResourceId(db, args)
   const targetArgs = { ...args, resourceId: targetResourceId }
 
   // Check if draft blob exists and return that preferentially
@@ -914,20 +916,35 @@ export const getDescendantResourceIdsUnsafeForScheduledUnpublish = async (
     .where("Resource.type", "in", UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS)
     .where((eb) =>
       eb.or([
+        // Unsafe case 1: currently live, and nothing guarantees it'll be
+        // down before `scheduledAt` fires.
         eb.and([
           eb("Resource.publishedVersionId", "is not", null),
           eb.or([
+            // No unpublish scheduled at all.
             eb("Resource.scheduledAt", "is", null),
+            // An unpublish is scheduled, but at/after `scheduledAt` — not
+            // guaranteed to land first.
             eb("Resource.scheduledAt", ">=", scheduledAt),
+            // A schedule exists with no action recorded — legacy rows
+            // (pre-scheduledAction) default to Publish, so this is not an
+            // Unpublish.
             eb("Resource.scheduledAction", "is", null),
+            // A schedule exists, but it's a Publish, not an Unpublish.
             eb("Resource.scheduledAction", "!=", ScheduledAction.Unpublish),
           ]),
         ]),
+        // Unsafe case 2: not live right now, but scheduled to become live
+        // again before `scheduledAt` fires.
         eb.and([
           eb("Resource.publishedVersionId", "is", null),
+          // A schedule exists...
           eb("Resource.scheduledAt", "is not", null),
+          // ...and it fires strictly before `scheduledAt`...
           eb("Resource.scheduledAt", "<", scheduledAt),
           eb.or([
+            // ...and it's a Publish (or defaults to one, per the legacy
+            // null-scheduledAction convention above).
             eb("Resource.scheduledAction", "is", null),
             eb("Resource.scheduledAction", "=", ScheduledAction.Publish),
           ]),
@@ -1486,13 +1503,14 @@ interface UnpublishPageResourceArgs {
 }
 
 /**
- * Only a narrow set of resource types are unpublishable via scheduleUnpublish
- * — see UNPUBLISHABLE_RESOURCE_TYPES for why RootPage/Folder/Collection/
- * FolderMeta/CollectionMeta are excluded. Unlike unpublishPageResource,
- * scheduleAction resolves `pageId` with getPageById, which doesn't redirect
- * a Folder/Collection id to its child IndexPage — so a scheduled unpublish
- * can't support containers the way an immediate unpublishPage call can (see
- * UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS for that wider allow-list).
+ * scheduleUnpublish/cancelScheduleUnpublish accept the same input shape as
+ * unpublishPageResource: a real page id, or a Folder/Collection id shorthand
+ * for its landing page. resolveEffectiveResourceId resolves the container to
+ * its child IndexPage before getPageById is called — a Folder/Collection
+ * with no IndexPage yet has nothing to resolve to, so it falls through to
+ * getPageById unchanged and is rejected there as not found (see
+ * UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS for the wider allow-list this
+ * gate validates the *original* id against, before resolution happens).
  */
 // Shared across every unpublish-family check (unpublishPage's flag-off and
 // wrong-type branches, scheduleUnpublish/cancelScheduleUnpublish's flag-off
@@ -1503,10 +1521,10 @@ export const UNPUBLISH_PAGE_NOT_FOUND_MESSAGE =
 
 // Accepts the same input shape as unpublishPageResource: a real page id, or
 // a Folder/Collection id shorthand for its landing page (resolved by the
-// caller via resolveContainerToIndexPageId, not here — this only validates
+// caller via resolveEffectiveResourceId, not here — this only validates
 // that the *original* id given is a legitimate kind of thing to unpublish,
 // before any resolution happens).
-export const assertPageIsUnpublishable = async (
+export const assertUnpublishableResourceType = async (
   db: SafeKysely,
   { resourceId, siteId }: { resourceId: number; siteId: number },
 ) => {
