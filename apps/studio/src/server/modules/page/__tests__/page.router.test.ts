@@ -4088,6 +4088,45 @@ describe("page.router", async () => {
         new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
       )
     })
+
+    it("should resolve a Folder id to its child IndexPage and schedule that", async () => {
+      // Arrange — same input contract as publishPage: passing the Folder's
+      // own id, not its landing page's, should still work.
+      const { site, folder } = await setupFolder({})
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        userId: session.userId ?? undefined,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.schedulePage({
+        siteId: site.id,
+        pageId: Number(folder.id),
+        scheduledAt: addDays(FIXED_NOW, 1),
+      })
+
+      // Assert — the schedule landed on the IndexPage, not the Folder
+      const updatedIndexPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", indexPage.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updatedIndexPage.scheduledAt).toEqual(addDays(FIXED_NOW, 1))
+      expect(updatedIndexPage.scheduledAction).toEqual(ScheduledAction.Publish)
+
+      const updatedFolder = await db
+        .selectFrom("Resource")
+        .where("id", "=", folder.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updatedFolder.scheduledAt).toBeNull()
+    })
   })
   describe("cancelSchedulePage", () => {
     const FIXED_NOW = new Date("2024-01-01T00:00:00.000Z")
@@ -4236,6 +4275,43 @@ describe("page.router", async () => {
       await expect(cancelScheduleCaller).rejects.toThrow(
         new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
       )
+    })
+
+    it("should resolve a Folder id to its child IndexPage and cancel that", async () => {
+      const { site, folder } = await setupFolder({})
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        userId: session.userId ?? undefined,
+        scheduledAt: set(addDays(FIXED_NOW, 1), {
+          hours: 10,
+          minutes: 0,
+          seconds: 0,
+          milliseconds: 0,
+        }),
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Publish,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.cancelSchedulePage({
+        siteId: site.id,
+        pageId: Number(folder.id),
+      })
+
+      // Assert
+      const updatedIndexPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", indexPage.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updatedIndexPage.scheduledAt).toBeNull()
+      expect(updatedIndexPage.scheduledBy).toBeNull()
     })
   })
 
@@ -4708,6 +4784,48 @@ describe("page.router", async () => {
         .execute()
       expect(auditLogs.length).toEqual(1)
     })
+
+    it("should resolve a Folder id to its child IndexPage and schedule that", async () => {
+      // Arrange — same input contract as unpublishPage: passing the
+      // Folder's own id, not its landing page's, should still work.
+      const { site, folder } = await setupFolder({})
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.scheduleUnpublish({
+        siteId: site.id,
+        pageId: Number(folder.id),
+        scheduledAt: futureDate,
+      })
+
+      // Assert — the schedule landed on the IndexPage, not the Folder
+      const updatedIndexPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", indexPage.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updatedIndexPage.scheduledAt).toEqual(futureDate)
+      expect(updatedIndexPage.scheduledAction).toEqual(
+        ScheduledAction.Unpublish,
+      )
+
+      const updatedFolder = await db
+        .selectFrom("Resource")
+        .where("id", "=", folder.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updatedFolder.scheduledAt).toBeNull()
+    })
   })
 
   describe("cancelScheduleUnpublish", () => {
@@ -4869,6 +4987,40 @@ describe("page.router", async () => {
         .selectAll()
         .execute()
       expect(auditLogs.length).toEqual(1)
+    })
+
+    it("should resolve a Folder id to its child IndexPage and cancel that", async () => {
+      const { site, folder } = await setupFolder({})
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+        scheduledAt: futureDate,
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.cancelScheduleUnpublish({
+        siteId: site.id,
+        pageId: Number(folder.id),
+      })
+
+      // Assert
+      const updatedIndexPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", indexPage.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updatedIndexPage.scheduledAt).toBeNull()
+      expect(updatedIndexPage.scheduledBy).toBeNull()
+      expect(updatedIndexPage.scheduledAction).toBeNull()
     })
   })
 })
