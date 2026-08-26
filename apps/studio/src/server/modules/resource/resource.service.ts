@@ -874,6 +874,62 @@ export const getPublishedDescendantResourceIds = async (
   return rows.map((row) => String(row.id))
 }
 
+// Ids of descendants that would still be live when a scheduled unpublish of
+// `resourceId` (an IndexPage) fires at `scheduledAt` — i.e. this is the
+// schedule-time analogue of getPublishedDescendantResourceIds's execution-time
+// check. A descendant is "safe" (excluded from the result) only if:
+//   - it's currently live AND has its own scheduled Unpublish strictly before
+//     `scheduledAt` (so it'll be down well before this one fires), or
+//   - it's currently not live AND has no scheduled Publish before
+//     `scheduledAt` (so it won't come back up before this one fires).
+// The second case matters even though the descendant isn't live right now:
+// without it, a descendant could be sitting on an already-scheduled Publish
+// for some time before `scheduledAt`, guaranteeing it'll be live again by
+// the time this unpublish executes — a fact fully knowable now, not a race.
+// A currently-live descendant with no schedule, or one scheduled for a
+// *later* Unpublish, is unsafe; same for a currently-unpublished descendant
+// scheduled to Publish before `scheduledAt` (a null scheduledAction is
+// treated as Publish, matching the convention elsewhere in this module).
+export const getDescendantResourceIdsUnsafeForScheduledUnpublish = async (
+  trx: SafeKysely,
+  {
+    siteId,
+    resourceId,
+    scheduledAt,
+  }: { siteId: number; resourceId: string; scheduledAt: Date },
+): Promise<string[]> => {
+  const rows = await withResourceSubtree(trx, { siteId, resourceId })
+    .selectFrom("subtree")
+    .innerJoin("Resource", "Resource.id", "subtree.id")
+    .where("Resource.id", "!=", resourceId)
+    .where("Resource.type", "in", UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS)
+    .where((eb) =>
+      eb.or([
+        eb.and([
+          eb("Resource.publishedVersionId", "is not", null),
+          eb.or([
+            eb("Resource.scheduledAt", "is", null),
+            eb("Resource.scheduledAt", ">=", scheduledAt),
+            eb("Resource.scheduledAction", "is", null),
+            eb("Resource.scheduledAction", "!=", ScheduledAction.Unpublish),
+          ]),
+        ]),
+        eb.and([
+          eb("Resource.publishedVersionId", "is", null),
+          eb("Resource.scheduledAt", "is not", null),
+          eb("Resource.scheduledAt", "<", scheduledAt),
+          eb.or([
+            eb("Resource.scheduledAction", "is", null),
+            eb("Resource.scheduledAction", "=", ScheduledAction.Publish),
+          ]),
+        ]),
+      ]),
+    )
+    .select("Resource.id")
+    .execute()
+  return rows.map((row) => String(row.id))
+}
+
 // Resolves a full permalink path (e.g. "/foo/bar") to the resource that serves
 // it, walking permalink segments from the site's root page. A Folder/Collection
 // is resolved to its IndexPage child, since that is what actually renders at the
