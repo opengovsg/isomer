@@ -1,11 +1,12 @@
 import type { MockInstance } from "vitest"
 import type { User } from "~prisma/generated/prisma/client"
-import { addSeconds } from "date-fns"
+import { addSeconds, subMinutes } from "date-fns"
 import MockDate from "mockdate"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
 import { applyAuthedSession } from "tests/integration/helpers/iron-session"
 import {
+  setupFolder,
   setupPageResource,
   setupPublisherPermissions,
   setupUser,
@@ -781,6 +782,65 @@ describe("schedulePublishingJob", async () => {
       await publishScheduledResources(false, FIXED_NOW)
 
       expect(sendFailedUnpublishEmailSpy).not.toHaveBeenCalled()
+    })
+
+    it("unpublishes a container's landing page and a sibling due in the same run, regardless of insertion order", async () => {
+      // Arrange — the IndexPage is created (and so gets a lower id) before
+      // its sibling, but the sibling's scheduledAt is earlier. Without
+      // ordering the cron's query by scheduledAt, the DB could return the
+      // IndexPage first, and its container-siblings guard would then
+      // spuriously fail against a sibling that "should" already be down but
+      // hadn't been processed yet in this same run.
+      const { site, folder } = await setupFolder({})
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId,
+        scheduledAt: subMinutes(FIXED_NOW, 1),
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      const { page: siblingPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.Page,
+        permalink: "sibling-page",
+        state: ResourceState.Published,
+        userId: session.userId,
+        scheduledAt: subMinutes(FIXED_NOW, 2),
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      const sendFailedUnpublishEmailSpy = vi
+        .spyOn(emailService, "sendFailedUnpublishEmail")
+        .mockResolvedValue()
+
+      // Act
+      const result = await publishScheduledResources(true, FIXED_NOW)
+
+      // Assert — both unpublished, no spurious failure on the IndexPage
+      expect(sendFailedUnpublishEmailSpy).not.toHaveBeenCalled()
+      const updatedIndexPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", indexPage.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      const updatedSiblingPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", siblingPage.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updatedIndexPage.publishedVersionId).toBeNull()
+      expect(updatedSiblingPage.publishedVersionId).toBeNull()
+      expect(result[site.id]?.map((r) => r.id)).toEqual(
+        expect.arrayContaining([indexPage.id, siblingPage.id]),
+      )
     })
   })
 
