@@ -14,8 +14,8 @@ import {
 import type { Resource } from "../database"
 import { logResourceEvent } from "../audit/audit.service"
 import { db } from "../database"
-import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 import { getPageById, updatePageById } from "../resource/resource.service"
+import { getUserById } from "../user/user.service"
 
 export const createDefaultPage = ({
   layout,
@@ -92,62 +92,29 @@ export const createFolderIndexPage = (title: string) => {
   } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
 }
 
-interface ScheduleActionParams {
+interface SchedulePublishParams {
   userId: string
   siteId: number
   pageId: number
   scheduledAt: Date
-  action: ScheduledAction
-  permissionAction: "publish" | "unpublish"
-  // whether the page must currently be published for this action to be schedulable (true for unpublish, false for publish)
-  requiresPublished: boolean
-  auditEvent:
-    | typeof AuditLogEvent.SchedulePublish
-    | typeof AuditLogEvent.ScheduleUnpublish
-  alreadyScheduledMessage: (scheduledAt: Date) => string
-  failedMessage: string
-  sendConfirmationEmail: (args: {
-    resource: Resource
-    scheduledAt: Date
-    recipientEmail: string
-  }) => Promise<void>
 }
 
-// Shared body for schedulePage/scheduleUnpublish: they differ only in the
-// scheduled action, permission, published-state precondition, audit event,
-// error copy, and confirmation email.
-export const scheduleAction = async ({
+export const schedulePublish = async ({
   userId,
   siteId,
   pageId,
   scheduledAt,
-  action,
-  permissionAction,
-  requiresPublished,
-  auditEvent,
-  alreadyScheduledMessage,
-  failedMessage,
-  sendConfirmationEmail,
-}: ScheduleActionParams) => {
-  await bulkValidateUserPermissionsForResources({
-    siteId,
-    action: permissionAction,
-    userId,
-  })
-
+}: SchedulePublishParams): Promise<Resource> => {
   if (isBefore(scheduledAt, new Date())) {
     throw new TRPCError({
       code: "BAD_REQUEST",
       message: "Scheduled time must be in the future",
     })
   }
-  const by = await db
-    .selectFrom("User")
-    .where("id", "=", userId)
-    .selectAll()
-    .executeTakeFirstOrThrow()
 
-  const updatedPage = await db.transaction().execute(async (tx) => {
+  const by = await getUserById(userId)
+
+  return db.transaction().execute(async (tx) => {
     // fetch the resource to be scheduled inside the transaction, to guard against concurrent update issues (race conditions)
     const resource = await getPageById(tx, { resourceId: pageId, siteId })
     if (!resource) {
@@ -156,7 +123,70 @@ export const scheduleAction = async ({
         message: "Resource not found",
       })
     }
-    if (requiresPublished && !resource.publishedVersionId) {
+    if (resource.scheduledAt) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: `Page already has a scheduled action at ${format(resource.scheduledAt, "yyyy-MM-dd HH:mm")}`,
+      })
+    }
+
+    const updatedPage = await updatePageById(
+      {
+        id: pageId,
+        siteId,
+        scheduledAt,
+        scheduledBy: by.id,
+        scheduledAction: ScheduledAction.Publish,
+      },
+      tx,
+    )
+    if (!updatedPage) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to schedule page",
+      })
+    }
+    await logResourceEvent(tx, {
+      siteId,
+      by,
+      delta: { before: resource, after: updatedPage },
+      eventType: AuditLogEvent.SchedulePublish,
+    })
+    return updatedPage
+  })
+}
+
+interface ScheduleUnpublishParams {
+  userId: string
+  siteId: number
+  pageId: number
+  scheduledAt: Date
+}
+
+export const scheduleUnpublish = async ({
+  userId,
+  siteId,
+  pageId,
+  scheduledAt,
+}: ScheduleUnpublishParams): Promise<Resource> => {
+  if (isBefore(scheduledAt, new Date())) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Scheduled time must be in the future",
+    })
+  }
+
+  const by = await getUserById(userId)
+
+  return db.transaction().execute(async (tx) => {
+    const resource = await getPageById(tx, { resourceId: pageId, siteId })
+    if (!resource) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Resource not found",
+      })
+    }
+    if (!resource.publishedVersionId) {
       throw new TRPCError({
         code: "BAD_REQUEST",
         message: "This page is not currently published",
@@ -165,84 +195,50 @@ export const scheduleAction = async ({
     if (resource.scheduledAt) {
       throw new TRPCError({
         code: "BAD_REQUEST",
-        message: alreadyScheduledMessage(resource.scheduledAt),
+        message: `Page already has a scheduled action at ${format(resource.scheduledAt, "yyyy-MM-dd HH:mm")}`,
       })
     }
-    // update the resource's scheduled field
+
     const updatedPage = await updatePageById(
       {
         id: pageId,
         siteId,
         scheduledAt,
         scheduledBy: by.id,
-        scheduledAction: action,
+        scheduledAction: ScheduledAction.Unpublish,
       },
       tx,
     )
-    // verify that the update was successful
     if (!updatedPage) {
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
-        message: failedMessage,
+        message: "Failed to schedule unpublish",
       })
     }
     await logResourceEvent(tx, {
       siteId,
       by,
       delta: { before: resource, after: updatedPage },
-      eventType: auditEvent,
+      eventType: AuditLogEvent.ScheduleUnpublish,
     })
     return updatedPage
   })
-  await sendConfirmationEmail({
-    resource: updatedPage,
-    scheduledAt,
-    recipientEmail: by.email,
-  })
 }
 
-interface CancelScheduleActionParams {
+interface CancelSchedulePublishParams {
   userId: string
   siteId: number
   pageId: number
-  action: ScheduledAction
-  permissionAction: "publish" | "unpublish"
-  auditEvent:
-    | typeof AuditLogEvent.CancelSchedulePublish
-    | typeof AuditLogEvent.CancelScheduleUnpublish
-  notScheduledMessage: string
-  failedMessage: string
-  sendConfirmationEmail: (args: {
-    resource: Resource
-    recipientEmail: string
-  }) => Promise<void>
 }
 
-// Shared body for cancelSchedulePage/cancelScheduleUnpublish: they differ
-// only in the scheduled action being cancelled, permission, audit event,
-// error copy, and confirmation email.
-export const cancelScheduleAction = async ({
+export const cancelSchedulePublish = async ({
   userId,
   siteId,
   pageId,
-  action,
-  permissionAction,
-  auditEvent,
-  notScheduledMessage,
-  failedMessage,
-  sendConfirmationEmail,
-}: CancelScheduleActionParams) => {
-  await bulkValidateUserPermissionsForResources({
-    siteId,
-    action: permissionAction,
-    userId,
-  })
-  const by = await db
-    .selectFrom("User")
-    .where("id", "=", userId)
-    .selectAll()
-    .executeTakeFirstOrThrow()
-  const updatedPage = await db.transaction().execute(async (tx) => {
+}: CancelSchedulePublishParams): Promise<Resource> => {
+  const by = await getUserById(userId)
+
+  return db.transaction().execute(async (tx) => {
     const resource = await getPageById(tx, { resourceId: pageId, siteId })
     if (!resource) {
       throw new TRPCError({
@@ -256,14 +252,17 @@ export const cancelScheduleAction = async ({
     // rather than requiring an exact enum match.
     const effectiveScheduledAction =
       resource.scheduledAction ?? ScheduledAction.Publish
-    if (!resource.scheduledAt || effectiveScheduledAction !== action) {
+    if (
+      !resource.scheduledAt ||
+      effectiveScheduledAction !== ScheduledAction.Publish
+    ) {
       throw new TRPCError({
         code: "BAD_REQUEST",
-        message: notScheduledMessage,
+        message:
+          "Unable to cancel schedule for a page that is not scheduled to be published",
       })
     }
 
-    // update the resource's scheduled field
     const updatedPage = await updatePageById(
       {
         id: pageId,
@@ -277,19 +276,75 @@ export const cancelScheduleAction = async ({
     if (!updatedPage) {
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
-        message: failedMessage,
+        message: "Failed to cancel page schedule",
       })
     }
     await logResourceEvent(tx, {
       siteId,
       by,
       delta: { before: resource, after: updatedPage },
-      eventType: auditEvent,
+      eventType: AuditLogEvent.CancelSchedulePublish,
     })
     return updatedPage
   })
-  await sendConfirmationEmail({
-    resource: updatedPage,
-    recipientEmail: by.email,
+}
+
+interface CancelScheduleUnpublishParams {
+  userId: string
+  siteId: number
+  pageId: number
+}
+
+export const cancelScheduleUnpublish = async ({
+  userId,
+  siteId,
+  pageId,
+}: CancelScheduleUnpublishParams): Promise<Resource> => {
+  const by = await getUserById(userId)
+
+  return db.transaction().execute(async (tx) => {
+    const resource = await getPageById(tx, { resourceId: pageId, siteId })
+    if (!resource) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Resource not found",
+      })
+    }
+    const effectiveScheduledAction =
+      resource.scheduledAction ?? ScheduledAction.Publish
+    if (
+      !resource.scheduledAt ||
+      effectiveScheduledAction !== ScheduledAction.Unpublish
+    ) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message:
+          "Unable to cancel schedule for a page that is not scheduled to be unpublished",
+      })
+    }
+
+    const updatedPage = await updatePageById(
+      {
+        id: pageId,
+        siteId,
+        scheduledAt: null,
+        scheduledBy: null,
+        scheduledAction: null,
+      },
+      tx,
+    )
+    if (!updatedPage) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to cancel scheduled unpublish",
+      })
+    }
+    await logResourceEvent(tx, {
+      siteId,
+      by,
+      delta: { before: resource, after: updatedPage },
+      eventType: AuditLogEvent.CancelScheduleUnpublish,
+    })
+    return updatedPage
   })
 }
