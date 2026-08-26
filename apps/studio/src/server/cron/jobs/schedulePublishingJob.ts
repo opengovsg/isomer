@@ -8,6 +8,7 @@ import {
 import {
   ENABLE_CODEBUILD_JOBS,
   ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY,
+  IS_UNPUBLISH_ENABLED_FEATURE_KEY,
 } from "~/lib/growthbook"
 import { createBaseLogger } from "~/lib/logger"
 import { createGrowthBookContext } from "~/server/context"
@@ -59,10 +60,12 @@ const schedulePublishJobHandler = async () => {
     const enableEmailsForScheduledPublishes = gb.isOn(
       ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY,
     )
+    const isUnpublishEnabled = gb.isOn(IS_UNPUBLISH_ENABLED_FEATURE_KEY)
     // Publish all scheduled resources up to the cutoff time
     const siteResourcesMap = await publishScheduledResources(
       enableEmailsForScheduledPublishes,
       scheduledAtCutoff,
+      isUnpublishEnabled,
     )
     // Publish all sites that have resources published
     await publishScheduledSites(siteResourcesMap, enableCodebuildJobs)
@@ -111,6 +114,12 @@ const getScheduledActionHandler = (
 export const publishScheduledResources = async (
   enableEmailsForScheduledPublishes: boolean,
   scheduledAtCutoff: Date,
+  // Dark-launched, same flag as unpublishPage/scheduleUnpublish — but unlike
+  // those, this is re-checked at execution time rather than trusted from
+  // schedule time, since the flag (or a kill-switch) could be flipped off
+  // between when a resource was scheduled and when the cron picks it up.
+  // Defaults true so existing publish-only scenarios are unaffected.
+  isUnpublishEnabled = true,
 ) => {
   // A mapping from siteId to array of resourceIds, to determine which sites need to be published after their resources have been published
   const siteResourcesMap: Record<string, ResourceWithUser[]> = {}
@@ -145,6 +154,15 @@ export const publishScheduledResources = async (
     if (resource.userDeletedAt) {
       logger.warn(
         `Resource ${resourceId}'s scheduling user has been deactivated since scheduling, skipping ${handler.verb}`,
+      )
+      continue
+    }
+
+    // The unpublish flag may have been turned off since this was scheduled —
+    // don't execute an unpublish the feature no longer allows.
+    if (scheduledAction === ScheduledAction.Unpublish && !isUnpublishEnabled) {
+      logger.warn(
+        `Unpublish feature is disabled, skipping scheduled unpublish for resource: ${resourceId}`,
       )
       continue
     }
