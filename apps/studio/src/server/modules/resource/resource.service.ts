@@ -12,6 +12,7 @@ import { TRPCError } from "@trpc/server"
 import { format } from "date-fns"
 import chunk from "lodash-es/chunk"
 import get from "lodash-es/get"
+import { UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS } from "~/constants/resources"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   normalizeRedirectPath,
@@ -812,16 +813,27 @@ export const getDescendantResourceIds = async (
 }
 
 // The following published-descendant checks (hasPublishedDescendant,
-// getPublishedDescendantResourceIds) both exclude FolderMeta/CollectionMeta
-// from counting as "published". Some rows of these types carry a stray
-// publishedVersionId in production, despite neither type ever being built
-// into a visitor-facing page — they're excluded from PAGE_RESOURCE_TYPES in
-// the static-site build (tooling/build/scripts/publishing/constants.ts) and
-// only ever read for internal ordering bookkeeping (see the `@deprecated
-// pageOrderFromIndex` migration in that build script). Both types are
-// themselves candidates for deprecation/removal once that migration is
-// complete. Until then, a stray publishedVersionId on either must not block
-// a delete/move that would otherwise be safe.
+// getPublishedDescendantResourceIds) both restrict to
+// UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS rather than just excluding
+// FolderMeta/CollectionMeta, reusing the existing allow-list instead of a
+// bespoke deny-list. The types excluded by that allow-list and why:
+// - FolderMeta/CollectionMeta: internal ordering metadata, never built into
+//   a visitor-facing page — they're excluded from PAGE_RESOURCE_TYPES in the
+//   static-site build (tooling/build/scripts/publishing/constants.ts) and
+//   only ever read for internal ordering bookkeeping (see the `@deprecated
+//   pageOrderFromIndex` migration in that build script). Some rows of these
+//   types carry a stray publishedVersionId in production despite that, so a
+//   type exclusion (not just relying on the join below) is needed to stop a
+//   stray value from blocking a delete/move that would otherwise be safe.
+//   Both types are themselves candidates for deprecation/removal once that
+//   migration is complete.
+// - RootPage: never a descendant of anything (it has no parent), so its
+//   exclusion here has no practical effect — it's just along for the ride on
+//   the shared allow-list.
+// Folder/Collection are also in that allow-list, but excluding them here
+// would be a no-op either way — they never carry their own
+// publishedVersionId (see the module-level note on containers), so the
+// `publishedVersionId is not null` filter below already keeps them out.
 
 // True when `resourceId` or any descendant is published — the folder analogue of
 // a page's `publishedVersionId !== null`, used to decide whether a folder/
@@ -840,10 +852,7 @@ export const hasPublishedDescendant = async (
     .selectFrom("subtree")
     .innerJoin("Resource", "Resource.id", "subtree.id")
     .where("Resource.publishedVersionId", "is not", null)
-    .where("Resource.type", "not in", [
-      ResourceType.FolderMeta,
-      ResourceType.CollectionMeta,
-    ])
+    .where("Resource.type", "in", UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS)
     .select("Resource.id")
     .executeTakeFirst()
   return published !== undefined
@@ -862,10 +871,7 @@ export const getPublishedDescendantResourceIds = async (
     .innerJoin("Resource", "Resource.id", "subtree.id")
     .where("Resource.id", "!=", resourceId)
     .where("Resource.publishedVersionId", "is not", null)
-    .where("Resource.type", "not in", [
-      ResourceType.FolderMeta,
-      ResourceType.CollectionMeta,
-    ])
+    .where("Resource.type", "in", UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS)
     .select("Resource.id")
     .execute()
   return rows.map((row) => String(row.id))

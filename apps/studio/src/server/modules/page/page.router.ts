@@ -104,6 +104,12 @@ const validatedPageProcedure = protectedProcedure.use(
   },
 )
 
+// Shared by unpublishPage's flag-off and wrong-resource-type branches so both
+// stay byte-identical — the dark-launch trick below relies on a caller not
+// being able to tell the two apart from the error message alone.
+const UNPUBLISH_PAGE_NOT_FOUND_MESSAGE =
+  "This page either does not exist or cannot be unpublished"
+
 export const pageRouter = router({
   getPrefill: protectedProcedure
     .input(getPrefillSchema)
@@ -694,7 +700,7 @@ export const pageRouter = router({
         if (!gb.isOn(IS_UNPUBLISH_ENABLED_FEATURE_KEY)) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "This page either does not exist or cannot be unpublished",
+            message: UNPUBLISH_PAGE_NOT_FOUND_MESSAGE,
           })
         }
 
@@ -718,7 +724,7 @@ export const pageRouter = router({
         if (!page) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "This page either does not exist or cannot be unpublished",
+            message: UNPUBLISH_PAGE_NOT_FOUND_MESSAGE,
           })
         }
 
