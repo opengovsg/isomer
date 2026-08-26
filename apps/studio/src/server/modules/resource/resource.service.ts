@@ -11,10 +11,7 @@ import {
 import { TRPCError } from "@trpc/server"
 import chunk from "lodash-es/chunk"
 import get from "lodash-es/get"
-import {
-  UNPUBLISHABLE_RESOURCE_TYPES,
-  UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS,
-} from "~/constants/resources"
+import { UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS } from "~/constants/resources"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   normalizeRedirectPath,
@@ -154,17 +151,20 @@ const getById = (
     .where("Resource.id", "=", String(resourceId))
     .where("siteId", "=", siteId)
 
-// NOTE: Throw here to fail early if our invariant that a page has a `blobId` is violated
-export const getFullPageById = async (
+// A Folder/Collection never carries its own publishedVersionId/draftBlobId —
+// its liveness and content are entirely its child IndexPage's. Resolves to
+// that child's id; any other resource type (including a Folder/Collection
+// with no IndexPage yet) is returned unchanged. Shared by every flow that
+// accepts a container id as shorthand for "its landing page" — publish/
+// unpublish (via getFullPageById below) and scheduling both need this same
+// resolution so their input contract matches.
+export const resolveContainerToIndexPageId = async (
   db: SafeKysely,
-  args: { resourceId: number; siteId: number },
-) => {
-  // Check if the resource is a Collection or Folder, and if so, use its IndexPage
-  const resource = await getById(db, args)
+  { resourceId, siteId }: { resourceId: number; siteId: number },
+): Promise<number> => {
+  const resource = await getById(db, { resourceId, siteId })
     .select(["Resource.id", "Resource.type"])
     .executeTakeFirst()
-
-  let targetResourceId = args.resourceId
 
   if (
     resource?.type === ResourceType.Collection ||
@@ -172,17 +172,26 @@ export const getFullPageById = async (
   ) {
     const indexPage = await db
       .selectFrom("Resource")
-      .where("Resource.parentId", "=", String(args.resourceId))
-      .where("Resource.siteId", "=", args.siteId)
+      .where("Resource.parentId", "=", String(resourceId))
+      .where("Resource.siteId", "=", siteId)
       .where("Resource.type", "=", ResourceType.IndexPage)
       .select("Resource.id")
       .executeTakeFirst()
 
     if (indexPage) {
-      targetResourceId = Number(indexPage.id)
+      return Number(indexPage.id)
     }
   }
 
+  return resourceId
+}
+
+// NOTE: Throw here to fail early if our invariant that a page has a `blobId` is violated
+export const getFullPageById = async (
+  db: SafeKysely,
+  args: { resourceId: number; siteId: number },
+) => {
+  const targetResourceId = await resolveContainerToIndexPageId(db, args)
   const targetArgs = { ...args, resourceId: targetResourceId }
 
   // Check if draft blob exists and return that preferentially
@@ -1485,6 +1494,18 @@ interface UnpublishPageResourceArgs {
  * can't support containers the way an immediate unpublishPage call can (see
  * UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS for that wider allow-list).
  */
+// Shared across every unpublish-family check (unpublishPage's flag-off and
+// wrong-type branches, scheduleUnpublish/cancelScheduleUnpublish's flag-off
+// and not-found branches) so they're all indistinguishable from each other —
+// load-bearing for the dark-launch trick, not just DRY.
+export const UNPUBLISH_PAGE_NOT_FOUND_MESSAGE =
+  "This page either does not exist or cannot be unpublished"
+
+// Accepts the same input shape as unpublishPageResource: a real page id, or
+// a Folder/Collection id shorthand for its landing page (resolved by the
+// caller via resolveContainerToIndexPageId, not here — this only validates
+// that the *original* id given is a legitimate kind of thing to unpublish,
+// before any resolution happens).
 export const assertPageIsUnpublishable = async (
   db: SafeKysely,
   { resourceId, siteId }: { resourceId: number; siteId: number },
@@ -1493,14 +1514,14 @@ export const assertPageIsUnpublishable = async (
     .selectFrom("Resource")
     .where("Resource.id", "=", String(resourceId))
     .where("Resource.siteId", "=", siteId)
-    .where("Resource.type", "in", UNPUBLISHABLE_RESOURCE_TYPES)
+    .where("Resource.type", "in", UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS)
     .select("Resource.id")
     .executeTakeFirst()
 
   if (!page) {
     throw new TRPCError({
       code: "NOT_FOUND",
-      message: "This page either does not exist or cannot be unpublished",
+      message: UNPUBLISH_PAGE_NOT_FOUND_MESSAGE,
     })
   }
 }

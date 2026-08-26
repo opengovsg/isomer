@@ -11,7 +11,6 @@ import {
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { get, isEmpty, isEqual, pick } from "lodash-es"
-import { UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS } from "~/constants/resources"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   sendCancelSchedulePageEmail,
@@ -70,6 +69,7 @@ import {
   getResourcePermalinkTree,
   publishPageResource,
   publishResource,
+  UNPUBLISH_PAGE_NOT_FOUND_MESSAGE,
   unpublishPageResource,
   updateBlobById,
 } from "../resource/resource.service"
@@ -114,11 +114,6 @@ const validatedPageProcedure = protectedProcedure.use(
     return next()
   },
 )
-
-// Shared so the flag-off and wrong-type branches below throw an identical
-// error — the dark-launch trick depends on them being indistinguishable.
-const UNPUBLISH_PAGE_NOT_FOUND_MESSAGE =
-  "This page either does not exist or cannot be unpublished"
 
 export const pageRouter = router({
   getPrefill: protectedProcedure
@@ -438,13 +433,13 @@ export const pageRouter = router({
       if (!ctx.gb.isOn(IS_UNPUBLISH_ENABLED_FEATURE_KEY)) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "This page either does not exist or cannot be unpublished",
+          message: UNPUBLISH_PAGE_NOT_FOUND_MESSAGE,
         })
       }
-      // Same allow-list as unpublishPage — otherwise a RootPage/Folder/
-      // Collection could be scheduled for unpublish here even though
-      // unpublishing it directly is rejected, and the cron would run
-      // unpublishPageResource on it with no type check at all.
+      // Same check, same allow-list as unpublishPage — pageId may be a
+      // Folder/Collection id, which scheduleUnpublish resolves to its child
+      // IndexPage internally (mirroring unpublishPageResource), so the input
+      // contract matches unpublishPage's exactly.
       await assertPageIsUnpublishable(db, { resourceId: pageId, siteId })
       const resource = await scheduleUnpublish({
         userId: ctx.user.id,
@@ -469,9 +464,10 @@ export const pageRouter = router({
       if (!ctx.gb.isOn(IS_UNPUBLISH_ENABLED_FEATURE_KEY)) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "This page either does not exist or cannot be unpublished",
+          message: UNPUBLISH_PAGE_NOT_FOUND_MESSAGE,
         })
       }
+      await assertPageIsUnpublishable(db, { resourceId: pageId, siteId })
       const resource = await cancelScheduleUnpublish({
         userId: ctx.user.id,
         siteId,
@@ -694,28 +690,7 @@ export const pageRouter = router({
           })
         }
 
-        // Wider allow-list than scheduleUnpublish's assertPageIsUnpublishable:
-        // unpublishPageResource (unlike scheduleAction) resolves a Folder/
-        // Collection id to its child IndexPage, so this accepts those too —
-        // see UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS.
-        const page = await db
-          .selectFrom("Resource")
-          .where("Resource.id", "=", String(pageId))
-          .where("Resource.siteId", "=", siteId)
-          .where(
-            "Resource.type",
-            "in",
-            UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS,
-          )
-          .select("Resource.id")
-          .executeTakeFirst()
-
-        if (!page) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: UNPUBLISH_PAGE_NOT_FOUND_MESSAGE,
-          })
-        }
+        await assertPageIsUnpublishable(db, { resourceId: pageId, siteId })
 
         await unpublishPageResource({
           logger,
