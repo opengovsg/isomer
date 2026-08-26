@@ -18,6 +18,8 @@ import { db } from "../database"
 import {
   getDescendantResourceIdsUnsafeForScheduledUnpublish,
   getPageById,
+  resolveContainerToIndexPageId,
+  UNPUBLISH_PAGE_NOT_FOUND_MESSAGE,
   updatePageById,
 } from "../resource/resource.service"
 import { getUserById } from "../user/user.service"
@@ -120,8 +122,19 @@ export const schedulePublish = async ({
   const by = await getUserById(userId)
 
   return db.transaction().execute(async (tx) => {
+    // pageId may be a Folder/Collection id shorthand for its landing page —
+    // resolve inside the transaction, same as publishPageResource does via
+    // getFullPageById, so the input contract matches the immediate-publish
+    // flow exactly.
+    const resolvedResourceId = await resolveContainerToIndexPageId(tx, {
+      resourceId: pageId,
+      siteId,
+    })
     // fetch the resource to be scheduled inside the transaction, to guard against concurrent update issues (race conditions)
-    const resource = await getPageById(tx, { resourceId: pageId, siteId })
+    const resource = await getPageById(tx, {
+      resourceId: resolvedResourceId,
+      siteId,
+    })
     if (!resource) {
       throw new TRPCError({
         code: "NOT_FOUND",
@@ -137,7 +150,7 @@ export const schedulePublish = async ({
 
     const updatedPage = await updatePageById(
       {
-        id: pageId,
+        id: resolvedResourceId,
         siteId,
         scheduledAt,
         scheduledBy: by.id,
@@ -184,11 +197,21 @@ export const scheduleUnpublish = async ({
   const by = await getUserById(userId)
 
   return db.transaction().execute(async (tx) => {
-    const resource = await getPageById(tx, { resourceId: pageId, siteId })
+    // pageId may be a Folder/Collection id shorthand for its landing page —
+    // resolve inside the transaction, same as unpublishPageResource does via
+    // getFullPageById, so the input contract matches unpublishPage exactly.
+    const resolvedResourceId = await resolveContainerToIndexPageId(tx, {
+      resourceId: pageId,
+      siteId,
+    })
+    const resource = await getPageById(tx, {
+      resourceId: resolvedResourceId,
+      siteId,
+    })
     if (!resource) {
       throw new TRPCError({
         code: "NOT_FOUND",
-        message: "Resource not found",
+        message: UNPUBLISH_PAGE_NOT_FOUND_MESSAGE,
       })
     }
     if (!resource.publishedVersionId) {
@@ -234,7 +257,7 @@ export const scheduleUnpublish = async ({
 
     const updatedPage = await updatePageById(
       {
-        id: pageId,
+        id: resolvedResourceId,
         siteId,
         scheduledAt,
         scheduledBy: by.id,
@@ -272,7 +295,14 @@ export const cancelSchedulePublish = async ({
   const by = await getUserById(userId)
 
   return db.transaction().execute(async (tx) => {
-    const resource = await getPageById(tx, { resourceId: pageId, siteId })
+    const resolvedResourceId = await resolveContainerToIndexPageId(tx, {
+      resourceId: pageId,
+      siteId,
+    })
+    const resource = await getPageById(tx, {
+      resourceId: resolvedResourceId,
+      siteId,
+    })
     if (!resource) {
       throw new TRPCError({
         code: "NOT_FOUND",
@@ -298,7 +328,7 @@ export const cancelSchedulePublish = async ({
 
     const updatedPage = await updatePageById(
       {
-        id: pageId,
+        id: resolvedResourceId,
         siteId,
         scheduledAt: null,
         scheduledBy: null,
@@ -336,11 +366,18 @@ export const cancelScheduleUnpublish = async ({
   const by = await getUserById(userId)
 
   return db.transaction().execute(async (tx) => {
-    const resource = await getPageById(tx, { resourceId: pageId, siteId })
+    const resolvedResourceId = await resolveContainerToIndexPageId(tx, {
+      resourceId: pageId,
+      siteId,
+    })
+    const resource = await getPageById(tx, {
+      resourceId: resolvedResourceId,
+      siteId,
+    })
     if (!resource) {
       throw new TRPCError({
         code: "NOT_FOUND",
-        message: "Resource not found",
+        message: UNPUBLISH_PAGE_NOT_FOUND_MESSAGE,
       })
     }
     const effectiveScheduledAction =
@@ -358,7 +395,7 @@ export const cancelScheduleUnpublish = async ({
 
     const updatedPage = await updatePageById(
       {
-        id: pageId,
+        id: resolvedResourceId,
         siteId,
         scheduledAt: null,
         scheduledBy: null,
