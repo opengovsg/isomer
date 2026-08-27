@@ -19,6 +19,8 @@ export const folderHandlers = {
           title: "a folder",
           id: "1",
           draftBlobId: null,
+          publishedVersionId: null,
+          liveStatus: "notLive",
         }
       })
     },

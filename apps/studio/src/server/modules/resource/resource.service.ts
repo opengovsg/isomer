@@ -1245,6 +1245,80 @@ export const assertResourceNotLive = async (
   }
 }
 
+// Tags every direct child of `resourceId` (or every top-level resource, when
+// `resourceId` is null) with its own id ("branchId"), then walks downward —
+// each descendant inherits its ancestor's tag as the recursion goes deeper.
+// Grouping by that tag at the end tells us, per child, whether it (or
+// anything nested under it, at any depth) is published — one query answers
+// this for every child at once, instead of walking one child's subtree per
+// call.
+//
+// `hasLiveIndexPage` narrows that down to just the child's own immediate
+// IndexPage (one level under it): a Folder/Collection is genuinely "Live"
+// only when this is true, versus "Live · Template" when it's not published
+// but `hasLiveDescendant` is still true because something deeper is live.
+export const getChildLiveStatusMap = async (
+  trx: SafeKysely,
+  { siteId, resourceId }: { siteId: number; resourceId: string | null },
+): Promise<
+  Map<string, { hasLiveDescendant: boolean; hasLiveIndexPage: boolean }>
+> => {
+  const rows = await trx
+    .withRecursive("branchSubtree", (eb) =>
+      eb
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+        .where(
+          "Resource.parentId",
+          resourceId === null ? "is" : "=",
+          resourceId,
+        )
+        .select([
+          "Resource.id",
+          "Resource.id as branchId",
+          sql<number>`0`.as("depth"),
+        ])
+        // `union` (not `unionAll`) dedupes rows so a malformed parent chain with
+        // a cycle can't drive the recursion forever.
+        .union((fb) =>
+          fb
+            .selectFrom("Resource")
+            .innerJoin("branchSubtree", "branchSubtree.id", "Resource.parentId")
+            .where("Resource.siteId", "=", siteId)
+            .select([
+              "Resource.id",
+              "branchSubtree.branchId",
+              sql<number>`"branchSubtree"."depth" + 1`.as("depth"),
+            ]),
+        ),
+    )
+    .selectFrom("branchSubtree")
+    .innerJoin("Resource", "Resource.id", "branchSubtree.id")
+    .groupBy("branchSubtree.branchId")
+    .select([
+      "branchSubtree.branchId as branchId",
+      sql<boolean>`bool_or("Resource"."publishedVersionId" is not null)`.as(
+        "hasLiveDescendant",
+      ),
+      sql<boolean>`bool_or(
+        "branchSubtree"."depth" = 1
+        and "Resource"."type" = ${ResourceType.IndexPage}
+        and "Resource"."publishedVersionId" is not null
+      )`.as("hasLiveIndexPage"),
+    ])
+    .execute()
+
+  return new Map(
+    rows.map((row) => [
+      String(row.branchId),
+      {
+        hasLiveDescendant: row.hasLiveDescendant,
+        hasLiveIndexPage: row.hasLiveIndexPage,
+      },
+    ]),
+  )
+}
+
 // Resolves a full permalink path (e.g. "/foo/bar") to the resource that serves
 // it, walking permalink segments from the site's root page. A Folder/Collection
 // is resolved to its IndexPage child, since that is what actually renders at the
