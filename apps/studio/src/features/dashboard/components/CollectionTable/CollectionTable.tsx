@@ -16,6 +16,7 @@ import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { CollectionTableData } from "./types"
+import { LiveStatusBadges } from "../LiveStatusBadges"
 import { ResourceSortMenu } from "../ResourceTable/ResourceSortMenu"
 import { TitleCell } from "../ResourceTable/TitleCell"
 import { CollectionTableMenu } from "./CollectionTableMenu"
@@ -28,7 +29,7 @@ const getColumns = ({ siteId }: CollectionTableProps) => [
     header: () => <TableHeader>Title</TableHeader>,
     cell: ({ row }) => (
       <TitleCell
-        scheduledAt={row.original.scheduledAt}
+        draftBlobId={row.original.draftBlobId}
         siteId={siteId}
         id={row.original.id}
         title={row.original.title}
@@ -38,6 +39,17 @@ const getColumns = ({ siteId }: CollectionTableProps) => [
             : `/${row.original.permalink}`
         }
         type={row.original.type}
+      />
+    ),
+  }),
+  columnsHelper.display({
+    id: "status",
+    header: () => <TableHeader>Status</TableHeader>,
+    cell: ({ row }) => (
+      <LiveStatusBadges
+        liveStatus={row.original.liveStatus}
+        scheduledAt={row.original.scheduledAt}
+        scheduledAction={row.original.scheduledAction}
       />
     ),
   }),

@@ -24,6 +24,7 @@ import { createFolderIndexPage } from "../page/page.service"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 import { applyFolderPermalinkChangeRedirects } from "../redirect/redirect.service"
 import {
+  getChildLiveStatusMap,
   getResourceFullPermalink,
   hasPublishedDescendant,
   publishResource,
@@ -361,7 +362,7 @@ export const folderRouter = router({
         .where("Resource.siteId", "=", siteId)
         .where("Resource.parentId", "=", resourceId)
         .where("Resource.type", "=", ResourceType.IndexPage)
-        .select(["id", "draftBlobId"])
+        .select(["id", "draftBlobId", "publishedVersionId"])
         .executeTakeFirstOrThrow(
           () =>
             new TRPCError({
@@ -370,7 +371,22 @@ export const folderRouter = router({
             }),
         )
 
-      return { title, ...indexPage }
+      // "Live" if the folder/collection's own index page is published;
+      // "Live · Template" if not, but something nested inside it is (the
+      // dashboard auto-generates a placeholder index for these so the live
+      // content underneath stays reachable); "Not live" otherwise.
+      const childLiveStatus = await getChildLiveStatusMap(db, {
+        siteId,
+        resourceId,
+      })
+      const liveStatus: "live" | "liveTemplate" | "notLive" =
+        indexPage.publishedVersionId !== null
+          ? "live"
+          : [...childLiveStatus.values()].some((s) => s.hasLiveDescendant)
+            ? "liveTemplate"
+            : "notLive"
+
+      return { title, ...indexPage, liveStatus }
     }),
 
   listChildPages: protectedProcedure
