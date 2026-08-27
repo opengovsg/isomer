@@ -7,6 +7,7 @@ import { siteLaunchSecondWindow } from "./apps/launch-second";
 import { migrateClassicToNext } from "./apps/classic-migration";
 import { graftFolderIntoSite } from "./apps/graft-folder";
 import { migrateIndividualPages } from "./apps/page-migration";
+import { triggerCodeBuildBuildsFromCsv } from "./apps/trigger-codebuild";
 
 const main = async () => {
   const script = await select<StreamlineScriptType>({
@@ -52,6 +53,12 @@ const main = async () => {
           "Convert specific Classic pages to Studio format and collect the assets they use.",
         value: "convert-classic-pages",
       },
+      {
+        name: "Script 8: Trigger CodeBuild builds",
+        description:
+          "Trigger CodeBuild builds for the site names listed in codebuild.csv.",
+        value: "trigger-codebuild-builds",
+      },
     ],
   });
 
@@ -76,6 +83,9 @@ const main = async () => {
       break;
     case "convert-classic-pages":
       await migrateIndividualPages();
+      break;
+    case "trigger-codebuild-builds":
+      await triggerCodeBuildBuildsFromCsv();
       break;
     default:
       const _: never = script;

@@ -5,7 +5,8 @@ export type StreamlineScriptType =
   | "site-launch-1st-window"
   | "site-launch-2nd-window"
   | "graft-folder-into-site"
-  | "convert-classic-pages";
+  | "convert-classic-pages"
+  | "trigger-codebuild-builds";
 
 // Represents a single site as part of the onboarding batch
 export interface OnboardingSite {

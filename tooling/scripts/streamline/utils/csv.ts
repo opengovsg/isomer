@@ -6,6 +6,7 @@ import type { OnboardingSite, SiteLaunchSite } from "../types";
 
 const ONBOARDING_BATCH_CSV = "onboarding.csv";
 const SITE_LAUNCH_BATCH_CSV = "site-launch.csv";
+const CODEBUILD_BATCH_CSV = "codebuild.csv";
 
 dotenv.config({
   path: path.join(__dirname, "..", ".env"),
@@ -31,6 +32,16 @@ export const getSiteLaunchBatch = async () => {
   });
 
   return parsed.data;
+};
+
+export const getCodeBuildSiteNames = async () => {
+  const csvFilePath = path.join(__dirname, "..", CODEBUILD_BATCH_CSV);
+  const fileContent = await fs.promises.readFile(csvFilePath, "utf-8");
+
+  return fileContent
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
 };
 
 interface SitesProductionCSVRow {
