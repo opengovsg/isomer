@@ -61,9 +61,7 @@ const SuspendableEditingLockedOverlay = ({
         </VStack>
         <Flex gap="0.75rem">
           {/* Placeholder actions — modals to be wired in a follow-up */}
-          <Button variant="outline" bg="white" color="interaction.main.default">
-            {actionLabel}
-          </Button>
+          <Button variant="reverse">{actionLabel}</Button>
           <Button>Cancel schedule</Button>
         </Flex>
       </VStack>
