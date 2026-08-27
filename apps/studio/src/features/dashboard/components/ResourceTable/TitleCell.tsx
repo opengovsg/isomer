@@ -13,6 +13,7 @@ import { format } from "date-fns"
 import NextLink from "next/link"
 import { useMemo } from "react"
 import { BiTimeFive } from "react-icons/bi"
+import { HasDraftIndicator } from "~/features/dashboard/components/HasDraftIndicator"
 import { getLinkToResource } from "~/utils/resource"
 import { getIcon } from "~/utils/resources"
 
@@ -20,7 +21,7 @@ import type { ResourceTableData } from "./types"
 
 interface TitleCellProps extends Pick<
   ResourceTableData,
-  "title" | "permalink" | "type" | "id" | "scheduledAt"
+  "title" | "permalink" | "type" | "id" | "scheduledAt" | "draftBlobId"
 > {
   siteId: number
 }
@@ -32,6 +33,7 @@ export const TitleCell = ({
   siteId,
   id,
   scheduledAt,
+  draftBlobId,
 }: TitleCellProps): JSX.Element => {
   const linkStyles = useStyleConfig("Link", {
     colorScheme: "neutral",
@@ -91,6 +93,7 @@ export const TitleCell = ({
               </Badge>
             </Tooltip>
           )}
+          <HasDraftIndicator draftBlobId={draftBlobId} />
         </HStack>
         {permalink && (
           <Text
