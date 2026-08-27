@@ -1040,7 +1040,7 @@ describe("folder.router", async () => {
       )
     })
 
-    it("should return 200", async () => {
+    it("should return 200 with liveStatus 'notLive' when nothing under the folder is published", async () => {
       // Arrange
       const { folder, site } = await setupFolder()
       const { page, blob } = await setupPageResource({
@@ -1061,10 +1061,68 @@ describe("folder.router", async () => {
         title: folder.title,
         id: page.id,
         draftBlobId: blob.id,
+        publishedVersionId: null,
+        liveStatus: "notLive",
       })
       await expect(
         db.selectFrom("AuditLog").selectAll().execute(),
       ).resolves.toHaveLength(0)
+    })
+
+    it("should return liveStatus 'live' when the folder's own index page is published", async () => {
+      // Arrange
+      const { folder, site } = await setupFolder()
+      const { page } = await setupPageResource({
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: folder.id,
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = await caller.getIndexpage({
+        siteId: site.id,
+        resourceId: folder.id,
+      })
+
+      // Assert
+      expect(result.liveStatus).toEqual("live")
+      expect(result.publishedVersionId).toEqual(page.publishedVersionId)
+    })
+
+    it("should return liveStatus 'liveTemplate' when the index page itself isn't published but a nested descendant is", async () => {
+      // Arrange
+      const { folder, site } = await setupFolder()
+      await setupPageResource({
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: folder.id,
+      })
+      const { folder: subfolder } = await setupFolder({
+        siteId: site.id,
+        parentId: folder.id,
+        permalink: "nested-folder",
+      })
+      await setupPageResource({
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: subfolder.id,
+        permalink: "nested-index",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = await caller.getIndexpage({
+        siteId: site.id,
+        resourceId: folder.id,
+      })
+
+      // Assert
+      expect(result.liveStatus).toEqual("liveTemplate")
     })
   })
 

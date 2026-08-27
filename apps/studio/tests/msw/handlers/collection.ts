@@ -19,6 +19,7 @@ export const DEFAULT_COLLECTION_ITEMS = [
     scheduledAt: null,
     scheduledBy: null,
     scheduledAction: null,
+    liveStatus: "notLive" as const,
   },
   {
     id: "5",
@@ -35,6 +36,7 @@ export const DEFAULT_COLLECTION_ITEMS = [
     scheduledAt: null,
     scheduledBy: null,
     scheduledAction: null,
+    liveStatus: "notLive" as const,
   },
 ]
 export const collectionHandlers = {

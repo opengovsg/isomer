@@ -53,6 +53,7 @@ import {
   defaultResourceSelect,
   getAncestorIndexPages,
   getBatchAncestryWithSelfQuery,
+  getChildLiveStatusMap,
   getLockingAncestorIndexPages,
   getResourceFullPermalink,
   getSearchRecentlyEdited,
@@ -732,7 +733,7 @@ export const resourceRouter = router({
         query = applyResourceOrderBy(query, orderBy)
 
         // TODO: Add pagination support
-        return query
+        const rows = await query
           .offset(offset)
           .limit(limit)
           .select([
@@ -745,8 +746,40 @@ export const resourceRouter = router({
             "Resource.parentId",
             "Resource.updatedAt",
             "Resource.scheduledAt",
+            "Resource.scheduledAction",
           ])
           .execute()
+
+        // A Folder/Collection never carries its own publishedVersionId — its
+        // live content is its child IndexPage's — so its status needs the
+        // recursive descendant check; every other type is live iff its own
+        // publishedVersionId is set.
+        const childLiveStatus = await getChildLiveStatusMap(db, {
+          siteId,
+          resourceId: resourceId ? String(resourceId) : null,
+        })
+
+        return rows.map((row) => {
+          const isContainer =
+            row.type === ResourceType.Folder ||
+            row.type === ResourceType.Collection
+          if (!isContainer) {
+            return {
+              ...row,
+              liveStatus: row.publishedVersionId !== null ? "live" : "notLive",
+            } as const
+          }
+
+          const status = childLiveStatus.get(String(row.id))
+          return {
+            ...row,
+            liveStatus: status?.hasLiveIndexPage
+              ? "live"
+              : status?.hasLiveDescendant
+                ? "liveTemplate"
+                : "notLive",
+          } as const
+        })
       },
     ),
 

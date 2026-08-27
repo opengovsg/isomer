@@ -1117,6 +1117,116 @@ export const getLockingAncestorIndexPages = (rows: AncestorIndexPage[]) =>
       row.scheduledAction === ScheduledAction.Unpublish,
   )
 
+// Ancestor IndexPages that are not currently live — blocks an immediate
+// publish of `resourceId`, since a child can't go live before its container.
+export const getNotLiveAncestorIndexPages = (rows: AncestorIndexPage[]) =>
+  rows.filter((row) => row.publishedVersionId === null)
+
+// Ancestor IndexPages not guaranteed to be live by `scheduledAt` — the
+// upward, inverted mirror of getDescendantResourceIdsUnsafeForScheduledUnpublish.
+// An ancestor is "unsafe" (blocks scheduling a publish underneath it) unless:
+//   - it's currently live AND has no scheduled Unpublish before `scheduledAt`
+//     (so it'll still be up when this one fires), or
+//   - it's currently not live AND has a scheduled Publish at/before
+//     `scheduledAt` (so it's guaranteed to be up in time).
+// A null scheduledAction on a legacy row defaults to Publish, matching the
+// convention used throughout this module.
+export const getAncestorIndexPagesUnsafeForScheduledPublish = (
+  rows: AncestorIndexPage[],
+  scheduledAt: Date,
+) =>
+  rows.filter((row) => {
+    if (row.publishedVersionId !== null) {
+      // Currently live: unsafe only if it's going dark before we'd fire.
+      return (
+        row.scheduledAt !== null &&
+        row.scheduledAt < scheduledAt &&
+        row.scheduledAction === ScheduledAction.Unpublish
+      )
+    }
+    // Currently not live: safe only if a Publish is guaranteed by then.
+    return !(
+      row.scheduledAt !== null &&
+      row.scheduledAt <= scheduledAt &&
+      (row.scheduledAction === null ||
+        row.scheduledAction === ScheduledAction.Publish)
+    )
+  })
+
+// Tags every direct child of `resourceId` (or every top-level resource, when
+// `resourceId` is null) with its own id ("branchId"), then walks downward —
+// each descendant inherits its ancestor's tag as the recursion goes deeper.
+// Grouping by that tag at the end tells us, per child, whether it (or
+// anything nested under it, at any depth) is published — one query answers
+// this for every child at once, instead of walking one child's subtree per
+// call.
+//
+// `hasLiveIndexPage` narrows that down to just the child's own immediate
+// IndexPage (one level under it): a Folder/Collection is genuinely "Live"
+// only when this is true, versus "Live · Template" when it's not published
+// but `hasLiveDescendant` is still true because something deeper is live.
+export const getChildLiveStatusMap = async (
+  trx: SafeKysely,
+  { siteId, resourceId }: { siteId: number; resourceId: string | null },
+): Promise<
+  Map<string, { hasLiveDescendant: boolean; hasLiveIndexPage: boolean }>
+> => {
+  const rows = await trx
+    .withRecursive("branchSubtree", (eb) =>
+      eb
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+        .where(
+          "Resource.parentId",
+          resourceId === null ? "is" : "=",
+          resourceId,
+        )
+        .select([
+          "Resource.id",
+          "Resource.id as branchId",
+          sql<number>`0`.as("depth"),
+        ])
+        // `union` (not `unionAll`) dedupes rows so a malformed parent chain with
+        // a cycle can't drive the recursion forever.
+        .union((fb) =>
+          fb
+            .selectFrom("Resource")
+            .innerJoin("branchSubtree", "branchSubtree.id", "Resource.parentId")
+            .where("Resource.siteId", "=", siteId)
+            .select([
+              "Resource.id",
+              "branchSubtree.branchId",
+              sql<number>`"branchSubtree"."depth" + 1`.as("depth"),
+            ]),
+        ),
+    )
+    .selectFrom("branchSubtree")
+    .innerJoin("Resource", "Resource.id", "branchSubtree.id")
+    .groupBy("branchSubtree.branchId")
+    .select([
+      "branchSubtree.branchId as branchId",
+      sql<boolean>`bool_or("Resource"."publishedVersionId" is not null)`.as(
+        "hasLiveDescendant",
+      ),
+      sql<boolean>`bool_or(
+        "branchSubtree"."depth" = 1
+        and "Resource"."type" = ${ResourceType.IndexPage}
+        and "Resource"."publishedVersionId" is not null
+      )`.as("hasLiveIndexPage"),
+    ])
+    .execute()
+
+  return new Map(
+    rows.map((row) => [
+      String(row.branchId),
+      {
+        hasLiveDescendant: row.hasLiveDescendant,
+        hasLiveIndexPage: row.hasLiveIndexPage,
+      },
+    ]),
+  )
+}
+
 // Resolves a full permalink path (e.g. "/foo/bar") to the resource that serves
 // it, walking permalink segments from the site's root page. A Folder/Collection
 // is resolved to its IndexPage child, since that is what actually renders at the

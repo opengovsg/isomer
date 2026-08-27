@@ -2683,7 +2683,20 @@ describe("resource.router", async () => {
       "parentId",
       "updatedAt",
       "scheduledAt",
+      "scheduledAction",
     ] as const
+
+    // `liveStatus` is derived, not a Resource column — every fixture here is
+    // an unpublished Page/Folder with no published descendants, so it's
+    // always "notLive".
+    const pickComparable = <
+      T extends Record<(typeof RESOURCE_FIELDS_TO_PICK)[number], unknown>,
+    >(
+      resource: T,
+    ) => ({
+      ...pick(resource, RESOURCE_FIELDS_TO_PICK),
+      liveStatus: "notLive" as const,
+    })
 
     const testListComparable = (
       a: { updatedAt: Date; id: string },
@@ -2848,7 +2861,7 @@ describe("resource.router", async () => {
             title: `Test page ${i}`,
             resourceType: "Page",
           })
-          return pick(page, RESOURCE_FIELDS_TO_PICK)
+          return pickComparable(page)
         }),
       )
       const folders = await Promise.all(
@@ -2858,7 +2871,7 @@ describe("resource.router", async () => {
             permalink: `folder-${i}`,
             title: `Test folder ${i}`,
           })
-          return pick(folder, RESOURCE_FIELDS_TO_PICK)
+          return pickComparable(folder)
         }),
       )
       await setupEditorPermissions({
@@ -2896,7 +2909,7 @@ describe("resource.router", async () => {
             title: `Test page ${i}`,
             resourceType: "Page",
           })
-          return pick(page, RESOURCE_FIELDS_TO_PICK)
+          return pickComparable(page)
         }),
       )
       // Folders inside the folder
@@ -2908,7 +2921,7 @@ describe("resource.router", async () => {
             permalink: `folder-${i}`,
             title: `Test folder ${i}`,
           })
-          return pick(folder, RESOURCE_FIELDS_TO_PICK)
+          return pickComparable(folder)
         }),
       )
       await setupEditorPermissions({
@@ -3122,6 +3135,82 @@ describe("resource.router", async () => {
         "bravo",
         "charlie",
       ])
+    })
+
+    it("should return liveStatus 'live' for a published page", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: "Page",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
+
+      // Act
+      const result = await caller.listWithoutRoot({ siteId: site.id })
+
+      // Assert
+      expect(result).toEqual([
+        expect.objectContaining({ id: page.id, liveStatus: "live" }),
+      ])
+    })
+
+    it("should return liveStatus 'live' for a folder whose own index page is published", async () => {
+      // Arrange
+      const { folder, site } = await setupFolder()
+      await setupPageResource({
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: folder.id,
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
+
+      // Act
+      const result = await caller.listWithoutRoot({ siteId: site.id })
+
+      // Assert
+      expect(result).toEqual([
+        expect.objectContaining({ id: folder.id, liveStatus: "live" }),
+      ])
+    })
+
+    it("should return liveStatus 'liveTemplate' for a folder whose index page isn't published but a nested descendant is", async () => {
+      // Arrange
+      const { folder, site } = await setupFolder()
+      await setupPageResource({
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: folder.id,
+      })
+      const { folder: subfolder } = await setupFolder({
+        siteId: site.id,
+        parentId: folder.id,
+        permalink: "nested-folder",
+      })
+      await setupPageResource({
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: subfolder.id,
+        permalink: "nested-index",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
+
+      // Act
+      const result = await caller.listWithoutRoot({ siteId: site.id })
+
+      // Assert
+      expect(result).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: folder.id,
+            liveStatus: "liveTemplate",
+          }),
+        ]),
+      )
     })
 
     it("should throw 403 if user does not have read access to site", async () => {

@@ -15,6 +15,7 @@ import { useTablePagination } from "~/hooks/useTablePagination"
 import { trpc } from "~/utils/trpc"
 
 import type { ResourceTableData } from "./types"
+import { LiveStatusBadges } from "../LiveStatusBadges"
 import { ResourceSortMenu } from "./ResourceSortMenu"
 import { ResourceTableMenu } from "./ResourceTableMenu"
 import { TitleCell } from "./TitleCell"
@@ -32,7 +33,18 @@ const getColumns = ({ siteId }: ResourceTableProps) => [
         title={row.original.title}
         permalink={`/${row.original.permalink}`}
         type={row.original.type}
+        draftBlobId={row.original.draftBlobId}
+      />
+    ),
+  }),
+  columnsHelper.display({
+    id: "status",
+    header: () => <TableHeader>Status</TableHeader>,
+    cell: ({ row }) => (
+      <LiveStatusBadges
+        liveStatus={row.original.liveStatus}
         scheduledAt={row.original.scheduledAt}
+        scheduledAction={row.original.scheduledAction}
       />
     ),
   }),

@@ -702,6 +702,56 @@ describe("collection.router", async () => {
       expect(result).toEqual(expect.any(Array))
     })
 
+    it("should return liveStatus 'notLive' for an unpublished collection page", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      const { page } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+      })
+
+      // Act
+      const result = await caller.list({
+        siteId: site.id,
+        resourceId: Number(collection.id),
+      })
+
+      // Assert
+      expect(result).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: page.id, liveStatus: "notLive" }),
+        ]),
+      )
+    })
+
+    it("should return liveStatus 'live' for a published collection page", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      const { page } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+
+      // Act
+      const result = await caller.list({
+        siteId: site.id,
+        resourceId: Number(collection.id),
+      })
+
+      // Assert
+      expect(result).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: page.id, liveStatus: "live" }),
+        ]),
+      )
+    })
+
     it("should return deterministic paginated results when items share the same type and title", async () => {
       // Arrange: Create 4 CollectionPages with identical title to trigger non-deterministic
       // ordering without a tie-breaker. Tests regression of offset/limit pagination bug.
