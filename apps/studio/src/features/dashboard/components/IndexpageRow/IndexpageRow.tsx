@@ -9,8 +9,8 @@ import {
 import Link from "next/link"
 import { useEffect } from "react"
 import { BiChevronRight } from "react-icons/bi"
-import { HasDraftIndicator } from "~/features/dashboard/components/HasDraftIndicator"
-import { LiveStatusBadges } from "~/features/dashboard/components/LiveStatusBadges"
+import { HasDraftIndicator } from "~/components/HasDraftIndicator"
+import { LiveStatusBadges } from "~/components/LiveStatusBadges"
 import { useNewCollectionTagsManagement } from "~/hooks/useNewCollectionTagsManagement"
 import { trpc } from "~/utils/trpc"
 
