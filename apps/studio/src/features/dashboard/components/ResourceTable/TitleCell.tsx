@@ -13,7 +13,7 @@ import { format } from "date-fns"
 import NextLink from "next/link"
 import { useMemo } from "react"
 import { BiTimeFive } from "react-icons/bi"
-import { HasDraftIndicator } from "~/features/dashboard/components/HasDraftIndicator"
+import { HasDraftIndicator } from "~/components/HasDraftIndicator"
 import { getLinkToResource } from "~/utils/resource"
 import { getIcon } from "~/utils/resources"
 
