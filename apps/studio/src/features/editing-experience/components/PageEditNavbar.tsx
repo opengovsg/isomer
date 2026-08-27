@@ -15,6 +15,7 @@ import { getResourceSubpath } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
 
 import { pageSchema } from "../schema"
+import { PageStatusIndicators } from "./PageStatusIndicators"
 import PublishButton from "./PublishButton"
 
 interface NavigationBreadcrumbsProps {
@@ -131,7 +132,8 @@ export const PageEditNavbar = (): JSX.Element => {
         </TabLink>
       </Flex>
       {pageId && siteId && (
-        <Flex justifyContent={"end"} alignItems={"center"} flex={1}>
+        <Flex justifyContent={"end"} alignItems={"center"} flex={1} gap="1rem">
+          <PageStatusIndicators pageId={pageId} siteId={siteId} />
           <PublishButton pageId={pageId} siteId={siteId} />
         </Flex>
       )}
