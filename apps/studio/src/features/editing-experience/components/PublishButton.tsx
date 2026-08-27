@@ -120,11 +120,7 @@ const SuspendablePublishButton = ({
               />
             )}
             {currPage.scheduledAt && isAllowed ? (
-              <CancelSchedulePublishIndicator
-                siteId={siteId}
-                pageId={pageId}
-                scheduledAt={currPage.scheduledAt}
-              />
+              <CancelSchedulePublishIndicator siteId={siteId} pageId={pageId} />
             ) : (
               <HStack spacing={0} position="relative">
                 <Button
