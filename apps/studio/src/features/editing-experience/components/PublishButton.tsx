@@ -57,6 +57,12 @@ const SuspendablePublishButton = ({
           resourceId: pageId,
           siteId,
         }),
+        // Publishing changes this resource's liveStatus, which the dashboard
+        // tables/index-page row derive from — refresh whichever of these is
+        // currently mounted (folder, collection item list, or index page).
+        utils.resource.listWithoutRoot.invalidate(),
+        utils.collection.list.invalidate(),
+        utils.folder.getIndexpage.invalidate(),
       ])
     },
     onSuccess: () => {
