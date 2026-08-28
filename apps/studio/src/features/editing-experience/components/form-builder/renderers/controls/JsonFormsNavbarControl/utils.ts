@@ -338,3 +338,40 @@ export const handleMoveItem = (
       return data
   }
 }
+
+export type NestDestination = number | "root"
+
+// Helper function to nest a childless navbar item under a first-level item
+// (or promote a subitem to the first level, when destination is "root"),
+// always placing it at the end of the destination list. Used by the
+// "Nest under" modal as a non-drag alternative to the combine drop.
+export const nestNavbarItemUnder = (
+  existingData: NavbarItems["items"],
+  maxItems: number | undefined,
+  source: NavbarItemIndices,
+  destination: NestDestination,
+): NavbarItems["items"] => {
+  const originalPath = getNavbarItemPath(source.index, source.parentIndex)
+  const isMaxItemsReached = !!(maxItems && existingData.length >= maxItems)
+
+  if (destination === "root") {
+    // Targeting one past the last first-level index keeps the promoted item
+    // at the end of the first level
+    return handleMoveItem(
+      existingData,
+      isMaxItemsReached,
+      originalPath,
+      getNavbarItemPath(existingData.length),
+      undefined,
+      null,
+    )
+  }
+
+  return handleMoveItem(
+    existingData,
+    isMaxItemsReached,
+    originalPath,
+    getNavbarItemPath(destination),
+    "combine",
+  )
+}
