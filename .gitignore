@@ -64,6 +64,3 @@ packages/db/prisma/generated/
 
 # Generated Tailwind CSS for the editor preview iframe (built by `build:preview-tw`)
 apps/studio/public/assets/css/preview-tw.css
-
-# Bytecode from running the agent hook self-check
-__pycache__/
