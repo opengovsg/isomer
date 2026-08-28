@@ -1063,6 +1063,8 @@ describe("folder.router", async () => {
         draftBlobId: blob.id,
         publishedVersionId: null,
         liveStatus: "notLive",
+        scheduledAt: null,
+        scheduledAction: null,
       })
       await expect(
         db.selectFrom("AuditLog").selectAll().execute(),
@@ -1123,6 +1125,31 @@ describe("folder.router", async () => {
 
       // Assert
       expect(result.liveStatus).toEqual("liveTemplate")
+    })
+
+    it("should surface the index page's own scheduledAt/scheduledAction", async () => {
+      // Arrange
+      const { folder, site } = await setupFolder()
+      const scheduledAt = new Date(Date.now() + 60 * 60 * 1000)
+      const { page } = await setupPageResource({
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: folder.id,
+        scheduledAt,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = await caller.getIndexpage({
+        siteId: site.id,
+        resourceId: folder.id,
+      })
+
+      // Assert
+      expect(result.id).toEqual(page.id)
+      expect(result.scheduledAt).toEqual(scheduledAt)
+      expect(result.scheduledAction).toEqual(ScheduledAction.Unpublish)
     })
   })
 
