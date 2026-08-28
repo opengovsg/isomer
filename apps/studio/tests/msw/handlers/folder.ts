@@ -21,6 +21,8 @@ export const folderHandlers = {
           draftBlobId: null,
           publishedVersionId: null,
           liveStatus: "notLive",
+          scheduledAt: null,
+          scheduledAction: null,
         }
       })
     },
