@@ -46,7 +46,15 @@
       "Bash(sh ./scripts/connectRds.sh prod:*)",
       "Bash(./scripts/connectRds.sh prod:*)",
       "Bash(./apps/studio/scripts/connectRds.sh prod:*)",
-      "Bash(apps/studio/scripts/connectRds.sh prod:*)"
+      "Bash(apps/studio/scripts/connectRds.sh prod:*)",
+      "Bash(pulumi destroy:*)",
+      "Bash(pulumi * destroy)",
+      "Bash(pulumi * destroy *)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git push * --force)",
+      "Bash(git push * --force *)",
+      "Bash(git push * -f)"
     ],
     "allow": [
       "Bash(gh pr list:*)",
