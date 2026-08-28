@@ -1,5 +1,5 @@
 {
   "regions": ["sin1"],
-  "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
+  "installCommand": "cd ../.. && ENABLE_EXPERIMENTAL_COREPACK=1 corepack enable && corepack install && pnpm install --frozen-lockfile",
   "buildCommand": "pnpm run vercel-build"
 }
