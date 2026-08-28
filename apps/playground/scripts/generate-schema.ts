@@ -15,5 +15,6 @@ const jsonOutput = JSON.stringify(schema, null, 2)
   .replace(/^.*\$id.*\n?/gm, "")
 const outputPath = path.resolve("public", "0.1.0.json")
 
+fs.mkdirSync(path.dirname(outputPath), { recursive: true })
 fs.writeFileSync(outputPath, jsonOutput + "\n", "utf8")
 console.log(`Isomer JSON schema file has been generated at ${outputPath}`)

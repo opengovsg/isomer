@@ -30,7 +30,11 @@ pnpm --filter playground format:fix
 
 ## Schema generation
 
-`scripts/generate-schema.ts` imports the schema from `@opengovsg/isomer-components` and writes `public/0.1.0.json`. The editor loads that file at runtime for JSON validation. Run `pnpm --filter playground generate` to regenerate it (also runs automatically as part of `build`). Generated files under `public/` are formatted with oxfmt.
+`public/0.1.0.json` is **generated** — it is gitignored and produced from `@opengovsg/isomer-components` at dev/build time via `scripts/generate-schema.ts`. The editor fetches it at runtime for JSON validation.
+
+- `pnpm --filter playground dev` — runs `generate` automatically (`predev`)
+- `pnpm --filter playground build` — runs `generate` before Vite bundles `public/`
+- `pnpm --filter playground generate` — regenerate only
 
 ## Deployment
 

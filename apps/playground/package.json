@@ -3,14 +3,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc && vite build && pnpm run generate",
+    "build": "tsc && pnpm run generate && vite build",
     "clean": "git clean -xdf dist .turbo node_modules",
     "dev": "vite",
     "format": "oxfmt --check . --ignore-path ../../.gitignore",
     "format:fix": "oxfmt --write . --ignore-path ../../.gitignore",
-    "generate": "tsx scripts/generate-schema.ts && oxfmt --write public/0.1.0.json",
+    "generate": "tsx scripts/generate-schema.ts",
     "lint": "oxlint --type-aware .",
     "lint:fix": "oxlint --type-aware --fix .",
+    "predev": "pnpm run generate",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.node.json"
   },
