@@ -45,7 +45,7 @@ export default function Preview({ schema }: PreviewProps) {
     <RenderEngine
       site={{
         siteName: "Ministry of Trade and Industry",
-        // @ts-expect-error blah
+        // @ts-expect-error preview uses a minimal sitemap stub without required fields
         siteMap: { title: "Home", permalink: "/", children: [] },
         theme: "isomer-next",
         logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
@@ -53,7 +53,7 @@ export default function Preview({ schema }: PreviewProps) {
         environment: "production",
         lastUpdated: "3 Apr 2024",
         navbar: navBar,
-        // @ts-expect-error blah
+        // @ts-expect-error JSON import widens socialMediaLinks.type to string
         footerItems: footer,
         assetsBaseUrl: `https://isomer-user-content.by.gov.sg`,
       }}
