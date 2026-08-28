@@ -1,18 +1,5 @@
 {
   "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"$(git rev-parse --show-toplevel)/tooling/hooks/block-production-db-connect.py\"",
-            "timeout": 5,
-            "statusMessage": "Checking production database safety"
-          }
-        ]
-      }
-    ],
     "PostToolUse": [
       {
         "matcher": "Edit|Write",
@@ -42,6 +29,25 @@
     ]
   },
   "permissions": {
+    "deny": [
+      "Bash(pnpm db:connect:*)",
+      "Bash(pnpm run db:connect:*)",
+      "Bash(pnpm --filter isomer-studio run db:connect:*)",
+      "Bash(pnpm --filter isomer-studio db:connect:*)",
+      "Bash(turbo run db:connect:*)",
+      "Bash(dotenv -- turbo run db:connect:*)",
+      "Bash(pnpm exec turbo run db:connect:*)",
+      "Bash(npm run db:connect:*)",
+      "Bash(yarn db:connect:*)",
+      "Bash(bash ./scripts/connectRds.sh prod:*)",
+      "Bash(bash scripts/connectRds.sh prod:*)",
+      "Bash(bash ./apps/studio/scripts/connectRds.sh prod:*)",
+      "Bash(bash apps/studio/scripts/connectRds.sh prod:*)",
+      "Bash(sh ./scripts/connectRds.sh prod:*)",
+      "Bash(./scripts/connectRds.sh prod:*)",
+      "Bash(./apps/studio/scripts/connectRds.sh prod:*)",
+      "Bash(apps/studio/scripts/connectRds.sh prod:*)"
+    ],
     "allow": [
       "Bash(gh pr list:*)",
       "Bash(gh pr view:*)",
