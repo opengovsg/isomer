@@ -9,6 +9,8 @@ packages:
   - "tooling/build/scripts/publishing"
   # Bruno API collections, not an npm package
   - "!tooling/bruno"
+  # Agent runtime hook scripts, not an npm package
+  - "!tooling/hooks"
 
 linkWorkspacePackages: true
 
