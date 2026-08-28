@@ -13,10 +13,11 @@ import {
 import { createBaseLogger } from "~/lib/logger"
 import { createGrowthBookContext } from "~/server/context"
 import { publishSite } from "~/server/modules/aws/codebuild.service"
-import { db, ScheduledAction } from "~/server/modules/database"
+import { db, ResourceType, ScheduledAction } from "~/server/modules/database"
 import { bulkValidateUserPermissionsForResources } from "~/server/modules/permissions/permissions.service"
 import {
   defaultResourceSelect,
+  getContainerAncestorCount,
   publishPageResource,
   unpublishPageResource,
 } from "~/server/modules/resource/resource.service"
@@ -124,13 +125,6 @@ export const publishScheduledResources = async (
   // A mapping from siteId to array of resourceIds, to determine which sites need to be published after their resources have been published
   const siteResourcesMap: Record<string, ResourceWithUser[]> = {}
   // Fetch all resources that are scheduled to be published at or before the current time, along with the user who scheduled them.
-  // Ordered by scheduledAt: the loop below processes resources sequentially
-  // (one transaction at a time, awaited in order), and the container-siblings
-  // guard on a scheduled IndexPage unpublish only holds if a sibling scheduled
-  // strictly earlier has actually committed its own unpublish first. Without
-  // this order, both being due in the same cron tick would let the DB return
-  // them in an arbitrary order, and the IndexPage's unpublish could spuriously
-  // fail against a sibling that "should" already be down but hasn't run yet.
   const resourcesWithUser = await db
     .selectFrom("Resource")
     .leftJoin("User as u", "Resource.scheduledBy", "u.id")
@@ -140,14 +134,65 @@ export const publishScheduledResources = async (
       "u.email as email",
       "u.deletedAt as userDeletedAt",
     ])
-    .orderBy("Resource.scheduledAt", "asc")
-    .orderBy("Resource.id", "asc")
     .execute()
+
+  // The loop below processes resources sequentially (one transaction at a
+  // time, awaited in order), so anything due in the same cron tick needs a
+  // deterministic execution order, not whatever order the DB happened to
+  // return rows in:
+  //   1. scheduledAt ascending — a resource due earlier must run first,
+  //      since the container-siblings guard on a scheduled IndexPage
+  //      unpublish only holds if a sibling due earlier has actually
+  //      committed its own unpublish first.
+  //   2. a depth-based tiebreak for resources due at the *exact same*
+  //      instant (the case restriction 4 explicitly asks us to support —
+  //      scheduling an index page and its children together): Publish must
+  //      run ancestors-before-descendants (a child can't go live before its
+  //      container), Unpublish must run descendants-before-ancestors (a
+  //      container's IndexPage can't go dark while a child is still live).
+  //      `depth` here treats an IndexPage as sharing its own container's
+  //      depth rather than being one level deeper than its sibling pages —
+  //      structurally they're siblings under the same parentId, but the
+  //      IndexPage stands in for the container itself for ordering
+  //      purposes. This holds at any nesting depth: a grandparent's
+  //      IndexPage always ends up with a strictly smaller depth than
+  //      anything inside it, however deep. Harmless (a no-op) for any pair
+  //      of due resources that aren't actually ancestor/descendant of each
+  //      other.
+  //   3. id ascending, as a final deterministic tiebreak.
+  const resourcesWithDepth = await Promise.all(
+    resourcesWithUser.map(async (resource) => {
+      const containerAncestorCount = await getContainerAncestorCount(db, {
+        siteId: resource.siteId,
+        resourceId: resource.id,
+      })
+      const depth =
+        containerAncestorCount -
+        (resource.type === ResourceType.IndexPage ? 1 : 0)
+      // The query above only selects rows with scheduledAt <=
+      // scheduledAtCutoff, so this is never actually null.
+      const scheduledAt = resource.scheduledAt ?? scheduledAtCutoff
+      return { resource, depth, scheduledAt }
+    }),
+  )
+  resourcesWithDepth.sort((a, b) => {
+    const scheduledAtDiff = a.scheduledAt.getTime() - b.scheduledAt.getTime()
+    if (scheduledAtDiff !== 0) return scheduledAtDiff
+
+    const aAction = a.resource.scheduledAction ?? ScheduledAction.Publish
+    const bAction = b.resource.scheduledAction ?? ScheduledAction.Publish
+    const aKey = aAction === ScheduledAction.Unpublish ? -a.depth : a.depth
+    const bKey = bAction === ScheduledAction.Unpublish ? -b.depth : b.depth
+    if (aKey !== bKey) return aKey - bKey
+
+    return Number(a.resource.id) - Number(b.resource.id)
+  })
+  const orderedResources = resourcesWithDepth.map(({ resource }) => resource)
 
   // Reset the scheduledAt and scheduledBy fields for all resources that are being published
   await resetScheduledAtForPublishedResources(scheduledAtCutoff)
 
-  for (const resource of resourcesWithUser) {
+  for (const resource of orderedResources) {
     const { id: resourceId, siteId, scheduledBy } = resource
     if (!scheduledBy) {
       logger.error(
