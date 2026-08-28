@@ -362,7 +362,13 @@ export const folderRouter = router({
         .where("Resource.siteId", "=", siteId)
         .where("Resource.parentId", "=", resourceId)
         .where("Resource.type", "=", ResourceType.IndexPage)
-        .select(["id", "draftBlobId", "publishedVersionId"])
+        .select([
+          "id",
+          "draftBlobId",
+          "publishedVersionId",
+          "scheduledAt",
+          "scheduledAction",
+        ])
         .executeTakeFirstOrThrow(
           () =>
             new TRPCError({

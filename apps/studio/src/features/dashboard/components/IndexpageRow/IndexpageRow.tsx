@@ -75,8 +75,8 @@ export const IndexpageRow = ({
             {data && (
               <LiveStatusBadges
                 liveStatus={data.liveStatus}
-                scheduledAt={null}
-                scheduledAction={null}
+                scheduledAt={data.scheduledAt}
+                scheduledAction={data.scheduledAction}
               />
             )}
             <HasDraftIndicator draftBlobId={data?.draftBlobId ?? null} />
