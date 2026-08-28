@@ -2670,6 +2670,31 @@ describe("resource.router", async () => {
     })
 
     it.skip("should throw 403 if user does not have read access to resource", async () => {})
+
+    it("should only count rows matching the statusFilter", async () => {
+      // Arrange
+      const { site } = await setupPageResource({
+        resourceType: "Page",
+        state: ResourceState.Published,
+        userId: session.userId,
+        permalink: "live-page",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: "Page",
+        permalink: "draft-page",
+      })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
+
+      // Act
+      const result = await caller.countWithoutRoot({
+        siteId: site.id,
+        statusFilter: ["live"],
+      })
+
+      // Assert
+      expect(result).toEqual(1)
+    })
   })
 
   describe("listWithoutRoot", () => {
@@ -3233,6 +3258,259 @@ describe("resource.router", async () => {
     })
 
     it.skip("should throw 403 if user does not have read access to the resource", async () => {})
+
+    describe("statusFilter", () => {
+      it("should return only leaf rows matching 'live' when statusFilter is ['live']", async () => {
+        // Arrange
+        const { site, page: livePage } = await setupPageResource({
+          resourceType: "Page",
+          state: ResourceState.Published,
+          userId: session.userId,
+          permalink: "live-page",
+        })
+        await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          permalink: "draft-page",
+        })
+        await setupEditorPermissions({
+          siteId: site.id,
+          userId: session.userId,
+        })
+
+        // Act
+        const result = await caller.listWithoutRoot({
+          siteId: site.id,
+          statusFilter: ["live"],
+        })
+
+        // Assert
+        expect(result).toEqual([
+          expect.objectContaining({ id: livePage.id, liveStatus: "live" }),
+        ])
+      })
+
+      it("should include a container whose child is live when statusFilter is ['live']", async () => {
+        // Arrange
+        const { folder, site } = await setupFolder()
+        await setupPageResource({
+          resourceType: ResourceType.IndexPage,
+          siteId: site.id,
+          parentId: folder.id,
+          state: ResourceState.Published,
+          userId: session.userId,
+        })
+        await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          permalink: "draft-page",
+        })
+        await setupEditorPermissions({
+          siteId: site.id,
+          userId: session.userId,
+        })
+
+        // Act
+        const result = await caller.listWithoutRoot({
+          siteId: site.id,
+          statusFilter: ["live"],
+        })
+
+        // Assert
+        expect(result).toEqual([
+          expect.objectContaining({ id: folder.id, liveStatus: "live" }),
+        ])
+      })
+
+      it("should return only rows matching 'notLive' when statusFilter is ['notLive']", async () => {
+        // Arrange
+        const { site, page: draftPage } = await setupPageResource({
+          resourceType: "Page",
+          permalink: "draft-page",
+        })
+        await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          state: ResourceState.Published,
+          userId: session.userId,
+          permalink: "live-page",
+        })
+        await setupEditorPermissions({
+          siteId: site.id,
+          userId: session.userId,
+        })
+
+        // Act
+        const result = await caller.listWithoutRoot({
+          siteId: site.id,
+          statusFilter: ["notLive"],
+        })
+
+        // Assert
+        expect(result).toEqual([
+          expect.objectContaining({ id: draftPage.id, liveStatus: "notLive" }),
+        ])
+      })
+
+      it("should return rows scheduled to publish when statusFilter is ['scheduledToPublish']", async () => {
+        // Arrange
+        const { site, page: scheduledPage } = await setupPageResource({
+          resourceType: "Page",
+          permalink: "scheduled-publish",
+          scheduledAt: new Date(Date.now() + 60 * 60 * 1000),
+          scheduledAction: ScheduledAction.Publish,
+        })
+        await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          permalink: "not-scheduled",
+        })
+        await setupEditorPermissions({
+          siteId: site.id,
+          userId: session.userId,
+        })
+
+        // Act
+        const result = await caller.listWithoutRoot({
+          siteId: site.id,
+          statusFilter: ["scheduledToPublish"],
+        })
+
+        // Assert
+        expect(result).toEqual([
+          expect.objectContaining({ id: scheduledPage.id }),
+        ])
+      })
+
+      it("should return rows scheduled to unpublish when statusFilter is ['scheduledToUnpublish']", async () => {
+        // Arrange
+        const { site, page: scheduledPage } = await setupPageResource({
+          resourceType: "Page",
+          permalink: "scheduled-unpublish",
+          scheduledAt: new Date(Date.now() + 60 * 60 * 1000),
+          scheduledAction: ScheduledAction.Unpublish,
+        })
+        await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          permalink: "scheduled-publish",
+          scheduledAt: new Date(Date.now() + 60 * 60 * 1000),
+          scheduledAction: ScheduledAction.Publish,
+        })
+        await setupEditorPermissions({
+          siteId: site.id,
+          userId: session.userId,
+        })
+
+        // Act
+        const result = await caller.listWithoutRoot({
+          siteId: site.id,
+          statusFilter: ["scheduledToUnpublish"],
+        })
+
+        // Assert
+        expect(result).toEqual([
+          expect.objectContaining({ id: scheduledPage.id }),
+        ])
+      })
+
+      it("should return rows with a draft when statusFilter is ['hasDraft']", async () => {
+        // Arrange
+        const { site, page: draftPage } = await setupPageResource({
+          resourceType: "Page",
+          permalink: "has-draft",
+        })
+        await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          state: ResourceState.Published,
+          userId: session.userId,
+          permalink: "no-draft",
+        })
+        await setupEditorPermissions({
+          siteId: site.id,
+          userId: session.userId,
+        })
+
+        // Act
+        const result = await caller.listWithoutRoot({
+          siteId: site.id,
+          statusFilter: ["hasDraft"],
+        })
+
+        // Assert
+        expect(result).toEqual([expect.objectContaining({ id: draftPage.id })])
+      })
+
+      it("should OR multiple tags together", async () => {
+        // Arrange
+        const { site, page: livePage } = await setupPageResource({
+          resourceType: "Page",
+          state: ResourceState.Published,
+          userId: session.userId,
+          permalink: "live-page",
+        })
+        const { page: scheduledPage } = await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          permalink: "scheduled-unpublish",
+          scheduledAt: new Date(Date.now() + 60 * 60 * 1000),
+          scheduledAction: ScheduledAction.Unpublish,
+        })
+        await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          permalink: "plain-draft",
+        })
+        await setupEditorPermissions({
+          siteId: site.id,
+          userId: session.userId,
+        })
+
+        // Act
+        const result = await caller.listWithoutRoot({
+          siteId: site.id,
+          statusFilter: ["live", "scheduledToUnpublish"],
+        })
+
+        // Assert
+        expect(result).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ id: livePage.id }),
+            expect.objectContaining({ id: scheduledPage.id }),
+          ]),
+        )
+        expect(result).toHaveLength(2)
+      })
+
+      it("should return everything when statusFilter is empty", async () => {
+        // Arrange
+        const { site } = await setupPageResource({
+          resourceType: "Page",
+          state: ResourceState.Published,
+          userId: session.userId,
+          permalink: "live-page",
+        })
+        await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          permalink: "draft-page",
+        })
+        await setupEditorPermissions({
+          siteId: site.id,
+          userId: session.userId,
+        })
+
+        // Act
+        const result = await caller.listWithoutRoot({
+          siteId: site.id,
+          statusFilter: [],
+        })
+
+        // Assert
+        expect(result).toHaveLength(2)
+      })
+    })
   })
 
   describe("delete", () => {
