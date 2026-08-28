@@ -32,7 +32,7 @@ const createSeedFolder = () =>
       parentId: null,
       title: "E2E Test Folder",
       draftBlobId: null,
-      state: ResourceState.Draft,
+      state: ResourceState.Published,
       type: ResourceType.Folder,
       publishedVersionId: null,
     })
@@ -81,7 +81,9 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     await ensureUserOnboarded(TEST_EMAILS.publisher)
   })
 
-  test("publisher does not see the Create new button", async ({ page }) => {
+  test("publisher does not see the Create new button on the site homepage", async ({
+    page,
+  }) => {
     await page.goto(`/sites/${siteId}`)
     await expect(
       page.getByRole("button", { name: "Create new..." }),
@@ -94,7 +96,9 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await ensureUserOnboarded(TEST_EMAILS.editor)
   })
 
-  test("editor does not see the Create new button", async ({ page }) => {
+  test("editor does not see the Create new button on the site homepage", async ({
+    page,
+  }) => {
     await page.goto(`/sites/${siteId}`)
     await expect(
       page.getByRole("button", { name: "Create new..." }),
