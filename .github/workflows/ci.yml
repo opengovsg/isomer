@@ -48,6 +48,7 @@ jobs:
               - 'packages/algolia/**'
               - 'packages/pgboss/**'
               - 'packages/logging/**'
+              - 'packages/validators/**'
               - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'
               - '.github/workflows/ci.yml'
