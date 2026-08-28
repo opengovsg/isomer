@@ -46,8 +46,19 @@ export const LiveStatusBadges = ({
           hasArrow
         >
           <Badge
-            bgColor="utility.feedback.info-subtle"
-            color="utility.feedback.info"
+            // Scheduled-to-unpublish is styled to match the "Not live" pill,
+            // since that's where the page is headed; scheduled-to-publish
+            // keeps the info-blue treatment.
+            bgColor={
+              scheduledAction === ScheduledAction.Unpublish
+                ? "interaction.neutral-subtle.default"
+                : "utility.feedback.info-subtle"
+            }
+            color={
+              scheduledAction === ScheduledAction.Unpublish
+                ? "interaction.sub.default"
+                : "utility.feedback.info"
+            }
             cursor="pointer"
           >
             <HStack spacing="0.25rem" align="center">
