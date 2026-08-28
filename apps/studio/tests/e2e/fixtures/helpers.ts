@@ -44,11 +44,7 @@ export const openInviteModal = async (page: Page, siteId: number) => {
 
 export const inviteCollaborator = async (
   page: Page,
-  {
-    email,
-    role,
-    siteId,
-  }: { email: string; role: RoleType; siteId: number },
+  { email, role, siteId }: { email: string; role: RoleType; siteId: number },
 ) => {
   await openInviteModal(page, siteId)
   await page.getByLabel("Email address").fill(email)
