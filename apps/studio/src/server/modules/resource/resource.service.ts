@@ -1,8 +1,13 @@
-import type { SelectExpression, SelectQueryBuilder } from "kysely"
+import type {
+  ExpressionBuilder,
+  SelectExpression,
+  SelectQueryBuilder,
+} from "kysely"
 import type { UnwrapTagged } from "type-fest"
 import type {
   ResourceItemContent,
   ResourceOrderByOption,
+  ResourceStatusFilterOption,
 } from "~/schemas/resource"
 import {
   createChildrenPagesComparator,
@@ -101,6 +106,98 @@ export const applyResourceOrderBy = <O>(
         .orderBy("Resource.updatedAt", "desc")
         .orderBy("Resource.id", "asc")
   }
+}
+
+const CONTAINER_TYPES = [ResourceType.Folder, ResourceType.Collection]
+
+// Folder/Collection ids that count as "live"/"not live" for the status
+// filter, derived from the same child-live-status map the Status column
+// badges use — see getChildLiveStatusMap. A container is "live" (whether
+// fully live or just live-template) iff something in its subtree is
+// published; otherwise it's "not live".
+export const splitContainerIdsByLiveStatus = (
+  childLiveStatus: Map<
+    string,
+    { hasLiveDescendant: boolean; hasLiveIndexPage: boolean }
+  >,
+): { liveContainerIds: string[]; notLiveContainerIds: string[] } => {
+  const liveContainerIds: string[] = []
+  const notLiveContainerIds: string[] = []
+  for (const [id, { hasLiveDescendant }] of childLiveStatus) {
+    ;(hasLiveDescendant ? liveContainerIds : notLiveContainerIds).push(id)
+  }
+  return { liveContainerIds, notLiveContainerIds }
+}
+
+const matchesContainerIds = (
+  eb: ExpressionBuilder<DB, "Resource">,
+  ids: string[],
+) => (ids.length > 0 ? eb("Resource.id", "in", ids) : sql<boolean>`false`)
+
+// Shared by listWithoutRoot/countWithoutRoot so the Status filter dropdown
+// and the "N items" count agree. Tags are OR'd together (a row matches if it
+// satisfies any checked tag). Live/notLive need liveContainerIds/
+// notLiveContainerIds (from splitContainerIdsByLiveStatus) since a Folder/
+// Collection's own publishedVersionId is never set — every other tag reads
+// the row's own columns uniformly regardless of type.
+export const applyResourceStatusFilter = <O>(
+  query: SelectQueryBuilder<DB, "Resource", O>,
+  {
+    statusFilter,
+    liveContainerIds,
+    notLiveContainerIds,
+  }: {
+    statusFilter: ResourceStatusFilterOption[]
+    liveContainerIds: string[]
+    notLiveContainerIds: string[]
+  },
+): SelectQueryBuilder<DB, "Resource", O> => {
+  if (statusFilter.length === 0) {
+    return query
+  }
+
+  return query.where((eb) => {
+    const isContainer = eb("Resource.type", "in", CONTAINER_TYPES)
+    const isLeaf = eb("Resource.type", "not in", CONTAINER_TYPES)
+
+    return eb.or(
+      statusFilter.map((tag) => {
+        switch (tag) {
+          case "live":
+            return eb.or([
+              eb.and([
+                isLeaf,
+                eb("Resource.publishedVersionId", "is not", null),
+              ]),
+              eb.and([isContainer, matchesContainerIds(eb, liveContainerIds)]),
+            ])
+          case "notLive":
+            return eb.or([
+              eb.and([isLeaf, eb("Resource.publishedVersionId", "is", null)]),
+              eb.and([
+                isContainer,
+                matchesContainerIds(eb, notLiveContainerIds),
+              ]),
+            ])
+          case "scheduledToPublish":
+            return eb.and([
+              eb("Resource.scheduledAt", "is not", null),
+              eb.or([
+                eb("Resource.scheduledAction", "is", null),
+                eb("Resource.scheduledAction", "=", ScheduledAction.Publish),
+              ]),
+            ])
+          case "scheduledToUnpublish":
+            return eb.and([
+              eb("Resource.scheduledAt", "is not", null),
+              eb("Resource.scheduledAction", "=", ScheduledAction.Unpublish),
+            ])
+          case "hasDraft":
+            return eb("Resource.draftBlobId", "is not", null)
+        }
+      }),
+    )
+  })
 }
 
 const defaultResourceWithBlobSelect = [
