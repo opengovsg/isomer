@@ -58,6 +58,7 @@ pnpm clean            # Clean build artifacts
 
 ### Monorepo Structure
 - `apps/studio` - Main Next.js 16 application (CMS/site builder)
+- `apps/playground` - Vite app with a JSON editor and live preview for Isomer page schemas
 - `packages/components` - Reusable component library (@opengovsg/isomer-components)
 - `packages/pgboss` - Job queue wrapper (@isomer/pgboss)
 - `tooling/*` - Shared configs (TypeScript, Oxlint, Storybook)
