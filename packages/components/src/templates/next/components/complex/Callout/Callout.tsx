@@ -29,7 +29,7 @@ const calloutStyles = tv({
     variant: {
       information: {
         container:
-          "border-utility-feedback-info bg-utility-feedback-info-subtle",
+          "border-utility-feedback-info-subtle bg-utility-feedback-info-faint",
       },
       goodToKnow: {
         container:
