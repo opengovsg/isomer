@@ -23,7 +23,10 @@ import { PG_ERROR_CODES } from "../database/constants"
 import { createFolderIndexPage } from "../page/page.service"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 import { applyFolderPermalinkChangeRedirects } from "../redirect/redirect.service"
+import { AncestorScheduledUnpublishLockError } from "../resource/resource.error"
 import {
+  getAncestorIndexPages,
+  getLockingAncestorIndexPages,
   getResourceFullPermalink,
   hasPublishedDescendant,
   publishResource,
@@ -86,6 +89,21 @@ export const folderRouter = router({
               code: "BAD_REQUEST",
               message: "Resource ID does not point to a folder",
             })
+          }
+
+          // Nothing may be created under a container (or one of its own
+          // ancestors) that's scheduled to go dark — see
+          // AncestorScheduledUnpublishLockError.
+          const ancestorIndexPages = await getAncestorIndexPages(db, {
+            siteId,
+            resourceId: String(parentFolderId),
+          })
+          const [lockingAncestor] =
+            getLockingAncestorIndexPages(ancestorIndexPages)
+          if (lockingAncestor?.scheduledAt) {
+            throw new AncestorScheduledUnpublishLockError(
+              lockingAncestor.scheduledAt,
+            )
           }
         }
 
