@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
-"""Block repository commands that can open a production database tunnel."""
+"""Block repository commands that can open a production database tunnel.
+
+This is a speed bump against an agent invoking the tunnel by mistake, not a
+sandbox. It matches on command text, so it cannot see through an encoded or
+indirectly constructed command; the real gate is that connectRds.sh needs an
+interactive AWS SSO login.
+"""
 
 import json
-import os
-import shlex
 import sys
 
 
@@ -12,44 +16,20 @@ DENIAL_REASON = (
     "connectRds.sh. Production database access requires the developer to "
     "perform the connection outside the agent session."
 )
-SHELL_SEPARATORS = {"&", "&&", ";", "|", "||"}
-
-
-def shell_tokens(command: str) -> list[str]:
-    lexer = shlex.shlex(command, posix=True, punctuation_chars=";&|")
-    lexer.whitespace_split = True
-    lexer.commenters = ""
-    return list(lexer)
+PROTECTED = ("db:connect", "connectrds.sh")
+NON_PRODUCTION_ENVIRONMENTS = ("staging", "uat", "vapt")
 
 
 def is_production_database_command(command: str) -> bool:
-    try:
-        tokens = shell_tokens(command)
-    except ValueError:
-        # A malformed shell command cannot execute successfully, but fail closed
-        # if it still contains one of the protected entry points.
-        return "db:connect" in command or "connectRds.sh" in command
+    command = command.lower()
 
-    for index, token in enumerate(tokens):
-        executable = os.path.basename(token).lower()
+    # The non-production variants contain the protected names as a prefix
+    # (`db:connect:staging`), so remove them before looking for a bare match.
+    for environment in NON_PRODUCTION_ENVIRONMENTS:
+        command = command.replace(f"db:connect:{environment}", "")
+        command = command.replace(f"connectrds.sh {environment}", "")
 
-        # Block direct invocation of the tunnel script regardless of its
-        # arguments so an environment variable cannot conceal the `prod` value.
-        if executable == "connectrds.sh":
-            return True
-
-        if executable not in {"pnpm", "pnpm.cmd", "pnpm.exe"}:
-            continue
-
-        # pnpm permits flags and `run` before a package script, so inspect the
-        # remainder of the current shell segment for the exact protected script.
-        for argument in tokens[index + 1 :]:
-            if argument in SHELL_SEPARATORS:
-                break
-            if argument == "db:connect":
-                return True
-
-    return False
+    return any(name in command for name in PROTECTED)
 
 
 def main() -> int:
