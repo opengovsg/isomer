@@ -19,6 +19,7 @@ import {
 import { IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import { createCallerFactory } from "~/server/trpc"
 import { getReferenceLink } from "~/utils/link"
+import { ScheduledAction } from "~prisma/generated/generatedEnums"
 
 import { AuditLogEvent, db, ResourceState, ResourceType } from "../../database"
 import { folderRouter } from "../folder.router"
@@ -180,6 +181,39 @@ describe("folder.router", async () => {
       await expect(
         db.selectFrom("AuditLog").selectAll().execute(),
       ).resolves.toHaveLength(0)
+    })
+
+    it("should throw if the parent folder's IndexPage has a pending scheduled unpublish", async () => {
+      // Arrange — nothing may be created under a container that's locked by
+      // a pending scheduled unpublish.
+      const { site, folder: parentFolder } = await setupFolder()
+      await setupPageResource({
+        siteId: site.id,
+        parentId: parentFolder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId,
+        scheduledAt: new Date("2999-01-01T00:00:00Z"),
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.create({
+        folderTitle: "test folder",
+        siteId: site.id,
+        permalink: "nested-folder",
+        parentFolderId: Number(parentFolder.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        expect.objectContaining({ code: "PRECONDITION_FAILED" }),
+      )
     })
 
     it("should create a folder even with duplicate permalink if `siteId` is different", async () => {

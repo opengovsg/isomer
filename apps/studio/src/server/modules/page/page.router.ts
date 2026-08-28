@@ -57,12 +57,15 @@ import { db, jsonb, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 import { applyPermalinkChangeRedirects } from "../redirect/redirect.service"
+import { AncestorScheduledUnpublishLockError } from "../resource/resource.error"
 import {
   assertUnpublishableResourceType,
   createResourceWithBlob,
+  getAncestorIndexPages,
   getBlobOfResource,
   getFooter,
   getFullPageById,
+  getLockingAncestorIndexPages,
   getNavBar,
   getPageById,
   getResourceFullPermalink,
@@ -1029,6 +1032,20 @@ export const pageRouter = router({
           code: "NOT_FOUND",
           message: "Parent resource not found or is not a folder/collection",
         })
+      }
+
+      // Nothing may be created under a container (or one of its own
+      // ancestors) that's scheduled to go dark — see
+      // AncestorScheduledUnpublishLockError.
+      const ancestorIndexPages = await getAncestorIndexPages(db, {
+        siteId,
+        resourceId: parentId,
+      })
+      const [lockingAncestor] = getLockingAncestorIndexPages(ancestorIndexPages)
+      if (lockingAncestor?.scheduledAt) {
+        throw new AncestorScheduledUnpublishLockError(
+          lockingAncestor.scheduledAt,
+        )
       }
 
       const blobContent =
