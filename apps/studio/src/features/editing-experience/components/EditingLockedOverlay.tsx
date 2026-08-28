@@ -37,7 +37,16 @@ const SuspendableEditingLockedOverlay = ({
       bg="blackAlpha.700"
       align="center"
       justify="center"
-      zIndex="overlay"
+      // Chakra wraps every portaled element (Modal, Toast, Popover, Menu,
+      // Tooltip...) in its own `chakra-portal-zIndex` container, hardcoded
+      // to z-index 40 — that wrapper establishes a stacking context, so a
+      // portaled component's own (much higher) theme z-index only competes
+      // within it; as a unit it still sits at 40 against the rest of the
+      // page. This overlay must stay below that 40 (not the "overlay"
+      // token's 1300) so any modal/toast opened while it's showing — e.g.
+      // CancelScheduleModal from the navbar's Cancel-schedule button —
+      // still renders on top of it.
+      zIndex="docked"
       px="1.5rem"
       py="2rem"
     >
