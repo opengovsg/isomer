@@ -12,6 +12,7 @@
       "persistent": true
     },
     "generate": {
+      "dependsOn": ["@opengovsg/isomer-components#build"],
       "outputs": ["public/0.1.0.json"]
     }
   }
