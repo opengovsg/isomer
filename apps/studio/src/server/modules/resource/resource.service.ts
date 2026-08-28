@@ -1354,6 +1354,11 @@ export const assertResourceNotLive = async (
 // IndexPage (one level under it): a Folder/Collection is genuinely "Live"
 // only when this is true, versus "Live · Template" when it's not published
 // but `hasLiveDescendant` is still true because something deeper is live.
+// TODO: remove_autogen has closed off new ways to reach the "Live · Template"
+// state, but legacy data can still be in it. Once index-page autogeneration
+// is properly removed (and any remaining legacy rows backfilled),
+// `hasLiveDescendant`/"liveTemplate" should no longer be reachable and can
+// be dropped, leaving just `hasLiveIndexPage`'s live/not-live check.
 export const getChildLiveStatusMap = async (
   trx: SafeKysely,
   { siteId, resourceId }: { siteId: number; resourceId: string | null },
