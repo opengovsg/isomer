@@ -38,6 +38,7 @@
     "dev": "tsc -w",
     "format": "oxfmt --check . --ignore-path ../../.gitignore",
     "format:fix": "oxfmt --write . --ignore-path ../../.gitignore",
+    "image-audit": "vite audit-app",
     "lint": "oxlint --type-aware .",
     "lint:fix": "oxlint --type-aware --fix .",
     "prebuild": "rimraf dist",

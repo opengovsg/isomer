@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1200" width="900" height="1200" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <pattern id="g" width="100" height="100" patternUnits="userSpaceOnUse">
+      <path d="M100 0H0V100" fill="none" stroke="#A3BFD8" stroke-width="2"/>
+    </pattern>
+  </defs>
+  <rect width="900" height="1200" fill="#E9EFF5"/>
+  <rect width="900" height="1200" fill="url(#g)"/>
+  <line x1="0" y1="0" x2="900" y2="1200" stroke="#A3BFD8" stroke-width="3"/>
+  <line x1="900" y1="0" x2="0" y2="1200" stroke="#A3BFD8" stroke-width="3"/>
+  <circle cx="450" cy="600" r="438" fill="none" stroke="#3D5A77" stroke-width="6" stroke-dasharray="18 12"/>
+  <circle cx="450" cy="600" r="15" fill="#3D5A77"/>
+  <rect x="3" y="3" width="894" height="1194" fill="none" stroke="#3D5A77" stroke-width="6"/>
+  <text x="450" y="568.5" text-anchor="middle" font-size="90" font-weight="bold" fill="#3D5A77">3:4 · sane portrait</text>
+  <text x="450" y="676.5" text-anchor="middle" font-size="50" fill="#3D5A77">900 × 1200</text>
+  <text x="450" y="106.4" text-anchor="middle" font-size="56" font-weight="bold" fill="#3D5A77">▲ TOP</text>
+  <text x="450" y="1138.4" text-anchor="middle" font-size="56" font-weight="bold" fill="#3D5A77">▼ BOTTOM</text>
+  <text x="61.60000000000001" y="600" text-anchor="middle" font-size="56" font-weight="bold" fill="#3D5A77" transform="rotate(-90 61.60000000000001 600)">◀ LEFT</text>
+  <text x="838.4" y="600" text-anchor="middle" font-size="56" font-weight="bold" fill="#3D5A77" transform="rotate(90 838.4 600)">RIGHT ▶</text>
+</svg>

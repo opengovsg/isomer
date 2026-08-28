@@ -1,0 +1,266 @@
+/* Shell chrome only — never loaded inside the component iframes' content area
+   styling; the components themselves render from the package's own CSS. */
+
+.shell {
+  font-family: Helvetica, Arial, sans-serif;
+  color: #23282b;
+  background: #f2f0eb;
+  min-height: 100vh;
+  padding: 24px clamp(16px, 4vw, 48px) 96px;
+}
+
+.shell-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.shell-head h1 {
+  font-size: 26px;
+  font-weight: 700;
+  margin: 0 0 6px;
+}
+
+.shell-head p {
+  margin: 0;
+  max-width: 62ch;
+  font-size: 14px;
+  color: #6b6e68;
+}
+
+.shell-head code {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 12.5px;
+  background: #e2dfd7;
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+/* image picker */
+.picker {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.picker-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 2px solid #c9c5ba;
+  border-radius: 8px;
+  background: #fbfaf8;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.picker-item:hover {
+  border-color: #8a8677;
+}
+
+.picker-item.active {
+  border-color: #17635b;
+  background: #e3eeec;
+  box-shadow: 0 0 0 2px #17635b33;
+}
+
+.picker-item:focus-visible {
+  outline: 3px solid #17635b;
+  outline-offset: 2px;
+}
+
+.picker-thumb {
+  height: 44px;
+  width: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border: 1px solid #e2dfd7;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.picker-thumb img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.picker-label {
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.picker-dims {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 11px;
+  color: #6b6e68;
+}
+
+/* tabs */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  border-bottom: 2px solid #c9c5ba;
+  margin-bottom: 28px;
+}
+
+.tabs button {
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 16px;
+  border: none;
+  border-bottom: 3px solid transparent;
+  background: none;
+  cursor: pointer;
+  color: #6b6e68;
+  margin-bottom: -2px;
+}
+
+.tabs button:hover {
+  color: #23282b;
+}
+
+.tabs button.active {
+  color: #114a44;
+  border-bottom-color: #17635b;
+}
+
+.tabs button:focus-visible {
+  outline: 3px solid #17635b;
+  outline-offset: -3px;
+}
+
+.tab-count {
+  margin-left: 7px;
+  font-size: 11.5px;
+  font-weight: 700;
+  background: #e2dfd7;
+  color: #23282b;
+  border-radius: 999px;
+  padding: 1px 7px;
+  vertical-align: 1px;
+}
+
+/* rows */
+.row {
+  background: #fbfaf8;
+  border: 1px solid #e2dfd7;
+  border-radius: 10px;
+  padding: 20px clamp(14px, 2.5vw, 28px) 28px;
+  margin-bottom: 32px;
+}
+
+.row-title-line {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.row-title-line h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.row-title-line a {
+  font-size: 13px;
+  font-weight: 600;
+  color: #114a44;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.row-title-line a:hover {
+  text-decoration: underline;
+}
+
+.row-note {
+  margin: 8px 0 0;
+  max-width: 100ch;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #4a4e49;
+}
+
+.row-controls {
+  margin-top: 10px;
+}
+
+.fit-control {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.fit-control label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.picker-na {
+  margin: 0;
+  font-size: 12.5px;
+  font-style: italic;
+  color: #8a5b12;
+}
+
+/* device panes */
+.panes {
+  display: grid;
+  grid-template-columns: minmax(0, 390fr) minmax(0, 768fr);
+  gap: 20px;
+  margin-top: 18px;
+}
+
+.pane-area-desktop {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 900px) {
+  .panes {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pane-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #6b6e68;
+  margin-bottom: 6px;
+}
+
+.pane-scale {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.pane-slot {
+  width: 100%;
+}
+
+.pane-clip {
+  overflow: hidden;
+  border: 1px solid #c9c5ba;
+  background: #fff;
+  max-width: 100%;
+}
