@@ -16,16 +16,39 @@ export default function Editor() {
     placeholder as PreviewSchema,
   )
   const [isJSONValid, setIsJSONValid] = useState(true)
+  const [schemaLoadError, setSchemaLoadError] = useState<string | null>(null)
   const [isCopied, setIsCopied] = useState(false)
 
   const [validate, setValidate] = useState<ValidateFunction | null>(null)
 
   const loadSchema = async () => {
-    const response = await fetch(ISOMER_SCHEMA_URI)
-    const schema = (await response.json()) as object
-    const ajv = new Ajv({ strict: false })
-    const validateFn = ajv.compile(schema)
-    setValidate(() => validateFn)
+    try {
+      const response = await fetch(ISOMER_SCHEMA_URI)
+
+      if (!response.ok) {
+        throw new Error(
+          `Failed to load schema (${response.status} ${response.statusText})`,
+        )
+      }
+
+      let schema: object
+      try {
+        schema = (await response.json()) as object
+      } catch {
+        throw new Error("Failed to parse schema JSON")
+      }
+
+      const ajv = new Ajv({ strict: false })
+      const validateFn = ajv.compile(schema)
+      setValidate(() => validateFn)
+      setSchemaLoadError(null)
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to load schema"
+      setSchemaLoadError(message)
+      setIsJSONValid(false)
+      console.error(message, error)
+    }
   }
 
   const handleEditorChange = useCallback(
@@ -37,13 +60,12 @@ export default function Editor() {
       setEditorValue(value)
       localStorage.setItem("editorValue", value)
 
+      if (validate === null) {
+        return
+      }
+
       try {
         const parsedJson = JSON.parse(value) as PreviewSchema
-
-        if (validate === null) {
-          console.log("Schema not loaded yet")
-          return
-        }
 
         if (validate(parsedJson)) {
           setIsJSONValid(true)
@@ -82,6 +104,18 @@ export default function Editor() {
     }
   }, [isCopied])
 
+  const statusLabel = schemaLoadError
+    ? "Schema error"
+    : isJSONValid
+      ? "Valid"
+      : "Invalid"
+
+  const statusClassName = schemaLoadError
+    ? "bg-red-200 text-red-700"
+    : isJSONValid
+      ? "bg-green-200 text-green-700"
+      : "bg-red-200 text-red-700"
+
   return (
     <div className="flex h-full w-full flex-col">
       <div className="flex w-full flex-row gap-4 border-b border-b-gray-400 px-4 py-1 hover:[&_a]:text-blue-700 hover:[&_button]:text-blue-700">
@@ -95,21 +129,22 @@ export default function Editor() {
         >
           Reset Editor
         </button>
-        <a href={ISOMER_SCHEMA_URI} target="_blank">
+        <a href={ISOMER_SCHEMA_URI} target="_blank" rel="noopener noreferrer">
           Isomer Schema
         </a>
 
         <div className="flex-1"></div>
 
-        <div
-          className={`px-2 ${
-            isJSONValid
-              ? "bg-green-200 text-green-700"
-              : "bg-red-200 text-red-700"
-          }`}
-        >
-          {isJSONValid ? "Valid" : "Invalid"}
-        </div>
+        {schemaLoadError !== null ? (
+          <div
+            className="max-w-md truncate px-2 text-red-700"
+            title={schemaLoadError}
+          >
+            {schemaLoadError}
+          </div>
+        ) : null}
+
+        <div className={`px-2 ${statusClassName}`}>{statusLabel}</div>
       </div>
 
       <div className="flex flex-row">

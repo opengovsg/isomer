@@ -10,7 +10,8 @@ Isomer Next is a monorepo for a government CMS/site builder platform (Open Gover
 
 ### Development
 ```bash
-pnpm dev              # Start all dev servers
+pnpm dev              # Start Studio dev server
+pnpm --filter playground dev  # Start the JSON schema playground
 pnpm storybook        # Start Storybook in multiple workspaces (e.g. Studio on 6007, Components on 6006)
 pnpm watch:packages   # Watch and rebuild packages
 ```
