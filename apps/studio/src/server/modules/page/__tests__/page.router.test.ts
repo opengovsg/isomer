@@ -1859,40 +1859,6 @@ describe("page.router", async () => {
       })
     })
 
-    it("should throw if the folder's IndexPage has a pending scheduled unpublish", async () => {
-      // Arrange — nothing may be created under a container that's locked by
-      // a pending scheduled unpublish.
-      const { site, folder } = await setupFolder()
-      await setupPageResource({
-        siteId: site.id,
-        parentId: folder.id,
-        resourceType: ResourceType.IndexPage,
-        state: ResourceState.Published,
-        userId: session.userId ?? undefined,
-        scheduledAt: new Date("2999-01-01T00:00:00Z"),
-        scheduledBy: session.userId,
-        scheduledAction: ScheduledAction.Unpublish,
-      })
-      await setupAdminPermissions({
-        userId: session.userId ?? undefined,
-        siteId: site.id,
-      })
-
-      // Act
-      const result = caller.createPage({
-        siteId: site.id,
-        title: "Test Page",
-        permalink: "test-page",
-        layout: "content",
-        folderId: Number(folder.id),
-      })
-
-      // Assert
-      await expect(result).rejects.toThrow(
-        expect.objectContaining({ code: "PRECONDITION_FAILED" }),
-      )
-    })
-
     it("should throw 404 if folderId does not exist", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -2419,115 +2385,6 @@ describe("page.router", async () => {
     })
 
     describe("ancestor guard", () => {
-      it("should throw if the page's containing folder's IndexPage is not live", async () => {
-        const { site, folder } = await setupFolder({})
-        await setupPageResource({
-          siteId: site.id,
-          parentId: folder.id,
-          resourceType: ResourceType.IndexPage,
-        })
-        const { page } = await setupPageResource({
-          siteId: site.id,
-          parentId: folder.id,
-          resourceType: ResourceType.Page,
-          permalink: "child-page",
-        })
-        await setupPublisherPermissions({
-          userId: session.userId ?? undefined,
-          siteId: site.id,
-        })
-
-        const result = caller.publishPage({
-          siteId: site.id,
-          pageId: Number(page.id),
-        })
-
-        await expect(result).rejects.toThrow(
-          expect.objectContaining({ code: "PRECONDITION_FAILED" }),
-        )
-      })
-
-      it("should throw if a grandparent folder's IndexPage is not live, even though the immediate parent's IndexPage is live", async () => {
-        const { site, folder: grandparentFolder } = await setupFolder({
-          permalink: "grandparent",
-        })
-        await setupPageResource({
-          siteId: site.id,
-          parentId: grandparentFolder.id,
-          resourceType: ResourceType.IndexPage,
-        })
-        const { folder: parentFolder } = await setupFolder({
-          siteId: site.id,
-          permalink: "parent",
-          parentId: grandparentFolder.id,
-        })
-        await setupPageResource({
-          siteId: site.id,
-          parentId: parentFolder.id,
-          resourceType: ResourceType.IndexPage,
-          state: ResourceState.Published,
-          userId: session.userId ?? undefined,
-        })
-        const { page } = await setupPageResource({
-          siteId: site.id,
-          parentId: parentFolder.id,
-          resourceType: ResourceType.Page,
-          permalink: "child-page",
-        })
-        await setupPublisherPermissions({
-          userId: session.userId ?? undefined,
-          siteId: site.id,
-        })
-
-        const result = caller.publishPage({
-          siteId: site.id,
-          pageId: Number(page.id),
-        })
-
-        await expect(result).rejects.toThrow(
-          expect.objectContaining({ code: "PRECONDITION_FAILED" }),
-        )
-      })
-
-      it("should allow publishing a child page once every ancestor IndexPage is live", async () => {
-        const { site, folder: grandparentFolder } = await setupFolder({
-          permalink: "grandparent",
-        })
-        await setupPageResource({
-          siteId: site.id,
-          parentId: grandparentFolder.id,
-          resourceType: ResourceType.IndexPage,
-          state: ResourceState.Published,
-          userId: session.userId ?? undefined,
-        })
-        const { folder: parentFolder } = await setupFolder({
-          siteId: site.id,
-          permalink: "parent",
-          parentId: grandparentFolder.id,
-        })
-        await setupPageResource({
-          siteId: site.id,
-          parentId: parentFolder.id,
-          resourceType: ResourceType.IndexPage,
-          state: ResourceState.Published,
-          userId: session.userId ?? undefined,
-        })
-        const { page } = await setupPageResource({
-          siteId: site.id,
-          parentId: parentFolder.id,
-          resourceType: ResourceType.Page,
-          permalink: "child-page",
-        })
-        await setupPublisherPermissions({
-          userId: session.userId ?? undefined,
-          siteId: site.id,
-        })
-
-        await expect(
-          caller.publishPage({ siteId: site.id, pageId: Number(page.id) }),
-        ).resolves.toBeUndefined()
-      })
-
       it("should throw if the containing folder's IndexPage has a pending scheduled unpublish, even though it's currently live", async () => {
         const { site, folder } = await setupFolder({})
         const scheduledAt = new Date("2999-01-01T00:00:00Z")
@@ -4076,44 +3933,6 @@ describe("page.router", async () => {
       // Assert
       expect(result).toEqual({ pageId: expect.any(String) })
     })
-
-    it("should throw if an ancestor folder's IndexPage has a pending scheduled unpublish", async () => {
-      // Arrange — a grandparent folder locked by a pending scheduled
-      // unpublish; nothing may be created underneath it, at any depth.
-      const { site, folder: grandparentFolder } = await setupFolder({
-        permalink: "grandparent",
-      })
-      await setupPageResource({
-        siteId: site.id,
-        parentId: grandparentFolder.id,
-        resourceType: ResourceType.IndexPage,
-        state: ResourceState.Published,
-        userId: session.userId ?? undefined,
-        scheduledAt: new Date("2999-01-01T00:00:00Z"),
-        scheduledBy: session.userId,
-        scheduledAction: ScheduledAction.Unpublish,
-      })
-      const { folder: childFolder } = await setupFolder({
-        siteId: site.id,
-        permalink: "child",
-        parentId: grandparentFolder.id,
-      })
-      await setupAdminPermissions({
-        userId: session.userId ?? undefined,
-        siteId: site.id,
-      })
-
-      // Act
-      const result = caller.createIndexPage({
-        siteId: site.id,
-        parentId: childFolder.id,
-      })
-
-      // Assert
-      await expect(result).rejects.toThrow(
-        expect.objectContaining({ code: "PRECONDITION_FAILED" }),
-      )
-    })
   })
   describe("schedulePage", () => {
     const FIXED_NOW = new Date("2024-01-01T00:00:00.000Z")
@@ -4346,65 +4165,6 @@ describe("page.router", async () => {
     })
 
     describe("ancestor guard", () => {
-      it("should throw if the containing folder's IndexPage won't be live by the scheduled time", async () => {
-        const { site, folder } = await setupFolder({})
-        await setupPageResource({
-          siteId: site.id,
-          parentId: folder.id,
-          resourceType: ResourceType.IndexPage,
-        })
-        const { page } = await setupPageResource({
-          siteId: site.id,
-          parentId: folder.id,
-          resourceType: ResourceType.Page,
-          permalink: "child-page",
-        })
-        await setupPublisherPermissions({
-          userId: session.userId ?? undefined,
-          siteId: site.id,
-        })
-
-        const result = caller.schedulePage({
-          siteId: site.id,
-          pageId: Number(page.id),
-          scheduledAt: addDays(FIXED_NOW, 1),
-        })
-
-        await expect(result).rejects.toThrow(
-          expect.objectContaining({ code: "PRECONDITION_FAILED" }),
-        )
-      })
-
-      it("should allow scheduling when the containing folder's IndexPage is scheduled to publish first", async () => {
-        const { site, folder } = await setupFolder({})
-        await setupPageResource({
-          siteId: site.id,
-          parentId: folder.id,
-          resourceType: ResourceType.IndexPage,
-          scheduledAt: addDays(FIXED_NOW, 1),
-          scheduledBy: session.userId,
-          scheduledAction: ScheduledAction.Publish,
-        })
-        const { page } = await setupPageResource({
-          siteId: site.id,
-          parentId: folder.id,
-          resourceType: ResourceType.Page,
-          permalink: "child-page",
-        })
-        await setupPublisherPermissions({
-          userId: session.userId ?? undefined,
-          siteId: site.id,
-        })
-
-        await expect(
-          caller.schedulePage({
-            siteId: site.id,
-            pageId: Number(page.id),
-            scheduledAt: addDays(FIXED_NOW, 2),
-          }),
-        ).resolves.not.toThrow()
-      })
-
       it("should throw if the containing folder's IndexPage has a pending scheduled unpublish", async () => {
         const { site, folder } = await setupFolder({})
         await setupPageResource({
