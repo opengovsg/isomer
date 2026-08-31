@@ -2,9 +2,15 @@ import type { HeroGradientProps } from "~/interfaces/complex/Hero"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
+import {
+  contentBlockIndexAttr,
+  type ContentBlockIndexProps,
+} from "../../../render/contentBlockIndex"
 import { ComponentContent } from "../../internal/customCssClass"
 import { ImageClient } from "../../internal/ImageClient"
 import { LinkButton } from "../../internal/LinkButton/LinkButton"
+
+type HeroGradientRenderProps = HeroGradientProps & ContentBlockIndexProps
 
 export const HeroGradient = ({
   title,
@@ -16,10 +22,14 @@ export const HeroGradient = ({
   backgroundUrl,
   site,
   headingLevel,
-}: HeroGradientProps) => {
+  contentBlockIndex,
+}: HeroGradientRenderProps) => {
   const Tag = getHeadingTag(headingLevel)
   return (
-    <section className="relative flex min-h-[15rem] sm:min-h-[22.5rem] lg:min-h-[31.25rem]">
+    <section
+      className="relative flex min-h-[15rem] sm:min-h-[22.5rem] lg:min-h-[31.25rem]"
+      {...contentBlockIndexAttr(contentBlockIndex)}
+    >
       <div
         className="absolute inset-0 min-h-[15rem] min-w-full overflow-hidden sm:min-h-[22.5rem] lg:min-h-[31.25rem]"
         style={{ contain: "layout" }}

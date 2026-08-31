@@ -4,6 +4,10 @@ import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
 
+import {
+  contentBlockIndexAttr,
+  type ContentBlockIndexProps,
+} from "../../../render/contentBlockIndex"
 import { ComponentContent } from "../../internal/customCssClass"
 import { LinkButton } from "../../internal/LinkButton"
 
@@ -59,6 +63,8 @@ const createKeyStatisticsStyles = tv({
 
 const compoundStyles = createKeyStatisticsStyles()
 
+type KeyStatisticsRenderProps = KeyStatisticsProps & ContentBlockIndexProps
+
 export const KeyStatistics = ({
   id,
   title,
@@ -68,7 +74,8 @@ export const KeyStatistics = ({
   layout,
   site,
   headingLevel,
-}: KeyStatisticsProps) => {
+  contentBlockIndex,
+}: KeyStatisticsRenderProps) => {
   const noOfItems = Math.min(MAX_ITEMS, statistics.length) as NoOfItemVariants
   const simplifiedLayout = getTailwindVariantLayout(layout)
   const TitleTag = getHeadingTag(headingLevel)
@@ -78,6 +85,7 @@ export const KeyStatistics = ({
     <section
       id={id}
       className={compoundStyles.container({ layout: simplifiedLayout })}
+      {...contentBlockIndexAttr(contentBlockIndex)}
     >
       <TitleTag className={compoundStyles.title()}>{title}</TitleTag>
 

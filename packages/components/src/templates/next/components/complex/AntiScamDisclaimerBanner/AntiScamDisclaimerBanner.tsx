@@ -1,14 +1,21 @@
 import { BiError } from "react-icons/bi"
 
+import {
+  contentBlockIndexAttr,
+  type ContentBlockIndexProps,
+} from "../../../render/contentBlockIndex"
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
 
-export const AntiScamDisclaimerBanner = () => {
+export const AntiScamDisclaimerBanner = ({
+  contentBlockIndex,
+}: ContentBlockIndexProps) => {
   return (
     <div
       className={`${ComponentContent} w-full rounded-lg bg-base-canvas px-5 py-12 md:px-6 lg:w-fit lg:max-w-full lg:py-16`}
       role="region"
       aria-label="Anti-scam notice"
+      {...contentBlockIndexAttr(contentBlockIndex)}
     >
       <div className="flex flex-col gap-5 lg:flex-row lg:items-start">
         <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-utility-feedback-warning-faint">

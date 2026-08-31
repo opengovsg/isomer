@@ -11,9 +11,6 @@ const meta: Meta<typeof AntiScamDisclaimerBanner> = {
     layout: "fullscreen",
     chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
   },
-  args: {
-    type: "antiscambanner",
-  },
 }
 
 export default meta
