@@ -239,9 +239,6 @@ export const detectTableSelectionKind = (editor: Editor): SelectionKind => {
   })
 }
 
-// Any CellSelection (including a single cell) has at least Clear contents.
-export const isActionableTableSelectionKind = (kind: SelectionKind) =>
-  kind !== "none"
-
+// Hide the menu while a Chakra/modal dialog has focus.
 export const isEditorModalOpen = () =>
   document.querySelector('[role="dialog"][aria-modal="true"]') != null
