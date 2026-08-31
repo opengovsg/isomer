@@ -1,5 +1,5 @@
 import type { ProseProps } from "@opengovsg/isomer-components"
-import type { EditorEvents, JSONContent } from "@tiptap/react"
+import type { JSONContent } from "@tiptap/react"
 import { Box, HStack, useDisclosure, VStack } from "@chakra-ui/react"
 import {
   Button,
@@ -60,14 +60,10 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
   const [hasTipTapSchemaError, setHasTipTapSchemaError] = useState(false)
 
   const toast = useToast()
-  const handleTipTapContentError = useCallback(
-    ({ editor }: EditorEvents["contentError"]) => {
-      setHasTipTapSchemaError(true)
-      setIsContentValid(false)
-      editor.setEditable(false, false)
-    },
-    [],
-  )
+  const handleTipTapContentError = useCallback(() => {
+    setHasTipTapSchemaError(true)
+    setIsContentValid(false)
+  }, [])
   const { pageId, siteId } = useQueryParse(pageSchema)
   const { mutate, isPending } = trpc.page.updatePageBlob.useMutation({
     onSuccess: async () => {
