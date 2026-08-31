@@ -3,6 +3,10 @@ import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
 import type { InfopicProps } from "../types"
+import {
+  contentBlockIndexAttr,
+  type ContentBlockIndexProps,
+} from "../../../../render/contentBlockIndex"
 import { LinkButton } from "../../../internal/LinkButton"
 import { infopicStyles } from "../common"
 
@@ -19,7 +23,8 @@ export const FullInfopic = ({
   isTextOnRight,
   site,
   headingLevel,
-}: FullInfopicProps) => {
+  contentBlockIndex,
+}: FullInfopicProps & ContentBlockIndexProps) => {
   const Tag = getHeadingTag(headingLevel)
   const compoundStyles = infopicStyles({
     isTextOnRight,
@@ -36,6 +41,7 @@ export const FullInfopic = ({
         backgroundPosition: "center",
       }}
       id={id}
+      {...contentBlockIndexAttr(contentBlockIndex)}
     >
       <div className={compoundStyles.overlay()}>
         <div

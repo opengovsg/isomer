@@ -5,6 +5,10 @@ import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
 
+import {
+  contentBlockIndexAttr,
+  type ContentBlockIndexProps,
+} from "../../../render/contentBlockIndex"
 import { ComponentContent } from "../../internal/customCssClass"
 import { LinkButton } from "../../internal/LinkButton"
 
@@ -85,6 +89,8 @@ export const createInfobarStyles = tv({
   },
 })
 
+type InfobarRenderProps = InfobarProps & ContentBlockIndexProps
+
 export const Infobar = ({
   variant,
   title,
@@ -96,7 +102,8 @@ export const Infobar = ({
   layout,
   site,
   headingLevel,
-}: InfobarProps) => {
+  contentBlockIndex,
+}: InfobarRenderProps) => {
   const simplifiedLayout = getTailwindVariantLayout(layout)
   const Tag = getHeadingTag(headingLevel)
   const hasPrimaryCTA = !!buttonLabel && !!buttonUrl
@@ -114,7 +121,10 @@ export const Infobar = ({
       : "default"
 
   return (
-    <section className={styles.screenWideOuterContainer()}>
+    <section
+      className={styles.screenWideOuterContainer()}
+      {...contentBlockIndexAttr(contentBlockIndex)}
+    >
       <div className={styles.outerContainer()}>
         <div className={styles.innerContainer()}>
           <div className={styles.headingContainer()}>
