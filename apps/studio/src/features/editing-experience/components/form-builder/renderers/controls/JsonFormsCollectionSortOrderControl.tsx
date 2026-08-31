@@ -45,10 +45,14 @@ function JsonFormsCollectionSortOrderControl({
   )
 
   useEffect(() => {
+    if (isLoading) {
+      return
+    }
+
     if (resolvedValue !== data) {
       handleChange(path, resolvedValue)
     }
-  }, [data, handleChange, path, resolvedValue])
+  }, [data, handleChange, isLoading, path, resolvedValue])
 
   if (isLoading) {
     return <Skeleton />
