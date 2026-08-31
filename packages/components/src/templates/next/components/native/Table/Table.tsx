@@ -23,6 +23,12 @@ const tableStyles = tv({
   },
 })
 
+const brandInverseContentStyles =
+  "text-base-content-inverse [&_ol]:text-base-content-inverse [&_ol]:marker:text-base-content-inverse [&_p]:text-base-content-inverse [&_ul]:text-base-content-inverse [&_ul]:marker:text-base-content-inverse"
+
+const brandInverseLinkStyles =
+  "[&_p_a]:text-base-content-inverse visited:[&_p_a]:text-base-content-inverse hover:[&_p_a]:text-base-content-inverse hover:[&_p_a]:underline focus-visible:[&_p_a]:text-base-content-inverse"
+
 const tableCellStyles = tv({
   base: "max-w-40 break-words border border-base-divider-medium px-4 py-3 align-top [&_li]:mb-4 [&_li]:mt-0 [&_li]:pl-1 [&_ol]:mt-0 [&_ol]:ps-5 [&_ul]:mt-0 [&_ul]:ps-5",
   variants: {
@@ -31,7 +37,7 @@ const tableCellStyles = tv({
       false: "bg-base-canvas-alt [&_ol]:prose-body-sm [&_p]:prose-body-sm",
     },
     isBrandInverse: {
-      true: "text-base-content-inverse [&_ol]:text-base-content-inverse [&_ol]:marker:text-base-content-inverse [&_p]:text-base-content-inverse [&_p_a]:text-base-content-inverse visited:[&_p_a]:text-base-content-inverse hover:[&_p_a]:text-base-content-inverse hover:[&_p_a]:underline focus-visible:[&_p_a]:text-base-content-inverse [&_ul]:text-base-content-inverse [&_ul]:marker:text-base-content-inverse",
+      true: `${brandInverseContentStyles} ${brandInverseLinkStyles}`,
     },
   },
 })
@@ -64,7 +70,7 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
               <tr key={index} className="text-left">
                 {row.content.map((cell, cellIndex) => {
                   const isHeader = cell.type === "tableHeader"
-                  const TableCellTag = isHeader ? "th" : "td"
+                  const CellTag = isHeader ? "th" : "td"
                   const backgroundColor = getTableCellBackgroundColorCssForKind(
                     cell.attrs?.backgroundColor,
                     { isHeader },
@@ -76,7 +82,7 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
                     )
 
                   return (
-                    <TableCellTag
+                    <CellTag
                       key={cellIndex}
                       colSpan={normalizeColspan(cell.attrs?.colspan)}
                       rowSpan={normalizeRowspan(cell.attrs?.rowspan)}
@@ -119,7 +125,7 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
                             return <></>
                         }
                       })}
-                    </TableCellTag>
+                    </CellTag>
                   )
                 })}
               </tr>
