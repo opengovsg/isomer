@@ -1,3 +1,4 @@
+import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { IframeCallbackFnProps } from "~/types/dom"
 import { Box, useDisclosure } from "@chakra-ui/react"
 import { isEqual, merge } from "lodash-es"
@@ -19,7 +20,7 @@ import PreviewWithCustomSitemap from "./PreviewWithCustomSitemap"
 import { ViewportContainer } from "./ViewportContainer"
 
 interface PendingBlockSelection {
-  index: number
+  block: IsomerSchema["content"][number]
 }
 
 const LoadingState = (): JSX.Element => {
@@ -100,7 +101,7 @@ const SuspendableEditPagePreview = (): JSX.Element => {
 
     const hasUnsavedChanges = !isEqual(previewPageState, savedPageState)
     if (hasUnsavedChanges && hoveredBlockIndex !== currActiveIdx) {
-      setPendingBlockSelection({ index: hoveredBlockIndex })
+      setPendingBlockSelection({ block })
       onDiscardChangesModalOpen()
       return
     }
@@ -123,16 +124,14 @@ const SuspendableEditPagePreview = (): JSX.Element => {
     setPreviewPageState(savedPageState)
     onDiscardChangesModalClose()
     if (pendingBlockSelection) {
-      // Re-derive the target block from the just-restored saved content —
-      // the pending selection's index came from hovering the discarded
-      // preview, whose structure (and therefore block types/positions) may
-      // no longer match `savedPageState` after add/remove/reorder edits.
-      const restoredBlock = savedPageState.content[pendingBlockSelection.index]
-      if (restoredBlock) {
-        selectBlock(
-          pendingBlockSelection.index,
-          getDrawerStateForBlock(restoredBlock),
-        )
+      const idx = savedPageState.content.findIndex((b) =>
+        isEqual(b, pendingBlockSelection.block),
+      )
+      if (idx !== -1) {
+        const restoredBlock = savedPageState.content[idx]
+        if (restoredBlock) {
+          selectBlock(idx, getDrawerStateForBlock(restoredBlock))
+        }
       }
       setPendingBlockSelection(null)
     }

@@ -11,7 +11,6 @@ export const useSelectBlock = () => {
     setDrawerState,
     setFlashBlockIndex,
     iframeDocument,
-    previewPageState,
   } = useEditorDrawerContext()
 
   return useCallback(
@@ -21,16 +20,9 @@ export const useSelectBlock = () => {
       setFlashBlockIndex(index)
       scrollToBlockElement({
         iframeDocument,
-        content: previewPageState.content,
         index,
       })
     },
-    [
-      setCurrActiveIdx,
-      setDrawerState,
-      setFlashBlockIndex,
-      iframeDocument,
-      previewPageState,
-    ],
+    [setCurrActiveIdx, setDrawerState, setFlashBlockIndex, iframeDocument],
   )
 }
