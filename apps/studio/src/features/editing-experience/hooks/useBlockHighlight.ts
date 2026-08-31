@@ -37,7 +37,7 @@ export const useBlockHighlight = ({
       return
     }
 
-    const blockEl = getBlockElement(iframeDocument, content, hoveredBlockIndex)
+    const blockEl = getBlockElement(iframeDocument, hoveredBlockIndex)
 
     if (!blockEl) {
       setRect(null)
