@@ -1,5 +1,9 @@
 import type { UnorderedListProps } from "~/interfaces"
 
+import {
+  contentBlockIndexAttr,
+  type ContentBlockIndexProps,
+} from "../../../render/contentBlockIndex"
 import { ListItem } from "../ListItem"
 
 const getUnorderedListType = (level?: number) => {
@@ -13,13 +17,19 @@ const getUnorderedListType = (level?: number) => {
   }
 }
 
-export const UnorderedList = ({ content, level, site }: UnorderedListProps) => {
+export const UnorderedList = ({
+  content,
+  level,
+  site,
+  contentBlockIndex,
+}: UnorderedListProps & ContentBlockIndexProps) => {
   return (
     // Nested sublists (level set) use `mt-3` to match the item rhythm (`my-3`
     // on ListItem). Top-level lists keep `mt-6` because preceding blocks like
     // Table or Callout have no bottom margin to collapse over a smaller value.
     <ul
       className={`${level ? "mt-3" : "mt-6"} ps-9 marker:text-base-content ${getUnorderedListType(level)}`}
+      {...contentBlockIndexAttr(contentBlockIndex)}
     >
       {content.map((item, index) => (
         <ListItem key={index} {...item} level={level} site={site} />
