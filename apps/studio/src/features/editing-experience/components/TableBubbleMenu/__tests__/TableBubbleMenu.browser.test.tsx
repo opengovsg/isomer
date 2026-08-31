@@ -297,7 +297,7 @@ describe("TableBubbleMenu", () => {
     expect(firstRowTexts(editor)).toEqual(["Column C", "Column A", "Column B"])
   })
 
-  it("withholds Delete and Move when selection includes header row", async () => {
+  it("withholds Add above, Delete and Move when selection includes header row", async () => {
     const { editor, findByText, findByRole, queryByText, queryByRole } =
       await renderHarness()
 
@@ -306,7 +306,7 @@ describe("TableBubbleMenu", () => {
 
     const headerToggle = await findByRole("checkbox", { name: "Header row" })
     expect(headerToggle).toBeChecked()
-    expect(await findByText("Add row above")).toBeTruthy()
+    expect(queryByText("Add row above")).toBeNull()
     expect(await findByText("Add row below")).toBeTruthy()
     expect(queryByText("Delete row")).toBeNull()
     expect(queryByText("Move up")).toBeNull()
@@ -315,6 +315,7 @@ describe("TableBubbleMenu", () => {
     selectCells(editor, 0, 5)
     await activateTableBubbleMenu(findByRole)
     expect(queryByRole("checkbox", { name: "Header row" })).toBeNull()
+    expect(queryByText("Add row above")).toBeNull()
     expect(queryByText("Delete row")).toBeNull()
     expect(queryByText("Move up")).toBeNull()
     expect(queryByText("Move down")).toBeNull()
@@ -338,11 +339,12 @@ describe("TableBubbleMenu", () => {
     await waitFor(() => {
       expect(headerToggle).not.toBeChecked()
     })
+    expect(await findByText("Add row above")).toBeTruthy()
     expect(await findByText("Delete row")).toBeTruthy()
     expect(await findByText("Move down")).toBeTruthy()
   })
 
-  it("withholds Delete and Move when selection includes header column", async () => {
+  it("withholds Add left, Delete and Move when selection includes header column", async () => {
     const { editor, findByText, findByRole, queryByText, queryByRole } =
       await renderHarness()
 
@@ -363,6 +365,7 @@ describe("TableBubbleMenu", () => {
     expect(
       await findByRole("checkbox", { name: "Header column" }),
     ).toBeChecked()
+    expect(queryByText("Add column left")).toBeNull()
     expect(queryByText("Delete column")).toBeNull()
     expect(queryByText("Move left")).toBeNull()
     expect(queryByText("Move right")).toBeNull()
