@@ -1,8 +1,8 @@
 import type { AllCardProps } from "~/interfaces"
 import { parseISO } from "date-fns"
-import { parseCollectionSortOrder } from "~/utils/collectionSortOrder"
 
 import type { GetCollectionItemsProps } from "./getCollectionItems"
+import { parseCollectionSortOrder } from "./collectionSortOrder"
 
 interface SortCollectionItemsProps extends Pick<
   GetCollectionItemsProps,
@@ -256,11 +256,10 @@ const sortCollectionItemsByDateFilter = ({
   items: AllCardProps[]
   filterId: string
   sortDirection?: SortDirection
-}) => {
-  return items.sort((a, b) =>
+}) =>
+  items.sort((a, b) =>
     compareDateFilterStartDates(a, b, filterId, sortDirection),
   )
-}
 
 export const sortCollectionItems = ({
   items,

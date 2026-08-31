@@ -1,11 +1,16 @@
 import type { AllCardProps } from "~/interfaces"
 import type { IsomerSitemap, IsomerSiteProps } from "~/types"
 import type { CollectionPagePageProps } from "~/types/page"
-import { resolveCollectionSortOrder } from "~/utils/collectionSortOrder"
 import { getParsedDate } from "~/utils/getParsedDate"
 import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
 
+<<<<<<< HEAD
 import { resolveItemDateFields } from "./dateFilterStatic"
+=======
+import { resolveCollectionSortOrder } from "./collectionSortOrder"
+import { getTodayInSingapore } from "./getDateFilterStatus"
+import { getDateFilterValues } from "./getDateFilterValues"
+>>>>>>> 075d6cbbb (refactor: trim collection sort order slop)
 import { getPillAndPlaintextTags } from "./getPillAndPlaintextTags"
 import { getTagsFromTagged } from "./getTagsFromTagged"
 import { sortCollectionItems } from "./sortCollectionItems"

@@ -1,24 +1,12 @@
 import type { CollectionPagePageProps } from "~/types/page"
 import { isDateFilter } from "~/types/page"
 
-export const BASE_COLLECTION_SORT_ORDERS = {
-  dateDesc: "date-desc",
-  dateAsc: "date-asc",
-  titleAsc: "title-asc",
-  titleDesc: "title-desc",
-} as const
+const DEFAULT_COLLECTION_SORT_ORDER = "date-desc"
+const DATE_FILTER_SORT_ORDER_PREFIX = "date-filter-"
 
-export type BaseCollectionSortOrder =
-  (typeof BASE_COLLECTION_SORT_ORDERS)[keyof typeof BASE_COLLECTION_SORT_ORDERS]
+type CollectionSortDirection = "asc" | "desc"
 
-export const DEFAULT_COLLECTION_SORT_ORDER =
-  BASE_COLLECTION_SORT_ORDERS.dateDesc
-
-export const DATE_FILTER_SORT_ORDER_PREFIX = "date-filter-"
-
-export type CollectionSortDirection = "asc" | "desc"
-
-export type ParsedCollectionSortOrder =
+type ParsedCollectionSortOrder =
   | { kind: "date"; direction: CollectionSortDirection }
   | { kind: "title"; direction: CollectionSortDirection }
   | {
@@ -27,34 +15,31 @@ export type ParsedCollectionSortOrder =
       direction: CollectionSortDirection
     }
 
-const BASE_COLLECTION_SORT_OPTIONS: {
-  value: BaseCollectionSortOrder
-  label: string
-}[] = [
+const BASE_COLLECTION_SORT_OPTIONS = [
   {
-    value: BASE_COLLECTION_SORT_ORDERS.dateDesc,
+    value: "date-desc",
     label: "By article date, newest → oldest",
   },
   {
-    value: BASE_COLLECTION_SORT_ORDERS.dateAsc,
+    value: "date-asc",
     label: "By article date, oldest → newest",
   },
   {
-    value: BASE_COLLECTION_SORT_ORDERS.titleAsc,
+    value: "title-asc",
     label: "By title, A → Z",
   },
   {
-    value: BASE_COLLECTION_SORT_ORDERS.titleDesc,
+    value: "title-desc",
     label: "By title, Z → A",
   },
-]
+] as const
 
-export const encodeDateFilterSortOrder = (
+const encodeDateFilterSortOrder = (
   filterId: string,
   direction: CollectionSortDirection,
 ): string => `${DATE_FILTER_SORT_ORDER_PREFIX}${filterId}-${direction}`
 
-export const parseCollectionSortOrder = (
+const parseCollectionSortOrder = (
   sortOrder: string | undefined,
 ): ParsedCollectionSortOrder => {
   if (!sortOrder) {
@@ -65,10 +50,9 @@ export const parseCollectionSortOrder = (
     const direction: CollectionSortDirection = sortOrder.endsWith("-asc")
       ? "asc"
       : "desc"
-    const directionSuffix = `-${direction}`
     const filterId = sortOrder.slice(
       DATE_FILTER_SORT_ORDER_PREFIX.length,
-      sortOrder.length - directionSuffix.length,
+      sortOrder.length - `-${direction}`.length,
     )
 
     return { kind: "date-filter", filterId, direction }
@@ -85,6 +69,11 @@ export const parseCollectionSortOrder = (
 
   return { kind: "date", direction }
 }
+
+const isBaseCollectionSortOrder = (
+  sortOrder: string,
+): sortOrder is (typeof BASE_COLLECTION_SORT_OPTIONS)[number]["value"] =>
+  BASE_COLLECTION_SORT_OPTIONS.some(({ value }) => value === sortOrder)
 
 export const getCollectionSortOptions = (
   tagCategories?: CollectionPagePageProps["tagCategories"],
@@ -112,13 +101,20 @@ export const resolveCollectionSortOrder = (
     return DEFAULT_COLLECTION_SORT_ORDER
   }
 
-  const validValues = new Set(
-    getCollectionSortOptions(tagCategories).map(({ value }) => value),
-  )
+  if (isBaseCollectionSortOrder(sortOrder)) {
+    return sortOrder
+  }
 
-  if (!validValues.has(sortOrder)) {
+  const parsed = parseCollectionSortOrder(sortOrder)
+  if (parsed.kind !== "date-filter") {
     return DEFAULT_COLLECTION_SORT_ORDER
   }
 
-  return sortOrder
+  const filterExists = tagCategories
+    ?.filter(isDateFilter)
+    .some(({ id }) => id === parsed.filterId)
+
+  return filterExists ? sortOrder : DEFAULT_COLLECTION_SORT_ORDER
 }
+
+export { parseCollectionSortOrder }

@@ -14,14 +14,11 @@ export {
   formatBytes,
   DGS_REQUEST_MAX_BYTES,
   getAskgovIdFromString,
-  BASE_COLLECTION_SORT_ORDERS,
-  DEFAULT_COLLECTION_SORT_ORDER,
-  DATE_FILTER_SORT_ORDER_PREFIX,
-  encodeDateFilterSortOrder,
-  getCollectionSortOptions,
-  parseCollectionSortOrder,
-  resolveCollectionSortOrder,
 } from "./utils"
+export {
+  getCollectionSortOptions,
+  resolveCollectionSortOrder,
+} from "./templates/next/layouts/Collection/utils/collectionSortOrder"
 export * from "./schemas"
 export * from "./types"
 export * from "./interfaces"
