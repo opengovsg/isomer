@@ -31,7 +31,7 @@ const tableCellStyles = tv({
       false: "bg-base-canvas-alt [&_ol]:prose-body-sm [&_p]:prose-body-sm",
     },
     isBrandInverse: {
-      true: "text-base-content-inverse [&_ol]:text-base-content-inverse [&_ol]:marker:text-base-content-inverse [&_p]:text-base-content-inverse [&_ul]:text-base-content-inverse [&_ul]:marker:text-base-content-inverse",
+      true: "text-base-content-inverse [&_ol]:text-base-content-inverse [&_ol]:marker:text-base-content-inverse [&_p]:text-base-content-inverse [&_p_a]:text-base-content-inverse visited:[&_p_a]:text-base-content-inverse hover:[&_p_a]:text-base-content-inverse hover:[&_p_a]:underline focus-visible:[&_p_a]:text-base-content-inverse [&_ul]:text-base-content-inverse [&_ul]:marker:text-base-content-inverse",
     },
   },
 })
@@ -60,77 +60,70 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
             </colgroup>
           )}
           <tbody>
-            {content.map((row, index) => {
-              const TableCellTag =
-                row.content[0]?.type === "tableHeader" ? "th" : "td"
-
-              return (
-                <tr key={index} className="text-left">
-                  {row.content.map((cell, cellIndex) => {
-                    const isHeader = cell.type === "tableHeader"
-                    const backgroundColor =
-                      getTableCellBackgroundColorCssForKind(
-                        cell.attrs?.backgroundColor,
-                        { isHeader },
-                      )
-                    const isBrandInverse =
-                      isHeader &&
-                      isTableCellBrandBackgroundColorToken(
-                        cell.attrs?.backgroundColor,
-                      )
-
-                    return (
-                      <TableCellTag
-                        key={cellIndex}
-                        colSpan={normalizeColspan(cell.attrs?.colspan)}
-                        rowSpan={normalizeRowspan(cell.attrs?.rowspan)}
-                        className={tableCellStyles({
-                          isHeader,
-                          isBrandInverse,
-                        })}
-                        style={
-                          backgroundColor ? { backgroundColor } : undefined
-                        }
-                      >
-                        {cell.content.map((cellContent, index) => {
-                          switch (cellContent.type) {
-                            case "divider":
-                              return <Divider key={index} {...cellContent} />
-                            case "orderedList":
-                              return (
-                                <OrderedList
-                                  key={index}
-                                  {...cellContent}
-                                  site={site}
-                                />
-                              )
-                            case "paragraph":
-                              return (
-                                <Paragraph
-                                  key={index}
-                                  {...cellContent}
-                                  site={site}
-                                />
-                              )
-                            case "unorderedList":
-                              return (
-                                <UnorderedList
-                                  key={index}
-                                  {...cellContent}
-                                  site={site}
-                                />
-                              )
-                            default:
-                              const _: never = cellContent
-                              return <></>
-                          }
-                        })}
-                      </TableCellTag>
+            {content.map((row, index) => (
+              <tr key={index} className="text-left">
+                {row.content.map((cell, cellIndex) => {
+                  const isHeader = cell.type === "tableHeader"
+                  const TableCellTag = isHeader ? "th" : "td"
+                  const backgroundColor = getTableCellBackgroundColorCssForKind(
+                    cell.attrs?.backgroundColor,
+                    { isHeader },
+                  )
+                  const isBrandInverse =
+                    isHeader &&
+                    isTableCellBrandBackgroundColorToken(
+                      cell.attrs?.backgroundColor,
                     )
-                  })}
-                </tr>
-              )
-            })}
+
+                  return (
+                    <TableCellTag
+                      key={cellIndex}
+                      colSpan={normalizeColspan(cell.attrs?.colspan)}
+                      rowSpan={normalizeRowspan(cell.attrs?.rowspan)}
+                      className={tableCellStyles({
+                        isHeader,
+                        isBrandInverse,
+                      })}
+                      style={backgroundColor ? { backgroundColor } : undefined}
+                    >
+                      {cell.content.map((cellContent, index) => {
+                        switch (cellContent.type) {
+                          case "divider":
+                            return <Divider key={index} {...cellContent} />
+                          case "orderedList":
+                            return (
+                              <OrderedList
+                                key={index}
+                                {...cellContent}
+                                site={site}
+                              />
+                            )
+                          case "paragraph":
+                            return (
+                              <Paragraph
+                                key={index}
+                                {...cellContent}
+                                site={site}
+                              />
+                            )
+                          case "unorderedList":
+                            return (
+                              <UnorderedList
+                                key={index}
+                                {...cellContent}
+                                site={site}
+                              />
+                            )
+                          default:
+                            const _: never = cellContent
+                            return <></>
+                        }
+                      })}
+                    </TableCellTag>
+                  )
+                })}
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
