@@ -4,13 +4,8 @@ import type { CollectionPagePageProps } from "~/types/page"
 import { getParsedDate } from "~/utils/getParsedDate"
 import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
 
-<<<<<<< HEAD
-import { resolveItemDateFields } from "./dateFilterStatic"
-=======
 import { resolveCollectionSortOrder } from "./collectionSortOrder"
-import { getTodayInSingapore } from "./getDateFilterStatus"
-import { getDateFilterValues } from "./getDateFilterValues"
->>>>>>> 075d6cbbb (refactor: trim collection sort order slop)
+import { resolveItemDateFields } from "./dateFilterStatic"
 import { getPillAndPlaintextTags } from "./getPillAndPlaintextTags"
 import { getTagsFromTagged } from "./getTagsFromTagged"
 import { sortCollectionItems } from "./sortCollectionItems"
