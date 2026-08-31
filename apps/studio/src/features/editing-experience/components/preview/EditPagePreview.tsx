@@ -21,6 +21,7 @@ import { ViewportContainer } from "./ViewportContainer"
 
 interface PendingBlockSelection {
   block: IsomerSchema["content"][number]
+  index: number
 }
 
 const LoadingState = (): JSX.Element => {
@@ -66,6 +67,8 @@ const SuspendableEditPagePreview = (): JSX.Element => {
   } = useDisclosure()
   const [pendingBlockSelection, setPendingBlockSelection] =
     useState<PendingBlockSelection | null>(null)
+  const [hoveredBlockElement, setHoveredBlockElement] =
+    useState<HTMLElement | null>(null)
 
   const [siteMap] = trpc.site.getLocalisedSitemap.useSuspenseQuery({
     siteId,
@@ -83,11 +86,13 @@ const SuspendableEditPagePreview = (): JSX.Element => {
     iframeDocument,
     previewPageState.content,
     setHoveredBlockIndex,
+    setHoveredBlockElement,
   )
 
   const { rect: highlightRect, label: highlightLabel } = useBlockHighlight({
     iframeDocument,
     hoveredBlockIndex,
+    hoveredBlockElement,
     content: previewPageState.content,
   })
 
@@ -101,7 +106,7 @@ const SuspendableEditPagePreview = (): JSX.Element => {
 
     const hasUnsavedChanges = !isEqual(previewPageState, savedPageState)
     if (hasUnsavedChanges && hoveredBlockIndex !== currActiveIdx) {
-      setPendingBlockSelection({ block })
+      setPendingBlockSelection({ block, index: hoveredBlockIndex })
       onDiscardChangesModalOpen()
       return
     }
@@ -124,9 +129,14 @@ const SuspendableEditPagePreview = (): JSX.Element => {
     setPreviewPageState(savedPageState)
     onDiscardChangesModalClose()
     if (pendingBlockSelection) {
-      const idx = savedPageState.content.findIndex((b) =>
-        isEqual(b, pendingBlockSelection.block),
-      )
+      const { block, index } = pendingBlockSelection
+      let idx = savedPageState.content.findIndex((b) => isEqual(b, block))
+      if (idx === -1) {
+        const savedBlock = savedPageState.content[index]
+        if (savedBlock?.type === block.type) {
+          idx = index
+        }
+      }
       if (idx !== -1) {
         const restoredBlock = savedPageState.content[idx]
         if (restoredBlock) {

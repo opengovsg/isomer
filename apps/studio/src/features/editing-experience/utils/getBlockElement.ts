@@ -11,9 +11,11 @@ export const getBlockElement = (
     return undefined
   }
 
-  return iframeDocument.querySelector(
-    `${CONTENT_BLOCKS_SELECTOR} [${CONTENT_BLOCK_INDEX_ATTR}="${index}"]`,
-  ) as HTMLElement | undefined
+  return (
+    iframeDocument.querySelector<HTMLElement>(
+      `${CONTENT_BLOCKS_SELECTOR} [${CONTENT_BLOCK_INDEX_ATTR}="${index}"]`,
+    ) ?? undefined
+  )
 }
 
 export const getContentIndexFromElement = (
