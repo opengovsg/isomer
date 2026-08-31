@@ -67,8 +67,6 @@ const SuspendableEditPagePreview = (): JSX.Element => {
   } = useDisclosure()
   const [pendingBlockSelection, setPendingBlockSelection] =
     useState<PendingBlockSelection | null>(null)
-  const [hoveredBlockElement, setHoveredBlockElement] =
-    useState<HTMLElement | null>(null)
 
   const [siteMap] = trpc.site.getLocalisedSitemap.useSuspenseQuery({
     siteId,
@@ -86,13 +84,11 @@ const SuspendableEditPagePreview = (): JSX.Element => {
     iframeDocument,
     previewPageState.content,
     setHoveredBlockIndex,
-    setHoveredBlockElement,
   )
 
   const { rect: highlightRect, label: highlightLabel } = useBlockHighlight({
     iframeDocument,
     hoveredBlockIndex,
-    hoveredBlockElement,
     content: previewPageState.content,
   })
 
