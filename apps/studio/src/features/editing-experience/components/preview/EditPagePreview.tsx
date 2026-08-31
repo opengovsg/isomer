@@ -209,11 +209,16 @@ const SuspendableEditPagePreview = (): JSX.Element => {
           )}
       </ViewportContainer>
       {/* Outside the preview iframe: Chakra portals into ownerDocument.body,
-          and the iframe only loads site CSS, so the dialog would be unstyled. */}
+          and the iframe only loads site CSS, so the dialog would be unstyled.
+          Do not restore focus or lock scroll into the iframe — that focuses
+          "Skip to main content" and jumps the preview to the top. */}
       <DiscardChangesModal
         isOpen={isDiscardChangesModalOpen}
         onClose={handleDiscardChangesModalClose}
         onDiscard={handleDiscardChanges}
+        returnFocusOnClose={false}
+        blockScrollOnMount={false}
+        lockFocusAcrossFrames={false}
       />
     </>
   )
