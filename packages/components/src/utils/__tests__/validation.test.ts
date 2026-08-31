@@ -379,7 +379,14 @@ describe("validation", () => {
 
     it("should reject Letterlike Symbols letter lookalikes", () => {
       // Arrange
-      const testCases = ["ℂℍℕℝℤ", "ℬℰℱℋℐℒℳℛℯℊℴ", "ℎ ⅅⅆⅇⅈⅉ", "Ⅎancy"]
+      const testCases = [
+        "ℂℍℕℝℤ",
+        "ℬℰℱℋℐℒℳℛℯℊℴ",
+        "ℎ ⅅⅆⅇⅈⅉ",
+        "Ⅎancy",
+        "⅁⅂⅃⅄",
+        "ⅎancy",
+      ]
 
       testCases.forEach((testCase) => {
         // Act
