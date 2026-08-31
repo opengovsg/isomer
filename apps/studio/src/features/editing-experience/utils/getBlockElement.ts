@@ -3,8 +3,6 @@ import {
   CONTENT_BLOCKS_SELECTOR,
 } from "~/features/editing-experience/constants"
 
-// Blocks stamp `data-isomer-content-index` at render time so we don't have to
-// guess how many DOM nodes each block type occupies.
 export const getBlockElement = (
   iframeDocument: Document | null,
   index: number | null,
