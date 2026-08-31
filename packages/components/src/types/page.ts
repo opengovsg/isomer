@@ -389,24 +389,12 @@ export const CollectionPagePageSchema = Type.Intersect([
       ),
     ),
     sortOrder: Type.Optional(
-      Type.Union(
-        [
-          Type.Literal("date-desc", {
-            title: "By article date, newest → oldest",
-          }),
-          Type.Literal("date-asc", {
-            title: "By article date, oldest → newest",
-          }),
-          Type.Literal("title-asc", { title: "By title, A → Z" }),
-          Type.Literal("title-desc", { title: "By title, Z → A" }),
-        ],
-        {
-          title: "Sort items by",
-          description: "This might take a while to reflect on the preview.",
-          type: "string",
-          default: "date-desc",
-        },
-      ),
+      Type.String({
+        title: "Sort items by",
+        description: "This might take a while to reflect on the preview.",
+        format: "collection-sort-order",
+        default: "date-desc",
+      }),
     ),
     // Deprecated, will be replaced with sortOrder above
     defaultSortBy: Type.Optional(

@@ -1,6 +1,7 @@
 import type { AllCardProps } from "~/interfaces"
 import type { IsomerSitemap, IsomerSiteProps } from "~/types"
 import type { CollectionPagePageProps } from "~/types/page"
+import { resolveCollectionSortOrder } from "~/utils/collectionSortOrder"
 import { getParsedDate } from "~/utils/getParsedDate"
 import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
 
@@ -177,7 +178,7 @@ export const getCollectionItems = ({
 
   return sortCollectionItems({
     items: transformedItems,
-    sortOrder,
+    sortOrder: resolveCollectionSortOrder(sortOrder, tagCategories),
     sortBy,
     sortDirection,
   })
