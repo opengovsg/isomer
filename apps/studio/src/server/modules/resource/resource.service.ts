@@ -49,7 +49,6 @@ import { PG_ERROR_CODES } from "../database/constants"
 import { getUserById } from "../user/user.service"
 import { incrementVersion } from "../version/version.service"
 import {
-  AncestorIndexPageNotLiveError,
   AncestorScheduledUnpublishLockError,
   PageAlreadyUnpublishedError,
   ScheduledActionConflictError,
@@ -1109,50 +1108,14 @@ export const getContainerAncestorCount = async (
 
 // Ancestor IndexPages with a pending scheduled Unpublish, regardless of
 // timing — an unconditional lock, not a time comparison. Once a container is
-// scheduled to go dark, nothing underneath it may be published, scheduled to
-// publish, or created until that schedule fires or is cancelled.
+// scheduled to go dark, nothing underneath it may be published (immediately
+// or via a future schedule) until that schedule fires or is cancelled.
 export const getLockingAncestorIndexPages = (rows: AncestorIndexPage[]) =>
   rows.filter(
     (row) =>
       row.scheduledAt !== null &&
       row.scheduledAction === ScheduledAction.Unpublish,
   )
-
-// Ancestor IndexPages that are not currently live — blocks an immediate
-// publish of `resourceId`, since a child can't go live before its container.
-export const getNotLiveAncestorIndexPages = (rows: AncestorIndexPage[]) =>
-  rows.filter((row) => row.publishedVersionId === null)
-
-// Ancestor IndexPages not guaranteed to be live by `scheduledAt` — the
-// upward, inverted mirror of getDescendantResourceIdsUnsafeForScheduledUnpublish.
-// An ancestor is "unsafe" (blocks scheduling a publish underneath it) unless:
-//   - it's currently live AND has no scheduled Unpublish before `scheduledAt`
-//     (so it'll still be up when this one fires), or
-//   - it's currently not live AND has a scheduled Publish at/before
-//     `scheduledAt` (so it's guaranteed to be up in time).
-// A null scheduledAction on a legacy row defaults to Publish, matching the
-// convention used throughout this module.
-export const getAncestorIndexPagesUnsafeForScheduledPublish = (
-  rows: AncestorIndexPage[],
-  scheduledAt: Date,
-) =>
-  rows.filter((row) => {
-    if (row.publishedVersionId !== null) {
-      // Currently live: unsafe only if it's going dark before we'd fire.
-      return (
-        row.scheduledAt !== null &&
-        row.scheduledAt < scheduledAt &&
-        row.scheduledAction === ScheduledAction.Unpublish
-      )
-    }
-    // Currently not live: safe only if a Publish is guaranteed by then.
-    return !(
-      row.scheduledAt !== null &&
-      row.scheduledAt <= scheduledAt &&
-      (row.scheduledAction === null ||
-        row.scheduledAction === ScheduledAction.Publish)
-    )
-  })
 
 // Resolves a full permalink path (e.g. "/foo/bar") to the resource that serves
 // it, walking permalink segments from the site's root page. A Folder/Collection
@@ -1565,26 +1528,19 @@ export const publishPageResource = async ({
       )
     }
 
-    // A page can't go live before the folder/collection that renders it, at
-    // any depth — walk every ancestor container's IndexPage and block if any
-    // of them either isn't live yet, or is locked by a pending scheduled
-    // unpublish (see getLockingAncestorIndexPages/AncestorScheduledUnpublishLockError).
+    // A pending scheduled unpublish on an ancestor container's IndexPage
+    // locks out publishing anything underneath it, at any nesting depth,
+    // until that schedule fires or is cancelled (see
+    // getLockingAncestorIndexPages/AncestorScheduledUnpublishLockError).
     // Walk from fullResource.id, not the raw `resourceId` param: the latter
     // may be an unresolved Folder/Collection id (see getFullPageById).
     const ancestorIndexPages = await getAncestorIndexPages(tx, {
       siteId,
       resourceId: fullResource.id,
     })
-    const lockingAncestors = getLockingAncestorIndexPages(ancestorIndexPages)
-    if (lockingAncestors.length > 0) {
-      const [locking] = lockingAncestors
-      if (locking?.scheduledAt) {
-        throw new AncestorScheduledUnpublishLockError(locking.scheduledAt)
-      }
-    }
-    const notLiveAncestors = getNotLiveAncestorIndexPages(ancestorIndexPages)
-    if (notLiveAncestors.length > 0) {
-      throw new AncestorIndexPageNotLiveError()
+    const [lockingAncestor] = getLockingAncestorIndexPages(ancestorIndexPages)
+    if (lockingAncestor?.scheduledAt) {
+      throw new AncestorScheduledUnpublishLockError(lockingAncestor.scheduledAt)
     }
 
     // Only the first publish needs the redirect handling below: the shadow
@@ -2288,18 +2244,6 @@ export const createResourceWithBlob = async ({
         message:
           "Parent not found or parentId is not a valid collection or folder",
       })
-    }
-
-    // Nothing may be created under a container (or one of its own
-    // ancestors) that's scheduled to go dark — see
-    // AncestorScheduledUnpublishLockError.
-    const ancestorIndexPages = await getAncestorIndexPages(db, {
-      siteId,
-      resourceId: parentId,
-    })
-    const [lockingAncestor] = getLockingAncestorIndexPages(ancestorIndexPages)
-    if (lockingAncestor?.scheduledAt) {
-      throw new AncestorScheduledUnpublishLockError(lockingAncestor.scheduledAt)
     }
   }
 

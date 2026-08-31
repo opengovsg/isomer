@@ -18,7 +18,6 @@ import { db } from "../database"
 import { AncestorScheduledUnpublishLockError } from "../resource/resource.error"
 import {
   getAncestorIndexPages,
-  getAncestorIndexPagesUnsafeForScheduledPublish,
   getDescendantResourceIdsUnsafeForScheduledUnpublish,
   getLockingAncestorIndexPages,
   getPageById,
@@ -153,10 +152,8 @@ export const schedulePublish = async ({
       })
     }
 
-    // Upward mirror of scheduleUnpublish's descendant guard below: a page
-    // can't be scheduled to go live before the folder/collection that
-    // renders it will be. A pending ancestor scheduled-unpublish locks out
-    // scheduling underneath it too, regardless of timing (see
+    // A pending ancestor scheduled-unpublish locks out scheduling a publish
+    // underneath it, at any nesting depth, regardless of timing (see
     // getLockingAncestorIndexPages).
     const ancestorIndexPages = await getAncestorIndexPages(tx, {
       siteId,
@@ -165,17 +162,6 @@ export const schedulePublish = async ({
     const [lockingAncestor] = getLockingAncestorIndexPages(ancestorIndexPages)
     if (lockingAncestor?.scheduledAt) {
       throw new AncestorScheduledUnpublishLockError(lockingAncestor.scheduledAt)
-    }
-    const unsafeAncestors = getAncestorIndexPagesUnsafeForScheduledPublish(
-      ancestorIndexPages,
-      scheduledAt,
-    )
-    if (unsafeAncestors.length > 0) {
-      throw new TRPCError({
-        code: "PRECONDITION_FAILED",
-        message:
-          "This page's containing folder or collection won't be published by then — publish or schedule it first.",
-      })
     }
 
     const updatedPage = await updatePageById(
@@ -357,8 +343,7 @@ export const cancelSchedulePublish = async ({
     }
 
     // If this index page isn't live yet, a child page may have scheduled its
-    // own publish assuming this one would land first (see
-    // getAncestorIndexPagesUnsafeForScheduledPublish). Cancelling this
+    // own publish assuming this one would land first. Cancelling this
     // schedule out from under it would leave that child's schedule
     // unenforceable, so require the child schedules to be cancelled first —
     // a hard block, not an auto-cascade.
