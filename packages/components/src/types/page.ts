@@ -10,6 +10,7 @@ import {
 } from "~/interfaces"
 import { imageSchemaObject } from "~/schemas/internal"
 import {
+  COLLECTION_SORT_ORDER_PATTERN,
   REF_HREF_PATTERN,
   TRIMMED_NON_EMPTY_STRING_REGEX,
   TRIMMED_STRING_OR_EMPTY_REGEX,
@@ -393,6 +394,10 @@ export const CollectionPagePageSchema = Type.Intersect([
         title: "Sort items by",
         description: "This might take a while to reflect on the preview.",
         format: "collection-sort-order",
+        pattern: COLLECTION_SORT_ORDER_PATTERN,
+        errorMessage: {
+          pattern: "must be a valid collection sort order",
+        },
         default: "date-desc",
       }),
     ),

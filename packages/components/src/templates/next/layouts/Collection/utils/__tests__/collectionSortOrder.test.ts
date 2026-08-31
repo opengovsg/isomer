@@ -1,6 +1,7 @@
 import type { CollectionPagePageProps } from "~/types/page"
 import { describe, expect, it } from "vitest"
 import { DATE_FILTER_STATUS_ID, TAG_CATEGORY_TYPE } from "~/types/constants"
+import { COLLECTION_SORT_ORDER_PATTERN } from "~/utils/validation"
 
 import {
   getCollectionSortOptions,
@@ -37,6 +38,18 @@ const tagCategories: NonNullable<CollectionPagePageProps["tagCategories"]> = [
 ]
 
 describe("collectionSortOrder", () => {
+  const sortOrderPattern = new RegExp(COLLECTION_SORT_ORDER_PATTERN)
+
+  it("accepts syntactically valid sort orders", () => {
+    expect(sortOrderPattern.test("date-desc")).toBe(true)
+    expect(sortOrderPattern.test("title-asc")).toBe(true)
+    expect(sortOrderPattern.test(`date-filter-${EVENT_FILTER_ID}-desc`)).toBe(
+      true,
+    )
+    expect(sortOrderPattern.test("totally-made-up")).toBe(false)
+    expect(sortOrderPattern.test("date-filter-not-a-uuid-desc")).toBe(false)
+  })
+
   it("parses base and date-filter sort orders", () => {
     expect(parseCollectionSortOrder("date-desc")).toEqual({
       kind: "date",
