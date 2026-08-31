@@ -54,9 +54,6 @@ const moveTableBlock = (
   })(state, (tr) => {
     restoreMovedBlockSelection(view, tr, tablePos, plan, axis)
   })
-  // Unlike every sibling action, this dispatches its own transaction instead
-  // of `.chain().focus()...run()` — restore focus explicitly so a real
-  // mousedown-triggered blur doesn't strand it on the button.
   editor.commands.focus()
 }
 
@@ -74,8 +71,6 @@ const ActionButton = ({
     variant="clear"
     colorScheme="neutral"
     onClick={onClick}
-    // TipTap toolbar pattern: preventDefault on mousedown so the click does
-    // not steal focus (and thus CellSelection) from the editor.
     onMouseDown={(event) => event.preventDefault()}
     w="100%"
     h="auto"
@@ -119,7 +114,6 @@ const HeaderToggle = ({
     justify="space-between"
     px="0.75rem"
     gap="0.5rem"
-    // Prevent editor blur when toggling header switches.
     onMouseDown={(event) => event.preventDefault()}
   >
     <Text textStyle="body-2" color="base.content.strong">
@@ -136,7 +130,6 @@ const HeaderToggle = ({
 
 type SelectionRect = ReturnType<typeof selectedRect>
 
-// Row-axis actions: header toggle only when the selection is exactly one row.
 const RowSelectionActions = ({
   editor,
   rect,
@@ -200,7 +193,6 @@ const RowSelectionActions = ({
   )
 }
 
-// Column-axis actions: header toggle only when the selection is exactly one column.
 const ColumnSelectionActions = ({
   editor,
   rect,
@@ -266,7 +258,6 @@ const ColumnSelectionActions = ({
   )
 }
 
-// Action list rendered above the pencil trigger when the menu is activated.
 export const TableBubbleMenuActions = ({
   editor,
   kind,
