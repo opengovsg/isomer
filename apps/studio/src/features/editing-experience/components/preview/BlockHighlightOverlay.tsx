@@ -10,12 +10,7 @@ interface BlockHighlightOverlayProps {
   width: number
   height: number
   label?: string
-  // When true, fades the overlay out — used for the lingering flash shown
-  // after a click-to-scroll, as opposed to the hover highlight which just
-  // tracks the cursor at full opacity.
   isFading?: boolean
-  // Edit button, placed inside the top-right corner rather than outside it —
-  // outside would sit past the block's DOM bounds and trigger a mouseout.
   onEditClick?: () => void
 }
 
