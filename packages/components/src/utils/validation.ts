@@ -316,4 +316,4 @@ export const GTM_ID_STRING_REGEX = "^(GTM|G|GT)-[A-Z0-9]+$"
 // template components that only need runtime validators from this file
 // (e.g. `isValidVideoUrl`) don't transitively pull in typebox for treeshaking.
 export const NO_STYLIZED_UNICODE_REGEX =
-  "^(?![\\s\\S]*(?:\\uD835[\\uDC00-\\uDFFF]|[\\u2460-\\u24FF]|\\uD83C[\\uDD10-\\uDD89]|[\\uFF10-\\uFF19\\uFF21-\\uFF3A\\uFF41-\\uFF5A]|[\\u2102\\u210A-\\u210E\\u2110-\\u2112\\u2115\\u2119-\\u211D\\u2124\\u2128\\u212C\\u212D\\u212F-\\u2131\\u2133\\u2134\\u2145-\\u2149]))"
+  "^(?![\\s\\S]*(?:\\uD835[\\uDC00-\\uDFFF]|[\\u2460-\\u24FF]|\\uD83C[\\uDD10-\\uDD89]|[\\uFF10-\\uFF19\\uFF21-\\uFF3A\\uFF41-\\uFF5A]|[\\u2102\\u210A-\\u210E\\u2110-\\u2112\\u2115\\u2119-\\u211D\\u2124\\u2128\\u212C\\u212D\\u212F-\\u2134\\u2145-\\u2149]))"
