@@ -4,25 +4,20 @@ import type { JSONContent } from "@tiptap/react"
 import { renderHook } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-const useEditorMock = vi.fn()
+const useEditorMock = vi.fn((_options: unknown): object => ({}))
 
-vi.mock("@tiptap/react", async (importActual) => {
-  const actual = (await importActual()) as Record<string, unknown>
-  return {
-    ...actual,
-    useEditor: (...args: unknown[]) => useEditorMock(...args),
-  }
-})
+vi.mock("@tiptap/react", () => ({
+  useEditor: (options: unknown): object => useEditorMock(options),
+}))
 
 import { useTextEditor } from "../useTextEditor"
 
 describe("useTextEditor", () => {
   beforeEach(() => {
-    useEditorMock.mockReturnValue({})
+    useEditorMock.mockClear()
   })
 
   it("passes enableContentCheck and onContentError to useEditor", () => {
-    // Arrange
     const handleChange = vi.fn()
     const onContentError = vi.fn()
     const data: JSONContent = {
@@ -30,10 +25,8 @@ describe("useTextEditor", () => {
       content: [{ type: "paragraph" }],
     }
 
-    // Act
     renderHook(() => useTextEditor({ data, handleChange, onContentError }))
 
-    // Assert
     expect(useEditorMock).toHaveBeenCalledWith(
       expect.objectContaining({
         enableContentCheck: true,
