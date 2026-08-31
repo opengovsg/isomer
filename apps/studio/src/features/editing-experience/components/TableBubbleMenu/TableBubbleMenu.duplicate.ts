@@ -19,7 +19,7 @@ import {
  * Duplicate selected rows/columns with cell content preserved.
  *
  * prosemirror-tables (via `@tiptap/pm/tables`) ships `addRow` / `addColumn` but
- * no duplicate — those commands insert empty cells (`createAndFill`). The insert
+ * no duplicate. Those commands insert empty cells (`createAndFill`). The insert
  * loops below mirror that package's TableMap handling; we reference source content
  * instead and flatten merges along the duplicate axis.
  *
@@ -214,7 +214,7 @@ const selectBlockAndDispatch = ({
   }
   editor.view.dispatch(tr)
   // Unlike every sibling action, this dispatches its own transaction instead
-  // of `.chain().focus()...run()` — restore focus explicitly so a real
+  // of `.chain().focus()...run()`. Restore focus explicitly so a real
   // mousedown-triggered blur doesn't strand it on the button.
   editor.commands.focus()
 }
