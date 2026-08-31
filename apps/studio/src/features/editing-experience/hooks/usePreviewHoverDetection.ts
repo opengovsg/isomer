@@ -1,12 +1,17 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
+import type { Dispatch, SetStateAction } from "react"
 import { useEffect } from "react"
-import { CONTENT_BLOCKS_SELECTOR } from "~/features/editing-experience/constants"
+import {
+  CONTENT_BLOCK_INDEX_ATTR,
+  CONTENT_BLOCKS_SELECTOR,
+} from "~/features/editing-experience/constants"
 import { getContentIndexFromElement } from "~/features/editing-experience/utils/getBlockElement"
 
 export const usePreviewHoverDetection = (
   iframeDocument: Document | null,
   content: IsomerSchema["content"],
   setHoveredBlockIndex: (index: number | null) => void,
+  setHoveredBlockElement?: Dispatch<SetStateAction<HTMLElement | null>>,
 ): void => {
   useEffect(() => {
     if (!iframeDocument) return
@@ -16,10 +21,14 @@ export const usePreviewHoverDetection = (
     const handleMouseOver = (event: MouseEvent) => {
       container ??= iframeDocument.querySelector(CONTENT_BLOCKS_SELECTOR)
 
-      const contentIndex = getContentIndexFromElement(
-        event.target as Element | null,
+      const target = event.target as Element | null
+      const contentIndex = getContentIndexFromElement(target)
+      if (contentIndex === null) return
+
+      setHoveredBlockIndex(contentIndex)
+      setHoveredBlockElement?.(
+        target?.closest<HTMLElement>(`[${CONTENT_BLOCK_INDEX_ATTR}]`) ?? null,
       )
-      if (contentIndex !== null) setHoveredBlockIndex(contentIndex)
     }
 
     const handleMouseOut = (event: MouseEvent) => {
@@ -46,6 +55,7 @@ export const usePreviewHoverDetection = (
       }
 
       setHoveredBlockIndex(null)
+      setHoveredBlockElement?.(null)
     }
 
     iframeDocument.addEventListener("mouseover", handleMouseOver)
@@ -55,5 +65,5 @@ export const usePreviewHoverDetection = (
       iframeDocument.removeEventListener("mouseover", handleMouseOver)
       iframeDocument.removeEventListener("mouseout", handleMouseOut)
     }
-  }, [iframeDocument, content, setHoveredBlockIndex])
+  }, [iframeDocument, content, setHoveredBlockIndex, setHoveredBlockElement])
 }

@@ -5,7 +5,7 @@ import { CONTENT_BLOCK_INDEX_ATTR } from "../../constants"
 import { getBlockElement, getContentIndexFromElement } from "../getBlockElement"
 
 const renderContainer = (
-  blocks: Array<{ contentIndex: number; tag?: string }>,
+  blocks: { contentIndex: number; tag?: string }[],
 ): HTMLElement => {
   const container = document.createElement("div")
   container.setAttribute("data-isomer-content-blocks", "")
@@ -44,15 +44,9 @@ describe("getBlockElement / getContentIndexFromElement", () => {
     })
 
     it("maps a stamped DOM node back to the same content index", () => {
-      expect(
-        getContentIndexFromElement(container?.children[0] as Element),
-      ).toBe(0)
-      expect(
-        getContentIndexFromElement(container?.children[1] as Element),
-      ).toBe(1)
-      expect(
-        getContentIndexFromElement(container?.children[2] as Element),
-      ).toBe(2)
+      expect(getContentIndexFromElement(container!.children[0]!)).toBe(0)
+      expect(getContentIndexFromElement(container!.children[1]!)).toBe(1)
+      expect(getContentIndexFromElement(container!.children[2]!)).toBe(2)
     })
   })
 
@@ -75,21 +69,13 @@ describe("getBlockElement / getContentIndexFromElement", () => {
     })
 
     it("maps every DOM node belonging to prose back to the prose content index", () => {
-      expect(
-        getContentIndexFromElement(container?.children[0] as Element),
-      ).toBe(0)
-      expect(
-        getContentIndexFromElement(container?.children[1] as Element),
-      ).toBe(0)
-      expect(
-        getContentIndexFromElement(container?.children[2] as Element),
-      ).toBe(0)
+      expect(getContentIndexFromElement(container!.children[0]!)).toBe(0)
+      expect(getContentIndexFromElement(container!.children[1]!)).toBe(0)
+      expect(getContentIndexFromElement(container!.children[2]!)).toBe(0)
     })
 
     it("maps the DOM node after prose back to the following content index", () => {
-      expect(
-        getContentIndexFromElement(container?.children[3] as Element),
-      ).toBe(1)
+      expect(getContentIndexFromElement(container!.children[3]!)).toBe(1)
     })
   })
 
