@@ -105,6 +105,14 @@ const ActionGroup = ({ children }: { children: ReactNode }) => (
   </VStack>
 )
 
+const ClearContentsButton = ({ editor }: { editor: Editor }) => (
+  <ActionButton
+    label="Clear contents"
+    icon={<BiX fontSize="1rem" />}
+    onClick={() => clearSelectedCells(editor)}
+  />
+)
+
 const HeaderToggle = ({
   label,
   isChecked,
@@ -182,11 +190,7 @@ const RowSelectionActions = ({
           onClick={() => duplicateSelectedRows(editor)}
         />
       )}
-      <ActionButton
-        label="Clear contents"
-        icon={<BiX fontSize="1rem" />}
-        onClick={() => clearSelectedCells(editor)}
-      />
+      <ClearContentsButton editor={editor} />
       {rowMoveUpPlan && !includesHeader && (
         <ActionButton
           label="Move up"
@@ -259,11 +263,7 @@ const ColumnSelectionActions = ({
           onClick={() => duplicateSelectedColumns(editor)}
         />
       )}
-      <ActionButton
-        label="Clear contents"
-        icon={<BiX fontSize="1rem" />}
-        onClick={() => clearSelectedCells(editor)}
-      />
+      <ClearContentsButton editor={editor} />
       {columnMoveLeftPlan && !includesHeader && (
         <ActionButton
           label="Move left"
@@ -308,11 +308,7 @@ export const TableBubbleMenuActions = ({
     case "table":
       return (
         <ActionGroup>
-          <ActionButton
-            label="Clear contents"
-            icon={<BiX fontSize="1rem" />}
-            onClick={() => clearSelectedCells(editor)}
-          />
+          <ClearContentsButton editor={editor} />
           <ActionButton
             label="Delete table"
             icon={<BiTrash fontSize="1rem" />}
@@ -323,11 +319,7 @@ export const TableBubbleMenuActions = ({
     case "multi-cell":
       return (
         <ActionGroup>
-          <ActionButton
-            label="Clear contents"
-            icon={<BiX fontSize="1rem" />}
-            onClick={() => clearSelectedCells(editor)}
-          />
+          <ClearContentsButton editor={editor} />
           <ActionButton
             label="Merge cells"
             icon={<IconMergeCells boxSize="1rem" />}
@@ -338,21 +330,13 @@ export const TableBubbleMenuActions = ({
     case "single-cell":
       return (
         <ActionGroup>
-          <ActionButton
-            label="Clear contents"
-            icon={<BiX fontSize="1rem" />}
-            onClick={() => clearSelectedCells(editor)}
-          />
+          <ClearContentsButton editor={editor} />
         </ActionGroup>
       )
     case "merged-cell":
       return (
         <ActionGroup>
-          <ActionButton
-            label="Clear contents"
-            icon={<BiX fontSize="1rem" />}
-            onClick={() => clearSelectedCells(editor)}
-          />
+          <ClearContentsButton editor={editor} />
           <ActionButton
             label="Split cell"
             icon={<IconSplitCell boxSize="1rem" />}
