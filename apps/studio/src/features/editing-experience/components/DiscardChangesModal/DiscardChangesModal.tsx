@@ -1,3 +1,4 @@
+import type { ModalProps } from "@chakra-ui/react"
 import {
   HStack,
   Modal,
@@ -10,7 +11,10 @@ import {
 } from "@chakra-ui/react"
 import { Button, ModalCloseButton } from "@opengovsg/design-system-react"
 
-interface DiscardChangesModalProps {
+interface DiscardChangesModalProps extends Pick<
+  ModalProps,
+  "returnFocusOnClose" | "blockScrollOnMount" | "lockFocusAcrossFrames"
+> {
   isOpen: boolean
   onClose: () => void
   onDiscard: () => void
@@ -20,9 +24,10 @@ export const DiscardChangesModal = ({
   isOpen,
   onClose,
   onDiscard,
+  ...modalProps
 }: DiscardChangesModalProps): JSX.Element => {
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} {...modalProps}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader pr="4.5rem">
