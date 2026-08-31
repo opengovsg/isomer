@@ -33,7 +33,6 @@ const tableSettingsSchema = z.object({
 })
 
 interface TableSettingsModalProps {
-  /** The table's current caption, used to seed the form. */
   caption: string
   isOpen: boolean
   onClose: () => void
@@ -53,7 +52,6 @@ export const TableSettingsModal = ({
     handleSubmit,
   } = useZodForm({
     schema: tableSettingsSchema,
-    // Keep isValid in sync while typing so Save enables after clear → type.
     mode: "onChange",
     defaultValues: {
       caption: currentCaption,
@@ -62,8 +60,7 @@ export const TableSettingsModal = ({
 
   const caption = watch("caption")
 
-  // Chakra's FocusLock (trapFocus) fights TipTap's BubbleMenu when the editor
-  // blurs into this modal, hanging Tab — so the built-in trap stays off.
+  // trapFocus off: Chakra FocusLock hangs Tab when focus moves from TipTap's BubbleMenu into this modal.
   return (
     <Modal isOpen={isOpen} onClose={onClose} trapFocus={false}>
       <ModalOverlay />

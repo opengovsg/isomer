@@ -6,7 +6,6 @@ import {
 
 describe("isPlaceholderTableCaption", () => {
   it("treats empty and default captions as placeholders", () => {
-    // Arrange / Act / Assert
     expect(isPlaceholderTableCaption("")).toBe(true)
     expect(isPlaceholderTableCaption("   ")).toBe(true)
     expect(isPlaceholderTableCaption(DEFAULT_TABLE_CAPTION)).toBe(true)
@@ -14,10 +13,6 @@ describe("isPlaceholderTableCaption", () => {
   })
 
   it("treats real captions as non-placeholder", () => {
-    // Arrange / Act
-    const result = isPlaceholderTableCaption("Quarterly revenue")
-
-    // Assert
-    expect(result).toBe(false)
+    expect(isPlaceholderTableCaption("Quarterly revenue")).toBe(false)
   })
 })
