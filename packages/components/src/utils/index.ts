@@ -41,17 +41,3 @@ export {
 } from "./validation"
 
 export { createChildrenPagesComparator } from "./createChildrenPagesComparator"
-export {
-  BASE_COLLECTION_SORT_ORDERS,
-  DEFAULT_COLLECTION_SORT_ORDER,
-  DATE_FILTER_SORT_ORDER_PREFIX,
-  encodeDateFilterSortOrder,
-  getCollectionSortOptions,
-  parseCollectionSortOrder,
-  resolveCollectionSortOrder,
-} from "./collectionSortOrder"
-export type {
-  BaseCollectionSortOrder,
-  CollectionSortDirection,
-  ParsedCollectionSortOrder,
-} from "./collectionSortOrder"

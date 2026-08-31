@@ -11,10 +11,9 @@ import {
   getCollectionSortOptions,
   resolveCollectionSortOrder,
 } from "@opengovsg/isomer-components"
-import { useEffect, useMemo } from "react"
-import Suspense from "~/components/Suspense"
+import { useEffect } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
-import { useSuspenseCollectionTags } from "~/features/editing-experience/hooks/useCollectionTags"
+import { useCollectionTags } from "~/features/editing-experience/hooks/useCollectionTags"
 import { pageSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 
@@ -25,21 +24,7 @@ export const jsonFormsCollectionSortOrderControlTester: RankedTester = rankWith(
   schemaMatches((schema) => schema.format === "collection-sort-order"),
 )
 
-interface CollectionSortOrderControlProps extends Omit<ControlProps, "data"> {
-  data: string | undefined
-}
-
-export function JsonFormsCollectionSortOrderControl(
-  props: CollectionSortOrderControlProps,
-): JSX.Element {
-  return (
-    <Suspense fallback={<Skeleton />}>
-      <SuspendableJsonFormsCollectionSortOrderControl {...props} />
-    </Suspense>
-  )
-}
-
-function SuspendableJsonFormsCollectionSortOrderControl({
+function JsonFormsCollectionSortOrderControl({
   data,
   label,
   description,
@@ -48,21 +33,15 @@ function SuspendableJsonFormsCollectionSortOrderControl({
   path,
   enabled,
   handleChange,
-}: CollectionSortOrderControlProps): JSX.Element {
+}: ControlProps): JSX.Element {
   const { siteId, pageId } = useQueryParse(pageSchema)
-  const [tagCategories] = useSuspenseCollectionTags({
+  const { data: tagCategories = [], isLoading } = useCollectionTags({
     resourceId: pageId,
     siteId,
   })
-
-  const options = useMemo(
-    () => getCollectionSortOptions(tagCategories),
-    [tagCategories],
-  )
-
-  const resolvedValue = useMemo(
-    () => resolveCollectionSortOrder(data, tagCategories),
-    [data, tagCategories],
+  const resolvedValue = resolveCollectionSortOrder(
+    typeof data === "string" ? data : undefined,
+    tagCategories,
   )
 
   useEffect(() => {
@@ -70,6 +49,10 @@ function SuspendableJsonFormsCollectionSortOrderControl({
       handleChange(path, resolvedValue)
     }
   }, [data, handleChange, path, resolvedValue])
+
+  if (isLoading) {
+    return <Skeleton />
+  }
 
   return (
     <Box>
@@ -79,7 +62,7 @@ function SuspendableJsonFormsCollectionSortOrderControl({
         <SingleSelect
           value={resolvedValue}
           name={label}
-          items={options}
+          items={getCollectionSortOptions(tagCategories)}
           isClearable={false}
           isDisabled={!enabled}
           onChange={(value) => {
