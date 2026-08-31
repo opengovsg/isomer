@@ -1,14 +1,23 @@
 import { TRPCError } from "@trpc/server"
-import { describe, expect, it } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
+import { deleteFile } from "~/lib/s3"
 
 import {
+  deleteAssetsByUrl,
   doAllFileKeysBelongToSite,
   getContentDispositionForKey,
   getContentDispositionForTitle,
   getContentTypeFromKey,
   getFileKey,
+  getSiteIdFromKey,
+  parseAssetUrlToKey,
   sanitizeSvg,
 } from "../asset.service"
+
+// Mock the S3 client so these stay pure unit tests, matching asset.router.test.ts.
+vi.mock("~/lib/s3", () => ({
+  deleteFile: vi.fn().mockResolvedValue(undefined),
+}))
 
 describe("asset.service", () => {
   describe("getContentTypeFromKey", () => {
@@ -315,6 +324,107 @@ describe("asset.service", () => {
           fileKeys: ["2/uuid/file.png"],
         }),
       ).toBe(true)
+    })
+  })
+
+  describe("parseAssetUrlToKey", () => {
+    it("should extract the key from a well-formed asset URL", () => {
+      const result = parseAssetUrlToKey(
+        "https://isomer-user-content.by.gov.sg/36/uuid/picture.png",
+      )
+      expect(result).toBe("36/uuid/picture.png")
+    })
+
+    it("should decode percent-encoded characters in the path", () => {
+      const result = parseAssetUrlToKey(
+        "https://example.com/36/uuid/my%20file.png",
+      )
+      expect(result).toBe("36/uuid/my file.png")
+    })
+
+    it("should trim surrounding whitespace before parsing", () => {
+      const result = parseAssetUrlToKey(
+        "  https://example.com/36/uuid/file.png  ",
+      )
+      expect(result).toBe("36/uuid/file.png")
+    })
+
+    it("should return null for a malformed URL", () => {
+      expect(parseAssetUrlToKey("not-a-url")).toBeNull()
+    })
+
+    it("should return null for an empty string", () => {
+      expect(parseAssetUrlToKey("")).toBeNull()
+    })
+  })
+
+  describe("getSiteIdFromKey", () => {
+    it("should return the first path segment as the siteId", () => {
+      expect(getSiteIdFromKey("36/uuid/picture.png")).toBe("36")
+    })
+
+    it("should return the whole string when there is no slash", () => {
+      expect(getSiteIdFromKey("picture.png")).toBe("picture.png")
+    })
+  })
+
+  describe("deleteAssetsByUrl", () => {
+    beforeEach(() => {
+      vi.clearAllMocks()
+    })
+
+    it("should mark each valid URL's key as deleted and report success", async () => {
+      // Arrange
+      const urls = [
+        "https://example.com/36/uuid1/a.png",
+        "https://example.com/37/uuid2/b.png",
+      ]
+
+      // Act
+      const results = await deleteAssetsByUrl(urls)
+
+      // Assert
+      expect(results).toEqual([
+        { url: urls[0], key: "36/uuid1/a.png", success: true },
+        { url: urls[1], key: "37/uuid2/b.png", success: true },
+      ])
+      expect(deleteFile).toHaveBeenCalledTimes(2)
+    })
+
+    it("should report failure for an invalid URL without calling deleteFile", async () => {
+      // Act
+      const results = await deleteAssetsByUrl(["not-a-url"])
+
+      // Assert
+      expect(results).toEqual([
+        { url: "not-a-url", success: false, error: "Invalid asset URL" },
+      ])
+      expect(deleteFile).not.toHaveBeenCalled()
+    })
+
+    it("should report per-URL failure when deleteFile rejects, without failing other URLs", async () => {
+      // Arrange
+      vi.mocked(deleteFile)
+        .mockResolvedValueOnce(undefined)
+        .mockRejectedValueOnce(new Error("S3 unavailable"))
+      const urls = [
+        "https://example.com/36/uuid1/a.png",
+        "https://example.com/37/uuid2/b.png",
+      ]
+
+      // Act
+      const results = await deleteAssetsByUrl(urls)
+
+      // Assert
+      expect(results).toEqual([
+        { url: urls[0], key: "36/uuid1/a.png", success: true },
+        {
+          url: urls[1],
+          key: "37/uuid2/b.png",
+          success: false,
+          error: "S3 unavailable",
+        },
+      ])
     })
   })
 

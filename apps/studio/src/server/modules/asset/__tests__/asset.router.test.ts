@@ -9,16 +9,18 @@ import {
   setupAdminPermissions,
   setupEditorPermissions,
   setupFolder,
+  setupIsomerAdmin,
   setupPageResource,
   setupPublisherPermissions,
   setUpWhitelist,
 } from "tests/integration/helpers/seed"
 import { vi } from "vitest"
 import { deleteFile, generateSignedPutUrl, putObjectDirect } from "~/lib/s3"
-import { MAX_DELETE_FILE_KEYS } from "~/schemas/asset"
+import { MAX_DELETE_ASSET_URLS, MAX_DELETE_FILE_KEYS } from "~/schemas/asset"
 import { createCallerFactory } from "~/server/trpc"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+import { IsomerAdminRole, ResourceType } from "~prisma/generated/generatedEnums"
 
+import { invalidateAssetsBySiteIds } from "../../aws/cloudfront.service"
 import { assetRouter } from "../asset.router"
 
 // Mock the S3 client to prevent credential loading issues in CI
@@ -35,6 +37,11 @@ vi.mock("~/lib/s3", () => ({
   putObjectDirect: vi.fn().mockResolvedValue(undefined),
 }))
 
+// Mock CloudFront invalidation to prevent real AWS calls in CI.
+vi.mock("../../aws/cloudfront.service", () => ({
+  invalidateAssetsBySiteIds: vi.fn().mockResolvedValue({ success: true }),
+}))
+
 const createCaller = createCallerFactory(assetRouter)
 
 describe("asset.router", async () => {
@@ -48,7 +55,12 @@ describe("asset.router", async () => {
   })
 
   beforeEach(async () => {
-    await resetTables("Site", "ResourcePermission", "Resource")
+    // IsomerAdmin is reset here (not just in the deleteAssetsByUrl block below)
+    // because setupIsomerAdmin grants the session's user implicit Admin
+    // permissions on every site — a row left behind would silently make
+    // later tests in this file (e.g. uploadSvg's 403 checks) pass for the
+    // wrong reason.
+    await resetTables("Site", "ResourcePermission", "Resource", "IsomerAdmin")
     await setUpWhitelist({ email: TEST_VALID_EMAIL })
     vi.clearAllMocks()
     vi.mocked(generateSignedPutUrl).mockResolvedValue(
@@ -137,7 +149,7 @@ describe("asset.router", async () => {
       })
       await setupEditorPermissions({
         siteId: site.id,
-        userId: session.userId,
+        userId: String(session.userId),
       })
 
       // Act
@@ -159,7 +171,7 @@ describe("asset.router", async () => {
       })
       await setupEditorPermissions({
         siteId: site.id,
-        userId: session.userId,
+        userId: String(session.userId),
       })
       const fileName = "test-image.png"
       const fileSize = 1234
@@ -189,7 +201,7 @@ describe("asset.router", async () => {
       })
       await setupEditorPermissions({
         siteId: site.id,
-        userId: session.userId,
+        userId: String(session.userId),
       })
 
       // Act
@@ -218,7 +230,7 @@ describe("asset.router", async () => {
       })
       await setupEditorPermissions({
         siteId: site.id,
-        userId: session.userId,
+        userId: String(session.userId),
       })
 
       // Act
@@ -313,7 +325,7 @@ describe("asset.router", async () => {
       })
       await setupEditorPermissions({
         siteId: site.id,
-        userId: session.userId,
+        userId: String(session.userId),
       })
       const fileKey = `${site.id}/test-uuid/test.png`
 
@@ -335,7 +347,7 @@ describe("asset.router", async () => {
       })
       await setupEditorPermissions({
         siteId: site.id,
-        userId: session.userId,
+        userId: String(session.userId),
       })
 
       // Act
@@ -365,7 +377,7 @@ describe("asset.router", async () => {
       })
       await setupPublisherPermissions({
         siteId: site.id,
-        userId: session.userId,
+        userId: String(session.userId),
       })
       const fileKey = `${site.id}/test-uuid/test.png`
 
@@ -387,7 +399,7 @@ describe("asset.router", async () => {
       })
       await setupPublisherPermissions({
         siteId: site.id,
-        userId: session.userId,
+        userId: String(session.userId),
       })
 
       // Act
@@ -414,7 +426,7 @@ describe("asset.router", async () => {
       })
       await setupAdminPermissions({
         siteId: site.id,
-        userId: session.userId,
+        userId: String(session.userId),
       })
       const fileKey = `${site.id}/test-uuid/test.png`
 
@@ -436,7 +448,7 @@ describe("asset.router", async () => {
       })
       await setupAdminPermissions({
         siteId: site.id,
-        userId: session.userId,
+        userId: String(session.userId),
       })
       const fileKeys = [
         `${site.id}/uuid1/file1.png`,
@@ -468,7 +480,7 @@ describe("asset.router", async () => {
       })
       await setupAdminPermissions({
         siteId: site.id,
-        userId: session.userId,
+        userId: String(session.userId),
       })
       const otherSiteId = site.id + 100
       const fileKeysFromOtherSite = `${otherSiteId}/some-uuid/attacker-target.png`
@@ -498,7 +510,7 @@ describe("asset.router", async () => {
       })
       await setupAdminPermissions({
         siteId: site.id,
-        userId: session.userId,
+        userId: String(session.userId),
       })
       const tooManyFileKeys = Array.from(
         { length: MAX_DELETE_FILE_KEYS + 1 },
@@ -519,6 +531,118 @@ describe("asset.router", async () => {
         `You can only delete up to ${MAX_DELETE_FILE_KEYS} assets at a time`,
       )
       await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
+      expect(deleteFile).not.toHaveBeenCalled()
+    })
+  })
+
+  describe("deleteAssetsByUrl", () => {
+    it("should throw 401 if not logged in", async () => {
+      // Arrange
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      // Act
+      const result = unauthedCaller.deleteAssetsByUrl({
+        urls: ["https://example.com/1/uuid/a.png"],
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user is not an Isomer Core Admin", async () => {
+      // Act
+      const result = caller.deleteAssetsByUrl({
+        urls: ["https://example.com/1/uuid/a.png"],
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+      expect(deleteFile).not.toHaveBeenCalled()
+    })
+
+    it("should throw 403 for a Migrator admin (Core-only tool)", async () => {
+      // Arrange
+      await setupIsomerAdmin({
+        userId: String(session.userId),
+        role: IsomerAdminRole.Migrator,
+      })
+
+      // Act
+      const result = caller.deleteAssetsByUrl({
+        urls: ["https://example.com/1/uuid/a.png"],
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+      expect(deleteFile).not.toHaveBeenCalled()
+    })
+
+    it("should soft-delete each asset URL and invalidate CloudFront for the affected sites when caller is a Core admin", async () => {
+      // Arrange
+      await setupIsomerAdmin({
+        userId: String(session.userId),
+        role: IsomerAdminRole.Core,
+      })
+      vi.mocked(invalidateAssetsBySiteIds).mockResolvedValueOnce({
+        success: true,
+        invalidationId: "INV123",
+      })
+      const urls = [
+        "https://example.com/1/uuid1/a.png",
+        "https://example.com/2/uuid2/b.png",
+      ]
+
+      // Act
+      const result = await caller.deleteAssetsByUrl({ urls })
+
+      // Assert
+      expect(result.results).toEqual([
+        { url: urls[0], key: "1/uuid1/a.png", success: true },
+        { url: urls[1], key: "2/uuid2/b.png", success: true },
+      ])
+      expect(result.invalidation).toEqual({
+        success: true,
+        invalidationId: "INV123",
+      })
+      expect(deleteFile).toHaveBeenCalledTimes(2)
+      expect(invalidateAssetsBySiteIds).toHaveBeenCalledWith(
+        new Set(["1", "2"]),
+      )
+    })
+
+    it("should reject and not call deleteFile when urls exceeds the cap", async () => {
+      // Arrange
+      await setupIsomerAdmin({
+        userId: String(session.userId),
+        role: IsomerAdminRole.Core,
+      })
+      const tooManyUrls = Array.from(
+        { length: MAX_DELETE_ASSET_URLS + 1 },
+        (_, i) => `https://example.com/1/uuid-${i}/file-${i}.png`,
+      )
+
+      // Act
+      const result = caller.deleteAssetsByUrl({ urls: tooManyUrls })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        `You can only delete up to ${MAX_DELETE_ASSET_URLS} assets at a time`,
+      )
       expect(deleteFile).not.toHaveBeenCalled()
     })
   })
@@ -598,7 +722,7 @@ describe("asset.router", async () => {
       })
       await setupEditorPermissions({
         siteId: site.id,
-        userId: session.userId,
+        userId: String(session.userId),
       })
 
       // Act
@@ -622,7 +746,7 @@ describe("asset.router", async () => {
       })
       await setupEditorPermissions({
         siteId: site.id,
-        userId: session.userId,
+        userId: String(session.userId),
       })
       const entityBomb = `<!DOCTYPE svg [<!ENTITY lol "lol">]><svg xmlns="http://www.w3.org/2000/svg"/>`
 
@@ -647,7 +771,7 @@ describe("asset.router", async () => {
       })
       await setupEditorPermissions({
         siteId: site.id,
-        userId: session.userId,
+        userId: String(session.userId),
       })
 
       // Act
@@ -672,7 +796,7 @@ describe("asset.router", async () => {
       })
       await setupEditorPermissions({
         siteId: site.id,
-        userId: session.userId,
+        userId: String(session.userId),
       })
 
       // Act

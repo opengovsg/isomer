@@ -1,17 +1,23 @@
 import { TRPCError } from "@trpc/server"
 import {
+  deleteAssetsByUrlSchema,
   deleteAssetsSchema,
   getPresignedGetUrlSchema,
   getPresignedPutUrlSchema,
   uploadSvgSchema,
 } from "~/schemas/asset"
 import { protectedProcedure, router } from "~/server/trpc"
+import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
+import { invalidateAssetsBySiteIds } from "../aws/cloudfront.service"
+import { validateUserIsIsomerAdmin } from "../permissions/permissions.service"
 import {
+  deleteAssetsByUrl,
   doAllFileKeysBelongToSite,
   getFileKey,
   getPresignedGetUrl,
   getPresignedPutUrl,
+  getSiteIdFromKey,
   markFileAsDeleted,
   putFileDirect,
   sanitizeSvg,
@@ -136,6 +142,45 @@ export const assetRouter = router({
           })
         }
       })
+    }),
+
+  // OGP-admin-only tool: soft-deletes arbitrary asset URLs across any site
+  // (moderation/PDPA takedowns), unlike deleteAssets above which is scoped to
+  // a caller's own site. Rate-limited since it drives S3 + CloudFront calls
+  // per submitted URL.
+  deleteAssetsByUrl: protectedProcedure
+    .input(deleteAssetsByUrlSchema)
+    .meta({ rateLimitOptions: { max: 10, windowMs: 60_000 } })
+    .mutation(async ({ ctx, input: { urls } }) => {
+      await validateUserIsIsomerAdmin({
+        userId: ctx.user.id,
+        roles: [IsomerAdminRole.Core],
+      })
+
+      const results = await deleteAssetsByUrl(urls)
+
+      const successfulSiteIds = new Set(
+        results
+          .filter((result) => result.success && result.key)
+          .map((result) => getSiteIdFromKey(result.key ?? ""))
+          .filter((siteId): siteId is string => !!siteId),
+      )
+      const invalidation = await invalidateAssetsBySiteIds(successfulSiteIds)
+
+      const failedCount = results.filter((result) => !result.success).length
+      ctx.logger.info(
+        {
+          userId: ctx.user.id,
+          urls,
+          results,
+          invalidation,
+        },
+        `Admin asset deletion: ${
+          results.length - failedCount
+        } succeeded, ${failedCount} failed`,
+      )
+
+      return { results, invalidation }
     }),
 
   uploadSvg: protectedProcedure

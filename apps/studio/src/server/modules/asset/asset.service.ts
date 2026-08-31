@@ -171,6 +171,58 @@ export const markFileAsDeleted = async ({ key }: { key: string }) => {
   await deleteFile({ Key: key, Bucket: bucket })
 }
 
+export interface DeleteAssetByUrlResult {
+  url: string
+  key?: string
+  success: boolean
+  error?: string
+}
+
+// Parses a full asset URL (e.g.
+// https://isomer-user-content.by.gov.sg/36/uuid/picture.png) into its S3 key
+// by dropping the leading slash from the pathname and decoding percent-encoded
+// segments (e.g. %20 -> space). Mirrors the key shape produced by getFileKey:
+// `${siteId}/${uuid}/${fileName}`.
+export const parseAssetUrlToKey = (url: string): string | null => {
+  try {
+    const parsed = new URL(url.trim())
+    return decodeURIComponent(parsed.pathname.slice(1))
+  } catch {
+    return null
+  }
+}
+
+export const getSiteIdFromKey = (key: string): string | undefined =>
+  key.split("/")[0]
+
+// Admin-only counterpart to markFileAsDeleted: takes arbitrary asset URLs
+// (not scoped to a single site the caller is permissioned on) and soft-deletes
+// each one, tolerating per-URL failures so one bad URL doesn't abort the rest.
+export const deleteAssetsByUrl = async (
+  urls: string[],
+): Promise<DeleteAssetByUrlResult[]> => {
+  return Promise.all(
+    urls.map(async (url): Promise<DeleteAssetByUrlResult> => {
+      const key = parseAssetUrlToKey(url)
+      if (!key) {
+        return { url, success: false, error: "Invalid asset URL" }
+      }
+
+      try {
+        await markFileAsDeleted({ key })
+        return { url, key, success: true }
+      } catch (error) {
+        return {
+          url,
+          key,
+          success: false,
+          error: error instanceof Error ? error.message : "Unknown error",
+        }
+      }
+    }),
+  )
+}
+
 export const getPresignedGetUrl = async ({
   key,
 }: {
