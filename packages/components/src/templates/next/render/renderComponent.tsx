@@ -48,8 +48,6 @@ export const renderComponent = ({
   component,
   ...rest
 }: RenderComponentProps) => {
-  const contentBlockIndex = contentIndex
-
   switch (component.type) {
     case "logocloud":
       return (
@@ -57,7 +55,7 @@ export const renderComponent = ({
           key={elementKey}
           {...component}
           {...rest}
-          contentBlockIndex={contentBlockIndex}
+          contentBlockIndex={contentIndex}
         />
       )
     case "accordion":
@@ -66,14 +64,14 @@ export const renderComponent = ({
           key={elementKey}
           {...component}
           {...rest}
-          contentBlockIndex={contentBlockIndex}
+          contentBlockIndex={contentIndex}
         />
       )
     case "antiscambanner":
       return (
         <AntiScamDisclaimerBanner
           key={elementKey}
-          contentBlockIndex={contentBlockIndex}
+          contentBlockIndex={contentIndex}
         />
       )
     case "blockquote":
@@ -82,7 +80,7 @@ export const renderComponent = ({
           key={elementKey}
           {...component}
           {...rest}
-          contentBlockIndex={contentBlockIndex}
+          contentBlockIndex={contentIndex}
         />
       )
     case "button":
@@ -91,7 +89,7 @@ export const renderComponent = ({
           key={elementKey}
           {...component}
           {...rest}
-          contentBlockIndex={contentBlockIndex}
+          contentBlockIndex={contentIndex}
         />
       )
     case "callout":
@@ -100,7 +98,7 @@ export const renderComponent = ({
           key={elementKey}
           {...component}
           {...rest}
-          contentBlockIndex={contentBlockIndex}
+          contentBlockIndex={contentIndex}
         />
       )
     case "contentpic":
@@ -109,7 +107,7 @@ export const renderComponent = ({
           key={elementKey}
           {...component}
           {...rest}
-          contentBlockIndex={contentBlockIndex}
+          contentBlockIndex={contentIndex}
         />
       )
     case "formsg":
@@ -118,7 +116,7 @@ export const renderComponent = ({
           key={elementKey}
           {...component}
           {...rest}
-          contentBlockIndex={contentBlockIndex}
+          contentBlockIndex={contentIndex}
         />
       )
     case "hero":
@@ -127,7 +125,7 @@ export const renderComponent = ({
           key={elementKey}
           {...component}
           {...rest}
-          contentBlockIndex={contentBlockIndex}
+          contentBlockIndex={contentIndex}
         />
       )
     case "iframe":
@@ -136,7 +134,7 @@ export const renderComponent = ({
           key={elementKey}
           {...component}
           {...rest}
-          contentBlockIndex={contentBlockIndex}
+          contentBlockIndex={contentIndex}
         />
       )
     case "image":
@@ -145,7 +143,7 @@ export const renderComponent = ({
           key={elementKey}
           {...component}
           {...rest}
-          contentBlockIndex={contentBlockIndex}
+          contentBlockIndex={contentIndex}
         />
       )
     case "infobar":
@@ -154,7 +152,7 @@ export const renderComponent = ({
           key={elementKey}
           {...component}
           {...rest}
-          contentBlockIndex={contentBlockIndex}
+          contentBlockIndex={contentIndex}
         />
       )
     case "infocards":
@@ -163,7 +161,7 @@ export const renderComponent = ({
           key={elementKey}
           {...component}
           {...rest}
-          contentBlockIndex={contentBlockIndex}
+          contentBlockIndex={contentIndex}
         />
       )
     case "infocols":
@@ -172,7 +170,7 @@ export const renderComponent = ({
           key={elementKey}
           {...component}
           {...rest}
-          contentBlockIndex={contentBlockIndex}
+          contentBlockIndex={contentIndex}
         />
       )
     case "infopic":
@@ -181,7 +179,7 @@ export const renderComponent = ({
           key={elementKey}
           {...component}
           {...rest}
-          contentBlockIndex={contentBlockIndex}
+          contentBlockIndex={contentIndex}
         />
       )
     case "keystatistics":
@@ -190,7 +188,7 @@ export const renderComponent = ({
           key={elementKey}
           {...component}
           {...rest}
-          contentBlockIndex={contentBlockIndex}
+          contentBlockIndex={contentIndex}
         />
       )
     case "map":
@@ -199,7 +197,7 @@ export const renderComponent = ({
           key={elementKey}
           {...component}
           {...rest}
-          contentBlockIndex={contentBlockIndex}
+          contentBlockIndex={contentIndex}
         />
       )
     case "childrenpages":
@@ -208,7 +206,7 @@ export const renderComponent = ({
           key={elementKey}
           {...component}
           {...rest}
-          contentBlockIndex={contentBlockIndex}
+          contentBlockIndex={contentIndex}
         />
       )
     case "prose":
@@ -217,7 +215,7 @@ export const renderComponent = ({
           key={elementKey}
           {...component}
           {...rest}
-          contentBlockIndex={contentBlockIndex}
+          contentBlockIndex={contentIndex}
           shouldStripContentHtmlTags
         />
       )
@@ -227,7 +225,7 @@ export const renderComponent = ({
           key={elementKey}
           {...component}
           {...rest}
-          contentBlockIndex={contentBlockIndex}
+          contentBlockIndex={contentIndex}
         />
       )
     case "video":
@@ -236,7 +234,7 @@ export const renderComponent = ({
           key={elementKey}
           {...component}
           {...rest}
-          contentBlockIndex={contentBlockIndex}
+          contentBlockIndex={contentIndex}
         />
       )
     case "dynamicdatabanner":
@@ -245,7 +243,7 @@ export const renderComponent = ({
           key={elementKey}
           {...component}
           {...rest}
-          contentBlockIndex={contentBlockIndex}
+          contentBlockIndex={contentIndex}
         />
       )
 
@@ -255,7 +253,7 @@ export const renderComponent = ({
           key={elementKey}
           {...component}
           {...rest}
-          contentBlockIndex={contentBlockIndex}
+          contentBlockIndex={contentIndex}
         />
       )
     case "imagegallery":
@@ -264,7 +262,7 @@ export const renderComponent = ({
           key={elementKey}
           {...component}
           {...rest}
-          contentBlockIndex={contentBlockIndex}
+          contentBlockIndex={contentIndex}
         />
       )
     case "contactinformation":
@@ -273,7 +271,7 @@ export const renderComponent = ({
           key={elementKey}
           {...component}
           {...rest}
-          contentBlockIndex={contentBlockIndex}
+          contentBlockIndex={contentIndex}
         />
       )
     case "dynamiccomponentlist":
@@ -282,7 +280,7 @@ export const renderComponent = ({
           key={elementKey}
           {...component}
           {...rest}
-          contentBlockIndex={contentBlockIndex}
+          contentBlockIndex={contentIndex}
         />
       )
     default:

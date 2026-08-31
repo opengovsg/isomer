@@ -63,7 +63,6 @@ export const TYPE_TO_ICON: Record<
 export const PUBLISHED_AFTER_EDITING_EVENT = "published-after-editing"
 export const LEFT_EDITOR_AFTER_EDITING_EVENT = "left-editor-after-editing"
 
-// Shared by getBlockElement.ts and usePreviewHoverDetection.ts.
 export const CONTENT_BLOCKS_SELECTOR = "[data-isomer-content-blocks]"
 export const CONTENT_BLOCK_INDEX_ATTR = "data-isomer-content-index"
 export type ContentEditSurveyEvent =
