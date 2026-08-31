@@ -2227,6 +2227,55 @@ describe("resource.router", async () => {
         )
       })
 
+      it("throws when moving a published page into a destination folder whose own IndexPage is unlocked but whose ancestor has a pending scheduled unpublish", async () => {
+        const { site, folder: grandparentFolder } = await setupFolder({
+          permalink: "grandparent",
+        })
+        await setupPageResource({
+          siteId: site.id,
+          parentId: grandparentFolder.id,
+          resourceType: ResourceType.IndexPage,
+          state: ResourceState.Published,
+          userId: session.userId,
+          scheduledAt: new Date("2999-01-01T00:00:00Z"),
+          scheduledBy: session.userId,
+          scheduledAction: ScheduledAction.Unpublish,
+        })
+        const { folder: destinationFolder } = await setupFolder({
+          siteId: site.id,
+          permalink: "destination",
+          parentId: grandparentFolder.id,
+        })
+        await setupPageResource({
+          siteId: site.id,
+          parentId: destinationFolder.id,
+          resourceType: ResourceType.IndexPage,
+          state: ResourceState.Published,
+          userId: session.userId,
+        })
+        const { page: pageToMove } = await setupPageResource({
+          siteId: site.id,
+          resourceType: ResourceType.Page,
+          permalink: "page-to-move",
+          state: ResourceState.Published,
+          userId: session.userId,
+        })
+        await setupAdminPermissions({
+          userId: session.userId,
+          siteId: site.id,
+        })
+
+        const result = caller.move({
+          siteId: site.id,
+          movedResourceId: pageToMove.id,
+          destinationResourceId: destinationFolder.id,
+        })
+
+        await expect(result).rejects.toThrow(
+          expect.objectContaining({ code: "PRECONDITION_FAILED" }),
+        )
+      })
+
       it("throws when moving a folder with a live descendant (but no publishedVersionId of its own) into such a destination", async () => {
         const { site, folder: destinationFolder } = await setupFolder({
           permalink: "destination",
