@@ -166,52 +166,56 @@ const SuspendableEditPagePreview = (): JSX.Element => {
   })
 
   return (
-    <ViewportContainer siteId={siteId} callback={handleIframeMount}>
-      <PreviewWithCustomSitemap
-        {...merge(previewPageState, { page: { title } })}
-        siteId={siteId}
-        permalink={permalink}
-        lastModified={updatedAt.toISOString()}
-        version="0.1.0"
-        siteMap={siteMap}
-      />
-      {/* Use a positioned overlay rather than styling the block directly —
-      a background colour would paint behind the block's own content
-      (invisible over opaque images/video), and an outline drawn on the
-      block itself can only sit inside or across its edge, overlapping
-      its content either way. */}
-      {iframeDocument &&
-        highlightRect &&
-        createPortal(
-          <BlockHighlightOverlay
-            {...highlightRect}
-            label={highlightLabel}
-            onEditClick={handleEditClick}
-          />,
-          iframeDocument.body,
-        )}
-      {/* Deliberately rendered even when it overlaps the hover overlay above
-      (e.g. clicking a block you're already hovering) — the flash's hold/fade
-      timer starts at click time regardless of render state, so gating this
-      on hover would let the timer run out before the block stops being
-      hovered, cutting the flash short or skipping it entirely. Overlapping
-      the identical hover overlay is visually a no-op. */}
-      {iframeDocument &&
-        flashRect &&
-        createPortal(
-          <BlockHighlightOverlay
-            {...flashRect}
-            label={flashLabel}
-            isFading={isFlashFading}
-          />,
-          iframeDocument.body,
-        )}
+    <>
+      <ViewportContainer siteId={siteId} callback={handleIframeMount}>
+        <PreviewWithCustomSitemap
+          {...merge(previewPageState, { page: { title } })}
+          siteId={siteId}
+          permalink={permalink}
+          lastModified={updatedAt.toISOString()}
+          version="0.1.0"
+          siteMap={siteMap}
+        />
+        {/* Use a positioned overlay rather than styling the block directly —
+        a background colour would paint behind the block's own content
+        (invisible over opaque images/video), and an outline drawn on the
+        block itself can only sit inside or across its edge, overlapping
+        its content either way. */}
+        {iframeDocument &&
+          highlightRect &&
+          createPortal(
+            <BlockHighlightOverlay
+              {...highlightRect}
+              label={highlightLabel}
+              onEditClick={handleEditClick}
+            />,
+            iframeDocument.body,
+          )}
+        {/* Deliberately rendered even when it overlaps the hover overlay above
+        (e.g. clicking a block you're already hovering) — the flash's hold/fade
+        timer starts at click time regardless of render state, so gating this
+        on hover would let the timer run out before the block stops being
+        hovered, cutting the flash short or skipping it entirely. Overlapping
+        the identical hover overlay is visually a no-op. */}
+        {iframeDocument &&
+          flashRect &&
+          createPortal(
+            <BlockHighlightOverlay
+              {...flashRect}
+              label={flashLabel}
+              isFading={isFlashFading}
+            />,
+            iframeDocument.body,
+          )}
+      </ViewportContainer>
+      {/* Outside the preview iframe: Chakra portals into ownerDocument.body,
+          and the iframe only loads site CSS, so the dialog would be unstyled. */}
       <DiscardChangesModal
         isOpen={isDiscardChangesModalOpen}
         onClose={handleDiscardChangesModalClose}
         onDiscard={handleDiscardChanges}
       />
-    </ViewportContainer>
+    </>
   )
 }
 
