@@ -35,6 +35,7 @@ import {
   BiChevronDown,
   BiDotsHorizontalRounded,
   BiGridVertical,
+  BiMove,
   BiPencil,
   BiSolidErrorCircle,
   BiTrash,
@@ -50,6 +51,7 @@ interface NavbarItemBoxProps {
   index: number
   onEditItem: () => void
   onDeleteItem: () => void
+  onMoveItem: () => void
   name?: string
   description?: string
   subItems?: Pick<NavbarItemBoxProps, "name" | "description">[]
@@ -66,6 +68,7 @@ export const NavbarItemBox = ({
   index,
   onEditItem,
   onDeleteItem,
+  onMoveItem,
   name = DEFAULT_NAVBAR_ITEM_TITLE,
   description = DEFAULT_NAVBAR_ITEM_DESCRIPTION,
   subItems,
@@ -354,6 +357,16 @@ export const NavbarItemBox = ({
                 >
                   <Icon as={BiPencil} />
                   <Text textStyle="body-2">Edit link</Text>
+                </Flex>
+              </MenuItem>
+              <MenuItem onClick={onMoveItem}>
+                <Flex
+                  alignItems="center"
+                  gap="0.5rem"
+                  color="base.content.strong"
+                >
+                  <Icon as={BiMove} />
+                  <Text textStyle="body-2">Move to</Text>
                 </Flex>
               </MenuItem>
               <MenuItem onClick={onDeleteItem}>

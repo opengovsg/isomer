@@ -18,6 +18,7 @@ import { getResourceIdFromReferenceLink } from "@opengovsg/isomer-components"
 import {
   BiDotsHorizontalRounded,
   BiGridVertical,
+  BiMove,
   BiPencil,
   BiSolidErrorCircle,
   BiTrash,
@@ -58,6 +59,7 @@ interface DraggableLinkButtonProps extends Omit<
   "selected" | "enabled" | "handleSelect" | "removeItem" | "translations"
 > {
   onDeleteItem: () => void
+  onMoveItem: () => void
   resetLink: () => void
 }
 
@@ -68,6 +70,7 @@ const DraggableLinkButton = forwardRef<DraggableLinkButtonProps, "div">(
       dragHandleProps,
       setSelectedIndex,
       onDeleteItem,
+      onMoveItem,
       isError,
       index,
       path,
@@ -230,6 +233,16 @@ const DraggableLinkButton = forwardRef<DraggableLinkButtonProps, "div">(
                     >
                       <Icon as={BiPencil} />
                       <Text textStyle="body-2">Edit link</Text>
+                    </Flex>
+                  </MenuItem>
+                  <MenuItem onClick={onMoveItem}>
+                    <Flex
+                      alignItems="center"
+                      gap="0.5rem"
+                      color="base.content.strong"
+                    >
+                      <Icon as={BiMove} />
+                      <Text textStyle="body-2">Move to</Text>
                     </Flex>
                   </MenuItem>
                   <MenuItem onClick={onDeleteItem}>

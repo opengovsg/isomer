@@ -38,7 +38,7 @@ import {
   withJsonFormsArrayLayoutProps,
 } from "@jsonforms/react"
 import { Button } from "@opengovsg/design-system-react"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import {
   BiDirections,
   BiLeftArrowAlt,
@@ -48,6 +48,7 @@ import {
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 import DraggableLinkButton from "../../components/DraggableLinkButton"
+import { MovePositionModal } from "../../components/MovePositionModal"
 import { FORM_BUILDER_PARENT_ID } from "../../constants"
 import { useBuilderErrors } from "../../ErrorProvider"
 
@@ -261,10 +262,12 @@ function JsonFormsArrayLinkControl({
   uischema,
   description,
 }: ArrayLayoutProps) {
+  const ctx = useJsonForms()
   const { hasErrorAt } = useBuilderErrors()
   const [selectedIndex, setSelectedIndex] = useState<number>()
   const [selectedPathForDeletion, setSelectedPathForDeletion] =
     useState<string>()
+  const [selectedIndexForMove, setSelectedIndexForMove] = useState<number>()
 
   const isRemoveItemDisabled =
     arraySchema.minItems !== undefined && data <= arraySchema.minItems
@@ -303,6 +306,22 @@ function JsonFormsArrayLinkControl({
       }
     },
     [moveUp, moveDown],
+  )
+  const siblingLabels = useMemo(
+    () =>
+      [...Array(data).keys()].map(
+        (index) =>
+          computeChildLabel(
+            ctx.core?.data,
+            composePaths(path, `${index}`),
+            "",
+            schema,
+            ctx.core?.schema ?? {},
+            ctx.i18n?.translate ?? ((s) => s),
+            uischema,
+          ) || "Untitled link",
+      ),
+    [ctx.core?.data, ctx.core?.schema, ctx.i18n, data, path, schema, uischema],
   )
   const handleDeleteItem = () => {
     if (selectedPathForDeletion === undefined) return
@@ -372,6 +391,26 @@ function JsonFormsArrayLinkControl({
         path={selectedPathForDeletion ?? ""}
         schema={schema}
         uischema={getChildUiSchema(selectedPathForDeletion ?? "")}
+      />
+
+      <MovePositionModal
+        isOpen={selectedIndexForMove !== undefined}
+        label={
+          selectedIndexForMove !== undefined
+            ? (siblingLabels[selectedIndexForMove] ?? "")
+            : ""
+        }
+        siblings={siblingLabels
+          .map((itemLabel, index) => ({ key: `${index}`, label: itemLabel }))
+          .filter((_, index) => index !== selectedIndexForMove)}
+        onClose={() => setSelectedIndexForMove(undefined)}
+        onMove={(targetIndex) => {
+          if (selectedIndexForMove === undefined) {
+            return
+          }
+
+          handleMoveItem(path, selectedIndexForMove, targetIndex)
+        }}
       />
 
       <VStack spacing="0.375rem" align="start">
@@ -475,6 +514,7 @@ function JsonFormsArrayLinkControl({
                           onDeleteItem={() =>
                             setSelectedPathForDeletion(childPath)
                           }
+                          onMoveItem={() => setSelectedIndexForMove(index)}
                           resetLink={() => {
                             handleRemoveItem(path, index)()
                           }}

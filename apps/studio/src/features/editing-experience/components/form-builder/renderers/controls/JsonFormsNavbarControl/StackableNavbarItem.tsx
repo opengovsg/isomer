@@ -25,6 +25,7 @@ import {
 } from "@chakra-ui/react"
 import { useEffect, useMemo, useRef, useState } from "react"
 
+import { MovePositionModal } from "../../../components/MovePositionModal"
 import {
   DEFAULT_NAVBAR_ITEM_DESCRIPTION,
   DEFAULT_NAVBAR_ITEM_TITLE,
@@ -51,9 +52,12 @@ interface StackableNavbarItemProps {
   errors: ErrorObject<string, Record<string, any>, unknown>[]
   onEdit: (subItemIndex?: number) => void
   removeItem: (subItemIndex?: number) => void
+  moveItem: (targetIndex: number, subItemIndex?: number) => void
   name?: string
   description?: string
   subItems?: Pick<StackableNavbarItemProps, "name" | "description">[]
+  /** Every top-level navbar item, in order, used to build the "Move to" list for this item */
+  allTopLevelItems: Pick<StackableNavbarItemProps, "name">[]
 }
 
 export const StackableNavbarItem = ({
@@ -61,9 +65,11 @@ export const StackableNavbarItem = ({
   errors,
   onEdit,
   removeItem,
+  moveItem,
   name,
   description,
   subItems,
+  allTopLevelItems,
 }: StackableNavbarItemProps) => {
   const {
     isOpen: isDeleteGroupModalOpen,
@@ -76,6 +82,17 @@ export const StackableNavbarItem = ({
     onClose: onDeleteSubItemModalClose,
   } = useDisclosure()
   const [subItemToDelete, setSubItemToDelete] = useState<number>()
+  const {
+    isOpen: isMoveMainItemModalOpen,
+    onOpen: onMoveMainItemModalOpen,
+    onClose: onMoveMainItemModalClose,
+  } = useDisclosure()
+  const {
+    isOpen: isMoveSubItemModalOpen,
+    onOpen: onMoveSubItemModalOpen,
+    onClose: onMoveSubItemModalClose,
+  } = useDisclosure()
+  const [subItemToMove, setSubItemToMove] = useState<number>()
   const [isNavbarItemDragging, setIsNavbarItemDragging] = useState(false)
   const [isItemBeingDraggedOver, setIsItemBeingDraggedOver] = useState(false)
   const [navbarItemClosestEdge, setNavbarItemClosestEdge] =
@@ -239,6 +256,45 @@ export const StackableNavbarItem = ({
         />
       )}
 
+      <MovePositionModal
+        isOpen={isMoveMainItemModalOpen}
+        label={name || DEFAULT_NAVBAR_ITEM_TITLE}
+        siblings={allTopLevelItems
+          .map((item, i) => ({
+            key: `${i}`,
+            label: item.name || DEFAULT_NAVBAR_ITEM_TITLE,
+            itemIndex: i,
+          }))
+          .filter(({ itemIndex }) => itemIndex !== index)}
+        onClose={onMoveMainItemModalClose}
+        onMove={(targetIndex) => moveItem(targetIndex)}
+      />
+
+      {hasSubItems && (
+        <MovePositionModal
+          isOpen={isMoveSubItemModalOpen}
+          label={
+            subItems[subItemToMove ?? 0]?.name ?? DEFAULT_NAVBAR_ITEM_TITLE
+          }
+          siblings={subItems
+            .map((item, i) => ({
+              key: `${i}`,
+              label: item.name || DEFAULT_NAVBAR_ITEM_TITLE,
+              itemIndex: i,
+            }))
+            .filter(({ itemIndex }) => itemIndex !== subItemToMove)}
+          onClose={() => {
+            onMoveSubItemModalClose()
+            setSubItemToMove(undefined)
+          }}
+          onMove={(targetIndex) => {
+            if (subItemToMove !== undefined) {
+              moveItem(targetIndex, subItemToMove)
+            }
+          }}
+        />
+      )}
+
       {navbarItemClosestEdge === "top" && !isItemBeingDraggedOver && (
         <Divider borderColor="base.divider.brand" borderWidth="2px" />
       )}
@@ -259,6 +315,7 @@ export const StackableNavbarItem = ({
             isNavbarItemDragging={isNavbarItemDragging}
             onEditItem={onEdit}
             onDeleteItem={onDeleteGroupModalOpen}
+            onMoveItem={onMoveMainItemModalOpen}
             isItemBeingDraggedOver={isItemBeingDraggedOver}
             setIsItemBeingDraggedOver={setIsItemBeingDraggedOver}
             isInvalid={numberOfErrors > 0}
@@ -296,6 +353,10 @@ export const StackableNavbarItem = ({
                       onDeleteItem={() => {
                         setSubItemToDelete(idx)
                         onDeleteSubItemModalOpen()
+                      }}
+                      onMoveItem={() => {
+                        setSubItemToMove(idx)
+                        onMoveSubItemModalOpen()
                       }}
                       isInvalid={isInvalid}
                     />

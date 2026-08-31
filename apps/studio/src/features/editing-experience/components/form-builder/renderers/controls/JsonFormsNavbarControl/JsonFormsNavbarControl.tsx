@@ -5,6 +5,7 @@ import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/clo
 import { extractInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item"
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine"
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter"
+import { reorder } from "@atlaskit/pragmatic-drag-and-drop/reorder"
 import {
   Accordion,
   Box,
@@ -27,7 +28,7 @@ import {
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
 import { Infobox } from "@opengovsg/design-system-react"
 import { get } from "lodash-es"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { BiPlusCircle } from "react-icons/bi"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
@@ -102,6 +103,37 @@ function JsonFormsNavbarControl({
       )
     },
     [arraySchema.maxItems, ctx, data, path],
+  )
+
+  const handleMoveTo = useCallback(
+    (arrPath: string, fromIndex: number, toIndex: number) => {
+      if (fromIndex === toIndex) {
+        return
+      }
+
+      ctx.dispatch?.(
+        Actions.update(arrPath, (prevData) =>
+          reorder({
+            list: prevData as NavbarItems["items"],
+            startIndex: fromIndex,
+            finishIndex: toIndex,
+          }),
+        ),
+      )
+    },
+    [ctx],
+  )
+
+  const allTopLevelItems = useMemo(
+    () =>
+      [...Array(data).keys()].map((i) => {
+        const item = get(ctx.core?.data, composePaths(path, String(i))) as
+          | PartialDeep<NavbarItems["items"][number]>
+          | undefined
+
+        return { name: item?.name }
+      }),
+    [ctx.core?.data, data, path],
   )
 
   const isOverMaxItems = isFirstLevelLinksOverLimit(data, arraySchema.maxItems)
@@ -298,7 +330,19 @@ function JsonFormsNavbarControl({
                           handleRemove(path, index)
                         }
                       }}
+                      moveItem={(targetIndex, subItemIndex) => {
+                        if (subItemIndex !== undefined) {
+                          handleMoveTo(
+                            [childPath, "items"].join("."),
+                            subItemIndex,
+                            targetIndex,
+                          )
+                        } else {
+                          handleMoveTo(path, index, targetIndex)
+                        }
+                      }}
                       subItems={childItem.items}
+                      allTopLevelItems={allTopLevelItems}
                     />
                   )
                 })}
