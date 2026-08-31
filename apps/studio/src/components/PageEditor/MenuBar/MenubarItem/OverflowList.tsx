@@ -26,8 +26,8 @@ export const MenubarOverflowList = ({
   }
   return (
     // TipTap toolbar pattern: preventDefault on mousedown so the trigger
-    // does not steal focus from the editor. Pair with closeOnBlur=false —
-    // otherwise focus never enters the popover and closeOnBlur immediately
+    // does not steal focus from the editor. Pair with closeOnBlur=false.
+    // Otherwise focus never enters the popover and closeOnBlur immediately
     // dismisses (or fights) the open state.
     <Popover placement="bottom" closeOnBlur={false} isLazy>
       {({ isOpen, onClose }) => (
