@@ -216,7 +216,7 @@ calculate_duration $start_time
 # Update CloudFront origin path
 echo "Updating CloudFront origin path..."
 echo "CloudFront distribution ID: $CLOUDFRONT_DISTRIBUTION_ID"
-aws cloudfront get-distribution --id $CLOUDFRONT_DISTRIBUTION_ID >distribution.json
+aws cloudfront get-distribution --id "$CLOUDFRONT_DISTRIBUTION_ID" >distribution.json
 
 ETag=$(cat distribution.json | jq -r '.ETag')
 echo "ETag: $ETag"
@@ -226,15 +226,15 @@ jq ".Origins.Items[0].OriginPath = \"/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest\
 
 # Disable errexit so we can handle PreconditionFailed without aborting.
 set +e
-UPDATE_DISTRIBUTION_OUTPUT=$(aws cloudfront update-distribution --id $CLOUDFRONT_DISTRIBUTION_ID --distribution-config file://distribution-config.json --if-match $ETag 2>&1)
+UPDATE_DISTRIBUTION_OUTPUT=$(aws cloudfront update-distribution --id "$CLOUDFRONT_DISTRIBUTION_ID" --distribution-config file://distribution-config.json --if-match "$ETag" 2>&1)
 UPDATE_DISTRIBUTION_EXIT_CODE=$?
 set -e
 
-if [ $UPDATE_DISTRIBUTION_EXIT_CODE -ne 0 ]; then
+if [ "$UPDATE_DISTRIBUTION_EXIT_CODE" -ne 0 ]; then
   # Concurrent publishes race on the CloudFront ETag. If we lose, only skip our update
   # when the distribution already points at this site's build >= ours.
   if [[ "$UPDATE_DISTRIBUTION_OUTPUT" == *PreconditionFailed* ]]; then
-    CURRENT_ORIGIN_PATH=$(aws cloudfront get-distribution --id $CLOUDFRONT_DISTRIBUTION_ID \
+    CURRENT_ORIGIN_PATH=$(aws cloudfront get-distribution --id "$CLOUDFRONT_DISTRIBUTION_ID" \
       | jq -r '.Distribution.DistributionConfig.Origins.Items[0].OriginPath')
     echo "PreconditionFailed: current origin path is $CURRENT_ORIGIN_PATH"
 
