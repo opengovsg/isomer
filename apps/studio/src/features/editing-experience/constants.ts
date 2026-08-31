@@ -65,6 +65,7 @@ export const LEFT_EDITOR_AFTER_EDITING_EVENT = "left-editor-after-editing"
 
 // Shared by getBlockElement.ts and usePreviewHoverDetection.ts.
 export const CONTENT_BLOCKS_SELECTOR = "[data-isomer-content-blocks]"
+export const CONTENT_BLOCK_INDEX_ATTR = "data-isomer-content-index"
 export type ContentEditSurveyEvent =
   | typeof PUBLISHED_AFTER_EDITING_EVENT
   | typeof LEFT_EDITOR_AFTER_EDITING_EVENT
