@@ -20,6 +20,7 @@ import { Superscript } from "@tiptap/extension-superscript"
 import { Table } from "@tiptap/extension-table"
 import { TableCell } from "@tiptap/extension-table-cell"
 import { TableHeader } from "@tiptap/extension-table-header"
+import { TableRow } from "@tiptap/extension-table-row"
 import { Text } from "@tiptap/extension-text"
 import { Underline } from "@tiptap/extension-underline"
 import { Plugin, PluginKey } from "@tiptap/pm/state"
@@ -31,7 +32,7 @@ import {
 } from "../../utils"
 import { selectTableCellContent } from "./selectTableCellContent"
 
-export { TableRow } from "@tiptap/extension-table-row"
+export { TableRow }
 
 export const HEADING_TYPE = "heading"
 export const PARAGRAPH_TYPE = "paragraph"
