@@ -36,15 +36,11 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
         align="flex-end"
         gap="0.25rem"
         data-table-bubble-menu
-        // Exempts the portaled trigger/content from Chakra Modal's FocusLock
-        // (e.g. Table Settings): react-focus-lock lets focus move freely
-        // to/from any element bearing this attribute instead of pulling it
-        // back into the modal.
+        // Lets focus move between this portaled menu and Chakra modals (e.g. Table Settings).
         data-no-focus-lock
         position="fixed"
         left={position ? `${position.x}px` : 0}
         top={position ? `${position.y}px` : 0}
-        // Hide until position is computed (async after Portal mount).
         visibility={position ? "visible" : "hidden"}
         zIndex="dropdown"
         onFocus={onMenuFocus}
@@ -90,7 +86,6 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
                 : { bg: "interaction.main-subtle.default" }),
             },
           }}
-          // Keep editor focus on cell selection; open menu via click instead.
           onMouseDown={(event) => event.preventDefault()}
           onClick={toggleMenu}
         >
