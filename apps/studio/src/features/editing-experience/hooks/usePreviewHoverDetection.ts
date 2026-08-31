@@ -3,10 +3,6 @@ import { useEffect } from "react"
 import { CONTENT_BLOCKS_SELECTOR } from "~/features/editing-experience/constants"
 import { getContentIndexFromElement } from "~/features/editing-experience/utils/getBlockElement"
 
-// Tracks which block the cursor is over inside the preview iframe (the
-// reverse of hovering a sidebar row). Hand-rolled instead of usehooks-ts's
-// `useEventListener`, which only re-subscribes on `element` ref identity
-// change, not `.current` change — misses `iframeDocument` going null -> set.
 export const usePreviewHoverDetection = (
   iframeDocument: Document | null,
   content: IsomerSchema["content"],
@@ -37,17 +33,11 @@ export const usePreviewHoverDetection = (
         )
         const toIndex = getContentIndexFromElement(related as Element | null)
 
-        // Moving between elements inside the same block (e.g. prose items).
         if (fromIndex !== null && fromIndex === toIndex) return
-
-        // Another block inside the container — mouseover will update the index.
         if (container.contains(related)) return
 
-        // The hover toolbar is portaled as a sibling of the content container,
-        // not a descendant, so moving onto it fires mouseout with
-        // `relatedTarget` outside the block — that would unmount the toolbar
-        // mid-hover and loop (block reappears -> synthetic mouseover -> repeat).
-        // Treat entering the toolbar as staying within the block.
+        // The edit toolbar is portaled outside the content container; treat
+        // moving onto it as staying within the hovered block.
         const relatedElement = related as Element | null
         const enteredToolbar = relatedElement?.closest?.(
           "[data-isomer-preview-toolbar]",
