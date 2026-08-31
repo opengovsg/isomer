@@ -140,10 +140,6 @@ export const IsomerTable = Table.extend({
       ...parentShortcuts,
       "Mod-a": () =>
         selectTableCellContent(this.editor) || this.editor.commands.selectAll(),
-      // The base extension's Tab always calls goToNextCell, which keeps
-      // keyboard focus trapped inside the table. When the bubble menu's
-      // trigger is showing (an actionable multi-cell selection), send focus
-      // there instead so the trigger stays keyboard-reachable.
       Tab: ({ editor }) => {
         if (focusTableBubbleMenuTrigger(editor)) {
           return true
