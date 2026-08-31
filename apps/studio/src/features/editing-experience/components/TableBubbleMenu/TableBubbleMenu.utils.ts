@@ -10,9 +10,7 @@ import type {
   TableMovePlan,
 } from "./TableBubbleMenu.types"
 
-// Slice of selectedRect() needed to tell whether a selection overlaps a
-// TipTap header row/column. Kept structural so unit tests don't need a live
-// EditorView.
+// Structural slice of selectedRect() for header overlap checks (no live EditorView).
 export interface TableHeaderOverlapRect {
   top: number
   left: number
@@ -20,15 +18,10 @@ export interface TableHeaderOverlapRect {
   table: Node
 }
 
-// ProseMirror-specific selection details are normalized into these facts so
-// the menu's classification rules can stay independent of editor state.
 interface TableSelectionFacts {
   spansEntireTableWidth: boolean
   spansEntireTableHeight: boolean
   allCellsAreHeaders: boolean
-  // True when the selection is exactly the table's first row / first column
-  // (half-open rect starting at 0 with span 1). TipTap header toggles only
-  // rewrite that edge, so "header-*" kinds match the same scope.
   isTopRow: boolean
   isLeftmostColumn: boolean
   selectsSingleCellNode: boolean
@@ -61,9 +54,7 @@ const isHeaderColumnAtLeft = (rect: TableHeaderOverlapRect): boolean => {
   return rect.map.height > 0
 }
 
-// Delete is withheld whenever the selection overlaps a header axis — not only
-// when the selection is exclusively that header — so users unset the header
-// first rather than accidentally leaving the table headerless.
+// Withhold delete/move when the selection overlaps a header axis so users unset the header first.
 export const selectionIncludesHeaderRow = (
   rect: TableHeaderOverlapRect,
 ): boolean => rect.top === 0 && isHeaderRowAtTop(rect)
@@ -72,8 +63,6 @@ export const selectionIncludesHeaderColumn = (
   rect: TableHeaderOverlapRect,
 ): boolean => rect.left === 0 && isHeaderColumnAtLeft(rect)
 
-// Half-open span: included start at 0 with extent 1 — the first row/column only.
-// TipTap header toggles only rewrite that table edge.
 export const selectionIsTopRow = (rect: {
   top: number
   bottom: number
@@ -84,8 +73,6 @@ export const selectionIsLeftmostColumn = (rect: {
   right: number
 }): boolean => rect.left === 0 && rect.right === 1
 
-// Order matters: a whole-table selection spans both axes, and a merged cell
-// can span multiple grid rows/columns while still selecting only one cell node.
 export const getTableSelectionKind = ({
   spansEntireTableWidth,
   spansEntireTableHeight,
@@ -108,9 +95,6 @@ export const getTableSelectionKind = ({
   return "multi-cell"
 }
 
-// Bounds are half-open: `top` is included and `bottom` is excluded. TipTap's
-// row mover operates on one row, so moving a block means moving its adjacent
-// neighbour past the block and then reselecting the block at `newStart`.
 export const getRowMovePlan = (
   {
     top,
@@ -126,7 +110,6 @@ export const getRowMovePlan = (
   const span = bottom - top
 
   if (direction === "up") {
-    // Move the row above to the block's final row.
     if (top === 0) return null
     return {
       from: top - 1,
@@ -136,7 +119,6 @@ export const getRowMovePlan = (
     }
   }
 
-  // Move the row below to the block's first row.
   if (bottom >= tableHeight) return null
   return {
     from: bottom,
@@ -146,8 +128,6 @@ export const getRowMovePlan = (
   }
 }
 
-// Column movement mirrors row movement; `left` included and `right` excluded;
-// the adjacent column is moved across the selected block.
 export const getColumnMovePlan = (
   {
     left,
@@ -163,7 +143,6 @@ export const getColumnMovePlan = (
   const span = right - left
 
   if (direction === "left") {
-    // Move the column on the left to the block's final column.
     if (left === 0) return null
     return {
       from: left - 1,
@@ -173,7 +152,6 @@ export const getColumnMovePlan = (
     }
   }
 
-  // Move the column on the right to the block's first column.
   if (right >= tableWidth) return null
   return {
     from: right,
@@ -183,8 +161,6 @@ export const getColumnMovePlan = (
   }
 }
 
-// CellSelection corners for a moved row/column block. Offsets are relative to
-// the table node's content start (i.e. document position tableStart).
 export const getMovedBlockCellCorners = (
   map: MovedBlockTableMap,
   table: Node,
@@ -204,9 +180,6 @@ export const getMovedBlockCellCorners = (
   }
 }
 
-// moveTableRow/Column with select:false leaves nothing selected; reselect the
-// moved block so the bubble menu stays open. Runs inside the move transaction
-// callback once the table structure has been updated.
 export const restoreMovedBlockSelection = (
   view: EditorView,
   tr: Transaction,
@@ -241,7 +214,6 @@ const isMergedCell = (rect: ReturnType<typeof selectedRect>): boolean => {
   )
 }
 
-// Maps the current CellSelection to a SelectionKind for action menu routing.
 export const detectTableSelectionKind = (editor: Editor): SelectionKind => {
   const { selection } = editor.state
   if (!(selection instanceof CellSelection)) return "none"
@@ -267,10 +239,8 @@ export const detectTableSelectionKind = (editor: Editor): SelectionKind => {
   })
 }
 
-// Ordinary single-cell text cursors show no bubble menu.
 export const isActionableTableSelectionKind = (kind: SelectionKind) =>
   kind !== "none" && kind !== "single-cell"
 
-// Hide the menu while a Chakra/modal dialog has focus.
 export const isEditorModalOpen = () =>
   document.querySelector('[role="dialog"][aria-modal="true"]') != null

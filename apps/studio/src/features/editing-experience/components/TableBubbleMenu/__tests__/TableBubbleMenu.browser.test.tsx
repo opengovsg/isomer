@@ -61,13 +61,7 @@ const TWO_TABLES_CONTENT: JSONContent = {
   ],
 }
 
-// Finds the document position at the start boundary of the nth cell
-// (tableCell or tableHeader) in reading order, 0-indexed. This is the
-// position CellSelection.create expects: resolving it yields a ResolvedPos
-// whose parent is the cell's tableRow, so `$pos.node(-1)` is the table (as
-// prosemirror-tables' CellSelection constructor requires) — resolving one
-// position later (i.e. *inside* the cell) would instead make the row the
-// `node(-1)` ancestor and throw "Not a table node".
+// Cell start position for CellSelection.create (must resolve to tableRow, not cell content).
 const nthCellPos = (editor: Editor, index: number): number => {
   let seen = 0
   let found: number | null = null
@@ -86,15 +80,11 @@ const nthCellPos = (editor: Editor, index: number): number => {
   return found
 }
 
-// Selects the cell range [startIndex, endIndex] (inclusive, 0-indexed reading
-// order) and flushes the resulting transaction inside `act`, since this
-// dispatches synchronously outside of React's own event handling.
+// Selects cells [startIndex, endIndex] in reading order inside act().
 const selectCells = (editor: Editor, startIndex: number, endIndex: number) => {
   const anchorCell = nthCellPos(editor, startIndex)
   const headCell = nthCellPos(editor, endIndex)
   act(() => {
-    // A real pointer selection focuses the editor. Make that precondition
-    // explicit instead of relying on menu rendering to steal focus.
     editor.chain().focus().setCellSelection({ anchorCell, headCell }).run()
   })
 }

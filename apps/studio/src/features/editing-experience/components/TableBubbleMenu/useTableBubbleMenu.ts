@@ -23,8 +23,6 @@ import {
 } from "./tableBubbleMenuFocus"
 import { useTableBubbleMenuPosition } from "./useTableBubbleMenuPosition"
 
-// UI state for the table bubble menu: visibility, activation, positioning, and
-// keyboard-focus bridge to the IsomerTable Tab handler.
 export interface TableBubbleMenuUiState {
   show: boolean
   kind: SelectionKind
@@ -40,7 +38,6 @@ export interface TableBubbleMenuUiState {
 const isElement = (target: EventTarget | null): target is Element =>
   target instanceof Element
 
-// Header toggles rewrite cell types in place; anchor/head positions stay put.
 const getSelectionRangeKey = (selection: Editor["state"]["selection"]) =>
   selection instanceof CellSelection
     ? `${selection.$anchorCell.pos}:${selection.$headCell.pos}`
@@ -51,16 +48,12 @@ export const useTableBubbleMenu = (editor: Editor): TableBubbleMenuUiState => {
   const [menuEl, setMenuEl] = useState<HTMLDivElement | null>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
 
-  // Callback ref: Portal mounts asynchronously, so menuEl state retriggers
-  // positioning once the container is in the DOM.
   const menuRef = useCallback((node: HTMLDivElement | null) => {
     menuElRef.current = node
     setMenuEl(node)
   }, [])
 
   const [isActivated, setIsActivated] = useState(false)
-  // Keeps the menu visible while focus is on the trigger or action list, even
-  // when the editor itself has blurred (e.g. Tab from cell to trigger).
   const [menuHasFocus, setMenuHasFocus] = useState(false)
 
   const { kind, selection, isDragging, isFocused } = useEditorState({
@@ -69,7 +62,6 @@ export const useTableBubbleMenu = (editor: Editor): TableBubbleMenuUiState => {
       kind: detectTableSelectionKind(currentEditor),
       selection: currentEditor.state.selection,
       isFocused: currentEditor.isFocused,
-      // prosemirror-tables sets this meta while a cell drag-select is in progress.
       isDragging: tableEditingKey.getState(currentEditor.state) != null,
     }),
     equalityFn: (previous, next) =>
@@ -105,7 +97,6 @@ export const useTableBubbleMenu = (editor: Editor): TableBubbleMenuUiState => {
     selection,
   })
 
-  // Register trigger ref for IsomerTable's focusTableBubbleMenuTrigger command.
   useEffect(() => {
     registerTableBubbleMenuFocusTrigger(editor, () => {
       const trigger = triggerRef.current
@@ -118,8 +109,6 @@ export const useTableBubbleMenu = (editor: Editor): TableBubbleMenuUiState => {
     }
   }, [editor])
 
-  // Editor blur fires before menu focusin; relatedTarget tells us whether
-  // focus moved into the menu or left the editor entirely.
   useEffect(() => {
     const isMenuElement = (target: EventTarget | null) =>
       isElement(target) && (menuElRef.current?.contains(target) ?? false)

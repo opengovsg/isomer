@@ -22,8 +22,6 @@ const getEditorScrollParent = (view: EditorView): HTMLElement | Window => {
   return window
 }
 
-// Document position of the bottom-right perimeter cell in a CellSelection
-// (anchors the table action trigger).
 const getBottomRightCellDocumentPos = (state: EditorState): number | null => {
   const { selection } = state
   if (!(selection instanceof CellSelection)) return null
@@ -54,9 +52,7 @@ const getBottomRightCellRect = (
   return dom.getBoundingClientRect()
 }
 
-// Positions the menu container so the pencil trigger's center sits on the
-// bottom-right corner of the selected cell block.
-const computeTableBubbleMenuContainerPosition = (
+const computeMenuPosition = (
   cellRect: DOMRect,
   menuEl: HTMLElement,
 ): TableBubbleMenuPosition | null => {
@@ -71,8 +67,7 @@ const computeTableBubbleMenuContainerPosition = (
   }
 }
 
-// Point anchor for Floating UI autoUpdate scroll/resize detection.
-const createTableBubbleMenuVirtualReference = (
+const createVirtualReference = (
   getView: () => EditorView,
   getState: () => EditorState,
 ) => {
@@ -88,8 +83,7 @@ const createTableBubbleMenuVirtualReference = (
   return virtualReference
 }
 
-// Updates the menu position when the selected cell block changes.
-const createTableBubbleMenuPositionUpdater = (
+const createPositionUpdater = (
   getView: () => EditorView,
   getState: () => EditorState,
   menuEl: HTMLElement,
@@ -99,18 +93,15 @@ const createTableBubbleMenuPositionUpdater = (
     const cellRect = getBottomRightCellRect(getView(), getState())
     if (!cellRect) return
 
-    const nextPosition = computeTableBubbleMenuContainerPosition(
-      cellRect,
-      menuEl,
-    )
+    const nextPosition = computeMenuPosition(cellRect, menuEl)
     if (nextPosition) {
       onPosition(nextPosition)
     }
   }
 }
 
-// autoUpdate does not always track nested editor scroll containers.
-const attachTableBubbleMenuScrollListeners = (
+// autoUpdate does not track nested editor scroll containers.
+const attachScrollListeners = (
   view: EditorView,
   onUpdate: () => void,
 ): (() => void) => {
@@ -136,8 +127,6 @@ interface UseTableBubbleMenuPositionOptions {
   selection: Selection
 }
 
-// Anchors the menu to the bottom-right of the selected cell block and keeps
-// position in sync on scroll, resize, and selection changes.
 export const useTableBubbleMenuPosition = ({
   editor,
   menuEl,
@@ -156,17 +145,13 @@ export const useTableBubbleMenuPosition = ({
     }
 
     if (!menuEl) {
-      // Portal may not have mounted yet; menuEl state update will retry.
       return
     }
 
     const getView = () => editorRef.current.view
     const getState = () => editorRef.current.state
-    const virtualReference = createTableBubbleMenuVirtualReference(
-      getView,
-      getState,
-    )
-    const updatePosition = createTableBubbleMenuPositionUpdater(
+    const virtualReference = createVirtualReference(getView, getState)
+    const updatePosition = createPositionUpdater(
       getView,
       getState,
       menuEl,
@@ -176,7 +161,7 @@ export const useTableBubbleMenuPosition = ({
     updatePosition()
 
     const stopAutoUpdate = autoUpdate(virtualReference, menuEl, updatePosition)
-    const detachScrollListeners = attachTableBubbleMenuScrollListeners(
+    const detachScrollListeners = attachScrollListeners(
       getView(),
       updatePosition,
     )
