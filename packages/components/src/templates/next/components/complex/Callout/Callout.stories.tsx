@@ -41,6 +41,17 @@ export const Default: Story = {
   },
 }
 
+// Legacy variant value, kept for backward compatibility with content saved
+// before "info" was renamed to "information".
+export const Info: Story = {
+  args: {
+    site: generateSiteConfig(),
+    headingLevel: 2,
+    content,
+    variant: "info",
+  },
+}
+
 export const GoodToKnow: Story = {
   args: {
     site: generateSiteConfig(),
