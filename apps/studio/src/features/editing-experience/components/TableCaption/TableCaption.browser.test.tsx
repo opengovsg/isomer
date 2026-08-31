@@ -46,8 +46,6 @@ const Harness = ({
 
   if (editor) onEditorReady?.(editor)
 
-  // Captions are rendered by the `table` node view, so mounting the editor
-  // content is all that is needed here.
   return <EditorContent editor={editor} />
 }
 
@@ -85,17 +83,14 @@ const getCaptionButton = async (name?: string | RegExp) =>
 
 describe("TableCaption", () => {
   it("renders an Add caption button when the table has no caption", async () => {
-    // Arrange
     renderHarness({ type: "prose", content: [tableContent("")] })
 
-    // Assert
     expect(await getCaptionButton("Add table caption")).toHaveTextContent(
       "Add caption",
     )
   })
 
   it("renders Add caption for legacy and current default placeholder captions", async () => {
-    // Arrange
     renderHarness({
       type: "prose",
       content: [
@@ -108,7 +103,6 @@ describe("TableCaption", () => {
       ],
     })
 
-    // Assert
     expect(
       await screen.findByText(LEGACY_DEFAULT_TABLE_CAPTION),
     ).toBeInTheDocument()
@@ -124,13 +118,11 @@ describe("TableCaption", () => {
   })
 
   it("renders the caption text inline with an Edit button when a real caption exists", async () => {
-    // Arrange
     renderHarness({
       type: "prose",
       content: [tableContent("Existing caption")],
     })
 
-    // Assert
     const captionText = await screen.findByText("Existing caption")
     expect(captionText).toBeInTheDocument()
     expect(await getCaptionButton("Edit table caption")).toHaveTextContent(
@@ -139,7 +131,6 @@ describe("TableCaption", () => {
   })
 
   it("wraps long caption text across multiple lines", async () => {
-    // Arrange
     const longCaption =
       "This is a very long table caption that should wrap onto multiple lines when rendered above the table in the editor"
 
@@ -148,28 +139,24 @@ describe("TableCaption", () => {
       content: [tableContent(longCaption)],
     })
 
-    // Assert
     const captionText = await screen.findByText(longCaption)
     expect(captionText).toHaveStyle({ whiteSpace: "normal" })
     expect(captionText).toHaveStyle({ wordBreak: "break-word" })
   })
 
   it("shows the default placeholder caption for newly inserted tables", async () => {
-    // Arrange
     const { getEditor } = renderHarness({ type: "prose", content: [] })
 
     await waitFor(() => {
       expect(getEditor()).toBeDefined()
     })
 
-    // Act
     getEditor()!
       .chain()
       .focus()
       .insertTable({ rows: 2, cols: 2, withHeaderRow: true })
       .run()
 
-    // Assert
     await waitFor(() => {
       expect(screen.getByText(DEFAULT_TABLE_CAPTION)).toBeInTheDocument()
     })
@@ -179,13 +166,11 @@ describe("TableCaption", () => {
   })
 
   it("opens the table settings modal and saves a new caption", async () => {
-    // Arrange
     const { getEditor } = renderHarness({
       type: "prose",
       content: [tableContent("")],
     })
 
-    // Act
     await userEvent.click(await getCaptionButton())
 
     const textarea = await screen.findByPlaceholderText(
@@ -194,7 +179,6 @@ describe("TableCaption", () => {
     await userEvent.type(textarea, "A new caption")
     await userEvent.click(screen.getByRole("button", { name: "Save changes" }))
 
-    // Assert
     await waitFor(() => {
       expect(screen.queryByText("Table settings")).not.toBeInTheDocument()
     })
@@ -203,45 +187,37 @@ describe("TableCaption", () => {
   })
 
   it("opens the modal pre-filled with the placeholder caption text", async () => {
-    // Arrange
     renderHarness({
       type: "prose",
       content: [tableContent(DEFAULT_TABLE_CAPTION)],
     })
 
-    // Act
     await userEvent.click(await getCaptionButton())
 
-    // Assert
     expect(
       await screen.findByPlaceholderText("This is the caption for your table"),
     ).toHaveValue(DEFAULT_TABLE_CAPTION)
   })
 
   it("opens the modal pre-filled when editing an existing caption", async () => {
-    // Arrange
     renderHarness({
       type: "prose",
       content: [tableContent("Existing caption")],
     })
 
-    // Act
     await userEvent.click(await getCaptionButton("Edit table caption"))
 
-    // Assert
     expect(
       await screen.findByPlaceholderText("This is the caption for your table"),
     ).toHaveValue("Existing caption")
   })
 
   it("updates the caption when saving changes in the modal", async () => {
-    // Arrange
     const { getEditor } = renderHarness({
       type: "prose",
       content: [tableContent("Old caption")],
     })
 
-    // Act
     await userEvent.click(await getCaptionButton("Edit table caption"))
 
     const textarea = await screen.findByPlaceholderText(
@@ -251,7 +227,6 @@ describe("TableCaption", () => {
     await userEvent.type(textarea, "Updated caption")
     await userEvent.click(screen.getByRole("button", { name: "Save changes" }))
 
-    // Assert
     await waitFor(() => {
       expect(getTableCaptions(getEditor()!)).toEqual(["Updated caption"])
     })
@@ -259,13 +234,11 @@ describe("TableCaption", () => {
   })
 
   it("does not save when closing the modal without saving", async () => {
-    // Arrange
     const { getEditor } = renderHarness({
       type: "prose",
       content: [tableContent("Kept caption")],
     })
 
-    // Act
     await userEvent.click(await getCaptionButton("Edit table caption"))
 
     const textarea = await screen.findByPlaceholderText(
@@ -277,7 +250,6 @@ describe("TableCaption", () => {
       screen.getByRole("button", { name: "Go back to editing" }),
     )
 
-    // Assert
     await waitFor(() => {
       expect(screen.queryByText("Table settings")).not.toBeInTheDocument()
     })
@@ -286,7 +258,6 @@ describe("TableCaption", () => {
   })
 
   it("renders one caption control per table and scopes edits to the correct table instance", async () => {
-    // Arrange
     const { getEditor } = renderHarness({
       type: "prose",
       content: [
@@ -304,7 +275,6 @@ describe("TableCaption", () => {
       name: "Add table caption",
     })
 
-    // Act
     await userEvent.click(addSecond)
 
     const textarea = await screen.findByPlaceholderText(
@@ -313,7 +283,6 @@ describe("TableCaption", () => {
     await userEvent.type(textarea, "Second table caption")
     await userEvent.click(screen.getByRole("button", { name: "Save changes" }))
 
-    // Assert
     await waitFor(() => {
       expect(getTableCaptions(getEditor()!)).toEqual([
         "First table caption",
@@ -321,7 +290,6 @@ describe("TableCaption", () => {
       ])
     })
     expect(screen.getByText("Second table caption")).toBeInTheDocument()
-    // Both tables now carry a real caption, so both controls read "Edit".
     const editButtons = await screen.findAllByRole("button", {
       name: "Edit table caption",
     })
