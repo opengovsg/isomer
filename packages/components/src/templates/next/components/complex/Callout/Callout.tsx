@@ -10,6 +10,7 @@ const CALLOUT_CONFIG: Record<
   CalloutVariant,
   { label: string; icon?: IconType }
 > = {
+  info: { label: "Information" },
   information: { label: "Information" },
   goodToKnow: { label: "Positive update", icon: BiCheckCircle },
   warning: { label: "Warning", icon: BiErrorCircle },
@@ -27,6 +28,10 @@ const calloutStyles = tv({
   },
   variants: {
     variant: {
+      info: {
+        container:
+          "border-utility-feedback-info bg-utility-feedback-info-subtle",
+      },
       information: {
         container:
           "border-utility-feedback-info bg-utility-feedback-info-subtle",
