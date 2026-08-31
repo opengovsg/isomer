@@ -250,7 +250,9 @@ export const detectTableSelectionKind = (editor: Editor): SelectionKind => {
 
   let allHeader = true
   selection.forEachCell((node) => {
-    if (node.type.name !== "tableHeader") allHeader = false
+    if (node.type.name !== "tableHeader") {
+      allHeader = false
+    }
   })
 
   const selectsSingleCellNode = isSingleCellSelection(selection)
