@@ -11,10 +11,6 @@ export const inferAsProse = (component?: IsomerComponent): ProseProps => {
     )
   }
 
-  // NOTE: `ProseProps` also carries `site` (a render-time prop from
-  // `@opengovsg/isomer-components`), which `IsomerComponent` never has.
-  // TipTapProseComponent only reads the content schema fields off this
-  // value, so the cast is safe in practice despite being structurally
-  // unsound.
+  // ProseProps includes render-time `site`; TipTap only reads content fields.
   return component as ProseProps
 }
