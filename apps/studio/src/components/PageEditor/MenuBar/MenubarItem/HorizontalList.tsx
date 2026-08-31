@@ -31,7 +31,7 @@ export const MenubarHorizontalList = ({
     return null
   }
   return (
-    // closeOnBlur=false pairs with mousedown preventDefault below — otherwise
+    // closeOnBlur=false pairs with mousedown preventDefault below. Otherwise
     // focus stays in the editor and Chakra dismisses the popover immediately.
     <Popover placement="bottom" closeOnBlur={false} isLazy>
       {({ isOpen, onClose }) => (
