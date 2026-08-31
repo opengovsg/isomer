@@ -1,9 +1,20 @@
 import type { AudioProps } from "~/interfaces"
 import { isApplePodcastUrl, isValidAudioEmbedUrl } from "~/utils/validation"
 
+import {
+  contentBlockIndexAttr,
+  type ContentBlockIndexProps,
+} from "../../../render/contentBlockIndex"
 import { ComponentContent } from "../../internal/customCssClass"
 
-export const Audio = ({ title, url, shouldLazyLoad = true }: AudioProps) => {
+type AudioRenderProps = AudioProps & ContentBlockIndexProps
+
+export const Audio = ({
+  title,
+  url,
+  shouldLazyLoad = true,
+  contentBlockIndex,
+}: AudioRenderProps) => {
   if (!isValidAudioEmbedUrl(url)) {
     return <></>
   }
@@ -12,7 +23,10 @@ export const Audio = ({ title, url, shouldLazyLoad = true }: AudioProps) => {
     const isEpisode = new URL(url).searchParams.has("i")
     const heightPx = isEpisode ? 175 : 450
     return (
-      <section className={`${ComponentContent} mt-7 first:mt-0`}>
+      <section
+        className={`${ComponentContent} mt-7 first:mt-0`}
+        {...contentBlockIndexAttr(contentBlockIndex)}
+      >
         {/* Apple Podcast: show 450px, episode 175px; 10px radius; 100% width */}
         <div
           className="w-full overflow-hidden rounded-[10px]"
@@ -35,7 +49,10 @@ export const Audio = ({ title, url, shouldLazyLoad = true }: AudioProps) => {
   }
 
   return (
-    <section className={`${ComponentContent} mt-7 first:mt-0`}>
+    <section
+      className={`${ComponentContent} mt-7 first:mt-0`}
+      {...contentBlockIndexAttr(contentBlockIndex)}
+    >
       {/* Spotify: 152px default embed height */}
       <div className="h-[152px] w-full overflow-hidden rounded-[12px]">
         <iframe

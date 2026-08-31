@@ -3,6 +3,10 @@ import { BiSolidQuoteAltLeft } from "react-icons/bi"
 import { tv } from "~/lib/tv"
 import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
 
+import {
+  contentBlockIndexAttr,
+  type ContentBlockIndexProps,
+} from "../../../render/contentBlockIndex"
 import { ComponentContent } from "../../internal/customCssClass"
 import { ImageClient } from "../../internal/ImageClient"
 
@@ -47,6 +51,8 @@ const createBlockquoteStyles = tv({
   },
 })
 
+type BlockquoteRenderProps = BlockquoteProps & ContentBlockIndexProps
+
 export const Blockquote = ({
   quote,
   source,
@@ -55,7 +61,8 @@ export const Blockquote = ({
   layout,
   shouldLazyLoad,
   site,
-}: BlockquoteProps) => {
+  contentBlockIndex,
+}: BlockquoteRenderProps) => {
   const simplifiedLayout = getTailwindVariantLayout(layout)
   const variants = {
     layout: simplifiedLayout,
@@ -63,7 +70,10 @@ export const Blockquote = ({
   const compoundStyles = createBlockquoteStyles(variants)
 
   return (
-    <section className={compoundStyles.outerContainer()}>
+    <section
+      className={compoundStyles.outerContainer()}
+      {...contentBlockIndexAttr(contentBlockIndex)}
+    >
       <div className={compoundStyles.innerContainer()}>
         <div className={compoundStyles.quoteContainer()}>
           <div className={compoundStyles.openApostrophe()} aria-hidden>

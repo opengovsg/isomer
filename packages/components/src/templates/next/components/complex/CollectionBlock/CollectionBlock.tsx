@@ -10,6 +10,10 @@ import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { getResourceIdFromReferenceLink } from "~/utils/getResourceIdFromReferenceLink"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 
+import {
+  contentBlockIndexAttr,
+  type ContentBlockIndexProps,
+} from "../../../render/contentBlockIndex"
 import { ComponentContent } from "../../internal/customCssClass"
 import { ImageClient } from "../../internal/ImageClient"
 import { Link } from "../../internal/Link"
@@ -151,15 +155,20 @@ interface CollectionBlockSkeletonProps {
   title: string
   description: string
   headingLevel: number
+  contentBlockIndex?: number
 }
 const CollectionBlockSkeleton = ({
   title,
   description,
   headingLevel,
+  contentBlockIndex,
 }: CollectionBlockSkeletonProps) => {
   const TitleTag = getHeadingTag(headingLevel)
   return (
-    <section className={compoundStyles.container()}>
+    <section
+      className={compoundStyles.container()}
+      {...contentBlockIndexAttr(contentBlockIndex)}
+    >
       <div className={compoundStyles.headingContainer()}>
         <TitleTag className={compoundStyles.headingTitle()}>{title}</TitleTag>
         <p>{description}</p>
@@ -167,6 +176,8 @@ const CollectionBlockSkeleton = ({
     </section>
   )
 }
+
+type CollectionBlockRenderProps = CollectionBlockProps & ContentBlockIndexProps
 
 export const CollectionBlock = ({
   site,
@@ -178,7 +189,8 @@ export const CollectionBlock = ({
   buttonLabel,
   shouldLazyLoad,
   headingLevel,
-}: CollectionBlockProps): JSX.Element => {
+  contentBlockIndex,
+}: CollectionBlockRenderProps): JSX.Element => {
   const collectionId = getResourceIdFromReferenceLink(collectionReferenceLink)
 
   // This happens when no collection is selected yet on Studio when the user just added the block
@@ -188,6 +200,7 @@ export const CollectionBlock = ({
         title="No collection selected"
         description="Choose a collection to display its content."
         headingLevel={headingLevel}
+        contentBlockIndex={contentBlockIndex}
       />
     )
   }
@@ -212,7 +225,10 @@ export const CollectionBlock = ({
   const TitleTag = getHeadingTag(headingLevel)
 
   return (
-    <section className={compoundStyles.container()}>
+    <section
+      className={compoundStyles.container()}
+      {...contentBlockIndexAttr(contentBlockIndex)}
+    >
       <div className={compoundStyles.headingContainer()}>
         <TitleTag className={compoundStyles.headingTitle()}>
           {customTitle ?? collectionParent.title}
