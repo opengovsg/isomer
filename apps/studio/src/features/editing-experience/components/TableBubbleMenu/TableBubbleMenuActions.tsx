@@ -163,11 +163,13 @@ const RowSelectionActions = ({
           onToggle={() => editor.chain().focus().toggleHeaderRow().run()}
         />
       )}
-      <ActionButton
-        label="Add row above"
-        icon={<IconAddRowAbove boxSize="1rem" />}
-        onClick={() => editor.chain().focus().addRowBefore().run()}
-      />
+      {!includesHeader && (
+        <ActionButton
+          label="Add row above"
+          icon={<IconAddRowAbove boxSize="1rem" />}
+          onClick={() => editor.chain().focus().addRowBefore().run()}
+        />
+      )}
       <ActionButton
         label="Add row below"
         icon={<IconAddRowBelow boxSize="1rem" />}
@@ -227,11 +229,13 @@ const ColumnSelectionActions = ({
           onToggle={() => editor.chain().focus().toggleHeaderColumn().run()}
         />
       )}
-      <ActionButton
-        label="Add column left"
-        icon={<IconAddColLeft boxSize="1rem" />}
-        onClick={() => editor.chain().focus().addColumnBefore().run()}
-      />
+      {!includesHeader && (
+        <ActionButton
+          label="Add column left"
+          icon={<IconAddColLeft boxSize="1rem" />}
+          onClick={() => editor.chain().focus().addColumnBefore().run()}
+        />
+      )}
       <ActionButton
         label="Add column right"
         icon={<IconAddColRight boxSize="1rem" />}
