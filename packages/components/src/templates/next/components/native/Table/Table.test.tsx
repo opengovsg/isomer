@@ -344,4 +344,89 @@ describe("Table backgroundColor by cell kind", () => {
     expect(tdBrand).not.toContain("background-color:")
     expect(tdBlue).toContain("background-color:#EBECF7")
   })
+
+  it("renders th and td per cell in a header-column row", () => {
+    const html = renderToStaticMarkup(
+      <Table
+        type="table"
+        site={generateSiteConfig()}
+        attrs={{ caption: "Header column" }}
+        content={[
+          {
+            type: "tableRow",
+            content: [
+              {
+                type: "tableHeader",
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "Header" }],
+                  },
+                ],
+              },
+              {
+                type: "tableCell",
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "Body" }],
+                  },
+                ],
+              },
+            ],
+          },
+        ]}
+      />,
+    )
+
+    const cellTags = [...html.matchAll(/<(th|td)\b/g)].map((match) => match[1])
+
+    expect(cellTags).toEqual(["th", "td"])
+    expect(html).toMatch(/<th\b[^>]*>[\s\S]*?Header[\s\S]*?<\/th>/)
+    expect(html).toMatch(/<td\b[^>]*>[\s\S]*?Body[\s\S]*?<\/td>/)
+  })
+
+  it("uses inverse link colours on brand-inverse header cells", () => {
+    const html = renderToStaticMarkup(
+      <Table
+        type="table"
+        site={generateSiteConfig()}
+        attrs={{ caption: "Brand header link" }}
+        content={[
+          {
+            type: "tableRow",
+            content: [
+              {
+                type: "tableHeader",
+                attrs: { backgroundColor: "brand.canvas.inverse" },
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [
+                      {
+                        type: "text",
+                        marks: [
+                          {
+                            type: "link",
+                            attrs: {
+                              href: "/contact",
+                              target: "_blank",
+                            },
+                          },
+                        ],
+                        text: "Contact us",
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ]}
+      />,
+    )
+
+    expect(html).toContain("[&amp;_p_a]:text-base-content-inverse")
+    expect(html).toContain('href="/contact"')
+  })
 })
