@@ -4,6 +4,10 @@ import { ALLOWED_TAG_LIST, Interweave } from "interweave"
 import { twMerge } from "~/lib/twMerge"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 
+import {
+  CONTENT_BLOCK_INDEX_ATTR,
+  type ContentBlockIndexProps,
+} from "../../../render/contentBlockIndex"
 import { Link } from "../Link"
 
 // This will be tree-shaken out of client bundles
@@ -26,7 +30,8 @@ export const BaseParagraph = ({
   allowedTags,
   className,
   attrs,
-}: BaseParagraphProps) => {
+  contentBlockIndex,
+}: BaseParagraphProps & ContentBlockIndexProps) => {
   const transform = (node: HTMLElement, children: Node[]): React.ReactNode => {
     if (node.tagName.toLocaleLowerCase() === "a") {
       const href = node.getAttribute("href") ?? undefined
@@ -52,6 +57,9 @@ export const BaseParagraph = ({
       allowList={allowedTags ?? ALLOWED_TAG_LIST_WITHOUT_SPAN}
       attributes={{
         ...(attrs?.dir && { dir: attrs.dir }),
+        ...(contentBlockIndex !== undefined && {
+          [CONTENT_BLOCK_INDEX_ATTR]: contentBlockIndex,
+        }),
       }}
       className={twMerge(
         `[&:not(:first-child)]:mt-6 [&:not(:last-child)]:mb-6 [&_a]:text-link [&_a]:underline [&_a]:outline-none visited:[&_a]:text-link-visited hover:[&_a]:text-link-hover focus-visible:[&_a]:bg-utility-highlight focus-visible:[&_a]:text-base-content-strong focus-visible:[&_a]:decoration-transparent focus-visible:[&_a]:shadow-focus-visible focus-visible:[&_a]:transition-none`,

@@ -5,6 +5,7 @@ import type { DynamicComponentListProps } from "~/interfaces"
 import { useMemo } from "react"
 import { useDgsData } from "~/hooks/useDgsData"
 
+import { type ContentBlockIndexProps } from "../../../render/contentBlockIndex"
 import { DgsTransformedContactInformation } from "../ContactInformation"
 
 // We do not know how many records will be returned
@@ -16,7 +17,8 @@ export const DynamicComponentList = ({
   component,
   layout,
   headingLevel,
-}: DynamicComponentListProps) => {
+  contentBlockIndex,
+}: DynamicComponentListProps & ContentBlockIndexProps) => {
   const params = useMemo(
     () => ({
       resourceId,
@@ -52,6 +54,7 @@ export const DynamicComponentList = ({
           layout={layout}
           isLoading={isLoading}
           headingLevel={headingLevel}
+          contentBlockIndex={contentBlockIndex}
         />
       ))
 

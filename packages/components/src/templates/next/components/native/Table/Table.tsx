@@ -3,6 +3,10 @@ import { useId } from "react"
 import { getTableCellBackgroundColorCss } from "~/constants/tableCellBackgroundColor"
 import { tv } from "~/lib/tv"
 
+import {
+  contentBlockIndexAttr,
+  type ContentBlockIndexProps,
+} from "../../../render/contentBlockIndex"
 import { BaseParagraph } from "../../internal/BaseParagraph"
 import { Divider } from "../Divider"
 import { OrderedList } from "../OrderedList"
@@ -34,12 +38,20 @@ const tableCellStyles = tv({
   },
 })
 
-export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
+export const Table = ({
+  attrs: { caption },
+  content,
+  site,
+  contentBlockIndex,
+}: TableProps & ContentBlockIndexProps) => {
   const tableDescriptionId = useId()
   const layout = resolveTableLayout(content)
 
   return (
-    <div className="flex flex-col gap-4 [&:not(:first-child)]:mt-7">
+    <div
+      className="flex flex-col gap-4 [&:not(:first-child)]:mt-7"
+      {...contentBlockIndexAttr(contentBlockIndex)}
+    >
       <BaseParagraph
         id={tableDescriptionId}
         content={caption}
