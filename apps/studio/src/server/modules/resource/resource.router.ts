@@ -31,10 +31,7 @@ import {
   searchWithResourceIdsSchema,
 } from "~/schemas/resource"
 import { protectedProcedure, router } from "~/server/trpc"
-import {
-  AuditLogEvent,
-  ScheduledAction,
-} from "~prisma/generated/generatedEnums"
+import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 
 import type { PermissionsProps } from "../permissions/permissions.type"
 import { logResourceEvent } from "../audit/audit.service"
@@ -54,7 +51,9 @@ import { validateUserPermissionsForSite } from "../site/site.service"
 import {
   applyResourceOrderBy,
   defaultResourceSelect,
+  getAncestorIndexPages,
   getBatchAncestryWithSelfQuery,
+  getLockingAncestorIndexPages,
   getResourceFullPermalink,
   getSearchRecentlyEdited,
   getSearchResults,
@@ -465,25 +464,27 @@ export const resourceRouter = router({
             // that's scheduled to go dark — it would either go live at a URL
             // about to disappear, or (for a container being moved) sit on
             // live content underneath a container that's about to unpublish.
-            // Only the immediate destination is checked here, not its own
-            // ancestors; RootPage has no separate landing IndexPage and can
-            // never itself have a scheduled unpublish, so it's skipped.
+            // Walks the destination's own IndexPage AND every ancestor above
+            // it (getAncestorIndexPages is self-inclusive when `resourceId`
+            // is itself a container), since a lock further up the tree is
+            // just as disqualifying as one on the immediate destination.
+            // RootPage has no separate landing IndexPage and can never
+            // itself have a scheduled unpublish, so it's skipped — its own
+            // ancestors are covered too, since the walk still runs for it
+            // being a possible ancestor of a Folder/Collection destination.
             if (
               parent.type === ResourceType.Folder ||
               parent.type === ResourceType.Collection
             ) {
-              const destinationIndexPage = await tx
-                .selectFrom("Resource")
-                .where("Resource.parentId", "=", parent.id)
-                .where("Resource.siteId", "=", parent.siteId)
-                .where("Resource.type", "=", ResourceType.IndexPage)
-                .select(["Resource.scheduledAt", "Resource.scheduledAction"])
-                .executeTakeFirst()
+              const ancestorIndexPages = await getAncestorIndexPages(tx, {
+                siteId,
+                resourceId: parent.id,
+              })
+              const [lockingAncestor] =
+                getLockingAncestorIndexPages(ancestorIndexPages)
 
               if (
-                destinationIndexPage?.scheduledAt &&
-                destinationIndexPage.scheduledAction ===
-                  ScheduledAction.Unpublish &&
+                lockingAncestor &&
                 (await hasPublishedDescendant(tx, {
                   siteId,
                   resourceId: movedResourceId,
@@ -492,7 +493,7 @@ export const resourceRouter = router({
                 throw new TRPCError({
                   code: "PRECONDITION_FAILED",
                   message:
-                    "Cannot move a published page into a folder or collection that is scheduled to be unpublished.",
+                    "Cannot move a published page into a folder or collection that is scheduled to be unpublished, or into one nested under such a folder or collection.",
                 })
               }
             }
