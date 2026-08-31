@@ -9,3 +9,6 @@ export const COLLECTION_DISPLAY_SAVED_MESSAGE =
 
 export const FILTER_SAVED_MESSAGE =
   "Filter saved. Remember to publish the changes so that other users can use the new filter options."
+
+export const PROSE_CONTENT_LOAD_ERROR_MESSAGE =
+  "Some of this block's content could not be loaded. Fix it before saving."

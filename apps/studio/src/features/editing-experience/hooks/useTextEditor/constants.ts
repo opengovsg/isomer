@@ -162,3 +162,12 @@ export const IsomerHeading = Heading.extend({
 }).configure({
   levels: HEADING_LEVELS,
 })
+
+export const TEXT_EDITOR_EXTRA_EXTENSIONS: Extensions = [
+  ...PROSE_EXTENSIONS,
+  TableRow,
+  IsomerTable,
+  IsomerTableCell,
+  IsomerTableHeader,
+  IsomerHeading,
+]
