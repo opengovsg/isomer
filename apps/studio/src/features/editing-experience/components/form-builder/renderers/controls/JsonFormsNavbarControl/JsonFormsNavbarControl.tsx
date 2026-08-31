@@ -5,7 +5,6 @@ import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/clo
 import { extractInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item"
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine"
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter"
-import { reorder } from "@atlaskit/pragmatic-drag-and-drop/reorder"
 import {
   Accordion,
   Box,
@@ -36,7 +35,11 @@ import type { NavbarItems } from "./types"
 import { getParentPath } from "../utils"
 import { EditNavbarItem } from "./EditNavbarItem"
 import { StackableNavbarItem } from "./StackableNavbarItem"
-import { handleMoveItem, isFirstLevelLinksOverLimit } from "./utils"
+import {
+  getNavbarItemPath,
+  handleMoveItem,
+  isFirstLevelLinksOverLimit,
+} from "./utils"
 
 export const jsonFormsNavbarControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.NavbarControl,
@@ -105,23 +108,8 @@ function JsonFormsNavbarControl({
     [arraySchema.maxItems, ctx, data, path],
   )
 
-  const handleMoveTo = useCallback(
-    (arrPath: string, fromIndex: number, toIndex: number) => {
-      if (fromIndex === toIndex) {
-        return
-      }
-
-      ctx.dispatch?.(
-        Actions.update(arrPath, (prevData) =>
-          reorder({
-            list: prevData as NavbarItems["items"],
-            startIndex: fromIndex,
-            finishIndex: toIndex,
-          }),
-        ),
-      )
-    },
-    [ctx],
+  const isTopLevelFull = !!(
+    arraySchema.maxItems && data >= arraySchema.maxItems
   )
 
   const allTopLevelItems = useMemo(
@@ -330,19 +318,39 @@ function JsonFormsNavbarControl({
                           handleRemove(path, index)
                         }
                       }}
-                      moveItem={(targetIndex, subItemIndex) => {
+                      moveItem={(destinationParentIndex, subItemIndex) => {
                         if (subItemIndex !== undefined) {
-                          handleMoveTo(
-                            [childPath, "items"].join("."),
+                          const originalPath = getNavbarItemPath(
                             subItemIndex,
-                            targetIndex,
+                            index,
                           )
-                        } else {
-                          handleMoveTo(path, index, targetIndex)
+
+                          if (destinationParentIndex === undefined) {
+                            // Move the subitem out to become a top-level item
+                            handleMove(
+                              originalPath,
+                              getNavbarItemPath(Math.max(data - 1, 0)),
+                            )
+                          } else {
+                            handleMove(
+                              originalPath,
+                              getNavbarItemPath(destinationParentIndex),
+                              "combine",
+                            )
+                          }
+                        } else if (destinationParentIndex !== undefined) {
+                          // Move this top-level item to become a subitem of
+                          // another top-level item
+                          handleMove(
+                            getNavbarItemPath(index),
+                            getNavbarItemPath(destinationParentIndex),
+                            "combine",
+                          )
                         }
                       }}
                       subItems={childItem.items}
                       allTopLevelItems={allTopLevelItems}
+                      isTopLevelFull={isTopLevelFull}
                     />
                   )
                 })}

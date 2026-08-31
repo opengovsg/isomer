@@ -25,7 +25,6 @@ import {
 } from "@chakra-ui/react"
 import { useEffect, useMemo, useRef, useState } from "react"
 
-import { MovePositionModal } from "../../../components/MovePositionModal"
 import {
   DEFAULT_NAVBAR_ITEM_DESCRIPTION,
   DEFAULT_NAVBAR_ITEM_TITLE,
@@ -33,6 +32,7 @@ import {
 } from "./constants"
 import { DeleteGroupModal } from "./DeleteGroupModal"
 import { DeleteSubItemModal } from "./DeleteSubItemModal"
+import { MoveNavbarItemModal } from "./MoveNavbarItemModal"
 import { NavbarItemBox } from "./NavbarItemBox"
 import { getInstancePathFromNavbarItemPath, getNavbarItemPath } from "./utils"
 
@@ -52,12 +52,21 @@ interface StackableNavbarItemProps {
   errors: ErrorObject<string, Record<string, any>, unknown>[]
   onEdit: (subItemIndex?: number) => void
   removeItem: (subItemIndex?: number) => void
-  moveItem: (targetIndex: number, subItemIndex?: number) => void
+  /**
+   * Moves an item to become a subitem of the top-level item at
+   * `destinationParentIndex`, or to the top level if undefined.
+   */
+  moveItem: (
+    destinationParentIndex: number | undefined,
+    subItemIndex?: number,
+  ) => void
   name?: string
   description?: string
   subItems?: Pick<StackableNavbarItemProps, "name" | "description">[]
-  /** Every top-level navbar item, in order, used to build the "Move to" list for this item */
+  /** Every top-level navbar item, in order, used to build the "Move to" destination list */
   allTopLevelItems: Pick<StackableNavbarItemProps, "name">[]
+  /** Whether the top-level items array is already at its maxItems limit */
+  isTopLevelFull: boolean
 }
 
 export const StackableNavbarItem = ({
@@ -70,6 +79,7 @@ export const StackableNavbarItem = ({
   description,
   subItems,
   allTopLevelItems,
+  isTopLevelFull,
 }: StackableNavbarItemProps) => {
   const {
     isOpen: isDeleteGroupModalOpen,
@@ -82,17 +92,8 @@ export const StackableNavbarItem = ({
     onClose: onDeleteSubItemModalClose,
   } = useDisclosure()
   const [subItemToDelete, setSubItemToDelete] = useState<number>()
-  const {
-    isOpen: isMoveMainItemModalOpen,
-    onOpen: onMoveMainItemModalOpen,
-    onClose: onMoveMainItemModalClose,
-  } = useDisclosure()
-  const {
-    isOpen: isMoveSubItemModalOpen,
-    onOpen: onMoveSubItemModalOpen,
-    onClose: onMoveSubItemModalClose,
-  } = useDisclosure()
-  const [subItemToMove, setSubItemToMove] = useState<number>()
+  // "main" moves this item itself; a number moves the subitem at that index
+  const [moveTarget, setMoveTarget] = useState<"main" | number>()
   const [isNavbarItemDragging, setIsNavbarItemDragging] = useState(false)
   const [isItemBeingDraggedOver, setIsItemBeingDraggedOver] = useState(false)
   const [navbarItemClosestEdge, setNavbarItemClosestEdge] =
@@ -103,6 +104,37 @@ export const StackableNavbarItem = ({
   const subItemsDroppableZoneRef = useRef<HTMLDivElement | null>(null)
 
   const hasSubItems = !!subItems && subItems.length > 0
+
+  const movingSubItemIndex =
+    typeof moveTarget === "number" ? moveTarget : undefined
+  const moveLabel =
+    moveTarget === "main"
+      ? name || DEFAULT_NAVBAR_ITEM_TITLE
+      : (subItems?.[movingSubItemIndex ?? 0]?.name ?? DEFAULT_NAVBAR_ITEM_TITLE)
+  const moveDestinations = useMemo(() => {
+    if (moveTarget === undefined) {
+      return []
+    }
+
+    // Every other top-level item can become the new parent, whether it
+    // already has subitems or not; the item's own current parent (or
+    // itself, when moving a top-level item) is excluded as a no-op.
+    const otherTopLevelItems = allTopLevelItems
+      .map((item, i) => ({
+        key: `${i}`,
+        label: item.name || DEFAULT_NAVBAR_ITEM_TITLE,
+      }))
+      .filter((_, i) => i !== index)
+
+    if (moveTarget === "main") {
+      return otherTopLevelItems
+    }
+
+    return [
+      { key: "top-level", label: "Top level", isDisabled: isTopLevelFull },
+      ...otherTopLevelItems,
+    ]
+  }, [moveTarget, allTopLevelItems, index, isTopLevelFull])
 
   const numberOfErrors = getNumberOfErrors(errors, getNavbarItemPath(index))
   const itemDescription = useMemo(() => {
@@ -256,44 +288,17 @@ export const StackableNavbarItem = ({
         />
       )}
 
-      <MovePositionModal
-        isOpen={isMoveMainItemModalOpen}
-        label={name || DEFAULT_NAVBAR_ITEM_TITLE}
-        siblings={allTopLevelItems
-          .map((item, i) => ({
-            key: `${i}`,
-            label: item.name || DEFAULT_NAVBAR_ITEM_TITLE,
-            itemIndex: i,
-          }))
-          .filter(({ itemIndex }) => itemIndex !== index)}
-        onClose={onMoveMainItemModalClose}
-        onMove={(targetIndex) => moveItem(targetIndex)}
+      <MoveNavbarItemModal
+        isOpen={moveTarget !== undefined}
+        label={moveLabel}
+        destinations={moveDestinations}
+        onClose={() => setMoveTarget(undefined)}
+        onMove={(destinationKey) => {
+          const destinationParentIndex =
+            destinationKey === "top-level" ? undefined : Number(destinationKey)
+          moveItem(destinationParentIndex, movingSubItemIndex)
+        }}
       />
-
-      {hasSubItems && (
-        <MovePositionModal
-          isOpen={isMoveSubItemModalOpen}
-          label={
-            subItems[subItemToMove ?? 0]?.name ?? DEFAULT_NAVBAR_ITEM_TITLE
-          }
-          siblings={subItems
-            .map((item, i) => ({
-              key: `${i}`,
-              label: item.name || DEFAULT_NAVBAR_ITEM_TITLE,
-              itemIndex: i,
-            }))
-            .filter(({ itemIndex }) => itemIndex !== subItemToMove)}
-          onClose={() => {
-            onMoveSubItemModalClose()
-            setSubItemToMove(undefined)
-          }}
-          onMove={(targetIndex) => {
-            if (subItemToMove !== undefined) {
-              moveItem(targetIndex, subItemToMove)
-            }
-          }}
-        />
-      )}
 
       {navbarItemClosestEdge === "top" && !isItemBeingDraggedOver && (
         <Divider borderColor="base.divider.brand" borderWidth="2px" />
@@ -315,7 +320,7 @@ export const StackableNavbarItem = ({
             isNavbarItemDragging={isNavbarItemDragging}
             onEditItem={onEdit}
             onDeleteItem={onDeleteGroupModalOpen}
-            onMoveItem={onMoveMainItemModalOpen}
+            onMoveItem={() => setMoveTarget("main")}
             isItemBeingDraggedOver={isItemBeingDraggedOver}
             setIsItemBeingDraggedOver={setIsItemBeingDraggedOver}
             isInvalid={numberOfErrors > 0}
@@ -354,10 +359,7 @@ export const StackableNavbarItem = ({
                         setSubItemToDelete(idx)
                         onDeleteSubItemModalOpen()
                       }}
-                      onMoveItem={() => {
-                        setSubItemToMove(idx)
-                        onMoveSubItemModalOpen()
-                      }}
+                      onMoveItem={() => setMoveTarget(idx)}
                       isInvalid={isInvalid}
                     />
                   )

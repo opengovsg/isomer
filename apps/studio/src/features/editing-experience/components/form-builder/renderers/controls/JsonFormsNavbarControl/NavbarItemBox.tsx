@@ -359,16 +359,18 @@ export const NavbarItemBox = ({
                   <Text textStyle="body-2">Edit link</Text>
                 </Flex>
               </MenuItem>
-              <MenuItem onClick={onMoveItem}>
-                <Flex
-                  alignItems="center"
-                  gap="0.5rem"
-                  color="base.content.strong"
-                >
-                  <Icon as={BiMove} />
-                  <Text textStyle="body-2">Move to</Text>
-                </Flex>
-              </MenuItem>
+              {(!subItems || subItems.length === 0) && (
+                <MenuItem onClick={onMoveItem}>
+                  <Flex
+                    alignItems="center"
+                    gap="0.5rem"
+                    color="base.content.strong"
+                  >
+                    <Icon as={BiMove} />
+                    <Text textStyle="body-2">Move to</Text>
+                  </Flex>
+                </MenuItem>
+              )}
               <MenuItem onClick={onDeleteItem}>
                 <Flex
                   alignItems="center"
