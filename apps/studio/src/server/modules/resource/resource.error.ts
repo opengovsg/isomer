@@ -40,29 +40,10 @@ export class ScheduledActionConflictError extends TRPCError {
 
 /**
  * Thrown by `publishPageResource`/`schedulePublish` when a Folder/Collection
- * above the target page isn't live yet — a page can't go live (or be
- * scheduled to) before the container that renders it. Distinct from
- * `AncestorScheduledUnpublishLockError`: this is about a container that was
- * never published (or hasn't caught up yet), not one that's about to go dark.
- */
-export class AncestorIndexPageNotLiveError extends TRPCError {
-  constructor() {
-    super({
-      code: "PRECONDITION_FAILED",
-      message:
-        "This page's containing folder or collection isn't published yet. Publish it (and any of its own parent folders) before publishing this page.",
-    })
-    this.name = "AncestorIndexPageNotLiveError"
-  }
-}
-
-/**
- * Thrown by `publishPageResource`/`schedulePublish`/the page-creation
- * mutations when a Folder/Collection above the target has a pending
- * scheduled unpublish — an unconditional lock (not a time comparison): once
- * a container is scheduled to go dark, nothing underneath it may be
- * published, scheduled to publish, or created until that schedule fires or
- * is cancelled.
+ * above the target has a pending scheduled unpublish — an unconditional
+ * lock (not a time comparison): once a container is scheduled to go dark,
+ * nothing underneath it may be published, whether immediately or via a
+ * future schedule, until that schedule fires or is cancelled.
  */
 export class AncestorScheduledUnpublishLockError extends TRPCError {
   constructor(scheduledAt: Date) {
@@ -71,7 +52,7 @@ export class AncestorScheduledUnpublishLockError extends TRPCError {
       message: `A folder or collection above this page is scheduled to be unpublished at ${format(
         scheduledAt,
         "yyyy-MM-dd HH:mm",
-      )}. Cancel that schedule before publishing, scheduling, or creating pages here.`,
+      )}. Cancel that schedule before publishing or scheduling this page.`,
     })
     this.name = "AncestorScheduledUnpublishLockError"
   }

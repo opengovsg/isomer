@@ -26,13 +26,10 @@ import {
 } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
-import { AncestorScheduledUnpublishLockError } from "../resource/resource.error"
 import {
   applyResourceOrderBy,
   defaultResourceSelect,
-  getAncestorIndexPages,
   getBlobOfResource,
-  getLockingAncestorIndexPages,
   getSiteResourceById,
   publishResource,
   updateBlobById,
@@ -111,21 +108,6 @@ export const collectionRouter = router({
                 message:
                   "Collections can only be created inside other folders or at the root",
               })
-            }
-
-            // Nothing may be created under a container (or one of its own
-            // ancestors) that's scheduled to go dark — see
-            // AncestorScheduledUnpublishLockError.
-            const ancestorIndexPages = await getAncestorIndexPages(tx, {
-              siteId,
-              resourceId: String(parentFolderId),
-            })
-            const [lockingAncestor] =
-              getLockingAncestorIndexPages(ancestorIndexPages)
-            if (lockingAncestor?.scheduledAt) {
-              throw new AncestorScheduledUnpublishLockError(
-                lockingAncestor.scheduledAt,
-              )
             }
           }
 
@@ -243,21 +225,6 @@ export const collectionRouter = router({
             code: "NOT_FOUND",
             message: "Parent collection does not exist",
           })
-        }
-
-        // Nothing may be created under a container (or one of its own
-        // ancestors) that's scheduled to go dark — see
-        // AncestorScheduledUnpublishLockError.
-        const ancestorIndexPages = await getAncestorIndexPages(tx, {
-          siteId,
-          resourceId: String(collectionId),
-        })
-        const [lockingAncestor] =
-          getLockingAncestorIndexPages(ancestorIndexPages)
-        if (lockingAncestor?.scheduledAt) {
-          throw new AncestorScheduledUnpublishLockError(
-            lockingAncestor.scheduledAt,
-          )
         }
 
         const blob = await tx
