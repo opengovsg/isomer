@@ -23,11 +23,7 @@ describe("inferAsProse", () => {
     expect(result).toBe(component)
   })
 
-  it("should return the component even when its text content contains stylized unicode or is otherwise schema-invalid", () => {
-    // Arrange
-    // Content that predates a content policy (or otherwise fails schema
-    // validation) should still be openable for editing, not crash the
-    // drawer. Schema validity is enforced separately at save-time, not here.
+  it("should return schema-invalid prose content without throwing", () => {
     const component: IsomerComponent = {
       type: "prose",
       content: [
