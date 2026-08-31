@@ -1,6 +1,6 @@
 export const CONTENT_BLOCK_INDEX_ATTR = "data-isomer-content-index" as const
 
-export type ContentBlockIndexProps = {
+export interface ContentBlockIndexProps {
   contentBlockIndex?: number
 }
 

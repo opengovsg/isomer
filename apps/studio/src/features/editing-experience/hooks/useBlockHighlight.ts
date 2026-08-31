@@ -14,6 +14,7 @@ interface HighlightRect {
 interface UseBlockHighlightParams {
   iframeDocument: Document | null
   hoveredBlockIndex: number | null
+  hoveredBlockElement?: HTMLElement | null
   content: IsomerSchema["content"]
 }
 
@@ -27,6 +28,7 @@ interface UseBlockHighlightReturn {
 export const useBlockHighlight = ({
   iframeDocument,
   hoveredBlockIndex,
+  hoveredBlockElement,
   content,
 }: UseBlockHighlightParams): UseBlockHighlightReturn => {
   const [rect, setRect] = useState<HighlightRect | null>(null)
@@ -37,7 +39,8 @@ export const useBlockHighlight = ({
       return
     }
 
-    const blockEl = getBlockElement(iframeDocument, hoveredBlockIndex)
+    const blockEl =
+      hoveredBlockElement ?? getBlockElement(iframeDocument, hoveredBlockIndex)
 
     if (!blockEl) {
       setRect(null)
@@ -69,7 +72,7 @@ export const useBlockHighlight = ({
     return () => {
       resizeObserver.disconnect()
     }
-  }, [hoveredBlockIndex, iframeDocument, content])
+  }, [hoveredBlockIndex, hoveredBlockElement, iframeDocument, content])
 
   const block =
     hoveredBlockIndex !== null ? content[hoveredBlockIndex] : undefined
