@@ -1,6 +1,7 @@
 import type { ControlProps } from "@jsonforms/core"
 import type { EditorEvents, Extensions, JSONContent } from "@tiptap/react"
 import CharacterCount from "@tiptap/extension-character-count"
+import { TableRow } from "@tiptap/extension-table-row"
 import { useEditor } from "@tiptap/react"
 import TextDirection from "tiptap-text-direction"
 
@@ -14,7 +15,6 @@ import {
   IsomerTableHeader,
   PARAGRAPH_TYPE,
   PROSE_EXTENSIONS,
-  TableRow,
   TEXT_EDITOR_EXTRA_EXTENSIONS,
 } from "./constants"
 
