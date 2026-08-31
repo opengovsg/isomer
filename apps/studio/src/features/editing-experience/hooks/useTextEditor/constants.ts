@@ -49,8 +49,6 @@ import {
 import { deleteEmptyTextblockBeforeTable } from "./deleteEmptyTextblockBeforeTable"
 import { selectTableCellContent } from "./selectTableCellContent"
 
-export { TableRow }
-
 export const HEADING_TYPE = "heading"
 export const PARAGRAPH_TYPE = "paragraph"
 
