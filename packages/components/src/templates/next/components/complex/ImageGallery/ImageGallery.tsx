@@ -1,10 +1,13 @@
 import type { ImageGalleryProps } from "~/interfaces/complex/ImageGallery"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 
+import { type ContentBlockIndexProps } from "../../../render/contentBlockIndex"
 import { ImageGalleryClient } from "./ImageGalleryClient"
 
-export const ImageGallery = (props: ImageGalleryProps) => {
-  const { site, images, ...rest } = props
+type ImageGalleryRenderProps = ImageGalleryProps & ContentBlockIndexProps
+
+export const ImageGallery = (props: ImageGalleryRenderProps) => {
+  const { site, images, contentBlockIndex, ...rest } = props
 
   const processedImages = images.map((image) => ({
     ...image,
@@ -18,6 +21,7 @@ export const ImageGallery = (props: ImageGalleryProps) => {
     <ImageGalleryClient
       assetsBaseUrl={site.assetsBaseUrl}
       images={processedImages}
+      contentBlockIndex={contentBlockIndex}
       {...rest}
     />
   )

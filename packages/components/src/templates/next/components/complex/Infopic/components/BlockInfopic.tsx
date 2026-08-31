@@ -3,6 +3,10 @@ import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
 import type { InfopicProps } from "../types"
+import {
+  contentBlockIndexAttr,
+  type ContentBlockIndexProps,
+} from "../../../../render/contentBlockIndex"
 import { ImageClient } from "../../../internal/ImageClient"
 import { LinkButton } from "../../../internal/LinkButton"
 import { infopicStyles } from "../common"
@@ -19,7 +23,8 @@ export const BlockInfopic = ({
   shouldLazyLoad,
   site,
   headingLevel,
-}: Omit<InfopicProps, "variant">) => {
+  contentBlockIndex,
+}: Omit<InfopicProps, "variant"> & ContentBlockIndexProps) => {
   const Tag = getHeadingTag(headingLevel)
   const compoundStyles = infopicStyles({
     isTextOnRight,
@@ -29,7 +34,11 @@ export const BlockInfopic = ({
   const hasLinkButton = !!buttonLabel && !!buttonUrl
 
   return (
-    <section id={id} className={compoundStyles.container()}>
+    <section
+      id={id}
+      className={compoundStyles.container()}
+      {...contentBlockIndexAttr(contentBlockIndex)}
+    >
       <div className={compoundStyles.content()}>
         <Tag className={compoundStyles.title()}>{title}</Tag>
         <p className={compoundStyles.description()}>{description}</p>

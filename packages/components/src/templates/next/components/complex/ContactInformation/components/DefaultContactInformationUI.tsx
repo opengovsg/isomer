@@ -2,6 +2,10 @@ import type { ContactInformationUIProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 
+import {
+  contentBlockIndexAttr,
+  type ContentBlockIndexProps,
+} from "../../../../render/contentBlockIndex"
 import { BaseParagraph } from "../../../internal/BaseParagraph"
 import { LinkButton } from "../../../internal/LinkButton"
 import {
@@ -38,7 +42,8 @@ export const DefaultContactInformationUI = ({
   isLoading,
   acceptHtmlTags = false,
   headingLevel,
-}: ContactInformationUIProps) => {
+  contentBlockIndex,
+}: ContactInformationUIProps & ContentBlockIndexProps) => {
   const compoundStyles = createDefaultContactInformationStyles({
     isLoading,
   })
@@ -62,7 +67,10 @@ export const DefaultContactInformationUI = ({
   const descriptionText = isLoading ? "" : (description ?? "")
 
   return (
-    <section className={compoundStyles.screenWideOuterContainer()}>
+    <section
+      className={compoundStyles.screenWideOuterContainer()}
+      {...contentBlockIndexAttr(contentBlockIndex)}
+    >
       <div className={compoundStyles.container()}>
         <div className={compoundStyles.titleAndDescriptionContainer()}>
           {(title || isLoading) && (

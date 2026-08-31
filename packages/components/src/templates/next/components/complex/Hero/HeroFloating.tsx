@@ -2,6 +2,10 @@ import type { HeroFloatingProps } from "~/interfaces/complex/Hero"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
+import {
+  contentBlockIndexAttr,
+  type ContentBlockIndexProps,
+} from "../../../render/contentBlockIndex"
 import { ComponentContent } from "../../internal/customCssClass"
 import { ImageClient } from "../../internal/ImageClient"
 import { LinkButton } from "../../internal/LinkButton/LinkButton"
@@ -25,6 +29,8 @@ const HERO_THEME_MAPPINGS = {
   },
 } as const
 
+type HeroFloatingRenderProps = HeroFloatingProps & ContentBlockIndexProps
+
 export const HeroFloating = ({
   title,
   subtitle,
@@ -36,7 +42,8 @@ export const HeroFloating = ({
   site,
   theme = "default",
   headingLevel,
-}: HeroFloatingProps) => {
+  contentBlockIndex,
+}: HeroFloatingRenderProps) => {
   const heroColour = HERO_THEME_MAPPINGS.hero[theme]
   const heroTitleColour = HERO_THEME_MAPPINGS.title[theme]
   const heroSubtitleColour = HERO_THEME_MAPPINGS.subtitle[theme]
@@ -47,6 +54,7 @@ export const HeroFloating = ({
     <section
       // we have !px-0, sm:!px-0 and md:!px-0 to override the default px from ComponentContent
       className={`${ComponentContent} flex w-full flex-col items-center !px-0 pb-12 pt-6 sm:!px-0 md:!px-0 md:pb-24 md:pt-16 lg:items-start lg:!px-10`}
+      {...contentBlockIndexAttr(contentBlockIndex)}
     >
       {/* Image with aspect ratio and max height */}
       <div className="lg:flex lg:w-full lg:justify-end">
