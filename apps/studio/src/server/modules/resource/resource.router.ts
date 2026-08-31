@@ -30,7 +30,10 @@ import {
 } from "~/schemas/resource"
 import { protectedProcedure, router } from "~/server/trpc"
 import { isResourceMoveValid } from "~/utils/resources"
-import { AuditLogEvent } from "~prisma/generated/generatedEnums"
+import {
+  AuditLogEvent,
+  ScheduledAction,
+} from "~prisma/generated/generatedEnums"
 
 import type { PermissionsProps } from "../permissions/permissions.type"
 import { logResourceEvent } from "../audit/audit.service"
@@ -414,6 +417,42 @@ export const resourceRouter = router({
                 code: "BAD_REQUEST",
                 message: moveValidity.message,
               })
+            }
+
+            // A published/live resource can't be moved into a container
+            // that's scheduled to go dark — it would either go live at a URL
+            // about to disappear, or (for a container being moved) sit on
+            // live content underneath a container that's about to unpublish.
+            // Only the immediate destination is checked here, not its own
+            // ancestors; RootPage has no separate landing IndexPage and can
+            // never itself have a scheduled unpublish, so it's skipped.
+            if (
+              parent.type === ResourceType.Folder ||
+              parent.type === ResourceType.Collection
+            ) {
+              const destinationIndexPage = await tx
+                .selectFrom("Resource")
+                .where("Resource.parentId", "=", parent.id)
+                .where("Resource.siteId", "=", parent.siteId)
+                .where("Resource.type", "=", ResourceType.IndexPage)
+                .select(["Resource.scheduledAt", "Resource.scheduledAction"])
+                .executeTakeFirst()
+
+              if (
+                destinationIndexPage?.scheduledAt &&
+                destinationIndexPage.scheduledAction ===
+                  ScheduledAction.Unpublish &&
+                (await hasPublishedDescendant(tx, {
+                  siteId,
+                  resourceId: movedResourceId,
+                }))
+              ) {
+                throw new TRPCError({
+                  code: "PRECONDITION_FAILED",
+                  message:
+                    "Cannot move a published page into a folder or collection that is scheduled to be unpublished.",
+                })
+              }
             }
 
             if (

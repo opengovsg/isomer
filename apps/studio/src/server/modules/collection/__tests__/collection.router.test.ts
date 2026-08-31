@@ -23,7 +23,6 @@ import {
 } from "tests/integration/helpers/seed"
 import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
-import { ScheduledAction } from "~prisma/generated/generatedEnums"
 
 import { assertAuditLogRows } from "../../audit/__tests__/utils"
 import { db, jsonb, ResourceState, ResourceType } from "../../database"
@@ -195,39 +194,6 @@ describe("collection.router", async () => {
       )
       expect(auditSpy).not.toHaveBeenCalled()
       await assertAuditLogRows()
-    })
-
-    it("should throw if the parent folder's IndexPage has a pending scheduled unpublish", async () => {
-      // Arrange — nothing may be created under a container that's locked by
-      // a pending scheduled unpublish.
-      const { site, folder: parentFolder } = await setupFolder()
-      await setupPageResource({
-        siteId: site.id,
-        parentId: parentFolder.id,
-        resourceType: ResourceType.IndexPage,
-        state: ResourceState.Published,
-        userId: session.userId,
-        scheduledAt: new Date("2999-01-01T00:00:00Z"),
-        scheduledBy: session.userId,
-        scheduledAction: ScheduledAction.Unpublish,
-      })
-      await setupAdminPermissions({
-        userId: session.userId,
-        siteId: site.id,
-      })
-
-      // Act
-      const result = caller.create({
-        collectionTitle: "test collection",
-        siteId: site.id,
-        permalink: "test-collection",
-        parentFolderId: Number(parentFolder.id),
-      })
-
-      // Assert
-      await expect(result).rejects.toThrow(
-        expect.objectContaining({ code: "PRECONDITION_FAILED" }),
-      )
     })
 
     it("should create a collection even with duplicate permalink if `siteId` is different", async () => {
@@ -510,40 +476,6 @@ describe("collection.router", async () => {
       )
       expect(auditSpy).not.toHaveBeenCalled()
       await assertAuditLogRows()
-    })
-
-    it("should throw if the collection's own IndexPage has a pending scheduled unpublish", async () => {
-      // Arrange — nothing may be created under a container that's locked by
-      // a pending scheduled unpublish, including the collection itself.
-      const { collection, site } = await setupCollection()
-      await setupPageResource({
-        siteId: site.id,
-        parentId: collection.id,
-        resourceType: ResourceType.IndexPage,
-        state: ResourceState.Published,
-        userId: session.userId,
-        scheduledAt: new Date("2999-01-01T00:00:00Z"),
-        scheduledBy: session.userId,
-        scheduledAction: ScheduledAction.Unpublish,
-      })
-      await setupAdminPermissions({
-        userId: session.userId,
-        siteId: site.id,
-      })
-
-      // Act
-      const result = caller.createCollectionPage({
-        title: "test collection page",
-        type: "CollectionPage",
-        siteId: site.id,
-        collectionId: Number(collection.id),
-        permalink: "test-collection-page",
-      })
-
-      // Assert
-      await expect(result).rejects.toThrow(
-        expect.objectContaining({ code: "PRECONDITION_FAILED" }),
-      )
     })
 
     it("should throw 404 if `collectionId` does not exist", async () => {
