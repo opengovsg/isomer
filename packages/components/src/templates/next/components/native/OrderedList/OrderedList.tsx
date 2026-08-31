@@ -1,5 +1,9 @@
 import type { OrderedListProps } from "~/interfaces"
 
+import {
+  contentBlockIndexAttr,
+  type ContentBlockIndexProps,
+} from "../../../render/contentBlockIndex"
 import { ListItem } from "../ListItem"
 
 const getOrderedListType = (level?: number) => {
@@ -18,7 +22,8 @@ export const OrderedList = ({
   content,
   level,
   site,
-}: OrderedListProps) => {
+  contentBlockIndex,
+}: OrderedListProps & ContentBlockIndexProps) => {
   return (
     // Nested sublists (level set) use `mt-3` to match the item rhythm (`my-3`
     // on ListItem). Top-level lists keep `mt-6` because preceding blocks like
@@ -26,6 +31,7 @@ export const OrderedList = ({
     <ol
       className={`${level ? "mt-3" : "mt-6"} ps-9 marker:text-base-content ${getOrderedListType(level)}`}
       start={attrs?.start}
+      {...contentBlockIndexAttr(contentBlockIndex)}
     >
       {content.map((item, index) => (
         <ListItem key={index} {...item} level={level} site={site} />
