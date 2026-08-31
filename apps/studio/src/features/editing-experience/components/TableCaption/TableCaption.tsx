@@ -10,15 +10,6 @@ export interface TableCaptionProps {
   onCaptionChange: (caption: string) => void
 }
 
-/**
- * Read-only caption line for a single table with a right-aligned control that
- * opens the table settings modal — "Add caption" for placeholder defaults,
- * "Edit" when a real caption exists.
- *
- * Rendered by `TableNodeView`, so the caption it shows and the caption it
- * writes back always belong to the same `table` node — no document positions
- * to track, even when a document contains several tables.
- */
 export const TableCaption = ({
   caption,
   onCaptionChange,
@@ -65,8 +56,7 @@ export const TableCaption = ({
         </Button>
       </Flex>
 
-      {/* Mounted only while open so the form always initialises from the
-          caption as it stands when the author opens the modal. */}
+      {/* Unmount while closed so defaultValues match the caption at open time. */}
       {isTableSettingsModalOpen && (
         <TableSettingsModal
           caption={caption}
