@@ -198,7 +198,7 @@ export const renderComponent = ({
           key={elementKey}
           {...component}
           {...rest}
-          contentBlockIndex={contentBlockIndex}
+          contentBlockIndex={contentIndex}
         />
       )
     case "map":
