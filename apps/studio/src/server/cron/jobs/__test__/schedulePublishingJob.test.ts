@@ -842,6 +842,189 @@ describe("schedulePublishingJob", async () => {
         expect.arrayContaining([indexPage.id, siblingPage.id]),
       )
     })
+
+    it("unpublishes a child page before its container's IndexPage when both are due at the exact same instant", async () => {
+      // Restriction 4: scheduling an index page and its children to
+      // unpublish together at the same instant must be supported. Without
+      // the cron's depth-aware ordering, the DB could return the IndexPage
+      // before the child, and the IndexPage's container-siblings guard would
+      // spuriously fail against a child that "should" already be down.
+      const { site, folder } = await setupFolder({})
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId,
+        scheduledAt: FIXED_NOW,
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      const { page: childPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.Page,
+        permalink: "child-page",
+        state: ResourceState.Published,
+        userId: session.userId,
+        scheduledAt: FIXED_NOW,
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      const sendFailedUnpublishEmailSpy = vi
+        .spyOn(emailService, "sendFailedUnpublishEmail")
+        .mockResolvedValue()
+
+      // Act
+      const result = await publishScheduledResources(true, FIXED_NOW)
+
+      // Assert — both unpublished, no spurious failure on the IndexPage
+      expect(sendFailedUnpublishEmailSpy).not.toHaveBeenCalled()
+      const updatedIndexPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", indexPage.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      const updatedChildPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", childPage.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updatedIndexPage.publishedVersionId).toBeNull()
+      expect(updatedChildPage.publishedVersionId).toBeNull()
+      expect(result[site.id]?.map((r) => r.id)).toEqual(
+        expect.arrayContaining([indexPage.id, childPage.id]),
+      )
+    })
+
+    it("publishes a container's IndexPage before its child page when both are due at the exact same instant", async () => {
+      // Symmetric case: Publish must run ancestors-before-descendants.
+      // Without the cron's depth-aware ordering, the child could process
+      // first and spuriously fail the ancestor-live check added for
+      // restriction 2/3.
+      const { site, folder } = await setupFolder({})
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        userId: session.userId,
+        scheduledAt: FIXED_NOW,
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Publish,
+      })
+      const { page: childPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.Page,
+        permalink: "child-page",
+        userId: session.userId,
+        scheduledAt: FIXED_NOW,
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Publish,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      const sendFailedPublishEmailSpy = vi
+        .spyOn(emailService, "sendFailedPublishEmail")
+        .mockResolvedValue()
+
+      // Act
+      const result = await publishScheduledResources(true, FIXED_NOW)
+
+      // Assert — both published, no spurious failure on the child
+      expect(sendFailedPublishEmailSpy).not.toHaveBeenCalled()
+      const updatedIndexPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", indexPage.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      const updatedChildPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", childPage.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updatedIndexPage.publishedVersionId).not.toBeNull()
+      expect(updatedChildPage.publishedVersionId).not.toBeNull()
+      expect(result[site.id]?.map((r) => r.id)).toEqual(
+        expect.arrayContaining([indexPage.id, childPage.id]),
+      )
+    })
+
+    it("orders a 3-level nested unpublish (grandparent, parent, child) deepest-first when all are due at the same instant", async () => {
+      const { site, folder: grandparentFolder } = await setupFolder({
+        permalink: "grandparent",
+      })
+      const { page: grandparentIndex } = await setupPageResource({
+        siteId: site.id,
+        parentId: grandparentFolder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId,
+        scheduledAt: FIXED_NOW,
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      const { folder: parentFolder } = await setupFolder({
+        siteId: site.id,
+        permalink: "parent",
+        parentId: grandparentFolder.id,
+      })
+      const { page: parentIndex } = await setupPageResource({
+        siteId: site.id,
+        parentId: parentFolder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId,
+        scheduledAt: FIXED_NOW,
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      const { page: childPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: parentFolder.id,
+        resourceType: ResourceType.Page,
+        permalink: "child-page",
+        state: ResourceState.Published,
+        userId: session.userId,
+        scheduledAt: FIXED_NOW,
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      const sendFailedUnpublishEmailSpy = vi
+        .spyOn(emailService, "sendFailedUnpublishEmail")
+        .mockResolvedValue()
+
+      // Act
+      const result = await publishScheduledResources(true, FIXED_NOW)
+
+      // Assert — all three unpublished, no spurious failures anywhere in the chain
+      expect(sendFailedUnpublishEmailSpy).not.toHaveBeenCalled()
+      for (const id of [grandparentIndex.id, parentIndex.id, childPage.id]) {
+        const updated = await db
+          .selectFrom("Resource")
+          .where("id", "=", id)
+          .selectAll()
+          .executeTakeFirstOrThrow()
+        expect(updated.publishedVersionId).toBeNull()
+      }
+      expect(result[site.id]?.map((r) => r.id)).toEqual(
+        expect.arrayContaining([
+          grandparentIndex.id,
+          parentIndex.id,
+          childPage.id,
+        ]),
+      )
+    })
   })
 
   describe("publishScheduledSites", () => {

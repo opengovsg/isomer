@@ -37,3 +37,23 @@ export class ScheduledActionConflictError extends TRPCError {
     this.name = "ScheduledActionConflictError"
   }
 }
+
+/**
+ * Thrown by `publishPageResource`/`schedulePublish` when a Folder/Collection
+ * above the target has a pending scheduled unpublish — an unconditional
+ * lock (not a time comparison): once a container is scheduled to go dark,
+ * nothing underneath it may be published, whether immediately or via a
+ * future schedule, until that schedule fires or is cancelled.
+ */
+export class AncestorScheduledUnpublishLockError extends TRPCError {
+  constructor(scheduledAt: Date) {
+    super({
+      code: "PRECONDITION_FAILED",
+      message: `A folder or collection above this page is scheduled to be unpublished at ${format(
+        scheduledAt,
+        "yyyy-MM-dd HH:mm",
+      )}. Cancel that schedule before publishing or scheduling this page.`,
+    })
+    this.name = "AncestorScheduledUnpublishLockError"
+  }
+}

@@ -2383,6 +2383,42 @@ describe("page.router", async () => {
       expect(updated.scheduledBy).toBeNull()
       expect(updated.scheduledAction).toBeNull()
     })
+
+    describe("ancestor guard", () => {
+      it("should throw if the containing folder's IndexPage has a pending scheduled unpublish, even though it's currently live", async () => {
+        const { site, folder } = await setupFolder({})
+        const scheduledAt = new Date("2999-01-01T00:00:00Z")
+        await setupPageResource({
+          siteId: site.id,
+          parentId: folder.id,
+          resourceType: ResourceType.IndexPage,
+          state: ResourceState.Published,
+          userId: session.userId ?? undefined,
+          scheduledAt,
+          scheduledBy: session.userId,
+          scheduledAction: ScheduledAction.Unpublish,
+        })
+        const { page } = await setupPageResource({
+          siteId: site.id,
+          parentId: folder.id,
+          resourceType: ResourceType.Page,
+          permalink: "child-page",
+        })
+        await setupPublisherPermissions({
+          userId: session.userId ?? undefined,
+          siteId: site.id,
+        })
+
+        const result = caller.publishPage({
+          siteId: site.id,
+          pageId: Number(page.id),
+        })
+
+        await expect(result).rejects.toThrow(
+          expect.objectContaining({ code: "PRECONDITION_FAILED" }),
+        )
+      })
+    })
   })
 
   describe("unpublishPage", () => {
@@ -4127,6 +4163,42 @@ describe("page.router", async () => {
         .executeTakeFirstOrThrow()
       expect(updatedFolder.scheduledAt).toBeNull()
     })
+
+    describe("ancestor guard", () => {
+      it("should throw if the containing folder's IndexPage has a pending scheduled unpublish", async () => {
+        const { site, folder } = await setupFolder({})
+        await setupPageResource({
+          siteId: site.id,
+          parentId: folder.id,
+          resourceType: ResourceType.IndexPage,
+          state: ResourceState.Published,
+          userId: session.userId ?? undefined,
+          scheduledAt: addDays(FIXED_NOW, 5),
+          scheduledBy: session.userId,
+          scheduledAction: ScheduledAction.Unpublish,
+        })
+        const { page } = await setupPageResource({
+          siteId: site.id,
+          parentId: folder.id,
+          resourceType: ResourceType.Page,
+          permalink: "child-page",
+        })
+        await setupPublisherPermissions({
+          userId: session.userId ?? undefined,
+          siteId: site.id,
+        })
+
+        const result = caller.schedulePage({
+          siteId: site.id,
+          pageId: Number(page.id),
+          scheduledAt: addDays(FIXED_NOW, 1),
+        })
+
+        await expect(result).rejects.toThrow(
+          expect.objectContaining({ code: "PRECONDITION_FAILED" }),
+        )
+      })
+    })
   })
   describe("cancelSchedulePage", () => {
     const FIXED_NOW = new Date("2024-01-01T00:00:00.000Z")
@@ -4312,6 +4384,63 @@ describe("page.router", async () => {
         .executeTakeFirstOrThrow()
       expect(updatedIndexPage.scheduledAt).toBeNull()
       expect(updatedIndexPage.scheduledBy).toBeNull()
+    })
+
+    it("should throw if the index page isn't live and a child page still has a pending scheduled publish", async () => {
+      const { site, folder } = await setupFolder({})
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        scheduledAt: addDays(FIXED_NOW, 1),
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Publish,
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.Page,
+        permalink: "child-page",
+        scheduledAt: addDays(FIXED_NOW, 1),
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Publish,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      const result = caller.cancelSchedulePage({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+      })
+
+      await expect(result).rejects.toThrow(
+        expect.objectContaining({ code: "PRECONDITION_FAILED" }),
+      )
+    })
+
+    it("should allow cancelling once the child page's scheduled publish is cancelled", async () => {
+      const { site, folder } = await setupFolder({})
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        scheduledAt: addDays(FIXED_NOW, 1),
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Publish,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      await expect(
+        caller.cancelSchedulePage({
+          siteId: site.id,
+          pageId: Number(indexPage.id),
+        }),
+      ).resolves.not.toThrow()
     })
   })
 
@@ -4746,6 +4875,49 @@ describe("page.router", async () => {
           .executeTakeFirstOrThrow()
         expect(updated.scheduledAt).toEqual(futureDate)
       })
+
+      it("should allow scheduling when a live sibling is scheduled to unpublish at the exact same time", async () => {
+        // Restriction 4 explicitly allows scheduling an index page's
+        // unpublish alongside its children at the same instant — the cron's
+        // depth-aware ordering (schedulePublishingJob.ts) is what makes this
+        // actually safe to execute.
+        const { site, folder } = await setupFolder({})
+        const { page: indexPage } = await setupPageResource({
+          siteId: site.id,
+          parentId: folder.id,
+          resourceType: ResourceType.IndexPage,
+          state: ResourceState.Published,
+          userId: session.userId ?? undefined,
+        })
+        await setupPageResource({
+          siteId: site.id,
+          parentId: folder.id,
+          resourceType: ResourceType.Page,
+          permalink: "sibling-page",
+          state: ResourceState.Published,
+          userId: session.userId ?? undefined,
+          scheduledAt: futureDate,
+          scheduledBy: session.userId,
+          scheduledAction: ScheduledAction.Unpublish,
+        })
+        await setupPublisherPermissions({
+          userId: session.userId ?? undefined,
+          siteId: site.id,
+        })
+
+        await caller.scheduleUnpublish({
+          siteId: site.id,
+          pageId: Number(indexPage.id),
+          scheduledAt: futureDate,
+        })
+
+        const updated = await db
+          .selectFrom("Resource")
+          .where("id", "=", indexPage.id)
+          .selectAll()
+          .executeTakeFirstOrThrow()
+        expect(updated.scheduledAt).toEqual(futureDate)
+      })
     })
 
     it("should schedule the page for unpublish", async () => {
@@ -5021,6 +5193,69 @@ describe("page.router", async () => {
       expect(updatedIndexPage.scheduledAt).toBeNull()
       expect(updatedIndexPage.scheduledBy).toBeNull()
       expect(updatedIndexPage.scheduledAction).toBeNull()
+    })
+
+    it("should throw if a child page still has a pending scheduled unpublish", async () => {
+      const { site, folder } = await setupFolder({})
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+        scheduledAt: futureDate,
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.Page,
+        permalink: "child-page",
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+        scheduledAt: futureDate,
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      const result = caller.cancelScheduleUnpublish({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+      })
+
+      await expect(result).rejects.toThrow(
+        expect.objectContaining({ code: "PRECONDITION_FAILED" }),
+      )
+    })
+
+    it("should allow cancelling once the child page's scheduled unpublish is cancelled", async () => {
+      const { site, folder } = await setupFolder({})
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+        scheduledAt: futureDate,
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      await expect(
+        caller.cancelScheduleUnpublish({
+          siteId: site.id,
+          pageId: Number(indexPage.id),
+        }),
+      ).resolves.not.toThrow()
     })
   })
 })

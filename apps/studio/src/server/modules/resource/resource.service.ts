@@ -49,6 +49,7 @@ import { PG_ERROR_CODES } from "../database/constants"
 import { getUserById } from "../user/user.service"
 import { incrementVersion } from "../version/version.service"
 import {
+  AncestorScheduledUnpublishLockError,
   PageAlreadyUnpublishedError,
   ScheduledActionConflictError,
 } from "./resource.error"
@@ -889,8 +890,10 @@ export const getPublishedDescendantResourceIds = async (
 // `resourceId` (an IndexPage) fires at `scheduledAt` — i.e. this is the
 // schedule-time analogue of getPublishedDescendantResourceIds's execution-time
 // check. A descendant is "safe" (excluded from the result) only if:
-//   - it's currently live AND has its own scheduled Unpublish strictly before
-//     `scheduledAt` (so it'll be down well before this one fires), or
+//   - it's currently live AND has its own scheduled Unpublish at or before
+//     `scheduledAt` (so it'll be down by the time this one fires — the cron's
+//     depth-aware execution ordering, see schedulePublishingJob.ts, is what
+//     guarantees an exact-same-instant descendant actually lands first), or
 //   - it's currently not live AND has no scheduled Publish before
 //     `scheduledAt` (so it won't come back up before this one fires).
 // The second case matters even though the descendant isn't live right now:
@@ -923,9 +926,11 @@ export const getDescendantResourceIdsUnsafeForScheduledUnpublish = async (
           eb.or([
             // No unpublish scheduled at all.
             eb("Resource.scheduledAt", "is", null),
-            // An unpublish is scheduled, but at/after `scheduledAt` — not
-            // guaranteed to land first.
-            eb("Resource.scheduledAt", ">=", scheduledAt),
+            // An unpublish is scheduled, but strictly after `scheduledAt` —
+            // not guaranteed to land first. Equal is fine: the cron's
+            // depth-aware ordering (schedulePublishingJob.ts) processes a
+            // descendant due at the same instant before its ancestor.
+            eb("Resource.scheduledAt", ">", scheduledAt),
             // A schedule exists with no action recorded — legacy rows
             // (pre-scheduledAction) default to Publish, so this is not an
             // Unpublish.
@@ -955,6 +960,162 @@ export const getDescendantResourceIdsUnsafeForScheduledUnpublish = async (
     .execute()
   return rows.map((row) => String(row.id))
 }
+
+// True when some descendant of `resourceId` (excluding `excludeResourceId`)
+// has a pending schedule of `action` — a plain existence check, unlike the
+// "unsafe for scheduled X" functions above: there's no time cutoff to
+// compare against, just "does anything downstream still depend on this
+// happening". Used to hard-block cancelling an IndexPage's own schedule out
+// from under dependents (see cancelScheduleUnpublish/cancelSchedulePublish
+// in page.service.ts) — the caller must cancel the descendants' schedules
+// first. `excludeResourceId` is the IndexPage whose own schedule is being
+// cancelled: it's still part of `resourceId`'s (its container's) subtree and
+// still has `scheduledAt` set at the point this check runs (the cancel
+// hasn't been applied yet), so it must be excluded or the check would
+// always find "itself" as a blocking dependent. A null scheduledAction is
+// legacy data and defaults to Publish, matching the convention used
+// throughout this module.
+export const hasDescendantWithPendingScheduledAction = async (
+  trx: SafeKysely,
+  {
+    siteId,
+    resourceId,
+    excludeResourceId,
+    action,
+  }: {
+    siteId: number
+    resourceId: string
+    excludeResourceId: string
+    action: ScheduledAction
+  },
+): Promise<boolean> => {
+  const row = await withResourceSubtree(trx, { siteId, resourceId })
+    .selectFrom("subtree")
+    .innerJoin("Resource", "Resource.id", "subtree.id")
+    .where("Resource.id", "!=", excludeResourceId)
+    .where("Resource.scheduledAt", "is not", null)
+    .where((eb) =>
+      action === ScheduledAction.Publish
+        ? eb.or([
+            eb("Resource.scheduledAction", "is", null),
+            eb("Resource.scheduledAction", "=", ScheduledAction.Publish),
+          ])
+        : eb("Resource.scheduledAction", "=", action),
+    )
+    .select("Resource.id")
+    .executeTakeFirst()
+  return row !== undefined
+}
+
+// The upward analogue of withResourceSubtree: walks from `resourceId` up
+// through Folder/Collection ancestors, stopping at the first parent that
+// isn't a container (e.g. RootPage) or has none. Base row is `resourceId`
+// itself, so if `resourceId` is itself a Folder/Collection its own id is
+// still eligible to join to its own IndexPage below.
+const withAncestorContainers = (
+  trx: SafeKysely,
+  { siteId, resourceId }: { siteId: number; resourceId: string },
+) =>
+  trx.withRecursive("ancestors", (eb) =>
+    eb
+      .selectFrom("Resource")
+      .where("Resource.siteId", "=", siteId)
+      .where("Resource.id", "=", resourceId)
+      .select(["Resource.id", "Resource.parentId"])
+      // `union` (not `unionAll`) dedupes rows so a malformed parent chain
+      // with a cycle can't drive the recursion forever.
+      .union((fb) =>
+        fb
+          .selectFrom("Resource")
+          .innerJoin("ancestors", "ancestors.parentId", "Resource.id")
+          .where("Resource.siteId", "=", siteId)
+          .where("Resource.type", "in", [
+            ResourceType.Folder,
+            ResourceType.Collection,
+          ])
+          .select(["Resource.id", "Resource.parentId"]),
+      ),
+  )
+
+export interface AncestorIndexPage {
+  id: string
+  containerId: string
+  publishedVersionId: string | null
+  scheduledAt: Date | null
+  scheduledAction: ScheduledAction | null
+}
+
+// The landing IndexPage of `resourceId` and of every Folder/Collection above
+// it, up to the root — the upward counterpart of getPublishedDescendantResourceIds:
+// that asks "is anything below me still live", this asks "is everything
+// above me live (or on track to be)". `indexPage.id != resourceId` excludes
+// self-matches: if `resourceId` is itself an IndexPage, its own container is
+// walked as an ancestor row, and that container's child IndexPage is
+// `resourceId` itself — this filter drops that, while still including the
+// container's own IndexPage when `resourceId` is the *container* (a Folder/
+// Collection id, as passed by the creation-time guards) since the container
+// isn't its own IndexPage.
+export const getAncestorIndexPages = async (
+  trx: SafeKysely,
+  { siteId, resourceId }: { siteId: number; resourceId: string },
+): Promise<AncestorIndexPage[]> => {
+  const rows = await withAncestorContainers(trx, { siteId, resourceId })
+    .selectFrom("ancestors")
+    .innerJoin("Resource as indexPage", (join) =>
+      join
+        .onRef("indexPage.parentId", "=", "ancestors.id")
+        .on("indexPage.type", "=", ResourceType.IndexPage),
+    )
+    .where("indexPage.siteId", "=", siteId)
+    .where("indexPage.id", "!=", resourceId)
+    .select([
+      "indexPage.id as id",
+      "ancestors.id as containerId",
+      "indexPage.publishedVersionId as publishedVersionId",
+      "indexPage.scheduledAt as scheduledAt",
+      "indexPage.scheduledAction as scheduledAction",
+    ])
+    .execute()
+  return rows.map((row) => ({
+    id: String(row.id),
+    containerId: String(row.containerId),
+    publishedVersionId:
+      row.publishedVersionId === null ? null : String(row.publishedVersionId),
+    scheduledAt: row.scheduledAt,
+    scheduledAction: row.scheduledAction,
+  }))
+}
+
+// Number of ancestor Folder/Collection containers strictly above
+// `resourceId` (excluding `resourceId` itself, even when `resourceId` is
+// itself a container). Used by the scheduled-publishing cron
+// (schedulePublishingJob.ts) to order same-tick actions so a container's
+// IndexPage always executes before (Publish) or after (Unpublish) the pages
+// inside it, at any nesting depth — see the depth comment there for how an
+// IndexPage's count is adjusted to match its own container's, not its
+// sibling pages'.
+export const getContainerAncestorCount = async (
+  trx: SafeKysely,
+  { siteId, resourceId }: { siteId: number; resourceId: string },
+): Promise<number> => {
+  const rows = await withAncestorContainers(trx, { siteId, resourceId })
+    .selectFrom("ancestors")
+    .where("ancestors.id", "!=", resourceId)
+    .select("ancestors.id")
+    .execute()
+  return rows.length
+}
+
+// Ancestor IndexPages with a pending scheduled Unpublish, regardless of
+// timing — an unconditional lock, not a time comparison. Once a container is
+// scheduled to go dark, nothing underneath it may be published (immediately
+// or via a future schedule) until that schedule fires or is cancelled.
+export const getLockingAncestorIndexPages = (rows: AncestorIndexPage[]) =>
+  rows.filter(
+    (row) =>
+      row.scheduledAt !== null &&
+      row.scheduledAction === ScheduledAction.Unpublish,
+  )
 
 // Resolves a full permalink path (e.g. "/foo/bar") to the resource that serves
 // it, walking permalink segments from the site's root page. A Folder/Collection
@@ -1365,6 +1526,21 @@ export const publishPageResource = async ({
         "unpublished",
         fullResource.scheduledAt,
       )
+    }
+
+    // A pending scheduled unpublish on an ancestor container's IndexPage
+    // locks out publishing anything underneath it, at any nesting depth,
+    // until that schedule fires or is cancelled (see
+    // getLockingAncestorIndexPages/AncestorScheduledUnpublishLockError).
+    // Walk from fullResource.id, not the raw `resourceId` param: the latter
+    // may be an unresolved Folder/Collection id (see getFullPageById).
+    const ancestorIndexPages = await getAncestorIndexPages(tx, {
+      siteId,
+      resourceId: fullResource.id,
+    })
+    const [lockingAncestor] = getLockingAncestorIndexPages(ancestorIndexPages)
+    if (lockingAncestor?.scheduledAt) {
+      throw new AncestorScheduledUnpublishLockError(lockingAncestor.scheduledAt)
     }
 
     // Only the first publish needs the redirect handling below: the shadow
