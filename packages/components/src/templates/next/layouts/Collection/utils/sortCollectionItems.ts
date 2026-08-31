@@ -1,4 +1,6 @@
 import type { AllCardProps } from "~/interfaces"
+import { parseISO } from "date-fns"
+import { parseCollectionSortOrder } from "~/utils/collectionSortOrder"
 
 import type { GetCollectionItemsProps } from "./getCollectionItems"
 
@@ -9,15 +11,7 @@ interface SortCollectionItemsProps extends Pick<
   items: AllCardProps[]
 }
 
-// Helper types to extract the sortBy and sortDirection from sortOrder
-type FirstPart<T extends string> = T extends `${infer F}-${string}` ? F : never
-type SecondPart<T extends string> = T extends `${string}-${infer S}` ? S : never
-type SortBy =
-  | FirstPart<NonNullable<GetCollectionItemsProps["sortOrder"]>>
-  | GetCollectionItemsProps["sortBy"]
-type SortDirection =
-  | SecondPart<NonNullable<GetCollectionItemsProps["sortOrder"]>>
-  | GetCollectionItemsProps["sortDirection"]
+type SortDirection = NonNullable<SortCollectionItemsProps["sortDirection"]>
 
 const getLastModifiedDate = (item: AllCardProps): Date | undefined => {
   if (!item.lastModified) {
@@ -36,7 +30,7 @@ const getLastModifiedDate = (item: AllCardProps): Date | undefined => {
 const compareDates = (
   a: AllCardProps,
   b: AllCardProps,
-  sortDirection: NonNullable<SortCollectionItemsProps["sortDirection"]>,
+  sortDirection: SortDirection,
 ): number => {
   // Type assertion because TS control-flow narrowing only works when
   // check is done inline and not when we define the variable
@@ -57,7 +51,7 @@ const compareDates = (
 const compareTitles = (
   a: AllCardProps,
   b: AllCardProps,
-  sortDirection: NonNullable<SortCollectionItemsProps["sortDirection"]>,
+  sortDirection: SortDirection,
 ): number => {
   switch (sortDirection) {
     case "asc":
@@ -73,7 +67,7 @@ const compareTitles = (
 const compareLastModified = (
   a: AllCardProps,
   b: AllCardProps,
-  sortDirection: NonNullable<SortCollectionItemsProps["sortDirection"]>,
+  sortDirection: SortDirection,
 ): number => {
   const aLastModified = getLastModifiedDate(a)
   const bLastModified = getLastModifiedDate(b)
@@ -96,13 +90,66 @@ const compareLastModified = (
   return 0
 }
 
+const getDateFilterStartTime = (
+  item: AllCardProps,
+  filterId: string,
+): number | undefined => {
+  const dateValue = item.dateTagged?.find(({ id }) => id === filterId)?.date
+
+  if (!dateValue) {
+    return undefined
+  }
+
+  return parseISO(dateValue).getTime()
+}
+
+const compareDateFilterStartDates = (
+  a: AllCardProps,
+  b: AllCardProps,
+  filterId: string,
+  sortDirection: SortDirection,
+): number => {
+  const aDate = getDateFilterStartTime(a, filterId)
+  const bDate = getDateFilterStartTime(b, filterId)
+  const aNoDate = aDate === undefined
+  const bNoDate = bDate === undefined
+
+  if (aNoDate && bNoDate) {
+    return compareTitles(a, b, "asc")
+  }
+
+  if (aNoDate) {
+    return 1
+  }
+
+  if (bNoDate) {
+    return -1
+  }
+
+  if (aDate !== bDate) {
+    switch (sortDirection) {
+      case "asc":
+        return aDate >= bDate ? 1 : -1
+      case "desc":
+        return aDate <= bDate ? 1 : -1
+      default:
+        const _: never = sortDirection
+        return 1
+    }
+  }
+
+  return compareTitles(a, b, "asc")
+}
+
 // Sort by published date, followed by last modified date, tiebreaker by title
 // If published date is not available, sort by title first, followed by last
 // modified date
 const sortCollectionItemsByDate = ({
   items,
   sortDirection = "desc",
-}: Omit<SortCollectionItemsProps, "sortBy">) => {
+}: Omit<SortCollectionItemsProps, "sortBy" | "sortOrder"> & {
+  sortDirection?: SortDirection
+}) => {
   return items.sort((a, b) => {
     const bothHaveDates = a.date instanceof Date && b.date instanceof Date
     const bothSameDate = a.date?.getTime() === b.date?.getTime()
@@ -156,7 +203,9 @@ const sortCollectionItemsByDate = ({
 const sortCollectionItemsByTitle = ({
   items,
   sortDirection = "asc",
-}: Omit<SortCollectionItemsProps, "sortBy">) => {
+}: Omit<SortCollectionItemsProps, "sortBy" | "sortOrder"> & {
+  sortDirection?: SortDirection
+}) => {
   return items.sort((a, b) => {
     const bothSameTitle = a.title === b.title
     const bothHaveDates = a.date instanceof Date && b.date instanceof Date
@@ -199,31 +248,58 @@ const sortCollectionItemsByTitle = ({
   })
 }
 
+const sortCollectionItemsByDateFilter = ({
+  items,
+  filterId,
+  sortDirection = "desc",
+}: {
+  items: AllCardProps[]
+  filterId: string
+  sortDirection?: SortDirection
+}) => {
+  return items.sort((a, b) =>
+    compareDateFilterStartDates(a, b, filterId, sortDirection),
+  )
+}
+
 export const sortCollectionItems = ({
   items,
   sortOrder,
   sortBy,
   sortDirection,
 }: SortCollectionItemsProps): AllCardProps[] => {
-  const derivedSortBy = sortOrder ? (sortOrder.split("-")[0] as SortBy) : sortBy
-  const derivedSortDirection = sortOrder
-    ? (sortOrder.split("-")[1] as SortDirection)
-    : sortDirection
+  const parsedSortOrder = parseCollectionSortOrder(sortOrder)
 
-  switch (derivedSortBy) {
+  if (!sortOrder) {
+    switch (sortBy) {
+      case "title":
+        return sortCollectionItemsByTitle({ items, sortDirection })
+      case "date":
+      case undefined:
+      default:
+        return sortCollectionItemsByDate({ items, sortDirection })
+    }
+  }
+
+  switch (parsedSortOrder.kind) {
     case "date":
-    case undefined:
       return sortCollectionItemsByDate({
         items,
-        sortDirection: derivedSortDirection,
+        sortDirection: parsedSortOrder.direction,
       })
     case "title":
       return sortCollectionItemsByTitle({
         items,
-        sortDirection: derivedSortDirection,
+        sortDirection: parsedSortOrder.direction,
+      })
+    case "date-filter":
+      return sortCollectionItemsByDateFilter({
+        items,
+        filterId: parsedSortOrder.filterId,
+        sortDirection: parsedSortOrder.direction,
       })
     default:
-      const _: never = derivedSortBy
+      const _: never = parsedSortOrder
       return []
   }
 }
