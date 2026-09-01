@@ -26,11 +26,14 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
     isActivated,
     triggerRef,
     popoverContentRef,
+    onMenuFocus,
+    onMenuBlur,
     toggleMenu,
     deactivateMenu,
     shouldShow,
     getReferencedVirtualElement,
     bubbleMenuOptions,
+    appendTo,
   } = useTableBubbleMenu(editor)
 
   return (
@@ -41,10 +44,13 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
       resizeDelay={0}
       shouldShow={shouldShow}
       getReferencedVirtualElement={getReferencedVirtualElement}
+      appendTo={appendTo}
       options={bubbleMenuOptions}
       data-table-bubble-menu
       data-no-focus-lock
       style={{ zIndex: "var(--chakra-zIndices-dropdown)" }}
+      onFocus={onMenuFocus}
+      onBlur={onMenuBlur}
     >
       <Popover
         isOpen={isActivated}
