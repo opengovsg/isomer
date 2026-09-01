@@ -6,9 +6,10 @@ import { ThemeProvider } from "@opengovsg/design-system-react"
 import { act, cleanup, render, waitFor } from "@testing-library/react"
 import { CellSelection, tableEditingKey } from "@tiptap/pm/tables"
 import { EditorContent } from "@tiptap/react"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { afterEach, describe, expect, it } from "vitest"
 import { userEvent } from "vitest/browser"
+import { TableDragHandles } from "~/features/editing-experience/components/TableDragHandles/TableDragHandles"
 import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor"
 import { theme } from "~/theme"
 
@@ -1019,6 +1020,50 @@ describe("TableBubbleMenu", () => {
     } finally {
       outside.remove()
     }
+  })
+
+  it("pins the pencil to the bottom-right cell of a full row with drag handles mounted", async () => {
+    // Arrange
+    let editor: Editor | undefined
+    const HandlesHarness = () => {
+      const e = useTextEditor({ data: SEED_CONTENT, handleChange: () => null })
+      const containerRef = useRef<HTMLDivElement>(null)
+      useEffect(() => {
+        if (e) editor = e
+      }, [e])
+      return (
+        <div ref={containerRef} style={{ position: "relative" }}>
+          {e && <TableBubbleMenu editor={e} />}
+          {e && <TableDragHandles editor={e} containerRef={containerRef} />}
+          {e && <EditorContent editor={e} />}
+        </div>
+      )
+    }
+    const { findByRole, container } = render(
+      <ThemeProvider theme={theme}>
+        <HandlesHarness />
+      </ThemeProvider>,
+    )
+    await waitFor(() => {
+      if (!editor) throw new Error("editor not ready")
+    })
+
+    // Act
+    selectCells(editor!, 3, 5)
+    const trigger = await findByRole("button", { name: "Table actions" })
+    const cells = container.querySelectorAll("td")
+    const bottomRight = [...cells].find(
+      (cell) => cell.textContent === "Row 1, C",
+    )
+    if (!bottomRight) throw new Error("bottom-right cell not found")
+
+    // Assert
+    const cellRect = bottomRight.getBoundingClientRect()
+    const triggerRect = trigger.getBoundingClientRect()
+    const triggerCentreX = triggerRect.left + triggerRect.width / 2
+    const triggerCentreY = triggerRect.top + triggerRect.height / 2
+    expect(Math.abs(triggerCentreX - cellRect.right)).toBeLessThan(8)
+    expect(Math.abs(triggerCentreY - cellRect.bottom)).toBeLessThan(8)
   })
 
   it("shows the pencil trigger without the action menu until it is activated", async () => {
