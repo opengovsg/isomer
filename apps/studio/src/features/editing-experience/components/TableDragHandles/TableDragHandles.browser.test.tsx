@@ -134,35 +134,75 @@ const hoverUntil = async (
   })
 
 describe("TableDragHandles", () => {
-  it("reveals a passive row handle when hovering a data row", async () => {
+  it("reveals a visible row handle when hovering a data row", async () => {
+    // Arrange
     const { editor, container, queryByLabelText, getByLabelText } =
       await renderHarness()
-
     expect(queryByLabelText("Drag to reorder row")).toBeNull()
-
     const cell = findByCellText(container, "Row 1, A")
     const { x, y } = centreOf(cell)
+
+    // Act
     const handle = await hoverUntil(x, y, () =>
       getByLabelText("Drag to reorder row"),
     )
-    expect(handle.getAttribute("data-state")).toBe("passive")
 
+    // Assert
+    expect(handle.getAttribute("data-state")).toBe("hover")
     expect(getCellText(editor)[3]).toBe("Row 1, A")
   })
 
-  it("promotes a row handle to hover when the pointer enters the handle", async () => {
+  it("reveals both the row and column handles when hovering a cell", async () => {
+    // Arrange
     const { container, getByLabelText } = await renderHarness()
-
-    const cell = findByCellText(container, "Row 1, A")
+    const cell = findByCellText(container, "Row 1, B")
     const { x, y } = centreOf(cell)
+
+    // Act
+    const rowHandle = await hoverUntil(x, y, () =>
+      getByLabelText("Drag to reorder row"),
+    )
+    const colHandle = getByLabelText("Drag to reorder column")
+
+    // Assert
+    expect(rowHandle.getAttribute("data-state")).toBe("hover")
+    expect(colHandle.getAttribute("data-state")).toBe("hover")
+  })
+
+  it("places the row handle outside the row", async () => {
+    // Arrange
+    const { container, getByLabelText } = await renderHarness()
+    const cell = findByCellText(container, "Row 1, A")
+    const row = cell.closest("tr")
+    if (!row) throw new Error("row not found")
+    const { x, y } = centreOf(cell)
+
+    // Act
     const handle = await hoverUntil(x, y, () =>
       getByLabelText("Drag to reorder row"),
     )
 
-    act(() => {
-      fireEvent.mouseEnter(handle)
-    })
-    expect(handle.getAttribute("data-state")).toBe("hover")
+    // Assert
+    expect(handle.getBoundingClientRect().right).toBeLessThanOrEqual(
+      row.getBoundingClientRect().left,
+    )
+  })
+
+  it("places the column handle outside the column", async () => {
+    // Arrange
+    const { container, getByLabelText } = await renderHarness()
+    const headerCell = findByCellText(container, "Column B")
+    const { x, y } = centreOf(headerCell)
+
+    // Act
+    const handle = await hoverUntil(x, y, () =>
+      getByLabelText("Drag to reorder column"),
+    )
+
+    // Assert
+    expect(handle.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+      headerCell.getBoundingClientRect().top,
+    )
   })
 
   it("reveals a row handle when hovering the header row", async () => {
@@ -178,7 +218,7 @@ describe("TableDragHandles", () => {
 
     const headerCell = findByCellText(container, "Column B")
     const { x, y } = centreOf(headerCell)
-    await hoverUntil(x, y - 20, () => getByLabelText("Drag to reorder column"))
+    await hoverUntil(x, y, () => getByLabelText("Drag to reorder column"))
   })
 
   it("reveals a row handle when hovering a data row of a second table", async () => {
@@ -256,9 +296,6 @@ describe("TableDragHandles", () => {
     const handle = await hoverUntil(x, y, () =>
       getByLabelText("Drag to reorder row"),
     )
-    act(() => {
-      fireEvent.mouseEnter(handle)
-    })
     expect(handle.getAttribute("data-state")).toBe("hover")
 
     const handleCentre = centreOf(handle)
@@ -302,12 +339,9 @@ describe("TableDragHandles", () => {
 
     const headerCell = findByCellText(container, "Column B")
     const { x, y } = centreOf(headerCell)
-    const handle = await hoverUntil(x, y - 20, () =>
+    const handle = await hoverUntil(x, y, () =>
       getByLabelText("Drag to reorder column"),
     )
-    act(() => {
-      fireEvent.mouseEnter(handle)
-    })
     expect(handle.getAttribute("data-state")).toBe("hover")
 
     const handleCentre = centreOf(handle)
@@ -439,7 +473,7 @@ describe("TableDragHandles", () => {
 
     const headerCell = findByCellText(container, "Column A")
     const { x, y } = centreOf(headerCell)
-    const handle = await hoverUntil(x, y - 20, () =>
+    const handle = await hoverUntil(x, y, () =>
       getByLabelText("Drag to reorder column"),
     )
     const handleCentre = centreOf(handle)
@@ -583,7 +617,7 @@ describe("TableDragHandles", () => {
     const { x, y } = centreOf(headerCell)
 
     // Act
-    const handle = await hoverUntil(x, y - 20, () =>
+    const handle = await hoverUntil(x, y, () =>
       getByLabelText("Drag to reorder column"),
     )
 
