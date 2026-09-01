@@ -2,6 +2,7 @@
 // EditorView), so this runs under Vitest Browser Mode rather than jsdom — see
 // the `*.browser.test.{ts,tsx}` convention in apps/studio/vitest.config.ts.
 import type { Editor, JSONContent } from "@tiptap/react"
+import { ThemeProvider } from "@opengovsg/design-system-react"
 import { act, fireEvent, render, waitFor } from "@testing-library/react"
 import { CellSelection } from "@tiptap/pm/tables"
 import { EditorContent } from "@tiptap/react"
@@ -9,6 +10,7 @@ import { useRef } from "react"
 import { describe, expect, it } from "vitest"
 import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor"
 import { HANDLE_THICKNESS_PX } from "~/features/editing-experience/utils/tableEditorChrome"
+import { theme } from "~/theme"
 
 import { TableDragHandles } from "./TableDragHandles"
 
@@ -71,7 +73,11 @@ const Harness = ({ onReady }: { onReady: (editor: Editor) => void }) => {
 
 const renderHarness = async () => {
   let editor: Editor | undefined
-  const utils = render(<Harness onReady={(e) => (editor = e)} />)
+  const utils = render(
+    <ThemeProvider theme={theme}>
+      <Harness onReady={(e) => (editor = e)} />
+    </ThemeProvider>,
+  )
   await waitFor(() => {
     if (!editor) throw new Error("editor not ready")
   })
@@ -174,6 +180,35 @@ describe("TableDragHandles", () => {
     // Assert — seed table is 4 rows × 3 columns
     expect(rowHandles).toHaveLength(4)
     expect(colHandles).toHaveLength(3)
+  })
+
+  it("uses a white fill and unselected dots when a handle is idle", async () => {
+    // Arrange / Act
+    const { container } = await renderHarness()
+    const handle = await waitForHandle(container, "row", 1)
+
+    // Assert
+    expect(getComputedStyle(handle).backgroundColor).toBe("rgb(255, 255, 255)")
+    const icon = handle.querySelector("svg")
+    expect(icon && getComputedStyle(icon).color).toBe("rgb(160, 164, 173)")
+  })
+
+  it("uses medium dots when a handle is hovered", async () => {
+    // Arrange
+    const { container } = await renderHarness()
+    const handle = await waitForHandle(container, "row", 1)
+
+    // Act
+    act(() => {
+      fireEvent.mouseEnter(handle)
+    })
+
+    // Assert
+    await waitFor(() => {
+      expect(getComputedStyle(handle).color).toBe("rgb(102, 108, 122)")
+      const icon = handle.querySelector("svg")
+      expect(icon && getComputedStyle(icon).color).toBe("rgb(102, 108, 122)")
+    })
   })
 
   it("places the row handle outside the row", async () => {
