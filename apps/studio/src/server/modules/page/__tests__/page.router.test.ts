@@ -3118,6 +3118,139 @@ describe("page.router", async () => {
     })
   })
 
+  describe("getUnpublishBlockInfo", () => {
+    it("should throw 401 if not logged in", async () => {
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      const result = unauthedCaller.getUnpublishBlockInfo({
+        siteId: 1,
+        pageId: 1,
+      })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should return isBlocked: false for a page that isn't an IndexPage", async () => {
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+
+      const result = await caller.getUnpublishBlockInfo({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      expect(result).toEqual({ isBlocked: false })
+    })
+
+    it("should return isBlocked: false for a folder's IndexPage with no other published descendants", async () => {
+      const { site, folder } = await setupFolder({})
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.Page,
+        permalink: "draft-nested-page",
+        state: ResourceState.Draft,
+      })
+
+      const result = await caller.getUnpublishBlockInfo({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+      })
+
+      expect(result).toEqual({ isBlocked: false })
+    })
+
+    it("should return isBlocked: true with the published descendant count for a folder's IndexPage", async () => {
+      const { site, folder } = await setupFolder({})
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.Page,
+        permalink: "nested-page-1",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      const { folder: subfolder } = await setupFolder({
+        siteId: site.id,
+        parentId: folder.id,
+        permalink: "subfolder",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: subfolder.id,
+        resourceType: ResourceType.Page,
+        permalink: "nested-page-2",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+
+      const result = await caller.getUnpublishBlockInfo({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+      })
+
+      expect(result).toEqual({
+        isBlocked: true,
+        count: 2,
+        parentId: folder.id,
+        parentType: ResourceType.Folder,
+      })
+    })
+
+    it("should return isBlocked: true with parentType Collection for a collection's IndexPage", async () => {
+      const { site, collection } = await setupCollection({})
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.CollectionPage,
+        permalink: "nested-collection-page",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+
+      const result = await caller.getUnpublishBlockInfo({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+      })
+
+      expect(result).toEqual({
+        isBlocked: true,
+        count: 1,
+        parentId: collection.id,
+        parentType: ResourceType.Collection,
+      })
+    })
+  })
+
   describe("updateMeta", () => {
     it("should throw 401 if not logged in update", async () => {
       const unauthedSession = applySession()
