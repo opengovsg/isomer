@@ -1,6 +1,7 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { CollectionPagePageProps } from "~/types"
 import type { TagCategoryDisplay } from "~/types/constants"
+import { parseDate } from "@internationalized/date"
 
 export interface FilterItem {
   id: string
@@ -39,11 +40,23 @@ export interface AppliedFilter {
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value)
 
+// Same yyyy-MM-dd strings accepted by `parseDate` / the `dateTagged` schema.
+export const isIsoDateString = (value: string): boolean => {
+  try {
+    parseDate(value)
+    return true
+  } catch {
+    return false
+  }
+}
+
 const isValidDateRange = (value: unknown): boolean =>
   value === undefined ||
   (isRecord(value) &&
     typeof value.start === "string" &&
-    typeof value.end === "string")
+    typeof value.end === "string" &&
+    isIsoDateString(value.start) &&
+    isIsoDateString(value.end))
 
 export const isAppliedFilters = (value: unknown): value is AppliedFilter[] =>
   Array.isArray(value) &&
