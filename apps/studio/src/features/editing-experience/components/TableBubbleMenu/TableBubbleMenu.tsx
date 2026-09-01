@@ -107,30 +107,32 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
               />
             </Flex>
           </PopoverAnchor>
-          <PopoverContent
-            ref={popoverContentRef}
-            data-table-bubble-menu-actions
-            data-no-focus-lock
-            w="auto"
-            minW="10rem"
-            p="0"
-            py="0.5rem"
-            bg="base.canvas.default"
-            boxShadow="sm"
-            borderRadius="0.25rem"
-            border="1px solid"
-            borderColor="base.divider.medium"
-            _focus={{ boxShadow: "sm" }}
-          >
-            <PopoverBody p="0">
-              <TableBubbleMenuActions
-                editor={editor}
-                kind={kind}
-                brandCanvasInverseColor={brandCanvasInverseColor}
-                onColorSet={deactivateMenu}
-              />
-            </PopoverBody>
-          </PopoverContent>
+          {isActivated ? (
+            <PopoverContent
+              ref={popoverContentRef}
+              data-table-bubble-menu-actions
+              data-no-focus-lock
+              w="auto"
+              minW="10rem"
+              p="0"
+              py="0.5rem"
+              bg="base.canvas.default"
+              boxShadow="sm"
+              borderRadius="0.25rem"
+              border="1px solid"
+              borderColor="base.divider.medium"
+              _focus={{ boxShadow: "sm" }}
+            >
+              <PopoverBody p="0">
+                <TableBubbleMenuActions
+                  editor={editor}
+                  kind={kind}
+                  brandCanvasInverseColor={brandCanvasInverseColor}
+                  onColorSet={deactivateMenu}
+                />
+              </PopoverBody>
+            </PopoverContent>
+          ) : null}
         </Popover>
       </Box>
     </Portal>
