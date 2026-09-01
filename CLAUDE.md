@@ -15,7 +15,8 @@ Isomer Next is a monorepo for a government CMS/site builder platform (Open Gover
 
 ### Development
 ```bash
-pnpm dev              # Start all dev servers
+pnpm dev              # Start Studio dev server
+pnpm --filter playground dev  # Start the JSON schema playground
 pnpm storybook        # Start Storybook in multiple workspaces (e.g. Studio on 6007, Components on 6006)
 pnpm watch:packages   # Watch and rebuild packages
 ```
@@ -79,6 +80,7 @@ pnpm clean            # Clean build artifacts
 
 ### Monorepo Structure
 - `apps/studio` - Main Next.js 16 application (CMS/site builder)
+- `apps/playground` - Vite app with a JSON editor and live preview for Isomer page schemas
 - `packages/components` - Reusable component library (@opengovsg/isomer-components)
 - `packages/pgboss` - Job queue wrapper (@isomer/pgboss)
 - `tooling/*` - Shared configs (TypeScript, Oxlint, Storybook)
