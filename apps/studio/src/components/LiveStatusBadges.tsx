@@ -1,5 +1,5 @@
 import type { RouterOutput } from "~/utils/trpc"
-import { Badge, HStack, Icon, Text, Tooltip } from "@chakra-ui/react"
+import { Badge, Box, HStack, Icon, Text, Tooltip } from "@chakra-ui/react"
 import {
   Badge as PillBadge,
   BadgeLeftIcon,
@@ -55,7 +55,12 @@ export const LiveStatusBadges = ({
         placement="bottom"
         hasArrow
       >
-        {livePill}
+        {/* PillBadge (design-system-react's Badge) doesn't forward its ref,
+        so Tooltip can't measure it for positioning without this wrapper —
+        without it the tooltip renders pinned to the viewport's top-left. */}
+        <Box as="span" display="inline-block">
+          {livePill}
+        </Box>
       </Tooltip>
       {scheduledAt && (
         <Tooltip
