@@ -85,13 +85,13 @@ const readCellColors = (doc: ProseMirrorNode) => {
 describe("appendClearBackgroundOnCellKindChange", () => {
   it("clears backgroundColor on cells that changed kind in the transaction", () => {
     const beforeDoc = createTableDoc([
-      [{ type: "tableHeader", backgroundColor: "brand.canvas.inverse" }],
-      [{ type: "tableCell", backgroundColor: "blue" }],
+      [{ type: "tableHeader", backgroundColor: "blue" }],
+      [{ type: "tableCell", backgroundColor: "pink" }],
     ])
 
     const afterDoc = createTableDoc([
-      [{ type: "tableCell", backgroundColor: "brand.canvas.inverse" }],
       [{ type: "tableCell", backgroundColor: "blue" }],
+      [{ type: "tableCell", backgroundColor: "pink" }],
     ])
 
     const state = EditorState.create({ doc: afterDoc })

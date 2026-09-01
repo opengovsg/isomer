@@ -928,29 +928,26 @@ describe("TableBubbleMenu", () => {
     expect(queryByText("Set background color")).toBeNull()
   })
 
-  it("hides Set background color for a full header row selection", async () => {
-    const { editor, findByText, findByRole, queryByText } =
-      await renderHarness()
+  it("shows Set background color for a full header row selection", async () => {
+    const { editor, findByText, findByRole } = await renderHarness()
 
     selectCells(editor, 0, 2)
     await activateTableBubbleMenu(findByRole)
     await findByText("Add row above")
 
-    expect(queryByText("Set background color")).toBeNull()
+    expect(await findByText("Set background color")).toBeTruthy()
+    expect(await findByRole("button", { name: "Blue" })).toBeTruthy()
   })
 
-  it("hides Set background color for a mixed header and body selection", async () => {
-    // Arrange — leftmost column spans header + body cells
-    const { editor, findByText, findByRole, queryByText } =
-      await renderHarness()
+  it("shows Set background color for a mixed header and body selection", async () => {
+    const { editor, findByText, findByRole } = await renderHarness()
 
-    // Act
     selectCells(editor, 0, 6)
     await activateTableBubbleMenu(findByRole)
     await findByText("Add column left")
 
-    // Assert
-    expect(queryByText("Set background color")).toBeNull()
+    expect(await findByText("Set background color")).toBeTruthy()
+    expect(await findByRole("button", { name: "Blue" })).toBeTruthy()
   })
 
   it("clears background colour when toggling header row off", async () => {

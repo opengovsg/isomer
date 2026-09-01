@@ -1,4 +1,3 @@
-import type { TableCellBackgroundColorToken } from "@opengovsg/isomer-components"
 import type { Node as ProseMirrorNode, NodeSpec } from "@tiptap/pm/model"
 import type { Editor } from "@tiptap/react"
 import { Schema } from "@tiptap/pm/model"
@@ -8,7 +7,6 @@ import { describe, expect, it } from "vitest"
 
 import {
   getSelectionBackgroundColorState,
-  isBackgroundColorAllowedForSelection,
   setSelectedCellsBackgroundColor,
 } from "../TableBubbleMenu.backgroundColor"
 
@@ -134,37 +132,34 @@ const createEditor = (doc: ProseMirrorNode, selection: CellSelection) => {
 }
 
 describe("getSelectionBackgroundColorState", () => {
-  it("disallows header-only selections", () => {
+  it("reports uniform colour on header-only selections", () => {
     const doc = createTableDoc([
       [
-        { type: "tableHeader", backgroundColor: "brand.canvas.inverse" },
-        { type: "tableHeader", backgroundColor: "brand.canvas.inverse" },
+        { type: "tableHeader", backgroundColor: "blue" },
+        { type: "tableHeader", backgroundColor: "blue" },
       ],
     ])
 
     expect(getSelectionBackgroundColorState(selectCells(doc, 0, 1))).toEqual({
-      canSet: false,
       isUniform: true,
-      uniformColor: null,
+      uniformColor: "blue",
     })
   })
 
-  it("allows body-only selections", () => {
+  it("reports uniform colour on body-only selections", () => {
     const doc = createTableDoc([[{ type: "tableCell" }, { type: "tableCell" }]])
     expect(getSelectionBackgroundColorState(selectCells(doc, 0, 1))).toEqual({
-      canSet: true,
       isUniform: true,
       uniformColor: null,
     })
   })
 
-  it("marks mixed header and body selections as unable to set color", () => {
+  it("reports uniform colour on mixed header and body selections", () => {
     const doc = createTableDoc([
       [{ type: "tableHeader" }, { type: "tableHeader" }],
       [{ type: "tableCell" }, { type: "tableCell" }],
     ])
     expect(getSelectionBackgroundColorState(selectCells(doc, 0, 3))).toEqual({
-      canSet: false,
       isUniform: true,
       uniformColor: null,
     })
@@ -179,34 +174,9 @@ describe("getSelectionBackgroundColorState", () => {
     ])
 
     expect(getSelectionBackgroundColorState(selectCells(doc, 0, 1))).toEqual({
-      canSet: true,
       isUniform: false,
       uniformColor: null,
     })
-  })
-
-  it("detects mixed colours when the first cell has no background", () => {
-    const doc = createTableDoc([
-      [{ type: "tableCell" }, { type: "tableCell", backgroundColor: "blue" }],
-    ])
-
-    expect(getSelectionBackgroundColorState(selectCells(doc, 0, 1))).toEqual({
-      canSet: true,
-      isUniform: false,
-      uniformColor: null,
-    })
-  })
-})
-
-describe("isBackgroundColorAllowedForSelection", () => {
-  it("allows palette colours and null", () => {
-    expect(isBackgroundColorAllowedForSelection("blue")).toBe(true)
-    expect(isBackgroundColorAllowedForSelection(null)).toBe(true)
-    expect(
-      isBackgroundColorAllowedForSelection(
-        "brand.canvas.inverse" as TableCellBackgroundColorToken,
-      ),
-    ).toBe(false)
   })
 })
 
@@ -229,27 +199,35 @@ describe("setSelectedCellsBackgroundColor", () => {
     ])
   })
 
-  it("rejects header-only selections", () => {
+  it("sets backgroundColor on header-only selections", () => {
     const doc = createTableDoc([
       [{ type: "tableHeader" }, { type: "tableHeader" }],
     ])
     const { editor, getDispatched } = createEditor(doc, selectCells(doc, 0, 1))
 
-    setSelectedCellsBackgroundColor(editor, "blue")
+    setSelectedCellsBackgroundColor(editor, "purple")
 
-    expect(getDispatched()).toBeUndefined()
+    expect(readCellColors(getDispatched()?.doc ?? doc)).toEqual([
+      { type: "tableHeader", backgroundColor: "purple" },
+      { type: "tableHeader", backgroundColor: "purple" },
+    ])
   })
 
-  it("rejects mixed header and body selections", () => {
+  it("sets backgroundColor on mixed header and body selections", () => {
     const doc = createTableDoc([
       [{ type: "tableHeader" }, { type: "tableHeader" }],
       [{ type: "tableCell" }, { type: "tableCell" }],
     ])
     const { editor, getDispatched } = createEditor(doc, selectCells(doc, 0, 3))
 
-    setSelectedCellsBackgroundColor(editor, "blue")
+    setSelectedCellsBackgroundColor(editor, "green")
 
-    expect(getDispatched()).toBeUndefined()
+    expect(readCellColors(getDispatched()?.doc ?? doc)).toEqual([
+      { type: "tableHeader", backgroundColor: "green" },
+      { type: "tableHeader", backgroundColor: "green" },
+      { type: "tableCell", backgroundColor: "green" },
+      { type: "tableCell", backgroundColor: "green" },
+    ])
   })
 
   it("clears backgroundColor on selected cells", () => {
