@@ -5,6 +5,8 @@ import { autoUpdate } from "@floating-ui/dom"
 import { CellSelection, selectedRect } from "@tiptap/pm/tables"
 import { useEffect, useRef, useState } from "react"
 
+import type { TableBubbleMenuAnchor } from "./TableBubbleMenu.types"
+
 interface TableBubbleMenuPosition {
   x: number
   y: number
@@ -39,6 +41,45 @@ const getBottomRightCellDocumentPos = (state: EditorState): number | null => {
   return bottomRightPos
 }
 
+const getAnchorRect = (anchor?: TableBubbleMenuAnchor): DOMRect | null => {
+  const virtualElement = anchor?.getReferencedVirtualElement()
+  if (!virtualElement) return null
+  const rect = virtualElement.getBoundingClientRect()
+  if (rect.width === 0 && rect.height === 0) return null
+  return rect
+}
+
+const getReferenceRect = (
+  view: EditorView,
+  state: EditorState,
+  anchor?: TableBubbleMenuAnchor,
+): DOMRect | null =>
+  getAnchorRect(anchor) ?? getBottomRightCellRect(view, state)
+
+const computeMenuPosition = (
+  referenceRect: DOMRect,
+  menuEl: HTMLElement,
+  anchor?: TableBubbleMenuAnchor,
+): TableBubbleMenuPosition | null => {
+  const triggerEl = menuEl.querySelector("[data-table-bubble-menu-trigger]")
+  if (!(triggerEl instanceof HTMLElement)) return null
+
+  const { offsetWidth: triggerWidth, offsetHeight: triggerHeight } = triggerEl
+  const anchorRect = getAnchorRect(anchor)
+
+  if (anchorRect) {
+    return {
+      x: anchorRect.right - triggerWidth / 2 - triggerEl.offsetLeft,
+      y: anchorRect.bottom + 4 - triggerEl.offsetTop,
+    }
+  }
+
+  return {
+    x: referenceRect.right - triggerWidth / 2 - triggerEl.offsetLeft,
+    y: referenceRect.bottom - triggerHeight / 2 - triggerEl.offsetTop,
+  }
+}
+
 const getBottomRightCellRect = (
   view: EditorView,
   state: EditorState,
@@ -52,29 +93,18 @@ const getBottomRightCellRect = (
   return dom.getBoundingClientRect()
 }
 
-const computeMenuPosition = (
-  cellRect: DOMRect,
-  menuEl: HTMLElement,
-): TableBubbleMenuPosition | null => {
-  const triggerEl = menuEl.querySelector("[data-table-bubble-menu-trigger]")
-  if (!(triggerEl instanceof HTMLElement)) return null
-
-  const { offsetWidth: triggerWidth, offsetHeight: triggerHeight } = triggerEl
-
-  return {
-    x: cellRect.right - triggerWidth / 2 - triggerEl.offsetLeft,
-    y: cellRect.bottom - triggerHeight / 2 - triggerEl.offsetTop,
-  }
-}
-
 const createVirtualReference = (
   getView: () => EditorView,
   getState: () => EditorState,
+  anchor?: TableBubbleMenuAnchor,
 ) => {
   const virtualReference = {
     getBoundingClientRect: () => {
-      const rect = getBottomRightCellRect(getView(), getState())
+      const rect = getReferenceRect(getView(), getState(), anchor)
       if (!rect) return new DOMRect()
+      if (getAnchorRect(anchor)) {
+        return new DOMRect(rect.left, rect.top, rect.width, rect.height)
+      }
       return new DOMRect(rect.right, rect.bottom, 0, 0)
     },
     getClientRects: () => [virtualReference.getBoundingClientRect()],
@@ -88,12 +118,13 @@ const createPositionUpdater = (
   getState: () => EditorState,
   menuEl: HTMLElement,
   onPosition: (position: TableBubbleMenuPosition) => void,
+  anchor?: TableBubbleMenuAnchor,
 ): (() => void) => {
   return () => {
-    const cellRect = getBottomRightCellRect(getView(), getState())
-    if (!cellRect) return
+    const referenceRect = getReferenceRect(getView(), getState(), anchor)
+    if (!referenceRect) return
 
-    const nextPosition = computeMenuPosition(cellRect, menuEl)
+    const nextPosition = computeMenuPosition(referenceRect, menuEl, anchor)
     if (nextPosition) {
       onPosition(nextPosition)
     }
@@ -125,6 +156,7 @@ interface UseTableBubbleMenuPositionOptions {
   menuEl: HTMLDivElement | null
   show: boolean
   selection: Selection
+  anchor?: TableBubbleMenuAnchor
 }
 
 export const useTableBubbleMenuPosition = ({
@@ -132,6 +164,7 @@ export const useTableBubbleMenuPosition = ({
   menuEl,
   show,
   selection,
+  anchor,
 }: UseTableBubbleMenuPositionOptions): TableBubbleMenuPosition | null => {
   const editorRef = useRef(editor)
   editorRef.current = editor
@@ -150,12 +183,13 @@ export const useTableBubbleMenuPosition = ({
 
     const getView = () => editorRef.current.view
     const getState = () => editorRef.current.state
-    const virtualReference = createVirtualReference(getView, getState)
+    const virtualReference = createVirtualReference(getView, getState, anchor)
     const updatePosition = createPositionUpdater(
       getView,
       getState,
       menuEl,
       setPosition,
+      anchor,
     )
 
     updatePosition()
@@ -170,7 +204,7 @@ export const useTableBubbleMenuPosition = ({
       stopAutoUpdate()
       detachScrollListeners()
     }
-  }, [show, selection, menuEl])
+  }, [show, selection, menuEl, anchor])
 
   return position
 }
