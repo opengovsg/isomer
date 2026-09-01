@@ -28,7 +28,11 @@ export interface TableBubbleMenuUiState {
   isActivated: boolean
   menuRef: RefCallback<HTMLDivElement>
   triggerRef: RefObject<HTMLButtonElement>
-  position: { x: number; y: number } | null
+  position: {
+    x: number
+    y: number
+    placement: "above" | "below"
+  } | null
   onMenuFocus: () => void
   onMenuBlur: (event: FocusEvent<HTMLElement>) => void
   toggleMenu: () => void
@@ -102,6 +106,7 @@ export const useTableBubbleMenu = (
     editor,
     menuEl,
     show,
+    isActivated,
     selection,
   })
 

@@ -42,6 +42,9 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
       <VStack
         ref={menuRef}
         align="flex-end"
+        flexDirection={
+          position?.placement === "below" ? "column-reverse" : "column"
+        }
         gap="0.25rem"
         data-table-bubble-menu
         // Lets focus move between this portaled menu and Chakra modals (e.g. Table Settings).
