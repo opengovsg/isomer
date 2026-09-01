@@ -147,7 +147,7 @@ catalog:
   next: 16.2.11
   openid-client: ^5.7.1
   oxfmt: ^0.62.0
-  oxlint: ^1.77.0
+  oxlint: ^1.80.0
   oxlint-tsgolint: ^7.0.2001
   papaparse: ^5.5.4
   pg-boss: ^12.27.0
