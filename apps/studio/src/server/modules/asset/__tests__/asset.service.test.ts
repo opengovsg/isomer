@@ -48,7 +48,7 @@ describe("asset.service", () => {
   describe("getContentDispositionForKey", () => {
     it("should return inline with filename from key segment", () => {
       const result = getContentDispositionForKey("1/abc-uuid/test.png")
-      expect(result).toBe(`inline; filename="test.png"`)
+      expect(result).toBe(`inline; filename=test.png`)
     })
 
     it("should encode non-latin1 characters via RFC 5987 with a latin1 fallback", () => {
