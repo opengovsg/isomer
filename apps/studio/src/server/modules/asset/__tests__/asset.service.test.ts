@@ -346,15 +346,27 @@ describe("asset.service", () => {
       expect(result).toBe(`36/${UUID}/my file.png`)
     })
 
-    it("should not truncate the key at an unescaped '#' in the filename", () => {
+    it("should extract a percent-encoded '#' from the filename", () => {
       // filenamify's reserved-character list doesn't strip '#', so a
-      // legitimately uploaded file can have one — the WHATWG URL parser
-      // would otherwise treat it as the start of a fragment and drop it
-      // and everything after it from `.pathname`.
+      // legitimately uploaded file can have one — but the only unambiguous
+      // way to represent it in a URL is percent-encoded ('%23'), which
+      // never triggers the URL parser's fragment splitting.
+      const result = parseAssetUrlToKey(
+        `https://${ASSET_DOMAIN}/36/${UUID}/my%23file.png`,
+      )
+      expect(result).toBe(`36/${UUID}/my#file.png`)
+    })
+
+    it("should reject a URL with an unescaped '#' rather than guess its meaning", () => {
+      // An unescaped '#' is ambiguous — it could be a literal filename
+      // character (filenamify doesn't strip '#') or a real URL fragment.
+      // Guessing wrong either truncates the key or appends the fragment to
+      // it, both landing on the wrong S3 object, so this is rejected
+      // instead of resolved.
       const result = parseAssetUrlToKey(
         `https://${ASSET_DOMAIN}/36/${UUID}/my#file.png`,
       )
-      expect(result).toBe(`36/${UUID}/my#file.png`)
+      expect(result).toBeNull()
     })
 
     it("should drop a query string rather than folding it into the key", () => {

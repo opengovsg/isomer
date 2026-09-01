@@ -204,19 +204,20 @@ export const parseAssetUrlToKey = (url: string): string | null => {
     return null
   }
 
-  // `parsed.pathname` alone drops everything from an unescaped `#`
-  // onward — WHATWG treats it as the start of a fragment, not part of the
-  // path — which would resolve to the wrong (truncated) key for a
-  // legitimately uploaded filename containing `#` (filenamify's
-  // reserved-character list doesn't strip that character). Reattaching
-  // `.hash` recovers it. `.search` (a real `?query`) is deliberately left
-  // out: filenamify does strip `?`, so an asset key can never legitimately
-  // contain one, and folding it in would let a copy-pasted tracking/query
-  // suffix silently become part of the deletion key.
-  const rawPath = parsed.pathname + parsed.hash
+  // A `#` in the URL is inherently ambiguous: it's either a literal
+  // character in the filename (filenamify's reserved-character list
+  // doesn't strip `#`) or a genuine URL fragment — there's no way to tell
+  // which from the string alone, and guessing wrong either truncates the
+  // real key or appends the fragment onto it, both resolving to the wrong
+  // S3 object. Reject rather than risk deleting (or failing to delete) the
+  // wrong asset. `.search` (a real `?query`) is dropped outright: filenamify
+  // does strip `?`, so a real asset key can never contain one.
+  if (parsed.hash) {
+    return null
+  }
 
   try {
-    const key = decodeURIComponent(rawPath.slice(1))
+    const key = decodeURIComponent(parsed.pathname.slice(1))
     return ASSET_KEY_PATTERN.test(key) ? key : null
   } catch {
     return null
