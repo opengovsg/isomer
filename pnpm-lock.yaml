@@ -261,8 +261,8 @@ catalogs:
       specifier: ^2.0.1
       version: 2.0.1
     nanoid:
-      specifier: ^3.3.18
-      version: 3.3.18
+      specifier: ^6.0.1
+      version: 6.0.1
     next:
       specifier: 16.2.11
       version: 16.2.11
@@ -933,7 +933,7 @@ importers:
         version: 4.18.1
       nanoid:
         specifier: 'catalog:'
-        version: 3.3.18
+        version: 6.0.1
       next:
         specifier: 'catalog:'
         version: 16.2.11(patch_hash=96c056d3c2fe2195b5487aa4adf46a46a96f6dc0e872c060e5563e3c74b51409)(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.62.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.103.1)
@@ -1444,7 +1444,7 @@ importers:
         version: 6.10.0(@openfeature/server-sdk@1.21.0(@openfeature/core@1.10.0))
       nanoid:
         specifier: 'catalog:'
-        version: 3.3.18
+        version: 6.0.1
       pino:
         specifier: 'catalog:'
         version: 10.3.1
@@ -10176,6 +10176,11 @@ packages:
   nanoid@3.3.18:
     resolution: {integrity: sha512-DTg4MJbGMWkfi6VZFdNt2/caMbQy4Ou+Op/hJQvGEWcnVfoA1QA+xzRKAzw9jD6+GVOOeYr/mIcuDSdug6F6+w==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
+    hasBin: true
+
+  nanoid@6.0.1:
+    resolution: {integrity: sha512-3wVS3i51pE2pi1k5FFL/95BGfVS0kSsvDVuGXHOtxox/TywUmtgq+3qiTOTbs9J7KfHaXPiN171k/A6dBnaXFw==}
+    engines: {node: ^22 || ^24 || >=26}
     hasBin: true
 
   natural-compare@1.4.0:
@@ -21771,6 +21776,8 @@ snapshots:
     optional: true
 
   nanoid@3.3.18: {}
+
+  nanoid@6.0.1: {}
 
   natural-compare@1.4.0: {}
 
