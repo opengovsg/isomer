@@ -23,6 +23,7 @@ export const folderHandlers = {
           liveStatus: "notLive",
           scheduledAt: null,
           scheduledAction: null,
+          lastPublishedAt: null,
         }
       })
     },

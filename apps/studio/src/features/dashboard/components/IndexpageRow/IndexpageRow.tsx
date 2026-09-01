@@ -77,6 +77,7 @@ export const IndexpageRow = ({
                 liveStatus={data.liveStatus}
                 scheduledAt={data.scheduledAt}
                 scheduledAction={data.scheduledAction}
+                lastPublishedAt={data.lastPublishedAt}
               />
             )}
             <HasDraftIndicator draftBlobId={data?.draftBlobId ?? null} />

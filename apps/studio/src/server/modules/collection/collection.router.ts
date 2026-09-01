@@ -32,6 +32,7 @@ import {
   getBlobOfResource,
   getSiteResourceById,
   publishResource,
+  selectLastPublishedAt,
   updateBlobById,
 } from "../resource/resource.service"
 import { validateUserPermissionsForSite } from "../site/site.service"
@@ -300,7 +301,7 @@ export const collectionRouter = router({
         const rows = await query
           .limit(limit)
           .offset(offset)
-          .select(defaultResourceSelect)
+          .select((eb) => [...defaultResourceSelect, selectLastPublishedAt(eb)])
           .execute()
 
         // CollectionPage/CollectionLink are always leaf resources, unlike

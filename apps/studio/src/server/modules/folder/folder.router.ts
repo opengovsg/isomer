@@ -28,6 +28,7 @@ import {
   getResourceFullPermalink,
   hasPublishedDescendant,
   publishResource,
+  selectLastPublishedAt,
 } from "../resource/resource.service"
 import { defaultFolderSelect } from "./folder.select"
 
@@ -362,12 +363,13 @@ export const folderRouter = router({
         .where("Resource.siteId", "=", siteId)
         .where("Resource.parentId", "=", resourceId)
         .where("Resource.type", "=", ResourceType.IndexPage)
-        .select([
+        .select((eb) => [
           "id",
           "draftBlobId",
           "publishedVersionId",
           "scheduledAt",
           "scheduledAction",
+          selectLastPublishedAt(eb),
         ])
         .executeTakeFirstOrThrow(
           () =>
