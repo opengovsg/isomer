@@ -47,7 +47,11 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
       options={bubbleMenuOptions}
       data-table-bubble-menu
       data-no-focus-lock
-      style={{ zIndex: "var(--chakra-zIndices-dropdown, 1400)" }}
+      tabIndex={-1}
+      style={{
+        zIndex: 1800,
+        pointerEvents: "auto",
+      }}
     >
       <Popover
         isOpen={isActivated}

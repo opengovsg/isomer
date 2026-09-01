@@ -53,12 +53,14 @@ export const createBottomRightVirtualElement = (
   view: EditorView,
   state: EditorState,
 ): VirtualElement | null => {
-  const cellRect = getBottomRightCellRect(view, state)
-  if (!cellRect) return null
+  if (!(state.selection instanceof CellSelection)) return null
 
   const virtualElement: VirtualElement = {
-    getBoundingClientRect: () =>
-      new DOMRect(cellRect.right, cellRect.bottom, 0, 0),
+    getBoundingClientRect: () => {
+      const cellRect = getBottomRightCellRect(view, state)
+      if (!cellRect) return new DOMRect()
+      return new DOMRect(cellRect.right, cellRect.bottom, 0, 0)
+    },
     getClientRects: () => [virtualElement.getBoundingClientRect()],
   }
 
