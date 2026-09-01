@@ -204,19 +204,19 @@ export const parseAssetUrlToKey = (url: string): string | null => {
     return null
   }
 
-  // Derive the key from the raw string, not `parsed.pathname`: the WHATWG
-  // URL parser treats an unescaped `#` as the start of a fragment and
-  // silently drops everything after it, which would resolve to the wrong
-  // (truncated) key for a legitimately uploaded filename containing `#` —
-  // filenamify's reserved-character list doesn't strip that character.
-  const schemeEnd = trimmed.indexOf("://")
-  const pathStart = schemeEnd === -1 ? -1 : trimmed.indexOf("/", schemeEnd + 3)
-  if (pathStart === -1) {
-    return null
-  }
+  // `parsed.pathname` alone drops everything from an unescaped `#`
+  // onward — WHATWG treats it as the start of a fragment, not part of the
+  // path — which would resolve to the wrong (truncated) key for a
+  // legitimately uploaded filename containing `#` (filenamify's
+  // reserved-character list doesn't strip that character). Reattaching
+  // `.hash` recovers it. `.search` (a real `?query`) is deliberately left
+  // out: filenamify does strip `?`, so an asset key can never legitimately
+  // contain one, and folding it in would let a copy-pasted tracking/query
+  // suffix silently become part of the deletion key.
+  const rawPath = parsed.pathname + parsed.hash
 
   try {
-    const key = decodeURIComponent(trimmed.slice(pathStart + 1))
+    const key = decodeURIComponent(rawPath.slice(1))
     return ASSET_KEY_PATTERN.test(key) ? key : null
   } catch {
     return null

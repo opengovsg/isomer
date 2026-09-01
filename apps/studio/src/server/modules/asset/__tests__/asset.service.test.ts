@@ -357,6 +357,15 @@ describe("asset.service", () => {
       expect(result).toBe(`36/${UUID}/my#file.png`)
     })
 
+    it("should drop a query string rather than folding it into the key", () => {
+      // A real asset key can never contain '?' (filenamify strips it), so
+      // a query string on a pasted URL is never part of the filename.
+      const result = parseAssetUrlToKey(
+        `https://${ASSET_DOMAIN}/36/${UUID}/picture.png?download=1`,
+      )
+      expect(result).toBe(`36/${UUID}/picture.png`)
+    })
+
     it("should trim surrounding whitespace before parsing", () => {
       const result = parseAssetUrlToKey(
         `  https://${ASSET_DOMAIN}/36/${UUID}/file.png  `,
