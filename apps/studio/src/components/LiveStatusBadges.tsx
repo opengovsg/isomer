@@ -46,15 +46,9 @@ export const LiveStatusBadges = ({
 
   return (
     <HStack spacing="0.5rem">
-      {liveStatus === "notLive" ? (
-        livePill
-      ) : (
+      {liveStatus !== "notLive" && lastPublishedAt ? (
         <Tooltip
-          label={
-            lastPublishedAt
-              ? `Last published on ${format(lastPublishedAt, "MMMM d, yyyy h:mm a")}`
-              : "Never published"
-          }
+          label={`Last published on ${format(lastPublishedAt, "MMMM d, yyyy h:mm a")}`}
           placement="bottom"
           hasArrow
         >
@@ -65,6 +59,8 @@ export const LiveStatusBadges = ({
             {livePill}
           </Box>
         </Tooltip>
+      ) : (
+        livePill
       )}
       {scheduledAt && (
         <Tooltip
