@@ -11,7 +11,10 @@ import {
   type RefObject,
 } from "react"
 
-import type { SelectionKind } from "./TableBubbleMenu.types"
+import type {
+  SelectionKind,
+  TableBubbleMenuAnchor,
+} from "./TableBubbleMenu.types"
 import {
   detectTableSelectionKind,
   isEditorModalOpen,
@@ -43,7 +46,15 @@ const getSelectionRangeKey = (selection: Editor["state"]["selection"]) =>
     ? `${selection.$anchorCell.pos}:${selection.$headCell.pos}`
     : `${selection.from}:${selection.to}`
 
-export const useTableBubbleMenu = (editor: Editor): TableBubbleMenuUiState => {
+interface UseTableBubbleMenuOptions {
+  anchor?: TableBubbleMenuAnchor
+  isDragReordering?: boolean
+}
+
+export const useTableBubbleMenu = (
+  editor: Editor,
+  { anchor, isDragReordering = false }: UseTableBubbleMenuOptions = {},
+): TableBubbleMenuUiState => {
   const menuElRef = useRef<HTMLDivElement | null>(null)
   const [menuEl, setMenuEl] = useState<HTMLDivElement | null>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
@@ -75,8 +86,10 @@ export const useTableBubbleMenu = (editor: Editor): TableBubbleMenuUiState => {
   const show =
     kind !== "none" &&
     !isDragging &&
+    !isDragReordering &&
     !isEditorModalOpen() &&
-    (isFocused || menuHasFocus)
+    (isFocused || menuHasFocus) &&
+    !anchor?.shouldWaitForReference()
 
   const selectionRangeKey = getSelectionRangeKey(selection)
 
@@ -95,6 +108,7 @@ export const useTableBubbleMenu = (editor: Editor): TableBubbleMenuUiState => {
     menuEl,
     show,
     selection,
+    anchor,
   })
 
   useEffect(() => {

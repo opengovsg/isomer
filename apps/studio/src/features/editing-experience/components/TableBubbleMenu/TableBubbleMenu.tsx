@@ -3,15 +3,20 @@ import { Flex, Icon, Portal, VStack } from "@chakra-ui/react"
 import { memo } from "react"
 import { BiPencil } from "react-icons/bi"
 
+import type { TableBubbleMenuAnchor } from "./TableBubbleMenu.types"
 import { TableBubbleMenuActions } from "./TableBubbleMenuActions"
 import { useTableBubbleMenu } from "./useTableBubbleMenu"
 
 export interface TableBubbleMenuProps {
   editor: Editor
+  anchor?: TableBubbleMenuAnchor
+  isDragReordering?: boolean
 }
 
 export const TableBubbleMenu = memo(function TableBubbleMenu({
   editor,
+  anchor,
+  isDragReordering = false,
 }: TableBubbleMenuProps) {
   const {
     show,
@@ -24,7 +29,7 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
     onMenuBlur,
     toggleMenu,
     deactivateMenu,
-  } = useTableBubbleMenu(editor)
+  } = useTableBubbleMenu(editor, { anchor, isDragReordering })
 
   if (!show) {
     return null
