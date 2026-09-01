@@ -49,32 +49,19 @@ const meta: Meta<typeof AuditLogSettingsPage> = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-// Admin, initial empty state: no log type picked, so the submit button is the
-// disabled "Select log types to export" call-to-action.
+// Admin, initial state: the current (partial) month is preselected, so the
+// submit is immediately the enabled "Export logs" call-to-action.
 export const Default: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement.ownerDocument.body)
     await waitFor(async () =>
       expect(
-        await screen.findByRole("button", {
-          name: "Select log types to export",
-        }),
-      ).toBeDisabled(),
+        await screen.findByRole("button", { name: "Export logs" }),
+      ).toBeEnabled(),
     )
-  },
-}
-
-// Selecting "Audit logs" reveals the month picker and arms the submit button.
-export const AuditLogSelected: Story = {
-  play: async ({ canvasElement }) => {
-    const screen = within(canvasElement.ownerDocument.body)
-    await userEvent.click(
-      await screen.findByRole("checkbox", { name: /Audit logs/ }),
-    )
-    await expect(await screen.findByText("For the month of")).toBeVisible()
     await expect(
-      screen.getByRole("button", { name: "Export log" }),
-    ).toBeEnabled()
+      screen.getByRole("link", { name: "User management" }),
+    ).toBeVisible()
   },
 }
 
@@ -84,11 +71,14 @@ export const ExportRequested: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement.ownerDocument.body)
     await userEvent.click(
-      await screen.findByRole("checkbox", { name: /User access review logs/ }),
+      await screen.findByRole("button", { name: "Export logs" }),
+      { pointerEventsCheck: 0 },
     )
-    await userEvent.click(screen.getByRole("button", { name: "Export log" }), {
-      pointerEventsCheck: 0,
-    })
-    await expect(await screen.findByText("Export requested")).toBeVisible()
+    // Presence, not a one-shot toBeVisible. BRIEF_TOAST_SETTINGS gives the
+    // toast a 3s duration and it is removed ~200ms after that, so on a loaded
+    // CI machine it can begin tearing down between the find and the assertion —
+    // leaving an emptied node that fails the visibility check even though the
+    // toast did appear.
+    await screen.findByText("Export requested")
   },
 }

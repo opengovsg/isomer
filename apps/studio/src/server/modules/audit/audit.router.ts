@@ -1,14 +1,16 @@
 import { TRPCError } from "@trpc/server"
 import {
-  createAuditLogExportRequestSchema,
+  AuditLogExportScope,
+  createAuditLogExportRequestServerSchema,
   getAuditLogExportWindowSchema,
 } from "~/schemas/audit"
 import getIP from "~/utils/getClientIp"
 
 import { protectedProcedure, router } from "../../trpc"
 import { validateUserIsSiteAdmin } from "../permissions/permissions.service"
+import { getAdminSiteIds } from "../site/site.service"
 import {
-  createAuditLogExportRequest,
+  createAuditLogExportRequestsForSites,
   getAuditLogExportWindow,
 } from "./auditLogExport.service"
 
@@ -27,28 +29,45 @@ export const auditRouter = router({
       return getAuditLogExportWindow(siteId)
     }),
   createExportRequest: protectedProcedure
-    .input(createAuditLogExportRequestSchema)
+    .input(createAuditLogExportRequestServerSchema)
     // Rate-limited because each accepted request eventually triggers downstream
     // work that hits external services (CSV generation, S3 upload, email).
     // Arbitrary low limit to prevent abuse; tune if legitimate usage is blocked.
     .meta({ rateLimitOptions: { max: 5, windowMs: 60_000 } })
-    .mutation(async ({ ctx, input: { siteId, month, reportType } }) => {
-      // Permission check FIRST, before any mutation. Audit log export is a
-      // Site Admin-only capability so we reject any attempts if they are not an admin
-      await validateUserIsSiteAdmin({
-        siteId,
-        userId: ctx.user.id,
-      })
+    .mutation(async ({ ctx, input }) => {
+      const { scope, month, reportType } = input
+
+      // Permission check FIRST, before any mutation, resolved into the
+      // concrete site IDs this ask covers. "site" is always exactly the one
+      // requested site (Site Admin-only); "allSites" is resolved server-side
+      // from the caller's own Admin access — never trusted from client input.
+      // Whether that resolves to at least one site, and everything about
+      // fanning the ask out into per-site requests, is the service's call
+      // (see `createAuditLogExportRequestsForSites`) — the router's job ends
+      // at authorising and wiring.
+      let siteIds: number[]
+      if (scope === AuditLogExportScope.Site) {
+        const { siteId } = input
+        if (siteId === undefined) {
+          // Unreachable: createAuditLogExportRequestServerSchema requires
+          // `siteId` whenever `scope` is "site".
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Select a valid site",
+          })
+        }
+        await validateUserIsSiteAdmin({ siteId, userId: ctx.user.id })
+        siteIds = [siteId]
+      } else {
+        siteIds = await getAdminSiteIds(ctx.user.id)
+      }
 
       try {
-        return await createAuditLogExportRequest({
-          siteId,
+        return await createAuditLogExportRequestsForSites({
+          siteIds,
           userId: ctx.user.id,
           month,
           reportType,
-          // Capture the requester IP the same way sibling audit events do
-          // (see auth.router.ts), so the AuditLogExportCreate event records
-          // who exported the logs AND from where.
           ip: getIP(ctx.req),
         })
       } catch (error) {
@@ -64,7 +83,8 @@ export const auditRouter = router({
         ctx.logger.error({
           error,
           message: "Failed to create audit log export request",
-          siteId,
+          scope,
+          siteCount: siteIds.length,
           month,
           reportType,
         })

@@ -5,6 +5,11 @@ import { rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel } from "@opengovsg/design-system-react"
 import {
+  IconCalloutGoodToKnow,
+  IconCalloutInformation,
+  IconCalloutNote,
+  IconCalloutUrgent,
+  IconCalloutWarning,
   IconTagCategoryPills,
   IconTagCategoryPlaintext,
 } from "~/components/icons"
@@ -15,11 +20,17 @@ import { ImageRadioIndicator } from "./ImageRadioIndicator"
 const IMAGE_RADIO_ICONS: Record<string, typeof IconTagCategoryPills> = {
   "tagcategory/pills": IconTagCategoryPills,
   "tagcategory/plaintext": IconTagCategoryPlaintext,
+  "callout/information": IconCalloutInformation,
+  "callout/goodToKnow": IconCalloutGoodToKnow,
+  "callout/warning": IconCalloutWarning,
+  "callout/urgent": IconCalloutUrgent,
+  "callout/note": IconCalloutNote,
 }
 
 interface ImageRadioSchema {
   oneOf?: {
     const: string
+    title?: string
     image: string
   }[]
 }
@@ -52,14 +63,20 @@ const ImageRadioOption = ({
         borderColor={
           isSelected ? "interaction.main.default" : "base.divider.medium"
         }
-        bg={isSelected ? "white" : undefined}
+        bg="white"
         boxShadow={
           isSelected ? "0 0 10px 0 rgba(191, 191, 191, 0.50)" : undefined
         }
         overflow="hidden"
+        padding="12px"
       >
         {ImageRadioIcon && (
-          <ImageRadioIcon width="100%" display="block" aria-hidden />
+          <ImageRadioIcon
+            width="100%"
+            height="auto"
+            display="block"
+            aria-hidden
+          />
         )}
         <ImageRadioIndicator
           isSelected={isSelected}
@@ -77,12 +94,17 @@ const ImageRadioOption = ({
 const getImageRadioOptions = (schema: ControlProps["schema"]) =>
   ((schema as ImageRadioSchema).oneOf ?? []).map((option) => ({
     value: option.const,
+    title: option.title,
     image: option.image,
   }))
 
 export const jsonFormsImageRadioControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ImageRadioControl,
-  schemaMatches((schema) => schema.format === "image-radio"),
+  schemaMatches(
+    (schema) =>
+      schema.format === "image-radio/1col" ||
+      schema.format === "image-radio/2col",
+  ),
 )
 
 function JsonFormsImageRadioControl({
@@ -114,11 +136,16 @@ function JsonFormsImageRadioControl({
         <Box
           {...getRootProps()}
           display="grid"
-          gridTemplateColumns="repeat(2, 1fr)"
+          gridTemplateColumns={`repeat(${schema.format === "image-radio/1col" ? 1 : 2}, 1fr)`}
           gap="1rem"
+          alignItems="start"
         >
-          {options.map((option) => {
-            const isSelected = data === option.value
+          {options.map((option, index) => {
+            // Display-only fallback: when no value is stored yet, show the
+            // first option as selected without writing it (schema `default`
+            // is avoided because AJV's `useDefaults` would dirty saved pages).
+            const isSelected =
+              data === undefined ? index === 0 : data === option.value
 
             return (
               <ImageRadioOption
@@ -127,6 +154,7 @@ function JsonFormsImageRadioControl({
                 image={option.image}
                 isSelected={isSelected}
                 ariaLabel={
+                  option.title ??
                   option.value.charAt(0).toUpperCase() + option.value.slice(1)
                 }
               />

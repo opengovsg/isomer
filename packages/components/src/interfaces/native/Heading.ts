@@ -40,4 +40,8 @@ export const HeadingSchema = Type.Object(
 
 export type HeadingProps = Static<typeof HeadingSchema> & {
   site: IsomerSiteProps
+  // The actual <h#> tag to render, computed from this heading's position in
+  // the page (see renderPageContent/renderComponent). `attrs.level` no longer
+  // determines the tag — it only selects the visual style/font size.
+  headingLevel: number
 }

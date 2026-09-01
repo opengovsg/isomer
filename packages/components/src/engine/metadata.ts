@@ -1,7 +1,162 @@
+import type { DistributedOmit } from "type-fest"
 import type { IsomerPageSchemaType } from "~/types/schema"
+import type { IsomerSiteConfigProps } from "~/types/site"
 import type { IsomerSitemap } from "~/types/sitemap"
 import { ISOMER_PAGE_LAYOUTS } from "~/types/constants"
+import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
+
+const DEFAULT_SITE_NAME = "Isomer"
+const DEFAULT_SITE_URL = "https://www.isomer.gov.sg"
+
+interface GetSiteJsonLdProps {
+  site: Pick<
+    IsomerSiteConfigProps,
+    "agencyName" | "isGovernment" | "siteEntity" | "siteName" | "url"
+  > & {
+    assetsBaseUrl?: string
+    logoUrl?: IsomerSiteConfigProps["logoUrl"]
+  }
+  footer: {
+    contactUsLink?: string
+    socialMediaLinks?: readonly { type?: string; url: string }[]
+  }
+  sitemap?: IsomerSitemap
+}
+
+type PageSchemaWithoutSite = DistributedOmit<IsomerPageSchemaType, "site">
+
+type GetPageJsonLdProps = PageSchemaWithoutSite & {
+  // NOTE: `siteName` is the homepage's meta-description fallback, so it is
+  // needed wherever that description is derived.
+  site: Pick<IsomerSiteConfigProps, "siteName" | "url">
+}
+
+const getNonEmptyString = (value?: string) => {
+  const trimmedValue = value?.trim()
+  return trimmedValue || undefined
+}
+
+const getAbsoluteHttpUrl = (
+  value: string | undefined,
+  siteUrl: string,
+  assetsBaseUrl?: string,
+  sitemapArray: IsomerSitemap[] = [],
+) => {
+  const resolvedValue = getReferenceLinkHref(
+    value,
+    sitemapArray,
+    assetsBaseUrl?.replace(/\/$/, ""),
+  )
+
+  if (!resolvedValue || resolvedValue.startsWith("[resource:")) return undefined
+
+  try {
+    const url = new URL(resolvedValue, siteUrl)
+    return url.protocol === "http:" || url.protocol === "https:"
+      ? url.toString()
+      : undefined
+  } catch {
+    return undefined
+  }
+}
+
+const getSiteUrl = (configuredUrl: string) => {
+  const siteUrl = getNonEmptyString(configuredUrl) ?? DEFAULT_SITE_URL
+  return getAbsoluteHttpUrl(siteUrl, DEFAULT_SITE_URL) ?? DEFAULT_SITE_URL
+}
+
+/**
+ * Generates the site-wide Schema.org entity graph rendered by the base
+ * template. The WebSite node represents the website itself, while the linked
+ * Organization node represents the agency or organisation that publishes it.
+ */
+export const getSiteJsonLd = ({
+  site,
+  footer,
+  sitemap,
+}: GetSiteJsonLdProps) => {
+  const siteUrl = getSiteUrl(site.url)
+  const sitemapArray = sitemap ? getSitemapAsArray(sitemap) : []
+  const websiteId = new URL("#website", siteUrl).toString()
+  const organisationId = new URL("#organization", siteUrl).toString()
+  const siteName = getNonEmptyString(site.siteName) ?? DEFAULT_SITE_NAME
+  const organisationName = getNonEmptyString(site.agencyName) ?? siteName
+  const entity = site.siteEntity
+  const logoUrl =
+    site.assetsBaseUrl && site.logoUrl?.startsWith("/")
+      ? `${site.assetsBaseUrl.replace(/\/$/, "")}${site.logoUrl}`
+      : site.logoUrl
+
+  const addressValues = {
+    streetAddress: getNonEmptyString(entity?.address?.streetAddress),
+    addressLocality: getNonEmptyString(entity?.address?.addressLocality),
+    postalCode: getNonEmptyString(entity?.address?.postalCode),
+    addressCountry: getNonEmptyString(entity?.address?.addressCountry),
+  }
+  const hasAddress = Object.values(addressValues).some(Boolean)
+
+  const contactPointValues = {
+    contactType: getNonEmptyString(entity?.contactPoint?.contactType),
+    telephone: getNonEmptyString(entity?.contactPoint?.telephone),
+    email: getNonEmptyString(entity?.contactPoint?.email),
+    url: getAbsoluteHttpUrl(
+      footer.contactUsLink,
+      siteUrl,
+      site.assetsBaseUrl,
+      sitemapArray,
+    ),
+  }
+  const hasContactPoint = Object.values(contactPointValues).some(Boolean)
+
+  const sameAs = footer.socialMediaLinks
+    ?.map(({ url }) =>
+      getAbsoluteHttpUrl(url, siteUrl, site.assetsBaseUrl, sitemapArray),
+    )
+    .filter((url): url is string => url !== undefined)
+
+  const organisation = {
+    "@type":
+      entity?.type ??
+      (site.isGovernment
+        ? ("GovernmentOrganization" as const)
+        : ("Organization" as const)),
+    "@id": organisationId,
+    name: organisationName,
+    url: siteUrl,
+    logo: getAbsoluteHttpUrl(logoUrl, siteUrl),
+    description: getNonEmptyString(entity?.description),
+    address: hasAddress
+      ? {
+          "@type": "PostalAddress" as const,
+          ...addressValues,
+        }
+      : undefined,
+    contactPoint: hasContactPoint
+      ? {
+          "@type": "ContactPoint" as const,
+          ...contactPointValues,
+        }
+      : undefined,
+    sameAs: sameAs?.length ? sameAs : undefined,
+  }
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": websiteId,
+        name: siteName,
+        url: siteUrl,
+        publisher: {
+          "@id": organisationId,
+        },
+      },
+      organisation,
+    ],
+  }
+}
 
 const getOpenGraphTitle = (props: IsomerPageSchemaType) => {
   // NOTE: We show the site name as the title for the homepage, as places like
@@ -10,7 +165,7 @@ const getOpenGraphTitle = (props: IsomerPageSchemaType) => {
   return props.page.permalink === "/" ? props.site.siteName : props.page.title
 }
 
-const getMetaDescription = (props: IsomerPageSchemaType) => {
+const getMetaDescription = (props: GetPageJsonLdProps) => {
   if (props.meta?.description) {
     return props.meta.description
   }
@@ -25,7 +180,10 @@ const getMetaDescription = (props: IsomerPageSchemaType) => {
     case ISOMER_PAGE_LAYOUTS.Collection:
       return props.page.subtitle
     case ISOMER_PAGE_LAYOUTS.Homepage:
-      return props.content.find((item) => item.type === "hero")?.subtitle
+      return (
+        props.content.find((item) => item.type === "hero")?.subtitle ||
+        props.site.siteName
+      )
     case ISOMER_PAGE_LAYOUTS.File:
     case ISOMER_PAGE_LAYOUTS.Link:
     case ISOMER_PAGE_LAYOUTS.Search:
@@ -69,7 +227,7 @@ const getMetaImage = (props: IsomerPageSchemaType) => {
 // NOTE: We throw an error for malformed site URLs to ensure data integrity.
 // The schema serves as our contract - when inputs don't match expectations,
 // we should fail fast rather than accommodate inconsistent data formats.
-const getCanonicalUrl = (props: IsomerPageSchemaType) => {
+const getCanonicalUrl = (props: GetPageJsonLdProps) => {
   if (!props.site.url) return props.page.permalink
 
   if (!props.site.url.startsWith("https://")) {
@@ -82,6 +240,33 @@ const getCanonicalUrl = (props: IsomerPageSchemaType) => {
     return new URL(props.page.permalink, props.site.url).toString()
   } catch {
     throw new Error("Invalid site URL or permalink.")
+  }
+}
+
+/**
+ * Generates the Schema.org entity for a rendered page. Its stable references
+ * connect it to the site-wide WebSite and Organization graph.
+ */
+export const getPageJsonLd = (props: GetPageJsonLdProps) => {
+  const canonicalUrl = getCanonicalUrl(props)
+  const siteUrl = getSiteUrl(props.site.url)
+  const pageUrl = new URL(canonicalUrl, siteUrl).toString()
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": new URL("#webpage", pageUrl).toString(),
+    url: pageUrl,
+    name: props.page.title,
+    description: getMetaDescription(props),
+    dateModified: props.page.lastModified,
+    inLanguage: "en",
+    isPartOf: {
+      "@id": new URL("#website", siteUrl).toString(),
+    },
+    publisher: {
+      "@id": new URL("#organization", siteUrl).toString(),
+    },
   }
 }
 

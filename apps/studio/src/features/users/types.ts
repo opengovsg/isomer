@@ -15,3 +15,15 @@ export interface RemoveUserModalState {
   siteId: number
   userId: string
 }
+
+export type ExportAccessLogsModalState = UnopenedModalState | OpenedModalState
+
+interface UnopenedModalState {
+  siteId: 0
+  isOpen?: false
+}
+
+interface OpenedModalState {
+  isOpen: true
+  siteId: number
+}

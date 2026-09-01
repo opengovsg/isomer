@@ -13,8 +13,6 @@ export const IS_SINGPASS_ENABLED_FEATURE_KEY = "is-singpass-enabled"
 export const IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY =
   "homepage-antiscam-banner-enabled"
 export const EGAZETTE_INFO_FEATURE_KEY = "egazette-info"
-export const IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY =
-  "is-advanced-redirects-enabled"
 // Gates the audit-log export surface (settings sidenav entry + page). OFF by
 // default so the feature can ship dark and be enabled per-environment.
 export const IS_AUDIT_LOG_ENABLED_FEATURE_KEY = "is-audit-log-enabled"

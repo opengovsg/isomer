@@ -27,6 +27,7 @@ const DefaultHeadings = () => {
               attrs={{ level }}
               content={[{ type: "text", text: `This is a heading-${level}` }]}
               site={generateSiteConfig()}
+              headingLevel={2}
             />
           </div>
         )
@@ -49,6 +50,7 @@ const HeadingsWithDirection = () => {
               attrs={{ level: 2, dir: dir as AttrsDirProps }}
               content={[{ type: "text", text: `ما ${dir} فائدته ؟` }]}
               site={generateSiteConfig()}
+              headingLevel={2}
             />
           </div>
         )

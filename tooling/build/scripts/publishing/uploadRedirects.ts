@@ -99,6 +99,29 @@ export function normalizeSource(source: string): string | null {
   return trimmed
 }
 
+// A reference destination has already been resolved to a path by GET_REDIRECTS
+// before this script runs. Compare the paths as CloudFront will see them:
+// percent-decoded, slash-normalised and without a query/fragment (neither is
+// part of the S3 object key). For a wildcard, compare its prefix because the
+// edge resolver appends the matched remainder to the destination; e.g.
+// "/students/*" -> "/students" also redirects every request back to itself.
+// Exported for focused regression coverage of this final upload boundary.
+export function isSelfReferentialRedirect({
+  source,
+  destination,
+}: Redirect): boolean {
+  if (!destination.startsWith("/")) return false
+
+  const sourcePath = source.endsWith("/*") ? source.slice(0, -2) : source
+  const destinationPath = destination.split(/[?#]/, 1)[0]
+  const normalizedSource = normalizeSource(sourcePath)
+  const normalizedDestination = destinationPath
+    ? normalizeSource(destinationPath)
+    : null
+
+  return normalizedSource !== null && normalizedSource === normalizedDestination
+}
+
 export const MANIFEST_KEY_SUFFIX = "_redirects/manifest.json"
 
 // A stored source is a wildcard ("…/*") — those go in the manifest for the edge
@@ -235,7 +258,17 @@ async function main(): Promise<void> {
   // Partition BEFORE per-kind normalisation: wildcard sources must not go
   // through normalizeSource (it strips the leading slash and would mangle the
   // "/*"). Their stored sources are already canonical (written by the schema).
-  const { exact: rawExact, manifestEntries } = partitionRedirects(raw)
+  // GET_REDIRECTS drops self-references too, but enforce the invariant again at
+  // the final upload boundary. This also protects custom/stale redirects.json
+  // inputs and catches percent-encoded sources after CloudFront normalisation.
+  const publishable = raw.filter((redirect) => {
+    if (!isSelfReferentialRedirect(redirect)) return true
+    console.warn(
+      `Skipping self-referential redirect: ${redirect.source} -> ${redirect.destination}`,
+    )
+    return false
+  })
+  const { exact: rawExact, manifestEntries } = partitionRedirects(publishable)
 
   // Exact: normalise the S3 key (decode %-encoding, strip slashes, safety checks).
   const seen = new Set<string>()
