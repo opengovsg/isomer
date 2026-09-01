@@ -1,9 +1,9 @@
 import { HStack, IconButton, Text, VStack } from "@chakra-ui/react"
-import { Badge, BadgeLeftIcon } from "@opengovsg/design-system-react"
 import Link from "next/link"
-import { BiChevronRight, BiHomeAlt, BiSolidCircle } from "react-icons/bi"
+import { BiChevronRight, BiHomeAlt } from "react-icons/bi"
+import { HasDraftIndicator } from "~/components/HasDraftIndicator"
+import { LiveStatusBadges } from "~/components/LiveStatusBadges"
 import { trpc } from "~/utils/trpc"
-import { ResourceState } from "~prisma/generated/generatedEnums"
 
 interface RootpageRowProps {
   siteId: number
@@ -15,7 +15,17 @@ interface RootpageRowProps {
 // in ~/constants/resources), so a client-side affordance would just surface
 // a confusing error instead of failing silently.
 export const RootpageRow = ({ siteId }: RootpageRowProps) => {
-  const [{ id, title, draftBlobId }] = trpc.page.getRootPage.useSuspenseQuery({
+  const [
+    {
+      id,
+      title,
+      draftBlobId,
+      publishedVersionId,
+      scheduledAt,
+      scheduledAction,
+      lastPublishedAt,
+    },
+  ] = trpc.page.getRootPage.useSuspenseQuery({
     siteId,
   })
   return (
@@ -38,16 +48,13 @@ export const RootpageRow = ({ siteId }: RootpageRowProps) => {
       <VStack flex={1} gap="0.25rem" alignItems="flex-start">
         <HStack gap="0.25rem">
           <Text textStyle="subhead-2">{title}</Text>
-          <Badge
-            size="xs"
-            variant="clear"
-            colorScheme={draftBlobId ? "warning" : "success"}
-          >
-            <BadgeLeftIcon fontSize="0.5rem" as={BiSolidCircle} />
-            <Text textStyle="legal">
-              {draftBlobId ? ResourceState.Draft : ResourceState.Published}
-            </Text>
-          </Badge>
+          <LiveStatusBadges
+            liveStatus={publishedVersionId !== null ? "live" : "notLive"}
+            scheduledAt={scheduledAt}
+            scheduledAction={scheduledAction}
+            lastPublishedAt={lastPublishedAt}
+          />
+          <HasDraftIndicator draftBlobId={draftBlobId} />
         </HStack>
         {/*   TODO: werequire the last updated at and to display it */}
         {/* as a relative time. */}
