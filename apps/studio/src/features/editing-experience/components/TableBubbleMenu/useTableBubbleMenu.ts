@@ -4,10 +4,9 @@ import { useEditorState } from "@tiptap/react"
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
-  type FocusEvent,
-  type RefCallback,
   type RefObject,
 } from "react"
 
@@ -18,23 +17,41 @@ import {
   isEditorModalOpen,
 } from "./TableBubbleMenu.utils"
 import {
+  createBottomRightVirtualElement,
+  getEditorScrollParent,
+  TABLE_BUBBLE_MENU_PLUGIN_KEY,
+} from "./tableBubbleMenuAnchor"
+import {
   registerTableBubbleMenuFocusTrigger,
   unregisterTableBubbleMenuFocusTrigger,
 } from "./tableBubbleMenuFocus"
-import { useTableBubbleMenuPencilTriggerPosition } from "./useTableBubbleMenuPencilTriggerPosition"
 
 export interface TableBubbleMenuUiState {
-  show: boolean
   kind: SelectionKind
   isActivated: boolean
-  menuRef: RefCallback<HTMLDivElement>
   triggerRef: RefObject<HTMLButtonElement>
-  popoverContentRef: RefCallback<HTMLElement>
-  position: { x: number; y: number } | null
-  onMenuFocus: () => void
-  onMenuBlur: (event: FocusEvent<HTMLElement>) => void
+  popoverContentRef: (node: HTMLElement | null) => void
   toggleMenu: () => void
   deactivateMenu: () => void
+  shouldShow: (props: {
+    editor: Editor
+    view: Editor["view"]
+    element: HTMLElement
+  }) => boolean
+  getReferencedVirtualElement: () => ReturnType<
+    typeof createBottomRightVirtualElement
+  >
+  bubbleMenuOptions: {
+    strategy: "fixed"
+    placement: "top-end"
+    offset: number
+    flip: boolean
+    shift: boolean
+    hide: boolean
+    scrollTarget: HTMLElement | Window
+  }
+  appendTo: () => HTMLElement
+  pluginKey: string
 }
 
 const isElement = (target: EventTarget | null): target is Element =>
@@ -46,22 +63,19 @@ const getSelectionRangeKey = (selection: Editor["state"]["selection"]) =>
     : `${selection.from}:${selection.to}`
 
 export const useTableBubbleMenu = (editor: Editor): TableBubbleMenuUiState => {
-  const menuElRef = useRef<HTMLDivElement | null>(null)
   const popoverContentElRef = useRef<HTMLElement | null>(null)
-  const [menuEl, setMenuEl] = useState<HTMLDivElement | null>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
-
-  const menuRef = useCallback((node: HTMLDivElement | null) => {
-    menuElRef.current = node
-    setMenuEl(node)
-  }, [])
+  const menuHasFocusRef = useRef(false)
+  const lastForcedVisibilityRef = useRef<boolean | null>(null)
+  const [scrollTarget, setScrollTarget] = useState<HTMLElement | Window>(
+    () => window,
+  )
 
   const popoverContentRef = useCallback((node: HTMLElement | null) => {
     popoverContentElRef.current = node
   }, [])
 
   const [isActivated, setIsActivated] = useState(false)
-  const [menuHasFocus, setMenuHasFocus] = useState(false)
 
   const { kind, selection, isDragging, isFocused } = useEditorState({
     editor,
@@ -79,30 +93,11 @@ export const useTableBubbleMenu = (editor: Editor): TableBubbleMenuUiState => {
       previous.isDragging === next.isDragging,
   })
 
-  const show =
-    isActionableTableSelectionKind(kind) &&
-    !isDragging &&
-    !isEditorModalOpen() &&
-    (isFocused || menuHasFocus)
-
   const selectionRangeKey = getSelectionRangeKey(selection)
 
   useEffect(() => {
     setIsActivated(false)
   }, [selectionRangeKey])
-
-  useEffect(() => {
-    if (!show) {
-      setIsActivated(false)
-    }
-  }, [show])
-
-  const position = useTableBubbleMenuPencilTriggerPosition({
-    editor,
-    menuEl,
-    show,
-    selection,
-  })
 
   useEffect(() => {
     registerTableBubbleMenuFocusTrigger(editor, () => {
@@ -117,46 +112,142 @@ export const useTableBubbleMenu = (editor: Editor): TableBubbleMenuUiState => {
   }, [editor])
 
   useEffect(() => {
-    const isMenuElement = (target: EventTarget | null) =>
-      isElement(target) &&
-      ((menuElRef.current?.contains(target) ?? false) ||
-        (popoverContentElRef.current?.contains(target) ?? false))
+    const nextScrollTarget = getEditorScrollParent(editor.view)
+    setScrollTarget(nextScrollTarget)
+    editor.view.dispatch(
+      editor.state.tr.setMeta(TABLE_BUBBLE_MENU_PLUGIN_KEY, {
+        type: "updateOptions",
+        options: {
+          options: {
+            strategy: "fixed",
+            placement: "top-end",
+            offset: 4,
+            flip: true,
+            shift: false,
+            hide: false,
+            scrollTarget: nextScrollTarget,
+          },
+        },
+      }),
+    )
+  }, [editor, selection])
 
-    const isWithinFocusScope = (target: EventTarget | null) =>
-      isElement(target) &&
-      (isMenuElement(target) || editor.view.dom.contains(target))
+  const isWithinMenuFocusScope = useCallback((target: EventTarget | null) => {
+    if (!isElement(target)) return false
+    const popoverContent = popoverContentElRef.current
+    return (
+      target === triggerRef.current ||
+      (popoverContent?.contains(target) ?? false)
+    )
+  }, [])
 
-    const onBlur = ({ event }: { event?: globalThis.FocusEvent }) => {
-      const relatedTarget = event?.relatedTarget ?? null
-      if (isWithinFocusScope(relatedTarget)) {
-        if (isMenuElement(relatedTarget)) {
-          setMenuHasFocus(true)
-        }
-        return
-      }
-      setMenuHasFocus(false)
-    }
-    editor.on("blur", onBlur)
-    return () => {
-      editor.off("blur", onBlur)
-    }
+  const shouldShowMenu = useCallback(
+    ({
+      editor: currentEditor,
+      view,
+      element,
+    }: {
+      editor: Editor
+      view: Editor["view"]
+      element: HTMLElement
+    }) => {
+      const currentKind = detectTableSelectionKind(currentEditor)
+      const isChildOfMenu =
+        element.contains(document.activeElement) ||
+        isWithinMenuFocusScope(document.activeElement)
+
+      return (
+        isActionableTableSelectionKind(currentKind) &&
+        tableEditingKey.getState(currentEditor.state) == null &&
+        !isEditorModalOpen() &&
+        (view.hasFocus() ||
+          currentEditor.isFocused ||
+          menuHasFocusRef.current ||
+          isChildOfMenu)
+      )
+    },
+    [isWithinMenuFocusScope],
+  )
+
+  const getReferencedVirtualElement = useCallback(() => {
+    return createBottomRightVirtualElement(editor.view, editor.state)
   }, [editor])
 
-  const onMenuFocus = () => setMenuHasFocus(true)
+  const bubbleMenuOptions = useMemo(
+    () => ({
+      strategy: "fixed" as const,
+      placement: "top-end" as const,
+      offset: 4,
+      flip: true,
+      shift: false,
+      hide: false,
+      scrollTarget,
+    }),
+    [scrollTarget],
+  )
 
-  const onMenuBlur = (event: FocusEvent<HTMLElement>) => {
-    const relatedTarget = event.relatedTarget
-    if (
-      isElement(relatedTarget) &&
-      ((menuElRef.current?.contains(relatedTarget) ?? false) ||
-        (popoverContentElRef.current?.contains(relatedTarget) ?? false) ||
-        editor.view.dom.contains(relatedTarget))
-    ) {
-      return
+  const appendTo = useCallback(() => document.body, [])
+
+  const syncForcedVisibility = useCallback(
+    (visible: boolean) => {
+      if (lastForcedVisibilityRef.current === visible) return
+      lastForcedVisibilityRef.current = visible
+      editor.commands.setMeta(
+        TABLE_BUBBLE_MENU_PLUGIN_KEY,
+        visible ? "show" : "hide",
+      )
+    },
+    [editor],
+  )
+
+  // BubbleMenu's plugin view only re-runs shouldShow when the doc or
+  // selection changes. Clearing tableEditingKey on mouseup is plugin state
+  // only, so force show/hide through the plugin meta API.
+  useEffect(() => {
+    const isChildOfMenu = isWithinMenuFocusScope(document.activeElement)
+    const visible =
+      isActionableTableSelectionKind(kind) &&
+      !isDragging &&
+      !isEditorModalOpen() &&
+      (isFocused || menuHasFocusRef.current || isChildOfMenu)
+
+    syncForcedVisibility(visible)
+  }, [
+    kind,
+    isDragging,
+    isFocused,
+    isWithinMenuFocusScope,
+    syncForcedVisibility,
+  ])
+
+  // appendTo body makes BubbleMenu treat document.body as parentNode, so
+  // its own blur handler never hides (body contains the next focus target).
+  useEffect(() => {
+    const onFocusIn = (event: globalThis.FocusEvent) => {
+      const target = event.target
+      const inEditor = isElement(target) && editor.view.dom.contains(target)
+      const inMenu = isWithinMenuFocusScope(target)
+
+      if (inMenu) {
+        menuHasFocusRef.current = true
+        return
+      }
+
+      if (inEditor) {
+        menuHasFocusRef.current = false
+        return
+      }
+
+      menuHasFocusRef.current = false
+      setIsActivated(false)
+      syncForcedVisibility(false)
     }
-    setMenuHasFocus(false)
-    setIsActivated(false)
-  }
+
+    document.addEventListener("focusin", onFocusIn)
+    return () => {
+      document.removeEventListener("focusin", onFocusIn)
+    }
+  }, [editor, isWithinMenuFocusScope, syncForcedVisibility])
 
   const toggleMenu = () => {
     setIsActivated((activated) => {
@@ -173,16 +264,16 @@ export const useTableBubbleMenu = (editor: Editor): TableBubbleMenuUiState => {
   }
 
   return {
-    show,
     kind,
     isActivated,
-    menuRef,
     triggerRef,
     popoverContentRef,
-    position,
-    onMenuFocus,
-    onMenuBlur,
     toggleMenu,
     deactivateMenu,
+    shouldShow: shouldShowMenu,
+    getReferencedVirtualElement,
+    bubbleMenuOptions,
+    appendTo,
+    pluginKey: TABLE_BUBBLE_MENU_PLUGIN_KEY,
   }
 }
