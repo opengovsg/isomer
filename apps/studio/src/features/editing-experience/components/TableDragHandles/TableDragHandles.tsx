@@ -177,6 +177,17 @@ const collectAxisBoundaries = (
   return boundaries
 }
 
+const boundariesFromGeometry = (
+  geometry: TableGeometry,
+  axis: "row" | "column",
+  lockMinIndex: number,
+): number[] =>
+  collectAxisBoundaries(
+    axis === "row" ? geometry.rowRects : geometry.colRects,
+    lockMinIndex,
+    axis === "row" ? "top" : "left",
+  )
+
 const DRAG_THRESHOLD_PX = 4
 const EMPTY_RECTS: (Rect | null)[] = []
 const EMPTY_INDEXES: number[] = []
@@ -596,6 +607,28 @@ export const TableDragHandles = ({
       resizeObserver?.disconnect()
     }
   }, [editor, containerRef])
+
+  useLayoutEffect(() => {
+    const current = dragRef.current
+    if (!current) return
+    const geometry = geometries.find((g) => g.pos === current.tablePos)
+    if (!geometry) return
+    const boundaries = boundariesFromGeometry(
+      geometry,
+      current.axis,
+      current.lockMinIndex,
+    )
+    if (boundaries.length === 0) return
+    if (
+      boundaries.length === current.boundaries.length &&
+      boundaries.every((value, index) => value === current.boundaries[index])
+    ) {
+      return
+    }
+    const next = { ...current, boundaries }
+    dragRef.current = next
+    setDrag(next)
+  }, [geometries])
 
   useEffect(() => {
     let frame: number | null = null
