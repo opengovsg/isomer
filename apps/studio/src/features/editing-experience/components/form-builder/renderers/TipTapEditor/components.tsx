@@ -4,7 +4,7 @@ import type { PropsWithChildren, RefObject } from "react"
 import type { EditorMenuBar } from "~/components/PageEditor/MenuBar/MenuBar"
 import { Box, VStack } from "@chakra-ui/react"
 import { EditorContent } from "@tiptap/react"
-import { useCallback, useMemo, useRef, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import { TableBubbleMenu } from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu"
 import { TableDragHandles } from "~/features/editing-experience/components/TableDragHandles/TableDragHandles"
 import {
@@ -58,13 +58,6 @@ const EditorContentWrapper = ({
   showTableExtras?: boolean
   onDragStateChange?: (isDragging: boolean) => void
 }) => {
-  const handleTableDragStateChange = useCallback(
-    (isDragging: boolean) => {
-      onDragStateChange?.(isDragging)
-    },
-    [onDragStateChange],
-  )
-
   return (
     <Box
       ref={containerRef}
@@ -88,7 +81,7 @@ const EditorContentWrapper = ({
         <TableDragHandles
           editor={editor}
           containerRef={containerRef}
-          onDragStateChange={handleTableDragStateChange}
+          onDragStateChange={onDragStateChange}
         />
       )}
     </Box>
