@@ -11,21 +11,15 @@ import {
 } from "@tiptap/pm/tables"
 import { useEditorState } from "@tiptap/react"
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
-import {
-  BiDotsHorizontalRounded,
-  BiDotsVerticalRounded,
-  BiPlus,
-} from "react-icons/bi"
+import { BiPlus } from "react-icons/bi"
 import {
   ADD_PILL_GAP_PX,
   ADD_PILL_MIN_LENGTH_PX,
   ADD_PILL_THICKNESS_PX,
   COL_HANDLE,
-  HANDLE_BORDER_PX,
+  HANDLE_ACTIVE_BG,
   HANDLE_BORDER_RADIUS_PX,
   HANDLE_GAP_PX,
-  HANDLE_ICON_PX,
-  HANDLE_MARGIN_PX,
   isPointerInTableChrome,
   ROW_HANDLE,
 } from "~/features/editing-experience/utils/tableEditorChrome"
@@ -35,6 +29,11 @@ import {
   viewportPointToContainerPoint,
   viewportRectToContainerRect,
 } from "~/features/editing-experience/utils/tableEditorGeometry"
+
+import {
+  selectionIncludesHeaderColumn,
+  selectionIncludesHeaderRow,
+} from "../TableBubbleMenu/TableBubbleMenu.utils"
 
 export interface TableDragHandlesProps {
   editor: TiptapEditor | null
@@ -137,6 +136,7 @@ interface DragState {
   tablePos: number
   pointer: number
   boundaries: number[]
+  lockMinIndex: number
 }
 
 interface PendingGesture {
@@ -146,12 +146,41 @@ interface PendingGesture {
   startClientX: number
   startClientY: number
   boundaries: number[]
+  lockMinIndex: number
+}
+
+const getAxisLockMinIndex = (
+  table: ProseMirrorNode,
+  axis: "row" | "column",
+): number => {
+  const map = TableMap.get(table)
+  const rect = { top: 0, left: 0, map, table }
+  if (axis === "row") {
+    return selectionIncludesHeaderRow(rect) ? 1 : 0
+  }
+  return selectionIncludesHeaderColumn(rect) ? 1 : 0
+}
+
+const collectAxisBoundaries = (
+  rects: (Rect | null)[],
+  lockMinIndex: number,
+  edge: "top" | "left",
+): number[] => {
+  const boundaries: number[] = []
+  rects.forEach((rect, i) => {
+    if (!rect) return
+    const start = edge === "top" ? rect.top : rect.left
+    const size = edge === "top" ? rect.height : rect.width
+    if (i === lockMinIndex) boundaries.push(start)
+    if (i >= lockMinIndex) boundaries.push(start + size)
+  })
+  return boundaries
 }
 
 const DRAG_THRESHOLD_PX = 4
 const EMPTY_RECTS: (Rect | null)[] = []
 const EMPTY_INDEXES: number[] = []
-const EMPTY_GEOMETRIES: TableGeometry[] = []
+const TABLE_DRAGGING_ATTR = "data-table-drag-handles-dragging"
 
 const selectWholeRow = (
   editor: TiptapEditor,
@@ -203,7 +232,25 @@ const boundaryToTargetIndex = (boundaryIndex: number, from: number) => {
   return boundaryIndex
 }
 
-type HandleVisualState = "passive" | "hover" | "selected" | "dragging"
+const resolveDropIndex = ({
+  pointer,
+  boundaries,
+  from,
+  lockMinIndex,
+}: {
+  pointer: number
+  boundaries: number[]
+  from: number
+  lockMinIndex: number
+}): number => {
+  const boundaryIndex = nearestBoundaryIndex(pointer, boundaries)
+  return Math.max(
+    lockMinIndex,
+    boundaryToTargetIndex(boundaryIndex + lockMinIndex, from),
+  )
+}
+
+type HandleVisualState = "passive" | "selected" | "dragging"
 
 const getSelectionHandleTarget = (
   editor: TiptapEditor,
@@ -230,50 +277,41 @@ const getSelectionHandleTarget = (
 const resolveHandleState = ({
   isSelected,
   isDragging,
-  isHovered,
 }: {
   isSelected: boolean
   isDragging: boolean
-  isHovered: boolean
 }): HandleVisualState => {
   if (isDragging) return "dragging"
   if (isSelected) return "selected"
-  if (isHovered) return "hover"
   return "passive"
 }
 
-const selectedChrome = {
-  bg: "interaction.main.default",
-  borderColor: "interaction.main.default",
-  color: "base.content.inverse",
-} as const
-
-const handleChromeByState = (state: HandleVisualState) => {
-  switch (state) {
-    case "passive":
-      return {
-        bg: "transparent",
-        borderColor: "transparent",
-        color: "base.content.medium",
-        cursor: "pointer",
-      }
-    case "hover":
-      return {
-        bg: "base.canvas.alt",
-        borderColor: "base.divider.medium",
-        color: "base.content.medium",
-        cursor: "grab",
-      }
-    case "selected":
-      return {
-        ...selectedChrome,
-        cursor: "grab",
-      }
-    case "dragging":
-      return {
-        ...selectedChrome,
-        cursor: "grabbing",
-      }
+const handleChromeByState = (state: HandleVisualState, isLocked: boolean) => {
+  const isActive = state === "selected" || state === "dragging"
+  const cursor = isLocked
+    ? "pointer"
+    : state === "dragging"
+      ? "grabbing"
+      : "grab"
+  return {
+    cursor,
+    sx: {
+      appearance: "none",
+      WebkitAppearance: "none",
+      backgroundColor: isActive
+        ? HANDLE_ACTIVE_BG
+        : "var(--chakra-colors-interaction-neutral-subtle-default)",
+      color: isActive ? "#FFFFFF" : "var(--chakra-colors-base-content-medium)",
+      _hover: isActive
+        ? {
+            backgroundColor: HANDLE_ACTIVE_BG,
+            color: "#FFFFFF",
+          }
+        : {
+            backgroundColor:
+              "var(--chakra-colors-interaction-muted-main-hover)",
+          },
+    },
   }
 }
 
@@ -281,21 +319,54 @@ const handleBaseStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  border: `${HANDLE_BORDER_PX}px solid`,
+  p: 0,
+  m: 0,
+  border: "0",
   borderRadius: `${HANDLE_BORDER_RADIUS_PX}px`,
   userSelect: "none",
   zIndex: "2",
   boxSizing: "border-box",
   lineHeight: 0,
-  transition: "background-color 0.15s, border-color 0.15s, color 0.15s",
+  flexShrink: 0,
+  transition: "background-color 0.15s, color 0.15s",
 } as const
 
-const EllipsisIcon = ({ axis }: { axis: "row" | "column" }) => (
-  <Icon
-    as={axis === "row" ? BiDotsVerticalRounded : BiDotsHorizontalRounded}
-    fontSize={`${HANDLE_ICON_PX}px`}
+const VerticalDotsIcon = ({ color }: { color: string }) => (
+  <Box
+    as="svg"
+    xmlns="http://www.w3.org/2000/svg"
+    width="4px"
+    height="14px"
+    viewBox="0 0 4 14"
+    fill="none"
+    flexShrink={0}
     aria-hidden
-  />
+    color={color}
+  >
+    <path
+      d="M1.66667 5C0.75 5 0 5.75 0 6.66667C0 7.58333 0.75 8.33333 1.66667 8.33333C2.58333 8.33333 3.33333 7.58333 3.33333 6.66667C3.33333 5.75 2.58333 5 1.66667 5ZM1.66667 0C0.75 0 0 0.75 0 1.66667C0 2.58333 0.75 3.33333 1.66667 3.33333C2.58333 3.33333 3.33333 2.58333 3.33333 1.66667C3.33333 0.75 2.58333 0 1.66667 0ZM1.66667 10C0.75 10 0 10.75 0 11.6667C0 12.5833 0.75 13.3333 1.66667 13.3333C2.58333 13.3333 3.33333 12.5833 3.33333 11.6667C3.33333 10.75 2.58333 10 1.66667 10Z"
+      fill="currentColor"
+    />
+  </Box>
+)
+
+const HorizontalDotsIcon = ({ color }: { color: string }) => (
+  <Box
+    as="svg"
+    xmlns="http://www.w3.org/2000/svg"
+    width="14px"
+    height="4px"
+    viewBox="0 0 14 4"
+    fill="none"
+    flexShrink={0}
+    aria-hidden
+    color={color}
+  >
+    <path
+      d="M8.3335 1.66667C8.3335 0.75 7.5835 0 6.66683 0C5.75016 0 5.00016 0.75 5.00016 1.66667C5.00016 2.58333 5.75016 3.33333 6.66683 3.33333C7.5835 3.33333 8.3335 2.58333 8.3335 1.66667ZM13.3335 1.66667C13.3335 0.75 12.5835 0 11.6668 0C10.7502 0 10.0002 0.75 10.0002 1.66667C10.0002 2.58333 10.7502 3.33333 11.6668 3.33333C12.5835 3.33333 13.3335 2.58333 13.3335 1.66667ZM3.3335 1.66667C3.3335 0.75 2.5835 0 1.66683 0C0.750163 0 0.000163 0.75 0.000163 1.66667C0.000163 2.58333 0.750163 3.33333 1.66683 3.33333C2.5835 3.33333 3.3335 2.58333 3.3335 1.66667Z"
+      fill="currentColor"
+    />
+  </Box>
 )
 
 const AddPillButton = ({
@@ -352,68 +423,88 @@ const RowHandle = ({
   state,
   tablePos,
   index,
+  isLocked,
   onMouseDown,
+  onClick,
 }: {
   rect: Rect
   state: HandleVisualState
   tablePos: number
   index: number
+  isLocked: boolean
   onMouseDown: (e: React.MouseEvent) => void
-}) => (
-  <Box
-    position="absolute"
-    left={`${rect.left - HANDLE_GAP_PX - ROW_HANDLE.w}px`}
-    top={`${rect.top + (rect.height - ROW_HANDLE.h) / 2}px`}
-    {...handleBaseStyle}
-    {...handleChromeByState(state)}
-    w={`${ROW_HANDLE.w}px`}
-    h={`${ROW_HANDLE.h}px`}
-    onMouseDown={onMouseDown}
-    title="Select or drag to reorder row"
-    aria-label="Drag to reorder row"
-    role="button"
-    data-state={state}
-    data-table-drag-handle="row"
-    data-table-pos={tablePos}
-    data-index={index}
-  >
-    <EllipsisIcon axis="row" />
-  </Box>
-)
+  onClick: () => void
+}) => {
+  const isActive = state === "selected" || state === "dragging"
+  const iconColor = isActive ? "white" : "base.content.medium"
+  return (
+    <Box
+      as="button"
+      type="button"
+      position="absolute"
+      left={`${rect.left - HANDLE_GAP_PX - ROW_HANDLE.w}px`}
+      top={`${rect.top + (rect.height - ROW_HANDLE.h) / 2}px`}
+      {...handleBaseStyle}
+      {...handleChromeByState(state, isLocked)}
+      w={`${ROW_HANDLE.w}px`}
+      h={`${ROW_HANDLE.h}px`}
+      onMouseDown={onMouseDown}
+      onClick={onClick}
+      title={isLocked ? "Select row" : "Select or drag to reorder row"}
+      aria-label={isLocked ? "Select row" : "Drag to reorder row"}
+      data-state={state}
+      data-table-drag-handle="row"
+      data-table-pos={tablePos}
+      data-index={index}
+    >
+      <VerticalDotsIcon color={iconColor} />
+    </Box>
+  )
+}
 
 const ColumnHandle = ({
   rect,
   state,
   tablePos,
   index,
+  isLocked,
   onMouseDown,
+  onClick,
 }: {
   rect: Rect
   state: HandleVisualState
   tablePos: number
   index: number
+  isLocked: boolean
   onMouseDown: (e: React.MouseEvent) => void
-}) => (
-  <Box
-    position="absolute"
-    top={`${rect.top - HANDLE_GAP_PX - COL_HANDLE.h}px`}
-    left={`${rect.left + (rect.width - COL_HANDLE.w) / 2}px`}
-    {...handleBaseStyle}
-    {...handleChromeByState(state)}
-    w={`${COL_HANDLE.w}px`}
-    h={`${COL_HANDLE.h}px`}
-    onMouseDown={onMouseDown}
-    title="Select or drag to reorder column"
-    aria-label="Drag to reorder column"
-    role="button"
-    data-state={state}
-    data-table-drag-handle="column"
-    data-table-pos={tablePos}
-    data-index={index}
-  >
-    <EllipsisIcon axis="column" />
-  </Box>
-)
+  onClick: () => void
+}) => {
+  const isActive = state === "selected" || state === "dragging"
+  const iconColor = isActive ? "white" : "base.content.medium"
+  return (
+    <Box
+      as="button"
+      type="button"
+      position="absolute"
+      top={`${rect.top - HANDLE_GAP_PX - COL_HANDLE.h}px`}
+      left={`${rect.left + (rect.width - COL_HANDLE.w) / 2}px`}
+      {...handleBaseStyle}
+      {...handleChromeByState(state, isLocked)}
+      w={`${COL_HANDLE.w}px`}
+      h={`${COL_HANDLE.h}px`}
+      onMouseDown={onMouseDown}
+      onClick={onClick}
+      title={isLocked ? "Select column" : "Select or drag to reorder column"}
+      aria-label={isLocked ? "Select column" : "Drag to reorder column"}
+      data-state={state}
+      data-table-drag-handle="column"
+      data-table-pos={tablePos}
+      data-index={index}
+    >
+      <HorizontalDotsIcon color={iconColor} />
+    </Box>
+  )
+}
 
 export const TableDragHandles = ({
   editor,
@@ -421,11 +512,10 @@ export const TableDragHandles = ({
   onDragStateChange,
 }: TableDragHandlesProps) => {
   const [hoverTablePos, setHoverTablePos] = useState<number | null>(null)
-  const [hoverRow, setHoverRow] = useState<number | null>(null)
-  const [hoverCol, setHoverCol] = useState<number | null>(null)
   const [drag, setDrag] = useState<DragState | null>(null)
   const dragRef = useRef<DragState | null>(null)
   const pendingRef = useRef<PendingGesture | null>(null)
+  const suppressNextClickRef = useRef(false)
 
   const [geometries, setGeometries] = useState<TableGeometry[]>([])
 
@@ -466,76 +556,82 @@ export const TableDragHandles = ({
       )
     }
 
+    const resizeObserver =
+      typeof ResizeObserver !== "undefined" ? new ResizeObserver(measure) : null
+
+    const observeLayout = () => {
+      if (!resizeObserver) return
+      resizeObserver.disconnect()
+      const container = containerRef.current
+      if (!container) return
+      resizeObserver.observe(container)
+      container.querySelectorAll("table").forEach((table) => {
+        resizeObserver.observe(table)
+      })
+    }
+
+    const onEditorChange = () => {
+      observeLayout()
+      measure()
+    }
+
     measure()
-    const raf = requestAnimationFrame(measure)
-    editor.on("transaction", measure)
-    editor.on("update", measure)
+    observeLayout()
+    const raf = requestAnimationFrame(() => {
+      observeLayout()
+      measure()
+    })
+    editor.on("transaction", onEditorChange)
+    editor.on("update", onEditorChange)
+    window.addEventListener("resize", measure)
+    const container = containerRef.current
+    container?.addEventListener("scroll", measure, true)
+
     return () => {
       cancelAnimationFrame(raf)
-      editor.off("transaction", measure)
-      editor.off("update", measure)
+      editor.off("transaction", onEditorChange)
+      editor.off("update", onEditorChange)
+      window.removeEventListener("resize", measure)
+      container?.removeEventListener("scroll", measure, true)
+      resizeObserver?.disconnect()
     }
   }, [editor, containerRef])
 
   useEffect(() => {
-    const onMove = (e: MouseEvent) => {
+    let frame: number | null = null
+
+    const hitTestTables = (clientX: number, clientY: number) => {
       if (dragRef.current || pendingRef.current) return
       const container = containerRef.current
       if (!container) return
       const containerRect = container.getBoundingClientRect()
-      const { clientX, clientY } = e
 
       let matchedTablePos: number | null = null
-      let matchedRow: number | null = null
-      let matchedCol: number | null = null
 
       for (const geometry of geometries) {
-        let rowHit: number | null = null
-        geometry.rowRects.forEach((rect, i) => {
-          if (!rect) return
-          const viewportRect = containerRectToViewportRect({
-            rect,
-            containerRect,
-            scrollTop: container.scrollTop,
-            scrollLeft: container.scrollLeft,
-          })
-          const top = viewportRect.top
-          const bottom = top + rect.height
-          const left = viewportRect.left
-          const right = left + rect.width
-          if (
-            clientY >= top &&
-            clientY <= bottom &&
-            clientX >= left - HANDLE_MARGIN_PX &&
-            clientX <= right
-          ) {
-            rowHit = i
-          }
-        })
-
-        let colHit: number | null = null
         const tableRects = geometry.rowRects.filter((r): r is Rect => !!r)
         const firstRowRect = tableRects[0]
         const lastRowRect = tableRects[tableRects.length - 1]
-        let inChrome = false
-        if (firstRowRect && lastRowRect) {
-          const firstViewport = containerRectToViewportRect({
-            rect: firstRowRect,
-            containerRect,
-            scrollTop: container.scrollTop,
-            scrollLeft: container.scrollLeft,
-          })
-          const lastViewport = containerRectToViewportRect({
-            rect: lastRowRect,
-            containerRect,
-            scrollTop: container.scrollTop,
-            scrollLeft: container.scrollLeft,
-          })
-          const tableTop = firstViewport.top
-          const tableBottom = lastViewport.top + lastRowRect.height
-          const tableLeft = firstViewport.left
-          const tableRight = firstViewport.left + firstRowRect.width
-          inChrome = isPointerInTableChrome({
+        if (!firstRowRect || !lastRowRect) continue
+
+        const firstViewport = containerRectToViewportRect({
+          rect: firstRowRect,
+          containerRect,
+          scrollTop: container.scrollTop,
+          scrollLeft: container.scrollLeft,
+        })
+        const lastViewport = containerRectToViewportRect({
+          rect: lastRowRect,
+          containerRect,
+          scrollTop: container.scrollTop,
+          scrollLeft: container.scrollLeft,
+        })
+        const tableTop = firstViewport.top
+        const tableBottom = lastViewport.top + lastRowRect.height
+        const tableLeft = firstViewport.left
+        const tableRight = firstViewport.left + firstRowRect.width
+        if (
+          isPointerInTableChrome({
             clientX,
             clientY,
             tableLeft,
@@ -543,54 +639,32 @@ export const TableDragHandles = ({
             tableRight,
             tableBottom,
           })
-          geometry.colRects.forEach((rect, i) => {
-            if (!rect) return
-            const left = containerRectToViewportRect({
-              rect,
-              containerRect,
-              scrollTop: container.scrollTop,
-              scrollLeft: container.scrollLeft,
-            }).left
-            const right = left + rect.width
-            if (
-              clientX >= left &&
-              clientX <= right &&
-              clientY >= tableTop - HANDLE_MARGIN_PX &&
-              clientY <= tableBottom
-            ) {
-              colHit = i
-            }
-          })
-        }
-
-        if (rowHit !== null || colHit !== null || inChrome) {
+        ) {
           matchedTablePos = geometry.pos
-          matchedRow = rowHit
-          matchedCol = colHit
           break
         }
       }
 
       setHoverTablePos(matchedTablePos)
-      setHoverRow(matchedRow)
-      setHoverCol(matchedCol)
+    }
+
+    const onMove = (event: MouseEvent) => {
+      if (frame !== null) return
+      const { clientX, clientY } = event
+      frame = requestAnimationFrame(() => {
+        frame = null
+        hitTestTables(clientX, clientY)
+      })
     }
 
     window.addEventListener("mousemove", onMove)
-    return () => window.removeEventListener("mousemove", onMove)
+    return () => {
+      window.removeEventListener("mousemove", onMove)
+      if (frame !== null) cancelAnimationFrame(frame)
+    }
   }, [geometries, containerRef])
 
-  const visibleGeometries = useMemo(() => {
-    const positions = new Set<number>()
-    if (drag) positions.add(drag.tablePos)
-    if (hoverTablePos !== null) positions.add(hoverTablePos)
-    if (selectionTarget) positions.add(selectionTarget.tablePos)
-    if (positions.size === 0) return EMPTY_GEOMETRIES
-    return geometries.filter((g) => positions.has(g.pos))
-  }, [drag, hoverTablePos, selectionTarget, geometries])
-
-  const gestureTablePos =
-    drag?.tablePos ?? hoverTablePos ?? selectionTarget?.tablePos ?? null
+  const gestureTablePos = drag?.tablePos ?? hoverTablePos ?? null
   const gestureGeometry =
     geometries.find((g) => g.pos === gestureTablePos) ?? null
   const gestureRowRects = gestureGeometry?.rowRects ?? EMPTY_RECTS
@@ -599,19 +673,20 @@ export const TableDragHandles = ({
     (tablePos: number, rowIndex: number, rowRects: (Rect | null)[]) =>
     (e: React.MouseEvent) => {
       e.preventDefault()
-      const boundaries: number[] = []
-      rowRects.forEach((rect, i) => {
-        if (!rect) return
-        if (i === 0) boundaries.push(rect.top)
-        boundaries.push(rect.top + rect.height)
-      })
+      if (!editor) return
+      const table = editor.state.doc.nodeAt(tablePos)
+      const lockMinIndex =
+        table && table.type.name === "table"
+          ? getAxisLockMinIndex(table, "row")
+          : 0
       pendingRef.current = {
         axis: "row",
         from: rowIndex,
         tablePos,
         startClientX: e.clientX,
         startClientY: e.clientY,
-        boundaries,
+        boundaries: collectAxisBoundaries(rowRects, lockMinIndex, "top"),
+        lockMinIndex,
       }
     }
 
@@ -619,33 +694,39 @@ export const TableDragHandles = ({
     (tablePos: number, colIndex: number, colRects: (Rect | null)[]) =>
     (e: React.MouseEvent) => {
       e.preventDefault()
-      const boundaries: number[] = []
-      colRects.forEach((rect, i) => {
-        if (!rect) return
-        if (i === 0) boundaries.push(rect.left)
-        boundaries.push(rect.left + rect.width)
-      })
+      if (!editor) return
+      const table = editor.state.doc.nodeAt(tablePos)
+      const lockMinIndex =
+        table && table.type.name === "table"
+          ? getAxisLockMinIndex(table, "column")
+          : 0
       pendingRef.current = {
         axis: "column",
         from: colIndex,
         tablePos,
         startClientX: e.clientX,
         startClientY: e.clientY,
-        boundaries,
+        boundaries: collectAxisBoundaries(colRects, lockMinIndex, "left"),
+        lockMinIndex,
       }
     }
 
   useEffect(() => {
-    if (!drag) return
+    const container = containerRef.current
+    if (!drag) {
+      container?.removeAttribute(TABLE_DRAGGING_ATTR)
+      return
+    }
+    container?.setAttribute(TABLE_DRAGGING_ATTR, "")
     const style = document.createElement("style")
     style.setAttribute("data-table-drag-handles-cursor", "")
-    style.textContent =
-      "*, *::before, *::after { cursor: grabbing !important; }"
+    style.textContent = `[${TABLE_DRAGGING_ATTR}], [${TABLE_DRAGGING_ATTR}] * { cursor: grabbing !important; }`
     document.head.appendChild(style)
     return () => {
       style.remove()
+      container?.removeAttribute(TABLE_DRAGGING_ATTR)
     }
-  }, [drag])
+  }, [drag, containerRef])
 
   const wasDraggingRef = useRef(false)
   useEffect(() => {
@@ -672,6 +753,7 @@ export const TableDragHandles = ({
         const dx = e.clientX - pending.startClientX
         const dy = e.clientY - pending.startClientY
         if (Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) return
+        if (pending.from < pending.lockMinIndex) return
 
         const containerRect = container.getBoundingClientRect()
         const pointer = viewportPointToContainerPoint({
@@ -687,6 +769,7 @@ export const TableDragHandles = ({
           tablePos: pending.tablePos,
           pointer: pending.axis === "row" ? pointer.y : pointer.x,
           boundaries: pending.boundaries,
+          lockMinIndex: pending.lockMinIndex,
         }
         pendingRef.current = null
         dragRef.current = state
@@ -729,11 +812,13 @@ export const TableDragHandles = ({
 
       if (!current || !editor) return
 
-      const boundaryIndex = nearestBoundaryIndex(
-        current.pointer,
-        current.boundaries,
-      )
-      const to = boundaryToTargetIndex(boundaryIndex, current.from)
+      suppressNextClickRef.current = true
+      const to = resolveDropIndex({
+        pointer: current.pointer,
+        boundaries: current.boundaries,
+        from: current.from,
+        lockMinIndex: current.lockMinIndex,
+      })
       if (to !== current.from) {
         // moveTableRow/moveTableColumn need a position inside the table node.
         if (current.axis === "row") {
@@ -791,18 +876,16 @@ export const TableDragHandles = ({
   const getTableBounds = (geometry: TableGeometry) => {
     const rowRects = geometry.rowRects.filter((r): r is Rect => !!r)
     const colRects = geometry.colRects.filter((r): r is Rect => !!r)
-    if (rowRects.length === 0 || colRects.length === 0) return null
-    const top = rowRects[0]!.top
-    const left = colRects[0]!.left
-    const bottom =
-      rowRects[rowRects.length - 1]!.top + rowRects[rowRects.length - 1]!.height
-    const right =
-      colRects[colRects.length - 1]!.left + colRects[colRects.length - 1]!.width
+    const firstRow = rowRects[0]
+    const lastRow = rowRects[rowRects.length - 1]
+    const firstCol = colRects[0]
+    const lastCol = colRects[colRects.length - 1]
+    if (!firstRow || !lastRow || !firstCol || !lastCol) return null
     return {
-      left,
-      top,
-      width: right - left,
-      height: bottom - top,
+      left: firstCol.left,
+      top: firstRow.top,
+      width: lastCol.left + lastCol.width - firstCol.left,
+      height: lastRow.top + lastRow.height - firstRow.top,
     }
   }
 
@@ -826,12 +909,37 @@ export const TableDragHandles = ({
     editor.chain().focus().setTextSelection(cellPos).addColumnAfter().run()
   }
 
+  const onHandleClick = (
+    axis: "row" | "column",
+    tablePos: number,
+    index: number,
+  ) => {
+    if (suppressNextClickRef.current) {
+      suppressNextClickRef.current = false
+      return
+    }
+    if (!editor) return
+    if (axis === "row") {
+      selectWholeRow(editor, tablePos, index)
+      return
+    }
+    selectWholeColumn(editor, tablePos, index)
+  }
+
   if (!editor) return null
 
   return (
     <>
-      {visibleGeometries.map((geometry) => {
-        const isHoverTable = hoverTablePos === geometry.pos
+      {geometries.map((geometry) => {
+        const tableNode = editor.state.doc.nodeAt(geometry.pos)
+        const rowLockMinIndex =
+          tableNode && tableNode.type.name === "table"
+            ? getAxisLockMinIndex(tableNode, "row")
+            : 0
+        const colLockMinIndex =
+          tableNode && tableNode.type.name === "table"
+            ? getAxisLockMinIndex(tableNode, "column")
+            : 0
         const selectionRows =
           selectionTarget?.tablePos === geometry.pos
             ? selectionTarget.rows
@@ -845,18 +953,15 @@ export const TableDragHandles = ({
           <Box key={`table-${geometry.pos}`} as="span" display="contents">
             {geometry.rowRects.map((rect, i) => {
               if (!rect) return null
-              const isHovered = isHoverTable && hoverRow === i
               const isInSelection = selectionRows.includes(i)
               const isSelected = selectionRows.length === 1 && isInSelection
               const isDragging =
                 drag?.axis === "row" &&
                 drag.tablePos === geometry.pos &&
                 drag.from === i
-              if (!isHovered && !isInSelection && !isDragging) return null
               const state = resolveHandleState({
                 isSelected,
                 isDragging,
-                isHovered,
               })
               return (
                 <RowHandle
@@ -865,29 +970,28 @@ export const TableDragHandles = ({
                   state={state}
                   tablePos={geometry.pos}
                   index={i}
+                  isLocked={i < rowLockMinIndex}
                   onMouseDown={beginRowGesture(
                     geometry.pos,
                     i,
                     geometry.rowRects,
                   )}
+                  onClick={() => onHandleClick("row", geometry.pos, i)}
                 />
               )
             })}
 
             {geometry.colRects.map((rect, i) => {
               if (!rect) return null
-              const isHovered = isHoverTable && hoverCol === i
               const isInSelection = selectionCols.includes(i)
               const isSelected = selectionCols.length === 1 && isInSelection
               const isDragging =
                 drag?.axis === "column" &&
                 drag.tablePos === geometry.pos &&
                 drag.from === i
-              if (!isHovered && !isInSelection && !isDragging) return null
               const state = resolveHandleState({
                 isSelected,
                 isDragging,
-                isHovered,
               })
               return (
                 <ColumnHandle
@@ -896,11 +1000,13 @@ export const TableDragHandles = ({
                   state={state}
                   tablePos={geometry.pos}
                   index={i}
+                  isLocked={i < colLockMinIndex}
                   onMouseDown={beginColGesture(
                     geometry.pos,
                     i,
                     geometry.colRects,
                   )}
+                  onClick={() => onHandleClick("column", geometry.pos, i)}
                 />
               )
             })}
@@ -908,7 +1014,7 @@ export const TableDragHandles = ({
         )
       })}
 
-      {visibleGeometries.map((geometry) => {
+      {geometries.map((geometry) => {
         const bounds = getTableBounds(geometry)
         if (!bounds || hoverTablePos !== geometry.pos || drag) return null
         const addRowWidth = Math.max(bounds.width, ADD_PILL_MIN_LENGTH_PX)
