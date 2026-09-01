@@ -2007,7 +2007,7 @@ export const WithBackgroundColors: Story = {
   args: {
     attrs: {
       caption:
-        "Body cells: every palette colour (pink–purple) or no colour. Header cells use the default backdrop.",
+        "Body and header cells: every palette colour (pink–purple) or no colour.",
     },
     content: [
       {

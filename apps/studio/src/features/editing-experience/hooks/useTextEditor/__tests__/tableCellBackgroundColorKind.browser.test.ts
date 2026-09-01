@@ -88,8 +88,8 @@ describe("TipTap table cell backgroundColor", () => {
   it("clears backgroundColor when a cell changes between header and body", () => {
     editor = createEditor(
       tableDoc({
-        headerColor: "brand.canvas.inverse",
-        bodyColor: "blue",
+        headerColor: "blue",
+        bodyColor: "pink",
       }),
     )
 
@@ -109,7 +109,7 @@ describe("TipTap table cell backgroundColor", () => {
             {
               type: "tableRow",
               content: [
-                { type: "tableCell", attrs: { backgroundColor: "blue" } },
+                { type: "tableCell", attrs: { backgroundColor: "pink" } },
               ],
             },
           ],
@@ -118,41 +118,29 @@ describe("TipTap table cell backgroundColor", () => {
     })
   })
 
-  it("does not emit deprecated brand data attributes", () => {
-    editor = createEditor(
-      tableDoc({
-        headerColor: "brand.canvas.inverse",
-        bodyColor: "brand.canvas.inverse",
-      }),
-    )
-    const html = editor.getHTML()
-
-    expect(html).not.toMatch(/data-background-color="brand\.canvas\.inverse"/)
-  })
-
-  it("emits palette data attribute on body cells only", () => {
+  it("emits palette data attributes on header and body cells", () => {
     editor = createEditor(
       tableDoc({
         headerColor: "blue",
-        bodyColor: "blue",
+        bodyColor: "pink",
       }),
     )
     const html = editor.getHTML()
 
-    expect(html).toMatch(/<td\b[^>]*data-background-color="blue"/)
-    expect(html).not.toMatch(/<th\b[^>]*data-background-color="blue"/)
+    expect(html).toMatch(/<th\b[^>]*data-background-color="blue"/)
+    expect(html).toMatch(/<td\b[^>]*data-background-color="pink"/)
   })
 
-  it("does not emit inline styles for deprecated brand tokens", () => {
+  it("emits inline background styles on header and body cells", () => {
     editor = createEditor(
       tableDoc({
-        headerColor: "brand.canvas.inverse",
+        headerColor: "green",
         bodyColor: null,
       }),
     )
 
     const th = editor.view.dom.querySelector("th")!
-    expect(th.getAttribute("data-background-color")).toBeNull()
-    expect(th.getAttribute("style")).toBeNull()
+    expect(th.getAttribute("data-background-color")).toBe("green")
+    expect(th.getAttribute("style")).toContain("background-color:")
   })
 })

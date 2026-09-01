@@ -253,8 +253,7 @@ const BackgroundColorSection = ({
   )
 }
 
-// Whole-table and no selection have nothing useful to color; every other
-// CellSelection kind can, as long as it isn't a mixed header+body block.
+// Any cell selection (including whole-table and mixed header/body) can be coloured.
 const BackgroundColor = ({
   editor,
   kind,
@@ -264,13 +263,12 @@ const BackgroundColor = ({
   kind: SelectionKind
   onColorSet: () => void
 }) => {
-  if (kind === "none" || kind === "table") return null
+  if (kind === "none") return null
 
   const { selection } = editor.state
   if (!(selection instanceof CellSelection)) return null
 
   const state = getSelectionBackgroundColorState(selection)
-  if (!state.canSet) return null
 
   return (
     <BackgroundColorSection

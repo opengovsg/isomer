@@ -272,8 +272,8 @@ describe("Table colgroup", () => {
   })
 })
 
-describe("Table backgroundColor by cell kind", () => {
-  it("paints palette on body cells only and ignores header colours", () => {
+describe("Table backgroundColor", () => {
+  it("paints palette colours on header and body cells", () => {
     const html = renderToStaticMarkup(
       <Table
         type="table"
@@ -285,11 +285,11 @@ describe("Table backgroundColor by cell kind", () => {
             content: [
               {
                 type: "tableHeader",
-                attrs: { backgroundColor: "brand.canvas.inverse" },
+                attrs: { backgroundColor: "pink" },
                 content: [
                   {
                     type: "paragraph",
-                    content: [{ type: "text", text: "Legacy brand header" }],
+                    content: [{ type: "text", text: "Pink header" }],
                   },
                 ],
               },
@@ -310,11 +310,11 @@ describe("Table backgroundColor by cell kind", () => {
             content: [
               {
                 type: "tableCell",
-                attrs: { backgroundColor: "brand.canvas.inverse" },
+                attrs: { backgroundColor: "green" },
                 content: [
                   {
                     type: "paragraph",
-                    content: [{ type: "text", text: "Legacy brand body" }],
+                    content: [{ type: "text", text: "Green body" }],
                   },
                 ],
               },
@@ -335,11 +335,11 @@ describe("Table backgroundColor by cell kind", () => {
     )
 
     const openTags = [...html.matchAll(/<(th|td)\b[^>]*>/g)].map((m) => m[0])
-    const [thBrand, thBlue, tdBrand, tdBlue] = openTags
+    const [thPink, thBlue, tdGreen, tdBlue] = openTags
 
-    expect(thBrand).not.toContain("background-color:")
-    expect(thBlue).not.toContain("background-color:")
-    expect(tdBrand).not.toContain("background-color:")
+    expect(thPink).toContain("background-color:#F7EBF1")
+    expect(thBlue).toContain("background-color:#EBECF7")
+    expect(tdGreen).toContain("background-color:#E9F6EC")
     expect(tdBlue).toContain("background-color:#EBECF7")
   })
 
