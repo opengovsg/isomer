@@ -1,7 +1,7 @@
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model"
 import type { Editor as TiptapEditor } from "@tiptap/react"
 import type { RefObject, MouseEvent as ReactMouseEvent } from "react"
-import { Box, Icon } from "@chakra-ui/react"
+import { Box } from "@chakra-ui/react"
 import {
   CellSelection,
   moveTableColumn,
@@ -11,10 +11,14 @@ import {
 } from "@tiptap/pm/tables"
 import { useEditorState } from "@tiptap/react"
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
-import { BiPlus } from "react-icons/bi"
 import {
   ADD_PILL_GAP_PX,
+  ADD_PILL_HOVER_BG,
+  ADD_PILL_ICON_FILL,
+  ADD_PILL_ICON_SIZE_PX,
+  ADD_PILL_IDLE_BG,
   ADD_PILL_MIN_LENGTH_PX,
+  ADD_PILL_RADIUS_PX,
   ADD_PILL_THICKNESS_PX,
   COL_HANDLE,
   HANDLE_ACTIVE_BG,
@@ -387,6 +391,24 @@ const HorizontalDotsIcon = () => (
   </Box>
 )
 
+const AddPlusIcon = () => (
+  <Box
+    as="svg"
+    xmlns="http://www.w3.org/2000/svg"
+    width={`${ADD_PILL_ICON_SIZE_PX}px`}
+    height={`${ADD_PILL_ICON_SIZE_PX}px`}
+    viewBox="0 0 12 12"
+    fill="none"
+    flexShrink={0}
+    aria-hidden
+  >
+    <path
+      d="M9.5 5.5H6.5V2.5H5.5V5.5H2.5V6.5H5.5V9.5H6.5V6.5H9.5V5.5Z"
+      fill={ADD_PILL_ICON_FILL}
+    />
+  </Box>
+)
+
 const AddPillButton = ({
   axis,
   left,
@@ -401,40 +423,44 @@ const AddPillButton = ({
   width: number
   height: number
   onClick: () => void
-}) => (
-  <Box
-    as="button"
-    type="button"
-    position="absolute"
-    left={`${left}px`}
-    top={`${top}px`}
-    w={`${width}px`}
-    h={`${height}px`}
-    display="flex"
-    alignItems="center"
-    justifyContent="center"
-    bg="base.canvas.alt"
-    border="1px solid"
-    borderColor="base.divider.medium"
-    borderRadius="full"
-    color="base.content.medium"
-    cursor="pointer"
-    zIndex="2"
-    transition="background-color 0.15s, border-color 0.15s"
-    aria-label={axis === "row" ? "Add row below" : "Add column to the right"}
-    data-table-add-handle={axis}
-    sx={{
-      _hover: {
-        bg: "base.divider.medium",
-        borderColor: "base.divider.strong",
-      },
-    }}
-    onMouseDown={(event: ReactMouseEvent) => event.preventDefault()}
-    onClick={onClick}
-  >
-    <Icon as={BiPlus} fontSize="0.875rem" aria-hidden />
-  </Box>
-)
+}) => {
+  const [isHovered, setIsHovered] = useState(false)
+  return (
+    <Box
+      as="button"
+      type="button"
+      position="absolute"
+      left={`${left}px`}
+      top={`${top}px`}
+      w={`${width}px`}
+      h={`${height}px`}
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      border="0"
+      borderRadius={`${ADD_PILL_RADIUS_PX}px`}
+      cursor="pointer"
+      zIndex="2"
+      transition="background-color 0.15s"
+      aria-label={axis === "row" ? "Add row below" : "Add column to the right"}
+      data-table-add-handle={axis}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      sx={{
+        appearance: "none",
+        WebkitAppearance: "none",
+        backgroundColor: isHovered ? ADD_PILL_HOVER_BG : ADD_PILL_IDLE_BG,
+        _hover: {
+          backgroundColor: ADD_PILL_HOVER_BG,
+        },
+      }}
+      onMouseDown={(event: ReactMouseEvent) => event.preventDefault()}
+      onClick={onClick}
+    >
+      <AddPlusIcon />
+    </Box>
+  )
+}
 
 const RowHandle = ({
   rect,

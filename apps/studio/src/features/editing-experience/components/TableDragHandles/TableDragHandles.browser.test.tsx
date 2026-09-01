@@ -9,7 +9,11 @@ import { EditorContent } from "@tiptap/react"
 import { useRef } from "react"
 import { describe, expect, it } from "vitest"
 import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor"
-import { HANDLE_THICKNESS_PX } from "~/features/editing-experience/utils/tableEditorChrome"
+import {
+  ADD_PILL_ICON_SIZE_PX,
+  ADD_PILL_RADIUS_PX,
+  HANDLE_THICKNESS_PX,
+} from "~/features/editing-experience/utils/tableEditorChrome"
 import { theme } from "~/theme"
 
 import { TableDragHandles } from "./TableDragHandles"
@@ -737,6 +741,53 @@ describe("TableDragHandles", () => {
     // Assert
     expect(pillRect.right).toBeLessThanOrEqual(clipRect.right + 0.5)
     expect(pillRect.left).toBeGreaterThanOrEqual(clipRect.left)
+  })
+
+  it("styles add pills with a subtle fill, 99px radius, and 12px plus icon", async () => {
+    // Arrange
+    const { container, getByLabelText } = await renderHarness()
+    const cell = findByCellText(container, "Row 1, A")
+    const { x, y } = centreOf(cell)
+
+    // Act
+    const pill = await hoverUntil(x, y, () => getByLabelText("Add row below"))
+
+    // Assert
+    expect(getComputedStyle(pill).backgroundColor).toBe("rgb(248, 249, 249)")
+    expect(getComputedStyle(pill).borderTopWidth).toBe("0px")
+    expect(parseFloat(getComputedStyle(pill).borderTopLeftRadius)).toBe(
+      ADD_PILL_RADIUS_PX,
+    )
+    const icon = pill.querySelector("svg")
+    expect(icon).toBeTruthy()
+    expect(icon && getComputedStyle(icon).width).toBe(
+      `${ADD_PILL_ICON_SIZE_PX}px`,
+    )
+    expect(icon && getComputedStyle(icon).height).toBe(
+      `${ADD_PILL_ICON_SIZE_PX}px`,
+    )
+    const path = icon?.querySelector("path")
+    expect(path?.getAttribute("fill")).toBe("#2C2E34")
+  })
+
+  it("uses the subtle hover fill when an add pill is hovered", async () => {
+    // Arrange
+    const { container, getByLabelText } = await renderHarness()
+    const cell = findByCellText(container, "Row 1, C")
+    const { x, y } = centreOf(cell)
+    const pill = await hoverUntil(x, y, () =>
+      getByLabelText("Add column to the right"),
+    )
+
+    // Act
+    act(() => {
+      fireEvent.mouseEnter(pill)
+    })
+
+    // Assert
+    await waitFor(() => {
+      expect(getComputedStyle(pill).backgroundColor).toBe("rgb(237, 237, 237)")
+    })
   })
 
   it("renders a rectangular 20px-thick row handle with no border", async () => {
