@@ -10,7 +10,7 @@ import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
 import { focusRing } from "~/utils/tailwind"
 
-import type { AppliedFilter, FilterProps } from "../../../types/Filter"
+import type { AppliedFilter, Filter, FilterProps } from "../../../types/Filter"
 import { Button } from "../Button"
 import { Checkbox, CheckboxGroup } from "../Checkbox"
 import { IconButton } from "../IconButton"
@@ -58,7 +58,11 @@ const ExpandFilterButton = ({
   )
 }
 
-interface FilterDrawerProps extends FilterProps {
+interface FilterDrawerProps extends Omit<
+  FilterProps,
+  "filters" | "items" | "tagCategories"
+> {
+  filters: Filter[]
   isOpen: boolean
   onOpen: (isOpen: boolean) => void
 }

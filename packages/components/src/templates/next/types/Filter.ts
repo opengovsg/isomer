@@ -1,3 +1,5 @@
+import type { ProcessedCollectionCardProps } from "~/interfaces"
+import type { CollectionPagePageProps } from "~/types"
 import type { TagCategoryDisplay } from "~/types/constants"
 
 export interface FilterItem {
@@ -57,7 +59,11 @@ export const isAppliedFilters = (value: unknown): value is AppliedFilter[] =>
   )
 
 export interface FilterProps {
-  filters: Filter[]
+  // NOTE: pass `items` + `tagCategories` for live date-filter counts, or
+  // pre-built `filters` for Storybook / tests.
+  filters?: Filter[]
+  items?: ProcessedCollectionCardProps[]
+  tagCategories?: CollectionPagePageProps["tagCategories"]
   appliedFilters: AppliedFilter[]
   setAppliedFilters: (appliedFilters: AppliedFilter[]) => void
   handleFilterToggle: (filterId: string, itemId: string) => void

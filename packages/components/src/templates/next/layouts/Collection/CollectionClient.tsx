@@ -15,7 +15,6 @@ import { PaginationControls } from "../../components/internal/PaginationControls
 import { CollectionPageHeader } from "./CollectionPageHeader"
 import { CollectionResults } from "./CollectionResults"
 import { ITEMS_PER_PAGE, useCollection } from "./useCollection"
-import { enrichItemsWithDateFilterCards } from "./utils/enrichItemsWithDateFilterCards"
 import { getAvailableFilters } from "./utils/getAvailableFilters"
 
 interface CollectionClientProps {
@@ -52,15 +51,6 @@ export const CollectionClient = ({
   siteAssetsBaseUrl,
   breadcrumb,
 }: CollectionClientProps) => {
-  const itemsWithDateCards = useMemo(
-    () => enrichItemsWithDateFilterCards(items, page.tagCategories),
-    [items, page.tagCategories],
-  )
-  const filters = useMemo(
-    () => getAvailableFilters(items, page.tagCategories),
-    [items, page.tagCategories],
-  )
-
   const {
     paginatedItems,
     filteredCount,
@@ -74,7 +64,7 @@ export const CollectionClient = ({
     currPage,
     setCurrPage,
     totalCount,
-  } = useCollection({ items: itemsWithDateCards })
+  } = useCollection({ items })
 
   const articleContainerRef = useRef<HTMLDivElement>(null)
   const onPageChange = () => {
@@ -83,6 +73,10 @@ export const CollectionClient = ({
     })
   }
 
+  const filters = useMemo(
+    () => getAvailableFilters(items, page.tagCategories),
+    [items, page.tagCategories],
+  )
   const hasNoFilters = filters.length === 0
 
   return (
@@ -105,7 +99,8 @@ export const CollectionClient = ({
           })}
         >
           <Filter
-            filters={filters}
+            items={items}
+            tagCategories={page.tagCategories}
             appliedFilters={appliedFilters}
             handleFilterToggle={handleFilterToggle}
             handleDateRangeChange={handleDateRangeChange}
@@ -130,6 +125,7 @@ export const CollectionClient = ({
               totalCount={totalCount}
               shouldShowDate={shouldShowDate}
               siteAssetsBaseUrl={siteAssetsBaseUrl}
+              tagCategories={page.tagCategories}
               headingLevel={2}
             />
           </div>

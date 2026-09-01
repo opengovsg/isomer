@@ -1,5 +1,5 @@
 import type { Static } from "@sinclair/typebox"
-import type { ArticlePagePageProps, CollectionPagePageProps } from "~/types"
+import type { CollectionPagePageProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 
 import type { BreadcrumbProps } from "./Breadcrumb"
@@ -20,6 +20,6 @@ export type ArticlePageHeaderProps = Static<typeof ArticlePageHeaderSchema> & {
   title: string
   plaintextTags?: CollectionCardProps["plaintextTags"]
   date?: string
-  dateTagged?: ArticlePagePageProps["dateTagged"]
+  dateFilterDisplayEntries?: CollectionCardProps["dateFilterDisplayEntries"]
   tagCategories?: CollectionPagePageProps["tagCategories"]
 }

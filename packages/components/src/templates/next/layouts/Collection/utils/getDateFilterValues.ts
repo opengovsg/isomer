@@ -1,5 +1,6 @@
 import type {
   DateFilterCard,
+  DateFilterDisplayEntry,
   DateFilterValue,
 } from "~/interfaces/internal/CollectionCard"
 import type { ArticlePagePageProps, CollectionPagePageProps } from "~/types"
@@ -19,7 +20,9 @@ export const getValidatedDateTagged = (
   itemDateTagged: ArticlePagePageProps["dateTagged"],
   tagCategories: CollectionPagePageProps["tagCategories"],
 ): DateFilterValue[] | undefined => {
-  return getDateFilterValues(itemDateTagged, tagCategories).dateTagged
+  return getDateFilterStaticEntries(itemDateTagged, tagCategories)?.map(
+    ({ id, date, endDate }) => ({ id, date, endDate }),
+  )
 }
 
 // "27 Sep - 29 Sep 2026" when the range stays within one year (year shown
@@ -47,51 +50,69 @@ const formatDateFilterDateText = (
   return `${format(date, sameYear ? "d MMM" : "d MMM yyyy")} - ${format(endDate, "d MMM yyyy")}`
 }
 
-// NOTE: Shared by getCollectionItems (server) and client-side enrichment —
-// resolves an item's raw `dateTagged` against the parent's `tagCategories`.
-// Status (`dateFilterCards`) should only be consumed on the client so it
-// reflects today's Singapore date at view time.
-export const getDateFilterValues = (
+// Server-safe: label + formatted date text only — no status computation.
+export const getDateFilterStaticEntries = (
   itemDateTagged: ArticlePagePageProps["dateTagged"],
   tagCategories: CollectionPagePageProps["tagCategories"],
-  today: string = getTodayInSingapore(),
-): GetDateFilterValuesResult => {
+): DateFilterDisplayEntry[] | undefined => {
   if (!itemDateTagged || itemDateTagged.length === 0 || !tagCategories) {
-    return { dateTagged: undefined, dateFilterCards: undefined }
+    return undefined
   }
 
   const dateCategories = tagCategories.filter(isDateFilter)
-
-  const dateTagged: DateFilterValue[] = []
-  const dateFilterCards: DateFilterCard[] = []
+  const entries: DateFilterDisplayEntry[] = []
 
   itemDateTagged.forEach((value) => {
     const category = dateCategories.find(
       (tagCategory) => tagCategory.id === value.id,
     )
-    // NOTE: the owning filter no longer exists (deleted) — orphaned entry,
-    // ignored at render rather than erroring (see wayfinder ticket 008).
     if (!category) {
       return
     }
 
-    dateTagged.push(value)
-
-    const status = getDateFilterStatus(value, today)
-    const statusLabel =
-      category.statusLabels.find(({ id }) => id === status)?.label ?? status
-
-    dateFilterCards.push({
+    entries.push({
       id: category.id,
       label: category.label,
-      status,
-      statusLabel,
       dateText: formatDateFilterDateText(value.date, value.endDate),
+      date: value.date,
+      endDate: value.endDate,
     })
   })
 
+  return entries.length > 0 ? entries : undefined
+}
+
+// NOTE: used by tests and any callers that need the full resolved shape in
+// one shot. Production UI should prefer getDateFilterStaticEntries (server)
+// + EventDateFilterDisplay (client) instead.
+export const getDateFilterValues = (
+  itemDateTagged: ArticlePagePageProps["dateTagged"],
+  tagCategories: CollectionPagePageProps["tagCategories"],
+  today: string = getTodayInSingapore(),
+): GetDateFilterValuesResult => {
+  const entries = getDateFilterStaticEntries(itemDateTagged, tagCategories)
+
+  if (!entries) {
+    return { dateTagged: undefined, dateFilterCards: undefined }
+  }
+
+  const dateCategories = tagCategories?.filter(isDateFilter) ?? []
+  const dateTagged: DateFilterValue[] = entries.map(
+    ({ id, date, endDate }) => ({ id, date, endDate }),
+  )
+  const dateFilterCards: DateFilterCard[] = entries.map((entry) => {
+    const category = dateCategories.find(
+      (tagCategory) => tagCategory.id === entry.id,
+    )
+    const status = getDateFilterStatus(entry, today)
+    const statusLabel =
+      category?.statusLabels.find(({ id }) => id === status)?.label ?? status
+
+    return { ...entry, status, statusLabel }
+  })
+
   return {
-    dateTagged: dateTagged.length > 0 ? dateTagged : undefined,
-    dateFilterCards: dateFilterCards.length > 0 ? dateFilterCards : undefined,
+    dateTagged,
+    dateFilterCards,
   }
 }

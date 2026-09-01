@@ -5,7 +5,7 @@ import { getIndexByPermalink } from "~/utils/getIndexByPermalink"
 import { ArticlePageHeader } from "../../components/internal/ArticlePageHeader"
 import { BackToTopLink } from "../../components/internal/BackToTopLink"
 import { renderPageContent } from "../../render"
-import { getValidatedDateTagged } from "../Collection/utils/getDateFilterValues"
+import { getDateFilterStaticEntries } from "../Collection/utils/getDateFilterValues"
 import { getPillAndPlaintextTags } from "../Collection/utils/getPillAndPlaintextTags"
 import { Skeleton } from "../Skeleton"
 
@@ -44,7 +44,7 @@ export const ArticleLayout = ({
           title={page.title}
           date={page.date}
           pillTags={pillTags}
-          dateTagged={getValidatedDateTagged(
+          dateFilterDisplayEntries={getDateFilterStaticEntries(
             page.dateTagged,
             parentTagCategories,
           )}

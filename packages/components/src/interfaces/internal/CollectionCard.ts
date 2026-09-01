@@ -3,16 +3,25 @@ import type { FormattedDate, IsomerSiteProps, TagGroup } from "~/types"
 import type { DateFilterStatusId } from "~/types/constants"
 
 // NOTE: one entry per date-type filter the item has a raw value for — used
-// for filter matching (see getFilteredItems' range-overlap check) and as
-// the input for client-side status derivation (see enrichItemsWithDateFilterCards).
+// for filter matching (see getFilteredItems' range-overlap check).
 export interface DateFilterValue {
   id: string
   date: string
   endDate?: string
 }
 
-// NOTE: derived on the client from `dateTagged` + live Singapore date for
-// card display (status pill + date text under the title).
+// NOTE: server-precomputed display fields for a date filter (label + formatted
+// date text). Status is derived on the client — see EventDateFilterDisplay.
+export interface DateFilterDisplayEntry {
+  id: string
+  label: string
+  dateText: string
+  date: string
+  endDate?: string
+}
+
+// NOTE: fully resolved card display entry, including live status — only
+// produced on the client (see EventDateFilterDisplay).
 export interface DateFilterCard {
   id: string
   label: string
@@ -39,12 +48,10 @@ interface BaseCardProps {
   // NOTE: Same shape as `pillTags`, but only includes groups shown as plaintext
   // — rendered as comma-joined text, dot-separated between groups (see PlaintextTags)
   plaintextTags?: TagGroup[]
-  // NOTE: raw per-item date-filter values (mirrors the `dateTagged` schema
-  // field), used for filter matching (see getFilteredItems) and client-side
-  // status derivation — not rendered directly.
+  // NOTE: raw per-item date-filter values — used for filter matching only.
   dateTagged?: DateFilterValue[]
-  // NOTE: client-derived display data — see DateFilterCard.
-  dateFilterCards?: DateFilterCard[]
+  // NOTE: server-precomputed label + date text for EventDateFilterDisplay.
+  dateFilterDisplayEntries?: DateFilterDisplayEntry[]
   title: string
   url: string
   description: string
@@ -83,7 +90,7 @@ export type CollectionCardProps = Pick<
   | "pillTags"
   | "isContainNeeded"
   | "dateTagged"
-  | "dateFilterCards"
+  | "dateFilterDisplayEntries"
 > & {
   referenceLinkHref: string | undefined
   imageSrc: string | undefined

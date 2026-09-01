@@ -24,7 +24,7 @@ export const processCollectionItems = (
       tags,
       pillTags,
       dateTagged,
-      dateFilterCards,
+      dateFilterDisplayEntries,
     } = item
     const file = variant === "file" ? item.fileDetails : null
     return {
@@ -38,7 +38,7 @@ export const processCollectionItems = (
       tags,
       pillTags,
       dateTagged,
-      dateFilterCards,
+      dateFilterDisplayEntries,
       referenceLinkHref: getReferenceLinkHref(
         url,
         site.siteMapArray,

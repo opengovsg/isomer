@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest"
 
-import { getDateFilterValues } from "../getDateFilterValues"
+import {
+  getDateFilterStaticEntries,
+  getDateFilterValues,
+} from "../getDateFilterValues"
 
 const EVENT_DATE_FILTER_ID = "11111111-1111-1111-1111-111111111111"
 
@@ -18,6 +21,26 @@ const tagCategories = [
 ]
 
 describe("getDateFilterValues", () => {
+  it("returns undefined when the item has no date filter values", () => {
+    expect(getDateFilterStaticEntries(undefined, tagCategories)).toBeUndefined()
+  })
+
+  it("returns static entries without status", () => {
+    const result = getDateFilterStaticEntries(
+      [{ id: EVENT_DATE_FILTER_ID, date: "2026-09-27" }],
+      tagCategories,
+    )
+
+    expect(result).toEqual([
+      {
+        id: EVENT_DATE_FILTER_ID,
+        label: "Event Date",
+        dateText: "27 Sep 2026",
+        date: "2026-09-27",
+      },
+    ])
+  })
+
   it("returns undefined for both fields when the item has no date filter values", () => {
     expect(getDateFilterValues(undefined, tagCategories, "2026-06-15")).toEqual(
       {
@@ -41,6 +64,8 @@ describe("getDateFilterValues", () => {
       {
         id: EVENT_DATE_FILTER_ID,
         label: "Event Date",
+        date: "2026-06-15",
+        endDate: undefined,
         status: "ONGOING",
         statusLabel: "Ongoing",
         dateText: "15 Jun 2026",

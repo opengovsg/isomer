@@ -115,9 +115,11 @@ export const WithDateFilter: Story = {
   args: {
     ...ARTICLE,
     title: "Annual Community Charity Run 2026",
-    dateTagged: [
+    dateFilterDisplayEntries: [
       {
         id: "event-date",
+        label: "Event Date",
+        dateText: "27 Sep - 29 Sep 2026",
         date: daysFromNow(-5),
         endDate: daysFromNow(5),
       },
@@ -130,14 +132,18 @@ export const WithMultipleDateFilters: Story = {
   args: {
     ...ARTICLE,
     title: "Item with two date filters",
-    dateTagged: [
+    dateFilterDisplayEntries: [
       {
         id: "event-date",
+        label: "Event Date",
+        dateText: "27 Sep - 29 Sep 2026",
         date: daysFromNow(30),
         endDate: daysFromNow(40),
       },
       {
         id: "registration-deadline",
+        label: "Registration Deadline",
+        dateText: "1 Jan - 10 Sep 2026",
         date: daysFromNow(-5),
         endDate: daysFromNow(5),
       },
