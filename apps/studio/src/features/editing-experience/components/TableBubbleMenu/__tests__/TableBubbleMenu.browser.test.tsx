@@ -925,7 +925,7 @@ describe("TableBubbleMenu", () => {
     // Act — cells 0–2 are the entire first row (kind: header-row)
     selectCells(editor, 0, 2)
     await activateTableBubbleMenu(findByRole)
-    await findByText("Add row above")
+    await findByText("Set background color")
 
     // Assert — headers only offer None + brand (site canvas.inverse)
     expect(await findByText("Set background color")).toBeTruthy()
