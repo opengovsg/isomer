@@ -6,31 +6,21 @@ import {
 import { CellSelection } from "@tiptap/pm/tables"
 
 export interface SelectionBackgroundColorState {
-  canSet: boolean
   /** False when selected cells do not all share the same background token. */
   isUniform: boolean
   /** Shared token when `isUniform`; otherwise null (do not treat as “None”). */
   uniformColor: TableCellBackgroundColorToken | null
 }
 
-/** One CellSelection walk: mixed gate and uniform token. */
+/** One CellSelection walk for uniform token detection. */
 export const getSelectionBackgroundColorState = (
   selection: CellSelection,
 ): SelectionBackgroundColorState => {
-  let hasBodyCell = false
-  let hasHeaderCell = false
   let seenColor = false
   let isUniform = true
   let uniformColor: TableCellBackgroundColorToken | null = null
 
   selection.forEachCell((node) => {
-    if (node.type.name === "tableCell") {
-      hasBodyCell = true
-    } else if (node.type.name === "tableHeader") {
-      hasHeaderCell = true
-    }
-
-    // Still walk every cell for header/body flags; skip further colour compares.
     if (seenColor && !isUniform) return
 
     const cellColor = isTableCellBackgroundColorToken(
@@ -52,15 +42,10 @@ export const getSelectionBackgroundColorState = (
   })
 
   return {
-    canSet: hasBodyCell && !hasHeaderCell,
     isUniform,
     uniformColor,
   }
 }
-
-export const isBackgroundColorAllowedForSelection = (
-  color: TableCellBackgroundColorToken | null,
-): boolean => color === null || isTableCellBackgroundColorToken(color)
 
 export const setSelectedCellsBackgroundColor = (
   editor: Editor,
@@ -68,10 +53,7 @@ export const setSelectedCellsBackgroundColor = (
 ): void => {
   const { selection } = editor.state
   if (!(selection instanceof CellSelection)) return
-
-  const state = getSelectionBackgroundColorState(selection)
-  if (!state.canSet) return
-  if (!isBackgroundColorAllowedForSelection(color)) return
+  if (color !== null && !isTableCellBackgroundColorToken(color)) return
 
   const transaction = editor.state.tr
   selection.forEachCell((node, pos) => {

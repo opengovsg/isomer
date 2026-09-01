@@ -1,6 +1,6 @@
 import type { TableProps } from "~/interfaces"
 import { useId } from "react"
-import { getTableCellBackgroundColorCssForKind } from "~/constants/tableCellBackgroundColor"
+import { getTableCellBackgroundColorCss } from "~/constants/tableCellBackgroundColor"
 import { tv } from "~/lib/tv"
 
 import { BaseParagraph } from "../../internal/BaseParagraph"
@@ -59,9 +59,8 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
                 {row.content.map((cell, cellIndex) => {
                   const isHeader = cell.type === "tableHeader"
                   const CellTag = isHeader ? "th" : "td"
-                  const backgroundColor = getTableCellBackgroundColorCssForKind(
+                  const backgroundColor = getTableCellBackgroundColorCss(
                     cell.attrs?.backgroundColor,
-                    { isHeader },
                   )
 
                   return (

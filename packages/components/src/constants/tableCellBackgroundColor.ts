@@ -6,10 +6,6 @@ export const TABLE_CELL_BACKGROUND_COLOR_TOKENS = [
   "purple",
 ] as const
 
-/** @deprecated No longer offered in the editor; accepted in schema for legacy content. */
-export const TABLE_CELL_DEPRECATED_BRAND_BACKGROUND_COLOR_TOKEN =
-  "brand.canvas.inverse" as const
-
 export type TableCellBackgroundColorToken =
   (typeof TABLE_CELL_BACKGROUND_COLOR_TOKENS)[number]
 
@@ -36,13 +32,3 @@ export const getTableCellBackgroundColorCss = (
   isTableCellBackgroundColorToken(value)
     ? TABLE_CELL_BACKGROUND_COLORS[value]
     : undefined
-
-/** CSS only when the token is allowed for header vs body. Palette tokens apply on body cells only. */
-export const getTableCellBackgroundColorCssForKind = (
-  value: unknown,
-  { isHeader }: { isHeader: boolean },
-): string | undefined => {
-  if (isHeader) return undefined
-
-  return getTableCellBackgroundColorCss(value)
-}
