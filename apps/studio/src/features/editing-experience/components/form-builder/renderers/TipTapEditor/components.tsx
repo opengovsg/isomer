@@ -7,10 +7,6 @@ import { EditorContent } from "@tiptap/react"
 import { useMemo, useRef, useState } from "react"
 import { TableBubbleMenu } from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu"
 import { TableDragHandles } from "~/features/editing-experience/components/TableDragHandles/TableDragHandles"
-import {
-  createTableDragHandlesBubbleMenuAnchor,
-  TABLE_EDITOR_OVERLAYS_ATTR,
-} from "~/features/editing-experience/components/TableDragHandles/TableDragHandles.bubbleMenu"
 
 const EditorContainer = ({
   children,
@@ -66,7 +62,6 @@ const EditorContentWrapper = ({
       flex="1 1 auto"
       overflowX="hidden"
       overflowY="auto"
-      {...{ [TABLE_EDITOR_OVERLAYS_ATTR]: "" }}
     >
       <Box
         as={EditorContent}
@@ -100,23 +95,12 @@ export const Editor = ({ editor, menubar, isNested }: EditorProps) => {
   const isTableEditor = editor.extensionManager.extensions.some(
     (ext) => ext.name === "table",
   )
-  const tableBubbleMenuAnchor = useMemo(
-    () =>
-      isTableEditor
-        ? createTableDragHandlesBubbleMenuAnchor(editor)
-        : undefined,
-    [editor, isTableEditor],
-  )
 
   return (
     <EditorContainer isNested={isNested}>
       {menubar({ editor })}
       {isTableEditor && (
-        <TableBubbleMenu
-          editor={editor}
-          anchor={tableBubbleMenuAnchor}
-          isDragReordering={isDragReordering}
-        />
+        <TableBubbleMenu editor={editor} isDragReordering={isDragReordering} />
       )}
       <EditorContentWrapper
         editor={editor}
