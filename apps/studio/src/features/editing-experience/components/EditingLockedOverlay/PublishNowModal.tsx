@@ -14,20 +14,20 @@ import { useToast } from "@opengovsg/design-system-react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { trpc } from "~/utils/trpc"
 
-interface CancelScheduleModalProps extends UseDisclosureReturn {
+interface PublishNowModalProps extends UseDisclosureReturn {
   pageId: number
   siteId: number
 }
 
-export const CancelScheduleModal = ({
+export const PublishNowModal = ({
   pageId,
   siteId,
   onClose,
   ...rest
-}: CancelScheduleModalProps): JSX.Element => {
+}: PublishNowModalProps): JSX.Element => {
   const utils = trpc.useUtils()
   const toast = useToast()
-  const { mutate, isPending } = trpc.page.cancelSchedulePage.useMutation({
+  const { mutate, isPending } = trpc.page.publishPage.useMutation({
     onSettled: async () => {
       await Promise.all([
         utils.page.readPage.refetch({ pageId, siteId }),
@@ -35,10 +35,9 @@ export const CancelScheduleModal = ({
           resourceId: pageId,
           siteId,
         }),
-        // Cancelling a schedule changes this resource's liveStatus, which the
-        // dashboard tables/index-page row derive from — refresh whichever of
-        // these is currently mounted (folder, collection item list, or index
-        // page).
+        // Publishing changes this resource's liveStatus, which the dashboard
+        // tables/index-page row derive from — refresh whichever of these is
+        // currently mounted (folder, collection item list, or index page).
         utils.resource.listWithoutRoot.invalidate(),
         utils.collection.list.invalidate(),
         utils.folder.getIndexpage.invalidate(),
@@ -48,29 +47,33 @@ export const CancelScheduleModal = ({
     onSuccess: () => {
       toast({
         status: "success",
-        title: "Schedule cancelled successfully",
+        title: "Page published successfully",
         ...BRIEF_TOAST_SETTINGS,
       })
     },
     onError: (error) => {
-      console.error(`Error occurred when cancelling schedule: ${error.message}`)
+      console.error(`Error occurred when publishing page: ${error.message}`)
       toast({
         status: "error",
-        title: "Failed to cancel schedule. Please contact Isomer support.",
+        title: "Failed to publish page. Please contact Isomer support.",
         ...BRIEF_TOAST_SETTINGS,
       })
     },
   })
+
   return (
     <Modal onClose={onClose} {...rest}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader mr="3.5rem">
-          Are you sure you want to cancel the schedule to publish?
+          Are you sure you want to publish this page now?
         </ModalHeader>
         <ModalCloseButton size="lg" />
         <ModalBody>
-          <Text textStyle="body-2">This page will go back to draft mode.</Text>
+          <Text textStyle="body-2">
+            Changes will be live on your site in approximately 5–10 minutes, and
+            its status will change to Live.
+          </Text>
         </ModalBody>
         <ModalFooter>
           <Button
@@ -84,9 +87,8 @@ export const CancelScheduleModal = ({
           <Button
             onClick={() => mutate({ pageId, siteId })}
             isLoading={isPending}
-            colorScheme="critical"
           >
-            Yes, cancel the schedule
+            Yes, publish now
           </Button>
         </ModalFooter>
       </ModalContent>
