@@ -300,22 +300,6 @@ const EllipsisIcon = ({ axis }: { axis: "row" | "column" }) => (
   />
 )
 
-const SelectionOutline = ({ rect }: { rect: Rect }) => (
-  <Box
-    position="absolute"
-    left={`${rect.left}px`}
-    top={`${rect.top}px`}
-    w={`${rect.width}px`}
-    h={`${rect.height}px`}
-    border="2px solid"
-    borderColor="interaction.main.default"
-    borderRadius="0.125rem"
-    pointerEvents="none"
-    zIndex="1"
-    aria-hidden
-  />
-)
-
 const AddPillButton = ({
   axis,
   left,
@@ -867,20 +851,6 @@ export const TableDragHandles = ({
 
         return (
           <Box key={`table-${geometry.pos}`} as="span" display="contents">
-            {selectionRows.length === 1 &&
-              geometry.rowRects[selectionRows[0]!] && (
-                <SelectionOutline
-                  rect={geometry.rowRects[selectionRows[0]!]!}
-                />
-              )}
-
-            {selectionCols.length === 1 &&
-              geometry.colRects[selectionCols[0]!] && (
-                <SelectionOutline
-                  rect={geometry.colRects[selectionCols[0]!]!}
-                />
-              )}
-
             {geometry.rowRects.map((rect, i) => {
               if (!rect) return null
               const isHovered = isHoverTable && hoverRow === i
