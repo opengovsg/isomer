@@ -19,7 +19,10 @@ import {
   duplicateSelectedRows,
 } from "../TableBubbleMenu.duplicate"
 
-const createSeedTable = (caption: string): JSONContent => ({
+const createSeedTable = (
+  caption: string,
+  headerBackgroundColor?: string,
+): JSONContent => ({
   type: "table",
   attrs: { caption },
   content: [
@@ -27,33 +30,9 @@ const createSeedTable = (caption: string): JSONContent => ({
       type: "tableRow",
       content: ["Column A", "Column B", "Column C"].map((text) => ({
         type: "tableHeader",
-        content: [{ type: "paragraph", content: [{ type: "text", text }] }],
-      })),
-    },
-    ...[1, 2].map((row) => ({
-      type: "tableRow",
-      content: ["A", "B", "C"].map((col) => ({
-        type: "tableCell",
-        content: [
-          {
-            type: "paragraph",
-            content: [{ type: "text", text: `Row ${row}, ${col}` }],
-          },
-        ],
-      })),
-    })),
-  ],
-})
-
-const createSeedTableWithColoredHeader = (caption: string): JSONContent => ({
-  type: "table",
-  attrs: { caption },
-  content: [
-    {
-      type: "tableRow",
-      content: ["Column A", "Column B", "Column C"].map((text) => ({
-        type: "tableHeader",
-        attrs: { backgroundColor: "blue" },
+        ...(headerBackgroundColor
+          ? { attrs: { backgroundColor: headerBackgroundColor } }
+          : {}),
         content: [{ type: "paragraph", content: [{ type: "text", text }] }],
       })),
     },
@@ -953,7 +932,7 @@ describe("TableBubbleMenu", () => {
   it("clears background colour when toggling header row off", async () => {
     const { editor, findByRole, container } = await renderHarness({
       type: "prose",
-      content: [createSeedTableWithColoredHeader("Coloured header row")],
+      content: [createSeedTable("Coloured header row", "blue")],
     })
 
     selectCells(editor, 0, 0)

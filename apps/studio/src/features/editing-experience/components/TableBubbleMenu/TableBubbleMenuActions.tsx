@@ -41,7 +41,6 @@ import type {
 import {
   getSelectionBackgroundColorState,
   setSelectedCellsBackgroundColor,
-  type SelectionBackgroundColorState,
 } from "./TableBubbleMenu.backgroundColor"
 import { clearSelectedCells } from "./TableBubbleMenu.clear"
 import {
@@ -216,7 +215,7 @@ const BackgroundColorSection = ({
   state,
   onSetColor,
 }: {
-  state: SelectionBackgroundColorState
+  state: ReturnType<typeof getSelectionBackgroundColorState>
   onSetColor: (color: TableCellBackgroundColorToken | null) => void
 }) => {
   const { isUniform, uniformColor: activeColor } = state
@@ -253,7 +252,6 @@ const BackgroundColorSection = ({
   )
 }
 
-// Any cell selection (including whole-table and mixed header/body) can be coloured.
 const BackgroundColor = ({
   editor,
   kind,
@@ -517,7 +515,6 @@ const SelectionActions = ({
   }
 }
 
-// Action list rendered above the pencil trigger when the menu is activated.
 export const TableBubbleMenuActions = ({
   editor,
   kind,

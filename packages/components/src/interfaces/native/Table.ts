@@ -38,7 +38,7 @@ export const TableBaseCellSchema = Type.Object({
       {
         title: "Table cell background colour",
         description:
-          "Palette background colour token. Colour is cleared when a cell changes between header and body.",
+          "Palette background colour token. Cleared when a cell changes between header and body.",
       },
     ),
   ),
