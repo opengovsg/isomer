@@ -12,6 +12,7 @@ import { imageSchemaObject } from "~/schemas/internal"
 import {
   REF_HREF_PATTERN,
   TRIMMED_NON_EMPTY_STRING_REGEX,
+  TRIMMED_STRING_OR_EMPTY_REGEX,
 } from "~/utils/validation"
 
 import {
@@ -121,9 +122,27 @@ const DateFilterSchema = Type.Object(
     type: Type.Literal(TAG_CATEGORY_TYPE.Date, { format: "hidden" }),
     statusLabels: Type.Object(
       {
-        ENDED: Type.String({ title: "Event ended" }),
-        ONGOING: Type.String({ title: "Ongoing" }),
-        UPCOMING: Type.String({ title: "Upcoming" }),
+        ENDED: Type.String({
+          title: "Event ended",
+          pattern: TRIMMED_STRING_OR_EMPTY_REGEX,
+          errorMessage: {
+            pattern: "cannot have leading/trailing spaces",
+          },
+        }),
+        ONGOING: Type.String({
+          title: "Ongoing",
+          pattern: TRIMMED_STRING_OR_EMPTY_REGEX,
+          errorMessage: {
+            pattern: "cannot have leading/trailing spaces",
+          },
+        }),
+        UPCOMING: Type.String({
+          title: "Upcoming",
+          pattern: TRIMMED_STRING_OR_EMPTY_REGEX,
+          errorMessage: {
+            pattern: "cannot have leading/trailing spaces",
+          },
+        }),
       },
       {
         title: "Status labels",
