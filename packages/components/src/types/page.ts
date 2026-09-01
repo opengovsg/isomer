@@ -139,18 +139,13 @@ const DateFilterSchema = Type.Object(
     statusLabels: Type.Array(
       Type.Object({
         id: DateFilterStatusIdSchema,
-        label: Type.Union(
-          [
-            Type.Literal(""),
-            Type.String({
-              pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
-              errorMessage: {
-                pattern: "cannot be empty or have leading/trailing spaces",
-              },
-            }),
-          ],
-          { title: "Status label" },
-        ),
+        label: Type.String({
+          title: "Status label",
+          pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
+          errorMessage: {
+            pattern: "cannot be empty or have leading/trailing spaces",
+          },
+        }),
       }),
       {
         title: "Status labels",
