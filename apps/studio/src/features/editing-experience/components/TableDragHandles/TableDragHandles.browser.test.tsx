@@ -122,13 +122,7 @@ const hoverAt = (x: number, y: number) => {
   })
 }
 
-// A real cursor continuously emits mousemove events while it's stationary
-// over an element (the browser still dispatches them on any movement, however
-// tiny) — a single synthetic mousemove can race the component's own
-// measurement pass (its rects may still be an all-zero placeholder on the
-// very first layout tick, matching bug 1 documented in the prototype this
-// component was ported from), so `waitFor` re-fires the same hover on every
-// retry until a real rect has been measured and the handle mounts.
+// Retry hover until layout measurement has produced real row/column rects.
 const hoverUntil = async (
   x: number,
   y: number,
@@ -153,7 +147,6 @@ describe("TableDragHandles", () => {
     )
     expect(handle.getAttribute("data-state")).toBe("passive")
 
-    // Sanity: hovering alone doesn't mutate the document.
     expect(getCellText(editor)[3]).toBe("Row 1, A")
   })
 
@@ -185,9 +178,6 @@ describe("TableDragHandles", () => {
 
     const headerCell = findByCellText(container, "Column B")
     const { x, y } = centreOf(headerCell)
-    // The column handle renders above the header row; hover slightly above
-    // the header cell (within the widened hover margin) the way a cursor
-    // travelling from inside the table toward the handle would.
     await hoverUntil(x, y - 20, () => getByLabelText("Drag to reorder column"))
   })
 
@@ -294,7 +284,6 @@ describe("TableDragHandles", () => {
       selectedTexts.push(node.textContent)
     })
     expect(selectedTexts).toEqual(["Row 1, A", "Row 1, B", "Row 1, C"])
-    // A click must not reorder.
     expect(getCellText(editor).slice(3, 6)).toEqual([
       "Row 1, A",
       "Row 1, B",

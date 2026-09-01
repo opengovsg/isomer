@@ -5,7 +5,7 @@ import type { EditorMenuBar } from "~/components/PageEditor/MenuBar/MenuBar"
 import type { TableBubbleMenuAnchor } from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu.types"
 import { Box, VStack } from "@chakra-ui/react"
 import { EditorContent } from "@tiptap/react"
-import { useCallback, useMemo, useRef, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import { useOptionalEditorDrawerSiteId } from "~/contexts/EditorDrawerContext"
 import {
   DEFAULT_BRAND_CANVAS_INVERSE_COLOR,
@@ -64,13 +64,6 @@ const EditorContentWrapper = ({
   showTableExtras?: boolean
   onDragStateChange?: (isDragging: boolean) => void
 }) => {
-  const handleTableDragStateChange = useCallback(
-    (isDragging: boolean) => {
-      onDragStateChange?.(isDragging)
-    },
-    [onDragStateChange],
-  )
-
   return (
     <Box
       ref={containerRef}
@@ -94,7 +87,7 @@ const EditorContentWrapper = ({
         <TableDragHandles
           editor={editor}
           containerRef={containerRef}
-          onDragStateChange={handleTableDragStateChange}
+          onDragStateChange={onDragStateChange}
         />
       )}
     </Box>
