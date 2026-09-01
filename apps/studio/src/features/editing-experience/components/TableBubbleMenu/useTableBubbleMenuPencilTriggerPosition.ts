@@ -5,7 +5,7 @@ import { autoUpdate } from "@floating-ui/dom"
 import { CellSelection, selectedRect } from "@tiptap/pm/tables"
 import { useEffect, useRef, useState } from "react"
 
-interface TableBubbleMenuTriggerPosition {
+interface TableBubbleMenuPencilTriggerPosition {
   x: number
   y: number
 }
@@ -52,10 +52,10 @@ const getBottomRightCellRect = (
   return dom.getBoundingClientRect()
 }
 
-const computeTriggerPosition = (
+const computePencilTriggerPosition = (
   cellRect: DOMRect,
   menuEl: HTMLElement,
-): TableBubbleMenuTriggerPosition | null => {
+): TableBubbleMenuPencilTriggerPosition | null => {
   const triggerEl = menuEl.querySelector("[data-table-bubble-menu-trigger]")
   if (!(triggerEl instanceof HTMLElement)) return null
 
@@ -87,13 +87,13 @@ const createPositionUpdater = (
   getView: () => EditorView,
   getState: () => EditorState,
   menuEl: HTMLElement,
-  onPosition: (position: TableBubbleMenuTriggerPosition) => void,
+  onPosition: (position: TableBubbleMenuPencilTriggerPosition) => void,
 ): (() => void) => {
   return () => {
     const cellRect = getBottomRightCellRect(getView(), getState())
     if (!cellRect) return
 
-    const nextPosition = computeTriggerPosition(cellRect, menuEl)
+    const nextPosition = computePencilTriggerPosition(cellRect, menuEl)
     if (nextPosition) {
       onPosition(nextPosition)
     }
@@ -120,24 +120,24 @@ const attachScrollListeners = (
   }
 }
 
-interface UseTableBubbleMenuTriggerPositionOptions {
+interface UseTableBubbleMenuPencilTriggerPositionOptions {
   editor: Editor
   menuEl: HTMLDivElement | null
   show: boolean
   selection: Selection
 }
 
-export const useTableBubbleMenuTriggerPosition = ({
+export const useTableBubbleMenuPencilTriggerPosition = ({
   editor,
   menuEl,
   show,
   selection,
-}: UseTableBubbleMenuTriggerPositionOptions): TableBubbleMenuTriggerPosition | null => {
+}: UseTableBubbleMenuPencilTriggerPositionOptions): TableBubbleMenuPencilTriggerPosition | null => {
   const editorRef = useRef(editor)
   editorRef.current = editor
 
   const [position, setPosition] =
-    useState<TableBubbleMenuTriggerPosition | null>(null)
+    useState<TableBubbleMenuPencilTriggerPosition | null>(null)
 
   useEffect(() => {
     if (!show) {

@@ -21,7 +21,7 @@ import {
   registerTableBubbleMenuFocusTrigger,
   unregisterTableBubbleMenuFocusTrigger,
 } from "./tableBubbleMenuFocus"
-import { useTableBubbleMenuTriggerPosition } from "./useTableBubbleMenuTriggerPosition"
+import { useTableBubbleMenuPencilTriggerPosition } from "./useTableBubbleMenuPencilTriggerPosition"
 
 export interface TableBubbleMenuUiState {
   show: boolean
@@ -97,7 +97,7 @@ export const useTableBubbleMenu = (editor: Editor): TableBubbleMenuUiState => {
     }
   }, [show])
 
-  const position = useTableBubbleMenuTriggerPosition({
+  const position = useTableBubbleMenuPencilTriggerPosition({
     editor,
     menuEl,
     show,
