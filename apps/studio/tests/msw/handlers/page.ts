@@ -12,7 +12,15 @@ const getRootPageQuery = (wait?: DelayMode | number) => {
     if (wait !== undefined) {
       await delay(wait)
     }
-    return { title: "A mock page", id: "1", draftBlobId: "1" }
+    return {
+      title: "A mock page",
+      id: "1",
+      draftBlobId: "1",
+      publishedVersionId: null,
+      scheduledAt: null,
+      scheduledAction: null,
+      lastPublishedAt: null,
+    }
   })
 }
 export const DEFAULT_PAGE_ITEMS: RouterOutput["resource"]["listWithoutRoot"] = [

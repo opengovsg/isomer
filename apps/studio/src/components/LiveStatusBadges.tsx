@@ -24,9 +24,9 @@ const LIVE_STATUS_CONFIG: Record<
   LiveStatus,
   { label: string; colorScheme: string }
 > = {
-  live: { label: "Live", colorScheme: "success" },
+  live: { label: "Published", colorScheme: "success" },
   liveTemplate: { label: "Live · Template", colorScheme: "success" },
-  notLive: { label: "Not live", colorScheme: "neutral" },
+  notLive: { label: "Unpublished", colorScheme: "neutral" },
 }
 
 export const LiveStatusBadges = ({
@@ -46,22 +46,26 @@ export const LiveStatusBadges = ({
 
   return (
     <HStack spacing="0.5rem">
-      <Tooltip
-        label={
-          lastPublishedAt
-            ? `Last published on ${format(lastPublishedAt, "MMMM d, yyyy h:mm a")}`
-            : "Never published"
-        }
-        placement="bottom"
-        hasArrow
-      >
-        {/* PillBadge (design-system-react's Badge) doesn't forward its ref,
-        so Tooltip can't measure it for positioning without this wrapper —
-        without it the tooltip renders pinned to the viewport's top-left. */}
-        <Box as="span" display="inline-block">
-          {livePill}
-        </Box>
-      </Tooltip>
+      {liveStatus === "notLive" ? (
+        livePill
+      ) : (
+        <Tooltip
+          label={
+            lastPublishedAt
+              ? `Last published on ${format(lastPublishedAt, "MMMM d, yyyy h:mm a")}`
+              : "Never published"
+          }
+          placement="bottom"
+          hasArrow
+        >
+          {/* PillBadge (design-system-react's Badge) doesn't forward its ref,
+          so Tooltip can't measure it for positioning without this wrapper —
+          without it the tooltip renders pinned to the viewport's top-left. */}
+          <Box as="span" display="inline-block">
+            {livePill}
+          </Box>
+        </Tooltip>
+      )}
       {scheduledAt && (
         <Tooltip
           label={
