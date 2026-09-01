@@ -306,35 +306,29 @@ const resolveHandleState = ({
   return "passive"
 }
 
-const handleFill = (isActive: boolean, isHovered: boolean) => {
-  if (isActive) {
-    return { backgroundColor: HANDLE_ACTIVE_BG, color: HANDLE_ACTIVE_DOT }
-  }
-  if (isHovered) {
-    return { backgroundColor: HANDLE_HOVER_BG, color: HANDLE_HOVER_DOT }
-  }
-  return { backgroundColor: HANDLE_IDLE_BG, color: HANDLE_IDLE_DOT }
-}
-
-const handleChromeByState = (
-  state: HandleVisualState,
-  isLocked: boolean,
-  isHovered: boolean,
-) => {
+const handleChromeByState = (state: HandleVisualState, isLocked: boolean) => {
   const isActive = state === "selected" || state === "dragging"
   const cursor = isLocked
     ? "pointer"
     : state === "dragging"
       ? "grabbing"
       : "grab"
-  const fill = handleFill(isActive, isHovered)
   return {
     cursor,
     sx: {
       appearance: "none",
       WebkitAppearance: "none",
-      ...fill,
-      _hover: handleFill(isActive, true),
+      backgroundColor: isActive ? HANDLE_ACTIVE_BG : HANDLE_IDLE_BG,
+      color: isActive ? HANDLE_ACTIVE_DOT : HANDLE_IDLE_DOT,
+      _hover: isActive
+        ? {
+            backgroundColor: HANDLE_ACTIVE_BG,
+            color: HANDLE_ACTIVE_DOT,
+          }
+        : {
+            backgroundColor: HANDLE_HOVER_BG,
+            color: HANDLE_HOVER_DOT,
+          },
     },
   }
 }
@@ -391,24 +385,6 @@ const HorizontalDotsIcon = () => (
   </Box>
 )
 
-const AddPlusIcon = () => (
-  <Box
-    as="svg"
-    xmlns="http://www.w3.org/2000/svg"
-    width={`${ADD_PILL_ICON_SIZE_PX}px`}
-    height={`${ADD_PILL_ICON_SIZE_PX}px`}
-    viewBox="0 0 12 12"
-    fill="none"
-    flexShrink={0}
-    aria-hidden
-  >
-    <path
-      d="M9.5 5.5H6.5V2.5H5.5V5.5H2.5V6.5H5.5V9.5H6.5V6.5H9.5V5.5Z"
-      fill={ADD_PILL_ICON_FILL}
-    />
-  </Box>
-)
-
 const AddPillButton = ({
   axis,
   left,
@@ -423,44 +399,53 @@ const AddPillButton = ({
   width: number
   height: number
   onClick: () => void
-}) => {
-  const [isHovered, setIsHovered] = useState(false)
-  return (
+}) => (
+  <Box
+    as="button"
+    type="button"
+    position="absolute"
+    left={`${left}px`}
+    top={`${top}px`}
+    w={`${width}px`}
+    h={`${height}px`}
+    display="flex"
+    alignItems="center"
+    justifyContent="center"
+    border="0"
+    borderRadius={`${ADD_PILL_RADIUS_PX}px`}
+    cursor="pointer"
+    zIndex="2"
+    transition="background-color 0.15s"
+    aria-label={axis === "row" ? "Add row below" : "Add column to the right"}
+    data-table-add-handle={axis}
+    sx={{
+      appearance: "none",
+      WebkitAppearance: "none",
+      backgroundColor: ADD_PILL_IDLE_BG,
+      _hover: {
+        backgroundColor: ADD_PILL_HOVER_BG,
+      },
+    }}
+    onMouseDown={(event: ReactMouseEvent) => event.preventDefault()}
+    onClick={onClick}
+  >
     <Box
-      as="button"
-      type="button"
-      position="absolute"
-      left={`${left}px`}
-      top={`${top}px`}
-      w={`${width}px`}
-      h={`${height}px`}
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      border="0"
-      borderRadius={`${ADD_PILL_RADIUS_PX}px`}
-      cursor="pointer"
-      zIndex="2"
-      transition="background-color 0.15s"
-      aria-label={axis === "row" ? "Add row below" : "Add column to the right"}
-      data-table-add-handle={axis}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      sx={{
-        appearance: "none",
-        WebkitAppearance: "none",
-        backgroundColor: isHovered ? ADD_PILL_HOVER_BG : ADD_PILL_IDLE_BG,
-        _hover: {
-          backgroundColor: ADD_PILL_HOVER_BG,
-        },
-      }}
-      onMouseDown={(event: ReactMouseEvent) => event.preventDefault()}
-      onClick={onClick}
+      as="svg"
+      xmlns="http://www.w3.org/2000/svg"
+      width={`${ADD_PILL_ICON_SIZE_PX}px`}
+      height={`${ADD_PILL_ICON_SIZE_PX}px`}
+      viewBox="0 0 12 12"
+      fill="none"
+      flexShrink={0}
+      aria-hidden
     >
-      <AddPlusIcon />
+      <path
+        d="M9.5 5.5H6.5V2.5H5.5V5.5H2.5V6.5H5.5V9.5H6.5V6.5H9.5V5.5Z"
+        fill={ADD_PILL_ICON_FILL}
+      />
     </Box>
-  )
-}
+  </Box>
+)
 
 const RowHandle = ({
   rect,
@@ -478,34 +463,29 @@ const RowHandle = ({
   isLocked: boolean
   onMouseDown: (e: React.MouseEvent) => void
   onClick: () => void
-}) => {
-  const [isHovered, setIsHovered] = useState(false)
-  return (
-    <Box
-      as="button"
-      type="button"
-      position="absolute"
-      left={`${rect.left - HANDLE_GAP_PX - ROW_HANDLE.w}px`}
-      top={`${rect.top + (rect.height - ROW_HANDLE.h) / 2}px`}
-      {...handleBaseStyle}
-      {...handleChromeByState(state, isLocked, isHovered)}
-      w={`${ROW_HANDLE.w}px`}
-      h={`${ROW_HANDLE.h}px`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onMouseDown={onMouseDown}
-      onClick={onClick}
-      title={isLocked ? "Select row" : "Select or drag to reorder row"}
-      aria-label={isLocked ? "Select row" : "Drag to reorder row"}
-      data-state={state}
-      data-table-drag-handle="row"
-      data-table-pos={tablePos}
-      data-index={index}
-    >
-      <VerticalDotsIcon />
-    </Box>
-  )
-}
+}) => (
+  <Box
+    as="button"
+    type="button"
+    position="absolute"
+    left={`${rect.left - HANDLE_GAP_PX - ROW_HANDLE.w}px`}
+    top={`${rect.top + (rect.height - ROW_HANDLE.h) / 2}px`}
+    {...handleBaseStyle}
+    {...handleChromeByState(state, isLocked)}
+    w={`${ROW_HANDLE.w}px`}
+    h={`${ROW_HANDLE.h}px`}
+    onMouseDown={onMouseDown}
+    onClick={onClick}
+    title={isLocked ? "Select row" : "Select or drag to reorder row"}
+    aria-label={isLocked ? "Select row" : "Drag to reorder row"}
+    data-state={state}
+    data-table-drag-handle="row"
+    data-table-pos={tablePos}
+    data-index={index}
+  >
+    <VerticalDotsIcon />
+  </Box>
+)
 
 const ColumnHandle = ({
   rect,
@@ -523,34 +503,29 @@ const ColumnHandle = ({
   isLocked: boolean
   onMouseDown: (e: React.MouseEvent) => void
   onClick: () => void
-}) => {
-  const [isHovered, setIsHovered] = useState(false)
-  return (
-    <Box
-      as="button"
-      type="button"
-      position="absolute"
-      top={`${rect.top - HANDLE_GAP_PX - COL_HANDLE.h}px`}
-      left={`${rect.left + (rect.width - COL_HANDLE.w) / 2}px`}
-      {...handleBaseStyle}
-      {...handleChromeByState(state, isLocked, isHovered)}
-      w={`${COL_HANDLE.w}px`}
-      h={`${COL_HANDLE.h}px`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onMouseDown={onMouseDown}
-      onClick={onClick}
-      title={isLocked ? "Select column" : "Select or drag to reorder column"}
-      aria-label={isLocked ? "Select column" : "Drag to reorder column"}
-      data-state={state}
-      data-table-drag-handle="column"
-      data-table-pos={tablePos}
-      data-index={index}
-    >
-      <HorizontalDotsIcon />
-    </Box>
-  )
-}
+}) => (
+  <Box
+    as="button"
+    type="button"
+    position="absolute"
+    top={`${rect.top - HANDLE_GAP_PX - COL_HANDLE.h}px`}
+    left={`${rect.left + (rect.width - COL_HANDLE.w) / 2}px`}
+    {...handleBaseStyle}
+    {...handleChromeByState(state, isLocked)}
+    w={`${COL_HANDLE.w}px`}
+    h={`${COL_HANDLE.h}px`}
+    onMouseDown={onMouseDown}
+    onClick={onClick}
+    title={isLocked ? "Select column" : "Select or drag to reorder column"}
+    aria-label={isLocked ? "Select column" : "Drag to reorder column"}
+    data-state={state}
+    data-table-drag-handle="column"
+    data-table-pos={tablePos}
+    data-index={index}
+  >
+    <HorizontalDotsIcon />
+  </Box>
+)
 
 export const TableDragHandles = ({
   editor,

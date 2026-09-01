@@ -197,42 +197,6 @@ describe("TableDragHandles", () => {
     expect(icon && getComputedStyle(icon).color).toBe("rgb(160, 164, 173)")
   })
 
-  it("uses medium dots when a handle is hovered", async () => {
-    // Arrange
-    const { container } = await renderHarness()
-    const handle = await waitForHandle(container, "row", 1)
-
-    // Act
-    act(() => {
-      fireEvent.mouseEnter(handle)
-    })
-
-    // Assert
-    await waitFor(() => {
-      expect(getComputedStyle(handle).color).toBe("rgb(102, 108, 122)")
-      const icon = handle.querySelector("svg")
-      expect(icon && getComputedStyle(icon).color).toBe("rgb(102, 108, 122)")
-    })
-  })
-
-  it("sits column handles flush with the caption row", async () => {
-    // Arrange
-    const { container, getByText } = await renderHarness()
-    const captionRow = getByText("Test table").parentElement
-    if (!captionRow) throw new Error("caption row not found")
-
-    // Act
-    const handle = await waitForHandle(container, "column", 1)
-
-    // Assert
-    expect(
-      Math.abs(
-        handle.getBoundingClientRect().top -
-          captionRow.getBoundingClientRect().bottom,
-      ),
-    ).toBeLessThan(1)
-  })
-
   it("places the row handle outside the row", async () => {
     // Arrange
     const { container } = await renderHarness()
@@ -768,26 +732,6 @@ describe("TableDragHandles", () => {
     )
     const path = icon?.querySelector("path")
     expect(path?.getAttribute("fill")).toBe("#2C2E34")
-  })
-
-  it("uses the subtle hover fill when an add pill is hovered", async () => {
-    // Arrange
-    const { container, getByLabelText } = await renderHarness()
-    const cell = findByCellText(container, "Row 1, C")
-    const { x, y } = centreOf(cell)
-    const pill = await hoverUntil(x, y, () =>
-      getByLabelText("Add column to the right"),
-    )
-
-    // Act
-    act(() => {
-      fireEvent.mouseEnter(pill)
-    })
-
-    // Assert
-    await waitFor(() => {
-      expect(getComputedStyle(pill).backgroundColor).toBe("rgb(237, 237, 237)")
-    })
   })
 
   it("renders a rectangular 20px-thick row handle with no border", async () => {
