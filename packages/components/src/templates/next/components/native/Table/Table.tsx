@@ -1,9 +1,6 @@
 import type { TableProps } from "~/interfaces"
 import { useId } from "react"
-import {
-  getTableCellBackgroundColorCssForKind,
-  isTableCellBrandBackgroundColorToken,
-} from "~/constants/tableCellBackgroundColor"
+import { getTableCellBackgroundColorCssForKind } from "~/constants/tableCellBackgroundColor"
 import { tv } from "~/lib/tv"
 
 import { BaseParagraph } from "../../internal/BaseParagraph"
@@ -23,21 +20,12 @@ const tableStyles = tv({
   },
 })
 
-const brandInverseContentStyles =
-  "text-base-content-inverse [&_ol]:text-base-content-inverse [&_ol]:marker:text-base-content-inverse [&_p]:text-base-content-inverse [&_ul]:text-base-content-inverse [&_ul]:marker:text-base-content-inverse"
-
-const brandInverseLinkStyles =
-  "[&_p_a]:text-base-content-inverse visited:[&_p_a]:text-base-content-inverse hover:[&_p_a]:text-base-content-inverse hover:[&_p_a]:underline focus-visible:[&_p_a]:text-base-content-inverse"
-
 const tableCellStyles = tv({
   base: "max-w-40 break-words border border-base-divider-medium px-4 py-3 align-top [&_li]:mb-4 [&_li]:mt-0 [&_li]:pl-1 [&_ol]:mt-0 [&_ol]:ps-5 [&_ul]:mt-0 [&_ul]:ps-5",
   variants: {
     isHeader: {
       true: "bg-base-canvas-backdrop [&_ol]:prose-label-md-medium [&_p]:prose-label-md-medium",
       false: "bg-base-canvas-alt [&_ol]:prose-body-sm [&_p]:prose-body-sm",
-    },
-    isBrandInverse: {
-      true: `${brandInverseContentStyles} ${brandInverseLinkStyles}`,
     },
   },
 })
@@ -75,21 +63,13 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
                     cell.attrs?.backgroundColor,
                     { isHeader },
                   )
-                  const isBrandInverse =
-                    isHeader &&
-                    isTableCellBrandBackgroundColorToken(
-                      cell.attrs?.backgroundColor,
-                    )
 
                   return (
                     <CellTag
                       key={cellIndex}
                       colSpan={normalizeColspan(cell.attrs?.colspan)}
                       rowSpan={normalizeRowspan(cell.attrs?.rowspan)}
-                      className={tableCellStyles({
-                        isHeader,
-                        isBrandInverse,
-                      })}
+                      className={tableCellStyles({ isHeader })}
                       style={backgroundColor ? { backgroundColor } : undefined}
                     >
                       {cell.content.map((cellContent, index) => {

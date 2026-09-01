@@ -83,9 +83,6 @@ describe("TipTap table cell backgroundColor", () => {
     editor?.destroy()
     editor = undefined
     document.body.replaceChildren()
-    document.documentElement.style.removeProperty(
-      "--color-brand-canvas-inverse",
-    )
   })
 
   it("clears backgroundColor when a cell changes between header and body", () => {
@@ -121,7 +118,7 @@ describe("TipTap table cell backgroundColor", () => {
     })
   })
 
-  it("emits Brand data attribute on headers only", () => {
+  it("does not emit deprecated brand data attributes", () => {
     editor = createEditor(
       tableDoc({
         headerColor: "brand.canvas.inverse",
@@ -130,12 +127,7 @@ describe("TipTap table cell backgroundColor", () => {
     )
     const html = editor.getHTML()
 
-    expect(html).toMatch(
-      /<th\b[^>]*data-background-color="brand\.canvas\.inverse"/,
-    )
-    expect(html).not.toMatch(
-      /<td\b[^>]*data-background-color="brand\.canvas\.inverse"/,
-    )
+    expect(html).not.toMatch(/data-background-color="brand\.canvas\.inverse"/)
   })
 
   it("emits palette data attribute on body cells only", () => {
@@ -151,12 +143,7 @@ describe("TipTap table cell backgroundColor", () => {
     expect(html).not.toMatch(/<th\b[^>]*data-background-color="blue"/)
   })
 
-  it("emits brand background and light text inline on header cells", () => {
-    document.documentElement.style.setProperty(
-      "--color-brand-canvas-inverse",
-      "#123456",
-    )
-
+  it("does not emit inline styles for deprecated brand tokens", () => {
     editor = createEditor(
       tableDoc({
         headerColor: "brand.canvas.inverse",
@@ -165,31 +152,7 @@ describe("TipTap table cell backgroundColor", () => {
     )
 
     const th = editor.view.dom.querySelector("th")!
-    expect(th.getAttribute("data-background-color")).toBe(
-      "brand.canvas.inverse",
-    )
-    expect(th.getAttribute("style")).toContain(
-      "background-color: var(--color-brand-canvas-inverse)",
-    )
-    expect(th.getAttribute("style")).toContain("color: rgb(255, 255, 255)") // its #ffffff but the browser normalizes it to rgb(255, 255, 255)
-    expect(getComputedStyle(th).color).toBe("rgb(255, 255, 255)")
-  })
-
-  it("does not emit brand styles on body cells", () => {
-    document.documentElement.style.setProperty(
-      "--color-brand-canvas-inverse",
-      "#123456",
-    )
-
-    editor = createEditor(
-      tableDoc({
-        headerColor: null,
-        bodyColor: "brand.canvas.inverse",
-      }),
-    )
-
-    const td = editor.view.dom.querySelector("td")!
-    expect(td.getAttribute("data-background-color")).toBeNull()
-    expect(td.getAttribute("style")).toBeNull()
+    expect(th.getAttribute("data-background-color")).toBeNull()
+    expect(th.getAttribute("style")).toBeNull()
   })
 })
