@@ -1,32 +1,12 @@
 import type { ButtonProps } from "@opengovsg/design-system-react"
-import {
-  Divider,
-  HStack,
-  Icon,
-  IconButton,
-  MenuButton,
-  MenuItem,
-  MenuList,
-  Skeleton,
-  Text,
-  useDisclosure,
-} from "@chakra-ui/react"
-import {
-  Button,
-  Menu,
-  TouchableTooltip,
-  useToast,
-} from "@opengovsg/design-system-react"
+import { Skeleton, useDisclosure } from "@chakra-ui/react"
+import { Button, TouchableTooltip } from "@opengovsg/design-system-react"
 import posthog from "posthog-js"
-import { BiChevronDown, BiTimeFive } from "react-icons/bi"
-import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { Can } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
 import { trpc } from "~/utils/trpc"
 
-import { PUBLISHED_AFTER_EDITING_EVENT } from "../constants"
-import { useFireContentEditSurveyEvent } from "../hooks/useContentEditSurvey"
-import { PublishingModal, ScheduledPublishingModal } from "./PublishingModal"
+import { PublishModal } from "./PublishingModal"
 import { CancelSchedulePublishIndicator } from "./PublishingModal/CancelSchedulePublishIndicator"
 
 interface PublishButtonProps extends ButtonProps {
@@ -39,56 +19,10 @@ const SuspendablePublishButton = ({
   siteId,
   ...rest
 }: PublishButtonProps): JSX.Element => {
-  const toast = useToast()
-  const utils = trpc.useUtils()
-  const fireContentEditSurveyEvent = useFireContentEditSurveyEvent()
-  // the current disclosures for the publish modals
-  const publishNowDisclosure = useDisclosure()
-  const scheduledPublishingDisclosure = useDisclosure()
+  const publishDisclosure = useDisclosure()
 
   const [currPage] = trpc.page.readPage.useSuspenseQuery({ pageId, siteId })
   const isChangesPendingPublish = !!currPage.draftBlobId
-
-  const { mutate, isPending } = trpc.page.publishPage.useMutation({
-    onSettled: () => {
-      void Promise.all([
-        utils.page.readPage.refetch({ pageId, siteId }),
-        utils.site.getLocalisedSitemap.invalidate({
-          resourceId: pageId,
-          siteId,
-        }),
-        // Publishing changes this resource's liveStatus, which the dashboard
-        // tables/index-page row derive from — refresh whichever of these is
-        // currently mounted (folder, collection item list, or index page).
-        utils.resource.listWithoutRoot.invalidate(),
-        utils.collection.list.invalidate(),
-        utils.folder.getIndexpage.invalidate(),
-      ])
-    },
-    onSuccess: () => {
-      posthog.capture("page_published", { site_id: siteId })
-      fireContentEditSurveyEvent(PUBLISHED_AFTER_EDITING_EVENT)
-      toast({
-        status: "success",
-        title: "Page published successfully",
-        ...BRIEF_TOAST_SETTINGS,
-      })
-      if (publishNowDisclosure.isOpen) publishNowDisclosure.onClose()
-    },
-    onError: (error) => {
-      console.error(`Error occurred when publishing page: ${error.message}`)
-      // The publish-block throws CONFLICT with an actionable message naming the
-      // redirect to remove — surface it verbatim, not the generic failure copy.
-      toast({
-        status: "error",
-        title:
-          error.data?.code === "CONFLICT"
-            ? error.message
-            : "Failed to publish page. Please contact Isomer support.",
-        ...BRIEF_TOAST_SETTINGS,
-      })
-    },
-  })
 
   return (
     <Can do="publish" on="Resource" passThrough>
@@ -100,20 +34,11 @@ const SuspendablePublishButton = ({
           {isAllowed && (
             <>
               {/* Render the modal conditionally to ensure the schema resets when the modal is opened/closed */}
-              {scheduledPublishingDisclosure.isOpen && (
-                <ScheduledPublishingModal
-                  siteId={siteId}
-                  pageId={pageId}
-                  {...scheduledPublishingDisclosure}
-                />
-              )}
-              {publishNowDisclosure.isOpen && (
-                <PublishingModal
+              {publishDisclosure.isOpen && (
+                <PublishModal
                   pageId={pageId}
                   siteId={siteId}
-                  onPublishNow={(pageId, siteId) => mutate({ pageId, siteId })}
-                  isPublishingNow={isPending}
-                  {...publishNowDisclosure}
+                  {...publishDisclosure}
                 />
               )}
               {currPage.scheduledAt ? (
@@ -122,62 +47,20 @@ const SuspendablePublishButton = ({
                   pageId={pageId}
                 />
               ) : (
-                <HStack spacing={0} position="relative">
-                  <Button
-                    variant="solid"
-                    size="sm"
-                    isDisabled={!isChangesPendingPublish}
-                    isLoading={isPending}
-                    borderRightRadius={0}
-                    onClick={() => {
-                      posthog.capture("publish_modal_opened", {
-                        site_id: siteId,
-                      })
-                      publishNowDisclosure.onOpen()
-                    }}
-                    {...rest}
-                  >
-                    Publish
-                  </Button>
-                  <>
-                    <Divider
-                      orientation="vertical"
-                      borderColor="base.canvas.default"
-                      height="auto"
-                    />
-                    <Menu preventOverflow={true} isLazy>
-                      <MenuButton
-                        as={IconButton}
-                        aria-label="More options"
-                        icon={<Icon as={BiChevronDown} boxSize="1rem" />}
-                        size="sm"
-                        variant="solid"
-                        isDisabled={!isChangesPendingPublish || isPending}
-                        borderLeftRadius={0}
-                      />
-                      <MenuList>
-                        <MenuItem
-                          onClick={() => {
-                            posthog.capture("scheduled_publish_modal_opened", {
-                              site_id: siteId,
-                            })
-                            scheduledPublishingDisclosure.onOpen()
-                          }}
-                        >
-                          <HStack spacing="0.5rem" alignItems="center">
-                            <Icon as={BiTimeFive} boxSize="1rem" />
-                            <Text
-                              textStyle="body-2"
-                              color="base.content.strong"
-                            >
-                              Schedule for later
-                            </Text>
-                          </HStack>
-                        </MenuItem>
-                      </MenuList>
-                    </Menu>
-                  </>
-                </HStack>
+                <Button
+                  variant="solid"
+                  size="sm"
+                  isDisabled={!isChangesPendingPublish}
+                  onClick={() => {
+                    posthog.capture("publish_modal_opened", {
+                      site_id: siteId,
+                    })
+                    publishDisclosure.onOpen()
+                  }}
+                  {...rest}
+                >
+                  Publish
+                </Button>
               )}
             </>
           )}
