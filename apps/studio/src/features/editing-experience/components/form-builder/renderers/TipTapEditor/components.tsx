@@ -2,7 +2,6 @@ import type { BoxProps } from "@chakra-ui/react"
 import type { EditorContentProps, Editor as TiptapEditor } from "@tiptap/react"
 import type { PropsWithChildren, RefObject } from "react"
 import type { EditorMenuBar } from "~/components/PageEditor/MenuBar/MenuBar"
-import type { TableBubbleMenuAnchor } from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu.types"
 import { Box, VStack } from "@chakra-ui/react"
 import { EditorContent } from "@tiptap/react"
 import { useMemo, useRef, useState } from "react"
@@ -12,10 +11,6 @@ import {
   TableBubbleMenu,
 } from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu"
 import { TableDragHandles } from "~/features/editing-experience/components/TableDragHandles/TableDragHandles"
-import {
-  createTableDragHandlesBubbleMenuAnchor,
-  TABLE_EDITOR_OVERLAYS_ATTR,
-} from "~/features/editing-experience/components/TableDragHandles/TableDragHandles.bubbleMenu"
 import { useSiteThemeCssVars } from "~/features/preview/hooks/useSiteThemeCssVars"
 
 const EditorContainer = ({
@@ -72,7 +67,6 @@ const EditorContentWrapper = ({
       flex="1 1 auto"
       overflowX="hidden"
       overflowY="auto"
-      {...{ [TABLE_EDITOR_OVERLAYS_ATTR]: "" }}
     >
       <Box
         as={EditorContent}
@@ -97,12 +91,10 @@ const EditorContentWrapper = ({
 const TableBubbleMenuThemed = ({
   editor,
   siteId,
-  anchor,
   isDragReordering,
 }: {
   editor: TiptapEditor
   siteId: number
-  anchor?: TableBubbleMenuAnchor
   isDragReordering?: boolean
 }) => {
   const themeCssVars = useSiteThemeCssVars({ siteId })
@@ -115,7 +107,6 @@ const TableBubbleMenuThemed = ({
     <TableBubbleMenu
       editor={editor}
       brandCanvasInverseColor={brandCanvasInverseColor}
-      anchor={anchor}
       isDragReordering={isDragReordering}
     />
   )
@@ -134,13 +125,6 @@ export const Editor = ({ editor, menubar, isNested }: EditorProps) => {
   const isTableEditor = editor.extensionManager.extensions.some(
     (ext) => ext.name === "table",
   )
-  const tableBubbleMenuAnchor = useMemo(
-    () =>
-      isTableEditor
-        ? createTableDragHandlesBubbleMenuAnchor(editor)
-        : undefined,
-    [editor, isTableEditor],
-  )
 
   return (
     <EditorContainer isNested={isNested}>
@@ -150,13 +134,11 @@ export const Editor = ({ editor, menubar, isNested }: EditorProps) => {
           <TableBubbleMenuThemed
             editor={editor}
             siteId={siteId}
-            anchor={tableBubbleMenuAnchor}
             isDragReordering={isDragReordering}
           />
         ) : (
           <TableBubbleMenu
             editor={editor}
-            anchor={tableBubbleMenuAnchor}
             isDragReordering={isDragReordering}
           />
         ))}

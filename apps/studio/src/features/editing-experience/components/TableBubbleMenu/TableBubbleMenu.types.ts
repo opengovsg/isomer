@@ -17,10 +17,3 @@ export interface TableMovePlan {
 }
 
 export type TableMoveAxis = "row" | "column"
-
-export interface TableBubbleMenuAnchor {
-  shouldWaitForReference: () => boolean
-  getReferencedVirtualElement: () => {
-    getBoundingClientRect: () => DOMRect
-  } | null
-}
