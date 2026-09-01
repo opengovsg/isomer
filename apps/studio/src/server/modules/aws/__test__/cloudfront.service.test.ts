@@ -22,6 +22,10 @@ vi.mock("~/env.mjs", () => ({
   env: { CLOUDFRONT_ASSETS_DISTRIBUTION_ID: "" },
 }))
 
+const mockLogger = { error: vi.fn() } as unknown as Parameters<
+  typeof invalidateAssetsBySiteIds
+>[0]
+
 describe("invalidateAssetsBySiteIds", () => {
   beforeEach(() => {
     mockSend.mockReset()
@@ -30,7 +34,7 @@ describe("invalidateAssetsBySiteIds", () => {
 
   it("should return success without calling CloudFront when there are no siteIds", async () => {
     // Act
-    const result = await invalidateAssetsBySiteIds(new Set())
+    const result = await invalidateAssetsBySiteIds(mockLogger, new Set())
 
     // Assert
     expect(result).toEqual({ success: true })
@@ -39,7 +43,7 @@ describe("invalidateAssetsBySiteIds", () => {
 
   it("should return failure when the distribution id is not configured", async () => {
     // Act
-    const result = await invalidateAssetsBySiteIds(new Set(["1"]))
+    const result = await invalidateAssetsBySiteIds(mockLogger, new Set(["1"]))
 
     // Assert
     expect(result).toEqual({
@@ -55,7 +59,7 @@ describe("invalidateAssetsBySiteIds", () => {
     mockSend.mockResolvedValueOnce({ Invalidation: { Id: "INV123" } })
 
     // Act
-    const result = await invalidateAssetsBySiteIds(["1", "2", "1"])
+    const result = await invalidateAssetsBySiteIds(mockLogger, ["1", "2", "1"])
 
     // Assert
     expect(result).toEqual({ success: true, invalidationId: "INV123" })
@@ -69,15 +73,18 @@ describe("invalidateAssetsBySiteIds", () => {
     )
   })
 
-  it("should return failure with the underlying error message when CloudFront throws", async () => {
+  it("should return a generic failure message when CloudFront throws, without leaking the underlying error", async () => {
     // Arrange
     env.CLOUDFRONT_ASSETS_DISTRIBUTION_ID = "DIST123"
     mockSend.mockRejectedValueOnce(new Error("Access denied"))
 
     // Act
-    const result = await invalidateAssetsBySiteIds(["1"])
+    const result = await invalidateAssetsBySiteIds(mockLogger, ["1"])
 
     // Assert
-    expect(result).toEqual({ success: false, error: "Access denied" })
+    expect(result).toEqual({
+      success: false,
+      error: "Failed to invalidate CloudFront cache",
+    })
   })
 })

@@ -206,7 +206,7 @@ export const parseAssetUrlToKey = (url: string): string | null => {
 }
 
 export const getSiteIdFromKey = (key: string): string | undefined =>
-  key.split("/")[0]
+  key.split("/")[0] || undefined
 
 // Admin-only counterpart to markFileAsDeleted: takes arbitrary asset URLs
 // (not scoped to a single site the caller is permissioned on) and soft-deletes

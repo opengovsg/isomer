@@ -165,7 +165,10 @@ export const assetRouter = router({
           .map((result) => getSiteIdFromKey(result.key ?? ""))
           .filter((siteId): siteId is string => !!siteId),
       )
-      const invalidation = await invalidateAssetsBySiteIds(successfulSiteIds)
+      const invalidation = await invalidateAssetsBySiteIds(
+        ctx.logger,
+        successfulSiteIds,
+      )
 
       const failedCount = results.filter((result) => !result.success).length
       ctx.logger.info(

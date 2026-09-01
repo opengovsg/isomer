@@ -627,6 +627,7 @@ describe("asset.router", async () => {
       })
       expect(deleteFile).toHaveBeenCalledTimes(2)
       expect(invalidateAssetsBySiteIds).toHaveBeenCalledWith(
+        expect.anything(),
         new Set(["1", "2"]),
       )
     })

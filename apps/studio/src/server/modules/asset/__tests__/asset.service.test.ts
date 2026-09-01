@@ -391,6 +391,10 @@ describe("asset.service", () => {
     it("should return the whole string when there is no slash", () => {
       expect(getSiteIdFromKey("picture.png")).toBe("picture.png")
     })
+
+    it("should return undefined for an empty key", () => {
+      expect(getSiteIdFromKey("")).toBeUndefined()
+    })
   })
 
   describe("deleteAssetsByUrl", () => {

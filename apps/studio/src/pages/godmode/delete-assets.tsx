@@ -43,10 +43,14 @@ const GodModeDeleteAssetsPage: NextPageWithLayout = () => {
     onClose: onConfirmModalClose,
   } = useDisclosure()
 
-  const parsedUrls = urlsText
-    .split(/\r?\n/)
-    .map((url) => url.trim())
-    .filter((url) => url.length > 0)
+  const parsedUrls = Array.from(
+    new Set(
+      urlsText
+        .split(/\r?\n/)
+        .map((url) => url.trim())
+        .filter((url) => url.length > 0),
+    ),
+  )
 
   const deleteMutation = trpc.asset.deleteAssetsByUrl.useMutation({
     onSuccess: (data) => {

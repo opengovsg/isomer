@@ -2,7 +2,10 @@ import {
   CloudFrontClient,
   CreateInvalidationCommand,
 } from "@aws-sdk/client-cloudfront"
+import { randomUUID } from "crypto"
 import { env } from "~/env.mjs"
+
+import type { Logger } from "@isomer/logging"
 
 const client = new CloudFrontClient({})
 
@@ -24,6 +27,7 @@ export interface InvalidationResult {
 // degrades to a reported failure rather than throwing, so asset tagging
 // still succeeds on its own.
 export const invalidateAssetsBySiteIds = async (
+  logger: Logger<string>,
   siteIds: Set<string> | string[],
 ): Promise<InvalidationResult> => {
   const uniqueSiteIds = Array.from(new Set(siteIds))
@@ -46,7 +50,7 @@ export const invalidateAssetsBySiteIds = async (
       new CreateInvalidationCommand({
         DistributionId: distributionId,
         InvalidationBatch: {
-          CallerReference: `delete-assets-${Date.now()}`,
+          CallerReference: `delete-assets-${Date.now()}-${randomUUID()}`,
           Paths: {
             Quantity: paths.length,
             Items: paths,
@@ -56,9 +60,13 @@ export const invalidateAssetsBySiteIds = async (
     )
     return { success: true, invalidationId: response.Invalidation?.Id }
   } catch (error) {
+    logger.error(
+      { error, siteIds: uniqueSiteIds },
+      "Failed to invalidate CloudFront cache",
+    )
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
+      error: "Failed to invalidate CloudFront cache",
     }
   }
 }
