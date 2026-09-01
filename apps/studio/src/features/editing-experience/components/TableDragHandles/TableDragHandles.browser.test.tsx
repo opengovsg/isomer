@@ -576,13 +576,17 @@ describe("TableDragHandles", () => {
     const targetPos = centreOf(columnCCell)
     act(() => {
       fireEvent.mouseMove(document, {
-        clientX: targetPos.x + 20, // past column C's midpoint -> drop after it
+        clientX: handleCentre.x + 10,
+        clientY: handleCentre.y,
+      })
+      fireEvent.mouseMove(document, {
+        clientX: targetPos.x + 40,
         clientY: handleCentre.y,
       })
     })
     act(() => {
       fireEvent.mouseUp(document, {
-        clientX: targetPos.x + 20,
+        clientX: targetPos.x + 40,
         clientY: handleCentre.y,
       })
     })
@@ -760,6 +764,57 @@ describe("TableDragHandles", () => {
         Math.abs(after.left - before.left) +
           Math.abs(after.width - before.width),
       ).toBeGreaterThan(1)
+    })
+  })
+
+  it("updates drop targets when the table resizes during a drag", async () => {
+    // Arrange
+    const { editor, container } = await renderHarness()
+    const handle = await waitForHandle(container, "column", 0)
+    const handleCentre = centreOf(handle)
+    act(() => {
+      fireEvent.mouseDown(handle, {
+        clientX: handleCentre.x,
+        clientY: handleCentre.y,
+      })
+      fireEvent.mouseMove(document, {
+        clientX: handleCentre.x + 8,
+        clientY: handleCentre.y,
+      })
+    })
+    const table = container.querySelector("table")
+    if (!table) throw new Error("table not found")
+    const thirdHandle = await waitForHandle(container, "column", 2)
+    const before = thirdHandle.getBoundingClientRect()
+
+    // Act
+    act(() => {
+      table.style.width = `${table.getBoundingClientRect().width + 160}px`
+    })
+    await waitFor(() => {
+      const after = thirdHandle.getBoundingClientRect()
+      expect(Math.abs(after.left - before.left)).toBeGreaterThan(1)
+    })
+    const columnC = findByCellText(container, "Column C")
+    const targetPos = centreOf(columnC)
+    act(() => {
+      fireEvent.mouseMove(document, {
+        clientX: targetPos.x + 20,
+        clientY: handleCentre.y,
+      })
+      fireEvent.mouseUp(document, {
+        clientX: targetPos.x + 20,
+        clientY: handleCentre.y,
+      })
+    })
+
+    // Assert
+    await waitFor(() => {
+      expect(getCellText(editor).slice(0, 3)).toEqual([
+        "Column B",
+        "Column C",
+        "Column A",
+      ])
     })
   })
 })
