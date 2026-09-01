@@ -220,19 +220,17 @@ export const parseAssetUrlToKey = (url: string): string | null => {
     return null
   }
 
-  // A `#` in the URL is inherently ambiguous: it's either a literal
-  // character in the filename (filenamify's reserved-character list
-  // doesn't strip `#`) or a genuine URL fragment — there's no way to tell
-  // which from the string alone, and guessing wrong either truncates the
-  // real key or appends the fragment onto it, both resolving to the wrong
-  // S3 object. Reject rather than risk deleting (or failing to delete) the
-  // wrong asset. `.search` (a real `?query`) is dropped outright: filenamify
-  // does strip `?`, so a real asset key can never contain one.
-  if (parsed.hash) {
-    return null
-  }
-
-  const key = decodePercentEncodedRuns(parsed.pathname.slice(1))
+  // `parsed.pathname` alone drops everything from an unescaped `#` onward
+  // — WHATWG treats it as the start of a fragment. Isomer never appends a
+  // real navigational fragment to an asset URL (these are direct file
+  // links, not page links with anchors), and filenamify's
+  // reserved-character list doesn't strip `#`, so a `#` here is always a
+  // literal filename character produced by Studio's own (unencoded) URL
+  // generation — reattaching `.hash` recovers it. `.search` (a real
+  // `?query`) is deliberately left out: filenamify does strip `?`, so a
+  // real asset key can never contain one.
+  const rawPath = parsed.pathname + parsed.hash
+  const key = decodePercentEncodedRuns(rawPath.slice(1))
   return ASSET_KEY_PATTERN.test(key) ? key : null
 }
 
