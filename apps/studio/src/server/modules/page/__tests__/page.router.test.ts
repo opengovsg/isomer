@@ -774,177 +774,6 @@ describe("page.router", async () => {
     })
   })
 
-  describe("getCategoryOptions", () => {
-    it("should throw 401 if not logged in", async () => {
-      // Arrange
-      const unauthedSession = applySession()
-      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
-
-      // Act
-      const result = unauthedCaller.getCategoryOptions({ siteId: 1, pageId: 1 })
-
-      // Assert
-      await expect(result).rejects.toThrowError(
-        new TRPCError({ code: "UNAUTHORIZED" }),
-      )
-    })
-
-    it("should throw 403 if user does not have read access to the site", async () => {
-      // Arrange
-      const { page, site } = await setupPageResource({
-        resourceType: ResourceType.CollectionPage,
-      })
-
-      // Act
-      const result = caller.getCategoryOptions({
-        siteId: site.id,
-        pageId: Number(page.id),
-      })
-
-      // Assert
-      await expect(result).rejects.toThrowError(
-        new TRPCError({
-          code: "FORBIDDEN",
-          message:
-            "You do not have sufficient permissions to perform this action",
-        }),
-      )
-    })
-
-    it("should return 200", async () => {
-      // Arrange
-      const { collection, site } = await setupCollection()
-      const { page } = await setupPageResource({
-        siteId: site.id,
-        parentId: collection.id,
-        resourceType: ResourceType.CollectionPage,
-      })
-      await setupEditorPermissions({
-        userId: session.userId ?? undefined,
-        siteId: site.id,
-      })
-
-      // Act
-      const result = await caller.getCategoryOptions({
-        siteId: site.id,
-        pageId: Number(page.id),
-      })
-
-      // Assert
-      expect(result).toBeDefined()
-      expect(result.categoryOptions).toEqual([])
-    })
-
-    it("should throw 404 when the resource has no parent collection", async () => {
-      // Arrange
-      const { page, site } = await setupPageResource({
-        resourceType: ResourceType.RootPage,
-      })
-      await setupEditorPermissions({
-        userId: session.userId ?? undefined,
-        siteId: site.id,
-      })
-
-      // Act
-      const result = caller.getCategoryOptions({
-        siteId: site.id,
-        pageId: Number(page.id),
-      })
-
-      // Assert
-      await expect(result).rejects.toThrowError(
-        new TRPCError({
-          code: "NOT_FOUND",
-          message: "Page not found",
-        }),
-      )
-    })
-
-    it("should throw 400 when the resource's parent is not a Collection", async () => {
-      // Arrange
-      const { folder, site } = await setupFolder()
-      const { page } = await setupPageResource({
-        siteId: site.id,
-        parentId: folder.id,
-        resourceType: ResourceType.Page,
-      })
-      await setupEditorPermissions({
-        userId: session.userId ?? undefined,
-        siteId: site.id,
-      })
-
-      // Act
-      const result = caller.getCategoryOptions({
-        siteId: site.id,
-        pageId: Number(page.id),
-      })
-
-      // Assert
-      await expect(result).rejects.toThrowError(
-        new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Page is not a child of a Collection",
-        }),
-      )
-    })
-
-    it("should return category options from the published collection index blob", async () => {
-      // Arrange
-      const { collection, site } = await setupCollection()
-      const { blob: indexBlob } = await setupPageResource({
-        siteId: site.id,
-        parentId: collection.id,
-        resourceType: ResourceType.IndexPage,
-        state: ResourceState.Published,
-        userId: user.id,
-      })
-      await db
-        .updateTable("Blob")
-        .where("id", "=", indexBlob.id)
-        .set({
-          content: jsonb({
-            ...indexBlob.content,
-            page: {
-              ...indexBlob.content.page,
-              categoryOptions: [
-                {
-                  id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-                  label: "Alpha",
-                },
-                {
-                  id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
-                  label: "Beta",
-                },
-              ],
-            },
-          }),
-        })
-        .execute()
-
-      const { page: collectionPage } = await setupPageResource({
-        siteId: site.id,
-        parentId: collection.id,
-        resourceType: ResourceType.CollectionPage,
-      })
-      await setupEditorPermissions({
-        userId: session.userId ?? undefined,
-        siteId: site.id,
-      })
-
-      // Act
-      const result = await caller.getCategoryOptions({
-        siteId: site.id,
-        pageId: Number(collectionPage.id),
-      })
-
-      // Assert
-      expect(result.categoryOptions).toEqual([
-        { id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", label: "Alpha" },
-        { id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", label: "Beta" },
-      ])
-    })
-  })
-
   describe("readPage", () => {
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
@@ -1811,13 +1640,13 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await assertAuditLogRows()
       await expect(result).rejects.toThrow(
         new TRPCError({
           code: "CONFLICT",
           message: "A resource with the same permalink already exists",
         }),
       )
+      await assertAuditLogRows()
     })
 
     it("should create a new page with Content layout successfully", async () => {
@@ -2039,7 +1868,6 @@ describe("page.router", async () => {
       const result = caller.createPage({ ...expectedPageArgs })
 
       // Assert
-      await assertAuditLogRows()
       await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
@@ -2047,6 +1875,7 @@ describe("page.router", async () => {
             "Parent not found or parentId is not a valid collection or folder",
         }),
       )
+      await assertAuditLogRows()
     })
 
     it("should throw 404 if folderId is not a Folder resource", async () => {
@@ -2067,7 +1896,6 @@ describe("page.router", async () => {
       const result = caller.createPage({ ...expectedPageArgs })
 
       // Assert
-      await assertAuditLogRows()
       await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
@@ -2075,6 +1903,7 @@ describe("page.router", async () => {
             "Parent not found or parentId is not a valid collection or folder",
         }),
       )
+      await assertAuditLogRows()
     })
 
     // TODO: Implement tests when permissions are implemented
@@ -2764,7 +2593,6 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await assertAuditLogRows()
       await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
@@ -2772,6 +2600,7 @@ describe("page.router", async () => {
             "Unable to load content for the requested page, please contact Isomer Support",
         }),
       )
+      await assertAuditLogRows()
     })
 
     it("should update page settings successfully", async () => {
@@ -2794,8 +2623,9 @@ describe("page.router", async () => {
         ...expectedSettings,
       })
 
-      // Assert
-      await assertAuditLogRows(2)
+      // Assert — only a ResourceUpdate entry; an unpublished page has no live
+      // presence, so no implicit publish happens.
+      await assertAuditLogRows(1)
       const actualResource = await db
         .selectFrom("Resource")
         .where("id", "=", page.id)
@@ -2809,7 +2639,62 @@ describe("page.router", async () => {
         .executeTakeFirstOrThrow()
       expect(result).toMatchObject(actualResource)
       expect(result).toMatchObject(expectedSettings)
-      await assertAuditLogRows(2)
+    })
+
+    it("should not log a Publish event when updating settings of an unpublished page", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({ resourceType: "Page" })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.updateSettings({
+        siteId: site.id,
+        pageId: Number(page.id),
+        type: "Page",
+        title: "New Title",
+        permalink: "new-permalink",
+      })
+
+      // Assert
+      const publishLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", AuditLogEvent.Publish)
+        .selectAll()
+        .execute()
+      expect(publishLogs).toHaveLength(0)
+    })
+
+    it("should log a Publish event when updating settings of a published page", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: "Page",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.updateSettings({
+        siteId: site.id,
+        pageId: Number(page.id),
+        type: "Page",
+        title: "New Title",
+        permalink: "new-permalink",
+      })
+
+      // Assert
+      const publishLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", AuditLogEvent.Publish)
+        .selectAll()
+        .execute()
+      expect(publishLogs).toHaveLength(1)
     })
 
     it("should update root page settings successfully", async () => {

@@ -5,6 +5,7 @@ import type {
   PutObjectCommandInput,
   PutObjectTaggingCommandInput,
 } from "@aws-sdk/client-s3"
+import type { Readable } from "node:stream"
 import {
   CopyObjectCommand,
   GetObjectCommand,
@@ -15,12 +16,19 @@ import {
   PutObjectTaggingCommand,
   S3Client,
 } from "@aws-sdk/client-s3"
+import { Upload } from "@aws-sdk/lib-storage"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { addDays } from "date-fns"
 import { env } from "~/env.mjs"
 
 const DELETE_TAG = "deletedAt"
 const EGAZETTE_COMPLIANCE_HOLD_IN_DAYS = 10000
+
+// Unlike Key params (which the SDK URL-encodes), CopySource is sent verbatim
+// as the x-amz-copy-source header, so keys with spaces or reserved characters
+// (e.g. "2026/Government Gazette/...") must be encoded per path segment here.
+const getEncodedCopySource = (Bucket: string, Key: string) =>
+  `${Bucket}/${Key?.split("/").map(encodeURIComponent).join("/")}`
 
 // R2 credentials are only set for preview, but the choice of backend is
 // driven by their presence rather than the environment name. Exported so
@@ -83,10 +91,11 @@ export const generateSignedPutUrl = async ({
   )
 }
 
-export const generateSignedGetUrl = async ({
-  Bucket,
-  Key,
-}: Pick<GetObjectCommandInput, "Bucket" | "Key">): Promise<string> => {
+export const generateSignedGetUrl = async (
+  { Bucket, Key }: Pick<GetObjectCommandInput, "Bucket" | "Key">,
+  // Default kept at 5 minutes so all existing callers are unchanged.
+  expiresIn: number = 60 * 5,
+): Promise<string> => {
   return getSignedUrl(
     storage,
     new GetObjectCommand({
@@ -94,7 +103,7 @@ export const generateSignedGetUrl = async ({
       Key,
     }),
     {
-      expiresIn: 60 * 5, // 5 minutes
+      expiresIn,
     },
   )
 }
@@ -147,20 +156,27 @@ export const deleteFile = async ({
   )
 }
 
-// NOTE: In order to set the asset as published, we have to do 2 things:
-// 1. we have to set the object lock retention
-// 2. we have to remove the scheduledAt tag
+// NOTE: In order to set the asset as published, we have to do 3 things:
+// 1. we rewrite the Content-Disposition (when given) so downloads are named
+//    after the gazette title rather than the raw S3 key
+// 2. we have to set the object lock retention
+// 3. we have to remove the scheduledAt tag
 // this is required to guarantee that the gazettes
 // can be seen and cannot be deleted
 export const setAssetAsPublished = async ({
   Key,
   Bucket,
-}: Pick<PutObjectTaggingCommandInput, "Key" | "Bucket">) => {
+  ContentDisposition,
+}: Pick<PutObjectTaggingCommandInput, "Key" | "Bucket"> &
+  Pick<PutObjectCommandInput, "ContentDisposition">) => {
   // Skip on R2: the COMPLIANCE-mode Object Lock below is irreversible for
   // ~27 years — applying it to a shared preview bucket would permanently
   // lock every test upload. The GuardDuty malware-scan tag check is also
   // moot, since GuardDuty is an AWS-only service that never scans R2 objects.
   if (isR2Configured) return
+  if (!Bucket) throw new Error("Bucket must be defined")
+  if (!Key) throw new Error("Key must be defined")
+
   const objectTag = await storage.send(
     new GetObjectTaggingCommand({
       Bucket,
@@ -182,6 +198,31 @@ export const setAssetAsPublished = async ({
   )
   if (hasFailedScan) {
     throw new Error("Cannot publish asset with failed malware scan")
+  }
+
+  // NOTE: S3 object metadata is immutable, so rewriting Content-Disposition
+  // requires a self-copy with MetadataDirective REPLACE. This must happen
+  // before the retention lock below — once the object lock is applied the
+  // object can no longer be overwritten. REPLACE drops all existing metadata,
+  // so ContentType and user metadata are read back and re-supplied; object
+  // tags carry over via the default TaggingDirective (COPY).
+  if (ContentDisposition) {
+    const head = await storage.send(new HeadObjectCommand({ Bucket, Key }))
+    // Skip the (paid) self-copy when the disposition is already correct,
+    // e.g. on a pg-boss retry after an earlier attempt already rewrote it.
+    if (head.ContentDisposition !== ContentDisposition) {
+      await storage.send(
+        new CopyObjectCommand({
+          Bucket,
+          CopySource: getEncodedCopySource(Bucket, Key),
+          Key,
+          MetadataDirective: "REPLACE",
+          ContentType: head.ContentType,
+          Metadata: head.Metadata,
+          ContentDisposition,
+        }),
+      )
+    }
   }
 
   // NOTE: Lock first to preserve guarantee that once published
@@ -220,6 +261,24 @@ export const setAssetAsPublished = async ({
   return
 }
 
+// A HeadObject error means "object is genuinely absent" only for a real
+// not-found: AWS SDK v3 surfaces this as an error named "NotFound"/"NoSuchKey"
+// or an HTTP 404. Every other failure (throttling, network blips, auth) is
+// transient/operational and MUST propagate — swallowing it as `null` would let
+// callers mistake a present object for a missing one.
+const isNotFoundError = (error: unknown): boolean => {
+  if (typeof error !== "object" || error === null) return false
+  const { name, $metadata } = error as {
+    name?: unknown
+    $metadata?: { httpStatusCode?: unknown }
+  }
+  return (
+    name === "NotFound" ||
+    name === "NoSuchKey" ||
+    $metadata?.httpStatusCode === 404
+  )
+}
+
 export const getFileSize = async ({
   Key,
   Bucket,
@@ -227,8 +286,11 @@ export const getFileSize = async ({
   try {
     const response = await storage.send(new HeadObjectCommand({ Bucket, Key }))
     return response.ContentLength ?? null
-  } catch {
-    return null
+  } catch (error) {
+    if (isNotFoundError(error)) {
+      return null
+    }
+    throw error
   }
 }
 
@@ -240,10 +302,12 @@ export const copyFile = async ({
   SourceKey: string
   DestKey: string
 }) => {
+  if (!Bucket) throw new Error("Bucket must be defined")
+
   return storage.send(
     new CopyObjectCommand({
       Bucket,
-      CopySource: `${Bucket}/${SourceKey}`,
+      CopySource: getEncodedCopySource(Bucket, SourceKey),
       Key: DestKey,
     }),
   )
@@ -319,4 +383,53 @@ export const putObjectDirect = async (
   >,
 ): Promise<void> => {
   await storage.send(new PutObjectCommand(props))
+}
+
+// Resolves the private studio assets bucket — a dedicated bucket for
+// Studio-generated artifacts (provisioned in isomer-next-infra, published to
+// the env via SSM), separate from the public-facing website assets bucket; it
+// has no CDN or public access point in front of it. Audit-log CSV exports
+// live in it under the `audit-log-exports/` key prefix (see ADR 0007).
+// Throws a clear error if the env var is unset, so misconfiguration fails
+// loudly at call time rather than silently uploading to `undefined`. Exposed
+// so the orchestrator (next layer) can build keys / sign URLs against the
+// same bucket.
+export const getStudioAssetsBucketName = (): string => {
+  const bucket = env.S3_STUDIO_ASSETS_BUCKET_NAME
+  if (!bucket) {
+    throw new Error("S3_STUDIO_ASSETS_BUCKET_NAME is not configured")
+  }
+  return bucket
+}
+
+// Uploads a generated audit-log CSV export to the private studio assets
+// bucket. The download disposition uses the key's basename as the filename so
+// the browser saves a sensibly-named .csv rather than the full object key.
+//
+// `body` is streamed (the fulfilment path pipes a Postgres cursor through CSV
+// serialisation straight into here), so we use lib-storage's `Upload` rather
+// than a one-shot `PutObjectCommand`: it consumes a `Readable` without
+// buffering the whole file, switching to a multipart upload automatically once
+// the stream exceeds a single part and falling back to a single `PutObject`
+// for small bodies. A plain string body is still accepted.
+export const uploadAuditLogExport = async ({
+  key,
+  body,
+}: {
+  key: string
+  body: Readable | string
+}): Promise<void> => {
+  const Bucket = getStudioAssetsBucketName()
+  const filename = key.split("/").pop() ?? key
+  const upload = new Upload({
+    client: storage,
+    params: {
+      Bucket,
+      Key: key,
+      Body: body,
+      ContentType: "text/csv",
+      ContentDisposition: `attachment; filename="${filename}"`,
+    },
+  })
+  await upload.done()
 }

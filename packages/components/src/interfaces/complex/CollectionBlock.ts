@@ -51,6 +51,7 @@ export const CollectionBlockSchema = Type.Object(
 export type CollectionBlockProps = Static<typeof CollectionBlockSchema> & {
   site: IsomerSiteProps
   shouldLazyLoad?: boolean
+  headingLevel: number
 }
 
 export type CollectionBlockSingleCardProps = Pick<
@@ -58,7 +59,7 @@ export type CollectionBlockSingleCardProps = Pick<
   | "title"
   | "image"
   | "isContainNeeded"
-  | "category"
+  | "plaintextTags"
   | "referenceLinkHref"
   | "formattedDate"
 > &
@@ -66,6 +67,7 @@ export type CollectionBlockSingleCardProps = Pick<
   CollectionBlockNumberOfCards & {
     site: IsomerSiteProps
     shouldLazyLoad?: boolean
+    headingLevel: number
   }
 
 export interface CollectionBlockNumberOfCards {

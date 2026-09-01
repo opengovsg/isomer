@@ -17,10 +17,279 @@ const meta: Meta<CalloutProps> = {
 export default meta
 type Story = StoryObj<typeof Callout>
 
+const content: CalloutProps["content"] = {
+  type: "prose",
+  content: [
+    {
+      type: "paragraph",
+      content: [
+        {
+          type: "text",
+          text: `As of December 1, 2024, the scheme is being reviewed for new criteria in 2025. To view the new criteria please refer to <a href="/faq">New Idea Scheme Proposal</a> while it is being updated.`,
+        },
+      ],
+    },
+  ],
+}
+
 // Default scenario
 export const Default: Story = {
   args: {
     site: generateSiteConfig(),
+    headingLevel: 2,
+    content,
+  },
+}
+
+// Legacy variant value, kept for backward compatibility with content saved
+// before "info" was renamed to "information".
+export const Info: Story = {
+  args: {
+    site: generateSiteConfig(),
+    headingLevel: 2,
+    content,
+    variant: "info",
+  },
+}
+
+export const GoodToKnow: Story = {
+  args: {
+    site: generateSiteConfig(),
+    headingLevel: 2,
+    content,
+    variant: "goodToKnow",
+  },
+}
+
+export const Warning: Story = {
+  args: {
+    site: generateSiteConfig(),
+    headingLevel: 2,
+    content,
+    variant: "warning",
+  },
+}
+
+export const Urgent: Story = {
+  args: {
+    site: generateSiteConfig(),
+    headingLevel: 2,
+    content,
+    variant: "urgent",
+  },
+}
+
+export const Note: Story = {
+  args: {
+    site: generateSiteConfig(),
+    headingLevel: 2,
+    content,
+    variant: "note",
+  },
+}
+
+export const UnorderedListFirst: Story = {
+  args: {
+    site: generateSiteConfig(),
+    headingLevel: 2,
+    content: {
+      type: "prose",
+      content: [
+        {
+          type: "unorderedList",
+          content: [
+            {
+              type: "listItem",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [
+                    {
+                      type: "text",
+                      text: "Feeds on grasses, leaves, and shoots.",
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: "listItem",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [
+                    {
+                      type: "text",
+                      text: "Uses its horn for defence and foraging.",
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: "paragraph",
+          content: [
+            {
+              type: "text",
+              text: "Rhinos are large, sturdy mammals known for their thick, protective skin and one or two horns on their snouts.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+}
+
+export const UnorderedListOnly: Story = {
+  args: {
+    site: generateSiteConfig(),
+    headingLevel: 2,
+    content: {
+      type: "prose",
+      content: [
+        {
+          type: "unorderedList",
+          content: [
+            {
+              type: "listItem",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [
+                    {
+                      type: "text",
+                      text: "Feeds on grasses, leaves, and shoots.",
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: "listItem",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [
+                    {
+                      type: "text",
+                      text: "Uses its horn for defence and foraging.",
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
+}
+
+export const OrderedListFirst: Story = {
+  args: {
+    site: generateSiteConfig(),
+    headingLevel: 2,
+    content: {
+      type: "prose",
+      content: [
+        {
+          type: "orderedList",
+          content: [
+            {
+              type: "listItem",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [
+                    {
+                      type: "text",
+                      text: "Feeds on grasses, leaves, and shoots.",
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: "listItem",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [
+                    {
+                      type: "text",
+                      text: "Uses its horn for defence and foraging.",
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: "paragraph",
+          content: [
+            {
+              type: "text",
+              text: "Rhinos are large, sturdy mammals known for their thick, protective skin and one or two horns on their snouts.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+}
+
+export const OrderedListOnly: Story = {
+  args: {
+    site: generateSiteConfig(),
+    headingLevel: 2,
+    content: {
+      type: "prose",
+      content: [
+        {
+          type: "orderedList",
+          content: [
+            {
+              type: "listItem",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [
+                    {
+                      type: "text",
+                      text: "Feeds on grasses, leaves, and shoots.",
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: "listItem",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [
+                    {
+                      type: "text",
+                      text: "Uses its horn for defence and foraging.",
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
+}
+
+export const ListInMiddle: Story = {
+  args: {
+    site: generateSiteConfig(),
+    headingLevel: 2,
     content: {
       type: "prose",
       content: [
@@ -29,7 +298,49 @@ export const Default: Story = {
           content: [
             {
               type: "text",
-              text: `As of December 1, 2024, the scheme is being reviewed for new criteria in 2025. To view the new criteria please refer to <a href="/faq">New Idea Scheme Proposal</a> while it is being updated.`,
+              text: "Rhinos are large, sturdy mammals known for their thick, protective skin and one or two horns on their snouts.",
+            },
+          ],
+        },
+        {
+          type: "unorderedList",
+          content: [
+            {
+              type: "listItem",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [
+                    {
+                      type: "text",
+                      text: "Feeds on grasses, leaves, and shoots.",
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: "listItem",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [
+                    {
+                      type: "text",
+                      text: "Uses its horn for defence and foraging.",
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: "paragraph",
+          content: [
+            {
+              type: "text",
+              text: "They are herbivorous mammals and one of the oldest groups of mammals still in existence.",
             },
           ],
         },

@@ -6,6 +6,7 @@ import { z } from "zod"
 import { generateBasePermalinkSchema } from "./common"
 import { MAX_FOLDER_PERMALINK_LENGTH, MAX_FOLDER_TITLE_LENGTH } from "./folder"
 import { offsetPaginationSchema } from "./pagination"
+import { resourceOrderByOptions } from "./resource"
 
 export type CollectionLinkProps = Static<typeof LinkRefPageSchema>
 
@@ -56,7 +57,6 @@ export const editLinkSchema = z.object({
       alt: z.string(),
     })
     .optional(),
-  categoryId: z.string().optional(),
 })
 
 export const readLinkSchema = z.object({
@@ -95,32 +95,22 @@ export const getCollectionTagsSchema = z
     { message: "Exactly one of resourceId or collectionId must be provided" },
   )
 
-export const getCategoryOptionUsageCountSchema = z.object({
-  siteId: z.number().min(1, { message: "Site ID must be at least 1" }),
-  indexPageId: z.number().min(1, { message: "Page ID must be at least 1" }),
-  categoryId: z.uuid(),
-})
-
 export const getCollectionsSchema = z.object({
   siteId: z.number().min(1),
   hasChildren: z.boolean().optional().default(false),
 })
 
-export const readCollectionOrderByOptions = [
-  "updated-desc",
-  "title-asc",
-] as const
-
 export const readCollectionSchema = z
   .object({
     siteId: z.number().min(1),
     resourceId: z.number().min(1),
-    orderBy: z
-      .enum(readCollectionOrderByOptions)
-      .optional()
-      .default("updated-desc"),
+    orderBy: z.enum(resourceOrderByOptions).optional().default("updated-desc"),
   })
   .merge(offsetPaginationSchema)
+
+// Upper bound to limit request parsing and SQL cost (ANY(...) on text[]).
+// Arbitrary limit to prevent abuse; adjust if legitimate collections exceed this.
+export const MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT = 100
 
 /** Counts child collection pages/links whose `tagged` includes any of these option ids. */
 export const countTagOptionsUsageSchema = z.object({
@@ -128,9 +118,7 @@ export const countTagOptionsUsageSchema = z.object({
   pageId: z.number().min(1), // pageId is the collection index page resource id
   tagOptionIds: z
     .array(z.string().uuid())
-    // Upper bound to limit request parsing and SQL cost (ANY(...) on text[]).
-    // Arbitrary limit to prevent abuse; adjust if legitimate collections exceed this.
-    .max(100, {
-      message: `At most 100 tag options can be queried at once`,
+    .max(MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT, {
+      message: `At most ${MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT} tag options can be queried at once`,
     }),
 })

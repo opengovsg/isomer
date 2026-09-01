@@ -16,7 +16,8 @@ const createAccordionStyles = tv({
     details:
       "group mt-7 border-y border-divider-medium px-4 py-5 first:mt-0 has-[+_details]:border-b-0 [&+details]:mt-0",
     icon: "h-6 w-6 flex-shrink-0 [&.minus]:hidden [&.minus]:group-open:block [&.plus]:block [&.plus]:group-open:hidden",
-    content: "pt-5 text-base-content-strong",
+    content:
+      "pt-5 text-base-content-strong [&>:is(ol,ul):first-child>li:first-child]:mt-0 [&>:is(ol,ul):first-child]:mt-0 [&>:is(ol,ul):last-child>li:last-child]:mb-0",
   },
 })
 
@@ -25,7 +26,12 @@ const accordionStyles = createAccordionStyles()
 interface AccordionProps
   extends BaseAccordionProps, VariantProps<typeof createAccordionStyles> {}
 
-export const Accordion = ({ summary, details, site }: AccordionProps) => {
+export const Accordion = ({
+  summary,
+  details,
+  site,
+  headingLevel,
+}: AccordionProps) => {
   return (
     <details className={accordionStyles.details()}>
       <summary className={summaryStyle()}>
@@ -41,7 +47,11 @@ export const Accordion = ({ summary, details, site }: AccordionProps) => {
       </summary>
 
       <div className={accordionStyles.content()}>
-        <Prose {...details} site={site} />
+        {/* The accordion's own "title" is a <summary>, not a heading, so it
+            never consumes `headingLevel` itself — the body stays at the same
+            level rather than nesting one deeper, otherwise a heading inside it
+            would skip a level with no parent heading in between. */}
+        <Prose {...details} site={site} headingLevel={headingLevel} />
       </div>
     </details>
   )

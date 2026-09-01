@@ -1,6 +1,7 @@
 import {
   Box,
   Center,
+  Flex,
   FormControl,
   HStack,
   Icon,
@@ -13,21 +14,53 @@ import {
 import {
   Button,
   FormErrorMessage,
+  FormHelperText,
   FormLabel,
+  Link,
   useToast,
 } from "@opengovsg/design-system-react"
+import posthog from "posthog-js"
 import { useState } from "react"
-import { BiPlus, BiRightArrowAlt, BiSearch } from "react-icons/bi"
+import { BiBulb, BiPlus, BiRightArrowAlt, BiSearch } from "react-icons/bi"
 import { REDIRECT_MESSAGES } from "~/constants/redirect"
 import {
   BRIEF_TOAST_SETTINGS,
   SETTINGS_TOAST_MESSAGES,
 } from "~/constants/toast"
 import { useZodForm } from "~/lib/form"
+import { normalizeRedirectSource, redirectKind } from "~/schemas/redirect"
 
 import { useCreateRedirect } from "../api"
+import { WILDCARD_HINT } from "../constants"
 import { addRedirectSchema, type AddRedirectInput } from "../types"
+import { BulkUploadRedirectsModal } from "./BulkUploadRedirectsModal"
 import { SelectDestinationPageModal } from "./SelectDestinationPageModal"
+
+const safeNormalize = (raw: string): string | null => {
+  try {
+    return normalizeRedirectSource(raw)
+  } catch {
+    return null
+  }
+}
+
+// Renders how a wildcard carries the matched remainder onto the destination,
+// e.g. "/old/*" + "/dest" -> "/old/example → /dest/example". The destination is
+// trimmed first so the preview matches the value the schema submits (it trims),
+// rather than reflecting stray leading/trailing whitespace as the user types.
+// Returns null for a non-wildcard source instead of trusting the caller's
+// `kind === "wildcard"` check, so the "/*" strip below can never run on a
+// source that doesn't have it.
+const buildWildcardPreview = (
+  normalizedSource: string,
+  destination: string,
+): string | null => {
+  if (!normalizedSource.endsWith("/*")) return null
+  const prefix = normalizedSource.slice(0, -2) // strip trailing "/*"
+  const trimmed = destination.trim()
+  const base = trimmed.endsWith("/") ? trimmed.slice(0, -1) : trimmed
+  return `${prefix}/example → ${base}/example`
+}
 
 interface AddRedirectCardProps {
   siteId: number
@@ -56,9 +89,24 @@ export const AddRedirectCard = ({
     onOpen: onPageModalOpen,
     onClose: onPageModalClose,
   } = useDisclosure()
+  const {
+    isOpen: isBulkUploadOpen,
+    onOpen: onBulkUploadOpen,
+    onClose: onBulkUploadClose,
+  } = useDisclosure()
 
   const [source, destination] = watch(["source", "destination"])
   const isAddDisabled = !source?.trim() || !destination?.trim()
+
+  const trimmedSource = source?.trim()
+  const normalizedSource = trimmedSource ? safeNormalize(trimmedSource) : null
+  const kind = normalizedSource ? redirectKind(normalizedSource) : "exact"
+
+  // Live preview: /old/* + /dest → /old/example → /dest/example
+  const wildcardPreview =
+    kind === "wildcard" && normalizedSource && destination
+      ? buildWildcardPreview(normalizedSource, destination)
+      : null
 
   // The "Redirect to a page on your site..." dropdown only surfaces while the
   // destination field is focused (per the design).
@@ -80,6 +128,12 @@ export const AddRedirectCard = ({
       { siteId, source, destination },
       {
         onSuccess: () => {
+          posthog.capture("redirect_created", {
+            site_id: siteId,
+            destination_type: destination.startsWith("/")
+              ? "internal"
+              : "external",
+          })
           reset()
           toast({ ...SETTINGS_TOAST_MESSAGES.success, status: "success" })
         },
@@ -132,6 +186,41 @@ export const AddRedirectCard = ({
         effect on your live site.
       </Text>
 
+      <Flex
+        align="center"
+        gap="0.5rem"
+        bg="utility.feedback.info-subtle"
+        borderRadius="4px"
+        p="0.75rem"
+        mb="1.25rem"
+      >
+        <Icon
+          as={BiBulb}
+          boxSize="1.25rem"
+          color="base.content.default"
+          flexShrink={0}
+        />
+        <Text textStyle="subhead-2" color="base.content.default">
+          Have more than 10 redirects to add? You can{" "}
+          <Link
+            as="button"
+            type="button"
+            variant="inline"
+            textStyle="subhead-2"
+            color="interaction.links.default"
+            onClick={() => {
+              posthog.capture("redirect_bulk_upload_modal_opened", {
+                site_id: siteId,
+              })
+              onBulkUploadOpen()
+            }}
+          >
+            bulk upload with a .csv instead
+          </Link>
+          .
+        </Text>
+      </Flex>
+
       <HStack as="form" align="flex-start" onSubmit={handleSubmit(onSubmit)}>
         <FormControl
           flex={1}
@@ -148,13 +237,26 @@ export const AddRedirectCard = ({
               /
             </InputLeftAddon>
             <Input
-              placeholder="redirect-from"
+              placeholder="redirect-from or path/*"
               {...register("source", {
                 onChange: clearFieldFeedback("source"),
               })}
             />
           </InputGroup>
           <FormErrorMessage>{errors.source?.message}</FormErrorMessage>
+          {/* The design system's helper text sits flush against the field
+              (theme sets `mt: 0`), which reads as part of the input when placed
+              below it — space it off the box. This has to go through `sx`, not
+              an `mt` prop: the design system's wrapper merges the theme's
+              helperText styles into `sx`, and Chakra's `sx` outranks style
+              props, so an `mt` prop is silently dropped. Colour and font size
+              come from the theme (base.content.medium, body-2) for the same
+              reason. */}
+          {!errors.source && (
+            <FormHelperText sx={{ mt: "0.75rem" }}>
+              {wildcardPreview ? `e.g. ${wildcardPreview}` : WILDCARD_HINT}
+            </FormHelperText>
+          )}
         </FormControl>
 
         <Box flexShrink={0}>
@@ -258,6 +360,12 @@ export const AddRedirectCard = ({
             shouldDirty: true,
           })
         }
+      />
+
+      <BulkUploadRedirectsModal
+        siteId={siteId}
+        isOpen={isBulkUploadOpen}
+        onClose={onBulkUploadClose}
       />
     </Box>
   )

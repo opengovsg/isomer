@@ -12,7 +12,10 @@ import {
 import { TRPCError } from "@trpc/server"
 import { format, isBefore } from "date-fns"
 import { get, isEmpty, isEqual, pick } from "lodash-es"
-import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
+import {
+  INDEX_PAGE_PERMALINK,
+  SEARCH_PAGE_PERMALINK,
+} from "~/constants/sitemap"
 import {
   sendCancelSchedulePageEmail,
   sendScheduledPageEmail,
@@ -66,11 +69,7 @@ import {
   updatePageById,
 } from "../resource/resource.service"
 import { getSiteConfig } from "../site/site.service"
-import {
-  createDefaultPage,
-  createFolderIndexPage,
-  getCategoryOptionsForPage,
-} from "./page.service"
+import { createDefaultPage, createFolderIndexPage } from "./page.service"
 
 const schemaValidator = ajv.compile<IsomerSchema>(schema)
 
@@ -198,18 +197,6 @@ export const pageRouter = router({
         .filter((c) => !!c && !!c.trim())
 
       return { categories }
-    }),
-
-  getCategoryOptions: protectedProcedure
-    .input(basePageSchema)
-    .query(async ({ ctx, input: { pageId, siteId } }) => {
-      await bulkValidateUserPermissionsForResources({
-        siteId,
-        action: "read",
-        userId: ctx.user.id,
-      })
-
-      return getCategoryOptionsForPage({ pageId, siteId })
     }),
 
   readPage: protectedProcedure
@@ -836,7 +823,10 @@ export const pageRouter = router({
 
           // The search page (permalink /search, no parent) is a default page
           // whose settings cannot be edited.
-          if (resource.permalink === "search" && resource.parentId === null) {
+          if (
+            resource.permalink === SEARCH_PAGE_PERMALINK &&
+            resource.parentId === null
+          ) {
             throw new TRPCError({
               code: "BAD_REQUEST",
               message: "The search page settings cannot be edited",
@@ -903,8 +893,12 @@ export const pageRouter = router({
             }
 
             // We do an implicit publish so that we can make the changes to the
-            // page settings immediately visible on the end site
-            await publishResource(ctx.user.id, updatedResource, ctx.logger)
+            // page settings immediately visible on the end site. A page that
+            // has never been published has no live presence, so skip the site
+            // rebuild and Publish audit entry for it.
+            if (updatedResource.publishedVersionId !== null) {
+              await publishResource(ctx.user.id, updatedResource, ctx.logger)
+            }
 
             return pick(updatedResource, [
               "id",

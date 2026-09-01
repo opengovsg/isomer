@@ -21,7 +21,7 @@ import {
 } from "~/schemas/site"
 import { protectedProcedure, router } from "~/server/trpc"
 import { safeJsonParse } from "~/utils/safeJsonParse"
-import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
+import { IsomerAdminRole, RoleType } from "~prisma/generated/generatedEnums"
 
 import { logConfigEvent, logPublishEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
@@ -42,31 +42,38 @@ import {
   getNotification,
   getSiteConfig,
   getSiteTheme,
-  resolveEgazetteAlgoliaSearchConfig,
+  normalizeAskgovConfig,
+  resolveSearchConfig,
   setSiteNotification,
   validateUserPermissionsForSite,
 } from "./site.service"
 
 export const siteRouter = router({
   list: protectedProcedure.query(async ({ ctx }) => {
-    // Isomer admins can see all sites
+    // Isomer admins can see all sites, with an implicit Admin role
+    // regardless of any explicit roles they have on the site
     const isIsomerAdmin = await isActiveIsomerAdmin(ctx.user.id)
     if (isIsomerAdmin) {
-      return db
+      const sites = await db
         .selectFrom("Site")
         .select(["Site.id", "Site.config"])
         .orderBy("Site.id", "asc")
         .execute()
+      return sites.map((site) => ({ ...site, role: RoleType.Admin }))
     }
 
-    // NOTE: Any role should be able to read site
+    // NOTE: Any role should be able to read site.
+    // We only consider site-wide permissions (resourceId is null) here
+    // because there's no granular resource role, mirroring
+    // `getResourcePermission` in the permissions module.
     return db
       .selectFrom("Site")
       .innerJoin("ResourcePermission", "Site.id", "ResourcePermission.siteId")
       .where("ResourcePermission.deletedAt", "is", null)
+      .where("ResourcePermission.resourceId", "is", null)
       .where("ResourcePermission.userId", "=", ctx.user.id)
-      .select(["Site.id", "Site.config"])
-      .groupBy(["Site.id", "Site.config"])
+      .select(["Site.id", "Site.config", "ResourcePermission.role"])
+      .orderBy("Site.id", "asc")
       .execute()
   }),
   listAllSites: protectedProcedure.query(async ({ ctx }) => {
@@ -130,21 +137,21 @@ export const siteRouter = router({
         .executeTakeFirstOrThrow()
 
       const { config } = site
+      const normalizedConfig = normalizeAskgovConfig({ ...rest, siteName })
 
       const updatedConfig = await db.transaction().execute(async (tx) => {
-        // Preserve the existing clientId from DB - only admins can update it via setSiteConfigByAdmin
-        const searchConfig =
-          rest.search?.type === "searchSG" && config.search?.type === "searchSG"
-            ? { ...rest.search, clientId: config.search.clientId }
-            : // egazette-algolia is admin-managed; site admins cannot switch
-              // to/from it or tamper with its Algolia credentials.
-              resolveEgazetteAlgoliaSearchConfig(config.search, rest.search)
+        // searchSG and egazette-algolia are admin-managed; their credentials
+        // always come from the DB, never from site-admin input.
+        const searchConfig = resolveSearchConfig(
+          config.search,
+          normalizedConfig.search,
+        )
 
         const updatedSite = await tx
           .updateTable("Site")
           .set({
             name: siteName,
-            config: jsonb({ ...rest, siteName, search: searchConfig }),
+            config: jsonb({ ...normalizedConfig, search: searchConfig }),
           })
           .where("id", "=", siteId)
           .returningAll()
@@ -195,6 +202,7 @@ export const siteRouter = router({
         .where("id", "=", ctx.user.id)
         .selectAll()
         .executeTakeFirstOrThrow()
+      const normalizedData = normalizeAskgovConfig(data)
 
       return await db.transaction().execute(async (tx) => {
         const site = await tx
@@ -208,7 +216,7 @@ export const siteRouter = router({
         // a site admin from switching back to localSearch once SearchSG is set.
         if (
           site.config.search?.type === "searchSG" &&
-          data.search?.type === "localSearch"
+          normalizedData.search?.type === "localSearch"
         ) {
           throw new TRPCError({
             code: "BAD_REQUEST",
@@ -217,16 +225,16 @@ export const siteRouter = router({
           })
         }
 
-        // egazette-algolia is admin-managed; site admins cannot switch to/from
-        // it or tamper with its Algolia credentials.
-        const search = resolveEgazetteAlgoliaSearchConfig(
+        // searchSG and egazette-algolia are admin-managed; their credentials
+        // always come from the DB, never from site-admin input.
+        const search = resolveSearchConfig(
           site.config.search,
-          data.search,
+          normalizedData.search,
         )
 
         const updatedSite = await tx
           .updateTable("Site")
-          .set({ config: jsonb({ ...data, search }) })
+          .set({ config: jsonb({ ...normalizedData, search }) })
           .where("id", "=", siteId)
           .returningAll()
           .executeTakeFirstOrThrow()

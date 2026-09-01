@@ -2,7 +2,6 @@ import type {
   ArticlePagePageProps,
   CollectionPagePageProps,
   FileRefPageProps,
-  IsomerComponent,
   IsomerSitemap,
   LinkRefPageProps,
 } from "@opengovsg/isomer-components"
@@ -17,6 +16,13 @@ import {
 } from "~/server/modules/resource/resource.service"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
+// Projected in SQL from the first top-level image block of the page body, so
+// the body itself never has to leave the database
+export interface FirstImage {
+  src: string | null
+  alt: string | null
+}
+
 type ResourceDto = Omit<
   Resource,
   "id" | "parentId" | "publishedVersionId" | "draftBlobId"
@@ -26,10 +32,9 @@ type ResourceDto = Omit<
   summary?: string
   thumbnail?: string
   category?: string
-  categoryId?: string | null
   tagged?: string | null
   date?: string
-  content?: string
+  firstImage?: FirstImage | null
 }
 
 const parseTagged = (raw: string | null | undefined): string[] | undefined => {
@@ -85,15 +90,10 @@ const getSitemapTreeFromArray = (
   // TODO: Sort the children by the page ordering if the FolderMeta resource exists
   return children.map((resource) => {
     const permalink = `${path}${resource.permalink}`
-    const parsedContent =
-      typeof resource.content === "string" && resource.content !== ""
-        ? (JSON.parse(resource.content) as IsomerComponent[])
-        : undefined
-    const firstImageComponent = Array.isArray(parsedContent)
-      ? parsedContent.find(
-          (item): item is Extract<IsomerComponent, { type: "image" }> =>
-            item.type === "image",
-        )
+    // Null when the body has no image block at all; `src` is null only when a
+    // block exists but omits it
+    const firstImage = resource.firstImage?.src
+      ? { src: resource.firstImage.src, alt: resource.firstImage.alt ?? "" }
       : undefined
 
     if (resource.type === ResourceType.Page) {
@@ -109,12 +109,7 @@ const getSitemapTreeFromArray = (
           src: resource.thumbnail ?? "",
           alt: "",
         },
-        firstImage: firstImageComponent
-          ? {
-              src: firstImageComponent.src,
-              alt: firstImageComponent.alt,
-            }
-          : undefined,
+        firstImage,
       }
     } else if (resource.type === ResourceType.CollectionPage) {
       return {
@@ -126,19 +121,13 @@ const getSitemapTreeFromArray = (
         lastModified: resource.updatedAt.toISOString(),
         permalink,
         category: resource.category ?? "Others",
-        categoryId: resource.categoryId ?? undefined,
         tagged: parseTagged(resource.tagged),
         date: resource.date ?? "",
         image: {
           src: resource.thumbnail ?? "",
           alt: "",
         },
-        firstImage: firstImageComponent
-          ? {
-              src: firstImageComponent.src,
-              alt: firstImageComponent.alt,
-            }
-          : undefined,
+        firstImage,
       }
     } else if (resource.type === ResourceType.CollectionLink) {
       return {
@@ -150,19 +139,13 @@ const getSitemapTreeFromArray = (
         lastModified: resource.updatedAt.toISOString(),
         permalink,
         category: resource.category ?? "Others",
-        categoryId: resource.categoryId ?? undefined,
         tagged: parseTagged(resource.tagged),
         date: resource.date ?? "",
         image: {
           src: resource.thumbnail ?? "",
           alt: "",
         },
-        firstImage: firstImageComponent
-          ? {
-              src: firstImageComponent.src,
-              alt: firstImageComponent.alt,
-            }
-          : undefined,
+        firstImage,
         ref: "/",
       }
     }
@@ -192,12 +175,7 @@ const getSitemapTreeFromArray = (
       image: !!indexPage?.thumbnail
         ? { src: indexPage.thumbnail, alt: "" }
         : undefined,
-      firstImage: firstImageComponent
-        ? {
-            src: firstImageComponent.src,
-            alt: firstImageComponent.alt,
-          }
-        : undefined,
+      firstImage,
       children: getSitemapTreeFromArray(
         resources,
         resource.id,
@@ -304,8 +282,6 @@ export const injectTagMappings = async (
     // of a collection item
     childPageProps.tagged,
     collectionPageProps.tagCategories,
-    childPageProps.categoryId,
-    collectionPageProps.categoryOptions,
     resource.id,
     resource.parentId,
   )
@@ -316,19 +292,17 @@ const _injectTagMappings = (
   sitemap: IsomerSitemap,
   tagged: ArticlePagePageProps["tagged"],
   tagCategories: CollectionPagePageProps["tagCategories"],
-  categoryId: ArticlePagePageProps["categoryId"],
-  categoryOptions: CollectionPagePageProps["categoryOptions"],
   childId: CollectionItemResourceDto["id"],
   collectionId: CollectionItemResourceDto["parentId"],
 ): IsomerSitemap => {
   // NOTE: If the child id matches,
-  // inject the tags and categoryId
+  // inject the tags
   if (sitemap.id === childId) {
-    return { ...sitemap, tagged, categoryId }
+    return { ...sitemap, tagged }
   }
 
   // NOTE: If the collection id matches,
-  // inject tag categories, categoryOptions and process the children
+  // inject tag categories and process the children
   if (
     sitemap.layout === ISOMER_USABLE_PAGE_LAYOUTS.Collection &&
     sitemap.id === collectionId
@@ -338,18 +312,9 @@ const _injectTagMappings = (
       collectionPagePageProps: {
         ...sitemap.collectionPagePageProps,
         tagCategories,
-        categoryOptions,
       },
       children: sitemap.children?.map((child) =>
-        _injectTagMappings(
-          child,
-          tagged,
-          tagCategories,
-          categoryId,
-          categoryOptions,
-          childId,
-          collectionId,
-        ),
+        _injectTagMappings(child, tagged, tagCategories, childId, collectionId),
       ),
     }
   }
@@ -359,15 +324,7 @@ const _injectTagMappings = (
   return {
     ...sitemap,
     children: sitemap.children?.map((child) =>
-      _injectTagMappings(
-        child,
-        tagged,
-        tagCategories,
-        categoryId,
-        categoryOptions,
-        childId,
-        collectionId,
-      ),
+      _injectTagMappings(child, tagged, tagCategories, childId, collectionId),
     ),
   }
 }

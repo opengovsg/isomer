@@ -33,8 +33,10 @@ export const MAX_REDIRECT_REFERENCES = 100
 export const MAX_REDIRECT_PAGE_SIZE = 100
 
 // Whitelist of characters allowed in a source path: RFC 3986 `pchar` plus "/"
-// and "%". Whitelisting keeps anything that could corrupt the published rules
-// (spaces, control chars, "?", "#", "\\", non-ASCII) out up front.
+// and "%". The "*" (part of pchar) is permitted so a trailing "/*" wildcard can
+// pass; the wildcard-shape refine below constrains where it may appear.
+// Whitelisting keeps spaces, control chars, "?", "#", "\\", and non-ASCII out up
+// front — a query string is not a supported redirect source.
 const SOURCE_ALLOWED_CHARS_REGEX = /^[A-Za-z0-9\-._~!$&'()*+,;=:@%/]+$/
 
 // ASCII control characters (0x00-0x1f, 0x7f). A destination is persisted verbatim
@@ -67,6 +69,14 @@ export const isValidExternalDestination = (value: string) => {
   }
 }
 
+export type RedirectKind = "exact" | "wildcard"
+
+// Classifies a stored (already-normalised) source by its shape. The build and
+// the edge resolver both branch on this. A trailing "/*" is a wildcard;
+// everything else is an exact path.
+export const redirectKind = (source: string): RedirectKind =>
+  source.endsWith("/*") ? "wildcard" : "exact"
+
 // Strips slashes from both ends of a path so "/foo/", "foo" and "foo//"
 // all normalise to the same inner segments before validation.
 const trimSlashes = (value: string) => value.replace(/^\/+|\/+$/g, "")
@@ -78,10 +88,17 @@ export const normalizeRedirectPath = (value: string) =>
   `/${trimSlashes(value).replace(/\/{2,}/g, "/")}`
 
 // Sources are additionally lowercased — page permalinks are lowercase-only, so
-// a source must lowercase to compare against (and not shadow) a real page.
-// Exported so the server's source/loop guards compare in the same form.
-export const normalizeRedirectSource = (value: string) =>
-  normalizeRedirectPath(value).toLowerCase()
+// a source must lowercase to compare against (and not shadow) a real page. A
+// trailing "/*" wildcard is normalised on its path part and re-appended, so
+// "/News/Press/*" -> "/news/press/*". Exported so the server's source/loop
+// guards and the build's manifest key compare the same way.
+export const normalizeRedirectSource = (value: string): string => {
+  const isWildcard = value.endsWith("/*")
+  const path = normalizeRedirectPath(
+    isWildcard ? value.slice(0, -2) : value,
+  ).toLowerCase()
+  return isWildcard ? `${path}/*` : path
+}
 
 // True when the (normalised) source falls under a reserved prefix — the prefix
 // itself or anything nested beneath it.
@@ -101,12 +118,23 @@ const sourceSchema = z
     message:
       "Source can only contain letters, numbers, and URL path characters",
   })
-  // Wildcard redirects aren't supported yet. A "*" would be stored as a literal
-  // path character that can never match an incoming request, so reject it with a
-  // clear message instead of silently creating a dead redirect.
-  .refine((value) => !value.includes("*"), {
-    message: "Wildcards aren't supported yet — enter the full path",
-  })
+  // A "*" is only allowed as a single trailing "/*" wildcard (the sole form the
+  // prefix-walk resolver supports). Reject a mid-string or repeated "*", and any
+  // root-equivalent prefix ("/*", "//*", "/./*") that would redirect the whole
+  // site. The prefix is checked on segments — not a raw length — so that
+  // collapsing "//" or a "." segment can't smuggle a root wildcard through.
+  .refine(
+    (value) => {
+      if (!value.includes("*")) return true
+      if (!value.endsWith("/*")) return false
+      const prefix = value.slice(0, -2)
+      if (prefix.includes("*")) return false
+      return trimSlashes(prefix)
+        .split("/")
+        .some((segment) => segment !== "" && segment !== ".")
+    },
+    { message: "Use a wildcard only as a trailing /* on a path, e.g. /news/*" },
+  )
   // The source is a path on this site, never a full URL — a scheme like
   // "https://" can never match an incoming request path, so reject it instead
   // of silently mangling it into a slashed source.
@@ -202,6 +230,67 @@ export const createRedirectSchema = createRedirectObjectSchema.superRefine(
   refineSourceDestinationDiffer,
 )
 export type CreateRedirectInput = z.infer<typeof createRedirectSchema>
+
+// Convenience applied just before the destination rules so users don't have to
+// type the scheme the published site serves over:
+//   - an "http://" destination is upgraded to "https://"
+//   - a leading "www." host gets "https://" prefixed
+// A "www." prefix unambiguously signals an external host (an internal path
+// starts with "/"), so it's safe to infer. A schemeless host WITHOUT "www."
+// ("google.com") is left untouched — it's ambiguous against an internal path
+// ("test.zip" vs "/test.zip") — and fails validation as an invalid URL. Shared
+// by the add-redirect form and the bulk-upload row schema below.
+export const normalizeDestinationScheme = (value: string): string => {
+  if (value.startsWith("http://")) {
+    return `https://${value.slice("http://".length)}`
+  }
+  if (value.startsWith("www.")) {
+    return `https://${value}`
+  }
+  return value
+}
+
+// One redirect as entered in the add form or a bulk-upload CSV row: every rule
+// the create schema applies except siteId (the server supplies it), with the
+// destination first passed through the scheme fix-up. Shared so a typed-in
+// redirect and a CSV row are validated by exactly the same rules.
+export const redirectRowSchema = z
+  .object({
+    source: createRedirectObjectSchema.shape.source,
+    destination: z
+      .string()
+      .trim()
+      .transform(normalizeDestinationScheme)
+      .pipe(createRedirectObjectSchema.shape.destination),
+  })
+  .superRefine(refineSourceDestinationDiffer)
+export type RedirectRowInput = z.infer<typeof redirectRowSchema>
+
+// Caps the raw CSV text a bulk upload may send. Redirect rows are short ASCII,
+// so ~1MB already covers thousands of them; the client enforces the same limit
+// on the picked file's byte size, and this is the matching server-side trust
+// boundary.
+export const MAX_BULK_REDIRECT_CSV_BYTES = 1_000_000
+
+// `string().max()` counts UTF-16 code units, which undercounts multi-byte
+// characters — a code-unit cap would let a non-ASCII file exceed the byte budget
+// (and diverge from the client's byte-size check). Measure the encoded UTF-8
+// bytes so the limit matches its name and the client.
+const utf8ByteLength = (value: string) => new TextEncoder().encode(value).length
+
+export const bulkRedirectsCsvSchema = z.object({
+  siteId: z.number().min(1),
+  csv: z
+    .string()
+    .min(1, { message: "Upload a .csv file to continue" })
+    // Cheap code-unit ceiling first (code units <= bytes), so the byte check
+    // below never has to encode a pathologically large string.
+    .max(MAX_BULK_REDIRECT_CSV_BYTES, { message: "File is too big" })
+    .refine((csv) => utf8ByteLength(csv) <= MAX_BULK_REDIRECT_CSV_BYTES, {
+      message: "File is too big",
+    }),
+})
+export type BulkRedirectsCsvInput = z.infer<typeof bulkRedirectsCsvSchema>
 
 export const deleteRedirectSchema = z.object({
   siteId: z.number().min(1),

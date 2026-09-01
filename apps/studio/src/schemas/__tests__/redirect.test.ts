@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  bulkRedirectsCsvSchema,
   createRedirectSchema,
+  MAX_BULK_REDIRECT_CSV_BYTES,
   MAX_REDIRECT_DESTINATION_LENGTH,
   MAX_REDIRECT_SOURCE_LENGTH,
+  redirectKind,
 } from "../redirect"
 
 const VALID_REDIRECT = {
@@ -230,11 +233,11 @@ describe("createRedirectSchema", () => {
       expect(result.source).toBe("/old-page")
     })
 
-    it("should reject sources containing a wildcard with the unsupported-wildcard message", () => {
+    it("should reject mid-string and double wildcards", () => {
       // Arrange
-      const wildcardSources = ["/promo/*", "/promo/**", "/pro*mo"]
+      const invalidWildcardSources = ["/promo/**", "/pro*mo"]
 
-      wildcardSources.forEach((source) => {
+      invalidWildcardSources.forEach((source) => {
         // Act
         const result = createRedirectSchema.safeParse({
           ...VALID_REDIRECT,
@@ -245,10 +248,63 @@ describe("createRedirectSchema", () => {
         expect(result.success).toBe(false)
         if (!result.success) {
           expect(result.error.issues.map((issue) => issue.message)).toContain(
-            "Wildcards aren't supported yet — enter the full path",
+            "Use a wildcard only as a trailing /* on a path, e.g. /news/*",
           )
         }
       })
+    })
+  })
+
+  describe("wildcard sources", () => {
+    const parseSource = (source: string) =>
+      createRedirectSchema.safeParse({ siteId: 1, source, destination: "/x" })
+
+    it("accepts a single trailing /*", () => {
+      const r = parseSource("/news/*")
+      expect(r.success).toBe(true)
+      if (r.success) expect(r.data.source).toBe("/news/*")
+    })
+
+    it("lowercases the path but keeps the /*", () => {
+      const r = parseSource("/News/Press/*")
+      expect(r.success && r.data.source).toBe("/news/press/*")
+    })
+
+    it("rejects a mid-string *", () => {
+      expect(parseSource("/news/*/2020").success).toBe(false)
+    })
+
+    it("rejects root-equivalent wildcards that would match the whole site", () => {
+      // "/*", "//*" (collapses to root) and "/./*" (dot segment) all reduce to a
+      // root wildcard and must be rejected — see the segment-based shape check.
+      const rootWildcards = ["/*", "//*", "/./*"]
+      rootWildcards.forEach((source) => {
+        expect(parseSource(source).success).toBe(false)
+      })
+    })
+
+    it("rejects a wildcard whose prefix contains a '..' segment", () => {
+      expect(parseSource("/news/../*").success).toBe(false)
+    })
+  })
+
+  describe("query sources are not supported", () => {
+    const parseSource = (source: string) =>
+      createRedirectSchema.safeParse({ siteId: 1, source, destination: "/x" })
+
+    it("rejects a source containing a query string", () => {
+      // "?" is outside the source character whitelist, so a query-based source
+      // (including one appended to a reserved prefix like "/_next?x=1") is
+      // rejected before any other check.
+      expect(parseSource("/gallery.html?id=123").success).toBe(false)
+      expect(parseSource("/_next?bypass=1").success).toBe(false)
+    })
+  })
+
+  describe("redirectKind", () => {
+    it("classifies by the stored source string", () => {
+      expect(redirectKind("/news/*")).toBe("wildcard")
+      expect(redirectKind("/faq")).toBe("exact")
     })
   })
 
@@ -570,5 +626,35 @@ describe("createRedirectSchema", () => {
       // Assert
       expect(result.success).toBe(true)
     })
+  })
+})
+
+describe("bulkRedirectsCsvSchema", () => {
+  it("accepts a small valid CSV", () => {
+    // Arrange / Act
+    const result = bulkRedirectsCsvSchema.safeParse({
+      siteId: 1,
+      csv: "When someone visits,Redirect them to\n/old,/new",
+    })
+
+    // Assert
+    expect(result.success).toBe(true)
+  })
+
+  it("rejects a CSV over the byte limit even when under the UTF-16 length limit", () => {
+    // Arrange: "字" is one UTF-16 code unit but three UTF-8 bytes, so this string
+    // stays under the code-unit ceiling while its byte size exceeds the cap — the
+    // limit must be enforced in bytes, not code units.
+    const csv = "字".repeat(400_000)
+    expect(csv.length).toBeLessThanOrEqual(MAX_BULK_REDIRECT_CSV_BYTES)
+    expect(new TextEncoder().encode(csv).length).toBeGreaterThan(
+      MAX_BULK_REDIRECT_CSV_BYTES,
+    )
+
+    // Act
+    const result = bulkRedirectsCsvSchema.safeParse({ siteId: 1, csv })
+
+    // Assert
+    expect(result.success).toBe(false)
   })
 })

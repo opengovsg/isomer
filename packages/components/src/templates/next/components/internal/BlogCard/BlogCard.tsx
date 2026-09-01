@@ -5,11 +5,11 @@ import { isExternalUrl } from "~/utils/isExternalUrl"
 import { Title } from "../CollectionCard/Title" // Reusing since the logic is the same for both
 import { ImageClient } from "../ImageClient"
 import { Link } from "../Link"
-import { Tag } from "../Tag"
+import { PillTags, PlaintextTags } from "../Tags"
 
 export const BlogCard = ({
   description,
-  category,
+  plaintextTags,
   image,
   isContainNeeded,
   referenceLinkHref,
@@ -17,11 +17,13 @@ export const BlogCard = ({
   itemTitle,
   siteAssetsBaseUrl,
   shouldShowDate = true,
-  tags = [],
+  pillTags,
   formattedDate,
+  headingLevel,
 }: CollectionCardProps & {
   shouldShowDate?: boolean
   siteAssetsBaseUrl: string | undefined
+  headingLevel: number
 }): JSX.Element => {
   const isExternalLink = !!referenceLinkHref && isExternalUrl(referenceLinkHref)
 
@@ -52,30 +54,25 @@ export const BlogCard = ({
         </p>
       )}
       <div className="flex flex-grow flex-col gap-3 text-base-content">
-        <Title title={itemTitle} isExternalLink={isExternalLink} />
-        {tags && tags.length > 0 && (
-          <div className="-mt-1 flex flex-col gap-2">
-            {tags.flatMap(({ category, selected: labels }) => {
-              return (
-                <div className="flex w-full flex-wrap items-center gap-1.5">
-                  <p className="prose-label-sm">{category}</p>
-                  {labels.map((label) => {
-                    return <Tag>{label}</Tag>
-                  })}
-                </div>
-              )
-            })}
-          </div>
-        )}
+        <Title
+          title={itemTitle}
+          isExternalLink={isExternalLink}
+          headingLevel={headingLevel}
+        />
+        <PillTags
+          tags={pillTags}
+          className="flex w-full flex-wrap items-center gap-1.5"
+          containerClassName="-mt-1 flex flex-col gap-2"
+        />
         {description && description.trim() !== "" && (
           <p className="prose-body-base line-clamp-3 whitespace-pre-wrap">
             {description}
           </p>
         )}
-        {/* TODO: Feature enhancement? Filter by category when clicked */}
-        <p className="prose-label-sm-medium text-base-content-subtle">
-          {category}
-        </p>
+        <PlaintextTags
+          tags={plaintextTags}
+          className="prose-label-sm-medium text-base-content-subtle"
+        />
       </div>
     </Link>
   )

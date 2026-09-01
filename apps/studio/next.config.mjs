@@ -38,6 +38,7 @@ const ContentSecurityPolicy = `
     https://www.googletagmanager.com
     https://td.doubleclick.net
     https://www.onemap.gov.sg
+    https://mobile.onemap.gov.sg
     https://www.youtube-nocookie.com
     https://player.vimeo.com
     https://m.facebook.com
@@ -60,6 +61,8 @@ const ContentSecurityPolicy = `
     https://embed-cdn.spotifycdn.com
     https://open.spotify.com
     https://js-cdn.music.apple.com
+    ${env.NEXT_PUBLIC_POSTHOG_ASSETS_HOST ?? ""}
+    ${env.NEXT_PUBLIC_POSTHOG_HOST ?? ""}
     ${env.NEXT_PUBLIC_APP_ENV === "preview" ? "https://vercel.live" : ""}
     ;
   style-src
@@ -77,6 +80,8 @@ const ContentSecurityPolicy = `
     ;
   connect-src
     'self'
+    ${env.NEXT_PUBLIC_POSTHOG_HOST ?? ""}
+    ${env.NEXT_PUBLIC_POSTHOG_ASSETS_HOST ?? ""}
     https://browser-intake-datadoghq.com
     https://*.browser-intake-datadoghq.com
     https://vitals.vercel-insights.com
@@ -158,10 +163,11 @@ const config = {
   /** We already do typechecking as separate tasks in CI */
   typescript: { ignoreBuildErrors: true },
   transpilePackages: [
+    "@isomer/algolia",
     "@isomer/logging",
     "@isomer/pgboss",
     "@sinclair/typebox",
-    "@opengovsg/starter-kitty-validators",
+    "@opengovsg/validators",
   ],
   images: {
     remotePatterns: env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME

@@ -1129,9 +1129,9 @@ describe("gazette.router", async () => {
       expect(resource).toBeUndefined()
     })
 
-    it("rejects deletion after the 15-minute grace period", async () => {
+    it("rejects deletion after the 30-minute grace period", async () => {
       const { site, collection, user } = await seedToppanWithCollection()
-      const publishedAt = subMinutes(FIXED_NOW, 16) // 16 minutes ago
+      const publishedAt = subMinutes(FIXED_NOW, 31) // 31 minutes ago
 
       const { gazetteId } = await seedPublishedGazette({
         siteId: site.id,
@@ -1149,7 +1149,7 @@ describe("gazette.router", async () => {
         new TRPCError({
           code: "FORBIDDEN",
           message:
-            "Gazettes are unable to be deleted after the given grace period of 15 minutes",
+            "Gazettes are unable to be deleted after the given grace period of 30 minutes",
         }),
       )
 

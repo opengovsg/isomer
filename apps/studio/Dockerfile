@@ -27,13 +27,21 @@ ENV NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY=$NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY
 ARG NEXT_PUBLIC_INTERCOM_APP_ID
 ENV NEXT_PUBLIC_INTERCOM_APP_ID=$NEXT_PUBLIC_INTERCOM_APP_ID
 
+ARG NEXT_PUBLIC_POSTHOG_ASSETS_HOST
+ENV NEXT_PUBLIC_POSTHOG_ASSETS_HOST=$NEXT_PUBLIC_POSTHOG_ASSETS_HOST
+
+ARG NEXT_PUBLIC_POSTHOG_HOST
+ENV NEXT_PUBLIC_POSTHOG_HOST=$NEXT_PUBLIC_POSTHOG_HOST
+
+ARG NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN
+ENV NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN=$NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN
+
 # Refer to this PR for the env var and why we need this.
 # https://github.com/vercel/next.js/pull/46052/changes
 ENV KEEP_ALIVE_TIMEOUT 70000
 
 FROM base AS builder
-RUN apk update
-RUN apk add --no-cache libc6-compat
+RUN apk update && apk add --no-cache libc6-compat
 
 # Set working directory
 WORKDIR /app
@@ -42,7 +50,7 @@ ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME/bin:$PATH"
 RUN corepack enable && corepack install -g pnpm@11.5.1
 # fixed version to prevent supply chain attacks (to ensure it's same version as pnpm-workspace.yaml)
-RUN pnpm add -g turbo@2.10.3
+RUN pnpm add -g turbo@2.10.7
 COPY . .
 
 # Generate a partial monorepo with a pruned lockfile for a target workspace.
@@ -51,8 +59,7 @@ RUN turbo prune isomer-studio --docker
 
 # Add lockfile and package.json's of isolated subworkspace
 FROM base AS installer
-RUN apk update
-RUN apk add --no-cache libc6-compat
+RUN apk update && apk add --no-cache libc6-compat
 WORKDIR /app
 
 RUN corepack enable && corepack install -g pnpm@11.5.1

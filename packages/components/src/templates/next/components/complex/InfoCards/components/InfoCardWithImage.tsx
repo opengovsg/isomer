@@ -17,6 +17,7 @@ export const InfoCardWithImage = ({
   site,
   shouldLazyLoad = true,
   isFallback,
+  headingLevel,
 }: SingleCardWithImageProps): JSX.Element => {
   const isExternalLink = isExternalUrl(url)
   return (
@@ -37,6 +38,7 @@ export const InfoCardWithImage = ({
         description={description}
         url={url}
         isExternalLink={isExternalLink}
+        headingLevel={headingLevel}
       />
     </InfoCardContainer>
   )

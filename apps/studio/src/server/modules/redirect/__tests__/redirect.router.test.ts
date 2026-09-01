@@ -1540,6 +1540,48 @@ describe("redirect.router", async () => {
         { reference: "/folder", permalink: null, warn: true },
       ])
     })
+
+    it("terminates for a folder whose subtree contains a parent-chain cycle", async () => {
+      // Arrange — nothing creates a cycle today (moving a folder into its own
+      // descendant is rejected), but a malformed chain must not be able to spin
+      // the permalink walk forever: the folder and its child point at each
+      // other, so following parents alternates between them without end.
+      // Reached by id through a stored reference, which skips the path walk a
+      // cycle would otherwise fail.
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.RootPage,
+        parentId: null,
+      })
+      const { folder } = await setupFolder({
+        siteId,
+        permalink: "folder",
+        parentId: null,
+      })
+      const { folder: child } = await setupFolder({
+        siteId,
+        permalink: "child",
+        parentId: folder.id,
+      })
+      await db
+        .updateTable("Resource")
+        .set({ parentId: child.id })
+        .where("id", "=", folder.id)
+        .execute()
+
+      // Act
+      const result = await caller.resolveReferences({
+        siteId,
+        references: [`[resource:${siteId}:${folder.id}]`],
+      })
+
+      // Assert — the point is that it returns at all rather than hanging, and
+      // still warns because nothing inside is published. The permalink is left
+      // unasserted: a cyclic chain has no meaningful path, so pinning whatever
+      // the walk salvages would only lock in nonsense.
+      expect(result).toHaveLength(1)
+      expect(result[0]?.warn).toBe(true)
+    })
   })
 
   describe("delete", () => {
@@ -2000,6 +2042,99 @@ describe("redirect.router", async () => {
 
       // Assert
       expect(count).toBe(0)
+    })
+  })
+
+  describe("create — wildcard sources", () => {
+    it("stores a wildcard whose internal destination becomes a page reference", async () => {
+      // Arrange
+      const { page } = await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        permalink: "new-section",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+
+      // Act
+      await caller.create({
+        siteId,
+        source: "/old-section/*",
+        destination: "/new-section",
+      })
+
+      // Assert — the destination resolves to a [resource:…] reference so it
+      // follows the page if its permalink changes; the "/*" stays in the source.
+      const row = await db
+        .selectFrom("Redirect")
+        .select(["source", "destination"])
+        .where("siteId", "=", siteId)
+        .where("source", "=", "/old-section/*")
+        .executeTakeFirstOrThrow()
+      expect(row.source).toBe("/old-section/*")
+      expect(row.destination).toBe(`[resource:${siteId}:${page.id}]`)
+    })
+
+    it("does not block a wildcard source when nothing lives under its prefix", async () => {
+      // Arrange — no resource sits at "/anything" at all, so nothing can be
+      // published under it either; the create must succeed.
+      await expect(
+        caller.create({
+          siteId,
+          source: "/anything/*",
+          destination: "/home",
+        }),
+      ).resolves.toBeDefined()
+    })
+
+    it("blocks a wildcard source when a published page already exists under its prefix", async () => {
+      // Arrange — "/news/story" is published, so "/news" is a live folder.
+      // "/news/*" would shadow it: the edge resolver's prefix walk would
+      // intercept "/news/story" and redirect it away instead of serving it.
+      const { folder } = await setupFolder({ siteId, permalink: "news" })
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        parentId: folder.id,
+        permalink: "story",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+
+      // Act
+      const result = caller.create({
+        siteId,
+        source: "/news/*",
+        destination: "/home",
+      })
+
+      // Assert
+      await expect(result).rejects.toMatchObject({
+        code: "PRECONDITION_FAILED",
+      })
+    })
+
+    it("blocks a wildcard source when the prefix itself is a published page", async () => {
+      // Arrange
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        permalink: "news",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+
+      // Act
+      const result = caller.create({
+        siteId,
+        source: "/news/*",
+        destination: "/home",
+      })
+
+      // Assert
+      await expect(result).rejects.toMatchObject({
+        code: "PRECONDITION_FAILED",
+      })
     })
   })
 })

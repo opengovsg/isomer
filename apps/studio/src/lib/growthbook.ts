@@ -9,13 +9,13 @@ export const ENABLE_EMAILS_FOR_REGULAR_PUBLISHES_FEATURE_KEY =
 export const BANNER_FEATURE_KEY = "isomer-next-banner"
 export const IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY =
   "is-new-collection-tags-management-enabled"
-export const CATEGORY_DROPDOWN_FEATURE_KEY = "category-dropdown"
-export const CATEGORY_ID_DROPDOWN_FEATURE_KEY = "category-id-dropdown"
 export const IS_SINGPASS_ENABLED_FEATURE_KEY = "is-singpass-enabled"
 export const IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY =
   "homepage-antiscam-banner-enabled"
 export const EGAZETTE_INFO_FEATURE_KEY = "egazette-info"
-export const IS_REDIRECTIONS_ENABLED_FEATURE_KEY = "is-redirections-enabled"
+// Gates the audit-log export surface (settings sidenav entry + page). OFF by
+// default so the feature can ship dark and be enabled per-environment.
+export const IS_AUDIT_LOG_ENABLED_FEATURE_KEY = "is-audit-log-enabled"
 // When OFF (default): gazette ingestion targets Algolia directly.
 // When ON: gazette ingestion is routed to SearchSG instead.
 export const ENABLE_SEARCHSG_GAZETTE_INGESTION =

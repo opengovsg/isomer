@@ -1,5 +1,6 @@
 import type { KeyStatisticsProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
+import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
 
@@ -66,16 +67,19 @@ export const KeyStatistics = ({
   label,
   layout,
   site,
+  headingLevel,
 }: KeyStatisticsProps) => {
   const noOfItems = Math.min(MAX_ITEMS, statistics.length) as NoOfItemVariants
   const simplifiedLayout = getTailwindVariantLayout(layout)
+  const TitleTag = getHeadingTag(headingLevel)
+  const ItemTag = getHeadingTag(headingLevel + 1)
 
   return (
     <section
       id={id}
       className={compoundStyles.container({ layout: simplifiedLayout })}
     >
-      <h2 className={compoundStyles.title()}>{title}</h2>
+      <TitleTag className={compoundStyles.title()}>{title}</TitleTag>
 
       <div className={compoundStyles.statistics()}>
         {statistics.slice(0, MAX_ITEMS).map(({ label, value }, index) => (
@@ -83,9 +87,9 @@ export const KeyStatistics = ({
             key={index}
             className={compoundStyles.itemContainer({ noOfItems })}
           >
-            <h3 className={compoundStyles.itemValue()}>
+            <ItemTag className={compoundStyles.itemValue()}>
               {value.slice(0, MAX_CHAR_LIMIT)}
-            </h3>
+            </ItemTag>
 
             <p className={compoundStyles.itemLabel()}>{label}</p>
           </div>

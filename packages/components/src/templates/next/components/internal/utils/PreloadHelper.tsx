@@ -4,7 +4,8 @@
 
 export const PreloadHelper = ({ href }: { href: string }) => {
   // TODO: replace with ReactDom.preconnect and ReactDom.dnsPrefetch
-  // However, note that they are only available in React 19 which is not yet supported by Next.js
+  // They are only available in React 19, while this repository remains on
+  // React 18 because some design-system dependencies still use findDOMNode.
   // Ref: https://nextjs.org/docs/app/api-reference/functions/generate-metadata#resource-hints
   return (
     <>

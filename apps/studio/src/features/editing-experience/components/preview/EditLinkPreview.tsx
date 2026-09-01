@@ -1,6 +1,10 @@
-import type { IsomerSitemap } from "@opengovsg/isomer-components"
 import type { CollectionLinkProps } from "~/schemas/collection"
 import { useMemo } from "react"
+import { useSuspenseCollectionTags } from "~/features/editing-experience/hooks/useCollectionTags"
+import {
+  buildCollectionLinkPreviewSitemap,
+  getCollectionPermalink,
+} from "~/features/editing-experience/utils/buildCollectionLinkPreviewSitemap"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { editLinkSchema } from "~/pages/sites/[siteId]/links/[linkId]"
 import { trpc } from "~/utils/trpc"
@@ -33,73 +37,50 @@ export const EditCollectionLinkPreview = ({
     siteId,
   })
 
-  const [tagCategories] = trpc.collection.getCollectionTags.useSuspenseQuery({
+  const [tagCategories] = useSuspenseCollectionTags({
     resourceId: linkId,
     siteId,
   })
 
-  const [{ categoryOptions }] = trpc.page.getCategoryOptions.useSuspenseQuery({
-    pageId: linkId,
-    siteId,
+  // Ends at the parent collection, so drop it — the collection node is built below.
+  const [ancestry] = trpc.resource.getAncestryStack.useSuspenseQuery({
+    resourceId: String(linkId),
+    siteId: String(siteId),
+    includeSelf: false,
   })
 
   const parentPermalink = useMemo(
-    () => permalink.split("/").slice(0, -1).join("/"),
+    () => getCollectionPermalink(permalink),
     [permalink],
   )
   const parentTitle = useMemo(
     () => parent?.title || ResourceType.Collection,
     [parent?.title],
   )
+  const ancestorTitles = useMemo(
+    () => ancestry.slice(0, -1).map(({ title }) => title),
+    [ancestry],
+  )
 
   const siteMap = useMemo(
     () =>
-      ({
-        id: "root",
-        permalink: "/",
+      buildCollectionLinkPreviewSitemap({
+        permalink,
+        title,
+        link,
+        collectionTitle: parentTitle,
+        ancestorTitles,
+        tagCategories,
         lastModified: currentDate,
-        layout: "homepage",
-        title: "An Isomer Site",
-        summary: "",
-        children: [
-          {
-            id: "collection",
-            permalink: parentPermalink,
-            lastModified: currentDate,
-            layout: "collection",
-            title: parentTitle,
-            summary: "",
-            collectionPagePageProps: { tagCategories, categoryOptions },
-            children: [
-              {
-                id: "9999999",
-                title,
-                summary: link.description ?? "",
-                layout: "link",
-                permalink,
-                lastModified: currentDate,
-                ...link,
-              },
-            ],
-          },
-        ],
-      }) satisfies IsomerSitemap,
-    [
-      parentPermalink,
-      parentTitle,
-      tagCategories,
-      categoryOptions,
-      link,
-      permalink,
-      title,
-    ],
+      }),
+    [permalink, title, link, parentTitle, ancestorTitles, tagCategories],
   )
 
   return (
     <ViewportContainer siteId={siteId}>
       <PreviewWithCustomSitemap
         content={[]}
-        page={{ title: parentTitle, tagCategories, categoryOptions }}
+        page={{ title: parentTitle, tagCategories }}
         layout={"collection"}
         siteId={siteId}
         siteMap={siteMap}

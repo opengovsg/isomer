@@ -65,7 +65,32 @@ export interface GazetteDeletionEmailTemplateData extends BaseEmailTemplateData 
   gazetteTitle: string
 }
 
+export interface AuditLogExportDownloadLink {
+  label: "access" | "audit"
+  url: string
+}
+
+export interface AuditLogExportReadyEmailTemplateData extends BaseEmailTemplateData {
+  siteName: string
+  // Human-readable month the export covers, e.g. "June 2026".
+  month: string
+  // Each export job produces exactly one report, so exactly one link.
+  link: AuditLogExportDownloadLink
+  sizeInBytes: number | null
+}
+
+export interface AuditLogExportFailedEmailTemplateData extends BaseEmailTemplateData {
+  siteName: string
+  month: string
+}
+
 export interface EmailTemplate {
   subject: string
   body: string
 }
+
+export type EmailTemplateFunction<T extends BaseEmailTemplateData> = (
+  data: T,
+) => EmailTemplate
+
+export type EmailTemplateMap = Record<string, EmailTemplateFunction<never>>

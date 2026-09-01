@@ -3,12 +3,12 @@ import { isExternalUrl } from "~/utils/isExternalUrl"
 
 import { ImageClient } from "../ImageClient"
 import { Link } from "../Link"
-import { Tag } from "../Tag"
+import { PillTags, PlaintextTags } from "../Tags"
 import { Title } from "./Title"
 
 export const CollectionCard = ({
   description,
-  category,
+  plaintextTags,
   image,
   isContainNeeded,
   referenceLinkHref,
@@ -16,11 +16,13 @@ export const CollectionCard = ({
   itemTitle,
   siteAssetsBaseUrl,
   shouldShowDate = true,
-  tags = [],
+  pillTags,
   formattedDate,
+  headingLevel,
 }: CollectionCardProps & {
   shouldShowDate?: boolean
   siteAssetsBaseUrl: string | undefined
+  headingLevel: number
 }): JSX.Element => {
   const isExternalLink = !!referenceLinkHref && isExternalUrl(referenceLinkHref)
 
@@ -36,28 +38,24 @@ export const CollectionCard = ({
         </p>
       )}
       <div className="flex flex-grow flex-col gap-3 text-base-content md:gap-2">
-        <Title title={itemTitle} isExternalLink={isExternalLink} />
-        {tags && tags.length > 0 && (
-          <>
-            {tags.flatMap(({ category, selected: labels }) => {
-              return (
-                <div className="flex w-full flex-wrap items-center gap-2">
-                  <p className="prose-label-sm">{category}</p>
-                  {labels.map((label) => {
-                    return <Tag>{label}</Tag>
-                  })}
-                </div>
-              )
-            })}
-          </>
-        )}
+        <Title
+          title={itemTitle}
+          isExternalLink={isExternalLink}
+          headingLevel={headingLevel}
+        />
+        <PillTags
+          tags={pillTags}
+          className="flex w-full flex-wrap items-center gap-2"
+        />
         {description && description.trim() !== "" && (
           <p className="prose-body-base mb-3 line-clamp-3 whitespace-pre-wrap md:mb-2">
             {description}
           </p>
         )}
-        {/* TODO: Feature enhancement? Filter by category when clicked */}
-        <p className="prose-label-md text-base-content-subtle">{category}</p>
+        <PlaintextTags
+          tags={plaintextTags}
+          className="prose-label-md text-base-content-subtle"
+        />
       </div>
       {image && (
         <div className="relative mt-3 flex h-[160px] w-[200px] shrink-0 items-center justify-center md:ml-4 md:mt-0">

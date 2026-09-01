@@ -52,6 +52,9 @@ export const PAGE_BLOB: IsomerSchema = {
       ],
       title: "Irrationality in numbers",
     },
+    {
+      type: "antiscambanner",
+    },
   ],
 }
 

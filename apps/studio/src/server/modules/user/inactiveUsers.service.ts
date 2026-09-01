@@ -1,3 +1,4 @@
+import { createId } from "@paralleldrive/cuid2"
 import { startOfDay, subDays } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
 import { env } from "~/env.mjs"
@@ -6,9 +7,11 @@ import {
   sendAccountDeactivationWarningEmail,
 } from "~/features/mail/service"
 import { createBaseLogger } from "~/lib/logger"
+import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 
 import type { ResourcePermission, Site, User } from "../database"
 import type { BulkSendAccountDeactivationWarningEmailsProps } from "./types"
+import { logPermissionEvent } from "../audit/audit.service"
 import { db, RoleType, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { MAX_DAYS_FROM_LAST_LOGIN } from "./constants"
@@ -137,13 +140,62 @@ const deactivateUsers = async ({ userIds }: DeactivateUsersProps) => {
       .transaction()
       .setIsolationLevel("serializable") // for idempotency
       .execute(async (tx) => {
-        return tx
+        // Upsert so the system user is guaranteed to exist for audit-log
+        // attribution, rather than relying on it being created manually.
+        // The no-op doUpdateSet forces RETURNING to yield the existing row
+        // on conflict, rather than doNothing (which returns nothing).
+        const systemUser = await tx
+          .insertInto("User")
+          .values({
+            id: createId(),
+            email: env.SYSTEM_USER_EMAIL,
+            name: "System",
+            phone: "",
+          })
+          .onConflict((oc) =>
+            oc.columns(["email", "deletedAt"]).doUpdateSet((eb) => ({
+              email: eb.ref("excluded.email"),
+            })),
+          )
+          .returningAll()
+          .executeTakeFirstOrThrow()
+
+        const permissionsToDelete = await tx
+          .selectFrom("ResourcePermission")
+          .where("userId", "in", userIds)
+          .where("deletedAt", "is", null)
+          .selectAll()
+          .execute()
+
+        if (permissionsToDelete.length === 0) return []
+
+        const updated = await tx
           .updateTable("ResourcePermission")
           .where("userId", "in", userIds)
           .where("deletedAt", "is", null)
           .set({ deletedAt: new Date() })
           .returningAll()
           .execute()
+
+        for (const after of updated) {
+          const before = permissionsToDelete.find((p) => p.id === after.id)
+          // Not expected: same tx/isolation level as the read above.
+          if (!before) {
+            throw new Error(
+              `Could not find pre-update state for ResourcePermission ${after.id}`,
+            )
+          }
+
+          await logPermissionEvent(tx, {
+            eventType: AuditLogEvent.PermissionDelete,
+            by: systemUser,
+            delta: { before, after },
+            siteId: after.siteId,
+            metadata: { reason: "inactivity" },
+          })
+        }
+
+        return updated
       })
   } catch (error) {
     if (
@@ -252,12 +304,12 @@ export const bulkDeactivateInactiveUsers = async (): Promise<void> => {
   for (const { user, siteIds } of deactivatedUsersAndSiteIds) {
     if (siteIds.length === 0) continue
 
-    const sitesAndAdmins = await getSiteAndAdmins({
-      userId: user.id,
-      siteIds,
-    })
-
     try {
+      const sitesAndAdmins = await getSiteAndAdmins({
+        userId: user.id,
+        siteIds,
+      })
+
       await sendAccountDeactivationEmail({
         recipientEmail: user.email,
         sitesAndAdmins,

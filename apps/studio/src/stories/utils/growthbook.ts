@@ -2,11 +2,9 @@ import type { BannerProps } from "@opengovsg/design-system-react"
 import { GrowthBook } from "@growthbook/growthbook"
 import {
   BANNER_FEATURE_KEY,
-  CATEGORY_DROPDOWN_FEATURE_KEY,
-  CATEGORY_ID_DROPDOWN_FEATURE_KEY,
   EGAZETTE_INFO_FEATURE_KEY,
+  IS_AUDIT_LOG_ENABLED_FEATURE_KEY,
   IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY,
-  IS_REDIRECTIONS_ENABLED_FEATURE_KEY,
   IS_SINGPASS_ENABLED_FEATURE_KEY,
 } from "~/lib/growthbook"
 
@@ -33,24 +31,16 @@ export const createBannerGbParameters = ({
   return [BANNER_FEATURE_KEY, { variant, message }]
 }
 
-export const createDropdownGbParameters = (siteId: string) => {
-  return [CATEGORY_DROPDOWN_FEATURE_KEY, { enabledSites: [siteId] }]
-}
-
-export const createCategoryIdDropdownGbParameters = (siteId: string) => {
-  return [CATEGORY_ID_DROPDOWN_FEATURE_KEY, { enabledSites: [siteId] }]
-}
-
 export const createSingpassEnabledGbParameters = (isEnabled: boolean) => {
   return [IS_SINGPASS_ENABLED_FEATURE_KEY, isEnabled]
 }
 
-export const createRedirectionsEnabledGbParameters = (isEnabled: boolean) => {
-  return [IS_REDIRECTIONS_ENABLED_FEATURE_KEY, isEnabled]
-}
-
 export const createAntiScamBannerEnabledGbParameters = (isEnabled: boolean) => {
   return [IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY, isEnabled]
+}
+
+export const createAuditLogEnabledGbParameters = (isEnabled: boolean) => {
+  return [IS_AUDIT_LOG_ENABLED_FEATURE_KEY, isEnabled]
 }
 
 export const createEgazetteInfoGbParameters = ({

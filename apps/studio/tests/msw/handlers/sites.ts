@@ -1,5 +1,7 @@
 import type { DelayMode } from "msw"
+import { DEFAULT_TAG_CATEGORY_DISPLAY } from "@opengovsg/isomer-components"
 import { delay } from "msw"
+import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { MOCK_STORY_DATE } from "../constants"
 import { trpcMsw } from "../mockTrpc"
@@ -32,6 +34,7 @@ const siteListQuery = ({
           search: undefined,
           isGovernment: true,
         } as PrismaJson.SiteJsonConfig,
+        role: RoleType.Admin,
       },
       {
         id: 2,
@@ -44,6 +47,7 @@ const siteListQuery = ({
           search: undefined,
           isGovernment: true,
         } as PrismaJson.SiteJsonConfig,
+        role: RoleType.Admin,
       },
       {
         id: 3,
@@ -56,6 +60,7 @@ const siteListQuery = ({
           search: undefined,
           isGovernment: true,
         } as PrismaJson.SiteJsonConfig,
+        role: RoleType.Admin,
       },
     ]
   })
@@ -372,6 +377,7 @@ export const sitesHandlers = {
                   {
                     label: "Topic",
                     id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+                    display: DEFAULT_TAG_CATEGORY_DISPLAY,
                     options: [
                       {
                         label: "Technology",
@@ -390,11 +396,13 @@ export const sitesHandlers = {
                   {
                     label: "Empty Category",
                     id: "123e4567-e89b-12d3-a456-426614174000",
+                    display: DEFAULT_TAG_CATEGORY_DISPLAY,
                     options: [],
                   },
                   {
                     label: "Industries",
                     id: "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
+                    display: DEFAULT_TAG_CATEGORY_DISPLAY,
                     options: [
                       {
                         label: "Agriculture & Food",

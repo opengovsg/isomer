@@ -1,4 +1,7 @@
-import type { UserManagementAbility } from "~/server/modules/permissions/permissions.type"
+import type {
+  RedirectManagementAbility,
+  UserManagementAbility,
+} from "~/server/modules/permissions/permissions.type"
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
@@ -36,6 +39,27 @@ export const buildPermissionsForResource = (
       builder.can("publish", "Resource")
       return
   }
+}
+
+// Mirrors the server's gate on the redirect router: `list`/`count` need only
+// read access to the site, while `create`, `bulkCreate` and `delete` check
+// create/delete on Site, which only an Admin holds.
+export const buildRedirectManagementPermissions = (
+  roles: { role: RoleType }[],
+) => {
+  const builder = new AbilityBuilder<RedirectManagementAbility>(
+    createMongoAbility,
+  )
+
+  if (roles.length > 0) {
+    builder.can("read", "RedirectManagement")
+  }
+
+  if (roles.some(({ role }) => role === RoleType.Admin)) {
+    builder.can("manage", "RedirectManagement")
+  }
+
+  return builder.build({ detectSubjectType: () => "RedirectManagement" })
 }
 
 export const buildUserManagementPermissions = (roles: { role: RoleType }[]) => {

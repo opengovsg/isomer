@@ -1,11 +1,11 @@
+import type { StockFeatures } from "@tanstack/react-table"
+import type { ResourceOrderByOption } from "~/schemas/resource"
 import { HStack, Text } from "@chakra-ui/react"
-import { Menu } from "@opengovsg/design-system-react"
 import { keepPreviousData } from "@tanstack/react-query"
 import {
   createColumnHelper,
-  getCoreRowModel,
-  getPaginationRowModel,
-  useReactTable,
+  stockFeatures,
+  useTable,
 } from "@tanstack/react-table"
 import { useMemo, useState } from "react"
 import { TableHeader } from "~/components/Datatable"
@@ -15,47 +15,48 @@ import { useTablePagination } from "~/hooks/useTablePagination"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
-import type { CollectionTableData, CollectionTableSortOptions } from "./types"
+import type { CollectionTableData } from "./types"
+import { ResourceSortMenu } from "../ResourceTable/ResourceSortMenu"
 import { TitleCell } from "../ResourceTable/TitleCell"
 import { CollectionTableMenu } from "./CollectionTableMenu"
-import { COLLECTION_TABLE_SORT_OPTIONS } from "./constants"
 
-const columnsHelper = createColumnHelper<CollectionTableData>()
+const columnsHelper = createColumnHelper<StockFeatures, CollectionTableData>()
 
-const getColumns = ({ siteId }: CollectionTableProps) => [
-  columnsHelper.accessor("title", {
-    minSize: 300,
-    header: () => <TableHeader>Title</TableHeader>,
-    cell: ({ row }) => (
-      <TitleCell
-        scheduledAt={row.original.scheduledAt}
-        siteId={siteId}
-        id={row.original.id}
-        title={row.original.title}
-        permalink={
-          row.original.type === ResourceType.CollectionLink
-            ? ""
-            : `/${row.original.permalink}`
-        }
-        type={row.original.type}
-      />
-    ),
-  }),
-  columnsHelper.display({
-    id: "resource_menu",
-    header: () => <TableHeader>Actions</TableHeader>,
-    cell: ({ row }) => (
-      <CollectionTableMenu
-        permalink={row.original.permalink}
-        parentId={row.original.parentId}
-        resourceType={row.original.type}
-        title={row.original.title}
-        resourceId={row.original.id}
-      />
-    ),
-    size: 24,
-  }),
-]
+const getColumns = ({ siteId }: CollectionTableProps) =>
+  columnsHelper.columns([
+    columnsHelper.accessor("title", {
+      minSize: 300,
+      header: () => <TableHeader>Title</TableHeader>,
+      cell: ({ row }) => (
+        <TitleCell
+          scheduledAt={row.original.scheduledAt}
+          siteId={siteId}
+          id={row.original.id}
+          title={row.original.title}
+          permalink={
+            row.original.type === ResourceType.CollectionLink
+              ? ""
+              : `/${row.original.permalink}`
+          }
+          type={row.original.type}
+        />
+      ),
+    }),
+    columnsHelper.display({
+      id: "resource_menu",
+      header: () => <TableHeader>Actions</TableHeader>,
+      cell: ({ row }) => (
+        <CollectionTableMenu
+          permalink={row.original.permalink}
+          parentId={row.original.parentId}
+          resourceType={row.original.type}
+          title={row.original.title}
+          resourceId={row.original.id}
+        />
+      ),
+      size: 24,
+    }),
+  ])
 
 interface CollectionTableProps {
   siteId: number
@@ -67,7 +68,7 @@ export const CollectionTable = ({
   resourceId,
 }: CollectionTableProps): JSX.Element => {
   const [sortOption, setSortOption] =
-    useState<CollectionTableSortOptions>("updated-desc")
+    useState<ResourceOrderByOption>("updated-desc")
 
   const columns = useMemo(
     () => getColumns({ siteId, resourceId }),
@@ -100,14 +101,13 @@ export const CollectionTable = ({
     },
   )
 
-  const tableInstance = useReactTable<CollectionTableData>({
+  const tableInstance = useTable({
+    features: stockFeatures,
     columns,
     data: resources ?? [],
-    getCoreRowModel: getCoreRowModel(),
     manualFiltering: true,
     manualPagination: true,
     autoResetPageIndex: false,
-    getPaginationRowModel: getPaginationRowModel(),
     onPaginationChange,
     state: {
       pagination,
@@ -127,50 +127,18 @@ export const CollectionTable = ({
           {totalRowCount} {totalRowCount === 1 ? "item" : "items"}
         </Text>
 
-        <HStack>
-          <Text textStyle="caption-1" color="base.content.default">
-            Sort by:
-          </Text>
-          <Menu size="sm" variant="clear">
-            {({ isOpen }) => (
-              <>
-                <Menu.Button
-                  variant="clear"
-                  size="sm"
-                  p="0"
-                  minH="auto"
-                  colorScheme="sub"
-                  fontSize="0.75rem"
-                  isOpen={isOpen}
-                >
-                  {COLLECTION_TABLE_SORT_OPTIONS[sortOption]}
-                </Menu.Button>
-                <Menu.List pt="0.75rem" pb="0.5rem">
-                  {Object.entries(COLLECTION_TABLE_SORT_OPTIONS).map(
-                    ([option, label]) => (
-                      <Menu.Item
-                        key={option}
-                        onClick={() => {
-                          setSortOption(option as CollectionTableSortOptions)
-                          onPaginationChange((old) => ({
-                            ...old,
-                            pageIndex: 0,
-                          }))
-                        }}
-                      >
-                        {label}
-                      </Menu.Item>
-                    ),
-                  )}
-                </Menu.List>
-              </>
-            )}
-          </Menu>
-        </HStack>
+        <ResourceSortMenu
+          value={sortOption}
+          onChange={(option) => {
+            setSortOption(option)
+            onPaginationChange((old) => ({ ...old, pageIndex: 0 }))
+          }}
+        />
       </HStack>
 
       <Datatable
         pagination
+        isRowLink
         isFetching={isFetching || isCountLoading}
         emptyPlaceholder={
           <EmptyTablePlaceholder

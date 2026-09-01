@@ -8,6 +8,7 @@ import {
   setupUser,
 } from "tests/integration/helpers/seed"
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import { env } from "~/env.mjs"
 import {
   sendAccountDeactivationEmail,
   sendAccountDeactivationWarningEmail,
@@ -126,13 +127,16 @@ const setupUserWrapper = async ({
 describe("inactiveUsers.service", () => {
   describe("bulkDeactivateInactiveUsers", () => {
     let site: Site
+    let systemUser: User
 
     beforeEach(async () => {
       vi.clearAllMocks()
-      await resetTables("Site", "User", "ResourcePermission")
+      await resetTables("Site", "User", "ResourcePermission", "AuditLog")
 
       const { site: _site } = await setupSite()
       site = _site
+
+      systemUser = await setupUser({ email: env.SYSTEM_USER_EMAIL })
     })
 
     it("should successfully deactivate user with permissions", async () => {
@@ -159,6 +163,98 @@ describe("inactiveUsers.service", () => {
         recipientEmail: user.email,
         sitesAndAdmins: expect.any(Array),
       })
+    })
+
+    it("should create a PermissionDelete audit log entry attributed to the system user", async () => {
+      // Arrange
+      const user = await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 91,
+        lastLoginDaysAgo: null,
+      })
+
+      // Act
+      await bulkDeactivateInactiveUsers()
+
+      // Assert
+      const auditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "PermissionDelete")
+        .selectAll()
+        .execute()
+      expect(auditLogs).toHaveLength(1)
+      expect(auditLogs[0]).toEqual(
+        expect.objectContaining({
+          userId: systemUser.id,
+          siteId: site.id,
+          metadata: { reason: "inactivity" },
+        }),
+      )
+      const delta = auditLogs[0]?.delta as {
+        before: { userId: string; deletedAt: string | null }
+        after: { userId: string; deletedAt: string | null }
+      }
+      expect(delta.before.userId).toBe(user.id)
+      expect(delta.before.deletedAt).toBeNull()
+      expect(delta.after.userId).toBe(user.id)
+      expect(delta.after.deletedAt).not.toBeNull()
+    })
+
+    it("should create one audit log entry per removed permission across multiple sites", async () => {
+      // Arrange
+      const user = await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 91,
+        lastLoginDaysAgo: null,
+      })
+      const { site: otherSite } = await setupSite()
+      await setupAdminPermissions({ siteId: otherSite.id, userId: user.id })
+
+      // Act
+      await bulkDeactivateInactiveUsers()
+
+      // Assert
+      const auditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "PermissionDelete")
+        .selectAll()
+        .execute()
+      expect(auditLogs).toHaveLength(2)
+      expect(auditLogs.map((log) => log.siteId)).toEqual(
+        expect.arrayContaining([site.id, otherSite.id]),
+      )
+      auditLogs.forEach((log) => expect(log.userId).toBe(systemUser.id))
+    })
+
+    it("should recreate the system user and continue deactivating if it does not exist", async () => {
+      // Arrange
+      const user = await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 91,
+        lastLoginDaysAgo: null,
+      })
+      await db.deleteFrom("User").where("id", "=", systemUser.id).execute()
+
+      // Act
+      await bulkDeactivateInactiveUsers()
+
+      // Assert
+      const deletedPermissions = await db
+        .selectFrom("ResourcePermission")
+        .where("userId", "=", user.id)
+        .where("deletedAt", "is not", null)
+        .execute()
+      expect(deletedPermissions).toHaveLength(1)
+
+      const recreatedSystemUser = await db
+        .selectFrom("User")
+        .where("email", "=", env.SYSTEM_USER_EMAIL)
+        .where("deletedAt", "is", null)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(recreatedSystemUser.id).not.toBe(systemUser.id)
+
+      expect(sendAccountDeactivationEmail).toHaveBeenCalled()
     })
 
     it("should return early when user has no permissions to delete", async () => {
@@ -380,6 +476,33 @@ describe("inactiveUsers.service", () => {
         .selectAll()
         .execute()
       expect(deletedPermissions).toHaveLength(0)
+    })
+
+    it("should continue sending emails when retrieving site admins throws", async () => {
+      // Arrange
+      await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 91,
+        lastLoginDaysAgo: null,
+      })
+      await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 91,
+        lastLoginDaysAgo: null,
+      })
+      const withSpy = vi.spyOn(db, "with").mockImplementationOnce(() => {
+        throw new Error("Database error")
+      })
+
+      // Act
+      try {
+        await bulkDeactivateInactiveUsers()
+      } finally {
+        withSpy.mockRestore()
+      }
+
+      // Assert
+      expect(sendAccountDeactivationEmail).toHaveBeenCalledTimes(1)
     })
 
     it("should only delete non-deleted permissions", async () => {

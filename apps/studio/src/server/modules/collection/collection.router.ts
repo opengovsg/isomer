@@ -6,7 +6,6 @@ import {
   countTagOptionsUsageSchema,
   createCollectionSchema,
   editLinkSchema,
-  getCategoryOptionUsageCountSchema,
   getCollectionsSchema,
   getCollectionTagsSchema,
   readCollectionSchema,
@@ -28,6 +27,7 @@ import {
 import { PG_ERROR_CODES } from "../database/constants"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 import {
+  applyResourceOrderBy,
   defaultResourceSelect,
   getBlobOfResource,
   getSiteResourceById,
@@ -40,7 +40,6 @@ import {
   createCollectionIndexJson,
   createCollectionLinkJson,
   createCollectionPageJson,
-  getCategoryOptionUsageCount,
   getCollectionTagsForResource,
 } from "./collection.service"
 
@@ -297,18 +296,9 @@ export const collectionRouter = router({
             ResourceType.CollectionLink,
           ])
 
-        switch (orderBy) {
-          case "title-asc":
-            query = query.orderBy("Resource.title", "asc")
-            break
-          case "updated-desc":
-          default:
-            query = query.orderBy("Resource.updatedAt", "desc")
-            break
-        }
+        query = applyResourceOrderBy(query, orderBy)
 
         return await query
-          .orderBy("Resource.id", "asc") // to ensure deterministic ordering
           .limit(limit)
           .offset(offset)
           .select(defaultResourceSelect)
@@ -453,7 +443,6 @@ export const collectionRouter = router({
         input: {
           date,
           category,
-          categoryId,
           linkId,
           siteId,
           description,
@@ -511,7 +500,6 @@ export const collectionRouter = router({
                 ref,
                 date,
                 category,
-                categoryId,
                 image,
                 tags,
                 tagged,
@@ -565,22 +553,6 @@ export const collectionRouter = router({
         code: "BAD_REQUEST",
         message: "Either collectionId or resourceId must be provided",
       })
-    }),
-
-  /**
-   * Counts collection pages/links whose draft **or** published blob has `page.categoryId` equal to the
-   * given id.
-   */
-  getCategoryOptionUsageCount: protectedProcedure
-    .input(getCategoryOptionUsageCountSchema)
-    .query(async ({ ctx, input: { siteId, indexPageId, categoryId } }) => {
-      await bulkValidateUserPermissionsForResources({
-        siteId,
-        action: "read",
-        userId: ctx.user.id,
-      })
-
-      return getCategoryOptionUsageCount({ siteId, indexPageId, categoryId })
     }),
 
   getCollections: protectedProcedure

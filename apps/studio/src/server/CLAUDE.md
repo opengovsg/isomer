@@ -40,9 +40,9 @@ Never write your own auth middleware in a router. If you need a new auth shape, 
 - Define the Zod schema in `apps/studio/src/schemas/<area>.ts` and import it in the router.
 - Routers should not declare ad-hoc inline schemas. If a schema is router-internal and tiny, keep it inline; otherwise lift it.
 
-### Permission checks belong in the service
+### Permission checks belong in the router
 
-- Routers wire input → service. The service performs the permission check (`bulkValidateUserPermissionsForResources` and friends) **before** mutating.
+- Routers wire input → service. The router performs the permission check (`bulkValidateUserPermissionsForResources` and friends) **before** mutating and calling services.
 - Do not gate purely on the existence of a session — that only proves the caller is logged in, not authorised for the resource.
 
 ### Audit-log every state change
@@ -65,7 +65,7 @@ Never write your own auth middleware in a router. If you need a new auth shape, 
 - Kysely (`db`) is the default. Prefer it for new queries.
 - Prisma (`ctx.prisma`) is used for legacy queries and where Kysely lacks parity.
 - Mix in one router only when necessary, and prefer one transaction owner per mutation.
-- Migrations and schema live under `apps/studio/prisma/` — see `apps/studio/prisma/CLAUDE.md`.
+- Migrations and schema live under `packages/db/prisma/` — see `packages/db/prisma/CLAUDE.md`. Studio-owned seed data, JSON-column types, and one-off scripts remain under `apps/studio/prisma/`.
 
 ## Testing
 

@@ -24,11 +24,30 @@ interface ResourceSelectorProps {
   onChange: (resourceId: string | null, fullPermalink: string) => void
   selectedResourceId?: string
   existingResource?: ResourceItemContent
-  onlyShowFolders?: boolean
   fileExplorerHeight?: number
   // Whether to render the "You selected ..." preview box below the tree.
   // Defaults to true; the move modal hides it in favour of its own notice.
   showSelectedResourcePreview?: boolean
+}
+
+const LINK_RESOURCE_TYPES = [
+  ResourceType.Page,
+  ResourceType.Folder,
+  ResourceType.Collection,
+  ResourceType.CollectionPage,
+]
+
+const getMoveSearchResourceTypes = (
+  existingResource: ResourceItemContent | undefined,
+) => {
+  if (
+    existingResource?.type === ResourceType.CollectionPage ||
+    existingResource?.type === ResourceType.CollectionLink
+  ) {
+    return [ResourceType.Collection]
+  }
+
+  return [ResourceType.Folder]
 }
 
 const SuspensableResourceSelector = ({
@@ -37,7 +56,6 @@ const SuspensableResourceSelector = ({
   onChange,
   selectedResourceId,
   existingResource,
-  onlyShowFolders = false,
   fileExplorerHeight = FILE_EXPLORER_DEFAULT_HEIGHT_IN_REM,
   showSelectedResourcePreview = true,
   searchQuery,
@@ -54,6 +72,7 @@ const SuspensableResourceSelector = ({
   const hasAdditionalLeftPadding: boolean = isSearchQueryEmpty
 
   const {
+    rootPage,
     fullPermalink,
     moveDestPermalink,
     moveDest,
@@ -79,7 +98,7 @@ const SuspensableResourceSelector = ({
     moveDest,
     parentDest,
     isResourceHighlighted,
-    onlyShowFolders,
+    showOnlyContainers: interactionType === "move",
     resourceIds: isSearchQueryEmpty
       ? undefined
       : matchedResources.map((resource) => resource.id),
@@ -87,6 +106,7 @@ const SuspensableResourceSelector = ({
 
   const {
     isResourceIdHighlighted,
+    isHomeHighlighted,
     isResourceItemDisabled,
     hasParentInStack,
     handleClickBackButton,
@@ -115,8 +135,20 @@ const SuspensableResourceSelector = ({
           hasParentInStack={hasParentInStack}
           handleClickBackButton={handleClickBackButton}
           resourceItemsWithAncestryStack={resourceItemsWithAncestryStack}
+          handleOnClick={() =>
+            handleClickResourceItem([
+              {
+                title: "Home",
+                permalink: "",
+                type: ResourceType.RootPage,
+                id: rootPage.id,
+                parentId: null,
+              },
+            ])
+          }
           searchQuery={searchQuery}
           isLoading={isLoading}
+          isHomeHighlighted={isHomeHighlighted}
         />
       </Suspense>
     )
@@ -125,8 +157,11 @@ const SuspensableResourceSelector = ({
     hasParentInStack,
     handleClickBackButton,
     resourceItemsWithAncestryStack,
+    handleClickResourceItem,
     searchQuery,
     isLoading,
+    isHomeHighlighted,
+    rootPage.id,
   ])
 
   const renderedContent = useMemo(() => {
@@ -205,6 +240,11 @@ const SuspensableResourceSelector = ({
 }
 
 export const ResourceSelector = (props: ResourceSelectorProps) => {
+  const resourceTypes =
+    props.interactionType === "move"
+      ? getMoveSearchResourceTypes(props.existingResource)
+      : LINK_RESOURCE_TYPES
+
   const {
     searchValue,
     setSearchValue,
@@ -214,14 +254,7 @@ export const ResourceSelector = (props: ResourceSelectorProps) => {
     clearSearchValue,
   } = useSearchQuery({
     siteId: String(props.siteId),
-    resourceTypes: props.onlyShowFolders
-      ? [ResourceType.Folder]
-      : [
-          ResourceType.Page,
-          ResourceType.Folder,
-          ResourceType.Collection,
-          ResourceType.CollectionPage,
-        ],
+    resourceTypes,
   })
 
   return (

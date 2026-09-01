@@ -26,6 +26,7 @@ import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { moveResourceAtom } from "../../atoms"
+import { useValidateResourceMove } from "../../hooks/useValidateResourceMove"
 
 export const MoveResourceModal = () => {
   // NOTE: This is what we are trying to move
@@ -116,6 +117,14 @@ const MoveResourceContent = withSuspense(
     })
 
     const movedItem = useAtomValue(moveResourceAtom)
+    const {
+      isLoading: isValidMoveLoading,
+      isValidMove,
+      errorMessage,
+    } = useValidateResourceMove({
+      sourceId: movedItem?.id,
+      destinationId: curResourceId ?? null,
+    })
 
     const [shouldCreateRedirect, setShouldCreateRedirect] = useState(true)
     const [{ fullPermalink: movedFullPermalink }] =
@@ -130,9 +139,15 @@ const MoveResourceContent = withSuspense(
 
     // Only published Page/CollectionPage have a live URL worth preserving — the
     // server skips redirect creation for unpublished pages, so don't offer it.
-    const isRedirectableType =
+    const isPageRedirectable =
       (type === ResourceType.Page || type === ResourceType.CollectionPage) &&
       publishedVersionId !== null
+    // A Folder/Collection preserves its subtree with one wildcard redirect. It
+    // has no publishedVersionId of its own, so the server decides based on
+    // published descendants.
+    const isFolderRedirect =
+      type === ResourceType.Folder || type === ResourceType.Collection
+    const isRedirectableType = isPageRedirectable || isFolderRedirect
     const oldFullPermalink = normalizeRedirectPath(movedFullPermalink)
     const newFullPermalink = normalizeRedirectPath(
       `${curResourceId && destination ? destination.fullPermalink : ""}/${movedSlug}`,
@@ -143,14 +158,20 @@ const MoveResourceContent = withSuspense(
       curResourceId === null || (curResourceId !== undefined && !!destination)
     // Moving a page into its current parent leaves the URL unchanged, so there's
     // nothing to redirect — only offer the option when the URL actually changes.
+    // An invalid destination has no resulting URL, so gate on a valid move too.
     const showRedirectOption =
+      isValidMove === true &&
       isRedirectableType &&
       isDestinationResolved &&
       oldFullPermalink !== newFullPermalink
-    // The URL-change notice shows for any resource once a picked destination
-    // actually changes its URL; the redirect checkbox is the published subset.
+    // CollectionLinks have no URL of their own (their permalink is a hidden
+    // random UUID), so skip the notice even though their permalink changes.
+    // An invalid destination has no resulting URL, so gate on a valid move too.
     const showUrlChangeNotice =
-      isDestinationResolved && oldFullPermalink !== newFullPermalink
+      isValidMove === true &&
+      type !== ResourceType.CollectionLink &&
+      isDestinationResolved &&
+      oldFullPermalink !== newFullPermalink
     const { data: existingRedirect } = trpc.redirect.getBySource.useQuery(
       { siteId: Number(siteId), source: newFullPermalink },
       { enabled: showRedirectOption },
@@ -165,11 +186,17 @@ const MoveResourceContent = withSuspense(
             <ResourceSelector
               interactionType="move"
               siteId={siteId}
-              onlyShowFolders
               showSelectedResourcePreview={false}
               existingResource={movedItem ?? undefined}
               onChange={(resourceId) => setCurResourceId(resourceId)}
             />
+            {curResourceId !== undefined &&
+              errorMessage &&
+              !isValidMoveLoading && (
+                <Infobox variant="error" size="sm" w="full">
+                  {errorMessage}
+                </Infobox>
+              )}
             {showUrlChangeNotice && (
               <VStack alignItems="flex-start" spacing="0.75rem" w="full">
                 <Box
@@ -179,7 +206,9 @@ const MoveResourceContent = withSuspense(
                   p="1rem"
                 >
                   <Text textStyle="body-2" color="base.content.strong">
-                    The page URL will change to {newFullPermalink}.
+                    {isFolderRedirect
+                      ? `The URL will change to ${newFullPermalink}, and every page under it will move too.`
+                      : `The page URL will change to ${newFullPermalink}.`}
                   </Text>
                 </Box>
                 {showRedirectOption && (
@@ -205,8 +234,9 @@ const MoveResourceContent = withSuspense(
                       }
                     >
                       <Text textStyle="body-2" color="base.content.strong">
-                        Check this box to automatically redirect visitors from{" "}
-                        {oldFullPermalink} to this new URL.
+                        {isFolderRedirect
+                          ? `Check this box to redirect visitors from everything under ${oldFullPermalink}/ to the new location.`
+                          : `Check this box to automatically redirect visitors from ${oldFullPermalink} to this new URL.`}
                       </Text>
                     </Checkbox>
                   </>
@@ -232,9 +262,12 @@ const MoveResourceContent = withSuspense(
               ability.cannot("move", {
                 parentId: curResourceId ?? null,
               }) ||
-              ability.cannot("move", { parentId: movedItem?.parentId ?? null })
+              ability.cannot("move", {
+                parentId: movedItem?.parentId ?? null,
+              }) ||
+              isValidMove !== true
             }
-            isLoading={isPending}
+            isLoading={isPending || isValidMoveLoading}
             onClick={() =>
               movedItem?.id &&
               mutate({
