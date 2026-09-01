@@ -1,9 +1,21 @@
-import { Center, Flex, Icon, Text, VStack } from "@chakra-ui/react"
+import {
+  Center,
+  Flex,
+  Icon,
+  Text,
+  VStack,
+  useDisclosure,
+} from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { BiLockAlt } from "react-icons/bi"
+import { CancelScheduleModal } from "~/features/editing-experience/components/PublishingModal"
 import { withSuspense } from "~/hocs/withSuspense"
 import { trpc } from "~/utils/trpc"
 import { ScheduledAction } from "~prisma/generated/generatedEnums"
+
+import { CancelScheduleUnpublishModal } from "./CancelScheduleUnpublishModal"
+import { PublishNowModal } from "./PublishNowModal"
+import { UnpublishNowModal } from "./UnpublishNowModal"
 
 interface EditingLockedOverlayProps {
   pageId: number
@@ -23,12 +35,16 @@ const SuspendableEditingLockedOverlay = ({
   siteId,
 }: EditingLockedOverlayProps): JSX.Element | null => {
   const [currPage] = trpc.page.readPage.useSuspenseQuery({ pageId, siteId })
+  const actionDisclosure = useDisclosure()
+  const cancelScheduleDisclosure = useDisclosure()
 
   if (!currPage.scheduledAt || !currPage.scheduledAction) {
     return null
   }
 
   const { verb, actionLabel } = COPY[currPage.scheduledAction]
+  const isScheduledToPublish =
+    currPage.scheduledAction === ScheduledAction.Publish
 
   return (
     <Flex
@@ -50,6 +66,35 @@ const SuspendableEditingLockedOverlay = ({
       px="1.5rem"
       py="2rem"
     >
+      {/* Render the modal conditionally to ensure the schema resets when the modal is opened/closed */}
+      {actionDisclosure.isOpen &&
+        (isScheduledToPublish ? (
+          <PublishNowModal
+            pageId={pageId}
+            siteId={siteId}
+            {...actionDisclosure}
+          />
+        ) : (
+          <UnpublishNowModal
+            pageId={pageId}
+            siteId={siteId}
+            {...actionDisclosure}
+          />
+        ))}
+      {cancelScheduleDisclosure.isOpen &&
+        (isScheduledToPublish ? (
+          <CancelScheduleModal
+            pageId={pageId}
+            siteId={siteId}
+            {...cancelScheduleDisclosure}
+          />
+        ) : (
+          <CancelScheduleUnpublishModal
+            pageId={pageId}
+            siteId={siteId}
+            {...cancelScheduleDisclosure}
+          />
+        ))}
       <VStack spacing="1.5rem" maxW="22.5rem" textAlign="center">
         <VStack spacing="0.5rem">
           <Center
@@ -69,9 +114,12 @@ const SuspendableEditingLockedOverlay = ({
           </Text>
         </VStack>
         <Flex gap="0.75rem">
-          {/* Placeholder actions — modals to be wired in a follow-up */}
-          <Button variant="reverse">{actionLabel}</Button>
-          <Button>Cancel schedule</Button>
+          <Button variant="reverse" onClick={actionDisclosure.onOpen}>
+            {actionLabel}
+          </Button>
+          <Button onClick={cancelScheduleDisclosure.onOpen}>
+            Cancel schedule
+          </Button>
         </Flex>
       </VStack>
     </Flex>
