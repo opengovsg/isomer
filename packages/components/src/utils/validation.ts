@@ -223,6 +223,13 @@ export const NON_EMPTY_STRING_REGEX = "^(?=.*\\S)"
 // ❌ " a " (surrounded by spaces)
 export const TRIMMED_NON_EMPTY_STRING_REGEX = "^\\S(.*\\S)?$"
 
+// ✅ "" (empty string — used when a label should be hidden)
+// ✅ "ab cd" (internal whitespace allowed)
+// ❌ " " (only whitespace)
+// ❌ " hello" (leading whitespace)
+// ❌ "hello " (trailing whitespace)
+export const TRIMMED_STRING_OR_EMPTY_REGEX = "^$|^\\S(.*\\S)?$"
+
 // ✅ "d_a" (minimum 3 characters, starts with "d_")
 // ✅ "d_abc" (more than 3 characters, starts with "d_")
 // ❌ "d_" (only 2 characters)

@@ -35,6 +35,12 @@ const slashDateSchema = z
     return format(d, SLASH_DATE_FORMAT)
   })
 
+const dateTaggedEntrySchema = z.object({
+  id: z.string().uuid(),
+  date: z.string().min(1),
+  endDate: z.string().optional(),
+})
+
 export const editLinkSchema = z.object({
   date: slashDateSchema.optional(),
   category: z.string(),
@@ -51,6 +57,7 @@ export const editLinkSchema = z.object({
     )
     .optional(),
   tagged: z.array(z.string()).optional(),
+  dateTagged: z.array(dateTaggedEntrySchema).optional(),
   image: z
     .object({
       src: z.string(),
