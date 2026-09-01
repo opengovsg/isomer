@@ -21,6 +21,7 @@ const SuspendablePageStatusIndicators = ({
         liveStatus={currPage.publishedVersionId !== null ? "live" : "notLive"}
         scheduledAt={currPage.scheduledAt}
         scheduledAction={currPage.scheduledAction}
+        lastPublishedAt={currPage.lastPublishedAt}
       />
       <HasDraftIndicator draftBlobId={currPage.draftBlobId} />
     </HStack>

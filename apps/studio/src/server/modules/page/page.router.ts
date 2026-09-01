@@ -66,6 +66,7 @@ import {
   getBlobOfResource,
   getFooter,
   getFullPageById,
+  getLastPublishedAt,
   getNavBar,
   getPageById,
   getResourceFullPermalink,
@@ -236,7 +237,11 @@ export const pageRouter = router({
         })
       }
 
-      return retrievedPage
+      const lastPublishedAt = await getLastPublishedAt(db, {
+        resourceId: pageId,
+      })
+
+      return { ...retrievedPage, lastPublishedAt }
     }),
 
   readPageAndBlob: protectedProcedure
