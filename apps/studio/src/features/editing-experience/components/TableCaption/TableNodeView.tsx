@@ -1,6 +1,7 @@
 import type { NodeViewProps } from "@tiptap/react"
 import { Box } from "@chakra-ui/react"
 import { NodeViewContent, NodeViewWrapper } from "@tiptap/react"
+import { TABLE_ADD_CHROME_PX } from "~/features/editing-experience/utils/tableEditorChrome"
 
 import { TableCaption } from "./TableCaption"
 
@@ -22,7 +23,9 @@ export const TableNodeView = ({ node, updateAttributes }: NodeViewProps) => {
           }
         />
       </Box>
-      <NodeViewContent<"table"> as="table" />
+      <Box pr={`${TABLE_ADD_CHROME_PX}px`} pb={`${TABLE_ADD_CHROME_PX}px`}>
+        <NodeViewContent<"table"> as="table" />
+      </Box>
     </Box>
   )
 }
