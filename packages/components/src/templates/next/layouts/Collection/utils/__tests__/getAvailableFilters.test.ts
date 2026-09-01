@@ -5,6 +5,17 @@ import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
 
 import { getAvailableFilters } from "../getAvailableFilters"
 
+const TODAY = "2026-06-15"
+const EVENT_DATE_FILTER_ID = "event-date-filter-id"
+
+const ongoingDateTagged = [
+  {
+    id: EVENT_DATE_FILTER_ID,
+    date: "2026-06-10",
+    endDate: "2026-06-20",
+  },
+]
+
 describe("getAvailableFilters", () => {
   it("returns no filters when there are no items", () => {
     // Arrange
@@ -73,21 +84,13 @@ describe("getAvailableFilters", () => {
       {
         title: "Item 1",
         tags: [{ selected: ["Guides"], category: "Category" }],
-        dateFilterCards: [
-          {
-            id: "event-date-filter-id",
-            label: "Event Date",
-            status: "ONGOING",
-            statusLabel: "Ongoing",
-            dateText: "1 Jun - 30 Jun 2026",
-          },
-        ],
+        dateTagged: ongoingDateTagged,
         date: new Date("2023-01-01"),
       } as ProcessedCollectionCardProps,
     ]
     const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
       {
-        id: "event-date-filter-id",
+        id: EVENT_DATE_FILTER_ID,
         label: "Event Date",
         type: "date",
         statusLabels: [
@@ -106,11 +109,11 @@ describe("getAvailableFilters", () => {
     ]
 
     // Act
-    const result = getAvailableFilters(items, tagCategories)
+    const result = getAvailableFilters(items, tagCategories, TODAY)
 
     // Assert — matches tagCategories order (date before tag), not type-grouped
     expect(result.map((filter) => filter.id)).toEqual([
-      "event-date-filter-id",
+      EVENT_DATE_FILTER_ID,
       "Category",
       "year",
     ])
@@ -122,15 +125,7 @@ describe("getAvailableFilters", () => {
       {
         title: "Item 1",
         tags: [{ selected: ["Guides"], category: "Category" }],
-        dateFilterCards: [
-          {
-            id: "event-date-filter-id",
-            label: "Event Date",
-            status: "ONGOING",
-            statusLabel: "Ongoing",
-            dateText: "1 Jun - 30 Jun 2026",
-          },
-        ],
+        dateTagged: ongoingDateTagged,
         date: new Date("2023-01-01"),
       } as ProcessedCollectionCardProps,
     ]
@@ -143,7 +138,7 @@ describe("getAvailableFilters", () => {
         options: [{ label: "Guides", id: "opt-1" }],
       },
       {
-        id: "event-date-filter-id",
+        id: EVENT_DATE_FILTER_ID,
         label: "Event Date",
         type: "date",
         statusLabels: [
@@ -155,12 +150,12 @@ describe("getAvailableFilters", () => {
     ]
 
     // Act
-    const result = getAvailableFilters(items, tagCategories)
+    const result = getAvailableFilters(items, tagCategories, TODAY)
 
     // Assert
     expect(result.map((filter) => filter.id)).toEqual([
       "Category",
-      "event-date-filter-id",
+      EVENT_DATE_FILTER_ID,
       "year",
     ])
   })

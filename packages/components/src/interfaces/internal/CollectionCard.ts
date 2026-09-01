@@ -3,18 +3,16 @@ import type { FormattedDate, IsomerSiteProps, TagGroup } from "~/types"
 import type { DateFilterStatusId } from "~/types/constants"
 
 // NOTE: one entry per date-type filter the item has a raw value for — used
-// only for filter matching (see getFilteredItems' range-overlap check).
-// Card display uses the pre-resolved `dateFilterCards` below instead.
+// for filter matching (see getFilteredItems' range-overlap check) and as
+// the input for client-side status derivation (see enrichItemsWithDateFilterCards).
 export interface DateFilterValue {
   id: string
   date: string
   endDate?: string
 }
 
-// NOTE: pre-resolved for card display (status pill + date text under the
-// title) — one entry per date-type filter the item has a value for. `status`
-// is computed once server-side (see getCollectionItems/getDateFilterStatus);
-// `dateText` is the human-formatted date/range string.
+// NOTE: derived on the client from `dateTagged` + live Singapore date for
+// card display (status pill + date text under the title).
 export interface DateFilterCard {
   id: string
   label: string
@@ -42,10 +40,10 @@ interface BaseCardProps {
   // — rendered as comma-joined text, dot-separated between groups (see PlaintextTags)
   plaintextTags?: TagGroup[]
   // NOTE: raw per-item date-filter values (mirrors the `dateTagged` schema
-  // field), used only for filter matching (see getFilteredItems) — not
-  // rendered directly.
+  // field), used for filter matching (see getFilteredItems) and client-side
+  // status derivation — not rendered directly.
   dateTagged?: DateFilterValue[]
-  // NOTE: pre-resolved for card display — see DateFilterCard.
+  // NOTE: client-derived display data — see DateFilterCard.
   dateFilterCards?: DateFilterCard[]
   title: string
   url: string

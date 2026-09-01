@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest"
 import { getDateFilters } from "../getDateFilters"
 
 const EVENT_DATE_FILTER_ID = "event-date-filter-id"
+const TODAY = "2026-06-15"
 
 const tagCategories: NonNullable<
   CollectionPageSchemaType["page"]["tagCategories"]
@@ -23,7 +24,7 @@ const tagCategories: NonNullable<
 
 describe("getDateFilters", () => {
   it("returns no filters when there are no tagCategories", () => {
-    expect(getDateFilters([], undefined)).toEqual([])
+    expect(getDateFilters([], undefined, TODAY)).toEqual([])
   })
 
   it("ignores text-type tagCategories entirely", () => {
@@ -31,49 +32,43 @@ describe("getDateFilters", () => {
       CollectionPageSchemaType["page"]["tagCategories"]
     > = [{ id: "text-filter", label: "Category", options: [] }]
 
-    expect(getDateFilters([], textOnly)).toEqual([])
+    expect(getDateFilters([], textOnly, TODAY)).toEqual([])
   })
 
   it("counts items into their computed status bucket, dropping empty buckets", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
       {
-        dateFilterCards: [
+        dateTagged: [
           {
             id: EVENT_DATE_FILTER_ID,
-            label: "Event Date",
-            status: "ONGOING",
-            statusLabel: "Ongoing",
-            dateText: "",
+            date: "2026-06-10",
+            endDate: "2026-06-20",
           },
         ],
       } as ProcessedCollectionCardProps,
       {
-        dateFilterCards: [
+        dateTagged: [
           {
             id: EVENT_DATE_FILTER_ID,
-            label: "Event Date",
-            status: "ONGOING",
-            statusLabel: "Ongoing",
-            dateText: "",
+            date: "2026-06-10",
+            endDate: "2026-06-20",
           },
         ],
       } as ProcessedCollectionCardProps,
       {
-        dateFilterCards: [
+        dateTagged: [
           {
             id: EVENT_DATE_FILTER_ID,
-            label: "Event Date",
-            status: "UPCOMING",
-            statusLabel: "Upcoming",
-            dateText: "",
+            date: "2026-07-01",
+            endDate: "2026-07-10",
           },
         ],
       } as ProcessedCollectionCardProps,
     ]
 
     // Act
-    const result = getDateFilters(items, tagCategories)
+    const result = getDateFilters(items, tagCategories, TODAY)
 
     // Assert — no ENDED bucket since count is 0, order follows statusLabels
     expect(result).toEqual([
@@ -91,10 +86,10 @@ describe("getDateFilters", () => {
 
   it("returns an empty items list when no item has a value for the filter", () => {
     const items: ProcessedCollectionCardProps[] = [
-      { dateFilterCards: undefined } as ProcessedCollectionCardProps,
+      { dateTagged: undefined } as ProcessedCollectionCardProps,
     ]
 
-    expect(getDateFilters(items, tagCategories)).toEqual([
+    expect(getDateFilters(items, tagCategories, TODAY)).toEqual([
       {
         id: EVENT_DATE_FILTER_ID,
         label: "Event Date",

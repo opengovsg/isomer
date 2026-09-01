@@ -1,7 +1,40 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { ArticlePageHeaderProps } from "~/interfaces"
+import type { CollectionPagePageProps } from "~/types"
 
 import { ArticlePageHeader } from "./ArticlePageHeader"
+
+const pad = (n: number): string => n.toString().padStart(2, "0")
+const toDateString = (date: Date) =>
+  `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+const daysFromNow = (days: number) => {
+  const date = new Date()
+  date.setDate(date.getDate() + days)
+  return toDateString(date)
+}
+
+const DATE_FILTER_TAG_CATEGORIES: CollectionPagePageProps["tagCategories"] = [
+  {
+    id: "event-date",
+    label: "Event Date",
+    type: "date",
+    statusLabels: [
+      { id: "ENDED", label: "Event ended" },
+      { id: "ONGOING", label: "Ongoing" },
+      { id: "UPCOMING", label: "Upcoming" },
+    ],
+  },
+  {
+    id: "registration-deadline",
+    label: "Registration Deadline",
+    type: "date",
+    statusLabels: [
+      { id: "ENDED", label: "Registration closed" },
+      { id: "ONGOING", label: "Registration open" },
+      { id: "UPCOMING", label: "Registration upcoming" },
+    ],
+  },
+]
 
 const meta: Meta<ArticlePageHeaderProps> = {
   title: "Next/Internal Components/ArticlePageHeader",
@@ -82,15 +115,14 @@ export const WithDateFilter: Story = {
   args: {
     ...ARTICLE,
     title: "Annual Community Charity Run 2026",
-    dateFilterCards: [
+    dateTagged: [
       {
         id: "event-date",
-        label: "Event Date",
-        status: "ONGOING",
-        statusLabel: "Ongoing",
-        dateText: "27 Sep - 29 Sep 2026",
+        date: daysFromNow(-5),
+        endDate: daysFromNow(5),
       },
     ],
+    tagCategories: DATE_FILTER_TAG_CATEGORIES,
   },
 }
 
@@ -98,21 +130,18 @@ export const WithMultipleDateFilters: Story = {
   args: {
     ...ARTICLE,
     title: "Item with two date filters",
-    dateFilterCards: [
+    dateTagged: [
       {
         id: "event-date",
-        label: "Event Date",
-        status: "UPCOMING",
-        statusLabel: "Upcoming",
-        dateText: "27 Sep - 29 Sep 2026",
+        date: daysFromNow(30),
+        endDate: daysFromNow(40),
       },
       {
         id: "registration-deadline",
-        label: "Registration Deadline",
-        status: "ONGOING",
-        statusLabel: "Ongoing",
-        dateText: "1 Jan - 10 Sep 2026",
+        date: daysFromNow(-5),
+        endDate: daysFromNow(5),
       },
     ],
+    tagCategories: DATE_FILTER_TAG_CATEGORIES,
   },
 }

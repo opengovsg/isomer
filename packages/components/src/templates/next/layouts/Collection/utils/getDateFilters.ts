@@ -4,6 +4,7 @@ import { TAG_CATEGORY_TYPE } from "~/types/constants"
 import { isDateFilter } from "~/types/page"
 
 import type { Filter } from "../../../types/Filter"
+import { getDateFilterStatus, getTodayInSingapore } from "./getDateFilterStatus"
 
 // Parallel to getYearFilter/getTagFilters, but for date-type `tagCategories`
 // entries: unlike text filters (whose options are admin-defined and
@@ -13,6 +14,7 @@ import type { Filter } from "../../../types/Filter"
 export const getDateFilters = (
   items: ProcessedCollectionCardProps[],
   tagCategories?: CollectionPageSchemaType["page"]["tagCategories"],
+  today: string = getTodayInSingapore(),
 ): Filter[] => {
   if (!tagCategories) {
     return []
@@ -24,9 +26,10 @@ export const getDateFilters = (
     const counts = new Map<string, number>()
 
     items.forEach((item) => {
-      const card = item.dateFilterCards?.find(({ id }) => id === category.id)
-      if (card) {
-        counts.set(card.status, (counts.get(card.status) ?? 0) + 1)
+      const value = item.dateTagged?.find(({ id }) => id === category.id)
+      if (value) {
+        const status = getDateFilterStatus(value, today)
+        counts.set(status, (counts.get(status) ?? 0) + 1)
       }
     })
 

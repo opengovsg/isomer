@@ -5,10 +5,9 @@ import type {
   ProcessedCollectionCardProps,
 } from "~/interfaces"
 import type { CollectionPagePageProps } from "~/types"
-import { useRef } from "react"
+import { useMemo, useRef } from "react"
 import { tv } from "~/lib/tv"
 
-import type { Filter as FilterType } from "../../types/Filter"
 import { BackToTopLink } from "../../components/internal/BackToTopLink"
 import { CollectionSearch } from "../../components/internal/CollectionSearch"
 import { Filter } from "../../components/internal/Filter"
@@ -16,11 +15,12 @@ import { PaginationControls } from "../../components/internal/PaginationControls
 import { CollectionPageHeader } from "./CollectionPageHeader"
 import { CollectionResults } from "./CollectionResults"
 import { ITEMS_PER_PAGE, useCollection } from "./useCollection"
+import { enrichItemsWithDateFilterCards } from "./utils/enrichItemsWithDateFilterCards"
+import { getAvailableFilters } from "./utils/getAvailableFilters"
 
 interface CollectionClientProps {
   page: CollectionPagePageProps
   items: ProcessedCollectionCardProps[]
-  filters: FilterType[]
   shouldShowDate: boolean
   siteAssetsBaseUrl: string | undefined
   breadcrumb: BreadcrumbProps
@@ -48,11 +48,19 @@ const compoundStyles = createCollectionLayoutStyles()
 export const CollectionClient = ({
   page,
   items,
-  filters,
   shouldShowDate,
   siteAssetsBaseUrl,
   breadcrumb,
 }: CollectionClientProps) => {
+  const itemsWithDateCards = useMemo(
+    () => enrichItemsWithDateFilterCards(items, page.tagCategories),
+    [items, page.tagCategories],
+  )
+  const filters = useMemo(
+    () => getAvailableFilters(items, page.tagCategories),
+    [items, page.tagCategories],
+  )
+
   const {
     paginatedItems,
     filteredCount,
@@ -66,7 +74,7 @@ export const CollectionClient = ({
     currPage,
     setCurrPage,
     totalCount,
-  } = useCollection({ items })
+  } = useCollection({ items: itemsWithDateCards })
 
   const articleContainerRef = useRef<HTMLDivElement>(null)
   const onPageChange = () => {

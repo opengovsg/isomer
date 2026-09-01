@@ -4,15 +4,17 @@ import { isDateFilter } from "~/types/page"
 
 import type { Filter } from "../../../types/Filter"
 import { getDateFilters } from "./getDateFilters"
+import { getTodayInSingapore } from "./getDateFilterStatus"
 import { getTagFilters } from "./getTagFilters"
 import { getYearFilter } from "./getYearFilter"
 
 export const getAvailableFilters = (
   items: ProcessedCollectionCardProps[],
   tagCategories?: CollectionPageSchemaType["page"]["tagCategories"],
+  today: string = getTodayInSingapore(),
 ): Filter[] => {
   const tagFilters = getTagFilters(items, tagCategories)
-  const dateFilters = getDateFilters(items, tagCategories)
+  const dateFilters = getDateFilters(items, tagCategories, today)
 
   // NOTE: Year isn't a `tagCategories` entry (it's derived from each item's
   // `date`), so it has no position to respect and always renders last. Text
