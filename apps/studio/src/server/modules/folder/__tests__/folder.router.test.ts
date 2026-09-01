@@ -20,7 +20,13 @@ import { IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import { createCallerFactory } from "~/server/trpc"
 import { getReferenceLink } from "~/utils/link"
 
-import { AuditLogEvent, db, ResourceState, ResourceType } from "../../database"
+import {
+  AuditLogEvent,
+  db,
+  ResourceState,
+  ResourceType,
+  ScheduledAction,
+} from "../../database"
 import { folderRouter } from "../folder.router"
 
 const createCaller = createCallerFactory(folderRouter)
