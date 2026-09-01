@@ -2713,7 +2713,9 @@ describe("resource.router", async () => {
 
     // `liveStatus` is derived, not a Resource column — every fixture here is
     // an unpublished Page/Folder with no published descendants, so it's
-    // always "notLive".
+    // always "notLive". Likewise `lastPublishedAt` is read from the Version
+    // table, not a Resource column — these fixtures are never published, so
+    // it's always null.
     const pickComparable = <
       T extends Record<(typeof RESOURCE_FIELDS_TO_PICK)[number], unknown>,
     >(
@@ -2721,6 +2723,7 @@ describe("resource.router", async () => {
     ) => ({
       ...pick(resource, RESOURCE_FIELDS_TO_PICK),
       liveStatus: "notLive" as const,
+      lastPublishedAt: null,
     })
 
     const testListComparable = (

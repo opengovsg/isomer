@@ -108,6 +108,36 @@ export const applyResourceOrderBy = <O>(
   }
 }
 
+// Correlated subquery for the "last published on" tooltip. Deliberately not
+// read off Resource.publishedVersionId, since that goes null on unpublish —
+// this reflects the resource's most recent publish regardless of current
+// live status. Returns null for a resource that's never been published.
+export const selectLastPublishedAt = (eb: ExpressionBuilder<DB, "Resource">) =>
+  eb
+    .selectFrom("Version")
+    .select("Version.publishedAt")
+    .whereRef("Version.resourceId", "=", "Resource.id")
+    .orderBy("Version.versionNum", "desc")
+    .limit(1)
+    .as("lastPublishedAt")
+
+// Single-resource equivalent of selectLastPublishedAt, for call sites (like
+// page.readPage) that already fetch the resource via a helper not built
+// around a correlated-subquery select list.
+export const getLastPublishedAt = async (
+  db: SafeKysely,
+  { resourceId }: { resourceId: number },
+): Promise<Date | null> => {
+  const row = await db
+    .selectFrom("Version")
+    .where("Version.resourceId", "=", String(resourceId))
+    .select("Version.publishedAt")
+    .orderBy("Version.versionNum", "desc")
+    .limit(1)
+    .executeTakeFirst()
+  return row?.publishedAt ?? null
+}
+
 const CONTAINER_TYPES = [ResourceType.Folder, ResourceType.Collection]
 
 // Folder/Collection ids that count as "live"/"not live" for the status

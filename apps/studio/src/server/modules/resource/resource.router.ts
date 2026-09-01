@@ -63,6 +63,7 @@ import {
   getWithFullPermalink,
   hasPublishedDescendant,
   publishResource,
+  selectLastPublishedAt,
   splitContainerIdsByLiveStatus,
 } from "./resource.service"
 
@@ -781,7 +782,7 @@ export const resourceRouter = router({
         const rows = await query
           .offset(offset)
           .limit(limit)
-          .select([
+          .select((eb) => [
             "Resource.id",
             "Resource.permalink",
             "Resource.title",
@@ -792,6 +793,7 @@ export const resourceRouter = router({
             "Resource.updatedAt",
             "Resource.scheduledAt",
             "Resource.scheduledAction",
+            selectLastPublishedAt(eb),
           ])
           .execute()
 
