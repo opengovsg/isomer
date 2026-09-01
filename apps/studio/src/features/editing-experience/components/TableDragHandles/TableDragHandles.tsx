@@ -316,31 +316,6 @@ const SelectionOutline = ({ rect }: { rect: Rect }) => (
   />
 )
 
-const HoverGuideLine = ({
-  axis,
-  position,
-  span,
-}: {
-  axis: "row" | "column"
-  position: number
-  span: { left: number; top: number; width: number; height: number }
-}) => (
-  <Box
-    position="absolute"
-    left={axis === "row" ? `${span.left}px` : `${position}px`}
-    top={axis === "row" ? `${position}px` : `${span.top}px`}
-    w={axis === "row" ? `${span.width}px` : "0"}
-    h={axis === "row" ? "0" : `${span.height}px`}
-    borderTop={axis === "row" ? "1px dashed" : undefined}
-    borderLeft={axis === "column" ? "1px dashed" : undefined}
-    borderColor="interaction.main.default"
-    opacity={0.7}
-    pointerEvents="none"
-    zIndex="1"
-    aria-hidden
-  />
-)
-
 const AddPillButton = ({
   axis,
   left,
@@ -903,29 +878,6 @@ export const TableDragHandles = ({
               geometry.colRects[selectionCols[0]!] && (
                 <SelectionOutline
                   rect={geometry.colRects[selectionCols[0]!]!}
-                />
-              )}
-
-            {isHoverTable &&
-              hoverRow !== null &&
-              geometry.rowRects[hoverRow] &&
-              !drag && (
-                <HoverGuideLine
-                  axis="row"
-                  position={
-                    geometry.rowRects[hoverRow]!.top +
-                    geometry.rowRects[hoverRow]!.height / 2
-                  }
-                  span={{
-                    left: geometry.rowRects.find((r) => r)?.left ?? 0,
-                    top: 0,
-                    width:
-                      geometry.rowRects.reduce((max, rect) => {
-                        if (!rect) return max
-                        return Math.max(max, rect.left + rect.width)
-                      }, 0) - (geometry.rowRects.find((r) => r)?.left ?? 0),
-                    height: 0,
-                  }}
                 />
               )}
 
