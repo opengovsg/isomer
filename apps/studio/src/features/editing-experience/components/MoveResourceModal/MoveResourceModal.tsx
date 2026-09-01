@@ -158,13 +158,17 @@ const MoveResourceContent = withSuspense(
       curResourceId === null || (curResourceId !== undefined && !!destination)
     // Moving a page into its current parent leaves the URL unchanged, so there's
     // nothing to redirect — only offer the option when the URL actually changes.
+    // An invalid destination has no resulting URL, so gate on a valid move too.
     const showRedirectOption =
+      isValidMove === true &&
       isRedirectableType &&
       isDestinationResolved &&
       oldFullPermalink !== newFullPermalink
     // CollectionLinks have no URL of their own (their permalink is a hidden
     // random UUID), so skip the notice even though their permalink changes.
+    // An invalid destination has no resulting URL, so gate on a valid move too.
     const showUrlChangeNotice =
+      isValidMove === true &&
       type !== ResourceType.CollectionLink &&
       isDestinationResolved &&
       oldFullPermalink !== newFullPermalink
