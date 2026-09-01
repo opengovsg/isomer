@@ -475,4 +475,122 @@ describe("TableDragHandles", () => {
       ])
     })
   })
+
+  it("keeps add pills visible when the pointer moves into the gap below the table", async () => {
+    // Arrange
+    const { container, getByLabelText } = await renderHarness()
+    const cell = findByCellText(container, "Row 1, A")
+    const { x, y } = centreOf(cell)
+    await hoverUntil(x, y, () => getByLabelText("Add row below"))
+    const table = container.querySelector("table")
+    if (!table) throw new Error("table not found")
+    const tableRect = table.getBoundingClientRect()
+
+    // Act
+    hoverAt(tableRect.left + tableRect.width / 2, tableRect.bottom + 4)
+
+    // Assert
+    expect(getByLabelText("Add row below")).toBeTruthy()
+    expect(getByLabelText("Add column to the right")).toBeTruthy()
+  })
+
+  it("adds a row when the add-row pill is clicked after crossing the gap", async () => {
+    // Arrange
+    const { editor, container, getByLabelText } = await renderHarness()
+    expect(getCellText(editor)).toHaveLength(12)
+    const cell = findByCellText(container, "Row 3, A")
+    const { x, y } = centreOf(cell)
+    const addRow = await hoverUntil(x, y, () => getByLabelText("Add row below"))
+    const pillCentre = centreOf(addRow)
+
+    // Act
+    hoverAt(pillCentre.x, pillCentre.y)
+    act(() => {
+      fireEvent.click(getByLabelText("Add row below"))
+    })
+
+    // Assert
+    await waitFor(() => {
+      expect(getCellText(editor)).toHaveLength(15)
+    })
+  })
+
+  it("keeps the add-column pill inside an overflow-hidden editor", async () => {
+    // Arrange
+    let editor: Editor | undefined
+    const ClipHarness = () => {
+      const tipTap = useTextEditor({
+        data: SEED_CONTENT,
+        handleChange: () => null,
+      })
+      const containerRef = useRef<HTMLDivElement>(null)
+      if (tipTap) editor = tipTap
+      return (
+        <div
+          data-testid="clip-root"
+          ref={containerRef}
+          style={{ position: "relative", overflowX: "hidden", width: 420 }}
+        >
+          {tipTap && (
+            <TableDragHandles editor={tipTap} containerRef={containerRef} />
+          )}
+          {tipTap && <EditorContent editor={tipTap} />}
+        </div>
+      )
+    }
+    const { getByLabelText, getByTestId } = render(<ClipHarness />)
+    await waitFor(() => {
+      if (!editor) throw new Error("editor not ready")
+    })
+    const clipRoot = getByTestId("clip-root")
+    const cell = findByCellText(clipRoot, "Row 1, C")
+    const { x, y } = centreOf(cell)
+    const pill = await hoverUntil(x, y, () =>
+      getByLabelText("Add column to the right"),
+    )
+
+    // Act
+    const pillRect = pill.getBoundingClientRect()
+    const clipRect = clipRoot.getBoundingClientRect()
+
+    // Assert
+    expect(pillRect.right).toBeLessThanOrEqual(clipRect.right + 0.5)
+    expect(pillRect.left).toBeGreaterThanOrEqual(clipRect.left)
+  })
+
+  it("renders a rectangular row handle rather than a circle", async () => {
+    // Arrange
+    const { container, getByLabelText } = await renderHarness()
+    const cell = findByCellText(container, "Row 1, A")
+    const { x, y } = centreOf(cell)
+
+    // Act
+    const handle = await hoverUntil(x, y, () =>
+      getByLabelText("Drag to reorder row"),
+    )
+
+    // Assert
+    const { width, height } = handle.getBoundingClientRect()
+    expect(height).toBeGreaterThan(width)
+    const radius = parseFloat(getComputedStyle(handle).borderTopLeftRadius)
+    expect(radius).toBeLessThan(Math.min(width, height) / 2)
+  })
+
+  it("renders a rectangular column handle rather than a circle", async () => {
+    // Arrange
+    const { container, getByLabelText } = await renderHarness()
+    const headerCell = findByCellText(container, "Column B")
+    const { x, y } = centreOf(headerCell)
+
+    // Act
+    const handle = await hoverUntil(x, y - 20, () =>
+      getByLabelText("Drag to reorder column"),
+    )
+
+    // Assert
+    const { width, height } = handle.getBoundingClientRect()
+    expect(width).toBeGreaterThan(height)
+    const radius = parseFloat(getComputedStyle(handle).borderTopLeftRadius)
+    expect(radius).toBeLessThan(Math.min(width, height) / 2)
+  })
 })

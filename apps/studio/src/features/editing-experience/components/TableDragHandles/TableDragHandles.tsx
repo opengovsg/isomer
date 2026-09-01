@@ -17,6 +17,18 @@ import {
   BiPlus,
 } from "react-icons/bi"
 import {
+  ADD_PILL_GAP_PX,
+  ADD_PILL_MIN_LENGTH_PX,
+  ADD_PILL_THICKNESS_PX,
+  COL_HANDLE,
+  HANDLE_BORDER_PX,
+  HANDLE_BORDER_RADIUS_PX,
+  HANDLE_ICON_PX,
+  HANDLE_MARGIN_PX,
+  isPointerInTableChrome,
+  ROW_HANDLE,
+} from "~/features/editing-experience/utils/tableEditorChrome"
+import {
   containerRectToViewportRect,
   type Rect,
   viewportPointToContainerPoint,
@@ -135,8 +147,10 @@ interface PendingGesture {
   boundaries: number[]
 }
 
-/** CSS px before a handle click becomes a drag-reorder. */
 const DRAG_THRESHOLD_PX = 4
+const EMPTY_RECTS: (Rect | null)[] = []
+const EMPTY_INDEXES: number[] = []
+const EMPTY_GEOMETRIES: TableGeometry[] = []
 
 const selectWholeRow = (
   editor: TiptapEditor,
@@ -187,22 +201,6 @@ const boundaryToTargetIndex = (boundaryIndex: number, from: number) => {
   if (boundaryIndex > from) return boundaryIndex - 1
   return boundaryIndex
 }
-
-const HANDLE_MARGIN_PX = 28
-const HANDLE_ICON_PX = 12
-const HANDLE_PADDING_PX = 4
-const HANDLE_BORDER_PX = 1
-const ADD_PILL_THICKNESS_PX = 20
-const ADD_PILL_MIN_LENGTH_PX = 48
-const outerSize = (iconPx: number) => ({
-  w: iconPx + HANDLE_PADDING_PX * 2 + HANDLE_BORDER_PX * 2,
-  h: iconPx + HANDLE_PADDING_PX * 2 + HANDLE_BORDER_PX * 2,
-})
-const ROW_HANDLE = outerSize(HANDLE_ICON_PX)
-const COL_HANDLE = outerSize(HANDLE_ICON_PX)
-const EMPTY_RECTS: (Rect | null)[] = []
-const EMPTY_INDEXES: number[] = []
-const EMPTY_GEOMETRIES: TableGeometry[] = []
 
 type HandleVisualState = "passive" | "hover" | "selected" | "dragging"
 
@@ -283,11 +281,10 @@ const handleBaseStyle = {
   alignItems: "center",
   justifyContent: "center",
   border: `${HANDLE_BORDER_PX}px solid`,
-  borderRadius: "full",
+  borderRadius: `${HANDLE_BORDER_RADIUS_PX}px`,
   userSelect: "none",
   zIndex: "2",
-  boxSizing: "content-box",
-  p: `${HANDLE_PADDING_PX}px`,
+  boxSizing: "border-box",
   lineHeight: 0,
   transition: "background-color 0.15s, border-color 0.15s, color 0.15s",
 } as const
@@ -372,6 +369,8 @@ const RowHandle = ({
     top={`${rect.top + (rect.height - ROW_HANDLE.h) / 2}px`}
     {...handleBaseStyle}
     {...handleChromeByState(state)}
+    w={`${ROW_HANDLE.w}px`}
+    h={`${ROW_HANDLE.h}px`}
     onMouseDown={onMouseDown}
     onMouseEnter={onMouseEnter}
     onMouseLeave={onMouseLeave}
@@ -410,6 +409,8 @@ const ColumnHandle = ({
     left={`${rect.left + (rect.width - COL_HANDLE.w) / 2}px`}
     {...handleBaseStyle}
     {...handleChromeByState(state)}
+    w={`${COL_HANDLE.w}px`}
+    h={`${COL_HANDLE.h}px`}
     onMouseDown={onMouseDown}
     onMouseEnter={onMouseEnter}
     onMouseLeave={onMouseLeave}
@@ -533,24 +534,35 @@ export const TableDragHandles = ({
         })
 
         let colHit: number | null = null
-        const headerRowRect = geometry.rowRects[0]
-        if (headerRowRect) {
-          const headerTop = containerRectToViewportRect({
-            rect: headerRowRect,
+        const tableRects = geometry.rowRects.filter((r): r is Rect => !!r)
+        const firstRowRect = tableRects[0]
+        const lastRowRect = tableRects[tableRects.length - 1]
+        let inChrome = false
+        if (firstRowRect && lastRowRect) {
+          const firstViewport = containerRectToViewportRect({
+            rect: firstRowRect,
             containerRect,
             scrollTop: container.scrollTop,
             scrollLeft: container.scrollLeft,
-          }).top
-          const tableRects = geometry.rowRects.filter((r): r is Rect => !!r)
-          const lastRowRect = tableRects[tableRects.length - 1]
-          const tableBottom = lastRowRect
-            ? containerRectToViewportRect({
-                rect: lastRowRect,
-                containerRect,
-                scrollTop: container.scrollTop,
-                scrollLeft: container.scrollLeft,
-              }).top + lastRowRect.height
-            : headerTop + headerRowRect.height
+          })
+          const lastViewport = containerRectToViewportRect({
+            rect: lastRowRect,
+            containerRect,
+            scrollTop: container.scrollTop,
+            scrollLeft: container.scrollLeft,
+          })
+          const tableTop = firstViewport.top
+          const tableBottom = lastViewport.top + lastRowRect.height
+          const tableLeft = firstViewport.left
+          const tableRight = firstViewport.left + firstRowRect.width
+          inChrome = isPointerInTableChrome({
+            clientX,
+            clientY,
+            tableLeft,
+            tableTop,
+            tableRight,
+            tableBottom,
+          })
           geometry.colRects.forEach((rect, i) => {
             if (!rect) return
             const left = containerRectToViewportRect({
@@ -563,7 +575,7 @@ export const TableDragHandles = ({
             if (
               clientX >= left &&
               clientX <= right &&
-              clientY >= headerTop - HANDLE_MARGIN_PX &&
+              clientY >= tableTop - HANDLE_MARGIN_PX &&
               clientY <= tableBottom
             ) {
               colHit = i
@@ -571,7 +583,7 @@ export const TableDragHandles = ({
           })
         }
 
-        if (rowHit !== null || colHit !== null) {
+        if (rowHit !== null || colHit !== null || inChrome) {
           matchedTablePos = geometry.pos
           matchedRow = rowHit
           matchedCol = colHit
@@ -930,14 +942,14 @@ export const TableDragHandles = ({
             <AddPillButton
               axis="row"
               left={bounds.left + (bounds.width - addRowWidth) / 2}
-              top={bounds.top + bounds.height + 8}
+              top={bounds.top + bounds.height + ADD_PILL_GAP_PX}
               width={addRowWidth}
               height={ADD_PILL_THICKNESS_PX}
               onClick={() => addRowAfter(geometry.pos)}
             />
             <AddPillButton
               axis="column"
-              left={bounds.left + bounds.width + 8}
+              left={bounds.left + bounds.width + ADD_PILL_GAP_PX}
               top={bounds.top + (bounds.height - addColHeight) / 2}
               width={ADD_PILL_THICKNESS_PX}
               height={addColHeight}
