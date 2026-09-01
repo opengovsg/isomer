@@ -111,7 +111,11 @@ export const ResourceFilterMenu = ({
               >
                 <Text
                   textStyle="body-2"
-                  color="interaction.support.disabled-content"
+                  color={
+                    value.length === 0
+                      ? "interaction.support.disabled-content"
+                      : "base.content.strong"
+                  }
                 >
                   Clear filter
                 </Text>
