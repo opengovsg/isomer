@@ -23,6 +23,7 @@ import {
   COL_HANDLE,
   HANDLE_BORDER_PX,
   HANDLE_BORDER_RADIUS_PX,
+  HANDLE_GAP_PX,
   HANDLE_ICON_PX,
   HANDLE_MARGIN_PX,
   isPointerInTableChrome,
@@ -229,15 +230,15 @@ const getSelectionHandleTarget = (
 const resolveHandleState = ({
   isSelected,
   isDragging,
-  pointerOnHandle,
+  isHovered,
 }: {
   isSelected: boolean
   isDragging: boolean
-  pointerOnHandle: boolean
+  isHovered: boolean
 }): HandleVisualState => {
   if (isDragging) return "dragging"
   if (isSelected) return "selected"
-  if (pointerOnHandle) return "hover"
+  if (isHovered) return "hover"
   return "passive"
 }
 
@@ -352,28 +353,22 @@ const RowHandle = ({
   tablePos,
   index,
   onMouseDown,
-  onMouseEnter,
-  onMouseLeave,
 }: {
   rect: Rect
   state: HandleVisualState
   tablePos: number
   index: number
   onMouseDown: (e: React.MouseEvent) => void
-  onMouseEnter: () => void
-  onMouseLeave: () => void
 }) => (
   <Box
     position="absolute"
-    left={`${rect.left - ROW_HANDLE.w / 2}px`}
+    left={`${rect.left - HANDLE_GAP_PX - ROW_HANDLE.w}px`}
     top={`${rect.top + (rect.height - ROW_HANDLE.h) / 2}px`}
     {...handleBaseStyle}
     {...handleChromeByState(state)}
     w={`${ROW_HANDLE.w}px`}
     h={`${ROW_HANDLE.h}px`}
     onMouseDown={onMouseDown}
-    onMouseEnter={onMouseEnter}
-    onMouseLeave={onMouseLeave}
     title="Select or drag to reorder row"
     aria-label="Drag to reorder row"
     role="button"
@@ -392,28 +387,22 @@ const ColumnHandle = ({
   tablePos,
   index,
   onMouseDown,
-  onMouseEnter,
-  onMouseLeave,
 }: {
   rect: Rect
   state: HandleVisualState
   tablePos: number
   index: number
   onMouseDown: (e: React.MouseEvent) => void
-  onMouseEnter: () => void
-  onMouseLeave: () => void
 }) => (
   <Box
     position="absolute"
-    top={`${rect.top - COL_HANDLE.h / 2}px`}
+    top={`${rect.top - HANDLE_GAP_PX - COL_HANDLE.h}px`}
     left={`${rect.left + (rect.width - COL_HANDLE.w) / 2}px`}
     {...handleBaseStyle}
     {...handleChromeByState(state)}
     w={`${COL_HANDLE.w}px`}
     h={`${COL_HANDLE.h}px`}
     onMouseDown={onMouseDown}
-    onMouseEnter={onMouseEnter}
-    onMouseLeave={onMouseLeave}
     title="Select or drag to reorder column"
     aria-label="Drag to reorder column"
     role="button"
@@ -434,8 +423,6 @@ export const TableDragHandles = ({
   const [hoverTablePos, setHoverTablePos] = useState<number | null>(null)
   const [hoverRow, setHoverRow] = useState<number | null>(null)
   const [hoverCol, setHoverCol] = useState<number | null>(null)
-  const [pointerOnRowHandle, setPointerOnRowHandle] = useState(false)
-  const [pointerOnColHandle, setPointerOnColHandle] = useState(false)
   const [drag, setDrag] = useState<DragState | null>(null)
   const dragRef = useRef<DragState | null>(null)
   const pendingRef = useRef<PendingGesture | null>(null)
@@ -458,13 +445,6 @@ export const TableDragHandles = ({
       )
     },
   })
-
-  useEffect(() => {
-    setPointerOnRowHandle(false)
-  }, [hoverRow, hoverTablePos])
-  useEffect(() => {
-    setPointerOnColHandle(false)
-  }, [hoverCol, hoverTablePos])
 
   useLayoutEffect(() => {
     if (!editor) {
@@ -876,7 +856,7 @@ export const TableDragHandles = ({
               const state = resolveHandleState({
                 isSelected,
                 isDragging,
-                pointerOnHandle: isHovered && pointerOnRowHandle,
+                isHovered,
               })
               return (
                 <RowHandle
@@ -890,8 +870,6 @@ export const TableDragHandles = ({
                     i,
                     geometry.rowRects,
                   )}
-                  onMouseEnter={() => setPointerOnRowHandle(true)}
-                  onMouseLeave={() => setPointerOnRowHandle(false)}
                 />
               )
             })}
@@ -909,7 +887,7 @@ export const TableDragHandles = ({
               const state = resolveHandleState({
                 isSelected,
                 isDragging,
-                pointerOnHandle: isHovered && pointerOnColHandle,
+                isHovered,
               })
               return (
                 <ColumnHandle
@@ -923,8 +901,6 @@ export const TableDragHandles = ({
                     i,
                     geometry.colRects,
                   )}
-                  onMouseEnter={() => setPointerOnColHandle(true)}
-                  onMouseLeave={() => setPointerOnColHandle(false)}
                 />
               )
             })}
