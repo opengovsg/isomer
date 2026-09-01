@@ -5,7 +5,7 @@ import { getIndexByPermalink } from "~/utils/getIndexByPermalink"
 import { ArticlePageHeader } from "../../components/internal/ArticlePageHeader"
 import { BackToTopLink } from "../../components/internal/BackToTopLink"
 import { renderPageContent } from "../../render"
-import { getDateFilterStaticEntries } from "../Collection/utils/getDateFilterValues"
+import { resolveItemDateFields } from "../Collection/utils/dateFilterStatic"
 import { getPillAndPlaintextTags } from "../Collection/utils/getPillAndPlaintextTags"
 import { Skeleton } from "../Skeleton"
 
@@ -44,11 +44,10 @@ export const ArticleLayout = ({
           title={page.title}
           date={page.date}
           pillTags={pillTags}
-          dateFilterDisplayEntries={getDateFilterStaticEntries(
-            page.dateTagged,
-            parentTagCategories,
-          )}
-          tagCategories={parentTagCategories}
+          dateFilterDisplayEntries={
+            resolveItemDateFields(page.dateTagged, parentTagCategories)
+              .dateFilterDisplayEntries
+          }
         />
 
         <div className="mx-auto w-full gap-10 pb-20">

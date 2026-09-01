@@ -39,6 +39,11 @@ describe("processCollectionItems", () => {
         label: "Event Date",
         dateText: "27 Sep 2026",
         date: "2026-09-27",
+        statusLabels: [
+          { id: "ENDED" as const, label: "Ended" },
+          { id: "ONGOING" as const, label: "Ongoing" },
+          { id: "UPCOMING" as const, label: "Upcoming" },
+        ],
       },
     ]
 

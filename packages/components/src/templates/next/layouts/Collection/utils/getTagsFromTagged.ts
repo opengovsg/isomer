@@ -12,7 +12,7 @@ export const getTagsFromTagged = (
   return (
     tagCategories
       // NOTE: date filters have no `options`/`tagged` membership — they resolve
-      // their own tags separately (see getDateFilterValues).
+      // their own tags separately (see resolveItemDateFields).
       .filter(isTextFilter)
       .map(({ id, options, label }) => {
         return {

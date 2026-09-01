@@ -13,7 +13,6 @@ export const ArticlePageHeader = ({
   summary,
   pillTags,
   dateFilterDisplayEntries,
-  tagCategories,
 }: ArticlePageHeaderProps) => {
   return (
     <div className="mx-auto w-full">
@@ -28,10 +27,7 @@ export const ArticlePageHeader = ({
 
       <div className="flex flex-col gap-5">
         <div className="flex flex-col gap-4">
-          <EventDateFilterDisplay
-            entries={dateFilterDisplayEntries}
-            tagCategories={tagCategories}
-          >
+          <EventDateFilterDisplay entries={dateFilterDisplayEntries}>
             <h1 className="prose-display-md break-words text-base-content-strong">
               {title}
             </h1>

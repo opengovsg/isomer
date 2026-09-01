@@ -64,7 +64,8 @@ export const CollectionClient = ({
     currPage,
     setCurrPage,
     totalCount,
-  } = useCollection({ items })
+    today,
+  } = useCollection({ items, tagCategories: page.tagCategories })
 
   const articleContainerRef = useRef<HTMLDivElement>(null)
   const onPageChange = () => {
@@ -74,8 +75,8 @@ export const CollectionClient = ({
   }
 
   const filters = useMemo(
-    () => getAvailableFilters(items, page.tagCategories),
-    [items, page.tagCategories],
+    () => getAvailableFilters(items, page.tagCategories, today),
+    [items, page.tagCategories, today],
   )
   const hasNoFilters = filters.length === 0
 
@@ -124,7 +125,6 @@ export const CollectionClient = ({
               totalCount={totalCount}
               shouldShowDate={shouldShowDate}
               siteAssetsBaseUrl={siteAssetsBaseUrl}
-              tagCategories={page.tagCategories}
               headingLevel={2}
             />
           </div>

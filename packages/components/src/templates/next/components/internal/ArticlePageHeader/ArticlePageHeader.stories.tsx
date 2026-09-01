@@ -36,6 +36,10 @@ const DATE_FILTER_TAG_CATEGORIES: CollectionPagePageProps["tagCategories"] = [
   },
 ]
 
+const statusLabelsFor = (categoryId: string) =>
+  DATE_FILTER_TAG_CATEGORIES.find((category) => category.id === categoryId)!
+    .statusLabels
+
 const meta: Meta<ArticlePageHeaderProps> = {
   title: "Next/Internal Components/ArticlePageHeader",
   component: ArticlePageHeader,
@@ -122,9 +126,9 @@ export const WithDateFilter: Story = {
         dateText: "27 Sep - 29 Sep 2026",
         date: daysFromNow(-5),
         endDate: daysFromNow(5),
+        statusLabels: statusLabelsFor("event-date"),
       },
     ],
-    tagCategories: DATE_FILTER_TAG_CATEGORIES,
   },
 }
 
@@ -139,6 +143,7 @@ export const WithMultipleDateFilters: Story = {
         dateText: "27 Sep - 29 Sep 2026",
         date: daysFromNow(30),
         endDate: daysFromNow(40),
+        statusLabels: statusLabelsFor("event-date"),
       },
       {
         id: "registration-deadline",
@@ -146,8 +151,8 @@ export const WithMultipleDateFilters: Story = {
         dateText: "1 Jan - 10 Sep 2026",
         date: daysFromNow(-5),
         endDate: daysFromNow(5),
+        statusLabels: statusLabelsFor("registration-deadline"),
       },
     ],
-    tagCategories: DATE_FILTER_TAG_CATEGORIES,
   },
 }

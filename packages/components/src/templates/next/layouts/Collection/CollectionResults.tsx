@@ -17,7 +17,6 @@ interface CollectionResultProps extends Pick<
   shouldShowDate?: boolean
   variant?: CollectionPageSchemaType["page"]["variant"]
   siteAssetsBaseUrl?: string
-  tagCategories?: CollectionPageSchemaType["page"]["tagCategories"]
   headingLevel: number
 }
 
@@ -50,7 +49,6 @@ export const CollectionResults = ({
   shouldShowDate = true,
   siteAssetsBaseUrl,
   variant = "collection",
-  tagCategories,
   headingLevel,
 }: CollectionResultProps) => {
   const { collectionResults } = collection({ variant })
@@ -88,7 +86,6 @@ export const CollectionResults = ({
                 {...item}
                 shouldShowDate={shouldShowDate}
                 siteAssetsBaseUrl={siteAssetsBaseUrl}
-                tagCategories={tagCategories}
                 headingLevel={headingLevel}
               />
             ) : (
@@ -97,7 +94,6 @@ export const CollectionResults = ({
                 {...item}
                 shouldShowDate={shouldShowDate}
                 siteAssetsBaseUrl={siteAssetsBaseUrl}
-                tagCategories={tagCategories}
                 headingLevel={headingLevel}
               />
             ),

@@ -1,5 +1,6 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { AppliedFilter } from "~/templates/next/types/Filter"
+import type { CollectionPagePageProps } from "~/types"
 import { describe, expect, it } from "vitest"
 
 import { NO_SPECIFIED_YEAR_FILTER_ID } from "../constants"
@@ -294,11 +295,19 @@ describe("getFilteredItems", () => {
   describe("date filters", () => {
     const EVENT_DATE_FILTER_ID = "event-date-filter-id"
 
-    // NOTE: getFilteredItems always computes "today" internally (Asia/Singapore,
-    // real clock) rather than accepting an override, so these fixtures are
-    // built relative to `new Date()` at test-run time rather than hardcoded
-    // dates — a hardcoded "ongoing" range would silently become "ended" once
-    // that date passes.
+    const dateTagCategories: CollectionPagePageProps["tagCategories"] = [
+      {
+        id: EVENT_DATE_FILTER_ID,
+        label: "Event Date",
+        type: "date",
+        statusLabels: [
+          { id: "ENDED", label: "Ended" },
+          { id: "ONGOING", label: "Ongoing" },
+          { id: "UPCOMING", label: "Upcoming" },
+        ],
+      },
+    ]
+
     const toDateString = (date: Date) => date.toISOString().slice(0, 10)
     const daysFromNow = (days: number) => {
       const date = new Date()
@@ -307,6 +316,7 @@ describe("getFilteredItems", () => {
     }
     const ONGOING_RANGE = { date: daysFromNow(-5), endDate: daysFromNow(5) }
     const ENDED_RANGE = { date: daysFromNow(-20), endDate: daysFromNow(-10) }
+    const today = daysFromNow(0)
 
     it("filters by bucket status (OR within the same date filter)", () => {
       // Arrange
@@ -327,7 +337,13 @@ describe("getFilteredItems", () => {
       ]
 
       // Act
-      const result = getFilteredItems(items, appliedFilters, "")
+      const result = getFilteredItems(
+        items,
+        appliedFilters,
+        "",
+        dateTagCategories,
+        today,
+      )
 
       // Assert
       expect(result).toEqual([items[0]])
@@ -368,7 +384,13 @@ describe("getFilteredItems", () => {
       ]
 
       // Act
-      const result = getFilteredItems(items, appliedFilters, "")
+      const result = getFilteredItems(
+        items,
+        appliedFilters,
+        "",
+        dateTagCategories,
+        today,
+      )
 
       // Assert — the first item's range only partially overlaps the picked
       // window, but any overlap counts as a match.
@@ -400,7 +422,13 @@ describe("getFilteredItems", () => {
       ]
 
       // Act
-      const result = getFilteredItems(items, appliedFilters, "")
+      const result = getFilteredItems(
+        items,
+        appliedFilters,
+        "",
+        dateTagCategories,
+        today,
+      )
 
       // Assert
       expect(result).toEqual([items[0]])
@@ -425,10 +453,39 @@ describe("getFilteredItems", () => {
       ]
 
       // Act
-      const result = getFilteredItems(items, appliedFilters, "")
+      const result = getFilteredItems(
+        items,
+        appliedFilters,
+        "",
+        dateTagCategories,
+        today,
+      )
 
       // Assert
       expect(result).toEqual([items[0]])
+    })
+
+    it("routes date filters by tag category type even when no item has a value", () => {
+      const items: ProcessedCollectionCardProps[] = [
+        {
+          title: "No date value",
+          description: "",
+          dateTagged: undefined,
+        } as ProcessedCollectionCardProps,
+      ]
+      const appliedFilters: AppliedFilter[] = [
+        { id: EVENT_DATE_FILTER_ID, items: [{ id: "ONGOING" }] },
+      ]
+
+      const result = getFilteredItems(
+        items,
+        appliedFilters,
+        "",
+        dateTagCategories,
+        today,
+      )
+
+      expect(result).toEqual([])
     })
   })
 })

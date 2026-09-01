@@ -1,53 +1,12 @@
 "use client"
 
-import { useButton } from "@react-aria/button"
-import { useFocusRing } from "@react-aria/focus"
-import { mergeProps } from "@react-aria/utils"
 import { useRef, useState } from "react"
-import { BiChevronDown, BiChevronRight } from "react-icons/bi"
-import { tv } from "~/lib/tv"
-import { groupFocusVisibleHighlight } from "~/utils/tailwind"
+import { BiChevronRight } from "react-icons/bi"
 
 import type { FilterProps } from "../../../types/Filter"
 import { Button } from "../Button"
-import { Checkbox, CheckboxGroup } from "../Checkbox"
-import { DateRangeFilterInput } from "./DateRangeFilterInput"
 import { FilterDrawer } from "./FilterDrawer"
-
-const filterSectionLabelStyle = tv({
-  extend: groupFocusVisibleHighlight,
-})
-
-const FilterSectionButton = ({
-  label,
-  isOpen,
-  onToggle,
-}: {
-  label: string
-  isOpen: boolean
-  onToggle: () => void
-}) => {
-  const buttonRef = useRef<HTMLButtonElement>(null)
-  const { buttonProps } = useButton({ onPress: onToggle }, buttonRef)
-  const { focusProps } = useFocusRing()
-  const mergedProps = mergeProps(buttonProps, focusProps)
-
-  return (
-    <button
-      {...mergedProps}
-      ref={buttonRef}
-      className="group prose-headline-base-semibold flex w-full flex-row items-center justify-between gap-4 text-left text-base-content outline-0"
-    >
-      <label className={filterSectionLabelStyle()}>{label}</label>
-      <BiChevronDown
-        aria-hidden
-        className={`h-6 w-6 flex-shrink-0 text-base-content-strong transition-all duration-300 ease-in-out ${
-          isOpen ? "rotate-180" : "rotate-0"
-        }`}
-      />
-    </button>
-  )
-}
+import { FilterSection } from "./FilterSection"
 
 export const Filter = ({
   filters,
@@ -114,39 +73,26 @@ export const Filter = ({
             </Button>
           )}
         </div>
-        {filters.map(({ id, label, items, type }) => (
-          <CheckboxGroup
+        {filters.map((filter) => (
+          <FilterSection
+            key={filter.id}
+            filter={filter}
             className="border-b border-b-divider-medium py-4"
-            key={id}
-            value={appliedItemsById[id] ?? []}
-          >
-            <FilterSectionButton
-              label={label}
-              isOpen={showFilter[id] ?? false}
-              onToggle={() => updateFilterToggle(id)}
-            />
-
-            <div className={showFilter[id] ? "flex flex-col gap-2" : "hidden"}>
-              {items.map(({ id: itemId, label: itemLabel, count }) => (
-                <Checkbox
-                  key={itemId}
-                  className="w-fit cursor-pointer p-2"
-                  value={itemId}
-                  onChange={() => handleFilterToggle(id, itemId)}
-                >
-                  {itemLabel} ({count.toLocaleString()})
-                </Checkbox>
-              ))}
-              {type === "date" && (
-                <DateRangeFilterInput
-                  value={
-                    appliedFilters.find((filter) => filter.id === id)?.dateRange
-                  }
-                  onChange={(dateRange) => handleDateRangeChange(id, dateRange)}
-                />
-              )}
-            </div>
-          </CheckboxGroup>
+            headerVariant="sidebar"
+            commitMode="immediate"
+            isExpanded={showFilter[filter.id] ?? false}
+            onToggleExpanded={() => updateFilterToggle(filter.id)}
+            selectedItemIds={appliedItemsById[filter.id] ?? []}
+            dateRange={
+              appliedFilters.find(
+                (appliedFilter) => appliedFilter.id === filter.id,
+              )?.dateRange
+            }
+            onItemToggle={(itemId) => handleFilterToggle(filter.id, itemId)}
+            onDateRangeChange={(dateRange) =>
+              handleDateRangeChange(filter.id, dateRange)
+            }
+          />
         ))}
       </aside>
     </>

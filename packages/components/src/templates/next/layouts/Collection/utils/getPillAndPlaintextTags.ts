@@ -30,7 +30,7 @@ export const getPillAndPlaintextTags = (
 
   for (const tagCategory of tagCategories) {
     // NOTE: date filters have no `options`/`tagged` membership — their
-    // status pill is derived separately (see getDateFilterValues) and never
+    // status pill is derived separately (see resolveItemDateFields) and never
     // flows through pillTags/plaintextTags.
     if (!isTextFilter(tagCategory)) {
       continue

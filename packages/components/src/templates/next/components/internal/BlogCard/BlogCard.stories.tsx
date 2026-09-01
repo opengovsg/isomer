@@ -206,8 +206,8 @@ export const WithDateFilter: Story = {
         dateText: "27 Sep - 29 Sep 2026",
         date: daysFromNow(-5),
         endDate: daysFromNow(5),
+        statusLabels: DATE_FILTER_TAG_CATEGORIES[0]!.statusLabels,
       },
     ],
-    tagCategories: DATE_FILTER_TAG_CATEGORIES,
   },
 }

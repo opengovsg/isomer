@@ -1,4 +1,5 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
+import type { CollectionPagePageProps } from "~/types"
 import { isEmpty } from "lodash-es"
 import { useCallback, useMemo } from "react"
 import { useQueryParams } from "~/hooks/useQueryParams"
@@ -11,13 +12,18 @@ import {
   updateAppliedDateRange,
   updateAppliedFilters,
 } from "./utils"
+import { getTodayInSingapore } from "./utils/getDateFilterStatus"
 
 export const ITEMS_PER_PAGE = 10
 
 export const useCollection = ({
   items,
+  tagCategories,
+  today = getTodayInSingapore(),
 }: {
   items: ProcessedCollectionCardProps[]
+  tagCategories?: CollectionPagePageProps["tagCategories"]
+  today?: string
 }) => {
   const [queryParams, updateQueryParams] = useQueryParams()
 
@@ -88,7 +94,17 @@ export const useCollection = ({
     [appliedFilters, setAppliedFilters],
   )
 
-  const filteredItems = getFilteredItems(items, appliedFilters, searchValue)
+  const filteredItems = useMemo(
+    () =>
+      getFilteredItems(
+        items,
+        appliedFilters,
+        searchValue,
+        tagCategories,
+        today,
+      ),
+    [items, appliedFilters, searchValue, tagCategories, today],
+  )
   const paginatedItems = useMemo(
     () => getPaginatedItems(filteredItems, ITEMS_PER_PAGE, currPage),
     [currPage, filteredItems],
@@ -113,6 +129,7 @@ export const useCollection = ({
     setAppliedFilters,
     currPage,
     setCurrPage,
+    today,
   }
 }
 

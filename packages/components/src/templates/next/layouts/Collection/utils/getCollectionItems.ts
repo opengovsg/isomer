@@ -4,10 +4,7 @@ import type { CollectionPagePageProps } from "~/types/page"
 import { getParsedDate } from "~/utils/getParsedDate"
 import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
 
-import {
-  getDateFilterStaticEntries,
-  getValidatedDateTagged,
-} from "./getDateFilterValues"
+import { resolveItemDateFields } from "./dateFilterStatic"
 import { getPillAndPlaintextTags } from "./getPillAndPlaintextTags"
 import { getTagsFromTagged } from "./getTagsFromTagged"
 import { sortCollectionItems } from "./sortCollectionItems"
@@ -129,8 +126,7 @@ export const getCollectionItems = ({
       item.tagged,
       tagCategories,
     )
-    const dateTagged = getValidatedDateTagged(item.dateTagged, tagCategories)
-    const dateFilterDisplayEntries = getDateFilterStaticEntries(
+    const { dateTagged, dateFilterDisplayEntries } = resolveItemDateFields(
       item.dateTagged,
       tagCategories,
     )

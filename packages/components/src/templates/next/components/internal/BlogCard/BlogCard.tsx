@@ -1,5 +1,4 @@
 import type { CollectionCardProps } from "~/interfaces"
-import type { CollectionPagePageProps } from "~/types"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 
 import { EventDateFilterDisplay } from "../CollectionCard/EventDateFilterDisplay"
@@ -22,11 +21,9 @@ export const BlogCard = ({
   formattedDate,
   headingLevel,
   dateFilterDisplayEntries,
-  tagCategories,
 }: CollectionCardProps & {
   shouldShowDate?: boolean
   siteAssetsBaseUrl: string | undefined
-  tagCategories?: CollectionPagePageProps["tagCategories"]
   headingLevel: number
 }): JSX.Element => {
   const isExternalLink = !!referenceLinkHref && isExternalUrl(referenceLinkHref)
@@ -58,10 +55,7 @@ export const BlogCard = ({
         </p>
       )}
       <div className="flex flex-grow flex-col gap-3 text-base-content">
-        <EventDateFilterDisplay
-          entries={dateFilterDisplayEntries}
-          tagCategories={tagCategories}
-        >
+        <EventDateFilterDisplay entries={dateFilterDisplayEntries}>
           <Title
             title={itemTitle}
             isExternalLink={isExternalLink}

@@ -1,31 +1,35 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
+import type { CollectionPagePageProps } from "~/types"
+import { isDateFilter } from "~/types/page"
 
 import type { AppliedFilter } from "../../../types/Filter"
 import { FILTER_ID_YEAR, NO_SPECIFIED_YEAR_FILTER_ID } from "./constants"
 import { getDateFilterStatus, getTodayInSingapore } from "./getDateFilterStatus"
 import { normalizeCollectionSearchText } from "./normalizeCollectionSearchText"
 
+const getDateFilterIds = (
+  tagCategories?: CollectionPagePageProps["tagCategories"],
+): Set<string> => {
+  if (!tagCategories) {
+    return new Set()
+  }
+
+  return new Set(
+    tagCategories.filter(isDateFilter).map((category) => category.id),
+  )
+}
+
 export const getFilteredItems = (
   items: ProcessedCollectionCardProps[],
   appliedFilters: AppliedFilter[],
   searchValue: string,
+  tagCategories?: CollectionPagePageProps["tagCategories"],
+  today: string = getTodayInSingapore(),
 ): ProcessedCollectionCardProps[] => {
   const normalizedSearchValue =
     searchValue !== "" ? normalizeCollectionSearchText(searchValue) : ""
 
-  const today = getTodayInSingapore()
-
-  // NOTE: a filter id counts as "date-type" if any item carries a raw
-  // `dateTagged` entry for it. Date filters are handled entirely in
-  // Step 4 below rather than via Step 3's tag-membership reduce — unlike
-  // text filters, a date filter's bucket ids aren't discovered from items
-  // via `getTagFilters`' generic unique-value scan (that scan would also
-  // pick up date-derived values if they were merged into `item.tags`,
-  // producing a second, malformed Filter for the same id), and range
-  // matching needs the raw dates, which `item.tags` doesn't carry at all.
-  const dateFilterIds = new Set(
-    items.flatMap((item) => item.dateTagged?.map(({ id }) => id) ?? []),
-  )
+  const dateFilterIds = getDateFilterIds(tagCategories)
 
   return items.filter((item) => {
     // Step 1: Filter based on search value
