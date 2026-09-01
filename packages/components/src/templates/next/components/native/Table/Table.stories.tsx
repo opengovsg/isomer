@@ -2015,6 +2015,7 @@ export const WithBackgroundColors: Story = {
         content: [
           {
             type: "tableHeader",
+            attrs: { backgroundColor: "pink" },
             content: [
               {
                 type: "paragraph",
@@ -2024,6 +2025,7 @@ export const WithBackgroundColors: Story = {
           },
           {
             type: "tableHeader",
+            attrs: { backgroundColor: "yellow" },
             content: [
               {
                 type: "paragraph",
@@ -2033,6 +2035,7 @@ export const WithBackgroundColors: Story = {
           },
           {
             type: "tableHeader",
+            attrs: { backgroundColor: "green" },
             content: [
               {
                 type: "paragraph",
@@ -2042,6 +2045,7 @@ export const WithBackgroundColors: Story = {
           },
           {
             type: "tableHeader",
+            attrs: { backgroundColor: "blue" },
             content: [
               {
                 type: "paragraph",
@@ -2051,6 +2055,7 @@ export const WithBackgroundColors: Story = {
           },
           {
             type: "tableHeader",
+            attrs: { backgroundColor: "purple" },
             content: [
               {
                 type: "paragraph",
@@ -2161,17 +2166,7 @@ export const WithBackgroundColors: Story = {
         content: [
           {
             type: "tableHeader",
-            attrs: { colspan: 3 },
-            content: [
-              {
-                type: "paragraph",
-                content: [{ type: "text", text: "Default header" }],
-              },
-            ],
-          },
-          {
-            type: "tableHeader",
-            attrs: { colspan: 3 },
+            attrs: { colspan: 6 },
             content: [
               {
                 type: "paragraph",

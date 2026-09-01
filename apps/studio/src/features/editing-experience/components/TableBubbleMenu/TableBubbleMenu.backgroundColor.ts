@@ -5,17 +5,7 @@ import {
 } from "@opengovsg/isomer-components"
 import { CellSelection } from "@tiptap/pm/tables"
 
-export interface SelectionBackgroundColorState {
-  /** False when selected cells do not all share the same background token. */
-  isUniform: boolean
-  /** Shared token when `isUniform`; otherwise null (do not treat as “None”). */
-  uniformColor: TableCellBackgroundColorToken | null
-}
-
-/** One CellSelection walk for uniform token detection. */
-export const getSelectionBackgroundColorState = (
-  selection: CellSelection,
-): SelectionBackgroundColorState => {
+export const getSelectionBackgroundColorState = (selection: CellSelection) => {
   let seenColor = false
   let isUniform = true
   let uniformColor: TableCellBackgroundColorToken | null = null
