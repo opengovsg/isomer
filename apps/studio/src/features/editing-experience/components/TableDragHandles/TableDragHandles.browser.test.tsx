@@ -211,6 +211,24 @@ describe("TableDragHandles", () => {
     })
   })
 
+  it("sits column handles flush with the caption row", async () => {
+    // Arrange
+    const { container, getByText } = await renderHarness()
+    const captionRow = getByText("Test table").parentElement
+    if (!captionRow) throw new Error("caption row not found")
+
+    // Act
+    const handle = await waitForHandle(container, "column", 1)
+
+    // Assert
+    expect(
+      Math.abs(
+        handle.getBoundingClientRect().top -
+          captionRow.getBoundingClientRect().bottom,
+      ),
+    ).toBeLessThan(1)
+  })
+
   it("places the row handle outside the row", async () => {
     // Arrange
     const { container } = await renderHarness()
