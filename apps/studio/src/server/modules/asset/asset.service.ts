@@ -185,6 +185,22 @@ export interface DeleteAssetByUrlResult {
 const ASSET_KEY_PATTERN =
   /^\d+\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/[^/]+$/i
 
+// `decodeURIComponent` throws on a raw '%' that isn't part of a valid
+// escape — but filenamify doesn't strip '%' from filenames, so a
+// legitimately uploaded "cover-100%.png" produces a URL `decodeURIComponent`
+// can't parse whole. Decoding only maximal runs of valid %XX triplets (a
+// multi-byte UTF-8 character is exactly such a run, e.g. "%C3%A9") and
+// leaving everything else — including a stray '%' — untouched handles both
+// without throwing.
+const decodePercentEncodedRuns = (input: string): string =>
+  input.replace(/(?:%[0-9a-fA-F]{2})+/g, (run) => {
+    try {
+      return decodeURIComponent(run)
+    } catch {
+      return run
+    }
+  })
+
 // Parses a full asset URL (e.g.
 // https://isomer-user-content.by.gov.sg/36/uuid/picture.png) into its S3 key.
 // Only URLs on the configured asset domain, with a pathname in the canonical
@@ -216,12 +232,8 @@ export const parseAssetUrlToKey = (url: string): string | null => {
     return null
   }
 
-  try {
-    const key = decodeURIComponent(parsed.pathname.slice(1))
-    return ASSET_KEY_PATTERN.test(key) ? key : null
-  } catch {
-    return null
-  }
+  const key = decodePercentEncodedRuns(parsed.pathname.slice(1))
+  return ASSET_KEY_PATTERN.test(key) ? key : null
 }
 
 export const getSiteIdFromKey = (key: string): string | undefined =>

@@ -378,6 +378,24 @@ describe("asset.service", () => {
       expect(result).toBe(`36/${UUID}/picture.png`)
     })
 
+    it("should preserve a literal '%' rather than throwing on a malformed escape", () => {
+      // filenamify doesn't strip '%' from filenames, so a legitimately
+      // uploaded "cover-100%.png" produces a URL with a raw '%' that isn't
+      // part of a valid escape — decodeURIComponent would throw on the
+      // whole string if applied directly.
+      const result = parseAssetUrlToKey(
+        `https://${ASSET_DOMAIN}/36/${UUID}/cover-100%.png`,
+      )
+      expect(result).toBe(`36/${UUID}/cover-100%.png`)
+    })
+
+    it("should decode a multi-byte percent-encoded character", () => {
+      const result = parseAssetUrlToKey(
+        `https://${ASSET_DOMAIN}/36/${UUID}/caf%C3%A9.png`,
+      )
+      expect(result).toBe(`36/${UUID}/café.png`)
+    })
+
     it("should trim surrounding whitespace before parsing", () => {
       const result = parseAssetUrlToKey(
         `  https://${ASSET_DOMAIN}/36/${UUID}/file.png  `,
