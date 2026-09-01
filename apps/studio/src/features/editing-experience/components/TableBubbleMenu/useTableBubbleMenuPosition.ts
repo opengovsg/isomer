@@ -5,13 +5,10 @@ import { autoUpdate } from "@floating-ui/dom"
 import { CellSelection, selectedRect } from "@tiptap/pm/tables"
 import { useEffect, useRef, useState } from "react"
 
-import {
-  computeTableBubbleMenuPlacement,
-  computeTableBubbleMenuPosition,
-  getTableBubbleMenuDimensions,
-  type TableBubbleMenuPlacement,
-  type TableBubbleMenuPosition,
-} from "./tableBubbleMenuPosition"
+interface TableBubbleMenuPosition {
+  x: number
+  y: number
+}
 
 const getEditorScrollParent = (view: EditorView): HTMLElement | Window => {
   let element: HTMLElement | null = view.dom.parentElement
@@ -55,6 +52,21 @@ const getBottomRightCellRect = (
   return dom.getBoundingClientRect()
 }
 
+const computeMenuPosition = (
+  cellRect: DOMRect,
+  menuEl: HTMLElement,
+): TableBubbleMenuPosition | null => {
+  const triggerEl = menuEl.querySelector("[data-table-bubble-menu-trigger]")
+  if (!(triggerEl instanceof HTMLElement)) return null
+
+  const { offsetWidth: triggerWidth, offsetHeight: triggerHeight } = triggerEl
+
+  return {
+    x: cellRect.right - triggerWidth / 2 - triggerEl.offsetLeft,
+    y: cellRect.bottom - triggerHeight / 2 - triggerEl.offsetTop,
+  }
+}
+
 const createVirtualReference = (
   getView: () => EditorView,
   getState: () => EditorState,
@@ -75,31 +87,16 @@ const createPositionUpdater = (
   getView: () => EditorView,
   getState: () => EditorState,
   menuEl: HTMLElement,
-  isActivated: boolean,
   onPosition: (position: TableBubbleMenuPosition) => void,
 ): (() => void) => {
   return () => {
     const cellRect = getBottomRightCellRect(getView(), getState())
     if (!cellRect) return
 
-    const dimensions = getTableBubbleMenuDimensions(menuEl, isActivated)
-    if (!dimensions) return
-
-    const placement = computeTableBubbleMenuPlacement({
-      cellRect,
-      dimensions,
-      isActivated,
-    })
-
-    const coordinates = computeTableBubbleMenuPosition({
-      cellRect,
-      menuEl,
-      dimensions,
-      placement,
-    })
-    if (!coordinates) return
-
-    onPosition({ ...coordinates, placement })
+    const nextPosition = computeMenuPosition(cellRect, menuEl)
+    if (nextPosition) {
+      onPosition(nextPosition)
+    }
   }
 }
 
@@ -127,7 +124,6 @@ interface UseTableBubbleMenuPositionOptions {
   editor: Editor
   menuEl: HTMLDivElement | null
   show: boolean
-  isActivated: boolean
   selection: Selection
 }
 
@@ -135,7 +131,6 @@ export const useTableBubbleMenuPosition = ({
   editor,
   menuEl,
   show,
-  isActivated,
   selection,
 }: UseTableBubbleMenuPositionOptions): TableBubbleMenuPosition | null => {
   const editorRef = useRef(editor)
@@ -160,7 +155,6 @@ export const useTableBubbleMenuPosition = ({
       getView,
       getState,
       menuEl,
-      isActivated,
       setPosition,
     )
 
@@ -172,17 +166,11 @@ export const useTableBubbleMenuPosition = ({
       updatePosition,
     )
 
-    const resizeObserver = new ResizeObserver(updatePosition)
-    resizeObserver.observe(menuEl)
-
     return () => {
       stopAutoUpdate()
       detachScrollListeners()
-      resizeObserver.disconnect()
     }
-  }, [show, selection, menuEl, isActivated])
+  }, [show, selection, menuEl])
 
   return position
 }
-
-export type { TableBubbleMenuPlacement, TableBubbleMenuPosition }

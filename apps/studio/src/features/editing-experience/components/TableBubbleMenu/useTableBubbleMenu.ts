@@ -28,11 +28,8 @@ export interface TableBubbleMenuUiState {
   isActivated: boolean
   menuRef: RefCallback<HTMLDivElement>
   triggerRef: RefObject<HTMLButtonElement>
-  position: {
-    x: number
-    y: number
-    placement: "above" | "below"
-  } | null
+  popoverContentRef: RefCallback<HTMLElement>
+  position: { x: number; y: number } | null
   onMenuFocus: () => void
   onMenuBlur: (event: FocusEvent<HTMLElement>) => void
   toggleMenu: () => void
@@ -56,12 +53,17 @@ export const useTableBubbleMenu = (
   { isDragReordering = false }: UseTableBubbleMenuOptions = {},
 ): TableBubbleMenuUiState => {
   const menuElRef = useRef<HTMLDivElement | null>(null)
+  const popoverContentElRef = useRef<HTMLElement | null>(null)
   const [menuEl, setMenuEl] = useState<HTMLDivElement | null>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
 
   const menuRef = useCallback((node: HTMLDivElement | null) => {
     menuElRef.current = node
     setMenuEl(node)
+  }, [])
+
+  const popoverContentRef = useCallback((node: HTMLElement | null) => {
+    popoverContentElRef.current = node
   }, [])
 
   const [isActivated, setIsActivated] = useState(false)
@@ -106,7 +108,6 @@ export const useTableBubbleMenu = (
     editor,
     menuEl,
     show,
-    isActivated,
     selection,
   })
 
@@ -124,7 +125,9 @@ export const useTableBubbleMenu = (
 
   useEffect(() => {
     const isMenuElement = (target: EventTarget | null) =>
-      isElement(target) && (menuElRef.current?.contains(target) ?? false)
+      isElement(target) &&
+      ((menuElRef.current?.contains(target) ?? false) ||
+        (popoverContentElRef.current?.contains(target) ?? false))
 
     const isWithinFocusScope = (target: EventTarget | null) =>
       isElement(target) &&
@@ -153,6 +156,7 @@ export const useTableBubbleMenu = (
     if (
       isElement(relatedTarget) &&
       ((menuElRef.current?.contains(relatedTarget) ?? false) ||
+        (popoverContentElRef.current?.contains(relatedTarget) ?? false) ||
         editor.view.dom.contains(relatedTarget))
     ) {
       return
@@ -181,6 +185,7 @@ export const useTableBubbleMenu = (
     isActivated,
     menuRef,
     triggerRef,
+    popoverContentRef,
     position,
     onMenuFocus,
     onMenuBlur,
