@@ -20,12 +20,15 @@ interface LiveStatusBadgesProps {
   lastPublishedAt: Date | null
 }
 
+// liveTemplate (a Folder/Collection whose own landing page isn't published,
+// but something nested inside it still is) is shown identically to live —
+// callers no longer need to distinguish the two in the UI.
 const LIVE_STATUS_CONFIG: Record<
   LiveStatus,
   { label: string; colorScheme: string }
 > = {
   live: { label: "Published", colorScheme: "success" },
-  liveTemplate: { label: "Live · Template", colorScheme: "success" },
+  liveTemplate: { label: "Published", colorScheme: "success" },
   notLive: { label: "Unpublished", colorScheme: "neutral" },
 }
 
