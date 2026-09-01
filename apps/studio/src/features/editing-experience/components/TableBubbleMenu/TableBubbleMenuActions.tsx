@@ -6,7 +6,6 @@ import { Button, Switch } from "@opengovsg/design-system-react"
 import {
   TABLE_CELL_BACKGROUND_COLORS,
   TABLE_CELL_BACKGROUND_COLOR_TOKENS,
-  TABLE_CELL_BRAND_BACKGROUND_COLOR_TOKEN,
 } from "@opengovsg/isomer-components"
 import {
   CellSelection,
@@ -195,24 +194,6 @@ const ColorSwatch = ({
   </Button>
 )
 
-const BrandColorSwatch = ({
-  brandCanvasInverseColor,
-  isActive,
-  onSetColor,
-}: {
-  brandCanvasInverseColor: string
-  isActive: boolean
-  onSetColor: (color: TableCellBackgroundColorToken | null) => void
-}) => (
-  <ColorSwatch
-    label="Brand"
-    fill={brandCanvasInverseColor}
-    borderColor={brandCanvasInverseColor}
-    isActive={isActive}
-    onClick={() => onSetColor(TABLE_CELL_BRAND_BACKGROUND_COLOR_TOKEN)}
-  />
-)
-
 const PaletteColorSwatch = ({
   color,
   isActive,
@@ -232,19 +213,13 @@ const PaletteColorSwatch = ({
 )
 
 const BackgroundColorSection = ({
-  brandCanvasInverseColor,
   state,
   onSetColor,
 }: {
-  brandCanvasInverseColor: string
   state: SelectionBackgroundColorState
   onSetColor: (color: TableCellBackgroundColorToken | null) => void
 }) => {
-  const {
-    isHeaderOnly: isHeaderSelection,
-    isUniform,
-    uniformColor: activeColor,
-  } = state
+  const { isUniform, uniformColor: activeColor } = state
 
   return (
     <VStack align="stretch" gap="0">
@@ -265,25 +240,14 @@ const BackgroundColorSection = ({
           isActive={isUniform && activeColor === null}
           onClick={() => onSetColor(null)}
         />
-        {isHeaderSelection ? (
-          <BrandColorSwatch
-            brandCanvasInverseColor={brandCanvasInverseColor}
-            isActive={
-              isUniform &&
-              activeColor === TABLE_CELL_BRAND_BACKGROUND_COLOR_TOKEN
-            }
+        {TABLE_CELL_BACKGROUND_COLOR_TOKENS.map((color) => (
+          <PaletteColorSwatch
+            key={color}
+            color={color}
+            isActive={isUniform && activeColor === color}
             onSetColor={onSetColor}
           />
-        ) : (
-          TABLE_CELL_BACKGROUND_COLOR_TOKENS.map((color) => (
-            <PaletteColorSwatch
-              key={color}
-              color={color}
-              isActive={isUniform && activeColor === color}
-              onSetColor={onSetColor}
-            />
-          ))
-        )}
+        ))}
       </Flex>
     </VStack>
   )
@@ -294,12 +258,10 @@ const BackgroundColorSection = ({
 const BackgroundColor = ({
   editor,
   kind,
-  brandCanvasInverseColor,
   onColorSet,
 }: {
   editor: Editor
   kind: SelectionKind
-  brandCanvasInverseColor: string
   onColorSet: () => void
 }) => {
   if (kind === "none" || kind === "table") return null
@@ -312,7 +274,6 @@ const BackgroundColor = ({
 
   return (
     <BackgroundColorSection
-      brandCanvasInverseColor={brandCanvasInverseColor}
       state={state}
       onSetColor={(color) => {
         setSelectedCellsBackgroundColor(editor, color)
@@ -562,21 +523,14 @@ const SelectionActions = ({
 export const TableBubbleMenuActions = ({
   editor,
   kind,
-  brandCanvasInverseColor,
   onColorSet,
 }: {
   editor: Editor
   kind: SelectionKind
-  brandCanvasInverseColor: string
   onColorSet: () => void
 }) => (
   <>
     <SelectionActions editor={editor} kind={kind} />
-    <BackgroundColor
-      editor={editor}
-      kind={kind}
-      brandCanvasInverseColor={brandCanvasInverseColor}
-      onColorSet={onColorSet}
-    />
+    <BackgroundColor editor={editor} kind={kind} onColorSet={onColorSet} />
   </>
 )

@@ -5,12 +5,7 @@ import type { EditorMenuBar } from "~/components/PageEditor/MenuBar/MenuBar"
 import { Box, VStack } from "@chakra-ui/react"
 import { EditorContent } from "@tiptap/react"
 import { useMemo } from "react"
-import { useOptionalEditorDrawerSiteId } from "~/contexts/EditorDrawerContext"
-import {
-  DEFAULT_BRAND_CANVAS_INVERSE_COLOR,
-  TableBubbleMenu,
-} from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu"
-import { useSiteThemeCssVars } from "~/features/preview/hooks/useSiteThemeCssVars"
+import { TableBubbleMenu } from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu"
 
 const EditorContainer = ({
   children,
@@ -67,27 +62,6 @@ const EditorContentWrapper = ({
   )
 }
 
-const TableBubbleMenuThemed = ({
-  editor,
-  siteId,
-}: {
-  editor: TiptapEditor
-  siteId: number
-}) => {
-  const themeCssVars = useSiteThemeCssVars({ siteId })
-  const cssVars = themeCssVars as Record<string, string> | undefined
-  const brandCanvasInverseColor =
-    cssVars?.["--color-brand-canvas-inverse"] ??
-    DEFAULT_BRAND_CANVAS_INVERSE_COLOR
-
-  return (
-    <TableBubbleMenu
-      editor={editor}
-      brandCanvasInverseColor={brandCanvasInverseColor}
-    />
-  )
-}
-
 interface EditorProps {
   menubar: EditorMenuBar
   editor: TiptapEditor
@@ -95,7 +69,6 @@ interface EditorProps {
 }
 
 export const Editor = ({ editor, menubar, isNested }: EditorProps) => {
-  const siteId = useOptionalEditorDrawerSiteId()
   const isTableEditor = editor.extensionManager.extensions.some(
     (ext) => ext.name === "table",
   )
@@ -103,12 +76,7 @@ export const Editor = ({ editor, menubar, isNested }: EditorProps) => {
   return (
     <EditorContainer isNested={isNested}>
       {menubar({ editor })}
-      {isTableEditor &&
-        (siteId !== undefined ? (
-          <TableBubbleMenuThemed editor={editor} siteId={siteId} />
-        ) : (
-          <TableBubbleMenu editor={editor} />
-        ))}
+      {isTableEditor && <TableBubbleMenu editor={editor} />}
       <EditorContentWrapper editor={editor} />
     </EditorContainer>
   )

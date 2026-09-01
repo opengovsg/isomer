@@ -6,17 +6,12 @@ import { BiPencil } from "react-icons/bi"
 import { TableBubbleMenuActions } from "./TableBubbleMenuActions"
 import { useTableBubbleMenu } from "./useTableBubbleMenu"
 
-/** Matches packages/components default when site theme is unavailable. */
-export const DEFAULT_BRAND_CANVAS_INVERSE_COLOR = "#00405f"
-
 export interface TableBubbleMenuProps {
   editor: Editor
-  brandCanvasInverseColor?: string
 }
 
 export const TableBubbleMenu = memo(function TableBubbleMenu({
   editor,
-  brandCanvasInverseColor = DEFAULT_BRAND_CANVAS_INVERSE_COLOR,
 }: TableBubbleMenuProps) {
   const {
     show,
@@ -71,7 +66,6 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
             <TableBubbleMenuActions
               editor={editor}
               kind={kind}
-              brandCanvasInverseColor={brandCanvasInverseColor}
               onColorSet={deactivateMenu}
             />
           </VStack>
