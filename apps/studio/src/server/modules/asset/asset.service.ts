@@ -178,15 +178,28 @@ export interface DeleteAssetByUrlResult {
   error?: string
 }
 
+// Matches the key shape produced by getFileKey: `${siteId}/${uuid}/${fileName}`.
+// Rejects anything else (extra/missing path segments, a non-UUID folder) so an
+// admin-submitted URL can only ever resolve to a key in that canonical shape,
+// never to an arbitrary object that happens to share a pathname.
+const ASSET_KEY_PATTERN =
+  /^\d+\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/[^/]+$/i
+
 // Parses a full asset URL (e.g.
-// https://isomer-user-content.by.gov.sg/36/uuid/picture.png) into its S3 key
-// by dropping the leading slash from the pathname and decoding percent-encoded
-// segments (e.g. %20 -> space). Mirrors the key shape produced by getFileKey:
-// `${siteId}/${uuid}/${fileName}`.
+// https://isomer-user-content.by.gov.sg/36/uuid/picture.png) into its S3 key.
+// Only URLs on the configured asset domain, with a pathname in the canonical
+// `${siteId}/${uuid}/${fileName}` shape, resolve to a key — anything else
+// (wrong host, extra path segments, a non-UUID folder) returns null so a
+// mistyped or malicious URL can't be mapped onto an unrelated S3 object.
 export const parseAssetUrlToKey = (url: string): string | null => {
   try {
     const parsed = new URL(url.trim())
-    return decodeURIComponent(parsed.pathname.slice(1))
+    if (parsed.hostname !== env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME) {
+      return null
+    }
+
+    const key = decodeURIComponent(parsed.pathname.slice(1))
+    return ASSET_KEY_PATTERN.test(key) ? key : null
   } catch {
     return null
   }
@@ -212,11 +225,15 @@ export const deleteAssetsByUrl = async (
         await markFileAsDeleted({ key })
         return { url, key, success: true }
       } catch (error) {
+        logger.error(
+          { url, key, error },
+          "Failed to soft-delete asset via deleteAssetsByUrl",
+        )
         return {
           url,
           key,
           success: false,
-          error: error instanceof Error ? error.message : "Unknown error",
+          error: "Failed to delete asset",
         }
       }
     }),

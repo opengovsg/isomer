@@ -536,6 +536,12 @@ describe("asset.router", async () => {
   })
 
   describe("deleteAssetsByUrl", () => {
+    // Matches NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME in .env.test — parseAssetUrlToKey
+    // only resolves a key for URLs on this host with a `siteId/uuid/filename` path.
+    const ASSET_DOMAIN = "user-content.example.com"
+    const UUID_1 = "11111111-1111-1111-1111-111111111111"
+    const UUID_2 = "22222222-2222-2222-2222-222222222222"
+
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -543,7 +549,7 @@ describe("asset.router", async () => {
 
       // Act
       const result = unauthedCaller.deleteAssetsByUrl({
-        urls: ["https://example.com/1/uuid/a.png"],
+        urls: [`https://${ASSET_DOMAIN}/1/${UUID_1}/a.png`],
       })
 
       // Assert
@@ -555,7 +561,7 @@ describe("asset.router", async () => {
     it("should throw 403 if user is not an Isomer Core Admin", async () => {
       // Act
       const result = caller.deleteAssetsByUrl({
-        urls: ["https://example.com/1/uuid/a.png"],
+        urls: [`https://${ASSET_DOMAIN}/1/${UUID_1}/a.png`],
       })
 
       // Assert
@@ -578,7 +584,7 @@ describe("asset.router", async () => {
 
       // Act
       const result = caller.deleteAssetsByUrl({
-        urls: ["https://example.com/1/uuid/a.png"],
+        urls: [`https://${ASSET_DOMAIN}/1/${UUID_1}/a.png`],
       })
 
       // Assert
@@ -603,8 +609,8 @@ describe("asset.router", async () => {
         invalidationId: "INV123",
       })
       const urls = [
-        "https://example.com/1/uuid1/a.png",
-        "https://example.com/2/uuid2/b.png",
+        `https://${ASSET_DOMAIN}/1/${UUID_1}/a.png`,
+        `https://${ASSET_DOMAIN}/2/${UUID_2}/b.png`,
       ]
 
       // Act
@@ -612,8 +618,8 @@ describe("asset.router", async () => {
 
       // Assert
       expect(result.results).toEqual([
-        { url: urls[0], key: "1/uuid1/a.png", success: true },
-        { url: urls[1], key: "2/uuid2/b.png", success: true },
+        { url: urls[0], key: `1/${UUID_1}/a.png`, success: true },
+        { url: urls[1], key: `2/${UUID_2}/b.png`, success: true },
       ])
       expect(result.invalidation).toEqual({
         success: true,
@@ -633,7 +639,7 @@ describe("asset.router", async () => {
       })
       const tooManyUrls = Array.from(
         { length: MAX_DELETE_ASSET_URLS + 1 },
-        (_, i) => `https://example.com/1/uuid-${i}/file-${i}.png`,
+        (_, i) => `https://${ASSET_DOMAIN}/1/${UUID_1}/file-${i}.png`,
       )
 
       // Act

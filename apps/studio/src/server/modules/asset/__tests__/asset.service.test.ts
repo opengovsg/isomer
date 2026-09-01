@@ -328,25 +328,29 @@ describe("asset.service", () => {
   })
 
   describe("parseAssetUrlToKey", () => {
+    // Matches NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME in .env.test.
+    const ASSET_DOMAIN = "user-content.example.com"
+    const UUID = "11111111-1111-1111-1111-111111111111"
+
     it("should extract the key from a well-formed asset URL", () => {
       const result = parseAssetUrlToKey(
-        "https://isomer-user-content.by.gov.sg/36/uuid/picture.png",
+        `https://${ASSET_DOMAIN}/36/${UUID}/picture.png`,
       )
-      expect(result).toBe("36/uuid/picture.png")
+      expect(result).toBe(`36/${UUID}/picture.png`)
     })
 
     it("should decode percent-encoded characters in the path", () => {
       const result = parseAssetUrlToKey(
-        "https://example.com/36/uuid/my%20file.png",
+        `https://${ASSET_DOMAIN}/36/${UUID}/my%20file.png`,
       )
-      expect(result).toBe("36/uuid/my file.png")
+      expect(result).toBe(`36/${UUID}/my file.png`)
     })
 
     it("should trim surrounding whitespace before parsing", () => {
       const result = parseAssetUrlToKey(
-        "  https://example.com/36/uuid/file.png  ",
+        `  https://${ASSET_DOMAIN}/36/${UUID}/file.png  `,
       )
-      expect(result).toBe("36/uuid/file.png")
+      expect(result).toBe(`36/${UUID}/file.png`)
     })
 
     it("should return null for a malformed URL", () => {
@@ -355,6 +359,27 @@ describe("asset.service", () => {
 
     it("should return null for an empty string", () => {
       expect(parseAssetUrlToKey("")).toBeNull()
+    })
+
+    it("should return null when the URL is on a different host", () => {
+      const result = parseAssetUrlToKey(
+        `https://evil.example.com/36/${UUID}/picture.png`,
+      )
+      expect(result).toBeNull()
+    })
+
+    it("should return null when the path has extra segments", () => {
+      const result = parseAssetUrlToKey(
+        `https://${ASSET_DOMAIN}/36/${UUID}/nested/picture.png`,
+      )
+      expect(result).toBeNull()
+    })
+
+    it("should return null when the folder segment is not a UUID", () => {
+      const result = parseAssetUrlToKey(
+        `https://${ASSET_DOMAIN}/36/uuid/picture.png`,
+      )
+      expect(result).toBeNull()
     })
   })
 
@@ -373,11 +398,16 @@ describe("asset.service", () => {
       vi.clearAllMocks()
     })
 
+    // Matches NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME in .env.test.
+    const ASSET_DOMAIN = "user-content.example.com"
+    const UUID_1 = "11111111-1111-1111-1111-111111111111"
+    const UUID_2 = "22222222-2222-2222-2222-222222222222"
+
     it("should mark each valid URL's key as deleted and report success", async () => {
       // Arrange
       const urls = [
-        "https://example.com/36/uuid1/a.png",
-        "https://example.com/37/uuid2/b.png",
+        `https://${ASSET_DOMAIN}/36/${UUID_1}/a.png`,
+        `https://${ASSET_DOMAIN}/37/${UUID_2}/b.png`,
       ]
 
       // Act
@@ -385,8 +415,8 @@ describe("asset.service", () => {
 
       // Assert
       expect(results).toEqual([
-        { url: urls[0], key: "36/uuid1/a.png", success: true },
-        { url: urls[1], key: "37/uuid2/b.png", success: true },
+        { url: urls[0], key: `36/${UUID_1}/a.png`, success: true },
+        { url: urls[1], key: `37/${UUID_2}/b.png`, success: true },
       ])
       expect(deleteFile).toHaveBeenCalledTimes(2)
     })
@@ -402,27 +432,28 @@ describe("asset.service", () => {
       expect(deleteFile).not.toHaveBeenCalled()
     })
 
-    it("should report per-URL failure when deleteFile rejects, without failing other URLs", async () => {
+    it("should report a generic failure message when deleteFile rejects, without failing other URLs", async () => {
       // Arrange
       vi.mocked(deleteFile)
         .mockResolvedValueOnce(undefined)
         .mockRejectedValueOnce(new Error("S3 unavailable"))
       const urls = [
-        "https://example.com/36/uuid1/a.png",
-        "https://example.com/37/uuid2/b.png",
+        `https://${ASSET_DOMAIN}/36/${UUID_1}/a.png`,
+        `https://${ASSET_DOMAIN}/37/${UUID_2}/b.png`,
       ]
 
       // Act
       const results = await deleteAssetsByUrl(urls)
 
-      // Assert
+      // Assert — the underlying provider error is logged server-side, not
+      // returned to the caller.
       expect(results).toEqual([
-        { url: urls[0], key: "36/uuid1/a.png", success: true },
+        { url: urls[0], key: `36/${UUID_1}/a.png`, success: true },
         {
           url: urls[1],
-          key: "37/uuid2/b.png",
+          key: `37/${UUID_2}/b.png`,
           success: false,
-          error: "S3 unavailable",
+          error: "Failed to delete asset",
         },
       ])
     })
