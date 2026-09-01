@@ -1065,6 +1065,7 @@ describe("folder.router", async () => {
         liveStatus: "notLive",
         scheduledAt: null,
         scheduledAction: null,
+        lastPublishedAt: null,
       })
       await expect(
         db.selectFrom("AuditLog").selectAll().execute(),

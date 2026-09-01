@@ -49,6 +49,7 @@ const getColumns = ({ siteId }: ResourceTableProps) => [
         liveStatus={row.original.liveStatus}
         scheduledAt={row.original.scheduledAt}
         scheduledAction={row.original.scheduledAction}
+        lastPublishedAt={row.original.lastPublishedAt}
       />
     ),
   }),

@@ -15,6 +15,9 @@ interface LiveStatusBadgesProps {
   liveStatus: LiveStatus
   scheduledAt: Date | null
   scheduledAction: ScheduledAction | null
+  // The resource's most recent publish, regardless of current live status —
+  // null if it's never been published.
+  lastPublishedAt: Date | null
 }
 
 const LIVE_STATUS_CONFIG: Record<
@@ -30,18 +33,41 @@ export const LiveStatusBadges = ({
   liveStatus,
   scheduledAt,
   scheduledAction,
+  lastPublishedAt,
 }: LiveStatusBadgesProps): JSX.Element => {
   const { label, colorScheme } = LIVE_STATUS_CONFIG[liveStatus]
 
+  const livePill = (
+    <PillBadge size="xs" variant="subtle" colorScheme={colorScheme}>
+      <BadgeLeftIcon fontSize="0.5rem" as={BiSolidCircle} />
+      <Text textStyle="legal">{label}</Text>
+    </PillBadge>
+  )
+
   return (
     <HStack spacing="0.5rem">
-      <PillBadge size="xs" variant="subtle" colorScheme={colorScheme}>
-        <BadgeLeftIcon fontSize="0.5rem" as={BiSolidCircle} />
-        <Text textStyle="legal">{label}</Text>
-      </PillBadge>
+      <Tooltip
+        label={
+          lastPublishedAt
+            ? `Last published on ${format(lastPublishedAt, "MMMM d, yyyy h:mm a")}`
+            : "Never published"
+        }
+        placement="bottom"
+        hasArrow
+      >
+        {livePill}
+      </Tooltip>
       {scheduledAt && (
         <Tooltip
-          label={format(scheduledAt, "MMMM d, yyyy h:mm a")}
+          label={
+            <>
+              {scheduledAction === ScheduledAction.Unpublish
+                ? "Will be unpublished on"
+                : "Will be published on"}
+              <br />
+              {format(scheduledAt, "MMMM d, yyyy h:mm a")}
+            </>
+          }
           placement="bottom"
           hasArrow
         >

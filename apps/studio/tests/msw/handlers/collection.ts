@@ -19,6 +19,7 @@ export const DEFAULT_COLLECTION_ITEMS = [
     scheduledAt: null,
     scheduledBy: null,
     scheduledAction: null,
+    lastPublishedAt: null,
     liveStatus: "notLive" as const,
   },
   {
@@ -36,6 +37,7 @@ export const DEFAULT_COLLECTION_ITEMS = [
     scheduledAt: null,
     scheduledBy: null,
     scheduledAction: null,
+    lastPublishedAt: null,
     liveStatus: "notLive" as const,
   },
 ]
