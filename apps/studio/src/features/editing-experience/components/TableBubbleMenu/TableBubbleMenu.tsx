@@ -45,7 +45,7 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
       <Box
         ref={menuRef}
         data-table-bubble-menu
-        // Lets focus move between this portaled menu and Chakra modals (e.g. Table Settings).
+        // Skip Chakra focus trap so Tab can reach Table Settings and back.
         data-no-focus-lock
         position="fixed"
         left={position ? `${position.x}px` : 0}
