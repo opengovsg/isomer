@@ -5,9 +5,10 @@ import posthog from "posthog-js"
 import { Can } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
 import { trpc } from "~/utils/trpc"
+import { ScheduledAction } from "~prisma/generated/generatedEnums"
 
-import { PublishModal } from "./PublishingModal"
 import { CancelSchedulePublishIndicator } from "./PublishingModal/CancelSchedulePublishIndicator"
+import { PublishOrUnpublishModal } from "./PublishOrUnpublishModal"
 
 interface PublishButtonProps extends ButtonProps {
   pageId: number
@@ -23,25 +24,40 @@ const SuspendablePublishButton = ({
 
   const [currPage] = trpc.page.readPage.useSuspenseQuery({ pageId, siteId })
   const isChangesPendingPublish = !!currPage.draftBlobId
+  // A null scheduledAction on a legacy row defaults to Publish, matching the
+  // convention used throughout the resource/page services.
+  const isScheduledToPublish =
+    !!currPage.scheduledAt &&
+    currPage.scheduledAction !== ScheduledAction.Unpublish
+  const isScheduledToUnpublish =
+    !!currPage.scheduledAt &&
+    currPage.scheduledAction === ScheduledAction.Unpublish
+
+  // publishPageResource blocks an immediate publish while a scheduled
+  // unpublish is pending (opposite-direction conflict) — surface that here
+  // instead of letting the user hit the error after submitting.
+  const disabledReason = isScheduledToUnpublish
+    ? "This page has a scheduled unpublish. Cancel it before publishing."
+    : !isChangesPendingPublish
+      ? "All changes have been published"
+      : undefined
 
   return (
     <Can do="publish" on="Resource" passThrough>
       {({ isAllowed }) => (
-        <TouchableTooltip
-          hidden={isChangesPendingPublish}
-          label="All changes have been published"
-        >
+        <TouchableTooltip hidden={!disabledReason} label={disabledReason}>
           {isAllowed && (
             <>
               {/* Render the modal conditionally to ensure the schema resets when the modal is opened/closed */}
               {publishDisclosure.isOpen && (
-                <PublishModal
+                <PublishOrUnpublishModal
+                  action="publish"
                   pageId={pageId}
                   siteId={siteId}
                   {...publishDisclosure}
                 />
               )}
-              {currPage.scheduledAt ? (
+              {isScheduledToPublish ? (
                 <CancelSchedulePublishIndicator
                   siteId={siteId}
                   pageId={pageId}
@@ -50,7 +66,7 @@ const SuspendablePublishButton = ({
                 <Button
                   variant="solid"
                   size="sm"
-                  isDisabled={!isChangesPendingPublish}
+                  isDisabled={!!disabledReason}
                   onClick={() => {
                     posthog.capture("publish_modal_opened", {
                       site_id: siteId,
