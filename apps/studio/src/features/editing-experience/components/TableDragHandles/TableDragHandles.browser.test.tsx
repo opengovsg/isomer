@@ -8,6 +8,7 @@ import { EditorContent } from "@tiptap/react"
 import { useRef } from "react"
 import { describe, expect, it } from "vitest"
 import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor"
+import { HANDLE_THICKNESS_PX } from "~/features/editing-experience/utils/tableEditorChrome"
 
 import { TableDragHandles } from "./TableDragHandles"
 
@@ -133,54 +134,57 @@ const hoverUntil = async (
     return check()
   })
 
-describe("TableDragHandles", () => {
-  it("reveals a visible row handle when hovering a data row", async () => {
-    // Arrange
-    const { editor, container, queryByLabelText, getByLabelText } =
-      await renderHarness()
-    expect(queryByLabelText("Drag to reorder row")).toBeNull()
-    const cell = findByCellText(container, "Row 1, A")
-    const { x, y } = centreOf(cell)
+const queryHandle = (
+  container: HTMLElement,
+  axis: "row" | "column",
+  index: number,
+): HTMLElement | null =>
+  container.querySelector(
+    `[data-table-drag-handle="${axis}"][data-index="${index}"]`,
+  )
 
-    // Act
-    const handle = await hoverUntil(x, y, () =>
-      getByLabelText("Drag to reorder row"),
-    )
-
-    // Assert
-    expect(handle.getAttribute("data-state")).toBe("hover")
-    expect(getCellText(editor)[3]).toBe("Row 1, A")
+const waitForHandle = async (
+  container: HTMLElement,
+  axis: "row" | "column",
+  index: number,
+): Promise<HTMLElement> =>
+  waitFor(() => {
+    const handle = queryHandle(container, axis, index)
+    if (!handle) throw new Error(`${axis} handle ${index} not found`)
+    return handle
   })
 
-  it("reveals both the row and column handles when hovering a cell", async () => {
+describe("TableDragHandles", () => {
+  it("shows a handle for every row and column without hovering", async () => {
     // Arrange
-    const { container, getByLabelText } = await renderHarness()
-    const cell = findByCellText(container, "Row 1, B")
-    const { x, y } = centreOf(cell)
+    const { container } = await renderHarness()
 
     // Act
-    const rowHandle = await hoverUntil(x, y, () =>
-      getByLabelText("Drag to reorder row"),
+    const rowHandles = await waitFor(() => {
+      const handles = container.querySelectorAll(
+        '[data-table-drag-handle="row"]',
+      )
+      if (handles.length === 0) throw new Error("row handles not measured yet")
+      return handles
+    })
+    const colHandles = container.querySelectorAll(
+      '[data-table-drag-handle="column"]',
     )
-    const colHandle = getByLabelText("Drag to reorder column")
 
-    // Assert
-    expect(rowHandle.getAttribute("data-state")).toBe("hover")
-    expect(colHandle.getAttribute("data-state")).toBe("hover")
+    // Assert — seed table is 4 rows × 3 columns
+    expect(rowHandles).toHaveLength(4)
+    expect(colHandles).toHaveLength(3)
   })
 
   it("places the row handle outside the row", async () => {
     // Arrange
-    const { container, getByLabelText } = await renderHarness()
+    const { container } = await renderHarness()
     const cell = findByCellText(container, "Row 1, A")
     const row = cell.closest("tr")
     if (!row) throw new Error("row not found")
-    const { x, y } = centreOf(cell)
 
     // Act
-    const handle = await hoverUntil(x, y, () =>
-      getByLabelText("Drag to reorder row"),
-    )
+    const handle = await waitForHandle(container, "row", 1)
 
     // Assert
     expect(handle.getBoundingClientRect().right).toBeLessThanOrEqual(
@@ -190,14 +194,11 @@ describe("TableDragHandles", () => {
 
   it("places the column handle outside the column", async () => {
     // Arrange
-    const { container, getByLabelText } = await renderHarness()
+    const { container } = await renderHarness()
     const headerCell = findByCellText(container, "Column B")
-    const { x, y } = centreOf(headerCell)
 
     // Act
-    const handle = await hoverUntil(x, y, () =>
-      getByLabelText("Drag to reorder column"),
-    )
+    const handle = await waitForHandle(container, "column", 1)
 
     // Assert
     expect(handle.getBoundingClientRect().bottom).toBeLessThanOrEqual(
@@ -205,23 +206,26 @@ describe("TableDragHandles", () => {
     )
   })
 
-  it("reveals a row handle when hovering the header row", async () => {
-    const { container, getByLabelText } = await renderHarness()
+  it("shows a row handle for the header row so it can be selected", async () => {
+    // Arrange / Act
+    const { container } = await renderHarness()
+    const handle = await waitForHandle(container, "row", 0)
 
-    const headerCell = findByCellText(container, "Column A")
-    const { x, y } = centreOf(headerCell)
-    await hoverUntil(x, y, () => getByLabelText("Drag to reorder row"))
+    // Assert
+    expect(handle.getAttribute("aria-label")).toBe("Select row")
+    expect(handle.tagName).toBe("BUTTON")
   })
 
-  it("reveals a column handle when hovering a column header", async () => {
-    const { container, getByLabelText } = await renderHarness()
+  it("shows a column handle for every column including the first", async () => {
+    // Arrange / Act
+    const { container } = await renderHarness()
+    const handle = await waitForHandle(container, "column", 1)
 
-    const headerCell = findByCellText(container, "Column B")
-    const { x, y } = centreOf(headerCell)
-    await hoverUntil(x, y, () => getByLabelText("Drag to reorder column"))
+    // Assert
+    expect(handle.getAttribute("aria-label")).toBe("Drag to reorder column")
   })
 
-  it("reveals a row handle when hovering a data row of a second table", async () => {
+  it("shows handles for every row of a second table as well", async () => {
     const twoTables: JSONContent = {
       type: "prose",
       content: [
@@ -274,32 +278,35 @@ describe("TableDragHandles", () => {
       )
     }
 
-    const { container, getByLabelText, queryByLabelText } = render(
-      <TwoTableHarness />,
-    )
+    // Arrange / Act
+    const { container } = render(<TwoTableHarness />)
     await waitFor(() => {
       if (!editor) throw new Error("editor not ready")
     })
+    const rowHandles = await waitFor(() => {
+      const handles = container.querySelectorAll(
+        '[data-table-drag-handle="row"]',
+      )
+      if (handles.length < 6) throw new Error("both tables not measured yet")
+      return handles
+    })
+    const colHandles = container.querySelectorAll(
+      '[data-table-drag-handle="column"]',
+    )
 
-    expect(queryByLabelText("Drag to reorder row")).toBeNull()
-
-    const cell = findByCellText(container, "Second-1-A")
-    const { x, y } = centreOf(cell)
-    await hoverUntil(x, y, () => getByLabelText("Drag to reorder row"))
+    // Assert — 4×3 first table + 2×2 second table
+    expect(rowHandles).toHaveLength(6)
+    expect(colHandles).toHaveLength(5)
   })
 
   it("clicking a row handle selects the entire row and becomes selected", async () => {
-    const { editor, container, getByLabelText } = await renderHarness()
-
-    const firstBodyCell = findByCellText(container, "Row 1, A")
-    const { x, y } = centreOf(firstBodyCell)
-    const handle = await hoverUntil(x, y, () =>
-      getByLabelText("Drag to reorder row"),
-    )
-    expect(handle.getAttribute("data-state")).toBe("hover")
-
+    // Arrange
+    const { editor, container } = await renderHarness()
+    const handle = await waitForHandle(container, "row", 1)
+    expect(handle.getAttribute("data-state")).toBe("passive")
     const handleCentre = centreOf(handle)
 
+    // Act
     act(() => {
       fireEvent.mouseDown(handle, {
         clientX: handleCentre.x,
@@ -311,6 +318,7 @@ describe("TableDragHandles", () => {
       })
     })
 
+    // Assert
     const selection = editor.state.selection
     expect(selection).toBeInstanceOf(CellSelection)
     expect((selection as CellSelection).isRowSelection()).toBe(true)
@@ -328,24 +336,20 @@ describe("TableDragHandles", () => {
     ])
 
     await waitFor(() => {
-      expect(
-        getByLabelText("Drag to reorder row").getAttribute("data-state"),
-      ).toBe("selected")
+      expect(queryHandle(container, "row", 1)?.getAttribute("data-state")).toBe(
+        "selected",
+      )
     })
   })
 
   it("clicking a column handle selects the entire column and becomes selected", async () => {
-    const { editor, container, getByLabelText } = await renderHarness()
-
-    const headerCell = findByCellText(container, "Column B")
-    const { x, y } = centreOf(headerCell)
-    const handle = await hoverUntil(x, y, () =>
-      getByLabelText("Drag to reorder column"),
-    )
-    expect(handle.getAttribute("data-state")).toBe("hover")
-
+    // Arrange
+    const { editor, container } = await renderHarness()
+    const handle = await waitForHandle(container, "column", 1)
+    expect(handle.getAttribute("data-state")).toBe("passive")
     const handleCentre = centreOf(handle)
 
+    // Act
     act(() => {
       fireEvent.mouseDown(handle, {
         clientX: handleCentre.x,
@@ -357,6 +361,7 @@ describe("TableDragHandles", () => {
       })
     })
 
+    // Assert
     const selection = editor.state.selection
     expect(selection).toBeInstanceOf(CellSelection)
     expect((selection as CellSelection).isColSelection()).toBe(true)
@@ -380,67 +385,86 @@ describe("TableDragHandles", () => {
 
     await waitFor(() => {
       expect(
-        getByLabelText("Drag to reorder column").getAttribute("data-state"),
+        queryHandle(container, "column", 1)?.getAttribute("data-state"),
       ).toBe("selected")
     })
   })
 
-  it("keeps handles passive when multiple rows are selected", async () => {
+  it("selects a row when the handle is activated from the keyboard", async () => {
     // Arrange
-    const { editor, findAllByLabelText } = await renderHarness()
+    const { editor, container } = await renderHarness()
+    const handle = await waitForHandle(container, "row", 1)
+
+    // Act
+    act(() => {
+      handle.focus()
+      fireEvent.click(handle)
+    })
+
+    // Assert
+    const selection = editor.state.selection
+    expect(selection).toBeInstanceOf(CellSelection)
+    expect((selection as CellSelection).isRowSelection()).toBe(true)
+  })
+
+  it("keeps handles unselected when multiple rows are selected", async () => {
+    // Arrange
+    const { editor, container } = await renderHarness()
+    await waitForHandle(container, "row", 1)
 
     // Act
     selectCells(editor, 3, 8)
 
     // Assert
-    const handles = await findAllByLabelText("Drag to reorder row")
-    expect(handles).toHaveLength(2)
-    expect(handles.every((handle) => handle.dataset.state === "passive")).toBe(
-      true,
-    )
+    const handles = container.querySelectorAll('[data-table-drag-handle="row"]')
+    expect(handles).toHaveLength(4)
+    expect(
+      [...handles].every(
+        (handle) => handle.getAttribute("data-state") === "passive",
+      ),
+    ).toBe(true)
   })
 
-  it("keeps handles passive when multiple columns are selected", async () => {
+  it("keeps handles unselected when multiple columns are selected", async () => {
     // Arrange
-    const { editor, findAllByLabelText } = await renderHarness()
+    const { editor, container } = await renderHarness()
+    await waitForHandle(container, "column", 0)
 
     // Act
     selectCells(editor, 0, 10)
 
     // Assert
-    const handles = await findAllByLabelText("Drag to reorder column")
-    expect(handles).toHaveLength(2)
-    expect(handles.every((handle) => handle.dataset.state === "passive")).toBe(
-      true,
+    const handles = container.querySelectorAll(
+      '[data-table-drag-handle="column"]',
     )
+    expect(handles).toHaveLength(3)
+    expect(
+      [...handles].every(
+        (handle) => handle.getAttribute("data-state") === "passive",
+      ),
+    ).toBe(true)
   })
 
   it("drags a data row to a new position and reorders the document", async () => {
-    const { editor, container, getByLabelText } = await renderHarness()
-
+    // Arrange
+    const { editor, container } = await renderHarness()
     expect(getCellText(editor).slice(3, 6)).toEqual([
       "Row 1, A",
       "Row 1, B",
       "Row 1, C",
     ])
-
-    const firstBodyCell = findByCellText(container, "Row 1, A")
-    const { x, y } = centreOf(firstBodyCell)
-    const handle = await hoverUntil(x, y, () =>
-      getByLabelText("Drag to reorder row"),
-    )
+    const handle = await waitForHandle(container, "row", 1)
     const handleCentre = centreOf(handle)
 
+    // Act
     act(() => {
       fireEvent.mouseDown(handle, {
         clientX: handleCentre.x,
         clientY: handleCentre.y,
       })
     })
-
     const thirdBodyCell = findByCellText(container, "Row 3, A")
     const targetPos = centreOf(thirdBodyCell)
-
     act(() => {
       fireEvent.mouseMove(document, {
         clientX: handleCentre.x,
@@ -454,6 +478,7 @@ describe("TableDragHandles", () => {
       })
     })
 
+    // Assert
     await waitFor(() => {
       const cells = getCellText(editor)
       expect(cells.slice(3, 6)).toEqual(["Row 2, A", "Row 2, B", "Row 2, C"])
@@ -462,32 +487,93 @@ describe("TableDragHandles", () => {
     })
   })
 
-  it("drags a column to a new position and reorders the document", async () => {
-    const { editor, container, getByLabelText } = await renderHarness()
+  it("does not reorder when dragging the header row, and click still selects it", async () => {
+    // Arrange
+    const { editor, container } = await renderHarness()
+    const before = getCellText(editor)
+    const handle = await waitForHandle(container, "row", 0)
+    const handleCentre = centreOf(handle)
+    const thirdBodyCell = findByCellText(container, "Row 3, A")
+    const targetPos = centreOf(thirdBodyCell)
 
+    // Act
+    act(() => {
+      fireEvent.mouseDown(handle, {
+        clientX: handleCentre.x,
+        clientY: handleCentre.y,
+      })
+      fireEvent.mouseMove(document, {
+        clientX: handleCentre.x,
+        clientY: targetPos.y + 15,
+      })
+      fireEvent.mouseUp(document, {
+        clientX: handleCentre.x,
+        clientY: targetPos.y + 15,
+      })
+    })
+
+    // Assert
+    expect(getCellText(editor)).toEqual(before)
+    expect(editor.state.selection).toBeInstanceOf(CellSelection)
+    expect((editor.state.selection as CellSelection).isRowSelection()).toBe(
+      true,
+    )
+  })
+
+  it("does not drop a data row into the header row", async () => {
+    // Arrange
+    const { editor, container } = await renderHarness()
+    const handle = await waitForHandle(container, "row", 1)
+    const handleCentre = centreOf(handle)
+    const headerCell = findByCellText(container, "Column A")
+    const headerTop = headerCell.getBoundingClientRect().top
+
+    // Act
+    act(() => {
+      fireEvent.mouseDown(handle, {
+        clientX: handleCentre.x,
+        clientY: handleCentre.y,
+      })
+      fireEvent.mouseMove(document, {
+        clientX: handleCentre.x,
+        clientY: headerTop - 8,
+      })
+      fireEvent.mouseUp(document, {
+        clientX: handleCentre.x,
+        clientY: headerTop - 8,
+      })
+    })
+
+    // Assert
+    await waitFor(() => {
+      expect(getCellText(editor).slice(0, 3)).toEqual([
+        "Column A",
+        "Column B",
+        "Column C",
+      ])
+    })
+  })
+
+  it("drags a column to a new position and reorders the document", async () => {
+    // Arrange
+    const { editor, container } = await renderHarness()
     expect(getCellText(editor).slice(0, 3)).toEqual([
       "Column A",
       "Column B",
       "Column C",
     ])
-
-    const headerCell = findByCellText(container, "Column A")
-    const { x, y } = centreOf(headerCell)
-    const handle = await hoverUntil(x, y, () =>
-      getByLabelText("Drag to reorder column"),
-    )
+    const handle = await waitForHandle(container, "column", 0)
     const handleCentre = centreOf(handle)
 
+    // Act
     act(() => {
       fireEvent.mouseDown(handle, {
         clientX: handleCentre.x,
         clientY: handleCentre.y,
       })
     })
-
     const columnCCell = findByCellText(container, "Column C")
     const targetPos = centreOf(columnCCell)
-
     act(() => {
       fireEvent.mouseMove(document, {
         clientX: targetPos.x + 20, // past column C's midpoint -> drop after it
@@ -501,6 +587,7 @@ describe("TableDragHandles", () => {
       })
     })
 
+    // Assert
     await waitFor(() => {
       expect(getCellText(editor).slice(0, 3)).toEqual([
         "Column B",
@@ -524,8 +611,10 @@ describe("TableDragHandles", () => {
     hoverAt(tableRect.left + tableRect.width / 2, tableRect.bottom + 4)
 
     // Assert
-    expect(getByLabelText("Add row below")).toBeTruthy()
-    expect(getByLabelText("Add column to the right")).toBeTruthy()
+    await waitFor(() => {
+      expect(getByLabelText("Add row below")).toBeTruthy()
+      expect(getByLabelText("Add column to the right")).toBeTruthy()
+    })
   })
 
   it("adds a row when the add-row pill is clicked after crossing the gap", async () => {
@@ -539,6 +628,7 @@ describe("TableDragHandles", () => {
 
     // Act
     hoverAt(pillCentre.x, pillCentre.y)
+    await waitFor(() => getByLabelText("Add row below"))
     act(() => {
       fireEvent.click(getByLabelText("Add row below"))
     })
@@ -592,39 +682,84 @@ describe("TableDragHandles", () => {
     expect(pillRect.left).toBeGreaterThanOrEqual(clipRect.left)
   })
 
-  it("renders a rectangular row handle rather than a circle", async () => {
-    // Arrange
-    const { container, getByLabelText } = await renderHarness()
-    const cell = findByCellText(container, "Row 1, A")
-    const { x, y } = centreOf(cell)
-
-    // Act
-    const handle = await hoverUntil(x, y, () =>
-      getByLabelText("Drag to reorder row"),
-    )
+  it("renders a rectangular 20px-thick row handle with no border", async () => {
+    // Arrange / Act
+    const { container } = await renderHarness()
+    const handle = await waitForHandle(container, "row", 1)
 
     // Assert
     const { width, height } = handle.getBoundingClientRect()
+    expect(width).toBe(HANDLE_THICKNESS_PX)
     expect(height).toBeGreaterThan(width)
+    expect(getComputedStyle(handle).borderTopWidth).toBe("0px")
     const radius = parseFloat(getComputedStyle(handle).borderTopLeftRadius)
     expect(radius).toBeLessThan(Math.min(width, height) / 2)
   })
 
-  it("renders a rectangular column handle rather than a circle", async () => {
-    // Arrange
-    const { container, getByLabelText } = await renderHarness()
-    const headerCell = findByCellText(container, "Column B")
-    const { x, y } = centreOf(headerCell)
-
-    // Act
-    const handle = await hoverUntil(x, y, () =>
-      getByLabelText("Drag to reorder column"),
-    )
+  it("renders a rectangular 20px-thick column handle with no border", async () => {
+    // Arrange / Act
+    const { container } = await renderHarness()
+    const handle = await waitForHandle(container, "column", 1)
 
     // Assert
     const { width, height } = handle.getBoundingClientRect()
+    expect(height).toBe(HANDLE_THICKNESS_PX)
     expect(width).toBeGreaterThan(height)
+    expect(getComputedStyle(handle).borderTopWidth).toBe("0px")
     const radius = parseFloat(getComputedStyle(handle).borderTopLeftRadius)
     expect(radius).toBeLessThan(Math.min(width, height) / 2)
+  })
+
+  it("uses the active fill and white dots when a handle is selected", async () => {
+    // Arrange
+    const { container } = await renderHarness()
+    const handle = await waitForHandle(container, "row", 1)
+    const handleCentre = centreOf(handle)
+
+    // Act
+    act(() => {
+      fireEvent.mouseDown(handle, {
+        clientX: handleCentre.x,
+        clientY: handleCentre.y,
+      })
+      fireEvent.mouseUp(document, {
+        clientX: handleCentre.x,
+        clientY: handleCentre.y,
+      })
+    })
+
+    // Assert
+    await waitFor(() => {
+      const selected = queryHandle(container, "row", 1)
+      expect(selected?.getAttribute("data-state")).toBe("selected")
+      expect(selected && getComputedStyle(selected).backgroundColor).toBe(
+        "rgb(34, 53, 255)",
+      )
+      const icon = selected?.querySelector("svg")
+      expect(icon && getComputedStyle(icon).color).toBe("rgb(255, 255, 255)")
+    })
+  })
+
+  it("remeasures handle position when the table is resized", async () => {
+    // Arrange
+    const { container } = await renderHarness()
+    const handle = await waitForHandle(container, "column", 1)
+    const before = handle.getBoundingClientRect()
+
+    // Act
+    const table = container.querySelector("table")
+    if (!table) throw new Error("table not found")
+    act(() => {
+      table.style.width = `${before.width + 160}px`
+    })
+
+    // Assert
+    await waitFor(() => {
+      const after = handle.getBoundingClientRect()
+      expect(
+        Math.abs(after.left - before.left) +
+          Math.abs(after.width - before.width),
+      ).toBeGreaterThan(1)
+    })
   })
 })
