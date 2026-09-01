@@ -73,6 +73,7 @@ import {
   getResourcePermalinkTree,
   publishPageResource,
   publishResource,
+  selectLastPublishedAt,
   UNPUBLISH_PAGE_NOT_FOUND_MESSAGE,
   unpublishPageResource,
   updateBlobById,
@@ -627,7 +628,15 @@ export const pageRouter = router({
         // TODO: Only return sites that the user has access to
         .where("Resource.siteId", "=", siteId)
         .where("Resource.type", "=", ResourceType.RootPage)
-        .select(["id", "title", "draftBlobId"])
+        .select((eb) => [
+          "id",
+          "title",
+          "draftBlobId",
+          "publishedVersionId",
+          "scheduledAt",
+          "scheduledAction",
+          selectLastPublishedAt(eb),
+        ])
         .executeTakeFirst()
 
       if (!rootPage) {
