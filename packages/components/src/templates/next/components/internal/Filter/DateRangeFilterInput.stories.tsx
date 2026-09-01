@@ -13,11 +13,17 @@ const meta: Meta<typeof DateRangeFilterInput> = {
   // Controlled component — wrap with local state so onChange (typing a
   // selection + pressing Apply in the calendar) is actually reflected back
   // into the trigger's displayed value, same pattern as Filter.stories.tsx.
-  render: ({ value: initialValue }) => {
+  render: ({ value: initialValue, presentation }) => {
     const [value, setValue] = useState<DateRangeFilterValue | undefined>(
       initialValue,
     )
-    return <DateRangeFilterInput value={value} onChange={setValue} />
+    return (
+      <DateRangeFilterInput
+        value={value}
+        onChange={setValue}
+        presentation={presentation}
+      />
+    )
   },
   parameters: {
     themes: {
@@ -72,5 +78,32 @@ export const SelectRangeAndApply: Story = {
     await userEvent.click(screen.getByText("10"))
     await userEvent.click(screen.getByText("20"))
     await userEvent.click(await screen.findByText("Apply"))
+  },
+}
+
+export const ModalPresentation: Story = {
+  args: {
+    value: undefined,
+    presentation: "modal",
+  },
+  parameters: {
+    chromatic: withChromaticModes(["mobile"]),
+  },
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+    await userEvent.click(screen.getByText("DD/MM/YYYY"))
+    await screen.findByText("Clear")
+    await screen.findByText("Apply")
+  },
+}
+
+export const ClearAppliedRange: Story = {
+  args: {
+    value: { start: "2026-04-28", end: "2026-05-30" },
+  },
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+    await userEvent.click(screen.getByText("28/04/2026 - 30/05/2026"))
+    await userEvent.click(await screen.findByText("Clear"))
   },
 }

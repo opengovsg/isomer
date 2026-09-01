@@ -169,6 +169,7 @@ const FilterDrawerContent = ({
               ))}
               {type === "date" && (
                 <DateRangeFilterInput
+                  presentation="modal"
                   value={holdingDateRangesById[id]}
                   onChange={(dateRange) =>
                     setHoldingDateRangesById((prev) => ({

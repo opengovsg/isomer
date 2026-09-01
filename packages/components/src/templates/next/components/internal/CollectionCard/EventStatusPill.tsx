@@ -1,17 +1,11 @@
 import type { DateFilterStatusId } from "~/types/constants"
 import { DATE_FILTER_STATUS_ID } from "~/types/constants"
 
-// Reuses existing `utility-feedback` design tokens rather than inventing new
-// colors: ended = neutral (matches the existing `Tag` pill's default look),
-// ongoing = warning (draws attention — "happening now"), upcoming = info
-// (calm, "coming soon"). See wayfinder ticket 005.
+// Figma-specified status colours (wayfinder ticket 005).
 const STATUS_STYLES: Record<DateFilterStatusId, string> = {
-  [DATE_FILTER_STATUS_ID.Ended]:
-    "bg-base-canvas-backdrop text-base-content-subtle",
-  [DATE_FILTER_STATUS_ID.Ongoing]:
-    "bg-utility-feedback-warning-subtle text-utility-feedback-warning",
-  [DATE_FILTER_STATUS_ID.Upcoming]:
-    "bg-utility-feedback-info-subtle text-utility-feedback-info",
+  [DATE_FILTER_STATUS_ID.Upcoming]: "bg-[#358257] text-white",
+  [DATE_FILTER_STATUS_ID.Ongoing]: "bg-[#A88651] text-white",
+  [DATE_FILTER_STATUS_ID.Ended]: "bg-[#E6E6E6] text-base-content",
 }
 
 interface EventStatusPillProps {
@@ -22,7 +16,7 @@ interface EventStatusPillProps {
 export const EventStatusPill = ({ status, label }: EventStatusPillProps) => {
   return (
     <div
-      className={`w-fit items-center justify-center rounded-full px-1.5 py-0.5 ${STATUS_STYLES[status]}`}
+      className={`inline-flex items-center justify-center gap-2 rounded px-2 py-1 ${STATUS_STYLES[status]}`}
     >
       <p className="prose-label-sm-medium line-clamp-1">{label}</p>
     </div>

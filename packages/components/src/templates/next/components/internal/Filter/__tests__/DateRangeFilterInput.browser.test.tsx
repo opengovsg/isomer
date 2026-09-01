@@ -88,4 +88,20 @@ describe("DateRangeFilterInput", () => {
 
     screen.getByText(displayValue)
   })
+
+  it("clears the applied range when Clear is pressed", () => {
+    const onChange = vi.fn()
+    render(
+      <DateRangeFilterInput
+        value={{ start: currentMonthIso(5), end: currentMonthIso(8) }}
+        onChange={onChange}
+      />,
+    )
+
+    fireEvent.click(screen.getByText(/05\/\d{2}\/\d{4} - 08\/\d{2}\/\d{4}/))
+    fireEvent.click(screen.getByText("Clear"))
+
+    expect(onChange).toHaveBeenCalledExactlyOnceWith(undefined)
+    expect(screen.queryByText("Clear")).toBeNull()
+  })
 })

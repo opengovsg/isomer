@@ -1,5 +1,6 @@
 "use client"
 
+import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react"
 import { parseDate } from "@internationalized/date"
 import { useRef, useState } from "react"
 import { BiCalendar } from "react-icons/bi"
@@ -16,6 +17,8 @@ export interface DateRangeFilterValue {
 interface DateRangeFilterInputProps {
   value: DateRangeFilterValue | undefined
   onChange: (value: DateRangeFilterValue | undefined) => void
+  /** Desktop sidebar uses a popover; mobile filter drawer uses a modal. */
+  presentation?: "popover" | "modal"
 }
 
 // "yyyy-MM-dd" (the ISO format both this filter's value and
@@ -33,10 +36,15 @@ const toDisplayDate = (isoDate: string): string => {
 export const DateRangeFilterInput = ({
   value,
   onChange,
+  presentation = "popover",
 }: DateRangeFilterInputProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
-  useOnClickOutside(containerRef, () => setIsOpen(false))
+  useOnClickOutside(containerRef, () => {
+    if (presentation === "popover") {
+      setIsOpen(false)
+    }
+  })
 
   const displayValue = value
     ? value.start === value.end
@@ -58,6 +66,14 @@ export const DateRangeFilterInput = ({
     onChange({ start: range.start.toString(), end: range.end.toString() })
     setIsOpen(false)
   }
+
+  const calendar = (
+    <RangeCalendar
+      key={value ? `${value.start}-${value.end}` : "empty"}
+      defaultValue={calendarValue}
+      onApply={handleCalendarApply}
+    />
+  )
 
   return (
     <div className="mx-2 mb-2 flex flex-col gap-2" ref={containerRef}>
@@ -84,15 +100,34 @@ export const DateRangeFilterInput = ({
           </span>
         </button>
 
-        {isOpen && (
+        {isOpen && presentation === "popover" && (
           <div className="absolute z-10 mt-1 w-fit rounded-md border border-base-divider-medium bg-white p-4 shadow-md">
-            <RangeCalendar
-              defaultValue={calendarValue}
-              onApply={handleCalendarApply}
-            />
+            {calendar}
           </div>
         )}
       </div>
+
+      {presentation === "modal" && (
+        <Dialog
+          open={isOpen}
+          onClose={setIsOpen}
+          className="relative z-50 lg:hidden"
+        >
+          <DialogBackdrop
+            transition
+            className="fixed inset-0 bg-black bg-opacity-25 transition-opacity duration-300 ease-linear data-[closed]:opacity-0"
+          />
+
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
+            <DialogPanel
+              transition
+              className="w-full max-w-sm rounded-md border border-base-divider-medium bg-white p-4 shadow-md transition duration-300 ease-in-out data-[closed]:scale-95 data-[closed]:opacity-0"
+            >
+              {calendar}
+            </DialogPanel>
+          </div>
+        </Dialog>
+      )}
     </div>
   )
 }
