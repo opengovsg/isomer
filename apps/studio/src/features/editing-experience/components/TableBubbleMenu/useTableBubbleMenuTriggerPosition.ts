@@ -5,7 +5,7 @@ import { autoUpdate } from "@floating-ui/dom"
 import { CellSelection, selectedRect } from "@tiptap/pm/tables"
 import { useEffect, useRef, useState } from "react"
 
-interface TableBubbleMenuPosition {
+interface TableBubbleMenuTriggerPosition {
   x: number
   y: number
 }
@@ -52,10 +52,10 @@ const getBottomRightCellRect = (
   return dom.getBoundingClientRect()
 }
 
-const computeMenuPosition = (
+const computeTriggerPosition = (
   cellRect: DOMRect,
   menuEl: HTMLElement,
-): TableBubbleMenuPosition | null => {
+): TableBubbleMenuTriggerPosition | null => {
   const triggerEl = menuEl.querySelector("[data-table-bubble-menu-trigger]")
   if (!(triggerEl instanceof HTMLElement)) return null
 
@@ -87,13 +87,13 @@ const createPositionUpdater = (
   getView: () => EditorView,
   getState: () => EditorState,
   menuEl: HTMLElement,
-  onPosition: (position: TableBubbleMenuPosition) => void,
+  onPosition: (position: TableBubbleMenuTriggerPosition) => void,
 ): (() => void) => {
   return () => {
     const cellRect = getBottomRightCellRect(getView(), getState())
     if (!cellRect) return
 
-    const nextPosition = computeMenuPosition(cellRect, menuEl)
+    const nextPosition = computeTriggerPosition(cellRect, menuEl)
     if (nextPosition) {
       onPosition(nextPosition)
     }
@@ -120,23 +120,24 @@ const attachScrollListeners = (
   }
 }
 
-interface UseTableBubbleMenuPositionOptions {
+interface UseTableBubbleMenuTriggerPositionOptions {
   editor: Editor
   menuEl: HTMLDivElement | null
   show: boolean
   selection: Selection
 }
 
-export const useTableBubbleMenuPosition = ({
+export const useTableBubbleMenuTriggerPosition = ({
   editor,
   menuEl,
   show,
   selection,
-}: UseTableBubbleMenuPositionOptions): TableBubbleMenuPosition | null => {
+}: UseTableBubbleMenuTriggerPositionOptions): TableBubbleMenuTriggerPosition | null => {
   const editorRef = useRef(editor)
   editorRef.current = editor
 
-  const [position, setPosition] = useState<TableBubbleMenuPosition | null>(null)
+  const [position, setPosition] =
+    useState<TableBubbleMenuTriggerPosition | null>(null)
 
   useEffect(() => {
     if (!show) {

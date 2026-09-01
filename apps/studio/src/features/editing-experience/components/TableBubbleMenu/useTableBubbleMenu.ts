@@ -21,7 +21,7 @@ import {
   registerTableBubbleMenuFocusTrigger,
   unregisterTableBubbleMenuFocusTrigger,
 } from "./tableBubbleMenuFocus"
-import { useTableBubbleMenuPosition } from "./useTableBubbleMenuPosition"
+import { useTableBubbleMenuTriggerPosition } from "./useTableBubbleMenuTriggerPosition"
 
 export interface TableBubbleMenuUiState {
   show: boolean
@@ -29,10 +29,12 @@ export interface TableBubbleMenuUiState {
   isActivated: boolean
   menuRef: RefCallback<HTMLDivElement>
   triggerRef: RefObject<HTMLButtonElement>
+  popoverContentRef: RefCallback<HTMLElement>
   position: { x: number; y: number } | null
   onMenuFocus: () => void
   onMenuBlur: (event: FocusEvent<HTMLElement>) => void
   toggleMenu: () => void
+  deactivateMenu: () => void
 }
 
 const isElement = (target: EventTarget | null): target is Element =>
@@ -45,12 +47,17 @@ const getSelectionRangeKey = (selection: Editor["state"]["selection"]) =>
 
 export const useTableBubbleMenu = (editor: Editor): TableBubbleMenuUiState => {
   const menuElRef = useRef<HTMLDivElement | null>(null)
+  const popoverContentElRef = useRef<HTMLElement | null>(null)
   const [menuEl, setMenuEl] = useState<HTMLDivElement | null>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
 
   const menuRef = useCallback((node: HTMLDivElement | null) => {
     menuElRef.current = node
     setMenuEl(node)
+  }, [])
+
+  const popoverContentRef = useCallback((node: HTMLElement | null) => {
+    popoverContentElRef.current = node
   }, [])
 
   const [isActivated, setIsActivated] = useState(false)
@@ -90,7 +97,7 @@ export const useTableBubbleMenu = (editor: Editor): TableBubbleMenuUiState => {
     }
   }, [show])
 
-  const position = useTableBubbleMenuPosition({
+  const position = useTableBubbleMenuTriggerPosition({
     editor,
     menuEl,
     show,
@@ -111,7 +118,9 @@ export const useTableBubbleMenu = (editor: Editor): TableBubbleMenuUiState => {
 
   useEffect(() => {
     const isMenuElement = (target: EventTarget | null) =>
-      isElement(target) && (menuElRef.current?.contains(target) ?? false)
+      isElement(target) &&
+      ((menuElRef.current?.contains(target) ?? false) ||
+        (popoverContentElRef.current?.contains(target) ?? false))
 
     const isWithinFocusScope = (target: EventTarget | null) =>
       isElement(target) &&
@@ -140,6 +149,7 @@ export const useTableBubbleMenu = (editor: Editor): TableBubbleMenuUiState => {
     if (
       isElement(relatedTarget) &&
       ((menuElRef.current?.contains(relatedTarget) ?? false) ||
+        (popoverContentElRef.current?.contains(relatedTarget) ?? false) ||
         editor.view.dom.contains(relatedTarget))
     ) {
       return
@@ -158,15 +168,21 @@ export const useTableBubbleMenu = (editor: Editor): TableBubbleMenuUiState => {
     })
   }
 
+  const deactivateMenu = () => {
+    setIsActivated(false)
+  }
+
   return {
     show,
     kind,
     isActivated,
     menuRef,
     triggerRef,
+    popoverContentRef,
     position,
     onMenuFocus,
     onMenuBlur,
     toggleMenu,
+    deactivateMenu,
   }
 }
