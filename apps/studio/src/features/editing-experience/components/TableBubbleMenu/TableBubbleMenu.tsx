@@ -3,6 +3,7 @@ import { Flex, Icon, Portal, VStack } from "@chakra-ui/react"
 import { memo } from "react"
 import { BiPencil } from "react-icons/bi"
 
+import type { TableBubbleMenuAnchor } from "./TableBubbleMenu.types"
 import { TableBubbleMenuActions } from "./TableBubbleMenuActions"
 import { useTableBubbleMenu } from "./useTableBubbleMenu"
 
@@ -12,11 +13,15 @@ export const DEFAULT_BRAND_CANVAS_INVERSE_COLOR = "#00405f"
 export interface TableBubbleMenuProps {
   editor: Editor
   brandCanvasInverseColor?: string
+  anchor?: TableBubbleMenuAnchor
+  isDragReordering?: boolean
 }
 
 export const TableBubbleMenu = memo(function TableBubbleMenu({
   editor,
   brandCanvasInverseColor = DEFAULT_BRAND_CANVAS_INVERSE_COLOR,
+  anchor,
+  isDragReordering = false,
 }: TableBubbleMenuProps) {
   const {
     show,
@@ -29,7 +34,7 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
     onMenuBlur,
     toggleMenu,
     deactivateMenu,
-  } = useTableBubbleMenu(editor)
+  } = useTableBubbleMenu(editor, { anchor, isDragReordering })
 
   if (!show) {
     return null

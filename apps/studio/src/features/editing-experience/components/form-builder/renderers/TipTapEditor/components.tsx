@@ -1,15 +1,21 @@
 import type { BoxProps } from "@chakra-ui/react"
 import type { EditorContentProps, Editor as TiptapEditor } from "@tiptap/react"
-import type { PropsWithChildren } from "react"
+import type { PropsWithChildren, RefObject } from "react"
 import type { EditorMenuBar } from "~/components/PageEditor/MenuBar/MenuBar"
+import type { TableBubbleMenuAnchor } from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu.types"
 import { Box, VStack } from "@chakra-ui/react"
 import { EditorContent } from "@tiptap/react"
-import { useMemo } from "react"
+import { useCallback, useMemo, useRef, useState } from "react"
 import { useOptionalEditorDrawerSiteId } from "~/contexts/EditorDrawerContext"
 import {
   DEFAULT_BRAND_CANVAS_INVERSE_COLOR,
   TableBubbleMenu,
 } from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu"
+import { TableDragHandles } from "~/features/editing-experience/components/TableDragHandles/TableDragHandles"
+import {
+  createTableDragHandlesBubbleMenuAnchor,
+  TABLE_EDITOR_OVERLAYS_ATTR,
+} from "~/features/editing-experience/components/TableDragHandles/TableDragHandles.bubbleMenu"
 import { useSiteThemeCssVars } from "~/features/preview/hooks/useSiteThemeCssVars"
 
 const EditorContainer = ({
@@ -50,29 +56,61 @@ const EditorContainer = ({
 
 const EditorContentWrapper = ({
   editor,
-}: Pick<EditorContentProps, "editor">) => {
+  containerRef,
+  showTableExtras,
+  onDragStateChange,
+}: Pick<EditorContentProps, "editor"> & {
+  containerRef: RefObject<HTMLDivElement>
+  showTableExtras?: boolean
+  onDragStateChange?: (isDragging: boolean) => void
+}) => {
+  const handleTableDragStateChange = useCallback(
+    (isDragging: boolean) => {
+      onDragStateChange?.(isDragging)
+    },
+    [onDragStateChange],
+  )
+
   return (
     <Box
-      as={EditorContent}
-      editor={editor}
+      ref={containerRef}
+      position="relative"
       w="100%"
-      p="1rem"
       flex="1 1 auto"
       overflowX="hidden"
       overflowY="auto"
-      backgroundColor="white"
-      onClick={() => editor?.chain().focus().run()}
-      cursor="text"
-    />
+      {...{ [TABLE_EDITOR_OVERLAYS_ATTR]: "" }}
+    >
+      <Box
+        as={EditorContent}
+        editor={editor}
+        w="100%"
+        p="1rem"
+        backgroundColor="white"
+        onClick={() => editor?.chain().focus().run()}
+        cursor="text"
+      />
+      {showTableExtras && (
+        <TableDragHandles
+          editor={editor}
+          containerRef={containerRef}
+          onDragStateChange={handleTableDragStateChange}
+        />
+      )}
+    </Box>
   )
 }
 
 const TableBubbleMenuThemed = ({
   editor,
   siteId,
+  anchor,
+  isDragReordering,
 }: {
   editor: TiptapEditor
   siteId: number
+  anchor?: TableBubbleMenuAnchor
+  isDragReordering?: boolean
 }) => {
   const themeCssVars = useSiteThemeCssVars({ siteId })
   const cssVars = themeCssVars as Record<string, string> | undefined
@@ -84,6 +122,8 @@ const TableBubbleMenuThemed = ({
     <TableBubbleMenu
       editor={editor}
       brandCanvasInverseColor={brandCanvasInverseColor}
+      anchor={anchor}
+      isDragReordering={isDragReordering}
     />
   )
 }
@@ -96,8 +136,17 @@ interface EditorProps {
 
 export const Editor = ({ editor, menubar, isNested }: EditorProps) => {
   const siteId = useOptionalEditorDrawerSiteId()
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [isDragReordering, setIsDragReordering] = useState(false)
   const isTableEditor = editor.extensionManager.extensions.some(
     (ext) => ext.name === "table",
+  )
+  const tableBubbleMenuAnchor = useMemo(
+    () =>
+      isTableEditor
+        ? createTableDragHandlesBubbleMenuAnchor(editor)
+        : undefined,
+    [editor, isTableEditor],
   )
 
   return (
@@ -105,11 +154,25 @@ export const Editor = ({ editor, menubar, isNested }: EditorProps) => {
       {menubar({ editor })}
       {isTableEditor &&
         (siteId !== undefined ? (
-          <TableBubbleMenuThemed editor={editor} siteId={siteId} />
+          <TableBubbleMenuThemed
+            editor={editor}
+            siteId={siteId}
+            anchor={tableBubbleMenuAnchor}
+            isDragReordering={isDragReordering}
+          />
         ) : (
-          <TableBubbleMenu editor={editor} />
+          <TableBubbleMenu
+            editor={editor}
+            anchor={tableBubbleMenuAnchor}
+            isDragReordering={isDragReordering}
+          />
         ))}
-      <EditorContentWrapper editor={editor} />
+      <EditorContentWrapper
+        editor={editor}
+        containerRef={containerRef}
+        showTableExtras={isTableEditor}
+        onDragStateChange={setIsDragReordering}
+      />
     </EditorContainer>
   )
 }
