@@ -116,6 +116,7 @@ export const SiteEntitySettingsSchema = Type.Object(
     title: "Organisation structured data",
     description:
       "Help search engines understand the organisation that owns this site.",
+    format: "hidden",
   },
 )
 

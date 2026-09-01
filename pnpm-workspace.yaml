@@ -138,7 +138,7 @@ catalog:
   interweave: ^13.1.0
   interweave-ssr: ^2.0.0
   iron-session: ^8.0.4
-  jose: ^6.2.8
+  jose: ^6.2.10
   jotai: ^2.20.2
   js-md5: ^0.9.2
   kysely: ^0.29.5
@@ -147,7 +147,7 @@ catalog:
   next: 16.2.11
   openid-client: ^5.7.1
   oxfmt: ^0.62.0
-  oxlint: ^1.77.0
+  oxlint: ^1.80.0
   oxlint-tsgolint: ^7.0.2001
   papaparse: ^5.5.4
   pg-boss: ^12.27.0
@@ -175,15 +175,15 @@ catalogs:
     "@atlaskit/pragmatic-drag-and-drop": ^2.0.2
     "@atlaskit/pragmatic-drag-and-drop-hitbox": ^2.0.0
   "aws-sdk":
-    "@aws-sdk/client-acm": ^3.1115.0
-    "@aws-sdk/client-amplify": ^3.1115.0
-    "@aws-sdk/client-cloudfront": ^3.1115.0
-    "@aws-sdk/client-codebuild": ^3.1115.0
-    "@aws-sdk/client-s3": ^3.1115.0
-    "@aws-sdk/lib-storage": ^3.1115.0
-    "@aws-sdk/s3-request-presigner": ^3.1115.0
-    "@aws-sdk/credential-providers": ^3.1115.0
-    "@aws-sdk/rds-signer": ^3.1115.0
+    "@aws-sdk/client-acm": ^3.1116.0
+    "@aws-sdk/client-amplify": ^3.1116.0
+    "@aws-sdk/client-cloudfront": ^3.1116.0
+    "@aws-sdk/client-codebuild": ^3.1116.0
+    "@aws-sdk/client-s3": ^3.1116.0
+    "@aws-sdk/lib-storage": ^3.1116.0
+    "@aws-sdk/s3-request-presigner": ^3.1116.0
+    "@aws-sdk/credential-providers": ^3.1116.0
+    "@aws-sdk/rds-signer": ^3.1116.0
   babel:
     "@babel/plugin-transform-class-properties": ^8.0.1
     "@babel/plugin-transform-object-rest-spread": ^8.0.1
@@ -218,7 +218,7 @@ catalogs:
     "@prisma/client": 7.9.1
     prisma: 7.9.1
     prisma-json-types-generator: 5.1.1
-    prisma-kysely: 3.1.1
+    prisma-kysely: 3.2.1
   react:
     react: ^18.3.1
     react-dom: ^18.3.1
@@ -250,39 +250,39 @@ catalogs:
     eslint-plugin-storybook: 10.4.6
     storybook-addon-pseudo-states: 10.4.6
   tanstack-query:
-    "@tanstack/query-devtools": ^5.101.3
-    "@tanstack/react-query": ^5.101.3
-    "@tanstack/react-query-devtools": ^5.101.3
+    "@tanstack/query-devtools": ^5.102.2
+    "@tanstack/react-query": ^5.102.2
+    "@tanstack/react-query-devtools": ^5.102.2
   tiptap:
-    "@tiptap/core": ^3.30.2
-    "@tiptap/extension-bold": ^3.30.2
-    "@tiptap/extension-bullet-list": ^3.30.2
-    "@tiptap/extension-character-count": ^3.30.2
-    "@tiptap/extension-document": ^3.30.2
-    "@tiptap/extension-dropcursor": ^3.30.2
-    "@tiptap/extension-gapcursor": ^3.30.2
-    "@tiptap/extension-hard-break": ^3.30.2
-    "@tiptap/extension-heading": ^3.30.2
-    "@tiptap/extension-history": ^3.30.2
-    "@tiptap/extension-horizontal-rule": ^3.30.2
-    "@tiptap/extension-image": ^3.30.2
-    "@tiptap/extension-italic": ^3.30.2
-    "@tiptap/extension-link": ^3.30.2
-    "@tiptap/extension-list-item": ^3.30.2
-    "@tiptap/extension-ordered-list": ^3.30.2
-    "@tiptap/extension-paragraph": ^3.30.2
-    "@tiptap/extension-strike": ^3.30.2
-    "@tiptap/extension-subscript": ^3.30.2
-    "@tiptap/extension-superscript": ^3.30.2
-    "@tiptap/extension-table": ^3.30.2
-    "@tiptap/extension-table-cell": ^3.30.2
-    "@tiptap/extension-table-header": ^3.30.2
-    "@tiptap/extension-table-row": ^3.30.2
-    "@tiptap/extension-text": ^3.30.2
-    "@tiptap/extension-underline": ^3.30.2
-    "@tiptap/html": ^3.30.2
-    "@tiptap/pm": ^3.30.2
-    "@tiptap/react": ^3.30.2
+    "@tiptap/core": ^3.30.3
+    "@tiptap/extension-bold": ^3.30.3
+    "@tiptap/extension-bullet-list": ^3.30.3
+    "@tiptap/extension-character-count": ^3.30.3
+    "@tiptap/extension-document": ^3.30.3
+    "@tiptap/extension-dropcursor": ^3.30.3
+    "@tiptap/extension-gapcursor": ^3.30.3
+    "@tiptap/extension-hard-break": ^3.30.3
+    "@tiptap/extension-heading": ^3.30.3
+    "@tiptap/extension-history": ^3.30.3
+    "@tiptap/extension-horizontal-rule": ^3.30.3
+    "@tiptap/extension-image": ^3.30.3
+    "@tiptap/extension-italic": ^3.30.3
+    "@tiptap/extension-link": ^3.30.3
+    "@tiptap/extension-list-item": ^3.30.3
+    "@tiptap/extension-ordered-list": ^3.30.3
+    "@tiptap/extension-paragraph": ^3.30.3
+    "@tiptap/extension-strike": ^3.30.3
+    "@tiptap/extension-subscript": ^3.30.3
+    "@tiptap/extension-superscript": ^3.30.3
+    "@tiptap/extension-table": ^3.30.3
+    "@tiptap/extension-table-cell": ^3.30.3
+    "@tiptap/extension-table-header": ^3.30.3
+    "@tiptap/extension-table-row": ^3.30.3
+    "@tiptap/extension-text": ^3.30.3
+    "@tiptap/extension-underline": ^3.30.3
+    "@tiptap/html": ^3.30.3
+    "@tiptap/pm": ^3.30.3
+    "@tiptap/react": ^3.30.3
   trpc:
     "@trpc/client": ^11.18.0
     "@trpc/next": ^11.18.0
