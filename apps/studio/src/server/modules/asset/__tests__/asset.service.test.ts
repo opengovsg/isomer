@@ -346,6 +346,17 @@ describe("asset.service", () => {
       expect(result).toBe(`36/${UUID}/my file.png`)
     })
 
+    it("should not truncate the key at an unescaped '#' in the filename", () => {
+      // filenamify's reserved-character list doesn't strip '#', so a
+      // legitimately uploaded file can have one — the WHATWG URL parser
+      // would otherwise treat it as the start of a fragment and drop it
+      // and everything after it from `.pathname`.
+      const result = parseAssetUrlToKey(
+        `https://${ASSET_DOMAIN}/36/${UUID}/my#file.png`,
+      )
+      expect(result).toBe(`36/${UUID}/my#file.png`)
+    })
+
     it("should trim surrounding whitespace before parsing", () => {
       const result = parseAssetUrlToKey(
         `  https://${ASSET_DOMAIN}/36/${UUID}/file.png  `,

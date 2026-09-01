@@ -192,13 +192,31 @@ const ASSET_KEY_PATTERN =
 // (wrong host, extra path segments, a non-UUID folder) returns null so a
 // mistyped or malicious URL can't be mapped onto an unrelated S3 object.
 export const parseAssetUrlToKey = (url: string): string | null => {
+  const trimmed = url.trim()
+  let parsed: URL
   try {
-    const parsed = new URL(url.trim())
-    if (parsed.hostname !== env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME) {
-      return null
-    }
+    parsed = new URL(trimmed)
+  } catch {
+    return null
+  }
 
-    const key = decodeURIComponent(parsed.pathname.slice(1))
+  if (parsed.hostname !== env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME) {
+    return null
+  }
+
+  // Derive the key from the raw string, not `parsed.pathname`: the WHATWG
+  // URL parser treats an unescaped `#` as the start of a fragment and
+  // silently drops everything after it, which would resolve to the wrong
+  // (truncated) key for a legitimately uploaded filename containing `#` —
+  // filenamify's reserved-character list doesn't strip that character.
+  const schemeEnd = trimmed.indexOf("://")
+  const pathStart = schemeEnd === -1 ? -1 : trimmed.indexOf("/", schemeEnd + 3)
+  if (pathStart === -1) {
+    return null
+  }
+
+  try {
+    const key = decodeURIComponent(trimmed.slice(pathStart + 1))
     return ASSET_KEY_PATTERN.test(key) ? key : null
   } catch {
     return null
