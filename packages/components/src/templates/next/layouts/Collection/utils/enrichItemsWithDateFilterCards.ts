@@ -18,6 +18,9 @@ export const enrichItemsWithDateFilterCards = (
       today,
     )
 
-    return { ...item, dateFilterCards }
+    return {
+      ...item,
+      dateFilterCards,
+    } as ProcessedCollectionCardProps
   })
 }
