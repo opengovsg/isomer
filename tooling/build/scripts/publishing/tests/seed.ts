@@ -353,6 +353,21 @@ export const seedPublishingSite = async () => {
     source: "/ref-page",
     destination: `[resource:${siteId}:${ourTeamPageId}]`,
   })
+  // Reproduces ISOM-2525: a redirect created before a folder rename now
+  // resolves to the exact same live URL as its source and must not be emitted.
+  await seedRedirect({
+    siteId,
+    source: "/about/our-team",
+    destination: `[resource:${siteId}:${ourTeamPageId}]`,
+  })
+  // Folder variant of the same failure: the wildcard resolver appends the
+  // matched remainder, so /about/* -> /about sends every request back to the
+  // exact path it started from.
+  await seedRedirect({
+    siteId,
+    source: "/about/*",
+    destination: `[resource:${siteId}:${aboutFolderId}]`,
+  })
   // A reference to an index page resolves to its folder (the "_index" segment
   // is stripped, matching what the editor displays)
   await seedRedirect({
