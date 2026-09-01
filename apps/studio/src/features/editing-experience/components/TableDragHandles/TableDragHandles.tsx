@@ -18,8 +18,13 @@ import {
   ADD_PILL_THICKNESS_PX,
   COL_HANDLE,
   HANDLE_ACTIVE_BG,
+  HANDLE_ACTIVE_DOT,
   HANDLE_BORDER_RADIUS_PX,
   HANDLE_GAP_PX,
+  HANDLE_HOVER_BG,
+  HANDLE_HOVER_DOT,
+  HANDLE_IDLE_BG,
+  HANDLE_IDLE_DOT,
   isPointerInTableChrome,
   ROW_HANDLE,
 } from "~/features/editing-experience/utils/tableEditorChrome"
@@ -297,31 +302,35 @@ const resolveHandleState = ({
   return "passive"
 }
 
-const handleChromeByState = (state: HandleVisualState, isLocked: boolean) => {
+const handleFill = (isActive: boolean, isHovered: boolean) => {
+  if (isActive) {
+    return { backgroundColor: HANDLE_ACTIVE_BG, color: HANDLE_ACTIVE_DOT }
+  }
+  if (isHovered) {
+    return { backgroundColor: HANDLE_HOVER_BG, color: HANDLE_HOVER_DOT }
+  }
+  return { backgroundColor: HANDLE_IDLE_BG, color: HANDLE_IDLE_DOT }
+}
+
+const handleChromeByState = (
+  state: HandleVisualState,
+  isLocked: boolean,
+  isHovered: boolean,
+) => {
   const isActive = state === "selected" || state === "dragging"
   const cursor = isLocked
     ? "pointer"
     : state === "dragging"
       ? "grabbing"
       : "grab"
+  const fill = handleFill(isActive, isHovered)
   return {
     cursor,
     sx: {
       appearance: "none",
       WebkitAppearance: "none",
-      backgroundColor: isActive
-        ? HANDLE_ACTIVE_BG
-        : "var(--chakra-colors-interaction-neutral-subtle-default)",
-      color: isActive ? "#FFFFFF" : "var(--chakra-colors-base-content-medium)",
-      _hover: isActive
-        ? {
-            backgroundColor: HANDLE_ACTIVE_BG,
-            color: "#FFFFFF",
-          }
-        : {
-            backgroundColor:
-              "var(--chakra-colors-interaction-muted-main-hover)",
-          },
+      ...fill,
+      _hover: handleFill(isActive, true),
     },
   }
 }
@@ -342,7 +351,7 @@ const handleBaseStyle = {
   transition: "background-color 0.15s, color 0.15s",
 } as const
 
-const VerticalDotsIcon = ({ color }: { color: string }) => (
+const VerticalDotsIcon = () => (
   <Box
     as="svg"
     xmlns="http://www.w3.org/2000/svg"
@@ -352,7 +361,6 @@ const VerticalDotsIcon = ({ color }: { color: string }) => (
     fill="none"
     flexShrink={0}
     aria-hidden
-    color={color}
   >
     <path
       d="M1.66667 5C0.75 5 0 5.75 0 6.66667C0 7.58333 0.75 8.33333 1.66667 8.33333C2.58333 8.33333 3.33333 7.58333 3.33333 6.66667C3.33333 5.75 2.58333 5 1.66667 5ZM1.66667 0C0.75 0 0 0.75 0 1.66667C0 2.58333 0.75 3.33333 1.66667 3.33333C2.58333 3.33333 3.33333 2.58333 3.33333 1.66667C3.33333 0.75 2.58333 0 1.66667 0ZM1.66667 10C0.75 10 0 10.75 0 11.6667C0 12.5833 0.75 13.3333 1.66667 13.3333C2.58333 13.3333 3.33333 12.5833 3.33333 11.6667C3.33333 10.75 2.58333 10 1.66667 10Z"
@@ -361,7 +369,7 @@ const VerticalDotsIcon = ({ color }: { color: string }) => (
   </Box>
 )
 
-const HorizontalDotsIcon = ({ color }: { color: string }) => (
+const HorizontalDotsIcon = () => (
   <Box
     as="svg"
     xmlns="http://www.w3.org/2000/svg"
@@ -371,7 +379,6 @@ const HorizontalDotsIcon = ({ color }: { color: string }) => (
     fill="none"
     flexShrink={0}
     aria-hidden
-    color={color}
   >
     <path
       d="M8.3335 1.66667C8.3335 0.75 7.5835 0 6.66683 0C5.75016 0 5.00016 0.75 5.00016 1.66667C5.00016 2.58333 5.75016 3.33333 6.66683 3.33333C7.5835 3.33333 8.3335 2.58333 8.3335 1.66667ZM13.3335 1.66667C13.3335 0.75 12.5835 0 11.6668 0C10.7502 0 10.0002 0.75 10.0002 1.66667C10.0002 2.58333 10.7502 3.33333 11.6668 3.33333C12.5835 3.33333 13.3335 2.58333 13.3335 1.66667ZM3.3335 1.66667C3.3335 0.75 2.5835 0 1.66683 0C0.750163 0 0.000163 0.75 0.000163 1.66667C0.000163 2.58333 0.750163 3.33333 1.66683 3.33333C2.5835 3.33333 3.3335 2.58333 3.3335 1.66667Z"
@@ -446,8 +453,7 @@ const RowHandle = ({
   onMouseDown: (e: React.MouseEvent) => void
   onClick: () => void
 }) => {
-  const isActive = state === "selected" || state === "dragging"
-  const iconColor = isActive ? "white" : "base.content.medium"
+  const [isHovered, setIsHovered] = useState(false)
   return (
     <Box
       as="button"
@@ -456,9 +462,11 @@ const RowHandle = ({
       left={`${rect.left - HANDLE_GAP_PX - ROW_HANDLE.w}px`}
       top={`${rect.top + (rect.height - ROW_HANDLE.h) / 2}px`}
       {...handleBaseStyle}
-      {...handleChromeByState(state, isLocked)}
+      {...handleChromeByState(state, isLocked, isHovered)}
       w={`${ROW_HANDLE.w}px`}
       h={`${ROW_HANDLE.h}px`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       onMouseDown={onMouseDown}
       onClick={onClick}
       title={isLocked ? "Select row" : "Select or drag to reorder row"}
@@ -468,7 +476,7 @@ const RowHandle = ({
       data-table-pos={tablePos}
       data-index={index}
     >
-      <VerticalDotsIcon color={iconColor} />
+      <VerticalDotsIcon />
     </Box>
   )
 }
@@ -490,8 +498,7 @@ const ColumnHandle = ({
   onMouseDown: (e: React.MouseEvent) => void
   onClick: () => void
 }) => {
-  const isActive = state === "selected" || state === "dragging"
-  const iconColor = isActive ? "white" : "base.content.medium"
+  const [isHovered, setIsHovered] = useState(false)
   return (
     <Box
       as="button"
@@ -500,9 +507,11 @@ const ColumnHandle = ({
       top={`${rect.top - HANDLE_GAP_PX - COL_HANDLE.h}px`}
       left={`${rect.left + (rect.width - COL_HANDLE.w) / 2}px`}
       {...handleBaseStyle}
-      {...handleChromeByState(state, isLocked)}
+      {...handleChromeByState(state, isLocked, isHovered)}
       w={`${COL_HANDLE.w}px`}
       h={`${COL_HANDLE.h}px`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       onMouseDown={onMouseDown}
       onClick={onClick}
       title={isLocked ? "Select column" : "Select or drag to reorder column"}
@@ -512,7 +521,7 @@ const ColumnHandle = ({
       data-table-pos={tablePos}
       data-index={index}
     >
-      <HorizontalDotsIcon color={iconColor} />
+      <HorizontalDotsIcon />
     </Box>
   )
 }

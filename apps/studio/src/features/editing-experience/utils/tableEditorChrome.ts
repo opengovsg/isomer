@@ -8,6 +8,14 @@ export const HANDLE_BORDER_RADIUS_PX = 4
 export const HANDLE_THICKNESS_PX = 20
 export const HANDLE_LENGTH_PX = 32
 export const HANDLE_ACTIVE_BG = "#2235FF"
+export const HANDLE_ACTIVE_DOT = "#FFFFFF"
+export const HANDLE_IDLE_BG = "#FFFFFF"
+export const HANDLE_IDLE_DOT =
+  "var(--color-interaction-support-unselected, #A0A4AD)"
+export const HANDLE_HOVER_BG =
+  "var(--chakra-colors-interaction-muted-main-hover, #F8FAFE)"
+export const HANDLE_HOVER_DOT =
+  "var(--chakra-colors-base-content-medium, #666C7A)"
 export const ROW_HANDLE = { w: HANDLE_THICKNESS_PX, h: HANDLE_LENGTH_PX }
 export const COL_HANDLE = { w: HANDLE_LENGTH_PX, h: HANDLE_THICKNESS_PX }
 export const HANDLE_MARGIN_PX = HANDLE_GAP_PX + ROW_HANDLE.w
