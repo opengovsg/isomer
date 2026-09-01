@@ -1,3 +1,4 @@
+import type { TableCellBackgroundColorToken } from "@opengovsg/isomer-components"
 import type { Node as ProseMirrorNode, NodeSpec } from "@tiptap/pm/model"
 import type { Editor } from "@tiptap/react"
 import { Schema } from "@tiptap/pm/model"
@@ -133,8 +134,7 @@ const createEditor = (doc: ProseMirrorNode, selection: CellSelection) => {
 }
 
 describe("getSelectionBackgroundColorState", () => {
-  it("returns canSet, isHeaderOnly, and uniformColor in one pass", () => {
-    // Arrange
+  it("disallows header-only selections", () => {
     const doc = createTableDoc([
       [
         { type: "tableHeader", backgroundColor: "brand.canvas.inverse" },
@@ -142,23 +142,17 @@ describe("getSelectionBackgroundColorState", () => {
       ],
     ])
 
-    // Act
-    const state = getSelectionBackgroundColorState(selectCells(doc, 0, 1))
-
-    // Assert
-    expect(state).toEqual({
-      canSet: true,
-      isHeaderOnly: true,
+    expect(getSelectionBackgroundColorState(selectCells(doc, 0, 1))).toEqual({
+      canSet: false,
       isUniform: true,
-      uniformColor: "brand.canvas.inverse",
+      uniformColor: null,
     })
   })
 
-  it("allows body-only selections and reports isHeaderOnly false", () => {
+  it("allows body-only selections", () => {
     const doc = createTableDoc([[{ type: "tableCell" }, { type: "tableCell" }]])
     expect(getSelectionBackgroundColorState(selectCells(doc, 0, 1))).toEqual({
       canSet: true,
-      isHeaderOnly: false,
       isUniform: true,
       uniformColor: null,
     })
@@ -171,14 +165,12 @@ describe("getSelectionBackgroundColorState", () => {
     ])
     expect(getSelectionBackgroundColorState(selectCells(doc, 0, 3))).toEqual({
       canSet: false,
-      isHeaderOnly: false,
       isUniform: true,
       uniformColor: null,
     })
   })
 
   it("reports isUniform false when selected cells have different colours", () => {
-    // Arrange
     const doc = createTableDoc([
       [
         { type: "tableCell", backgroundColor: "blue" },
@@ -186,28 +178,20 @@ describe("getSelectionBackgroundColorState", () => {
       ],
     ])
 
-    // Act
-    const state = getSelectionBackgroundColorState(selectCells(doc, 0, 1))
-
-    // Assert — None must not look selected; UI keys off isUniform
-    expect(state).toEqual({
+    expect(getSelectionBackgroundColorState(selectCells(doc, 0, 1))).toEqual({
       canSet: true,
-      isHeaderOnly: false,
       isUniform: false,
       uniformColor: null,
     })
   })
 
   it("detects mixed colours when the first cell has no background", () => {
-    // Arrange — previously short-circuited after a null first colour
     const doc = createTableDoc([
       [{ type: "tableCell" }, { type: "tableCell", backgroundColor: "blue" }],
     ])
 
-    // Act / Assert
     expect(getSelectionBackgroundColorState(selectCells(doc, 0, 1))).toEqual({
       canSet: true,
-      isHeaderOnly: false,
       isUniform: false,
       uniformColor: null,
     })
@@ -215,33 +199,27 @@ describe("getSelectionBackgroundColorState", () => {
 })
 
 describe("isBackgroundColorAllowedForSelection", () => {
-  it("allows brand on header selections and palette on body selections", () => {
+  it("allows palette colours and null", () => {
+    expect(isBackgroundColorAllowedForSelection("blue")).toBe(true)
+    expect(isBackgroundColorAllowedForSelection(null)).toBe(true)
     expect(
-      isBackgroundColorAllowedForSelection("brand.canvas.inverse", true),
-    ).toBe(true)
-    expect(isBackgroundColorAllowedForSelection("blue", false)).toBe(true)
-    expect(
-      isBackgroundColorAllowedForSelection("brand.canvas.inverse", false),
+      isBackgroundColorAllowedForSelection(
+        "brand.canvas.inverse" as TableCellBackgroundColorToken,
+      ),
     ).toBe(false)
-    expect(isBackgroundColorAllowedForSelection("blue", true)).toBe(false)
-    expect(isBackgroundColorAllowedForSelection(null, true)).toBe(true)
-    expect(isBackgroundColorAllowedForSelection(null, false)).toBe(true)
   })
 })
 
 describe("setSelectedCellsBackgroundColor", () => {
   it("sets backgroundColor on every selected body cell", () => {
-    // Arrange
     const doc = createTableDoc([
       [{ type: "tableHeader" }, { type: "tableHeader" }],
       [{ type: "tableCell" }, { type: "tableCell" }],
     ])
     const { editor, getDispatched } = createEditor(doc, selectCells(doc, 2, 3))
 
-    // Act
     setSelectedCellsBackgroundColor(editor, "blue")
 
-    // Assert
     expect(getDispatched()).toBeDefined()
     expect(readCellColors(getDispatched()?.doc ?? doc)).toEqual([
       { type: "tableHeader", backgroundColor: null },
@@ -251,7 +229,7 @@ describe("setSelectedCellsBackgroundColor", () => {
     ])
   })
 
-  it("rejects palette colours on header-only selections", () => {
+  it("rejects header-only selections", () => {
     const doc = createTableDoc([
       [{ type: "tableHeader" }, { type: "tableHeader" }],
     ])
@@ -275,7 +253,6 @@ describe("setSelectedCellsBackgroundColor", () => {
   })
 
   it("clears backgroundColor on selected cells", () => {
-    // Arrange
     const doc = createTableDoc([
       [
         { type: "tableCell", backgroundColor: "purple" },
@@ -284,27 +261,11 @@ describe("setSelectedCellsBackgroundColor", () => {
     ])
     const { editor, getDispatched } = createEditor(doc, selectCells(doc, 0, 1))
 
-    // Act
     setSelectedCellsBackgroundColor(editor, null)
 
-    // Assert
     expect(readCellColors(getDispatched()?.doc ?? doc)).toEqual([
       { type: "tableCell", backgroundColor: null },
       { type: "tableCell", backgroundColor: null },
-    ])
-  })
-
-  it("can set brand inverse on header cells", () => {
-    const doc = createTableDoc([
-      [{ type: "tableHeader" }, { type: "tableHeader" }],
-    ])
-    const { editor, getDispatched } = createEditor(doc, selectCells(doc, 0, 1))
-
-    setSelectedCellsBackgroundColor(editor, "brand.canvas.inverse")
-
-    expect(readCellColors(getDispatched()?.doc ?? doc)).toEqual([
-      { type: "tableHeader", backgroundColor: "brand.canvas.inverse" },
-      { type: "tableHeader", backgroundColor: "brand.canvas.inverse" },
     ])
   })
 })

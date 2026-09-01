@@ -273,7 +273,7 @@ describe("Table colgroup", () => {
 })
 
 describe("Table backgroundColor by cell kind", () => {
-  it("paints Brand on header and palette on body; ignores the reverse", () => {
+  it("paints palette on body cells only and ignores header colours", () => {
     const html = renderToStaticMarkup(
       <Table
         type="table"
@@ -289,7 +289,7 @@ describe("Table backgroundColor by cell kind", () => {
                 content: [
                   {
                     type: "paragraph",
-                    content: [{ type: "text", text: "Brand header" }],
+                    content: [{ type: "text", text: "Legacy brand header" }],
                   },
                 ],
               },
@@ -314,7 +314,7 @@ describe("Table backgroundColor by cell kind", () => {
                 content: [
                   {
                     type: "paragraph",
-                    content: [{ type: "text", text: "Brand body" }],
+                    content: [{ type: "text", text: "Legacy brand body" }],
                   },
                 ],
               },
@@ -337,9 +337,7 @@ describe("Table backgroundColor by cell kind", () => {
     const openTags = [...html.matchAll(/<(th|td)\b[^>]*>/g)].map((m) => m[0])
     const [thBrand, thBlue, tdBrand, tdBlue] = openTags
 
-    expect(thBrand).toContain(
-      "background-color:var(--color-brand-canvas-inverse)",
-    )
+    expect(thBrand).not.toContain("background-color:")
     expect(thBlue).not.toContain("background-color:")
     expect(tdBrand).not.toContain("background-color:")
     expect(tdBlue).toContain("background-color:#EBECF7")
@@ -382,48 +380,5 @@ describe("Table backgroundColor by cell kind", () => {
     const cellTags = [...html.matchAll(/<(th|td)\b/g)].map((match) => match[1])
 
     expect(cellTags).toEqual(["th", "td"])
-  })
-
-  it("overrides paragraph link colour on brand-inverse header cells", () => {
-    const html = renderToStaticMarkup(
-      <Table
-        type="table"
-        site={generateSiteConfig()}
-        attrs={{ caption: "Brand header link" }}
-        content={[
-          {
-            type: "tableRow",
-            content: [
-              {
-                type: "tableHeader",
-                attrs: { backgroundColor: "brand.canvas.inverse" },
-                content: [
-                  {
-                    type: "paragraph",
-                    content: [
-                      {
-                        type: "text",
-                        marks: [
-                          {
-                            type: "link",
-                            attrs: {
-                              href: "/contact",
-                              target: "_blank",
-                            },
-                          },
-                        ],
-                        text: "Contact us",
-                      },
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-        ]}
-      />,
-    )
-
-    expect(html).toMatch(/\[&(?:amp;)?_p_a\]:text-base-content-inverse/)
   })
 })

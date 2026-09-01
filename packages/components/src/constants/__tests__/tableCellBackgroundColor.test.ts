@@ -5,7 +5,6 @@ import {
   getTableCellBackgroundColorCssForKind,
   isTableCellBackgroundColorToken,
   TABLE_CELL_BACKGROUND_COLORS,
-  TABLE_CELL_BRAND_BACKGROUND_COLOR_TOKEN,
 } from "../tableCellBackgroundColor"
 
 describe("isTableCellBackgroundColorToken", () => {
@@ -16,6 +15,10 @@ describe("isTableCellBackgroundColorToken", () => {
   it("rejects inherited object property names", () => {
     expect(isTableCellBackgroundColorToken("toString")).toBe(false)
   })
+
+  it("rejects the deprecated brand token", () => {
+    expect(isTableCellBackgroundColorToken("brand.canvas.inverse")).toBe(false)
+  })
 })
 
 describe("getTableCellBackgroundColorCss", () => {
@@ -25,23 +28,19 @@ describe("getTableCellBackgroundColorCss", () => {
 })
 
 describe("getTableCellBackgroundColorCssForKind", () => {
-  it("resolves Brand on header cells", () => {
+  it("ignores deprecated brand tokens on header cells", () => {
     expect(
-      getTableCellBackgroundColorCssForKind(
-        TABLE_CELL_BRAND_BACKGROUND_COLOR_TOKEN,
-        { isHeader: true },
-      ),
-    ).toBe(
-      TABLE_CELL_BACKGROUND_COLORS[TABLE_CELL_BRAND_BACKGROUND_COLOR_TOKEN],
-    )
+      getTableCellBackgroundColorCssForKind("brand.canvas.inverse", {
+        isHeader: true,
+      }),
+    ).toBeUndefined()
   })
 
-  it("ignores Brand on body cells", () => {
+  it("ignores deprecated brand tokens on body cells", () => {
     expect(
-      getTableCellBackgroundColorCssForKind(
-        TABLE_CELL_BRAND_BACKGROUND_COLOR_TOKEN,
-        { isHeader: false },
-      ),
+      getTableCellBackgroundColorCssForKind("brand.canvas.inverse", {
+        isHeader: false,
+      }),
     ).toBeUndefined()
   })
 

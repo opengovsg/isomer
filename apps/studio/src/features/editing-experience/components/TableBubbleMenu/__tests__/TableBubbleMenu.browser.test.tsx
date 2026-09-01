@@ -45,6 +45,33 @@ const createSeedTable = (caption: string): JSONContent => ({
   ],
 })
 
+const createSeedTableWithColoredHeader = (caption: string): JSONContent => ({
+  type: "table",
+  attrs: { caption },
+  content: [
+    {
+      type: "tableRow",
+      content: ["Column A", "Column B", "Column C"].map((text) => ({
+        type: "tableHeader",
+        attrs: { backgroundColor: "blue" },
+        content: [{ type: "paragraph", content: [{ type: "text", text }] }],
+      })),
+    },
+    ...[1, 2].map((row) => ({
+      type: "tableRow",
+      content: ["A", "B", "C"].map((col) => ({
+        type: "tableCell",
+        content: [
+          {
+            type: "paragraph",
+            content: [{ type: "text", text: `Row ${row}, ${col}` }],
+          },
+        ],
+      })),
+    })),
+  ],
+})
+
 const SEED_TABLE = createSeedTable("Test table")
 
 const SEED_CONTENT: JSONContent = {
@@ -160,12 +187,10 @@ const Harness = ({
   onReady,
   showMenu = true,
   data = SEED_CONTENT,
-  brandCanvasInverseColor,
 }: {
   onReady: (editor: Editor) => void
   showMenu?: boolean
   data?: JSONContent
-  brandCanvasInverseColor?: string
 }) => {
   const editor = useTextEditor({ data, handleChange: () => null })
   useEffect(() => {
@@ -173,21 +198,13 @@ const Harness = ({
   }, [editor, onReady])
   return (
     <>
-      {editor && showMenu && (
-        <TableBubbleMenu
-          editor={editor}
-          brandCanvasInverseColor={brandCanvasInverseColor}
-        />
-      )}
+      {editor && showMenu && <TableBubbleMenu editor={editor} />}
       {editor && <EditorContent editor={editor} />}
     </>
   )
 }
 
-const renderHarness = async (
-  data: JSONContent = SEED_CONTENT,
-  brandCanvasInverseColor?: string,
-) => {
+const renderHarness = async (data: JSONContent = SEED_CONTENT) => {
   let editor: Editor | undefined
   let setShowMenu: ((showMenu: boolean) => void) | undefined
 
@@ -195,12 +212,7 @@ const renderHarness = async (
     const [showMenu, setShowMenuState] = useState(true)
     setShowMenu = setShowMenuState
     return (
-      <Harness
-        onReady={(e) => (editor = e)}
-        showMenu={showMenu}
-        data={data}
-        brandCanvasInverseColor={brandCanvasInverseColor}
-      />
+      <Harness onReady={(e) => (editor = e)} showMenu={showMenu} data={data} />
     )
   }
 
@@ -916,36 +928,15 @@ describe("TableBubbleMenu", () => {
     expect(queryByText("Set background color")).toBeNull()
   })
 
-  it("shows Set background color with brand swatch for a full header row selection", async () => {
-    // Arrange
-    const { editor, findByText, findByRole, queryByRole } =
+  it("hides Set background color for a full header row selection", async () => {
+    const { editor, findByText, findByRole, queryByText } =
       await renderHarness()
 
-    // Act — cells 0–2 are the entire first row (kind: header-row)
     selectCells(editor, 0, 2)
     await activateTableBubbleMenu(findByRole)
     await findByText("Add row above")
 
-    // Assert — headers only offer None + brand (site canvas.inverse)
-    expect(await findByText("Set background color")).toBeTruthy()
-    expect(await findByRole("button", { name: "Brand" })).toBeTruthy()
-    expect(queryByRole("button", { name: "Blue" })).toBeNull()
-  })
-
-  it("Brand swatch fill uses the site brand colour passed from theme", async () => {
-    const { editor, findByRole, findByText } = await renderHarness(
-      SEED_CONTENT,
-      "#123456",
-    )
-    selectCells(editor, 0, 2)
-    await activateTableBubbleMenu(findByRole)
-    await findByText("Set background color")
-
-    const brandSwatch = await findByRole("button", { name: "Brand" })
-    const fill = brandSwatch.querySelector("span")
-
-    expect(fill).not.toBeNull()
-    expect(getComputedStyle(fill!).backgroundColor).toBe("rgb(18, 52, 86)")
+    expect(queryByText("Set background color")).toBeNull()
   })
 
   it("hides Set background color for a mixed header and body selection", async () => {
@@ -963,28 +954,22 @@ describe("TableBubbleMenu", () => {
   })
 
   it("clears background colour when toggling header row off", async () => {
-    const { editor, findByText, findByRole, queryByRole, container } =
-      await renderHarness()
-    selectCells(editor, 0, 0)
-    await activateTableBubbleMenu(findByRole)
-    await findByText("Set background color")
-    const brandSwatch = await findByRole("button", { name: "Brand" })
-    act(() => {
-      brandSwatch.click()
+    const { editor, findByRole, container } = await renderHarness({
+      type: "prose",
+      content: [createSeedTableWithColoredHeader("Coloured header row")],
     })
+
+    selectCells(editor, 0, 0)
     act(() => {
       editor.chain().focus().toggleHeaderRow().run()
     })
-    selectCells(editor, 0, 0)
-    await activateTableBubbleMenu(findByRole)
 
-    expect(await findByText("Set background color")).toBeTruthy()
-    expect(await findByRole("button", { name: "Blue" })).toBeTruthy()
-    expect(queryByRole("button", { name: "Brand" })).toBeNull()
     expect(
-      container.querySelector(
-        "td.selectedCell[data-background-color='brand.canvas.inverse']",
-      ),
+      container.querySelector("td[data-background-color='blue']"),
+    ).toBeNull()
+    await activateTableBubbleMenu(findByRole)
+    expect(
+      container.querySelector("td.selectedCell[data-background-color='blue']"),
     ).toBeNull()
   })
 

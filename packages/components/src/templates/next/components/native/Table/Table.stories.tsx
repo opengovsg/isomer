@@ -2007,7 +2007,7 @@ export const WithBackgroundColors: Story = {
   args: {
     attrs: {
       caption:
-        "Body cells: every palette colour (pink–purple) or no colour. Header cells: no colour or brand.canvas.inverse.",
+        "Body cells: every palette colour (pink–purple) or no colour. Header cells use the default backdrop.",
     },
     content: [
       {
@@ -2165,25 +2165,10 @@ export const WithBackgroundColors: Story = {
             content: [
               {
                 type: "paragraph",
-                content: [{ type: "text", text: "No colour" }],
+                content: [{ type: "text", text: "Default header" }],
               },
             ],
           },
-          {
-            type: "tableHeader",
-            attrs: { colspan: 3 },
-            content: [
-              {
-                type: "paragraph",
-                content: [{ type: "text", text: "Brand" }],
-              },
-            ],
-          },
-        ],
-      },
-      {
-        type: "tableRow",
-        content: [
           {
             type: "tableHeader",
             attrs: { colspan: 3 },
@@ -2191,16 +2176,6 @@ export const WithBackgroundColors: Story = {
               {
                 type: "paragraph",
                 content: [{ type: "text", text: "Default header" }],
-              },
-            ],
-          },
-          {
-            type: "tableHeader",
-            attrs: { backgroundColor: "brand.canvas.inverse", colspan: 3 },
-            content: [
-              {
-                type: "paragraph",
-                content: [{ type: "text", text: "brand.canvas.inverse" }],
               },
             ],
           },

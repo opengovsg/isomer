@@ -4,7 +4,6 @@ import type { Editor } from "@tiptap/react"
 import {
   getTableCellBackgroundColorCssForKind,
   isTableCellBackgroundColorToken,
-  isTableCellBrandBackgroundColorToken,
 } from "@opengovsg/isomer-components"
 import { Bold } from "@tiptap/extension-bold"
 import { BulletList } from "@tiptap/extension-bullet-list"
@@ -195,15 +194,9 @@ const createTableCellBackgroundColorAttribute = (isHeader: boolean) => ({
       return {}
     }
 
-    const style =
-      isHeader &&
-      isTableCellBrandBackgroundColorToken(attributes.backgroundColor)
-        ? `background-color: ${css}; color: #ffffff`
-        : `background-color: ${css}`
-
     return {
       "data-background-color": attributes.backgroundColor,
-      style,
+      style: `background-color: ${css}`,
     }
   },
 })

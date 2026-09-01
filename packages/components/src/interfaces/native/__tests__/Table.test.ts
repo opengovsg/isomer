@@ -16,7 +16,7 @@ describe("TableBaseCellSchema", () => {
     )
   })
 
-  it("accepts the brand canvas inverse colour token", () => {
+  it("accepts the deprecated brand canvas inverse colour token", () => {
     expect(
       Value.Check(TableBaseCellSchema, {
         backgroundColor: "brand.canvas.inverse",
