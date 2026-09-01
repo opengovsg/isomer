@@ -9,12 +9,7 @@ export const TableNodeView = ({ node, updateAttributes }: NodeViewProps) => {
   const caption = (node.attrs.caption as string | undefined) ?? ""
 
   return (
-    <Box
-      as={NodeViewWrapper}
-      display="flex"
-      flexDirection="column"
-      gap="0.5rem"
-    >
+    <Box as={NodeViewWrapper} display="flex" flexDirection="column">
       <Box contentEditable={false}>
         <TableCaption
           caption={caption}
