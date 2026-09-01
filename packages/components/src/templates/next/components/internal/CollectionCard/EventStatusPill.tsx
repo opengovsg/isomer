@@ -1,7 +1,6 @@
 import type { DateFilterStatusId } from "~/types/constants"
 import { DATE_FILTER_STATUS_ID } from "~/types/constants"
 
-// Figma-specified status colours (wayfinder ticket 005).
 const STATUS_STYLES: Record<DateFilterStatusId, string> = {
   [DATE_FILTER_STATUS_ID.Upcoming]: "bg-[#358257] text-white",
   [DATE_FILTER_STATUS_ID.Ongoing]: "bg-[#A88651] text-white",

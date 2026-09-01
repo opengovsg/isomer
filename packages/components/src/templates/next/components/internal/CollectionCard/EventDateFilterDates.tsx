@@ -4,9 +4,6 @@ interface EventDateFilterDatesProps {
   entries: DateFilterCard[]
 }
 
-// Underneath the title: one label+date block per date filter the item has a
-// value for, laid out in a 2-column grid to stay compact when there are
-// several. See wayfinder ticket 005.
 export const EventDateFilterDates = ({
   entries,
 }: EventDateFilterDatesProps) => {

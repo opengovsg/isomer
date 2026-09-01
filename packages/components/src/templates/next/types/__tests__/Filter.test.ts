@@ -1,28 +1,30 @@
 import { describe, expect, it } from "vitest"
 
-import { isAppliedFilters, isIsoDateString } from "../Filter"
-
-describe("isIsoDateString", () => {
-  it.each(["2026-01-01", "2026-12-31"])("accepts %s", (value) => {
-    expect(isIsoDateString(value)).toBe(true)
-  })
-
-  it.each(["not-a-date", "2026-13-01", "2026-00-15", "26-01-01", ""])(
-    "rejects %s",
-    (value) => {
-      expect(isIsoDateString(value)).toBe(false)
-    },
-  )
-})
+import { isAppliedFilters } from "../Filter"
 
 describe("isAppliedFilters", () => {
-  it("rejects a dateRange with invalid ISO date strings", () => {
+  it.each(["not-a-date", "2026-13-01", "2026-00-15", "26-01-01", ""])(
+    "rejects a dateRange with invalid start date %s",
+    (start) => {
+      expect(
+        isAppliedFilters([
+          {
+            id: "event-date",
+            items: [],
+            dateRange: { start, end: "2026-01-01" },
+          },
+        ]),
+      ).toBe(false)
+    },
+  )
+
+  it("rejects a dateRange with invalid end date", () => {
     expect(
       isAppliedFilters([
         {
           id: "event-date",
           items: [],
-          dateRange: { start: "not-a-date", end: "2026-01-01" },
+          dateRange: { start: "2026-01-01", end: "not-a-date" },
         },
       ]),
     ).toBe(false)

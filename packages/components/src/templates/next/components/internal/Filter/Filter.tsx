@@ -3,13 +3,12 @@
 import { useButton } from "@react-aria/button"
 import { useFocusRing } from "@react-aria/focus"
 import { mergeProps } from "@react-aria/utils"
-import { useMemo, useRef, useState } from "react"
+import { useRef, useState } from "react"
 import { BiChevronDown, BiChevronRight } from "react-icons/bi"
 import { tv } from "~/lib/tv"
 import { groupFocusVisibleHighlight } from "~/utils/tailwind"
 
 import type { FilterProps } from "../../../types/Filter"
-import { getAvailableFilters } from "../../../layouts/Collection/utils/getAvailableFilters"
 import { Button } from "../Button"
 import { Checkbox, CheckboxGroup } from "../Checkbox"
 import { DateRangeFilterInput } from "./DateRangeFilterInput"
@@ -51,20 +50,13 @@ const FilterSectionButton = ({
 }
 
 export const Filter = ({
-  filters: filtersProp,
-  items,
-  tagCategories,
+  filters,
   appliedFilters,
   handleFilterToggle,
   handleDateRangeChange,
   handleClearFilter,
   setAppliedFilters,
 }: FilterProps) => {
-  const filters = useMemo(
-    () => filtersProp ?? getAvailableFilters(items ?? [], tagCategories),
-    [filtersProp, items, tagCategories],
-  )
-
   const [showFilter, setShowFilter] = useState<Record<string, boolean>>(
     filters.reduce((acc, { id }) => ({ ...acc, [id]: true }), {}),
   )

@@ -99,8 +99,7 @@ export const CollectionClient = ({
           })}
         >
           <Filter
-            items={items}
-            tagCategories={page.tagCategories}
+            filters={filters}
             appliedFilters={appliedFilters}
             handleFilterToggle={handleFilterToggle}
             handleDateRangeChange={handleDateRangeChange}

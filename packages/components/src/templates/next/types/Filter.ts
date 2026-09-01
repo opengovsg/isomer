@@ -1,5 +1,3 @@
-import type { ProcessedCollectionCardProps } from "~/interfaces"
-import type { CollectionPagePageProps } from "~/types"
 import type { TagCategoryDisplay } from "~/types/constants"
 import { parseDate } from "@internationalized/date"
 
@@ -40,8 +38,7 @@ export interface AppliedFilter {
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value)
 
-// Same yyyy-MM-dd strings accepted by `parseDate` / the `dateTagged` schema.
-export const isIsoDateString = (value: string): boolean => {
+const isIsoDateString = (value: string): boolean => {
   try {
     parseDate(value)
     return true
@@ -72,11 +69,7 @@ export const isAppliedFilters = (value: unknown): value is AppliedFilter[] =>
   )
 
 export interface FilterProps {
-  // NOTE: pass `items` + `tagCategories` for live date-filter counts, or
-  // pre-built `filters` for Storybook / tests.
-  filters?: Filter[]
-  items?: ProcessedCollectionCardProps[]
-  tagCategories?: CollectionPagePageProps["tagCategories"]
+  filters: Filter[]
   appliedFilters: AppliedFilter[]
   setAppliedFilters: (appliedFilters: AppliedFilter[]) => void
   handleFilterToggle: (filterId: string, itemId: string) => void

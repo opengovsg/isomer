@@ -82,9 +82,25 @@ export const getDateFilterStaticEntries = (
   return entries.length > 0 ? entries : undefined
 }
 
-// NOTE: used by tests and any callers that need the full resolved shape in
-// one shot. Production UI should prefer getDateFilterStaticEntries (server)
-// + EventDateFilterDisplay (client) instead.
+export const getDateFilterCardsFromEntries = (
+  entries: DateFilterDisplayEntry[],
+  tagCategories: CollectionPagePageProps["tagCategories"],
+  today: string = getTodayInSingapore(),
+): DateFilterCard[] => {
+  const dateCategories = tagCategories?.filter(isDateFilter) ?? []
+
+  return entries.map((entry) => {
+    const category = dateCategories.find(
+      (tagCategory) => tagCategory.id === entry.id,
+    )
+    const status = getDateFilterStatus(entry, today)
+    const statusLabel =
+      category?.statusLabels.find(({ id }) => id === status)?.label ?? status
+
+    return { ...entry, status, statusLabel }
+  })
+}
+
 export const getDateFilterValues = (
   itemDateTagged: ArticlePagePageProps["dateTagged"],
   tagCategories: CollectionPagePageProps["tagCategories"],
@@ -96,23 +112,16 @@ export const getDateFilterValues = (
     return { dateTagged: undefined, dateFilterCards: undefined }
   }
 
-  const dateCategories = tagCategories?.filter(isDateFilter) ?? []
   const dateTagged: DateFilterValue[] = entries.map(
     ({ id, date, endDate }) => ({ id, date, endDate }),
   )
-  const dateFilterCards: DateFilterCard[] = entries.map((entry) => {
-    const category = dateCategories.find(
-      (tagCategory) => tagCategory.id === entry.id,
-    )
-    const status = getDateFilterStatus(entry, today)
-    const statusLabel =
-      category?.statusLabels.find(({ id }) => id === status)?.label ?? status
-
-    return { ...entry, status, statusLabel }
-  })
 
   return {
     dateTagged,
-    dateFilterCards,
+    dateFilterCards: getDateFilterCardsFromEntries(
+      entries,
+      tagCategories,
+      today,
+    ),
   }
 }
