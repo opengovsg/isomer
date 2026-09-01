@@ -23,7 +23,7 @@ export const TableNodeView = ({ node, updateAttributes }: NodeViewProps) => {
           }
         />
       </Box>
-      <Box pr={`${TABLE_ADD_CHROME_PX}px`} pb={`${TABLE_ADD_CHROME_PX}px`}>
+      <Box p={`${TABLE_ADD_CHROME_PX}px`}>
         <NodeViewContent<"table"> as="table" />
       </Box>
     </Box>
