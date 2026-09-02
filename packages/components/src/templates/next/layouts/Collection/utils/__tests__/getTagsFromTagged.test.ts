@@ -1,9 +1,6 @@
 import type { ArticlePagePageProps, CollectionPagePageProps } from "~/types"
 import { describe, expect, it } from "vitest"
-import {
-  DATE_FILTER_STATUS_ID,
-  type DateFilterStatusId,
-} from "~/types/constants"
+import { DATE_FILTER_STATUS, type DateFilterStatusId } from "~/types/constants"
 
 import { getTagsFromTagged } from "../getTagsFromTagged"
 
@@ -100,9 +97,9 @@ describe("getTagsFromTagged", () => {
           id: "date-1",
           type: "date",
           statusLabels: {
-            [DATE_FILTER_STATUS_ID.Ended]: "Ended",
-            [DATE_FILTER_STATUS_ID.Ongoing]: "Ongoing",
-            [DATE_FILTER_STATUS_ID.Upcoming]: "Upcoming",
+            [DATE_FILTER_STATUS.Ended.id]: "Ended",
+            [DATE_FILTER_STATUS.Ongoing.id]: "Ongoing",
+            [DATE_FILTER_STATUS.Upcoming.id]: "Upcoming",
           } satisfies Record<DateFilterStatusId, string>,
         },
         {

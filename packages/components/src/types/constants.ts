@@ -55,40 +55,11 @@ export const DATE_FILTER_STATUS = {
   },
 } as const
 
-type DateFilterStatusKey = keyof typeof DATE_FILTER_STATUS
-
 export type DateFilterStatusId =
-  (typeof DATE_FILTER_STATUS)[DateFilterStatusKey]["id"]
+  (typeof DATE_FILTER_STATUS)[keyof typeof DATE_FILTER_STATUS]["id"]
 
-export const DATE_FILTER_STATUS_ID = {
-  Ended: DATE_FILTER_STATUS.Ended.id,
-  Ongoing: DATE_FILTER_STATUS.Ongoing.id,
-  Upcoming: DATE_FILTER_STATUS.Upcoming.id,
-} as const
-
-export const DEFAULT_DATE_FILTER_STATUS_LABELS = Object.fromEntries(
-  (Object.keys(DATE_FILTER_STATUS) as DateFilterStatusKey[]).map((key) => [
-    DATE_FILTER_STATUS[key].id,
-    DATE_FILTER_STATUS[key].defaultLabel,
-  ]),
-) as Record<DateFilterStatusId, string>
-
-/** Build a record keyed by every date filter status id. */
-export const mapDateFilterStatusIds = <T>(
-  getValue: (statusId: DateFilterStatusId) => T,
-): Record<DateFilterStatusId, T> =>
-  Object.fromEntries(
-    (
-      Object.values(
-        DATE_FILTER_STATUS,
-      ) as (typeof DATE_FILTER_STATUS)[DateFilterStatusKey][]
-    ).map(({ id }) => [id, getValue(id)]),
-  ) as Record<DateFilterStatusId, T>
-
-export const resolveDateFilterStatusLabels = (
-  statusLabels?: Partial<Record<DateFilterStatusId, string>>,
-): Record<DateFilterStatusId, string> =>
-  mapDateFilterStatusIds(
-    (statusId) =>
-      statusLabels?.[statusId] ?? DEFAULT_DATE_FILTER_STATUS_LABELS[statusId],
-  )
+export const getDefaultDateFilterStatusLabel = (
+  statusId: DateFilterStatusId,
+): string =>
+  Object.values(DATE_FILTER_STATUS).find((status) => status.id === statusId)!
+    .defaultLabel

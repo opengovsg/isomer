@@ -16,10 +16,10 @@ import {
 } from "~/utils/validation"
 
 import {
-  DEFAULT_DATE_FILTER_STATUS_LABELS,
-  mapDateFilterStatusIds,
+  DATE_FILTER_STATUS,
   TAG_CATEGORY_DISPLAY_OPTIONS,
   TAG_CATEGORY_TYPE,
+  type DateFilterStatusId,
   type TagCategoryDisplay,
 } from "./constants"
 
@@ -132,12 +132,15 @@ const createDateFilterStatusLabelSchema = ({
     }),
   )
 
-const dateFilterStatusLabelsSchemaProperties = mapDateFilterStatusIds(
-  (statusId) =>
-    createDateFilterStatusLabelSchema({
-      defaultValue: DEFAULT_DATE_FILTER_STATUS_LABELS[statusId],
-    }),
-)
+const dateFilterStatusLabelsSchemaProperties = Object.fromEntries(
+  Object.values(DATE_FILTER_STATUS).map(({ id, defaultLabel }) => [
+    id,
+    createDateFilterStatusLabelSchema({ defaultValue: defaultLabel }),
+  ]),
+) as Record<
+  DateFilterStatusId,
+  ReturnType<typeof createDateFilterStatusLabelSchema>
+>
 
 const DateFilterSchema = Type.Object(
   {
@@ -145,9 +148,9 @@ const DateFilterSchema = Type.Object(
     ...tagCategoryIsRequiredSchemaObject,
     // Always "date" on new filters. Keeps oneOf exclusive with TextFilterSchema.
     type: Type.Literal(TAG_CATEGORY_TYPE.Date, { format: "hidden" }),
-    // Optional for backward compatibility. Missing/`undefined` must be read as
-    // `DEFAULT_DATE_FILTER_STATUS_LABELS` at render time. Per-field schema
-    // `default`s are safe here: date filters are new-only (no legacy rows).
+    // Optional for backward compatibility. Missing/`undefined` must be read from
+    // `DATE_FILTER_STATUS` at render time. Per-field schema `default`s are safe
+    // here: date filters are new-only (no legacy rows).
     statusLabels: Type.Optional(
       Type.Object(dateFilterStatusLabelsSchemaProperties, {
         title: "Custom labels",
