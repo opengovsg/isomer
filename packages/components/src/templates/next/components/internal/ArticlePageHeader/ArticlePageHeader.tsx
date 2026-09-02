@@ -2,10 +2,8 @@ import type { ArticlePageHeaderProps } from "~/interfaces"
 import { getFormattedDate } from "~/utils/getFormattedDate"
 
 import { Breadcrumb } from "../Breadcrumb"
-import {
-  EventDateFilterDatesFromEntries,
-  EventDateFilterStatusBadges,
-} from "../CollectionCard/EventDateFilterClientParts"
+import { EventDateFilterDatesFromEntries } from "../CollectionCard/EventDateFilterDatesFromEntries"
+import { EventDateFilterStatusBadges } from "../CollectionCard/EventDateFilterStatusBadges"
 import { PillTags, PlaintextTags } from "../Tags"
 
 export const ArticlePageHeader = ({

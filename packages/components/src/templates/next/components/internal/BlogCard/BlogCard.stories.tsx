@@ -1,39 +1,14 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { CollectionCardProps } from "~/interfaces"
-import type { CollectionPagePageProps } from "~/types"
 import { expect, within } from "storybook/test"
-import { isDateFilter } from "~/types/page"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
+import {
+  daysFromNow,
+  statusLabelsFor,
+} from "../CollectionCard/dateFilterStoryFixtures"
 import { BlogCard } from "./BlogCard"
-
-const DATE_FILTER_TAG_CATEGORIES: CollectionPagePageProps["tagCategories"] = [
-  {
-    id: "event-date",
-    label: "Event Date",
-    type: "date",
-    statusLabels: [
-      { id: "ENDED", label: "Event ended" },
-      { id: "ONGOING", label: "Ongoing" },
-      { id: "UPCOMING", label: "Upcoming" },
-    ],
-  },
-]
-
-const statusLabelsFor = (categoryId: string) => {
-  const category = DATE_FILTER_TAG_CATEGORIES?.find(
-    (entry) => entry.id === categoryId,
-  )
-  return category && isDateFilter(category) ? category.statusLabels : []
-}
-
-const pad = (n: number): string => n.toString().padStart(2, "0")
-const daysFromNow = (days: number) => {
-  const date = new Date()
-  date.setDate(date.getDate() + days)
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
-}
 
 const meta: Meta<typeof BlogCard> = {
   title: "Next/Internal Components/Blog Card",

@@ -4,7 +4,8 @@ import { isExternalUrl } from "~/utils/isExternalUrl"
 import { ImageClient } from "../ImageClient"
 import { Link } from "../Link"
 import { PillTags, PlaintextTags } from "../Tags"
-import { EventDateFilterDisplay } from "./EventDateFilterDisplay"
+import { EventDateFilterDatesFromEntries } from "./EventDateFilterDatesFromEntries"
+import { EventDateFilterStatusBadges } from "./EventDateFilterStatusBadges"
 import { Title } from "./Title"
 
 export const CollectionCard = ({
@@ -40,22 +41,20 @@ export const CollectionCard = ({
         </p>
       )}
       <div className="flex flex-grow flex-col gap-3 text-base-content md:gap-2">
-        <EventDateFilterDisplay
-          entries={dateFilterDisplayEntries}
-          beforeTitle={
-            shouldShowDate ? (
-              <p className="prose-label-md-regular text-base-content-subtle md:hidden">
-                {formattedDate ? formattedDate : "-"}
-              </p>
-            ) : undefined
-          }
-        >
+        <>
+          <EventDateFilterStatusBadges entries={dateFilterDisplayEntries} />
+          {shouldShowDate ? (
+            <p className="prose-label-md-regular text-base-content-subtle md:hidden">
+              {formattedDate ? formattedDate : "-"}
+            </p>
+          ) : null}
           <Title
             title={itemTitle}
             isExternalLink={isExternalLink}
             headingLevel={headingLevel}
           />
-        </EventDateFilterDisplay>
+          <EventDateFilterDatesFromEntries entries={dateFilterDisplayEntries} />
+        </>
         <PillTags
           tags={pillTags}
           className="flex w-full flex-wrap items-center gap-2"
