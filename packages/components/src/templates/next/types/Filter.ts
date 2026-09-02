@@ -1,4 +1,5 @@
 import type { TagCategoryDisplay } from "~/types/constants"
+import type { DateFilterSidebarVisibility } from "~/types/page"
 import { parseDate } from "@internationalized/date"
 import { DEFAULT_DATE_RANGE_FILTER_LABEL } from "~/types/constants"
 
@@ -23,6 +24,10 @@ export interface Filter {
   // NOTE: only set for date-type tag-category filters — label above the custom
   // date-range input in the sidebar (see DateRangeFilterInput).
   dateRangeFilterLabel?: string
+  // NOTE: only set for date-type tag-category filters — whether the status-label
+  // checkboxes and/or custom date-range input render in the sidebar.
+  showStatusLabels?: DateFilterSidebarVisibility["showStatusLabels"]
+  showDateRange?: DateFilterSidebarVisibility["showDateRange"]
 }
 
 interface AppliedFilterItem {
