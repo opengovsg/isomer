@@ -34,11 +34,8 @@ export const resolveTagCategoryDisplay = (
   display?: TagCategoryDisplay,
 ): TagCategoryDisplay => display ?? DEFAULT_TAG_CATEGORY_DISPLAY
 
-// A `tagCategories` entry is either a "text" filter (admin-defined option
-// list, the original mechanism) or a "date" filter (computed ended/ongoing/
-// upcoming status). Legacy persisted entries omit `type` entirely — read
-// missing/`undefined` as `Text` for backward compatibility, same pattern as
-// `resolveTagCategoryDisplay` above.
+// tagCategories entry is "text" (option list) or "date" (status buckets).
+// Old rows omit type. Treat missing as text via resolveTagCategoryType.
 export const TAG_CATEGORY_TYPE = {
   Text: "text",
   Date: "date",
@@ -53,9 +50,8 @@ export const resolveTagCategoryType = (
   type?: TagCategoryType,
 ): TagCategoryType => type ?? DEFAULT_TAG_CATEGORY_TYPE
 
-// Fixed, well-known ids for a date filter's 3 status buckets. Status
-// computation (see getDateFilterStatus) keys off these ids, never off the
-// admin-editable label text, so relabelling a bucket never breaks matching.
+// Stable ids for the three status buckets. getDateFilterStatus matches on
+// these, not the admin-editable labels.
 export const DATE_FILTER_STATUS_ID = {
   Ended: "ENDED",
   Ongoing: "ONGOING",
