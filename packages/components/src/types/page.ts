@@ -15,11 +15,8 @@ import {
 } from "~/utils/validation"
 
 import {
-  DATE_FILTER_STATUS_COUNT,
-  DATE_FILTER_STATUS_ID,
   TAG_CATEGORY_DISPLAY_OPTIONS,
   TAG_CATEGORY_TYPE,
-  type DateFilterStatusId,
   type TagCategoryDisplay,
 } from "./constants"
 
@@ -38,12 +35,6 @@ const TagCategoryUuidSchema = generateUuidSchema({
   description:
     "This is the uuid of a single tag category and will be used to uniquely identify it.",
 })
-
-const DateFilterStatusIdSchema = Type.Union(
-  (Object.values(DATE_FILTER_STATUS_ID) as DateFilterStatusId[]).map((id) =>
-    Type.Literal(id),
-  ),
-)
 
 const tagCategoryLabelSchemaObject = {
   label: Type.String({
@@ -73,11 +64,11 @@ const tagCategoryIsRequiredSchemaObject = {
 const TextFilterSchema = Type.Object(
   {
     ...tagCategoryLabelSchemaObject,
+    ...tagCategoryIsRequiredSchemaObject,
     // Optional on old rows. Must be "text" or absent so oneOf picks TextFilterSchema.
     type: Type.Optional(
       Type.Literal(TAG_CATEGORY_TYPE.Text, { format: "hidden" }),
     ),
-    ...tagCategoryIsRequiredSchemaObject,
     // Optional for backward compatibility. Missing/`undefined` must be read as
     // `DEFAULT_TAG_CATEGORY_DISPLAY` via `resolveTagCategoryDisplay`.
     // Omit JSON Schema `default`: Studio AJV runs with useDefaults, which would apply the
@@ -125,28 +116,20 @@ const TextFilterSchema = Type.Object(
 const DateFilterSchema = Type.Object(
   {
     ...tagCategoryLabelSchemaObject,
+    ...tagCategoryIsRequiredSchemaObject,
     // Always "date" on new filters. Keeps oneOf exclusive with TextFilterSchema.
     type: Type.Literal(TAG_CATEGORY_TYPE.Date, { format: "hidden" }),
-    ...tagCategoryIsRequiredSchemaObject,
-    // Three entries, keyed by DATE_FILTER_STATUS_ID. Only labels are editable.
-    statusLabels: Type.Array(
-      Type.Object({
-        id: DateFilterStatusIdSchema,
-        label: Type.String({
-          title: "Status label",
-          pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
-          errorMessage: {
-            pattern: "cannot be empty or have leading/trailing spaces",
-          },
-        }),
-      }),
+    statusLabels: Type.Object(
+      {
+        ENDED: Type.String({ title: "Event ended" }),
+        ONGOING: Type.String({ title: "Ongoing" }),
+        UPCOMING: Type.String({ title: "Upcoming" }),
+      },
       {
         title: "Status labels",
         description:
           "Labels for each status. Status is derived from dates on each item.",
         format: "date-filter-status-labels",
-        minItems: DATE_FILTER_STATUS_COUNT,
-        maxItems: DATE_FILTER_STATUS_COUNT,
       },
     ),
     // Falls back to DEFAULT_DATE_RANGE_FILTER_LABEL at render. No schema default
