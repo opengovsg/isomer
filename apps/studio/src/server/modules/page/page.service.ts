@@ -21,7 +21,7 @@ import {
   getDescendantResourceIdsUnsafeForScheduledUnpublish,
   getLockingAncestorIndexPages,
   getPageById,
-  hasDescendantWithPendingScheduledAction,
+  hasDescendantWithPendingScheduledUnpublish,
   resolveEffectiveResourceId,
   UNPUBLISH_PAGE_NOT_FOUND_MESSAGE,
   updatePageById,
@@ -342,31 +342,6 @@ export const cancelSchedulePublish = async ({
       })
     }
 
-    // If this index page isn't live yet, a child page may have scheduled its
-    // own publish assuming this one would land first. Cancelling this
-    // schedule out from under it would leave that child's schedule
-    // unenforceable, so require the child schedules to be cancelled first —
-    // a hard block, not an auto-cascade.
-    if (
-      resource.type === ResourceType.IndexPage &&
-      resource.parentId &&
-      !resource.publishedVersionId
-    ) {
-      const hasPendingChildPublish =
-        await hasDescendantWithPendingScheduledAction(tx, {
-          siteId,
-          resourceId: resource.parentId,
-          excludeResourceId: resource.id,
-          action: ScheduledAction.Publish,
-        })
-      if (hasPendingChildPublish) {
-        throw new TRPCError({
-          code: "PRECONDITION_FAILED",
-          message: "Cancel the scheduled publish for its child pages first.",
-        })
-      }
-    }
-
     const updatedPage = await updatePageById(
       {
         id: resolvedResourceId,
@@ -441,11 +416,10 @@ export const cancelScheduleUnpublish = async ({
     // hard block, not an auto-cascade.
     if (resource.type === ResourceType.IndexPage && resource.parentId) {
       const hasPendingChildUnpublish =
-        await hasDescendantWithPendingScheduledAction(tx, {
+        await hasDescendantWithPendingScheduledUnpublish(tx, {
           siteId,
           resourceId: resource.parentId,
           excludeResourceId: resource.id,
-          action: ScheduledAction.Unpublish,
         })
       if (hasPendingChildUnpublish) {
         throw new TRPCError({
