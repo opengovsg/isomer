@@ -14,8 +14,7 @@ import { trpc } from "~/utils/trpc"
 import { ScheduledAction } from "~prisma/generated/generatedEnums"
 
 import { CancelScheduleUnpublishModal } from "./CancelScheduleUnpublishModal"
-import { PublishNowModal } from "./PublishNowModal"
-import { UnpublishNowModal } from "./UnpublishNowModal"
+import { PublishOrUnpublishNowModal } from "./PublishOrUnpublishNowModal"
 
 interface EditingLockedOverlayProps {
   pageId: number
@@ -66,21 +65,18 @@ const SuspendableEditingLockedOverlay = ({
       px="1.5rem"
       py="2rem"
     >
-      {/* Render the modal conditionally to ensure the schema resets when the modal is opened/closed */}
-      {actionDisclosure.isOpen &&
-        (isScheduledToPublish ? (
-          <PublishNowModal
-            pageId={pageId}
-            siteId={siteId}
-            {...actionDisclosure}
-          />
-        ) : (
-          <UnpublishNowModal
-            pageId={pageId}
-            siteId={siteId}
-            {...actionDisclosure}
-          />
-        ))}
+      {/* Mounted only while open. These are plain confirmation dialogs with
+          no form/schema to reset, but this still keeps a fresh mutation
+          instance per open rather than reusing one whose isPending/error
+          state could otherwise linger from the previous open. */}
+      {actionDisclosure.isOpen && (
+        <PublishOrUnpublishNowModal
+          action={isScheduledToPublish ? "publish" : "unpublish"}
+          pageId={pageId}
+          siteId={siteId}
+          {...actionDisclosure}
+        />
+      )}
       {cancelScheduleDisclosure.isOpen &&
         (isScheduledToPublish ? (
           <CancelScheduleModal
