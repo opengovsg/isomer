@@ -17,7 +17,7 @@ import { db, ResourceType, ScheduledAction } from "~/server/modules/database"
 import { bulkValidateUserPermissionsForResources } from "~/server/modules/permissions/permissions.service"
 import {
   defaultResourceSelect,
-  getContainerAncestorCount,
+  getContainerAncestorCounts,
   publishPageResource,
   unpublishPageResource,
 } from "~/server/modules/resource/resource.service"
@@ -160,21 +160,34 @@ export const publishScheduledResources = async (
   //      of due resources that aren't actually ancestor/descendant of each
   //      other.
   //   3. id ascending, as a final deterministic tiebreak.
-  const resourcesWithDepth = await Promise.all(
-    resourcesWithUser.map(async (resource) => {
-      const containerAncestorCount = await getContainerAncestorCount(db, {
-        siteId: resource.siteId,
-        resourceId: resource.id,
-      })
-      const depth =
-        containerAncestorCount -
-        (resource.type === ResourceType.IndexPage ? 1 : 0)
-      // The query above only selects rows with scheduledAt <=
-      // scheduledAtCutoff, so this is never actually null.
-      const scheduledAt = resource.scheduledAt ?? scheduledAtCutoff
-      return { resource, depth, scheduledAt }
-    }),
-  )
+  // Batched per site (one recursive-CTE query per distinct site due this
+  // tick) rather than one query per due resource, since the ancestor walk
+  // is scoped to a single site anyway.
+  const resourceIdsBySite = new Map<number, string[]>()
+  for (const resource of resourcesWithUser) {
+    const ids = resourceIdsBySite.get(resource.siteId) ?? []
+    ids.push(resource.id)
+    resourceIdsBySite.set(resource.siteId, ids)
+  }
+  const ancestorCountsBySite = new Map<number, Map<string, number>>()
+  for (const [siteId, resourceIds] of resourceIdsBySite) {
+    ancestorCountsBySite.set(
+      siteId,
+      await getContainerAncestorCounts(db, { siteId, resourceIds }),
+    )
+  }
+
+  const resourcesWithDepth = resourcesWithUser.map((resource) => {
+    const containerAncestorCount =
+      ancestorCountsBySite.get(resource.siteId)?.get(resource.id) ?? 0
+    const depth =
+      containerAncestorCount -
+      (resource.type === ResourceType.IndexPage ? 1 : 0)
+    // The query above only selects rows with scheduledAt <=
+    // scheduledAtCutoff, so this is never actually null.
+    const scheduledAt = resource.scheduledAt ?? scheduledAtCutoff
+    return { resource, depth, scheduledAt }
+  })
   resourcesWithDepth.sort((a, b) => {
     const scheduledAtDiff = a.scheduledAt.getTime() - b.scheduledAt.getTime()
     if (scheduledAtDiff !== 0) return scheduledAtDiff
@@ -185,7 +198,11 @@ export const publishScheduledResources = async (
     const bKey = bAction === ScheduledAction.Unpublish ? -b.depth : b.depth
     if (aKey !== bKey) return aKey - bKey
 
-    return Number(a.resource.id) - Number(b.resource.id)
+    // Resource.id is a BigInt (serialized as a numeric string) — compare as
+    // BigInt rather than Number to avoid precision loss for very large ids.
+    const aId = BigInt(a.resource.id)
+    const bId = BigInt(b.resource.id)
+    return aId < bId ? -1 : aId > bId ? 1 : 0
   })
   const orderedResources = resourcesWithDepth.map(({ resource }) => resource)
 

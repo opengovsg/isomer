@@ -1075,36 +1075,88 @@ export const getAncestorIndexPages = async (
   }))
 }
 
-// Number of ancestor Folder/Collection containers strictly above
-// `resourceId` (excluding `resourceId` itself, even when `resourceId` is
-// itself a container). Used by the scheduled-publishing cron
-// (schedulePublishingJob.ts) to order same-tick actions so a container's
-// IndexPage always executes before (Publish) or after (Unpublish) the pages
-// inside it, at any nesting depth — see the depth comment there for how an
-// IndexPage's count is adjusted to match its own container's, not its
-// sibling pages'.
-export const getContainerAncestorCount = async (
+// Number of ancestor Folder/Collection containers strictly above each id in
+// `resourceIds` (excluding the id itself, even when it's itself a
+// container), batched in one query rather than one recursive CTE per id.
+// Used by the scheduled-publishing cron (schedulePublishingJob.ts) to order
+// same-tick actions so a container's IndexPage always executes before
+// (Publish) or after (Unpublish) the pages inside it, at any nesting depth
+// — see the depth comment there for how an IndexPage's count is adjusted to
+// match its own container's, not its sibling pages'. All ids must belong to
+// `siteId`; callers with due resources spanning multiple sites call this
+// once per site. Ids with zero ancestors are still present in the returned
+// map (mapped to 0), since a batched query returns no row at all for them.
+export const getContainerAncestorCounts = async (
   trx: SafeKysely,
-  { siteId, resourceId }: { siteId: number; resourceId: string },
-): Promise<number> => {
-  const rows = await withAncestorContainers(trx, { siteId, resourceId })
-    .selectFrom("ancestors")
-    .where("ancestors.id", "!=", resourceId)
-    .select("ancestors.id")
+  { siteId, resourceIds }: { siteId: number; resourceIds: string[] },
+): Promise<Map<string, number>> => {
+  const counts = new Map<string, number>(resourceIds.map((id) => [id, 0]))
+  if (resourceIds.length === 0) return counts
+
+  const rows = await trx
+    .withRecursive("ancestorBranches", (eb) =>
+      eb
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.id", "in", resourceIds)
+        .select(["Resource.id", "Resource.id as rootId", "Resource.parentId"])
+        // `union` (not `unionAll`) dedupes rows so a malformed parent chain
+        // with a cycle can't drive the recursion forever.
+        .union((fb) =>
+          fb
+            .selectFrom("Resource")
+            .innerJoin(
+              "ancestorBranches",
+              "ancestorBranches.parentId",
+              "Resource.id",
+            )
+            .where("Resource.siteId", "=", siteId)
+            .where("Resource.type", "in", [
+              ResourceType.Folder,
+              ResourceType.Collection,
+            ])
+            .select([
+              "Resource.id",
+              "ancestorBranches.rootId",
+              "Resource.parentId",
+            ]),
+        ),
+    )
+    .selectFrom("ancestorBranches")
+    .whereRef("ancestorBranches.id", "!=", "ancestorBranches.rootId")
+    .groupBy("ancestorBranches.rootId")
+    .select([
+      "ancestorBranches.rootId as rootId",
+      (eb) => eb.fn.countAll<number>().as("count"),
+    ])
     .execute()
-  return rows.length
+
+  for (const row of rows) {
+    counts.set(String(row.rootId), Number(row.count))
+  }
+  return counts
 }
 
 // Ancestor IndexPages with a pending scheduled Unpublish, regardless of
 // timing — an unconditional lock, not a time comparison. Once a container is
 // scheduled to go dark, nothing underneath it may be published (immediately
 // or via a future schedule) until that schedule fires or is cancelled.
+// Sorted earliest-scheduledAt-first: callers take the first element to build
+// an error message naming a specific scheduledAt, and an unsorted filter's
+// row order isn't guaranteed — sorting keeps that message stable and names
+// the soonest-firing (most actionable) lock when more than one ancestor is
+// locked.
 export const getLockingAncestorIndexPages = (rows: AncestorIndexPage[]) =>
-  rows.filter(
-    (row) =>
-      row.scheduledAt !== null &&
-      row.scheduledAction === ScheduledAction.Unpublish,
-  )
+  rows
+    .filter(
+      (row) =>
+        row.scheduledAt !== null &&
+        row.scheduledAction === ScheduledAction.Unpublish,
+    )
+    .sort(
+      (a, b) =>
+        (a.scheduledAt?.getTime() ?? 0) - (b.scheduledAt?.getTime() ?? 0),
+    )
 
 // A published/live resource can't be moved into a container that's scheduled
 // to go dark — it would either go live at a URL about to disappear, or (for
@@ -1152,7 +1204,7 @@ export const assertMoveDestinationUnlocked = async (
     throw new TRPCError({
       code: "PRECONDITION_FAILED",
       message:
-        "Cannot move a published page into a folder or collection that is scheduled to be unpublished, or into one nested under such a folder or collection.",
+        "Cannot move a resource that is published (or has published pages inside it) into a folder or collection that is scheduled to be unpublished, or into one nested under such a folder or collection.",
     })
   }
 }
