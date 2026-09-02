@@ -8,6 +8,7 @@ import {
   ensureUserOnboarded,
   uniqueInviteeEmail,
   uniqueVendorEmail,
+  whitelistVendorEmail,
 } from "../fixtures/user"
 import { expectUserRoleOnSite } from "../fixtures/user-expect"
 import { UsersPO } from "../fixtures/users.po"
@@ -38,6 +39,53 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await expectUserRoleOnSite(siteId, inviteeEmail).toBe("Editor")
   })
 
+  test("admin can invite a new collaborator as Publisher", async ({ page }) => {
+    const inviteeEmail = uniqueInviteeEmail()
+
+    // Arrange / Act
+    await inviteCollaborator(page, {
+      email: inviteeEmail,
+      role: "Publisher",
+      siteId,
+    })
+
+    // Assert
+    await expectUserRoleOnSite(siteId, inviteeEmail).toBe("Publisher")
+  })
+
+  test("admin can invite a new collaborator as Admin", async ({ page }) => {
+    const inviteeEmail = uniqueInviteeEmail()
+
+    // Arrange / Act
+    await inviteCollaborator(page, {
+      email: inviteeEmail,
+      role: "Admin",
+      siteId,
+    })
+
+    // Assert
+    await expectUserRoleOnSite(siteId, inviteeEmail).toBe("Admin")
+  })
+
+  test("admin can invite a whitelisted vendor collaborator as Admin", async ({
+    page,
+  }) => {
+    const vendorEmail = uniqueVendorEmail()
+
+    // Arrange
+    await whitelistVendorEmail(vendorEmail)
+
+    // Act
+    await inviteCollaborator(page, {
+      email: vendorEmail,
+      role: "Admin",
+      siteId,
+    })
+
+    // Assert
+    await expectUserRoleOnSite(siteId, vendorEmail).toBe("Admin")
+  })
+
   test("admin sees AddAdminWarning when selecting Admin role in invite modal", async ({
     page,
   }) => {
@@ -62,6 +110,23 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await users.fillInviteForm(vendorEmail, "Editor")
 
     // Assert
+    await users.expectNonGovSgWhitelistWarning()
+    await users.expectSendInviteDisabled()
+  })
+
+  test("admin cannot invite a non-whitelisted vendor collaborator, even as Admin", async ({
+    page,
+  }) => {
+    const vendorEmail = uniqueVendorEmail()
+    const users = new UsersPO(page)
+
+    // Arrange / Act
+    await openInviteModal(page, siteId)
+    await users.selectInviteRole("Admin")
+    await users.fillInviteEmail(vendorEmail)
+
+    // Assert
+    await users.expectInviteRoleEnabled("Admin")
     await users.expectNonGovSgWhitelistWarning()
     await users.expectSendInviteDisabled()
   })
