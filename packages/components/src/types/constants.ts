@@ -75,3 +75,8 @@ export const DEFAULT_DATE_FILTER_STATUS_LABELS: {
 ]
 
 export const DEFAULT_DATE_RANGE_FILTER_LABEL = "Or, search for a date"
+
+export const DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY = {
+  showStatusLabels: true,
+  showDateRange: true,
+} as const

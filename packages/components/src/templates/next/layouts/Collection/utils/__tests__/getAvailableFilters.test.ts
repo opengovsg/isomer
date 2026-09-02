@@ -176,4 +176,67 @@ describe("getAvailableFilters", () => {
     // Assert
     expect(result).toEqual([])
   })
+
+  it("includes a date filter when only the date-range control is enabled", () => {
+    const items: ProcessedCollectionCardProps[] = [
+      {
+        title: "Item 1",
+        dateTagged: ongoingDateTagged,
+        date: new Date("2023-01-01"),
+      } as ProcessedCollectionCardProps,
+    ]
+    const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
+      {
+        id: EVENT_DATE_FILTER_ID,
+        label: "Event Date",
+        type: "date",
+        showStatusLabels: false,
+        showDateRange: true,
+        statusLabels: [
+          { id: "ENDED", label: "Event ended" },
+          { id: "ONGOING", label: "Ongoing" },
+          { id: "UPCOMING", label: "Upcoming" },
+        ],
+      },
+    ]
+
+    const result = getAvailableFilters(items, tagCategories, TODAY)
+
+    expect(result.map((filter) => filter.id)).toEqual([
+      EVENT_DATE_FILTER_ID,
+      "year",
+    ])
+    expect(result[0]).toMatchObject({
+      showStatusLabels: false,
+      showDateRange: true,
+    })
+  })
+
+  it("omits a date filter when both sidebar controls are hidden", () => {
+    const items: ProcessedCollectionCardProps[] = [
+      {
+        title: "Item 1",
+        dateTagged: ongoingDateTagged,
+        date: new Date("2023-01-01"),
+      } as ProcessedCollectionCardProps,
+    ]
+    const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
+      {
+        id: EVENT_DATE_FILTER_ID,
+        label: "Event Date",
+        type: "date",
+        showStatusLabels: false,
+        showDateRange: false,
+        statusLabels: [
+          { id: "ENDED", label: "Event ended" },
+          { id: "ONGOING", label: "Ongoing" },
+          { id: "UPCOMING", label: "Upcoming" },
+        ],
+      },
+    ]
+
+    const result = getAvailableFilters(items, tagCategories, TODAY)
+
+    expect(result.map((filter) => filter.id)).toEqual(["year"])
+  })
 })
