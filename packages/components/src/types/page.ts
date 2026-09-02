@@ -114,6 +114,14 @@ const TextFilterSchema = Type.Object(
   { title: "Text filter" },
 )
 
+const dateFilterStatusLabelSchema = Type.String({
+  title: "Label",
+  pattern: TRIMMED_STRING_OR_EMPTY_REGEX,
+  errorMessage: {
+    pattern: "cannot have leading/trailing spaces",
+  },
+})
+
 const DateFilterSchema = Type.Object(
   {
     ...tagCategoryLabelSchemaObject,
@@ -127,27 +135,9 @@ const DateFilterSchema = Type.Object(
     statusLabels: Type.Optional(
       Type.Object(
         {
-          ENDED: Type.String({
-            title: "Event ended",
-            pattern: TRIMMED_STRING_OR_EMPTY_REGEX,
-            errorMessage: {
-              pattern: "cannot have leading/trailing spaces",
-            },
-          }),
-          ONGOING: Type.String({
-            title: "Ongoing",
-            pattern: TRIMMED_STRING_OR_EMPTY_REGEX,
-            errorMessage: {
-              pattern: "cannot have leading/trailing spaces",
-            },
-          }),
-          UPCOMING: Type.String({
-            title: "Upcoming",
-            pattern: TRIMMED_STRING_OR_EMPTY_REGEX,
-            errorMessage: {
-              pattern: "cannot have leading/trailing spaces",
-            },
-          }),
+          ENDED: dateFilterStatusLabelSchema,
+          ONGOING: dateFilterStatusLabelSchema,
+          UPCOMING: dateFilterStatusLabelSchema,
         },
         {
           title: "Custom labels",
