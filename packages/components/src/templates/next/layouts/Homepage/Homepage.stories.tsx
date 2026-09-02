@@ -8,10 +8,10 @@ import {
 } from "~/stories/decorators"
 import { generateSiteConfig } from "~/stories/helpers"
 import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
+import { getSingaporeDateYYYYMMDD } from "~/utils/getSingaporeDate"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import { getSingaporeDateYYYYMMDD } from "../../components/complex/DynamicDataBanner/utils"
 import { HomepageLayout } from "./Homepage"
 
 const meta: Meta<typeof HomepageLayout> = {
