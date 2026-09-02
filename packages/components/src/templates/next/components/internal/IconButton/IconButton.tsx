@@ -29,6 +29,7 @@ const iconButtonStyles = tv({
     },
     size: {
       base: "h-12 w-12 p-2",
+      sm: "h-10 w-10 p-1.5",
     },
   },
   compoundVariants: [
@@ -53,6 +54,15 @@ const iconButtonStyles = tv({
 
 const iconButtonIconStyles = tv({
   base: "h-6 w-6",
+  variants: {
+    size: {
+      base: "h-6 w-6",
+      sm: "h-5 w-5",
+    },
+  },
+  defaultVariants: {
+    size: "base",
+  },
 })
 
 interface IconButtonProps
@@ -89,7 +99,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
           className,
         )}
       >
-        <Icon className={iconButtonIconStyles()} />
+        <Icon className={iconButtonIconStyles({ size })} />
       </button>
     )
   },
