@@ -16,6 +16,7 @@ import {
 
 import {
   TAG_CATEGORY_DISPLAY_OPTIONS,
+  TAG_CATEGORY_TYPE,
   type TagCategoryDisplay,
 } from "./constants"
 
@@ -35,31 +36,39 @@ const TagCategoryUuidSchema = generateUuidSchema({
     "This is the uuid of a single tag category and will be used to uniquely identify it.",
 })
 
-const TagCategorySchema = Type.Composite([
-  Type.Object({
-    label: Type.String({
-      title: "Filter name",
-      pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
-      errorMessage: {
-        pattern: "cannot be empty or have leading/trailing spaces",
-      },
+const tagCategoryLabelSchemaObject = {
+  label: Type.String({
+    title: "Filter name",
+    pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
+    errorMessage: {
+      pattern: "cannot be empty or have leading/trailing spaces",
+    },
+  }),
+  id: TagCategoryUuidSchema,
+}
+
+const tagCategoryIsRequiredSchemaObject = {
+  // Optional for backward compatibility. Missing/`undefined` must be read as `false`.
+  // Omit JSON Schema `default`: Studio AJV runs with useDefaults, which would apply the
+  // same default to legacy rows that omit this key. New filters set `isRequired: true` in
+  // the tag-categories JsonForms control when adding an item.
+  isRequired: Type.Optional(
+    Type.Boolean({
+      title: "This filter is required",
+      description:
+        "Every item must have at least one option selected from this filter.",
     }),
-    id: TagCategoryUuidSchema,
-  }),
-  Type.Object({
-    // Optional for backward compatibility. Missing/`undefined` must be read as `false`.
-    // Omit JSON Schema `default`: Studio AJV runs with useDefaults, which would apply the
-    // same default to legacy rows that omit this key. New filters set `isRequired: true` in
-    // the tag-categories JsonForms control when adding an item.
-    isRequired: Type.Optional(
-      Type.Boolean({
-        title: "This filter is required",
-        description:
-          "Every item must have at least one option selected from this filter.",
-      }),
+  ),
+}
+
+const TextFilterSchema = Type.Object(
+  {
+    ...tagCategoryLabelSchemaObject,
+    ...tagCategoryIsRequiredSchemaObject,
+    // Optional on old rows. Must be "text" or absent so oneOf picks TextFilterSchema.
+    type: Type.Optional(
+      Type.Literal(TAG_CATEGORY_TYPE.Text, { format: "hidden" }),
     ),
-  }),
-  Type.Object({
     // Optional for backward compatibility. Missing/`undefined` must be read as
     // `DEFAULT_TAG_CATEGORY_DISPLAY` via `resolveTagCategoryDisplay`.
     // Omit JSON Schema `default`: Studio AJV runs with useDefaults, which would apply the
@@ -82,8 +91,6 @@ const TagCategorySchema = Type.Composite([
         format: "image-radio/2col",
       }),
     ),
-  }),
-  Type.Object({
     options: Type.Array(
       Type.Object({
         label: Type.String({
@@ -102,8 +109,55 @@ const TagCategorySchema = Type.Composite([
         format: "tag-category-options",
       },
     ),
-  }),
-])
+  },
+  { title: "Text filter" },
+)
+
+const DateFilterSchema = Type.Object(
+  {
+    ...tagCategoryLabelSchemaObject,
+    ...tagCategoryIsRequiredSchemaObject,
+    // Always "date" on new filters. Keeps oneOf exclusive with TextFilterSchema.
+    type: Type.Literal(TAG_CATEGORY_TYPE.Date, { format: "hidden" }),
+    statusLabels: Type.Object(
+      {
+        ENDED: Type.String({ title: "Event ended" }),
+        ONGOING: Type.String({ title: "Ongoing" }),
+        UPCOMING: Type.String({ title: "Upcoming" }),
+      },
+      {
+        title: "Status labels",
+        description:
+          "Labels for each status. Status is derived from dates on each item.",
+        format: "date-filter-status-labels",
+      },
+    ),
+    // Optional custom label; falls back to a default at render.
+    dateRangeFilterLabel: Type.Optional(
+      Type.String({
+        title: "Custom date range label",
+        description:
+          "Label shown above the custom date range input in the filter sidebar.",
+        pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
+        errorMessage: {
+          pattern: "cannot be empty or have leading/trailing spaces",
+        },
+      }),
+    ),
+  },
+  { title: "Date filter" },
+)
+
+export type DateFilterSchemaType = Static<typeof DateFilterSchema>
+
+// oneOf, not a flat object with every field optional. Order: text=0, date=1.
+// format "tag-category-item" routes to JsonFormsTagCategoryItemControl.
+const TagCategorySchema = Type.Unsafe<
+  Static<typeof TextFilterSchema> | Static<typeof DateFilterSchema>
+>({
+  oneOf: [TextFilterSchema, DateFilterSchema],
+  format: "tag-category-item",
+})
 // NOTE: can be optional because the categories might not exist
 const TagCategoriesSchema = Type.Object({
   tagCategories: Type.Optional(
@@ -122,6 +176,22 @@ const TaggedSchema = Type.Optional(
     // NOTE: we need a custom format because this cannot just be a simple drop down
     // as we need to reference the existing data that is pointing to this
     format: "tagged",
+  }),
+)
+
+// id is the filter uuid. No endDate means a single-day event.
+const DateTaggedItemSchema = Type.Object({
+  id: TagCategoryUuidSchema,
+  date: Type.String({ format: "date" }),
+  endDate: Type.Optional(Type.String({ format: "date" })),
+})
+
+export type DateTaggedItem = Static<typeof DateTaggedItemSchema>
+
+const DateTaggedSchema = Type.Optional(
+  Type.Array(DateTaggedItemSchema, {
+    description: "Pick a single date or a range.",
+    format: "date-tagged",
   }),
 )
 
@@ -146,6 +216,7 @@ const dateSchemaObject = Type.Object({
 const BaseRefPageSchema = Type.Composite([
   categorySchemaObject,
   Type.Object({ tagged: TaggedSchema }),
+  Type.Object({ dateTagged: DateTaggedSchema }),
   dateSchemaObject,
   imageSchemaObject,
   Type.Object({
@@ -185,6 +256,7 @@ const TagsSchema = Type.Object(
 export const ArticlePagePageSchema = Type.Composite([
   categorySchemaObject,
   Type.Object({ tagged: TaggedSchema }),
+  Type.Object({ dateTagged: DateTaggedSchema }),
   dateSchemaObject,
   Type.Object({
     articlePageHeader: ArticlePageHeaderSchema,

@@ -33,3 +33,9 @@ export const DEFAULT_TAG_CATEGORY_DISPLAY = TAG_CATEGORY_DISPLAY_OPTIONS.Pills
 export const resolveTagCategoryDisplay = (
   display?: TagCategoryDisplay,
 ): TagCategoryDisplay => display ?? DEFAULT_TAG_CATEGORY_DISPLAY
+
+// tagCategories entry is "text" (option list) or "date" (status buckets).
+export const TAG_CATEGORY_TYPE = {
+  Text: "text",
+  Date: "date",
+} as const
