@@ -1,8 +1,8 @@
 import type { CollectionCardProps } from "~/interfaces"
-import type { CollectionPageSchemaType } from "~/types"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 
-import { Title } from "../CollectionCard/Title" // Reusing since the logic is the same for both
+import { EventDateFilterDisplay } from "../CollectionCard/EventDateFilterDisplay"
+import { Title } from "../CollectionCard/Title"
 import { ImageClient } from "../ImageClient"
 import { Link } from "../Link"
 import { PillTags, PlaintextTags } from "../Tags"
@@ -20,6 +20,7 @@ export const BlogCard = ({
   pillTags,
   formattedDate,
   headingLevel,
+  dateFilterDisplayEntries,
 }: CollectionCardProps & {
   shouldShowDate?: boolean
   siteAssetsBaseUrl: string | undefined
@@ -49,16 +50,27 @@ export const BlogCard = ({
         </div>
       )}
       {shouldShowDate && (
-        <p className="prose-label-md-regular shrink-0 text-base-content-subtle">
+        <p className="prose-label-md-regular hidden shrink-0 text-base-content-subtle md:block">
           {formattedDate ? formattedDate : "-"}
         </p>
       )}
       <div className="flex flex-grow flex-col gap-3 text-base-content">
-        <Title
-          title={itemTitle}
-          isExternalLink={isExternalLink}
-          headingLevel={headingLevel}
-        />
+        <EventDateFilterDisplay
+          entries={dateFilterDisplayEntries}
+          beforeTitle={
+            shouldShowDate ? (
+              <p className="prose-label-md-regular text-base-content-subtle md:hidden">
+                {formattedDate ? formattedDate : "-"}
+              </p>
+            ) : undefined
+          }
+        >
+          <Title
+            title={itemTitle}
+            isExternalLink={isExternalLink}
+            headingLevel={headingLevel}
+          />
+        </EventDateFilterDisplay>
         <PillTags
           tags={pillTags}
           className="flex w-full flex-wrap items-center gap-1.5"
