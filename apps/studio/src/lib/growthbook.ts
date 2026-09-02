@@ -20,6 +20,11 @@ export const IS_AUDIT_LOG_ENABLED_FEATURE_KEY = "is-audit-log-enabled"
 // When ON: gazette ingestion is routed to SearchSG instead.
 export const ENABLE_SEARCHSG_GAZETTE_INGESTION =
   "enable-searchsg-gazette-ingestion"
+// Gates the "Date filter" option when adding a new collection tag filter.
+// TODO: flip IS_DATE_FILTERS_ENABLED_FEATURE_KEY_FALLBACK_VALUE to false once
+// this key is set up in GrowthBook.
+export const IS_DATE_FILTERS_ENABLED_FEATURE_KEY = "is-date-filters-enabled"
+export const IS_DATE_FILTERS_ENABLED_FEATURE_KEY_FALLBACK_VALUE = true
 
 export const IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE = true
 
