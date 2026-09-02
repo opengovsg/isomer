@@ -72,7 +72,11 @@ const DgsDatasetIdModal = ({
 
   const datasetId = getDgsIdFromString({ string: debouncedInputValue })
 
-  const { metadata, isLoading: isValidatingDataset } = useDgsMetadata({
+  const {
+    metadata,
+    isLoading: isValidatingDataset,
+    isMetadataCurrent,
+  } = useDgsMetadata({
     resourceId: datasetId ?? "",
     enabled: !!datasetId,
   })
@@ -82,9 +86,11 @@ const DgsDatasetIdModal = ({
   // or an equivalent that works universally.
   const isDatasetTooLarge =
     metadata?.size !== undefined && metadata.size > DGS_REQUEST_MAX_BYTES
-  const isValidDataset = format === "CSV" && !isDatasetTooLarge
+  const isValidDataset =
+    isMetadataCurrent && format === "CSV" && !isDatasetTooLarge
 
-  const isLoading = isValidatingDataset || isDebouncing
+  const isLoading =
+    isValidatingDataset || isDebouncing || (!!datasetId && !isMetadataCurrent)
 
   const {
     register,
