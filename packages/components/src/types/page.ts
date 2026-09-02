@@ -12,6 +12,7 @@ import { imageSchemaObject } from "~/schemas/internal"
 import {
   REF_HREF_PATTERN,
   TRIMMED_NON_EMPTY_STRING_REGEX,
+  TRIMMED_STRING_OR_EMPTY_REGEX,
 } from "~/utils/validation"
 
 import {
@@ -141,9 +142,9 @@ const DateFilterSchema = Type.Object(
         id: DateFilterStatusIdSchema,
         label: Type.String({
           title: "Status label",
-          pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
+          pattern: TRIMMED_STRING_OR_EMPTY_REGEX,
           errorMessage: {
-            pattern: "cannot be empty or have leading/trailing spaces",
+            pattern: "cannot have leading/trailing spaces",
           },
         }),
       }),
