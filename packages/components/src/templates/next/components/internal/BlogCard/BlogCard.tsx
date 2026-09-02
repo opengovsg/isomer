@@ -51,25 +51,18 @@ export const BlogCard = ({
         </div>
       )}
       {shouldShowDate && (
-        <p className="prose-label-md-regular hidden shrink-0 text-base-content-subtle md:block">
+        <p className="prose-label-md-regular shrink-0 text-base-content-subtle">
           {formattedDate ? formattedDate : "-"}
         </p>
       )}
       <div className="flex flex-grow flex-col gap-3 text-base-content">
-        <>
-          <DateFilterStatusClient entries={dateFilterDisplayEntries} />
-          {shouldShowDate ? (
-            <p className="prose-label-md-regular text-base-content-subtle md:hidden">
-              {formattedDate ? formattedDate : "-"}
-            </p>
-          ) : null}
-          <Title
-            title={itemTitle}
-            isExternalLink={isExternalLink}
-            headingLevel={headingLevel}
-          />
-          <DateFilterDates entries={dateFilterDisplayEntries} />
-        </>
+        <DateFilterStatusClient entries={dateFilterDisplayEntries} />
+        <Title
+          title={itemTitle}
+          isExternalLink={isExternalLink}
+          headingLevel={headingLevel}
+        />
+        <DateFilterDates entries={dateFilterDisplayEntries} />
         <PillTags
           tags={pillTags}
           className="flex w-full flex-wrap items-center gap-1.5"
