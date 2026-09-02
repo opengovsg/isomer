@@ -7,8 +7,6 @@ import type {
 } from "~/types"
 import type { DateFilterStatusId } from "~/types/constants"
 
-// NOTE: server-precomputed display fields for a date filter (label + formatted
-// date text + admin status labels). Live status is derived on the client.
 export interface DateFilterDisplayEntry {
   id: string
   label: string
@@ -18,8 +16,6 @@ export interface DateFilterDisplayEntry {
   statusLabels: Record<DateFilterStatusId, string>
 }
 
-// NOTE: fully resolved card display entry, including live status — only
-// produced on the client (see EventDateFilterDisplay).
 export interface DateFilterCard {
   id: string
   label: string
@@ -48,7 +44,7 @@ interface BaseCardProps {
   plaintextTags?: TagGroup[]
   // NOTE: raw per-item date-filter values — used for filter matching only.
   dateTagged?: DateTaggedItem[]
-  // NOTE: server-precomputed label + date text for EventDateFilterDisplay.
+  // NOTE: server-precomputed label + date text for date filter client components.
   dateFilterDisplayEntries?: DateFilterDisplayEntry[]
   title: string
   url: string
