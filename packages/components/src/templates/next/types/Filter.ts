@@ -1,4 +1,4 @@
-import type { TagCategoryDisplay } from "~/types/constants"
+import { TAG_CATEGORY_TYPE, type TagCategoryDisplay } from "~/types/constants"
 
 export interface FilterItem {
   id: string
@@ -12,9 +12,9 @@ export interface Filter {
   items: FilterItem[]
   // NOTE: only set for tag-category filters; category/year filters omit this.
   display?: TagCategoryDisplay
-  // Date-type tag-category filters only. items are the status buckets.
-  // Custom range value lives on AppliedFilter.dateRange, not items.
-  type?: "date"
+  // Set only on date-type tag-category filters (see getDateFilters in PR 2).
+  // Text filters omit this; resolveTagCategoryType treats missing as text.
+  type?: typeof TAG_CATEGORY_TYPE.Date
 }
 
 interface AppliedFilterItem {
