@@ -178,7 +178,9 @@ export const getCollectionItems = ({
 
   return sortCollectionItems({
     items: transformedItems,
-    sortOrder: resolveCollectionSortOrder(sortOrder, tagCategories),
+    sortOrder: sortOrder
+      ? resolveCollectionSortOrder(sortOrder, tagCategories)
+      : undefined,
     sortBy,
     sortDirection,
   })
