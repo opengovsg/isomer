@@ -39,6 +39,3 @@ export const TAG_CATEGORY_TYPE = {
   Text: "text",
   Date: "date",
 } as const
-
-export type TagCategoryType =
-  (typeof TAG_CATEGORY_TYPE)[keyof typeof TAG_CATEGORY_TYPE]
