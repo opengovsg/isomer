@@ -1,5 +1,6 @@
 import { RuleTester } from "oxlint/plugins-dev"
 import { describe, it } from "vitest"
+
 import plugin from "./index.js"
 
 RuleTester.describe = describe
@@ -33,18 +34,22 @@ ruleTester.run("no-page-methods-in-tests", rules["no-page-methods-in-tests"], {
   ],
 })
 
-ruleTester.run("no-test-use-storage-state", rules["no-test-use-storage-state"], {
-  valid: [
-    'test.describe("admin", { tag: roleTag("admin") }, () => {})',
-    'test.use({ baseURL: "http://localhost" })',
-  ],
-  invalid: [
-    {
-      code: 'test.use({ storageState: "./storage-state/admin.json" })',
-      errors: [{ messageId: "noStorageStateUse" }],
-    },
-  ],
-})
+ruleTester.run(
+  "no-test-use-storage-state",
+  rules["no-test-use-storage-state"],
+  {
+    valid: [
+      'test.describe("admin", { tag: roleTag("admin") }, () => {})',
+      'test.use({ baseURL: "http://localhost" })',
+    ],
+    invalid: [
+      {
+        code: 'test.use({ storageState: "./storage-state/admin.json" })',
+        errors: [{ messageId: "noStorageStateUse" }],
+      },
+    ],
+  },
+)
 
 ruleTester.run("no-raw-role-tag", rules["no-raw-role-tag"], {
   valid: [

@@ -13,7 +13,7 @@ export const noRawRoleTag = {
     },
     messages: {
       noRawRoleTag:
-        "Use `roleTag(\"{{role}}\")` from `~e2e/fixtures/auth` instead of a raw `\"@{{role}}\"` tag string.",
+        'Use `roleTag("{{role}}")` from `~e2e/fixtures/auth` instead of a raw `"@{{role}}"` tag string.',
     },
     schema: [],
   },
@@ -25,7 +25,11 @@ export const noRawRoleTag = {
           (key.type === "Identifier" && key.name === "tag") ||
           (key.type === "Literal" && key.value === "tag")
 
-        if (!isTagKey || value.type !== "Literal" || typeof value.value !== "string") {
+        if (
+          !isTagKey ||
+          value.type !== "Literal" ||
+          typeof value.value !== "string"
+        ) {
           return
         }
 
