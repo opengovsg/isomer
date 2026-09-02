@@ -66,10 +66,8 @@ import {
   getLastPublishedAt,
   getNavBar,
   getPageById,
-  getPublishedDescendantResourceIds,
   getResourceFullPermalink,
   getResourcePermalinkTree,
-  getSiteResourceById,
   publishPageResource,
   publishResource,
   selectLastPublishedAt,
@@ -722,62 +720,6 @@ export const pageRouter = router({
         })
       },
     ),
-
-  // Pre-flight check so the UI can show a helpful "unpublish the pages
-  // inside first" modal instead of letting the user hit unpublishPage's
-  // PRECONDITION_FAILED (see the equivalent guard in unpublishPageResource).
-  // Only IndexPage matters here — every other type can always be unpublished
-  // on its own.
-  getUnpublishBlockInfo: protectedProcedure
-    .input(basePageSchema)
-    .query(async ({ ctx, input: { siteId, pageId } }) => {
-      await bulkValidateUserPermissionsForResources({
-        siteId,
-        action: "read",
-        userId: ctx.user.id,
-      })
-
-      const page = await getPageById(db, { resourceId: pageId, siteId })
-      if (!page) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Resource not found",
-        })
-      }
-
-      if (page.type !== ResourceType.IndexPage || !page.parentId) {
-        return { isBlocked: false } as const
-      }
-
-      const parent = await getSiteResourceById({
-        siteId,
-        resourceId: page.parentId,
-      })
-      if (!parent) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Parent resource not found",
-        })
-      }
-
-      const publishedDescendantIds = (
-        await getPublishedDescendantResourceIds(db, {
-          siteId,
-          resourceId: page.parentId,
-        })
-      ).filter((id) => id !== page.id)
-
-      if (publishedDescendantIds.length === 0) {
-        return { isBlocked: false } as const
-      }
-
-      return {
-        isBlocked: true,
-        count: publishedDescendantIds.length,
-        parentId: page.parentId,
-        parentType: parent.type,
-      } as const
-    }),
 
   updateMeta: protectedProcedure
     .input(updatePageMetaSchema)

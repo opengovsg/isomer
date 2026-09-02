@@ -10,6 +10,7 @@ import {
 } from "tests/integration/helpers/iron-session"
 import {
   setupAdminPermissions,
+  setupCollection,
   setupEditorPermissions,
   setupFolder,
   setupPageResource,
@@ -1072,6 +1073,8 @@ describe("folder.router", async () => {
         scheduledAt: null,
         scheduledAction: null,
         lastPublishedAt: null,
+        parentType: ResourceType.Folder,
+        otherPublishedDescendantCount: 0,
       })
       await expect(
         db.selectFrom("AuditLog").selectAll().execute(),
@@ -1157,6 +1160,110 @@ describe("folder.router", async () => {
       expect(result.id).toEqual(page.id)
       expect(result.scheduledAt).toEqual(scheduledAt)
       expect(result.scheduledAction).toEqual(ScheduledAction.Unpublish)
+    })
+
+    it("should return otherPublishedDescendantCount: 0 when nothing else under the folder is published", async () => {
+      // Arrange
+      const { folder, site } = await setupFolder()
+      await setupPageResource({
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: folder.id,
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupPageResource({
+        resourceType: ResourceType.Page,
+        siteId: site.id,
+        parentId: folder.id,
+        permalink: "draft-nested-page",
+        state: ResourceState.Draft,
+      })
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = await caller.getIndexpage({
+        siteId: site.id,
+        resourceId: folder.id,
+      })
+
+      // Assert
+      expect(result.otherPublishedDescendantCount).toEqual(0)
+    })
+
+    it("should count published descendants (at any depth) other than the index page itself", async () => {
+      // Arrange
+      const { folder, site } = await setupFolder()
+      const { page: indexPage } = await setupPageResource({
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: folder.id,
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupPageResource({
+        resourceType: ResourceType.Page,
+        siteId: site.id,
+        parentId: folder.id,
+        permalink: "nested-page-1",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      const { folder: subfolder } = await setupFolder({
+        siteId: site.id,
+        parentId: folder.id,
+        permalink: "subfolder",
+      })
+      await setupPageResource({
+        resourceType: ResourceType.Page,
+        siteId: site.id,
+        parentId: subfolder.id,
+        permalink: "nested-page-2",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = await caller.getIndexpage({
+        siteId: site.id,
+        resourceId: folder.id,
+      })
+
+      // Assert
+      expect(result.id).toEqual(indexPage.id)
+      expect(result.otherPublishedDescendantCount).toEqual(2)
+    })
+
+    it("should return parentType Collection for a collection's index page", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection({})
+      await setupPageResource({
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: collection.id,
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.CollectionPage,
+        permalink: "nested-collection-page",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = await caller.getIndexpage({
+        siteId: site.id,
+        resourceId: collection.id,
+      })
+
+      // Assert
+      expect(result.parentType).toEqual(ResourceType.Collection)
+      expect(result.otherPublishedDescendantCount).toEqual(1)
     })
   })
 

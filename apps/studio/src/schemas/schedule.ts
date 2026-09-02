@@ -49,6 +49,49 @@ export const schedulePublishClientSchema = basePageSchema
     }
   })
 
+/**
+ * This schema includes the unpublish date and time for the scheduled unpublication
+ */
+export const scheduleUnpublishClientSchema = basePageSchema
+  .extend({
+    unpublishDate: z.date(),
+    unpublishTime: z.string().refine((time) => {
+      // check that time is in HH:mm format
+      const parsed = parseTimeStringToDate(time)
+      return isValid(parsed) && format(parsed, "HH:mm") === time
+    }),
+  })
+  .transform((schema) => {
+    const { unpublishDate, unpublishTime, ...rest } = schema
+    // combine unpublishDate and unpublishTime into a single Date object
+    const [hours, minutes] = unpublishTime.split(":").map(Number)
+    return {
+      ...rest,
+      scheduledAt: set(unpublishDate, {
+        hours,
+        minutes,
+        seconds: 0,
+        milliseconds: 0,
+      }),
+    }
+  })
+  .superRefine((schema, ctx) => {
+    const { scheduledAt } = schema
+    const earliestScheduleTime = add(new Date(), {
+      minutes: MINIMUM_SCHEDULE_LEAD_TIME_MINUTES,
+    })
+    const isDateBeforeToday =
+      startOfDay(scheduledAt) < startOfDay(earliestScheduleTime)
+    // if the scheduled date is before the earliest allowable date, show error on unpublishDate
+    if (isBefore(scheduledAt, earliestScheduleTime)) {
+      ctx.addIssue({
+        path: isDateBeforeToday ? ["unpublishDate"] : ["unpublishTime"],
+        code: z.ZodIssueCode.custom,
+        message: "Date can't be in the past",
+      })
+    }
+  })
+
 export const scheduledPublishServerSchema = basePageSchema.extend({
   scheduledAt: z.date(),
 })
