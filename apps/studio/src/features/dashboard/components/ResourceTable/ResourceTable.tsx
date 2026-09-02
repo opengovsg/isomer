@@ -19,6 +19,7 @@ import { useTablePagination } from "~/hooks/useTablePagination"
 import { trpc } from "~/utils/trpc"
 
 import type { ResourceTableData } from "./types"
+import { RESOURCE_TABLE_STATUS_FILTER_OPTIONS } from "./constants"
 import { ResourceFilterMenu } from "./ResourceFilterMenu"
 import { ResourceSortMenu } from "./ResourceSortMenu"
 import { ResourceTableMenu } from "./ResourceTableMenu"
@@ -171,6 +172,13 @@ export const ResourceTable = ({
             entityName="page"
             groupLabel="folder"
             hasSearchTerm={false}
+            activeFilterLabels={statusFilter.map(
+              (option) => RESOURCE_TABLE_STATUS_FILTER_OPTIONS[option],
+            )}
+            onClearFilter={() => {
+              setStatusFilter([])
+              onPaginationChange((old) => ({ ...old, pageIndex: 0 }))
+            }}
           />
         }
         isFetching={isFetching || isCountLoading}
