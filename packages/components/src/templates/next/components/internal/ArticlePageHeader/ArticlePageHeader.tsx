@@ -2,8 +2,8 @@ import type { ArticlePageHeaderProps } from "~/interfaces"
 import { getFormattedDate } from "~/utils/getFormattedDate"
 
 import { Breadcrumb } from "../Breadcrumb"
-import { EventDateFilterDatesFromEntries } from "../CollectionCard/EventDateFilterDatesFromEntries"
-import { EventDateFilterStatusBadges } from "../CollectionCard/EventDateFilterStatusBadges"
+import { DateFilterDates } from "../CollectionCard/DateFilterDates"
+import { DateFilterStatusClient } from "../CollectionCard/DateFilterStatusClient"
 import { PillTags, PlaintextTags } from "../Tags"
 
 export const ArticlePageHeader = ({
@@ -23,7 +23,7 @@ export const ArticlePageHeader = ({
 
       <div className="flex flex-col gap-5">
         <div className="flex flex-col gap-4">
-          <EventDateFilterStatusBadges entries={dateFilterDisplayEntries} />
+          <DateFilterStatusClient entries={dateFilterDisplayEntries} />
 
           <PlaintextTags
             tags={plaintextTags}
@@ -40,7 +40,7 @@ export const ArticlePageHeader = ({
             </p>
           )}
 
-          <EventDateFilterDatesFromEntries entries={dateFilterDisplayEntries} />
+          <DateFilterDates entries={dateFilterDisplayEntries} />
 
           <PillTags
             tags={pillTags}

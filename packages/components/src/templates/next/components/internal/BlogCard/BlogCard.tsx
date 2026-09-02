@@ -1,8 +1,8 @@
 import type { CollectionCardProps } from "~/interfaces"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 
-import { EventDateFilterDatesFromEntries } from "../CollectionCard/EventDateFilterDatesFromEntries"
-import { EventDateFilterStatusBadges } from "../CollectionCard/EventDateFilterStatusBadges"
+import { DateFilterDates } from "../CollectionCard/DateFilterDates"
+import { DateFilterStatusClient } from "../CollectionCard/DateFilterStatusClient"
 import { Title } from "../CollectionCard/Title"
 import { ImageClient } from "../ImageClient"
 import { Link } from "../Link"
@@ -57,7 +57,7 @@ export const BlogCard = ({
       )}
       <div className="flex flex-grow flex-col gap-3 text-base-content">
         <>
-          <EventDateFilterStatusBadges entries={dateFilterDisplayEntries} />
+          <DateFilterStatusClient entries={dateFilterDisplayEntries} />
           {shouldShowDate ? (
             <p className="prose-label-md-regular text-base-content-subtle md:hidden">
               {formattedDate ? formattedDate : "-"}
@@ -68,7 +68,7 @@ export const BlogCard = ({
             isExternalLink={isExternalLink}
             headingLevel={headingLevel}
           />
-          <EventDateFilterDatesFromEntries entries={dateFilterDisplayEntries} />
+          <DateFilterDates entries={dateFilterDisplayEntries} />
         </>
         <PillTags
           tags={pillTags}

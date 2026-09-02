@@ -1,10 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { ArticlePageHeaderProps } from "~/interfaces"
+import { daysFromNow, statusLabelsFor } from "~/stories/helpers"
 
-import {
-  daysFromNow,
-  statusLabelsFor,
-} from "../CollectionCard/dateFilterStoryFixtures"
 import { ArticlePageHeader } from "./ArticlePageHeader"
 
 const meta: Meta<ArticlePageHeaderProps> = {

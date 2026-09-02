@@ -1,14 +1,12 @@
-import type { DateFilterCard } from "~/interfaces/internal/CollectionCard"
+import type { DateFilterDisplayEntry } from "~/interfaces/internal/CollectionCard"
 import { BiCalendar } from "react-icons/bi"
 
-interface EventDateFilterDatesProps {
-  entries: DateFilterCard[]
+interface DateFilterDatesProps {
+  entries?: DateFilterDisplayEntry[]
 }
 
-export const EventDateFilterDates = ({
-  entries,
-}: EventDateFilterDatesProps) => {
-  if (entries.length === 0) {
+export const DateFilterDates = ({ entries }: DateFilterDatesProps) => {
+  if (!entries || entries.length === 0) {
     return null
   }
 
