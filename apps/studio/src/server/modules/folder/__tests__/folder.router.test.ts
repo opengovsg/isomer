@@ -10,6 +10,7 @@ import {
 } from "tests/integration/helpers/iron-session"
 import {
   setupAdminPermissions,
+  setupCollection,
   setupEditorPermissions,
   setupFolder,
   setupPageResource,
@@ -20,7 +21,13 @@ import { IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import { createCallerFactory } from "~/server/trpc"
 import { getReferenceLink } from "~/utils/link"
 
-import { AuditLogEvent, db, ResourceState, ResourceType } from "../../database"
+import {
+  AuditLogEvent,
+  db,
+  ResourceState,
+  ResourceType,
+  ScheduledAction,
+} from "../../database"
 import { folderRouter } from "../folder.router"
 
 const createCaller = createCallerFactory(folderRouter)
@@ -1040,7 +1047,7 @@ describe("folder.router", async () => {
       )
     })
 
-    it("should return 200", async () => {
+    it("should return 200 with liveStatus 'notLive' when nothing under the folder is published", async () => {
       // Arrange
       const { folder, site } = await setupFolder()
       const { page, blob } = await setupPageResource({
@@ -1061,10 +1068,202 @@ describe("folder.router", async () => {
         title: folder.title,
         id: page.id,
         draftBlobId: blob.id,
+        publishedVersionId: null,
+        liveStatus: "notLive",
+        scheduledAt: null,
+        scheduledAction: null,
+        lastPublishedAt: null,
+        parentType: ResourceType.Folder,
+        otherPublishedDescendantCount: 0,
       })
       await expect(
         db.selectFrom("AuditLog").selectAll().execute(),
       ).resolves.toHaveLength(0)
+    })
+
+    it("should return liveStatus 'live' when the folder's own index page is published", async () => {
+      // Arrange
+      const { folder, site } = await setupFolder()
+      const { page } = await setupPageResource({
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: folder.id,
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = await caller.getIndexpage({
+        siteId: site.id,
+        resourceId: folder.id,
+      })
+
+      // Assert
+      expect(result.liveStatus).toEqual("live")
+      expect(result.publishedVersionId).toEqual(page.publishedVersionId)
+    })
+
+    it("should return liveStatus 'liveTemplate' when the index page itself isn't published but a nested descendant is", async () => {
+      // Arrange
+      const { folder, site } = await setupFolder()
+      await setupPageResource({
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: folder.id,
+      })
+      const { folder: subfolder } = await setupFolder({
+        siteId: site.id,
+        parentId: folder.id,
+        permalink: "nested-folder",
+      })
+      await setupPageResource({
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: subfolder.id,
+        permalink: "nested-index",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = await caller.getIndexpage({
+        siteId: site.id,
+        resourceId: folder.id,
+      })
+
+      // Assert
+      expect(result.liveStatus).toEqual("liveTemplate")
+    })
+
+    it("should surface the index page's own scheduledAt/scheduledAction", async () => {
+      // Arrange
+      const { folder, site } = await setupFolder()
+      const scheduledAt = new Date(Date.now() + 60 * 60 * 1000)
+      const { page } = await setupPageResource({
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: folder.id,
+        scheduledAt,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = await caller.getIndexpage({
+        siteId: site.id,
+        resourceId: folder.id,
+      })
+
+      // Assert
+      expect(result.id).toEqual(page.id)
+      expect(result.scheduledAt).toEqual(scheduledAt)
+      expect(result.scheduledAction).toEqual(ScheduledAction.Unpublish)
+    })
+
+    it("should return otherPublishedDescendantCount: 0 when nothing else under the folder is published", async () => {
+      // Arrange
+      const { folder, site } = await setupFolder()
+      await setupPageResource({
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: folder.id,
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupPageResource({
+        resourceType: ResourceType.Page,
+        siteId: site.id,
+        parentId: folder.id,
+        permalink: "draft-nested-page",
+        state: ResourceState.Draft,
+      })
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = await caller.getIndexpage({
+        siteId: site.id,
+        resourceId: folder.id,
+      })
+
+      // Assert
+      expect(result.otherPublishedDescendantCount).toEqual(0)
+    })
+
+    it("should count published descendants (at any depth) other than the index page itself", async () => {
+      // Arrange
+      const { folder, site } = await setupFolder()
+      const { page: indexPage } = await setupPageResource({
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: folder.id,
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupPageResource({
+        resourceType: ResourceType.Page,
+        siteId: site.id,
+        parentId: folder.id,
+        permalink: "nested-page-1",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      const { folder: subfolder } = await setupFolder({
+        siteId: site.id,
+        parentId: folder.id,
+        permalink: "subfolder",
+      })
+      await setupPageResource({
+        resourceType: ResourceType.Page,
+        siteId: site.id,
+        parentId: subfolder.id,
+        permalink: "nested-page-2",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = await caller.getIndexpage({
+        siteId: site.id,
+        resourceId: folder.id,
+      })
+
+      // Assert
+      expect(result.id).toEqual(indexPage.id)
+      expect(result.otherPublishedDescendantCount).toEqual(2)
+    })
+
+    it("should return parentType Collection for a collection's index page", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection({})
+      await setupPageResource({
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: collection.id,
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.CollectionPage,
+        permalink: "nested-collection-page",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = await caller.getIndexpage({
+        siteId: site.id,
+        resourceId: collection.id,
+      })
+
+      // Assert
+      expect(result.parentType).toEqual(ResourceType.Collection)
+      expect(result.otherPublishedDescendantCount).toEqual(1)
     })
   })
 

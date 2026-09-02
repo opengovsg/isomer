@@ -19,6 +19,29 @@ export const folderHandlers = {
           title: "a folder",
           id: "1",
           draftBlobId: null,
+          publishedVersionId: null,
+          liveStatus: "notLive",
+          scheduledAt: null,
+          scheduledAction: null,
+          lastPublishedAt: null,
+          parentType: "Folder",
+          otherPublishedDescendantCount: 0,
+        }
+      })
+    },
+    blocked: () => {
+      return trpcMsw.folder.getIndexpage.query(() => {
+        return {
+          title: "a folder",
+          id: "1",
+          draftBlobId: null,
+          publishedVersionId: "1",
+          liveStatus: "live",
+          scheduledAt: null,
+          scheduledAction: null,
+          lastPublishedAt: null,
+          parentType: "Folder",
+          otherPublishedDescendantCount: 2,
         }
       })
     },

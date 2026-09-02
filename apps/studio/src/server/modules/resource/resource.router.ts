@@ -19,6 +19,8 @@ import {
   getIndexPageOutputSchema,
   getIndexPageSchema,
   getMetadataSchema,
+  getMoveLockInfoOutputSchema,
+  getMoveLockInfoSchema,
   getNestedFolderChildrenOutputSchema,
   getNestedFolderChildrenSchema,
   getParentSchema,
@@ -50,9 +52,11 @@ import {
 import { validateUserPermissionsForSite } from "../site/site.service"
 import {
   applyResourceOrderBy,
+  applyResourceStatusFilter,
   defaultResourceSelect,
   getAncestorIndexPages,
   getBatchAncestryWithSelfQuery,
+  getChildLiveStatusMap,
   getLockingAncestorIndexPages,
   getResourceFullPermalink,
   getSearchRecentlyEdited,
@@ -61,6 +65,8 @@ import {
   getWithFullPermalink,
   hasPublishedDescendant,
   publishResource,
+  selectLastPublishedAt,
+  splitContainerIdsByLiveStatus,
 } from "./resource.service"
 
 const fetchResource = async (resourceId: string | null) => {
@@ -656,9 +662,67 @@ export const resourceRouter = router({
       },
     ),
 
+  // Read-only mirror of the `move` mutation's unpublish-lock check (see the
+  // comment there), so the destination picker can warn as soon as a
+  // destination is selected instead of only surfacing the error on submit.
+  // The mutation still re-runs this check itself as the source of truth.
+  getMoveLockInfo: protectedProcedure
+    .input(getMoveLockInfoSchema)
+    .output(getMoveLockInfoOutputSchema)
+    .query(
+      async ({
+        ctx,
+        input: { siteId, movedResourceId, destinationResourceId },
+      }) => {
+        await bulkValidateUserPermissionsForResources({
+          action: "read",
+          resourceIds: [
+            movedResourceId,
+            ...(destinationResourceId ? [destinationResourceId] : []),
+          ],
+          userId: ctx.user.id,
+          siteId: Number(siteId),
+        })
+
+        let query = db.selectFrom("Resource")
+        query = destinationResourceId
+          ? query.where("id", "=", destinationResourceId)
+          : query
+              .where("type", "=", ResourceType.RootPage)
+              .where("siteId", "=", siteId)
+        const parent = await query.select(["id", "type"]).executeTakeFirst()
+
+        if (
+          !parent ||
+          (parent.type !== ResourceType.Folder &&
+            parent.type !== ResourceType.Collection)
+        ) {
+          return { isBlocked: false }
+        }
+
+        const ancestorIndexPages = await getAncestorIndexPages(db, {
+          siteId,
+          resourceId: parent.id,
+        })
+        const [lockingAncestor] =
+          getLockingAncestorIndexPages(ancestorIndexPages)
+
+        if (!lockingAncestor) {
+          return { isBlocked: false }
+        }
+
+        return {
+          isBlocked: await hasPublishedDescendant(db, {
+            siteId,
+            resourceId: movedResourceId,
+          }),
+        }
+      },
+    ),
+
   countWithoutRoot: protectedProcedure
     .input(countResourceSchema)
-    .query(async ({ ctx, input: { siteId, resourceId } }) => {
+    .query(async ({ ctx, input: { siteId, resourceId, statusFilter } }) => {
       await bulkValidateUserPermissionsForResources({
         action: "read",
         resourceIds: [resourceId ? String(resourceId) : null],
@@ -697,6 +761,28 @@ export const resourceRouter = router({
         query = query.where("Resource.parentId", "is", null)
       }
 
+      if (statusFilter.length > 0) {
+        // Only fetch the child-live-status map when a live/notLive tag is
+        // actually selected — every other tag filters on plain columns.
+        const needsLiveStatus = statusFilter.some(
+          (tag) => tag === "live" || tag === "notLive",
+        )
+        const { liveContainerIds, notLiveContainerIds } = needsLiveStatus
+          ? splitContainerIdsByLiveStatus(
+              await getChildLiveStatusMap(db, {
+                siteId,
+                resourceId: resourceId ? String(resourceId) : null,
+              }),
+            )
+          : { liveContainerIds: [], notLiveContainerIds: [] }
+
+        query = applyResourceStatusFilter(query, {
+          statusFilter,
+          liveContainerIds,
+          notLiveContainerIds,
+        })
+      }
+
       const result = await query.executeTakeFirst()
       return Number(result?.totalCount ?? 0)
     }),
@@ -706,7 +792,7 @@ export const resourceRouter = router({
     .query(
       async ({
         ctx,
-        input: { siteId, resourceId, offset, limit, orderBy },
+        input: { siteId, resourceId, offset, limit, orderBy, statusFilter },
       }) => {
         await bulkValidateUserPermissionsForResources({
           action: "read",
@@ -731,11 +817,32 @@ export const resourceRouter = router({
 
         query = applyResourceOrderBy(query, orderBy)
 
+        // A Folder/Collection never carries its own publishedVersionId — its
+        // live content is its child IndexPage's — so its status needs the
+        // recursive descendant check; every other type is live iff its own
+        // publishedVersionId is set. Computed up front (rather than after
+        // the rows query, as before) since the live/notLive status filter
+        // needs it too.
+        const childLiveStatus = await getChildLiveStatusMap(db, {
+          siteId,
+          resourceId: resourceId ? String(resourceId) : null,
+        })
+
+        if (statusFilter.length > 0) {
+          const { liveContainerIds, notLiveContainerIds } =
+            splitContainerIdsByLiveStatus(childLiveStatus)
+          query = applyResourceStatusFilter(query, {
+            statusFilter,
+            liveContainerIds,
+            notLiveContainerIds,
+          })
+        }
+
         // TODO: Add pagination support
-        return query
+        const rows = await query
           .offset(offset)
           .limit(limit)
-          .select([
+          .select((eb) => [
             "Resource.id",
             "Resource.permalink",
             "Resource.title",
@@ -745,8 +852,32 @@ export const resourceRouter = router({
             "Resource.parentId",
             "Resource.updatedAt",
             "Resource.scheduledAt",
+            "Resource.scheduledAction",
+            selectLastPublishedAt(eb),
           ])
           .execute()
+
+        return rows.map((row) => {
+          const isContainer =
+            row.type === ResourceType.Folder ||
+            row.type === ResourceType.Collection
+          if (!isContainer) {
+            return {
+              ...row,
+              liveStatus: row.publishedVersionId !== null ? "live" : "notLive",
+            } as const
+          }
+
+          const status = childLiveStatus.get(String(row.id))
+          return {
+            ...row,
+            liveStatus: status?.hasLiveIndexPage
+              ? "live"
+              : status?.hasLiveDescendant
+                ? "liveTemplate"
+                : "notLive",
+          } as const
+        })
       },
     ),
 

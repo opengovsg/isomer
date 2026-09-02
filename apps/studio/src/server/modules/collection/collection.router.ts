@@ -32,6 +32,7 @@ import {
   getBlobOfResource,
   getSiteResourceById,
   publishResource,
+  selectLastPublishedAt,
   updateBlobById,
 } from "../resource/resource.service"
 import { validateUserPermissionsForSite } from "../site/site.service"
@@ -285,7 +286,6 @@ export const collectionRouter = router({
         })
         // Things that aren't working yet:
         // 1. Last Edited user and time
-        // 2. Page status(draft, published)
 
         let query = db
           .selectFrom("Resource")
@@ -298,11 +298,19 @@ export const collectionRouter = router({
 
         query = applyResourceOrderBy(query, orderBy)
 
-        return await query
+        const rows = await query
           .limit(limit)
           .offset(offset)
-          .select(defaultResourceSelect)
+          .select((eb) => [...defaultResourceSelect, selectLastPublishedAt(eb)])
           .execute()
+
+        // CollectionPage/CollectionLink are always leaf resources, unlike
+        // Folder/Collection — their own publishedVersionId is the whole story.
+        return rows.map((row) => {
+          const liveStatus: "live" | "notLive" =
+            row.publishedVersionId !== null ? "live" : "notLive"
+          return { ...row, liveStatus }
+        })
       },
     ),
 

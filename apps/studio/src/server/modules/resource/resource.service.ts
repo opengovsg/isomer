@@ -1,8 +1,13 @@
-import type { SelectExpression, SelectQueryBuilder } from "kysely"
+import type {
+  ExpressionBuilder,
+  SelectExpression,
+  SelectQueryBuilder,
+} from "kysely"
 import type { UnwrapTagged } from "type-fest"
 import type {
   ResourceItemContent,
   ResourceOrderByOption,
+  ResourceStatusFilterOption,
 } from "~/schemas/resource"
 import {
   createChildrenPagesComparator,
@@ -101,6 +106,128 @@ export const applyResourceOrderBy = <O>(
         .orderBy("Resource.updatedAt", "desc")
         .orderBy("Resource.id", "asc")
   }
+}
+
+// Correlated subquery for the "last published on" tooltip. Deliberately not
+// read off Resource.publishedVersionId, since that goes null on unpublish —
+// this reflects the resource's most recent publish regardless of current
+// live status. Returns null for a resource that's never been published.
+export const selectLastPublishedAt = (eb: ExpressionBuilder<DB, "Resource">) =>
+  eb
+    .selectFrom("Version")
+    .select("Version.publishedAt")
+    .whereRef("Version.resourceId", "=", "Resource.id")
+    .orderBy("Version.versionNum", "desc")
+    .limit(1)
+    .as("lastPublishedAt")
+
+// Single-resource equivalent of selectLastPublishedAt, for call sites (like
+// page.readPage) that already fetch the resource via a helper not built
+// around a correlated-subquery select list.
+export const getLastPublishedAt = async (
+  db: SafeKysely,
+  { resourceId }: { resourceId: number },
+): Promise<Date | null> => {
+  const row = await db
+    .selectFrom("Version")
+    .where("Version.resourceId", "=", String(resourceId))
+    .select("Version.publishedAt")
+    .orderBy("Version.versionNum", "desc")
+    .limit(1)
+    .executeTakeFirst()
+  return row?.publishedAt ?? null
+}
+
+const CONTAINER_TYPES = [ResourceType.Folder, ResourceType.Collection]
+
+// Folder/Collection ids that count as "live"/"not live" for the status
+// filter, derived from the same child-live-status map the Status column
+// badges use — see getChildLiveStatusMap. A container is "live" (whether
+// fully live or just live-template) iff something in its subtree is
+// published; otherwise it's "not live".
+export const splitContainerIdsByLiveStatus = (
+  childLiveStatus: Map<
+    string,
+    { hasLiveDescendant: boolean; hasLiveIndexPage: boolean }
+  >,
+): { liveContainerIds: string[]; notLiveContainerIds: string[] } => {
+  const liveContainerIds: string[] = []
+  const notLiveContainerIds: string[] = []
+  for (const [id, { hasLiveDescendant }] of childLiveStatus) {
+    ;(hasLiveDescendant ? liveContainerIds : notLiveContainerIds).push(id)
+  }
+  return { liveContainerIds, notLiveContainerIds }
+}
+
+const matchesContainerIds = (
+  eb: ExpressionBuilder<DB, "Resource">,
+  ids: string[],
+) => (ids.length > 0 ? eb("Resource.id", "in", ids) : sql<boolean>`false`)
+
+// Shared by listWithoutRoot/countWithoutRoot so the Status filter dropdown
+// and the "N items" count agree. Tags are OR'd together (a row matches if it
+// satisfies any checked tag). Live/notLive need liveContainerIds/
+// notLiveContainerIds (from splitContainerIdsByLiveStatus) since a Folder/
+// Collection's own publishedVersionId is never set — every other tag reads
+// the row's own columns uniformly regardless of type.
+export const applyResourceStatusFilter = <O>(
+  query: SelectQueryBuilder<DB, "Resource", O>,
+  {
+    statusFilter,
+    liveContainerIds,
+    notLiveContainerIds,
+  }: {
+    statusFilter: ResourceStatusFilterOption[]
+    liveContainerIds: string[]
+    notLiveContainerIds: string[]
+  },
+): SelectQueryBuilder<DB, "Resource", O> => {
+  if (statusFilter.length === 0) {
+    return query
+  }
+
+  return query.where((eb) => {
+    const isContainer = eb("Resource.type", "in", CONTAINER_TYPES)
+    const isLeaf = eb("Resource.type", "not in", CONTAINER_TYPES)
+
+    return eb.or(
+      statusFilter.map((tag) => {
+        switch (tag) {
+          case "live":
+            return eb.or([
+              eb.and([
+                isLeaf,
+                eb("Resource.publishedVersionId", "is not", null),
+              ]),
+              eb.and([isContainer, matchesContainerIds(eb, liveContainerIds)]),
+            ])
+          case "notLive":
+            return eb.or([
+              eb.and([isLeaf, eb("Resource.publishedVersionId", "is", null)]),
+              eb.and([
+                isContainer,
+                matchesContainerIds(eb, notLiveContainerIds),
+              ]),
+            ])
+          case "scheduledToPublish":
+            return eb.and([
+              eb("Resource.scheduledAt", "is not", null),
+              eb.or([
+                eb("Resource.scheduledAction", "is", null),
+                eb("Resource.scheduledAction", "=", ScheduledAction.Publish),
+              ]),
+            ])
+          case "scheduledToUnpublish":
+            return eb.and([
+              eb("Resource.scheduledAt", "is not", null),
+              eb("Resource.scheduledAction", "=", ScheduledAction.Unpublish),
+            ])
+          case "hasDraft":
+            return eb("Resource.draftBlobId", "is not", null)
+        }
+      }),
+    )
+  })
 }
 
 const defaultResourceWithBlobSelect = [
@@ -1116,6 +1243,121 @@ export const getLockingAncestorIndexPages = (rows: AncestorIndexPage[]) =>
       row.scheduledAt !== null &&
       row.scheduledAction === ScheduledAction.Unpublish,
   )
+
+// Ancestor IndexPages that are not currently live — blocks an immediate
+// publish of `resourceId`, since a child can't go live before its container.
+export const getNotLiveAncestorIndexPages = (rows: AncestorIndexPage[]) =>
+  rows.filter((row) => row.publishedVersionId === null)
+
+// Ancestor IndexPages not guaranteed to be live by `scheduledAt` — the
+// upward, inverted mirror of getDescendantResourceIdsUnsafeForScheduledUnpublish.
+// An ancestor is "unsafe" (blocks scheduling a publish underneath it) unless:
+//   - it's currently live AND has no scheduled Unpublish before `scheduledAt`
+//     (so it'll still be up when this one fires), or
+//   - it's currently not live AND has a scheduled Publish at/before
+//     `scheduledAt` (so it's guaranteed to be up in time).
+// A null scheduledAction on a legacy row defaults to Publish, matching the
+// convention used throughout this module.
+export const getAncestorIndexPagesUnsafeForScheduledPublish = (
+  rows: AncestorIndexPage[],
+  scheduledAt: Date,
+) =>
+  rows.filter((row) => {
+    if (row.publishedVersionId !== null) {
+      // Currently live: unsafe only if it's going dark before we'd fire.
+      return (
+        row.scheduledAt !== null &&
+        row.scheduledAt < scheduledAt &&
+        row.scheduledAction === ScheduledAction.Unpublish
+      )
+    }
+    // Currently not live: safe only if a Publish is guaranteed by then.
+    return !(
+      row.scheduledAt !== null &&
+      row.scheduledAt <= scheduledAt &&
+      (row.scheduledAction === null ||
+        row.scheduledAction === ScheduledAction.Publish)
+    )
+  })
+
+// Tags every direct child of `resourceId` (or every top-level resource, when
+// `resourceId` is null) with its own id ("branchId"), then walks downward —
+// each descendant inherits its ancestor's tag as the recursion goes deeper.
+// Grouping by that tag at the end tells us, per child, whether it (or
+// anything nested under it, at any depth) is published — one query answers
+// this for every child at once, instead of walking one child's subtree per
+// call.
+//
+// `hasLiveIndexPage` narrows that down to just the child's own immediate
+// IndexPage (one level under it): a Folder/Collection is genuinely "Live"
+// only when this is true, versus "Live · Template" when it's not published
+// but `hasLiveDescendant` is still true because something deeper is live.
+// TODO: remove_autogen has closed off new ways to reach the "Live · Template"
+// state, but legacy data can still be in it. Once index-page autogeneration
+// is properly removed (and any remaining legacy rows backfilled),
+// `hasLiveDescendant`/"liveTemplate" should no longer be reachable and can
+// be dropped, leaving just `hasLiveIndexPage`'s live/not-live check.
+export const getChildLiveStatusMap = async (
+  trx: SafeKysely,
+  { siteId, resourceId }: { siteId: number; resourceId: string | null },
+): Promise<
+  Map<string, { hasLiveDescendant: boolean; hasLiveIndexPage: boolean }>
+> => {
+  const rows = await trx
+    .withRecursive("branchSubtree", (eb) =>
+      eb
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+        .where(
+          "Resource.parentId",
+          resourceId === null ? "is" : "=",
+          resourceId,
+        )
+        .select([
+          "Resource.id",
+          "Resource.id as branchId",
+          sql<number>`0`.as("depth"),
+        ])
+        // `union` (not `unionAll`) dedupes rows so a malformed parent chain with
+        // a cycle can't drive the recursion forever.
+        .union((fb) =>
+          fb
+            .selectFrom("Resource")
+            .innerJoin("branchSubtree", "branchSubtree.id", "Resource.parentId")
+            .where("Resource.siteId", "=", siteId)
+            .select([
+              "Resource.id",
+              "branchSubtree.branchId",
+              sql<number>`"branchSubtree"."depth" + 1`.as("depth"),
+            ]),
+        ),
+    )
+    .selectFrom("branchSubtree")
+    .innerJoin("Resource", "Resource.id", "branchSubtree.id")
+    .groupBy("branchSubtree.branchId")
+    .select([
+      "branchSubtree.branchId as branchId",
+      sql<boolean>`bool_or("Resource"."publishedVersionId" is not null)`.as(
+        "hasLiveDescendant",
+      ),
+      sql<boolean>`bool_or(
+        "branchSubtree"."depth" = 1
+        and "Resource"."type" = ${ResourceType.IndexPage}
+        and "Resource"."publishedVersionId" is not null
+      )`.as("hasLiveIndexPage"),
+    ])
+    .execute()
+
+  return new Map(
+    rows.map((row) => [
+      String(row.branchId),
+      {
+        hasLiveDescendant: row.hasLiveDescendant,
+        hasLiveIndexPage: row.hasLiveIndexPage,
+      },
+    ]),
+  )
+}
 
 // Resolves a full permalink path (e.g. "/foo/bar") to the resource that serves
 // it, walking permalink segments from the site's root page. A Folder/Collection

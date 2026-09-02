@@ -128,6 +128,19 @@ const MoveResourceContent = withSuspense(
       { siteId: Number(siteId), resourceId: curResourceId ?? "" },
       { enabled: !!curResourceId },
     )
+    // Pre-flight the move mutation's unpublish-lock check as soon as a
+    // destination is picked, rather than only surfacing it as an error
+    // toast after "Move here" is clicked.
+    const { data: moveLockInfo, isFetching: isMoveLockInfoFetching } =
+      trpc.resource.getMoveLockInfo.useQuery(
+        {
+          siteId: Number(siteId),
+          movedResourceId: resourceId,
+          destinationResourceId: curResourceId ?? null,
+        },
+        { enabled: curResourceId !== undefined },
+      )
+    const isMoveBlocked = !!moveLockInfo?.isBlocked
 
     const isAdvancedRedirectsEnabled = useIsAdvancedRedirectsEnabled()
 
@@ -179,6 +192,12 @@ const MoveResourceContent = withSuspense(
               existingResource={movedItem ?? undefined}
               onChange={(resourceId) => setCurResourceId(resourceId)}
             />
+            {isMoveBlocked && (
+              <Infobox variant="warning" size="sm" w="full">
+                This destination (or a folder/collection above it) is scheduled
+                to be unpublished, so a published page can't be moved here.
+              </Infobox>
+            )}
             {showUrlChangeNotice && (
               <VStack alignItems="flex-start" spacing="0.75rem" w="full">
                 <Box
@@ -237,14 +256,20 @@ const MoveResourceContent = withSuspense(
             Cancel
           </Button>
           <Button
-            // NOTE: disable this button if the resourceId to be moved is missing
-            // or if the user does not have sufficient permissions to move to the destination
+            // NOTE: disable this button if the resourceId to be moved is missing,
+            // if the user does not have sufficient permissions to move to the
+            // destination, if the move is blocked by the unpublish-lock check
+            // (or that check hasn't resolved yet)
             isDisabled={
               curResourceId === undefined ||
               ability.cannot("move", {
                 parentId: curResourceId ?? null,
               }) ||
-              ability.cannot("move", { parentId: movedItem?.parentId ?? null })
+              ability.cannot("move", {
+                parentId: movedItem?.parentId ?? null,
+              }) ||
+              isMoveLockInfoFetching ||
+              isMoveBlocked
             }
             isLoading={isPending}
             onClick={() =>

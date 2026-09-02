@@ -3,6 +3,7 @@ import { Grid, GridItem } from "@chakra-ui/react"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { EditorDrawerProvider } from "~/contexts/EditorDrawerContext"
 import { EditPageDrawer } from "~/features/editing-experience/components/Drawer/EditPageDrawer"
+import { EditingLockedOverlay } from "~/features/editing-experience/components/EditingLockedOverlay"
 import { EditPagePreview } from "~/features/editing-experience/components/preview/EditPagePreview"
 import {
   useContentEditTracker,
@@ -48,19 +49,25 @@ const EditPage: NextPageWithLayout = () => {
       updatedAt={updatedAt}
       title={title}
     >
-      <PageEditingView />
+      <PageEditingView pageId={pageId} siteId={siteId} />
     </EditorDrawerProvider>
   )
 }
 
-const PageEditingView = () => {
+interface PageEditingViewProps {
+  pageId: number
+  siteId: number
+}
+
+const PageEditingView = ({ pageId, siteId }: PageEditingViewProps) => {
   useContentEditTracker()
   useLeftEditorSurveyTracker()
 
   return (
     <Grid h="full" w="100%" templateColumns="repeat(3, 1fr)" gap={0}>
-      <GridItem colSpan={1} overflow="auto" minW="28rem">
+      <GridItem colSpan={1} overflow="auto" minW="28rem" position="relative">
         <EditPageDrawer />
+        <EditingLockedOverlay pageId={pageId} siteId={siteId} />
       </GridItem>
       <GridItem colSpan={2}>
         <EditPagePreview />

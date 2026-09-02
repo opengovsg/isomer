@@ -6,13 +6,13 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react"
-import { Badge, BadgeLeftIcon } from "@opengovsg/design-system-react"
 import Link from "next/link"
 import { useEffect } from "react"
-import { BiChevronRight, BiSolidCircle } from "react-icons/bi"
+import { BiChevronRight } from "react-icons/bi"
+import { HasDraftIndicator } from "~/components/HasDraftIndicator"
+import { LiveStatusBadges } from "~/components/LiveStatusBadges"
 import { useNewCollectionTagsManagement } from "~/hooks/useNewCollectionTagsManagement"
 import { trpc } from "~/utils/trpc"
-import { ResourceState } from "~prisma/generated/generatedEnums"
 
 import type { IndexpageRowProps } from "./types"
 import { getIndexPageIcon, getIndexPageSubtitle } from "./utils"
@@ -72,18 +72,15 @@ export const IndexpageRow = ({
         <VStack flex={1} gap="0.25rem" alignItems="flex-start">
           <HStack gap="0.25rem">
             <Text textStyle="subhead-2">{data?.title}</Text>
-            <Badge
-              size="xs"
-              variant="clear"
-              colorScheme={data?.draftBlobId ? "warning" : "success"}
-            >
-              <BadgeLeftIcon fontSize="0.5rem" as={BiSolidCircle} />
-              <Text textStyle="legal">
-                {data?.draftBlobId
-                  ? ResourceState.Draft
-                  : ResourceState.Published}
-              </Text>
-            </Badge>
+            {data && (
+              <LiveStatusBadges
+                liveStatus={data.liveStatus}
+                scheduledAt={data.scheduledAt}
+                scheduledAction={data.scheduledAction}
+                lastPublishedAt={data.lastPublishedAt}
+              />
+            )}
+            <HasDraftIndicator draftBlobId={data?.draftBlobId ?? null} />
           </HStack>
           {/*   TODO: we require the last updated at and to display it */}
           {/* as a relative time. */}

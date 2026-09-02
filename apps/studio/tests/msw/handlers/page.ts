@@ -12,7 +12,15 @@ const getRootPageQuery = (wait?: DelayMode | number) => {
     if (wait !== undefined) {
       await delay(wait)
     }
-    return { title: "A mock page", id: "1", draftBlobId: "1" }
+    return {
+      title: "A mock page",
+      id: "1",
+      draftBlobId: "1",
+      publishedVersionId: null,
+      scheduledAt: null,
+      scheduledAction: null,
+      lastPublishedAt: null,
+    }
   })
 }
 export const DEFAULT_PAGE_ITEMS: RouterOutput["resource"]["listWithoutRoot"] = [
@@ -26,6 +34,9 @@ export const DEFAULT_PAGE_ITEMS: RouterOutput["resource"]["listWithoutRoot"] = [
     parentId: null,
     updatedAt: new Date("2024-09-12T07:00:00.000Z"),
     scheduledAt: null,
+    scheduledAction: null,
+    lastPublishedAt: null,
+    liveStatus: "notLive",
   },
   {
     id: "4",
@@ -37,6 +48,9 @@ export const DEFAULT_PAGE_ITEMS: RouterOutput["resource"]["listWithoutRoot"] = [
     parentId: null,
     updatedAt: new Date("2024-09-12T07:00:10.000Z"),
     scheduledAt: null,
+    scheduledAction: null,
+    lastPublishedAt: null,
+    liveStatus: "notLive",
   },
   {
     id: "5",
@@ -48,6 +62,9 @@ export const DEFAULT_PAGE_ITEMS: RouterOutput["resource"]["listWithoutRoot"] = [
     parentId: null,
     updatedAt: new Date("2024-09-12T07:00:20.000Z"),
     scheduledAt: null,
+    scheduledAction: null,
+    lastPublishedAt: null,
+    liveStatus: "notLive",
   },
   {
     id: "6",
@@ -59,6 +76,9 @@ export const DEFAULT_PAGE_ITEMS: RouterOutput["resource"]["listWithoutRoot"] = [
     parentId: null,
     updatedAt: new Date("2024-09-12T07:00:30.000Z"),
     scheduledAt: null,
+    scheduledAction: null,
+    lastPublishedAt: null,
+    liveStatus: "notLive",
   },
 ]
 
@@ -1507,6 +1527,7 @@ export const pageHandlers = {
           scheduledAt: null,
           scheduledBy: null,
           scheduledAction: null,
+          lastPublishedAt: null,
           createdAt: new Date("2024-09-12T07:00:00.000Z"),
           updatedAt: new Date("2024-09-12T07:00:00.000Z"),
           ...overrides,
@@ -1530,6 +1551,7 @@ export const pageHandlers = {
           scheduledAt: null,
           scheduledBy: null,
           scheduledAction: null,
+          lastPublishedAt: null,
           createdAt: new Date("2024-09-12T07:00:00.000Z"),
           updatedAt: new Date("2024-09-12T07:00:00.000Z"),
           ...overrides,
@@ -1553,6 +1575,7 @@ export const pageHandlers = {
           scheduledAt: null,
           scheduledBy: null,
           scheduledAction: null,
+          lastPublishedAt: null,
           createdAt: new Date("2024-09-12T07:00:00.000Z"),
           updatedAt: new Date("2024-09-12T07:00:00.000Z"),
           ...overrides,
@@ -1576,6 +1599,7 @@ export const pageHandlers = {
           scheduledAt: null,
           scheduledBy: null,
           scheduledAction: null,
+          lastPublishedAt: null,
           createdAt: new Date("2024-09-12T07:00:00.000Z"),
           updatedAt: new Date("2024-09-12T07:00:00.000Z"),
           ...overrides,
@@ -1599,6 +1623,7 @@ export const pageHandlers = {
           scheduledAt: null,
           scheduledBy: null,
           scheduledAction: null,
+          lastPublishedAt: null,
           createdAt: new Date("2024-09-12T07:00:00.000Z"),
           updatedAt: new Date("2024-09-12T07:00:00.000Z"),
           ...overrides,
@@ -1661,5 +1686,36 @@ export const pageHandlers = {
       trpcMsw.page.getPermalinkTree.query(() => {
         return ["newsroom", "collection-page", "sub-collection-page"]
       }),
+  },
+  unpublishPage: {
+    default: () => {
+      return trpcMsw.page.unpublishPage.mutation(() => {
+        return undefined
+      })
+    },
+    loading: () => {
+      return trpcMsw.page.unpublishPage.mutation(() => {
+        return new Promise(() => {
+          // Never resolve to simulate infinite loading
+        })
+      })
+    },
+    error: () => {
+      return trpcMsw.page.unpublishPage.mutation(() => {
+        throw new Error("Failed to unpublish page")
+      })
+    },
+  },
+  scheduleUnpublish: {
+    default: () => {
+      return trpcMsw.page.scheduleUnpublish.mutation(() => {
+        return undefined
+      })
+    },
+    error: () => {
+      return trpcMsw.page.scheduleUnpublish.mutation(() => {
+        throw new Error("Failed to schedule unpublish")
+      })
+    },
   },
 }
