@@ -1,16 +1,35 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
+import type { CollectionPagePageProps } from "~/types"
+import { isDateFilter } from "~/types/page"
 
 import type { AppliedFilter } from "../../../types/Filter"
 import { FILTER_ID_YEAR, NO_SPECIFIED_YEAR_FILTER_ID } from "./constants"
+import { getDateFilterStatus, getTodayInSingapore } from "./getDateFilterStatus"
 import { normalizeCollectionSearchText } from "./normalizeCollectionSearchText"
+
+const getDateFilterIds = (
+  tagCategories?: CollectionPagePageProps["tagCategories"],
+): Set<string> => {
+  if (!tagCategories) {
+    return new Set()
+  }
+
+  return new Set(
+    tagCategories.filter(isDateFilter).map((category) => category.id),
+  )
+}
 
 export const getFilteredItems = (
   items: ProcessedCollectionCardProps[],
   appliedFilters: AppliedFilter[],
   searchValue: string,
+  tagCategories?: CollectionPagePageProps["tagCategories"],
+  today: string = getTodayInSingapore(),
 ): ProcessedCollectionCardProps[] => {
   const normalizedSearchValue =
     searchValue !== "" ? normalizeCollectionSearchText(searchValue) : ""
+
+  const dateFilterIds = getDateFilterIds(tagCategories)
 
   return items.filter((item) => {
     // Step 1: Filter based on search value
@@ -44,12 +63,12 @@ export const getFilteredItems = (
     }
 
     const remainingFilters = appliedFilters.filter(
-      ({ id }) => id !== FILTER_ID_YEAR,
+      ({ id }) => id !== FILTER_ID_YEAR && !dateFilterIds.has(id),
     )
 
-    // Step 3: Compute set intersection between remaining filters and the set of items.
+    // Step 3: Compute set intersection between remaining (text) filters and the set of items.
     // Take note that we use OR between items within the same filter and AND between filters.
-    return remainingFilters
+    const matchesTextFilters = remainingFilters
       .map(({ items: activeFilters, id }) => {
         return item.tags?.some(({ category, selected: itemLabels }) => {
           return (
@@ -63,5 +82,34 @@ export const getFilteredItems = (
         })
       })
       .every((x) => x)
+
+    if (!matchesTextFilters) {
+      return false
+    }
+
+    // Step 4: Date filters — bucket (status) and date-range both apply
+    // together (AND'd) within one filter; AND across filters, same as text.
+    const dateFilters = appliedFilters.filter(({ id }) => dateFilterIds.has(id))
+
+    return dateFilters.every((appliedFilter) => {
+      const value = item.dateTagged?.find(({ id }) => id === appliedFilter.id)
+      // Filter is active but this item has no value for it at all.
+      if (!value) {
+        return false
+      }
+
+      const matchesBucket =
+        appliedFilter.items.length === 0 ||
+        appliedFilter.items.some(
+          ({ id: statusId }) => getDateFilterStatus(value, today) === statusId,
+        )
+
+      const matchesRange =
+        !appliedFilter.dateRange ||
+        (value.date <= appliedFilter.dateRange.end &&
+          (value.endDate ?? value.date) >= appliedFilter.dateRange.start)
+
+      return matchesBucket && matchesRange
+    })
   })
 }

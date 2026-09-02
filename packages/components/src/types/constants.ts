@@ -40,6 +40,20 @@ export const TAG_CATEGORY_TYPE = {
   Date: "date",
 } as const
 
+export type TagCategoryType =
+  (typeof TAG_CATEGORY_TYPE)[keyof typeof TAG_CATEGORY_TYPE]
+
+export const DEFAULT_TAG_CATEGORY_TYPE = TAG_CATEGORY_TYPE.Text
+
+export const resolveTagCategoryType = (
+  type?: TagCategoryType,
+): TagCategoryType => type ?? DEFAULT_TAG_CATEGORY_TYPE
+
+export const isDateCategoryType = (
+  type?: TagCategoryType,
+): type is typeof TAG_CATEGORY_TYPE.Date =>
+  resolveTagCategoryType(type) === TAG_CATEGORY_TYPE.Date
+
 export const DATE_FILTER_STATUS_ID = {
   Ended: "ENDED",
   Ongoing: "ONGOING",
@@ -48,3 +62,14 @@ export const DATE_FILTER_STATUS_ID = {
 
 export type DateFilterStatusId =
   (typeof DATE_FILTER_STATUS_ID)[keyof typeof DATE_FILTER_STATUS_ID]
+
+export const DEFAULT_DATE_FILTER_STATUS_LABELS: Record<
+  DateFilterStatusId,
+  string
+> = {
+  [DATE_FILTER_STATUS_ID.Ended]: "Event ended",
+  [DATE_FILTER_STATUS_ID.Ongoing]: "Ongoing",
+  [DATE_FILTER_STATUS_ID.Upcoming]: "Upcoming",
+}
+
+export const DEFAULT_DATE_RANGE_FILTER_LABEL = "Or, search for a date"

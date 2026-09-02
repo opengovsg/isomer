@@ -4,6 +4,7 @@ import type { CollectionPagePageProps } from "~/types/page"
 import { getParsedDate } from "~/utils/getParsedDate"
 import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
 
+import { resolveItemDateFields } from "./dateFilterStatic"
 import { getPillAndPlaintextTags } from "./getPillAndPlaintextTags"
 import { getTagsFromTagged } from "./getTagsFromTagged"
 import { sortCollectionItems } from "./sortCollectionItems"
@@ -125,6 +126,10 @@ export const getCollectionItems = ({
       item.tagged,
       tagCategories,
     )
+    const { dateTagged, dateFilterDisplayEntries } = resolveItemDateFields(
+      item.dateTagged,
+      tagCategories,
+    )
 
     const baseItem = {
       type: "collectionCard" as const,
@@ -144,6 +149,8 @@ export const getCollectionItems = ({
           ? getTagsFromTagged(item.tagged, tagCategories)
           : undefined,
       pillTags,
+      dateTagged,
+      dateFilterDisplayEntries,
     }
 
     if (item.layout === "file") {
