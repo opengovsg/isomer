@@ -58,6 +58,7 @@ import {
   defaultResourceSelect,
   getBatchAncestryWithSelfQuery,
   getChildLiveStatusMap,
+  getMoveLockInfo,
   getResourceFullPermalink,
   getSearchRecentlyEdited,
   getSearchResults,
@@ -653,39 +654,11 @@ export const resourceRouter = router({
           siteId: Number(siteId),
         })
 
-        let query = db.selectFrom("Resource")
-        query = destinationResourceId
-          ? query.where("id", "=", destinationResourceId)
-          : query
-              .where("type", "=", ResourceType.RootPage)
-              .where("siteId", "=", siteId)
-        const parent = await query.select(["id", "type"]).executeTakeFirst()
-
-        if (
-          !parent ||
-          (parent.type !== ResourceType.Folder &&
-            parent.type !== ResourceType.Collection)
-        ) {
-          return { isBlocked: false }
-        }
-
-        const ancestorIndexPages = await getAncestorIndexPages(db, {
+        return getMoveLockInfo(db, {
           siteId,
-          resourceId: parent.id,
+          movedResourceId,
+          destinationResourceId,
         })
-        const [lockingAncestor] =
-          getLockingAncestorIndexPages(ancestorIndexPages)
-
-        if (!lockingAncestor) {
-          return { isBlocked: false }
-        }
-
-        return {
-          isBlocked: await hasPublishedDescendant(db, {
-            siteId,
-            resourceId: movedResourceId,
-          }),
-        }
       },
     ),
 

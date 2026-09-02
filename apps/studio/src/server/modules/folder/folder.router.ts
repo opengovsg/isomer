@@ -24,14 +24,12 @@ import { createFolderIndexPage } from "../page/page.service"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 import { applyFolderPermalinkChangeRedirects } from "../redirect/redirect.service"
 import {
-  getChildLiveStatusMap,
-  getPublishedDescendantResourceIds,
   getResourceFullPermalink,
   hasPublishedDescendant,
   publishResource,
-  selectLastPublishedAt,
 } from "../resource/resource.service"
 import { defaultFolderSelect } from "./folder.select"
+import { getFolderIndexPageInfo } from "./folder.service"
 
 export const folderRouter = router({
   create: protectedProcedure
@@ -352,68 +350,7 @@ export const folderRouter = router({
         resourceIds: [resourceId],
       })
 
-      const { title, type: parentType } = await db
-        .selectFrom("Resource")
-        .where("Resource.siteId", "=", siteId)
-        .where("Resource.id", "=", resourceId)
-        .select(["title", "type"])
-        .executeTakeFirstOrThrow()
-
-      const indexPage = await db
-        .selectFrom("Resource")
-        .where("Resource.siteId", "=", siteId)
-        .where("Resource.parentId", "=", resourceId)
-        .where("Resource.type", "=", ResourceType.IndexPage)
-        .select((eb) => [
-          "id",
-          "draftBlobId",
-          "publishedVersionId",
-          "scheduledAt",
-          "scheduledAction",
-          selectLastPublishedAt(eb),
-        ])
-        .executeTakeFirstOrThrow(
-          () =>
-            new TRPCError({
-              code: "NOT_FOUND",
-              message: "No existing index page found",
-            }),
-        )
-
-      // "Live" if the folder/collection's own index page is published;
-      // "Live · Template" if not, but something nested inside it is (the
-      // dashboard auto-generates a placeholder index for these so the live
-      // content underneath stays reachable); "Not live" otherwise.
-      // TODO: remove_autogen has closed off new ways to reach this state, but
-      // legacy data can still be in it. Once index-page autogeneration is
-      // properly removed (and any remaining legacy rows backfilled),
-      // "liveTemplate" should no longer be reachable and can be dropped.
-      const childLiveStatus = await getChildLiveStatusMap(db, {
-        siteId,
-        resourceId,
-      })
-      const liveStatus: "live" | "liveTemplate" | "notLive" =
-        indexPage.publishedVersionId !== null
-          ? "live"
-          : [...childLiveStatus.values()].some((s) => s.hasLiveDescendant)
-            ? "liveTemplate"
-            : "notLive"
-
-      // Powers the "can't unpublish this landing page yet" guard in the page
-      // editor — reusing this query (rather than a separate one) means
-      // navigating here from the dashboard, which already fetched this same
-      // data, doesn't pay for a second round-trip.
-      const otherPublishedDescendantCount = (
-        await getPublishedDescendantResourceIds(db, { siteId, resourceId })
-      ).filter((id) => id !== indexPage.id).length
-
-      return {
-        title,
-        ...indexPage,
-        liveStatus,
-        parentType,
-        otherPublishedDescendantCount,
-      }
+      return getFolderIndexPageInfo(db, { siteId, resourceId })
     }),
 
   listChildPages: protectedProcedure
