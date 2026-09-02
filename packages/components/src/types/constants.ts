@@ -73,3 +73,5 @@ export const DEFAULT_DATE_FILTER_STATUS_LABELS: {
   { id: DATE_FILTER_STATUS_ID.Ongoing, label: "Ongoing" },
   { id: DATE_FILTER_STATUS_ID.Upcoming, label: "Upcoming" },
 ]
+
+export const DEFAULT_DATE_RANGE_FILTER_LABEL = "Or, search for a date"
