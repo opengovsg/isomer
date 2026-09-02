@@ -15,6 +15,7 @@ import { getResourceSubpath } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
 
 import { pageSchema } from "../schema"
+import { PageMoreActionsButton } from "./PageMoreActionsButton"
 import { PageStatusIndicators } from "./PageStatusIndicators"
 import PublishButton from "./PublishButton"
 
@@ -135,6 +136,7 @@ export const PageEditNavbar = (): JSX.Element => {
         <Flex justifyContent={"end"} alignItems={"center"} flex={1} gap="1rem">
           <PageStatusIndicators pageId={pageId} siteId={siteId} />
           <PublishButton pageId={pageId} siteId={siteId} />
+          <PageMoreActionsButton pageId={pageId} siteId={siteId} />
         </Flex>
       )}
     </Flex>

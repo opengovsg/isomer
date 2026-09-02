@@ -24,6 +24,7 @@ import { bulkValidateUserPermissionsForResources } from "../permissions/permissi
 import { applyFolderPermalinkChangeRedirects } from "../redirect/redirect.service"
 import {
   getChildLiveStatusMap,
+  getPublishedDescendantResourceIds,
   getResourceFullPermalink,
   hasPublishedDescendant,
   publishResource,
@@ -345,11 +346,11 @@ export const folderRouter = router({
         resourceIds: [resourceId],
       })
 
-      const { title } = await db
+      const { title, type: parentType } = await db
         .selectFrom("Resource")
         .where("Resource.siteId", "=", siteId)
         .where("Resource.id", "=", resourceId)
-        .select("title")
+        .select(["title", "type"])
         .executeTakeFirstOrThrow()
 
       const indexPage = await db
@@ -392,7 +393,21 @@ export const folderRouter = router({
             ? "liveTemplate"
             : "notLive"
 
-      return { title, ...indexPage, liveStatus }
+      // Powers the "can't unpublish this landing page yet" guard in the page
+      // editor — reusing this query (rather than a separate one) means
+      // navigating here from the dashboard, which already fetched this same
+      // data, doesn't pay for a second round-trip.
+      const otherPublishedDescendantCount = (
+        await getPublishedDescendantResourceIds(db, { siteId, resourceId })
+      ).filter((id) => id !== indexPage.id).length
+
+      return {
+        title,
+        ...indexPage,
+        liveStatus,
+        parentType,
+        otherPublishedDescendantCount,
+      }
     }),
 
   listChildPages: protectedProcedure

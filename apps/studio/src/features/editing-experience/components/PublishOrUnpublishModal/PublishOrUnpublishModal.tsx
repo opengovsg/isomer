@@ -133,12 +133,14 @@ export const PublishOrUnpublishModal = ({
       onError: (error) => {
         console.error(`Error occurred when publishing page: ${error.message}`)
         // The publish-block throws CONFLICT with an actionable message naming
-        // the redirect to remove — surface it verbatim, not the generic
-        // failure copy.
+        // the redirect to remove; guards like the scheduled-unpublish
+        // ancestor lock throw PRECONDITION_FAILED — surface both verbatim
+        // rather than the generic failure copy.
         toast({
           status: "error",
           title:
-            error.data?.code === "CONFLICT"
+            error.data?.code === "CONFLICT" ||
+            error.data?.code === "PRECONDITION_FAILED"
               ? error.message
               : "Failed to publish page. Please contact Isomer support.",
           ...BRIEF_TOAST_SETTINGS,
@@ -162,9 +164,15 @@ export const PublishOrUnpublishModal = ({
       },
       onError: (error) => {
         console.error(`Error occurred when scheduling page: ${error.message}`)
+        // The scheduled-unpublish ancestor lock (and similar guards) throws
+        // PRECONDITION_FAILED with an actionable message — surface it
+        // verbatim rather than the generic failure copy.
         toast({
           status: "error",
-          title: "Failed to schedule page. Please contact Isomer support.",
+          title:
+            error.data?.code === "PRECONDITION_FAILED"
+              ? error.message
+              : "Failed to schedule page. Please contact Isomer support.",
           ...BRIEF_TOAST_SETTINGS,
         })
       },

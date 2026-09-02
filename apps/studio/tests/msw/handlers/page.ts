@@ -1687,4 +1687,35 @@ export const pageHandlers = {
         return ["newsroom", "collection-page", "sub-collection-page"]
       }),
   },
+  unpublishPage: {
+    default: () => {
+      return trpcMsw.page.unpublishPage.mutation(() => {
+        return undefined
+      })
+    },
+    loading: () => {
+      return trpcMsw.page.unpublishPage.mutation(() => {
+        return new Promise(() => {
+          // Never resolve to simulate infinite loading
+        })
+      })
+    },
+    error: () => {
+      return trpcMsw.page.unpublishPage.mutation(() => {
+        throw new Error("Failed to unpublish page")
+      })
+    },
+  },
+  scheduleUnpublish: {
+    default: () => {
+      return trpcMsw.page.scheduleUnpublish.mutation(() => {
+        return undefined
+      })
+    },
+    error: () => {
+      return trpcMsw.page.scheduleUnpublish.mutation(() => {
+        throw new Error("Failed to schedule unpublish")
+      })
+    },
+  },
 }
