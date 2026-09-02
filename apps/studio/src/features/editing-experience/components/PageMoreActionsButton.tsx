@@ -73,7 +73,7 @@ const SuspendablePageMoreActionsButton = ({
     parentIndexPageInfo.otherPublishedDescendantCount > 0
 
   const disabledReason = !isLive
-    ? "This page isn't live."
+    ? "This page isn't live"
     : isScheduledToPublish
       ? "This page has a scheduled publish. Cancel it before unpublishing."
       : undefined
@@ -147,7 +147,7 @@ const SuspendablePageMoreActionsButton = ({
                               {isScheduledToUnpublish
                                 ? "Cancel the schedule to make changes."
                                 : (disabledReason ??
-                                  "Hide page from the public.")}
+                                  "Hide this page from the public")}
                             </Text>
                           </VStack>
                           {isScheduledToUnpublish ? (
