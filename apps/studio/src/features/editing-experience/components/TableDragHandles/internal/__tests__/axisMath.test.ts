@@ -15,12 +15,14 @@ const ROW: AxisProjection = {
   rectsOf: (geometry) => geometry.rowRects,
   startOf: (rect) => rect.top,
   sizeOf: (rect) => rect.height,
+  pointerOf: (point) => point.y,
 }
 
 const COLUMN: AxisProjection = {
   rectsOf: (geometry) => geometry.colRects,
   startOf: (rect) => rect.left,
   sizeOf: (rect) => rect.width,
+  pointerOf: (point) => point.x,
 }
 
 // A 4-row × 3-column table: rows are 20px tall from y=100, columns 100px wide

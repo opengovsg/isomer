@@ -33,8 +33,6 @@ export interface AxisSpec extends AxisProjection {
   selectLabel: string
   dragLabel: string
   addPillLabel: string
-  /** The pointer coordinate that matters for this axis. */
-  pointerOf: (point: { x: number; y: number }) => number
   /** First index that may not be reordered — 1 when the axis has a header. */
   lockMinIndex: (table: ProseMirrorNode) => number
   /** Offset of the first cell in slot `index`, relative to the table start. */

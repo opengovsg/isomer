@@ -35,6 +35,8 @@ export interface AxisProjection {
   startOf: (rect: Rect) => number
   /** How long a slot is along the axis. */
   sizeOf: (rect: Rect) => number
+  /** The pointer coordinate that matters for this axis. */
+  pointerOf: (point: { x: number; y: number }) => number
 }
 
 /** Outer bounds of the whole table, in container coordinates. */
