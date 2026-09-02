@@ -19,7 +19,7 @@ import { useIsUnpublishEnabled } from "~/hooks/useIsUnpublishEnabled"
 import { trpc } from "~/utils/trpc"
 import { ResourceType, ScheduledAction } from "~prisma/generated/generatedEnums"
 
-import { CancelScheduleUnpublishModal } from "./EditingLockedOverlay/CancelScheduleUnpublishModal"
+import { CancelScheduleModal } from "./PublishingModal"
 import { PublishOrUnpublishModal } from "./PublishOrUnpublishModal"
 import { CantUnpublishModal } from "./UnpublishModal"
 
@@ -113,7 +113,8 @@ const SuspendablePageMoreActionsButton = ({
                 />
               )}
             {cancelScheduleDisclosure.isOpen && (
-              <CancelScheduleUnpublishModal
+              <CancelScheduleModal
+                action="unpublish"
                 pageId={pageId}
                 siteId={siteId}
                 {...cancelScheduleDisclosure}

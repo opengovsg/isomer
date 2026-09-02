@@ -13,7 +13,6 @@ import { withSuspense } from "~/hocs/withSuspense"
 import { trpc } from "~/utils/trpc"
 import { ScheduledAction } from "~prisma/generated/generatedEnums"
 
-import { CancelScheduleUnpublishModal } from "./CancelScheduleUnpublishModal"
 import { PublishOrUnpublishNowModal } from "./PublishOrUnpublishNowModal"
 
 interface EditingLockedOverlayProps {
@@ -77,20 +76,14 @@ const SuspendableEditingLockedOverlay = ({
           {...actionDisclosure}
         />
       )}
-      {cancelScheduleDisclosure.isOpen &&
-        (isScheduledToPublish ? (
-          <CancelScheduleModal
-            pageId={pageId}
-            siteId={siteId}
-            {...cancelScheduleDisclosure}
-          />
-        ) : (
-          <CancelScheduleUnpublishModal
-            pageId={pageId}
-            siteId={siteId}
-            {...cancelScheduleDisclosure}
-          />
-        ))}
+      {cancelScheduleDisclosure.isOpen && (
+        <CancelScheduleModal
+          action={isScheduledToPublish ? "publish" : "unpublish"}
+          pageId={pageId}
+          siteId={siteId}
+          {...cancelScheduleDisclosure}
+        />
+      )}
       <VStack spacing="1.5rem" maxW="22.5rem" textAlign="center">
         <VStack spacing="0.5rem">
           <Center
