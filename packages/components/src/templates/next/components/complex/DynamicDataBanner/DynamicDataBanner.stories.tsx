@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { http, HttpResponse } from "msw"
 import { generateSiteConfig } from "~/stories/helpers"
+import { getSingaporeDateYYYYMMDD } from "~/utils/getSingaporeDate"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import { DynamicDataBanner } from "./DynamicDataBanner"
-import { getSingaporeDateYYYYMMDD } from "./utils"
 
 const meta: Meta<typeof DynamicDataBanner> = {
   title: "Next/Components/DynamicDataBanner",
