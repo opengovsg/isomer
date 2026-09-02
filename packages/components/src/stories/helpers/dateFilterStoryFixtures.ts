@@ -36,7 +36,11 @@ export const statusLabelsFor = (
     return { ENDED: "", ONGOING: "", UPCOMING: "" }
   }
 
-  return category.statusLabels
+  return {
+    ENDED: category.statusLabels?.ENDED ?? "",
+    ONGOING: category.statusLabels?.ONGOING ?? "",
+    UPCOMING: category.statusLabels?.UPCOMING ?? "",
+  }
 }
 
 const pad = (n: number): string => n.toString().padStart(2, "0")
