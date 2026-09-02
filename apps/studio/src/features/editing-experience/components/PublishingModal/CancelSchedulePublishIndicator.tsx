@@ -18,6 +18,7 @@ export const CancelSchedulePublishIndicator = ({
       {cancelScheduleDisclosure.isOpen && (
         <CancelScheduleModal
           {...cancelScheduleDisclosure}
+          action="publish"
           siteId={siteId}
           pageId={pageId}
         />
