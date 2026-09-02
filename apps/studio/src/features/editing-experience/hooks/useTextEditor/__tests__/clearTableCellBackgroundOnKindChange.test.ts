@@ -100,7 +100,7 @@ describe("appendClearBackgroundOnCellKindChange", () => {
 
     expect(readCellColors(transaction.doc)).toEqual([
       { type: "tableCell", backgroundColor: null },
-      { type: "tableCell", backgroundColor: "blue" },
+      { type: "tableCell", backgroundColor: "pink" },
     ])
   })
 })
