@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { DATE_FILTER_STATUS_ID } from "~/types/constants"
+import { getSingaporeDateYYYYMMDD } from "~/utils/getSingaporeDate"
 
 import { getDateFilterStatus } from "../getDateFilterStatus"
 
@@ -55,9 +56,7 @@ describe("getDateFilterStatus", () => {
   })
 
   it("defaults `today` to the current date in Asia/Singapore when omitted", () => {
-    const todayInSg = new Intl.DateTimeFormat("en-CA", {
-      timeZone: "Asia/Singapore",
-    }).format(new Date())
+    const todayInSg = getSingaporeDateYYYYMMDD()
 
     expect(getDateFilterStatus({ date: todayInSg })).toEqual(
       DATE_FILTER_STATUS_ID.Ongoing,
