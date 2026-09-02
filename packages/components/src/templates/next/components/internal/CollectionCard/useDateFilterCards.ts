@@ -11,6 +11,5 @@ export const useDateFilterCards = (entries?: DateFilterDisplayEntry[]) =>
     }
 
     return getDateFilterCardsFromEntries(entries, getTodayInSingapore())
-    // NOTE: `today` is only recomputed when `entries` changes. Status can stay
-    // stale if the page stays mounted across Singapore midnight — accepted.
+    // today only updates when entries changes; open past SGT midnight may show stale status
   }, [entries])
