@@ -148,7 +148,17 @@ const DateFilterSchema = Type.Object(
   { title: "Date filter" },
 )
 
+export type TextFilterSchemaType = Static<typeof TextFilterSchema>
 export type DateFilterSchemaType = Static<typeof DateFilterSchema>
+
+export const isDateFilter = (
+  tagCategory: TextFilterSchemaType | DateFilterSchemaType,
+): tagCategory is DateFilterSchemaType =>
+  tagCategory.type === TAG_CATEGORY_TYPE.Date
+
+export const isTextFilter = (
+  tagCategory: TextFilterSchemaType | DateFilterSchemaType,
+): tagCategory is TextFilterSchemaType => !isDateFilter(tagCategory)
 
 // oneOf, not a flat object with every field optional. Order: text=0, date=1.
 // format "tag-category-item" routes to JsonFormsTagCategoryItemControl.

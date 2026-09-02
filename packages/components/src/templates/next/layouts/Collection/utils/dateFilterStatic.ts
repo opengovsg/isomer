@@ -1,13 +1,14 @@
+import type { DateFilterDisplayEntry } from "~/interfaces/internal/CollectionCard"
 import type {
-  DateFilterDisplayEntry,
-  DateFilterValue,
-} from "~/interfaces/internal/CollectionCard"
-import type { ArticlePagePageProps, CollectionPagePageProps } from "~/types"
+  ArticlePagePageProps,
+  CollectionPagePageProps,
+  DateTaggedItem,
+} from "~/types"
 import { format, isSameDay, parseISO } from "date-fns"
 import { isDateFilter } from "~/types/page"
 
 export interface ResolvedItemDateFields {
-  dateTagged?: DateFilterValue[]
+  dateTagged?: DateTaggedItem[]
   dateFilterDisplayEntries?: DateFilterDisplayEntry[]
 }
 
@@ -41,7 +42,7 @@ export const resolveItemDateFields = (
   }
 
   const dateCategories = tagCategories.filter(isDateFilter)
-  const dateTagged: DateFilterValue[] = []
+  const dateTagged: DateTaggedItem[] = []
   const dateFilterDisplayEntries: DateFilterDisplayEntry[] = []
 
   itemDateTagged.forEach((value) => {
