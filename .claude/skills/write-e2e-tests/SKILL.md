@@ -6,9 +6,9 @@ description: Suggests and writes Playwright E2E tests for Studio features follow
 # Write E2E tests
 
 Helps plan and implement Playwright E2E tests in `apps/studio/tests/e2e/`.
-Always follow the living conventions in
-[`.claude/skills/isomer-conventions/conventions/e2e-tests.md`](../isomer-conventions/conventions/e2e-tests.md)
-and onboarding notes in `apps/studio/tests/e2e/README.md`.
+Follow repo conventions via the **repo-root paths** in step 2 below — do not use
+relative markdown links; read each file by its absolute path from the repository
+root.
 
 ## Entry
 
@@ -42,11 +42,18 @@ Identify:
 
 ### 2. Load conventions
 
-Read before suggesting or writing anything:
+Read before suggesting or writing anything. Use these repo-root paths:
 
-1. [e2e-tests.md](../isomer-conventions/conventions/e2e-tests.md) — file layout, fixture layers, PO rules, smells
-2. [tests-arrange-act-assert.md](../isomer-conventions/conventions/tests-arrange-act-assert.md) — AAA comments in test bodies
-3. Skim `apps/studio/tests/e2e/README.md` — fixture imports, role projects, what stays in integration tests
+1. `apps/studio/tests/e2e/README.md` — fixture imports, structure, role projects,
+   what stays in integration tests
+2. `.claude/skills/isomer-conventions/conventions/tests-arrange-act-assert.md` —
+   AAA comments in test bodies
+3. `.claude/skills/isomer-conventions/conventions/e2e-tests.md` — file layout,
+   fixture layers, PO rules, smells (when present on the branch)
+
+If step 3's file is absent, load the `isomer-conventions` skill and follow its
+E2E catalog entry when listed; otherwise treat the README and existing specs
+under `apps/studio/tests/e2e/` as the source of truth.
 
 ### 3. Suggest tests (required output)
 
@@ -155,8 +162,8 @@ before committing.
 
 ## Hard rules
 
-- **Read e2e-tests.md first** — conventions are partially enforced by
-  `eslint-plugin-isomer-e2e`; violating them fails CI.
+- **Load conventions (step 2) first** — PO and layering rules are partially
+  enforced by `eslint-plugin-isomer-e2e`; violating them fails CI.
 - **Suggest before writing** unless the user explicitly asked to implement
   immediately.
 - **Infer from branch/PR when unsaid** — do not ask "what feature?" without
