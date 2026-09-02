@@ -214,9 +214,9 @@ catalogs:
     "@types/pg": ^8.23.1
     "@types/pg-cursor": ^2.7.2
   prisma:
-    "@prisma/adapter-pg": 7.9.1
-    "@prisma/client": 7.9.1
-    prisma: 7.9.1
+    "@prisma/adapter-pg": 7.10.0
+    "@prisma/client": 7.10.0
+    prisma: 7.10.0
     prisma-json-types-generator: 5.1.1
     prisma-kysely: 3.2.1
   react:
