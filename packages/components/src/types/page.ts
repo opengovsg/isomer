@@ -16,6 +16,8 @@ import {
 } from "~/utils/validation"
 
 import {
+  DATE_FILTER_STATUS_ID,
+  DEFAULT_DATE_FILTER_STATUS_LABELS,
   TAG_CATEGORY_DISPLAY_OPTIONS,
   TAG_CATEGORY_TYPE,
   type TagCategoryDisplay,
@@ -114,15 +116,17 @@ const TextFilterSchema = Type.Object(
   { title: "Text filter" },
 )
 
-const dateFilterStatusLabelSchema = Type.Optional(
-  Type.String({
-    title: "Label",
-    pattern: TRIMMED_STRING_OR_EMPTY_REGEX,
-    errorMessage: {
-      pattern: "cannot have leading/trailing spaces",
-    },
-  }),
-)
+const createDateFilterStatusLabelSchema = (defaultValue: string) =>
+  Type.Optional(
+    Type.String({
+      title: "Label",
+      pattern: TRIMMED_STRING_OR_EMPTY_REGEX,
+      errorMessage: {
+        pattern: "cannot have leading/trailing spaces",
+      },
+      default: defaultValue,
+    }),
+  )
 
 const DateFilterSchema = Type.Object(
   {
@@ -131,15 +135,20 @@ const DateFilterSchema = Type.Object(
     // Always "date" on new filters. Keeps oneOf exclusive with TextFilterSchema.
     type: Type.Literal(TAG_CATEGORY_TYPE.Date, { format: "hidden" }),
     // Optional for backward compatibility. Missing/`undefined` must be read as
-    // `DEFAULT_DATE_FILTER_STATUS_LABELS` at render time — omit JSON Schema
-    // `default`: Studio AJV runs with useDefaults, which would backfill legacy
-    // rows when editors open them.
+    // `DEFAULT_DATE_FILTER_STATUS_LABELS` at render time. Per-field schema
+    // `default`s are safe here: date filters are new-only (no legacy rows).
     statusLabels: Type.Optional(
       Type.Object(
         {
-          ENDED: dateFilterStatusLabelSchema,
-          ONGOING: dateFilterStatusLabelSchema,
-          UPCOMING: dateFilterStatusLabelSchema,
+          ENDED: createDateFilterStatusLabelSchema(
+            DEFAULT_DATE_FILTER_STATUS_LABELS[DATE_FILTER_STATUS_ID.Ended],
+          ),
+          ONGOING: createDateFilterStatusLabelSchema(
+            DEFAULT_DATE_FILTER_STATUS_LABELS[DATE_FILTER_STATUS_ID.Ongoing],
+          ),
+          UPCOMING: createDateFilterStatusLabelSchema(
+            DEFAULT_DATE_FILTER_STATUS_LABELS[DATE_FILTER_STATUS_ID.Upcoming],
+          ),
         },
         {
           title: "Custom labels",
