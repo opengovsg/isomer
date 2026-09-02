@@ -149,7 +149,6 @@ const DateFilterSchema = Type.Object(
 )
 
 export type DateFilterSchemaType = Static<typeof DateFilterSchema>
-export type DateFilterStatusId = keyof DateFilterSchemaType["statusLabels"]
 
 // oneOf, not a flat object with every field optional. Order: text=0, date=1.
 // format "tag-category-item" routes to JsonFormsTagCategoryItemControl.
