@@ -103,6 +103,50 @@ const getDateFilterStartTime = (
   return parseISO(dateValue).getTime()
 }
 
+const compareUndatedItemsByPublishDate = (
+  a: AllCardProps,
+  b: AllCardProps,
+  sortDirection: SortDirection,
+): number => {
+  const bothHaveDates = a.date instanceof Date && b.date instanceof Date
+  const bothSameDate = a.date?.getTime() === b.date?.getTime()
+  const bothSameLastModified =
+    getLastModifiedDate(a)?.getTime() === getLastModifiedDate(b)?.getTime()
+  const bothSameTitle = a.title === b.title
+  const aNoDate = a.date === undefined
+  const bNoDate = b.date === undefined
+
+  if (bothHaveDates && !bothSameDate) {
+    return compareDates(a, b, sortDirection)
+  }
+
+  if (bothHaveDates && bothSameDate && !bothSameLastModified) {
+    return compareLastModified(a, b, sortDirection)
+  }
+
+  if (bothHaveDates && bothSameDate && bothSameLastModified) {
+    return compareTitles(a, b, "asc")
+  }
+
+  if (aNoDate && bNoDate && !bothSameTitle) {
+    return compareTitles(a, b, "asc")
+  }
+
+  if (aNoDate && bNoDate && bothSameTitle) {
+    return compareLastModified(a, b, sortDirection)
+  }
+
+  if (aNoDate) {
+    return 1
+  }
+
+  if (bNoDate) {
+    return -1
+  }
+
+  return a.date instanceof Date ? -1 : 1
+}
+
 const compareDateFilterStartDates = (
   a: AllCardProps,
   b: AllCardProps,
@@ -115,7 +159,7 @@ const compareDateFilterStartDates = (
   const bNoDate = bDate === undefined
 
   if (aNoDate && bNoDate) {
-    return compareTitles(a, b, "asc")
+    return compareUndatedItemsByPublishDate(a, b, sortDirection)
   }
 
   if (aNoDate) {
