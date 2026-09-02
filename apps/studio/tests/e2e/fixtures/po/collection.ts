@@ -1,6 +1,8 @@
 import type { Page } from "@playwright/test"
 import { expect } from "@playwright/test"
 
+import { expectAnyVisible } from "./locator-helpers"
+
 export class CollectionPO {
   constructor(private readonly page: Page) {}
 
@@ -123,6 +125,17 @@ export class CollectionPO {
     await expect(this.page.getByText("Manage filters")).toBeVisible()
   }
 
+  /** Filters list panel — `DrawerHeader` label plus the droppable filter rows. */
+  manageFiltersPanel() {
+    return this.page
+      .getByText("Manage filters", { exact: true })
+      .locator("xpath=../..")
+  }
+
+  filterRow() {
+    return this.page.locator("[data-rfd-draggable-id], [data-rbd-draggable-id]")
+  }
+
   async addFilter() {
     await this.page.getByRole("button", { name: /Add a filter/i }).click()
   }
@@ -192,15 +205,15 @@ export class CollectionPO {
   }
 
   async expectOptionNameError(message: string | RegExp) {
-    await expect(
-      this.page.getByText(message).filter({ hasText: message }).first(),
-    ).toBeVisible()
+    const activeNameField = this.page.getByRole("textbox", {
+      name: /Option \d+ name/,
+    })
+    const row = this.filterRow().filter({ has: activeNameField })
+    await expect(row.getByText(message)).toBeVisible()
   }
 
   async expectFilterNameError(message: string | RegExp) {
-    await expect(
-      this.page.getByText(message).filter({ hasText: message }).first(),
-    ).toBeVisible()
+    await expectAnyVisible(this.manageFiltersPanel().getByText(message))
   }
 
   async expectFilterNamedVisible(name: string) {

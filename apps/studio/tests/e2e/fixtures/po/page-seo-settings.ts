@@ -1,6 +1,6 @@
 import { expect, type Page } from "@playwright/test"
 
-import { toastWithText } from "./toast"
+import { waitForToastWithText } from "./toast"
 
 /**
  * Top-nav Meta Settings route (`/sites/:siteId/pages/:pageId/settings`).
@@ -73,6 +73,6 @@ export class PageSeoSettingsPO {
   async saveByBlur() {
     await this.page.getByRole("heading", { name: "Meta settings" }).click()
     // Multiple autosaves in one test can leave overlapping success toasts.
-    await expect(toastWithText(this.page, "Saved page metadata")).toBeVisible()
+    await waitForToastWithText(this.page, "Saved page metadata")
   }
 }

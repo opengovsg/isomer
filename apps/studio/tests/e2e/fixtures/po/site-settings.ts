@@ -1,6 +1,6 @@
 import type { Locator, Page } from "@playwright/test"
 
-import { toastWithText } from "./toast"
+import { waitForToastWithText } from "./toast"
 
 export type SettingsSection =
   | "agency"
@@ -696,9 +696,7 @@ export class SitePO {
    * other success paths without verifying their toast copy.
    */
   async expectChangesPublishedToast() {
-    await toastWithText(this.page, "Changes published").waitFor({
-      state: "visible",
-    })
+    await waitForToastWithText(this.page, "Changes published")
   }
 }
 

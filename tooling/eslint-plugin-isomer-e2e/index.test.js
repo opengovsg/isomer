@@ -78,6 +78,8 @@ ruleTester.run(
   {
     valid: [
       "this.page.locator('div').filter({ hasText: /^Enable/ }).last().locator('xpath=..')",
+      "this.page.locator('button').filter({ hasText: /Item 1/ }).first().click()",
+      "this.page.getByRole('group').filter({ has: this.page.getByText('Topic') }).getByRole('combobox')",
       "async (links, index) => { await expect(links.nth(index)).toBeVisible() }",
       'this.page.getByRole("button", { name: "Save" }).click()',
     ],
@@ -92,6 +94,10 @@ ruleTester.run(
       },
       {
         code: 'this.page.getByRole("button", { name: "Add a link" }).first().click()',
+        errors: [{ messageId: "noPositionalLocator" }],
+      },
+      {
+        code: 'this.page.getByText("Saved").filter({ hasText: "Saved" }).first()',
         errors: [{ messageId: "noPositionalLocator" }],
       },
     ],

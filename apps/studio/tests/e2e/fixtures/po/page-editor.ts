@@ -1,6 +1,7 @@
 import { expect, type Page } from "@playwright/test"
 
-import { toastWithText } from "./toast"
+import { expectAnyVisible } from "./locator-helpers"
+import { waitForToastWithText } from "./toast"
 
 /** Exact key sequence `ActivateRawJsonEditorMode.tsx` listens for on `window`
  * (any wrong key resets progress to 0) — kept local to the PO rather than
@@ -109,9 +110,7 @@ export class PageEditorPO {
   }
 
   async expectPublishedToast() {
-    await toastWithText(this.page, "Page published successfully").waitFor({
-      state: "visible",
-    })
+    await waitForToastWithText(this.page, "Page published successfully")
   }
 
   async expectPublishConflictError(permalink: string) {
@@ -127,9 +126,7 @@ export class PageEditorPO {
    * (e.g. the `reorderBlock` router's stale-draft `CONFLICT` copy) rendered
    * verbatim as the toast description under a fixed title. */
   async expectReorderConflictToast() {
-    await toastWithText(this.page, "Failed to update blocks").waitFor({
-      state: "visible",
-    })
+    await waitForToastWithText(this.page, "Failed to update blocks")
     await expect(
       this.page.getByText(
         "Someone on your team has changed this page, refresh the page and try again",
@@ -251,12 +248,10 @@ export class PageEditorPO {
     text: string,
     options?: { exact?: boolean; timeout?: number },
   ) {
-    await expect(
-      this.previewFrame()
-        .getByText(text, { exact: options?.exact })
-        .filter({ hasText: text })
-        .first(),
-    ).toBeVisible({ timeout: options?.timeout })
+    await expectAnyVisible(
+      this.previewFrame().getByText(text, { exact: options?.exact }),
+      { timeout: options?.timeout },
+    )
   }
 
   /** `map`/`formsg` render a plain `<iframe title={title}>` directly (no

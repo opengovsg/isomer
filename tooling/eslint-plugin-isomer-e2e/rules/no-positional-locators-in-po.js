@@ -21,9 +21,9 @@ const getPositionalMethod = (member) => {
     : null
 }
 
-/** @param {import('estree').Node | null | undefined} node */
-const hasFilterCallInChain = (node) => {
-  let current = node
+/** @param {import('estree').Node | null | undefined} start */
+const findFilterCallInChain = (start) => {
+  let current = start
   while (current) {
     if (
       current.type === "CallExpression" &&
@@ -31,7 +31,7 @@ const hasFilterCallInChain = (node) => {
       current.callee.property.type === "Identifier" &&
       current.callee.property.name === "filter"
     ) {
-      return true
+      return current
     }
 
     if (current.type === "MemberExpression") {
@@ -50,7 +50,22 @@ const hasFilterCallInChain = (node) => {
     break
   }
 
-  return false
+  return null
+}
+
+/** @param {import('estree').CallExpression} filterCall */
+const filterUsesChildLocator = (filterCall) => {
+  const arg = filterCall.arguments[0]
+  if (!arg || arg.type !== "ObjectExpression") {
+    return false
+  }
+
+  return arg.properties.some(
+    (property) =>
+      property.type === "Property" &&
+      property.key.type === "Identifier" &&
+      (property.key.name === "has" || property.key.name === "hasNot"),
+  )
 }
 
 /**
@@ -89,6 +104,35 @@ const findLocatorFactory = (node) => {
   }
 
   return null
+}
+
+/** @param {import('estree').CallExpression} filterCall */
+const isGenericLocatorTextFilter = (filterCall) => {
+  const factory = findLocatorFactory(filterCall.callee.object)
+  if (
+    !factory ||
+    factory.callee.type !== "MemberExpression" ||
+    factory.callee.property.type !== "Identifier" ||
+    factory.callee.property.name !== "locator"
+  ) {
+    return false
+  }
+
+  return true
+}
+
+/** @param {import('estree').Node | null | undefined} receiver */
+const allowsPositionalAfterFilter = (receiver) => {
+  const filterCall = findFilterCallInChain(receiver)
+  if (!filterCall) {
+    return false
+  }
+
+  if (filterUsesChildLocator(filterCall)) {
+    return true
+  }
+
+  return isGenericLocatorTextFilter(filterCall)
 }
 
 /** @param {import('estree').CallExpression} node */
@@ -134,7 +178,7 @@ export const noPositionalLocatorsInPo = {
         }
 
         const receiver = node.callee.object
-        if (hasFilterCallInChain(receiver)) {
+        if (allowsPositionalAfterFilter(receiver)) {
           return
         }
 
