@@ -1,7 +1,7 @@
 import type { DateFilterStatusId } from "~/types/constants"
 import { DATE_FILTER_STATUS_ID } from "~/types/constants"
 
-// Deliberate one-off design colours — not theme tokens.
+// Fixed hex from design spec, not theme tokens.
 const STATUS_STYLES: Record<DateFilterStatusId, string> = {
   [DATE_FILTER_STATUS_ID.Upcoming]: "bg-[#358257] text-white",
   [DATE_FILTER_STATUS_ID.Ongoing]: "bg-[#A88651] text-white",
