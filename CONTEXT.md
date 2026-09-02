@@ -41,6 +41,23 @@ _Avoid_: trigger point (overloaded), exit (window close is not a Measuring Point
 **Measuring Period**: The recurrence window within which a given user is shown the editing survey at most once. Defined and enforced in the survey tool's frequency settings, not by Studio.
 _Avoid_: survey cooldown, quarter (the period is configurable, not fixed)
 
+### Page editor — tables
+
+**Axis** (`Axis`): Which direction a slot runs — `"row"` or `"column"`. Table editing rules are written once against an axis rather than twice, so an axis is passed around as a value wherever rows and columns differ only in coordinate.
+_Avoid_: direction, orientation, dimension
+
+**Slot**: A row or a column of a table, considered interchangeably — the unit a drag handle selects, reorders, or appends. Naming it is what lets one rule cover both axes.
+_Avoid_: row/column (when the statement applies to both), line, track, cell (a slot is a whole row or column, never a single cell)
+
+**Locked slot**: A slot an editor may select but never reorder — today, a header row or header column. Expressed as a minimum movable index per axis, so a drag can neither start from a locked slot nor drop above one.
+_Avoid_: header (the cells themselves, not the constraint on them), frozen row/column (implies scroll pinning, which is unrelated)
+
+**Gutter** (`TABLE_GUTTER_PX`): The band reserved on every side of a table in the page editor, holding the drag handles and add pills. A layout contract between two components — the table node view pads it, the drag handles draw into it — and the pointer counts as hovering a table anywhere within it.
+_Avoid_: margin, padding (each is only one side's implementation of the contract), chrome (broader — includes the handles themselves)
+
+**Add pill**: The rounded control in the gutter below and to the right of a table that appends a slot to that axis. Shown while the pointer is over the table or its gutter.
+_Avoid_: add button, plus button, insert control
+
 ### Roles and surfaces
 
 **Isomer Admin**: A user with the Core or Migrator role. The only role that can manage taxonomy (create, edit, delete Tag Categories and Tag Options) via the Manage Filters panel.
