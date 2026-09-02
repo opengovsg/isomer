@@ -1,9 +1,8 @@
 /**
- * Everything about a row or column axis that requires the document: locating
- * the cells of a slot, selecting one, and reordering it.
+ * Row/column axis helpers that need the document: slot cells, selection, reorder.
  *
- * The prosemirror-tables adapter for this module — the only file here that
- * needs to know rows and columns are addressed differently in a TableMap.
+ * Prosemirror-tables adapter. Only file here that knows TableMap addresses
+ * rows and columns differently.
  */
 
 import type { Node as ProseMirrorNode, ResolvedPos } from "@tiptap/pm/model"
@@ -22,7 +21,7 @@ import {
 import type { Axis } from "./axisView"
 
 export interface AxisTableOps {
-  /** First index that may not be reordered — 1 when the axis has a header. */
+  /** First index that may not be reordered. 1 when the axis has a header. */
   lockMinIndex: (table: ProseMirrorNode) => number
   /** Offset of the first cell in slot `index`, relative to the table start. */
   cellOffsetAt: (map: TableMap, table: ProseMirrorNode, index: number) => number

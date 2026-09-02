@@ -941,7 +941,7 @@ describe("TableBubbleMenu", () => {
     selectCells(editor, 3, 7)
     await activateTableBubbleMenu(findByRole)
 
-    // Act — label is plain text; swatches sit underneath and are immediately
+    // Act: label is plain text; swatches sit underneath and are immediately
     // available (no navigate-away submenu).
     expect(await findByText("Set background color")).toBeTruthy()
     expect(await findByText("Merge cells")).toBeTruthy()
@@ -950,7 +950,7 @@ describe("TableBubbleMenu", () => {
       blueSwatch.click()
     })
 
-    // Assert — colour applied; action panel closes (pencil trigger stays)
+    // Assert: colour applied; action panel closes (pencil trigger stays)
     await waitFor(() => {
       expect(
         container.querySelector(
@@ -1101,7 +1101,7 @@ describe("TableBubbleMenu", () => {
   })
 
   it("withholds the pencil while a row is being drag-reordered, and restores it on drop", async () => {
-    // Arrange — a full-row selection, so the pencil is showing to begin with.
+    // Arrange: full-row selection, so the pencil is showing to begin with.
     const { editor, container, findByRole, queryByRole } =
       await renderWithDragHandles()
     selectCells(editor, 3, 5)
@@ -1122,7 +1122,7 @@ describe("TableBubbleMenu", () => {
       clientY: rect.top + rect.height / 2,
     }
 
-    // Act — press, then travel far enough to clear the drag threshold.
+    // Act: press, then travel far enough to clear the drag threshold.
     act(() => {
       fireEvent.mouseDown(handle, start)
       fireEvent.mouseMove(document, {
@@ -1131,12 +1131,12 @@ describe("TableBubbleMenu", () => {
       })
     })
 
-    // Assert — the menu stays out of the way for the whole drag.
+    // Assert: the menu stays out of the way for the whole drag.
     await waitFor(() => {
       expect(queryByRole("button", { name: "Table actions" })).toBeNull()
     })
 
-    // Act — drop.
+    // Act: drop.
     act(() => {
       fireEvent.mouseUp(document, {
         clientX: start.clientX,
@@ -1144,7 +1144,7 @@ describe("TableBubbleMenu", () => {
       })
     })
 
-    // Assert — the drop re-selects a whole row, so the pencil comes back.
+    // Assert: the drop re-selects a whole row, so the pencil comes back.
     expect(await findByRole("button", { name: "Table actions" })).toBeTruthy()
   })
 

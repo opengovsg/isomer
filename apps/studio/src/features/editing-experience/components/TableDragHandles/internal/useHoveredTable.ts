@@ -35,7 +35,7 @@ export const findHoveredTablePos = ({
     scrollLeft,
   })
 
-  // A table counts as hovered anywhere within its gutter, not just over cells.
+  // A table counts as hovered anywhere in its gutter, including outside cells.
   const match = geometries.find((geometry) => {
     const bounds = getTableBounds(geometry)
     if (!bounds) return false

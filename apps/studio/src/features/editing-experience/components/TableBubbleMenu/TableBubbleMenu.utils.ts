@@ -15,7 +15,7 @@ import type {
   TableMovePlan,
 } from "./TableBubbleMenu.types"
 
-// Structural slice of selectedRect() for header overlap checks (no live EditorView).
+// selectedRect() fields needed for header overlap checks (no live EditorView).
 export interface TableHeaderOverlapRect extends MappedTable {
   top: number
   left: number

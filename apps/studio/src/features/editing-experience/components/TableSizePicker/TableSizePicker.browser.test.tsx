@@ -62,7 +62,7 @@ describe("TableSizePicker", () => {
     fireEvent.click(screen.getByRole("button", { name: "Table" }))
 
     // Chakra's Popover content mounts via a Framer Motion enter transition,
-    // so it isn't immediately part of the accessible tree — `findByRole`
+    // so it isn't immediately part of the accessible tree. `findByRole`
     // polls until the transition settles.
     expect(
       await screen.findByRole("group", { name: "Select table size" }),
