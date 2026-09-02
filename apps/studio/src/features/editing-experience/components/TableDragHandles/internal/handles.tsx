@@ -8,7 +8,7 @@ import {
 } from "~/features/editing-experience/utils/tableEditorChrome"
 
 import type { Axis } from "./axis"
-import type { Rect } from "./coordinates"
+import type { Rect } from "./axisMath"
 import { AXIS } from "./axis"
 import { DotsIcon, PlusIcon } from "./icons"
 
