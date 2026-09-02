@@ -116,7 +116,11 @@ const TextFilterSchema = Type.Object(
   { title: "Text filter" },
 )
 
-const createDateFilterStatusLabelSchema = (defaultValue: string) =>
+const createDateFilterStatusLabelSchema = ({
+  defaultValue,
+}: {
+  defaultValue: string
+}) =>
   Type.Optional(
     Type.String({
       title: "Label",
@@ -140,15 +144,18 @@ const DateFilterSchema = Type.Object(
     statusLabels: Type.Optional(
       Type.Object(
         {
-          ENDED: createDateFilterStatusLabelSchema(
-            DEFAULT_DATE_FILTER_STATUS_LABELS[DATE_FILTER_STATUS_ID.Ended],
-          ),
-          ONGOING: createDateFilterStatusLabelSchema(
-            DEFAULT_DATE_FILTER_STATUS_LABELS[DATE_FILTER_STATUS_ID.Ongoing],
-          ),
-          UPCOMING: createDateFilterStatusLabelSchema(
-            DEFAULT_DATE_FILTER_STATUS_LABELS[DATE_FILTER_STATUS_ID.Upcoming],
-          ),
+          ENDED: createDateFilterStatusLabelSchema({
+            defaultValue:
+              DEFAULT_DATE_FILTER_STATUS_LABELS[DATE_FILTER_STATUS_ID.Ended],
+          }),
+          ONGOING: createDateFilterStatusLabelSchema({
+            defaultValue:
+              DEFAULT_DATE_FILTER_STATUS_LABELS[DATE_FILTER_STATUS_ID.Ongoing],
+          }),
+          UPCOMING: createDateFilterStatusLabelSchema({
+            defaultValue:
+              DEFAULT_DATE_FILTER_STATUS_LABELS[DATE_FILTER_STATUS_ID.Upcoming],
+          }),
         },
         {
           title: "Custom labels",
