@@ -50,24 +50,34 @@ export const resolveTagCategoryType = (
   type?: TagCategoryType,
 ): TagCategoryType => type ?? DEFAULT_TAG_CATEGORY_TYPE
 
-// Stable ids for the three status buckets. getDateFilterStatus matches on
-// these, not the admin-editable labels.
+export const isDateCategoryType = (
+  type?: TagCategoryType,
+): type is typeof TAG_CATEGORY_TYPE.Date =>
+  resolveTagCategoryType(type) === TAG_CATEGORY_TYPE.Date
+
+export const DATE_FILTER_STATUS = {
+  Ended: { id: "ENDED", defaultLabel: "Event ended" },
+  Ongoing: { id: "ONGOING", defaultLabel: "Ongoing" },
+  Upcoming: { id: "UPCOMING", defaultLabel: "Upcoming" },
+} as const
+
 export const DATE_FILTER_STATUS_ID = {
-  Ended: "ENDED",
-  Ongoing: "ONGOING",
-  Upcoming: "UPCOMING",
+  Ended: DATE_FILTER_STATUS.Ended.id,
+  Ongoing: DATE_FILTER_STATUS.Ongoing.id,
+  Upcoming: DATE_FILTER_STATUS.Upcoming.id,
 } as const
 
 export type DateFilterStatusId =
-  (typeof DATE_FILTER_STATUS_ID)[keyof typeof DATE_FILTER_STATUS_ID]
+  (typeof DATE_FILTER_STATUS)[keyof typeof DATE_FILTER_STATUS]["id"]
+
+export const DATE_FILTER_STATUS_COUNT = Object.keys(DATE_FILTER_STATUS).length
 
 export const DEFAULT_DATE_FILTER_STATUS_LABELS: {
   id: DateFilterStatusId
   label: string
-}[] = [
-  { id: DATE_FILTER_STATUS_ID.Ended, label: "Event ended" },
-  { id: DATE_FILTER_STATUS_ID.Ongoing, label: "Ongoing" },
-  { id: DATE_FILTER_STATUS_ID.Upcoming, label: "Upcoming" },
-]
+}[] = Object.values(DATE_FILTER_STATUS).map(({ id, defaultLabel }) => ({
+  id,
+  label: defaultLabel,
+}))
 
 export const DEFAULT_DATE_RANGE_FILTER_LABEL = "Or, search for a date"
