@@ -14,6 +14,7 @@ import type { Axis } from "./axisView"
 import {
   boundariesFromGeometry,
   collectAxisBoundaries,
+  geometryAt,
   resolveDropIndex,
 } from "./axisMath"
 
@@ -138,7 +139,7 @@ const reduceGeometryChanged = (
   state: DraggingGesture,
   geometries: TableGeometry[],
 ): GestureTransition => {
-  const geometry = geometries.find((g) => g.pos === state.tablePos)
+  const geometry = geometryAt(geometries, state.tablePos)
   if (!geometry) return unchanged(state)
   const boundaries = boundariesFromGeometry(
     geometry,

@@ -39,6 +39,13 @@ export interface AxisProjection {
   pointerOf: (point: { x: number; y: number }) => number
 }
 
+/** The geometry of the table at `pos`, or null when it is no longer measured. */
+export const geometryAt = (
+  geometries: TableGeometry[],
+  pos: number,
+): TableGeometry | null =>
+  geometries.find((geometry) => geometry.pos === pos) ?? null
+
 /** Outer bounds of the whole table, in container coordinates. */
 export const getTableBounds = (geometry: TableGeometry) => {
   const rowRects = geometry.rowRects.filter((r): r is Rect => !!r)
