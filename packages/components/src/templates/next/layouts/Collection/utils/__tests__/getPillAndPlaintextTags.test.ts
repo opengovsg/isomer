@@ -1,6 +1,10 @@
 import type { CollectionPageSchemaType } from "~/types"
 import { describe, expect, it } from "vitest"
-import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
+import {
+  DATE_FILTER_STATUS_ID,
+  TAG_CATEGORY_DISPLAY_OPTIONS,
+  type DateFilterStatusId,
+} from "~/types/constants"
 
 import { getPillAndPlaintextTags } from "../getPillAndPlaintextTags"
 
@@ -116,10 +120,10 @@ describe("getPillAndPlaintextTags", () => {
         id: "date-1",
         type: "date",
         statusLabels: {
-          ENDED: "Ended",
-          ONGOING: "Ongoing",
-          UPCOMING: "Upcoming",
-        },
+          [DATE_FILTER_STATUS_ID.Ended]: "Ended",
+          [DATE_FILTER_STATUS_ID.Ongoing]: "Ongoing",
+          [DATE_FILTER_STATUS_ID.Upcoming]: "Upcoming",
+        } satisfies Record<DateFilterStatusId, string>,
       },
       {
         label: "Topic",
