@@ -16,8 +16,8 @@ export const RESOURCE_TABLE_STATUS_FILTER_OPTIONS: Record<
   ResourceStatusFilterOption,
   string
 > = {
-  live: "Live",
-  notLive: "Not live",
+  live: "Published",
+  notLive: "Unpublished",
   scheduledToPublish: "Scheduled to publish",
   scheduledToUnpublish: "Scheduled to unpublish",
   hasDraft: "Has draft",
