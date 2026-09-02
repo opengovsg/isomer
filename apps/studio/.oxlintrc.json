@@ -186,6 +186,18 @@
         ]
       },
       "plugins": ["import"]
+    },
+    {
+      "files": ["tests/e2e/fixtures/po/**/*.ts"],
+      "jsPlugins": [
+        {
+          "name": "isomer-e2e",
+          "specifier": "eslint-plugin-isomer-e2e"
+        }
+      ],
+      "rules": {
+        "isomer-e2e/no-positional-locators-in-po": "warn"
+      }
     }
   ]
 }

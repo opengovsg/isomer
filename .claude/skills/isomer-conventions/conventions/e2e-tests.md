@@ -9,7 +9,7 @@ Living reference for `apps/studio/tests/e2e/`. Update when the stack introduces 
 
 Fixture import paths and onboarding: `apps/studio/tests/e2e/README.md`.
 
-Enforced in CI via Oxlint (`eslint-plugin-isomer-e2e` + `no-restricted-imports` override on `tests/e2e/**/*.test.ts` in `apps/studio/.oxlintrc.json`).
+Enforced in CI via Oxlint (`eslint-plugin-isomer-e2e` + `no-restricted-imports` override on `tests/e2e/**/*.test.ts` in `apps/studio/.oxlintrc.json`). PO locator rules (`isomer-e2e/no-positional-locators-in-po` on `fixtures/po/**/*.ts`, currently `warn` while legacy `.first()`/`.nth()` usages are cleaned up) are enforced separately.
 
 ## File layout
 

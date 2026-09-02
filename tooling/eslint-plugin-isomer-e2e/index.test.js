@@ -58,3 +58,29 @@ ruleTester.run("no-raw-role-tag", rules["no-raw-role-tag"], {
     },
   ],
 })
+
+ruleTester.run(
+  "no-positional-locators-in-po",
+  rules["no-positional-locators-in-po"],
+  {
+    valid: [
+      "this.page.locator('div').filter({ hasText: /^Enable/ }).last().locator('xpath=..')",
+      "async (links, index) => { await expect(links.nth(index)).toBeVisible() }",
+      'this.page.getByRole("button", { name: "Save" }).click()',
+    ],
+    invalid: [
+      {
+        code: 'this.page.getByRole("textbox").first().fill("x")',
+        errors: [{ messageId: "noPositionalLocator" }],
+      },
+      {
+        code: 'this.page.locator("textarea").nth(1).fill("x")',
+        errors: [{ messageId: "noPositionalLocator" }],
+      },
+      {
+        code: 'this.page.getByRole("button", { name: "Add a link" }).first().click()',
+        errors: [{ messageId: "noPositionalLocator" }],
+      },
+    ],
+  },
+)

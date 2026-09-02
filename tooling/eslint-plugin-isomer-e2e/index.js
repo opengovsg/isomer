@@ -1,4 +1,5 @@
 import { noPageMethodsInTests } from "./rules/no-page-methods-in-tests.js"
+import { noPositionalLocatorsInPo } from "./rules/no-positional-locators-in-po.js"
 import { noRawRoleTag } from "./rules/no-raw-role-tag.js"
 import { noTestUseStorageState } from "./rules/no-test-use-storage-state.js"
 
@@ -9,6 +10,7 @@ const plugin = {
   },
   rules: {
     "no-page-methods-in-tests": noPageMethodsInTests,
+    "no-positional-locators-in-po": noPositionalLocatorsInPo,
     "no-raw-role-tag": noRawRoleTag,
     "no-test-use-storage-state": noTestUseStorageState,
   },
