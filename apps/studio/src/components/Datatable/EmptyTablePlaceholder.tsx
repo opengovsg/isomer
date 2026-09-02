@@ -1,14 +1,23 @@
-import { Flex, Stack, Td, Text, Tr } from "@chakra-ui/react"
+import { Flex, Link, Stack, Td, Text, Tr } from "@chakra-ui/react"
+import { NoSearchResultSvgr } from "~/components/Svg/NoSearchResultSvgr"
 
 export const EmptyTablePlaceholder = ({
   entityName,
   hasSearchTerm,
   groupLabel,
+  activeFilterLabels,
+  onClearFilter,
 }: {
   entityName: string
   hasSearchTerm: boolean
   groupLabel: string
+  // When set (and non-empty), a status filter is active and yielded no
+  // rows — takes priority over the plain empty-group copy below.
+  activeFilterLabels?: string[]
+  onClearFilter?: () => void
 }) => {
+  const isFiltered = !hasSearchTerm && !!activeFilterLabels?.length
+
   return (
     <Tr aria-hidden>
       <Td colSpan={8}>
@@ -20,7 +29,20 @@ export const EmptyTablePlaceholder = ({
                 <Text textStyle="body-2">Try different search terms</Text>
               </>
             )}
-            {!hasSearchTerm && (
+            {isFiltered && (
+              <>
+                <NoSearchResultSvgr mb="0.5rem" />
+                <Text textStyle="subhead-4">No {entityName}s found.</Text>
+                <Text textStyle="body-2">
+                  No {entityName}s match "{activeFilterLabels.join(", ")}". Try
+                  a different filter.
+                </Text>
+                <Link textStyle="body-2" onClick={onClearFilter}>
+                  Clear filter
+                </Link>
+              </>
+            )}
+            {!hasSearchTerm && !isFiltered && (
               <Text textStyle="subhead-4">
                 This {groupLabel} is empty. Create a new page or folder
               </Text>
