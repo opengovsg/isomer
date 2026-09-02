@@ -920,7 +920,7 @@ describe("TableBubbleMenu", () => {
 
     selectCells(editor, 0, 2)
     await activateTableBubbleMenu(findByRole)
-    await findByText("Add row above")
+    await findByText("Add row below")
 
     expect(await findByText("Set background color")).toBeTruthy()
     expect(await findByRole("button", { name: "Blue" })).toBeTruthy()
