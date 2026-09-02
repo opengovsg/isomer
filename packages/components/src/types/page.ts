@@ -12,6 +12,7 @@ import { imageSchemaObject } from "~/schemas/internal"
 import {
   REF_HREF_PATTERN,
   TRIMMED_NON_EMPTY_STRING_REGEX,
+  TRIMMED_STRING_OR_EMPTY_REGEX,
 } from "~/utils/validation"
 
 import {
@@ -64,6 +65,18 @@ const tagCategoryIsRequiredSchemaObject = {
       title: "This filter is required",
       description:
         "Every item must have at least one option selected from this filter.",
+    }),
+  ),
+}
+
+const dateFilterIsRequiredSchemaObject = {
+  // Same semantics as `tagCategoryIsRequiredSchemaObject`, but date filters use
+  // item-specific copy in Studio because the requirement applies to dates, not
+  // tag options.
+  isRequired: Type.Optional(
+    Type.Boolean({
+      title: "This date is required",
+      description: "Every item must have a date entered for this filter.",
     }),
   ),
 }
@@ -131,7 +144,7 @@ const DateFilterSchema = Type.Object(
     // `"date"` so this branch and `TextFilterSchema` remain mutually
     // exclusive for `oneOf` resolution.
     type: Type.Literal(TAG_CATEGORY_TYPE.Date, { format: "hidden" }),
-    ...tagCategoryIsRequiredSchemaObject,
+    ...dateFilterIsRequiredSchemaObject,
     // Fixed at exactly 3 entries, keyed by the well-known
     // `DATE_FILTER_STATUS_ID`s — only the `label` is admin-editable (the admin
     // UI hides add/remove for this list); the id set itself is what future
@@ -141,9 +154,9 @@ const DateFilterSchema = Type.Object(
         id: DateFilterStatusIdSchema,
         label: Type.String({
           title: "Status label",
-          pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
+          pattern: TRIMMED_STRING_OR_EMPTY_REGEX,
           errorMessage: {
-            pattern: "cannot be empty or have leading/trailing spaces",
+            pattern: "cannot have leading/trailing spaces",
           },
         }),
       }),

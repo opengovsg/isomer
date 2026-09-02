@@ -119,6 +119,31 @@ describe("validateRequiredTags", () => {
     expect(result.unfilledRequiredCategories).toEqual([requiredCategory])
   })
 
+  it("ignores date-type tag categories entirely, even if required", () => {
+    // Arrange
+    const requiredDateFilter: CollectionTags[number] = {
+      id: "e92f065f-0dhh-98c7-f0bc-5j57g7h8i924",
+      label: "Event Date",
+      type: "date",
+      isRequired: true,
+      statusLabels: [
+        { id: "ENDED", label: "Event ended" },
+        { id: "ONGOING", label: "Ongoing" },
+        { id: "UPCOMING", label: "Upcoming" },
+      ],
+    }
+
+    // Act
+    const result = validateRequiredTags(
+      [requiredDateFilter, requiredCategory],
+      [REQUIRED_OPTION_ID],
+    )
+
+    // Assert
+    expect(result.isValid).toBe(true)
+    expect(result.unfilledRequiredCategories).toEqual([])
+  })
+
   it("treats isRequired as false when omitted on a category", () => {
     // Arrange
     const categoryWithoutRequiredFlag: CollectionTags[number] = {
