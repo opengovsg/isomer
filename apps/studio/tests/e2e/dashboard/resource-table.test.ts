@@ -19,29 +19,34 @@ test.beforeAll(async () => {
 })
 
 /**
- * Insertion order (oldest -> newest) is Charlie, Alpha, Bravo, and permalinks
- * are prefixed aaa/bbb/ccc, so "Recently edited", "Alphabetical", and "URL"
- * sort each yield a distinct, unambiguous row order.
+ * updatedAt is set explicitly (oldest -> newest: Charlie, Alpha, Bravo) and
+ * permalinks are prefixed aaa/bbb/ccc, so "Recently edited", "Alphabetical",
+ * and "URL" sort each yield a distinct, unambiguous row order.
  */
 const seedSortableFolder = async (folderTitle: string) => {
   const { folder } = await seedFolder({ siteId, folderTitle })
+  const baseUpdatedAt = new Date("2026-01-01T00:00:00.000Z")
+
   await seedPageInFolder({
     siteId,
     folderId: folder.id,
     pageTitle: "E2E Sort Charlie",
     pagePermalink: `aaa-charlie-${crypto.randomUUID().slice(0, 8)}`,
+    updatedAt: baseUpdatedAt,
   })
   await seedPageInFolder({
     siteId,
     folderId: folder.id,
     pageTitle: "E2E Sort Alpha",
     pagePermalink: `bbb-alpha-${crypto.randomUUID().slice(0, 8)}`,
+    updatedAt: new Date(baseUpdatedAt.getTime() + 1_000),
   })
   await seedPageInFolder({
     siteId,
     folderId: folder.id,
     pageTitle: "E2E Sort Bravo",
     pagePermalink: `ccc-bravo-${crypto.randomUUID().slice(0, 8)}`,
+    updatedAt: new Date(baseUpdatedAt.getTime() + 2_000),
   })
   return { folder }
 }

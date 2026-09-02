@@ -184,11 +184,13 @@ export const seedPageInFolder = async ({
   folderId,
   pageTitle = "E2E Nested Page",
   pagePermalink,
+  updatedAt,
 }: {
   siteId: number
   folderId: string
   pageTitle?: string
   pagePermalink?: string
+  updatedAt?: Date
 }) => {
   const suffix = crypto.randomUUID().slice(0, 8)
   const { page } = await setupPageResource({
@@ -198,7 +200,19 @@ export const seedPageInFolder = async ({
     title: pageTitle,
     permalink: pagePermalink ?? `e2e-nested-page-${suffix}`,
   })
-  return { page }
+
+  if (!updatedAt) {
+    return { page }
+  }
+
+  const updatedPage = await db
+    .updateTable("Resource")
+    .set({ updatedAt })
+    .where("id", "=", page.id)
+    .returningAll()
+    .executeTakeFirstOrThrow()
+
+  return { page: updatedPage }
 }
 
 export const seedFolderWithChildPage = async ({
