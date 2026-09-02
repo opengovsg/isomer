@@ -70,14 +70,12 @@ export const DATE_FILTER_STATUS_ID = {
 export type DateFilterStatusId =
   (typeof DATE_FILTER_STATUS)[keyof typeof DATE_FILTER_STATUS]["id"]
 
-export const DATE_FILTER_STATUS_COUNT = Object.keys(DATE_FILTER_STATUS).length
+export type DateFilterStatusLabels = Record<DateFilterStatusId, string>
 
-export const DEFAULT_DATE_FILTER_STATUS_LABELS: {
-  id: DateFilterStatusId
-  label: string
-}[] = Object.values(DATE_FILTER_STATUS).map(({ id, defaultLabel }) => ({
-  id,
-  label: defaultLabel,
-}))
+export const DEFAULT_DATE_FILTER_STATUS_LABELS: DateFilterStatusLabels = {
+  [DATE_FILTER_STATUS_ID.Ended]: DATE_FILTER_STATUS.Ended.defaultLabel,
+  [DATE_FILTER_STATUS_ID.Ongoing]: DATE_FILTER_STATUS.Ongoing.defaultLabel,
+  [DATE_FILTER_STATUS_ID.Upcoming]: DATE_FILTER_STATUS.Upcoming.defaultLabel,
+}
 
 export const DEFAULT_DATE_RANGE_FILTER_LABEL = "Or, search for a date"
