@@ -132,8 +132,7 @@ const DateFilterSchema = Type.Object(
         format: "date-filter-status-labels",
       },
     ),
-    // Falls back to DEFAULT_DATE_RANGE_FILTER_LABEL at render. No schema default
-    // because Studio AJV runs with useDefaults.
+    // Falls back to DEFAULT_DATE_RANGE_FILTER_LABEL at render.
     dateRangeFilterLabel: Type.Optional(
       Type.String({
         title: "Custom date range label",
