@@ -1,19 +1,23 @@
 "use client"
 
 import type { DateFilterDisplayEntry } from "~/interfaces/internal/CollectionCard"
+import { useMemo } from "react"
 
-import { EventDateFilterDates } from "./EventDateFilterDates"
 import { EventStatusPill } from "./EventStatusPill"
-import { useDateFilterCards } from "./useDateFilterCards"
+import { resolveDateFilterCards } from "./resolveDateFilterCards"
 
-interface EventDateFilterClientPartsProps {
+interface EventDateFilterStatusBadgesProps {
   entries?: DateFilterDisplayEntry[]
 }
 
 export const EventDateFilterStatusBadges = ({
   entries,
-}: EventDateFilterClientPartsProps) => {
-  const dateFilterCards = useDateFilterCards(entries)
+}: EventDateFilterStatusBadgesProps) => {
+  const dateFilterCards = useMemo(
+    () => resolveDateFilterCards(entries),
+    // today only updates when entries changes; open past SGT midnight may show stale status
+    [entries],
+  )
 
   if (!dateFilterCards) {
     return null
@@ -34,16 +38,4 @@ export const EventDateFilterStatusBadges = ({
       ))}
     </div>
   )
-}
-
-export const EventDateFilterDatesFromEntries = ({
-  entries,
-}: EventDateFilterClientPartsProps) => {
-  const dateFilterCards = useDateFilterCards(entries)
-
-  if (!dateFilterCards || dateFilterCards.length === 0) {
-    return null
-  }
-
-  return <EventDateFilterDates entries={dateFilterCards} />
 }
