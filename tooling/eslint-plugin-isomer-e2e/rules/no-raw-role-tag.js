@@ -18,6 +18,27 @@ export const noRawRoleTag = {
     schema: [],
   },
   create(context) {
+    /** @param {import('estree').Node} node @param {string} role */
+    const reportRawRoleTag = (node, role) => {
+      context.report({
+        node,
+        messageId: "noRawRoleTag",
+        data: { role },
+      })
+    }
+
+    /** @param {import('estree').Literal} literal */
+    const checkRoleTagLiteral = (literal) => {
+      if (typeof literal.value !== "string") {
+        return
+      }
+
+      const match = /^@(?<role>[a-z]+)$/.exec(literal.value)
+      if (match?.groups?.role) {
+        reportRawRoleTag(literal, match.groups.role)
+      }
+    }
+
     return {
       Property(node) {
         const { key, value } = node
@@ -25,24 +46,22 @@ export const noRawRoleTag = {
           (key.type === "Identifier" && key.name === "tag") ||
           (key.type === "Literal" && key.value === "tag")
 
-        if (
-          !isTagKey ||
-          value.type !== "Literal" ||
-          typeof value.value !== "string"
-        ) {
+        if (!isTagKey) {
           return
         }
 
-        const match = /^@(?<role>[a-z]+)$/.exec(value.value)
-        if (!match?.groups?.role) {
+        if (value.type === "Literal") {
+          checkRoleTagLiteral(value)
           return
         }
 
-        context.report({
-          node: value,
-          messageId: "noRawRoleTag",
-          data: { role: match.groups.role },
-        })
+        if (value.type === "ArrayExpression") {
+          for (const element of value.elements) {
+            if (element?.type === "Literal") {
+              checkRoleTagLiteral(element)
+            }
+          }
+        }
       },
     }
   },

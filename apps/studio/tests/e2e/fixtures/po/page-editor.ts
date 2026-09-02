@@ -252,7 +252,10 @@ export class PageEditorPO {
     options?: { exact?: boolean; timeout?: number },
   ) {
     await expect(
-      this.previewFrame().getByText(text, { exact: options?.exact }),
+      this.previewFrame()
+        .getByText(text, { exact: options?.exact })
+        .filter({ hasText: text })
+        .first(),
     ).toBeVisible({ timeout: options?.timeout })
   }
 
@@ -749,8 +752,13 @@ export class PageEditorPO {
    * "Item 1", "Item 2", etc. (`DraggableTagButton`'s `childLabel` fallback).
    */
   async openGalleryItem(nameOrRegex: string | RegExp) {
+    // Row labels render as visible text inside a nested `<button>`; matching on
+    // `hasText` is more reliable than `getByRole('button', { name })` once the
+    // label is a full upload path rather than a short "Item N" fallback.
     await this.page
-      .getByRole("button", { name: nameOrRegex })
+      .locator("button")
+      .filter({ hasText: nameOrRegex })
+      .first()
       .click({ force: true })
   }
 

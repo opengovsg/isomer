@@ -31,6 +31,10 @@ ruleTester.run("no-page-methods-in-tests", rules["no-page-methods-in-tests"], {
       code: "async ({ page }) => { await page.clock.install({ time: new Date() }) }",
       errors: [{ messageId: "noPageMethods" }],
     },
+    {
+      code: "async ({ page: page2 }) => { await page2.goto('/dashboard') }",
+      errors: [{ messageId: "noPageMethods" }],
+    },
   ],
 })
 
@@ -60,6 +64,10 @@ ruleTester.run("no-raw-role-tag", rules["no-raw-role-tag"], {
     {
       code: 'test.describe("admin", { tag: "@admin" }, () => {})',
       errors: [{ messageId: "noRawRoleTag" }],
+    },
+    {
+      code: 'test.describe("admin", { tag: ["@admin", "@editor"] }, () => {})',
+      errors: [{ messageId: "noRawRoleTag" }, { messageId: "noRawRoleTag" }],
     },
   ],
 })

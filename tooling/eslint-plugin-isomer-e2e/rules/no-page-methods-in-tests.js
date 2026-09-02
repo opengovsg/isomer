@@ -7,9 +7,28 @@ const getMemberChainRoot = (node) => {
   return current
 }
 
-/** @param {import('estree').Node} node */
-const isPlaywrightPageFixture = (node) =>
-  node.type === "Identifier" && node.name === "page"
+/** @param {import('estree').Pattern} param @param {Set<string>} names */
+const collectPageFixtureBindings = (param, names) => {
+  if (param.type !== "ObjectPattern") {
+    return
+  }
+
+  for (const property of param.properties) {
+    if (property.type !== "Property") {
+      continue
+    }
+
+    const keyIsPage =
+      (property.key.type === "Identifier" && property.key.name === "page") ||
+      (property.key.type === "Literal" && property.key.value === "page")
+
+    if (!keyIsPage || property.value.type !== "Identifier") {
+      continue
+    }
+
+    names.add(property.value.name)
+  }
+}
 
 /**
  * Disallow `page.<method>(...)` in E2E test files. Playwright page calls belong
@@ -32,17 +51,52 @@ export const noPageMethodsInTests = {
     schema: [],
   },
   create(context) {
+    /** @type {Set<string>[]} */
+    const pageFixtureScopeStack = [new Set(["page"])]
+
+    const currentPageFixtures = () => {
+      const names = new Set()
+      for (const scope of pageFixtureScopeStack) {
+        for (const name of scope) {
+          names.add(name)
+        }
+      }
+      return names
+    }
+
+    const enterFunction = (node) => {
+      const names = new Set()
+      for (const param of node.params) {
+        collectPageFixtureBindings(param, names)
+      }
+      pageFixtureScopeStack.push(names)
+    }
+
+    const exitFunction = () => {
+      pageFixtureScopeStack.pop()
+    }
+
     return {
+      FunctionDeclaration: enterFunction,
+      "FunctionDeclaration:exit": exitFunction,
+      FunctionExpression: enterFunction,
+      "FunctionExpression:exit": exitFunction,
+      ArrowFunctionExpression: enterFunction,
+      "ArrowFunctionExpression:exit": exitFunction,
       CallExpression(node) {
         const root = getMemberChainRoot(node.callee)
-        if (!isPlaywrightPageFixture(root)) {
+        if (root?.type !== "Identifier") {
+          return
+        }
+
+        if (!currentPageFixtures().has(root.name)) {
           return
         }
 
         const method =
           node.callee.type === "MemberExpression"
             ? context.sourceCode.getText(node.callee)
-            : "page"
+            : root.name
 
         context.report({
           node,

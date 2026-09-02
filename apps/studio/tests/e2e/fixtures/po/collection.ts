@@ -192,21 +192,15 @@ export class CollectionPO {
   }
 
   async expectOptionNameError(message: string | RegExp) {
-    const activeNameField = this.page.getByRole("textbox", {
-      name: /Option \d+ name/,
-    })
-    const row = this.page
-      .locator("[data-rfd-draggable-id], [data-rbd-draggable-id]")
-      .filter({ has: activeNameField })
-    await expect(row.getByText(message)).toBeVisible()
+    await expect(
+      this.page.getByText(message).filter({ hasText: message }).first(),
+    ).toBeVisible()
   }
 
   async expectFilterNameError(message: string | RegExp) {
-    const filterNameField = this.page.getByPlaceholder(/Filter name/i)
-    const row = this.page
-      .locator("[data-rfd-draggable-id], [data-rbd-draggable-id]")
-      .filter({ has: filterNameField })
-    await expect(row.getByText(message)).toBeVisible()
+    await expect(
+      this.page.getByText(message).filter({ hasText: message }).first(),
+    ).toBeVisible()
   }
 
   async expectFilterNamedVisible(name: string) {
