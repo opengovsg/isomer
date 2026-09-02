@@ -555,5 +555,28 @@ describe("sortCollectionItems", () => {
 
       expect(sorted.map((item) => item.title)).toEqual(["Alpha", "Zebra"])
     })
+
+    it("should fall back to publish date when both items lack the date filter value", () => {
+      const items = [
+        createItem({
+          title: "Older publish",
+          date: new Date("2023-01-01"),
+        }),
+        createItem({
+          title: "Newer publish",
+          date: new Date("2023-12-31"),
+        }),
+      ]
+
+      const sorted = sortCollectionItems({
+        items,
+        sortOrder: `date-filter-${filterId}-desc`,
+      })
+
+      expect(sorted.map((item) => item.title)).toEqual([
+        "Newer publish",
+        "Older publish",
+      ])
+    })
   })
 })
