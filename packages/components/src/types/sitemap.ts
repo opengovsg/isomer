@@ -22,6 +22,7 @@ interface IsomerBaseSitemap {
   // `tagCategories` (see getPillAndPlaintextTags/getTagsFromTagged) to derive what's
   // actually rendered. The legacy resolved `tags` field is no longer supported.
   tagged?: ArticlePagePageProps["tagged"]
+  dateTagged?: ArticlePagePageProps["dateTagged"]
 }
 
 interface IsomerPageSitemap extends IsomerBaseSitemap {
