@@ -1117,6 +1117,93 @@ export const getLockingAncestorIndexPages = (rows: AncestorIndexPage[]) =>
       row.scheduledAction === ScheduledAction.Unpublish,
   )
 
+// A published/live resource can't be moved into a container that's scheduled
+// to go dark — it would either go live at a URL about to disappear, or (for
+// a container being moved) sit on live content underneath a container that's
+// about to unpublish. Walks the destination's own IndexPage AND every
+// ancestor above it (getAncestorIndexPages is self-inclusive when
+// `destinationId` is itself a container), since a lock further up the tree
+// is just as disqualifying as one on the immediate destination. RootPage has
+// no separate landing IndexPage and can never itself have a scheduled
+// unpublish, so callers pass its type through and this is a no-op for it.
+export const assertMoveDestinationUnlocked = async (
+  tx: SafeKysely,
+  {
+    siteId,
+    destinationId,
+    destinationType,
+    movedResourceId,
+  }: {
+    siteId: number
+    destinationId: string
+    destinationType: ResourceType
+    movedResourceId: string
+  },
+) => {
+  if (
+    destinationType !== ResourceType.Folder &&
+    destinationType !== ResourceType.Collection
+  ) {
+    return
+  }
+
+  const ancestorIndexPages = await getAncestorIndexPages(tx, {
+    siteId,
+    resourceId: destinationId,
+  })
+  const [lockingAncestor] = getLockingAncestorIndexPages(ancestorIndexPages)
+
+  if (
+    lockingAncestor &&
+    (await hasPublishedDescendant(tx, {
+      siteId,
+      resourceId: movedResourceId,
+    }))
+  ) {
+    throw new TRPCError({
+      code: "PRECONDITION_FAILED",
+      message:
+        "Cannot move a published page into a folder or collection that is scheduled to be unpublished, or into one nested under such a folder or collection.",
+    })
+  }
+}
+
+// Blocks deleting a resource that's still live. Deletion cascades (parentId
+// is onDelete: Cascade), so a Folder/Collection needs its whole subtree
+// checked via hasPublishedDescendant, not just its own (always-null)
+// publishedVersionId.
+export const assertResourceNotLive = async (
+  tx: SafeKysely,
+  {
+    siteId,
+    resourceId,
+    resourceType,
+    publishedVersionId,
+  }: {
+    siteId: number
+    resourceId: string
+    resourceType: ResourceType
+    publishedVersionId: string | null
+  },
+) => {
+  const isContainer =
+    resourceType === ResourceType.Folder ||
+    resourceType === ResourceType.Collection
+
+  const isLive = isContainer
+    ? await hasPublishedDescendant(tx, { siteId, resourceId })
+    : publishedVersionId !== null
+
+  if (isLive) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: isContainer
+        ? `This ${resourceType === ResourceType.Folder ? "folder" : "collection"} has live pages inside it — unpublish them before deleting`
+        : "This page must be unpublished before it can be deleted",
+    })
+  }
+}
+
 // Resolves a full permalink path (e.g. "/foo/bar") to the resource that serves
 // it, walking permalink segments from the site's root page. A Folder/Collection
 // is resolved to its IndexPage child, since that is what actually renders at the

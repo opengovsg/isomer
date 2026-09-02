@@ -50,10 +50,10 @@ import {
 import { validateUserPermissionsForSite } from "../site/site.service"
 import {
   applyResourceOrderBy,
+  assertMoveDestinationUnlocked,
+  assertResourceNotLive,
   defaultResourceSelect,
-  getAncestorIndexPages,
   getBatchAncestryWithSelfQuery,
-  getLockingAncestorIndexPages,
   getResourceFullPermalink,
   getSearchRecentlyEdited,
   getSearchResults,
@@ -460,43 +460,12 @@ export const resourceRouter = router({
               })
             }
 
-            // A published/live resource can't be moved into a container
-            // that's scheduled to go dark — it would either go live at a URL
-            // about to disappear, or (for a container being moved) sit on
-            // live content underneath a container that's about to unpublish.
-            // Walks the destination's own IndexPage AND every ancestor above
-            // it (getAncestorIndexPages is self-inclusive when `resourceId`
-            // is itself a container), since a lock further up the tree is
-            // just as disqualifying as one on the immediate destination.
-            // RootPage has no separate landing IndexPage and can never
-            // itself have a scheduled unpublish, so it's skipped — its own
-            // ancestors are covered too, since the walk still runs for it
-            // being a possible ancestor of a Folder/Collection destination.
-            if (
-              parent.type === ResourceType.Folder ||
-              parent.type === ResourceType.Collection
-            ) {
-              const ancestorIndexPages = await getAncestorIndexPages(tx, {
-                siteId,
-                resourceId: parent.id,
-              })
-              const [lockingAncestor] =
-                getLockingAncestorIndexPages(ancestorIndexPages)
-
-              if (
-                lockingAncestor &&
-                (await hasPublishedDescendant(tx, {
-                  siteId,
-                  resourceId: movedResourceId,
-                }))
-              ) {
-                throw new TRPCError({
-                  code: "PRECONDITION_FAILED",
-                  message:
-                    "Cannot move a published page into a folder or collection that is scheduled to be unpublished, or into one nested under such a folder or collection.",
-                })
-              }
-            }
+            await assertMoveDestinationUnlocked(tx, {
+              siteId,
+              destinationId: parent.id,
+              destinationType: parent.type,
+              movedResourceId,
+            })
 
             if (
               toMove.type === "Folder" ||
@@ -796,32 +765,16 @@ export const resourceRouter = router({
           })
         }
 
-        // Block deleting anything still live. Deletion cascades (`parentId`
-        // is `onDelete: Cascade`), so a Folder/Collection needs its whole
-        // subtree checked, not just its own (always-null) publishedVersionId.
         // Gated on the flag: with unpublish unreachable, a live resource
         // could never become deletable, so skip the guard entirely rather
         // than lock it out permanently.
         if (ctx.gb.isOn(IS_UNPUBLISH_ENABLED_FEATURE_KEY)) {
-          const isContainer =
-            before.type === ResourceType.Folder ||
-            before.type === ResourceType.Collection
-
-          const isLive = isContainer
-            ? await hasPublishedDescendant(tx, {
-                siteId: Number(siteId),
-                resourceId,
-              })
-            : before.publishedVersionId !== null
-
-          if (isLive) {
-            throw new TRPCError({
-              code: "BAD_REQUEST",
-              message: isContainer
-                ? `This ${before.type === ResourceType.Folder ? "folder" : "collection"} has live pages inside it — unpublish them before deleting`
-                : "This page must be unpublished before it can be deleted",
-            })
-          }
+          await assertResourceNotLive(tx, {
+            siteId: Number(siteId),
+            resourceId,
+            resourceType: before.type,
+            publishedVersionId: before.publishedVersionId,
+          })
         }
 
         await logResourceEvent(tx, {
