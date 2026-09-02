@@ -166,9 +166,6 @@ const DateFilterSchema = Type.Object(
   { title: "Date filter" },
 )
 
-export type TextFilterSchemaType = Static<typeof TextFilterSchema>
-export type DateFilterSchemaType = Static<typeof DateFilterSchema>
-
 // oneOf keeps each filter type's fields separate. A date filter has no
 // display or options fields at all.
 // format "tag-category-item" hands off to JsonFormsTagCategoryItemControl,
@@ -176,7 +173,7 @@ export type DateFilterSchemaType = Static<typeof DateFilterSchema>
 // text vs date in the creation modal.
 // Order is load-bearing: text at index 0, date at index 1.
 const TagCategorySchema = Type.Unsafe<
-  TextFilterSchemaType | DateFilterSchemaType
+  Static<typeof TextFilterSchema> | Static<typeof DateFilterSchema>
 >({
   oneOf: [TextFilterSchema, DateFilterSchema],
   format: "tag-category-item",
