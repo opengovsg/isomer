@@ -293,3 +293,12 @@ export const ASKGOV_ID_OR_URL_REGEX = `^\\s*(?:${ASKGOV_AGENCY_ID_REGEX}|${ASKGO
 // NOTE: Official documentation does not specify allowed length,
 // so we use ^GTM-[A-Z0-9]+$ (one or more chars) for future proofing.
 export const GTM_ID_STRING_REGEX = "^(GTM|G|GT)-[A-Z0-9]+$"
+
+// Collection page `sortOrder`: the four base literals, or
+// `date-filter-{uuid}-asc|desc` for a published date filter.
+// ✅ "date-desc"
+// ✅ "date-filter-550e8400-e29b-41d4-a716-446655440000-asc"
+// ❌ "totally-made-up"
+// ❌ "date-filter-not-a-uuid-desc"
+export const COLLECTION_SORT_ORDER_PATTERN =
+  "^(date-desc|date-asc|title-asc|title-desc|date-filter-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}-(?:asc|desc))$"
