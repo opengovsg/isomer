@@ -156,6 +156,20 @@ const DateFilterSchema = Type.Object(
         maxItems: 3,
       },
     ),
+    // Optional for backward compatibility. Missing/`undefined` is read as
+    // `DEFAULT_DATE_RANGE_FILTER_LABEL` at render time — omit JSON Schema
+    // `default` for the same reason as `isRequired` above.
+    dateRangeFilterLabel: Type.Optional(
+      Type.String({
+        title: "Custom date range label",
+        description:
+          "Label shown above the custom date range input in the filter sidebar.",
+        pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
+        errorMessage: {
+          pattern: "cannot be empty or have leading/trailing spaces",
+        },
+      }),
+    ),
   },
   { title: "Date filter" },
 )
