@@ -1,6 +1,5 @@
 import type { Node as ProseMirrorNode, ResolvedPos } from "@tiptap/pm/model"
 import type { Command } from "@tiptap/pm/state"
-import type { Rect } from "~/features/editing-experience/utils/tableEditorGeometry"
 import {
   CellSelection,
   moveTableColumn,
@@ -8,14 +7,15 @@ import {
   TableMap,
 } from "@tiptap/pm/tables"
 import {
+  selectionIncludesHeaderColumn,
+  selectionIncludesHeaderRow,
+} from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu.utils"
+import {
   COL_HANDLE,
   ROW_HANDLE,
 } from "~/features/editing-experience/utils/tableEditorChrome"
 
-import {
-  selectionIncludesHeaderColumn,
-  selectionIncludesHeaderRow,
-} from "../TableBubbleMenu/TableBubbleMenu.utils"
+import type { Rect } from "./coordinates"
 
 export type Axis = "row" | "column"
 

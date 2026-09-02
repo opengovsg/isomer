@@ -6,7 +6,7 @@ import { Box, VStack } from "@chakra-ui/react"
 import { EditorContent } from "@tiptap/react"
 import { useMemo, useRef, useState } from "react"
 import { TableBubbleMenu } from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu"
-import { TableDragHandles } from "~/features/editing-experience/components/TableDragHandles/TableDragHandles"
+import { TableDragHandles } from "~/features/editing-experience/components/TableDragHandles"
 
 const EditorContainer = ({
   children,

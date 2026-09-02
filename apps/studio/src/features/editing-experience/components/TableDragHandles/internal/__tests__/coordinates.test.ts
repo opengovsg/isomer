@@ -2,7 +2,7 @@ import {
   containerRectToViewportRect,
   viewportPointToContainerPoint,
   viewportRectToContainerRect,
-} from "~/features/editing-experience/utils/tableEditorGeometry"
+} from "../coordinates"
 
 describe("tableEditorGeometry", () => {
   const containerRect = { top: 100, left: 50 }
