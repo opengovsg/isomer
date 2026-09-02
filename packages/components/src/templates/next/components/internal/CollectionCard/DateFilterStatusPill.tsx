@@ -8,12 +8,15 @@ const STATUS_STYLES: Record<DateFilterStatusId, string> = {
   [DATE_FILTER_STATUS_ID.Ended]: "bg-[#E6E6E6] text-base-content",
 }
 
-interface EventStatusPillProps {
+interface DateFilterStatusPillProps {
   status: DateFilterStatusId
   label: string
 }
 
-export const EventStatusPill = ({ status, label }: EventStatusPillProps) => {
+export const DateFilterStatusPill = ({
+  status,
+  label,
+}: DateFilterStatusPillProps) => {
   return (
     <div
       className={`inline-flex items-center justify-center gap-2 rounded px-2 py-1 ${STATUS_STYLES[status]}`}
