@@ -3,6 +3,7 @@ import type { CollectionPageSchemaType } from "~/types"
 import {
   DEFAULT_DATE_RANGE_FILTER_LABEL,
   TAG_CATEGORY_TYPE,
+  type DateFilterStatusId,
 } from "~/types/constants"
 import { isDateFilter } from "~/types/page"
 
@@ -42,12 +43,14 @@ export const getDateFilters = (
       type: TAG_CATEGORY_TYPE.Date,
       dateRangeFilterLabel:
         category.dateRangeFilterLabel ?? DEFAULT_DATE_RANGE_FILTER_LABEL,
-      items: category.statusLabels
-        .filter((statusLabel) => statusLabel.label.trim() !== "")
-        .map((statusLabel) => ({
-          id: statusLabel.id,
-          label: statusLabel.label,
-          count: counts.get(statusLabel.id) ?? 0,
+      items: (
+        Object.entries(category.statusLabels) as [DateFilterStatusId, string][]
+      )
+        .filter(([, label]) => label.trim() !== "")
+        .map(([id, label]) => ({
+          id,
+          label,
+          count: counts.get(id) ?? 0,
         }))
         .filter((item) => item.count >= 1),
     }

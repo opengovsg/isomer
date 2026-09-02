@@ -1,6 +1,9 @@
 import type { TagCategoryDisplay } from "~/types/constants"
 import { parseDate } from "@internationalized/date"
-import { DEFAULT_DATE_RANGE_FILTER_LABEL } from "~/types/constants"
+import {
+  DEFAULT_DATE_RANGE_FILTER_LABEL,
+  TAG_CATEGORY_TYPE,
+} from "~/types/constants"
 
 export interface FilterItem {
   id: string
@@ -19,7 +22,7 @@ export interface Filter {
   // buckets (ended/ongoing/upcoming); the sidebar also renders a date-range
   // control for this filter (see Filter.tsx), whose value lives in
   // `AppliedFilter.dateRange`, not `items`.
-  type?: "date"
+  type?: typeof TAG_CATEGORY_TYPE.Date
   // NOTE: only set for date-type tag-category filters — label above the custom
   // date-range input in the sidebar (see DateRangeFilterInput).
   dateRangeFilterLabel?: string

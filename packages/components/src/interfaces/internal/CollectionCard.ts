@@ -1,19 +1,11 @@
 import type { ImageProps } from "~/interfaces"
-import type { FormattedDate, IsomerSiteProps, TagGroup } from "~/types"
+import type {
+  DateTaggedItem,
+  FormattedDate,
+  IsomerSiteProps,
+  TagGroup,
+} from "~/types"
 import type { DateFilterStatusId } from "~/types/constants"
-
-// NOTE: one entry per date-type filter the item has a raw value for — used
-// for filter matching (see getFilteredItems' range-overlap check).
-export interface DateFilterValue {
-  id: string
-  date: string
-  endDate?: string
-}
-
-export interface DateFilterStatusLabel {
-  id: DateFilterStatusId
-  label: string
-}
 
 // NOTE: server-precomputed display fields for a date filter (label + formatted
 // date text + admin status labels). Live status is derived on the client.
@@ -23,7 +15,7 @@ export interface DateFilterDisplayEntry {
   dateText: string
   date: string
   endDate?: string
-  statusLabels: DateFilterStatusLabel[]
+  statusLabels: Record<DateFilterStatusId, string>
 }
 
 // NOTE: fully resolved card display entry, including live status — only
@@ -55,7 +47,7 @@ interface BaseCardProps {
   // — rendered as comma-joined text, dot-separated between groups (see PlaintextTags)
   plaintextTags?: TagGroup[]
   // NOTE: raw per-item date-filter values — used for filter matching only.
-  dateTagged?: DateFilterValue[]
+  dateTagged?: DateTaggedItem[]
   // NOTE: server-precomputed label + date text for EventDateFilterDisplay.
   dateFilterDisplayEntries?: DateFilterDisplayEntry[]
   title: string
