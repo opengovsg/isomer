@@ -4386,7 +4386,12 @@ describe("page.router", async () => {
       expect(updatedIndexPage.scheduledBy).toBeNull()
     })
 
-    it("should throw if the index page isn't live and a child page still has a pending scheduled publish", async () => {
+    it("should allow cancelling even when a child page still has its own pending scheduled publish", async () => {
+      // Unlike scheduled unpublish, cancelling a scheduled publish is never
+      // blocked by a dependent child's own schedule — a child's publish
+      // doesn't depend on its ancestor's publish schedule (only on the
+      // ancestor not having a pending scheduled *unpublish*, see the
+      // ancestor guard above), so there's nothing for this cancel to strand.
       const { site, folder } = await setupFolder({})
       const { page: indexPage } = await setupPageResource({
         siteId: site.id,
@@ -4401,31 +4406,6 @@ describe("page.router", async () => {
         parentId: folder.id,
         resourceType: ResourceType.Page,
         permalink: "child-page",
-        scheduledAt: addDays(FIXED_NOW, 1),
-        scheduledBy: session.userId,
-        scheduledAction: ScheduledAction.Publish,
-      })
-      await setupPublisherPermissions({
-        userId: session.userId ?? undefined,
-        siteId: site.id,
-      })
-
-      const result = caller.cancelSchedulePage({
-        siteId: site.id,
-        pageId: Number(indexPage.id),
-      })
-
-      await expect(result).rejects.toThrow(
-        expect.objectContaining({ code: "PRECONDITION_FAILED" }),
-      )
-    })
-
-    it("should allow cancelling once the child page's scheduled publish is cancelled", async () => {
-      const { site, folder } = await setupFolder({})
-      const { page: indexPage } = await setupPageResource({
-        siteId: site.id,
-        parentId: folder.id,
-        resourceType: ResourceType.IndexPage,
         scheduledAt: addDays(FIXED_NOW, 1),
         scheduledBy: session.userId,
         scheduledAction: ScheduledAction.Publish,

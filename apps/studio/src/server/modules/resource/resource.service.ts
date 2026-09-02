@@ -962,31 +962,27 @@ export const getDescendantResourceIdsUnsafeForScheduledUnpublish = async (
 }
 
 // True when some descendant of `resourceId` (excluding `excludeResourceId`)
-// has a pending schedule of `action` — a plain existence check, unlike the
+// has a pending scheduled Unpublish — a plain existence check, unlike the
 // "unsafe for scheduled X" functions above: there's no time cutoff to
 // compare against, just "does anything downstream still depend on this
-// happening". Used to hard-block cancelling an IndexPage's own schedule out
-// from under dependents (see cancelScheduleUnpublish/cancelSchedulePublish
-// in page.service.ts) — the caller must cancel the descendants' schedules
+// happening". Used to hard-block cancelling an IndexPage's own scheduled
+// unpublish out from under dependents (see cancelScheduleUnpublish in
+// page.service.ts) — the caller must cancel the descendants' schedules
 // first. `excludeResourceId` is the IndexPage whose own schedule is being
 // cancelled: it's still part of `resourceId`'s (its container's) subtree and
 // still has `scheduledAt` set at the point this check runs (the cancel
 // hasn't been applied yet), so it must be excluded or the check would
-// always find "itself" as a blocking dependent. A null scheduledAction is
-// legacy data and defaults to Publish, matching the convention used
-// throughout this module.
-export const hasDescendantWithPendingScheduledAction = async (
+// always find "itself" as a blocking dependent.
+export const hasDescendantWithPendingScheduledUnpublish = async (
   trx: SafeKysely,
   {
     siteId,
     resourceId,
     excludeResourceId,
-    action,
   }: {
     siteId: number
     resourceId: string
     excludeResourceId: string
-    action: ScheduledAction
   },
 ): Promise<boolean> => {
   const row = await withResourceSubtree(trx, { siteId, resourceId })
@@ -994,14 +990,7 @@ export const hasDescendantWithPendingScheduledAction = async (
     .innerJoin("Resource", "Resource.id", "subtree.id")
     .where("Resource.id", "!=", excludeResourceId)
     .where("Resource.scheduledAt", "is not", null)
-    .where((eb) =>
-      action === ScheduledAction.Publish
-        ? eb.or([
-            eb("Resource.scheduledAction", "is", null),
-            eb("Resource.scheduledAction", "=", ScheduledAction.Publish),
-          ])
-        : eb("Resource.scheduledAction", "=", action),
-    )
+    .where("Resource.scheduledAction", "=", ScheduledAction.Unpublish)
     .select("Resource.id")
     .executeTakeFirst()
   return row !== undefined
