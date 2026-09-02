@@ -71,10 +71,7 @@ const tagCategoryIsRequiredSchemaObject = {
 const TextFilterSchema = Type.Object(
   {
     ...tagCategoryLabelSchemaObject,
-    // Optional for backward compatibility — every pre-existing `tagCategories`
-    // entry was a text filter before date filters existed. Must stay
-    // `"text"` or absent (never `"date"`) so this branch and `DateFilterSchema`
-    // remain mutually exclusive for `oneOf` resolution.
+    // Optional on old rows. Must be "text" or absent so oneOf picks TextFilterSchema.
     type: Type.Optional(
       Type.Literal(TAG_CATEGORY_TYPE.Text, { format: "hidden" }),
     ),
@@ -126,16 +123,10 @@ const TextFilterSchema = Type.Object(
 const DateFilterSchema = Type.Object(
   {
     ...tagCategoryLabelSchemaObject,
-    // Required (never absent) — a date filter is only ever created going
-    // forward via the type-choice modal, never a legacy row. Must stay
-    // `"date"` so this branch and `TextFilterSchema` remain mutually
-    // exclusive for `oneOf` resolution.
+    // Always "date" on new filters. Keeps oneOf exclusive with TextFilterSchema.
     type: Type.Literal(TAG_CATEGORY_TYPE.Date, { format: "hidden" }),
     ...tagCategoryIsRequiredSchemaObject,
-    // Fixed at exactly 3 entries, keyed by the well-known
-    // `DATE_FILTER_STATUS_ID`s — only the `label` is admin-editable (the admin
-    // UI hides add/remove for this list); the id set itself is what future
-    // work would need to extend, not something today's UI exposes.
+    // Three entries, keyed by DATE_FILTER_STATUS_ID. Only labels are editable.
     statusLabels: Type.Array(
       Type.Object({
         id: DateFilterStatusIdSchema,
@@ -150,15 +141,14 @@ const DateFilterSchema = Type.Object(
       {
         title: "Status labels",
         description:
-          "Customise the labels shown for each status. These are computed automatically from the dates entered on each item.",
+          "Labels for each status. Status is derived from dates on each item.",
         format: "date-filter-status-labels",
         minItems: 3,
         maxItems: 3,
       },
     ),
-    // Optional for backward compatibility. Missing/`undefined` is read as
-    // `DEFAULT_DATE_RANGE_FILTER_LABEL` at render time — omit JSON Schema
-    // `default` for the same reason as `isRequired` above.
+    // Falls back to DEFAULT_DATE_RANGE_FILTER_LABEL at render. No schema default
+    // because Studio AJV runs with useDefaults.
     dateRangeFilterLabel: Type.Optional(
       Type.String({
         title: "Custom date range label",
@@ -186,17 +176,12 @@ export const isTextFilter = (
   tagCategory: TextFilterSchemaType | DateFilterSchemaType,
 ): tagCategory is TextFilterSchemaType => !isDateFilter(tagCategory)
 
-// A real `oneOf` union rather than a flat object with every field optional:
-// each filter type only ever carries the fields that are meaningful for it
-// (a date filter genuinely has no `display`/`options`, not just a hidden
-// one). The dedicated `"tag-category-item"` format lets a custom Studio
-// control (JsonFormsTagCategoryItemControl) dispatch straight to whichever
-// branch already matches the data — bypassing JSONForms' generic `oneOf`
-// renderer, which would otherwise show an always-visible "Variant" picker
-// the admin has no reason to see (the type was already decided by the
-// type-choice modal on creation). `oneOf` order is load-bearing: index 0 is
-// text, index 1 is date — JsonFormsTagCategoryItemControl indexes into this
-// same array via JSONForms' own `indexOfFittingSchema`.
+// oneOf keeps each filter type's fields separate. A date filter has no
+// display or options fields at all.
+// format "tag-category-item" hands off to JsonFormsTagCategoryItemControl,
+// which skips JsonForms' generic Variant picker. The admin already picked
+// text vs date in the creation modal.
+// Order is load-bearing: text at index 0, date at index 1.
 const TagCategorySchema = Type.Unsafe<
   TextFilterSchemaType | DateFilterSchemaType
 >({
@@ -224,13 +209,9 @@ const TaggedSchema = Type.Optional(
   }),
 )
 
-// NOTE: one entry per date-type `tagCategories` filter the item has a value
-// for — `id` references that filter's `id` (distinct from `tagged`, which is
-// a flat list of *option* ids since text filters have no per-item value
-// shape to key by; a date filter's per-item value is data the editor typed
-// in, not a selection from a list, so each entry needs to carry both the
-// key and the value together). `endDate` present = the item picked a range;
-// absent = a single date, treated as a 1-day event by status computation.
+// One entry per date filter on this item. id is the filter uuid.
+// tagged is a flat list of option ids. dateTagged carries the typed dates.
+// No endDate means a single-day event.
 const DateTaggedSchema = Type.Optional(
   Type.Array(
     Type.Object({
