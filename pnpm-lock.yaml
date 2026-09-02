@@ -468,9 +468,15 @@ catalogs:
       specifier: ^18.3.1
       version: 18.3.1
   react-aria:
+    '@internationalized/date':
+      specifier: ^3.12.1
+      version: 3.12.3
     '@react-aria/button':
       specifier: ^3.15.1
       version: 3.15.1
+    '@react-aria/calendar':
+      specifier: ^3.10.1
+      version: 3.10.1
     '@react-aria/checkbox':
       specifier: ^3.17.1
       version: 3.17.1
@@ -486,6 +492,9 @@ catalogs:
     '@react-aria/utils':
       specifier: ^3.34.1
       version: 3.34.1
+    '@react-stately/calendar':
+      specifier: ^3.10.1
+      version: 3.10.1
     '@react-stately/checkbox':
       specifier: ^3.8.1
       version: 3.8.1
@@ -1215,12 +1224,18 @@ importers:
       '@headlessui/react':
         specifier: 'catalog:'
         version: 2.2.10(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@internationalized/date':
+        specifier: catalog:react-aria
+        version: 3.12.3
       '@isomer/validators':
         specifier: workspace:*
         version: link:../validators
       '@react-aria/button':
         specifier: catalog:react-aria
         version: 3.15.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@react-aria/calendar':
+        specifier: catalog:react-aria
+        version: 3.10.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@react-aria/checkbox':
         specifier: catalog:react-aria
         version: 3.17.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1236,6 +1251,9 @@ importers:
       '@react-aria/utils':
         specifier: catalog:react-aria
         version: 3.34.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@react-stately/calendar':
+        specifier: catalog:react-aria
+        version: 3.10.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@react-stately/checkbox':
         specifier: catalog:react-aria
         version: 3.8.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -4679,8 +4697,8 @@ packages:
   '@intercom/messenger-js-sdk@0.0.20':
     resolution: {integrity: sha512-99ixqRcsX4ZL+HnH3xxpQewKqdN9/mtptsnxk5vDd31TQG4x1o0gvp6aNPJm5iX3SPSJldQhA/uqW66NV1LO1w==}
 
-  '@internationalized/date@3.12.1':
-    resolution: {integrity: sha512-6IedsVWXyq4P9Tj+TxuU8WGWM70hYLl12nbYU8jkikVpa6WXapFazPUcHUMDMoWftIDE2ILDkFFte6W2nFCkRQ==}
+  '@internationalized/date@3.12.3':
+    resolution: {integrity: sha512-fuLX+3ZKLsxI73y8b01EG/WjHb6gE6weCqlfawPO27kBWGMh9G1yH6Csv1uU7/cac9H2GHmOMt6CjmuQ1aia4Q==}
 
   '@internationalized/number@3.6.6':
     resolution: {integrity: sha512-iFgmQaXHE0vytNfpLZWOC2mEJCBRzcUxt53Xf/yCXG93lRvqas237i3r7X4RKMwO3txiyZD4mQjKAByFv6UGSQ==}
@@ -5954,6 +5972,12 @@ packages:
       react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
       react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
 
+  '@react-aria/calendar@3.10.1':
+    resolution: {integrity: sha512-0QYoKYyCHFVvfOlXgftTzDttTXtbnYa0GQ6i970Rjdx/0VrMdJe2TXSm60OEISwB3w0aZWAnn3CBiDVtOYQtEw==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+      react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+
   '@react-aria/checkbox@3.17.1':
     resolution: {integrity: sha512-742B+UhH87TK02SYsFJZOgQ9VZpFEythH5LXRnwxt/xShoKOp+eqXPaVah79s/+B9sxY1mF0wNORQ2RVAQFSKw==}
     peerDependencies:
@@ -5980,6 +6004,12 @@ packages:
 
   '@react-aria/utils@3.34.1':
     resolution: {integrity: sha512-H6+rGZL+0f58bBNaUMfctEnT+NogqwAk+nHiB8sR3K+YlQ37GTuCijy2U/pPvQtFMS5mURrjZeBH5JNNXsx14A==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+      react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+
+  '@react-stately/calendar@3.10.1':
+    resolution: {integrity: sha512-nKluH+UT9xJlAimOW6ZrXgQNDiFUfbdtQwQ6rmq5mXs7yD8hGpOOLxJ0ZtT+cyWkbOAYR19j/6xyRPzGQxRL9g==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
       react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
@@ -16065,7 +16095,7 @@ snapshots:
 
   '@intercom/messenger-js-sdk@0.0.20': {}
 
-  '@internationalized/date@3.12.1':
+  '@internationalized/date@3.12.3':
     dependencies:
       '@swc/helpers': 0.5.20
 
@@ -17083,6 +17113,14 @@ snapshots:
       react-aria: 3.48.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-dom: 18.3.1(react@18.3.1)
 
+  '@react-aria/calendar@3.10.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+    dependencies:
+      '@swc/helpers': 0.5.20
+      react: 18.3.1
+      react-aria: 3.48.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react-dom: 18.3.1(react@18.3.1)
+      react-stately: 3.46.0(react@18.3.1)
+
   '@react-aria/checkbox@3.17.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@swc/helpers': 0.5.20
@@ -17117,6 +17155,13 @@ snapshots:
       '@swc/helpers': 0.5.20
       react: 18.3.1
       react-aria: 3.48.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react-dom: 18.3.1(react@18.3.1)
+      react-stately: 3.46.0(react@18.3.1)
+
+  '@react-stately/calendar@3.10.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+    dependencies:
+      '@swc/helpers': 0.5.20
+      react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
       react-stately: 3.46.0(react@18.3.1)
 
@@ -23147,7 +23192,7 @@ snapshots:
 
   react-aria@3.48.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
-      '@internationalized/date': 3.12.1
+      '@internationalized/date': 3.12.3
       '@internationalized/number': 3.6.6
       '@internationalized/string': 3.2.8
       '@react-types/shared': 3.34.0(react@18.3.1)
@@ -23353,7 +23398,7 @@ snapshots:
 
   react-stately@3.46.0(react@18.3.1):
     dependencies:
-      '@internationalized/date': 3.12.1
+      '@internationalized/date': 3.12.3
       '@internationalized/number': 3.6.6
       '@internationalized/string': 3.2.8
       '@react-types/shared': 3.34.0(react@18.3.1)
