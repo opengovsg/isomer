@@ -817,7 +817,13 @@ export const resourceRouter = router({
         throw new TRPCError({ code: "BAD_REQUEST" })
       }
 
-      await publishResource(user.id, result, ctx.logger)
+      // Skip the rebuild when the guard above ran: it already proved nothing
+      // live was just deleted, so there's nothing for a rebuild to remove.
+      // Without the flag, a live resource can still reach here, so keep
+      // rebuilding in that case.
+      if (!ctx.gb.isOn(IS_UNPUBLISH_ENABLED_FEATURE_KEY)) {
+        await publishResource(user.id, result, ctx.logger)
+      }
 
       // NOTE: We need to do this cast as the property is a `bigint`
       // and trpc cannot serialise it, which leads to errors
