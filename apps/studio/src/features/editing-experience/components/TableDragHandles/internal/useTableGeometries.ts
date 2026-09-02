@@ -3,7 +3,11 @@ import type { RefObject } from "react"
 import { useLayoutEffect, useState } from "react"
 
 import type { TableGeometry } from "./axisMath"
-import { findAllTables, geometriesEqual, measureTableGeometry } from "./measure"
+import {
+  findAllTables,
+  measureTableGeometry,
+  reconcileGeometries,
+} from "./measure"
 
 const EMPTY_GEOMETRIES: TableGeometry[] = []
 
@@ -34,11 +38,7 @@ export const useTableGeometries = (
       const next = findAllTables(editor).map((table) =>
         measureTableGeometry(editor, table, container, containerRect),
       )
-      // Keep the previous array when nothing moved: handles stay mounted and
-      // consumers keyed on the geometry identity do not re-subscribe.
-      setGeometries((previous) =>
-        geometriesEqual(previous, next) ? previous : next,
-      )
+      setGeometries((previous) => reconcileGeometries(previous, next))
     }
 
     const resizeObserver =
