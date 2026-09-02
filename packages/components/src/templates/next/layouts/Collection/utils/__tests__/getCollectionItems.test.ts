@@ -421,6 +421,50 @@ describe("getCollectionItems", () => {
     })
   })
 
+  describe("mixed text and date tagCategories", () => {
+    const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
+      {
+        label: "Event Date",
+        id: "date-1",
+        type: "date",
+        statusLabels: [
+          { id: "ENDED", label: "Ended" },
+          { id: "ONGOING", label: "Ongoing" },
+          { id: "UPCOMING", label: "Upcoming" },
+        ],
+      },
+      {
+        label: "Category",
+        id: "cat-1",
+        display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
+        options: [{ label: "Guides", id: "cat-opt-1" }],
+      },
+    ]
+
+    it("resolves tags/plaintextTags from the text category and skips the date category, without crashing", () => {
+      // Arrange
+      const site = createSiteWithChildren([
+        createArticleChild({ tagged: ["cat-opt-1"] }),
+      ])
+
+      // Act
+      const result = getCollectionItems({
+        site,
+        permalink: "/collection",
+        tagCategories,
+      })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      expect(result[0]!.tags).toEqual([
+        { id: "cat-1", category: "Category", selected: ["Guides"] },
+      ])
+      expect(result[0]!.plaintextTags).toEqual([
+        { id: "cat-1", category: "Category", selected: ["Guides"] },
+      ])
+    })
+  })
+
   describe('pillTags include only display: "pills" groups', () => {
     const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
       {
