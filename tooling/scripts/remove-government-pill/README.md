@@ -46,14 +46,12 @@ For each site ID in `sites.csv`, this script:
    ./searchsg.sh
    ```
 
-The script processes sites sequentially and does not print progress per
-site — only `curl`/`jq` errors will surface. Blank lines in `sites.csv` are
-skipped.
+The script processes sites sequentially and prints progress and status for
+each site. Blank lines in `sites.csv` are skipped.
 
 ## Notes
 
 - This mutates production Search.gov configuration for every site listed —
   double-check `sites.csv` before running.
-- If a site has no applications, `appId` will resolve to `null` and the
-  `PATCH` request will fail against a malformed URL
-  (`.../apps/null`) — check the output for errors after a run.
+- If a site has no applications, the script records that site as failed and
+  skips the `PATCH` request.
