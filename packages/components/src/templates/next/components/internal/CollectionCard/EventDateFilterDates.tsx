@@ -13,7 +13,11 @@ export const EventDateFilterDates = ({
   }
 
   if (entries.length === 1) {
-    const { dateText } = entries[0]!
+    const entry = entries[0]
+    if (!entry) {
+      return null
+    }
+    const { dateText } = entry
 
     return (
       <div className="flex items-center gap-2">

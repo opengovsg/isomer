@@ -71,13 +71,22 @@ const parseInputText = (
 
   const rangeParts = trimmed.split(/\s*-\s*/)
   if (rangeParts.length === 1) {
-    const isoDate = parseSingleDisplayDate(rangeParts[0]!)
+    const firstPart = rangeParts[0]
+    if (!firstPart) {
+      return null
+    }
+    const isoDate = parseSingleDisplayDate(firstPart)
     return isoDate ? { start: isoDate, end: isoDate } : null
   }
 
   if (rangeParts.length === 2) {
-    const start = parseSingleDisplayDate(rangeParts[0]!)
-    const end = parseSingleDisplayDate(rangeParts[1]!)
+    const startPart = rangeParts[0]
+    const endPart = rangeParts[1]
+    if (!startPart || !endPart) {
+      return null
+    }
+    const start = parseSingleDisplayDate(startPart)
+    const end = parseSingleDisplayDate(endPart)
     if (!start || !end) {
       return null
     }
