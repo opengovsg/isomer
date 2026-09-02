@@ -12,8 +12,7 @@ export const getDateFilterCardsFromEntries = (
   entries.map((entry) => {
     const { statusLabels, ...displayFields } = entry
     const status = getDateFilterStatus(entry, today)
-    const statusLabel =
-      statusLabels.find(({ id }) => id === status)?.label ?? status
+    const statusLabel = statusLabels[status] ?? status
 
     return { ...displayFields, status, statusLabel }
   })
