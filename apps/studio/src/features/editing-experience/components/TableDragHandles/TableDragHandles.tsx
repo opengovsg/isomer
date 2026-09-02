@@ -9,14 +9,15 @@ import {
   ADD_PILL_THICKNESS_PX,
 } from "~/features/editing-experience/utils/tableEditorChrome"
 
-import type { Axis } from "./internal/axis"
 import type { TableGeometry } from "./internal/axisMath"
-import { AXES, AXIS, getAxisLockMinIndex } from "./internal/axis"
+import type { Axis } from "./internal/axisView"
 import {
   getRowSpan,
   getTableBounds,
   nearestBoundaryIndex,
 } from "./internal/axisMath"
+import { getAxisLockMinIndex } from "./internal/axisTableOps"
+import { AXES, AXIS_VIEW } from "./internal/axisView"
 import {
   AddPillButton,
   AxisHandle,
@@ -92,7 +93,7 @@ export const TableDragHandles = ({
       axis,
     )
     const selected = selectedIndexesFor(selectionTarget, geometry.pos, axis)
-    const rects = AXIS[axis].rectsOf(geometry)
+    const rects = AXIS_VIEW[axis].rectsOf(geometry)
 
     return rects.map((rect, index) => {
       if (!rect) return null

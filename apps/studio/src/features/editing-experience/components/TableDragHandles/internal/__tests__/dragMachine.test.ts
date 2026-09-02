@@ -1,5 +1,5 @@
-import type { Axis } from "../axis"
 import type { AxisProjection, Rect, TableGeometry } from "../axisMath"
+import type { Axis } from "../axisView"
 import type { GestureEvent, GestureState } from "../dragMachine"
 import { IDLE_GESTURE, reduceGesture } from "../dragMachine"
 

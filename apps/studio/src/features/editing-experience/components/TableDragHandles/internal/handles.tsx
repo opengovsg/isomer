@@ -7,9 +7,9 @@ import {
   HANDLE_GAP_PX,
 } from "~/features/editing-experience/utils/tableEditorChrome"
 
-import type { Axis } from "./axis"
 import type { Rect } from "./axisMath"
-import { AXIS } from "./axis"
+import type { Axis } from "./axisView"
+import { AXIS_VIEW } from "./axisView"
 import { DotsIcon, PlusIcon } from "./icons"
 
 export type HandleVisualState = "passive" | "selected" | "dragging"
@@ -86,7 +86,7 @@ export const AxisHandle = ({
   onMouseDown: (event: ReactMouseEvent) => void
   onClick: () => void
 }) => {
-  const { handle, selectLabel, dragLabel } = AXIS[axis]
+  const { handle, selectLabel, dragLabel } = AXIS_VIEW[axis]
   const isRow = axis === "row"
   return (
     <Box
@@ -152,7 +152,7 @@ export const AddPillButton = ({
     cursor="pointer"
     zIndex="2"
     transition="background-color 0.15s"
-    aria-label={AXIS[axis].addPillLabel}
+    aria-label={AXIS_VIEW[axis].addPillLabel}
     data-table-add-handle={axis}
     sx={{
       appearance: "none",
