@@ -26,7 +26,7 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
     onMenuBlur,
     toggleMenu,
     deactivateMenu,
-  } = useTableBubbleMenu(editor, { isDragReordering })
+  } = useTableBubbleMenu(editor, isDragReordering)
 
   if (!show) {
     return null

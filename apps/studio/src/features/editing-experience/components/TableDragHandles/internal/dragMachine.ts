@@ -11,12 +11,7 @@
 
 import type { AxisProjection, Rect, TableGeometry } from "./axisMath"
 import type { Axis } from "./axisView"
-import {
-  boundariesFromGeometry,
-  collectAxisBoundaries,
-  geometryAt,
-  resolveDropIndex,
-} from "./axisMath"
+import { collectAxisBoundaries, geometryAt, resolveDropIndex } from "./axisMath"
 
 /** How far the pointer must travel before a press counts as a drag. */
 export const DRAG_THRESHOLD_PX = 4
@@ -141,10 +136,10 @@ const reduceGeometryChanged = (
 ): GestureTransition => {
   const geometry = geometryAt(geometries, state.tablePos)
   if (!geometry) return unchanged(state)
-  const boundaries = boundariesFromGeometry(
-    geometry,
-    state.projection,
+  const boundaries = collectAxisBoundaries(
+    state.projection.rectsOf(geometry),
     state.lockMinIndex,
+    state.projection,
   )
   if (
     boundaries.length === 0 ||

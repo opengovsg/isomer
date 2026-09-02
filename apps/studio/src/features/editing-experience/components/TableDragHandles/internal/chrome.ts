@@ -16,5 +16,3 @@ export const COL_HANDLE = { w: HANDLE_LENGTH_PX, h: TABLE_CHROME_THICKNESS_PX }
 export const ADD_PILL_MIN_LENGTH_PX = 48
 export const ADD_PILL_RADIUS_PX = 99
 export const ADD_PILL_ICON_SIZE_PX = 12
-// A raw SVG `fill` attribute rather than a style prop, so it cannot be a token.
-export const ADD_PILL_ICON_FILL = "#2C2E34"

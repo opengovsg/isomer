@@ -1,17 +1,15 @@
 import type { AxisProjection, Rect, TableGeometry } from "../axisMath"
 import {
-  boundariesFromGeometry,
   collectAxisBoundaries,
   geometryAt,
-  getRowSpan,
   getTableBounds,
   nearestBoundaryIndex,
   resolveDropIndex,
 } from "../axisMath"
 
-// Local literals rather than the real `AXIS` descriptors, so this test needs
-// neither ProseMirror nor a DOM. `AxisSpec extends AxisProjection`, so the
-// typechecker already guarantees the real descriptors fit here.
+// Local literals rather than the real `AXIS_VIEW` descriptors, so this test
+// needs neither ProseMirror nor a DOM. `AxisView extends AxisProjection`, so
+// the typechecker already guarantees the real descriptors fit here.
 const ROW: AxisProjection = {
   rectsOf: (geometry) => geometry.rowRects,
   startOf: (rect) => rect.top,
@@ -87,17 +85,6 @@ describe("collectAxisBoundaries", () => {
   it("returns nothing for a table with no measured slots", () => {
     expect(collectAxisBoundaries([null, null], 0, ROW)).toEqual([])
     expect(collectAxisBoundaries([], 0, ROW)).toEqual([])
-  })
-})
-
-describe("boundariesFromGeometry", () => {
-  it("picks the rect list belonging to the axis", () => {
-    expect(boundariesFromGeometry(GEOMETRY, ROW, 0)).toEqual(
-      UNLOCKED_BOUNDARIES,
-    )
-    expect(boundariesFromGeometry(GEOMETRY, COLUMN, 0)).toEqual([
-      50, 150, 250, 350,
-    ])
   })
 })
 
@@ -214,29 +201,14 @@ describe("getTableBounds", () => {
     expect(getTableBounds({ ...GEOMETRY, rowRects: [null] })).toBeNull()
     expect(getTableBounds({ ...GEOMETRY, colRects: [] })).toBeNull()
   })
-})
 
-describe("getRowSpan", () => {
-  it("takes its width from the first row and its height from the last", () => {
-    expect(getRowSpan(ROW_RECTS)).toEqual({
-      left: 50,
-      width: 300,
-      top: 100,
-      height: 80,
+  it("collapses to a single slot's size for a one-row, one-column table", () => {
+    const bounds = getTableBounds({
+      ...GEOMETRY,
+      rowRects: [ROW_RECTS[0]!],
+      colRects: [COL_RECTS[0]!],
     })
-  })
 
-  it("collapses to a single row's height for a one-row table", () => {
-    expect(getRowSpan([ROW_RECTS[0]!])).toEqual({
-      left: 50,
-      width: 300,
-      top: 100,
-      height: 20,
-    })
-  })
-
-  it("returns null when no row was measured", () => {
-    expect(getRowSpan([])).toBeNull()
-    expect(getRowSpan([null, null])).toBeNull()
+    expect(bounds).toEqual({ left: 50, top: 100, width: 100, height: 20 })
   })
 })
