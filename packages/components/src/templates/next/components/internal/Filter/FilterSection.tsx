@@ -7,6 +7,7 @@ import { useRef } from "react"
 import { BiChevronDown } from "react-icons/bi"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
+import { DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY } from "~/types/constants"
 import { focusRing, groupFocusVisibleHighlight } from "~/utils/tailwind"
 
 import type { AppliedFilter, Filter } from "../../../types/Filter"
@@ -103,7 +104,14 @@ type FilterSectionProps =
 
 export const FilterSection = (props: FilterSectionProps) => {
   const {
-    filter: { label, items, type, dateRangeFilterLabel },
+    filter: {
+      label,
+      items,
+      type,
+      dateRangeFilterLabel,
+      showStatusLabels,
+      showDateRange,
+    },
     isExpanded,
     onToggleExpanded,
     selectedItemIds,
@@ -114,6 +122,14 @@ export const FilterSection = (props: FilterSectionProps) => {
     dateRangePresentation = "popover",
     commitMode,
   } = props
+
+  const shouldShowStatusLabels =
+    type !== "date" ||
+    (showStatusLabels ??
+      DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showStatusLabels)
+  const shouldShowDateRange =
+    type === "date" &&
+    (showDateRange ?? DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showDateRange)
 
   return (
     <CheckboxGroup
@@ -129,21 +145,22 @@ export const FilterSection = (props: FilterSectionProps) => {
       />
 
       <div className={isExpanded ? "flex flex-col gap-2" : "hidden"}>
-        {items.map(({ id: itemId, label: itemLabel, count }) => (
-          <Checkbox
-            key={itemId}
-            className="w-fit cursor-pointer p-2"
-            value={itemId}
-            onChange={
-              commitMode === "immediate"
-                ? () => props.onItemToggle(itemId)
-                : undefined
-            }
-          >
-            {itemLabel} ({count.toLocaleString()})
-          </Checkbox>
-        ))}
-        {type === "date" && (
+        {shouldShowStatusLabels &&
+          items.map(({ id: itemId, label: itemLabel, count }) => (
+            <Checkbox
+              key={itemId}
+              className="w-fit cursor-pointer p-2"
+              value={itemId}
+              onChange={
+                commitMode === "immediate"
+                  ? () => props.onItemToggle(itemId)
+                  : undefined
+              }
+            >
+              {itemLabel} ({count.toLocaleString()})
+            </Checkbox>
+          ))}
+        {shouldShowDateRange && (
           <DateRangeFilterInput
             presentation={dateRangePresentation}
             value={dateRange}
