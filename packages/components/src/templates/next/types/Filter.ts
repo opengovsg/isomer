@@ -1,4 +1,6 @@
 import type { TagCategoryDisplay } from "~/types/constants"
+import { parseDate } from "@internationalized/date"
+import { DEFAULT_DATE_RANGE_FILTER_LABEL } from "~/types/constants"
 
 export interface FilterItem {
   id: string
@@ -18,6 +20,9 @@ export interface Filter {
   // control for this filter (see Filter.tsx), whose value lives in
   // `AppliedFilter.dateRange`, not `items`.
   type?: "date"
+  // NOTE: only set for date-type tag-category filters — label above the custom
+  // date-range input in the sidebar (see DateRangeFilterInput).
+  dateRangeFilterLabel?: string
 }
 
 interface AppliedFilterItem {
@@ -37,11 +42,22 @@ export interface AppliedFilter {
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value)
 
+const isIsoDateString = (value: string): boolean => {
+  try {
+    parseDate(value)
+    return true
+  } catch {
+    return false
+  }
+}
+
 const isValidDateRange = (value: unknown): boolean =>
   value === undefined ||
   (isRecord(value) &&
     typeof value.start === "string" &&
-    typeof value.end === "string")
+    typeof value.end === "string" &&
+    isIsoDateString(value.start) &&
+    isIsoDateString(value.end))
 
 export const isAppliedFilters = (value: unknown): value is AppliedFilter[] =>
   Array.isArray(value) &&

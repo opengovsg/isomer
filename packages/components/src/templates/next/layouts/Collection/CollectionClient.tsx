@@ -5,10 +5,9 @@ import type {
   ProcessedCollectionCardProps,
 } from "~/interfaces"
 import type { CollectionPagePageProps } from "~/types"
-import { useRef } from "react"
+import { useMemo, useRef } from "react"
 import { tv } from "~/lib/tv"
 
-import type { Filter as FilterType } from "../../types/Filter"
 import { BackToTopLink } from "../../components/internal/BackToTopLink"
 import { CollectionSearch } from "../../components/internal/CollectionSearch"
 import { Filter } from "../../components/internal/Filter"
@@ -16,11 +15,11 @@ import { PaginationControls } from "../../components/internal/PaginationControls
 import { CollectionPageHeader } from "./CollectionPageHeader"
 import { CollectionResults } from "./CollectionResults"
 import { ITEMS_PER_PAGE, useCollection } from "./useCollection"
+import { getAvailableFilters } from "./utils/getAvailableFilters"
 
 interface CollectionClientProps {
   page: CollectionPagePageProps
   items: ProcessedCollectionCardProps[]
-  filters: FilterType[]
   shouldShowDate: boolean
   siteAssetsBaseUrl: string | undefined
   breadcrumb: BreadcrumbProps
@@ -48,7 +47,6 @@ const compoundStyles = createCollectionLayoutStyles()
 export const CollectionClient = ({
   page,
   items,
-  filters,
   shouldShowDate,
   siteAssetsBaseUrl,
   breadcrumb,
@@ -59,13 +57,15 @@ export const CollectionClient = ({
     searchValue,
     appliedFilters,
     handleFilterToggle,
+    handleDateRangeChange,
     setAppliedFilters,
     handleSearchValueChange,
     handleClearFilter,
     currPage,
     setCurrPage,
     totalCount,
-  } = useCollection({ items })
+    today,
+  } = useCollection({ items, tagCategories: page.tagCategories })
 
   const articleContainerRef = useRef<HTMLDivElement>(null)
   const onPageChange = () => {
@@ -74,6 +74,10 @@ export const CollectionClient = ({
     })
   }
 
+  const filters = useMemo(
+    () => getAvailableFilters(items, page.tagCategories, today),
+    [items, page.tagCategories, today],
+  )
   const hasNoFilters = filters.length === 0
 
   return (
@@ -99,6 +103,7 @@ export const CollectionClient = ({
             filters={filters}
             appliedFilters={appliedFilters}
             handleFilterToggle={handleFilterToggle}
+            handleDateRangeChange={handleDateRangeChange}
             setAppliedFilters={setAppliedFilters}
             handleClearFilter={handleClearFilter}
           />

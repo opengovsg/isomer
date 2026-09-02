@@ -61,6 +61,25 @@ describe("useCollection", () => {
       expect(result.current.appliedFilters).toEqual(filters)
     })
 
+    it("parses valid JSON filters with a date range from the URL", () => {
+      const filters = [
+        {
+          id: "event-date",
+          items: [],
+          dateRange: { start: "2026-01-01", end: "2026-03-15" },
+        },
+      ]
+      window.history.replaceState(
+        {},
+        "",
+        `/?filters=${encodeURIComponent(JSON.stringify(filters))}`,
+      )
+
+      const { result } = renderHook(() => useCollection({ items: [] }))
+
+      expect(result.current.appliedFilters).toEqual(filters)
+    })
+
     it.each([
       {
         invalidShape: "filter id is not a string",
@@ -73,6 +92,26 @@ describe("useCollection", () => {
       {
         invalidShape: "filter item id is not a string",
         filters: [{ id: "category", items: [{ id: 123 }] }],
+      },
+      {
+        invalidShape: "dateRange start is not a valid ISO date",
+        filters: [
+          {
+            id: "event-date",
+            items: [],
+            dateRange: { start: "not-a-date", end: "2026-01-01" },
+          },
+        ],
+      },
+      {
+        invalidShape: "dateRange end is not a valid ISO date",
+        filters: [
+          {
+            id: "event-date",
+            items: [],
+            dateRange: { start: "2026-01-01", end: "2026-13-40" },
+          },
+        ],
       },
     ])("returns empty array when $invalidShape", ({ filters }) => {
       // Arrange
