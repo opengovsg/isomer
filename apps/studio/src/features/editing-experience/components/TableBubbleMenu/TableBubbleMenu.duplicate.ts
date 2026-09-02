@@ -213,9 +213,9 @@ const selectBlockAndDispatch = ({
     )
   }
   editor.view.dispatch(tr)
-  // Unlike every sibling action, this dispatches its own transaction instead
-  // of `.chain().focus()...run()`. Restore focus explicitly so a real
-  // mousedown-triggered blur doesn't strand it on the button.
+  // Unlike sibling actions, this dispatches its own transaction instead of
+  // `.chain().focus()...run()`. Refocus the editor so a mousedown blur on the
+  // button does not leave focus stranded there.
   editor.commands.focus()
 }
 

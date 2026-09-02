@@ -21,7 +21,7 @@ const COLUMN: AxisProjection = {
 
 const TABLE_POS = 7
 
-// Four rows, 20px tall from y=100 — boundaries land on 100/120/140/160/180.
+// Four rows, 20px tall from y=100. Boundaries land on 100/120/140/160/180.
 const ROW_RECTS: Rect[] = [100, 120, 140, 160].map((top) => ({
   top,
   left: 50,
@@ -303,7 +303,7 @@ describe("release", () => {
     const { intents } = reduceGesture(dragging, { type: "release" })
 
     // Still suppresses the click and re-selects, so a nudge is not a no-op
-    // visually — it just does not touch the document.
+    // visually. It just does not touch the document.
     expect(intents).toEqual([
       { type: "suppressNextClick" },
       { type: "selectSlot", axis: "row", tablePos: TABLE_POS, index: 1 },

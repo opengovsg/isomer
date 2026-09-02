@@ -2,14 +2,11 @@ import type { Node as ProseMirrorNode } from "@tiptap/pm/model"
 import type { TableMap } from "@tiptap/pm/tables"
 
 /**
- * Whether a table has a header row or a header column. The bubble menu uses it
- * to withhold destructive actions that overlap a header; the drag handles use
- * it to lock a header axis against reordering.
- */
-
-/**
- * A table node paired with its cell map — the structural slice needed to
- * inspect a table's cells without a live EditorView.
+ * Header row/column detection. The bubble menu uses this to block destructive
+ * actions on header axes; drag handles use it to lock reordering.
+ *
+ * `MappedTable` pairs a table node with its cell map for inspection without
+ * a live EditorView.
  */
 export interface MappedTable {
   map: Pick<TableMap, "width" | "height" | "map">

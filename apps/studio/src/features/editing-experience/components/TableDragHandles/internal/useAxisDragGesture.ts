@@ -39,10 +39,8 @@ export interface AxisDragGesture {
 }
 
 /**
- * Wires the pointer to `dragMachine`: translates mouse events into gesture
- * events, publishes the resulting drag for rendering, and carries out the
- * intents the machine returns against the editor. The rules themselves live in
- * the machine.
+ * Feeds pointer events to `dragMachine`, publishes the drag state for rendering,
+ * and runs the intents the machine returns.
  */
 export const useAxisDragGesture = ({
   editor,
@@ -145,9 +143,8 @@ export const useAxisDragGesture = ({
 
   useEffect(() => {
     const onMouseMove = (event: MouseEvent) => {
-      // Skip the layout read entirely when nothing is in flight — the machine
-      // would ignore the event anyway, and this fires for every mouse move on
-      // the page.
+      // Skip the layout read when nothing is in flight. The machine would
+      // ignore the event anyway, and this fires on every mouse move.
       if (!isGestureActive()) return
       const container = containerRef.current
       dispatch({

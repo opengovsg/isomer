@@ -1,11 +1,9 @@
 /**
- * The layout contract between the table node view and `TableDragHandles`: the
- * node view reserves a gutter around every table, and the handles and add pills
- * are drawn into it. Both sides have to agree, so the gutter and the two
- * measurements it derives from live here rather than inside either component.
+ * Gutter sizes shared by the table node view and `TableDragHandles`. The node
+ * view pads every table; handles and add pills render into that padding. These
+ * constants live here so both sides stay in sync.
  *
- * Everything else about how that chrome looks is private to
- * `TableDragHandles/internal/chrome.ts`.
+ * Handle and pill styling is in `TableDragHandles/internal/chrome.ts`.
  */
 
 /** How far the handles and add pills sit from the table's edge. */

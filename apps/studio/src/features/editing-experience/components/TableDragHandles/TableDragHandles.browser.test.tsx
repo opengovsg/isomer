@@ -1,5 +1,5 @@
 // Renders a real TipTap editor (ProseMirror needs a real DOM to construct an
-// EditorView), so this runs under Vitest Browser Mode rather than jsdom — see
+// EditorView), so this runs under Vitest Browser Mode rather than jsdom. See
 // the `*.browser.test.{ts,tsx}` convention in apps/studio/vitest.config.ts.
 import type { Editor, JSONContent } from "@tiptap/react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
@@ -178,7 +178,7 @@ describe("TableDragHandles", () => {
       '[data-table-drag-handle="column"]',
     )
 
-    // Assert — seed table is 4 rows × 3 columns
+    // Assert: seed table is 4 rows × 3 columns
     expect(rowHandles).toHaveLength(4)
     expect(colHandles).toHaveLength(3)
   })
@@ -312,7 +312,7 @@ describe("TableDragHandles", () => {
       '[data-table-drag-handle="column"]',
     )
 
-    // Assert — 4×3 first table + 2×2 second table
+    // Assert: 4×3 first table + 2×2 second table
     expect(rowHandles).toHaveLength(6)
     expect(colHandles).toHaveLength(5)
   })

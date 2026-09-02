@@ -35,15 +35,11 @@ const TABLE_BUTTON_PROPS = {
   p: "0.25rem",
 } as const
 
-// While a table is selected, this stays a plain delete-table button — the
-// grid picker below is only for inserting a NEW table. (Every in-table
-// action, including delete, is also reachable from TableBubbleMenu once
-// that ships from a separate branch; this fallback just means the
-// capability isn't stranded if this one merges first.)
+// While a table is selected, this is a plain delete-table button. The grid
+// picker below is only for inserting a new table.
 //
-// This is only ever rendered while a table is active, so it's always in
-// the "active" visual state — matching the old single Table button, which
-// stayed highlighted for as long as the cursor was inside a table.
+// Always rendered while a table is active, so it stays in the "active"
+// visual state like the old single Table button did.
 const DeleteTableButton = ({ editor }: { editor: Editor }) => (
   <IconButton
     {...TABLE_BUTTON_PROPS}

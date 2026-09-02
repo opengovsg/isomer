@@ -2,8 +2,8 @@
  * Reads table geometry out of a live editor: finds every table, measures its
  * rows and columns, and converts between viewport and container coordinates.
  *
- * This is the only part of the module that needs a real DOM — the rules
- * computed from what it produces live in `axisMath.ts`.
+ * This is the only part of the module that needs a real DOM. The rules built
+ * from its output live in `axisMath.ts`.
  */
 
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model"
