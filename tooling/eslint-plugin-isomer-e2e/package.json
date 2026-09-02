@@ -1,0 +1,18 @@
+{
+  "name": "eslint-plugin-isomer-e2e",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Oxlint JS plugin enforcing Studio Playwright E2E conventions",
+  "type": "module",
+  "exports": {
+    ".": "./index.js"
+  },
+  "scripts": {
+    "test:unit": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@isomer/oxlint-config": "workspace:*",
+    "vitest": "catalog:vitest"
+  }
+}
