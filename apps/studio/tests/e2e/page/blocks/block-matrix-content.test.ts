@@ -3,7 +3,10 @@ import { test } from "@playwright/test"
 import crypto from "crypto"
 import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
 import { openSeededPageEditor } from "~e2e/fixtures/helpers"
-import { seedFolderWithPage } from "~e2e/fixtures/resource"
+import {
+  DEFAULT_CALLOUT_BLOCK_LABEL,
+  seedFolderWithPage,
+} from "~e2e/fixtures/resource"
 import { provisionE2ESite } from "~e2e/fixtures/site"
 import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { RoleType } from "~prisma/generated/generatedEnums"
@@ -75,12 +78,7 @@ const CONTENT_BLOCK_MATRIX_CASES: BlockMatrixCase[] = [
     pickerLabel: "Callout",
     fillBeforeSave: NOOP,
     assertRendered: async (editor) => {
-      // `exact: true` — the seeded page's own pre-existing callout block
-      // (`setupBlob`'s default content) reads "Test Callout content", which
-      // contains this block's default "Callout content" as a literal
-      // substring. A non-exact match would resolve to both blocks' paragraphs
-      // and violate Playwright's strict mode.
-      await editor.expectPreviewContains("Callout content", { exact: true })
+      await editor.expectPreviewContains(DEFAULT_CALLOUT_BLOCK_LABEL)
     },
   },
   {

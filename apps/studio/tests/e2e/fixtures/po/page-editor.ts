@@ -243,10 +243,10 @@ export class PageEditorPO {
   }
 
   /** `exact` disambiguates default placeholder text that is a literal
-   * substring of other text already on the page (e.g. `callout`'s default
-   * "Callout content" vs. the integration seed's default callout block,
-   * whose text is "Test Callout content" — a non-exact match would resolve
-   * to both blocks' paragraphs and violate Playwright's strict mode). */
+   * substring of other text already on the page (e.g. a newly-added block's
+   * default prose vs. the integration seed's pre-existing callout block,
+   * `SEEDED_CALLOUT_BLOCK_LABEL` — a non-exact match would resolve to both
+   * blocks' paragraphs and violate Playwright's strict mode). */
   async expectPreviewContains(
     text: string,
     options?: { exact?: boolean; timeout?: number },
