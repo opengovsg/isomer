@@ -198,6 +198,18 @@ export const resourceHandlers = {
       })
     },
   },
+  getMoveLockInfo: {
+    default: () => {
+      return trpcMsw.resource.getMoveLockInfo.query(() => {
+        return { isBlocked: false }
+      })
+    },
+    blocked: () => {
+      return trpcMsw.resource.getMoveLockInfo.query(() => {
+        return { isBlocked: true }
+      })
+    },
+  },
   getMetadataById: {
     homepage: () =>
       trpcMsw.resource.getMetadataById.query(() => {
