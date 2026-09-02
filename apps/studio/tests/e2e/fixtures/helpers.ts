@@ -16,9 +16,11 @@ export const openSeededPageEditor = async (
   page: Page,
   siteId: number,
   pageId: string,
-  options?: { scheduleClock?: boolean },
+  options?: { scheduleClock?: boolean; scheduleClockTime?: Date },
 ) => {
-  if (options?.scheduleClock) {
+  if (options?.scheduleClockTime) {
+    await page.clock.install({ time: options.scheduleClockTime })
+  } else if (options?.scheduleClock) {
     await page.clock.install({ time: SCHEDULE_PRESET_CLOCK_TIME })
   }
   const editor = new PageEditorPO(page)
