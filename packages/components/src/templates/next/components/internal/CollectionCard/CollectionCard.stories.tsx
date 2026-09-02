@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { CollectionCardProps } from "~/interfaces"
 import { expect, within } from "storybook/test"
+import { daysFromNow, statusLabelsFor } from "~/stories/helpers"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import { CollectionCard } from "./CollectionCard"
-import { daysFromNow, statusLabelsFor } from "./dateFilterStoryFixtures"
 
 const meta: Meta<typeof CollectionCard> = {
   title: "Next/Internal Components/CollectionCard",

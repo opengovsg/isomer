@@ -3,16 +3,16 @@
 import type { DateFilterDisplayEntry } from "~/interfaces/internal/CollectionCard"
 import { useMemo } from "react"
 
-import { EventStatusPill } from "./EventStatusPill"
+import { DateFilterStatusPill } from "./DateFilterStatusPill"
 import { resolveDateFilterCards } from "./resolveDateFilterCards"
 
-interface EventDateFilterStatusBadgesProps {
+interface DateFilterStatusClientProps {
   entries?: DateFilterDisplayEntry[]
 }
 
-export const EventDateFilterStatusBadges = ({
+export const DateFilterStatusClient = ({
   entries,
-}: EventDateFilterStatusBadgesProps) => {
+}: DateFilterStatusClientProps) => {
   const dateFilterCards = useMemo(
     () => resolveDateFilterCards(entries),
     // today only updates when entries changes; open past SGT midnight may show stale status
@@ -34,7 +34,7 @@ export const EventDateFilterStatusBadges = ({
   return (
     <div className="flex flex-wrap items-center gap-2">
       {statusBadges.map(({ id, status, statusLabel }) => (
-        <EventStatusPill key={id} status={status} label={statusLabel} />
+        <DateFilterStatusPill key={id} status={status} label={statusLabel} />
       ))}
     </div>
   )
