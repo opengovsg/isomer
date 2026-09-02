@@ -2440,6 +2440,113 @@ describe("resource.router", async () => {
     })
   })
 
+  describe("getMoveLockInfo", () => {
+    it("should throw 401 if not logged in", async () => {
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      const result = unauthedCaller.getMoveLockInfo({
+        siteId: 1,
+        movedResourceId: "1",
+        destinationResourceId: "2",
+      })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("returns isBlocked: true for the same scenario the move mutation blocks", async () => {
+      const { site, folder: destinationFolder } = await setupFolder({
+        permalink: "destination",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: destinationFolder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId,
+        scheduledAt: new Date("2999-01-01T00:00:00Z"),
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      const { page: pageToMove } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.Page,
+        permalink: "page-to-move",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      const result = await caller.getMoveLockInfo({
+        siteId: site.id,
+        movedResourceId: pageToMove.id,
+        destinationResourceId: destinationFolder.id,
+      })
+
+      expect(result).toEqual({ isBlocked: true })
+    })
+
+    it("returns isBlocked: false for a folder with no pending schedule", async () => {
+      const { site, folder: destinationFolder } = await setupFolder({
+        permalink: "destination",
+      })
+      const { page: pageToMove } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.Page,
+        permalink: "page-to-move",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      const result = await caller.getMoveLockInfo({
+        siteId: site.id,
+        movedResourceId: pageToMove.id,
+        destinationResourceId: destinationFolder.id,
+      })
+
+      expect(result).toEqual({ isBlocked: false })
+    })
+
+    it("returns isBlocked: false when moving into the root (no destinationResourceId)", async () => {
+      const { site, folder: originFolder } = await setupFolder({
+        permalink: "origin",
+      })
+      await setupPageResource({
+        resourceType: "RootPage",
+        siteId: site.id,
+      })
+      const { page: pageToMove } = await setupPageResource({
+        siteId: site.id,
+        parentId: originFolder.id,
+        resourceType: ResourceType.Page,
+        permalink: "page-to-move",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      const result = await caller.getMoveLockInfo({
+        siteId: site.id,
+        movedResourceId: pageToMove.id,
+        destinationResourceId: null,
+      })
+
+      expect(result).toEqual({ isBlocked: false })
+    })
+  })
+
   describe("countWithoutRoot", () => {
     it("should throw 401 if not logged in", async () => {
       // Arrange

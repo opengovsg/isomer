@@ -19,6 +19,8 @@ import {
   getIndexPageOutputSchema,
   getIndexPageSchema,
   getMetadataSchema,
+  getMoveLockInfoOutputSchema,
+  getMoveLockInfoSchema,
   getNestedFolderChildrenOutputSchema,
   getNestedFolderChildrenSchema,
   getParentSchema,
@@ -626,6 +628,64 @@ export const resourceRouter = router({
 
         await publishResource(user.id, result, ctx.logger)
         return result
+      },
+    ),
+
+  // Read-only mirror of the `move` mutation's unpublish-lock check (see the
+  // comment there), so the destination picker can warn as soon as a
+  // destination is selected instead of only surfacing the error on submit.
+  // The mutation still re-runs this check itself as the source of truth.
+  getMoveLockInfo: protectedProcedure
+    .input(getMoveLockInfoSchema)
+    .output(getMoveLockInfoOutputSchema)
+    .query(
+      async ({
+        ctx,
+        input: { siteId, movedResourceId, destinationResourceId },
+      }) => {
+        await bulkValidateUserPermissionsForResources({
+          action: "read",
+          resourceIds: [
+            movedResourceId,
+            ...(destinationResourceId ? [destinationResourceId] : []),
+          ],
+          userId: ctx.user.id,
+          siteId: Number(siteId),
+        })
+
+        let query = db.selectFrom("Resource")
+        query = destinationResourceId
+          ? query.where("id", "=", destinationResourceId)
+          : query
+              .where("type", "=", ResourceType.RootPage)
+              .where("siteId", "=", siteId)
+        const parent = await query.select(["id", "type"]).executeTakeFirst()
+
+        if (
+          !parent ||
+          (parent.type !== ResourceType.Folder &&
+            parent.type !== ResourceType.Collection)
+        ) {
+          return { isBlocked: false }
+        }
+
+        const ancestorIndexPages = await getAncestorIndexPages(db, {
+          siteId,
+          resourceId: parent.id,
+        })
+        const [lockingAncestor] =
+          getLockingAncestorIndexPages(ancestorIndexPages)
+
+        if (!lockingAncestor) {
+          return { isBlocked: false }
+        }
+
+        return {
+          isBlocked: await hasPublishedDescendant(db, {
+            siteId,
+            resourceId: movedResourceId,
+          }),
+        }
       },
     ),
 

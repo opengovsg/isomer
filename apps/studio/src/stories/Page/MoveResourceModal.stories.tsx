@@ -19,6 +19,7 @@ const SHARED_HANDLERS = [
   resourceHandlers.getWithFullPermalink.default(),
   resourceHandlers.getAncestryStack.default(),
   resourceHandlers.getMetadataById.content(),
+  resourceHandlers.getMoveLockInfo.default(),
 ]
 
 const meta: Meta<typeof SitePage> = {

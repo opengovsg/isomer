@@ -47,6 +47,18 @@ export const moveSchema = z.object({
   shouldCreateRedirect: z.boolean().optional().default(true),
 })
 
+// Read-only pre-flight for the move mutation's unpublish-lock check, so the
+// UI can warn as soon as a destination is picked instead of only on submit.
+export const getMoveLockInfoSchema = z.object({
+  siteId: z.number(),
+  movedResourceId: bigIntSchema,
+  destinationResourceId: bigIntSchema.nullable(),
+})
+
+export const getMoveLockInfoOutputSchema = z.object({
+  isBlocked: z.boolean(),
+})
+
 export const resourceStatusFilterOptions = [
   "live",
   "notLive",
