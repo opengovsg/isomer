@@ -1,7 +1,5 @@
 import type { IconBaseProps } from "react-icons"
 
-import { ADD_PILL_ICON_FILL } from "./chrome"
-
 const DOT_RADIUS = 5 / 3
 const DOT_SPACING = 5
 const DOT_OFFSETS = [0, 1, 2].map((i) => DOT_RADIUS + i * DOT_SPACING)
@@ -62,7 +60,7 @@ export const PlusIcon = ({
   >
     <path
       d="M9.5 5.5H6.5V2.5H5.5V5.5H2.5V6.5H5.5V9.5H6.5V6.5H9.5V5.5Z"
-      fill={ADD_PILL_ICON_FILL}
+      fill="#2C2E34"
     />
   </svg>
 )

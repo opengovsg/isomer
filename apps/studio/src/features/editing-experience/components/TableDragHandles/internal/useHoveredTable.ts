@@ -2,31 +2,15 @@ import type { RefObject } from "react"
 import { useEffect, useState } from "react"
 import { TABLE_GUTTER_PX } from "~/features/editing-experience/utils/tableEditorChrome"
 
-import type { Rect, TableGeometry } from "./axisMath"
-import { containerRectToViewportRect } from "./measure"
-
-interface ViewportBox {
-  left: number
-  top: number
-  right: number
-  bottom: number
-}
-
-/** A table counts as hovered anywhere within its gutter, not just over cells. */
-const isPointerInGutter = (
-  clientX: number,
-  clientY: number,
-  box: ViewportBox,
-): boolean =>
-  clientX >= box.left - TABLE_GUTTER_PX &&
-  clientX <= box.right + TABLE_GUTTER_PX &&
-  clientY >= box.top - TABLE_GUTTER_PX &&
-  clientY <= box.bottom + TABLE_GUTTER_PX
+import type { TableGeometry } from "./axisMath"
+import { getTableBounds } from "./axisMath"
+import { viewportPointToContainerPoint } from "./measure"
 
 /**
  * Position of the table whose gutter contains the pointer, or null. Geometry is
  * held in container coordinates and the pointer arrives in viewport ones, so
- * each candidate is converted back out through the container's scroll offset.
+ * the pointer is converted in through the container's scroll offset once and
+ * hit-tested against every table's bounds.
  */
 export const findHoveredTablePos = ({
   geometries,
@@ -43,28 +27,24 @@ export const findHoveredTablePos = ({
   scrollTop: number
   scrollLeft: number
 }): number | null => {
+  const { x, y } = viewportPointToContainerPoint({
+    clientX,
+    clientY,
+    containerRect,
+    scrollTop,
+    scrollLeft,
+  })
+
+  // A table counts as hovered anywhere within its gutter, not just over cells.
   const match = geometries.find((geometry) => {
-    const rowRects = geometry.rowRects.filter((r): r is Rect => !!r)
-    const firstRow = rowRects[0]
-    const lastRow = rowRects[rowRects.length - 1]
-    if (!firstRow || !lastRow) return false
-
-    const toViewport = (rect: Rect) =>
-      containerRectToViewportRect({
-        rect,
-        containerRect,
-        scrollTop,
-        scrollLeft,
-      })
-    const first = toViewport(firstRow)
-    const last = toViewport(lastRow)
-
-    return isPointerInGutter(clientX, clientY, {
-      left: first.left,
-      top: first.top,
-      right: first.left + firstRow.width,
-      bottom: last.top + lastRow.height,
-    })
+    const bounds = getTableBounds(geometry)
+    if (!bounds) return false
+    return (
+      x >= bounds.left - TABLE_GUTTER_PX &&
+      x <= bounds.left + bounds.width + TABLE_GUTTER_PX &&
+      y >= bounds.top - TABLE_GUTTER_PX &&
+      y <= bounds.top + bounds.height + TABLE_GUTTER_PX
+    )
   })
 
   return match?.pos ?? null

@@ -35,18 +35,6 @@ const viewportRectToContainerRect = ({
   height: rect.height,
 })
 
-export const containerRectToViewportRect = ({
-  rect,
-  containerRect,
-  scrollTop,
-  scrollLeft,
-}: ContainerOffset & { rect: Rect }): Rect => ({
-  top: rect.top + containerRect.top - scrollTop,
-  left: rect.left + containerRect.left - scrollLeft,
-  width: rect.width,
-  height: rect.height,
-})
-
 export const viewportPointToContainerPoint = ({
   clientX,
   clientY,
@@ -136,7 +124,11 @@ const rectsEqual = (a: Rect | null, b: Rect | null): boolean => {
 const rectListsEqual = (a: (Rect | null)[], b: (Rect | null)[]): boolean =>
   a.length === b.length && a.every((rect, i) => rectsEqual(rect, b[i] ?? null))
 
-const sameGeometry = (a: TableGeometry, b: TableGeometry): boolean =>
+const sameGeometry = (
+  a: TableGeometry | undefined,
+  b: TableGeometry,
+): boolean =>
+  !!a &&
   a.pos === b.pos &&
   rectListsEqual(a.rowRects, b.rowRects) &&
   rectListsEqual(a.colRects, b.colRects)
@@ -146,9 +138,8 @@ const sameGeometry = (a: TableGeometry, b: TableGeometry): boolean =>
  *
  * Measurement runs on every transaction, scroll and resize, and almost always
  * produces the same numbers. Handing back the previous array when nothing moved
- * keeps handles mounted and stops consumers keyed on the geometry identity from
- * re-subscribing; handing back the previous *entry* for each table that did not
- * move confines the re-render to the table that did.
+ * keeps handles mounted and stops the effects keyed on the geometry identity
+ * from re-subscribing.
  */
 export const reconcileGeometries = (
   previous: TableGeometry[],
@@ -156,14 +147,7 @@ export const reconcileGeometries = (
 ): TableGeometry[] => {
   // A table was added or removed, so entries no longer line up by index.
   if (previous.length !== next.length) return next
-
-  let changed = false
-  const merged = next.map((geometry, index) => {
-    const before = previous[index]
-    if (before && sameGeometry(before, geometry)) return before
-    changed = true
-    return geometry
-  })
-
-  return changed ? merged : previous
+  return next.every((geometry, i) => sameGeometry(previous[i], geometry))
+    ? previous
+    : next
 }

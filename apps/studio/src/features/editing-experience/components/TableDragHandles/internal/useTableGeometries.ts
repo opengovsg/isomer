@@ -41,11 +41,9 @@ export const useTableGeometries = (
       setGeometries((previous) => reconcileGeometries(previous, next))
     }
 
-    const resizeObserver =
-      typeof ResizeObserver !== "undefined" ? new ResizeObserver(measure) : null
+    const resizeObserver = new ResizeObserver(measure)
 
     const observeLayout = () => {
-      if (!resizeObserver) return
       resizeObserver.disconnect()
       const container = containerRef.current
       if (!container) return
@@ -74,7 +72,7 @@ export const useTableGeometries = (
       editor.off("transaction", onEditorChange)
       window.removeEventListener("resize", measure)
       container?.removeEventListener("scroll", measure, true)
-      resizeObserver?.disconnect()
+      resizeObserver.disconnect()
     }
   }, [editor, containerRef])
 

@@ -2,7 +2,7 @@ import type { Editor as TiptapEditor } from "@tiptap/react"
 import type { RefObject } from "react"
 import { Box } from "@chakra-ui/react"
 import { useEditorState } from "@tiptap/react"
-import { useMemo } from "react"
+import { Fragment, useMemo } from "react"
 import {
   TABLE_CHROME_GAP_PX,
   TABLE_CHROME_THICKNESS_PX,
@@ -12,18 +12,13 @@ import type { TableGeometry } from "./internal/axisMath"
 import type { Axis } from "./internal/axisView"
 import {
   geometryAt,
-  getRowSpan,
   getTableBounds,
   nearestBoundaryIndex,
 } from "./internal/axisMath"
 import { getAxisLockMinIndex } from "./internal/axisTableOps"
 import { AXES, AXIS_VIEW } from "./internal/axisView"
 import { ADD_PILL_MIN_LENGTH_PX } from "./internal/chrome"
-import {
-  AddPillButton,
-  AxisHandle,
-  resolveHandleState,
-} from "./internal/handles"
+import { AddPillButton, AxisHandle } from "./internal/handles"
 import {
   addSlotAfter,
   getSelectionHandleTarget,
@@ -70,14 +65,14 @@ export const TableDragHandles = ({
   const dropIndicator = useMemo(() => {
     if (!drag) return null
     const geometry = geometryAt(geometries, drag.tablePos)
-    const span = geometry ? getRowSpan(geometry.rowRects) : null
-    if (!span) return null
+    const bounds = geometry ? getTableBounds(geometry) : null
+    if (!bounds) return null
     const at =
       drag.boundaries[nearestBoundaryIndex(drag.pointer, drag.boundaries)]
     if (at === undefined) return null
     return drag.axis === "row"
-      ? { left: span.left, top: at, width: span.width, height: 2 }
-      : { left: at, top: span.top, width: 2, height: span.height }
+      ? { left: bounds.left, top: at, width: bounds.width, height: 2 }
+      : { left: at, top: bounds.top, width: 2, height: bounds.height }
   }, [drag, geometries])
 
   if (!editor) return null
@@ -98,20 +93,18 @@ export const TableDragHandles = ({
 
     return rects.map((rect, index) => {
       if (!rect) return null
-      const state = resolveHandleState({
+      const isActive =
         // A multi-slot selection leaves every handle passive.
-        isSelected: selected.length === 1 && selected.includes(index),
-        isDragging:
-          drag?.axis === axis &&
+        (selected.length === 1 && selected.includes(index)) ||
+        (drag?.axis === axis &&
           drag.tablePos === geometry.pos &&
-          drag.from === index,
-      })
+          drag.from === index)
       return (
         <AxisHandle
           key={`${axis}-${geometry.pos}-${index}`}
           axis={axis}
           rect={rect}
-          state={state}
+          isActive={isActive}
           tablePos={geometry.pos}
           index={index}
           isLocked={index < lockMinIndex}
@@ -152,10 +145,10 @@ export const TableDragHandles = ({
   return (
     <>
       {geometries.map((geometry) => (
-        <Box key={`table-${geometry.pos}`} as="span" display="contents">
+        <Fragment key={geometry.pos}>
           {AXES.map((axis) => renderAxisHandles(geometry, axis))}
           {renderAddPills(geometry)}
-        </Box>
+        </Fragment>
       ))}
 
       {dropIndicator && (
