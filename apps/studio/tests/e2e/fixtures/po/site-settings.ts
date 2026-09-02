@@ -1,5 +1,7 @@
 import type { Locator, Page } from "@playwright/test"
 
+import { toastWithText } from "./toast"
+
 export type SettingsSection =
   | "agency"
   | "colours"
@@ -334,7 +336,7 @@ export class SitePO {
 
   /** "Add a link" button on the Menu Links tab (JsonFormsNavbarControl) — same text whether the list is empty (outline variant) or not (clear variant). */
   addNavbarLinkButton() {
-    return this.page.getByRole("button", { name: "Add a link" }).first()
+    return this.page.getByRole("button", { name: "Add a link" })
   }
 
   /** "Delete this link" button inside the navbar/footer item edit panel. */
@@ -427,9 +429,11 @@ export class SitePO {
    * rather than accessible name, since the button has no text/aria-label.
    */
   navbarExpandItemButton(itemDataId: string) {
-    return this.page
-      .locator(`[data-id="${itemDataId}"] .chakra-accordion__button`)
-      .first()
+    const match = /^items\.(\d+)$/.exec(itemDataId)
+    const itemNumber = match ? Number(match[1]) + 1 : 1
+    return this.page.locator(`[data-id="${itemDataId}"]`).getByRole("button", {
+      name: `Expand navbar item ${itemNumber} nested links`,
+    })
   }
 
   utilityItemNameField() {
@@ -692,10 +696,9 @@ export class SitePO {
    * other success paths without verifying their toast copy.
    */
   async expectChangesPublishedToast() {
-    await this.page
-      .getByText("Changes published")
-      .first()
-      .waitFor({ state: "visible" })
+    await toastWithText(this.page, "Changes published").waitFor({
+      state: "visible",
+    })
   }
 }
 

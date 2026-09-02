@@ -97,6 +97,7 @@ export const RawJsonEditor = ({
 
         <Box px="2rem" py="1rem" maxW="33vw" overflow="auto">
           <Textarea
+            aria-label="Raw JSON editor content"
             fontFamily="monospace"
             boxSizing="border-box"
             minH="68vh"

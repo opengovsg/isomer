@@ -196,7 +196,7 @@
         }
       ],
       "rules": {
-        "isomer-e2e/no-positional-locators-in-po": "warn"
+        "isomer-e2e/no-positional-locators-in-po": "error"
       }
     }
   ]

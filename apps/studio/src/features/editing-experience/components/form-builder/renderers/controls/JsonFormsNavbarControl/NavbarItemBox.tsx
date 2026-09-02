@@ -376,6 +376,7 @@ export const NavbarItemBox = ({
 
           {!!subItems && subItems.length > 0 && (
             <AccordionButton
+              aria-label={`Expand navbar item ${index + 1} nested links`}
               h="1.5rem"
               w="1.5rem"
               p={0}

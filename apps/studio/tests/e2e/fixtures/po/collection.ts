@@ -112,9 +112,7 @@ export class CollectionPO {
 
   async openCollectionDisplay() {
     await this.page.getByRole("button", { name: /Collection display/i }).click()
-    await expect(
-      this.page.getByText("Collection display").first(),
-    ).toBeVisible()
+    await expect(this.page.getByPlaceholder("Summary")).toBeVisible()
   }
 
   async openFilters() {
@@ -130,7 +128,7 @@ export class CollectionPO {
   }
 
   async openFilterNamed(name: string) {
-    await this.page.getByText(name, { exact: true }).first().click()
+    await this.page.getByRole("button", { name }).click()
     await expect(this.page.getByText(/Edit Filters/i)).toBeVisible()
   }
 
@@ -170,11 +168,8 @@ export class CollectionPO {
 
   async openOptionInlineEdit(index0Based: number) {
     const optionName = `Option ${index0Based + 1}`
-    // EditableLabel is Chakra Text-as-button. The wrapping Body `as="button"`
-    // has no onClick and intercepts a click on the first button in the row.
-    await this.optionRow(index0Based)
-      .locator(".chakra-text")
-      .first()
+    await this.page
+      .getByRole("button", { name: `${optionName} name` })
       .click({ force: true })
     await this.page
       .getByRole("textbox", { name: `${optionName} name` })
@@ -197,11 +192,21 @@ export class CollectionPO {
   }
 
   async expectOptionNameError(message: string | RegExp) {
-    await expect(this.page.getByText(message).first()).toBeVisible()
+    const activeNameField = this.page.getByRole("textbox", {
+      name: /Option \d+ name/,
+    })
+    const row = this.page
+      .locator("[data-rfd-draggable-id], [data-rbd-draggable-id]")
+      .filter({ has: activeNameField })
+    await expect(row.getByText(message)).toBeVisible()
   }
 
   async expectFilterNameError(message: string | RegExp) {
-    await expect(this.page.getByText(message).first()).toBeVisible()
+    const filterNameField = this.page.getByPlaceholder(/Filter name/i)
+    const row = this.page
+      .locator("[data-rfd-draggable-id], [data-rbd-draggable-id]")
+      .filter({ has: filterNameField })
+    await expect(row.getByText(message)).toBeVisible()
   }
 
   async expectFilterNamedVisible(name: string) {
@@ -231,12 +236,20 @@ export class CollectionPO {
   }
 
   async reorderFirstFilterDown() {
+    const rowIndex = 0
+    const row = this.page
+      .locator("[data-rfd-draggable-id], [data-rbd-draggable-id]")
+      .nth(rowIndex)
+    const draggableId =
+      (await row.getAttribute("data-rfd-draggable-id")) ??
+      (await row.getAttribute("data-rbd-draggable-id"))
+    if (!draggableId) {
+      throw new Error("Expected filter row to expose a draggable id")
+    }
     await this.reorderDraggableDown(
-      this.page
-        .locator(
-          "[data-rfd-drag-handle-draggable-id], [data-rbd-drag-handle-draggable-id]",
-        )
-        .first(),
+      this.page.locator(
+        `[data-rfd-drag-handle-draggable-id="${draggableId}"], [data-rbd-drag-handle-draggable-id="${draggableId}"]`,
+      ),
     )
   }
 
