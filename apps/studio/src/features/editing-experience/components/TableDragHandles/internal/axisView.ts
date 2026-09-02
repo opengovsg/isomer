@@ -7,12 +7,8 @@
  * of this module can describe an axis without importing ProseMirror.
  */
 
-import {
-  COL_HANDLE,
-  ROW_HANDLE,
-} from "~/features/editing-experience/utils/tableEditorChrome"
-
 import type { AxisProjection } from "./axisMath"
+import { COL_HANDLE, ROW_HANDLE } from "./chrome"
 
 export type Axis = "row" | "column"
 

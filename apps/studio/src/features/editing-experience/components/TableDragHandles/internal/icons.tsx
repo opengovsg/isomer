@@ -1,5 +1,6 @@
 import type { IconBaseProps } from "react-icons"
-import { ADD_PILL_ICON_FILL } from "~/features/editing-experience/utils/tableEditorChrome"
+
+import { ADD_PILL_ICON_FILL } from "./chrome"
 
 const DOT_RADIUS = 5 / 3
 const DOT_SPACING = 5

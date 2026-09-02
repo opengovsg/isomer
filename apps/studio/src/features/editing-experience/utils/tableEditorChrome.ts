@@ -1,36 +1,22 @@
-export const ADD_PILL_GAP_PX = 8
-export const ADD_PILL_THICKNESS_PX = 20
-export const ADD_PILL_MIN_LENGTH_PX = 48
-export const ADD_PILL_RADIUS_PX = 99
-export const ADD_PILL_ICON_SIZE_PX = 12
-// A raw SVG `fill` attribute rather than a style prop, so it cannot be a token.
-export const ADD_PILL_ICON_FILL = "#2C2E34"
-export const TABLE_ADD_CHROME_PX = ADD_PILL_GAP_PX + ADD_PILL_THICKNESS_PX
+/**
+ * The layout contract between the table node view and `TableDragHandles`: the
+ * node view reserves a gutter around every table, and the handles and add pills
+ * are drawn into it. Both sides have to agree, so the gutter and the two
+ * measurements it derives from live here rather than inside either component.
+ *
+ * Everything else about how that chrome looks is private to
+ * `TableDragHandles/internal/chrome.ts`.
+ */
 
-export const HANDLE_GAP_PX = ADD_PILL_GAP_PX
-export const HANDLE_BORDER_RADIUS_PX = 4
-export const HANDLE_THICKNESS_PX = 20
-export const HANDLE_LENGTH_PX = 32
-export const ROW_HANDLE = { w: HANDLE_THICKNESS_PX, h: HANDLE_LENGTH_PX }
-export const COL_HANDLE = { w: HANDLE_LENGTH_PX, h: HANDLE_THICKNESS_PX }
-export const HANDLE_MARGIN_PX = HANDLE_GAP_PX + ROW_HANDLE.w
+/** How far the handles and add pills sit from the table's edge. */
+export const TABLE_CHROME_GAP_PX = 8
 
-export const isPointerInTableChrome = ({
-  clientX,
-  clientY,
-  tableLeft,
-  tableTop,
-  tableRight,
-  tableBottom,
-}: {
-  clientX: number
-  clientY: number
-  tableLeft: number
-  tableTop: number
-  tableRight: number
-  tableBottom: number
-}): boolean =>
-  clientX >= tableLeft - HANDLE_MARGIN_PX &&
-  clientX <= tableRight + TABLE_ADD_CHROME_PX &&
-  clientY >= tableTop - HANDLE_MARGIN_PX &&
-  clientY <= tableBottom + TABLE_ADD_CHROME_PX
+/** How thick a handle or add pill is, measured across the gutter. */
+export const TABLE_CHROME_THICKNESS_PX = 20
+
+/**
+ * The band reserved on every side of a table. Handles occupy the top and left
+ * of it, add pills the bottom and right, and the pointer counts as hovering a
+ * table anywhere within it.
+ */
+export const TABLE_GUTTER_PX = TABLE_CHROME_GAP_PX + TABLE_CHROME_THICKNESS_PX

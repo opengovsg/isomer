@@ -9,13 +9,10 @@ import { EditorContent } from "@tiptap/react"
 import { useRef } from "react"
 import { describe, expect, it } from "vitest"
 import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor"
-import {
-  ADD_PILL_ICON_SIZE_PX,
-  ADD_PILL_RADIUS_PX,
-  HANDLE_THICKNESS_PX,
-} from "~/features/editing-experience/utils/tableEditorChrome"
+import { TABLE_CHROME_THICKNESS_PX } from "~/features/editing-experience/utils/tableEditorChrome"
 import { theme } from "~/theme"
 
+import { ADD_PILL_ICON_SIZE_PX, ADD_PILL_RADIUS_PX } from "./internal/chrome"
 import { TableDragHandles } from "./TableDragHandles"
 
 const SEED_CONTENT: JSONContent = {
@@ -742,7 +739,7 @@ describe("TableDragHandles", () => {
 
     // Assert
     const { width, height } = handle.getBoundingClientRect()
-    expect(width).toBe(HANDLE_THICKNESS_PX)
+    expect(width).toBe(TABLE_CHROME_THICKNESS_PX)
     expect(height).toBeGreaterThan(width)
     expect(getComputedStyle(handle).borderTopWidth).toBe("0px")
     const radius = parseFloat(getComputedStyle(handle).borderTopLeftRadius)
@@ -756,7 +753,7 @@ describe("TableDragHandles", () => {
 
     // Assert
     const { width, height } = handle.getBoundingClientRect()
-    expect(height).toBe(HANDLE_THICKNESS_PX)
+    expect(height).toBe(TABLE_CHROME_THICKNESS_PX)
     expect(width).toBeGreaterThan(height)
     expect(getComputedStyle(handle).borderTopWidth).toBe("0px")
     const radius = parseFloat(getComputedStyle(handle).borderTopLeftRadius)
