@@ -11,18 +11,27 @@ interface EventDateFilterDisplayProps {
   entries?: DateFilterDisplayEntry[]
   beforeTitle?: ReactNode
   afterTitle?: ReactNode
+  afterDates?: ReactNode
 }
 
 export const EventDateFilterDisplay = ({
   entries,
   beforeTitle,
   afterTitle,
+  afterDates,
   children,
 }: PropsWithChildren<EventDateFilterDisplayProps>) => {
   const dateFilterCards = useDateFilterCards(entries)
 
   if (!dateFilterCards || dateFilterCards.length === 0) {
-    return children ?? null
+    return (
+      <>
+        {beforeTitle}
+        {children}
+        {afterTitle}
+        {afterDates}
+      </>
+    )
   }
 
   const statusBadges = dateFilterCards.filter(({ statusLabel }) =>
@@ -42,6 +51,7 @@ export const EventDateFilterDisplay = ({
       {children}
       {afterTitle}
       <EventDateFilterDates entries={dateFilterCards} />
+      {afterDates}
     </>
   )
 }

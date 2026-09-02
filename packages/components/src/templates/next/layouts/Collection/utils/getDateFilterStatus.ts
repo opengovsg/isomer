@@ -2,6 +2,7 @@ import {
   DATE_FILTER_STATUS_ID,
   type DateFilterStatusId,
 } from "~/types/constants"
+import { getSingaporeDateYYYYMMDD } from "~/utils/getSingaporeDate"
 
 export interface DateFilterValue {
   date: string
@@ -14,13 +15,7 @@ export interface DateFilterValue {
 // and `endDate` are already plain "yyyy-MM-dd" strings (schema format
 // "date", no time component), so lexicographic string comparison against
 // this is equivalent to calendar-date comparison — no Date parsing needed.
-export const getTodayInSingapore = (): string =>
-  new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Singapore",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date())
+export const getTodayInSingapore = (): string => getSingaporeDateYYYYMMDD()
 
 // Inclusive on both ends: `today < date` → upcoming, `date <= today <= end`
 // → ongoing, `today > end` → ended. A single date (no `endDate`) is treated
