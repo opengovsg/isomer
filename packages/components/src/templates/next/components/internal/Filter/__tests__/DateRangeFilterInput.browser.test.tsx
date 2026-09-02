@@ -10,12 +10,16 @@ const currentMonthIso = (day: number): string => {
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(day)}`
 }
 
+const openCalendar = () => {
+  fireEvent.click(screen.getByLabelText("Open calendar"))
+}
+
 describe("DateRangeFilterInput", () => {
   it("opens the calendar, stages a selection, and only calls onChange on Apply", () => {
     const onChange = vi.fn()
     render(<DateRangeFilterInput value={undefined} onChange={onChange} />)
 
-    fireEvent.click(screen.getByText("DD/MM/YYYY"))
+    openCalendar()
 
     fireEvent.click(screen.getByText("10"))
     fireEvent.click(screen.getByText("20"))
@@ -38,7 +42,7 @@ describe("DateRangeFilterInput", () => {
     const onChange = vi.fn()
     render(<DateRangeFilterInput value={undefined} onChange={onChange} />)
 
-    fireEvent.click(screen.getByText("DD/MM/YYYY"))
+    openCalendar()
     fireEvent.click(screen.getByText("10"))
     fireEvent.click(screen.getByText("Apply"))
 
@@ -57,15 +61,15 @@ describe("DateRangeFilterInput", () => {
     )
 
     const [year, month, day] = currentMonthIso(13).split("-")
-    screen.getByText(`${day}/${month}/${year}`)
-    expect(screen.queryByText(/ - /)).toBeNull()
+    screen.getByDisplayValue(`${day}/${month}/${year}`)
+    expect(screen.queryByDisplayValue(/ - /)).toBeNull()
   })
 
   it("closes the calendar without calling onChange when clicking outside", () => {
     const onChange = vi.fn()
     render(<DateRangeFilterInput value={undefined} onChange={onChange} />)
 
-    fireEvent.click(screen.getByText("DD/MM/YYYY"))
+    openCalendar()
     screen.getByText("Apply")
 
     fireEvent.mouseDown(document.body)
@@ -86,7 +90,7 @@ describe("DateRangeFilterInput", () => {
     const end = currentMonthIso(8).split("-")
     const displayValue = `${start[2]}/${start[1]}/${start[0]} - ${end[2]}/${end[1]}/${end[0]}`
 
-    screen.getByText(displayValue)
+    screen.getByDisplayValue(displayValue)
   })
 
   it("clears the applied range when Clear is pressed", () => {
@@ -98,10 +102,38 @@ describe("DateRangeFilterInput", () => {
       />,
     )
 
-    fireEvent.click(screen.getByText(/05\/\d{2}\/\d{4} - 08\/\d{2}\/\d{4}/))
+    openCalendar()
     fireEvent.click(screen.getByText("Clear"))
 
     expect(onChange).toHaveBeenCalledExactlyOnceWith(undefined)
     expect(screen.queryByText("Clear")).toBeNull()
+  })
+
+  it("shows an inline error for invalid typed dates", () => {
+    const onChange = vi.fn()
+    render(<DateRangeFilterInput value={undefined} onChange={onChange} />)
+
+    fireEvent.change(screen.getByPlaceholderText("DD/MM/YYYY"), {
+      target: { value: "31/02/2026" },
+    })
+    fireEvent.blur(screen.getByPlaceholderText("DD/MM/YYYY"))
+
+    screen.getByText("Enter a valid date in DD/MM/YYYY format")
+    expect(onChange).not.toHaveBeenCalled()
+  })
+
+  it("commits a valid typed single date on blur", () => {
+    const onChange = vi.fn()
+    render(<DateRangeFilterInput value={undefined} onChange={onChange} />)
+
+    fireEvent.change(screen.getByPlaceholderText("DD/MM/YYYY"), {
+      target: { value: "10/06/2026" },
+    })
+    fireEvent.blur(screen.getByPlaceholderText("DD/MM/YYYY"))
+
+    expect(onChange).toHaveBeenCalledExactlyOnceWith({
+      start: "2026-06-10",
+      end: "2026-06-10",
+    })
   })
 })

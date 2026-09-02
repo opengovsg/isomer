@@ -98,4 +98,41 @@ describe("getDateFilters", () => {
       },
     ])
   })
+
+  it("omits sidebar buckets whose status labels are blank", () => {
+    const categoriesWithBlankLabel: NonNullable<
+      CollectionPageSchemaType["page"]["tagCategories"]
+    > = [
+      {
+        id: EVENT_DATE_FILTER_ID,
+        label: "Event Date",
+        type: "date",
+        statusLabels: [
+          { id: "ENDED", label: "" },
+          { id: "ONGOING", label: "Ongoing" },
+          { id: "UPCOMING", label: "Upcoming" },
+        ],
+      },
+    ]
+    const items: ProcessedCollectionCardProps[] = [
+      {
+        dateTagged: [
+          {
+            id: EVENT_DATE_FILTER_ID,
+            date: "2026-05-01",
+            endDate: "2026-05-10",
+          },
+        ],
+      } as ProcessedCollectionCardProps,
+    ]
+
+    expect(getDateFilters(items, categoriesWithBlankLabel, TODAY)).toEqual([
+      {
+        id: EVENT_DATE_FILTER_ID,
+        label: "Event Date",
+        type: "date",
+        items: [],
+      },
+    ])
+  })
 })

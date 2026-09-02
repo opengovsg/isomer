@@ -6,6 +6,7 @@ import {
   createCalendar,
   getWeeksInMonth,
   isToday,
+  parseDate,
 } from "@internationalized/date"
 import { useButton } from "@react-aria/button"
 import {
@@ -17,10 +18,19 @@ import { useRangeCalendarState } from "@react-stately/calendar"
 import { useMemo, useRef, useState } from "react"
 import { BiChevronLeft, BiChevronRight } from "react-icons/bi"
 
+import { getTodayInSingapore } from "../../../layouts/Collection/utils/getDateFilterStatus"
+import { IconButton } from "../IconButton"
+
 // Government sites are English-only today, so the locale is fixed rather
 // than plumbed through `useLocale` (@react-aria/i18n) — avoids pulling in
 // another dependency for a capability this codebase doesn't need yet.
 const LOCALE = "en-SG"
+
+const FULL_DATE_FORMATTER = new Intl.DateTimeFormat("en-SG", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+})
 
 export interface RangeCalendarValue {
   start: CalendarDate
@@ -31,6 +41,9 @@ interface RangeCalendarProps {
   defaultValue: RangeCalendarValue | null
   onApply: (value: RangeCalendarValue | null) => void
 }
+
+const getTodayCalendarDate = (): CalendarDate =>
+  parseDate(getTodayInSingapore())
 
 // Hand-built on top of the same headless @react-aria/* hook family already
 // used elsewhere in this package (see Filter.tsx), rather than pulling in a
@@ -47,11 +60,15 @@ export const RangeCalendar = ({
   defaultValue,
   onApply,
 }: RangeCalendarProps) => {
+  const today = useMemo(() => getTodayCalendarDate(), [])
+  const initialValue = defaultValue ?? { start: today, end: today }
+
   const state = useRangeCalendarState({
     locale: LOCALE,
     createCalendar,
-    defaultValue,
+    defaultValue: initialValue,
     visibleDuration: { months: 1 },
+    defaultFocusedValue: defaultValue?.start ?? today,
   })
 
   const calendarRef = useRef<HTMLDivElement>(null)
@@ -61,15 +78,19 @@ export const RangeCalendar = ({
   return (
     <div {...calendarProps} ref={calendarRef} className="w-fit">
       <div className="mb-3 flex items-center justify-between">
-        <CalendarNavButton {...prevButtonProps}>
-          <BiChevronLeft aria-hidden className="h-5 w-5" />
-        </CalendarNavButton>
+        <CalendarNavButton
+          {...prevButtonProps}
+          aria-label="Previous month"
+          icon={BiChevronLeft}
+        />
         <p className="prose-headline-base-semibold text-base-content">
           {title}
         </p>
-        <CalendarNavButton {...nextButtonProps}>
-          <BiChevronRight aria-hidden className="h-5 w-5" />
-        </CalendarNavButton>
+        <CalendarNavButton
+          {...nextButtonProps}
+          aria-label="Next month"
+          icon={BiChevronRight}
+        />
       </div>
       <CalendarGrid state={state} />
       <div className="mt-3 flex justify-end gap-3">
@@ -130,21 +151,23 @@ const ClearButton = (props: Parameters<typeof useButton>[0]) => {
   )
 }
 
-const CalendarNavButton = (
-  props: Parameters<typeof useButton>[0] & { children: React.ReactNode },
-) => {
-  const ref = useRef<HTMLButtonElement>(null)
-  const { buttonProps } = useButton(props, ref)
-
+const CalendarNavButton = ({
+  icon: Icon,
+  "aria-label": ariaLabel,
+  ...props
+}: Parameters<typeof useButton>[0] & {
+  icon: typeof BiChevronLeft
+  "aria-label": string
+}) => {
   return (
-    <button
-      {...buttonProps}
-      ref={ref}
-      type="button"
-      className="flex h-10 w-10 items-center justify-center rounded text-base-content-subtle outline-0 hover:bg-base-canvas-backdrop disabled:pointer-events-none disabled:opacity-50"
-    >
-      {props.children}
-    </button>
+    <IconButton
+      {...props}
+      icon={Icon}
+      size="sm"
+      variant="clear"
+      aria-label={ariaLabel}
+      className="text-base-content-subtle"
+    />
   )
 }
 
@@ -210,6 +233,9 @@ const CalendarGrid = ({ state }: { state: RangeCalendarState }) => {
   )
 }
 
+const formatAccessibleDate = (date: CalendarDate, timeZone: string): string =>
+  FULL_DATE_FORMATTER.format(date.toDate(timeZone))
+
 const CalendarCell = ({
   state,
   date,
@@ -229,6 +255,8 @@ const CalendarCell = ({
     isOutsideVisibleRange,
     formattedDate,
   } = useCalendarCell({ date }, state, cellRef)
+
+  const accessibleDateLabel = formatAccessibleDate(date, state.timeZone)
 
   const isRangeStart =
     !!highlightedRange && date.compare(highlightedRange.start) === 0
@@ -258,6 +286,7 @@ const CalendarCell = ({
       >
         <div
           {...buttonProps}
+          aria-label={accessibleDateLabel}
           {...(isOutsideVisibleRange
             ? {
                 "aria-disabled": undefined,

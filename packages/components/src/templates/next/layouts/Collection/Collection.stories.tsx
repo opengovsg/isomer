@@ -483,7 +483,7 @@ export const DateFiltersCalendarOpen: Story = {
   }),
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    await userEvent.click(screen.getByText("DD/MM/YYYY"))
+    await userEvent.click(screen.getByLabelText("Open calendar"))
     await screen.findByText("Apply")
 
     await expectNoStatusChecked(canvasElement)
@@ -498,7 +498,7 @@ export const DateFiltersCalendarRangeSelected: Story = {
   }),
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    await userEvent.click(screen.getByText("DD/MM/YYYY"))
+    await userEvent.click(screen.getByLabelText("Open calendar"))
     await screen.findByText("Apply")
 
     // 4 and 14 August 2025 — the exact range the "ongoing" items above use

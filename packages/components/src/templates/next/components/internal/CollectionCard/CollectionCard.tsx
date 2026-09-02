@@ -35,12 +35,21 @@ export const CollectionCard = ({
       isExternal={isExternalLink}
     >
       {shouldShowDate && (
-        <p className="prose-label-md-regular shrink-0 text-base-content-subtle md:w-[140px]">
+        <p className="prose-label-md-regular hidden shrink-0 text-base-content-subtle md:block md:w-[140px]">
           {formattedDate ? formattedDate : "-"}
         </p>
       )}
       <div className="flex flex-grow flex-col gap-3 text-base-content md:gap-2">
-        <EventDateFilterDisplay entries={dateFilterDisplayEntries}>
+        <EventDateFilterDisplay
+          entries={dateFilterDisplayEntries}
+          beforeTitle={
+            shouldShowDate ? (
+              <p className="prose-label-md-regular text-base-content-subtle md:hidden">
+                {formattedDate ? formattedDate : "-"}
+              </p>
+            ) : undefined
+          }
+        >
           <Title
             title={itemTitle}
             isExternalLink={isExternalLink}

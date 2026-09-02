@@ -60,7 +60,7 @@ export const OpenedCalendar: Story = {
   },
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    await userEvent.click(screen.getByText("DD/MM/YYYY"))
+    await userEvent.click(screen.getByLabelText("Open calendar"))
     // Calendar renders in a portal-less absolutely-positioned popover within
     // the same canvas, so no need to escape to `canvasElement.parentElement`.
     await screen.findByText("Apply")
@@ -73,7 +73,7 @@ export const SelectRangeAndApply: Story = {
   },
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    await userEvent.click(screen.getByText("DD/MM/YYYY"))
+    await userEvent.click(screen.getByLabelText("Open calendar"))
 
     await userEvent.click(screen.getByText("10"))
     await userEvent.click(screen.getByText("20"))
@@ -91,7 +91,7 @@ export const ModalPresentation: Story = {
   },
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    await userEvent.click(screen.getByText("DD/MM/YYYY"))
+    await userEvent.click(screen.getByLabelText("Open calendar"))
     await screen.findByText("Clear")
     await screen.findByText("Apply")
   },
@@ -103,7 +103,7 @@ export const ClearAppliedRange: Story = {
   },
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    await userEvent.click(screen.getByText("28/04/2026 - 30/05/2026"))
+    await userEvent.click(screen.getByLabelText("Open calendar"))
     await userEvent.click(await screen.findByText("Clear"))
   },
 }

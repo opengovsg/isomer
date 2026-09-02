@@ -38,6 +38,7 @@ export const getDateFilters = (
       label: category.label,
       type: TAG_CATEGORY_TYPE.Date,
       items: category.statusLabels
+        .filter((statusLabel) => statusLabel.label.trim() !== "")
         .map((statusLabel) => ({
           id: statusLabel.id,
           label: statusLabel.label,
