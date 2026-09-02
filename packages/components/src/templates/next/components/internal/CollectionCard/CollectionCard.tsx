@@ -4,6 +4,8 @@ import { isExternalUrl } from "~/utils/isExternalUrl"
 import { ImageClient } from "../ImageClient"
 import { Link } from "../Link"
 import { PillTags, PlaintextTags } from "../Tags"
+import { DateFilterDates } from "./DateFilterDates"
+import { DateFilterStatusClient } from "./DateFilterStatusClient"
 import { Title } from "./Title"
 
 export const CollectionCard = ({
@@ -19,6 +21,7 @@ export const CollectionCard = ({
   pillTags,
   formattedDate,
   headingLevel,
+  dateFilterDisplayEntries,
 }: CollectionCardProps & {
   shouldShowDate?: boolean
   siteAssetsBaseUrl: string | undefined
@@ -33,16 +36,25 @@ export const CollectionCard = ({
       isExternal={isExternalLink}
     >
       {shouldShowDate && (
-        <p className="prose-label-md-regular shrink-0 text-base-content-subtle md:w-[140px]">
+        <p className="prose-label-md-regular hidden shrink-0 text-base-content-subtle md:block md:w-[140px]">
           {formattedDate ? formattedDate : "-"}
         </p>
       )}
       <div className="flex flex-grow flex-col gap-3 text-base-content md:gap-2">
-        <Title
-          title={itemTitle}
-          isExternalLink={isExternalLink}
-          headingLevel={headingLevel}
-        />
+        <>
+          <DateFilterStatusClient entries={dateFilterDisplayEntries} />
+          {shouldShowDate ? (
+            <p className="prose-label-md-regular text-base-content-subtle md:hidden">
+              {formattedDate ? formattedDate : "-"}
+            </p>
+          ) : null}
+          <Title
+            title={itemTitle}
+            isExternalLink={isExternalLink}
+            headingLevel={headingLevel}
+          />
+          <DateFilterDates entries={dateFilterDisplayEntries} />
+        </>
         <PillTags
           tags={pillTags}
           className="flex w-full flex-wrap items-center gap-2"

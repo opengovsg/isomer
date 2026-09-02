@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { ArticlePageHeaderProps } from "~/interfaces"
+import { daysFromNow, statusLabelsFor } from "~/stories/helpers"
 
 import { ArticlePageHeader } from "./ArticlePageHeader"
 
@@ -73,6 +74,48 @@ export const ArticleWithTags: Story = {
       {
         category: "Tags",
         selected: ["NParks Happenings", "Wild dinosaur"],
+      },
+    ],
+  },
+}
+
+export const WithDateFilter: Story = {
+  args: {
+    ...ARTICLE,
+    title: "Annual Community Charity Run 2026",
+    dateFilterDisplayEntries: [
+      {
+        id: "event-date",
+        label: "Event Date",
+        dateText: "27 Sep - 29 Sep 2026",
+        date: daysFromNow(-5),
+        endDate: daysFromNow(5),
+        statusLabels: statusLabelsFor("event-date"),
+      },
+    ],
+  },
+}
+
+export const WithMultipleDateFilters: Story = {
+  args: {
+    ...ARTICLE,
+    title: "Item with two date filters",
+    dateFilterDisplayEntries: [
+      {
+        id: "event-date",
+        label: "Event Date",
+        dateText: "27 Sep - 29 Sep 2026",
+        date: daysFromNow(30),
+        endDate: daysFromNow(40),
+        statusLabels: statusLabelsFor("event-date"),
+      },
+      {
+        id: "registration-deadline",
+        label: "Registration Deadline",
+        dateText: "1 Jan - 10 Sep 2026",
+        date: daysFromNow(-5),
+        endDate: daysFromNow(5),
+        statusLabels: statusLabelsFor("registration-deadline"),
       },
     ],
   },
