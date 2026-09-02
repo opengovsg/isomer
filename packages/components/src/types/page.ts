@@ -12,6 +12,7 @@ import { imageSchemaObject } from "~/schemas/internal"
 import {
   REF_HREF_PATTERN,
   TRIMMED_NON_EMPTY_STRING_REGEX,
+  TRIMMED_STRING_OR_EMPTY_REGEX,
 } from "~/utils/validation"
 
 import {
@@ -119,18 +120,41 @@ const DateFilterSchema = Type.Object(
     ...tagCategoryIsRequiredSchemaObject,
     // Always "date" on new filters. Keeps oneOf exclusive with TextFilterSchema.
     type: Type.Literal(TAG_CATEGORY_TYPE.Date, { format: "hidden" }),
-    statusLabels: Type.Object(
-      {
-        ENDED: Type.String({ title: "Event ended" }),
-        ONGOING: Type.String({ title: "Ongoing" }),
-        UPCOMING: Type.String({ title: "Upcoming" }),
-      },
-      {
-        title: "Status labels",
-        description:
-          "Labels for each status. Status is derived from dates on each item.",
-        format: "date-filter-status-labels",
-      },
+    // Optional for backward compatibility. Missing/`undefined` must be read as
+    // `DEFAULT_DATE_FILTER_STATUS_LABELS` at render time — omit JSON Schema
+    // `default`: Studio AJV runs with useDefaults, which would backfill legacy
+    // rows when editors open them.
+    statusLabels: Type.Optional(
+      Type.Object(
+        {
+          ENDED: Type.String({
+            title: "Event ended",
+            pattern: TRIMMED_STRING_OR_EMPTY_REGEX,
+            errorMessage: {
+              pattern: "cannot have leading/trailing spaces",
+            },
+          }),
+          ONGOING: Type.String({
+            title: "Ongoing",
+            pattern: TRIMMED_STRING_OR_EMPTY_REGEX,
+            errorMessage: {
+              pattern: "cannot have leading/trailing spaces",
+            },
+          }),
+          UPCOMING: Type.String({
+            title: "Upcoming",
+            pattern: TRIMMED_STRING_OR_EMPTY_REGEX,
+            errorMessage: {
+              pattern: "cannot have leading/trailing spaces",
+            },
+          }),
+        },
+        {
+          title: "Custom labels",
+          description: "If you don't want to show a label, leave fields empty.",
+          format: "date-filter-status-labels",
+        },
+      ),
     ),
     // Optional custom label; falls back to a default at render.
     dateRangeFilterLabel: Type.Optional(
