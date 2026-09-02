@@ -8,10 +8,12 @@ import { useTableBubbleMenu } from "./useTableBubbleMenu"
 
 export interface TableBubbleMenuProps {
   editor: Editor
+  isDragReordering?: boolean
 }
 
 export const TableBubbleMenu = memo(function TableBubbleMenu({
   editor,
+  isDragReordering = false,
 }: TableBubbleMenuProps) {
   const {
     show,
@@ -24,7 +26,7 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
     onMenuBlur,
     toggleMenu,
     deactivateMenu,
-  } = useTableBubbleMenu(editor)
+  } = useTableBubbleMenu(editor, isDragReordering)
 
   if (!show) {
     return null

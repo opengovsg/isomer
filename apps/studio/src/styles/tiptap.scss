@@ -255,3 +255,10 @@ $max-depth: 13;
     }
   }
 }
+
+// Keep the grabbing cursor while a table row or column is being dragged.
+// `TableDragHandles` toggles this attribute on the editor container.
+[data-table-drag-handles-dragging],
+[data-table-drag-handles-dragging] * {
+  cursor: grabbing !important;
+}

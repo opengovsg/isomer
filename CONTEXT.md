@@ -41,6 +41,23 @@ _Avoid_: trigger point (overloaded), exit (window close is not a Measuring Point
 **Measuring Period**: The recurrence window within which a given user is shown the editing survey at most once. Defined and enforced in the survey tool's frequency settings, not by Studio.
 _Avoid_: survey cooldown, quarter (the period is configurable, not fixed)
 
+### Page editor — tables
+
+**Axis** (`Axis`): Whether a slot is a `"row"` or `"column"`. Most table editing rules take an axis instead of duplicating row and column logic.
+_Avoid_: direction, orientation, dimension
+
+**Slot**: A whole row or a whole column. Drag handles select, reorder, and append slots.
+_Avoid_: row/column (when the statement applies to both), line, track, cell (a slot is a whole row or column, never a single cell)
+
+**Locked slot**: A slot you can select but not reorder. Today that means a header row or header column. Each axis has a minimum movable index; drags cannot start from a locked slot or drop above one.
+_Avoid_: header (the cells themselves, not the constraint on them), frozen row/column (implies scroll pinning, which is unrelated)
+
+**Gutter** (`TABLE_GUTTER_PX`): The band on every side of a table where drag handles and add pills sit. The table node view reserves it; `TableDragHandles` draws into it. The pointer counts as hovering a table anywhere inside the gutter.
+_Avoid_: margin, padding (each is only one side's implementation), chrome (broader, includes the handles themselves)
+
+**Add pill**: The rounded control in the gutter below and to the right of a table. Appends a slot on that axis. Visible while the pointer is over the table or its gutter.
+_Avoid_: add button, plus button, insert control
+
 ### Roles and surfaces
 
 **Isomer Admin**: A user with the Core or Migrator role. The only role that can manage taxonomy (create, edit, delete Tag Categories and Tag Options) via the Manage Filters panel.
