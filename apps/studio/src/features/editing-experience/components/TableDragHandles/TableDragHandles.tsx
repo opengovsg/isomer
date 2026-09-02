@@ -10,14 +10,13 @@ import {
 } from "~/features/editing-experience/utils/tableEditorChrome"
 
 import type { Axis } from "./internal/axis"
-import type { TableGeometry } from "./internal/geometry"
-import { AXES, getAxisLockMinIndex } from "./internal/axis"
+import type { TableGeometry } from "./internal/axisMath"
+import { AXES, AXIS, getAxisLockMinIndex } from "./internal/axis"
 import {
   getRowSpan,
   getTableBounds,
   nearestBoundaryIndex,
-  rectsForAxis,
-} from "./internal/geometry"
+} from "./internal/axisMath"
 import {
   AddPillButton,
   AxisHandle,
@@ -93,7 +92,7 @@ export const TableDragHandles = ({
       axis,
     )
     const selected = selectedIndexesFor(selectionTarget, geometry.pos, axis)
-    const rects = rectsForAxis(geometry, axis)
+    const rects = AXIS[axis].rectsOf(geometry)
 
     return rects.map((rect, index) => {
       if (!rect) return null

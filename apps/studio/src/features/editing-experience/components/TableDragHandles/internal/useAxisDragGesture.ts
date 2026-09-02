@@ -9,15 +9,14 @@ import {
 } from "react"
 
 import type { Axis } from "./axis"
-import type { Rect } from "./coordinates"
-import type { TableGeometry } from "./geometry"
+import type { Rect, TableGeometry } from "./axisMath"
 import { AXIS, getAxisLockMinIndex } from "./axis"
-import { viewportPointToContainerPoint } from "./coordinates"
 import {
   boundariesFromGeometry,
   collectAxisBoundaries,
   resolveDropIndex,
-} from "./geometry"
+} from "./axisMath"
+import { viewportPointToContainerPoint } from "./measure"
 import { selectWholeSlot } from "./selection"
 
 const DRAG_THRESHOLD_PX = 4
@@ -102,7 +101,7 @@ export const useAxisDragGesture = ({
           tablePos,
           startClientX: event.clientX,
           startClientY: event.clientY,
-          boundaries: collectAxisBoundaries(rects, lockMinIndex, axis),
+          boundaries: collectAxisBoundaries(rects, lockMinIndex, AXIS[axis]),
           lockMinIndex,
         }
       },
@@ -118,7 +117,7 @@ export const useAxisDragGesture = ({
     if (!geometry) return
     const boundaries = boundariesFromGeometry(
       geometry,
-      current.axis,
+      AXIS[current.axis],
       current.lockMinIndex,
     )
     if (boundaries.length === 0) return

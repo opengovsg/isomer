@@ -15,7 +15,7 @@ import {
   ROW_HANDLE,
 } from "~/features/editing-experience/utils/tableEditorChrome"
 
-import type { Rect } from "./coordinates"
+import type { AxisProjection } from "./axisMath"
 
 export type Axis = "row" | "column"
 
@@ -24,15 +24,15 @@ export const AXES = ["row", "column"] as const satisfies readonly Axis[]
 // Rows and columns differ only in which coordinate they run along and which
 // prosemirror-tables command they dispatch. Describing that difference once
 // keeps every handle, boundary and drop calculation axis-agnostic.
-export interface AxisSpec {
+//
+// Extends `AxisProjection` so a spec can be handed straight to the pure
+// arithmetic in `axisMath.ts` without dragging this file's ProseMirror imports
+// along with it.
+export interface AxisSpec extends AxisProjection {
   handle: { w: number; h: number }
   selectLabel: string
   dragLabel: string
   addPillLabel: string
-  /** Where a slot starts along the axis. */
-  startOf: (rect: Rect) => number
-  /** How long a slot is along the axis. */
-  sizeOf: (rect: Rect) => number
   /** The pointer coordinate that matters for this axis. */
   pointerOf: (point: { x: number; y: number }) => number
   /** First index that may not be reordered — 1 when the axis has a header. */
@@ -51,6 +51,7 @@ export const AXIS: Record<Axis, AxisSpec> = {
     selectLabel: "Select row",
     dragLabel: "Drag to reorder row",
     addPillLabel: "Add row below",
+    rectsOf: (geometry) => geometry.rowRects,
     startOf: (rect) => rect.top,
     sizeOf: (rect) => rect.height,
     pointerOf: (point) => point.y,
@@ -73,6 +74,7 @@ export const AXIS: Record<Axis, AxisSpec> = {
     selectLabel: "Select column",
     dragLabel: "Drag to reorder column",
     addPillLabel: "Add column to the right",
+    rectsOf: (geometry) => geometry.colRects,
     startOf: (rect) => rect.left,
     sizeOf: (rect) => rect.width,
     pointerOf: (point) => point.x,
