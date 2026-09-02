@@ -1,3 +1,4 @@
+import type { CollectionPagePageProps } from "@opengovsg/isomer-components"
 import type { CollectionLinkProps } from "~/schemas/collection"
 import { useMemo } from "react"
 import { useSuspenseCollectionTags } from "~/features/editing-experience/hooks/useCollectionTags"
@@ -42,6 +43,20 @@ export const EditCollectionLinkPreview = ({
     siteId,
   })
 
+  const [indexPage] = trpc.folder.getIndexpage.useSuspenseQuery({
+    resourceId: parent.id,
+    siteId,
+  })
+
+  const [{ content: collectionIndexContent }] =
+    trpc.page.readPageAndBlob.useSuspenseQuery({
+      pageId: Number(indexPage.id),
+      siteId,
+    })
+
+  const { showThumbnail, showDate } =
+    collectionIndexContent.page as CollectionPagePageProps
+
   // Ends at the parent collection, so drop it — the collection node is built below.
   const [ancestry] = trpc.resource.getAncestryStack.useSuspenseQuery({
     resourceId: String(linkId),
@@ -80,7 +95,7 @@ export const EditCollectionLinkPreview = ({
     <ViewportContainer siteId={siteId}>
       <PreviewWithCustomSitemap
         content={[]}
-        page={{ title: parentTitle, tagCategories }}
+        page={{ title: parentTitle, tagCategories, showThumbnail, showDate }}
         layout={"collection"}
         siteId={siteId}
         siteMap={siteMap}
