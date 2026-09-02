@@ -9,26 +9,30 @@ import {
   ADD_PILL_THICKNESS_PX,
 } from "~/features/editing-experience/utils/tableEditorChrome"
 
-import type { Axis } from "./axis"
-import type { TableGeometry } from "./geometry"
-import { AXES, getAxisLockMinIndex } from "./axis"
+import type { Axis } from "./internal/axis"
+import type { TableGeometry } from "./internal/geometry"
+import { AXES, getAxisLockMinIndex } from "./internal/axis"
 import {
   getRowSpan,
   getTableBounds,
   nearestBoundaryIndex,
   rectsForAxis,
-} from "./geometry"
-import { AddPillButton, AxisHandle, resolveHandleState } from "./handles"
+} from "./internal/geometry"
+import {
+  AddPillButton,
+  AxisHandle,
+  resolveHandleState,
+} from "./internal/handles"
 import {
   addSlotAfter,
   getSelectionHandleTarget,
   selectedIndexesFor,
   selectionTargetsEqual,
   selectWholeSlot,
-} from "./selection"
-import { useAxisDragGesture } from "./useAxisDragGesture"
-import { useHoveredTable } from "./useHoveredTable"
-import { useTableGeometries } from "./useTableGeometries"
+} from "./internal/selection"
+import { useAxisDragGesture } from "./internal/useAxisDragGesture"
+import { useHoveredTable } from "./internal/useHoveredTable"
+import { useTableGeometries } from "./internal/useTableGeometries"
 
 export interface TableDragHandlesProps {
   editor: TiptapEditor | null
