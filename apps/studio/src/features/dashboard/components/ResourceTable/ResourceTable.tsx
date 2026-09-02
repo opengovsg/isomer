@@ -7,8 +7,8 @@ import { HStack, Text } from "@chakra-ui/react"
 import { keepPreviousData } from "@tanstack/react-query"
 import {
   createColumnHelper,
-  stockFeatures,
-  useTable,
+  getCoreRowModel,
+  useReactTable,
 } from "@tanstack/react-table"
 import { useMemo, useState } from "react"
 import { TableHeader } from "~/components/Datatable"
@@ -93,39 +93,37 @@ export const ResourceTable = ({
     [siteId, resourceId],
   )
 
-  const { data: totalCount = 0, isLoading: isCountLoading } =
-    trpc.resource.countWithoutRoot.useQuery({
+  // `limit`/`skip` only depend on local pagination state (pageIndex/pageSize),
+  // not on `totalCount` — so it's safe for `totalCount` to come from the same
+  // query this feeds into, with no circular dependency. `pageCount` from this
+  // call is discarded (it'd be stuck at 0) and recomputed below once the
+  // query's own `totalCount` is available.
+  const { limit, onPaginationChange, skip, pagination } = useTablePagination({
+    pageIndex: 0,
+    pageSize: 25,
+    totalCount: 0,
+  })
+
+  const { data, isFetching } = trpc.resource.listWithoutRoot.useQuery(
+    {
       siteId,
       resourceId,
+      orderBy: sortOption,
       statusFilter,
-    })
+      limit,
+      offset: skip,
+    },
+    {
+      placeholderData: keepPreviousData, // Required for table to show previous data while fetching next page
+    },
+  )
+  const totalCount = data?.totalCount ?? 0
+  const pageCount = Math.ceil(totalCount / limit)
 
-  const { limit, onPaginationChange, skip, pagination, pageCount } =
-    useTablePagination({
-      pageIndex: 0,
-      pageSize: 25,
-      totalCount,
-    })
-
-  const { data: resources, isFetching } =
-    trpc.resource.listWithoutRoot.useQuery(
-      {
-        siteId,
-        resourceId,
-        orderBy: sortOption,
-        statusFilter,
-        limit,
-        offset: skip,
-      },
-      {
-        placeholderData: keepPreviousData, // Required for table to show previous data while fetching next page
-      },
-    )
-
-  const tableInstance = useTable({
-    features: stockFeatures,
+  const tableInstance = useReactTable<ResourceTableData>({
     columns,
-    data: resources ?? [],
+    data: data?.items ?? [],
+    getCoreRowModel: getCoreRowModel(),
     manualFiltering: true,
     manualPagination: true,
     autoResetPageIndex: false,
@@ -183,7 +181,7 @@ export const ResourceTable = ({
             }}
           />
         }
-        isFetching={isFetching || isCountLoading}
+        isFetching={isFetching}
         instance={tableInstance}
         sx={{
           tableLayout: "auto",
