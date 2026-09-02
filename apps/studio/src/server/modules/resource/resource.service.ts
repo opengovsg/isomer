@@ -1372,6 +1372,56 @@ export const assertResourceNotLive = async (
   }
 }
 
+// Read-only mirror of the `move` mutation's unpublish-lock check, so the
+// destination picker can warn as soon as a destination is selected instead
+// of only surfacing the error on submit. The mutation still re-runs its own
+// check as the source of truth.
+export const getMoveLockInfo = async (
+  trx: SafeKysely,
+  {
+    siteId,
+    movedResourceId,
+    destinationResourceId,
+  }: {
+    siteId: number
+    movedResourceId: string
+    destinationResourceId: string | null
+  },
+): Promise<{ isBlocked: boolean }> => {
+  let query = trx.selectFrom("Resource")
+  query = destinationResourceId
+    ? query.where("id", "=", destinationResourceId)
+    : query
+        .where("type", "=", ResourceType.RootPage)
+        .where("siteId", "=", siteId)
+  const parent = await query.select(["id", "type"]).executeTakeFirst()
+
+  if (
+    !parent ||
+    (parent.type !== ResourceType.Folder &&
+      parent.type !== ResourceType.Collection)
+  ) {
+    return { isBlocked: false }
+  }
+
+  const ancestorIndexPages = await getAncestorIndexPages(trx, {
+    siteId,
+    resourceId: parent.id,
+  })
+  const [lockingAncestor] = getLockingAncestorIndexPages(ancestorIndexPages)
+
+  if (!lockingAncestor) {
+    return { isBlocked: false }
+  }
+
+  return {
+    isBlocked: await hasPublishedDescendant(trx, {
+      siteId,
+      resourceId: movedResourceId,
+    }),
+  }
+}
+
 // Tags every direct child of `resourceId` (or every top-level resource, when
 // `resourceId` is null) with its own id ("branchId"), then walks downward —
 // each descendant inherits its ancestor's tag as the recursion goes deeper.
