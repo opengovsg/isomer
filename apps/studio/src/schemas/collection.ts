@@ -35,6 +35,12 @@ const slashDateSchema = z
     return format(d, SLASH_DATE_FORMAT)
   })
 
+const dateTaggedEntrySchema = z.object({
+  id: z.string().uuid(),
+  date: z.string().min(1),
+  endDate: z.string().optional(),
+})
+
 export const editLinkSchema = z.object({
   date: slashDateSchema.optional(),
   category: z.string(),
@@ -51,6 +57,7 @@ export const editLinkSchema = z.object({
     )
     .optional(),
   tagged: z.array(z.string()).optional(),
+  dateTagged: z.array(dateTaggedEntrySchema).optional(),
   image: z
     .object({
       src: z.string(),
@@ -121,4 +128,16 @@ export const countTagOptionsUsageSchema = z.object({
     .max(MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT, {
       message: `At most ${MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT} tag options can be queried at once`,
     }),
+})
+
+/**
+ * Counts child collection pages/links that have a `dateTagged` entry
+ * for this date filter. Unlike `countTagOptionsUsageSchema`, there's no
+ * per-option granularity to query — a date filter's "usage" is simply
+ * whether an item has a value for it at all.
+ */
+export const countDateFilterUsageSchema = z.object({
+  siteId: z.number().min(1),
+  pageId: z.number().min(1), // pageId is the collection index page resource id
+  dateFilterId: z.string().uuid(),
 })

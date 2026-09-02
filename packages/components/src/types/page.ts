@@ -12,6 +12,7 @@ import { imageSchemaObject } from "~/schemas/internal"
 import {
   REF_HREF_PATTERN,
   TRIMMED_NON_EMPTY_STRING_REGEX,
+  TRIMMED_STRING_OR_EMPTY_REGEX,
 } from "~/utils/validation"
 
 import {
@@ -57,6 +58,18 @@ const tagCategoryIsRequiredSchemaObject = {
       title: "This filter is required",
       description:
         "Every item must have at least one option selected from this filter.",
+    }),
+  ),
+}
+
+const dateFilterIsRequiredSchemaObject = {
+  // Same semantics as `tagCategoryIsRequiredSchemaObject`, but date filters use
+  // item-specific copy in Studio because the requirement applies to dates, not
+  // tag options.
+  isRequired: Type.Optional(
+    Type.Boolean({
+      title: "This date is required",
+      description: "Every item must have a date entered for this filter.",
     }),
   ),
 }
@@ -116,14 +129,32 @@ const TextFilterSchema = Type.Object(
 const DateFilterSchema = Type.Object(
   {
     ...tagCategoryLabelSchemaObject,
-    ...tagCategoryIsRequiredSchemaObject,
+    ...dateFilterIsRequiredSchemaObject,
     // Always "date" on new filters. Keeps oneOf exclusive with TextFilterSchema.
     type: Type.Literal(TAG_CATEGORY_TYPE.Date, { format: "hidden" }),
     statusLabels: Type.Object(
       {
-        ENDED: Type.String({ title: "Event ended" }),
-        ONGOING: Type.String({ title: "Ongoing" }),
-        UPCOMING: Type.String({ title: "Upcoming" }),
+        ENDED: Type.String({
+          title: "Event ended",
+          pattern: TRIMMED_STRING_OR_EMPTY_REGEX,
+          errorMessage: {
+            pattern: "cannot have leading/trailing spaces",
+          },
+        }),
+        ONGOING: Type.String({
+          title: "Ongoing",
+          pattern: TRIMMED_STRING_OR_EMPTY_REGEX,
+          errorMessage: {
+            pattern: "cannot have leading/trailing spaces",
+          },
+        }),
+        UPCOMING: Type.String({
+          title: "Upcoming",
+          pattern: TRIMMED_STRING_OR_EMPTY_REGEX,
+          errorMessage: {
+            pattern: "cannot have leading/trailing spaces",
+          },
+        }),
       },
       {
         title: "Status labels",
