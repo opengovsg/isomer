@@ -1,15 +1,15 @@
 import type { MouseEvent as ReactMouseEvent } from "react"
 import { Box } from "@chakra-ui/react"
-import {
-  ADD_PILL_ICON_SIZE_PX,
-  ADD_PILL_RADIUS_PX,
-  HANDLE_BORDER_RADIUS_PX,
-  HANDLE_GAP_PX,
-} from "~/features/editing-experience/utils/tableEditorChrome"
+import { TABLE_CHROME_GAP_PX } from "~/features/editing-experience/utils/tableEditorChrome"
 
 import type { Rect } from "./axisMath"
 import type { Axis } from "./axisView"
 import { AXIS_VIEW } from "./axisView"
+import {
+  ADD_PILL_ICON_SIZE_PX,
+  ADD_PILL_RADIUS_PX,
+  HANDLE_BORDER_RADIUS_PX,
+} from "./chrome"
 import { DotsIcon, PlusIcon } from "./icons"
 
 export type HandleVisualState = "passive" | "selected" | "dragging"
@@ -95,13 +95,13 @@ export const AxisHandle = ({
       position="absolute"
       left={`${
         isRow
-          ? rect.left - HANDLE_GAP_PX - handle.w
+          ? rect.left - TABLE_CHROME_GAP_PX - handle.w
           : rect.left + (rect.width - handle.w) / 2
       }px`}
       top={`${
         isRow
           ? rect.top + (rect.height - handle.h) / 2
-          : rect.top - HANDLE_GAP_PX - handle.h
+          : rect.top - TABLE_CHROME_GAP_PX - handle.h
       }px`}
       {...handleBaseStyle}
       {...handleChromeByState(state, isLocked)}

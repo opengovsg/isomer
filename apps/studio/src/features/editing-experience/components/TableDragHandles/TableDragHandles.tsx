@@ -4,9 +4,8 @@ import { Box } from "@chakra-ui/react"
 import { useEditorState } from "@tiptap/react"
 import { useMemo } from "react"
 import {
-  ADD_PILL_GAP_PX,
-  ADD_PILL_MIN_LENGTH_PX,
-  ADD_PILL_THICKNESS_PX,
+  TABLE_CHROME_GAP_PX,
+  TABLE_CHROME_THICKNESS_PX,
 } from "~/features/editing-experience/utils/tableEditorChrome"
 
 import type { TableGeometry } from "./internal/axisMath"
@@ -18,6 +17,7 @@ import {
 } from "./internal/axisMath"
 import { getAxisLockMinIndex } from "./internal/axisTableOps"
 import { AXES, AXIS_VIEW } from "./internal/axisView"
+import { ADD_PILL_MIN_LENGTH_PX } from "./internal/chrome"
 import {
   AddPillButton,
   AxisHandle,
@@ -131,16 +131,16 @@ export const TableDragHandles = ({
         <AddPillButton
           axis="row"
           left={bounds.left + (bounds.width - rowPillWidth) / 2}
-          top={bounds.top + bounds.height + ADD_PILL_GAP_PX}
+          top={bounds.top + bounds.height + TABLE_CHROME_GAP_PX}
           width={rowPillWidth}
-          height={ADD_PILL_THICKNESS_PX}
+          height={TABLE_CHROME_THICKNESS_PX}
           onClick={() => addSlotAfter(editor, geometry.pos, "row")}
         />
         <AddPillButton
           axis="column"
-          left={bounds.left + bounds.width + ADD_PILL_GAP_PX}
+          left={bounds.left + bounds.width + TABLE_CHROME_GAP_PX}
           top={bounds.top + (bounds.height - colPillHeight) / 2}
-          width={ADD_PILL_THICKNESS_PX}
+          width={TABLE_CHROME_THICKNESS_PX}
           height={colPillHeight}
           onClick={() => addSlotAfter(editor, geometry.pos, "column")}
         />
