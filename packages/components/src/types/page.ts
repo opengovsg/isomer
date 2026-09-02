@@ -15,9 +15,11 @@ import {
 } from "~/utils/validation"
 
 import {
+  DATE_FILTER_STATUS_COUNT,
   DATE_FILTER_STATUS_ID,
   TAG_CATEGORY_DISPLAY_OPTIONS,
   TAG_CATEGORY_TYPE,
+  type DateFilterStatusId,
   type TagCategoryDisplay,
 } from "./constants"
 
@@ -37,11 +39,11 @@ const TagCategoryUuidSchema = generateUuidSchema({
     "This is the uuid of a single tag category and will be used to uniquely identify it.",
 })
 
-const DateFilterStatusIdSchema = Type.Union([
-  Type.Literal(DATE_FILTER_STATUS_ID.Ended),
-  Type.Literal(DATE_FILTER_STATUS_ID.Ongoing),
-  Type.Literal(DATE_FILTER_STATUS_ID.Upcoming),
-])
+const DateFilterStatusIdSchema = Type.Union(
+  (Object.values(DATE_FILTER_STATUS_ID) as DateFilterStatusId[]).map((id) =>
+    Type.Literal(id),
+  ),
+)
 
 const tagCategoryLabelSchemaObject = {
   label: Type.String({
@@ -143,8 +145,8 @@ const DateFilterSchema = Type.Object(
         description:
           "Labels for each status. Status is derived from dates on each item.",
         format: "date-filter-status-labels",
-        minItems: 3,
-        maxItems: 3,
+        minItems: DATE_FILTER_STATUS_COUNT,
+        maxItems: DATE_FILTER_STATUS_COUNT,
       },
     ),
     // Falls back to DEFAULT_DATE_RANGE_FILTER_LABEL at render. No schema default
@@ -166,15 +168,6 @@ const DateFilterSchema = Type.Object(
 
 export type TextFilterSchemaType = Static<typeof TextFilterSchema>
 export type DateFilterSchemaType = Static<typeof DateFilterSchema>
-
-export const isDateFilter = (
-  tagCategory: TextFilterSchemaType | DateFilterSchemaType,
-): tagCategory is DateFilterSchemaType =>
-  tagCategory.type === TAG_CATEGORY_TYPE.Date
-
-export const isTextFilter = (
-  tagCategory: TextFilterSchemaType | DateFilterSchemaType,
-): tagCategory is TextFilterSchemaType => !isDateFilter(tagCategory)
 
 // oneOf keeps each filter type's fields separate. A date filter has no
 // display or options fields at all.
@@ -212,18 +205,19 @@ const TaggedSchema = Type.Optional(
 // One entry per date filter on this item. id is the filter uuid.
 // tagged is a flat list of option ids. dateTagged carries the typed dates.
 // No endDate means a single-day event.
+const DateTaggedItemSchema = Type.Object({
+  id: TagCategoryUuidSchema,
+  date: Type.String({ format: "date" }),
+  endDate: Type.Optional(Type.String({ format: "date" })),
+})
+
+export type DateTaggedItem = Static<typeof DateTaggedItemSchema>
+
 const DateTaggedSchema = Type.Optional(
-  Type.Array(
-    Type.Object({
-      id: TagCategoryUuidSchema,
-      date: Type.String({ format: "date" }),
-      endDate: Type.Optional(Type.String({ format: "date" })),
-    }),
-    {
-      description: "Pick a single date or a range.",
-      format: "date-tagged",
-    },
-  ),
+  Type.Array(DateTaggedItemSchema, {
+    description: "Pick a single date or a range.",
+    format: "date-tagged",
+  }),
 )
 
 const categorySchemaObject = Type.Object({

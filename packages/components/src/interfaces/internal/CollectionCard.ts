@@ -1,14 +1,11 @@
 import type { ImageProps } from "~/interfaces"
-import type { FormattedDate, IsomerSiteProps, TagGroup } from "~/types"
+import type {
+  DateTaggedItem,
+  FormattedDate,
+  IsomerSiteProps,
+  TagGroup,
+} from "~/types"
 import type { DateFilterStatusId } from "~/types/constants"
-
-// Raw date-filter value per item. getFilteredItems uses this for matching.
-// Cards read dateFilterCards instead.
-export interface DateFilterValue {
-  id: string
-  date: string
-  endDate?: string
-}
 
 // Resolved date-filter display for cards. status from getDateFilterStatus.
 // dateText is the formatted date or range string.
@@ -39,7 +36,7 @@ interface BaseCardProps {
   // — rendered as comma-joined text, dot-separated between groups (see PlaintextTags)
   plaintextTags?: TagGroup[]
   // Mirrors dateTagged schema. Matching only, not rendered.
-  dateTagged?: DateFilterValue[]
+  dateTagged?: DateTaggedItem[]
   // Resolved for cards. See DateFilterCard.
   dateFilterCards?: DateFilterCard[]
   title: string
