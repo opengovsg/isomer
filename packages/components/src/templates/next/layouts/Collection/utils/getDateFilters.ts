@@ -1,6 +1,9 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { CollectionPageSchemaType } from "~/types"
-import { TAG_CATEGORY_TYPE } from "~/types/constants"
+import {
+  DEFAULT_DATE_RANGE_FILTER_LABEL,
+  TAG_CATEGORY_TYPE,
+} from "~/types/constants"
 import { isDateFilter } from "~/types/page"
 
 import type { Filter } from "../../../types/Filter"
@@ -37,6 +40,8 @@ export const getDateFilters = (
       id: category.id,
       label: category.label,
       type: TAG_CATEGORY_TYPE.Date,
+      dateRangeFilterLabel:
+        category.dateRangeFilterLabel ?? DEFAULT_DATE_RANGE_FILTER_LABEL,
       items: category.statusLabels
         .filter((statusLabel) => statusLabel.label.trim() !== "")
         .map((statusLabel) => ({

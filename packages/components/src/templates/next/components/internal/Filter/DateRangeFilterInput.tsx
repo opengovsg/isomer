@@ -5,6 +5,7 @@ import { parseDate } from "@internationalized/date"
 import { useEffect, useRef, useState } from "react"
 import { BiCalendar } from "react-icons/bi"
 import { useOnClickOutside } from "usehooks-ts"
+import { DEFAULT_DATE_RANGE_FILTER_LABEL } from "~/types/constants"
 
 import type { RangeCalendarValue } from "./RangeCalendar"
 import { RangeCalendar } from "./RangeCalendar"
@@ -22,7 +23,6 @@ interface DateRangeFilterInputProps {
   label?: string
 }
 
-const DEFAULT_LABEL = "Or, search for a date"
 const INPUT_ERROR_MESSAGE = "Enter a valid date in DD/MM/YYYY format"
 
 // "yyyy-MM-dd" (the ISO format both this filter's value and
@@ -95,7 +95,7 @@ export const DateRangeFilterInput = ({
   value,
   onChange,
   presentation = "popover",
-  label = DEFAULT_LABEL,
+  label = DEFAULT_DATE_RANGE_FILTER_LABEL,
 }: DateRangeFilterInputProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const [inputValue, setInputValue] = useState(() => valueToInputText(value))

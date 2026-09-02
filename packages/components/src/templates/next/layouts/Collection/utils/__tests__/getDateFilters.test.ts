@@ -1,6 +1,7 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { CollectionPageSchemaType } from "~/types"
 import { describe, expect, it } from "vitest"
+import { DEFAULT_DATE_RANGE_FILTER_LABEL } from "~/types/constants"
 
 import { getDateFilters } from "../getDateFilters"
 
@@ -76,6 +77,7 @@ describe("getDateFilters", () => {
         id: EVENT_DATE_FILTER_ID,
         label: "Event Date",
         type: "date",
+        dateRangeFilterLabel: DEFAULT_DATE_RANGE_FILTER_LABEL,
         items: [
           { id: "ONGOING", label: "Ongoing", count: 2 },
           { id: "UPCOMING", label: "Upcoming", count: 1 },
@@ -94,6 +96,7 @@ describe("getDateFilters", () => {
         id: EVENT_DATE_FILTER_ID,
         label: "Event Date",
         type: "date",
+        dateRangeFilterLabel: DEFAULT_DATE_RANGE_FILTER_LABEL,
         items: [],
       },
     ])
@@ -131,6 +134,31 @@ describe("getDateFilters", () => {
         id: EVENT_DATE_FILTER_ID,
         label: "Event Date",
         type: "date",
+        dateRangeFilterLabel: DEFAULT_DATE_RANGE_FILTER_LABEL,
+        items: [],
+      },
+    ])
+  })
+
+  it("uses the configured date range label when provided", () => {
+    const categories: NonNullable<
+      CollectionPageSchemaType["page"]["tagCategories"]
+    > = [
+      {
+        id: EVENT_DATE_FILTER_ID,
+        label: "Event Date",
+        type: "date",
+        statusLabels: tagCategories[0]!.statusLabels,
+        dateRangeFilterLabel: "Pick a custom date",
+      },
+    ]
+
+    expect(getDateFilters([], categories, TODAY)).toEqual([
+      {
+        id: EVENT_DATE_FILTER_ID,
+        label: "Event Date",
+        type: "date",
+        dateRangeFilterLabel: "Pick a custom date",
         items: [],
       },
     ])

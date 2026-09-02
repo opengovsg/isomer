@@ -103,7 +103,7 @@ type FilterSectionProps =
 
 export const FilterSection = (props: FilterSectionProps) => {
   const {
-    filter: { label, items, type },
+    filter: { label, items, type, dateRangeFilterLabel },
     isExpanded,
     onToggleExpanded,
     selectedItemIds,
@@ -148,6 +148,7 @@ export const FilterSection = (props: FilterSectionProps) => {
             presentation={dateRangePresentation}
             value={dateRange}
             onChange={onDateRangeChange}
+            label={dateRangeFilterLabel}
           />
         )}
       </div>
