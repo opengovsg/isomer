@@ -2,7 +2,10 @@ import type { ArticlePageHeaderProps } from "~/interfaces"
 import { getFormattedDate } from "~/utils/getFormattedDate"
 
 import { Breadcrumb } from "../Breadcrumb"
-import { EventDateFilterDisplay } from "../CollectionCard/EventDateFilterDisplay"
+import {
+  EventDateFilterDatesFromEntries,
+  EventDateFilterStatusBadges,
+} from "../CollectionCard/EventDateFilterClientParts"
 import { PillTags, PlaintextTags } from "../Tags"
 
 export const ArticlePageHeader = ({
@@ -22,31 +25,29 @@ export const ArticlePageHeader = ({
 
       <div className="flex flex-col gap-5">
         <div className="flex flex-col gap-4">
-          <EventDateFilterDisplay
-            entries={dateFilterDisplayEntries}
-            beforeTitle={
-              <PlaintextTags
-                tags={plaintextTags}
-                className="prose-body-base text-base-content"
-              />
-            }
-            afterDates={
-              <PillTags
-                tags={pillTags}
-                className="flex flex-wrap items-center gap-2"
-              />
-            }
-          >
-            <h1 className="prose-display-md break-words text-base-content-strong">
-              {title}
-            </h1>
+          <EventDateFilterStatusBadges entries={dateFilterDisplayEntries} />
 
-            {date && (
-              <p className="prose-label-sm-medium text-base-content">
-                {getFormattedDate(date)}
-              </p>
-            )}
-          </EventDateFilterDisplay>
+          <PlaintextTags
+            tags={plaintextTags}
+            className="prose-body-base text-base-content"
+          />
+
+          <h1 className="prose-display-md break-words text-base-content-strong">
+            {title}
+          </h1>
+
+          {date && (
+            <p className="prose-label-sm-medium text-base-content">
+              {getFormattedDate(date)}
+            </p>
+          )}
+
+          <EventDateFilterDatesFromEntries entries={dateFilterDisplayEntries} />
+
+          <PillTags
+            tags={pillTags}
+            className="flex flex-wrap items-center gap-2"
+          />
         </div>
 
         {summary && (
