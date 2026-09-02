@@ -4,7 +4,11 @@ import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
 import { createPageViaWizard } from "~e2e/fixtures/helpers"
 import { DashboardPO, PageEditorPO } from "~e2e/fixtures/po"
 import { deleteResourceById } from "~e2e/fixtures/reset"
-import { getResourceByTitle, seedFolder } from "~e2e/fixtures/resource"
+import {
+  getResource,
+  getResourceByTitle,
+  seedFolder,
+} from "~e2e/fixtures/resource"
 import { provisionE2ESite } from "~e2e/fixtures/site"
 import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { RoleType } from "~prisma/generated/generatedEnums"
@@ -39,20 +43,20 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     const title = UNIQUE_TITLE()
 
     // Act
-    await createPageViaWizard(page, {
+    const { pageId } = await createPageViaWizard(page, {
       startUrl: `/sites/${siteId}`,
       title,
       siteId,
     })
+    createdPageId = pageId
     await new PageEditorPO(page).expectLoaded()
 
     // Assert
-    const created = await getResourceByTitle({ siteId, title })
+    const created = await getResource(pageId)
     expect(created).toBeTruthy()
     expect(created?.state).toBe("Draft")
     expect(created?.type).toBe("Page")
     expect(created?.parentId).toBeNull()
-    createdPageId = created?.id
   })
 })
 

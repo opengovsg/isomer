@@ -3,7 +3,7 @@ import crypto from "crypto"
 import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
 import { createFolderViaWizard } from "~e2e/fixtures/helpers"
 import { deleteResourceById } from "~e2e/fixtures/reset"
-import { getResourceByTitleAndType } from "~e2e/fixtures/resource"
+import { getResource } from "~e2e/fixtures/resource"
 import { provisionE2ESite } from "~e2e/fixtures/site"
 import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { ResourceType, RoleType } from "~prisma/generated/generatedEnums"
@@ -37,18 +37,12 @@ test.describe("create folder", { tag: roleTag("admin") }, () => {
     const title = UNIQUE_TITLE()
 
     // Act
-    await createFolderViaWizard(page, { siteId, title })
+    const { folderId } = await createFolderViaWizard(page, { siteId, title })
+    createdFolderId = folderId
 
     // Assert
-    // A folder also creates an IndexPage child sharing the same title, so we
-    // must scope the lookup by type to avoid matching the IndexPage.
-    const created = await getResourceByTitleAndType({
-      siteId,
-      title,
-      type: ResourceType.Folder,
-    })
+    const created = await getResource(folderId)
     expect(created).toBeTruthy()
     expect(created?.type).toBe(ResourceType.Folder)
-    createdFolderId = created?.id
   })
 })
