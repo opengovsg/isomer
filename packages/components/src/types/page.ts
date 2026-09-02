@@ -114,13 +114,15 @@ const TextFilterSchema = Type.Object(
   { title: "Text filter" },
 )
 
-const dateFilterStatusLabelSchema = Type.String({
-  title: "Label",
-  pattern: TRIMMED_STRING_OR_EMPTY_REGEX,
-  errorMessage: {
-    pattern: "cannot have leading/trailing spaces",
-  },
-})
+const dateFilterStatusLabelSchema = Type.Optional(
+  Type.String({
+    title: "Label",
+    pattern: TRIMMED_STRING_OR_EMPTY_REGEX,
+    errorMessage: {
+      pattern: "cannot have leading/trailing spaces",
+    },
+  }),
+)
 
 const DateFilterSchema = Type.Object(
   {
