@@ -1,8 +1,8 @@
 import type { Editor as TiptapEditor } from "@tiptap/react"
 import { CellSelection, selectedRect, TableMap } from "@tiptap/pm/tables"
 
-import type { Axis } from "./axis"
-import { AXIS, getTableAt } from "./axis"
+import type { Axis } from "./axisView"
+import { AXIS_TABLE_OPS, getTableAt } from "./axisTableOps"
 
 export const EMPTY_INDEXES: number[] = []
 
@@ -22,8 +22,11 @@ export const selectWholeSlot = (
   const table = getTableAt(editor.state.doc, tablePos)
   if (!table) return
   const map = TableMap.get(table)
-  const cellPos = tablePos + 1 + AXIS[axis].cellOffsetAt(map, table, index)
-  const selection = AXIS[axis].cellSelection(editor.state.doc.resolve(cellPos))
+  const cellPos =
+    tablePos + 1 + AXIS_TABLE_OPS[axis].cellOffsetAt(map, table, index)
+  const selection = AXIS_TABLE_OPS[axis].cellSelection(
+    editor.state.doc.resolve(cellPos),
+  )
   editor.view.dispatch(editor.state.tr.setSelection(selection))
   editor.view.focus()
 }
@@ -38,7 +41,7 @@ export const addSlotAfter = (
   const table = getTableAt(editor.state.doc, tablePos)
   if (!table) return
   const map = TableMap.get(table)
-  const cellPos = tablePos + 1 + AXIS[axis].lastCellOffset(map, table)
+  const cellPos = tablePos + 1 + AXIS_TABLE_OPS[axis].lastCellOffset(map, table)
   const chain = editor.chain().focus().setTextSelection(cellPos)
   if (axis === "row") {
     chain.addRowAfter().run()

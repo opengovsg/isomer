@@ -8,15 +8,16 @@ import {
   useState,
 } from "react"
 
-import type { Axis } from "./axis"
 import type { Rect, TableGeometry } from "./axisMath"
+import type { Axis } from "./axisView"
 import type {
   DraggingGesture,
   GestureEvent,
   GestureIntent,
   GestureState,
 } from "./dragMachine"
-import { AXIS, getAxisLockMinIndex } from "./axis"
+import { AXIS_TABLE_OPS, getAxisLockMinIndex } from "./axisTableOps"
+import { AXIS_VIEW } from "./axisView"
 import { IDLE_GESTURE, reduceGesture } from "./dragMachine"
 import { viewportPointToContainerPoint } from "./measure"
 import { selectWholeSlot } from "./selection"
@@ -72,7 +73,7 @@ export const useAxisDragGesture = ({
         return
       }
       // The move commands need a position inside the table node.
-      AXIS[intent.axis].move({
+      AXIS_TABLE_OPS[intent.axis].move({
         from: intent.from,
         to: intent.to,
         pos: intent.tablePos + 1,
@@ -115,7 +116,7 @@ export const useAxisDragGesture = ({
           tablePos,
           index,
           rects,
-          projection: AXIS[axis],
+          projection: AXIS_VIEW[axis],
           lockMinIndex: getAxisLockMinIndex(editor.state.doc, tablePos, axis),
           clientX: event.clientX,
           clientY: event.clientY,
