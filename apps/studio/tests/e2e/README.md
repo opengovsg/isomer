@@ -39,7 +39,7 @@ import { ensureUserOnboarded } from "~e2e/fixtures/user"
 - `<module>/` — one directory per backend router module (`site/`, `page/`, `resource/`, …). Each file covers a single UI surface (e.g. `site/settings-agency.test.ts`).
 - `page/blocks/`, `page/settings/`, `page/flows/` — page editor E2E split across three CI shards (block matrix, meta/header settings, publish/create flows).
 
-Enforceable conventions (PO rules, DB layers, smells) live in `.claude/skills/isomer-conventions/conventions/e2e-tests.md`.
+Enforceable conventions (PO rules, DB layers, smells) live in `.claude/skills/isomer-conventions/conventions/e2e-tests.md`. Key rules are enforced by Oxlint via `eslint-plugin-isomer-e2e` (see `apps/studio/.oxlintrc.json`).
 
 ## Adding tests for a new module
 

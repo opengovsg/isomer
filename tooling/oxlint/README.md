@@ -4,6 +4,8 @@ Shared **Oxlint** configuration for Isomer. This package **depends on** `oxlint`
 
 Workspaces whose `.oxlintrc.json` uses **`jsPlugins`: `eslint-plugin-storybook`** (for `storybook/*` rules) should list **`eslint-plugin-storybook`** in their own `devDependencies`—Oxlint loads that package via [JS plugins](https://oxc.rs/docs/guide/usage/linter/js-plugins); **ESLint itself is not required**.
 
+`apps/studio` also loads **`eslint-plugin-isomer-e2e`** for Playwright E2E convention rules on `tests/e2e/**/*.test.ts`.
+
 ## Use in this monorepo
 
 Add the config package to any workspace that runs lint:

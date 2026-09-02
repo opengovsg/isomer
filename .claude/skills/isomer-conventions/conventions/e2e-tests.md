@@ -9,6 +9,8 @@ Living reference for `apps/studio/tests/e2e/`. Update when the stack introduces 
 
 Fixture import paths and onboarding: `apps/studio/tests/e2e/README.md`.
 
+Enforced in CI via Oxlint (`eslint-plugin-isomer-e2e` + `no-restricted-imports` override on `tests/e2e/**/*.test.ts` in `apps/studio/.oxlintrc.json`).
+
 ## File layout
 
 - `tests/e2e/<module>/<surface>.test.ts` — one file per UI surface
