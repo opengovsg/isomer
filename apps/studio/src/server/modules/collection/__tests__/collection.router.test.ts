@@ -2378,4 +2378,171 @@ describe("collection.router", async () => {
       expect(result).toHaveLength(0)
     })
   })
+
+  describe("getCollectionShowThumbnail", () => {
+    const indexPageBlob = (showThumbnail?: {
+      fallback: "logo" | "first-image"
+    }) => ({
+      layout: "collection" as const,
+      page: {
+        title: "Test Collection",
+        subtitle: "Test subtitle",
+        ...(showThumbnail ? { showThumbnail } : {}),
+      },
+      content: [],
+      version: "0.1.0",
+    })
+
+    async function setupCollectionWithIndexPage() {
+      const { collection, site } = await setupCollection()
+      const { page: indexPage, blob: indexBlob } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.IndexPage,
+        parentId: collection.id,
+      })
+      return { collection, site, indexPage, indexBlob }
+    }
+
+    async function publishIndexPage(
+      indexPageId: string,
+      showThumbnail?: { fallback: "logo" | "first-image" },
+    ) {
+      const publishedBlob = await db
+        .insertInto("Blob")
+        .values({ content: jsonb(indexPageBlob(showThumbnail)) })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+      const version = await db
+        .insertInto("Version")
+        .values({
+          versionNum: 1,
+          resourceId: indexPageId,
+          blobId: publishedBlob.id,
+          publishedBy: session.userId!,
+        })
+        .returning("id")
+        .executeTakeFirstOrThrow()
+      await db
+        .updateTable("Resource")
+        .set({ publishedVersionId: version.id })
+        .where("id", "=", indexPageId)
+        .execute()
+    }
+
+    it("should throw 401 if not logged in", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      const { page: collectionPage } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+      })
+
+      // Act
+      const result = unauthedCaller.getCollectionShowThumbnail({
+        siteId: site.id,
+        resourceId: Number(collectionPage.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user does not have read access", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      const { page: collectionPage } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+      })
+
+      // Act
+      const result = caller.getCollectionShowThumbnail({
+        siteId: site.id,
+        resourceId: Number(collectionPage.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should return the showThumbnail setting from the published blob", async () => {
+      // Arrange
+      const { collection, site, indexPage } =
+        await setupCollectionWithIndexPage()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await publishIndexPage(indexPage.id, { fallback: "logo" })
+      const { page: collectionPage } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+      })
+
+      // Act
+      const result = await caller.getCollectionShowThumbnail({
+        siteId: site.id,
+        resourceId: Number(collectionPage.id),
+      })
+
+      // Assert
+      expect(result).toEqual({ fallback: "logo" })
+    })
+
+    it("should fall back to the draft blob when there is no published version", async () => {
+      // Arrange
+      const { collection, site, indexBlob } =
+        await setupCollectionWithIndexPage()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await db
+        .updateTable("Blob")
+        .set({ content: jsonb(indexPageBlob({ fallback: "first-image" })) })
+        .where("id", "=", indexBlob.id)
+        .execute()
+      const { page: collectionPage } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+      })
+
+      // Act
+      const result = await caller.getCollectionShowThumbnail({
+        siteId: site.id,
+        resourceId: Number(collectionPage.id),
+      })
+
+      // Assert
+      expect(result).toEqual({ fallback: "first-image" })
+    })
+
+    it("should return undefined when the collection does not display thumbnails", async () => {
+      // Arrange
+      const { collection, site, indexPage } =
+        await setupCollectionWithIndexPage()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await publishIndexPage(indexPage.id)
+      const { page: collectionPage } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+      })
+
+      // Act
+      const result = await caller.getCollectionShowThumbnail({
+        siteId: site.id,
+        resourceId: Number(collectionPage.id),
+      })
+
+      // Assert
+      expect(result).toBeUndefined()
+    })
+  })
 })

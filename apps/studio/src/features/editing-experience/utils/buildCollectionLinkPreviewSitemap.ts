@@ -2,6 +2,7 @@ import type { IsomerSitemap } from "@opengovsg/isomer-components"
 import type { CollectionLinkProps } from "~/schemas/collection"
 import { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 
+import type { CollectionShowThumbnail } from "../hooks/useCollectionShowThumbnail"
 import type { CollectionTags } from "../hooks/useCollectionTags"
 
 interface BuildCollectionLinkPreviewSitemapProps {
@@ -13,6 +14,7 @@ interface BuildCollectionLinkPreviewSitemapProps {
   /** Titles of the folders between the site root and the collection, root-first. */
   ancestorTitles: string[]
   tagCategories: CollectionTags | undefined
+  showThumbnail: CollectionShowThumbnail
   lastModified: string
 }
 
@@ -32,6 +34,7 @@ export const buildCollectionLinkPreviewSitemap = ({
   collectionTitle,
   ancestorTitles,
   tagCategories,
+  showThumbnail,
   lastModified,
 }: BuildCollectionLinkPreviewSitemapProps): IsomerSitemap => {
   const collectionPermalink = getCollectionPermalink(permalink)
@@ -44,7 +47,7 @@ export const buildCollectionLinkPreviewSitemap = ({
     layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,
     title: collectionTitle,
     summary: "",
-    collectionPagePageProps: { tagCategories },
+    collectionPagePageProps: { tagCategories, showThumbnail },
     children: [
       {
         id: "9999999",

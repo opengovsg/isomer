@@ -40,6 +40,7 @@ import {
   createCollectionIndexJson,
   createCollectionLinkJson,
   createCollectionPageJson,
+  getCollectionShowThumbnailForResource,
   getCollectionTagsForResource,
 } from "./collection.service"
 
@@ -548,6 +549,32 @@ export const collectionRouter = router({
           resourceId,
           isPublishedOnly: true,
         })
+      }
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Either collectionId or resourceId must be provided",
+      })
+    }),
+
+  // The collection link preview renders the parent collection index page, which
+  // only shows item thumbnails when its `showThumbnail` setting is enabled. This
+  // exposes that setting so the preview matches the published collection page.
+  getCollectionShowThumbnail: protectedProcedure
+    .input(getCollectionTagsSchema)
+    .query(async ({ ctx, input: { resourceId, collectionId, siteId } }) => {
+      const resourceIdToValidate = collectionId ?? resourceId
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+        resourceIds: resourceIdToValidate ? [String(resourceIdToValidate)] : [],
+      })
+
+      if (collectionId !== undefined) {
+        return getCollectionShowThumbnailForResource({ siteId, collectionId })
+      }
+      if (resourceId !== undefined) {
+        return getCollectionShowThumbnailForResource({ siteId, resourceId })
       }
       throw new TRPCError({
         code: "BAD_REQUEST",

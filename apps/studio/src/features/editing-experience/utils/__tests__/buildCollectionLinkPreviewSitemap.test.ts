@@ -22,6 +22,7 @@ const buildSitemap = (
     collectionTitle: "Circulars",
     ancestorTitles: [],
     tagCategories: undefined,
+    showThumbnail: undefined,
     lastModified: "2024-01-01",
     ...overrides,
   })
@@ -103,6 +104,35 @@ describe("buildCollectionLinkPreviewSitemap", () => {
         summary: "A summary",
         permalink: "/circulars/my-link",
         ref: "[resource:1:2]",
+      })
+    })
+
+    it("carries the link's thumbnail so the collection can render it", () => {
+      // Arrange
+      const image = { src: "https://example.com/thumb.png", alt: "Thumbnail" }
+
+      // Act
+      const result = buildSitemap({ link: { ...LINK, image } })
+      const linkNode = result.children?.[0]?.children?.[0]
+
+      // Assert
+      expect(linkNode).toMatchObject({ image })
+    })
+  })
+
+  describe("the collection node", () => {
+    it("passes the collection's showThumbnail setting through", () => {
+      // Arrange
+      const showThumbnail = { fallback: "logo" as const }
+
+      // Act
+      const result = buildSitemap({ showThumbnail })
+      const collectionNode = result.children?.[0]
+
+      // Assert
+      expect(collectionNode).toMatchObject({
+        layout: "collection",
+        collectionPagePageProps: { showThumbnail },
       })
     })
   })

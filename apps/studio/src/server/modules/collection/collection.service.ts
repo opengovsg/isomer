@@ -56,16 +56,20 @@ export const createCollectionIndexJson = (title: string) => {
   }
 }
 
-export const getCollectionTagsForResource = async ({
+type CollectionIndexPageLocator = { siteId: number } & MergeExclusive<
+  { resourceId: number },
+  { collectionId: number }
+>
+
+// Reads the collection index page blob for the collection identified either
+// directly (`collectionId`) or via one of its items (`resourceId`). Returns the
+// published and draft content so callers can pick their own resolution order.
+const getCollectionIndexContent = async ({
   resourceId,
   collectionId,
   siteId,
-  isPublishedOnly = false,
-}: { siteId: number; isPublishedOnly?: boolean } & MergeExclusive<
-  { resourceId: number },
-  { collectionId: number }
->): Promise<NonNullable<CollectionPageSchemaType["page"]["tagCategories"]>> => {
-  const row = await db
+}: CollectionIndexPageLocator) => {
+  return db
     .selectFrom("Resource as r")
     .leftJoin("Blob as draftBlob", "r.draftBlobId", "draftBlob.id")
     .leftJoin("Version as v", "r.publishedVersionId", "v.id")
@@ -93,6 +97,15 @@ export const getCollectionTagsForResource = async ({
       ),
     ])
     .executeTakeFirst()
+}
+
+export const getCollectionTagsForResource = async ({
+  isPublishedOnly = false,
+  ...locator
+}: CollectionIndexPageLocator & {
+  isPublishedOnly?: boolean
+}): Promise<NonNullable<CollectionPageSchemaType["page"]["tagCategories"]>> => {
+  const row = await getCollectionIndexContent(locator)
 
   if (!row) {
     return []
@@ -103,4 +116,24 @@ export const getCollectionTagsForResource = async ({
     : (row.publishedContent?.page.tagCategories ??
         row.draftContent?.page.tagCategories ??
         [])
+}
+
+// The Collection layout hides every item's thumbnail unless the collection index
+// opts in via `showThumbnail`, so the collection link preview needs this setting
+// to render a link's thumbnail the same way the published collection page does.
+// Prefers the published setting and falls back to draft for never-published
+// collections, mirroring how the collection index preview resolves its blob.
+export const getCollectionShowThumbnailForResource = async (
+  locator: CollectionIndexPageLocator,
+): Promise<CollectionPageSchemaType["page"]["showThumbnail"]> => {
+  const row = await getCollectionIndexContent(locator)
+
+  if (!row) {
+    return undefined
+  }
+
+  return (
+    row.publishedContent?.page.showThumbnail ??
+    row.draftContent?.page.showThumbnail
+  )
 }

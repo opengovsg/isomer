@@ -1,5 +1,6 @@
 import type { CollectionLinkProps } from "~/schemas/collection"
 import { useMemo } from "react"
+import { useSuspenseCollectionShowThumbnail } from "~/features/editing-experience/hooks/useCollectionShowThumbnail"
 import { useSuspenseCollectionTags } from "~/features/editing-experience/hooks/useCollectionTags"
 import {
   buildCollectionLinkPreviewSitemap,
@@ -42,6 +43,11 @@ export const EditCollectionLinkPreview = ({
     siteId,
   })
 
+  const [showThumbnail] = useSuspenseCollectionShowThumbnail({
+    resourceId: linkId,
+    siteId,
+  })
+
   // Ends at the parent collection, so drop it — the collection node is built below.
   const [ancestry] = trpc.resource.getAncestryStack.useSuspenseQuery({
     resourceId: String(linkId),
@@ -71,16 +77,25 @@ export const EditCollectionLinkPreview = ({
         collectionTitle: parentTitle,
         ancestorTitles,
         tagCategories,
+        showThumbnail,
         lastModified: currentDate,
       }),
-    [permalink, title, link, parentTitle, ancestorTitles, tagCategories],
+    [
+      permalink,
+      title,
+      link,
+      parentTitle,
+      ancestorTitles,
+      tagCategories,
+      showThumbnail,
+    ],
   )
 
   return (
     <ViewportContainer siteId={siteId}>
       <PreviewWithCustomSitemap
         content={[]}
-        page={{ title: parentTitle, tagCategories }}
+        page={{ title: parentTitle, tagCategories, showThumbnail }}
         layout={"collection"}
         siteId={siteId}
         siteMap={siteMap}
