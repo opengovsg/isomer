@@ -9,8 +9,8 @@
  * `useAxisDragGesture` feeds it events and carries out the intents it returns.
  */
 
-import type { Axis } from "./axis"
 import type { AxisProjection, Rect, TableGeometry } from "./axisMath"
+import type { Axis } from "./axisView"
 import {
   boundariesFromGeometry,
   collectAxisBoundaries,
