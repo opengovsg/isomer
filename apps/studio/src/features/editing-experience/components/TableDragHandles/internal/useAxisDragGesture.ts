@@ -1,6 +1,5 @@
 import type { Editor as TiptapEditor } from "@tiptap/react"
 import type { MouseEvent as ReactMouseEvent, RefObject } from "react"
-import type { Rect } from "~/features/editing-experience/utils/tableEditorGeometry"
 import {
   useCallback,
   useEffect,
@@ -8,11 +7,12 @@ import {
   useRef,
   useState,
 } from "react"
-import { viewportPointToContainerPoint } from "~/features/editing-experience/utils/tableEditorGeometry"
 
 import type { Axis } from "./axis"
+import type { Rect } from "./coordinates"
 import type { TableGeometry } from "./geometry"
 import { AXIS, getAxisLockMinIndex } from "./axis"
+import { viewportPointToContainerPoint } from "./coordinates"
 import {
   boundariesFromGeometry,
   collectAxisBoundaries,

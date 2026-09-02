@@ -1,13 +1,10 @@
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model"
 import type { Editor as TiptapEditor } from "@tiptap/react"
 import { TableMap } from "@tiptap/pm/tables"
-import {
-  type Rect,
-  viewportRectToContainerRect,
-} from "~/features/editing-experience/utils/tableEditorGeometry"
 
 import type { Axis } from "./axis"
 import { AXIS } from "./axis"
+import { type Rect, viewportRectToContainerRect } from "./coordinates"
 
 export interface TableGeometry {
   pos: number

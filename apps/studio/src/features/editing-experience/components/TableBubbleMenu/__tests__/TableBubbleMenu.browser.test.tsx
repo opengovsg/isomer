@@ -9,7 +9,7 @@ import { EditorContent } from "@tiptap/react"
 import { useEffect, useRef, useState } from "react"
 import { afterEach, describe, expect, it } from "vitest"
 import { userEvent } from "vitest/browser"
-import { TableDragHandles } from "~/features/editing-experience/components/TableDragHandles/TableDragHandles"
+import { TableDragHandles } from "~/features/editing-experience/components/TableDragHandles"
 import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor"
 import { theme } from "~/theme"
 

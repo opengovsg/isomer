@@ -1,5 +1,4 @@
 import type { MouseEvent as ReactMouseEvent } from "react"
-import type { Rect } from "~/features/editing-experience/utils/tableEditorGeometry"
 import { Box } from "@chakra-ui/react"
 import {
   ADD_PILL_ICON_SIZE_PX,
@@ -9,6 +8,7 @@ import {
 } from "~/features/editing-experience/utils/tableEditorChrome"
 
 import type { Axis } from "./axis"
+import type { Rect } from "./coordinates"
 import { AXIS } from "./axis"
 import { DotsIcon, PlusIcon } from "./icons"
 
