@@ -12,8 +12,7 @@ export interface Filter {
   items: FilterItem[]
   // NOTE: only set for tag-category filters; category/year filters omit this.
   display?: TagCategoryDisplay
-  // Set only on date-type tag-category filters (see getDateFilters in PR 2).
-  // Text filters omit this; resolveTagCategoryType treats missing as text.
+  // Present on date tag-category filters only.
   type?: typeof TAG_CATEGORY_TYPE.Date
 }
 
@@ -24,8 +23,7 @@ interface AppliedFilterItem {
 export interface AppliedFilter {
   id: Filter["id"]
   items: AppliedFilterItem[]
-  // Date filters only. AND'd with items when both are set.
-  // yyyy-MM-dd, same as dateTagged.
+  // Date filters only. yyyy-MM-dd, same as dateTagged.
   dateRange?: { start: string; end: string }
 }
 

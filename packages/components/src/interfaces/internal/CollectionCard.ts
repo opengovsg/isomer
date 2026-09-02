@@ -7,8 +7,7 @@ import type {
 } from "~/types"
 import type { DateFilterStatusId } from "~/types/constants"
 
-// Resolved date-filter display for cards. status from getDateFilterStatus.
-// dateText is the formatted date or range string.
+// Precomputed for card display.
 export interface DateFilterCard {
   id: string
   label: string
@@ -35,9 +34,7 @@ interface BaseCardProps {
   // NOTE: Same shape as `pillTags`, but only includes groups shown as plaintext
   // — rendered as comma-joined text, dot-separated between groups (see PlaintextTags)
   plaintextTags?: TagGroup[]
-  // Mirrors dateTagged schema. Matching only, not rendered.
   dateTagged?: DateTaggedItem[]
-  // Resolved for cards. See DateFilterCard.
   dateFilterCards?: DateFilterCard[]
   title: string
   url: string
