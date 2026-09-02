@@ -2,7 +2,7 @@ import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
 import type { BreadcrumbProps } from "./Breadcrumb"
-import type { CollectionCardProps } from "./CollectionCard"
+import type { CollectionCardProps, DateFilterCard } from "./CollectionCard"
 
 export const ArticlePageHeaderSchema = Type.Object({
   summary: Type.String({
@@ -19,4 +19,5 @@ export type ArticlePageHeaderProps = Static<typeof ArticlePageHeaderSchema> & {
   title: string
   plaintextTags?: CollectionCardProps["plaintextTags"]
   date?: string
+  dateFilterCards?: DateFilterCard[]
 }

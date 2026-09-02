@@ -15,7 +15,9 @@ import {
 } from "~/utils/validation"
 
 import {
+  DATE_FILTER_STATUS_ID,
   TAG_CATEGORY_DISPLAY_OPTIONS,
+  TAG_CATEGORY_TYPE,
   type TagCategoryDisplay,
 } from "./constants"
 
@@ -35,31 +37,48 @@ const TagCategoryUuidSchema = generateUuidSchema({
     "This is the uuid of a single tag category and will be used to uniquely identify it.",
 })
 
-const TagCategorySchema = Type.Composite([
-  Type.Object({
-    label: Type.String({
-      title: "Filter name",
-      pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
-      errorMessage: {
-        pattern: "cannot be empty or have leading/trailing spaces",
-      },
+const DateFilterStatusIdSchema = Type.Union([
+  Type.Literal(DATE_FILTER_STATUS_ID.Ended),
+  Type.Literal(DATE_FILTER_STATUS_ID.Ongoing),
+  Type.Literal(DATE_FILTER_STATUS_ID.Upcoming),
+])
+
+const tagCategoryLabelSchemaObject = {
+  label: Type.String({
+    title: "Filter name",
+    pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
+    errorMessage: {
+      pattern: "cannot be empty or have leading/trailing spaces",
+    },
+  }),
+  id: TagCategoryUuidSchema,
+}
+
+const tagCategoryIsRequiredSchemaObject = {
+  // Optional for backward compatibility. Missing/`undefined` must be read as `false`.
+  // Omit JSON Schema `default`: Studio AJV runs with useDefaults, which would apply the
+  // same default to legacy rows that omit this key. New filters set `isRequired: true` in
+  // the tag-categories JsonForms control when adding an item.
+  isRequired: Type.Optional(
+    Type.Boolean({
+      title: "This filter is required",
+      description:
+        "Every item must have at least one option selected from this filter.",
     }),
-    id: TagCategoryUuidSchema,
-  }),
-  Type.Object({
-    // Optional for backward compatibility. Missing/`undefined` must be read as `false`.
-    // Omit JSON Schema `default`: Studio AJV runs with useDefaults, which would apply the
-    // same default to legacy rows that omit this key. New filters set `isRequired: true` in
-    // the tag-categories JsonForms control when adding an item.
-    isRequired: Type.Optional(
-      Type.Boolean({
-        title: "This filter is required",
-        description:
-          "Every item must have at least one option selected from this filter.",
-      }),
+  ),
+}
+
+const TextFilterSchema = Type.Object(
+  {
+    ...tagCategoryLabelSchemaObject,
+    // Optional for backward compatibility — every pre-existing `tagCategories`
+    // entry was a text filter before date filters existed. Must stay
+    // `"text"` or absent (never `"date"`) so this branch and `DateFilterSchema`
+    // remain mutually exclusive for `oneOf` resolution.
+    type: Type.Optional(
+      Type.Literal(TAG_CATEGORY_TYPE.Text, { format: "hidden" }),
     ),
-  }),
-  Type.Object({
+    ...tagCategoryIsRequiredSchemaObject,
     // Optional for backward compatibility. Missing/`undefined` must be read as
     // `DEFAULT_TAG_CATEGORY_DISPLAY` via `resolveTagCategoryDisplay`.
     // Omit JSON Schema `default`: Studio AJV runs with useDefaults, which would apply the
@@ -82,8 +101,6 @@ const TagCategorySchema = Type.Composite([
         format: "image-radio/2col",
       }),
     ),
-  }),
-  Type.Object({
     options: Type.Array(
       Type.Object({
         label: Type.String({
@@ -102,8 +119,76 @@ const TagCategorySchema = Type.Composite([
         format: "tag-category-options",
       },
     ),
-  }),
-])
+  },
+  { title: "Text filter" },
+)
+
+const DateFilterSchema = Type.Object(
+  {
+    ...tagCategoryLabelSchemaObject,
+    // Required (never absent) — a date filter is only ever created going
+    // forward via the type-choice modal, never a legacy row. Must stay
+    // `"date"` so this branch and `TextFilterSchema` remain mutually
+    // exclusive for `oneOf` resolution.
+    type: Type.Literal(TAG_CATEGORY_TYPE.Date, { format: "hidden" }),
+    ...tagCategoryIsRequiredSchemaObject,
+    // Fixed at exactly 3 entries, keyed by the well-known
+    // `DATE_FILTER_STATUS_ID`s — only the `label` is admin-editable (the admin
+    // UI hides add/remove for this list); the id set itself is what future
+    // work would need to extend, not something today's UI exposes.
+    statusLabels: Type.Array(
+      Type.Object({
+        id: DateFilterStatusIdSchema,
+        label: Type.String({
+          title: "Status label",
+          pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
+          errorMessage: {
+            pattern: "cannot be empty or have leading/trailing spaces",
+          },
+        }),
+      }),
+      {
+        title: "Status labels",
+        description:
+          "Customise the labels shown for each status. These are computed automatically from the dates entered on each item.",
+        format: "date-filter-status-labels",
+        minItems: 3,
+        maxItems: 3,
+      },
+    ),
+  },
+  { title: "Date filter" },
+)
+
+export type TextFilterSchemaType = Static<typeof TextFilterSchema>
+export type DateFilterSchemaType = Static<typeof DateFilterSchema>
+
+export const isDateFilter = (
+  tagCategory: TextFilterSchemaType | DateFilterSchemaType,
+): tagCategory is DateFilterSchemaType =>
+  tagCategory.type === TAG_CATEGORY_TYPE.Date
+
+export const isTextFilter = (
+  tagCategory: TextFilterSchemaType | DateFilterSchemaType,
+): tagCategory is TextFilterSchemaType => !isDateFilter(tagCategory)
+
+// A real `oneOf` union rather than a flat object with every field optional:
+// each filter type only ever carries the fields that are meaningful for it
+// (a date filter genuinely has no `display`/`options`, not just a hidden
+// one). The dedicated `"tag-category-item"` format lets a custom Studio
+// control (JsonFormsTagCategoryItemControl) dispatch straight to whichever
+// branch already matches the data — bypassing JSONForms' generic `oneOf`
+// renderer, which would otherwise show an always-visible "Variant" picker
+// the admin has no reason to see (the type was already decided by the
+// type-choice modal on creation). `oneOf` order is load-bearing: index 0 is
+// text, index 1 is date — JsonFormsTagCategoryItemControl indexes into this
+// same array via JSONForms' own `indexOfFittingSchema`.
+const TagCategorySchema = Type.Unsafe<
+  TextFilterSchemaType | DateFilterSchemaType
+>({
+  oneOf: [TextFilterSchema, DateFilterSchema],
+  format: "tag-category-item",
+})
 // NOTE: can be optional because the categories might not exist
 const TagCategoriesSchema = Type.Object({
   tagCategories: Type.Optional(
@@ -123,6 +208,27 @@ const TaggedSchema = Type.Optional(
     // as we need to reference the existing data that is pointing to this
     format: "tagged",
   }),
+)
+
+// NOTE: one entry per date-type `tagCategories` filter the item has a value
+// for — `id` references that filter's `id` (distinct from `tagged`, which is
+// a flat list of *option* ids since text filters have no per-item value
+// shape to key by; a date filter's per-item value is data the editor typed
+// in, not a selection from a list, so each entry needs to carry both the
+// key and the value together). `endDate` present = the item picked a range;
+// absent = a single date, treated as a 1-day event by status computation.
+const DateTaggedSchema = Type.Optional(
+  Type.Array(
+    Type.Object({
+      id: TagCategoryUuidSchema,
+      date: Type.String({ format: "date" }),
+      endDate: Type.Optional(Type.String({ format: "date" })),
+    }),
+    {
+      description: "Pick a single date or a range.",
+      format: "date-tagged",
+    },
+  ),
 )
 
 const categorySchemaObject = Type.Object({
@@ -146,6 +252,7 @@ const dateSchemaObject = Type.Object({
 const BaseRefPageSchema = Type.Composite([
   categorySchemaObject,
   Type.Object({ tagged: TaggedSchema }),
+  Type.Object({ dateTagged: DateTaggedSchema }),
   dateSchemaObject,
   imageSchemaObject,
   Type.Object({
@@ -185,6 +292,7 @@ const TagsSchema = Type.Object(
 export const ArticlePagePageSchema = Type.Composite([
   categorySchemaObject,
   Type.Object({ tagged: TaggedSchema }),
+  Type.Object({ dateTagged: DateTaggedSchema }),
   dateSchemaObject,
   Type.Object({
     articlePageHeader: ArticlePageHeaderSchema,
