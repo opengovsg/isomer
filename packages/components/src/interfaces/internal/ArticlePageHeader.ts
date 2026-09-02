@@ -19,4 +19,5 @@ export type ArticlePageHeaderProps = Static<typeof ArticlePageHeaderSchema> & {
   title: string
   plaintextTags?: CollectionCardProps["plaintextTags"]
   date?: string
+  dateFilterDisplayEntries?: CollectionCardProps["dateFilterDisplayEntries"]
 }

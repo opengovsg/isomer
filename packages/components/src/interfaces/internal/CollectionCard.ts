@@ -1,5 +1,32 @@
 import type { ImageProps } from "~/interfaces"
-import type { FormattedDate, IsomerSiteProps, TagGroup } from "~/types"
+import type {
+  DateTaggedItem,
+  FormattedDate,
+  IsomerSiteProps,
+  TagGroup,
+} from "~/types"
+import type { DateFilterStatusId } from "~/types/constants"
+
+// NOTE: server-precomputed display fields for a date filter (label + formatted
+// date text + admin status labels). Live status is derived on the client.
+export interface DateFilterDisplayEntry {
+  id: string
+  label: string
+  dateText: string
+  date: string
+  endDate?: string
+  statusLabels: Record<DateFilterStatusId, string>
+}
+
+// NOTE: fully resolved card display entry, including live status — only
+// produced on the client (see EventDateFilterDisplay).
+export interface DateFilterCard {
+  id: string
+  label: string
+  status: DateFilterStatusId
+  statusLabel: string
+  dateText: string
+}
 
 interface FileDetails {
   type: string
@@ -19,6 +46,10 @@ interface BaseCardProps {
   // NOTE: Same shape as `pillTags`, but only includes groups shown as plaintext
   // — rendered as comma-joined text, dot-separated between groups (see PlaintextTags)
   plaintextTags?: TagGroup[]
+  // NOTE: raw per-item date-filter values — used for filter matching only.
+  dateTagged?: DateTaggedItem[]
+  // NOTE: server-precomputed label + date text for EventDateFilterDisplay.
+  dateFilterDisplayEntries?: DateFilterDisplayEntry[]
   title: string
   url: string
   description: string
@@ -56,6 +87,8 @@ export type CollectionCardProps = Pick<
   | "tags"
   | "pillTags"
   | "isContainNeeded"
+  | "dateTagged"
+  | "dateFilterDisplayEntries"
 > & {
   referenceLinkHref: string | undefined
   imageSrc: string | undefined

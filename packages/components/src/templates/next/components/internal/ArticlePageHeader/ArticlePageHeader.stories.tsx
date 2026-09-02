@@ -1,7 +1,48 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { ArticlePageHeaderProps } from "~/interfaces"
+import type { CollectionPagePageProps } from "~/types"
+import { isDateFilter } from "~/types/page"
 
 import { ArticlePageHeader } from "./ArticlePageHeader"
+
+const pad = (n: number): string => n.toString().padStart(2, "0")
+const toDateString = (date: Date) =>
+  `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+const daysFromNow = (days: number) => {
+  const date = new Date()
+  date.setDate(date.getDate() + days)
+  return toDateString(date)
+}
+
+const DATE_FILTER_TAG_CATEGORIES: CollectionPagePageProps["tagCategories"] = [
+  {
+    id: "event-date",
+    label: "Event Date",
+    type: "date",
+    statusLabels: [
+      { id: "ENDED", label: "Event ended" },
+      { id: "ONGOING", label: "Ongoing" },
+      { id: "UPCOMING", label: "Upcoming" },
+    ],
+  },
+  {
+    id: "registration-deadline",
+    label: "Registration Deadline",
+    type: "date",
+    statusLabels: [
+      { id: "ENDED", label: "Registration closed" },
+      { id: "ONGOING", label: "Registration open" },
+      { id: "UPCOMING", label: "Registration upcoming" },
+    ],
+  },
+]
+
+const statusLabelsFor = (categoryId: string) => {
+  const category = DATE_FILTER_TAG_CATEGORIES?.find(
+    (entry) => entry.id === categoryId,
+  )
+  return category && isDateFilter(category) ? category.statusLabels : []
+}
 
 const meta: Meta<ArticlePageHeaderProps> = {
   title: "Next/Internal Components/ArticlePageHeader",
@@ -73,6 +114,48 @@ export const ArticleWithTags: Story = {
       {
         category: "Tags",
         selected: ["NParks Happenings", "Wild dinosaur"],
+      },
+    ],
+  },
+}
+
+export const WithDateFilter: Story = {
+  args: {
+    ...ARTICLE,
+    title: "Annual Community Charity Run 2026",
+    dateFilterDisplayEntries: [
+      {
+        id: "event-date",
+        label: "Event Date",
+        dateText: "27 Sep - 29 Sep 2026",
+        date: daysFromNow(-5),
+        endDate: daysFromNow(5),
+        statusLabels: statusLabelsFor("event-date"),
+      },
+    ],
+  },
+}
+
+export const WithMultipleDateFilters: Story = {
+  args: {
+    ...ARTICLE,
+    title: "Item with two date filters",
+    dateFilterDisplayEntries: [
+      {
+        id: "event-date",
+        label: "Event Date",
+        dateText: "27 Sep - 29 Sep 2026",
+        date: daysFromNow(30),
+        endDate: daysFromNow(40),
+        statusLabels: statusLabelsFor("event-date"),
+      },
+      {
+        id: "registration-deadline",
+        label: "Registration Deadline",
+        dateText: "1 Jan - 10 Sep 2026",
+        date: daysFromNow(-5),
+        endDate: daysFromNow(5),
+        statusLabels: statusLabelsFor("registration-deadline"),
       },
     ],
   },
