@@ -10,8 +10,8 @@ const DOTS_SHORT_PX = 4
  * The three-dot grip on a drag handle. Both orientations are the same circles
  * with their coordinates transposed, so the shape is described once.
  *
- * Inherits its colour from the handle via `currentColor` — that is what drives
- * the passive/hover/selected states, so callers should not set `fill`.
+ * Uses `currentColor` from the handle for passive, hover, and selected states.
+ * Callers should not set `fill`.
  */
 export const DotsIcon = ({
   orientation,

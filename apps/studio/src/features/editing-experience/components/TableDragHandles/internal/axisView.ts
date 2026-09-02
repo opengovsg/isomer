@@ -1,10 +1,8 @@
 /**
- * Everything about a row or column axis that needs no access to the document:
- * how it projects a rect onto the coordinate it runs along, and how big its
- * handle is.
+ * Row/column axis helpers that do not need the document: how a rect projects
+ * onto the axis coordinate, and handle size.
  *
- * Kept apart from `axisTableOps.ts` so the presentational and arithmetic parts
- * of this module can describe an axis without importing ProseMirror.
+ * Split from `axisTableOps.ts` so layout math can run without ProseMirror.
  */
 
 import type { AxisProjection } from "./axisMath"

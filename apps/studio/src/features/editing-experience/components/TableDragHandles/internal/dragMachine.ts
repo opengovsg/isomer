@@ -1,12 +1,11 @@
 /**
- * Every rule governing a press-and-drag on a row or column handle, as a pure
- * transition over `(state, event)`.
+ * Press-and-drag rules for row and column handles, as a pure `(state, event)`
+ * transition.
  *
- * A press becomes a *pending* gesture; it only becomes a *drag* once the
- * pointer travels far enough, and never for a locked header slot. Releasing a
- * pending gesture selects the slot, so handles stay clickable; releasing a drag
- * reorders. Nothing here touches the DOM, the editor or React —
- * `useAxisDragGesture` feeds it events and carries out the intents it returns.
+ * A press starts *pending*; it becomes a *drag* after the pointer moves far
+ * enough, unless the slot is locked. Release while pending selects the slot.
+ * Release while dragging reorders. No DOM, editor, or React here.
+ * `useAxisDragGesture` feeds events and runs the returned intents.
  */
 
 import type { AxisProjection, Rect, TableGeometry } from "./axisMath"

@@ -3,10 +3,9 @@
  * from it: where a dragged slot may land, which boundary the pointer is nearest,
  * and the outer bounds of a table.
  *
- * Deliberately free of DOM and ProseMirror imports. Each axis passes in an
- * `AxisProjection` describing how it reads a rect, so the same arithmetic serves
- * rows and columns and can be exercised with plain numbers. Reading these rects
- * out of a live editor is `measure.ts`'s job.
+ * No DOM or ProseMirror imports. Each axis passes an `AxisProjection` that
+ * reads rects its own way, so the same math works for rows and columns and
+ * tests can use plain numbers. `measure.ts` reads rects from the live editor.
  */
 
 export interface Rect {
@@ -101,7 +100,7 @@ export const nearestBoundaryIndex = (
  * The slot index a drop lands on. Boundaries are indexed from the first movable
  * slot, so `lockMinIndex` shifts them back onto real slot indexes; landing past
  * the dragged slot's own trailing edge shifts back one more, because the slot
- * vacates its old position on the way; and a locked header axis is a floor.
+ * moves out of its old position on the way. A locked header axis is a floor.
  */
 export const resolveDropIndex = ({
   pointer,
