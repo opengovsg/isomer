@@ -166,12 +166,8 @@ const DateFilterSchema = Type.Object(
   { title: "Date filter" },
 )
 
-// oneOf keeps each filter type's fields separate. A date filter has no
-// display or options fields at all.
-// format "tag-category-item" hands off to JsonFormsTagCategoryItemControl,
-// which skips JsonForms' generic Variant picker. The admin already picked
-// text vs date in the creation modal.
-// Order is load-bearing: text at index 0, date at index 1.
+// oneOf, not a flat object with every field optional. Order: text=0, date=1.
+// format "tag-category-item" routes to JsonFormsTagCategoryItemControl.
 const TagCategorySchema = Type.Unsafe<
   Static<typeof TextFilterSchema> | Static<typeof DateFilterSchema>
 >({
@@ -199,9 +195,7 @@ const TaggedSchema = Type.Optional(
   }),
 )
 
-// One entry per date filter on this item. id is the filter uuid.
-// tagged is a flat list of option ids. dateTagged carries the typed dates.
-// No endDate means a single-day event.
+// id is the filter uuid. No endDate means a single-day event.
 const DateTaggedItemSchema = Type.Object({
   id: TagCategoryUuidSchema,
   date: Type.String({ format: "date" }),
