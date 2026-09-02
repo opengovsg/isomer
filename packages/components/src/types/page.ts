@@ -69,6 +69,18 @@ const tagCategoryIsRequiredSchemaObject = {
   ),
 }
 
+const dateFilterIsRequiredSchemaObject = {
+  // Same semantics as `tagCategoryIsRequiredSchemaObject`, but date filters use
+  // item-specific copy in Studio because the requirement applies to dates, not
+  // tag options.
+  isRequired: Type.Optional(
+    Type.Boolean({
+      title: "This date is required",
+      description: "Every item must have a date entered for this filter.",
+    }),
+  ),
+}
+
 const TextFilterSchema = Type.Object(
   {
     ...tagCategoryLabelSchemaObject,
@@ -132,7 +144,7 @@ const DateFilterSchema = Type.Object(
     // `"date"` so this branch and `TextFilterSchema` remain mutually
     // exclusive for `oneOf` resolution.
     type: Type.Literal(TAG_CATEGORY_TYPE.Date, { format: "hidden" }),
-    ...tagCategoryIsRequiredSchemaObject,
+    ...dateFilterIsRequiredSchemaObject,
     // Fixed at exactly 3 entries, keyed by the well-known
     // `DATE_FILTER_STATUS_ID`s — only the `label` is admin-editable (the admin
     // UI hides add/remove for this list); the id set itself is what future
