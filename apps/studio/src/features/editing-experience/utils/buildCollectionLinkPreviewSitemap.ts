@@ -1,8 +1,10 @@
-import type { IsomerSitemap } from "@opengovsg/isomer-components"
+import type {
+  CollectionPagePageProps,
+  IsomerSitemap,
+} from "@opengovsg/isomer-components"
 import type { CollectionLinkProps } from "~/schemas/collection"
 import { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 
-import type { CollectionShowThumbnail } from "../hooks/useCollectionShowThumbnail"
 import type { CollectionTags } from "../hooks/useCollectionTags"
 
 interface BuildCollectionLinkPreviewSitemapProps {
@@ -14,7 +16,7 @@ interface BuildCollectionLinkPreviewSitemapProps {
   /** Titles of the folders between the site root and the collection, root-first. */
   ancestorTitles: string[]
   tagCategories: CollectionTags | undefined
-  showThumbnail: CollectionShowThumbnail
+  showThumbnail: CollectionPagePageProps["showThumbnail"]
   lastModified: string
 }
 

@@ -123,17 +123,21 @@ export const getCollectionTagsForResource = async ({
 // to render a link's thumbnail the same way the published collection page does.
 // Prefers the published setting and falls back to draft for never-published
 // collections, mirroring how the collection index preview resolves its blob.
+// Returns `null` (never `undefined`) so it is a valid React Query result.
 export const getCollectionShowThumbnailForResource = async (
   locator: CollectionIndexPageLocator,
-): Promise<CollectionPageSchemaType["page"]["showThumbnail"]> => {
+): Promise<NonNullable<
+  CollectionPageSchemaType["page"]["showThumbnail"]
+> | null> => {
   const row = await getCollectionIndexContent(locator)
 
   if (!row) {
-    return undefined
+    return null
   }
 
   return (
     row.publishedContent?.page.showThumbnail ??
-    row.draftContent?.page.showThumbnail
+    row.draftContent?.page.showThumbnail ??
+    null
   )
 }

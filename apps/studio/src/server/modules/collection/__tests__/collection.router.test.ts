@@ -2523,7 +2523,7 @@ describe("collection.router", async () => {
       expect(result).toEqual({ fallback: "first-image" })
     })
 
-    it("should return undefined when the collection does not display thumbnails", async () => {
+    it("should return null when the collection does not display thumbnails", async () => {
       // Arrange
       const { collection, site, indexPage } =
         await setupCollectionWithIndexPage()
@@ -2542,7 +2542,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      expect(result).toBeUndefined()
+      expect(result).toBeNull()
     })
   })
 })

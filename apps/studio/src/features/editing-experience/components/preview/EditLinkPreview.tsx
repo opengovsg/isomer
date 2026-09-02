@@ -6,11 +6,13 @@ import {
   buildCollectionLinkPreviewSitemap,
   getCollectionPermalink,
 } from "~/features/editing-experience/utils/buildCollectionLinkPreviewSitemap"
+import { withSuspense } from "~/hocs/withSuspense"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { editLinkSchema } from "~/pages/sites/[siteId]/links/[linkId]"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
+import { LoadingPreview } from "./LoadingPreview"
 import PreviewWithCustomSitemap from "./PreviewWithCustomSitemap"
 import { ViewportContainer } from "./ViewportContainer"
 
@@ -20,7 +22,7 @@ interface EditCollectionLinkPreviewProps {
   link: CollectionLinkProps
   title: string
 }
-export const EditCollectionLinkPreview = ({
+const SuspendableEditCollectionLinkPreview = ({
   link,
   title,
 }: EditCollectionLinkPreviewProps): JSX.Element => {
@@ -43,10 +45,13 @@ export const EditCollectionLinkPreview = ({
     siteId,
   })
 
-  const [showThumbnail] = useSuspenseCollectionShowThumbnail({
+  const [showThumbnailSetting] = useSuspenseCollectionShowThumbnail({
     resourceId: linkId,
     siteId,
   })
+  // The query returns `null` when the collection has no thumbnail setting; the
+  // Collection layout expects `undefined` to mean "no setting".
+  const showThumbnail = showThumbnailSetting ?? undefined
 
   // Ends at the parent collection, so drop it — the collection node is built below.
   const [ancestry] = trpc.resource.getAncestryStack.useSuspenseQuery({
@@ -105,3 +110,10 @@ export const EditCollectionLinkPreview = ({
     </ViewportContainer>
   )
 }
+
+// Give the preview its own Suspense boundary (as EditPagePreview does) so its
+// data fetching doesn't blank the sibling link editor drawer while loading.
+export const EditCollectionLinkPreview = withSuspense(
+  SuspendableEditCollectionLinkPreview,
+  <LoadingPreview />,
+)
