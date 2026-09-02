@@ -11,6 +11,12 @@ import { ensureUserOnboarded } from "../fixtures/user"
 
 const DEFAULT_PAGE_TITLE = "E2E Seed Page"
 
+// Quick-select presets compare against the browser's local wall-clock. Pin SGT
+// so the frozen instant below is always early morning with every preset visible.
+test.use({ timezoneId: "Asia/Singapore" })
+
+const SCHEDULE_TEST_FROZEN_TIME = new Date("2099-01-01T00:01:00+08:00")
+
 let siteId: number
 
 test.beforeAll(async () => {
@@ -33,12 +39,12 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
 
     // Act
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
-    // Freeze the clock at a fixed early-morning time so the "Quick select a
+    // Freeze the clock at a fixed early-morning SGT time so the "Quick select a
     // time?" presets (00:00/09:00/13:00/17:00) are always available: they're
     // hidden once every preset for the day has already passed, which made
     // this flow fail deterministically whenever the suite ran late in the
     // day (real time was in the past relative to those presets).
-    await page.clock.install({ time: new Date("2099-01-01T00:01:00+08:00") })
+    await page.clock.install({ time: SCHEDULE_TEST_FROZEN_TIME })
 
     await editor.openScheduleModal()
     await editor.schedulePublishForToday()
@@ -71,15 +77,10 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
   test("publisher can reschedule a scheduled publish to a different time", async ({
     page,
   }) => {
-    // Arrange. The quick-select presets (00:00/09:00/13:00/17:00) filter to
-    // whichever are still later than "now" in the browser's (UTC, on CI)
-    // wall-clock reading of the frozen instant — an explicit "+08:00" instant
-    // reads as mid-afternoon in UTC, leaving only the 17:00 preset, which is
-    // why other tests in this file (needing only one preset) freeze the clock
-    // that way. This test needs two distinct presets to reschedule between,
-    // so it freezes to an instant that's also early-morning in UTC.
+    // Arrange. With the file-level SGT timezone pinned above, the frozen
+    // instant is early morning so multiple quick-select presets stay visible.
     const { page: seededPage } = await seedFolderWithPage({ siteId })
-    await page.clock.install({ time: new Date("2099-01-01T00:01:00Z") })
+    await page.clock.install({ time: SCHEDULE_TEST_FROZEN_TIME })
 
     // Act: schedule for the 5:00 PM quick-select slot
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
@@ -118,7 +119,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
   }) => {
     // Arrange
     const { page: seededPage } = await seedFolderWithPage({ siteId })
-    await page.clock.install({ time: new Date("2099-01-01T00:01:00+08:00") })
+    await page.clock.install({ time: SCHEDULE_TEST_FROZEN_TIME })
 
     // Act
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
