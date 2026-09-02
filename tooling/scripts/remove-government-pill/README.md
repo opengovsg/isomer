@@ -1,7 +1,7 @@
 # remove-government-pill
 
-Bulk-disables the "government" scope pill on a list of Search.gov sites, via
-the [Search.gov Admin API](https://open.gsa.gov/api/search-gov/).
+Bulk-disables the "government" scope pill on a list of SearchSG sites, via
+the SearchSG Admin API (https://api.services.search.gov.sg/admin/v2).
 
 For each site ID in `sites.csv`, this script:
 
