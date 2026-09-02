@@ -2,11 +2,8 @@ import type { MouseEvent as ReactMouseEvent } from "react"
 import type { Rect } from "~/features/editing-experience/utils/tableEditorGeometry"
 import { Box } from "@chakra-ui/react"
 import {
-  ADD_PILL_HOVER_BG,
   ADD_PILL_ICON_SIZE_PX,
-  ADD_PILL_IDLE_BG,
   ADD_PILL_RADIUS_PX,
-  HANDLE_ACTIVE_BG,
   HANDLE_BORDER_RADIUS_PX,
   HANDLE_GAP_PX,
 } from "~/features/editing-experience/utils/tableEditorChrome"
@@ -57,10 +54,10 @@ const handleChromeByState = (state: HandleVisualState, isLocked: boolean) => {
     sx: {
       appearance: "none",
       WebkitAppearance: "none",
-      backgroundColor: isActive ? HANDLE_ACTIVE_BG : "white",
+      backgroundColor: isActive ? "interaction.main.default" : "white",
       color: isActive ? "white" : "interaction.support.unselected",
       _hover: isActive
-        ? { backgroundColor: HANDLE_ACTIVE_BG, color: "white" }
+        ? { backgroundColor: "interaction.main.default", color: "white" }
         : {
             backgroundColor: "interaction.muted.main.hover",
             color: "base.content.medium",
@@ -160,8 +157,8 @@ export const AddPillButton = ({
     sx={{
       appearance: "none",
       WebkitAppearance: "none",
-      backgroundColor: ADD_PILL_IDLE_BG,
-      _hover: { backgroundColor: ADD_PILL_HOVER_BG },
+      backgroundColor: "interaction.neutral-subtle.default",
+      _hover: { backgroundColor: "interaction.neutral-subtle.hover" },
     }}
     onMouseDown={(event: ReactMouseEvent) => event.preventDefault()}
     onClick={onClick}
