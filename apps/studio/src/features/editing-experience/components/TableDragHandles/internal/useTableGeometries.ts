@@ -2,12 +2,8 @@ import type { Editor as TiptapEditor } from "@tiptap/react"
 import type { RefObject } from "react"
 import { useLayoutEffect, useState } from "react"
 
-import type { TableGeometry } from "./geometry"
-import {
-  findAllTables,
-  geometriesEqual,
-  measureTableGeometry,
-} from "./geometry"
+import type { TableGeometry } from "./axisMath"
+import { findAllTables, geometriesEqual, measureTableGeometry } from "./measure"
 
 const EMPTY_GEOMETRIES: TableGeometry[] = []
 

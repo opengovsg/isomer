@@ -2,9 +2,8 @@ import type { RefObject } from "react"
 import { useEffect, useState } from "react"
 import { isPointerInTableChrome } from "~/features/editing-experience/utils/tableEditorChrome"
 
-import type { Rect } from "./coordinates"
-import type { TableGeometry } from "./geometry"
-import { containerRectToViewportRect } from "./coordinates"
+import type { Rect, TableGeometry } from "./axisMath"
+import { containerRectToViewportRect } from "./measure"
 
 /**
  * Position of the table the pointer is over, including the chrome gutter that
