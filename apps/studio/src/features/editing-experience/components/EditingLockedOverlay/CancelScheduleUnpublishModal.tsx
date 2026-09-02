@@ -54,9 +54,15 @@ export const CancelScheduleUnpublishModal = ({
     },
     onError: (error) => {
       console.error(`Error occurred when cancelling schedule: ${error.message}`)
+      // The "cancel the scheduled unpublish for its child pages first" guard
+      // throws PRECONDITION_FAILED with an actionable message — surface it
+      // verbatim rather than the generic failure copy.
       toast({
         status: "error",
-        title: "Failed to cancel schedule. Please contact Isomer support.",
+        title:
+          error.data?.code === "PRECONDITION_FAILED"
+            ? error.message
+            : "Failed to cancel schedule. Please contact Isomer support.",
         ...BRIEF_TOAST_SETTINGS,
       })
     },

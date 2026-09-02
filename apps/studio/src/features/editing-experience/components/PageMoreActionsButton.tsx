@@ -68,7 +68,13 @@ const SuspendablePageMoreActionsButton = ({
     return null
   }
 
+  // isIndexPage must gate this explicitly, not just the query's `enabled` —
+  // every child page in a folder shares the same query key as the folder's
+  // own index page (both key off `currPage.parentId`), so `enabled: false`
+  // alone doesn't stop a child page from reading back cached block-info left
+  // over from a prior visit to the index page (or the dashboard).
   const isBlockedByLiveDescendants =
+    isIndexPage &&
     !!parentIndexPageInfo &&
     parentIndexPageInfo.otherPublishedDescendantCount > 0
 
