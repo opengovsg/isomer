@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { ArticlePageHeaderProps } from "~/interfaces"
 import type { CollectionPagePageProps } from "~/types"
+import { isDateFilter } from "~/types/page"
 
 import { ArticlePageHeader } from "./ArticlePageHeader"
 
@@ -36,9 +37,12 @@ const DATE_FILTER_TAG_CATEGORIES: CollectionPagePageProps["tagCategories"] = [
   },
 ]
 
-const statusLabelsFor = (categoryId: string) =>
-  DATE_FILTER_TAG_CATEGORIES.find((category) => category.id === categoryId)!
-    .statusLabels
+const statusLabelsFor = (categoryId: string) => {
+  const category = DATE_FILTER_TAG_CATEGORIES?.find(
+    (entry) => entry.id === categoryId,
+  )
+  return category && isDateFilter(category) ? category.statusLabels : []
+}
 
 const meta: Meta<ArticlePageHeaderProps> = {
   title: "Next/Internal Components/ArticlePageHeader",

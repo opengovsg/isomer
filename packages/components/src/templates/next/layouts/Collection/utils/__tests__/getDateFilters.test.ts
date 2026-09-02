@@ -148,7 +148,11 @@ describe("getDateFilters", () => {
         id: EVENT_DATE_FILTER_ID,
         label: "Event Date",
         type: "date",
-        statusLabels: tagCategories[0]!.statusLabels,
+        statusLabels: [
+          { id: "ENDED", label: "Event ended" },
+          { id: "ONGOING", label: "Ongoing" },
+          { id: "UPCOMING", label: "Upcoming" },
+        ],
         dateRangeFilterLabel: "Pick a custom date",
       },
     ]

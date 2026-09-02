@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { CollectionCardProps } from "~/interfaces"
 import type { CollectionPagePageProps } from "~/types"
 import { expect, within } from "storybook/test"
+import { isDateFilter } from "~/types/page"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
@@ -30,9 +31,12 @@ const DATE_FILTER_TAG_CATEGORIES: CollectionPagePageProps["tagCategories"] = [
   },
 ]
 
-const statusLabelsFor = (categoryId: string) =>
-  DATE_FILTER_TAG_CATEGORIES.find((category) => category.id === categoryId)!
-    .statusLabels
+const statusLabelsFor = (categoryId: string) => {
+  const category = DATE_FILTER_TAG_CATEGORIES?.find(
+    (entry) => entry.id === categoryId,
+  )
+  return category && isDateFilter(category) ? category.statusLabels : []
+}
 
 const pad = (n: number): string => n.toString().padStart(2, "0")
 const daysFromNow = (days: number) => {

@@ -1,6 +1,7 @@
 "use client"
 
 import type { CalendarDate } from "@internationalized/date"
+import type { AriaButtonProps } from "@react-aria/button"
 import type { RangeCalendarState } from "@react-stately/calendar"
 import {
   createCalendar,
@@ -79,7 +80,8 @@ export const RangeCalendar = ({
     <div {...calendarProps} ref={calendarRef} className="w-fit">
       <div className="mb-3 flex items-center justify-between">
         <CalendarNavButton
-          {...prevButtonProps}
+          onPress={prevButtonProps.onPress}
+          isDisabled={prevButtonProps.isDisabled}
           aria-label="Previous month"
           icon={BiChevronLeft}
         />
@@ -87,7 +89,8 @@ export const RangeCalendar = ({
           {title}
         </p>
         <CalendarNavButton
-          {...nextButtonProps}
+          onPress={nextButtonProps.onPress}
+          isDisabled={nextButtonProps.isDisabled}
           aria-label="Next month"
           icon={BiChevronRight}
         />
@@ -154,19 +157,21 @@ const ClearButton = (props: Parameters<typeof useButton>[0]) => {
 const CalendarNavButton = ({
   icon: Icon,
   "aria-label": ariaLabel,
-  ...props
-}: Parameters<typeof useButton>[0] & {
+  onPress,
+  isDisabled,
+}: Pick<AriaButtonProps, "onPress" | "isDisabled"> & {
   icon: typeof BiChevronLeft
   "aria-label": string
 }) => {
   return (
     <IconButton
-      {...props}
       icon={Icon}
       size="sm"
       variant="clear"
       aria-label={ariaLabel}
       className="text-base-content-subtle"
+      onPress={onPress}
+      isDisabled={isDisabled}
     />
   )
 }

@@ -79,7 +79,7 @@ const FilterSectionHeader = ({
   )
 }
 
-type FilterSectionBaseProps = {
+interface FilterSectionBaseProps {
   filter: Filter
   isExpanded: boolean
   onToggleExpanded: () => void

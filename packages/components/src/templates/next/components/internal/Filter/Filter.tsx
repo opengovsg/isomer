@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useState } from "react"
 import { BiChevronRight } from "react-icons/bi"
 
 import type { FilterProps } from "../../../types/Filter"
