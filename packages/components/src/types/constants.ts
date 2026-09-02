@@ -35,7 +35,6 @@ export const resolveTagCategoryDisplay = (
 ): TagCategoryDisplay => display ?? DEFAULT_TAG_CATEGORY_DISPLAY
 
 // tagCategories entry is "text" (option list) or "date" (status buckets).
-// Old rows omit type. Treat missing as text via resolveTagCategoryType.
 export const TAG_CATEGORY_TYPE = {
   Text: "text",
   Date: "date",
@@ -43,39 +42,3 @@ export const TAG_CATEGORY_TYPE = {
 
 export type TagCategoryType =
   (typeof TAG_CATEGORY_TYPE)[keyof typeof TAG_CATEGORY_TYPE]
-
-export const DEFAULT_TAG_CATEGORY_TYPE = TAG_CATEGORY_TYPE.Text
-
-export const resolveTagCategoryType = (
-  type?: TagCategoryType,
-): TagCategoryType => type ?? DEFAULT_TAG_CATEGORY_TYPE
-
-export const isDateCategoryType = (
-  type?: TagCategoryType,
-): type is typeof TAG_CATEGORY_TYPE.Date =>
-  resolveTagCategoryType(type) === TAG_CATEGORY_TYPE.Date
-
-export const DATE_FILTER_STATUS = {
-  Ended: { id: "ENDED", defaultLabel: "Event ended" },
-  Ongoing: { id: "ONGOING", defaultLabel: "Ongoing" },
-  Upcoming: { id: "UPCOMING", defaultLabel: "Upcoming" },
-} as const
-
-export const DATE_FILTER_STATUS_ID = {
-  Ended: DATE_FILTER_STATUS.Ended.id,
-  Ongoing: DATE_FILTER_STATUS.Ongoing.id,
-  Upcoming: DATE_FILTER_STATUS.Upcoming.id,
-} as const
-
-export type DateFilterStatusId =
-  (typeof DATE_FILTER_STATUS)[keyof typeof DATE_FILTER_STATUS]["id"]
-
-export type DateFilterStatusLabels = Record<DateFilterStatusId, string>
-
-export const DEFAULT_DATE_FILTER_STATUS_LABELS: DateFilterStatusLabels = {
-  [DATE_FILTER_STATUS_ID.Ended]: DATE_FILTER_STATUS.Ended.defaultLabel,
-  [DATE_FILTER_STATUS_ID.Ongoing]: DATE_FILTER_STATUS.Ongoing.defaultLabel,
-  [DATE_FILTER_STATUS_ID.Upcoming]: DATE_FILTER_STATUS.Upcoming.defaultLabel,
-}
-
-export const DEFAULT_DATE_RANGE_FILTER_LABEL = "Or, search for a date"

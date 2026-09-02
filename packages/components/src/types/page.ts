@@ -132,7 +132,7 @@ const DateFilterSchema = Type.Object(
         format: "date-filter-status-labels",
       },
     ),
-    // Falls back to DEFAULT_DATE_RANGE_FILTER_LABEL at render.
+    // Optional custom label; falls back to a default at render.
     dateRangeFilterLabel: Type.Optional(
       Type.String({
         title: "Custom date range label",
@@ -147,6 +147,9 @@ const DateFilterSchema = Type.Object(
   },
   { title: "Date filter" },
 )
+
+export type DateFilterSchemaType = Static<typeof DateFilterSchema>
+export type DateFilterStatusId = keyof DateFilterSchemaType["statusLabels"]
 
 // oneOf, not a flat object with every field optional. Order: text=0, date=1.
 // format "tag-category-item" routes to JsonFormsTagCategoryItemControl.
