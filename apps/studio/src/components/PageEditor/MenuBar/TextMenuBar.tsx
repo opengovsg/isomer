@@ -151,12 +151,12 @@ export const TextMenuBar = ({ editor }: { editor: Editor }) => {
       },
       {
         // A grid-based size picker when not in a table (insert), or a plain
-        // delete button when a table is selected — see TableSizePicker.
+        // delete button when a table is selected. See TableSizePicker.
         type: "custom",
         render: () => <TableSizePicker editor={editor} />,
       },
       // "Table settings" (the caption editor) is the one item from the old
-      // table toolbar group not yet covered by TableBubbleMenu — every other
+      // table toolbar group not yet covered by TableBubbleMenu. Every other
       // action (add/delete row/column, merge, split) moved there already.
       // This stays until the inline TableCaption component replaces it.
       {
