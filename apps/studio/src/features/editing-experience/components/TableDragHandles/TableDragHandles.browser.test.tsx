@@ -717,7 +717,8 @@ describe("TableDragHandles", () => {
     const pill = await hoverUntil(x, y, () => getByLabelText("Add row below"))
 
     // Assert
-    expect(getComputedStyle(pill).backgroundColor).toBe("rgb(248, 249, 249)")
+    // interaction.neutral-subtle.default
+    expect(getComputedStyle(pill).backgroundColor).toBe("rgb(237, 237, 237)")
     expect(getComputedStyle(pill).borderTopWidth).toBe("0px")
     expect(parseFloat(getComputedStyle(pill).borderTopLeftRadius)).toBe(
       ADD_PILL_RADIUS_PX,
@@ -784,8 +785,9 @@ describe("TableDragHandles", () => {
     await waitFor(() => {
       const selected = queryHandle(container, "row", 1)
       expect(selected?.getAttribute("data-state")).toBe("selected")
+      // interaction.main.default
       expect(selected && getComputedStyle(selected).backgroundColor).toBe(
-        "rgb(34, 53, 255)",
+        "rgb(33, 100, 218)",
       )
       const icon = selected?.querySelector("svg")
       expect(icon && getComputedStyle(icon).color).toBe("rgb(255, 255, 255)")
