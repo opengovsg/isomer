@@ -16,8 +16,8 @@ import {
 } from "~/utils/validation"
 
 import {
-  DATE_FILTER_STATUS_ID,
   DEFAULT_DATE_FILTER_STATUS_LABELS,
+  mapDateFilterStatusIds,
   TAG_CATEGORY_DISPLAY_OPTIONS,
   TAG_CATEGORY_TYPE,
   type TagCategoryDisplay,
@@ -132,6 +132,13 @@ const createDateFilterStatusLabelSchema = ({
     }),
   )
 
+const dateFilterStatusLabelsSchemaProperties = mapDateFilterStatusIds(
+  (statusId) =>
+    createDateFilterStatusLabelSchema({
+      defaultValue: DEFAULT_DATE_FILTER_STATUS_LABELS[statusId],
+    }),
+)
+
 const DateFilterSchema = Type.Object(
   {
     ...tagCategoryLabelSchemaObject,
@@ -142,27 +149,11 @@ const DateFilterSchema = Type.Object(
     // `DEFAULT_DATE_FILTER_STATUS_LABELS` at render time. Per-field schema
     // `default`s are safe here: date filters are new-only (no legacy rows).
     statusLabels: Type.Optional(
-      Type.Object(
-        {
-          ENDED: createDateFilterStatusLabelSchema({
-            defaultValue:
-              DEFAULT_DATE_FILTER_STATUS_LABELS[DATE_FILTER_STATUS_ID.Ended],
-          }),
-          ONGOING: createDateFilterStatusLabelSchema({
-            defaultValue:
-              DEFAULT_DATE_FILTER_STATUS_LABELS[DATE_FILTER_STATUS_ID.Ongoing],
-          }),
-          UPCOMING: createDateFilterStatusLabelSchema({
-            defaultValue:
-              DEFAULT_DATE_FILTER_STATUS_LABELS[DATE_FILTER_STATUS_ID.Upcoming],
-          }),
-        },
-        {
-          title: "Custom labels",
-          description: "If you don't want to show a label, leave fields empty.",
-          format: "date-filter-status-labels",
-        },
-      ),
+      Type.Object(dateFilterStatusLabelsSchemaProperties, {
+        title: "Custom labels",
+        description: "If you don't want to show a label, leave fields empty.",
+        format: "date-filter-status-labels",
+      }),
     ),
   },
   { title: "Date filter" },

@@ -2,6 +2,7 @@ import type {
   DateFilterCard,
   DateFilterDisplayEntry,
 } from "~/interfaces/internal/CollectionCard"
+import { resolveDateFilterStatusLabels } from "~/types/constants"
 
 import { getDateFilterStatus, getTodayInSingapore } from "./getDateFilterStatus"
 
@@ -12,7 +13,8 @@ export const getDateFilterCardsFromEntries = (
   entries.map((entry) => {
     const { statusLabels, ...displayFields } = entry
     const status = getDateFilterStatus(entry, today)
-    const statusLabel = statusLabels[status] ?? status
+    const resolvedStatusLabels = resolveDateFilterStatusLabels(statusLabels)
+    const statusLabel = resolvedStatusLabels[status]
 
     return { ...displayFields, status, statusLabel }
   })
