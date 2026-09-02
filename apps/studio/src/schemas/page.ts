@@ -3,7 +3,11 @@ import { schema } from "@opengovsg/isomer-components"
 import { z } from "zod"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
-import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
+import {
+  ResourceState,
+  ResourceType,
+  ScheduledAction,
+} from "~prisma/generated/generatedEnums"
 
 import { generateBasePermalinkSchema } from "./common"
 
@@ -91,8 +95,8 @@ export const publishPageSchema = z.object({
 })
 
 export const unpublishPageSchema = z.object({
-  pageId: z.number().min(1),
-  siteId: z.number().min(1),
+  pageId: z.number().min(1, { message: "Select a page to unpublish" }),
+  siteId: z.number().min(1, { message: "Select a site" }),
 })
 
 export const createCollectionPageFormSchema = z
@@ -169,6 +173,7 @@ export const readPageOutputSchema = z.object({
   type: z.nativeEnum(ResourceType),
   scheduledAt: z.date().nullable(),
   scheduledBy: z.string().nullable(),
+  scheduledAction: z.nativeEnum(ScheduledAction).nullable(),
   createdAt: z.date(),
   updatedAt: z.date(),
 })

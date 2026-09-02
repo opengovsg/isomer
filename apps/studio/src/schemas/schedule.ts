@@ -52,3 +52,7 @@ export const schedulePublishClientSchema = basePageSchema
 export const scheduledPublishServerSchema = basePageSchema.extend({
   scheduledAt: z.date(),
 })
+
+export const scheduledUnpublishServerSchema = basePageSchema.extend({
+  scheduledAt: z.date(),
+})

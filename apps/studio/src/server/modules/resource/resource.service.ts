@@ -9,7 +9,6 @@ import {
   type IsomerSitemap,
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
-import { format } from "date-fns"
 import chunk from "lodash-es/chunk"
 import get from "lodash-es/get"
 import { UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS } from "~/constants/resources"
@@ -24,7 +23,10 @@ import {
   isCollectionItem,
   overwriteCollectionChildrenForCollectionBlock,
 } from "~/utils/sitemap"
-import { AuditLogEvent } from "~prisma/generated/generatedEnums"
+import {
+  AuditLogEvent,
+  ScheduledAction,
+} from "~prisma/generated/generatedEnums"
 import { type DB } from "~prisma/generated/generatedTypes"
 
 import type { Logger } from "@isomer/logging"
@@ -46,6 +48,10 @@ import { db, jsonb, ResourceState, ResourceType, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { getUserById } from "../user/user.service"
 import { incrementVersion } from "../version/version.service"
+import {
+  PageAlreadyUnpublishedError,
+  ScheduledActionConflictError,
+} from "./resource.error"
 import { type Page } from "./resource.types"
 import { tokenizeSearchQuery } from "./resource.utils"
 
@@ -64,6 +70,7 @@ export const defaultResourceSelect = [
   "Resource.updatedAt",
   "Resource.scheduledAt",
   "Resource.scheduledBy",
+  "Resource.scheduledAction",
 ] satisfies SelectExpression<DB, "Resource">[]
 
 // Shared by any query listing rows from the `Resource` table (e.g. folder/root
@@ -144,17 +151,22 @@ const getById = (
     .where("Resource.id", "=", String(resourceId))
     .where("siteId", "=", siteId)
 
-// NOTE: Throw here to fail early if our invariant that a page has a `blobId` is violated
-export const getFullPageById = async (
+// Accepts any resourceId and returns the effective page id to operate on.
+// A Folder/Collection never carries its own publishedVersionId/draftBlobId —
+// its liveness and content are entirely its child IndexPage's — so those are
+// resolved to that child's id. Every other resourceId (including a Folder/
+// Collection with no IndexPage yet, or an ordinary page) is returned
+// unchanged. Shared by every flow that accepts a container id as shorthand
+// for "its landing page" — publish/unpublish (via getFullPageById below)
+// and scheduling both need this same resolution so their input contract
+// matches.
+export const resolveEffectiveResourceId = async (
   db: SafeKysely,
-  args: { resourceId: number; siteId: number },
-) => {
-  // Check if the resource is a Collection or Folder, and if so, use its IndexPage
-  const resource = await getById(db, args)
+  { resourceId, siteId }: { resourceId: number; siteId: number },
+): Promise<number> => {
+  const resource = await getById(db, { resourceId, siteId })
     .select(["Resource.id", "Resource.type"])
     .executeTakeFirst()
-
-  let targetResourceId = args.resourceId
 
   if (
     resource?.type === ResourceType.Collection ||
@@ -162,17 +174,26 @@ export const getFullPageById = async (
   ) {
     const indexPage = await db
       .selectFrom("Resource")
-      .where("Resource.parentId", "=", String(args.resourceId))
-      .where("Resource.siteId", "=", args.siteId)
+      .where("Resource.parentId", "=", String(resourceId))
+      .where("Resource.siteId", "=", siteId)
       .where("Resource.type", "=", ResourceType.IndexPage)
       .select("Resource.id")
       .executeTakeFirst()
 
     if (indexPage) {
-      targetResourceId = Number(indexPage.id)
+      return Number(indexPage.id)
     }
   }
 
+  return resourceId
+}
+
+// NOTE: Throw here to fail early if our invariant that a page has a `blobId` is violated
+export const getFullPageById = async (
+  db: SafeKysely,
+  args: { resourceId: number; siteId: number },
+) => {
+  const targetResourceId = await resolveEffectiveResourceId(db, args)
   const targetArgs = { ...args, resourceId: targetResourceId }
 
   // Check if draft blob exists and return that preferentially
@@ -231,6 +252,7 @@ export const updatePageById = (
       | "title"
       | "scheduledAt"
       | "scheduledBy"
+      | "scheduledAction"
       | "publishedVersionId"
       | "draftBlobId"
     >
@@ -863,6 +885,77 @@ export const getPublishedDescendantResourceIds = async (
   return rows.map((row) => String(row.id))
 }
 
+// Ids of descendants that would still be live when a scheduled unpublish of
+// `resourceId` (an IndexPage) fires at `scheduledAt` — i.e. this is the
+// schedule-time analogue of getPublishedDescendantResourceIds's execution-time
+// check. A descendant is "safe" (excluded from the result) only if:
+//   - it's currently live AND has its own scheduled Unpublish strictly before
+//     `scheduledAt` (so it'll be down well before this one fires), or
+//   - it's currently not live AND has no scheduled Publish before
+//     `scheduledAt` (so it won't come back up before this one fires).
+// The second case matters even though the descendant isn't live right now:
+// without it, a descendant could be sitting on an already-scheduled Publish
+// for some time before `scheduledAt`, guaranteeing it'll be live again by
+// the time this unpublish executes — a fact fully knowable now, not a race.
+// A currently-live descendant with no schedule, or one scheduled for a
+// *later* Unpublish, is unsafe; same for a currently-unpublished descendant
+// scheduled to Publish before `scheduledAt` (a null scheduledAction is
+// treated as Publish, matching the convention elsewhere in this module).
+export const getDescendantResourceIdsUnsafeForScheduledUnpublish = async (
+  trx: SafeKysely,
+  {
+    siteId,
+    resourceId,
+    scheduledAt,
+  }: { siteId: number; resourceId: string; scheduledAt: Date },
+): Promise<string[]> => {
+  const rows = await withResourceSubtree(trx, { siteId, resourceId })
+    .selectFrom("subtree")
+    .innerJoin("Resource", "Resource.id", "subtree.id")
+    .where("Resource.id", "!=", resourceId)
+    .where("Resource.type", "in", UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS)
+    .where((eb) =>
+      eb.or([
+        // Unsafe case 1: currently live, and nothing guarantees it'll be
+        // down before `scheduledAt` fires.
+        eb.and([
+          eb("Resource.publishedVersionId", "is not", null),
+          eb.or([
+            // No unpublish scheduled at all.
+            eb("Resource.scheduledAt", "is", null),
+            // An unpublish is scheduled, but at/after `scheduledAt` — not
+            // guaranteed to land first.
+            eb("Resource.scheduledAt", ">=", scheduledAt),
+            // A schedule exists with no action recorded — legacy rows
+            // (pre-scheduledAction) default to Publish, so this is not an
+            // Unpublish.
+            eb("Resource.scheduledAction", "is", null),
+            // A schedule exists, but it's a Publish, not an Unpublish.
+            eb("Resource.scheduledAction", "!=", ScheduledAction.Unpublish),
+          ]),
+        ]),
+        // Unsafe case 2: not live right now, but scheduled to become live
+        // again before `scheduledAt` fires.
+        eb.and([
+          eb("Resource.publishedVersionId", "is", null),
+          // A schedule exists...
+          eb("Resource.scheduledAt", "is not", null),
+          // ...and it fires strictly before `scheduledAt`...
+          eb("Resource.scheduledAt", "<", scheduledAt),
+          eb.or([
+            // ...and it's a Publish (or defaults to one, per the legacy
+            // null-scheduledAction convention above).
+            eb("Resource.scheduledAction", "is", null),
+            eb("Resource.scheduledAction", "=", ScheduledAction.Publish),
+          ]),
+        ]),
+      ]),
+    )
+    .select("Resource.id")
+    .execute()
+  return rows.map((row) => String(row.id))
+}
+
 // Resolves a full permalink path (e.g. "/foo/bar") to the resource that serves
 // it, walking permalink segments from the site's root page. A Folder/Collection
 // is resolved to its IndexPage child, since that is what actually renders at the
@@ -1211,6 +1304,18 @@ export const getResourceIdsByPermalinks = async (
   return result
 }
 
+// Clears a resource's pending schedule, since a manual publish/unpublish
+// that matches the schedule's direction makes it redundant (see the
+// same-direction-proceeds comments in publishPageResource/unpublishPageResource).
+const clearScheduledResource = (
+  tx: Transaction<DB>,
+  { id, siteId }: { id: number; siteId: number },
+) =>
+  updatePageById(
+    { id, siteId, scheduledAt: null, scheduledBy: null, scheduledAction: null },
+    tx,
+  )
+
 interface PublishPageResourceArgs {
   logger: Logger<string>
   userId: string
@@ -1243,6 +1348,23 @@ export const publishPageResource = async ({
         message:
           "Please ensure you are attempting to publish a page that exists",
       })
+    }
+
+    // A schedule pending in the opposite direction (unpublish) would conflict
+    // with publishing now, so block and make the caller cancel it first. A
+    // same-direction schedule (publish) isn't a conflict — this manual
+    // publish is just doing early what was already going to happen, so it
+    // proceeds and clears the now-redundant schedule below. (No null-fallback
+    // needed here: a legacy null scheduledAction defaults to Publish, which
+    // is never the conflicting value for this check.)
+    if (
+      fullResource.scheduledAt &&
+      fullResource.scheduledAction === ScheduledAction.Unpublish
+    ) {
+      throw new ScheduledActionConflictError(
+        "unpublished",
+        fullResource.scheduledAt,
+      )
     }
 
     // Only the first publish needs the redirect handling below: the shadow
@@ -1281,6 +1403,10 @@ export const publishPageResource = async ({
         `No draft found for resource ${resourceId} in site ${siteId}. Publish aborted.`,
       )
       return
+    }
+
+    if (fullResource.scheduledAt) {
+      await clearScheduledResource(tx, { id: Number(resourceId), siteId })
     }
 
     // Reference back-fill: a redirect created to this resource's URL before it
@@ -1377,6 +1503,48 @@ interface UnpublishPageResourceArgs {
 }
 
 /**
+ * scheduleUnpublish/cancelScheduleUnpublish accept the same input shape as
+ * unpublishPageResource: a real page id, or a Folder/Collection id shorthand
+ * for its landing page. resolveEffectiveResourceId resolves the container to
+ * its child IndexPage before getPageById is called — a Folder/Collection
+ * with no IndexPage yet has nothing to resolve to, so it falls through to
+ * getPageById unchanged and is rejected there as not found (see
+ * UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS for the wider allow-list this
+ * gate validates the *original* id against, before resolution happens).
+ */
+// Shared across every unpublish-family check (unpublishPage's flag-off and
+// wrong-type branches, scheduleUnpublish/cancelScheduleUnpublish's flag-off
+// and not-found branches) so they're all indistinguishable from each other —
+// load-bearing for the dark-launch trick, not just DRY.
+export const UNPUBLISH_PAGE_NOT_FOUND_MESSAGE =
+  "This page either does not exist or cannot be unpublished"
+
+// Accepts the same input shape as unpublishPageResource: a real page id, or
+// a Folder/Collection id shorthand for its landing page (resolved by the
+// caller via resolveEffectiveResourceId, not here — this only validates
+// that the *original* id given is a legitimate kind of thing to unpublish,
+// before any resolution happens).
+export const assertUnpublishableResourceType = async (
+  db: SafeKysely,
+  { resourceId, siteId }: { resourceId: number; siteId: number },
+) => {
+  const page = await db
+    .selectFrom("Resource")
+    .where("Resource.id", "=", String(resourceId))
+    .where("Resource.siteId", "=", siteId)
+    .where("Resource.type", "in", UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS)
+    .select("Resource.id")
+    .executeTakeFirst()
+
+  if (!page) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: UNPUBLISH_PAGE_NOT_FOUND_MESSAGE,
+    })
+  }
+}
+
+/**
  * Takes a live page back to not-live. The draft (if any) and the Version
  * history are left untouched — only `publishedVersionId` is cleared (and
  * `state` flipped back to Draft, since several queries key "is this resource
@@ -1407,25 +1575,28 @@ export const unpublishPageResource = async ({
       })
     }
 
-    if (fullResource.publishedVersionId === null) {
-      throw new TRPCError({
-        code: "PRECONDITION_FAILED",
-        message: "This page is not currently published",
-      })
+    if (!fullResource.publishedVersionId) {
+      throw new PageAlreadyUnpublishedError()
     }
 
-    // A scheduled publish isn't cleared by unpublishing — the schedule cron
-    // (schedulePublishingJob.ts) only checks scheduledAt, not the page's
-    // current state, so it would silently republish this page later from its
-    // draft blob. Make the caller cancel the schedule first.
-    if (fullResource.scheduledAt) {
-      throw new TRPCError({
-        code: "PRECONDITION_FAILED",
-        message: `This page is scheduled to be published at ${format(
-          fullResource.scheduledAt,
-          "yyyy-MM-dd HH:mm",
-        )}. Cancel the schedule before unpublishing.`,
-      })
+    // A schedule pending in the opposite direction (publish) would conflict
+    // with unpublishing now, so block and make the caller cancel it first.
+    // A same-direction schedule (unpublish) isn't a conflict — this manual
+    // unpublish is just doing early what was already going to happen, so it
+    // proceeds and clears the now-redundant schedule below. Unlike the
+    // publish-side check, the null-fallback matters here: a resource
+    // scheduled before scheduledAction existed has it stored as null, which
+    // must still be treated as an implicit Publish schedule (see
+    // schedulePublishingJob.ts's null-handling convention) to conflict.
+    if (
+      fullResource.scheduledAt &&
+      (fullResource.scheduledAction ?? ScheduledAction.Publish) ===
+        ScheduledAction.Publish
+    ) {
+      throw new ScheduledActionConflictError(
+        "published",
+        fullResource.scheduledAt,
+      )
     }
 
     // Block unpublishing a container's landing page while a sibling or
@@ -1476,6 +1647,11 @@ export const unpublishPageResource = async ({
         publishedVersionId: null,
         draftBlobId,
         state: ResourceState.Draft,
+        ...(fullResource.scheduledAt && {
+          scheduledAt: null,
+          scheduledBy: null,
+          scheduledAction: null,
+        }),
       },
       tx,
     )

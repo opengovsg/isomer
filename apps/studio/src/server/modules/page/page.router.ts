@@ -10,13 +10,13 @@ import {
   schema,
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
-import { format, isBefore } from "date-fns"
 import { get, isEmpty, isEqual, pick } from "lodash-es"
-import { UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS } from "~/constants/resources"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   sendCancelSchedulePageEmail,
+  sendCancelScheduleUnpublishEmail,
   sendScheduledPageEmail,
+  sendScheduledUnpublishEmail,
 } from "~/features/mail/service"
 import {
   ENABLE_CODEBUILD_JOBS,
@@ -38,7 +38,10 @@ import {
   updatePageBlobSchema,
   updatePageMetaSchema,
 } from "~/schemas/page"
-import { scheduledPublishServerSchema } from "~/schemas/schedule"
+import {
+  scheduledPublishServerSchema,
+  scheduledUnpublishServerSchema,
+} from "~/schemas/schedule"
 import { protectedProcedure, router } from "~/server/trpc"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
@@ -55,6 +58,7 @@ import { PG_ERROR_CODES } from "../database/constants"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 import { applyPermalinkChangeRedirects } from "../redirect/redirect.service"
 import {
+  assertUnpublishableResourceType,
   createResourceWithBlob,
   getBlobOfResource,
   getFooter,
@@ -65,12 +69,19 @@ import {
   getResourcePermalinkTree,
   publishPageResource,
   publishResource,
+  UNPUBLISH_PAGE_NOT_FOUND_MESSAGE,
   unpublishPageResource,
   updateBlobById,
-  updatePageById,
 } from "../resource/resource.service"
 import { getSiteConfig } from "../site/site.service"
-import { createDefaultPage, createFolderIndexPage } from "./page.service"
+import {
+  cancelSchedulePublish,
+  cancelScheduleUnpublish,
+  createDefaultPage,
+  createFolderIndexPage,
+  schedulePublish,
+  scheduleUnpublish,
+} from "./page.service"
 
 const schemaValidator = ajv.compile<IsomerSchema>(schema)
 
@@ -103,11 +114,6 @@ const validatedPageProcedure = protectedProcedure.use(
     return next()
   },
 )
-
-// Shared so the flag-off and wrong-type branches below throw an identical
-// error — the dark-launch trick depends on them being indistinguishable.
-const UNPUBLISH_PAGE_NOT_FOUND_MESSAGE =
-  "This page either does not exist or cannot be unpublished"
 
 export const pageRouter = router({
   getPrefill: protectedProcedure
@@ -384,62 +390,16 @@ export const pageRouter = router({
         action: "publish",
         userId: ctx.user.id,
       })
-
-      // check if the input.scheduledAt is after the current time
-      if (isBefore(scheduledAt, new Date())) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Scheduled time must be in the future",
-        })
-      }
-      const by = await db
-        .selectFrom("User")
-        .where("id", "=", ctx.user.id)
-        .selectAll()
-        .executeTakeFirstOrThrow()
-
-      const updatedPage = await db.transaction().execute(async (tx) => {
-        // fetch the resource to be scheduled inside the transaction, to guard against concurrent update issues (race conditions)
-        const resource = await getPageById(tx, { resourceId: pageId, siteId })
-        if (!resource) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Resource not found",
-          })
-        }
-        if (resource.scheduledAt) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: `Page is already scheduled to be published at ${format(
-              resource.scheduledAt,
-              "yyyy-MM-dd HH:mm",
-            )}`,
-          })
-        }
-        // update the resource's scheduled field
-        const updatedPage = await updatePageById(
-          { id: pageId, siteId, scheduledAt, scheduledBy: by.id },
-          tx,
-        )
-        // verify that the update was successful
-        if (!updatedPage) {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Failed to schedule page",
-          })
-        }
-        await logResourceEvent(tx, {
-          siteId,
-          by,
-          delta: { before: resource, after: updatedPage },
-          eventType: AuditLogEvent.SchedulePublish,
-        })
-        return updatedPage
+      const resource = await schedulePublish({
+        userId: ctx.user.id,
+        siteId,
+        pageId,
+        scheduledAt,
       })
       await sendScheduledPageEmail({
-        resource: updatedPage,
+        resource,
         scheduledAt,
-        recipientEmail: by.email,
+        recipientEmail: ctx.user.email,
       })
     }),
   cancelSchedulePage: protectedProcedure
@@ -450,49 +410,72 @@ export const pageRouter = router({
         action: "publish",
         userId: ctx.user.id,
       })
-      const by = await db
-        .selectFrom("User")
-        .where("id", "=", ctx.user.id)
-        .selectAll()
-        .executeTakeFirstOrThrow()
-      const updatedPage = await db.transaction().execute(async (tx) => {
-        const resource = await getPageById(tx, { resourceId: pageId, siteId })
-        if (!resource) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Resource not found",
-          })
-        }
-        if (!resource.scheduledAt) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message:
-              "Unable to cancel schedule for a page that is not scheduled",
-          })
-        }
-
-        // update the resource's scheduled field
-        const updatedPage = await updatePageById(
-          { id: pageId, siteId, scheduledAt: null, scheduledBy: null },
-          tx,
-        )
-        if (!updatedPage) {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Failed to cancel page schedule",
-          })
-        }
-        await logResourceEvent(tx, {
-          siteId,
-          by,
-          delta: { before: resource, after: updatedPage },
-          eventType: AuditLogEvent.CancelSchedulePublish,
-        })
-        return updatedPage
+      const resource = await cancelSchedulePublish({
+        userId: ctx.user.id,
+        siteId,
+        pageId,
       })
       await sendCancelSchedulePageEmail({
-        resource: updatedPage,
-        recipientEmail: by.email,
+        resource,
+        recipientEmail: ctx.user.email,
+      })
+    }),
+  scheduleUnpublish: protectedProcedure
+    .input(scheduledUnpublishServerSchema)
+    .mutation(async ({ ctx, input: { scheduledAt, siteId, pageId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "unpublish",
+        userId: ctx.user.id,
+      })
+      // Dark-launched, same flag as unpublishPage — scheduling an unpublish
+      // presupposes the unpublish feature itself is enabled.
+      if (!ctx.gb.isOn(IS_UNPUBLISH_ENABLED_FEATURE_KEY)) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: UNPUBLISH_PAGE_NOT_FOUND_MESSAGE,
+        })
+      }
+      // Same check, same allow-list as unpublishPage — pageId may be a
+      // Folder/Collection id, which scheduleUnpublish resolves to its child
+      // IndexPage internally (mirroring unpublishPageResource), so the input
+      // contract matches unpublishPage's exactly.
+      await assertUnpublishableResourceType(db, { resourceId: pageId, siteId })
+      const resource = await scheduleUnpublish({
+        userId: ctx.user.id,
+        siteId,
+        pageId,
+        scheduledAt,
+      })
+      await sendScheduledUnpublishEmail({
+        resource,
+        scheduledAt,
+        recipientEmail: ctx.user.email,
+      })
+    }),
+  cancelScheduleUnpublish: protectedProcedure
+    .input(basePageSchema)
+    .mutation(async ({ ctx, input: { siteId, pageId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "unpublish",
+        userId: ctx.user.id,
+      })
+      if (!ctx.gb.isOn(IS_UNPUBLISH_ENABLED_FEATURE_KEY)) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: UNPUBLISH_PAGE_NOT_FOUND_MESSAGE,
+        })
+      }
+      await assertUnpublishableResourceType(db, { resourceId: pageId, siteId })
+      const resource = await cancelScheduleUnpublish({
+        userId: ctx.user.id,
+        siteId,
+        pageId,
+      })
+      await sendCancelScheduleUnpublishEmail({
+        resource,
+        recipientEmail: ctx.user.email,
       })
     }),
   updatePageBlob: validatedPageProcedure
@@ -707,28 +690,10 @@ export const pageRouter = router({
           })
         }
 
-        // Allow-list: Page-like types, plus Folder/Collection (resolved to
-        // their child IndexPage below). See
-        // UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS for what's excluded
-        // and why.
-        const page = await db
-          .selectFrom("Resource")
-          .where("Resource.id", "=", String(pageId))
-          .where("Resource.siteId", "=", siteId)
-          .where(
-            "Resource.type",
-            "in",
-            UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS,
-          )
-          .select("Resource.id")
-          .executeTakeFirst()
-
-        if (!page) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: UNPUBLISH_PAGE_NOT_FOUND_MESSAGE,
-          })
-        }
+        await assertUnpublishableResourceType(db, {
+          resourceId: pageId,
+          siteId,
+        })
 
         await unpublishPageResource({
           logger,

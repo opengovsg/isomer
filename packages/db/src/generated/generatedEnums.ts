@@ -3,6 +3,12 @@ export const ResourceState = {
   Published: "Published",
 } as const
 export type ResourceState = (typeof ResourceState)[keyof typeof ResourceState]
+export const ScheduledAction = {
+  Publish: "Publish",
+  Unpublish: "Unpublish",
+} as const
+export type ScheduledAction =
+  (typeof ScheduledAction)[keyof typeof ScheduledAction]
 export const ResourceType = {
   RootPage: "RootPage",
   Page: "Page",
@@ -33,6 +39,8 @@ export const AuditLogEvent = {
   ResourceDelete: "ResourceDelete",
   SchedulePublish: "SchedulePublish",
   CancelSchedulePublish: "CancelSchedulePublish",
+  ScheduleUnpublish: "ScheduleUnpublish",
+  CancelScheduleUnpublish: "CancelScheduleUnpublish",
   UserCreate: "UserCreate",
   UserUpdate: "UserUpdate",
   UserDelete: "UserDelete",
