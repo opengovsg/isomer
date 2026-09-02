@@ -3,7 +3,13 @@
 // the `*.browser.test.{ts,tsx}` convention in apps/studio/vitest.config.ts.
 import type { Editor, JSONContent } from "@tiptap/react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
-import { act, cleanup, render, waitFor } from "@testing-library/react"
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  waitFor,
+} from "@testing-library/react"
 import { CellSelection, tableEditingKey } from "@tiptap/pm/tables"
 import { EditorContent } from "@tiptap/react"
 import { useEffect, useRef, useState } from "react"
@@ -212,6 +218,48 @@ const renderHarness = async (data: JSONContent = SEED_CONTENT) => {
       setShowMenu!(showMenu)
     },
   }
+}
+
+// Mounts the bubble menu alongside the drag handles the way the real editor
+// does in `form-builder/renderers/TipTapEditor/components.tsx`, including the
+// `isDragReordering` wiring that lets a drag withhold the menu.
+const renderWithDragHandles = async () => {
+  let editor: Editor | undefined
+
+  const DragHandlesHarness = () => {
+    const e = useTextEditor({ data: SEED_CONTENT, handleChange: () => null })
+    const containerRef = useRef<HTMLDivElement>(null)
+    const [isDragReordering, setIsDragReordering] = useState(false)
+    useEffect(() => {
+      if (e) editor = e
+    }, [e])
+    return (
+      <div ref={containerRef} style={{ position: "relative" }}>
+        {e && (
+          <TableBubbleMenu editor={e} isDragReordering={isDragReordering} />
+        )}
+        {e && (
+          <TableDragHandles
+            editor={e}
+            containerRef={containerRef}
+            onDragStateChange={setIsDragReordering}
+          />
+        )}
+        {e && <EditorContent editor={e} />}
+      </div>
+    )
+  }
+
+  const utils = render(
+    <ThemeProvider theme={theme}>
+      <DragHandlesHarness />
+    </ThemeProvider>,
+  )
+  await waitFor(() => {
+    if (!editor) throw new Error("editor not ready")
+  })
+  // Non-null by the waitFor above.
+  return { ...utils, editor: editor! }
 }
 
 // First-row cell text contents in left-to-right order, used to assert
@@ -1024,32 +1072,10 @@ describe("TableBubbleMenu", () => {
 
   it("pins the pencil to the bottom-right cell of a full row with drag handles mounted", async () => {
     // Arrange
-    let editor: Editor | undefined
-    const HandlesHarness = () => {
-      const e = useTextEditor({ data: SEED_CONTENT, handleChange: () => null })
-      const containerRef = useRef<HTMLDivElement>(null)
-      useEffect(() => {
-        if (e) editor = e
-      }, [e])
-      return (
-        <div ref={containerRef} style={{ position: "relative" }}>
-          {e && <TableBubbleMenu editor={e} />}
-          {e && <TableDragHandles editor={e} containerRef={containerRef} />}
-          {e && <EditorContent editor={e} />}
-        </div>
-      )
-    }
-    const { findByRole, container } = render(
-      <ThemeProvider theme={theme}>
-        <HandlesHarness />
-      </ThemeProvider>,
-    )
-    await waitFor(() => {
-      if (!editor) throw new Error("editor not ready")
-    })
+    const { editor, findByRole, container } = await renderWithDragHandles()
 
     // Act
-    selectCells(editor!, 3, 5)
+    selectCells(editor, 3, 5)
     const trigger = await findByRole("button", { name: "Table actions" })
     const cells = container.querySelectorAll("td")
     const bottomRight = [...cells].find(
@@ -1064,6 +1090,54 @@ describe("TableBubbleMenu", () => {
     const triggerCentreY = triggerRect.top + triggerRect.height / 2
     expect(Math.abs(triggerCentreX - cellRect.right)).toBeLessThan(8)
     expect(Math.abs(triggerCentreY - cellRect.bottom)).toBeLessThan(8)
+  })
+
+  it("withholds the pencil while a row is being drag-reordered, and restores it on drop", async () => {
+    // Arrange — a full-row selection, so the pencil is showing to begin with.
+    const { editor, container, findByRole, queryByRole } =
+      await renderWithDragHandles()
+    selectCells(editor, 3, 5)
+    expect(await findByRole("button", { name: "Table actions" })).toBeTruthy()
+
+    // Row 1 is a body row, so it is draggable; waiting for its handle also
+    // waits for the geometry the drag reads its boundaries from.
+    const handle = await waitFor(() => {
+      const el = container.querySelector<HTMLElement>(
+        '[data-table-drag-handle="row"][data-index="1"]',
+      )
+      if (!el) throw new Error("row handle 1 not found")
+      return el
+    })
+    const rect = handle.getBoundingClientRect()
+    const start = {
+      clientX: rect.left + rect.width / 2,
+      clientY: rect.top + rect.height / 2,
+    }
+
+    // Act — press, then travel far enough to clear the drag threshold.
+    act(() => {
+      fireEvent.mouseDown(handle, start)
+      fireEvent.mouseMove(document, {
+        clientX: start.clientX,
+        clientY: start.clientY + 40,
+      })
+    })
+
+    // Assert — the menu stays out of the way for the whole drag.
+    await waitFor(() => {
+      expect(queryByRole("button", { name: "Table actions" })).toBeNull()
+    })
+
+    // Act — drop.
+    act(() => {
+      fireEvent.mouseUp(document, {
+        clientX: start.clientX,
+        clientY: start.clientY + 40,
+      })
+    })
+
+    // Assert — the drop re-selects a whole row, so the pencil comes back.
+    expect(await findByRole("button", { name: "Table actions" })).toBeTruthy()
   })
 
   it("shows the pencil trigger without the action menu until it is activated", async () => {

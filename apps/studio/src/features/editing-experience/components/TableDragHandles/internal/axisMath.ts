@@ -25,8 +25,7 @@ export interface TableGeometry {
 
 /**
  * How one axis reads the geometry: which rect list belongs to it, and which
- * coordinate of a rect it runs along. Satisfied by the axis descriptors in
- * `axis.ts`, but a bare object literal works just as well.
+ * coordinate of a rect it runs along.
  */
 export interface AxisProjection {
   /** The rects of every slot on this axis. */
@@ -63,20 +62,6 @@ export const getTableBounds = (geometry: TableGeometry) => {
   }
 }
 
-/** Span of the table derived from its rows, used to size the drop indicator. */
-export const getRowSpan = (rowRects: (Rect | null)[]) => {
-  const rects = rowRects.filter((r): r is Rect => !!r)
-  const first = rects[0]
-  const last = rects[rects.length - 1]
-  if (!first || !last) return null
-  return {
-    left: first.left,
-    width: first.width,
-    top: first.top,
-    height: last.top + last.height - first.top,
-  }
-}
-
 /**
  * Positions where a dragged slot may land: the leading edge of the first
  * movable slot, then the trailing edge of every slot after it.
@@ -95,13 +80,6 @@ export const collectAxisBoundaries = (
   })
   return boundaries
 }
-
-export const boundariesFromGeometry = (
-  geometry: TableGeometry,
-  projection: AxisProjection,
-  lockMinIndex: number,
-): number[] =>
-  collectAxisBoundaries(projection.rectsOf(geometry), lockMinIndex, projection)
 
 export const nearestBoundaryIndex = (
   pointer: number,

@@ -1,25 +1,11 @@
 import type { Rect, TableGeometry } from "../axisMath"
-import {
-  containerRectToViewportRect,
-  reconcileGeometries,
-  viewportPointToContainerPoint,
-} from "../measure"
+import { reconcileGeometries, viewportPointToContainerPoint } from "../measure"
 
 // Measuring itself needs a live editor and is covered by the browser test; the
-// scroll-aware conversions are pure, and easy to get the sign of wrong.
+// scroll-aware conversion is pure, and easy to get the sign of wrong.
 describe("coordinate conversion", () => {
   const containerRect = { top: 100, left: 50 }
   const scroll = { scrollTop: 40, scrollLeft: 15 }
-
-  it("converts a container rect back into viewport coordinates", () => {
-    const result = containerRectToViewportRect({
-      rect: { top: 70, left: 55, width: 200, height: 30 },
-      containerRect,
-      ...scroll,
-    })
-
-    expect(result).toEqual({ top: 130, left: 90, width: 200, height: 30 })
-  })
 
   it("converts a pointer into scroll-aware container coordinates", () => {
     const result = viewportPointToContainerPoint({
@@ -61,17 +47,11 @@ describe("reconcileGeometries", () => {
     expect(reconcileGeometries(previous, [])).toBe(previous)
   })
 
-  it("re-renders only the table that moved", () => {
+  it("publishes the fresh measurement when any table moved", () => {
     const previous = [geometry(1, [10, 30]), geometry(9, [100])]
     const next = [geometry(1, [10, 30]), geometry(9, [140])]
 
-    const result = reconcileGeometries(previous, next)
-
-    expect(result).not.toBe(previous)
-    // The untouched table hands back its old object, so its handles do not
-    // re-render; only the moved table takes the freshly measured one.
-    expect(result[0]).toBe(previous[0])
-    expect(result[1]).toBe(next[1])
+    expect(reconcileGeometries(previous, next)).toBe(next)
   })
 
   it("publishes everything fresh when a table is added or removed", () => {

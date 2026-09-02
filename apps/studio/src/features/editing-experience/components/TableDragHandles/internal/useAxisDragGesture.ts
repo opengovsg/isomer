@@ -139,20 +139,9 @@ export const useAxisDragGesture = ({
     return () => container?.removeAttribute(TABLE_DRAGGING_ATTR)
   }, [drag, containerRef])
 
-  const wasDraggingRef = useRef(false)
   useEffect(() => {
-    if (!editor || editor.isDestroyed) return
-    if (drag) {
-      wasDraggingRef.current = true
-      onDragStateChange?.(true)
-      return
-    }
-    if (!wasDraggingRef.current) return
-    wasDraggingRef.current = false
-    queueMicrotask(() => {
-      if (!editor.isDestroyed) onDragStateChange?.(false)
-    })
-  }, [drag, editor, onDragStateChange])
+    onDragStateChange?.(!!drag)
+  }, [drag, onDragStateChange])
 
   useEffect(() => {
     const onMouseMove = (event: MouseEvent) => {

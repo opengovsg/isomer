@@ -4,8 +4,6 @@ import { CellSelection, selectedRect, TableMap } from "@tiptap/pm/tables"
 import type { Axis } from "./axisView"
 import { AXIS_TABLE_OPS, getTableAt } from "./axisTableOps"
 
-export const EMPTY_INDEXES: number[] = []
-
 export interface SelectionHandleTarget {
   tablePos: number
   rows: number[]
@@ -69,11 +67,11 @@ export const getSelectionHandleTarget = (
   if (isRow) {
     const rows: number[] = []
     for (let r = rect.top; r < rect.bottom; r++) rows.push(r)
-    return { tablePos, rows, cols: EMPTY_INDEXES }
+    return { tablePos, rows, cols: [] }
   }
   const cols: number[] = []
   for (let c = rect.left; c < rect.right; c++) cols.push(c)
-  return { tablePos, rows: EMPTY_INDEXES, cols }
+  return { tablePos, rows: [], cols }
 }
 
 export const selectionTargetsEqual = (
@@ -96,6 +94,6 @@ export const selectedIndexesFor = (
   tablePos: number,
   axis: Axis,
 ): number[] => {
-  if (target?.tablePos !== tablePos) return EMPTY_INDEXES
+  if (target?.tablePos !== tablePos) return []
   return axis === "row" ? target.rows : target.cols
 }

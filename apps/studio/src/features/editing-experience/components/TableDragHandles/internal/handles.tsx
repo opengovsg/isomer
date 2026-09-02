@@ -12,20 +12,6 @@ import {
 } from "./chrome"
 import { DotsIcon, PlusIcon } from "./icons"
 
-export type HandleVisualState = "passive" | "selected" | "dragging"
-
-export const resolveHandleState = ({
-  isSelected,
-  isDragging,
-}: {
-  isSelected: boolean
-  isDragging: boolean
-}): HandleVisualState => {
-  if (isDragging) return "dragging"
-  if (isSelected) return "selected"
-  return "passive"
-}
-
 const handleBaseStyle = {
   display: "flex",
   alignItems: "center",
@@ -42,35 +28,29 @@ const handleBaseStyle = {
   transition: "background-color 0.15s, color 0.15s",
 } as const
 
-const handleChromeByState = (state: HandleVisualState, isLocked: boolean) => {
-  const isActive = state === "selected" || state === "dragging"
-  const cursor = isLocked
-    ? "pointer"
-    : state === "dragging"
-      ? "grabbing"
-      : "grab"
-  return {
-    cursor,
-    sx: {
-      appearance: "none",
-      WebkitAppearance: "none",
-      backgroundColor: isActive ? "interaction.main.default" : "white",
-      color: isActive ? "white" : "interaction.support.unselected",
-      _hover: isActive
-        ? { backgroundColor: "interaction.main.default", color: "white" }
-        : {
-            backgroundColor: "interaction.muted.main.hover",
-            color: "base.content.medium",
-          },
-    },
-  }
-}
+// While a drag is in flight `tiptap.scss` forces `grabbing` on everything in
+// the editor container, so only the idle cursors are set here.
+const handleChrome = (isActive: boolean, isLocked: boolean) => ({
+  cursor: isLocked ? "pointer" : "grab",
+  sx: {
+    appearance: "none",
+    WebkitAppearance: "none",
+    backgroundColor: isActive ? "interaction.main.default" : "white",
+    color: isActive ? "white" : "interaction.support.unselected",
+    _hover: isActive
+      ? { backgroundColor: "interaction.main.default", color: "white" }
+      : {
+          backgroundColor: "interaction.muted.main.hover",
+          color: "base.content.medium",
+        },
+  },
+})
 
 /** Sits in the gutter beside the slot it controls, centred on its length. */
 export const AxisHandle = ({
   axis,
   rect,
-  state,
+  isActive,
   tablePos,
   index,
   isLocked,
@@ -79,14 +59,15 @@ export const AxisHandle = ({
 }: {
   axis: Axis
   rect: Rect
-  state: HandleVisualState
+  /** Selected, or the slot currently being dragged. */
+  isActive: boolean
   tablePos: number
   index: number
   isLocked: boolean
   onMouseDown: (event: ReactMouseEvent) => void
   onClick: () => void
 }) => {
-  const { handle, selectLabel, dragLabel } = AXIS_VIEW[axis]
+  const { handle } = AXIS_VIEW[axis]
   const isRow = axis === "row"
   return (
     <Box
@@ -104,14 +85,14 @@ export const AxisHandle = ({
           : rect.top - TABLE_CHROME_GAP_PX - handle.h
       }px`}
       {...handleBaseStyle}
-      {...handleChromeByState(state, isLocked)}
+      {...handleChrome(isActive, isLocked)}
       w={`${handle.w}px`}
       h={`${handle.h}px`}
       onMouseDown={onMouseDown}
       onClick={onClick}
-      title={isLocked ? selectLabel : `Select or drag to reorder ${axis}`}
-      aria-label={isLocked ? selectLabel : dragLabel}
-      data-state={state}
+      title={isLocked ? `Select ${axis}` : `Select or drag to reorder ${axis}`}
+      aria-label={isLocked ? `Select ${axis}` : `Drag to reorder ${axis}`}
+      data-state={isActive ? "selected" : "passive"}
       data-table-drag-handle={axis}
       data-table-pos={tablePos}
       data-index={index}
