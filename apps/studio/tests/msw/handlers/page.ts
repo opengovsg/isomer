@@ -23,71 +23,72 @@ const getRootPageQuery = (wait?: DelayMode | number) => {
     }
   })
 }
-export const DEFAULT_PAGE_ITEMS: RouterOutput["resource"]["listWithoutRoot"] = [
-  {
-    id: "1",
-    permalink: "newsroom",
-    title: "Press Releases",
-    publishedVersionId: null,
-    draftBlobId: null,
-    type: "Collection",
-    parentId: null,
-    updatedAt: new Date("2024-09-12T07:00:00.000Z"),
-    scheduledAt: null,
-    scheduledAction: null,
-    lastPublishedAt: null,
-    liveStatus: "notLive",
-  },
-  {
-    id: "4",
-    permalink: "test-page-1",
-    title: "Test page 1",
-    publishedVersionId: null,
-    draftBlobId: "3",
-    type: "Page",
-    parentId: null,
-    updatedAt: new Date("2024-09-12T07:00:10.000Z"),
-    scheduledAt: null,
-    scheduledAction: null,
-    lastPublishedAt: null,
-    liveStatus: "notLive",
-  },
-  {
-    id: "5",
-    permalink: "test-page-2",
-    title: "Test page 2",
-    publishedVersionId: null,
-    draftBlobId: "4",
-    type: "Page",
-    parentId: null,
-    updatedAt: new Date("2024-09-12T07:00:20.000Z"),
-    scheduledAt: null,
-    scheduledAction: null,
-    lastPublishedAt: null,
-    liveStatus: "notLive",
-  },
-  {
-    id: "6",
-    permalink: "folder",
-    title: "Test folder 1",
-    publishedVersionId: null,
-    draftBlobId: null,
-    type: "Folder",
-    parentId: null,
-    updatedAt: new Date("2024-09-12T07:00:30.000Z"),
-    scheduledAt: null,
-    scheduledAction: null,
-    lastPublishedAt: null,
-    liveStatus: "notLive",
-  },
-]
+export const DEFAULT_PAGE_ITEMS: RouterOutput["resource"]["listWithoutRoot"]["items"] =
+  [
+    {
+      id: "1",
+      permalink: "newsroom",
+      title: "Press Releases",
+      publishedVersionId: null,
+      draftBlobId: null,
+      type: "Collection",
+      parentId: null,
+      updatedAt: new Date("2024-09-12T07:00:00.000Z"),
+      scheduledAt: null,
+      scheduledAction: null,
+      lastPublishedAt: null,
+      liveStatus: "notLive",
+    },
+    {
+      id: "4",
+      permalink: "test-page-1",
+      title: "Test page 1",
+      publishedVersionId: null,
+      draftBlobId: "3",
+      type: "Page",
+      parentId: null,
+      updatedAt: new Date("2024-09-12T07:00:10.000Z"),
+      scheduledAt: null,
+      scheduledAction: null,
+      lastPublishedAt: null,
+      liveStatus: "notLive",
+    },
+    {
+      id: "5",
+      permalink: "test-page-2",
+      title: "Test page 2",
+      publishedVersionId: null,
+      draftBlobId: "4",
+      type: "Page",
+      parentId: null,
+      updatedAt: new Date("2024-09-12T07:00:20.000Z"),
+      scheduledAt: null,
+      scheduledAction: null,
+      lastPublishedAt: null,
+      liveStatus: "notLive",
+    },
+    {
+      id: "6",
+      permalink: "folder",
+      title: "Test folder 1",
+      publishedVersionId: null,
+      draftBlobId: null,
+      type: "Folder",
+      parentId: null,
+      updatedAt: new Date("2024-09-12T07:00:30.000Z"),
+      scheduledAt: null,
+      scheduledAction: null,
+      lastPublishedAt: null,
+      liveStatus: "notLive",
+    },
+  ]
 
 const pageListQuery = (wait?: DelayMode | number) => {
   return trpcMsw.resource.listWithoutRoot.query(async () => {
     if (wait !== undefined) {
       await delay(wait)
     }
-    return DEFAULT_PAGE_ITEMS
+    return { items: DEFAULT_PAGE_ITEMS, totalCount: DEFAULT_PAGE_ITEMS.length }
   })
 }
 

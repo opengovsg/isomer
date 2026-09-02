@@ -9,7 +9,7 @@ import { BiSolidCircle, BiTimeFive } from "react-icons/bi"
 import { ScheduledAction } from "~prisma/generated/generatedEnums"
 
 type LiveStatus =
-  RouterOutput["resource"]["listWithoutRoot"][number]["liveStatus"]
+  RouterOutput["resource"]["listWithoutRoot"]["items"][number]["liveStatus"]
 
 interface LiveStatusBadgesProps {
   liveStatus: LiveStatus

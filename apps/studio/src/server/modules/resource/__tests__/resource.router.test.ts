@@ -2926,7 +2926,7 @@ describe("resource.router", async () => {
       })
 
       // Act
-      const result = await caller.listWithoutRoot({
+      const { items: result } = await caller.listWithoutRoot({
         siteId: site.id,
         limit: 25,
       })
@@ -2946,7 +2946,7 @@ describe("resource.router", async () => {
       })
 
       // Act
-      const result = await caller.listWithoutRoot({
+      const { items: result } = await caller.listWithoutRoot({
         siteId: site.id,
         limit: 25,
       })
@@ -2987,7 +2987,7 @@ describe("resource.router", async () => {
       })
 
       // Act
-      const result = await caller.listWithoutRoot({
+      const { items: result } = await caller.listWithoutRoot({
         siteId: site.id,
         resourceId: Number(page.id),
         limit: 25,
@@ -3006,7 +3006,7 @@ describe("resource.router", async () => {
       })
 
       // Act
-      const result = await caller.listWithoutRoot({
+      const { items: result } = await caller.listWithoutRoot({
         siteId: site.id,
         resourceId: Number(folder.id),
         limit: 25,
@@ -3053,7 +3053,7 @@ describe("resource.router", async () => {
       })
 
       // Act
-      const result = await caller.listWithoutRoot({
+      const { items: result, totalCount } = await caller.listWithoutRoot({
         siteId: site.id,
       })
 
@@ -3062,6 +3062,8 @@ describe("resource.router", async () => {
         .sort(testListComparable)
         .slice(0, 10)
       expect(expected).toMatchObject(result)
+      // The total should reflect the full filtered set, not just this page.
+      expect(totalCount).toBe(numberOfPages + numberOfFolders)
     })
 
     it("should return resources (respecting the limit) nested inside the resourceId", async () => {
@@ -3103,7 +3105,7 @@ describe("resource.router", async () => {
       })
 
       // Act
-      const result = await caller.listWithoutRoot({
+      const { items: result } = await caller.listWithoutRoot({
         resourceId: Number(folderToUse.id),
         siteId: site.id,
       })
@@ -3150,17 +3152,17 @@ describe("resource.router", async () => {
         .execute()
 
       // Act
-      const page1First = await caller.listWithoutRoot({
+      const { items: page1First } = await caller.listWithoutRoot({
         siteId: site.id,
         limit: 2,
         offset: 0,
       })
-      const page1Second = await caller.listWithoutRoot({
+      const { items: page1Second } = await caller.listWithoutRoot({
         siteId: site.id,
         limit: 2,
         offset: 0,
       })
-      const page2Result = await caller.listWithoutRoot({
+      const { items: page2Result } = await caller.listWithoutRoot({
         siteId: site.id,
         limit: 2,
         offset: 2,
@@ -3179,6 +3181,37 @@ describe("resource.router", async () => {
       const allIds = new Set([...page1Ids, ...page2Ids])
       const expectedIds = new Set(pages.map(({ page }) => page.id))
       expect(allIds).toEqual(expectedIds)
+    })
+
+    it("should return the true totalCount even when offset skips past every row", async () => {
+      // Arrange: the per-row window-function count is only available on
+      // returned rows, so an out-of-range offset (0 rows back) needs a
+      // fallback query to still report the real total instead of 0.
+      const { site } = await setupSite()
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
+      await Promise.all(
+        ["page-1", "page-2"].map((permalink) =>
+          setupPageResource({
+            siteId: site.id,
+            resourceType: "Page",
+            permalink,
+          }),
+        ),
+      )
+
+      // Act
+      const { items, totalCount } = await caller.listWithoutRoot({
+        siteId: site.id,
+        limit: 10,
+        offset: 100,
+      })
+
+      // Assert
+      expect(items).toEqual([])
+      expect(totalCount).toBe(2)
     })
 
     it("should sort case-insensitively when orderBy is title-asc", async () => {
@@ -3212,7 +3245,7 @@ describe("resource.router", async () => {
       })
 
       // Act
-      const result = await caller.listWithoutRoot({
+      const { items: result } = await caller.listWithoutRoot({
         siteId: site.id,
         orderBy: "title-asc",
       })
@@ -3249,7 +3282,7 @@ describe("resource.router", async () => {
       })
 
       // Act
-      const result = await caller.listWithoutRoot({
+      const { items: result } = await caller.listWithoutRoot({
         siteId: site.id,
         orderBy: "permalink-asc",
       })
@@ -3296,7 +3329,7 @@ describe("resource.router", async () => {
       })
 
       // Act
-      const result = await caller.listWithoutRoot({
+      const { items: result } = await caller.listWithoutRoot({
         siteId: site.id,
         resourceId: Number(folder.id),
         orderBy: "permalink-asc",
@@ -3320,7 +3353,9 @@ describe("resource.router", async () => {
       await setupEditorPermissions({ siteId: site.id, userId: session.userId })
 
       // Act
-      const result = await caller.listWithoutRoot({ siteId: site.id })
+      const { items: result } = await caller.listWithoutRoot({
+        siteId: site.id,
+      })
 
       // Assert
       expect(result).toEqual([
@@ -3341,7 +3376,9 @@ describe("resource.router", async () => {
       await setupEditorPermissions({ siteId: site.id, userId: session.userId })
 
       // Act
-      const result = await caller.listWithoutRoot({ siteId: site.id })
+      const { items: result } = await caller.listWithoutRoot({
+        siteId: site.id,
+      })
 
       // Assert
       expect(result).toEqual([
@@ -3373,7 +3410,9 @@ describe("resource.router", async () => {
       await setupEditorPermissions({ siteId: site.id, userId: session.userId })
 
       // Act
-      const result = await caller.listWithoutRoot({ siteId: site.id })
+      const { items: result } = await caller.listWithoutRoot({
+        siteId: site.id,
+      })
 
       // Assert
       expect(result).toEqual(
@@ -3427,7 +3466,7 @@ describe("resource.router", async () => {
         })
 
         // Act
-        const result = await caller.listWithoutRoot({
+        const { items: result } = await caller.listWithoutRoot({
           siteId: site.id,
           statusFilter: ["live"],
         })
@@ -3459,7 +3498,7 @@ describe("resource.router", async () => {
         })
 
         // Act
-        const result = await caller.listWithoutRoot({
+        const { items: result } = await caller.listWithoutRoot({
           siteId: site.id,
           statusFilter: ["live"],
         })
@@ -3489,7 +3528,7 @@ describe("resource.router", async () => {
         })
 
         // Act
-        const result = await caller.listWithoutRoot({
+        const { items: result } = await caller.listWithoutRoot({
           siteId: site.id,
           statusFilter: ["notLive"],
         })
@@ -3519,7 +3558,7 @@ describe("resource.router", async () => {
         })
 
         // Act
-        const result = await caller.listWithoutRoot({
+        const { items: result } = await caller.listWithoutRoot({
           siteId: site.id,
           statusFilter: ["scheduledToPublish"],
         })
@@ -3551,7 +3590,7 @@ describe("resource.router", async () => {
         })
 
         // Act
-        const result = await caller.listWithoutRoot({
+        const { items: result } = await caller.listWithoutRoot({
           siteId: site.id,
           statusFilter: ["scheduledToUnpublish"],
         })
@@ -3581,7 +3620,7 @@ describe("resource.router", async () => {
         })
 
         // Act
-        const result = await caller.listWithoutRoot({
+        const { items: result } = await caller.listWithoutRoot({
           siteId: site.id,
           statusFilter: ["hasDraft"],
         })
@@ -3616,7 +3655,7 @@ describe("resource.router", async () => {
         })
 
         // Act
-        const result = await caller.listWithoutRoot({
+        const { items: result } = await caller.listWithoutRoot({
           siteId: site.id,
           statusFilter: ["live", "scheduledToUnpublish"],
         })
@@ -3650,7 +3689,7 @@ describe("resource.router", async () => {
         })
 
         // Act
-        const result = await caller.listWithoutRoot({
+        const { items: result } = await caller.listWithoutRoot({
           siteId: site.id,
           statusFilter: [],
         })

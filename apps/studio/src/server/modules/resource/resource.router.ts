@@ -780,7 +780,6 @@ export const resourceRouter = router({
           })
         }
 
-        // TODO: Add pagination support
         const rows = await query
           .offset(offset)
           .limit(limit)
@@ -796,10 +795,15 @@ export const resourceRouter = router({
             "Resource.scheduledAt",
             "Resource.scheduledAction",
             selectLastPublishedAt(eb),
+            // A window function count avoids a second round-trip for the
+            // common case. It rides along on every returned row, so it's
+            // unavailable when the page itself comes back empty (e.g. a
+            // stale `offset` past the true end) — see the fallback below.
+            eb.fn.countAll<string>().over().as("totalCount"),
           ])
           .execute()
 
-        return rows.map((row) => {
+        const items = rows.map(({ totalCount: _totalCount, ...row }) => {
           const isContainer =
             row.type === ResourceType.Folder ||
             row.type === ResourceType.Collection
@@ -820,6 +824,19 @@ export const resourceRouter = router({
                 : "notLive",
           } as const
         })
+
+        const totalCount = rows[0]
+          ? Number(rows[0].totalCount)
+          : Number(
+              (
+                await query
+                  .clearOrderBy()
+                  .select((eb) => [eb.fn.countAll<string>().as("totalCount")])
+                  .executeTakeFirst()
+              )?.totalCount ?? 0,
+            )
+
+        return { items, totalCount }
       },
     ),
 
