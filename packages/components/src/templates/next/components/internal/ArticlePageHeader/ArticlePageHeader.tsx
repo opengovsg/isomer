@@ -2,9 +2,7 @@ import type { ArticlePageHeaderProps } from "~/interfaces"
 import { getFormattedDate } from "~/utils/getFormattedDate"
 
 import { Breadcrumb } from "../Breadcrumb"
-import { EventDateFilterDates } from "../CollectionCard/EventDateFilterDates"
-import { EventStatusPill } from "../CollectionCard/EventStatusPill"
-import { useDateFilterCards } from "../CollectionCard/useDateFilterCards"
+import { EventDateFilterDisplay } from "../CollectionCard/EventDateFilterDisplay"
 import { PillTags, PlaintextTags } from "../Tags"
 
 export const ArticlePageHeader = ({
@@ -16,10 +14,6 @@ export const ArticlePageHeader = ({
   pillTags,
   dateFilterDisplayEntries,
 }: ArticlePageHeaderProps) => {
-  const dateFilterCards = useDateFilterCards(dateFilterDisplayEntries)
-  const statusBadges =
-    dateFilterCards?.filter(({ statusLabel }) => statusLabel.trim()) ?? []
-
   return (
     <div className="mx-auto w-full">
       <div className="my-16">
@@ -28,37 +22,31 @@ export const ArticlePageHeader = ({
 
       <div className="flex flex-col gap-5">
         <div className="flex flex-col gap-4">
-          {statusBadges.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2">
-              {statusBadges.map(({ id, status, statusLabel }) => (
-                <EventStatusPill key={id} status={status} label={statusLabel} />
-              ))}
-            </div>
-          )}
+          <EventDateFilterDisplay
+            entries={dateFilterDisplayEntries}
+            beforeTitle={
+              <PlaintextTags
+                tags={plaintextTags}
+                className="prose-body-base text-base-content"
+              />
+            }
+            afterDates={
+              <PillTags
+                tags={pillTags}
+                className="flex flex-wrap items-center gap-2"
+              />
+            }
+          >
+            <h1 className="prose-display-md break-words text-base-content-strong">
+              {title}
+            </h1>
 
-          <PlaintextTags
-            tags={plaintextTags}
-            className="prose-body-base text-base-content"
-          />
-
-          <h1 className="prose-display-md break-words text-base-content-strong">
-            {title}
-          </h1>
-
-          {date && (
-            <p className="prose-label-sm-medium text-base-content">
-              {getFormattedDate(date)}
-            </p>
-          )}
-
-          {dateFilterCards && (
-            <EventDateFilterDates entries={dateFilterCards} />
-          )}
-
-          <PillTags
-            tags={pillTags}
-            className="flex flex-wrap items-center gap-2"
-          />
+            {date && (
+              <p className="prose-label-sm-medium text-base-content">
+                {getFormattedDate(date)}
+              </p>
+            )}
+          </EventDateFilterDisplay>
         </div>
 
         {summary && (
