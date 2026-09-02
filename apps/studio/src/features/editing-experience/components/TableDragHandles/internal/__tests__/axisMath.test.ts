@@ -2,6 +2,7 @@ import type { AxisProjection, Rect, TableGeometry } from "../axisMath"
 import {
   boundariesFromGeometry,
   collectAxisBoundaries,
+  geometryAt,
   getRowSpan,
   getTableBounds,
   nearestBoundaryIndex,
@@ -174,6 +175,19 @@ describe("resolveDropIndex", () => {
         lockMinIndex: 1,
       }),
     ).toBe(1)
+  })
+})
+
+describe("geometryAt", () => {
+  const other: TableGeometry = { ...GEOMETRY, pos: 42 }
+
+  it("finds the geometry for a table position", () => {
+    expect(geometryAt([other, GEOMETRY], GEOMETRY.pos)).toBe(GEOMETRY)
+  })
+
+  it("returns null when that table is not measured", () => {
+    expect(geometryAt([other], GEOMETRY.pos)).toBeNull()
+    expect(geometryAt([], GEOMETRY.pos)).toBeNull()
   })
 })
 

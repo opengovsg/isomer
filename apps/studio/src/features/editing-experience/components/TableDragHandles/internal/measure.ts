@@ -136,20 +136,34 @@ const rectsEqual = (a: Rect | null, b: Rect | null): boolean => {
 const rectListsEqual = (a: (Rect | null)[], b: (Rect | null)[]): boolean =>
   a.length === b.length && a.every((rect, i) => rectsEqual(rect, b[i] ?? null))
 
-// Measurement runs on every transaction, so bail out when nothing moved —
-// a fresh array would otherwise re-render every handle and churn the
-// window listeners keyed on the geometry identity.
-export const geometriesEqual = (
-  a: TableGeometry[],
-  b: TableGeometry[],
-): boolean =>
-  a.length === b.length &&
-  a.every((geometry, i) => {
-    const other = b[i]
-    return (
-      !!other &&
-      geometry.pos === other.pos &&
-      rectListsEqual(geometry.rowRects, other.rowRects) &&
-      rectListsEqual(geometry.colRects, other.colRects)
-    )
+const sameGeometry = (a: TableGeometry, b: TableGeometry): boolean =>
+  a.pos === b.pos &&
+  rectListsEqual(a.rowRects, b.rowRects) &&
+  rectListsEqual(a.colRects, b.colRects)
+
+/**
+ * Chooses what to publish after a fresh measurement.
+ *
+ * Measurement runs on every transaction, scroll and resize, and almost always
+ * produces the same numbers. Handing back the previous array when nothing moved
+ * keeps handles mounted and stops consumers keyed on the geometry identity from
+ * re-subscribing; handing back the previous *entry* for each table that did not
+ * move confines the re-render to the table that did.
+ */
+export const reconcileGeometries = (
+  previous: TableGeometry[],
+  next: TableGeometry[],
+): TableGeometry[] => {
+  // A table was added or removed, so entries no longer line up by index.
+  if (previous.length !== next.length) return next
+
+  let changed = false
+  const merged = next.map((geometry, index) => {
+    const before = previous[index]
+    if (before && sameGeometry(before, geometry)) return before
+    changed = true
+    return geometry
   })
+
+  return changed ? merged : previous
+}

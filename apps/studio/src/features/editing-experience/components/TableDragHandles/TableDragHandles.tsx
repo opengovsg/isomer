@@ -11,6 +11,7 @@ import {
 import type { TableGeometry } from "./internal/axisMath"
 import type { Axis } from "./internal/axisView"
 import {
+  geometryAt,
   getRowSpan,
   getTableBounds,
   nearestBoundaryIndex,
@@ -68,7 +69,7 @@ export const TableDragHandles = ({
 
   const dropIndicator = useMemo(() => {
     if (!drag) return null
-    const geometry = geometries.find((g) => g.pos === drag.tablePos)
+    const geometry = geometryAt(geometries, drag.tablePos)
     const span = geometry ? getRowSpan(geometry.rowRects) : null
     if (!span) return null
     const at =
