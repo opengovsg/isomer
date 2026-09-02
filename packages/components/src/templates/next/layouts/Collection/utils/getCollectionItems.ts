@@ -4,6 +4,7 @@ import type { CollectionPagePageProps } from "~/types/page"
 import { getParsedDate } from "~/utils/getParsedDate"
 import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
 
+import { resolveCollectionSortOrder } from "./collectionSortOrder"
 import { resolveItemDateFields } from "./dateFilterStatic"
 import { getPillAndPlaintextTags } from "./getPillAndPlaintextTags"
 import { getTagsFromTagged } from "./getTagsFromTagged"
@@ -177,7 +178,9 @@ export const getCollectionItems = ({
 
   return sortCollectionItems({
     items: transformedItems,
-    sortOrder,
+    sortOrder: sortOrder
+      ? resolveCollectionSortOrder(sortOrder, tagCategories)
+      : undefined,
     sortBy,
     sortDirection,
   })

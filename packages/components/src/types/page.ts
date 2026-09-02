@@ -10,6 +10,7 @@ import {
 } from "~/interfaces"
 import { imageSchemaObject } from "~/schemas/internal"
 import {
+  COLLECTION_SORT_ORDER_PATTERN,
   REF_HREF_PATTERN,
   TRIMMED_NON_EMPTY_STRING_REGEX,
   TRIMMED_STRING_OR_EMPTY_REGEX,
@@ -389,24 +390,16 @@ export const CollectionPagePageSchema = Type.Intersect([
       ),
     ),
     sortOrder: Type.Optional(
-      Type.Union(
-        [
-          Type.Literal("date-desc", {
-            title: "By article date, newest → oldest",
-          }),
-          Type.Literal("date-asc", {
-            title: "By article date, oldest → newest",
-          }),
-          Type.Literal("title-asc", { title: "By title, A → Z" }),
-          Type.Literal("title-desc", { title: "By title, Z → A" }),
-        ],
-        {
-          title: "Sort items by",
-          description: "This might take a while to reflect on the preview.",
-          type: "string",
-          default: "date-desc",
+      Type.String({
+        title: "Sort items by",
+        description: "This might take a while to reflect on the preview.",
+        format: "collection-sort-order",
+        pattern: COLLECTION_SORT_ORDER_PATTERN,
+        errorMessage: {
+          pattern: "must be a valid collection sort order",
         },
-      ),
+        default: "date-desc",
+      }),
     ),
     // Deprecated, will be replaced with sortOrder above
     defaultSortBy: Type.Optional(

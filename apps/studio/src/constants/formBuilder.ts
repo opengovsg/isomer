@@ -34,6 +34,7 @@ export const JSON_FORMS_RANKING = {
   ChildrenPagesControl: 4,
   // NOTE: needs to have higher priority than anyof
   CollectionVariantControl: 4,
+  CollectionSortOrderControl: 4,
   // NOTE: needs to have higher priority than array
   ChildrenPagesOrderingControl: 5,
   // NOTE: needs to have higher priority than array
