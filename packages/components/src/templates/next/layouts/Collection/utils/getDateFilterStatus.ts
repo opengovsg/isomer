@@ -1,7 +1,4 @@
-import {
-  DATE_FILTER_STATUS_ID,
-  type DateFilterStatusId,
-} from "~/types/constants"
+import { DATE_FILTER_STATUS, type DateFilterStatusId } from "~/types/constants"
 import { getSingaporeDateYYYYMMDD } from "~/utils/getSingaporeDate"
 
 export interface DateFilterValue {
@@ -27,12 +24,12 @@ export const getDateFilterStatus = (
   const end = endDate ?? date
 
   if (today < date) {
-    return DATE_FILTER_STATUS_ID.Upcoming
+    return DATE_FILTER_STATUS.Upcoming.id
   }
 
   if (today > end) {
-    return DATE_FILTER_STATUS_ID.Ended
+    return DATE_FILTER_STATUS.Ended.id
   }
 
-  return DATE_FILTER_STATUS_ID.Ongoing
+  return DATE_FILTER_STATUS.Ongoing.id
 }

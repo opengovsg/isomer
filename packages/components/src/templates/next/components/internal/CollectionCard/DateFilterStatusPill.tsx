@@ -1,12 +1,12 @@
 import type { DateFilterStatusId } from "~/types/constants"
 import { tv } from "~/lib/tv"
-import { DATE_FILTER_STATUS_ID } from "~/types/constants"
+import { DATE_FILTER_STATUS } from "~/types/constants"
 
 // Fixed hex from design spec, not theme tokens.
 const STATUS_VARIANT_CLASSES = {
-  [DATE_FILTER_STATUS_ID.Upcoming]: "bg-[#358257] text-white",
-  [DATE_FILTER_STATUS_ID.Ongoing]: "bg-[#A88651] text-white",
-  [DATE_FILTER_STATUS_ID.Ended]: "bg-[#E6E6E6] text-base-content",
+  [DATE_FILTER_STATUS.Upcoming.id]: "bg-[#358257] text-white",
+  [DATE_FILTER_STATUS.Ongoing.id]: "bg-[#A88651] text-white",
+  [DATE_FILTER_STATUS.Ended.id]: "bg-[#E6E6E6] text-base-content",
 } satisfies Record<DateFilterStatusId, string>
 
 const statusPillStyles = tv({

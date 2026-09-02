@@ -1,7 +1,7 @@
 import type { CollectionPageSchemaType } from "~/types"
 import { describe, expect, it } from "vitest"
 import {
-  DATE_FILTER_STATUS_ID,
+  DATE_FILTER_STATUS,
   TAG_CATEGORY_DISPLAY_OPTIONS,
   type DateFilterStatusId,
 } from "~/types/constants"
@@ -120,9 +120,9 @@ describe("getPillAndPlaintextTags", () => {
         id: "date-1",
         type: "date",
         statusLabels: {
-          [DATE_FILTER_STATUS_ID.Ended]: "Ended",
-          [DATE_FILTER_STATUS_ID.Ongoing]: "Ongoing",
-          [DATE_FILTER_STATUS_ID.Upcoming]: "Upcoming",
+          [DATE_FILTER_STATUS.Ended.id]: "Ended",
+          [DATE_FILTER_STATUS.Ongoing.id]: "Ongoing",
+          [DATE_FILTER_STATUS.Upcoming.id]: "Upcoming",
         } satisfies Record<DateFilterStatusId, string>,
       },
       {

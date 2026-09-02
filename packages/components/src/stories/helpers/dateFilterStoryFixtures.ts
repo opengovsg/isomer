@@ -1,10 +1,5 @@
 import type { CollectionPagePageProps } from "~/types"
-import {
-  DATE_FILTER_STATUS_ID,
-  DEFAULT_DATE_FILTER_STATUS_LABELS,
-  mapDateFilterStatusIds,
-  type DateFilterStatusId,
-} from "~/types/constants"
+import { DATE_FILTER_STATUS, type DateFilterStatusId } from "~/types/constants"
 
 export const DATE_FILTER_TAG_CATEGORIES: CollectionPagePageProps["tagCategories"] =
   [
@@ -12,16 +7,22 @@ export const DATE_FILTER_TAG_CATEGORIES: CollectionPagePageProps["tagCategories"
       id: "event-date",
       label: "Event Date",
       type: "date",
-      statusLabels: DEFAULT_DATE_FILTER_STATUS_LABELS,
+      statusLabels: {
+        [DATE_FILTER_STATUS.Ended.id]: DATE_FILTER_STATUS.Ended.defaultLabel,
+        [DATE_FILTER_STATUS.Ongoing.id]:
+          DATE_FILTER_STATUS.Ongoing.defaultLabel,
+        [DATE_FILTER_STATUS.Upcoming.id]:
+          DATE_FILTER_STATUS.Upcoming.defaultLabel,
+      } satisfies Record<DateFilterStatusId, string>,
     },
     {
       id: "registration-deadline",
       label: "Registration Deadline",
       type: "date",
       statusLabels: {
-        [DATE_FILTER_STATUS_ID.Ended]: "Registration closed",
-        [DATE_FILTER_STATUS_ID.Ongoing]: "Registration open",
-        [DATE_FILTER_STATUS_ID.Upcoming]: "Registration upcoming",
+        [DATE_FILTER_STATUS.Ended.id]: "Registration closed",
+        [DATE_FILTER_STATUS.Ongoing.id]: "Registration open",
+        [DATE_FILTER_STATUS.Upcoming.id]: "Registration upcoming",
       } satisfies Record<DateFilterStatusId, string>,
     },
   ]
@@ -34,12 +35,18 @@ export const statusLabelsFor = (
   )
 
   if (!category || category.type !== "date") {
-    return mapDateFilterStatusIds(() => "")
+    return {
+      [DATE_FILTER_STATUS.Ended.id]: "",
+      [DATE_FILTER_STATUS.Ongoing.id]: "",
+      [DATE_FILTER_STATUS.Upcoming.id]: "",
+    }
   }
 
-  return mapDateFilterStatusIds(
-    (statusId) => category.statusLabels?.[statusId] ?? "",
-  )
+  return {
+    [DATE_FILTER_STATUS.Ended.id]: category.statusLabels?.ENDED ?? "",
+    [DATE_FILTER_STATUS.Ongoing.id]: category.statusLabels?.ONGOING ?? "",
+    [DATE_FILTER_STATUS.Upcoming.id]: category.statusLabels?.UPCOMING ?? "",
+  }
 }
 
 const pad = (n: number): string => n.toString().padStart(2, "0")
