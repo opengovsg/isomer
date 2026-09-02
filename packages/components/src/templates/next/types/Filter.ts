@@ -1,4 +1,4 @@
-import { TAG_CATEGORY_TYPE, type TagCategoryDisplay } from "~/types/constants"
+import type { TagCategoryDisplay } from "~/types/constants"
 
 export interface FilterItem {
   id: string
@@ -12,8 +12,6 @@ export interface Filter {
   items: FilterItem[]
   // NOTE: only set for tag-category filters; category/year filters omit this.
   display?: TagCategoryDisplay
-  // Present on date tag-category filters only.
-  type?: typeof TAG_CATEGORY_TYPE.Date
 }
 
 interface AppliedFilterItem {
@@ -23,18 +21,10 @@ interface AppliedFilterItem {
 export interface AppliedFilter {
   id: Filter["id"]
   items: AppliedFilterItem[]
-  // Date filters only. yyyy-MM-dd, same as dateTagged.
-  dateRange?: { start: string; end: string }
 }
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value)
-
-const isValidDateRange = (value: unknown): boolean =>
-  value === undefined ||
-  (isRecord(value) &&
-    typeof value.start === "string" &&
-    typeof value.end === "string")
 
 export const isAppliedFilters = (value: unknown): value is AppliedFilter[] =>
   Array.isArray(value) &&
@@ -45,8 +35,7 @@ export const isAppliedFilters = (value: unknown): value is AppliedFilter[] =>
       Array.isArray(filter.items) &&
       filter.items.every(
         (item) => isRecord(item) && typeof item.id === "string",
-      ) &&
-      isValidDateRange(filter.dateRange),
+      ),
   )
 
 export interface FilterProps {
@@ -54,9 +43,5 @@ export interface FilterProps {
   appliedFilters: AppliedFilter[]
   setAppliedFilters: (appliedFilters: AppliedFilter[]) => void
   handleFilterToggle: (filterId: string, itemId: string) => void
-  handleDateRangeChange: (
-    filterId: string,
-    dateRange: AppliedFilter["dateRange"],
-  ) => void
   handleClearFilter: () => void
 }
