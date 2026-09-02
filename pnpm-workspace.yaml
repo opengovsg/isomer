@@ -254,7 +254,7 @@ catalogs:
     "@tanstack/react-query": ^5.102.3
     "@tanstack/react-query-devtools": ^5.102.3
   tiptap:
-    "@tiptap/core": ^3.30.3
+    "@tiptap/core": ^3.30.4
     "@tiptap/extension-bold": ^3.30.3
     "@tiptap/extension-bullet-list": ^3.30.3
     "@tiptap/extension-character-count": ^3.30.3
