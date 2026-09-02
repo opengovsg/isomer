@@ -1607,6 +1607,9 @@ importers:
       '@isomer/oxlint-config':
         specifier: workspace:*
         version: link:../oxlint
+      oxfmt:
+        specifier: 'catalog:'
+        version: 0.62.0
       vitest:
         specifier: catalog:vitest
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.4.0)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-istanbul@4.1.11)(happy-dom@20.10.6)(jsdom@30.0.1(@noble/hashes@2.2.0))(msw@2.15.0(@types/node@26.4.0)(typescript@6.0.3))(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.12)(yaml@2.8.3))
