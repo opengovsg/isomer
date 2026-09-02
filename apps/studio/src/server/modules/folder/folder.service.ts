@@ -44,10 +44,6 @@ export const getFolderIndexPageInfo = async (
   // "Live · Template" if not, but something nested inside it is (the
   // dashboard auto-generates a placeholder index for these so the live
   // content underneath stays reachable); "Not live" otherwise.
-  // TODO: remove_autogen has closed off new ways to reach this state, but
-  // legacy data can still be in it. Once index-page autogeneration is
-  // properly removed (and any remaining legacy rows backfilled),
-  // "liveTemplate" should no longer be reachable and can be dropped.
   const childLiveStatus = await getChildLiveStatusMap(trx, {
     siteId,
     resourceId,
