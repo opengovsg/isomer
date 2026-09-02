@@ -135,12 +135,15 @@ describe("TipTap table cell backgroundColor", () => {
     editor = createEditor(
       tableDoc({
         headerColor: "green",
-        bodyColor: null,
+        bodyColor: "pink",
       }),
     )
 
-    const th = editor.view.dom.querySelector("th")!
-    expect(th.getAttribute("data-background-color")).toBe("green")
-    expect(th.getAttribute("style")).toContain("background-color:")
+    const html = editor.getHTML()
+
+    expect(html).toMatch(/<th\b[^>]*data-background-color="green"/)
+    expect(html).toMatch(/<th\b[^>]*style="[^"]*background-color:/)
+    expect(html).toMatch(/<td\b[^>]*data-background-color="pink"/)
+    expect(html).toMatch(/<td\b[^>]*style="[^"]*background-color:/)
   })
 })
