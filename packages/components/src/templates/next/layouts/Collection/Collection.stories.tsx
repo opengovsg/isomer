@@ -1,9 +1,14 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { CollectionPageSchemaType, IsomerSitemap } from "~/types"
+import { addDays, format } from "date-fns"
 import { flatten, times } from "lodash-es"
 import { expect, userEvent, within } from "storybook/test"
 import { generateSiteConfig } from "~/stories/helpers"
-import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
+import {
+  DEFAULT_DATE_FILTER_STATUS_LABELS,
+  TAG_CATEGORY_DISPLAY_OPTIONS,
+  TAG_CATEGORY_TYPE,
+} from "~/types/constants"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
@@ -351,4 +356,194 @@ export const Blog: Story = {
     collectionItems: COLLECTION_ITEMS,
     variant: "blog",
   }),
+}
+
+// Anchored to the same fixed reference date `.storybook/preview.tsx`'s
+// `MockDateDecorator` freezes `Date` to for every story (deterministic
+// Chromatic snapshots) — NOT real wall-clock `new Date()`. The decorator's
+// `mockdate.set(...)` only takes effect once the story actually renders, by
+// which point this module has already finished evaluating, so anchoring to
+// real time here would compute dates relative to a "today" the app never
+// actually sees, landing every item in the same bucket regardless of intent.
+const STORYBOOK_MOCKED_DATE = "2025-08-09T12:00:00.000Z"
+const offsetDate = (days: number): string =>
+  format(addDays(new Date(STORYBOOK_MOCKED_DATE), days), "yyyy-MM-dd")
+
+const EVENT_DATE_FILTER_ID = "event-date-filter"
+// Matches the Figma reference's exact bucket labels ("Ended", not the
+// schema default "Event ended").
+const EVENT_DATE_STATUS_LABELS = DEFAULT_DATE_FILTER_STATUS_LABELS.map(
+  (statusLabel) =>
+    statusLabel.id === "ENDED"
+      ? { ...statusLabel, label: "Ended" }
+      : statusLabel,
+)
+const EVENT_DATE_TAG_CATEGORY: NonNullable<
+  CollectionPageSchemaType["page"]["tagCategories"]
+> = [
+  {
+    label: "Event date",
+    id: EVENT_DATE_FILTER_ID,
+    type: TAG_CATEGORY_TYPE.Date,
+    statusLabels: EVENT_DATE_STATUS_LABELS,
+  },
+]
+
+// Counts (12 upcoming / 10 ongoing / 2 ended) mirror the Figma reference
+// for the sidebar's date-filter section (see wayfinder ticket 009).
+const dateFilterCollectionItem = (
+  index: number,
+  dateTagged: NonNullable<IsomerSitemap["dateTagged"]>,
+): IsomerSitemap => ({
+  id: `date-filter-item-${index}`,
+  title: `Annual Community Charity Run ${2020 + index}`,
+  permalink: `/publications/annual-community-charity-run-${index}`,
+  lastModified: "",
+  layout: "article",
+  summary:
+    "Join us for a day of community, fitness, and fundraising for a good cause.",
+  dateTagged,
+})
+
+const DATE_FILTER_COLLECTION_ITEMS: IsomerSitemap[] = [
+  ...times(12, (index) =>
+    dateFilterCollectionItem(index, [
+      {
+        id: EVENT_DATE_FILTER_ID,
+        date: offsetDate(30 + index),
+        endDate: offsetDate(32 + index),
+      },
+    ]),
+  ),
+  ...times(10, (index) =>
+    dateFilterCollectionItem(12 + index, [
+      {
+        id: EVENT_DATE_FILTER_ID,
+        date: offsetDate(-5),
+        endDate: offsetDate(5),
+      },
+    ]),
+  ),
+  ...times(2, (index) =>
+    dateFilterCollectionItem(22 + index, [
+      {
+        id: EVENT_DATE_FILTER_ID,
+        date: offsetDate(-60),
+        endDate: offsetDate(-50),
+      },
+    ]),
+  ),
+]
+
+export const DateFilters: Story = {
+  name: "Date Filters",
+  args: generateArgs({
+    tagCategories: EVENT_DATE_TAG_CATEGORY,
+    collectionItems: DATE_FILTER_COLLECTION_ITEMS,
+  }),
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+
+    await expect(screen.getByText(/Upcoming \(12\)/i)).toBeInTheDocument()
+    await expect(screen.getByText(/Ongoing \(10\)/i)).toBeInTheDocument()
+    await expect(screen.getByText(/Ended \(2\)/i)).toBeInTheDocument()
+  },
+}
+
+export const DateFiltersStatusFiltered: Story = {
+  name: "Date Filters — Status Filtered",
+  args: generateArgs({
+    tagCategories: EVENT_DATE_TAG_CATEGORY,
+    collectionItems: DATE_FILTER_COLLECTION_ITEMS,
+  }),
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+    await userEvent.click(screen.getByText(/Ended \(2\)/i))
+
+    const resultsHeader = await screen.findAllByText(/2 items/)
+    await expect(resultsHeader.length).toBe(1)
+  },
+}
+
+// These calendar-focused stories are exclusively about the date-range input
+// — no status checkbox (Upcoming/Ongoing/Ended) should ever end up checked,
+// since `updateAppliedDateRange` applies a range independently of `items`.
+const expectNoStatusChecked = async (canvasElement: HTMLElement) => {
+  const checkedBoxes = canvasElement.querySelectorAll(
+    'input[type="checkbox"]:checked',
+  )
+  await expect(checkedBoxes.length).toBe(0)
+}
+
+export const DateFiltersCalendarOpen: Story = {
+  name: "Date Filters — Calendar Open (nothing selected)",
+  args: generateArgs({
+    tagCategories: EVENT_DATE_TAG_CATEGORY,
+    collectionItems: DATE_FILTER_COLLECTION_ITEMS,
+  }),
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+    await userEvent.click(screen.getByLabelText("Open calendar"))
+    await screen.findByText("Apply")
+
+    await expectNoStatusChecked(canvasElement)
+  },
+}
+
+export const DateFiltersCalendarRangeSelected: Story = {
+  name: "Date Filters — Calendar Open (range selected)",
+  args: generateArgs({
+    tagCategories: EVENT_DATE_TAG_CATEGORY,
+    collectionItems: DATE_FILTER_COLLECTION_ITEMS,
+  }),
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+    await userEvent.click(screen.getByLabelText("Open calendar"))
+    await screen.findByText("Apply")
+
+    // 4 and 14 August 2025 — the exact range the "ongoing" items above use
+    // (offsetDate(-5)/offsetDate(5) from the mocked "today" of 9 Aug 2025).
+    // Matched by aria-label rather than the visible day number, which is
+    // ambiguous — the grid also shows the trailing September overflow days
+    // (also labelled "4"/"14"), so a plain text match throws.
+    //
+    // The lookaheads match "August" and the day/year regardless of word
+    // order: the "en-SG" locale's day-month-year formatting isn't stable
+    // across browsers/CLDR versions — Chromium has rendered it as both
+    // "August 4, 2025" and "4 August 2025" — so anchoring to one fixed
+    // order is what actually broke here.
+    await userEvent.click(
+      screen.getByRole("button", {
+        name: /(?=.*\bAugust\b)(?=.*\b4\b)(?=.*\b2025\b)/i,
+      }),
+    )
+    await userEvent.click(
+      screen.getByRole("button", {
+        name: /(?=.*\bAugust\b)(?=.*\b14\b)(?=.*\b2025\b)/i,
+      }),
+    )
+
+    await expectNoStatusChecked(canvasElement)
+  },
+}
+
+export const DateFiltersDateFiltered: Story = {
+  name: "Date Filters — Date Filtered",
+  args: generateArgs({
+    tagCategories: EVENT_DATE_TAG_CATEGORY,
+    collectionItems: DATE_FILTER_COLLECTION_ITEMS,
+  }),
+  play: async (context) => {
+    await DateFiltersCalendarRangeSelected.play?.(context)
+
+    const screen = within(context.canvasElement)
+    await userEvent.click(screen.getByText("Apply"))
+
+    // Only the 10 "ongoing" items (4 - 14 Aug 2025) overlap this range —
+    // the "ended" (Jun 2025) and "upcoming" (Sep 2025+) items don't.
+    const resultsHeader = await screen.findAllByText(/10 items/)
+    await expect(resultsHeader.length).toBe(1)
+
+    await expectNoStatusChecked(context.canvasElement)
+  },
 }

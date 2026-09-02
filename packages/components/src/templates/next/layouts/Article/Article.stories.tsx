@@ -1,7 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { generateSiteConfig } from "~/stories/helpers"
 import { type ArticlePageSchemaType } from "~/types"
-import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
+import {
+  DEFAULT_DATE_FILTER_STATUS_LABELS,
+  TAG_CATEGORY_DISPLAY_OPTIONS,
+  TAG_CATEGORY_TYPE,
+} from "~/types/constants"
 
 import { ArticleLayout } from "./Article"
 
@@ -755,6 +759,104 @@ export const TaggedArticleWithTagCategories: Story = {
         src: "https://images.unsplash.com/photo-1570441262582-a2d4b9a916a5?q=80&w=2948&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         alt: "A man is serving food out of a blue food",
       },
+      {
+        type: "prose",
+        content: [
+          {
+            type: "paragraph",
+            content: [
+              {
+                type: "text",
+                text: "This is a Chat-GPT4 generated article for visual testing purposes.",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+}
+
+const DATE_FILTER_ID = "event-date-filter"
+
+// Exercises Article.tsx's own derivation of `dateFilterCards` from
+// `page.dateTagged` + the parent collection's date-type `tagCategories`,
+// mirroring TaggedArticleWithTagCategories for the date-filter equivalent.
+// Uses a far-future date range so the computed status (Ended/Ongoing/
+// Upcoming) stays "Upcoming" regardless of when this story is viewed.
+export const WithDateFilter: Story = {
+  name: "WithDateFilter",
+  args: {
+    layout: "article",
+    site: generateSiteConfig({
+      siteMap: {
+        id: "1",
+        title: "Home",
+        permalink: "/",
+        lastModified: "",
+        layout: "homepage",
+        summary: "",
+        children: [
+          {
+            id: "2",
+            title: "Newsroom",
+            permalink: "/newsroom",
+            lastModified: "",
+            layout: "content",
+            summary: "",
+            children: [
+              {
+                id: "3",
+                title: "News",
+                permalink: "/newsroom/news",
+                lastModified: "",
+                layout: "collection",
+                summary: "",
+                collectionPagePageProps: {
+                  tagCategories: [
+                    {
+                      label: "Event Date",
+                      id: DATE_FILTER_ID,
+                      type: TAG_CATEGORY_TYPE.Date,
+                      statusLabels: DEFAULT_DATE_FILTER_STATUS_LABELS,
+                    },
+                  ],
+                },
+                children: [
+                  {
+                    id: "4",
+                    title: "Annual Community Charity Run 2026",
+                    permalink:
+                      "/newsroom/news/annual-community-charity-run-2026",
+                    lastModified: "",
+                    layout: "article",
+                    summary: "",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    }),
+    page: {
+      title: "Annual Community Charity Run 2026",
+      permalink: "/newsroom/news/annual-community-charity-run-2026",
+      lastModified: "2024-05-02T14:12:57.160Z",
+      category: "Citizen Engagement",
+      dateTagged: [
+        {
+          id: DATE_FILTER_ID,
+          date: "2099-09-27",
+          endDate: "2099-09-29",
+        },
+      ],
+      articlePageHeader: {
+        summary:
+          "Join us for a day of community, fitness, and fundraising for a good cause.",
+      },
+    },
+    content: [
       {
         type: "prose",
         content: [

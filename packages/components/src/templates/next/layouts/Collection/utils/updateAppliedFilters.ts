@@ -18,7 +18,13 @@ export const updateAppliedFilters = (
       const newAppliedFilters = [...appliedFilters]
       newAppliedFilters[filterIndex]?.items.splice(itemIndex, 1)
 
-      if (newAppliedFilters[filterIndex]?.items.length === 0) {
+      // NOTE: a date filter can still be "active" via `dateRange` alone even
+      // once its last bucket checkbox is unticked — only drop the entry
+      // entirely when nothing is left on it.
+      if (
+        newAppliedFilters[filterIndex]?.items.length === 0 &&
+        !newAppliedFilters[filterIndex]?.dateRange
+      ) {
         newAppliedFilters.splice(filterIndex, 1)
       }
 

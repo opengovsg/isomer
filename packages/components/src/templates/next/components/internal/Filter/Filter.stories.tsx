@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { AppliedFilter } from "~/templates/next/types/Filter"
 import { useState } from "react"
 import { userEvent, within } from "storybook/test"
+import { updateAppliedDateRange } from "~/templates/next/layouts/Collection/utils"
 
 import { getViewportByMode, withChromaticModes } from "@isomer/storybook-config"
 
@@ -59,6 +60,14 @@ const meta: Meta<typeof Filter> = {
         handleFilterToggle={(id: string, itemId: string) =>
           updateAppliedFilters(appliedFilters, setAppliedFilters, id, itemId)
         }
+        handleDateRangeChange={(id, dateRange) =>
+          updateAppliedDateRange(
+            appliedFilters,
+            setAppliedFilters,
+            id,
+            dateRange,
+          )
+        }
         handleClearFilter={handleClearFilter}
       />
     )
@@ -107,6 +116,17 @@ const meta: Meta<typeof Filter> = {
     ],
     appliedFilters: [],
   },
+}
+
+const DATE_FILTER = {
+  id: "event-date",
+  label: "Event Date",
+  type: "date" as const,
+  items: [
+    { id: "UPCOMING", label: "Upcoming", count: 12 },
+    { id: "ONGOING", label: "Ongoing", count: 3 },
+    { id: "ENDED", label: "Event ended", count: 48 },
+  ],
 }
 export default meta
 type Story = StoryObj<typeof Filter>
@@ -163,6 +183,32 @@ export const MobileFilterDrawerClearAll: Story = {
     await userEvent.click(
       screen.getByRole("button", { name: /clear all filters/i }),
     )
+  },
+}
+
+export const WithDateFilter: Story = {
+  parameters: {
+    chromatic: withChromaticModes(["desktop"]),
+  },
+  args: {
+    filters: [DATE_FILTER],
+    appliedFilters: [],
+  },
+}
+
+export const WithDateFilterApplied: Story = {
+  parameters: {
+    chromatic: withChromaticModes(["desktop"]),
+  },
+  args: {
+    filters: [DATE_FILTER],
+    appliedFilters: [
+      {
+        id: "event-date",
+        items: [{ id: "ONGOING" }],
+        dateRange: { start: "2026-06-01", end: "2026-06-30" },
+      },
+    ],
   },
 }
 

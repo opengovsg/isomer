@@ -1,66 +1,21 @@
 "use client"
 
 import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react"
-import { useButton } from "@react-aria/button"
-import { useFocusRing } from "@react-aria/focus"
-import { mergeProps } from "@react-aria/utils"
-import { useEffect, useRef, useState } from "react"
-import { BiChevronDown, BiX } from "react-icons/bi"
-import { tv } from "~/lib/tv"
-import { twMerge } from "~/lib/twMerge"
-import { focusRing } from "~/utils/tailwind"
+import { useEffect, useState } from "react"
+import { BiX } from "react-icons/bi"
 
-import type { AppliedFilter, FilterProps } from "../../../types/Filter"
+import type { AppliedFilter, Filter, FilterProps } from "../../../types/Filter"
 import { Button } from "../Button"
-import { Checkbox, CheckboxGroup } from "../Checkbox"
 import { IconButton } from "../IconButton"
-
-const expandFilterButtonStyle = tv({
-  extend: focusRing,
-  base: "prose-headline-base-semibold flex w-full flex-row items-center justify-between gap-4 text-left text-base-content",
-})
-
-interface ExpandFilterButtonProps {
-  label: string
-  isExpanded: boolean
-  onPress: () => void
-}
-
-const ExpandFilterButton = ({
-  label,
-  isExpanded,
-  onPress,
-}: ExpandFilterButtonProps) => {
-  const buttonRef = useRef<HTMLButtonElement>(null)
-  const { buttonProps } = useButton({ onPress }, buttonRef)
-  const { focusProps, isFocusVisible } = useFocusRing()
-  const mergedProps = mergeProps(buttonProps, focusProps)
-
-  return (
-    <button
-      {...mergedProps}
-      ref={buttonRef}
-      className={twMerge(
-        expandFilterButtonStyle({
-          isFocusVisible,
-        }),
-      )}
-    >
-      <span>{label}</span>
-      <BiChevronDown
-        aria-hidden
-        className={`mr-3 h-6 w-6 flex-shrink-0 text-base-content-strong transition-all duration-300 ease-in-out ${
-          isExpanded ? "rotate-180" : "rotate-0"
-        }`}
-      />
-    </button>
-  )
-}
+import { FilterSection } from "./FilterSection"
 
 interface FilterDrawerProps extends FilterProps {
+  filters: Filter[]
   isOpen: boolean
   onOpen: (isOpen: boolean) => void
 }
+
+type DateRangesById = Record<string, AppliedFilter["dateRange"]>
 
 const transform = {
   toCheckboxes: (appliedFilters: AppliedFilter[]) => {
@@ -69,13 +24,28 @@ const transform = {
       {} as Record<string, string[]>,
     )
   },
-  toAppliedFilters: (holdingFiltersById: Record<string, string[]>) => {
-    return Object.entries(holdingFiltersById)
-      .map(([id, items]) => ({
+  toDateRanges: (appliedFilters: AppliedFilter[]): DateRangesById => {
+    return appliedFilters.reduce(
+      (acc, { id, dateRange }) =>
+        dateRange ? { ...acc, [id]: dateRange } : acc,
+      {} as DateRangesById,
+    )
+  },
+  toAppliedFilters: (
+    holdingFiltersById: Record<string, string[]>,
+    holdingDateRangesById: DateRangesById,
+  ) => {
+    const ids = new Set([
+      ...Object.keys(holdingFiltersById),
+      ...Object.keys(holdingDateRangesById),
+    ])
+    return Array.from(ids)
+      .map((id) => ({
         id,
-        items: items.map((id) => ({ id })),
+        items: (holdingFiltersById[id] ?? []).map((itemId) => ({ id: itemId })),
+        dateRange: holdingDateRangesById[id],
       }))
-      .filter(({ items }) => items.length > 0)
+      .filter(({ items, dateRange }) => items.length > 0 || dateRange)
   },
 }
 
@@ -93,10 +63,13 @@ const FilterDrawerContent = ({
   const [holdingFiltersById, setHoldingFiltersById] = useState(
     transform.toCheckboxes(initialAppliedFilters),
   )
+  const [holdingDateRangesById, setHoldingDateRangesById] = useState(
+    transform.toDateRanges(initialAppliedFilters),
+  )
 
-  // Synchronize the applied filters with the holding filters
   useEffect(() => {
     setHoldingFiltersById(transform.toCheckboxes(initialAppliedFilters))
+    setHoldingDateRangesById(transform.toDateRanges(initialAppliedFilters))
   }, [initialAppliedFilters])
 
   const updateFilterToggle = (filterId: string) => {
@@ -107,47 +80,42 @@ const FilterDrawerContent = ({
   }
 
   const handleApplyFilters = () => {
-    setAppliedFilters(transform.toAppliedFilters(holdingFiltersById))
+    setAppliedFilters(
+      transform.toAppliedFilters(holdingFiltersById, holdingDateRangesById),
+    )
     onOpen(false)
   }
 
   return (
     <>
-      {/* Filters */}
       <form className="flex-1 px-6 md:px-10">
-        {filters.map(({ id, label, items }) => (
-          <CheckboxGroup
+        {filters.map((filter) => (
+          <FilterSection
+            key={filter.id}
+            filter={filter}
             className="border-b border-b-divider-medium py-4 last:border-0"
-            key={id}
-            value={holdingFiltersById[id] ?? []}
-            onChange={(values) => {
+            headerVariant="drawer"
+            commitMode="staged"
+            dateRangePresentation="modal"
+            isExpanded={showFilter[filter.id] ?? false}
+            onToggleExpanded={() => updateFilterToggle(filter.id)}
+            selectedItemIds={holdingFiltersById[filter.id] ?? []}
+            dateRange={holdingDateRangesById[filter.id]}
+            onSelectionChange={(values) => {
               setHoldingFiltersById((prev) => ({
                 ...prev,
-                [id]: values,
+                [filter.id]: values,
               }))
             }}
-          >
-            <ExpandFilterButton
-              label={label}
-              isExpanded={showFilter[id] ?? false}
-              onPress={() => updateFilterToggle(id)}
-            />
-
-            <div className={showFilter[id] ? "flex flex-col" : "hidden"}>
-              {items.map(({ id: itemId, label: itemLabel, count }) => (
-                <Checkbox
-                  value={itemId}
-                  key={itemId}
-                  className="w-fit cursor-pointer p-2"
-                >
-                  {itemLabel} ({count.toLocaleString()})
-                </Checkbox>
-              ))}
-            </div>
-          </CheckboxGroup>
+            onDateRangeChange={(dateRange) =>
+              setHoldingDateRangesById((prev) => ({
+                ...prev,
+                [filter.id]: dateRange,
+              }))
+            }
+          />
         ))}
       </form>
-      {/* Sticky action bottom bar */}
       <div className="sticky bottom-0 left-0 right-0 flex flex-col gap-3 border-t border-t-divider-medium bg-white px-6 pb-12 pt-8 md:px-10">
         <Button
           className="w-full justify-center"
