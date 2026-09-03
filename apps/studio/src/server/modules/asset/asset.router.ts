@@ -9,7 +9,7 @@ import {
 import { protectedProcedure, router } from "~/server/trpc"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
-import { invalidateAssetsBySiteIds } from "../aws/cloudfront.service"
+import { invalidateAssetPaths } from "../aws/cloudfront.service"
 import { validateUserIsIsomerAdmin } from "../permissions/permissions.service"
 import {
   deleteAssetsByUrl,
@@ -17,7 +17,6 @@ import {
   getFileKey,
   getPresignedGetUrl,
   getPresignedPutUrl,
-  getSiteIdFromKey,
   markFileAsDeleted,
   putFileDirect,
   sanitizeSvg,
@@ -159,15 +158,15 @@ export const assetRouter = router({
 
       const results = await deleteAssetsByUrl(urls)
 
-      const successfulSiteIds = new Set(
+      const successfulKeys = new Set(
         results
           .filter((result) => result.success && result.key)
-          .map((result) => getSiteIdFromKey(result.key ?? ""))
-          .filter((siteId): siteId is string => !!siteId),
+          .map((result) => result.key)
+          .filter((key): key is string => !!key),
       )
-      const invalidation = await invalidateAssetsBySiteIds(
+      const invalidation = await invalidateAssetPaths(
         ctx.logger,
-        successfulSiteIds,
+        successfulKeys,
       )
 
       const failedCount = results.filter((result) => !result.success).length

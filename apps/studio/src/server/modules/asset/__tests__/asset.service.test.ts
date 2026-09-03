@@ -9,7 +9,6 @@ import {
   getContentDispositionForTitle,
   getContentTypeFromKey,
   getFileKey,
-  getSiteIdFromKey,
   parseAssetUrlToKey,
   sanitizeSvg,
 } from "../asset.service"
@@ -430,20 +429,6 @@ describe("asset.service", () => {
         `https://${ASSET_DOMAIN}/36/uuid/picture.png`,
       )
       expect(result).toBeNull()
-    })
-  })
-
-  describe("getSiteIdFromKey", () => {
-    it("should return the first path segment as the siteId", () => {
-      expect(getSiteIdFromKey("36/uuid/picture.png")).toBe("36")
-    })
-
-    it("should return the whole string when there is no slash", () => {
-      expect(getSiteIdFromKey("picture.png")).toBe("picture.png")
-    })
-
-    it("should return undefined for an empty key", () => {
-      expect(getSiteIdFromKey("")).toBeUndefined()
     })
   })
 

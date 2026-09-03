@@ -2,7 +2,7 @@ import { CreateInvalidationCommand } from "@aws-sdk/client-cloudfront"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { env } from "~/env.mjs"
 
-import { invalidateAssetsBySiteIds } from "../cloudfront.service"
+import { invalidateAssetPaths } from "../cloudfront.service"
 
 const { mockSend } = vi.hoisted(() => ({ mockSend: vi.fn() }))
 
@@ -23,18 +23,18 @@ vi.mock("~/env.mjs", () => ({
 }))
 
 const mockLogger = { error: vi.fn() } as unknown as Parameters<
-  typeof invalidateAssetsBySiteIds
+  typeof invalidateAssetPaths
 >[0]
 
-describe("invalidateAssetsBySiteIds", () => {
+describe("invalidateAssetPaths", () => {
   beforeEach(() => {
     mockSend.mockReset()
     env.CLOUDFRONT_ASSETS_DISTRIBUTION_ID = ""
   })
 
-  it("should return success without calling CloudFront when there are no siteIds", async () => {
+  it("should return success without calling CloudFront when there are no keys", async () => {
     // Act
-    const result = await invalidateAssetsBySiteIds(mockLogger, new Set())
+    const result = await invalidateAssetPaths(mockLogger, new Set())
 
     // Assert
     expect(result).toEqual({ success: true })
@@ -43,7 +43,7 @@ describe("invalidateAssetsBySiteIds", () => {
 
   it("should return failure when the distribution id is not configured", async () => {
     // Act
-    const result = await invalidateAssetsBySiteIds(mockLogger, new Set(["1"]))
+    const result = await invalidateAssetPaths(mockLogger, new Set(["1/a.png"]))
 
     // Assert
     expect(result).toEqual({
@@ -53,13 +53,17 @@ describe("invalidateAssetsBySiteIds", () => {
     expect(mockSend).not.toHaveBeenCalled()
   })
 
-  it("should create one invalidation batching a path per unique siteId when configured", async () => {
+  it("should create one invalidation batching a path per unique key when configured", async () => {
     // Arrange
     env.CLOUDFRONT_ASSETS_DISTRIBUTION_ID = "DIST123"
     mockSend.mockResolvedValueOnce({ Invalidation: { Id: "INV123" } })
 
     // Act
-    const result = await invalidateAssetsBySiteIds(mockLogger, ["1", "2", "1"])
+    const result = await invalidateAssetPaths(mockLogger, [
+      "1/a.png",
+      "2/b.png",
+      "1/a.png",
+    ])
 
     // Assert
     expect(result).toEqual({ success: true, invalidationId: "INV123" })
@@ -67,7 +71,7 @@ describe("invalidateAssetsBySiteIds", () => {
       expect.objectContaining({
         DistributionId: "DIST123",
         InvalidationBatch: expect.objectContaining({
-          Paths: { Quantity: 2, Items: ["/1/*", "/2/*"] },
+          Paths: { Quantity: 2, Items: ["/1/a.png", "/2/b.png"] },
         }),
       }),
     )
@@ -79,7 +83,7 @@ describe("invalidateAssetsBySiteIds", () => {
     mockSend.mockRejectedValueOnce(new Error("Access denied"))
 
     // Act
-    const result = await invalidateAssetsBySiteIds(mockLogger, ["1"])
+    const result = await invalidateAssetPaths(mockLogger, ["1/a.png"])
 
     // Assert
     expect(result).toEqual({

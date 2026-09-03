@@ -20,7 +20,7 @@ import { MAX_DELETE_ASSET_URLS, MAX_DELETE_FILE_KEYS } from "~/schemas/asset"
 import { createCallerFactory } from "~/server/trpc"
 import { IsomerAdminRole, ResourceType } from "~prisma/generated/generatedEnums"
 
-import { invalidateAssetsBySiteIds } from "../../aws/cloudfront.service"
+import { invalidateAssetPaths } from "../../aws/cloudfront.service"
 import { assetRouter } from "../asset.router"
 
 // Mock the S3 client to prevent credential loading issues in CI
@@ -39,7 +39,7 @@ vi.mock("~/lib/s3", () => ({
 
 // Mock CloudFront invalidation to prevent real AWS calls in CI.
 vi.mock("../../aws/cloudfront.service", () => ({
-  invalidateAssetsBySiteIds: vi.fn().mockResolvedValue({ success: true }),
+  invalidateAssetPaths: vi.fn().mockResolvedValue({ success: true }),
 }))
 
 const createCaller = createCallerFactory(assetRouter)
@@ -598,13 +598,13 @@ describe("asset.router", async () => {
       expect(deleteFile).not.toHaveBeenCalled()
     })
 
-    it("should soft-delete each asset URL and invalidate CloudFront for the affected sites when caller is a Core admin", async () => {
+    it("should soft-delete each asset URL and invalidate CloudFront for the exact deleted paths when caller is a Core admin", async () => {
       // Arrange
       await setupIsomerAdmin({
         userId: String(session.userId),
         role: IsomerAdminRole.Core,
       })
-      vi.mocked(invalidateAssetsBySiteIds).mockResolvedValueOnce({
+      vi.mocked(invalidateAssetPaths).mockResolvedValueOnce({
         success: true,
         invalidationId: "INV123",
       })
@@ -626,9 +626,9 @@ describe("asset.router", async () => {
         invalidationId: "INV123",
       })
       expect(deleteFile).toHaveBeenCalledTimes(2)
-      expect(invalidateAssetsBySiteIds).toHaveBeenCalledWith(
+      expect(invalidateAssetPaths).toHaveBeenCalledWith(
         expect.anything(),
-        new Set(["1", "2"]),
+        new Set([`1/${UUID_1}/a.png`, `2/${UUID_2}/b.png`]),
       )
     })
 
