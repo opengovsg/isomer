@@ -60,7 +60,7 @@ export const CalendarCell = ({
   highlightedRange,
   onPreviewOutsideDate,
 }: CalendarCellProps) => {
-  const cellRef = useRef<HTMLDivElement>(null)
+  const cellRef = useRef<HTMLButtonElement>(null)
   const {
     cellProps,
     buttonProps,
@@ -93,11 +93,11 @@ export const CalendarCell = ({
 
   const outsideVisibleRangeProps = {
     "aria-disabled": undefined,
-    onClick: (event: MouseEvent<HTMLDivElement>) => {
+    onClick: (event: MouseEvent<HTMLButtonElement>) => {
       event.preventDefault()
       selectOutsideVisibleDate()
     },
-    onKeyDown: (event: KeyboardEvent<HTMLDivElement>) => {
+    onKeyDown: (event: KeyboardEvent<HTMLButtonElement>) => {
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault()
         selectOutsideVisibleDate()
@@ -132,9 +132,10 @@ export const CalendarCell = ({
           isRangeEnd,
         })}
       >
-        <div
+        <button
           {...mergedButtonProps}
           ref={cellRef}
+          type="button"
           className={calendarCellButtonStyles({
             isFocusVisible,
             isCurrentDate,
@@ -144,7 +145,7 @@ export const CalendarCell = ({
           })}
         >
           {formattedDate}
-        </div>
+        </button>
       </div>
     </div>
   )
