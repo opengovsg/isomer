@@ -1,7 +1,7 @@
-import type { Locator, Page } from "@playwright/test"
 import type { UUID } from "crypto"
-
-import { overwriteToken } from "../utils"
+import { expect, type Locator, type Page } from "@playwright/test"
+import { env } from "~/env.mjs"
+import { overwriteToken } from "~e2e/utils"
 
 export class LoginPage {
   readonly page: Page
@@ -32,8 +32,6 @@ export class LoginPage {
   }
 
   async fillToken(email: string) {
-    // NOTE: The function for verification of otp does a comparison between the hash of the submitted token
-    // and the VerificationToken.token in db.
     const token = await overwriteToken({
       factory: () => "123456",
       identifier: email,
@@ -41,28 +39,90 @@ export class LoginPage {
     await this.tokenInput.fill(token)
   }
 
-  // NOTE: Handles login at the mockpass page and redirects to studio
+  // Mockpass has two "Login" buttons. secondaryLoginButton is the profile
+  // confirm step; getByRole("button", { name: "Login" }) matches both.
+  private async clickMockpassSecondaryLogin() {
+    await this.secondaryLoginButton.click()
+  }
+
   async defaultMockpassLogin() {
     await this.singpassButton.click()
     await this.singpassLoginButton.click()
-    // NOTE: There are 2 login buttons on mockpass -
-    // the first button, once clicked, brings you to a second profile selection component
-    // that also has a login button.
-    // Both of the buttons have the same `name` for `getByRole`, so we have to use a new locator
-    // that doesn't conflict with the original button's locator.
-    await this.secondaryLoginButton.click()
+    await this.clickMockpassSecondaryLogin()
   }
 
   async mockpassLoginWith(uuid?: UUID) {
     await this.singpassButton.click()
     await this.singpassLoginButton.click()
-    // NOTE: There are 2 login buttons on mockpass -
-    // the first button, once clicked, brings you to a second profile selection component
-    // that also has a login button.
-    // Both of the buttons have the same `name` for `getByRole`, so we have to use a new locator
-    // that doesn't conflict with the original button's locator.
     const filledUuid = uuid || crypto.randomUUID()
     await this.uuidInput.fill(filledUuid)
-    await this.secondaryLoginButton.click()
+    await this.clickMockpassSecondaryLogin()
+  }
+
+  async gotoSignIn() {
+    await this.page.goto("/sign-in")
+  }
+
+  async gotoNotFound() {
+    return this.page.goto("/not-found")
+  }
+
+  studioTitle() {
+    return this.page.getByText("Isomer Studio").first()
+  }
+
+  async expectStudioTitleVisible() {
+    await expect(this.studioTitle()).toBeVisible()
+  }
+
+  signInButton() {
+    return this.page.getByRole("button", { name: "Sign in" })
+  }
+
+  async expectOtpVisible() {
+    await expect(this.page.getByText("Enter OTP")).toBeVisible()
+  }
+
+  continueToStudioLink() {
+    return this.page.getByRole("link", {
+      name: "Continue to Isomer Studio",
+    })
+  }
+
+  async clickContinueToStudio() {
+    await expect(this.continueToStudioLink()).toBeVisible()
+    await this.continueToStudioLink().click()
+  }
+
+  welcomeModal() {
+    return this.page.getByRole("dialog", { name: "Welcome to Studio" })
+  }
+
+  async expectWelcomeModalVisible() {
+    await expect(this.welcomeModal()).toBeVisible()
+  }
+
+  async expectSitesHeadingVisible() {
+    await expect(
+      this.page.getByRole("heading", { name: "Your sites" }),
+    ).toBeVisible()
+  }
+
+  async expectNoSitesAccessTextVisible() {
+    await expect(
+      this.page.getByText("You don't have access to any sites yet."),
+    ).toBeInViewport()
+  }
+
+  async waitForSingpassErrorUrl() {
+    await this.page.waitForURL("**/singpass?error=true")
+  }
+
+  async waitForAppHomeUrl() {
+    const appUrl = env.NEXT_PUBLIC_APP_URL
+    if (!appUrl) {
+      throw new Error("NEXT_PUBLIC_APP_URL is required for e2e singpass tests")
+    }
+    await this.page.waitForURL(appUrl)
   }
 }

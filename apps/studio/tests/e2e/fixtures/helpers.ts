@@ -3,18 +3,24 @@ import { IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY } from "~/lib/gro
 import { type RoleType } from "~prisma/generated/generatedEnums"
 
 import { storageStateFor, type Role } from "./auth"
-import { CollectionPO } from "./collection.po"
-import { DashboardPO } from "./dashboard.po"
 import { enableGrowthBookFeature, resetGrowthBookPage } from "./network"
-import { PageEditorPO } from "./page-editor.po"
-import { getCollectionByTitle, getFolderByTitle } from "./resource.db"
-import { UsersPO } from "./users.po"
+import { CollectionPO } from "./po/collection"
+import { DashboardPO } from "./po/dashboard"
+import { PageEditorPO } from "./po/page-editor"
+import { UsersPO } from "./po/users"
+import { getCollectionByTitle, getFolderByTitle } from "./resource/db"
+
+const SCHEDULE_PRESET_CLOCK_TIME = new Date("2099-01-01T00:01:00+08:00")
 
 export const openSeededPageEditor = async (
   page: Page,
   siteId: number,
   pageId: string,
+  options?: { scheduleClock?: boolean },
 ) => {
+  if (options?.scheduleClock) {
+    await page.clock.install({ time: SCHEDULE_PRESET_CLOCK_TIME })
+  }
   const editor = new PageEditorPO(page)
   await editor.gotoPage(siteId, pageId)
   await editor.expectLoaded()

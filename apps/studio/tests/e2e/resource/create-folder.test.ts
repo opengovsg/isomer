@@ -1,13 +1,12 @@
 import { expect, test } from "@playwright/test"
 import crypto from "crypto"
-import { RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { createFolderViaWizard } from "../fixtures/helpers"
-import { deleteResourcesByTitleLike } from "../fixtures/reset"
-import { getResource } from "../fixtures/resource.db"
-import { provisionE2ESite } from "../fixtures/site"
-import { ensureUserOnboarded } from "../fixtures/user"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
+import { createFolderViaWizard } from "~e2e/fixtures/helpers"
+import { deleteResourcesByTitlePrefix } from "~e2e/fixtures/reset"
+import { getResourceByTitleAndType } from "~e2e/fixtures/resource"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
+import { ResourceType, RoleType } from "~prisma/generated/generatedEnums"
 
 const UNIQUE_TITLE = () => `E2E Test Folder ${crypto.randomUUID().slice(0, 8)}`
 
@@ -24,7 +23,7 @@ test.describe("create folder", { tag: roleTag("admin") }, () => {
   })
 
   test.afterEach(async () => {
-    await deleteResourcesByTitleLike(siteId, "E2E Test Folder %")
+    await deleteResourcesByTitlePrefix(siteId, "E2E Test Folder ")
   })
 
   test("admin can create a folder via the Create new wizard", async ({
@@ -34,11 +33,17 @@ test.describe("create folder", { tag: roleTag("admin") }, () => {
     const title = UNIQUE_TITLE()
 
     // Act
-    const { folderId } = await createFolderViaWizard(page, { siteId, title })
+    await createFolderViaWizard(page, { siteId, title })
 
     // Assert
-    const created = await getResource(folderId)
+    // A folder also creates an IndexPage child sharing the same title, so we
+    // must scope the lookup by type to avoid matching the IndexPage.
+    const created = await getResourceByTitleAndType({
+      siteId,
+      title,
+      type: ResourceType.Folder,
+    })
     expect(created).toBeTruthy()
-    expect(created?.type).toBe("Folder")
+    expect(created?.type).toBe(ResourceType.Folder)
   })
 })
