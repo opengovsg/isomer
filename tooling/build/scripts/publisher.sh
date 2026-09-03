@@ -214,13 +214,59 @@ echo "Uploading redirect files to S3..."
 calculate_duration $start_time
 
 # Update CloudFront origin path
+#
+# This can race with a concurrent build of the SAME site (Studio allows a second
+# build to start alongside a stale in-progress one - see computeBuildChanges).
+# Both builds read-modify-write the same DistributionConfig, so the second one to
+# write hits a 412 PreconditionFailed on a stale ETag. On conflict we re-fetch and
+# retry, but only if we are actually the more recent build: CODEBUILD_BUILD_NUMBER
+# is an AWS-assigned, per-project, monotonically increasing counter, so comparing
+# it against the build number already live tells us, independent of the ETag,
+# whether our content is newer. This guarantees the highest build number always
+# ends up live, regardless of which build's write happens to land last.
 echo "Updating CloudFront origin path..."
 echo "CloudFront distribution ID: $CLOUDFRONT_DISTRIBUTION_ID"
-aws cloudfront get-distribution --id $CLOUDFRONT_DISTRIBUTION_ID >distribution.json
 
-ETag=$(cat distribution.json | jq -r '.ETag')
-echo "ETag: $ETag"
+MAX_ATTEMPTS=5
+UPDATED=false
 
-jq '.Distribution.DistributionConfig' distribution.json >distribution-new.json
-jq ".Origins.Items[0].OriginPath = \"/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest\"" distribution-new.json >distribution-config.json
-aws cloudfront update-distribution --id $CLOUDFRONT_DISTRIBUTION_ID --distribution-config file://distribution-config.json --if-match $ETag
+for ((attempt = 1; attempt <= MAX_ATTEMPTS; attempt++)); do
+  aws cloudfront get-distribution --id "$CLOUDFRONT_DISTRIBUTION_ID" >distribution.json
+
+  ETag=$(jq -r '.ETag' distribution.json)
+  CURRENT_ORIGIN_PATH=$(jq -r '.Distribution.DistributionConfig.Origins.Items[0].OriginPath' distribution.json)
+  CURRENT_BUILD_NUMBER=$(echo "$CURRENT_ORIGIN_PATH" | grep -oE '[0-9]+' | head -n1)
+  echo "Attempt $attempt/$MAX_ATTEMPTS: ETag=$ETag, live build=$CURRENT_BUILD_NUMBER, this build=$CODEBUILD_BUILD_NUMBER"
+
+  if [ -n "$CURRENT_BUILD_NUMBER" ] && [ "$CURRENT_BUILD_NUMBER" -gt "$CODEBUILD_BUILD_NUMBER" ]; then
+    echo "Live origin path is already on a newer build ($CURRENT_BUILD_NUMBER > $CODEBUILD_BUILD_NUMBER). Skipping CloudFront update."
+    UPDATED=true
+    break
+  fi
+
+  jq '.Distribution.DistributionConfig' distribution.json >distribution-new.json
+  jq ".Origins.Items[0].OriginPath = \"/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest\"" distribution-new.json >distribution-config.json
+
+  if aws cloudfront update-distribution --id "$CLOUDFRONT_DISTRIBUTION_ID" --distribution-config file://distribution-config.json --if-match "$ETag" 2>update-error.log; then
+    echo "Successfully updated CloudFront origin path to build $CODEBUILD_BUILD_NUMBER"
+    UPDATED=true
+    break
+  fi
+
+  cat update-error.log
+  if ! grep -q "PreconditionFailed" update-error.log; then
+    echo "Error: CloudFront update-distribution failed for a reason other than an ETag conflict."
+    exit 1
+  fi
+
+  if [ "$attempt" -lt "$MAX_ATTEMPTS" ]; then
+    sleep_time=$(((2 ** attempt) + (RANDOM % 3)))
+    echo "ETag conflict detected. Retrying in ${sleep_time}s..."
+    sleep "$sleep_time"
+  fi
+done
+
+if [ "$UPDATED" != true ]; then
+  echo "Error: exhausted $MAX_ATTEMPTS attempts due to repeated ETag conflicts."
+  exit 1
+fi
