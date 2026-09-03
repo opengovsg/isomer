@@ -2,7 +2,7 @@ import { CalendarDate } from "@internationalized/date"
 import { fireEvent, render, screen } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 
-import { RangeCalendar } from "../RangeCalendar"
+import { RangeCalendar } from "../RangeCalendar/RangeCalendar"
 
 // April 2026 is fixed (rather than "today") so the visible month's leading
 // and trailing outside-of-month cells are known in advance: April 1 falls
