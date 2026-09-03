@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
+import { getSingaporeDateYYYYMMDD } from "~/utils/getSingaporeDate"
 
 import { DateRangeFilterInput } from "../DateRangeFilterInput"
 
@@ -49,6 +50,20 @@ describe("DateRangeFilterInput", () => {
     expect(onChange).toHaveBeenCalledExactlyOnceWith({
       start: currentMonthIso(10),
       end: currentMonthIso(10),
+    })
+  })
+
+  it("applies today's date when Apply is pressed without changing the default selection", () => {
+    const onChange = vi.fn()
+    const today = getSingaporeDateYYYYMMDD()
+    render(<DateRangeFilterInput value={undefined} onChange={onChange} />)
+
+    openCalendar()
+    fireEvent.click(screen.getByText("Apply"))
+
+    expect(onChange).toHaveBeenCalledExactlyOnceWith({
+      start: today,
+      end: today,
     })
   })
 

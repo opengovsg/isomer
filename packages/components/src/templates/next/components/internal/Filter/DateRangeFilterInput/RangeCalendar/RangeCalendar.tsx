@@ -3,7 +3,7 @@
 import { createCalendar, parseDate } from "@internationalized/date"
 import { useRangeCalendar } from "@react-aria/calendar"
 import { useRangeCalendarState } from "@react-stately/calendar"
-import { forwardRef, useRef, useState } from "react"
+import { forwardRef, useRef } from "react"
 import { BiChevronLeft, BiChevronRight } from "react-icons/bi"
 import { getSingaporeDateYYYYMMDD } from "~/utils/getSingaporeDate"
 import { mergeRefs } from "~/utils/rac"
@@ -12,7 +12,9 @@ import type { RangeCalendarValue } from "./types"
 import { IconButton } from "../../../IconButton"
 import { CalendarActionButton } from "./CalendarActionButton"
 import { CalendarGrid } from "./CalendarGrid"
-import { LOCALE } from "./constants"
+
+// Government sites are English-only today — locale is fixed rather than
+// plumbed through `useLocale` (@react-aria/i18n).
 
 interface RangeCalendarProps {
   defaultValue: RangeCalendarValue | null
@@ -30,14 +32,17 @@ interface RangeCalendarProps {
 // clicking dates updates the calendar's own visible selection immediately,
 // but the parent only learns about it when "Apply" is pressed — an explicit
 // commit step rather than applying on every click.
+//
+// When opened with no existing value, today is staged as the default
+// selection in the calendar UI only — the parent filter is not updated until
+// the user presses Apply (or Clear to dismiss).
 export const RangeCalendar = forwardRef<HTMLDivElement, RangeCalendarProps>(
   function RangeCalendar({ defaultValue, onApply }, ref) {
     const today = parseDate(getSingaporeDateYYYYMMDD())
     const initialValue = defaultValue ?? { start: today, end: today }
-    const [hasUserSelected, setHasUserSelected] = useState(false)
 
     const state = useRangeCalendarState({
-      locale: LOCALE,
+      locale: "en-SG",
       createCalendar,
       defaultValue: initialValue,
       visibleDuration: { months: 1 },
@@ -81,10 +86,7 @@ export const RangeCalendar = forwardRef<HTMLDivElement, RangeCalendarProps>(
             isDisabled={nextButtonProps.isDisabled}
           />
         </div>
-        <CalendarGrid
-          state={state}
-          onDateSelected={() => setHasUserSelected(true)}
-        />
+        <CalendarGrid state={state} />
         <div className="mt-3 flex justify-end gap-3">
           <CalendarActionButton variant="clear" onPress={() => onApply(null)}>
             Clear
@@ -92,11 +94,6 @@ export const RangeCalendar = forwardRef<HTMLDivElement, RangeCalendarProps>(
           <CalendarActionButton
             variant="apply"
             onPress={() => {
-              if (defaultValue === null && !hasUserSelected) {
-                onApply(null)
-                return
-              }
-
               // A single click only sets `anchorDate` (selection in progress)
               // — `value` isn't populated until a second click completes the
               // range, so pressing Apply after just one click would otherwise

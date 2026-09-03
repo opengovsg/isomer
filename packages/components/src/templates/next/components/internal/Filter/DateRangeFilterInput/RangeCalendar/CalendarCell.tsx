@@ -50,7 +50,6 @@ interface CalendarCellProps {
   date: CalendarDate
   highlightedRange: { start: CalendarDate; end: CalendarDate } | null
   onHoverOutsideDate: (date: CalendarDate | null) => void
-  onDateSelected: () => void
 }
 
 export const CalendarCell = ({
@@ -58,7 +57,6 @@ export const CalendarCell = ({
   date,
   highlightedRange,
   onHoverOutsideDate,
-  onDateSelected,
 }: CalendarCellProps) => {
   const cellRef = useRef<HTMLDivElement>(null)
   const {
@@ -87,9 +85,8 @@ export const CalendarCell = ({
   // press handler uses internally, so adjacent-month days stay selectable
   // without paging the calendar away from the current view. Hover preview
   // is tracked separately (see `CalendarGrid`) for the same reason.
-  const selectDate = () => {
+  const selectOutsideVisibleDate = () => {
     state.selectDate(date)
-    onDateSelected()
   }
 
   const outsideVisibleRangeProps = isOutsideVisibleRange
@@ -97,12 +94,12 @@ export const CalendarCell = ({
         "aria-disabled": undefined,
         onClick: (event: MouseEvent<HTMLDivElement>) => {
           event.preventDefault()
-          selectDate()
+          selectOutsideVisibleDate()
         },
         onKeyDown: (event: KeyboardEvent<HTMLDivElement>) => {
           if (event.key === "Enter" || event.key === " ") {
             event.preventDefault()
-            selectDate()
+            selectOutsideVisibleDate()
             return
           }
 
@@ -111,12 +108,7 @@ export const CalendarCell = ({
         onPointerEnter: () => onHoverOutsideDate(date),
         onPointerLeave: () => onHoverOutsideDate(null),
       }
-    : {
-        onClick: (event: MouseEvent<HTMLDivElement>) => {
-          buttonProps.onClick?.(event)
-          onDateSelected()
-        },
-      }
+    : {}
 
   return (
     <div {...cellProps} className="h-11 w-11">
