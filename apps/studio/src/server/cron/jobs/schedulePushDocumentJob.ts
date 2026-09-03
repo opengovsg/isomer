@@ -6,15 +6,17 @@ import { ENABLE_SEARCHSG_GAZETTE_INGESTION } from "~/lib/growthbook"
 import { createBaseLogger } from "~/lib/logger"
 import { getBlob, setAssetAsPublished } from "~/lib/s3"
 import { createGrowthBookContext } from "~/server/context"
-import { getContentDispositionForTitle } from "~/server/modules/asset/asset.service"
 import { db } from "~/server/modules/database"
 import {
-  buildGazetteSearchRecords,
   generateDocumentId,
-  parseFullTextFromPDF,
   pushDocumentsForIngestion,
 } from "~/server/modules/gazette/gazette.service"
 
+import {
+  buildGazetteSearchRecords,
+  getContentDispositionForTitle,
+  parseFullTextFromPDF,
+} from "@isomer/algolia"
 import { registerPgbossJob } from "@isomer/pgboss"
 
 const JOB_NAME = "schedule-push-document"
