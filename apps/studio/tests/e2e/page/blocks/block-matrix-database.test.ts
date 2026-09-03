@@ -3,7 +3,10 @@ import { test } from "@playwright/test"
 import crypto from "crypto"
 import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
 import { openSeededPageEditor } from "~e2e/fixtures/helpers"
-import { seedDatabasePage } from "~e2e/fixtures/resource"
+import {
+  DEFAULT_CALLOUT_BLOCK_LABEL,
+  seedDatabasePage,
+} from "~e2e/fixtures/resource"
 import { provisionE2ESite } from "~e2e/fixtures/site"
 import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { RoleType } from "~prisma/generated/generatedEnums"
@@ -59,7 +62,7 @@ const BLOCK_MATRIX_CASES: BlockMatrixCase[] = [
       await editor.saveComplexBlock()
     },
     expectRendered: async (editor) => {
-      await editor.expectPreviewContains("Callout content")
+      await editor.expectPreviewContains(DEFAULT_CALLOUT_BLOCK_LABEL)
     },
   },
   {

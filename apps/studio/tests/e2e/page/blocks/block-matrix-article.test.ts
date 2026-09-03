@@ -3,7 +3,10 @@ import { test } from "@playwright/test"
 import crypto from "crypto"
 import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
 import { openSeededPageEditor } from "~e2e/fixtures/helpers"
-import { seedArticlePage } from "~e2e/fixtures/resource"
+import {
+  DEFAULT_CALLOUT_BLOCK_LABEL,
+  seedArticlePage,
+} from "~e2e/fixtures/resource"
 import { provisionE2ESite } from "~e2e/fixtures/site"
 import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { RoleType } from "~prisma/generated/generatedEnums"
@@ -72,7 +75,8 @@ const DEFAULT_BLOCK_CASES: DefaultBlockCase[] = [
       await editor.expectSaveBlockButtonEnabled()
       await editor.saveComplexBlock()
     },
-    expectRendered: (editor) => editor.expectPreviewContains("Callout content"),
+    expectRendered: (editor) =>
+      editor.expectPreviewContains(DEFAULT_CALLOUT_BLOCK_LABEL),
   },
   {
     label: "Quote",
