@@ -7,7 +7,7 @@ import { DashboardPO } from "../fixtures/dashboard.po"
 import { createCollectionViaWizard } from "../fixtures/helpers"
 import { seedFolder } from "../fixtures/page-seed"
 import { deleteResource, deleteResourcesByTitleLike } from "../fixtures/reset"
-import { getResource } from "../fixtures/resource.db"
+import { getResource, getResourceByTitle } from "../fixtures/resource.db"
 import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
 
@@ -24,6 +24,8 @@ test.beforeAll(async () => {
 })
 
 test.describe("admin", { tag: roleTag("admin") }, () => {
+  test.describe.configure({ mode: "serial" })
+
   test.beforeEach(async () => {
     await ensureUserOnboarded(TEST_EMAILS.admin)
   })
@@ -48,6 +50,25 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     expect(created).toBeTruthy()
     expect(created?.type).toBe("Collection")
     expect(created?.parentId).toBeNull()
+  })
+
+  test("admin can close the create collection modal without creating a collection", async ({
+    page,
+  }) => {
+    const title = UNIQUE_TITLE()
+    const dashboard = new DashboardPO(page)
+
+    // Arrange
+    await dashboard.gotoSite(siteId)
+
+    // Act
+    await dashboard.openCreateCollectionModal()
+    await dashboard.fillCreateCollectionModalTitle(title)
+    await dashboard.cancelCreateCollectionModal()
+
+    // Assert
+    const created = await getResourceByTitle({ siteId, title })
+    expect(created).toBeUndefined()
   })
 })
 
