@@ -30,7 +30,7 @@ export const DATE_FILTER_TAG_CATEGORIES: CollectionPagePageProps["tagCategories"
 export const statusLabelsFor = (
   categoryId: string,
 ): Record<DateFilterStatusId, string> => {
-  const category = DATE_FILTER_TAG_CATEGORIES?.find(
+  const category = DATE_FILTER_TAG_CATEGORIES.find(
     (entry) => entry.id === categoryId,
   )
 

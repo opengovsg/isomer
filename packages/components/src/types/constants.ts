@@ -60,6 +60,12 @@ export type DateFilterStatusId =
 
 export const getDefaultDateFilterStatusLabel = (
   statusId: DateFilterStatusId,
-): string =>
-  Object.values(DATE_FILTER_STATUS).find((status) => status.id === statusId)!
-    .defaultLabel
+): string => {
+  for (const status of Object.values(DATE_FILTER_STATUS)) {
+    if (status.id === statusId) {
+      return status.defaultLabel
+    }
+  }
+
+  return statusId
+}
