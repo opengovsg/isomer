@@ -113,7 +113,10 @@ export const CalendarCell = ({
     : mergeProps(buttonProps, focusProps)
 
   return (
-    <div {...cellProps} className="h-11 w-11 max-[374px]:h-9 max-[374px]:w-9">
+    <div
+      {...cellProps}
+      className={`h-11 w-11 max-[374px]:h-9 max-[374px]:w-9${isFocusVisible ? " relative z-10" : ""}`}
+    >
       <div
         className={calendarCellRangeFillStyles({
           isInRange: isInHighlightedRange,
