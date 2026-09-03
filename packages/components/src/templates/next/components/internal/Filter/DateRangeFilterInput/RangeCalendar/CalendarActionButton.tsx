@@ -2,11 +2,15 @@
 
 import type { AriaButtonProps } from "@react-aria/button"
 import { useButton } from "@react-aria/button"
+import { useFocusRing } from "@react-aria/focus"
+import { mergeProps } from "@react-aria/utils"
 import { useRef, type ReactNode } from "react"
 import { tv } from "~/lib/tv"
+import { focusRing } from "~/utils/tailwind"
 
 const calendarActionButtonStyles = tv({
-  base: "prose-label-sm-medium rounded px-4 py-2.5 outline-0",
+  extend: focusRing,
+  base: "prose-label-sm-medium rounded px-4 py-2.5",
   variants: {
     variant: {
       apply: "bg-brand-canvas-inverse text-base-content-inverse",
@@ -27,13 +31,14 @@ export const CalendarActionButton = ({
 }: CalendarActionButtonProps) => {
   const ref = useRef<HTMLButtonElement>(null)
   const { buttonProps } = useButton(props, ref)
+  const { focusProps, isFocusVisible } = useFocusRing()
 
   return (
     <button
-      {...buttonProps}
+      {...mergeProps(buttonProps, focusProps)}
       ref={ref}
       type="button"
-      className={calendarActionButtonStyles({ variant })}
+      className={calendarActionButtonStyles({ variant, isFocusVisible })}
     >
       {children}
     </button>
