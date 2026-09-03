@@ -21,21 +21,19 @@ export const CalendarGrid = ({ state }: CalendarGridProps) => {
   const { gridProps, headerProps, weekDays } = useCalendarGrid({}, state)
   const weeksInMonth = getWeeksInMonth(state.visibleRange.start, "en-SG")
 
-  // Hovering an adjacent-month day previews the range like any other cell,
-  // but tracked separately from react-aria's own `highlightDate` — that
-  // moves `focusedDate`, which auto-pages the calendar to keep focus
-  // visible, jumping the whole view to the hovered month. This mirrors the
-  // preview without touching `focusedDate`.
-  const [hoveredOutsideDate, setHoveredOutsideDate] =
+  // Adjacent-month days preview the range on hover or keyboard focus, tracked
+  // separately from react-aria's own `highlightDate` — that moves
+  // `focusedDate`, which auto-pages the calendar to keep focus visible.
+  const [previewOutsideDate, setPreviewOutsideDate] =
     useState<CalendarDate | null>(null)
   const highlightedRange = useMemo(() => {
-    if (state.anchorDate && hoveredOutsideDate) {
-      return hoveredOutsideDate.compare(state.anchorDate) < 0
-        ? { start: hoveredOutsideDate, end: state.anchorDate }
-        : { start: state.anchorDate, end: hoveredOutsideDate }
+    if (state.anchorDate && previewOutsideDate) {
+      return previewOutsideDate.compare(state.anchorDate) < 0
+        ? { start: previewOutsideDate, end: state.anchorDate }
+        : { start: state.anchorDate, end: previewOutsideDate }
     }
     return state.highlightedRange
-  }, [state.anchorDate, state.highlightedRange, hoveredOutsideDate])
+  }, [state.anchorDate, state.highlightedRange, previewOutsideDate])
 
   return (
     <div {...gridProps}>
@@ -62,7 +60,7 @@ export const CalendarGrid = ({ state }: CalendarGridProps) => {
                     state={state}
                     date={date}
                     highlightedRange={highlightedRange}
-                    onHoverOutsideDate={setHoveredOutsideDate}
+                    onPreviewOutsideDate={setPreviewOutsideDate}
                   />
                 ) : (
                   <div key={index} role="gridcell" className={dayCellSize} />

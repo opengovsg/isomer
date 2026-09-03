@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, type RefObject } from "react"
 
 import {
   formatDateRangeInputChange,
@@ -24,6 +24,8 @@ const ALLOWED_INPUT_KEYS = new Set([
 interface DateRangeFilterTextInputProps {
   id: string
   value: string
+  formatHintId: string
+  blurCommitExcludeRef?: RefObject<HTMLElement | null>
   onValueChange: (value: string) => void
   onCommit: () => void
   isInvalid?: boolean
@@ -33,6 +35,8 @@ interface DateRangeFilterTextInputProps {
 export const DateRangeFilterTextInput = ({
   id,
   value,
+  formatHintId,
+  blurCommitExcludeRef,
   onValueChange,
   onCommit,
   isInvalid,
@@ -41,6 +45,8 @@ export const DateRangeFilterTextInput = ({
   const [isFocused, setIsFocused] = useState(false)
   const ghostSuffix = getDateRangeInputGhostSuffix(value)
   const showGhostOverlay = isFocused && ghostSuffix.length > 0
+  const describedBy =
+    [formatHintId, errorId].filter(Boolean).join(" ") || undefined
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const input = event.target
@@ -79,11 +85,13 @@ export const DateRangeFilterTextInput = ({
         autoComplete="off"
         value={value}
         placeholder={isFocused ? undefined : SINGLE_DATE_MASK}
-        aria-label={SINGLE_DATE_MASK}
         onChange={handleChange}
         onFocus={() => setIsFocused(true)}
-        onBlur={() => {
+        onBlur={(event) => {
           setIsFocused(false)
+          if (event.relatedTarget === blurCommitExcludeRef?.current) {
+            return
+          }
           onCommit()
         }}
         onKeyDown={(event) => {
@@ -109,7 +117,7 @@ export const DateRangeFilterTextInput = ({
         className="prose-label-md-regular w-full border-0 bg-transparent py-2 pl-4 text-base-content outline-none placeholder:text-base-content-subtle data-[ghost-overlay]:text-transparent data-[ghost-overlay]:caret-base-content"
         data-ghost-overlay={showGhostOverlay ? "" : undefined}
         aria-invalid={isInvalid ? true : undefined}
-        aria-describedby={errorId}
+        aria-describedby={describedBy}
       />
     </div>
   )

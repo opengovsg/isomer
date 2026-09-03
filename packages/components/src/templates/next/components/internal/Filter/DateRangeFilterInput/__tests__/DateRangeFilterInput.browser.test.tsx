@@ -15,7 +15,7 @@ const openCalendar = () => {
   fireEvent.click(screen.getByLabelText("Open calendar"))
 }
 
-const getDateInput = () => screen.getByLabelText("DD/MM/YYYY")
+const getDateInput = () => screen.getByLabelText("Or, search for a date")
 
 describe("DateRangeFilterInput", () => {
   it("opens the calendar, stages a selection, and only calls onChange on Apply", () => {
