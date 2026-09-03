@@ -7,20 +7,18 @@ import { useCalendarGrid } from "@react-aria/calendar"
 import { useMemo, useState } from "react"
 
 import { CalendarCell } from "./CalendarCell"
-import { LOCALE } from "./constants"
 
 interface CalendarGridProps {
   state: RangeCalendarState
-  onDateSelected: () => void
 }
 
 // Plain flex rows rather than a <table> — avoids browser table-rendering
 // quirks (hairline seams between adjacent <td> backgrounds) and lets range
 // "fill" segments have a real gap between weeks. ARIA row/grid semantics are
 // reproduced by hand via `role` since we're not using table elements.
-export const CalendarGrid = ({ state, onDateSelected }: CalendarGridProps) => {
+export const CalendarGrid = ({ state }: CalendarGridProps) => {
   const { gridProps, headerProps, weekDays } = useCalendarGrid({}, state)
-  const weeksInMonth = getWeeksInMonth(state.visibleRange.start, LOCALE)
+  const weeksInMonth = getWeeksInMonth(state.visibleRange.start, "en-SG")
 
   // Hovering an adjacent-month day previews the range like any other cell,
   // but tracked separately from react-aria's own `highlightDate` — that
@@ -64,7 +62,6 @@ export const CalendarGrid = ({ state, onDateSelected }: CalendarGridProps) => {
                     date={date}
                     highlightedRange={highlightedRange}
                     onHoverOutsideDate={setHoveredOutsideDate}
-                    onDateSelected={onDateSelected}
                   />
                 ) : (
                   <div key={index} role="gridcell" className="h-11 w-11" />
