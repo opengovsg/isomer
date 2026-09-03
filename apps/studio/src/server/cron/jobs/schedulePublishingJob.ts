@@ -81,11 +81,8 @@ type ResourceWithUser = Omit<Resource, "scheduledBy"> & {
   userDeletedAt: Date | null
 }
 
-// Dispatch table so publish/unpublish share one code path instead of
-// parallel if/else branches — adding a third scheduled action only means
-// adding a case here. Resolved lazily (not a module-scope constant) so it
-// always calls through the current `publishPageResource`/`unpublishPageResource`
-// bindings, which tests replace via `vi.spyOn`.
+// Resolved per-call (not a module-scope constant) so it reads the current
+// publishPageResource/unpublishPageResource bindings, which tests replace via vi.spyOn.
 const getScheduledActionHandler = (
   action: ScheduledAction,
 ): {
@@ -115,11 +112,8 @@ const getScheduledActionHandler = (
 export const publishScheduledResources = async (
   enableEmailsForScheduledPublishes: boolean,
   scheduledAtCutoff: Date,
-  // Dark-launched, same flag as unpublishPage/scheduleUnpublish — but unlike
-  // those, this is re-checked at execution time rather than trusted from
-  // schedule time, since the flag (or a kill-switch) could be flipped off
-  // between when a resource was scheduled and when the cron picks it up.
-  // Defaults true so existing publish-only scenarios are unaffected.
+  // Re-checked here rather than trusted from schedule time, since the flag
+  // could be flipped off between scheduling and the cron picking it up.
   isUnpublishEnabled = true,
 ) => {
   // A mapping from siteId to array of resourceIds, to determine which sites need to be published after their resources have been published
@@ -136,33 +130,10 @@ export const publishScheduledResources = async (
     ])
     .execute()
 
-  // The loop below processes resources sequentially (one transaction at a
-  // time, awaited in order), so anything due in the same cron tick needs a
-  // deterministic execution order, not whatever order the DB happened to
-  // return rows in:
-  //   1. scheduledAt ascending — a resource due earlier must run first,
-  //      since the container-siblings guard on a scheduled IndexPage
-  //      unpublish only holds if a sibling due earlier has actually
-  //      committed its own unpublish first.
-  //   2. a depth-based tiebreak for resources due at the *exact same*
-  //      instant (the case restriction 4 explicitly asks us to support —
-  //      scheduling an index page and its children together): Publish must
-  //      run ancestors-before-descendants (a child can't go live before its
-  //      container), Unpublish must run descendants-before-ancestors (a
-  //      container's IndexPage can't go dark while a child is still live).
-  //      `depth` here treats an IndexPage as sharing its own container's
-  //      depth rather than being one level deeper than its sibling pages —
-  //      structurally they're siblings under the same parentId, but the
-  //      IndexPage stands in for the container itself for ordering
-  //      purposes. This holds at any nesting depth: a grandparent's
-  //      IndexPage always ends up with a strictly smaller depth than
-  //      anything inside it, however deep. Harmless (a no-op) for any pair
-  //      of due resources that aren't actually ancestor/descendant of each
-  //      other.
-  //   3. id ascending, as a final deterministic tiebreak.
-  // Batched per site (one recursive-CTE query per distinct site due this
-  // tick) rather than one query per due resource, since the ancestor walk
-  // is scoped to a single site anyway.
+  // Resources due in the same tick must process in a deterministic order:
+  // scheduledAt asc, then depth (publish ancestors-first, unpublish
+  // descendants-first, so a container's IndexPage guard never races a
+  // sibling/child due in the same run), then id asc.
   const resourceIdsBySite = new Map<number, string[]>()
   for (const resource of resourcesWithUser) {
     const ids = resourceIdsBySite.get(resource.siteId) ?? []
@@ -239,9 +210,8 @@ export const publishScheduledResources = async (
     }
 
     try {
-      // Permissions may have been revoked since this was scheduled — the
-      // check made at schedule time doesn't hold at execution time, so
-      // re-validate rather than trusting it.
+      // Permissions may have been revoked since scheduling, so re-validate
+      // rather than trusting the check made at schedule time.
       await bulkValidateUserPermissionsForResources({
         siteId,
         action: handler.permissionAction,
@@ -322,12 +292,8 @@ export const publishScheduledSites = async (
           )
           continue
         }
-        // Every resource here already had its own publish/unpublish succeed
-        // (that's why it's in siteResourcesMap) — only the site rebuild
-        // failed. Use the site-rebuild-specific email, not the "we couldn't
-        // {verb} your page" one: that would tell the user to retry an action
-        // that already succeeded (and for unpublish, retrying would just
-        // throw PageAlreadyUnpublishedError).
+        // Publish/unpublish already succeeded for these resources — only the
+        // site rebuild failed, so use the rebuild-specific email.
         const { verb } = getScheduledActionHandler(
           resource.scheduledAction ?? ScheduledAction.Publish,
         )

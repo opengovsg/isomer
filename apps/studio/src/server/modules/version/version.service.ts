@@ -20,10 +20,8 @@ const defaultVersionSelect: SelectExpression<DB, "Version">[] = [
 ]
 
 /**
- * Get the most recent Version for a resource, by versionNum, regardless of
- * whether it is the resource's currently published version. This must be
- * keyed off Version history rather than Resource.publishedVersionId, since
- * the latter is cleared on unpublish but the version history is not.
+ * Keyed off Version history, not Resource.publishedVersionId — the latter
+ * is cleared on unpublish but the version history is not.
  */
 const getLatestVersionByResourceId = ({
   tx,

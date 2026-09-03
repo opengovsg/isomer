@@ -2818,11 +2818,8 @@ describe("resource.router", async () => {
       "scheduledAction",
     ] as const
 
-    // `liveStatus` is derived, not a Resource column — every fixture here is
-    // an unpublished Page/Folder with no published descendants, so it's
-    // always "notLive". Likewise `lastPublishedAt` is read from the Version
-    // table, not a Resource column — these fixtures are never published, so
-    // it's always null.
+    // `liveStatus`/`lastPublishedAt` are derived, not Resource columns; every
+    // fixture here is unpublished, so they're always "notLive"/null.
     const pickComparable = <
       T extends Record<(typeof RESOURCE_FIELDS_TO_PICK)[number], unknown>,
     >(
@@ -3879,10 +3876,8 @@ describe("resource.router", async () => {
       })
 
       it("should allow deleting a still-published page, falling back to pre-unpublish behaviour", async () => {
-        // Arrange — with unpublish dark-launched off, a live page has no way
-        // to stop being live, so the unpublish-before-delete guard must not
-        // apply, or every currently-published page becomes permanently
-        // undeletable.
+        // Arrange — with unpublish disabled, a live page can never stop being
+        // live, so the delete guard must not apply here.
         mockGrowthBook.setForcedFeatures(
           new Map([
             ...mockFeatureFlags,
@@ -3916,8 +3911,8 @@ describe("resource.router", async () => {
     })
 
     it("should block deleting a folder whose IndexPage is still published", async () => {
-      // Arrange — the folder's own row never carries a publishedVersionId;
-      // it's the child IndexPage that's actually live.
+      // Arrange — the folder's own row never carries a publishedVersionId; its
+      // child IndexPage does.
       const { site, folder } = await setupFolder({})
       await setupAdminPermissions({
         userId: session.userId,
@@ -3982,9 +3977,8 @@ describe("resource.router", async () => {
     })
 
     it("should allow deleting a folder whose FolderMeta has a stray publishedVersionId", async () => {
-      // Arrange — FolderMeta is internal ordering metadata that never renders
-      // as visitor-facing content; a stray publishedVersionId on it (seen in
-      // production) must not block deleting an otherwise fully-unpublished folder
+      // Arrange — FolderMeta is ordering metadata, not content; a stray
+      // publishedVersionId on it must not block deletion.
       const { site, folder } = await setupFolder({})
       await setupAdminPermissions({
         userId: session.userId,
@@ -4033,8 +4027,8 @@ describe("resource.router", async () => {
     })
 
     it("should block deleting a folder whose IndexPage is unpublished but has a live nested page", async () => {
-      // Arrange — `parentId` is `onDelete: Cascade`, so deleting the folder
-      // would silently take the nested page down with it if this weren't blocked
+      // Arrange — `parentId` is `onDelete: Cascade`, so deletion would
+      // silently cascade to the live nested page if unblocked.
       const { site, folder } = await setupFolder({})
       await setupAdminPermissions({
         userId: session.userId,

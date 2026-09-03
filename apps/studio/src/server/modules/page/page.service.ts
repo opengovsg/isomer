@@ -126,15 +126,12 @@ export const schedulePublish = async ({
   const by = await getUserById(userId)
 
   return db.transaction().execute(async (tx) => {
-    // pageId may be a Folder/Collection id shorthand for its landing page —
-    // resolve inside the transaction, same as publishPageResource does via
-    // getFullPageById, so the input contract matches the immediate-publish
-    // flow exactly.
+    // pageId may be a Folder/Collection id shorthand for its landing page.
     const resolvedResourceId = await resolveEffectiveResourceId(tx, {
       resourceId: pageId,
       siteId,
     })
-    // fetch the resource to be scheduled inside the transaction, to guard against concurrent update issues (race conditions)
+    // Fetch inside the transaction to guard against concurrent updates.
     const resource = await getPageById(tx, {
       resourceId: resolvedResourceId,
       siteId,
@@ -152,9 +149,8 @@ export const schedulePublish = async ({
       })
     }
 
-    // A pending ancestor scheduled-unpublish locks out scheduling a publish
-    // underneath it, at any nesting depth, regardless of timing (see
-    // getLockingAncestorIndexPages).
+    // A pending ancestor scheduled-unpublish locks out publishing underneath
+    // it at any nesting depth, regardless of timing.
     const ancestorIndexPages = await getAncestorIndexPages(tx, {
       siteId,
       resourceId: resource.id,
@@ -213,9 +209,7 @@ export const scheduleUnpublish = async ({
   const by = await getUserById(userId)
 
   return db.transaction().execute(async (tx) => {
-    // pageId may be a Folder/Collection id shorthand for its landing page —
-    // resolve inside the transaction, same as unpublishPageResource does via
-    // getFullPageById, so the input contract matches unpublishPage exactly.
+    // pageId may be a Folder/Collection id shorthand for its landing page.
     const resolvedResourceId = await resolveEffectiveResourceId(tx, {
       resourceId: pageId,
       siteId,
@@ -243,18 +237,12 @@ export const scheduleUnpublish = async ({
       })
     }
 
-    // Schedule-time analogue of unpublishPageResource's container-siblings
-    // guard: block scheduling a folder/collection's landing page to unpublish
-    // while another page inside it won't be safely down by then. The
-    // execution-time guard still runs when this fires (see
-    // unpublishPageResource) — this only gives the caller earlier feedback.
+    // Block scheduling a folder/collection's landing page to unpublish while
+    // another page inside it won't be safely down by then; the same check
+    // still runs at execution time as a backstop.
     if (resource.type === ResourceType.IndexPage && resource.parentId) {
-      // resourceId here is the container (parent) whose subtree is walked;
-      // the IndexPage being scheduled is itself part of that subtree and is
-      // still published/unscheduled at this point, so it must be excluded
-      // from the result the same way getPublishedDescendantResourceIds's
-      // callers exclude the resource being unpublished (see
-      // unpublishPageResource's container-siblings guard).
+      // Exclude the resource itself: it's still published/unscheduled at
+      // this point but is part of the parent's subtree being walked.
       const unsafeDescendantIds = (
         await getDescendantResourceIdsUnsafeForScheduledUnpublish(tx, {
           siteId,
@@ -325,10 +313,8 @@ export const cancelSchedulePublish = async ({
         message: "Resource not found",
       })
     }
-    // A resource scheduled before scheduledAction existed has it as null;
-    // the cron treats that null the same as Publish (see
-    // schedulePublishingJob.ts), so cancellation must match that convention
-    // rather than requiring an exact enum match.
+    // Resources scheduled before scheduledAction existed have it as null;
+    // treat that the same as Publish, matching the cron's convention.
     const effectiveScheduledAction =
       resource.scheduledAction ?? ScheduledAction.Publish
     if (
@@ -409,11 +395,9 @@ export const cancelScheduleUnpublish = async ({
       })
     }
 
-    // A child page may already be scheduled to unpublish assuming this
-    // container's unpublish lands first (or at the same time). Cancelling
-    // this schedule out from under it would leave the child's own schedule
-    // dangling, so require the child schedules to be cancelled first — a
-    // hard block, not an auto-cascade.
+    // A child page may be scheduled to unpublish assuming this container
+    // unpublishes first; cancelling this out from under it would leave the
+    // child's schedule dangling, so require cancelling those first.
     if (resource.type === ResourceType.IndexPage && resource.parentId) {
       const hasPendingChildUnpublish =
         await hasDescendantWithPendingScheduledUnpublish(tx, {

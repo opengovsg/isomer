@@ -4,12 +4,8 @@ import { Menu } from "@opengovsg/design-system-react"
 
 import { RESOURCE_TABLE_STATUS_FILTER_OPTIONS } from "./constants"
 
-// Decorative only — the surrounding Menu.Item's onClick drives the actual
-// toggle. Drawn as a raw SVG (matching Figma's checkbox glyph exactly)
-// rather than the design system's Checkbox component, since that
-// component's own label/container padding doesn't collapse to zero even
-// with no label — it was eating into the row's width and wrapping the
-// longer option labels onto two lines.
+// Decorative only — the parent Menu.Item's onClick drives the toggle. Raw SVG
+// instead of the design system's Checkbox, whose label padding wraps long labels.
 const FilterCheckbox = ({ isChecked }: { isChecked: boolean }) => (
   <Icon viewBox="0 0 16 16" boxSize="1rem" flexShrink={0}>
     {isChecked ? (

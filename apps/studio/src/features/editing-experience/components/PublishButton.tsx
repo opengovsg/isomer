@@ -24,8 +24,7 @@ const SuspendablePublishButton = ({
 
   const [currPage] = trpc.page.readPage.useSuspenseQuery({ pageId, siteId })
   const isChangesPendingPublish = !!currPage.draftBlobId
-  // A null scheduledAction on a legacy row defaults to Publish, matching the
-  // convention used throughout the resource/page services.
+  // A null scheduledAction on a legacy row defaults to Publish.
   const isScheduledToPublish =
     !!currPage.scheduledAt &&
     currPage.scheduledAction !== ScheduledAction.Unpublish
@@ -33,9 +32,8 @@ const SuspendablePublishButton = ({
     !!currPage.scheduledAt &&
     currPage.scheduledAction === ScheduledAction.Unpublish
 
-  // publishPageResource blocks an immediate publish while a scheduled
-  // unpublish is pending (opposite-direction conflict) — surface that here
-  // instead of letting the user hit the error after submitting.
+  // The server blocks publishing while a scheduled unpublish is pending;
+  // surface that upfront instead of after the user submits.
   const disabledReason = isScheduledToUnpublish
     ? "This page has a scheduled unpublish. Cancel it before publishing."
     : !isChangesPendingPublish

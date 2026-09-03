@@ -434,18 +434,13 @@ export const pageRouter = router({
         action: "unpublish",
         userId: ctx.user.id,
       })
-      // Dark-launched, same flag as unpublishPage — scheduling an unpublish
-      // presupposes the unpublish feature itself is enabled.
+      // Scheduling an unpublish presupposes the unpublish feature is enabled.
       if (!ctx.gb.isOn(IS_UNPUBLISH_ENABLED_FEATURE_KEY)) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: UNPUBLISH_PAGE_NOT_FOUND_MESSAGE,
         })
       }
-      // Same check, same allow-list as unpublishPage — pageId may be a
-      // Folder/Collection id, which scheduleUnpublish resolves to its child
-      // IndexPage internally (mirroring unpublishPageResource), so the input
-      // contract matches unpublishPage's exactly.
       await assertUnpublishableResourceType(db, { resourceId: pageId, siteId })
       const resource = await scheduleUnpublish({
         userId: ctx.user.id,
@@ -645,10 +640,8 @@ export const pageRouter = router({
       return rootPage
     }),
 
-  // No resourceType guard here on purpose: a site must always be able to
-  // (re-)publish its homepage, even though unpublishPage below blocks the
-  // reverse for RootPage — see UNPUBLISHABLE_RESOURCE_TYPES in
-  // ~/constants/resources for why that asymmetry is intentional.
+  // No resourceType guard here: a site must always be able to (re-)publish
+  // its homepage, unlike unpublishPage below (see UNPUBLISHABLE_RESOURCE_TYPES).
   publishPage: protectedProcedure
     .input(publishPageSchema)
     .mutation(
@@ -680,10 +673,8 @@ export const pageRouter = router({
       },
     ),
 
-  // `pageId` isn't always the resource that ends up mutated: pass a
-  // Folder/Collection id and unpublishPageResource swaps in its child
-  // IndexPage's id first, since that's what's actually live at the
-  // container's URL.
+  // `pageId` may be a Folder/Collection id — unpublishPageResource swaps in
+  // its child IndexPage's id first, since that's what's live at the URL.
   unpublishPage: protectedProcedure
     .input(unpublishPageSchema)
     .mutation(
@@ -694,9 +685,8 @@ export const pageRouter = router({
           userId: user.id,
         })
 
-        // Dark-launched: same NOT_FOUND as the type-guard below, so a caller
-        // can't distinguish "flag off" from "wrong resource type" and infer
-        // the feature exists before it's rolled out.
+        // Same NOT_FOUND as the type-guard below, so a caller can't tell
+        // "flag off" from "wrong resource type" and infer the feature exists.
         if (!gb.isOn(IS_UNPUBLISH_ENABLED_FEATURE_KEY)) {
           throw new TRPCError({
             code: "NOT_FOUND",

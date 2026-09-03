@@ -304,8 +304,8 @@ export const collectionRouter = router({
           .select((eb) => [...defaultResourceSelect, selectLastPublishedAt(eb)])
           .execute()
 
-        // CollectionPage/CollectionLink are always leaf resources, unlike
-        // Folder/Collection — their own publishedVersionId is the whole story.
+        // Unlike Folder/Collection, these are always leaves, so their own
+        // publishedVersionId is the whole story.
         return rows.map((row) => {
           const liveStatus: "live" | "notLive" =
             row.publishedVersionId !== null ? "live" : "notLive"

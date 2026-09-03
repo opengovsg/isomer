@@ -91,11 +91,8 @@ export const ResourceTable = ({
     [siteId, resourceId],
   )
 
-  // `limit`/`skip` only depend on local pagination state (pageIndex/pageSize),
-  // not on `totalCount` — so it's safe for `totalCount` to come from the same
-  // query this feeds into, with no circular dependency. `pageCount` from this
-  // call is discarded (it'd be stuck at 0) and recomputed below once the
-  // query's own `totalCount` is available.
+  // `totalCount: 0` here is fine — `limit`/`skip` don't depend on it, and the
+  // real totalCount/pageCount are recomputed below from the query response.
   const { limit, onPaginationChange, skip, pagination } = useTablePagination({
     pageIndex: 0,
     pageSize: 25,

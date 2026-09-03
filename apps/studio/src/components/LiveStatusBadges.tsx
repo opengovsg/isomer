@@ -15,14 +15,12 @@ interface LiveStatusBadgesProps {
   liveStatus: LiveStatus
   scheduledAt: Date | null
   scheduledAction: ScheduledAction | null
-  // The resource's most recent publish, regardless of current live status —
-  // null if it's never been published.
+  // Null if the resource has never been published, regardless of current live status.
   lastPublishedAt: Date | null
 }
 
-// liveTemplate (a Folder/Collection whose own landing page isn't published,
-// but something nested inside it still is) is shown identically to live —
-// callers no longer need to distinguish the two in the UI.
+// liveTemplate (landing page unpublished but something nested still is) is
+// treated as live here — the UI doesn't distinguish the two.
 const LIVE_STATUS_CONFIG: Record<
   LiveStatus,
   { label: string; colorScheme: string }
@@ -55,9 +53,8 @@ export const LiveStatusBadges = ({
           placement="bottom"
           hasArrow
         >
-          {/* PillBadge (design-system-react's Badge) doesn't forward its ref,
-          so Tooltip can't measure it for positioning without this wrapper —
-          without it the tooltip renders pinned to the viewport's top-left. */}
+          {/* PillBadge doesn't forward its ref, so Tooltip needs this wrapper
+          to measure position — without it, the tooltip pins to the viewport's top-left. */}
           <Box as="span" display="inline-block">
             {livePill}
           </Box>
@@ -80,9 +77,8 @@ export const LiveStatusBadges = ({
           hasArrow
         >
           <Badge
-            // Scheduled-to-unpublish is styled to match the "Not live" pill,
-            // since that's where the page is headed; scheduled-to-publish
-            // keeps the info-blue treatment.
+            // Scheduled-to-unpublish is styled like the "Not live" pill, since
+            // that's where the page is headed.
             bgColor={
               scheduledAction === ScheduledAction.Unpublish
                 ? "interaction.neutral-subtle.default"
