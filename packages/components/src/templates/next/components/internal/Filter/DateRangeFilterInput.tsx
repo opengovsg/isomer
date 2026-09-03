@@ -5,7 +5,6 @@ import { parseDate } from "@internationalized/date"
 import { useEffect, useRef, useState } from "react"
 import { BiCalendar } from "react-icons/bi"
 import { useOnClickOutside } from "usehooks-ts"
-import { DEFAULT_DATE_RANGE_FILTER_LABEL } from "~/types/constants"
 
 import type { RangeCalendarValue } from "./RangeCalendar"
 import { RangeCalendar } from "./RangeCalendar"
@@ -20,7 +19,6 @@ interface DateRangeFilterInputProps {
   onChange: (value: DateRangeFilterValue | undefined) => void
   /** Desktop sidebar uses a popover; mobile filter drawer uses a modal. */
   presentation?: "popover" | "modal"
-  label?: string
 }
 
 const INPUT_ERROR_MESSAGE = "Enter a valid date in DD/MM/YYYY format"
@@ -90,7 +88,7 @@ const parseInputText = (
     if (!start || !end) {
       return null
     }
-    return { start, end }
+    return start <= end ? { start, end } : { start: end, end: start }
   }
 
   return null
@@ -104,7 +102,6 @@ export const DateRangeFilterInput = ({
   value,
   onChange,
   presentation = "popover",
-  label = DEFAULT_DATE_RANGE_FILTER_LABEL,
 }: DateRangeFilterInputProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const [inputValue, setInputValue] = useState(() => valueToInputText(value))
@@ -167,7 +164,9 @@ export const DateRangeFilterInput = ({
 
   return (
     <div className="mx-2 mb-2 flex flex-col gap-2" ref={containerRef}>
-      <p className="prose-headline-base-medium text-base-content">{label}</p>
+      <p className="prose-headline-base-medium text-base-content">
+        Or, search for a date
+      </p>
 
       <div className="relative">
         <div
