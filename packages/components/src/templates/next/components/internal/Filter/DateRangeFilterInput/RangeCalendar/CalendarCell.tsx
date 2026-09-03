@@ -11,7 +11,7 @@ import { tv } from "~/lib/tv"
 import { focusRing } from "~/utils/tailwind"
 
 const calendarCellRangeFillStyles = tv({
-  base: "flex h-11 w-11 items-center justify-center max-[479px]:h-9 max-[479px]:w-9",
+  base: "flex h-11 w-11 items-center justify-center max-[374px]:h-9 max-[374px]:w-9",
   variants: {
     isInRange: {
       true: "bg-base-canvas-backdrop",
@@ -27,7 +27,7 @@ const calendarCellRangeFillStyles = tv({
 
 const calendarCellButtonStyles = tv({
   extend: focusRing,
-  base: "prose-label-md-medium flex h-11 w-11 items-center justify-center rounded-full ring-inset hover:ring-2 hover:ring-base-content-strong max-[479px]:h-9 max-[479px]:w-9",
+  base: "prose-label-md-medium flex h-11 w-11 items-center justify-center rounded-full ring-inset hover:ring-2 hover:ring-base-content-strong max-[374px]:h-9 max-[374px]:w-9",
   variants: {
     isCurrentDate: {
       true: "ring-1 ring-base-content-strong",
@@ -113,7 +113,7 @@ export const CalendarCell = ({
     : mergeProps(buttonProps, focusProps)
 
   return (
-    <div {...cellProps} className="h-11 w-11 max-[479px]:h-9 max-[479px]:w-9">
+    <div {...cellProps} className="h-11 w-11 max-[374px]:h-9 max-[374px]:w-9">
       <div
         className={calendarCellRangeFillStyles({
           isInRange: isInHighlightedRange,
