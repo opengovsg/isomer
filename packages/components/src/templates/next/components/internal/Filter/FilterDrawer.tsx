@@ -66,6 +66,15 @@ interface FilterDrawerProps extends FilterProps {
 
 type DateRangesById = Record<string, AppliedFilter["dateRange"]>
 
+const holdingDateRangesFromApplied = (
+  appliedFilters: AppliedFilter[],
+): DateRangesById =>
+  Object.fromEntries(
+    appliedFilters.flatMap(({ id, dateRange }) =>
+      dateRange ? [[id, dateRange]] : [],
+    ),
+  )
+
 const transform = {
   toCheckboxes: (appliedFilters: AppliedFilter[]) => {
     return appliedFilters.reduce(
@@ -73,22 +82,17 @@ const transform = {
       {} as Record<string, string[]>,
     )
   },
-  toDateRanges: (appliedFilters: AppliedFilter[]): DateRangesById => {
-    return appliedFilters.reduce(
-      (acc, { id, dateRange }) =>
-        dateRange ? { ...acc, [id]: dateRange } : acc,
-      {} as DateRangesById,
-    )
-  },
   toAppliedFilters: (
     holdingFiltersById: Record<string, string[]>,
     holdingDateRangesById: DateRangesById,
   ) => {
-    const ids = new Set([
-      ...Object.keys(holdingFiltersById),
-      ...Object.keys(holdingDateRangesById),
-    ])
-    return Array.from(ids)
+    const ids = [
+      ...new Set([
+        ...Object.keys(holdingFiltersById),
+        ...Object.keys(holdingDateRangesById),
+      ]),
+    ]
+    return ids
       .map((id) => ({
         id,
         items: (holdingFiltersById[id] ?? []).map((itemId) => ({ id: itemId })),
@@ -113,12 +117,15 @@ const FilterDrawerContent = ({
     transform.toCheckboxes(initialAppliedFilters),
   )
   const [holdingDateRangesById, setHoldingDateRangesById] = useState(
-    transform.toDateRanges(initialAppliedFilters),
+    holdingDateRangesFromApplied(initialAppliedFilters),
   )
 
+  // Synchronize the applied filters with the holding filters
   useEffect(() => {
     setHoldingFiltersById(transform.toCheckboxes(initialAppliedFilters))
-    setHoldingDateRangesById(transform.toDateRanges(initialAppliedFilters))
+    setHoldingDateRangesById(
+      holdingDateRangesFromApplied(initialAppliedFilters),
+    )
   }, [initialAppliedFilters])
 
   const updateFilterToggle = (filterId: string) => {
@@ -137,6 +144,7 @@ const FilterDrawerContent = ({
 
   return (
     <>
+      {/* Filters */}
       <form className="flex-1 px-6 md:px-10">
         {filters.map(({ id, label, items, type }) => (
           <CheckboxGroup
@@ -181,6 +189,7 @@ const FilterDrawerContent = ({
           </CheckboxGroup>
         ))}
       </form>
+      {/* Sticky action bottom bar */}
       <div className="sticky bottom-0 left-0 right-0 flex flex-col gap-3 border-t border-t-divider-medium bg-white px-6 pb-12 pt-8 md:px-10">
         <Button
           className="w-full justify-center"

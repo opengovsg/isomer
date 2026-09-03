@@ -15,23 +15,21 @@ export const getAvailableFilters = (
 ): Filter[] => {
   const tagFilters = getTagFilters(items, tagCategories)
   const dateFilters = getDateFilters(items, tagCategories, today)
+  const filtersById = new Map(
+    [...tagFilters, ...dateFilters].map((filter) => [filter.id, filter]),
+  )
 
-  if (!tagCategories || tagCategories.length === 0) {
-    return [...tagFilters, ...dateFilters, getYearFilter(items)].filter(
-      (filter) => filter.items.length >= 1,
-    )
-  }
+  const orderedCategoryFilters = tagCategories?.length
+    ? tagCategories
+        .map((category) =>
+          filtersById.get(
+            isDateFilter(category) ? category.id : category.label,
+          ),
+        )
+        .filter((filter): filter is Filter => filter !== undefined)
+    : [...tagFilters, ...dateFilters]
 
-  const filtersById = new Map<string, Filter>()
-  tagFilters.forEach((filter) => filtersById.set(filter.id, filter))
-  dateFilters.forEach((filter) => filtersById.set(filter.id, filter))
-
-  const orderedCategoryFilters = tagCategories
-    .map((category) =>
-      filtersById.get(isDateFilter(category) ? category.id : category.label),
-    )
-    .filter((filter): filter is Filter => filter !== undefined)
-
+  // TODO: Allow user to pass in order of filters to be shown
   return [...orderedCategoryFilters, getYearFilter(items)].filter(
     (filter) => filter.items.length >= 1,
   )

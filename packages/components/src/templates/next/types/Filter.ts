@@ -28,6 +28,7 @@ export interface AppliedFilter {
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value)
 
+// ISO calendar date (YYYY-MM-DD) from URL-parsed filter JSON. Rejects time and locale formats.
 const isIsoDateString = (value: string): boolean =>
   /^\d{4}-\d{2}-\d{2}$/.test(value)
 
@@ -58,9 +59,5 @@ export interface FilterProps {
   appliedFilters: AppliedFilter[]
   setAppliedFilters: (appliedFilters: AppliedFilter[]) => void
   handleFilterToggle: (filterId: string, itemId: string) => void
-  handleDateRangeChange: (
-    filterId: string,
-    dateRange: AppliedFilter["dateRange"],
-  ) => void
   handleClearFilter: () => void
 }

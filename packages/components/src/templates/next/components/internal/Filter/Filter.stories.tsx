@@ -2,7 +2,6 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { AppliedFilter } from "~/templates/next/types/Filter"
 import { useState } from "react"
 import { userEvent, within } from "storybook/test"
-import { updateAppliedDateRange } from "~/templates/next/layouts/Collection/utils"
 
 import { getViewportByMode, withChromaticModes } from "@isomer/storybook-config"
 
@@ -59,14 +58,6 @@ const meta: Meta<typeof Filter> = {
         setAppliedFilters={setAppliedFilters}
         handleFilterToggle={(id: string, itemId: string) =>
           updateAppliedFilters(appliedFilters, setAppliedFilters, id, itemId)
-        }
-        handleDateRangeChange={(id, dateRange) =>
-          updateAppliedDateRange(
-            appliedFilters,
-            setAppliedFilters,
-            id,
-            dateRange,
-          )
         }
         handleClearFilter={handleClearFilter}
       />

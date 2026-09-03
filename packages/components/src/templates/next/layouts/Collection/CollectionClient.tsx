@@ -59,7 +59,6 @@ export const CollectionClient = ({
     searchValue,
     appliedFilters,
     handleFilterToggle,
-    handleDateRangeChange,
     setAppliedFilters,
     handleSearchValueChange,
     handleClearFilter,
@@ -100,7 +99,6 @@ export const CollectionClient = ({
             filters={filters}
             appliedFilters={appliedFilters}
             handleFilterToggle={handleFilterToggle}
-            handleDateRangeChange={handleDateRangeChange}
             setAppliedFilters={setAppliedFilters}
             handleClearFilter={handleClearFilter}
           />

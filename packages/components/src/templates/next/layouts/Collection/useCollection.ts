@@ -9,7 +9,6 @@ import { isAppliedFilters } from "../../types/Filter"
 import {
   getFilteredItems,
   getPaginatedItems,
-  updateAppliedDateRange,
   updateAppliedFilters,
 } from "./utils"
 
@@ -46,6 +45,7 @@ export const useCollection = ({
       const parsed: unknown = JSON.parse(filters || "[]")
       return isAppliedFilters(parsed) ? parsed : []
     } catch {
+      // Malformed URL param (e.g. ?filters=hello) — treat as no filters rather than crashing.
       return []
     }
   }, [queryParams.filters])
@@ -78,18 +78,6 @@ export const useCollection = ({
     [appliedFilters, setAppliedFilters],
   )
 
-  const handleDateRangeChange = useCallback(
-    (id: string, dateRange: AppliedFilter["dateRange"]) => {
-      return updateAppliedDateRange(
-        appliedFilters,
-        setAppliedFilters,
-        id,
-        dateRange,
-      )
-    },
-    [appliedFilters, setAppliedFilters],
-  )
-
   const filteredItems = useMemo(
     () => getFilteredItems(items, appliedFilters, searchValue, tagCategories),
     [items, appliedFilters, searchValue, tagCategories],
@@ -114,7 +102,6 @@ export const useCollection = ({
     handleClearFilter,
     appliedFilters,
     handleFilterToggle,
-    handleDateRangeChange,
     setAppliedFilters,
     currPage,
     setCurrPage,

@@ -6,6 +6,7 @@ import { mergeProps } from "@react-aria/utils"
 import { useRef, useState } from "react"
 import { BiChevronDown, BiChevronRight } from "react-icons/bi"
 import { tv } from "~/lib/tv"
+import { updateAppliedFilters } from "~/templates/next/layouts/Collection/utils"
 import { TAG_CATEGORY_TYPE } from "~/types/constants"
 import { groupFocusVisibleHighlight } from "~/utils/tailwind"
 
@@ -54,7 +55,6 @@ export const Filter = ({
   filters,
   appliedFilters,
   handleFilterToggle,
-  handleDateRangeChange,
   handleClearFilter,
   setAppliedFilters,
 }: FilterProps) => {
@@ -65,10 +65,6 @@ export const Filter = ({
   const appliedItemsById = appliedFilters.reduce(
     (acc, { id, items }) => ({ ...acc, [id]: items.map(({ id }) => id) }),
     {} as Record<string, string[]>,
-  )
-  const appliedDateRangesById = appliedFilters.reduce(
-    (acc, { id, dateRange }) => (dateRange ? { ...acc, [id]: dateRange } : acc),
-    {} as Record<string, NonNullable<(typeof appliedFilters)[0]["dateRange"]>>,
   )
 
   const updateFilterToggle = (filterId: string) => {
@@ -101,7 +97,6 @@ export const Filter = ({
         isOpen={mobileFiltersOpen}
         onOpen={setMobileFiltersOpen}
         handleFilterToggle={handleFilterToggle}
-        handleDateRangeChange={handleDateRangeChange}
         setAppliedFilters={setAppliedFilters}
       />
       <aside className="hidden lg:block">
@@ -144,8 +139,17 @@ export const Filter = ({
               ))}
               {type === TAG_CATEGORY_TYPE.Date && (
                 <DateRangeFilterInput
-                  value={appliedDateRangesById[id]}
-                  onChange={(dateRange) => handleDateRangeChange(id, dateRange)}
+                  value={
+                    appliedFilters.find((filter) => filter.id === id)?.dateRange
+                  }
+                  onChange={(dateRange) =>
+                    updateAppliedFilters(
+                      appliedFilters,
+                      setAppliedFilters,
+                      id,
+                      dateRange,
+                    )
+                  }
                 />
               )}
             </div>

@@ -1,17 +1,20 @@
 import { describe, expect, it, vi } from "vitest"
 
 import type { AppliedFilter } from "../../../../types/Filter"
-import { updateAppliedDateRange } from "../updateAppliedDateRange"
+import { updateAppliedFilters } from "../updateAppliedFilters"
 
-describe("updateAppliedDateRange", () => {
-  it("adds a date-range-only applied filter", () => {
+describe("updateAppliedFilters", () => {
+  it("adds an applied filter with only a date range", () => {
+    // Arrange
     const setAppliedFilters = vi.fn()
 
-    updateAppliedDateRange([], setAppliedFilters, "event-date", {
+    // Act
+    updateAppliedFilters([], setAppliedFilters, "event-date", {
       start: "2026-01-01",
       end: "2026-03-15",
     })
 
+    // Assert
     expect(setAppliedFilters).toHaveBeenCalledWith([
       {
         id: "event-date",
@@ -21,7 +24,8 @@ describe("updateAppliedDateRange", () => {
     ])
   })
 
-  it("removes the filter when both range and buckets are cleared", () => {
+  it("drops the filter when the date range and buckets are both cleared", () => {
+    // Arrange
     const setAppliedFilters = vi.fn()
     const appliedFilters: AppliedFilter[] = [
       {
@@ -31,13 +35,15 @@ describe("updateAppliedDateRange", () => {
       },
     ]
 
-    updateAppliedDateRange(
+    // Act
+    updateAppliedFilters(
       appliedFilters,
       setAppliedFilters,
       "event-date",
       undefined,
     )
 
+    // Assert
     expect(setAppliedFilters).toHaveBeenCalledWith([])
   })
 })
