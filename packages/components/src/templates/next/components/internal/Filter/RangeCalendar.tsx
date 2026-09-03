@@ -18,8 +18,8 @@ import {
 import { useRangeCalendarState } from "@react-stately/calendar"
 import { useMemo, useRef, useState } from "react"
 import { BiChevronLeft, BiChevronRight } from "react-icons/bi"
+import { getSingaporeDateYYYYMMDD } from "~/utils/getSingaporeDate"
 
-import { getTodayInSingapore } from "../../../layouts/Collection/utils/getDateFilterStatus"
 import { IconButton } from "../IconButton"
 
 // Government sites are English-only today, so the locale is fixed rather
@@ -44,7 +44,7 @@ interface RangeCalendarProps {
 }
 
 const getTodayCalendarDate = (): CalendarDate =>
-  parseDate(getTodayInSingapore())
+  parseDate(getSingaporeDateYYYYMMDD())
 
 // Hand-built on top of the same headless @react-aria/* hook family already
 // used elsewhere in this package (see Filter.tsx), rather than pulling in a
@@ -63,6 +63,7 @@ export const RangeCalendar = ({
 }: RangeCalendarProps) => {
   const today = useMemo(() => getTodayCalendarDate(), [])
   const initialValue = defaultValue ?? { start: today, end: today }
+  const [hasUserSelected, setHasUserSelected] = useState(false)
 
   const state = useRangeCalendarState({
     locale: LOCALE,
@@ -95,11 +96,19 @@ export const RangeCalendar = ({
           icon={BiChevronRight}
         />
       </div>
-      <CalendarGrid state={state} />
+      <CalendarGrid
+        state={state}
+        onDateSelected={() => setHasUserSelected(true)}
+      />
       <div className="mt-3 flex justify-end gap-3">
         <ClearButton onPress={() => onApply(null)} />
         <ApplyButton
           onPress={() => {
+            if (defaultValue === null && !hasUserSelected) {
+              onApply(null)
+              return
+            }
+
             // A single click only sets `anchorDate` (selection in progress)
             // — `value` isn't populated until a second click completes the
             // range, so pressing Apply after just one click would otherwise
@@ -166,7 +175,7 @@ const CalendarNavButton = ({
   return (
     <IconButton
       icon={Icon}
-      size="sm"
+      size="base"
       variant="clear"
       aria-label={ariaLabel}
       className="text-base-content-subtle"
@@ -180,7 +189,13 @@ const CalendarNavButton = ({
 // quirks (hairline seams between adjacent <td> backgrounds) and lets range
 // "fill" segments have a real gap between weeks. ARIA row/grid semantics are
 // reproduced by hand via `role` since we're not using table elements.
-const CalendarGrid = ({ state }: { state: RangeCalendarState }) => {
+const CalendarGrid = ({
+  state,
+  onDateSelected,
+}: {
+  state: RangeCalendarState
+  onDateSelected: () => void
+}) => {
   const { gridProps, headerProps, weekDays } = useCalendarGrid({}, state)
   const weeksInMonth = getWeeksInMonth(state.visibleRange.start, LOCALE)
 
@@ -226,6 +241,7 @@ const CalendarGrid = ({ state }: { state: RangeCalendarState }) => {
                     date={date}
                     highlightedRange={highlightedRange}
                     onHoverOutsideDate={setHoveredOutsideDate}
+                    onDateSelected={onDateSelected}
                   />
                 ) : (
                   <div key={index} role="gridcell" className="h-11 w-11" />
@@ -246,11 +262,13 @@ const CalendarCell = ({
   date,
   highlightedRange,
   onHoverOutsideDate,
+  onDateSelected,
 }: {
   state: RangeCalendarState
   date: CalendarDate
   highlightedRange: { start: CalendarDate; end: CalendarDate } | null
   onHoverOutsideDate: (date: CalendarDate | null) => void
+  onDateSelected: () => void
 }) => {
   const cellRef = useRef<HTMLDivElement>(null)
   const {
@@ -282,6 +300,7 @@ const CalendarCell = ({
   // is tracked separately (see `CalendarGrid`) for the same reason.
   const handleOutsideRangeClick = () => {
     state.selectDate(date)
+    onDateSelected()
   }
 
   return (
@@ -292,6 +311,12 @@ const CalendarCell = ({
         <div
           {...buttonProps}
           aria-label={accessibleDateLabel}
+          onClick={(event) => {
+            buttonProps.onClick?.(event)
+            if (!isOutsideVisibleRange) {
+              onDateSelected()
+            }
+          }}
           {...(isOutsideVisibleRange
             ? {
                 "aria-disabled": undefined,
