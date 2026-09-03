@@ -1,16 +1,13 @@
 import { createId } from "@paralleldrive/cuid2"
+import { setUpWhitelist, setupSite } from "tests/integration/helpers/seed"
 import { db } from "~/server/modules/database"
 import { IsomerAdminRole, RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS } from "./auth"
 
-const SEED_SITE_ID = 1
-
-export const getSeedSiteId = () => SEED_SITE_ID
-
 /**
  * Idempotent: inserts user if missing, then ensures a ResourcePermission
- * with `role` on the seed site exists (re-activating if soft-deleted).
+ * with `role` on `siteId` exists (re-activating if soft-deleted).
  *
  * The unique constraint on ResourcePermission is
  * (userId, siteId, resourceId, deletedAt) NULLS NOT DISTINCT.
@@ -20,6 +17,7 @@ export const getSeedSiteId = () => SEED_SITE_ID
 const ensureUserWithRole = async (
   email: string,
   role: (typeof RoleType)[keyof typeof RoleType] | null,
+  siteId: number,
 ) => {
   const user = await db
     .insertInto("User")
@@ -52,7 +50,7 @@ const ensureUserWithRole = async (
     .insertInto("ResourcePermission")
     .values({
       userId: user.id,
-      siteId: SEED_SITE_ID,
+      siteId,
       role,
       resourceId: null,
     })
@@ -72,8 +70,9 @@ const ensureUserWithRole = async (
 const ensureGodModeAdmin = async (
   email: string,
   role: (typeof IsomerAdminRole)[keyof typeof IsomerAdminRole],
+  siteId: number,
 ) => {
-  const user = await ensureUserWithRole(email, null)
+  const user = await ensureUserWithRole(email, null, siteId)
 
   await db
     .insertInto("IsomerAdmin")
@@ -85,11 +84,24 @@ const ensureGodModeAdmin = async (
 }
 
 export const seedRolesForE2E = async () => {
-  await ensureUserWithRole(TEST_EMAILS.admin, RoleType.Admin)
-  await ensureUserWithRole(TEST_EMAILS.nomember, null)
-  // editor + publisher are seeded by prisma/seed.ts; ensure they're still active
-  await ensureUserWithRole(TEST_EMAILS.editor, RoleType.Editor)
-  await ensureUserWithRole(TEST_EMAILS.publisher, RoleType.Publisher)
-  await ensureGodModeAdmin(TEST_EMAILS.core, IsomerAdminRole.Core)
-  await ensureGodModeAdmin(TEST_EMAILS.migrator, IsomerAdminRole.Migrator)
+  // protectedProcedure's authMiddleware requires the caller's email to be
+  // whitelisted (see whitelist.service.ts's isEmailWhitelisted), so every
+  // TEST_EMAILS user (all @open.gov.sg) needs this domain whitelisted for
+  // any tRPC call to succeed across the whole e2e suite. prisma/seed.ts
+  // used to provide this row via CI's now-removed "Seed testing db" step;
+  // it's self-provisioned here instead.
+  await setUpWhitelist({ email: "@open.gov.sg" })
+
+  const { site } = await setupSite()
+
+  await ensureUserWithRole(TEST_EMAILS.admin, RoleType.Admin, site.id)
+  await ensureUserWithRole(TEST_EMAILS.nomember, null, site.id)
+  await ensureUserWithRole(TEST_EMAILS.editor, RoleType.Editor, site.id)
+  await ensureUserWithRole(TEST_EMAILS.publisher, RoleType.Publisher, site.id)
+  await ensureGodModeAdmin(TEST_EMAILS.core, IsomerAdminRole.Core, site.id)
+  await ensureGodModeAdmin(
+    TEST_EMAILS.migrator,
+    IsomerAdminRole.Migrator,
+    site.id,
+  )
 }

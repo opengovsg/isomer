@@ -1,11 +1,52 @@
 import type { FullConfig } from "@playwright/test"
 import { chromium } from "@playwright/test"
 import crypto from "crypto"
-import { db } from "~/server/modules/database"
+import { env } from "~/env.mjs"
+import { db, sql } from "~/server/modules/database"
 
 import { ROLES, storageStateFor, TEST_EMAILS } from "./fixtures/auth"
 import { LoginPage } from "./fixtures/login"
 import { seedRolesForE2E } from "./fixtures/seed"
+
+// The e2e suite's DATABASE_URL points at a `test` database that has no
+// purpose other than e2e fixtures (a separate logical database from local
+// dev's `app` database, inside the same docker-compose Postgres container),
+// so wiping it completely at the start of every run is safe. The table list
+// is derived dynamically from information_schema so this doesn't silently
+// go stale as the schema evolves.
+const E2E_DATABASE_NAME = "test"
+
+const resetE2EDatabase = async (): Promise<void> => {
+  // dotenv (used to load .env.test) does not override an already-set
+  // DATABASE_URL by default, so a shell that already has the dev DATABASE_URL
+  // exported would otherwise cause this to silently truncate the dev
+  // database instead of the disposable e2e one.
+  const databaseName = new URL(env.DATABASE_URL).pathname.replace(/^\//, "")
+  if (databaseName !== E2E_DATABASE_NAME) {
+    throw new Error(
+      `Refusing to reset database: expected DATABASE_URL to point at the disposable "${E2E_DATABASE_NAME}" database, but it points at "${databaseName}". Check that .env.test is loaded before running e2e tests.`,
+    )
+  }
+
+  const { rows: tables } = await sql<{
+    table_name: string
+  }>`
+    SELECT table_name FROM information_schema.tables
+    WHERE table_schema = 'public'
+      AND table_type = 'BASE TABLE'
+      AND table_name != '_prisma_migrations'
+  `.execute(db)
+
+  if (tables.length === 0) return
+
+  const tableList = sql.join(
+    tables.map(({ table_name }) => sql.table(table_name)),
+  )
+
+  await db.executeQuery(
+    sql`TRUNCATE TABLE ${tableList} RESTART IDENTITY CASCADE`.compile(db),
+  )
+}
 
 const setSingpassUuidFor = async (email: string, uuid: string) => {
   await db
@@ -40,6 +81,7 @@ const signInOnce = async (role: keyof typeof TEST_EMAILS, baseURL: string) => {
 const globalSetup = async (config: FullConfig) => {
   const baseURL = config.projects[0]?.use.baseURL ?? "http://127.0.0.1:3000"
 
+  await resetE2EDatabase()
   await seedRolesForE2E()
 
   for (const role of ROLES) {
