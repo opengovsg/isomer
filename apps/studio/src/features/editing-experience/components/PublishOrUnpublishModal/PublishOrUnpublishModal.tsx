@@ -16,9 +16,9 @@ import {
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
-import { add, set } from "date-fns"
+import { add } from "date-fns"
 import posthog from "posthog-js"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { FormProvider } from "react-hook-form"
 import { BiSolidInfoCircle } from "react-icons/bi"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
@@ -50,6 +50,13 @@ interface PublishOrUnpublishModalProps extends UseDisclosureReturn {
   // unpublished by then. Undefined when this page isn't a container landing
   // page at all.
   containerType?: ResourceType
+  // Unpublish-only: set when "now" isn't a valid choice — some other
+  // currently-live page inside this container has no unpublish scheduled at
+  // all, so an immediate unpublish would fail server-side. Scheduling is
+  // still offered: once every live descendant has its own unpublish
+  // scheduled, picking a date on/after the latest one will succeed (checked
+  // for real against the chosen date when the schedule mutation runs).
+  disableNow?: boolean
 }
 
 const FIELD_NAMES: Record<
@@ -66,14 +73,18 @@ export const PublishOrUnpublishModal = ({
   siteId,
   hasDraftChanges = false,
   containerType,
+  disableNow = false,
   onClose,
   ...rest
 }: PublishOrUnpublishModalProps): JSX.Element => {
   const toast = useToast()
   const utils = trpc.useUtils()
   const fireContentEditSurveyEvent = useFireContentEditSurveyEvent()
-  const [mode, setMode] = useState<ActionMode | undefined>(undefined)
-  const [isScheduleValid, setIsScheduleValid] = useState(false)
+  // Skip straight to "later" when "now" isn't an option — there's nothing
+  // else to pick.
+  const [mode, setMode] = useState<ActionMode | undefined>(
+    disableNow ? "later" : undefined,
+  )
 
   const schema =
     action === "publish"
@@ -88,16 +99,6 @@ export const PublishOrUnpublishModal = ({
     schema: schema as typeof schedulePublishClientSchema,
     defaultValues: { pageId, siteId },
   })
-
-  // Validate the schedule form as it changes so the info banner can be shown
-  // once it's complete. Do NOT use trigger() since that surfaces error messages.
-  useEffect(() => {
-    const validateForm = () => {
-      setIsScheduleValid(schema.safeParse(methods.getValues()).success)
-    }
-    const subscription = methods.watch(() => validateForm())
-    return () => subscription.unsubscribe()
-  }, [methods, schema])
 
   const invalidateAfterMutation = () =>
     Promise.all([
@@ -241,9 +242,10 @@ export const PublishOrUnpublishModal = ({
   })
 
   const isSubmitting =
-    action === "publish"
-      ? isPublishingNow || isSchedulingPublish
-      : isUnpublishingNow || isSchedulingUnpublish
+    isPublishingNow ||
+    isSchedulingPublish ||
+    isUnpublishingNow ||
+    isSchedulingUnpublish
 
   const handleSubmitClick = () => {
     if (mode === "now") {
@@ -267,22 +269,16 @@ export const PublishOrUnpublishModal = ({
     minutes: MINIMUM_SCHEDULE_LEAD_TIME_MINUTES,
   })
 
-  const [selectedDate, selectedTime] = methods.watch([
-    dateField as "publishDate",
-    timeField as "publishTime",
-  ])
-  const scheduledAt =
-    isScheduleValid && selectedDate && selectedTime
-      ? (() => {
-          const [hours, minutes] = String(selectedTime).split(":").map(Number)
-          return set(selectedDate, {
-            hours,
-            minutes,
-            seconds: 0,
-            milliseconds: 0,
-          })
-        })()
-      : null
+  // Calling watch() with no args during render (not inside an effect)
+  // subscribes this component to every field change, same as useWatch would.
+  // Feeding that straight into the schema gives us both "is the schedule
+  // complete" and the combined date in one place, instead of tracking
+  // validity as separate state and reassembling the date by hand — the
+  // schema's own transform already does that.
+  const parsedSchedule = schema.safeParse(methods.watch())
+  const scheduledAt = parsedSchedule.success
+    ? parsedSchedule.data.scheduledAt
+    : null
 
   return (
     <Modal onClose={onClose} {...rest}>
@@ -299,6 +295,11 @@ export const PublishOrUnpublishModal = ({
                 action={action}
                 value={mode}
                 onChange={(value) => setMode(value as ActionMode)}
+                disableNowReason={
+                  disableNow
+                    ? "Other pages inside are still live with no unpublish scheduled. Unpublish or schedule those first, or schedule this for later."
+                    : undefined
+                }
               />
               {mode === "later" && (
                 <VStack align="stretch" spacing="1rem">

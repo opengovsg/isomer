@@ -1,5 +1,5 @@
 import { HStack, Skeleton } from "@chakra-ui/react"
-import { HasDraftIndicator } from "~/components/HasDraftIndicator"
+import { DraftIndicator } from "~/components/HasDraftIndicator"
 import { LiveStatusBadges } from "~/components/LiveStatusBadges"
 import { withSuspense } from "~/hocs/withSuspense"
 import { trpc } from "~/utils/trpc"
@@ -23,7 +23,7 @@ const SuspendablePageStatusIndicators = ({
         scheduledAction={currPage.scheduledAction}
         lastPublishedAt={currPage.lastPublishedAt}
       />
-      <HasDraftIndicator draftBlobId={currPage.draftBlobId} />
+      <DraftIndicator draftBlobId={currPage.draftBlobId} />
     </HStack>
   )
 }

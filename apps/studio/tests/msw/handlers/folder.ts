@@ -26,6 +26,7 @@ export const folderHandlers = {
           lastPublishedAt: null,
           parentType: "Folder",
           otherPublishedDescendantCount: 0,
+          unschedulableDescendantCount: 0,
         }
       })
     },
@@ -42,6 +43,7 @@ export const folderHandlers = {
           lastPublishedAt: null,
           parentType: "Folder",
           otherPublishedDescendantCount: 2,
+          unschedulableDescendantCount: 2,
         }
       })
     },

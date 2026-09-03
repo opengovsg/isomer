@@ -3,7 +3,7 @@ import { HStack, Icon, Text, VStack } from "@chakra-ui/react"
 import { Link } from "@opengovsg/design-system-react"
 import NextLink from "next/link"
 import { useMemo } from "react"
-import { HasDraftIndicator } from "~/components/HasDraftIndicator"
+import { DraftIndicator } from "~/components/HasDraftIndicator"
 import { getLinkToResource } from "~/utils/resource"
 import { getIcon } from "~/utils/resources"
 
@@ -53,7 +53,7 @@ export const TitleCell = ({
           >
             {title}
           </Link>
-          <HasDraftIndicator draftBlobId={draftBlobId} />
+          <DraftIndicator draftBlobId={draftBlobId} />
         </HStack>
         {permalink && (
           <Text

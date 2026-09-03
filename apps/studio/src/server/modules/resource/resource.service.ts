@@ -140,13 +140,19 @@ export const getLastPublishedAt = async (
 
 const CONTAINER_TYPES = [ResourceType.Folder, ResourceType.Collection]
 
-// Folder/Collection ids that count as each status tag, derived from the same
-// child-status map the Status column badges use — see getChildLiveStatusMap.
-// A container is "live" (whether fully live or just live-template) iff
-// something in its subtree is published; otherwise it's "not live". The
-// scheduled/draft tags key off the container's own IndexPage child, since
-// that's the only place a Folder/Collection's schedule/draft state actually
-// lives.
+// Folder/Collection ids that count as each status tag in the dashboard's
+// filter dropdown (RESOURCE_TABLE_STATUS_FILTER_OPTIONS). A container can
+// match more than one tag at once. It can be live, have a draft, and be
+// scheduled to unpublish, all at the same time, because the filter
+// checkboxes are independent and applyResourceStatusFilter ORs them
+// together. That is why this returns 5 separate id lists instead of one
+// bucket per container. Each list feeds one tag's own WHERE clause.
+//
+// The live/notLive tags read the container's subtree (getChildLiveStatusMap).
+// A container counts as "live" if anything underneath it is published. The
+// scheduled/draft tags read the container's own IndexPage child instead,
+// since that is the only place a Folder/Collection's schedule/draft state
+// actually lives. The container's own row never carries that data.
 export const splitContainerIdsByStatus = (
   childLiveStatus: Map<
     string,
@@ -170,26 +176,33 @@ export const splitContainerIdsByStatus = (
   const hasDraftContainerIds: string[] = []
   const scheduledToPublishContainerIds: string[] = []
   const scheduledToUnpublishContainerIds: string[] = []
-  for (const [
-    id,
-    {
-      hasLiveDescendant,
-      indexPageDraftBlobId,
-      indexPageScheduledAt,
-      indexPageScheduledAction,
-    },
-  ] of childLiveStatus) {
-    ;(hasLiveDescendant ? liveContainerIds : notLiveContainerIds).push(id)
-    if (indexPageDraftBlobId) {
+
+  // These 5 buckets aren't one exhaustive partition — they're 3 independent
+  // classifications per container:
+  // 1. live vs notLive — every container lands in exactly one
+  // 2. hasDraft — additional, doesn't affect the other two
+  // 3. scheduledToPublish vs scheduledToUnpublish — only when a schedule
+  //    exists at all; a container with no schedule lands in neither
+  for (const [id, status] of childLiveStatus) {
+    if (status.hasLiveDescendant) {
+      liveContainerIds.push(id)
+    } else {
+      notLiveContainerIds.push(id)
+    }
+
+    if (status.indexPageDraftBlobId) {
       hasDraftContainerIds.push(id)
     }
-    if (indexPageScheduledAt) {
-      ;(indexPageScheduledAction === ScheduledAction.Unpublish
-        ? scheduledToUnpublishContainerIds
-        : scheduledToPublishContainerIds
-      ).push(id)
+
+    if (status.indexPageScheduledAt) {
+      if (status.indexPageScheduledAction === ScheduledAction.Unpublish) {
+        scheduledToUnpublishContainerIds.push(id)
+      } else {
+        scheduledToPublishContainerIds.push(id)
+      }
     }
   }
+
   return {
     liveContainerIds,
     notLiveContainerIds,
@@ -1539,9 +1552,11 @@ export const getChildLiveStatusMap = async (
           "Resource.id as branchId",
           sql<number>`0`.as("depth"),
         ])
-        // `union` (not `unionAll`) dedupes rows so a malformed parent chain with
-        // a cycle can't drive the recursion forever.
-        .union((fb) =>
+        // Resource.parentId forms a tree enforced at move-time (see the
+        // `move` mutation in resource.router.ts, which rejects moving a
+        // folder into its own descendant) — so plain `unionAll` is safe;
+        // there's no cycle for it to need to dedupe against.
+        .unionAll((fb) =>
           fb
             .selectFrom("Resource")
             .innerJoin("branchSubtree", "branchSubtree.id", "Resource.parentId")

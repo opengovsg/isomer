@@ -2,13 +2,13 @@ import { Box, Text, Tooltip } from "@chakra-ui/react"
 import { Badge, BadgeLeftIcon } from "@opengovsg/design-system-react"
 import { BiSolidCircle } from "react-icons/bi"
 
-interface HasDraftIndicatorProps {
+interface DraftIndicatorProps {
   draftBlobId: string | null
 }
 
-export const HasDraftIndicator = ({
+export const DraftIndicator = ({
   draftBlobId,
-}: HasDraftIndicatorProps): JSX.Element | null => {
+}: DraftIndicatorProps): JSX.Element | null => {
   if (!draftBlobId) {
     return null
   }

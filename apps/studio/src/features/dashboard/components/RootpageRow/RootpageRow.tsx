@@ -1,7 +1,7 @@
 import { HStack, IconButton, Text, VStack } from "@chakra-ui/react"
 import Link from "next/link"
 import { BiChevronRight, BiHomeAlt } from "react-icons/bi"
-import { HasDraftIndicator } from "~/components/HasDraftIndicator"
+import { DraftIndicator } from "~/components/HasDraftIndicator"
 import { LiveStatusBadges } from "~/components/LiveStatusBadges"
 import { trpc } from "~/utils/trpc"
 
@@ -54,7 +54,7 @@ export const RootpageRow = ({ siteId }: RootpageRowProps) => {
             scheduledAction={scheduledAction}
             lastPublishedAt={lastPublishedAt}
           />
-          <HasDraftIndicator draftBlobId={draftBlobId} />
+          <DraftIndicator draftBlobId={draftBlobId} />
         </HStack>
         {/*   TODO: werequire the last updated at and to display it */}
         {/* as a relative time. */}
