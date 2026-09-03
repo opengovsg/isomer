@@ -423,4 +423,204 @@ export class DashboardPO {
       .getByRole("button", { name: String(pageNumber), exact: true })
       .click()
   }
+
+  /** Folder ResourceTable shares its sort menu with the collection table. */
+  async sortResourceTableBy(label: "Recently edited" | "Alphabetical" | "URL") {
+    await this.sortCollectionBy(label)
+  }
+
+  /** Folder ResourceTable shares its pagination component with the collection table. */
+  async goToResourceTablePage(pageNumber: number) {
+    await this.goToCollectionTablePage(pageNumber)
+  }
+
+  async expectResourceRowsInOrder(titles: string[]) {
+    await this.expectCollectionRowsInOrder(titles)
+  }
+
+  async expectResourceRowVisible(title: string) {
+    await this.expectCollectionRowVisible(title)
+  }
+
+  async expectResourceRowHidden(title: string) {
+    await this.expectCollectionRowHidden(title)
+  }
+
+  async expectFolderEmptyState() {
+    await expect(
+      this.page.getByText("This folder is empty. Create a new page or folder"),
+    ).toBeVisible()
+  }
+
+  async expectSiteAccessDenied() {
+    await expect(
+      this.page.getByText("You don't have access to edit this site."),
+    ).toBeVisible()
+    await expect(
+      this.page.getByRole("button", { name: "Back to My Sites" }),
+    ).toBeVisible()
+  }
+
+  async openSearchViaShortcut() {
+    await expect(
+      this.page.getByRole("button", { name: "search-button" }),
+    ).toBeVisible()
+    const shortcut = await this.page.evaluate(() =>
+      (navigator.userAgent || navigator.platform).toLowerCase().includes("mac")
+        ? "Meta+k"
+        : "Control+k",
+    )
+    await this.page.keyboard.press(shortcut)
+    await expect(
+      this.page.getByPlaceholder(
+        /Search pages, collections, or folders by name/,
+      ),
+    ).toBeVisible()
+  }
+
+  async closeSearchViaEscape() {
+    await this.page.keyboard.press("Escape")
+    await expect(
+      this.page.getByPlaceholder(
+        /Search pages, collections, or folders by name/,
+      ),
+    ).not.toBeVisible()
+  }
+
+  async expectSearchTriggerFocused() {
+    await expect(
+      this.page.getByRole("button", { name: "search-button" }),
+    ).toBeFocused()
+  }
+
+  async expectNoSearchResults() {
+    await expect(
+      this.page.getByText(
+        /We[\u2019']ve looked everywhere, but we[\u2019']re getting nothing\./,
+      ),
+    ).toBeVisible()
+  }
+
+  async expectSearchResultCount(count: number) {
+    const dialog = this.page.getByRole("dialog")
+    await expect(
+      dialog.getByText(new RegExp(`^${count} search result`)),
+    ).toBeVisible()
+  }
+
+  async expectSearchModalClosed() {
+    await expect(this.page.getByRole("dialog")).toHaveCount(0)
+  }
+
+  async expectOnSiteDashboard(siteId: number) {
+    await this.page.waitForURL(new RegExp(`/sites/${siteId}$`))
+  }
+
+  async expectRecentlyEditedSearchResult(title: string) {
+    const dialog = this.page.getByRole("dialog")
+    const recentlyEditedHeader = dialog.getByText(
+      "Pages recently edited on your site",
+    )
+    await expect(recentlyEditedHeader).toBeVisible()
+    const recentlyEditedSection = recentlyEditedHeader.locator("xpath=..")
+    await expect(
+      recentlyEditedSection.getByRole("link", { name: title }),
+    ).toBeVisible()
+  }
+
+  async expectRecentlyViewedSearchResult(title: string) {
+    const dialog = this.page.getByRole("dialog")
+    const recentlyOpenedHeader = dialog.getByText(
+      /Pages you[\u2019']ve recently opened/,
+    )
+    await expect(recentlyOpenedHeader).toBeVisible()
+    const recentlyOpenedSection = recentlyOpenedHeader.locator("xpath=..")
+    await expect(
+      recentlyOpenedSection.getByRole("link", { name: title }),
+    ).toBeVisible()
+  }
+
+  // --- DirectorySidebar ---
+
+  /** Sidebar rows render the resource's own permalink segment, not its title. */
+  async expectSidebarItemVisible(permalinkLabel: string) {
+    await expect(
+      this.page.getByRole("link", { name: permalinkLabel, exact: true }),
+    ).toBeVisible()
+  }
+
+  async expectSidebarItemHidden(permalinkLabel: string) {
+    await expect(
+      this.page.getByRole("link", { name: permalinkLabel, exact: true }),
+    ).toHaveCount(0)
+  }
+
+  async clickSidebarItem(permalinkLabel: string) {
+    await this.page
+      .getByRole("link", { name: permalinkLabel, exact: true })
+      .click()
+  }
+
+  #sidebarRow(permalinkLabel: string) {
+    return this.page
+      .getByRole("link", { name: permalinkLabel, exact: true })
+      .locator("xpath=..")
+  }
+
+  async toggleSidebarItem(permalinkLabel: string) {
+    await this.#sidebarRow(permalinkLabel).getByRole("button").click()
+  }
+
+  async expectSidebarItemExpanded(permalinkLabel: string) {
+    await expect(
+      this.#sidebarRow(permalinkLabel).getByRole("button"),
+    ).toHaveAttribute("aria-expanded", "true")
+  }
+
+  async expectSidebarItemCollapsed(permalinkLabel: string) {
+    await expect(
+      this.#sidebarRow(permalinkLabel).getByRole("button"),
+    ).toHaveAttribute("aria-expanded", "false")
+  }
+
+  async expectSidebarItemActive(permalinkLabel: string) {
+    await expect(
+      this.page.getByRole("link", { name: permalinkLabel, exact: true }),
+    ).toHaveAttribute("aria-selected", "true")
+  }
+
+  async expectSidebarItemInactive(permalinkLabel: string) {
+    await expect(
+      this.page.getByRole("link", { name: permalinkLabel, exact: true }),
+    ).toHaveAttribute("aria-selected", "false")
+  }
+
+  // --- Breadcrumbs ---
+
+  async clickBreadcrumb(label: string) {
+    await this.page
+      .getByRole("navigation", { name: "breadcrumb" })
+      .getByRole("link", { name: label })
+      .click()
+  }
+
+  async expectBreadcrumbLinkVisible(label: string) {
+    await expect(
+      this.page
+        .getByRole("navigation", { name: "breadcrumb" })
+        .getByRole("link", { name: label }),
+    ).toBeVisible()
+  }
+
+  async expectBreadcrumbCurrentText(label: string) {
+    const breadcrumb = this.page.getByRole("navigation", {
+      name: "breadcrumb",
+    })
+    await expect(breadcrumb.getByText(label, { exact: true })).toBeVisible()
+    await expect(breadcrumb.getByRole("link", { name: label })).toHaveCount(0)
+  }
+
+  async goBack() {
+    await this.page.goBack()
+  }
 }
