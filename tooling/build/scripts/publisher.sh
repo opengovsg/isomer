@@ -218,12 +218,18 @@ calculate_duration $start_time
 # This can race with a concurrent build of the SAME site (Studio allows a second
 # build to start alongside a stale in-progress one - see computeBuildChanges).
 # Both builds read-modify-write the same DistributionConfig, so the second one to
-# write hits a 412 PreconditionFailed on a stale ETag. On conflict we re-fetch and
-# retry, but only if we are actually the more recent build: CODEBUILD_BUILD_NUMBER
-# is an AWS-assigned, per-project, monotonically increasing counter, so comparing
-# it against the build number already live tells us, independent of the ETag,
-# whether our content is newer. This guarantees the highest build number always
-# ends up live, regardless of which build's write happens to land last.
+# write hits a 412 PreconditionFailed on a stale ETag.
+#
+# We only compare build numbers to decide whether to concede AFTER a real
+# collision, never on the first attempt. A live collision means another build
+# is racing us right now, which is only possible if it belongs to the same
+# CodeBuild project instance we do - so its build number is guaranteed to be on
+# the same counter scale as ours. Comparing unconditionally (even with no
+# collision) would also match against whatever number happens to be sitting in
+# the live OriginPath, which could be a stale leftover from a previous,
+# unrelated CodeBuild project instance (e.g. if the project was ever destroyed
+# and recreated, resetting CODEBUILD_BUILD_NUMBER back to 1) - wrongly and
+# silently suppressing every future build forever.
 echo "Updating CloudFront origin path..."
 echo "CloudFront distribution ID: $CLOUDFRONT_DISTRIBUTION_ID"
 
@@ -232,31 +238,33 @@ UPDATED=false
 
 for ((attempt = 1; attempt <= MAX_ATTEMPTS; attempt++)); do
   aws cloudfront get-distribution --id "$CLOUDFRONT_DISTRIBUTION_ID" >distribution.json
-
   ETag=$(jq -r '.ETag' distribution.json)
-  CURRENT_ORIGIN_PATH=$(jq -r '.Distribution.DistributionConfig.Origins.Items[0].OriginPath' distribution.json)
 
-  # Extract the build-number segment precisely (SITE_NAME can itself contain
-  # digits, e.g. "mindef-sg101", so a bare digit grep over the whole path
-  # would pick up digits from the site name instead of the build number).
-  # Fail closed to an empty value if the path doesn't exactly match
-  # /$SITE_NAME/<digits>/latest.
-  CURRENT_BUILD_NUMBER=""
-  EXPECTED_PREFIX="/$SITE_NAME/"
-  EXPECTED_SUFFIX="/latest"
-  if [[ "$CURRENT_ORIGIN_PATH" == "$EXPECTED_PREFIX"*"$EXPECTED_SUFFIX" ]]; then
-    MIDDLE="${CURRENT_ORIGIN_PATH#"$EXPECTED_PREFIX"}"
-    MIDDLE="${MIDDLE%"$EXPECTED_SUFFIX"}"
-    if [[ "$MIDDLE" =~ ^[0-9]+$ ]]; then
-      CURRENT_BUILD_NUMBER="$MIDDLE"
+  if [ "$attempt" -gt 1 ]; then
+    CURRENT_ORIGIN_PATH=$(jq -r '.Distribution.DistributionConfig.Origins.Items[0].OriginPath' distribution.json)
+
+    # Extract the build-number segment precisely (SITE_NAME can itself contain
+    # digits, e.g. "mindef-sg101", so a bare digit grep over the whole path
+    # would pick up digits from the site name instead of the build number).
+    # Fail closed to an empty value if the path doesn't exactly match
+    # /$SITE_NAME/<digits>/latest.
+    CURRENT_BUILD_NUMBER=""
+    EXPECTED_PREFIX="/$SITE_NAME/"
+    EXPECTED_SUFFIX="/latest"
+    if [[ "$CURRENT_ORIGIN_PATH" == "$EXPECTED_PREFIX"*"$EXPECTED_SUFFIX" ]]; then
+      MIDDLE="${CURRENT_ORIGIN_PATH#"$EXPECTED_PREFIX"}"
+      MIDDLE="${MIDDLE%"$EXPECTED_SUFFIX"}"
+      if [[ "$MIDDLE" =~ ^[0-9]+$ ]]; then
+        CURRENT_BUILD_NUMBER="$MIDDLE"
+      fi
     fi
-  fi
-  echo "Attempt $attempt/$MAX_ATTEMPTS: ETag=$ETag, live build=$CURRENT_BUILD_NUMBER, this build=$CODEBUILD_BUILD_NUMBER"
+    echo "Retry $attempt/$MAX_ATTEMPTS after ETag conflict: live build=$CURRENT_BUILD_NUMBER, this build=$CODEBUILD_BUILD_NUMBER"
 
-  if [ -n "$CURRENT_BUILD_NUMBER" ] && [ "$CURRENT_BUILD_NUMBER" -gt "$CODEBUILD_BUILD_NUMBER" ]; then
-    echo "Live origin path is already on a newer build ($CURRENT_BUILD_NUMBER > $CODEBUILD_BUILD_NUMBER). Skipping CloudFront update."
-    UPDATED=true
-    break
+    if [ -n "$CURRENT_BUILD_NUMBER" ] && [ "$CURRENT_BUILD_NUMBER" -gt "$CODEBUILD_BUILD_NUMBER" ]; then
+      echo "Live origin path is already on a newer build ($CURRENT_BUILD_NUMBER > $CODEBUILD_BUILD_NUMBER). Conceding - skipping CloudFront update."
+      UPDATED=true
+      break
+    fi
   fi
 
   jq '.Distribution.DistributionConfig' distribution.json >distribution-new.json
