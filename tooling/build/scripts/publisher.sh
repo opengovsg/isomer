@@ -217,47 +217,51 @@ calculate_duration $start_time
 #
 # Two builds of the same site can run concurrently (see computeBuildChanges),
 # racing to write the same DistributionConfig; the second writer gets a 412
-# PreconditionFailed on a stale ETag. Retry with a fresh ETag rather than
-# failing the build. This keeps the pre-existing "last write wins" ordering
-# semantics (unchanged from before this fix) instead of trying to order by
-# CODEBUILD_BUILD_NUMBER: that's assigned at build start, not when a build
-# fetches its content, so a slower-starting build can still legitimately
-# fetch fresher content later - ordering by build number would wrongly and
-# permanently lock that fresher content out.
+# PreconditionFailed on a stale ETag. If we lose the race, only concede
+# silently when the live OriginPath proves a build >= ours already won -
+# that's the one state a normal race actually produces. Anything else
+# (an older build won, or the path is unrecognised - e.g. a manual or IaC
+# change) isn't explained by a normal race, so fail loudly instead of
+# guessing and silently overwriting.
 echo "Updating CloudFront origin path..."
 echo "CloudFront distribution ID: $CLOUDFRONT_DISTRIBUTION_ID"
 
-MAX_ATTEMPTS=5
-UPDATED=false
+aws cloudfront get-distribution --id "$CLOUDFRONT_DISTRIBUTION_ID" >distribution.json
+ETag=$(jq -r '.ETag' distribution.json)
 
-for ((attempt = 1; attempt <= MAX_ATTEMPTS; attempt++)); do
-  aws cloudfront get-distribution --id "$CLOUDFRONT_DISTRIBUTION_ID" >distribution.json
-  ETag=$(jq -r '.ETag' distribution.json)
-  echo "Attempt $attempt/$MAX_ATTEMPTS: ETag=$ETag"
+jq '.Distribution.DistributionConfig' distribution.json >distribution-new.json
+jq ".Origins.Items[0].OriginPath = \"/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest\"" distribution-new.json >distribution-config.json
 
-  jq '.Distribution.DistributionConfig' distribution.json >distribution-new.json
-  jq ".Origins.Items[0].OriginPath = \"/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest\"" distribution-new.json >distribution-config.json
-
-  if aws cloudfront update-distribution --id "$CLOUDFRONT_DISTRIBUTION_ID" --distribution-config file://distribution-config.json --if-match "$ETag" 2>update-error.log; then
-    echo "Successfully updated CloudFront origin path to build $CODEBUILD_BUILD_NUMBER"
-    UPDATED=true
-    break
-  fi
-
+if aws cloudfront update-distribution --id "$CLOUDFRONT_DISTRIBUTION_ID" --distribution-config file://distribution-config.json --if-match "$ETag" 2>update-error.log; then
+  echo "Successfully updated CloudFront origin path to build $CODEBUILD_BUILD_NUMBER"
+else
   cat update-error.log
   if ! grep -q "PreconditionFailed" update-error.log; then
     echo "Error: CloudFront update-distribution failed for a reason other than an ETag conflict."
     exit 1
   fi
 
-  if [ "$attempt" -lt "$MAX_ATTEMPTS" ]; then
-    sleep_time=$(((2 ** attempt) + (RANDOM % 3)))
-    echo "ETag conflict detected. Retrying in ${sleep_time}s..."
-    sleep "$sleep_time"
-  fi
-done
+  aws cloudfront get-distribution --id "$CLOUDFRONT_DISTRIBUTION_ID" >distribution.json
+  CURRENT_ORIGIN_PATH=$(jq -r '.Distribution.DistributionConfig.Origins.Items[0].OriginPath' distribution.json)
 
-if [ "$UPDATED" != true ]; then
-  echo "Error: exhausted $MAX_ATTEMPTS attempts due to repeated ETag conflicts."
-  exit 1
+  # SITE_NAME can contain digits (e.g. "mindef-sg101"), so strip the known
+  # prefix/suffix instead of grepping the whole path for digits. Fails
+  # closed to empty if the path isn't exactly /$SITE_NAME/<digits>/latest.
+  CURRENT_BUILD_NUMBER=""
+  EXPECTED_PREFIX="/$SITE_NAME/"
+  EXPECTED_SUFFIX="/latest"
+  if [[ "$CURRENT_ORIGIN_PATH" == "$EXPECTED_PREFIX"*"$EXPECTED_SUFFIX" ]]; then
+    MIDDLE="${CURRENT_ORIGIN_PATH#"$EXPECTED_PREFIX"}"
+    MIDDLE="${MIDDLE%"$EXPECTED_SUFFIX"}"
+    if [[ "$MIDDLE" =~ ^[0-9]+$ ]]; then
+      CURRENT_BUILD_NUMBER="$MIDDLE"
+    fi
+  fi
+
+  if [ -n "$CURRENT_BUILD_NUMBER" ] && [ "$CURRENT_BUILD_NUMBER" -ge "$CODEBUILD_BUILD_NUMBER" ]; then
+    echo "Warning: CloudFront already points to build $CURRENT_BUILD_NUMBER (>= ours: $CODEBUILD_BUILD_NUMBER). A concurrent build won the race, skipping our update."
+  else
+    echo "Error: PreconditionFailed but the live origin path ($CURRENT_ORIGIN_PATH) does not point to a build >= ours ($CODEBUILD_BUILD_NUMBER)."
+    exit 1
+  fi
 fi
