@@ -195,7 +195,7 @@ export const DateRangeFilterInput = ({
         )}
 
         {isOpen && presentation === "popover" && (
-          <FocusScope contain restoreFocus autoFocus>
+          <FocusScope contain restoreFocus>
             <div
               id={popoverId}
               className="absolute z-10 mt-1 w-fit rounded-md border border-base-divider-medium bg-white p-4 shadow-md"
@@ -216,6 +216,7 @@ export const DateRangeFilterInput = ({
         <Dialog
           open={isOpen}
           onClose={setIsOpen}
+          autoFocus={false}
           className="relative z-50 lg:hidden"
         >
           <DialogBackdrop
