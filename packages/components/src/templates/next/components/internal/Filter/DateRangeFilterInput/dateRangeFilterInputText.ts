@@ -25,6 +25,43 @@ const toIsoDate = (displayDate: string): string | undefined => {
   return format(parsed, ISO_FORMAT)
 }
 
+const formatDisplayRange = (startIso: string, endIso: string): string =>
+  `${toDisplayDate(startIso)} - ${toDisplayDate(endIso)}`
+
+// Split on the range separator (" - ") with optional surrounding whitespace.
+// The hyphen is not inside a character class, so it won't match slashes in DD/MM/YYYY.
+const splitRangeParts = (text: string): string[] => text.split(/\s*-\s*/)
+
+const singleDayRange = (isoDate: string): DateRangeFilterValue => ({
+  start: isoDate,
+  end: isoDate,
+})
+
+const normalizeRangeOrder = (
+  start: string,
+  end: string,
+): DateRangeFilterValue =>
+  start <= end ? { start, end } : { start: end, end: start }
+
+const parseSingleDisplayDate = (
+  displayDate: string,
+): DateRangeFilterValue | null => {
+  const isoDate = toIsoDate(displayDate)
+  return isoDate ? singleDayRange(isoDate) : null
+}
+
+const parseDisplayDateRange = (
+  startPart: string,
+  endPart: string,
+): DateRangeFilterValue | null => {
+  const start = toIsoDate(startPart)
+  const end = toIsoDate(endPart)
+  if (!start || !end) {
+    return null
+  }
+  return normalizeRangeOrder(start, end)
+}
+
 export const valueToInputText = (
   value: DateRangeFilterValue | undefined,
 ): string => {
@@ -36,7 +73,7 @@ export const valueToInputText = (
     return toDisplayDate(value.start)
   }
 
-  return `${toDisplayDate(value.start)} - ${toDisplayDate(value.end)}`
+  return formatDisplayRange(value.start, value.end)
 }
 
 export const parseInputText = (
@@ -47,16 +84,11 @@ export const parseInputText = (
     return undefined
   }
 
-  // Split on the range separator (" - ") with optional surrounding whitespace.
-  // The hyphen is not inside a character class, so it won't match slashes in DD/MM/YYYY.
-  const rangeParts = trimmed.split(/\s*-\s*/)
+  const rangeParts = splitRangeParts(trimmed)
+
   if (rangeParts.length === 1) {
-    const firstPart = rangeParts[0]
-    if (!firstPart) {
-      return null
-    }
-    const isoDate = toIsoDate(firstPart)
-    return isoDate ? { start: isoDate, end: isoDate } : null
+    const displayDate = rangeParts[0]
+    return displayDate ? parseSingleDisplayDate(displayDate) : null
   }
 
   if (rangeParts.length === 2) {
@@ -65,12 +97,7 @@ export const parseInputText = (
     if (!startPart || !endPart) {
       return null
     }
-    const start = toIsoDate(startPart)
-    const end = toIsoDate(endPart)
-    if (!start || !end) {
-      return null
-    }
-    return start <= end ? { start, end } : { start: end, end: start }
+    return parseDisplayDateRange(startPart, endPart)
   }
 
   return null
