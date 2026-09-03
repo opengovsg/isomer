@@ -15,6 +15,8 @@ const openCalendar = () => {
   fireEvent.click(screen.getByLabelText("Open calendar"))
 }
 
+const getDateInput = () => screen.getByLabelText("DD/MM/YYYY")
+
 describe("DateRangeFilterInput", () => {
   it("opens the calendar, stages a selection, and only calls onChange on Apply", () => {
     // Arrange
@@ -146,10 +148,10 @@ describe("DateRangeFilterInput", () => {
     render(<DateRangeFilterInput value={undefined} onChange={onChange} />)
 
     // Act
-    fireEvent.change(screen.getByPlaceholderText("DD/MM/YYYY"), {
+    fireEvent.change(getDateInput(), {
       target: { value: "31/02/2026" },
     })
-    fireEvent.blur(screen.getByPlaceholderText("DD/MM/YYYY"))
+    fireEvent.blur(getDateInput())
 
     // Assert
     screen.getByText("Enter a valid date in DD/MM/YYYY format")
@@ -162,15 +164,60 @@ describe("DateRangeFilterInput", () => {
     render(<DateRangeFilterInput value={undefined} onChange={onChange} />)
 
     // Act
-    fireEvent.change(screen.getByPlaceholderText("DD/MM/YYYY"), {
+    fireEvent.change(getDateInput(), {
       target: { value: "10/06/2026" },
     })
-    fireEvent.blur(screen.getByPlaceholderText("DD/MM/YYYY"))
+    fireEvent.blur(getDateInput())
 
     // Assert
     expect(onChange).toHaveBeenCalledExactlyOnceWith({
       start: "2026-06-10",
       end: "2026-06-10",
     })
+  })
+
+  it("auto-formats digits as the user types", () => {
+    // Arrange
+    const onChange = vi.fn()
+    render(<DateRangeFilterInput value={undefined} onChange={onChange} />)
+    const input = getDateInput()
+
+    // Act
+    fireEvent.change(input, {
+      target: { value: "09031996", selectionStart: 8 },
+    })
+
+    // Assert
+    expect(input).toHaveValue("09/03/1996")
+  })
+
+  it("blocks alphabetic characters from being entered", () => {
+    // Arrange
+    render(<DateRangeFilterInput value={undefined} onChange={vi.fn()} />)
+    const input = getDateInput()
+
+    // Act
+    fireEvent.keyDown(input, { key: "a" })
+    fireEvent.change(input, {
+      target: { value: "09a03", selectionStart: 4 },
+    })
+
+    // Assert
+    expect(input).toHaveValue("09/03")
+  })
+
+  it("shows a ghost placeholder suffix while focused and incomplete", () => {
+    // Arrange
+    render(<DateRangeFilterInput value={undefined} onChange={vi.fn()} />)
+    const input = getDateInput()
+
+    // Act
+    fireEvent.focus(input)
+    fireEvent.change(input, {
+      target: { value: "09", selectionStart: 2 },
+    })
+
+    // Assert
+    expect(screen.getByText("/MM/YYYY")).toBeTruthy()
   })
 })

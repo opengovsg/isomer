@@ -17,6 +17,7 @@ import {
   valueToInputText,
   type DateRangeFilterValue,
 } from "./dateRangeFilterInputText"
+import { DateRangeFilterTextInput } from "./DateRangeFilterTextInput"
 import { RangeCalendar } from "./RangeCalendar/RangeCalendar"
 
 export type { DateRangeFilterValue }
@@ -145,26 +146,16 @@ export const DateRangeFilterInput = ({
             isFocusWithin,
           })}
         >
-          <input
+          <DateRangeFilterTextInput
             id={inputId}
-            type="text"
             value={inputValue}
-            placeholder="DD/MM/YYYY"
-            onChange={(event) => {
-              setInputValue(event.target.value)
+            onValueChange={(nextValue) => {
+              setInputValue(nextValue)
               setInputError(null)
             }}
-            onBlur={commitInputValue}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                commitInputValue()
-              }
-            }}
-            className="prose-label-md-regular min-w-0 flex-1 border-0 bg-transparent py-2 pl-4 text-base-content outline-none placeholder:text-base-content-subtle"
-            aria-invalid={inputError ? true : undefined}
-            aria-describedby={
-              inputError ? "date-range-filter-error" : undefined
-            }
+            onCommit={commitInputValue}
+            isInvalid={!!inputError}
+            errorId={inputError ? "date-range-filter-error" : undefined}
           />
           <button
             {...mergeProps(triggerFocusProps)}
