@@ -43,7 +43,9 @@ function JsonFormsObjectControl({
       setDataSnapshot(data)
       handleChange(path, undefined)
     } else {
-      handleChange(path, dataSnapshot)
+      // First enable has an empty snapshot (`undefined`). Nested controls
+      // (e.g. page.image.src) cannot persist unless the object itself exists.
+      handleChange(path, isEmpty(dataSnapshot) ? {} : dataSnapshot)
     }
     setIsChecked((prev) => !prev)
   }
@@ -91,6 +93,7 @@ function JsonFormsObjectControl({
 
             <Switch
               size="md"
+              aria-label={label}
               isChecked={isChecked}
               onChange={handleToggle}
               isDisabled={!enabled}

@@ -423,6 +423,14 @@ export class CollectionPO {
     await expect(this.page.getByPlaceholder("Summary")).toHaveValue(summary)
   }
 
+  /** Smoke-level check (no specific value asserted) that the Collection
+   * layout's "Summary" field renders — the one field this drawer scopes down
+   * to for Collection Index pages, distinguishing it from other layouts'
+   * fuller metadata drawers. */
+  async expectCollectionSummaryFieldVisible() {
+    await expect(this.page.getByPlaceholder("Summary")).toBeVisible()
+  }
+
   async chooseLayout(layout: "1-column" | "2-column") {
     await this.page.getByRole("radio", { name: layout }).click({ force: true })
   }

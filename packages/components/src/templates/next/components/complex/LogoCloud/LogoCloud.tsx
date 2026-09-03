@@ -22,7 +22,11 @@ export const LogoCloud = ({
   shouldLazyLoad = true,
 }: LogoCloudProps) => {
   return (
-    <div className={compoundStyles.container()}>
+    <div
+      className={compoundStyles.container()}
+      role="region"
+      aria-label={title ?? "Logo cloud"}
+    >
       {title && <p className={compoundStyles.title()}>{title}</p>}
       <div className={compoundStyles.logoContainer()}>
         {baseImages.map(({ src, alt }) => (

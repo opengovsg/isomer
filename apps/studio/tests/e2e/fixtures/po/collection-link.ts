@@ -29,6 +29,19 @@ export class CollectionLinkPO {
     await dialog.getByRole("button", { name: "Add link" }).click()
   }
 
+  // Same LinkEditorModal/BaseLinkControl as addExternalLink, but "Page" type:
+  // picks a target resource via the ResourceSelector file tree by its title.
+  async addInternalLink(targetPageTitle: string) {
+    await this.page.getByRole("button", { name: "Link something..." }).click()
+    const dialog = this.page.getByRole("dialog")
+    await dialog.getByText("Page", { exact: true }).click()
+    await dialog
+      .getByRole("button")
+      .filter({ hasText: targetPageTitle })
+      .click()
+    await dialog.getByRole("button", { name: "Add link" }).click()
+  }
+
   async save() {
     await this.page.getByRole("button", { name: "Save" }).click()
     await expect(this.page.getByText("Link updated!")).toBeVisible()
@@ -44,5 +57,13 @@ export class CollectionLinkPO {
 
   async expectExternalLinkHref(href: string) {
     await expect(this.page.getByText(href, { exact: true })).toBeVisible()
+  }
+
+  /** After a Page-type link resolves, `BaseLinkControl`'s `SuspendableLabel`
+   * renders the target's full permalink (not the raw `[resource:...]` href). */
+  async expectInternalLinkTarget(permalink: string) {
+    await expect(
+      this.page.getByText(`/${permalink}`, { exact: true }),
+    ).toBeVisible()
   }
 }
