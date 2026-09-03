@@ -5,7 +5,7 @@ import { expect, userEvent, within } from "storybook/test"
 import { generateSiteConfig } from "~/stories/helpers"
 import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
 
-import { withChromaticModes } from "@isomer/storybook-config"
+import { getViewportByMode, withChromaticModes } from "@isomer/storybook-config"
 
 import { CollectionLayout } from "./Collection"
 
@@ -215,13 +215,22 @@ const threeItemsHaveUndefinedDate = [
 
 export const YearFilter: Story = {
   args: generateArgs({ collectionItems: threeItemsHaveUndefinedDate }),
+  // Desktop so each card shows one publication date (sidebar); mobile also renders
+  // the same date inline (md:hidden) and would double-count without this viewport.
+  globals: {
+    viewport: getViewportByMode("desktop"),
+  },
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    const dateNotSpecified = screen.queryByText(/Not specified \(3\)/i)
-    await expect(dateNotSpecified).toBeInTheDocument()
 
-    const dateText = await screen.findAllByText(/7 May 2024/)
-    await expect(dateText.length).toBe(10)
+    await expect(screen.getByText(/Not specified \(3\)/i)).toBeInTheDocument()
+    await expect(screen.getByText(/2024 \(18\)/i)).toBeInTheDocument()
+    await expect(screen.getByText(/2023 \(9\)/i)).toBeInTheDocument()
+
+    const visibleDates = await screen.findAllByText(/7 May 2024/, {
+      hidden: false,
+    })
+    await expect(visibleDates.length).toBe(10)
   },
 }
 

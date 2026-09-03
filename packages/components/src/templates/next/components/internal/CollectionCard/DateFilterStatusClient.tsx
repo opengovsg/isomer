@@ -2,16 +2,19 @@
 
 import type { DateFilterDisplayEntry } from "~/interfaces/internal/CollectionCard"
 import { useMemo } from "react"
+import { twMerge } from "~/lib/twMerge"
 
 import { DateFilterStatusPill } from "./DateFilterStatusPill"
 import { getDateFilterCardsFromEntries } from "./utils/getDateFilterCardsFromEntries"
 
 interface DateFilterStatusClientProps {
   entries?: DateFilterDisplayEntry[]
+  className?: string
 }
 
 export const DateFilterStatusClient = ({
   entries,
+  className,
 }: DateFilterStatusClientProps) => {
   const dateFilterCards = useMemo(
     () =>
@@ -33,7 +36,7 @@ export const DateFilterStatusClient = ({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className={twMerge("flex flex-wrap items-center gap-2", className)}>
       {statusBadges.map(({ id, status, statusLabel }) => (
         <DateFilterStatusPill key={id} status={status} label={statusLabel} />
       ))}
