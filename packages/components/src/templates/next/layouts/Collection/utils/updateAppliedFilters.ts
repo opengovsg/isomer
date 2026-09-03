@@ -18,7 +18,10 @@ export const updateAppliedFilters = (
       const newAppliedFilters = [...appliedFilters]
       newAppliedFilters[filterIndex]?.items.splice(itemIndex, 1)
 
-      if (newAppliedFilters[filterIndex]?.items.length === 0) {
+      if (
+        newAppliedFilters[filterIndex]?.items.length === 0 &&
+        !newAppliedFilters[filterIndex]?.dateRange
+      ) {
         newAppliedFilters.splice(filterIndex, 1)
       }
 

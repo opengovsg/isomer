@@ -144,6 +144,7 @@ export const getCollectionItems = ({
           ? getTagsFromTagged(item.tagged, tagCategories)
           : undefined,
       pillTags,
+      dateTagged: item.dateTagged,
     }
 
     if (item.layout === "file") {

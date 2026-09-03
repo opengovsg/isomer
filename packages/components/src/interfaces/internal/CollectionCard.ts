@@ -39,6 +39,7 @@ interface BaseCardProps {
   // NOTE: Same shape as `pillTags`, but only includes groups shown as plaintext
   // — rendered as comma-joined text, dot-separated between groups (see PlaintextTags)
   plaintextTags?: TagGroup[]
+  dateTagged?: DateTaggedItem[]
   // NOTE: server-precomputed label + date text for date filter client components.
   dateFilterDisplayEntries?: DateFilterDisplayEntry[]
   title: string
@@ -78,6 +79,7 @@ export type CollectionCardProps = Pick<
   | "tags"
   | "pillTags"
   | "isContainNeeded"
+  | "dateTagged"
   | "dateFilterDisplayEntries"
 > & {
   referenceLinkHref: string | undefined

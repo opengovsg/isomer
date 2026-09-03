@@ -59,13 +59,14 @@ export const CollectionClient = ({
     searchValue,
     appliedFilters,
     handleFilterToggle,
+    handleDateRangeChange,
     setAppliedFilters,
     handleSearchValueChange,
     handleClearFilter,
     currPage,
     setCurrPage,
     totalCount,
-  } = useCollection({ items })
+  } = useCollection({ items, tagCategories: page.tagCategories })
 
   const articleContainerRef = useRef<HTMLDivElement>(null)
   const onPageChange = () => {
@@ -99,6 +100,7 @@ export const CollectionClient = ({
             filters={filters}
             appliedFilters={appliedFilters}
             handleFilterToggle={handleFilterToggle}
+            handleDateRangeChange={handleDateRangeChange}
             setAppliedFilters={setAppliedFilters}
             handleClearFilter={handleClearFilter}
           />
