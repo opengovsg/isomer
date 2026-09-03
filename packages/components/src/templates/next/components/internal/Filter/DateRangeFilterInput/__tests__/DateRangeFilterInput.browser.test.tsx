@@ -7,8 +7,8 @@ import { DateRangeFilterInput } from "../DateRangeFilterInput"
 const pad = (n: number): string => n.toString().padStart(2, "0")
 
 const currentMonthIso = (day: number): string => {
-  const now = new Date()
-  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(day)}`
+  const [year, month] = getSingaporeDateYYYYMMDD().split("-")
+  return `${year}-${month}-${pad(day)}`
 }
 
 const openCalendar = () => {

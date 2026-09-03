@@ -29,7 +29,7 @@ const formatDisplayRange = (startIso: string, endIso: string): string =>
   `${toDisplayDate(startIso)} - ${toDisplayDate(endIso)}`
 
 // Split on the range separator (" - ") with optional surrounding whitespace.
-// The hyphen is not inside a character class, so it won't match slashes in DD/MM/YYYY.
+// Display dates use slashes (DD/MM/YYYY), so "-" can only appear as the range delimiter.
 const splitRangeParts = (text: string): string[] => text.split(/\s*-\s*/)
 
 const singleDayRange = (isoDate: string): DateRangeFilterValue => ({
