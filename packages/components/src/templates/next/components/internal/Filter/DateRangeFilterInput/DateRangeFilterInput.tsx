@@ -12,7 +12,14 @@ import { tv } from "~/lib/tv"
 import { focusRing } from "~/utils/tailwind"
 
 import type { RangeCalendarValue } from "./RangeCalendar/types"
+import {
+  parseInputText,
+  valueToInputText,
+  type DateRangeFilterValue,
+} from "./dateRangeFilterInputText"
 import { RangeCalendar } from "./RangeCalendar/RangeCalendar"
+
+export type { DateRangeFilterValue }
 
 const dateRangeInputFieldStyles = tv({
   base: "flex w-full items-center rounded border-[1.5px] bg-white",
@@ -32,11 +39,6 @@ const calendarTriggerStyles = tv({
   base: "shrink-0 p-2.5 text-base-content-subtle",
 })
 
-export interface DateRangeFilterValue {
-  start: string
-  end: string
-}
-
 interface DateRangeFilterInputProps {
   value: DateRangeFilterValue | undefined
   onChange: (value: DateRangeFilterValue | undefined) => void
@@ -46,81 +48,6 @@ interface DateRangeFilterInputProps {
 
 const INPUT_ERROR_MESSAGE = "Enter a valid date in DD/MM/YYYY format"
 
-// "yyyy-MM-dd" (the ISO format both this filter's value and
-// `@internationalized/date`'s `CalendarDate.toString()` use) -> "DD/MM/YYYY"
-const toDisplayDate = (isoDate: string): string => {
-  const [year, month, day] = isoDate.split("-")
-  return `${day}/${month}/${year}`
-}
-
-const valueToInputText = (value: DateRangeFilterValue | undefined): string => {
-  if (!value) {
-    return ""
-  }
-
-  if (value.start === value.end) {
-    return toDisplayDate(value.start)
-  }
-
-  return `${toDisplayDate(value.start)} - ${toDisplayDate(value.end)}`
-}
-
-const parseSingleDisplayDate = (displayDate: string): string | undefined => {
-  const match = displayDate.trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/)
-  if (!match) {
-    return undefined
-  }
-
-  const [, day, month, year] = match
-  const isoDate = `${year}-${month}-${day}`
-
-  try {
-    parseDate(isoDate)
-    return isoDate
-  } catch {
-    return undefined
-  }
-}
-
-const parseInputText = (
-  text: string,
-): DateRangeFilterValue | undefined | null => {
-  const trimmed = text.trim()
-  if (!trimmed) {
-    return undefined
-  }
-
-  const rangeParts = trimmed.split(/\s*-\s*/)
-  if (rangeParts.length === 1) {
-    const firstPart = rangeParts[0]
-    if (!firstPart) {
-      return null
-    }
-    const isoDate = parseSingleDisplayDate(firstPart)
-    return isoDate ? { start: isoDate, end: isoDate } : null
-  }
-
-  if (rangeParts.length === 2) {
-    const startPart = rangeParts[0]
-    const endPart = rangeParts[1]
-    if (!startPart || !endPart) {
-      return null
-    }
-    const start = parseSingleDisplayDate(startPart)
-    const end = parseSingleDisplayDate(endPart)
-    if (!start || !end) {
-      return null
-    }
-    return start <= end ? { start, end } : { start: end, end: start }
-  }
-
-  return null
-}
-
-// Hand-built, no `@opengovsg/design-system-react` dependency — this package
-// (published to every site) has none, unlike Studio's admin editing UI.
-// Supports typed DD/MM/YYYY entry with inline validation, plus a calendar
-// popover for visual range selection. See wayfinder ticket 009.
 export const DateRangeFilterInput = ({
   value,
   onChange,
