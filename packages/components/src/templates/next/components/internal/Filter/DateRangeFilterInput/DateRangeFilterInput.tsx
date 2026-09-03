@@ -5,9 +5,20 @@ import { parseDate } from "@internationalized/date"
 import { useEffect, useRef, useState } from "react"
 import { BiCalendar } from "react-icons/bi"
 import { useOnClickOutside } from "usehooks-ts"
+import { tv } from "~/lib/tv"
 
-import type { RangeCalendarValue } from "./RangeCalendar"
-import { RangeCalendar } from "./RangeCalendar"
+import type { RangeCalendarValue } from "./RangeCalendar/types"
+import { RangeCalendar } from "./RangeCalendar/RangeCalendar"
+
+const dateRangeInputFieldStyles = tv({
+  base: "flex w-full items-center rounded border-[1.5px] bg-white",
+  variants: {
+    isInvalid: {
+      false: "border-base-divider-strong",
+      true: "border-utility-feedback-error-medium",
+    },
+  },
+})
 
 export interface DateRangeFilterValue {
   start: string
@@ -169,13 +180,7 @@ export const DateRangeFilterInput = ({
       </p>
 
       <div className="relative">
-        <div
-          className={`flex w-full items-center rounded border-[1.5px] bg-white ${
-            inputError
-              ? "border-utility-feedback-error-medium"
-              : "border-base-divider-strong"
-          }`}
-        >
+        <div className={dateRangeInputFieldStyles({ isInvalid: !!inputError })}>
           <input
             type="text"
             value={inputValue}
