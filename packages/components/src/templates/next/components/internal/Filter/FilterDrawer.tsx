@@ -14,6 +14,7 @@ import type { AppliedFilter, FilterProps } from "../../../types/Filter"
 import { Button } from "../Button"
 import { Checkbox, CheckboxGroup } from "../Checkbox"
 import { IconButton } from "../IconButton"
+import { filterChevronStyles, filterPanelStyles } from "./filterStyles"
 
 const expandFilterButtonStyle = tv({
   extend: focusRing,
@@ -49,9 +50,7 @@ const ExpandFilterButton = ({
       <span>{label}</span>
       <BiChevronDown
         aria-hidden
-        className={`mr-3 h-6 w-6 flex-shrink-0 text-base-content-strong transition-all duration-300 ease-in-out ${
-          isExpanded ? "rotate-180" : "rotate-0"
-        }`}
+        className={twMerge(filterChevronStyles({ isOpen: isExpanded }), "mr-3")}
       />
     </button>
   )
@@ -133,7 +132,7 @@ const FilterDrawerContent = ({
               onPress={() => updateFilterToggle(id)}
             />
 
-            <div className={showFilter[id] ? "flex flex-col" : "hidden"}>
+            <div className={filterPanelStyles({ isOpen: showFilter[id] })}>
               {items.map(({ id: itemId, label: itemLabel, count }) => (
                 <Checkbox
                   value={itemId}
