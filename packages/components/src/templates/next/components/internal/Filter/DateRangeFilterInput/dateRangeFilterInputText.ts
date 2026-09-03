@@ -1,14 +1,28 @@
-import { parseDate } from "@internationalized/date"
+import { format, isMatch, isValid, parse } from "date-fns"
 
 export interface DateRangeFilterValue {
   start: string
   end: string
 }
 
-// yyyy-MM-dd -> DD/MM/YYYY
-const toDisplayDate = (isoDate: string): string => {
-  const [year, month, day] = isoDate.split("-")
-  return `${day}/${month}/${year}`
+const DISPLAY_FORMAT = "dd/MM/yyyy"
+const ISO_FORMAT = "yyyy-MM-dd"
+
+const toDisplayDate = (isoDate: string): string =>
+  format(parse(isoDate, ISO_FORMAT, new Date()), DISPLAY_FORMAT)
+
+const toIsoDate = (displayDate: string): string | undefined => {
+  const trimmed = displayDate.trim()
+  if (!isMatch(trimmed, DISPLAY_FORMAT)) {
+    return undefined
+  }
+
+  const parsed = parse(trimmed, DISPLAY_FORMAT, new Date())
+  if (!isValid(parsed)) {
+    return undefined
+  }
+
+  return format(parsed, ISO_FORMAT)
 }
 
 export const valueToInputText = (
@@ -25,23 +39,6 @@ export const valueToInputText = (
   return `${toDisplayDate(value.start)} - ${toDisplayDate(value.end)}`
 }
 
-const parseSingleDisplayDate = (displayDate: string): string | undefined => {
-  const match = displayDate.trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/)
-  if (!match) {
-    return undefined
-  }
-
-  const [, day, month, year] = match
-  const isoDate = `${year}-${month}-${day}`
-
-  try {
-    parseDate(isoDate)
-    return isoDate
-  } catch {
-    return undefined
-  }
-}
-
 export const parseInputText = (
   text: string,
 ): DateRangeFilterValue | undefined | null => {
@@ -56,7 +53,7 @@ export const parseInputText = (
     if (!firstPart) {
       return null
     }
-    const isoDate = parseSingleDisplayDate(firstPart)
+    const isoDate = toIsoDate(firstPart)
     return isoDate ? { start: isoDate, end: isoDate } : null
   }
 
@@ -66,8 +63,8 @@ export const parseInputText = (
     if (!startPart || !endPart) {
       return null
     }
-    const start = parseSingleDisplayDate(startPart)
-    const end = parseSingleDisplayDate(endPart)
+    const start = toIsoDate(startPart)
+    const end = toIsoDate(endPart)
     if (!start || !end) {
       return null
     }
