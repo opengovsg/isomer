@@ -9,11 +9,8 @@ interface RootpageRowProps {
   siteId: number
 }
 
-// No menu/unpublish action here today. If one is ever added, exclude
-// RootPage the same way ResourceTableMenu already excludes it from Delete —
-// unpublishPage rejects RootPage server-side (see UNPUBLISHABLE_RESOURCE_TYPES
-// in ~/constants/resources), so a client-side affordance would just surface
-// a confusing error instead of failing silently.
+// No menu/unpublish action: unpublishPage rejects RootPage server-side
+// (see UNPUBLISHABLE_RESOURCE_TYPES in ~/constants/resources).
 export const RootpageRow = ({ siteId }: RootpageRowProps) => {
   const [
     {

@@ -16,9 +16,8 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 interface CantUnpublishModalProps extends UseDisclosureReturn {
   siteId: number
   parentId: string
-  // In practice always Folder or Collection (an IndexPage's only possible
-  // parent types), but typed as the full enum since that's what the
-  // resource lookup backing this returns.
+  // In practice always Folder or Collection; typed as the full enum since
+  // that's what the resource lookup backing this returns.
   parentType: ResourceType
   count: number
 }

@@ -15,9 +15,8 @@ import {
 import { getEarliestAllowableTime } from "../PublishingModal/utils"
 
 interface ScheduleDateTimeFieldsProps {
-  // Field names differ between the publish and unpublish client schemas
-  // ("publishDate"/"publishTime" vs "unpublishDate"/"unpublishTime"), so this
-  // binds generically to whichever the caller passes rather than assuming one.
+  // Field names differ between the publish and unpublish schemas, so the
+  // caller passes whichever pair applies.
   dateField: string
   timeField: string
   earliestSchedule: Date
@@ -43,8 +42,8 @@ export const ScheduleDateTimeFields = ({
     [selectedDate, earliestSchedule],
   )
 
-  // If there is an earliest allowable time and the indicated time is out of
-  // range, reset the time to make the user re-input it.
+  // Selecting an earlier date can leave a previously-picked time out of
+  // range; reset it so the user re-enters a valid one.
   useEffect(() => {
     if (
       earliestAllowableTime &&

@@ -632,10 +632,8 @@ export const resourceRouter = router({
       },
     ),
 
-  // Read-only mirror of the `move` mutation's unpublish-lock check (see the
-  // comment there), so the destination picker can warn as soon as a
-  // destination is selected instead of only surfacing the error on submit.
-  // The mutation still re-runs this check itself as the source of truth.
+  // Read-only counterpart to the `move` mutation's unpublish-lock check (see
+  // getMoveLockInfo in resource.service.ts).
   getMoveLockInfo: protectedProcedure
     .input(getMoveLockInfoSchema)
     .output(getMoveLockInfoOutputSchema)
@@ -704,9 +702,6 @@ export const resourceRouter = router({
       }
 
       if (statusFilter.length > 0) {
-        // Every tag needs the container-id sets — a Folder/Collection's own
-        // publishedVersionId/scheduledAt/scheduledAction/draftBlobId are
-        // never set, so all five tags key off its child IndexPage instead.
         const {
           liveContainerIds,
           notLiveContainerIds,
@@ -764,12 +759,8 @@ export const resourceRouter = router({
 
         query = applyResourceOrderBy(query, orderBy)
 
-        // A Folder/Collection never carries its own publishedVersionId — its
-        // live content is its child IndexPage's — so its status needs the
-        // recursive descendant check; every other type is live iff its own
-        // publishedVersionId is set. Computed up front (rather than after
-        // the rows query, as before) since the live/notLive status filter
-        // needs it too.
+        // Computed up front (rather than after the rows query) since the
+        // live/notLive status filter needs it too.
         const childLiveStatus = await getChildLiveStatusMap(db, {
           siteId,
           resourceId: resourceId ? String(resourceId) : null,
@@ -808,10 +799,8 @@ export const resourceRouter = router({
             "Resource.scheduledAt",
             "Resource.scheduledAction",
             selectLastPublishedAt(eb),
-            // A window function count avoids a second round-trip for the
-            // common case. It rides along on every returned row, so it's
-            // unavailable when the page itself comes back empty (e.g. a
-            // stale `offset` past the true end) — see the fallback below.
+            // Window function count avoids a second round-trip, but is
+            // unavailable when rows come back empty — see the fallback below.
             eb.fn.countAll<string>().over().as("totalCount"),
           ])
           .execute()
@@ -835,9 +824,7 @@ export const resourceRouter = router({
               : status?.hasLiveDescendant
                 ? "liveTemplate"
                 : "notLive",
-            // A Folder/Collection never carries its own draftBlobId/
-            // scheduledAt/scheduledAction — that state lives on its child
-            // IndexPage — so the Status badges need those substituted in.
+            // Substitute in the child IndexPage's own draft/schedule state.
             draftBlobId: status?.indexPageDraftBlobId ?? null,
             scheduledAt: status?.indexPageScheduledAt ?? null,
             scheduledAction: status?.indexPageScheduledAction ?? null,
@@ -905,9 +892,8 @@ export const resourceRouter = router({
           })
         }
 
-        // Gated on the flag: with unpublish unreachable, a live resource
-        // could never become deletable, so skip the guard entirely rather
-        // than lock it out permanently.
+        // Skipped when the flag is off: unpublish is unreachable, so a live
+        // resource could never become deletable otherwise.
         if (ctx.gb.isOn(IS_UNPUBLISH_ENABLED_FEATURE_KEY)) {
           await assertResourceNotLive(tx, {
             siteId: Number(siteId),
@@ -950,10 +936,8 @@ export const resourceRouter = router({
         throw new TRPCError({ code: "BAD_REQUEST" })
       }
 
-      // Skip the rebuild when the guard above ran: it already proved nothing
-      // live was just deleted, so there's nothing for a rebuild to remove.
-      // Without the flag, a live resource can still reach here, so keep
-      // rebuilding in that case.
+      // Skipped when the guard above ran: it already proved nothing live was
+      // deleted, so there's nothing left for a rebuild to remove.
       if (!ctx.gb.isOn(IS_UNPUBLISH_ENABLED_FEATURE_KEY)) {
         await publishResource(user.id, result, ctx.logger)
       }

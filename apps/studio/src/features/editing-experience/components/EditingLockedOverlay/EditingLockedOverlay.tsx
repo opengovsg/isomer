@@ -53,23 +53,15 @@ const SuspendableEditingLockedOverlay = ({
       bg="blackAlpha.700"
       align="center"
       justify="center"
-      // Chakra wraps every portaled element (Modal, Toast, Popover, Menu,
-      // Tooltip...) in its own `chakra-portal-zIndex` container, hardcoded
-      // to z-index 40 — that wrapper establishes a stacking context, so a
-      // portaled component's own (much higher) theme z-index only competes
-      // within it; as a unit it still sits at 40 against the rest of the
-      // page. This overlay must stay below that 40 (not the "overlay"
-      // token's 1300) so any modal/toast opened while it's showing — e.g.
-      // CancelScheduleModal from the navbar's Cancel-schedule button —
-      // still renders on top of it.
+      // Must stay below Chakra's portal wrapper z-index (hardcoded 40, not
+      // the "overlay" token's 1300) so modals/toasts opened over this
+      // overlay still render above it.
       zIndex="docked"
       px="1.5rem"
       py="2rem"
     >
-      {/* Mounted only while open. These are plain confirmation dialogs with
-          no form/schema to reset, but this still keeps a fresh mutation
-          instance per open rather than reusing one whose isPending/error
-          state could otherwise linger from the previous open. */}
+      {/* Mounted only while open, so each open gets a fresh mutation instance
+          instead of one with stale isPending/error state. */}
       {actionDisclosure.isOpen && (
         <PublishOrUnpublishNowModal
           action={isScheduledToPublish ? "publish" : "unpublish"}

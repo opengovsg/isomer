@@ -2172,10 +2172,8 @@ describe("page.router", async () => {
     })
 
     it("should back-fill a literal redirect destination into a reference on first publish", async () => {
-      // Arrange — a draft page, plus a redirect whose destination is the page's
-      // literal path (created before the page was live). Publishing the page
-      // should rewrite that literal into a [resource:...] reference so the
-      // redirect follows the page's future moves.
+      // Arrange — a redirect destination set to the page's literal path
+      // before it went live; publishing should rewrite it into a reference.
       const { site, page } = await setupPageResource({
         resourceType: ResourceType.Page,
       })
@@ -2277,10 +2275,8 @@ describe("page.router", async () => {
     })
 
     it("should back-fill a literal redirect to a folder URL into a container reference when the folder's index page is first published", async () => {
-      // Arrange — a folder served by its (draft) IndexPage, plus a redirect
-      // whose destination is the folder's literal path. The IndexPage renders at
-      // the folder's URL, so publishing it should rewrite the literal into a
-      // reference to the CONTAINER (folder), not the index page itself.
+      // Arrange — the IndexPage renders at the folder's URL, so the rewritten
+      // reference should point at the folder, not the index page itself.
       const { site, folder } = await setupFolder({ permalink: "guides" })
       const { page: indexPage } = await setupPageResource({
         siteId: site.id,
@@ -2322,7 +2318,7 @@ describe("page.router", async () => {
     })
 
     it("should throw if the page has a pending scheduled unpublish", async () => {
-      // Arrange — publishing now would conflict with the pending unpublish
+      // Arrange
       const scheduledAt = new Date("2999-01-01T00:00:00Z")
       const { site, page } = await setupPageResource({
         resourceType: ResourceType.Page,
@@ -2350,9 +2346,8 @@ describe("page.router", async () => {
     })
 
     it("should proceed and clear the schedule when publishing a page with a pending scheduled publish", async () => {
-      // Arrange — same-direction schedule: manually publishing now is just
-      // doing early what the cron would have done later, so it should
-      // proceed and clear the now-redundant schedule rather than block.
+      // Arrange — same-direction schedule: publishing now is just doing
+      // early what the cron would have done later, so it should proceed.
       const scheduledAt = new Date("2999-01-01T00:00:00Z")
       const { site, page } = await setupPageResource({
         resourceType: ResourceType.Page,
@@ -2468,9 +2463,8 @@ describe("page.router", async () => {
       })
 
       it("should throw 404 as if the page cannot be unpublished, even for an otherwise-valid page", async () => {
-        // Arrange — dark-launch guard: same NOT_FOUND a caller would see for
-        // an unsupported resource type, so the flag's existence isn't
-        // observable from the error shape
+        // Arrange — same NOT_FOUND as an unsupported resource type, so the
+        // flag's existence isn't observable from the error shape.
         mockGrowthBook.setForcedFeatures(
           new Map([
             ...mockFeatureFlags,
@@ -2525,8 +2519,7 @@ describe("page.router", async () => {
 
     it("should throw if the page has a pending scheduled publish", async () => {
       // Arrange — the schedule cron only checks scheduledAt, not the page's
-      // current state, so unpublishing without cancelling the schedule
-      // would let the cron silently republish this page later
+      // current state, so an uncancelled schedule could republish it later.
       const scheduledAt = new Date("2999-01-01T00:00:00Z")
       const { site, page } = await setupPageResource({
         resourceType: ResourceType.Page,
@@ -2553,9 +2546,8 @@ describe("page.router", async () => {
     })
 
     it("should proceed and clear the schedule when unpublishing a page with a pending scheduled unpublish", async () => {
-      // Arrange — same-direction schedule: manually unpublishing now is just
-      // doing early what the cron would have done later, so it should
-      // proceed and clear the now-redundant schedule rather than block.
+      // Arrange — same-direction schedule: unpublishing now is just doing
+      // early what the cron would have done later, so it should proceed.
       const scheduledAt = new Date("2999-01-01T00:00:00Z")
       const { site, page } = await setupPageResource({
         resourceType: ResourceType.Page,
@@ -2599,7 +2591,7 @@ describe("page.router", async () => {
       // Act
       const result = caller.unpublishPage({
         siteId: site.id,
-        pageId: 99999, // does not exist
+        pageId: 99999,
       })
 
       // Assert
@@ -2923,11 +2915,8 @@ describe("page.router", async () => {
       ResourceType.FolderMeta,
       ResourceType.CollectionMeta,
     ])("should throw 404 if pageId refers to a %s", async (resourceType) => {
-      // Arrange — RootPage has a real publish state but the static-site
-      // build has no "unpublished homepage" case (see
-      // UNPUBLISHABLE_RESOURCE_TYPES in ~/constants/resources); FolderMeta/
-      // CollectionMeta are internal ordering metadata with no meaningfully
-      // tracked publish state
+      // Arrange — none of these have a meaningfully unpublishable state (see
+      // UNPUBLISHABLE_RESOURCE_TYPES in ~/constants/resources).
       const { site, page } = await setupPageResource({
         resourceType,
         state: ResourceState.Published,
@@ -3062,13 +3051,9 @@ describe("page.router", async () => {
     })
 
     it("should leave existing redirects untouched", async () => {
-      // Arrange — one redirect pointing away from the page (by literal path),
-      // and one redirect whose destination references the page being
-      // unpublished. unpublishPageResource never writes to the Redirect
-      // table, so neither row's source/destination/deletedAt should change —
-      // the build-time exclusion of unpublished targets from redirects.json
-      // (tooling/build/scripts/publishing/queries.ts) is a separate, later
-      // concern from the DB row itself.
+      // Arrange — unpublishPageResource never writes to the Redirect table;
+      // excluding unpublished targets from redirects.json is a separate,
+      // build-time concern (tooling/build/scripts/publishing/queries.ts).
       const { site, page } = await setupPageResource({
         resourceType: ResourceType.Page,
         state: ResourceState.Published,
@@ -3175,7 +3160,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      expect(result).toBeUndefined() // not returning anything
+      expect(result).toBeUndefined()
 
       // Assert - DB (AuditLog)
       const auditLogs = await db
@@ -3787,7 +3772,7 @@ describe("page.router", async () => {
       // Act
       const result = caller.getPermalinkTree({
         pageId: 1,
-        siteId: 999999, // should not exist
+        siteId: 999999,
       })
 
       // Assert
@@ -3937,10 +3922,10 @@ describe("page.router", async () => {
   describe("schedulePage", () => {
     const FIXED_NOW = new Date("2024-01-01T00:00:00.000Z")
     beforeEach(() => {
-      MockDate.set(FIXED_NOW) // Freeze time before each test
+      MockDate.set(FIXED_NOW)
     })
     afterEach(() => {
-      MockDate.reset() // Reset time after each test
+      MockDate.reset()
     })
     it("should throw 403 if user does not have publish access to the site", async () => {
       //  Arrange
@@ -3998,7 +3983,6 @@ describe("page.router", async () => {
         .where("id", "=", expectedPage.id)
         .selectAll()
         .executeTakeFirstOrThrow()
-      // expect the scheduledAt to be tomorrow at 10am
       const expectedDate = set(addDays(FIXED_NOW, 1), {
         hours: 10,
         minutes: 0,
@@ -4007,14 +3991,13 @@ describe("page.router", async () => {
       })
       expect(actual.scheduledAt).toEqual(expectedDate)
       expect(actual.scheduledBy).toEqual(session.userId)
-      // expect the audit log to be created, with the updated scheduledAt time
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog).toHaveLength(1)
       expect(auditLog[0]).toMatchObject({
         eventType: AuditLogEvent.SchedulePublish,
         delta: {
           before: omit(expectedPage, ["updatedAt", "createdAt"]),
-          // NOTE: Need to convert expectedDate to ISO string as the comparison is done with the DB value which is in ISO format
+          // Compared against the DB value, which is stored as an ISO string.
           after: omit(
             {
               ...expectedPage,
@@ -4037,8 +4020,7 @@ describe("page.router", async () => {
         siteId: site.id,
       })
 
-      // Act
-      // This should throw an error on the frontend or backend based on the value specified in MINIMUM_SCHEDULE_LEAD_TIME_MINUTES
+      // Act — enforced via MINIMUM_SCHEDULE_LEAD_TIME_MINUTES
       await expect(
         caller.schedulePage({
           siteId: site.id,
@@ -4048,13 +4030,11 @@ describe("page.router", async () => {
       ).rejects.toThrow()
 
       // Assert
-      // Since the request fails, expect scheduledAt to be null
       const pageById = await getPageById(db, {
         resourceId: Number(expectedPage.id),
         siteId: site.id,
       })
       expect(pageById?.scheduledAt).toBeNull()
-      // Since the request fails, expect no audit log to be created
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog).toHaveLength(0)
     })
@@ -4063,7 +4043,6 @@ describe("page.router", async () => {
       const { site, page: expectedPage } = await setupPageResource({
         resourceType: "Page",
       })
-      // The user is only an editor, not a publisher
       await setupEditorPermissions({
         userId: session.userId ?? undefined,
         siteId: site.id,
@@ -4115,7 +4094,7 @@ describe("page.router", async () => {
       // Act
       const scheduleCaller = caller.schedulePage({
         siteId: site.id,
-        pageId: Number(expectedPage.id) + 1, // Invalid pageId should lead to an error being thrown
+        pageId: Number(expectedPage.id) + 1,
         scheduledAt: addDays(FIXED_NOW, 1),
       })
 
@@ -4203,10 +4182,10 @@ describe("page.router", async () => {
   describe("cancelSchedulePage", () => {
     const FIXED_NOW = new Date("2024-01-01T00:00:00.000Z")
     beforeEach(() => {
-      MockDate.set(FIXED_NOW) // Freeze time before each test
+      MockDate.set(FIXED_NOW)
     })
     afterEach(() => {
-      MockDate.reset() // Reset time after each test
+      MockDate.reset()
     })
     // TODO: check that the request fails if the job is already active - requires mocking the job queue
     it("cancelling a scheduled publish works correctly", async () => {
@@ -4233,7 +4212,6 @@ describe("page.router", async () => {
       })
 
       // Assert
-      // The scheduledAt field of the page should be null
       const actual = await db
         .selectFrom("Resource")
         .where("id", "=", expectedPage.id)
@@ -4277,7 +4255,6 @@ describe("page.router", async () => {
           milliseconds: 0,
         }),
       })
-      // The user is only an editor, not a publisher
       await setupEditorPermissions({
         userId: session.userId ?? undefined,
         siteId: site.id,
@@ -4340,7 +4317,7 @@ describe("page.router", async () => {
       // Act
       const cancelScheduleCaller = caller.cancelSchedulePage({
         siteId: site.id,
-        pageId: Number(expectedPage.id) + 1, // Invalid pageId should lead to an error being thrown
+        pageId: Number(expectedPage.id) + 1,
       })
 
       // Assert
@@ -4388,10 +4365,7 @@ describe("page.router", async () => {
 
     it("should allow cancelling even when a child page still has its own pending scheduled publish", async () => {
       // Unlike scheduled unpublish, cancelling a scheduled publish is never
-      // blocked by a dependent child's own schedule — a child's publish
-      // doesn't depend on its ancestor's publish schedule (only on the
-      // ancestor not having a pending scheduled *unpublish*, see the
-      // ancestor guard above), so there's nothing for this cancel to strand.
+      // blocked by a dependent child's own schedule (see ancestor guard above).
       const { site, folder } = await setupFolder({})
       const { page: indexPage } = await setupPageResource({
         siteId: site.id,

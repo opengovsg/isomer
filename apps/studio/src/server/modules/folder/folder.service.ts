@@ -40,10 +40,8 @@ export const getFolderIndexPageInfo = async (
         }),
     )
 
-  // "Live" if the folder/collection's own index page is published;
-  // "Live · Template" if not, but something nested inside it is (the
-  // dashboard auto-generates a placeholder index for these so the live
-  // content underneath stays reachable); "Not live" otherwise.
+  // "liveTemplate" covers auto-generated placeholder index pages that
+  // aren't published themselves but have published descendants.
   const childLiveStatus = await getChildLiveStatusMap(trx, {
     siteId,
     resourceId,
@@ -55,10 +53,7 @@ export const getFolderIndexPageInfo = async (
         ? "liveTemplate"
         : "notLive"
 
-  // Powers the "can't unpublish this landing page yet" guard in the page
-  // editor — reusing this query (rather than a separate one) means
-  // navigating here from the dashboard, which already fetched this same
-  // data, doesn't pay for a second round-trip.
+  // Reused by the page editor's "can't unpublish yet" guard.
   const otherPublishedDescendantCount = (
     await getPublishedDescendantResourceIds(trx, { siteId, resourceId })
   ).filter((id) => id !== indexPage.id).length

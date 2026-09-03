@@ -70,8 +70,7 @@ describe("version.service", () => {
         state: ResourceState.Published,
         userId: user.id,
       })
-      // Simulate an unpublish: publishedVersionId is cleared but the
-      // Version history (versionNum 1) remains untouched.
+      // Simulate an unpublish: publishedVersionId cleared, Version history intact.
       const newDraftBlob = await setupBlob()
       await db
         .updateTable("Resource")

@@ -341,7 +341,7 @@ describe("schedulePublishingJob", async () => {
       // Act
       const result = await publishScheduledResources(true, FIXED_NOW)
 
-      // Assert — the action never runs on behalf of a deactivated user
+      // Assert
       expect(publishPageResourceSpy).not.toHaveBeenCalled()
       expect(sendFailedPublishEmailSpy).not.toHaveBeenCalled()
       expect(result[site.id]).not.toBeDefined()
@@ -353,8 +353,8 @@ describe("schedulePublishingJob", async () => {
       expect(updated.publishedVersionId).toBeNull()
     })
     it("does not execute the scheduled action when the scheduling user no longer has permission on the site", async () => {
-      // Arrange — permissions revoked after scheduling: no
-      // setupPublisherPermissions call for this user/site.
+      // Arrange — no setupPublisherPermissions call: permissions were
+      // revoked after scheduling.
       const { site, page } = await setupPageResource({
         resourceType: ResourceType.Page,
         scheduledAt: FIXED_NOW,
@@ -371,8 +371,7 @@ describe("schedulePublishingJob", async () => {
       // Act
       const result = await publishScheduledResources(true, FIXED_NOW)
 
-      // Assert — the action never runs without a fresh permission check,
-      // and it's handled like any other failure (logged + failure email)
+      // Assert
       expect(publishPageResourceSpy).not.toHaveBeenCalled()
       expect(result[site.id]).not.toBeDefined()
       expect(sendFailedPublishEmailSpy).toHaveBeenCalledTimes(1)
@@ -492,7 +491,7 @@ describe("schedulePublishingJob", async () => {
       // Act
       const resourceSiteMap = await publishScheduledResources(true, FIXED_NOW)
 
-      // Assert — the resource is unpublished, not republished
+      // Assert
       const updated = await db
         .selectFrom("Resource")
         .where("id", "=", page.id)
@@ -514,8 +513,8 @@ describe("schedulePublishingJob", async () => {
     })
 
     it("does not execute a scheduled unpublish when the scheduling user no longer has permission on the site", async () => {
-      // Arrange — permissions revoked after scheduling: no
-      // setupPublisherPermissions call for this user/site.
+      // Arrange — no setupPublisherPermissions call: permissions were
+      // revoked after scheduling.
       const { site, page } = await setupPageResource({
         resourceType: ResourceType.Page,
         state: ResourceState.Published,
@@ -544,7 +543,6 @@ describe("schedulePublishingJob", async () => {
         .where("id", "=", page.id)
         .selectAll()
         .executeTakeFirstOrThrow()
-      // still published — the unpublish never ran
       expect(updated.publishedVersionId).not.toBeNull()
     })
 
@@ -570,12 +568,10 @@ describe("schedulePublishingJob", async () => {
         .spyOn(emailService, "sendFailedUnpublishEmail")
         .mockResolvedValue()
 
-      // Act — isUnpublishEnabled explicitly false, as if the flag was
-      // flipped off after this was scheduled
+      // Act — flag flipped off after scheduling
       const result = await publishScheduledResources(true, FIXED_NOW, false)
 
-      // Assert — skipped entirely, not treated as a failure (no failure
-      // email, since this isn't the scheduling user's fault)
+      // Assert — skipped, not treated as a failure
       expect(unpublishPageResourceSpy).not.toHaveBeenCalled()
       expect(sendFailedUnpublishEmailSpy).not.toHaveBeenCalled()
       expect(result[site.id]).not.toBeDefined()
@@ -584,7 +580,6 @@ describe("schedulePublishingJob", async () => {
         .where("id", "=", page.id)
         .selectAll()
         .executeTakeFirstOrThrow()
-      // still published — the unpublish never ran
       expect(updated.publishedVersionId).not.toBeNull()
     })
 
@@ -716,13 +711,9 @@ describe("schedulePublishingJob", async () => {
     })
 
     it("sends a failed-unpublish email when the page was already unpublished before the scheduled job ran", async () => {
-      // NOTE: this can no longer happen via a manual unpublish beating the
-      // schedule — unpublishPageResource now blocks manual unpublishing
-      // while any schedule is pending (see resource.service.ts) — so this
-      // only covers the (very narrow) case of unpublishPageResource still
-      // throwing PageAlreadyUnpublishedError for some other reason. There is
-      // no dedicated "already unpublished" email/log path anymore; it's
-      // treated like any other failure.
+      // NOTE: manual unpublish can no longer race the schedule (blocked
+      // while a schedule is pending); this just covers unpublishPageResource
+      // still throwing PageAlreadyUnpublishedError for another reason.
       const { site, page } = await setupPageResource({
         resourceType: ResourceType.Page,
         state: ResourceState.Published,
@@ -785,12 +776,9 @@ describe("schedulePublishingJob", async () => {
     })
 
     it("unpublishes a container's landing page and a sibling due in the same run, regardless of insertion order", async () => {
-      // Arrange — the IndexPage is created (and so gets a lower id) before
-      // its sibling, but the sibling's scheduledAt is earlier. Without
-      // ordering the cron's query by scheduledAt, the DB could return the
-      // IndexPage first, and its container-siblings guard would then
-      // spuriously fail against a sibling that "should" already be down but
-      // hadn't been processed yet in this same run.
+      // Arrange — IndexPage has a lower id but a later scheduledAt than its
+      // sibling; ordering must use scheduledAt, not id, or the
+      // container-siblings guard fails spuriously.
       const { site, folder } = await setupFolder({})
       const { page: indexPage } = await setupPageResource({
         siteId: site.id,
@@ -844,11 +832,9 @@ describe("schedulePublishingJob", async () => {
     })
 
     it("unpublishes a child page before its container's IndexPage when both are due at the exact same instant", async () => {
-      // Restriction 4: scheduling an index page and its children to
-      // unpublish together at the same instant must be supported. Without
-      // the cron's depth-aware ordering, the DB could return the IndexPage
-      // before the child, and the IndexPage's container-siblings guard would
-      // spuriously fail against a child that "should" already be down.
+      // Arrange — index page and child both due at once; without
+      // depth-aware ordering the IndexPage could process first and
+      // spuriously fail its container-siblings guard.
       const { site, folder } = await setupFolder({})
       const { page: indexPage } = await setupPageResource({
         siteId: site.id,
@@ -902,10 +888,8 @@ describe("schedulePublishingJob", async () => {
     })
 
     it("publishes a container's IndexPage before its child page when both are due at the exact same instant", async () => {
-      // Symmetric case: Publish must run ancestors-before-descendants.
-      // Without the cron's depth-aware ordering, the child could process
-      // first and spuriously fail the ancestor-live check added for
-      // restriction 2/3.
+      // Arrange — symmetric case: publish must run ancestors before
+      // descendants, or the child's ancestor-live check fails spuriously.
       const { site, folder } = await setupFolder({})
       const { page: indexPage } = await setupPageResource({
         siteId: site.id,
@@ -1131,9 +1115,8 @@ describe("schedulePublishingJob", async () => {
       expect(startProjectByIdSpy).toHaveBeenCalledOnce()
     })
     it("a failed site publish sends a failed-site-rebuild email (not a failed-publish email) for each resource under the site", async () => {
-      // NOTE: every resource passed into publishScheduledSites already had
-      // its own publish/unpublish succeed — only the site rebuild fails
-      // here — so the email must not claim the page-level action failed.
+      // NOTE: the resource's own publish/unpublish already succeeded here —
+      // only the site rebuild fails, so the email must not claim otherwise.
       // Arrange
       const { site, page } = await setupPageResource({
         resourceType: ResourceType.Page,

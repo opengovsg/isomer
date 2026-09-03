@@ -49,21 +49,16 @@ export const schedulePublishClientSchema = basePageSchema
     }
   })
 
-/**
- * This schema includes the unpublish date and time for the scheduled unpublication
- */
 export const scheduleUnpublishClientSchema = basePageSchema
   .extend({
     unpublishDate: z.date(),
     unpublishTime: z.string().refine((time) => {
-      // check that time is in HH:mm format
       const parsed = parseTimeStringToDate(time)
       return isValid(parsed) && format(parsed, "HH:mm") === time
     }),
   })
   .transform((schema) => {
     const { unpublishDate, unpublishTime, ...rest } = schema
-    // combine unpublishDate and unpublishTime into a single Date object
     const [hours, minutes] = unpublishTime.split(":").map(Number)
     return {
       ...rest,
@@ -82,7 +77,7 @@ export const scheduleUnpublishClientSchema = basePageSchema
     })
     const isDateBeforeToday =
       startOfDay(scheduledAt) < startOfDay(earliestScheduleTime)
-    // if the scheduled date is before the earliest allowable date, show error on unpublishDate
+    // Too-soon-today errors go on unpublishTime; a past date errors on unpublishDate.
     if (isBefore(scheduledAt, earliestScheduleTime)) {
       ctx.addIssue({
         path: isDateBeforeToday ? ["unpublishDate"] : ["unpublishTime"],

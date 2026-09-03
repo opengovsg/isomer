@@ -128,9 +128,8 @@ const MoveResourceContent = withSuspense(
       { siteId: Number(siteId), resourceId: curResourceId ?? "" },
       { enabled: !!curResourceId },
     )
-    // Pre-flight the move mutation's unpublish-lock check as soon as a
-    // destination is picked, rather than only surfacing it as an error
-    // toast after "Move here" is clicked.
+    // Pre-flight the unpublish-lock check once a destination is picked,
+    // rather than only surfacing it as an error toast after "Move here".
     const { data: moveLockInfo, isFetching: isMoveLockInfoFetching } =
       trpc.resource.getMoveLockInfo.useQuery(
         {
@@ -256,10 +255,8 @@ const MoveResourceContent = withSuspense(
             Cancel
           </Button>
           <Button
-            // NOTE: disable this button if the resourceId to be moved is missing,
-            // if the user does not have sufficient permissions to move to the
-            // destination, if the move is blocked by the unpublish-lock check
-            // (or that check hasn't resolved yet)
+            // NOTE: disable if resourceId is missing, permissions are
+            // insufficient, or the move-lock check is blocked or pending.
             isDisabled={
               curResourceId === undefined ||
               ability.cannot("move", {

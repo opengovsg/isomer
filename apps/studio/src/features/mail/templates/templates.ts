@@ -235,11 +235,8 @@ const failedUnpublishTemplate = (
   }
 }
 
-// Distinct from failedPublish/failedUnpublish: here the page-level action
-// (publish or unpublish) already succeeded — only the follow-up site rebuild
-// failed. The copy must not tell the reader to retry the page action, since
-// retrying e.g. unpublish on an already-unpublished page just throws
-// PageAlreadyUnpublishedError.
+// Only the site rebuild failed here (the publish/unpublish itself succeeded),
+// so the copy must not tell the reader to retry the page action.
 const failedSiteRebuildTemplate = (
   data: FailedSiteRebuildTemplateData,
 ): EmailTemplate => {
@@ -255,10 +252,8 @@ const failedSiteRebuildTemplate = (
   }
 }
 
-// NOTE: this is sent for both publish and unpublish scheduled/manual actions
-// (this is the only call site, in webhook.utils.ts, and it doesn't know which
-// action a given CodeBuild job was for), so the copy is intentionally generic
-// rather than claiming the page is now live.
+// Sent for both publish and unpublish; the caller (webhook.utils.ts) can't
+// tell which, so the copy stays generic rather than claiming the page is live.
 const successfulPublishTemplate = (
   data: SuccessfulPublishTemplateData,
 ): EmailTemplate => {

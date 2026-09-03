@@ -18,16 +18,8 @@ export const USER_LINKABLE_RESOURCE_TYPES = [
 ] satisfies ResourceType[]
 
 // Resource types that can be individually unpublished via unpublishPage.
-// Everything else is excluded for its own reason:
-// - FolderMeta/CollectionMeta are internal ordering metadata, never built
-//   into a visitor-facing page.
-// - RootPage has a real publish state and can be published via publishPage,
-//   but is deliberately excluded here: the static-site build has no real
-//   "unpublished homepage" case. Unpublishing it drops the RootPage's sitemap
-//   entry entirely (no schema/_index.json gets written for `/`) and silently
-//   drops any redirect whose destination resolves to the RootPage
-//   (tooling/build/scripts/publishing/queries.ts GET_REDIRECTS requires a
-//   non-null publishedVersionId to resolve a [resource:...] target).
+// RootPage is deliberately excluded: unpublishing it would drop its sitemap
+// entry and break redirects that resolve to it.
 export const UNPUBLISHABLE_RESOURCE_TYPES: ResourceType[] = [
   ResourceType.Page,
   ResourceType.CollectionPage,
@@ -35,10 +27,9 @@ export const UNPUBLISHABLE_RESOURCE_TYPES: ResourceType[] = [
   ResourceType.CollectionLink,
 ]
 
-// Folder/Collection ids are also accepted by unpublishPage: they never carry
-// their own publishedVersionId — their liveness is entirely their child
-// IndexPage's — so unpublishPageResource resolves them to that child
-// IndexPage before doing anything else.
+// Folder/Collection ids are also accepted by unpublishPage: they have no
+// publishedVersionId of their own, so unpublishPageResource resolves them
+// to their child IndexPage first.
 export const UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS: ResourceType[] = [
   ...UNPUBLISHABLE_RESOURCE_TYPES,
   ResourceType.Folder,

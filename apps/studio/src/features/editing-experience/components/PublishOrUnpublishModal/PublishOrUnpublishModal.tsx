@@ -42,13 +42,10 @@ interface PublishOrUnpublishModalProps extends UseDisclosureReturn {
   action: PublishOrUnpublishAction
   pageId: number
   siteId: number
-  // Unpublish-only: whether the page has unsaved draft changes on top of its
-  // published version.
+  // Unpublish-only: whether the page has unsaved draft changes.
   hasDraftChanges?: boolean
-  // Unpublish-only: set when this is a Folder/Collection's landing page —
-  // scheduling an unpublish here also requires its child pages to be
-  // unpublished by then. Undefined when this page isn't a container landing
-  // page at all.
+  // Unpublish-only: set when this page is a Folder/Collection's landing
+  // page, whose child pages must also be unpublished by the scheduled time.
   containerType?: ResourceType
 }
 
@@ -81,16 +78,15 @@ export const PublishOrUnpublishModal = ({
       : scheduleUnpublishClientSchema
   const { date: dateField, time: timeField } = FIELD_NAMES[action]
 
-  // Both schemas differ in shape (publishDate/publishTime vs unpublishDate/
-  // unpublishTime), so this can't be typed as a single concrete schema — it's
-  // deliberately loose here in exchange for the two flows sharing one modal.
+  // Publish/unpublish schemas differ in shape, so typing is deliberately
+  // loose here to let both flows share one form.
   const methods = useZodForm<typeof schedulePublishClientSchema>({
     schema: schema as typeof schedulePublishClientSchema,
     defaultValues: { pageId, siteId },
   })
 
-  // Validate the schedule form as it changes so the info banner can be shown
-  // once it's complete. Do NOT use trigger() since that surfaces error messages.
+  // Don't use trigger() here — it would surface field error messages
+  // before the user has finished filling the form.
   useEffect(() => {
     const validateForm = () => {
       setIsScheduleValid(schema.safeParse(methods.getValues()).success)
@@ -106,10 +102,8 @@ export const PublishOrUnpublishModal = ({
         resourceId: pageId,
         siteId,
       }),
-      // Publishing/unpublishing changes this resource's liveStatus, which the
-      // dashboard tables/index-page row derive from — refresh whichever of
-      // these is currently mounted (folder, collection item list, or index
-      // page).
+      // liveStatus feeds the dashboard tables and index-page row — refresh
+      // whichever of these is currently mounted.
       utils.resource.listWithoutRoot.invalidate(),
       utils.collection.list.invalidate(),
       utils.folder.getIndexpage.invalidate(),
@@ -132,10 +126,8 @@ export const PublishOrUnpublishModal = ({
       },
       onError: (error) => {
         console.error(`Error occurred when publishing page: ${error.message}`)
-        // The publish-block throws CONFLICT with an actionable message naming
-        // the redirect to remove; guards like the scheduled-unpublish
-        // ancestor lock throw PRECONDITION_FAILED — surface both verbatim
-        // rather than the generic failure copy.
+        // CONFLICT and PRECONDITION_FAILED carry actionable messages
+        // (e.g. redirect to remove, ancestor lock) — show them verbatim.
         toast({
           status: "error",
           title:
@@ -164,9 +156,8 @@ export const PublishOrUnpublishModal = ({
       },
       onError: (error) => {
         console.error(`Error occurred when scheduling page: ${error.message}`)
-        // The scheduled-unpublish ancestor lock (and similar guards) throws
-        // PRECONDITION_FAILED with an actionable message — surface it
-        // verbatim rather than the generic failure copy.
+        // PRECONDITION_FAILED (e.g. ancestor lock) carries an actionable
+        // message — show it verbatim.
         toast({
           status: "error",
           title:
@@ -193,9 +184,8 @@ export const PublishOrUnpublishModal = ({
       },
       onError: (error) => {
         console.error(`Error occurred when unpublishing page: ${error.message}`)
-        // Guards like "other pages inside are still live" throw
-        // PRECONDITION_FAILED with an actionable message — surface it
-        // verbatim rather than the generic failure copy.
+        // PRECONDITION_FAILED (e.g. other pages inside still live) carries
+        // an actionable message — show it verbatim.
         toast({
           status: "error",
           title:
@@ -226,9 +216,8 @@ export const PublishOrUnpublishModal = ({
       console.error(
         `Error occurred when scheduling unpublish: ${error.message}`,
       )
-      // The "child pages won't be unpublished in time" guard throws
-      // PRECONDITION_FAILED with an actionable message — surface it
-      // verbatim rather than the generic failure copy.
+      // PRECONDITION_FAILED (e.g. child pages won't unpublish in time)
+      // carries an actionable message — show it verbatim.
       toast({
         status: "error",
         title:

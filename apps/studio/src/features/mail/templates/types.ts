@@ -37,14 +37,12 @@ export interface FailedPublishTemplateData extends BaseEmailTemplateData {
 }
 
 export interface FailedUnpublishTemplateData extends BaseEmailTemplateData {
-  isScheduled: boolean // whether the unpublish was scheduled or manual
-  resource: Resource // the resource that failed to be unpublished
+  isScheduled: boolean
+  resource: Resource
 }
 
 export interface FailedSiteRebuildTemplateData extends BaseEmailTemplateData {
-  // whether the page-level action that succeeded was a publish or unpublish —
-  // distinct from FailedPublish/FailedUnpublish, which are for when that
-  // action itself failed. Here it succeeded; only the site rebuild didn't.
+  // The page-level action that succeeded; only the site rebuild failed.
   verb: "publish" | "unpublish"
   resource: Resource
 }

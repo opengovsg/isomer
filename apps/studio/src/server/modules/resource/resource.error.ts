@@ -2,11 +2,9 @@ import { TRPCError } from "@trpc/server"
 import { format } from "date-fns"
 
 /**
- * Thrown by `unpublishPageResource` when the page is not currently published
- * — including the "was already unpublished by the time the cron ran" case.
- * A distinct class (rather than matching on `error.message`) so callers like
- * the scheduled-publishing cron can distinguish this from other failures
- * without depending on exact error copy.
+ * Thrown by `unpublishPageResource` when the page isn't currently published.
+ * A distinct class so callers (e.g. the scheduling cron) can match on it
+ * instead of `error.message`.
  */
 export class PageAlreadyUnpublishedError extends TRPCError {
   constructor() {
@@ -19,11 +17,9 @@ export class PageAlreadyUnpublishedError extends TRPCError {
 }
 
 /**
- * Thrown by `publishPageResource`/`unpublishPageResource` when the page has a
- * schedule pending in the opposite direction (e.g. publishing a page with a
- * scheduled unpublish) — the two would conflict, so the caller must cancel
- * the schedule first. A same-direction schedule is not an error: the manual
- * action just runs immediately and clears it (see callers).
+ * Thrown when a page has a schedule pending in the opposite direction (e.g.
+ * publishing a page with a scheduled unpublish); the caller must cancel the
+ * schedule first. A same-direction schedule is not an error.
  */
 export class ScheduledActionConflictError extends TRPCError {
   constructor(scheduledAction: "published" | "unpublished", scheduledAt: Date) {
@@ -39,11 +35,9 @@ export class ScheduledActionConflictError extends TRPCError {
 }
 
 /**
- * Thrown by `publishPageResource`/`schedulePublish` when a Folder/Collection
- * above the target has a pending scheduled unpublish — an unconditional
- * lock (not a time comparison): once a container is scheduled to go dark,
- * nothing underneath it may be published, whether immediately or via a
- * future schedule, until that schedule fires or is cancelled.
+ * Thrown when a Folder/Collection above the target has a pending scheduled
+ * unpublish: an unconditional lock, regardless of timing, until that
+ * schedule fires or is cancelled.
  */
 export class AncestorScheduledUnpublishLockError extends TRPCError {
   constructor(scheduledAt: Date) {
