@@ -26,6 +26,7 @@ interface DateRangeFilterTextInputProps {
   value: string
   onValueChange: (value: string) => void
   onCommit: () => void
+  onFocusChange?: (isFocused: boolean) => void
   isInvalid?: boolean
   errorId?: string
 }
@@ -35,6 +36,7 @@ export const DateRangeFilterTextInput = ({
   value,
   onValueChange,
   onCommit,
+  onFocusChange,
   isInvalid,
   errorId,
 }: DateRangeFilterTextInputProps) => {
@@ -57,7 +59,7 @@ export const DateRangeFilterTextInput = ({
   }
 
   return (
-    <div className="relative min-w-0 flex-1">
+    <div className="relative flex h-full min-w-0 flex-1 items-center">
       {showGhostOverlay && (
         <div
           className="pointer-events-none absolute inset-y-0 left-4 flex items-center"
@@ -81,9 +83,13 @@ export const DateRangeFilterTextInput = ({
         placeholder={isFocused ? undefined : SINGLE_DATE_MASK}
         aria-label={SINGLE_DATE_MASK}
         onChange={handleChange}
-        onFocus={() => setIsFocused(true)}
+        onFocus={() => {
+          setIsFocused(true)
+          onFocusChange?.(true)
+        }}
         onBlur={() => {
           setIsFocused(false)
+          onFocusChange?.(false)
           onCommit()
         }}
         onKeyDown={(event) => {
