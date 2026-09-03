@@ -150,6 +150,54 @@
         "storybook/no-uninstalled-addons": "error"
       },
       "jsPlugins": ["eslint-plugin-storybook"]
+    },
+    {
+      "files": ["tests/e2e/**/*.test.ts"],
+      "jsPlugins": [
+        {
+          "name": "isomer-e2e",
+          "specifier": "eslint-plugin-isomer-e2e"
+        }
+      ],
+      "rules": {
+        "isomer-e2e/no-page-methods-in-tests": "error",
+        "isomer-e2e/no-raw-role-tag": "error",
+        "isomer-e2e/no-test-use-storage-state": "error",
+        "no-restricted-imports": [
+          "error",
+          {
+            "paths": [
+              {
+                "name": "~e2e/fixtures",
+                "message": "Import from subpath barrels (e.g. `~e2e/fixtures/po`), not the root `~e2e/fixtures` barrel."
+              },
+              {
+                "name": "@isomer/db",
+                "message": "Do not query the DB directly in E2E tests. Use helpers from `~e2e/fixtures/<entity>/db.ts` or `expect.ts`."
+              }
+            ],
+            "patterns": [
+              {
+                "group": ["kysely", "kysely/*"],
+                "message": "Do not use Kysely directly in E2E tests. Use helpers from `~e2e/fixtures/<entity>/db.ts` or `expect.ts`."
+              }
+            ]
+          }
+        ]
+      },
+      "plugins": ["import"]
+    },
+    {
+      "files": ["tests/e2e/fixtures/po/**/*.ts"],
+      "jsPlugins": [
+        {
+          "name": "isomer-e2e",
+          "specifier": "eslint-plugin-isomer-e2e"
+        }
+      ],
+      "rules": {
+        "isomer-e2e/no-positional-locators-in-po": "error"
+      }
     }
   ]
 }

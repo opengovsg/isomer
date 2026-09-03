@@ -105,12 +105,14 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     // leaving only the 17:00 preset, which is fine for tests that only ever
     // pick one time. This test needs two distinct presets to reschedule
     // between, so it freezes to an instant that's early-morning in UTC
-    // instead, via a direct clock install rather than `scheduleClock`.
+    // instead, via `scheduleClockTime` on `openSeededPageEditor` rather than
+    // the shared `scheduleClock` preset.
     const { page: seededPage } = await seedFolderWithPage({ siteId })
-    await page.clock.install({ time: new Date("2099-01-01T00:01:00Z") })
 
     // Act: schedule for the 5:00 PM quick-select slot
-    const editor = await openSeededPageEditor(page, siteId, seededPage.id)
+    const editor = await openSeededPageEditor(page, siteId, seededPage.id, {
+      scheduleClockTime: new Date("2099-01-01T00:01:00Z"),
+    })
     await editor.openScheduleModal()
     await editor.schedulePublishForToday("5:00 PM")
     await editor.expectScheduledSuccessfully()

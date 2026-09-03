@@ -202,6 +202,7 @@
     "commander": "catalog:",
     "dotenv": "catalog:",
     "dotenv-cli": "catalog:",
+    "eslint-plugin-isomer-e2e": "workspace:*",
     "eslint-plugin-storybook": "catalog:storybook",
     "mockdate": "catalog:",
     "msw": "catalog:",

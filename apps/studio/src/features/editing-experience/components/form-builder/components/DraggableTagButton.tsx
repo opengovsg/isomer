@@ -276,6 +276,7 @@ const EditableLabel = ({
       <Text
         as="button"
         type="button"
+        aria-label={ariaLabel}
         textStyle="subhead-2"
         textAlign="start"
         color={

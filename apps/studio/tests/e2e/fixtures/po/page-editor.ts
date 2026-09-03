@@ -1,5 +1,8 @@
 import { expect, type Page } from "@playwright/test"
 
+import { expectAnyVisible } from "./locator-helpers"
+import { waitForToastWithText } from "./toast"
+
 /** Exact key sequence `ActivateRawJsonEditorMode.tsx` listens for on `window`
  * (any wrong key resets progress to 0) — kept local to the PO rather than
  * imported from app code, per e2e convention. */
@@ -43,16 +46,16 @@ export class PageEditorPO {
 
   async addAndFillTextBlock(text: string) {
     await this.addTextBlock()
-    await this.page.getByRole("textbox").first().fill(text)
+    await this.proseEditor().fill(text)
     await this.saveBlockChanges()
   }
 
-  // Open block drawer by accessible name; fill the first textbox.
+  // Open block drawer by accessible name; fill the prose editor.
   async fillBlock(label: string, text: string) {
     await this.page
       .getByRole("button", { name: new RegExp(label, "i") })
       .click({ force: true })
-    await this.page.getByRole("textbox").first().fill(text)
+    await this.proseEditor().fill(text)
   }
 
   async saveBlockChanges() {
@@ -69,7 +72,7 @@ export class PageEditorPO {
    * textbox role, not a labeled form control — use this instead of
    * `expectFormFieldValue` for its content. */
   async expectProseTextboxContains(text: string) {
-    await expect(this.page.getByRole("textbox").first()).toContainText(text)
+    await expect(this.proseEditor()).toContainText(text)
   }
 
   async expectBlockPreview(text: string) {
@@ -107,10 +110,7 @@ export class PageEditorPO {
   }
 
   async expectPublishedToast() {
-    await this.page
-      .getByText("Page published successfully")
-      .first()
-      .waitFor({ state: "visible" })
+    await waitForToastWithText(this.page, "Page published successfully")
   }
 
   async expectPublishConflictError(permalink: string) {
@@ -126,10 +126,7 @@ export class PageEditorPO {
    * (e.g. the `reorderBlock` router's stale-draft `CONFLICT` copy) rendered
    * verbatim as the toast description under a fixed title. */
   async expectReorderConflictToast() {
-    await this.page
-      .getByText("Failed to update blocks")
-      .first()
-      .waitFor({ state: "visible" })
+    await waitForToastWithText(this.page, "Failed to update blocks")
     await expect(
       this.page.getByText(
         "Someone on your team has changed this page, refresh the page and try again",
@@ -251,9 +248,10 @@ export class PageEditorPO {
     text: string,
     options?: { exact?: boolean; timeout?: number },
   ) {
-    await expect(
-      this.previewFrame().getByText(text, { exact: options?.exact }).first(),
-    ).toBeVisible({ timeout: options?.timeout })
+    await expectAnyVisible(
+      this.previewFrame().getByText(text, { exact: options?.exact }),
+      { timeout: options?.timeout },
+    )
   }
 
   /** `map`/`formsg` render a plain `<iframe title={title}>` directly (no
@@ -356,7 +354,7 @@ export class PageEditorPO {
       typeof previewLabel === "string"
         ? new RegExp(previewLabel, "i")
         : previewLabel
-    await this.page.getByRole("button", { name }).first().click({ force: true })
+    await this.page.getByRole("button", { name }).click({ force: true })
   }
 
   async fillFormFieldByLabel(label: string, text: string) {
@@ -838,7 +836,6 @@ export class PageEditorPO {
     // as its label rather than the idle "Text styles" default.
     await this.page
       .getByRole("button", { name: /Text styles|Paragraph/ })
-      .first()
       .click()
     await this.page
       .getByRole("menuitem", { name: HEADING_MENU_ITEM[level] })
@@ -1179,11 +1176,9 @@ export class PageEditorPO {
     await expect(this.rawJsonEditorHeading()).not.toBeVisible()
   }
 
-  /** The textarea has no accessible name set (`RawJsonEditor.tsx`'s plain
-   * Chakra `<Textarea>`) — `.first()` mirrors the same-shaped fallback used
-   * elsewhere in this PO (e.g. `fillBlock`) for unlabelled textbox roles. */
+  /** Raw JSON editor textarea (`RawJsonEditor.tsx`). */
   rawJsonEditorTextarea() {
-    return this.page.getByRole("textbox").first()
+    return this.page.getByLabel("Raw JSON editor content")
   }
 
   async getRawJsonEditorValue() {

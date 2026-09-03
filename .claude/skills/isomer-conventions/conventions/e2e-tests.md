@@ -9,6 +9,8 @@ Living reference for `apps/studio/tests/e2e/`. Update when the stack introduces 
 
 Fixture import paths and onboarding: `apps/studio/tests/e2e/README.md`.
 
+Enforced in CI via Oxlint (`eslint-plugin-isomer-e2e` + `no-restricted-imports` override on `tests/e2e/**/*.test.ts` in `apps/studio/.oxlintrc.json`). PO locator rules (`isomer-e2e/no-positional-locators-in-po` on `fixtures/po/**/*.ts`) are enforced at error level.
+
 ## File layout
 
 - `tests/e2e/<module>/<surface>.test.ts` — one file per UI surface
@@ -127,6 +129,18 @@ Constructor takes `Page`. No DB setup in POs.
 
 Prefer `getByRole(role, { name })` / `getByLabel(...)` matched against the control's visible/aria label over positional locators like `getByRole("checkbox").first()/.last()` or `page.locator("textarea").nth(1)`. Positional locators silently point at the wrong element the moment a sibling control is added, reordered, or conditionally rendered. If the underlying component has no accessible name yet, add `aria-label={label}` to it (see `JsonFormsBoxedGroupControl.tsx`, `godmode/whitelist.tsx`) rather than falling back to position in the PO.
 
+When several elements share the same visible text, **scope** to the drawer, row, or group that owns the control (`getByRole('group').filter({ has: ... })`, a row locator with `.filter({ has: activeField })`, etc.) instead of picking the first match. For smoke-level "text appears somewhere in preview" checks, use `expectAnyVisible` from `fixtures/po/locator-helpers.ts` (polls `nth(i)` with a loop variable — allowed by the linter).
+
+`isomer-e2e/no-positional-locators-in-po` enforces this at error level. Allowed exceptions:
+
+| Pattern | Example | Why |
+| ------- | ------- | --- |
+| `.filter({ has/hasNot: locator })` | `getByRole('group').filter({ has: page.getByText('Topic') })` | Structural scoping to a labelled region |
+| `.locator(tag).filter({ hasText })` then `.first()`/`.last()` | `locator('button').filter({ hasText: /Item 1/ }).first()` | Narrows a generic tag before DOM traversal (e.g. gallery item rows, footer columns) |
+| `.nth(index)` with a variable index | `links.nth(index)` in a reorder assertion | Intentional list-position checks |
+
+Not allowed: bare `.first()`/`.last()`/literal `.nth(n)` on `getByRole`/`getByText`/`getByLabel`, or redundant `.filter({ hasText })` on the same locator just to satisfy the linter (e.g. `getByText('foo').filter({ hasText: 'foo' }).first()`).
+
 ### `page.*` in test files
 
 **Smell:** any `page.<method>(` in `tests/e2e/**/*.test.ts` outside the allowlist.
@@ -168,5 +182,6 @@ Examples: `expectResourceAbsent`, `expectResourceTitle`, `expectSiteName`, `expe
 | `page.waitForURL` for dashboard nav                                                   | `DashboardPO.expectOnFolder` / `expectOnPageEditor`                        |
 | Any other `page.*` in `*.test.ts`                                                     | PO or helper for that surface                                              |
 | Delete-by-title-prefix in `afterEach`                                                 | Track created ID(s), `deleteResourceById`                                  |
-| `.first()`/`.last()`/`.nth()` on a labeled control                                    | `getByRole(role, { name })` / `getByLabel`, adding `aria-label` if missing |
+| `.first()`/`.last()`/`.nth()` on a labelled control                                    | `getByRole(role, { name })` / `getByLabel`, adding `aria-label` if missing |
+| Redundant `.filter({ hasText }).first()` to bypass the positional-locator rule         | Scope to a drawer/row/group, or `expectAnyVisible` for duplicate preview text |
 | 2+ tests in one `describe` mutating the same shared `siteId` settings, no serial mode | `test.describe.configure({ mode: "serial" })`                              |
