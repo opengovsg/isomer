@@ -12,13 +12,16 @@ variants or with a `className` prop — use `tv` (from `~/lib/tv`) or `twMerge`
 no variance to model and no classes to merge, a plain `className` string is
 fine.
 
+A single boolean variant is a normal `tv` use case. Prefer `tv` over inline
+ternaries whenever variant logic appears in `className`.
+
 ## Why
 
 Inline ternaries and template literals in `className` are hard to scan, easy to
 get wrong when adding a third state, and bypass the repo's Tailwind merge
 config. `tv` and `twMerge` keep variant logic in one place and resolve class
-conflicts predictably. Overusing them for static or single-class cases adds
-noise without benefit.
+conflicts predictably. Overusing them for fully static classes adds noise without
+benefit.
 
 ## Bad
 
@@ -33,13 +36,13 @@ noise without benefit.
   className={`absolute left-0 h-full w-full rounded ${isContainNeeded ? "object-contain" : "object-cover"}`}
 />
 
-// tv with a single variant and no real branching — smell: ceremony without payoff
+// Redundant true/false pair — smell: one branch is just the default, declare it in base
 const imageStyles = tv({
   base: "absolute left-0 h-full w-full rounded",
   variants: {
     contain: {
       true: "object-contain",
-      false: "object-cover",
+      false: "object-cover", // default belongs in base, not a false branch
     },
   },
 })
@@ -50,7 +53,19 @@ Real examples: `packages/components/src/templates/next/components/complex/Video/
 ## Good
 
 ```tsx
-// tv when modelling real variants
+// tv with one boolean variant — fine; put the default in base, override in variants
+const imageStyles = tv({
+  base: "absolute left-0 h-full w-full rounded object-cover",
+  variants: {
+    contain: {
+      true: "object-contain",
+    },
+  },
+})
+
+<img className={imageStyles({ contain: isContainNeeded })} />
+
+// tv with multiple variant axes
 const tableCellStyles = tv({
   base: "max-w-40 break-words border border-base-divider-medium px-4 py-3 align-top",
   variants: {
@@ -82,8 +97,7 @@ Real examples: `packages/components/src/templates/next/components/native/Table/T
 ## How to detect
 
 In `packages/components`, grep for `className=\{.*\?` or `className=\{\`` with
-embedded `${... ? ... : ...}`. When you see variant logic, check whether `tv` or
-`twMerge` is the better fit. When you see `tv({` with only one boolean variant
-and no extension/reuse, ask whether a plain ternary-free `tv` call or static
-classes would be simpler — but still prefer `tv` over inline JSX conditionals
-when there are two or more variant axes.
+embedded `${... ? ... : ...}` — replace with `tv` or `twMerge`. When reviewing
+`tv({`, check that defaults live in `base` (or `defaultVariants`) rather than
+as a redundant `false` branch. Reserve plain `className` strings for fully static
+markup with nothing to merge.
