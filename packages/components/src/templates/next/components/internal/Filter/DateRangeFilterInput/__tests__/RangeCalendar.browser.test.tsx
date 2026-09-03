@@ -23,6 +23,7 @@ const findOutsideRangeCellByDay = (day: string): HTMLElement => {
 
 describe("RangeCalendar", () => {
   it("orders the range correctly when the later date is clicked before the earlier date", () => {
+    // Arrange
     const onApply = vi.fn()
     render(
       <RangeCalendar
@@ -31,10 +32,12 @@ describe("RangeCalendar", () => {
       />,
     )
 
+    // Act
     fireEvent.click(screen.getByText("20"))
     fireEvent.click(screen.getByText("10"))
     fireEvent.click(screen.getByText("Apply"))
 
+    // Assert
     expect(onApply).toHaveBeenCalledExactlyOnceWith({
       start: new CalendarDate(2026, 4, 10),
       end: new CalendarDate(2026, 4, 20),
@@ -42,6 +45,7 @@ describe("RangeCalendar", () => {
   })
 
   it("resolves a range spanning two months when a trailing outside-range cell is clicked", () => {
+    // Arrange
     const onApply = vi.fn()
     render(
       <RangeCalendar
@@ -50,10 +54,12 @@ describe("RangeCalendar", () => {
       />,
     )
 
+    // Act
     fireEvent.click(screen.getByText("15"))
     fireEvent.click(findOutsideRangeCellByDay("1"))
     fireEvent.click(screen.getByText("Apply"))
 
+    // Assert
     expect(onApply).toHaveBeenCalledExactlyOnceWith({
       start: new CalendarDate(2026, 4, 15),
       end: new CalendarDate(2026, 5, 1),

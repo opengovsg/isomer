@@ -47,6 +47,8 @@ export const parseInputText = (
     return undefined
   }
 
+  // Split on the range separator (" - ") with optional surrounding whitespace.
+  // The hyphen is not inside a character class, so it won't match slashes in DD/MM/YYYY.
   const rangeParts = trimmed.split(/\s*-\s*/)
   if (rangeParts.length === 1) {
     const firstPart = rangeParts[0]
