@@ -36,13 +36,15 @@ const SuspendableEditingLockedOverlay = ({
   const actionDisclosure = useDisclosure()
   const cancelScheduleDisclosure = useDisclosure()
 
-  if (!currPage.scheduledAt || !currPage.scheduledAction) {
+  if (!currPage.scheduledAt) {
     return null
   }
 
-  const { verb, actionLabel } = COPY[currPage.scheduledAction]
-  const isScheduledToPublish =
-    currPage.scheduledAction === ScheduledAction.Publish
+  // A null scheduledAction on a legacy row defaults to Publish, matching
+  // PublishButton/PageMoreActionsButton.
+  const scheduledAction = currPage.scheduledAction ?? ScheduledAction.Publish
+  const { verb, actionLabel } = COPY[scheduledAction]
+  const isScheduledToPublish = scheduledAction === ScheduledAction.Publish
 
   return (
     <Flex

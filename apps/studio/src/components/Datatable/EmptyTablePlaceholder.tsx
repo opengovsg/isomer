@@ -1,4 +1,5 @@
-import { Flex, Link, Stack, Td, Text, Tr } from "@chakra-ui/react"
+import { Flex, Stack, Td, Text, Tr } from "@chakra-ui/react"
+import { Button } from "@opengovsg/design-system-react"
 import { NoSearchResultSvgr } from "~/components/Svg/NoSearchResultSvgr"
 
 export const EmptyTablePlaceholder = ({
@@ -37,9 +38,14 @@ export const EmptyTablePlaceholder = ({
                   No {entityName}s match "{activeFilterLabels.join(", ")}". Try
                   a different filter.
                 </Text>
-                <Link textStyle="body-2" onClick={onClearFilter}>
+                <Button
+                  variant="link"
+                  size="xs"
+                  textStyle="body-2"
+                  onClick={onClearFilter}
+                >
                   Clear filter
-                </Link>
+                </Button>
               </>
             )}
             {!hasSearchTerm && !isFiltered && (
