@@ -9,7 +9,7 @@ import {
 import Link from "next/link"
 import { useEffect } from "react"
 import { BiChevronRight } from "react-icons/bi"
-import { HasDraftIndicator } from "~/components/HasDraftIndicator"
+import { DraftIndicator } from "~/components/HasDraftIndicator"
 import { LiveStatusBadges } from "~/components/LiveStatusBadges"
 import { useNewCollectionTagsManagement } from "~/hooks/useNewCollectionTagsManagement"
 import { trpc } from "~/utils/trpc"
@@ -80,7 +80,7 @@ export const IndexpageRow = ({
                 lastPublishedAt={data.lastPublishedAt}
               />
             )}
-            <HasDraftIndicator draftBlobId={data?.draftBlobId ?? null} />
+            <DraftIndicator draftBlobId={data?.draftBlobId ?? null} />
           </HStack>
           {/*   TODO: we require the last updated at and to display it */}
           {/* as a relative time. */}

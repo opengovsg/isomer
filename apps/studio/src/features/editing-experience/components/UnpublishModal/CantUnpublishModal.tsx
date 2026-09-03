@@ -43,8 +43,9 @@ export const CantUnpublishModal = ({
         <ModalBody>
           <Text textStyle="body-2">
             This {label} has {count} published page{count === 1 ? "" : "s"}{" "}
-            inside, including pages in subfolders. Unpublish those pages first,
-            then you'll be able to unpublish the {label}.
+            inside (including pages in subfolders) with no unpublish scheduled.
+            Unpublish or schedule those pages to unpublish first, then you'll be
+            able to unpublish or schedule the {label}.
           </Text>
         </ModalBody>
         <ModalFooter>

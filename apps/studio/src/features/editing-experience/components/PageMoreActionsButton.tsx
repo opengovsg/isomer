@@ -68,15 +68,29 @@ const SuspendablePageMoreActionsButton = ({
     return null
   }
 
-  // isIndexPage must gate this explicitly, not just the query's `enabled` —
-  // every child page in a folder shares the same query key as the folder's
-  // own index page (both key off `currPage.parentId`), so `enabled: false`
-  // alone doesn't stop a child page from reading back cached block-info left
-  // over from a prior visit to the index page (or the dashboard).
-  const isBlockedByLiveDescendants =
+  // isIndexPage must gate both of these explicitly, not just the query's
+  // `enabled` — every child page in a folder shares the same query key as
+  // the folder's own index page (both key off `currPage.parentId`), so
+  // `enabled: false` alone doesn't stop a child page from reading back
+  // cached block-info left over from a prior visit to the index page (or the
+  // dashboard).
+  //
+  // These are two different questions with two different answers:
+  // - isBlockedFromUnpublishingNow: is anything live right now — blocks
+  //   "Unpublish now" (which has no grace period).
+  // - isBlockedFromScheduling: would some descendant block this forever,
+  //   regardless of what date is picked (live with no unpublish scheduled at
+  //   all) — blocks the "Unpublish later" flow entirely. A descendant that's
+  //   merely live-but-already-scheduled-to-unpublish blocks the first but
+  //   not the second.
+  const isBlockedFromUnpublishingNow =
     isIndexPage &&
     !!parentIndexPageInfo &&
     parentIndexPageInfo.otherPublishedDescendantCount > 0
+  const isBlockedFromScheduling =
+    isIndexPage &&
+    !!parentIndexPageInfo &&
+    parentIndexPageInfo.unschedulableDescendantCount > 0
 
   const disabledReason = !isLive
     ? "This page isn't live"
@@ -98,6 +112,7 @@ const SuspendablePageMoreActionsButton = ({
                 containerType={
                   isIndexPage ? parentIndexPageInfo?.parentType : undefined
                 }
+                disableNow={isBlockedFromUnpublishingNow}
                 {...unpublishModalDisclosure}
               />
             )}
@@ -108,7 +123,7 @@ const SuspendablePageMoreActionsButton = ({
                   siteId={siteId}
                   parentId={currPage.parentId}
                   parentType={parentIndexPageInfo.parentType}
-                  count={parentIndexPageInfo.otherPublishedDescendantCount}
+                  count={parentIndexPageInfo.unschedulableDescendantCount}
                   {...cantUnpublishModalDisclosure}
                 />
               )}
@@ -182,7 +197,7 @@ const SuspendablePageMoreActionsButton = ({
                               leftIcon={<Icon as={BiHide} boxSize="1rem" />}
                               onClick={() => {
                                 onClose()
-                                if (isBlockedByLiveDescendants) {
+                                if (isBlockedFromScheduling) {
                                   cantUnpublishModalDisclosure.onOpen()
                                 } else {
                                   unpublishModalDisclosure.onOpen()
