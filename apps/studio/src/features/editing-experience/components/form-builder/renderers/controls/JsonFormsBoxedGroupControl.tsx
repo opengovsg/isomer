@@ -96,6 +96,7 @@ function JsonFormsBoxedGroupControl({
 
             <Switch
               size="md"
+              aria-label={label}
               isChecked={isChecked}
               onChange={handleToggle}
               isDisabled={!enabled}
