@@ -3,8 +3,8 @@
 import type { DateFilterDisplayEntry } from "~/interfaces/internal/CollectionCard"
 import { useMemo } from "react"
 
+import { getDateFilterCardsFromEntries } from "../../../layouts/Collection/utils/getDateFilterCardsFromEntries"
 import { DateFilterStatusPill } from "./DateFilterStatusPill"
-import { resolveDateFilterCards } from "./resolveDateFilterCards"
 
 interface DateFilterStatusClientProps {
   entries?: DateFilterDisplayEntry[]
@@ -14,7 +14,8 @@ export const DateFilterStatusClient = ({
   entries,
 }: DateFilterStatusClientProps) => {
   const dateFilterCards = useMemo(
-    () => resolveDateFilterCards(entries),
+    () =>
+      entries?.length ? getDateFilterCardsFromEntries(entries) : undefined,
     // today only updates when entries changes; open past SGT midnight may show stale status
     [entries],
   )

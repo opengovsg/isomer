@@ -12,15 +12,15 @@ export interface DateFilterValue {
 // and `endDate` are already plain "yyyy-MM-dd" strings (schema format
 // "date", no time component), so lexicographic string comparison against
 // this is equivalent to calendar-date comparison — no Date parsing needed.
-export const getTodayInSingapore = (): string => getSingaporeDateYYYYMMDD()
 
 // Inclusive on both ends: `today < date` → upcoming, `date <= today <= end`
 // → ongoing, `today > end` → ended. A single date (no `endDate`) is treated
 // as a 1-day range — ongoing on the day itself.
-export const getDateFilterStatus = (
-  { date, endDate }: DateFilterValue,
-  today: string = getTodayInSingapore(),
-): DateFilterStatusId => {
+export const getDateFilterStatus = ({
+  date,
+  endDate,
+  today = getSingaporeDateYYYYMMDD(),
+}: DateFilterValue & { today?: string }): DateFilterStatusId => {
   const end = endDate ?? date
 
   if (today < date) {

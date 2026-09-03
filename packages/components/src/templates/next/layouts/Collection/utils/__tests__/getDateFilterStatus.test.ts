@@ -9,7 +9,7 @@ describe("getDateFilterStatus", () => {
 
   it("returns upcoming when today is before a single date", () => {
     // Arrange / Act
-    const result = getDateFilterStatus({ date: "2026-06-16" }, TODAY)
+    const result = getDateFilterStatus({ date: "2026-06-16", today: TODAY })
 
     // Assert
     expect(result).toEqual(DATE_FILTER_STATUS.Upcoming.id)
@@ -17,7 +17,7 @@ describe("getDateFilterStatus", () => {
 
   it("returns ongoing on the single date itself", () => {
     // Arrange / Act
-    const result = getDateFilterStatus({ date: TODAY }, TODAY)
+    const result = getDateFilterStatus({ date: TODAY, today: TODAY })
 
     // Assert
     expect(result).toEqual(DATE_FILTER_STATUS.Ongoing.id)
@@ -25,7 +25,7 @@ describe("getDateFilterStatus", () => {
 
   it("returns ended when today is after a single date", () => {
     // Arrange / Act
-    const result = getDateFilterStatus({ date: "2026-06-14" }, TODAY)
+    const result = getDateFilterStatus({ date: "2026-06-14", today: TODAY })
 
     // Assert
     expect(result).toEqual(DATE_FILTER_STATUS.Ended.id)
@@ -33,10 +33,11 @@ describe("getDateFilterStatus", () => {
 
   it("returns upcoming when today is before a range's start", () => {
     // Arrange / Act
-    const result = getDateFilterStatus(
-      { date: "2026-06-20", endDate: "2026-06-25" },
-      TODAY,
-    )
+    const result = getDateFilterStatus({
+      date: "2026-06-20",
+      endDate: "2026-06-25",
+      today: TODAY,
+    })
 
     // Assert
     expect(result).toEqual(DATE_FILTER_STATUS.Upcoming.id)
@@ -44,10 +45,11 @@ describe("getDateFilterStatus", () => {
 
   it("returns ongoing on the range's start date (inclusive)", () => {
     // Arrange / Act
-    const result = getDateFilterStatus(
-      { date: TODAY, endDate: "2026-06-20" },
-      TODAY,
-    )
+    const result = getDateFilterStatus({
+      date: TODAY,
+      endDate: "2026-06-20",
+      today: TODAY,
+    })
 
     // Assert
     expect(result).toEqual(DATE_FILTER_STATUS.Ongoing.id)
@@ -55,10 +57,11 @@ describe("getDateFilterStatus", () => {
 
   it("returns ongoing on the range's end date (inclusive)", () => {
     // Arrange / Act
-    const result = getDateFilterStatus(
-      { date: "2026-06-01", endDate: TODAY },
-      TODAY,
-    )
+    const result = getDateFilterStatus({
+      date: "2026-06-01",
+      endDate: TODAY,
+      today: TODAY,
+    })
 
     // Assert
     expect(result).toEqual(DATE_FILTER_STATUS.Ongoing.id)
@@ -66,10 +69,11 @@ describe("getDateFilterStatus", () => {
 
   it("returns ongoing strictly between a range's start and end", () => {
     // Arrange / Act
-    const result = getDateFilterStatus(
-      { date: "2026-06-01", endDate: "2026-06-30" },
-      TODAY,
-    )
+    const result = getDateFilterStatus({
+      date: "2026-06-01",
+      endDate: "2026-06-30",
+      today: TODAY,
+    })
 
     // Assert
     expect(result).toEqual(DATE_FILTER_STATUS.Ongoing.id)
@@ -77,10 +81,11 @@ describe("getDateFilterStatus", () => {
 
   it("returns ended when today is after a range's end", () => {
     // Arrange / Act
-    const result = getDateFilterStatus(
-      { date: "2026-05-01", endDate: "2026-05-31" },
-      TODAY,
-    )
+    const result = getDateFilterStatus({
+      date: "2026-05-01",
+      endDate: "2026-05-31",
+      today: TODAY,
+    })
 
     // Assert
     expect(result).toEqual(DATE_FILTER_STATUS.Ended.id)

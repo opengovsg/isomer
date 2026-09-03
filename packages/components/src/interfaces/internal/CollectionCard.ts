@@ -7,21 +7,18 @@ import type {
 } from "~/types"
 import type { DateFilterStatusId } from "~/types/constants"
 
-export interface DateFilterDisplayEntry {
-  id: string
+export type DateFilterDisplayEntry = DateTaggedItem & {
   label: string
   dateText: string
-  date: string
-  endDate?: string
   statusLabels: Record<DateFilterStatusId, string>
 }
 
-export interface DateFilterCard {
-  id: string
-  label: string
+export type DateFilterCard = Pick<
+  DateFilterDisplayEntry,
+  "id" | "label" | "dateText"
+> & {
   status: DateFilterStatusId
   statusLabel: string
-  dateText: string
 }
 
 interface FileDetails {
@@ -42,8 +39,6 @@ interface BaseCardProps {
   // NOTE: Same shape as `pillTags`, but only includes groups shown as plaintext
   // — rendered as comma-joined text, dot-separated between groups (see PlaintextTags)
   plaintextTags?: TagGroup[]
-  // NOTE: raw per-item date-filter values — used for filter matching only.
-  dateTagged?: DateTaggedItem[]
   // NOTE: server-precomputed label + date text for date filter client components.
   dateFilterDisplayEntries?: DateFilterDisplayEntry[]
   title: string
@@ -83,7 +78,6 @@ export type CollectionCardProps = Pick<
   | "tags"
   | "pillTags"
   | "isContainNeeded"
-  | "dateTagged"
   | "dateFilterDisplayEntries"
 > & {
   referenceLinkHref: string | undefined
