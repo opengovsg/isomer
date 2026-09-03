@@ -53,6 +53,7 @@ const COPY: Record<
 interface ActionOptionRadioProps extends UseRadioProps {
   action: PublishOrUnpublishAction
   value: ActionMode
+  disabledReason?: string
 }
 
 const ActionOptionRadio = forwardRef<HTMLInputElement, ActionOptionRadioProps>(
@@ -60,7 +61,7 @@ const ActionOptionRadio = forwardRef<HTMLInputElement, ActionOptionRadioProps>(
     const { getInputProps, getRadioProps } = useRadio(props)
     const input = getInputProps(undefined, ref)
     const checkbox = getRadioProps()
-    const { action, value } = props
+    const { action, value, disabledReason } = props
 
     const { icon, title, description } = useMemo(
       () => COPY[action][value],
@@ -72,13 +73,14 @@ const ActionOptionRadio = forwardRef<HTMLInputElement, ActionOptionRadioProps>(
         <input {...input} />
         <Flex
           {...checkbox}
-          cursor="pointer"
+          cursor={disabledReason ? "not-allowed" : "pointer"}
           gap="0.75rem"
           alignItems="flex-start"
           borderWidth="1px"
           borderRadius="0.5rem"
           borderColor="base.divider.medium"
           p="1rem"
+          opacity={disabledReason ? 0.5 : 1}
           _checked={{
             bg: "brand.primary.50",
             borderColor: "utility.focus-default",
@@ -96,7 +98,7 @@ const ActionOptionRadio = forwardRef<HTMLInputElement, ActionOptionRadioProps>(
               {title}
             </Text>
             <Text textStyle="body-2" color="base.content.default">
-              {description}
+              {disabledReason ?? description}
             </Text>
           </Stack>
         </Flex>
@@ -107,24 +109,30 @@ const ActionOptionRadio = forwardRef<HTMLInputElement, ActionOptionRadioProps>(
 
 type ActionOptionsInputProps = UseRadioGroupProps & {
   action: PublishOrUnpublishAction
+  // Set when "now" isn't a valid choice right now (e.g. a folder/collection
+  // landing page with other pages still live) — disables that option and
+  // shows this in place of its normal description, explaining why.
+  disableNowReason?: string
 }
 
 export const ActionOptionsInput = forwardRef<
   HTMLInputElement,
   ActionOptionsInputProps
->(({ action, ...props }, ref) => {
+>(({ action, disableNowReason, ...props }, ref) => {
   const { getRootProps, getRadioProps } = useRadioGroup(props)
   const group = getRootProps()
 
   return (
     <Stack {...group} spacing="0.75rem">
       {ACTION_MODES.map((value, index) => {
-        const radio = getRadioProps({ value })
+        const isDisabled = value === "now" && !!disableNowReason
+        const radio = getRadioProps({ value, isDisabled })
         return (
           <ActionOptionRadio
             key={value}
             action={action}
             value={value}
+            disabledReason={isDisabled ? disableNowReason : undefined}
             {...radio}
             ref={index === 0 ? ref : undefined}
           />

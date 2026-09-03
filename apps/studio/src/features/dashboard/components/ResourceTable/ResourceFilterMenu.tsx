@@ -1,34 +1,22 @@
 import type { ResourceStatusFilterOption } from "~/schemas/resource"
-import { HStack, Icon, Text } from "@chakra-ui/react"
-import { Menu } from "@opengovsg/design-system-react"
+import { Box, HStack, Icon, Text, useMultiStyleConfig } from "@chakra-ui/react"
+import { BxCheckAnimated, Menu } from "@opengovsg/design-system-react"
 
 import { RESOURCE_TABLE_STATUS_FILTER_OPTIONS } from "./constants"
 
 // Decorative only — the surrounding Menu.Item's onClick drives the actual
-// toggle. Drawn as a raw SVG (matching Figma's checkbox glyph exactly)
-// rather than the design system's Checkbox component, since that
-// component's own label/container padding doesn't collapse to zero even
-// with no label — it was eating into the row's width and wrapping the
-// longer option labels onto two lines.
-const FilterCheckbox = ({ isChecked }: { isChecked: boolean }) => (
-  <Icon viewBox="0 0 16 16" boxSize="1rem" flexShrink={0}>
-    {isChecked ? (
-      <path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        d="M2.66667 0C1.19391 0 0 1.19391 0 2.66667V13.3333C0 14.8061 1.19391 16 2.66667 16H13.3333C14.8061 16 16 14.8061 16 13.3333V2.66667C16 1.19391 14.8061 0 13.3333 0H2.66667ZM4.47144 8.19539L6.66677 10.3907L12.1954 4.86205L13.1381 5.80472L6.66677 12.2761L3.52878 9.13805L4.47144 8.19539Z"
-        fill="var(--chakra-colors-interaction-main-default)"
-      />
-    ) : (
-      <path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        d="M2.66667 1.33333C1.93029 1.33333 1.33333 1.93029 1.33333 2.66667V13.3333C1.33333 14.0697 1.93029 14.6667 2.66667 14.6667H13.3333C14.0697 14.6667 14.6667 14.0697 14.6667 13.3333V2.66667C14.6667 1.93029 14.0697 1.33333 13.3333 1.33333H2.66667ZM2.66667 0C1.19391 0 0 1.19391 0 2.66667V13.3333C0 14.8061 1.19391 16 2.66667 16H13.3333C14.8061 16 16 14.8061 16 13.3333V2.66667C16 1.19391 14.8061 0 13.3333 0H2.66667Z"
-        fill="var(--chakra-colors-base-content-strong)"
-      />
-    )}
-  </Icon>
-)
+// toggle. Renders just the design system Checkbox's `control`/`icon` parts
+// (skipping `container`/`label`, whose padding doesn't collapse to zero even
+// with no label and was eating into the row's width, wrapping longer option
+// labels onto two lines) — same pattern as MultiSelect's ItemCheckboxIcon.
+const FilterCheckbox = ({ isChecked }: { isChecked: boolean }) => {
+  const styles = useMultiStyleConfig("Checkbox", { size: "sm" })
+  return (
+    <Box __css={styles.control} flexShrink={0}>
+      <Icon as={BxCheckAnimated} __css={styles.icon} isChecked={isChecked} />
+    </Box>
+  )
+}
 
 interface ResourceFilterMenuProps {
   value: ResourceStatusFilterOption[]

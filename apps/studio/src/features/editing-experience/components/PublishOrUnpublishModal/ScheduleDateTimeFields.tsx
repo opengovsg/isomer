@@ -72,7 +72,7 @@ export const ScheduleDateTimeFields = ({
             <DatePicker
               {...field}
               size="sm"
-              shouldSetDateOnTodayButtonClick={true}
+              shouldSetDateOnTodayButtonClick
               isDateUnavailable={(date) =>
                 isBefore(startOfDay(date), startOfDay(earliestSchedule))
               }

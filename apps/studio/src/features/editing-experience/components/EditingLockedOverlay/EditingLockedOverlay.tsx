@@ -9,6 +9,7 @@ import {
 import { Button } from "@opengovsg/design-system-react"
 import { BiLockAlt } from "react-icons/bi"
 import { CancelScheduleModal } from "~/features/editing-experience/components/PublishingModal"
+import { Can } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
 import { trpc } from "~/utils/trpc"
 import { ScheduledAction } from "~prisma/generated/generatedEnums"
@@ -66,26 +67,6 @@ const SuspendableEditingLockedOverlay = ({
       px="1.5rem"
       py="2rem"
     >
-      {/* Mounted only while open. These are plain confirmation dialogs with
-          no form/schema to reset, but this still keeps a fresh mutation
-          instance per open rather than reusing one whose isPending/error
-          state could otherwise linger from the previous open. */}
-      {actionDisclosure.isOpen && (
-        <PublishOrUnpublishNowModal
-          action={isScheduledToPublish ? "publish" : "unpublish"}
-          pageId={pageId}
-          siteId={siteId}
-          {...actionDisclosure}
-        />
-      )}
-      {cancelScheduleDisclosure.isOpen && (
-        <CancelScheduleModal
-          action={isScheduledToPublish ? "publish" : "unpublish"}
-          pageId={pageId}
-          siteId={siteId}
-          {...cancelScheduleDisclosure}
-        />
-      )}
       <VStack spacing="1.5rem" maxW="22.5rem" textAlign="center">
         <VStack spacing="0.5rem">
           <Center
@@ -104,14 +85,45 @@ const SuspendableEditingLockedOverlay = ({
             scheduled time.
           </Text>
         </VStack>
-        <Flex gap="0.75rem">
-          <Button variant="reverse" onClick={actionDisclosure.onOpen}>
-            {actionLabel}
-          </Button>
-          <Button onClick={cancelScheduleDisclosure.onOpen}>
-            Cancel schedule
-          </Button>
-        </Flex>
+        {/* Both actions here require the same ability as the pending
+            scheduled action itself (cancelSchedulePublish/Unpublish mirror
+            publishPage/unpublishPage's permission), so one check covers both
+            buttons — a viewer without that ability just sees the lock
+            message with no action, matching PublishButton/
+            PageMoreActionsButton's pattern elsewhere in this flow. */}
+        <Can do={isScheduledToPublish ? "publish" : "unpublish"} on="Resource">
+          <>
+            {/* Mounted only while open. These are plain confirmation dialogs
+                with no form/schema to reset, but this still keeps a fresh
+                mutation instance per open rather than reusing one whose
+                isPending/error state could otherwise linger from the
+                previous open. */}
+            {actionDisclosure.isOpen && (
+              <PublishOrUnpublishNowModal
+                action={isScheduledToPublish ? "publish" : "unpublish"}
+                pageId={pageId}
+                siteId={siteId}
+                {...actionDisclosure}
+              />
+            )}
+            {cancelScheduleDisclosure.isOpen && (
+              <CancelScheduleModal
+                action={isScheduledToPublish ? "publish" : "unpublish"}
+                pageId={pageId}
+                siteId={siteId}
+                {...cancelScheduleDisclosure}
+              />
+            )}
+            <Flex gap="0.75rem">
+              <Button variant="reverse" onClick={actionDisclosure.onOpen}>
+                {actionLabel}
+              </Button>
+              <Button onClick={cancelScheduleDisclosure.onOpen}>
+                Cancel schedule
+              </Button>
+            </Flex>
+          </>
+        </Can>
       </VStack>
     </Flex>
   )
