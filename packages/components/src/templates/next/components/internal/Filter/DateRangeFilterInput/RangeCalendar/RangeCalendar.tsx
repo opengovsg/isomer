@@ -18,10 +18,6 @@ interface RangeCalendarProps {
   onApply: (value: RangeCalendarValue | null) => void
 }
 
-// en-SG only; filter values are yyyy-MM-dd Gregorian. GregorianCalendar
-// instead of createCalendar avoids bundling every calendar system Adobe ships.
-const createGregorianCalendar = () => new GregorianCalendar()
-
 // Uncontrolled: parent only hears about selection on Apply. With no value,
 // today is staged in the grid until Apply or Clear.
 export const RangeCalendar = forwardRef<HTMLDivElement, RangeCalendarProps>(
@@ -31,7 +27,9 @@ export const RangeCalendar = forwardRef<HTMLDivElement, RangeCalendarProps>(
 
     const state = useRangeCalendarState({
       locale: "en-SG",
-      createCalendar: createGregorianCalendar,
+      // en-SG only; filter values are yyyy-MM-dd Gregorian. GregorianCalendar
+      // instead of createCalendar avoids bundling every calendar system Adobe ships.
+      createCalendar: (_name) => new GregorianCalendar(),
       defaultValue: initialValue,
       visibleDuration: { months: 1 },
       defaultFocusedValue: defaultValue?.start ?? today,
