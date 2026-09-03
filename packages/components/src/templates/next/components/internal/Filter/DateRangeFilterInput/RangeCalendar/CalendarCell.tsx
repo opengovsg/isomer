@@ -89,26 +89,28 @@ export const CalendarCell = ({
     state.selectDate(date)
   }
 
-  const outsideVisibleRangeProps = isOutsideVisibleRange
-    ? {
-        "aria-disabled": undefined,
-        onClick: (event: MouseEvent<HTMLDivElement>) => {
-          event.preventDefault()
-          selectOutsideVisibleDate()
-        },
-        onKeyDown: (event: KeyboardEvent<HTMLDivElement>) => {
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault()
-            selectOutsideVisibleDate()
-            return
-          }
-
-          buttonProps.onKeyDown?.(event)
-        },
-        onPointerEnter: () => onHoverOutsideDate(date),
-        onPointerLeave: () => onHoverOutsideDate(null),
+  const outsideVisibleRangeProps = {
+    "aria-disabled": undefined,
+    onClick: (event: MouseEvent<HTMLDivElement>) => {
+      event.preventDefault()
+      selectOutsideVisibleDate()
+    },
+    onKeyDown: (event: KeyboardEvent<HTMLDivElement>) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault()
+        selectOutsideVisibleDate()
+        return
       }
-    : {}
+
+      buttonProps.onKeyDown?.(event)
+    },
+    onPointerEnter: () => onHoverOutsideDate(date),
+    onPointerLeave: () => onHoverOutsideDate(null),
+  }
+
+  const mergedButtonProps = isOutsideVisibleRange
+    ? mergeProps(buttonProps, focusProps, outsideVisibleRangeProps)
+    : mergeProps(buttonProps, focusProps)
 
   return (
     <div {...cellProps} className="h-11 w-11">
@@ -120,7 +122,7 @@ export const CalendarCell = ({
         })}
       >
         <div
-          {...mergeProps(buttonProps, focusProps, outsideVisibleRangeProps)}
+          {...mergedButtonProps}
           ref={cellRef}
           className={calendarCellButtonStyles({
             isFocusVisible,
