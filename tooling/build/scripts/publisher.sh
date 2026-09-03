@@ -235,7 +235,22 @@ for ((attempt = 1; attempt <= MAX_ATTEMPTS; attempt++)); do
 
   ETag=$(jq -r '.ETag' distribution.json)
   CURRENT_ORIGIN_PATH=$(jq -r '.Distribution.DistributionConfig.Origins.Items[0].OriginPath' distribution.json)
-  CURRENT_BUILD_NUMBER=$(echo "$CURRENT_ORIGIN_PATH" | grep -oE '[0-9]+' | head -n1)
+
+  # Extract the build-number segment precisely (SITE_NAME can itself contain
+  # digits, e.g. "mindef-sg101", so a bare digit grep over the whole path
+  # would pick up digits from the site name instead of the build number).
+  # Fail closed to an empty value if the path doesn't exactly match
+  # /$SITE_NAME/<digits>/latest.
+  CURRENT_BUILD_NUMBER=""
+  EXPECTED_PREFIX="/$SITE_NAME/"
+  EXPECTED_SUFFIX="/latest"
+  if [[ "$CURRENT_ORIGIN_PATH" == "$EXPECTED_PREFIX"*"$EXPECTED_SUFFIX" ]]; then
+    MIDDLE="${CURRENT_ORIGIN_PATH#"$EXPECTED_PREFIX"}"
+    MIDDLE="${MIDDLE%"$EXPECTED_SUFFIX"}"
+    if [[ "$MIDDLE" =~ ^[0-9]+$ ]]; then
+      CURRENT_BUILD_NUMBER="$MIDDLE"
+    fi
+  fi
   echo "Attempt $attempt/$MAX_ATTEMPTS: ETag=$ETag, live build=$CURRENT_BUILD_NUMBER, this build=$CODEBUILD_BUILD_NUMBER"
 
   if [ -n "$CURRENT_BUILD_NUMBER" ] && [ "$CURRENT_BUILD_NUMBER" -gt "$CODEBUILD_BUILD_NUMBER" ]; then
