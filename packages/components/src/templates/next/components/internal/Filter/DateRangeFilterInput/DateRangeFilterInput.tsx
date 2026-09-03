@@ -197,7 +197,7 @@ export const DateRangeFilterInput = ({
                   id={popoverId}
                   role="dialog"
                   aria-label="Select date range"
-                  className="pointer-events-auto w-fit max-w-sm rounded-md border border-base-divider-medium bg-white p-4 shadow-md max-[479px]:p-3"
+                  className="pointer-events-auto w-fit max-w-sm rounded-md border border-base-divider-medium bg-white p-4 shadow-md max-[374px]:p-3"
                   onKeyDown={(event) => {
                     if (event.key === "Escape") {
                       event.preventDefault()
