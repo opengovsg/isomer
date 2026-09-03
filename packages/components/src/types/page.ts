@@ -164,18 +164,6 @@ const DateFilterSchema = Type.Object(
         },
       ),
     ),
-    // Optional custom label; falls back to a default at render.
-    dateRangeFilterLabel: Type.Optional(
-      Type.String({
-        title: "Custom date range label",
-        description:
-          "Label shown above the custom date range input in the filter sidebar.",
-        pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
-        errorMessage: {
-          pattern: "cannot be empty or have leading/trailing spaces",
-        },
-      }),
-    ),
   },
   { title: "Date filter" },
 )
