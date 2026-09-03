@@ -2,10 +2,14 @@
 
 import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react"
 import { parseDate } from "@internationalized/date"
-import { useEffect, useRef, useState } from "react"
+import { FocusScope, useFocusRing } from "@react-aria/focus"
+import { useFocusWithin } from "@react-aria/interactions"
+import { mergeProps } from "@react-aria/utils"
+import { useEffect, useId, useRef, useState } from "react"
 import { BiCalendar } from "react-icons/bi"
 import { useOnClickOutside } from "usehooks-ts"
 import { tv } from "~/lib/tv"
+import { focusRing } from "~/utils/tailwind"
 
 import type { RangeCalendarValue } from "./RangeCalendar/types"
 import { RangeCalendar } from "./RangeCalendar/RangeCalendar"
@@ -17,7 +21,15 @@ const dateRangeInputFieldStyles = tv({
       false: "border-base-divider-strong",
       true: "border-utility-feedback-error-medium",
     },
+    isFocusWithin: {
+      true: "shadow-[0_0_0_2px] shadow-utility-feedback-info",
+    },
   },
+})
+
+const calendarTriggerStyles = tv({
+  extend: focusRing,
+  base: "shrink-0 p-2.5 text-base-content-subtle",
 })
 
 export interface DateRangeFilterValue {
@@ -114,10 +126,21 @@ export const DateRangeFilterInput = ({
   onChange,
   presentation = "popover",
 }: DateRangeFilterInputProps) => {
+  const inputId = useId()
+  const popoverId = useId()
   const [isOpen, setIsOpen] = useState(false)
+  const [isFocusWithin, setIsFocusWithin] = useState(false)
   const [inputValue, setInputValue] = useState(() => valueToInputText(value))
   const [inputError, setInputError] = useState<string | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const calendarTriggerRef = useRef<HTMLButtonElement>(null)
+  const {
+    focusProps: triggerFocusProps,
+    isFocusVisible: isTriggerFocusVisible,
+  } = useFocusRing()
+  const { focusWithinProps } = useFocusWithin({
+    onFocusWithinChange: setIsFocusWithin,
+  })
 
   useEffect(() => {
     setInputValue(valueToInputText(value))
@@ -125,10 +148,15 @@ export const DateRangeFilterInput = ({
   }, [value])
 
   useOnClickOutside(containerRef, () => {
-    if (presentation === "popover") {
+    if (presentation === "popover" && isOpen) {
       setIsOpen(false)
     }
   })
+
+  const closePopover = () => {
+    setIsOpen(false)
+    calendarTriggerRef.current?.focus()
+  }
 
   const calendarValue: RangeCalendarValue | null = value
     ? { start: parseDate(value.start), end: parseDate(value.end) }
@@ -175,13 +203,23 @@ export const DateRangeFilterInput = ({
 
   return (
     <div className="mx-2 mb-2 flex flex-col gap-2" ref={containerRef}>
-      <p className="prose-headline-base-medium text-base-content">
+      <label
+        htmlFor={inputId}
+        className="prose-headline-base-medium text-base-content"
+      >
         Or, search for a date
-      </p>
+      </label>
 
       <div className="relative">
-        <div className={dateRangeInputFieldStyles({ isInvalid: !!inputError })}>
+        <div
+          {...focusWithinProps}
+          className={dateRangeInputFieldStyles({
+            isInvalid: !!inputError,
+            isFocusWithin,
+          })}
+        >
           <input
+            id={inputId}
             type="text"
             value={inputValue}
             placeholder="DD/MM/YYYY"
@@ -195,16 +233,23 @@ export const DateRangeFilterInput = ({
                 commitInputValue()
               }
             }}
-            className="prose-label-md-regular min-w-0 flex-1 border-0 bg-transparent py-2 pl-4 text-base-content outline-0 placeholder:text-base-content-subtle"
+            className="prose-label-md-regular min-w-0 flex-1 border-0 bg-transparent py-2 pl-4 text-base-content outline-none placeholder:text-base-content-subtle"
             aria-invalid={inputError ? true : undefined}
             aria-describedby={
               inputError ? "date-range-filter-error" : undefined
             }
           />
           <button
+            {...mergeProps(triggerFocusProps)}
+            ref={calendarTriggerRef}
             type="button"
-            className="shrink-0 p-2.5 text-base-content-subtle outline-0"
+            className={calendarTriggerStyles({
+              isFocusVisible: isTriggerFocusVisible,
+            })}
             aria-label="Open calendar"
+            aria-haspopup="true"
+            aria-expanded={isOpen}
+            aria-controls={isOpen ? popoverId : undefined}
             onClick={() => setIsOpen((prev) => !prev)}
           >
             <BiCalendar aria-hidden className="h-5 w-5" />
@@ -214,6 +259,7 @@ export const DateRangeFilterInput = ({
         {inputError && (
           <p
             id="date-range-filter-error"
+            role="alert"
             className="text-utility-feedback-error-medium prose-label-sm-regular mt-1"
           >
             {inputError}
@@ -221,9 +267,20 @@ export const DateRangeFilterInput = ({
         )}
 
         {isOpen && presentation === "popover" && (
-          <div className="absolute z-10 mt-1 w-fit rounded-md border border-base-divider-medium bg-white p-4 shadow-md">
-            {calendar}
-          </div>
+          <FocusScope contain restoreFocus autoFocus>
+            <div
+              id={popoverId}
+              className="absolute z-10 mt-1 w-fit rounded-md border border-base-divider-medium bg-white p-4 shadow-md"
+              onKeyDown={(event) => {
+                if (event.key === "Escape") {
+                  event.preventDefault()
+                  closePopover()
+                }
+              }}
+            >
+              {calendar}
+            </div>
+          </FocusScope>
         )}
       </div>
 

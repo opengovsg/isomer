@@ -4,10 +4,11 @@ import type { CalendarDate } from "@internationalized/date"
 import type { RangeCalendarState } from "@react-stately/calendar"
 import { isToday } from "@internationalized/date"
 import { useCalendarCell } from "@react-aria/calendar"
-import { useRef } from "react"
+import { useFocusRing } from "@react-aria/focus"
+import { mergeProps } from "@react-aria/utils"
+import { useRef, type KeyboardEvent, type MouseEvent } from "react"
 import { tv } from "~/lib/tv"
-
-import { FULL_DATE_FORMATTER } from "./constants"
+import { focusRing } from "~/utils/tailwind"
 
 const calendarCellRangeFillStyles = tv({
   base: "flex h-11 w-11 items-center justify-center",
@@ -25,7 +26,8 @@ const calendarCellRangeFillStyles = tv({
 })
 
 const calendarCellButtonStyles = tv({
-  base: "prose-label-md-medium flex h-11 w-11 items-center justify-center rounded-full outline-0 ring-inset hover:ring-2 hover:ring-base-content-strong",
+  extend: focusRing,
+  base: "prose-label-md-medium flex h-11 w-11 items-center justify-center rounded-full ring-inset hover:ring-2 hover:ring-base-content-strong",
   variants: {
     isCurrentDate: {
       true: "ring-1 ring-base-content-strong",
@@ -51,9 +53,6 @@ interface CalendarCellProps {
   onDateSelected: () => void
 }
 
-const formatAccessibleDate = (date: CalendarDate, timeZone: string): string =>
-  FULL_DATE_FORMATTER.format(date.toDate(timeZone))
-
 export const CalendarCell = ({
   state,
   date,
@@ -69,8 +68,7 @@ export const CalendarCell = ({
     isOutsideVisibleRange,
     formattedDate,
   } = useCalendarCell({ date }, state, cellRef)
-
-  const accessibleDateLabel = formatAccessibleDate(date, state.timeZone)
+  const { focusProps, isFocusVisible } = useFocusRing()
 
   const isRangeStart =
     !!highlightedRange && date.compare(highlightedRange.start) === 0
@@ -89,10 +87,36 @@ export const CalendarCell = ({
   // press handler uses internally, so adjacent-month days stay selectable
   // without paging the calendar away from the current view. Hover preview
   // is tracked separately (see `CalendarGrid`) for the same reason.
-  const handleOutsideRangeClick = () => {
+  const selectDate = () => {
     state.selectDate(date)
     onDateSelected()
   }
+
+  const outsideVisibleRangeProps = isOutsideVisibleRange
+    ? {
+        "aria-disabled": undefined,
+        onClick: (event: MouseEvent<HTMLDivElement>) => {
+          event.preventDefault()
+          selectDate()
+        },
+        onKeyDown: (event: KeyboardEvent<HTMLDivElement>) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault()
+            selectDate()
+            return
+          }
+
+          buttonProps.onKeyDown?.(event)
+        },
+        onPointerEnter: () => onHoverOutsideDate(date),
+        onPointerLeave: () => onHoverOutsideDate(null),
+      }
+    : {
+        onClick: (event: MouseEvent<HTMLDivElement>) => {
+          buttonProps.onClick?.(event)
+          onDateSelected()
+        },
+      }
 
   return (
     <div {...cellProps} className="h-11 w-11">
@@ -104,24 +128,10 @@ export const CalendarCell = ({
         })}
       >
         <div
-          {...buttonProps}
-          aria-label={accessibleDateLabel}
-          onClick={(event) => {
-            buttonProps.onClick?.(event)
-            if (!isOutsideVisibleRange) {
-              onDateSelected()
-            }
-          }}
-          {...(isOutsideVisibleRange
-            ? {
-                "aria-disabled": undefined,
-                onClick: handleOutsideRangeClick,
-                onPointerEnter: () => onHoverOutsideDate(date),
-                onPointerLeave: () => onHoverOutsideDate(null),
-              }
-            : {})}
+          {...mergeProps(buttonProps, focusProps, outsideVisibleRangeProps)}
           ref={cellRef}
           className={calendarCellButtonStyles({
+            isFocusVisible,
             isCurrentDate,
             isEndpoint,
             isOutsideVisibleRange: isOutsideVisibleRange && !isEndpoint,
