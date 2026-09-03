@@ -83,7 +83,7 @@ catalog:
   node-mocks-http: ^1.18.1
   npm-run-all2: ^9.0.3
   "@octokit/rest": ^22.0.0
-  "@inquirer/prompts": ^8.5.2
+  "@inquirer/prompts": ^8.6.0
   "@opengovsg/design-system-react": ^1.31.0
   "@opengovsg/validators": ^1.4.1
   "@paralleldrive/cuid2": ^3.3.0
@@ -175,15 +175,15 @@ catalogs:
     "@atlaskit/pragmatic-drag-and-drop": ^2.0.2
     "@atlaskit/pragmatic-drag-and-drop-hitbox": ^2.0.0
   "aws-sdk":
-    "@aws-sdk/client-acm": ^3.1116.0
-    "@aws-sdk/client-amplify": ^3.1116.0
-    "@aws-sdk/client-cloudfront": ^3.1116.0
-    "@aws-sdk/client-codebuild": ^3.1116.0
-    "@aws-sdk/client-s3": ^3.1116.0
-    "@aws-sdk/lib-storage": ^3.1116.0
-    "@aws-sdk/s3-request-presigner": ^3.1116.0
-    "@aws-sdk/credential-providers": ^3.1116.0
-    "@aws-sdk/rds-signer": ^3.1116.0
+    "@aws-sdk/client-acm": ^3.1118.0
+    "@aws-sdk/client-amplify": ^3.1118.0
+    "@aws-sdk/client-cloudfront": ^3.1118.0
+    "@aws-sdk/client-codebuild": ^3.1118.0
+    "@aws-sdk/client-s3": ^3.1118.0
+    "@aws-sdk/lib-storage": ^3.1118.0
+    "@aws-sdk/s3-request-presigner": ^3.1118.0
+    "@aws-sdk/credential-providers": ^3.1118.0
+    "@aws-sdk/rds-signer": ^3.1118.0
   babel:
     "@babel/plugin-transform-class-properties": ^8.0.1
     "@babel/plugin-transform-object-rest-spread": ^8.0.1
@@ -214,9 +214,9 @@ catalogs:
     "@types/pg": ^8.23.1
     "@types/pg-cursor": ^2.7.2
   prisma:
-    "@prisma/adapter-pg": 7.9.1
-    "@prisma/client": 7.9.1
-    prisma: 7.9.1
+    "@prisma/adapter-pg": 7.10.0
+    "@prisma/client": 7.10.0
+    prisma: 7.10.0
     prisma-json-types-generator: 5.1.1
     prisma-kysely: 3.2.1
   react:
@@ -250,9 +250,9 @@ catalogs:
     eslint-plugin-storybook: 10.4.6
     storybook-addon-pseudo-states: 10.4.6
   tanstack-query:
-    "@tanstack/query-devtools": ^5.102.2
-    "@tanstack/react-query": ^5.102.2
-    "@tanstack/react-query-devtools": ^5.102.2
+    "@tanstack/query-devtools": ^5.102.3
+    "@tanstack/react-query": ^5.102.3
+    "@tanstack/react-query-devtools": ^5.102.3
   tiptap:
     "@tiptap/core": ^3.30.3
     "@tiptap/extension-bold": ^3.30.3
