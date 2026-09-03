@@ -51,14 +51,14 @@ interface CalendarCellProps {
   state: RangeCalendarState
   date: CalendarDate
   highlightedRange: { start: CalendarDate; end: CalendarDate } | null
-  onHoverOutsideDate: (date: CalendarDate | null) => void
+  onPreviewOutsideDate: (date: CalendarDate | null) => void
 }
 
 export const CalendarCell = ({
   state,
   date,
   highlightedRange,
-  onHoverOutsideDate,
+  onPreviewOutsideDate,
 }: CalendarCellProps) => {
   const cellRef = useRef<HTMLDivElement>(null)
   const {
@@ -106,13 +106,19 @@ export const CalendarCell = ({
 
       buttonProps.onKeyDown?.(event)
     },
-    onPointerEnter: () => onHoverOutsideDate(date),
-    onPointerLeave: () => onHoverOutsideDate(null),
+    onPointerEnter: () => onPreviewOutsideDate(date),
+    onPointerLeave: () => onPreviewOutsideDate(null),
+    onFocus: () => onPreviewOutsideDate(date),
+    onBlur: () => onPreviewOutsideDate(null),
   }
 
-  const mergedButtonProps = isOutsideVisibleRange
-    ? mergeProps(buttonProps, focusProps, outsideVisibleRangeProps)
-    : mergeProps(buttonProps, focusProps)
+  const previewProps = isOutsideVisibleRange
+    ? outsideVisibleRangeProps
+    : {
+        onFocus: () => onPreviewOutsideDate(null),
+      }
+
+  const mergedButtonProps = mergeProps(buttonProps, focusProps, previewProps)
 
   return (
     <div

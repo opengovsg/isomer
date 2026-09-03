@@ -38,7 +38,7 @@ export function RangeCalendar({ defaultValue, onApply }: RangeCalendarProps) {
 
   const calendarRef = useRef<HTMLDivElement>(null)
   const { calendarProps, prevButtonProps, nextButtonProps, title } =
-    useRangeCalendar({ "aria-label": "Select date range" }, state, calendarRef)
+    useRangeCalendar({}, state, calendarRef)
 
   return (
     <div {...calendarProps} ref={calendarRef} className="w-fit">

@@ -5,9 +5,11 @@ import { FocusScope, useFocusRing } from "@react-aria/focus"
 import { useEffect, useId, useRef, useState } from "react"
 import { BiCalendar } from "react-icons/bi"
 import { useOnClickOutside } from "usehooks-ts"
+import { useBreakpoint } from "~/hooks/useBreakpoint"
 import { tv } from "~/lib/tv"
 
 import type { RangeCalendarValue } from "./RangeCalendar/types"
+import { SINGLE_DATE_MASK } from "./dateRangeFilterInputFormatting"
 import {
   parseInputText,
   valueToInputText,
@@ -51,12 +53,14 @@ export const DateRangeFilterInput = ({
   onChange,
 }: DateRangeFilterInputProps) => {
   const inputId = useId()
+  const formatHintId = useId()
   const popoverId = useId()
   const [isOpen, setIsOpen] = useState(false)
   const [inputValue, setInputValue] = useState(() => valueToInputText(value))
   const [inputError, setInputError] = useState<string | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const calendarTriggerRef = useRef<HTMLButtonElement>(null)
+  const isDesktop = useBreakpoint("lg")
   const { focusProps: triggerFocusProps, isFocused: isTriggerFocused } =
     useFocusRing()
 
@@ -119,6 +123,10 @@ export const DateRangeFilterInput = ({
       >
         Or, search for a date
       </label>
+      <p id={formatHintId} className="sr-only">
+        Use {SINGLE_DATE_MASK} format. For a range, enter {SINGLE_DATE_MASK} -{" "}
+        {SINGLE_DATE_MASK}.
+      </p>
 
       <div className="relative">
         <div
@@ -130,6 +138,8 @@ export const DateRangeFilterInput = ({
             <DateRangeFilterTextInput
               id={inputId}
               value={inputValue}
+              formatHintId={formatHintId}
+              blurCommitExcludeRef={calendarTriggerRef}
               onValueChange={(nextValue) => {
                 setInputValue(nextValue)
                 setInputError(null)
@@ -147,7 +157,7 @@ export const DateRangeFilterInput = ({
               isFocused: isTriggerFocused,
             })}
             aria-label="Open calendar"
-            aria-haspopup="true"
+            aria-haspopup="dialog"
             aria-expanded={isOpen}
             aria-controls={isOpen ? popoverId : undefined}
             onClick={() => setIsOpen((prev) => !prev)}
@@ -181,6 +191,7 @@ export const DateRangeFilterInput = ({
                   id={popoverId}
                   role="dialog"
                   aria-label="Select date range"
+                  aria-modal={isDesktop ? undefined : true}
                   className="pointer-events-auto w-fit max-w-sm rounded-md border border-base-divider-medium bg-white p-4 shadow-md max-[374px]:p-3"
                   onKeyDown={(event) => {
                     if (event.key === "Escape") {
