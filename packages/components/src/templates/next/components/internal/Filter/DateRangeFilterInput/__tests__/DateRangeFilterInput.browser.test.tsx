@@ -206,6 +206,41 @@ describe("DateRangeFilterInput", () => {
     expect(input).toHaveValue("09/03")
   })
 
+  it("focuses today's date when the calendar is opened with the keyboard", () => {
+    // Arrange
+    const today = getSingaporeDateYYYYMMDD()
+    const todayDay = String(Number(today.split("-")[2]))
+    render(<DateRangeFilterInput value={undefined} onChange={vi.fn()} />)
+    const trigger = screen.getByLabelText("Open calendar")
+
+    // Act
+    trigger.focus()
+    fireEvent.keyDown(trigger, { key: "Enter" })
+    fireEvent.click(trigger)
+
+    // Assert
+    expect(document.activeElement).toHaveTextContent(todayDay)
+    expect(document.activeElement).toHaveAttribute("tabindex", "0")
+    expect(screen.getByLabelText(/^previous$/i)).not.toHaveFocus()
+  })
+
+  it("focuses the applied start date when the calendar is re-opened", () => {
+    // Arrange
+    render(
+      <DateRangeFilterInput
+        value={{ start: currentMonthIso(13), end: currentMonthIso(20) }}
+        onChange={vi.fn()}
+      />,
+    )
+
+    // Act
+    openCalendar()
+
+    // Assert
+    expect(document.activeElement).toHaveTextContent("13")
+    expect(document.activeElement).toHaveAttribute("tabindex", "0")
+  })
+
   it("shows a ghost placeholder suffix while focused and incomplete", () => {
     // Arrange
     render(<DateRangeFilterInput value={undefined} onChange={vi.fn()} />)

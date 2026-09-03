@@ -33,6 +33,9 @@ export const RangeCalendar = forwardRef<HTMLDivElement, RangeCalendarProps>(
       defaultValue: initialValue,
       visibleDuration: { months: 1 },
       defaultFocusedValue: defaultValue?.start ?? today,
+      // Focus the applied start date (or today) instead of the first tabbable
+      // control, which is the previous-month button.
+      autoFocus: true,
     })
 
     const calendarRef = useRef<HTMLDivElement>(null)
