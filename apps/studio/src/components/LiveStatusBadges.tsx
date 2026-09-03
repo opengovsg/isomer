@@ -25,10 +25,20 @@ interface LiveStatusBadgesProps {
 // callers no longer need to distinguish the two in the UI.
 const LIVE_STATUS_CONFIG: Record<
   LiveStatus,
-  { label: string; colorScheme: string }
+  // bgColor overrides the design system's own subtle-variant background,
+  // which is lighter than the design here calls for.
+  { label: string; colorScheme: string; bgColor?: string }
 > = {
-  live: { label: "Published", colorScheme: "success" },
-  liveTemplate: { label: "Published", colorScheme: "success" },
+  live: {
+    label: "Published",
+    colorScheme: "success",
+    bgColor: "interaction.success-subtle.default",
+  },
+  liveTemplate: {
+    label: "Published",
+    colorScheme: "success",
+    bgColor: "interaction.success-subtle.default",
+  },
   notLive: { label: "Unpublished", colorScheme: "neutral" },
 }
 
@@ -38,10 +48,15 @@ export const LiveStatusBadges = ({
   scheduledAction,
   lastPublishedAt,
 }: LiveStatusBadgesProps): JSX.Element => {
-  const { label, colorScheme } = LIVE_STATUS_CONFIG[liveStatus]
+  const { label, colorScheme, bgColor } = LIVE_STATUS_CONFIG[liveStatus]
 
   const livePill = (
-    <PillBadge size="xs" variant="subtle" colorScheme={colorScheme}>
+    <PillBadge
+      size="xs"
+      variant="subtle"
+      colorScheme={colorScheme}
+      bgColor={bgColor}
+    >
       <BadgeLeftIcon fontSize="0.5rem" as={BiSolidCircle} />
       <Text textStyle="legal">{label}</Text>
     </PillBadge>
@@ -51,7 +66,7 @@ export const LiveStatusBadges = ({
     <HStack spacing="0.5rem">
       {liveStatus !== "notLive" && lastPublishedAt ? (
         <Tooltip
-          label={`Last published on ${format(lastPublishedAt, "MMMM d, yyyy h:mm a")}`}
+          label={`Last published on ${format(lastPublishedAt, "d MMM yyyy, h:mma")}`}
           placement="bottom"
           hasArrow
         >
@@ -73,7 +88,7 @@ export const LiveStatusBadges = ({
                 ? "Will be unpublished on"
                 : "Will be published on"}
               <br />
-              {format(scheduledAt, "MMMM d, yyyy h:mm a")}
+              {format(scheduledAt, "d MMM yyyy, h:mma")}
             </>
           }
           placement="bottom"
