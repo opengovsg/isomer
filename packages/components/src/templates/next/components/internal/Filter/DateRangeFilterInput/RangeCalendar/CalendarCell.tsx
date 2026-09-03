@@ -10,8 +10,10 @@ import { useRef, type KeyboardEvent, type MouseEvent } from "react"
 import { tv } from "~/lib/tv"
 import { focusRing } from "~/utils/tailwind"
 
+import { dayCellSize } from "./dayCellSize"
+
 const calendarCellRangeFillStyles = tv({
-  base: "flex h-11 w-11 items-center justify-center max-[374px]:h-9 max-[374px]:w-9",
+  base: `flex ${dayCellSize} items-center justify-center`,
   variants: {
     isInRange: {
       true: "bg-base-canvas-backdrop",
@@ -27,7 +29,7 @@ const calendarCellRangeFillStyles = tv({
 
 const calendarCellButtonStyles = tv({
   extend: focusRing,
-  base: "prose-label-md-medium flex h-11 w-11 items-center justify-center rounded-full ring-inset hover:ring-2 hover:ring-base-content-strong max-[374px]:h-9 max-[374px]:w-9",
+  base: `prose-label-md-medium flex ${dayCellSize} items-center justify-center rounded-full ring-inset hover:ring-2 hover:ring-base-content-strong`,
   variants: {
     isCurrentDate: {
       true: "ring-1 ring-base-content-strong",
@@ -115,7 +117,7 @@ export const CalendarCell = ({
   return (
     <div
       {...cellProps}
-      className={`h-11 w-11 max-[374px]:h-9 max-[374px]:w-9${isFocusVisible ? " relative z-10" : ""}`}
+      className={`${dayCellSize}${isFocusVisible ? " relative z-10" : ""}`}
     >
       <div
         className={calendarCellRangeFillStyles({

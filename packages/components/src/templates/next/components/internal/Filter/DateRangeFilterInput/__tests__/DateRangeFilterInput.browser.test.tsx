@@ -188,7 +188,7 @@ describe("DateRangeFilterInput", () => {
     })
 
     // Assert
-    expect(input).toHaveValue("09/03/1996")
+    expect((input as HTMLInputElement).value).toBe("09/03/1996")
   })
 
   it("blocks alphabetic characters from being entered", () => {
@@ -203,7 +203,7 @@ describe("DateRangeFilterInput", () => {
     })
 
     // Assert
-    expect(input).toHaveValue("09/03")
+    expect((input as HTMLInputElement).value).toBe("09/03")
   })
 
   it("focuses today's date when the calendar is opened with the keyboard", () => {
@@ -219,9 +219,11 @@ describe("DateRangeFilterInput", () => {
     fireEvent.click(trigger)
 
     // Assert
-    expect(document.activeElement).toHaveTextContent(todayDay)
-    expect(document.activeElement).toHaveAttribute("tabindex", "0")
-    expect(screen.getByLabelText(/^previous$/i)).not.toHaveFocus()
+    expect(document.activeElement?.textContent).toBe(todayDay)
+    expect(document.activeElement?.getAttribute("tabindex")).toBe("0")
+    expect(document.activeElement).not.toBe(
+      screen.getByLabelText(/^previous$/i),
+    )
   })
 
   it("focuses the applied start date when the calendar is re-opened", () => {
@@ -237,8 +239,8 @@ describe("DateRangeFilterInput", () => {
     openCalendar()
 
     // Assert
-    expect(document.activeElement).toHaveTextContent("13")
-    expect(document.activeElement).toHaveAttribute("tabindex", "0")
+    expect(document.activeElement?.textContent).toBe("13")
+    expect(document.activeElement?.getAttribute("tabindex")).toBe("0")
   })
 
   it("shows a ghost placeholder suffix while focused and incomplete", () => {

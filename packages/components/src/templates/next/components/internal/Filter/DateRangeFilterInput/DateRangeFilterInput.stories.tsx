@@ -52,10 +52,13 @@ export const OpenedCalendar: Story = {
   args: {
     value: undefined,
   },
+  parameters: {
+    chromatic: withChromaticModes(["desktop", "mobileSmall", "mobile"]),
+  },
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
     await userEvent.click(screen.getByLabelText("Open calendar"))
-    // Calendar stays in the same canvas: popover on desktop, overlay on mobile.
+    await screen.findByText("Clear")
     await screen.findByText("Apply")
   },
 }
@@ -71,21 +74,6 @@ export const SelectRangeAndApply: Story = {
     await userEvent.click(screen.getByText("10"))
     await userEvent.click(screen.getByText("20"))
     await userEvent.click(await screen.findByText("Apply"))
-  },
-}
-
-export const OpenedCalendarOnMobile: Story = {
-  args: {
-    value: undefined,
-  },
-  parameters: {
-    chromatic: withChromaticModes(["mobileSmall", "mobile"]),
-  },
-  play: async ({ canvasElement }) => {
-    const screen = within(canvasElement)
-    await userEvent.click(screen.getByLabelText("Open calendar"))
-    await screen.findByText("Clear")
-    await screen.findByText("Apply")
   },
 }
 

@@ -4,8 +4,7 @@ export const MAX_DATE_RANGE_DIGITS = 16
 // Index in SINGLE_DATE_MASK immediately after each digit slot (1-based digit count).
 const MASK_INDEX_AFTER_DIGIT = [1, 2, 4, 5, 7, 8, 9, 10]
 
-export const extractDateDigits = (text: string): string =>
-  text.replace(/\D/g, "")
+const extractDateDigits = (text: string): string => text.replace(/\D/g, "")
 
 const formatSingleDateDigits = (digits: string): string => {
   const day = digits.slice(0, 2)
@@ -21,7 +20,7 @@ const formatSingleDateDigits = (digits: string): string => {
   return `${day}/${month}/${year}`
 }
 
-export const formatDateRangeInputDigits = (digits: string): string => {
+const formatDateRangeInputDigits = (digits: string): string => {
   const capped = digits.slice(0, MAX_DATE_RANGE_DIGITS)
   const firstDateDigits = capped.slice(0, 8)
   const secondDateDigits = capped.slice(8)
@@ -41,7 +40,11 @@ const getSingleDateGhostSuffix = (digitCount: number): string => {
   if (digitCount >= 8) {
     return ""
   }
-  return SINGLE_DATE_MASK.slice(MASK_INDEX_AFTER_DIGIT[digitCount - 1]!)
+  const maskIndex = MASK_INDEX_AFTER_DIGIT[digitCount - 1]
+  if (maskIndex === undefined) {
+    return ""
+  }
+  return SINGLE_DATE_MASK.slice(maskIndex)
 }
 
 export const getDateRangeInputGhostSuffix = (
@@ -56,7 +59,7 @@ export const getDateRangeInputGhostSuffix = (
   return getSingleDateGhostSuffix(secondDateDigitCount)
 }
 
-export const cursorPositionAfterDigitIndex = (
+const cursorPositionAfterDigitIndex = (
   formatted: string,
   digitIndex: number,
 ): number => {
