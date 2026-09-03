@@ -2,7 +2,6 @@
 
 import { parseDate } from "@internationalized/date"
 import { FocusScope, useFocusRing } from "@react-aria/focus"
-import { mergeProps } from "@react-aria/utils"
 import { useEffect, useId, useRef, useState } from "react"
 import { BiCalendar } from "react-icons/bi"
 import { useOnClickOutside } from "usehooks-ts"
@@ -25,15 +24,6 @@ const dateRangeInputFieldStyles = tv({
     isInvalid: {
       false: "shadow-base-divider-strong",
       true: "shadow-utility-feedback-error-medium",
-    },
-  },
-})
-
-const dateRangeInputSectionStyles = tv({
-  base: "min-w-0 flex-1 self-stretch rounded-l",
-  variants: {
-    isFocused: {
-      true: "relative z-10 shadow-[0_0_0_2px] shadow-utility-feedback-info",
     },
   },
 })
@@ -63,7 +53,6 @@ export const DateRangeFilterInput = ({
   const inputId = useId()
   const popoverId = useId()
   const [isOpen, setIsOpen] = useState(false)
-  const [isInputFocused, setIsInputFocused] = useState(false)
   const [inputValue, setInputValue] = useState(() => valueToInputText(value))
   const [inputError, setInputError] = useState<string | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -137,11 +126,7 @@ export const DateRangeFilterInput = ({
             isInvalid: !!inputError,
           })}
         >
-          <div
-            className={dateRangeInputSectionStyles({
-              isFocused: isInputFocused,
-            })}
-          >
+          <div className="min-w-0 flex-1 self-stretch rounded-l focus-within:relative focus-within:z-10 focus-within:shadow-[0_0_0_2px] focus-within:shadow-utility-feedback-info">
             <DateRangeFilterTextInput
               id={inputId}
               value={inputValue}
@@ -150,13 +135,12 @@ export const DateRangeFilterInput = ({
                 setInputError(null)
               }}
               onCommit={commitInputValue}
-              onFocusChange={setIsInputFocused}
               isInvalid={!!inputError}
               errorId={inputError ? "date-range-filter-error" : undefined}
             />
           </div>
           <button
-            {...mergeProps(triggerFocusProps)}
+            {...triggerFocusProps}
             ref={calendarTriggerRef}
             type="button"
             className={calendarTriggerStyles({

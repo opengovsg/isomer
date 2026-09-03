@@ -11,16 +11,6 @@ import { RangeCalendar } from "../RangeCalendar/RangeCalendar"
 // cell selection deterministically.
 const APRIL_15_2026 = new CalendarDate(2026, 4, 15)
 
-const findOutsideRangeCellByDay = (day: string): HTMLElement => {
-  const cell = Array.from(
-    document.querySelectorAll(".text-base-content-light"),
-  ).find((el) => el.textContent === day)
-  if (!cell) {
-    throw new Error(`Could not find an outside-range cell for day ${day}`)
-  }
-  return cell as HTMLElement
-}
-
 describe("RangeCalendar", () => {
   it("orders the range correctly when the later date is clicked before the earlier date", () => {
     // Arrange
@@ -56,7 +46,13 @@ describe("RangeCalendar", () => {
 
     // Act
     fireEvent.click(screen.getByText("15"))
-    fireEvent.click(findOutsideRangeCellByDay("1"))
+    const outsideRangeCell = Array.from(
+      document.querySelectorAll(".text-base-content-light"),
+    ).find((el) => el.textContent === "1")
+    if (!outsideRangeCell) {
+      throw new Error("Could not find an outside-range cell for day 1")
+    }
+    fireEvent.click(outsideRangeCell)
     fireEvent.click(screen.getByText("Apply"))
 
     // Assert

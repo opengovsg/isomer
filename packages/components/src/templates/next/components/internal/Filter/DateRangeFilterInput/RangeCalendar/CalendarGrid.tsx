@@ -7,6 +7,7 @@ import { useCalendarGrid } from "@react-aria/calendar"
 import { useMemo, useState } from "react"
 
 import { CalendarCell } from "./CalendarCell"
+import { dayCellSize } from "./dayCellSize"
 
 interface CalendarGridProps {
   state: RangeCalendarState
@@ -43,7 +44,7 @@ export const CalendarGrid = ({ state }: CalendarGridProps) => {
           <div
             key={index}
             role="columnheader"
-            className="prose-label-md-medium flex h-11 w-11 items-center justify-center text-base-content max-[374px]:h-9 max-[374px]:w-9"
+            className={`prose-label-md-medium flex ${dayCellSize} items-center justify-center text-base-content`}
           >
             {day}
           </div>
@@ -64,11 +65,7 @@ export const CalendarGrid = ({ state }: CalendarGridProps) => {
                     onHoverOutsideDate={setHoveredOutsideDate}
                   />
                 ) : (
-                  <div
-                    key={index}
-                    role="gridcell"
-                    className="h-11 w-11 max-[374px]:h-9 max-[374px]:w-9"
-                  />
+                  <div key={index} role="gridcell" className={dayCellSize} />
                 ),
               )}
           </div>
