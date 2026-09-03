@@ -140,23 +140,63 @@ export const getLastPublishedAt = async (
 
 const CONTAINER_TYPES = [ResourceType.Folder, ResourceType.Collection]
 
-// Folder/Collection ids that count as "live"/"not live" for the status
-// filter, derived from the same child-live-status map the Status column
-// badges use — see getChildLiveStatusMap. A container is "live" (whether
-// fully live or just live-template) iff something in its subtree is
-// published; otherwise it's "not live".
-export const splitContainerIdsByLiveStatus = (
+// Folder/Collection ids that count as each status tag, derived from the same
+// child-status map the Status column badges use — see getChildLiveStatusMap.
+// A container is "live" (whether fully live or just live-template) iff
+// something in its subtree is published; otherwise it's "not live". The
+// scheduled/draft tags key off the container's own IndexPage child, since
+// that's the only place a Folder/Collection's schedule/draft state actually
+// lives.
+export const splitContainerIdsByStatus = (
   childLiveStatus: Map<
     string,
-    { hasLiveDescendant: boolean; hasLiveIndexPage: boolean }
+    {
+      hasLiveDescendant: boolean
+      hasLiveIndexPage: boolean
+      indexPageDraftBlobId: string | null
+      indexPageScheduledAt: Date | null
+      indexPageScheduledAction: ScheduledAction | null
+    }
   >,
-): { liveContainerIds: string[]; notLiveContainerIds: string[] } => {
+): {
+  liveContainerIds: string[]
+  notLiveContainerIds: string[]
+  hasDraftContainerIds: string[]
+  scheduledToPublishContainerIds: string[]
+  scheduledToUnpublishContainerIds: string[]
+} => {
   const liveContainerIds: string[] = []
   const notLiveContainerIds: string[] = []
-  for (const [id, { hasLiveDescendant }] of childLiveStatus) {
+  const hasDraftContainerIds: string[] = []
+  const scheduledToPublishContainerIds: string[] = []
+  const scheduledToUnpublishContainerIds: string[] = []
+  for (const [
+    id,
+    {
+      hasLiveDescendant,
+      indexPageDraftBlobId,
+      indexPageScheduledAt,
+      indexPageScheduledAction,
+    },
+  ] of childLiveStatus) {
     ;(hasLiveDescendant ? liveContainerIds : notLiveContainerIds).push(id)
+    if (indexPageDraftBlobId) {
+      hasDraftContainerIds.push(id)
+    }
+    if (indexPageScheduledAt) {
+      ;(indexPageScheduledAction === ScheduledAction.Unpublish
+        ? scheduledToUnpublishContainerIds
+        : scheduledToPublishContainerIds
+      ).push(id)
+    }
   }
-  return { liveContainerIds, notLiveContainerIds }
+  return {
+    liveContainerIds,
+    notLiveContainerIds,
+    hasDraftContainerIds,
+    scheduledToPublishContainerIds,
+    scheduledToUnpublishContainerIds,
+  }
 }
 
 const matchesContainerIds = (
@@ -166,20 +206,26 @@ const matchesContainerIds = (
 
 // Shared by listWithoutRoot/countWithoutRoot so the Status filter dropdown
 // and the "N items" count agree. Tags are OR'd together (a row matches if it
-// satisfies any checked tag). Live/notLive need liveContainerIds/
-// notLiveContainerIds (from splitContainerIdsByLiveStatus) since a Folder/
-// Collection's own publishedVersionId is never set — every other tag reads
-// the row's own columns uniformly regardless of type.
+// satisfies any checked tag). Every tag needs the container-id sets (from
+// splitContainerIdsByStatus) since a Folder/Collection's own
+// publishedVersionId/scheduledAt/scheduledAction/draftBlobId are never set —
+// that state lives on its child IndexPage instead.
 export const applyResourceStatusFilter = <O>(
   query: SelectQueryBuilder<DB, "Resource", O>,
   {
     statusFilter,
     liveContainerIds,
     notLiveContainerIds,
+    hasDraftContainerIds,
+    scheduledToPublishContainerIds,
+    scheduledToUnpublishContainerIds,
   }: {
     statusFilter: ResourceStatusFilterOption[]
     liveContainerIds: string[]
     notLiveContainerIds: string[]
+    hasDraftContainerIds: string[]
+    scheduledToPublishContainerIds: string[]
+    scheduledToUnpublishContainerIds: string[]
   },
 ): SelectQueryBuilder<DB, "Resource", O> => {
   if (statusFilter.length === 0) {
@@ -210,20 +256,40 @@ export const applyResourceStatusFilter = <O>(
               ]),
             ])
           case "scheduledToPublish":
-            return eb.and([
-              eb("Resource.scheduledAt", "is not", null),
-              eb.or([
-                eb("Resource.scheduledAction", "is", null),
-                eb("Resource.scheduledAction", "=", ScheduledAction.Publish),
+            return eb.or([
+              eb.and([
+                isLeaf,
+                eb("Resource.scheduledAt", "is not", null),
+                eb.or([
+                  eb("Resource.scheduledAction", "is", null),
+                  eb("Resource.scheduledAction", "=", ScheduledAction.Publish),
+                ]),
+              ]),
+              eb.and([
+                isContainer,
+                matchesContainerIds(eb, scheduledToPublishContainerIds),
               ]),
             ])
           case "scheduledToUnpublish":
-            return eb.and([
-              eb("Resource.scheduledAt", "is not", null),
-              eb("Resource.scheduledAction", "=", ScheduledAction.Unpublish),
+            return eb.or([
+              eb.and([
+                isLeaf,
+                eb("Resource.scheduledAt", "is not", null),
+                eb("Resource.scheduledAction", "=", ScheduledAction.Unpublish),
+              ]),
+              eb.and([
+                isContainer,
+                matchesContainerIds(eb, scheduledToUnpublishContainerIds),
+              ]),
             ])
           case "hasDraft":
-            return eb("Resource.draftBlobId", "is not", null)
+            return eb.or([
+              eb.and([isLeaf, eb("Resource.draftBlobId", "is not", null)]),
+              eb.and([
+                isContainer,
+                matchesContainerIds(eb, hasDraftContainerIds),
+              ]),
+            ])
         }
       }),
     )
@@ -1434,11 +1500,29 @@ export const getMoveLockInfo = async (
 // IndexPage (one level under it): a Folder/Collection is genuinely "Live"
 // only when this is true, versus "Live · Template" when it's not published
 // but `hasLiveDescendant` is still true because something deeper is live.
+//
+// `indexPageDraftBlobId`/`indexPageScheduledAt`/`indexPageScheduledAction` mirror
+// that same immediate IndexPage's own draft/schedule columns — a Folder/
+// Collection never carries its own draftBlobId/scheduledAt/scheduledAction,
+// so the Status badges and the dashboard status filter both need this to
+// read the container's actual draft/schedule state instead of always seeing
+// null. At most one row per branch can match (depth 1 + IndexPage), so the
+// conditional aggregates below resolve to that row's values, or null if the
+// container has no IndexPage yet.
 export const getChildLiveStatusMap = async (
   trx: SafeKysely,
   { siteId, resourceId }: { siteId: number; resourceId: string | null },
 ): Promise<
-  Map<string, { hasLiveDescendant: boolean; hasLiveIndexPage: boolean }>
+  Map<
+    string,
+    {
+      hasLiveDescendant: boolean
+      hasLiveIndexPage: boolean
+      indexPageDraftBlobId: string | null
+      indexPageScheduledAt: Date | null
+      indexPageScheduledAction: ScheduledAction | null
+    }
+  >
 > => {
   const rows = await trx
     .withRecursive("branchSubtree", (eb) =>
@@ -1482,6 +1566,18 @@ export const getChildLiveStatusMap = async (
         and "Resource"."type" = ${ResourceType.IndexPage}
         and "Resource"."publishedVersionId" is not null
       )`.as("hasLiveIndexPage"),
+      sql<string | null>`max(case when
+        "branchSubtree"."depth" = 1
+        and "Resource"."type" = ${ResourceType.IndexPage}
+        then "Resource"."draftBlobId" end)`.as("indexPageDraftBlobId"),
+      sql<Date | null>`max(case when
+        "branchSubtree"."depth" = 1
+        and "Resource"."type" = ${ResourceType.IndexPage}
+        then "Resource"."scheduledAt" end)`.as("indexPageScheduledAt"),
+      sql<ScheduledAction | null>`max(case when
+        "branchSubtree"."depth" = 1
+        and "Resource"."type" = ${ResourceType.IndexPage}
+        then "Resource"."scheduledAction" end)`.as("indexPageScheduledAction"),
     ])
     .execute()
 
@@ -1491,6 +1587,9 @@ export const getChildLiveStatusMap = async (
       {
         hasLiveDescendant: row.hasLiveDescendant,
         hasLiveIndexPage: row.hasLiveIndexPage,
+        indexPageDraftBlobId: row.indexPageDraftBlobId,
+        indexPageScheduledAt: row.indexPageScheduledAt,
+        indexPageScheduledAction: row.indexPageScheduledAction,
       },
     ]),
   )

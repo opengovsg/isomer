@@ -46,7 +46,7 @@ export const ScheduleBanner = ({
           <>
             This page will become unpublished between{" "}
             <Text display="inline" textStyle="subhead-2">
-              {format(scheduledAt, "h:mm")} –{" "}
+              {format(scheduledAt, "h:mm a")} –{" "}
               {format(
                 add(scheduledAt, { minutes: UNPUBLISH_WINDOW_MINUTES }),
                 "h:mm a",

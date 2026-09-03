@@ -3531,6 +3531,36 @@ describe("resource.router", async () => {
         ])
       })
 
+      it("should include a container whose IndexPage is scheduled to publish when statusFilter is ['scheduledToPublish']", async () => {
+        // Arrange
+        const { folder, site } = await setupFolder()
+        await setupPageResource({
+          resourceType: ResourceType.IndexPage,
+          siteId: site.id,
+          parentId: folder.id,
+          scheduledAt: new Date(Date.now() + 60 * 60 * 1000),
+          scheduledAction: ScheduledAction.Publish,
+        })
+        await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          permalink: "not-scheduled",
+        })
+        await setupEditorPermissions({
+          siteId: site.id,
+          userId: session.userId,
+        })
+
+        // Act
+        const { items: result } = await caller.listWithoutRoot({
+          siteId: site.id,
+          statusFilter: ["scheduledToPublish"],
+        })
+
+        // Assert
+        expect(result).toEqual([expect.objectContaining({ id: folder.id })])
+      })
+
       it("should return rows scheduled to unpublish when statusFilter is ['scheduledToUnpublish']", async () => {
         // Arrange
         const { site, page: scheduledPage } = await setupPageResource({
@@ -3563,6 +3593,38 @@ describe("resource.router", async () => {
         ])
       })
 
+      it("should include a container whose IndexPage is scheduled to unpublish when statusFilter is ['scheduledToUnpublish']", async () => {
+        // Arrange
+        const { folder, site } = await setupFolder()
+        await setupPageResource({
+          resourceType: ResourceType.IndexPage,
+          siteId: site.id,
+          parentId: folder.id,
+          state: ResourceState.Published,
+          userId: session.userId,
+          scheduledAt: new Date(Date.now() + 60 * 60 * 1000),
+          scheduledAction: ScheduledAction.Unpublish,
+        })
+        await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          permalink: "not-scheduled",
+        })
+        await setupEditorPermissions({
+          siteId: site.id,
+          userId: session.userId,
+        })
+
+        // Act
+        const { items: result } = await caller.listWithoutRoot({
+          siteId: site.id,
+          statusFilter: ["scheduledToUnpublish"],
+        })
+
+        // Assert
+        expect(result).toEqual([expect.objectContaining({ id: folder.id })])
+      })
+
       it("should return rows with a draft when statusFilter is ['hasDraft']", async () => {
         // Arrange
         const { site, page: draftPage } = await setupPageResource({
@@ -3589,6 +3651,36 @@ describe("resource.router", async () => {
 
         // Assert
         expect(result).toEqual([expect.objectContaining({ id: draftPage.id })])
+      })
+
+      it("should include a container whose IndexPage has a draft when statusFilter is ['hasDraft']", async () => {
+        // Arrange
+        const { folder, site } = await setupFolder()
+        await setupPageResource({
+          resourceType: ResourceType.IndexPage,
+          siteId: site.id,
+          parentId: folder.id,
+        })
+        await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          state: ResourceState.Published,
+          userId: session.userId,
+          permalink: "no-draft",
+        })
+        await setupEditorPermissions({
+          siteId: site.id,
+          userId: session.userId,
+        })
+
+        // Act
+        const { items: result } = await caller.listWithoutRoot({
+          siteId: site.id,
+          statusFilter: ["hasDraft"],
+        })
+
+        // Assert
+        expect(result).toEqual([expect.objectContaining({ id: folder.id })])
       })
 
       it("should OR multiple tags together", async () => {

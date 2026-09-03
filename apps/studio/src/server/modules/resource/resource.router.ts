@@ -67,7 +67,7 @@ import {
   hasPublishedDescendant,
   publishResource,
   selectLastPublishedAt,
-  splitContainerIdsByLiveStatus,
+  splitContainerIdsByStatus,
 } from "./resource.service"
 
 const fetchResource = async (resourceId: string | null) => {
@@ -704,24 +704,29 @@ export const resourceRouter = router({
       }
 
       if (statusFilter.length > 0) {
-        // Only fetch the child-live-status map when a live/notLive tag is
-        // actually selected — every other tag filters on plain columns.
-        const needsLiveStatus = statusFilter.some(
-          (tag) => tag === "live" || tag === "notLive",
+        // Every tag needs the container-id sets — a Folder/Collection's own
+        // publishedVersionId/scheduledAt/scheduledAction/draftBlobId are
+        // never set, so all five tags key off its child IndexPage instead.
+        const {
+          liveContainerIds,
+          notLiveContainerIds,
+          hasDraftContainerIds,
+          scheduledToPublishContainerIds,
+          scheduledToUnpublishContainerIds,
+        } = splitContainerIdsByStatus(
+          await getChildLiveStatusMap(db, {
+            siteId,
+            resourceId: resourceId ? String(resourceId) : null,
+          }),
         )
-        const { liveContainerIds, notLiveContainerIds } = needsLiveStatus
-          ? splitContainerIdsByLiveStatus(
-              await getChildLiveStatusMap(db, {
-                siteId,
-                resourceId: resourceId ? String(resourceId) : null,
-              }),
-            )
-          : { liveContainerIds: [], notLiveContainerIds: [] }
 
         query = applyResourceStatusFilter(query, {
           statusFilter,
           liveContainerIds,
           notLiveContainerIds,
+          hasDraftContainerIds,
+          scheduledToPublishContainerIds,
+          scheduledToUnpublishContainerIds,
         })
       }
 
@@ -771,12 +776,20 @@ export const resourceRouter = router({
         })
 
         if (statusFilter.length > 0) {
-          const { liveContainerIds, notLiveContainerIds } =
-            splitContainerIdsByLiveStatus(childLiveStatus)
+          const {
+            liveContainerIds,
+            notLiveContainerIds,
+            hasDraftContainerIds,
+            scheduledToPublishContainerIds,
+            scheduledToUnpublishContainerIds,
+          } = splitContainerIdsByStatus(childLiveStatus)
           query = applyResourceStatusFilter(query, {
             statusFilter,
             liveContainerIds,
             notLiveContainerIds,
+            hasDraftContainerIds,
+            scheduledToPublishContainerIds,
+            scheduledToUnpublishContainerIds,
           })
         }
 
@@ -822,6 +835,12 @@ export const resourceRouter = router({
               : status?.hasLiveDescendant
                 ? "liveTemplate"
                 : "notLive",
+            // A Folder/Collection never carries its own draftBlobId/
+            // scheduledAt/scheduledAction — that state lives on its child
+            // IndexPage — so the Status badges need those substituted in.
+            draftBlobId: status?.indexPageDraftBlobId ?? null,
+            scheduledAt: status?.indexPageScheduledAt ?? null,
+            scheduledAction: status?.indexPageScheduledAction ?? null,
           } as const
         })
 
