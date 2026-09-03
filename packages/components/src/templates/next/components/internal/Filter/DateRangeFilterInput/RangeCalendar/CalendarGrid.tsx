@@ -43,7 +43,7 @@ export const CalendarGrid = ({ state }: CalendarGridProps) => {
           <div
             key={index}
             role="columnheader"
-            className="prose-label-md-medium flex h-11 w-11 items-center justify-center text-base-content"
+            className="prose-label-md-medium flex h-11 w-11 items-center justify-center text-base-content max-[479px]:h-9 max-[479px]:w-9"
           >
             {day}
           </div>
@@ -64,7 +64,11 @@ export const CalendarGrid = ({ state }: CalendarGridProps) => {
                     onHoverOutsideDate={setHoveredOutsideDate}
                   />
                 ) : (
-                  <div key={index} role="gridcell" className="h-11 w-11" />
+                  <div
+                    key={index}
+                    role="gridcell"
+                    className="h-11 w-11 max-[479px]:h-9 max-[479px]:w-9"
+                  />
                 ),
               )}
           </div>

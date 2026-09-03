@@ -49,11 +49,6 @@ const calendarTriggerStyles = tv({
   },
 })
 
-// Same `lg` breakpoint as Filter / FilterDrawer: overlay below lg, popover at lg+.
-const calendarPanelStyles = tv({
-  base: "z-50 w-fit max-w-sm rounded-md border border-base-divider-medium bg-white p-4 shadow-md max-lg:fixed max-lg:left-1/2 max-lg:top-1/2 max-lg:-translate-x-1/2 max-lg:-translate-y-1/2 lg:absolute lg:mt-1 lg:max-w-none",
-})
-
 interface DateRangeFilterInputProps {
   value: DateRangeFilterValue | undefined
   onChange: (value: DateRangeFilterValue | undefined) => void
@@ -196,23 +191,26 @@ export const DateRangeFilterInput = ({
               onClick={closeCalendar}
             />
             <FocusScope contain restoreFocus>
-              <div
-                id={popoverId}
-                role="dialog"
-                aria-label="Select date range"
-                className={calendarPanelStyles()}
-                onKeyDown={(event) => {
-                  if (event.key === "Escape") {
-                    event.preventDefault()
-                    closeCalendar()
-                  }
-                }}
-              >
-                <RangeCalendar
-                  key={value ? `${value.start}-${value.end}` : "empty"}
-                  defaultValue={calendarValue}
-                  onApply={handleCalendarApply}
-                />
+              {/* Same `lg` breakpoint as Filter / FilterDrawer: overlay below lg, popover at lg+. */}
+              <div className="z-50 max-lg:pointer-events-none max-lg:fixed max-lg:inset-0 max-lg:flex max-lg:items-center max-lg:justify-center max-lg:p-4 lg:absolute lg:mt-1">
+                <div
+                  id={popoverId}
+                  role="dialog"
+                  aria-label="Select date range"
+                  className="pointer-events-auto w-fit max-w-sm rounded-md border border-base-divider-medium bg-white p-4 shadow-md max-[479px]:p-3"
+                  onKeyDown={(event) => {
+                    if (event.key === "Escape") {
+                      event.preventDefault()
+                      closeCalendar()
+                    }
+                  }}
+                >
+                  <RangeCalendar
+                    key={value ? `${value.start}-${value.end}` : "empty"}
+                    defaultValue={calendarValue}
+                    onApply={handleCalendarApply}
+                  />
+                </div>
               </div>
             </FocusScope>
           </>

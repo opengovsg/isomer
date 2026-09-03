@@ -79,7 +79,7 @@ export const OpenedCalendarOnMobile: Story = {
     value: undefined,
   },
   parameters: {
-    chromatic: withChromaticModes(["mobile"]),
+    chromatic: withChromaticModes(["mobileSmall", "mobile"]),
   },
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
