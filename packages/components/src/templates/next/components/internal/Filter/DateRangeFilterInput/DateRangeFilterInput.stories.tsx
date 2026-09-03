@@ -13,17 +13,11 @@ const meta: Meta<typeof DateRangeFilterInput> = {
   // Controlled component — wrap with local state so onChange (typing a
   // selection + pressing Apply in the calendar) is actually reflected back
   // into the trigger's displayed value, same pattern as Filter.stories.tsx.
-  render: ({ value: initialValue, presentation }) => {
+  render: ({ value: initialValue }) => {
     const [value, setValue] = useState<DateRangeFilterValue | undefined>(
       initialValue,
     )
-    return (
-      <DateRangeFilterInput
-        value={value}
-        onChange={setValue}
-        presentation={presentation}
-      />
-    )
+    return <DateRangeFilterInput value={value} onChange={setValue} />
   },
   parameters: {
     themes: {
@@ -61,8 +55,7 @@ export const OpenedCalendar: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
     await userEvent.click(screen.getByLabelText("Open calendar"))
-    // Calendar renders in a portal-less absolutely-positioned popover within
-    // the same canvas, so no need to escape to `canvasElement.parentElement`.
+    // Calendar stays in the same canvas: popover on desktop, overlay on mobile.
     await screen.findByText("Apply")
   },
 }
@@ -81,10 +74,9 @@ export const SelectRangeAndApply: Story = {
   },
 }
 
-export const ModalPresentation: Story = {
+export const OpenedCalendarOnMobile: Story = {
   args: {
     value: undefined,
-    presentation: "modal",
   },
   parameters: {
     chromatic: withChromaticModes(["mobile"]),

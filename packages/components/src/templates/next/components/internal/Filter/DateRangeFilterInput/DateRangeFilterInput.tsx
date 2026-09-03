@@ -1,6 +1,5 @@
 "use client"
 
-import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react"
 import { parseDate } from "@internationalized/date"
 import { FocusScope, useFocusRing } from "@react-aria/focus"
 import { mergeProps } from "@react-aria/utils"
@@ -50,11 +49,14 @@ const calendarTriggerStyles = tv({
   },
 })
 
+// Same `lg` breakpoint as Filter / FilterDrawer: overlay below lg, popover at lg+.
+const calendarPanelStyles = tv({
+  base: "z-50 w-fit max-w-sm rounded-md border border-base-divider-medium bg-white p-4 shadow-md max-lg:fixed max-lg:left-1/2 max-lg:top-1/2 max-lg:-translate-x-1/2 max-lg:-translate-y-1/2 lg:absolute lg:mt-1 lg:max-w-none",
+})
+
 interface DateRangeFilterInputProps {
   value: DateRangeFilterValue | undefined
   onChange: (value: DateRangeFilterValue | undefined) => void
-  /** Desktop sidebar uses a popover; mobile filter drawer uses a modal. */
-  presentation?: "popover" | "modal"
 }
 
 const INPUT_ERROR_MESSAGE = "Enter a valid date in DD/MM/YYYY format"
@@ -62,7 +64,6 @@ const INPUT_ERROR_MESSAGE = "Enter a valid date in DD/MM/YYYY format"
 export const DateRangeFilterInput = ({
   value,
   onChange,
-  presentation = "popover",
 }: DateRangeFilterInputProps) => {
   const inputId = useId()
   const popoverId = useId()
@@ -81,12 +82,12 @@ export const DateRangeFilterInput = ({
   }, [value])
 
   useOnClickOutside(containerRef, () => {
-    if (presentation === "popover" && isOpen) {
+    if (isOpen) {
       setIsOpen(false)
     }
   })
 
-  const closePopover = () => {
+  const closeCalendar = () => {
     setIsOpen(false)
     calendarTriggerRef.current?.focus()
   }
@@ -125,14 +126,6 @@ export const DateRangeFilterInput = ({
     onChange(parsed)
     setInputValue(valueToInputText(parsed))
   }
-
-  const calendar = (
-    <RangeCalendar
-      key={value ? `${value.start}-${value.end}` : "empty"}
-      defaultValue={calendarValue}
-      onApply={handleCalendarApply}
-    />
-  )
 
   return (
     <div className="mx-2 mb-2 flex flex-col gap-2" ref={containerRef}>
@@ -194,46 +187,37 @@ export const DateRangeFilterInput = ({
           </p>
         )}
 
-        {isOpen && presentation === "popover" && (
-          <FocusScope contain restoreFocus>
-            <div
-              id={popoverId}
-              className="absolute z-10 mt-1 w-fit rounded-md border border-base-divider-medium bg-white p-4 shadow-md"
-              onKeyDown={(event) => {
-                if (event.key === "Escape") {
-                  event.preventDefault()
-                  closePopover()
-                }
-              }}
-            >
-              {calendar}
-            </div>
-          </FocusScope>
+        {isOpen && (
+          <>
+            <button
+              type="button"
+              className="fixed inset-0 z-40 bg-black bg-opacity-25 lg:hidden"
+              aria-label="Dismiss calendar"
+              onClick={closeCalendar}
+            />
+            <FocusScope contain restoreFocus>
+              <div
+                id={popoverId}
+                role="dialog"
+                aria-label="Select date range"
+                className={calendarPanelStyles()}
+                onKeyDown={(event) => {
+                  if (event.key === "Escape") {
+                    event.preventDefault()
+                    closeCalendar()
+                  }
+                }}
+              >
+                <RangeCalendar
+                  key={value ? `${value.start}-${value.end}` : "empty"}
+                  defaultValue={calendarValue}
+                  onApply={handleCalendarApply}
+                />
+              </div>
+            </FocusScope>
+          </>
         )}
       </div>
-
-      {presentation === "modal" && (
-        <Dialog
-          open={isOpen}
-          onClose={setIsOpen}
-          autoFocus={false}
-          className="relative z-50 lg:hidden"
-        >
-          <DialogBackdrop
-            transition
-            className="fixed inset-0 bg-black bg-opacity-25 transition-opacity duration-300 ease-linear data-[closed]:opacity-0"
-          />
-
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
-            <DialogPanel
-              transition
-              className="w-full max-w-sm rounded-md border border-base-divider-medium bg-white p-4 shadow-md transition duration-300 ease-in-out data-[closed]:scale-95 data-[closed]:opacity-0"
-            >
-              {calendar}
-            </DialogPanel>
-          </div>
-        </Dialog>
-      )}
     </div>
   )
 }
