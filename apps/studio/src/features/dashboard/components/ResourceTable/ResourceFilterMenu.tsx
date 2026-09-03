@@ -48,6 +48,12 @@ export const ResourceFilterMenu = ({
               size="sm"
               p="0"
               minH="auto"
+              // Fixed so the label text changing length ("All" vs "N
+              // selected") doesn't resize the button and drag the anchored
+              // popover along with it. Sized to fit the longest possible
+              // label ("5 selected", one word per filter option).
+              minW="5rem"
+              textAlign="left"
               colorScheme="sub"
               fontSize="0.75rem"
               isOpen={isOpen}
@@ -102,7 +108,7 @@ export const ResourceFilterMenu = ({
                   color={
                     value.length === 0
                       ? "interaction.support.disabled-content"
-                      : "base.content.strong"
+                      : "interaction.links.default"
                   }
                 >
                   Clear filter
