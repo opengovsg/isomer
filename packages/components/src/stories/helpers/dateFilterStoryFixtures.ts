@@ -1,5 +1,16 @@
+import type { DateFilterDisplayEntry } from "~/interfaces/internal/CollectionCard"
 import type { CollectionPagePageProps } from "~/types"
+import { addDays, format } from "date-fns"
 import { DATE_FILTER_STATUS, type DateFilterStatusId } from "~/types/constants"
+
+// Matches `.storybook/preview.tsx` MockDateDecorator — story dates are anchored here
+// rather than `new Date()` at module load, which runs before mockdate is applied.
+export const STORYBOOK_MOCKED_DATE = "2025-08-09T12:00:00.000Z"
+
+export const offsetDateFromStorybookToday = (days: number): string =>
+  format(addDays(new Date(STORYBOOK_MOCKED_DATE), days), "yyyy-MM-dd")
+
+export const daysFromNow = offsetDateFromStorybookToday
 
 export const DATE_FILTER_TAG_CATEGORIES: CollectionPagePageProps["tagCategories"] =
   [
@@ -49,10 +60,25 @@ export const statusLabelsFor = (
   }
 }
 
-const pad = (n: number): string => n.toString().padStart(2, "0")
-
-export const daysFromNow = (days: number) => {
-  const date = new Date()
-  date.setDate(date.getDate() + days)
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+export const upcomingDateFilterEntry: DateFilterDisplayEntry = {
+  id: "event-date",
+  label: "Event Date",
+  dateText: "8 Sep - 18 Sep 2025",
+  date: offsetDateFromStorybookToday(30),
+  endDate: offsetDateFromStorybookToday(40),
+  statusLabels: statusLabelsFor("event-date"),
 }
+
+export const ongoingDateFilterEntry: DateFilterDisplayEntry = {
+  id: "registration-deadline",
+  label: "Registration Deadline",
+  dateText: "4 Aug - 14 Aug 2025",
+  date: offsetDateFromStorybookToday(-5),
+  endDate: offsetDateFromStorybookToday(5),
+  statusLabels: statusLabelsFor("registration-deadline"),
+}
+
+export const upcomingAndOngoingDateFilterEntries: DateFilterDisplayEntry[] = [
+  upcomingDateFilterEntry,
+  ongoingDateFilterEntry,
+]

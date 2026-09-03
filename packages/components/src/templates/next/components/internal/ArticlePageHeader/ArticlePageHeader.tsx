@@ -21,15 +21,18 @@ export const ArticlePageHeader = ({
         <Breadcrumb links={breadcrumb.links} />
       </div>
 
+      <DateFilterStatusClient
+        entries={dateFilterDisplayEntries}
+        className="mb-3"
+      />
+
+      <PlaintextTags
+        tags={plaintextTags}
+        className="prose-body-base mb-3 text-base-content"
+      />
+
       <div className="flex flex-col gap-5">
         <div className="flex flex-col gap-4">
-          <DateFilterStatusClient entries={dateFilterDisplayEntries} />
-
-          <PlaintextTags
-            tags={plaintextTags}
-            className="prose-body-base text-base-content"
-          />
-
           <h1 className="prose-display-md break-words text-base-content-strong">
             {title}
           </h1>

@@ -1,7 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { CollectionCardProps } from "~/interfaces"
 import { expect, within } from "storybook/test"
-import { daysFromNow, statusLabelsFor } from "~/stories/helpers"
+import {
+  ongoingDateFilterEntry,
+  upcomingAndOngoingDateFilterEntries,
+} from "~/stories/helpers"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
@@ -175,19 +178,21 @@ export const MultiplePlaintextTags: Story = {
 }
 
 export const WithDateFilter: Story = {
+  name: "With Ongoing Date Filter",
   args: {
     ...generateArgs({
       title: "Annual Community Charity Run 2026",
     }),
-    dateFilterDisplayEntries: [
-      {
-        id: "event-date",
-        label: "Event Date",
-        dateText: "27 Sep - 29 Sep 2026",
-        date: daysFromNow(-5),
-        endDate: daysFromNow(5),
-        statusLabels: statusLabelsFor("event-date"),
-      },
-    ],
+    dateFilterDisplayEntries: [ongoingDateFilterEntry],
+  },
+}
+
+export const WithUpcomingAndOngoingDateFilters: Story = {
+  name: "With Upcoming And Ongoing Date Filters",
+  args: {
+    ...generateArgs({
+      title: "Annual Community Charity Run 2026",
+    }),
+    dateFilterDisplayEntries: upcomingAndOngoingDateFilterEntries,
   },
 }
