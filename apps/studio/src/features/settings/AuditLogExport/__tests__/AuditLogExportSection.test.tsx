@@ -96,7 +96,7 @@ describe(AuditLogExportSection, () => {
         .getAttribute("href"),
     ).toBe(`/sites/${SITE_ID}/users`)
     const submit = screen.getByRole("button", { name: "Export logs" })
-    expect((submit as HTMLButtonElement).disabled).toBeFalsy()
+    expect((submit as HTMLButtonElement).disabled).toBe(false)
   })
 
   it("defaults the export scope to 'This site only'", () => {
@@ -105,8 +105,8 @@ describe(AuditLogExportSection, () => {
     const allSites = screen.getByRole("radio", {
       name: "All sites I have Admin access to",
     })
-    expect((siteOnly as HTMLInputElement).checked).toBeTruthy()
-    expect((allSites as HTMLInputElement).checked).toBeFalsy()
+    expect((siteOnly as HTMLInputElement).checked).toBe(true)
+    expect((allSites as HTMLInputElement).checked).toBe(false)
   })
 
   // This section only ever requests the Activity log now — Access-log export

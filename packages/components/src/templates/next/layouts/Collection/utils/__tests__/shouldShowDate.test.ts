@@ -18,7 +18,7 @@ describe(shouldShowDate, () => {
       } as ProcessedCollectionCardProps,
     ]
 
-    expect(shouldShowDate(items)).toBeTruthy()
+    expect(shouldShowDate(items)).toBe(true)
   })
 
   it("returns false if no items have date", () => {
@@ -35,10 +35,10 @@ describe(shouldShowDate, () => {
       } as ProcessedCollectionCardProps,
     ]
 
-    expect(shouldShowDate(items)).toBeFalsy()
+    expect(shouldShowDate(items)).toBe(false)
   })
 
   it("returns false for empty array", () => {
-    expect(shouldShowDate([])).toBeFalsy()
+    expect(shouldShowDate([])).toBe(false)
   })
 })

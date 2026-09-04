@@ -19,7 +19,7 @@ describe(getIsActiveForResource, () => {
     )
 
     // Assert
-    expect(isActive).toBeTruthy()
+    expect(isActive).toBe(true)
   })
 
   it("does not mark a collection active when the route has a different collectionId", () => {
@@ -36,7 +36,7 @@ describe(getIsActiveForResource, () => {
     )
 
     // Assert
-    expect(isActive).toBeFalsy()
+    expect(isActive).toBe(false)
   })
 
   it("does not mark a collection active when the route has no collectionId", () => {
@@ -53,7 +53,7 @@ describe(getIsActiveForResource, () => {
     )
 
     // Assert
-    expect(isActive).toBeFalsy()
+    expect(isActive).toBe(false)
   })
 
   it("does not mark the root page active when the route has a collectionId", () => {
@@ -70,7 +70,7 @@ describe(getIsActiveForResource, () => {
     )
 
     // Assert
-    expect(isActive).toBeFalsy()
+    expect(isActive).toBe(false)
   })
 
   it("does not mark the root page active when the route has a folderId", () => {
@@ -87,7 +87,7 @@ describe(getIsActiveForResource, () => {
     )
 
     // Assert
-    expect(isActive).toBeFalsy()
+    expect(isActive).toBe(false)
   })
 
   it("does not mark the root page active when the route has a resourceId", () => {
@@ -104,7 +104,7 @@ describe(getIsActiveForResource, () => {
     )
 
     // Assert
-    expect(isActive).toBeFalsy()
+    expect(isActive).toBe(false)
   })
 
   it("marks the root page active when there is no routed resource", () => {
@@ -121,7 +121,7 @@ describe(getIsActiveForResource, () => {
     )
 
     // Assert
-    expect(isActive).toBeTruthy()
+    expect(isActive).toBe(true)
   })
 
   it("does not mark the root page active when the route has a linkId", () => {
@@ -138,6 +138,6 @@ describe(getIsActiveForResource, () => {
     )
 
     // Assert
-    expect(isActive).toBeFalsy()
+    expect(isActive).toBe(false)
   })
 })

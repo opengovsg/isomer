@@ -222,7 +222,7 @@ describe(selectTableCellContent, () => {
     const handled = selectTableCellContent(editor)
 
     // Assert
-    expect(handled).toBeTruthy()
+    expect(handled).toBe(true)
     expect(selectedText(editor)).toBe("Cell One")
     expect(editor.state.selection.from).toBe(cellOne.from)
     expect(editor.state.selection.to).toBe(cellOne.to)
@@ -239,7 +239,7 @@ describe(selectTableCellContent, () => {
     const handled = selectTableCellContent(editor)
 
     // Assert
-    expect(handled).toBeTruthy()
+    expect(handled).toBe(true)
     expect(selectedText(editor)).toBe("Header A")
     expect(editor.state.selection.from).toBe(headerA.from)
     expect(editor.state.selection.to).toBe(headerA.to)
@@ -259,7 +259,7 @@ describe(selectTableCellContent, () => {
     const handled = selectTableCellContent(editor)
 
     // Assert
-    expect(handled).toBeTruthy()
+    expect(handled).toBe(true)
     expect(selectedText(editor)).toBe("First lineSecond line")
     await expect(copiedText()).resolves.toBe("First line\n\nSecond line")
   })
@@ -270,7 +270,7 @@ describe(selectTableCellContent, () => {
     editor.commands.setTextSelection(beforeTable.from)
 
     // Act / Assert
-    expect(selectTableCellContent(editor)).toBeFalsy()
+    expect(selectTableCellContent(editor)).toBe(false)
   })
 })
 

@@ -33,7 +33,7 @@ describe("invitationTemplate", () => {
       env.NEXT_PUBLIC_APP_URL
         ? template.body.includes(env.NEXT_PUBLIC_APP_URL)
         : true,
-    ).toBeTruthy()
+    ).toBe(true)
   })
 
   it("should generate correct body content for Publisher role", () => {
@@ -112,7 +112,7 @@ describe("accountDeactivationWarningTemplate", () => {
       env.NEXT_PUBLIC_APP_URL
         ? template.body.includes(env.NEXT_PUBLIC_APP_URL)
         : true,
-    ).toBeTruthy()
+    ).toBe(true)
   })
 
   it("should include security measure message", () => {

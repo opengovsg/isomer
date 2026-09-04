@@ -1587,7 +1587,7 @@ describe("redirect.router", async () => {
       // unasserted: a cyclic chain has no meaningful path, so pinning whatever
       // the walk salvages would only lock in nonsense.
       expect(result).toHaveLength(1)
-      expect(result[0]?.warn).toBeTruthy()
+      expect(result[0]?.warn).toBe(true)
     })
   })
 

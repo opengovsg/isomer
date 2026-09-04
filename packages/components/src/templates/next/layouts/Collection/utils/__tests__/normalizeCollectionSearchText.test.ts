@@ -130,7 +130,7 @@ describe("collection search via normalized includes", () => {
     const result = collectionSearchIncludes(title, search)
 
     // Assert
-    expect(result).toBeTruthy()
+    expect(result).toBe(true)
   })
 
   it("matches a full title search that includes parentheses", () => {
@@ -142,7 +142,7 @@ describe("collection search via normalized includes", () => {
     const result = collectionSearchIncludes(circularTitle, search)
 
     // Assert
-    expect(result).toBeTruthy()
+    expect(result).toBe(true)
   })
 
   it("matches a partial search from the middle of the title", () => {
@@ -155,7 +155,7 @@ describe("collection search via normalized includes", () => {
     const result = collectionSearchIncludes(title, search)
 
     // Assert
-    expect(result).toBeTruthy()
+    expect(result).toBe(true)
   })
 
   it("matches when the stored title uses fullwidth parentheses", () => {
@@ -168,7 +168,7 @@ describe("collection search via normalized includes", () => {
     const result = collectionSearchIncludes(title, search)
 
     // Assert
-    expect(result).toBeTruthy()
+    expect(result).toBe(true)
   })
 
   it("does not match unrelated search terms", () => {
@@ -179,6 +179,6 @@ describe("collection search via normalized includes", () => {
     const result = collectionSearchIncludes(circularTitle, search)
 
     // Assert
-    expect(result).toBeFalsy()
+    expect(result).toBe(false)
   })
 })

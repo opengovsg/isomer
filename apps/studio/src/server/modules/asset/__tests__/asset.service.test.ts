@@ -223,7 +223,7 @@ describe("asset.service", () => {
           siteId: 25,
           fileKeys: ["25/uuid-1/image.png", "25/uuid-2/doc.pdf"],
         }),
-      ).toBeTruthy()
+      ).toBe(true)
     })
 
     it("should return true for empty file keys array", () => {
@@ -232,7 +232,7 @@ describe("asset.service", () => {
           siteId: 25,
           fileKeys: [],
         }),
-      ).toBeTruthy()
+      ).toBe(true)
     })
 
     it("should return true for single key belonging to site", () => {
@@ -241,7 +241,7 @@ describe("asset.service", () => {
           siteId: 1,
           fileKeys: ["1/abc-123/file.jpg"],
         }),
-      ).toBeTruthy()
+      ).toBe(true)
     })
 
     it("should return false when one key belongs to another site", () => {
@@ -250,7 +250,7 @@ describe("asset.service", () => {
           siteId: 25,
           fileKeys: ["25/uuid-1/image.png", "99/other-site/attacker.png"],
         }),
-      ).toBeFalsy()
+      ).toBe(false)
     })
 
     it("should return false when key has no site prefix", () => {
@@ -259,7 +259,7 @@ describe("asset.service", () => {
           siteId: 25,
           fileKeys: ["bare-filename.png"],
         }),
-      ).toBeFalsy()
+      ).toBe(false)
     })
 
     it("should return false when key prefix is a different site id (no slash collision)", () => {
@@ -269,7 +269,7 @@ describe("asset.service", () => {
           siteId: 2,
           fileKeys: ["25/uuid/file.png"],
         }),
-      ).toBeFalsy()
+      ).toBe(false)
     })
 
     it("should return true when siteId is substring but key has correct prefix with slash", () => {
@@ -279,7 +279,7 @@ describe("asset.service", () => {
           siteId: 2,
           fileKeys: ["2/uuid/file.png"],
         }),
-      ).toBeTruthy()
+      ).toBe(true)
     })
   })
 

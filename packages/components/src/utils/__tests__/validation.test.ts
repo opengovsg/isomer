@@ -23,7 +23,7 @@ describe("validation", () => {
 
       testCases.forEach((testCase) => {
         const result = new RegExp(LINK_HREF_PATTERN).test(testCase)
-        expect(result).toBeTruthy()
+        expect(result).toBe(true)
       })
     })
 
@@ -39,7 +39,7 @@ describe("validation", () => {
         .map((testCase) => `mailto:${testCase}`)
         .forEach((testCase) => {
           const result = new RegExp(LINK_HREF_PATTERN).test(testCase)
-          expect(result).toBeTruthy()
+          expect(result).toBe(true)
         })
     })
 
@@ -54,7 +54,7 @@ describe("validation", () => {
 
       testCases.forEach((testCase) => {
         const result = new RegExp(LINK_HREF_PATTERN).test(testCase)
-        expect(result).toBeTruthy()
+        expect(result).toBe(true)
       })
     })
 
@@ -67,7 +67,7 @@ describe("validation", () => {
 
       testCases.forEach((testCase) => {
         const result = new RegExp(LINK_HREF_PATTERN).test(testCase)
-        expect(result).toBeTruthy()
+        expect(result).toBe(true)
       })
     })
 
@@ -80,7 +80,7 @@ describe("validation", () => {
 
       testCases.forEach((testCase) => {
         const result = new RegExp(LINK_HREF_PATTERN).test(testCase)
-        expect(result).toBeTruthy()
+        expect(result).toBe(true)
       })
     })
 
@@ -95,7 +95,7 @@ describe("validation", () => {
 
       testCases.forEach((testCase) => {
         const result = new RegExp(LINK_HREF_PATTERN).test(testCase)
-        expect(result).toBeTruthy()
+        expect(result).toBe(true)
       })
     })
 
@@ -110,7 +110,7 @@ describe("validation", () => {
 
       testCases.forEach((testCase) => {
         const result = new RegExp(LINK_HREF_PATTERN).test(testCase)
-        expect(result).toBeTruthy()
+        expect(result).toBe(true)
       })
     })
 
@@ -119,7 +119,7 @@ describe("validation", () => {
 
       testCases.forEach((testCase) => {
         const result = new RegExp(LINK_HREF_PATTERN).test(testCase)
-        expect(result).toBeFalsy()
+        expect(result).toBe(false)
       })
     })
   })
@@ -134,7 +134,7 @@ describe("validation", () => {
 
       testCases.forEach((testCase) => {
         const result = new RegExp(MAPS_EMBED_URL_PATTERN).test(testCase)
-        expect(result).toBeTruthy()
+        expect(result).toBe(true)
       })
     })
 
@@ -145,7 +145,7 @@ describe("validation", () => {
 
       testCases.forEach((testCase) => {
         const result = new RegExp(MAPS_EMBED_URL_PATTERN).test(testCase)
-        expect(result).toBeTruthy()
+        expect(result).toBe(true)
       })
     })
 
@@ -159,7 +159,7 @@ describe("validation", () => {
 
       testCases.forEach((testCase) => {
         const result = new RegExp(MAPS_EMBED_URL_PATTERN).test(testCase)
-        expect(result).toBeTruthy()
+        expect(result).toBe(true)
       })
     })
 
@@ -170,7 +170,7 @@ describe("validation", () => {
       ]
 
       testCases.forEach((testCase) => {
-        expect(isValidMapEmbedUrl(testCase)).toBeTruthy()
+        expect(isValidMapEmbedUrl(testCase)).toBe(true)
       })
     })
 
@@ -185,7 +185,7 @@ describe("validation", () => {
 
       testCases.forEach((testCase) => {
         const result = new RegExp(MAPS_EMBED_URL_PATTERN).test(testCase)
-        expect(result).toBeTruthy()
+        expect(result).toBe(true)
       })
     })
 
@@ -203,7 +203,7 @@ describe("validation", () => {
 
       testCases.forEach((testCase) => {
         const result = new RegExp(MAPS_EMBED_URL_PATTERN).test(testCase)
-        expect(result).toBeFalsy()
+        expect(result).toBe(false)
       })
     })
   })
@@ -219,7 +219,7 @@ describe("validation", () => {
 
       testCases.forEach((testCase) => {
         const result = new RegExp(VIDEO_EMBED_URL_PATTERN).test(testCase)
-        expect(result).toBeTruthy()
+        expect(result).toBe(true)
       })
     })
 
@@ -236,7 +236,7 @@ describe("validation", () => {
 
       testCases.forEach((testCase) => {
         const result = new RegExp(VIDEO_EMBED_URL_PATTERN).test(testCase)
-        expect(result).toBeTruthy()
+        expect(result).toBe(true)
       })
     })
 
@@ -251,7 +251,7 @@ describe("validation", () => {
 
       testCases.forEach((testCase) => {
         const result = new RegExp(VIDEO_EMBED_URL_PATTERN).test(testCase)
-        expect(result).toBeTruthy()
+        expect(result).toBe(true)
       })
     })
 
@@ -262,7 +262,7 @@ describe("validation", () => {
 
       testCases.forEach((testCase) => {
         const result = new RegExp(VIDEO_EMBED_URL_PATTERN).test(testCase)
-        expect(result).toBeTruthy()
+        expect(result).toBe(true)
       })
     })
 
@@ -273,7 +273,7 @@ describe("validation", () => {
 
       testCases.forEach((testCase) => {
         const result = new RegExp(VIDEO_EMBED_URL_PATTERN).test(testCase)
-        expect(result).toBeTruthy()
+        expect(result).toBe(true)
       })
     })
 
@@ -289,7 +289,7 @@ describe("validation", () => {
 
       testCases.forEach((testCase) => {
         const result = new RegExp(VIDEO_EMBED_URL_PATTERN).test(testCase)
-        expect(result).toBeFalsy()
+        expect(result).toBe(false)
       })
     })
   })
@@ -310,7 +310,7 @@ describe("validation", () => {
         const result = new RegExp(GTM_ID_STRING_REGEX).test(testCase)
 
         // Assert
-        expect(result).toBeTruthy()
+        expect(result).toBe(true)
       })
     })
 
@@ -329,7 +329,7 @@ describe("validation", () => {
         const result = new RegExp(GTM_ID_STRING_REGEX).test(testCase)
 
         // Assert
-        expect(result).toBeFalsy()
+        expect(result).toBe(false)
       })
     })
   })
@@ -344,8 +344,8 @@ describe("validation", () => {
       ]
 
       testCases.forEach((testCase) => {
-        expect(new RegExp(AUDIO_EMBED_URL_PATTERN).test(testCase)).toBeTruthy()
-        expect(isValidAudioEmbedUrl(testCase)).toBeTruthy()
+        expect(new RegExp(AUDIO_EMBED_URL_PATTERN).test(testCase)).toBe(true)
+        expect(isValidAudioEmbedUrl(testCase)).toBe(true)
       })
     })
 
@@ -357,8 +357,8 @@ describe("validation", () => {
       ]
 
       testCases.forEach((testCase) => {
-        expect(new RegExp(AUDIO_EMBED_URL_PATTERN).test(testCase)).toBeTruthy()
-        expect(isValidAudioEmbedUrl(testCase)).toBeTruthy()
+        expect(new RegExp(AUDIO_EMBED_URL_PATTERN).test(testCase)).toBe(true)
+        expect(isValidAudioEmbedUrl(testCase)).toBe(true)
       })
     })
 
@@ -370,8 +370,8 @@ describe("validation", () => {
       ]
 
       testCases.forEach((testCase) => {
-        expect(new RegExp(AUDIO_EMBED_URL_PATTERN).test(testCase)).toBeFalsy()
-        expect(isValidAudioEmbedUrl(testCase)).toBeFalsy()
+        expect(new RegExp(AUDIO_EMBED_URL_PATTERN).test(testCase)).toBe(false)
+        expect(isValidAudioEmbedUrl(testCase)).toBe(false)
       })
     })
 
@@ -386,8 +386,8 @@ describe("validation", () => {
       ]
 
       testCases.forEach((testCase) => {
-        expect(new RegExp(AUDIO_EMBED_URL_PATTERN).test(testCase)).toBeFalsy()
-        expect(isValidAudioEmbedUrl(testCase)).toBeFalsy()
+        expect(new RegExp(AUDIO_EMBED_URL_PATTERN).test(testCase)).toBe(false)
+        expect(isValidAudioEmbedUrl(testCase)).toBe(false)
       })
     })
   })

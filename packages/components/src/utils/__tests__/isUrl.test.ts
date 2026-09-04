@@ -14,7 +14,7 @@ describe(isUrl, () => {
       ]
 
       validUrls.forEach((url) => {
-        expect(isUrl(url)).toBeTruthy()
+        expect(isUrl(url)).toBe(true)
       })
     })
 
@@ -28,7 +28,7 @@ describe(isUrl, () => {
       ]
 
       validUrls.forEach((url) => {
-        expect(isUrl(url)).toBeTruthy()
+        expect(isUrl(url)).toBe(true)
       })
     })
 
@@ -40,7 +40,7 @@ describe(isUrl, () => {
       ]
 
       validUrls.forEach((url) => {
-        expect(isUrl(url)).toBeTruthy()
+        expect(isUrl(url)).toBe(true)
       })
     })
   })
@@ -54,7 +54,7 @@ describe(isUrl, () => {
       ]
 
       validUrls.forEach((url) => {
-        expect(isUrl(url)).toBeTruthy()
+        expect(isUrl(url)).toBe(true)
       })
     })
 
@@ -66,7 +66,7 @@ describe(isUrl, () => {
       ]
 
       validUrls.forEach((url) => {
-        expect(isUrl(url)).toBeTruthy()
+        expect(isUrl(url)).toBe(true)
       })
     })
 
@@ -78,7 +78,7 @@ describe(isUrl, () => {
       ]
 
       validUrls.forEach((url) => {
-        expect(isUrl(url)).toBeTruthy()
+        expect(isUrl(url)).toBe(true)
       })
     })
 
@@ -90,7 +90,7 @@ describe(isUrl, () => {
       ]
 
       validUrls.forEach((url) => {
-        expect(isUrl(url)).toBeTruthy()
+        expect(isUrl(url)).toBe(true)
       })
     })
   })
@@ -107,7 +107,7 @@ describe(isUrl, () => {
       ]
 
       invalidUrls.forEach((url) => {
-        expect(isUrl(url)).toBeFalsy()
+        expect(isUrl(url)).toBe(false)
       })
     })
 
@@ -120,7 +120,7 @@ describe(isUrl, () => {
       ]
 
       invalidUrls.forEach((url) => {
-        expect(isUrl(url)).toBeFalsy()
+        expect(isUrl(url)).toBe(false)
       })
     })
 
@@ -136,7 +136,7 @@ describe(isUrl, () => {
       ]
 
       invalidUrls.forEach((url) => {
-        expect(isUrl(url)).toBeFalsy()
+        expect(isUrl(url)).toBe(false)
       })
     })
 
@@ -150,7 +150,7 @@ describe(isUrl, () => {
       ]
 
       invalidUrls.forEach((url) => {
-        expect(isUrl(url)).toBeFalsy()
+        expect(isUrl(url)).toBe(false)
       })
     })
   })

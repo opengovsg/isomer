@@ -145,8 +145,8 @@ describe(validateNumericId, () => {
 
   it("accepts numeric strings with optional surrounding whitespace", () => {
     // Act + Assert
-    expect(validate("123")).toBeTruthy()
-    expect(validate(" 456 ")).toBeTruthy()
+    expect(validate("123")).toBe(true)
+    expect(validate(" 456 ")).toBe(true)
   })
 
   it("rejects empty, non-numeric, and mixed values", () => {

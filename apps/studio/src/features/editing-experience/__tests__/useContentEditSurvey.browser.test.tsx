@@ -103,7 +103,7 @@ describe(useFireContentEditSurveyEvent, () => {
 
     // Assert
     expect(trackEventMock).not.toHaveBeenCalled()
-    expect(store.get(hasContentEditAtom)).toBeFalsy()
+    expect(store.get(hasContentEditAtom)).toBe(false)
   })
 
   it("fires the event and resets the flag when a content edit has been made", () => {
@@ -119,7 +119,7 @@ describe(useFireContentEditSurveyEvent, () => {
 
     // Assert
     expect(trackEventMock).toHaveBeenCalledExactlyOnceWith(PUBLISHED_AFTER_EDITING_EVENT)
-    expect(store.get(hasContentEditAtom)).toBeFalsy()
+    expect(store.get(hasContentEditAtom)).toBe(false)
   })
 
   it("is a no-op on a second call after the flag has been consumed", () => {
@@ -152,7 +152,7 @@ describe(useFireContentEditSurveyEvent, () => {
 
     // Assert
     expect(trackEventMock).not.toHaveBeenCalled()
-    expect(store.get(hasContentEditAtom)).toBeFalsy()
+    expect(store.get(hasContentEditAtom)).toBe(false)
   })
 })
 
@@ -179,7 +179,7 @@ describe(useContentEditTracker, () => {
     )
 
     // Assert
-    expect(store.get(hasContentEditAtom)).toBeTruthy()
+    expect(store.get(hasContentEditAtom)).toBe(true)
   })
 
   it("does not set the flag on a re-render with deep-equal content", () => {
@@ -196,7 +196,7 @@ describe(useContentEditTracker, () => {
     )
 
     // Assert
-    expect(store.get(hasContentEditAtom)).toBeFalsy()
+    expect(store.get(hasContentEditAtom)).toBe(false)
   })
 
   it("does not set the flag when content diverges in raw JSON mode", () => {
@@ -214,7 +214,7 @@ describe(useContentEditTracker, () => {
     )
 
     // Assert
-    expect(store.get(hasContentEditAtom)).toBeFalsy()
+    expect(store.get(hasContentEditAtom)).toBe(false)
 
     // Act: leaving raw JSON mode must not retroactively arm the flag
     // (docs/adr/0003-editing-survey-measuring-points.md) — pins that the
@@ -222,7 +222,7 @@ describe(useContentEditTracker, () => {
     act(() => drawerContext.setDrawerState({ state: "root" }))
 
     // Assert
-    expect(store.get(hasContentEditAtom)).toBeFalsy()
+    expect(store.get(hasContentEditAtom)).toBe(false)
   })
 
   it("re-arms after the flag is consumed, emitting one event per burst", () => {
@@ -244,7 +244,7 @@ describe(useContentEditTracker, () => {
 
     // Assert
     expect(trackEventMock).toHaveBeenCalledOnce()
-    expect(store.get(hasContentEditAtom)).toBeFalsy()
+    expect(store.get(hasContentEditAtom)).toBe(false)
 
     // Act: second burst — a fresh divergence
     act(() =>
@@ -255,7 +255,7 @@ describe(useContentEditTracker, () => {
     )
 
     // Assert: the consumed flag is re-armed
-    expect(store.get(hasContentEditAtom)).toBeTruthy()
+    expect(store.get(hasContentEditAtom)).toBe(true)
 
     // Act: fire the second burst
     act(() => result.current(PUBLISHED_AFTER_EDITING_EVENT))
@@ -285,7 +285,7 @@ describe(useLeftEditorSurveyTracker, () => {
 
     // Assert
     expect(trackEventMock).toHaveBeenCalledExactlyOnceWith(LEFT_EDITOR_AFTER_EDITING_EVENT)
-    expect(store.get(hasContentEditAtom)).toBeFalsy()
+    expect(store.get(hasContentEditAtom)).toBe(false)
   })
 
   it("unsubscribes from route changes on unmount", () => {

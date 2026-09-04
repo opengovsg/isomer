@@ -52,6 +52,6 @@ test("admin can create a folder via the Create new wizard", async ({
     .where("title", "=", title)
     .select(["id", "type"])
     .executeTakeFirst()
-  expect(created).toBeTruthy()
+  expect(created).toBe(true)
   expect(created?.type).toBe("Folder")
 })

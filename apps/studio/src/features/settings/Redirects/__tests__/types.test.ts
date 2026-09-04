@@ -58,6 +58,6 @@ describe("addRedirectSchema destination scheme normalisation", () => {
     })
 
     // Assert
-    expect(result.success).toBeFalsy()
+    expect(result.success).toBe(false)
   })
 })

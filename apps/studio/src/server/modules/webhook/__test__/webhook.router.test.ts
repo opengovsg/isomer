@@ -228,7 +228,7 @@ describe("webhook.router", async () => {
       expect(jobs).toHaveLength(NUM_RESOURCES_WITH_SAME_BUILD_ID)
       jobs.forEach((job) => {
         expect(job.status).toBe("SUCCEEDED")
-        expect(job.emailSent).toBeTruthy()
+        expect(job.emailSent).toBe(true)
       })
     })
 
@@ -460,7 +460,7 @@ describe("webhook.router", async () => {
         .execute()
       expect(updatedCodebuildJob).toHaveLength(NUMBER_SUPERSEDED_BUILDS + 1) // +1 for the original build
       updatedCodebuildJob.forEach((job) => {
-        expect(job.emailSent).toBeTruthy() // all jobs should have emailSent = true
+        expect(job.emailSent).toBe(true) // all jobs should have emailSent = true
       })
     })
 

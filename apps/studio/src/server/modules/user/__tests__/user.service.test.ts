@@ -31,7 +31,7 @@ describe("user.service", () => {
       // Act
       const result = await isUserDeleted(email)
       // Assert
-      expect(result).toBeFalsy()
+      expect(result).toBe(false)
     })
 
     it("should return true if user is deleted", async () => {
@@ -46,7 +46,7 @@ describe("user.service", () => {
       // Act
       const result = await isUserDeleted(email)
       // Assert
-      expect(result).toBeTruthy()
+      expect(result).toBe(true)
     })
   })
 

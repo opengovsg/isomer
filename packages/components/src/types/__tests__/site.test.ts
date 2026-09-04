@@ -34,7 +34,7 @@ describe(SiteEntitySettingsSchema, () => {
           email: "hello@example.gov.sg",
         },
       }),
-    ).toBeTruthy()
+    ).toBe(true)
   })
 
   it.each(["S", "SGP", "S1", "  "])(
@@ -42,17 +42,17 @@ describe(SiteEntitySettingsSchema, () => {
     (addressCountry) => {
       expect(
         Value.Check(SiteEntitySettingsSchema, { address: { addressCountry } }),
-      ).toBeFalsy()
+      ).toBe(false)
     },
   )
 
   it("allows the organisation type to be derived at render time", () => {
-    expect(Value.Check(SiteEntitySettingsSchema, {})).toBeTruthy()
+    expect(Value.Check(SiteEntitySettingsSchema, {})).toBe(true)
   })
 
   it("keeps site entity metadata optional for existing settings", () => {
     expect(
       Value.Check(AgencySettingsSchema, { siteName: "Existing site" }),
-    ).toBeTruthy()
+    ).toBe(true)
   })
 })

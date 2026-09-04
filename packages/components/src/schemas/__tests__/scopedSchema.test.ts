@@ -372,7 +372,7 @@ describe(getScopedSchema, () => {
         schema.allOf
           .flatMap((s) => (Array.isArray(s.required) ? s.required : []))
           .every((field) => field === "subtitle"),
-      ).toBeTruthy()
+      ).toBe(true)
     })
 
     it("should throw when both include and exclude are provided", () => {

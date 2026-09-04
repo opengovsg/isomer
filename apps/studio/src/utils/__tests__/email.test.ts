@@ -14,7 +14,7 @@ describe(isGovEmail, () => {
     ]
 
     validEmails.forEach((email) => {
-      expect(isGovEmail(email)).toBeTruthy()
+      expect(isGovEmail(email)).toBe(true)
     })
   })
 
@@ -29,7 +29,7 @@ describe(isGovEmail, () => {
     ]
 
     invalidEmails.forEach((email) => {
-      expect(isGovEmail(email)).toBeFalsy()
+      expect(isGovEmail(email)).toBe(false)
     })
   })
 
@@ -49,7 +49,7 @@ describe(isGovEmail, () => {
     ]
 
     invalidFormats.forEach((input) => {
-      expect(isGovEmail(input)).toBeFalsy()
+      expect(isGovEmail(input)).toBe(false)
     })
   })
 
@@ -63,7 +63,7 @@ describe(isGovEmail, () => {
     ]
 
     emailsWithSpaces.forEach((email) => {
-      expect(isGovEmail(email)).toBeFalsy()
+      expect(isGovEmail(email)).toBe(false)
     })
   })
 
@@ -77,7 +77,7 @@ describe(isGovEmail, () => {
     ]
 
     emailsWithSpaces.forEach((email) => {
-      expect(isGovEmail(email.trim())).toBeTruthy()
+      expect(isGovEmail(email.trim())).toBe(true)
     })
   })
 })

@@ -75,8 +75,8 @@ describe(ExportAccessLogsModal, () => {
       name: "All sites I have Admin access to",
     })
     const siteOnly = screen.getByRole("radio", { name: "This site only" })
-    expect((allSites as HTMLInputElement).checked).toBeTruthy()
-    expect((siteOnly as HTMLInputElement).checked).toBeFalsy()
+    expect((allSites as HTMLInputElement).checked).toBe(true)
+    expect((siteOnly as HTMLInputElement).checked).toBe(false)
   })
 
   it("submits an Access export for the current month with the default 'allSites' scope", async () => {

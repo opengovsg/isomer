@@ -16,7 +16,7 @@ describe(isUserOnboarded, () => {
 
       // Act & Assert
       validUsers.forEach((user) => {
-        expect(isUserOnboarded(user)).toBeTruthy()
+        expect(isUserOnboarded(user)).toBe(true)
       })
     })
 
@@ -30,7 +30,7 @@ describe(isUserOnboarded, () => {
 
       // Act & Assert
       usersWithoutName.forEach((user) => {
-        expect(isUserOnboarded(user as isUserOnboardedProps)).toBeFalsy()
+        expect(isUserOnboarded(user as isUserOnboardedProps)).toBe(false)
       })
     })
 
@@ -44,7 +44,7 @@ describe(isUserOnboarded, () => {
 
       // Act & Assert
       usersWithoutPhone.forEach((user) => {
-        expect(isUserOnboarded(user as isUserOnboardedProps)).toBeFalsy()
+        expect(isUserOnboarded(user as isUserOnboardedProps)).toBe(false)
       })
     })
   })
@@ -64,7 +64,7 @@ describe(isUserOnboarded, () => {
 
       // Act & Assert
       validUsers.forEach((user) => {
-        expect(isUserOnboarded(user)).toBeTruthy()
+        expect(isUserOnboarded(user)).toBe(true)
       })
     })
 
@@ -81,7 +81,7 @@ describe(isUserOnboarded, () => {
 
       // Act & Assert
       invalidUsers.forEach((user) => {
-        expect(isUserOnboarded(user)).toBeFalsy()
+        expect(isUserOnboarded(user)).toBe(false)
       })
     })
 
@@ -96,7 +96,7 @@ describe(isUserOnboarded, () => {
 
       // Act & Assert
       invalidUsers.forEach((user) => {
-        expect(isUserOnboarded(user)).toBeFalsy()
+        expect(isUserOnboarded(user)).toBe(false)
       })
     })
 
@@ -112,7 +112,7 @@ describe(isUserOnboarded, () => {
 
       // Act & Assert
       invalidUsers.forEach((user) => {
-        expect(isUserOnboarded(user)).toBeFalsy()
+        expect(isUserOnboarded(user)).toBe(false)
       })
     })
 
@@ -127,7 +127,7 @@ describe(isUserOnboarded, () => {
 
       // Act & Assert
       invalidUsers.forEach((user) => {
-        expect(isUserOnboarded(user)).toBeFalsy()
+        expect(isUserOnboarded(user)).toBe(false)
       })
     })
 
@@ -150,7 +150,7 @@ describe(isUserOnboarded, () => {
 
       // Act & Assert
       invalidUsers.forEach((user) => {
-        expect(isUserOnboarded(user)).toBeFalsy()
+        expect(isUserOnboarded(user)).toBe(false)
       })
     })
   })
