@@ -1,25 +1,20 @@
-import { defineConfig } from "oxlint";
+import { defineConfig } from "oxlint"
 
 export default defineConfig({
   plugins: [],
   categories: {
-    correctness: "off"
+    correctness: "off",
   },
   options: {
-    typeAware: true
+    typeAware: true,
   },
   env: {
-    builtin: true
+    builtin: true,
   },
-  ignorePatterns: [
-    "dist",
-    "**/*.config.*"
-  ],
+  ignorePatterns: ["dist", "**/*.config.*"],
   overrides: [
     {
-      files: [
-        "**/*.js"
-      ],
+      files: ["**/*.js"],
       rules: {
         "constructor-super": "error",
         "for-direction": "error",
@@ -72,8 +67,8 @@ export default defineConfig({
         "no-unused-vars": [
           "error",
           {
-            caughtErrorsIgnorePattern: "^_"
-          }
+            caughtErrorsIgnorePattern: "^_",
+          },
         ],
         "no-useless-backreference": "error",
         "no-useless-catch": "error",
@@ -82,20 +77,12 @@ export default defineConfig({
         "require-yield": "error",
         "use-isnan": "error",
         "valid-typeof": "error",
-        "import/consistent-type-specifier-style": [
-          "error",
-          "prefer-top-level"
-        ]
+        "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
       },
-      plugins: [
-        "import"
-      ]
+      plugins: ["import"],
     },
     {
-      files: [
-        "**/*.ts",
-        "**/*.tsx"
-      ],
+      files: ["**/*.ts", "**/*.tsx"],
       rules: {
         "constructor-super": "off",
         "no-class-assign": "off",
@@ -134,8 +121,8 @@ export default defineConfig({
           "error",
           {
             argsIgnorePattern: "^_",
-            varsIgnorePattern: "^_"
-          }
+            varsIgnorePattern: "^_",
+          },
         ],
         "@typescript-eslint/no-wrapper-object-types": "error",
         "@typescript-eslint/prefer-as-const": "error",
@@ -152,9 +139,9 @@ export default defineConfig({
           "error",
           {
             checksVoidReturn: {
-              attributes: false
-            }
-          }
+              attributes: false,
+            },
+          },
         ],
         "@typescript-eslint/no-redundant-type-constituents": "error",
         "@typescript-eslint/no-unnecessary-type-assertion": "error",
@@ -192,37 +179,28 @@ export default defineConfig({
         "@typescript-eslint/prefer-nullish-coalescing": [
           "error",
           {
-            ignorePrimitives: true
-          }
+            ignorePrimitives: true,
+          },
         ],
         "@typescript-eslint/consistent-type-imports": [
           "warn",
           {
             prefer: "type-imports",
-            fixStyle: "separate-type-imports"
-          }
+            fixStyle: "separate-type-imports",
+          },
         ],
-        "@typescript-eslint/no-non-null-assertion": "error"
+        "@typescript-eslint/no-non-null-assertion": "error",
       },
-      plugins: [
-        "typescript"
-      ]
+      plugins: ["typescript"],
     },
     {
-      files: [
-        "**/*.spec.ts",
-        "**/*.spec.tsx",
-        "**/*.test.ts",
-        "**/*.test.tsx"
-      ],
+      files: ["**/*.spec.ts", "**/*.spec.tsx", "**/*.test.ts", "**/*.test.tsx"],
       rules: {
         "@typescript-eslint/no-unsafe-assignment": "off",
         "@typescript-eslint/no-non-null-assertion": "off",
-        "no-empty-function": "off"
+        "no-empty-function": "off",
       },
-      plugins: [
-        "typescript"
-      ]
-    }
-  ]
-});
+      plugins: ["typescript"],
+    },
+  ],
+})
