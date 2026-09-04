@@ -46,7 +46,6 @@ export default defineConfig({
         "vitest/no-disabled-tests": "off",
         // Dummy matchers like empty toHaveBeenCalledWith() are worse than off.
         "vitest/prefer-called-with": "off",
-        "vitest/prefer-each": "error",
         // Audit-log helpers wrap expect() internally; register them so tests aren't
         // flagged as having no assertions.
         "vitest/expect-expect": [
