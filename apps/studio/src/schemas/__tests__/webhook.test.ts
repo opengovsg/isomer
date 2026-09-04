@@ -18,7 +18,7 @@ const { WEBHOOK_API_KEY, INVALID_WEBHOOK_API_KEY_WITH_EXPECTED_LENGTH } =
       "11111111-1111-4111-8111-111111111111",
   }))
 
-vi.mock(import("~/env.mjs"), async () => {
+vi.mock("~/env.mjs", async () => {
   // Import the real module first to get all default values
   const actual = await vi.importActual<{ env: typeof env }>("~/env.mjs")
   return {
@@ -32,9 +32,9 @@ vi.mock(import("~/env.mjs"), async () => {
 })
 
 // Mock the publishSite function to avoid sending emails
-vi.mock(import("~/features/mail/service"), () => ({
-  sendSuccessfulScheduledPublishEmail: vi.fn<(...args: unknown[]) => unknown>(),
-  sendFailedSchedulePublishEmail: vi.fn<(...args: unknown[]) => unknown>(),
+vi.mock("~/features/mail/service", () => ({
+  sendSuccessfulScheduledPublishEmail: vi.fn(),
+  sendFailedSchedulePublishEmail: vi.fn(),
 }))
 
 const createMockRequest = ({

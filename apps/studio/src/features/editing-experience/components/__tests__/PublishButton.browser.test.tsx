@@ -13,7 +13,7 @@ import PublishButton from "../PublishButton"
 // The "Schedule for later" dropdown relies on Chakra's Menu context, which does
 // not initialise under jsdom. It is unrelated to the permission gate under test,
 // so stub the menu primitives to plain passthroughs.
-vi.mock(import("@chakra-ui/react"), async (importActual) => {
+vi.mock("@chakra-ui/react", async (importActual) => {
   const actual = (await importActual()) as Record<string, unknown>
   return {
     ...actual,
@@ -28,7 +28,7 @@ vi.mock(import("@chakra-ui/react"), async (importActual) => {
 
 // PublishButton is wrapped in withSuspense, whose Suspense wrapper waits for the
 // Next.js router to be ready before mounting children. Provide a ready router.
-vi.mock(import("next/router"), () => ({
+vi.mock("next/router", () => ({
   useRouter: () => ({ isReady: true }),
 }))
 
@@ -36,16 +36,16 @@ vi.mock(import("next/router"), () => ({
 // directly at module scope — harmless under jsdom but a ReferenceError under
 // Browser Mode's real-browser runtime, where `process` doesn't exist. It's
 // unrelated to the permission gate under test, so stub it out.
-vi.mock(import("../../hooks/useContentEditSurvey"), () => ({
-  useFireContentEditSurveyEvent: () => vi.fn<(...args: unknown[]) => unknown>(),
+vi.mock("../../hooks/useContentEditSurvey", () => ({
+  useFireContentEditSurveyEvent: () => vi.fn(),
 }))
 
 // PublishButton reads the current page (to decide the enabled/pending state) and
 // owns the publish mutation. Neither is what we are testing here — the regression
 // is purely about whether the <Can> permission gate shows the button — so stub
 // the tRPC surface with the minimum the component touches on render.
-vi.mock(import("~/utils/trpc"), () => {
-  const noop = vi.fn<(...args: unknown[]) => unknown>()
+vi.mock("~/utils/trpc", () => {
+  const noop = vi.fn()
   return {
     trpc: {
       page: {

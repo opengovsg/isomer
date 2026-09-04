@@ -15,7 +15,7 @@ const VALID_REDIRECT = {
   destination: "/new-page",
 }
 
-describe(createRedirectSchema, () => {
+describe("createRedirectSchema", () => {
   describe("source", () => {
     it("should normalise the source to a single leading slash with no trailing slash", () => {
       // Arrange / Act
@@ -611,7 +611,7 @@ describe(createRedirectSchema, () => {
   })
 })
 
-describe(bulkRedirectsCsvSchema, () => {
+describe("bulkRedirectsCsvSchema", () => {
   it("accepts a small valid CSV", () => {
     // Arrange / Act
     const result = bulkRedirectsCsvSchema.safeParse({

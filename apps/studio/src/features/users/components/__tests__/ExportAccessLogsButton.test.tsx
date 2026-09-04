@@ -16,7 +16,7 @@ import { ExportAccessLogsButton } from "../ExportAccessLogsButton"
 // The button is hidden while the is-audit-log-enabled flag is off (or not yet
 // loaded) — drive the flag per-test.
 let isAuditLogFlagOn = true
-vi.mock(import("@growthbook/growthbook-react"), () => ({
+vi.mock("@growthbook/growthbook-react", () => ({
   useFeatureValue: (_key: string, fallback: boolean) =>
     isAuditLogFlagOn || fallback,
 }))

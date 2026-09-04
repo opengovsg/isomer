@@ -13,7 +13,7 @@ import {
   MAX_DELETE_FILE_KEYS,
 } from "../asset"
 
-describe(getPresignedPutUrlSchema, () => {
+describe("getPresignedPutUrlSchema", () => {
   const validBaseData = {
     siteId: 1,
     resourceId: "test-resource-id",
@@ -292,7 +292,7 @@ describe(getPresignedPutUrlSchema, () => {
   })
 })
 
-describe(fileNameAndSizeSchema, () => {
+describe("fileNameAndSizeSchema", () => {
   it("should validate a file without site or resource identifiers", () => {
     const result = fileNameAndSizeSchema.safeParse({
       fileName: "test.png",
@@ -317,7 +317,7 @@ describe(fileNameAndSizeSchema, () => {
   })
 })
 
-describe(deleteAssetsSchema, () => {
+describe("deleteAssetsSchema", () => {
   const validBaseData = {
     siteId: 1,
     resourceId: "test-resource-id",

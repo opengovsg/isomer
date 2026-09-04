@@ -9,7 +9,7 @@ import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 // algoliasearch(env.ALGOLIA_APP_ID, env.ALGOLIA_API_KEY). Those env vars are
 // not set in the test environment, so the import throws "appId is missing"
 // before any test runs. Mock the whole module to prevent this.
-vi.mock(import("~/lib/algolia"))
+vi.mock("~/lib/algolia")
 
 import * as algoliaLib from "~/lib/algolia"
 

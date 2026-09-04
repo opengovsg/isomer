@@ -20,9 +20,9 @@ import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 import { MAX_DAYS_FROM_LAST_LOGIN } from "../constants"
 
 // Mock must be at module level to be hoisted correctly
-vi.mock(import("~/features/mail/service"), () => ({
-  sendAccountDeactivationEmail: vi.fn<(...args: unknown[]) => unknown>(),
-  sendAccountDeactivationWarningEmail: vi.fn<(...args: unknown[]) => unknown>(),
+vi.mock("~/features/mail/service", () => ({
+  sendAccountDeactivationEmail: vi.fn(),
+  sendAccountDeactivationWarningEmail: vi.fn(),
 }))
 import {
   bulkDeactivateInactiveUsers,

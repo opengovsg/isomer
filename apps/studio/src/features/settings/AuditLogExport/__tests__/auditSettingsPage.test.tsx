@@ -18,17 +18,17 @@ Object.defineProperty(window, "matchMedia", {
     matches: false,
     media: query,
     onchange: null,
-    addListener: vi.fn<(...args: unknown[]) => unknown>(),
-    removeListener: vi.fn<(...args: unknown[]) => unknown>(),
-    addEventListener: vi.fn<(...args: unknown[]) => unknown>(),
-    removeEventListener: vi.fn<(...args: unknown[]) => unknown>(),
-    dispatchEvent: vi.fn<(...args: unknown[]) => unknown>(),
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
   }),
 })
 
-const replace = vi.fn<(...args: unknown[]) => unknown>()
+const replace = vi.fn()
 
-vi.mock(import("next/router"), () => ({
+vi.mock("next/router", () => ({
   useRouter: () => ({
     query: { siteId: String(SITE_ID) },
     replace,
@@ -41,7 +41,7 @@ vi.mock(import("next/router"), () => ({
 // returning the fallback until features are loaded.
 let isGbReady = true
 let isAuditLogFlagOn = true
-vi.mock(import("@growthbook/growthbook-react"), () => ({
+vi.mock("@growthbook/growthbook-react", () => ({
   useGrowthBook: () => ({ ready: isGbReady }),
   useFeatureValue: (_key: string, fallback: boolean) =>
     isGbReady ? isAuditLogFlagOn : fallback,
@@ -50,7 +50,7 @@ vi.mock(import("@growthbook/growthbook-react"), () => ({
 // The page reads `getRolesFor` only for its loading signal; the ability itself
 // comes from `UserManagementContext`. Drive `isPending` per-test.
 let isRolesPending = false
-vi.mock(import("~/utils/trpc"), () => ({
+vi.mock("~/utils/trpc", () => ({
   trpc: {
     resource: {
       getRolesFor: {
@@ -63,7 +63,7 @@ vi.mock(import("~/utils/trpc"), () => ({
       },
       createExportRequest: {
         useMutation: () => ({
-          mutate: vi.fn<(...args: unknown[]) => unknown>(),
+          mutate: vi.fn(),
           isPending: false,
         }),
       },

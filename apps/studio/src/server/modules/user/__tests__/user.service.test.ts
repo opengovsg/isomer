@@ -1,3 +1,8 @@
+import type {
+  AuditLog,
+  ResourcePermission,
+  User,
+} from "~prisma/generated/selectableTypes"
 import { TRPCError } from "@trpc/server"
 import { omit } from "lodash-es"
 import { resetTables } from "tests/integration/helpers/db"
@@ -154,20 +159,10 @@ describe("user.service", () => {
         ReturnType<typeof createUserWithPermission>
       >["resourcePermission"]
       let originalUserId: string
-      let dbUserResult: Awaited<
-        ReturnType<ReturnType<typeof db.selectFrom<"User">>["execute"]>
-      >
-      let dbResourcePermissionResult: Awaited<
-        ReturnType<
-          ReturnType<typeof db.selectFrom<"ResourcePermission">>["execute"]
-        >
-      >
-      let userAuditLogs: Awaited<
-        ReturnType<ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]>
-      >
-      let permissionAuditLogs: Awaited<
-        ReturnType<ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]>
-      >
+      let dbUserResult: User[]
+      let dbResourcePermissionResult: ResourcePermission[]
+      let userAuditLogs: AuditLog[]
+      let permissionAuditLogs: AuditLog[]
 
       beforeEach(async () => {
         const user = await setupUser({ email: TEST_EMAIL, isDeleted: true })
@@ -419,20 +414,10 @@ describe("user.service", () => {
       let resourcePermission: Awaited<
         ReturnType<typeof createUserWithPermission>
       >["resourcePermission"]
-      let dbUserResult: Awaited<
-        ReturnType<ReturnType<typeof db.selectFrom<"User">>["execute"]>
-      >
-      let dbResourcePermissionResult: Awaited<
-        ReturnType<
-          ReturnType<typeof db.selectFrom<"ResourcePermission">>["execute"]
-        >
-      >
-      let userAuditLogs: Awaited<
-        ReturnType<ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]>
-      >
-      let permissionAuditLogs: Awaited<
-        ReturnType<ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]>
-      >
+      let dbUserResult: User[]
+      let dbResourcePermissionResult: ResourcePermission[]
+      let userAuditLogs: AuditLog[]
+      let permissionAuditLogs: AuditLog[]
 
       beforeEach(async () => {
         const result = await db.transaction().execute((tx) => {
@@ -526,20 +511,10 @@ describe("user.service", () => {
       let resourcePermission: Awaited<
         ReturnType<typeof createUserWithPermission>
       >["resourcePermission"]
-      let dbUserResult: Awaited<
-        ReturnType<ReturnType<typeof db.selectFrom<"User">>["execute"]>
-      >
-      let dbResourcePermissionResult: Awaited<
-        ReturnType<
-          ReturnType<typeof db.selectFrom<"ResourcePermission">>["execute"]
-        >
-      >
-      let userAuditLogs: Awaited<
-        ReturnType<ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]>
-      >
-      let permissionAuditLogs: Awaited<
-        ReturnType<ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]>
-      >
+      let dbUserResult: User[]
+      let dbResourcePermissionResult: ResourcePermission[]
+      let userAuditLogs: AuditLog[]
+      let permissionAuditLogs: AuditLog[]
 
       beforeEach(async () => {
         const result = await db.transaction().execute((tx) => {

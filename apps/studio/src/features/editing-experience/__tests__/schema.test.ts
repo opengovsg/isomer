@@ -8,7 +8,7 @@ import {
 } from "../schema"
 
 describe("editing-experience schemas", () => {
-  describe(siteSchema, () => {
+  describe("siteSchema", () => {
     it("should validate a valid siteId", () => {
       // Arrange + Act
       const result = siteSchema.safeParse({ siteId: "123" })
@@ -29,7 +29,7 @@ describe("editing-experience schemas", () => {
     })
   })
 
-  describe(pageSchema, () => {
+  describe("pageSchema", () => {
     it("should validate a valid page with siteId and pageId", () => {
       // Arrange + Act
       const result = pageSchema.safeParse({ siteId: "123", pageId: "456" })
@@ -67,7 +67,7 @@ describe("editing-experience schemas", () => {
     })
   })
 
-  describe(collectionItemSchema, () => {
+  describe("collectionItemSchema", () => {
     it("should validate with both pageId and linkId", () => {
       // Arrange + Act
       const result = collectionItemSchema.safeParse({
@@ -140,7 +140,7 @@ describe("editing-experience schemas", () => {
     })
   })
 
-  describe(pageOrLinkSchema, () => {
+  describe("pageOrLinkSchema", () => {
     it("should validate with only pageId in pageOrLinkSchema", () => {
       // Arrange + Act
       const result = pageOrLinkSchema.safeParse({

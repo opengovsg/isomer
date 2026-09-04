@@ -8,23 +8,23 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import RootStateDrawer from "../RootStateDrawer"
 
-const noop = vi.hoisted(() => vi.fn<(...args: unknown[]) => unknown>())
+const noop = vi.hoisted(() => vi.fn())
 
-vi.mock(import("next/router"), () => ({
+vi.mock("next/router", () => ({
   useRouter: () => ({ query: { pageId: "1", siteId: "1" } }),
 }))
 
-vi.mock(import("posthog-js"), () => ({ default: { capture: noop } }))
+vi.mock("posthog-js", () => ({ default: { capture: noop } }))
 
-vi.mock(import("~/hooks/useIsUserIsomerAdmin"), () => ({
+vi.mock("~/hooks/useIsUserIsomerAdmin", () => ({
   useIsUserIsomerAdmin: () => ({ isAdmin: false, isLoading: false }),
 }))
 
-vi.mock(import("~/hooks/useNewCollectionTagsManagement"), () => ({
+vi.mock("~/hooks/useNewCollectionTagsManagement", () => ({
   useNewCollectionTagsManagement: () => false,
 }))
 
-vi.mock(import("~/utils/trpc"), () => ({
+vi.mock("~/utils/trpc", () => ({
   trpc: {
     page: {
       readPage: {

@@ -23,7 +23,7 @@ import { assetRouter } from "../asset.router"
 
 // Mock the S3 client to prevent credential loading issues in CI
 // Workaround as we do not really want to set up a full integration test here with S3
-vi.mock(import("~/lib/s3"), () => ({
+vi.mock("~/lib/s3", () => ({
   storage: {
     send: vi
       .fn<(...args: unknown[]) => unknown>()

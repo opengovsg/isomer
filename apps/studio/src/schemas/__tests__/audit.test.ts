@@ -23,7 +23,7 @@ const VALID_INPUT = {
   reportType: AuditLogExportRequestedReportType.Activity,
 }
 
-describe(createAuditLogExportRequestSchema, () => {
+describe("createAuditLogExportRequestSchema", () => {
   it("should parse a known-good input", () => {
     // Arrange / Act
     const result = createAuditLogExportRequestSchema.safeParse(VALID_INPUT)
@@ -142,7 +142,7 @@ describe(createAuditLogExportRequestSchema, () => {
     })
   })
 
-  describe(createAuditLogExportRequestServerSchema, () => {
+  describe("createAuditLogExportRequestServerSchema", () => {
     it("accepts scope 'site' with a siteId", () => {
       // Arrange / Act
       const result =

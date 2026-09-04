@@ -1,14 +1,14 @@
 import { describe, expect, it, vi } from "vitest"
 
-const resetMock = vi.fn<(...args: unknown[]) => unknown>()
-const identifyMock = vi.fn<(...args: unknown[]) => unknown>()
+const resetMock = vi.fn()
+const identifyMock = vi.fn()
 
 let releaseImport: () => void
 const importGate = new Promise<void>((resolve) => {
   releaseImport = resolve
 })
 
-vi.mock(import("posthog-js"), async () => {
+vi.mock("posthog-js", async () => {
   // Simulate the dynamic import taking a while to resolve (e.g. the very
   // first time the posthog-js chunk is fetched), so we can assert that
   // calls made while it's still pending don't jump the queue.

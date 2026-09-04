@@ -257,7 +257,7 @@ describe(getBlobOfResource, () => {
     blobChain.executeTakeFirstOrThrow.mockResolvedValue(draftBlob)
 
     const db = {
-      selectFrom: vi.fn<(...args: unknown[]) => unknown>((table: string) =>
+      selectFrom: vi.fn((table: string) =>
         table === "Resource" ? resourceChain : blobChain,
       ),
     } as unknown as Parameters<typeof getBlobOfResource>[0]["db"]
@@ -284,7 +284,7 @@ describe(getBlobOfResource, () => {
     blobChain.executeTakeFirstOrThrow.mockResolvedValue(publishedBlob)
 
     const db = {
-      selectFrom: vi.fn<(...args: unknown[]) => unknown>((table: string) =>
+      selectFrom: vi.fn((table: string) =>
         table === "Resource" ? resourceChain : blobChain,
       ),
     } as unknown as Parameters<typeof getBlobOfResource>[0]["db"]
@@ -305,7 +305,7 @@ describe(getBlobOfResource, () => {
     })
 
     const db = {
-      selectFrom: vi.fn<(...args: unknown[]) => unknown>(() => resourceChain),
+      selectFrom: vi.fn(() => resourceChain),
     } as unknown as Parameters<typeof getBlobOfResource>[0]["db"]
 
     // Act + Assert
@@ -335,9 +335,9 @@ describe(updateBlobById, () => {
     updateChain.execute.mockResolvedValue(undefined)
 
     const tx = {
-      selectFrom: vi.fn<(...args: unknown[]) => unknown>(() => selectChain),
-      insertInto: vi.fn<(...args: unknown[]) => unknown>(() => insertChain),
-      updateTable: vi.fn<(...args: unknown[]) => unknown>(() => updateChain),
+      selectFrom: vi.fn(() => selectChain),
+      insertInto: vi.fn(() => insertChain),
+      updateTable: vi.fn(() => updateChain),
     } as unknown as Transaction<DB>
 
     // Act
@@ -366,9 +366,9 @@ describe(updateBlobById, () => {
     updateChain.executeTakeFirstOrThrow.mockResolvedValue(updatedBlob)
 
     const tx = {
-      selectFrom: vi.fn<(...args: unknown[]) => unknown>(() => selectChain),
-      insertInto: vi.fn<(...args: unknown[]) => unknown>(),
-      updateTable: vi.fn<(...args: unknown[]) => unknown>(() => updateChain),
+      selectFrom: vi.fn(() => selectChain),
+      insertInto: vi.fn(),
+      updateTable: vi.fn(() => updateChain),
     } as unknown as Transaction<DB>
 
     // Act
@@ -394,7 +394,7 @@ describe(updateBlobById, () => {
     selectChain.executeTakeFirst.mockResolvedValue(undefined)
 
     const tx = {
-      selectFrom: vi.fn<(...args: unknown[]) => unknown>(() => selectChain),
+      selectFrom: vi.fn(() => selectChain),
     } as unknown as Transaction<DB>
 
     // Act + Assert
@@ -418,7 +418,7 @@ describe(incrementVersion, () => {
     })
 
     const tx = {
-      selectFrom: vi.fn<(...args: unknown[]) => unknown>(() => selectChain),
+      selectFrom: vi.fn(() => selectChain),
     } as unknown as Transaction<DB>
 
     // Act
@@ -448,9 +448,9 @@ describe(incrementVersion, () => {
     updateChain.execute.mockResolvedValue(undefined)
 
     const tx = {
-      selectFrom: vi.fn<(...args: unknown[]) => unknown>(() => selectChain),
-      insertInto: vi.fn<(...args: unknown[]) => unknown>(() => insertChain),
-      updateTable: vi.fn<(...args: unknown[]) => unknown>(() => updateChain),
+      selectFrom: vi.fn(() => selectChain),
+      insertInto: vi.fn(() => insertChain),
+      updateTable: vi.fn(() => updateChain),
     } as unknown as Transaction<DB>
 
     // Act
@@ -499,11 +499,11 @@ describe(incrementVersion, () => {
     updateChain.execute.mockResolvedValue(undefined)
 
     const tx = {
-      selectFrom: vi.fn<(...args: unknown[]) => unknown>((table: string) =>
+      selectFrom: vi.fn((table: string) =>
         table === "Resource" ? selectChain : versionChain,
       ),
-      insertInto: vi.fn<(...args: unknown[]) => unknown>(() => insertChain),
-      updateTable: vi.fn<(...args: unknown[]) => unknown>(() => updateChain),
+      insertInto: vi.fn(() => insertChain),
+      updateTable: vi.fn(() => updateChain),
     } as unknown as Transaction<DB>
 
     // Act
