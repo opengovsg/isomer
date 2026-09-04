@@ -1448,9 +1448,9 @@ describe("isActiveIsomerAdmin", () => {
       const user = await setupUser({ email: "test@example.com" })
       await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Core })
 
-      await expect(isActiveIsomerAdmin(user.id, [IsomerAdminRole.Core])).resolves.toBe(
-        true,
-      )
+      await expect(
+        isActiveIsomerAdmin(user.id, [IsomerAdminRole.Core]),
+      ).resolves.toBe(true)
     })
 
     it("should return false when the user's role does not match the requested roles", async () => {
@@ -1460,9 +1460,9 @@ describe("isActiveIsomerAdmin", () => {
         role: IsomerAdminRole.Migrator,
       })
 
-      await expect(isActiveIsomerAdmin(user.id, [IsomerAdminRole.Core])).resolves.toBe(
-        false,
-      )
+      await expect(
+        isActiveIsomerAdmin(user.id, [IsomerAdminRole.Core]),
+      ).resolves.toBe(false)
     })
 
     it("should return true when the user's role is among multiple requested roles", async () => {
@@ -1472,10 +1472,12 @@ describe("isActiveIsomerAdmin", () => {
         role: IsomerAdminRole.Migrator,
       })
 
-      await expect(isActiveIsomerAdmin(user.id, [
+      await expect(
+        isActiveIsomerAdmin(user.id, [
           IsomerAdminRole.Core,
           IsomerAdminRole.Migrator,
-        ])).resolves.toBe(true)
+        ]),
+      ).resolves.toBe(true)
     })
   })
 })

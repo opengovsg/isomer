@@ -25,22 +25,14 @@ import { assetRouter } from "../asset.router"
 // Workaround as we do not really want to set up a full integration test here with S3
 vi.mock("~/lib/s3", () => ({
   storage: {
-    send: vi
-      .fn()
-      .mockResolvedValue({ TagSet: [] }),
+    send: vi.fn().mockResolvedValue({ TagSet: [] }),
   },
   generateSignedPutUrl: vi
     .fn()
     .mockResolvedValue("https://example.com/signed-url"),
-  markFileAsDeleted: vi
-    .fn()
-    .mockResolvedValue(undefined),
-  deleteFile: vi
-    .fn()
-    .mockResolvedValue(undefined),
-  putObjectDirect: vi
-    .fn()
-    .mockResolvedValue(undefined),
+  markFileAsDeleted: vi.fn().mockResolvedValue(undefined),
+  deleteFile: vi.fn().mockResolvedValue(undefined),
+  putObjectDirect: vi.fn().mockResolvedValue(undefined),
 }))
 
 const createCaller = createCallerFactory(assetRouter)

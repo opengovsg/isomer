@@ -1853,11 +1853,19 @@ describe("user.router", () => {
           eventType: "PermissionDelete",
           delta: expect.objectContaining({
             before: expect.objectContaining({
-              ...omit(currentPermission, ["createdAt", "updatedAt", "deletedAt"]),
+              ...omit(currentPermission, [
+                "createdAt",
+                "updatedAt",
+                "deletedAt",
+              ]),
               deletedAt: null,
             }),
             after: expect.objectContaining({
-              ...omit(currentPermission, ["createdAt", "updatedAt", "deletedAt"]),
+              ...omit(currentPermission, [
+                "createdAt",
+                "updatedAt",
+                "deletedAt",
+              ]),
               deletedAt: expect.anything(),
             }),
           }),
@@ -1953,11 +1961,19 @@ describe("user.router", () => {
           eventType: "PermissionDelete",
           delta: expect.objectContaining({
             before: expect.objectContaining({
-              ...omit(currentPermission, ["createdAt", "updatedAt", "deletedAt"]),
+              ...omit(currentPermission, [
+                "createdAt",
+                "updatedAt",
+                "deletedAt",
+              ]),
               deletedAt: null,
             }),
             after: expect.objectContaining({
-              ...omit(currentPermission, ["createdAt", "updatedAt", "deletedAt"]),
+              ...omit(currentPermission, [
+                "createdAt",
+                "updatedAt",
+                "deletedAt",
+              ]),
               deletedAt: expect.anything(),
             }),
           }),
@@ -2266,7 +2282,10 @@ describe("user.router", () => {
             name: testUserName,
             phone,
           })
-          expect(result).toStrictEqual({ name: testUserName, phone: "81234567" })
+          expect(result).toStrictEqual({
+            name: testUserName,
+            phone: "81234567",
+          })
 
           const updatedUser = await db
             .selectFrom("User")

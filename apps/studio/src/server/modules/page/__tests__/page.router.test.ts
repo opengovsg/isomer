@@ -1,4 +1,3 @@
-import { beforeAll, beforeEach, afterEach, describe, expect, it } from 'vitest';
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { z } from "zod"
 import type { reorderBlobSchema, updatePageBlobSchema } from "~/schemas/page"
@@ -23,6 +22,7 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
+import { beforeAll, beforeEach, afterEach, describe, expect, it } from "vitest"
 import { normalizeRedirectPath } from "~/schemas/redirect"
 import { createCallerFactory } from "~/server/trpc"
 import {
@@ -1181,7 +1181,9 @@ describe("page.router", async () => {
           ],
         },
       ]
-      expect(unexpectedBlock).not.toStrictEqual(pageToReorder.blob.content.content)
+      expect(unexpectedBlock).not.toStrictEqual(
+        pageToReorder.blob.content.content,
+      )
       await setupAdminPermissions({
         userId: session.userId ?? undefined,
         siteId: pageToReorder.site.id,

@@ -1213,7 +1213,9 @@ describe("inactiveUsers.service", () => {
       })
 
       // Assert
-      expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledExactlyOnceWith({
+      expect(
+        sendAccountDeactivationWarningEmail,
+      ).toHaveBeenCalledExactlyOnceWith({
         recipientEmail: user.email,
         siteNames: [site.name],
         inHowManyDays: 1,
@@ -1370,7 +1372,9 @@ describe("inactiveUsers.service", () => {
       })
 
       // Assert
-      expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledExactlyOnceWith({
+      expect(
+        sendAccountDeactivationWarningEmail,
+      ).toHaveBeenCalledExactlyOnceWith({
         recipientEmail: user.email,
         siteNames: [site.name, anotherSite.name],
         inHowManyDays: 1,

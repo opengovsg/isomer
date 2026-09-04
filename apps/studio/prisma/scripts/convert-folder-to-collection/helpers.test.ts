@@ -65,57 +65,54 @@ interface PageOverrides {
   image?: { src: string; alt: string }
 }
 
-const makeIndexBlob = (overrides?: PageOverrides): IndexBlob =>
-  ({
-    version: "0.1.0",
-    layout: "index",
-    page: {
-      title: "Index",
-      contentPageHeader: {
-        summary: overrides?.summary ?? "Index summary",
-        showThumbnail: false,
-      },
-      ...(overrides?.image ? { image: overrides.image } : {}),
+const makeIndexBlob = (overrides?: PageOverrides): IndexBlob => ({
+  version: "0.1.0",
+  layout: "index",
+  page: {
+    title: "Index",
+    contentPageHeader: {
+      summary: overrides?.summary ?? "Index summary",
+      showThumbnail: false,
     },
-    content: [],
-  })
+    ...(overrides?.image ? { image: overrides.image } : {}),
+  },
+  content: [],
+})
 
 const makeContentBlob = (
   overrides?: PageOverrides,
   content: IsomerComponent[] = [],
-): ContentBlob =>
-  ({
-    version: "0.1.0",
-    layout: "content",
-    page: {
-      title: "Page",
-      contentPageHeader: {
-        summary: overrides?.summary ?? "Content summary",
-        showThumbnail: false,
-      },
-      ...(overrides?.image ? { image: overrides.image } : {}),
+): ContentBlob => ({
+  version: "0.1.0",
+  layout: "content",
+  page: {
+    title: "Page",
+    contentPageHeader: {
+      summary: overrides?.summary ?? "Content summary",
+      showThumbnail: false,
     },
-    content,
-  })
+    ...(overrides?.image ? { image: overrides.image } : {}),
+  },
+  content,
+})
 
 const makeArticleBlob = (
   overrides?: PageOverrides & { category?: string; date?: string },
   content: IsomerComponent[] = [],
-): ArticleBlob =>
-  ({
-    version: "0.1.0",
-    layout: "article",
-    page: {
-      title: "Article",
-      category: overrides?.category ?? "News",
-      date: overrides?.date ?? "1 Jan 2024",
-      articlePageHeader: {
-        summary: overrides?.summary ?? "Article summary",
-      },
-      ...(overrides?.image ? { image: overrides.image } : {}),
+): ArticleBlob => ({
+  version: "0.1.0",
+  layout: "article",
+  page: {
+    title: "Article",
+    category: overrides?.category ?? "News",
+    date: overrides?.date ?? "1 Jan 2024",
+    articlePageHeader: {
+      summary: overrides?.summary ?? "Article summary",
     },
-    content,
-  })
+    ...(overrides?.image ? { image: overrides.image } : {}),
+  },
+  content,
+})
 
 const makeConversionPlan = (
   overrides?: Partial<ConversionPlan>,
@@ -170,12 +167,8 @@ describe("buildConversionReport", () => {
           title: "Flagged",
           permalink: "flagged",
           currentBlobId: "b1",
-          currentBlob: makeContentBlob({}, [
-            infobarBlock,
-          ]),
-          nextBlob: makeArticleBlob({}, [
-            infobarBlock,
-          ]),
+          currentBlob: makeContentBlob({}, [infobarBlock]),
+          nextBlob: makeArticleBlob({}, [infobarBlock]),
           disallowedBlocks: [{ index: 0, type: "infobar" }],
         },
         {
@@ -211,14 +204,8 @@ describe("buildConversionReport", () => {
           title: "Many flags",
           permalink: "many",
           currentBlobId: "b1",
-          currentBlob: makeContentBlob({}, [
-            infobarBlock,
-            infocardsBlock,
-          ]),
-          nextBlob: makeArticleBlob({}, [
-            infobarBlock,
-            infocardsBlock,
-          ]),
+          currentBlob: makeContentBlob({}, [infobarBlock, infocardsBlock]),
+          nextBlob: makeArticleBlob({}, [infobarBlock, infocardsBlock]),
           disallowedBlocks: [
             { index: 0, type: "infobar" },
             { index: 1, type: "infocards" },

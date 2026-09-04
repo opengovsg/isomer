@@ -28,9 +28,7 @@ describe("updateSearchSGConfig", () => {
       auth: vi.fn().mockReturnThis(),
       headers: vi.fn().mockReturnThis(),
       post: vi.fn().mockReturnThis(),
-      json: vi
-        .fn()
-        .mockRejectedValue(new Error("no network in tests")),
+      json: vi.fn().mockRejectedValue(new Error("no network in tests")),
     })
   })
 

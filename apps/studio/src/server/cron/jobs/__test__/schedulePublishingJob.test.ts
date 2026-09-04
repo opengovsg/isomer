@@ -1,12 +1,3 @@
-import {
-  afterEach,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi,
-} from "vitest"
 import type { MockInstance } from "vitest"
 import type { User } from "~prisma/generated/prisma/client"
 import { addSeconds } from "date-fns"
@@ -19,6 +10,15 @@ import {
   setupPublisherPermissions,
   setupUser,
 } from "tests/integration/helpers/seed"
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest"
 import * as emailService from "~/features/mail/service"
 import * as awsUtils from "~/server/modules/aws/utils"
 import { db } from "~/server/modules/database"

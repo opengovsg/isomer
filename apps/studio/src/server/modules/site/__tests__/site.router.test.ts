@@ -1,4 +1,3 @@
-import { expect, vi, beforeEach, describe, beforeAll, it } from 'vitest';
 import type { Notification } from "~/schemas/site"
 import { TRPCError } from "@trpc/server"
 import { pick } from "lodash-es"
@@ -18,6 +17,7 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
+import { expect, vi, beforeEach, describe, beforeAll, it } from "vitest"
 import * as searchSgService from "~/server/modules/searchsg/searchsg.service"
 import { createCallerFactory } from "~/server/trpc"
 import { IsomerAdminRole, RoleType } from "~prisma/generated/generatedEnums"
@@ -349,7 +349,9 @@ describe("site.router", async () => {
       const result = await caller.listAllSites()
 
       // Assert
-      expect(result).toStrictEqual([pick(site, ["id", "config", "codeBuildId"])])
+      expect(result).toStrictEqual([
+        pick(site, ["id", "config", "codeBuildId"]),
+      ])
     })
   })
 
@@ -1061,7 +1063,10 @@ describe("site.router", async () => {
       })
 
       // Assert
-      expect(result.config).toStrictEqual({ ...MOCK_INTEGRATION_DATA, fake: "fake" })
+      expect(result.config).toStrictEqual({
+        ...MOCK_INTEGRATION_DATA,
+        fake: "fake",
+      })
     })
 
     it("should reject an invalid siteGtmId", async () => {
@@ -2134,7 +2139,9 @@ describe("site.router", async () => {
         .where("id", "=", site.id)
         .select("Site.config")
         .executeTakeFirstOrThrow()
-      expect(newSite.config.notification).toStrictEqual(notification.notification)
+      expect(newSite.config.notification).toStrictEqual(
+        notification.notification,
+      )
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog).toHaveLength(2)
       expect(
@@ -2175,7 +2182,9 @@ describe("site.router", async () => {
         .where("id", "=", site.id)
         .select("Site.config")
         .executeTakeFirstOrThrow()
-      expect(newSite.config.notification).toStrictEqual(notification.notification)
+      expect(newSite.config.notification).toStrictEqual(
+        notification.notification,
+      )
       const auditLog = await db
         .selectFrom("AuditLog")
         .selectAll()
