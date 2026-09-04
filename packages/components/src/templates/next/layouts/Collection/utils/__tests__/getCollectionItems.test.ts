@@ -49,7 +49,7 @@ const createSiteWithChildren = (children: IsomerSitemap[]) =>
     },
   })
 
-describe("getCollectionItems", () => {
+describe(getCollectionItems, () => {
   describe("showThumbnail is undefined", () => {
     it("should not include image when showThumbnail is undefined, even if item has an image", () => {
       const itemImage = { src: "/images/thumbnail.png", alt: "Thumbnail" }
@@ -65,7 +65,7 @@ describe("getCollectionItems", () => {
 
       expect(result).toHaveLength(1)
       expect(result[0]!.image).toBeUndefined()
-      expect(result[0]!.isContainNeeded).toBe(false)
+      expect(result[0]!.isContainNeeded).toBeFalsy()
     })
 
     it("should not include image when showThumbnail is undefined and item has no image", () => {
@@ -81,7 +81,7 @@ describe("getCollectionItems", () => {
 
       expect(result).toHaveLength(1)
       expect(result[0]!.image).toBeUndefined()
-      expect(result[0]!.isContainNeeded).toBe(false)
+      expect(result[0]!.isContainNeeded).toBeFalsy()
     })
   })
 
@@ -99,8 +99,8 @@ describe("getCollectionItems", () => {
       })
 
       expect(result).toHaveLength(1)
-      expect(result[0]!.image).toEqual(itemImage)
-      expect(result[0]!.isContainNeeded).toBe(false)
+      expect(result[0]!.image).toStrictEqual(itemImage)
+      expect(result[0]!.isContainNeeded).toBeFalsy()
     })
 
     it("should fall back to site logo when item has no image", () => {
@@ -115,8 +115,8 @@ describe("getCollectionItems", () => {
       })
 
       expect(result).toHaveLength(1)
-      expect(result[0]!.image).toEqual(SITE_LOGO_FALLBACK)
-      expect(result[0]!.isContainNeeded).toBe(true)
+      expect(result[0]!.image).toStrictEqual(SITE_LOGO_FALLBACK)
+      expect(result[0]!.isContainNeeded).toBeTruthy()
     })
 
     it("should fall back to site logo when item image has an empty src", () => {
@@ -131,8 +131,8 @@ describe("getCollectionItems", () => {
       })
 
       expect(result).toHaveLength(1)
-      expect(result[0]!.image).toEqual(SITE_LOGO_FALLBACK)
-      expect(result[0]!.isContainNeeded).toBe(true)
+      expect(result[0]!.image).toStrictEqual(SITE_LOGO_FALLBACK)
+      expect(result[0]!.isContainNeeded).toBeTruthy()
     })
 
     it("should fall back to site logo when item image has an empty src but non-empty alt", () => {
@@ -147,8 +147,8 @@ describe("getCollectionItems", () => {
       })
 
       expect(result).toHaveLength(1)
-      expect(result[0]!.image).toEqual(SITE_LOGO_FALLBACK)
-      expect(result[0]!.isContainNeeded).toBe(true)
+      expect(result[0]!.image).toStrictEqual(SITE_LOGO_FALLBACK)
+      expect(result[0]!.isContainNeeded).toBeTruthy()
     })
 
     it("should ignore item firstImage when fallback is 'logo'", () => {
@@ -164,8 +164,8 @@ describe("getCollectionItems", () => {
       })
 
       expect(result).toHaveLength(1)
-      expect(result[0]!.image).toEqual(SITE_LOGO_FALLBACK)
-      expect(result[0]!.isContainNeeded).toBe(true)
+      expect(result[0]!.image).toStrictEqual(SITE_LOGO_FALLBACK)
+      expect(result[0]!.isContainNeeded).toBeTruthy()
     })
   })
 
@@ -184,8 +184,8 @@ describe("getCollectionItems", () => {
       })
 
       expect(result).toHaveLength(1)
-      expect(result[0]!.image).toEqual(itemImage)
-      expect(result[0]!.isContainNeeded).toBe(false)
+      expect(result[0]!.image).toStrictEqual(itemImage)
+      expect(result[0]!.isContainNeeded).toBeFalsy()
     })
 
     it("should fall back to firstImage when item has no image but has a firstImage", () => {
@@ -201,8 +201,8 @@ describe("getCollectionItems", () => {
       })
 
       expect(result).toHaveLength(1)
-      expect(result[0]!.image).toEqual(firstImage)
-      expect(result[0]!.isContainNeeded).toBe(false)
+      expect(result[0]!.image).toStrictEqual(firstImage)
+      expect(result[0]!.isContainNeeded).toBeFalsy()
     })
 
     it("should fall back to firstImage when item image has an empty src", () => {
@@ -218,8 +218,8 @@ describe("getCollectionItems", () => {
       })
 
       expect(result).toHaveLength(1)
-      expect(result[0]!.image).toEqual(firstImage)
-      expect(result[0]!.isContainNeeded).toBe(false)
+      expect(result[0]!.image).toStrictEqual(firstImage)
+      expect(result[0]!.isContainNeeded).toBeFalsy()
     })
 
     it("should fall back to site logo when item has no image and no firstImage", () => {
@@ -234,8 +234,8 @@ describe("getCollectionItems", () => {
       })
 
       expect(result).toHaveLength(1)
-      expect(result[0]!.image).toEqual(SITE_LOGO_FALLBACK)
-      expect(result[0]!.isContainNeeded).toBe(true)
+      expect(result[0]!.image).toStrictEqual(SITE_LOGO_FALLBACK)
+      expect(result[0]!.isContainNeeded).toBeTruthy()
     })
 
     it("should fall back to site logo when firstImage has an empty src", () => {
@@ -253,8 +253,8 @@ describe("getCollectionItems", () => {
       })
 
       expect(result).toHaveLength(1)
-      expect(result[0]!.image).toEqual(SITE_LOGO_FALLBACK)
-      expect(result[0]!.isContainNeeded).toBe(true)
+      expect(result[0]!.image).toStrictEqual(SITE_LOGO_FALLBACK)
+      expect(result[0]!.isContainNeeded).toBeTruthy()
     })
   })
 
@@ -281,10 +281,10 @@ describe("getCollectionItems", () => {
       })
 
       expect(result).toHaveLength(2)
-      expect(result[0]!.image).toEqual(itemImage)
-      expect(result[0]!.isContainNeeded).toBe(false)
-      expect(result[1]!.image).toEqual(SITE_LOGO_FALLBACK)
-      expect(result[1]!.isContainNeeded).toBe(true)
+      expect(result[0]!.image).toStrictEqual(itemImage)
+      expect(result[0]!.isContainNeeded).toBeFalsy()
+      expect(result[1]!.image).toStrictEqual(SITE_LOGO_FALLBACK)
+      expect(result[1]!.isContainNeeded).toBeTruthy()
     })
 
     it("should resolve images per-item with fallback 'first-image'", () => {
@@ -317,12 +317,16 @@ describe("getCollectionItems", () => {
       })
 
       expect(result).toHaveLength(3)
-      expect(result[0]!.image).toEqual(itemImage)
-      expect(result[0]!.isContainNeeded).toBe(false)
-      expect(result[1]!.image).toEqual(firstImage)
-      expect(result[1]!.isContainNeeded).toBe(false)
-      expect(result[2]!.image).toEqual(SITE_LOGO_FALLBACK)
-      expect(result[2]!.isContainNeeded).toBe(true)
+      expect(
+        result.map((item) => ({
+          image: item.image,
+          isContainNeeded: item.isContainNeeded,
+        })),
+      ).toStrictEqual([
+        { image: itemImage, isContainNeeded: false },
+        { image: firstImage, isContainNeeded: false },
+        { image: SITE_LOGO_FALLBACK, isContainNeeded: true },
+      ])
     })
   })
 
@@ -360,7 +364,7 @@ describe("getCollectionItems", () => {
 
       // Assert
       expect(result).toHaveLength(1)
-      expect(result[0]!.plaintextTags).toEqual([
+      expect(result[0]!.plaintextTags).toStrictEqual([
         { id: "cat-1", category: "Category", selected: ["Guides"] },
       ])
     })
@@ -380,7 +384,7 @@ describe("getCollectionItems", () => {
 
       // Assert
       expect(result).toHaveLength(1)
-      expect(result[0]!.plaintextTags).toEqual([
+      expect(result[0]!.plaintextTags).toStrictEqual([
         { id: "cat-1", category: "Category", selected: ["Guides", "Articles"] },
       ])
     })
@@ -455,11 +459,11 @@ describe("getCollectionItems", () => {
 
       // Assert
       expect(result).toHaveLength(1)
-      expect(result[0]!.tags).toEqual([
+      expect(result[0]!.tags).toStrictEqual([
         { id: "topic-1", category: "Topic", selected: ["Health"] },
         { id: "cat-1", category: "Category", selected: ["Guides"] },
       ])
-      expect(result[0]!.pillTags).toEqual([
+      expect(result[0]!.pillTags).toStrictEqual([
         { id: "topic-1", category: "Topic", selected: ["Health"] },
       ])
     })
@@ -504,10 +508,10 @@ describe("getCollectionItems", () => {
 
       // Assert
       expect(result).toHaveLength(1)
-      expect(result[0]!.pillTags).toEqual([
+      expect(result[0]!.pillTags).toStrictEqual([
         { id: "topic-1", category: "Topic", selected: ["Health"] },
       ])
-      expect(result[0]!.plaintextTags).toEqual([])
+      expect(result[0]!.plaintextTags).toStrictEqual([])
     })
 
     it('returns an empty array for pillTags when the only group is display: "plaintext"', () => {
@@ -533,10 +537,10 @@ describe("getCollectionItems", () => {
 
       // Assert
       expect(result).toHaveLength(1)
-      expect(result[0]!.tags).toEqual([
+      expect(result[0]!.tags).toStrictEqual([
         { id: "cat-1", category: "Category", selected: ["Guides"] },
       ])
-      expect(result[0]!.pillTags).toEqual([])
+      expect(result[0]!.pillTags).toStrictEqual([])
     })
   })
 })

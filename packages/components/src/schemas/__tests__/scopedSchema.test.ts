@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { getScopedSchema } from "../scopedSchema"
 
-describe("getScopedSchema", () => {
+describe(getScopedSchema, () => {
   describe("database layout", () => {
     it("should return schema for page.contentPageHeader", () => {
       const schema = getScopedSchema({
@@ -209,12 +209,10 @@ describe("getScopedSchema", () => {
       expect(schema).toBeDefined()
       expect(schema.allOf).toBeDefined()
 
-      // "subtitle" should not appear in any allOf sub-schema
-      for (const subSchema of schema.allOf) {
-        if (subSchema.properties) {
-          expect(subSchema.properties.subtitle).toBeUndefined()
-        }
-      }
+      const allPropertyKeys = schema.allOf.flatMap((subSchema) =>
+        subSchema.properties ? Object.keys(subSchema.properties) : [],
+      )
+      expect(allPropertyKeys).not.toContain("subtitle")
     })
 
     it("should exclude multiple fields across different allOf sub-schemas in collection layout", () => {
@@ -227,13 +225,12 @@ describe("getScopedSchema", () => {
       expect(schema).toBeDefined()
       expect(schema.allOf).toBeDefined()
 
-      for (const subSchema of schema.allOf) {
-        if (subSchema.properties) {
-          expect(subSchema.properties.subtitle).toBeUndefined()
-          expect(subSchema.properties.variant).toBeUndefined()
-          expect(subSchema.properties.image).toBeUndefined()
-        }
-      }
+      const allPropertyKeys = schema.allOf.flatMap((subSchema) =>
+        subSchema.properties ? Object.keys(subSchema.properties) : [],
+      )
+      expect(allPropertyKeys).not.toStrictEqual(
+        expect.arrayContaining(["subtitle", "variant", "image"]),
+      )
     })
 
     it("should preserve non-excluded fields in allOf sub-schemas", () => {
@@ -265,12 +262,10 @@ describe("getScopedSchema", () => {
       expect(schema).toBeDefined()
       expect(schema.allOf).toBeDefined()
 
-      // "subtitle" should not appear in any required array
-      for (const subSchema of schema.allOf) {
-        if (Array.isArray(subSchema.required)) {
-          expect(subSchema.required).not.toContain("subtitle")
-        }
-      }
+      const allRequiredFields = schema.allOf.flatMap((subSchema) =>
+        Array.isArray(subSchema.required) ? subSchema.required : [],
+      )
+      expect(allRequiredFields).not.toContain("subtitle")
     })
 
     it("should remove excluded fields from required array in non-allOf schemas", () => {
@@ -281,9 +276,7 @@ describe("getScopedSchema", () => {
       })
 
       expect(schema).toBeDefined()
-      if (Array.isArray(schema.required)) {
-        expect(schema.required).not.toContain("contentPageHeader")
-      }
+      expect(schema.required ?? []).not.toContain("contentPageHeader")
     })
 
     it("should return original schema when exclude is empty array", () => {
@@ -298,7 +291,7 @@ describe("getScopedSchema", () => {
         exclude: [],
       })
 
-      expect(schemaWithEmptyExclude).toEqual(originalSchema)
+      expect(schemaWithEmptyExclude).toStrictEqual(originalSchema)
     })
   })
 
@@ -317,7 +310,7 @@ describe("getScopedSchema", () => {
         (s: Record<string, unknown>) =>
           s.properties ? Object.keys(s.properties) : [],
       )
-      expect(allProperties).toEqual(["subtitle"])
+      expect(allProperties).toStrictEqual(["subtitle"])
     })
 
     it("should keep multiple specified fields across allOf sub-schemas", () => {
@@ -334,10 +327,14 @@ describe("getScopedSchema", () => {
         (s: Record<string, unknown>) =>
           s.properties ? Object.keys(s.properties) : [],
       )
-      expect(allProperties).toContain("subtitle")
-      expect(allProperties).toContain("variant")
-      expect(allProperties).not.toContain("sortOrder")
-      expect(allProperties).not.toContain("image")
+      expect(allProperties).toStrictEqual(
+        expect.arrayContaining(["subtitle", "variant"]),
+      )
+      expect(
+        allProperties.filter((property) =>
+          ["sortOrder", "image"].includes(property),
+        ),
+      ).toStrictEqual([])
     })
 
     it("should keep only specified fields in flat (non-allOf) schemas", () => {
@@ -361,13 +358,10 @@ describe("getScopedSchema", () => {
       })
 
       expect(schema).toBeDefined()
-      for (const subSchema of schema.allOf) {
-        if (Array.isArray(subSchema.required)) {
-          for (const field of subSchema.required) {
-            expect(field).toBe("subtitle")
-          }
-        }
-      }
+      const allRequiredFields = schema.allOf.flatMap((subSchema) =>
+        Array.isArray(subSchema.required) ? subSchema.required : [],
+      )
+      expect(new Set(allRequiredFields)).toStrictEqual(new Set(["subtitle"]))
     })
 
     it("should throw when both include and exclude are provided", () => {
@@ -393,7 +387,7 @@ describe("getScopedSchema", () => {
         include: [],
       })
 
-      expect(schemaWithEmptyInclude).toEqual(originalSchema)
+      expect(schemaWithEmptyInclude).toStrictEqual(originalSchema)
     })
   })
 })

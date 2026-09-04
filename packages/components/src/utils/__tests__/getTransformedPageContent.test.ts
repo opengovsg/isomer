@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 import { getDigestFromText } from "~/utils/getDigestFromText"
 import { getTransformedPageContent } from "~/utils/getTransformedPageContent"
 
-describe("getTransformedPageContent", () => {
+describe(getTransformedPageContent, () => {
   const idPattern = /^[a-f0-9]{32}$/
 
   it("preserves array length and block order", () => {
@@ -39,7 +39,7 @@ describe("getTransformedPageContent", () => {
 
     // Assert
     expect(transformed).toHaveLength(content.length)
-    expect(transformed.map((b) => b.type)).toEqual(content.map((b) => b.type))
+    expect(transformed.map((b) => b.type)).toStrictEqual(content.map((b) => b.type))
   })
 
   it("adds ids only to level-2 prose headings without ids", () => {
@@ -73,20 +73,22 @@ describe("getTransformedPageContent", () => {
 
     // Assert
     expect(proseBlock?.type).toBe("prose")
-    if (proseBlock?.type === "prose" && proseBlock.content) {
-      const headingInfo = proseBlock.content.map((node) => {
-        if (node.type !== "heading") return undefined
-        return { level: node.attrs.level, id: node.attrs.id }
-      })
-
-      expect(headingInfo).toHaveLength(3)
-      expect(headingInfo[0]).toEqual({
-        level: 2,
-        id: expect.stringMatching(idPattern),
-      })
-      expect(headingInfo[1]).toEqual({ level: 3, id: undefined })
-      expect(headingInfo[2]).toEqual({ level: 2, id: "existing-id" })
+    if (proseBlock?.type !== "prose" || !proseBlock.content) {
+      throw new Error("Expected prose block with content")
     }
+
+    const headingInfo = proseBlock.content.map((node) => {
+      if (node.type !== "heading") return undefined
+      return { level: node.attrs.level, id: node.attrs.id }
+    })
+
+    expect(headingInfo).toHaveLength(3)
+    expect(headingInfo[0]).toStrictEqual({
+      level: 2,
+      id: expect.stringMatching(idPattern),
+    })
+    expect(headingInfo[1]).toStrictEqual({ level: 3, id: undefined })
+    expect(headingInfo[2]).toStrictEqual({ level: 2, id: "existing-id" })
   })
 
   it("generates unique IDs for identical headings in 2 prose blocks", () => {
@@ -215,22 +217,25 @@ describe("getTransformedPageContent", () => {
     const transformed = getTransformedPageContent(content)
 
     // Assert
-    transformed.forEach((block) => {
-      expect(
-        block.type === "infocards" ||
-          block.type === "infocols" ||
-          block.type === "infopic" ||
-          block.type === "keystatistics",
-      ).toBe(true)
-
-      if (
+    const blocksWithIds = transformed.filter(
+      (
+        block,
+      ): block is Extract<
+        (typeof transformed)[number],
+        | { type: "infocards" }
+        | { type: "infocols" }
+        | { type: "infopic" }
+        | { type: "keystatistics" }
+      > =>
         block.type === "infocards" ||
         block.type === "infocols" ||
         block.type === "infopic" ||
-        block.type === "keystatistics"
-      ) {
-        expect(block.id).toMatch(idPattern)
-      }
-    })
+        block.type === "keystatistics",
+    )
+
+    expect(blocksWithIds).toHaveLength(transformed.length)
+    for (const block of blocksWithIds) {
+      expect(block.id).toMatch(idPattern)
+    }
   })
 })

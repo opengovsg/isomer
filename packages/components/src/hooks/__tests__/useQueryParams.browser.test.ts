@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { useQueryParams } from "../useQueryParams"
 
-describe("useQueryParams", () => {
+describe(useQueryParams, () => {
   let originalPushState: History["pushState"]
 
   beforeEach(() => {
@@ -25,7 +25,7 @@ describe("useQueryParams", () => {
     const { result } = renderHook(() => useQueryParams())
 
     // Assert
-    expect(result.current[0]).toEqual({ category: "guides", page: "2" })
+    expect(result.current[0]).toStrictEqual({ category: "guides", page: "2" })
   })
 
   it("should update query params when pushState changes the URL", () => {
@@ -38,7 +38,7 @@ describe("useQueryParams", () => {
     })
 
     // Assert
-    expect(result.current[0]).toEqual({ page: "3", search: "budget" })
+    expect(result.current[0]).toStrictEqual({ page: "3", search: "budget" })
   })
 
   it("should update query params when popstate is dispatched", () => {
@@ -52,25 +52,25 @@ describe("useQueryParams", () => {
     })
 
     // Assert
-    expect(result.current[0]).toEqual({ filters: "[]" })
+    expect(result.current[0]).toStrictEqual({ filters: "[]" })
   })
 
   it("should stop emitting pushstate events after unmount", () => {
     // Arrange
-    const onPushState = vi.fn()
+    const onPushState = vi.fn<() => void>()
     window.addEventListener("pushstate", onPushState)
     const { unmount } = renderHook(() => useQueryParams())
     act(() => {
       window.history.pushState({}, "", "/?page=1")
     })
-    expect(onPushState).toHaveBeenCalledTimes(1)
+    expect(onPushState).toHaveBeenCalledOnce()
 
     // Act
     unmount()
     window.history.pushState({}, "", "/?page=2")
 
     // Assert
-    expect(onPushState).toHaveBeenCalledTimes(1)
+    expect(onPushState).toHaveBeenCalledOnce()
     window.removeEventListener("pushstate", onPushState)
   })
 })

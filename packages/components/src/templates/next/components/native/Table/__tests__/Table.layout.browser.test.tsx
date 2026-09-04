@@ -53,10 +53,14 @@ describe("Table layout", () => {
 
     const tableWidth = getTableWidth(table)
     const [h1Width = 0, h2h3Width = 0] = getCellWidths(table, 0)
-    expect(h1Width).toBeGreaterThan(0)
-    expect(h2h3Width).toBeGreaterThan(0)
+    expect([h1Width, h2h3Width].every((width) => width > 0)).toBeTruthy()
 
-    expect(h1Width / tableWidth).toBeCloseTo(1 / 3, 1)
-    expect(h2h3Width / tableWidth).toBeCloseTo(2 / 3, 1)
+    expect({
+      h1Ratio: h1Width / tableWidth,
+      h2h3Ratio: h2h3Width / tableWidth,
+    }).toStrictEqual({
+      h1Ratio: expect.closeTo(1 / 3, 1),
+      h2h3Ratio: expect.closeTo(2 / 3, 1),
+    })
   })
 })
