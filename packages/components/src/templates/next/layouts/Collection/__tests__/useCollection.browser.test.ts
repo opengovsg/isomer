@@ -61,6 +61,34 @@ describe("useCollection", () => {
       expect(result.current.appliedFilters).toEqual(filters)
     })
 
+    it.each([
+      {
+        invalidShape: "filter id is not a string",
+        filters: [{ id: 123, items: [] }],
+      },
+      {
+        invalidShape: "filter items is not an array",
+        filters: [{ id: "category", items: { id: "guides" } }],
+      },
+      {
+        invalidShape: "filter item id is not a string",
+        filters: [{ id: "category", items: [{ id: 123 }] }],
+      },
+    ])("returns empty array when $invalidShape", ({ filters }) => {
+      // Arrange
+      window.history.replaceState(
+        {},
+        "",
+        `/?filters=${encodeURIComponent(JSON.stringify(filters))}`,
+      )
+
+      // Act
+      const { result } = renderHook(() => useCollection({ items: [] }))
+
+      // Assert
+      expect(result.current.appliedFilters).toEqual([])
+    })
+
     it("returns empty array instead of crashing when filters param is not valid JSON", () => {
       // Arrange — simulates a user manually typing ?filters=hello in the address bar
       window.history.replaceState({}, "", "/?filters=hello")

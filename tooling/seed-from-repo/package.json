@@ -48,14 +48,14 @@
     "cheerio": "catalog:",
     "dayjs": "catalog:",
     "dotenv": "catalog:",
-    "pg": "catalog:",
+    "pg": "catalog:pg",
     "tsx": "catalog:"
   },
   "devDependencies": {
     "@isomer/oxlint-config": "workspace:*",
     "@isomer/tsconfig": "workspace:*",
     "@types/node": "catalog:",
-    "@types/pg": "catalog:",
+    "@types/pg": "catalog:pg",
     "@types/request": "catalog:"
   }
 }

@@ -4,6 +4,7 @@ import { Box, Flex, HStack, useDisclosure } from "@chakra-ui/react"
 import { Button, IconButton, useToast } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
 import { cloneDeep, isEmpty, isEqual } from "lodash-es"
+import posthog from "posthog-js"
 import { useCallback, useMemo } from "react"
 import { BiTrash } from "react-icons/bi"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
@@ -58,6 +59,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
   const { mutate: savePage, isPending: isSavingPage } =
     trpc.page.updatePageBlob.useMutation({
       onSuccess: async () => {
+        posthog.capture("page_changes_saved", { site_id: siteId })
         await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
         await utils.page.readPage.invalidate({ pageId, siteId })
         if (type === ResourceType.CollectionPage) {

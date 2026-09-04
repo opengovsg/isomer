@@ -83,4 +83,5 @@ export type InfopicProps = Static<typeof InfopicSchema> & {
   isTextOnRight?: boolean // Automatically determined based on position in page
   shouldLazyLoad?: boolean
   site: IsomerSiteProps
+  headingLevel: number
 }

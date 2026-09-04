@@ -18,13 +18,13 @@
   "dependencies": {
     "@aws-sdk/client-s3": "catalog:aws-sdk",
     "dotenv": "catalog:",
-    "pg": "catalog:",
+    "pg": "catalog:pg",
     "tsx": "catalog:"
   },
   "devDependencies": {
     "@isomer/db": "workspace:*",
     "@types/node": "catalog:",
-    "@types/pg": "catalog:",
+    "@types/pg": "catalog:pg",
     "testcontainers": "catalog:",
     "vitest": "catalog:vitest"
   }

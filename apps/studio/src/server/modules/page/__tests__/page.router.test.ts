@@ -1640,13 +1640,13 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await assertAuditLogRows()
       await expect(result).rejects.toThrow(
         new TRPCError({
           code: "CONFLICT",
           message: "A resource with the same permalink already exists",
         }),
       )
+      await assertAuditLogRows()
     })
 
     it("should create a new page with Content layout successfully", async () => {
@@ -1868,7 +1868,6 @@ describe("page.router", async () => {
       const result = caller.createPage({ ...expectedPageArgs })
 
       // Assert
-      await assertAuditLogRows()
       await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
@@ -1876,6 +1875,7 @@ describe("page.router", async () => {
             "Parent not found or parentId is not a valid collection or folder",
         }),
       )
+      await assertAuditLogRows()
     })
 
     it("should throw 404 if folderId is not a Folder resource", async () => {
@@ -1896,7 +1896,6 @@ describe("page.router", async () => {
       const result = caller.createPage({ ...expectedPageArgs })
 
       // Assert
-      await assertAuditLogRows()
       await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
@@ -1904,6 +1903,7 @@ describe("page.router", async () => {
             "Parent not found or parentId is not a valid collection or folder",
         }),
       )
+      await assertAuditLogRows()
     })
 
     // TODO: Implement tests when permissions are implemented
@@ -2593,7 +2593,6 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await assertAuditLogRows()
       await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
@@ -2601,6 +2600,7 @@ describe("page.router", async () => {
             "Unable to load content for the requested page, please contact Isomer Support",
         }),
       )
+      await assertAuditLogRows()
     })
 
     it("should update page settings successfully", async () => {

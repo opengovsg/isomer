@@ -1,7 +1,12 @@
 import { toZonedTime } from "date-fns-tz"
-import { ISOMER_SUPPORT_EMAIL, ISOMER_SUPPORT_LINK } from "~/constants/misc"
+import {
+  AUDIT_LOG_EXPORT_URL_EXPIRY_DAYS,
+  ISOMER_SUPPORT_EMAIL,
+  ISOMER_SUPPORT_LINK,
+} from "~/constants/misc"
 import { env } from "~/env.mjs"
 import { formatScheduledAtDate } from "~/lib/dates"
+import { ONE_MB_IN_BYTES } from "~/lib/fileUpload"
 import { MAX_DAYS_FROM_LAST_LOGIN } from "~/server/modules/user/constants"
 import { getStudioResourceUrl } from "~/utils/resources"
 import { RoleType } from "~prisma/generated/generatedEnums"
@@ -9,6 +14,9 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 import type {
   AccountDeactivationEmailTemplateData,
   AccountDeactivationWarningEmailTemplateData,
+  AuditLogExportDownloadLink,
+  AuditLogExportFailedEmailTemplateData,
+  AuditLogExportReadyEmailTemplateData,
   CancelSchedulePageTemplateData,
   EmailTemplate,
   EmailTemplateFunction,
@@ -22,6 +30,14 @@ import type {
   SuccessfulPublishTemplateData,
 } from "./types"
 import { escapeHtml, escapeTemplateArguments, unescapeHtml } from "../utils"
+
+const getDownloadLinkLabel = (
+  label: AuditLogExportDownloadLink["label"],
+  longMonth: string,
+  sizeInMb: string,
+) => {
+  return `Download ${label} review logs for ${longMonth} [.csv, ${sizeInMb}MB]`
+}
 
 const constructStudioRedirect = () =>
   `<a target="_blank" href="${escapeHtml(env.NEXT_PUBLIC_APP_URL)}">${escapeHtml(env.NEXT_PUBLIC_APP_URL?.replace("https://", ""))}</a>`
@@ -271,6 +287,48 @@ const accountDeactivationTemplate = (
   }
 }
 
+// `data` is already HTML-escaped by the `escapeTemplateArguments` wrapper on
+// the `templates` export (including nested fields like `link.url`), so no
+// field may be escaped again here: double-escaping turns `&` in the signed
+// URL's query string into `&amp;amp;`, which breaks the S3 signature.
+const auditLogExportReadyTemplate = (
+  data: AuditLogExportReadyEmailTemplateData,
+): EmailTemplate => {
+  const { recipientEmail, siteName, month, link, sizeInBytes } = data
+
+  const logName = link.label === "access" ? "Access" : "Audit"
+
+  const downloadLink = `<a href="${link.url}">${getDownloadLinkLabel(link.label, month, sizeInBytes ? (sizeInBytes / ONE_MB_IN_BYTES).toFixed(2) : "-")}</a>`
+
+  return {
+    subject: `[Isomer] ${logName} logs for ${month} for your site (${unescapeHtml(siteName)}) is ready`,
+    body: `<p>Hi ${recipientEmail},</p>
+<p>You requested for audit logs for your site(s) for ${month}. This link will expire after ${AUDIT_LOG_EXPORT_URL_EXPIRY_DAYS} days.</p>
+<p>${downloadLink}</p>
+<br/>
+<p>Best,</p>
+<p>Isomer team</p>`,
+  }
+}
+
+// `data` is pre-escaped by `escapeTemplateArguments` — see the note on
+// `auditLogExportReadyTemplate`.
+const auditLogExportFailedTemplate = (
+  data: AuditLogExportFailedEmailTemplateData,
+): EmailTemplate => {
+  const { recipientEmail, siteName, month } = data
+
+  return {
+    subject: `[Isomer Studio] Your audit log export for ${unescapeHtml(siteName)} (${month}) could not be generated`,
+    body: `<p>Hi ${recipientEmail},</p>
+<p>We're sorry — we couldn't generate your audit log export for ${siteName} (${month}).</p>
+<p>Please try again later. If the problem persists, contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a>.</p>
+<br/>
+<p>Best,</p>
+<p>Isomer team</p>`,
+  }
+}
+
 const _templates = {
   invitation:
     invitationTemplate satisfies EmailTemplateFunction<InvitationEmailTemplateData>,
@@ -294,6 +352,10 @@ const _templates = {
     accountDeactivationTemplate satisfies EmailTemplateFunction<AccountDeactivationEmailTemplateData>,
   gazetteDeletion:
     gazetteDeletionTemplate satisfies EmailTemplateFunction<GazetteDeletionEmailTemplateData>,
+  auditLogExportReady:
+    auditLogExportReadyTemplate satisfies EmailTemplateFunction<AuditLogExportReadyEmailTemplateData>,
+  auditLogExportFailed:
+    auditLogExportFailedTemplate satisfies EmailTemplateFunction<AuditLogExportFailedEmailTemplateData>,
 } as const
 
 export const templates = escapeTemplateArguments(_templates)

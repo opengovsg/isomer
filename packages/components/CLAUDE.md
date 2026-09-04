@@ -109,7 +109,7 @@ src/
 ## Tests
 
 - Visual + behavioural tests via Storybook.
-- Unit tests (`.spec.ts`) for utilities and engine code.
+- Unit tests (`.test.ts` / `.test.tsx`) for utilities and engine code.
 - Snapshot tests are discouraged except for the JSON Schema itself.
 
 ## Anti-patterns the agent should refuse

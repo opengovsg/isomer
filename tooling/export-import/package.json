@@ -11,7 +11,7 @@
   "devDependencies": {
     "@isomer/tsconfig": "workspace:*",
     "@types/node": "catalog:",
-    "@types/pg": "catalog:",
+    "@types/pg": "catalog:pg",
     "dotenv-cli": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:"
@@ -19,8 +19,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/credential-providers": "catalog:aws-sdk",
+    "@aws-sdk/rds-signer": "catalog:aws-sdk",
     "@inquirer/prompts": "catalog:",
     "dotenv": "catalog:",
-    "pg": "catalog:"
+    "pg": "catalog:pg"
   }
 }

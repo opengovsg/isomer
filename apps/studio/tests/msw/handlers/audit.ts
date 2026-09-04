@@ -1,0 +1,60 @@
+import { MOCK_STORY_DATE } from "../constants"
+import { trpcMsw } from "../mockTrpc"
+
+export const auditHandlers = {
+  // How many months back the export picker may offer for this site. Defaults
+  // to the standard full window; stories that want to demonstrate a young
+  // site can override with a smaller `maxMonths`.
+  getExportWindow: {
+    default: (maxMonths = 12) =>
+      trpcMsw.audit.getExportWindow.query(() => ({ maxMonths })),
+  },
+  createExportRequest: {
+    // Accepts the request and returns the inserted Pending row, the way the
+    // service does on the happy path.
+    success: () =>
+      trpcMsw.audit.createExportRequest.mutation(
+        ({ input: { siteId, reportType } }) => {
+          // The service stores the picked month as a half-open SGT date range
+          // string, `[YYYY-MM-DD,YYYY-MM-DD)`. The UI never reads this value,
+          // so a fixed literal is enough for the mocked row — avoids pulling
+          // the server DB query module into the Storybook browser bundle.
+          const auditLogDateRange = "[2024-09-01,2024-09-13)"
+          return [
+            {
+              id: "audit-export-1",
+              // `siteId` is already `number | undefined` per the schema
+              // (a union+transform+pipe, not `z.coerce.number()`); the
+              // `Number()` cast here is just defensive. Both real callers
+              // (AuditLogExportSection, ExportAccessLogsModal) always send
+              // `siteId` alongside `scope`, even for `allSites` — the server
+              // ignores it in that case and resolves the site list itself
+              // (see audit.router.ts). The `undefined` fallback only covers a
+              // handler invoked directly without one — no story currently
+              // does that.
+              siteId: siteId === undefined ? 1 : Number(siteId),
+              userId: "cljcnahpn0000xlwynuea40lv",
+              auditLogDateRange,
+              reportType,
+              status: "Pending",
+              attempts: 0,
+              errorMessage: null,
+              objectKey: null,
+              completedAt: null,
+              createdAt: MOCK_STORY_DATE,
+              updatedAt: MOCK_STORY_DATE,
+            },
+          ]
+        },
+      ),
+    // Never resolves, so the submit button stays in its loading state — used
+    // to demonstrate the in-flight UI.
+    // NOTE: there is deliberately no failure handler for a duplicate request:
+    // asking twice can no longer fail — the service accepts duplicates
+    // idempotently (ADR docs/adr/0005).
+    pending: () =>
+      trpcMsw.audit.createExportRequest.mutation(
+        () => new Promise(() => undefined),
+      ),
+  },
+}

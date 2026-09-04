@@ -8,6 +8,7 @@
   "globalEnv": [
     "NODE_ENV",
     "DATABASE_URL",
+    "ENABLE_CRON_WORKERS",
     "CI",
     "SESSION_SECRET",
     "NEXT_PUBLIC_S3_REGION",

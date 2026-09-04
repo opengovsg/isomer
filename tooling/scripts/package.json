@@ -7,16 +7,18 @@
   },
   "dependencies": {
     "@aws-sdk/client-codebuild": "catalog:aws-sdk",
+    "@aws-sdk/client-s3": "catalog:aws-sdk",
     "@inquirer/prompts": "catalog:",
+    "@isomer/algolia": "workspace:*",
     "@paralleldrive/cuid2": "catalog:",
     "ajv": "catalog:",
     "dotenv": "catalog:",
     "dotenv-cli": "catalog:",
-    "pg": "catalog:",
+    "pg": "catalog:pg",
     "tsx": "catalog:"
   },
   "devDependencies": {
     "@isomer/tsconfig": "workspace:*",
-    "@types/pg": "catalog:"
+    "@types/pg": "catalog:pg"
   }
 }

@@ -96,6 +96,20 @@ export const WithBanner: Story = {
   },
 }
 
+// The collection index page walks the sitemap segment by segment from the root, so a
+// collection sitting inside folders needs a node at every permalink prefix to render.
+export const NestedCollection: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        pageHandlers.getFullPermalink.nestedCollectionLink(),
+        resourceHandlers.getAncestryStack.nestedCollection(),
+        ...COMMON_HANDLERS,
+      ],
+    },
+  },
+}
+
 export const WithModal: Story = {
   play: async (context) => {
     const { canvasElement } = context

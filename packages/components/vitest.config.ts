@@ -1,3 +1,4 @@
+import react from "@vitejs/plugin-react"
 import { playwright } from "@vitest/browser-playwright"
 import { fileURLToPath } from "url"
 import { configDefaults, defineConfig } from "vitest/config"
@@ -12,6 +13,7 @@ const alias = {
 const BROWSER_TEST_PATTERN = "**/*.browser.test.{ts,tsx}"
 
 export default defineConfig({
+  plugins: [react()],
   test: {
     coverage: {
       provider: "istanbul",
@@ -48,6 +50,7 @@ export default defineConfig({
           globals: true,
           include: [BROWSER_TEST_PATTERN],
           alias,
+          setupFiles: ["src/__tests__/browserSetup.ts"],
           browser: {
             enabled: true,
             provider: playwright(),

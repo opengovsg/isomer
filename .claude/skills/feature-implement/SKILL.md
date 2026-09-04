@@ -36,7 +36,8 @@ Particular files to re-read every time:
 - `apps/studio/src/server/CLAUDE.md` if touching the server
 - `apps/studio/src/features/CLAUDE.md` if touching a feature
 - `packages/components/CLAUDE.md` if touching the published-site renderer
-- `apps/studio/prisma/CLAUDE.md` if touching the schema
+- `packages/db/prisma/CLAUDE.md` if touching the schema or migrations
+- `apps/studio/prisma/CLAUDE.md` if touching Studio seed data, JSON-column types, or one-off data scripts
 
 ### 3. Stack the work
 

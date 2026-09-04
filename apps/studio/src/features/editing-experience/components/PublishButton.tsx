@@ -88,84 +88,95 @@ const SuspendablePublishButton = ({
     <Can do="publish" on="Resource" passThrough>
       {({ isAllowed }) => (
         <TouchableTooltip
-          hidden={isChangesPendingPublish}
-          label="All changes have been published"
+          hidden={isChangesPendingPublish && isAllowed}
+          label={
+            !isAllowed
+              ? "You need to be a Publisher or Admin to publish."
+              : "All changes have been published"
+          }
         >
-          {isAllowed && (
-            <>
-              {/* Render the modal conditionally to ensure the schema resets when the modal is opened/closed */}
-              {scheduledPublishingDisclosure.isOpen && (
-                <ScheduledPublishingModal
-                  siteId={siteId}
-                  pageId={pageId}
-                  {...scheduledPublishingDisclosure}
-                />
-              )}
-              {publishNowDisclosure.isOpen && (
-                <PublishingModal
-                  pageId={pageId}
-                  siteId={siteId}
-                  onPublishNow={(pageId, siteId) => mutate({ pageId, siteId })}
-                  isPublishingNow={isPending}
-                  {...publishNowDisclosure}
-                />
-              )}
-              {currPage.scheduledAt ? (
-                <CancelSchedulePublishIndicator
-                  siteId={siteId}
-                  pageId={pageId}
-                  scheduledAt={currPage.scheduledAt}
-                />
-              ) : (
-                <HStack spacing={0} position="relative">
-                  <Button
-                    variant="solid"
-                    size="sm"
-                    isDisabled={!isChangesPendingPublish}
-                    isLoading={isPending}
-                    borderRightRadius={0}
-                    onClick={() => publishNowDisclosure.onOpen()}
-                    {...rest}
-                  >
-                    Publish
-                  </Button>
-                  <>
-                    <Divider
-                      orientation="vertical"
-                      borderColor="base.canvas.default"
-                      height="auto"
+          <>
+            {/* Render the modal conditionally to ensure the schema resets when the modal is opened/closed */}
+            {scheduledPublishingDisclosure.isOpen && (
+              <ScheduledPublishingModal
+                siteId={siteId}
+                pageId={pageId}
+                {...scheduledPublishingDisclosure}
+              />
+            )}
+            {publishNowDisclosure.isOpen && (
+              <PublishingModal
+                pageId={pageId}
+                siteId={siteId}
+                onPublishNow={(pageId, siteId) => mutate({ pageId, siteId })}
+                isPublishingNow={isPending}
+                {...publishNowDisclosure}
+              />
+            )}
+            {currPage.scheduledAt && isAllowed ? (
+              <CancelSchedulePublishIndicator
+                siteId={siteId}
+                pageId={pageId}
+                scheduledAt={currPage.scheduledAt}
+              />
+            ) : (
+              <HStack spacing={0} position="relative">
+                <Button
+                  variant="solid"
+                  size="sm"
+                  isDisabled={!isChangesPendingPublish || !isAllowed}
+                  isLoading={isPending}
+                  borderRightRadius={0}
+                  onClick={() => {
+                    posthog.capture("publish_modal_opened", {
+                      site_id: siteId,
+                    })
+                    publishNowDisclosure.onOpen()
+                  }}
+                  {...rest}
+                >
+                  Publish
+                </Button>
+                <>
+                  <Divider
+                    orientation="vertical"
+                    borderColor="base.canvas.default"
+                    height="auto"
+                  />
+                  <Menu preventOverflow={true} isLazy>
+                    <MenuButton
+                      as={IconButton}
+                      aria-label="More options"
+                      icon={<Icon as={BiChevronDown} boxSize="1rem" />}
+                      size="sm"
+                      variant="solid"
+                      isDisabled={
+                        !isChangesPendingPublish || isPending || !isAllowed
+                      }
+                      borderLeftRadius={0}
                     />
-                    <Menu preventOverflow={true} isLazy>
-                      <MenuButton
-                        as={IconButton}
-                        aria-label="More options"
-                        icon={<Icon as={BiChevronDown} boxSize="1rem" />}
-                        size="sm"
-                        variant="solid"
-                        isDisabled={!isChangesPendingPublish || isPending}
-                        borderLeftRadius={0}
-                      />
-                      <MenuList>
-                        <MenuItem
-                          onClick={scheduledPublishingDisclosure.onOpen}
-                        >
-                          <HStack spacing="0.5rem" alignItems="center">
-                            <Icon as={BiTimeFive} boxSize="1rem" />
-                            <Text
-                              textStyle="body-2"
-                              color="base.content.strong"
-                            >
-                              Schedule for later
-                            </Text>
-                          </HStack>
-                        </MenuItem>
-                      </MenuList>
-                    </Menu>
-                  </>
-                </HStack>
-              )}
-            </>
-          )}
+                    <MenuList>
+                      <MenuItem
+                        onClick={() => {
+                          posthog.capture("scheduled_publish_modal_opened", {
+                            site_id: siteId,
+                          })
+                          scheduledPublishingDisclosure.onOpen()
+                        }}
+                      >
+                        <HStack spacing="0.5rem" alignItems="center">
+                          <Icon as={BiTimeFive} boxSize="1rem" />
+                          <Text textStyle="body-2" color="base.content.strong">
+                            Schedule for later
+                          </Text>
+                        </HStack>
+                      </MenuItem>
+                    </MenuList>
+                  </Menu>
+                </>
+              </HStack>
+            )}
+          </>
         </TouchableTooltip>
       )}
     </Can>

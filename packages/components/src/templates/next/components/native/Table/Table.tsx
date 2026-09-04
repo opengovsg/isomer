@@ -7,6 +7,17 @@ import { Divider } from "../Divider"
 import { OrderedList } from "../OrderedList"
 import { Paragraph } from "../Paragraph"
 import { UnorderedList } from "../UnorderedList"
+import { resolveTableLayout } from "./resolveTableLayout"
+import { normalizeColspan, normalizeRowspan } from "./tableLayoutLimits"
+
+const tableStyles = tv({
+  base: "w-full border-collapse border-spacing-0 border border-base-divider-medium",
+  variants: {
+    isFixedLayout: {
+      true: "table-fixed",
+    },
+  },
+})
 
 const tableCellStyles = tv({
   base: "max-w-40 break-words border border-base-divider-medium px-4 py-3 align-top [&_li]:mb-4 [&_li]:mt-0 [&_li]:pl-1 [&_ol]:mt-0 [&_ol]:ps-5 [&_ul]:mt-0 [&_ul]:ps-5",
@@ -20,6 +31,7 @@ const tableCellStyles = tv({
 
 export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
   const tableDescriptionId = useId()
+  const layout = resolveTableLayout(content)
 
   return (
     <div className="flex flex-col gap-4 [&:not(:first-child)]:mt-7">
@@ -30,9 +42,16 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
       />
       <div className="overflow-x-auto" tabIndex={0}>
         <table
-          className="w-full border-collapse border-spacing-0 border border-base-divider-medium"
+          className={tableStyles({ isFixedLayout: layout.kind === "fixed" })}
           aria-describedby={tableDescriptionId}
         >
+          {layout.kind === "fixed" && (
+            <colgroup>
+              {layout.columnWidths.map((width, index) => (
+                <col key={index} style={{ width }} />
+              ))}
+            </colgroup>
+          )}
           <tbody>
             {content.map((row, index) => {
               const TableCellTag =
@@ -44,8 +63,8 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
                     return (
                       <TableCellTag
                         key={cellIndex}
-                        colSpan={cell.attrs?.colspan || 1}
-                        rowSpan={cell.attrs?.rowspan || 1}
+                        colSpan={normalizeColspan(cell.attrs?.colspan)}
+                        rowSpan={normalizeRowspan(cell.attrs?.rowspan)}
                         className={tableCellStyles({
                           isHeader: cell.type === "tableHeader",
                         })}

@@ -79,7 +79,7 @@ const TagCategorySchema = Type.Composite([
           },
         ],
         title: "Show as",
-        format: "image-radio",
+        format: "image-radio/2col",
       }),
     ),
   }),

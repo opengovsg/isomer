@@ -1,5 +1,6 @@
 import type {
   AuditLogEvent,
+  AuditLogExportReportType,
   Blob,
   DB,
   Footer,
@@ -384,5 +385,47 @@ export const logPermissionEvent: AuditLogger<PermissionEventLogProps> = async (
       siteId,
       metadata,
     })
+    .execute()
+}
+
+interface AuditLogExportCreateDelta {
+  before: null
+  after: {
+    auditLogDateRange: string
+    reportType: AuditLogExportReportType
+  }
+}
+
+interface AuditLogExportEventLogProps {
+  eventType: Extract<AuditLogEvent, "AuditLogExportCreate">
+  delta: AuditLogExportCreateDelta
+  by: User
+  ip?: string
+  siteId: Site["id"]
+}
+
+// Batched: an "allSites" ask (see auditLogExport.service.ts) can cover every
+// site the caller Admins, and each site's request gets its own event —
+// inserting all of them in one multi-row statement avoids holding that ask's
+// transaction open for one extra round trip per site.
+export const logAuditLogExportEvents: AuditLogger<
+  AuditLogExportEventLogProps[]
+> = async (tx, events) => {
+  if (events.length === 0) {
+    return
+  }
+
+  await tx
+    .insertInto("AuditLog")
+    .values(
+      events.map(({ eventType, delta, by, ip, siteId }) => ({
+        siteId,
+        eventType,
+        delta,
+        userId: by.id,
+        ipAddress: ip,
+        metadata: {},
+      })),
+    )
     .execute()
 }

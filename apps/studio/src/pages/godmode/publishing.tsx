@@ -96,8 +96,8 @@ const GodModePublishingPage: NextPageWithLayout = () => {
         <Table variant="simple">
           <Thead>
             <Tr>
-              <Th>Site Name</Th>
               <Th>Site ID</Th>
+              <Th>Site Name</Th>
               <Th>CodeBuild ID</Th>
               <Th>Actions</Th>
             </Tr>

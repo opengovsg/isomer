@@ -1,6 +1,7 @@
 import { Center, Text, useDisclosure, Link, VStack } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { useRouter } from "next/router"
+import posthog from "posthog-js"
 import { Suspense, useEffect } from "react"
 import { BiData, BiPlus } from "react-icons/bi"
 import { z } from "zod"
@@ -92,7 +93,12 @@ const GazettesPage: NextPageWithLayout = () => {
               <Button
                 size="md"
                 leftIcon={<BiPlus fontSize="1.25rem" />}
-                onClick={onOpen}
+                onClick={() => {
+                  posthog.capture("gazette_create_modal_opened", {
+                    site_id: siteId,
+                  })
+                  onOpen()
+                }}
               >
                 Add a new Gazette
               </Button>
