@@ -20,20 +20,20 @@ const VALID_CONFIG = {
 
 describe(EgazetteAlgoliaSearchSchema, () => {
   it("accepts a valid config", () => {
-    expect(Value.Check(EgazetteAlgoliaSearchSchema, VALID_CONFIG)).toBeTruthy()
+    expect(Value.Check(EgazetteAlgoliaSearchSchema, VALID_CONFIG)).toBe(true)
   })
 
   it.each(["appId", "searchApiKey", "indexName"] as const)(
     "rejects a config missing %s",
     (key) => {
       const { [key]: _omitted, ...rest } = VALID_CONFIG
-      expect(Value.Check(EgazetteAlgoliaSearchSchema, rest)).toBeFalsy()
+      expect(Value.Check(EgazetteAlgoliaSearchSchema, rest)).toBe(false)
     },
   )
 
   it("rejects a config with the wrong type discriminator", () => {
     const config = { ...VALID_CONFIG, type: "searchSG" }
-    expect(Value.Check(EgazetteAlgoliaSearchSchema, config)).toBeFalsy()
+    expect(Value.Check(EgazetteAlgoliaSearchSchema, config)).toBe(false)
   })
 })
 
@@ -41,7 +41,7 @@ describe("site.search union", () => {
   it("accepts the egazette-algolia variant", () => {
     expect(
       Value.Check(SimpleIntegrationsSettingsSchema, { search: VALID_CONFIG }),
-    ).toBeTruthy()
+    ).toBe(true)
   })
 
   it("still accepts the searchSG variant", () => {
@@ -49,7 +49,7 @@ describe("site.search union", () => {
       Value.Check(SimpleIntegrationsSettingsSchema, {
         search: { type: "searchSG", clientId: "some-client-id" },
       }),
-    ).toBeTruthy()
+    ).toBe(true)
   })
 
   it("still accepts the localSearch variant", () => {
@@ -57,6 +57,6 @@ describe("site.search union", () => {
       Value.Check(SimpleIntegrationsSettingsSchema, {
         search: { type: "localSearch", searchUrl: "/search" },
       }),
-    ).toBeTruthy()
+    ).toBe(true)
   })
 })

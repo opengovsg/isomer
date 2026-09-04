@@ -44,11 +44,11 @@ const REJECTED = [
 
 describe(AskgovSchema, () => {
   it.each(ACCEPTED)("accepts %j", (value) => {
-    expect(isValidAgencyInput(value)).toBeTruthy()
+    expect(isValidAgencyInput(value)).toBe(true)
   })
 
   it.each(REJECTED)("rejects %j", (value) => {
-    expect(isValidAgencyInput(value)).toBeFalsy()
+    expect(isValidAgencyInput(value)).toBe(false)
   })
 
   // The schema gates what a user can save and `getAskgovIdFromString` decides

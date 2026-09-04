@@ -34,7 +34,7 @@ describe(validateRequiredTags, () => {
     const result = validateRequiredTags([], ["anything"])
 
     // Assert
-    expect(result.isValid).toBeTruthy()
+    expect(result.isValid).toBe(true)
     expect(result.unfilledRequiredCategories).toStrictEqual([])
   })
 
@@ -43,7 +43,7 @@ describe(validateRequiredTags, () => {
     const result = validateRequiredTags([optionalCategory], undefined)
 
     // Assert
-    expect(result.isValid).toBeTruthy()
+    expect(result.isValid).toBe(true)
     expect(result.unfilledRequiredCategories).toStrictEqual([])
   })
 
@@ -55,7 +55,7 @@ describe(validateRequiredTags, () => {
     )
 
     // Assert
-    expect(result.isValid).toBeTruthy()
+    expect(result.isValid).toBe(true)
     expect(result.unfilledRequiredCategories).toStrictEqual([])
   })
 
@@ -64,7 +64,7 @@ describe(validateRequiredTags, () => {
     const result = validateRequiredTags([requiredCategory], [])
 
     // Assert
-    expect(result.isValid).toBeFalsy()
+    expect(result.isValid).toBe(false)
     expect(result.unfilledRequiredCategories).toStrictEqual([requiredCategory])
   })
 
@@ -73,7 +73,7 @@ describe(validateRequiredTags, () => {
     const result = validateRequiredTags([requiredCategory], undefined)
 
     // Assert
-    expect(result.isValid).toBeFalsy()
+    expect(result.isValid).toBe(false)
     expect(result.unfilledRequiredCategories).toStrictEqual([requiredCategory])
   })
 
@@ -85,7 +85,7 @@ describe(validateRequiredTags, () => {
     )
 
     // Assert
-    expect(result.isValid).toBeTruthy()
+    expect(result.isValid).toBe(true)
     expect(result.unfilledRequiredCategories).toStrictEqual([])
   })
 
@@ -97,7 +97,7 @@ describe(validateRequiredTags, () => {
     )
 
     // Assert
-    expect(result.isValid).toBeFalsy()
+    expect(result.isValid).toBe(false)
     expect(result.unfilledRequiredCategories).toStrictEqual([otherRequiredCategory])
   })
 
@@ -117,7 +117,7 @@ describe(validateRequiredTags, () => {
     )
 
     // Assert
-    expect(result.isValid).toBeFalsy()
+    expect(result.isValid).toBe(false)
     expect(result.unfilledRequiredCategories).toStrictEqual([requiredCategory])
   })
 
@@ -136,7 +136,7 @@ describe(validateRequiredTags, () => {
     )
 
     // Assert
-    expect(result.isValid).toBeTruthy()
+    expect(result.isValid).toBe(true)
     expect(result.unfilledRequiredCategories).toStrictEqual([])
   })
 })

@@ -56,7 +56,7 @@ describe("deleteFile", () => {
       Key: "GuardDutyMalwareScanStatus",
       Value: "NO_THREATS_FOUND",
     })
-    expect(tagSet?.some(({ Key }) => Key === DELETE_TAG)).toBeTruthy()
+    expect(tagSet?.some(({ Key }) => Key === DELETE_TAG)).toBe(true)
   })
 
   it("skips the (paid) PutObjectTagging when the file is already soft-deleted", async () => {
@@ -75,7 +75,7 @@ describe("deleteFile", () => {
       sendMock.mock.calls.some(
         ([command]) => command instanceof PutObjectTaggingCommand,
       ),
-    ).toBeFalsy()
+    ).toBe(false)
   })
 })
 
@@ -276,10 +276,10 @@ describe("setAssetAsPublished", () => {
     const commands = sendMock.mock.calls.map(([command]) => command)
     expect(
       commands.some((command) => command instanceof CopyObjectCommand),
-    ).toBeFalsy()
+    ).toBe(false)
     expect(
       commands.some((command) => command instanceof PutObjectRetentionCommand),
-    ).toBeTruthy()
+    ).toBe(true)
   })
 
   it("skips the self-copy when no ContentDisposition is given", async () => {
@@ -297,10 +297,10 @@ describe("setAssetAsPublished", () => {
     const commands = sendMock.mock.calls.map(([command]) => command)
     expect(
       commands.some((command) => command instanceof CopyObjectCommand),
-    ).toBeFalsy()
+    ).toBe(false)
     expect(
       commands.some((command) => command instanceof PutObjectRetentionCommand),
-    ).toBeTruthy()
+    ).toBe(true)
   })
 })
 

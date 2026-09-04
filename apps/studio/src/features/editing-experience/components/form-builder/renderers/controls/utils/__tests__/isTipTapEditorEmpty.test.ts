@@ -4,7 +4,7 @@ import { isTiptapEditorEmpty } from "../isTipTapEditorEmpty"
 describe(isTiptapEditorEmpty, () => {
 
   it("should return true if the editor is empty", () => {
-    expect(isTiptapEditorEmpty({ type: "prose", content: [] })).toBeTruthy()
+    expect(isTiptapEditorEmpty({ type: "prose", content: [] })).toBe(true)
   })
 
   it("should return true if the editor has empty paragraph", () => {
@@ -13,7 +13,7 @@ describe(isTiptapEditorEmpty, () => {
         type: "prose",
         content: [{ type: "paragraph" }],
       }),
-    ).toBeTruthy()
+    ).toBe(true)
   })
 
   it("should return true if the editor has empty heading", () => {
@@ -22,11 +22,11 @@ describe(isTiptapEditorEmpty, () => {
         type: "prose",
         content: [{ type: "heading", attrs: { level: 2 } }],
       }),
-    ).toBeTruthy()
+    ).toBe(true)
   })
 
   it("should return true if the editor is undefined", () => {
-    expect(isTiptapEditorEmpty(undefined)).toBeTruthy()
+    expect(isTiptapEditorEmpty(undefined)).toBe(true)
   })
 
   it("should return false if the editor has paragraph with empty text", () => {
@@ -35,7 +35,7 @@ describe(isTiptapEditorEmpty, () => {
         type: "prose",
         content: [{ type: "paragraph", content: [{ type: "text", text: "" }] }],
       }),
-    ).toBeFalsy()
+    ).toBe(false)
   })
 
   it("should return false if the editor has multiple content blocks", () => {
@@ -47,7 +47,7 @@ describe(isTiptapEditorEmpty, () => {
           { type: "paragraph", content: [{ type: "text", text: "test2" }] },
         ],
       }),
-    ).toBeFalsy()
+    ).toBe(false)
   })
 
   it("should return false if the editor has non-text content", () => {
@@ -56,7 +56,7 @@ describe(isTiptapEditorEmpty, () => {
         type: "prose",
         content: [{ type: "divider" }],
       }),
-    ).toBeFalsy()
+    ).toBe(false)
   })
 
   it("should return false if the editor has non-empty paragraph", () => {
@@ -70,7 +70,7 @@ describe(isTiptapEditorEmpty, () => {
           },
         ],
       }),
-    ).toBeFalsy()
+    ).toBe(false)
   })
 
   it("should return false if the editor has non-empty heading", () => {
@@ -85,7 +85,7 @@ describe(isTiptapEditorEmpty, () => {
           },
         ],
       }),
-    ).toBeFalsy()
+    ).toBe(false)
   })
 
   it("should return false if editor type is not prose", () => {
@@ -94,6 +94,6 @@ describe(isTiptapEditorEmpty, () => {
         type: "paragraph",
         content: [],
       }),
-    ).toBeFalsy()
+    ).toBe(false)
   })
 })

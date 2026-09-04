@@ -3,24 +3,24 @@ import { isExternalUrl } from "~/utils/isExternalUrl"
 
 describe(isExternalUrl, () => {
   it("should return true for external URLs", () => {
-    expect(isExternalUrl("https://example.com")).toBeTruthy()
-    expect(isExternalUrl("http://example.com")).toBeTruthy()
+    expect(isExternalUrl("https://example.com")).toBe(true)
+    expect(isExternalUrl("http://example.com")).toBe(true)
   })
 
   it("should return false for internal URLs starting with '/'", () => {
-    expect(isExternalUrl("/internal-page")).toBeFalsy()
+    expect(isExternalUrl("/internal-page")).toBe(false)
   })
 
   it("should return false for URLs starting with '#'", () => {
-    expect(isExternalUrl("#section")).toBeFalsy()
+    expect(isExternalUrl("#section")).toBe(false)
   })
 
   it("should return false for URLs starting with '[resource:'", () => {
-    expect(isExternalUrl("[resource:some-resource]")).toBeFalsy()
+    expect(isExternalUrl("[resource:some-resource]")).toBe(false)
   })
 
   it("should return false for undefined or empty string", () => {
-    expect(isExternalUrl(undefined)).toBeFalsy()
-    expect(isExternalUrl("")).toBeFalsy()
+    expect(isExternalUrl(undefined)).toBe(false)
+    expect(isExternalUrl("")).toBe(false)
   })
 })

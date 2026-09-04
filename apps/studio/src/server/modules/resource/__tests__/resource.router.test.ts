@@ -5106,7 +5106,7 @@ describe("resource.router", async () => {
       })
 
       // Assert - route accepts input (DB returns unique rows so 1 result)
-      expect(Array.isArray(result)).toBeTruthy()
+      expect(Array.isArray(result)).toBe(true)
     })
 
     it("should reject requests over MAX_BATCH_RESOURCE_IDS", async () => {

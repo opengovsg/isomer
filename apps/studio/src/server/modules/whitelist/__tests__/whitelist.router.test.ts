@@ -91,7 +91,7 @@ describe("whitelist.router", async () => {
       })
 
       // Assert
-      expect(result).toBeFalsy()
+      expect(result).toBe(false)
     })
 
     it("should return true if email is whitelisted", async () => {
@@ -106,7 +106,7 @@ describe("whitelist.router", async () => {
       })
 
       // Assert
-      expect(result).toBeTruthy()
+      expect(result).toBe(true)
     })
   })
 

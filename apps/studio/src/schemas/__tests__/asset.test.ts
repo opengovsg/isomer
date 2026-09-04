@@ -33,7 +33,7 @@ describe(getPresignedPutUrlSchema, () => {
               ...validBaseData,
               fileName,
             })
-            expect(result.success).toBeTruthy()
+            expect(result.success).toBe(true)
           })
         })
 
@@ -42,7 +42,7 @@ describe(getPresignedPutUrlSchema, () => {
           ...validBaseData,
           fileName: "test-image.svg",
         })
-        expect(result.success).toBeFalsy()
+        expect(result.success).toBe(false)
       })
 
       // Test all allowed file extensions
@@ -55,7 +55,7 @@ describe(getPresignedPutUrlSchema, () => {
               ...validBaseData,
               fileName,
             })
-            expect(result.success).toBeTruthy()
+            expect(result.success).toBe(true)
           })
         },
       )
@@ -69,7 +69,7 @@ describe(getPresignedPutUrlSchema, () => {
             ...validBaseData,
             fileName,
           })
-          expect(result.success).toBeTruthy()
+          expect(result.success).toBe(true)
         })
       })
 
@@ -86,7 +86,7 @@ describe(getPresignedPutUrlSchema, () => {
             ...validBaseData,
             fileName,
           })
-          expect(result.success).toBeTruthy()
+          expect(result.success).toBe(true)
         })
       })
 
@@ -107,7 +107,7 @@ describe(getPresignedPutUrlSchema, () => {
           ...validBaseData,
           fileName,
         })
-        expect(result.success).toBeFalsy()
+        expect(result.success).toBe(false)
         if (result.success) throw new Error("Expected parse to fail")
         expect(result.error.issues[0]?.message).toBe(
           "File type not allowed. Please upload a supported file type.",
@@ -122,7 +122,7 @@ describe(getPresignedPutUrlSchema, () => {
             ...validBaseData,
             fileName,
           })
-          expect(result.success).toBeFalsy()
+          expect(result.success).toBe(false)
           if (result.success) throw new Error("Expected parse to fail")
           expect(result.error.issues[0]?.message).toBe(
             "File type not allowed. Please upload a supported file type.",
@@ -139,7 +139,7 @@ describe(getPresignedPutUrlSchema, () => {
             ...validBaseData,
             fileName,
           })
-          expect(result.success).toBeFalsy()
+          expect(result.success).toBe(false)
         })
       })
     })
@@ -159,7 +159,7 @@ describe(getPresignedPutUrlSchema, () => {
             ...validBaseData,
             fileName,
           })
-          expect(result.success).toBeTruthy()
+          expect(result.success).toBe(true)
         })
       })
 
@@ -171,7 +171,7 @@ describe(getPresignedPutUrlSchema, () => {
             ...validBaseData,
             fileName,
           })
-          expect(result.success).toBeTruthy()
+          expect(result.success).toBe(true)
         })
       })
 
@@ -183,7 +183,7 @@ describe(getPresignedPutUrlSchema, () => {
             ...validBaseData,
             fileName,
           })
-          expect(result.success).toBeTruthy()
+          expect(result.success).toBe(true)
         })
       })
 
@@ -195,7 +195,7 @@ describe(getPresignedPutUrlSchema, () => {
             ...validBaseData,
             fileName,
           })
-          expect(result.success).toBeTruthy()
+          expect(result.success).toBe(true)
         })
       })
 
@@ -236,7 +236,7 @@ describe(getPresignedPutUrlSchema, () => {
             ...validBaseData,
             fileName,
           })
-          expect(result.success).toBeFalsy()
+          expect(result.success).toBe(false)
           if (result.success) throw new Error("Expected parse to fail")
           expect(result.error.issues[0]?.message).toBe(
             "File name must start with a letter, number, hyphen, or underscore",
@@ -252,7 +252,7 @@ describe(getPresignedPutUrlSchema, () => {
           ...validBaseData,
           // fileName is missing
         })
-        expect(result.success).toBeFalsy()
+        expect(result.success).toBe(false)
         if (result.success) throw new Error('Expected parse to fail')
         expect(result.error.issues[0]?.message).toBe("Missing file name")
       })
@@ -262,7 +262,7 @@ describe(getPresignedPutUrlSchema, () => {
           ...validBaseData,
           fileName: "",
         })
-        expect(result.success).toBeFalsy()
+        expect(result.success).toBe(false)
       })
     })
   })
@@ -289,7 +289,7 @@ describe(getPresignedPutUrlSchema, () => {
         fileSize,
       })
 
-      expect(result.success).toBeFalsy()
+      expect(result.success).toBe(false)
       if (result.success) throw new Error("Expected parse to fail")
       expect(result.error.issues[0]?.path).toStrictEqual(["fileSize"])
       expect(result.error.issues[0]?.message).toBe(message)
@@ -305,7 +305,7 @@ describe(fileNameAndSizeSchema, () => {
       fileSize: 1,
     })
 
-    expect(result.success).toBeTruthy()
+    expect(result.success).toBe(true)
   })
 
   it("should apply the file type-specific size limit", () => {
@@ -314,7 +314,7 @@ describe(fileNameAndSizeSchema, () => {
       fileSize: MAX_IMG_FILE_SIZE_BYTES + 1,
     })
 
-    expect(result.success).toBeFalsy()
+    expect(result.success).toBe(false)
     if (result.success) throw new Error("Expected parse to fail")
     expect(result.error.issues[0]?.path).toStrictEqual(["fileSize"])
     expect(result.error.issues[0]?.message).toBe(
@@ -337,7 +337,7 @@ describe(deleteAssetsSchema, () => {
       ...validBaseData,
       fileKeys: makeFileKeys(MAX_DELETE_FILE_KEYS),
     })
-    expect(result.success).toBeTruthy()
+    expect(result.success).toBe(true)
   })
 
   it("should accept an empty file keys array", () => {
@@ -345,7 +345,7 @@ describe(deleteAssetsSchema, () => {
       ...validBaseData,
       fileKeys: [],
     })
-    expect(result.success).toBeTruthy()
+    expect(result.success).toBe(true)
   })
 
   it(`should reject more than ${MAX_DELETE_FILE_KEYS} file keys`, () => {
@@ -353,7 +353,7 @@ describe(deleteAssetsSchema, () => {
       ...validBaseData,
       fileKeys: makeFileKeys(MAX_DELETE_FILE_KEYS + 1),
     })
-    expect(result.success).toBeFalsy()
+    expect(result.success).toBe(false)
     if (result.success) throw new Error("Expected parse to fail")
     expect(result.error.issues[0]?.message).toBe(
       `You can only delete up to ${MAX_DELETE_FILE_KEYS} assets at a time`,

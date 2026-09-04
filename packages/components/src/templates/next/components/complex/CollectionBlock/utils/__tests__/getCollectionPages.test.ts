@@ -237,7 +237,7 @@ describe(getCollectionPages, () => {
         src: "/item-image.jpg",
         alt: "Item image",
       })
-      expect(result[0]?.isContainNeeded).toBeFalsy()
+      expect(result[0]?.isContainNeeded).toBe(false)
     })
 
     it("should fall back to the site logo when showThumbnail is undefined on the referenced Collection", () => {
@@ -263,7 +263,7 @@ describe(getCollectionPages, () => {
           alt: `${site.siteName} site logo`,
           isContainNeeded: true,
         })
-        expect(item.isContainNeeded).toBeTruthy()
+        expect(item.isContainNeeded).toBe(true)
       })
     })
 

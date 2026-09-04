@@ -15,7 +15,7 @@ describe(isPhoneNumber, () => {
       ]
 
       validPhones.forEach((phone) => {
-        expect(isPhoneNumber(phone)).toBeTruthy()
+        expect(isPhoneNumber(phone)).toBe(true)
       })
     })
 
@@ -32,7 +32,7 @@ describe(isPhoneNumber, () => {
       ]
 
       invalidPhones.forEach((phone) => {
-        expect(isPhoneNumber(phone)).toBeFalsy()
+        expect(isPhoneNumber(phone)).toBe(false)
       })
     })
 
@@ -41,7 +41,7 @@ describe(isPhoneNumber, () => {
       const invalidInputs = [null, undefined, 12345678, {}, [], true, false]
 
       invalidInputs.forEach((input) => {
-        expect(isPhoneNumber(input as any)).toBeFalsy()
+        expect(isPhoneNumber(input as any)).toBe(false)
       })
     })
   })
@@ -58,7 +58,7 @@ describe(isPhoneNumber, () => {
       ]
 
       phonesWithWhitespace.forEach((phone) => {
-        expect(isPhoneNumber(phone)).toBeTruthy()
+        expect(isPhoneNumber(phone)).toBe(true)
       })
     })
 
@@ -72,7 +72,7 @@ describe(isPhoneNumber, () => {
       ]
 
       phonesWithWhitespace.forEach((phone) => {
-        expect(isPhoneNumber(phone)).toBeTruthy()
+        expect(isPhoneNumber(phone)).toBe(true)
       })
     })
 
@@ -92,7 +92,7 @@ describe(isPhoneNumber, () => {
       ]
 
       phonesWithSeparators.forEach((phone) => {
-        expect(isPhoneNumber(phone)).toBeTruthy() // These should now pass as separators are removed
+        expect(isPhoneNumber(phone)).toBe(true) // These should now pass as separators are removed
       })
     })
   })
@@ -102,13 +102,13 @@ describe(isPhoneNumber, () => {
       const emptyInputs = ["", " ", "  ", "\t", "\n", "\t\n"]
 
       emptyInputs.forEach((input) => {
-        expect(isPhoneNumber(input)).toBeFalsy()
+        expect(isPhoneNumber(input)).toBe(false)
       })
     })
 
     it("should handle very long strings", () => {
       const longString = "1".repeat(100)
-      expect(isPhoneNumber(longString)).toBeFalsy()
+      expect(isPhoneNumber(longString)).toBe(false)
     })
   })
 })

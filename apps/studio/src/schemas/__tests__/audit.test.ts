@@ -30,7 +30,7 @@ describe(createAuditLogExportRequestSchema, () => {
     const result = createAuditLogExportRequestSchema.safeParse(VALID_INPUT)
 
     // Assert
-    expect(result.success).toBeTruthy()
+    expect(result.success).toBe(true)
   })
 
   describe("month", () => {
@@ -45,7 +45,7 @@ describe(createAuditLogExportRequestSchema, () => {
         })
 
         // Assert
-        expect(result.success).toBeFalsy()
+        expect(result.success).toBe(false)
       },
     )
 
@@ -61,7 +61,7 @@ describe(createAuditLogExportRequestSchema, () => {
       })
 
       // Assert
-      expect(result.success).toBeTruthy()
+      expect(result.success).toBe(true)
     })
   })
 
@@ -78,7 +78,7 @@ describe(createAuditLogExportRequestSchema, () => {
       })
 
       // Assert
-      expect(result.success).toBeTruthy()
+      expect(result.success).toBe(true)
     })
 
     it("should reject an invalid report type", () => {
@@ -89,7 +89,7 @@ describe(createAuditLogExportRequestSchema, () => {
       })
 
       // Assert
-      expect(result.success).toBeFalsy()
+      expect(result.success).toBe(false)
     })
 
     it("should reject 'Both' — the combined-request flow has been removed", () => {
@@ -100,7 +100,7 @@ describe(createAuditLogExportRequestSchema, () => {
       })
 
       // Assert
-      expect(result.success).toBeFalsy()
+      expect(result.success).toBe(false)
     })
   })
 
@@ -116,7 +116,7 @@ describe(createAuditLogExportRequestSchema, () => {
         })
 
         // Assert
-        expect(result.success).toBeTruthy()
+        expect(result.success).toBe(true)
       },
     )
 
@@ -128,7 +128,7 @@ describe(createAuditLogExportRequestSchema, () => {
       })
 
       // Assert
-      expect(result.success).toBeFalsy()
+      expect(result.success).toBe(false)
     })
 
     it("accepts scope 'allSites' without a siteId on the plain object schema — client forms never need to supply one", () => {
@@ -142,7 +142,7 @@ describe(createAuditLogExportRequestSchema, () => {
       })
 
       // Assert
-      expect(result.success).toBeTruthy()
+      expect(result.success).toBe(true)
     })
   })
 
@@ -154,7 +154,7 @@ describe(createAuditLogExportRequestSchema, () => {
         createAuditLogExportRequestServerSchema.safeParse(VALID_INPUT)
 
       // Assert
-      expect(result.success).toBeTruthy()
+      expect(result.success).toBe(true)
     })
 
     it("rejects scope 'site' without a siteId", () => {
@@ -166,7 +166,7 @@ describe(createAuditLogExportRequestSchema, () => {
         createAuditLogExportRequestServerSchema.safeParse(withoutSiteId)
 
       // Assert
-      expect(result.success).toBeFalsy()
+      expect(result.success).toBe(false)
     })
 
     it("accepts scope 'allSites' without a siteId — resolved server-side from the caller's own Admin access", () => {
@@ -180,7 +180,7 @@ describe(createAuditLogExportRequestSchema, () => {
       })
 
       // Assert
-      expect(result.success).toBeTruthy()
+      expect(result.success).toBe(true)
     })
 
     // The future/past-year window is enforced here (not on the plain object
@@ -199,7 +199,7 @@ describe(createAuditLogExportRequestSchema, () => {
         })
 
         // Assert
-        expect(result.success).toBeTruthy()
+        expect(result.success).toBe(true)
       })
 
       it("accepts the earliest month in the window for an Activity export", () => {
@@ -210,7 +210,7 @@ describe(createAuditLogExportRequestSchema, () => {
         })
 
         // Assert
-        expect(result.success).toBeTruthy()
+        expect(result.success).toBe(true)
       })
 
       it("rejects a future month for an Activity export", () => {
@@ -221,7 +221,7 @@ describe(createAuditLogExportRequestSchema, () => {
         })
 
         // Assert
-        expect(result.success).toBeFalsy()
+        expect(result.success).toBe(false)
       })
 
       it("rejects a month older than the 12-month window for an Activity export", () => {
@@ -232,7 +232,7 @@ describe(createAuditLogExportRequestSchema, () => {
         })
 
         // Assert
-        expect(result.success).toBeFalsy()
+        expect(result.success).toBe(false)
       })
 
       it("accepts a future or out-of-window month for an Access export", () => {
@@ -249,8 +249,8 @@ describe(createAuditLogExportRequestSchema, () => {
         })
 
         // Assert
-        expect(future.success).toBeTruthy()
-        expect(tooOld.success).toBeTruthy()
+        expect(future.success).toBe(true)
+        expect(tooOld.success).toBe(true)
       })
     })
   })
@@ -289,7 +289,7 @@ describe(createAuditLogExportRequestSchema, () => {
       })
 
       // Assert
-      expect(result.success).toBeTruthy()
+      expect(result.success).toBe(true)
       expect(result.data?.siteId).toBe(1)
     })
 
@@ -301,7 +301,7 @@ describe(createAuditLogExportRequestSchema, () => {
       })
 
       // Assert
-      expect(result.success).toBeTruthy()
+      expect(result.success).toBe(true)
       expect(result.data?.siteId).toBe(1)
     })
 
@@ -321,7 +321,7 @@ describe(createAuditLogExportRequestSchema, () => {
       })
 
       // Assert
-      expect(result.success).toBeFalsy()
+      expect(result.success).toBe(false)
     })
 
     it("should reject a non-positive siteId", () => {
@@ -332,7 +332,7 @@ describe(createAuditLogExportRequestSchema, () => {
       })
 
       // Assert
-      expect(result.success).toBeFalsy()
+      expect(result.success).toBe(false)
     })
 
     it("should reject a negative siteId", () => {
@@ -343,7 +343,7 @@ describe(createAuditLogExportRequestSchema, () => {
       })
 
       // Assert
-      expect(result.success).toBeFalsy()
+      expect(result.success).toBe(false)
     })
 
     it("should reject a non-integer siteId", () => {
@@ -354,7 +354,7 @@ describe(createAuditLogExportRequestSchema, () => {
       })
 
       // Assert
-      expect(result.success).toBeFalsy()
+      expect(result.success).toBe(false)
     })
   })
 })

@@ -765,12 +765,12 @@ describe("site.router", async () => {
       // for those tests to cover the case that actually reaches SearchSG.
       expect(
         searchSgService.isValidSearchSGClientId(MOCK_SEARCHSG_CLIENT_ID),
-      ).toBeTruthy()
+      ).toBe(true)
       expect(
         searchSgService.isValidSearchSGClientId(
           MOCK_OTHER_SITE_SEARCHSG_CLIENT_ID,
         ),
-      ).toBeTruthy()
+      ).toBe(true)
     })
 
     it("should not allow a site admin to enable searchSG with a supplied clientId", async () => {
@@ -1707,17 +1707,17 @@ describe("site.router", async () => {
         auditLog.some(({ eventType }) => {
           return eventType === AuditLogEvent.FooterUpdate
         }),
-      ).toBeTruthy()
+      ).toBe(true)
       expect(
         auditLog.some(({ eventType }) => {
           return eventType === AuditLogEvent.Publish
         }),
-      ).toBeTruthy()
+      ).toBe(true)
       expect(
         auditLog.every(({ userId }) => {
           return userId === session.userId
         }),
-      ).toBeTruthy()
+      ).toBe(true)
     })
   })
 
@@ -1871,17 +1871,17 @@ describe("site.router", async () => {
         auditLog.some(({ eventType }) => {
           return eventType === AuditLogEvent.NavbarUpdate
         }),
-      ).toBeTruthy()
+      ).toBe(true)
       expect(
         auditLog.some(({ eventType }) => {
           return eventType === AuditLogEvent.Publish
         }),
-      ).toBeTruthy()
+      ).toBe(true)
       expect(
         auditLog.every(({ userId }) => {
           return userId === session.userId
         }),
-      ).toBeTruthy()
+      ).toBe(true)
     })
   })
 
@@ -2157,17 +2157,17 @@ describe("site.router", async () => {
         auditLog.some(({ eventType }) => {
           return eventType === AuditLogEvent.SiteConfigUpdate
         }),
-      ).toBeTruthy()
+      ).toBe(true)
       expect(
         auditLog.some(({ eventType }) => {
           return eventType === AuditLogEvent.Publish
         }),
-      ).toBeTruthy()
+      ).toBe(true)
       expect(
         auditLog.every(({ userId }) => {
           return userId === session.userId
         }),
-      ).toBeTruthy()
+      ).toBe(true)
     })
 
     it("should add the site notification successfully if one did exist before", async () => {
@@ -2344,21 +2344,21 @@ describe("site.router", async () => {
         auditLogs.some(
           (log) => log.eventType === AuditLogEvent.SiteConfigUpdate,
         ),
-      ).toBeTruthy()
+      ).toBe(true)
       // oxlint-disable-next-line vitest/max-expects
       expect(
         auditLogs.some((log) => log.eventType === AuditLogEvent.NavbarUpdate),
-      ).toBeTruthy()
+      ).toBe(true)
       // oxlint-disable-next-line vitest/max-expects
       expect(
         auditLogs.some((log) => log.eventType === AuditLogEvent.FooterUpdate),
-      ).toBeTruthy()
+      ).toBe(true)
       // oxlint-disable-next-line vitest/max-expects
       expect(
         auditLogs.some((log) => log.eventType === AuditLogEvent.Publish),
-      ).toBeTruthy()
+      ).toBe(true)
       // oxlint-disable-next-line vitest/max-expects
-      expect(auditLogs.every((log) => log.userId === session.userId)).toBeTruthy()
+      expect(auditLogs.every((log) => log.userId === session.userId)).toBe(true)
     })
 
     it("should save changes to the site config, navbar and footer successfully if user is an Isomer Migrator Admin", async () => {
@@ -2410,21 +2410,21 @@ describe("site.router", async () => {
         auditLogs.some(
           (log) => log.eventType === AuditLogEvent.SiteConfigUpdate,
         ),
-      ).toBeTruthy()
+      ).toBe(true)
       // oxlint-disable-next-line vitest/max-expects
       expect(
         auditLogs.some((log) => log.eventType === AuditLogEvent.NavbarUpdate),
-      ).toBeTruthy()
+      ).toBe(true)
       // oxlint-disable-next-line vitest/max-expects
       expect(
         auditLogs.some((log) => log.eventType === AuditLogEvent.FooterUpdate),
-      ).toBeTruthy()
+      ).toBe(true)
       // oxlint-disable-next-line vitest/max-expects
       expect(
         auditLogs.some((log) => log.eventType === AuditLogEvent.Publish),
-      ).toBeTruthy()
+      ).toBe(true)
       // oxlint-disable-next-line vitest/max-expects
-      expect(auditLogs.every((log) => log.userId === session.userId)).toBeTruthy()
+      expect(auditLogs.every((log) => log.userId === session.userId)).toBe(true)
     })
   })
 
@@ -2571,15 +2571,15 @@ const assertAuditLog = async (sessionUserId?: string) => {
     auditLog.some(({ eventType }) => {
       return eventType === AuditLogEvent.SiteConfigUpdate
     }),
-  ).toBeTruthy()
+  ).toBe(true)
   expect(
     auditLog.some(({ eventType }) => {
       return eventType === AuditLogEvent.Publish
     }),
-  ).toBeTruthy()
+  ).toBe(true)
   expect(
     auditLog.every(({ userId }) => {
       return userId === sessionUserId
     }),
-  ).toBeTruthy()
+  ).toBe(true)
 }

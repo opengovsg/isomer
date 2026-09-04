@@ -286,29 +286,29 @@ describe("ARTICLE_TYPES / CONTENT_TYPES / CONTENT_ONLY_TYPES", () => {
   it("ARTICLE_TYPES is a subset of CONTENT_TYPES (article blocks all live in content)", () => {
     // Act + Assert
     for (const t of ARTICLE_TYPES) {
-      expect(CONTENT_TYPES.has(t)).toBeTruthy()
+      expect(CONTENT_TYPES.has(t)).toBe(true)
     }
   })
 
   it("CONTENT_ONLY_TYPES contains content types that are not allowed in articles", () => {
     // Act + Assert
     for (const t of CONTENT_ONLY_TYPES) {
-      expect(CONTENT_TYPES.has(t)).toBeTruthy()
-      expect(ARTICLE_TYPES.has(t)).toBeFalsy()
+      expect(CONTENT_TYPES.has(t)).toBe(true)
+      expect(ARTICLE_TYPES.has(t)).toBe(false)
     }
   })
 
   it("CONTENT_ONLY_TYPES excludes blocks shared with the article layout", () => {
     // The article layout currently shares prose/image/callout/etc.
     // Act + Assert
-    expect(CONTENT_ONLY_TYPES.has("prose")).toBeFalsy()
-    expect(CONTENT_ONLY_TYPES.has("image")).toBeFalsy()
+    expect(CONTENT_ONLY_TYPES.has("prose")).toBe(false)
+    expect(CONTENT_ONLY_TYPES.has("image")).toBe(false)
   })
 
   it("CONTENT_ONLY_TYPES flags content-only blocks like infobar and infocards", () => {
     // Act + Assert
-    expect(CONTENT_ONLY_TYPES.has("infobar")).toBeTruthy()
-    expect(CONTENT_ONLY_TYPES.has("infocards")).toBeTruthy()
+    expect(CONTENT_ONLY_TYPES.has("infobar")).toBe(true)
+    expect(CONTENT_ONLY_TYPES.has("infocards")).toBe(true)
   })
 })
 
@@ -463,7 +463,7 @@ describe(buildCollectionIndexBlob, () => {
     const result = asResult(buildCollectionIndexBlob(current, "Folder"))
 
     // Assert
-    expect("image" in result.page).toBeFalsy()
+    expect("image" in result.page).toBe(false)
   })
 
   it("empties the content array (collection pages have no body blocks)", () => {
@@ -499,7 +499,7 @@ describe(buildCollectionIndexBlob, () => {
     const result = asResult(buildCollectionIndexBlob(current, "Folder"))
 
     // Assert
-    expect("contentPageHeader" in result.page).toBeFalsy()
+    expect("contentPageHeader" in result.page).toBe(false)
   })
 
   it("uses the supplied folderTitle, overriding the source page title", () => {
@@ -593,7 +593,7 @@ describe(buildArticleBlob, () => {
     const result = asResult(buildArticleBlob(current, "cat"))
 
     // Assert
-    expect("image" in result.page).toBeFalsy()
+    expect("image" in result.page).toBe(false)
   })
 
   it("preserves all body content blocks (including disallowed-in-article blocks)", () => {
@@ -630,7 +630,7 @@ describe(buildArticleBlob, () => {
     const result = asResult(buildArticleBlob(current, "cat"))
 
     // Assert
-    expect("contentPageHeader" in result.page).toBeFalsy()
+    expect("contentPageHeader" in result.page).toBe(false)
   })
 
   it("does not mutate the source blob", () => {
@@ -666,6 +666,6 @@ describe(buildArticleBlob, () => {
       date: "15 May 2024",
       articlePageHeader: { summary: "Existing summary" },
     })
-    expect("contentPageHeader" in result.page).toBeFalsy()
+    expect("contentPageHeader" in result.page).toBe(false)
   })
 })

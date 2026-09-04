@@ -153,7 +153,7 @@ describe("permissions.service", () => {
       const canMoveTo = perms.can("move", to)
 
       // Assert
-      expect(canMoveFrom).toBeFalsy()
+      expect(canMoveFrom).toBe(false)
       expect(canMoveTo).toBe(expected)
     })
 
@@ -170,7 +170,7 @@ describe("permissions.service", () => {
 
       // Assert
       expect(canMoveFrom).toBe(expected)
-      expect(canMoveTo).toBeFalsy()
+      expect(canMoveTo).toBe(false)
     })
   })
 
@@ -178,22 +178,22 @@ describe("permissions.service", () => {
 
     it("should not allow read when user has no roles", () => {
       const perms = buildUserManagementPermissions([])
-      expect(perms.can("read", "UserManagement")).toBeFalsy()
-      expect(perms.can("manage", "UserManagement")).toBeFalsy()
+      expect(perms.can("read", "UserManagement")).toBe(false)
+      expect(perms.can("manage", "UserManagement")).toBe(false)
     })
 
     it("should allow read when user has exactly one role (Editor)", () => {
       const perms = buildUserManagementPermissions([{ role: RoleType.Editor }])
-      expect(perms.can("read", "UserManagement")).toBeTruthy()
-      expect(perms.can("manage", "UserManagement")).toBeFalsy()
+      expect(perms.can("read", "UserManagement")).toBe(true)
+      expect(perms.can("manage", "UserManagement")).toBe(false)
     })
 
     it("should allow read when user has exactly one role (Publisher)", () => {
       const perms = buildUserManagementPermissions([
         { role: RoleType.Publisher },
       ])
-      expect(perms.can("read", "UserManagement")).toBeTruthy()
-      expect(perms.can("manage", "UserManagement")).toBeFalsy()
+      expect(perms.can("read", "UserManagement")).toBe(true)
+      expect(perms.can("manage", "UserManagement")).toBe(false)
     })
 
     it("should allow read when user has multiple non-admin roles (Editor and Publisher)", () => {
@@ -201,14 +201,14 @@ describe("permissions.service", () => {
         { role: RoleType.Editor },
         { role: RoleType.Publisher },
       ])
-      expect(perms.can("read", "UserManagement")).toBeTruthy()
-      expect(perms.can("manage", "UserManagement")).toBeFalsy()
+      expect(perms.can("read", "UserManagement")).toBe(true)
+      expect(perms.can("manage", "UserManagement")).toBe(false)
     })
 
     it("should allow manage when user has Admin role", () => {
       const perms = buildUserManagementPermissions([{ role: RoleType.Admin }])
-      expect(perms.can("read", "UserManagement")).toBeTruthy()
-      expect(perms.can("manage", "UserManagement")).toBeTruthy()
+      expect(perms.can("read", "UserManagement")).toBe(true)
+      expect(perms.can("manage", "UserManagement")).toBe(true)
     })
 
     it("should allow manage when user has multiple roles including Admin", () => {
@@ -216,8 +216,8 @@ describe("permissions.service", () => {
         { role: RoleType.Editor },
         { role: RoleType.Admin },
       ])
-      expect(perms.can("read", "UserManagement")).toBeTruthy()
-      expect(perms.can("manage", "UserManagement")).toBeTruthy()
+      expect(perms.can("read", "UserManagement")).toBe(true)
+      expect(perms.can("manage", "UserManagement")).toBe(true)
     })
   })
 
@@ -1388,7 +1388,7 @@ describe(isActiveIsomerAdmin, () => {
     const user = await setupUser({ email: "test@example.com" })
     await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Core })
 
-    await expect(isActiveIsomerAdmin(user.id)).resolves.toBeTruthy()
+    await expect(isActiveIsomerAdmin(user.id)).resolves.toBe(true)
   })
 
   it("should return true for an active Isomer Admin with a future expiry", async () => {
@@ -1396,7 +1396,7 @@ describe(isActiveIsomerAdmin, () => {
     const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000)
     await setupIsomerAdmin({ userId: user.id, expiry: tomorrow })
 
-    await expect(isActiveIsomerAdmin(user.id)).resolves.toBeTruthy()
+    await expect(isActiveIsomerAdmin(user.id)).resolves.toBe(true)
   })
 
   it("should return false for an expired Isomer Admin", async () => {
@@ -1404,7 +1404,7 @@ describe(isActiveIsomerAdmin, () => {
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
     await setupIsomerAdmin({ userId: user.id, expiry: yesterday })
 
-    await expect(isActiveIsomerAdmin(user.id)).resolves.toBeFalsy()
+    await expect(isActiveIsomerAdmin(user.id)).resolves.toBe(false)
   })
 
   it("should return false for an Isomer Admin whose expiry is exactly now", async () => {
@@ -1413,13 +1413,13 @@ describe(isActiveIsomerAdmin, () => {
     const justExpired = new Date(Date.now() - 1000)
     await setupIsomerAdmin({ userId: user.id, expiry: justExpired })
 
-    await expect(isActiveIsomerAdmin(user.id)).resolves.toBeFalsy()
+    await expect(isActiveIsomerAdmin(user.id)).resolves.toBe(false)
   })
 
   it("should return false for a user with no IsomerAdmin row", async () => {
     const user = await setupUser({ email: "test@example.com" })
 
-    await expect(isActiveIsomerAdmin(user.id)).resolves.toBeFalsy()
+    await expect(isActiveIsomerAdmin(user.id)).resolves.toBe(false)
   })
 
   describe("role filtering", () => {
@@ -1428,7 +1428,7 @@ describe(isActiveIsomerAdmin, () => {
       const user = await setupUser({ email: "test@example.com" })
       await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Core })
 
-      await expect(isActiveIsomerAdmin(user.id, [IsomerAdminRole.Core])).resolves.toBeTruthy()
+      await expect(isActiveIsomerAdmin(user.id, [IsomerAdminRole.Core])).resolves.toBe(true)
     })
 
     it("should return false when the user's role does not match the requested roles", async () => {
@@ -1438,7 +1438,7 @@ describe(isActiveIsomerAdmin, () => {
         role: IsomerAdminRole.Migrator,
       })
 
-      await expect(isActiveIsomerAdmin(user.id, [IsomerAdminRole.Core])).resolves.toBeFalsy()
+      await expect(isActiveIsomerAdmin(user.id, [IsomerAdminRole.Core])).resolves.toBe(false)
     })
 
     it("should return true when the user's role is among multiple requested roles", async () => {
@@ -1451,7 +1451,7 @@ describe(isActiveIsomerAdmin, () => {
       await expect(isActiveIsomerAdmin(user.id, [
           IsomerAdminRole.Core,
           IsomerAdminRole.Migrator,
-        ])).resolves.toBeTruthy()
+        ])).resolves.toBe(true)
     })
   })
 })
@@ -1542,7 +1542,7 @@ describe(validateUserIsSiteAdmin, () => {
     // Act & Assert
     await expect(
       validateUserIsSiteAdmin({ userId: user.id, siteId: site.id }),
-    ).resolves.toBeTruthy()
+    ).resolves.toBe(true)
   })
 
   it("should allow an active Isomer Admin without a site permission", async () => {
@@ -1554,7 +1554,7 @@ describe(validateUserIsSiteAdmin, () => {
     // Act & Assert
     await expect(
       validateUserIsSiteAdmin({ userId: user.id, siteId: site.id }),
-    ).resolves.toBeTruthy()
+    ).resolves.toBe(true)
   })
 
   it("should reject an expired Isomer Admin without a site permission", async () => {
@@ -1595,10 +1595,10 @@ describe(definePermissionsForResource, () => {
     })
 
     // Assert — Isomer Admin can create/delete at root
-    expect(perms.can("create", { parentId: null })).toBeTruthy()
-    expect(perms.can("delete", { parentId: null })).toBeTruthy()
-    expect(perms.can("read", { parentId: null })).toBeTruthy()
-    expect(perms.can("update", { parentId: null })).toBeTruthy()
+    expect(perms.can("create", { parentId: null })).toBe(true)
+    expect(perms.can("delete", { parentId: null })).toBe(true)
+    expect(perms.can("read", { parentId: null })).toBe(true)
+    expect(perms.can("update", { parentId: null })).toBe(true)
   })
 
   it("should not grant admin resource permissions to an expired Isomer Admin without ResourcePermission", async () => {
@@ -1615,8 +1615,8 @@ describe(definePermissionsForResource, () => {
     })
 
     // Assert — expired Isomer Admin has no permissions
-    expect(perms.can("create", { parentId: null })).toBeFalsy()
-    expect(perms.can("delete", { parentId: null })).toBeFalsy()
+    expect(perms.can("create", { parentId: null })).toBe(false)
+    expect(perms.can("delete", { parentId: null })).toBe(false)
   })
 })
 
@@ -1638,9 +1638,9 @@ describe(definePermissionsForSite, () => {
     })
 
     // Assert
-    expect(perms.can("read", "Site")).toBeTruthy()
+    expect(perms.can("read", "Site")).toBe(true)
     CRUD_ACTIONS.forEach((action) => {
-      expect(perms.can(action, "Site")).toBeTruthy()
+      expect(perms.can(action, "Site")).toBe(true)
     })
   })
 
@@ -1658,9 +1658,9 @@ describe(definePermissionsForSite, () => {
     })
 
     // Assert
-    expect(perms.can("read", "Site")).toBeFalsy()
+    expect(perms.can("read", "Site")).toBe(false)
     CRUD_ACTIONS.forEach((action) => {
-      expect(perms.can(action, "Site")).toBeFalsy()
+      expect(perms.can(action, "Site")).toBe(false)
     })
   })
 })

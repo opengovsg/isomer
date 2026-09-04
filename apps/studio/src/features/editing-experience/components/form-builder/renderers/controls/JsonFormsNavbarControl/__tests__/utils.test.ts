@@ -45,7 +45,7 @@ describe(isSubItemPath, () => {
     const actual = isSubItemPath(path)
 
     // Assert
-    expect(actual).toBeTruthy()
+    expect(actual).toBe(true)
   })
 
   it("should return false for top-level item path", () => {
@@ -56,7 +56,7 @@ describe(isSubItemPath, () => {
     const actual = isSubItemPath(path)
 
     // Assert
-    expect(actual).toBeFalsy()
+    expect(actual).toBe(false)
   })
 
   it("should return false for invalid path", () => {
@@ -67,7 +67,7 @@ describe(isSubItemPath, () => {
     const actual = isSubItemPath(path)
 
     // Assert
-    expect(actual).toBeFalsy()
+    expect(actual).toBe(false)
   })
 })
 
@@ -82,7 +82,7 @@ describe(isFirstLevelLinksOverLimit, () => {
     const actual = isFirstLevelLinksOverLimit(itemCount, maxItems)
 
     // Assert
-    expect(actual).toBeFalsy()
+    expect(actual).toBe(false)
   })
 
   it("should return false when item count is exactly maxItems", () => {
@@ -94,7 +94,7 @@ describe(isFirstLevelLinksOverLimit, () => {
     const actual = isFirstLevelLinksOverLimit(itemCount, maxItems)
 
     // Assert
-    expect(actual).toBeFalsy()
+    expect(actual).toBe(false)
   })
 
   it("should return true when item count exceeds maxItems", () => {
@@ -106,7 +106,7 @@ describe(isFirstLevelLinksOverLimit, () => {
     const actual = isFirstLevelLinksOverLimit(itemCount, maxItems)
 
     // Assert
-    expect(actual).toBeTruthy()
+    expect(actual).toBe(true)
   })
 
   it("should return false when maxItems is undefined", () => {
@@ -117,7 +117,7 @@ describe(isFirstLevelLinksOverLimit, () => {
     const actual = isFirstLevelLinksOverLimit(itemCount, undefined)
 
     // Assert
-    expect(actual).toBeFalsy()
+    expect(actual).toBe(false)
   })
 
   it("should return false when maxItems is 0", () => {
@@ -129,7 +129,7 @@ describe(isFirstLevelLinksOverLimit, () => {
     const actual = isFirstLevelLinksOverLimit(itemCount, maxItems)
 
     // Assert
-    expect(actual).toBeFalsy()
+    expect(actual).toBe(false)
   })
 })
 

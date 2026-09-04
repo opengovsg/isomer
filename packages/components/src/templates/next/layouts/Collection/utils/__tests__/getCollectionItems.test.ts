@@ -65,7 +65,7 @@ describe(getCollectionItems, () => {
 
       expect(result).toHaveLength(1)
       expect(result[0]!.image).toBeUndefined()
-      expect(result[0]!.isContainNeeded).toBeFalsy()
+      expect(result[0]!.isContainNeeded).toBe(false)
     })
 
     it("should not include image when showThumbnail is undefined and item has no image", () => {
@@ -81,7 +81,7 @@ describe(getCollectionItems, () => {
 
       expect(result).toHaveLength(1)
       expect(result[0]!.image).toBeUndefined()
-      expect(result[0]!.isContainNeeded).toBeFalsy()
+      expect(result[0]!.isContainNeeded).toBe(false)
     })
   })
 
@@ -100,7 +100,7 @@ describe(getCollectionItems, () => {
 
       expect(result).toHaveLength(1)
       expect(result[0]!.image).toStrictEqual(itemImage)
-      expect(result[0]!.isContainNeeded).toBeFalsy()
+      expect(result[0]!.isContainNeeded).toBe(false)
     })
 
     it("should fall back to site logo when item has no image", () => {
@@ -116,7 +116,7 @@ describe(getCollectionItems, () => {
 
       expect(result).toHaveLength(1)
       expect(result[0]!.image).toStrictEqual(SITE_LOGO_FALLBACK)
-      expect(result[0]!.isContainNeeded).toBeTruthy()
+      expect(result[0]!.isContainNeeded).toBe(true)
     })
 
     it("should fall back to site logo when item image has an empty src", () => {
@@ -132,7 +132,7 @@ describe(getCollectionItems, () => {
 
       expect(result).toHaveLength(1)
       expect(result[0]!.image).toStrictEqual(SITE_LOGO_FALLBACK)
-      expect(result[0]!.isContainNeeded).toBeTruthy()
+      expect(result[0]!.isContainNeeded).toBe(true)
     })
 
     it("should fall back to site logo when item image has an empty src but non-empty alt", () => {
@@ -148,7 +148,7 @@ describe(getCollectionItems, () => {
 
       expect(result).toHaveLength(1)
       expect(result[0]!.image).toStrictEqual(SITE_LOGO_FALLBACK)
-      expect(result[0]!.isContainNeeded).toBeTruthy()
+      expect(result[0]!.isContainNeeded).toBe(true)
     })
 
     it("should ignore item firstImage when fallback is 'logo'", () => {
@@ -165,7 +165,7 @@ describe(getCollectionItems, () => {
 
       expect(result).toHaveLength(1)
       expect(result[0]!.image).toStrictEqual(SITE_LOGO_FALLBACK)
-      expect(result[0]!.isContainNeeded).toBeTruthy()
+      expect(result[0]!.isContainNeeded).toBe(true)
     })
   })
 
@@ -185,7 +185,7 @@ describe(getCollectionItems, () => {
 
       expect(result).toHaveLength(1)
       expect(result[0]!.image).toStrictEqual(itemImage)
-      expect(result[0]!.isContainNeeded).toBeFalsy()
+      expect(result[0]!.isContainNeeded).toBe(false)
     })
 
     it("should fall back to firstImage when item has no image but has a firstImage", () => {
@@ -202,7 +202,7 @@ describe(getCollectionItems, () => {
 
       expect(result).toHaveLength(1)
       expect(result[0]!.image).toStrictEqual(firstImage)
-      expect(result[0]!.isContainNeeded).toBeFalsy()
+      expect(result[0]!.isContainNeeded).toBe(false)
     })
 
     it("should fall back to firstImage when item image has an empty src", () => {
@@ -219,7 +219,7 @@ describe(getCollectionItems, () => {
 
       expect(result).toHaveLength(1)
       expect(result[0]!.image).toStrictEqual(firstImage)
-      expect(result[0]!.isContainNeeded).toBeFalsy()
+      expect(result[0]!.isContainNeeded).toBe(false)
     })
 
     it("should fall back to site logo when item has no image and no firstImage", () => {
@@ -235,7 +235,7 @@ describe(getCollectionItems, () => {
 
       expect(result).toHaveLength(1)
       expect(result[0]!.image).toStrictEqual(SITE_LOGO_FALLBACK)
-      expect(result[0]!.isContainNeeded).toBeTruthy()
+      expect(result[0]!.isContainNeeded).toBe(true)
     })
 
     it("should fall back to site logo when firstImage has an empty src", () => {
@@ -254,7 +254,7 @@ describe(getCollectionItems, () => {
 
       expect(result).toHaveLength(1)
       expect(result[0]!.image).toStrictEqual(SITE_LOGO_FALLBACK)
-      expect(result[0]!.isContainNeeded).toBeTruthy()
+      expect(result[0]!.isContainNeeded).toBe(true)
     })
   })
 
@@ -282,9 +282,9 @@ describe(getCollectionItems, () => {
 
       expect(result).toHaveLength(2)
       expect(result[0]!.image).toStrictEqual(itemImage)
-      expect(result[0]!.isContainNeeded).toBeFalsy()
+      expect(result[0]!.isContainNeeded).toBe(false)
       expect(result[1]!.image).toStrictEqual(SITE_LOGO_FALLBACK)
-      expect(result[1]!.isContainNeeded).toBeTruthy()
+      expect(result[1]!.isContainNeeded).toBe(true)
     })
 
     it("should resolve images per-item with fallback 'first-image'", () => {

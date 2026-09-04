@@ -233,7 +233,7 @@ describe("utils", () => {
       ]
 
       testCases.forEach((testCase) => {
-        expect(isFacebookReelEmbedUrl(testCase)).toBeTruthy()
+        expect(isFacebookReelEmbedUrl(testCase)).toBe(true)
       })
     })
 
@@ -244,7 +244,7 @@ describe("utils", () => {
       ]
 
       testCases.forEach((testCase) => {
-        expect(isFacebookReelEmbedUrl(testCase)).toBeFalsy()
+        expect(isFacebookReelEmbedUrl(testCase)).toBe(false)
       })
     })
 
@@ -256,7 +256,7 @@ describe("utils", () => {
       ]
 
       testCases.forEach((testCase) => {
-        expect(isFacebookReelEmbedUrl(testCase)).toBeFalsy()
+        expect(isFacebookReelEmbedUrl(testCase)).toBe(false)
       })
     })
 
@@ -265,7 +265,7 @@ describe("utils", () => {
         isFacebookReelEmbedUrl(
           "https://www.facebook.com/plugins/video.php?show_text=false",
         ),
-      ).toBeFalsy()
+      ).toBe(false)
     })
 
     it("should return false for non-Facebook URLs", () => {
@@ -275,7 +275,7 @@ describe("utils", () => {
       ]
 
       testCases.forEach((testCase) => {
-        expect(isFacebookReelEmbedUrl(testCase)).toBeFalsy()
+        expect(isFacebookReelEmbedUrl(testCase)).toBe(false)
       })
     })
 
@@ -283,7 +283,7 @@ describe("utils", () => {
       const testCases = ["", "not-a-url"]
 
       testCases.forEach((testCase) => {
-        expect(isFacebookReelEmbedUrl(testCase)).toBeFalsy()
+        expect(isFacebookReelEmbedUrl(testCase)).toBe(false)
       })
     })
   })
