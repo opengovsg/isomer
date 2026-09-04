@@ -2,6 +2,7 @@
   "name": "isomer-base-template",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "build:local": "rm -rf .next && curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/build/scripts/preBuild.sh | bash && pnpm run build",
     "build:template": "next build --webpack",
