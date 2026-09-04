@@ -22,11 +22,25 @@ if [ -z "$ISOMER_BUILD_REPO_BRANCH" ]; then
   tar --use-compress-program=zstd -xf isomer.tar.zst
   cd isomer/
 else
-  git clone --depth 1 --branch "$ISOMER_BUILD_REPO_BRANCH" https://github.com/opengovsg/isomer.git
-  cd isomer/
-  # Checkout specific branch
-  echo "Checking out branch..."
-  git checkout "$ISOMER_BUILD_REPO_BRANCH"
+  # A manual/test build-components.yml run for this branch may have already archived
+  # and published the repository to this ref-scoped prefix; reuse it if present instead
+  # of re-cloning and re-installing from scratch.
+  REPO_TGZ="isomer.tar.zst"
+  REPO_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/isomer/refs/$ISOMER_BUILD_REPO_BRANCH/$REPO_TGZ"
+  aws s3 cp --only-show-errors "$REPO_CACHE_PATH" $REPO_TGZ || true
+  if [ -f "$REPO_TGZ" ]; then
+    echo "$REPO_TGZ found in cache for branch $ISOMER_BUILD_REPO_BRANCH"
+    tar --use-compress-program=zstd -xf $REPO_TGZ
+    rm $REPO_TGZ
+    cd isomer/
+  else
+    echo "$REPO_TGZ not found in cache for branch $ISOMER_BUILD_REPO_BRANCH"
+    git clone --depth 1 --branch "$ISOMER_BUILD_REPO_BRANCH" https://github.com/opengovsg/isomer.git
+    cd isomer/
+    # Checkout specific branch
+    echo "Checking out branch..."
+    git checkout "$ISOMER_BUILD_REPO_BRANCH"
+  fi
 fi
 
 calculate_duration "$start_time"
