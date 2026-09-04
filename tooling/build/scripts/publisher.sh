@@ -11,6 +11,42 @@ calculate_duration() {
   echo "Time taken: $duration seconds"
 }
 
+# Downloads $2 from S3 path $1 and extracts it into $3 (default: cwd), removing the
+# local tarball afterwards. Returns 1 - without tripping `set -e` - if the object
+# isn't in S3; callers decide whether that's a fallback or a fatal error.
+fetch_cached() {
+  local cache_path=$1 tarball=$2 extract_dir=${3:-.} start_time
+  echo "Fetching $tarball from cache..."
+  aws s3 cp --only-show-errors "$cache_path" "$tarball" || true
+  if [ ! -f "$tarball" ]; then
+    echo "$tarball not found in cache ($cache_path)"
+    return 1
+  fi
+  echo "$tarball found in cache ($cache_path)"
+  start_time=$(date +%s)
+  mkdir -p "$extract_dir"
+  tar --use-compress-program=zstd -xf "$tarball" -C "$extract_dir"
+  rm "$tarball"
+  calculate_duration "$start_time"
+}
+
+# Archives $3+ (passed straight through to `tar -c`) into $2 and uploads it to S3 path $1.
+cache_upload() {
+  local cache_path=$1 tarball=$2 start_time
+  shift 2
+  echo "Caching $tarball to S3..."
+  start_time=$(date +%s)
+  tar --use-compress-program="zstd -6" -cf "$tarball" "$@"
+  aws s3 cp --only-show-errors "$tarball" "$cache_path"
+  rm "$tarball"
+  calculate_duration "$start_time"
+}
+
+REPO_TGZ="isomer.tar.zst"
+STORE_TGZ="isomer-pnpm-store.tar.zst"
+TEMPLATE_DEPS_TGZ="isomer-template-deps.tar.zst"
+COMPONENTS_DIST_TGZ="isomer-components-dist.tar.zst"
+
 # Cloning the repository
 echo "Cloning central repository..."
 start_time=$(date +%s)
@@ -18,8 +54,8 @@ start_time=$(date +%s)
 # NOTE: if no build repo branch was provided,
 # we will assume this is production and just clone from the bucket
 if [ -z "$ISOMER_BUILD_REPO_BRANCH" ]; then
-  aws s3 cp --only-show-errors s3://"$S3_CACHE_BUCKET_NAME"/isomer/latest/isomer.tar.zst .
-  tar --use-compress-program=zstd -xf isomer.tar.zst
+  fetch_cached "s3://$S3_CACHE_BUCKET_NAME/isomer/latest/$REPO_TGZ" "$REPO_TGZ" ||
+    { echo "Error: $REPO_TGZ not found in production cache"; exit 1; }
   cd isomer/
 
   # isomer.tar.zst is source-only (see build-components.yml); the pnpm store is archived
@@ -27,23 +63,16 @@ if [ -z "$ISOMER_BUILD_REPO_BRANCH" ]; then
   # "latest" so it's shared across every ref that happens to point at the same
   # commit. It's relinked into node_modules below, once pnpm is configured.
   GIT_SHA=$(cat .isomer-build-sha)
-  aws s3 cp --only-show-errors s3://"$S3_CACHE_BUCKET_NAME"/isomer/"$GIT_SHA"/isomer-pnpm-store.tar.zst .
-  tar --use-compress-program=zstd -xf isomer-pnpm-store.tar.zst
-  rm isomer-pnpm-store.tar.zst
+  fetch_cached "s3://$S3_CACHE_BUCKET_NAME/isomer/$GIT_SHA/$STORE_TGZ" "$STORE_TGZ" ||
+    { echo "Error: $STORE_TGZ not found for commit $GIT_SHA"; exit 1; }
 else
   # A manual/test build-components.yml run for this branch may have already archived
   # and published the repository to this ref-scoped prefix; reuse it if present instead
   # of re-cloning and re-installing from scratch.
-  REPO_TGZ="isomer.tar.zst"
   REPO_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/isomer/refs/$ISOMER_BUILD_REPO_BRANCH/$REPO_TGZ"
-  aws s3 cp --only-show-errors "$REPO_CACHE_PATH" $REPO_TGZ || true
-  if [ -f "$REPO_TGZ" ]; then
-    echo "$REPO_TGZ found in cache for branch $ISOMER_BUILD_REPO_BRANCH"
-    tar --use-compress-program=zstd -xf $REPO_TGZ
-    rm $REPO_TGZ
+  if fetch_cached "$REPO_CACHE_PATH" "$REPO_TGZ"; then
     cd isomer/
   else
-    echo "$REPO_TGZ not found in cache for branch $ISOMER_BUILD_REPO_BRANCH"
     git clone --depth 1 --branch "$ISOMER_BUILD_REPO_BRANCH" https://github.com/opengovsg/isomer.git
     cd isomer/
     # Checkout specific branch
@@ -80,58 +109,25 @@ if [[ -n "$ISOMER_BUILD_REPO_BRANCH" ]]; then
   UNIQUE_CACHE_KEY="$ISOMER_BUILD_REPO_BRANCH-$COMMIT_SHA"
   echo "Unique cache key: $UNIQUE_CACHE_KEY"
 
-  # build-components.yml publishes a pnpm store archive keyed by commit SHA on every run
-  # (production or ref-scoped), independent of which branch/ref triggered it. If it already
-  # ran for this exact commit, reuse that instead of installing from the registry.
-  STORE_TGZ="isomer-pnpm-store.tar.zst"
-  aws s3 cp --only-show-errors s3://"$S3_CACHE_BUCKET_NAME"/isomer/"$COMMIT_SHA"/"$STORE_TGZ" . || true
-  if [ -f "$STORE_TGZ" ]; then
-    echo "$STORE_TGZ found in cache for commit $COMMIT_SHA"
-    start_time=$(date +%s)
-    tar --use-compress-program=zstd -xf "$STORE_TGZ"
-    rm "$STORE_TGZ"
-    calculate_duration "$start_time"
+  # Try the commit-scoped store build-components.yml may have already published for this
+  # exact commit (shared across every ref pointing at it, produced on every run whether
+  # production or ref-scoped), then fall back to this branch's own cache from a previous
+  # run. `pnpm install` below recreates node_modules from whichever store was restored -
+  # cheap when one was, a real registry install when neither was found.
+  TEMPLATE_DEPS_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/$UNIQUE_CACHE_KEY/$TEMPLATE_DEPS_TGZ"
+  RESTORED_STORE=0
+  fetch_cached "s3://$S3_CACHE_BUCKET_NAME/isomer/$COMMIT_SHA/$STORE_TGZ" "$STORE_TGZ" && RESTORED_STORE=1
+  if [ "$RESTORED_STORE" -eq 0 ]; then
+    fetch_cached "$TEMPLATE_DEPS_CACHE_PATH" "$TEMPLATE_DEPS_TGZ" && RESTORED_STORE=1
+  fi
 
-    echo "Re-linking workspace from cached store..."
-    start_time=$(date +%s)
-    pnpm install --frozen-lockfile
-    calculate_duration "$start_time"
-  else
-    echo "$STORE_TGZ not found in cache for commit $COMMIT_SHA"
+  echo "Installing workspace dependencies..."
+  start_time=$(date +%s)
+  pnpm install --frozen-lockfile
+  calculate_duration "$start_time"
 
-    # Shared S3 dependency cache (same bucket/prefix pattern is used by multiple CodeBuild projects).
-    # pnpm keeps package bytes in a content-addressable store; `store-dir` is set above for this run only.
-    # We archive only `.pnpm-store`; `pnpm install` recreates node_modules from the store + lockfile.
-    TEMPLATE_DEPS_TGZ="isomer-template-deps.tar.zst"
-    TEMPLATE_DEPS_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/$UNIQUE_CACHE_KEY/$TEMPLATE_DEPS_TGZ"
-    echo "Fetching cached pnpm store..."
-    aws s3 cp --only-show-errors "$TEMPLATE_DEPS_CACHE_PATH" $TEMPLATE_DEPS_TGZ || true
-    if [ -f "$TEMPLATE_DEPS_TGZ" ]; then
-      echo "$TEMPLATE_DEPS_TGZ found in cache"
-      start_time=$(date +%s)
-      tar --use-compress-program=zstd -xf $TEMPLATE_DEPS_TGZ
-      rm $TEMPLATE_DEPS_TGZ
-      calculate_duration "$start_time"
-
-      echo "Re-linking workspace from cached store..."
-      start_time=$(date +%s)
-      pnpm install --frozen-lockfile
-      calculate_duration "$start_time"
-    else
-      echo "$TEMPLATE_DEPS_TGZ not found in cache"
-      echo "Installing workspace dependencies..."
-      start_time=$(date +%s)
-      pnpm install --frozen-lockfile
-      calculate_duration "$start_time"
-
-      echo "Caching pnpm store to S3..."
-      start_time=$(date +%s)
-      tar --use-compress-program="zstd -6" -cf $TEMPLATE_DEPS_TGZ .pnpm-store
-      aws s3 cp --only-show-errors $TEMPLATE_DEPS_TGZ "$TEMPLATE_DEPS_CACHE_PATH"
-      rm $TEMPLATE_DEPS_TGZ
-      echo "Cached pnpm store"
-      calculate_duration "$start_time"
-    fi
+  if [ "$RESTORED_STORE" -eq 0 ]; then
+    cache_upload "$TEMPLATE_DEPS_CACHE_PATH" "$TEMPLATE_DEPS_TGZ" .pnpm-store
   fi
 else
   # Production path: build-components.yml already populated the pnpm store and
@@ -152,31 +148,14 @@ fi
 
 # packages/components/dist is gitignored; Next resolves @opengovsg/isomer-components via workspace.
 # Cache dist separately from .pnpm-store: restoring plain files does not affect the content-addressable store or node_modules linking.
-COMPONENTS_DIST_TGZ="isomer-components-dist.tar.zst"
 COMPONENTS_DIST_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/$UNIQUE_CACHE_KEY/$COMPONENTS_DIST_TGZ"
-echo "Fetching cached isomer-components dist..."
-aws s3 cp --only-show-errors "$COMPONENTS_DIST_CACHE_PATH" $COMPONENTS_DIST_TGZ || true
-if [ -f "$COMPONENTS_DIST_TGZ" ]; then
-  echo "$COMPONENTS_DIST_TGZ found in cache"
-  start_time=$(date +%s)
-  mkdir -p packages/components
-  tar --use-compress-program=zstd -xf $COMPONENTS_DIST_TGZ -C packages/components
-  rm $COMPONENTS_DIST_TGZ
-  calculate_duration "$start_time"
-else
-  echo "$COMPONENTS_DIST_TGZ not found in cache"
+if ! fetch_cached "$COMPONENTS_DIST_CACHE_PATH" "$COMPONENTS_DIST_TGZ" packages/components; then
   echo "Building @opengovsg/isomer-components..."
   start_time=$(date +%s)
   pnpm --filter @opengovsg/isomer-components run build
   calculate_duration "$start_time"
 
-  echo "Caching isomer-components dist to S3..."
-  start_time=$(date +%s)
-  tar --use-compress-program="zstd -6" -cf $COMPONENTS_DIST_TGZ -C packages/components dist
-  aws s3 cp --only-show-errors $COMPONENTS_DIST_TGZ "$COMPONENTS_DIST_CACHE_PATH"
-  rm $COMPONENTS_DIST_TGZ
-  echo "Cached isomer-components dist"
-  calculate_duration "$start_time"
+  cache_upload "$COMPONENTS_DIST_CACHE_PATH" "$COMPONENTS_DIST_TGZ" -C packages/components dist
 fi
 
 # Fetch from database
