@@ -75,14 +75,17 @@ jobs:
           pnpm config set store-dir .pnpm-store --location project
 
       - name: Install pnpm dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --filter isomer-base-template...
 
       # Shared S3 cache (same bucket/prefix pattern is used by multiple CodeBuild projects).
-      # Rather than caching the pnpm store and a built dist separately, archive the whole
-      # repository (source + node_modules) as a single tarball so downstream per-site
-      # CodeBuild projects can pull it down instead of cloning/installing themselves.
+      # Archived as two separate tarballs so downstream per-site CodeBuild projects can pull
+      # them down instead of cloning/installing themselves:
+      #   1. isomer.tar.zst - the repository itself (source only, no node_modules/.pnpm-store).
+      #   2. isomer-pnpm-store.tar.zst - the project-local pnpm store, cached separately since
+      #      restoring it doesn't touch the repository and it's what publisher.sh's install
+      #      step actually needs to relink node_modules without hitting the registry.
       #
-      # publisher.sh (the consumer) downloads this from isomer/latest/isomer.tar.zst, extracts it with
+      # publisher.sh (the consumer) downloads isomer.tar.zst from isomer/latest/, extracts it with
       # `tar --use-compress-program=zstd -xf`, then `cd isomer/` - mirroring what
       # `git clone .../isomer.git` would have produced. So the archive must be
       # zstd-compressed and rooted at an `isomer/` directory, not the bare working tree.
@@ -102,6 +105,7 @@ jobs:
           }
 
           REPO_TGZ="isomer.tar.zst"
+          STORE_TGZ="isomer-pnpm-store.tar.zst"
           # publisher.sh's production path only ever reads isomer/latest/. This branch
           # exists so a manual/test workflow_dispatch of *this* workflow (passing an
           # explicit ref) writes to its own prefix instead of clobbering isomer/latest/
@@ -111,13 +115,13 @@ jobs:
           # workflow produced for that branch instead of re-cloning from scratch, and
           # only falls back to a fresh git clone if no such archive was published.
           if [ -n "$REQUESTED_REF" ]; then
-            REPO_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/isomer/refs/$REQUESTED_REF/$REPO_TGZ"
+            CACHE_PREFIX="s3://$S3_CACHE_BUCKET_NAME/isomer/refs/$REQUESTED_REF"
           else
-            REPO_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/isomer/latest/$REPO_TGZ"
+            CACHE_PREFIX="s3://$S3_CACHE_BUCKET_NAME/isomer/latest"
           fi
+          REPO_CACHE_PATH="$CACHE_PREFIX/$REPO_TGZ"
+          STORE_CACHE_PATH="$CACHE_PREFIX/$STORE_TGZ"
 
-          echo "Archiving repository..."
-          start_time=$(date +%s)
           # Record the resolved ref inside the archive so publisher.sh's production
           # path - which has no branch input and no .git to inspect - can key its
           # isomer-components dist cache by the actual release instead of a fixed
@@ -129,12 +133,26 @@ jobs:
           # directory itself and `ln -s` would fail with "File exists".
           ARCHIVE_STAGING=$(mktemp -d)
           ln -s "$(pwd)" "$ARCHIVE_STAGING/isomer"
-          tar --exclude=.git -h --use-compress-program="zstd -6" -cf "$ARCHIVE_STAGING/$REPO_TGZ" -C "$ARCHIVE_STAGING" isomer
+
+          echo "Archiving repository..."
+          start_time=$(date +%s)
+          tar --exclude=.git --exclude=node_modules --exclude=.pnpm-store -h --use-compress-program="zstd -6" -cf "$ARCHIVE_STAGING/$REPO_TGZ" -C "$ARCHIVE_STAGING" isomer
           calculate_duration $start_time
 
           echo "Uploading repository archive to S3..."
           start_time=$(date +%s)
           aws s3 cp --only-show-errors "$ARCHIVE_STAGING/$REPO_TGZ" $REPO_CACHE_PATH
-          rm -rf "$ARCHIVE_STAGING"
           echo "Uploaded repository archive"
+          calculate_duration $start_time
+
+          echo "Archiving pnpm store..."
+          start_time=$(date +%s)
+          tar --use-compress-program="zstd -6" -cf "$ARCHIVE_STAGING/$STORE_TGZ" .pnpm-store
+          calculate_duration $start_time
+
+          echo "Uploading pnpm store archive to S3..."
+          start_time=$(date +%s)
+          aws s3 cp --only-show-errors "$ARCHIVE_STAGING/$STORE_TGZ" $STORE_CACHE_PATH
+          rm -rf "$ARCHIVE_STAGING"
+          echo "Uploaded pnpm store archive"
           calculate_duration $start_time

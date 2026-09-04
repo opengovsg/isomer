@@ -21,6 +21,12 @@ if [ -z "$ISOMER_BUILD_REPO_BRANCH" ]; then
   aws s3 cp --only-show-errors s3://"$S3_CACHE_BUCKET_NAME"/isomer/latest/isomer.tar.zst .
   tar --use-compress-program=zstd -xf isomer.tar.zst
   cd isomer/
+
+  # isomer.tar.zst is source-only (see build-components.yml); the pnpm store is archived
+  # separately and relinked into node_modules below, once pnpm is configured.
+  aws s3 cp --only-show-errors s3://"$S3_CACHE_BUCKET_NAME"/isomer/latest/isomer-pnpm-store.tar.zst .
+  tar --use-compress-program=zstd -xf isomer-pnpm-store.tar.zst
+  rm isomer-pnpm-store.tar.zst
 else
   # A manual/test build-components.yml run for this branch may have already archived
   # and published the repository to this ref-scoped prefix; reuse it if present instead
@@ -97,13 +103,19 @@ if [[ -n "$ISOMER_BUILD_REPO_BRANCH" ]]; then
     calculate_duration "$start_time"
   fi
 else
-  # Production path: dependencies were already installed and archived by
-  # build-components.yml, then extracted above as part of isomer.tar.zst -
-  # no need to reinstall or fetch a separate deps cache. Key the (still
-  # necessary) isomer-components dist cache by the actual release ref that
-  # build-components.yml resolved and recorded in the archive, not a fixed
-  # "latest" string - otherwise every release after the first would silently
-  # reuse an older release's stale dist build.
+  # Production path: build-components.yml already populated the pnpm store and
+  # archived it alongside the repository (fetched above); relink node_modules
+  # from it here - cheap since every package is already in the store, no
+  # registry hits needed. Key the (still necessary) isomer-components dist
+  # cache by the actual release ref that build-components.yml resolved and
+  # recorded in the archive, not a fixed "latest" string - otherwise every
+  # release after the first would silently reuse an older release's stale
+  # dist build.
+  echo "Re-linking workspace from cached store..."
+  start_time=$(date +%s)
+  pnpm install --frozen-lockfile
+  calculate_duration "$start_time"
+
   UNIQUE_CACHE_KEY=$(cat .isomer-release-ref)
 fi
 
