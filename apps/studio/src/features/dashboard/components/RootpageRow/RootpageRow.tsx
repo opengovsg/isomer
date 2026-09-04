@@ -1,7 +1,7 @@
 import { HStack, IconButton, Text, VStack } from "@chakra-ui/react"
 import Link from "next/link"
 import { BiChevronRight, BiHomeAlt } from "react-icons/bi"
-import { DraftIndicator } from "~/components/HasDraftIndicator"
+import { DraftIndicator } from "~/components/DraftIndicator"
 import { LiveStatusBadges } from "~/components/LiveStatusBadges"
 import { trpc } from "~/utils/trpc"
 
