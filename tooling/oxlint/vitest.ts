@@ -1,5 +1,11 @@
+import { fileURLToPath } from "node:url"
+
 import { defineConfig } from "oxlint"
 import ultraciteVitest from "ultracite/oxlint/vitest"
+
+const isomerVitestPlugin = fileURLToPath(
+  new URL("./plugins/ban-dummy-vitest-matchers.js", import.meta.url),
+)
 
 /**
  * Isomer vitest preset: Ultracite defaults with strict boolean matchers.
@@ -7,6 +13,12 @@ import ultraciteVitest from "ultracite/oxlint/vitest"
  */
 export default defineConfig({
   extends: [ultraciteVitest],
+  jsPlugins: [
+    {
+      name: "isomer-vitest",
+      specifier: isomerVitestPlugin,
+    },
+  ],
   overrides: [
     {
       files: [
@@ -49,6 +61,7 @@ export default defineConfig({
             ],
           },
         ],
+        "isomer-vitest/no-dummy-to-throw-regex": "error",
       },
     },
     {
