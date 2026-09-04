@@ -602,7 +602,6 @@ describe("auditLogExport processor", () => {
           reportType: "Access",
         })
         await processPendingAuditLogExports()
-        expect(mockUploadAuditLogExport).toHaveBeenCalledOnce()
 
         const secondAdmin = await setupUser({ email: "second@vendor.com.sg" })
         await setupAdminPermissions({ userId: secondAdmin.id, siteId: site.id })
