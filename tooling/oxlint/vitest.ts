@@ -36,7 +36,7 @@ export default defineConfig({
         // Dummy matchers like toThrow(/./) or empty toHaveBeenCalledWith() are worse than off.
         "vitest/require-to-throw-message": "off",
         "vitest/prefer-called-with": "off",
-        "vitest/prefer-called-exactly-once-with": "off",
+        "vitest/prefer-called-exactly-once-with": "error",
         "vitest/prefer-each": "off",
         "vitest/expect-expect": [
           "error",
