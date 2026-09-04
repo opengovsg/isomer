@@ -1,4 +1,4 @@
-import type { AuditLog } from "~prisma/generated/selectableTypes"
+import { it, vi, describe, expect, beforeAll, beforeEach } from 'vitest';
 import { TRPCError } from "@trpc/server"
 import { omit, pick } from "lodash-es"
 import { auth } from "tests/integration/helpers/auth"
@@ -23,15 +23,6 @@ import {
   setupUser,
   setUpWhitelist,
 } from "tests/integration/helpers/seed"
-import {
-  it,
-  vi,
-  describe,
-  expect,
-  beforeAll,
-  beforeEach,
-  type MockInstance,
-} from "vitest"
 import { USER_VIEWABLE_RESOURCE_TYPES } from "~/constants/resources"
 import { MAX_BATCH_RESOURCE_IDS } from "~/schemas/resource"
 import * as auditService from "~/server/modules/audit/audit.service"
@@ -166,7 +157,6 @@ describe("resource.router", async () => {
       )
     })
 
-    // oxlint-disable-next-line vitest/warn-todo
     it.todo("should throw 403 if user does not have read access to resource")
   })
 
@@ -498,7 +488,6 @@ describe("resource.router", async () => {
       )
     })
 
-    // oxlint-disable-next-line vitest/warn-todo
     it.todo("should throw 403 if user does not have read access to resource")
   })
 
@@ -638,9 +627,10 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      expect(
-        linkPickerResult.items.map(({ permalink }) => permalink),
-      ).toStrictEqual(["about", "search"])
+      expect(linkPickerResult.items.map(({ permalink }) => permalink)).toStrictEqual([
+        "about",
+        "search",
+      ])
       expect(
         directorySidebarResult.items.map(({ permalink }) => permalink),
       ).toStrictEqual(["about"])
@@ -1067,7 +1057,6 @@ describe("resource.router", async () => {
       )
     })
 
-    // oxlint-disable-next-line vitest/warn-todo
     it.todo("should throw 403 if user does not have read access to resource")
   })
 
@@ -1162,7 +1151,6 @@ describe("resource.router", async () => {
       )
     })
 
-    // oxlint-disable-next-line vitest/warn-todo
     it.todo("should throw 403 if user does not have read access to resource")
 
     it("should return nested folder children (e.g. folders within folders)", async () => {
@@ -1543,7 +1531,7 @@ describe("resource.router", async () => {
         .where("eventType", "=", "ResourceUpdate")
         .selectAll()
         .executeTakeFirstOrThrow()
-      expect(auditSpy).toHaveBeenCalledWith()
+      expect(auditSpy).toHaveBeenCalled()
       expect(auditEntry.delta.after!).toMatchObject(
         omit(result, ["createdAt", "updatedAt"]),
       )
@@ -1594,7 +1582,7 @@ describe("resource.router", async () => {
         .where("eventType", "=", "ResourceUpdate")
         .selectAll()
         .executeTakeFirstOrThrow()
-      expect(auditSpy).toHaveBeenCalledWith()
+      expect(auditSpy).toHaveBeenCalled()
       expect(auditEntry.delta.after!).toMatchObject(
         omit(result, ["createdAt", "updatedAt"]),
       )
@@ -1635,7 +1623,7 @@ describe("resource.router", async () => {
         .where("eventType", "=", "ResourceUpdate")
         .selectAll()
         .executeTakeFirstOrThrow()
-      expect(auditSpy).toHaveBeenCalledWith()
+      expect(auditSpy).toHaveBeenCalled()
       expect(auditEntry.delta.after!).toMatchObject(
         omit(result, ["createdAt", "updatedAt"]),
       )
@@ -1787,7 +1775,7 @@ describe("resource.router", async () => {
 
       // Assert
       expect(result.parentId).toStrictEqual(folderB.id)
-      expect(auditSpy).toHaveBeenCalledWith()
+      expect(auditSpy).toHaveBeenCalled()
     })
 
     it("should return 400 if moving a RootPage into its descendant (prevents circular reference)", async () => {
@@ -1862,7 +1850,7 @@ describe("resource.router", async () => {
         .where("eventType", "=", "ResourceUpdate")
         .selectAll()
         .executeTakeFirstOrThrow()
-      expect(auditSpy).toHaveBeenCalledWith()
+      expect(auditSpy).toHaveBeenCalled()
       expect(auditEntry.delta.after!).toMatchObject(
         omit(result, ["createdAt", "updatedAt"]),
       )
@@ -1901,15 +1889,9 @@ describe("resource.router", async () => {
       )
     })
 
-    // oxlint-disable-next-line vitest/warn-todo
-    it.todo(
-      "should throw 403 if user does not have write access to destination resource",
-    )
+    it.todo("should throw 403 if user does not have write access to destination resource")
 
-    // oxlint-disable-next-line vitest/warn-todo
-    it.todo(
-      "should throw 403 if user does not have write access to origin resource",
-    )
+    it.todo("should throw 403 if user does not have write access to origin resource")
 
     describe("redirect on move", () => {
       const setup = async () => {
@@ -2464,7 +2446,6 @@ describe("resource.router", async () => {
       )
     })
 
-    // oxlint-disable-next-line vitest/warn-todo
     it.todo("should throw 403 if user does not have read access to resource")
   })
 
@@ -2804,9 +2785,7 @@ describe("resource.router", async () => {
       })
 
       // Assert: repeated calls to the same page return identical results
-      expect(page1First.map((r) => r.id)).toStrictEqual(
-        page1Second.map((r) => r.id),
-      )
+      expect(page1First.map((r) => r.id)).toStrictEqual(page1Second.map((r) => r.id))
 
       // Assert: no duplicate IDs across pages
       const page1Ids = new Set(page1First.map((r) => r.id))
@@ -2857,11 +2836,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      expect(result.map((r) => r.title)).toStrictEqual([
-        "apple",
-        "Banana",
-        "cherry",
-      ])
+      expect(result.map((r) => r.title)).toStrictEqual(["apple", "Banana", "cherry"])
     })
 
     it("should sort by permalink ascending when orderBy is permalink-asc", async () => {
@@ -2972,10 +2947,7 @@ describe("resource.router", async () => {
       )
     })
 
-    // oxlint-disable-next-line vitest/warn-todo
-    it.todo(
-      "should throw 403 if user does not have read access to the resource",
-    )
+    it.todo("should throw 403 if user does not have read access to the resource")
   })
 
   describe("delete", () => {
@@ -3050,7 +3022,7 @@ describe("resource.router", async () => {
         .where("eventType", "=", "ResourceDelete")
         .selectAll()
         .executeTakeFirstOrThrow()
-      expect(auditSpy).toHaveBeenCalledWith()
+      expect(auditSpy).toHaveBeenCalled()
       expect(auditEntry.delta.before!).toMatchObject(
         omit(fullPage, ["createdAt", "updatedAt"]),
       )
@@ -3159,98 +3131,80 @@ describe("resource.router", async () => {
       expect(after.deletedAt).toBeNull()
     })
 
-    describe("should delete a folder and all its children (recursively) successfully", () => {
-      let auditSpy: MockInstance<typeof auditService.logResourceEvent>
-      let folderToUse: Awaited<ReturnType<typeof setupFolder>>["folder"]
-      let result: Awaited<ReturnType<typeof caller.delete>>
-      let actual: Awaited<
-        ReturnType<ReturnType<typeof db.selectFrom<"Resource">>["execute"]>
-      >
-      let auditEntry: AuditLog
+    it("should delete a folder and all its children (recursively) successfully", async () => {
+      // Arrange
+      const { folder: folderToUse, site } = await setupFolder()
+      const auditSpy = vi.spyOn(auditService, "logResourceEvent")
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      const nestedPages = await Promise.all(
+        Array.from({ length: 3 }, (_, i) => i).map(async (i) => {
+          const { page } = await setupPageResource({
+            siteId: site.id,
+            parentId: folderToUse.id,
+            permalink: `page-${i}`,
+            title: `Test page ${i}`,
+            resourceType: "Page",
+          })
+          return page.id
+        }),
+      )
+      const nestedFolders = await Promise.all(
+        Array.from({ length: 2 }, (_, i) => i).map(async (i) => {
+          const { folder } = await setupFolder({
+            siteId: site.id,
+            parentId: folderToUse.id,
+            permalink: `folder-${i}`,
+            title: `Test folder ${i}`,
+          })
+          return folder.id
+        }),
+      )
+      // Nested in nested
+      const nestedInNested = await Promise.all(
+        Array.from({ length: 3 }, (_, i) => i).map(async (i) => {
+          const { page } = await setupPageResource({
+            siteId: site.id,
+            parentId: nestedFolders[1],
+            resourceType: "Page",
+            permalink: `nested-page-${i}`,
+            title: `Nested page ${i}`,
+          })
+          return page.id
+        }),
+      )
 
-      beforeEach(async () => {
-        // Arrange
-        const setup = await setupFolder()
-        folderToUse = setup.folder
-        const { site } = setup
-        auditSpy = vi.spyOn(auditService, "logResourceEvent")
-        await setupAdminPermissions({
-          userId: session.userId,
-          siteId: site.id,
-        })
-        const nestedPages = await Promise.all(
-          Array.from({ length: 3 }, (_, i) => i).map(async (i) => {
-            const { page } = await setupPageResource({
-              siteId: site.id,
-              parentId: folderToUse.id,
-              permalink: `page-${i}`,
-              title: `Test page ${i}`,
-              resourceType: "Page",
-            })
-            return page.id
-          }),
-        )
-        const nestedFolders = await Promise.all(
-          Array.from({ length: 2 }, (_, i) => i).map(async (i) => {
-            const { folder } = await setupFolder({
-              siteId: site.id,
-              parentId: folderToUse.id,
-              permalink: `folder-${i}`,
-              title: `Test folder ${i}`,
-            })
-            return folder.id
-          }),
-        )
-        // Nested in nested
-        const nestedInNested = await Promise.all(
-          Array.from({ length: 3 }, (_, i) => i).map(async (i) => {
-            const { page } = await setupPageResource({
-              siteId: site.id,
-              parentId: nestedFolders[1],
-              resourceType: "Page",
-              permalink: `nested-page-${i}`,
-              title: `Nested page ${i}`,
-            })
-            return page.id
-          }),
-        )
-
-        // Act
-        result = await caller.delete({
-          resourceId: folderToUse.id,
-          siteId: site.id,
-        })
-
-        actual = await db
-          .selectFrom("Resource")
-          .where("id", "in", [
-            ...nestedPages,
-            ...nestedFolders,
-            ...nestedInNested,
-            folderToUse.id,
-          ])
-          .execute()
-        auditEntry = await db
-          .selectFrom("AuditLog")
-          .where("eventType", "=", "ResourceDelete")
-          .selectAll()
-          .executeTakeFirstOrThrow()
+      // Act
+      const result = await caller.delete({
+        resourceId: folderToUse.id,
+        siteId: site.id,
       })
 
-      it("deletes all nested resources and returns the deleted folder", () => {
-        // Assert
-        expect(actual).toHaveLength(0)
-        expect(result).toStrictEqual(folderToUse)
-        expect(auditSpy).toHaveBeenCalledExactlyOnceWith()
-        expect(auditEntry.delta.before).toMatchObject(
-          omit(folderToUse, ["createdAt", "updatedAt"]),
-        )
-      })
-
-      it("records the delete in the audit log", () => {
-        // Assert
-        expect(auditEntry.userId).toBe(session.userId)
-      })
+      // Assert
+      const actual = await db
+        .selectFrom("Resource")
+        .where("id", "in", [
+          ...nestedPages,
+          ...nestedFolders,
+          ...nestedInNested,
+          folderToUse.id,
+        ])
+        .execute()
+      expect(actual).toHaveLength(0)
+      expect(result).toStrictEqual(folderToUse)
+      expect(auditSpy).toHaveBeenCalledOnce()
+      const auditEntry = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "ResourceDelete")
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(auditSpy).toHaveBeenCalled()
+      expect(auditEntry.delta.before!).toMatchObject(
+        omit(folderToUse, ["createdAt", "updatedAt"]),
+      )
+      expect(auditEntry.userId).toBe(session.userId)
     })
 
     it("should return 400 if resource to delete is a root page", async () => {
@@ -3478,11 +3432,6 @@ describe("resource.router", async () => {
         }),
       )
     })
-
-    // oxlint-disable-next-line vitest/warn-todo
-    it.todo(
-      "should throw 403 if user does not have read access to the resource (getWithFullPermalink todo)",
-    )
   })
 
   describe("getWithFullPermalink", () => {
@@ -3598,10 +3547,7 @@ describe("resource.router", async () => {
       )
     })
 
-    // oxlint-disable-next-line vitest/warn-todo
-    it.todo(
-      "should throw 403 if user does not have read access to the resource",
-    )
+    it.todo("should throw 403 if user does not have read access to the resource")
   })
 
   describe("getAncestryStack", () => {
@@ -3812,10 +3758,7 @@ describe("resource.router", async () => {
       )
     })
 
-    // oxlint-disable-next-line vitest/warn-todo
-    it.todo(
-      "should throw 403 if user does not have read access to the resource",
-    )
+    it.todo("should throw 403 if user does not have read access to the resource")
   })
 
   describe("getBatchAncestryWithSelf", () => {
@@ -3948,10 +3891,7 @@ describe("resource.router", async () => {
       await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
     })
 
-    // oxlint-disable-next-line vitest/warn-todo
-    it.todo(
-      "should throw 403 if user does not have read access to the resources",
-    )
+    it.todo("should throw 403 if user does not have read access to the resources")
   })
 
   describe("search", () => {
@@ -4000,7 +3940,6 @@ describe("resource.router", async () => {
       )
     })
 
-    // oxlint-disable-next-line vitest/warn-todo
     it.todo("should throw 403 if user does not have read access to resource")
 
     it("should return empty results if no resources exist", async () => {
@@ -5178,10 +5117,7 @@ describe("resource.router", async () => {
       await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
     })
 
-    // oxlint-disable-next-line vitest/warn-todo
-    it.todo(
-      "should throw 403 if user does not have read access to the resources",
-    )
+    it.todo("should throw 403 if user does not have read access to the resources")
   })
 
   describe("getIndexPage", () => {

@@ -173,7 +173,7 @@ describe("permissions.service", () => {
     })
   })
 
-  describe(buildUserManagementPermissions, () => {
+  describe("buildUserManagementPermissions", () => {
     it("should not allow read when user has no roles", () => {
       const perms = buildUserManagementPermissions([])
       expect(perms.can("read", "UserManagement")).toBe(false)
@@ -219,7 +219,7 @@ describe("permissions.service", () => {
     })
   })
 
-  describe(bulkValidateUserPermissionsForResources, async () => {
+  describe("bulkValidateUserPermissionsForResources", async () => {
     const user = await setupUser({
       userId: "user1",
       email: "user1@example.com",
@@ -269,7 +269,7 @@ describe("permissions.service", () => {
           })
 
           // Assert
-          await expect(validation).resolves.not.toThrow(/./)
+          await expect(validation).resolves.not.toThrow()
         })
       })
 
@@ -287,7 +287,7 @@ describe("permissions.service", () => {
           })
 
           // Assert
-          await expect(validation).resolves.not.toThrow(/./)
+          await expect(validation).resolves.not.toThrow()
         })
 
         it("should not allow publishers to create root resources", async () => {
@@ -341,7 +341,7 @@ describe("permissions.service", () => {
           })
 
           // Assert
-          await expect(validation).resolves.not.toThrow(/./)
+          await expect(validation).resolves.not.toThrow()
         })
 
         it("should not allow editors to create root resources", async () => {
@@ -415,7 +415,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
-            await expect(validation).resolves.not.toThrow(/./)
+            await expect(validation).resolves.not.toThrow()
           }
 
           // Act (multiple resources)
@@ -427,7 +427,7 @@ describe("permissions.service", () => {
           })
 
           // Assert (multiple resources)
-          await expect(bulkValidation).resolves.not.toThrow(/./)
+          await expect(bulkValidation).resolves.not.toThrow()
         })
       })
 
@@ -446,7 +446,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
-            await expect(validation).resolves.not.toThrow(/./)
+            await expect(validation).resolves.not.toThrow()
           }
 
           // Act (multiple resources)
@@ -458,7 +458,7 @@ describe("permissions.service", () => {
           })
 
           // Assert (multiple resources)
-          await expect(bulkValidation).resolves.not.toThrow(/./)
+          await expect(bulkValidation).resolves.not.toThrow()
         })
       })
 
@@ -477,7 +477,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
-            await expect(validation).resolves.not.toThrow(/./)
+            await expect(validation).resolves.not.toThrow()
           }
 
           // Act (multiple resources)
@@ -489,7 +489,7 @@ describe("permissions.service", () => {
           })
 
           // Assert (multiple resources)
-          await expect(bulkValidation).resolves.not.toThrow(/./)
+          await expect(bulkValidation).resolves.not.toThrow()
         })
       })
 
@@ -586,7 +586,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
-            await expect(validation).resolves.not.toThrow(/./)
+            await expect(validation).resolves.not.toThrow()
           }
 
           // Act (multiple resources)
@@ -598,7 +598,7 @@ describe("permissions.service", () => {
           })
 
           // Assert (multiple resources)
-          await expect(bulkValidation).resolves.not.toThrow(/./)
+          await expect(bulkValidation).resolves.not.toThrow()
         })
       })
 
@@ -617,7 +617,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
-            await expect(validation).resolves.not.toThrow(/./)
+            await expect(validation).resolves.not.toThrow()
           }
 
           // Act (multiple resources)
@@ -629,7 +629,7 @@ describe("permissions.service", () => {
           })
 
           // Assert (multiple resources)
-          await expect(bulkValidation).resolves.not.toThrow(/./)
+          await expect(bulkValidation).resolves.not.toThrow()
         })
       })
 
@@ -648,7 +648,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
-            await expect(validation).resolves.not.toThrow(/./)
+            await expect(validation).resolves.not.toThrow()
           }
 
           // Act (multiple resources)
@@ -660,7 +660,7 @@ describe("permissions.service", () => {
           })
 
           // Assert (multiple resources)
-          await expect(bulkValidation).resolves.not.toThrow(/./)
+          await expect(bulkValidation).resolves.not.toThrow()
         })
       })
 
@@ -729,7 +729,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
-            await expect(validation).resolves.not.toThrow(/./)
+            await expect(validation).resolves.not.toThrow()
           }
 
           // Act (multiple resources)
@@ -741,7 +741,7 @@ describe("permissions.service", () => {
           })
 
           // Assert (multiple resources)
-          await expect(bulkValidation).resolves.not.toThrow(/./)
+          await expect(bulkValidation).resolves.not.toThrow()
         })
       })
 
@@ -761,7 +761,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
-            await expect(validation).resolves.not.toThrow(/./)
+            await expect(validation).resolves.not.toThrow()
           }
 
           // Act (multiple resources)
@@ -773,7 +773,7 @@ describe("permissions.service", () => {
           })
 
           // Assert (multiple resources)
-          await expect(bulkValidation).resolves.not.toThrow(/./)
+          await expect(bulkValidation).resolves.not.toThrow()
         })
 
         it("should not allow publishers to delete root resources", async () => {
@@ -832,7 +832,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
-            await expect(validation).resolves.not.toThrow(/./)
+            await expect(validation).resolves.not.toThrow()
           }
 
           // Act (multiple resources)
@@ -844,7 +844,7 @@ describe("permissions.service", () => {
           })
 
           // Assert (multiple resources)
-          await expect(bulkValidation).resolves.not.toThrow(/./)
+          await expect(bulkValidation).resolves.not.toThrow()
         })
 
         it("should not allow editors to delete root resources", async () => {
@@ -952,7 +952,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
-            await expect(validation).resolves.not.toThrow(/./)
+            await expect(validation).resolves.not.toThrow()
           }
 
           // Act (multiple resources)
@@ -964,7 +964,7 @@ describe("permissions.service", () => {
           })
 
           // Assert (multiple resources)
-          await expect(bulkValidation).resolves.not.toThrow(/./)
+          await expect(bulkValidation).resolves.not.toThrow()
         })
       })
 
@@ -983,7 +983,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
-            await expect(validation).resolves.not.toThrow(/./)
+            await expect(validation).resolves.not.toThrow()
           }
 
           // Act (multiple resources)
@@ -995,7 +995,7 @@ describe("permissions.service", () => {
           })
 
           // Assert (multiple resources)
-          await expect(bulkValidation).resolves.not.toThrow(/./)
+          await expect(bulkValidation).resolves.not.toThrow()
         })
       })
 
@@ -1102,7 +1102,7 @@ describe("permissions.service", () => {
           })
 
           // Assert
-          await expect(validation).resolves.not.toThrow(/./)
+          await expect(validation).resolves.not.toThrow()
         }
       })
 
@@ -1128,7 +1128,7 @@ describe("permissions.service", () => {
   })
 })
 
-describe(getResourcePermission, () => {
+describe("getResourcePermission", () => {
   beforeEach(async () => {
     await resetTables("ResourcePermission", "User", "Site", "Resource")
   })
@@ -1151,10 +1151,36 @@ describe(getResourcePermission, () => {
     expect(permissions[0]?.role).toBe(RoleType.Admin)
   })
 
-  // oxlint-disable-next-line vitest/warn-todo
-  it.todo(
-    "should return resource-specific permissions when resourceId is provided",
-  )
+  // TODO: add this back in when we have resource-specific permissions
+  it.skip("should return resource-specific permissions when resourceId is provided", async () => {
+    // Arrange
+    const user = await setupUser({ email: "test@example.com" })
+    const { page, site } = await setupPageResource({
+      resourceType: ResourceType.Page,
+    })
+
+    await db
+      .insertInto("ResourcePermission")
+      .values({
+        userId: user.id,
+        siteId: site.id,
+        resourceId: page.id,
+        role: RoleType.Admin,
+        deletedAt: null,
+      })
+      .execute()
+
+    // Act
+    const permissions = await getResourcePermission({
+      userId: user.id,
+      siteId: site.id,
+      resourceId: page.id,
+    })
+
+    // Assert
+    expect(permissions).toHaveLength(1)
+    expect(permissions[0]?.role).toBe(RoleType.Admin)
+  })
 
   it("should return empty array when no permissions exist for user and site", async () => {
     // Arrange
@@ -1190,10 +1216,25 @@ describe(getResourcePermission, () => {
     expect(permissions).toHaveLength(0)
   })
 
-  // oxlint-disable-next-line vitest/warn-todo
-  it.todo(
-    "should not return site-wide permissions when resourceId is provided and is not null",
-  )
+  // TODO: add this back in when we have resource-specific permissions
+  it.skip("should not return site-wide permissions when resourceId is provided and is not null", async () => {
+    // Arrange
+    const user = await setupUser({ email: "test@example.com" })
+    const { page, site } = await setupPageResource({
+      resourceType: ResourceType.Page,
+    })
+    await setupAdminPermissions({ userId: user.id, siteId: site.id })
+
+    // Act
+    const permissions = await getResourcePermission({
+      userId: user.id,
+      siteId: site.id,
+      resourceId: page.id,
+    })
+
+    // Assert
+    expect(permissions).toHaveLength(0)
+  })
 
   it("should exclude soft-deleted permissions", async () => {
     // Arrange
@@ -1359,7 +1400,7 @@ describe(getResourcePermission, () => {
   })
 })
 
-describe(isActiveIsomerAdmin, () => {
+describe("isActiveIsomerAdmin", () => {
   beforeEach(async () => {
     await resetTables("IsomerAdmin", "User")
   })
@@ -1407,9 +1448,9 @@ describe(isActiveIsomerAdmin, () => {
       const user = await setupUser({ email: "test@example.com" })
       await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Core })
 
-      await expect(
-        isActiveIsomerAdmin(user.id, [IsomerAdminRole.Core]),
-      ).resolves.toBe(true)
+      await expect(isActiveIsomerAdmin(user.id, [IsomerAdminRole.Core])).resolves.toBe(
+        true,
+      )
     })
 
     it("should return false when the user's role does not match the requested roles", async () => {
@@ -1419,9 +1460,9 @@ describe(isActiveIsomerAdmin, () => {
         role: IsomerAdminRole.Migrator,
       })
 
-      await expect(
-        isActiveIsomerAdmin(user.id, [IsomerAdminRole.Core]),
-      ).resolves.toBe(false)
+      await expect(isActiveIsomerAdmin(user.id, [IsomerAdminRole.Core])).resolves.toBe(
+        false,
+      )
     })
 
     it("should return true when the user's role is among multiple requested roles", async () => {
@@ -1431,17 +1472,15 @@ describe(isActiveIsomerAdmin, () => {
         role: IsomerAdminRole.Migrator,
       })
 
-      await expect(
-        isActiveIsomerAdmin(user.id, [
+      await expect(isActiveIsomerAdmin(user.id, [
           IsomerAdminRole.Core,
           IsomerAdminRole.Migrator,
-        ]),
-      ).resolves.toBe(true)
+        ])).resolves.toBe(true)
     })
   })
 })
 
-describe(validateUserIsIsomerAdmin, () => {
+describe("validateUserIsIsomerAdmin", () => {
   beforeEach(async () => {
     await resetTables("IsomerAdmin", "User")
   })
@@ -1455,7 +1494,7 @@ describe(validateUserIsIsomerAdmin, () => {
         userId: user.id,
         roles: [IsomerAdminRole.Core],
       }),
-    ).resolves.not.toThrow(/./)
+    ).resolves.not.toThrow()
   })
 
   it("should throw FORBIDDEN for a user with no IsomerAdmin row", async () => {
@@ -1513,7 +1552,7 @@ describe(validateUserIsIsomerAdmin, () => {
   })
 })
 
-describe(validateUserIsSiteAdmin, () => {
+describe("validateUserIsSiteAdmin", () => {
   beforeEach(async () => {
     await resetTables("IsomerAdmin", "ResourcePermission", "User", "Site")
   })
@@ -1556,7 +1595,7 @@ describe(validateUserIsSiteAdmin, () => {
   })
 })
 
-describe(definePermissionsForResource, () => {
+describe("definePermissionsForResource", () => {
   beforeEach(async () => {
     await resetTables(
       "IsomerAdmin",
@@ -1605,7 +1644,7 @@ describe(definePermissionsForResource, () => {
   })
 })
 
-describe(definePermissionsForSite, () => {
+describe("definePermissionsForSite", () => {
   beforeEach(async () => {
     await resetTables("IsomerAdmin", "ResourcePermission", "User", "Site")
   })
@@ -1650,7 +1689,7 @@ describe(definePermissionsForSite, () => {
   })
 })
 
-describe(validatePermissionsForManagingUsers, () => {
+describe("validatePermissionsForManagingUsers", () => {
   beforeEach(async () => {
     await resetTables("IsomerAdmin", "ResourcePermission", "User", "Site")
   })
@@ -1668,7 +1707,7 @@ describe(validatePermissionsForManagingUsers, () => {
         siteId: site.id,
         action: "manage",
       }),
-    ).resolves.not.toThrow(/./)
+    ).resolves.not.toThrow()
   })
 
   it("should throw FORBIDDEN for a non-admin user without ResourcePermission", async () => {

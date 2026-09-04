@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 
 import { sortCollectionItems } from "../sortCollectionItems"
 
-describe(sortCollectionItems, () => {
+describe("sortCollectionItems", () => {
   let itemCounter = 0
 
   const createItem = (overrides?: Partial<AllCardProps>): AllCardProps => {

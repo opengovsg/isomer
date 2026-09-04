@@ -44,7 +44,7 @@ const renderHarness = () =>
     </ThemeProvider>,
   )
 
-describe(TableSizePicker, () => {
+describe("TableSizePicker", () => {
   afterEach(() => {
     cleanup()
   })

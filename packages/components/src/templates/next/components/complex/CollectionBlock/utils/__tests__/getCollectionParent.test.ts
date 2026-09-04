@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 
 import { getCollectionParent } from "../getCollectionParent"
 
-describe(getCollectionParent, () => {
+describe("getCollectionParent", () => {
   let site: IsomerSiteProps = {
     // IsomerGeneratedSiteProps
     siteMap: {

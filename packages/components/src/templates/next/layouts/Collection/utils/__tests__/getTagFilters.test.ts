@@ -5,7 +5,7 @@ import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
 
 import { getTagFilters } from "../getTagFilters"
 
-describe(getTagFilters, () => {
+describe("getTagFilters", () => {
   it("returns filters grouped by tag category", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [

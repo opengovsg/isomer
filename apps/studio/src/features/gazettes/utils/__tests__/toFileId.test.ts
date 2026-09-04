@@ -4,7 +4,7 @@ import { toFileId } from "../toFileId"
 
 const FILE_ID_REGEX = /^[_\-a-zA-Z0-9]+\.pdf$/
 
-describe(toFileId, () => {
+describe("toFileId", () => {
   it("passes through an already-valid file ID unchanged", () => {
     // Arrange / Act
     const result = toFileId("report_2026-01.pdf")

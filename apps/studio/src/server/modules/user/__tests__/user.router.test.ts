@@ -1,8 +1,3 @@
-import type {
-  AuditLog,
-  ResourcePermission,
-  User,
-} from "~prisma/generated/selectableTypes"
 import { TRPCError } from "@trpc/server"
 import { omit } from "lodash-es"
 import { resetTables } from "tests/integration/helpers/db"
@@ -112,118 +107,105 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrow(/./)
+      await expect(result).rejects.toThrow()
 
       // Assert DB - audit logs
       const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLogs).toHaveLength(0)
     })
 
-    describe("should create user if user already exists but has non-null deletedAt", () => {
+    it("should create user if user already exists but has non-null deletedAt", async () => {
+      // Arrange
+      await setupAdminPermissions({ userId: session.userId, siteId })
+
+      const user = await setupUser({ email: TEST_EMAIL, isDeleted: true })
+
+      // Act
       const roleToCreate = RoleType.Editor
-      let user: Awaited<ReturnType<typeof setupUser>>
-      let createdUsers: Awaited<ReturnType<typeof caller.create>>
-      let createdUser: (typeof createdUsers)[number]
-      let dbUserResult: User[]
-      let resourcePermissions: ResourcePermission[]
-      let userAuditEntry: AuditLog[]
-      let permissionAuditEntry: AuditLog[]
+      const createdUsers = await caller.create({
+        siteId,
+        users: [{ email: user.email, role: roleToCreate }],
+      })
 
-      beforeEach(async () => {
-        await setupAdminPermissions({ userId: session.userId, siteId })
-        user = await setupUser({ email: TEST_EMAIL, isDeleted: true })
+      // Assert
+      expect(createdUsers).toHaveLength(1)
+      const createdUser = createdUsers[0]
+      expect(createdUser).toStrictEqual(
+        expect.objectContaining({
+          email: TEST_EMAIL,
+          id: expect.any(String),
+        }),
+      )
 
-        createdUsers = await caller.create({
+      // Assert: Verify user in database
+      const dbUserResult = await db
+        .selectFrom("User")
+        .where("email", "=", TEST_EMAIL)
+        .selectAll()
+        .execute()
+      expect(dbUserResult).toHaveLength(2) // original + newly created record
+      expect(dbUserResult).toStrictEqual([
+        expect.objectContaining({
+          email: TEST_EMAIL,
+          id: user.id, // original record
+          deletedAt: expect.any(Date),
+        }),
+        expect.objectContaining({
+          email: TEST_EMAIL,
+          id: expect.any(String),
+          deletedAt: null,
+        }),
+      ])
+
+      // Assert: Verify permissions in database
+      const resourcePermissions = await db
+        .selectFrom("ResourcePermission")
+        .where("userId", "=", createdUser?.id ?? "")
+        .where("siteId", "=", siteId)
+        .selectAll()
+        .execute()
+      expect(resourcePermissions).toHaveLength(1)
+      expect(resourcePermissions).toStrictEqual([
+        expect.objectContaining({
+          userId: expect.any(String),
           siteId,
-          users: [{ email: user.email, role: roleToCreate }],
-        })
-        createdUser = createdUsers[0]!
+          role: roleToCreate,
+        }),
+      ])
 
-        dbUserResult = await db
-          .selectFrom("User")
-          .where("email", "=", TEST_EMAIL)
-          .selectAll()
-          .execute()
-        resourcePermissions = await db
-          .selectFrom("ResourcePermission")
-          .where("userId", "=", createdUser?.id ?? "")
-          .where("siteId", "=", siteId)
-          .selectAll()
-          .execute()
-        userAuditEntry = await db
-          .selectFrom("AuditLog")
-          .where("eventType", "=", "UserCreate")
-          .selectAll()
-          .execute()
-        permissionAuditEntry = await db
-          .selectFrom("AuditLog")
-          .where("eventType", "=", "PermissionCreate")
-          .selectAll()
-          .execute()
-      })
-
-      it("should return the newly created user", () => {
-        expect(createdUsers).toHaveLength(1)
-        expect(createdUser).toStrictEqual(
-          expect.objectContaining({
+      // Assert DB - audit logs (user)
+      const userAuditEntry = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "UserCreate")
+        .selectAll()
+        .execute()
+      expect(userAuditEntry).toHaveLength(1)
+      expect(userAuditEntry[0]).toMatchObject({
+        eventType: "UserCreate",
+        delta: expect.objectContaining({
+          before: null,
+          after: expect.objectContaining({
+            id: createdUser?.id,
             email: TEST_EMAIL,
-            id: expect.any(String),
           }),
-        )
+        }),
       })
 
-      it("should create a new user record alongside the deleted one", () => {
-        expect(dbUserResult).toHaveLength(2)
-        expect(dbUserResult).toStrictEqual([
-          expect.objectContaining({
-            email: TEST_EMAIL,
-            id: user.id,
-            deletedAt: expect.any(Date),
-          }),
-          expect.objectContaining({
-            email: TEST_EMAIL,
-            id: expect.any(String),
-            deletedAt: null,
-          }),
-        ])
-      })
-
-      it("should create resource permission for the new user", () => {
-        expect(resourcePermissions).toHaveLength(1)
-        expect(resourcePermissions).toStrictEqual([
-          expect.objectContaining({
-            userId: expect.any(String),
-            siteId,
-            role: roleToCreate,
-          }),
-        ])
-      })
-
-      it("should create a UserCreate audit log", () => {
-        expect(userAuditEntry).toHaveLength(1)
-        expect(userAuditEntry[0]).toMatchObject({
-          eventType: "UserCreate",
-          delta: expect.objectContaining({
-            before: null,
-            after: expect.objectContaining({
-              id: createdUser?.id,
-              email: TEST_EMAIL,
-            }),
-          }),
-        })
-      })
-
-      it("should create a PermissionCreate audit log", () => {
-        expect(permissionAuditEntry).toHaveLength(1)
-        expect(permissionAuditEntry[0]).toMatchObject({
-          eventType: "PermissionCreate",
-          delta: expect.objectContaining({
-            before: null,
-            after: expect.objectContaining(
-              omit(resourcePermissions[0], ["createdAt", "updatedAt"]),
-            ),
-          }),
-        })
+      // Assert DB - audit logs (permission)
+      const permissionAuditEntry = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "PermissionCreate")
+        .selectAll()
+        .execute()
+      expect(permissionAuditEntry).toHaveLength(1)
+      expect(permissionAuditEntry[0]).toMatchObject({
+        eventType: "PermissionCreate",
+        delta: expect.objectContaining({
+          before: null,
+          after: expect.objectContaining(
+            omit(resourcePermissions[0], ["createdAt", "updatedAt"]),
+          ),
+        }),
       })
     })
 
@@ -389,192 +371,165 @@ describe("user.router", () => {
       })
     })
 
-    describe("should create user permissions successfully if user already exists but permissions do not exist", () => {
-      let existingUser: Awaited<ReturnType<typeof setupUser>>
-      let result: Awaited<ReturnType<typeof caller.create>>
-      let createdUser: (typeof result)[number]
-      let dbUserResult: User[]
-      let resourcePermissions: ResourcePermission[]
-      let userAuditEntries: AuditLog[]
-      let permissionAuditEntry: AuditLog[]
+    it("should create user permissions successfully if user already exists but permissions do not exist", async () => {
+      // Arrange
+      await setupAdminPermissions({ userId: session.userId, siteId })
 
-      beforeEach(async () => {
-        await setupAdminPermissions({ userId: session.userId, siteId })
-        existingUser = await setupUser({ email: TEST_EMAIL, isDeleted: false })
+      const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
 
-        result = await caller.create({
+      // Act
+      const result = await caller.create({
+        siteId,
+        users: [{ email: TEST_EMAIL }],
+      })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      const createdUser = result[0]
+      expect(createdUser).toStrictEqual(
+        expect.objectContaining({
+          email: TEST_EMAIL,
+          id: expect.any(String),
+        }),
+      )
+
+      // Assert: No new user was created
+      const dbUserResult = await db
+        .selectFrom("User")
+        .where("email", "=", TEST_EMAIL)
+        .selectAll()
+        .execute()
+      expect(dbUserResult).toHaveLength(1)
+
+      // Assert: Verify permissions in database
+      const resourcePermissions = await db
+        .selectFrom("ResourcePermission")
+        .where("userId", "=", user.id)
+        .where("siteId", "=", siteId)
+        .selectAll()
+        .execute()
+      expect(resourcePermissions).toHaveLength(1)
+      expect(resourcePermissions).toStrictEqual([
+        expect.objectContaining({
+          userId: createdUser?.id,
           siteId,
-          users: [{ email: TEST_EMAIL }],
-        })
-        createdUser = result[0]!
+          role: RoleType.Editor,
+        }),
+      ])
 
-        dbUserResult = await db
-          .selectFrom("User")
-          .where("email", "=", TEST_EMAIL)
-          .selectAll()
-          .execute()
-        resourcePermissions = await db
-          .selectFrom("ResourcePermission")
-          .where("userId", "=", existingUser.id)
-          .where("siteId", "=", siteId)
-          .selectAll()
-          .execute()
-        userAuditEntries = await db
-          .selectFrom("AuditLog")
-          .where("eventType", "=", "UserCreate")
-          .selectAll()
-          .execute()
-        permissionAuditEntry = await db
-          .selectFrom("AuditLog")
-          .where("eventType", "=", "PermissionCreate")
-          .selectAll()
-          .execute()
-      })
+      // Assert: Verify audit logs (user)
+      // should not create audit log for user create as user already exists
+      const userAuditEntries = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "UserCreate")
+        .selectAll()
+        .execute()
+      expect(userAuditEntries).toHaveLength(0)
 
-      it("should return the existing user", () => {
-        expect(result).toHaveLength(1)
-        expect(createdUser).toStrictEqual(
-          expect.objectContaining({
-            email: TEST_EMAIL,
-            id: expect.any(String),
-          }),
-        )
-      })
-
-      it("should not create a new user record", () => {
-        expect(dbUserResult).toHaveLength(1)
-      })
-
-      it("should create resource permission for the existing user", () => {
-        expect(resourcePermissions).toHaveLength(1)
-        expect(resourcePermissions).toStrictEqual([
-          expect.objectContaining({
-            userId: createdUser?.id,
-            siteId,
-            role: RoleType.Editor,
-          }),
-        ])
-      })
-
-      it("should not create a UserCreate audit log", () => {
-        expect(userAuditEntries).toHaveLength(0)
-      })
-
-      it("should create a PermissionCreate audit log", () => {
-        expect(permissionAuditEntry).toHaveLength(1)
-        expect(permissionAuditEntry[0]).toMatchObject({
-          eventType: "PermissionCreate",
-          delta: expect.objectContaining({
-            before: null,
-            after: expect.objectContaining(
-              omit(resourcePermissions[0], ["createdAt", "updatedAt"]),
-            ),
-          }),
-        })
+      // Assert: Verify audit logs (permission)
+      const permissionAuditEntry = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "PermissionCreate")
+        .selectAll()
+        .execute()
+      expect(permissionAuditEntry).toHaveLength(1)
+      expect(permissionAuditEntry[0]).toMatchObject({
+        eventType: "PermissionCreate",
+        delta: expect.objectContaining({
+          before: null,
+          after: expect.objectContaining(
+            omit(resourcePermissions[0], ["createdAt", "updatedAt"]),
+          ),
+        }),
       })
     })
 
-    describe("should create both user and permissions successfully if user is admin", () => {
-      let createdUsers: Awaited<ReturnType<typeof caller.create>>
-      let createdUser: (typeof createdUsers)[number]
-      let user: User
-      let resourcePermissions: ResourcePermission[]
-      let userAuditEntries: AuditLog[]
-      let permissionAuditEntry: AuditLog[]
+    it("should create both user and permissions successfully if user is admin", async () => {
+      // Arrange
+      await setupAdminPermissions({ userId: session.userId, siteId })
 
-      beforeEach(async () => {
-        await setupAdminPermissions({ userId: session.userId, siteId })
-
-        createdUsers = await caller.create({
-          siteId,
-          users: [{ email: TEST_EMAIL }],
-        })
-        createdUser = createdUsers[0]!
-
-        user = await db
-          .selectFrom("User")
-          .where("email", "=", TEST_EMAIL)
-          .selectAll()
-          .executeTakeFirstOrThrow()
-        resourcePermissions = await db
-          .selectFrom("ResourcePermission")
-          .where("userId", "=", user.id)
-          .where("siteId", "=", siteId)
-          .selectAll()
-          .execute()
-        userAuditEntries = await db
-          .selectFrom("AuditLog")
-          .where("eventType", "=", "UserCreate")
-          .selectAll()
-          .execute()
-        permissionAuditEntry = await db
-          .selectFrom("AuditLog")
-          .where("eventType", "=", "PermissionCreate")
-          .selectAll()
-          .execute()
+      // Act
+      const createdUsers = await caller.create({
+        siteId,
+        users: [{ email: TEST_EMAIL }],
       })
 
-      it("should return the newly created user", () => {
-        expect(createdUsers).toHaveLength(1)
-        expect(createdUser).toStrictEqual(
-          expect.objectContaining({
-            email: TEST_EMAIL,
-            id: expect.any(String),
-          }),
-        )
-      })
-
-      it("should persist the user in the database", () => {
-        expect(user).toMatchObject({
+      // Assert
+      expect(createdUsers).toHaveLength(1)
+      const createdUser = createdUsers[0]
+      expect(createdUser).toStrictEqual(
+        expect.objectContaining({
           email: TEST_EMAIL,
-          id: createdUser?.id,
-          deletedAt: null,
-        })
+          id: expect.any(String),
+        }),
+      )
+
+      // Assert: Verify user in database
+      const user = await db
+        .selectFrom("User")
+        .where("email", "=", TEST_EMAIL)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(user).toMatchObject({
+        email: TEST_EMAIL,
+        id: createdUser?.id,
+        deletedAt: null,
       })
 
-      it("should create resource permission for the user", () => {
-        expect(resourcePermissions).toHaveLength(1)
-        expect(resourcePermissions).toStrictEqual([
-          expect.objectContaining({
-            userId: createdUser?.id,
-            siteId,
+      // Assert: Verify permissions in database
+      const resourcePermissions = await db
+        .selectFrom("ResourcePermission")
+        .where("userId", "=", user.id)
+        .where("siteId", "=", siteId)
+        .selectAll()
+        .execute()
+      expect(resourcePermissions).toHaveLength(1)
+      expect(resourcePermissions).toStrictEqual([
+        expect.objectContaining({
+          userId: createdUser?.id,
+          siteId,
+        }),
+      ])
+
+      // Assert: Verify audit logs (user)
+      const userAuditEntries = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "UserCreate")
+        .selectAll()
+        .execute()
+      expect(userAuditEntries).toHaveLength(1)
+      expect(userAuditEntries[0]).toMatchObject({
+        eventType: "UserCreate",
+        delta: expect.objectContaining({
+          before: null,
+          after: expect.objectContaining({
+            id: createdUser?.id,
+            email: TEST_EMAIL,
           }),
-        ])
+        }),
       })
 
-      it("should create a UserCreate audit log", () => {
-        expect(userAuditEntries).toHaveLength(1)
-        expect(userAuditEntries[0]).toMatchObject({
-          eventType: "UserCreate",
-          delta: expect.objectContaining({
-            before: null,
-            after: expect.objectContaining({
-              id: createdUser?.id,
-              email: TEST_EMAIL,
-            }),
-          }),
-        })
-      })
-
-      it("should create a PermissionCreate audit log", () => {
-        expect(permissionAuditEntry).toHaveLength(1)
-        expect(permissionAuditEntry[0]).toMatchObject({
-          eventType: "PermissionCreate",
-          delta: expect.objectContaining({
-            before: null,
-            after: expect.objectContaining(
-              omit(resourcePermissions[0], ["createdAt", "updatedAt"]),
-            ),
-          }),
-        })
+      // Assert: Verify audit logs (permission)
+      const permissionAuditEntry = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "PermissionCreate")
+        .selectAll()
+        .execute()
+      expect(permissionAuditEntry).toHaveLength(1)
+      expect(permissionAuditEntry[0]).toMatchObject({
+        eventType: "PermissionCreate",
+        delta: expect.objectContaining({
+          before: null,
+          after: expect.objectContaining(
+            omit(resourcePermissions[0], ["createdAt", "updatedAt"]),
+          ),
+        }),
       })
     })
 
     // Skip for now as we aren't working on multiple users creation yet
-    // oxlint-disable-next-line vitest/warn-todo
     it.todo("should create multiple users successfully if user is admin")
 
-    // oxlint-disable-next-line vitest/warn-todo
     it.todo("should not create any users if one of the emails is invalid")
   })
 
@@ -761,179 +716,156 @@ describe("user.router", () => {
       expect(auditLogs).toHaveLength(0)
     })
 
-    describe("should soft delete an existing user's permissions successfully", () => {
-      let userToDelete: Awaited<ReturnType<typeof setupUser>>
-      let result: Awaited<ReturnType<typeof caller.delete>>
-      let deletedUserPermissions: { deletedAt: Date | null }[]
-      let userDeleteAuditLogs: AuditLog[]
-      let permissionsAuditLogs: AuditLog[]
+    it("should soft delete an existing user's permissions successfully", async () => {
+      // Arrange
+      await setupAdminPermissions({ userId: session.userId, siteId })
 
-      beforeEach(async () => {
-        await setupAdminPermissions({ userId: session.userId, siteId })
-        userToDelete = await setupUser({
-          email: TEST_EMAIL,
-          isDeleted: false,
-        })
-        await setupEditorPermissions({ userId: userToDelete.id, siteId })
+      const userToDelete = await setupUser({
+        email: TEST_EMAIL,
+        isDeleted: false,
+      })
+      await setupEditorPermissions({ userId: userToDelete.id, siteId })
 
-        result = await caller.delete({
-          siteId,
-          userId: userToDelete.id,
-        })
-
-        deletedUserPermissions = await db
-          .selectFrom("ResourcePermission")
-          .where("userId", "=", userToDelete.id)
-          .where("siteId", "=", siteId)
-          .select("deletedAt")
-          .execute()
-        userDeleteAuditLogs = await db
-          .selectFrom("AuditLog")
-          .where("eventType", "=", "UserDelete")
-          .selectAll()
-          .execute()
-        permissionsAuditLogs = await db
-          .selectFrom("AuditLog")
-          .where("eventType", "=", "PermissionDelete")
-          .selectAll()
-          .execute()
+      // Act
+      const result = await caller.delete({
+        siteId,
+        userId: userToDelete.id,
       })
 
-      it("should return the deleted user", () => {
-        expect(result).toStrictEqual(
-          expect.objectContaining({
-            id: userToDelete.id,
-            email: userToDelete.email,
+      // Assert
+      expect(result).toStrictEqual(
+        expect.objectContaining({
+          id: userToDelete.id,
+          email: userToDelete.email,
+        }),
+      )
+
+      // Verify in database
+      const deletedUserPermissions = await db
+        .selectFrom("ResourcePermission")
+        .where("userId", "=", userToDelete.id)
+        .where("siteId", "=", siteId)
+        .select("deletedAt")
+        .execute()
+      expect(deletedUserPermissions).toHaveLength(1) // ensure it's not hard deleted
+      expect(deletedUserPermissions[0]?.deletedAt).not.toBeNull()
+
+      // Assert DB - audit logs (user)
+      // Should not have any audit logs as user is not being deleted
+      const auditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "UserDelete")
+        .selectAll()
+        .execute()
+      expect(auditLogs).toHaveLength(0)
+
+      // Assert DB - audit logs (permissions)
+      const permissionsAuditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "PermissionDelete")
+        .selectAll()
+        .execute()
+      expect(permissionsAuditLogs).toHaveLength(1)
+      expect(permissionsAuditLogs[0]).toMatchObject({
+        eventType: "PermissionDelete",
+        delta: expect.objectContaining({
+          before: expect.objectContaining({
+            ...omit(deletedUserPermissions[0], [
+              "createdAt",
+              "updatedAt",
+              "deletedAt",
+            ]),
+            deletedAt: null,
           }),
-        )
-      })
-
-      it("should soft-delete the user's permissions", () => {
-        expect(deletedUserPermissions).toHaveLength(1)
-        expect(deletedUserPermissions[0]?.deletedAt).not.toBeNull()
-      })
-
-      it("should not create a UserDelete audit log", () => {
-        expect(userDeleteAuditLogs).toHaveLength(0)
-      })
-
-      it("should create a PermissionDelete audit log", () => {
-        expect(permissionsAuditLogs).toHaveLength(1)
-        expect(permissionsAuditLogs[0]).toMatchObject({
-          eventType: "PermissionDelete",
-          delta: expect.objectContaining({
-            before: expect.objectContaining({
-              ...omit(deletedUserPermissions[0], [
-                "createdAt",
-                "updatedAt",
-                "deletedAt",
-              ]),
-              deletedAt: null,
-            }),
-            after: expect.objectContaining({
-              ...omit(deletedUserPermissions[0], [
-                "createdAt",
-                "updatedAt",
-                "deletedAt",
-              ]),
-              deletedAt: expect.anything(),
-            }),
+          after: expect.objectContaining({
+            ...omit(deletedUserPermissions[0], [
+              "createdAt",
+              "updatedAt",
+              "deletedAt",
+            ]),
+            deletedAt: expect.anything(),
           }),
-        })
+        }),
       })
     })
 
-    describe("should soft delete a user's permissions and not their account", () => {
-      let userToDelete: Awaited<ReturnType<typeof setupUser>>
-      let result: Awaited<ReturnType<typeof caller.delete>>
-      let dbUsers: { deletedAt: Date | null }[]
-      let userDeleteAuditLogs: AuditLog[]
-      let deletedUserPermission: Awaited<
-        ReturnType<
-          ReturnType<
-            typeof db.selectFrom<"ResourcePermission">
-          >["executeTakeFirst"]
-        >
-      >
-      let permissionsAuditLogs: AuditLog[]
+    // User might have permissions to multiple sites
+    // We should only soft delete the permissions for the site that the user is being deleted from
+    it("should soft delete a user's permissions and not their account", async () => {
+      // Arrange
+      await setupAdminPermissions({ userId: session.userId, siteId })
 
-      beforeEach(async () => {
-        await setupAdminPermissions({ userId: session.userId, siteId })
-        userToDelete = await setupUser({
-          email: TEST_EMAIL,
-          isDeleted: false,
-        })
-        await setupEditorPermissions({ userId: userToDelete.id, siteId })
+      const userToDelete = await setupUser({
+        email: TEST_EMAIL,
+        isDeleted: false,
+      })
+      await setupEditorPermissions({ userId: userToDelete.id, siteId })
 
-        result = await caller.delete({
-          siteId,
-          userId: userToDelete.id,
-        })
-
-        dbUsers = await db
-          .selectFrom("User")
-          .where("id", "=", userToDelete.id)
-          .select("deletedAt")
-          .execute()
-        userDeleteAuditLogs = await db
-          .selectFrom("AuditLog")
-          .where("eventType", "=", "UserDelete")
-          .selectAll()
-          .execute()
-        deletedUserPermission = await db
-          .selectFrom("ResourcePermission")
-          .where("userId", "=", userToDelete.id)
-          .where("siteId", "=", siteId)
-          .select("deletedAt")
-          .executeTakeFirst()
-        permissionsAuditLogs = await db
-          .selectFrom("AuditLog")
-          .where("eventType", "=", "PermissionDelete")
-          .selectAll()
-          .execute()
+      // Act
+      const result = await caller.delete({
+        siteId,
+        userId: userToDelete.id,
       })
 
-      it("should return the user without deleting their account", () => {
-        expect(result).toStrictEqual(
-          expect.objectContaining({
-            id: userToDelete.id,
-            email: userToDelete.email,
+      // Assert
+      expect(result).toStrictEqual(
+        expect.objectContaining({
+          id: userToDelete.id,
+          email: userToDelete.email,
+        }),
+      )
+
+      // Verify in database
+      const dbUsers = await db
+        .selectFrom("User")
+        .where("id", "=", userToDelete.id)
+        .select("deletedAt")
+        .execute()
+      expect(dbUsers).toHaveLength(1)
+      expect(dbUsers[0]?.deletedAt).toBeNull()
+
+      // Assert DB - audit logs (user)
+      // Should not have any audit logs as user is not being deleted
+      const auditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "UserDelete")
+        .selectAll()
+        .execute()
+      expect(auditLogs).toHaveLength(0)
+
+      // Assert DB - audit logs (permissions)
+      const deletedUserPermission = await db
+        .selectFrom("ResourcePermission")
+        .where("userId", "=", userToDelete.id)
+        .where("siteId", "=", siteId)
+        .select("deletedAt")
+        .executeTakeFirst()
+      const permissionsAuditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "PermissionDelete")
+        .selectAll()
+        .execute()
+      expect(permissionsAuditLogs).toHaveLength(1)
+      expect(permissionsAuditLogs[0]).toMatchObject({
+        eventType: "PermissionDelete",
+        delta: expect.objectContaining({
+          before: expect.objectContaining({
+            ...omit(deletedUserPermission, [
+              "createdAt",
+              "updatedAt",
+              "deletedAt",
+            ]),
+            deletedAt: null,
           }),
-        )
-      })
-
-      it("should leave the user account active", () => {
-        expect(dbUsers).toHaveLength(1)
-        expect(dbUsers[0]?.deletedAt).toBeNull()
-      })
-
-      it("should not create a UserDelete audit log", () => {
-        expect(userDeleteAuditLogs).toHaveLength(0)
-      })
-
-      it("should create a PermissionDelete audit log", () => {
-        expect(permissionsAuditLogs).toHaveLength(1)
-        expect(permissionsAuditLogs[0]).toMatchObject({
-          eventType: "PermissionDelete",
-          delta: expect.objectContaining({
-            before: expect.objectContaining({
-              ...omit(deletedUserPermission, [
-                "createdAt",
-                "updatedAt",
-                "deletedAt",
-              ]),
-              deletedAt: null,
-            }),
-            after: expect.objectContaining({
-              ...omit(deletedUserPermission, [
-                "createdAt",
-                "updatedAt",
-                "deletedAt",
-              ]),
-              deletedAt: expect.anything(),
-            }),
+          after: expect.objectContaining({
+            ...omit(deletedUserPermission, [
+              "createdAt",
+              "updatedAt",
+              "deletedAt",
+            ]),
+            deletedAt: expect.anything(),
           }),
-        })
+        }),
       })
     })
   })
@@ -1737,358 +1669,295 @@ describe("user.router", () => {
       )
     })
 
-    describe("should update a non-gov.sg email with non-admin role successfully", () => {
+    it("should update a non-gov.sg email with non-admin role successfully", async () => {
+      // Arrange
+      await setupAdminPermissions({ userId: session.userId, siteId })
+
+      const userToUpdate = await setupUser({
+        email: "test@coolvendor.com",
+        isDeleted: false,
+      })
+      const currentPermission = await setupEditorPermissions({
+        userId: userToUpdate.id,
+        siteId,
+      })
       const newRole = RoleType.Publisher
-      let userToUpdate: Awaited<ReturnType<typeof setupUser>>
-      let currentPermission: Awaited<ReturnType<typeof setupEditorPermissions>>
-      let result: Awaited<ReturnType<typeof caller.update>>
-      let deletedPermissionAuditLogs: AuditLog[]
-      let newPermission: Awaited<
-        ReturnType<
-          ReturnType<
-            typeof db.selectFrom<"ResourcePermission">
-          >["executeTakeFirst"]
-        >
-      >
-      let newPermissionAuditLogs: AuditLog[]
 
-      beforeEach(async () => {
-        await setupAdminPermissions({ userId: session.userId, siteId })
-        userToUpdate = await setupUser({
-          email: "test@coolvendor.com",
-          isDeleted: false,
-        })
-        currentPermission = await setupEditorPermissions({
-          userId: userToUpdate.id,
-          siteId,
-        })
+      // Act
+      const result = await caller.update({
+        siteId,
+        userId: userToUpdate.id,
+        role: newRole,
+      })
 
-        result = await caller.update({
+      // Assert
+      expect(result).toStrictEqual(
+        expect.objectContaining({
           siteId,
           userId: userToUpdate.id,
           role: newRole,
-        })
+        }),
+      )
 
-        deletedPermissionAuditLogs = await db
-          .selectFrom("AuditLog")
-          .where("eventType", "=", "PermissionDelete")
-          .selectAll()
-          .execute()
-        newPermission = await db
-          .selectFrom("ResourcePermission")
-          .where("userId", "=", userToUpdate.id)
-          .where("siteId", "=", siteId)
-          .where("role", "=", newRole)
-          .selectAll()
-          .executeTakeFirst()
-        newPermissionAuditLogs = await db
-          .selectFrom("AuditLog")
-          .where("eventType", "=", "PermissionCreate")
-          .selectAll()
-          .execute()
-      })
+      // Verify in database
+      const updatedUser = await db
+        .selectFrom("ResourcePermission")
+        .where("userId", "=", userToUpdate.id)
+        .where("siteId", "=", siteId)
+        .where("role", "=", newRole)
+        .select("role")
+        .executeTakeFirst()
+      expect(updatedUser).not.toBeNull()
 
-      it("should return the updated permission", () => {
-        expect(result).toStrictEqual(
-          expect.objectContaining({
-            siteId,
-            userId: userToUpdate.id,
-            role: newRole,
+      // Assert DB - audit logs (soft-deleted permission)
+      const deletedPermissionAuditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "PermissionDelete")
+        .selectAll()
+        .execute()
+      expect(deletedPermissionAuditLogs).toHaveLength(1)
+      expect(deletedPermissionAuditLogs[0]).toMatchObject({
+        eventType: "PermissionDelete",
+        delta: expect.objectContaining({
+          before: expect.objectContaining({
+            ...omit(currentPermission, ["createdAt", "updatedAt", "deletedAt"]),
+            deletedAt: null,
           }),
-        )
-      })
-
-      it("should persist the new role in the database", async () => {
-        const updatedUser = await db
-          .selectFrom("ResourcePermission")
-          .where("userId", "=", userToUpdate.id)
-          .where("siteId", "=", siteId)
-          .where("role", "=", newRole)
-          .select("role")
-          .executeTakeFirst()
-        expect(updatedUser).not.toBeNull()
-      })
-
-      it("should create a PermissionDelete audit log for the old permission", () => {
-        expect(deletedPermissionAuditLogs).toHaveLength(1)
-        expect(deletedPermissionAuditLogs[0]).toMatchObject({
-          eventType: "PermissionDelete",
-          delta: expect.objectContaining({
-            before: expect.objectContaining({
-              ...omit(currentPermission, [
-                "createdAt",
-                "updatedAt",
-                "deletedAt",
-              ]),
-              deletedAt: null,
-            }),
-            after: expect.objectContaining({
-              ...omit(currentPermission, [
-                "createdAt",
-                "updatedAt",
-                "deletedAt",
-              ]),
-              deletedAt: expect.anything(),
-            }),
+          after: expect.objectContaining({
+            ...omit(currentPermission, ["createdAt", "updatedAt", "deletedAt"]),
+            deletedAt: expect.anything(),
           }),
-        })
+        }),
       })
 
-      it("should create a PermissionCreate audit log for the new permission", () => {
-        expect(newPermissionAuditLogs).toHaveLength(1)
-        expect(newPermissionAuditLogs[0]).toMatchObject({
-          eventType: "PermissionCreate",
-          delta: expect.objectContaining({
-            before: null,
-            after: expect.objectContaining({
-              ...omit(newPermission, ["createdAt", "updatedAt"]),
-            }),
+      // Assert DB - audit logs (new permission)
+      const newPermission = await db
+        .selectFrom("ResourcePermission")
+        .where("userId", "=", userToUpdate.id)
+        .where("siteId", "=", siteId)
+        .where("role", "=", newRole)
+        .selectAll()
+        .executeTakeFirst()
+      const newPermissionAuditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "PermissionCreate")
+        .selectAll()
+        .execute()
+      expect(newPermissionAuditLogs).toHaveLength(1)
+      expect(newPermissionAuditLogs[0]).toMatchObject({
+        eventType: "PermissionCreate",
+        delta: expect.objectContaining({
+          before: null,
+          after: expect.objectContaining({
+            ...omit(newPermission, ["createdAt", "updatedAt"]),
           }),
-        })
+        }),
       })
     })
 
-    describe("should update a user's role successfully", () => {
+    it("should update a user's role successfully", async () => {
+      // Arrange
+      await setupAdminPermissions({ userId: session.userId, siteId })
+
+      const userToUpdate = await setupUser({
+        email: TEST_EMAIL,
+        isDeleted: false,
+      })
+      const currentPermission = await setupEditorPermissions({
+        userId: userToUpdate.id,
+        siteId,
+      })
       const newRole = RoleType.Admin
-      let userToUpdate: Awaited<ReturnType<typeof setupUser>>
-      let currentPermission: Awaited<ReturnType<typeof setupEditorPermissions>>
-      let result: Awaited<ReturnType<typeof caller.update>>
-      let deletedPermissionAuditLogs: AuditLog[]
-      let newPermission: Awaited<
-        ReturnType<
-          ReturnType<
-            typeof db.selectFrom<"ResourcePermission">
-          >["executeTakeFirst"]
-        >
-      >
-      let newPermissionAuditLogs: AuditLog[]
 
-      beforeEach(async () => {
-        await setupAdminPermissions({ userId: session.userId, siteId })
-        userToUpdate = await setupUser({
-          email: TEST_EMAIL,
-          isDeleted: false,
-        })
-        currentPermission = await setupEditorPermissions({
-          userId: userToUpdate.id,
-          siteId,
-        })
+      // Act
+      const result = await caller.update({
+        siteId,
+        userId: userToUpdate.id,
+        role: newRole,
+      })
 
-        result = await caller.update({
+      // Assert
+      expect(result).toStrictEqual(
+        expect.objectContaining({
           siteId,
           userId: userToUpdate.id,
           role: newRole,
-        })
+        }),
+      )
 
-        deletedPermissionAuditLogs = await db
-          .selectFrom("AuditLog")
-          .where("eventType", "=", "PermissionDelete")
-          .selectAll()
-          .execute()
-        newPermission = await db
-          .selectFrom("ResourcePermission")
-          .where("userId", "=", userToUpdate.id)
-          .where("siteId", "=", siteId)
-          .where("role", "=", newRole)
-          .selectAll()
-          .executeTakeFirst()
-        newPermissionAuditLogs = await db
-          .selectFrom("AuditLog")
-          .where("eventType", "=", "PermissionCreate")
-          .selectAll()
-          .execute()
-      })
+      // Verify in database
+      const updatedUser = await db
+        .selectFrom("ResourcePermission")
+        .where("userId", "=", userToUpdate.id)
+        .where("siteId", "=", siteId)
+        .where("resourceId", "is", null)
+        .where("deletedAt", "is", null)
+        .select("role")
+        .executeTakeFirst()
+      expect(updatedUser?.role).toBe(newRole)
 
-      it("should return the updated permission", () => {
-        expect(result).toStrictEqual(
-          expect.objectContaining({
-            siteId,
-            userId: userToUpdate.id,
-            role: newRole,
+      // Assert DB - audit logs (soft-deleted permission)
+      const deletedPermissionAuditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "PermissionDelete")
+        .selectAll()
+        .execute()
+      expect(deletedPermissionAuditLogs).toHaveLength(1)
+      expect(deletedPermissionAuditLogs[0]).toMatchObject({
+        eventType: "PermissionDelete",
+        delta: expect.objectContaining({
+          before: expect.objectContaining({
+            ...omit(currentPermission, ["createdAt", "updatedAt", "deletedAt"]),
+            deletedAt: null,
           }),
-        )
-      })
-
-      it("should persist the new role in the database", async () => {
-        const updatedUser = await db
-          .selectFrom("ResourcePermission")
-          .where("userId", "=", userToUpdate.id)
-          .where("siteId", "=", siteId)
-          .where("resourceId", "is", null)
-          .where("deletedAt", "is", null)
-          .select("role")
-          .executeTakeFirst()
-        expect(updatedUser?.role).toBe(newRole)
-      })
-
-      it("should create a PermissionDelete audit log for the old permission", () => {
-        expect(deletedPermissionAuditLogs).toHaveLength(1)
-        expect(deletedPermissionAuditLogs[0]).toMatchObject({
-          eventType: "PermissionDelete",
-          delta: expect.objectContaining({
-            before: expect.objectContaining({
-              ...omit(currentPermission, [
-                "createdAt",
-                "updatedAt",
-                "deletedAt",
-              ]),
-              deletedAt: null,
-            }),
-            after: expect.objectContaining({
-              ...omit(currentPermission, [
-                "createdAt",
-                "updatedAt",
-                "deletedAt",
-              ]),
-              deletedAt: expect.anything(),
-            }),
+          after: expect.objectContaining({
+            ...omit(currentPermission, ["createdAt", "updatedAt", "deletedAt"]),
+            deletedAt: expect.anything(), // should be set to a new date
           }),
-        })
+        }),
       })
 
-      it("should create a PermissionCreate audit log for the new permission", () => {
-        expect(newPermissionAuditLogs).toHaveLength(1)
-        expect(newPermissionAuditLogs[0]).toMatchObject({
-          eventType: "PermissionCreate",
-          delta: expect.objectContaining({
-            before: null,
-            after: expect.objectContaining({
-              ...omit(newPermission, ["createdAt", "updatedAt"]),
-            }),
+      // Assert DB - audit logs (new permission)
+      const newPermission = await db
+        .selectFrom("ResourcePermission")
+        .where("userId", "=", userToUpdate.id)
+        .where("siteId", "=", siteId)
+        .where("role", "=", newRole)
+        .selectAll()
+        .executeTakeFirst()
+      const newPermissionAuditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "PermissionCreate")
+        .selectAll()
+        .execute()
+      expect(newPermissionAuditLogs).toHaveLength(1)
+      expect(newPermissionAuditLogs[0]).toMatchObject({
+        eventType: "PermissionCreate",
+        delta: expect.objectContaining({
+          before: null,
+          after: expect.objectContaining({
+            ...omit(newPermission, ["createdAt", "updatedAt"]),
           }),
-        })
+        }),
       })
     })
 
-    describe("when updating a user's role, create a new permission for the user and update the old permission's deletedAt", () => {
+    it("when updating a user's role, create a new permission for the user and update the old permission's deletedAt", async () => {
+      // Arrange
+      await setupAdminPermissions({ userId: session.userId, siteId })
+
+      const userToUpdate = await setupUser({
+        email: TEST_EMAIL,
+        isDeleted: false,
+      })
+      // If deletedAt is set, it should not be overwritten
+      const originalDeletedPermission = await setupEditorPermissions({
+        userId: userToUpdate.id,
+        siteId,
+      })
+      const originalDeletedPermissionDeletedAt = new Date()
+      await db
+        .updateTable("ResourcePermission")
+        .where("id", "=", originalDeletedPermission.id)
+        .set({ deletedAt: originalDeletedPermissionDeletedAt })
+        .execute()
+      // original active permission
+      const originalPermission = await setupEditorPermissions({
+        userId: userToUpdate.id,
+        siteId,
+      })
       const newRole = RoleType.Publisher
-      let userToUpdate: Awaited<ReturnType<typeof setupUser>>
-      let originalDeletedPermission: Awaited<
-        ReturnType<typeof setupEditorPermissions>
-      >
-      let originalDeletedPermissionDeletedAt: Date
-      let originalPermission: Awaited<ReturnType<typeof setupEditorPermissions>>
-      let result: Awaited<ReturnType<typeof caller.update>>
-      let userPermissions: ResourcePermission[]
-      let deletedPermissionAuditLogs: AuditLog[]
-      let createdPermissionAuditLogs: AuditLog[]
 
-      beforeEach(async () => {
-        await setupAdminPermissions({ userId: session.userId, siteId })
-        userToUpdate = await setupUser({
-          email: TEST_EMAIL,
-          isDeleted: false,
-        })
-        originalDeletedPermission = await setupEditorPermissions({
-          userId: userToUpdate.id,
-          siteId,
-        })
-        originalDeletedPermissionDeletedAt = new Date()
-        await db
-          .updateTable("ResourcePermission")
-          .where("id", "=", originalDeletedPermission.id)
-          .set({ deletedAt: originalDeletedPermissionDeletedAt })
-          .execute()
-        originalPermission = await setupEditorPermissions({
-          userId: userToUpdate.id,
-          siteId,
-        })
-
-        result = await caller.update({
-          siteId,
-          userId: userToUpdate.id,
-          role: newRole,
-        })
-
-        userPermissions = await db
-          .selectFrom("ResourcePermission")
-          .where("userId", "=", userToUpdate.id)
-          .where("siteId", "=", siteId)
-          .selectAll()
-          .execute()
-        deletedPermissionAuditLogs = await db
-          .selectFrom("AuditLog")
-          .where("eventType", "=", "PermissionDelete")
-          .selectAll()
-          .execute()
-        createdPermissionAuditLogs = await db
-          .selectFrom("AuditLog")
-          .where("eventType", "=", "PermissionCreate")
-          .selectAll()
-          .execute()
+      // Act
+      const result = await caller.update({
+        siteId,
+        userId: userToUpdate.id,
+        role: newRole,
       })
 
-      it("should return a new permission with the updated role", () => {
-        expect(result).toStrictEqual({
-          id: expect.not.stringContaining(originalPermission.id),
-          siteId,
-          userId: userToUpdate.id,
-          role: newRole,
-        })
+      // Assert
+      expect(result).toStrictEqual({
+        id: expect.not.stringContaining(originalPermission.id),
+        siteId,
+        userId: userToUpdate.id,
+        role: newRole,
       })
 
-      it("should soft-delete the active permission and preserve prior deleted permissions", () => {
-        expect(userPermissions).toHaveLength(3)
-        expect(userPermissions).toStrictEqual(
-          expect.arrayContaining([
-            expect.objectContaining({
-              id: originalDeletedPermission.id,
-              role: RoleType.Editor,
-              deletedAt: originalDeletedPermissionDeletedAt,
-            }),
-            expect.objectContaining({
-              id: originalPermission.id,
-              role: RoleType.Editor,
-              deletedAt: expect.any(Date),
-            }),
-            expect.objectContaining({
-              id: result.id,
-              role: RoleType.Publisher,
-              deletedAt: null,
-            }),
-          ]),
-        )
-      })
-
-      it("should create a PermissionDelete audit log for the active permission", () => {
-        expect(deletedPermissionAuditLogs).toHaveLength(1)
-        expect(deletedPermissionAuditLogs[0]).toMatchObject({
-          eventType: "PermissionDelete",
-          delta: expect.objectContaining({
-            before: expect.objectContaining({
-              ...omit(originalPermission, [
-                "createdAt",
-                "updatedAt",
-                "deletedAt",
-              ]),
-              deletedAt: null,
-            }),
-            after: expect.objectContaining({
-              ...omit(originalPermission, [
-                "createdAt",
-                "updatedAt",
-                "deletedAt",
-              ]),
-              deletedAt: expect.anything(),
-            }),
+      // Assert: Verify in DB
+      const userPermissions = await db
+        .selectFrom("ResourcePermission")
+        .where("userId", "=", userToUpdate.id)
+        .where("siteId", "=", siteId)
+        .selectAll()
+        .execute()
+      expect(userPermissions).toHaveLength(3) // 1 old (deleted) + 1 old (active) + 1 new
+      expect(userPermissions).toStrictEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: originalDeletedPermission.id,
+            role: RoleType.Editor,
+            deletedAt: originalDeletedPermissionDeletedAt,
           }),
-        })
+          expect.objectContaining({
+            id: originalPermission.id,
+            role: RoleType.Editor,
+            deletedAt: expect.any(Date),
+          }),
+          expect.objectContaining({
+            id: result.id,
+            role: RoleType.Publisher,
+            deletedAt: null,
+          }),
+        ]),
+      )
+
+      // Assert DB - audit logs (soft-deleted permission)
+      const deletedPermissionAuditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "PermissionDelete")
+        .selectAll()
+        .execute()
+      expect(deletedPermissionAuditLogs).toHaveLength(1)
+      expect(deletedPermissionAuditLogs[0]).toMatchObject({
+        eventType: "PermissionDelete",
+        delta: expect.objectContaining({
+          before: expect.objectContaining({
+            ...omit(originalPermission, [
+              "createdAt",
+              "updatedAt",
+              "deletedAt",
+            ]),
+            deletedAt: null,
+          }),
+          after: expect.objectContaining({
+            ...omit(originalPermission, [
+              "createdAt",
+              "updatedAt",
+              "deletedAt",
+            ]),
+            deletedAt: expect.anything(), // should be set to a new date
+          }),
+        }),
       })
 
-      it("should create a PermissionCreate audit log for the new permission", () => {
-        expect(createdPermissionAuditLogs).toHaveLength(1)
-        expect(createdPermissionAuditLogs[0]).toMatchObject({
-          eventType: "PermissionCreate",
-          delta: expect.objectContaining({
-            before: null,
-            after: expect.objectContaining({
-              ...omit(
-                userPermissions.find((p) => p.deletedAt === null),
-                ["createdAt", "updatedAt"],
-              ),
-            }),
+      // Assert DB - audit logs (new permission)
+      const createdPermissionAuditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "PermissionCreate")
+        .selectAll()
+        .execute()
+      expect(createdPermissionAuditLogs).toHaveLength(1)
+      expect(createdPermissionAuditLogs[0]).toMatchObject({
+        eventType: "PermissionCreate",
+        delta: expect.objectContaining({
+          before: null,
+          after: expect.objectContaining({
+            ...omit(
+              userPermissions.find((p) => p.deletedAt === null),
+              ["createdAt", "updatedAt"],
+            ),
           }),
-        })
+        }),
       })
     })
   })
@@ -2115,9 +1984,9 @@ describe("user.router", () => {
     })
 
     describe("name validation", () => {
-      it.each(["", " ", "  "])(
-        "should throw error if name is empty: %s",
-        async (emptyName) => {
+      const emptyNames = ["", " ", "  "]
+      for (const emptyName of emptyNames) {
+        it(`should throw error if name is empty: ${emptyName}`, async () => {
           // Act & Assert
           await expect(
             caller.updateDetails({ name: emptyName, phone: "81234567" }),
@@ -2129,8 +1998,8 @@ describe("user.router", () => {
             .selectAll()
             .execute()
           expect(auditLogs).toHaveLength(0)
-        },
-      )
+        })
+      }
 
       it("should trim whitespace from name", async () => {
         // Arrange
@@ -2173,9 +2042,9 @@ describe("user.router", () => {
     describe("phone validation", () => {
       const testUserName = "Test User"
 
-      it.each(["", " ", "  "])(
-        "should throw error if phone is empty: %s",
-        async (emptyPhone) => {
+      const emptyPhones = ["", " ", "  "]
+      for (const emptyPhone of emptyPhones) {
+        it(`should throw error if phone is empty: ${emptyPhone}`, async () => {
           // Act & Assert
           await expect(
             caller.updateDetails({ name: testUserName, phone: emptyPhone }),
@@ -2188,12 +2057,12 @@ describe("user.router", () => {
             .selectAll()
             .execute()
           expect(auditLogs).toHaveLength(0)
-        },
-      )
+        })
+      }
 
-      it.each(["1234567", "123456789", "812345"])(
-        "should throw error if phone number has incorrect length: %s",
-        async (phone) => {
+      const incorrectLengthPhones = ["1234567", "123456789", "812345"]
+      for (const phone of incorrectLengthPhones) {
+        it(`should throw error if phone number has incorrect length: ${phone}`, async () => {
           // Act & Assert
           await expect(
             caller.updateDetails({ name: testUserName, phone }),
@@ -2206,12 +2075,12 @@ describe("user.router", () => {
             .selectAll()
             .execute()
           expect(auditLogs).toHaveLength(0)
-        },
-      )
+        })
+      }
 
-      it.each(["12345678", "23456789", "45678901", "78901234"])(
-        "should throw error if phone number starts with invalid digit: %s",
-        async (phone) => {
+      const invalidPhones = ["12345678", "23456789", "45678901", "78901234"]
+      for (const phone of invalidPhones) {
+        it(`should throw error if phone number starts with invalid digit: ${phone}`, async () => {
           // Act & Assert
           await expect(
             caller.updateDetails({ name: testUserName, phone }),
@@ -2224,21 +2093,23 @@ describe("user.router", () => {
             .selectAll()
             .execute()
           expect(auditLogs).toHaveLength(0)
-        },
-      )
+        })
+      }
 
-      it.each([" 81234567 ", "8123 4567", " 8123 4567 ", "  81234567  "])(
-        "should handle phone numbers with whitespace: %s",
-        async (phone) => {
+      const validPhonesWithSpaces = [
+        " 81234567 ",
+        "8123 4567",
+        " 8123 4567 ",
+        "  81234567  ",
+      ]
+      for (const phone of validPhonesWithSpaces) {
+        it(`should handle phone numbers with whitespace: ${phone}`, async () => {
           // Act & Assert
           const result = await caller.updateDetails({
             name: testUserName,
             phone,
           })
-          expect(result).toStrictEqual({
-            name: testUserName,
-            phone: "81234567",
-          })
+          expect(result).toStrictEqual({ name: testUserName, phone: "81234567" })
 
           const updatedUser = await db
             .selectFrom("User")
@@ -2266,8 +2137,8 @@ describe("user.router", () => {
               ),
             }),
           })
-        },
-      )
+        })
+      }
 
       it("should remove +65 country code if present", async () => {
         // Arrange
@@ -2308,9 +2179,9 @@ describe("user.router", () => {
         })
       })
 
-      it.each(["61234567", "81234567", "91234567"])(
-        "should accept valid Singapore phone numbers: %s",
-        async (phone) => {
+      const validSingaporePhones = ["61234567", "81234567", "91234567"]
+      for (const phone of validSingaporePhones) {
+        it(`should accept valid Singapore phone numbers: ${phone}`, async () => {
           // Act & Assert
           const result = await caller.updateDetails({
             name: testUserName,
@@ -2344,8 +2215,8 @@ describe("user.router", () => {
               ),
             }),
           })
-        },
-      )
+        })
+      }
     })
 
     it("should update user details successfully", async () => {

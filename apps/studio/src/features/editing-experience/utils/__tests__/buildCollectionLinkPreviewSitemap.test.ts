@@ -33,7 +33,7 @@ const collectNodePermalinks = (node: IsomerSitemap): string[] => [
   ...(node.children?.flatMap(collectNodePermalinks) ?? []),
 ]
 
-describe(buildCollectionLinkPreviewSitemap, () => {
+describe("buildCollectionLinkPreviewSitemap", () => {
   describe("collection at the top level", () => {
     it("nests the link directly under the collection", () => {
       // Arrange / Act

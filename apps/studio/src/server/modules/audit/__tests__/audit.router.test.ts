@@ -1,3 +1,4 @@
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { TRPCError } from "@trpc/server"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
@@ -13,7 +14,6 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
-import { beforeAll, beforeEach, describe, expect, it } from "vitest"
 import { getCurrentSingaporeMonth } from "~/schemas/audit"
 import { createCallerFactory } from "~/server/trpc"
 
@@ -109,66 +109,53 @@ describe("audit.router", async () => {
       )
     })
 
-    describe("should create a single Pending request for a concrete report type", () => {
-      let result: Awaited<ReturnType<typeof caller.createExportRequest>>
-      let auditLogDateRange: ReturnType<typeof getMonthDateRange>
-      let rows: Awaited<ReturnType<typeof getRequestRows>>
-      let events: Awaited<ReturnType<typeof getExportCreateEvents>>
-      let site: Awaited<ReturnType<typeof setupSite>>["site"]
-
-      beforeEach(async () => {
-        // Arrange
-        const setup = await setupSite()
-        site = setup.site
-        await setupAdminPermissions({
-          userId: session.userId,
-          siteId: site.id,
-        })
-
-        // Act
-        result = await caller.createExportRequest({
-          scope: "site",
-          siteId: site.id,
-          month: VALID_MONTH,
-          reportType: "Access",
-        })
-
-        auditLogDateRange = getMonthDateRange(VALID_MONTH, new Date())
-        rows = await getRequestRows({
-          siteId: site.id,
-          userId: session.userId!,
-        })
-        events = await getExportCreateEvents({ siteId: site.id })
+    it("should create a single Pending request for a concrete report type", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
       })
 
-      it("inserts and returns the pending export request", () => {
-        // Assert: one inserted row, stored as the daterange derived from the
-        // picked month, and returned as an array (the fan-out contract).
-        expect(result).toHaveLength(1)
-        expect(result[0]).toMatchObject({
-          siteId: site.id,
-          userId: session.userId,
-          auditLogDateRange,
-          reportType: "Access",
-          status: "Pending",
-          attempts: 0,
-        })
-        expect(result[0]?.id).toBeDefined()
-        expect(rows).toHaveLength(1)
+      // Act
+      const result = await caller.createExportRequest({
+        scope: "site",
+        siteId: site.id,
+        month: VALID_MONTH,
+        reportType: "Access",
       })
 
-      it("audit-logs the export request", () => {
-        // Assert: The ask itself is audit-logged: one AuditLogExportCreate event whose
-        // delta records what was asked for (the requested type, verbatim).
-        expect(events).toHaveLength(1)
-        expect(events[0]).toMatchObject({
-          userId: session.userId,
-          siteId: site.id,
-          delta: {
-            before: null,
-            after: { auditLogDateRange, reportType: "Access" },
-          },
-        })
+      // Assert: one inserted row, stored as the daterange derived from the
+      // picked month, and returned as an array (the fan-out contract).
+      const auditLogDateRange = getMonthDateRange(VALID_MONTH, new Date())
+      expect(result).toHaveLength(1)
+      expect(result[0]).toMatchObject({
+        siteId: site.id,
+        userId: session.userId,
+        auditLogDateRange,
+        reportType: "Access",
+        status: "Pending",
+        attempts: 0,
+      })
+      expect(result[0]?.id).toBeDefined()
+
+      const rows = await getRequestRows({
+        siteId: site.id,
+        userId: session.userId!,
+      })
+      expect(rows).toHaveLength(1)
+
+      // The ask itself is audit-logged: one AuditLogExportCreate event whose
+      // delta records what was asked for (the requested type, verbatim).
+      const events = await getExportCreateEvents({ siteId: site.id })
+      expect(events).toHaveLength(1)
+      expect(events[0]).toMatchObject({
+        userId: session.userId,
+        siteId: site.id,
+        delta: {
+          before: null,
+          after: { auditLogDateRange, reportType: "Access" },
+        },
       })
     })
 
@@ -389,9 +376,9 @@ describe("audit.router", async () => {
 
         // Assert: one row per admin site, none for the site without permission.
         expect(result).toHaveLength(2)
-        expect(
-          result.map((row) => row.siteId).sort((a, b) => a - b),
-        ).toStrictEqual([adminSiteA.id, adminSiteB.id].sort((a, b) => a - b))
+        expect(result.map((row) => row.siteId).sort((a, b) => a - b)).toStrictEqual(
+          [adminSiteA.id, adminSiteB.id].sort((a, b) => a - b),
+        )
 
         const otherSiteRows = await getRequestRows({
           siteId: otherSite.id,
@@ -423,9 +410,9 @@ describe("audit.router", async () => {
 
         // Assert
         expect(result).toHaveLength(2)
-        expect(
-          result.map((row) => row.siteId).sort((a, b) => a - b),
-        ).toStrictEqual([siteA.id, siteB.id].sort((a, b) => a - b))
+        expect(result.map((row) => row.siteId).sort((a, b) => a - b)).toStrictEqual(
+          [siteA.id, siteB.id].sort((a, b) => a - b),
+        )
       })
 
       it("throws FORBIDDEN when the caller is not an Admin on any site", async () => {

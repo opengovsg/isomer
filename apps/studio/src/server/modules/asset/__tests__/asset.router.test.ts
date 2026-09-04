@@ -26,20 +26,20 @@ import { assetRouter } from "../asset.router"
 vi.mock("~/lib/s3", () => ({
   storage: {
     send: vi
-      .fn<(...args: unknown[]) => unknown>()
+      .fn()
       .mockResolvedValue({ TagSet: [] }),
   },
   generateSignedPutUrl: vi
-    .fn<(...args: unknown[]) => unknown>()
+    .fn()
     .mockResolvedValue("https://example.com/signed-url"),
   markFileAsDeleted: vi
-    .fn<(...args: unknown[]) => unknown>()
+    .fn()
     .mockResolvedValue(undefined),
   deleteFile: vi
-    .fn<(...args: unknown[]) => unknown>()
+    .fn()
     .mockResolvedValue(undefined),
   putObjectDirect: vi
-    .fn<(...args: unknown[]) => unknown>()
+    .fn()
     .mockResolvedValue(undefined),
 }))
 
@@ -157,7 +157,7 @@ describe("asset.router", async () => {
       })
 
       // Assert
-      await expect(result).resolves.not.toThrow(/./)
+      await expect(result).resolves.not.toThrow()
     })
 
     it("should call generateSignedPutUrl with correct parameters", async () => {
@@ -333,7 +333,7 @@ describe("asset.router", async () => {
       })
 
       // Assert
-      await expect(result).resolves.not.toThrow(/./)
+      await expect(result).resolves.not.toThrow()
     })
 
     it("should throw 403 if user does only has Editor permission to read root resource", async () => {
@@ -385,7 +385,7 @@ describe("asset.router", async () => {
       })
 
       // Assert
-      await expect(result).resolves.not.toThrow(/./)
+      await expect(result).resolves.not.toThrow()
     })
 
     it("should throw 403 if user does only has Publisher permission to read root resource", async () => {
@@ -434,7 +434,7 @@ describe("asset.router", async () => {
       })
 
       // Assert
-      await expect(result).resolves.not.toThrow(/./)
+      await expect(result).resolves.not.toThrow()
     })
 
     it("should call deleteFile with correct parameters for each file key", async () => {

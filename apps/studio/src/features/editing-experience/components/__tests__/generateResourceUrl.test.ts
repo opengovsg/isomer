@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { generateResourceUrl } from "../utils"
 
-describe(generateResourceUrl, () => {
+describe("generateResourceUrl", () => {
   it("produces a normal slug for a Latin title", () => {
     // Arrange
     const title = "Hello World"

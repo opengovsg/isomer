@@ -17,7 +17,7 @@ const basePage = {
   title: "Home",
 } as IsomerPageSchemaType["page"]
 
-describe(getMetadata, () => {
+describe("getMetadata", () => {
   describe("Homepage", () => {
     it("uses the hero subtitle as the meta description when present", () => {
       // Arrange
@@ -128,7 +128,7 @@ const getSerializedJsonLd = (
     typeof getSiteJsonLd
   >
 
-describe(getSiteJsonLd, () => {
+describe("getSiteJsonLd", () => {
   it("generates linked website and organisation entities from configured values", () => {
     const jsonLd = getSerializedJsonLd({
       site: {
@@ -370,7 +370,7 @@ const getSerializedPageJsonLd = (
     typeof getPageJsonLd
   >
 
-describe(getPageJsonLd, () => {
+describe("getPageJsonLd", () => {
   const contentPage = {
     layout: "content",
     meta: {},

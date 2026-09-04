@@ -7,7 +7,7 @@ const collectionSearchIncludes = (text: string, search: string): boolean => {
   return normalizeCollectionSearchText(text).includes(normalizedSearch)
 }
 
-describe(normalizeCollectionSearchText, () => {
+describe("normalizeCollectionSearchText", () => {
   it("lowercases and trims text", () => {
     // Arrange
     const text = "  Guide To Isomer  "

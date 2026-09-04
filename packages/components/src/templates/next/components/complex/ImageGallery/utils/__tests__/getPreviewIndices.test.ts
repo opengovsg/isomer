@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { getPreviewIndices } from "../getPreviewIndices"
 
-describe(getPreviewIndices, () => {
+describe("getPreviewIndices", () => {
   describe("when maxPreviewImages is 3", () => {
     const maxPreviewImages = 3
 

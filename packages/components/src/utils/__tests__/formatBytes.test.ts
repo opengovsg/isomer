@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { formatBytes } from "../formatBytes"
 
-describe(formatBytes, () => {
+describe("formatBytes", () => {
   describe("edge cases", () => {
     it("should return undefined for zero bytes", () => {
       expect(formatBytes(0)).toBeUndefined()
@@ -77,21 +77,19 @@ describe(formatBytes, () => {
 
   describe("boundary conditions", () => {
     it("should handle values at unit boundaries", () => {
-      expect({
-        below1KB: formatBytes(1023),
-        exactly1KB: formatBytes(1024),
-        above1KB: formatBytes(1025),
-        below1MB: formatBytes(1048575),
-        exactly1MB: formatBytes(1048576),
-        above1MB: formatBytes(1048577),
-      }).toStrictEqual({
-        below1KB: "1023.00 B",
-        exactly1KB: "1.00 KB",
-        above1KB: "1.00 KB",
-        below1MB: "1024.00 KB",
-        exactly1MB: "1.00 MB",
-        above1MB: "1.00 MB",
-      })
+      // Just below 1 KB
+      expect(formatBytes(1023)).toBe("1023.00 B")
+      // Exactly 1 KB
+      expect(formatBytes(1024)).toBe("1.00 KB")
+      // Just above 1 KB
+      expect(formatBytes(1025)).toBe("1.00 KB")
+
+      // Just below 1 MB
+      expect(formatBytes(1048575)).toBe("1024.00 KB")
+      // Exactly 1 MB
+      expect(formatBytes(1048576)).toBe("1.00 MB")
+      // Just above 1 MB
+      expect(formatBytes(1048577)).toBe("1.00 MB")
     })
   })
 

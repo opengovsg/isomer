@@ -3,7 +3,7 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { getIsActiveForResource } from "../useIsActive"
 
-describe(getIsActiveForResource, () => {
+describe("getIsActiveForResource", () => {
   it("marks a collection active when the route has the matching collectionId", () => {
     // Arrange
     const resourceId = "456"

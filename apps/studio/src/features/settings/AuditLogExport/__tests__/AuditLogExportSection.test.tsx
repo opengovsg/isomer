@@ -77,7 +77,7 @@ const renderWith = (ability: UserManagementAbility) =>
     </ThemeProvider>,
   )
 
-describe(AuditLogExportSection, () => {
+describe("AuditLogExportSection", () => {
   beforeEach(() => {
     mutate.mockClear()
     posthogCapture.mockClear()

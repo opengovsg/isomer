@@ -1,3 +1,4 @@
+import { expect, beforeEach, afterEach, describe, beforeAll, it } from 'vitest';
 import { pick } from "lodash-es"
 import { resetTables } from "tests/integration/helpers/db"
 import {
@@ -12,7 +13,6 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
-import { expect, beforeEach, afterEach, describe, beforeAll, it } from "vitest"
 import { ResourceType } from "~prisma/generated/prisma/client"
 
 import type { Resource } from "../../database"
@@ -34,57 +34,31 @@ import { PAGE_BLOB } from "./constants"
 
 describe("resource.service", () => {
   // TODO: Implement tests when publish works
-  // oxlint-disable-next-line vitest/no-disabled-tests
   describe.skip("publishPage", () => {
-    // oxlint-disable-next-line vitest/warn-todo
     it.todo("should trigger a publish automatically on creation of a folder")
 
-    // oxlint-disable-next-line vitest/warn-todo
     it.todo("should trigger a publish automatically on deletion of a folder")
 
-    // oxlint-disable-next-line vitest/warn-todo
     it.todo("should trigger a publish automatically on move of a folder")
 
-    // oxlint-disable-next-line vitest/warn-todo
-    it.todo(
-      "should trigger a publish automatically on update of a folder's title",
-    )
+    it.todo("should trigger a publish automatically on update of a folder's title")
 
-    // oxlint-disable-next-line vitest/warn-todo
-    it.todo(
-      "should trigger a publish automatically on update of a folder's permalink",
-    )
+    it.todo("should trigger a publish automatically on update of a folder's permalink")
 
-    // oxlint-disable-next-line vitest/warn-todo
-    it.todo(
-      "should trigger a publish automatically on creation of a collection",
-    )
+    it.todo("should trigger a publish automatically on creation of a collection")
 
-    // oxlint-disable-next-line vitest/warn-todo
-    it.todo(
-      "should trigger a publish automatically on deletion of a collection",
-    )
+    it.todo("should trigger a publish automatically on deletion of a collection")
 
-    // oxlint-disable-next-line vitest/warn-todo
-    it.todo(
-      "should trigger a publish automatically on update of a collection's title",
-    )
+    it.todo("should trigger a publish automatically on update of a collection's title")
 
-    // oxlint-disable-next-line vitest/warn-todo
-    it.todo(
-      "should trigger a publish automatically on update of a collection's permalink",
-    )
+    it.todo("should trigger a publish automatically on update of a collection's permalink")
 
-    // oxlint-disable-next-line vitest/warn-todo
     it.todo("should trigger a publish automatically on move of a page")
 
-    // oxlint-disable-next-line vitest/warn-todo
-    it.todo(
-      "should not trigger a publish if there is a currently running publish witin the past minute",
-    )
+    it.todo("should not trigger a publish if there is a currently running publish witin the past minute")
   })
 
-  describe(getBatchAncestryWithSelfQuery, () => {
+  describe("getBatchAncestryWithSelfQuery", () => {
     it("should return empty array if no resources exist", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -310,10 +284,9 @@ describe("resource.service", () => {
     })
   })
 
-  describe(getSiteResourceById, () => {
+  describe("getSiteResourceById", () => {
     let actualPage: Resource
     let actualSiteId: number
-    let anotherSiteId: number
 
     beforeAll(async () => {
       const { site, page: _pageToId } = await setupPageResource({
@@ -327,12 +300,11 @@ describe("resource.service", () => {
         },
       )
 
-      anotherSiteId = anotherSite.id
+      void _anotherPage
+      void anotherSite
     })
 
     it("should return the resource with the given `id`", async () => {
-      expect(anotherSiteId).not.toBe(actualSiteId)
-
       // Act
       const result = await getSiteResourceById({
         siteId: actualSiteId,
@@ -396,7 +368,7 @@ describe("resource.service", () => {
     })
   })
 
-  describe(getFullPageById, () => {
+  describe("getFullPageById", () => {
     it("should return resource with draft blob if it exists", async () => {
       // Arrange
       const {
@@ -488,7 +460,7 @@ describe("resource.service", () => {
     })
   })
 
-  describe(getPageById, () => {
+  describe("getPageById", () => {
     it("should return the 'Page' resource with the given `id`", async () => {
       // Arrange
       const { site, page } = await setupPageResource({
@@ -586,7 +558,7 @@ describe("resource.service", () => {
     })
   })
 
-  describe(updatePageById, () => {
+  describe("updatePageById", () => {
     it("should not update any rows if no matching `id` can be found", async () => {
       // Arrange
       const { site } = await setupPageResource({
@@ -666,10 +638,10 @@ describe("resource.service", () => {
       )
 
       // Assert
-      await expect(result).rejects.toThrow(/./)
+      await expect(result).rejects.toThrow()
     })
   })
-  describe(updateBlobById, () => {
+  describe("updateBlobById", () => {
     let site: Awaited<ReturnType<typeof setupPageResource>>["site"]
 
     beforeEach(async () => {
@@ -692,7 +664,7 @@ describe("resource.service", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrow(/./)
+      await expect(result).rejects.toThrow()
     })
 
     it("should create a draft blob if the page is already published", async () => {
@@ -779,11 +751,11 @@ describe("resource.service", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrow(/./)
+      await expect(result).rejects.toThrow()
     })
   })
 
-  describe(getNavBar, () => {
+  describe("getNavBar", () => {
     it("should return the nav bar for the given site", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -798,11 +770,11 @@ describe("resource.service", () => {
       // Act
       const result = getNavBar(db, 99999)
       // Assert
-      await expect(result).rejects.toThrow(/./)
+      await expect(result).rejects.toThrow()
     })
   })
 
-  describe(getFooter, () => {
+  describe("getFooter", () => {
     it("should return the footer for the given site", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -817,11 +789,11 @@ describe("resource.service", () => {
       // Act
       const result = getFooter(db, 99999)
       // Assert
-      await expect(result).rejects.toThrow(/./)
+      await expect(result).rejects.toThrow()
     })
   })
 
-  describe(getLocalisedSitemap, () => {
+  describe("getLocalisedSitemap", () => {
     beforeEach(async () => {
       await resetTables("Site", "Resource", "Blob", "Version", "User")
     })
@@ -834,7 +806,7 @@ describe("resource.service", () => {
       const result = getLocalisedSitemap(9999, Number(page.id))
 
       // Assert
-      await expect(result).rejects.toThrow(/./)
+      await expect(result).rejects.toThrow()
     })
 
     it("should throw an error if the `resourceId` doesn't exist", async () => {
@@ -843,7 +815,7 @@ describe("resource.service", () => {
       // Act
       const result = getLocalisedSitemap(site.id, 99999)
       // Assert
-      await expect(result).rejects.toThrow(/./)
+      await expect(result).rejects.toThrow()
     })
 
     it("should return the path from ancestor to the page (DRAFT), together with its siblings", async () => {
@@ -1126,138 +1098,125 @@ describe("resource.service", () => {
       expect(child?.summary).toBe("Hello im the index page") // should be from the index page
     })
 
-    describe("should include children resources when resourceId is a IndexPage (PUBLISHED)", () => {
-      type SitemapResult = Awaited<ReturnType<typeof getLocalisedSitemap>>
-      type SitemapNode = NonNullable<SitemapResult["children"]>[number]
+    it("should include children resources when resourceId is a IndexPage (PUBLISHED)", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupPageResource({
+        resourceType: ResourceType.RootPage, // Pre-requisite
+        siteId: site.id,
+      })
 
-      let page: Awaited<ReturnType<typeof setupPageResource>>["page"]
-      let folder: Awaited<ReturnType<typeof setupFolder>>["folder"]
-      let collection: Awaited<ReturnType<typeof setupCollection>>["collection"]
-      let result: SitemapResult
-      let pageNode: SitemapNode | undefined
-      let folderNode: SitemapNode | undefined
-      let collectionNode: SitemapNode | undefined
+      const { folder: parentFolder } = await setupFolder({
+        permalink: "parent-folder",
+        siteId: site.id,
+        title: "Parent Folder",
+      })
 
-      beforeEach(async () => {
-        const { site } = await setupSite()
-        await setupPageResource({
-          resourceType: ResourceType.RootPage, // Pre-requisite
-          siteId: site.id,
-        })
+      const { page: indexPage } = await setupPageResource({
+        title: "Parent Folder",
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: parentFolder.id,
+        state: ResourceState.Published,
+        userId: (await setupUser({})).id,
+      })
 
-        const { folder: parentFolder } = await setupFolder({
-          permalink: "parent-folder",
-          siteId: site.id,
-          title: "Parent Folder",
-        })
-
-        const { page: indexPage } = await setupPageResource({
-          title: "Parent Folder",
-          resourceType: ResourceType.IndexPage,
-          siteId: site.id,
-          parentId: parentFolder.id,
-          state: ResourceState.Published,
-          userId: (await setupUser({})).id,
-        })
-
-        const { page: childPage, blob: pageBlob } = await setupPageResource({
-          permalink: "page-a",
-          resourceType: ResourceType.Page,
-          siteId: site.id,
-          parentId: parentFolder.id,
-          state: ResourceState.Published,
-          userId: (await setupUser({})).id,
-        })
-        page = childPage
-        await db
-          .updateTable("Blob")
-          .where("id", "=", pageBlob.id)
-          .set({
-            content: {
-              ...pageBlob.content,
-              page: {
-                image: {
-                  src: "https://pageblob.com",
-                  alt: "im a page blob image alt text",
-                },
+      const { page, blob: pageBlob } = await setupPageResource({
+        permalink: "page-a",
+        resourceType: ResourceType.Page,
+        siteId: site.id,
+        parentId: parentFolder.id,
+        state: ResourceState.Published,
+        userId: (await setupUser({})).id,
+      })
+      await db
+        .updateTable("Blob")
+        .where("id", "=", pageBlob.id)
+        .set({
+          content: {
+            ...pageBlob.content,
+            page: {
+              image: {
+                src: "https://pageblob.com",
+                alt: "im a page blob image alt text",
               },
             },
-          })
-          .execute()
-
-        const { folder: childFolder } = await setupFolder({
-          title: "Folder A",
-          permalink: "folder-a",
-          siteId: site.id,
-          parentId: parentFolder.id,
-          state: ResourceState.Published,
+          },
         })
-        folder = childFolder
+        .execute()
 
-        const { blob: folderAIndexPageBlob } = await setupPageResource({
-          title: "Folder A",
-          resourceType: ResourceType.IndexPage,
-          siteId: site.id,
-          parentId: folder.id,
-          state: ResourceState.Published,
-          userId: (await setupUser({})).id,
-        })
-        await db
-          .updateTable("Blob")
-          .where("id", "=", folderAIndexPageBlob.id)
-          .set({
-            content: {
-              ...folderAIndexPageBlob.content,
-              page: {
-                contentPageHeader: {
-                  summary: "Hello im the index page",
-                },
-                image: {
-                  src: "https://indexpageblob.com",
-                  alt: "im a index page blob image alt text",
-                },
+      const { folder } = await setupFolder({
+        title: "Folder A",
+        permalink: "folder-a",
+        siteId: site.id,
+        parentId: parentFolder.id,
+        state: ResourceState.Published,
+      })
+
+      const { blob: folderAIndexPageBlob } = await setupPageResource({
+        title: "Folder A",
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: folder.id,
+        state: ResourceState.Published,
+        userId: (await setupUser({})).id,
+      })
+      await db
+        .updateTable("Blob")
+        .where("id", "=", folderAIndexPageBlob.id)
+        .set({
+          content: {
+            ...folderAIndexPageBlob.content,
+            page: {
+              contentPageHeader: {
+                summary: "Hello im the index page",
+              },
+              image: {
+                src: "https://indexpageblob.com",
+                alt: "im a index page blob image alt text",
               },
             },
-          })
-          .execute()
-
-        const { collection: childCollection } = await setupCollection({
-          title: "Collection A",
-          permalink: "collection-a",
-          siteId: site.id,
-          parentId: parentFolder.id,
-          state: ResourceState.Published,
+          },
         })
-        collection = childCollection
+        .execute()
 
-        result = await getLocalisedSitemap(site.id, Number(indexPage.id))
-
-        const children = result.children?.at(0)?.children
-        pageNode = children?.find((child) => child.id === page.id)
-        folderNode = children?.find((child) => child.id === folder.id)
-        collectionNode = children?.find((child) => child.id === collection.id)
+      const { collection } = await setupCollection({
+        title: "Collection A",
+        permalink: "collection-a",
+        siteId: site.id,
+        parentId: parentFolder.id,
+        state: ResourceState.Published,
       })
 
-      it("should include three child resources in the sitemap", () => {
-        expect(result.children?.at(0)?.children?.length).toBe(3)
-      })
+      // Act
+      const result = await getLocalisedSitemap(site.id, Number(indexPage.id))
 
-      it("should include Page in the sitemap", () => {
-        expect(pageNode?.title).toBe(page.title)
-        expect(pageNode?.image?.src).toBe("https://pageblob.com")
-      })
+      // Assert
+      const children = result.children?.at(0)?.children
+      expect(children?.length).toBe(3)
 
-      it("should include Folder in the sitemap", () => {
-        expect(folderNode?.title).toBe(folder.title)
-        expect(folderNode?.summary).toBe("Hello im the index page")
-        expect(folderNode?.image?.src).toBe("https://indexpageblob.com")
-      })
+      // Assert: Find Page in the sitemap
+      const pageNode = result.children
+        ?.at(0)
+        ?.children?.find((child) => child.id === page.id)
+      expect(pageNode?.title).toBe(page.title)
+      expect(pageNode?.image?.src).toBe("https://pageblob.com")
 
-      it("should include Collection in the sitemap", () => {
-        expect(collectionNode?.title).toBe(collection.title)
-        expect(collectionNode?.summary).toBe(`Pages in ${collection.title}`)
-        expect(collectionNode?.image?.src).toBeUndefined()
-      })
+      // Assert: Find Folder in the sitemap
+      const folderNode = result.children
+        ?.at(0)
+        ?.children?.find((child) => child.id === folder.id)
+      expect(folderNode?.title).toBe(folder.title)
+      expect(folderNode?.summary).toBe("Hello im the index page")
+      expect(folderNode?.image?.src).toBe("https://indexpageblob.com")
+
+      // Assert: Find Collection in the sitemap
+      const collectionNode = result.children
+        ?.at(0)
+        ?.children?.find((child) => child.id === collection.id)
+      expect(collectionNode?.title).toBe(collection.title)
+      expect(collectionNode?.summary).toBe(`Pages in ${collection.title}`)
+      expect(collectionNode?.image?.src).toBeUndefined()
     })
 
     it("should include any nested collections if resourceId is a RootPage", async () => {
@@ -1523,11 +1482,7 @@ describe("resource.service", () => {
         const childIds = parentNode?.children?.map((child) => child.id)
 
         // Should be Alpha, Beta, Gamma (alphabetical)
-        expect(childIds).toStrictEqual([
-          pageAlpha.id,
-          pageBeta.id,
-          pageGamma.id,
-        ])
+        expect(childIds).toStrictEqual([pageAlpha.id, pageBeta.id, pageGamma.id])
       })
 
       it("should only apply ordering at the correct parent node", async () => {
@@ -1775,7 +1730,7 @@ describe("resource.service", () => {
         // `alt` is required by the schema but nothing enforces it on the stored
         // JSON, so the cast reproduces a blob that omits it
         const node = await setupCollectionWithItemBody([
-          { type: "image", src: "/no-alt.jpg" } as unknown as PageBody[number],
+          { type: "image", src: "/no-alt.jpg" },
         ])
 
         // Assert
@@ -1834,14 +1789,11 @@ describe("resource.service", () => {
       })
     })
   })
-  // oxlint-disable-next-line vitest/no-disabled-tests
   describe.skip("getResourcePermalinkTree", () => {})
-  // oxlint-disable-next-line vitest/no-disabled-tests
   describe.skip("getResourceFullPermalink", () => {})
-  // oxlint-disable-next-line vitest/no-disabled-tests
   describe.skip("publishResource", () => {})
 
-  describe(getWithFullPermalink, () => {
+  describe("getWithFullPermalink", () => {
     it("returns an empty array when given no resourceIds", async () => {
       const { site } = await setupSite()
 
@@ -1911,7 +1863,7 @@ describe("resource.service", () => {
     })
   })
 
-  describe(getSearchResults, () => {
+  describe("getSearchResults", () => {
     it("returns an empty array when given no resourceTypes", async () => {
       //Arrange
       const { site } = await setupPageResource({
@@ -1933,9 +1885,7 @@ describe("resource.service", () => {
     })
   })
 
-  // oxlint-disable-next-line vitest/no-disabled-tests
   describe.skip("getSearchRecentlyEdited", () => {})
-  // oxlint-disable-next-line vitest/no-disabled-tests
   describe.skip("getSearchWithResourceIds", () => {})
 })
 

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { isPhoneNumber } from "../isPhoneNumber"
 
-describe(isPhoneNumber, () => {
+describe("isPhoneNumber", () => {
   describe("basic validation", () => {
     it("should return true for valid international phone numbers", () => {
       const validPhones = [

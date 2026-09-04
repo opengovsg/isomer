@@ -5,7 +5,7 @@ import {
   getContentDispositionForTitle,
 } from "../gazette"
 
-describe(getContentDispositionForTitle, () => {
+describe("getContentDispositionForTitle", () => {
   it("should use the title as filename, keeping the key's extension", () => {
     const result = getContentDispositionForTitle(
       "Government Gazette No. 1",
@@ -45,7 +45,7 @@ describe(getContentDispositionForTitle, () => {
   })
 })
 
-describe(buildGazetteSearchRecords, () => {
+describe("buildGazetteSearchRecords", () => {
   // A fixed date in SGT (UTC+8): 2026-04-30T12:00:00 SGT = 2026-04-30T04:00:00Z
   const SGT_DATE = new Date("2026-04-30T04:00:00.000Z")
 

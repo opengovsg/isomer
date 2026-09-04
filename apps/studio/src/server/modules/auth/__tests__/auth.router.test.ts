@@ -54,7 +54,7 @@ describe("auth.email", () => {
       // Assert
       // NOTE: Not asserting argument becasuse this requires a tx,
       // we'll instead check that the db row exists
-      expect(spy).toHaveBeenCalledWith()
+      expect(spy).toHaveBeenCalled()
       expect(result.isLoggedIn).toBe(false)
       const user = db
         .selectFrom("User")

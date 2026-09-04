@@ -39,7 +39,7 @@ interface ChainMock {
 
 const createChain = (): ChainMock => {
   const chain = {} as ChainMock
-  // oxlint-disable vitest/prefer-spy-on, vitest/require-mock-type-parameters -- fluent Kysely chain mock
+  // oxlint-disable vitest/prefer-spy-on -- fluent Kysely chain mock
   chain.where = vi.fn().mockReturnValue(chain)
   chain.select = vi.fn().mockReturnValue(chain)
   chain.selectAll = vi.fn().mockReturnValue(chain)
@@ -50,7 +50,7 @@ const createChain = (): ChainMock => {
   chain.executeTakeFirstOrThrow = vi.fn()
   chain.executeTakeFirst = vi.fn()
   chain.execute = vi.fn()
-  // oxlint-enable vitest/prefer-spy-on, vitest/require-mock-type-parameters
+  // oxlint-enable vitest/prefer-spy-on
   return chain
 }
 
@@ -75,7 +75,7 @@ const makeConversionPlan = (): ConversionPlan => ({
         contentPageHeader: { summary: "Pages in folder is cool" },
       },
       content: [],
-    } as unknown as IsomerSchema,
+    },
     nextBlob: {
       layout: "collection",
       version: "0.1.0",
@@ -85,7 +85,7 @@ const makeConversionPlan = (): ConversionPlan => ({
         sortOrder: "date-desc",
       },
       content: [],
-    } as unknown as IsomerSchema,
+    },
     disallowedBlocks: [],
   },
   pages: [
@@ -102,7 +102,7 @@ const makeConversionPlan = (): ConversionPlan => ({
           contentPageHeader: { summary: "Summary A" },
         },
         content: [{ type: "prose", content: [] }],
-      } as unknown as IsomerSchema,
+      },
       nextBlob: {
         layout: "article",
         version: "0.1.0",
@@ -111,7 +111,7 @@ const makeConversionPlan = (): ConversionPlan => ({
           articlePageHeader: { summary: "Summary A" },
         },
         content: [{ type: "prose", content: [] }],
-      } as unknown as IsomerSchema,
+      },
       disallowedBlocks: [],
     },
     {
@@ -127,7 +127,7 @@ const makeConversionPlan = (): ConversionPlan => ({
           contentPageHeader: { summary: "Summary B" },
         },
         content: [{ type: "infobar", title: "CTA", description: "x" }],
-      } as unknown as IsomerSchema,
+      },
       nextBlob: {
         layout: "article",
         version: "0.1.0",
@@ -136,13 +136,13 @@ const makeConversionPlan = (): ConversionPlan => ({
           articlePageHeader: { summary: "Summary B" },
         },
         content: [{ type: "infobar", title: "CTA", description: "x" }],
-      } as unknown as IsomerSchema,
+      },
       disallowedBlocks: [{ index: 0, type: "infobar" }],
     },
   ],
 })
 
-describe(validateNumericId, () => {
+describe("validateNumericId", () => {
   const validate = validateNumericId("Site ID")
 
   it("accepts numeric strings with optional surrounding whitespace", () => {
@@ -243,7 +243,7 @@ describe("plan file I/O", () => {
   })
 })
 
-describe(getBlobOfResource, () => {
+describe("getBlobOfResource", () => {
   it("returns the draft blob when draftBlobId is set", async () => {
     // Arrange
     const resourceChain = createChain()
@@ -315,7 +315,7 @@ describe(getBlobOfResource, () => {
   })
 })
 
-describe(updateBlobById, () => {
+describe("updateBlobById", () => {
   const nextContent = {
     layout: "article",
     version: "0.1.0",
@@ -408,7 +408,7 @@ describe(updateBlobById, () => {
   })
 })
 
-describe(incrementVersion, () => {
+describe("incrementVersion", () => {
   it("returns null when the resource has no draft blob", async () => {
     // Arrange
     const selectChain = createChain()

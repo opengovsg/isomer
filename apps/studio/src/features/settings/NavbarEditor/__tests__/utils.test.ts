@@ -12,7 +12,7 @@ const createError = (message?: string): ErrorObject =>
     message,
   }) as ErrorObject
 
-describe(getUniqueErrorMessages, () => {
+describe("getUniqueErrorMessages", () => {
   it("should return an empty array when there are no errors", () => {
     // Arrange
     const errors = {}

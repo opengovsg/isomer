@@ -158,7 +158,7 @@ describe(useFireContentEditSurveyEvent, () => {
   })
 })
 
-describe(useContentEditTracker, () => {
+describe("useContentEditTracker", () => {
   beforeEach(() => {
     trackEventMock.mockClear()
     mockEnv.env.NEXT_PUBLIC_INTERCOM_APP_ID = "test-app-id"
@@ -267,7 +267,7 @@ describe(useContentEditTracker, () => {
   })
 })
 
-describe(useLeftEditorSurveyTracker, () => {
+describe("useLeftEditorSurveyTracker", () => {
   beforeEach(() => {
     trackEventMock.mockClear()
     mockEnv.env.NEXT_PUBLIC_INTERCOM_APP_ID = "test-app-id"

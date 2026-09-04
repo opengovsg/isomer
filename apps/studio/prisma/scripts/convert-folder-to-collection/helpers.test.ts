@@ -78,7 +78,7 @@ const makeIndexBlob = (overrides?: PageOverrides): IndexBlob =>
       ...(overrides?.image ? { image: overrides.image } : {}),
     },
     content: [],
-  }) as unknown as IndexBlob
+  })
 
 const makeContentBlob = (
   overrides?: PageOverrides,
@@ -96,7 +96,7 @@ const makeContentBlob = (
       ...(overrides?.image ? { image: overrides.image } : {}),
     },
     content,
-  }) as unknown as ContentBlob
+  })
 
 const makeArticleBlob = (
   overrides?: PageOverrides & { category?: string; date?: string },
@@ -115,7 +115,7 @@ const makeArticleBlob = (
       ...(overrides?.image ? { image: overrides.image } : {}),
     },
     content,
-  }) as unknown as ArticleBlob
+  })
 
 const makeConversionPlan = (
   overrides?: Partial<ConversionPlan>,
@@ -132,15 +132,15 @@ const makeConversionPlan = (
     title: "Index",
     permalink: "_index",
     currentBlobId: "blob-index",
-    currentBlob: makeIndexBlob() as unknown as IsomerSchema,
-    nextBlob: makeIndexBlob() as unknown as IsomerSchema,
+    currentBlob: makeIndexBlob(),
+    nextBlob: makeIndexBlob(),
     disallowedBlocks: [],
   },
   pages: [],
   ...overrides,
 })
 
-describe(buildConversionReport, () => {
+describe("buildConversionReport", () => {
   it("returns an empty array when no pages have disallowed blocks", () => {
     // Arrange
     const plan = makeConversionPlan({
@@ -150,8 +150,8 @@ describe(buildConversionReport, () => {
           title: "Clean page",
           permalink: "clean",
           currentBlobId: "b1",
-          currentBlob: makeContentBlob() as unknown as IsomerSchema,
-          nextBlob: makeArticleBlob() as unknown as IsomerSchema,
+          currentBlob: makeContentBlob(),
+          nextBlob: makeArticleBlob(),
           disallowedBlocks: [],
         },
       ],
@@ -172,10 +172,10 @@ describe(buildConversionReport, () => {
           currentBlobId: "b1",
           currentBlob: makeContentBlob({}, [
             infobarBlock,
-          ]) as unknown as IsomerSchema,
+          ]),
           nextBlob: makeArticleBlob({}, [
             infobarBlock,
-          ]) as unknown as IsomerSchema,
+          ]),
           disallowedBlocks: [{ index: 0, type: "infobar" }],
         },
         {
@@ -183,8 +183,8 @@ describe(buildConversionReport, () => {
           title: "Clean",
           permalink: "clean",
           currentBlobId: "b2",
-          currentBlob: makeContentBlob() as unknown as IsomerSchema,
-          nextBlob: makeArticleBlob() as unknown as IsomerSchema,
+          currentBlob: makeContentBlob(),
+          nextBlob: makeArticleBlob(),
           disallowedBlocks: [],
         },
       ],
@@ -214,11 +214,11 @@ describe(buildConversionReport, () => {
           currentBlob: makeContentBlob({}, [
             infobarBlock,
             infocardsBlock,
-          ]) as unknown as IsomerSchema,
+          ]),
           nextBlob: makeArticleBlob({}, [
             infobarBlock,
             infocardsBlock,
-          ]) as unknown as IsomerSchema,
+          ]),
           disallowedBlocks: [
             { index: 0, type: "infobar" },
             { index: 1, type: "infocards" },
@@ -237,7 +237,7 @@ describe(buildConversionReport, () => {
   })
 })
 
-describe(toFolderPlan, () => {
+describe("toFolderPlan", () => {
   it("maps folder metadata, default category, and child resource IDs", () => {
     // Arrange
     const plan = makeConversionPlan({
@@ -247,8 +247,8 @@ describe(toFolderPlan, () => {
           title: "Page A",
           permalink: "a",
           currentBlobId: "b1",
-          currentBlob: makeContentBlob() as unknown as IsomerSchema,
-          nextBlob: makeArticleBlob() as unknown as IsomerSchema,
+          currentBlob: makeContentBlob(),
+          nextBlob: makeArticleBlob(),
           disallowedBlocks: [],
         },
         {
@@ -256,8 +256,8 @@ describe(toFolderPlan, () => {
           title: "Page B",
           permalink: "b",
           currentBlobId: "b2",
-          currentBlob: makeContentBlob() as unknown as IsomerSchema,
-          nextBlob: makeArticleBlob() as unknown as IsomerSchema,
+          currentBlob: makeContentBlob(),
+          nextBlob: makeArticleBlob(),
           disallowedBlocks: [],
         },
       ],
@@ -309,7 +309,7 @@ describe("ARTICLE_TYPES / CONTENT_TYPES / CONTENT_ONLY_TYPES", () => {
   })
 })
 
-describe(findDisallowedBlocks, () => {
+describe("findDisallowedBlocks", () => {
   it("returns an empty array when all blocks are article-allowed", () => {
     // Act
     const result = findDisallowedBlocks([proseBlock, proseBlock])
@@ -338,7 +338,7 @@ describe(findDisallowedBlocks, () => {
   })
 })
 
-describe(asIndexBlob, () => {
+describe("asIndexBlob", () => {
   it("returns the blob unchanged when layout is 'index'", () => {
     // Arrange
     const blob = makeIndexBlob() as unknown as IsomerSchema
@@ -361,7 +361,7 @@ describe(asIndexBlob, () => {
   })
 })
 
-describe(asPageBlob, () => {
+describe("asPageBlob", () => {
   it("returns content blobs unchanged", () => {
     // Arrange
     const blob = makeContentBlob() as unknown as IsomerSchema
@@ -395,7 +395,7 @@ describe(asPageBlob, () => {
   })
 })
 
-describe(asContentBlob, () => {
+describe("asContentBlob", () => {
   it("returns the blob unchanged when layout is 'content'", () => {
     // Arrange
     const blob = makeContentBlob() as unknown as IsomerSchema
@@ -418,7 +418,7 @@ describe(asContentBlob, () => {
   })
 })
 
-describe(buildCollectionIndexBlob, () => {
+describe("buildCollectionIndexBlob", () => {
   it("flips layout to 'collection' and maps summary → subtitle", () => {
     // Arrange
     const current = makeIndexBlob({ summary: "Summary text" })
@@ -538,7 +538,7 @@ describe(buildCollectionIndexBlob, () => {
   })
 })
 
-describe(buildArticleBlob, () => {
+describe("buildArticleBlob", () => {
   it("flips layout to 'article' and maps summary → articlePageHeader.summary", () => {
     // Arrange
     const current = makeContentBlob({ summary: "Article summary" })

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { indicesWithBlankLabels } from "../indicesWithBlankLabels"
 
-describe(indicesWithBlankLabels, () => {
+describe("indicesWithBlankLabels", () => {
   it("returns an empty set when items are undefined or empty", () => {
     // Arrange
     const undefinedItems = undefined

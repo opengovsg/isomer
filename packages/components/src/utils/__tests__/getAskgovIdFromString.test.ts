@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { getAskgovIdFromString } from "../getAskgovIdFromString"
 
-describe(getAskgovIdFromString, () => {
+describe("getAskgovIdFromString", () => {
   it.each(["mha", "help2", "agency_id", "agency-id"])(
     "returns the plain ID %j unchanged",
     (agencyId) => {

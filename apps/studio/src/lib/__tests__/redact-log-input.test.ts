@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { redactLogInput } from "../redact-log-input"
 
-describe(redactLogInput, () => {
+describe("redactLogInput", () => {
   it("redacts known sensitive keys at the top level", () => {
     // Arrange
     const input = {

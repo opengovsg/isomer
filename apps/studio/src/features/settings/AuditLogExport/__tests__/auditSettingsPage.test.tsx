@@ -85,7 +85,7 @@ const renderWith = (ability: UserManagementAbility) =>
     </ThemeProvider>,
   )
 
-describe(AuditLogExportSettingsPage, () => {
+describe("AuditLogExportSettingsPage", () => {
   beforeEach(() => {
     replace.mockClear()
     isRolesPending = false

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { getDgsIdFromString } from "../getDgsIdFromString"
 
-describe(getDgsIdFromString, () => {
+describe("getDgsIdFromString", () => {
   describe("Dataset URL", () => {
     it("should extract ID from full URL format", () => {
       // Arrange

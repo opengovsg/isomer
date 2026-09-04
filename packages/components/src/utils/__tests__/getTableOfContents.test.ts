@@ -4,7 +4,7 @@ import { generateSiteConfig } from "~/stories/helpers/generateSiteConfig"
 import { getTableOfContents } from "~/utils/getTableOfContents"
 import { getTransformedPageContent } from "~/utils/getTransformedPageContent"
 
-describe(getTableOfContents, () => {
+describe("getTableOfContents", () => {
   const anchorPattern = /^#[a-f0-9]{32}$/
 
   it("generates toc entries from level-2 prose headings only", () => {

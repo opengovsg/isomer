@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { getHeadingTag } from "../getHeadingTag"
 
-describe(getHeadingTag, () => {
+describe("getHeadingTag", () => {
   it("should map levels 1 through 6 to their matching tag", () => {
     // Arrange
     const levels = [1, 2, 3, 4, 5, 6] as const

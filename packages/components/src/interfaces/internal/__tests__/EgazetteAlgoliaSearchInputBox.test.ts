@@ -18,7 +18,7 @@ const VALID_CONFIG = {
   indexName: "staging_ogp_egazettes_index",
 }
 
-describe("egazette algolia search schema", () => {
+describe("EgazetteAlgoliaSearchSchema", () => {
   it("accepts a valid config", () => {
     expect(Value.Check(EgazetteAlgoliaSearchSchema, VALID_CONFIG)).toBe(true)
   })

@@ -2,7 +2,7 @@ import { expect, describe, it } from "vitest"
 
 import { formatEnumLabel } from "../formatEnumLabel"
 
-describe(formatEnumLabel, () => {
+describe("formatEnumLabel", () => {
   it.each([
     ["Organization", "Organization"],
     ["GovernmentOrganization", "Government Organization"],

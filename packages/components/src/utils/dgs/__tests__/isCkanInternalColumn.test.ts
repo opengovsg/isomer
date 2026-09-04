@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { isCkanInternalColumn } from "../isCkanInternalColumn"
 
-describe(isCkanInternalColumn, () => {
+describe("isCkanInternalColumn", () => {
   it("should return true for _id", () => {
     expect(isCkanInternalColumn("_id")).toBe(true)
   })
