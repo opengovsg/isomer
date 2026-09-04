@@ -3,7 +3,7 @@
     "source.fixAll.oxc": "explicit"
   },
   "editor.defaultFormatter": "oxc.oxc-vscode",
-  "oxc.fmt.configPath": ".oxfmtrc.json",
+  "oxc.fmt.configPath": "oxfmt.config.ts",
   "editor.formatOnSave": true,
   "oxc.typeAware": true,
   "tailwindCSS.experimental.classRegex": [
