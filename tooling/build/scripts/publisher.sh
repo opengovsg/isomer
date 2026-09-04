@@ -129,33 +129,35 @@ if [[ -n "$ISOMER_BUILD_REPO_BRANCH" ]]; then
   if [ "$RESTORED_STORE" -eq 0 ]; then
     cache_upload "$TEMPLATE_DEPS_CACHE_PATH" "$TEMPLATE_DEPS_TGZ" .pnpm-store
   fi
+
+  # packages/components/dist is gitignored, so it's cached as its own tarball. Same
+  # two-tier lookup as the store above: a build-components.yml run for this exact
+  # commit first, then this branch's own cache from a previous publisher.sh run.
+  COMPONENTS_DIST_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/$UNIQUE_CACHE_KEY/$COMPONENTS_DIST_TGZ"
+  if fetch_cached "s3://$S3_CACHE_BUCKET_NAME/isomer/$COMMIT_SHA/$COMPONENTS_DIST_TGZ" "$COMPONENTS_DIST_TGZ" packages/components; then
+    :
+  elif fetch_cached "$COMPONENTS_DIST_CACHE_PATH" "$COMPONENTS_DIST_TGZ" packages/components; then
+    :
+  else
+    echo "Building @opengovsg/isomer-components..."
+    start_time=$(date +%s)
+    pnpm --filter @opengovsg/isomer-components run build
+    calculate_duration "$start_time"
+
+    cache_upload "$COMPONENTS_DIST_CACHE_PATH" "$COMPONENTS_DIST_TGZ" -C packages/components dist
+  fi
 else
-  # Production path: build-components.yml already populated the pnpm store and
-  # archived it alongside the repository (fetched above); relink node_modules
-  # from it here - cheap since every package is already in the store, no
-  # registry hits needed. Key the (still necessary) isomer-components dist
-  # cache by the actual release ref that build-components.yml resolved and
-  # recorded in the archive, not a fixed "latest" string - otherwise every
-  # release after the first would silently reuse an older release's stale
-  # dist build.
+  # Production path: build-components.yml already populated the pnpm store, archived it
+  # alongside the repository (fetched above), and built + published the isomer-components
+  # dist to the same commit-scoped prefix - relink node_modules and fetch the dist here;
+  # nothing needs to be built in a per-site job.
   echo "Re-linking workspace from cached store..."
   start_time=$(date +%s)
   pnpm install --frozen-lockfile
   calculate_duration "$start_time"
 
-  UNIQUE_CACHE_KEY=$(cat .isomer-release-ref)
-fi
-
-# packages/components/dist is gitignored; Next resolves @opengovsg/isomer-components via workspace.
-# Cache dist separately from .pnpm-store: restoring plain files does not affect the content-addressable store or node_modules linking.
-COMPONENTS_DIST_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/$UNIQUE_CACHE_KEY/$COMPONENTS_DIST_TGZ"
-if ! fetch_cached "$COMPONENTS_DIST_CACHE_PATH" "$COMPONENTS_DIST_TGZ" packages/components; then
-  echo "Building @opengovsg/isomer-components..."
-  start_time=$(date +%s)
-  pnpm --filter @opengovsg/isomer-components run build
-  calculate_duration "$start_time"
-
-  cache_upload "$COMPONENTS_DIST_CACHE_PATH" "$COMPONENTS_DIST_TGZ" -C packages/components dist
+  fetch_cached "s3://$S3_CACHE_BUCKET_NAME/isomer/$GIT_SHA/$COMPONENTS_DIST_TGZ" "$COMPONENTS_DIST_TGZ" packages/components ||
+    { echo "Error: $COMPONENTS_DIST_TGZ not found for commit $GIT_SHA"; exit 1; }
 fi
 
 # Fetch from database
