@@ -25,19 +25,21 @@ interface LiveStatusBadgesProps {
 // callers no longer need to distinguish the two in the UI.
 const LIVE_STATUS_CONFIG: Record<
   LiveStatus,
-  // bgColor overrides the design system's own subtle-variant background,
+  // bgColor/color override the design system's own subtle-variant styling,
   // which is lighter than the design here calls for.
-  { label: string; colorScheme: string; bgColor?: string }
+  { label: string; colorScheme: string; bgColor?: string; color?: string }
 > = {
   live: {
     label: "Published",
     colorScheme: "success",
     bgColor: "interaction.success-subtle.default",
+    color: "interaction.success.hover",
   },
   liveTemplate: {
     label: "Published",
     colorScheme: "success",
     bgColor: "interaction.success-subtle.default",
+    color: "interaction.success.hover",
   },
   notLive: { label: "Unpublished", colorScheme: "neutral" },
 }
@@ -48,7 +50,7 @@ export const LiveStatusBadges = ({
   scheduledAction,
   lastPublishedAt,
 }: LiveStatusBadgesProps): JSX.Element => {
-  const { label, colorScheme, bgColor } = LIVE_STATUS_CONFIG[liveStatus]
+  const { label, colorScheme, bgColor, color } = LIVE_STATUS_CONFIG[liveStatus]
 
   const livePill = (
     <PillBadge
@@ -56,6 +58,7 @@ export const LiveStatusBadges = ({
       variant="subtle"
       colorScheme={colorScheme}
       bgColor={bgColor}
+      color={color}
     >
       <BadgeLeftIcon fontSize="0.5rem" as={BiSolidCircle} />
       <Text textStyle="legal">{label}</Text>
@@ -97,7 +100,7 @@ export const LiveStatusBadges = ({
           <Badge
             // Scheduled-to-unpublish is styled to match the "Not live" pill,
             // since that's where the page is headed; scheduled-to-publish
-            // matches the "Published" pill's background.
+            // matches the "Published" pill's styling.
             bgColor={
               scheduledAction === ScheduledAction.Unpublish
                 ? "interaction.neutral-subtle.default"
@@ -106,7 +109,7 @@ export const LiveStatusBadges = ({
             color={
               scheduledAction === ScheduledAction.Unpublish
                 ? "interaction.sub.default"
-                : "utility.feedback.info"
+                : "interaction.success.hover"
             }
             cursor="pointer"
           >
