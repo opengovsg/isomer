@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 import { serializeForInlineScript } from "~/serializeForInlineScript"
 
-describe("serializeForInlineScript", () => {
+describe(serializeForInlineScript, () => {
   it("should serialize strings as valid JavaScript string literals", () => {
     // Arrange
     const value = "GTM-ABC123"
