@@ -15,6 +15,8 @@ export default defineConfig({
       ],
       plugins: ["vitest"],
       rules: {
+        // Ultracite prefers toBeTruthy()/toBeFalsy(), which pass for any
+        // truthy/falsy value. Flip that: require toBe(true)/toBe(false).
         "vitest/prefer-to-be-truthy": "off",
         "vitest/prefer-to-be-falsy": "off",
         "vitest/prefer-strict-boolean-matchers": "error",
