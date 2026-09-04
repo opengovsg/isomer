@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest';
 import type { NavbarItemPath } from "../types"
 import {
   getInstancePathFromNavbarItemPath,
@@ -8,7 +9,8 @@ import {
   isSubItemPath,
 } from "../utils"
 
-describe("getNavbarItemPath", () => {
+describe(getNavbarItemPath, () => {
+
   it("should return correct path for top-level item", () => {
     // Arrange
     const index = 2
@@ -33,7 +35,8 @@ describe("getNavbarItemPath", () => {
   })
 })
 
-describe("isSubItemPath", () => {
+describe(isSubItemPath, () => {
+
   it("should return true for sub-item path", () => {
     // Arrange
     const path = "items.0.items.1"
@@ -42,7 +45,7 @@ describe("isSubItemPath", () => {
     const actual = isSubItemPath(path)
 
     // Assert
-    expect(actual).toBe(true)
+    expect(actual).toBeTruthy()
   })
 
   it("should return false for top-level item path", () => {
@@ -53,7 +56,7 @@ describe("isSubItemPath", () => {
     const actual = isSubItemPath(path)
 
     // Assert
-    expect(actual).toBe(false)
+    expect(actual).toBeFalsy()
   })
 
   it("should return false for invalid path", () => {
@@ -64,11 +67,12 @@ describe("isSubItemPath", () => {
     const actual = isSubItemPath(path)
 
     // Assert
-    expect(actual).toBe(false)
+    expect(actual).toBeFalsy()
   })
 })
 
-describe("isFirstLevelLinksOverLimit", () => {
+describe(isFirstLevelLinksOverLimit, () => {
+
   it("should return false when item count is below maxItems", () => {
     // Arrange
     const itemCount = 7
@@ -78,7 +82,7 @@ describe("isFirstLevelLinksOverLimit", () => {
     const actual = isFirstLevelLinksOverLimit(itemCount, maxItems)
 
     // Assert
-    expect(actual).toBe(false)
+    expect(actual).toBeFalsy()
   })
 
   it("should return false when item count is exactly maxItems", () => {
@@ -90,7 +94,7 @@ describe("isFirstLevelLinksOverLimit", () => {
     const actual = isFirstLevelLinksOverLimit(itemCount, maxItems)
 
     // Assert
-    expect(actual).toBe(false)
+    expect(actual).toBeFalsy()
   })
 
   it("should return true when item count exceeds maxItems", () => {
@@ -102,7 +106,7 @@ describe("isFirstLevelLinksOverLimit", () => {
     const actual = isFirstLevelLinksOverLimit(itemCount, maxItems)
 
     // Assert
-    expect(actual).toBe(true)
+    expect(actual).toBeTruthy()
   })
 
   it("should return false when maxItems is undefined", () => {
@@ -113,7 +117,7 @@ describe("isFirstLevelLinksOverLimit", () => {
     const actual = isFirstLevelLinksOverLimit(itemCount, undefined)
 
     // Assert
-    expect(actual).toBe(false)
+    expect(actual).toBeFalsy()
   })
 
   it("should return false when maxItems is 0", () => {
@@ -125,11 +129,12 @@ describe("isFirstLevelLinksOverLimit", () => {
     const actual = isFirstLevelLinksOverLimit(itemCount, maxItems)
 
     // Assert
-    expect(actual).toBe(false)
+    expect(actual).toBeFalsy()
   })
 })
 
-describe("getInstancePathFromNavbarItemPath", () => {
+describe(getInstancePathFromNavbarItemPath, () => {
+
   it("should convert navbar item path to instance path for top-level item", () => {
     // Arrange
     const path = "items.3" as NavbarItemPath
@@ -153,7 +158,8 @@ describe("getInstancePathFromNavbarItemPath", () => {
   })
 })
 
-describe("getMoveItemOperation", () => {
+describe(getMoveItemOperation, () => {
+
   it("should return correct operation for reordering within the same subitem", () => {
     // Arrange
     const originalPath = "items.2.items.1"
@@ -287,7 +293,8 @@ describe("getMoveItemOperation", () => {
   })
 })
 
-describe("handleMoveItem", () => {
+describe(handleMoveItem, () => {
+
   it("should handle moving a single main item to become a subitem correctly", () => {
     // Arrange
     const prevData = [
@@ -320,7 +327,7 @@ describe("handleMoveItem", () => {
       },
       { name: "Item 2", url: "/item2" },
     ]
-    expect(actual).toEqual(expected)
+    expect(actual).toStrictEqual(expected)
   })
 
   it("should handle moving a subitem into another main item correctly", () => {
@@ -365,7 +372,7 @@ describe("handleMoveItem", () => {
         items: [{ name: "Subitem 1-2", url: "/item1/subitem2" }],
       },
     ]
-    expect(actual).toEqual(expected)
+    expect(actual).toStrictEqual(expected)
   })
 
   it("should handle reordering subitems within the same main item correctly", () => {
@@ -411,7 +418,7 @@ describe("handleMoveItem", () => {
       },
       { name: "Item 2", url: "/item2" },
     ]
-    expect(actual).toEqual(expected)
+    expect(actual).toStrictEqual(expected)
   })
 
   it("should handle reordering main items correctly", () => {
@@ -443,7 +450,7 @@ describe("handleMoveItem", () => {
       { name: "Item 3", url: "/item3" },
       { name: "Item 1", url: "/item1" },
     ]
-    expect(actual).toEqual(expected)
+    expect(actual).toStrictEqual(expected)
   })
 
   it("should handle moving subitems to become main items correctly", () => {
@@ -485,7 +492,7 @@ describe("handleMoveItem", () => {
       { name: "Subitem 1-1", url: "/item1/subitem1" },
       { name: "Item 2", url: "/item2" },
     ]
-    expect(actual).toEqual(expected)
+    expect(actual).toStrictEqual(expected)
   })
 
   it("should not move subitems to become main items if maxItems is reached", () => {
@@ -524,7 +531,7 @@ describe("handleMoveItem", () => {
     )
 
     // Assert
-    expect(actual).toEqual(prevData)
+    expect(actual).toStrictEqual(prevData)
   })
 
   it("should not change data for invalid move operations", () => {
@@ -557,6 +564,6 @@ describe("handleMoveItem", () => {
     )
 
     // Assert
-    expect(actual).toEqual(prevData)
+    expect(actual).toStrictEqual(prevData)
   })
 })

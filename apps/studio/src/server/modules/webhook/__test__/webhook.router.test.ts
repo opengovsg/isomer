@@ -1,3 +1,4 @@
+import { beforeEach, vi, afterEach, describe, expect, it } from 'vitest';
 import type { GrowthBook } from "@growthbook/growthbook"
 import type { Mock } from "vitest"
 import type { env } from "~/env.mjs"
@@ -28,7 +29,7 @@ import { WEBHOOK_X_API_KEY_HEADER, createCallerFactory } from "~/server/trpc"
 import { db } from "../../database"
 import { webhookRouter } from "../webhook.router"
 
-vi.mock("~/env.mjs", async () => {
+vi.mock(import('~/env.mjs'), async () => {
   const actual = await vi.importActual<{ env: typeof env }>("~/env.mjs")
   return {
     env: {
@@ -39,9 +40,9 @@ vi.mock("~/env.mjs", async () => {
 })
 
 // Mock the publishSite function to avoid sending emails
-vi.mock("~/features/mail/service", () => ({
-  sendSuccessfulPublishEmail: vi.fn(),
-  sendFailedPublishEmail: vi.fn(),
+vi.mock(import('~/features/mail/service'), () => ({
+  sendSuccessfulPublishEmail: vi.fn<(...args: unknown[]) => unknown>(()),
+  sendFailedPublishEmail: vi.fn<(...args: unknown[]) => unknown>(()),
 }))
 
 const getCallerWithMockGrowthbook = (
@@ -59,8 +60,8 @@ const getCallerWithMockGrowthbook = (
     method: "GET",
   })
   const mockGrowthBook: Partial<GrowthBook> = {
-    isOn: vi.fn().mockReturnValue(mockReturnValue),
-    destroy: vi.fn(),
+    isOn: vi.fn<(...args: unknown[]) => unknown>(()).mockReturnValue(mockReturnValue),
+    destroy: vi.fn<(...args: unknown[]) => unknown>(()),
   }
   mockRequest.gb = mockGrowthBook as GrowthBook
   return createCaller(mockRequest)
@@ -90,6 +91,7 @@ describe("webhook.router", async () => {
     afterEach(() => {
       MockDate.reset() // Reset time after each test
     })
+
     it("it should update the codebuildjobs table if the received build status is successful", async () => {
       // Arrange
       const { page, codebuildJob } = await setupCodeBuildJob({
@@ -108,8 +110,7 @@ describe("webhook.router", async () => {
       })
 
       // Assert
-      expect(sendSuccessfulPublishEmail).toHaveBeenCalledOnce()
-      expect(sendSuccessfulPublishEmail).toHaveBeenCalledWith({
+      expect(sendSuccessfulPublishEmail).toHaveBeenCalledExactlyOnceWith({
         recipientEmail: user.email,
         isScheduled: true,
         resource: expect.objectContaining(page),
@@ -122,13 +123,14 @@ describe("webhook.router", async () => {
         .selectAll()
         .executeTakeFirstOrThrow()
 
-      expect(job).toEqual(
+      expect(job).toStrictEqual(
         expect.objectContaining({
           status: "SUCCEEDED",
           emailSent: true,
         }),
       )
     })
+
     it("does not send a success email to toppan users", async () => {
       // Arrange
       const toppanUser = await setupUser({
@@ -157,13 +159,14 @@ describe("webhook.router", async () => {
         .where("buildId", "=", codebuildJob.buildId)
         .selectAll()
         .executeTakeFirstOrThrow()
-      expect(job).toEqual(
+      expect(job).toStrictEqual(
         expect.objectContaining({
           status: "SUCCEEDED",
           emailSent: false, // emailSent should remain false
         }),
       )
     })
+
     it("rejects authenticated callers that do not provide the webhook API key", async () => {
       // Arrange
       await setupCodeBuildJob({
@@ -183,6 +186,7 @@ describe("webhook.router", async () => {
       ).rejects.toThrow("Invalid Webhook API key provided")
       expect(sendSuccessfulPublishEmail).not.toHaveBeenCalled()
     })
+
     it("it should update the codebuildjobs table when multiple resources specify the same buildId", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -221,12 +225,13 @@ describe("webhook.router", async () => {
         .selectAll()
         .execute()
 
-      expect(jobs.length).toBe(NUM_RESOURCES_WITH_SAME_BUILD_ID)
+      expect(jobs).toHaveLength(NUM_RESOURCES_WITH_SAME_BUILD_ID)
       jobs.forEach((job) => {
         expect(job.status).toBe("SUCCEEDED")
-        expect(job.emailSent).toBe(true)
+        expect(job.emailSent).toBeTruthy()
       })
     })
+
     it("it should update the codebuildjobs table if the received build status is failed", async () => {
       // Arrange
       const { page, codebuildJob } = await setupCodeBuildJob({
@@ -245,8 +250,7 @@ describe("webhook.router", async () => {
       })
 
       // Assert
-      expect(sendFailedPublishEmail).toHaveBeenCalledOnce()
-      expect(sendFailedPublishEmail).toHaveBeenCalledWith({
+      expect(sendFailedPublishEmail).toHaveBeenCalledExactlyOnceWith({
         isScheduled: true,
         recipientEmail: user.email,
         resource: expect.objectContaining(page),
@@ -259,13 +263,14 @@ describe("webhook.router", async () => {
         .executeTakeFirstOrThrow()
 
       // expect the job status to be updated to SUCCEEDED, and emailSent to be true
-      expect(job).toEqual(
+      expect(job).toStrictEqual(
         expect.objectContaining({
           status: "FAILED",
           emailSent: true,
         }),
       )
     })
+
     it("do not send an email if the the email has already been sent", async () => {
       // Arrange
       await setupCodeBuildJob({
@@ -288,6 +293,7 @@ describe("webhook.router", async () => {
       // Assert
       expect(sendSuccessfulPublishEmail).not.toHaveBeenCalled()
     })
+
     it("sends a success email with the correct isScheduled flag", async () => {
       // Arrange
       const { page } = await setupCodeBuildJob({
@@ -307,13 +313,13 @@ describe("webhook.router", async () => {
       })
 
       // Assert
-      expect(sendSuccessfulPublishEmail).toHaveBeenCalledOnce()
-      expect(sendSuccessfulPublishEmail).toHaveBeenCalledWith({
+      expect(sendSuccessfulPublishEmail).toHaveBeenCalledExactlyOnceWith({
         recipientEmail: user.email,
         isScheduled: false,
         resource: expect.objectContaining(page),
       })
     })
+
     it("sends a failure email with the correct isScheduled flag", async () => {
       // Arrange
       const { page } = await setupCodeBuildJob({
@@ -333,13 +339,13 @@ describe("webhook.router", async () => {
       })
 
       // Assert
-      expect(sendFailedPublishEmail).toHaveBeenCalledOnce()
-      expect(sendFailedPublishEmail).toHaveBeenCalledWith({
+      expect(sendFailedPublishEmail).toHaveBeenCalledExactlyOnceWith({
         recipientEmail: user.email,
         isScheduled: false,
         resource: expect.objectContaining(page),
       })
     })
+
     it("does not send a success email if the feature flag is disabled", async () => {
       // Arrange
       await setupCodeBuildJob({
@@ -361,6 +367,7 @@ describe("webhook.router", async () => {
       // Assert
       expect(sendSuccessfulPublishEmail).not.toHaveBeenCalled()
     })
+
     it("does not send a failure email if the feature flag is disabled", async () => {
       // Arrange
       await setupCodeBuildJob({
@@ -382,6 +389,7 @@ describe("webhook.router", async () => {
       // Assert
       expect(sendFailedPublishEmail).not.toHaveBeenCalled()
     })
+
     it("sends a success email to multiple users if multiple builds are superseded by the same build id", async () => {
       // Arrange
       const NUMBER_SUPERSEDED_BUILDS = 4
@@ -428,18 +436,18 @@ describe("webhook.router", async () => {
         .filter((call) => {
           return call.recipientEmail === userForSupersededBuilds.email
         })
-      expect(callsWithOriginalUser.length).toEqual(1)
-      expect(callsWithSupersededUser.length).toEqual(NUMBER_SUPERSEDED_BUILDS)
+      expect(callsWithOriginalUser).toHaveLength(1)
+      expect(callsWithSupersededUser).toHaveLength(NUMBER_SUPERSEDED_BUILDS)
       // assert that the calls contain the correct parameters
       callsWithOriginalUser.forEach((call) => {
-        expect(call).toEqual({
+        expect(call).toStrictEqual({
           recipientEmail: user.email,
           isScheduled: codebuildJob.isScheduled,
           resource: expect.objectContaining(pageForMainBuild),
         })
       })
       callsWithSupersededUser.forEach((call) => {
-        expect(call).toEqual({
+        expect(call).toStrictEqual({
           recipientEmail: userForSupersededBuilds.email,
           isScheduled: codebuildJob.isScheduled,
           resource: expect.objectContaining(pageForSupersededBuild),
@@ -450,11 +458,12 @@ describe("webhook.router", async () => {
         .selectFrom("CodeBuildJobs")
         .selectAll()
         .execute()
-      expect(updatedCodebuildJob.length).toBe(NUMBER_SUPERSEDED_BUILDS + 1) // +1 for the original build
+      expect(updatedCodebuildJob).toHaveLength(NUMBER_SUPERSEDED_BUILDS + 1) // +1 for the original build
       updatedCodebuildJob.forEach((job) => {
-        expect(job.emailSent).toBe(true) // all jobs should have emailSent = true
+        expect(job.emailSent).toBeTruthy() // all jobs should have emailSent = true
       })
     })
+
     it("does not send an email if the publish is a site-level publish", async () => {
       // Arrange
       const { codebuildJob } = await setupCodeBuildJob({
@@ -483,7 +492,7 @@ describe("webhook.router", async () => {
         .executeTakeFirstOrThrow()
         .then((job) => {
           // expect the job status to be updated to SUCCEEDED
-          expect(job).toEqual(
+          expect(job).toStrictEqual(
             expect.objectContaining({
               status: "SUCCEEDED",
               emailSent: false, // emailSent should remain false

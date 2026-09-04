@@ -102,33 +102,35 @@ describe("auditLogExport.query", () => {
   })
 
   describe("formatAuditLogDateRange / parseAuditLogDateRange", () => {
+
     it("round-trips SGT calendar-date bounds through the canonical form", () => {
       const range = formatAuditLogDateRange("2026-04-01", "2026-05-01")
       expect(range).toBe("[2026-04-01,2026-05-01)")
-      expect(parseAuditLogDateRange(range)).toEqual({
+      expect(parseAuditLogDateRange(range)).toStrictEqual({
         lowerInclusive: "2026-04-01",
         upperExclusive: "2026-05-01",
       })
     })
 
-    it("rejects non-canonical input", () => {
-      expect(() => parseAuditLogDateRange("")).toThrow()
-      expect(() => parseAuditLogDateRange("garbage")).toThrow()
-      // Missing brackets
-      expect(() => parseAuditLogDateRange("2026-04-01,2026-05-01")).toThrow()
-      // Wrong bound inclusivity — Postgres canonicalises to `[...)`
-      expect(() => parseAuditLogDateRange("(2026-04-01,2026-05-01)")).toThrow()
-      expect(() => parseAuditLogDateRange("[2026-04-01,2026-05-01]")).toThrow()
-      // Unpadded dates are not canonical
-      expect(() => parseAuditLogDateRange("[2026-4-1,2026-05-01)")).toThrow()
-      // Unbounded ranges are excluded by the DB CHECK
-      expect(() => parseAuditLogDateRange("[2026-04-01,)")).toThrow()
-      expect(() => parseAuditLogDateRange("[,2026-05-01)")).toThrow()
-      expect(() => parseAuditLogDateRange("empty")).toThrow()
+    it.each([
+      "",
+      "garbage",
+      "2026-04-01,2026-05-01",
+      "(2026-04-01,2026-05-01)",
+      "[2026-04-01,2026-05-01]",
+      "[2026-4-1,2026-05-01)",
+      "[2026-04-01,)",
+      "[,2026-05-01)",
+      "empty",
+    ])("rejects non-canonical input %#", (input) => {
+      expect(() => parseAuditLogDateRange(input)).toThrow(
+        /Invalid audit log date range/,
+      )
     })
   })
 
-  describe("getMonthDateRange", () => {
+  describe(getMonthDateRange, () => {
+
     it("returns the full calendar month for a past month", () => {
       expect(getMonthDateRange("2026-04", NOW)).toBe("[2026-04-01,2026-05-01)")
       expect(getMonthDateRange(MONTH, NOW)).toBe("[2024-03-01,2024-04-01)")
@@ -176,12 +178,13 @@ describe("auditLogExport.query", () => {
       // Casts bypass the `IsoMonth` compile-time guard on purpose: these
       // exercise the runtime defense for values arriving through untyped
       // paths (e.g. raw DB reads or JSON).
-      expect(() => getMonthDateRange("2024-13" as IsoMonth, NOW)).toThrow()
-      expect(() => getMonthDateRange("not-a-month" as IsoMonth, NOW)).toThrow()
+      expect(() => getMonthDateRange("2024-13" as IsoMonth, NOW)).toThrow(/./)
+      expect(() => getMonthDateRange("not-a-month" as IsoMonth, NOW)).toThrow(/./)
     })
   })
 
-  describe("getExportRange", () => {
+  describe(getExportRange, () => {
+
     it("maps the SGT calendar-date bounds to SGT-midnight UTC instants", () => {
       const { rangeStart, rangeEnd } = getExportRange("[2024-03-01,2024-04-01)")
       // 2024-03-01 00:00 SGT === 2024-02-29 16:00 UTC
@@ -191,11 +194,12 @@ describe("auditLogExport.query", () => {
     })
 
     it("throws on a non-canonical range", () => {
-      expect(() => getExportRange("2024-03-01/2024-04-01")).toThrow()
+      expect(() => getExportRange("2024-03-01/2024-04-01")).toThrow(/./)
     })
   })
 
   describe("getAccessReportRows (point-in-time)", () => {
+
     it("reconstructs who had access as of the end of the selected month", async () => {
       const { site } = await setupSite()
 
@@ -258,7 +262,7 @@ describe("auditLogExport.query", () => {
       })
       const emails = rows.map((r) => r.Email).sort()
 
-      expect(emails).toEqual([
+      expect(emails).toStrictEqual([
         "active@agency.gov.sg",
         "revoked-late@agency.gov.sg",
       ])
@@ -289,7 +293,7 @@ describe("auditLogExport.query", () => {
         siteId: site.id,
         auditLogDateRange,
       })
-      expect(rows.map((r) => r.Email)).toEqual(["agency@agency.gov.sg"])
+      expect(rows.map((r) => r.Email)).toStrictEqual(["agency@agency.gov.sg"])
     })
 
     it("excludes users permissioned only on a different site", async () => {
@@ -362,7 +366,7 @@ describe("auditLogExport.query", () => {
         siteId: site.id,
         auditLogDateRange,
       })
-      expect(rows.map((r) => r.Email).sort()).toEqual([
+      expect(rows.map((r) => r.Email).sort()).toStrictEqual([
         "in-month@agency.gov.sg",
         "revoked-after-boundary@agency.gov.sg",
       ])
@@ -390,7 +394,7 @@ describe("auditLogExport.query", () => {
       expect(rows).toHaveLength(1)
       // String-alias columns keep their quotes in the key (matches the
       // script; `toCsv` strips them for the CSV header).
-      expect(rows[0]).toEqual({
+      expect(rows[0]).toStrictEqual({
         Email: "shape@agency.gov.sg",
         '"Last login"': lastLoginAt,
         Role: RoleType.Admin,
@@ -398,7 +402,7 @@ describe("auditLogExport.query", () => {
       })
       // Column order must match the script's CSV (Email, Last login, Role,
       // Date added) since `toCsv` serializes by insertion order.
-      expect(Object.keys(rows[0] ?? {})).toEqual([
+      expect(Object.keys(rows[0] ?? {})).toStrictEqual([
         "Email",
         '"Last login"',
         "Role",
@@ -408,6 +412,7 @@ describe("auditLogExport.query", () => {
   })
 
   describe("getActivityReportRows (month-scoped events)", () => {
+
     it("includes in-month events with a non-empty Description and excludes out-of-month events", async () => {
       const { site } = await setupSite()
       const user = await setupUser({ email: "editor@agency.gov.sg" })
@@ -715,7 +720,7 @@ describe("auditLogExport.query", () => {
       const loginRows = rows.filter(
         (r) => r['"Event type"'] === AuditLogEvent.Login,
       )
-      expect(loginRows.map((r) => r.Description)).toEqual([
+      expect(loginRows.map((r) => r.Description)).toStrictEqual([
         "Login attempt by active@agency.gov.sg from IP address 10.0.0.1",
       ])
     })
@@ -874,7 +879,7 @@ describe("auditLogExport.query", () => {
         auditLogDateRange,
       })
 
-      expect(rows.map((r) => r.Description)).toEqual([
+      expect(rows.map((r) => r.Description)).toStrictEqual([
         'Redirect from "/old" to "/new" created',
         'Redirect from "/old" to "/new" revived (was: "/stale")',
         'Redirect from "/old" to "/new" deleted',
@@ -934,7 +939,7 @@ describe("auditLogExport.query", () => {
           siteId: site.id,
           auditLogDateRange,
         })
-        expect(rows.map((r) => r['"Event type"'])).toEqual([
+        expect(rows.map((r) => r['"Event type"'])).toStrictEqual([
           AuditLogEvent.Login,
         ])
       })
@@ -1006,7 +1011,7 @@ describe("auditLogExport.query", () => {
         const times = rows
           .filter((r) => r['"Event type"'] === AuditLogEvent.Login)
           .map((r) => r['"Date and time"'].getTime())
-        expect(times).toEqual([T_05.getTime(), T_25.getTime()])
+        expect(times).toStrictEqual([T_05.getTime(), T_25.getTime()])
       })
 
       it("includes a Logout during an active collaboration window and excludes one at the exact moment of revocation", async () => {
@@ -1030,7 +1035,7 @@ describe("auditLogExport.query", () => {
         const logoutTimes = rows
           .filter((r) => r['"Event type"'] === AuditLogEvent.Logout)
           .map((r) => r['"Date and time"'].getTime())
-        expect(logoutTimes).toEqual([T_10.getTime()])
+        expect(logoutTimes).toStrictEqual([T_10.getTime()])
       })
 
       it("excludes a Logout by an Isomer admin", async () => {
@@ -1054,7 +1059,8 @@ describe("auditLogExport.query", () => {
     })
   })
 
-  describe("getStringifiedValue", () => {
+  describe(getStringifiedValue, () => {
+
     it("returns empty string for null and undefined", () => {
       expect(getStringifiedValue(null)).toBe("")
       expect(getStringifiedValue(undefined)).toBe("")
@@ -1085,7 +1091,8 @@ describe("auditLogExport.query", () => {
     })
   })
 
-  describe("toCsv", () => {
+  describe(toCsv, () => {
+
     it("produces a header row plus one data row per input row", () => {
       const rows = [
         {
@@ -1123,7 +1130,7 @@ describe("auditLogExport.query", () => {
     })
   })
 
-  describe("createCsvTransform", () => {
+  describe(createCsvTransform, () => {
     // Drive rows through the streaming serializer and collect the emitted CSV
     // text, so we can assert it byte-for-byte against the buffered `toCsv`.
     const collect = async (
@@ -1161,11 +1168,11 @@ describe("auditLogExport.query", () => {
         },
       ]
 
-      expect(await collect(rows)).toBe(toCsv(rows))
+      await expect(collect(rows)).resolves.toBe(toCsv(rows))
     })
 
     it("emits nothing for an empty stream (matches toCsv([]))", async () => {
-      expect(await collect([])).toBe("")
+      await expect(collect([])).resolves.toBe("")
     })
   })
 })

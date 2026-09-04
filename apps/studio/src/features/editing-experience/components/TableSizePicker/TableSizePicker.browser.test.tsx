@@ -44,16 +44,14 @@ const renderHarness = () =>
     </ThemeProvider>,
   )
 
-describe("TableSizePicker", () => {
+describe(TableSizePicker, () => {
   afterEach(() => {
     cleanup()
   })
 
   it("does not show the size grid until the button is clicked", () => {
     renderHarness()
-    expect(screen.queryByRole("group", { name: "Select table size" })).toBe(
-      null,
-    )
+    expect(screen.queryByRole("group", { name: "Select table size" })).toBeNull()
   })
 
   it("opens the size grid popover on click", async () => {
@@ -64,9 +62,7 @@ describe("TableSizePicker", () => {
     // Chakra's Popover content mounts via a Framer Motion enter transition,
     // so it isn't immediately part of the accessible tree — `findByRole`
     // polls until the transition settles.
-    expect(
-      await screen.findByRole("group", { name: "Select table size" }),
-    ).toBeInTheDocument()
+    await expect(screen.findByRole("group", { name: "Select table size" })).resolves.toBeInTheDocument()
     expect(screen.getByText("Insert table")).toBeInTheDocument()
   })
 
@@ -113,9 +109,7 @@ describe("TableSizePicker", () => {
     fireEvent.click(targetCell)
 
     await waitFor(() => {
-      expect(screen.queryByRole("group", { name: "Select table size" })).toBe(
-        null,
-      )
+      expect(screen.queryByRole("group", { name: "Select table size" })).toBeNull()
     })
 
     const rows = screen.getAllByRole("row")
@@ -135,7 +129,7 @@ describe("TableSizePicker", () => {
     fireEvent.click(targetCell)
 
     await waitFor(() => {
-      expect(screen.queryByRole("button", { name: "Table" })).toBe(null)
+      expect(screen.queryByRole("button", { name: "Table" })).toBeNull()
     })
 
     expect(
@@ -145,11 +139,9 @@ describe("TableSizePicker", () => {
     fireEvent.click(screen.getByRole("button", { name: "Delete table" }))
 
     await waitFor(() => {
-      expect(screen.queryByRole("row")).toBe(null)
+      expect(screen.queryByRole("row")).toBeNull()
     })
-    expect(
-      await screen.findByRole("button", { name: "Table" }),
-    ).toBeInTheDocument()
+    await expect(screen.findByRole("button", { name: "Table" })).resolves.toBeInTheDocument()
   })
 
   it("shows the delete-table button in its active (highlighted) state, matching the old Table button's behaviour while inside a table", async () => {

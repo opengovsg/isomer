@@ -3,7 +3,8 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { getIsActiveForResource } from "../useIsActive"
 
-describe("getIsActiveForResource", () => {
+describe(getIsActiveForResource, () => {
+
   it("marks a collection active when the route has the matching collectionId", () => {
     // Arrange
     const resourceId = "456"
@@ -18,7 +19,7 @@ describe("getIsActiveForResource", () => {
     )
 
     // Assert
-    expect(isActive).toBe(true)
+    expect(isActive).toBeTruthy()
   })
 
   it("does not mark a collection active when the route has a different collectionId", () => {
@@ -35,7 +36,7 @@ describe("getIsActiveForResource", () => {
     )
 
     // Assert
-    expect(isActive).toBe(false)
+    expect(isActive).toBeFalsy()
   })
 
   it("does not mark a collection active when the route has no collectionId", () => {
@@ -52,7 +53,7 @@ describe("getIsActiveForResource", () => {
     )
 
     // Assert
-    expect(isActive).toBe(false)
+    expect(isActive).toBeFalsy()
   })
 
   it("does not mark the root page active when the route has a collectionId", () => {
@@ -69,7 +70,7 @@ describe("getIsActiveForResource", () => {
     )
 
     // Assert
-    expect(isActive).toBe(false)
+    expect(isActive).toBeFalsy()
   })
 
   it("does not mark the root page active when the route has a folderId", () => {
@@ -86,7 +87,7 @@ describe("getIsActiveForResource", () => {
     )
 
     // Assert
-    expect(isActive).toBe(false)
+    expect(isActive).toBeFalsy()
   })
 
   it("does not mark the root page active when the route has a resourceId", () => {
@@ -103,7 +104,7 @@ describe("getIsActiveForResource", () => {
     )
 
     // Assert
-    expect(isActive).toBe(false)
+    expect(isActive).toBeFalsy()
   })
 
   it("marks the root page active when there is no routed resource", () => {
@@ -120,7 +121,7 @@ describe("getIsActiveForResource", () => {
     )
 
     // Assert
-    expect(isActive).toBe(true)
+    expect(isActive).toBeTruthy()
   })
 
   it("does not mark the root page active when the route has a linkId", () => {
@@ -137,6 +138,6 @@ describe("getIsActiveForResource", () => {
     )
 
     // Assert
-    expect(isActive).toBe(false)
+    expect(isActive).toBeFalsy()
   })
 })

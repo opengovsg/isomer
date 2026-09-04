@@ -1,3 +1,4 @@
+import { beforeEach, vi, afterEach, describe, expect, it } from 'vitest';
 import type { ResolvedDestination } from "../utils"
 import {
   formatAddedAt,
@@ -6,7 +7,7 @@ import {
   shouldWarnDestination,
 } from "../utils"
 
-describe("formatAddedAt", () => {
+describe(formatAddedAt, () => {
   beforeEach(() => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date("2026-06-10T12:00:00"))
@@ -66,14 +67,15 @@ describe("formatAddedAt", () => {
   })
 })
 
-describe("isReferenceDestination", () => {
+describe(isReferenceDestination, () => {
+
   it("returns true only for a string that is exactly a reference", () => {
-    expect(isReferenceDestination("[resource:1:2]")).toBe(true)
+    expect(isReferenceDestination("[resource:1:2]")).toBeTruthy()
   })
 
   it("returns false for literal paths and external URLs", () => {
-    expect(isReferenceDestination("/about-us")).toBe(false)
-    expect(isReferenceDestination("https://example.gov.sg/page")).toBe(false)
+    expect(isReferenceDestination("/about-us")).toBeFalsy()
+    expect(isReferenceDestination("https://example.gov.sg/page")).toBeFalsy()
   })
 
   it("returns false for a value that merely contains the reference substring", () => {
@@ -81,21 +83,22 @@ describe("isReferenceDestination", () => {
     // reference embedded in an external URL or a longer string.
     expect(
       isReferenceDestination("https://example.gov.sg/[resource:1:2]"),
-    ).toBe(false)
-    expect(isReferenceDestination("[resource:1:2]/extra")).toBe(false)
+    ).toBeFalsy()
+    expect(isReferenceDestination("[resource:1:2]/extra")).toBeFalsy()
   })
 })
 
-describe("getDestinationDisplay", () => {
+describe(getDestinationDisplay, () => {
+
   it("shows a non-reference destination verbatim", () => {
-    expect(getDestinationDisplay("/about-us", new Map())).toEqual({
+    expect(getDestinationDisplay("/about-us", new Map())).toStrictEqual({
       status: "resolved",
       label: "/about-us",
     })
   })
 
   it("is resolving until the reference lookup lands", () => {
-    expect(getDestinationDisplay("[resource:1:2]", new Map())).toEqual({
+    expect(getDestinationDisplay("[resource:1:2]", new Map())).toStrictEqual({
       status: "resolving",
     })
   })
@@ -104,7 +107,7 @@ describe("getDestinationDisplay", () => {
     const infoByDestination = new Map<string, ResolvedDestination>([
       ["[resource:1:2]", { permalink: "/about/contact", warn: false }],
     ])
-    expect(getDestinationDisplay("[resource:1:2]", infoByDestination)).toEqual({
+    expect(getDestinationDisplay("[resource:1:2]", infoByDestination)).toStrictEqual({
       status: "resolved",
       label: "/about/contact",
     })
@@ -114,37 +117,32 @@ describe("getDestinationDisplay", () => {
     const infoByDestination = new Map<string, ResolvedDestination>([
       ["[resource:1:2]", { permalink: null, warn: true }],
     ])
-    expect(getDestinationDisplay("[resource:1:2]", infoByDestination)).toEqual({
+    expect(getDestinationDisplay("[resource:1:2]", infoByDestination)).toStrictEqual({
       status: "missing",
     })
   })
 })
 
-describe("shouldWarnDestination", () => {
+describe(shouldWarnDestination, () => {
+
   it("warns when the server flagged the destination as leading nowhere", () => {
     const infoByDestination = new Map<string, ResolvedDestination>([
       ["[resource:1:2]", { permalink: null, warn: true }],
       ["/unpublished", { permalink: null, warn: true }],
     ])
-    expect(shouldWarnDestination("[resource:1:2]", infoByDestination)).toBe(
-      true,
-    )
-    expect(shouldWarnDestination("/unpublished", infoByDestination)).toBe(true)
+    expect(shouldWarnDestination("[resource:1:2]", infoByDestination)).toBeTruthy()
+    expect(shouldWarnDestination("/unpublished", infoByDestination)).toBeTruthy()
   })
 
   it("does not warn for a published destination", () => {
     const infoByDestination = new Map<string, ResolvedDestination>([
       ["[resource:1:2]", { permalink: "/about/contact", warn: false }],
     ])
-    expect(shouldWarnDestination("[resource:1:2]", infoByDestination)).toBe(
-      false,
-    )
+    expect(shouldWarnDestination("[resource:1:2]", infoByDestination)).toBeFalsy()
   })
 
   it("does not warn for a destination that is still resolving or external", () => {
-    expect(shouldWarnDestination("https://example.gov.sg", new Map())).toBe(
-      false,
-    )
-    expect(shouldWarnDestination("[resource:1:2]", new Map())).toBe(false)
+    expect(shouldWarnDestination("https://example.gov.sg", new Map())).toBeFalsy()
+    expect(shouldWarnDestination("[resource:1:2]", new Map())).toBeFalsy()
   })
 })

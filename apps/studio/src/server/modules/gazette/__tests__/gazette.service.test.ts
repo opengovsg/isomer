@@ -9,7 +9,7 @@ import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 // algoliasearch(env.ALGOLIA_APP_ID, env.ALGOLIA_API_KEY). Those env vars are
 // not set in the test environment, so the import throws "appId is missing"
 // before any test runs. Mock the whole module to prevent this.
-vi.mock("~/lib/algolia")
+vi.mock(import('~/lib/algolia'))
 
 import * as algoliaLib from "~/lib/algolia"
 
@@ -35,7 +35,8 @@ describe("gazette.service", () => {
     )
   })
 
-  describe("assertGazetteAccess", () => {
+  describe(assertGazetteAccess, () => {
+
     it("allows a Toppan-email user", async () => {
       const user = await setupUser({ email: "anyone@toppannext.com" })
       await expect(assertGazetteAccess(user.id)).resolves.toBeUndefined()
@@ -58,7 +59,7 @@ describe("gazette.service", () => {
 
     it("rejects a user who is neither Toppan nor a qualifying admin", async () => {
       const user = await setupUser({ email: "user@example.com" })
-      await expect(assertGazetteAccess(user.id)).rejects.toThrowError(
+      await expect(assertGazetteAccess(user.id)).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message: "You do not have access to the gazette feature",
@@ -69,18 +70,19 @@ describe("gazette.service", () => {
     it("throws INTERNAL_SERVER_ERROR if the user row is missing", async () => {
       await expect(
         assertGazetteAccess("11111111-1111-1111-1111-111111111111"),
-      ).rejects.toThrowError(new TRPCError({ code: "INTERNAL_SERVER_ERROR" }))
+      ).rejects.toThrow(new TRPCError({ code: "INTERNAL_SERVER_ERROR" }))
     })
   })
 
-  describe("copyFileWithNewName", () => {
+  describe(copyFileWithNewName, () => {
+
     it("rejects a sourceKey that does not have the expected /year/cat/sub/file shape", async () => {
       await expect(
         copyFileWithNewName({
           sourceKey: "too/few/parts",
           newFileName: "renamed.pdf",
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message: "Invalid source key format",
@@ -100,14 +102,15 @@ describe("gazette.service", () => {
       expect(newKey).toBe(
         "2026/Government Gazette/Public/renamed-weird-name.pdf",
       )
-      expect(copySpy).toHaveBeenCalledTimes(1)
+      expect(copySpy).toHaveBeenCalledOnce()
       const args = copySpy.mock.calls[0]![0]
       expect(args.SourceKey).toBe("2026/Government Gazette/Public/original.pdf")
       expect(args.DestKey).toBe(newKey)
     })
   })
 
-  describe("getPresignedPutUrl", () => {
+  describe(getPresignedPutUrl, () => {
+
     it("includes Tagging in the signer call when tags are supplied", async () => {
       const signedPutSpy = vi
         .spyOn(s3Lib, "generateSignedPutUrl")
@@ -139,7 +142,8 @@ describe("gazette.service", () => {
     })
   })
 
-  describe("removeGazetteFromAlgolia", () => {
+  describe(removeGazetteFromAlgolia, () => {
+
     it("calls deleteObjectsFromSearchIndexByFilter with a correctly-quoted objectGroup filter", async () => {
       // Arrange
       const deleteSpy = vi
@@ -152,8 +156,7 @@ describe("gazette.service", () => {
       )
 
       // Assert
-      expect(deleteSpy).toHaveBeenCalledTimes(1)
-      expect(deleteSpy).toHaveBeenCalledWith(
+      expect(deleteSpy).toHaveBeenCalledExactlyOnceWith(
         'objectGroup:"2026/Government Gazette/Public/notice-123.pdf"',
       )
     })
@@ -171,7 +174,7 @@ describe("gazette.service", () => {
       )
 
       // Assert
-      await expect(act).rejects.toThrowError(
+      await expect(act).rejects.toThrow(
         new TRPCError({
           code: "PRECONDITION_FAILED",
           message: "Failed to remove gazette from search index",

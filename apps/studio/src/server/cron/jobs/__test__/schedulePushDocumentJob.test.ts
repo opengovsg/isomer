@@ -1,3 +1,4 @@
+import { it, vi, afterEach, expect, describe, beforeEach } from 'vitest';
 import type * as serverContextType from "~/server/context"
 import type { User } from "~prisma/generated/selectableTypes"
 import { addMinutes } from "date-fns"
@@ -15,15 +16,15 @@ import * as algoliaPkg from "@isomer/algolia"
 // algoliasearch(env.ALGOLIA_APP_ID, env.ALGOLIA_API_KEY). Those env vars are
 // not set in the test environment, so the import throws "appId is missing"
 // before any test runs. Mock the whole module to prevent this.
-vi.mock("~/lib/algolia")
+vi.mock(import('~/lib/algolia'))
 
 // Mock createGrowthBookContext so tests can control the flag without hitting
 // the remote GrowthBook CDN.
-vi.mock("~/server/context", async (importOriginal) => {
+vi.mock(import('~/server/context'), async (importOriginal) => {
   const actual = await importOriginal<typeof serverContextType>()
   return {
     ...actual,
-    createGrowthBookContext: vi.fn(),
+    createGrowthBookContext: vi.fn<(...args: unknown[]) => unknown>(()),
   }
 })
 
@@ -162,11 +163,11 @@ const seedDocumentReadyForIngestion = async ({
 
 /** Build a mock GrowthBook instance where isOn returns the given value. */
 const makeMockGb = (isOn: boolean) => ({
-  isOn: vi.fn().mockReturnValue(isOn),
-  destroy: vi.fn(),
+  isOn: vi.fn<(...args: unknown[]) => unknown>(()).mockReturnValue(isOn),
+  destroy: vi.fn<(...args: unknown[]) => unknown>(()),
 })
 
-describe("schedulePushDocumentJobHandler", async () => {
+describe(schedulePushDocumentJobHandler, async () => {
   const session = await applyAuthedSession()
   let user: User
 
@@ -235,6 +236,7 @@ describe("schedulePushDocumentJobHandler", async () => {
   })
 
   describe("Algolia path (flag OFF)", () => {
+
     it("dispatches a due row to Algolia and deletes it", async () => {
       // Arrange
       const { resourceId, ref } = await seedDocumentReadyForIngestion({
@@ -256,7 +258,7 @@ describe("schedulePushDocumentJobHandler", async () => {
       await schedulePushDocumentJobHandler()
 
       // Assert — Algolia saveObjects was called with correct fields.
-      expect(algoliaLib.saveObjectsToSearchIndex).toHaveBeenCalledTimes(1)
+      expect(algoliaLib.saveObjectsToSearchIndex).toHaveBeenCalledOnce()
       const [records] = vi.mocked(algoliaLib.saveObjectsToSearchIndex).mock
         .calls[0]!
       expect(records.length).toBeGreaterThan(0)
@@ -284,8 +286,8 @@ describe("schedulePushDocumentJobHandler", async () => {
       expect(remaining).toHaveLength(0)
 
       // S3 + PDF parser were each invoked exactly once.
-      expect(s3Lib.getBlob).toHaveBeenCalledTimes(1)
-      expect(algoliaPkg.parseFullTextFromPDF).toHaveBeenCalledTimes(1)
+      expect(s3Lib.getBlob).toHaveBeenCalledOnce()
+      expect(algoliaPkg.parseFullTextFromPDF).toHaveBeenCalledOnce()
 
       // The published object's download filename is rewritten to the
       // gazette title (extension carried over from the key).
@@ -329,7 +331,7 @@ describe("schedulePushDocumentJobHandler", async () => {
 
       // Assert — records were built from the full text (>1 chunk because the
       // text exceeds one 7 000-char chunk), and no 50k truncation was applied.
-      expect(algoliaLib.saveObjectsToSearchIndex).toHaveBeenCalledTimes(1)
+      expect(algoliaLib.saveObjectsToSearchIndex).toHaveBeenCalledOnce()
       const builtRecords: algoliaPkg.SearchRecord[] =
         buildSpy.mock.results[0]!.value
       expect(builtRecords.length).toBeGreaterThan(1)
@@ -365,7 +367,7 @@ describe("schedulePushDocumentJobHandler", async () => {
       await schedulePushDocumentJobHandler()
 
       // Assert
-      expect(algoliaLib.saveObjectsToSearchIndex).toHaveBeenCalledTimes(1)
+      expect(algoliaLib.saveObjectsToSearchIndex).toHaveBeenCalledOnce()
       const [records] = vi.mocked(algoliaLib.saveObjectsToSearchIndex).mock
         .calls[0]!
       expect(records[0]).toMatchObject({ notificationNum: "12345" })
@@ -496,11 +498,11 @@ describe("schedulePushDocumentJobHandler", async () => {
 
       // Assert — the gazette is indexed from the published Version's blob
       // and its S3 object is untagged, even though no draft blob remains.
-      expect(algoliaLib.saveObjectsToSearchIndex).toHaveBeenCalledTimes(1)
+      expect(algoliaLib.saveObjectsToSearchIndex).toHaveBeenCalledOnce()
       const [records] = vi.mocked(algoliaLib.saveObjectsToSearchIndex).mock
         .calls[0]!
       expect(records[0]).toMatchObject({ objectGroup: ref.slice(1) })
-      expect(s3Lib.setAssetAsPublished).toHaveBeenCalledTimes(1)
+      expect(s3Lib.setAssetAsPublished).toHaveBeenCalledOnce()
       const remainingAfterPublish = await db
         .selectFrom("PushDocumentJob")
         .selectAll()
@@ -554,7 +556,7 @@ describe("schedulePushDocumentJobHandler", async () => {
       await schedulePushDocumentJobHandler()
 
       // Assert — records are built from the published ref, not the draft's.
-      expect(algoliaLib.saveObjectsToSearchIndex).toHaveBeenCalledTimes(1)
+      expect(algoliaLib.saveObjectsToSearchIndex).toHaveBeenCalledOnce()
       const [records] = vi.mocked(algoliaLib.saveObjectsToSearchIndex).mock
         .calls[0]!
       expect(records[0]).toMatchObject({
@@ -708,8 +710,8 @@ describe("schedulePushDocumentJobHandler", async () => {
       expect(remaining).toHaveLength(0)
 
       // S3 + PDF parser were each invoked exactly once.
-      expect(s3Lib.getBlob).toHaveBeenCalledTimes(1)
-      expect(algoliaPkg.parseFullTextFromPDF).toHaveBeenCalledTimes(1)
+      expect(s3Lib.getBlob).toHaveBeenCalledOnce()
+      expect(algoliaPkg.parseFullTextFromPDF).toHaveBeenCalledOnce()
 
       // The published object's download filename is rewritten to the
       // gazette title (extension carried over from the key).

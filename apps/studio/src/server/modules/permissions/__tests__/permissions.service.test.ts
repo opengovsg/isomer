@@ -11,7 +11,7 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, beforeEach } from "vitest"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import type { ResourceAbility } from "../permissions.type"
@@ -40,6 +40,7 @@ const buildPermissions = (role: RoleType) => {
 
 describe("permissions.service", () => {
   describe("buildPermissions", () => {
+
     it("should allow editors to perform CRUD actions on non root pages", () => {
       // Arrange
       const perms = buildPermissions(RoleType.Editor)
@@ -152,7 +153,7 @@ describe("permissions.service", () => {
       const canMoveTo = perms.can("move", to)
 
       // Assert
-      expect(canMoveFrom).toBe(false)
+      expect(canMoveFrom).toBeFalsy()
       expect(canMoveTo).toBe(expected)
     })
 
@@ -169,29 +170,30 @@ describe("permissions.service", () => {
 
       // Assert
       expect(canMoveFrom).toBe(expected)
-      expect(canMoveTo).toBe(false)
+      expect(canMoveTo).toBeFalsy()
     })
   })
 
-  describe("buildUserManagementPermissions", () => {
+  describe(buildUserManagementPermissions, () => {
+
     it("should not allow read when user has no roles", () => {
       const perms = buildUserManagementPermissions([])
-      expect(perms.can("read", "UserManagement")).toBe(false)
-      expect(perms.can("manage", "UserManagement")).toBe(false)
+      expect(perms.can("read", "UserManagement")).toBeFalsy()
+      expect(perms.can("manage", "UserManagement")).toBeFalsy()
     })
 
     it("should allow read when user has exactly one role (Editor)", () => {
       const perms = buildUserManagementPermissions([{ role: RoleType.Editor }])
-      expect(perms.can("read", "UserManagement")).toBe(true)
-      expect(perms.can("manage", "UserManagement")).toBe(false)
+      expect(perms.can("read", "UserManagement")).toBeTruthy()
+      expect(perms.can("manage", "UserManagement")).toBeFalsy()
     })
 
     it("should allow read when user has exactly one role (Publisher)", () => {
       const perms = buildUserManagementPermissions([
         { role: RoleType.Publisher },
       ])
-      expect(perms.can("read", "UserManagement")).toBe(true)
-      expect(perms.can("manage", "UserManagement")).toBe(false)
+      expect(perms.can("read", "UserManagement")).toBeTruthy()
+      expect(perms.can("manage", "UserManagement")).toBeFalsy()
     })
 
     it("should allow read when user has multiple non-admin roles (Editor and Publisher)", () => {
@@ -199,14 +201,14 @@ describe("permissions.service", () => {
         { role: RoleType.Editor },
         { role: RoleType.Publisher },
       ])
-      expect(perms.can("read", "UserManagement")).toBe(true)
-      expect(perms.can("manage", "UserManagement")).toBe(false)
+      expect(perms.can("read", "UserManagement")).toBeTruthy()
+      expect(perms.can("manage", "UserManagement")).toBeFalsy()
     })
 
     it("should allow manage when user has Admin role", () => {
       const perms = buildUserManagementPermissions([{ role: RoleType.Admin }])
-      expect(perms.can("read", "UserManagement")).toBe(true)
-      expect(perms.can("manage", "UserManagement")).toBe(true)
+      expect(perms.can("read", "UserManagement")).toBeTruthy()
+      expect(perms.can("manage", "UserManagement")).toBeTruthy()
     })
 
     it("should allow manage when user has multiple roles including Admin", () => {
@@ -214,12 +216,12 @@ describe("permissions.service", () => {
         { role: RoleType.Editor },
         { role: RoleType.Admin },
       ])
-      expect(perms.can("read", "UserManagement")).toBe(true)
-      expect(perms.can("manage", "UserManagement")).toBe(true)
+      expect(perms.can("read", "UserManagement")).toBeTruthy()
+      expect(perms.can("manage", "UserManagement")).toBeTruthy()
     })
   })
 
-  describe("bulkValidateUserPermissionsForResources", async () => {
+  describe(bulkValidateUserPermissionsForResources, async () => {
     const user = await setupUser({
       userId: "user1",
       email: "user1@example.com",
@@ -256,6 +258,7 @@ describe("permissions.service", () => {
 
     describe("create", () => {
       describe("admin", () => {
+
         it("should allow admins to create root resources", async () => {
           // Arrange
           await setupAdminPermissions({ userId: user.id, siteId: site.id })
@@ -269,11 +272,12 @@ describe("permissions.service", () => {
           })
 
           // Assert
-          await expect(validation).resolves.not.toThrow()
+          await expect(validation).resolves.not.toThrow(/./)
         })
       })
 
       describe("publisher", () => {
+
         it("should allow publishers to create non-root resources", async () => {
           // Arrange
           await setupPublisherPermissions({ userId: user.id, siteId: site.id })
@@ -287,7 +291,7 @@ describe("permissions.service", () => {
           })
 
           // Assert
-          await expect(validation).resolves.not.toThrow()
+          await expect(validation).resolves.not.toThrow(/./)
         })
 
         it("should not allow publishers to create root resources", async () => {
@@ -328,6 +332,7 @@ describe("permissions.service", () => {
       })
 
       describe("editor", () => {
+
         it("should allow editors to create non-root resources", async () => {
           // Arrange
           await setupEditorPermissions({ userId: user.id, siteId: site.id })
@@ -341,7 +346,7 @@ describe("permissions.service", () => {
           })
 
           // Assert
-          await expect(validation).resolves.not.toThrow()
+          await expect(validation).resolves.not.toThrow(/./)
         })
 
         it("should not allow editors to create root resources", async () => {
@@ -382,6 +387,7 @@ describe("permissions.service", () => {
       })
 
       describe("no permissions", () => {
+
         it("should not allow users without permissions to create resources", async () => {
           // Act
           const validation = bulkValidateUserPermissionsForResources({
@@ -401,6 +407,7 @@ describe("permissions.service", () => {
 
     describe("read", () => {
       describe("admin", () => {
+
         it("should allow admins to read any resource", async () => {
           // Arrange
           await setupAdminPermissions({ userId: user.id, siteId: site.id })
@@ -415,7 +422,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
-            await expect(validation).resolves.not.toThrow()
+            await expect(validation).resolves.not.toThrow(/./)
           }
 
           // Act (multiple resources)
@@ -427,7 +434,7 @@ describe("permissions.service", () => {
           })
 
           // Assert (multiple resources)
-          await expect(bulkValidation).resolves.not.toThrow()
+          await expect(bulkValidation).resolves.not.toThrow(/./)
         })
       })
 
@@ -446,7 +453,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
-            await expect(validation).resolves.not.toThrow()
+            await expect(validation).resolves.not.toThrow(/./)
           }
 
           // Act (multiple resources)
@@ -458,7 +465,7 @@ describe("permissions.service", () => {
           })
 
           // Assert (multiple resources)
-          await expect(bulkValidation).resolves.not.toThrow()
+          await expect(bulkValidation).resolves.not.toThrow(/./)
         })
       })
 
@@ -477,7 +484,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
-            await expect(validation).resolves.not.toThrow()
+            await expect(validation).resolves.not.toThrow(/./)
           }
 
           // Act (multiple resources)
@@ -489,11 +496,12 @@ describe("permissions.service", () => {
           })
 
           // Assert (multiple resources)
-          await expect(bulkValidation).resolves.not.toThrow()
+          await expect(bulkValidation).resolves.not.toThrow(/./)
         })
       })
 
       describe("no permissions", () => {
+
         it("should not allow users without permissions to read any resources", async () => {
           for (const resourceId of resourceIds) {
             // Act (single resource)
@@ -526,6 +534,7 @@ describe("permissions.service", () => {
       })
 
       describe("should throw error if resource is not found", () => {
+
         it("single resource", async () => {
           // Arrange
           await setupAdminPermissions({ userId: user.id, siteId: site.id })
@@ -572,6 +581,7 @@ describe("permissions.service", () => {
 
     describe("update", () => {
       describe("admin", () => {
+
         it("should allow admins to update any resources", async () => {
           // Arrange
           await setupAdminPermissions({ userId: user.id, siteId: site.id })
@@ -586,7 +596,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
-            await expect(validation).resolves.not.toThrow()
+            await expect(validation).resolves.not.toThrow(/./)
           }
 
           // Act (multiple resources)
@@ -598,11 +608,12 @@ describe("permissions.service", () => {
           })
 
           // Assert (multiple resources)
-          await expect(bulkValidation).resolves.not.toThrow()
+          await expect(bulkValidation).resolves.not.toThrow(/./)
         })
       })
 
       describe("publisher", () => {
+
         it("should allow publishers to update any resources", async () => {
           // Arrange
           await setupPublisherPermissions({ userId: user.id, siteId: site.id })
@@ -617,7 +628,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
-            await expect(validation).resolves.not.toThrow()
+            await expect(validation).resolves.not.toThrow(/./)
           }
 
           // Act (multiple resources)
@@ -629,11 +640,12 @@ describe("permissions.service", () => {
           })
 
           // Assert (multiple resources)
-          await expect(bulkValidation).resolves.not.toThrow()
+          await expect(bulkValidation).resolves.not.toThrow(/./)
         })
       })
 
       describe("editor", () => {
+
         it("should allow editors to update any resources", async () => {
           // Arrange
           await setupEditorPermissions({ userId: user.id, siteId: site.id })
@@ -648,7 +660,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
-            await expect(validation).resolves.not.toThrow()
+            await expect(validation).resolves.not.toThrow(/./)
           }
 
           // Act (multiple resources)
@@ -660,11 +672,12 @@ describe("permissions.service", () => {
           })
 
           // Assert (multiple resources)
-          await expect(bulkValidation).resolves.not.toThrow()
+          await expect(bulkValidation).resolves.not.toThrow(/./)
         })
       })
 
       describe("no permissions", () => {
+
         it("should not allow users without permissions to update any resources", async () => {
           for (const resourceId of resourceIds) {
             // Act (single resource)
@@ -715,6 +728,7 @@ describe("permissions.service", () => {
 
     describe("delete", () => {
       describe("admin", () => {
+
         it("should allow admins to delete any resources", async () => {
           // Arrange
           await setupAdminPermissions({ userId: user.id, siteId: site.id })
@@ -729,7 +743,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
-            await expect(validation).resolves.not.toThrow()
+            await expect(validation).resolves.not.toThrow(/./)
           }
 
           // Act (multiple resources)
@@ -741,11 +755,12 @@ describe("permissions.service", () => {
           })
 
           // Assert (multiple resources)
-          await expect(bulkValidation).resolves.not.toThrow()
+          await expect(bulkValidation).resolves.not.toThrow(/./)
         })
       })
 
       describe("publisher", () => {
+
         it("should allow publishers to delete non-root resources", async () => {
           // Arrange
           await setupPublisherPermissions({ userId: user.id, siteId: site.id })
@@ -761,7 +776,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
-            await expect(validation).resolves.not.toThrow()
+            await expect(validation).resolves.not.toThrow(/./)
           }
 
           // Act (multiple resources)
@@ -773,7 +788,7 @@ describe("permissions.service", () => {
           })
 
           // Assert (multiple resources)
-          await expect(bulkValidation).resolves.not.toThrow()
+          await expect(bulkValidation).resolves.not.toThrow(/./)
         })
 
         it("should not allow publishers to delete root resources", async () => {
@@ -817,6 +832,7 @@ describe("permissions.service", () => {
       })
 
       describe("editor", () => {
+
         it("should allow editors to delete non-root resources", async () => {
           // Arrange
           await setupEditorPermissions({ userId: user.id, siteId: site.id })
@@ -832,7 +848,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
-            await expect(validation).resolves.not.toThrow()
+            await expect(validation).resolves.not.toThrow(/./)
           }
 
           // Act (multiple resources)
@@ -844,7 +860,7 @@ describe("permissions.service", () => {
           })
 
           // Assert (multiple resources)
-          await expect(bulkValidation).resolves.not.toThrow()
+          await expect(bulkValidation).resolves.not.toThrow(/./)
         })
 
         it("should not allow editors to delete root resources", async () => {
@@ -888,6 +904,7 @@ describe("permissions.service", () => {
       })
 
       describe("no permissions", () => {
+
         it("should not allow users without permissions to delete any resources", async () => {
           for (const resourceId of resourceIds) {
             // Act (single resource)
@@ -938,6 +955,7 @@ describe("permissions.service", () => {
 
     describe("publish", () => {
       describe("admin", () => {
+
         it("should allow admins to publish any resources", async () => {
           // Arrange
           await setupAdminPermissions({ userId: user.id, siteId: site.id })
@@ -952,7 +970,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
-            await expect(validation).resolves.not.toThrow()
+            await expect(validation).resolves.not.toThrow(/./)
           }
 
           // Act (multiple resources)
@@ -964,11 +982,12 @@ describe("permissions.service", () => {
           })
 
           // Assert (multiple resources)
-          await expect(bulkValidation).resolves.not.toThrow()
+          await expect(bulkValidation).resolves.not.toThrow(/./)
         })
       })
 
       describe("publisher", () => {
+
         it("should allow publishers to publish any resources", async () => {
           // Arrange
           await setupPublisherPermissions({ userId: user.id, siteId: site.id })
@@ -983,7 +1002,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
-            await expect(validation).resolves.not.toThrow()
+            await expect(validation).resolves.not.toThrow(/./)
           }
 
           // Act (multiple resources)
@@ -995,11 +1014,12 @@ describe("permissions.service", () => {
           })
 
           // Assert (multiple resources)
-          await expect(bulkValidation).resolves.not.toThrow()
+          await expect(bulkValidation).resolves.not.toThrow(/./)
         })
       })
 
       describe("editor", () => {
+
         it("should not allow editors to publish resources", async () => {
           // Arrange
           await setupEditorPermissions({ userId: user.id, siteId: site.id })
@@ -1035,6 +1055,7 @@ describe("permissions.service", () => {
       })
 
       describe("no permissions", () => {
+
         it("should not allow users without permissions to publish any resources", async () => {
           for (const resourceId of resourceIds) {
             // Act (single resource)
@@ -1102,7 +1123,7 @@ describe("permissions.service", () => {
           })
 
           // Assert
-          await expect(validation).resolves.not.toThrow()
+          await expect(validation).resolves.not.toThrow(/./)
         }
       })
 
@@ -1128,7 +1149,7 @@ describe("permissions.service", () => {
   })
 })
 
-describe("getResourcePermission", () => {
+describe(getResourcePermission, () => {
   beforeEach(async () => {
     await resetTables("ResourcePermission", "User", "Site", "Resource")
   })
@@ -1152,6 +1173,7 @@ describe("getResourcePermission", () => {
   })
 
   // TODO: add this back in when we have resource-specific permissions
+  // oxlint-disable-next-line vitest/no-disabled-tests
   it.skip("should return resource-specific permissions when resourceId is provided", async () => {
     // Arrange
     const user = await setupUser({ email: "test@example.com" })
@@ -1217,6 +1239,7 @@ describe("getResourcePermission", () => {
   })
 
   // TODO: add this back in when we have resource-specific permissions
+  // oxlint-disable-next-line vitest/no-disabled-tests
   it.skip("should not return site-wide permissions when resourceId is provided and is not null", async () => {
     // Arrange
     const user = await setupUser({ email: "test@example.com" })
@@ -1321,6 +1344,7 @@ describe("getResourcePermission", () => {
   })
 
   describe("Isomer Admin", () => {
+
     it("should return Admin role for an Isomer Admin without any explicit ResourcePermission", async () => {
       // Arrange
       const user = await setupUser({ email: "test@example.com" })
@@ -1400,7 +1424,7 @@ describe("getResourcePermission", () => {
   })
 })
 
-describe("isActiveIsomerAdmin", () => {
+describe(isActiveIsomerAdmin, () => {
   beforeEach(async () => {
     await resetTables("IsomerAdmin", "User")
   })
@@ -1409,7 +1433,7 @@ describe("isActiveIsomerAdmin", () => {
     const user = await setupUser({ email: "test@example.com" })
     await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Core })
 
-    expect(await isActiveIsomerAdmin(user.id)).toBe(true)
+    await expect(isActiveIsomerAdmin(user.id)).resolves.toBeTruthy()
   })
 
   it("should return true for an active Isomer Admin with a future expiry", async () => {
@@ -1417,7 +1441,7 @@ describe("isActiveIsomerAdmin", () => {
     const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000)
     await setupIsomerAdmin({ userId: user.id, expiry: tomorrow })
 
-    expect(await isActiveIsomerAdmin(user.id)).toBe(true)
+    await expect(isActiveIsomerAdmin(user.id)).resolves.toBeTruthy()
   })
 
   it("should return false for an expired Isomer Admin", async () => {
@@ -1425,7 +1449,7 @@ describe("isActiveIsomerAdmin", () => {
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
     await setupIsomerAdmin({ userId: user.id, expiry: yesterday })
 
-    expect(await isActiveIsomerAdmin(user.id)).toBe(false)
+    await expect(isActiveIsomerAdmin(user.id)).resolves.toBeFalsy()
   })
 
   it("should return false for an Isomer Admin whose expiry is exactly now", async () => {
@@ -1434,23 +1458,22 @@ describe("isActiveIsomerAdmin", () => {
     const justExpired = new Date(Date.now() - 1000)
     await setupIsomerAdmin({ userId: user.id, expiry: justExpired })
 
-    expect(await isActiveIsomerAdmin(user.id)).toBe(false)
+    await expect(isActiveIsomerAdmin(user.id)).resolves.toBeFalsy()
   })
 
   it("should return false for a user with no IsomerAdmin row", async () => {
     const user = await setupUser({ email: "test@example.com" })
 
-    expect(await isActiveIsomerAdmin(user.id)).toBe(false)
+    await expect(isActiveIsomerAdmin(user.id)).resolves.toBeFalsy()
   })
 
   describe("role filtering", () => {
+
     it("should return true when the user's role matches the requested roles", async () => {
       const user = await setupUser({ email: "test@example.com" })
       await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Core })
 
-      expect(await isActiveIsomerAdmin(user.id, [IsomerAdminRole.Core])).toBe(
-        true,
-      )
+      await expect(isActiveIsomerAdmin(user.id, [IsomerAdminRole.Core])).resolves.toBeTruthy()
     })
 
     it("should return false when the user's role does not match the requested roles", async () => {
@@ -1460,9 +1483,7 @@ describe("isActiveIsomerAdmin", () => {
         role: IsomerAdminRole.Migrator,
       })
 
-      expect(await isActiveIsomerAdmin(user.id, [IsomerAdminRole.Core])).toBe(
-        false,
-      )
+      await expect(isActiveIsomerAdmin(user.id, [IsomerAdminRole.Core])).resolves.toBeFalsy()
     })
 
     it("should return true when the user's role is among multiple requested roles", async () => {
@@ -1472,17 +1493,15 @@ describe("isActiveIsomerAdmin", () => {
         role: IsomerAdminRole.Migrator,
       })
 
-      expect(
-        await isActiveIsomerAdmin(user.id, [
+      await expect(isActiveIsomerAdmin(user.id, [
           IsomerAdminRole.Core,
           IsomerAdminRole.Migrator,
-        ]),
-      ).toBe(true)
+        ])).resolves.toBeTruthy()
     })
   })
 })
 
-describe("validateUserIsIsomerAdmin", () => {
+describe(validateUserIsIsomerAdmin, () => {
   beforeEach(async () => {
     await resetTables("IsomerAdmin", "User")
   })
@@ -1496,7 +1515,7 @@ describe("validateUserIsIsomerAdmin", () => {
         userId: user.id,
         roles: [IsomerAdminRole.Core],
       }),
-    ).resolves.not.toThrow()
+    ).resolves.not.toThrow(/./)
   })
 
   it("should throw FORBIDDEN for a user with no IsomerAdmin row", async () => {
@@ -1554,7 +1573,7 @@ describe("validateUserIsIsomerAdmin", () => {
   })
 })
 
-describe("validateUserIsSiteAdmin", () => {
+describe(validateUserIsSiteAdmin, () => {
   beforeEach(async () => {
     await resetTables("IsomerAdmin", "ResourcePermission", "User", "Site")
   })
@@ -1568,7 +1587,7 @@ describe("validateUserIsSiteAdmin", () => {
     // Act & Assert
     await expect(
       validateUserIsSiteAdmin({ userId: user.id, siteId: site.id }),
-    ).resolves.toBe(true)
+    ).resolves.toBeTruthy()
   })
 
   it("should allow an active Isomer Admin without a site permission", async () => {
@@ -1580,7 +1599,7 @@ describe("validateUserIsSiteAdmin", () => {
     // Act & Assert
     await expect(
       validateUserIsSiteAdmin({ userId: user.id, siteId: site.id }),
-    ).resolves.toBe(true)
+    ).resolves.toBeTruthy()
   })
 
   it("should reject an expired Isomer Admin without a site permission", async () => {
@@ -1597,7 +1616,7 @@ describe("validateUserIsSiteAdmin", () => {
   })
 })
 
-describe("definePermissionsForResource", () => {
+describe(definePermissionsForResource, () => {
   beforeEach(async () => {
     await resetTables(
       "IsomerAdmin",
@@ -1621,10 +1640,10 @@ describe("definePermissionsForResource", () => {
     })
 
     // Assert — Isomer Admin can create/delete at root
-    expect(perms.can("create", { parentId: null })).toBe(true)
-    expect(perms.can("delete", { parentId: null })).toBe(true)
-    expect(perms.can("read", { parentId: null })).toBe(true)
-    expect(perms.can("update", { parentId: null })).toBe(true)
+    expect(perms.can("create", { parentId: null })).toBeTruthy()
+    expect(perms.can("delete", { parentId: null })).toBeTruthy()
+    expect(perms.can("read", { parentId: null })).toBeTruthy()
+    expect(perms.can("update", { parentId: null })).toBeTruthy()
   })
 
   it("should not grant admin resource permissions to an expired Isomer Admin without ResourcePermission", async () => {
@@ -1641,12 +1660,12 @@ describe("definePermissionsForResource", () => {
     })
 
     // Assert — expired Isomer Admin has no permissions
-    expect(perms.can("create", { parentId: null })).toBe(false)
-    expect(perms.can("delete", { parentId: null })).toBe(false)
+    expect(perms.can("create", { parentId: null })).toBeFalsy()
+    expect(perms.can("delete", { parentId: null })).toBeFalsy()
   })
 })
 
-describe("definePermissionsForSite", () => {
+describe(definePermissionsForSite, () => {
   beforeEach(async () => {
     await resetTables("IsomerAdmin", "ResourcePermission", "User", "Site")
   })
@@ -1664,9 +1683,9 @@ describe("definePermissionsForSite", () => {
     })
 
     // Assert
-    expect(perms.can("read", "Site")).toBe(true)
+    expect(perms.can("read", "Site")).toBeTruthy()
     CRUD_ACTIONS.forEach((action) => {
-      expect(perms.can(action, "Site")).toBe(true)
+      expect(perms.can(action, "Site")).toBeTruthy()
     })
   })
 
@@ -1684,14 +1703,14 @@ describe("definePermissionsForSite", () => {
     })
 
     // Assert
-    expect(perms.can("read", "Site")).toBe(false)
+    expect(perms.can("read", "Site")).toBeFalsy()
     CRUD_ACTIONS.forEach((action) => {
-      expect(perms.can(action, "Site")).toBe(false)
+      expect(perms.can(action, "Site")).toBeFalsy()
     })
   })
 })
 
-describe("validatePermissionsForManagingUsers", () => {
+describe(validatePermissionsForManagingUsers, () => {
   beforeEach(async () => {
     await resetTables("IsomerAdmin", "ResourcePermission", "User", "Site")
   })
@@ -1709,7 +1728,7 @@ describe("validatePermissionsForManagingUsers", () => {
         siteId: site.id,
         action: "manage",
       }),
-    ).resolves.not.toThrow()
+    ).resolves.not.toThrow(/./)
   })
 
   it("should throw FORBIDDEN for a non-admin user without ResourcePermission", async () => {

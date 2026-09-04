@@ -1,3 +1,4 @@
+import { beforeEach, describe, expect, it } from 'vitest';
 import { TRPCError } from "@trpc/server"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
@@ -90,7 +91,7 @@ describe("whitelist.router", async () => {
       })
 
       // Assert
-      expect(result).toBe(false)
+      expect(result).toBeFalsy()
     })
 
     it("should return true if email is whitelisted", async () => {
@@ -105,7 +106,7 @@ describe("whitelist.router", async () => {
       })
 
       // Assert
-      expect(result).toBe(true)
+      expect(result).toBeTruthy()
     })
   })
 
@@ -167,7 +168,7 @@ describe("whitelist.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         adminCount: 1,
         vendorCount: 0,
       })
@@ -196,7 +197,7 @@ describe("whitelist.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         adminCount: 0,
         vendorCount: 1,
       })
@@ -216,7 +217,7 @@ describe("whitelist.router", async () => {
       const expectedExpiry = new Date()
       expectedExpiry.setDate(expectedExpiry.getDate() + 90)
       expectedExpiry.setHours(0, 0, 0, 0)
-      expect(whitelistEntry?.expiry).toEqual(expectedExpiry)
+      expect(whitelistEntry?.expiry).toStrictEqual(expectedExpiry)
     })
 
     it("should whitelist emails successfully if user is an Isomer Migrator", async () => {
@@ -235,7 +236,7 @@ describe("whitelist.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         adminCount: 1,
         vendorCount: 1,
       })
@@ -271,7 +272,7 @@ describe("whitelist.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         adminCount: 2,
         vendorCount: 2,
       })
@@ -321,7 +322,7 @@ describe("whitelist.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         adminCount: 1,
         vendorCount: 0,
       })
@@ -418,7 +419,7 @@ describe("whitelist.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         adminCount: 0,
         vendorCount: 0,
       })

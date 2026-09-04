@@ -20,18 +20,18 @@ import {
   useLeftEditorSurveyTracker,
 } from "../hooks/useContentEditSurvey"
 
-const trackEventMock = vi.hoisted(() => vi.fn())
-vi.mock("@intercom/messenger-js-sdk", () => ({ trackEvent: trackEventMock }))
+const trackEventMock = vi.hoisted(() => vi.fn<(...args: unknown[]) => unknown>())
+vi.mock(import('@intercom/messenger-js-sdk'), () => ({ trackEvent: trackEventMock }))
 
 const mockEnv = vi.hoisted<{
   env: { NEXT_PUBLIC_INTERCOM_APP_ID: string | undefined }
 }>(() => ({
   env: { NEXT_PUBLIC_INTERCOM_APP_ID: "test-app-id" },
 }))
-vi.mock("~/env.mjs", () => mockEnv)
+vi.mock(import('~/env.mjs'), () => mockEnv)
 
 const routeChangeStartHandlers = vi.hoisted<(() => void)[]>(() => [])
-vi.mock("next/router", () => ({
+vi.mock(import('next/router'), () => ({
   useRouter: () => ({
     events: {
       on: (_event: string, handler: () => void) => {
@@ -84,13 +84,13 @@ const renderTracker = (store: ReturnType<typeof createStore>) =>
     </Provider>,
   )
 
-beforeEach(() => {
-  trackEventMock.mockClear()
-  mockEnv.env.NEXT_PUBLIC_INTERCOM_APP_ID = "test-app-id"
-  routeChangeStartHandlers.length = 0
-})
+describe(useFireContentEditSurveyEvent, () => {
+  beforeEach(() => {
+    trackEventMock.mockClear()
+    mockEnv.env.NEXT_PUBLIC_INTERCOM_APP_ID = "test-app-id"
+    routeChangeStartHandlers.length = 0
+  })
 
-describe("useFireContentEditSurveyEvent", () => {
   it("does nothing when no content edit has been made", () => {
     // Arrange
     const store = createStore()
@@ -103,7 +103,7 @@ describe("useFireContentEditSurveyEvent", () => {
 
     // Assert
     expect(trackEventMock).not.toHaveBeenCalled()
-    expect(store.get(hasContentEditAtom)).toBe(false)
+    expect(store.get(hasContentEditAtom)).toBeFalsy()
   })
 
   it("fires the event and resets the flag when a content edit has been made", () => {
@@ -118,9 +118,8 @@ describe("useFireContentEditSurveyEvent", () => {
     act(() => result.current(PUBLISHED_AFTER_EDITING_EVENT))
 
     // Assert
-    expect(trackEventMock).toHaveBeenCalledTimes(1)
-    expect(trackEventMock).toHaveBeenCalledWith(PUBLISHED_AFTER_EDITING_EVENT)
-    expect(store.get(hasContentEditAtom)).toBe(false)
+    expect(trackEventMock).toHaveBeenCalledExactlyOnceWith(PUBLISHED_AFTER_EDITING_EVENT)
+    expect(store.get(hasContentEditAtom)).toBeFalsy()
   })
 
   it("is a no-op on a second call after the flag has been consumed", () => {
@@ -136,7 +135,7 @@ describe("useFireContentEditSurveyEvent", () => {
     act(() => result.current(PUBLISHED_AFTER_EDITING_EVENT))
 
     // Assert
-    expect(trackEventMock).toHaveBeenCalledTimes(1)
+    expect(trackEventMock).toHaveBeenCalledOnce()
   })
 
   it("resets the flag without firing when NEXT_PUBLIC_INTERCOM_APP_ID is unset", () => {
@@ -153,11 +152,17 @@ describe("useFireContentEditSurveyEvent", () => {
 
     // Assert
     expect(trackEventMock).not.toHaveBeenCalled()
-    expect(store.get(hasContentEditAtom)).toBe(false)
+    expect(store.get(hasContentEditAtom)).toBeFalsy()
   })
 })
 
-describe("useContentEditTracker", () => {
+describe(useContentEditTracker, () => {
+  beforeEach(() => {
+    trackEventMock.mockClear()
+    mockEnv.env.NEXT_PUBLIC_INTERCOM_APP_ID = "test-app-id"
+    routeChangeStartHandlers.length = 0
+  })
+
   it("sets the flag when content diverges", () => {
     // Arrange
     const store = createStore()
@@ -174,7 +179,7 @@ describe("useContentEditTracker", () => {
     )
 
     // Assert
-    expect(store.get(hasContentEditAtom)).toBe(true)
+    expect(store.get(hasContentEditAtom)).toBeTruthy()
   })
 
   it("does not set the flag on a re-render with deep-equal content", () => {
@@ -191,7 +196,7 @@ describe("useContentEditTracker", () => {
     )
 
     // Assert
-    expect(store.get(hasContentEditAtom)).toBe(false)
+    expect(store.get(hasContentEditAtom)).toBeFalsy()
   })
 
   it("does not set the flag when content diverges in raw JSON mode", () => {
@@ -209,7 +214,7 @@ describe("useContentEditTracker", () => {
     )
 
     // Assert
-    expect(store.get(hasContentEditAtom)).toBe(false)
+    expect(store.get(hasContentEditAtom)).toBeFalsy()
 
     // Act: leaving raw JSON mode must not retroactively arm the flag
     // (docs/adr/0003-editing-survey-measuring-points.md) — pins that the
@@ -217,7 +222,7 @@ describe("useContentEditTracker", () => {
     act(() => drawerContext.setDrawerState({ state: "root" }))
 
     // Assert
-    expect(store.get(hasContentEditAtom)).toBe(false)
+    expect(store.get(hasContentEditAtom)).toBeFalsy()
   })
 
   it("re-arms after the flag is consumed, emitting one event per burst", () => {
@@ -238,8 +243,8 @@ describe("useContentEditTracker", () => {
     act(() => result.current(PUBLISHED_AFTER_EDITING_EVENT))
 
     // Assert
-    expect(trackEventMock).toHaveBeenCalledTimes(1)
-    expect(store.get(hasContentEditAtom)).toBe(false)
+    expect(trackEventMock).toHaveBeenCalledOnce()
+    expect(store.get(hasContentEditAtom)).toBeFalsy()
 
     // Act: second burst — a fresh divergence
     act(() =>
@@ -250,7 +255,7 @@ describe("useContentEditTracker", () => {
     )
 
     // Assert: the consumed flag is re-armed
-    expect(store.get(hasContentEditAtom)).toBe(true)
+    expect(store.get(hasContentEditAtom)).toBeTruthy()
 
     // Act: fire the second burst
     act(() => result.current(PUBLISHED_AFTER_EDITING_EVENT))
@@ -260,7 +265,13 @@ describe("useContentEditTracker", () => {
   })
 })
 
-describe("useLeftEditorSurveyTracker", () => {
+describe(useLeftEditorSurveyTracker, () => {
+  beforeEach(() => {
+    trackEventMock.mockClear()
+    mockEnv.env.NEXT_PUBLIC_INTERCOM_APP_ID = "test-app-id"
+    routeChangeStartHandlers.length = 0
+  })
+
   it("fires the left-editor event on route change when a content edit has been made", () => {
     // Arrange
     const store = createStore()
@@ -273,9 +284,8 @@ describe("useLeftEditorSurveyTracker", () => {
     act(() => routeChangeStartHandlers.forEach((handler) => handler()))
 
     // Assert
-    expect(trackEventMock).toHaveBeenCalledTimes(1)
-    expect(trackEventMock).toHaveBeenCalledWith(LEFT_EDITOR_AFTER_EDITING_EVENT)
-    expect(store.get(hasContentEditAtom)).toBe(false)
+    expect(trackEventMock).toHaveBeenCalledExactlyOnceWith(LEFT_EDITOR_AFTER_EDITING_EVENT)
+    expect(store.get(hasContentEditAtom)).toBeFalsy()
   })
 
   it("unsubscribes from route changes on unmount", () => {

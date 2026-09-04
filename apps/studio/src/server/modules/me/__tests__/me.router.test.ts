@@ -1,3 +1,4 @@
+import { beforeEach, describe, expect, it } from 'vitest';
 import type { User } from "~prisma/generated/prisma/client"
 import { TRPCError } from "@trpc/server"
 import { pick } from "lodash-es"
@@ -33,6 +34,7 @@ describe("me.router", async () => {
   })
 
   describe("get", () => {
+
     it("should throw 401 if not logged in", async () => {
       // Act
       const result = unauthedCaller.get()
@@ -48,7 +50,7 @@ describe("me.router", async () => {
       const result = await caller.get()
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         ...pick(user, ["id", "email", "name", "phone", "createdAt"]),
       })
     })

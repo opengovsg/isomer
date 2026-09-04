@@ -1,3 +1,4 @@
+import { beforeEach, vi, describe, expect, it } from 'vitest';
 import type { NextApiRequest, NextApiResponse } from "next"
 import type { z } from "zod"
 import type { env } from "~/env.mjs"
@@ -17,7 +18,7 @@ const { WEBHOOK_API_KEY, INVALID_WEBHOOK_API_KEY_WITH_EXPECTED_LENGTH } =
       "11111111-1111-4111-8111-111111111111",
   }))
 
-vi.mock("~/env.mjs", async () => {
+vi.mock(import('~/env.mjs'), async () => {
   // Import the real module first to get all default values
   const actual = await vi.importActual<{ env: typeof env }>("~/env.mjs")
   return {
@@ -31,9 +32,9 @@ vi.mock("~/env.mjs", async () => {
 })
 
 // Mock the publishSite function to avoid sending emails
-vi.mock("~/features/mail/service", () => ({
-  sendSuccessfulScheduledPublishEmail: vi.fn(),
-  sendFailedSchedulePublishEmail: vi.fn(),
+vi.mock(import('~/features/mail/service'), () => ({
+  sendSuccessfulScheduledPublishEmail: vi.fn<(...args: unknown[]) => unknown>(()),
+  sendFailedSchedulePublishEmail: vi.fn<(...args: unknown[]) => unknown>(()),
 }))
 
 const createMockRequest = ({
@@ -65,6 +66,7 @@ describe("webhook", () => {
     await resetTables("CodeBuildJobs", "Resource", "Site")
   })
   describe("updateCodebuildWebhook", () => {
+
     it("should process valid webhook payload", async () => {
       // Arrange
       const user = await setupUser(createTestUser())
@@ -84,6 +86,7 @@ describe("webhook", () => {
       // Assert
       expect(res.statusCode).toBe(200)
     })
+
     it("providing an incorrect API key causes a 401", async () => {
       // Arrange
       const user = await setupUser(createTestUser())
@@ -104,6 +107,7 @@ describe("webhook", () => {
       // Assert
       expect(res.statusCode).toBe(401)
     })
+
     it("providing an incorrect API key with the expected length causes a 401", async () => {
       // Arrange
       const user = await setupUser(createTestUser())
@@ -124,6 +128,7 @@ describe("webhook", () => {
       // Assert
       expect(res.statusCode).toBe(401)
     })
+
     it("requests missing an API key causes a 401", async () => {
       // Arrange
       const user = await setupUser(createTestUser())

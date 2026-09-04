@@ -6,7 +6,8 @@ import { stripFileUploadMetaSuffix } from "../stripFileUploadMetaSuffix"
 /** Minimal stand-in for browser `File` (implementation only uses `name` and `size`). */
 const mockFile = (name: string, size: number): File => ({ name, size }) as File
 
-describe("buildFileUploadMetaSuffix", () => {
+describe(buildFileUploadMetaSuffix, () => {
+
   it("includes type and size for allowed extensions", () => {
     // Arrange + Act + Assert
     expect(buildFileUploadMetaSuffix(mockFile("speech.pdf", 286720))).toBe(

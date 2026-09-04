@@ -1,8 +1,10 @@
+import { expect, describe, it } from 'vitest';
 import { addRedirectSchema } from "../types"
 
 const VALID = { source: "/old-page" }
 
 describe("addRedirectSchema destination scheme normalisation", () => {
+
   it("should prefix https:// to a leading www. host", () => {
     // Arrange / Act
     const result = addRedirectSchema.parse({
@@ -56,6 +58,6 @@ describe("addRedirectSchema destination scheme normalisation", () => {
     })
 
     // Assert
-    expect(result.success).toBe(false)
+    expect(result.success).toBeFalsy()
   })
 })

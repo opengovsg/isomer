@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest';
 import { readFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 
@@ -14,7 +15,8 @@ const { source: SOURCE_HEADER, destination: DESTINATION_HEADER } =
 
 const header = `${SOURCE_HEADER},${DESTINATION_HEADER}`
 
-describe("parseRedirectCsv", () => {
+describe(parseRedirectCsv, () => {
+
   it("parses rows with 1-based line numbers and trims cells", () => {
     // Arrange
     const csv = `${header}\n/old , /new\n/blog,https://example.gov.sg`
@@ -24,7 +26,7 @@ describe("parseRedirectCsv", () => {
 
     // Assert
     expect(result.fileError).toBeUndefined()
-    expect(result.rows).toEqual([
+    expect(result.rows).toStrictEqual([
       { rowNumber: 2, source: "/old", destination: "/new", malformed: false },
       {
         rowNumber: 3,
@@ -44,7 +46,7 @@ describe("parseRedirectCsv", () => {
     const result = parseRedirectCsv(csv)
 
     // Assert
-    expect(result.rows).toEqual([
+    expect(result.rows).toStrictEqual([
       { rowNumber: 3, source: "/old", destination: "/new", malformed: false },
     ])
   })
@@ -84,7 +86,7 @@ describe("parseRedirectCsv", () => {
     const result = parseRedirectCsv(csv)
 
     // Assert
-    expect(result.rows).toEqual([
+    expect(result.rows).toStrictEqual([
       { rowNumber: 2, source: "/old", destination: "/new", malformed: false },
     ])
   })
@@ -145,7 +147,8 @@ describe("parseRedirectCsv", () => {
   })
 })
 
-describe("buildRedirectErrorsCsv", () => {
+describe(buildRedirectErrorsCsv, () => {
+
   it("lists failed rows first, keeps passing rows marked 'No error', and round-trips", () => {
     // Arrange
     const rows = [
@@ -162,7 +165,7 @@ describe("buildRedirectErrorsCsv", () => {
     expect(lines[0]).toContain(BULK_REDIRECT_CSV_ERROR_HEADER)
     expect(lines[1]).toContain("Enter a valid URL.")
     expect(csv).toContain(BULK_REDIRECT_CSV_NO_ERROR)
-    expect(reparsed.rows).toEqual([
+    expect(reparsed.rows).toStrictEqual([
       {
         rowNumber: 2,
         source: "/bad",
@@ -175,6 +178,7 @@ describe("buildRedirectErrorsCsv", () => {
 })
 
 describe("redirects template file", () => {
+
   it("has the exact header the parser expects (guards against drift)", () => {
     // Arrange
     const templatePath = fileURLToPath(
