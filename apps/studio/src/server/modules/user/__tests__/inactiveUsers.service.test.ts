@@ -1,4 +1,4 @@
-import type { Site, User } from "~/server/modules/database"
+import type { AuditLog, Site, User } from "~/server/modules/database"
 import { resetTables } from "tests/integration/helpers/db"
 import {
   setupAdminPermissions,
@@ -21,8 +21,8 @@ import { MAX_DAYS_FROM_LAST_LOGIN } from "../constants"
 
 // Mock must be at module level to be hoisted correctly
 vi.mock(import('~/features/mail/service'), () => ({
-  sendAccountDeactivationEmail: vi.fn<(...args: unknown[]) => unknown>(()),
-  sendAccountDeactivationWarningEmail: vi.fn<(...args: unknown[]) => unknown>(()),
+  sendAccountDeactivationEmail: vi.fn<(...args: unknown[]) => unknown>(),
+  sendAccountDeactivationWarningEmail: vi.fn<(...args: unknown[]) => unknown>(),
 }))
 import {
   bulkDeactivateInactiveUsers,
@@ -165,39 +165,47 @@ describe("inactiveUsers.service", () => {
       })
     })
 
-    it("should create a PermissionDelete audit log entry attributed to the system user", async () => {
-      // Arrange
-      const user = await setupUserWrapper({
-        siteId: site.id,
-        createdDaysAgo: 91,
-        lastLoginDaysAgo: null,
+    describe("should create a PermissionDelete audit log entry attributed to the system user", () => {
+      let user: Awaited<ReturnType<typeof setupUserWrapper>>
+      let auditLogs: AuditLog[]
+
+      beforeEach(async () => {
+        user = await setupUserWrapper({
+          siteId: site.id,
+          createdDaysAgo: 91,
+          lastLoginDaysAgo: null,
+        })
+
+        await bulkDeactivateInactiveUsers()
+
+        auditLogs = await db
+          .selectFrom("AuditLog")
+          .where("eventType", "=", "PermissionDelete")
+          .selectAll()
+          .execute()
       })
 
-      // Act
-      await bulkDeactivateInactiveUsers()
+      it("records one entry attributed to the system user with inactivity metadata", () => {
+        expect(auditLogs).toHaveLength(1)
+        expect(auditLogs[0]).toStrictEqual(
+          expect.objectContaining({
+            userId: systemUser.id,
+            siteId: site.id,
+            metadata: { reason: "inactivity" },
+          }),
+        )
+      })
 
-      // Assert
-      const auditLogs = await db
-        .selectFrom("AuditLog")
-        .where("eventType", "=", "PermissionDelete")
-        .selectAll()
-        .execute()
-      expect(auditLogs).toHaveLength(1)
-      expect(auditLogs[0]).toStrictEqual(
-        expect.objectContaining({
-          userId: systemUser.id,
-          siteId: site.id,
-          metadata: { reason: "inactivity" },
-        }),
-      )
-      const delta = auditLogs[0]?.delta as {
-        before: { userId: string; deletedAt: string | null }
-        after: { userId: string; deletedAt: string | null }
-      }
-      expect(delta.before.userId).toBe(user.id)
-      expect(delta.before.deletedAt).toBeNull()
-      expect(delta.after.userId).toBe(user.id)
-      expect(delta.after.deletedAt).not.toBeNull()
+      it("captures the permission delta before and after soft-delete", () => {
+        const delta = auditLogs[0]?.delta as {
+          before: { userId: string; deletedAt: string | null }
+          after: { userId: string; deletedAt: string | null }
+        }
+        expect(delta.before.userId).toBe(user.id)
+        expect(delta.before.deletedAt).toBeNull()
+        expect(delta.after.userId).toBe(user.id)
+        expect(delta.after.deletedAt).not.toBeNull()
+      })
     })
 
     it("should create one audit log entry per removed permission across multiple sites", async () => {
@@ -357,49 +365,59 @@ describe("inactiveUsers.service", () => {
       expect(sitesAndAdmins?.[0]?.adminEmails).not.toContain(user2.email)
     })
 
-    it("should only include admins from sites the deactivated user had permissions for", async () => {
-      // Arrange
-      // Create Site 1 with User A (to be deactivated) and User C (admin)
-      const userToDeactivate = await setupUserWrapper({
-        siteId: site.id,
-        createdDaysAgo: 91,
-        lastLoginDaysAgo: null,
+    describe("should only include admins from sites the deactivated user had permissions for", () => {
+      let userToDeactivate: Awaited<ReturnType<typeof setupUserWrapper>>
+      let adminOnSite1: Awaited<ReturnType<typeof setupUserWrapper>>
+      let adminOnSite2: Awaited<ReturnType<typeof setupUserWrapper>>
+      let site2: Awaited<ReturnType<typeof setupSite>>["site"]
+      let sitesAndAdmins:
+        | NonNullable<
+            Parameters<typeof sendAccountDeactivationEmail>[0]
+          >["sitesAndAdmins"]
+        | undefined
+
+      beforeEach(async () => {
+        // Arrange: Site 1 has the user to deactivate and an admin; Site 2 has
+        // an admin but the deactivated user never had permissions there.
+        userToDeactivate = await setupUserWrapper({
+          siteId: site.id,
+          createdDaysAgo: 91,
+          lastLoginDaysAgo: null,
+        })
+        adminOnSite1 = await setupUserWrapper({
+          siteId: site.id,
+          createdDaysAgo: 89,
+          lastLoginDaysAgo: null,
+        })
+
+        const setup = await setupSite()
+        site2 = setup.site
+        adminOnSite2 = await setupUserWrapper({
+          siteId: site2.id,
+          createdDaysAgo: 89,
+          lastLoginDaysAgo: null,
+        })
+
+        await bulkDeactivateInactiveUsers()
+
+        const emailCall = vi.mocked(sendAccountDeactivationEmail).mock.calls[0]
+        sitesAndAdmins = emailCall?.[0]?.sitesAndAdmins
       })
-      const adminOnSite1 = await setupUserWrapper({
-        siteId: site.id,
-        createdDaysAgo: 89,
-        lastLoginDaysAgo: null,
+
+      it("lists only the site where the deactivated user had permissions", () => {
+        expect(sitesAndAdmins).toBeDefined()
+        expect(sitesAndAdmins).toHaveLength(1)
+        expect(sitesAndAdmins?.map((s) => s.siteName)).toContain(site.name)
+        expect(sitesAndAdmins?.map((s) => s.siteName)).not.toContain(site2.name)
       })
 
-      // Create Site 2 with User B (admin) - User A never had permissions here
-      const { site: site2 } = await setupSite()
-      const adminOnSite2 = await setupUserWrapper({
-        siteId: site2.id,
-        createdDaysAgo: 89,
-        lastLoginDaysAgo: null,
+      it("includes only admins from that site and excludes the deactivated user", () => {
+        expect(sitesAndAdmins?.[0]?.adminEmails).toContain(adminOnSite1.email)
+        expect(sitesAndAdmins?.[0]?.adminEmails).not.toContain(adminOnSite2.email)
+        expect(sitesAndAdmins?.[0]?.adminEmails).not.toContain(
+          userToDeactivate.email,
+        )
       })
-
-      // Act
-      await bulkDeactivateInactiveUsers()
-
-      // Assert
-      const emailCall = vi.mocked(sendAccountDeactivationEmail).mock.calls[0]
-      const sitesAndAdmins = emailCall?.[0]?.sitesAndAdmins
-      expect(sitesAndAdmins).toBeDefined()
-      expect(sitesAndAdmins).toHaveLength(1)
-      expect(sitesAndAdmins?.map((s) => s.siteName)).toContain(site.name)
-      expect(sitesAndAdmins?.map((s) => s.siteName)).not.toContain(site2.name)
-
-      // Should only include admin from Site 1 (where user had permissions)
-      expect(sitesAndAdmins?.[0]?.adminEmails).toContain(adminOnSite1.email)
-
-      // Should NOT include admin from Site 2 (where user never had permissions)
-      expect(sitesAndAdmins?.[0]?.adminEmails).not.toContain(adminOnSite2.email)
-
-      // Should NOT include the deactivated user themselves
-      expect(sitesAndAdmins?.[0]?.adminEmails).not.toContain(
-        userToDeactivate.email,
-      )
     })
 
     it("should send email with correct recipient and site data", async () => {
@@ -937,56 +955,65 @@ describe("inactiveUsers.service", () => {
       expect(inactiveUsers[0]?.id).toBe(expiredAdmin.id)
     })
 
-    it("should filter users by fromDaysAgo when provided", async () => {
-      // Arrange
-      const userCreatedVeryLongAgo = await setupUserWrapper({
-        siteId: site.id,
-        createdDaysAgo: 120,
-        lastLoginDaysAgo: null,
-      })
-      const userCreatedLongAgo = await setupUserWrapper({
-        siteId: site.id,
-        createdDaysAgo: 100,
-        lastLoginDaysAgo: null,
-      })
-      const userCreatedRecently = await setupUserWrapper({
-        siteId: site.id,
-        createdDaysAgo: 80,
-        lastLoginDaysAgo: null,
+    describe("should filter users by fromDaysAgo when provided", () => {
+      let userCreatedVeryLongAgo: Awaited<ReturnType<typeof setupUserWrapper>>
+      let userCreatedLongAgo: Awaited<ReturnType<typeof setupUserWrapper>>
+      let userCreatedRecently: Awaited<ReturnType<typeof setupUserWrapper>>
+
+      beforeEach(async () => {
+        userCreatedVeryLongAgo = await setupUserWrapper({
+          siteId: site.id,
+          createdDaysAgo: 120,
+          lastLoginDaysAgo: null,
+        })
+        userCreatedLongAgo = await setupUserWrapper({
+          siteId: site.id,
+          createdDaysAgo: 100,
+          lastLoginDaysAgo: null,
+        })
+        userCreatedRecently = await setupUserWrapper({
+          siteId: site.id,
+          createdDaysAgo: 80,
+          lastLoginDaysAgo: null,
+        })
       })
 
-      // Act + Assert (1)
-      const usersCreatedVeryLongAgo = await getInactiveUsers({
-        fromDaysAgo: 130,
-        toDaysAgo: 110,
+      it("returns only users created in the oldest window", async () => {
+        const usersCreatedVeryLongAgo = await getInactiveUsers({
+          fromDaysAgo: 130,
+          toDaysAgo: 110,
+        })
+        expect(usersCreatedVeryLongAgo).toHaveLength(1)
+        expect(usersCreatedVeryLongAgo[0]?.id).toBe(userCreatedVeryLongAgo.id)
       })
-      expect(usersCreatedVeryLongAgo).toHaveLength(1)
-      expect(usersCreatedVeryLongAgo[0]?.id).toBe(userCreatedVeryLongAgo.id)
 
-      // Act + Assert (2)
-      const usersCreatedLongAgo = await getInactiveUsers({
-        fromDaysAgo: 110,
-        toDaysAgo: 90,
+      it("returns only users created in the middle window", async () => {
+        const usersCreatedLongAgo = await getInactiveUsers({
+          fromDaysAgo: 110,
+          toDaysAgo: 90,
+        })
+        expect(usersCreatedLongAgo).toHaveLength(1)
+        expect(usersCreatedLongAgo[0]?.id).toBe(userCreatedLongAgo.id)
       })
-      expect(usersCreatedLongAgo).toHaveLength(1)
-      expect(usersCreatedLongAgo[0]?.id).toBe(userCreatedLongAgo.id)
 
-      // Act + Assert (3)
-      const usersCreatedRecently = await getInactiveUsers({
-        fromDaysAgo: 90,
-        toDaysAgo: 70,
+      it("returns only users created in the recent window", async () => {
+        const usersCreatedRecently = await getInactiveUsers({
+          fromDaysAgo: 90,
+          toDaysAgo: 70,
+        })
+        expect(usersCreatedRecently).toHaveLength(1)
+        expect(usersCreatedRecently[0]?.id).toBe(userCreatedRecently.id)
       })
-      expect(usersCreatedRecently).toHaveLength(1)
-      expect(usersCreatedRecently[0]?.id).toBe(userCreatedRecently.id)
 
-      // Act + Assert (4)
-      const users = await getInactiveUsers({
-        fromDaysAgo: 110,
-        toDaysAgo: 0,
+      it("returns users across a wide fromDaysAgo range", async () => {
+        const users = await getInactiveUsers({
+          fromDaysAgo: 110,
+          toDaysAgo: 0,
+        })
+        expect(users).toHaveLength(2)
+        expect(users.map((u) => u.id)).toContain(userCreatedLongAgo.id)
+        expect(users.map((u) => u.id)).toContain(userCreatedRecently.id)
       })
-      expect(users).toHaveLength(2)
-      expect(users.map((u) => u.id)).toContain(userCreatedLongAgo.id)
-      expect(users.map((u) => u.id)).toContain(userCreatedRecently.id)
     })
 
     it("should filter users by fromDaysAgo for users who have logged in", async () => {

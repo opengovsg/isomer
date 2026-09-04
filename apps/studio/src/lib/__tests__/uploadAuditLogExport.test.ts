@@ -24,15 +24,15 @@ vi.mock(import('~/env.mjs'), () => ({
 // not a one-shot PutObjectCommand — mock Upload itself so no real AWS calls
 // happen, and capture its constructor options to assert on the S3 params.
 const { doneMock, uploadCtorMock } = vi.hoisted(() => ({
-  doneMock: vi.fn<(...args: unknown[]) => unknown>(()),
-  uploadCtorMock: vi.fn<(...args: unknown[]) => unknown>(()),
+  doneMock: vi.fn<(...args: unknown[]) => unknown>(),
+  uploadCtorMock: vi.fn<(...args: unknown[]) => unknown>(),
 }))
 vi.mock(import('@aws-sdk/lib-storage'), () => ({
-  Upload: vi.fn<(...args: unknown[]) => unknown>(()function (
+  Upload: vi.fn<(...args: unknown[]) => unknown>(function (
     options: ConstructorParameters<typeof UploadType>[0],
   ) {
     uploadCtorMock(options)
-    return { done: doneMock, on: vi.fn<(...args: unknown[]) => unknown>(()) }
+    return { done: doneMock, on: vi.fn<(...args: unknown[]) => unknown>() }
   }),
 }))
 
@@ -45,28 +45,34 @@ describe("uploadAuditLogExport", () => {
     doneMock.mockResolvedValue({})
   })
 
-  it("streams the CSV to the configured bucket with text/csv and attachment disposition", async () => {
-    // Act
-    await uploadAuditLogExport({
-      key: "site-1/2026-06/access.csv",
-      body: "a,b,c\n1,2,3",
+  describe("streams the CSV to the configured bucket with text/csv and attachment disposition", () => {
+    let options: ConstructorParameters<typeof UploadType>[0]
+
+    beforeEach(async () => {
+      await uploadAuditLogExport({
+        key: "site-1/2026-06/access.csv",
+        body: "a,b,c\n1,2,3",
+      })
+      options = uploadCtorMock.mock.calls[0]?.[0] as ConstructorParameters<
+        typeof UploadType
+      >[0]
     })
 
-    // Assert: one Upload, awaited to completion, with the expected S3 params
-    expect(uploadCtorMock).toHaveBeenCalledOnce()
-    expect(doneMock).toHaveBeenCalledOnce()
+    it("constructs one Upload and awaits completion with the expected bucket, key, and body", () => {
+      expect(uploadCtorMock).toHaveBeenCalledOnce()
+      expect(doneMock).toHaveBeenCalledOnce()
+      expect(options.params.Bucket).toBe("audit-export-bucket")
+      expect(options.params.Key).toBe("site-1/2026-06/access.csv")
+      expect(options.params.Body).toBe("a,b,c\n1,2,3")
+    })
 
-    const options = uploadCtorMock.mock.calls[0]?.[0] as ConstructorParameters<
-      typeof UploadType
-    >[0]
-    expect(options.params.Bucket).toBe("audit-export-bucket")
-    expect(options.params.Key).toBe("site-1/2026-06/access.csv")
-    expect(options.params.Body).toBe("a,b,c\n1,2,3")
-    expect(options.params.ContentType).toBe("text/csv")
-    // Filename derived from the key's basename
-    expect(options.params.ContentDisposition).toBe(
-      `attachment; filename="access.csv"`,
-    )
+    it("sets text/csv content type and attachment disposition from the key basename", () => {
+      expect(options.params.ContentType).toBe("text/csv")
+      // Filename derived from the key's basename
+      expect(options.params.ContentDisposition).toBe(
+        `attachment; filename="access.csv"`,
+      )
+    })
   })
 
   it("throws a clear error when the bucket env var is unset", async () => {
