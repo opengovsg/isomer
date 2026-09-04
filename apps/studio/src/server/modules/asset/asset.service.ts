@@ -168,10 +168,15 @@ const deleteFileIfExists = async ({ Key }: { Key: string }) => {
 // NOTE: Check if the key ends in one of our image optimisation formats.
 // If it does, we need to also delete all of the related formats.
 export const markFileAsDeleted = async ({ key }: { key: string }) => {
-  const suffix = key.split(".").pop()
+  const _suffix = key.split(".").pop()
+  const suffix = _suffix === "jpg" ? "jpeg" : _suffix
   if (!suffix) return
 
-  if (SUPPORTED_OPTIMIZABLE_FORMATS.includes(suffix)) {
+  if (
+    SUPPORTED_OPTIMIZABLE_FORMATS.includes(
+      suffix as (typeof SUPPORTED_OPTIMIZABLE_FORMATS)[number],
+    )
+  ) {
     // NOTE: We only convert to webp and avif
     const prefix = key.substring(0, key.lastIndexOf("."))
     await deleteFileIfExists({ Key: `${prefix}.webp` })
