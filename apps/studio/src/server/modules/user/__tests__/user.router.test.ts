@@ -2158,8 +2158,10 @@ describe("user.router", () => {
 
     describe("name validation", () => {
       const emptyNames = ["", " ", "  "]
-      for (const emptyName of emptyNames) {
-        it(`should throw error if name is empty: ${emptyName}`, async () => {
+
+      it.each(emptyNames)(
+        "should throw error if name is empty: %s",
+        async (emptyName) => {
           // Act & Assert
           await expect(
             caller.updateDetails({ name: emptyName, phone: "81234567" }),
@@ -2171,8 +2173,8 @@ describe("user.router", () => {
             .selectAll()
             .execute()
           expect(auditLogs).toHaveLength(0)
-        })
-      }
+        },
+      )
 
       it("should trim whitespace from name", async () => {
         // Arrange
@@ -2216,8 +2218,10 @@ describe("user.router", () => {
       const testUserName = "Test User"
 
       const emptyPhones = ["", " ", "  "]
-      for (const emptyPhone of emptyPhones) {
-        it(`should throw error if phone is empty: ${emptyPhone}`, async () => {
+
+      it.each(emptyPhones)(
+        "should throw error if phone is empty: %s",
+        async (emptyPhone) => {
           // Act & Assert
           await expect(
             caller.updateDetails({ name: testUserName, phone: emptyPhone }),
@@ -2230,12 +2234,14 @@ describe("user.router", () => {
             .selectAll()
             .execute()
           expect(auditLogs).toHaveLength(0)
-        })
-      }
+        },
+      )
 
       const incorrectLengthPhones = ["1234567", "123456789", "812345"]
-      for (const phone of incorrectLengthPhones) {
-        it(`should throw error if phone number has incorrect length: ${phone}`, async () => {
+
+      it.each(incorrectLengthPhones)(
+        "should throw error if phone number has incorrect length: %s",
+        async (phone) => {
           // Act & Assert
           await expect(
             caller.updateDetails({ name: testUserName, phone }),
@@ -2248,12 +2254,14 @@ describe("user.router", () => {
             .selectAll()
             .execute()
           expect(auditLogs).toHaveLength(0)
-        })
-      }
+        },
+      )
 
       const invalidPhones = ["12345678", "23456789", "45678901", "78901234"]
-      for (const phone of invalidPhones) {
-        it(`should throw error if phone number starts with invalid digit: ${phone}`, async () => {
+
+      it.each(invalidPhones)(
+        "should throw error if phone number starts with invalid digit: %s",
+        async (phone) => {
           // Act & Assert
           await expect(
             caller.updateDetails({ name: testUserName, phone }),
@@ -2266,8 +2274,8 @@ describe("user.router", () => {
             .selectAll()
             .execute()
           expect(auditLogs).toHaveLength(0)
-        })
-      }
+        },
+      )
 
       const validPhonesWithSpaces = [
         " 81234567 ",
@@ -2275,8 +2283,10 @@ describe("user.router", () => {
         " 8123 4567 ",
         "  81234567  ",
       ]
-      for (const phone of validPhonesWithSpaces) {
-        it(`should handle phone numbers with whitespace: ${phone}`, async () => {
+
+      it.each(validPhonesWithSpaces)(
+        "should handle phone numbers with whitespace: %s",
+        async (phone) => {
           // Act & Assert
           const result = await caller.updateDetails({
             name: testUserName,
@@ -2313,8 +2323,8 @@ describe("user.router", () => {
               ),
             }),
           })
-        })
-      }
+        },
+      )
 
       it("should remove +65 country code if present", async () => {
         // Arrange
@@ -2356,8 +2366,10 @@ describe("user.router", () => {
       })
 
       const validSingaporePhones = ["61234567", "81234567", "91234567"]
-      for (const phone of validSingaporePhones) {
-        it(`should accept valid Singapore phone numbers: ${phone}`, async () => {
+
+      it.each(validSingaporePhones)(
+        "should accept valid Singapore phone numbers: %s",
+        async (phone) => {
           // Act & Assert
           const result = await caller.updateDetails({
             name: testUserName,
@@ -2391,8 +2403,8 @@ describe("user.router", () => {
               ),
             }),
           })
-        })
-      }
+        },
+      )
     })
 
     it("should update user details successfully", async () => {
