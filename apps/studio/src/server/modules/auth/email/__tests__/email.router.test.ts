@@ -313,7 +313,9 @@ describe("auth.email", () => {
         await expect(result).resolves.toMatchObject(expectedUser)
 
         // Session (singpass) should have been set with logged in user.
-        expect(session.singpass?.sessionState?.userId).toStrictEqual(expectedUser.id)
+        expect(session.singpass?.sessionState?.userId).toStrictEqual(
+          expectedUser.id,
+        )
 
         // Audit log should not have been created yet
         const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
@@ -353,7 +355,9 @@ describe("auth.email", () => {
         await expect(result).resolves.toMatchObject(expectedUser)
 
         // Session (singpass) should have been set with logged in user.
-        expect(session.singpass?.sessionState?.userId).toStrictEqual(expectedUser.id)
+        expect(session.singpass?.sessionState?.userId).toStrictEqual(
+          expectedUser.id,
+        )
 
         // Audit log should not have been created yet
         const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()

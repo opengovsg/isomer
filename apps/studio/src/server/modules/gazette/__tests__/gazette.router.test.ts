@@ -17,7 +17,15 @@ import {
   setupIsomerAdmin,
   setupUser,
 } from "tests/integration/helpers/seed"
-import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest"
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest"
 import { env } from "~/env.mjs"
 import * as mailService from "~/features/mail/service"
 import { ENABLE_SEARCHSG_GAZETTE_INGESTION } from "~/lib/growthbook"
@@ -190,7 +198,9 @@ describe("gazette.router", async () => {
       let user: Awaited<ReturnType<typeof seedToppanWithCollection>>["user"]
       let resource: Awaited<
         ReturnType<
-          ReturnType<typeof db.selectFrom<"Resource">>["executeTakeFirstOrThrow"]
+          ReturnType<
+            typeof db.selectFrom<"Resource">
+          >["executeTakeFirstOrThrow"]
         >
       >
       let pageRef: string | undefined
@@ -228,7 +238,8 @@ describe("gazette.router", async () => {
           .where("id", "=", resource.draftBlobId)
           .selectAll()
           .executeTakeFirstOrThrow()
-        pageRef = (blob.content as { page?: { ref?: string } } | null)?.page?.ref
+        pageRef = (blob.content as { page?: { ref?: string } } | null)?.page
+          ?.ref
 
         auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
       })
@@ -284,7 +295,9 @@ describe("gazette.router", async () => {
 
       const resources = await db.selectFrom("Resource").selectAll().execute()
       // Only the collection itself exists — no link was created.
-      expect(resources.map((r) => r.type)).toStrictEqual([ResourceType.Collection])
+      expect(resources.map((r) => r.type)).toStrictEqual([
+        ResourceType.Collection,
+      ])
     })
 
     it("rejects creation when a gazette with the same file ID already exists", async () => {
@@ -452,7 +465,9 @@ describe("gazette.router", async () => {
       let user: Awaited<ReturnType<typeof seedToppanWithCollection>>["user"]
       let resource: Awaited<
         ReturnType<
-          ReturnType<typeof db.selectFrom<"Resource">>["executeTakeFirstOrThrow"]
+          ReturnType<
+            typeof db.selectFrom<"Resource">
+          >["executeTakeFirstOrThrow"]
         >
       >
       let page: {
@@ -464,8 +479,11 @@ describe("gazette.router", async () => {
       let markFileAsDeleted: ReturnType<typeof vi.spyOn>
 
       beforeAll(async () => {
-        const { site, collection, user: seedUser } =
-          await seedToppanWithCollection()
+        const {
+          site,
+          collection,
+          user: seedUser,
+        } = await seedToppanWithCollection()
         user = seedUser
 
         const { gazetteId } = await caller.create({
@@ -795,8 +813,11 @@ describe("gazette.router", async () => {
       let markCancelled: ReturnType<typeof vi.spyOn>
 
       beforeAll(async () => {
-        const { site, collection, user: seedUser } =
-          await seedToppanWithCollection()
+        const {
+          site,
+          collection,
+          user: seedUser,
+        } = await seedToppanWithCollection()
         user = seedUser
         markCancelled = vi
           .spyOn(s3Lib, "markScheduledAssetAsCancelled")
@@ -1450,9 +1471,7 @@ describe("gazette.router", async () => {
       await caller.delete({ siteId: site.id, gazetteId })
 
       // Assert — SearchSG path was taken, Algolia path was not.
-      expect(gazetteService.removeGazetteFromSearchIndex).toHaveBeenCalledOnce(
-        
-      )
+      expect(gazetteService.removeGazetteFromSearchIndex).toHaveBeenCalledOnce()
       expect(gazetteService.removeGazetteFromAlgolia).not.toHaveBeenCalled()
       expect(gazetteService.deleteGazetteAsset).toHaveBeenCalledOnce()
     })

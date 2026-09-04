@@ -1,3 +1,10 @@
+import type * as serverContextType from "~/server/context"
+import type { User } from "~prisma/generated/selectableTypes"
+import { addMinutes } from "date-fns"
+import MockDate from "mockdate"
+import { resetTables } from "tests/integration/helpers/db"
+import { applyAuthedSession } from "tests/integration/helpers/iron-session"
+import { setupPageResource, setupUser } from "tests/integration/helpers/seed"
 import {
   afterEach,
   beforeAll,
@@ -7,13 +14,6 @@ import {
   it,
   vi,
 } from "vitest"
-import type * as serverContextType from "~/server/context"
-import type { User } from "~prisma/generated/selectableTypes"
-import { addMinutes } from "date-fns"
-import MockDate from "mockdate"
-import { resetTables } from "tests/integration/helpers/db"
-import { applyAuthedSession } from "tests/integration/helpers/iron-session"
-import { setupPageResource, setupUser } from "tests/integration/helpers/seed"
 import * as s3Lib from "~/lib/s3"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { db } from "~server/db"
@@ -276,8 +276,9 @@ describe("schedulePushDocumentJobHandler", async () => {
         // Act
         await schedulePushDocumentJobHandler()
 
-        ;[records] = vi.mocked(algoliaLib.saveObjectsToSearchIndex).mock
-          .calls[0]!
+        ;[records] = vi.mocked(
+          algoliaLib.saveObjectsToSearchIndex,
+        ).mock.calls[0]!
 
         remainingJobCount = (
           await db.selectFrom("PushDocumentJob").selectAll().execute()

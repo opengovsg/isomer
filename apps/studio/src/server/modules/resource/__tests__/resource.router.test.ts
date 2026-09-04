@@ -1,4 +1,3 @@
-import { it, vi, describe, expect, beforeAll, beforeEach } from 'vitest';
 import { TRPCError } from "@trpc/server"
 import { omit, pick } from "lodash-es"
 import { auth } from "tests/integration/helpers/auth"
@@ -23,6 +22,7 @@ import {
   setupUser,
   setUpWhitelist,
 } from "tests/integration/helpers/seed"
+import { it, vi, describe, expect, beforeAll, beforeEach } from "vitest"
 import { USER_VIEWABLE_RESOURCE_TYPES } from "~/constants/resources"
 import { MAX_BATCH_RESOURCE_IDS } from "~/schemas/resource"
 import * as auditService from "~/server/modules/audit/audit.service"
@@ -627,10 +627,9 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      expect(linkPickerResult.items.map(({ permalink }) => permalink)).toStrictEqual([
-        "about",
-        "search",
-      ])
+      expect(
+        linkPickerResult.items.map(({ permalink }) => permalink),
+      ).toStrictEqual(["about", "search"])
       expect(
         directorySidebarResult.items.map(({ permalink }) => permalink),
       ).toStrictEqual(["about"])
@@ -1889,9 +1888,13 @@ describe("resource.router", async () => {
       )
     })
 
-    it.todo("should throw 403 if user does not have write access to destination resource")
+    it.todo(
+      "should throw 403 if user does not have write access to destination resource",
+    )
 
-    it.todo("should throw 403 if user does not have write access to origin resource")
+    it.todo(
+      "should throw 403 if user does not have write access to origin resource",
+    )
 
     describe("redirect on move", () => {
       const setup = async () => {
@@ -2785,7 +2788,9 @@ describe("resource.router", async () => {
       })
 
       // Assert: repeated calls to the same page return identical results
-      expect(page1First.map((r) => r.id)).toStrictEqual(page1Second.map((r) => r.id))
+      expect(page1First.map((r) => r.id)).toStrictEqual(
+        page1Second.map((r) => r.id),
+      )
 
       // Assert: no duplicate IDs across pages
       const page1Ids = new Set(page1First.map((r) => r.id))
@@ -2836,7 +2841,11 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      expect(result.map((r) => r.title)).toStrictEqual(["apple", "Banana", "cherry"])
+      expect(result.map((r) => r.title)).toStrictEqual([
+        "apple",
+        "Banana",
+        "cherry",
+      ])
     })
 
     it("should sort by permalink ascending when orderBy is permalink-asc", async () => {
@@ -2947,7 +2956,9 @@ describe("resource.router", async () => {
       )
     })
 
-    it.todo("should throw 403 if user does not have read access to the resource")
+    it.todo(
+      "should throw 403 if user does not have read access to the resource",
+    )
   })
 
   describe("delete", () => {
@@ -3546,7 +3557,9 @@ describe("resource.router", async () => {
       )
     })
 
-    it.todo("should throw 403 if user does not have read access to the resource")
+    it.todo(
+      "should throw 403 if user does not have read access to the resource",
+    )
   })
 
   describe("getAncestryStack", () => {
@@ -3757,7 +3770,9 @@ describe("resource.router", async () => {
       )
     })
 
-    it.todo("should throw 403 if user does not have read access to the resource")
+    it.todo(
+      "should throw 403 if user does not have read access to the resource",
+    )
   })
 
   describe("getBatchAncestryWithSelf", () => {
@@ -3890,7 +3905,9 @@ describe("resource.router", async () => {
       await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
     })
 
-    it.todo("should throw 403 if user does not have read access to the resources")
+    it.todo(
+      "should throw 403 if user does not have read access to the resources",
+    )
   })
 
   describe("search", () => {
@@ -5116,7 +5133,9 @@ describe("resource.router", async () => {
       await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
     })
 
-    it.todo("should throw 403 if user does not have read access to the resources")
+    it.todo(
+      "should throw 403 if user does not have read access to the resources",
+    )
   })
 
   describe("getIndexPage", () => {
