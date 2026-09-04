@@ -1,3 +1,4 @@
+import { beforeEach, vi, afterEach, describe, expect, it } from 'vitest';
 import type { Mock } from "vitest"
 import type { HeartbeatOptions } from "~/utils"
 import { sendHeartbeat } from "~/utils"
@@ -21,10 +22,10 @@ describe("client", () => {
     env.ENABLE_CRON_WORKERS = true
     vi.restoreAllMocks()
   })
-  describe("registerPgbossJob", () => {
+  describe(registerPgbossJob, () => {
     it("does not start PgBoss or register a job when cron workers are disabled", async () => {
       env.ENABLE_CRON_WORKERS = false
-      const handler = vi.fn().mockResolvedValue(undefined)
+      const handler = vi.fn<() => Promise<void>>().mockResolvedValue(undefined)
 
       const { stop } = await registerPgbossJob(
         logger,
@@ -34,13 +35,13 @@ describe("client", () => {
       )
 
       expect(globalForPgboss.pgBoss).toBeUndefined()
-      expect(globalForPgboss.registeredPgbossJobs).toEqual(new Set())
+      expect(globalForPgboss.registeredPgbossJobs).toStrictEqual(new Set())
       expect(handler).not.toHaveBeenCalled()
       expect(stop()).toBeUndefined()
     })
 
     it("creates queue, registers worker, and schedules job", async () => {
-      const handler = vi.fn().mockResolvedValue(undefined)
+      const handler = vi.fn<() => Promise<void>>().mockResolvedValue(undefined)
 
       const { stop } = await registerPgbossJob(
         logger,
@@ -50,32 +51,39 @@ describe("client", () => {
       )
 
       // expect the global PgBoss instance to have the job registered, as per singleton pattern
-      expect(globalForPgboss.registeredPgbossJobs.has("test-job")).toBe(true)
-      expect(globalForPgboss.pgBoss).toBeDefined()
-      // the handler should not have been called yet
-      expect(handler).not.toHaveBeenCalled()
+      expect({
+        hasJob: globalForPgboss.registeredPgbossJobs.has("test-job"),
+        pgBossDefined: globalForPgboss.pgBoss !== undefined,
+        handlerCalled: handler.mock.calls.length,
+      }).toStrictEqual({
+        hasJob: true,
+        pgBossDefined: true,
+        handlerCalled: 0,
+      })
 
       // verify that the schedule was created in the database
       const existingSchedules = await globalForPgboss.pgBoss!.getSchedules()
-      expect(existingSchedules.length).toBe(1)
-      const schedule = existingSchedules[0]
-      expect(schedule!.cron).toBe("* * * * *")
-      expect(schedule!.name).toBe("test-job")
-
-      // verify that the queue was created in the database
       const queue = await globalForPgboss.pgBoss!.getQueue("test-job")
-      expect(queue).toBeDefined()
+      expect({
+        scheduleCount: existingSchedules.length,
+        schedule: existingSchedules[0],
+        queueDefined: queue !== undefined,
+      }).toMatchObject({
+        scheduleCount: 1,
+        schedule: { cron: "* * * * *", name: "test-job" },
+        queueDefined: true,
+      })
 
       // verify that calling stop works
       const offWorkSpy = vi
         .spyOn(globalForPgboss.pgBoss!, "offWork")
         .mockResolvedValue()
       await stop()
-      expect(offWorkSpy).toHaveBeenCalledTimes(1)
+      expect(offWorkSpy).toHaveBeenCalledOnce()
     })
 
     it("does not register the job again if already registered", async () => {
-      const handler = vi.fn().mockResolvedValue(undefined)
+      const handler = vi.fn<() => Promise<void>>().mockResolvedValue(undefined)
 
       // First registration
       await registerPgbossJob(logger, "test-job", "* * * * *", handler)
@@ -90,23 +98,24 @@ describe("client", () => {
 
       // Verify that only one schedule exists in the database
       const existingSchedules = await globalForPgboss.pgBoss!.getSchedules()
-      expect(existingSchedules.length).toBe(1)
+      expect(existingSchedules).toHaveLength(1)
 
       // Verify that calling stop works
       const offWorkSpy = vi
         .spyOn(globalForPgboss.pgBoss!, "offWork")
         .mockResolvedValue()
       await stop()
-      expect(offWorkSpy).toHaveBeenCalledTimes(1)
+      expect(offWorkSpy).toHaveBeenCalledOnce()
     })
   })
-  describe("sendHeartbeat", () => {
+  describe(sendHeartbeat, () => {
     let fetchMock: Mock
     beforeEach(() => {
-      fetchMock = vi.fn()
+      fetchMock = vi.fn<typeof fetch>()
       global.fetch = fetchMock
     })
     const MOCK_URL = "http://example.com/heartbeat"
+
     it("sends heartbeat successfully on first attempt", async () => {
       // Mock fetch to succeed on first attempt with a 200 response
       fetchMock.mockResolvedValueOnce({ ok: true, status: 200 })
@@ -116,11 +125,11 @@ describe("client", () => {
 
       await sendHeartbeat(logger, "job-123", options)
 
-      expect(fetchMock).toHaveBeenCalledTimes(1)
-      expect(fetchMock).toHaveBeenCalledWith(MOCK_URL, {
+      expect(fetchMock).toHaveBeenCalledExactlyOnceWith(MOCK_URL, {
         method: "POST",
       })
     })
+
     it("tries a max of 3 times before failing", async () => {
       // Mock fetch to fail with a 500 response
       fetchMock.mockResolvedValue({ ok: false, status: 500 })
