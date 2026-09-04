@@ -1,4 +1,3 @@
-import { beforeEach, vi, afterEach, describe, expect, it } from 'vitest';
 import { TRPCError } from "@trpc/server"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
@@ -14,6 +13,7 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
+import { beforeEach, vi, afterEach, describe, expect, it } from "vitest"
 import { createCallerFactory } from "~/server/trpc"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 
@@ -89,7 +89,6 @@ describe("redirect.router", async () => {
   }
 
   describe("list", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Arrange / Act
       const result = unauthedCaller.list({ siteId })
@@ -304,7 +303,6 @@ describe("redirect.router", async () => {
   })
 
   describe("count", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Arrange / Act
       const result = unauthedCaller.count({ siteId })
@@ -359,7 +357,6 @@ describe("redirect.router", async () => {
   })
 
   describe("validate", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Arrange / Act
       const result = unauthedCaller.validate({
@@ -636,7 +633,6 @@ describe("redirect.router", async () => {
   })
 
   describe("create", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Arrange / Act
       const result = unauthedCaller.create({
@@ -1014,7 +1010,6 @@ describe("redirect.router", async () => {
   })
 
   describe("create — destination resolution", () => {
-
     it("should store an internal-path destination as a page reference", async () => {
       // Arrange
       const { page } = await setupPageResource({
@@ -1227,7 +1222,6 @@ describe("redirect.router", async () => {
   })
 
   describe("resolveReferences", () => {
-
     it("should throw 403 if user does not have read access to the site", async () => {
       // Arrange
       const { site: otherSite } = await setupSite()
@@ -1336,7 +1330,9 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      expect(result).toStrictEqual([{ reference, permalink: "/info", warn: false }])
+      expect(result).toStrictEqual([
+        { reference, permalink: "/info", warn: false },
+      ])
     })
 
     it("should resolve a deleted page's reference to null and warn", async () => {
@@ -1384,7 +1380,9 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      expect(result).toStrictEqual([{ reference, permalink: null, warn: false }])
+      expect(result).toStrictEqual([
+        { reference, permalink: null, warn: false },
+      ])
     })
 
     it("should not warn for a literal path to a published page (no permalink echoed)", async () => {
@@ -1592,7 +1590,6 @@ describe("redirect.router", async () => {
   })
 
   describe("delete", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Arrange / Act
       const result = unauthedCaller.delete({ siteId, id: "1" })
@@ -1777,7 +1774,6 @@ describe("redirect.router", async () => {
   })
 
   describe("getBySource", () => {
-
     it("should throw 403 if user does not have read access to the site", async () => {
       // Arrange
       const { site: otherSite } = await setupSite()
@@ -1901,7 +1897,6 @@ describe("redirect.router", async () => {
   })
 
   describe("countByDestinationResource", () => {
-
     it("should throw 403 if user does not have read access to the site", async () => {
       // Arrange
       const { site: otherSite } = await setupSite()
@@ -2056,7 +2051,6 @@ describe("redirect.router", async () => {
   })
 
   describe("create — wildcard sources", () => {
-
     it("stores a wildcard whose internal destination becomes a page reference", async () => {
       // Arrange
       const { page } = await setupPageResource({

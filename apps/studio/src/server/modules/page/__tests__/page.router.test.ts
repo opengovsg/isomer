@@ -1,4 +1,3 @@
-import { beforeEach, afterEach, describe, expect, it } from 'vitest';
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { z } from "zod"
 import type { reorderBlobSchema, updatePageBlobSchema } from "~/schemas/page"
@@ -23,6 +22,7 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
+import { beforeEach, afterEach, describe, expect, it } from "vitest"
 import { normalizeRedirectPath } from "~/schemas/redirect"
 import { createCallerFactory } from "~/server/trpc"
 import {
@@ -69,7 +69,6 @@ describe("page.router", async () => {
   })
 
   describe("getPrefill", () => {
-
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
@@ -676,7 +675,6 @@ describe("page.router", async () => {
   })
 
   describe("list", () => {
-
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
@@ -720,7 +718,6 @@ describe("page.router", async () => {
   })
 
   describe("getCategories", () => {
-
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
@@ -779,7 +776,6 @@ describe("page.router", async () => {
   })
 
   describe("readPage", () => {
-
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
@@ -917,7 +913,6 @@ describe("page.router", async () => {
   })
 
   describe("readPageAndBlob", () => {
-
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
@@ -1186,7 +1181,9 @@ describe("page.router", async () => {
           ],
         },
       ]
-      expect(unexpectedBlock).not.toStrictEqual(pageToReorder.blob.content.content)
+      expect(unexpectedBlock).not.toStrictEqual(
+        pageToReorder.blob.content.content,
+      )
       await setupAdminPermissions({
         userId: session.userId ?? undefined,
         siteId: pageToReorder.site.id,
@@ -1564,7 +1561,6 @@ describe("page.router", async () => {
   })
 
   describe("createPage", () => {
-
     it("should throw 401 if not logged in create", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -1922,7 +1918,6 @@ describe("page.router", async () => {
   })
 
   describe("getRootPage", () => {
-
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
@@ -1992,7 +1987,6 @@ describe("page.router", async () => {
   })
 
   describe("publishPage", () => {
-
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
@@ -2348,7 +2342,6 @@ describe("page.router", async () => {
   })
 
   describe("updateMeta", () => {
-
     it("should throw 401 if not logged in update", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
@@ -2889,7 +2882,6 @@ describe("page.router", async () => {
   })
 
   describe("getFullPermalink", () => {
-
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
@@ -3005,7 +2997,6 @@ describe("page.router", async () => {
   })
 
   describe("getPermalinkTree", () => {
-
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
@@ -3117,7 +3108,6 @@ describe("page.router", async () => {
   })
 
   describe("createIndexPage", () => {
-
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))

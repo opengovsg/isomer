@@ -20,7 +20,7 @@ import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 import { MAX_DAYS_FROM_LAST_LOGIN } from "../constants"
 
 // Mock must be at module level to be hoisted correctly
-vi.mock(import('~/features/mail/service'), () => ({
+vi.mock(import("~/features/mail/service"), () => ({
   sendAccountDeactivationEmail: vi.fn<(...args: unknown[]) => unknown>(),
   sendAccountDeactivationWarningEmail: vi.fn<(...args: unknown[]) => unknown>(),
 }))
@@ -413,7 +413,9 @@ describe("inactiveUsers.service", () => {
 
       it("includes only admins from that site and excludes the deactivated user", () => {
         expect(sitesAndAdmins?.[0]?.adminEmails).toContain(adminOnSite1.email)
-        expect(sitesAndAdmins?.[0]?.adminEmails).not.toContain(adminOnSite2.email)
+        expect(sitesAndAdmins?.[0]?.adminEmails).not.toContain(
+          adminOnSite2.email,
+        )
         expect(sitesAndAdmins?.[0]?.adminEmails).not.toContain(
           userToDeactivate.email,
         )
@@ -1117,7 +1119,6 @@ describe("inactiveUsers.service", () => {
     })
 
     describe("should send warning emails to users who will be inactive in specified days", () => {
-
       it("1 day", async () => {
         // Arrange
         const user = await setupUserWrapper({
@@ -1211,7 +1212,9 @@ describe("inactiveUsers.service", () => {
       })
 
       // Assert
-      expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledExactlyOnceWith({
+      expect(
+        sendAccountDeactivationWarningEmail,
+      ).toHaveBeenCalledExactlyOnceWith({
         recipientEmail: user.email,
         siteNames: [site.name],
         inHowManyDays: 1,
@@ -1368,7 +1371,9 @@ describe("inactiveUsers.service", () => {
       })
 
       // Assert
-      expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledExactlyOnceWith({
+      expect(
+        sendAccountDeactivationWarningEmail,
+      ).toHaveBeenCalledExactlyOnceWith({
         recipientEmail: user.email,
         siteNames: [site.name, anotherSite.name],
         inHowManyDays: 1,

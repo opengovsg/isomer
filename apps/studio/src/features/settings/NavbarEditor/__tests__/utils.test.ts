@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
 import type { ErrorObject } from "ajv"
+import { describe, expect, it } from "vitest"
 
 import { getUniqueErrorMessages } from "../utils"
 
@@ -13,7 +13,6 @@ const createError = (message?: string): ErrorObject =>
   }) as ErrorObject
 
 describe(getUniqueErrorMessages, () => {
-
   it("should return an empty array when there are no errors", () => {
     // Arrange
     const errors = {}

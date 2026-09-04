@@ -1,9 +1,9 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from "vitest"
+
 import { LINK_TYPES } from "../constants"
 import { getLinkHrefType } from "../utils"
 
 describe(getLinkHrefType, () => {
-
   it("returns Page for empty or undefined href", () => {
     expect(getLinkHrefType(undefined)).toBe(LINK_TYPES.Page)
     expect(getLinkHrefType("")).toBe(LINK_TYPES.Page)

@@ -156,7 +156,9 @@ describe(getTableOfContents, () => {
     // Assert
     expect(toc).toHaveLength(1)
     expect(toc.map((t) => t.content)).toStrictEqual(["Real heading"])
-    expect(toc[0]?.anchorLink).toStrictEqual(expect.stringMatching(anchorPattern))
+    expect(toc[0]?.anchorLink).toStrictEqual(
+      expect.stringMatching(anchorPattern),
+    )
   })
 
   it("skips whitespace-only level-2 headings (spaces, tabs, non-breaking space)", () => {
@@ -191,7 +193,9 @@ describe(getTableOfContents, () => {
     // Assert
     expect(toc).toHaveLength(1)
     expect(toc.map((t) => t.content)).toStrictEqual(["Real heading"])
-    expect(toc[0]?.anchorLink).toStrictEqual(expect.stringMatching(anchorPattern))
+    expect(toc[0]?.anchorLink).toStrictEqual(
+      expect.stringMatching(anchorPattern),
+    )
   })
 
   it("preserves order of toc entries across prose and blocks", () => {

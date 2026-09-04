@@ -51,7 +51,9 @@ describe(TableSizePicker, () => {
 
   it("does not show the size grid until the button is clicked", () => {
     renderHarness()
-    expect(screen.queryByRole("group", { name: "Select table size" })).toBeNull()
+    expect(
+      screen.queryByRole("group", { name: "Select table size" }),
+    ).toBeNull()
   })
 
   it("opens the size grid popover on click", async () => {
@@ -62,7 +64,9 @@ describe(TableSizePicker, () => {
     // Chakra's Popover content mounts via a Framer Motion enter transition,
     // so it isn't immediately part of the accessible tree — `findByRole`
     // polls until the transition settles.
-    await expect(screen.findByRole("group", { name: "Select table size" })).resolves.toBeInTheDocument()
+    await expect(
+      screen.findByRole("group", { name: "Select table size" }),
+    ).resolves.toBeInTheDocument()
     expect(screen.getByText("Insert table")).toBeInTheDocument()
   })
 
@@ -109,7 +113,9 @@ describe(TableSizePicker, () => {
     fireEvent.click(targetCell)
 
     await waitFor(() => {
-      expect(screen.queryByRole("group", { name: "Select table size" })).toBeNull()
+      expect(
+        screen.queryByRole("group", { name: "Select table size" }),
+      ).toBeNull()
     })
 
     const rows = screen.getAllByRole("row")
@@ -141,7 +147,9 @@ describe(TableSizePicker, () => {
     await waitFor(() => {
       expect(screen.queryByRole("row")).toBeNull()
     })
-    await expect(screen.findByRole("button", { name: "Table" })).resolves.toBeInTheDocument()
+    await expect(
+      screen.findByRole("button", { name: "Table" }),
+    ).resolves.toBeInTheDocument()
   })
 
   it("shows the delete-table button in its active (highlighted) state, matching the old Table button's behaviour while inside a table", async () => {

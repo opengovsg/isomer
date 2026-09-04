@@ -161,7 +161,6 @@ describe(validateNumericId, () => {
 })
 
 describe("plan file naming", () => {
-
   it("uses stable convert-folder and convert-resource prefixes", () => {
     // Act + Assert
     expect(folderPlanFileName("159351")).toBe("convert-folder-159351.json")
@@ -245,7 +244,6 @@ describe("plan file I/O", () => {
 })
 
 describe(getBlobOfResource, () => {
-
   it("returns the draft blob when draftBlobId is set", async () => {
     // Arrange
     const resourceChain = createChain()
@@ -411,7 +409,6 @@ describe(updateBlobById, () => {
 })
 
 describe(incrementVersion, () => {
-
   it("returns null when the resource has no draft blob", async () => {
     // Arrange
     const selectChain = createChain()

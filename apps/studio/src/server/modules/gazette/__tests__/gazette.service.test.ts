@@ -9,7 +9,7 @@ import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 // algoliasearch(env.ALGOLIA_APP_ID, env.ALGOLIA_API_KEY). Those env vars are
 // not set in the test environment, so the import throws "appId is missing"
 // before any test runs. Mock the whole module to prevent this.
-vi.mock(import('~/lib/algolia'))
+vi.mock(import("~/lib/algolia"))
 
 import * as algoliaLib from "~/lib/algolia"
 
@@ -36,7 +36,6 @@ describe("gazette.service", () => {
   })
 
   describe(assertGazetteAccess, () => {
-
     it("allows a Toppan-email user", async () => {
       const user = await setupUser({ email: "anyone@toppannext.com" })
       await expect(assertGazetteAccess(user.id)).resolves.toBeUndefined()
@@ -75,7 +74,6 @@ describe("gazette.service", () => {
   })
 
   describe(copyFileWithNewName, () => {
-
     it("rejects a sourceKey that does not have the expected /year/cat/sub/file shape", async () => {
       await expect(
         copyFileWithNewName({
@@ -110,7 +108,6 @@ describe("gazette.service", () => {
   })
 
   describe(getPresignedPutUrl, () => {
-
     it("includes Tagging in the signer call when tags are supplied", async () => {
       const signedPutSpy = vi
         .spyOn(s3Lib, "generateSignedPutUrl")
@@ -143,7 +140,6 @@ describe("gazette.service", () => {
   })
 
   describe(removeGazetteFromAlgolia, () => {
-
     it("calls deleteObjectsFromSearchIndexByFilter with a correctly-quoted objectGroup filter", async () => {
       // Arrange
       const deleteSpy = vi

@@ -1,4 +1,3 @@
-import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { TRPCError } from "@trpc/server"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
@@ -14,6 +13,7 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
+import { beforeAll, beforeEach, describe, expect, it } from "vitest"
 import { getCurrentSingaporeMonth } from "~/schemas/audit"
 import { createCallerFactory } from "~/server/trpc"
 
@@ -89,7 +89,6 @@ describe("audit.router", async () => {
   })
 
   describe("createExportRequest", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -367,7 +366,6 @@ describe("audit.router", async () => {
     })
 
     describe("allSites scope", () => {
-
       it("fans out across every site the caller Admins, skipping sites without permission", async () => {
         // Arrange: caller is Admin on two sites, has no permission on a third.
         const { site: adminSiteA } = await setupSite()
@@ -391,9 +389,9 @@ describe("audit.router", async () => {
 
         // Assert: one row per admin site, none for the site without permission.
         expect(result).toHaveLength(2)
-        expect(result.map((row) => row.siteId).sort((a, b) => a - b)).toStrictEqual(
-          [adminSiteA.id, adminSiteB.id].sort((a, b) => a - b),
-        )
+        expect(
+          result.map((row) => row.siteId).sort((a, b) => a - b),
+        ).toStrictEqual([adminSiteA.id, adminSiteB.id].sort((a, b) => a - b))
 
         const otherSiteRows = await getRequestRows({
           siteId: otherSite.id,
@@ -425,9 +423,9 @@ describe("audit.router", async () => {
 
         // Assert
         expect(result).toHaveLength(2)
-        expect(result.map((row) => row.siteId).sort((a, b) => a - b)).toStrictEqual(
-          [siteA.id, siteB.id].sort((a, b) => a - b),
-        )
+        expect(
+          result.map((row) => row.siteId).sort((a, b) => a - b),
+        ).toStrictEqual([siteA.id, siteB.id].sort((a, b) => a - b))
       })
 
       it("throws FORBIDDEN when the caller is not an Admin on any site", async () => {

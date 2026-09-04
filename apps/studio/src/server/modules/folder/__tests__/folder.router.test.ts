@@ -1,4 +1,3 @@
-import { beforeEach, describe, expect, it } from 'vitest';
 import { TRPCError } from "@trpc/server"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
@@ -15,6 +14,7 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
+import { beforeEach, describe, expect, it } from "vitest"
 import { createCallerFactory } from "~/server/trpc"
 import { getReferenceLink } from "~/utils/link"
 
@@ -50,7 +50,6 @@ describe("folder.router", async () => {
   })
 
   describe("create", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Act
       const result = unauthedCaller.create({
@@ -332,11 +331,12 @@ describe("folder.router", async () => {
     })
 
     // oxlint-disable-next-line vitest/warn-todo
-    it.todo("should throw 403 if user does not have write access to the parent folder")
+    it.todo(
+      "should throw 403 if user does not have write access to the parent folder",
+    )
   })
 
   describe("getMetadata", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Act
       const result = unauthedCaller.getMetadata({
@@ -441,7 +441,6 @@ describe("folder.router", async () => {
   })
 
   describe("editFolder", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Act
       const { folder, site } = await setupFolder()
@@ -990,7 +989,6 @@ describe("folder.router", async () => {
   })
 
   describe("getIndexpage", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Act
       const result = unauthedCaller.getIndexpage({
@@ -1058,7 +1056,6 @@ describe("folder.router", async () => {
   })
 
   describe("listChildPages", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const { folder, site } = await setupFolder()

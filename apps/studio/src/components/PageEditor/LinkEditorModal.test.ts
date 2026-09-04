@@ -3,7 +3,6 @@ import { describe, expect, it } from "vitest"
 import { linkEditorSchema } from "./LinkEditorModal"
 
 describe(linkEditorSchema, () => {
-
   it("accepts a valid external link", () => {
     const result = linkEditorSchema.safeParse({
       linkText: "Isomer",
@@ -35,7 +34,7 @@ describe(linkEditorSchema, () => {
     })
     expect(result.success).toBe(true)
     expect(result.success).toBe(true)
-    if (!result.success) throw new Error('Expected parse to succeed')
+    if (!result.success) throw new Error("Expected parse to succeed")
     expect(result.data.linkHref).toBe("https://isomer.gov.sg")
   })
 

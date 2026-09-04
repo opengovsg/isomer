@@ -1,8 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from "vitest"
+
 import { normalizeSiteEntity } from "../utils"
 
 describe(normalizeSiteEntity, () => {
-
   it("removes blank strings alongside undefined values", () => {
     expect(
       normalizeSiteEntity({

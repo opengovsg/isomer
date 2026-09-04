@@ -6,7 +6,6 @@ import {
 } from "../useAssetUpload"
 
 describe("useAssetUpload backoff options", () => {
-
   it("should cap exponential retry delay", () => {
     // Act
     const options = getAssetUploadBackoffOptions({})

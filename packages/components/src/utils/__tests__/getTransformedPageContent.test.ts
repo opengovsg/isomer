@@ -39,7 +39,9 @@ describe(getTransformedPageContent, () => {
 
     // Assert
     expect(transformed).toHaveLength(content.length)
-    expect(transformed.map((b) => b.type)).toStrictEqual(content.map((b) => b.type))
+    expect(transformed.map((b) => b.type)).toStrictEqual(
+      content.map((b) => b.type),
+    )
   })
 
   it("adds ids only to level-2 prose headings without ids", () => {

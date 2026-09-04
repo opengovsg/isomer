@@ -11,7 +11,6 @@ import {
 
 describe("asset.service", () => {
   describe(getContentTypeFromKey, () => {
-
     it("should return image MIME for image extensions", () => {
       expect(getContentTypeFromKey("1/abc/test.png")).toBe("image/png")
       expect(getContentTypeFromKey("1/abc/photo.jpg")).toBe("image/jpeg")
@@ -47,7 +46,6 @@ describe("asset.service", () => {
   })
 
   describe(getContentDispositionForKey, () => {
-
     it("should return inline with filename from key segment", () => {
       const result = getContentDispositionForKey("1/abc-uuid/test.png")
       expect(result).toBe(`inline; filename=test.png`)
@@ -63,7 +61,6 @@ describe("asset.service", () => {
   })
 
   describe(getFileKey, () => {
-
     it("should generate a file key with basic ASCII filename", () => {
       // Arrange
       const siteId = 123
@@ -216,7 +213,6 @@ describe("asset.service", () => {
   })
 
   describe(doAllFileKeysBelongToSite, () => {
-
     it("should return true when all file keys start with the siteId prefix", () => {
       expect(
         doAllFileKeysBelongToSite({
@@ -284,7 +280,6 @@ describe("asset.service", () => {
   })
 
   describe(sanitizeSvg, () => {
-
     it("should return sanitized content for a valid SVG without altering safe elements or attributes", () => {
       // Arrange
       const input =

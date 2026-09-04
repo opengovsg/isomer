@@ -26,7 +26,7 @@ const { mockDb, mockValidatePermissions } = vi.hoisted(() => ({
   mockValidatePermissions: vi.fn<(...args: unknown[]) => unknown>(),
 }))
 
-vi.mock(import('~/env.mjs'), () => ({
+vi.mock(import("~/env.mjs"), () => ({
   env: {
     // oxlint-disable-next-line node/no-process-env
     NODE_ENV: process.env.NODE_ENV ?? "test",
@@ -38,12 +38,12 @@ vi.mock(import('~/env.mjs'), () => ({
 
 // Keep the real database module (its `AuditLogEvent`, `sql`, types and utils
 // are used across the audit module) and override only `db` with our fake.
-vi.mock(import('../../database'), async (importOriginal) => ({
+vi.mock(import("../../database"), async (importOriginal) => ({
   ...(await importOriginal<typeof import("../../database")>()),
   db: mockDb,
 }))
 
-vi.mock(import('../../permissions/permissions.service'), () => ({
+vi.mock(import("../../permissions/permissions.service"), () => ({
   validatePermissionsForManagingUsers: mockValidatePermissions,
 }))
 

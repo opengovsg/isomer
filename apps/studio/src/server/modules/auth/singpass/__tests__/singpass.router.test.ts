@@ -33,7 +33,6 @@ describe("auth.singpass", () => {
   })
 
   describe("login", () => {
-
     it("should throw if email verification has not been completed", async () => {
       // Act
       const result = caller.login({ landingUrl: "http://localhost" })
@@ -82,7 +81,6 @@ describe("auth.singpass", () => {
   })
 
   describe("getUserProps", () => {
-
     it("should throw if no session state is found", async () => {
       // Act
       const result = caller.getUserProps()
@@ -150,7 +148,6 @@ describe("auth.singpass", () => {
   })
 
   describe("callback", () => {
-
     it("should throw if no session state is found", async () => {
       // Act
       const result = caller.callback({

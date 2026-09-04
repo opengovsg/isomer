@@ -18,8 +18,10 @@ import { getMonthOptions } from "../utils"
 
 // PostHog capture calls run inside the mutation's onSuccess — mock the client
 // so they can be asserted on instead of hitting an uninitialised instance.
-const { posthogCapture } = vi.hoisted(() => ({ posthogCapture: vi.fn<(...args: unknown[]) => unknown>() }))
-vi.mock(import('posthog-js'), () => ({
+const { posthogCapture } = vi.hoisted(() => ({
+  posthogCapture: vi.fn<(...args: unknown[]) => unknown>(),
+}))
+vi.mock(import("posthog-js"), () => ({
   default: { capture: posthogCapture },
 }))
 
@@ -42,7 +44,7 @@ const fireOnSuccessForLastMutation = () => {
   capturedOptions?.onSuccess?.(undefined, variables)
 }
 
-vi.mock(import('~/utils/trpc'), () => ({
+vi.mock(import("~/utils/trpc"), () => ({
   trpc: {
     audit: {
       // The full window, as if the site were old enough to offer it — the
@@ -159,9 +161,11 @@ describe(AuditLogExportSection, () => {
       data: { code: "BAD_REQUEST" },
     })
 
-    await expect(screen.findByText(
+    await expect(
+      screen.findByText(
         "You cannot export audit logs for a month that is in the future",
-      )).resolves.not.toBeNull()
+      ),
+    ).resolves.not.toBeNull()
   })
 
   // A duplicate ask is a success, not an error: submitting the same form

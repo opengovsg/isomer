@@ -1,8 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from "vitest"
+
 import { escapeHtml, unescapeHtml } from "../html"
 
 describe(escapeHtml, () => {
-
   it("escapes HTML special characters", () => {
     // Arrange
     const raw = `</p><a href='x&y'>Click "here"</a>`
@@ -26,7 +26,6 @@ describe(escapeHtml, () => {
 })
 
 describe(unescapeHtml, () => {
-
   it("reverses HTML entity escaping", () => {
     // Arrange
     const escaped = `&lt;/p&gt;&lt;a href=&#39;x&amp;y&#39;&gt;Click &quot;here&quot;&lt;/a&gt;`

@@ -45,7 +45,7 @@ const {
 // string, which dotenv-cli has already loaded into `process.env` from
 // `.env.test`. We bypass the validated env schema (which would reject the
 // missing audit-bucket var) and read what we need straight from `process.env`.
-vi.mock(import('~/env.mjs'), () => ({
+vi.mock(import("~/env.mjs"), () => ({
   env: {
     // oxlint-disable-next-line node/no-process-env
     NODE_ENV: process.env.NODE_ENV ?? "test",
@@ -67,13 +67,13 @@ vi.mock(import('~/env.mjs'), () => ({
 // Fulfilment no longer presigns at export time (it emails a sealed Download
 // Token instead — ADR 0006), so generateSignedGetUrl is no longer part of
 // this path and is not mocked here.
-vi.mock(import('~/lib/s3'), () => ({
+vi.mock(import("~/lib/s3"), () => ({
   uploadAuditLogExport: mockUploadAuditLogExport,
   getStudioAssetsBucketName: mockGetStudioAssetsBucketName,
   getFileSize: mockGetFileSize,
 }))
 
-vi.mock(import('~/features/mail/service'), () => ({
+vi.mock(import("~/features/mail/service"), () => ({
   sendAuditLogExportReadyEmail: mockSendAuditLogExportReadyEmail,
   sendAuditLogExportFailedEmail: mockSendAuditLogExportFailedEmail,
 }))
@@ -586,7 +586,6 @@ describe("auditLogExport processor", () => {
   // on the generate path) AFTER the range fully elapsed and the S3 object
   // still exists.
   describe("Complete-Artifact reuse", () => {
-
     describe("reuses the Done artifact of an identical past-range request from ANOTHER user (per-site reuse, no second upload)", () => {
       let updatedFirst: Awaited<ReturnType<typeof getRequest>>
       let updatedSecond: Awaited<ReturnType<typeof getRequest>>

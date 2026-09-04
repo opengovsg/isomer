@@ -1,6 +1,6 @@
-import { beforeEach, afterEach, describe, expect, it } from 'vitest';
 import { addDays, addHours } from "date-fns"
 import MockDate from "mockdate"
+import { beforeEach, afterEach, describe, expect, it } from "vitest"
 
 import { getEarliestAllowableTime } from "../utils"
 

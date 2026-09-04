@@ -33,7 +33,7 @@ import {
 // algoliasearch(env.ALGOLIA_APP_ID, env.ALGOLIA_API_KEY). Those env vars are
 // not set in the test environment, so the import throws "appId is missing"
 // before any test runs. Mock the whole module to prevent this.
-vi.mock(import('~/lib/algolia'))
+vi.mock(import("~/lib/algolia"))
 
 import { db } from "../../database"
 import { gazetteRouter } from "../gazette.router"
@@ -93,7 +93,6 @@ describe("gazette.router", async () => {
   }
 
   describe("assertGazetteAccess (via gazette.list)", () => {
-
     it("rejects an ordinary site member with no Toppan email and no admin role", async () => {
       // Arrange
       const user = await setupUser({
@@ -183,10 +182,11 @@ describe("gazette.router", async () => {
   })
 
   describe("create", () => {
-
     describe("creates a gazette resource + blob + audit entries in one transaction", () => {
       let site: Awaited<ReturnType<typeof seedToppanWithCollection>>["site"]
-      let collection: Awaited<ReturnType<typeof seedToppanWithCollection>>["collection"]
+      let collection: Awaited<
+        ReturnType<typeof seedToppanWithCollection>
+      >["collection"]
       let user: Awaited<ReturnType<typeof seedToppanWithCollection>>["user"]
       let gazetteId: number
 
@@ -279,7 +279,9 @@ describe("gazette.router", async () => {
 
       const resources = await db.selectFrom("Resource").selectAll().execute()
       // Only the collection itself exists — no link was created.
-      expect(resources.map((r) => r.type)).toStrictEqual([ResourceType.Collection])
+      expect(resources.map((r) => r.type)).toStrictEqual([
+        ResourceType.Collection,
+      ])
     })
 
     it("rejects creation when a gazette with the same file ID already exists", async () => {
@@ -443,15 +445,17 @@ describe("gazette.router", async () => {
   })
 
   describe("update", () => {
-
     describe("rewrites the blob metadata and the resource title", () => {
       let gazetteId: number
       let user: Awaited<ReturnType<typeof seedToppanWithCollection>>["user"]
       let markFileAsDeleted: ReturnType<typeof vi.spyOn>
 
       beforeEach(async () => {
-        const { site, collection, user: toppanUser } =
-          await seedToppanWithCollection()
+        const {
+          site,
+          collection,
+          user: toppanUser,
+        } = await seedToppanWithCollection()
         user = toppanUser
         const createResult = await caller.create({
           siteId: site.id,
@@ -757,7 +761,6 @@ describe("gazette.router", async () => {
   })
 
   describe("cancelScheduledPublish", () => {
-
     describe("deletes the resource, blob, and push job atomically and emits both audit events", () => {
       let site: Awaited<ReturnType<typeof seedToppanWithCollection>>["site"]
       let user: Awaited<ReturnType<typeof seedToppanWithCollection>>["user"]
@@ -940,7 +943,6 @@ describe("gazette.router", async () => {
   })
 
   describe("getPresignedPutUrl", () => {
-
     it("passes the supplied tags through to the underlying signer", async () => {
       const { site, collection } = await seedToppanWithCollection()
       const signedPutSpy = vi
@@ -991,7 +993,6 @@ describe("gazette.router", async () => {
   })
 
   describe("getPresignedGetUrl", () => {
-
     it("returns the signed URL for the gazette bucket", async () => {
       const { site } = await seedToppanWithCollection()
       const signedGetSpy = vi
@@ -1444,9 +1445,7 @@ describe("gazette.router", async () => {
       await caller.delete({ siteId: site.id, gazetteId })
 
       // Assert — SearchSG path was taken, Algolia path was not.
-      expect(gazetteService.removeGazetteFromSearchIndex).toHaveBeenCalledOnce(
-        
-      )
+      expect(gazetteService.removeGazetteFromSearchIndex).toHaveBeenCalledOnce()
       expect(gazetteService.removeGazetteFromAlgolia).not.toHaveBeenCalled()
       expect(gazetteService.deleteGazetteAsset).toHaveBeenCalledOnce()
     })

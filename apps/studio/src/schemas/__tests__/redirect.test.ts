@@ -17,7 +17,6 @@ const VALID_REDIRECT = {
 
 describe(createRedirectSchema, () => {
   describe("source", () => {
-
     it("should normalise the source to a single leading slash with no trailing slash", () => {
       // Arrange / Act
       const result = createRedirectSchema.parse({
@@ -195,20 +194,23 @@ describe(createRedirectSchema, () => {
       "https://example.gov.sg/page",
       "http://example.com",
       "ftp://example.com/file",
-    ])("should reject a source that is a full URL with the design copy: %s", (source) => {
-      // Act
-      const result = createRedirectSchema.safeParse({
-        ...VALID_REDIRECT,
-        source,
-      })
+    ])(
+      "should reject a source that is a full URL with the design copy: %s",
+      (source) => {
+        // Act
+        const result = createRedirectSchema.safeParse({
+          ...VALID_REDIRECT,
+          source,
+        })
 
-      // Assert
-      expect(result.success).toBe(false)
-      if (result.success) throw new Error("Expected parse to fail")
-      expect(result.error.issues.map((issue) => issue.message)).toContain(
-        "Enter what comes behind your URL (e.g., /contact-us).",
-      )
-    })
+        // Assert
+        expect(result.success).toBe(false)
+        if (result.success) throw new Error("Expected parse to fail")
+        expect(result.error.issues.map((issue) => issue.message)).toContain(
+          "Enter what comes behind your URL (e.g., /contact-us).",
+        )
+      },
+    )
 
     it("should trim surrounding whitespace from the source", () => {
       // Arrange / Act
@@ -290,7 +292,6 @@ describe(createRedirectSchema, () => {
   })
 
   describe(redirectKind, () => {
-
     it("classifies by the stored source string", () => {
       expect(redirectKind("/news/*")).toBe("wildcard")
       expect(redirectKind("/faq")).toBe("exact")
@@ -298,7 +299,6 @@ describe(createRedirectSchema, () => {
   })
 
   describe("destination", () => {
-
     it("should normalise an internal destination to a single leading slash with no trailing slash", () => {
       // Arrange / Act
       const result = createRedirectSchema.parse({
@@ -553,7 +553,6 @@ describe(createRedirectSchema, () => {
   })
 
   describe("source and destination", () => {
-
     it("should reject a redirect from a source to itself with the design copy", () => {
       // Arrange / Act
       const result = createRedirectSchema.safeParse({
@@ -613,7 +612,6 @@ describe(createRedirectSchema, () => {
 })
 
 describe(bulkRedirectsCsvSchema, () => {
-
   it("accepts a small valid CSV", () => {
     // Arrange / Act
     const result = bulkRedirectsCsvSchema.safeParse({

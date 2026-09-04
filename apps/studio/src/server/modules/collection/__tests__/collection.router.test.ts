@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { MockInstance } from "vitest"
+import type { AuditLog } from "~prisma/generated/selectableTypes"
 import { TRPCError } from "@trpc/server"
 import { omit } from "lodash-es"
 import { randomUUID } from "node:crypto"
@@ -22,10 +22,10 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
 
-import type { AuditLog } from "~prisma/generated/selectableTypes"
 import { assertAuditLogRows } from "../../audit/__tests__/utils"
 import { db, jsonb, ResourceState, ResourceType } from "../../database"
 import { getBlobOfResource } from "../../resource/resource.service"
@@ -69,7 +69,6 @@ describe("collection.router", async () => {
   })
 
   describe("create", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Act
       const result = unauthedCaller.create({
@@ -388,11 +387,12 @@ describe("collection.router", async () => {
     })
 
     // oxlint-disable-next-line vitest/warn-todo
-    it.todo("should throw 403 if user does not have write access to the parent folder")
+    it.todo(
+      "should throw 403 if user does not have write access to the parent folder",
+    )
   })
 
   describe("createCollectionPage", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const { collection, site } = await setupCollection()
@@ -656,11 +656,12 @@ describe("collection.router", async () => {
     })
 
     // oxlint-disable-next-line vitest/warn-todo
-    it.todo("should throw 403 if user does not have write access to the parent collection")
+    it.todo(
+      "should throw 403 if user does not have write access to the parent collection",
+    )
   })
 
   describe("list", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Act
       const result = unauthedCaller.list({
@@ -750,7 +751,9 @@ describe("collection.router", async () => {
       })
 
       // Assert: Repeated page 1 calls return identical results (deterministic ordering)
-      expect(page1First.map((r) => r.id)).toStrictEqual(page1Second.map((r) => r.id))
+      expect(page1First.map((r) => r.id)).toStrictEqual(
+        page1Second.map((r) => r.id),
+      )
 
       // Assert: No duplicate IDs across pages (pagination consistency)
       const page1Ids = new Set(page1First.map((r) => r.id))
@@ -957,7 +960,11 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      expect(result.map((r) => r.title)).toStrictEqual(["Zulu", "Bravo", "Alpha"])
+      expect(result.map((r) => r.title)).toStrictEqual([
+        "Zulu",
+        "Bravo",
+        "Alpha",
+      ])
       expect(result.map((r) => r.type)).toStrictEqual([
         ResourceType.CollectionPage,
         ResourceType.CollectionLink,
@@ -1081,7 +1088,6 @@ describe("collection.router", async () => {
   })
 
   describe("readCollectionLink", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Act
       const result = unauthedCaller.readCollectionLink({
@@ -1141,7 +1147,6 @@ describe("collection.router", async () => {
   })
 
   describe("getMetadata", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Act
       const result = unauthedCaller.getMetadata({
@@ -1246,7 +1251,6 @@ describe("collection.router", async () => {
   })
 
   describe("readCollectionLink nested", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Act
       const { site } = await setupCollection()
@@ -1373,7 +1377,6 @@ describe("collection.router", async () => {
   })
 
   describe("updateCollectionLink", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Act
       const { site } = await setupCollection()
@@ -1668,7 +1671,6 @@ describe("collection.router", async () => {
   })
 
   describe("getCollections", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Act
       const result = unauthedCaller.getCollections({

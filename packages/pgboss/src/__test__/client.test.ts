@@ -1,6 +1,6 @@
-import { beforeEach, vi, afterEach, describe, expect, it } from 'vitest';
 import type { Mock } from "vitest"
 import type { HeartbeatOptions } from "~/utils"
+import { beforeEach, vi, afterEach, describe, expect, it } from "vitest"
 import { sendHeartbeat } from "~/utils"
 
 import { type BaseLogger, pino } from "@isomer/logging"

@@ -1,4 +1,3 @@
-import { beforeEach, describe, expect, it } from 'vitest';
 import { TRPCError } from "@trpc/server"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
@@ -15,6 +14,7 @@ import {
   setupUser,
   setUpWhitelist,
 } from "tests/integration/helpers/seed"
+import { beforeEach, describe, expect, it } from "vitest"
 import { createCallerFactory } from "~/server/trpc"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 

@@ -23,16 +23,24 @@ import { assetRouter } from "../asset.router"
 
 // Mock the S3 client to prevent credential loading issues in CI
 // Workaround as we do not really want to set up a full integration test here with S3
-vi.mock(import('~/lib/s3'), () => ({
+vi.mock(import("~/lib/s3"), () => ({
   storage: {
-    send: vi.fn<(...args: unknown[]) => unknown>().mockResolvedValue({ TagSet: [] }),
+    send: vi
+      .fn<(...args: unknown[]) => unknown>()
+      .mockResolvedValue({ TagSet: [] }),
   },
   generateSignedPutUrl: vi
     .fn<(...args: unknown[]) => unknown>()
     .mockResolvedValue("https://example.com/signed-url"),
-  markFileAsDeleted: vi.fn<(...args: unknown[]) => unknown>().mockResolvedValue(undefined),
-  deleteFile: vi.fn<(...args: unknown[]) => unknown>().mockResolvedValue(undefined),
-  putObjectDirect: vi.fn<(...args: unknown[]) => unknown>().mockResolvedValue(undefined),
+  markFileAsDeleted: vi
+    .fn<(...args: unknown[]) => unknown>()
+    .mockResolvedValue(undefined),
+  deleteFile: vi
+    .fn<(...args: unknown[]) => unknown>()
+    .mockResolvedValue(undefined),
+  putObjectDirect: vi
+    .fn<(...args: unknown[]) => unknown>()
+    .mockResolvedValue(undefined),
 }))
 
 const createCaller = createCallerFactory(assetRouter)
@@ -58,7 +66,6 @@ describe("asset.router", async () => {
   })
 
   describe("getPresignedPutUrl", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -238,7 +245,6 @@ describe("asset.router", async () => {
   })
 
   describe("deleteAssets", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()

@@ -26,7 +26,6 @@ describe(getPresignedPutUrlSchema, () => {
       Object.keys(IMAGE_ACCEPTED_MIME_TYPE_MAPPING)
         .filter((ext) => ext !== ".svg")
         .forEach((extension) => {
-
           it(`should accept valid image extension: ${extension}`, () => {
             const fileName = `test-image${extension}`
             const result = getPresignedPutUrlSchema.safeParse({
@@ -48,7 +47,6 @@ describe(getPresignedPutUrlSchema, () => {
       // Test all allowed file extensions
       Object.keys(FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING).forEach(
         (extension) => {
-
           it(`should accept valid file extension: ${extension}`, () => {
             const fileName = `test-file${extension}`
             const result = getPresignedPutUrlSchema.safeParse({
@@ -145,7 +143,6 @@ describe(getPresignedPutUrlSchema, () => {
     })
 
     describe("file name starting character validation", () => {
-
       it("should accept file names starting with letters", () => {
         const validNames = [
           "test.png",
@@ -246,14 +243,13 @@ describe(getPresignedPutUrlSchema, () => {
     })
 
     describe("required field validation", () => {
-
       it("should reject when fileName is missing", () => {
         const result = getPresignedPutUrlSchema.safeParse({
           ...validBaseData,
           // fileName is missing
         })
         expect(result.success).toBe(false)
-        if (result.success) throw new Error('Expected parse to fail')
+        if (result.success) throw new Error("Expected parse to fail")
         expect(result.error.issues[0]?.message).toBe("Missing file name")
       })
 
@@ -268,7 +264,6 @@ describe(getPresignedPutUrlSchema, () => {
   })
 
   describe("fileSize validation", () => {
-
     it.each([
       [
         "images larger than the image limit",
@@ -298,7 +293,6 @@ describe(getPresignedPutUrlSchema, () => {
 })
 
 describe(fileNameAndSizeSchema, () => {
-
   it("should validate a file without site or resource identifiers", () => {
     const result = fileNameAndSizeSchema.safeParse({
       fileName: "test.png",

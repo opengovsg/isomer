@@ -1,4 +1,4 @@
-import { it, vi, describe, expect, beforeAll, beforeEach } from 'vitest';
+import type { AuditLog } from "~prisma/generated/selectableTypes"
 import { TRPCError } from "@trpc/server"
 import { omit, pick } from "lodash-es"
 import { auth } from "tests/integration/helpers/auth"
@@ -23,12 +23,12 @@ import {
   setupUser,
   setUpWhitelist,
 } from "tests/integration/helpers/seed"
+import { it, vi, describe, expect, beforeAll, beforeEach } from "vitest"
 import { USER_VIEWABLE_RESOURCE_TYPES } from "~/constants/resources"
 import { MAX_BATCH_RESOURCE_IDS } from "~/schemas/resource"
 import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
-import type { AuditLog } from "~prisma/generated/selectableTypes"
 
 import { db } from "../../database"
 import { resourceRouter } from "../resource.router"
@@ -69,7 +69,6 @@ describe("resource.router", async () => {
   })
 
   describe("getMetadataById", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -164,7 +163,6 @@ describe("resource.router", async () => {
   })
 
   describe("getFolderChildrenOf", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -497,7 +495,6 @@ describe("resource.router", async () => {
   })
 
   describe("getChildrenOf", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -633,10 +630,9 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      expect(linkPickerResult.items.map(({ permalink }) => permalink)).toStrictEqual([
-        "about",
-        "search",
-      ])
+      expect(
+        linkPickerResult.items.map(({ permalink }) => permalink),
+      ).toStrictEqual(["about", "search"])
       expect(
         directorySidebarResult.items.map(({ permalink }) => permalink),
       ).toStrictEqual(["about"])
@@ -1898,10 +1894,14 @@ describe("resource.router", async () => {
     })
 
     // oxlint-disable-next-line vitest/warn-todo
-    it.todo("should throw 403 if user does not have write access to destination resource")
+    it.todo(
+      "should throw 403 if user does not have write access to destination resource",
+    )
 
     // oxlint-disable-next-line vitest/warn-todo
-    it.todo("should throw 403 if user does not have write access to origin resource")
+    it.todo(
+      "should throw 403 if user does not have write access to origin resource",
+    )
 
     describe("redirect on move", () => {
       const setup = async () => {
@@ -2201,7 +2201,6 @@ describe("resource.router", async () => {
   })
 
   describe("countWithoutRoot", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -2797,7 +2796,9 @@ describe("resource.router", async () => {
       })
 
       // Assert: repeated calls to the same page return identical results
-      expect(page1First.map((r) => r.id)).toStrictEqual(page1Second.map((r) => r.id))
+      expect(page1First.map((r) => r.id)).toStrictEqual(
+        page1Second.map((r) => r.id),
+      )
 
       // Assert: no duplicate IDs across pages
       const page1Ids = new Set(page1First.map((r) => r.id))
@@ -2848,7 +2849,11 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      expect(result.map((r) => r.title)).toStrictEqual(["apple", "Banana", "cherry"])
+      expect(result.map((r) => r.title)).toStrictEqual([
+        "apple",
+        "Banana",
+        "cherry",
+      ])
     })
 
     it("should sort by permalink ascending when orderBy is permalink-asc", async () => {
@@ -2960,7 +2965,9 @@ describe("resource.router", async () => {
     })
 
     // oxlint-disable-next-line vitest/warn-todo
-    it.todo("should throw 403 if user does not have read access to the resource")
+    it.todo(
+      "should throw 403 if user does not have read access to the resource",
+    )
   })
 
   describe("delete", () => {
@@ -3145,7 +3152,9 @@ describe("resource.router", async () => {
     })
 
     describe("should delete a folder and all its children (recursively) successfully", () => {
-      let auditSpy: ReturnType<typeof vi.spyOn<typeof auditService, "logResourceEvent">>
+      let auditSpy: ReturnType<
+        typeof vi.spyOn<typeof auditService, "logResourceEvent">
+      >
       let folderToUse: Awaited<ReturnType<typeof setupFolder>>["folder"]
       let result: Awaited<ReturnType<typeof caller.delete>>
       let actual: Awaited<
@@ -3320,7 +3329,6 @@ describe("resource.router", async () => {
   })
 
   describe("getParentOf", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -3472,7 +3480,6 @@ describe("resource.router", async () => {
   })
 
   describe("getWithFullPermalink", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -3586,7 +3593,9 @@ describe("resource.router", async () => {
     })
 
     // oxlint-disable-next-line vitest/warn-todo
-    it.todo("should throw 403 if user does not have read access to the resource")
+    it.todo(
+      "should throw 403 if user does not have read access to the resource",
+    )
   })
 
   describe("getAncestryStack", () => {
@@ -3798,7 +3807,9 @@ describe("resource.router", async () => {
     })
 
     // oxlint-disable-next-line vitest/warn-todo
-    it.todo("should throw 403 if user does not have read access to the resource")
+    it.todo(
+      "should throw 403 if user does not have read access to the resource",
+    )
   })
 
   describe("getBatchAncestryWithSelf", () => {
@@ -3932,7 +3943,9 @@ describe("resource.router", async () => {
     })
 
     // oxlint-disable-next-line vitest/warn-todo
-    it.todo("should throw 403 if user does not have read access to the resources")
+    it.todo(
+      "should throw 403 if user does not have read access to the resources",
+    )
   })
 
   describe("search", () => {
@@ -4830,7 +4843,6 @@ describe("resource.router", async () => {
     })
 
     describe("limit", () => {
-
       it("should return up to 10 most recently edited resources if no limit is provided", async () => {
         // Arrange
         const { site } = await setupSite()
@@ -4963,7 +4975,6 @@ describe("resource.router", async () => {
     })
 
     describe("cursor", () => {
-
       it("should return empty results if `cursor` is invalid", async () => {
         // Arrange
         const { site } = await setupSite()
@@ -5162,7 +5173,9 @@ describe("resource.router", async () => {
     })
 
     // oxlint-disable-next-line vitest/warn-todo
-    it.todo("should throw 403 if user does not have read access to the resources")
+    it.todo(
+      "should throw 403 if user does not have read access to the resources",
+    )
   })
 
   describe("getIndexPage", () => {

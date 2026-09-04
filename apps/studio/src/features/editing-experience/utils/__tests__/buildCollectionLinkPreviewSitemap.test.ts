@@ -35,7 +35,6 @@ const collectNodePermalinks = (node: IsomerSitemap): string[] => [
 
 describe(buildCollectionLinkPreviewSitemap, () => {
   describe("collection at the top level", () => {
-
     it("nests the link directly under the collection", () => {
       // Arrange / Act
       const result = buildSitemap()
@@ -50,7 +49,6 @@ describe(buildCollectionLinkPreviewSitemap, () => {
   })
 
   describe("collection nested inside folders", () => {
-
     it("creates a node for every permalink prefix so the walk can reach the link", () => {
       // Arrange / Act
       const result = buildSitemap({
@@ -93,7 +91,6 @@ describe(buildCollectionLinkPreviewSitemap, () => {
   })
 
   describe("the link node", () => {
-
     it("keeps the link layout so the collection picks it up as an item", () => {
       // Arrange / Act
       const result = buildSitemap()

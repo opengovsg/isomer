@@ -20,7 +20,9 @@ import {
   useLeftEditorSurveyTracker,
 } from "../hooks/useContentEditSurvey"
 
-const trackEventMock = vi.hoisted(() => vi.fn<(...args: unknown[]) => unknown>())
+const trackEventMock = vi.hoisted(() =>
+  vi.fn<(...args: unknown[]) => unknown>(),
+)
 vi.mock(import("~/lib/intercom"), () => ({ trackEvent: trackEventMock }))
 
 const mockEnv = vi.hoisted<{
@@ -28,10 +30,10 @@ const mockEnv = vi.hoisted<{
 }>(() => ({
   env: { NEXT_PUBLIC_INTERCOM_APP_ID: "test-app-id" },
 }))
-vi.mock(import('~/env.mjs'), () => mockEnv)
+vi.mock(import("~/env.mjs"), () => mockEnv)
 
 const routeChangeStartHandlers = vi.hoisted<(() => void)[]>(() => [])
-vi.mock(import('next/router'), () => ({
+vi.mock(import("next/router"), () => ({
   useRouter: () => ({
     events: {
       on: (_event: string, handler: () => void) => {
@@ -118,7 +120,9 @@ describe(useFireContentEditSurveyEvent, () => {
     act(() => result.current(PUBLISHED_AFTER_EDITING_EVENT))
 
     // Assert
-    expect(trackEventMock).toHaveBeenCalledExactlyOnceWith(PUBLISHED_AFTER_EDITING_EVENT)
+    expect(trackEventMock).toHaveBeenCalledExactlyOnceWith(
+      PUBLISHED_AFTER_EDITING_EVENT,
+    )
     expect(store.get(hasContentEditAtom)).toBe(false)
   })
 
@@ -284,7 +288,9 @@ describe(useLeftEditorSurveyTracker, () => {
     act(() => routeChangeStartHandlers.forEach((handler) => handler()))
 
     // Assert
-    expect(trackEventMock).toHaveBeenCalledExactlyOnceWith(LEFT_EDITOR_AFTER_EDITING_EVENT)
+    expect(trackEventMock).toHaveBeenCalledExactlyOnceWith(
+      LEFT_EDITOR_AFTER_EDITING_EVENT,
+    )
     expect(store.get(hasContentEditAtom)).toBe(false)
   })
 

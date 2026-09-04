@@ -1,4 +1,3 @@
-import { expect, vi, beforeEach, describe, beforeAll, it } from 'vitest';
 import type { Notification } from "~/schemas/site"
 import { TRPCError } from "@trpc/server"
 import { pick } from "lodash-es"
@@ -18,6 +17,7 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
+import { expect, vi, beforeEach, describe, beforeAll, it } from "vitest"
 import * as searchSgService from "~/server/modules/searchsg/searchsg.service"
 import { createCallerFactory } from "~/server/trpc"
 import { IsomerAdminRole, RoleType } from "~prisma/generated/generatedEnums"
@@ -27,7 +27,7 @@ import { AuditLogEvent, db, jsonb, ResourceType } from "../../database"
 import { siteRouter } from "../site.router"
 
 // Mock env to set production environment for SearchSG tests
-vi.mock(import('~/env.mjs'), async () => {
+vi.mock(import("~/env.mjs"), async () => {
   // Import the real module first to get all default values
   const actual = await vi.importActual("~/env.mjs")
   return {
@@ -153,7 +153,6 @@ describe("site.router", async () => {
   })
 
   describe("list", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -307,7 +306,6 @@ describe("site.router", async () => {
   })
 
   describe("listAllSites", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -351,12 +349,13 @@ describe("site.router", async () => {
       const result = await caller.listAllSites()
 
       // Assert
-      expect(result).toStrictEqual([pick(site, ["id", "config", "codeBuildId"])])
+      expect(result).toStrictEqual([
+        pick(site, ["id", "config", "codeBuildId"]),
+      ])
     })
   })
 
   describe("getSiteName", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -405,7 +404,6 @@ describe("site.router", async () => {
   })
 
   describe("getConfig", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -454,7 +452,6 @@ describe("site.router", async () => {
   })
 
   describe("updateSiteConfig", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -1068,7 +1065,10 @@ describe("site.router", async () => {
       })
 
       // Assert
-      expect(result.config).toStrictEqual({ ...MOCK_INTEGRATION_DATA, fake: "fake" })
+      expect(result.config).toStrictEqual({
+        ...MOCK_INTEGRATION_DATA,
+        fake: "fake",
+      })
     })
 
     it("should reject an invalid siteGtmId", async () => {
@@ -1325,7 +1325,6 @@ describe("site.router", async () => {
   })
 
   describe("setTheme", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -1509,7 +1508,6 @@ describe("site.router", async () => {
     })
   })
   describe("getTheme", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -1558,7 +1556,6 @@ describe("site.router", async () => {
   })
 
   describe("getFooter", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -1611,7 +1608,6 @@ describe("site.router", async () => {
   })
 
   describe("setFooter", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -1722,7 +1718,6 @@ describe("site.router", async () => {
   })
 
   describe("getNavbar", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -1775,7 +1770,6 @@ describe("site.router", async () => {
   })
 
   describe("setNavbar", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -1886,7 +1880,6 @@ describe("site.router", async () => {
   })
 
   describe("getLocalisedSitemap", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -1952,7 +1945,6 @@ describe("site.router", async () => {
   })
 
   describe("getNotification", () => {
-
     it("should throw 401 if user is not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -2150,7 +2142,9 @@ describe("site.router", async () => {
         .where("id", "=", site.id)
         .select("Site.config")
         .executeTakeFirstOrThrow()
-      expect(newSite.config.notification).toStrictEqual(notification.notification)
+      expect(newSite.config.notification).toStrictEqual(
+        notification.notification,
+      )
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog).toHaveLength(2)
       expect(
@@ -2191,7 +2185,9 @@ describe("site.router", async () => {
         .where("id", "=", site.id)
         .select("Site.config")
         .executeTakeFirstOrThrow()
-      expect(newSite.config.notification).toStrictEqual(notification.notification)
+      expect(newSite.config.notification).toStrictEqual(
+        notification.notification,
+      )
       const auditLog = await db
         .selectFrom("AuditLog")
         .selectAll()
@@ -2316,9 +2312,7 @@ describe("site.router", async () => {
         >
       >
       let auditLogs: Awaited<
-        ReturnType<
-          ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]
-        >
+        ReturnType<ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]>
       >
 
       beforeEach(async () => {
@@ -2407,9 +2401,7 @@ describe("site.router", async () => {
         >
       >
       let auditLogs: Awaited<
-        ReturnType<
-          ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]
-        >
+        ReturnType<ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]>
       >
 
       beforeEach(async () => {
@@ -2479,7 +2471,6 @@ describe("site.router", async () => {
   })
 
   describe("create", () => {
-
     it("should throw 401 if user is not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -2558,7 +2549,6 @@ describe("site.router", async () => {
   })
 
   describe("publish", () => {
-
     it("should throw 401 if user is not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()

@@ -34,7 +34,6 @@ describe("auth.email", () => {
   })
 
   describe("login", () => {
-
     it("should throw 400 if email is not provided", async () => {
       // Act
       const result = caller.login({ email: "" })
@@ -296,7 +295,6 @@ describe("auth.email", () => {
     })
 
     describe("when singpass is enabled", () => {
-
       it("should successfully set session on first valid OTP", async () => {
         // Arrange
         await setupUser({ email: TEST_VALID_EMAIL })
@@ -323,7 +321,9 @@ describe("auth.email", () => {
         await expect(result).resolves.toMatchObject(expectedUser)
 
         // Session (singpass) should have been set with logged in user.
-        expect(session.singpass?.sessionState?.userId).toStrictEqual(expectedUser.id)
+        expect(session.singpass?.sessionState?.userId).toStrictEqual(
+          expectedUser.id,
+        )
 
         // Audit log should not have been created yet
         const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
@@ -363,7 +363,9 @@ describe("auth.email", () => {
         await expect(result).resolves.toMatchObject(expectedUser)
 
         // Session (singpass) should have been set with logged in user.
-        expect(session.singpass?.sessionState?.userId).toStrictEqual(expectedUser.id)
+        expect(session.singpass?.sessionState?.userId).toStrictEqual(
+          expectedUser.id,
+        )
 
         // Audit log should not have been created yet
         const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()

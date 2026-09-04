@@ -141,7 +141,6 @@ const makeConversionPlan = (
 })
 
 describe(buildConversionReport, () => {
-
   it("returns an empty array when no pages have disallowed blocks", () => {
     // Arrange
     const plan = makeConversionPlan({
@@ -239,7 +238,6 @@ describe(buildConversionReport, () => {
 })
 
 describe(toFolderPlan, () => {
-
   it("maps folder metadata, default category, and child resource IDs", () => {
     // Arrange
     const plan = makeConversionPlan({
@@ -282,7 +280,6 @@ describe(toFolderPlan, () => {
 })
 
 describe("ARTICLE_TYPES / CONTENT_TYPES / CONTENT_ONLY_TYPES", () => {
-
   it("ARTICLE_TYPES is a subset of CONTENT_TYPES (article blocks all live in content)", () => {
     // Act + Assert
     for (const t of ARTICLE_TYPES) {
@@ -313,7 +310,6 @@ describe("ARTICLE_TYPES / CONTENT_TYPES / CONTENT_ONLY_TYPES", () => {
 })
 
 describe(findDisallowedBlocks, () => {
-
   it("returns an empty array when all blocks are article-allowed", () => {
     // Act
     const result = findDisallowedBlocks([proseBlock, proseBlock])
@@ -343,7 +339,6 @@ describe(findDisallowedBlocks, () => {
 })
 
 describe(asIndexBlob, () => {
-
   it("returns the blob unchanged when layout is 'index'", () => {
     // Arrange
     const blob = makeIndexBlob() as unknown as IsomerSchema
@@ -367,7 +362,6 @@ describe(asIndexBlob, () => {
 })
 
 describe(asPageBlob, () => {
-
   it("returns content blobs unchanged", () => {
     // Arrange
     const blob = makeContentBlob() as unknown as IsomerSchema
@@ -402,7 +396,6 @@ describe(asPageBlob, () => {
 })
 
 describe(asContentBlob, () => {
-
   it("returns the blob unchanged when layout is 'content'", () => {
     // Arrange
     const blob = makeContentBlob() as unknown as IsomerSchema
@@ -426,7 +419,6 @@ describe(asContentBlob, () => {
 })
 
 describe(buildCollectionIndexBlob, () => {
-
   it("flips layout to 'collection' and maps summary → subtitle", () => {
     // Arrange
     const current = makeIndexBlob({ summary: "Summary text" })
@@ -547,7 +539,6 @@ describe(buildCollectionIndexBlob, () => {
 })
 
 describe(buildArticleBlob, () => {
-
   it("flips layout to 'article' and maps summary → articlePageHeader.summary", () => {
     // Arrange
     const current = makeContentBlob({ summary: "Article summary" })
@@ -608,7 +599,11 @@ describe(buildArticleBlob, () => {
     const result = asResult(buildArticleBlob(current, "cat"))
 
     // Assert
-    expect(result.content).toStrictEqual([proseBlock, infobarBlock, infocardsBlock])
+    expect(result.content).toStrictEqual([
+      proseBlock,
+      infobarBlock,
+      infocardsBlock,
+    ])
   })
 
   it("preserves the version field from the source blob", () => {

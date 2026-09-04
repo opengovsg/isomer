@@ -1,4 +1,5 @@
-import { expect } from 'vitest';
+import { expect } from "vitest"
+
 import { db } from "../../database"
 
 export const assertAuditLogRows = async (numRows = 0) => {

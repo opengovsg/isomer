@@ -20,7 +20,10 @@ describe(getPillAndPlaintextTags, () => {
     const result = getPillAndPlaintextTags(undefined, tagCategories)
 
     // Assert
-    expect(result).toStrictEqual({ pillTags: undefined, plaintextTags: undefined })
+    expect(result).toStrictEqual({
+      pillTags: undefined,
+      plaintextTags: undefined,
+    })
   })
 
   it("returns undefined for both when tagCategories is undefined", () => {
@@ -28,7 +31,10 @@ describe(getPillAndPlaintextTags, () => {
     const result = getPillAndPlaintextTags(["topic-opt-1"], undefined)
 
     // Assert
-    expect(result).toStrictEqual({ pillTags: undefined, plaintextTags: undefined })
+    expect(result).toStrictEqual({
+      pillTags: undefined,
+      plaintextTags: undefined,
+    })
   })
 
   it("splits selected groups into pillTags and plaintextTags by display", () => {

@@ -3,7 +3,6 @@ import { describe, expect, it } from "vitest"
 import { stripFileUploadMetaSuffix } from "../stripFileUploadMetaSuffix"
 
 describe(stripFileUploadMetaSuffix, () => {
-
   it("removes trailing [type, size] before re-upload", () => {
     // Arrange + Act
     const stripped = stripFileUploadMetaSuffix(

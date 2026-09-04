@@ -50,7 +50,6 @@ describe("user.router", () => {
   })
 
   describe("create", () => {
-
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
@@ -607,7 +606,6 @@ describe("user.router", () => {
   })
 
   describe("delete", () => {
-
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
@@ -982,7 +980,6 @@ describe("user.router", () => {
   })
 
   describe("getUser", () => {
-
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
@@ -1109,7 +1106,6 @@ describe("user.router", () => {
   })
 
   describe("list", () => {
-
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
@@ -1378,7 +1374,6 @@ describe("user.router", () => {
   })
 
   describe("count", () => {
-
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
@@ -1510,7 +1505,6 @@ describe("user.router", () => {
   })
 
   describe("update", () => {
-
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
@@ -1866,11 +1860,19 @@ describe("user.router", () => {
           eventType: "PermissionDelete",
           delta: expect.objectContaining({
             before: expect.objectContaining({
-              ...omit(currentPermission, ["createdAt", "updatedAt", "deletedAt"]),
+              ...omit(currentPermission, [
+                "createdAt",
+                "updatedAt",
+                "deletedAt",
+              ]),
               deletedAt: null,
             }),
             after: expect.objectContaining({
-              ...omit(currentPermission, ["createdAt", "updatedAt", "deletedAt"]),
+              ...omit(currentPermission, [
+                "createdAt",
+                "updatedAt",
+                "deletedAt",
+              ]),
               deletedAt: expect.anything(),
             }),
           }),
@@ -1974,11 +1976,19 @@ describe("user.router", () => {
           eventType: "PermissionDelete",
           delta: expect.objectContaining({
             before: expect.objectContaining({
-              ...omit(currentPermission, ["createdAt", "updatedAt", "deletedAt"]),
+              ...omit(currentPermission, [
+                "createdAt",
+                "updatedAt",
+                "deletedAt",
+              ]),
               deletedAt: null,
             }),
             after: expect.objectContaining({
-              ...omit(currentPermission, ["createdAt", "updatedAt", "deletedAt"]),
+              ...omit(currentPermission, [
+                "createdAt",
+                "updatedAt",
+                "deletedAt",
+              ]),
               deletedAt: expect.anything(),
             }),
           }),
@@ -2141,7 +2151,6 @@ describe("user.router", () => {
   })
 
   describe("updateDetails", () => {
-
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
@@ -2275,18 +2284,18 @@ describe("user.router", () => {
         },
       )
 
-      it.each([
-        " 81234567 ",
-        "8123 4567",
-        " 8123 4567 ",
-        "  81234567  ",
-      ])("should handle phone numbers with whitespace: %s", async (phone) => {
+      it.each([" 81234567 ", "8123 4567", " 8123 4567 ", "  81234567  "])(
+        "should handle phone numbers with whitespace: %s",
+        async (phone) => {
           // Act & Assert
           const result = await caller.updateDetails({
             name: testUserName,
             phone,
           })
-          expect(result).toStrictEqual({ name: testUserName, phone: "81234567" })
+          expect(result).toStrictEqual({
+            name: testUserName,
+            phone: "81234567",
+          })
 
           const updatedUser = await db
             .selectFrom("User")
@@ -2314,7 +2323,8 @@ describe("user.router", () => {
               ),
             }),
           })
-        })
+        },
+      )
 
       it("should remove +65 country code if present", async () => {
         // Arrange
@@ -2437,7 +2447,6 @@ describe("user.router", () => {
   })
 
   describe("resendInvite", () => {
-
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))

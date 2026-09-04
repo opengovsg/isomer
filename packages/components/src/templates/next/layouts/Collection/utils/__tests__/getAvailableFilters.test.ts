@@ -64,7 +64,10 @@ describe(getAvailableFilters, () => {
     const result = getAvailableFilters(items)
 
     // Assert
-    expect(result.map((filter) => filter.id)).toStrictEqual(["Category", "year"])
+    expect(result.map((filter) => filter.id)).toStrictEqual([
+      "Category",
+      "year",
+    ])
   })
 
   it("omits filters that have no items", () => {
