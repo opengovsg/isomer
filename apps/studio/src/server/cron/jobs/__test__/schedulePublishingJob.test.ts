@@ -1,4 +1,12 @@
-import { beforeEach, vi, afterEach, describe, expect, it } from 'vitest';
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest"
 import type { MockInstance } from "vitest"
 import type { User } from "~prisma/generated/prisma/client"
 import { addSeconds } from "date-fns"
@@ -60,51 +68,72 @@ describe("schedulePublishingJob", async () => {
   })
 
   describe("schedulePublishJobHandler", () => {
-    it("publishes a resource which has scheduledAt less than current run time", async () => {
-      // Arrange
-      const { site, page } = await setupPageResource({
-        resourceType: ResourceType.Page,
-        scheduledAt: FIXED_NOW,
-        scheduledBy: session.userId,
+    describe("publishes a resource which has scheduledAt less than current run time", () => {
+      let site: Awaited<
+        ReturnType<typeof setupPageResource>
+      >["site"]
+      let page: Awaited<
+        ReturnType<typeof setupPageResource>
+      >["page"]
+      let resourceSiteMap: Awaited<
+        ReturnType<typeof publishScheduledResources>
+      >
+      let versions: Awaited<
+        ReturnType<typeof db.selectFrom<"Version">["selectAll"]>["execute"]>
+      >
+      let auditLogs: Awaited<
+        ReturnType<typeof db.selectFrom<"AuditLog">["selectAll"]>["execute"]>
+      >
+
+      beforeAll(async () => {
+        // Arrange
+        ;({ site, page } = await setupPageResource({
+          resourceType: ResourceType.Page,
+          scheduledAt: FIXED_NOW,
+          scheduledBy: session.userId,
+        }))
+        await setupPublisherPermissions({
+          userId: session.userId,
+          siteId: site.id,
+        })
+
+        // Act
+        resourceSiteMap = await publishScheduledResources(true, FIXED_NOW)
+
+        versions = await db
+          .selectFrom("Version")
+          .where("resourceId", "=", page.id)
+          .selectAll()
+          .execute()
+
+        auditLogs = await db
+          .selectFrom("AuditLog")
+          .where("siteId", "=", site.id)
+          .selectAll()
+          .execute()
       })
-      await setupPublisherPermissions({
-        userId: session.userId,
-        siteId: site.id,
+
+      it("creates a version for the published resource", () => {
+        expect(versions).toHaveLength(1)
+        expect(versions[0]).toMatchObject({
+          resourceId: page.id,
+          versionNum: 1,
+        })
       })
 
-      // Act
-      const resourceSiteMap = await publishScheduledResources(true, FIXED_NOW)
-
-      // Assert
-      // expect a version to be created for the resource, since the resource is published
-      const versions = await db
-        .selectFrom("Version")
-        .where("resourceId", "=", page.id)
-        .selectAll()
-        .execute()
-
-      expect(versions).toHaveLength(1)
-      expect(versions[0]).toMatchObject({
-        resourceId: page.id,
-        versionNum: 1,
+      it("creates an audit log for the publish action", () => {
+        expect(auditLogs).toHaveLength(1)
+        expect(auditLogs[0]).toMatchObject({
+          siteId: site.id,
+          userId: user.id,
+          eventType: AuditLogEvent.Publish,
+        })
       })
 
-      // expect the audit log to be created with the correct info corresponding to the publish action
-      const auditLogs = await db
-        .selectFrom("AuditLog")
-        .where("siteId", "=", site.id)
-        .selectAll()
-        .execute()
-      expect(auditLogs).toHaveLength(1)
-      expect(auditLogs[0]).toMatchObject({
-        siteId: site.id,
-        userId: user.id,
-        eventType: AuditLogEvent.Publish,
+      it("includes the site and resource in the resourceSiteMap", () => {
+        expect(resourceSiteMap[site.id]).toBeDefined()
+        expect(resourceSiteMap[site.id]?.[0]!.id).toBe(page.id)
       })
-
-      // expect the resourceSiteMap to contain the site and resource
-      expect(resourceSiteMap[site.id]).toBeDefined()
-      expect(resourceSiteMap[site.id]?.[0]!.id).toBe(page.id)
     })
 
     it("does not publish a resource if scheduledAt time is in the future", async () => {
@@ -168,8 +197,7 @@ describe("schedulePublishingJob", async () => {
 
       expect(versions).toHaveLength(0)
       expect(result[site.id]).toBeUndefined()
-      expect(sendFailedPublishEmailSpy).toHaveBeenCalledOnce()
-      expect(sendFailedPublishEmailSpy).toHaveBeenCalledWith({
+      expect(sendFailedPublishEmailSpy).toHaveBeenCalledExactlyOnceWith({
         recipientEmail: user.email,
         isScheduled: true,
         resource: expect.objectContaining({ id: page.id }),
@@ -221,8 +249,7 @@ describe("schedulePublishingJob", async () => {
       const result = await publishScheduledResources(true, FIXED_NOW)
 
       // Assert
-      expect(sendFailedPublishEmailSpy).toHaveBeenCalledOnce()
-      expect(sendFailedPublishEmailSpy).toHaveBeenCalledWith({
+      expect(sendFailedPublishEmailSpy).toHaveBeenCalledExactlyOnceWith({
         recipientEmail: user.email,
         isScheduled: true,
         resource: expect.objectContaining({ id: page.id }),
@@ -354,8 +381,7 @@ describe("schedulePublishingJob", async () => {
       const result = await publishScheduledResources(true, FIXED_NOW)
 
       // Assert
-      expect(emailServiceSpy).toHaveBeenCalledOnce()
-      expect(emailServiceSpy).toHaveBeenCalledWith({
+      expect(emailServiceSpy).toHaveBeenCalledExactlyOnceWith({
         recipientEmail: user.email,
         isScheduled: true,
         resource: expect.objectContaining({ id: page.id }),
@@ -530,8 +556,7 @@ describe("schedulePublishingJob", async () => {
       )
 
       // Assert
-      expect(sendFailedPublishEmailSpy).toHaveBeenCalledOnce()
-      expect(sendFailedPublishEmailSpy).toHaveBeenCalledWith({
+      expect(sendFailedPublishEmailSpy).toHaveBeenCalledExactlyOnceWith({
         recipientEmail: user.email,
         isScheduled: true,
         resource: expect.objectContaining({ id: page.id }),

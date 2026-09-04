@@ -38,7 +38,6 @@ export default defineConfig({
         "vitest/prefer-called-with": "off",
         // Splitting one test into nested describes with Act in beforeEach does not improve tests.
         "vitest/max-expects": "off",
-        "vitest/prefer-called-exactly-once-with": "off",
         "vitest/prefer-each": "off",
         "vitest/expect-expect": [
           "error",
