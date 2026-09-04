@@ -15,5 +15,10 @@
     "oxlint": "catalog:",
     "oxlint-tsgolint": "catalog:",
     "ultracite": "catalog:"
+  },
+  "devDependencies": {
+    "@isomer/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
   }
 }
