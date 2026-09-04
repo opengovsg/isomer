@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest';
 import type { ErrorObject } from "ajv"
 
 import { getUniqueErrorMessages } from "../utils"
@@ -11,7 +12,8 @@ const createError = (message?: string): ErrorObject =>
     message,
   }) as ErrorObject
 
-describe("getUniqueErrorMessages", () => {
+describe(getUniqueErrorMessages, () => {
+
   it("should return an empty array when there are no errors", () => {
     // Arrange
     const errors = {}
@@ -20,7 +22,7 @@ describe("getUniqueErrorMessages", () => {
     const actual = getUniqueErrorMessages(errors)
 
     // Assert
-    expect(actual).toEqual([])
+    expect(actual).toStrictEqual([])
   })
 
   it("should flatten error messages across multiple instance paths", () => {
@@ -34,7 +36,7 @@ describe("getUniqueErrorMessages", () => {
     const actual = getUniqueErrorMessages(errors)
 
     // Assert
-    expect(actual).toEqual([
+    expect(actual).toStrictEqual([
       "You can only have up to 8 first-level links.",
       'must match format "link"',
     ])
@@ -51,7 +53,7 @@ describe("getUniqueErrorMessages", () => {
     const actual = getUniqueErrorMessages(errors)
 
     // Assert
-    expect(actual).toEqual([message])
+    expect(actual).toStrictEqual([message])
   })
 
   it("should filter out errors with no message", () => {
@@ -64,6 +66,6 @@ describe("getUniqueErrorMessages", () => {
     const actual = getUniqueErrorMessages(errors)
 
     // Assert
-    expect(actual).toEqual(["has a message"])
+    expect(actual).toStrictEqual(["has a message"])
   })
 })

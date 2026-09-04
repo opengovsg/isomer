@@ -2,13 +2,14 @@ import { describe, expect, it } from "vitest"
 
 import { linkEditorSchema } from "./LinkEditorModal"
 
-describe("linkEditorSchema", () => {
+describe(linkEditorSchema, () => {
+
   it("accepts a valid external link", () => {
     const result = linkEditorSchema.safeParse({
       linkText: "Isomer",
       linkHref: "https://isomer.gov.sg",
     })
-    expect(result.success).toBe(true)
+    expect(result.success).toBeTruthy()
   })
 
   it("rejects an empty linkText", () => {
@@ -16,7 +17,7 @@ describe("linkEditorSchema", () => {
       linkText: "",
       linkHref: "https://isomer.gov.sg",
     })
-    expect(result.success).toBe(false)
+    expect(result.success).toBeFalsy()
   })
 
   it("rejects an empty linkHref", () => {
@@ -24,7 +25,7 @@ describe("linkEditorSchema", () => {
       linkText: "Isomer",
       linkHref: "",
     })
-    expect(result.success).toBe(false)
+    expect(result.success).toBeFalsy()
   })
 
   it("trims stray leading/trailing whitespace from a valid linkHref", () => {
@@ -32,10 +33,10 @@ describe("linkEditorSchema", () => {
       linkText: "Isomer",
       linkHref: "  https://isomer.gov.sg  ",
     })
-    expect(result.success).toBe(true)
-    if (result.success) {
-      expect(result.data.linkHref).toBe("https://isomer.gov.sg")
-    }
+    expect(result.success).toBeTruthy()
+    expect(result.success).toBeTruthy()
+    if (!result.success) throw new Error('Expected parse to succeed')
+    expect(result.data.linkHref).toBe("https://isomer.gov.sg")
   })
 
   it("rejects a linkHref that is only whitespace", () => {
@@ -43,7 +44,7 @@ describe("linkEditorSchema", () => {
       linkText: "Isomer",
       linkHref: "   ",
     })
-    expect(result.success).toBe(false)
+    expect(result.success).toBeFalsy()
   })
 
   it("does not reject a valid link containing internal whitespace-like characters", () => {
@@ -51,7 +52,7 @@ describe("linkEditorSchema", () => {
       linkText: "Isomer",
       linkHref: "https://example.com/foo\tbar\nbaz",
     })
-    expect(result.success).toBe(true)
+    expect(result.success).toBeTruthy()
   })
 
   it("rejects a bare https:// scheme with no domain", () => {
@@ -59,7 +60,7 @@ describe("linkEditorSchema", () => {
       linkText: "Isomer",
       linkHref: "https://",
     })
-    expect(result.success).toBe(false)
+    expect(result.success).toBeFalsy()
   })
 
   it("rejects a bare mailto: scheme with no address", () => {
@@ -67,7 +68,7 @@ describe("linkEditorSchema", () => {
       linkText: "Isomer",
       linkHref: "mailto:",
     })
-    expect(result.success).toBe(false)
+    expect(result.success).toBeFalsy()
   })
 
   it("rejects an external link with a malformed host", () => {
@@ -75,7 +76,7 @@ describe("linkEditorSchema", () => {
       linkText: "Isomer",
       linkHref: "https://exa mple.com",
     })
-    expect(result.success).toBe(false)
+    expect(result.success).toBeFalsy()
   })
 
   it("accepts a well-formed mailto: link", () => {
@@ -83,7 +84,7 @@ describe("linkEditorSchema", () => {
       linkText: "Isomer",
       linkHref: "mailto:foo@example.com",
     })
-    expect(result.success).toBe(true)
+    expect(result.success).toBeTruthy()
   })
 
   it("accepts a Page-type reference link, unaffected by the URL check", () => {
@@ -91,7 +92,7 @@ describe("linkEditorSchema", () => {
       linkText: "Isomer",
       linkHref: "[resource:1:2]",
     })
-    expect(result.success).toBe(true)
+    expect(result.success).toBeTruthy()
   })
 
   it("accepts a File-type link, unaffected by the URL check", () => {
@@ -99,7 +100,7 @@ describe("linkEditorSchema", () => {
       linkText: "Isomer",
       linkHref: "/123/550e8400-e29b-41d4-a716-446655440000/file.pdf",
     })
-    expect(result.success).toBe(true)
+    expect(result.success).toBeTruthy()
   })
 
   // Known limitation, accepted as a tradeoff: these are benign patterns
@@ -113,7 +114,7 @@ describe("linkEditorSchema", () => {
         linkText: "Isomer",
         linkHref,
       })
-      expect(result.success).toBe(false)
+      expect(result.success).toBeFalsy()
     },
   )
 
@@ -134,6 +135,6 @@ describe("linkEditorSchema", () => {
       linkText: "Isomer",
       linkHref,
     })
-    expect(result.success).toBe(false)
+    expect(result.success).toBeFalsy()
   })
 })

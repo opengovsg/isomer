@@ -1,3 +1,4 @@
+import { expect, beforeEach, afterEach, describe, beforeAll, it } from 'vitest';
 import { pick } from "lodash-es"
 import { resetTables } from "tests/integration/helpers/db"
 import {
@@ -33,21 +34,45 @@ import { PAGE_BLOB } from "./constants"
 
 describe("resource.service", () => {
   // TODO: Implement tests when publish works
+  // oxlint-disable-next-line vitest/no-disabled-tests
   describe.skip("publishPage", () => {
-    it.skip("should trigger a publish automatically on creation of a folder", () => {})
-    it.skip("should trigger a publish automatically on deletion of a folder", () => {})
-    it.skip("should trigger a publish automatically on move of a folder", () => {})
-    it.skip("should trigger a publish automatically on update of a folder's title", () => {})
-    it.skip("should trigger a publish automatically on update of a folder's permalink", () => {})
-    it.skip("should trigger a publish automatically on creation of a collection", () => {})
-    it.skip("should trigger a publish automatically on deletion of a collection", () => {})
-    it.skip("should trigger a publish automatically on update of a collection's title", () => {})
-    it.skip("should trigger a publish automatically on update of a collection's permalink", () => {})
-    it.skip("should trigger a publish automatically on move of a page", () => {})
-    it.skip("should not trigger a publish if there is a currently running publish witin the past minute", () => {})
+
+    // oxlint-disable-next-line vitest/warn-todo
+    it.todo("should trigger a publish automatically on creation of a folder")
+
+    // oxlint-disable-next-line vitest/warn-todo
+    it.todo("should trigger a publish automatically on deletion of a folder")
+
+    // oxlint-disable-next-line vitest/warn-todo
+    it.todo("should trigger a publish automatically on move of a folder")
+
+    // oxlint-disable-next-line vitest/warn-todo
+    it.todo("should trigger a publish automatically on update of a folder's title")
+
+    // oxlint-disable-next-line vitest/warn-todo
+    it.todo("should trigger a publish automatically on update of a folder's permalink")
+
+    // oxlint-disable-next-line vitest/warn-todo
+    it.todo("should trigger a publish automatically on creation of a collection")
+
+    // oxlint-disable-next-line vitest/warn-todo
+    it.todo("should trigger a publish automatically on deletion of a collection")
+
+    // oxlint-disable-next-line vitest/warn-todo
+    it.todo("should trigger a publish automatically on update of a collection's title")
+
+    // oxlint-disable-next-line vitest/warn-todo
+    it.todo("should trigger a publish automatically on update of a collection's permalink")
+
+    // oxlint-disable-next-line vitest/warn-todo
+    it.todo("should trigger a publish automatically on move of a page")
+
+    // oxlint-disable-next-line vitest/warn-todo
+    it.todo("should not trigger a publish if there is a currently running publish witin the past minute")
   })
 
-  describe("getBatchAncestryWithSelfQuery", () => {
+  describe(getBatchAncestryWithSelfQuery, () => {
+
     it("should return empty array if no resources exist", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -59,7 +84,7 @@ describe("resource.service", () => {
       })
 
       // Assert
-      expect(result).toEqual([])
+      expect(result).toStrictEqual([])
     })
 
     it("should return empty array for root page resources", async () => {
@@ -75,7 +100,7 @@ describe("resource.service", () => {
       })
 
       // Assert
-      expect(result).toEqual([])
+      expect(result).toStrictEqual([])
     })
 
     it("should return single item array for root-level resources", async () => {
@@ -91,7 +116,7 @@ describe("resource.service", () => {
       })
 
       // Assert
-      expect(result).toEqual([
+      expect(result).toStrictEqual([
         [
           {
             id: page.id,
@@ -134,7 +159,7 @@ describe("resource.service", () => {
       })
 
       // Assert
-      expect(result).toEqual([
+      expect(result).toStrictEqual([
         [
           {
             id: parentFolder.id,
@@ -202,7 +227,7 @@ describe("resource.service", () => {
       })
 
       // Assert
-      expect(result).toEqual([
+      expect(result).toStrictEqual([
         [
           {
             id: folder1.id,
@@ -259,7 +284,7 @@ describe("resource.service", () => {
       })
 
       // Assert
-      expect(result).toEqual([
+      expect(result).toStrictEqual([
         [
           {
             id: page1.id,
@@ -273,9 +298,10 @@ describe("resource.service", () => {
     })
   })
 
-  describe("getSiteResourceById", () => {
+  describe(getSiteResourceById, () => {
     let actualPage: Resource
     let actualSiteId: number
+    let anotherSiteId: number
 
     beforeAll(async () => {
       const { site, page: _pageToId } = await setupPageResource({
@@ -289,10 +315,12 @@ describe("resource.service", () => {
         },
       )
 
-      expect(anotherSite.id).not.toEqual(site.id)
+      anotherSiteId = anotherSite.id
     })
 
     it("should return the resource with the given `id`", async () => {
+      expect(anotherSiteId).not.toBe(actualSiteId)
+
       // Act
       const result = await getSiteResourceById({
         siteId: actualSiteId,
@@ -328,7 +356,7 @@ describe("resource.service", () => {
 
     it("should return undefined if the resource with the given `id` does not match given `type`", async () => {
       // Arrange
-      expect(actualPage.type).not.toEqual("Folder")
+      expect(actualPage.type).not.toBe("Folder")
 
       // Act
       const result = await getSiteResourceById({
@@ -343,7 +371,7 @@ describe("resource.service", () => {
 
     it("should return undefined if the resource with the given `id` does not belong to the given `siteId`", async () => {
       // Arrange
-      expect(actualPage.siteId).not.toEqual(99999)
+      expect(actualPage.siteId).not.toBe(99999)
 
       // Act
       const result = await getSiteResourceById({
@@ -356,7 +384,8 @@ describe("resource.service", () => {
     })
   })
 
-  describe("getFullPageById", () => {
+  describe(getFullPageById, () => {
+
     it("should return resource with draft blob if it exists", async () => {
       // Arrange
       const {
@@ -418,7 +447,7 @@ describe("resource.service", () => {
       const { site, page } = await setupPageResource({
         resourceType: "Page",
       })
-      expect(page.id).not.toEqual(99999)
+      expect(page.id).not.toBe(99999)
 
       // Act
       const result = await getFullPageById(db, {
@@ -435,7 +464,7 @@ describe("resource.service", () => {
       const { page } = await setupPageResource({
         resourceType: "Page",
       })
-      expect(page.siteId).not.toEqual(99999)
+      expect(page.siteId).not.toBe(99999)
 
       // Act
       const result = await getFullPageById(db, {
@@ -448,7 +477,8 @@ describe("resource.service", () => {
     })
   })
 
-  describe("getPageById", () => {
+  describe(getPageById, () => {
+
     it("should return the 'Page' resource with the given `id`", async () => {
       // Arrange
       const { site, page } = await setupPageResource({
@@ -546,7 +576,8 @@ describe("resource.service", () => {
     })
   })
 
-  describe("updatePageById", () => {
+  describe(updatePageById, () => {
+
     it("should not update any rows if no matching `id` can be found", async () => {
       // Arrange
       const { site } = await setupPageResource({
@@ -564,7 +595,7 @@ describe("resource.service", () => {
       )
 
       // Assert
-      expect(result).not.toBeDefined()
+      expect(result).toBeUndefined()
     })
 
     it("should update the page successfully", async () => {
@@ -606,7 +637,7 @@ describe("resource.service", () => {
       )
 
       // Assert
-      expect(result).not.toBeDefined()
+      expect(result).toBeUndefined()
     })
 
     it("should fail when the parent does not exist", async () => {
@@ -626,10 +657,10 @@ describe("resource.service", () => {
       )
 
       // Assert
-      await expect(result).rejects.toThrow()
+      await expect(result).rejects.toThrow(/./)
     })
   })
-  describe("updateBlobById", () => {
+  describe(updateBlobById, () => {
     let site: Awaited<ReturnType<typeof setupPageResource>>["site"]
 
     beforeEach(async () => {
@@ -652,7 +683,7 @@ describe("resource.service", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrow()
+      await expect(result).rejects.toThrow(/./)
     })
 
     it("should create a draft blob if the page is already published", async () => {
@@ -739,11 +770,12 @@ describe("resource.service", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrow()
+      await expect(result).rejects.toThrow(/./)
     })
   })
 
-  describe("getNavBar", () => {
+  describe(getNavBar, () => {
+
     it("should return the nav bar for the given site", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -758,11 +790,12 @@ describe("resource.service", () => {
       // Act
       const result = getNavBar(db, 99999)
       // Assert
-      await expect(result).rejects.toThrow()
+      await expect(result).rejects.toThrow(/./)
     })
   })
 
-  describe("getFooter", () => {
+  describe(getFooter, () => {
+
     it("should return the footer for the given site", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -777,11 +810,11 @@ describe("resource.service", () => {
       // Act
       const result = getFooter(db, 99999)
       // Assert
-      await expect(result).rejects.toThrow()
+      await expect(result).rejects.toThrow(/./)
     })
   })
 
-  describe("getLocalisedSitemap", () => {
+  describe(getLocalisedSitemap, () => {
     beforeEach(async () => {
       await resetTables("Site", "Resource", "Blob", "Version", "User")
     })
@@ -794,7 +827,7 @@ describe("resource.service", () => {
       const result = getLocalisedSitemap(9999, Number(page.id))
 
       // Assert
-      await expect(result).rejects.toThrow()
+      await expect(result).rejects.toThrow(/./)
     })
 
     it("should throw an error if the `resourceId` doesn't exist", async () => {
@@ -803,7 +836,7 @@ describe("resource.service", () => {
       // Act
       const result = getLocalisedSitemap(site.id, 99999)
       // Assert
-      await expect(result).rejects.toThrow()
+      await expect(result).rejects.toThrow(/./)
     })
 
     it("should return the path from ancestor to the page (DRAFT), together with its siblings", async () => {
@@ -1196,14 +1229,18 @@ describe("resource.service", () => {
         ?.children?.find((child) => child.id === folder.id)
       expect(folderNode?.title).toBe(folder.title)
       expect(folderNode?.summary).toBe("Hello im the index page")
+      // oxlint-disable-next-line vitest/max-expects
       expect(folderNode?.image?.src).toBe("https://indexpageblob.com")
 
       // Assert: Find Collection in the sitemap
       const collectionNode = result.children
         ?.at(0)
         ?.children?.find((child) => child.id === collection.id)
+      // oxlint-disable-next-line vitest/max-expects
       expect(collectionNode?.title).toBe(collection.title)
+      // oxlint-disable-next-line vitest/max-expects
       expect(collectionNode?.summary).toBe(`Pages in ${collection.title}`)
+      // oxlint-disable-next-line vitest/max-expects
       expect(collectionNode?.image?.src).toBeUndefined()
     })
 
@@ -1293,6 +1330,7 @@ describe("resource.service", () => {
     })
 
     describe("childrenPagesOrdering", () => {
+
       it("should order children according to childrenPagesOrdering when viewing a Page resource", async () => {
         // Arrange
         const { site } = await setupSite()
@@ -1381,7 +1419,7 @@ describe("resource.service", () => {
         const childIds = parentNode?.children?.map((child) => child.id)
 
         // Zebra (pageA) should be first, Mango (pageC) second, Apple (pageB) last
-        expect(childIds).toEqual([pageA.id, pageC.id, pageB.id])
+        expect(childIds).toStrictEqual([pageA.id, pageC.id, pageB.id])
       })
 
       it("should fall back to alphabetical title sort for children not in ordering", async () => {
@@ -1470,7 +1508,7 @@ describe("resource.service", () => {
         const childIds = parentNode?.children?.map((child) => child.id)
 
         // Should be Alpha, Beta, Gamma (alphabetical)
-        expect(childIds).toEqual([pageAlpha.id, pageBeta.id, pageGamma.id])
+        expect(childIds).toStrictEqual([pageAlpha.id, pageBeta.id, pageGamma.id])
       })
 
       it("should only apply ordering at the correct parent node", async () => {
@@ -1564,7 +1602,7 @@ describe("resource.service", () => {
           (child) => child.id === nestedFolder.id,
         )
         const nestedChildIds = nestedNode?.children?.map((child) => child.id)
-        expect(nestedChildIds).toEqual([nestedPageZ.id, nestedPageA.id])
+        expect(nestedChildIds).toStrictEqual([nestedPageZ.id, nestedPageA.id])
 
         // Assert: The ordering is applied at the correct level (nestedFolder, not parentFolder)
         // parentFolder's direct children should not be affected by nestedFolder's ordering
@@ -1696,7 +1734,7 @@ describe("resource.service", () => {
         ])
 
         // Assert
-        expect(node?.firstImage).toEqual({
+        expect(node?.firstImage).toStrictEqual({
           src: "/first.jpg",
           alt: "First image",
         })
@@ -1722,7 +1760,7 @@ describe("resource.service", () => {
         ])
 
         // Assert
-        expect(node?.firstImage).toEqual({ src: "/no-alt.jpg", alt: "" })
+        expect(node?.firstImage).toStrictEqual({ src: "/no-alt.jpg", alt: "" })
       })
 
       it("should not set firstImage for non-article layouts", async () => {
@@ -1777,11 +1815,15 @@ describe("resource.service", () => {
       })
     })
   })
+  // oxlint-disable-next-line vitest/no-disabled-tests
   describe.skip("getResourcePermalinkTree", () => {})
+  // oxlint-disable-next-line vitest/no-disabled-tests
   describe.skip("getResourceFullPermalink", () => {})
+  // oxlint-disable-next-line vitest/no-disabled-tests
   describe.skip("publishResource", () => {})
 
-  describe("getWithFullPermalink", () => {
+  describe(getWithFullPermalink, () => {
+
     it("returns an empty array when given no resourceIds", async () => {
       const { site } = await setupSite()
 
@@ -1790,7 +1832,7 @@ describe("resource.service", () => {
         siteId: site.id,
       })
 
-      expect(result).toEqual([])
+      expect(result).toStrictEqual([])
     })
 
     it("returns the full permalink for a nested resource in the requested site", async () => {
@@ -1839,7 +1881,7 @@ describe("resource.service", () => {
         resourceIds: [pageB.id],
         siteId: siteA.id,
       })
-      expect(crossSite).toEqual([])
+      expect(crossSite).toStrictEqual([])
 
       // Sanity: the same call with the correct siteId still works.
       const sameSite = await getWithFullPermalink({
@@ -1851,7 +1893,8 @@ describe("resource.service", () => {
     })
   })
 
-  describe("getSearchResults", () => {
+  describe(getSearchResults, () => {
+
     it("returns an empty array when given no resourceTypes", async () => {
       //Arrange
       const { site } = await setupPageResource({
@@ -1868,12 +1911,14 @@ describe("resource.service", () => {
       })
 
       //Should return empty array, with totalCount 0
-      expect(result.resources).toEqual([])
-      expect(result.totalCount).toEqual(0)
+      expect(result.resources).toStrictEqual([])
+      expect(result.totalCount).toBe(0)
     })
   })
 
+  // oxlint-disable-next-line vitest/no-disabled-tests
   describe.skip("getSearchRecentlyEdited", () => {})
+  // oxlint-disable-next-line vitest/no-disabled-tests
   describe.skip("getSearchWithResourceIds", () => {})
 })
 

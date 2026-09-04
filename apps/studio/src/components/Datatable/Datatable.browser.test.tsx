@@ -60,20 +60,30 @@ describe("Datatable linked rows", () => {
 
     expect(row.parentElement?.tagName).toBe("TBODY")
     expect(link.getAttribute("href")).toBe("/test-page")
-    expect(getComputedStyle(row).position).toBe("relative")
-    expect(getComputedStyle(row).cursor).toBe("pointer")
-    expect(getComputedStyle(link).position).toBe("static")
+    expect({
+      rowPosition: getComputedStyle(row).position,
+      rowCursor: getComputedStyle(row).cursor,
+      linkPosition: getComputedStyle(link).position,
+    }).toStrictEqual({
+      rowPosition: "relative",
+      rowCursor: "pointer",
+      linkPosition: "static",
+    })
 
     const overlayStyles = getComputedStyle(link, "::before")
     const rowBounds = row.getBoundingClientRect()
-    expect(overlayStyles.position).toBe("absolute")
-    expect(Number.parseFloat(overlayStyles.width)).toBeCloseTo(
-      rowBounds.width,
-      0,
-    )
-    expect(
-      Math.abs(Number.parseFloat(overlayStyles.height) - rowBounds.height),
-    ).toBeLessThanOrEqual(1)
+    expect({
+      position: overlayStyles.position,
+      widthMatches:
+        Math.abs(Number.parseFloat(overlayStyles.width) - rowBounds.width) < 1,
+      heightMatches:
+        Math.abs(Number.parseFloat(overlayStyles.height) - rowBounds.height) <=
+        1,
+    }).toStrictEqual({
+      position: "absolute",
+      widthMatches: true,
+      heightMatches: true,
+    })
   })
 
   it("keeps the row styles that the Table theme applies to Tr", () => {

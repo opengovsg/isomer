@@ -1,6 +1,8 @@
+import { describe, expect, it } from 'vitest';
 import { indicesWithBlankLabels } from "../indicesWithBlankLabels"
 
-describe("indicesWithBlankLabels", () => {
+describe(indicesWithBlankLabels, () => {
+
   it("returns an empty set when items are undefined or empty", () => {
     // Arrange
     const undefinedItems = undefined
@@ -11,8 +13,8 @@ describe("indicesWithBlankLabels", () => {
     const resultEmpty = indicesWithBlankLabels(emptyList)
 
     // Assert
-    expect(resultUndefined).toEqual(new Set())
-    expect(resultEmpty).toEqual(new Set())
+    expect(resultUndefined).toStrictEqual(new Set())
+    expect(resultEmpty).toStrictEqual(new Set())
   })
 
   it("returns an empty set when every item has a non-blank label", () => {
@@ -23,7 +25,7 @@ describe("indicesWithBlankLabels", () => {
     const result = indicesWithBlankLabels(items)
 
     // Assert
-    expect(result).toEqual(new Set())
+    expect(result).toStrictEqual(new Set())
   })
 
   it("returns the index when an item label is an empty string", () => {
@@ -34,7 +36,7 @@ describe("indicesWithBlankLabels", () => {
     const result = indicesWithBlankLabels(items)
 
     // Assert
-    expect(result).toEqual(new Set([1]))
+    expect(result).toStrictEqual(new Set([1]))
   })
 
   it("returns the index when an item label is whitespace-only", () => {
@@ -45,7 +47,7 @@ describe("indicesWithBlankLabels", () => {
     const result = indicesWithBlankLabels(items)
 
     // Assert
-    expect(result).toEqual(new Set([1]))
+    expect(result).toStrictEqual(new Set([1]))
   })
 
   it("returns the index when an item is missing the label property", () => {
@@ -56,7 +58,7 @@ describe("indicesWithBlankLabels", () => {
     const result = indicesWithBlankLabels(items)
 
     // Assert
-    expect(result).toEqual(new Set([1]))
+    expect(result).toStrictEqual(new Set([1]))
   })
 
   it("returns all indices with blank labels", () => {
@@ -67,7 +69,7 @@ describe("indicesWithBlankLabels", () => {
     const result = indicesWithBlankLabels(items)
 
     // Assert
-    expect(result).toEqual(new Set([0, 2, 3]))
+    expect(result).toStrictEqual(new Set([0, 2, 3]))
   })
 
   it("does not treat trimmed labels as blank", () => {
@@ -78,6 +80,6 @@ describe("indicesWithBlankLabels", () => {
     const result = indicesWithBlankLabels(items)
 
     // Assert
-    expect(result).toEqual(new Set())
+    expect(result).toStrictEqual(new Set())
   })
 })

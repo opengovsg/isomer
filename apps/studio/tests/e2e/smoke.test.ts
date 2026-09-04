@@ -1,3 +1,4 @@
+import { expect, test } from 'vitest';
 import { expect, test } from "@playwright/test"
 
 test("go to /sign-in", async ({ page }) => {

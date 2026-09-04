@@ -13,7 +13,7 @@ import {
   setupPublisherPermissions,
   setUpWhitelist,
 } from "tests/integration/helpers/seed"
-import { vi } from "vitest"
+import { vi, expect, beforeEach, describe, beforeAll, it } from "vitest"
 import { deleteFile, generateSignedPutUrl, putObjectDirect } from "~/lib/s3"
 import { MAX_DELETE_FILE_KEYS } from "~/schemas/asset"
 import { createCallerFactory } from "~/server/trpc"
@@ -23,16 +23,16 @@ import { assetRouter } from "../asset.router"
 
 // Mock the S3 client to prevent credential loading issues in CI
 // Workaround as we do not really want to set up a full integration test here with S3
-vi.mock("~/lib/s3", () => ({
+vi.mock(import('~/lib/s3'), () => ({
   storage: {
-    send: vi.fn().mockResolvedValue({ TagSet: [] }),
+    send: vi.fn<(...args: unknown[]) => unknown>(()).mockResolvedValue({ TagSet: [] }),
   },
   generateSignedPutUrl: vi
     .fn()
     .mockResolvedValue("https://example.com/signed-url"),
-  markFileAsDeleted: vi.fn().mockResolvedValue(undefined),
-  deleteFile: vi.fn().mockResolvedValue(undefined),
-  putObjectDirect: vi.fn().mockResolvedValue(undefined),
+  markFileAsDeleted: vi.fn<(...args: unknown[]) => unknown>(()).mockResolvedValue(undefined),
+  deleteFile: vi.fn<(...args: unknown[]) => unknown>(()).mockResolvedValue(undefined),
+  putObjectDirect: vi.fn<(...args: unknown[]) => unknown>(()).mockResolvedValue(undefined),
 }))
 
 const createCaller = createCallerFactory(assetRouter)
@@ -58,6 +58,7 @@ describe("asset.router", async () => {
   })
 
   describe("getPresignedPutUrl", () => {
+
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -149,7 +150,7 @@ describe("asset.router", async () => {
       })
 
       // Assert
-      await expect(result).resolves.not.toThrow()
+      await expect(result).resolves.not.toThrow(/./)
     })
 
     it("should call generateSignedPutUrl with correct parameters", async () => {
@@ -237,6 +238,7 @@ describe("asset.router", async () => {
   })
 
   describe("deleteAssets", () => {
+
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -325,7 +327,7 @@ describe("asset.router", async () => {
       })
 
       // Assert
-      await expect(result).resolves.not.toThrow()
+      await expect(result).resolves.not.toThrow(/./)
     })
 
     it("should throw 403 if user does only has Editor permission to read root resource", async () => {
@@ -377,7 +379,7 @@ describe("asset.router", async () => {
       })
 
       // Assert
-      await expect(result).resolves.not.toThrow()
+      await expect(result).resolves.not.toThrow(/./)
     })
 
     it("should throw 403 if user does only has Publisher permission to read root resource", async () => {
@@ -426,7 +428,7 @@ describe("asset.router", async () => {
       })
 
       // Assert
-      await expect(result).resolves.not.toThrow()
+      await expect(result).resolves.not.toThrow(/./)
     })
 
     it("should call deleteFile with correct parameters for each file key", async () => {
@@ -662,7 +664,7 @@ describe("asset.router", async () => {
       await expect(result).resolves.toMatchObject({
         fileKey: expect.stringContaining(".svg"),
       })
-      expect(putObjectDirect).toHaveBeenCalledTimes(1)
+      expect(putObjectDirect).toHaveBeenCalledOnce()
     })
 
     it("should reject fileName not ending in .svg", async () => {

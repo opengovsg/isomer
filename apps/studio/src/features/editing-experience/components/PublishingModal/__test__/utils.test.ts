@@ -1,10 +1,11 @@
+import { beforeEach, afterEach, describe, expect, it } from 'vitest';
 import { addDays, addHours } from "date-fns"
 import MockDate from "mockdate"
 
 import { getEarliestAllowableTime } from "../utils"
 
 describe("ScheduledPublishingModal.utils", () => {
-  describe("getEarliestAllowableTime", () => {
+  describe(getEarliestAllowableTime, () => {
     const FIXED_NOW = new Date("2024-01-01T00:15:00.000Z")
     beforeEach(() => {
       MockDate.set(FIXED_NOW) // Freeze time before each test
@@ -12,6 +13,7 @@ describe("ScheduledPublishingModal.utils", () => {
     afterEach(() => {
       MockDate.reset() // Reset time after each test
     })
+
     it("should return the correct earliest allowable time for same day", () => {
       // Arrange
       // Both selected date and earliest schedule are on the same day
@@ -23,8 +25,9 @@ describe("ScheduledPublishingModal.utils", () => {
       const actual = getEarliestAllowableTime(selectedDate, earliestSchedule)
 
       // Assert
-      expect(actual).toEqual(addHours(FIXED_NOW, hoursToAdd))
+      expect(actual).toStrictEqual(addHours(FIXED_NOW, hoursToAdd))
     })
+
     it("should return null for different days", () => {
       // Arrange
       // Both selected date and earliest schedule are on different days

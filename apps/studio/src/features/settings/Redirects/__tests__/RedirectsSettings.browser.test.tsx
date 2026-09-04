@@ -12,13 +12,13 @@ const SITE_ID = 42
 // ~/env.mjs validates `process.env` at module scope, which is a ReferenceError
 // under Browser Mode's real-browser runtime. The page picker reaches it via
 // ~/utils/resources for a link prefix that never renders here.
-vi.mock("~/env.mjs", () => ({
+vi.mock(import('~/env.mjs'), () => ({
   env: { NEXT_PUBLIC_APP_URL: "http://localhost:3000" },
 }))
 
 // The wildcard hint and the bulk-upload entry point only render with advanced
 // redirects on, which is the state these assertions are about.
-vi.mock("~/hooks/useIsAdvancedRedirectsEnabled", () => ({
+vi.mock(import('~/hooks/useIsAdvancedRedirectsEnabled'), () => ({
   useIsAdvancedRedirectsEnabled: () => true,
 }))
 
@@ -39,8 +39,8 @@ let rolesQueryState = { isPending: false, isError: false }
 // The table's reads and every write the card/modal owns. None of them is what
 // this test covers — the question is purely which controls a role is shown — so
 // stub the tRPC surface with the minimum both branches touch on render.
-vi.mock("~/utils/trpc", () => {
-  const noop = vi.fn()
+vi.mock(import('~/utils/trpc'), () => {
+  const noop = vi.fn<(...args: unknown[]) => unknown>(())
   return {
     trpc: {
       useUtils: () => ({ redirect: { invalidate: noop } }),
@@ -79,7 +79,7 @@ const renderAs = (role: RoleType) => {
 const DELETE_LABEL = `Delete redirect for ${REDIRECT_ROW.source}`
 const PERMISSION_ERROR = /We couldn't check your permissions/
 
-describe("RedirectsSettings", () => {
+describe(RedirectsSettings, () => {
   beforeEach(() => {
     currentRoles = []
     rolesQueryState = { isPending: false, isError: false }
@@ -132,7 +132,7 @@ describe("RedirectsSettings", () => {
 
     // Assert
     expect(adminHeights.length).toBeGreaterThan(0)
-    expect(editorHeights).toEqual(adminHeights)
+    expect(editorHeights).toStrictEqual(adminHeights)
   })
 
   it("does not present the page as read-only while the roles are still loading", () => {

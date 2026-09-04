@@ -12,13 +12,13 @@ import { ExportAccessLogsModal } from "../ExportAccessLogsModal"
 const SITE_ID = 42
 
 // The shared export hook fires a PostHog capture on success.
-vi.mock("posthog-js", () => ({ default: { capture: vi.fn() } }))
+vi.mock(import('posthog-js'), () => ({ default: { capture: vi.fn<(...args: unknown[]) => unknown>(()) } }))
 
-const mutate = vi.fn()
+const mutate = vi.fn<(...args: unknown[]) => unknown>(())
 let capturedOptions:
   | { onSuccess?: (data: unknown, variables: unknown) => void }
   | undefined
-vi.mock("~/utils/trpc", () => ({
+vi.mock(import('~/utils/trpc'), () => ({
   trpc: {
     audit: {
       createExportRequest: {
@@ -44,7 +44,7 @@ const renderOpen = () => {
   return { store, ...rendered }
 }
 
-describe("ExportAccessLogsModal", () => {
+describe(ExportAccessLogsModal, () => {
   beforeEach(() => {
     mutate.mockClear()
     capturedOptions = undefined
@@ -75,8 +75,8 @@ describe("ExportAccessLogsModal", () => {
       name: "All sites I have Admin access to",
     })
     const siteOnly = screen.getByRole("radio", { name: "This site only" })
-    expect((allSites as HTMLInputElement).checked).toBe(true)
-    expect((siteOnly as HTMLInputElement).checked).toBe(false)
+    expect((allSites as HTMLInputElement).checked).toBeTruthy()
+    expect((siteOnly as HTMLInputElement).checked).toBeFalsy()
   })
 
   it("submits an Access export for the current month with the default 'allSites' scope", async () => {
@@ -87,7 +87,7 @@ describe("ExportAccessLogsModal", () => {
     fireEvent.click(screen.getByRole("button", { name: "Export logs" }))
 
     // Assert
-    await waitFor(() => expect(mutate).toHaveBeenCalledTimes(1))
+    await waitFor(() => expect(mutate).toHaveBeenCalledOnce())
     expect(mutate).toHaveBeenCalledWith({
       scope: "allSites",
       siteId: SITE_ID,
@@ -105,7 +105,7 @@ describe("ExportAccessLogsModal", () => {
     fireEvent.click(screen.getByRole("button", { name: "Export logs" }))
 
     // Assert
-    await waitFor(() => expect(mutate).toHaveBeenCalledTimes(1))
+    await waitFor(() => expect(mutate).toHaveBeenCalledOnce())
     expect(mutate).toHaveBeenCalledWith(
       expect.objectContaining({ scope: "site" }),
     )
@@ -121,7 +121,7 @@ describe("ExportAccessLogsModal", () => {
     capturedOptions?.onSuccess?.(undefined, mutate.mock.lastCall?.[0])
 
     // Assert
-    expect(store.get(exportAccessLogsModalAtom)).toEqual({
+    expect(store.get(exportAccessLogsModalAtom)).toStrictEqual({
       siteId: 0,
       isOpen: false,
     })
@@ -135,7 +135,7 @@ describe("ExportAccessLogsModal", () => {
     fireEvent.click(screen.getByRole("button", { name: /close/i }))
 
     // Assert
-    expect(store.get(exportAccessLogsModalAtom)).toEqual({
+    expect(store.get(exportAccessLogsModalAtom)).toStrictEqual({
       siteId: 0,
       isOpen: false,
     })

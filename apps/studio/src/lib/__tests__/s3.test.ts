@@ -9,14 +9,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 
 // Mock the S3 client so we can observe which commands are dispatched without
 // hitting AWS. We keep the real command classes so we can assert on instances.
-const sendMock = vi.fn()
-vi.mock("@aws-sdk/client-s3", async (importOriginal) => {
+const sendMock = vi.fn<(...args: unknown[]) => unknown>(())
+vi.mock(import('@aws-sdk/client-s3'), async (importOriginal) => {
   const actual = await importOriginal<typeof import("@aws-sdk/client-s3")>()
   return {
     ...actual,
     // Use a regular function (not an arrow) so it can be invoked with `new`,
     // since s3.ts constructs the client via `new S3Client(...)`.
-    S3Client: vi.fn(function () {
+    S3Client: vi.fn<(...args: unknown[]) => unknown>(()function () {
       return { send: sendMock }
     }),
   }
@@ -56,7 +56,7 @@ describe("deleteFile", () => {
       Key: "GuardDutyMalwareScanStatus",
       Value: "NO_THREATS_FOUND",
     })
-    expect(tagSet?.some(({ Key }) => Key === DELETE_TAG)).toBe(true)
+    expect(tagSet?.some(({ Key }) => Key === DELETE_TAG)).toBeTruthy()
   })
 
   it("skips the (paid) PutObjectTagging when the file is already soft-deleted", async () => {
@@ -69,13 +69,13 @@ describe("deleteFile", () => {
     await deleteFile({ Key: "1/uuid/file.png", Bucket: "test-bucket" })
 
     // Assert: only the cheap Get ran, no Put
-    expect(sendMock).toHaveBeenCalledTimes(1)
+    expect(sendMock).toHaveBeenCalledOnce()
     expect(sendMock.mock.calls[0]?.[0]).toBeInstanceOf(GetObjectTaggingCommand)
     expect(
       sendMock.mock.calls.some(
         ([command]) => command instanceof PutObjectTaggingCommand,
       ),
-    ).toBe(false)
+    ).toBeFalsy()
   })
 })
 
@@ -183,7 +183,7 @@ describe("setAssetAsPublished", () => {
 
     // Assert: the self-copy replaces the disposition, preserves the object's
     // content type + metadata, and runs before the (irreversible) lock.
-    const commands = sendMock.mock.calls.map(([command]) => command as unknown)
+    const commands = sendMock.mock.calls.map(([command]) => command)
     expect(commands[1]).toBeInstanceOf(HeadObjectCommand)
     const copyIndex = commands.findIndex(
       (command) => command instanceof CopyObjectCommand,
@@ -221,7 +221,7 @@ describe("setAssetAsPublished", () => {
     // Assert: each path segment is encoded, but the Key itself stays raw
     // (the SDK encodes Key params on its own).
     const copyCommand = sendMock.mock.calls
-      .map(([command]) => command as unknown)
+      .map(([command]) => command)
       .find((command) => command instanceof CopyObjectCommand)
     expect(copyCommand?.input).toMatchObject({
       CopySource:
@@ -248,7 +248,7 @@ describe("setAssetAsPublished", () => {
 
     // Assert
     const copyCommand = sendMock.mock.calls
-      .map(([command]) => command as unknown)
+      .map(([command]) => command)
       .find((command) => command instanceof CopyObjectCommand)
     expect(copyCommand).toBeDefined()
     expect(copyCommand?.input).not.toHaveProperty("ContentType")
@@ -273,13 +273,13 @@ describe("setAssetAsPublished", () => {
     })
 
     // Assert: no copy issued, but the lock still applies.
-    const commands = sendMock.mock.calls.map(([command]) => command as unknown)
+    const commands = sendMock.mock.calls.map(([command]) => command)
     expect(
       commands.some((command) => command instanceof CopyObjectCommand),
-    ).toBe(false)
+    ).toBeFalsy()
     expect(
       commands.some((command) => command instanceof PutObjectRetentionCommand),
-    ).toBe(true)
+    ).toBeTruthy()
   })
 
   it("skips the self-copy when no ContentDisposition is given", async () => {
@@ -294,13 +294,13 @@ describe("setAssetAsPublished", () => {
     })
 
     // Assert: no HeadObject/CopyObject issued, but the lock still applies.
-    const commands = sendMock.mock.calls.map(([command]) => command as unknown)
+    const commands = sendMock.mock.calls.map(([command]) => command)
     expect(
       commands.some((command) => command instanceof CopyObjectCommand),
-    ).toBe(false)
+    ).toBeFalsy()
     expect(
       commands.some((command) => command instanceof PutObjectRetentionCommand),
-    ).toBe(true)
+    ).toBeTruthy()
   })
 })
 

@@ -14,7 +14,7 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 import { createUserWithPermission, isUserDeleted } from "../user.service"
 
 describe("user.service", () => {
-  describe("isUserDeleted", () => {
+  describe(isUserDeleted, () => {
     beforeAll(async () => {
       await resetTables("User")
     })
@@ -31,7 +31,7 @@ describe("user.service", () => {
       // Act
       const result = await isUserDeleted(email)
       // Assert
-      expect(result).toBe(false)
+      expect(result).toBeFalsy()
     })
 
     it("should return true if user is deleted", async () => {
@@ -46,11 +46,11 @@ describe("user.service", () => {
       // Act
       const result = await isUserDeleted(email)
       // Assert
-      expect(result).toBe(true)
+      expect(result).toBeTruthy()
     })
   })
 
-  describe("createUserWithPermission", () => {
+  describe(createUserWithPermission, () => {
     const TEST_EMAIL = "test@open.gov.sg"
     let siteId: number
     let creatorUserId: string
@@ -109,7 +109,7 @@ describe("user.service", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrow()
+      await expect(result).rejects.toThrow(/./)
 
       // Assert DB - audit logs
       const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
@@ -171,7 +171,7 @@ describe("user.service", () => {
         .selectAll()
         .execute()
       expect(dbUserResult).toHaveLength(2) // original + newly created record
-      expect(dbUserResult).toEqual([
+      expect(dbUserResult).toStrictEqual([
         expect.objectContaining({
           email: TEST_EMAIL,
           id: user.id, // original record
@@ -192,7 +192,7 @@ describe("user.service", () => {
         .selectAll()
         .execute()
       expect(dbResourcePermissionResult).toHaveLength(1)
-      expect(dbResourcePermissionResult).toEqual([
+      expect(dbResourcePermissionResult).toStrictEqual([
         expect.objectContaining({
           userId: expect.any(String),
           siteId,
@@ -207,6 +207,7 @@ describe("user.service", () => {
         .selectAll()
         .execute()
       expect(userAuditLogs).toHaveLength(1)
+      // oxlint-disable-next-line vitest/max-expects
       expect(userAuditLogs[0]).toMatchObject({
         eventType: "UserCreate",
         delta: expect.objectContaining({
@@ -224,7 +225,9 @@ describe("user.service", () => {
         .where("eventType", "=", "PermissionCreate")
         .selectAll()
         .execute()
+      // oxlint-disable-next-line vitest/max-expects
       expect(permissionAuditLogs).toHaveLength(1)
+      // oxlint-disable-next-line vitest/max-expects
       expect(permissionAuditLogs[0]).toMatchObject({
         eventType: "PermissionCreate",
         delta: expect.objectContaining({
@@ -310,7 +313,7 @@ describe("user.service", () => {
       })
 
       // Assert
-      expect(result).toEqual(expect.anything())
+      expect(result).toStrictEqual(expect.anything())
     })
 
     it("should create a whitelisted non-gov.sg email with admin role", async () => {
@@ -330,7 +333,7 @@ describe("user.service", () => {
       })
 
       // Assert
-      expect(result).toEqual(expect.anything())
+      expect(result).toStrictEqual(expect.anything())
     })
 
     it("should create a non-gov.sg email with non-admin role", async () => {
@@ -349,7 +352,7 @@ describe("user.service", () => {
         })
       })
       // Assert
-      expect(result).toEqual(expect.anything())
+      expect(result).toStrictEqual(expect.anything())
 
       // Assert DB - audit logs (user)
       const userAuditLogs = await db
@@ -438,6 +441,7 @@ describe("user.service", () => {
         .selectAll()
         .execute()
       expect(userAuditLogs).toHaveLength(1)
+      // oxlint-disable-next-line vitest/max-expects
       expect(userAuditLogs[0]).toMatchObject({
         eventType: "UserCreate",
         delta: expect.objectContaining({
@@ -454,7 +458,9 @@ describe("user.service", () => {
         .where("eventType", "=", "PermissionCreate")
         .selectAll()
         .execute()
+      // oxlint-disable-next-line vitest/max-expects
       expect(permissionAuditLogs).toHaveLength(1)
+      // oxlint-disable-next-line vitest/max-expects
       expect(permissionAuditLogs[0]).toMatchObject({
         eventType: "PermissionCreate",
         delta: expect.objectContaining({
@@ -523,6 +529,7 @@ describe("user.service", () => {
         .selectAll()
         .execute()
       expect(userAuditLogs).toHaveLength(1)
+      // oxlint-disable-next-line vitest/max-expects
       expect(userAuditLogs[0]).toMatchObject({
         eventType: "UserCreate",
         delta: expect.objectContaining({
@@ -539,7 +546,9 @@ describe("user.service", () => {
         .where("eventType", "=", "PermissionCreate")
         .selectAll()
         .execute()
+      // oxlint-disable-next-line vitest/max-expects
       expect(permissionAuditLogs).toHaveLength(1)
+      // oxlint-disable-next-line vitest/max-expects
       expect(permissionAuditLogs[0]).toMatchObject({
         eventType: "PermissionCreate",
         delta: expect.objectContaining({

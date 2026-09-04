@@ -1,6 +1,8 @@
+import { describe, expect, it } from 'vitest';
 import { indicesWithDuplicateLabels } from "../indicesWithDuplicateLabels"
 
-describe("indicesWithDuplicateLabels", () => {
+describe(indicesWithDuplicateLabels, () => {
+
   it("returns an empty set when items are undefined or empty", () => {
     // Arrange
     const undefinedItems = undefined
@@ -11,8 +13,8 @@ describe("indicesWithDuplicateLabels", () => {
     const resultEmpty = indicesWithDuplicateLabels(emptyList)
 
     // Assert
-    expect(resultUndefined).toEqual(new Set())
-    expect(resultEmpty).toEqual(new Set())
+    expect(resultUndefined).toStrictEqual(new Set())
+    expect(resultEmpty).toStrictEqual(new Set())
   })
 
   it("returns an empty set when there is a single item or all labels are unique", () => {
@@ -25,8 +27,8 @@ describe("indicesWithDuplicateLabels", () => {
     const resultUnique = indicesWithDuplicateLabels(uniquePair)
 
     // Assert
-    expect(resultSingle).toEqual(new Set())
-    expect(resultUnique).toEqual(new Set())
+    expect(resultSingle).toStrictEqual(new Set())
+    expect(resultUnique).toStrictEqual(new Set())
   })
 
   it("returns every index in a duplicate group", () => {
@@ -39,8 +41,8 @@ describe("indicesWithDuplicateLabels", () => {
     const resultTriple = indicesWithDuplicateLabels(triple)
 
     // Assert
-    expect(resultPair).toEqual(new Set([0, 1]))
-    expect(resultTriple).toEqual(new Set([0, 1, 2]))
+    expect(resultPair).toStrictEqual(new Set([0, 1]))
+    expect(resultTriple).toStrictEqual(new Set([0, 1, 2]))
   })
 
   it("treats labels as equal when they match after trim and case fold", () => {
@@ -51,7 +53,7 @@ describe("indicesWithDuplicateLabels", () => {
     const result = indicesWithDuplicateLabels(items)
 
     // Assert
-    expect(result).toEqual(new Set([0, 1]))
+    expect(result).toStrictEqual(new Set([0, 1]))
   })
 
   it("does not treat empty or whitespace-only labels as duplicates", () => {
@@ -66,9 +68,9 @@ describe("indicesWithDuplicateLabels", () => {
     const resultMissing = indicesWithDuplicateLabels(missingLabels)
 
     // Assert
-    expect(resultEmpty).toEqual(new Set())
-    expect(resultWhitespace).toEqual(new Set())
-    expect(resultMissing).toEqual(new Set())
+    expect(resultEmpty).toStrictEqual(new Set())
+    expect(resultWhitespace).toStrictEqual(new Set())
+    expect(resultMissing).toStrictEqual(new Set())
   })
 
   it("only includes indices that belong to a duplicated label", () => {
@@ -79,6 +81,6 @@ describe("indicesWithDuplicateLabels", () => {
     const result = indicesWithDuplicateLabels(items)
 
     // Assert
-    expect(result).toEqual(new Set([0, 1]))
+    expect(result).toStrictEqual(new Set([0, 1]))
   })
 })

@@ -13,7 +13,7 @@ import {
   MAX_DELETE_FILE_KEYS,
 } from "../asset"
 
-describe("getPresignedPutUrlSchema", () => {
+describe(getPresignedPutUrlSchema, () => {
   const validBaseData = {
     siteId: 1,
     resourceId: "test-resource-id",
@@ -26,13 +26,14 @@ describe("getPresignedPutUrlSchema", () => {
       Object.keys(IMAGE_ACCEPTED_MIME_TYPE_MAPPING)
         .filter((ext) => ext !== ".svg")
         .forEach((extension) => {
+
           it(`should accept valid image extension: ${extension}`, () => {
             const fileName = `test-image${extension}`
             const result = getPresignedPutUrlSchema.safeParse({
               ...validBaseData,
               fileName,
             })
-            expect(result.success).toBe(true)
+            expect(result.success).toBeTruthy()
           })
         })
 
@@ -41,19 +42,20 @@ describe("getPresignedPutUrlSchema", () => {
           ...validBaseData,
           fileName: "test-image.svg",
         })
-        expect(result.success).toBe(false)
+        expect(result.success).toBeFalsy()
       })
 
       // Test all allowed file extensions
       Object.keys(FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING).forEach(
         (extension) => {
+
           it(`should accept valid file extension: ${extension}`, () => {
             const fileName = `test-file${extension}`
             const result = getPresignedPutUrlSchema.safeParse({
               ...validBaseData,
               fileName,
             })
-            expect(result.success).toBe(true)
+            expect(result.success).toBeTruthy()
           })
         },
       )
@@ -67,7 +69,7 @@ describe("getPresignedPutUrlSchema", () => {
             ...validBaseData,
             fileName,
           })
-          expect(result.success).toBe(true)
+          expect(result.success).toBeTruthy()
         })
       })
 
@@ -84,61 +86,49 @@ describe("getPresignedPutUrlSchema", () => {
             ...validBaseData,
             fileName,
           })
-          expect(result.success).toBe(true)
+          expect(result.success).toBeTruthy()
         })
       })
 
       // Test invalid extensions
-      it("should reject invalid file extensions", () => {
-        const invalidExtensions = [
-          "test.exe",
-          "test.bat",
-          "test.sh",
-          "test.js",
-          "test.html",
-          "test.php",
-          "test.py",
-          "test.zip",
-          "test.rar",
-          "test.html",
-        ]
-
-        invalidExtensions.forEach((fileName) => {
-          const result = getPresignedPutUrlSchema.safeParse({
-            ...validBaseData,
-            fileName,
-          })
-          expect(result.success).toBe(false)
-          if (!result.success) {
-            expect(result.error.issues[0]?.message).toBe(
-              "File type not allowed. Please upload a supported file type.",
-            )
-          }
+      it.each([
+        "test.exe",
+        "test.bat",
+        "test.sh",
+        "test.js",
+        "test.html",
+        "test.php",
+        "test.py",
+        "test.zip",
+        "test.rar",
+        "test.html",
+      ])("should reject invalid file extensions: %s", (fileName) => {
+        const result = getPresignedPutUrlSchema.safeParse({
+          ...validBaseData,
+          fileName,
         })
+        expect(result.success).toBeFalsy()
+        if (result.success) throw new Error("Expected parse to fail")
+        expect(result.error.issues[0]?.message).toBe(
+          "File type not allowed. Please upload a supported file type.",
+        )
       })
 
       // Test files without extensions
-      it("should reject files without extensions", () => {
-        const filesWithoutExtensions = [
-          "testfile",
-          "my-document",
-          "image",
-          "file",
-        ]
-
-        filesWithoutExtensions.forEach((fileName) => {
+      it.each(["testfile", "my-document", "image", "file"])(
+        "should reject files without extensions: %s",
+        (fileName) => {
           const result = getPresignedPutUrlSchema.safeParse({
             ...validBaseData,
             fileName,
           })
-          expect(result.success).toBe(false)
-          if (!result.success) {
-            expect(result.error.issues[0]?.message).toBe(
-              "File type not allowed. Please upload a supported file type.",
-            )
-          }
-        })
-      })
+          expect(result.success).toBeFalsy()
+          if (result.success) throw new Error("Expected parse to fail")
+          expect(result.error.issues[0]?.message).toBe(
+            "File type not allowed. Please upload a supported file type.",
+          )
+        },
+      )
 
       // Test files with only dots
       it("should reject files with only dots", () => {
@@ -149,12 +139,13 @@ describe("getPresignedPutUrlSchema", () => {
             ...validBaseData,
             fileName,
           })
-          expect(result.success).toBe(false)
+          expect(result.success).toBeFalsy()
         })
       })
     })
 
     describe("file name starting character validation", () => {
+
       it("should accept file names starting with letters", () => {
         const validNames = [
           "test.png",
@@ -168,7 +159,7 @@ describe("getPresignedPutUrlSchema", () => {
             ...validBaseData,
             fileName,
           })
-          expect(result.success).toBe(true)
+          expect(result.success).toBeTruthy()
         })
       })
 
@@ -180,7 +171,7 @@ describe("getPresignedPutUrlSchema", () => {
             ...validBaseData,
             fileName,
           })
-          expect(result.success).toBe(true)
+          expect(result.success).toBeTruthy()
         })
       })
 
@@ -192,7 +183,7 @@ describe("getPresignedPutUrlSchema", () => {
             ...validBaseData,
             fileName,
           })
-          expect(result.success).toBe(true)
+          expect(result.success).toBeTruthy()
         })
       })
 
@@ -204,68 +195,66 @@ describe("getPresignedPutUrlSchema", () => {
             ...validBaseData,
             fileName,
           })
-          expect(result.success).toBe(true)
+          expect(result.success).toBeTruthy()
         })
       })
 
-      it("should reject file names starting with invalid characters", () => {
-        const invalidNames = [
-          " test.png",
-          "@test.png",
-          "#test.png",
-          "$test.png",
-          "%test.png",
-          "&test.png",
-          "*test.png",
-          "(test.png",
-          ")test.png",
-          "+test.png",
-          "=test.png",
-          "[test.png",
-          "]test.png",
-          "{test.png",
-          "}test.png",
-          "|test.png",
-          "\\test.png",
-          "/test.png",
-          "?test.png",
-          "!test.png",
-          "~test.png",
-          "`test.png",
-          "'test.png",
-          '"test.png',
-          ";test.png",
-          ":test.png",
-          "<test.png",
-          ">test.png",
-          ",test.png",
-        ]
-
-        invalidNames.forEach((fileName) => {
+      it.each([
+        " test.png",
+        "@test.png",
+        "#test.png",
+        "$test.png",
+        "%test.png",
+        "&test.png",
+        "*test.png",
+        "(test.png",
+        ")test.png",
+        "+test.png",
+        "=test.png",
+        "[test.png",
+        "]test.png",
+        "{test.png",
+        "}test.png",
+        "|test.png",
+        "\\test.png",
+        "/test.png",
+        "?test.png",
+        "!test.png",
+        "~test.png",
+        "`test.png",
+        "'test.png",
+        '"test.png',
+        ";test.png",
+        ":test.png",
+        "<test.png",
+        ">test.png",
+        ",test.png",
+      ])(
+        "should reject file names starting with invalid characters: %s",
+        (fileName) => {
           const result = getPresignedPutUrlSchema.safeParse({
             ...validBaseData,
             fileName,
           })
-          expect(result.success).toBe(false)
-          if (!result.success) {
-            expect(result.error.issues[0]?.message).toBe(
-              "File name must start with a letter, number, hyphen, or underscore",
-            )
-          }
-        })
-      })
+          expect(result.success).toBeFalsy()
+          if (result.success) throw new Error("Expected parse to fail")
+          expect(result.error.issues[0]?.message).toBe(
+            "File name must start with a letter, number, hyphen, or underscore",
+          )
+        },
+      )
     })
 
     describe("required field validation", () => {
+
       it("should reject when fileName is missing", () => {
         const result = getPresignedPutUrlSchema.safeParse({
           ...validBaseData,
           // fileName is missing
         })
-        expect(result.success).toBe(false)
-        if (!result.success) {
-          expect(result.error.issues[0]?.message).toBe("Missing file name")
-        }
+        expect(result.success).toBeFalsy()
+        if (result.success) throw new Error('Expected parse to fail')
+        expect(result.error.issues[0]?.message).toBe("Missing file name")
       })
 
       it("should reject when fileName is empty string", () => {
@@ -273,12 +262,13 @@ describe("getPresignedPutUrlSchema", () => {
           ...validBaseData,
           fileName: "",
         })
-        expect(result.success).toBe(false)
+        expect(result.success).toBeFalsy()
       })
     })
   })
 
   describe("fileSize validation", () => {
+
     it.each([
       [
         "images larger than the image limit",
@@ -299,23 +289,23 @@ describe("getPresignedPutUrlSchema", () => {
         fileSize,
       })
 
-      expect(result.success).toBe(false)
-      if (!result.success) {
-        expect(result.error.issues[0]?.path).toEqual(["fileSize"])
-        expect(result.error.issues[0]?.message).toBe(message)
-      }
+      expect(result.success).toBeFalsy()
+      if (result.success) throw new Error("Expected parse to fail")
+      expect(result.error.issues[0]?.path).toStrictEqual(["fileSize"])
+      expect(result.error.issues[0]?.message).toBe(message)
     })
   })
 })
 
-describe("fileNameAndSizeSchema", () => {
+describe(fileNameAndSizeSchema, () => {
+
   it("should validate a file without site or resource identifiers", () => {
     const result = fileNameAndSizeSchema.safeParse({
       fileName: "test.png",
       fileSize: 1,
     })
 
-    expect(result.success).toBe(true)
+    expect(result.success).toBeTruthy()
   })
 
   it("should apply the file type-specific size limit", () => {
@@ -324,17 +314,16 @@ describe("fileNameAndSizeSchema", () => {
       fileSize: MAX_IMG_FILE_SIZE_BYTES + 1,
     })
 
-    expect(result.success).toBe(false)
-    if (!result.success) {
-      expect(result.error.issues[0]?.path).toEqual(["fileSize"])
-      expect(result.error.issues[0]?.message).toBe(
-        "File size must not exceed 5 MB",
-      )
-    }
+    expect(result.success).toBeFalsy()
+    if (result.success) throw new Error("Expected parse to fail")
+    expect(result.error.issues[0]?.path).toStrictEqual(["fileSize"])
+    expect(result.error.issues[0]?.message).toBe(
+      "File size must not exceed 5 MB",
+    )
   })
 })
 
-describe("deleteAssetsSchema", () => {
+describe(deleteAssetsSchema, () => {
   const validBaseData = {
     siteId: 1,
     resourceId: "test-resource-id",
@@ -348,7 +337,7 @@ describe("deleteAssetsSchema", () => {
       ...validBaseData,
       fileKeys: makeFileKeys(MAX_DELETE_FILE_KEYS),
     })
-    expect(result.success).toBe(true)
+    expect(result.success).toBeTruthy()
   })
 
   it("should accept an empty file keys array", () => {
@@ -356,7 +345,7 @@ describe("deleteAssetsSchema", () => {
       ...validBaseData,
       fileKeys: [],
     })
-    expect(result.success).toBe(true)
+    expect(result.success).toBeTruthy()
   })
 
   it(`should reject more than ${MAX_DELETE_FILE_KEYS} file keys`, () => {
@@ -364,11 +353,10 @@ describe("deleteAssetsSchema", () => {
       ...validBaseData,
       fileKeys: makeFileKeys(MAX_DELETE_FILE_KEYS + 1),
     })
-    expect(result.success).toBe(false)
-    if (!result.success) {
-      expect(result.error.issues[0]?.message).toBe(
-        `You can only delete up to ${MAX_DELETE_FILE_KEYS} assets at a time`,
-      )
-    }
+    expect(result.success).toBeFalsy()
+    if (result.success) throw new Error("Expected parse to fail")
+    expect(result.error.issues[0]?.message).toBe(
+      `You can only delete up to ${MAX_DELETE_FILE_KEYS} assets at a time`,
+    )
   })
 })

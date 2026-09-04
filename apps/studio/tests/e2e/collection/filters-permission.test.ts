@@ -1,3 +1,4 @@
+import { test } from 'vitest';
 import { test } from "@playwright/test"
 import crypto from "crypto"
 import { db } from "~/server/modules/database"

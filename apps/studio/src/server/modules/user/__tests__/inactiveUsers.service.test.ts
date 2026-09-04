@@ -20,9 +20,9 @@ import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 import { MAX_DAYS_FROM_LAST_LOGIN } from "../constants"
 
 // Mock must be at module level to be hoisted correctly
-vi.mock("~/features/mail/service", () => ({
-  sendAccountDeactivationEmail: vi.fn(),
-  sendAccountDeactivationWarningEmail: vi.fn(),
+vi.mock(import('~/features/mail/service'), () => ({
+  sendAccountDeactivationEmail: vi.fn<(...args: unknown[]) => unknown>(()),
+  sendAccountDeactivationWarningEmail: vi.fn<(...args: unknown[]) => unknown>(()),
 }))
 import {
   bulkDeactivateInactiveUsers,
@@ -125,7 +125,7 @@ const setupUserWrapper = async ({
 }
 
 describe("inactiveUsers.service", () => {
-  describe("bulkDeactivateInactiveUsers", () => {
+  describe(bulkDeactivateInactiveUsers, () => {
     let site: Site
     let systemUser: User
 
@@ -183,7 +183,7 @@ describe("inactiveUsers.service", () => {
         .selectAll()
         .execute()
       expect(auditLogs).toHaveLength(1)
-      expect(auditLogs[0]).toEqual(
+      expect(auditLogs[0]).toStrictEqual(
         expect.objectContaining({
           userId: systemUser.id,
           siteId: site.id,
@@ -220,7 +220,7 @@ describe("inactiveUsers.service", () => {
         .selectAll()
         .execute()
       expect(auditLogs).toHaveLength(2)
-      expect(auditLogs.map((log) => log.siteId)).toEqual(
+      expect(auditLogs.map((log) => log.siteId)).toStrictEqual(
         expect.arrayContaining([site.id, otherSite.id]),
       )
       auditLogs.forEach((log) => expect(log.userId).toBe(systemUser.id))
@@ -254,7 +254,7 @@ describe("inactiveUsers.service", () => {
         .executeTakeFirstOrThrow()
       expect(recreatedSystemUser.id).not.toBe(systemUser.id)
 
-      expect(sendAccountDeactivationEmail).toHaveBeenCalled()
+      expect(sendAccountDeactivationEmail).toHaveBeenCalledWith()
     })
 
     it("should return early when user has no permissions to delete", async () => {
@@ -301,7 +301,7 @@ describe("inactiveUsers.service", () => {
       )
 
       // Assert
-      expect(sendAccountDeactivationEmail).toHaveBeenCalledTimes(1)
+      expect(sendAccountDeactivationEmail).toHaveBeenCalledOnce()
     })
 
     it("should deactivate user with permissions on multiple sites", async () => {
@@ -442,8 +442,7 @@ describe("inactiveUsers.service", () => {
       await bulkDeactivateInactiveUsers()
 
       // Assert
-      expect(sendAccountDeactivationEmail).toHaveBeenCalledTimes(1)
-      expect(sendAccountDeactivationEmail).toHaveBeenCalledWith({
+      expect(sendAccountDeactivationEmail).toHaveBeenCalledExactlyOnceWith({
         recipientEmail: user.email,
         sitesAndAdmins: [
           {
@@ -502,7 +501,7 @@ describe("inactiveUsers.service", () => {
       }
 
       // Assert
-      expect(sendAccountDeactivationEmail).toHaveBeenCalledTimes(1)
+      expect(sendAccountDeactivationEmail).toHaveBeenCalledOnce()
     })
 
     it("should only delete non-deleted permissions", async () => {
@@ -535,11 +534,11 @@ describe("inactiveUsers.service", () => {
       const deletedPermissions = allPermissions.filter(
         (p) => p.id === existingDeletedPermission.id,
       )
-      expect(deletedPermissions[0]?.deletedAt).toEqual(
+      expect(deletedPermissions[0]?.deletedAt).toStrictEqual(
         existingDeletedPermission.deletedAt,
       )
 
-      expect(sendAccountDeactivationEmail).toHaveBeenCalledTimes(1)
+      expect(sendAccountDeactivationEmail).toHaveBeenCalledOnce()
     })
 
     it("should not include active isomer admins and migrators in the email", async () => {
@@ -565,8 +564,7 @@ describe("inactiveUsers.service", () => {
 
       // Assert
       // Only the non-isomer-admin user should be deactivated
-      expect(sendAccountDeactivationEmail).toHaveBeenCalledTimes(1)
-      expect(sendAccountDeactivationEmail).toHaveBeenCalledWith({
+      expect(sendAccountDeactivationEmail).toHaveBeenCalledExactlyOnceWith({
         recipientEmail: userToDeactivate.email,
         sitesAndAdmins: expect.any(Array),
       })
@@ -584,8 +582,7 @@ describe("inactiveUsers.service", () => {
       await bulkDeactivateInactiveUsers()
 
       // Assert
-      expect(sendAccountDeactivationEmail).toHaveBeenCalledTimes(1)
-      expect(sendAccountDeactivationEmail).toHaveBeenCalledWith({
+      expect(sendAccountDeactivationEmail).toHaveBeenCalledExactlyOnceWith({
         recipientEmail: user.email,
         sitesAndAdmins: [
           {
@@ -636,7 +633,7 @@ describe("inactiveUsers.service", () => {
     })
   })
 
-  describe("getInactiveUsers", () => {
+  describe(getInactiveUsers, () => {
     let site: Site
 
     beforeEach(async () => {
@@ -1081,7 +1078,7 @@ describe("inactiveUsers.service", () => {
     })
   })
 
-  describe("bulkSendAccountDeactivationWarningEmails", () => {
+  describe(bulkSendAccountDeactivationWarningEmails, () => {
     let site: Site
 
     beforeEach(async () => {
@@ -1093,6 +1090,7 @@ describe("inactiveUsers.service", () => {
     })
 
     describe("should send warning emails to users who will be inactive in specified days", () => {
+
       it("1 day", async () => {
         // Arrange
         const user = await setupUserWrapper({
@@ -1114,7 +1112,7 @@ describe("inactiveUsers.service", () => {
         })
         await expect(
           bulkSendAccountDeactivationWarningEmails({ inHowManyDays: 1 }),
-        ).resolves.not.toThrow()
+        ).resolves.not.toThrow(/./)
       })
 
       it("7 days", async () => {
@@ -1138,7 +1136,7 @@ describe("inactiveUsers.service", () => {
         })
         await expect(
           bulkSendAccountDeactivationWarningEmails({ inHowManyDays: 7 }),
-        ).resolves.not.toThrow()
+        ).resolves.not.toThrow(/./)
       })
 
       it("14 days", async () => {
@@ -1162,7 +1160,7 @@ describe("inactiveUsers.service", () => {
         })
         await expect(
           bulkSendAccountDeactivationWarningEmails({ inHowManyDays: 14 }),
-        ).resolves.not.toThrow()
+        ).resolves.not.toThrow(/./)
       })
     })
 
@@ -1186,8 +1184,7 @@ describe("inactiveUsers.service", () => {
       })
 
       // Assert
-      expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledTimes(1)
-      expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledWith({
+      expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledExactlyOnceWith({
         recipientEmail: user.email,
         siteNames: [site.name],
         inHowManyDays: 1,
@@ -1344,8 +1341,7 @@ describe("inactiveUsers.service", () => {
       })
 
       // Assert
-      expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledTimes(1)
-      expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledWith({
+      expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledExactlyOnceWith({
         recipientEmail: user.email,
         siteNames: [site.name, anotherSite.name],
         inHowManyDays: 1,

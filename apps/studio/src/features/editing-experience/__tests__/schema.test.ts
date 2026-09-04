@@ -8,13 +8,14 @@ import {
 } from "../schema"
 
 describe("editing-experience schemas", () => {
-  describe("siteSchema", () => {
+  describe(siteSchema, () => {
+
     it("should validate a valid siteId", () => {
       // Arrange + Act
       const result = siteSchema.safeParse({ siteId: "123" })
 
       // Assert
-      expect(result.success).toBe(true)
+      expect(result.success).toBeTruthy()
     })
 
     it("should coerce string siteId to string", () => {
@@ -22,20 +23,21 @@ describe("editing-experience schemas", () => {
       const result = siteSchema.safeParse({ siteId: "456" })
 
       // Assert
-      if (result.success) {
-        expect(result.data.siteId).toBe("456")
-        expect(typeof result.data.siteId).toBe("string")
-      }
+      expect(result.success).toBeTruthy()
+      if (!result.success) throw new Error("Expected parse to succeed")
+      expect(result.data.siteId).toBe("456")
+      expect(result.data.siteId).toBeTypeOf("string")
     })
   })
 
-  describe("pageSchema", () => {
+  describe(pageSchema, () => {
+
     it("should validate a valid page with siteId and pageId", () => {
       // Arrange + Act
       const result = pageSchema.safeParse({ siteId: "123", pageId: "456" })
 
       // Assert
-      expect(result.success).toBe(true)
+      expect(result.success).toBeTruthy()
     })
 
     it("should coerce string IDs to numbers", () => {
@@ -43,11 +45,11 @@ describe("editing-experience schemas", () => {
       const result = pageSchema.safeParse({ siteId: "789", pageId: "101" })
 
       // Assert
-      if (result.success) {
-        expect(result.data).toEqual({ siteId: 789, pageId: 101 })
-        expect(typeof result.data.siteId).toBe("number")
-        expect(typeof result.data.pageId).toBe("number")
-      }
+      expect(result.success).toBeTruthy()
+      if (!result.success) throw new Error("Expected parse to succeed")
+      expect(result.data).toStrictEqual({ siteId: 789, pageId: 101 })
+      expect(result.data.siteId).toBeTypeOf("number")
+      expect(result.data.pageId).toBeTypeOf("number")
     })
 
     it("should reject undefined siteId", () => {
@@ -55,7 +57,7 @@ describe("editing-experience schemas", () => {
       const result = pageSchema.safeParse({ siteId: undefined, pageId: "456" })
 
       // Assert
-      expect(result.success).toBe(false)
+      expect(result.success).toBeFalsy()
     })
 
     it("should reject undefined pageId", () => {
@@ -63,11 +65,12 @@ describe("editing-experience schemas", () => {
       const result = pageSchema.safeParse({ siteId: "789", pageId: undefined })
 
       // Assert
-      expect(result.success).toBe(false)
+      expect(result.success).toBeFalsy()
     })
   })
 
-  describe("collectionItemSchema", () => {
+  describe(collectionItemSchema, () => {
+
     it("should validate with both pageId and linkId", () => {
       // Arrange + Act
       const result = collectionItemSchema.safeParse({
@@ -77,7 +80,7 @@ describe("editing-experience schemas", () => {
       })
 
       // Assert
-      expect(result.success).toBe(true)
+      expect(result.success).toBeTruthy()
     })
 
     it("should coerce string IDs to numbers", () => {
@@ -89,12 +92,12 @@ describe("editing-experience schemas", () => {
       })
 
       // Assert
-      if (result.success) {
-        expect(result.data).toEqual({ siteId: 123, pageId: 456, linkId: 789 })
-        expect(typeof result.data.siteId).toBe("number")
-        expect(typeof result.data.pageId).toBe("number")
-        expect(typeof result.data.linkId).toBe("number")
-      }
+      expect(result.success).toBeTruthy()
+      if (!result.success) throw new Error("Expected parse to succeed")
+      expect(result.data).toStrictEqual({ siteId: 123, pageId: 456, linkId: 789 })
+      expect(result.data.siteId).toBeTypeOf("number")
+      expect(result.data.pageId).toBeTypeOf("number")
+      expect(result.data.linkId).toBeTypeOf("number")
     })
 
     it("should validate with only pageId", () => {
@@ -105,10 +108,9 @@ describe("editing-experience schemas", () => {
       })
 
       // Assert
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.data).toEqual({ siteId: 123, pageId: 456 })
-      }
+      expect(result.success).toBeTruthy()
+      if (!result.success) throw new Error("Expected parse to succeed")
+      expect(result.data).toStrictEqual({ siteId: 123, pageId: 456 })
     })
 
     it("should validate with only linkId", () => {
@@ -119,10 +121,9 @@ describe("editing-experience schemas", () => {
       })
 
       // Assert
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.data).toEqual({ siteId: 123, linkId: 789 })
-      }
+      expect(result.success).toBeTruthy()
+      if (!result.success) throw new Error("Expected parse to succeed")
+      expect(result.data).toStrictEqual({ siteId: 123, linkId: 789 })
     })
 
     it("should validate with neither pageId nor linkId", () => {
@@ -132,15 +133,15 @@ describe("editing-experience schemas", () => {
       })
 
       // Assert
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.data).toEqual({ siteId: 123 })
-      }
+      expect(result.success).toBeTruthy()
+      if (!result.success) throw new Error("Expected parse to succeed")
+      expect(result.data).toStrictEqual({ siteId: 123 })
     })
   })
 
-  describe("pageOrLinkSchema", () => {
-    it("should validate with only pageId", () => {
+  describe(pageOrLinkSchema, () => {
+
+    it("should validate with only pageId in pageOrLinkSchema", () => {
       // Arrange + Act
       const result = pageOrLinkSchema.safeParse({
         siteId: "123",
@@ -148,7 +149,7 @@ describe("editing-experience schemas", () => {
       })
 
       // Assert
-      expect(result.success).toBe(true)
+      expect(result.success).toBeTruthy()
     })
 
     it("should coerce string IDs to numbers", () => {
@@ -160,15 +161,15 @@ describe("editing-experience schemas", () => {
       })
 
       // Assert
-      if (result.success) {
-        expect(result.data).toEqual({ siteId: 123, pageId: 456, linkId: 789 })
-        expect(typeof result.data.siteId).toBe("number")
-        expect(typeof result.data.pageId).toBe("number")
-        expect(typeof result.data.linkId).toBe("number")
-      }
+      expect(result.success).toBeTruthy()
+      if (!result.success) throw new Error("Expected parse to succeed")
+      expect(result.data).toStrictEqual({ siteId: 123, pageId: 456, linkId: 789 })
+      expect(result.data.siteId).toBeTypeOf("number")
+      expect(result.data.pageId).toBeTypeOf("number")
+      expect(result.data.linkId).toBeTypeOf("number")
     })
 
-    it("should validate with only pageId", () => {
+    it("should validate pageOrLinkSchema with only pageId", () => {
       // Arrange + Act
       const result = pageOrLinkSchema.safeParse({
         siteId: "123",
@@ -176,10 +177,9 @@ describe("editing-experience schemas", () => {
       })
 
       // Assert
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.data).toEqual({ siteId: 123, pageId: 456 })
-      }
+      expect(result.success).toBeTruthy()
+      if (!result.success) throw new Error("Expected parse to succeed")
+      expect(result.data).toStrictEqual({ siteId: 123, pageId: 456 })
     })
 
     it("should validate with only linkId", () => {
@@ -190,10 +190,9 @@ describe("editing-experience schemas", () => {
       })
 
       // Assert
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.data).toEqual({ siteId: 123, linkId: 789 })
-      }
+      expect(result.success).toBeTruthy()
+      if (!result.success) throw new Error("Expected parse to succeed")
+      expect(result.data).toStrictEqual({ siteId: 123, linkId: 789 })
     })
 
     it("should still pass when neither pageId nor linkId is provided", () => {
@@ -203,10 +202,9 @@ describe("editing-experience schemas", () => {
       })
 
       // Assert
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.data).toEqual({ siteId: 123 })
-      }
+      expect(result.success).toBeTruthy()
+      if (!result.success) throw new Error("Expected parse to succeed")
+      expect(result.data).toStrictEqual({ siteId: 123 })
     })
 
     it("should still pass when both pageId and linkId are undefined", () => {
@@ -218,10 +216,9 @@ describe("editing-experience schemas", () => {
       })
 
       // Assert
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.data).toEqual({ siteId: 123 })
-      }
+      expect(result.success).toBeTruthy()
+      if (!result.success) throw new Error("Expected parse to succeed")
+      expect(result.data).toStrictEqual({ siteId: 123 })
     })
   })
 })

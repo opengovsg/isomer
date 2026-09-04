@@ -18,8 +18,8 @@ import { getMonthOptions } from "../utils"
 
 // PostHog capture calls run inside the mutation's onSuccess — mock the client
 // so they can be asserted on instead of hitting an uninitialised instance.
-const { posthogCapture } = vi.hoisted(() => ({ posthogCapture: vi.fn() }))
-vi.mock("posthog-js", () => ({
+const { posthogCapture } = vi.hoisted(() => ({ posthogCapture: vi.fn<(...args: unknown[]) => unknown>(()) }))
+vi.mock(import('posthog-js'), () => ({
   default: { capture: posthogCapture },
 }))
 
@@ -27,7 +27,7 @@ vi.mock("posthog-js", () => ({
 // submitted payload and drive the onSuccess/onError branches ourselves.
 // react-query invokes onSuccess(data, variables, context), and the component
 // destructures the variables — so the harness must pass them too.
-const mutate = vi.fn()
+const mutate = vi.fn<(...args: unknown[]) => unknown>(())
 let capturedOptions:
   | {
       onSuccess?: (data: unknown, variables: unknown) => void
@@ -42,7 +42,7 @@ const fireOnSuccessForLastMutation = () => {
   capturedOptions?.onSuccess?.(undefined, variables)
 }
 
-vi.mock("~/utils/trpc", () => ({
+vi.mock(import('~/utils/trpc'), () => ({
   trpc: {
     audit: {
       // The full window, as if the site were old enough to offer it — the
@@ -75,7 +75,7 @@ const renderWith = (ability: UserManagementAbility) =>
     </ThemeProvider>,
   )
 
-describe("AuditLogExportSection", () => {
+describe(AuditLogExportSection, () => {
   beforeEach(() => {
     mutate.mockClear()
     posthogCapture.mockClear()
@@ -96,7 +96,7 @@ describe("AuditLogExportSection", () => {
         .getAttribute("href"),
     ).toBe(`/sites/${SITE_ID}/users`)
     const submit = screen.getByRole("button", { name: "Export logs" })
-    expect((submit as HTMLButtonElement).disabled).toBe(false)
+    expect((submit as HTMLButtonElement).disabled).toBeFalsy()
   })
 
   it("defaults the export scope to 'This site only'", () => {
@@ -105,8 +105,8 @@ describe("AuditLogExportSection", () => {
     const allSites = screen.getByRole("radio", {
       name: "All sites I have Admin access to",
     })
-    expect((siteOnly as HTMLInputElement).checked).toBe(true)
-    expect((allSites as HTMLInputElement).checked).toBe(false)
+    expect((siteOnly as HTMLInputElement).checked).toBeTruthy()
+    expect((allSites as HTMLInputElement).checked).toBeFalsy()
   })
 
   // This section only ever requests the Activity log now — Access-log export
@@ -118,11 +118,11 @@ describe("AuditLogExportSection", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Export logs" }))
 
-    await waitFor(() => expect(mutate).toHaveBeenCalledTimes(1))
+    await waitFor(() => expect(mutate).toHaveBeenCalledOnce())
     const [payload] = mutate.mock.calls[0] as [
       { scope: string; siteId: number; month: string; reportType: string },
     ]
-    expect(payload).toEqual({
+    expect(payload).toStrictEqual({
       scope: AuditLogExportScope.Site,
       siteId: SITE_ID,
       month: getMonthOptions()[0]!.value,
@@ -140,7 +140,7 @@ describe("AuditLogExportSection", () => {
     )
     fireEvent.click(screen.getByRole("button", { name: "Export logs" }))
 
-    await waitFor(() => expect(mutate).toHaveBeenCalledTimes(1))
+    await waitFor(() => expect(mutate).toHaveBeenCalledOnce())
     const [payload] = mutate.mock.calls[0] as [{ scope: string }]
     expect(payload).toMatchObject({ scope: "allSites", siteId: 42 })
   })
@@ -159,11 +159,9 @@ describe("AuditLogExportSection", () => {
       data: { code: "BAD_REQUEST" },
     })
 
-    expect(
-      await screen.findByText(
+    await expect(screen.findByText(
         "You cannot export audit logs for a month that is in the future",
-      ),
-    ).not.toBeNull()
+      )).resolves.not.toBeNull()
   })
 
   // A duplicate ask is a success, not an error: submitting the same form
@@ -173,12 +171,12 @@ describe("AuditLogExportSection", () => {
 
     // First ask.
     fireEvent.click(screen.getByRole("button", { name: "Export logs" }))
-    await waitFor(() => expect(mutate).toHaveBeenCalledTimes(1))
+    await waitFor(() => expect(mutate).toHaveBeenCalledOnce())
 
     fireOnSuccessForLastMutation()
 
     // The success handler also reports the requested log type to PostHog.
-    await waitFor(() => expect(posthogCapture).toHaveBeenCalledTimes(1))
+    await waitFor(() => expect(posthogCapture).toHaveBeenCalledOnce())
     expect(posthogCapture).toHaveBeenCalledWith(
       "audit_log_requested",
       expect.objectContaining({ site_id: SITE_ID }),
@@ -189,6 +187,6 @@ describe("AuditLogExportSection", () => {
     await waitFor(() => expect(mutate).toHaveBeenCalledTimes(2))
     // Identical payload both times — the duplicate is sent as-is; the server
     // idempotent-accepts it rather than erroring.
-    expect(mutate.mock.calls[1]).toEqual(mutate.mock.calls[0])
+    expect(mutate.mock.calls[1]).toStrictEqual(mutate.mock.calls[0])
   })
 })

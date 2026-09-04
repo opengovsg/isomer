@@ -1,3 +1,4 @@
+import { expect, test } from 'vitest';
 import { expect, test } from "@playwright/test"
 
 import { storageStateFor } from "../fixtures/auth"

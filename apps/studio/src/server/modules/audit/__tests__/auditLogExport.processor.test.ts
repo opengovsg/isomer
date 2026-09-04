@@ -45,7 +45,7 @@ const {
 // string, which dotenv-cli has already loaded into `process.env` from
 // `.env.test`. We bypass the validated env schema (which would reject the
 // missing audit-bucket var) and read what we need straight from `process.env`.
-vi.mock("~/env.mjs", () => ({
+vi.mock(import('~/env.mjs'), () => ({
   env: {
     // oxlint-disable-next-line node/no-process-env
     NODE_ENV: process.env.NODE_ENV ?? "test",
@@ -67,13 +67,13 @@ vi.mock("~/env.mjs", () => ({
 // Fulfilment no longer presigns at export time (it emails a sealed Download
 // Token instead — ADR 0006), so generateSignedGetUrl is no longer part of
 // this path and is not mocked here.
-vi.mock("~/lib/s3", () => ({
+vi.mock(import('~/lib/s3'), () => ({
   uploadAuditLogExport: mockUploadAuditLogExport,
   getStudioAssetsBucketName: mockGetStudioAssetsBucketName,
   getFileSize: mockGetFileSize,
 }))
 
-vi.mock("~/features/mail/service", () => ({
+vi.mock(import('~/features/mail/service'), () => ({
   sendAuditLogExportReadyEmail: mockSendAuditLogExportReadyEmail,
   sendAuditLogExportFailedEmail: mockSendAuditLogExportFailedEmail,
 }))
@@ -193,31 +193,38 @@ describe("auditLogExport processor", () => {
     // Assert: the S3 key renders the half-open range [2024-03-01,2024-04-01)
     // with an inclusive end — `2024-03-01-to-2024-03-31`.
     const expectedKey = `audit-log-exports/${site.id}/${request.id}/access-2024-03-01-to-2024-03-31.csv`
-    expect(mockUploadAuditLogExport).toHaveBeenCalledTimes(1)
+    expect(mockUploadAuditLogExport).toHaveBeenCalledOnce()
     expect(mockUploadAuditLogExport.mock.calls[0]![0].key).toBe(expectedKey)
 
-    expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledTimes(1)
+    expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledOnce()
     const emailArg = mockSendAuditLogExportReadyEmail.mock.calls[0]![0]
     // The emailed link points at the Studio redemption endpoint carrying a
     // sealed Download Token (ADR 0006), NOT a presigned S3 URL. This pins the
     // actual bug: no signing-credential-lifetime-capped amazonaws.com URL is
     // emailed anymore.
-    expect(emailArg.link.label).toBe("access")
-    expect(emailArg.link.url).toContain(
-      "https://studio.test.gov.sg/api/audit-log-exports/download?token=",
-    )
+    expect(emailArg).toMatchObject({
+      link: expect.objectContaining({
+        label: "access",
+        url: expect.stringContaining(
+          "https://studio.test.gov.sg/api/audit-log-exports/download?token=",
+        ),
+      }),
+      recipientEmail: "admin@vendor.com.sg",
+      month: "March 2024",
+    })
     expect(emailArg.link.url).not.toContain("amazonaws.com")
-    expect(emailArg.recipientEmail).toBe("admin@vendor.com.sg")
-    expect(emailArg.month).toBe("March 2024")
+    // oxlint-disable-next-line vitest/max-expects
     expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
 
     const updated = await getRequest(request.id)
-    expect(updated.status).toBe("Done")
-    expect(updated.objectKey).toBe(expectedKey)
-    // The generate path stamps completedAt too — it is what later identical
-    // requests compare against the range end to qualify this row for reuse.
-    // Its value is captured BEFORE the report query, not at delivery.
-    expect(updated.completedAt).not.toBeNull()
+    // oxlint-disable-next-line vitest/max-expects
+    expect(updated).toStrictEqual(
+      expect.objectContaining({
+        status: "Done",
+        objectKey: expectedKey,
+        completedAt: expect.any(Date),
+      }),
+    )
   })
 
   it("processes an Isomer Admin request without a site permission", async () => {
@@ -235,7 +242,7 @@ describe("auditLogExport processor", () => {
     await processPendingAuditLogExports()
 
     // Assert
-    expect(mockUploadAuditLogExport).toHaveBeenCalledTimes(1)
+    expect(mockUploadAuditLogExport).toHaveBeenCalledOnce()
     expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledWith(
       expect.objectContaining({ recipientEmail: admin.email }),
     )
@@ -268,7 +275,7 @@ describe("auditLogExport processor", () => {
     await processPendingAuditLogExports()
 
     // Assert
-    expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledTimes(1)
+    expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledOnce()
     expect(statusAtSendTime).toBe("Done")
     expect(completedAtSendTime).not.toBeNull()
   })
@@ -325,7 +332,7 @@ describe("auditLogExport processor", () => {
     const labels = mockSendAuditLogExportReadyEmail.mock.calls
       .map(([arg]) => arg.link.label)
       .sort()
-    expect(labels).toEqual(["access", "audit"])
+    expect(labels).toStrictEqual(["access", "audit"])
 
     const updatedAccess = await getRequest(accessRequest.id)
     expect(updatedAccess.status).toBe("Done")
@@ -334,7 +341,9 @@ describe("auditLogExport processor", () => {
     )
 
     const updatedActivity = await getRequest(activityRequest.id)
+    // oxlint-disable-next-line vitest/max-expects
     expect(updatedActivity.status).toBe("Done")
+    // oxlint-disable-next-line vitest/max-expects
     expect(updatedActivity.objectKey).toBe(
       `audit-log-exports/${site.id}/${activityRequest.id}/activity-2024-03-01-to-2024-03-31.csv`,
     )
@@ -359,8 +368,8 @@ describe("auditLogExport processor", () => {
     await processPendingAuditLogExports()
 
     // Assert
-    expect(mockUploadAuditLogExport).toHaveBeenCalledTimes(1)
-    expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledTimes(1)
+    expect(mockUploadAuditLogExport).toHaveBeenCalledOnce()
+    expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledOnce()
 
     const updated = await getRequest(request.id)
     expect(updated.status).toBe("Done")
@@ -393,20 +402,27 @@ describe("auditLogExport processor", () => {
     updated = await getRequest(request.id)
     expect(updated.attempts).toBe(2)
     expect(updated.status).toBe("Pending")
+    // oxlint-disable-next-line vitest/max-expects
     expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
 
     // Act: third sweep → attempt 3, Failed + failed email sent.
     await processPendingAuditLogExports()
     updated = await getRequest(request.id)
+    // oxlint-disable-next-line vitest/max-expects
     expect(updated.attempts).toBe(3)
+    // oxlint-disable-next-line vitest/max-expects
     expect(updated.status).toBe("Failed")
-    expect(mockSendAuditLogExportFailedEmail).toHaveBeenCalledTimes(1)
+    // oxlint-disable-next-line vitest/max-expects
+    expect(mockSendAuditLogExportFailedEmail).toHaveBeenCalledOnce()
     const failedArg = mockSendAuditLogExportFailedEmail.mock.calls[0]![0]
+    // oxlint-disable-next-line vitest/max-expects
     expect(failedArg.recipientEmail).toBe("admin4@vendor.com.sg")
     // The failure email's month label derives from the daterange lower bound.
+    // oxlint-disable-next-line vitest/max-expects
     expect(failedArg.month).toBe("March 2024")
 
     // The ready email must never have been sent.
+    // oxlint-disable-next-line vitest/max-expects
     expect(mockSendAuditLogExportReadyEmail).not.toHaveBeenCalled()
   })
 
@@ -455,14 +471,15 @@ describe("auditLogExport processor", () => {
     await processPendingAuditLogExports()
 
     // Assert: the stale row was re-claimed, processed, and finished.
-    expect(mockUploadAuditLogExport).toHaveBeenCalledTimes(1)
-    expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledTimes(1)
+    expect(mockUploadAuditLogExport).toHaveBeenCalledOnce()
+    expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledOnce()
     expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
 
     const updated = await getRequest(request.id)
     expect(updated.status).toBe("Done")
     expect(updated.objectKey).not.toBeNull()
     // Re-claiming a stale row counts as a fresh attempt.
+    // oxlint-disable-next-line vitest/max-expects
     expect(updated.attempts).toBe(1)
   })
 
@@ -526,6 +543,7 @@ describe("auditLogExport processor", () => {
     expect(updated.status).toBe("Processing")
     expect(updated.attempts).toBe(0)
     // `updatedAt` must not have moved (not re-claimed).
+    // oxlint-disable-next-line vitest/max-expects
     expect(updated.updatedAt.getTime()).toBe(freshUpdatedAt.getTime())
   })
 
@@ -536,6 +554,7 @@ describe("auditLogExport processor", () => {
   // on the generate path) AFTER the range fully elapsed and the S3 object
   // still exists.
   describe("Complete-Artifact reuse", () => {
+
     it("reuses the Done artifact of an identical past-range request from ANOTHER user (per-site reuse, no second upload)", async () => {
       // Arrange: first admin's request is processed to Done normally.
       const { site } = await setupSite()
@@ -547,7 +566,7 @@ describe("auditLogExport processor", () => {
         reportType: "Access",
       })
       await processPendingAuditLogExports()
-      expect(mockUploadAuditLogExport).toHaveBeenCalledTimes(1)
+      expect(mockUploadAuditLogExport).toHaveBeenCalledOnce()
 
       // A SECOND admin asks for the same (site, range, type): the artifact is
       // a function of (site, range, type) only, so their request qualifies.
@@ -564,25 +583,32 @@ describe("auditLogExport processor", () => {
 
       // Assert: ONE upload across both requests — the second run reused the
       // first artifact's key and only re-signed + re-emailed it.
-      expect(mockUploadAuditLogExport).toHaveBeenCalledTimes(1)
+      expect(mockUploadAuditLogExport).toHaveBeenCalledOnce()
       const updatedFirst = await getRequest(first.id)
       const updatedSecond = await getRequest(second.id)
       expect(updatedSecond.status).toBe("Done")
       expect(updatedSecond.objectKey).toBe(updatedFirst.objectKey)
       expect(updatedSecond.completedAt).not.toBeNull()
+      // oxlint-disable-next-line vitest/max-expects
       expect(updatedSecond.errorMessage).toBeNull()
 
       // A fresh ready email went to the SECOND requester.
+      // oxlint-disable-next-line vitest/max-expects
       expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledTimes(2)
       const secondEmail = mockSendAuditLogExportReadyEmail.mock.calls[1]![0]
+      // oxlint-disable-next-line vitest/max-expects
       expect(secondEmail.recipientEmail).toBe("second@vendor.com.sg")
       // Reuse still emails a Download Token link (against the reused row's own
       // token), never a presigned S3 URL.
+      // oxlint-disable-next-line vitest/max-expects
       expect(secondEmail.link.label).toBe("access")
+      // oxlint-disable-next-line vitest/max-expects
       expect(secondEmail.link.url).toContain(
         "https://studio.test.gov.sg/api/audit-log-exports/download?token=",
       )
+      // oxlint-disable-next-line vitest/max-expects
       expect(secondEmail.link.url).not.toContain("amazonaws.com")
+      // oxlint-disable-next-line vitest/max-expects
       expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
     })
 
@@ -605,7 +631,7 @@ describe("auditLogExport processor", () => {
         auditLogDateRange: currentMonthRange,
       })
       await processPendingAuditLogExports()
-      expect(mockUploadAuditLogExport).toHaveBeenCalledTimes(1)
+      expect(mockUploadAuditLogExport).toHaveBeenCalledOnce()
 
       const second = await seedRequest({
         siteId: site.id,
@@ -696,7 +722,7 @@ describe("auditLogExport processor", () => {
       await processPendingAuditLogExports()
 
       // Assert: generated fresh under this request's own key.
-      expect(mockUploadAuditLogExport).toHaveBeenCalledTimes(1)
+      expect(mockUploadAuditLogExport).toHaveBeenCalledOnce()
       const updated = await getRequest(request.id)
       expect(updated.status).toBe("Done")
       expect(updated.objectKey).toContain(`/${request.id}/`)
@@ -736,12 +762,13 @@ describe("auditLogExport processor", () => {
         Bucket: "test-audit-bucket",
         Key: goneKey,
       })
-      expect(mockUploadAuditLogExport).toHaveBeenCalledTimes(1)
+      expect(mockUploadAuditLogExport).toHaveBeenCalledOnce()
       const updated = await getRequest(request.id)
       expect(updated.status).toBe("Done")
       expect(updated.objectKey).toContain(`/${request.id}/`)
       expect(updated.objectKey).not.toBe(goneKey)
-      expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledTimes(1)
+      // oxlint-disable-next-line vitest/max-expects
+      expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledOnce()
     })
 
     it("re-queues (Pending) without regenerating when the existence probe hits a transient S3 error", async () => {

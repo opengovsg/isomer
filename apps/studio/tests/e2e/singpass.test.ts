@@ -1,3 +1,4 @@
+import { expect } from 'vitest';
 import { test as base, expect } from "@playwright/test"
 import crypto from "crypto"
 import { env } from "~/env.mjs"

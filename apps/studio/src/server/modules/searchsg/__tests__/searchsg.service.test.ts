@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const { mockWretch } = vi.hoisted(() => ({
-  mockWretch: vi.fn(),
+  mockWretch: vi.fn<(...args: unknown[]) => unknown>(()),
 }))
 
-vi.mock("wretch", () => ({ default: mockWretch }))
+vi.mock(import('wretch'), () => ({ default: mockWretch }))
 
-vi.mock("~/env.mjs", () => ({
+vi.mock(import('~/env.mjs'), () => ({
   env: {
     NEXT_PUBLIC_APP_ENV: "production",
     SEARCHSG_API_KEY: "test-api-key",
@@ -19,20 +19,21 @@ const VALID_UUID = "550e8400-e29b-41d4-a716-446655440000"
 const PROPS = { name: "test-site", _kind: "name" } as const
 const URL = "https://example.gov.sg"
 
-describe("updateSearchSGConfig", () => {
+describe(updateSearchSGConfig, () => {
   beforeEach(() => {
     vi.clearAllMocks()
     // Throw on the auth call to prevent actual HTTP requests while still
     // allowing us to assert whether wretch was invoked at all
     mockWretch.mockReturnValue({
-      auth: vi.fn().mockReturnThis(),
-      headers: vi.fn().mockReturnThis(),
-      post: vi.fn().mockReturnThis(),
-      json: vi.fn().mockRejectedValue(new Error("no network in tests")),
+      auth: vi.fn<(...args: unknown[]) => unknown>(()).mockReturnThis(),
+      headers: vi.fn<(...args: unknown[]) => unknown>(()).mockReturnThis(),
+      post: vi.fn<(...args: unknown[]) => unknown>(()).mockReturnThis(),
+      json: vi.fn<(...args: unknown[]) => unknown>(()).mockRejectedValue(new Error("no network in tests")),
     })
   })
 
   describe("clientId validation", () => {
+
     it("should not call the SearchSG API for a clientId containing path traversal sequences", async () => {
       // Arrange
       const clientId = "../../other-client-id"
@@ -71,11 +72,12 @@ describe("updateSearchSGConfig", () => {
       await updateSearchSGConfig(PROPS, VALID_UUID, URL).catch(() => {})
 
       // Assert
-      expect(mockWretch).toHaveBeenCalled()
+      expect(mockWretch).toHaveBeenCalledWith()
     })
   })
 
   describe("URL validation", () => {
+
     it.each(["www.example.com", "example.com", "not a url", ""])(
       "should resolve without rejecting and skip SearchSG config fetch for invalid URL %j",
       async (invalidUrl) => {

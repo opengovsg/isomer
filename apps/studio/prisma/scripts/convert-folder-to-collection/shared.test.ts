@@ -39,16 +39,16 @@ interface ChainMock {
 
 const createChain = (): ChainMock => {
   const chain = {} as ChainMock
-  chain.where = vi.fn().mockReturnValue(chain)
-  chain.select = vi.fn().mockReturnValue(chain)
-  chain.selectAll = vi.fn().mockReturnValue(chain)
-  chain.set = vi.fn().mockReturnValue(chain)
-  chain.values = vi.fn().mockReturnValue(chain)
-  chain.returningAll = vi.fn().mockReturnValue(chain)
-  chain.returning = vi.fn().mockReturnValue(chain)
-  chain.executeTakeFirstOrThrow = vi.fn()
-  chain.executeTakeFirst = vi.fn()
-  chain.execute = vi.fn()
+  chain.where = vi.fn<(...args: unknown[]) => unknown>(()).mockReturnValue(chain)
+  chain.select = vi.fn<(...args: unknown[]) => unknown>(()).mockReturnValue(chain)
+  chain.selectAll = vi.fn<(...args: unknown[]) => unknown>(()).mockReturnValue(chain)
+  chain.set = vi.fn<(...args: unknown[]) => unknown>(()).mockReturnValue(chain)
+  chain.values = vi.fn<(...args: unknown[]) => unknown>(()).mockReturnValue(chain)
+  chain.returningAll = vi.fn<(...args: unknown[]) => unknown>(()).mockReturnValue(chain)
+  chain.returning = vi.fn<(...args: unknown[]) => unknown>(()).mockReturnValue(chain)
+  chain.executeTakeFirstOrThrow = vi.fn<(...args: unknown[]) => unknown>(())
+  chain.executeTakeFirst = vi.fn<(...args: unknown[]) => unknown>(())
+  chain.execute = vi.fn<(...args: unknown[]) => unknown>(())
   return chain
 }
 
@@ -140,13 +140,13 @@ const makeConversionPlan = (): ConversionPlan => ({
   ],
 })
 
-describe("validateNumericId", () => {
+describe(validateNumericId, () => {
   const validate = validateNumericId("Site ID")
 
   it("accepts numeric strings with optional surrounding whitespace", () => {
     // Act + Assert
-    expect(validate("123")).toBe(true)
-    expect(validate(" 456 ")).toBe(true)
+    expect(validate("123")).toBeTruthy()
+    expect(validate(" 456 ")).toBeTruthy()
   })
 
   it("rejects empty, non-numeric, and mixed values", () => {
@@ -159,6 +159,7 @@ describe("validateNumericId", () => {
 })
 
 describe("plan file naming", () => {
+
   it("uses stable convert-folder and convert-resource prefixes", () => {
     // Act + Assert
     expect(folderPlanFileName("159351")).toBe("convert-folder-159351.json")
@@ -183,7 +184,7 @@ describe("plan file I/O", () => {
     const loaded = loadConversionPlan(plan.folder.id, tempDir)
 
     // Assert
-    expect(loaded).toEqual(plan)
+    expect(loaded).toStrictEqual(plan)
   })
 
   it("loads a plan when given the folder plan path directly", () => {
@@ -198,7 +199,7 @@ describe("plan file I/O", () => {
     const loaded = loadConversionPlanFromPath(folderPath!, tempDir)
 
     // Assert
-    expect(loaded).toEqual(plan)
+    expect(loaded).toStrictEqual(plan)
   })
 
   it("findPlanForFolder returns the folder plan path when it exists", () => {
@@ -232,7 +233,7 @@ describe("plan file I/O", () => {
     const report = JSON.parse(readFileSync(reportPath, "utf-8"))
 
     // Assert
-    expect(report).toEqual([
+    expect(report).toStrictEqual([
       {
         id: "159537",
         reason: "disallowed-in-article blocks: infobar@0",
@@ -241,7 +242,8 @@ describe("plan file I/O", () => {
   })
 })
 
-describe("getBlobOfResource", () => {
+describe(getBlobOfResource, () => {
+
   it("returns the draft blob when draftBlobId is set", async () => {
     // Arrange
     const resourceChain = createChain()
@@ -255,7 +257,7 @@ describe("getBlobOfResource", () => {
     blobChain.executeTakeFirstOrThrow.mockResolvedValue(draftBlob)
 
     const db = {
-      selectFrom: vi.fn((table: string) =>
+      selectFrom: vi.fn<(...args: unknown[]) => unknown>(()(table: string) =>
         table === "Resource" ? resourceChain : blobChain,
       ),
     } as unknown as Parameters<typeof getBlobOfResource>[0]["db"]
@@ -282,7 +284,7 @@ describe("getBlobOfResource", () => {
     blobChain.executeTakeFirstOrThrow.mockResolvedValue(publishedBlob)
 
     const db = {
-      selectFrom: vi.fn((table: string) =>
+      selectFrom: vi.fn<(...args: unknown[]) => unknown>(()(table: string) =>
         table === "Resource" ? resourceChain : blobChain,
       ),
     } as unknown as Parameters<typeof getBlobOfResource>[0]["db"]
@@ -303,7 +305,7 @@ describe("getBlobOfResource", () => {
     })
 
     const db = {
-      selectFrom: vi.fn(() => resourceChain),
+      selectFrom: vi.fn<(...args: unknown[]) => unknown>(()() => resourceChain),
     } as unknown as Parameters<typeof getBlobOfResource>[0]["db"]
 
     // Act + Assert
@@ -313,7 +315,7 @@ describe("getBlobOfResource", () => {
   })
 })
 
-describe("updateBlobById", () => {
+describe(updateBlobById, () => {
   const nextContent = {
     layout: "article",
     version: "0.1.0",
@@ -333,9 +335,9 @@ describe("updateBlobById", () => {
     updateChain.execute.mockResolvedValue(undefined)
 
     const tx = {
-      selectFrom: vi.fn(() => selectChain),
-      insertInto: vi.fn(() => insertChain),
-      updateTable: vi.fn(() => updateChain),
+      selectFrom: vi.fn<(...args: unknown[]) => unknown>(()() => selectChain),
+      insertInto: vi.fn<(...args: unknown[]) => unknown>(()() => insertChain),
+      updateTable: vi.fn<(...args: unknown[]) => unknown>(()() => updateChain),
     } as unknown as Transaction<DB>
 
     // Act
@@ -364,9 +366,9 @@ describe("updateBlobById", () => {
     updateChain.executeTakeFirstOrThrow.mockResolvedValue(updatedBlob)
 
     const tx = {
-      selectFrom: vi.fn(() => selectChain),
-      insertInto: vi.fn(),
-      updateTable: vi.fn(() => updateChain),
+      selectFrom: vi.fn<(...args: unknown[]) => unknown>(()() => selectChain),
+      insertInto: vi.fn<(...args: unknown[]) => unknown>(()),
+      updateTable: vi.fn<(...args: unknown[]) => unknown>(()() => updateChain),
     } as unknown as Transaction<DB>
 
     // Act
@@ -392,7 +394,7 @@ describe("updateBlobById", () => {
     selectChain.executeTakeFirst.mockResolvedValue(undefined)
 
     const tx = {
-      selectFrom: vi.fn(() => selectChain),
+      selectFrom: vi.fn<(...args: unknown[]) => unknown>(()() => selectChain),
     } as unknown as Transaction<DB>
 
     // Act + Assert
@@ -406,7 +408,8 @@ describe("updateBlobById", () => {
   })
 })
 
-describe("incrementVersion", () => {
+describe(incrementVersion, () => {
+
   it("returns null when the resource has no draft blob", async () => {
     // Arrange
     const selectChain = createChain()
@@ -416,7 +419,7 @@ describe("incrementVersion", () => {
     })
 
     const tx = {
-      selectFrom: vi.fn(() => selectChain),
+      selectFrom: vi.fn<(...args: unknown[]) => unknown>(()() => selectChain),
     } as unknown as Transaction<DB>
 
     // Act
@@ -446,9 +449,9 @@ describe("incrementVersion", () => {
     updateChain.execute.mockResolvedValue(undefined)
 
     const tx = {
-      selectFrom: vi.fn(() => selectChain),
-      insertInto: vi.fn(() => insertChain),
-      updateTable: vi.fn(() => updateChain),
+      selectFrom: vi.fn<(...args: unknown[]) => unknown>(()() => selectChain),
+      insertInto: vi.fn<(...args: unknown[]) => unknown>(()() => insertChain),
+      updateTable: vi.fn<(...args: unknown[]) => unknown>(()() => updateChain),
     } as unknown as Transaction<DB>
 
     // Act
@@ -460,7 +463,7 @@ describe("incrementVersion", () => {
     })
 
     // Assert
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       previousVersion: null,
       newVersion,
     })
@@ -497,11 +500,11 @@ describe("incrementVersion", () => {
     updateChain.execute.mockResolvedValue(undefined)
 
     const tx = {
-      selectFrom: vi.fn((table: string) =>
+      selectFrom: vi.fn<(...args: unknown[]) => unknown>(()(table: string) =>
         table === "Resource" ? selectChain : versionChain,
       ),
-      insertInto: vi.fn(() => insertChain),
-      updateTable: vi.fn(() => updateChain),
+      insertInto: vi.fn<(...args: unknown[]) => unknown>(()() => insertChain),
+      updateTable: vi.fn<(...args: unknown[]) => unknown>(()() => updateChain),
     } as unknown as Transaction<DB>
 
     // Act
@@ -513,7 +516,7 @@ describe("incrementVersion", () => {
     })
 
     // Assert
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       previousVersion,
       newVersion,
     })

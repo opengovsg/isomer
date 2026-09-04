@@ -140,7 +140,8 @@ const makeConversionPlan = (
   ...overrides,
 })
 
-describe("buildConversionReport", () => {
+describe(buildConversionReport, () => {
+
   it("returns an empty array when no pages have disallowed blocks", () => {
     // Arrange
     const plan = makeConversionPlan({
@@ -158,7 +159,7 @@ describe("buildConversionReport", () => {
     })
 
     // Act + Assert
-    expect(buildConversionReport(plan)).toEqual([])
+    expect(buildConversionReport(plan)).toStrictEqual([])
   })
 
   it("emits one entry per page with disallowed blocks", () => {
@@ -194,7 +195,7 @@ describe("buildConversionReport", () => {
     const report = buildConversionReport(plan)
 
     // Assert
-    expect(report).toEqual([
+    expect(report).toStrictEqual([
       {
         id: "159536",
         reason: "disallowed-in-article blocks: infobar@0",
@@ -228,7 +229,7 @@ describe("buildConversionReport", () => {
     })
 
     // Act + Assert
-    expect(buildConversionReport(plan)).toEqual([
+    expect(buildConversionReport(plan)).toStrictEqual([
       {
         id: "99",
         reason: "disallowed-in-article blocks: infobar@0, infocards@1",
@@ -237,7 +238,8 @@ describe("buildConversionReport", () => {
   })
 })
 
-describe("toFolderPlan", () => {
+describe(toFolderPlan, () => {
+
   it("maps folder metadata, default category, and child resource IDs", () => {
     // Arrange
     const plan = makeConversionPlan({
@@ -267,7 +269,7 @@ describe("toFolderPlan", () => {
     const folderPlan = toFolderPlan(plan)
 
     // Assert
-    expect(folderPlan).toEqual({
+    expect(folderPlan).toStrictEqual({
       id: "159351",
       siteId: 1,
       title: "Folder",
@@ -280,42 +282,44 @@ describe("toFolderPlan", () => {
 })
 
 describe("ARTICLE_TYPES / CONTENT_TYPES / CONTENT_ONLY_TYPES", () => {
+
   it("ARTICLE_TYPES is a subset of CONTENT_TYPES (article blocks all live in content)", () => {
     // Act + Assert
     for (const t of ARTICLE_TYPES) {
-      expect(CONTENT_TYPES.has(t)).toBe(true)
+      expect(CONTENT_TYPES.has(t)).toBeTruthy()
     }
   })
 
   it("CONTENT_ONLY_TYPES contains content types that are not allowed in articles", () => {
     // Act + Assert
     for (const t of CONTENT_ONLY_TYPES) {
-      expect(CONTENT_TYPES.has(t)).toBe(true)
-      expect(ARTICLE_TYPES.has(t)).toBe(false)
+      expect(CONTENT_TYPES.has(t)).toBeTruthy()
+      expect(ARTICLE_TYPES.has(t)).toBeFalsy()
     }
   })
 
   it("CONTENT_ONLY_TYPES excludes blocks shared with the article layout", () => {
     // The article layout currently shares prose/image/callout/etc.
     // Act + Assert
-    expect(CONTENT_ONLY_TYPES.has("prose")).toBe(false)
-    expect(CONTENT_ONLY_TYPES.has("image")).toBe(false)
+    expect(CONTENT_ONLY_TYPES.has("prose")).toBeFalsy()
+    expect(CONTENT_ONLY_TYPES.has("image")).toBeFalsy()
   })
 
   it("CONTENT_ONLY_TYPES flags content-only blocks like infobar and infocards", () => {
     // Act + Assert
-    expect(CONTENT_ONLY_TYPES.has("infobar")).toBe(true)
-    expect(CONTENT_ONLY_TYPES.has("infocards")).toBe(true)
+    expect(CONTENT_ONLY_TYPES.has("infobar")).toBeTruthy()
+    expect(CONTENT_ONLY_TYPES.has("infocards")).toBeTruthy()
   })
 })
 
-describe("findDisallowedBlocks", () => {
+describe(findDisallowedBlocks, () => {
+
   it("returns an empty array when all blocks are article-allowed", () => {
     // Act
     const result = findDisallowedBlocks([proseBlock, proseBlock])
 
     // Assert
-    expect(result).toEqual([])
+    expect(result).toStrictEqual([])
   })
 
   it("flags blocks that are content-only with their index and type", () => {
@@ -326,7 +330,7 @@ describe("findDisallowedBlocks", () => {
     const result = findDisallowedBlocks(content)
 
     // Assert
-    expect(result).toEqual([
+    expect(result).toStrictEqual([
       { index: 1, type: "infobar" },
       { index: 3, type: "infocards" },
     ])
@@ -334,11 +338,12 @@ describe("findDisallowedBlocks", () => {
 
   it("returns an empty array for an empty content array", () => {
     // Act + Assert
-    expect(findDisallowedBlocks([])).toEqual([])
+    expect(findDisallowedBlocks([])).toStrictEqual([])
   })
 })
 
-describe("asIndexBlob", () => {
+describe(asIndexBlob, () => {
+
   it("returns the blob unchanged when layout is 'index'", () => {
     // Arrange
     const blob = makeIndexBlob() as unknown as IsomerSchema
@@ -361,7 +366,8 @@ describe("asIndexBlob", () => {
   })
 })
 
-describe("asPageBlob", () => {
+describe(asPageBlob, () => {
+
   it("returns content blobs unchanged", () => {
     // Arrange
     const blob = makeContentBlob() as unknown as IsomerSchema
@@ -395,7 +401,8 @@ describe("asPageBlob", () => {
   })
 })
 
-describe("asContentBlob", () => {
+describe(asContentBlob, () => {
+
   it("returns the blob unchanged when layout is 'content'", () => {
     // Arrange
     const blob = makeContentBlob() as unknown as IsomerSchema
@@ -418,7 +425,8 @@ describe("asContentBlob", () => {
   })
 })
 
-describe("buildCollectionIndexBlob", () => {
+describe(buildCollectionIndexBlob, () => {
+
   it("flips layout to 'collection' and maps summary → subtitle", () => {
     // Arrange
     const current = makeIndexBlob({ summary: "Summary text" })
@@ -444,7 +452,7 @@ describe("buildCollectionIndexBlob", () => {
     const result = asResult(buildCollectionIndexBlob(current, "Folder"))
 
     // Assert
-    expect(result.page.image).toEqual(image)
+    expect(result.page.image).toStrictEqual(image)
   })
 
   it("omits the image key entirely when the source page has none", () => {
@@ -455,7 +463,7 @@ describe("buildCollectionIndexBlob", () => {
     const result = asResult(buildCollectionIndexBlob(current, "Folder"))
 
     // Assert
-    expect("image" in result.page).toBe(false)
+    expect("image" in result.page).toBeFalsy()
   })
 
   it("empties the content array (collection pages have no body blocks)", () => {
@@ -469,7 +477,7 @@ describe("buildCollectionIndexBlob", () => {
     const result = asResult(buildCollectionIndexBlob(current, "Folder"))
 
     // Assert
-    expect(result.content).toEqual([])
+    expect(result.content).toStrictEqual([])
   })
 
   it("preserves the version field from the source blob", () => {
@@ -491,7 +499,7 @@ describe("buildCollectionIndexBlob", () => {
     const result = asResult(buildCollectionIndexBlob(current, "Folder"))
 
     // Assert
-    expect("contentPageHeader" in result.page).toBe(false)
+    expect("contentPageHeader" in result.page).toBeFalsy()
   })
 
   it("uses the supplied folderTitle, overriding the source page title", () => {
@@ -513,7 +521,7 @@ describe("buildCollectionIndexBlob", () => {
         ...makeIndexBlob({ summary: "x" }).page,
         sortOrder: "date-asc",
       },
-    } as unknown as IndexBlob
+    }
 
     // Act
     const result = asResult(buildCollectionIndexBlob(current, "Folder"))
@@ -534,11 +542,12 @@ describe("buildCollectionIndexBlob", () => {
     buildCollectionIndexBlob(current, "Folder")
 
     // Assert
-    expect(current).toEqual(snapshot)
+    expect(current).toStrictEqual(snapshot)
   })
 })
 
-describe("buildArticleBlob", () => {
+describe(buildArticleBlob, () => {
+
   it("flips layout to 'article' and maps summary → articlePageHeader.summary", () => {
     // Arrange
     const current = makeContentBlob({ summary: "Article summary" })
@@ -548,7 +557,7 @@ describe("buildArticleBlob", () => {
 
     // Assert
     expect(result.layout).toBe("article")
-    expect(result.page.articlePageHeader).toEqual({
+    expect(result.page.articlePageHeader).toStrictEqual({
       summary: "Article summary",
     })
   })
@@ -573,7 +582,7 @@ describe("buildArticleBlob", () => {
     const result = asResult(buildArticleBlob(current, "cat"))
 
     // Assert
-    expect(result.page.image).toEqual(image)
+    expect(result.page.image).toStrictEqual(image)
   })
 
   it("omits the image key entirely when the source page has none", () => {
@@ -584,7 +593,7 @@ describe("buildArticleBlob", () => {
     const result = asResult(buildArticleBlob(current, "cat"))
 
     // Assert
-    expect("image" in result.page).toBe(false)
+    expect("image" in result.page).toBeFalsy()
   })
 
   it("preserves all body content blocks (including disallowed-in-article blocks)", () => {
@@ -599,7 +608,7 @@ describe("buildArticleBlob", () => {
     const result = asResult(buildArticleBlob(current, "cat"))
 
     // Assert
-    expect(result.content).toEqual([proseBlock, infobarBlock, infocardsBlock])
+    expect(result.content).toStrictEqual([proseBlock, infobarBlock, infocardsBlock])
   })
 
   it("preserves the version field from the source blob", () => {
@@ -621,7 +630,7 @@ describe("buildArticleBlob", () => {
     const result = asResult(buildArticleBlob(current, "cat"))
 
     // Assert
-    expect("contentPageHeader" in result.page).toBe(false)
+    expect("contentPageHeader" in result.page).toBeFalsy()
   })
 
   it("does not mutate the source blob", () => {
@@ -636,7 +645,7 @@ describe("buildArticleBlob", () => {
     buildArticleBlob(current, "News")
 
     // Assert
-    expect(current).toEqual(snapshot)
+    expect(current).toStrictEqual(snapshot)
   })
 
   it("updates category on an already-article blob while preserving article fields", () => {
@@ -657,6 +666,6 @@ describe("buildArticleBlob", () => {
       date: "15 May 2024",
       articlePageHeader: { summary: "Existing summary" },
     })
-    expect("contentPageHeader" in result.page).toBe(false)
+    expect("contentPageHeader" in result.page).toBeFalsy()
   })
 })

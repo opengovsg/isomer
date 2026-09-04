@@ -1,6 +1,8 @@
+import { describe, expect, it } from 'vitest';
 import { normalizeSiteEntity } from "../utils"
 
-describe("normalizeSiteEntity", () => {
+describe(normalizeSiteEntity, () => {
+
   it("removes blank strings alongside undefined values", () => {
     expect(
       normalizeSiteEntity({
@@ -10,7 +12,7 @@ describe("normalizeSiteEntity", () => {
           addressCountry: "SG",
         },
       }),
-    ).toEqual({ address: { addressCountry: "SG" } })
+    ).toStrictEqual({ address: { addressCountry: "SG" } })
   })
 
   it("removes empty nested objects and undefined values", () => {
@@ -35,7 +37,7 @@ describe("normalizeSiteEntity", () => {
           email: "hello@example.org",
         },
       }),
-    ).toEqual({
+    ).toStrictEqual({
       type: "NGO",
       description: "Community support",
       contactPoint: {

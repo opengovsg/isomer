@@ -16,7 +16,7 @@ import { ExportAccessLogsButton } from "../ExportAccessLogsButton"
 // The button is hidden while the is-audit-log-enabled flag is off (or not yet
 // loaded) — drive the flag per-test.
 let isAuditLogFlagOn = true
-vi.mock("@growthbook/growthbook-react", () => ({
+vi.mock(import('@growthbook/growthbook-react'), () => ({
   useFeatureValue: (_key: string, fallback: boolean) =>
     isAuditLogFlagOn || fallback,
 }))
@@ -40,7 +40,7 @@ const renderWith = (
     </Provider>,
   )
 
-describe("ExportAccessLogsButton", () => {
+describe(ExportAccessLogsButton, () => {
   let store: ReturnType<typeof createStore>
 
   beforeEach(() => {
@@ -59,7 +59,7 @@ describe("ExportAccessLogsButton", () => {
     fireEvent.click(screen.getByRole("button", { name: "Export user access" }))
 
     // Assert
-    expect(store.get(exportAccessLogsModalAtom)).toEqual({
+    expect(store.get(exportAccessLogsModalAtom)).toStrictEqual({
       siteId: SITE_ID,
       isOpen: true,
     })
@@ -86,7 +86,7 @@ describe("ExportAccessLogsButton", () => {
     expect(
       screen.queryByRole("button", { name: "Export user access" }),
     ).toBeNull()
-    expect(store.get(exportAccessLogsModalAtom)).toEqual({
+    expect(store.get(exportAccessLogsModalAtom)).toStrictEqual({
       siteId: 0,
       isOpen: false,
     })

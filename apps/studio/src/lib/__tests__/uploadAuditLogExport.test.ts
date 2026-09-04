@@ -14,7 +14,7 @@ const { envHolder } = vi.hoisted(() => {
   return { envHolder }
 })
 
-vi.mock("~/env.mjs", () => ({
+vi.mock(import('~/env.mjs'), () => ({
   get env() {
     return envHolder
   },
@@ -24,15 +24,15 @@ vi.mock("~/env.mjs", () => ({
 // not a one-shot PutObjectCommand — mock Upload itself so no real AWS calls
 // happen, and capture its constructor options to assert on the S3 params.
 const { doneMock, uploadCtorMock } = vi.hoisted(() => ({
-  doneMock: vi.fn(),
-  uploadCtorMock: vi.fn(),
+  doneMock: vi.fn<(...args: unknown[]) => unknown>(()),
+  uploadCtorMock: vi.fn<(...args: unknown[]) => unknown>(()),
 }))
-vi.mock("@aws-sdk/lib-storage", () => ({
-  Upload: vi.fn(function (
+vi.mock(import('@aws-sdk/lib-storage'), () => ({
+  Upload: vi.fn<(...args: unknown[]) => unknown>(()function (
     options: ConstructorParameters<typeof UploadType>[0],
   ) {
     uploadCtorMock(options)
-    return { done: doneMock, on: vi.fn() }
+    return { done: doneMock, on: vi.fn<(...args: unknown[]) => unknown>(()) }
   }),
 }))
 
@@ -53,8 +53,8 @@ describe("uploadAuditLogExport", () => {
     })
 
     // Assert: one Upload, awaited to completion, with the expected S3 params
-    expect(uploadCtorMock).toHaveBeenCalledTimes(1)
-    expect(doneMock).toHaveBeenCalledTimes(1)
+    expect(uploadCtorMock).toHaveBeenCalledOnce()
+    expect(doneMock).toHaveBeenCalledOnce()
 
     const options = uploadCtorMock.mock.calls[0]?.[0] as ConstructorParameters<
       typeof UploadType

@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest"
 
 import { isGovEmail } from "../email"
 
-describe("isGovEmail", () => {
+describe(isGovEmail, () => {
+
   it("should return true for valid .gov.sg email addresses", () => {
     const validEmails = [
       "test@open.gov.sg",
@@ -13,7 +14,7 @@ describe("isGovEmail", () => {
     ]
 
     validEmails.forEach((email) => {
-      expect(isGovEmail(email)).toBe(true)
+      expect(isGovEmail(email)).toBeTruthy()
     })
   })
 
@@ -28,7 +29,7 @@ describe("isGovEmail", () => {
     ]
 
     invalidEmails.forEach((email) => {
-      expect(isGovEmail(email)).toBe(false)
+      expect(isGovEmail(email)).toBeFalsy()
     })
   })
 
@@ -48,7 +49,7 @@ describe("isGovEmail", () => {
     ]
 
     invalidFormats.forEach((input) => {
-      expect(isGovEmail(input)).toBe(false)
+      expect(isGovEmail(input)).toBeFalsy()
     })
   })
 
@@ -62,7 +63,7 @@ describe("isGovEmail", () => {
     ]
 
     emailsWithSpaces.forEach((email) => {
-      expect(isGovEmail(email)).toBe(false)
+      expect(isGovEmail(email)).toBeFalsy()
     })
   })
 
@@ -76,7 +77,7 @@ describe("isGovEmail", () => {
     ]
 
     emailsWithSpaces.forEach((email) => {
-      expect(isGovEmail(email.trim())).toBe(true)
+      expect(isGovEmail(email.trim())).toBeTruthy()
     })
   })
 })

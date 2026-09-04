@@ -2,8 +2,9 @@ import { describe, expect, it } from "vitest"
 
 import { getDgsIdFromString } from "../getDgsIdFromString"
 
-describe("getDgsIdFromString", () => {
+describe(getDgsIdFromString, () => {
   describe("Dataset URL", () => {
+
     it("should extract ID from full URL format", () => {
       // Arrange
       const url = "https://data.gov.sg/datasets/d_abc123/view"
@@ -17,6 +18,7 @@ describe("getDgsIdFromString", () => {
   })
 
   describe("Dataset ID", () => {
+
     it("should return direct ID as-is", () => {
       // Arrange
       const url = "d_abc123"
@@ -63,6 +65,7 @@ describe("getDgsIdFromString", () => {
   })
 
   describe("Result URL", () => {
+
     it("should extract resultId from URL with query parameters", () => {
       // Arrange
       const url =
@@ -88,6 +91,7 @@ describe("getDgsIdFromString", () => {
   })
 
   describe("Invalid formats", () => {
+
     it("should return null for invalid formats", () => {
       // Arrange
       const testStrings = [

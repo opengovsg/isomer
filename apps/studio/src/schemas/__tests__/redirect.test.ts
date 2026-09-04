@@ -15,8 +15,9 @@ const VALID_REDIRECT = {
   destination: "/new-page",
 }
 
-describe("createRedirectSchema", () => {
+describe(createRedirectSchema, () => {
   describe("source", () => {
+
     it("should normalise the source to a single leading slash with no trailing slash", () => {
       // Arrange / Act
       const result = createRedirectSchema.parse({
@@ -55,7 +56,7 @@ describe("createRedirectSchema", () => {
       })
 
       // Assert
-      expect(result.success).toBe(false)
+      expect(result.success).toBeFalsy()
     })
 
     it("should reject sources containing backslashes", () => {
@@ -66,7 +67,7 @@ describe("createRedirectSchema", () => {
       })
 
       // Assert
-      expect(result.success).toBe(false)
+      expect(result.success).toBeFalsy()
     })
 
     it("should reject sources containing '..' path segments", () => {
@@ -77,7 +78,7 @@ describe("createRedirectSchema", () => {
       })
 
       // Assert
-      expect(result.success).toBe(false)
+      expect(result.success).toBeFalsy()
     })
 
     it("should preserve single '.' characters in the source", () => {
@@ -105,7 +106,7 @@ describe("createRedirectSchema", () => {
         })
 
         // Assert
-        expect(result.success).toBe(false)
+        expect(result.success).toBeFalsy()
       })
     })
 
@@ -117,7 +118,7 @@ describe("createRedirectSchema", () => {
       })
 
       // Assert
-      expect(result.success).toBe(false)
+      expect(result.success).toBeFalsy()
     })
 
     it("should reject an empty source", () => {
@@ -128,7 +129,7 @@ describe("createRedirectSchema", () => {
       })
 
       // Assert
-      expect(result.success).toBe(false)
+      expect(result.success).toBeFalsy()
     })
 
     it(`should accept a source at the max length of ${MAX_REDIRECT_SOURCE_LENGTH}`, () => {
@@ -139,7 +140,7 @@ describe("createRedirectSchema", () => {
       })
 
       // Assert
-      expect(result.success).toBe(true)
+      expect(result.success).toBeTruthy()
     })
 
     it("should reject a source longer than the max length", () => {
@@ -153,22 +154,16 @@ describe("createRedirectSchema", () => {
       })
 
       // Assert
-      expect(result.success).toBe(false)
-      if (!result.success) {
-        expect(result.error.issues.map((issue) => issue.message)).toContain(
-          "Source path is too long",
-        )
-      }
+      expect(result.success).toBeFalsy()
+      if (result.success) throw new Error("Expected parse to fail")
+      expect(result.error.issues.map((issue) => issue.message)).toContain(
+        "Source path is too long",
+      )
     })
 
-    it("should reject sources under the reserved /_next prefix", () => {
-      // Arrange
-      // The prefix itself and anything nested beneath it is reserved, and the
-      // check is on the normalised value so a missing leading slash is caught
-      // too.
-      const reservedSources = ["/_next", "/_next/static/chunk.js", "_next/data"]
-
-      reservedSources.forEach((source) => {
+    it.each(["/_next", "/_next/static/chunk.js", "_next/data"])(
+      "should reject sources under the reserved /_next prefix: %s",
+      (source) => {
         // Act
         const result = createRedirectSchema.safeParse({
           ...VALID_REDIRECT,
@@ -176,14 +171,13 @@ describe("createRedirectSchema", () => {
         })
 
         // Assert
-        expect(result.success).toBe(false)
-        if (!result.success) {
-          expect(result.error.issues.map((issue) => issue.message)).toContain(
-            "This path is reserved and can't be used as a redirect source",
-          )
-        }
-      })
-    })
+        expect(result.success).toBeFalsy()
+        if (result.success) throw new Error("Expected parse to fail")
+        expect(result.error.issues.map((issue) => issue.message)).toContain(
+          "This path is reserved and can't be used as a redirect source",
+        )
+      },
+    )
 
     it("should accept a source that merely starts with the reserved prefix as a substring", () => {
       // Arrange / Act
@@ -194,32 +188,26 @@ describe("createRedirectSchema", () => {
       })
 
       // Assert
-      expect(result.success).toBe(true)
+      expect(result.success).toBeTruthy()
     })
 
-    it("should reject a source that is a full URL with the design copy", () => {
-      // Arrange
-      const urlSources = [
-        "https://example.gov.sg/page",
-        "http://example.com",
-        "ftp://example.com/file",
-      ]
-
-      urlSources.forEach((source) => {
-        // Act
-        const result = createRedirectSchema.safeParse({
-          ...VALID_REDIRECT,
-          source,
-        })
-
-        // Assert
-        expect(result.success).toBe(false)
-        if (!result.success) {
-          expect(result.error.issues.map((issue) => issue.message)).toContain(
-            "Enter what comes behind your URL (e.g., /contact-us).",
-          )
-        }
+    it.each([
+      "https://example.gov.sg/page",
+      "http://example.com",
+      "ftp://example.com/file",
+    ])("should reject a source that is a full URL with the design copy: %s", (source) => {
+      // Act
+      const result = createRedirectSchema.safeParse({
+        ...VALID_REDIRECT,
+        source,
       })
+
+      // Assert
+      expect(result.success).toBeFalsy()
+      if (result.success) throw new Error("Expected parse to fail")
+      expect(result.error.issues.map((issue) => issue.message)).toContain(
+        "Enter what comes behind your URL (e.g., /contact-us).",
+      )
     })
 
     it("should trim surrounding whitespace from the source", () => {
@@ -233,11 +221,9 @@ describe("createRedirectSchema", () => {
       expect(result.source).toBe("/old-page")
     })
 
-    it("should reject mid-string and double wildcards", () => {
-      // Arrange
-      const invalidWildcardSources = ["/promo/**", "/pro*mo"]
-
-      invalidWildcardSources.forEach((source) => {
+    it.each(["/promo/**", "/pro*mo"])(
+      "should reject mid-string and double wildcards: %s",
+      (source) => {
         // Act
         const result = createRedirectSchema.safeParse({
           ...VALID_REDIRECT,
@@ -245,14 +231,13 @@ describe("createRedirectSchema", () => {
         })
 
         // Assert
-        expect(result.success).toBe(false)
-        if (!result.success) {
-          expect(result.error.issues.map((issue) => issue.message)).toContain(
-            "Use a wildcard only as a trailing /* on a path, e.g. /news/*",
-          )
-        }
-      })
-    })
+        expect(result.success).toBeFalsy()
+        if (result.success) throw new Error("Expected parse to fail")
+        expect(result.error.issues.map((issue) => issue.message)).toContain(
+          "Use a wildcard only as a trailing /* on a path, e.g. /news/*",
+        )
+      },
+    )
   })
 
   describe("wildcard sources", () => {
@@ -261,17 +246,20 @@ describe("createRedirectSchema", () => {
 
     it("accepts a single trailing /*", () => {
       const r = parseSource("/news/*")
-      expect(r.success).toBe(true)
-      if (r.success) expect(r.data.source).toBe("/news/*")
+      expect(r.success).toBeTruthy()
+      if (!r.success) throw new Error("Expected parse to succeed")
+      expect(r.data.source).toBe("/news/*")
     })
 
     it("lowercases the path but keeps the /*", () => {
       const r = parseSource("/News/Press/*")
-      expect(r.success && r.data.source).toBe("/news/press/*")
+      expect(r.success).toBeTruthy()
+      if (!r.success) throw new Error("Expected parse to succeed")
+      expect(r.data.source).toBe("/news/press/*")
     })
 
     it("rejects a mid-string *", () => {
-      expect(parseSource("/news/*/2020").success).toBe(false)
+      expect(parseSource("/news/*/2020").success).toBeFalsy()
     })
 
     it("rejects root-equivalent wildcards that would match the whole site", () => {
@@ -279,12 +267,12 @@ describe("createRedirectSchema", () => {
       // root wildcard and must be rejected — see the segment-based shape check.
       const rootWildcards = ["/*", "//*", "/./*"]
       rootWildcards.forEach((source) => {
-        expect(parseSource(source).success).toBe(false)
+        expect(parseSource(source).success).toBeFalsy()
       })
     })
 
     it("rejects a wildcard whose prefix contains a '..' segment", () => {
-      expect(parseSource("/news/../*").success).toBe(false)
+      expect(parseSource("/news/../*").success).toBeFalsy()
     })
   })
 
@@ -296,12 +284,13 @@ describe("createRedirectSchema", () => {
       // "?" is outside the source character whitelist, so a query-based source
       // (including one appended to a reserved prefix like "/_next?x=1") is
       // rejected before any other check.
-      expect(parseSource("/gallery.html?id=123").success).toBe(false)
-      expect(parseSource("/_next?bypass=1").success).toBe(false)
+      expect(parseSource("/gallery.html?id=123").success).toBeFalsy()
+      expect(parseSource("/_next?bypass=1").success).toBeFalsy()
     })
   })
 
-  describe("redirectKind", () => {
+  describe(redirectKind, () => {
+
     it("classifies by the stored source string", () => {
       expect(redirectKind("/news/*")).toBe("wildcard")
       expect(redirectKind("/faq")).toBe("exact")
@@ -309,6 +298,7 @@ describe("createRedirectSchema", () => {
   })
 
   describe("destination", () => {
+
     it("should normalise an internal destination to a single leading slash with no trailing slash", () => {
       // Arrange / Act
       const result = createRedirectSchema.parse({
@@ -338,7 +328,7 @@ describe("createRedirectSchema", () => {
       const result = createRedirectSchema.safeParse(VALID_REDIRECT)
 
       // Assert
-      expect(result.success).toBe(true)
+      expect(result.success).toBeTruthy()
     })
 
     it("should trim surrounding whitespace from an internal destination", () => {
@@ -360,7 +350,7 @@ describe("createRedirectSchema", () => {
       })
 
       // Assert
-      expect(result.success).toBe(true)
+      expect(result.success).toBeTruthy()
     })
 
     it("should accept an internal page reference as the destination", () => {
@@ -373,25 +363,20 @@ describe("createRedirectSchema", () => {
       })
 
       // Assert
-      expect(result.success).toBe(true)
+      expect(result.success).toBeTruthy()
     })
 
-    it("should reject destinations with other prefixes using the design copy", () => {
-      // Arrange
-      const invalidDestinations = [
-        "http://example.com",
-        "javascript:alert(1)",
-        "example.com/page",
-        "link with space",
-        // Doubled scheme parses as a URL with hostname "https" — a prefix check
-        // would let it through, the host-must-have-a-dot rule rejects it.
-        "https://https://www.isomer.gov.sg",
-        // Bare single-label hosts are never valid public redirect targets.
-        "https://localhost",
-        "https://",
-      ]
-
-      invalidDestinations.forEach((destination) => {
+    it.each([
+      "http://example.com",
+      "javascript:alert(1)",
+      "example.com/page",
+      "link with space",
+      "https://https://www.isomer.gov.sg",
+      "https://localhost",
+      "https://",
+    ])(
+      "should reject destinations with other prefixes using the design copy: %s",
+      (destination) => {
         // Act
         const result = createRedirectSchema.safeParse({
           ...VALID_REDIRECT,
@@ -399,14 +384,13 @@ describe("createRedirectSchema", () => {
         })
 
         // Assert
-        expect(result.success).toBe(false)
-        if (!result.success) {
-          expect(result.error.issues.map((issue) => issue.message)).toContain(
-            "Enter a valid path (/path-to-page) or URL (starts with www., http://, or https://).",
-          )
-        }
-      })
-    })
+        expect(result.success).toBeFalsy()
+        if (result.success) throw new Error("Expected parse to fail")
+        expect(result.error.issues.map((issue) => issue.message)).toContain(
+          "Enter a valid path (/path-to-page) or URL (starts with www., http://, or https://).",
+        )
+      },
+    )
 
     it("should accept a destination longer than the source limit", () => {
       // Arrange / Act
@@ -419,7 +403,7 @@ describe("createRedirectSchema", () => {
       })
 
       // Assert
-      expect(result.success).toBe(true)
+      expect(result.success).toBeTruthy()
     })
 
     it("should reject a destination longer than the max length", () => {
@@ -430,12 +414,11 @@ describe("createRedirectSchema", () => {
       })
 
       // Assert
-      expect(result.success).toBe(false)
-      if (!result.success) {
-        expect(result.error.issues.map((issue) => issue.message)).toContain(
-          "Destination is too long",
-        )
-      }
+      expect(result.success).toBeFalsy()
+      if (result.success) throw new Error("Expected parse to fail")
+      expect(result.error.issues.map((issue) => issue.message)).toContain(
+        "Destination is too long",
+      )
     })
 
     it("should strip control characters from an internal-path destination", () => {
@@ -459,7 +442,7 @@ describe("createRedirectSchema", () => {
       })
 
       // Assert
-      expect(result.success).toBe(false)
+      expect(result.success).toBeFalsy()
     })
 
     it("should collapse a protocol-relative '//' destination to a single leading slash", () => {
@@ -493,7 +476,7 @@ describe("createRedirectSchema", () => {
       })
 
       // Assert
-      expect(result.success).toBe(true)
+      expect(result.success).toBeTruthy()
     })
 
     it("should allow an internal path that links to an on-page anchor", () => {
@@ -505,7 +488,7 @@ describe("createRedirectSchema", () => {
       })
 
       // Assert
-      expect(result.success).toBe(true)
+      expect(result.success).toBeTruthy()
     })
 
     it("should allow a #fragment on an external https URL", () => {
@@ -516,7 +499,7 @@ describe("createRedirectSchema", () => {
       })
 
       // Assert
-      expect(result.success).toBe(true)
+      expect(result.success).toBeTruthy()
     })
 
     it("should strip control characters (CRLF/NUL) from an https destination", () => {
@@ -564,12 +547,13 @@ describe("createRedirectSchema", () => {
         })
 
         // Assert
-        expect(result.success).toBe(false)
+        expect(result.success).toBeFalsy()
       })
     })
   })
 
   describe("source and destination", () => {
+
     it("should reject a redirect from a source to itself with the design copy", () => {
       // Arrange / Act
       const result = createRedirectSchema.safeParse({
@@ -579,12 +563,11 @@ describe("createRedirectSchema", () => {
       })
 
       // Assert
-      expect(result.success).toBe(false)
-      if (!result.success) {
-        expect(result.error.issues.map((issue) => issue.message)).toContain(
-          "You can't redirect a URL to itself.",
-        )
-      }
+      expect(result.success).toBeFalsy()
+      if (result.success) throw new Error("Expected parse to fail")
+      expect(result.error.issues.map((issue) => issue.message)).toContain(
+        "You can't redirect a URL to itself.",
+      )
     })
 
     it("should reject when source and destination differ only by normalisation", () => {
@@ -598,7 +581,7 @@ describe("createRedirectSchema", () => {
       })
 
       // Assert
-      expect(result.success).toBe(false)
+      expect(result.success).toBeFalsy()
     })
 
     it("should accept a redirect to a different internal path", () => {
@@ -610,7 +593,7 @@ describe("createRedirectSchema", () => {
       })
 
       // Assert
-      expect(result.success).toBe(true)
+      expect(result.success).toBeTruthy()
     })
 
     it("should accept an external destination that matches the source path", () => {
@@ -624,12 +607,13 @@ describe("createRedirectSchema", () => {
       })
 
       // Assert
-      expect(result.success).toBe(true)
+      expect(result.success).toBeTruthy()
     })
   })
 })
 
-describe("bulkRedirectsCsvSchema", () => {
+describe(bulkRedirectsCsvSchema, () => {
+
   it("accepts a small valid CSV", () => {
     // Arrange / Act
     const result = bulkRedirectsCsvSchema.safeParse({
@@ -638,7 +622,7 @@ describe("bulkRedirectsCsvSchema", () => {
     })
 
     // Assert
-    expect(result.success).toBe(true)
+    expect(result.success).toBeTruthy()
   })
 
   it("rejects a CSV over the byte limit even when under the UTF-16 length limit", () => {
@@ -655,6 +639,6 @@ describe("bulkRedirectsCsvSchema", () => {
     const result = bulkRedirectsCsvSchema.safeParse({ siteId: 1, csv })
 
     // Assert
-    expect(result.success).toBe(false)
+    expect(result.success).toBeFalsy()
   })
 })

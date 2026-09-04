@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest"
 
 import { redactLogInput } from "../redact-log-input"
 
-describe("redactLogInput", () => {
+describe(redactLogInput, () => {
+
   it("redacts known sensitive keys at the top level", () => {
     // Arrange
     const input = {
@@ -17,7 +18,7 @@ describe("redactLogInput", () => {
     const result = redactLogInput(input)
 
     // Assert
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       email: "user@example.com",
       token: "[REDACTED]",
       password: "[REDACTED]",
@@ -34,7 +35,7 @@ describe("redactLogInput", () => {
     const result = redactLogInput(input)
 
     // Assert
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       OTP: "[REDACTED]",
       Token: "[REDACTED]",
     })
@@ -54,7 +55,7 @@ describe("redactLogInput", () => {
     const result = redactLogInput(input)
 
     // Assert
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       users: [
         { email: "a@example.com", token: "[REDACTED]" },
         { email: "b@example.com", token: "[REDACTED]" },
