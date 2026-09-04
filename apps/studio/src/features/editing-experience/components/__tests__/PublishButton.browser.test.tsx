@@ -37,7 +37,7 @@ vi.mock(import('next/router'), () => ({
 // Browser Mode's real-browser runtime, where `process` doesn't exist. It's
 // unrelated to the permission gate under test, so stub it out.
 vi.mock(import('../../hooks/useContentEditSurvey'), () => ({
-  useFireContentEditSurveyEvent: () => vi.fn<(...args: unknown[]) => unknown>(()),
+  useFireContentEditSurveyEvent: () => vi.fn<(...args: unknown[]) => unknown>(),
 }))
 
 // PublishButton reads the current page (to decide the enabled/pending state) and
@@ -45,7 +45,7 @@ vi.mock(import('../../hooks/useContentEditSurvey'), () => ({
 // is purely about whether the <Can> permission gate shows the button — so stub
 // the tRPC surface with the minimum the component touches on render.
 vi.mock(import('~/utils/trpc'), () => {
-  const noop = vi.fn<(...args: unknown[]) => unknown>(())
+  const noop = vi.fn<(...args: unknown[]) => unknown>()
   return {
     trpc: {
       page: {

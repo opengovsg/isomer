@@ -9,8 +9,7 @@ import {
 } from "../utils"
 
 describe("settings.utils.ts", () => {
-  describe(getPalette, () => {
-
+  describe("palette from hex color", () => {
     it("should generate a theme palette that passes contrast for #00ffff", () => {
       // Act
       const palette = getPalette("#00ffff")
@@ -25,17 +24,13 @@ describe("settings.utils.ts", () => {
       const palette = getPalette("#ff0000")
 
       // Assert
-      expect(palette.colors?.brand).toMatchObject({
-        canvas: expect.objectContaining({
-          default: expect.anything(),
-          alt: expect.anything(),
-          inverse: expect.anything(),
-        }),
-        interaction: expect.objectContaining({
-          default: expect.anything(),
-          hover: expect.anything(),
-          pressed: expect.anything(),
-        }),
+      expect(palette).toMatchObject({
+        "colors.brand.canvas.default": expect.anything(),
+        "colors.brand.canvas.alt": expect.anything(),
+        "colors.brand.canvas.inverse": expect.anything(),
+        "colors.brand.interaction.default": expect.anything(),
+        "colors.brand.interaction.hover": expect.anything(),
+        "colors.brand.interaction.pressed": expect.anything(),
       })
       expect(passesContrastCheck(palette as Theme)).toBe(true)
     })

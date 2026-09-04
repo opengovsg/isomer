@@ -153,6 +153,13 @@ export default defineConfig({
       plugins: ["react", "import"],
     },
     {
+      files: ["tests/e2e/**/*.ts"],
+      plugins: ["vitest"],
+      rules: {
+        "vitest/prefer-importing-vitest-globals": "off",
+      },
+    },
+    {
       files: [
         ".storybook/main.js",
         ".storybook/main.cjs",

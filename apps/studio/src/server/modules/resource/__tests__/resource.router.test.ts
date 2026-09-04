@@ -28,6 +28,7 @@ import { MAX_BATCH_RESOURCE_IDS } from "~/schemas/resource"
 import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
+import type { AuditLog } from "~prisma/generated/selectableTypes"
 
 import { db } from "../../database"
 import { resourceRouter } from "../resource.router"
@@ -3150,13 +3151,7 @@ describe("resource.router", async () => {
       let actual: Awaited<
         ReturnType<ReturnType<typeof db.selectFrom<"Resource">>["execute"]>
       >
-      let auditEntry: Awaited<
-        ReturnType<
-          ReturnType<
-            ReturnType<typeof db.selectFrom<"AuditLog">>["executeTakeFirstOrThrow"]
-          >
-        >
-      >
+      let auditEntry: AuditLog
 
       beforeEach(async () => {
         // Arrange
@@ -3227,17 +3222,17 @@ describe("resource.router", async () => {
           .executeTakeFirstOrThrow()
       })
 
-      it("deletes all nested resources and returns the deleted folder", async () => {
+      it("deletes all nested resources and returns the deleted folder", () => {
         // Assert
         expect(actual).toHaveLength(0)
         expect(result).toStrictEqual(folderToUse)
         expect(auditSpy).toHaveBeenCalledExactlyOnceWith()
-        expect(auditEntry.delta.before!).toMatchObject(
+        expect(auditEntry.delta.before).toMatchObject(
           omit(folderToUse, ["createdAt", "updatedAt"]),
         )
       })
 
-      it("records the delete in the audit log", async () => {
+      it("records the delete in the audit log", () => {
         // Assert
         expect(auditEntry.userId).toBe(session.userId)
       })

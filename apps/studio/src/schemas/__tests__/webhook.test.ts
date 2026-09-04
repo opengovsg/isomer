@@ -33,8 +33,8 @@ vi.mock(import('~/env.mjs'), async () => {
 
 // Mock the publishSite function to avoid sending emails
 vi.mock(import('~/features/mail/service'), () => ({
-  sendSuccessfulScheduledPublishEmail: vi.fn<(...args: unknown[]) => unknown>(()),
-  sendFailedSchedulePublishEmail: vi.fn<(...args: unknown[]) => unknown>(()),
+  sendSuccessfulScheduledPublishEmail: vi.fn<(...args: unknown[]) => unknown>(),
+  sendFailedSchedulePublishEmail: vi.fn<(...args: unknown[]) => unknown>(),
 }))
 
 const createMockRequest = ({

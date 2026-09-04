@@ -7,7 +7,7 @@ describe(escapeTemplateArguments, () => {
   const escaped = `&lt;/p&gt;&lt;h1&gt;URGENT&lt;/h1&gt;&lt;p&gt;`
 
   const createTemplate = () =>
-    vi.fn<(...args: unknown[]) => unknown>(()(data: { title: string }): EmailTemplate => ({
+    vi.fn<(...args: unknown[]) => unknown>((data: { title: string }): EmailTemplate => ({
       subject: data.title,
       body: data.title,
     }))

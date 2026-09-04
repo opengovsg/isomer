@@ -210,7 +210,9 @@ describe(getScopedSchema, () => {
       expect(schema.allOf).toBeDefined()
 
       // "subtitle" should not appear in any allOf sub-schema
-      for (const subSchema of schema.allOf.filter((s) => s.properties)) {
+      for (const subSchema of schema.allOf.filter(
+        (s: { properties?: Record<string, unknown> }) => s.properties,
+      )) {
         expect(subSchema.properties!.subtitle).toBeUndefined()
       }
     })
@@ -225,7 +227,9 @@ describe(getScopedSchema, () => {
       expect(schema).toBeDefined()
       expect(schema.allOf).toBeDefined()
 
-      for (const subSchema of schema.allOf.filter((s) => s.properties)) {
+      for (const subSchema of schema.allOf.filter(
+        (s: { properties?: Record<string, unknown> }) => s.properties,
+      )) {
         expect({
           subtitle: subSchema.properties!.subtitle,
           variant: subSchema.properties!.variant,
@@ -268,7 +272,7 @@ describe(getScopedSchema, () => {
       expect(schema.allOf).toBeDefined()
 
       // "subtitle" should not appear in any required array
-      for (const subSchema of schema.allOf.filter((s) =>
+      for (const subSchema of schema.allOf.filter((s: { required?: unknown }) =>
         Array.isArray(s.required),
       )) {
         expect(subSchema.required).not.toContain("subtitle")
@@ -370,8 +374,10 @@ describe(getScopedSchema, () => {
       expect(schema).toBeDefined()
       expect(
         schema.allOf
-          .flatMap((s) => (Array.isArray(s.required) ? s.required : []))
-          .every((field) => field === "subtitle"),
+          .flatMap((s: { required?: unknown }) =>
+            Array.isArray(s.required) ? s.required : [],
+          )
+          .every((field: unknown) => field === "subtitle"),
       ).toBe(true)
     })
 

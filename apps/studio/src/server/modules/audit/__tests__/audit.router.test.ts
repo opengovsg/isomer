@@ -142,7 +142,7 @@ describe("audit.router", async () => {
         events = await getExportCreateEvents({ siteId: site.id })
       })
 
-      it("inserts and returns the pending export request", async () => {
+      it("inserts and returns the pending export request", () => {
         // Assert: one inserted row, stored as the daterange derived from the
         // picked month, and returned as an array (the fan-out contract).
         expect(result).toHaveLength(1)
@@ -158,7 +158,7 @@ describe("audit.router", async () => {
         expect(rows).toHaveLength(1)
       })
 
-      it("audit-logs the export request", async () => {
+      it("audit-logs the export request", () => {
         // Assert: The ask itself is audit-logged: one AuditLogExportCreate event whose
         // delta records what was asked for (the requested type, verbatim).
         expect(events).toHaveLength(1)

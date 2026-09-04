@@ -1,4 +1,3 @@
-import { expect, test } from 'vitest';
 import { expect, test, type Browser, type Page } from "@playwright/test"
 
 import { storageStateFor, type Role } from "../fixtures/auth"
