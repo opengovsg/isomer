@@ -7,7 +7,7 @@ const collectionSearchIncludes = (text: string, search: string): boolean => {
   return normalizeCollectionSearchText(text).includes(normalizedSearch)
 }
 
-describe("normalizeCollectionSearchText", () => {
+describe(normalizeCollectionSearchText, () => {
   it("lowercases and trims text", () => {
     // Arrange
     const text = "  Guide To Isomer  "
@@ -130,7 +130,7 @@ describe("collection search via normalized includes", () => {
     const result = collectionSearchIncludes(title, search)
 
     // Assert
-    expect(result).toBe(true)
+    expect(result).toBeTruthy()
   })
 
   it("matches a full title search that includes parentheses", () => {
@@ -142,7 +142,7 @@ describe("collection search via normalized includes", () => {
     const result = collectionSearchIncludes(circularTitle, search)
 
     // Assert
-    expect(result).toBe(true)
+    expect(result).toBeTruthy()
   })
 
   it("matches a partial search from the middle of the title", () => {
@@ -155,7 +155,7 @@ describe("collection search via normalized includes", () => {
     const result = collectionSearchIncludes(title, search)
 
     // Assert
-    expect(result).toBe(true)
+    expect(result).toBeTruthy()
   })
 
   it("matches when the stored title uses fullwidth parentheses", () => {
@@ -168,7 +168,7 @@ describe("collection search via normalized includes", () => {
     const result = collectionSearchIncludes(title, search)
 
     // Assert
-    expect(result).toBe(true)
+    expect(result).toBeTruthy()
   })
 
   it("does not match unrelated search terms", () => {
@@ -179,6 +179,6 @@ describe("collection search via normalized includes", () => {
     const result = collectionSearchIncludes(circularTitle, search)
 
     // Assert
-    expect(result).toBe(false)
+    expect(result).toBeFalsy()
   })
 })

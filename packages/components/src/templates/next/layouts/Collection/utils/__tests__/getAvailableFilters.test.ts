@@ -5,7 +5,7 @@ import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
 
 import { getAvailableFilters } from "../getAvailableFilters"
 
-describe("getAvailableFilters", () => {
+describe(getAvailableFilters, () => {
   it("returns no filters when there are no items", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = []
@@ -14,7 +14,7 @@ describe("getAvailableFilters", () => {
     const result = getAvailableFilters(items)
 
     // Assert
-    expect(result).toEqual([])
+    expect(result).toStrictEqual([])
   })
 
   it("renders a migrated 'Category' tagCategories group as an ordinary tag filter, not duplicated", () => {
@@ -42,7 +42,7 @@ describe("getAvailableFilters", () => {
     // Assert — exactly one "Category" filter, sourced from tagCategories/tags
     const categoryFilters = result.filter((filter) => filter.id === "Category")
     expect(categoryFilters).toHaveLength(1)
-    expect(categoryFilters[0]).toEqual({
+    expect(categoryFilters[0]).toStrictEqual({
       id: "Category",
       label: "Category",
       display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
@@ -64,7 +64,7 @@ describe("getAvailableFilters", () => {
     const result = getAvailableFilters(items)
 
     // Assert
-    expect(result.map((filter) => filter.id)).toEqual(["Category", "year"])
+    expect(result.map((filter) => filter.id)).toStrictEqual(["Category", "year"])
   })
 
   it("omits filters that have no items", () => {
@@ -81,6 +81,6 @@ describe("getAvailableFilters", () => {
     const result = getAvailableFilters(items)
 
     // Assert
-    expect(result).toEqual([])
+    expect(result).toStrictEqual([])
   })
 })

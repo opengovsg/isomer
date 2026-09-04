@@ -17,7 +17,7 @@ const basePage = {
   title: "Home",
 } as IsomerPageSchemaType["page"]
 
-describe("getMetadata", () => {
+describe(getMetadata, () => {
   describe("Homepage", () => {
     it("uses the hero subtitle as the meta description when present", () => {
       // Arrange
@@ -128,7 +128,7 @@ const getSerializedJsonLd = (
     typeof getSiteJsonLd
   >
 
-describe("getSiteJsonLd", () => {
+describe(getSiteJsonLd, () => {
   it("generates linked website and organisation entities from configured values", () => {
     const jsonLd = getSerializedJsonLd({
       site: {
@@ -169,7 +169,7 @@ describe("getSiteJsonLd", () => {
       },
     })
 
-    expect(jsonLd).toEqual({
+    expect(jsonLd).toStrictEqual({
       "@context": "https://schema.org",
       "@graph": [
         {
@@ -294,7 +294,7 @@ describe("getSiteJsonLd", () => {
       },
     })
 
-    expect(jsonLd["@graph"][1]).toEqual({
+    expect(jsonLd["@graph"][1]).toStrictEqual({
       "@type": "Organization",
       "@id": "https://community.example.com/#organization",
       name: "Community Site",
@@ -370,7 +370,7 @@ const getSerializedPageJsonLd = (
     typeof getPageJsonLd
   >
 
-describe("getPageJsonLd", () => {
+describe(getPageJsonLd, () => {
   const contentPage = {
     layout: "content",
     meta: {},
@@ -390,7 +390,7 @@ describe("getPageJsonLd", () => {
   } satisfies IsomerPageSchemaType
 
   it("generates a page entity linked to the site-wide graph", () => {
-    expect(getSerializedPageJsonLd(contentPage)).toEqual({
+    expect(getSerializedPageJsonLd(contentPage)).toStrictEqual({
       "@context": "https://schema.org",
       "@type": "WebPage",
       "@id": "https://example.gov.sg/about-us#webpage",

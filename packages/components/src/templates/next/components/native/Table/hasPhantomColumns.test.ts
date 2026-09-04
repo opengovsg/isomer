@@ -10,7 +10,7 @@ describe("hasPhantomColumns", () => {
     const rows: [] = []
 
     // Act / Assert
-    expect(checkPhantomColumns(rows).hasPhantomColumns).toBe(false)
+    expect(checkPhantomColumns(rows).hasPhantomColumns).toBeFalsy()
   })
 
   it("returns false for a plain rectangular table", () => {
@@ -83,7 +83,7 @@ describe("hasPhantomColumns", () => {
     ]
 
     // Act / Assert
-    expect(checkPhantomColumns(rows).hasPhantomColumns).toBe(false)
+    expect(checkPhantomColumns(rows).hasPhantomColumns).toBeFalsy()
   })
 
   it("returns true for staggered merges with a phantom middle column", () => {
@@ -157,7 +157,7 @@ describe("hasPhantomColumns", () => {
     ]
 
     // Act / Assert
-    expect(checkPhantomColumns(rows).hasPhantomColumns).toBe(true)
+    expect(checkPhantomColumns(rows).hasPhantomColumns).toBeTruthy()
   })
 
   it("returns false when a full-width header span still has exclusive body cells", () => {
@@ -222,7 +222,7 @@ describe("hasPhantomColumns", () => {
     ]
 
     // Act / Assert
-    expect(checkPhantomColumns(rows).hasPhantomColumns).toBe(false)
+    expect(checkPhantomColumns(rows).hasPhantomColumns).toBeFalsy()
   })
 
   it("returns false for tables above MAX_TABLE_ROWS without scanning every row", () => {
@@ -243,6 +243,6 @@ describe("hasPhantomColumns", () => {
     })) as TableProps["content"]
 
     // Act / Assert
-    expect(checkPhantomColumns(rows).hasPhantomColumns).toBe(false)
+    expect(checkPhantomColumns(rows).hasPhantomColumns).toBeFalsy()
   })
 })

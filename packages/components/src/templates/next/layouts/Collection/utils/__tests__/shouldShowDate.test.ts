@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 
 import { shouldShowDate } from "../shouldShowDate"
 
-describe("shouldShowDate", () => {
+describe(shouldShowDate, () => {
   it("returns true if any item has date", () => {
     const items = [
       {
@@ -18,7 +18,7 @@ describe("shouldShowDate", () => {
       } as ProcessedCollectionCardProps,
     ]
 
-    expect(shouldShowDate(items)).toBe(true)
+    expect(shouldShowDate(items)).toBeTruthy()
   })
 
   it("returns false if no items have date", () => {
@@ -35,10 +35,10 @@ describe("shouldShowDate", () => {
       } as ProcessedCollectionCardProps,
     ]
 
-    expect(shouldShowDate(items)).toBe(false)
+    expect(shouldShowDate(items)).toBeFalsy()
   })
 
   it("returns false for empty array", () => {
-    expect(shouldShowDate([])).toBe(false)
+    expect(shouldShowDate([])).toBeFalsy()
   })
 })

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { isPhoneNumber } from "../isPhoneNumber"
 
-describe("isPhoneNumber", () => {
+describe(isPhoneNumber, () => {
   describe("basic validation", () => {
     it("should return true for valid international phone numbers", () => {
       const validPhones = [
@@ -15,7 +15,7 @@ describe("isPhoneNumber", () => {
       ]
 
       validPhones.forEach((phone) => {
-        expect(isPhoneNumber(phone)).toBe(true)
+        expect(isPhoneNumber(phone)).toBeTruthy()
       })
     })
 
@@ -32,7 +32,7 @@ describe("isPhoneNumber", () => {
       ]
 
       invalidPhones.forEach((phone) => {
-        expect(isPhoneNumber(phone)).toBe(false)
+        expect(isPhoneNumber(phone)).toBeFalsy()
       })
     })
 
@@ -41,7 +41,7 @@ describe("isPhoneNumber", () => {
       const invalidInputs = [null, undefined, 12345678, {}, [], true, false]
 
       invalidInputs.forEach((input) => {
-        expect(isPhoneNumber(input as any)).toBe(false)
+        expect(isPhoneNumber(input as any)).toBeFalsy()
       })
     })
   })
@@ -58,7 +58,7 @@ describe("isPhoneNumber", () => {
       ]
 
       phonesWithWhitespace.forEach((phone) => {
-        expect(isPhoneNumber(phone)).toBe(true)
+        expect(isPhoneNumber(phone)).toBeTruthy()
       })
     })
 
@@ -72,7 +72,7 @@ describe("isPhoneNumber", () => {
       ]
 
       phonesWithWhitespace.forEach((phone) => {
-        expect(isPhoneNumber(phone)).toBe(true)
+        expect(isPhoneNumber(phone)).toBeTruthy()
       })
     })
 
@@ -92,7 +92,7 @@ describe("isPhoneNumber", () => {
       ]
 
       phonesWithSeparators.forEach((phone) => {
-        expect(isPhoneNumber(phone)).toBe(true) // These should now pass as separators are removed
+        expect(isPhoneNumber(phone)).toBeTruthy() // These should now pass as separators are removed
       })
     })
   })
@@ -102,13 +102,13 @@ describe("isPhoneNumber", () => {
       const emptyInputs = ["", " ", "  ", "\t", "\n", "\t\n"]
 
       emptyInputs.forEach((input) => {
-        expect(isPhoneNumber(input)).toBe(false)
+        expect(isPhoneNumber(input)).toBeFalsy()
       })
     })
 
     it("should handle very long strings", () => {
       const longString = "1".repeat(100)
-      expect(isPhoneNumber(longString)).toBe(false)
+      expect(isPhoneNumber(longString)).toBeFalsy()
     })
   })
 })

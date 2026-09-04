@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { getTableColumnCount } from "./getTableColumnCount"
 
-describe("getTableColumnCount", () => {
+describe(getTableColumnCount, () => {
   it("returns 0 for an empty table", () => {
     // Arrange
     const rows: [] = []

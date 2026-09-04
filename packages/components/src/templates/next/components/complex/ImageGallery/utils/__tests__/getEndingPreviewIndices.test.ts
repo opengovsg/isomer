@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { getEndingPreviewIndices } from "../getEndingPreviewIndices"
 
-describe("getEndingPreviewIndices", () => {
+describe(getEndingPreviewIndices, () => {
   describe("when maxPreviewImages is 3", () => {
     const maxPreviewImages = 3
 
@@ -21,7 +21,7 @@ describe("getEndingPreviewIndices", () => {
           numberOfImages,
           maxPreviewImages,
         })
-        expect(result).toEqual(expected)
+        expect(result).toStrictEqual(expected)
       })
     })
 
@@ -39,7 +39,7 @@ describe("getEndingPreviewIndices", () => {
           numberOfImages,
           maxPreviewImages,
         })
-        expect(result).toEqual(expected)
+        expect(result).toStrictEqual(expected)
       })
     })
 
@@ -57,7 +57,7 @@ describe("getEndingPreviewIndices", () => {
           numberOfImages,
           maxPreviewImages,
         })
-        expect(result.length).toBe(maxPreviewImages)
+        expect(result).toHaveLength(maxPreviewImages)
       })
     })
   })
@@ -80,7 +80,7 @@ describe("getEndingPreviewIndices", () => {
           numberOfImages,
           maxPreviewImages,
         })
-        expect(result).toEqual(expected)
+        expect(result).toStrictEqual(expected)
       })
     })
 
@@ -98,7 +98,7 @@ describe("getEndingPreviewIndices", () => {
           numberOfImages,
           maxPreviewImages,
         })
-        expect(result).toEqual(expected)
+        expect(result).toStrictEqual(expected)
       })
     })
 
@@ -116,7 +116,7 @@ describe("getEndingPreviewIndices", () => {
           numberOfImages,
           maxPreviewImages,
         })
-        expect(result.length).toBe(maxPreviewImages)
+        expect(result).toHaveLength(maxPreviewImages)
       })
     })
   })

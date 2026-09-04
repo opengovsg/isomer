@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest"
 import { NO_SPECIFIED_YEAR_FILTER_ID } from "../constants"
 import { getFilteredItems } from "../getFilteredItems"
 
-describe("getFilteredItems", () => {
+describe(getFilteredItems, () => {
   it("returns all items when there is no search value and no applied filters", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
@@ -17,7 +17,7 @@ describe("getFilteredItems", () => {
     const result = getFilteredItems(items, [], "")
 
     // Assert
-    expect(result).toEqual(items)
+    expect(result).toStrictEqual(items)
   })
 
   it("filters by search value matching the title, case-insensitively", () => {
@@ -37,7 +37,7 @@ describe("getFilteredItems", () => {
     const result = getFilteredItems(items, [], "isomer")
 
     // Assert
-    expect(result).toEqual([items[0]])
+    expect(result).toStrictEqual([items[0]])
   })
 
   it("filters by search value matching the description", () => {
@@ -54,7 +54,7 @@ describe("getFilteredItems", () => {
     const result = getFilteredItems(items, [], "keyword")
 
     // Assert
-    expect(result).toEqual([items[0]])
+    expect(result).toStrictEqual([items[0]])
   })
 
   it("filters by year matching the item's date", () => {
@@ -79,7 +79,7 @@ describe("getFilteredItems", () => {
     const result = getFilteredItems(items, appliedFilters, "")
 
     // Assert
-    expect(result).toEqual([items[0]])
+    expect(result).toStrictEqual([items[0]])
   })
 
   it("filters items with no date via the 'not specified' year option", () => {
@@ -104,7 +104,7 @@ describe("getFilteredItems", () => {
     const result = getFilteredItems(items, appliedFilters, "")
 
     // Assert
-    expect(result).toEqual([items[0]])
+    expect(result).toStrictEqual([items[0]])
   })
 
   it("filters a migrated 'Category' group exactly like any other tag category (OR within group)", () => {
@@ -134,7 +134,7 @@ describe("getFilteredItems", () => {
     const result = getFilteredItems(items, appliedFilters, "")
 
     // Assert
-    expect(result).toEqual([items[0], items[1]])
+    expect(result).toStrictEqual([items[0], items[1]])
   })
 
   it("applies AND semantics across different filter groups, including a migrated Category group", () => {
@@ -166,7 +166,7 @@ describe("getFilteredItems", () => {
     const result = getFilteredItems(items, appliedFilters, "")
 
     // Assert
-    expect(result).toEqual([items[0]])
+    expect(result).toStrictEqual([items[0]])
   })
 
   it("excludes items that have no tags at all when a tag filter is applied", () => {
@@ -186,7 +186,7 @@ describe("getFilteredItems", () => {
     const result = getFilteredItems(items, appliedFilters, "")
 
     // Assert
-    expect(result).toEqual([])
+    expect(result).toStrictEqual([])
   })
 
   it("combines search value with tag filters", () => {
@@ -211,7 +211,7 @@ describe("getFilteredItems", () => {
     const result = getFilteredItems(items, appliedFilters, "isomer")
 
     // Assert
-    expect(result).toEqual([items[0]])
+    expect(result).toStrictEqual([items[0]])
   })
 
   it("matches titles with fullwidth parentheses when searching with ASCII parentheses", () => {
@@ -230,7 +230,7 @@ describe("getFilteredItems", () => {
     const result = getFilteredItems(items, [], search)
 
     // Assert
-    expect(result).toEqual(items)
+    expect(result).toStrictEqual(items)
   })
 
   it("matches titles without a space before parentheses when the search includes one", () => {
@@ -247,7 +247,7 @@ describe("getFilteredItems", () => {
     const result = getFilteredItems(items, [], "management (FM)")
 
     // Assert
-    expect(result).toEqual(items)
+    expect(result).toStrictEqual(items)
   })
 
   it("matches a partial search from the middle of the title", () => {
@@ -268,7 +268,7 @@ describe("getFilteredItems", () => {
     const result = getFilteredItems(items, [], "management (FM)")
 
     // Assert
-    expect(result).toEqual([items[0]])
+    expect(result).toStrictEqual([items[0]])
   })
 
   it("matches via description when title does not match and description is missing", () => {
@@ -288,6 +288,6 @@ describe("getFilteredItems", () => {
     const result = getFilteredItems(items, [], "management (FM)")
 
     // Assert
-    expect(result).toEqual([items[1]])
+    expect(result).toStrictEqual([items[1]])
   })
 })

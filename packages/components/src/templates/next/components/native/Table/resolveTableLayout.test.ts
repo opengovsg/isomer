@@ -5,7 +5,7 @@ import { resolveTableLayout } from "./resolveTableLayout"
 
 type TableRows = TableProps["content"]
 
-describe("resolveTableLayout", () => {
+describe(resolveTableLayout, () => {
   it("returns auto layout for a plain rectangular table", () => {
     // Arrange
     const rows = [
@@ -35,7 +35,7 @@ describe("resolveTableLayout", () => {
     ]
 
     // Act / Assert
-    expect(resolveTableLayout(rows)).toEqual({ kind: "auto" })
+    expect(resolveTableLayout(rows)).toStrictEqual({ kind: "auto" })
   })
 
   it("returns fixed equal-width tracks for staggered merges with a phantom column", () => {
@@ -109,7 +109,7 @@ describe("resolveTableLayout", () => {
     ]
 
     // Act / Assert
-    expect(resolveTableLayout(rows)).toEqual({
+    expect(resolveTableLayout(rows)).toStrictEqual({
       kind: "fixed",
       columnWidths: [`${100 / 3}%`, `${100 / 3}%`, `${100 / 3}%`],
     })

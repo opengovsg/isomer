@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { getPreviewIndices } from "../getPreviewIndices"
 
-describe("getPreviewIndices", () => {
+describe(getPreviewIndices, () => {
   describe("when maxPreviewImages is 3", () => {
     const maxPreviewImages = 3
 
@@ -21,7 +21,7 @@ describe("getPreviewIndices", () => {
           currentIndex,
           maxPreviewImages,
         })
-        expect(result).toEqual(expected)
+        expect(result).toStrictEqual(expected)
       })
     })
 
@@ -34,7 +34,7 @@ describe("getPreviewIndices", () => {
       })
 
       // Assert
-      expect(result).toEqual([4, 5, 6]) // 1 before, current, 1 after
+      expect(result).toStrictEqual([4, 5, 6]) // 1 before, current, 1 after
     })
 
     it("should handle edge cases with the current index at start or end", () => {
@@ -53,7 +53,7 @@ describe("getPreviewIndices", () => {
           currentIndex,
           maxPreviewImages,
         })
-        expect(result).toEqual(expected)
+        expect(result).toStrictEqual(expected)
       })
     })
 
@@ -72,7 +72,7 @@ describe("getPreviewIndices", () => {
           currentIndex,
           maxPreviewImages,
         })
-        expect(result.length).toBe(maxPreviewImages)
+        expect(result).toHaveLength(maxPreviewImages)
       })
     })
   })
@@ -95,7 +95,7 @@ describe("getPreviewIndices", () => {
           currentIndex,
           maxPreviewImages,
         })
-        expect(result).toEqual(expected)
+        expect(result).toStrictEqual(expected)
       })
     })
 
@@ -108,7 +108,7 @@ describe("getPreviewIndices", () => {
       })
 
       // Assert
-      expect(result).toEqual([3, 4, 5, 6, 7]) // 2 before, current, 2 after
+      expect(result).toStrictEqual([3, 4, 5, 6, 7]) // 2 before, current, 2 after
     })
 
     it("should adjust indices when close to the start", () => {
@@ -120,7 +120,7 @@ describe("getPreviewIndices", () => {
       })
 
       // Assert
-      expect(result).toEqual([0, 1, 2, 3, 4]) // Not enough room for 2 before
+      expect(result).toStrictEqual([0, 1, 2, 3, 4]) // Not enough room for 2 before
     })
 
     it("should adjust indices when close to the end", () => {
@@ -132,7 +132,7 @@ describe("getPreviewIndices", () => {
       })
 
       // Assert
-      expect(result).toEqual([5, 6, 7, 8, 9]) // Show last 5 images
+      expect(result).toStrictEqual([5, 6, 7, 8, 9]) // Show last 5 images
     })
 
     it("should handle edge cases with the current index at start or end", () => {
@@ -151,7 +151,7 @@ describe("getPreviewIndices", () => {
           currentIndex,
           maxPreviewImages,
         })
-        expect(result).toEqual(expected)
+        expect(result).toStrictEqual(expected)
       })
     })
 
@@ -170,7 +170,7 @@ describe("getPreviewIndices", () => {
           currentIndex,
           maxPreviewImages,
         })
-        expect(result.length).toBe(maxPreviewImages)
+        expect(result).toHaveLength(maxPreviewImages)
       })
     })
   })

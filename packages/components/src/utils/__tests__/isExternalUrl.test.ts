@@ -1,26 +1,26 @@
 import { describe, expect, it } from "vitest"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 
-describe("isExternalUrl", () => {
+describe(isExternalUrl, () => {
   it("should return true for external URLs", () => {
-    expect(isExternalUrl("https://example.com")).toBe(true)
-    expect(isExternalUrl("http://example.com")).toBe(true)
+    expect(isExternalUrl("https://example.com")).toBeTruthy()
+    expect(isExternalUrl("http://example.com")).toBeTruthy()
   })
 
   it("should return false for internal URLs starting with '/'", () => {
-    expect(isExternalUrl("/internal-page")).toBe(false)
+    expect(isExternalUrl("/internal-page")).toBeFalsy()
   })
 
   it("should return false for URLs starting with '#'", () => {
-    expect(isExternalUrl("#section")).toBe(false)
+    expect(isExternalUrl("#section")).toBeFalsy()
   })
 
   it("should return false for URLs starting with '[resource:'", () => {
-    expect(isExternalUrl("[resource:some-resource]")).toBe(false)
+    expect(isExternalUrl("[resource:some-resource]")).toBeFalsy()
   })
 
   it("should return false for undefined or empty string", () => {
-    expect(isExternalUrl(undefined)).toBe(false)
-    expect(isExternalUrl("")).toBe(false)
+    expect(isExternalUrl(undefined)).toBeFalsy()
+    expect(isExternalUrl("")).toBeFalsy()
   })
 })

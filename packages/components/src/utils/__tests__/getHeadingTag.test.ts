@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { getHeadingTag } from "../getHeadingTag"
 
-describe("getHeadingTag", () => {
+describe(getHeadingTag, () => {
   it("should map levels 1 through 6 to their matching tag", () => {
     // Arrange
     const levels = [1, 2, 3, 4, 5, 6] as const
@@ -11,7 +11,7 @@ describe("getHeadingTag", () => {
     const tags = levels.map((level) => getHeadingTag(level))
 
     // Assert
-    expect(tags).toEqual(["h1", "h2", "h3", "h4", "h5", "h6"])
+    expect(tags).toStrictEqual(["h1", "h2", "h3", "h4", "h5", "h6"])
   })
 
   it("should clamp levels below 1 to h1", () => {
@@ -22,7 +22,7 @@ describe("getHeadingTag", () => {
     const tags = levels.map((level) => getHeadingTag(level))
 
     // Assert
-    expect(tags).toEqual(["h1", "h1"])
+    expect(tags).toStrictEqual(["h1", "h1"])
   })
 
   it("should clamp levels above 6 to h6", () => {
@@ -33,7 +33,7 @@ describe("getHeadingTag", () => {
     const tags = levels.map((level) => getHeadingTag(level))
 
     // Assert
-    expect(tags).toEqual(["h6", "h6"])
+    expect(tags).toStrictEqual(["h6", "h6"])
   })
 
   it("should round non-integer levels", () => {

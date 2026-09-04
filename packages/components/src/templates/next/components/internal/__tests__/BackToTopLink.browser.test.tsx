@@ -3,9 +3,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { BackToTopLink } from "../BackToTopLink"
 
-describe("BackToTopLink", () => {
+describe(BackToTopLink, () => {
   beforeEach(() => {
-    vi.spyOn(window, "scrollTo").mockImplementation(() => undefined)
+    vi.spyOn(window, "scrollTo").mockReturnValue(undefined)
   })
 
   afterEach(() => {
