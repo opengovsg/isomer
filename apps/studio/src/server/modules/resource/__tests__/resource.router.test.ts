@@ -1,3 +1,4 @@
+import { it, vi, describe, expect, beforeAll, beforeEach } from 'vitest';
 import { TRPCError } from "@trpc/server"
 import { omit, pick } from "lodash-es"
 import { auth } from "tests/integration/helpers/auth"
@@ -67,6 +68,7 @@ describe("resource.router", async () => {
   })
 
   describe("getMetadataById", () => {
+
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -156,10 +158,12 @@ describe("resource.router", async () => {
       )
     })
 
-    it.skip("should throw 403 if user does not have read access to resource", async () => {})
+    // oxlint-disable-next-line vitest/warn-todo
+    it.todo("should throw 403 if user does not have read access to resource")
   })
 
   describe("getFolderChildrenOf", () => {
+
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -487,10 +491,12 @@ describe("resource.router", async () => {
       )
     })
 
-    it.skip("should throw 403 if user does not have read access to resource", async () => {})
+    // oxlint-disable-next-line vitest/warn-todo
+    it.todo("should throw 403 if user does not have read access to resource")
   })
 
   describe("getChildrenOf", () => {
+
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -626,13 +632,13 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      expect(linkPickerResult.items.map(({ permalink }) => permalink)).toEqual([
+      expect(linkPickerResult.items.map(({ permalink }) => permalink)).toStrictEqual([
         "about",
         "search",
       ])
       expect(
         directorySidebarResult.items.map(({ permalink }) => permalink),
-      ).toEqual(["about"])
+      ).toStrictEqual(["about"])
     })
 
     it("should not return FolderMeta, CollectionMeta, and CollectionLink as children", async () => {
@@ -1056,7 +1062,8 @@ describe("resource.router", async () => {
       )
     })
 
-    it.skip("should throw 403 if user does not have read access to resource", async () => {})
+    // oxlint-disable-next-line vitest/warn-todo
+    it.todo("should throw 403 if user does not have read access to resource")
   })
 
   describe("getNestedFolderChildrenOf", () => {
@@ -1150,7 +1157,8 @@ describe("resource.router", async () => {
       )
     })
 
-    it.skip("should throw 403 if user does not have read access to resource", async () => {})
+    // oxlint-disable-next-line vitest/warn-todo
+    it.todo("should throw 403 if user does not have read access to resource")
 
     it("should return nested folder children (e.g. folders within folders)", async () => {
       // Arrange
@@ -1196,7 +1204,7 @@ describe("resource.router", async () => {
           (resource) => pick(resource, RESOURCE_FIELDS_TO_PICK),
         ),
       }
-      expect(result).toEqual(expected)
+      expect(result).toStrictEqual(expected)
     })
 
     it("should terminate and return unique descendants when legacy cyclic data exists", async () => {
@@ -1236,7 +1244,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         items: [folderB, folderC].map((resource) =>
           pick(resource, RESOURCE_FIELDS_TO_PICK),
         ),
@@ -1252,7 +1260,7 @@ describe("resource.router", async () => {
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      const auditSpy = vi.spyOn(auditService, "logResourceEvent")
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
       const { site } = await setupSite()
 
@@ -1278,7 +1286,7 @@ describe("resource.router", async () => {
         userId: session.userId,
         siteId: site.id,
       })
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      const auditSpy = vi.spyOn(auditService, "logResourceEvent")
 
       // Act
       const result = caller.move({
@@ -1302,7 +1310,7 @@ describe("resource.router", async () => {
         userId: session.userId,
         siteId: site.id,
       })
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      const auditSpy = vi.spyOn(auditService, "logResourceEvent")
 
       // Act
       const result = caller.move({
@@ -1336,7 +1344,7 @@ describe("resource.router", async () => {
         userId: session.userId,
         siteId: site.id,
       })
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      const auditSpy = vi.spyOn(auditService, "logResourceEvent")
 
       // Act
       const result = caller.move({
@@ -1366,7 +1374,7 @@ describe("resource.router", async () => {
         siteId: site.id,
         parentId: originFolder.id,
       })
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      const auditSpy = vi.spyOn(auditService, "logResourceEvent")
       await setupAdminPermissions({
         userId: session.userId,
         siteId: pageToMove.siteId,
@@ -1394,7 +1402,7 @@ describe("resource.router", async () => {
       const { folder: originFolder, site } = await setupFolder({
         permalink: "origin-folder",
       })
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      const auditSpy = vi.spyOn(auditService, "logResourceEvent")
       await setupPageResource({
         resourceType: "RootPage",
         siteId: site.id,
@@ -1438,7 +1446,7 @@ describe("resource.router", async () => {
         siteId: site.id,
         permalink: "destination-folder",
       })
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      const auditSpy = vi.spyOn(auditService, "logResourceEvent")
       await setupAdminPermissions({
         userId: session.userId,
         siteId: site.id,
@@ -1453,7 +1461,7 @@ describe("resource.router", async () => {
 
       // Assert
       expect(auditSpy).not.toHaveBeenCalled()
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message: "The search page cannot be moved",
@@ -1463,13 +1471,13 @@ describe("resource.router", async () => {
 
     it("should return 400 if source and destination resources belong to different sites", async () => {
       // Arrange
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      const auditSpy = vi.spyOn(auditService, "logResourceEvent")
       const { page: originPage, site: originSite } = await setupPageResource({
         resourceType: "Page",
       })
       const { folder: destinationFolder, site: destinationSite } =
         await setupFolder()
-      expect(originSite.id).not.toEqual(destinationSite.id)
+      expect(originSite.id).not.toStrictEqual(destinationSite.id)
       await setupAdminPermissions({
         userId: session.userId,
         siteId: originSite.id,
@@ -1501,7 +1509,7 @@ describe("resource.router", async () => {
         resourceType: "RootPage",
         siteId: site.id,
       })
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      const auditSpy = vi.spyOn(auditService, "logResourceEvent")
       const { page: pageToMove } = await setupPageResource({
         resourceType: "Page",
         siteId: site.id,
@@ -1530,7 +1538,7 @@ describe("resource.router", async () => {
         .where("eventType", "=", "ResourceUpdate")
         .selectAll()
         .executeTakeFirstOrThrow()
-      expect(auditSpy).toHaveBeenCalled()
+      expect(auditSpy).toHaveBeenCalledWith()
       expect(auditEntry.delta.after!).toMatchObject(
         omit(result, ["createdAt", "updatedAt"]),
       )
@@ -1539,7 +1547,7 @@ describe("resource.router", async () => {
 
     it("should move nested resource to destination folder", async () => {
       // Arrange
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      const auditSpy = vi.spyOn(auditService, "logResourceEvent")
       const { folder: originFolder, site } = await setupFolder({
         permalink: "origin-folder",
       })
@@ -1574,14 +1582,14 @@ describe("resource.router", async () => {
         .where("id", "=", pageToMove.id)
         .select(["parentId"])
         .executeTakeFirstOrThrow()
-      expect(actual.parentId).toEqual(destinationFolder.id)
+      expect(actual.parentId).toStrictEqual(destinationFolder.id)
       expect(result).toMatchObject(expected)
       const auditEntry = await db
         .selectFrom("AuditLog")
         .where("eventType", "=", "ResourceUpdate")
         .selectAll()
         .executeTakeFirstOrThrow()
-      expect(auditSpy).toHaveBeenCalled()
+      expect(auditSpy).toHaveBeenCalledWith()
       expect(auditEntry.delta.after!).toMatchObject(
         omit(result, ["createdAt", "updatedAt"]),
       )
@@ -1590,7 +1598,7 @@ describe("resource.router", async () => {
 
     it("should move root-level resource to destination folder", async () => {
       // Arrange
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      const auditSpy = vi.spyOn(auditService, "logResourceEvent")
       const { page: pageToMove, site } = await setupPageResource({
         resourceType: "Page",
         parentId: null,
@@ -1622,7 +1630,7 @@ describe("resource.router", async () => {
         .where("eventType", "=", "ResourceUpdate")
         .selectAll()
         .executeTakeFirstOrThrow()
-      expect(auditSpy).toHaveBeenCalled()
+      expect(auditSpy).toHaveBeenCalledWith()
       expect(auditEntry.delta.after!).toMatchObject(
         omit(result, ["createdAt", "updatedAt"]),
       )
@@ -1631,7 +1639,7 @@ describe("resource.router", async () => {
 
     it("should return 400 if moving a folder into its direct child (prevents circular reference)", async () => {
       // Arrange
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      const auditSpy = vi.spyOn(auditService, "logResourceEvent")
       const { folder: parentFolder, site } = await setupFolder({
         permalink: "parent-folder",
       })
@@ -1664,7 +1672,7 @@ describe("resource.router", async () => {
 
     it("should return 400 if moving a folder into a deeply nested descendant (prevents circular reference)", async () => {
       // Arrange
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      const auditSpy = vi.spyOn(auditService, "logResourceEvent")
       const { folder: grandparentFolder, site } = await setupFolder({
         permalink: "grandparent-folder",
       })
@@ -1707,7 +1715,7 @@ describe("resource.router", async () => {
 
     it("should reject descendant moves even when legacy cyclic data exists", async () => {
       // Arrange
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      const auditSpy = vi.spyOn(auditService, "logResourceEvent")
       const { folder: folderA, site } = await setupFolder({
         permalink: "cyclic-folder-a",
       })
@@ -1752,7 +1760,7 @@ describe("resource.router", async () => {
 
     it("should allow moving a folder to a sibling folder (not a descendant)", async () => {
       // Arrange
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      const auditSpy = vi.spyOn(auditService, "logResourceEvent")
       const { folder: folderA, site } = await setupFolder({
         permalink: "folder-a",
       })
@@ -1773,13 +1781,13 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      expect(result.parentId).toEqual(folderB.id)
-      expect(auditSpy).toHaveBeenCalled()
+      expect(result.parentId).toStrictEqual(folderB.id)
+      expect(auditSpy).toHaveBeenCalledWith()
     })
 
     it("should return 400 if moving a RootPage into its descendant (prevents circular reference)", async () => {
       // Arrange
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      const auditSpy = vi.spyOn(auditService, "logResourceEvent")
       const { page: rootPage, site } = await setupPageResource({
         resourceType: "RootPage",
       })
@@ -1812,7 +1820,7 @@ describe("resource.router", async () => {
 
     it("should move a collection into a folder", async () => {
       // Arrange
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      const auditSpy = vi.spyOn(auditService, "logResourceEvent")
       const { collection, site } = await setupCollection({
         permalink: "my-collection",
       })
@@ -1843,13 +1851,13 @@ describe("resource.router", async () => {
         .where("id", "=", collection.id)
         .select(["parentId"])
         .executeTakeFirstOrThrow()
-      expect(actual.parentId).toEqual(destinationFolder.id)
+      expect(actual.parentId).toStrictEqual(destinationFolder.id)
       const auditEntry = await db
         .selectFrom("AuditLog")
         .where("eventType", "=", "ResourceUpdate")
         .selectAll()
         .executeTakeFirstOrThrow()
-      expect(auditSpy).toHaveBeenCalled()
+      expect(auditSpy).toHaveBeenCalledWith()
       expect(auditEntry.delta.after!).toMatchObject(
         omit(result, ["createdAt", "updatedAt"]),
       )
@@ -1858,7 +1866,7 @@ describe("resource.router", async () => {
 
     it("should return 400 if moving a collection into another collection", async () => {
       // Arrange
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      const auditSpy = vi.spyOn(auditService, "logResourceEvent")
       const { collection: collectionToMove, site } = await setupCollection({
         permalink: "collection-to-move",
       })
@@ -1880,7 +1888,7 @@ describe("resource.router", async () => {
 
       // Assert
       expect(auditSpy).not.toHaveBeenCalled()
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message: "Folder items can only be moved to another folder",
@@ -1888,9 +1896,11 @@ describe("resource.router", async () => {
       )
     })
 
-    it.skip("should throw 403 if user does not have write access to destination resource", async () => {})
+    // oxlint-disable-next-line vitest/warn-todo
+    it.todo("should throw 403 if user does not have write access to destination resource")
 
-    it.skip("should throw 403 if user does not have write access to origin resource", async () => {})
+    // oxlint-disable-next-line vitest/warn-todo
+    it.todo("should throw 403 if user does not have write access to origin resource")
 
     describe("redirect on move", () => {
       const setup = async () => {
@@ -1958,7 +1968,7 @@ describe("resource.router", async () => {
           shouldCreateRedirect: false,
         })
 
-        expect(await liveRedirects(site.id)).toHaveLength(0)
+        await expect(liveRedirects(site.id)).resolves.toHaveLength(0)
       })
 
       it("does not create a redirect for an unpublished page", async () => {
@@ -1978,7 +1988,7 @@ describe("resource.router", async () => {
           shouldCreateRedirect: true,
         })
 
-        expect(await liveRedirects(site.id)).toHaveLength(0)
+        await expect(liveRedirects(site.id)).resolves.toHaveLength(0)
       })
 
       it("soft-deletes a redirect pointing back at the page when it reclaims that URL", async () => {
@@ -2190,6 +2200,7 @@ describe("resource.router", async () => {
   })
 
   describe("countWithoutRoot", () => {
+
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -2263,7 +2274,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual(0)
+      expect(result).toBe(0)
     })
 
     it("should return 0 if resource is a folder with no children", async () => {
@@ -2281,7 +2292,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual(0)
+      expect(result).toBe(0)
     })
 
     it("should return count of resources excluding root page if resourceId is not provided", async () => {
@@ -2337,7 +2348,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual(numberOfPages + numberOfFolders)
+      expect(result).toStrictEqual(numberOfPages + numberOfFolders)
     })
 
     it("should exclude the default Search page from the root count", async () => {
@@ -2423,7 +2434,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual(numberOfPages + numberOfFolders)
+      expect(result).toStrictEqual(numberOfPages + numberOfFolders)
     })
 
     it("should throw 403 if user does not have read access to site", async () => {
@@ -2445,7 +2456,8 @@ describe("resource.router", async () => {
       )
     })
 
-    it.skip("should throw 403 if user does not have read access to resource", async () => {})
+    // oxlint-disable-next-line vitest/warn-todo
+    it.todo("should throw 403 if user does not have read access to resource")
   })
 
   describe("listWithoutRoot", () => {
@@ -2522,7 +2534,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual([])
+      expect(result).toStrictEqual([])
     })
 
     it("should return empty array if site has only root page", async () => {
@@ -2542,7 +2554,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual([])
+      expect(result).toStrictEqual([])
     })
 
     it("should return 404 if resource does not exist", async () => {
@@ -2584,7 +2596,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual([])
+      expect(result).toStrictEqual([])
     })
 
     it("should return empty array if resource is a folder with no children", async () => {
@@ -2603,7 +2615,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual([])
+      expect(result).toStrictEqual([])
     })
 
     it("should return resources (respecting the limit) excluding root page if resourceId is not provided", async () => {
@@ -2678,7 +2690,7 @@ describe("resource.router", async () => {
       const result = await caller.listWithoutRoot({ siteId: site.id })
 
       // Assert
-      expect(result.map(({ permalink }) => permalink)).toEqual(["about"])
+      expect(result.map(({ permalink }) => permalink)).toStrictEqual(["about"])
     })
 
     it("should return resources (respecting the limit) nested inside the resourceId", async () => {
@@ -2784,7 +2796,7 @@ describe("resource.router", async () => {
       })
 
       // Assert: repeated calls to the same page return identical results
-      expect(page1First.map((r) => r.id)).toEqual(page1Second.map((r) => r.id))
+      expect(page1First.map((r) => r.id)).toStrictEqual(page1Second.map((r) => r.id))
 
       // Assert: no duplicate IDs across pages
       const page1Ids = new Set(page1First.map((r) => r.id))
@@ -2795,7 +2807,7 @@ describe("resource.router", async () => {
       // Assert: all 4 items are returned across pages (none skipped)
       const allIds = new Set([...page1Ids, ...page2Ids])
       const expectedIds = new Set(pages.map(({ page }) => page.id))
-      expect(allIds).toEqual(expectedIds)
+      expect(allIds).toStrictEqual(expectedIds)
     })
 
     it("should sort case-insensitively when orderBy is title-asc", async () => {
@@ -2835,7 +2847,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      expect(result.map((r) => r.title)).toEqual(["apple", "Banana", "cherry"])
+      expect(result.map((r) => r.title)).toStrictEqual(["apple", "Banana", "cherry"])
     })
 
     it("should sort by permalink ascending when orderBy is permalink-asc", async () => {
@@ -2872,7 +2884,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      expect(result.map((r) => r.permalink)).toEqual([
+      expect(result.map((r) => r.permalink)).toStrictEqual([
         "alpha",
         "bravo",
         "charlie",
@@ -2920,7 +2932,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      expect(result.map((r) => r.permalink)).toEqual([
+      expect(result.map((r) => r.permalink)).toStrictEqual([
         "alpha",
         "bravo",
         "charlie",
@@ -2946,7 +2958,8 @@ describe("resource.router", async () => {
       )
     })
 
-    it.skip("should throw 403 if user does not have read access to the resource", async () => {})
+    // oxlint-disable-next-line vitest/warn-todo
+    it.todo("should throw 403 if user does not have read access to the resource")
   })
 
   describe("delete", () => {
@@ -2958,7 +2971,7 @@ describe("resource.router", async () => {
       // Arrange
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      const auditSpy = vi.spyOn(auditService, "logResourceEvent")
 
       // Act
       const result = unauthedCaller.delete({
@@ -2979,7 +2992,7 @@ describe("resource.router", async () => {
         userId: session.userId,
         siteId: site.id,
       })
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      const auditSpy = vi.spyOn(auditService, "logResourceEvent")
 
       // Act
       const result = caller.delete({
@@ -2999,7 +3012,7 @@ describe("resource.router", async () => {
       const { page, site } = await setupPageResource({
         resourceType: "Page",
       })
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      const auditSpy = vi.spyOn(auditService, "logResourceEvent")
       await setupAdminPermissions({
         userId: session.userId,
         siteId: site.id,
@@ -3021,7 +3034,7 @@ describe("resource.router", async () => {
         .where("eventType", "=", "ResourceDelete")
         .selectAll()
         .executeTakeFirstOrThrow()
-      expect(auditSpy).toHaveBeenCalled()
+      expect(auditSpy).toHaveBeenCalledWith()
       expect(auditEntry.delta.before!).toMatchObject(
         omit(fullPage, ["createdAt", "updatedAt"]),
       )
@@ -3031,7 +3044,7 @@ describe("resource.router", async () => {
         .where("id", "=", page.id)
         .executeTakeFirst()
       expect(actual).toBeUndefined()
-      expect(result).toEqual(page)
+      expect(result).toStrictEqual(page)
     })
 
     it("should soft-delete redirects pointing to the deleted page", async () => {
@@ -3133,7 +3146,7 @@ describe("resource.router", async () => {
     it("should delete a folder and all its children (recursively) successfully", async () => {
       // Arrange
       const { folder: folderToUse, site } = await setupFolder()
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      const auditSpy = vi.spyOn(auditService, "logResourceEvent")
       await setupAdminPermissions({
         userId: session.userId,
         siteId: site.id,
@@ -3192,17 +3205,17 @@ describe("resource.router", async () => {
         ])
         .execute()
       expect(actual).toHaveLength(0)
-      expect(result).toEqual(folderToUse)
-      expect(auditSpy).toHaveBeenCalledTimes(1)
+      expect(result).toStrictEqual(folderToUse)
+      expect(auditSpy).toHaveBeenCalledExactlyOnceWith()
       const auditEntry = await db
         .selectFrom("AuditLog")
         .where("eventType", "=", "ResourceDelete")
         .selectAll()
         .executeTakeFirstOrThrow()
-      expect(auditSpy).toHaveBeenCalled()
       expect(auditEntry.delta.before!).toMatchObject(
         omit(folderToUse, ["createdAt", "updatedAt"]),
       )
+      // oxlint-disable-next-line vitest/max-expects
       expect(auditEntry.userId).toBe(session.userId)
     })
 
@@ -3211,7 +3224,7 @@ describe("resource.router", async () => {
       const { page, site } = await setupPageResource({
         resourceType: "RootPage",
       })
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      const auditSpy = vi.spyOn(auditService, "logResourceEvent")
       await setupAdminPermissions({
         userId: session.userId,
         siteId: site.id,
@@ -3237,7 +3250,7 @@ describe("resource.router", async () => {
         permalink: "search",
         parentId: null,
       })
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      const auditSpy = vi.spyOn(auditService, "logResourceEvent")
       await setupAdminPermissions({
         userId: session.userId,
         siteId: site.id,
@@ -3288,6 +3301,7 @@ describe("resource.router", async () => {
   })
 
   describe("getParentOf", () => {
+
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -3348,7 +3362,7 @@ describe("resource.router", async () => {
         title: page.title,
         type: "RootPage",
       }
-      expect(result).toEqual(expected)
+      expect(result).toStrictEqual(expected)
     })
 
     it("should return parent details for a nested resource", async () => {
@@ -3407,7 +3421,7 @@ describe("resource.router", async () => {
         title: page.title,
         type: "Page",
       }
-      expect(result).toEqual(expected)
+      expect(result).toStrictEqual(expected)
     })
 
     it("should throw 403 if user does not have read access to the resource", async () => {
@@ -3432,10 +3446,14 @@ describe("resource.router", async () => {
       )
     })
 
-    it.skip("should throw 403 if user does not have read access to the resource", async () => {})
+    // oxlint-disable-next-line vitest/warn-todo
+    it.todo(
+      "should throw 403 if user does not have read access to the resource (getWithFullPermalink todo)",
+    )
   })
 
   describe("getWithFullPermalink", () => {
+
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -3548,7 +3566,8 @@ describe("resource.router", async () => {
       )
     })
 
-    it.skip("should throw 403 if user does not have read access to the resource", async () => {})
+    // oxlint-disable-next-line vitest/warn-todo
+    it.todo("should throw 403 if user does not have read access to the resource")
   })
 
   describe("getAncestryStack", () => {
@@ -3614,7 +3633,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual([])
+      expect(result).toStrictEqual([])
     })
 
     it("should return empty array if `resourceId` is not provided", async () => {
@@ -3631,7 +3650,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual([])
+      expect(result).toStrictEqual([])
     })
 
     it("should return the ancestry (including self and excluding root page) of a nested resource", async () => {
@@ -3673,7 +3692,7 @@ describe("resource.router", async () => {
         pick(nestedFolder, RESOURCE_FIELDS_TO_PICK),
         pick(nestedPage, RESOURCE_FIELDS_TO_PICK),
       ]
-      expect(result).toEqual(expected)
+      expect(result).toStrictEqual(expected)
     })
 
     it("should return empty resource if resource is a root-level resource", async () => {
@@ -3694,7 +3713,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual([pick(page, RESOURCE_FIELDS_TO_PICK)])
+      expect(result).toStrictEqual([pick(page, RESOURCE_FIELDS_TO_PICK)])
     })
 
     it("should return the ancestry (excluding self) of a nested resource", async () => {
@@ -3730,7 +3749,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual([
+      expect(result).toStrictEqual([
         pick(parentFolder, RESOURCE_FIELDS_TO_PICK),
         pick(nestedFolder, RESOURCE_FIELDS_TO_PICK),
       ])
@@ -3759,7 +3778,8 @@ describe("resource.router", async () => {
       )
     })
 
-    it.skip("should throw 403 if user does not have read access to the resource", async () => {})
+    // oxlint-disable-next-line vitest/warn-todo
+    it.todo("should throw 403 if user does not have read access to the resource")
   })
 
   describe("getBatchAncestryWithSelf", () => {
@@ -3827,7 +3847,7 @@ describe("resource.router", async () => {
           pick(nestedPage, RESOURCE_FIELDS_TO_PICK),
         ],
       ]
-      expect(result).toEqual(expected)
+      expect(result).toStrictEqual(expected)
     })
 
     it("should throw 403 if user does not have read access to the site", async () => {
@@ -3892,7 +3912,8 @@ describe("resource.router", async () => {
       await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
     })
 
-    it.skip("should throw 403 if user does not have read access to the resources", async () => {})
+    // oxlint-disable-next-line vitest/warn-todo
+    it.todo("should throw 403 if user does not have read access to the resources")
   })
 
   describe("search", () => {
@@ -3941,7 +3962,8 @@ describe("resource.router", async () => {
       )
     })
 
-    it.skip("should throw 403 if user does not have read access to resource", async () => {})
+    // oxlint-disable-next-line vitest/warn-todo
+    it.todo("should throw 403 if user does not have read access to resource")
 
     it("should return empty results if no resources exist", async () => {
       // Arrange
@@ -3964,7 +3986,7 @@ describe("resource.router", async () => {
         recentlyEdited: [],
         nextOffset: null,
       }
-      expect(result).toEqual(expected)
+      expect(result).toStrictEqual(expected)
     })
 
     it("should return the full permalink of resources", async () => {
@@ -4016,7 +4038,7 @@ describe("resource.router", async () => {
         recentlyEdited: [],
         nextOffset: null,
       }
-      expect(result).toEqual(expected)
+      expect(result).toStrictEqual(expected)
     })
 
     it("should use the draft blob updatedAt datetime if available", async () => {
@@ -4069,7 +4091,7 @@ describe("resource.router", async () => {
         recentlyEdited: [],
         nextOffset: null,
       }
-      expect(result).toEqual(expected)
+      expect(result).toStrictEqual(expected)
     })
 
     it("should return totalCount as a number", async () => {
@@ -4095,7 +4117,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      expect(result.totalCount).toEqual(numberOfPages)
+      expect(result.totalCount).toStrictEqual(numberOfPages)
     })
 
     it("should return recentlyEdited as an empty array", async () => {
@@ -4114,7 +4136,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      expect(result.recentlyEdited).toEqual([])
+      expect(result.recentlyEdited).toStrictEqual([])
     })
 
     it("should match all search terms and order by relevance", async () => {
@@ -4162,7 +4184,7 @@ describe("resource.router", async () => {
         recentlyEdited: [],
         nextOffset: null,
       }
-      expect(result).toEqual(expected)
+      expect(result).toStrictEqual(expected)
     })
 
     it("should exclude resources that match only some search terms", async () => {
@@ -4192,7 +4214,7 @@ describe("resource.router", async () => {
         recentlyEdited: [],
         nextOffset: null,
       }
-      expect(result).toEqual(expected)
+      expect(result).toStrictEqual(expected)
     })
 
     it("should match all search terms when some appear mid-title", async () => {
@@ -4228,7 +4250,7 @@ describe("resource.router", async () => {
         recentlyEdited: [],
         nextOffset: null,
       }
-      expect(result).toEqual(expected)
+      expect(result).toStrictEqual(expected)
     })
 
     it("should match all search terms case-insensitively", async () => {
@@ -4264,7 +4286,7 @@ describe("resource.router", async () => {
         recentlyEdited: [],
         nextOffset: null,
       }
-      expect(result).toEqual(expected)
+      expect(result).toStrictEqual(expected)
     })
 
     it("should return resources in order of most recently updated if same search terms", async () => {
@@ -4309,7 +4331,7 @@ describe("resource.router", async () => {
         recentlyEdited: [],
         nextOffset: null,
       }
-      expect(result).toEqual(expected)
+      expect(result).toStrictEqual(expected)
     })
 
     it("should return resources that by prefix for each word in the title", async () => {
@@ -4351,7 +4373,7 @@ describe("resource.router", async () => {
         recentlyEdited: [],
         nextOffset: null,
       }
-      expect(result).toEqual(expected)
+      expect(result).toStrictEqual(expected)
     })
 
     it("should rank results by not double counting ranking order for each search term", async () => {
@@ -4398,7 +4420,7 @@ describe("resource.router", async () => {
         recentlyEdited: [],
         nextOffset: null,
       }
-      expect(result).toEqual(expected)
+      expect(result).toStrictEqual(expected)
     })
 
     it("should require each search term to prefix-match a title word", async () => {
@@ -4441,7 +4463,7 @@ describe("resource.router", async () => {
         recentlyEdited: [],
         nextOffset: null,
       }
-      expect(result).toEqual(expected)
+      expect(result).toStrictEqual(expected)
     })
 
     it("should not return resources that do not match the search query", async () => {
@@ -4470,7 +4492,7 @@ describe("resource.router", async () => {
         recentlyEdited: [],
         nextOffset: null,
       }
-      expect(result).toEqual(expected)
+      expect(result).toStrictEqual(expected)
     })
 
     it("should not return resources matched by empty space if query terms are separated by spaces", async () => {
@@ -4512,7 +4534,7 @@ describe("resource.router", async () => {
         recentlyEdited: [],
         nextOffset: null,
       }
-      expect(result).toEqual(expected)
+      expect(result).toStrictEqual(expected)
     })
 
     it("should only return user viewable resource types if specified", async () => {
@@ -4581,7 +4603,7 @@ describe("resource.router", async () => {
         recentlyEdited: [],
         nextOffset: null,
       }
-      expect(result).toEqual(expected)
+      expect(result).toStrictEqual(expected)
     })
 
     it("should not return resources from another site", async () => {
@@ -4611,7 +4633,7 @@ describe("resource.router", async () => {
         recentlyEdited: [],
         nextOffset: null,
       }
-      expect(result).toEqual(expected)
+      expect(result).toStrictEqual(expected)
     })
 
     it("should return the correct values if query is empty string", async () => {
@@ -4645,7 +4667,7 @@ describe("resource.router", async () => {
         ],
         nextOffset: null,
       }
-      expect(result).toEqual(expected)
+      expect(result).toStrictEqual(expected)
     })
 
     it("should return the correct values if query is a string of whitespaces", async () => {
@@ -4679,7 +4701,7 @@ describe("resource.router", async () => {
         ],
         nextOffset: null,
       }
-      expect(result).toEqual(expected)
+      expect(result).toStrictEqual(expected)
     })
 
     it("should return the correct values if query is not provided", async () => {
@@ -4712,7 +4734,7 @@ describe("resource.router", async () => {
         ],
         nextOffset: null,
       }
-      expect(result).toEqual(expected)
+      expect(result).toStrictEqual(expected)
     })
 
     it("recentlyEdited should be ordered by lastUpdatedAt", async () => {
@@ -4758,7 +4780,7 @@ describe("resource.router", async () => {
         ],
         nextOffset: null,
       }
-      expect(result).toEqual(expected)
+      expect(result).toStrictEqual(expected)
     })
 
     it("recentlyEdited should only return page-ish resources", async () => {
@@ -4785,10 +4807,11 @@ describe("resource.router", async () => {
         recentlyEdited: [],
         nextOffset: null,
       }
-      expect(result).toEqual(expected)
+      expect(result).toStrictEqual(expected)
     })
 
     describe("limit", () => {
+
       it("should return up to 10 most recently edited resources if no limit is provided", async () => {
         // Arrange
         const { site } = await setupSite()
@@ -4830,7 +4853,7 @@ describe("resource.router", async () => {
           recentlyEdited: [],
           nextOffset: 10,
         }
-        expect(result).toEqual(expected)
+        expect(result).toStrictEqual(expected)
       })
 
       it("should return limit number of resources according to the the `limit` parameter", async () => {
@@ -4881,7 +4904,7 @@ describe("resource.router", async () => {
           recentlyEdited: [],
           nextOffset: 2,
         }
-        expect(result).toEqual(expected)
+        expect(result).toStrictEqual(expected)
       })
 
       it("should return all items if limit is greater than the number of items", async () => {
@@ -4916,11 +4939,12 @@ describe("resource.router", async () => {
           recentlyEdited: [],
           nextOffset: null,
         }
-        expect(result).toEqual(expected)
+        expect(result).toStrictEqual(expected)
       })
     })
 
     describe("cursor", () => {
+
       it("should return empty results if `cursor` is invalid", async () => {
         // Arrange
         const { site } = await setupSite()
@@ -4943,7 +4967,7 @@ describe("resource.router", async () => {
           recentlyEdited: [],
           nextOffset: null,
         }
-        expect(result).toEqual(expected)
+        expect(result).toStrictEqual(expected)
       })
 
       it("should return the next set of resources if valid `cursor` is provided", async () => {
@@ -4988,7 +5012,7 @@ describe("resource.router", async () => {
           recentlyEdited: [],
           nextOffset: 20,
         }
-        expect(result).toEqual(expected)
+        expect(result).toStrictEqual(expected)
       })
     })
   })
@@ -5030,7 +5054,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual([
+      expect(result).toStrictEqual([
         {
           ...pick(page, RESOURCE_FIELDS_TO_PICK),
           fullPermalink: `${page.permalink}`,
@@ -5082,7 +5106,7 @@ describe("resource.router", async () => {
       })
 
       // Assert - route accepts input (DB returns unique rows so 1 result)
-      expect(Array.isArray(result)).toBe(true)
+      expect(Array.isArray(result)).toBeTruthy()
     })
 
     it("should reject requests over MAX_BATCH_RESOURCE_IDS", async () => {
@@ -5118,7 +5142,8 @@ describe("resource.router", async () => {
       await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
     })
 
-    it.skip("should throw 403 if user does not have read access to the resources", async () => {})
+    // oxlint-disable-next-line vitest/warn-todo
+    it.todo("should throw 403 if user does not have read access to the resources")
   })
 
   describe("getIndexPage", () => {
@@ -5182,7 +5207,7 @@ describe("resource.router", async () => {
       const expected = {
         ...pick(page, RESOURCE_FIELDS_TO_PICK),
       }
-      expect(result).toEqual(expected)
+      expect(result).toStrictEqual(expected)
     })
 
     it("should throw 403 if user does not have read access to the site", async () => {

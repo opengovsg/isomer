@@ -13,7 +13,8 @@ const EMAIL_HREF = "mailto:user@example.com"
 
 const INITIAL_FILE_LINK_TEXT = "Download [PDF, 1.00 MB]"
 
-describe("useLinkEditorFileMetaSuffix", () => {
+describe(useLinkEditorFileMetaSuffix, () => {
+
   it("strips file meta suffix on open and re-appends it on save for file links", () => {
     // Arrange
     const { result } = renderHook(() =>

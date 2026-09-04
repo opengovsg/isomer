@@ -1,3 +1,4 @@
+import { beforeAll, describe, expect, it } from 'vitest';
 import { resetTables } from "tests/integration/helpers/db"
 import { setUpWhitelist } from "tests/integration/helpers/seed"
 
@@ -43,7 +44,7 @@ describe("whitelist.service", () => {
     const result = await isEmailWhitelisted(email)
 
     // Assert
-    expect(result).toBe(true)
+    expect(result).toBeTruthy()
   })
 
   it("should show email as whitelisted if the exact email address is whitelisted and expiry is in the future", async () => {
@@ -54,7 +55,7 @@ describe("whitelist.service", () => {
     const result = await isEmailWhitelisted(email)
 
     // Assert
-    expect(result).toBe(true)
+    expect(result).toBeTruthy()
   })
 
   it("should show email as not whitelisted if the exact email address is whitelisted and expiry is in the past", async () => {
@@ -65,7 +66,7 @@ describe("whitelist.service", () => {
     const result = await isEmailWhitelisted(email)
 
     // Assert
-    expect(result).toBe(false)
+    expect(result).toBeFalsy()
   })
 
   it("should show email as whitelisted if the exact email domain is whitelisted and expiry is NULL", async () => {
@@ -76,7 +77,7 @@ describe("whitelist.service", () => {
     const result = await isEmailWhitelisted(email)
 
     // Assert
-    expect(result).toBe(true)
+    expect(result).toBeTruthy()
   })
 
   it("should show email as whitelisted if the exact email domain is whitelisted and expiry is in the future", async () => {
@@ -87,7 +88,7 @@ describe("whitelist.service", () => {
     const result = await isEmailWhitelisted(email)
 
     // Assert
-    expect(result).toBe(true)
+    expect(result).toBeTruthy()
   })
 
   it("should show email as not whitelisted if the exact email domain is whitelisted and expiry is in the past", async () => {
@@ -98,7 +99,7 @@ describe("whitelist.service", () => {
     const result = await isEmailWhitelisted(email)
 
     // Assert
-    expect(result).toBe(false)
+    expect(result).toBeFalsy()
   })
 
   it("should show email as whitelisted if the suffix of the email domain is whitelisted and expiry is NULL", async () => {
@@ -109,7 +110,7 @@ describe("whitelist.service", () => {
     const result = await isEmailWhitelisted(email)
 
     // Assert
-    expect(result).toBe(true)
+    expect(result).toBeTruthy()
   })
 
   it("should show email as whitelisted if the exact email address is expired, but the domain's expiry is in the future", async () => {
@@ -120,6 +121,6 @@ describe("whitelist.service", () => {
     const result = await isEmailWhitelisted(email)
 
     // Assert
-    expect(result).toBe(true)
+    expect(result).toBeTruthy()
   })
 })

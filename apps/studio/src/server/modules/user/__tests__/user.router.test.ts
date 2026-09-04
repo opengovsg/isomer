@@ -50,6 +50,7 @@ describe("user.router", () => {
   })
 
   describe("create", () => {
+
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
@@ -107,7 +108,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrow()
+      await expect(result).rejects.toThrow(/./)
 
       // Assert DB - audit logs
       const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
@@ -130,7 +131,7 @@ describe("user.router", () => {
       // Assert
       expect(createdUsers).toHaveLength(1)
       const createdUser = createdUsers[0]
-      expect(createdUser).toEqual(
+      expect(createdUser).toStrictEqual(
         expect.objectContaining({
           email: TEST_EMAIL,
           id: expect.any(String),
@@ -144,7 +145,7 @@ describe("user.router", () => {
         .selectAll()
         .execute()
       expect(dbUserResult).toHaveLength(2) // original + newly created record
-      expect(dbUserResult).toEqual([
+      expect(dbUserResult).toStrictEqual([
         expect.objectContaining({
           email: TEST_EMAIL,
           id: user.id, // original record
@@ -165,7 +166,8 @@ describe("user.router", () => {
         .selectAll()
         .execute()
       expect(resourcePermissions).toHaveLength(1)
-      expect(resourcePermissions).toEqual([
+      // oxlint-disable-next-line vitest/max-expects
+      expect(resourcePermissions).toStrictEqual([
         expect.objectContaining({
           userId: expect.any(String),
           siteId,
@@ -179,7 +181,9 @@ describe("user.router", () => {
         .where("eventType", "=", "UserCreate")
         .selectAll()
         .execute()
+      // oxlint-disable-next-line vitest/max-expects
       expect(userAuditEntry).toHaveLength(1)
+      // oxlint-disable-next-line vitest/max-expects
       expect(userAuditEntry[0]).toMatchObject({
         eventType: "UserCreate",
         delta: expect.objectContaining({
@@ -197,7 +201,9 @@ describe("user.router", () => {
         .where("eventType", "=", "PermissionCreate")
         .selectAll()
         .execute()
+      // oxlint-disable-next-line vitest/max-expects
       expect(permissionAuditEntry).toHaveLength(1)
+      // oxlint-disable-next-line vitest/max-expects
       expect(permissionAuditEntry[0]).toMatchObject({
         eventType: "PermissionCreate",
         delta: expect.objectContaining({
@@ -298,7 +304,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      expect(result).toEqual(expect.anything())
+      expect(result).toStrictEqual(expect.anything())
     })
 
     it("should create a whitelisted non-gov.sg email with admin role", async () => {
@@ -314,7 +320,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      expect(result).toEqual(expect.anything())
+      expect(result).toStrictEqual(expect.anything())
     })
 
     it("should create a whitelisted non-gov.sg email with non-admin role", async () => {
@@ -331,7 +337,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      expect(result).toEqual(expect.anything())
+      expect(result).toStrictEqual(expect.anything())
 
       // Assert DB - audit logs (user)
       const userAuditEntry = await db
@@ -386,7 +392,7 @@ describe("user.router", () => {
       // Assert
       expect(result).toHaveLength(1)
       const createdUser = result[0]
-      expect(createdUser).toEqual(
+      expect(createdUser).toStrictEqual(
         expect.objectContaining({
           email: TEST_EMAIL,
           id: expect.any(String),
@@ -409,7 +415,7 @@ describe("user.router", () => {
         .selectAll()
         .execute()
       expect(resourcePermissions).toHaveLength(1)
-      expect(resourcePermissions).toEqual([
+      expect(resourcePermissions).toStrictEqual([
         expect.objectContaining({
           userId: createdUser?.id,
           siteId,
@@ -424,6 +430,7 @@ describe("user.router", () => {
         .where("eventType", "=", "UserCreate")
         .selectAll()
         .execute()
+      // oxlint-disable-next-line vitest/max-expects
       expect(userAuditEntries).toHaveLength(0)
 
       // Assert: Verify audit logs (permission)
@@ -432,7 +439,9 @@ describe("user.router", () => {
         .where("eventType", "=", "PermissionCreate")
         .selectAll()
         .execute()
+      // oxlint-disable-next-line vitest/max-expects
       expect(permissionAuditEntry).toHaveLength(1)
+      // oxlint-disable-next-line vitest/max-expects
       expect(permissionAuditEntry[0]).toMatchObject({
         eventType: "PermissionCreate",
         delta: expect.objectContaining({
@@ -457,7 +466,7 @@ describe("user.router", () => {
       // Assert
       expect(createdUsers).toHaveLength(1)
       const createdUser = createdUsers[0]
-      expect(createdUser).toEqual(
+      expect(createdUser).toStrictEqual(
         expect.objectContaining({
           email: TEST_EMAIL,
           id: expect.any(String),
@@ -484,7 +493,7 @@ describe("user.router", () => {
         .selectAll()
         .execute()
       expect(resourcePermissions).toHaveLength(1)
-      expect(resourcePermissions).toEqual([
+      expect(resourcePermissions).toStrictEqual([
         expect.objectContaining({
           userId: createdUser?.id,
           siteId,
@@ -497,7 +506,9 @@ describe("user.router", () => {
         .where("eventType", "=", "UserCreate")
         .selectAll()
         .execute()
+      // oxlint-disable-next-line vitest/max-expects
       expect(userAuditEntries).toHaveLength(1)
+      // oxlint-disable-next-line vitest/max-expects
       expect(userAuditEntries[0]).toMatchObject({
         eventType: "UserCreate",
         delta: expect.objectContaining({
@@ -515,7 +526,9 @@ describe("user.router", () => {
         .where("eventType", "=", "PermissionCreate")
         .selectAll()
         .execute()
+      // oxlint-disable-next-line vitest/max-expects
       expect(permissionAuditEntry).toHaveLength(1)
+      // oxlint-disable-next-line vitest/max-expects
       expect(permissionAuditEntry[0]).toMatchObject({
         eventType: "PermissionCreate",
         delta: expect.objectContaining({
@@ -528,11 +541,15 @@ describe("user.router", () => {
     })
 
     // Skip for now as we aren't working on multiple users creation yet
-    it.skip("should create multiple users successfully if user is admin", async () => {})
-    it.skip("should not create any users if one of the emails is invalid", async () => {})
+    // oxlint-disable-next-line vitest/warn-todo
+    it.todo("should create multiple users successfully if user is admin")
+
+    // oxlint-disable-next-line vitest/warn-todo
+    it.todo("should not create any users if one of the emails is invalid")
   })
 
   describe("delete", () => {
+
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
@@ -732,7 +749,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      expect(result).toEqual(
+      expect(result).toStrictEqual(
         expect.objectContaining({
           id: userToDelete.id,
           email: userToDelete.email,
@@ -765,6 +782,7 @@ describe("user.router", () => {
         .selectAll()
         .execute()
       expect(permissionsAuditLogs).toHaveLength(1)
+      // oxlint-disable-next-line vitest/max-expects
       expect(permissionsAuditLogs[0]).toMatchObject({
         eventType: "PermissionDelete",
         delta: expect.objectContaining({
@@ -807,7 +825,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      expect(result).toEqual(
+      expect(result).toStrictEqual(
         expect.objectContaining({
           id: userToDelete.id,
           email: userToDelete.email,
@@ -845,6 +863,7 @@ describe("user.router", () => {
         .selectAll()
         .execute()
       expect(permissionsAuditLogs).toHaveLength(1)
+      // oxlint-disable-next-line vitest/max-expects
       expect(permissionsAuditLogs[0]).toMatchObject({
         eventType: "PermissionDelete",
         delta: expect.objectContaining({
@@ -870,6 +889,7 @@ describe("user.router", () => {
   })
 
   describe("getUser", () => {
+
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
@@ -985,7 +1005,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      expect(result).toEqual(
+      expect(result).toStrictEqual(
         expect.objectContaining({
           id: user.id,
           email: TEST_EMAIL,
@@ -996,6 +1016,7 @@ describe("user.router", () => {
   })
 
   describe("list", () => {
+
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
@@ -1087,7 +1108,7 @@ describe("user.router", () => {
 
       // Assert
       expect(result).toHaveLength(2)
-      expect(result).toEqual(
+      expect(result).toStrictEqual(
         expect.arrayContaining([
           expect.objectContaining({
             id: user.id,
@@ -1105,7 +1126,7 @@ describe("user.router", () => {
 
       // Assert
       expect(result).toHaveLength(1) // only the current admin user
-      expect(result).toEqual([
+      expect(result).toStrictEqual([
         expect.objectContaining({
           id: session.userId,
           name: MOCK_TEST_USER_NAME,
@@ -1127,7 +1148,7 @@ describe("user.router", () => {
       const result = await caller.list({ siteId })
 
       // Assert
-      expect(result).toEqual([
+      expect(result).toStrictEqual([
         expect.objectContaining({
           id: session.userId,
           lastLoginAt: MOCK_STORY_DATE,
@@ -1255,7 +1276,7 @@ describe("user.router", () => {
 
       // Assert
       expect(result).toHaveLength(4) // current user + 3 new users
-      expect(result.map((user) => user.email).slice(0, 3)).toEqual([
+      expect(result.map((user) => user.email).slice(0, 3)).toStrictEqual([
         "alice@example.gov.sg",
         "bob@example.gov.sg",
         "charlie@example.gov.sg",
@@ -1264,6 +1285,7 @@ describe("user.router", () => {
   })
 
   describe("count", () => {
+
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
@@ -1395,6 +1417,7 @@ describe("user.router", () => {
   })
 
   describe("update", () => {
+
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
@@ -1598,7 +1621,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      expect(result).toEqual(
+      expect(result).toStrictEqual(
         expect.objectContaining({
           siteId,
           userId: userToUpdate.id,
@@ -1626,7 +1649,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      expect(result).toEqual(
+      expect(result).toStrictEqual(
         expect.objectContaining({
           siteId,
           userId: userToUpdate.id,
@@ -1659,7 +1682,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      expect(result).toEqual(
+      expect(result).toStrictEqual(
         expect.objectContaining({
           siteId,
           userId: userToUpdate.id,
@@ -1690,7 +1713,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      expect(result).toEqual(
+      expect(result).toStrictEqual(
         expect.objectContaining({
           siteId,
           userId: userToUpdate.id,
@@ -1743,6 +1766,7 @@ describe("user.router", () => {
         .selectAll()
         .execute()
       expect(newPermissionAuditLogs).toHaveLength(1)
+      // oxlint-disable-next-line vitest/max-expects
       expect(newPermissionAuditLogs[0]).toMatchObject({
         eventType: "PermissionCreate",
         delta: expect.objectContaining({
@@ -1776,7 +1800,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      expect(result).toEqual(
+      expect(result).toStrictEqual(
         expect.objectContaining({
           siteId,
           userId: userToUpdate.id,
@@ -1830,6 +1854,7 @@ describe("user.router", () => {
         .selectAll()
         .execute()
       expect(newPermissionAuditLogs).toHaveLength(1)
+      // oxlint-disable-next-line vitest/max-expects
       expect(newPermissionAuditLogs[0]).toMatchObject({
         eventType: "PermissionCreate",
         delta: expect.objectContaining({
@@ -1875,7 +1900,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         id: expect.not.stringContaining(originalPermission.id),
         siteId,
         userId: userToUpdate.id,
@@ -1890,7 +1915,7 @@ describe("user.router", () => {
         .selectAll()
         .execute()
       expect(userPermissions).toHaveLength(3) // 1 old (deleted) + 1 old (active) + 1 new
-      expect(userPermissions).toEqual(
+      expect(userPermissions).toStrictEqual(
         expect.arrayContaining([
           expect.objectContaining({
             id: originalDeletedPermission.id,
@@ -1945,7 +1970,9 @@ describe("user.router", () => {
         .where("eventType", "=", "PermissionCreate")
         .selectAll()
         .execute()
+      // oxlint-disable-next-line vitest/max-expects
       expect(createdPermissionAuditLogs).toHaveLength(1)
+      // oxlint-disable-next-line vitest/max-expects
       expect(createdPermissionAuditLogs[0]).toMatchObject({
         eventType: "PermissionCreate",
         delta: expect.objectContaining({
@@ -1962,6 +1989,7 @@ describe("user.router", () => {
   })
 
   describe("updateDetails", () => {
+
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
@@ -1983,9 +2011,9 @@ describe("user.router", () => {
     })
 
     describe("name validation", () => {
-      const emptyNames = ["", " ", "  "]
-      for (const emptyName of emptyNames) {
-        it(`should throw error if name is empty: ${emptyName}`, async () => {
+      it.each(["", " ", "  "])(
+        "should throw error if name is empty: %s",
+        async (emptyName) => {
           // Act & Assert
           await expect(
             caller.updateDetails({ name: emptyName, phone: "81234567" }),
@@ -1997,8 +2025,8 @@ describe("user.router", () => {
             .selectAll()
             .execute()
           expect(auditLogs).toHaveLength(0)
-        })
-      }
+        },
+      )
 
       it("should trim whitespace from name", async () => {
         // Arrange
@@ -2041,9 +2069,9 @@ describe("user.router", () => {
     describe("phone validation", () => {
       const testUserName = "Test User"
 
-      const emptyPhones = ["", " ", "  "]
-      for (const emptyPhone of emptyPhones) {
-        it(`should throw error if phone is empty: ${emptyPhone}`, async () => {
+      it.each(["", " ", "  "])(
+        "should throw error if phone is empty: %s",
+        async (emptyPhone) => {
           // Act & Assert
           await expect(
             caller.updateDetails({ name: testUserName, phone: emptyPhone }),
@@ -2056,12 +2084,12 @@ describe("user.router", () => {
             .selectAll()
             .execute()
           expect(auditLogs).toHaveLength(0)
-        })
-      }
+        },
+      )
 
-      const incorrectLengthPhones = ["1234567", "123456789", "812345"]
-      for (const phone of incorrectLengthPhones) {
-        it(`should throw error if phone number has incorrect length: ${phone}`, async () => {
+      it.each(["1234567", "123456789", "812345"])(
+        "should throw error if phone number has incorrect length: %s",
+        async (phone) => {
           // Act & Assert
           await expect(
             caller.updateDetails({ name: testUserName, phone }),
@@ -2074,12 +2102,12 @@ describe("user.router", () => {
             .selectAll()
             .execute()
           expect(auditLogs).toHaveLength(0)
-        })
-      }
+        },
+      )
 
-      const invalidPhones = ["12345678", "23456789", "45678901", "78901234"]
-      for (const phone of invalidPhones) {
-        it(`should throw error if phone number starts with invalid digit: ${phone}`, async () => {
+      it.each(["12345678", "23456789", "45678901", "78901234"])(
+        "should throw error if phone number starts with invalid digit: %s",
+        async (phone) => {
           // Act & Assert
           await expect(
             caller.updateDetails({ name: testUserName, phone }),
@@ -2092,23 +2120,21 @@ describe("user.router", () => {
             .selectAll()
             .execute()
           expect(auditLogs).toHaveLength(0)
-        })
-      }
+        },
+      )
 
-      const validPhonesWithSpaces = [
+      it.each([
         " 81234567 ",
         "8123 4567",
         " 8123 4567 ",
         "  81234567  ",
-      ]
-      for (const phone of validPhonesWithSpaces) {
-        it(`should handle phone numbers with whitespace: ${phone}`, async () => {
+      ])("should handle phone numbers with whitespace: %s", async (phone) => {
           // Act & Assert
           const result = await caller.updateDetails({
             name: testUserName,
             phone,
           })
-          expect(result).toEqual({ name: testUserName, phone: "81234567" })
+          expect(result).toStrictEqual({ name: testUserName, phone: "81234567" })
 
           const updatedUser = await db
             .selectFrom("User")
@@ -2137,7 +2163,7 @@ describe("user.router", () => {
             }),
           })
         })
-      }
+
       it("should remove +65 country code if present", async () => {
         // Arrange
         const phone = "+6581234567"
@@ -2146,7 +2172,7 @@ describe("user.router", () => {
         const result = await caller.updateDetails({ name: testUserName, phone })
 
         // Assert
-        expect(result).toEqual({ name: testUserName, phone: "81234567" })
+        expect(result).toStrictEqual({ name: testUserName, phone: "81234567" })
 
         // Verify in database
         const updatedUser = await db
@@ -2177,15 +2203,15 @@ describe("user.router", () => {
         })
       })
 
-      const validSingaporePhones = ["61234567", "81234567", "91234567"]
-      for (const phone of validSingaporePhones) {
-        it(`should accept valid Singapore phone numbers: ${phone}`, async () => {
+      it.each(["61234567", "81234567", "91234567"])(
+        "should accept valid Singapore phone numbers: %s",
+        async (phone) => {
           // Act & Assert
           const result = await caller.updateDetails({
             name: testUserName,
             phone,
           })
-          expect(result).toEqual({ name: testUserName, phone })
+          expect(result).toStrictEqual({ name: testUserName, phone })
 
           const updatedUser = await db
             .selectFrom("User")
@@ -2213,8 +2239,8 @@ describe("user.router", () => {
               ),
             }),
           })
-        })
-      }
+        },
+      )
     })
 
     it("should update user details successfully", async () => {
@@ -2226,7 +2252,7 @@ describe("user.router", () => {
       const result = await caller.updateDetails({ name, phone })
 
       // Assert
-      expect(result).toEqual({ name, phone })
+      expect(result).toStrictEqual({ name, phone })
 
       // Assert: Verify in database
       const updatedUser = await db
@@ -2259,6 +2285,7 @@ describe("user.router", () => {
   })
 
   describe("resendInvite", () => {
+
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
@@ -2406,7 +2433,7 @@ describe("user.router", () => {
       const result = await caller.resendInvite({ siteId, userId: user.id })
 
       // Assert
-      expect(result).toEqual({ email: user.email })
+      expect(result).toStrictEqual({ email: user.email })
     })
 
     it("should fall back to Site.name when Site.config is JSON null", async () => {
@@ -2436,7 +2463,7 @@ describe("user.router", () => {
       const result = await caller.resendInvite({ siteId, userId: user.id })
 
       // Assert
-      expect(result).toEqual({ email: user.email })
+      expect(result).toStrictEqual({ email: user.email })
     })
   })
 })

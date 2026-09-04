@@ -1,3 +1,4 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { MockInstance } from "vitest"
 import { TRPCError } from "@trpc/server"
 import { omit } from "lodash-es"
@@ -62,11 +63,12 @@ describe("collection.router", async () => {
       isDeleted: false,
     })
     await auth(user)
-    auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+    auditSpy = vi.spyOn(auditService, "logResourceEvent")
     auditSpy.mockClear()
   })
 
   describe("create", () => {
+
     it("should throw 401 if not logged in", async () => {
       // Act
       const result = unauthedCaller.create({
@@ -118,7 +120,7 @@ describe("collection.router", async () => {
         userId: session.userId,
         siteId: site.id,
       })
-      expect(site.id).not.toEqual(invalidSiteId)
+      expect(site.id).not.toStrictEqual(invalidSiteId)
 
       // Act
       const result = caller.create({
@@ -221,7 +223,7 @@ describe("collection.router", async () => {
         permalink: duplicatePermalink,
       })
       expect(result).toMatchObject({ id: actualCollection.id })
-      expect(auditSpy).toHaveBeenCalled()
+      expect(auditSpy).toHaveBeenCalledWith()
       await assertAuditLogRows(3)
       const auditEntry = await db
         .selectFrom("AuditLog")
@@ -255,7 +257,7 @@ describe("collection.router", async () => {
         siteId: site.id,
       })
       expect(result).toMatchObject({ id: actualCollection.id })
-      expect(auditSpy).toHaveBeenCalled()
+      expect(auditSpy).toHaveBeenCalledWith()
       await assertAuditLogRows(3)
       const auditEntry = await db
         .selectFrom("AuditLog")
@@ -288,10 +290,10 @@ describe("collection.router", async () => {
         permalink: permalinkToUse,
         siteId: site.id,
       })
-      expect(actualCollection.parentId).toEqual(parent.id)
+      expect(actualCollection.parentId).toStrictEqual(parent.id)
       expect(result).toMatchObject({ id: actualCollection.id })
       await assertAuditLogRows(3)
-      expect(auditSpy).toHaveBeenCalled()
+      expect(auditSpy).toHaveBeenCalledWith()
       const auditEntry = await db
         .selectFrom("AuditLog")
         .where("eventType", "=", "ResourceCreate")
@@ -323,10 +325,10 @@ describe("collection.router", async () => {
         permalink: permalinkToUse,
         siteId: site.id,
       })
-      expect(actualCollection.parentId).toEqual(parent.id)
+      expect(actualCollection.parentId).toStrictEqual(parent.id)
       expect(result).toMatchObject({ id: actualCollection.id })
       await assertAuditLogRows(3)
-      expect(auditSpy).toHaveBeenCalled()
+      expect(auditSpy).toHaveBeenCalledWith()
       const auditEntry = await db
         .selectFrom("AuditLog")
         .where("eventType", "=", "ResourceCreate")
@@ -384,10 +386,12 @@ describe("collection.router", async () => {
       await assertAuditLogRows()
     })
 
-    it.skip("should throw 403 if user does not have write access to the parent folder", async () => {})
+    // oxlint-disable-next-line vitest/warn-todo
+    it.todo("should throw 403 if user does not have write access to the parent folder")
   })
 
   describe("createCollectionPage", () => {
+
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const { collection, site } = await setupCollection()
@@ -455,7 +459,7 @@ describe("collection.router", async () => {
         userId: session.userId,
         siteId: site.id,
       })
-      expect(site.id).not.toEqual(invalidSiteId)
+      expect(site.id).not.toStrictEqual(invalidSiteId)
 
       // Act
       const result = caller.createCollectionPage({
@@ -575,7 +579,7 @@ describe("collection.router", async () => {
         collection.id,
       )
       expect(result).toMatchObject({ pageId: actualCollectionPage.id })
-      expect(auditSpy).toHaveBeenCalledTimes(1)
+      expect(auditSpy).toHaveBeenCalledOnce()
       const auditEntry = await db
         .selectFrom("AuditLog")
         .where("eventType", "=", "ResourceCreate")
@@ -613,7 +617,7 @@ describe("collection.router", async () => {
         collection.id,
       )
       expect(result).toMatchObject({ pageId: actualCollectionPage.id })
-      expect(auditSpy).toHaveBeenCalled()
+      expect(auditSpy).toHaveBeenCalledWith()
       const auditEntry = await db
         .selectFrom("AuditLog")
         .where("eventType", "=", "ResourceCreate")
@@ -650,10 +654,12 @@ describe("collection.router", async () => {
       await assertAuditLogRows()
     })
 
-    it.skip("should throw 403 if user does not have write access to the parent collection", async () => {})
+    // oxlint-disable-next-line vitest/warn-todo
+    it.todo("should throw 403 if user does not have write access to the parent collection")
   })
 
   describe("list", () => {
+
     it("should throw 401 if not logged in", async () => {
       // Act
       const result = unauthedCaller.list({
@@ -699,7 +705,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual(expect.any(Array))
+      expect(result).toStrictEqual(expect.any(Array))
     })
 
     it("should return deterministic paginated results when items share the same type and title", async () => {
@@ -743,7 +749,7 @@ describe("collection.router", async () => {
       })
 
       // Assert: Repeated page 1 calls return identical results (deterministic ordering)
-      expect(page1First.map((r) => r.id)).toEqual(page1Second.map((r) => r.id))
+      expect(page1First.map((r) => r.id)).toStrictEqual(page1Second.map((r) => r.id))
 
       // Assert: No duplicate IDs across pages (pagination consistency)
       const page1Ids = new Set(page1First.map((r) => r.id))
@@ -754,7 +760,7 @@ describe("collection.router", async () => {
       // Assert: All 4 items are returned across pages (no items skipped)
       const allIds = new Set([...page1Ids, ...page2Ids])
       const expectedIds = new Set(pages.map((p) => p.page.id))
-      expect(allIds).toEqual(expectedIds)
+      expect(allIds).toStrictEqual(expectedIds)
     })
 
     it("should sort by title ascending when orderBy is title-asc", async () => {
@@ -793,7 +799,7 @@ describe("collection.router", async () => {
 
       // Assert
       const titles = result.map((r) => r.title)
-      expect(titles).toEqual(["Alpha", "Bravo", "Charlie"])
+      expect(titles).toStrictEqual(["Alpha", "Bravo", "Charlie"])
     })
 
     it("should sort case-insensitively when orderBy is title-asc", async () => {
@@ -835,7 +841,7 @@ describe("collection.router", async () => {
 
       // Assert
       const titles = result.map((r) => r.title)
-      expect(titles).toEqual(["apple", "Banana", "cherry"])
+      expect(titles).toStrictEqual(["apple", "Banana", "cherry"])
     })
 
     it("should sort by permalink ascending when orderBy is permalink-asc", async () => {
@@ -874,7 +880,7 @@ describe("collection.router", async () => {
 
       // Assert
       const permalinks = result.map((r) => r.permalink)
-      expect(permalinks).toEqual(["alpha", "bravo", "charlie"])
+      expect(permalinks).toStrictEqual(["alpha", "bravo", "charlie"])
     })
 
     it("should sort case-insensitively when orderBy is permalink-asc", async () => {
@@ -913,7 +919,7 @@ describe("collection.router", async () => {
 
       // Assert
       const permalinks = result.map((r) => r.permalink)
-      expect(permalinks).toEqual(["apple", "Banana", "Cherry"])
+      expect(permalinks).toStrictEqual(["apple", "Banana", "Cherry"])
     })
 
     it("should sort CollectionLinks by title and CollectionPages by permalink when orderBy is permalink-asc", async () => {
@@ -950,8 +956,8 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      expect(result.map((r) => r.title)).toEqual(["Zulu", "Bravo", "Alpha"])
-      expect(result.map((r) => r.type)).toEqual([
+      expect(result.map((r) => r.title)).toStrictEqual(["Zulu", "Bravo", "Alpha"])
+      expect(result.map((r) => r.type)).toStrictEqual([
         ResourceType.CollectionPage,
         ResourceType.CollectionLink,
         ResourceType.CollectionPage,
@@ -994,8 +1000,8 @@ describe("collection.router", async () => {
       })
 
       // Assert: First Updated should appear before Second since it was updated more recently
-      expect(result[0]?.title).toEqual("First Updated")
-      expect(result[1]?.title).toEqual("Second")
+      expect(result[0]?.title).toBe("First Updated")
+      expect(result[1]?.title).toBe("Second")
     })
 
     it("should default to updated-desc ordering when orderBy is not specified", async () => {
@@ -1033,8 +1039,8 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      expect(result[0]?.title).toEqual("Older Now Latest")
-      expect(result[1]?.title).toEqual("Newer")
+      expect(result[0]?.title).toBe("Older Now Latest")
+      expect(result[1]?.title).toBe("Newer")
     })
 
     it("should break ties using resource id ascending", async () => {
@@ -1068,12 +1074,13 @@ describe("collection.router", async () => {
       // Assert: both have the same title, so tie-break by id ascending
       expect(result).toHaveLength(2)
       expect(Number(result[0]?.id)).toBeLessThan(Number(result[1]?.id))
-      expect(result[0]?.id).toEqual(pageA.page.id)
-      expect(result[1]?.id).toEqual(pageB.page.id)
+      expect(result[0]?.id).toStrictEqual(pageA.page.id)
+      expect(result[1]?.id).toStrictEqual(pageB.page.id)
     })
   })
 
   describe("readCollectionLink", () => {
+
     it("should throw 401 if not logged in", async () => {
       // Act
       const result = unauthedCaller.readCollectionLink({
@@ -1133,6 +1140,7 @@ describe("collection.router", async () => {
   })
 
   describe("getMetadata", () => {
+
     it("should throw 401 if not logged in", async () => {
       // Act
       const result = unauthedCaller.getMetadata({
@@ -1154,7 +1162,7 @@ describe("collection.router", async () => {
         userId: session.userId,
         siteId: site.id,
       })
-      expect(site.id).not.toEqual(invalidSiteId)
+      expect(site.id).not.toStrictEqual(invalidSiteId)
 
       // Act
       const result = caller.getMetadata({
@@ -1236,7 +1244,8 @@ describe("collection.router", async () => {
     })
   })
 
-  describe("readCollectionLink", () => {
+  describe("readCollectionLink nested", () => {
+
     it("should throw 401 if not logged in", async () => {
       // Act
       const { site } = await setupCollection()
@@ -1339,6 +1348,7 @@ describe("collection.router", async () => {
       )
       expect(auditSpy).not.toHaveBeenCalled()
     })
+
     it("should read the link successfully", async () => {
       // Arrange
       const { collection, site } = await setupCollection()
@@ -1356,12 +1366,13 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      expect(expected.title).toEqual(page.title)
-      expect(expected.content).toEqual(blob.content)
+      expect(expected.title).toStrictEqual(page.title)
+      expect(expected.content).toStrictEqual(blob.content)
     })
   })
 
   describe("updateCollectionLink", () => {
+
     it("should throw 401 if not logged in", async () => {
       // Act
       const { site } = await setupCollection()
@@ -1488,7 +1499,7 @@ describe("collection.router", async () => {
         userId: session.userId,
       })
       await setupAdminPermissions({ userId: session.userId, siteId: site.id })
-      expect(page.draftBlobId).toBe(null)
+      expect(page.draftBlobId).toBeNull()
 
       // Act
       const originalBlob = await db
@@ -1503,7 +1514,7 @@ describe("collection.router", async () => {
         linkId: Number(page.id),
       })
 
-      expect(auditSpy).toHaveBeenCalled()
+      expect(auditSpy).toHaveBeenCalledWith()
       await assertAuditLogRows(1)
       const auditEntry = await db
         .selectFrom("AuditLog")
@@ -1523,8 +1534,10 @@ describe("collection.router", async () => {
         page.permalink,
         page.parentId,
       )
-      expect(actual.draftBlobId).toEqual(expected.id)
-      expect(expected.content.content).toEqual([])
+      // oxlint-disable-next-line vitest/max-expects
+      expect(actual.draftBlobId).toStrictEqual(expected.id)
+      // oxlint-disable-next-line vitest/max-expects
+      expect(expected.content.content).toStrictEqual([])
     })
 
     it("should update the collection link successfully", async () => {
@@ -1546,7 +1559,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      expect(auditSpy).toHaveBeenCalled()
+      expect(auditSpy).toHaveBeenCalledWith()
       await assertAuditLogRows(1)
       const auditEntry = await db
         .selectFrom("AuditLog")
@@ -1566,8 +1579,9 @@ describe("collection.router", async () => {
       // During our update, we only update the `page` property
       // and make the content the default collection link content
       // which is an empty array
-      expect(expected.content.content).toEqual([])
-      expect(expected.id).toEqual(blob.id)
+      expect(expected.content.content).toStrictEqual([])
+      // oxlint-disable-next-line vitest/max-expects
+      expect(expected.id).toStrictEqual(blob.id)
     })
 
     it("should store a valid date in `dd/MM/yyyy` format", async () => {
@@ -1587,7 +1601,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      expect((expected.content.page as { date?: string }).date).toEqual(
+      expect((expected.content.page as { date?: string }).date).toBe(
         "31/01/2024",
       )
     })
@@ -1613,12 +1627,15 @@ describe("collection.router", async () => {
       await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
     })
 
-    it.skip("should throw when trying to update to a deleted `ref`")
+    // oxlint-disable-next-line vitest/warn-todo
+    it.todo("should throw when trying to update to a deleted `ref`")
 
-    it.skip("should throw when trying to update to an invalid `ref`")
+    // oxlint-disable-next-line vitest/warn-todo
+    it.todo("should throw when trying to update to an invalid `ref`")
   })
 
   describe("getCollections", () => {
+
     it("should throw 401 if not logged in", async () => {
       // Act
       const result = unauthedCaller.getCollections({
@@ -1661,7 +1678,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual([])
+      expect(result).toStrictEqual([])
     })
 
     it("should return all collections for the site ordered by title (default behavior)", async () => {
@@ -1696,7 +1713,7 @@ describe("collection.router", async () => {
       expect(result[0]?.title).toBe("Alpha Collection")
       expect(result[1]?.title).toBe("Beta Collection")
       expect(result[2]?.title).toBe("Zebra Collection")
-      expect(result).toEqual(
+      expect(result).toStrictEqual(
         expect.arrayContaining([
           expect.objectContaining({ id: collection1.id }),
           expect.objectContaining({ id: collection2.id }),
@@ -1827,7 +1844,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -1844,7 +1861,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1882,7 +1899,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Collection index page not found",
@@ -1903,7 +1920,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Collection index page not found",
@@ -1926,7 +1943,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Collection index page not found",
@@ -1952,7 +1969,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Collection index page has no parent collection",
@@ -1973,7 +1990,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({ count: 0 })
+      expect(result).toStrictEqual({ count: 0 })
     })
 
     it("should return 0 when no item references the tag option", async () => {
@@ -1996,7 +2013,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({ count: 0 })
+      expect(result).toStrictEqual({ count: 0 })
     })
 
     it("should return 1 when a collection page draft blob lists the tag", async () => {
@@ -2019,7 +2036,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({ count: 1 })
+      expect(result).toStrictEqual({ count: 1 })
     })
 
     it("should return 1 when only the published blob lists the tag", async () => {
@@ -2075,7 +2092,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({ count: 1 })
+      expect(result).toStrictEqual({ count: 1 })
     })
 
     it("should count a resource once when both draft and published list the tag", async () => {
@@ -2129,7 +2146,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({ count: 1 })
+      expect(result).toStrictEqual({ count: 1 })
     })
 
     it("should return 2 when two child items reference the tag", async () => {
@@ -2170,7 +2187,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({ count: 2 })
+      expect(result).toStrictEqual({ count: 2 })
     })
 
     it("should return 0 when tagOptionIds is empty", async () => {
@@ -2183,7 +2200,7 @@ describe("collection.router", async () => {
         tagOptionIds: [],
       })
 
-      expect(result).toEqual({ count: 0 })
+      expect(result).toStrictEqual({ count: 0 })
     })
 
     it("should return 1 when a child item lists one of several queried tag options", async () => {
@@ -2203,7 +2220,7 @@ describe("collection.router", async () => {
         tagOptionIds: [TAG_OPTION_ID, TAG_OPTION_B],
       })
 
-      expect(result).toEqual({ count: 1 })
+      expect(result).toStrictEqual({ count: 1 })
     })
 
     it("should count a resource once when tagged lists multiple of the queried option ids", async () => {
@@ -2223,7 +2240,7 @@ describe("collection.router", async () => {
         tagOptionIds: [TAG_OPTION_ID, TAG_OPTION_B],
       })
 
-      expect(result).toEqual({ count: 1 })
+      expect(result).toStrictEqual({ count: 1 })
     })
   })
 

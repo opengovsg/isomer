@@ -1,3 +1,4 @@
+import { beforeEach, vi, afterEach, describe, expect, it } from 'vitest';
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
 import {
@@ -88,6 +89,7 @@ describe("redirect.router bulk upload", async () => {
   ) => result.rows.find((row) => row.source === source)?.error ?? null
 
   describe("bulkValidate", () => {
+
     it("throws 403 without read access to the site", async () => {
       // Arrange
       const { site: otherSite } = await setupSite()
@@ -111,7 +113,7 @@ describe("redirect.router bulk upload", async () => {
 
       // Assert
       expect(result.fileError).not.toBeNull()
-      expect(result.rows).toEqual([])
+      expect(result.rows).toStrictEqual([])
     })
 
     it("flags a malformed row with the shared schema message", async () => {
@@ -376,6 +378,7 @@ describe("redirect.router bulk upload", async () => {
   })
 
   describe("bulkCreate", () => {
+
     it("throws 403 without create access to the site", async () => {
       // Arrange: a viewer-less other site the admin can't create on.
       const { site: otherSite } = await setupSite()
@@ -401,10 +404,9 @@ describe("redirect.router bulk upload", async () => {
       })
 
       // Assert
-      expect(result.ok).toBe(false)
-      if (!result.ok) {
-        expect(result.validation.errorCount).toBe(1)
-      }
+      expect(result.ok).toBeFalsy()
+      if (result.ok) throw new Error("Expected bulk create to fail")
+      expect(result.validation.errorCount).toBe(1)
       expect(publishSpy).not.toHaveBeenCalled()
     })
 
@@ -422,8 +424,8 @@ describe("redirect.router bulk upload", async () => {
       })
 
       // Assert
-      expect(result).toEqual({ ok: true, publishedCount: 2 })
-      expect(publishSpy).toHaveBeenCalledTimes(1)
+      expect(result).toStrictEqual({ ok: true, publishedCount: 2 })
+      expect(publishSpy).toHaveBeenCalledOnce()
       const live = await db
         .selectFrom("Redirect")
         .select(["source", "destination"])
@@ -431,7 +433,7 @@ describe("redirect.router bulk upload", async () => {
         .where("deletedAt", "is", null)
         .orderBy("source")
         .execute()
-      expect(live).toEqual([
+      expect(live).toStrictEqual([
         { source: "/old-one", destination: "/new-one" },
         { source: "/old-two", destination: "https://example.gov.sg" },
       ])
@@ -454,8 +456,8 @@ describe("redirect.router bulk upload", async () => {
       })
 
       // Assert
-      expect(result).toEqual({ ok: true, publishedCount: 1 })
-      expect(publishSpy).toHaveBeenCalledTimes(1)
+      expect(result).toStrictEqual({ ok: true, publishedCount: 1 })
+      expect(publishSpy).toHaveBeenCalledOnce()
     })
 
     it("revives a soft-deleted redirect for a source in the batch", async () => {
@@ -477,7 +479,7 @@ describe("redirect.router bulk upload", async () => {
       })
 
       // Assert
-      expect(result).toEqual({ ok: true, publishedCount: 1 })
+      expect(result).toStrictEqual({ ok: true, publishedCount: 1 })
       const revived = await db
         .selectFrom("Redirect")
         .selectAll()
@@ -521,8 +523,7 @@ describe("redirect.router bulk upload", async () => {
       vi.spyOn(
         resourceService,
         "getResourceIdsByPermalinks",
-      ).mockImplementationOnce(() =>
-        Promise.resolve(new Map<string, number | null>()),
+      ).mockResolvedValueOnce(new Map<string, number | null>(),
       )
 
       // Act
@@ -533,10 +534,9 @@ describe("redirect.router bulk upload", async () => {
 
       // Assert: the batch aborts instead of committing a shadowing redirect, and
       // the offending row comes back flagged so the modal can show it.
-      expect(result.ok).toBe(false)
-      if (!result.ok) {
-        expect(errorFor(result.validation, "/shadowed")).toBeTruthy()
-      }
+      expect(result.ok).toBeFalsy()
+      if (result.ok) throw new Error("Expected bulk create to fail")
+      expect(errorFor(result.validation, "/shadowed")).toBeTruthy()
       expect(publishSpy).not.toHaveBeenCalled()
       const live = await db
         .selectFrom("Redirect")

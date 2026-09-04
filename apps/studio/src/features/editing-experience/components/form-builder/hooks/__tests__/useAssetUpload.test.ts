@@ -6,6 +6,7 @@ import {
 } from "../useAssetUpload"
 
 describe("useAssetUpload backoff options", () => {
+
   it("should cap exponential retry delay", () => {
     // Act
     const options = getAssetUploadBackoffOptions({})
@@ -14,7 +15,7 @@ describe("useAssetUpload backoff options", () => {
     expect(options.maxDelay).toBe(MAX_ASSET_UPLOAD_BACKOFF_DELAY_MS)
     expect(options.numOfAttempts).toBe(10)
     expect(options.startingDelay).toBe(1000)
-    expect(options.delayFirstAttempt).toBe(true)
+    expect(options.delayFirstAttempt).toBeTruthy()
   })
 
   it("should preserve caller-provided attempt and base timeout values", () => {

@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest';
 import type { CollectionTags } from "../../hooks/useCollectionTags"
 import { validateRequiredTags } from "../validateRequiredTags"
 
@@ -26,14 +27,15 @@ const otherRequiredCategory: CollectionTags[number] = {
   options: [{ id: OTHER_REQUIRED_OPTION_ID, label: "Notice" }],
 }
 
-describe("validateRequiredTags", () => {
+describe(validateRequiredTags, () => {
+
   it("returns valid when there are no tag categories", () => {
     // Act
     const result = validateRequiredTags([], ["anything"])
 
     // Assert
-    expect(result.isValid).toBe(true)
-    expect(result.unfilledRequiredCategories).toEqual([])
+    expect(result.isValid).toBeTruthy()
+    expect(result.unfilledRequiredCategories).toStrictEqual([])
   })
 
   it("returns valid when no categories are required", () => {
@@ -41,8 +43,8 @@ describe("validateRequiredTags", () => {
     const result = validateRequiredTags([optionalCategory], undefined)
 
     // Assert
-    expect(result.isValid).toBe(true)
-    expect(result.unfilledRequiredCategories).toEqual([])
+    expect(result.isValid).toBeTruthy()
+    expect(result.unfilledRequiredCategories).toStrictEqual([])
   })
 
   it("returns valid when every required category has a selected option", () => {
@@ -53,8 +55,8 @@ describe("validateRequiredTags", () => {
     )
 
     // Assert
-    expect(result.isValid).toBe(true)
-    expect(result.unfilledRequiredCategories).toEqual([])
+    expect(result.isValid).toBeTruthy()
+    expect(result.unfilledRequiredCategories).toStrictEqual([])
   })
 
   it("returns invalid when a required category has no selection", () => {
@@ -62,8 +64,8 @@ describe("validateRequiredTags", () => {
     const result = validateRequiredTags([requiredCategory], [])
 
     // Assert
-    expect(result.isValid).toBe(false)
-    expect(result.unfilledRequiredCategories).toEqual([requiredCategory])
+    expect(result.isValid).toBeFalsy()
+    expect(result.unfilledRequiredCategories).toStrictEqual([requiredCategory])
   })
 
   it("returns invalid when tagged is undefined and a category is required", () => {
@@ -71,8 +73,8 @@ describe("validateRequiredTags", () => {
     const result = validateRequiredTags([requiredCategory], undefined)
 
     // Assert
-    expect(result.isValid).toBe(false)
-    expect(result.unfilledRequiredCategories).toEqual([requiredCategory])
+    expect(result.isValid).toBeFalsy()
+    expect(result.unfilledRequiredCategories).toStrictEqual([requiredCategory])
   })
 
   it("does not require selections for optional categories", () => {
@@ -83,8 +85,8 @@ describe("validateRequiredTags", () => {
     )
 
     // Assert
-    expect(result.isValid).toBe(true)
-    expect(result.unfilledRequiredCategories).toEqual([])
+    expect(result.isValid).toBeTruthy()
+    expect(result.unfilledRequiredCategories).toStrictEqual([])
   })
 
   it("returns only unfilled required categories when multiple are configured", () => {
@@ -95,8 +97,8 @@ describe("validateRequiredTags", () => {
     )
 
     // Assert
-    expect(result.isValid).toBe(false)
-    expect(result.unfilledRequiredCategories).toEqual([otherRequiredCategory])
+    expect(result.isValid).toBeFalsy()
+    expect(result.unfilledRequiredCategories).toStrictEqual([otherRequiredCategory])
   })
 
   it("treats a required category with no options as satisfied", () => {
@@ -115,8 +117,8 @@ describe("validateRequiredTags", () => {
     )
 
     // Assert
-    expect(result.isValid).toBe(false)
-    expect(result.unfilledRequiredCategories).toEqual([requiredCategory])
+    expect(result.isValid).toBeFalsy()
+    expect(result.unfilledRequiredCategories).toStrictEqual([requiredCategory])
   })
 
   it("treats isRequired as false when omitted on a category", () => {
@@ -134,7 +136,7 @@ describe("validateRequiredTags", () => {
     )
 
     // Assert
-    expect(result.isValid).toBe(true)
-    expect(result.unfilledRequiredCategories).toEqual([])
+    expect(result.isValid).toBeTruthy()
+    expect(result.unfilledRequiredCategories).toStrictEqual([])
   })
 })

@@ -5,7 +5,7 @@ import {
   SELECTED_CELL_BORDER_CLASSES,
 } from "../getSelectedCellBorderClasses"
 
-describe("getSelectedCellBorderClasses", () => {
+describe(getSelectedCellBorderClasses, () => {
   const selectionRect = { left: 1, top: 1, right: 3, bottom: 3 }
 
   it("returns all four sides for a single-cell selection", () => {
@@ -17,7 +17,7 @@ describe("getSelectedCellBorderClasses", () => {
     const classes = getSelectedCellBorderClasses(singleCellSelection, cellRect)
 
     // Assert
-    expect(classes).toEqual([
+    expect(classes).toStrictEqual([
       SELECTED_CELL_BORDER_CLASSES.top,
       SELECTED_CELL_BORDER_CLASSES.right,
       SELECTED_CELL_BORDER_CLASSES.bottom,
@@ -33,7 +33,7 @@ describe("getSelectedCellBorderClasses", () => {
     const classes = getSelectedCellBorderClasses(selectionRect, topLeftCell)
 
     // Assert
-    expect(classes).toEqual([
+    expect(classes).toStrictEqual([
       SELECTED_CELL_BORDER_CLASSES.top,
       SELECTED_CELL_BORDER_CLASSES.left,
     ])
@@ -48,7 +48,7 @@ describe("getSelectedCellBorderClasses", () => {
     const classes = getSelectedCellBorderClasses(largeSelection, interiorCell)
 
     // Assert
-    expect(classes).toEqual([])
+    expect(classes).toStrictEqual([])
   })
 
   it("returns the full left edge for a leftmost cell spanning the selection height", () => {
@@ -60,7 +60,7 @@ describe("getSelectedCellBorderClasses", () => {
     const classes = getSelectedCellBorderClasses(rowSelection, leftmostCell)
 
     // Assert
-    expect(classes).toEqual([
+    expect(classes).toStrictEqual([
       SELECTED_CELL_BORDER_CLASSES.top,
       SELECTED_CELL_BORDER_CLASSES.bottom,
       SELECTED_CELL_BORDER_CLASSES.left,
@@ -76,7 +76,7 @@ describe("getSelectedCellBorderClasses", () => {
     const classes = getSelectedCellBorderClasses(rowSelection, rightmostCell)
 
     // Assert
-    expect(classes).toEqual([
+    expect(classes).toStrictEqual([
       SELECTED_CELL_BORDER_CLASSES.top,
       SELECTED_CELL_BORDER_CLASSES.right,
       SELECTED_CELL_BORDER_CLASSES.bottom,

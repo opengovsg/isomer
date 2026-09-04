@@ -3,8 +3,9 @@ import { describe, expect, it } from "vitest"
 import type { isUserOnboardedProps } from "../isUserOnboarded"
 import { isUserOnboarded } from "../isUserOnboarded"
 
-describe("isUserOnboarded", () => {
+describe(isUserOnboarded, () => {
   describe("user validation", () => {
+
     it("should return true for valid user with name and Singapore phone number", () => {
       // Arrange
       const validUsers = [
@@ -15,7 +16,7 @@ describe("isUserOnboarded", () => {
 
       // Act & Assert
       validUsers.forEach((user) => {
-        expect(isUserOnboarded(user)).toBe(true)
+        expect(isUserOnboarded(user)).toBeTruthy()
       })
     })
 
@@ -29,7 +30,7 @@ describe("isUserOnboarded", () => {
 
       // Act & Assert
       usersWithoutName.forEach((user) => {
-        expect(isUserOnboarded(user as isUserOnboardedProps)).toBe(false)
+        expect(isUserOnboarded(user as isUserOnboardedProps)).toBeFalsy()
       })
     })
 
@@ -43,12 +44,13 @@ describe("isUserOnboarded", () => {
 
       // Act & Assert
       usersWithoutPhone.forEach((user) => {
-        expect(isUserOnboarded(user as isUserOnboardedProps)).toBe(false)
+        expect(isUserOnboarded(user as isUserOnboardedProps)).toBeFalsy()
       })
     })
   })
 
   describe("phone number validation", () => {
+
     it("should return true for valid Singapore phone numbers starting with 6, 8, or 9", () => {
       // Arrange
       const validUsers = [
@@ -62,7 +64,7 @@ describe("isUserOnboarded", () => {
 
       // Act & Assert
       validUsers.forEach((user) => {
-        expect(isUserOnboarded(user)).toBe(true)
+        expect(isUserOnboarded(user)).toBeTruthy()
       })
     })
 
@@ -79,7 +81,7 @@ describe("isUserOnboarded", () => {
 
       // Act & Assert
       invalidUsers.forEach((user) => {
-        expect(isUserOnboarded(user)).toBe(false)
+        expect(isUserOnboarded(user)).toBeFalsy()
       })
     })
 
@@ -94,7 +96,7 @@ describe("isUserOnboarded", () => {
 
       // Act & Assert
       invalidUsers.forEach((user) => {
-        expect(isUserOnboarded(user)).toBe(false)
+        expect(isUserOnboarded(user)).toBeFalsy()
       })
     })
 
@@ -110,7 +112,7 @@ describe("isUserOnboarded", () => {
 
       // Act & Assert
       invalidUsers.forEach((user) => {
-        expect(isUserOnboarded(user)).toBe(false)
+        expect(isUserOnboarded(user)).toBeFalsy()
       })
     })
 
@@ -125,7 +127,7 @@ describe("isUserOnboarded", () => {
 
       // Act & Assert
       invalidUsers.forEach((user) => {
-        expect(isUserOnboarded(user)).toBe(false)
+        expect(isUserOnboarded(user)).toBeFalsy()
       })
     })
 
@@ -148,7 +150,7 @@ describe("isUserOnboarded", () => {
 
       // Act & Assert
       invalidUsers.forEach((user) => {
-        expect(isUserOnboarded(user)).toBe(false)
+        expect(isUserOnboarded(user)).toBeFalsy()
       })
     })
   })

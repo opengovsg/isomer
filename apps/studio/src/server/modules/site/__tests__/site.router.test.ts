@@ -1,3 +1,4 @@
+import { expect, vi, beforeEach, describe, beforeAll, it } from 'vitest';
 import type { Notification } from "~/schemas/site"
 import { TRPCError } from "@trpc/server"
 import { pick } from "lodash-es"
@@ -26,7 +27,7 @@ import { AuditLogEvent, db, jsonb, ResourceType } from "../../database"
 import { siteRouter } from "../site.router"
 
 // Mock env to set production environment for SearchSG tests
-vi.mock("~/env.mjs", async () => {
+vi.mock(import('~/env.mjs'), async () => {
   // Import the real module first to get all default values
   const actual = await vi.importActual("~/env.mjs")
   return {
@@ -152,6 +153,7 @@ describe("site.router", async () => {
   })
 
   describe("list", () => {
+
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -171,7 +173,7 @@ describe("site.router", async () => {
       const result = await caller.list()
 
       // Assert
-      expect(result).toEqual([])
+      expect(result).toStrictEqual([])
     })
 
     it("should include the Site if the user has any role permission for the site", async () => {
@@ -186,7 +188,7 @@ describe("site.router", async () => {
       const result = await caller.list()
 
       // Assert
-      expect(result).toEqual([
+      expect(result).toStrictEqual([
         {
           id: site.id,
           config: site.config,
@@ -208,7 +210,7 @@ describe("site.router", async () => {
       const result = await caller.list()
 
       // Assert
-      expect(result).toEqual([
+      expect(result).toStrictEqual([
         {
           id: site1.id,
           config: site1.config,
@@ -225,7 +227,7 @@ describe("site.router", async () => {
       const result = await caller.list()
 
       // Assert
-      expect(result).toEqual([])
+      expect(result).toStrictEqual([])
     })
 
     it("should only return sites if the permissions are not deleted for the site", async () => {
@@ -245,7 +247,7 @@ describe("site.router", async () => {
       const result = await caller.list()
 
       // Assert
-      expect(result).toEqual([
+      expect(result).toStrictEqual([
         {
           id: site2.id,
           config: site2.config,
@@ -267,7 +269,7 @@ describe("site.router", async () => {
       const result = await caller.list()
 
       // Assert
-      expect(result).toEqual(
+      expect(result).toStrictEqual(
         [site1, site2]
           .sort((a, b) => a.id - b.id)
           .map((site) => ({
@@ -294,7 +296,7 @@ describe("site.router", async () => {
       const result = await caller.list()
 
       // Assert
-      expect(result).toEqual([
+      expect(result).toStrictEqual([
         {
           id: site.id,
           config: site.config,
@@ -305,6 +307,7 @@ describe("site.router", async () => {
   })
 
   describe("listAllSites", () => {
+
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -348,11 +351,12 @@ describe("site.router", async () => {
       const result = await caller.listAllSites()
 
       // Assert
-      expect(result).toEqual([pick(site, ["id", "config", "codeBuildId"])])
+      expect(result).toStrictEqual([pick(site, ["id", "config", "codeBuildId"])])
     })
   })
 
   describe("getSiteName", () => {
+
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -379,7 +383,7 @@ describe("site.router", async () => {
       const result = await caller.getSiteName({ siteId: site.id })
 
       // Assert
-      expect(result).toEqual({ name: site.name })
+      expect(result).toStrictEqual({ name: site.name })
     })
 
     it("should throw 403 if user does not have read access to the site", async () => {
@@ -401,6 +405,7 @@ describe("site.router", async () => {
   })
 
   describe("getConfig", () => {
+
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -444,11 +449,12 @@ describe("site.router", async () => {
       const result = await caller.getConfig({ id: site.id })
 
       // Assert
-      expect(result).toEqual(site.config)
+      expect(result).toStrictEqual(site.config)
     })
   })
 
   describe("updateSiteConfig", () => {
+
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -468,6 +474,7 @@ describe("site.router", async () => {
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
+
     it("should throw 403 if the user does not have write access to the site", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -490,6 +497,7 @@ describe("site.router", async () => {
         }),
       )
     })
+
     it("should throw 403 if the user has publisher access to the site", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -561,7 +569,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         siteName: MOCK_SITE_NAME,
         logoUrl: MOCK_LOGO_URL,
         url: "https://www.isomer.gov.sg",
@@ -574,8 +582,9 @@ describe("site.router", async () => {
         .where("id", "=", site.id)
         .select("name")
         .executeTakeFirstOrThrow()
-      expect(updatedSite.name).toEqual(MOCK_SITE_NAME)
+      expect(updatedSite.name).toStrictEqual(MOCK_SITE_NAME)
     })
+
     it("should normalize an AskGov URL when updating the site config", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -598,8 +607,9 @@ describe("site.router", async () => {
       })
 
       // Assert
-      expect(result.askgov).toEqual({ "data-agency": "mha" })
+      expect(result.askgov).toStrictEqual({ "data-agency": "mha" })
     })
+
     it("should generate an audit log entry", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -618,8 +628,10 @@ describe("site.router", async () => {
       })
 
       // Assert
+      expect.hasAssertions()
       await assertAuditLog(session.userId)
     })
+
     it("should update searchsg if the update went through", async () => {
       // Arrange
       const mockSearch = {
@@ -664,7 +676,7 @@ describe("site.router", async () => {
         mockSearch.search.clientId,
         result.url,
       )
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         siteName: MOCK_SITE_NAME,
         logoUrl: MOCK_LOGO_URL,
         url: "https://www.isomer.gov.sg",
@@ -672,6 +684,7 @@ describe("site.router", async () => {
         ...mockSearch,
       })
     })
+
     it("should not allow a site admin to change the searchSG clientId", async () => {
       // Arrange
       const existingClientId = MOCK_SEARCHSG_CLIENT_ID
@@ -702,11 +715,12 @@ describe("site.router", async () => {
       })
 
       // Assert - the stored clientId should be the original DB value
-      expect(result.search).toEqual({
+      expect(result.search).toStrictEqual({
         type: "searchSG",
         clientId: existingClientId,
       })
     })
+
     it("should call updateSearchSGConfig with the DB clientId, not the user-supplied one", async () => {
       // Arrange
       const existingClientId = MOCK_SEARCHSG_CLIENT_ID
@@ -744,19 +758,21 @@ describe("site.router", async () => {
         result.url,
       )
     })
+
     it("uses clientId fixtures that pass the SearchSG format check", () => {
       // Guards the premise of the tampering tests below: a malformed clientId
       // is rejected downstream anyway, so the fixtures have to be well-formed
       // for those tests to cover the case that actually reaches SearchSG.
       expect(
         searchSgService.isValidSearchSGClientId(MOCK_SEARCHSG_CLIENT_ID),
-      ).toBe(true)
+      ).toBeTruthy()
       expect(
         searchSgService.isValidSearchSGClientId(
           MOCK_OTHER_SITE_SEARCHSG_CLIENT_ID,
         ),
-      ).toBe(true)
+      ).toBeTruthy()
     })
+
     it("should not allow a site admin to enable searchSG with a supplied clientId", async () => {
       // Arrange - no search integration, so there is no clientId in the DB to
       // fall back on. The clientId is a valid UUID belonging to another site.
@@ -780,7 +796,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message:
@@ -788,6 +804,7 @@ describe("site.router", async () => {
         }),
       )
     })
+
     it("should not allow a site admin to switch search to egazette-algolia", async () => {
       // Arrange - site is not on egazette-algolia
       const { site } = await setupSite()
@@ -807,7 +824,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message:
@@ -815,6 +832,7 @@ describe("site.router", async () => {
         }),
       )
     })
+
     it("should not allow a site admin to switch search away from egazette-algolia", async () => {
       // Arrange - site is already on egazette-algolia
       const { site } = await setupSite()
@@ -844,7 +862,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message:
@@ -852,6 +870,7 @@ describe("site.router", async () => {
         }),
       )
     })
+
     it("should preserve the egazette-algolia config from DB and ignore tampered credentials", async () => {
       // Arrange - site is already on egazette-algolia
       const { site } = await setupSite()
@@ -886,7 +905,7 @@ describe("site.router", async () => {
       })
 
       // Assert - the stored search config is the original DB value
-      expect(result.search).toEqual(MOCK_EGAZETTE_ALGOLIA_SEARCH)
+      expect(result.search).toStrictEqual(MOCK_EGAZETTE_ALGOLIA_SEARCH)
     })
   })
 
@@ -914,6 +933,7 @@ describe("site.router", async () => {
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
+
     it("should throw 403 if the user does not have write access to the site", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -933,6 +953,7 @@ describe("site.router", async () => {
         }),
       )
     })
+
     it("should throw 403 if the user has publisher access to the site", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -955,6 +976,7 @@ describe("site.router", async () => {
         }),
       )
     })
+
     it("should update the site integrations if the user is a site admin", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -970,8 +992,9 @@ describe("site.router", async () => {
       })
 
       // Assert
-      expect(result.config).toEqual(MOCK_INTEGRATION_DATA)
+      expect(result.config).toStrictEqual(MOCK_INTEGRATION_DATA)
     })
+
     it.each([
       {
         input: "http://ask.gov.sg/mom/?topic=employment#contact",
@@ -1004,9 +1027,10 @@ describe("site.router", async () => {
         })
 
         // Assert
-        expect(result.config.askgov).toEqual({ "data-agency": expected })
+        expect(result.config.askgov).toStrictEqual({ "data-agency": expected })
       },
     )
+
     it("should generate an audit log entry", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -1022,6 +1046,7 @@ describe("site.router", async () => {
       })
 
       // Assert
+      expect.hasAssertions()
       await assertAuditLog(session.userId)
     })
 
@@ -1043,7 +1068,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      expect(result.config).toEqual({ ...MOCK_INTEGRATION_DATA, fake: "fake" })
+      expect(result.config).toStrictEqual({ ...MOCK_INTEGRATION_DATA, fake: "fake" })
     })
 
     it("should reject an invalid siteGtmId", async () => {
@@ -1098,11 +1123,12 @@ describe("site.router", async () => {
       })
 
       // Assert - the stored clientId should be the original DB value
-      expect(result.config.search).toEqual({
+      expect(result.config.search).toStrictEqual({
         type: "searchSG",
         clientId: MOCK_SEARCHSG_CLIENT_ID,
       })
     })
+
     it("should not allow a site admin to enable searchSG with a supplied clientId", async () => {
       // Arrange - no search integration, so there is no clientId in the DB
       const { site } = await setupSite()
@@ -1124,7 +1150,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message:
@@ -1132,6 +1158,7 @@ describe("site.router", async () => {
         }),
       )
     })
+
     it("should throw 400 if downgrading search integration from searchSG to localSearch", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -1161,7 +1188,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message:
@@ -1214,7 +1241,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message:
@@ -1251,7 +1278,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message:
@@ -1293,11 +1320,12 @@ describe("site.router", async () => {
       })
 
       // Assert - the stored search config is the original DB value
-      expect(result.config.search).toEqual(MOCK_EGAZETTE_ALGOLIA_SEARCH)
+      expect(result.config.search).toStrictEqual(MOCK_EGAZETTE_ALGOLIA_SEARCH)
     })
   })
 
   describe("setTheme", () => {
+
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -1314,6 +1342,7 @@ describe("site.router", async () => {
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
+
     it("should throw 403 if the user does not have write access to the site", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -1333,6 +1362,7 @@ describe("site.router", async () => {
         }),
       )
     })
+
     it("should throw 403 if the user only has publisher access", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -1362,6 +1392,7 @@ describe("site.router", async () => {
         }),
       )
     })
+
     it("should throw 404 if the theme for the site could not be found", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -1384,6 +1415,7 @@ describe("site.router", async () => {
         }),
       )
     })
+
     it("should update the site theme if the user is a site admin", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -1408,6 +1440,7 @@ describe("site.router", async () => {
         theme: MOCK_ISOMER_THEME,
       })
     })
+
     it("should update searchsg if the user is a site admin", async () => {
       // Arrange
       const mockSearchSg = {
@@ -1450,6 +1483,7 @@ describe("site.router", async () => {
         site.config.url,
       )
     })
+
     it("should generate an audit log entry", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -1470,10 +1504,12 @@ describe("site.router", async () => {
       })
 
       // Assert
+      expect.hasAssertions()
       await assertAuditLog(session.userId)
     })
   })
   describe("getTheme", () => {
+
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -1517,11 +1553,12 @@ describe("site.router", async () => {
       const result = await caller.getTheme({ id: site.id })
 
       // Assert
-      expect(result).toEqual(site.theme)
+      expect(result).toStrictEqual(site.theme)
     })
   })
 
   describe("getFooter", () => {
+
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -1565,7 +1602,7 @@ describe("site.router", async () => {
       const result = await caller.getFooter({ id: site.id })
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         id: footer.id,
         content: footer.content,
         siteId: site.id,
@@ -1574,6 +1611,7 @@ describe("site.router", async () => {
   })
 
   describe("setFooter", () => {
+
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -1662,28 +1700,29 @@ describe("site.router", async () => {
         .where("siteId", "=", site.id)
         .selectAll()
         .executeTakeFirstOrThrow()
-      expect(newFooter.content).toEqual(footerContent)
+      expect(newFooter.content).toStrictEqual(footerContent)
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog).toHaveLength(2)
       expect(
         auditLog.some(({ eventType }) => {
           return eventType === AuditLogEvent.FooterUpdate
         }),
-      ).toEqual(true)
+      ).toBeTruthy()
       expect(
         auditLog.some(({ eventType }) => {
           return eventType === AuditLogEvent.Publish
         }),
-      ).toEqual(true)
+      ).toBeTruthy()
       expect(
         auditLog.every(({ userId }) => {
           return userId === session.userId
         }),
-      ).toEqual(true)
+      ).toBeTruthy()
     })
   })
 
   describe("getNavbar", () => {
+
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -1727,7 +1766,7 @@ describe("site.router", async () => {
       const result = await caller.getNavbar({ id: site.id })
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         id: navbar.id,
         content: navbar.content,
         siteId: site.id,
@@ -1736,6 +1775,7 @@ describe("site.router", async () => {
   })
 
   describe("setNavbar", () => {
+
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -1824,28 +1864,29 @@ describe("site.router", async () => {
         .where("siteId", "=", site.id)
         .selectAll()
         .executeTakeFirstOrThrow()
-      expect(newNavbar.content).toEqual(navbarContent)
+      expect(newNavbar.content).toStrictEqual(navbarContent)
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog).toHaveLength(2)
       expect(
         auditLog.some(({ eventType }) => {
           return eventType === AuditLogEvent.NavbarUpdate
         }),
-      ).toEqual(true)
+      ).toBeTruthy()
       expect(
         auditLog.some(({ eventType }) => {
           return eventType === AuditLogEvent.Publish
         }),
-      ).toEqual(true)
+      ).toBeTruthy()
       expect(
         auditLog.every(({ userId }) => {
           return userId === session.userId
         }),
-      ).toEqual(true)
+      ).toBeTruthy()
     })
   })
 
   describe("getLocalisedSitemap", () => {
+
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -1911,6 +1952,7 @@ describe("site.router", async () => {
   })
 
   describe("getNotification", () => {
+
     it("should throw 401 if user is not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -1954,7 +1996,7 @@ describe("site.router", async () => {
       const result = await caller.getNotification({ siteId: site.id })
 
       // Assert
-      expect(result).toEqual({})
+      expect(result).toStrictEqual({})
     })
 
     it("should return the notification with the content in `prose` even if the base content is in `text` format", async () => {
@@ -1990,7 +2032,7 @@ describe("site.router", async () => {
       const actual = await caller.getNotification({ siteId: site.id })
 
       // Assert
-      expect(actual).toEqual(expected)
+      expect(actual).toStrictEqual(expected)
     })
   })
 
@@ -2108,24 +2150,24 @@ describe("site.router", async () => {
         .where("id", "=", site.id)
         .select("Site.config")
         .executeTakeFirstOrThrow()
-      expect(newSite.config.notification).toEqual(notification.notification)
+      expect(newSite.config.notification).toStrictEqual(notification.notification)
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog).toHaveLength(2)
       expect(
         auditLog.some(({ eventType }) => {
           return eventType === AuditLogEvent.SiteConfigUpdate
         }),
-      ).toEqual(true)
+      ).toBeTruthy()
       expect(
         auditLog.some(({ eventType }) => {
           return eventType === AuditLogEvent.Publish
         }),
-      ).toEqual(true)
+      ).toBeTruthy()
       expect(
         auditLog.every(({ userId }) => {
           return userId === session.userId
         }),
-      ).toEqual(true)
+      ).toBeTruthy()
     })
 
     it("should add the site notification successfully if one did exist before", async () => {
@@ -2149,14 +2191,14 @@ describe("site.router", async () => {
         .where("id", "=", site.id)
         .select("Site.config")
         .executeTakeFirstOrThrow()
-      expect(newSite.config.notification).toEqual(notification.notification)
+      expect(newSite.config.notification).toStrictEqual(notification.notification)
       const auditLog = await db
         .selectFrom("AuditLog")
         .selectAll()
         .executeTakeFirst()
       expect(auditLog).toBeDefined()
-      expect(auditLog?.eventType).toEqual(AuditLogEvent.SiteConfigUpdate)
-      expect(auditLog?.userId).toEqual(session.userId)
+      expect(auditLog?.eventType).toStrictEqual(AuditLogEvent.SiteConfigUpdate)
+      expect(auditLog?.userId).toStrictEqual(session.userId)
     })
 
     it("should remove the site notification successfully if notification is disabled", async () => {
@@ -2199,8 +2241,8 @@ describe("site.router", async () => {
         .selectAll()
         .executeTakeFirst()
       expect(auditLog).toBeDefined()
-      expect(auditLog?.eventType).toEqual(AuditLogEvent.SiteConfigUpdate)
-      expect(auditLog?.userId).toEqual(session.userId)
+      expect(auditLog?.eventType).toStrictEqual(AuditLogEvent.SiteConfigUpdate)
+      expect(auditLog?.userId).toStrictEqual(session.userId)
     })
   })
 
@@ -2292,26 +2334,31 @@ describe("site.router", async () => {
         .executeTakeFirstOrThrow()
       const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
 
-      expect(newSite.config).toEqual(NEW_CONFIG.replaceAll(`"`, ""))
-      expect(newSite.theme).toEqual(NEW_THEME.replaceAll(`"`, ""))
-      expect(newNavbar.content).toEqual(NEW_NAVBAR.replaceAll(`"`, ""))
-      expect(newFooter.content).toEqual(NEW_FOOTER.replaceAll(`"`, ""))
+      expect(newSite.config).toStrictEqual(NEW_CONFIG.replaceAll(`"`, ""))
+      expect(newSite.theme).toStrictEqual(NEW_THEME.replaceAll(`"`, ""))
+      expect(newNavbar.content).toStrictEqual(NEW_NAVBAR.replaceAll(`"`, ""))
+      expect(newFooter.content).toStrictEqual(NEW_FOOTER.replaceAll(`"`, ""))
       expect(auditLogs).toHaveLength(4)
+      // oxlint-disable-next-line vitest/max-expects
       expect(
         auditLogs.some(
           (log) => log.eventType === AuditLogEvent.SiteConfigUpdate,
         ),
-      ).toBe(true)
+      ).toBeTruthy()
+      // oxlint-disable-next-line vitest/max-expects
       expect(
         auditLogs.some((log) => log.eventType === AuditLogEvent.NavbarUpdate),
-      ).toBe(true)
+      ).toBeTruthy()
+      // oxlint-disable-next-line vitest/max-expects
       expect(
         auditLogs.some((log) => log.eventType === AuditLogEvent.FooterUpdate),
-      ).toBe(true)
+      ).toBeTruthy()
+      // oxlint-disable-next-line vitest/max-expects
       expect(
         auditLogs.some((log) => log.eventType === AuditLogEvent.Publish),
-      ).toBe(true)
-      expect(auditLogs.every((log) => log.userId === session.userId)).toBe(true)
+      ).toBeTruthy()
+      // oxlint-disable-next-line vitest/max-expects
+      expect(auditLogs.every((log) => log.userId === session.userId)).toBeTruthy()
     })
 
     it("should save changes to the site config, navbar and footer successfully if user is an Isomer Migrator Admin", async () => {
@@ -2353,30 +2400,36 @@ describe("site.router", async () => {
         .executeTakeFirstOrThrow()
       const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
 
-      expect(newSite.config).toEqual(NEW_CONFIG.replaceAll(`"`, ""))
-      expect(newSite.theme).toEqual(NEW_THEME.replaceAll(`"`, ""))
-      expect(newNavbar.content).toEqual(NEW_NAVBAR.replaceAll(`"`, ""))
-      expect(newFooter.content).toEqual(NEW_FOOTER.replaceAll(`"`, ""))
+      expect(newSite.config).toStrictEqual(NEW_CONFIG.replaceAll(`"`, ""))
+      expect(newSite.theme).toStrictEqual(NEW_THEME.replaceAll(`"`, ""))
+      expect(newNavbar.content).toStrictEqual(NEW_NAVBAR.replaceAll(`"`, ""))
+      expect(newFooter.content).toStrictEqual(NEW_FOOTER.replaceAll(`"`, ""))
       expect(auditLogs).toHaveLength(4)
+      // oxlint-disable-next-line vitest/max-expects
       expect(
         auditLogs.some(
           (log) => log.eventType === AuditLogEvent.SiteConfigUpdate,
         ),
-      ).toBe(true)
+      ).toBeTruthy()
+      // oxlint-disable-next-line vitest/max-expects
       expect(
         auditLogs.some((log) => log.eventType === AuditLogEvent.NavbarUpdate),
-      ).toBe(true)
+      ).toBeTruthy()
+      // oxlint-disable-next-line vitest/max-expects
       expect(
         auditLogs.some((log) => log.eventType === AuditLogEvent.FooterUpdate),
-      ).toBe(true)
+      ).toBeTruthy()
+      // oxlint-disable-next-line vitest/max-expects
       expect(
         auditLogs.some((log) => log.eventType === AuditLogEvent.Publish),
-      ).toBe(true)
-      expect(auditLogs.every((log) => log.userId === session.userId)).toBe(true)
+      ).toBeTruthy()
+      // oxlint-disable-next-line vitest/max-expects
+      expect(auditLogs.every((log) => log.userId === session.userId)).toBeTruthy()
     })
   })
 
   describe("create", () => {
+
     it("should throw 401 if user is not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -2425,7 +2478,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         siteId: expect.any(Number),
         siteName: "foo",
       })
@@ -2455,6 +2508,7 @@ describe("site.router", async () => {
   })
 
   describe("publish", () => {
+
     it("should throw 401 if user is not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -2517,15 +2571,15 @@ const assertAuditLog = async (sessionUserId?: string) => {
     auditLog.some(({ eventType }) => {
       return eventType === AuditLogEvent.SiteConfigUpdate
     }),
-  ).toEqual(true)
+  ).toBeTruthy()
   expect(
     auditLog.some(({ eventType }) => {
       return eventType === AuditLogEvent.Publish
     }),
-  ).toEqual(true)
+  ).toBeTruthy()
   expect(
     auditLog.every(({ userId }) => {
       return userId === sessionUserId
     }),
-  ).toEqual(true)
+  ).toBeTruthy()
 }

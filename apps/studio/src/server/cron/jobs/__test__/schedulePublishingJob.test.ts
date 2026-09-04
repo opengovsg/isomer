@@ -1,3 +1,4 @@
+import { beforeEach, vi, afterEach, describe, expect, it } from 'vitest';
 import type { MockInstance } from "vitest"
 import type { User } from "~prisma/generated/prisma/client"
 import { addSeconds } from "date-fns"
@@ -59,6 +60,7 @@ describe("schedulePublishingJob", async () => {
   })
 
   describe("schedulePublishJobHandler", () => {
+
     it("publishes a resource which has scheduledAt less than current run time", async () => {
       // Arrange
       const { site, page } = await setupPageResource({
@@ -103,8 +105,10 @@ describe("schedulePublishingJob", async () => {
 
       // expect the resourceSiteMap to contain the site and resource
       expect(resourceSiteMap[site.id]).toBeDefined()
+      // oxlint-disable-next-line vitest/max-expects
       expect(resourceSiteMap[site.id]?.[0]!.id).toBe(page.id)
     })
+
     it("does not publish a resource if scheduledAt time is in the future", async () => {
       // Arrange
       const { site, page } = await setupPageResource({
@@ -130,6 +134,7 @@ describe("schedulePublishingJob", async () => {
 
       expect(versions).toHaveLength(0)
     })
+
     it("throwing an error when publishing a resource sends failed publish email", async () => {
       // Arrange
       const { site, page } = await setupPageResource({
@@ -165,13 +170,13 @@ describe("schedulePublishingJob", async () => {
 
       expect(versions).toHaveLength(0)
       expect(result[site.id]).toBeUndefined()
-      expect(sendFailedPublishEmailSpy).toHaveBeenCalledTimes(1)
-      expect(sendFailedPublishEmailSpy).toHaveBeenCalledWith({
+      expect(sendFailedPublishEmailSpy).toHaveBeenCalledExactlyOnceWith({
         recipientEmail: user.email,
         isScheduled: true,
         resource: expect.objectContaining({ id: page.id }),
       })
     })
+
     it("throwing an error when publishing a resource still processes the next resource correctly", async () => {
       // Arrange
       const { site, page } = await setupPageResource({
@@ -217,13 +222,12 @@ describe("schedulePublishingJob", async () => {
       const result = await publishScheduledResources(true, FIXED_NOW)
 
       // Assert
-      expect(sendFailedPublishEmailSpy).toHaveBeenCalledTimes(1)
-      expect(sendFailedPublishEmailSpy).toHaveBeenCalledWith({
+      expect(sendFailedPublishEmailSpy).toHaveBeenCalledExactlyOnceWith({
         recipientEmail: user.email,
         isScheduled: true,
         resource: expect.objectContaining({ id: page.id }),
       })
-      expect(result[site.id]).not.toBeDefined()
+      expect(result[site.id]).toBeUndefined()
       expect(result[site2.id]?.length).toBe(1)
       expect(result[site2.id]?.[0]!.id).toBe(page2.id)
 
@@ -241,12 +245,15 @@ describe("schedulePublishingJob", async () => {
         .selectAll()
         .execute()
 
+      // oxlint-disable-next-line vitest/max-expects
       expect(versionsPage2).toHaveLength(1)
+      // oxlint-disable-next-line vitest/max-expects
       expect(versionsPage2[0]).toMatchObject({
         resourceId: page2.id,
         versionNum: 1,
       })
     })
+
     it("a resource without userId inside scheduledBy is skipped and does not prevent other resources from being published", async () => {
       // Arrange
       const { site, page } = await setupPageResource({
@@ -275,8 +282,8 @@ describe("schedulePublishingJob", async () => {
       const result = await publishScheduledResources(true, FIXED_NOW)
 
       // Assert
-      expect(publishPageResourceSpy).toHaveBeenCalledTimes(1)
-      expect(result[site.id]).not.toBeDefined()
+      expect(publishPageResourceSpy).toHaveBeenCalledOnce()
+      expect(result[site.id]).toBeUndefined()
       expect(result[site2.id]?.length).toBe(1)
       expect(result[site2.id]?.[0]!.id).toBe(page2.id)
 
@@ -294,12 +301,15 @@ describe("schedulePublishingJob", async () => {
         .selectAll()
         .execute()
 
+      // oxlint-disable-next-line vitest/max-expects
       expect(versionsPage2).toHaveLength(1)
+      // oxlint-disable-next-line vitest/max-expects
       expect(versionsPage2[0]).toMatchObject({
         resourceId: page2.id,
         versionNum: 1,
       })
     })
+
     it("throwing an error when sending an email for a resource still processes the next resource correctly", async () => {
       // Arrange
       const { site, page } = await setupPageResource({
@@ -348,14 +358,13 @@ describe("schedulePublishingJob", async () => {
       const result = await publishScheduledResources(true, FIXED_NOW)
 
       // Assert
-      expect(emailServiceSpy).toHaveBeenCalledTimes(1)
-      expect(emailServiceSpy).toHaveBeenCalledWith({
+      expect(emailServiceSpy).toHaveBeenCalledExactlyOnceWith({
         recipientEmail: user.email,
         isScheduled: true,
         resource: expect.objectContaining({ id: page.id }),
       })
 
-      expect(result[site.id]).not.toBeDefined()
+      expect(result[site.id]).toBeUndefined()
       expect(result[site2.id]?.length).toBe(1)
       expect(result[site2.id]?.[0]!.id).toBe(page2.id)
 
@@ -373,7 +382,9 @@ describe("schedulePublishingJob", async () => {
         .selectAll()
         .execute()
 
+      // oxlint-disable-next-line vitest/max-expects
       expect(versionsPage2).toHaveLength(1)
+      // oxlint-disable-next-line vitest/max-expects
       expect(versionsPage2[0]).toMatchObject({
         resourceId: page2.id,
         versionNum: 1,
@@ -381,7 +392,7 @@ describe("schedulePublishingJob", async () => {
     })
   })
 
-  describe("publishScheduledSites", () => {
+  describe(publishScheduledSites, () => {
     let computeBuildChangesSpy: MockInstance
     let startProjectByIdSpy: MockInstance
     beforeEach(() => {
@@ -446,6 +457,7 @@ describe("schedulePublishingJob", async () => {
         isScheduled: true,
       })
     })
+
     it("passing in enableCodebuildJobs false leads to no codebuild row being inserted", async () => {
       // Arrange
       const { site, page } = await setupPageResource({
@@ -484,6 +496,7 @@ describe("schedulePublishingJob", async () => {
       expect(computeBuildChangesSpy).toHaveBeenCalledOnce()
       expect(startProjectByIdSpy).toHaveBeenCalledOnce()
     })
+
     it("a failed site publish leads to an email being sent for each resource under the site", async () => {
       // Arrange
       const { site, page } = await setupPageResource({
@@ -522,13 +535,13 @@ describe("schedulePublishingJob", async () => {
       )
 
       // Assert
-      expect(sendFailedPublishEmailSpy).toHaveBeenCalledTimes(1)
-      expect(sendFailedPublishEmailSpy).toHaveBeenCalledWith({
+      expect(sendFailedPublishEmailSpy).toHaveBeenCalledExactlyOnceWith({
         recipientEmail: user.email,
         isScheduled: true,
         resource: expect.objectContaining({ id: page.id }),
       })
     })
+
     it("a failed site publish does NOT send emails if user is deleted", async () => {
       // Arrange
       const { site, page } = await setupPageResource({
@@ -569,6 +582,7 @@ describe("schedulePublishingJob", async () => {
       // Assert
       expect(sendFailedPublishEmailSpy).not.toHaveBeenCalled()
     })
+
     it("a failed site publish does NOT send emails if user is missing an email", async () => {
       // Arrange
       const { site, page } = await setupPageResource({

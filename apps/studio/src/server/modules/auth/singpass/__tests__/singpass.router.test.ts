@@ -6,7 +6,7 @@ import {
   createMockRequest,
 } from "tests/integration/helpers/iron-session"
 import { setupUser, setUpWhitelist } from "tests/integration/helpers/seed"
-import { expect, vi } from "vitest"
+import { expect, vi, beforeEach, describe, it } from "vitest"
 import { env } from "~/env.mjs"
 import { AuditLogEvent, db } from "~/server/modules/database"
 import { createCallerFactory } from "~/server/trpc"
@@ -33,6 +33,7 @@ describe("auth.singpass", () => {
   })
 
   describe("login", () => {
+
     it("should throw if email verification has not been completed", async () => {
       // Act
       const result = caller.login({ landingUrl: "http://localhost" })
@@ -81,6 +82,7 @@ describe("auth.singpass", () => {
   })
 
   describe("getUserProps", () => {
+
     it("should throw if no session state is found", async () => {
       // Act
       const result = caller.getUserProps()
@@ -140,7 +142,7 @@ describe("auth.singpass", () => {
       const result = await caller.getUserProps()
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         name: user.name || user.email,
         isNewUser: !user.singpassUuid,
       })
@@ -148,6 +150,7 @@ describe("auth.singpass", () => {
   })
 
   describe("callback", () => {
+
     it("should throw if no session state is found", async () => {
       // Act
       const result = caller.callback({
@@ -270,11 +273,11 @@ describe("auth.singpass", () => {
         .selectAll()
         .where("email", "=", TEST_VALID_EMAIL)
         .executeTakeFirstOrThrow()
-      expect(updatedUser.singpassUuid).toEqual(MOCK_SINGPASS_UUID)
+      expect(updatedUser.singpassUuid).toStrictEqual(MOCK_SINGPASS_UUID)
       // Audit log should have been created
       const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLogs).toHaveLength(2)
-      expect(auditLogs).toEqual([
+      expect(auditLogs).toStrictEqual([
         expect.objectContaining({
           eventType: AuditLogEvent.UserUpdate,
           delta: {
@@ -327,7 +330,7 @@ describe("auth.singpass", () => {
       // Assert
       const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLogs).toHaveLength(1)
-      expect(auditLogs).toEqual([
+      expect(auditLogs).toStrictEqual([
         expect.objectContaining({
           eventType: AuditLogEvent.Login,
           delta: {

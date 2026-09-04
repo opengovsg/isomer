@@ -22,11 +22,11 @@ import { getCurrentSingaporeMonth } from "~/schemas/audit"
 // ask was idempotent-accepted and nothing was inserted for that site.
 
 const { mockDb, mockValidatePermissions } = vi.hoisted(() => ({
-  mockDb: { transaction: vi.fn() },
-  mockValidatePermissions: vi.fn(),
+  mockDb: { transaction: vi.fn<(...args: unknown[]) => unknown>(()) },
+  mockValidatePermissions: vi.fn<(...args: unknown[]) => unknown>(()),
 }))
 
-vi.mock("~/env.mjs", () => ({
+vi.mock(import('~/env.mjs'), () => ({
   env: {
     // oxlint-disable-next-line node/no-process-env
     NODE_ENV: process.env.NODE_ENV ?? "test",
@@ -38,12 +38,12 @@ vi.mock("~/env.mjs", () => ({
 
 // Keep the real database module (its `AuditLogEvent`, `sql`, types and utils
 // are used across the audit module) and override only `db` with our fake.
-vi.mock("../../database", async (importOriginal) => ({
+vi.mock(import('../../database'), async (importOriginal) => ({
   ...(await importOriginal<typeof import("../../database")>()),
   db: mockDb,
 }))
 
-vi.mock("../../permissions/permissions.service", () => ({
+vi.mock(import('../../permissions/permissions.service'), () => ({
   validatePermissionsForManagingUsers: mockValidatePermissions,
 }))
 
@@ -256,7 +256,7 @@ describe("createAuditLogExportRequestsForSites — idempotent accept", () => {
     // Assert: the caller gets the winner's row as a plain success; nothing of
     // ours was inserted, and the ask is still recorded as an event carrying
     // the requester IP.
-    expect(result).toEqual([winnerRow])
+    expect(result).toStrictEqual([winnerRow])
     expect(tx.insertedValues).toHaveLength(0)
     expect(tx.auditLogValues).toHaveLength(1)
     expectExportCreateEvent(tx.auditLogValues[0], 1, "Access", "203.0.113.7")
@@ -299,7 +299,7 @@ describe("createAuditLogExportRequestsForSites — idempotent accept", () => {
 
     // Assert: the newer (winner's) row wins over the stale one, and it is
     // still recorded as accepted rather than silently dropped.
-    expect(result).toEqual([winnerRowNowDone])
+    expect(result).toStrictEqual([winnerRowNowDone])
     expect(tx.auditLogValues).toHaveLength(1)
     expectExportCreateEvent(tx.auditLogValues[0], 1, "Access")
   })
@@ -347,7 +347,7 @@ describe("createAuditLogExportRequestsForSites — idempotent accept", () => {
 
     // Assert: the existing row is returned, no INSERT was ever issued, and —
     // crucially — the pure idempotent-accept still records the ask's event.
-    expect(result).toEqual([existingRow])
+    expect(result).toStrictEqual([existingRow])
     expect(tx.insertedValues).toHaveLength(0)
     expect(tx.auditLogValues).toHaveLength(1)
     expectExportCreateEvent(tx.auditLogValues[0], 1, "Activity")
@@ -378,7 +378,7 @@ describe("createAuditLogExportRequestsForSites — idempotent accept", () => {
     // Assert: one row per site, one INSERT row (only for site 1), one audit
     // event per site.
     expect(result).toHaveLength(2)
-    expect(result).toEqual(
+    expect(result).toStrictEqual(
       expect.arrayContaining([
         existingRow,
         expect.objectContaining({ siteId: 1 }),
@@ -388,6 +388,6 @@ describe("createAuditLogExportRequestsForSites — idempotent accept", () => {
     expect(tx.insertedValues[0]).toMatchObject({ siteId: 1 })
     expect(tx.auditLogValues).toHaveLength(2)
     const siteIdsLogged = tx.auditLogValues.map((v) => v.siteId).sort()
-    expect(siteIdsLogged).toEqual([1, 2])
+    expect(siteIdsLogged).toStrictEqual([1, 2])
   })
 })
