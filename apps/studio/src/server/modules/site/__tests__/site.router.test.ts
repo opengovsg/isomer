@@ -2295,136 +2295,186 @@ describe("site.router", async () => {
       )
     })
 
-    it("should save changes to the site config, navbar and footer successfully if user is an Isomer Core Admin", async () => {
-      // Arrange
+    describe("should save changes to the site config, navbar and footer successfully if user is an Isomer Core Admin", () => {
       const NEW_CONFIG = `"config"`
       const NEW_THEME = `"theme"`
       const NEW_NAVBAR = `"navbar"`
       const NEW_FOOTER = `"footer"`
-      const { site } = await setupSite()
-      await setupIsomerAdmin({
-        userId: session.userId!,
-        role: IsomerAdminRole.Core,
+      let newSite: Awaited<
+        ReturnType<
+          ReturnType<typeof db.selectFrom<"Site">>["executeTakeFirstOrThrow"]
+        >
+      >
+      let newNavbar: Awaited<
+        ReturnType<
+          ReturnType<typeof db.selectFrom<"Navbar">>["executeTakeFirstOrThrow"]
+        >
+      >
+      let newFooter: Awaited<
+        ReturnType<
+          ReturnType<typeof db.selectFrom<"Footer">>["executeTakeFirstOrThrow"]
+        >
+      >
+      let auditLogs: Awaited<
+        ReturnType<
+          ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]
+        >
+      >
+
+      beforeEach(async () => {
+        const { site } = await setupSite()
+        await setupIsomerAdmin({
+          userId: session.userId!,
+          role: IsomerAdminRole.Core,
+        })
+
+        await caller.setSiteConfigByAdmin({
+          siteId: site.id,
+          config: NEW_CONFIG,
+          theme: NEW_THEME,
+          navbar: NEW_NAVBAR,
+          footer: NEW_FOOTER,
+        })
+
+        newSite = await db
+          .selectFrom("Site")
+          .where("id", "=", site.id)
+          .selectAll()
+          .executeTakeFirstOrThrow()
+        newNavbar = await db
+          .selectFrom("Navbar")
+          .where("siteId", "=", site.id)
+          .selectAll()
+          .executeTakeFirstOrThrow()
+        newFooter = await db
+          .selectFrom("Footer")
+          .where("siteId", "=", site.id)
+          .selectAll()
+          .executeTakeFirstOrThrow()
+        auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
       })
 
-      // Act
-      await caller.setSiteConfigByAdmin({
-        siteId: site.id,
-        config: NEW_CONFIG,
-        theme: NEW_THEME,
-        navbar: NEW_NAVBAR,
-        footer: NEW_FOOTER,
+      it("should update site config, navbar, and footer", () => {
+        expect(newSite.config).toStrictEqual(NEW_CONFIG.replaceAll(`"`, ""))
+        expect(newSite.theme).toStrictEqual(NEW_THEME.replaceAll(`"`, ""))
+        expect(newNavbar.content).toStrictEqual(NEW_NAVBAR.replaceAll(`"`, ""))
+        expect(newFooter.content).toStrictEqual(NEW_FOOTER.replaceAll(`"`, ""))
       })
 
-      // Assert
-      const newSite = await db
-        .selectFrom("Site")
-        .where("id", "=", site.id)
-        .selectAll()
-        .executeTakeFirstOrThrow()
-      const newNavbar = await db
-        .selectFrom("Navbar")
-        .where("siteId", "=", site.id)
-        .selectAll()
-        .executeTakeFirstOrThrow()
-      const newFooter = await db
-        .selectFrom("Footer")
-        .where("siteId", "=", site.id)
-        .selectAll()
-        .executeTakeFirstOrThrow()
-      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
+      it("should create audit logs with expected event types", () => {
+        expect(auditLogs).toHaveLength(4)
+        expect(
+          auditLogs.some(
+            (log) => log.eventType === AuditLogEvent.SiteConfigUpdate,
+          ),
+        ).toBe(true)
+        expect(
+          auditLogs.some((log) => log.eventType === AuditLogEvent.NavbarUpdate),
+        ).toBe(true)
+        expect(
+          auditLogs.some((log) => log.eventType === AuditLogEvent.FooterUpdate),
+        ).toBe(true)
+        expect(
+          auditLogs.some((log) => log.eventType === AuditLogEvent.Publish),
+        ).toBe(true)
+      })
 
-      expect(newSite.config).toStrictEqual(NEW_CONFIG.replaceAll(`"`, ""))
-      expect(newSite.theme).toStrictEqual(NEW_THEME.replaceAll(`"`, ""))
-      expect(newNavbar.content).toStrictEqual(NEW_NAVBAR.replaceAll(`"`, ""))
-      expect(newFooter.content).toStrictEqual(NEW_FOOTER.replaceAll(`"`, ""))
-      expect(auditLogs).toHaveLength(4)
-      // oxlint-disable-next-line vitest/max-expects
-      expect(
-        auditLogs.some(
-          (log) => log.eventType === AuditLogEvent.SiteConfigUpdate,
-        ),
-      ).toBe(true)
-      // oxlint-disable-next-line vitest/max-expects
-      expect(
-        auditLogs.some((log) => log.eventType === AuditLogEvent.NavbarUpdate),
-      ).toBe(true)
-      // oxlint-disable-next-line vitest/max-expects
-      expect(
-        auditLogs.some((log) => log.eventType === AuditLogEvent.FooterUpdate),
-      ).toBe(true)
-      // oxlint-disable-next-line vitest/max-expects
-      expect(
-        auditLogs.some((log) => log.eventType === AuditLogEvent.Publish),
-      ).toBe(true)
-      // oxlint-disable-next-line vitest/max-expects
-      expect(auditLogs.every((log) => log.userId === session.userId)).toBe(true)
+      it("should attribute audit logs to the session user", () => {
+        expect(auditLogs.every((log) => log.userId === session.userId)).toBe(
+          true,
+        )
+      })
     })
 
-    it("should save changes to the site config, navbar and footer successfully if user is an Isomer Migrator Admin", async () => {
-      // Arrange
+    describe("should save changes to the site config, navbar and footer successfully if user is an Isomer Migrator Admin", () => {
       const NEW_CONFIG = `"config"`
       const NEW_THEME = `"theme"`
       const NEW_NAVBAR = `"navbar"`
       const NEW_FOOTER = `"footer"`
-      const { site } = await setupSite()
-      await setupIsomerAdmin({
-        userId: session.userId!,
-        role: IsomerAdminRole.Migrator,
+      let newSite: Awaited<
+        ReturnType<
+          ReturnType<typeof db.selectFrom<"Site">>["executeTakeFirstOrThrow"]
+        >
+      >
+      let newNavbar: Awaited<
+        ReturnType<
+          ReturnType<typeof db.selectFrom<"Navbar">>["executeTakeFirstOrThrow"]
+        >
+      >
+      let newFooter: Awaited<
+        ReturnType<
+          ReturnType<typeof db.selectFrom<"Footer">>["executeTakeFirstOrThrow"]
+        >
+      >
+      let auditLogs: Awaited<
+        ReturnType<
+          ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]
+        >
+      >
+
+      beforeEach(async () => {
+        const { site } = await setupSite()
+        await setupIsomerAdmin({
+          userId: session.userId!,
+          role: IsomerAdminRole.Migrator,
+        })
+
+        await caller.setSiteConfigByAdmin({
+          siteId: site.id,
+          config: NEW_CONFIG,
+          theme: NEW_THEME,
+          navbar: NEW_NAVBAR,
+          footer: NEW_FOOTER,
+        })
+
+        newSite = await db
+          .selectFrom("Site")
+          .where("id", "=", site.id)
+          .selectAll()
+          .executeTakeFirstOrThrow()
+        newNavbar = await db
+          .selectFrom("Navbar")
+          .where("siteId", "=", site.id)
+          .selectAll()
+          .executeTakeFirstOrThrow()
+        newFooter = await db
+          .selectFrom("Footer")
+          .where("siteId", "=", site.id)
+          .selectAll()
+          .executeTakeFirstOrThrow()
+        auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
       })
 
-      // Act
-      await caller.setSiteConfigByAdmin({
-        siteId: site.id,
-        config: NEW_CONFIG,
-        theme: NEW_THEME,
-        navbar: NEW_NAVBAR,
-        footer: NEW_FOOTER,
+      it("should update site config, navbar, and footer", () => {
+        expect(newSite.config).toStrictEqual(NEW_CONFIG.replaceAll(`"`, ""))
+        expect(newSite.theme).toStrictEqual(NEW_THEME.replaceAll(`"`, ""))
+        expect(newNavbar.content).toStrictEqual(NEW_NAVBAR.replaceAll(`"`, ""))
+        expect(newFooter.content).toStrictEqual(NEW_FOOTER.replaceAll(`"`, ""))
       })
 
-      // Assert
-      const newSite = await db
-        .selectFrom("Site")
-        .where("id", "=", site.id)
-        .selectAll()
-        .executeTakeFirstOrThrow()
-      const newNavbar = await db
-        .selectFrom("Navbar")
-        .where("siteId", "=", site.id)
-        .selectAll()
-        .executeTakeFirstOrThrow()
-      const newFooter = await db
-        .selectFrom("Footer")
-        .where("siteId", "=", site.id)
-        .selectAll()
-        .executeTakeFirstOrThrow()
-      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
+      it("should create audit logs with expected event types", () => {
+        expect(auditLogs).toHaveLength(4)
+        expect(
+          auditLogs.some(
+            (log) => log.eventType === AuditLogEvent.SiteConfigUpdate,
+          ),
+        ).toBe(true)
+        expect(
+          auditLogs.some((log) => log.eventType === AuditLogEvent.NavbarUpdate),
+        ).toBe(true)
+        expect(
+          auditLogs.some((log) => log.eventType === AuditLogEvent.FooterUpdate),
+        ).toBe(true)
+        expect(
+          auditLogs.some((log) => log.eventType === AuditLogEvent.Publish),
+        ).toBe(true)
+      })
 
-      expect(newSite.config).toStrictEqual(NEW_CONFIG.replaceAll(`"`, ""))
-      expect(newSite.theme).toStrictEqual(NEW_THEME.replaceAll(`"`, ""))
-      expect(newNavbar.content).toStrictEqual(NEW_NAVBAR.replaceAll(`"`, ""))
-      expect(newFooter.content).toStrictEqual(NEW_FOOTER.replaceAll(`"`, ""))
-      expect(auditLogs).toHaveLength(4)
-      // oxlint-disable-next-line vitest/max-expects
-      expect(
-        auditLogs.some(
-          (log) => log.eventType === AuditLogEvent.SiteConfigUpdate,
-        ),
-      ).toBe(true)
-      // oxlint-disable-next-line vitest/max-expects
-      expect(
-        auditLogs.some((log) => log.eventType === AuditLogEvent.NavbarUpdate),
-      ).toBe(true)
-      // oxlint-disable-next-line vitest/max-expects
-      expect(
-        auditLogs.some((log) => log.eventType === AuditLogEvent.FooterUpdate),
-      ).toBe(true)
-      // oxlint-disable-next-line vitest/max-expects
-      expect(
-        auditLogs.some((log) => log.eventType === AuditLogEvent.Publish),
-      ).toBe(true)
-      // oxlint-disable-next-line vitest/max-expects
-      expect(auditLogs.every((log) => log.userId === session.userId)).toBe(true)
+      it("should attribute audit logs to the session user", () => {
+        expect(auditLogs.every((log) => log.userId === session.userId)).toBe(
+          true,
+        )
+      })
     })
   })
 

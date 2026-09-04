@@ -170,61 +170,71 @@ describe("auditLogExport processor", () => {
     mockSendAuditLogExportFailedEmail.mockResolvedValue(undefined)
   })
 
-  it("processes an Access request: one upload with an inclusive-end key, one link, status Done", async () => {
-    // Arrange
-    const { site } = await setupSite()
-    const admin = await setupUser({ email: "admin@vendor.com.sg" })
-    await setupAdminPermissions({ userId: admin.id, siteId: site.id })
-    // A couple of permission rows so the access report is non-empty.
-    const memberA = await setupUser({ email: "alice@vendor.com.sg" })
-    const memberB = await setupUser({ email: "bob@vendor.com.sg" })
-    await setupAdminPermissions({ userId: memberA.id, siteId: site.id })
-    await setupAdminPermissions({ userId: memberB.id, siteId: site.id })
+  describe("processes an Access request: one upload with an inclusive-end key, one link, status Done", () => {
+    const expectedKey = (requestId: string, siteId: number) =>
+      `audit-log-exports/${siteId}/${requestId}/access-2024-03-01-to-2024-03-31.csv`
+    let request: Awaited<ReturnType<typeof seedRequest>>
+    let siteId: number
+    let emailArg: ReadyEmailArg
+    let updated: Awaited<ReturnType<typeof getRequest>>
 
-    const request = await seedRequest({
-      siteId: site.id,
-      userId: admin.id,
-      reportType: "Access",
+    beforeEach(async () => {
+      const { site } = await setupSite()
+      siteId = site.id
+      const admin = await setupUser({ email: "admin@vendor.com.sg" })
+      await setupAdminPermissions({ userId: admin.id, siteId: site.id })
+      const memberA = await setupUser({ email: "alice@vendor.com.sg" })
+      const memberB = await setupUser({ email: "bob@vendor.com.sg" })
+      await setupAdminPermissions({ userId: memberA.id, siteId: site.id })
+      await setupAdminPermissions({ userId: memberB.id, siteId: site.id })
+
+      request = await seedRequest({
+        siteId: site.id,
+        userId: admin.id,
+        reportType: "Access",
+      })
+
+      await processPendingAuditLogExports()
+
+      emailArg = mockSendAuditLogExportReadyEmail.mock.calls[0]![0]
+      updated = await getRequest(request.id)
     })
 
-    // Act
-    await processPendingAuditLogExports()
-
-    // Assert: the S3 key renders the half-open range [2024-03-01,2024-04-01)
-    // with an inclusive end — `2024-03-01-to-2024-03-31`.
-    const expectedKey = `audit-log-exports/${site.id}/${request.id}/access-2024-03-01-to-2024-03-31.csv`
-    expect(mockUploadAuditLogExport).toHaveBeenCalledOnce()
-    expect(mockUploadAuditLogExport.mock.calls[0]![0].key).toBe(expectedKey)
-
-    expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledOnce()
-    const emailArg = mockSendAuditLogExportReadyEmail.mock.calls[0]![0]
-    // The emailed link points at the Studio redemption endpoint carrying a
-    // sealed Download Token (ADR 0006), NOT a presigned S3 URL. This pins the
-    // actual bug: no signing-credential-lifetime-capped amazonaws.com URL is
-    // emailed anymore.
-    expect(emailArg).toMatchObject({
-      link: expect.objectContaining({
-        label: "access",
-        url: expect.stringContaining(
-          "https://studio.test.gov.sg/api/audit-log-exports/download?token=",
-        ),
-      }),
-      recipientEmail: "admin@vendor.com.sg",
-      month: "March 2024",
+    it("uploads to S3 with the correct inclusive-end key", () => {
+      expect(mockUploadAuditLogExport).toHaveBeenCalledOnce()
+      expect(mockUploadAuditLogExport.mock.calls[0]![0].key).toBe(
+        expectedKey(request.id, siteId),
+      )
     })
-    expect(emailArg.link.url).not.toContain("amazonaws.com")
-    // oxlint-disable-next-line vitest/max-expects
-    expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
 
-    const updated = await getRequest(request.id)
-    // oxlint-disable-next-line vitest/max-expects
-    expect(updated).toStrictEqual(
-      expect.objectContaining({
-        status: "Done",
-        objectKey: expectedKey,
-        completedAt: expect.any(Date),
-      }),
-    )
+    it("sends a ready email with a download token link", () => {
+      expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledOnce()
+      expect(emailArg).toMatchObject({
+        link: expect.objectContaining({
+          label: "access",
+          url: expect.stringContaining(
+            "https://studio.test.gov.sg/api/audit-log-exports/download?token=",
+          ),
+        }),
+        recipientEmail: "admin@vendor.com.sg",
+        month: "March 2024",
+      })
+      expect(emailArg.link.url).not.toContain("amazonaws.com")
+    })
+
+    it("does not send a failed email", () => {
+      expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
+    })
+
+    it("marks the request Done with the object key", () => {
+      expect(updated).toStrictEqual(
+        expect.objectContaining({
+          status: "Done",
+          objectKey: expectedKey(request.id, siteId),
+          completedAt: expect.any(Date),
+        }),
+      )
+    })
   })
 
   it("processes an Isomer Admin request without a site permission", async () => {
@@ -304,49 +314,58 @@ describe("auditLogExport processor", () => {
     expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
   })
 
-  it("processes two independent pending rows in one sweep: two uploads, two single-link emails, both Done", async () => {
-    // Arrange: an Access row and an Activity row for the same site, each
-    // fulfilled as its own job with its own email — no cross-job coordination.
-    const { site } = await setupSite()
-    const admin = await setupUser({ email: "admin2@vendor.com.sg" })
-    await setupAdminPermissions({ userId: admin.id, siteId: site.id })
+  describe("processes two independent pending rows in one sweep: two uploads, two single-link emails, both Done", () => {
+    let siteId: number
+    let accessRequest: Awaited<ReturnType<typeof seedRequest>>
+    let activityRequest: Awaited<ReturnType<typeof seedRequest>>
+    let updatedAccess: Awaited<ReturnType<typeof getRequest>>
+    let updatedActivity: Awaited<ReturnType<typeof getRequest>>
 
-    const accessRequest = await seedRequest({
-      siteId: site.id,
-      userId: admin.id,
-      reportType: "Access",
+    beforeEach(async () => {
+      const { site } = await setupSite()
+      siteId = site.id
+      const admin = await setupUser({ email: "admin2@vendor.com.sg" })
+      await setupAdminPermissions({ userId: admin.id, siteId: site.id })
+
+      accessRequest = await seedRequest({
+        siteId: site.id,
+        userId: admin.id,
+        reportType: "Access",
+      })
+      activityRequest = await seedRequest({
+        siteId: site.id,
+        userId: admin.id,
+        reportType: "Activity",
+      })
+
+      await processPendingAuditLogExports()
+
+      updatedAccess = await getRequest(accessRequest.id)
+      updatedActivity = await getRequest(activityRequest.id)
     })
-    const activityRequest = await seedRequest({
-      siteId: site.id,
-      userId: admin.id,
-      reportType: "Activity",
+
+    it("uploads both reports and emails each with a single link", () => {
+      expect(mockUploadAuditLogExport).toHaveBeenCalledTimes(2)
+      expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledTimes(2)
+      const labels = mockSendAuditLogExportReadyEmail.mock.calls
+        .map(([arg]) => arg.link.label)
+        .sort()
+      expect(labels).toStrictEqual(["access", "audit"])
     })
 
-    // Act
-    await processPendingAuditLogExports()
+    it("marks the Access request Done with the correct object key", () => {
+      expect(updatedAccess.status).toBe("Done")
+      expect(updatedAccess.objectKey).toBe(
+        `audit-log-exports/${siteId}/${accessRequest.id}/access-2024-03-01-to-2024-03-31.csv`,
+      )
+    })
 
-    // Assert: two uploads and two independent ready emails, each with exactly
-    // one link (no cross-job coordination).
-    expect(mockUploadAuditLogExport).toHaveBeenCalledTimes(2)
-    expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledTimes(2)
-    const labels = mockSendAuditLogExportReadyEmail.mock.calls
-      .map(([arg]) => arg.link.label)
-      .sort()
-    expect(labels).toStrictEqual(["access", "audit"])
-
-    const updatedAccess = await getRequest(accessRequest.id)
-    expect(updatedAccess.status).toBe("Done")
-    expect(updatedAccess.objectKey).toBe(
-      `audit-log-exports/${site.id}/${accessRequest.id}/access-2024-03-01-to-2024-03-31.csv`,
-    )
-
-    const updatedActivity = await getRequest(activityRequest.id)
-    // oxlint-disable-next-line vitest/max-expects
-    expect(updatedActivity.status).toBe("Done")
-    // oxlint-disable-next-line vitest/max-expects
-    expect(updatedActivity.objectKey).toBe(
-      `audit-log-exports/${site.id}/${activityRequest.id}/activity-2024-03-01-to-2024-03-31.csv`,
-    )
+    it("marks the Activity request Done with the correct object key", () => {
+      expect(updatedActivity.status).toBe("Done")
+      expect(updatedActivity.objectKey).toBe(
+        `audit-log-exports/${siteId}/${activityRequest.id}/activity-2024-03-01-to-2024-03-31.csv`,
+      )
+    })
   })
 
   it("uploads a header-only CSV and sends the ready email when there are no results", async () => {
@@ -375,55 +394,59 @@ describe("auditLogExport processor", () => {
     expect(updated.status).toBe("Done")
   })
 
-  it("retries on failure and only fails (with email) after the third attempt", async () => {
-    // Arrange
-    const { site } = await setupSite()
-    const admin = await setupUser({ email: "admin4@vendor.com.sg" })
-    await setupAdminPermissions({ userId: admin.id, siteId: site.id })
-    mockUploadAuditLogExport.mockRejectedValue(new Error("s3 down"))
+  describe("retries on failure and only fails (with email) after the third attempt", () => {
+    let request: Awaited<ReturnType<typeof seedRequest>>
+    let updatedAfterFirstSweep: Awaited<ReturnType<typeof getRequest>>
+    let updatedAfterSecondSweep: Awaited<ReturnType<typeof getRequest>>
+    let updatedAfterThirdSweep: Awaited<ReturnType<typeof getRequest>>
+    let failedArg: FailedEmailArg
 
-    const request = await seedRequest({
-      siteId: site.id,
-      userId: admin.id,
-      reportType: "Access",
+    beforeEach(async () => {
+      const { site } = await setupSite()
+      const admin = await setupUser({ email: "admin4@vendor.com.sg" })
+      await setupAdminPermissions({ userId: admin.id, siteId: site.id })
+      mockUploadAuditLogExport.mockRejectedValue(new Error("s3 down"))
+
+      request = await seedRequest({
+        siteId: site.id,
+        userId: admin.id,
+        reportType: "Access",
+      })
+
+      await processPendingAuditLogExports()
+      updatedAfterFirstSweep = await getRequest(request.id)
+
+      await processPendingAuditLogExports()
+      updatedAfterSecondSweep = await getRequest(request.id)
+
+      await processPendingAuditLogExports()
+      updatedAfterThirdSweep = await getRequest(request.id)
+      failedArg = mockSendAuditLogExportFailedEmail.mock.calls[0]![0]
     })
 
-    // Act: first sweep → attempt 1, re-queued, no failed email.
-    await processPendingAuditLogExports()
+    it("re-queues after the first attempt without sending a failed email", () => {
+      expect(updatedAfterFirstSweep.attempts).toBe(1)
+      expect(updatedAfterFirstSweep.status).toBe("Pending")
+      expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
+    })
 
-    // Assert
-    let updated = await getRequest(request.id)
-    expect(updated.attempts).toBe(1)
-    expect(updated.status).toBe("Pending")
-    expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
+    it("re-queues after the second attempt without sending a failed email", () => {
+      expect(updatedAfterSecondSweep.attempts).toBe(2)
+      expect(updatedAfterSecondSweep.status).toBe("Pending")
+      expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
+    })
 
-    // Act: second sweep → attempt 2, still re-queued.
-    await processPendingAuditLogExports()
-    updated = await getRequest(request.id)
-    expect(updated.attempts).toBe(2)
-    expect(updated.status).toBe("Pending")
-    // oxlint-disable-next-line vitest/max-expects
-    expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
+    it("marks the request Failed and sends a failed email after the third attempt", () => {
+      expect(updatedAfterThirdSweep.attempts).toBe(3)
+      expect(updatedAfterThirdSweep.status).toBe("Failed")
+      expect(mockSendAuditLogExportFailedEmail).toHaveBeenCalledOnce()
+      expect(failedArg.recipientEmail).toBe("admin4@vendor.com.sg")
+      expect(failedArg.month).toBe("March 2024")
+    })
 
-    // Act: third sweep → attempt 3, Failed + failed email sent.
-    await processPendingAuditLogExports()
-    updated = await getRequest(request.id)
-    // oxlint-disable-next-line vitest/max-expects
-    expect(updated.attempts).toBe(3)
-    // oxlint-disable-next-line vitest/max-expects
-    expect(updated.status).toBe("Failed")
-    // oxlint-disable-next-line vitest/max-expects
-    expect(mockSendAuditLogExportFailedEmail).toHaveBeenCalledOnce()
-    const failedArg = mockSendAuditLogExportFailedEmail.mock.calls[0]![0]
-    // oxlint-disable-next-line vitest/max-expects
-    expect(failedArg.recipientEmail).toBe("admin4@vendor.com.sg")
-    // The failure email's month label derives from the daterange lower bound.
-    // oxlint-disable-next-line vitest/max-expects
-    expect(failedArg.month).toBe("March 2024")
-
-    // The ready email must never have been sent.
-    // oxlint-disable-next-line vitest/max-expects
-    expect(mockSendAuditLogExportReadyEmail).not.toHaveBeenCalled()
+    it("never sends a ready email", () => {
+      expect(mockSendAuditLogExportReadyEmail).not.toHaveBeenCalled()
+    })
   })
 
   it("does not reprocess a request that is not Pending", async () => {
@@ -450,37 +473,41 @@ describe("auditLogExport processor", () => {
     expect(updated.status).toBe("Done")
   })
 
-  it("re-claims and processes a stale Processing row (abandoned claim) to Done", async () => {
-    // Arrange: a row stuck in Processing with an `updatedAt` well past the
-    // 15-minute lease — simulating a worker that died after claiming it but
-    // before the ready email / mark-Done. A later sweep must recover it.
-    const { site } = await setupSite()
-    const admin = await setupUser({ email: "stale@vendor.com.sg" })
-    await setupAdminPermissions({ userId: admin.id, siteId: site.id })
+  describe("re-claims and processes a stale Processing row (abandoned claim) to Done", () => {
+    let updated: Awaited<ReturnType<typeof getRequest>>
 
-    const staleUpdatedAt = new Date(Date.now() - 30 * 60 * 1000) // 30 min ago
-    const request = await seedRequest({
-      siteId: site.id,
-      userId: admin.id,
-      reportType: "Access",
-      status: "Processing",
-      updatedAt: staleUpdatedAt,
+    beforeEach(async () => {
+      const { site } = await setupSite()
+      const admin = await setupUser({ email: "stale@vendor.com.sg" })
+      await setupAdminPermissions({ userId: admin.id, siteId: site.id })
+
+      const staleUpdatedAt = new Date(Date.now() - 30 * 60 * 1000)
+      const request = await seedRequest({
+        siteId: site.id,
+        userId: admin.id,
+        reportType: "Access",
+        status: "Processing",
+        updatedAt: staleUpdatedAt,
+      })
+
+      await processPendingAuditLogExports()
+      updated = await getRequest(request.id)
     })
 
-    // Act
-    await processPendingAuditLogExports()
+    it("uploads the report and sends a ready email", () => {
+      expect(mockUploadAuditLogExport).toHaveBeenCalledOnce()
+      expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledOnce()
+      expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
+    })
 
-    // Assert: the stale row was re-claimed, processed, and finished.
-    expect(mockUploadAuditLogExport).toHaveBeenCalledOnce()
-    expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledOnce()
-    expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
+    it("marks the request Done with an object key", () => {
+      expect(updated.status).toBe("Done")
+      expect(updated.objectKey).not.toBeNull()
+    })
 
-    const updated = await getRequest(request.id)
-    expect(updated.status).toBe("Done")
-    expect(updated.objectKey).not.toBeNull()
-    // Re-claiming a stale row counts as a fresh attempt.
-    // oxlint-disable-next-line vitest/max-expects
-    expect(updated.attempts).toBe(1)
+    it("charges one attempt for the re-claim", () => {
+      expect(updated.attempts).toBe(1)
+    })
   })
 
   it("charges a stale re-claim that fails exactly one attempt, not two", async () => {
@@ -515,36 +542,41 @@ describe("auditLogExport processor", () => {
     expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
   })
 
-  it("does not touch a fresh Processing row within the lease window", async () => {
-    // Arrange: a row currently Processing whose `updatedAt` is recent (a live
-    // worker is presumably still on it). A concurrent sweep must leave it alone.
-    const { site } = await setupSite()
-    const admin = await setupUser({ email: "fresh@vendor.com.sg" })
-    await setupAdminPermissions({ userId: admin.id, siteId: site.id })
+  describe("does not touch a fresh Processing row within the lease window", () => {
+    const freshUpdatedAt = new Date(Date.now() - 60 * 1000)
+    let updated: Awaited<ReturnType<typeof getRequest>>
 
-    const freshUpdatedAt = new Date(Date.now() - 60 * 1000) // 1 min ago
-    const request = await seedRequest({
-      siteId: site.id,
-      userId: admin.id,
-      reportType: "Access",
-      status: "Processing",
-      updatedAt: freshUpdatedAt,
+    beforeEach(async () => {
+      const { site } = await setupSite()
+      const admin = await setupUser({ email: "fresh@vendor.com.sg" })
+      await setupAdminPermissions({ userId: admin.id, siteId: site.id })
+
+      const request = await seedRequest({
+        siteId: site.id,
+        userId: admin.id,
+        reportType: "Access",
+        status: "Processing",
+        updatedAt: freshUpdatedAt,
+      })
+
+      await processPendingAuditLogExports()
+      updated = await getRequest(request.id)
     })
 
-    // Act
-    await processPendingAuditLogExports()
+    it("does not upload or send any emails", () => {
+      expect(mockUploadAuditLogExport).not.toHaveBeenCalled()
+      expect(mockSendAuditLogExportReadyEmail).not.toHaveBeenCalled()
+      expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
+    })
 
-    // Assert: no work happened and the row is untouched.
-    expect(mockUploadAuditLogExport).not.toHaveBeenCalled()
-    expect(mockSendAuditLogExportReadyEmail).not.toHaveBeenCalled()
-    expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
+    it("leaves the row in Processing with no new attempts", () => {
+      expect(updated.status).toBe("Processing")
+      expect(updated.attempts).toBe(0)
+    })
 
-    const updated = await getRequest(request.id)
-    expect(updated.status).toBe("Processing")
-    expect(updated.attempts).toBe(0)
-    // `updatedAt` must not have moved (not re-claimed).
-    // oxlint-disable-next-line vitest/max-expects
-    expect(updated.updatedAt.getTime()).toBe(freshUpdatedAt.getTime())
+    it("does not update the row timestamp", () => {
+      expect(updated.updatedAt.getTime()).toBe(freshUpdatedAt.getTime())
+    })
   })
 
   // Complete-Artifact reuse (ADR docs/adr/0005): an identical (site, range,
@@ -555,61 +587,59 @@ describe("auditLogExport processor", () => {
   // still exists.
   describe("Complete-Artifact reuse", () => {
 
-    it("reuses the Done artifact of an identical past-range request from ANOTHER user (per-site reuse, no second upload)", async () => {
-      // Arrange: first admin's request is processed to Done normally.
-      const { site } = await setupSite()
-      const firstAdmin = await setupUser({ email: "first@vendor.com.sg" })
-      await setupAdminPermissions({ userId: firstAdmin.id, siteId: site.id })
-      const first = await seedRequest({
-        siteId: site.id,
-        userId: firstAdmin.id,
-        reportType: "Access",
+    describe("reuses the Done artifact of an identical past-range request from ANOTHER user (per-site reuse, no second upload)", () => {
+      let updatedFirst: Awaited<ReturnType<typeof getRequest>>
+      let updatedSecond: Awaited<ReturnType<typeof getRequest>>
+      let secondEmail: ReadyEmailArg
+
+      beforeEach(async () => {
+        const { site } = await setupSite()
+        const firstAdmin = await setupUser({ email: "first@vendor.com.sg" })
+        await setupAdminPermissions({ userId: firstAdmin.id, siteId: site.id })
+        const first = await seedRequest({
+          siteId: site.id,
+          userId: firstAdmin.id,
+          reportType: "Access",
+        })
+        await processPendingAuditLogExports()
+        expect(mockUploadAuditLogExport).toHaveBeenCalledOnce()
+
+        const secondAdmin = await setupUser({ email: "second@vendor.com.sg" })
+        await setupAdminPermissions({ userId: secondAdmin.id, siteId: site.id })
+        const second = await seedRequest({
+          siteId: site.id,
+          userId: secondAdmin.id,
+          reportType: "Access",
+        })
+
+        await processPendingAuditLogExports()
+
+        updatedFirst = await getRequest(first.id)
+        updatedSecond = await getRequest(second.id)
+        secondEmail = mockSendAuditLogExportReadyEmail.mock.calls[1]![0]
       })
-      await processPendingAuditLogExports()
-      expect(mockUploadAuditLogExport).toHaveBeenCalledOnce()
 
-      // A SECOND admin asks for the same (site, range, type): the artifact is
-      // a function of (site, range, type) only, so their request qualifies.
-      const secondAdmin = await setupUser({ email: "second@vendor.com.sg" })
-      await setupAdminPermissions({ userId: secondAdmin.id, siteId: site.id })
-      const second = await seedRequest({
-        siteId: site.id,
-        userId: secondAdmin.id,
-        reportType: "Access",
+      it("reuses the first artifact without a second upload", () => {
+        expect(mockUploadAuditLogExport).toHaveBeenCalledOnce()
+        expect(updatedSecond.status).toBe("Done")
+        expect(updatedSecond.objectKey).toBe(updatedFirst.objectKey)
+        expect(updatedSecond.completedAt).not.toBeNull()
+        expect(updatedSecond.errorMessage).toBeNull()
       })
 
-      // Act
-      await processPendingAuditLogExports()
+      it("sends a fresh ready email to the second requester", () => {
+        expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledTimes(2)
+        expect(secondEmail.recipientEmail).toBe("second@vendor.com.sg")
+        expect(secondEmail.link.label).toBe("access")
+        expect(secondEmail.link.url).toContain(
+          "https://studio.test.gov.sg/api/audit-log-exports/download?token=",
+        )
+        expect(secondEmail.link.url).not.toContain("amazonaws.com")
+      })
 
-      // Assert: ONE upload across both requests — the second run reused the
-      // first artifact's key and only re-signed + re-emailed it.
-      expect(mockUploadAuditLogExport).toHaveBeenCalledOnce()
-      const updatedFirst = await getRequest(first.id)
-      const updatedSecond = await getRequest(second.id)
-      expect(updatedSecond.status).toBe("Done")
-      expect(updatedSecond.objectKey).toBe(updatedFirst.objectKey)
-      expect(updatedSecond.completedAt).not.toBeNull()
-      // oxlint-disable-next-line vitest/max-expects
-      expect(updatedSecond.errorMessage).toBeNull()
-
-      // A fresh ready email went to the SECOND requester.
-      // oxlint-disable-next-line vitest/max-expects
-      expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledTimes(2)
-      const secondEmail = mockSendAuditLogExportReadyEmail.mock.calls[1]![0]
-      // oxlint-disable-next-line vitest/max-expects
-      expect(secondEmail.recipientEmail).toBe("second@vendor.com.sg")
-      // Reuse still emails a Download Token link (against the reused row's own
-      // token), never a presigned S3 URL.
-      // oxlint-disable-next-line vitest/max-expects
-      expect(secondEmail.link.label).toBe("access")
-      // oxlint-disable-next-line vitest/max-expects
-      expect(secondEmail.link.url).toContain(
-        "https://studio.test.gov.sg/api/audit-log-exports/download?token=",
-      )
-      // oxlint-disable-next-line vitest/max-expects
-      expect(secondEmail.link.url).not.toContain("amazonaws.com")
-      // oxlint-disable-next-line vitest/max-expects
-      expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
+      it("does not send a failed email", () => {
+        expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
+      })
     })
 
     it("does NOT reuse an in-progress-month snapshot (completedAt before the range end)", async () => {
@@ -729,46 +759,56 @@ describe("auditLogExport processor", () => {
       expect(updated.objectKey).not.toBe(failedKey)
     })
 
-    it("falls back to generation when the reusable artifact's S3 object is gone", async () => {
-      // Arrange: a qualifying Done row exists, but the HeadObject probe says
-      // the object has vanished (e.g. a lifecycle policy deleted it).
-      const { site } = await setupSite()
-      const admin = await setupUser({ email: "vanished@vendor.com.sg" })
-      await setupAdminPermissions({ userId: admin.id, siteId: site.id })
+    describe("falls back to generation when the reusable artifact's S3 object is gone", () => {
+      let siteId: number
+      let goneKey: string
+      let request: Awaited<ReturnType<typeof seedRequest>>
+      let updated: Awaited<ReturnType<typeof getRequest>>
 
-      const goneKey = `audit-log-exports/${site.id}/998/access-2024-03-01-to-2024-03-31.csv`
-      await seedRequest({
-        siteId: site.id,
-        userId: admin.id,
-        reportType: "Access",
-        status: "Done",
-        objectKey: goneKey,
-        completedAt: new Date(),
+      beforeEach(async () => {
+        const { site } = await setupSite()
+        siteId = site.id
+        goneKey = `audit-log-exports/${siteId}/998/access-2024-03-01-to-2024-03-31.csv`
+        const admin = await setupUser({ email: "vanished@vendor.com.sg" })
+        await setupAdminPermissions({ userId: admin.id, siteId: site.id })
+
+        await seedRequest({
+          siteId: site.id,
+          userId: admin.id,
+          reportType: "Access",
+          status: "Done",
+          objectKey: goneKey,
+          completedAt: new Date(),
+        })
+        mockGetFileSize.mockResolvedValue(null)
+
+        request = await seedRequest({
+          siteId: site.id,
+          userId: admin.id,
+          reportType: "Access",
+        })
+
+        await processPendingAuditLogExports()
+        updated = await getRequest(request.id)
       })
-      mockGetFileSize.mockResolvedValue(null)
 
-      const request = await seedRequest({
-        siteId: site.id,
-        userId: admin.id,
-        reportType: "Access",
+      it("checks S3 for the candidate artifact and regenerates when it is missing", () => {
+        expect(mockGetFileSize).toHaveBeenCalledWith({
+          Bucket: "test-audit-bucket",
+          Key: goneKey,
+        })
+        expect(mockUploadAuditLogExport).toHaveBeenCalledOnce()
       })
 
-      // Act
-      await processPendingAuditLogExports()
-
-      // Assert: the existence check ran against the candidate, found nothing,
-      // and the report was regenerated + uploaded under a fresh key.
-      expect(mockGetFileSize).toHaveBeenCalledWith({
-        Bucket: "test-audit-bucket",
-        Key: goneKey,
+      it("marks the request Done under a fresh object key", () => {
+        expect(updated.status).toBe("Done")
+        expect(updated.objectKey).toContain(`/${request.id}/`)
+        expect(updated.objectKey).not.toBe(goneKey)
       })
-      expect(mockUploadAuditLogExport).toHaveBeenCalledOnce()
-      const updated = await getRequest(request.id)
-      expect(updated.status).toBe("Done")
-      expect(updated.objectKey).toContain(`/${request.id}/`)
-      expect(updated.objectKey).not.toBe(goneKey)
-      // oxlint-disable-next-line vitest/max-expects
-      expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledOnce()
+
+      it("sends a ready email", () => {
+        expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledOnce()
+      })
     })
 
     it("re-queues (Pending) without regenerating when the existence probe hits a transient S3 error", async () => {
