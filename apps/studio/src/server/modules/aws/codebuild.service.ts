@@ -1,4 +1,7 @@
 import { pick } from "lodash-es"
+import { spawn } from "node:child_process"
+import { copyFile, mkdtemp, rename, rm } from "node:fs/promises"
+import path from "node:path"
 import { env } from "~/env.mjs"
 
 import type { Logger } from "@isomer/logging"
@@ -19,10 +22,70 @@ interface PublishSiteArgs {
   }
 }
 
+const REPO_ROOT = path.resolve(process.cwd(), "../..")
+const PUBLISHING_DIR = path.join(REPO_ROOT, "tooling/build/scripts/publishing")
+const LOCAL_PUBLISH_DIR = path.join(
+  REPO_ROOT,
+  "tooling/template/.local-publish",
+)
+let localPublishQueue = Promise.resolve()
+
+const publishLocalSite = async (logger: Logger<string>, siteId: number) => {
+  const outputDir = await mkdtemp(`${LOCAL_PUBLISH_DIR}-`)
+
+  try {
+    await new Promise<void>((resolve, reject) => {
+      const child = spawn("pnpm", ["start"], {
+        cwd: PUBLISHING_DIR,
+        env: {
+          // oxlint-disable-next-line node/no-process-env
+          ...process.env,
+          SITE_ID: String(siteId),
+          OUTPUT_DIR: outputDir,
+        },
+        stdio: "inherit",
+      })
+
+      child.once("error", reject)
+      child.once("exit", (code) => {
+        if (code === 0) resolve()
+        else reject(new Error(`Local publisher exited with code ${code}`))
+      })
+    })
+
+    await copyFile(
+      path.join(outputDir, "schema/_index.json"),
+      path.join(outputDir, "schema/not-found.json"),
+    )
+    await rm(LOCAL_PUBLISH_DIR, { recursive: true, force: true })
+    await rename(outputDir, LOCAL_PUBLISH_DIR)
+    logger.info(
+      { siteId },
+      "Published site to the local template at http://localhost:3001",
+    )
+  } catch (error) {
+    await rm(outputDir, { recursive: true, force: true })
+    throw error
+  }
+}
+
 export const publishSite = async (
   logger: Logger<string>,
   { siteId, codebuildJob }: PublishSiteArgs,
 ) => {
+  if (env.NEXT_PUBLIC_APP_ENV === "development") {
+    // Publishing can be called from inside a transaction. Defer the export until
+    // that transaction has committed so the exporter sees the just-published data.
+    setTimeout(() => {
+      localPublishQueue = localPublishQueue
+        .then(() => publishLocalSite(logger, siteId))
+        .catch((error) =>
+          logger.error({ error, siteId }, "Local publish failed"),
+        )
+    })
+    return
+  }
+
   if (env.NEXT_PUBLIC_APP_ENV === "preview") {
     logger.info({ siteId }, "Preview env: skipping CodeBuild publish")
     return

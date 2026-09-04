@@ -11,6 +11,7 @@ import {
   RenderEngine,
   shouldBlockIndexing,
 } from "@opengovsg/isomer-components"
+import { notFound } from "next/navigation"
 
 import { serializeForInlineScript } from "@isomer/validators"
 
@@ -68,7 +69,8 @@ const getSchema = async ({ permalink }: Pick<ParamsContent, "permalink">) => {
         `@/schema/${joinedPermalink}/${INDEX_PAGE_PERMALINK}.json`
         // oxlint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
       ).then((module) => module.default)
-    })) as IsomerPageSchemaType
+    })
+    .catch(() => notFound())) as IsomerPageSchemaType
 
   const lastModified =
     // TODO: fixup all the typing errors

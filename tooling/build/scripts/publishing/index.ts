@@ -69,26 +69,30 @@ function logDebug(message: string, ...optionalParams: any[]) {
 }
 
 async function main() {
-  const client = new Client({
-    user: DB_USERNAME,
-    host: DB_HOST,
-    database: DB_NAME,
-    password: DB_IAM_AUTH
-      ? (DB_PASSWORD ?? "")
-      : decodeURIComponent(DB_PASSWORD ?? ""),
-    port: Number(DB_PORT),
-    ...(DB_IAM_AUTH && DB_SSL_SERVERNAME
-      ? {
-          ssl: {
-            // IAM requires TLS. Node does not trust the Amazon RDS CA, and the
-            // SSM tunnel presents that cert on localhost, so we encrypt without
-            // verifying the issuer.
-            rejectUnauthorized: false,
-            servername: DB_SSL_SERVERNAME,
-          },
-        }
-      : {}),
-  })
+  const client = new Client(
+    process.env.DATABASE_URL
+      ? { connectionString: process.env.DATABASE_URL }
+      : {
+          user: DB_USERNAME,
+          host: DB_HOST,
+          database: DB_NAME,
+          password: DB_IAM_AUTH
+            ? (DB_PASSWORD ?? "")
+            : decodeURIComponent(DB_PASSWORD ?? ""),
+          port: Number(DB_PORT),
+          ...(DB_IAM_AUTH && DB_SSL_SERVERNAME
+            ? {
+                ssl: {
+                  // IAM requires TLS. Node does not trust the Amazon RDS CA, and the
+                  // SSM tunnel presents that cert on localhost, so we encrypt without
+                  // verifying the issuer.
+                  rejectUnauthorized: false,
+                  servername: DB_SSL_SERVERNAME,
+                },
+              }
+            : {}),
+        },
+  )
 
   const start = performance.now() // Start profiling
 
@@ -592,4 +596,7 @@ function writeJsonToFile(content: any, filename: string) {
   }
 }
 
-main().catch((err) => console.error(err))
+main().catch((err) => {
+  console.error(err)
+  process.exitCode = 1
+})
