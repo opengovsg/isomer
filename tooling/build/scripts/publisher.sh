@@ -23,8 +23,11 @@ if [ -z "$ISOMER_BUILD_REPO_BRANCH" ]; then
   cd isomer/
 
   # isomer.tar.zst is source-only (see build-components.yml); the pnpm store is archived
-  # separately and relinked into node_modules below, once pnpm is configured.
-  aws s3 cp --only-show-errors s3://"$S3_CACHE_BUCKET_NAME"/isomer/latest/isomer-pnpm-store.tar.zst .
+  # separately, keyed by the commit SHA recorded in .isomer-build-sha rather than
+  # "latest" so it's shared across every ref that happens to point at the same
+  # commit. It's relinked into node_modules below, once pnpm is configured.
+  GIT_SHA=$(cat .isomer-build-sha)
+  aws s3 cp --only-show-errors s3://"$S3_CACHE_BUCKET_NAME"/isomer/"$GIT_SHA"/isomer-pnpm-store.tar.zst .
   tar --use-compress-program=zstd -xf isomer-pnpm-store.tar.zst
   rm isomer-pnpm-store.tar.zst
 else
@@ -72,23 +75,21 @@ if [[ -n "$ISOMER_BUILD_REPO_BRANCH" ]]; then
   if [ -f ".isomer-build-sha" ]; then
     COMMIT_SHA=$(cat .isomer-build-sha)
   else
-    COMMIT_SHA=$(git rev-parse --short HEAD)
+    COMMIT_SHA=$(git rev-parse HEAD)
   fi
   UNIQUE_CACHE_KEY="$ISOMER_BUILD_REPO_BRANCH-$COMMIT_SHA"
   echo "Unique cache key: $UNIQUE_CACHE_KEY"
 
-  # Shared S3 dependency cache (same bucket/prefix pattern is used by multiple CodeBuild projects).
-  # pnpm keeps package bytes in a content-addressable store; `store-dir` is set above for this run only.
-  # We archive only `.pnpm-store`; `pnpm install` recreates node_modules from the store + lockfile.
-  TEMPLATE_DEPS_TGZ="isomer-template-deps.tar.zst"
-  TEMPLATE_DEPS_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/$UNIQUE_CACHE_KEY/$TEMPLATE_DEPS_TGZ"
-  echo "Fetching cached pnpm store..."
-  aws s3 cp --only-show-errors "$TEMPLATE_DEPS_CACHE_PATH" $TEMPLATE_DEPS_TGZ || true
-  if [ -f "$TEMPLATE_DEPS_TGZ" ]; then
-    echo "$TEMPLATE_DEPS_TGZ found in cache"
+  # build-components.yml publishes a pnpm store archive keyed by commit SHA on every run
+  # (production or ref-scoped), independent of which branch/ref triggered it. If it already
+  # ran for this exact commit, reuse that instead of installing from the registry.
+  STORE_TGZ="isomer-pnpm-store.tar.zst"
+  aws s3 cp --only-show-errors s3://"$S3_CACHE_BUCKET_NAME"/isomer/"$COMMIT_SHA"/"$STORE_TGZ" . || true
+  if [ -f "$STORE_TGZ" ]; then
+    echo "$STORE_TGZ found in cache for commit $COMMIT_SHA"
     start_time=$(date +%s)
-    tar --use-compress-program=zstd -xf $TEMPLATE_DEPS_TGZ
-    rm $TEMPLATE_DEPS_TGZ
+    tar --use-compress-program=zstd -xf "$STORE_TGZ"
+    rm "$STORE_TGZ"
     calculate_duration "$start_time"
 
     echo "Re-linking workspace from cached store..."
@@ -96,19 +97,41 @@ if [[ -n "$ISOMER_BUILD_REPO_BRANCH" ]]; then
     pnpm install --frozen-lockfile
     calculate_duration "$start_time"
   else
-    echo "$TEMPLATE_DEPS_TGZ not found in cache"
-    echo "Installing workspace dependencies..."
-    start_time=$(date +%s)
-    pnpm install --frozen-lockfile
-    calculate_duration "$start_time"
+    echo "$STORE_TGZ not found in cache for commit $COMMIT_SHA"
 
-    echo "Caching pnpm store to S3..."
-    start_time=$(date +%s)
-    tar --use-compress-program="zstd -6" -cf $TEMPLATE_DEPS_TGZ .pnpm-store
-    aws s3 cp --only-show-errors $TEMPLATE_DEPS_TGZ "$TEMPLATE_DEPS_CACHE_PATH"
-    rm $TEMPLATE_DEPS_TGZ
-    echo "Cached pnpm store"
-    calculate_duration "$start_time"
+    # Shared S3 dependency cache (same bucket/prefix pattern is used by multiple CodeBuild projects).
+    # pnpm keeps package bytes in a content-addressable store; `store-dir` is set above for this run only.
+    # We archive only `.pnpm-store`; `pnpm install` recreates node_modules from the store + lockfile.
+    TEMPLATE_DEPS_TGZ="isomer-template-deps.tar.zst"
+    TEMPLATE_DEPS_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/$UNIQUE_CACHE_KEY/$TEMPLATE_DEPS_TGZ"
+    echo "Fetching cached pnpm store..."
+    aws s3 cp --only-show-errors "$TEMPLATE_DEPS_CACHE_PATH" $TEMPLATE_DEPS_TGZ || true
+    if [ -f "$TEMPLATE_DEPS_TGZ" ]; then
+      echo "$TEMPLATE_DEPS_TGZ found in cache"
+      start_time=$(date +%s)
+      tar --use-compress-program=zstd -xf $TEMPLATE_DEPS_TGZ
+      rm $TEMPLATE_DEPS_TGZ
+      calculate_duration "$start_time"
+
+      echo "Re-linking workspace from cached store..."
+      start_time=$(date +%s)
+      pnpm install --frozen-lockfile
+      calculate_duration "$start_time"
+    else
+      echo "$TEMPLATE_DEPS_TGZ not found in cache"
+      echo "Installing workspace dependencies..."
+      start_time=$(date +%s)
+      pnpm install --frozen-lockfile
+      calculate_duration "$start_time"
+
+      echo "Caching pnpm store to S3..."
+      start_time=$(date +%s)
+      tar --use-compress-program="zstd -6" -cf $TEMPLATE_DEPS_TGZ .pnpm-store
+      aws s3 cp --only-show-errors $TEMPLATE_DEPS_TGZ "$TEMPLATE_DEPS_CACHE_PATH"
+      rm $TEMPLATE_DEPS_TGZ
+      echo "Cached pnpm store"
+      calculate_duration "$start_time"
+    fi
   fi
 else
   # Production path: build-components.yml already populated the pnpm store and
