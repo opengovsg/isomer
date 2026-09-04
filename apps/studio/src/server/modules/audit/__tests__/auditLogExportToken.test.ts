@@ -9,7 +9,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 // above all top-level bindings and cannot close over this const.
 const SESSION_SECRET = "test-session-secret-at-least-32-chars-long"
 
-vi.mock(import("~/env.mjs"), () => ({
+vi.mock("~/env.mjs", () => ({
   env: {
     SESSION_SECRET: "test-session-secret-at-least-32-chars-long",
   },

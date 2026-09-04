@@ -20,20 +20,18 @@ import {
   useLeftEditorSurveyTracker,
 } from "../hooks/useContentEditSurvey"
 
-const trackEventMock = vi.hoisted(() =>
-  vi.fn<(...args: unknown[]) => unknown>(),
-)
-vi.mock(import("~/lib/intercom"), () => ({ trackEvent: trackEventMock }))
+const trackEventMock = vi.hoisted(() => vi.fn())
+vi.mock("~/lib/intercom", () => ({ trackEvent: trackEventMock }))
 
 const mockEnv = vi.hoisted<{
   env: { NEXT_PUBLIC_INTERCOM_APP_ID: string | undefined }
 }>(() => ({
   env: { NEXT_PUBLIC_INTERCOM_APP_ID: "test-app-id" },
 }))
-vi.mock(import("~/env.mjs"), () => mockEnv)
+vi.mock("~/env.mjs", () => mockEnv)
 
 const routeChangeStartHandlers = vi.hoisted<(() => void)[]>(() => [])
-vi.mock(import("next/router"), () => ({
+vi.mock("next/router", () => ({
   useRouter: () => ({
     events: {
       on: (_event: string, handler: () => void) => {

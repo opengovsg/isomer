@@ -19,9 +19,9 @@ import { getMonthOptions } from "../utils"
 // PostHog capture calls run inside the mutation's onSuccess — mock the client
 // so they can be asserted on instead of hitting an uninitialised instance.
 const { posthogCapture } = vi.hoisted(() => ({
-  posthogCapture: vi.fn<(...args: unknown[]) => unknown>(),
+  posthogCapture: vi.fn(),
 }))
-vi.mock(import("posthog-js"), () => ({
+vi.mock("posthog-js", () => ({
   default: { capture: posthogCapture },
 }))
 
@@ -29,7 +29,7 @@ vi.mock(import("posthog-js"), () => ({
 // submitted payload and drive the onSuccess/onError branches ourselves.
 // react-query invokes onSuccess(data, variables, context), and the component
 // destructures the variables — so the harness must pass them too.
-const mutate = vi.fn<(...args: unknown[]) => unknown>()
+const mutate = vi.fn()
 let capturedOptions:
   | {
       onSuccess?: (data: unknown, variables: unknown) => void
@@ -44,7 +44,7 @@ const fireOnSuccessForLastMutation = () => {
   capturedOptions?.onSuccess?.(undefined, variables)
 }
 
-vi.mock(import("~/utils/trpc"), () => ({
+vi.mock("~/utils/trpc", () => ({
   trpc: {
     audit: {
       // The full window, as if the site were old enough to offer it — the

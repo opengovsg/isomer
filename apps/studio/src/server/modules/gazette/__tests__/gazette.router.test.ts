@@ -33,7 +33,7 @@ import {
 // algoliasearch(env.ALGOLIA_APP_ID, env.ALGOLIA_API_KEY). Those env vars are
 // not set in the test environment, so the import throws "appId is missing"
 // before any test runs. Mock the whole module to prevent this.
-vi.mock(import("~/lib/algolia"))
+vi.mock("~/lib/algolia")
 
 import { db } from "../../database"
 import { gazetteRouter } from "../gazette.router"
@@ -188,7 +188,7 @@ describe("gazette.router", async () => {
         ReturnType<typeof seedToppanWithCollection>
       >["collection"]
       let user: Awaited<ReturnType<typeof seedToppanWithCollection>>["user"]
-      let gazetteId: number
+      let gazetteId: string
 
       beforeEach(async () => {
         const setup = await seedToppanWithCollection()
@@ -446,7 +446,7 @@ describe("gazette.router", async () => {
 
   describe("update", () => {
     describe("rewrites the blob metadata and the resource title", () => {
-      let gazetteId: number
+      let gazetteId: string
       let user: Awaited<ReturnType<typeof seedToppanWithCollection>>["user"]
       let markFileAsDeleted: ReturnType<typeof vi.spyOn>
 
@@ -764,7 +764,7 @@ describe("gazette.router", async () => {
     describe("deletes the resource, blob, and push job atomically and emits both audit events", () => {
       let site: Awaited<ReturnType<typeof seedToppanWithCollection>>["site"]
       let user: Awaited<ReturnType<typeof seedToppanWithCollection>>["user"]
-      let gazetteId: number
+      let gazetteId: string
       let beforeBlob: { draftBlobId: string | null }
       let hadPushJobBeforeCancel: boolean
       let newAuditLogs: {

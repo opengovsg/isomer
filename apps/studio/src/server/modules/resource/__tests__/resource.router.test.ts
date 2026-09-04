@@ -23,7 +23,15 @@ import {
   setupUser,
   setUpWhitelist,
 } from "tests/integration/helpers/seed"
-import { it, vi, describe, expect, beforeAll, beforeEach } from "vitest"
+import {
+  it,
+  vi,
+  describe,
+  expect,
+  beforeAll,
+  beforeEach,
+  type MockInstance,
+} from "vitest"
 import { USER_VIEWABLE_RESOURCE_TYPES } from "~/constants/resources"
 import { MAX_BATCH_RESOURCE_IDS } from "~/schemas/resource"
 import * as auditService from "~/server/modules/audit/audit.service"
@@ -3152,9 +3160,7 @@ describe("resource.router", async () => {
     })
 
     describe("should delete a folder and all its children (recursively) successfully", () => {
-      let auditSpy: ReturnType<
-        typeof vi.spyOn<typeof auditService, "logResourceEvent">
-      >
+      let auditSpy: MockInstance<typeof auditService.logResourceEvent>
       let folderToUse: Awaited<ReturnType<typeof setupFolder>>["folder"]
       let result: Awaited<ReturnType<typeof caller.delete>>
       let actual: Awaited<

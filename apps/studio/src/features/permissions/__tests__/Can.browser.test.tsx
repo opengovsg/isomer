@@ -10,7 +10,7 @@ import { Can } from "~/features/permissions"
 // `process.env` directly — fine under Node, but `process` doesn't exist under
 // Vitest Browser Mode's real-browser runtime. Stub it out; this test never
 // calls a trpc procedure.
-vi.mock(import("~/utils/trpc"), () => ({ trpc: {} }))
+vi.mock("~/utils/trpc", () => ({ trpc: {} }))
 
 // These tests lock the @casl/react <Can> contract that our permission gates rely
 // on. @casl/react v7 changed the render-prop from a positional boolean

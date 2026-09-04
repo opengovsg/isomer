@@ -1,5 +1,5 @@
 import type * as serverContextType from "~/server/context"
-import type { User } from "~prisma/generated/selectableTypes"
+import type { PushDocumentJob, User } from "~prisma/generated/selectableTypes"
 import { addMinutes } from "date-fns"
 import MockDate from "mockdate"
 import { resetTables } from "tests/integration/helpers/db"
@@ -16,15 +16,15 @@ import * as algoliaPkg from "@isomer/algolia"
 // algoliasearch(env.ALGOLIA_APP_ID, env.ALGOLIA_API_KEY). Those env vars are
 // not set in the test environment, so the import throws "appId is missing"
 // before any test runs. Mock the whole module to prevent this.
-vi.mock(import("~/lib/algolia"))
+vi.mock("~/lib/algolia")
 
 // Mock createGrowthBookContext so tests can control the flag without hitting
 // the remote GrowthBook CDN.
-vi.mock(import("~/server/context"), async (importOriginal) => {
+vi.mock("~/server/context", async (importOriginal) => {
   const actual = await importOriginal<typeof serverContextType>()
   return {
     ...actual,
-    createGrowthBookContext: vi.fn<(...args: unknown[]) => unknown>(),
+    createGrowthBookContext: vi.fn(),
   }
 })
 
@@ -163,8 +163,8 @@ const seedDocumentReadyForIngestion = async ({
 
 /** Build a mock GrowthBook instance where isOn returns the given value. */
 const makeMockGb = (isOn: boolean) => ({
-  isOn: vi.fn<(...args: unknown[]) => unknown>().mockReturnValue(isOn),
-  destroy: vi.fn<(...args: unknown[]) => unknown>(),
+  isOn: vi.fn().mockReturnValue(isOn),
+  destroy: vi.fn(),
 })
 
 describe(schedulePushDocumentJobHandler, async () => {
@@ -240,13 +240,7 @@ describe(schedulePushDocumentJobHandler, async () => {
       let ref: string
       let records: Parameters<typeof algoliaLib.saveObjectsToSearchIndex>[0]
       let expectedObjectGroup: string
-      let remaining: Awaited<
-        ReturnType<
-          ReturnType<
-            typeof db.selectFrom<"PushDocumentJob">
-          >["selectAll"]["execute"]
-        >
-      >
+      let remaining: PushDocumentJob[]
 
       beforeEach(async () => {
         const seeded = await seedDocumentReadyForIngestion({
@@ -667,13 +661,7 @@ describe(schedulePushDocumentJobHandler, async () => {
 
     describe("dispatches a row whose scheduledAt has passed to SearchSG and deletes it", () => {
       let body: { documentsToAdd: Record<string, unknown>[] }
-      let remaining: Awaited<
-        ReturnType<
-          ReturnType<
-            typeof db.selectFrom<"PushDocumentJob">
-          >["selectAll"]["execute"]
-        >
-      >
+      let remaining: PushDocumentJob[]
 
       beforeEach(async () => {
         const { resourceId } = await seedDocumentReadyForIngestion({

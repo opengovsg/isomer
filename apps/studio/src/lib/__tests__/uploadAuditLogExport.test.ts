@@ -14,7 +14,7 @@ const { envHolder } = vi.hoisted(() => {
   return { envHolder }
 })
 
-vi.mock(import("~/env.mjs"), () => ({
+vi.mock("~/env.mjs", () => ({
   get env() {
     return envHolder
   },
@@ -24,15 +24,15 @@ vi.mock(import("~/env.mjs"), () => ({
 // not a one-shot PutObjectCommand — mock Upload itself so no real AWS calls
 // happen, and capture its constructor options to assert on the S3 params.
 const { doneMock, uploadCtorMock } = vi.hoisted(() => ({
-  doneMock: vi.fn<(...args: unknown[]) => unknown>(),
-  uploadCtorMock: vi.fn<(...args: unknown[]) => unknown>(),
+  doneMock: vi.fn(),
+  uploadCtorMock: vi.fn(),
 }))
-vi.mock(import("@aws-sdk/lib-storage"), () => ({
-  Upload: vi.fn<(...args: unknown[]) => unknown>(function (
+vi.mock("@aws-sdk/lib-storage", () => ({
+  Upload: vi.fn(function (
     options: ConstructorParameters<typeof UploadType>[0],
   ) {
     uploadCtorMock(options)
-    return { done: doneMock, on: vi.fn<(...args: unknown[]) => unknown>() }
+    return { done: doneMock, on: vi.fn() }
   }),
 }))
 

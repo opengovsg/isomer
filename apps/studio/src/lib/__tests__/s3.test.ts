@@ -7,16 +7,23 @@ import {
 } from "@aws-sdk/client-s3"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
+type S3Command =
+  | CopyObjectCommand
+  | GetObjectTaggingCommand
+  | HeadObjectCommand
+  | PutObjectRetentionCommand
+  | PutObjectTaggingCommand
+
 // Mock the S3 client so we can observe which commands are dispatched without
 // hitting AWS. We keep the real command classes so we can assert on instances.
-const sendMock = vi.fn<(...args: unknown[]) => unknown>()
-vi.mock(import("@aws-sdk/client-s3"), async (importOriginal) => {
+const sendMock = vi.fn<(command: S3Command) => Promise<unknown>>()
+vi.mock("@aws-sdk/client-s3", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@aws-sdk/client-s3")>()
   return {
     ...actual,
     // Use a regular function (not an arrow) so it can be invoked with `new`,
     // since s3.ts constructs the client via `new S3Client(...)`.
-    S3Client: vi.fn<(...args: unknown[]) => unknown>(function () {
+    S3Client: vi.fn(function () {
       return { send: sendMock }
     }),
   }

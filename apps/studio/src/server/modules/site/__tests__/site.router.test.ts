@@ -1,4 +1,10 @@
 import type { Notification } from "~/schemas/site"
+import type {
+  AuditLog,
+  Footer,
+  Navbar,
+  Site,
+} from "~prisma/generated/selectableTypes"
 import { TRPCError } from "@trpc/server"
 import { pick } from "lodash-es"
 import { auth } from "tests/integration/helpers/auth"
@@ -27,7 +33,7 @@ import { AuditLogEvent, db, jsonb, ResourceType } from "../../database"
 import { siteRouter } from "../site.router"
 
 // Mock env to set production environment for SearchSG tests
-vi.mock(import("~/env.mjs"), async () => {
+vi.mock("~/env.mjs", async () => {
   // Import the real module first to get all default values
   const actual = await vi.importActual("~/env.mjs")
   return {
@@ -2296,24 +2302,10 @@ describe("site.router", async () => {
       const NEW_THEME = `"theme"`
       const NEW_NAVBAR = `"navbar"`
       const NEW_FOOTER = `"footer"`
-      let newSite: Awaited<
-        ReturnType<
-          ReturnType<typeof db.selectFrom<"Site">>["executeTakeFirstOrThrow"]
-        >
-      >
-      let newNavbar: Awaited<
-        ReturnType<
-          ReturnType<typeof db.selectFrom<"Navbar">>["executeTakeFirstOrThrow"]
-        >
-      >
-      let newFooter: Awaited<
-        ReturnType<
-          ReturnType<typeof db.selectFrom<"Footer">>["executeTakeFirstOrThrow"]
-        >
-      >
-      let auditLogs: Awaited<
-        ReturnType<ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]>
-      >
+      let newSite: Site
+      let newNavbar: Navbar
+      let newFooter: Footer
+      let auditLogs: AuditLog[]
 
       beforeEach(async () => {
         const { site } = await setupSite()
@@ -2385,24 +2377,10 @@ describe("site.router", async () => {
       const NEW_THEME = `"theme"`
       const NEW_NAVBAR = `"navbar"`
       const NEW_FOOTER = `"footer"`
-      let newSite: Awaited<
-        ReturnType<
-          ReturnType<typeof db.selectFrom<"Site">>["executeTakeFirstOrThrow"]
-        >
-      >
-      let newNavbar: Awaited<
-        ReturnType<
-          ReturnType<typeof db.selectFrom<"Navbar">>["executeTakeFirstOrThrow"]
-        >
-      >
-      let newFooter: Awaited<
-        ReturnType<
-          ReturnType<typeof db.selectFrom<"Footer">>["executeTakeFirstOrThrow"]
-        >
-      >
-      let auditLogs: Awaited<
-        ReturnType<ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]>
-      >
+      let newSite: Site
+      let newNavbar: Navbar
+      let newFooter: Footer
+      let auditLogs: AuditLog[]
 
       beforeEach(async () => {
         const { site } = await setupSite()

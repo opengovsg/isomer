@@ -12,14 +12,8 @@ const SITE_ID = 42
 // ~/env.mjs validates `process.env` at module scope, which is a ReferenceError
 // under Browser Mode's real-browser runtime. The page picker reaches it via
 // ~/utils/resources for a link prefix that never renders here.
-vi.mock(import("~/env.mjs"), () => ({
+vi.mock("~/env.mjs", () => ({
   env: { NEXT_PUBLIC_APP_URL: "http://localhost:3000" },
-}))
-
-// The wildcard hint and the bulk-upload entry point only render with advanced
-// redirects on, which is the state these assertions are about.
-vi.mock(import("~/hooks/useIsAdvancedRedirectsEnabled"), () => ({
-  useIsAdvancedRedirectsEnabled: () => true,
 }))
 
 const REDIRECT_ROW = {
@@ -39,8 +33,8 @@ let rolesQueryState = { isPending: false, isError: false }
 // The table's reads and every write the card/modal owns. None of them is what
 // this test covers — the question is purely which controls a role is shown — so
 // stub the tRPC surface with the minimum both branches touch on render.
-vi.mock(import("~/utils/trpc"), () => {
-  const noop = vi.fn<(...args: unknown[]) => unknown>()
+vi.mock("~/utils/trpc", () => {
+  const noop = vi.fn()
   return {
     trpc: {
       useUtils: () => ({ redirect: { invalidate: noop } }),

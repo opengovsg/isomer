@@ -22,11 +22,11 @@ import { getCurrentSingaporeMonth } from "~/schemas/audit"
 // ask was idempotent-accepted and nothing was inserted for that site.
 
 const { mockDb, mockValidatePermissions } = vi.hoisted(() => ({
-  mockDb: { transaction: vi.fn<(...args: unknown[]) => unknown>() },
-  mockValidatePermissions: vi.fn<(...args: unknown[]) => unknown>(),
+  mockDb: { transaction: vi.fn() },
+  mockValidatePermissions: vi.fn(),
 }))
 
-vi.mock(import("~/env.mjs"), () => ({
+vi.mock("~/env.mjs", () => ({
   env: {
     // oxlint-disable-next-line node/no-process-env
     NODE_ENV: process.env.NODE_ENV ?? "test",
@@ -38,12 +38,12 @@ vi.mock(import("~/env.mjs"), () => ({
 
 // Keep the real database module (its `AuditLogEvent`, `sql`, types and utils
 // are used across the audit module) and override only `db` with our fake.
-vi.mock(import("../../database"), async (importOriginal) => ({
+vi.mock("../../database", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../../database")>()),
   db: mockDb,
 }))
 
-vi.mock(import("../../permissions/permissions.service"), () => ({
+vi.mock("../../permissions/permissions.service", () => ({
   validatePermissionsForManagingUsers: mockValidatePermissions,
 }))
 

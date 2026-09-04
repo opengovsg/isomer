@@ -29,7 +29,7 @@ import { WEBHOOK_X_API_KEY_HEADER, createCallerFactory } from "~/server/trpc"
 import { db } from "../../database"
 import { webhookRouter } from "../webhook.router"
 
-vi.mock(import("~/env.mjs"), async () => {
+vi.mock("~/env.mjs", async () => {
   const actual = await vi.importActual<{ env: typeof env }>("~/env.mjs")
   return {
     env: {
@@ -40,9 +40,9 @@ vi.mock(import("~/env.mjs"), async () => {
 })
 
 // Mock the publishSite function to avoid sending emails
-vi.mock(import("~/features/mail/service"), () => ({
-  sendSuccessfulPublishEmail: vi.fn<(...args: unknown[]) => unknown>(),
-  sendFailedPublishEmail: vi.fn<(...args: unknown[]) => unknown>(),
+vi.mock("~/features/mail/service", () => ({
+  sendSuccessfulPublishEmail: vi.fn(),
+  sendFailedPublishEmail: vi.fn(),
 }))
 
 const getCallerWithMockGrowthbook = (
@@ -60,10 +60,8 @@ const getCallerWithMockGrowthbook = (
     method: "GET",
   })
   const mockGrowthBook: Partial<GrowthBook> = {
-    isOn: vi
-      .fn<(...args: unknown[]) => unknown>()
-      .mockReturnValue(mockReturnValue),
-    destroy: vi.fn<(...args: unknown[]) => unknown>(),
+    isOn: vi.fn().mockReturnValue(mockReturnValue) as GrowthBook["isOn"],
+    destroy: vi.fn(),
   }
   mockRequest.gb = mockGrowthBook as GrowthBook
   return createCaller(mockRequest)

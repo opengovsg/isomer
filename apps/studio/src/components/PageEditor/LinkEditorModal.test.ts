@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { linkEditorSchema } from "./LinkEditorModal"
 
-describe(linkEditorSchema, () => {
+describe("linkEditorSchema", () => {
   it("accepts a valid external link", () => {
     const result = linkEditorSchema.safeParse({
       linkText: "Isomer",
