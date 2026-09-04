@@ -22,8 +22,8 @@ import { getCurrentSingaporeMonth } from "~/schemas/audit"
 // ask was idempotent-accepted and nothing was inserted for that site.
 
 const { mockDb, mockValidatePermissions } = vi.hoisted(() => ({
-  mockDb: { transaction: vi.fn<(...args: unknown[]) => unknown>(()) },
-  mockValidatePermissions: vi.fn<(...args: unknown[]) => unknown>(()),
+  mockDb: { transaction: vi.fn<(...args: unknown[]) => unknown>() },
+  mockValidatePermissions: vi.fn<(...args: unknown[]) => unknown>(),
 }))
 
 vi.mock(import('~/env.mjs'), () => ({
@@ -54,7 +54,7 @@ const { createAuditLogExportRequestsForSites } =
 const VALID_MONTH = getCurrentSingaporeMonth()
 
 // The requesting user, as the service's in-transaction `User` lookup returns
-// it (the actor of the AuditLogExportCreate event).
+// that user (the actor of the AuditLogExportCreate event).
 const FAKE_USER = { id: "user-1", email: "admin@vendor.com.sg" }
 
 // What the batch INSERT does with one row of its multi-row `values(...)`:
@@ -353,41 +353,48 @@ describe("createAuditLogExportRequestsForSites — idempotent accept", () => {
     expectExportCreateEvent(tx.auditLogValues[0], 1, "Activity")
   })
 
-  it("batches an allSites-style ask across multiple sites in one INSERT, mixing an idempotent-accept with a fresh insert", async () => {
-    // Arrange: site 2 already has an in-flight ask (fast-path SELECT), site 1
-    // does not and gets freshly inserted — both in the same batch statement.
+  describe("batches an allSites-style ask across multiple sites in one INSERT, mixing an idempotent-accept with a fresh insert", () => {
     const existingRow = {
       id: "existing-row-2",
       siteId: 2,
       reportType: "Activity",
     }
-    const tx = makeTx({
-      selects: [[existingRow]],
-      inserts: [{ site: 1, outcome: "inserted" }],
-    })
-    useTx(tx)
+    let tx: ReturnType<typeof makeTx>
+    let result: Awaited<ReturnType<typeof createAuditLogExportRequestsForSites>>
 
-    // Act
-    const result = await createAuditLogExportRequestsForSites({
-      siteIds: [1, 2],
-      userId: "user-1",
-      month: VALID_MONTH,
-      reportType: "Activity",
+    beforeEach(async () => {
+      // Arrange: site 2 already has an in-flight ask (fast-path SELECT), site 1
+      // does not and gets freshly inserted — both in the same batch statement.
+      tx = makeTx({
+        selects: [[existingRow]],
+        inserts: [{ site: 1, outcome: "inserted" }],
+      })
+      useTx(tx)
+
+      result = await createAuditLogExportRequestsForSites({
+        siteIds: [1, 2],
+        userId: "user-1",
+        month: VALID_MONTH,
+        reportType: "Activity",
+      })
     })
 
-    // Assert: one row per site, one INSERT row (only for site 1), one audit
-    // event per site.
-    expect(result).toHaveLength(2)
-    expect(result).toStrictEqual(
-      expect.arrayContaining([
-        existingRow,
-        expect.objectContaining({ siteId: 1 }),
-      ]),
-    )
-    expect(tx.insertedValues).toHaveLength(1)
-    expect(tx.insertedValues[0]).toMatchObject({ siteId: 1 })
-    expect(tx.auditLogValues).toHaveLength(2)
-    const siteIdsLogged = tx.auditLogValues.map((v) => v.siteId).sort()
-    expect(siteIdsLogged).toStrictEqual([1, 2])
+    it("returns one row per site, mixing the existing row with a fresh insert", () => {
+      expect(result).toHaveLength(2)
+      expect(result).toStrictEqual(
+        expect.arrayContaining([
+          existingRow,
+          expect.objectContaining({ siteId: 1 }),
+        ]),
+      )
+      expect(tx.insertedValues).toHaveLength(1)
+      expect(tx.insertedValues[0]).toMatchObject({ siteId: 1 })
+    })
+
+    it("records one audit event per site", () => {
+      expect(tx.auditLogValues).toHaveLength(2)
+      const siteIdsLogged = tx.auditLogValues.map((v) => v.siteId).sort()
+      expect(siteIdsLogged).toStrictEqual([1, 2])
+    })
   })
 })
