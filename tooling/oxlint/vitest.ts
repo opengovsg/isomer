@@ -9,10 +9,7 @@ export default defineConfig({
   extends: [ultraciteVitest],
   overrides: [
     {
-      files: [
-        "**/*.{test,spec,test-d,spec-d}.{ts,tsx,js,jsx}",
-        "**/__tests__/**/*.{ts,tsx,js,jsx}",
-      ],
+      files: ["**/*.test.ts", "**/*.test.tsx"],
       plugins: ["vitest"],
       rules: {
         // Ultracite prefers toBeTruthy()/toBeFalsy(), which pass for any
@@ -28,10 +25,6 @@ export default defineConfig({
         // Zod 4 schemas are objects, not Functions, so describe(schema) fails typecheck.
         // String titles that match the schema export name also trip this rule.
         "vitest/prefer-describe-function-title": "off",
-        // Preserve base test-file TS relaxations when vitest override is applied.
-        "@typescript-eslint/no-unsafe-assignment": "off",
-        "@typescript-eslint/no-non-null-assertion": "off",
-        "no-empty-function": "off",
       },
     },
   ],
