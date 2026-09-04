@@ -10,25 +10,6 @@ name: Build and publish site
 # repository (source + node_modules) to S3, which downstream per-site
 # CodeBuild projects pull down instead of cloning/installing themselves.
 on:
-  workflow_dispatch:
-    inputs:
-      aws-region:
-        description: "AWS region to use"
-        required: true
-        default: "ap-southeast-1"
-        type: string
-      cicd-role:
-        description: "AWS IAM role to assume by GitHub action runner"
-        required: true
-        type: string
-      s3-cache-bucket-name:
-        description: "S3 bucket used to cache the pnpm store and isomer-components dist between builds (same bucket/prefix pattern as the CodeBuild projects)"
-        required: true
-        type: string
-      isomer-build-repo-branch:
-        description: "Git ref (tag or branch) of opengovsg/isomer to build. Leave empty to use the latest release tag."
-        required: false
-        type: string
   workflow_call:
     inputs:
       aws-region:
