@@ -1,6 +1,9 @@
 import type { z } from "zod"
 import type { getPresignedPutUrlSchema } from "~/schemas/asset"
-import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
+import {
+  IMAGE_ACCEPTED_MIME_TYPE_MAPPING,
+  SUPPORTED_OPTIMIZABLE_CONTENT_TYPES,
+} from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { create as createContentDisposition } from "content-disposition"
 import { randomUUID } from "crypto"
@@ -12,6 +15,7 @@ import {
   deleteFile,
   generateSignedGetUrl,
   generateSignedPutUrl,
+  isNotFoundError,
   putObjectDirect,
 } from "~/lib/s3"
 import { getServerDomPurify } from "~/lib/server-dom-purify"
@@ -151,7 +155,29 @@ export const getPresignedPutUrl = async ({
   return { presignedPutUrl, contentType, contentDisposition }
 }
 
+// Best-effort delete: the derived format may not exist for every asset
+// (e.g. it was never generated), so a missing key is not an error.
+const deleteFileIfExists = async ({ Key }: { Key: string }) => {
+  try {
+    await deleteFile({ Key, Bucket: bucket })
+  } catch (error) {
+    if (!isNotFoundError(error)) throw error
+  }
+}
+
+// NOTE: Check if the key ends in one of our image optimisation formats.
+// If it does, we need to also delete all of the related formats.
 export const markFileAsDeleted = async ({ key }: { key: string }) => {
+  const suffix = key.split(".").pop()
+  if (!suffix) return
+
+  if (SUPPORTED_OPTIMIZABLE_CONTENT_TYPES.includes(suffix)) {
+    // NOTE: We only convert to webp and avif
+    const prefix = key.substring(0, key.lastIndexOf("."))
+    await deleteFileIfExists({ Key: `${prefix}.webp` })
+    await deleteFileIfExists({ Key: `${prefix}.avif` })
+  }
+
   await deleteFile({ Key: key, Bucket: bucket })
 }
 
