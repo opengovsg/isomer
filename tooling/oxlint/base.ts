@@ -1,7 +1,11 @@
 import { defineConfig } from "oxlint"
+// import antiSlop from "ultracite/oxlint/anti-slop"
+// import core from "ultracite/oxlint/core"
 
 export default defineConfig({
   plugins: [],
+  // To enable this in following stacked PRs
+  // extends: [core, antiSlop],
   categories: {
     correctness: "off",
   },

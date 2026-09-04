@@ -30,17 +30,31 @@ Lint scripts should invoke the hoisted CLI (same as with ESLint):
 In TypeScript configs, import shared presets and pass them to `extends`:
 
 ```ts
-import { defineConfig } from "oxlint";
-import base from "@isomer/oxlint-config/base";
+import { defineConfig } from "oxlint"
+import base from "@isomer/oxlint-config/base"
 
 export default defineConfig({
   extends: [base],
   ignorePatterns: [".next/**"],
   overrides: [],
-});
+})
 ```
 
 Add package-specific `ignorePatterns` and `overrides` only—**`base.ts`** already sets `options.typeAware`, env, default ignores (`dist`, `**/*.config.*`), and the shared JS/TS/test rule blocks.
+
+### Framework presets (React, Next.js, Vitest)
+
+Ultracite framework presets are re-exported from `@isomer/oxlint-config/presets`. Consumers only need `@isomer/oxlint-config` — not a direct `ultracite` dependency.
+
+```ts
+import { defineConfig } from "oxlint"
+import base from "@isomer/oxlint-config/base"
+import { next, react, vitest } from "@isomer/oxlint-config/presets"
+
+export default defineConfig({
+  extends: [base, react, next, vitest],
+})
+```
 
 ### Other repositories
 
@@ -57,8 +71,9 @@ Or set `"options": { "typeAware": true }` in the root Oxlint config only.
 
 ## Exports
 
-| Subpath | File |
-|--------|------|
-| `@isomer/oxlint-config/base` | `base.ts` |
+| Subpath                         | File                                                           |
+| ------------------------------- | -------------------------------------------------------------- |
+| `@isomer/oxlint-config/base`    | `base.ts`                                                      |
+| `@isomer/oxlint-config/presets` | `presets.ts` — Ultracite `react`, `next`, and `vitest` presets |
 
 Add more JSON presets under `tooling/oxlint/` and list them under `exports` in `package.json` as you split shared vs app-specific rules.
