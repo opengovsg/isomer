@@ -2176,81 +2176,97 @@ describe("page.router", async () => {
       ).resolves.toBeUndefined()
     })
 
-    it("should back-fill a literal redirect destination into a reference on first publish", async () => {
-      // Arrange — a draft page, plus a redirect whose destination is the page's
-      // literal path (created before the page was live). Publishing the page
-      // should rewrite that literal into a [resource:...] reference so the
-      // redirect follows the page's future moves.
-      const { site, page } = await setupPageResource({
-        resourceType: ResourceType.Page,
-      })
-      await setupPublisherPermissions({
-        userId: session.userId ?? undefined,
-        siteId: site.id,
-      })
-      const fullPermalink = await getResourceFullPermalink(
-        site.id,
-        Number(page.id),
-      )
-      const literalDestination = normalizeRedirectPath(fullPermalink!)
-      await db
-        .insertInto("Redirect")
-        .values({
-          siteId: site.id,
-          source: "/old-url",
-          destination: literalDestination,
+    describe("should back-fill a literal redirect destination into a reference on first publish", () => {
+      let site: Awaited<ReturnType<typeof setupPageResource>>["site"]
+      let page: Awaited<ReturnType<typeof setupPageResource>>["page"]
+      let literalDestination: string
+      let deleteEntry: {
+        userId: string | null
+        delta: unknown
+      }
+      let createEntry: {
+        userId: string | null
+        delta: unknown
+      }
+
+      beforeEach(async () => {
+        // Arrange — a draft page, plus a redirect whose destination is the page's
+        // literal path (created before the page was live). Publishing the page
+        // should rewrite that literal into a [resource:...] reference so the
+        // redirect follows the page's future moves.
+        const setup = await setupPageResource({
+          resourceType: ResourceType.Page,
         })
-        .execute()
+        site = setup.site
+        page = setup.page
+        await setupPublisherPermissions({
+          userId: session.userId ?? undefined,
+          siteId: site.id,
+        })
+        const fullPermalink = await getResourceFullPermalink(
+          site.id,
+          Number(page.id),
+        )
+        literalDestination = normalizeRedirectPath(fullPermalink!)
+        await db
+          .insertInto("Redirect")
+          .values({
+            siteId: site.id,
+            source: "/old-url",
+            destination: literalDestination,
+          })
+          .execute()
 
-      // Act
-      await caller.publishPage({ siteId: site.id, pageId: Number(page.id) })
+        await caller.publishPage({ siteId: site.id, pageId: Number(page.id) })
 
-      // Assert — the literal destination is now a reference to the page
-      const redirect = await db
-        .selectFrom("Redirect")
-        .selectAll()
-        .where("siteId", "=", site.id)
-        .where("source", "=", "/old-url")
-        .executeTakeFirstOrThrow()
-      expect(redirect.destination).toBe(`[resource:${site.id}:${page.id}]`)
+        deleteEntry = await db
+          .selectFrom("AuditLog")
+          .selectAll()
+          .where("siteId", "=", site.id)
+          .where("eventType", "=", "RedirectDelete")
+          .executeTakeFirstOrThrow()
 
-      // Assert — a RedirectDelete entry records the literal form being retired
-      const deleteEntry = await db
-        .selectFrom("AuditLog")
-        .selectAll()
-        .where("siteId", "=", site.id)
-        .where("eventType", "=", "RedirectDelete")
-        .executeTakeFirstOrThrow()
-      expect(deleteEntry.userId).toBe(session.userId)
-      const deleteDelta = deleteEntry.delta as {
-        before: { destination: string; deletedAt: string | null }
-        after: { destination: string; deletedAt: string | null }
-      }
-      expect(deleteDelta.before.destination).toBe(literalDestination)
-      expect(deleteDelta.before.deletedAt).toBeNull()
-      expect(deleteDelta.after.destination).toBe(literalDestination)
-      // oxlint-disable-next-line vitest/max-expects
-      expect(deleteDelta.after.deletedAt).not.toBeNull()
+        createEntry = await db
+          .selectFrom("AuditLog")
+          .selectAll()
+          .where("siteId", "=", site.id)
+          .where("eventType", "=", "RedirectCreate")
+          .executeTakeFirstOrThrow()
+      })
 
-      // Assert — a RedirectCreate entry records the reference form being adopted
-      const createEntry = await db
-        .selectFrom("AuditLog")
-        .selectAll()
-        .where("siteId", "=", site.id)
-        .where("eventType", "=", "RedirectCreate")
-        .executeTakeFirstOrThrow()
-      // oxlint-disable-next-line vitest/max-expects
-      expect(createEntry.userId).toBe(session.userId)
-      const createDelta = createEntry.delta as {
-        before: null
-        after: { destination: string }
-      }
-      // oxlint-disable-next-line vitest/max-expects
-      expect(createDelta.before).toBeNull()
-      // oxlint-disable-next-line vitest/max-expects
-      expect(createDelta.after.destination).toBe(
-        `[resource:${site.id}:${page.id}]`,
-      )
+      it("should rewrite the redirect destination into a resource reference", async () => {
+        const redirect = await db
+          .selectFrom("Redirect")
+          .selectAll()
+          .where("siteId", "=", site.id)
+          .where("source", "=", "/old-url")
+          .executeTakeFirstOrThrow()
+        expect(redirect.destination).toBe(`[resource:${site.id}:${page.id}]`)
+      })
+
+      it("should record a RedirectDelete audit entry for the literal form", () => {
+        expect(deleteEntry.userId).toBe(session.userId)
+        const deleteDelta = deleteEntry.delta as {
+          before: { destination: string; deletedAt: string | null }
+          after: { destination: string; deletedAt: string | null }
+        }
+        expect(deleteDelta.before.destination).toBe(literalDestination)
+        expect(deleteDelta.before.deletedAt).toBeNull()
+        expect(deleteDelta.after.destination).toBe(literalDestination)
+        expect(deleteDelta.after.deletedAt).not.toBeNull()
+      })
+
+      it("should record a RedirectCreate audit entry for the reference form", () => {
+        expect(createEntry.userId).toBe(session.userId)
+        const createDelta = createEntry.delta as {
+          before: null
+          after: { destination: string }
+        }
+        expect(createDelta.before).toBeNull()
+        expect(createDelta.after.destination).toBe(
+          `[resource:${site.id}:${page.id}]`,
+        )
+      })
     })
 
     it("should leave a literal redirect to a different path untouched on publish", async () => {
