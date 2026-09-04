@@ -3,7 +3,7 @@ import { HStack, Icon, Text, VStack } from "@chakra-ui/react"
 import { Link } from "@opengovsg/design-system-react"
 import NextLink from "next/link"
 import { useMemo } from "react"
-import { DraftIndicator } from "~/components/HasDraftIndicator"
+import { DraftIndicator } from "~/components/DraftIndicator"
 import { getLinkToResource } from "~/utils/resource"
 import { getIcon } from "~/utils/resources"
 
