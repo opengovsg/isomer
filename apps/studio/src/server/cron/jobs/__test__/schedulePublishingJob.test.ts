@@ -61,52 +61,59 @@ describe("schedulePublishingJob", async () => {
 
   describe("schedulePublishJobHandler", () => {
 
-    it("publishes a resource which has scheduledAt less than current run time", async () => {
-      // Arrange
-      const { site, page } = await setupPageResource({
-        resourceType: ResourceType.Page,
-        scheduledAt: FIXED_NOW,
-        scheduledBy: session.userId,
-      })
-      await setupPublisherPermissions({
-        userId: session.userId,
-        siteId: site.id,
-      })
+    describe("publishes a resource which has scheduledAt less than current run time", () => {
+      let site: Awaited<ReturnType<typeof setupPageResource>>["site"]
+      let page: Awaited<ReturnType<typeof setupPageResource>>["page"]
+      let resourceSiteMap: Awaited<ReturnType<typeof publishScheduledResources>>
 
-      // Act
-      const resourceSiteMap = await publishScheduledResources(true, FIXED_NOW)
+      beforeEach(async () => {
+        const setup = await setupPageResource({
+          resourceType: ResourceType.Page,
+          scheduledAt: FIXED_NOW,
+          scheduledBy: session.userId,
+        })
+        site = setup.site
+        page = setup.page
+        await setupPublisherPermissions({
+          userId: session.userId,
+          siteId: site.id,
+        })
 
-      // Assert
-      // expect a version to be created for the resource, since the resource is published
-      const versions = await db
-        .selectFrom("Version")
-        .where("resourceId", "=", page.id)
-        .selectAll()
-        .execute()
-
-      expect(versions).toHaveLength(1)
-      expect(versions[0]).toMatchObject({
-        resourceId: page.id,
-        versionNum: 1,
+        resourceSiteMap = await publishScheduledResources(true, FIXED_NOW)
       })
 
-      // expect the audit log to be created with the correct info corresponding to the publish action
-      const auditLogs = await db
-        .selectFrom("AuditLog")
-        .where("siteId", "=", site.id)
-        .selectAll()
-        .execute()
-      expect(auditLogs).toHaveLength(1)
-      expect(auditLogs[0]).toMatchObject({
-        siteId: site.id,
-        userId: user.id,
-        eventType: AuditLogEvent.Publish,
+      it("should create a version for the published resource", async () => {
+        const versions = await db
+          .selectFrom("Version")
+          .where("resourceId", "=", page.id)
+          .selectAll()
+          .execute()
+
+        expect(versions).toHaveLength(1)
+        expect(versions[0]).toMatchObject({
+          resourceId: page.id,
+          versionNum: 1,
+        })
       })
 
-      // expect the resourceSiteMap to contain the site and resource
-      expect(resourceSiteMap[site.id]).toBeDefined()
-      // oxlint-disable-next-line vitest/max-expects
-      expect(resourceSiteMap[site.id]?.[0]!.id).toBe(page.id)
+      it("should create an audit log for the publish action", async () => {
+        const auditLogs = await db
+          .selectFrom("AuditLog")
+          .where("siteId", "=", site.id)
+          .selectAll()
+          .execute()
+        expect(auditLogs).toHaveLength(1)
+        expect(auditLogs[0]).toMatchObject({
+          siteId: site.id,
+          userId: user.id,
+          eventType: AuditLogEvent.Publish,
+        })
+      })
+
+      it("should include the site and resource in the resourceSiteMap", () => {
+        expect(resourceSiteMap[site.id]).toBeDefined()
+        expect(resourceSiteMap[site.id]?.[0]!.id).toBe(page.id)
+      })
     })
 
     it("does not publish a resource if scheduledAt time is in the future", async () => {
@@ -177,217 +184,249 @@ describe("schedulePublishingJob", async () => {
       })
     })
 
-    it("throwing an error when publishing a resource still processes the next resource correctly", async () => {
-      // Arrange
-      const { site, page } = await setupPageResource({
-        resourceType: ResourceType.Page,
-        scheduledAt: FIXED_NOW,
-        scheduledBy: session.userId,
-        permalink: "page-1",
-      })
-      // setup a second resource which should be published successfully
-      const { page: page2, site: site2 } = await setupPageResource({
-        resourceType: ResourceType.Page,
-        scheduledAt: FIXED_NOW,
-        scheduledBy: session.userId,
-        permalink: "page-2",
-      })
-      await setupPublisherPermissions({
-        userId: session.userId,
-        siteId: site.id,
-      })
-      // mock the publishPageResource to throw an error to simulate failure
-      // the second call should use the original function implementation
-      const originalPublishPageResource =
-        publishPageResourceModule.publishPageResource
+    describe("throwing an error when publishing a resource still processes the next resource correctly", () => {
+      let site: Awaited<ReturnType<typeof setupPageResource>>["site"]
+      let page: Awaited<ReturnType<typeof setupPageResource>>["page"]
+      let page2: Awaited<ReturnType<typeof setupPageResource>>["page"]
+      let site2: Awaited<ReturnType<typeof setupPageResource>>["site"]
+      let result: Awaited<ReturnType<typeof publishScheduledResources>>
+      let sendFailedPublishEmailSpy: ReturnType<typeof vi.spyOn>
 
-      vi.spyOn(
-        publishPageResourceModule,
-        "publishPageResource",
-      ).mockImplementation(async (args) => {
-        if (args.resourceId === page.id) {
-          // first call throws error
-          throw new Error("Mock error for resource 1")
-        } else {
-          // second call uses original implementation
-          return await originalPublishPageResource(args)
-        }
-      })
+      beforeEach(async () => {
+        const setup = await setupPageResource({
+          resourceType: ResourceType.Page,
+          scheduledAt: FIXED_NOW,
+          scheduledBy: session.userId,
+          permalink: "page-1",
+        })
+        site = setup.site
+        page = setup.page
+        const setup2 = await setupPageResource({
+          resourceType: ResourceType.Page,
+          scheduledAt: FIXED_NOW,
+          scheduledBy: session.userId,
+          permalink: "page-2",
+        })
+        page2 = setup2.page
+        site2 = setup2.site
+        await setupPublisherPermissions({
+          userId: session.userId,
+          siteId: site.id,
+        })
+        const originalPublishPageResource =
+          publishPageResourceModule.publishPageResource
 
-      const sendFailedPublishEmailSpy = vi
-        .spyOn(emailService, "sendFailedPublishEmail")
-        .mockResolvedValue()
-
-      // Act
-      const result = await publishScheduledResources(true, FIXED_NOW)
-
-      // Assert
-      expect(sendFailedPublishEmailSpy).toHaveBeenCalledExactlyOnceWith({
-        recipientEmail: user.email,
-        isScheduled: true,
-        resource: expect.objectContaining({ id: page.id }),
-      })
-      expect(result[site.id]).toBeUndefined()
-      expect(result[site2.id]?.length).toBe(1)
-      expect(result[site2.id]?.[0]!.id).toBe(page2.id)
-
-      // expect a version to be created only for the second resource
-      const versionsPage1 = await db
-        .selectFrom("Version")
-        .where("resourceId", "=", page.id)
-        .selectAll()
-        .execute()
-      expect(versionsPage1).toHaveLength(0)
-
-      const versionsPage2 = await db
-        .selectFrom("Version")
-        .where("resourceId", "=", page2.id)
-        .selectAll()
-        .execute()
-
-      // oxlint-disable-next-line vitest/max-expects
-      expect(versionsPage2).toHaveLength(1)
-      // oxlint-disable-next-line vitest/max-expects
-      expect(versionsPage2[0]).toMatchObject({
-        resourceId: page2.id,
-        versionNum: 1,
-      })
-    })
-
-    it("a resource without userId inside scheduledBy is skipped and does not prevent other resources from being published", async () => {
-      // Arrange
-      const { site, page } = await setupPageResource({
-        resourceType: ResourceType.Page,
-        scheduledAt: FIXED_NOW,
-        scheduledBy: null, // no user info
-        permalink: "page-1",
-      })
-      // setup a second resource which should be published successfully
-      const { page: page2, site: site2 } = await setupPageResource({
-        resourceType: ResourceType.Page,
-        scheduledAt: FIXED_NOW,
-        scheduledBy: session.userId,
-        permalink: "page-2",
-      })
-      await setupPublisherPermissions({
-        userId: session.userId,
-        siteId: site.id,
-      })
-      const publishPageResourceSpy = vi.spyOn(
-        publishPageResourceModule,
-        "publishPageResource",
-      )
-
-      // Act
-      const result = await publishScheduledResources(true, FIXED_NOW)
-
-      // Assert
-      expect(publishPageResourceSpy).toHaveBeenCalledOnce()
-      expect(result[site.id]).toBeUndefined()
-      expect(result[site2.id]?.length).toBe(1)
-      expect(result[site2.id]?.[0]!.id).toBe(page2.id)
-
-      // expect a version to be created only for the second resource
-      const versionsPage1 = await db
-        .selectFrom("Version")
-        .where("resourceId", "=", page.id)
-        .selectAll()
-        .execute()
-      expect(versionsPage1).toHaveLength(0)
-
-      const versionsPage2 = await db
-        .selectFrom("Version")
-        .where("resourceId", "=", page2.id)
-        .selectAll()
-        .execute()
-
-      // oxlint-disable-next-line vitest/max-expects
-      expect(versionsPage2).toHaveLength(1)
-      // oxlint-disable-next-line vitest/max-expects
-      expect(versionsPage2[0]).toMatchObject({
-        resourceId: page2.id,
-        versionNum: 1,
-      })
-    })
-
-    it("throwing an error when sending an email for a resource still processes the next resource correctly", async () => {
-      // Arrange
-      const { site, page } = await setupPageResource({
-        resourceType: ResourceType.Page,
-        scheduledAt: FIXED_NOW,
-        scheduledBy: session.userId,
-        permalink: "page-1",
-      })
-      // setup a second resource which should be published successfully
-      const { page: page2, site: site2 } = await setupPageResource({
-        resourceType: ResourceType.Page,
-        scheduledAt: FIXED_NOW,
-        scheduledBy: session.userId,
-        permalink: "page-2",
-      })
-      await setupPublisherPermissions({
-        userId: session.userId,
-        siteId: site.id,
-      })
-
-      // mock the publishPageResource to throw an error to simulate failure
-      // the second call should use the original function implementation
-      const originalPublishPageResource =
-        publishPageResourceModule.publishPageResource
-
-      vi.spyOn(
-        publishPageResourceModule,
-        "publishPageResource",
-      ).mockImplementation(async (args) => {
-        if (args.resourceId === page.id) {
-          // first call throws error
-          throw new Error("Mock error for resource 1")
-        } else {
-          // second call uses original implementation
-          return await originalPublishPageResource(args)
-        }
-      })
-
-      const emailServiceSpy = vi
-        .spyOn(emailService, "sendFailedPublishEmail")
-        .mockImplementation(() => {
-          throw new Error("Mock email send error for resource")
+        vi.spyOn(
+          publishPageResourceModule,
+          "publishPageResource",
+        ).mockImplementation(async (args) => {
+          if (args.resourceId === page.id) {
+            throw new Error("Mock error for resource 1")
+          } else {
+            return await originalPublishPageResource(args)
+          }
         })
 
-      // Act
-      const result = await publishScheduledResources(true, FIXED_NOW)
+        sendFailedPublishEmailSpy = vi
+          .spyOn(emailService, "sendFailedPublishEmail")
+          .mockResolvedValue()
 
-      // Assert
-      expect(emailServiceSpy).toHaveBeenCalledExactlyOnceWith({
-        recipientEmail: user.email,
-        isScheduled: true,
-        resource: expect.objectContaining({ id: page.id }),
+        result = await publishScheduledResources(true, FIXED_NOW)
       })
 
-      expect(result[site.id]).toBeUndefined()
-      expect(result[site2.id]?.length).toBe(1)
-      expect(result[site2.id]?.[0]!.id).toBe(page2.id)
+      it("should send a failed publish email for the failed resource", () => {
+        expect(sendFailedPublishEmailSpy).toHaveBeenCalledExactlyOnceWith({
+          recipientEmail: user.email,
+          isScheduled: true,
+          resource: expect.objectContaining({ id: page.id }),
+        })
+      })
 
-      // expect a version to be created only for the second resource
-      const versionsPage1 = await db
-        .selectFrom("Version")
-        .where("resourceId", "=", page.id)
-        .selectAll()
-        .execute()
-      expect(versionsPage1).toHaveLength(0)
+      it("should omit the failed site from the result and include the successful one", () => {
+        expect(result[site.id]).toBeUndefined()
+        expect(result[site2.id]?.length).toBe(1)
+        expect(result[site2.id]?.[0]!.id).toBe(page2.id)
+      })
 
-      const versionsPage2 = await db
-        .selectFrom("Version")
-        .where("resourceId", "=", page2.id)
-        .selectAll()
-        .execute()
+      it("should not create a version for the failed resource", async () => {
+        const versionsPage1 = await db
+          .selectFrom("Version")
+          .where("resourceId", "=", page.id)
+          .selectAll()
+          .execute()
+        expect(versionsPage1).toHaveLength(0)
+      })
 
-      // oxlint-disable-next-line vitest/max-expects
-      expect(versionsPage2).toHaveLength(1)
-      // oxlint-disable-next-line vitest/max-expects
-      expect(versionsPage2[0]).toMatchObject({
-        resourceId: page2.id,
-        versionNum: 1,
+      it("should create a version for the successfully published resource", async () => {
+        const versionsPage2 = await db
+          .selectFrom("Version")
+          .where("resourceId", "=", page2.id)
+          .selectAll()
+          .execute()
+
+        expect(versionsPage2).toHaveLength(1)
+        expect(versionsPage2[0]).toMatchObject({
+          resourceId: page2.id,
+          versionNum: 1,
+        })
+      })
+    })
+
+    describe("a resource without userId inside scheduledBy is skipped and does not prevent other resources from being published", () => {
+      let site: Awaited<ReturnType<typeof setupPageResource>>["site"]
+      let page: Awaited<ReturnType<typeof setupPageResource>>["page"]
+      let page2: Awaited<ReturnType<typeof setupPageResource>>["page"]
+      let site2: Awaited<ReturnType<typeof setupPageResource>>["site"]
+      let result: Awaited<ReturnType<typeof publishScheduledResources>>
+      let publishPageResourceSpy: ReturnType<typeof vi.spyOn>
+
+      beforeEach(async () => {
+        const setup = await setupPageResource({
+          resourceType: ResourceType.Page,
+          scheduledAt: FIXED_NOW,
+          scheduledBy: null, // no user info
+          permalink: "page-1",
+        })
+        site = setup.site
+        page = setup.page
+        const setup2 = await setupPageResource({
+          resourceType: ResourceType.Page,
+          scheduledAt: FIXED_NOW,
+          scheduledBy: session.userId,
+          permalink: "page-2",
+        })
+        page2 = setup2.page
+        site2 = setup2.site
+        await setupPublisherPermissions({
+          userId: session.userId,
+          siteId: site.id,
+        })
+        publishPageResourceSpy = vi.spyOn(
+          publishPageResourceModule,
+          "publishPageResource",
+        )
+
+        result = await publishScheduledResources(true, FIXED_NOW)
+      })
+
+      it("should publish only the resource with a scheduledBy user", () => {
+        expect(publishPageResourceSpy).toHaveBeenCalledOnce()
+        expect(result[site.id]).toBeUndefined()
+        expect(result[site2.id]?.length).toBe(1)
+        expect(result[site2.id]?.[0]!.id).toBe(page2.id)
+      })
+
+      it("should not create a version for the skipped resource", async () => {
+        const versionsPage1 = await db
+          .selectFrom("Version")
+          .where("resourceId", "=", page.id)
+          .selectAll()
+          .execute()
+        expect(versionsPage1).toHaveLength(0)
+      })
+
+      it("should create a version for the successfully published resource", async () => {
+        const versionsPage2 = await db
+          .selectFrom("Version")
+          .where("resourceId", "=", page2.id)
+          .selectAll()
+          .execute()
+
+        expect(versionsPage2).toHaveLength(1)
+        expect(versionsPage2[0]).toMatchObject({
+          resourceId: page2.id,
+          versionNum: 1,
+        })
+      })
+    })
+
+    describe("throwing an error when sending an email for a resource still processes the next resource correctly", () => {
+      let site: Awaited<ReturnType<typeof setupPageResource>>["site"]
+      let page: Awaited<ReturnType<typeof setupPageResource>>["page"]
+      let page2: Awaited<ReturnType<typeof setupPageResource>>["page"]
+      let site2: Awaited<ReturnType<typeof setupPageResource>>["site"]
+      let result: Awaited<ReturnType<typeof publishScheduledResources>>
+      let emailServiceSpy: ReturnType<typeof vi.spyOn>
+
+      beforeEach(async () => {
+        const setup = await setupPageResource({
+          resourceType: ResourceType.Page,
+          scheduledAt: FIXED_NOW,
+          scheduledBy: session.userId,
+          permalink: "page-1",
+        })
+        site = setup.site
+        page = setup.page
+        const setup2 = await setupPageResource({
+          resourceType: ResourceType.Page,
+          scheduledAt: FIXED_NOW,
+          scheduledBy: session.userId,
+          permalink: "page-2",
+        })
+        page2 = setup2.page
+        site2 = setup2.site
+        await setupPublisherPermissions({
+          userId: session.userId,
+          siteId: site.id,
+        })
+        const originalPublishPageResource =
+          publishPageResourceModule.publishPageResource
+
+        vi.spyOn(
+          publishPageResourceModule,
+          "publishPageResource",
+        ).mockImplementation(async (args) => {
+          if (args.resourceId === page.id) {
+            throw new Error("Mock error for resource 1")
+          } else {
+            return await originalPublishPageResource(args)
+          }
+        })
+
+        emailServiceSpy = vi
+          .spyOn(emailService, "sendFailedPublishEmail")
+          .mockImplementation(() => {
+            throw new Error("Mock email send error for resource")
+          })
+
+        result = await publishScheduledResources(true, FIXED_NOW)
+      })
+
+      it("should attempt to send a failed publish email for the failed resource", () => {
+        expect(emailServiceSpy).toHaveBeenCalledExactlyOnceWith({
+          recipientEmail: user.email,
+          isScheduled: true,
+          resource: expect.objectContaining({ id: page.id }),
+        })
+      })
+
+      it("should omit the failed site from the result and include the successful one", () => {
+        expect(result[site.id]).toBeUndefined()
+        expect(result[site2.id]?.length).toBe(1)
+        expect(result[site2.id]?.[0]!.id).toBe(page2.id)
+      })
+
+      it("should not create a version for the failed resource", async () => {
+        const versionsPage1 = await db
+          .selectFrom("Version")
+          .where("resourceId", "=", page.id)
+          .selectAll()
+          .execute()
+        expect(versionsPage1).toHaveLength(0)
+      })
+
+      it("should create a version for the successfully published resource", async () => {
+        const versionsPage2 = await db
+          .selectFrom("Version")
+          .where("resourceId", "=", page2.id)
+          .selectAll()
+          .execute()
+
+        expect(versionsPage2).toHaveLength(1)
+        expect(versionsPage2[0]).toMatchObject({
+          resourceId: page2.id,
+          versionNum: 1,
+        })
       })
     })
   })
