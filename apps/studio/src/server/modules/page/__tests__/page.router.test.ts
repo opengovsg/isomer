@@ -1,6 +1,7 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { z } from "zod"
 import type { reorderBlobSchema, updatePageBlobSchema } from "~/schemas/page"
+import type { AuditLog } from "~prisma/generated/selectableTypes"
 import { TRPCError } from "@trpc/server"
 import { addDays, set, subDays } from "date-fns"
 import { omit, pick } from "lodash-es"
@@ -2171,17 +2172,8 @@ describe("page.router", async () => {
       let page: Awaited<ReturnType<typeof setupPageResource>>["page"]
       let literalDestination: string
       let redirect: { destination: string }
-      let deleteEntry: {
-        userId: string | null
-        delta: {
-          before: { destination: string; deletedAt: string | null }
-          after: { destination: string; deletedAt: string | null }
-        }
-      }
-      let createEntry: {
-        userId: string | null
-        delta: { before: null; after: { destination: string } }
-      }
+      let deleteEntry: AuditLog
+      let createEntry: AuditLog
 
       beforeAll(async () => {
         const setup = await setupPageResource({
@@ -2234,19 +2226,27 @@ describe("page.router", async () => {
       })
 
       it("records a RedirectDelete audit entry for the literal form", () => {
+        const { before, after } = deleteEntry.delta as {
+          before: { destination: string; deletedAt: string | null }
+          after: { destination: string; deletedAt: string | null }
+        }
+
         expect(deleteEntry.userId).toBe(session.userId)
-        expect(deleteEntry.delta.before.destination).toBe(literalDestination)
-        expect(deleteEntry.delta.before.deletedAt).toBeNull()
-        expect(deleteEntry.delta.after.destination).toBe(literalDestination)
-        expect(deleteEntry.delta.after.deletedAt).not.toBeNull()
+        expect(before.destination).toBe(literalDestination)
+        expect(before.deletedAt).toBeNull()
+        expect(after.destination).toBe(literalDestination)
+        expect(after.deletedAt).not.toBeNull()
       })
 
       it("records a RedirectCreate audit entry for the reference form", () => {
+        const { after } = createEntry.delta as {
+          before: null
+          after: { destination: string }
+        }
+
         expect(createEntry.userId).toBe(session.userId)
         expect(createEntry.delta.before).toBeNull()
-        expect(createEntry.delta.after.destination).toBe(
-          `[resource:${site.id}:${page.id}]`,
-        )
+        expect(after.destination).toBe(`[resource:${site.id}:${page.id}]`)
       })
     })
 

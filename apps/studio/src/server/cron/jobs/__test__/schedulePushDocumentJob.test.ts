@@ -276,9 +276,8 @@ describe("schedulePushDocumentJobHandler", async () => {
         // Act
         await schedulePushDocumentJobHandler()
 
-        ;[records] = vi.mocked(
-          algoliaLib.saveObjectsToSearchIndex,
-        ).mock.calls[0]!
+        ;[records] = vi.mocked(algoliaLib.saveObjectsToSearchIndex).mock
+          .calls[0]! as [algoliaPkg.SearchRecord[]]
 
         remainingJobCount = (
           await db.selectFrom("PushDocumentJob").selectAll().execute()
@@ -556,7 +555,7 @@ describe("schedulePushDocumentJobHandler", async () => {
         .executeTakeFirstOrThrow()
       const draftBlob = await db
         .insertInto("Blob")
-        .values({ content: {} })
+        .values({ content: {} as never })
         .returning("id")
         .executeTakeFirstOrThrow()
       await setBlobContentForPushDocument(

@@ -40,7 +40,7 @@ const addCodebuildProjectToSite = async (siteId: number) => {
 
 const FIXED_NOW = new Date("2024-01-01T00:00:00.000Z")
 
-const getVersionsForResource = (resourceId: bigint) =>
+const getVersionsForResource = (resourceId: string) =>
   db
     .selectFrom("Version")
     .where("resourceId", "=", resourceId)
@@ -107,7 +107,7 @@ describe("schedulePublishingJob", async () => {
         // Act
         resourceSiteMap = await publishScheduledResources(true, FIXED_NOW)
 
-        versions = await getVersionsForResource(page.id)
+        versions = await getVersionsForResource(String(page.id))
 
         auditLogs = await getAuditLogsForSite(site.id)
       })
@@ -255,9 +255,9 @@ describe("schedulePublishingJob", async () => {
 
         failedEmailCall = sendFailedPublishEmailSpy.mock.calls[0]![0]!
 
-        versionsPage1 = await getVersionsForResource(page.id)
+        versionsPage1 = await getVersionsForResource(String(page.id))
 
-        versionsPage2 = await getVersionsForResource(page2.id)
+        versionsPage2 = await getVersionsForResource(String(page2.id))
       })
 
       it("sends a failed publish email for the first resource", () => {
@@ -325,9 +325,9 @@ describe("schedulePublishingJob", async () => {
 
         publishPageResourceCallCount = publishPageResourceSpy.mock.calls.length
 
-        versionsPage1 = await getVersionsForResource(page.id)
+        versionsPage1 = await getVersionsForResource(String(page.id))
 
-        versionsPage2 = await getVersionsForResource(page2.id)
+        versionsPage2 = await getVersionsForResource(String(page2.id))
       })
 
       it("publishes only the resource with a valid scheduledBy user", () => {
@@ -405,9 +405,9 @@ describe("schedulePublishingJob", async () => {
 
         failedEmailCall = emailServiceSpy.mock.calls[0]![0]!
 
-        versionsPage1 = await getVersionsForResource(page.id)
+        versionsPage1 = await getVersionsForResource(String(page.id))
 
-        versionsPage2 = await getVersionsForResource(page2.id)
+        versionsPage2 = await getVersionsForResource(String(page2.id))
       })
 
       it("attempts to send a failed publish email for the first resource", () => {

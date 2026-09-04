@@ -1,3 +1,8 @@
+import type {
+  AuditLog,
+  ResourcePermission,
+  User as DbUser,
+} from "~prisma/generated/selectableTypes"
 import { TRPCError } from "@trpc/server"
 import { omit } from "lodash-es"
 import { resetTables } from "tests/integration/helpers/db"
@@ -119,20 +124,10 @@ describe("user.router", () => {
       let user: Awaited<ReturnType<typeof setupUser>>
       let createdUsers: Awaited<ReturnType<typeof caller.create>>
       let createdUser: (typeof createdUsers)[number]
-      let dbUserResult: Awaited<
-        ReturnType<ReturnType<typeof db.selectFrom<"User">>["execute"]>
-      >
-      let resourcePermissions: Awaited<
-        ReturnType<
-          ReturnType<typeof db.selectFrom<"ResourcePermission">>["execute"]
-        >
-      >
-      let userAuditEntry: Awaited<
-        ReturnType<ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]>
-      >
-      let permissionAuditEntry: Awaited<
-        ReturnType<ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]>
-      >
+      let dbUserResult: DbUser[]
+      let resourcePermissions: ResourcePermission[]
+      let userAuditEntry: AuditLog[]
+      let permissionAuditEntry: AuditLog[]
 
       beforeAll(async () => {
         await setupAdminPermissions({ userId: session.userId, siteId })
@@ -398,20 +393,10 @@ describe("user.router", () => {
       let existingUser: Awaited<ReturnType<typeof setupUser>>
       let result: Awaited<ReturnType<typeof caller.create>>
       let createdUser: (typeof result)[number]
-      let dbUserResult: Awaited<
-        ReturnType<ReturnType<typeof db.selectFrom<"User">>["execute"]>
-      >
-      let resourcePermissions: Awaited<
-        ReturnType<
-          ReturnType<typeof db.selectFrom<"ResourcePermission">>["execute"]
-        >
-      >
-      let userAuditEntries: Awaited<
-        ReturnType<ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]>
-      >
-      let permissionAuditEntry: Awaited<
-        ReturnType<ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]>
-      >
+      let dbUserResult: DbUser[]
+      let resourcePermissions: ResourcePermission[]
+      let userAuditEntries: AuditLog[]
+      let permissionAuditEntry: AuditLog[]
 
       beforeAll(async () => {
         await setupAdminPermissions({ userId: session.userId, siteId })
@@ -492,22 +477,10 @@ describe("user.router", () => {
     describe("should create both user and permissions successfully if user is admin", () => {
       let createdUsers: Awaited<ReturnType<typeof caller.create>>
       let createdUser: (typeof createdUsers)[number]
-      let user: Awaited<
-        ReturnType<
-          ReturnType<typeof db.selectFrom<"User">>["executeTakeFirstOrThrow"]
-        >
-      >
-      let resourcePermissions: Awaited<
-        ReturnType<
-          ReturnType<typeof db.selectFrom<"ResourcePermission">>["execute"]
-        >
-      >
-      let userAuditEntries: Awaited<
-        ReturnType<ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]>
-      >
-      let permissionAuditEntry: Awaited<
-        ReturnType<ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]>
-      >
+      let user: DbUser
+      let resourcePermissions: ResourcePermission[]
+      let userAuditEntries: AuditLog[]
+      let permissionAuditEntry: AuditLog[]
 
       beforeAll(async () => {
         await setupAdminPermissions({ userId: session.userId, siteId })
@@ -789,17 +762,9 @@ describe("user.router", () => {
     describe("should soft delete an existing user's permissions successfully", () => {
       let userToDelete: Awaited<ReturnType<typeof setupUser>>
       let result: Awaited<ReturnType<typeof caller.delete>>
-      let deletedUserPermissions: Awaited<
-        ReturnType<
-          ReturnType<typeof db.selectFrom<"ResourcePermission">>["execute"]
-        >
-      >
-      let userDeleteAuditLogs: Awaited<
-        ReturnType<ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]>
-      >
-      let permissionsAuditLogs: Awaited<
-        ReturnType<ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]>
-      >
+      let deletedUserPermissions: Pick<ResourcePermission, "deletedAt">[]
+      let userDeleteAuditLogs: AuditLog[]
+      let permissionsAuditLogs: AuditLog[]
 
       beforeAll(async () => {
         await setupAdminPermissions({ userId: session.userId, siteId })
@@ -881,22 +846,12 @@ describe("user.router", () => {
     describe("should soft delete a user's permissions and not their account", () => {
       let userToDelete: Awaited<ReturnType<typeof setupUser>>
       let result: Awaited<ReturnType<typeof caller.delete>>
-      let dbUsers: Awaited<
-        ReturnType<ReturnType<typeof db.selectFrom<"User">>["execute"]>
-      >
-      let userDeleteAuditLogs: Awaited<
-        ReturnType<ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]>
-      >
-      let deletedUserPermission: Awaited<
-        ReturnType<
-          ReturnType<
-            typeof db.selectFrom<"ResourcePermission">
-          >["executeTakeFirst"]
-        >
-      >
-      let permissionsAuditLogs: Awaited<
-        ReturnType<ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]>
-      >
+      let dbUsers: Pick<DbUser, "deletedAt">[]
+      let userDeleteAuditLogs: AuditLog[]
+      let deletedUserPermission:
+        | Pick<ResourcePermission, "deletedAt">
+        | undefined
+      let permissionsAuditLogs: AuditLog[]
 
       beforeAll(async () => {
         await setupAdminPermissions({ userId: session.userId, siteId })
@@ -1783,19 +1738,9 @@ describe("user.router", () => {
       let userToUpdate: Awaited<ReturnType<typeof setupUser>>
       let currentPermission: Awaited<ReturnType<typeof setupEditorPermissions>>
       let result: Awaited<ReturnType<typeof caller.update>>
-      let deletedPermissionAuditLogs: Awaited<
-        ReturnType<ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]>
-      >
-      let newPermission: Awaited<
-        ReturnType<
-          ReturnType<
-            typeof db.selectFrom<"ResourcePermission">
-          >["executeTakeFirst"]
-        >
-      >
-      let newPermissionAuditLogs: Awaited<
-        ReturnType<ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]>
-      >
+      let deletedPermissionAuditLogs: AuditLog[]
+      let newPermission: ResourcePermission | undefined
+      let newPermissionAuditLogs: AuditLog[]
 
       beforeAll(async () => {
         await setupAdminPermissions({ userId: session.userId, siteId })
@@ -1891,19 +1836,9 @@ describe("user.router", () => {
       let userToUpdate: Awaited<ReturnType<typeof setupUser>>
       let currentPermission: Awaited<ReturnType<typeof setupEditorPermissions>>
       let result: Awaited<ReturnType<typeof caller.update>>
-      let deletedPermissionAuditLogs: Awaited<
-        ReturnType<ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]>
-      >
-      let newPermission: Awaited<
-        ReturnType<
-          ReturnType<
-            typeof db.selectFrom<"ResourcePermission">
-          >["executeTakeFirst"]
-        >
-      >
-      let newPermissionAuditLogs: Awaited<
-        ReturnType<ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]>
-      >
+      let deletedPermissionAuditLogs: AuditLog[]
+      let newPermission: ResourcePermission | undefined
+      let newPermissionAuditLogs: AuditLog[]
 
       beforeAll(async () => {
         await setupAdminPermissions({ userId: session.userId, siteId })
@@ -2003,17 +1938,9 @@ describe("user.router", () => {
       let originalDeletedPermissionDeletedAt: Date
       let originalPermission: Awaited<ReturnType<typeof setupEditorPermissions>>
       let result: Awaited<ReturnType<typeof caller.update>>
-      let userPermissions: Awaited<
-        ReturnType<
-          ReturnType<typeof db.selectFrom<"ResourcePermission">>["execute"]
-        >
-      >
-      let deletedPermissionAuditLogs: Awaited<
-        ReturnType<ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]>
-      >
-      let createdPermissionAuditLogs: Awaited<
-        ReturnType<ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]>
-      >
+      let userPermissions: ResourcePermission[]
+      let deletedPermissionAuditLogs: AuditLog[]
+      let createdPermissionAuditLogs: AuditLog[]
 
       beforeAll(async () => {
         await setupAdminPermissions({ userId: session.userId, siteId })
