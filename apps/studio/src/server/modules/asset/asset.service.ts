@@ -2,7 +2,7 @@ import type { z } from "zod"
 import type { getPresignedPutUrlSchema } from "~/schemas/asset"
 import {
   IMAGE_ACCEPTED_MIME_TYPE_MAPPING,
-  SUPPORTED_OPTIMIZABLE_CONTENT_TYPES,
+  SUPPORTED_OPTIMIZABLE_FORMATS,
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { create as createContentDisposition } from "content-disposition"
@@ -171,7 +171,7 @@ export const markFileAsDeleted = async ({ key }: { key: string }) => {
   const suffix = key.split(".").pop()
   if (!suffix) return
 
-  if (SUPPORTED_OPTIMIZABLE_CONTENT_TYPES.includes(suffix)) {
+  if (SUPPORTED_OPTIMIZABLE_FORMATS.includes(suffix)) {
     // NOTE: We only convert to webp and avif
     const prefix = key.substring(0, key.lastIndexOf("."))
     await deleteFileIfExists({ Key: `${prefix}.webp` })

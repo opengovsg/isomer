@@ -32,6 +32,6 @@ export const CONTENT_TYPE_TO_FORMAT = {
   "image/tiff": "tiff",
 } as const
 
-export const SUPPORTED_OPTIMIZABLE_CONTENT_TYPES = Object.keys(
+export const SUPPORTED_OPTIMIZABLE_FORMATS = Object.values(
   CONTENT_TYPE_TO_FORMAT,
 )
