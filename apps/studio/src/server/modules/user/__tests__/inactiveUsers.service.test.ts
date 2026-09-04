@@ -442,8 +442,7 @@ describe("inactiveUsers.service", () => {
       await bulkDeactivateInactiveUsers()
 
       // Assert
-      expect(sendAccountDeactivationEmail).toHaveBeenCalledOnce()
-      expect(sendAccountDeactivationEmail).toHaveBeenCalledWith({
+      expect(sendAccountDeactivationEmail).toHaveBeenCalledExactlyOnceWith({
         recipientEmail: user.email,
         sitesAndAdmins: [
           {
@@ -565,8 +564,7 @@ describe("inactiveUsers.service", () => {
 
       // Assert
       // Only the non-isomer-admin user should be deactivated
-      expect(sendAccountDeactivationEmail).toHaveBeenCalledOnce()
-      expect(sendAccountDeactivationEmail).toHaveBeenCalledWith({
+      expect(sendAccountDeactivationEmail).toHaveBeenCalledExactlyOnceWith({
         recipientEmail: userToDeactivate.email,
         sitesAndAdmins: expect.any(Array),
       })
@@ -584,8 +582,7 @@ describe("inactiveUsers.service", () => {
       await bulkDeactivateInactiveUsers()
 
       // Assert
-      expect(sendAccountDeactivationEmail).toHaveBeenCalledOnce()
-      expect(sendAccountDeactivationEmail).toHaveBeenCalledWith({
+      expect(sendAccountDeactivationEmail).toHaveBeenCalledExactlyOnceWith({
         recipientEmail: user.email,
         sitesAndAdmins: [
           {
@@ -1186,8 +1183,7 @@ describe("inactiveUsers.service", () => {
       })
 
       // Assert
-      expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledOnce()
-      expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledWith({
+      expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledExactlyOnceWith({
         recipientEmail: user.email,
         siteNames: [site.name],
         inHowManyDays: 1,
@@ -1344,8 +1340,7 @@ describe("inactiveUsers.service", () => {
       })
 
       // Assert
-      expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledOnce()
-      expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledWith({
+      expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledExactlyOnceWith({
         recipientEmail: user.email,
         siteNames: [site.name, anotherSite.name],
         inHowManyDays: 1,
