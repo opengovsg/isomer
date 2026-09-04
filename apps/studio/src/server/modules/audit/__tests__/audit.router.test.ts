@@ -109,53 +109,69 @@ describe("audit.router", async () => {
       )
     })
 
-    it("should create a single Pending request for a concrete report type", async () => {
-      // Arrange
-      const { site } = await setupSite()
-      await setupAdminPermissions({
-        userId: session.userId,
-        siteId: site.id,
-      })
-
-      // Act
-      const result = await caller.createExportRequest({
-        scope: "site",
-        siteId: site.id,
-        month: VALID_MONTH,
-        reportType: "Access",
-      })
-
-      // Assert: one inserted row, stored as the daterange derived from the
-      // picked month, and returned as an array (the fan-out contract).
+    describe("should create a single Pending request for a concrete report type", () => {
       const auditLogDateRange = getMonthDateRange(VALID_MONTH, new Date())
-      expect(result).toHaveLength(1)
-      expect(result[0]).toMatchObject({
-        siteId: site.id,
-        userId: session.userId,
-        auditLogDateRange,
-        reportType: "Access",
-        status: "Pending",
-        attempts: 0,
-      })
-      expect(result[0]?.id).toBeDefined()
+      let site: Awaited<ReturnType<typeof setupSite>>["site"]
+      let result: Awaited<ReturnType<typeof caller.createExportRequest>>
+      let rows: Awaited<ReturnType<typeof getRequestRows>>
+      let events: Awaited<ReturnType<typeof getExportCreateEvents>>
 
-      const rows = await getRequestRows({
-        siteId: site.id,
-        userId: session.userId!,
-      })
-      expect(rows).toHaveLength(1)
+      beforeAll(async () => {
+        // Arrange
+        const setup = await setupSite()
+        site = setup.site
+        await setupAdminPermissions({
+          userId: session.userId,
+          siteId: site.id,
+        })
 
-      // The ask itself is audit-logged: one AuditLogExportCreate event whose
-      // delta records what was asked for (the requested type, verbatim).
-      const events = await getExportCreateEvents({ siteId: site.id })
-      expect(events).toHaveLength(1)
-      expect(events[0]).toMatchObject({
-        userId: session.userId,
-        siteId: site.id,
-        delta: {
-          before: null,
-          after: { auditLogDateRange, reportType: "Access" },
-        },
+        // Act
+        result = await caller.createExportRequest({
+          scope: "site",
+          siteId: site.id,
+          month: VALID_MONTH,
+          reportType: "Access",
+        })
+
+        rows = await getRequestRows({
+          siteId: site.id,
+          userId: session.userId!,
+        })
+        events = await getExportCreateEvents({ siteId: site.id })
+      })
+
+      it("returns one Pending row with the derived daterange", () => {
+        // Assert: one inserted row, stored as the daterange derived from the
+        // picked month, and returned as an array (the fan-out contract).
+        expect(result).toHaveLength(1)
+        expect(result[0]).toMatchObject({
+          siteId: site.id,
+          userId: session.userId,
+          auditLogDateRange,
+          reportType: "Access",
+          status: "Pending",
+          attempts: 0,
+        })
+        expect(result[0]?.id).toBeDefined()
+      })
+
+      it("persists exactly one request row", () => {
+        // Assert
+        expect(rows).toHaveLength(1)
+      })
+
+      it("records an AuditLogExportCreate event for the ask", () => {
+        // Assert: the ask itself is audit-logged — one event whose delta records
+        // what was asked for (the requested type, verbatim).
+        expect(events).toHaveLength(1)
+        expect(events[0]).toMatchObject({
+          userId: session.userId,
+          siteId: site.id,
+          delta: {
+            before: null,
+            after: { auditLogDateRange, reportType: "Access" },
+          },
+        })
       })
     })
 
