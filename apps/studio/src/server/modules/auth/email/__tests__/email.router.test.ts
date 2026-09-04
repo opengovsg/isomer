@@ -188,8 +188,12 @@ describe("auth.email", () => {
         // Audit log should have been created.
         const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
         expect(auditLogs).toHaveLength(1)
-        expect(auditLogs[0]?.eventType).toBe(AuditLogEvent.Login)
-        expect(auditLogs[0]?.delta.before!.attempts).toBe(2)
+        expect(auditLogs[0]).toMatchObject({
+          eventType: AuditLogEvent.Login,
+          delta: expect.objectContaining({
+            before: expect.objectContaining({ attempts: 2 }),
+          }),
+        })
       })
 
       it("should set lastLoginAt when creating a new user", async () => {

@@ -54,8 +54,6 @@ describe("Datatable linked rows", () => {
 
     const link = screen.getByRole("link", { name: "Test page" })
     const row = link.closest("tr")
-
-    expect(row).not.toBeNull()
     if (!row) throw new Error("Expected link to be inside a table row")
 
     expect(row.parentElement?.tagName).toBe("TBODY")
@@ -63,6 +61,14 @@ describe("Datatable linked rows", () => {
     expect(getComputedStyle(row).position).toBe("relative")
     expect(getComputedStyle(row).cursor).toBe("pointer")
     expect(getComputedStyle(link).position).toBe("static")
+  })
+
+  it("positions the link overlay pseudo-element over the full row", () => {
+    render(<LinkedRowTable />)
+
+    const link = screen.getByRole("link", { name: "Test page" })
+    const row = link.closest("tr")
+    if (!row) throw new Error("Expected link to be inside a table row")
 
     const overlayStyles = getComputedStyle(link, "::before")
     const rowBounds = row.getBoundingClientRect()
