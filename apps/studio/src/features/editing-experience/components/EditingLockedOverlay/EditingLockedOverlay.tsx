@@ -115,7 +115,17 @@ const SuspendableEditingLockedOverlay = ({
               />
             )}
             <Flex gap="0.75rem">
-              <Button variant="reverse" onClick={actionDisclosure.onOpen}>
+              <Button
+                variant="reverse"
+                onClick={actionDisclosure.onOpen}
+                // Default reverse-variant hover is a near-white tint,
+                // invisible on this overlay's dark backdrop — match Cancel
+                // schedule's solid hover colour instead.
+                _hover={{
+                  bg: "interaction.main.hover",
+                  color: "base.content.inverse",
+                }}
+              >
                 {actionLabel}
               </Button>
               <Button onClick={cancelScheduleDisclosure.onOpen}>
