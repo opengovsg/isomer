@@ -1,5 +1,6 @@
 import { pick } from "lodash-es"
 import { spawn } from "node:child_process"
+import { existsSync } from "node:fs"
 import { copyFile, mkdtemp, rename, rm } from "node:fs/promises"
 import path from "node:path"
 import { env } from "~/env.mjs"
@@ -28,6 +29,7 @@ const LOCAL_PUBLISH_DIR = path.join(
   REPO_ROOT,
   "tooling/template/.local-publish",
 )
+const LOCAL_PUBLISH_BACKUP_DIR = `${LOCAL_PUBLISH_DIR}-backup`
 let localPublishQueue = Promise.resolve()
 
 const publishLocalSite = async (logger: Logger<string>, siteId: number) => {
@@ -57,8 +59,20 @@ const publishLocalSite = async (logger: Logger<string>, siteId: number) => {
       path.join(outputDir, "schema/_index.json"),
       path.join(outputDir, "schema/not-found.json"),
     )
-    await rm(LOCAL_PUBLISH_DIR, { recursive: true, force: true })
-    await rename(outputDir, LOCAL_PUBLISH_DIR)
+    await rm(LOCAL_PUBLISH_BACKUP_DIR, { recursive: true, force: true })
+    const hadPreviousPublish = existsSync(LOCAL_PUBLISH_DIR)
+    if (hadPreviousPublish) {
+      await rename(LOCAL_PUBLISH_DIR, LOCAL_PUBLISH_BACKUP_DIR)
+    }
+    try {
+      await rename(outputDir, LOCAL_PUBLISH_DIR)
+    } catch (error) {
+      if (hadPreviousPublish) {
+        await rename(LOCAL_PUBLISH_BACKUP_DIR, LOCAL_PUBLISH_DIR)
+      }
+      throw error
+    }
+    await rm(LOCAL_PUBLISH_BACKUP_DIR, { recursive: true, force: true })
     logger.info(
       { siteId },
       "Published site to the local template at http://localhost:3001",
@@ -74,15 +88,9 @@ export const publishSite = async (
   { siteId, codebuildJob }: PublishSiteArgs,
 ) => {
   if (env.NEXT_PUBLIC_APP_ENV === "development") {
-    // Publishing can be called from inside a transaction. Defer the export until
-    // that transaction has committed so the exporter sees the just-published data.
-    setTimeout(() => {
-      localPublishQueue = localPublishQueue
-        .then(() => publishLocalSite(logger, siteId))
-        .catch((error) =>
-          logger.error({ error, siteId }, "Local publish failed"),
-        )
-    })
+    localPublishQueue = localPublishQueue
+      .then(() => publishLocalSite(logger, siteId))
+      .catch((error) => logger.error({ error, siteId }, "Local publish failed"))
     return
   }
 

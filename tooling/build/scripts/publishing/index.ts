@@ -221,6 +221,7 @@ async function main() {
       logDebug(`Successfully wrote file: ${filePath}`)
     } catch (error) {
       console.error(`Error writing sitemap to file:`, error)
+      throw error
     }
   } finally {
     await client.end()
@@ -480,7 +481,7 @@ async function getAllResourcesWithFullPermalinks(
     return res.rows
   } catch (err) {
     console.error("Error fetching resources:", err)
-    return []
+    throw err
   }
 }
 
@@ -529,6 +530,7 @@ function writeContentToFile(
     logDebug(`Successfully wrote file: ${filePath}`)
   } catch (error) {
     console.error("Error writing content to file:", error)
+    throw error
   }
 }
 
@@ -560,6 +562,7 @@ async function fetchAndWriteSiteData(client: Client) {
     }
   } catch (err) {
     console.error("Error fetching site data:", err)
+    throw err
   }
 }
 
@@ -572,11 +575,7 @@ async function fetchAndWriteRedirects(client: Client) {
     logDebug(`Successfully wrote redirects: ${filePath}`)
   } catch (err) {
     console.error("Error fetching redirects:", err)
-    fs.writeFileSync(
-      path.join(OUTPUT_DIR, "redirects.json"),
-      JSON.stringify([]),
-      "utf-8",
-    )
+    throw err
   }
 }
 
@@ -593,6 +592,7 @@ function writeJsonToFile(content: any, filename: string) {
     logDebug(`Successfully wrote file: ${filePath}`)
   } catch (error) {
     console.error(`Error writing ${filename} to file:`, error)
+    throw error
   }
 }
 
