@@ -1491,97 +1491,141 @@ describe("collection.router", async () => {
       await assertAuditLogRows()
     })
 
-    it("should create a new `draftBlob` if it is currently `null`", async () => {
-      // Arrange
-      const { page, site } = await setupPageResource({
-        resourceType: "CollectionLink",
-        state: "Published",
-        userId: session.userId,
-      })
-      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
-      expect(page.draftBlobId).toBeNull()
+    describe("should create a new `draftBlob` if it is currently `null`", () => {
+      let page: Awaited<ReturnType<typeof setupPageResource>>["page"]
+      let originalBlob: Awaited<ReturnType<typeof getBlobOfResource>>
+      let expected: Awaited<ReturnType<typeof caller.updateCollectionLink>>
+      let auditEntry: Awaited<
+        ReturnType<
+          ReturnType<
+            ReturnType<typeof db.selectFrom<"AuditLog">>["executeTakeFirstOrThrow"]
+          >
+        >
+      >
+      let actual: Awaited<ReturnType<typeof getCollectionItemByPermalink>>
 
-      // Act
-      const originalBlob = await db
-        .transaction()
-        .execute((tx) => getBlobOfResource({ db: tx, resourceId: page.id }))
+      beforeEach(async () => {
+        // Arrange
+        const setup = await setupPageResource({
+          resourceType: "CollectionLink",
+          state: "Published",
+          userId: session.userId,
+        })
+        page = setup.page
+        const { site } = setup
+        await setupAdminPermissions({ userId: session.userId, siteId: site.id })
 
-      // Assert
-      const expected = await caller.updateCollectionLink({
-        siteId: site.id,
-        category: "category",
-        ref: "1",
-        linkId: Number(page.id),
+        originalBlob = await db
+          .transaction()
+          .execute((tx) => getBlobOfResource({ db: tx, resourceId: page.id }))
+
+        // Act
+        expected = await caller.updateCollectionLink({
+          siteId: site.id,
+          category: "category",
+          ref: "1",
+          linkId: Number(page.id),
+        })
+
+        auditEntry = await db
+          .selectFrom("AuditLog")
+          .where("eventType", "=", "ResourceUpdate")
+          .selectAll()
+          .executeTakeFirstOrThrow()
+        actual = await getCollectionItemByPermalink(
+          page.permalink,
+          page.parentId,
+        )
       })
 
-      expect(auditSpy).toHaveBeenCalledWith()
-      await assertAuditLogRows(1)
-      const auditEntry = await db
-        .selectFrom("AuditLog")
-        .where("eventType", "=", "ResourceUpdate")
-        .selectAll()
-        .executeTakeFirstOrThrow()
-      expect(auditEntry.delta.before!).toMatchObject({
-        blob: omit(originalBlob, ["createdAt", "updatedAt"]),
-        resource: omit(page, ["createdAt", "updatedAt"]),
+      it("creates a draft blob and records the update in the audit log", async () => {
+        // Assert
+        expect(page.draftBlobId).toBeNull()
+        expect(auditSpy).toHaveBeenCalledWith()
+        await assertAuditLogRows(1)
+        expect(auditEntry.delta.before!).toMatchObject({
+          blob: omit(originalBlob, ["createdAt", "updatedAt"]),
+          resource: omit(page, ["createdAt", "updatedAt"]),
+        })
+        expect(auditEntry.delta.after!).toMatchObject({
+          blob: omit(expected, ["createdAt", "updatedAt"]),
+          resource: omit(page, ["createdAt", "updatedAt"]),
+        })
       })
-      expect(auditEntry.delta.after!).toMatchObject({
-        blob: omit(expected, ["createdAt", "updatedAt"]),
-        resource: omit(page, ["createdAt", "updatedAt"]),
+
+      it("persists the draft blob on the collection link", async () => {
+        // Assert
+        expect(auditEntry.userId).toBe(session.userId)
+        expect(actual.draftBlobId).toStrictEqual(expected.id)
+        expect(expected.content.content).toStrictEqual([])
       })
-      expect(auditEntry.userId).toBe(session.userId)
-      const actual = await getCollectionItemByPermalink(
-        page.permalink,
-        page.parentId,
-      )
-      // oxlint-disable-next-line vitest/max-expects
-      expect(actual.draftBlobId).toStrictEqual(expected.id)
-      // oxlint-disable-next-line vitest/max-expects
-      expect(expected.content.content).toStrictEqual([])
     })
 
-    it("should update the collection link successfully", async () => {
-      // Arrange
-      const { blob, page, site } = await setupPageResource({
-        resourceType: "CollectionLink",
-      })
-      const originalBlob = await db
-        .transaction()
-        .execute((tx) => getBlobOfResource({ db: tx, resourceId: page.id }))
-      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+    describe("should update the collection link successfully", () => {
+      let blob: Awaited<ReturnType<typeof setupPageResource>>["blob"]
+      let page: Awaited<ReturnType<typeof setupPageResource>>["page"]
+      let originalBlob: Awaited<ReturnType<typeof getBlobOfResource>>
+      let expected: Awaited<ReturnType<typeof caller.updateCollectionLink>>
+      let auditEntry: Awaited<
+        ReturnType<
+          ReturnType<
+            ReturnType<typeof db.selectFrom<"AuditLog">>["executeTakeFirstOrThrow"]
+          >
+        >
+      >
 
-      // Act
-      const expected = await caller.updateCollectionLink({
-        siteId: site.id,
-        category: "category",
-        ref: "1",
-        linkId: Number(page.id),
+      beforeEach(async () => {
+        // Arrange
+        const setup = await setupPageResource({
+          resourceType: "CollectionLink",
+        })
+        blob = setup.blob
+        page = setup.page
+        const { site } = setup
+        originalBlob = await db
+          .transaction()
+          .execute((tx) => getBlobOfResource({ db: tx, resourceId: page.id }))
+        await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+
+        // Act
+        expected = await caller.updateCollectionLink({
+          siteId: site.id,
+          category: "category",
+          ref: "1",
+          linkId: Number(page.id),
+        })
+
+        auditEntry = await db
+          .selectFrom("AuditLog")
+          .where("eventType", "=", "ResourceUpdate")
+          .selectAll()
+          .executeTakeFirstOrThrow()
       })
 
-      // Assert
-      expect(auditSpy).toHaveBeenCalledWith()
-      await assertAuditLogRows(1)
-      const auditEntry = await db
-        .selectFrom("AuditLog")
-        .where("eventType", "=", "ResourceUpdate")
-        .selectAll()
-        .executeTakeFirstOrThrow()
-      expect(auditEntry.delta.before!).toMatchObject({
-        blob: omit(originalBlob, ["createdAt", "updatedAt"]),
-        resource: omit(page, ["createdAt", "updatedAt"]),
+      it("records the update in the audit log", async () => {
+        // Assert
+        expect(auditSpy).toHaveBeenCalledWith()
+        await assertAuditLogRows(1)
+        expect(auditEntry.delta.before!).toMatchObject({
+          blob: omit(originalBlob, ["createdAt", "updatedAt"]),
+          resource: omit(page, ["createdAt", "updatedAt"]),
+        })
+        expect(auditEntry.delta.after!).toMatchObject({
+          blob: omit(expected, ["createdAt", "updatedAt"]),
+          resource: omit(page, ["createdAt", "updatedAt"]),
+        })
+        expect(auditEntry.userId).toBe(session.userId)
       })
-      expect(auditEntry.delta.after!).toMatchObject({
-        blob: omit(expected, ["createdAt", "updatedAt"]),
-        resource: omit(page, ["createdAt", "updatedAt"]),
+
+      it("returns the updated collection link blob", async () => {
+        // Assert
+        // NOTE: For collection links, they have no content.
+        // During our update, we only update the `page` property
+        // and make the content the default collection link content
+        // which is an empty array
+        expect(expected.content.content).toStrictEqual([])
+        expect(expected.id).toStrictEqual(blob.id)
       })
-      expect(auditEntry.userId).toBe(session.userId)
-      // NOTE: For collection links, they have no content.
-      // During our update, we only update the `page` property
-      // and make the content the default collection link content
-      // which is an empty array
-      expect(expected.content.content).toStrictEqual([])
-      // oxlint-disable-next-line vitest/max-expects
-      expect(expected.id).toStrictEqual(blob.id)
     })
 
     it("should store a valid date in `dd/MM/yyyy` format", async () => {
