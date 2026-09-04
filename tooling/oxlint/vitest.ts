@@ -6,10 +6,6 @@ const isomerVitestPlugin = fileURLToPath(
   new URL("./plugins/ban-dummy-vitest-matchers.js", import.meta.url),
 )
 
-/**
- * Isomer vitest preset: Ultracite defaults with strict boolean matchers.
- * Prefer `toBe(true)` / `toBe(false)` over weaker `toBeTruthy()` / `toBeFalsy()`.
- */
 export default defineConfig({
   extends: [ultraciteVitest],
   jsPlugins: [
