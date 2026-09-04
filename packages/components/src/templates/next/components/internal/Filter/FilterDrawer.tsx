@@ -15,7 +15,7 @@ import type { AppliedFilter, FilterProps } from "../../../types/Filter"
 import { Button } from "../Button"
 import { Checkbox, CheckboxGroup } from "../Checkbox"
 import { IconButton } from "../IconButton"
-import { DateRangeFilterInput } from "./DateRangeFilterInput"
+import { DateFilterControls } from "./DateFilterControls"
 
 const expandFilterButtonStyle = tv({
   extend: focusRing,
@@ -165,25 +165,27 @@ const FilterDrawerContent = ({
             />
 
             <div className={showFilter[id] ? "flex flex-col gap-2" : "hidden"}>
-              {items.map(({ id: itemId, label: itemLabel, count }) => (
-                <Checkbox
-                  value={itemId}
-                  key={itemId}
-                  className="w-fit cursor-pointer p-2"
-                >
-                  {itemLabel} ({count.toLocaleString()})
-                </Checkbox>
-              ))}
-              {type === TAG_CATEGORY_TYPE.Date && (
-                <DateRangeFilterInput
-                  value={holdingDateRangesById[id]}
-                  onChange={(dateRange) =>
+              {type === TAG_CATEGORY_TYPE.Date ? (
+                <DateFilterControls
+                  items={items}
+                  dateRange={holdingDateRangesById[id]}
+                  onDateRangeChange={(dateRange) =>
                     setHoldingDateRangesById((prev) => ({
                       ...prev,
                       [id]: dateRange,
                     }))
                   }
                 />
+              ) : (
+                items.map(({ id: itemId, label: itemLabel, count }) => (
+                  <Checkbox
+                    value={itemId}
+                    key={itemId}
+                    className="w-fit cursor-pointer p-2"
+                  >
+                    {itemLabel} ({count.toLocaleString()})
+                  </Checkbox>
+                ))
               )}
             </div>
           </CheckboxGroup>

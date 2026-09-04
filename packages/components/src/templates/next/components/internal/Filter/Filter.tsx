@@ -13,7 +13,7 @@ import { groupFocusVisibleHighlight } from "~/utils/tailwind"
 import type { FilterProps } from "../../../types/Filter"
 import { Button } from "../Button"
 import { Checkbox, CheckboxGroup } from "../Checkbox"
-import { DateRangeFilterInput } from "./DateRangeFilterInput"
+import { DateFilterControls } from "./DateFilterControls"
 import { FilterDrawer } from "./FilterDrawer"
 
 const filterSectionLabelStyle = tv({
@@ -127,22 +127,14 @@ export const Filter = ({
             />
 
             <div className={showFilter[id] ? "flex flex-col gap-2" : "hidden"}>
-              {items.map(({ id: itemId, label: itemLabel, count }) => (
-                <Checkbox
-                  key={itemId}
-                  className="w-fit cursor-pointer p-2"
-                  value={itemId}
-                  onChange={() => handleFilterToggle(id, itemId)}
-                >
-                  {itemLabel} ({count.toLocaleString()})
-                </Checkbox>
-              ))}
-              {type === TAG_CATEGORY_TYPE.Date && (
-                <DateRangeFilterInput
-                  value={
+              {type === TAG_CATEGORY_TYPE.Date ? (
+                <DateFilterControls
+                  items={items}
+                  onBucketToggle={(itemId) => handleFilterToggle(id, itemId)}
+                  dateRange={
                     appliedFilters.find((filter) => filter.id === id)?.dateRange
                   }
-                  onChange={(dateRange) =>
+                  onDateRangeChange={(dateRange) =>
                     updateAppliedFilters(
                       appliedFilters,
                       setAppliedFilters,
@@ -151,6 +143,17 @@ export const Filter = ({
                     )
                   }
                 />
+              ) : (
+                items.map(({ id: itemId, label: itemLabel, count }) => (
+                  <Checkbox
+                    key={itemId}
+                    className="w-fit cursor-pointer p-2"
+                    value={itemId}
+                    onChange={() => handleFilterToggle(id, itemId)}
+                  >
+                    {itemLabel} ({count.toLocaleString()})
+                  </Checkbox>
+                ))
               )}
             </div>
           </CheckboxGroup>
