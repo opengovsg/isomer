@@ -1,5 +1,4 @@
 import { fileURLToPath } from "node:url"
-
 import { defineConfig } from "oxlint"
 import ultraciteVitest from "ultracite/oxlint/vitest"
 
@@ -48,6 +47,8 @@ export default defineConfig({
         // Dummy matchers like empty toHaveBeenCalledWith() are worse than off.
         "vitest/prefer-called-with": "off",
         "vitest/prefer-each": "off",
+        // Audit-log helpers wrap expect() internally; register them so tests aren't
+        // flagged as having no assertions.
         "vitest/expect-expect": [
           "error",
           {
@@ -61,6 +62,8 @@ export default defineConfig({
             ],
           },
         ],
+        // Ban toThrow(/./) placeholders that satisfy require-to-throw-message without
+        // asserting a real error.
         "isomer-vitest/no-dummy-to-throw-regex": "error",
       },
     },
