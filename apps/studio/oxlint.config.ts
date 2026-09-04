@@ -1,16 +1,18 @@
-{
-  "$schema": "../../node_modules/oxlint/configuration_schema.json",
-  "extends": ["./node_modules/@isomer/oxlint-config/base.json"],
-  "ignorePatterns": [
+import { defineConfig } from "oxlint";
+import base from "@isomer/oxlint-config/base";
+
+export default defineConfig({
+  extends: [base],
+  ignorePatterns: [
     ".next/**",
     "!.storybook/**",
     "./next-env.d.ts",
-    "prisma/generated/prisma/**"
+    "prisma/generated/prisma/**",
   ],
-  "overrides": [
+  overrides: [
     {
-      "files": ["**/*.js", "**/*.mjs", "**/*.ts", "**/*.tsx"],
-      "rules": {
+      files: ["**/*.js", "**/*.mjs", "**/*.ts", "**/*.tsx"],
+      rules: {
         "react/react-in-jsx-scope": "off",
         "react-hooks/rules-of-hooks": "error",
         "react-hooks/exhaustive-deps": "warn",
@@ -39,48 +41,52 @@
         "no-restricted-imports": [
           "error",
           {
-            "paths": [
+            paths: [
               {
-                "name": "process",
-                "importNames": ["env"],
-                "message": "Use `import { env } from '~/env'` instead to ensure validated types."
+                name: "process",
+                importNames: ["env"],
+                message:
+                  "Use `import { env } from '~/env'` instead to ensure validated types.",
               },
               {
-                "name": "@chakra-ui/react",
-                "importNames": ["useToast"],
-                "message": "Please use useToast from @opengovsg/design-system-react instead."
+                name: "@chakra-ui/react",
+                importNames: ["useToast"],
+                message:
+                  "Please use useToast from @opengovsg/design-system-react instead.",
               },
               {
-                "name": "@chakra-ui/react",
-                "importNames": [
+                name: "@chakra-ui/react",
+                importNames: [
                   "FormLabel",
                   "FormErrorMessage",
-                  "FormHelperText"
+                  "FormHelperText",
                 ],
-                "message": "Please use FormLabel, FormErrorMessage, and FormHelperText from @opengovsg/design-system-react instead."
+                message:
+                  "Please use FormLabel, FormErrorMessage, and FormHelperText from @opengovsg/design-system-react instead.",
               },
               {
-                "name": "@intercom/messenger-js-sdk",
-                "message": "Use `~/lib/intercom` instead so calls fall back to a console.log when NEXT_PUBLIC_INTERCOM_APP_ID is absent (e.g. on staging)."
-              }
-            ]
-          }
-        ]
+                name: "@intercom/messenger-js-sdk",
+                message:
+                  "Use `~/lib/intercom` instead so calls fall back to a console.log when NEXT_PUBLIC_INTERCOM_APP_ID is absent (e.g. on staging).",
+              },
+            ],
+          },
+        ],
       },
-      "globals": {
-        "React": "writable"
+      globals: {
+        React: "writable",
       },
-      "plugins": ["react", "nextjs", "node"]
+      plugins: ["react", "nextjs", "node"],
     },
     {
-      "files": ["src/env.mjs"],
-      "rules": {
-        "node/no-process-env": "off"
+      files: ["src/env.mjs"],
+      rules: {
+        "node/no-process-env": "off",
       },
-      "plugins": ["node"]
+      plugins: ["node"],
     },
     {
-      "files": [
+      files: [
         "playwright.config.ts",
         "vitest.config.ts",
         "tests/**/*.ts",
@@ -88,27 +94,27 @@
         ".storybook/**/*.ts",
         ".storybook/**/*.tsx",
         ".storybook/**/*.js",
-        ".storybook/**/*.jsx"
+        ".storybook/**/*.jsx",
       ],
-      "rules": {
-        "node/no-process-env": "off"
+      rules: {
+        "node/no-process-env": "off",
       },
-      "plugins": ["node"]
+      plugins: ["node"],
     },
     {
-      "files": ["**/*.ts", "**/*.tsx"],
-      "rules": {
+      files: ["**/*.ts", "**/*.tsx"],
+      rules: {
         "@typescript-eslint/prefer-nullish-coalescing": [
           "error",
           {
-            "ignorePrimitives": true
-          }
-        ]
+            ignorePrimitives: true,
+          },
+        ],
       },
-      "plugins": ["typescript"]
+      plugins: ["typescript"],
     },
     {
-      "files": [
+      files: [
         "**/*.stories.ts",
         "**/*.stories.tsx",
         "**/*.stories.js",
@@ -120,9 +126,9 @@
         "**/*.story.js",
         "**/*.story.jsx",
         "**/*.story.mjs",
-        "**/*.story.cjs"
+        "**/*.story.cjs",
       ],
-      "rules": {
+      rules: {
         "react-hooks/rules-of-hooks": "off",
         "import/no-anonymous-default-export": "off",
         "storybook/await-interactions": "error",
@@ -134,22 +140,22 @@
         "storybook/prefer-pascal-case": "warn",
         "storybook/story-exports": "error",
         "storybook/use-storybook-expect": "error",
-        "storybook/use-storybook-testing-library": "error"
+        "storybook/use-storybook-testing-library": "error",
       },
-      "jsPlugins": ["eslint-plugin-storybook"],
-      "plugins": ["react", "import"]
+      jsPlugins: ["eslint-plugin-storybook"],
+      plugins: ["react", "import"],
     },
     {
-      "files": [
+      files: [
         ".storybook/main.js",
         ".storybook/main.cjs",
         ".storybook/main.mjs",
-        ".storybook/main.ts"
+        ".storybook/main.ts",
       ],
-      "rules": {
-        "storybook/no-uninstalled-addons": "error"
+      rules: {
+        "storybook/no-uninstalled-addons": "error",
       },
-      "jsPlugins": ["eslint-plugin-storybook"]
-    }
-  ]
-}
+      jsPlugins: ["eslint-plugin-storybook"],
+    },
+  ],
+});

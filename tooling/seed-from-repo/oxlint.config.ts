@@ -1,11 +1,13 @@
-{
-  "$schema": "../../node_modules/oxlint/configuration_schema.json",
-  "extends": ["./node_modules/@isomer/oxlint-config/base.json"],
-  "ignorePatterns": ["!.storybook"],
-  "overrides": [
+import { defineConfig } from "oxlint";
+import base from "@isomer/oxlint-config/base";
+
+export default defineConfig({
+  extends: [base],
+  ignorePatterns: ["!.storybook"],
+  overrides: [
     {
-      "files": ["**/*.ts", "**/*.tsx"],
-      "rules": {
+      files: ["**/*.ts", "**/*.tsx"],
+      rules: {
         "@typescript-eslint/no-unsafe-assignment": "warn",
         "@typescript-eslint/no-explicit-any": "warn",
         "@typescript-eslint/no-unsafe-call": "warn",
@@ -18,13 +20,13 @@
         "@typescript-eslint/prefer-nullish-coalescing": [
           "error",
           {
-            "ignorePrimitives": true
-          }
+            ignorePrimitives: true,
+          },
         ],
         "@typescript-eslint/no-unnecessary-condition": "warn",
-        "no-unused-vars": "warn"
+        "no-unused-vars": "warn",
       },
-      "plugins": ["typescript"]
-    }
-  ]
-}
+      plugins: ["typescript"],
+    },
+  ],
+});

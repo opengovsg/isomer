@@ -1,19 +1,26 @@
-{
-  "plugins": [],
-  "categories": {
-    "correctness": "off"
+import { defineConfig } from "oxlint";
+
+export default defineConfig({
+  plugins: [],
+  categories: {
+    correctness: "off"
   },
-  "options": {
-    "typeAware": true
+  options: {
+    typeAware: true
   },
-  "env": {
-    "builtin": true
+  env: {
+    builtin: true
   },
-  "ignorePatterns": ["dist", "**/*.config.*"],
-  "overrides": [
+  ignorePatterns: [
+    "dist",
+    "**/*.config.*"
+  ],
+  overrides: [
     {
-      "files": ["**/*.js"],
-      "rules": {
+      files: [
+        "**/*.js"
+      ],
+      rules: {
         "constructor-super": "error",
         "for-direction": "error",
         "no-async-promise-executor": "error",
@@ -65,7 +72,7 @@
         "no-unused-vars": [
           "error",
           {
-            "caughtErrorsIgnorePattern": "^_"
+            caughtErrorsIgnorePattern: "^_"
           }
         ],
         "no-useless-backreference": "error",
@@ -80,11 +87,16 @@
           "prefer-top-level"
         ]
       },
-      "plugins": ["import"]
+      plugins: [
+        "import"
+      ]
     },
     {
-      "files": ["**/*.ts", "**/*.tsx"],
-      "rules": {
+      files: [
+        "**/*.ts",
+        "**/*.tsx"
+      ],
+      rules: {
         "constructor-super": "off",
         "no-class-assign": "off",
         "no-const-assign": "off",
@@ -121,8 +133,8 @@
         "no-unused-vars": [
           "error",
           {
-            "argsIgnorePattern": "^_",
-            "varsIgnorePattern": "^_"
+            argsIgnorePattern: "^_",
+            varsIgnorePattern: "^_"
           }
         ],
         "@typescript-eslint/no-wrapper-object-types": "error",
@@ -139,8 +151,8 @@
         "@typescript-eslint/no-misused-promises": [
           "error",
           {
-            "checksVoidReturn": {
-              "attributes": false
+            checksVoidReturn: {
+              attributes: false
             }
           }
         ],
@@ -180,33 +192,37 @@
         "@typescript-eslint/prefer-nullish-coalescing": [
           "error",
           {
-            "ignorePrimitives": true
+            ignorePrimitives: true
           }
         ],
         "@typescript-eslint/consistent-type-imports": [
           "warn",
           {
-            "prefer": "type-imports",
-            "fixStyle": "separate-type-imports"
+            prefer: "type-imports",
+            fixStyle: "separate-type-imports"
           }
         ],
         "@typescript-eslint/no-non-null-assertion": "error"
       },
-      "plugins": ["typescript"]
+      plugins: [
+        "typescript"
+      ]
     },
     {
-      "files": [
+      files: [
         "**/*.spec.ts",
         "**/*.spec.tsx",
         "**/*.test.ts",
         "**/*.test.tsx"
       ],
-      "rules": {
+      rules: {
         "@typescript-eslint/no-unsafe-assignment": "off",
         "@typescript-eslint/no-non-null-assertion": "off",
         "no-empty-function": "off"
       },
-      "plugins": ["typescript"]
+      plugins: [
+        "typescript"
+      ]
     }
   ]
-}
+});

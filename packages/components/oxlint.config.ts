@@ -1,11 +1,13 @@
-{
-  "$schema": "../../node_modules/oxlint/configuration_schema.json",
-  "extends": ["./node_modules/@isomer/oxlint-config/base.json"],
-  "ignorePatterns": ["dist", "**/*.config.*", "!.storybook"],
-  "overrides": [
+import { defineConfig } from "oxlint";
+import base from "@isomer/oxlint-config/base";
+
+export default defineConfig({
+  extends: [base],
+  ignorePatterns: ["dist", "**/*.config.*", "!.storybook"],
+  overrides: [
     {
-      "files": ["**/*.ts", "**/*.tsx"],
-      "rules": {
+      files: ["**/*.ts", "**/*.tsx"],
+      rules: {
         "react/react-in-jsx-scope": "off",
         "react-hooks/rules-of-hooks": "error",
         "react-hooks/exhaustive-deps": "warn",
@@ -19,49 +21,53 @@
         "@typescript-eslint/prefer-nullish-coalescing": [
           "error",
           {
-            "ignorePrimitives": true
-          }
+            ignorePrimitives: true,
+          },
         ],
         "no-restricted-imports": [
           "error",
           {
-            "paths": [
+            paths: [
               {
-                "name": "~/utils",
-                "message": "Do not import from ~/utils (barrel). Import from the specific file instead (e.g. ~/utils/getWordsFromPermalink)."
+                name: "~/utils",
+                message:
+                  "Do not import from ~/utils (barrel). Import from the specific file instead (e.g. ~/utils/getWordsFromPermalink).",
               },
               {
-                "name": "tailwind-variants",
-                "importNames": ["tv"],
-                "message": "Please use export from ~/lib/tv instead of the node module"
+                name: "tailwind-variants",
+                importNames: ["tv"],
+                message:
+                  "Please use export from ~/lib/tv instead of the node module",
               },
               {
-                "name": "tailwind-merge",
-                "importNames": ["twMerge"],
-                "message": "Please use export from ~/lib/twMerge instead of the node module"
+                name: "tailwind-merge",
+                importNames: ["twMerge"],
+                message:
+                  "Please use export from ~/lib/twMerge instead of the node module",
               },
               {
-                "name": "next/navigation",
-                "message": "Please use export from next instead of next/navigation"
-              }
+                name: "next/navigation",
+                message: "Please use export from next instead of next/navigation",
+              },
             ],
-            "patterns": [
+            patterns: [
               {
-                "group": ["lodash-es/*"],
-                "message": "Import from `lodash-es` entrypoint only to preserve tree shaking."
-              }
-            ]
-          }
+                group: ["lodash-es/*"],
+                message:
+                  "Import from `lodash-es` entrypoint only to preserve tree shaking.",
+              },
+            ],
+          },
         ],
-        "no-unused-vars": "warn"
+        "no-unused-vars": "warn",
       },
-      "globals": {
-        "React": "writable"
+      globals: {
+        React: "writable",
       },
-      "plugins": ["react", "typescript"]
+      plugins: ["react", "typescript"],
     },
     {
-      "files": [
+      files: [
         "**/*.stories.ts",
         "**/*.stories.tsx",
         "**/*.stories.js",
@@ -73,9 +79,9 @@
         "**/*.story.js",
         "**/*.story.jsx",
         "**/*.story.mjs",
-        "**/*.story.cjs"
+        "**/*.story.cjs",
       ],
-      "rules": {
+      rules: {
         "react-hooks/rules-of-hooks": "off",
         "import/no-anonymous-default-export": "off",
         "storybook/await-interactions": "error",
@@ -87,22 +93,22 @@
         "storybook/prefer-pascal-case": "warn",
         "storybook/story-exports": "error",
         "storybook/use-storybook-expect": "error",
-        "storybook/use-storybook-testing-library": "error"
+        "storybook/use-storybook-testing-library": "error",
       },
-      "jsPlugins": ["eslint-plugin-storybook"],
-      "plugins": ["react", "import"]
+      jsPlugins: ["eslint-plugin-storybook"],
+      plugins: ["react", "import"],
     },
     {
-      "files": [
+      files: [
         ".storybook/main.js",
         ".storybook/main.cjs",
         ".storybook/main.mjs",
-        ".storybook/main.ts"
+        ".storybook/main.ts",
       ],
-      "rules": {
-        "storybook/no-uninstalled-addons": "error"
+      rules: {
+        "storybook/no-uninstalled-addons": "error",
       },
-      "jsPlugins": ["eslint-plugin-storybook"]
-    }
-  ]
-}
+      jsPlugins: ["eslint-plugin-storybook"],
+    },
+  ],
+});

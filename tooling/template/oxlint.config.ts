@@ -1,11 +1,13 @@
-{
-  "$schema": "../../node_modules/oxlint/configuration_schema.json",
-  "extends": ["./node_modules/@isomer/oxlint-config/base.json"],
-  "ignorePatterns": [".next/**", "!.storybook/**", "out/**"],
-  "overrides": [
+import { defineConfig } from "oxlint";
+import base from "@isomer/oxlint-config/base";
+
+export default defineConfig({
+  extends: [base],
+  ignorePatterns: [".next/**", "!.storybook/**", "out/**"],
+  overrides: [
     {
-      "files": ["**/*.ts", "**/*.tsx"],
-      "rules": {
+      files: ["**/*.ts", "**/*.tsx"],
+      rules: {
         "react/react-in-jsx-scope": "off",
         "react-hooks/rules-of-hooks": "error",
         "react-hooks/exhaustive-deps": "warn",
@@ -33,14 +35,14 @@
         "@typescript-eslint/ban-ts-comment": [
           "error",
           {
-            "ts-ignore": "allow-with-description"
-          }
-        ]
+            "ts-ignore": "allow-with-description",
+          },
+        ],
       },
-      "globals": {
-        "React": "writable"
+      globals: {
+        React: "writable",
       },
-      "plugins": ["react", "nextjs", "typescript"]
-    }
-  ]
-}
+      plugins: ["react", "nextjs", "typescript"],
+    },
+  ],
+});
