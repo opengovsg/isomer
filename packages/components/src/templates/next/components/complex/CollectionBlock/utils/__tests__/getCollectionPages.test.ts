@@ -4,7 +4,7 @@ import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
 
 import { getCollectionPages } from "../getCollectionPages"
 
-describe("getCollectionPages", () => {
+describe(getCollectionPages, () => {
   let site: IsomerSiteProps = {
     // IsomerGeneratedSiteProps
     siteMap: {
@@ -141,7 +141,7 @@ describe("getCollectionPages", () => {
 
     // Assert
     expect(result).toHaveLength(3)
-    expect(result.map((item) => item.referenceLinkHref)).toEqual([
+    expect(result.map((item) => item.referenceLinkHref)).toStrictEqual([
       `${collectionPermalink}/1`,
       `${collectionPermalink}/2`,
       `${collectionPermalink}/3`,
@@ -184,8 +184,8 @@ describe("getCollectionPages", () => {
     const result = getCollectionPages({ site, collectionParent })
 
     // Assert
-    expect(result[0]?.itemTitle).toEqual(`${collectionId}2 title`)
-    expect(result[1]?.itemTitle).toEqual(`${collectionId}1 title`)
+    expect(result[0]?.itemTitle).toBe(`${collectionId}2 title`)
+    expect(result[1]?.itemTitle).toBe(`${collectionId}1 title`)
   })
 
   describe("thumbnail resolution", () => {
@@ -233,7 +233,7 @@ describe("getCollectionPages", () => {
       const result = getCollectionPages({ site: buildSite(), collectionParent })
 
       // Assert
-      expect(result[0]?.image).toEqual({
+      expect(result[0]?.image).toStrictEqual({
         src: "/item-image.jpg",
         alt: "Item image",
       })
@@ -258,12 +258,12 @@ describe("getCollectionPages", () => {
       // Assert
       // Both items should resolve to the site logo since showThumbnail is undefined
       result.forEach((item) => {
-        expect(item.image).toEqual({
+        expect(item.image).toStrictEqual({
           src: site.logoUrl,
           alt: `${site.siteName} site logo`,
           isContainNeeded: true,
         })
-        expect(item.isContainNeeded).toBe(true)
+        expect(item.isContainNeeded).toBeTruthy()
       })
     })
 
@@ -286,7 +286,7 @@ describe("getCollectionPages", () => {
       const result = getCollectionPages({ site: buildSite(), collectionParent })
 
       // Assert
-      expect(result[0]?.image).toEqual({
+      expect(result[0]?.image).toStrictEqual({
         src: site.logoUrl,
         alt: `${site.siteName} site logo`,
         isContainNeeded: true,
@@ -316,13 +316,13 @@ describe("getCollectionPages", () => {
         (r) => r.id === itemWithoutImageButWithFirstImage.permalink,
       )
       const second = result.find((r) => r.id === itemWithNoImages.permalink)
-      expect(first?.image).toEqual({
+      expect(first?.image).toStrictEqual({
         src: "/first-image.jpg",
         alt: "First image",
       })
       // When 'first-image' is set but no firstImage exists, should still
       // fall back to the site logo
-      expect(second?.image).toEqual({
+      expect(second?.image).toStrictEqual({
         src: site.logoUrl,
         alt: `${site.siteName} site logo`,
         isContainNeeded: true,
@@ -364,8 +364,8 @@ describe("getCollectionPages", () => {
     const result = getCollectionPages({ site, collectionParent })
 
     // Assert
-    expect(result[0]?.itemTitle).toEqual(`${collectionId}2 title`)
-    expect(result[1]?.itemTitle).toEqual(`${collectionId}1 title`)
+    expect(result[0]?.itemTitle).toBe(`${collectionId}2 title`)
+    expect(result[1]?.itemTitle).toBe(`${collectionId}1 title`)
   })
 
   describe("plaintextTags resolution", () => {
@@ -408,7 +408,7 @@ describe("getCollectionPages", () => {
       const result = getCollectionPages({ site, collectionParent })
 
       // Assert
-      expect(result[0]?.plaintextTags).toEqual([
+      expect(result[0]?.plaintextTags).toStrictEqual([
         { id: "cat-1", category: "Category", selected: ["Guides"] },
       ])
     })

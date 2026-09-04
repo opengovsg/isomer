@@ -16,7 +16,7 @@ const createMockMethods = (
   }))
 }
 
-describe("filterContactMethods", () => {
+describe(filterContactMethods, () => {
   describe("when whitelistedMethods is undefined", () => {
     it("should return all methods", () => {
       // Arrange
@@ -26,7 +26,7 @@ describe("filterContactMethods", () => {
       const result = filterContactMethods({ methods })
 
       // Assert
-      expect(result).toEqual(methods)
+      expect(result).toStrictEqual(methods)
       expect(result).toHaveLength(3)
     })
 
@@ -38,7 +38,7 @@ describe("filterContactMethods", () => {
       const result = filterContactMethods({ methods })
 
       // Assert
-      expect(result).toEqual([])
+      expect(result).toStrictEqual([])
     })
   })
 
@@ -90,7 +90,7 @@ describe("filterContactMethods", () => {
       const result = filterContactMethods({ methods, whitelistedMethods })
 
       // Assert
-      expect(result).toEqual([])
+      expect(result).toStrictEqual([])
       expect(result).toHaveLength(0)
     })
 
@@ -158,16 +158,14 @@ describe("filterContactMethods", () => {
 
       // Assert
       expect(result).toHaveLength(4)
-      // Should return all telephone methods first (in original order)
-      expect(result[0]?.method).toBe("telephone")
-      expect(result[0]?.label).toBe("Main Phone")
-      expect(result[1]?.method).toBe("telephone")
-      expect(result[1]?.label).toBe("Emergency Phone")
-      // Then all email methods (in original order)
-      expect(result[2]?.method).toBe("email")
-      expect(result[2]?.label).toBe("General Email")
-      expect(result[3]?.method).toBe("email")
-      expect(result[3]?.label).toBe("Support Email")
+      expect(
+        result.map((item) => ({ method: item?.method, label: item?.label })),
+      ).toStrictEqual([
+        { method: "telephone", label: "Main Phone" },
+        { method: "telephone", label: "Emergency Phone" },
+        { method: "email", label: "General Email" },
+        { method: "email", label: "Support Email" },
+      ])
     })
 
     it("should filter out methods with falsy method values", () => {
@@ -225,7 +223,7 @@ describe("filterContactMethods", () => {
 
       // Assert
       expect(result).toHaveLength(1)
-      expect(result[0]?.values).toEqual(["hello"])
+      expect(result[0]?.values).toStrictEqual(["hello"])
     })
 
     // Additional tests for invalid or empty values since data can be from external sources
@@ -289,7 +287,7 @@ describe("filterContactMethods", () => {
 
       // Assert
       expect(result).toHaveLength(1)
-      expect(result[0]?.values).toEqual(["+65-1234-5678"])
+      expect(result[0]?.values).toStrictEqual(["+65-1234-5678"])
     })
   })
 })
