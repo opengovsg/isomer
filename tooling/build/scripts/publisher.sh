@@ -123,7 +123,7 @@ if [[ -n "$ISOMER_BUILD_REPO_BRANCH" ]]; then
 
   echo "Installing workspace dependencies..."
   start_time=$(date +%s)
-  pnpm install --frozen-lockfile
+  pnpm install --frozen-lockfile --filter isomer-base-template...
   calculate_duration "$start_time"
 
   if [ "$RESTORED_STORE" -eq 0 ]; then
@@ -153,7 +153,7 @@ else
   # nothing needs to be built in a per-site job.
   echo "Re-linking workspace from cached store..."
   start_time=$(date +%s)
-  pnpm install --frozen-lockfile
+  pnpm install --frozen-lockfile --filter isomer-base-template...
   calculate_duration "$start_time"
 
   fetch_cached "s3://$S3_CACHE_BUCKET_NAME/isomer/$GIT_SHA/$COMPONENTS_DIST_TGZ" "$COMPONENTS_DIST_TGZ" packages/components ||
@@ -165,7 +165,7 @@ echo "Fetching from database..."
 start_time=$(date +%s)
 cd tooling/build/scripts/publishing
 pwd
-pnpm install --frozen-lockfile
+pnpm install --frozen-lockfile --filter publishing...
 pnpm run start
 calculate_duration "$start_time"
 
