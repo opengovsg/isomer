@@ -15,6 +15,7 @@ import {
 // Mock the S3 client so these stay pure unit tests, matching asset.router.test.ts.
 vi.mock("~/lib/s3", () => ({
   deleteFile: vi.fn().mockResolvedValue(undefined),
+  isNotFoundError: vi.fn().mockReturnValue(false),
 }))
 
 describe("asset.service", () => {
@@ -418,7 +419,9 @@ describe("asset.service", () => {
         { url: urls[0], key: `36/${UUID_1}/a.png`, success: true },
         { url: urls[1], key: `37/${UUID_2}/b.png`, success: true },
       ])
-      expect(deleteFile).toHaveBeenCalledTimes(2)
+      // .png is an optimizable format, so each key also deletes its .webp
+      // and .avif derivatives alongside the original: 3 calls per key.
+      expect(deleteFile).toHaveBeenCalledTimes(6)
     })
 
     it("should report failure for an invalid URL without calling deleteFile", async () => {

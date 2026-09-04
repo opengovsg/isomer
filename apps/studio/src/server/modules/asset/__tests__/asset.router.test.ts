@@ -35,6 +35,7 @@ vi.mock("~/lib/s3", () => ({
   markFileAsDeleted: vi.fn().mockResolvedValue(undefined),
   deleteFile: vi.fn().mockResolvedValue(undefined),
   putObjectDirect: vi.fn().mockResolvedValue(undefined),
+  isNotFoundError: vi.fn().mockReturnValue(false),
 }))
 
 // Mock CloudFront invalidation to prevent real AWS calls in CI.
@@ -463,8 +464,26 @@ describe("asset.router", async () => {
         fileKeys,
       })
 
-      // Assert
-      expect(deleteFile).toHaveBeenCalledTimes(fileKeys.length)
+      // Assert — .png and .jpg are optimizable formats, so each also
+      // deletes its .webp and .avif derivatives alongside the original;
+      // .pdf is not optimizable, so only the original is deleted.
+      expect(deleteFile).toHaveBeenCalledTimes(7)
+      expect(deleteFile).toHaveBeenCalledWith({
+        Bucket: expect.any(String),
+        Key: `${site.id}/uuid1/file1.webp`,
+      })
+      expect(deleteFile).toHaveBeenCalledWith({
+        Bucket: expect.any(String),
+        Key: `${site.id}/uuid1/file1.avif`,
+      })
+      expect(deleteFile).toHaveBeenCalledWith({
+        Bucket: expect.any(String),
+        Key: `${site.id}/uuid2/file2.webp`,
+      })
+      expect(deleteFile).toHaveBeenCalledWith({
+        Bucket: expect.any(String),
+        Key: `${site.id}/uuid2/file2.avif`,
+      })
       fileKeys.forEach((fileKey) => {
         expect(deleteFile).toHaveBeenCalledWith({
           Bucket: expect.any(String),
@@ -625,7 +644,9 @@ describe("asset.router", async () => {
         success: true,
         invalidationId: "INV123",
       })
-      expect(deleteFile).toHaveBeenCalledTimes(2)
+      // .png is an optimizable format, so each URL also deletes its .webp
+      // and .avif derivatives alongside the original: 3 calls per URL.
+      expect(deleteFile).toHaveBeenCalledTimes(6)
       expect(invalidateAssetPaths).toHaveBeenCalledWith(
         expect.anything(),
         new Set([`1/${UUID_1}/a.png`, `2/${UUID_2}/b.png`]),
