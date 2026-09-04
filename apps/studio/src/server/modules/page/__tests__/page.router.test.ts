@@ -3255,7 +3255,7 @@ describe("page.router", async () => {
           pageId: Number(expectedPage.id),
           scheduledAt: subDays(FIXED_NOW, 1),
         }),
-      ).rejects.toThrow()
+      ).rejects.toThrow("Scheduled time must be in the future")
 
       // Assert
       // Since the request fails, expect scheduledAt to be null

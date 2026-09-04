@@ -169,7 +169,7 @@ describe("auth.email", () => {
             email: TEST_VALID_EMAIL,
             token: INVALID_OTP,
           }),
-        ).rejects.toThrow()
+        ).rejects.toThrow("Token is invalid or has expired")
 
         const result = caller.verifyOtp({
           email: TEST_VALID_EMAIL,
@@ -337,7 +337,7 @@ describe("auth.email", () => {
             email: TEST_VALID_EMAIL,
             token: INVALID_OTP,
           }),
-        ).rejects.toThrow()
+        ).rejects.toThrow("Token is invalid or has expired")
 
         const result = caller.verifyOtp({
           email: TEST_VALID_EMAIL,

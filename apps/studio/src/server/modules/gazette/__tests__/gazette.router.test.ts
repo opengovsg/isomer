@@ -1023,7 +1023,7 @@ describe("gazette.router", async () => {
           siteId: site.id,
           fileKey: "/2026/Government Gazette/Public/notice-1.pdf",
         }),
-      ).rejects.toThrow()
+      ).rejects.toThrow("Invalid fileKey")
     })
 
     it("rejects a fileKey containing a `..` segment", async () => {
@@ -1034,7 +1034,7 @@ describe("gazette.router", async () => {
           siteId: site.id,
           fileKey: "2026/../etc/passwd",
         }),
-      ).rejects.toThrow()
+      ).rejects.toThrow("Invalid fileKey")
     })
   })
 

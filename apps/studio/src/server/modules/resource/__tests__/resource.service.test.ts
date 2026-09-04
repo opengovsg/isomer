@@ -1,4 +1,5 @@
 import { expect, beforeEach, afterEach, describe, beforeAll, it } from 'vitest';
+import { TRPCError } from "@trpc/server"
 import { pick } from "lodash-es"
 import { resetTables } from "tests/integration/helpers/db"
 import {
@@ -638,10 +639,9 @@ describe("resource.service", () => {
       )
 
       // Assert
-      await expect(result).rejects.toThrow()
-    })
-  })
-  describe("updateBlobById", () => {
+      await expect(result).rejects.toThrow(
+        /violates foreign key constraint.*Resource_parentId_fkey/,
+      )
     let site: Awaited<ReturnType<typeof setupPageResource>>["site"]
 
     beforeEach(async () => {
@@ -664,7 +664,9 @@ describe("resource.service", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrow()
+      await expect(result).rejects.toThrow(
+        new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
+      )
     })
 
     it("should create a draft blob if the page is already published", async () => {
@@ -751,7 +753,9 @@ describe("resource.service", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrow()
+      await expect(result).rejects.toThrow(
+        new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
+      )
     })
   })
 
@@ -770,7 +774,7 @@ describe("resource.service", () => {
       // Act
       const result = getNavBar(db, 99999)
       // Assert
-      await expect(result).rejects.toThrow()
+      await expect(result).rejects.toThrow("no result")
     })
   })
 
@@ -789,7 +793,7 @@ describe("resource.service", () => {
       // Act
       const result = getFooter(db, 99999)
       // Assert
-      await expect(result).rejects.toThrow()
+      await expect(result).rejects.toThrow("no result")
     })
   })
 
@@ -806,7 +810,7 @@ describe("resource.service", () => {
       const result = getLocalisedSitemap(9999, Number(page.id))
 
       // Assert
-      await expect(result).rejects.toThrow()
+      await expect(result).rejects.toThrow("no result")
     })
 
     it("should throw an error if the `resourceId` doesn't exist", async () => {
@@ -815,7 +819,7 @@ describe("resource.service", () => {
       // Act
       const result = getLocalisedSitemap(site.id, 99999)
       // Assert
-      await expect(result).rejects.toThrow()
+      await expect(result).rejects.toThrow("no result")
     })
 
     it("should return the path from ancestor to the page (DRAFT), together with its siblings", async () => {
