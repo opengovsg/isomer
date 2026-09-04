@@ -109,7 +109,9 @@ describe("user.service", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrow()
+      await expect(result).rejects.toThrow(
+        /violates foreign key constraint.*ResourcePermission_siteId_fkey/,
+      )
 
       // Assert DB - audit logs
       const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()

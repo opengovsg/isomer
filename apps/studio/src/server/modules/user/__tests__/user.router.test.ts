@@ -107,7 +107,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrow()
+      await expect(result).rejects.toThrow("Invalid email address")
 
       // Assert DB - audit logs
       const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()

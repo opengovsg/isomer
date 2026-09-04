@@ -176,9 +176,11 @@ describe("auditLogExport.query", () => {
       // Casts bypass the `IsoMonth` compile-time guard on purpose: these
       // exercise the runtime defense for values arriving through untyped
       // paths (e.g. raw DB reads or JSON).
-      expect(() => getMonthDateRange("2024-13" as IsoMonth, NOW)).toThrow()
+      expect(() => getMonthDateRange("2024-13" as IsoMonth, NOW)).toThrow(
+        'Invalid month, expected "yyyy-MM" but got: 2024-13',
+      )
       expect(() => getMonthDateRange("not-a-month" as IsoMonth, NOW)).toThrow(
-        /./,
+        'Invalid month, expected "yyyy-MM" but got: not-a-month',
       )
     })
   })
@@ -193,7 +195,9 @@ describe("auditLogExport.query", () => {
     })
 
     it("throws on a non-canonical range", () => {
-      expect(() => getExportRange("2024-03-01/2024-04-01")).toThrow()
+      expect(() => getExportRange("2024-03-01/2024-04-01")).toThrow(
+        'Invalid audit log date range, expected "[YYYY-MM-DD,YYYY-MM-DD)" but got: 2024-03-01/2024-04-01',
+      )
     })
   })
 

@@ -33,8 +33,7 @@ export default defineConfig({
         // Intentional todos/skips are common in this repo; do not require per-line disables.
         "vitest/warn-todo": "off",
         "vitest/no-disabled-tests": "off",
-        // Dummy matchers like toThrow(/./) or empty toHaveBeenCalledWith() are worse than off.
-        "vitest/require-to-throw-message": "off",
+        // Dummy matchers like empty toHaveBeenCalledWith() are worse than off.
         "vitest/prefer-called-with": "off",
         "vitest/prefer-each": "off",
         "vitest/expect-expect": [

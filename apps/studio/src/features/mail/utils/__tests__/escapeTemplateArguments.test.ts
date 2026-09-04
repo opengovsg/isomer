@@ -54,7 +54,7 @@ describe("escapeTemplateArguments", () => {
     }
 
     // Act / Assert
-    expect(() => wrapped.alert(input)).toThrow()
+    expect(() => wrapped.alert(input)).toThrow("Cannot escape a non-plain object")
     expect(template).not.toHaveBeenCalled()
   })
 
