@@ -28,7 +28,7 @@ const otherRequiredCategory: CollectionTags[number] = {
   options: [{ id: OTHER_REQUIRED_OPTION_ID, label: "Notice" }],
 }
 
-describe(validateRequiredTags, () => {
+describe("validateRequiredTags", () => {
   it("returns valid when there are no tag categories", () => {
     // Act
     const result = validateRequiredTags([], ["anything"])

@@ -49,7 +49,7 @@ const createSiteWithChildren = (children: IsomerSitemap[]) =>
     },
   })
 
-describe(getCollectionItems, () => {
+describe("getCollectionItems", () => {
   describe("showThumbnail is undefined", () => {
     it("should not include image when showThumbnail is undefined, even if item has an image", () => {
       const itemImage = { src: "/images/thumbnail.png", alt: "Thumbnail" }

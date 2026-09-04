@@ -5,7 +5,7 @@ import {
   SELECTED_CELL_BORDER_CLASSES,
 } from "../getSelectedCellBorderClasses"
 
-describe(getSelectedCellBorderClasses, () => {
+describe("getSelectedCellBorderClasses", () => {
   const selectionRect = { left: 1, top: 1, right: 3, bottom: 3 }
 
   it("returns all four sides for a single-cell selection", () => {

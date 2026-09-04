@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { getDgsIdFromDgsLink } from "../getDgsIdFromDgsLink"
 
-describe(getDgsIdFromDgsLink, () => {
+describe("getDgsIdFromDgsLink", () => {
   describe("valid DGS links", () => {
     it("should extract DGS ID from a simple DGS link", () => {
       const result = getDgsIdFromDgsLink("[dgs:test123]")

@@ -12,7 +12,7 @@ const items = [
 
 const itemsPerPage = 2
 
-describe(getPaginatedItems, () => {
+describe("getPaginatedItems", () => {
   it("returns the first page when currPage is NaN", () => {
     expect(getPaginatedItems(items, itemsPerPage, NaN)).toStrictEqual([
       items[0],

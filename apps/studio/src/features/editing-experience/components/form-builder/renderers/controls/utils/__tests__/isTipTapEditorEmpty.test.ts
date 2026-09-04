@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { isTiptapEditorEmpty } from "../isTipTapEditorEmpty"
 
-describe(isTiptapEditorEmpty, () => {
+describe("isTiptapEditorEmpty", () => {
   it("should return true if the editor is empty", () => {
     expect(isTiptapEditorEmpty({ type: "prose", content: [] })).toBe(true)
   })

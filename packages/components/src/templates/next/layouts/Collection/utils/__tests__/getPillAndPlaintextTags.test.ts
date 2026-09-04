@@ -4,7 +4,7 @@ import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
 
 import { getPillAndPlaintextTags } from "../getPillAndPlaintextTags"
 
-describe(getPillAndPlaintextTags, () => {
+describe("getPillAndPlaintextTags", () => {
   it("returns undefined for both when tagged is undefined", () => {
     // Arrange
     const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [

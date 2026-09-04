@@ -1,3 +1,4 @@
+import { beforeEach, afterEach, describe, expect, it } from 'vitest';
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { z } from "zod"
 import type { reorderBlobSchema, updatePageBlobSchema } from "~/schemas/page"
@@ -22,7 +23,6 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
-import { beforeEach, afterEach, describe, expect, it } from "vitest"
 import { normalizeRedirectPath } from "~/schemas/redirect"
 import { createCallerFactory } from "~/server/trpc"
 import {
@@ -1181,9 +1181,7 @@ describe("page.router", async () => {
           ],
         },
       ]
-      expect(unexpectedBlock).not.toStrictEqual(
-        pageToReorder.blob.content.content,
-      )
+      expect(unexpectedBlock).not.toStrictEqual(pageToReorder.blob.content.content)
       await setupAdminPermissions({
         userId: session.userId ?? undefined,
         siteId: pageToReorder.site.id,
@@ -1910,10 +1908,8 @@ describe("page.router", async () => {
     })
 
     // TODO: Implement tests when permissions are implemented
-    // oxlint-disable-next-line vitest/warn-todo
     it.todo("should throw 403 if user does not have write access to folder")
 
-    // oxlint-disable-next-line vitest/warn-todo
     it.todo("should throw 403 if user does not have write access to root")
   })
 
@@ -1979,10 +1975,8 @@ describe("page.router", async () => {
       )
     })
 
-    // oxlint-disable-next-line vitest/warn-todo
     it.todo("should throw 403 if user does not have access to site")
 
-    // oxlint-disable-next-line vitest/warn-todo
     it.todo("should throw 403 if user does not have read access to root")
   })
 
@@ -2170,97 +2164,77 @@ describe("page.router", async () => {
       ).resolves.toBeUndefined()
     })
 
-    describe("should back-fill a literal redirect destination into a reference on first publish", () => {
-      let site: Awaited<ReturnType<typeof setupPageResource>>["site"]
-      let page: Awaited<ReturnType<typeof setupPageResource>>["page"]
-      let literalDestination: string
-      let deleteEntry: {
-        userId: string | null
-        delta: unknown
-      }
-      let createEntry: {
-        userId: string | null
-        delta: unknown
-      }
-
-      beforeEach(async () => {
-        // Arrange — a draft page, plus a redirect whose destination is the page's
-        // literal path (created before the page was live). Publishing the page
-        // should rewrite that literal into a [resource:...] reference so the
-        // redirect follows the page's future moves.
-        const setup = await setupPageResource({
-          resourceType: ResourceType.Page,
-        })
-        site = setup.site
-        page = setup.page
-        await setupPublisherPermissions({
-          userId: session.userId ?? undefined,
+    it("should back-fill a literal redirect destination into a reference on first publish", async () => {
+      // Arrange — a draft page, plus a redirect whose destination is the page's
+      // literal path (created before the page was live). Publishing the page
+      // should rewrite that literal into a [resource:...] reference so the
+      // redirect follows the page's future moves.
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      const fullPermalink = await getResourceFullPermalink(
+        site.id,
+        Number(page.id),
+      )
+      const literalDestination = normalizeRedirectPath(fullPermalink!)
+      await db
+        .insertInto("Redirect")
+        .values({
           siteId: site.id,
+          source: "/old-url",
+          destination: literalDestination,
         })
-        const fullPermalink = await getResourceFullPermalink(
-          site.id,
-          Number(page.id),
-        )
-        literalDestination = normalizeRedirectPath(fullPermalink!)
-        await db
-          .insertInto("Redirect")
-          .values({
-            siteId: site.id,
-            source: "/old-url",
-            destination: literalDestination,
-          })
-          .execute()
+        .execute()
 
-        await caller.publishPage({ siteId: site.id, pageId: Number(page.id) })
+      // Act
+      await caller.publishPage({ siteId: site.id, pageId: Number(page.id) })
 
-        deleteEntry = await db
-          .selectFrom("AuditLog")
-          .selectAll()
-          .where("siteId", "=", site.id)
-          .where("eventType", "=", "RedirectDelete")
-          .executeTakeFirstOrThrow()
+      // Assert — the literal destination is now a reference to the page
+      const redirect = await db
+        .selectFrom("Redirect")
+        .selectAll()
+        .where("siteId", "=", site.id)
+        .where("source", "=", "/old-url")
+        .executeTakeFirstOrThrow()
+      expect(redirect.destination).toBe(`[resource:${site.id}:${page.id}]`)
 
-        createEntry = await db
-          .selectFrom("AuditLog")
-          .selectAll()
-          .where("siteId", "=", site.id)
-          .where("eventType", "=", "RedirectCreate")
-          .executeTakeFirstOrThrow()
-      })
+      // Assert — a RedirectDelete entry records the literal form being retired
+      const deleteEntry = await db
+        .selectFrom("AuditLog")
+        .selectAll()
+        .where("siteId", "=", site.id)
+        .where("eventType", "=", "RedirectDelete")
+        .executeTakeFirstOrThrow()
+      expect(deleteEntry.userId).toBe(session.userId)
+      const deleteDelta = deleteEntry.delta as {
+        before: { destination: string; deletedAt: string | null }
+        after: { destination: string; deletedAt: string | null }
+      }
+      expect(deleteDelta.before.destination).toBe(literalDestination)
+      expect(deleteDelta.before.deletedAt).toBeNull()
+      expect(deleteDelta.after.destination).toBe(literalDestination)
+      expect(deleteDelta.after.deletedAt).not.toBeNull()
 
-      it("should rewrite the redirect destination into a resource reference", async () => {
-        const redirect = await db
-          .selectFrom("Redirect")
-          .selectAll()
-          .where("siteId", "=", site.id)
-          .where("source", "=", "/old-url")
-          .executeTakeFirstOrThrow()
-        expect(redirect.destination).toBe(`[resource:${site.id}:${page.id}]`)
-      })
-
-      it("should record a RedirectDelete audit entry for the literal form", () => {
-        expect(deleteEntry.userId).toBe(session.userId)
-        const deleteDelta = deleteEntry.delta as {
-          before: { destination: string; deletedAt: string | null }
-          after: { destination: string; deletedAt: string | null }
-        }
-        expect(deleteDelta.before.destination).toBe(literalDestination)
-        expect(deleteDelta.before.deletedAt).toBeNull()
-        expect(deleteDelta.after.destination).toBe(literalDestination)
-        expect(deleteDelta.after.deletedAt).not.toBeNull()
-      })
-
-      it("should record a RedirectCreate audit entry for the reference form", () => {
-        expect(createEntry.userId).toBe(session.userId)
-        const createDelta = createEntry.delta as {
-          before: null
-          after: { destination: string }
-        }
-        expect(createDelta.before).toBeNull()
-        expect(createDelta.after.destination).toBe(
-          `[resource:${site.id}:${page.id}]`,
-        )
-      })
+      // Assert — a RedirectCreate entry records the reference form being adopted
+      const createEntry = await db
+        .selectFrom("AuditLog")
+        .selectAll()
+        .where("siteId", "=", site.id)
+        .where("eventType", "=", "RedirectCreate")
+        .executeTakeFirstOrThrow()
+      expect(createEntry.userId).toBe(session.userId)
+      const createDelta = createEntry.delta as {
+        before: null
+        after: { destination: string }
+      }
+      expect(createDelta.before).toBeNull()
+      expect(createDelta.after.destination).toBe(
+        `[resource:${site.id}:${page.id}]`,
+      )
     })
 
     it("should leave a literal redirect to a different path untouched on publish", async () => {
@@ -2848,7 +2822,6 @@ describe("page.router", async () => {
       )
     })
 
-    // oxlint-disable-next-line vitest/warn-todo
     it.todo("should throw 403 if user does not have write access to page")
 
     it("should throw 400 if attempting to update the search page settings", async () => {
@@ -2992,7 +2965,6 @@ describe("page.router", async () => {
       )
     })
 
-    // oxlint-disable-next-line vitest/warn-todo
     it.todo("should throw 403 if user does not have read access to page")
   })
 
@@ -3103,7 +3075,6 @@ describe("page.router", async () => {
       )
     })
 
-    // oxlint-disable-next-line vitest/warn-todo
     it.todo("should throw 403 if user does not have read access to root")
   })
 
@@ -3169,7 +3140,7 @@ describe("page.router", async () => {
       MockDate.reset() // Reset time after each test
     })
 
-    it("should throw 403 if user does not have publish access to the site", async () => {
+    it("should throw 403 when scheduling if user does not have publish access to the site", async () => {
       //  Arrange
       const { site, page: expectedPage } = await setupPageResource({
         resourceType: "Page",
@@ -3273,7 +3244,7 @@ describe("page.router", async () => {
           pageId: Number(expectedPage.id),
           scheduledAt: subDays(FIXED_NOW, 1),
         }),
-      ).rejects.toThrow(/./)
+      ).rejects.toThrow()
 
       // Assert
       // Since the request fails, expect scheduledAt to be null
@@ -3287,7 +3258,7 @@ describe("page.router", async () => {
       expect(auditLog).toHaveLength(0)
     })
 
-    it("should throw 403 when scheduling if user does not have publish access to the site", async () => {
+    it("should throw 403 when scheduling as an editor without publish access", async () => {
       //  Arrange
       const { site, page: expectedPage } = await setupPageResource({
         resourceType: "Page",

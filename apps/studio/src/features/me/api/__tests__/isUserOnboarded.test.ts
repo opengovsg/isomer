@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 import type { isUserOnboardedProps } from "../isUserOnboarded"
 import { isUserOnboarded } from "../isUserOnboarded"
 
-describe(isUserOnboarded, () => {
+describe("isUserOnboarded", () => {
   describe("user validation", () => {
     it("should return true for valid user with name and Singapore phone number", () => {
       // Arrange

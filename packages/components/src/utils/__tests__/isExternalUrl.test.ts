@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 
-describe(isExternalUrl, () => {
+describe("isExternalUrl", () => {
   it("should return true for external URLs", () => {
     expect(isExternalUrl("https://example.com")).toBe(true)
     expect(isExternalUrl("http://example.com")).toBe(true)

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { getCustomErrorMessage } from "../getCustomErrorMessage"
 
-describe(getCustomErrorMessage, () => {
+describe("getCustomErrorMessage", () => {
   it("should return 'cannot be empty' when error is 'is a required property'", () => {
     expect(getCustomErrorMessage("is a required property")).toBe(
       "cannot be empty",

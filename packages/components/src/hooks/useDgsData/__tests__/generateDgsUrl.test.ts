@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 import type { DgsApiDatasetSearchParams } from "../types"
 import { generateDgsUrl } from "../generateDgsUrl"
 
-describe(generateDgsUrl, () => {
+describe("generateDgsUrl", () => {
   it("should generate URL with only required resourceId", () => {
     // Arrange
     const params: DgsApiDatasetSearchParams = {

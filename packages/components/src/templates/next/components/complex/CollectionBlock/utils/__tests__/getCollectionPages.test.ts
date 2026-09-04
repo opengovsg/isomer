@@ -4,7 +4,7 @@ import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
 
 import { getCollectionPages } from "../getCollectionPages"
 
-describe(getCollectionPages, () => {
+describe("getCollectionPages", () => {
   let site: IsomerSiteProps = {
     // IsomerGeneratedSiteProps
     siteMap: {

@@ -6,7 +6,7 @@ import { getMaxExportableMonths } from "../auditLogExport.service"
 // Midday UTC lands safely inside the same SGT calendar day regardless of the
 // +8 offset, so these fixtures don't need to reason about the UTC/SGT
 // boundary — only the calendar month matters here.
-describe(getMaxExportableMonths, () => {
+describe("getMaxExportableMonths", () => {
   it("caps at the full window for a site older than the window", () => {
     expect(
       getMaxExportableMonths(

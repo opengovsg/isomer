@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 import { getDigestFromText } from "~/utils/getDigestFromText"
 import { getTransformedPageContent } from "~/utils/getTransformedPageContent"
 
-describe(getTransformedPageContent, () => {
+describe("getTransformedPageContent", () => {
   const idPattern = /^[a-f0-9]{32}$/
 
   it("preserves array length and block order", () => {

@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest"
 import { NO_SPECIFIED_YEAR_FILTER_ID } from "../constants"
 import { getFilteredItems } from "../getFilteredItems"
 
-describe(getFilteredItems, () => {
+describe("getFilteredItems", () => {
   it("returns all items when there is no search value and no applied filters", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [

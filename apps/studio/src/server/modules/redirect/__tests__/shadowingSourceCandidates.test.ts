@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { shadowingSourceCandidates } from "../redirect.service"
 
-describe(shadowingSourceCandidates, () => {
+describe("shadowingSourceCandidates", () => {
   it("lists the exact path then each ancestor wildcard, deepest first", () => {
     expect(shadowingSourceCandidates("/a/b/c")).toStrictEqual([
       "/a/b/c",

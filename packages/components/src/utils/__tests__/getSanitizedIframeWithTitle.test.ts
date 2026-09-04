@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 
 import { getSanitizedIframeWithTitle } from "../getSanitizedIframeWithTitle"
 
-describe(getSanitizedIframeWithTitle, () => {
+describe("getSanitizedIframeWithTitle", () => {
   it("sanitizes iframe and sets accessibility attributes", () => {
     const iframe = getSanitizedIframeWithTitle(
       '<iframe src="https://example.com" onload="alert(1)"></iframe>',
@@ -11,23 +11,15 @@ describe(getSanitizedIframeWithTitle, () => {
     )
 
     expect(iframe).not.toBeNull()
-    expect({
-      tagName: iframe?.tagName,
-      src: iframe?.getAttribute("src"),
-      onload: iframe?.getAttribute("onload"),
-      title: iframe?.getAttribute("title"),
-      height: iframe?.getAttribute("height"),
-      width: iframe?.getAttribute("width"),
-      className: iframe?.getAttribute("class"),
-    }).toStrictEqual({
-      tagName: "IFRAME",
-      src: "https://example.com",
-      onload: null,
-      title: "My embed",
-      height: "100%",
-      width: "100%",
-      className: "absolute top-0 left-0 bottom-0 right-0",
-    })
+    expect(iframe?.tagName).toBe("IFRAME")
+    expect(iframe?.getAttribute("src")).toBe("https://example.com")
+    expect(iframe?.getAttribute("onload")).toBeNull()
+    expect(iframe?.getAttribute("title")).toBe("My embed")
+    expect(iframe?.getAttribute("height")).toBe("100%")
+    expect(iframe?.getAttribute("width")).toBe("100%")
+    expect(iframe?.getAttribute("class")).toBe(
+      "absolute top-0 left-0 bottom-0 right-0",
+    )
   })
 
   it("handles leading whitespace before the iframe", () => {

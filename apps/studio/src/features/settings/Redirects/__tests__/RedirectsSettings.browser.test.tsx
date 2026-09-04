@@ -73,7 +73,7 @@ const renderAs = (role: RoleType) => {
 const DELETE_LABEL = `Delete redirect for ${REDIRECT_ROW.source}`
 const PERMISSION_ERROR = /We couldn't check your permissions/
 
-describe(RedirectsSettings, () => {
+describe("RedirectsSettings", () => {
   beforeEach(() => {
     currentRoles = []
     rolesQueryState = { isPending: false, isError: false }

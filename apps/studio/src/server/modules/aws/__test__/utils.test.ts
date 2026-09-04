@@ -11,7 +11,7 @@ import type { User } from "../../database"
 import { db } from "../../database"
 import { updateStoppedBuild } from "../utils"
 
-describe(updateStoppedBuild, () => {
+describe("updateStoppedBuild", () => {
   let user: User
   const FIXED_NOW = new Date("2024-01-01T00:15:00.000Z")
   beforeEach(async () => {

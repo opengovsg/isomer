@@ -330,7 +330,6 @@ describe("folder.router", async () => {
       ).resolves.toHaveLength(0)
     })
 
-    // oxlint-disable-next-line vitest/warn-todo
     it.todo(
       "should throw 403 if user does not have write access to the parent folder",
     )

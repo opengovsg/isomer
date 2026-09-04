@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { isUrl } from "../isUrl"
 
-describe(isUrl, () => {
+describe("isUrl", () => {
   describe("valid URLs with hostname", () => {
     it("should return true for http URLs", () => {
       const validUrls = [

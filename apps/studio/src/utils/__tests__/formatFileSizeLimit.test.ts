@@ -3,7 +3,7 @@ import { ONE_MB_IN_BYTES } from "~/lib/fileUpload"
 
 import { formatFileSizeLimit } from "../formatFileSizeLimit"
 
-describe(formatFileSizeLimit, () => {
+describe("formatFileSizeLimit", () => {
   it("uses KB when size is below 1 MB", () => {
     // Arrange
     const halfMbBytes = 500_000

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { tokenizeSearchQuery } from "../resource.utils"
 
-describe(tokenizeSearchQuery, () => {
+describe("tokenizeSearchQuery", () => {
   it("returns empty array for empty string", () => {
     expect(tokenizeSearchQuery("")).toStrictEqual([])
   })

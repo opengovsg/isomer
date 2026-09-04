@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest"
 
 import { useCollection } from "../useCollection"
 
-describe(useCollection, () => {
+describe("useCollection", () => {
   beforeEach(() => {
     window.history.replaceState({}, "", "/")
   })

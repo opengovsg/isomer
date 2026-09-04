@@ -5,7 +5,7 @@ import { resolveTableLayout } from "./resolveTableLayout"
 
 type TableRows = TableProps["content"]
 
-describe(resolveTableLayout, () => {
+describe("resolveTableLayout", () => {
   it("returns auto layout for a plain rectangular table", () => {
     // Arrange
     const rows = [

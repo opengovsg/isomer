@@ -88,7 +88,7 @@ const renderDrawer = ({
     </ThemeProvider>,
   )
 
-describe(RootStateDrawer, () => {
+describe("RootStateDrawer", () => {
   it("does not allow adding blocks on the system Search page", () => {
     // Arrange / Act
     renderDrawer({

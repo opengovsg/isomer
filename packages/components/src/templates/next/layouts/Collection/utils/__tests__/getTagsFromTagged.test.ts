@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 
 import { getTagsFromTagged } from "../getTagsFromTagged"
 
-describe(getTagsFromTagged, () => {
+describe("getTagsFromTagged", () => {
   it("returns a group with only the selected options' labels", () => {
     // Arrange
     const tagged: NonNullable<ArticlePagePageProps["tagged"]> = ["topic-opt-1"]

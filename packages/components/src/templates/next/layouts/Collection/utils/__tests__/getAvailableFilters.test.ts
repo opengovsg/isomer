@@ -5,7 +5,7 @@ import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
 
 import { getAvailableFilters } from "../getAvailableFilters"
 
-describe(getAvailableFilters, () => {
+describe("getAvailableFilters", () => {
   it("returns no filters when there are no items", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = []

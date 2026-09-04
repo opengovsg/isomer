@@ -200,7 +200,7 @@ const dispatchModA = (editor: Editor) => {
   )
 }
 
-describe(selectTableCellContent, () => {
+describe("selectTableCellContent", () => {
   let editor: Editor
 
   beforeEach(() => {

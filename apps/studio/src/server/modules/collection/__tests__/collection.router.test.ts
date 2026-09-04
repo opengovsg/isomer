@@ -1,5 +1,5 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { MockInstance } from "vitest"
-import type { AuditLog } from "~prisma/generated/selectableTypes"
 import { TRPCError } from "@trpc/server"
 import { omit } from "lodash-es"
 import { randomUUID } from "node:crypto"
@@ -22,7 +22,6 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
-import { beforeEach, describe, expect, it, vi } from "vitest"
 import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
 
@@ -223,7 +222,7 @@ describe("collection.router", async () => {
         permalink: duplicatePermalink,
       })
       expect(result).toMatchObject({ id: actualCollection.id })
-      expect(auditSpy).toHaveBeenCalledWith()
+      expect(auditSpy).toHaveBeenCalled()
       await assertAuditLogRows(3)
       const auditEntry = await db
         .selectFrom("AuditLog")
@@ -257,7 +256,7 @@ describe("collection.router", async () => {
         siteId: site.id,
       })
       expect(result).toMatchObject({ id: actualCollection.id })
-      expect(auditSpy).toHaveBeenCalledWith()
+      expect(auditSpy).toHaveBeenCalled()
       await assertAuditLogRows(3)
       const auditEntry = await db
         .selectFrom("AuditLog")
@@ -293,7 +292,7 @@ describe("collection.router", async () => {
       expect(actualCollection.parentId).toStrictEqual(parent.id)
       expect(result).toMatchObject({ id: actualCollection.id })
       await assertAuditLogRows(3)
-      expect(auditSpy).toHaveBeenCalledWith()
+      expect(auditSpy).toHaveBeenCalled()
       const auditEntry = await db
         .selectFrom("AuditLog")
         .where("eventType", "=", "ResourceCreate")
@@ -328,7 +327,7 @@ describe("collection.router", async () => {
       expect(actualCollection.parentId).toStrictEqual(parent.id)
       expect(result).toMatchObject({ id: actualCollection.id })
       await assertAuditLogRows(3)
-      expect(auditSpy).toHaveBeenCalledWith()
+      expect(auditSpy).toHaveBeenCalled()
       const auditEntry = await db
         .selectFrom("AuditLog")
         .where("eventType", "=", "ResourceCreate")
@@ -386,10 +385,7 @@ describe("collection.router", async () => {
       await assertAuditLogRows()
     })
 
-    // oxlint-disable-next-line vitest/warn-todo
-    it.todo(
-      "should throw 403 if user does not have write access to the parent folder",
-    )
+    it.todo("should throw 403 if user does not have write access to the parent folder")
   })
 
   describe("createCollectionPage", () => {
@@ -618,7 +614,7 @@ describe("collection.router", async () => {
         collection.id,
       )
       expect(result).toMatchObject({ pageId: actualCollectionPage.id })
-      expect(auditSpy).toHaveBeenCalledWith()
+      expect(auditSpy).toHaveBeenCalled()
       const auditEntry = await db
         .selectFrom("AuditLog")
         .where("eventType", "=", "ResourceCreate")
@@ -655,10 +651,7 @@ describe("collection.router", async () => {
       await assertAuditLogRows()
     })
 
-    // oxlint-disable-next-line vitest/warn-todo
-    it.todo(
-      "should throw 403 if user does not have write access to the parent collection",
-    )
+    it.todo("should throw 403 if user does not have write access to the parent collection")
   })
 
   describe("list", () => {
@@ -751,9 +744,7 @@ describe("collection.router", async () => {
       })
 
       // Assert: Repeated page 1 calls return identical results (deterministic ordering)
-      expect(page1First.map((r) => r.id)).toStrictEqual(
-        page1Second.map((r) => r.id),
-      )
+      expect(page1First.map((r) => r.id)).toStrictEqual(page1Second.map((r) => r.id))
 
       // Assert: No duplicate IDs across pages (pagination consistency)
       const page1Ids = new Set(page1First.map((r) => r.id))
@@ -960,11 +951,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      expect(result.map((r) => r.title)).toStrictEqual([
-        "Zulu",
-        "Bravo",
-        "Alpha",
-      ])
+      expect(result.map((r) => r.title)).toStrictEqual(["Zulu", "Bravo", "Alpha"])
       expect(result.map((r) => r.type)).toStrictEqual([
         ResourceType.CollectionPage,
         ResourceType.CollectionLink,
@@ -1250,7 +1237,7 @@ describe("collection.router", async () => {
     })
   })
 
-  describe("readCollectionLink nested", () => {
+  describe("readCollectionLink with collection setup", () => {
     it("should throw 401 if not logged in", async () => {
       // Act
       const { site } = await setupCollection()
@@ -1495,129 +1482,94 @@ describe("collection.router", async () => {
       await assertAuditLogRows()
     })
 
-    describe("should create a new `draftBlob` if it is currently `null`", () => {
-      let page: Awaited<ReturnType<typeof setupPageResource>>["page"]
-      let originalBlob: Awaited<ReturnType<typeof getBlobOfResource>>
-      let expected: Awaited<ReturnType<typeof caller.updateCollectionLink>>
-      let auditEntry: AuditLog
-      let actual: Awaited<ReturnType<typeof getCollectionItemByPermalink>>
+    it("should create a new `draftBlob` if it is currently `null`", async () => {
+      // Arrange
+      const { page, site } = await setupPageResource({
+        resourceType: "CollectionLink",
+        state: "Published",
+        userId: session.userId,
+      })
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      expect(page.draftBlobId).toBeNull()
 
-      beforeEach(async () => {
-        // Arrange
-        const setup = await setupPageResource({
-          resourceType: "CollectionLink",
-          state: "Published",
-          userId: session.userId,
-        })
-        page = setup.page
-        const { site } = setup
-        await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      // Act
+      const originalBlob = await db
+        .transaction()
+        .execute((tx) => getBlobOfResource({ db: tx, resourceId: page.id }))
 
-        originalBlob = await db
-          .transaction()
-          .execute((tx) => getBlobOfResource({ db: tx, resourceId: page.id }))
-
-        // Act
-        expected = await caller.updateCollectionLink({
-          siteId: site.id,
-          category: "category",
-          ref: "1",
-          linkId: Number(page.id),
-        })
-
-        auditEntry = await db
-          .selectFrom("AuditLog")
-          .where("eventType", "=", "ResourceUpdate")
-          .selectAll()
-          .executeTakeFirstOrThrow()
-        actual = await getCollectionItemByPermalink(
-          page.permalink,
-          page.parentId,
-        )
+      // Assert
+      const expected = await caller.updateCollectionLink({
+        siteId: site.id,
+        category: "category",
+        ref: "1",
+        linkId: Number(page.id),
       })
 
-      it("creates a draft blob and records the update in the audit log", async () => {
-        // Assert
-        expect(page.draftBlobId).toBeNull()
-        expect(auditSpy).toHaveBeenCalledWith()
-        await assertAuditLogRows(1)
-        expect(auditEntry.delta.before).toMatchObject({
-          blob: omit(originalBlob, ["createdAt", "updatedAt"]),
-          resource: omit(page, ["createdAt", "updatedAt"]),
-        })
-        expect(auditEntry.delta.after).toMatchObject({
-          blob: omit(expected, ["createdAt", "updatedAt"]),
-          resource: omit(page, ["createdAt", "updatedAt"]),
-        })
+      expect(auditSpy).toHaveBeenCalled()
+      await assertAuditLogRows(1)
+      const auditEntry = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "ResourceUpdate")
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(auditEntry.delta.before!).toMatchObject({
+        blob: omit(originalBlob, ["createdAt", "updatedAt"]),
+        resource: omit(page, ["createdAt", "updatedAt"]),
       })
-
-      it("persists the draft blob on the collection link", () => {
-        // Assert
-        expect(auditEntry.userId).toBe(session.userId)
-        expect(actual.draftBlobId).toStrictEqual(expected.id)
-        expect(expected.content.content).toStrictEqual([])
+      expect(auditEntry.delta.after!).toMatchObject({
+        blob: omit(expected, ["createdAt", "updatedAt"]),
+        resource: omit(page, ["createdAt", "updatedAt"]),
       })
+      expect(auditEntry.userId).toBe(session.userId)
+      const actual = await getCollectionItemByPermalink(
+        page.permalink,
+        page.parentId,
+      )
+      expect(actual.draftBlobId).toStrictEqual(expected.id)
+      expect(expected.content.content).toStrictEqual([])
     })
 
-    describe("should update the collection link successfully", () => {
-      let blob: Awaited<ReturnType<typeof setupPageResource>>["blob"]
-      let page: Awaited<ReturnType<typeof setupPageResource>>["page"]
-      let originalBlob: Awaited<ReturnType<typeof getBlobOfResource>>
-      let expected: Awaited<ReturnType<typeof caller.updateCollectionLink>>
-      let auditEntry: AuditLog
+    it("should update the collection link successfully", async () => {
+      // Arrange
+      const { blob, page, site } = await setupPageResource({
+        resourceType: "CollectionLink",
+      })
+      const originalBlob = await db
+        .transaction()
+        .execute((tx) => getBlobOfResource({ db: tx, resourceId: page.id }))
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
 
-      beforeEach(async () => {
-        // Arrange
-        const setup = await setupPageResource({
-          resourceType: "CollectionLink",
-        })
-        blob = setup.blob
-        page = setup.page
-        const { site } = setup
-        originalBlob = await db
-          .transaction()
-          .execute((tx) => getBlobOfResource({ db: tx, resourceId: page.id }))
-        await setupAdminPermissions({ userId: session.userId, siteId: site.id })
-
-        // Act
-        expected = await caller.updateCollectionLink({
-          siteId: site.id,
-          category: "category",
-          ref: "1",
-          linkId: Number(page.id),
-        })
-
-        auditEntry = await db
-          .selectFrom("AuditLog")
-          .where("eventType", "=", "ResourceUpdate")
-          .selectAll()
-          .executeTakeFirstOrThrow()
+      // Act
+      const expected = await caller.updateCollectionLink({
+        siteId: site.id,
+        category: "category",
+        ref: "1",
+        linkId: Number(page.id),
       })
 
-      it("records the update in the audit log", async () => {
-        // Assert
-        expect(auditSpy).toHaveBeenCalledWith()
-        await assertAuditLogRows(1)
-        expect(auditEntry.delta.before).toMatchObject({
-          blob: omit(originalBlob, ["createdAt", "updatedAt"]),
-          resource: omit(page, ["createdAt", "updatedAt"]),
-        })
-        expect(auditEntry.delta.after).toMatchObject({
-          blob: omit(expected, ["createdAt", "updatedAt"]),
-          resource: omit(page, ["createdAt", "updatedAt"]),
-        })
-        expect(auditEntry.userId).toBe(session.userId)
+      // Assert
+      expect(auditSpy).toHaveBeenCalled()
+      await assertAuditLogRows(1)
+      const auditEntry = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "ResourceUpdate")
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(auditEntry.delta.before!).toMatchObject({
+        blob: omit(originalBlob, ["createdAt", "updatedAt"]),
+        resource: omit(page, ["createdAt", "updatedAt"]),
       })
-
-      it("returns the updated collection link blob", () => {
-        // Assert
-        // NOTE: For collection links, they have no content.
-        // During our update, we only update the `page` property
-        // and make the content the default collection link content
-        // which is an empty array
-        expect(expected.content.content).toStrictEqual([])
-        expect(expected.id).toStrictEqual(blob.id)
+      expect(auditEntry.delta.after!).toMatchObject({
+        blob: omit(expected, ["createdAt", "updatedAt"]),
+        resource: omit(page, ["createdAt", "updatedAt"]),
       })
+      expect(auditEntry.userId).toBe(session.userId)
+      // NOTE: For collection links, they have no content.
+      // During our update, we only update the `page` property
+      // and make the content the default collection link content
+      // which is an empty array
+      expect(expected.content.content).toStrictEqual([])
+      expect(expected.id).toStrictEqual(blob.id)
     })
 
     it("should store a valid date in `dd/MM/yyyy` format", async () => {
@@ -1663,10 +1615,8 @@ describe("collection.router", async () => {
       await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
     })
 
-    // oxlint-disable-next-line vitest/warn-todo
     it.todo("should throw when trying to update to a deleted `ref`")
 
-    // oxlint-disable-next-line vitest/warn-todo
     it.todo("should throw when trying to update to an invalid `ref`")
   })
 

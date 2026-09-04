@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 
 import { shouldShowDate } from "../shouldShowDate"
 
-describe(shouldShowDate, () => {
+describe("shouldShowDate", () => {
   it("returns true if any item has date", () => {
     const items = [
       {

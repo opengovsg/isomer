@@ -10,7 +10,7 @@ import {
   isSubItemPath,
 } from "../utils"
 
-describe(getNavbarItemPath, () => {
+describe("getNavbarItemPath", () => {
   it("should return correct path for top-level item", () => {
     // Arrange
     const index = 2
@@ -35,7 +35,7 @@ describe(getNavbarItemPath, () => {
   })
 })
 
-describe(isSubItemPath, () => {
+describe("isSubItemPath", () => {
   it("should return true for sub-item path", () => {
     // Arrange
     const path = "items.0.items.1"
@@ -70,7 +70,7 @@ describe(isSubItemPath, () => {
   })
 })
 
-describe(isFirstLevelLinksOverLimit, () => {
+describe("isFirstLevelLinksOverLimit", () => {
   it("should return false when item count is below maxItems", () => {
     // Arrange
     const itemCount = 7
@@ -131,7 +131,7 @@ describe(isFirstLevelLinksOverLimit, () => {
   })
 })
 
-describe(getInstancePathFromNavbarItemPath, () => {
+describe("getInstancePathFromNavbarItemPath", () => {
   it("should convert navbar item path to instance path for top-level item", () => {
     // Arrange
     const path = "items.3" as NavbarItemPath
@@ -155,7 +155,7 @@ describe(getInstancePathFromNavbarItemPath, () => {
   })
 })
 
-describe(getMoveItemOperation, () => {
+describe("getMoveItemOperation", () => {
   it("should return correct operation for reordering within the same subitem", () => {
     // Arrange
     const originalPath = "items.2.items.1"
@@ -289,7 +289,7 @@ describe(getMoveItemOperation, () => {
   })
 })
 
-describe(handleMoveItem, () => {
+describe("handleMoveItem", () => {
   it("should handle moving a single main item to become a subitem correctly", () => {
     // Arrange
     const prevData = [

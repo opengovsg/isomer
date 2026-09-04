@@ -14,7 +14,7 @@ const makeNextApiRequest = (
     },
   }) as NextApiRequest
 
-describe(getIP, () => {
+describe("getIP", () => {
   it("prefers cf-connecting-ip over spoofable headers and socket addresses", () => {
     const req = makeNextApiRequest(
       {

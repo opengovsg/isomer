@@ -19,7 +19,7 @@ const VALID_UUID = "550e8400-e29b-41d4-a716-446655440000"
 const PROPS = { name: "test-site", _kind: "name" } as const
 const URL = "https://example.gov.sg"
 
-describe(updateSearchSGConfig, () => {
+describe("updateSearchSGConfig", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     // Throw on the auth call to prevent actual HTTP requests while still
@@ -29,7 +29,7 @@ describe(updateSearchSGConfig, () => {
       headers: vi.fn().mockReturnThis(),
       post: vi.fn().mockReturnThis(),
       json: vi
-        .fn<(...args: unknown[]) => unknown>()
+        .fn()
         .mockRejectedValue(new Error("no network in tests")),
     })
   })
@@ -73,7 +73,7 @@ describe(updateSearchSGConfig, () => {
       await updateSearchSGConfig(PROPS, VALID_UUID, URL).catch(() => {})
 
       // Assert
-      expect(mockWretch).toHaveBeenCalledWith()
+      expect(mockWretch).toHaveBeenCalled()
     })
   })
 

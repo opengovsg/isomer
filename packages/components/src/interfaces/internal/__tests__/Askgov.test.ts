@@ -42,7 +42,7 @@ const REJECTED = [
   "https://",
 ]
 
-describe("askgov agency schema", () => {
+describe("AskgovSchema", () => {
   it.each(ACCEPTED)("accepts %j", (value) => {
     expect(isValidAgencyInput(value)).toBe(true)
   })

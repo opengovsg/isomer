@@ -40,7 +40,7 @@ const renderWith = (
     </Provider>,
   )
 
-describe(ExportAccessLogsButton, () => {
+describe("ExportAccessLogsButton", () => {
   let store: ReturnType<typeof createStore>
 
   beforeEach(() => {

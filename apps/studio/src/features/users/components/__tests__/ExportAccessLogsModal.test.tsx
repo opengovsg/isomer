@@ -46,7 +46,7 @@ const renderOpen = () => {
   return { store, ...rendered }
 }
 
-describe(ExportAccessLogsModal, () => {
+describe("ExportAccessLogsModal", () => {
   beforeEach(() => {
     mutate.mockClear()
     capturedOptions = undefined

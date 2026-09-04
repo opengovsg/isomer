@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { useQueryParams } from "../useQueryParams"
 
-describe(useQueryParams, () => {
+describe("useQueryParams", () => {
   let originalPushState: History["pushState"]
 
   beforeEach(() => {

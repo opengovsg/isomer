@@ -3,7 +3,7 @@ import { vi, describe, expect, it } from "vitest"
 import type { EmailTemplate } from "../../templates/types"
 import { escapeTemplateArguments } from "../escapeTemplateArguments"
 
-describe(escapeTemplateArguments, () => {
+describe("escapeTemplateArguments", () => {
   const malicious = `</p><h1>URGENT</h1><p>`
   const escaped = `&lt;/p&gt;&lt;h1&gt;URGENT&lt;/h1&gt;&lt;p&gt;`
 
@@ -54,7 +54,7 @@ describe(escapeTemplateArguments, () => {
     }
 
     // Act / Assert
-    expect(() => wrapped.alert(input)).toThrow(/./)
+    expect(() => wrapped.alert(input)).toThrow()
     expect(template).not.toHaveBeenCalled()
   })
 

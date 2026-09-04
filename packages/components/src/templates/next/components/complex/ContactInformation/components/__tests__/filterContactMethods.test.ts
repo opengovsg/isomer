@@ -16,7 +16,7 @@ const createMockMethods = (
   }))
 }
 
-describe(filterContactMethods, () => {
+describe("filterContactMethods", () => {
   describe("when whitelistedMethods is undefined", () => {
     it("should return all methods", () => {
       // Arrange

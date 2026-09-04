@@ -8,7 +8,7 @@ import {
   shouldWarnDestination,
 } from "../utils"
 
-describe(formatAddedAt, () => {
+describe("formatAddedAt", () => {
   beforeEach(() => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date("2026-06-10T12:00:00"))
@@ -68,7 +68,7 @@ describe(formatAddedAt, () => {
   })
 })
 
-describe(isReferenceDestination, () => {
+describe("isReferenceDestination", () => {
   it("returns true only for a string that is exactly a reference", () => {
     expect(isReferenceDestination("[resource:1:2]")).toBe(true)
   })
@@ -88,7 +88,7 @@ describe(isReferenceDestination, () => {
   })
 })
 
-describe(getDestinationDisplay, () => {
+describe("getDestinationDisplay", () => {
   it("shows a non-reference destination verbatim", () => {
     expect(getDestinationDisplay("/about-us", new Map())).toStrictEqual({
       status: "resolved",
@@ -126,7 +126,7 @@ describe(getDestinationDisplay, () => {
   })
 })
 
-describe(shouldWarnDestination, () => {
+describe("shouldWarnDestination", () => {
   it("warns when the server flagged the destination as leading nowhere", () => {
     const infoByDestination = new Map<string, ResolvedDestination>([
       ["[resource:1:2]", { permalink: null, warn: true }],
