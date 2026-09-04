@@ -9,10 +9,6 @@ export const ACCEPTED_IMAGE_TYPES_MESSAGE = Object.keys(
 ).join(", ")
 
 type TagCategory = NonNullable<CollectionPagePageProps["tagCategories"]>[number]
-type TagCategoryWithOptions = Extract<
-  TagCategory,
-  { options: readonly unknown[] }
->
 export const createDefaultTagCategory = (): TagCategory => ({
   id: crypto.randomUUID(),
   label: "New filter",
@@ -21,7 +17,7 @@ export const createDefaultTagCategory = (): TagCategory => ({
   options: [],
 })
 
-type TagOption = TagCategoryWithOptions["options"][number]
+type TagOption = TagCategory["options"][number]
 export const createDefaultTagOption = (): TagOption => ({
   id: crypto.randomUUID(),
   label: "New option",

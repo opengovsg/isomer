@@ -155,9 +155,18 @@ export default defineConfig({
     },
     {
       files: ["tests/e2e/**/*.ts"],
-      plugins: ["vitest"],
       rules: {
+        // Playwright tests: do not apply vitest lint rules (boolean matchers, max-expects, etc.).
         "vitest/prefer-importing-vitest-globals": "off",
+        "vitest/prefer-strict-boolean-matchers": "off",
+        "vitest/prefer-to-be-truthy": "off",
+        "vitest/prefer-to-be-falsy": "off",
+        "vitest/prefer-describe-function-title": "off",
+        "vitest/max-expects": "off",
+        "vitest/require-to-throw-message": "off",
+        "vitest/prefer-called-with": "off",
+        "vitest/warn-todo": "off",
+        "vitest/no-disabled-tests": "off",
       },
     },
     {
