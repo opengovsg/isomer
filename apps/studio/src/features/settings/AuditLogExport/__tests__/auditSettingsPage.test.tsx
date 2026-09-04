@@ -18,15 +18,15 @@ Object.defineProperty(window, "matchMedia", {
     matches: false,
     media: query,
     onchange: null,
-    addListener: vi.fn<(...args: unknown[]) => unknown>(()),
-    removeListener: vi.fn<(...args: unknown[]) => unknown>(()),
-    addEventListener: vi.fn<(...args: unknown[]) => unknown>(()),
-    removeEventListener: vi.fn<(...args: unknown[]) => unknown>(()),
-    dispatchEvent: vi.fn<(...args: unknown[]) => unknown>(()),
+    addListener: vi.fn<(...args: unknown[]) => unknown>(),
+    removeListener: vi.fn<(...args: unknown[]) => unknown>(),
+    addEventListener: vi.fn<(...args: unknown[]) => unknown>(),
+    removeEventListener: vi.fn<(...args: unknown[]) => unknown>(),
+    dispatchEvent: vi.fn<(...args: unknown[]) => unknown>(),
   }),
 })
 
-const replace = vi.fn<(...args: unknown[]) => unknown>(())
+const replace = vi.fn<(...args: unknown[]) => unknown>()
 
 vi.mock(import('next/router'), () => ({
   useRouter: () => ({
@@ -62,7 +62,7 @@ vi.mock(import('~/utils/trpc'), () => ({
         useQuery: () => ({ data: { maxMonths: 12 } }),
       },
       createExportRequest: {
-        useMutation: () => ({ mutate: vi.fn<(...args: unknown[]) => unknown>(()), isPending: false }),
+        useMutation: () => ({ mutate: vi.fn<(...args: unknown[]) => unknown>(), isPending: false }),
       },
     },
   },

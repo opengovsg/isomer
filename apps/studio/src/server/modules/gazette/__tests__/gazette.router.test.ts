@@ -764,10 +764,10 @@ describe("gazette.router", async () => {
       let gazetteId: number
       let beforeBlob: { draftBlobId: string | null }
       let hadPushJobBeforeCancel: boolean
-      let newAuditLogs: Array<{
+      let newAuditLogs: {
         eventType: string
         delta: unknown
-      }>
+      }[]
       let markCancelled: ReturnType<typeof vi.spyOn>
 
       beforeEach(async () => {

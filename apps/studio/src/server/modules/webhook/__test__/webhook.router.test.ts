@@ -41,8 +41,8 @@ vi.mock(import('~/env.mjs'), async () => {
 
 // Mock the publishSite function to avoid sending emails
 vi.mock(import('~/features/mail/service'), () => ({
-  sendSuccessfulPublishEmail: vi.fn<(...args: unknown[]) => unknown>(()),
-  sendFailedPublishEmail: vi.fn<(...args: unknown[]) => unknown>(()),
+  sendSuccessfulPublishEmail: vi.fn<(...args: unknown[]) => unknown>(),
+  sendFailedPublishEmail: vi.fn<(...args: unknown[]) => unknown>(),
 }))
 
 const getCallerWithMockGrowthbook = (
@@ -60,8 +60,8 @@ const getCallerWithMockGrowthbook = (
     method: "GET",
   })
   const mockGrowthBook: Partial<GrowthBook> = {
-    isOn: vi.fn<(...args: unknown[]) => unknown>(()).mockReturnValue(mockReturnValue),
-    destroy: vi.fn<(...args: unknown[]) => unknown>(()),
+    isOn: vi.fn<(...args: unknown[]) => unknown>().mockReturnValue(mockReturnValue),
+    destroy: vi.fn<(...args: unknown[]) => unknown>(),
   }
   mockRequest.gb = mockGrowthBook as GrowthBook
   return createCaller(mockRequest)

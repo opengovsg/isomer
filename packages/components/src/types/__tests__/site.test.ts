@@ -7,7 +7,7 @@ import {
   SiteEntitySettingsSchema,
 } from "../site"
 
-describe(SiteEntitySettingsSchema, () => {
+describe("site entity settings schema", () => {
   // NOTE: `Value.Check` ignores the `enum` keyword, so asserting on the emitted
   // schema is the only guard here that the allowed types reach consumers. Ajv
   // (in Studio) is what actually enforces it at runtime.

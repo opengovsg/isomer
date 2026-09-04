@@ -12,9 +12,9 @@ import { ExportAccessLogsModal } from "../ExportAccessLogsModal"
 const SITE_ID = 42
 
 // The shared export hook fires a PostHog capture on success.
-vi.mock(import('posthog-js'), () => ({ default: { capture: vi.fn<(...args: unknown[]) => unknown>(()) } }))
+vi.mock(import('posthog-js'), () => ({ default: { capture: vi.fn<(...args: unknown[]) => unknown>() } }))
 
-const mutate = vi.fn<(...args: unknown[]) => unknown>(())
+const mutate = vi.fn<(...args: unknown[]) => unknown>()
 let capturedOptions:
   | { onSuccess?: (data: unknown, variables: unknown) => void }
   | undefined

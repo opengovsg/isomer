@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const { mockWretch } = vi.hoisted(() => ({
-  mockWretch: vi.fn<(...args: unknown[]) => unknown>(()),
+  mockWretch: vi.fn<(...args: unknown[]) => unknown>(),
 }))
 
 vi.mock(import('wretch'), () => ({ default: mockWretch }))
@@ -25,10 +25,10 @@ describe(updateSearchSGConfig, () => {
     // Throw on the auth call to prevent actual HTTP requests while still
     // allowing us to assert whether wretch was invoked at all
     mockWretch.mockReturnValue({
-      auth: vi.fn<(...args: unknown[]) => unknown>(()).mockReturnThis(),
-      headers: vi.fn<(...args: unknown[]) => unknown>(()).mockReturnThis(),
-      post: vi.fn<(...args: unknown[]) => unknown>(()).mockReturnThis(),
-      json: vi.fn<(...args: unknown[]) => unknown>(()).mockRejectedValue(new Error("no network in tests")),
+      auth: vi.fn<(...args: unknown[]) => unknown>().mockReturnThis(),
+      headers: vi.fn<(...args: unknown[]) => unknown>().mockReturnThis(),
+      post: vi.fn<(...args: unknown[]) => unknown>().mockReturnThis(),
+      json: vi.fn<(...args: unknown[]) => unknown>().mockRejectedValue(new Error("no network in tests")),
     })
   })
 

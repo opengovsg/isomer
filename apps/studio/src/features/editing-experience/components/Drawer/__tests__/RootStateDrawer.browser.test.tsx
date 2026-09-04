@@ -8,7 +8,7 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import RootStateDrawer from "../RootStateDrawer"
 
-const noop = vi.hoisted(() => vi.fn<(...args: unknown[]) => unknown>(()))
+const noop = vi.hoisted(() => vi.fn<(...args: unknown[]) => unknown>())
 
 vi.mock(import('next/router'), () => ({
   useRouter: () => ({ query: { pageId: "1", siteId: "1" } }),

@@ -1,4 +1,3 @@
-import { expect, test } from 'vitest';
 import { expect, test } from "@playwright/test"
 import { sql } from "kysely"
 import { db } from "~/server/modules/database"

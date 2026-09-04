@@ -25,6 +25,7 @@ import {
 import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
 
+import type { AuditLog } from "~prisma/generated/selectableTypes"
 import { assertAuditLogRows } from "../../audit/__tests__/utils"
 import { db, jsonb, ResourceState, ResourceType } from "../../database"
 import { getBlobOfResource } from "../../resource/resource.service"
@@ -1495,13 +1496,7 @@ describe("collection.router", async () => {
       let page: Awaited<ReturnType<typeof setupPageResource>>["page"]
       let originalBlob: Awaited<ReturnType<typeof getBlobOfResource>>
       let expected: Awaited<ReturnType<typeof caller.updateCollectionLink>>
-      let auditEntry: Awaited<
-        ReturnType<
-          ReturnType<
-            ReturnType<typeof db.selectFrom<"AuditLog">>["executeTakeFirstOrThrow"]
-          >
-        >
-      >
+      let auditEntry: AuditLog
       let actual: Awaited<ReturnType<typeof getCollectionItemByPermalink>>
 
       beforeEach(async () => {
@@ -1543,17 +1538,17 @@ describe("collection.router", async () => {
         expect(page.draftBlobId).toBeNull()
         expect(auditSpy).toHaveBeenCalledWith()
         await assertAuditLogRows(1)
-        expect(auditEntry.delta.before!).toMatchObject({
+        expect(auditEntry.delta.before).toMatchObject({
           blob: omit(originalBlob, ["createdAt", "updatedAt"]),
           resource: omit(page, ["createdAt", "updatedAt"]),
         })
-        expect(auditEntry.delta.after!).toMatchObject({
+        expect(auditEntry.delta.after).toMatchObject({
           blob: omit(expected, ["createdAt", "updatedAt"]),
           resource: omit(page, ["createdAt", "updatedAt"]),
         })
       })
 
-      it("persists the draft blob on the collection link", async () => {
+      it("persists the draft blob on the collection link", () => {
         // Assert
         expect(auditEntry.userId).toBe(session.userId)
         expect(actual.draftBlobId).toStrictEqual(expected.id)
@@ -1566,13 +1561,7 @@ describe("collection.router", async () => {
       let page: Awaited<ReturnType<typeof setupPageResource>>["page"]
       let originalBlob: Awaited<ReturnType<typeof getBlobOfResource>>
       let expected: Awaited<ReturnType<typeof caller.updateCollectionLink>>
-      let auditEntry: Awaited<
-        ReturnType<
-          ReturnType<
-            ReturnType<typeof db.selectFrom<"AuditLog">>["executeTakeFirstOrThrow"]
-          >
-        >
-      >
+      let auditEntry: AuditLog
 
       beforeEach(async () => {
         // Arrange
@@ -1606,18 +1595,18 @@ describe("collection.router", async () => {
         // Assert
         expect(auditSpy).toHaveBeenCalledWith()
         await assertAuditLogRows(1)
-        expect(auditEntry.delta.before!).toMatchObject({
+        expect(auditEntry.delta.before).toMatchObject({
           blob: omit(originalBlob, ["createdAt", "updatedAt"]),
           resource: omit(page, ["createdAt", "updatedAt"]),
         })
-        expect(auditEntry.delta.after!).toMatchObject({
+        expect(auditEntry.delta.after).toMatchObject({
           blob: omit(expected, ["createdAt", "updatedAt"]),
           resource: omit(page, ["createdAt", "updatedAt"]),
         })
         expect(auditEntry.userId).toBe(session.userId)
       })
 
-      it("returns the updated collection link blob", async () => {
+      it("returns the updated collection link blob", () => {
         // Assert
         // NOTE: For collection links, they have no content.
         // During our update, we only update the `page` property

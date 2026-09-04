@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 
-const resetMock = vi.fn<(...args: unknown[]) => unknown>(())
-const identifyMock = vi.fn<(...args: unknown[]) => unknown>(())
+const resetMock = vi.fn<(...args: unknown[]) => unknown>()
+const identifyMock = vi.fn<(...args: unknown[]) => unknown>()
 
 let releaseImport: () => void
 const importGate = new Promise<void>((resolve) => {

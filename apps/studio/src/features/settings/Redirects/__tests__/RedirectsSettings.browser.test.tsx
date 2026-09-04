@@ -40,7 +40,7 @@ let rolesQueryState = { isPending: false, isError: false }
 // this test covers — the question is purely which controls a role is shown — so
 // stub the tRPC surface with the minimum both branches touch on render.
 vi.mock(import('~/utils/trpc'), () => {
-  const noop = vi.fn<(...args: unknown[]) => unknown>(())
+  const noop = vi.fn<(...args: unknown[]) => unknown>()
   return {
     trpc: {
       useUtils: () => ({ redirect: { invalidate: noop } }),
