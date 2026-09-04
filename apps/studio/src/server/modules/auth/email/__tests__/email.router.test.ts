@@ -153,45 +153,56 @@ describe("auth.email", () => {
         expect(auditLogs[0]?.delta.before!.attempts).toBe(1)
       })
 
-      it("should successfully set session on a subsequent valid OTP", async () => {
-        // Arrange
-        await setupUser({ email: TEST_VALID_EMAIL })
-        await prisma.verificationToken.create({
-          data: {
-            expires: new Date(Date.now() + env.OTP_EXPIRY * 1000),
-            identifier: TEST_OTP_FINGERPRINT,
-            token: VALID_TOKEN_HASH,
-          },
-        })
-
-        // Act
-        await expect(
-          caller.verifyOtp({
-            email: TEST_VALID_EMAIL,
-            token: INVALID_OTP,
-          }),
-        ).rejects.toThrow(/./)
-
-        const result = caller.verifyOtp({
-          email: TEST_VALID_EMAIL,
-          token: VALID_OTP,
-        })
-
-        // Assert
+      describe("should successfully set session on a subsequent valid OTP", () => {
+        let invalidOtpResult: ReturnType<typeof caller.verifyOtp>
+        let result: ReturnType<typeof caller.verifyOtp>
         const expectedUser = {
           id: expect.any(String),
           email: TEST_VALID_EMAIL,
         }
-        // Should return logged in user.
-        await expect(result).resolves.toMatchObject(expectedUser)
-        // Session should have been set with logged in user.
-        expect(session.userId).toStrictEqual(expectedUser.id)
-        // Audit log should have been created.
-        const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
-        expect(auditLogs).toHaveLength(1)
-        expect(auditLogs[0]?.eventType).toBe(AuditLogEvent.Login)
-        // oxlint-disable-next-line vitest/max-expects
-        expect(auditLogs[0]?.delta.before!.attempts).toBe(2)
+
+        beforeEach(async () => {
+          // Arrange
+          await setupUser({ email: TEST_VALID_EMAIL })
+          await prisma.verificationToken.create({
+            data: {
+              expires: new Date(Date.now() + env.OTP_EXPIRY * 1000),
+              identifier: TEST_OTP_FINGERPRINT,
+              token: VALID_TOKEN_HASH,
+            },
+          })
+
+          // Act
+          invalidOtpResult = caller.verifyOtp({
+            email: TEST_VALID_EMAIL,
+            token: INVALID_OTP,
+          })
+          result = caller.verifyOtp({
+            email: TEST_VALID_EMAIL,
+            token: VALID_OTP,
+          })
+        })
+
+        it("rejects invalid OTP then logs in with valid OTP", async () => {
+          // Assert
+          await expect(invalidOtpResult).rejects.toThrow(/./)
+          // Should return logged in user.
+          await expect(result).resolves.toMatchObject(expectedUser)
+          // Session should have been set with logged in user.
+          expect(session.userId).toStrictEqual(expectedUser.id)
+        })
+
+        it("creates audit log with attempt count", async () => {
+          // Assert
+          // Audit log should have been created.
+          const auditLogs = await db
+            .selectFrom("AuditLog")
+            .selectAll()
+            .execute()
+          expect(auditLogs).toHaveLength(1)
+          expect(auditLogs[0]?.eventType).toBe(AuditLogEvent.Login)
+          expect(auditLogs[0]?.delta.before!.attempts).toBe(2)
+        })
       })
 
       it("should set lastLoginAt when creating a new user", async () => {

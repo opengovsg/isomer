@@ -3143,80 +3143,104 @@ describe("resource.router", async () => {
       expect(after.deletedAt).toBeNull()
     })
 
-    it("should delete a folder and all its children (recursively) successfully", async () => {
-      // Arrange
-      const { folder: folderToUse, site } = await setupFolder()
-      const auditSpy = vi.spyOn(auditService, "logResourceEvent")
-      await setupAdminPermissions({
-        userId: session.userId,
-        siteId: site.id,
-      })
-      const nestedPages = await Promise.all(
-        Array.from({ length: 3 }, (_, i) => i).map(async (i) => {
-          const { page } = await setupPageResource({
-            siteId: site.id,
-            parentId: folderToUse.id,
-            permalink: `page-${i}`,
-            title: `Test page ${i}`,
-            resourceType: "Page",
-          })
-          return page.id
-        }),
-      )
-      const nestedFolders = await Promise.all(
-        Array.from({ length: 2 }, (_, i) => i).map(async (i) => {
-          const { folder } = await setupFolder({
-            siteId: site.id,
-            parentId: folderToUse.id,
-            permalink: `folder-${i}`,
-            title: `Test folder ${i}`,
-          })
-          return folder.id
-        }),
-      )
-      // Nested in nested
-      const nestedInNested = await Promise.all(
-        Array.from({ length: 3 }, (_, i) => i).map(async (i) => {
-          const { page } = await setupPageResource({
-            siteId: site.id,
-            parentId: nestedFolders[1],
-            resourceType: "Page",
-            permalink: `nested-page-${i}`,
-            title: `Nested page ${i}`,
-          })
-          return page.id
-        }),
-      )
+    describe("should delete a folder and all its children (recursively) successfully", () => {
+      let auditSpy: ReturnType<typeof vi.spyOn<typeof auditService, "logResourceEvent">>
+      let folderToUse: Awaited<ReturnType<typeof setupFolder>>["folder"]
+      let result: Awaited<ReturnType<typeof caller.delete>>
+      let actual: Awaited<
+        ReturnType<ReturnType<typeof db.selectFrom<"Resource">>["execute"]>
+      >
+      let auditEntry: Awaited<
+        ReturnType<
+          ReturnType<
+            ReturnType<typeof db.selectFrom<"AuditLog">>["executeTakeFirstOrThrow"]
+          >
+        >
+      >
 
-      // Act
-      const result = await caller.delete({
-        resourceId: folderToUse.id,
-        siteId: site.id,
+      beforeEach(async () => {
+        // Arrange
+        const setup = await setupFolder()
+        folderToUse = setup.folder
+        const { site } = setup
+        auditSpy = vi.spyOn(auditService, "logResourceEvent")
+        await setupAdminPermissions({
+          userId: session.userId,
+          siteId: site.id,
+        })
+        const nestedPages = await Promise.all(
+          Array.from({ length: 3 }, (_, i) => i).map(async (i) => {
+            const { page } = await setupPageResource({
+              siteId: site.id,
+              parentId: folderToUse.id,
+              permalink: `page-${i}`,
+              title: `Test page ${i}`,
+              resourceType: "Page",
+            })
+            return page.id
+          }),
+        )
+        const nestedFolders = await Promise.all(
+          Array.from({ length: 2 }, (_, i) => i).map(async (i) => {
+            const { folder } = await setupFolder({
+              siteId: site.id,
+              parentId: folderToUse.id,
+              permalink: `folder-${i}`,
+              title: `Test folder ${i}`,
+            })
+            return folder.id
+          }),
+        )
+        // Nested in nested
+        const nestedInNested = await Promise.all(
+          Array.from({ length: 3 }, (_, i) => i).map(async (i) => {
+            const { page } = await setupPageResource({
+              siteId: site.id,
+              parentId: nestedFolders[1],
+              resourceType: "Page",
+              permalink: `nested-page-${i}`,
+              title: `Nested page ${i}`,
+            })
+            return page.id
+          }),
+        )
+
+        // Act
+        result = await caller.delete({
+          resourceId: folderToUse.id,
+          siteId: site.id,
+        })
+
+        actual = await db
+          .selectFrom("Resource")
+          .where("id", "in", [
+            ...nestedPages,
+            ...nestedFolders,
+            ...nestedInNested,
+            folderToUse.id,
+          ])
+          .execute()
+        auditEntry = await db
+          .selectFrom("AuditLog")
+          .where("eventType", "=", "ResourceDelete")
+          .selectAll()
+          .executeTakeFirstOrThrow()
       })
 
-      // Assert
-      const actual = await db
-        .selectFrom("Resource")
-        .where("id", "in", [
-          ...nestedPages,
-          ...nestedFolders,
-          ...nestedInNested,
-          folderToUse.id,
-        ])
-        .execute()
-      expect(actual).toHaveLength(0)
-      expect(result).toStrictEqual(folderToUse)
-      expect(auditSpy).toHaveBeenCalledExactlyOnceWith()
-      const auditEntry = await db
-        .selectFrom("AuditLog")
-        .where("eventType", "=", "ResourceDelete")
-        .selectAll()
-        .executeTakeFirstOrThrow()
-      expect(auditEntry.delta.before!).toMatchObject(
-        omit(folderToUse, ["createdAt", "updatedAt"]),
-      )
-      // oxlint-disable-next-line vitest/max-expects
-      expect(auditEntry.userId).toBe(session.userId)
+      it("deletes all nested resources and returns the deleted folder", async () => {
+        // Assert
+        expect(actual).toHaveLength(0)
+        expect(result).toStrictEqual(folderToUse)
+        expect(auditSpy).toHaveBeenCalledExactlyOnceWith()
+        expect(auditEntry.delta.before!).toMatchObject(
+          omit(folderToUse, ["createdAt", "updatedAt"]),
+        )
+      })
+
+      it("records the delete in the audit log", async () => {
+        // Assert
+        expect(auditEntry.userId).toBe(session.userId)
+      })
     })
 
     it("should return 400 if resource to delete is a root page", async () => {
