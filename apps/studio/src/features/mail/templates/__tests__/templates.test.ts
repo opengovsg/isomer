@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
 import type { Resource } from "~/server/modules/database"
+import { describe, expect, it } from "vitest"
 import { ISOMER_SUPPORT_EMAIL, ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { env } from "~/env.mjs"
 import { ResourceType, RoleType } from "~prisma/generated/generatedEnums"

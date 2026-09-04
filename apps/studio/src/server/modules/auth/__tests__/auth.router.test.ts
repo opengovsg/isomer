@@ -29,7 +29,6 @@ describe("auth.email", () => {
   })
 
   describe("logout", () => {
-
     it("should throw BAD_REQUEST and not log auth event if user row is missing while logging out", async () => {
       // Arrange
       const spy = vi.spyOn(authService, "logAuthEvent")

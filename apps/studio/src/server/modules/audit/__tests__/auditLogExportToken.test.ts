@@ -9,7 +9,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 // above all top-level bindings and cannot close over this const.
 const SESSION_SECRET = "test-session-secret-at-least-32-chars-long"
 
-vi.mock(import('~/env.mjs'), () => ({
+vi.mock(import("~/env.mjs"), () => ({
   env: {
     SESSION_SECRET: "test-session-secret-at-least-32-chars-long",
   },
@@ -41,8 +41,12 @@ describe("auditLogExportToken", () => {
 
   it("rejects garbage that is not an iron seal at all", async () => {
     await expect(unsealAuditLogExportToken("")).resolves.toBeNull()
-    await expect(unsealAuditLogExportToken("not-a-real-token")).resolves.toBeNull()
-    await expect(unsealAuditLogExportToken("Fe26.2**deadbeef**garbage")).resolves.toBeNull()
+    await expect(
+      unsealAuditLogExportToken("not-a-real-token"),
+    ).resolves.toBeNull()
+    await expect(
+      unsealAuditLogExportToken("Fe26.2**deadbeef**garbage"),
+    ).resolves.toBeNull()
   })
 
   it("rejects a blob sealed with a DIFFERENT secret (forged/tampered)", async () => {

@@ -4,9 +4,9 @@ const { mockWretch } = vi.hoisted(() => ({
   mockWretch: vi.fn<(...args: unknown[]) => unknown>(),
 }))
 
-vi.mock(import('wretch'), () => ({ default: mockWretch }))
+vi.mock(import("wretch"), () => ({ default: mockWretch }))
 
-vi.mock(import('~/env.mjs'), () => ({
+vi.mock(import("~/env.mjs"), () => ({
   env: {
     NEXT_PUBLIC_APP_ENV: "production",
     SEARCHSG_API_KEY: "test-api-key",
@@ -28,12 +28,13 @@ describe(updateSearchSGConfig, () => {
       auth: vi.fn<(...args: unknown[]) => unknown>().mockReturnThis(),
       headers: vi.fn<(...args: unknown[]) => unknown>().mockReturnThis(),
       post: vi.fn<(...args: unknown[]) => unknown>().mockReturnThis(),
-      json: vi.fn<(...args: unknown[]) => unknown>().mockRejectedValue(new Error("no network in tests")),
+      json: vi
+        .fn<(...args: unknown[]) => unknown>()
+        .mockRejectedValue(new Error("no network in tests")),
     })
   })
 
   describe("clientId validation", () => {
-
     it("should not call the SearchSG API for a clientId containing path traversal sequences", async () => {
       // Arrange
       const clientId = "../../other-client-id"
@@ -77,7 +78,6 @@ describe(updateSearchSGConfig, () => {
   })
 
   describe("URL validation", () => {
-
     it.each(["www.example.com", "example.com", "not a url", ""])(
       "should resolve without rejecting and skip SearchSG config fetch for invalid URL %j",
       async (invalidUrl) => {

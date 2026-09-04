@@ -1,4 +1,3 @@
-import { beforeEach, vi, describe, expect, it } from 'vitest';
 import type { NextApiRequest, NextApiResponse } from "next"
 import type { z } from "zod"
 import type { env } from "~/env.mjs"
@@ -6,6 +5,7 @@ import { createMocks } from "node-mocks-http"
 import { resetTables } from "tests/integration/helpers/db"
 import { createTestUser } from "tests/integration/helpers/iron-session"
 import { setupCodeBuildJob, setupUser } from "tests/integration/helpers/seed"
+import { beforeEach, vi, describe, expect, it } from "vitest"
 import handler from "~/pages/api/webhooks/updateCodebuildWebhook"
 import { WEBHOOK_X_API_KEY_HEADER } from "~/server/trpc"
 
@@ -18,7 +18,7 @@ const { WEBHOOK_API_KEY, INVALID_WEBHOOK_API_KEY_WITH_EXPECTED_LENGTH } =
       "11111111-1111-4111-8111-111111111111",
   }))
 
-vi.mock(import('~/env.mjs'), async () => {
+vi.mock(import("~/env.mjs"), async () => {
   // Import the real module first to get all default values
   const actual = await vi.importActual<{ env: typeof env }>("~/env.mjs")
   return {
@@ -32,7 +32,7 @@ vi.mock(import('~/env.mjs'), async () => {
 })
 
 // Mock the publishSite function to avoid sending emails
-vi.mock(import('~/features/mail/service'), () => ({
+vi.mock(import("~/features/mail/service"), () => ({
   sendSuccessfulScheduledPublishEmail: vi.fn<(...args: unknown[]) => unknown>(),
   sendFailedSchedulePublishEmail: vi.fn<(...args: unknown[]) => unknown>(),
 }))
@@ -66,7 +66,6 @@ describe("webhook", () => {
     await resetTables("CodeBuildJobs", "Resource", "Site")
   })
   describe("updateCodebuildWebhook", () => {
-
     it("should process valid webhook payload", async () => {
       // Arrange
       const user = await setupUser(createTestUser())

@@ -1,4 +1,5 @@
-import { beforeEach, vi, afterEach, describe, expect, it } from 'vitest';
+import { beforeEach, vi, afterEach, describe, expect, it } from "vitest"
+
 import type { ResolvedDestination } from "../utils"
 import {
   formatAddedAt,
@@ -68,7 +69,6 @@ describe(formatAddedAt, () => {
 })
 
 describe(isReferenceDestination, () => {
-
   it("returns true only for a string that is exactly a reference", () => {
     expect(isReferenceDestination("[resource:1:2]")).toBe(true)
   })
@@ -89,7 +89,6 @@ describe(isReferenceDestination, () => {
 })
 
 describe(getDestinationDisplay, () => {
-
   it("shows a non-reference destination verbatim", () => {
     expect(getDestinationDisplay("/about-us", new Map())).toStrictEqual({
       status: "resolved",
@@ -107,7 +106,9 @@ describe(getDestinationDisplay, () => {
     const infoByDestination = new Map<string, ResolvedDestination>([
       ["[resource:1:2]", { permalink: "/about/contact", warn: false }],
     ])
-    expect(getDestinationDisplay("[resource:1:2]", infoByDestination)).toStrictEqual({
+    expect(
+      getDestinationDisplay("[resource:1:2]", infoByDestination),
+    ).toStrictEqual({
       status: "resolved",
       label: "/about/contact",
     })
@@ -117,20 +118,23 @@ describe(getDestinationDisplay, () => {
     const infoByDestination = new Map<string, ResolvedDestination>([
       ["[resource:1:2]", { permalink: null, warn: true }],
     ])
-    expect(getDestinationDisplay("[resource:1:2]", infoByDestination)).toStrictEqual({
+    expect(
+      getDestinationDisplay("[resource:1:2]", infoByDestination),
+    ).toStrictEqual({
       status: "missing",
     })
   })
 })
 
 describe(shouldWarnDestination, () => {
-
   it("warns when the server flagged the destination as leading nowhere", () => {
     const infoByDestination = new Map<string, ResolvedDestination>([
       ["[resource:1:2]", { permalink: null, warn: true }],
       ["/unpublished", { permalink: null, warn: true }],
     ])
-    expect(shouldWarnDestination("[resource:1:2]", infoByDestination)).toBe(true)
+    expect(shouldWarnDestination("[resource:1:2]", infoByDestination)).toBe(
+      true,
+    )
     expect(shouldWarnDestination("/unpublished", infoByDestination)).toBe(true)
   })
 
@@ -138,11 +142,15 @@ describe(shouldWarnDestination, () => {
     const infoByDestination = new Map<string, ResolvedDestination>([
       ["[resource:1:2]", { permalink: "/about/contact", warn: false }],
     ])
-    expect(shouldWarnDestination("[resource:1:2]", infoByDestination)).toBe(false)
+    expect(shouldWarnDestination("[resource:1:2]", infoByDestination)).toBe(
+      false,
+    )
   })
 
   it("does not warn for a destination that is still resolving or external", () => {
-    expect(shouldWarnDestination("https://example.gov.sg", new Map())).toBe(false)
+    expect(shouldWarnDestination("https://example.gov.sg", new Map())).toBe(
+      false,
+    )
     expect(shouldWarnDestination("[resource:1:2]", new Map())).toBe(false)
   })
 })

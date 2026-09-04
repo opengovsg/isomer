@@ -1,4 +1,3 @@
-import { beforeEach, describe, expect, it } from 'vitest';
 import type { User } from "~prisma/generated/prisma/client"
 import { TRPCError } from "@trpc/server"
 import { pick } from "lodash-es"
@@ -10,6 +9,7 @@ import {
   createMockRequest,
 } from "tests/integration/helpers/iron-session"
 import { setupUser } from "tests/integration/helpers/seed"
+import { beforeEach, describe, expect, it } from "vitest"
 import { createCallerFactory } from "~/server/trpc"
 
 import { meRouter } from "../me.router"
@@ -34,7 +34,6 @@ describe("me.router", async () => {
   })
 
   describe("get", () => {
-
     it("should throw 401 if not logged in", async () => {
       // Act
       const result = unauthedCaller.get()

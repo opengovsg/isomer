@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from "vitest"
+
 import type { CollectionTags } from "../../hooks/useCollectionTags"
 import { validateRequiredTags } from "../validateRequiredTags"
 
@@ -28,7 +29,6 @@ const otherRequiredCategory: CollectionTags[number] = {
 }
 
 describe(validateRequiredTags, () => {
-
   it("returns valid when there are no tag categories", () => {
     // Act
     const result = validateRequiredTags([], ["anything"])
@@ -98,7 +98,9 @@ describe(validateRequiredTags, () => {
 
     // Assert
     expect(result.isValid).toBe(false)
-    expect(result.unfilledRequiredCategories).toStrictEqual([otherRequiredCategory])
+    expect(result.unfilledRequiredCategories).toStrictEqual([
+      otherRequiredCategory,
+    ])
   })
 
   it("treats a required category with no options as satisfied", () => {

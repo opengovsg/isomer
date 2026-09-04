@@ -10,7 +10,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 // Mock the S3 client so we can observe which commands are dispatched without
 // hitting AWS. We keep the real command classes so we can assert on instances.
 const sendMock = vi.fn<(...args: unknown[]) => unknown>()
-vi.mock(import('@aws-sdk/client-s3'), async (importOriginal) => {
+vi.mock(import("@aws-sdk/client-s3"), async (importOriginal) => {
   const actual = await importOriginal<typeof import("@aws-sdk/client-s3")>()
   return {
     ...actual,

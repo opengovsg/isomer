@@ -1,4 +1,3 @@
-import { beforeEach, vi, afterEach, describe, expect, it } from 'vitest';
 import type { MockInstance } from "vitest"
 import type { User } from "~prisma/generated/prisma/client"
 import { addSeconds } from "date-fns"
@@ -11,6 +10,7 @@ import {
   setupPublisherPermissions,
   setupUser,
 } from "tests/integration/helpers/seed"
+import { beforeEach, vi, afterEach, describe, expect, it } from "vitest"
 import * as emailService from "~/features/mail/service"
 import * as awsUtils from "~/server/modules/aws/utils"
 import { db } from "~/server/modules/database"
@@ -60,7 +60,6 @@ describe("schedulePublishingJob", async () => {
   })
 
   describe("schedulePublishJobHandler", () => {
-
     describe("publishes a resource which has scheduledAt less than current run time", () => {
       let site: Awaited<ReturnType<typeof setupPageResource>>["site"]
       let page: Awaited<ReturnType<typeof setupPageResource>>["page"]

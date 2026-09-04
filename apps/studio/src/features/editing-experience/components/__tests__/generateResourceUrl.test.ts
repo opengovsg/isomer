@@ -3,7 +3,6 @@ import { describe, expect, it } from "vitest"
 import { generateResourceUrl } from "../utils"
 
 describe(generateResourceUrl, () => {
-
   it("produces a normal slug for a Latin title", () => {
     // Arrange
     const title = "Hello World"
@@ -27,7 +26,6 @@ describe(generateResourceUrl, () => {
   })
 
   describe("Tamil", () => {
-
     it("transliterates a purely Tamil title", () => {
       // Arrange
       const title = "இது தமிழில் ஒரு தலைப்பு"
@@ -52,7 +50,6 @@ describe(generateResourceUrl, () => {
   })
 
   describe("Chinese", () => {
-
     it("transliterates Simplified Chinese using pinyin", () => {
       // Arrange
       const title = "中文标题"
@@ -77,7 +74,6 @@ describe(generateResourceUrl, () => {
   })
 
   describe("Japanese", () => {
-
     it("transliterates hiragana to romaji", () => {
       // Arrange
       const title = "こんにちは"
@@ -91,7 +87,6 @@ describe(generateResourceUrl, () => {
   })
 
   describe("Emoji", () => {
-
     it("produces an empty string for emoji-only titles (transliterate omits emoji)", () => {
       // Arrange
       const title = "🎉🎊"
@@ -116,7 +111,6 @@ describe(generateResourceUrl, () => {
   })
 
   describe("German", () => {
-
     it("converts umlauts to their ASCII equivalents", () => {
       // Arrange
       const title = "München"

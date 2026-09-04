@@ -3,7 +3,6 @@ import { describe, expect, it } from "vitest"
 import { getFileExtension } from "../getFileExtension"
 
 describe(getFileExtension, () => {
-
   it("returns lowercased extension including the dot", () => {
     // Arrange
     const pdfName = "Document.PDF"

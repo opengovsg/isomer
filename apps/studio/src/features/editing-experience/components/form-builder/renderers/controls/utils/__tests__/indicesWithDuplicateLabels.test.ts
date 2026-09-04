@@ -1,8 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from "vitest"
+
 import { indicesWithDuplicateLabels } from "../indicesWithDuplicateLabels"
 
 describe(indicesWithDuplicateLabels, () => {
-
   it("returns an empty set when items are undefined or empty", () => {
     // Arrange
     const undefinedItems = undefined

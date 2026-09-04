@@ -24,7 +24,6 @@ const VALID_INPUT = {
 }
 
 describe(createAuditLogExportRequestSchema, () => {
-
   it("should parse a known-good input", () => {
     // Arrange / Act
     const result = createAuditLogExportRequestSchema.safeParse(VALID_INPUT)
@@ -34,7 +33,6 @@ describe(createAuditLogExportRequestSchema, () => {
   })
 
   describe("month", () => {
-
     it.each(["2026-13", "2026-1", "26-01", "not-a-month", ""])(
       "should reject the invalid month %j",
       (month) => {
@@ -66,7 +64,6 @@ describe(createAuditLogExportRequestSchema, () => {
   })
 
   describe("reportType", () => {
-
     it.each([
       AuditLogExportRequestedReportType.Access,
       AuditLogExportRequestedReportType.Activity,
@@ -105,7 +102,6 @@ describe(createAuditLogExportRequestSchema, () => {
   })
 
   describe("scope", () => {
-
     it.each([AuditLogExportScope.Site, AuditLogExportScope.AllSites])(
       "should accept the valid scope %s",
       (scope) => {
@@ -147,7 +143,6 @@ describe(createAuditLogExportRequestSchema, () => {
   })
 
   describe(createAuditLogExportRequestServerSchema, () => {
-
     it("accepts scope 'site' with a siteId", () => {
       // Arrange / Act
       const result =
@@ -190,7 +185,6 @@ describe(createAuditLogExportRequestSchema, () => {
     // fine request over a discarded value (e.g. browser clock skew nudging
     // it into "next month").
     describe("month window", () => {
-
       it("accepts the current Singapore month for an Activity export", () => {
         // Arrange / Act
         const result = createAuditLogExportRequestServerSchema.safeParse({
@@ -256,7 +250,6 @@ describe(createAuditLogExportRequestSchema, () => {
   })
 
   describe(getEarliestExportableMonth, () => {
-
     it("should return the month 11 months before the current month", () => {
       // 12 months inclusive of the current month.
       expect(getEarliestExportableMonth("2026-06")).toBe("2025-07")
@@ -280,7 +273,6 @@ describe(createAuditLogExportRequestSchema, () => {
   })
 
   describe("siteId", () => {
-
     it("should accept a plain number siteId", () => {
       // Arrange / Act
       const result = createAuditLogExportRequestSchema.safeParse({

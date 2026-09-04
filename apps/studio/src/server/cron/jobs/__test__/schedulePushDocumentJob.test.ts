@@ -1,4 +1,3 @@
-import { it, vi, afterEach, expect, describe, beforeEach } from 'vitest';
 import type * as serverContextType from "~/server/context"
 import type { User } from "~prisma/generated/selectableTypes"
 import { addMinutes } from "date-fns"
@@ -6,6 +5,7 @@ import MockDate from "mockdate"
 import { resetTables } from "tests/integration/helpers/db"
 import { applyAuthedSession } from "tests/integration/helpers/iron-session"
 import { setupPageResource, setupUser } from "tests/integration/helpers/seed"
+import { it, vi, afterEach, expect, describe, beforeEach } from "vitest"
 import * as s3Lib from "~/lib/s3"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { db } from "~server/db"
@@ -16,11 +16,11 @@ import * as algoliaPkg from "@isomer/algolia"
 // algoliasearch(env.ALGOLIA_APP_ID, env.ALGOLIA_API_KEY). Those env vars are
 // not set in the test environment, so the import throws "appId is missing"
 // before any test runs. Mock the whole module to prevent this.
-vi.mock(import('~/lib/algolia'))
+vi.mock(import("~/lib/algolia"))
 
 // Mock createGrowthBookContext so tests can control the flag without hitting
 // the remote GrowthBook CDN.
-vi.mock(import('~/server/context'), async (importOriginal) => {
+vi.mock(import("~/server/context"), async (importOriginal) => {
   const actual = await importOriginal<typeof serverContextType>()
   return {
     ...actual,
@@ -236,14 +236,15 @@ describe(schedulePushDocumentJobHandler, async () => {
   })
 
   describe("Algolia path (flag OFF)", () => {
-
     describe("dispatches a due row to Algolia and deletes it", () => {
       let ref: string
       let records: Parameters<typeof algoliaLib.saveObjectsToSearchIndex>[0]
       let expectedObjectGroup: string
       let remaining: Awaited<
         ReturnType<
-          ReturnType<typeof db.selectFrom<"PushDocumentJob">>["selectAll"]["execute"]
+          ReturnType<
+            typeof db.selectFrom<"PushDocumentJob">
+          >["selectAll"]["execute"]
         >
       >
 
@@ -266,12 +267,11 @@ describe(schedulePushDocumentJobHandler, async () => {
 
         await schedulePushDocumentJobHandler()
 
-        ;[records] = vi.mocked(algoliaLib.saveObjectsToSearchIndex).mock.calls[0]!
+        ;[records] = vi.mocked(
+          algoliaLib.saveObjectsToSearchIndex,
+        ).mock.calls[0]!
         expectedObjectGroup = ref.slice(1)
-        remaining = await db
-          .selectFrom("PushDocumentJob")
-          .selectAll()
-          .execute()
+        remaining = await db.selectFrom("PushDocumentJob").selectAll().execute()
       })
 
       it("saves Algolia records with the expected object metadata and public file URL", () => {
@@ -669,7 +669,9 @@ describe(schedulePushDocumentJobHandler, async () => {
       let body: { documentsToAdd: Record<string, unknown>[] }
       let remaining: Awaited<
         ReturnType<
-          ReturnType<typeof db.selectFrom<"PushDocumentJob">>["selectAll"]["execute"]
+          ReturnType<
+            typeof db.selectFrom<"PushDocumentJob">
+          >["selectAll"]["execute"]
         >
       >
 
@@ -698,10 +700,7 @@ describe(schedulePushDocumentJobHandler, async () => {
         body = JSON.parse(ingestBody) as {
           documentsToAdd: Record<string, unknown>[]
         }
-        remaining = await db
-          .selectFrom("PushDocumentJob")
-          .selectAll()
-          .execute()
+        remaining = await db.selectFrom("PushDocumentJob").selectAll().execute()
       })
 
       it("posts the parsed document to SearchSG and skips Algolia", () => {

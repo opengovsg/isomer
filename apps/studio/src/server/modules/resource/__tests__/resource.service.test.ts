@@ -1,4 +1,3 @@
-import { expect, beforeEach, afterEach, describe, beforeAll, it } from 'vitest';
 import { pick } from "lodash-es"
 import { resetTables } from "tests/integration/helpers/db"
 import {
@@ -13,6 +12,7 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
+import { expect, beforeEach, afterEach, describe, beforeAll, it } from "vitest"
 import { ResourceType } from "~prisma/generated/prisma/client"
 
 import type { Resource } from "../../database"
@@ -36,7 +36,6 @@ describe("resource.service", () => {
   // TODO: Implement tests when publish works
   // oxlint-disable-next-line vitest/no-disabled-tests
   describe.skip("publishPage", () => {
-
     // oxlint-disable-next-line vitest/warn-todo
     it.todo("should trigger a publish automatically on creation of a folder")
 
@@ -47,32 +46,45 @@ describe("resource.service", () => {
     it.todo("should trigger a publish automatically on move of a folder")
 
     // oxlint-disable-next-line vitest/warn-todo
-    it.todo("should trigger a publish automatically on update of a folder's title")
+    it.todo(
+      "should trigger a publish automatically on update of a folder's title",
+    )
 
     // oxlint-disable-next-line vitest/warn-todo
-    it.todo("should trigger a publish automatically on update of a folder's permalink")
+    it.todo(
+      "should trigger a publish automatically on update of a folder's permalink",
+    )
 
     // oxlint-disable-next-line vitest/warn-todo
-    it.todo("should trigger a publish automatically on creation of a collection")
+    it.todo(
+      "should trigger a publish automatically on creation of a collection",
+    )
 
     // oxlint-disable-next-line vitest/warn-todo
-    it.todo("should trigger a publish automatically on deletion of a collection")
+    it.todo(
+      "should trigger a publish automatically on deletion of a collection",
+    )
 
     // oxlint-disable-next-line vitest/warn-todo
-    it.todo("should trigger a publish automatically on update of a collection's title")
+    it.todo(
+      "should trigger a publish automatically on update of a collection's title",
+    )
 
     // oxlint-disable-next-line vitest/warn-todo
-    it.todo("should trigger a publish automatically on update of a collection's permalink")
+    it.todo(
+      "should trigger a publish automatically on update of a collection's permalink",
+    )
 
     // oxlint-disable-next-line vitest/warn-todo
     it.todo("should trigger a publish automatically on move of a page")
 
     // oxlint-disable-next-line vitest/warn-todo
-    it.todo("should not trigger a publish if there is a currently running publish witin the past minute")
+    it.todo(
+      "should not trigger a publish if there is a currently running publish witin the past minute",
+    )
   })
 
   describe(getBatchAncestryWithSelfQuery, () => {
-
     it("should return empty array if no resources exist", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -385,7 +397,6 @@ describe("resource.service", () => {
   })
 
   describe(getFullPageById, () => {
-
     it("should return resource with draft blob if it exists", async () => {
       // Arrange
       const {
@@ -478,7 +489,6 @@ describe("resource.service", () => {
   })
 
   describe(getPageById, () => {
-
     it("should return the 'Page' resource with the given `id`", async () => {
       // Arrange
       const { site, page } = await setupPageResource({
@@ -577,7 +587,6 @@ describe("resource.service", () => {
   })
 
   describe(updatePageById, () => {
-
     it("should not update any rows if no matching `id` can be found", async () => {
       // Arrange
       const { site } = await setupPageResource({
@@ -775,7 +784,6 @@ describe("resource.service", () => {
   })
 
   describe(getNavBar, () => {
-
     it("should return the nav bar for the given site", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -795,7 +803,6 @@ describe("resource.service", () => {
   })
 
   describe(getFooter, () => {
-
     it("should return the footer for the given site", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -1339,7 +1346,6 @@ describe("resource.service", () => {
     })
 
     describe("childrenPagesOrdering", () => {
-
       it("should order children according to childrenPagesOrdering when viewing a Page resource", async () => {
         // Arrange
         const { site } = await setupSite()
@@ -1517,7 +1523,11 @@ describe("resource.service", () => {
         const childIds = parentNode?.children?.map((child) => child.id)
 
         // Should be Alpha, Beta, Gamma (alphabetical)
-        expect(childIds).toStrictEqual([pageAlpha.id, pageBeta.id, pageGamma.id])
+        expect(childIds).toStrictEqual([
+          pageAlpha.id,
+          pageBeta.id,
+          pageGamma.id,
+        ])
       })
 
       it("should only apply ordering at the correct parent node", async () => {
@@ -1832,7 +1842,6 @@ describe("resource.service", () => {
   describe.skip("publishResource", () => {})
 
   describe(getWithFullPermalink, () => {
-
     it("returns an empty array when given no resourceIds", async () => {
       const { site } = await setupSite()
 
@@ -1903,7 +1912,6 @@ describe("resource.service", () => {
   })
 
   describe(getSearchResults, () => {
-
     it("returns an empty array when given no resourceTypes", async () => {
       //Arrange
       const { site } = await setupPageResource({

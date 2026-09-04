@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest';
 import { readFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
+import { describe, expect, it } from "vitest"
 
 import {
   BULK_REDIRECT_CSV_ERROR_HEADER,
@@ -16,7 +16,6 @@ const { source: SOURCE_HEADER, destination: DESTINATION_HEADER } =
 const header = `${SOURCE_HEADER},${DESTINATION_HEADER}`
 
 describe(parseRedirectCsv, () => {
-
   it("parses rows with 1-based line numbers and trims cells", () => {
     // Arrange
     const csv = `${header}\n/old , /new\n/blog,https://example.gov.sg`
@@ -148,7 +147,6 @@ describe(parseRedirectCsv, () => {
 })
 
 describe(buildRedirectErrorsCsv, () => {
-
   it("lists failed rows first, keeps passing rows marked 'No error', and round-trips", () => {
     // Arrange
     const rows = [
@@ -178,7 +176,6 @@ describe(buildRedirectErrorsCsv, () => {
 })
 
 describe("redirects template file", () => {
-
   it("has the exact header the parser expects (guards against drift)", () => {
     // Arrange
     const templatePath = fileURLToPath(

@@ -102,7 +102,6 @@ describe("auditLogExport.query", () => {
   })
 
   describe("formatAuditLogDateRange / parseAuditLogDateRange", () => {
-
     it("round-trips SGT calendar-date bounds through the canonical form", () => {
       const range = formatAuditLogDateRange("2026-04-01", "2026-05-01")
       expect(range).toBe("[2026-04-01,2026-05-01)")
@@ -130,7 +129,6 @@ describe("auditLogExport.query", () => {
   })
 
   describe(getMonthDateRange, () => {
-
     it("returns the full calendar month for a past month", () => {
       expect(getMonthDateRange("2026-04", NOW)).toBe("[2026-04-01,2026-05-01)")
       expect(getMonthDateRange(MONTH, NOW)).toBe("[2024-03-01,2024-04-01)")
@@ -179,12 +177,13 @@ describe("auditLogExport.query", () => {
       // exercise the runtime defense for values arriving through untyped
       // paths (e.g. raw DB reads or JSON).
       expect(() => getMonthDateRange("2024-13" as IsoMonth, NOW)).toThrow(/./)
-      expect(() => getMonthDateRange("not-a-month" as IsoMonth, NOW)).toThrow(/./)
+      expect(() => getMonthDateRange("not-a-month" as IsoMonth, NOW)).toThrow(
+        /./,
+      )
     })
   })
 
   describe(getExportRange, () => {
-
     it("maps the SGT calendar-date bounds to SGT-midnight UTC instants", () => {
       const { rangeStart, rangeEnd } = getExportRange("[2024-03-01,2024-04-01)")
       // 2024-03-01 00:00 SGT === 2024-02-29 16:00 UTC
@@ -199,7 +198,6 @@ describe("auditLogExport.query", () => {
   })
 
   describe("getAccessReportRows (point-in-time)", () => {
-
     it("reconstructs who had access as of the end of the selected month", async () => {
       const { site } = await setupSite()
 
@@ -412,7 +410,6 @@ describe("auditLogExport.query", () => {
   })
 
   describe("getActivityReportRows (month-scoped events)", () => {
-
     it("includes in-month events with a non-empty Description and excludes out-of-month events", async () => {
       const { site } = await setupSite()
       const user = await setupUser({ email: "editor@agency.gov.sg" })
@@ -1060,7 +1057,6 @@ describe("auditLogExport.query", () => {
   })
 
   describe(getStringifiedValue, () => {
-
     it("returns empty string for null and undefined", () => {
       expect(getStringifiedValue(null)).toBe("")
       expect(getStringifiedValue(undefined)).toBe("")
@@ -1092,7 +1088,6 @@ describe("auditLogExport.query", () => {
   })
 
   describe(toCsv, () => {
-
     it("produces a header row plus one data row per input row", () => {
       const rows = [
         {

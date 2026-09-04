@@ -1,4 +1,5 @@
-import { vi, describe, expect, it } from 'vitest';
+import { vi, describe, expect, it } from "vitest"
+
 import type { EmailTemplate } from "../../templates/types"
 import { escapeTemplateArguments } from "../escapeTemplateArguments"
 
@@ -7,10 +8,12 @@ describe(escapeTemplateArguments, () => {
   const escaped = `&lt;/p&gt;&lt;h1&gt;URGENT&lt;/h1&gt;&lt;p&gt;`
 
   const createTemplate = () =>
-    vi.fn<(...args: unknown[]) => unknown>((data: { title: string }): EmailTemplate => ({
-      subject: data.title,
-      body: data.title,
-    }))
+    vi.fn<(...args: unknown[]) => unknown>(
+      (data: { title: string }): EmailTemplate => ({
+        subject: data.title,
+        body: data.title,
+      }),
+    )
 
   it("escapes nested strings before calling the template", () => {
     // Arrange

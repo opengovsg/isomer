@@ -1,4 +1,3 @@
-import { beforeEach, vi, afterEach, describe, expect, it } from 'vitest';
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
 import {
@@ -12,6 +11,7 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
+import { beforeEach, vi, afterEach, describe, expect, it } from "vitest"
 import { BULK_REDIRECT_CSV_HEADERS } from "~/lib/redirectCsv"
 import { createCallerFactory } from "~/server/trpc"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
@@ -89,7 +89,6 @@ describe("redirect.router bulk upload", async () => {
   ) => result.rows.find((row) => row.source === source)?.error ?? null
 
   describe("bulkValidate", () => {
-
     it("throws 403 without read access to the site", async () => {
       // Arrange
       const { site: otherSite } = await setupSite()
@@ -378,7 +377,6 @@ describe("redirect.router bulk upload", async () => {
   })
 
   describe("bulkCreate", () => {
-
     it("throws 403 without create access to the site", async () => {
       // Arrange: a viewer-less other site the admin can't create on.
       const { site: otherSite } = await setupSite()
@@ -523,8 +521,7 @@ describe("redirect.router bulk upload", async () => {
       vi.spyOn(
         resourceService,
         "getResourceIdsByPermalinks",
-      ).mockResolvedValueOnce(new Map<string, number | null>(),
-      )
+      ).mockResolvedValueOnce(new Map<string, number | null>())
 
       // Act
       const result = await caller.bulkCreate({

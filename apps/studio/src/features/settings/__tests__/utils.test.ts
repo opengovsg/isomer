@@ -98,7 +98,6 @@ describe("settings.utils.ts", () => {
   })
 
   describe(passesContrastCheck, () => {
-
     it("should pass for a theme with sufficient contrast ratios", () => {
       // Arrange - A theme that should pass
       const theme: Theme = {

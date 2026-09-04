@@ -1,6 +1,6 @@
-import { beforeEach, describe, expect, it } from 'vitest';
 import { resetTables } from "tests/integration/helpers/db"
 import { setupUser } from "tests/integration/helpers/seed"
+import { beforeEach, describe, expect, it } from "vitest"
 
 import { AuditLogEvent, db } from "../../database"
 import { logUserEvent } from "../audit.service"
@@ -11,7 +11,6 @@ describe("audit.service", () => {
   })
 
   describe(logUserEvent, () => {
-
     it("should log a resource event successfully", async () => {
       // Arrange
       const user = await setupUser({

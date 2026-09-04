@@ -5,7 +5,6 @@ import { isUserOnboarded } from "../isUserOnboarded"
 
 describe(isUserOnboarded, () => {
   describe("user validation", () => {
-
     it("should return true for valid user with name and Singapore phone number", () => {
       // Arrange
       const validUsers = [
@@ -50,7 +49,6 @@ describe(isUserOnboarded, () => {
   })
 
   describe("phone number validation", () => {
-
     it("should return true for valid Singapore phone numbers starting with 6, 8, or 9", () => {
       // Arrange
       const validUsers = [

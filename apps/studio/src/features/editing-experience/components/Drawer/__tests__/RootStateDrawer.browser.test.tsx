@@ -10,21 +10,21 @@ import RootStateDrawer from "../RootStateDrawer"
 
 const noop = vi.hoisted(() => vi.fn<(...args: unknown[]) => unknown>())
 
-vi.mock(import('next/router'), () => ({
+vi.mock(import("next/router"), () => ({
   useRouter: () => ({ query: { pageId: "1", siteId: "1" } }),
 }))
 
-vi.mock(import('posthog-js'), () => ({ default: { capture: noop } }))
+vi.mock(import("posthog-js"), () => ({ default: { capture: noop } }))
 
-vi.mock(import('~/hooks/useIsUserIsomerAdmin'), () => ({
+vi.mock(import("~/hooks/useIsUserIsomerAdmin"), () => ({
   useIsUserIsomerAdmin: () => ({ isAdmin: false, isLoading: false }),
 }))
 
-vi.mock(import('~/hooks/useNewCollectionTagsManagement'), () => ({
+vi.mock(import("~/hooks/useNewCollectionTagsManagement"), () => ({
   useNewCollectionTagsManagement: () => false,
 }))
 
-vi.mock(import('~/utils/trpc'), () => ({
+vi.mock(import("~/utils/trpc"), () => ({
   trpc: {
     page: {
       readPage: {
@@ -89,7 +89,6 @@ const renderDrawer = ({
   )
 
 describe(RootStateDrawer, () => {
-
   it("does not allow adding blocks on the system Search page", () => {
     // Arrange / Act
     renderDrawer({

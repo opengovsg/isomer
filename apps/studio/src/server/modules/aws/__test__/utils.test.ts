@@ -1,4 +1,3 @@
-import { beforeEach, vi, afterEach, describe, expect, it } from 'vitest';
 import MockDate from "mockdate"
 import { resetTables } from "tests/integration/helpers/db"
 import {
@@ -6,6 +5,7 @@ import {
   setupCodeBuildJob,
   setupUser,
 } from "tests/integration/helpers/seed"
+import { beforeEach, vi, afterEach, describe, expect, it } from "vitest"
 
 import type { User } from "../../database"
 import { db } from "../../database"

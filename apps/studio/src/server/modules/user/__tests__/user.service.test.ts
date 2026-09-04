@@ -155,9 +155,7 @@ describe("user.service", () => {
       >["resourcePermission"]
       let originalUserId: string
       let dbUserResult: Awaited<
-        ReturnType<
-          ReturnType<typeof db.selectFrom<"User">>["execute"]
-        >
+        ReturnType<ReturnType<typeof db.selectFrom<"User">>["execute"]>
       >
       let dbResourcePermissionResult: Awaited<
         ReturnType<
@@ -165,14 +163,10 @@ describe("user.service", () => {
         >
       >
       let userAuditLogs: Awaited<
-        ReturnType<
-          ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]
-        >
+        ReturnType<ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]>
       >
       let permissionAuditLogs: Awaited<
-        ReturnType<
-          ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]
-        >
+        ReturnType<ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]>
       >
 
       beforeEach(async () => {

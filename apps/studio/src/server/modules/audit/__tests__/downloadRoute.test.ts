@@ -15,7 +15,7 @@ const BUCKET = "test-audit-bucket"
 // reject the missing audit-bucket var in test. Bypass it and feed exactly what
 // the route needs; the DB still uses the real connection string dotenv-cli
 // loaded into process.env from `.env.test`.
-vi.mock(import('~/env.mjs'), () => ({
+vi.mock(import("~/env.mjs"), () => ({
   env: {
     // oxlint-disable-next-line node/no-process-env
     NODE_ENV: process.env.NODE_ENV ?? "test",
@@ -34,7 +34,7 @@ const { mockGenerateSignedGetUrl } = vi.hoisted(() => ({
 
 // Mock only the S3 presign boundary — the route builds a real signed URL at
 // click time. The DB is NOT mocked; request rows are seeded into real Postgres.
-vi.mock(import('~/lib/s3'), () => ({
+vi.mock(import("~/lib/s3"), () => ({
   generateSignedGetUrl: mockGenerateSignedGetUrl,
   getStudioAssetsBucketName: () => "test-audit-bucket",
 }))

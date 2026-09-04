@@ -14,7 +14,7 @@ const { envHolder } = vi.hoisted(() => {
   return { envHolder }
 })
 
-vi.mock(import('~/env.mjs'), () => ({
+vi.mock(import("~/env.mjs"), () => ({
   get env() {
     return envHolder
   },
@@ -27,7 +27,7 @@ const { doneMock, uploadCtorMock } = vi.hoisted(() => ({
   doneMock: vi.fn<(...args: unknown[]) => unknown>(),
   uploadCtorMock: vi.fn<(...args: unknown[]) => unknown>(),
 }))
-vi.mock(import('@aws-sdk/lib-storage'), () => ({
+vi.mock(import("@aws-sdk/lib-storage"), () => ({
   Upload: vi.fn<(...args: unknown[]) => unknown>(function (
     options: ConstructorParameters<typeof UploadType>[0],
   ) {

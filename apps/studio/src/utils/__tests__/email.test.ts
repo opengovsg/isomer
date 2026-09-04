@@ -3,7 +3,6 @@ import { describe, expect, it } from "vitest"
 import { isGovEmail } from "../email"
 
 describe(isGovEmail, () => {
-
   it("should return true for valid .gov.sg email addresses", () => {
     const validEmails = [
       "test@open.gov.sg",

@@ -1,6 +1,6 @@
-import { beforeAll, describe, expect, it } from 'vitest';
 import { resetTables } from "tests/integration/helpers/db"
 import { setUpWhitelist } from "tests/integration/helpers/seed"
+import { beforeAll, describe, expect, it } from "vitest"
 
 import { isEmailWhitelisted } from "../whitelist.service"
 

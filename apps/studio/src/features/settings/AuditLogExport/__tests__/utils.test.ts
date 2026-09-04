@@ -3,7 +3,6 @@ import { describe, expect, it } from "vitest"
 import { getMonthOptions } from "../utils"
 
 describe(getMonthOptions, () => {
-
   it("returns the current month first, newest to oldest, with no future months", () => {
     // 2026-06-30 08:00 UTC = 2026-06-30 16:00 SGT, so the Singapore month is June.
     const options = getMonthOptions(new Date("2026-06-30T08:00:00.000Z"))
@@ -38,7 +37,10 @@ describe(getMonthOptions, () => {
 
     expect(options).toHaveLength(3)
     expect(options[0]).toStrictEqual({ value: "2026-06", label: "June 2026" })
-    expect(options.at(-1)).toStrictEqual({ value: "2026-04", label: "April 2026" })
+    expect(options.at(-1)).toStrictEqual({
+      value: "2026-04",
+      label: "April 2026",
+    })
   })
 
   it("still returns at least the current month if maxMonths is 0 or negative", () => {

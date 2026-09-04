@@ -1,8 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from "vitest"
+
 import { mergeResourcesWithOrdering } from "../mergeResourcesWithOrdering"
 
 describe("merge", () => {
-
   it("should put strings that are not in base at the back and sorted by title", () => {
     // Arrange
     const base = ["2", "1", "53"]

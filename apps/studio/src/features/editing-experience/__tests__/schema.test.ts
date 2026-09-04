@@ -9,7 +9,6 @@ import {
 
 describe("editing-experience schemas", () => {
   describe(siteSchema, () => {
-
     it("should validate a valid siteId", () => {
       // Arrange + Act
       const result = siteSchema.safeParse({ siteId: "123" })
@@ -31,7 +30,6 @@ describe("editing-experience schemas", () => {
   })
 
   describe(pageSchema, () => {
-
     it("should validate a valid page with siteId and pageId", () => {
       // Arrange + Act
       const result = pageSchema.safeParse({ siteId: "123", pageId: "456" })
@@ -70,7 +68,6 @@ describe("editing-experience schemas", () => {
   })
 
   describe(collectionItemSchema, () => {
-
     it("should validate with both pageId and linkId", () => {
       // Arrange + Act
       const result = collectionItemSchema.safeParse({
@@ -94,7 +91,11 @@ describe("editing-experience schemas", () => {
       // Assert
       expect(result.success).toBe(true)
       if (!result.success) throw new Error("Expected parse to succeed")
-      expect(result.data).toStrictEqual({ siteId: 123, pageId: 456, linkId: 789 })
+      expect(result.data).toStrictEqual({
+        siteId: 123,
+        pageId: 456,
+        linkId: 789,
+      })
       expect(result.data.siteId).toBeTypeOf("number")
       expect(result.data.pageId).toBeTypeOf("number")
       expect(result.data.linkId).toBeTypeOf("number")
@@ -140,7 +141,6 @@ describe("editing-experience schemas", () => {
   })
 
   describe(pageOrLinkSchema, () => {
-
     it("should validate with only pageId in pageOrLinkSchema", () => {
       // Arrange + Act
       const result = pageOrLinkSchema.safeParse({
@@ -163,7 +163,11 @@ describe("editing-experience schemas", () => {
       // Assert
       expect(result.success).toBe(true)
       if (!result.success) throw new Error("Expected parse to succeed")
-      expect(result.data).toStrictEqual({ siteId: 123, pageId: 456, linkId: 789 })
+      expect(result.data).toStrictEqual({
+        siteId: 123,
+        pageId: 456,
+        linkId: 789,
+      })
       expect(result.data.siteId).toBeTypeOf("number")
       expect(result.data.pageId).toBeTypeOf("number")
       expect(result.data.linkId).toBeTypeOf("number")
