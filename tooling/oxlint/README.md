@@ -74,6 +74,7 @@ Or set `"options": { "typeAware": true }` in the root Oxlint config only.
 | Subpath                         | File                                                           |
 | ------------------------------- | -------------------------------------------------------------- |
 | `@isomer/oxlint-config/base`    | `base.ts`                                                      |
-| `@isomer/oxlint-config/presets` | `presets.ts` — Ultracite `react`, `next`, and `vitest` presets |
+| `@isomer/oxlint-config/presets` | `presets.ts` — Ultracite `react`, `next`, and custom `vitest` preset |
+| `@isomer/oxlint-config/vitest`  | `vitest.ts` — Ultracite vitest with strict `toBe(true/false)` matchers   |
 
 Add more JSON presets under `tooling/oxlint/` and list them under `exports` in `package.json` as you split shared vs app-specific rules.

@@ -8,7 +8,8 @@
     ".": "./package.json",
     "./base": "./base.ts",
     "./base.json": "./base.ts",
-    "./presets": "./presets.ts"
+    "./presets": "./presets.ts",
+    "./vitest": "./vitest.ts"
   },
   "dependencies": {
     "oxlint": "catalog:",
