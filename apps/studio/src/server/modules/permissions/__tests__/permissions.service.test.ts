@@ -1172,37 +1172,8 @@ describe(getResourcePermission, () => {
     expect(permissions[0]?.role).toBe(RoleType.Admin)
   })
 
-  // TODO: add this back in when we have resource-specific permissions
-  // oxlint-disable-next-line vitest/no-disabled-tests
-  it.skip("should return resource-specific permissions when resourceId is provided", async () => {
-    // Arrange
-    const user = await setupUser({ email: "test@example.com" })
-    const { page, site } = await setupPageResource({
-      resourceType: ResourceType.Page,
-    })
-
-    await db
-      .insertInto("ResourcePermission")
-      .values({
-        userId: user.id,
-        siteId: site.id,
-        resourceId: page.id,
-        role: RoleType.Admin,
-        deletedAt: null,
-      })
-      .execute()
-
-    // Act
-    const permissions = await getResourcePermission({
-      userId: user.id,
-      siteId: site.id,
-      resourceId: page.id,
-    })
-
-    // Assert
-    expect(permissions).toHaveLength(1)
-    expect(permissions[0]?.role).toBe(RoleType.Admin)
-  })
+  // oxlint-disable-next-line vitest/warn-todo
+  it.todo("should return resource-specific permissions when resourceId is provided")
 
   it("should return empty array when no permissions exist for user and site", async () => {
     // Arrange
@@ -1238,26 +1209,10 @@ describe(getResourcePermission, () => {
     expect(permissions).toHaveLength(0)
   })
 
-  // TODO: add this back in when we have resource-specific permissions
-  // oxlint-disable-next-line vitest/no-disabled-tests
-  it.skip("should not return site-wide permissions when resourceId is provided and is not null", async () => {
-    // Arrange
-    const user = await setupUser({ email: "test@example.com" })
-    const { page, site } = await setupPageResource({
-      resourceType: ResourceType.Page,
-    })
-    await setupAdminPermissions({ userId: user.id, siteId: site.id })
-
-    // Act
-    const permissions = await getResourcePermission({
-      userId: user.id,
-      siteId: site.id,
-      resourceId: page.id,
-    })
-
-    // Assert
-    expect(permissions).toHaveLength(0)
-  })
+  // oxlint-disable-next-line vitest/warn-todo
+  it.todo(
+    "should not return site-wide permissions when resourceId is provided and is not null",
+  )
 
   it("should exclude soft-deleted permissions", async () => {
     // Arrange
