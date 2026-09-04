@@ -5,6 +5,7 @@
   "description": "Isomer Next",
   "license": "ISC",
   "author": "Isomer Team",
+  "type": "module",
   "scripts": {
     "build": "dotenv -- turbo build",
     "build-storybook": "turbo run build-storybook --parallel",
