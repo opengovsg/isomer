@@ -1,4 +1,3 @@
-import { expect, beforeEach, afterEach, describe, beforeAll, it } from 'vitest';
 import { TRPCError } from "@trpc/server"
 import { pick } from "lodash-es"
 import { resetTables } from "tests/integration/helpers/db"
@@ -14,6 +13,7 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
+import { expect, beforeEach, afterEach, describe, beforeAll, it } from "vitest"
 import { ResourceType } from "~prisma/generated/prisma/client"
 
 import type { Resource } from "../../database"
@@ -42,21 +42,35 @@ describe("resource.service", () => {
 
     it.todo("should trigger a publish automatically on move of a folder")
 
-    it.todo("should trigger a publish automatically on update of a folder's title")
+    it.todo(
+      "should trigger a publish automatically on update of a folder's title",
+    )
 
-    it.todo("should trigger a publish automatically on update of a folder's permalink")
+    it.todo(
+      "should trigger a publish automatically on update of a folder's permalink",
+    )
 
-    it.todo("should trigger a publish automatically on creation of a collection")
+    it.todo(
+      "should trigger a publish automatically on creation of a collection",
+    )
 
-    it.todo("should trigger a publish automatically on deletion of a collection")
+    it.todo(
+      "should trigger a publish automatically on deletion of a collection",
+    )
 
-    it.todo("should trigger a publish automatically on update of a collection's title")
+    it.todo(
+      "should trigger a publish automatically on update of a collection's title",
+    )
 
-    it.todo("should trigger a publish automatically on update of a collection's permalink")
+    it.todo(
+      "should trigger a publish automatically on update of a collection's permalink",
+    )
 
     it.todo("should trigger a publish automatically on move of a page")
 
-    it.todo("should not trigger a publish if there is a currently running publish witin the past minute")
+    it.todo(
+      "should not trigger a publish if there is a currently running publish witin the past minute",
+    )
   })
 
   describe("getBatchAncestryWithSelfQuery", () => {
@@ -642,6 +656,10 @@ describe("resource.service", () => {
       await expect(result).rejects.toThrow(
         /violates foreign key constraint.*Resource_parentId_fkey/,
       )
+    })
+  })
+
+  describe("updateBlobById", () => {
     let site: Awaited<ReturnType<typeof setupPageResource>>["site"]
 
     beforeEach(async () => {
@@ -1130,14 +1148,16 @@ describe("resource.service", () => {
           userId: (await setupUser({})).id,
         })
 
-        const { page: publishedPage, blob: pageBlob } = await setupPageResource({
-          permalink: "page-a",
-          resourceType: ResourceType.Page,
-          siteId: site.id,
-          parentId: parentFolder.id,
-          state: ResourceState.Published,
-          userId: (await setupUser({})).id,
-        })
+        const { page: publishedPage, blob: pageBlob } = await setupPageResource(
+          {
+            permalink: "page-a",
+            resourceType: ResourceType.Page,
+            siteId: site.id,
+            parentId: parentFolder.id,
+            state: ResourceState.Published,
+            userId: (await setupUser({})).id,
+          },
+        )
         page = publishedPage
         await db
           .updateTable("Blob")
@@ -1497,7 +1517,11 @@ describe("resource.service", () => {
         const childIds = parentNode?.children?.map((child) => child.id)
 
         // Should be Alpha, Beta, Gamma (alphabetical)
-        expect(childIds).toStrictEqual([pageAlpha.id, pageBeta.id, pageGamma.id])
+        expect(childIds).toStrictEqual([
+          pageAlpha.id,
+          pageBeta.id,
+          pageGamma.id,
+        ])
       })
 
       it("should only apply ordering at the correct parent node", async () => {
