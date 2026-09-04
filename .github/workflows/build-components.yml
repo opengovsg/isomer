@@ -121,9 +121,14 @@ jobs:
           }
 
           REPO_TGZ="isomer.tar.zst"
-          # publisher.sh's production path only ever reads isomer/latest/. Manual/test
-          # dispatches with an explicit ref get their own prefix so they can never
-          # clobber the artifact a concurrent real deploy is about to consume.
+          # publisher.sh's production path only ever reads isomer/latest/, and nothing
+          # currently reads isomer/refs/*. This branch exists only so a manual/test
+          # workflow_dispatch of *this* workflow (passing an explicit ref) writes to its
+          # own prefix instead of clobbering isomer/latest/ while a real deploy's
+          # publisher.sh run might be downloading it. It is unrelated to publisher.sh's
+          # own ISOMER_BUILD_REPO_BRANCH git-clone path (line ~25 of publisher.sh), which
+          # is a separate escape hatch for testing site-publish against a feature branch
+          # and always clones fresh rather than consuming any archive this workflow produces.
           if [ -n "$REQUESTED_REF" ]; then
             REPO_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/isomer/refs/$REQUESTED_REF/$REPO_TGZ"
           else
