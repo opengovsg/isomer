@@ -66,7 +66,15 @@ if [[ -n "$ISOMER_BUILD_REPO_BRANCH" ]]; then
   # E.g. feat-buildsupercoolfeature-1a2b3c4d. This ensures that each unique
   # feature branch and commit will have its own cache, reducing manual cache
   # invalidation and human factor when testing on staging.
-  UNIQUE_CACHE_KEY="$ISOMER_BUILD_REPO_BRANCH-$(git rev-parse --short HEAD)"
+  # A ref-scoped cache hit above extracts an archive with no .git (build-components.yml
+  # excludes it), so `git rev-parse` would fail there; use the commit it recorded
+  # instead. The git-clone fallback has no such file but does have .git.
+  if [ -f ".isomer-build-sha" ]; then
+    COMMIT_SHA=$(cat .isomer-build-sha)
+  else
+    COMMIT_SHA=$(git rev-parse --short HEAD)
+  fi
+  UNIQUE_CACHE_KEY="$ISOMER_BUILD_REPO_BRANCH-$COMMIT_SHA"
   echo "Unique cache key: $UNIQUE_CACHE_KEY"
 
   # Shared S3 dependency cache (same bucket/prefix pattern is used by multiple CodeBuild projects).

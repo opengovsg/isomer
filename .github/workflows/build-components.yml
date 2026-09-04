@@ -127,6 +127,11 @@ jobs:
           # isomer-components dist cache by the actual release instead of a fixed
           # string, which would otherwise never invalidate across releases.
           echo "$RESOLVED_REF" > .isomer-release-ref
+          # Also record the commit SHA: the archive excludes .git below, but
+          # publisher.sh's branch cache-key still needs a commit to disambiguate
+          # builds of the same branch, and it can't run `git rev-parse` once .git
+          # is gone.
+          git rev-parse --short HEAD > .isomer-build-sha
           # Stage the rename-symlink in a fresh temp dir rather than the checkout's
           # parent: actions/checkout's default workspace path is
           # /home/runner/work/isomer/isomer, so "../isomer" there is the checkout
