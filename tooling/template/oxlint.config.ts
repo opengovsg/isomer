@@ -1,13 +1,15 @@
 import { defineConfig } from "oxlint"
 
 import base from "@isomer/oxlint-config/base"
-// import { react, next, vitest } from "@isomer/oxlint-config/presets"
+import { vitest } from "@isomer/oxlint-config/presets"
+// import { react, next } from "@isomer/oxlint-config/presets"
 
 export default defineConfig({
   extends: [
     base,
+    vitest,
     // To enable this in following stacked PRs
-    // react, next, vitest
+    // react, next
   ],
   ignorePatterns: [".next/**", "!.storybook/**", "out/**"],
   overrides: [
