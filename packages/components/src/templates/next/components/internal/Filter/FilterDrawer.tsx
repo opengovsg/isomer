@@ -164,7 +164,7 @@ const FilterDrawerContent = ({
               onPress={() => updateFilterToggle(id)}
             />
 
-            <div className={showFilter[id] ? "flex flex-col gap-2" : "hidden"}>
+            <div className={showFilter[id] ? "flex flex-col" : "hidden"}>
               {type === TAG_CATEGORY_TYPE.Date ? (
                 <DateFilterControls
                   items={items}

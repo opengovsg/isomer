@@ -19,7 +19,7 @@ export const DateFilterControls = ({
   onDateRangeChange,
 }: DateFilterControlsProps) => {
   return (
-    <>
+    <div className="flex flex-col gap-2">
       {items.map(({ id: itemId, label: itemLabel, count }) => (
         <Checkbox
           key={itemId}
@@ -33,6 +33,6 @@ export const DateFilterControls = ({
         </Checkbox>
       ))}
       <DateRangeFilterInput value={dateRange} onChange={onDateRangeChange} />
-    </>
+    </div>
   )
 }
