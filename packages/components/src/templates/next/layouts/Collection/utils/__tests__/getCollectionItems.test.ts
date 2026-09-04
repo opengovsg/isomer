@@ -319,8 +319,8 @@ describe(getCollectionItems, () => {
       expect(result).toHaveLength(3)
       expect(
         result.map((item) => ({
-          image: item!.image,
-          isContainNeeded: item!.isContainNeeded,
+          image: item.image,
+          isContainNeeded: item.isContainNeeded,
         })),
       ).toStrictEqual([
         { image: itemImage, isContainNeeded: false },

@@ -4,7 +4,7 @@ import { DEFAULT_CHILDREN_PAGES_BLOCK } from "~/interfaces/complex/ChildrenPages
 
 import { ensureChildrenPagesBlock } from "../IndexPage"
 
-describe("ensureChildrenPagesBlock", () => {
+describe(ensureChildrenPagesBlock, () => {
   it("returns the same content array when childrenpages block already exists", () => {
     // Arrange
     const content: IndexPageSchemaType["content"] = [

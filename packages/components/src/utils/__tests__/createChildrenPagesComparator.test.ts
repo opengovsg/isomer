@@ -47,7 +47,7 @@ const generateChildrenPages = (extraPages: ChildPage[] = []): ChildPage[] => {
 }
 
 describe("ChildrenPages.utils", () => {
-  describe("createChildrenPagesComparator", () => {
+  describe(createChildrenPagesComparator, () => {
     it("should sort the children pages in the order specified", () => {
       // Arrange
       const ordering = ["3", "1", "4", "2", "5", "6"]
@@ -57,7 +57,7 @@ describe("ChildrenPages.utils", () => {
       const actual = cloneDeep(generateChildrenPages()).sort(comparator)
 
       // Assert
-      expect(actual.map(({ id }) => id)).toEqual(ordering)
+      expect(actual.map(({ id }) => id)).toStrictEqual(ordering)
     })
 
     it("should add children pages that are not in ordering at the back of the array", () => {
@@ -78,7 +78,7 @@ describe("ChildrenPages.utils", () => {
       const actual = arr.sort(comparator)
 
       // Assert
-      expect(actual.map(({ id }) => id)).toEqual([...ordering, "22"])
+      expect(actual.map(({ id }) => id)).toStrictEqual([...ordering, "22"])
     })
 
     it("should precompute the map for O(1) lookups", () => {
@@ -93,8 +93,8 @@ describe("ChildrenPages.utils", () => {
       const sorted2 = cloneDeep(generateChildrenPages()).sort(comparator)
 
       // Assert - both sorts should produce the same result
-      expect(sorted1.map(({ id }) => id)).toEqual(ordering)
-      expect(sorted2.map(({ id }) => id)).toEqual(ordering)
+      expect(sorted1.map(({ id }) => id)).toStrictEqual(ordering)
+      expect(sorted2.map(({ id }) => id)).toStrictEqual(ordering)
     })
   })
 })

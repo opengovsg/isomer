@@ -76,7 +76,7 @@ const DEFAULT_SITEMAP: IsomerSitemap = {
   ],
 }
 
-describe("getNodeFromSiteMap", () => {
+describe(getNodeFromSiteMap, () => {
   it("should give the correct leaf node if permalink is a page with no children", () => {
     // Arrange
     const permalink = "/parent/rationality/child-page-1"

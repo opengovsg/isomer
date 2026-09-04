@@ -42,13 +42,13 @@ const REJECTED = [
   "https://",
 ]
 
-describe("AskgovSchema", () => {
+describe(AskgovSchema, () => {
   it.each(ACCEPTED)("accepts %j", (value) => {
-    expect(isValidAgencyInput(value)).toBe(true)
+    expect(isValidAgencyInput(value)).toBeTruthy()
   })
 
   it.each(REJECTED)("rejects %j", (value) => {
-    expect(isValidAgencyInput(value)).toBe(false)
+    expect(isValidAgencyInput(value)).toBeFalsy()
   })
 
   // The schema gates what a user can save and `getAskgovIdFromString` decides

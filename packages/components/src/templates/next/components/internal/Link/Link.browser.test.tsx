@@ -6,7 +6,7 @@ import { Link } from "./Link"
 
 const NestedLinkText = () => <span>Nested link text</span>
 
-describe("Link", () => {
+describe(Link, () => {
   it.each([
     ["plain text", "Access the full list"],
     ["URL-like text", "https://www.example.com"],

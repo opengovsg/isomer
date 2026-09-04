@@ -6,7 +6,7 @@ import {
   TAG_CATEGORY_DISPLAY_OPTIONS,
 } from "../constants"
 
-describe("resolveTagCategoryDisplay", () => {
+describe(resolveTagCategoryDisplay, () => {
   it("defaults missing display to pills for legacy tag categories", () => {
     expect(resolveTagCategoryDisplay(undefined)).toBe(
       DEFAULT_TAG_CATEGORY_DISPLAY,

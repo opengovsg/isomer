@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { getParsedDate } from "../getParsedDate"
 
-describe("getParsedDate", () => {
+describe(getParsedDate, () => {
   it("parses dd/MM/yyyy format correctly", () => {
     const result = getParsedDate("25/12/2023")
     expect(result).toStrictEqual(new Date(2023, 11, 25))

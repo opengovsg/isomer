@@ -7,7 +7,7 @@ import {
   SiteEntitySettingsSchema,
 } from "../site"
 
-describe("SiteEntitySettingsSchema", () => {
+describe(SiteEntitySettingsSchema, () => {
   // NOTE: `Value.Check` ignores the `enum` keyword, so asserting on the emitted
   // schema is the only guard here that the allowed types reach consumers. Ajv
   // (in Studio) is what actually enforces it at runtime.
@@ -34,7 +34,7 @@ describe("SiteEntitySettingsSchema", () => {
           email: "hello@example.gov.sg",
         },
       }),
-    ).toBe(true)
+    ).toBeTruthy()
   })
 
   it.each(["S", "SGP", "S1", "  "])(
@@ -42,17 +42,17 @@ describe("SiteEntitySettingsSchema", () => {
     (addressCountry) => {
       expect(
         Value.Check(SiteEntitySettingsSchema, { address: { addressCountry } }),
-      ).toBe(false)
+      ).toBeFalsy()
     },
   )
 
   it("allows the organisation type to be derived at render time", () => {
-    expect(Value.Check(SiteEntitySettingsSchema, {})).toBe(true)
+    expect(Value.Check(SiteEntitySettingsSchema, {})).toBeTruthy()
   })
 
   it("keeps site entity metadata optional for existing settings", () => {
     expect(
       Value.Check(AgencySettingsSchema, { siteName: "Existing site" }),
-    ).toBe(true)
+    ).toBeTruthy()
   })
 })

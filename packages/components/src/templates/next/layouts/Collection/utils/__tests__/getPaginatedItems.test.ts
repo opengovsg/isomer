@@ -12,36 +12,36 @@ const items = [
 
 const itemsPerPage = 2
 
-describe("getPaginatedItems", () => {
+describe(getPaginatedItems, () => {
   it("returns the first page when currPage is NaN", () => {
-    expect(getPaginatedItems(items, itemsPerPage, NaN)).toEqual([
+    expect(getPaginatedItems(items, itemsPerPage, NaN)).toStrictEqual([
       items[0],
       items[1],
     ])
   })
 
   it("returns the expected slice for a valid page number", () => {
-    expect(getPaginatedItems(items, itemsPerPage, 2)).toEqual([
+    expect(getPaginatedItems(items, itemsPerPage, 2)).toStrictEqual([
       items[2],
       items[3],
     ])
   })
 
   it("clamps page 0 to page 1", () => {
-    expect(getPaginatedItems(items, itemsPerPage, 0)).toEqual([
+    expect(getPaginatedItems(items, itemsPerPage, 0)).toStrictEqual([
       items[0],
       items[1],
     ])
   })
 
   it("clamps a negative page to page 1", () => {
-    expect(getPaginatedItems(items, itemsPerPage, -1)).toEqual([
+    expect(getPaginatedItems(items, itemsPerPage, -1)).toStrictEqual([
       items[0],
       items[1],
     ])
   })
 
   it("returns an empty array when the page is beyond the last page", () => {
-    expect(getPaginatedItems(items, itemsPerPage, 99)).toEqual([])
+    expect(getPaginatedItems(items, itemsPerPage, 99)).toStrictEqual([])
   })
 })

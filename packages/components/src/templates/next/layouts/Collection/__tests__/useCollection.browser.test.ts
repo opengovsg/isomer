@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest"
 
 import { useCollection } from "../useCollection"
 
-describe("useCollection", () => {
+describe(useCollection, () => {
   beforeEach(() => {
     window.history.replaceState({}, "", "/")
   })
@@ -20,7 +20,7 @@ describe("useCollection", () => {
       const { result } = renderHook(() => useCollection({ items: [] }))
 
       // Assert
-      expect(result.current.appliedFilters).toEqual([])
+      expect(result.current.appliedFilters).toStrictEqual([])
     })
 
     it("returns empty array when filters param is an empty string", () => {
@@ -31,7 +31,7 @@ describe("useCollection", () => {
       const { result } = renderHook(() => useCollection({ items: [] }))
 
       // Assert
-      expect(result.current.appliedFilters).toEqual([])
+      expect(result.current.appliedFilters).toStrictEqual([])
     })
 
     it("returns empty array when filters param is an empty JSON array", () => {
@@ -42,7 +42,7 @@ describe("useCollection", () => {
       const { result } = renderHook(() => useCollection({ items: [] }))
 
       // Assert
-      expect(result.current.appliedFilters).toEqual([])
+      expect(result.current.appliedFilters).toStrictEqual([])
     })
 
     it("parses valid JSON filters from the URL", () => {
@@ -58,7 +58,7 @@ describe("useCollection", () => {
       const { result } = renderHook(() => useCollection({ items: [] }))
 
       // Assert
-      expect(result.current.appliedFilters).toEqual(filters)
+      expect(result.current.appliedFilters).toStrictEqual(filters)
     })
 
     it.each([
@@ -86,7 +86,7 @@ describe("useCollection", () => {
       const { result } = renderHook(() => useCollection({ items: [] }))
 
       // Assert
-      expect(result.current.appliedFilters).toEqual([])
+      expect(result.current.appliedFilters).toStrictEqual([])
     })
 
     it("returns empty array instead of crashing when filters param is not valid JSON", () => {
@@ -97,7 +97,7 @@ describe("useCollection", () => {
       const { result } = renderHook(() => useCollection({ items: [] }))
 
       // Assert
-      expect(result.current.appliedFilters).toEqual([])
+      expect(result.current.appliedFilters).toStrictEqual([])
     })
 
     it("returns empty array instead of crashing for a partial JSON string", () => {
@@ -108,7 +108,7 @@ describe("useCollection", () => {
       const { result } = renderHook(() => useCollection({ items: [] }))
 
       // Assert
-      expect(result.current.appliedFilters).toEqual([])
+      expect(result.current.appliedFilters).toStrictEqual([])
     })
   })
 })

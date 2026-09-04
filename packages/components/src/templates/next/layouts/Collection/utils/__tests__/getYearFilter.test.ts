@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest"
 import { NO_SPECIFIED_YEAR_FILTER_ID } from "../constants"
 import { getYearFilter } from "../getYearFilter"
 
-describe("getYearFilter", () => {
+describe(getYearFilter, () => {
   it("should return empty filter items when no items provided", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = []
@@ -13,7 +13,7 @@ describe("getYearFilter", () => {
     const result = getYearFilter(items)
 
     // Assert
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       id: "year",
       label: "Year",
       items: [],
@@ -44,7 +44,7 @@ describe("getYearFilter", () => {
     const result = getYearFilter(items)
 
     // Assert
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       id: "year",
       label: "Year",
       items: [
@@ -67,7 +67,7 @@ describe("getYearFilter", () => {
     const result = getYearFilter(items)
 
     // Assert
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       id: "year",
       label: "Year",
       items: [{ id: "2023", label: "2023", count: 3 }],
@@ -86,7 +86,7 @@ describe("getYearFilter", () => {
     const result = getYearFilter(items)
 
     // Assert
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       id: "year",
       label: "Year",
       items: [],

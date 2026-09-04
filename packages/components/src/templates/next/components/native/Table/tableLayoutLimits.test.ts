@@ -7,7 +7,7 @@ import {
   normalizeRowspan,
 } from "./tableLayoutLimits"
 
-describe("normalizeColspan", () => {
+describe(normalizeColspan, () => {
   it.each([
     [undefined, 1],
     [null, 1],
@@ -25,7 +25,7 @@ describe("normalizeColspan", () => {
   })
 })
 
-describe("normalizeRowspan", () => {
+describe(normalizeRowspan, () => {
   it.each([
     [undefined, 1],
     [null, 1],

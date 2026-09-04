@@ -94,7 +94,7 @@ describe("Table colgroup", () => {
     const colWidths = [...html.matchAll(/<col style="width:([^"]+)"\/?>/g)].map(
       (match) => match[1],
     )
-    expect(colWidths).toEqual([`${100 / 3}%`, `${100 / 3}%`, `${100 / 3}%`])
+    expect(colWidths).toStrictEqual([`${100 / 3}%`, `${100 / 3}%`, `${100 / 3}%`])
     expect(html).toContain('colSpan="2"')
     expect(html).toContain('rowspan="2"')
   })

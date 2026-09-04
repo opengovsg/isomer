@@ -5,7 +5,7 @@ import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
 
 import { getTagFilters } from "../getTagFilters"
 
-describe("getTagFilters", () => {
+describe(getTagFilters, () => {
   it("returns filters grouped by tag category", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
@@ -29,7 +29,7 @@ describe("getTagFilters", () => {
     const result = getTagFilters(items)
 
     // Assert
-    expect(result).toEqual([
+    expect(result).toStrictEqual([
       {
         id: "Body parts",
         label: "Body parts",
@@ -82,7 +82,7 @@ describe("getTagFilters", () => {
     const result = getTagFilters(items, tagCategories)
 
     // Assert
-    expect(result).toEqual([
+    expect(result).toStrictEqual([
       {
         id: "Condition",
         label: "Condition",
@@ -143,7 +143,7 @@ describe("getTagFilters", () => {
     const result = getTagFilters(items, tagCategories)
 
     // Assert
-    expect(result).toEqual([
+    expect(result).toStrictEqual([
       {
         id: "Body parts",
         label: "Body parts",
@@ -187,7 +187,7 @@ describe("getTagFilters", () => {
     const result = getTagFilters(items)
 
     // Assert
-    expect(result).toEqual([
+    expect(result).toStrictEqual([
       {
         id: "Fruits",
         label: "Fruits",
@@ -213,7 +213,7 @@ describe("getTagFilters", () => {
     const result = getTagFilters(items)
 
     // Assert
-    expect(result).toEqual([])
+    expect(result).toStrictEqual([])
   })
 
   it("returns empty array for empty input", () => {
@@ -224,7 +224,7 @@ describe("getTagFilters", () => {
     const result = getTagFilters(items)
 
     // Assert
-    expect(result).toEqual([])
+    expect(result).toStrictEqual([])
   })
 
   it("handles mixed scenarios: some categories in tagCategories, some not", () => {
@@ -273,7 +273,7 @@ describe("getTagFilters", () => {
     const result = getTagFilters(items, tagCategories)
 
     // Assert
-    expect(result).toEqual([
+    expect(result).toStrictEqual([
       {
         id: "Condition",
         label: "Condition",
@@ -335,7 +335,7 @@ describe("getTagFilters", () => {
     const result = getTagFilters(items, tagCategories)
 
     // Assert
-    expect(result).toEqual([
+    expect(result).toStrictEqual([
       {
         id: "Condition",
         label: "Condition",
@@ -384,7 +384,7 @@ describe("getTagFilters", () => {
     const result = getTagFilters(items)
 
     // Assert
-    expect(result).toEqual([
+    expect(result).toStrictEqual([
       {
         id: "Body parts",
         label: "Body parts",
@@ -454,7 +454,7 @@ describe("getTagFilters", () => {
     const result = getTagFilters(items)
 
     // Assert
-    expect(result).toEqual([
+    expect(result).toStrictEqual([
       {
         id: "Body parts",
         label: "Body parts",
@@ -494,7 +494,7 @@ describe("getTagFilters", () => {
     const result = getTagFilters(items, tagCategories)
 
     // Assert
-    expect(result).toEqual([
+    expect(result).toStrictEqual([
       {
         id: "Body parts",
         label: "Body parts",

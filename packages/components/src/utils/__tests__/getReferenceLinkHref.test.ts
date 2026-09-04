@@ -23,7 +23,7 @@ const EXAMPLE_SITEMAP_ARRAY: IsomerSitemap[] = getSitemapAsArray({
   ],
 })
 
-describe("getReferenceLinkHref", () => {
+describe(getReferenceLinkHref, () => {
   it("should return undefined if referenceLink is undefined", () => {
     const result = getReferenceLinkHref(
       undefined,
