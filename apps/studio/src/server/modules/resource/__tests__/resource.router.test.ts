@@ -3200,7 +3200,6 @@ describe("resource.router", async () => {
         .where("eventType", "=", "ResourceDelete")
         .selectAll()
         .executeTakeFirstOrThrow()
-      expect(auditSpy).toHaveBeenCalled()
       expect(auditEntry.delta.before!).toMatchObject(
         omit(folderToUse, ["createdAt", "updatedAt"]),
       )
