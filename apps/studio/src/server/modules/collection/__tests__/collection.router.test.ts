@@ -1500,7 +1500,6 @@ describe("collection.router", async () => {
         page = setup.page
         site = setup.site
         await setupAdminPermissions({ userId: session.userId, siteId: site.id })
-        expect(page.draftBlobId).toBeNull()
 
         originalBlob = await db
           .transaction()
@@ -1539,6 +1538,7 @@ describe("collection.router", async () => {
       })
 
       it("persists the new draft blob on the collection link", () => {
+        expect(page.draftBlobId).toBeNull()
         expect(actual.draftBlobId).toStrictEqual(expected.id)
         expect(expected.content.content).toStrictEqual([])
       })
