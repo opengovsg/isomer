@@ -1059,7 +1059,7 @@ describe("site.router", async () => {
         data: {
           ...MOCK_INTEGRATION_DATA,
           fake: "fake",
-        },
+        } as typeof MOCK_INTEGRATION_DATA & { fake: string },
       })
 
       // Assert

@@ -1,3 +1,8 @@
+import type {
+  AuditLog,
+  Blob,
+  Resource,
+} from "~prisma/generated/selectableTypes"
 import { TRPCError } from "@trpc/server"
 import { subDays, subMinutes } from "date-fns"
 import MockDate from "mockdate"
@@ -196,17 +201,9 @@ describe("gazette.router", async () => {
         ReturnType<typeof seedToppanWithCollection>
       >["collection"]
       let user: Awaited<ReturnType<typeof seedToppanWithCollection>>["user"]
-      let resource: Awaited<
-        ReturnType<
-          ReturnType<
-            typeof db.selectFrom<"Resource">
-          >["executeTakeFirstOrThrow"]
-        >
-      >
+      let resource: Resource
       let pageRef: string | undefined
-      let auditLogs: Awaited<
-        ReturnType<ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]>
-      >
+      let auditLogs: AuditLog[]
 
       beforeAll(async () => {
         const seed = await seedToppanWithCollection()
@@ -463,13 +460,7 @@ describe("gazette.router", async () => {
   describe("update", () => {
     describe("rewrites the blob metadata and the resource title", () => {
       let user: Awaited<ReturnType<typeof seedToppanWithCollection>>["user"]
-      let resource: Awaited<
-        ReturnType<
-          ReturnType<
-            typeof db.selectFrom<"Resource">
-          >["executeTakeFirstOrThrow"]
-        >
-      >
+      let resource: Resource
       let page: {
         ref?: string
         category?: string
@@ -788,14 +779,10 @@ describe("gazette.router", async () => {
 
   describe("cancelScheduledPublish", () => {
     describe("deletes the resource, blob, and push job atomically and emits both audit events", () => {
-      let gazetteId: number
+      let gazetteId: string
       let user: Awaited<ReturnType<typeof seedToppanWithCollection>>["user"]
-      let resourceAfter: Awaited<
-        ReturnType<ReturnType<typeof db.selectFrom<"Resource">>["execute"]>
-      >
-      let blobAfter: Awaited<
-        ReturnType<ReturnType<typeof db.selectFrom<"Blob">>["execute"]>
-      >
+      let resourceAfter: Resource[]
+      let blobAfter: Blob[]
       let pushJobAfter: Awaited<
         ReturnType<
           ReturnType<typeof db.selectFrom<"PushDocumentJob">>["execute"]

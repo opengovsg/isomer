@@ -1,4 +1,5 @@
 import type { Site, User } from "~/server/modules/database"
+import type { AuditLog } from "~prisma/generated/selectableTypes"
 import { resetTables } from "tests/integration/helpers/db"
 import {
   setupAdminPermissions,
@@ -167,9 +168,7 @@ describe("inactiveUsers.service", () => {
 
     describe("should create a PermissionDelete audit log entry attributed to the system user", () => {
       let user: User
-      let auditLogs: Awaited<
-        ReturnType<ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]>
-      >
+      let auditLogs: AuditLog[]
       let delta: {
         before: { userId: string; deletedAt: string | null }
         after: { userId: string; deletedAt: string | null }
