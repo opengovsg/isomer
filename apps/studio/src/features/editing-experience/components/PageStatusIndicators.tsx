@@ -1,5 +1,5 @@
 import { HStack, Skeleton } from "@chakra-ui/react"
-import { DraftIndicator } from "~/components/HasDraftIndicator"
+import { DraftIndicator } from "~/components/DraftIndicator"
 import { LiveStatusBadges } from "~/components/LiveStatusBadges"
 import { withSuspense } from "~/hocs/withSuspense"
 import { trpc } from "~/utils/trpc"

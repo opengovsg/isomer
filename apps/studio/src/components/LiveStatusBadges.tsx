@@ -97,11 +97,11 @@ export const LiveStatusBadges = ({
           <Badge
             // Scheduled-to-unpublish is styled to match the "Not live" pill,
             // since that's where the page is headed; scheduled-to-publish
-            // keeps the info-blue treatment.
+            // matches the "Published" pill's background.
             bgColor={
               scheduledAction === ScheduledAction.Unpublish
                 ? "interaction.neutral-subtle.default"
-                : "utility.feedback.info-subtle"
+                : "interaction.success-subtle.default"
             }
             color={
               scheduledAction === ScheduledAction.Unpublish
