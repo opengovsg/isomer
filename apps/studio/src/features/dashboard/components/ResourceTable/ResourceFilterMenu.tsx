@@ -1,5 +1,6 @@
 import type { ResourceStatusFilterOption } from "~/schemas/resource"
 import { Box, HStack, Icon, Text, useMultiStyleConfig } from "@chakra-ui/react"
+import { dataAttr } from "@chakra-ui/utils"
 import { BxCheckAnimated, Menu } from "@opengovsg/design-system-react"
 
 import { RESOURCE_TABLE_STATUS_FILTER_OPTIONS } from "./constants"
@@ -12,7 +13,11 @@ import { RESOURCE_TABLE_STATUS_FILTER_OPTIONS } from "./constants"
 const FilterCheckbox = ({ isChecked }: { isChecked: boolean }) => {
   const styles = useMultiStyleConfig("Checkbox", { size: "sm" })
   return (
-    <Box __css={styles.control} flexShrink={0}>
+    <Box
+      __css={styles.control}
+      data-checked={dataAttr(isChecked)}
+      flexShrink={0}
+    >
       <Icon as={BxCheckAnimated} __css={styles.icon} isChecked={isChecked} />
     </Box>
   )
@@ -48,17 +53,20 @@ export const ResourceFilterMenu = ({
               size="sm"
               p="0"
               minH="auto"
-              // Fixed so the label text changing length ("All" vs "N
-              // selected") doesn't resize the button and drag the anchored
-              // popover along with it. Sized to fit the longest possible
-              // label ("5 selected", one word per filter option).
-              minW="5rem"
-              textAlign="left"
               colorScheme="sub"
               fontSize="0.75rem"
               isOpen={isOpen}
             >
-              {value.length === 0 ? "All" : `${value.length} selected`}
+              {/* Fixed width so the label text changing length doesn't
+              resize the button and drag the anchored popover along with it. */}
+              <Box
+                as="span"
+                display="inline-block"
+                minW="5rem"
+                textAlign="left"
+              >
+                {value.length === 0 ? "All" : `${value.length} selected`}
+              </Box>
             </Menu.Button>
             <Menu.List minW="13.3125rem" py="0.5rem">
               <Menu.Item
