@@ -9,6 +9,7 @@ jobs:
     # Additional guard to ensure main is never deleted
     if: github.head_ref != 'main'
     runs-on: ubuntu-latest
+    permissions: {} # only talks to Neon's API via api_key; no GITHUB_TOKEN use
     steps:
       - uses: neondatabase/delete-branch-action@4468d825d5a88ef4012f1705a82f02ec3072f776
         with:
