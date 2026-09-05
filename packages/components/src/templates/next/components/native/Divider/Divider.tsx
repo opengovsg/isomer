@@ -1,5 +1,17 @@
 import type { DividerProps } from "~/interfaces"
 
-export const Divider = ({}: DividerProps) => {
-  return <hr className="my-6 bg-divider-medium" />
+import {
+  contentBlockIndexAttr,
+  type ContentBlockIndexProps,
+} from "../../../render/contentBlockIndex"
+
+export const Divider = ({
+  contentBlockIndex,
+}: DividerProps & ContentBlockIndexProps) => {
+  return (
+    <hr
+      className="my-6 bg-divider-medium"
+      {...contentBlockIndexAttr(contentBlockIndex)}
+    />
+  )
 }

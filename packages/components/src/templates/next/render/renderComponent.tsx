@@ -33,6 +33,7 @@ import { Prose } from "../components/native/Prose"
 
 interface RenderComponentProps {
   elementKey?: number
+  contentIndex: number
   component: IsomerComponent
   layout: IsomerPageLayoutType
   site: IsomerSiteProps
@@ -43,72 +44,245 @@ interface RenderComponentProps {
 
 export const renderComponent = ({
   elementKey,
+  contentIndex,
   component,
   ...rest
 }: RenderComponentProps) => {
   switch (component.type) {
     case "logocloud":
-      return <LogoCloud key={elementKey} {...component} {...rest} />
+      return (
+        <LogoCloud
+          key={elementKey}
+          {...component}
+          {...rest}
+          contentBlockIndex={contentIndex}
+        />
+      )
     case "accordion":
-      return <Accordion key={elementKey} {...component} {...rest} />
+      return (
+        <Accordion
+          key={elementKey}
+          {...component}
+          {...rest}
+          contentBlockIndex={contentIndex}
+        />
+      )
     case "antiscambanner":
       return (
-        <AntiScamDisclaimerBanner key={elementKey} {...component} {...rest} />
+        <AntiScamDisclaimerBanner
+          key={elementKey}
+          contentBlockIndex={contentIndex}
+        />
       )
     case "blockquote":
-      return <Blockquote key={elementKey} {...component} {...rest} />
+      return (
+        <Blockquote
+          key={elementKey}
+          {...component}
+          {...rest}
+          contentBlockIndex={contentIndex}
+        />
+      )
     case "button":
-      return <Button key={elementKey} {...component} {...rest} />
+      return (
+        <Button
+          key={elementKey}
+          {...component}
+          {...rest}
+          contentBlockIndex={contentIndex}
+        />
+      )
     case "callout":
-      return <Callout key={elementKey} {...component} {...rest} />
+      return (
+        <Callout
+          key={elementKey}
+          {...component}
+          {...rest}
+          contentBlockIndex={contentIndex}
+        />
+      )
     case "contentpic":
-      return <Contentpic key={elementKey} {...component} {...rest} />
+      return (
+        <Contentpic
+          key={elementKey}
+          {...component}
+          {...rest}
+          contentBlockIndex={contentIndex}
+        />
+      )
     case "formsg":
-      return <FormSG key={elementKey} {...component} {...rest} />
+      return (
+        <FormSG
+          key={elementKey}
+          {...component}
+          {...rest}
+          contentBlockIndex={contentIndex}
+        />
+      )
     case "hero":
-      return <Hero key={elementKey} {...component} {...rest} />
+      return (
+        <Hero
+          key={elementKey}
+          {...component}
+          {...rest}
+          contentBlockIndex={contentIndex}
+        />
+      )
     case "iframe":
-      return <Iframe key={elementKey} {...component} {...rest} />
+      return (
+        <Iframe
+          key={elementKey}
+          {...component}
+          {...rest}
+          contentBlockIndex={contentIndex}
+        />
+      )
     case "image":
-      return <Image key={elementKey} {...component} {...rest} />
+      return (
+        <Image
+          key={elementKey}
+          {...component}
+          {...rest}
+          contentBlockIndex={contentIndex}
+        />
+      )
     case "infobar":
-      return <Infobar key={elementKey} {...component} {...rest} />
+      return (
+        <Infobar
+          key={elementKey}
+          {...component}
+          {...rest}
+          contentBlockIndex={contentIndex}
+        />
+      )
     case "infocards":
-      return <InfoCards key={elementKey} {...component} {...rest} />
+      return (
+        <InfoCards
+          key={elementKey}
+          {...component}
+          {...rest}
+          contentBlockIndex={contentIndex}
+        />
+      )
     case "infocols":
-      return <InfoCols key={elementKey} {...component} {...rest} />
+      return (
+        <InfoCols
+          key={elementKey}
+          {...component}
+          {...rest}
+          contentBlockIndex={contentIndex}
+        />
+      )
     case "infopic":
-      return <Infopic key={elementKey} {...component} {...rest} />
+      return (
+        <Infopic
+          key={elementKey}
+          {...component}
+          {...rest}
+          contentBlockIndex={contentIndex}
+        />
+      )
     case "keystatistics":
-      return <KeyStatistics key={elementKey} {...component} {...rest} />
+      return (
+        <KeyStatistics
+          key={elementKey}
+          {...component}
+          {...rest}
+          contentBlockIndex={contentIndex}
+        />
+      )
     case "map":
-      return <Map key={elementKey} {...component} {...rest} />
+      return (
+        <Map
+          key={elementKey}
+          {...component}
+          {...rest}
+          contentBlockIndex={contentIndex}
+        />
+      )
     case "childrenpages":
-      return <ChildrenPages key={elementKey} {...component} {...rest} />
+      return (
+        <ChildrenPages
+          key={elementKey}
+          {...component}
+          {...rest}
+          contentBlockIndex={contentIndex}
+        />
+      )
     case "prose":
       return (
         <Prose
           key={elementKey}
           {...component}
           {...rest}
+          contentBlockIndex={contentIndex}
           shouldStripContentHtmlTags
         />
       )
     case "audio":
-      return <Audio key={elementKey} {...component} {...rest} />
+      return (
+        <Audio
+          key={elementKey}
+          {...component}
+          {...rest}
+          contentBlockIndex={contentIndex}
+        />
+      )
     case "video":
-      return <Video key={elementKey} {...component} {...rest} />
+      return (
+        <Video
+          key={elementKey}
+          {...component}
+          {...rest}
+          contentBlockIndex={contentIndex}
+        />
+      )
     case "dynamicdatabanner":
-      return <DynamicDataBanner key={elementKey} {...component} {...rest} />
+      return (
+        <DynamicDataBanner
+          key={elementKey}
+          {...component}
+          {...rest}
+          contentBlockIndex={contentIndex}
+        />
+      )
 
     case "collectionblock":
-      return <CollectionBlock key={elementKey} {...component} {...rest} />
+      return (
+        <CollectionBlock
+          key={elementKey}
+          {...component}
+          {...rest}
+          contentBlockIndex={contentIndex}
+        />
+      )
     case "imagegallery":
-      return <ImageGallery key={elementKey} {...component} {...rest} />
+      return (
+        <ImageGallery
+          key={elementKey}
+          {...component}
+          {...rest}
+          contentBlockIndex={contentIndex}
+        />
+      )
     case "contactinformation":
-      return <ContactInformation key={elementKey} {...component} {...rest} />
+      return (
+        <ContactInformation
+          key={elementKey}
+          {...component}
+          {...rest}
+          contentBlockIndex={contentIndex}
+        />
+      )
     case "dynamiccomponentlist":
-      return <DynamicComponentList key={elementKey} {...component} {...rest} />
+      return (
+        <DynamicComponentList
+          key={elementKey}
+          {...component}
+          {...rest}
+          contentBlockIndex={contentIndex}
+        />
+      )
     default:
       const _: never = component
       return <></>

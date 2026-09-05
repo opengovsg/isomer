@@ -4,6 +4,10 @@ import { BiMinus, BiPlus } from "react-icons/bi"
 import { tv } from "~/lib/tv"
 import { focusVisibleHighlight } from "~/utils/tailwind"
 
+import {
+  contentBlockIndexAttr,
+  type ContentBlockIndexProps,
+} from "../../../render/contentBlockIndex"
 import { Prose } from "../../native/Prose"
 
 const summaryStyle = tv({
@@ -24,16 +28,23 @@ const createAccordionStyles = tv({
 const accordionStyles = createAccordionStyles()
 
 interface AccordionProps
-  extends BaseAccordionProps, VariantProps<typeof createAccordionStyles> {}
+  extends
+    BaseAccordionProps,
+    ContentBlockIndexProps,
+    VariantProps<typeof createAccordionStyles> {}
 
 export const Accordion = ({
   summary,
   details,
   site,
   headingLevel,
+  contentBlockIndex,
 }: AccordionProps) => {
   return (
-    <details className={accordionStyles.details()}>
+    <details
+      className={accordionStyles.details()}
+      {...contentBlockIndexAttr(contentBlockIndex)}
+    >
       <summary className={summaryStyle()}>
         {summary}
         <BiMinus

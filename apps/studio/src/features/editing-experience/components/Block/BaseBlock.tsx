@@ -18,6 +18,7 @@ export type BaseBlockProps = {
     description: string
   }
   isHidden?: boolean
+  isHighlighted?: boolean
 } & (
   | {
       icon: IconType
@@ -40,6 +41,7 @@ export const BaseBlock = ({
   onMouseLeave,
   invalidProps,
   isHidden,
+  isHighlighted,
 }: BaseBlockProps): JSX.Element | null => {
   const actualDraggableProps = draggableProps ?? {}
 
@@ -86,7 +88,9 @@ export const BaseBlock = ({
       w="100%"
       borderRadius="6px"
       border="1px solid"
-      borderColor="base.divider.medium"
+      borderColor={
+        isHighlighted ? "interaction.main-subtle.hover" : "base.divider.medium"
+      }
       transitionProperty="common"
       transitionDuration="normal"
       aria-invalid={!!invalidProps}
@@ -106,7 +110,7 @@ export const BaseBlock = ({
         bg: "utility.feedback.critical-subtle",
         borderColor: "utility.feedback.critical",
       }}
-      bg="white"
+      bg={isHighlighted ? "interaction.muted.main.hover" : "white"}
       py={variant === "vertical" ? "1.25rem" : "0.75rem"}
       px={variant === "vertical" ? "1.25rem" : "0.75rem"}
       flexDirection="row"
