@@ -1,16 +1,15 @@
 import { test } from "@playwright/test"
 import { IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
-import { RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { CollectionPO } from "../fixtures/collection.po"
+import { TEST_EMAILS, roleTag } from "~e2e/fixtures/auth"
 import {
   enableGrowthBookFeature,
   resetGrowthBookPage,
-} from "../fixtures/network"
-import { seedCollection } from "../fixtures/page-seed"
-import { provisionE2ESite } from "../fixtures/site"
-import { ensureUserOnboarded } from "../fixtures/user"
+} from "~e2e/fixtures/network"
+import { CollectionPO } from "~e2e/fixtures/po"
+import { seedCollection } from "~e2e/fixtures/resource"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
+import { RoleType } from "~prisma/generated/generatedEnums"
 
 let siteId: number
 let indexPageId: string

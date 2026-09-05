@@ -1,11 +1,10 @@
 import { expect, test } from "@playwright/test"
-import { RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
+import { TEST_EMAILS, roleTag } from "~e2e/fixtures/auth"
 import {
   mockSiteUpdateConfigFailure,
   unmockSiteUpdateConfigFailure,
-} from "../fixtures/network"
+} from "~e2e/fixtures/network"
+import { PUBLISH_GATED_SETTINGS_SECTIONS, SitePO } from "~e2e/fixtures/po"
 import {
   resetSiteAgencySettings,
   resetSiteFooter,
@@ -14,11 +13,11 @@ import {
   resetSiteNavbar,
   resetSiteNotification,
   resetSiteTheme,
-} from "../fixtures/reset"
-import { provisionE2ESite } from "../fixtures/site"
-import { expectSiteName } from "../fixtures/site-expect"
-import { PUBLISH_GATED_SETTINGS_SECTIONS, SitePO } from "../fixtures/site.po"
-import { ensureUserOnboarded } from "../fixtures/user"
+} from "~e2e/fixtures/reset"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import { expectSiteName } from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
+import { RoleType } from "~prisma/generated/generatedEnums"
 
 const RESET_BY_SECTION: Record<
   (typeof PUBLISH_GATED_SETTINGS_SECTIONS)[number],

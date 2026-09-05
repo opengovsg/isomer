@@ -1,6 +1,5 @@
 import { defineConfig, devices } from "@playwright/test"
-
-import { ROLES, storageStateFor } from "./tests/e2e/fixtures/auth"
+import { ROLES, storageStateFor } from "~e2e/fixtures/auth"
 
 const baseUrl = process.env.PLAYWRIGHT_TEST_BASE_URL || "http://localhost:3000"
 
@@ -18,9 +17,7 @@ const baseUse = {
 }
 
 export default defineConfig({
-  // "github" alone only emits error annotations — pair it with "list" so CI
-  // logs also show each test's pass/fail line with its duration.
-  reporter: process.env.CI ? [["github"], ["list"]] : "list",
+  reporter: process.env.CI ? "github" : "list",
   testDir: "./tests/e2e",
   outputDir: "./tests/e2e/test-results", // CI uploads this path as the e2e-test-results artifact (.github/workflows/ci.yml)
   timeout: 35e3,
@@ -31,13 +28,7 @@ export default defineConfig({
   projects: [
     {
       name: "unauthenticated",
-      testMatch: /smoke\.test\.ts/,
-      use: { ...baseUse },
-    },
-    // singpass.test.ts stays skipped; isolated project so it never runs under role greps
-    {
-      name: "singpass",
-      testMatch: /singpass\.test\.ts/,
+      testMatch: /(smoke|singpass)\.test\.ts/,
       use: { ...baseUse },
     },
     ...ROLES.map((role) => ({

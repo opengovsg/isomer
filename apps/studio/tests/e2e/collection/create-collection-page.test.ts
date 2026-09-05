@@ -1,16 +1,17 @@
 import { expect, test } from "@playwright/test"
 import crypto from "crypto"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
+import { createCollectionPageViaWizard } from "~e2e/fixtures/helpers"
+import { DashboardPO, PageEditorPO } from "~e2e/fixtures/po"
+import { deleteResourcesByTitlePrefix } from "~e2e/fixtures/reset"
+import {
+  countResourcesByParent,
+  getResource,
+  seedCollection,
+} from "~e2e/fixtures/resource"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { ResourceType, RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { DashboardPO } from "../fixtures/dashboard.po"
-import { createCollectionPageViaWizard } from "../fixtures/helpers"
-import { PageEditorPO } from "../fixtures/page-editor.po"
-import { seedCollection } from "../fixtures/page-seed"
-import { deleteResourcesByTitleLike } from "../fixtures/reset"
-import { getResource, listResourcesByParent } from "../fixtures/resource.db"
-import { provisionE2ESite } from "../fixtures/site"
-import { ensureUserOnboarded } from "../fixtures/user"
 
 const UNIQUE_TITLE = () =>
   `E2E Collection Page ${crypto.randomUUID().slice(0, 8)}`
@@ -28,14 +29,12 @@ test.beforeAll(async () => {
 })
 
 test.describe("admin", { tag: roleTag("admin") }, () => {
-  test.describe.configure({ mode: "serial" })
-
   test.beforeEach(async () => {
     await ensureUserOnboarded(TEST_EMAILS.admin)
   })
 
   test.afterEach(async () => {
-    await deleteResourcesByTitleLike(siteId, "E2E Collection Page %")
+    await deleteResourcesByTitlePrefix(siteId, "E2E Collection Page ")
   })
 
   test("admin can create a collection page via the wizard", async ({
@@ -63,7 +62,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     page,
   }) => {
     const dashboard = new DashboardPO(page)
-    const childrenBefore = await listResourcesByParent({
+    const childrenBefore = await countResourcesByParent({
       siteId,
       parentId: collectionId,
       type: ResourceType.CollectionPage,
@@ -77,12 +76,12 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await dashboard.cancelCollectionItemWizard()
 
     // Assert
-    const childrenAfter = await listResourcesByParent({
+    const childrenAfter = await countResourcesByParent({
       siteId,
       parentId: collectionId,
       type: ResourceType.CollectionPage,
     })
-    expect(childrenAfter).toHaveLength(childrenBefore.length)
+    expect(childrenAfter).toBe(childrenBefore)
   })
 })
 
@@ -92,7 +91,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
   })
 
   test.afterEach(async () => {
-    await deleteResourcesByTitleLike(siteId, "E2E Collection Page %")
+    await deleteResourcesByTitlePrefix(siteId, "E2E Collection Page ")
   })
 
   test("editor can create a collection page via the wizard", async ({
