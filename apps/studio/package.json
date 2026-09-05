@@ -58,6 +58,7 @@
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "catalog:atlaskitPragmaticDnd",
     "@atlaskit/pragmatic-drag-and-drop-hitbox": "catalog:atlaskitPragmaticDnd",
+    "@aws-sdk/client-cloudfront": "catalog:aws-sdk",
     "@aws-sdk/client-codebuild": "catalog:aws-sdk",
     "@aws-sdk/client-s3": "catalog:aws-sdk",
     "@aws-sdk/lib-storage": "catalog:aws-sdk",

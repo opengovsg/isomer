@@ -1,6 +1,9 @@
 import type { z } from "zod"
 import type { getPresignedPutUrlSchema } from "~/schemas/asset"
-import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
+import {
+  IMAGE_ACCEPTED_MIME_TYPE_MAPPING,
+  SUPPORTED_OPTIMIZABLE_FORMATS,
+} from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { create as createContentDisposition } from "content-disposition"
 import { randomUUID } from "crypto"
@@ -12,6 +15,7 @@ import {
   deleteFile,
   generateSignedGetUrl,
   generateSignedPutUrl,
+  isNotFoundError,
   putObjectDirect,
 } from "~/lib/s3"
 import { getServerDomPurify } from "~/lib/server-dom-purify"
@@ -151,8 +155,130 @@ export const getPresignedPutUrl = async ({
   return { presignedPutUrl, contentType, contentDisposition }
 }
 
+// Best-effort delete: the derived format may not exist for every asset
+// (e.g. it was never generated), so a missing key is not an error.
+const deleteFileIfExists = async ({ Key }: { Key: string }) => {
+  try {
+    await deleteFile({ Key, Bucket: bucket })
+  } catch (error) {
+    if (!isNotFoundError(error)) throw error
+  }
+}
+
+// NOTE: Check if the key ends in one of our image optimisation formats.
+// If it does, we need to also delete all of the related formats.
 export const markFileAsDeleted = async ({ key }: { key: string }) => {
+  const _suffix = key.split(".").pop()
+  const suffix = _suffix === "jpg" ? "jpeg" : _suffix
+  if (!suffix) return
+
+  if (
+    SUPPORTED_OPTIMIZABLE_FORMATS.includes(
+      suffix as (typeof SUPPORTED_OPTIMIZABLE_FORMATS)[number],
+    )
+  ) {
+    // NOTE: We only convert to webp and avif
+    const prefix = key.substring(0, key.lastIndexOf("."))
+    await deleteFileIfExists({ Key: `${prefix}.webp` })
+    await deleteFileIfExists({ Key: `${prefix}.avif` })
+  }
+
   await deleteFile({ Key: key, Bucket: bucket })
+}
+
+export interface DeleteAssetByUrlResult {
+  url: string
+  key?: string
+  success: boolean
+  error?: string
+}
+
+// Matches the key shape produced by getFileKey: `${siteId}/${uuid}/${fileName}`.
+// Rejects anything else (extra/missing path segments, a non-UUID folder) so an
+// admin-submitted URL can only ever resolve to a key in that canonical shape,
+// never to an arbitrary object that happens to share a pathname.
+const ASSET_KEY_PATTERN =
+  /^\d+\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/[^/]+$/i
+
+// `decodeURIComponent` throws on a raw '%' that isn't part of a valid
+// escape — but filenamify doesn't strip '%' from filenames, so a
+// legitimately uploaded "cover-100%.png" produces a URL `decodeURIComponent`
+// can't parse whole. Decoding only maximal runs of valid %XX triplets (a
+// multi-byte UTF-8 character is exactly such a run, e.g. "%C3%A9") and
+// leaving everything else — including a stray '%' — untouched handles both
+// without throwing.
+const decodePercentEncodedRuns = (input: string): string =>
+  input.replace(/(?:%[0-9a-fA-F]{2})+/g, (run) => {
+    try {
+      return decodeURIComponent(run)
+    } catch {
+      return run
+    }
+  })
+
+// Parses a full asset URL (e.g.
+// https://isomer-user-content.by.gov.sg/36/uuid/picture.png) into its S3 key.
+// Only URLs on the configured asset domain, with a pathname in the canonical
+// `${siteId}/${uuid}/${fileName}` shape, resolve to a key — anything else
+// (wrong host, extra path segments, a non-UUID folder) returns null so a
+// mistyped or malicious URL can't be mapped onto an unrelated S3 object.
+export const parseAssetUrlToKey = (url: string): string | null => {
+  const trimmed = url.trim()
+  let parsed: URL
+  try {
+    parsed = new URL(trimmed)
+  } catch {
+    return null
+  }
+
+  if (parsed.hostname !== env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME) {
+    return null
+  }
+
+  // `parsed.pathname` alone drops everything from an unescaped `#` onward
+  // — WHATWG treats it as the start of a fragment. Isomer never appends a
+  // real navigational fragment to an asset URL (these are direct file
+  // links, not page links with anchors), and filenamify's
+  // reserved-character list doesn't strip `#`, so a `#` here is always a
+  // literal filename character produced by Studio's own (unencoded) URL
+  // generation — reattaching `.hash` recovers it. `.search` (a real
+  // `?query`) is deliberately left out: filenamify does strip `?`, so a
+  // real asset key can never contain one.
+  const rawPath = parsed.pathname + parsed.hash
+  const key = decodePercentEncodedRuns(rawPath.slice(1))
+  return ASSET_KEY_PATTERN.test(key) ? key : null
+}
+
+// Admin-only counterpart to markFileAsDeleted: takes arbitrary asset URLs
+// (not scoped to a single site the caller is permissioned on) and soft-deletes
+// each one, tolerating per-URL failures so one bad URL doesn't abort the rest.
+export const deleteAssetsByUrl = async (
+  urls: string[],
+): Promise<DeleteAssetByUrlResult[]> => {
+  return Promise.all(
+    urls.map(async (url): Promise<DeleteAssetByUrlResult> => {
+      const key = parseAssetUrlToKey(url)
+      if (!key) {
+        return { url, success: false, error: "Invalid asset URL" }
+      }
+
+      try {
+        await markFileAsDeleted({ key })
+        return { url, key, success: true }
+      } catch (error) {
+        logger.error(
+          { url, key, error },
+          "Failed to soft-delete asset via deleteAssetsByUrl",
+        )
+        return {
+          url,
+          key,
+          success: false,
+          error: "Failed to delete asset",
+        }
+      }
+    }),
+  )
 }
 
 export const getPresignedGetUrl = async ({
