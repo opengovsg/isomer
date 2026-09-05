@@ -145,7 +145,12 @@ const ContentSecurityPolicy = `
  */
 /** @type {import("next").NextConfig} */
 const config = {
-  output: "standalone",
+  // Off only for the e2e CI build (SKIP_STANDALONE_OUTPUT=true) — that build
+  // is served via plain `next start`, never `.next/standalone`, so the
+  // dependency trace + node_modules copy standalone output requires is
+  // wasted work there (and triggers Next's "next start doesn't work with
+  // output: standalone" warning).
+  output: env.SKIP_STANDALONE_OUTPUT ? undefined : "standalone",
   // Pin the tracing root so the standalone layout is always
   // `.next/standalone/apps/studio/server.js` (what the Dockerfile and start:standalone expect).
   // Without this, Next infers the workspace root from the outermost lockfile, which varies by
@@ -159,7 +164,10 @@ const config = {
   // Next resolves them the same from the app root as from the workspace package (pnpm); otherwise
   // Next may bundle jsdom and break __dirname (default-stylesheet.css ENOENT).
   serverExternalPackages: ["isomorphic-dompurify", "jsdom"],
-  productionBrowserSourceMaps: true,
+  // Off only for the e2e CI build (SKIP_PRODUCTION_SOURCE_MAPS=true) — these
+  // maps exist for Datadog RUM error tracking on real deploys, which e2e
+  // gets no benefit from, and generating them is a meaningful chunk of build time.
+  productionBrowserSourceMaps: !env.SKIP_PRODUCTION_SOURCE_MAPS,
   /** We already do typechecking as separate tasks in CI */
   typescript: { ignoreBuildErrors: true },
   transpilePackages: [

@@ -26,7 +26,11 @@ export default defineConfig({
         extends: true,
         test: {
           name: "node",
-          include: ["src/**/*.test.{ts,tsx}", "prisma/scripts/**/*.test.ts"],
+          include: [
+            "src/**/*.test.{ts,tsx}",
+            "prisma/scripts/**/*.test.ts",
+            "scripts/**/*.test.ts",
+          ],
           exclude: [
             ...configDefaults.exclude,
             "**/tests/e2e/**",
