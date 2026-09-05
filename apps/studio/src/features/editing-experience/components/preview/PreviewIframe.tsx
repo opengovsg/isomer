@@ -70,6 +70,7 @@ export const PreviewIframe = ({
       {...containerStyles}
     >
       <Frame
+        data-testid="preview-iframe"
         style={containerStyles}
         {...extraProps}
         head={

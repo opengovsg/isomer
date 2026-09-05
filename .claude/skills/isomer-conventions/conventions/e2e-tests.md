@@ -111,14 +111,15 @@ One `unauthenticated` project (`smoke.test.ts`, `singpass.test.ts`) and one proj
 
 POs live in `fixtures/po/` (`import from "~e2e/fixtures/po"`). One PO per UI surface; multi-surface flows stay in `helpers.ts`.
 
-| PO                 | File (`fixtures/po/`) | Surface                    |
-| ------------------ | --------------------- | -------------------------- |
-| `SitePO`           | `site-settings.ts`    | Site settings              |
-| `DashboardPO`      | `dashboard.ts`        | Site dashboard / resources |
-| `PageEditorPO`     | `page-editor.ts`      | Page edit + publish        |
-| `PageSettingsPO`   | `page-settings.ts`    | Page settings modal        |
-| `FolderSettingsPO` | `folder-settings.ts`  | Folder settings modal      |
-| `UsersPO`          | `users.ts`            | Collaborators page         |
+| PO                  | File (`fixtures/po/`)  | Surface                                        |
+| ------------------- | ---------------------- | ---------------------------------------------- |
+| `SitePO`            | `site-settings.ts`     | Site settings                                  |
+| `DashboardPO`       | `dashboard.ts`         | Site dashboard / resources                     |
+| `PageEditorPO`      | `page-editor.ts`       | Page edit + publish                            |
+| `PageSeoSettingsPO` | `page-seo-settings.ts` | Page SEO meta settings (`/pages/:id/settings`) |
+| `PageSettingsPO`    | `page-settings.ts`     | Page settings modal                            |
+| `FolderSettingsPO`  | `folder-settings.ts`   | Folder settings modal                          |
+| `UsersPO`           | `users.ts`             | Collaborators page                             |
 
 Constructor takes `Page`. No DB setup in POs.
 
@@ -158,14 +159,14 @@ Examples: `expectResourceAbsent`, `expectResourceTitle`, `expectSiteName`, `expe
 
 ## Violation smells
 
-| Smell                                   | Fix                                                 |
-| --------------------------------------- | --------------------------------------------------- |
-| Hardcoded site ID or seed site name     | `provisionE2ESite` + assert returned `siteId`       |
-| Duplicated wizard/invite flow in a test | `helpers.ts` or PO                                  |
-| `test.use({ storageState })`            | `{ tag: roleTag(...) }` on `describe`               |
-| Inline `db.selectFrom` in `*.test.ts`   | `fixtures/<entity>/db.ts` or `expect.ts`            |
-| `page.waitForURL` for dashboard nav     | `DashboardPO.expectOnFolder` / `expectOnPageEditor` |
-| Any other `page.*` in `*.test.ts`       | PO or helper for that surface                       |
-| Delete-by-title-prefix in `afterEach`   | Track created ID(s), `deleteResourceById`           |
-| `.first()`/`.last()`/`.nth()` on a labeled control | `getByRole(role, { name })` / `getByLabel`, adding `aria-label` if missing |
-| 2+ tests in one `describe` mutating the same shared `siteId` settings, no serial mode | `test.describe.configure({ mode: "serial" })` |
+| Smell                                                                                 | Fix                                                                        |
+| ------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Hardcoded site ID or seed site name                                                   | `provisionE2ESite` + assert returned `siteId`                              |
+| Duplicated wizard/invite flow in a test                                               | `helpers.ts` or PO                                                         |
+| `test.use({ storageState })`                                                          | `{ tag: roleTag(...) }` on `describe`                                      |
+| Inline `db.selectFrom` in `*.test.ts`                                                 | `fixtures/<entity>/db.ts` or `expect.ts`                                   |
+| `page.waitForURL` for dashboard nav                                                   | `DashboardPO.expectOnFolder` / `expectOnPageEditor`                        |
+| Any other `page.*` in `*.test.ts`                                                     | PO or helper for that surface                                              |
+| Delete-by-title-prefix in `afterEach`                                                 | Track created ID(s), `deleteResourceById`                                  |
+| `.first()`/`.last()`/`.nth()` on a labeled control                                    | `getByRole(role, { name })` / `getByLabel`, adding `aria-label` if missing |
+| 2+ tests in one `describe` mutating the same shared `siteId` settings, no serial mode | `test.describe.configure({ mode: "serial" })`                              |

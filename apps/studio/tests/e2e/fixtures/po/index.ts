@@ -4,6 +4,7 @@ export { DashboardPO } from "./dashboard"
 export { FolderSettingsPO } from "./folder-settings"
 export { GodmodePO } from "./godmode"
 export { PageEditorPO } from "./page-editor"
+export { PageSeoSettingsPO } from "./page-seo-settings"
 export { PageSettingsPO } from "./page-settings"
 export { SiteAdminPO } from "./site-admin"
 export {

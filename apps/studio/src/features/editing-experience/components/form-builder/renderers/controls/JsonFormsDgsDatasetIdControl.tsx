@@ -72,7 +72,11 @@ const DgsDatasetIdModal = ({
 
   const datasetId = getDgsIdFromString({ string: debouncedInputValue })
 
-  const { metadata, isLoading: isValidatingDataset } = useDgsMetadata({
+  const {
+    metadata,
+    isLoading: isValidatingDataset,
+    isMetadataCurrent,
+  } = useDgsMetadata({
     resourceId: datasetId ?? "",
     enabled: !!datasetId,
   })
@@ -82,16 +86,17 @@ const DgsDatasetIdModal = ({
   // or an equivalent that works universally.
   const isDatasetTooLarge =
     metadata?.size !== undefined && metadata.size > DGS_REQUEST_MAX_BYTES
-  const isValidDataset = format === "CSV" && !isDatasetTooLarge
+  const isValidDataset =
+    isMetadataCurrent && format === "CSV" && !isDatasetTooLarge
 
-  const isLoading = isValidatingDataset || isDebouncing
+  const isLoading =
+    isValidatingDataset || isDebouncing || (!!datasetId && !isMetadataCurrent)
 
   const {
     register,
-    handleSubmit,
     setError,
     clearErrors,
-    formState: { errors, isValid },
+    formState: { errors },
   } = useZodForm({
     mode: "onChange",
     schema: z.object({
@@ -133,13 +138,15 @@ const DgsDatasetIdModal = ({
     clearErrors,
   ])
 
-  const onSubmit = handleSubmit(() => {
+  const onSubmit = (event: { preventDefault: () => void }) => {
+    event.preventDefault()
+    if (isLoading || !isValidDataset) return
     const extractedId = getDgsIdFromString({ string: debouncedInputValue })
     if (extractedId) {
       onClose()
       onSave(extractedId) // Save only the ID, not the full URL
     }
-  })
+  }
 
   const FeedbackMessage = () => {
     if (errors.datasetId) {
@@ -204,7 +211,7 @@ const DgsDatasetIdModal = ({
               <Button
                 type="submit"
                 onClick={onSubmit}
-                isDisabled={!isValid || isLoading || !isValidDataset}
+                isDisabled={!datasetId || isLoading || !isValidDataset}
                 isLoading={isLoading}
               >
                 Save Dataset ID
