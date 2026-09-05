@@ -3,11 +3,12 @@ import crypto from "crypto"
 import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
 import { createPageViaWizard } from "~e2e/fixtures/helpers"
 import { DashboardPO, PageEditorPO } from "~e2e/fixtures/po"
+import { deleteResourceById } from "~e2e/fixtures/reset"
 import {
-  deleteResourceById,
-  deleteResourcesByTitlePrefix,
-} from "~e2e/fixtures/reset"
-import { getResourceByTitle, seedFolder } from "~e2e/fixtures/resource"
+  getResource,
+  getResourceByTitle,
+  seedFolder,
+} from "~e2e/fixtures/resource"
 import { provisionE2ESite } from "~e2e/fixtures/site"
 import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { RoleType } from "~prisma/generated/generatedEnums"
@@ -24,12 +25,17 @@ test.beforeAll(async () => {
 })
 
 test.describe("admin", { tag: roleTag("admin") }, () => {
+  let createdPageId: string | undefined
+
   test.beforeEach(async () => {
     await ensureUserOnboarded(TEST_EMAILS.admin)
+    createdPageId = undefined
   })
 
   test.afterEach(async () => {
-    await deleteResourcesByTitlePrefix(siteId, "E2E Test Page ")
+    if (createdPageId) {
+      await deleteResourceById(createdPageId)
+    }
   })
 
   test("admin can create a new page via the wizard", async ({ page }) => {
@@ -37,15 +43,16 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     const title = UNIQUE_TITLE()
 
     // Act
-    await createPageViaWizard(page, {
+    const { pageId } = await createPageViaWizard(page, {
       startUrl: `/sites/${siteId}`,
       title,
       siteId,
     })
+    createdPageId = pageId
     await new PageEditorPO(page).expectLoaded()
 
     // Assert
-    const created = await getResourceByTitle({ siteId, title })
+    const created = await getResource(pageId)
     expect(created).toBeTruthy()
     expect(created?.state).toBe("Draft")
     expect(created?.type).toBe("Page")

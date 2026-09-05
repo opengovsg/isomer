@@ -186,7 +186,7 @@ export class GodmodePO {
   }
 
   vendorEmailsTextarea() {
-    return this.page.locator("textarea").nth(1)
+    return this.page.getByLabel("Vendors (90 day expiry)")
   }
 
   async fillVendorEmails(emails: string[]) {

@@ -45,9 +45,7 @@ export class UsersPO {
   }
 
   async selectInviteRole(role: string) {
-    await this.page
-      .getByRole("button", { name: new RegExp(`^${role}`) })
-      .click()
+    await this.page.getByRole("button", { name: `${role} role` }).click()
   }
 
   async fillInviteForm(email: string, role: string) {
@@ -61,7 +59,7 @@ export class UsersPO {
 
   async expectInviteRoleEnabled(role: string) {
     await expect(
-      this.page.getByRole("button", { name: new RegExp(`^${role}`) }),
+      this.page.getByRole("button", { name: `${role} role` }),
     ).toBeEnabled()
   }
 
@@ -95,10 +93,7 @@ export class UsersPO {
     ).toBeDisabled()
   }
 
-  /**
-   * Opens the row actions menu for the user whose email is shown in the table.
-   * Locates by email (stable) rather than display name (local-part for invites).
-   */
+  // Locate row by email. Display name is unstable for pending invites.
   async openUserMenu(email: string) {
     const row = this.page.getByRole("row").filter({ hasText: email })
     await row.getByRole("button", { name: /Options for/ }).click()
