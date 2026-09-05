@@ -1,0 +1,180 @@
+name: Build and publish site
+
+# Migrated from tooling/build/scripts/publisher.sh, which used to run as the
+# entrypoint of a per-site AWS CodeBuild project. CodeBuild supplied SITE_NAME /
+# S3_BUCKET_NAME / CLOUDFRONT_DISTRIBUTION_ID / S3_CACHE_BUCKET_NAME etc. as
+# project-level env vars; those become workflow_dispatch inputs here. The
+# git-clone-from-scratch step becomes actions/checkout. Rather than building
+# isomer-components and caching the pnpm store/dist as separate tarballs, this
+# workflow installs dependencies and publishes a single tarball of the whole
+# repository (source + node_modules) to S3, which downstream per-site
+# CodeBuild projects pull down instead of cloning/installing themselves.
+on:
+  workflow_call:
+    inputs:
+      aws-region:
+        description: "AWS region to use"
+        required: false
+        default: "ap-southeast-1"
+        type: string
+      cicd-role:
+        description: "AWS IAM role to assume by GitHub action runner"
+        required: true
+        type: string
+      s3-cache-bucket-name:
+        description: "S3 bucket used to cache the pnpm store and isomer-components dist between builds (same bucket/prefix pattern as the CodeBuild projects)"
+        required: true
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-and-publish:
+    name: Build and publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve build ref
+        id: resolve-ref
+        env:
+          # workflow_call inherits the triggering event's context, so this is populated
+          # whenever a caller (e.g. deploy_production.yml, deploy_uat.yml) itself runs off
+          # a `release` event - the exact tag that triggered it, not just "whatever
+          # currently sorts highest on the remote" (which can diverge on backfilled
+          # releases or newer prerelease tags).
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          # Always populated regardless of trigger type - the commit that triggered this
+          # run (e.g. the pushed commit for deploy_staging.yml, which has no release tag).
+          SHA: ${{ github.sha }}
+        run: |
+          # Priority: the tag that triggered this run (if any), else the triggering commit.
+          if [ -n "$RELEASE_TAG" ]; then
+            echo "ref=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
+          else
+            echo "ref=$SHA" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout ${{ steps.resolve-ref.outputs.ref }}
+        id: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ steps.resolve-ref.outputs.ref }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c # v6.2.3
+        with:
+          role-to-assume: ${{ inputs.cicd-role }}
+          role-session-name: github-action-build-components
+          aws-region: ${{ inputs.aws-region }}
+
+      - name: Set up pnpm
+        run: |
+          corepack enable
+          corepack install -g pnpm@11.5.1
+
+          # Use a project-local store only in this job so the S3 tarball is self-contained.
+          # Do not set storeDir in pnpm-workspace.yaml: local dev keeps the default global store.
+          pnpm config set store-dir .pnpm-store --location project
+
+      - name: Install pnpm dependencies
+        run: pnpm install --frozen-lockfile --filter isomer-base-template...
+
+      # publisher.sh's per-site builds each need this dist (packages/components/dist is
+      # gitignored, so it isn't in the repository archive below); building it once here
+      # instead of once per site is the whole point of centralizing this in CI.
+      - name: Build isomer-components
+        run: pnpm --filter @opengovsg/isomer-components run build
+
+      # Shared S3 cache (same bucket/prefix pattern is used by multiple CodeBuild projects).
+      # Archived as two separate tarballs so downstream per-site CodeBuild projects can pull
+      # them down instead of cloning/installing themselves:
+      #   1. isomer.tar.zst - the repository itself (source only, no node_modules/.pnpm-store).
+      #   2. isomer-pnpm-store.tar.zst - the project-local pnpm store, cached separately since
+      #      restoring it doesn't touch the repository and it's what publisher.sh's install
+      #      step actually needs to relink node_modules without hitting the registry.
+      #
+      # publisher.sh (the consumer) downloads isomer.tar.zst from isomer/latest/, extracts it with
+      # `tar --use-compress-program=zstd -xf`, then `cd isomer/` - mirroring what
+      # `git clone .../isomer.git` would have produced. So the archive must be
+      # zstd-compressed and rooted at an `isomer/` directory, not the bare working tree.
+      # A symlink lets tar rename the root on the fly without copying the whole tree;
+      # `-h` dereferences it so the symlink itself isn't archived.
+      - name: Archive and publish repository
+        env:
+          S3_CACHE_BUCKET_NAME: ${{ inputs.s3-cache-bucket-name }}
+          # Use the commit actions/checkout actually resolved and checked out, rather
+          # than re-deriving it with `git rev-parse HEAD` - GitHub's own record of what
+          # was checked out, not our own read of the working tree.
+          GIT_SHA: ${{ steps.checkout.outputs.commit }}
+        run: |
+          calculate_duration() {
+            local start_time=$1
+            local end_time
+            end_time=$(date +%s)
+            echo "Time taken: $((end_time - start_time)) seconds"
+          }
+
+          REPO_TGZ="isomer.tar.zst"
+          STORE_TGZ="isomer-pnpm-store.tar.zst"
+          COMPONENTS_DIST_TGZ="isomer-components-dist.tar.zst"
+          # publisher.sh's production path always reads isomer/latest/.
+          REPO_CACHE_PREFIX="s3://$S3_CACHE_BUCKET_NAME/isomer/latest"
+          STORE_CACHE_PREFIX="s3://$S3_CACHE_BUCKET_NAME/isomer/$GIT_SHA"
+          REPO_CACHE_PATH="$REPO_CACHE_PREFIX/$REPO_TGZ"
+          STORE_CACHE_PATH="$STORE_CACHE_PREFIX/$STORE_TGZ"
+          # Keyed by commit SHA, same prefix as the pnpm store: shared across every ref
+          # that happens to point at this commit, and what publisher.sh's branch path
+          # tries first before falling back to its own branch-scoped cache.
+          COMPONENTS_DIST_CACHE_PATH="$STORE_CACHE_PREFIX/$COMPONENTS_DIST_TGZ"
+
+          # Record the commit SHA: the archive excludes .git below, but
+          # publisher.sh needs it both to disambiguate branch cache-keys and to
+          # locate the SHA-scoped pnpm store archive above, and it can't run
+          # `git rev-parse` once .git is gone. Reuse $GIT_SHA so the recorded
+          # value matches the one used for STORE_CACHE_PREFIX.
+          echo "$GIT_SHA" > .isomer-build-sha
+          # Stage the rename-symlink in a fresh temp dir rather than the checkout's
+          # parent: actions/checkout's default workspace path is
+          # /home/runner/work/isomer/isomer, so "../isomer" there is the checkout
+          # directory itself and `ln -s` would fail with "File exists".
+          ARCHIVE_STAGING=$(mktemp -d)
+          ln -s "$(pwd)" "$ARCHIVE_STAGING/isomer"
+
+          # Upload the SHA-scoped store before the repository archive/pointer: publisher.sh's
+          # production path reads the SHA from the repository archive and immediately tries to
+          # download the store at that SHA, so publishing the repository first would let it
+          # observe a new SHA whose store isn't there yet.
+          echo "Archiving pnpm store..."
+          start_time=$(date +%s)
+          tar --use-compress-program="zstd -6" -cf "$ARCHIVE_STAGING/$STORE_TGZ" .pnpm-store
+          calculate_duration $start_time
+
+          echo "Uploading pnpm store archive to S3..."
+          start_time=$(date +%s)
+          aws s3 cp --only-show-errors "$ARCHIVE_STAGING/$STORE_TGZ" $STORE_CACHE_PATH
+          echo "Uploaded pnpm store archive"
+          calculate_duration $start_time
+
+          echo "Archiving isomer-components dist..."
+          start_time=$(date +%s)
+          tar --use-compress-program="zstd -6" -cf "$ARCHIVE_STAGING/$COMPONENTS_DIST_TGZ" -C packages/components dist
+          calculate_duration $start_time
+
+          echo "Uploading isomer-components dist archive to S3..."
+          start_time=$(date +%s)
+          aws s3 cp --only-show-errors "$ARCHIVE_STAGING/$COMPONENTS_DIST_TGZ" $COMPONENTS_DIST_CACHE_PATH
+          echo "Uploaded isomer-components dist archive"
+          calculate_duration $start_time
+
+          echo "Archiving repository..."
+          start_time=$(date +%s)
+          tar --exclude=.git --exclude=node_modules --exclude=.pnpm-store -h --use-compress-program="zstd -6" -cf "$ARCHIVE_STAGING/$REPO_TGZ" -C "$ARCHIVE_STAGING" isomer
+          calculate_duration $start_time
+
+          echo "Uploading repository archive to S3..."
+          start_time=$(date +%s)
+          aws s3 cp --only-show-errors "$ARCHIVE_STAGING/$REPO_TGZ" $REPO_CACHE_PATH
+          rm -rf "$ARCHIVE_STAGING"
+          echo "Uploaded repository archive"
+          calculate_duration $start_time
