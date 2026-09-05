@@ -1612,21 +1612,55 @@ export const getSearchResults = async ({
   }
 
   const searchTerms = tokenizeSearchQuery(query)
+const pathQuery = query.trim().replace(/^\/+/, "") || "."
+  const resourcesMatchingFullPermalink = db
+    .withRecursive("resourcePath", (eb) =>
+      eb
+        .selectFrom("Resource as r")
+        .select([
+          "r.id",
+          "r.permalink",
+          "r.parentId",
+          "r.permalink as fullPermalink",
+        ])
+        .where("r.siteId", "=", siteId)
+        .where("r.parentId", "is", null)
+        .unionAll(
+          eb
+            .selectFrom("Resource as s")
+            .innerJoin("resourcePath as rp", "s.parentId", "rp.id")
+            .where("s.siteId", "=", siteId)
+            .select([
+              "s.id",
+              "s.permalink",
+              "s.parentId",
+              sql<string>`CONCAT(rp."fullPermalink", '/', s.permalink)`.as(
+                "fullPermalink",
+              ),
+            ]),
+        ),
+    )
+    .selectFrom("resourcePath")
+    .select("resourcePath.id")
+    .where("resourcePath.fullPermalink", "ilike", `%${pathQuery}%`)
 
   const queriedResources = getResourcesWithLastUpdatedAt({
     siteId: Number(siteId),
   })
     .where("Resource.type", "in", resourceTypes)
     .where((eb) =>
-      eb.and(
-        searchTerms.map((searchTerm) =>
-          // Match if the search term is at the start of the title
-          eb("Resource.title", "ilike", `${searchTerm}%`).or(
-            // Match if the search term is in the middle of the title (after a space)
-            eb("Resource.title", "ilike", `% ${searchTerm}%`),
+      eb.or([
+        eb.and(
+          searchTerms.map((searchTerm) =>
+            // Match if the search term is at the start of the title
+            eb("Resource.title", "ilike", `${searchTerm}%`).or(
+              // Match if the search term is in the middle of the title (after a space)
+              eb("Resource.title", "ilike", `% ${searchTerm}%`),
+            ),
           ),
         ),
-      ),
+        eb("Resource.id", "in", resourcesMatchingFullPermalink),
+      ]),
     )
 
   // Currently ordered by number of words matched
