@@ -8,9 +8,11 @@ import {
   createCollectionPage,
   createCollectionWithTagCategories,
   deleteCollection,
-  getRootPageId,
 } from "../fixtures/collection"
+import { CollectionLinkPO } from "../fixtures/collection-link.po"
+import { getRootPageId } from "../fixtures/collection.db"
 import { CollectionPO } from "../fixtures/collection.po"
+import { PageEditorPO } from "../fixtures/page-editor.po"
 import { getResourceDraftTagged } from "../fixtures/resource.db"
 import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
@@ -72,15 +74,14 @@ test.describe(
     }) => {
       // Arrange
       const collection = new CollectionPO(page)
-      await page.goto(`/sites/${siteId}/links/${linkId}`)
-      const saveButton = page.getByRole("button", { name: "Save", exact: true })
-      await expect(saveButton).toBeDisabled()
+      const linkEditor = new CollectionLinkPO(page)
+      await linkEditor.gotoLink(siteId, linkId)
+      await collection.expectItemSaveDisabled()
 
       // Act
       await collection.selectTagOption(TAG_CATEGORY_LABEL, TAG_OPTION_LABEL)
-      await expect(saveButton).toBeEnabled()
-      await saveButton.click()
-      await expect(page.getByText("Link updated!")).toBeVisible()
+      await collection.expectItemSaveEnabled()
+      await collection.saveCollectionLink()
 
       // Assert
       const tagged = await getResourceDraftTagged(linkId)
@@ -92,12 +93,11 @@ test.describe(
     }) => {
       // Arrange
       const collection = new CollectionPO(page)
-      await page.goto(`/sites/${siteId}/links/${linkId}`)
+      const linkEditor = new CollectionLinkPO(page)
+      await linkEditor.gotoLink(siteId, linkId)
 
       // Assert
-      await expect(
-        page.getByRole("button", { name: "Save", exact: true }),
-      ).toBeDisabled()
+      await collection.expectItemSaveDisabled()
       await collection.expectRequiredTagError()
     })
   },
@@ -141,23 +141,15 @@ test.describe(
     }) => {
       // Arrange
       const collection = new CollectionPO(page)
-      await page.goto(`/sites/${siteId}/pages/${pageId}`)
-      await page.getByRole("button", { name: "Article page header" }).click()
-      const saveButton = page.getByRole("button", {
-        name: "Save changes",
-        exact: true,
-      })
-      await expect(saveButton).toBeDisabled()
+      const editor = new PageEditorPO(page)
+      await editor.gotoPage(siteId, pageId)
+      await collection.openArticleHeader()
+      await collection.expectArticleHeaderSaveDisabled()
 
       // Act
       await collection.selectTagOption(TAG_CATEGORY_LABEL, TAG_OPTION_LABEL)
-      await expect(saveButton).toBeEnabled()
-      await saveButton.click()
-      await expect(
-        page.getByText(
-          "Changes saved. Click 'Publish' when you're ready to go live.",
-        ),
-      ).toBeVisible()
+      await collection.expectArticleHeaderSaveEnabled()
+      await collection.saveArticleHeaderChanges()
 
       // Assert
       const tagged = await getResourceDraftTagged(pageId)
@@ -169,13 +161,12 @@ test.describe(
     }) => {
       // Arrange
       const collection = new CollectionPO(page)
-      await page.goto(`/sites/${siteId}/pages/${pageId}`)
-      await page.getByRole("button", { name: "Article page header" }).click()
+      const editor = new PageEditorPO(page)
+      await editor.gotoPage(siteId, pageId)
+      await collection.openArticleHeader()
 
       // Assert
-      await expect(
-        page.getByRole("button", { name: "Save changes", exact: true }),
-      ).toBeDisabled()
+      await collection.expectArticleHeaderSaveDisabled()
       await collection.expectRequiredTagError()
     })
   },

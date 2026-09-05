@@ -1,8 +1,11 @@
 import { type Browser, type BrowserContext, type Page } from "@playwright/test"
+import { IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import { type RoleType } from "~prisma/generated/generatedEnums"
 
 import { storageStateFor, type Role } from "./auth"
+import { CollectionPO } from "./collection.po"
 import { DashboardPO } from "./dashboard.po"
+import { enableGrowthBookFeature, resetGrowthBookPage } from "./network"
 import { PageEditorPO } from "./page-editor.po"
 import { getCollectionByTitle, getFolderByTitle } from "./resource.db"
 import { UsersPO } from "./users.po"
@@ -84,6 +87,24 @@ export interface RoleBrowserSession {
   editor: PageEditorPO
 }
 
+export const openCollectionIndexEditor = async (
+  page: Page,
+  siteId: number,
+  indexPageId: string,
+  opts?: { filtersEnabled?: boolean },
+) => {
+  const filtersEnabled = opts?.filtersEnabled ?? true
+  await enableGrowthBookFeature(
+    page,
+    IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY,
+    filtersEnabled,
+  )
+  await resetGrowthBookPage(page)
+  const collection = new CollectionPO(page)
+  await collection.gotoIndex(siteId, indexPageId)
+  return collection
+}
+
 export const createPageViaWizard = async (
   page: Page,
   {
@@ -123,17 +144,65 @@ export const createCollectionViaWizard = async (
     startUrl,
     title,
     siteId,
-  }: { startUrl: string; title: string; siteId: number },
+  }: { startUrl?: string; title: string; siteId: number },
 ) => {
-  await page.goto(startUrl)
-
   const dashboard = new DashboardPO(page)
+  if (startUrl) {
+    await page.goto(startUrl)
+  } else {
+    await dashboard.gotoSite(siteId)
+  }
   await dashboard.openCreateMenu()
   await dashboard.clickCreateCollection()
   await dashboard.fillCollectionWizard(title)
 
   const collection = await getCollectionByTitle({ siteId, title })
   return { collectionId: collection.id }
+}
+
+export const createCollectionPageViaWizard = async (
+  page: Page,
+  {
+    siteId,
+    collectionId,
+    title,
+  }: { siteId: number; collectionId: string; title: string },
+) => {
+  const dashboard = new DashboardPO(page)
+  await dashboard.gotoCollection(siteId, collectionId)
+  await dashboard.clickAddCollectionItem()
+  await dashboard.proceedToCollectionItemDetails()
+  await dashboard.fillCollectionPageWizard(title)
+
+  await page.waitForURL(new RegExp(`/sites/${siteId}/pages/\\d+$`))
+  const pageId = page.url().match(/\/pages\/(\d+)$/)?.[1]
+  if (!pageId) {
+    throw new Error(`Expected page editor URL after wizard, got ${page.url()}`)
+  }
+  return { pageId }
+}
+
+export const createCollectionLinkViaWizard = async (
+  page: Page,
+  {
+    siteId,
+    collectionId,
+    title,
+  }: { siteId: number; collectionId: string; title: string },
+) => {
+  const dashboard = new DashboardPO(page)
+  await dashboard.gotoCollection(siteId, collectionId)
+  await dashboard.clickAddCollectionItem()
+  await dashboard.selectCollectionItemType("Link or file")
+  await dashboard.proceedToCollectionItemDetails()
+  await dashboard.fillCollectionLinkWizard(title)
+
+  await page.waitForURL(new RegExp(`/sites/${siteId}/links/\\d+$`))
+  const linkId = page.url().match(/\/links\/(\d+)$/)?.[1]
+  if (!linkId) {
+    throw new Error(`Expected link editor URL after wizard, got ${page.url()}`)
+  }
+  return { linkId }
 }
 
 export const createCollectionItemViaWizard = async (
@@ -153,8 +222,15 @@ export const createCollectionItemViaWizard = async (
   const dashboard = new DashboardPO(page)
   await dashboard.gotoCollection(siteId, collectionId)
   await dashboard.openAddCollectionItem()
-  await dashboard.selectCollectionItemType(type)
-  await dashboard.fillCollectionItemWizard(title)
+  if (type === "Link or file") {
+    await dashboard.selectCollectionItemType(type)
+  }
+  await dashboard.proceedToCollectionItemDetails()
+  if (type === "Page") {
+    await dashboard.fillCollectionPageWizard(title)
+  } else {
+    await dashboard.fillCollectionLinkWizard(title)
+  }
 
   const itemId = await dashboard.captureCollectionItemIdFromUrl(siteId, type)
   return { itemId }
