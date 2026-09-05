@@ -1,6 +1,7 @@
 import type { ControlProps } from "@jsonforms/core"
-import type { Extensions, JSONContent } from "@tiptap/react"
+import type { EditorEvents, Extensions, JSONContent } from "@tiptap/react"
 import CharacterCount from "@tiptap/extension-character-count"
+import { TableRow } from "@tiptap/extension-table-row"
 import { useEditor } from "@tiptap/react"
 import TextDirection from "tiptap-text-direction"
 
@@ -14,22 +15,25 @@ import {
   IsomerTableHeader,
   PARAGRAPH_TYPE,
   PROSE_EXTENSIONS,
-  TableRow,
+  TEXT_EDITOR_EXTRA_EXTENSIONS,
 } from "./constants"
 
 export interface BaseEditorProps {
   data: ControlProps["data"]
   handleChange: (content: JSONContent | undefined) => void
+  onContentError?: (props: EditorEvents["contentError"]) => void
 }
 
 const useBaseEditor = ({
   data,
   handleChange,
+  onContentError,
   extensions,
 }: BaseEditorProps & { extensions: Extensions }) =>
   useEditor({
     immediatelyRender: false,
     shouldRerenderOnTransaction: true,
+    enableContentCheck: true,
     extensions: [
       ...BASE_EXTENSIONS,
       ...extensions,
@@ -39,6 +43,7 @@ const useBaseEditor = ({
     ],
     // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
     content: data,
+    onContentError,
     onUpdate: (e) => {
       const jsonContent = e.editor.getJSON()
       handleChange(jsonContent)
@@ -49,14 +54,7 @@ export type BaseEditorType = ReturnType<typeof useBaseEditor>
 export const useTextEditor = (props: BaseEditorProps) =>
   useBaseEditor({
     ...props,
-    extensions: [
-      ...PROSE_EXTENSIONS,
-      TableRow,
-      IsomerTable,
-      IsomerTableCell,
-      IsomerTableHeader,
-      IsomerHeading,
-    ],
+    extensions: TEXT_EDITOR_EXTRA_EXTENSIONS,
   })
 
 export const useCalloutEditor = (props: BaseEditorProps) =>

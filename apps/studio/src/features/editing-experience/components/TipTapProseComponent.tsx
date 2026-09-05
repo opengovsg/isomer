@@ -1,8 +1,14 @@
 import type { ProseProps } from "@opengovsg/isomer-components"
 import type { JSONContent } from "@tiptap/react"
 import { Box, HStack, useDisclosure, VStack } from "@chakra-ui/react"
-import { Button, IconButton, useToast } from "@opengovsg/design-system-react"
+import {
+  Button,
+  IconButton,
+  Infobox,
+  useToast,
+} from "@opengovsg/design-system-react"
 import { isEqual } from "lodash-es"
+import { useCallback, useState } from "react"
 import { BiTrash } from "react-icons/bi"
 import { PROSE_COMPONENT_NAME } from "~/constants/formBuilder"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
@@ -12,7 +18,11 @@ import { trpc } from "~/utils/trpc"
 
 import { useTextEditor } from "../hooks/useTextEditor"
 import { pageSchema } from "../schema"
-import { CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE } from "./constants"
+import { isValidProse } from "../utils/isValidProse"
+import {
+  CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
+  PROSE_CONTENT_LOAD_ERROR_MESSAGE,
+} from "./constants"
 import { DeleteBlockModal } from "./DeleteBlockModal"
 import { DiscardChangesModal } from "./DiscardChangesModal"
 import { DrawerHeader } from "./Drawer/DrawerHeader"
@@ -44,7 +54,16 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
     setAddedBlockIndex,
   } = useEditorDrawerContext()
 
+  const [isContentValid, setIsContentValid] = useState(() =>
+    isValidProse(content),
+  )
+  const [hasTipTapSchemaError, setHasTipTapSchemaError] = useState(false)
+
   const toast = useToast()
+  const handleTipTapContentError = useCallback(() => {
+    setHasTipTapSchemaError(true)
+    setIsContentValid(false)
+  }, [])
   const { pageId, siteId } = useQueryParse(pageSchema)
   const { mutate, isPending } = trpc.page.updatePageBlob.useMutation({
     onSuccess: async () => {
@@ -60,16 +79,20 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
 
   const updatePageState = (editorContent: JSONContent | undefined) => {
     const updatedBlocks = Array.from(previewPageState.content)
-    // TODO: actual validation
     updatedBlocks[currActiveIdx] = editorContent as ProseProps
     const newPageState = {
       ...previewPageState,
       content: updatedBlocks,
     }
     setPreviewPageState(newPageState)
+    setIsContentValid(isValidProse(editorContent))
   }
 
-  const editor = useTextEditor({ data: content, handleChange: updatePageState })
+  const editor = useTextEditor({
+    data: content,
+    handleChange: updatePageState,
+    onContentError: handleTipTapContentError,
+  })
 
   const handleDeleteBlock = () => {
     const updatedBlocks = Array.from(savedPageState.content)
@@ -141,6 +164,13 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
           }}
           label={`Edit ${PROSE_COMPONENT_NAME}`}
         />
+        {hasTipTapSchemaError && (
+          <Box px="2rem" pt="1rem" w="full">
+            <Infobox variant="warning" size="sm" w="full">
+              {PROSE_CONTENT_LOAD_ERROR_MESSAGE}
+            </Infobox>
+          </Box>
+        )}
         <Box w="100%" overflow="auto" flex={1}>
           <TiptapTextEditor editor={editor} />
         </Box>
@@ -179,6 +209,7 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
                   )
                 }}
                 isLoading={isPending}
+                isDisabled={!isContentValid}
               >
                 Save changes
               </Button>
