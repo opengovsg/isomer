@@ -21,6 +21,11 @@ export const SEEDED_PROSE_BLOCK_LABEL = "Test block"
  * need two distinct, already-seeded block labels. */
 export const SEEDED_CALLOUT_BLOCK_LABEL = "Test Callout content"
 
+/** Default callout preview label when a new callout block is added
+ * (`DEFAULT_BLOCKS.callout` in `components/PageEditor/constants.ts`). */
+export const DEFAULT_CALLOUT_BLOCK_LABEL =
+  "We’re closing applications for this position on Thursday, July 3rd. Make sure to apply by then."
+
 /**
  * A standalone (non-Collection) Article-layout page. `collectionPageBlobContent`
  * produces the same `layout: "article"` / `articlePageHeader` shape used for
