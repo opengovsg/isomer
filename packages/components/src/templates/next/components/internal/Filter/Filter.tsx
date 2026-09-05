@@ -6,11 +6,14 @@ import { mergeProps } from "@react-aria/utils"
 import { useRef, useState } from "react"
 import { BiChevronDown, BiChevronRight } from "react-icons/bi"
 import { tv } from "~/lib/tv"
+import { updateAppliedFilters } from "~/templates/next/layouts/Collection/utils"
+import { TAG_CATEGORY_TYPE } from "~/types/constants"
 import { groupFocusVisibleHighlight } from "~/utils/tailwind"
 
 import type { FilterProps } from "../../../types/Filter"
 import { Button } from "../Button"
 import { Checkbox, CheckboxGroup } from "../Checkbox"
+import { DateFilterControls } from "./DateFilterControls"
 import { FilterDrawer } from "./FilterDrawer"
 
 const filterSectionLabelStyle = tv({
@@ -111,7 +114,7 @@ export const Filter = ({
             </Button>
           )}
         </div>
-        {filters.map(({ id, label, items }) => (
+        {filters.map(({ id, label, items, type }) => (
           <CheckboxGroup
             className="border-b border-b-divider-medium py-4"
             key={id}
@@ -124,16 +127,34 @@ export const Filter = ({
             />
 
             <div className={showFilter[id] ? "flex flex-col" : "hidden"}>
-              {items.map(({ id: itemId, label: itemLabel, count }) => (
-                <Checkbox
-                  key={itemId}
-                  className="w-fit cursor-pointer p-2"
-                  value={itemId}
-                  onChange={() => handleFilterToggle(id, itemId)}
-                >
-                  {itemLabel} ({count.toLocaleString()})
-                </Checkbox>
-              ))}
+              {type === TAG_CATEGORY_TYPE.Date ? (
+                <DateFilterControls
+                  items={items}
+                  onBucketToggle={(itemId) => handleFilterToggle(id, itemId)}
+                  dateRange={
+                    appliedFilters.find((filter) => filter.id === id)?.dateRange
+                  }
+                  onDateRangeChange={(dateRange) =>
+                    updateAppliedFilters(
+                      appliedFilters,
+                      setAppliedFilters,
+                      id,
+                      dateRange,
+                    )
+                  }
+                />
+              ) : (
+                items.map(({ id: itemId, label: itemLabel, count }) => (
+                  <Checkbox
+                    key={itemId}
+                    className="w-fit cursor-pointer p-2"
+                    value={itemId}
+                    onChange={() => handleFilterToggle(id, itemId)}
+                  >
+                    {itemLabel} ({count.toLocaleString()})
+                  </Checkbox>
+                ))
+              )}
             </div>
           </CheckboxGroup>
         ))}

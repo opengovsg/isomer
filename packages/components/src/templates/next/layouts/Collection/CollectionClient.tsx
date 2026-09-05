@@ -65,7 +65,7 @@ export const CollectionClient = ({
     currPage,
     setCurrPage,
     totalCount,
-  } = useCollection({ items })
+  } = useCollection({ items, tagCategories: page.tagCategories })
 
   const articleContainerRef = useRef<HTMLDivElement>(null)
   const onPageChange = () => {
