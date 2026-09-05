@@ -1,0 +1,74 @@
+name: Update publisher script
+
+# Reusable workflow: uploads tooling/build/scripts/publisher.sh to the S3 bucket
+# that CodeBuild site-publish projects fetch it from. Always uploads
+# unconditionally - the upload is a cheap, idempotent aws s3 cp, and detecting
+# "did it change" reliably across every trigger type (push, release,
+# workflow_dispatch) isn't worth the complexity. No direct trigger of its own
+# (yet) - wire this up from a caller (workflow_call) or run it manually
+# (workflow_dispatch).
+on:
+  workflow_dispatch:
+    inputs:
+      aws-region:
+        description: "AWS region to use"
+        required: true
+        default: "ap-southeast-1"
+        type: string
+      aws-account-id:
+        description: "AWS account ID to use"
+        required: true
+        type: string
+      cicd-role:
+        description: "AWS IAM role to assume by GitHub action runner"
+        required: true
+        type: string
+      publisher-script-bucket:
+        description: "S3 bucket that CodeBuild site-publish projects fetch publisher.sh from"
+        required: true
+        type: string
+  workflow_call:
+    inputs:
+      aws-region:
+        description: "AWS region to use"
+        required: false
+        default: "ap-southeast-1"
+        type: string
+      aws-account-id:
+        description: "AWS account ID to use"
+        required: true
+        type: string
+      cicd-role:
+        description: "AWS IAM role to assume by GitHub action runner"
+        required: true
+        type: string
+      publisher-script-bucket:
+        description: "S3 bucket that CodeBuild site-publish projects fetch publisher.sh from"
+        required: true
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  update-publisher:
+    name: Update publisher script
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c # v6.2.3
+        with:
+          role-to-assume: ${{ inputs.cicd-role }}
+          role-session-name: github-action-update-publisher
+          aws-region: ${{ inputs.aws-region }}
+
+      - name: Upload publisher.sh to S3
+        env:
+          PUBLISHER_SCRIPT_BUCKET: ${{ inputs.publisher-script-bucket }}
+        run: |
+          aws s3 cp tooling/build/scripts/publisher.sh "s3://$PUBLISHER_SCRIPT_BUCKET/publisher.sh" \
+            --cache-control "no-cache, no-store, must-revalidate"

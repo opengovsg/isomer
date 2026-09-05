@@ -48,9 +48,19 @@ jobs:
       app-intercom-app-id: "jv2tjc3g"
 
   build_components:
-    name: Build and publish components 
+    name: Build and publish components
     uses: ./.github/workflows/build-components.yml
     with:
       aws-region: "ap-southeast-1"
       cicd-role: "arn:aws:iam::343218177745:role/isomer-next-infra-uat-deploy-role"
       s3-cache-bucket-name: "isomer-next-infra-uat-sites-cache-bucket-private-28d7dd9"
+
+  update_publisher:
+    name: Update publisher script
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/update_publisher.yml
+    with:
+      aws-region: "ap-southeast-1"
+      aws-account-id: "343218177745"
+      cicd-role: "arn:aws:iam::343218177745:role/isomer-next-infra-uat-deploy-role"
+      publisher-script-bucket: "isomer-next-infra-uat-assets-private-e728930"
