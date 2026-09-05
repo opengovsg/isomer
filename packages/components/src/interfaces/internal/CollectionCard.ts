@@ -1,5 +1,25 @@
 import type { ImageProps } from "~/interfaces"
-import type { FormattedDate, IsomerSiteProps, TagGroup } from "~/types"
+import type {
+  DateTaggedItem,
+  FormattedDate,
+  IsomerSiteProps,
+  TagGroup,
+} from "~/types"
+import type { DateFilterStatusId } from "~/types/constants"
+
+export type DateFilterDisplayEntry = DateTaggedItem & {
+  label: string
+  dateText: string
+  statusLabels: Record<DateFilterStatusId, string>
+}
+
+export type DateFilterCard = Pick<
+  DateFilterDisplayEntry,
+  "id" | "label" | "dateText"
+> & {
+  status: DateFilterStatusId
+  statusLabel: string
+}
 
 interface FileDetails {
   type: string
@@ -19,6 +39,8 @@ interface BaseCardProps {
   // NOTE: Same shape as `pillTags`, but only includes groups shown as plaintext
   // — rendered as comma-joined text, dot-separated between groups (see PlaintextTags)
   plaintextTags?: TagGroup[]
+  // NOTE: server-precomputed label + date text for date filter client components.
+  dateFilterDisplayEntries?: DateFilterDisplayEntry[]
   title: string
   url: string
   description: string
@@ -56,6 +78,7 @@ export type CollectionCardProps = Pick<
   | "tags"
   | "pillTags"
   | "isContainNeeded"
+  | "dateFilterDisplayEntries"
 > & {
   referenceLinkHref: string | undefined
   imageSrc: string | undefined

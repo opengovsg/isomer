@@ -1,5 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { ArticlePageHeaderProps } from "~/interfaces"
+import {
+  ongoingDateFilterEntry,
+  upcomingAndOngoingDateFilterEntries,
+} from "~/stories/helpers"
 
 import { ArticlePageHeader } from "./ArticlePageHeader"
 
@@ -75,5 +79,23 @@ export const ArticleWithTags: Story = {
         selected: ["NParks Happenings", "Wild dinosaur"],
       },
     ],
+  },
+}
+
+export const WithDateFilter: Story = {
+  name: "With Ongoing Date Filter",
+  args: {
+    ...ARTICLE,
+    title: "Annual Community Charity Run 2026",
+    dateFilterDisplayEntries: [ongoingDateFilterEntry],
+  },
+}
+
+export const WithUpcomingAndOngoingDateFilters: Story = {
+  name: "With Upcoming And Ongoing Date Filters",
+  args: {
+    ...ARTICLE,
+    title: "Annual Community Charity Run 2026",
+    dateFilterDisplayEntries: upcomingAndOngoingDateFilterEntries,
   },
 }

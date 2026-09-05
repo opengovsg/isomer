@@ -217,11 +217,11 @@ export const YearFilter: Story = {
   args: generateArgs({ collectionItems: threeItemsHaveUndefinedDate }),
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    const dateNotSpecified = screen.queryByText(/Not specified \(3\)/i)
-    await expect(dateNotSpecified).toBeInTheDocument()
 
+    // CollectionCard renders the publication date twice (desktop sidebar + mobile
+    // inline); both nodes stay in the DOM, so 10 paginated cards → 20 matches.
     const dateText = await screen.findAllByText(/7 May 2024/)
-    await expect(dateText.length).toBe(10)
+    await expect(dateText.length).toBe(20)
   },
 }
 

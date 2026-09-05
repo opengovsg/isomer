@@ -1,5 +1,6 @@
 import type { ArticlePagePageProps, CollectionPagePageProps } from "~/types"
 import { describe, expect, it } from "vitest"
+import { DATE_FILTER_STATUS, type DateFilterStatusId } from "~/types/constants"
 
 import { getTagsFromTagged } from "../getTagsFromTagged"
 
@@ -84,6 +85,37 @@ describe("getTagsFromTagged", () => {
 
     // Assert
     expect(result).toEqual([])
+  })
+
+  it("skips date-type categories entirely, resolving only text categories", () => {
+    // Arrange
+    const tagged: NonNullable<ArticlePagePageProps["tagged"]> = ["topic-opt-1"]
+    const tagCategories: NonNullable<CollectionPagePageProps["tagCategories"]> =
+      [
+        {
+          label: "Event Date",
+          id: "date-1",
+          type: "date",
+          statusLabels: {
+            [DATE_FILTER_STATUS.Ended.id]: "Ended",
+            [DATE_FILTER_STATUS.Ongoing.id]: "Ongoing",
+            [DATE_FILTER_STATUS.Upcoming.id]: "Upcoming",
+          } satisfies Record<DateFilterStatusId, string>,
+        },
+        {
+          label: "Topic",
+          id: "topic-1",
+          options: [{ label: "Health", id: "topic-opt-1" }],
+        },
+      ]
+
+    // Act
+    const result = getTagsFromTagged(tagged, tagCategories)
+
+    // Assert
+    expect(result).toEqual([
+      { id: "topic-1", category: "Topic", selected: ["Health"] },
+    ])
   })
 
   it("keeps all tagged options for a category, uncombined", () => {

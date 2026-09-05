@@ -2,6 +2,8 @@ import type { ArticlePageHeaderProps } from "~/interfaces"
 import { getFormattedDate } from "~/utils/getFormattedDate"
 
 import { Breadcrumb } from "../Breadcrumb"
+import { DateFilterDates } from "../CollectionCard/DateFilterDates"
+import { DateFilterStatusClient } from "../CollectionCard/DateFilterStatusClient"
 import { PillTags, PlaintextTags } from "../Tags"
 
 export const ArticlePageHeader = ({
@@ -11,12 +13,18 @@ export const ArticlePageHeader = ({
   date,
   summary,
   pillTags,
+  dateFilterDisplayEntries,
 }: ArticlePageHeaderProps) => {
   return (
     <div className="mx-auto w-full">
       <div className="my-16">
         <Breadcrumb links={breadcrumb.links} />
       </div>
+
+      <DateFilterStatusClient
+        entries={dateFilterDisplayEntries}
+        className="mb-3"
+      />
 
       <PlaintextTags
         tags={plaintextTags}
@@ -28,17 +36,20 @@ export const ArticlePageHeader = ({
           <h1 className="prose-display-md break-words text-base-content-strong">
             {title}
           </h1>
+
+          {date && (
+            <p className="prose-label-sm-medium text-base-content">
+              {getFormattedDate(date)}
+            </p>
+          )}
+
+          <DateFilterDates entries={dateFilterDisplayEntries} />
+
           <PillTags
             tags={pillTags}
             className="flex flex-wrap items-center gap-2"
           />
         </div>
-
-        {date && (
-          <p className="prose-label-sm-medium text-base-content">
-            {getFormattedDate(date)}
-          </p>
-        )}
 
         {summary && (
           <p className="prose-title-lg whitespace-pre-wrap text-base-content-light">
