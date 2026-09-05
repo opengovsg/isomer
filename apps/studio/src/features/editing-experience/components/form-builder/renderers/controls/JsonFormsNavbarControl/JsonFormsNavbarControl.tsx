@@ -25,17 +25,23 @@ import {
   schemaMatches,
 } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
-import { Infobox } from "@opengovsg/design-system-react"
+import { Infobox, useToast } from "@opengovsg/design-system-react"
 import { get } from "lodash-es"
 import { useCallback, useEffect, useState } from "react"
 import { BiPlusCircle } from "react-icons/bi"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 
-import type { NavbarItems } from "./types"
+import type { NavbarItemIndices, NavbarItems } from "./types"
+import type { NestDestination } from "./utils"
 import { getParentPath } from "../utils"
+import { DEFAULT_NAVBAR_ITEM_TITLE } from "./constants"
 import { EditNavbarItem } from "./EditNavbarItem"
+import { NestUnderModal } from "./NestUnderModal"
 import { StackableNavbarItem } from "./StackableNavbarItem"
-import { handleMoveItem, isFirstLevelLinksOverLimit } from "./utils"
+import {
+  handleMoveItem,
+  isFirstLevelLinksOverLimit,
 
 export const jsonFormsNavbarControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.NavbarControl,
@@ -57,7 +63,11 @@ function JsonFormsNavbarControl({
   uischema,
 }: ArrayLayoutProps): JSX.Element {
   const ctx = useJsonForms()
+  const toast = useToast()
   const [selectedPath, setSelectedPath] = useState<string>()
+  // NOTE: Doubles as the open state of the nest under modal (open when
+  // non-null), following the same pattern as MoveResourceModal
+  const [nestSource, setNestSource] = useState<NavbarItemIndices | null>(null)
   const [droppableZoneElement, setDroppableZoneElement] =
     useState<HTMLDivElement | null>(null)
 
@@ -102,6 +112,43 @@ function JsonFormsNavbarControl({
       )
     },
     [arraySchema.maxItems, ctx, data, path],
+  )
+
+  const handleNest = useCallback(
+    (destination: NestDestination) => {
+      if (!nestSource) {
+        return
+      }
+
+      const items = (get(ctx.core?.data, path) ?? []) as PartialDeep<
+        NavbarItems["items"][number]
+      >[]
+      const destinationName =
+        destination === "root"
+          ? undefined
+          : items[destination]?.name || DEFAULT_NAVBAR_ITEM_TITLE
+
+      ctx.dispatch?.(
+        Actions.update(path, (prevData) =>
+          nestNavbarItemUnder(
+            prevData as NavbarItems["items"],
+            arraySchema.maxItems,
+            nestSource,
+            destination,
+          ),
+        ),
+      )
+      setNestSource(null)
+      toast({
+        status: "success",
+        title:
+          destination === "root"
+            ? "Item moved to first level"
+            : `Item nested under “${destinationName}”`,
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    },
+    [arraySchema.maxItems, ctx, nestSource, path, toast],
   )
 
   const isOverMaxItems = isFirstLevelLinksOverLimit(data, arraySchema.maxItems)
@@ -298,6 +345,16 @@ function JsonFormsNavbarControl({
                           handleRemove(path, index)
                         }
                       }}
+                      onNest={(subItemIndex) => {
+                        if (subItemIndex !== undefined) {
+                          setNestSource({
+                            index: subItemIndex,
+                            parentIndex: index,
+                          })
+                        } else {
+                          setNestSource({ index })
+                        }
+                      }}
                       subItems={childItem.items}
                     />
                   )
@@ -307,6 +364,21 @@ function JsonFormsNavbarControl({
           )}
         </VStack>
       </FormControl>
+
+      {nestSource !== null && (
+        <NestUnderModal
+          isOpen
+          onClose={() => setNestSource(null)}
+          onNest={handleNest}
+          source={nestSource}
+          items={
+            (get(ctx.core?.data, path) ?? []) as PartialDeep<
+              NavbarItems["items"][number]
+            >[]
+          }
+          maxItems={arraySchema.maxItems}
+        />
+      )}
     </Box>
   )
 }
