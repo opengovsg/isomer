@@ -3,10 +3,11 @@ import { Type } from "@sinclair/typebox"
 
 import { ARRAY_RADIO_FORMAT } from "../format"
 import { DgsDataSourceSchema, NativeDataSourceSchema } from "../integration"
+import { IsomerString } from "../primitives/IsomerString"
 
 const BaseSearchableTableSchema = Type.Object({
   title: Type.Optional(
-    Type.String({
+    IsomerString({
       title: "Title",
       description: "The title of the table",
     }),
@@ -17,8 +18,10 @@ const NativeSearchableTableSchema = Type.Intersect(
   [
     NativeDataSourceSchema,
     Type.Object({
-      headers: Type.Array(Type.Union([Type.String(), Type.Number()])),
-      items: Type.Array(Type.Array(Type.Union([Type.String(), Type.Number()]))),
+      headers: Type.Array(Type.Union([IsomerString(), Type.Number()])),
+      items: Type.Array(
+        Type.Array(Type.Union([IsomerString(), Type.Number()])),
+      ),
     }),
   ],
   {
@@ -39,7 +42,7 @@ const DGSSearchableTableSchema = Type.Intersect(
               description: "Column name in DGS table",
             }),
             label: Type.Optional(
-              Type.String({
+              IsomerString({
                 title: "Label",
                 description: "Rename the column's header",
               }),

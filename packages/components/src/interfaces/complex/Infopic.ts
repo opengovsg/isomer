@@ -3,6 +3,7 @@ import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 
+import { IsomerString } from "../primitives/IsomerString"
 import { AltTextSchema, ImageSrcSchema } from "./Image"
 
 export const InfopicVariants = {
@@ -26,16 +27,16 @@ export const InfopicSchema = Type.Object(
         format: "hidden",
       }),
     ),
-    title: Type.String({
+    title: IsomerString({
       title: "Title",
     }),
     description: Type.Optional(
-      Type.String({
+      IsomerString({
         title: "Description",
       }),
     ),
     buttonLabel: Type.Optional(
-      Type.String({
+      IsomerString({
         title: "Button text",
         maxLength: 50,
         description:

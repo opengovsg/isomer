@@ -2,6 +2,8 @@ import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 import { FORMSG_EMBED_URL_PATTERN } from "~/utils/validation"
 
+import { IsomerString } from "../primitives/IsomerString"
+
 export const FormSGSchema = Type.Object(
   {
     type: Type.Literal("formsg", { default: "formsg" }),
@@ -10,7 +12,7 @@ export const FormSGSchema = Type.Object(
       pattern: FORMSG_EMBED_URL_PATTERN,
       format: "embed",
     }),
-    title: Type.String({
+    title: IsomerString({
       title: "Describe your form",
       description:
         "This isn’t displayed anywhere, but can be read by screen readers",

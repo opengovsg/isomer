@@ -3,9 +3,10 @@ import { Type } from "@sinclair/typebox"
 
 import type { BreadcrumbProps } from "./Breadcrumb"
 import type { CollectionCardProps } from "./CollectionCard"
+import { IsomerString } from "../primitives/IsomerString"
 
 export const ArticlePageHeaderSchema = Type.Object({
-  summary: Type.String({
+  summary: IsomerString({
     title: "Article summary",
     description: "Help users understand what this page is about",
     format: "textarea",
