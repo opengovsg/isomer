@@ -94,3 +94,15 @@ export const provisionE2ESite = async (opts: {
 
   return { siteId: site.id, siteName: site.name }
 }
+
+/** Set CodeBuild project id so the godmode publishing table shows a Publish action. */
+export const setSiteCodeBuildId = async (
+  siteId: number,
+  codeBuildId: string,
+): Promise<void> => {
+  await db
+    .updateTable("Site")
+    .set({ codeBuildId })
+    .where("id", "=", siteId)
+    .execute()
+}
