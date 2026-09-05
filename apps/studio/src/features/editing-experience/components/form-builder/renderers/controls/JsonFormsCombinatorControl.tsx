@@ -1,4 +1,8 @@
-import type { CombinatorRendererProps, RankedTester } from "@jsonforms/core"
+import type {
+  CombinatorRendererProps,
+  JsonSchema7,
+  RankedTester,
+} from "@jsonforms/core"
 import { Box, FormControl, RadioGroup } from "@chakra-ui/react"
 import {
   createCombinatorRenderInfos,
@@ -14,6 +18,7 @@ import {
 } from "@jsonforms/react"
 import { FormLabel, Radio, SingleSelect } from "@opengovsg/design-system-react"
 import { ARRAY_RADIO_FORMAT } from "@opengovsg/isomer-components"
+import { pick } from "lodash-es"
 import { useEffect, useState } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
@@ -29,6 +34,31 @@ export const jsonFormsAnyOfControlTester: RankedTester = rankWith(
 
 interface JsonFormsCombinatorControlProps extends CombinatorRendererProps {
   combinatorType: "oneOf" | "anyOf"
+}
+
+// Keeps existing array items (e.g. `cards`) instead of letting schema
+// defaults reset them to `[]`, dropping only fields the new variant lacks.
+export function keepMatchingArrayFields(
+  oldData: Record<string, unknown> | undefined,
+  newSchema: JsonSchema7,
+): Record<string, unknown> {
+  const preserved: Record<string, unknown> = {}
+
+  for (const [key, propSchema] of Object.entries(newSchema.properties ?? {})) {
+    // `items` is a tuple-form array only for positional tuple validation,
+    // which none of our schemas use.
+    const itemSchema = Array.isArray(propSchema.items)
+      ? undefined
+      : propSchema.items
+    const oldItems = oldData?.[key] as Record<string, unknown>[] | undefined
+    if (!itemSchema?.properties || !Array.isArray(oldItems)) {
+      continue
+    }
+
+    const allowedKeys = Object.keys(itemSchema.properties)
+    preserved[key] = oldItems.map((item) => pick(item, allowedKeys))
+  }
+  return preserved
 }
 
 function JsonFormsCombinatorControl({
@@ -79,18 +109,19 @@ function JsonFormsCombinatorControl({
       renderInfos[options.findIndex((option) => option.value === value)]?.schema
     if (!newSchema) {
       handleChange(path, {})
+    } else if (newSchema.type === "string") {
+      handleChange(path, newSchema.const || "")
     } else {
       // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const newData = createDefaultValue(newSchema, rootSchema)
-
-      if (newSchema.type === "string") {
-        handleChange(path, newSchema.const || "")
-      } else {
-        handleChange(path, {
-          ...data,
-          ...newData,
-        })
-      }
+      handleChange(path, {
+        ...data,
+        ...newData,
+        ...keepMatchingArrayFields(
+          data as Record<string, unknown> | undefined,
+          newSchema as JsonSchema7,
+        ),
+      })
     }
   }
 
