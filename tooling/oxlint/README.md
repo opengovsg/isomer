@@ -30,7 +30,7 @@ Lint scripts should invoke the hoisted CLI (same as with ESLint):
 In TypeScript configs, import shared presets and pass them to `extends`:
 
 ```ts
-import { defineConfig } from "oxlint";
+import { defineConfig } from "@isomer/oxlint-config";
 import base from "@isomer/oxlint-config/base";
 
 export default defineConfig({
@@ -59,6 +59,7 @@ Or set `"options": { "typeAware": true }` in the root Oxlint config only.
 
 | Subpath | File |
 |--------|------|
+| `@isomer/oxlint-config` | `index.ts` (`defineConfig`, `OxlintConfig`) |
 | `@isomer/oxlint-config/base` | `base.ts` |
 
 Add more JSON presets under `tooling/oxlint/` and list them under `exports` in `package.json` as you split shared vs app-specific rules.

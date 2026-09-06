@@ -5,7 +5,7 @@
   "description": "Shared Oxlint presets and pinned oxlint / oxlint-tsgolint for the monorepo and consumers",
   "type": "module",
   "exports": {
-    ".": "./package.json",
+    ".": "./index.ts",
     "./base": "./base.ts",
     "./base.json": "./base.ts"
   },
