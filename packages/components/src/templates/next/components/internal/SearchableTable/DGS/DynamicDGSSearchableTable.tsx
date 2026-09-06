@@ -5,7 +5,7 @@ import type {
   DGSSearchableTableProps,
   SearchableTableClientProps,
 } from "~/interfaces"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { useDebounce } from "~/hooks/useDebounce"
 import { useDgsData } from "~/hooks/useDgsData"
 import { isCkanInternalColumn } from "~/utils/dgs"
@@ -35,17 +35,19 @@ export const DynamicDGSSearchableTable = ({
   const search = useDebounce({ value: searchInput, delay: 300 })
   const [currPage, setCurrPage] = useState(1)
 
-  const params = {
-    resourceId,
-    filters: filters?.reduce<NonNullable<DgsApiDatasetSearchParams["filters"]>>(
-      (acc, filter) => {
+  const params = useMemo(
+    () => ({
+      resourceId,
+      filters: filters?.reduce<
+        NonNullable<DgsApiDatasetSearchParams["filters"]>
+      >((acc, filter) => {
         acc[filter.fieldKey] = filter.fieldValue
         return acc
-      },
-      {},
-    ),
-    sort,
-  }
+      }, {}),
+      sort,
+    }),
+    [resourceId, filters, sort],
+  )
 
   const { total } = useDgsData({ ...params, fetchAll: false })
 

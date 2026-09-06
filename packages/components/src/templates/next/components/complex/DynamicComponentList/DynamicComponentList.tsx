@@ -2,6 +2,7 @@
 
 import type { DgsApiDatasetSearchParams } from "~/hooks/useDgsData/types"
 import type { DynamicComponentListProps } from "~/interfaces"
+import { useMemo } from "react"
 import { useDgsData } from "~/hooks/useDgsData"
 
 import { DgsTransformedContactInformation } from "../ContactInformation/DgsContactInformation/DgsContactInformation"
@@ -16,17 +17,19 @@ export const DynamicComponentList = ({
   layout,
   headingLevel,
 }: DynamicComponentListProps) => {
-  const params = {
-    resourceId,
-    sort,
-    filters: filters?.reduce<NonNullable<DgsApiDatasetSearchParams["filters"]>>(
-      (acc, filter) => {
+  const params = useMemo(
+    () => ({
+      resourceId,
+      sort,
+      filters: filters?.reduce<
+        NonNullable<DgsApiDatasetSearchParams["filters"]>
+      >((acc, filter) => {
         acc[filter.fieldKey] = filter.fieldValue
         return acc
-      },
-      {},
-    ),
-  }
+      }, {}),
+    }),
+    [resourceId, sort, filters],
+  )
 
   const { records, isLoading, isError } = useDgsData(params)
 

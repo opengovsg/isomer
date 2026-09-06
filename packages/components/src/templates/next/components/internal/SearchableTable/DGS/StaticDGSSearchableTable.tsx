@@ -5,6 +5,7 @@ import type {
   DGSSearchableTableProps,
   SearchableTableClientProps,
 } from "~/interfaces"
+import { useMemo } from "react"
 import { useDgsData } from "~/hooks/useDgsData"
 
 import { SearchableTableClient } from "../shared/SearchableTableClient"
@@ -24,17 +25,19 @@ export const StaticDGSSearchableTable = ({
   isMetadataLoading,
   isMetadataError,
 }: StaticDGSSearchableTableProps) => {
-  const params = {
-    resourceId,
-    filters: filters?.reduce<NonNullable<DgsApiDatasetSearchParams["filters"]>>(
-      (acc, filter) => {
+  const params = useMemo(
+    () => ({
+      resourceId,
+      filters: filters?.reduce<
+        NonNullable<DgsApiDatasetSearchParams["filters"]>
+      >((acc, filter) => {
         acc[filter.fieldKey] = filter.fieldValue
         return acc
-      },
-      {},
-    ),
-    sort,
-  }
+      }, {}),
+      sort,
+    }),
+    [resourceId, filters, sort],
+  )
 
   const {
     records,
