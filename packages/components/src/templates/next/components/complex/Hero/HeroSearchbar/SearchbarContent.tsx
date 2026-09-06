@@ -1,3 +1,4 @@
+import { createElement } from "react"
 import type { HeroSearchbarProps } from "~/interfaces/complex/Hero"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 

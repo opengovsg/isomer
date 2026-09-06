@@ -1,3 +1,4 @@
+import { createElement } from "react"
 import { InfopicVariants } from "~/interfaces/complex/Infopic"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
@@ -31,7 +32,7 @@ export const BlockInfopic = ({
   return (
     <section id={id} className={compoundStyles.container()}>
       <div className={compoundStyles.content()}>
-        <Tag className={compoundStyles.title()}>{title}</Tag>
+        {createElement(Tag, { className: compoundStyles.title() }, title)}
         <p className={compoundStyles.description()}>{description}</p>
         {hasLinkButton && (
           <div className={compoundStyles.button()}>

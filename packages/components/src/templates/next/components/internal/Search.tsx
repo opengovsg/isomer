@@ -46,11 +46,11 @@ interface SearchFieldProps extends AriaTextFieldOptions<"input"> {
   >
 }
 
-export function SearchField({
+export const SearchField = ({
   classNames,
   placeholder,
   ...props
-}: SearchFieldProps) {
+}: SearchFieldProps) => {
   const inputRef = useRef<HTMLInputElement>(null)
   const [isFocusWithin, setIsFocusWithin] = useState(false)
   const { inputProps } = useTextField(props, inputRef)

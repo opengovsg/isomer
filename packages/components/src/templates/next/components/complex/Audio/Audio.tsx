@@ -5,7 +5,7 @@ import { ComponentContent } from "../../internal/customCssClass"
 
 export const Audio = ({ title, url, shouldLazyLoad = true }: AudioProps) => {
   if (!isValidAudioEmbedUrl(url)) {
-    return <></>
+    return null
   }
 
   if (isApplePodcastUrl(url)) {

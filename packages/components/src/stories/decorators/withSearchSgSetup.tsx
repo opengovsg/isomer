@@ -11,7 +11,7 @@ interface WithSearchSgSetupProps {
 }
 export const withSearchSgSetup =
   ({ pageType }: WithSearchSgSetupProps = { pageType: "default" }) =>
-  (Story: () => ReactNode) => {
+  function WithSearchSgSetup(Story: () => ReactNode) {
     useSearchSGScript({
       pageType,
       clientId: SEARCHSG_TEST_CLIENT_ID,

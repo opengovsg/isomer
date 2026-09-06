@@ -99,7 +99,7 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
                               )
                             default:
                               const _: never = cellContent
-                              return <></>
+                              return null
                           }
                         })}
                       </TableCellTag>

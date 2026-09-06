@@ -1,3 +1,4 @@
+import { createElement } from "react"
 import type { SupportedIconName } from "~/common/icons"
 import type { InfoColsProps } from "~/interfaces"
 import { BiRightArrowAlt } from "react-icons/bi"
@@ -170,7 +171,11 @@ export const InfoCols = ({
       >
         <div className={compoundStyles.innerContainer()}>
           <div className={compoundStyles.header({ layout: simplifiedLayout })}>
-            <Tag className={compoundStyles.headerTitle()}>{title}</Tag>
+            {createElement(
+              Tag,
+              { className: compoundStyles.headerTitle() },
+              title,
+            )}
 
             {subtitle && (
               <p

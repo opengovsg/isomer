@@ -1,3 +1,4 @@
+import { createElement } from "react"
 import type { HeroGradientProps } from "~/interfaces/complex/Hero"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"

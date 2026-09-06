@@ -139,7 +139,7 @@ export const EgazetteAlgoliaYearOutOfRange: Story = {
 // Seeds the URL with egazette deep-link params before <InstantSearch> mounts,
 // then restores the original URL on unmount so other stories are unaffected.
 const withDeepLinkParams = (search: string): Decorator => {
-  return (StoryComponent) => {
+  return function WithDeepLinkParams(StoryComponent) {
     const original = `${window.location.pathname}${window.location.search}`
     window.history.replaceState(
       null,

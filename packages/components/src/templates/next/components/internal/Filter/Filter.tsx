@@ -33,6 +33,7 @@ const FilterSectionButton = ({
 
   return (
     <button
+      type="button"
       {...mergedProps}
       ref={buttonRef}
       className="group prose-headline-base-semibold flex w-full flex-row items-center justify-between gap-4 text-left text-base-content outline-0"

@@ -8,7 +8,7 @@ export const ImageClient = forwardRef<
   HTMLImageElement,
   Omit<ImageClientProps, "ref">
 >(
-  (
+  function ImageClient(
     {
       src,
       alt,
@@ -19,7 +19,7 @@ export const ImageClient = forwardRef<
       onLoad,
     },
     ref,
-  ) => {
+  ) {
     const imgSrc =
       isExternalUrl(src) || assetsBaseUrl === undefined
         ? src
@@ -45,3 +45,4 @@ export const ImageClient = forwardRef<
     )
   },
 )
+ImageClient.displayName = "ImageClient"

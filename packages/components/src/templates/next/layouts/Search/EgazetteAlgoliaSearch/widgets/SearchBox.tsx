@@ -1,5 +1,5 @@
 import type { UseSearchBoxProps } from "react-instantsearch"
-import { useEffect, useRef, useState } from "react"
+import { useRef, useState } from "react"
 import { BiSearch } from "react-icons/bi"
 import { useSearchBox } from "react-instantsearch"
 
@@ -15,18 +15,16 @@ const queryHook: NonNullable<UseSearchBoxProps["queryHook"]> = (
 
 export const SearchBox = () => {
   const { query, refine } = useSearchBox({ queryHook })
-  const [value, setValue] = useState(query)
+  const [draft, setDraft] = useState<string | undefined>(undefined)
+  const [prevQuery, setPrevQuery] = useState(query)
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
-  useEffect(() => {
-    setValue(query)
-  }, [query])
+  if (query !== prevQuery) {
+    setPrevQuery(query)
+    setDraft(undefined)
+  }
 
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current)
-    }
-  }, [])
+  const value = draft ?? query
 
   return (
     <label className="relative flex w-full items-center">
@@ -42,7 +40,7 @@ export const SearchBox = () => {
         value={value}
         onChange={(event) => {
           const next = event.target.value
-          setValue(next)
+          setDraft(next)
           if (timerRef.current) clearTimeout(timerRef.current)
           timerRef.current = setTimeout(() => refine(next), DEBOUNCE_MS)
         }}

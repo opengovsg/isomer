@@ -57,6 +57,6 @@ export const DynamicComponentList = ({
 
     default:
       const _exhaustiveCheck: never = component.type
-      return <></>
+      return null
   }
 }

@@ -11,8 +11,10 @@ interface PillTagsProps {
   containerClassName?: string
 }
 
+const DEFAULT_TAGS: TagGroup[] = []
+
 export const PillTags = ({
-  tags = [],
+  tags = DEFAULT_TAGS,
   className,
   containerClassName,
 }: PillTagsProps) => {

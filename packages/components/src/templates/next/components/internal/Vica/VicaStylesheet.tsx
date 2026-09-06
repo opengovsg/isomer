@@ -8,8 +8,6 @@ export const VicaStylesheet = ({
     : "https://webchat.vica.gov.sg/static/css/chat.css"
 
   return (
-    <>
-      <link href={stylesheetUrl} referrerPolicy="origin" rel="stylesheet" />
-    </>
+    <link href={stylesheetUrl} referrerPolicy="origin" rel="stylesheet" />
   )
 }

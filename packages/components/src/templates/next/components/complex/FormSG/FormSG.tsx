@@ -6,7 +6,7 @@ import { ComponentContent } from "../../internal/customCssClass"
 
 export const FormSG = ({ title, url, shouldLazyLoad = true }: FormSGProps) => {
   if (!isValidFormSGEmbedUrl(url)) {
-    return <></>
+    return null
   }
 
   return (
@@ -31,7 +31,7 @@ export const FormSG = ({ title, url, shouldLazyLoad = true }: FormSGProps) => {
       </div>
 
       <BaseParagraph
-        content={`Powered by <a href="https://form.gov.sg">Form</a>.`}
+        content='Powered by <a href="https://form.gov.sg">Form</a>.'
         className="prose-body-base pb-2 pt-1 text-base-content-subtle"
       />
     </section>
