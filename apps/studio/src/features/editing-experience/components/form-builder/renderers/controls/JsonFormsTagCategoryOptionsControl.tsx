@@ -28,7 +28,7 @@ import { createDefaultTagOption } from "./constants"
 const DELETE_OPTION_UNDO_TEXT =
   "To undo this change, you will need to create and re-assign this option to all items."
 
-function DeleteOptionWarningBody({
+const DeleteOptionWarningBody = ({
   siteId,
   pageId,
   tagId,
@@ -36,7 +36,7 @@ function DeleteOptionWarningBody({
   siteId: number
   pageId: number
   tagId: string
-}) {
+}) => {
   const [{ count }] = trpc.collection.countTagOptionsUsage.useSuspenseQuery({
     siteId,
     pageId,

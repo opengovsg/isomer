@@ -33,7 +33,7 @@ const isSchemaWithTooltip = (
   return (schema as unknown as { tooltip?: string }).tooltip !== undefined
 }
 
-export function JsonFormsTextControl({
+export const JsonFormsTextControl = ({
   data,
   label,
   handleChange,
@@ -43,7 +43,7 @@ export function JsonFormsTextControl({
   errors,
   schema,
   enabled,
-}: ControlProps) {
+}: ControlProps) => {
   const { maxLength } = schema
   const remainingCharacterCount = maxLength
     ? getRemainingCharacterCount(maxLength, data ? String(data) : undefined)

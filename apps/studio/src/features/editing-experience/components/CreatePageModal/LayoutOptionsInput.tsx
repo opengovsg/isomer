@@ -22,7 +22,7 @@ interface LayoutTileProps extends UseRadioProps {
 }
 
 const LayoutOptionRadio = forwardRef<HTMLInputElement, LayoutTileProps>(
-  (props, ref) => {
+  function (props, ref) {
     const [isHover, setIsHover] = useState(false)
 
     const hoverTileColorFullOpacity = useToken(
@@ -141,7 +141,7 @@ type LayoutOptionsInputProps = UseRadioGroupProps
 export const LayoutOptionsInput = forwardRef<
   HTMLInputElement,
   LayoutOptionsInputProps
->((props, ref) => {
+>(function (props, ref) {
   const { getRootProps, getRadioProps } = useRadioGroup(props)
 
   const group = getRootProps()

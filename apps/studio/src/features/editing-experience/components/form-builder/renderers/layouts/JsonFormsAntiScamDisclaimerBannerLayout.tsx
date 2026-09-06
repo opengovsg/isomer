@@ -26,7 +26,7 @@ export const jsonFormsAntiScamDisclaimerBannerLayoutTester: RankedTester =
 // We intentionally do NOT rely on schema `default` + `readOnly` fields for this, because
 // Studio runs AJV with `useDefaults: true` which can materialize defaults into the saved page
 // JSON even when marked read-only, making it look like these are user-configurable settings.
-function JsonFormsAntiScamDisclaimerBannerLayout({ visible }: LayoutProps) {
+const JsonFormsAntiScamDisclaimerBannerLayout = ({ visible }: LayoutProps) => {
   if (!visible) return null
 
   return (

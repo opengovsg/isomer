@@ -243,7 +243,7 @@ const DeleteLinkModal = ({
   )
 }
 
-function JsonFormsArrayLinkControl({
+const JsonFormsArrayLinkControl = ({
   data,
   path,
   visible,
@@ -260,7 +260,7 @@ function JsonFormsArrayLinkControl({
   uischemas,
   uischema,
   description,
-}: ArrayLayoutProps) {
+}: ArrayLayoutProps) => {
   const { hasErrorAt } = useBuilderErrors()
   const [selectedIndex, setSelectedIndex] = useState<number>()
   const [selectedPathForDeletion, setSelectedPathForDeletion] =

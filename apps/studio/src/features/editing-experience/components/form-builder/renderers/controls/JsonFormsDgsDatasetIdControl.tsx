@@ -221,7 +221,7 @@ interface JsonFormsDgsDatasetIdControlProps extends ControlProps {
   data: string
 }
 
-function JsonFormsDgsDatasetIdControl({
+const JsonFormsDgsDatasetIdControl = ({
   data,
   label,
   handleChange,
@@ -229,7 +229,7 @@ function JsonFormsDgsDatasetIdControl({
   description,
   required,
   errors,
-}: JsonFormsDgsDatasetIdControlProps) {
+}: JsonFormsDgsDatasetIdControlProps) => {
   const {
     isOpen: isDgsModalOpen,
     onOpen: onDgsModalOpen,

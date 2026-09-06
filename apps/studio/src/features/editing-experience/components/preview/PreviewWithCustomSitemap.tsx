@@ -27,23 +27,25 @@ export type PreviewProps = IsomerSchema & {
 
 // Add a fake link component to prevent the preview from navigating away
 const FakeLink = forwardRef<HTMLAnchorElement, PropsWithChildren<unknown>>(
-  ({ children, ...rest }, ref) => (
-    <a {...rest} ref={ref} onClick={(e) => e.preventDefault()}>
-      {children}
-    </a>
-  ),
+  function ({ children, ...rest }, ref) {
+    return (
+      <a {...rest} ref={ref} onClick={(e) => e.preventDefault()}>
+        {children}
+      </a>
+    )
+  },
 )
 
 const defaultLastModified = new Date().toISOString()
 
-function SuspendablePreviewWithCustomSitemap({
+const SuspendablePreviewWithCustomSitemap = ({
   permalink,
   lastModified = defaultLastModified,
   siteId,
   overrides = {},
   siteMap,
   ...props
-}: PreviewProps) {
+}: PreviewProps) => {
   const [baseSiteConfig] = trpc.site.getConfig.useSuspenseQuery({ id: siteId })
   const [{ content: footer }] = trpc.site.getFooter.useSuspenseQuery({
     id: siteId,

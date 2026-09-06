@@ -41,8 +41,8 @@ const ReplaceContentModal = ({
         </ModalHeader>
         <ModalBody>
           <Text>
-            If the linked page has a title, summary or thumbnail, they&apos;ll be
-            copied over.
+            If the linked page has a title, summary or thumbnail, they&apos;ll
+            be copied over.
           </Text>
         </ModalBody>
         <ModalFooter>
@@ -73,14 +73,14 @@ const prefillFieldMappings = {
   imageUrl: "thumbnail",
 } as const
 
-function JsonFormsPrefillLinkControl({
+const JsonFormsPrefillLinkControl = ({
   data,
   label,
   handleChange,
   path,
   required,
   errors,
-}: ControlProps) {
+}: ControlProps) => {
   const [canPrefill, setCanPrefill] = useState(false)
   const toast = useToast()
   const prefill = usePrefillForCards({

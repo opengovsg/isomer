@@ -172,7 +172,7 @@ const SiderailOrderingContent = ({
   )
 }
 
-export default function SiderailOrderingEditorStateDrawer(): JSX.Element {
+const SiderailOrderingEditorStateDrawer = (): JSX.Element => {
   const {
     setDrawerState,
     savedPageState,
@@ -341,3 +341,5 @@ export default function SiderailOrderingEditorStateDrawer(): JSX.Element {
     </Flex>
   )
 }
+
+export default SiderailOrderingEditorStateDrawer

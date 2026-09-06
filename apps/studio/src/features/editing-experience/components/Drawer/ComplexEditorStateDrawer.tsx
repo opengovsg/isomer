@@ -27,7 +27,7 @@ import FormBuilder from "../form-builder/FormBuilder"
 import { uploadModifiedAssets } from "../utils"
 import { DrawerHeader } from "./DrawerHeader"
 
-export default function ComplexEditorStateDrawer(): JSX.Element {
+const ComplexEditorStateDrawer = (): JSX.Element => {
   const {
     isOpen: isDeleteBlockModalOpen,
     onOpen: onDeleteBlockModalOpen,
@@ -395,3 +395,5 @@ const SaveButton = ({
     </Button>
   )
 }
+
+export default ComplexEditorStateDrawer

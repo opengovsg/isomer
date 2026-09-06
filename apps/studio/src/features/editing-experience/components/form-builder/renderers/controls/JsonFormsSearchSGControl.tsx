@@ -13,7 +13,7 @@ export const jsonFormsSearchSGControlTester: RankedTester = rankWith(
   schemaMatches((schema) => schema.format === "searchsg"),
 )
 
-function JsonFormsSearchSGControl({
+const JsonFormsSearchSGControl = ({
   schema,
   path,
   renderers,
@@ -21,7 +21,7 @@ function JsonFormsSearchSGControl({
   rootSchema,
   uischema,
   uischemas,
-}: CombinatorRendererProps) {
+}: CombinatorRendererProps) => {
   const anyOfRenderInfos = createCombinatorRenderInfos(
     schema.anyOf ?? [],
     rootSchema,

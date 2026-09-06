@@ -5,11 +5,11 @@ import { trpc } from "~/utils/trpc"
 import type { PreviewProps } from "./PreviewWithCustomSitemap"
 import PreviewWithCustomSitemap from "./PreviewWithCustomSitemap"
 
-function SuspendablePreview({
+const SuspendablePreview = ({
   siteId,
   resourceId,
   ...rest
-}: Omit<PreviewProps, "siteMap"> & { resourceId: number }) {
+}: Omit<PreviewProps, "siteMap"> & { resourceId: number }) => {
   const [siteMap] = trpc.site.getLocalisedSitemap.useSuspenseQuery({
     siteId,
     resourceId,

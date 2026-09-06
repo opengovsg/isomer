@@ -24,7 +24,7 @@ export const jsonFormsArrayControlTester: RankedTester = rankWith(
   or(isObjectArrayControl, isPrimitiveArrayControl),
 )
 
-function JsonFormsArrayControl(props: ArrayLayoutProps) {
+const JsonFormsArrayControl = (props: ArrayLayoutProps) => {
   const {
     data,
     path,

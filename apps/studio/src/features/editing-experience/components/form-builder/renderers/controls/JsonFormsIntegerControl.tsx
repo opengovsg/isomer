@@ -40,7 +40,7 @@ export const jsonFormsIntegerControlTester: RankedTester = rankWith(
   ),
 )
 
-function JsonFormsIntegerControl({
+const JsonFormsIntegerControl = ({
   label,
   schema,
   handleChange,
@@ -48,7 +48,7 @@ function JsonFormsIntegerControl({
   path,
   description,
   required,
-}: ControlProps) {
+}: ControlProps) => {
   const {
     exclusiveMaximum,
     exclusiveMinimum,

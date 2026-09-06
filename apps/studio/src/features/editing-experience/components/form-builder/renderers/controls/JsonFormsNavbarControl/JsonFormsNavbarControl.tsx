@@ -42,7 +42,7 @@ export const jsonFormsNavbarControlTester: RankedTester = rankWith(
   schemaMatches((schema) => schema.format === "navbar"),
 )
 
-function JsonFormsNavbarControl({
+const JsonFormsNavbarControl = ({
   data,
   path,
   visible,
@@ -55,7 +55,7 @@ function JsonFormsNavbarControl({
   cells,
   uischemas,
   uischema,
-}: ArrayLayoutProps): JSX.Element {
+}: ArrayLayoutProps): JSX.Element => {
   const ctx = useJsonForms()
   const [selectedPath, setSelectedPath] = useState<string>()
   const [droppableZoneElement, setDroppableZoneElement] =

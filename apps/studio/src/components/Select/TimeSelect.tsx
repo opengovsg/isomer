@@ -18,110 +18,101 @@ interface TimeSelectProps extends Omit<BaseSelectProps<string>, "options"> {
 export const TimeSelect = React.forwardRef<
   SelectInstance<BaseSelectOption<string>>,
   TimeSelectProps
->(
-  (
-    {
-      value,
-      earliestAllowableTime,
-      minutesStep = 15,
-      ...rest
-    }: TimeSelectProps,
-    ref,
-  ) => {
-    const totalSlots = (24 * 60) / minutesStep
+>(function TimeSelect(
+  { value, earliestAllowableTime, minutesStep = 15, ...rest }: TimeSelectProps,
+  ref,
+) {
+  const totalSlots = (24 * 60) / minutesStep
 
-    // Generate all time slots in a day
-    const options = Array.from({ length: totalSlots })
-      .flatMap((_, i) => {
-        const minutesOfDay = i * minutesStep
-        const optionTime = set(new Date(), {
-          hours: Math.floor(minutesOfDay / 60),
-          minutes: minutesOfDay % 60,
-          seconds: 0,
-          milliseconds: 0,
-        })
-        return {
-          optionTime,
-          value: format(optionTime, "HH:mm"),
-          label: format(optionTime, "hh:mm a"),
-        }
+  // Generate all time slots in a day
+  const options = Array.from({ length: totalSlots })
+    .flatMap((_, i) => {
+      const minutesOfDay = i * minutesStep
+      const optionTime = set(new Date(), {
+        hours: Math.floor(minutesOfDay / 60),
+        minutes: minutesOfDay % 60,
+        seconds: 0,
+        milliseconds: 0,
       })
-      .filter(({ optionTime }) => {
-        return earliestAllowableTime
-          ? optionTime >= earliestAllowableTime
-          : true
-      })
+      return {
+        optionTime,
+        value: format(optionTime, "HH:mm"),
+        label: format(optionTime, "hh:mm a"),
+      }
+    })
+    .filter(({ optionTime }) => {
+      return earliestAllowableTime ? optionTime >= earliestAllowableTime : true
+    })
 
-    const TimezoneBadge = () => {
-      return (
-        <Text textStyle="caption-2" color="base.content.medium">
-          {getTimezoneAbbreviation()}
-        </Text>
-      )
-    }
-
-    const formatOptionLabel = (
-      option: BaseSelectOption<string>,
-      { context }: FormatOptionLabelMeta<BaseSelectOption<string>>,
-    ) => {
-      return (
-        <Flex
-          align="center"
-          justify="space-between"
-          w="100%"
-          cursor="pointer"
-          flexDir="row"
-        >
-          <Text>{option.label}</Text>
-          {context === "value" && <TimezoneBadge />}
-        </Flex>
-      )
-    }
-
+  const TimezoneBadge = () => {
     return (
-      <BaseSelect
-        ref={ref}
-        value={value}
-        options={options}
-        placeholder="Select time"
-        formatOptionLabel={formatOptionLabel}
-        customComponents={{
-          DropdownIndicator: () => {
-            return (
-              <Flex
-                height="100%"
-                w="2.75rem"
-                alignItems="center"
-                justifyContent="center"
-                cursor="pointer"
-              >
-                <Icon as={BiTimeFive} boxSize="1.25rem" />
-              </Flex>
-            )
-          },
-          IndicatorSeparator: () => (
-            <Divider
-              h="100%"
-              orientation="vertical"
-              borderColor="base.divider.strong"
-            />
-          ),
-          Placeholder: (props) => {
-            return (
-              <components.Placeholder {...props}>
-                <Flex align="center" justify="space-between" w="100%">
-                  <Text>Select time</Text>
-                  <TimezoneBadge />
-                </Flex>
-              </components.Placeholder>
-            )
-          },
-        }}
-        {...rest}
-      />
+      <Text textStyle="caption-2" color="base.content.medium">
+        {getTimezoneAbbreviation()}
+      </Text>
     )
-  },
-)
+  }
+
+  const formatOptionLabel = (
+    option: BaseSelectOption<string>,
+    { context }: FormatOptionLabelMeta<BaseSelectOption<string>>,
+  ) => {
+    return (
+      <Flex
+        align="center"
+        justify="space-between"
+        w="100%"
+        cursor="pointer"
+        flexDir="row"
+      >
+        <Text>{option.label}</Text>
+        {context === "value" && <TimezoneBadge />}
+      </Flex>
+    )
+  }
+
+  return (
+    <BaseSelect
+      ref={ref}
+      value={value}
+      options={options}
+      placeholder="Select time"
+      formatOptionLabel={formatOptionLabel}
+      customComponents={{
+        DropdownIndicator: () => {
+          return (
+            <Flex
+              height="100%"
+              w="2.75rem"
+              alignItems="center"
+              justifyContent="center"
+              cursor="pointer"
+            >
+              <Icon as={BiTimeFive} boxSize="1.25rem" />
+            </Flex>
+          )
+        },
+        IndicatorSeparator: () => (
+          <Divider
+            h="100%"
+            orientation="vertical"
+            borderColor="base.divider.strong"
+          />
+        ),
+        Placeholder: (props) => {
+          return (
+            <components.Placeholder {...props}>
+              <Flex align="center" justify="space-between" w="100%">
+                <Text>Select time</Text>
+                <TimezoneBadge />
+              </Flex>
+            </components.Placeholder>
+          )
+        },
+      }}
+      {...rest}
+    />
+  )
+})
 
 /**
  * Parses a time string in the format "HH:mm" to a Date object set to today's date

@@ -31,7 +31,7 @@ interface JsonFormsCombinatorControlProps extends CombinatorRendererProps {
   combinatorType: "oneOf" | "anyOf"
 }
 
-function JsonFormsCombinatorControl({
+const JsonFormsCombinatorControl = ({
   schema,
   path,
   renderers,
@@ -45,7 +45,7 @@ function JsonFormsCombinatorControl({
   indexOfFittingSchema,
   data,
   combinatorType,
-}: JsonFormsCombinatorControlProps) {
+}: JsonFormsCombinatorControlProps) => {
   const [variant, setVariant] = useState("")
   const combinatorSchemas = schema[combinatorType] ?? []
   const renderInfos = createCombinatorRenderInfos(
@@ -162,11 +162,11 @@ function JsonFormsCombinatorControl({
   )
 }
 
-function OneOfControl(props: CombinatorRendererProps) {
+const OneOfControl = (props: CombinatorRendererProps) => {
   return <JsonFormsCombinatorControl {...props} combinatorType="oneOf" />
 }
 
-function AnyOfControl(props: CombinatorRendererProps) {
+const AnyOfControl = (props: CombinatorRendererProps) => {
   return <JsonFormsCombinatorControl {...props} combinatorType="anyOf" />
 }
 

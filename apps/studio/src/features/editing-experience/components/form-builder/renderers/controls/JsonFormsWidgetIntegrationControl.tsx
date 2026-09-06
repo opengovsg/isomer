@@ -20,7 +20,7 @@ export const jsonFormsWidgetIntegrationControlTester: RankedTester = rankWith(
   schemaMatches((schema) => !!schema.format?.startsWith("widget-integration/")),
 )
 
-function JsonFormsWidgetIntegrationControl({
+const JsonFormsWidgetIntegrationControl = ({
   data,
   path,
   schema,
@@ -31,7 +31,7 @@ function JsonFormsWidgetIntegrationControl({
   cells,
   renderers,
   enabled,
-}: ControlWithDetailProps) {
+}: ControlWithDetailProps) => {
   const { activeWidget, setActiveWidget, getNextWidget } = useWidget()
   // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const [snapshot, setSnapshot] = useState(data)

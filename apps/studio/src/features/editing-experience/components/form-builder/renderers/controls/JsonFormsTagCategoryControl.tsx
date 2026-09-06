@@ -22,7 +22,7 @@ import { useDeleteTarget } from "../../hooks/useDeleteTarget"
 import { useLiveLabelIssues } from "../../hooks/useLiveLabelIssues"
 import { createDefaultTagCategory } from "./constants"
 
-function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
+const JsonFormsTagCategoriesArrayLayoutInner = (props: ArrayLayoutProps) => {
   const {
     data,
     path,

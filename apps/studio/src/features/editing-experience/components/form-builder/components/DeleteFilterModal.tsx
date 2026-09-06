@@ -33,7 +33,7 @@ interface DeleteFilterModalProps {
 const DELETE_FILTER_UNDO_TEXT =
   "To undo this change, you will need to recreate this filter and assign options to each item individually."
 
-function FilterUsageInfobox({
+const FilterUsageInfobox = ({
   siteId,
   pageId,
   tagOptionIds,
@@ -41,7 +41,7 @@ function FilterUsageInfobox({
   siteId: number
   pageId: number
   tagOptionIds: string[]
-}) {
+}) => {
   const [{ count }] = trpc.collection.countTagOptionsUsage.useSuspenseQuery({
     siteId,
     pageId,
@@ -58,14 +58,14 @@ function FilterUsageInfobox({
   )
 }
 
-export function DeleteFilterModal({
+export const DeleteFilterModal = ({
   isOpen,
   siteId,
   pageId,
   tagOptionIds,
   onClose,
   onConfirm,
-}: DeleteFilterModalProps) {
+}: DeleteFilterModalProps) => {
   const [isChecked, setIsChecked] = useState(false)
 
   return (

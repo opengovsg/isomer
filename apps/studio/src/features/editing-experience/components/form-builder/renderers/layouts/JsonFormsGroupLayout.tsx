@@ -55,7 +55,7 @@ const GroupComponent = React.memo(function GroupComponent({
   )
 })
 
-function JsonFormsGroupLayoutRenderer({
+const JsonFormsGroupLayoutRenderer = ({
   uischema,
   schema,
   path,
@@ -65,7 +65,7 @@ function JsonFormsGroupLayoutRenderer({
   cells,
   direction,
   label,
-}: LayoutProps) {
+}: LayoutProps) => {
   return (
     <GroupComponent
       schema={schema}

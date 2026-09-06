@@ -32,8 +32,8 @@ const AddRedirectSection = ({
   if (isError) {
     return (
       <Infobox variant="warning" size="sm">
-        We couldn&apos;t check your permissions, so adding and removing redirects is
-        unavailable. Refresh the page to try again.
+        We couldn&apos;t check your permissions, so adding and removing
+        redirects is unavailable. Refresh the page to try again.
       </Infobox>
     )
   }

@@ -90,13 +90,13 @@ const splitForMiddleTruncation = (value: string) => {
 // leaking the raw "[resource:...]" string. When the destination has no published
 // page behind it (missing or not-yet-published), a warning icon is pinned to the
 // end of the column.
-function DestinationCell({
+const DestinationCell = ({
   display,
   showWarning,
 }: {
   display: DestinationDisplay
   showWarning: boolean
-}): JSX.Element {
+}): JSX.Element => {
   const { ref, isTruncated } = useIsTruncated<HTMLParagraphElement>()
 
   if (display.status === "resolving") {
@@ -180,7 +180,7 @@ const destinationLabelFor = (display: DestinationDisplay): string => {
   }
 }
 
-function SortableHeader({
+const SortableHeader = ({
   label,
   isSorted,
   onClick,
@@ -188,7 +188,7 @@ function SortableHeader({
   label: string
   isSorted: false | "asc" | "desc"
   onClick?: (event: unknown) => void
-}): JSX.Element {
+}): JSX.Element => {
   const icon = useMemo(() => {
     switch (isSorted) {
       case "asc":
@@ -221,7 +221,7 @@ function SortableHeader({
 // Renders a redirect source. A trailing "*" wildcard is shown as a badge rather
 // than literal text. The tooltip surfaces the full source only when the visible
 // text is clipped by the cell width.
-function SourceCell({ source }: { source: string }): JSX.Element {
+const SourceCell = ({ source }: { source: string }): JSX.Element => {
   // Measure both the text and the row: the text catches its own clamp, while the
   // row catches the case where the wildcard badge is clipped even though the
   // text is not.

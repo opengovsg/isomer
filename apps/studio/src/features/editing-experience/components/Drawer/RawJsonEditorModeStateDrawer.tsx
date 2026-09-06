@@ -17,7 +17,7 @@ import { RawJsonEditor } from "../RawJsonEditor"
 
 const validateFn = ajv.compile<IsomerSchema>(schema)
 
-export default function RawJsonEditorModeStateDrawer(): JSX.Element {
+const RawJsonEditorModeStateDrawer = (): JSX.Element => {
   const {
     setDrawerState,
     savedPageState,
@@ -96,3 +96,5 @@ export default function RawJsonEditorModeStateDrawer(): JSX.Element {
     />
   )
 }
+
+export default RawJsonEditorModeStateDrawer

@@ -17,13 +17,13 @@ export const jsonFormsChildrenPagesLayoutControlTester: RankedTester = rankWith(
   ),
 )
 
-function JsonFormsChildrenPagesLayoutControl({
+const JsonFormsChildrenPagesLayoutControl = ({
   data,
   label,
   handleChange,
   path,
   description,
-}: ControlProps): JSX.Element {
+}: ControlProps): JSX.Element => {
   return (
     <Box>
       <FormControl isRequired gap="0.5rem">

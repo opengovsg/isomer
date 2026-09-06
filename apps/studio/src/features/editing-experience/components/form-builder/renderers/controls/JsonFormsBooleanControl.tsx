@@ -16,7 +16,7 @@ export const jsonFormsBooleanControlTester: RankedTester = rankWith(
   isBooleanControl,
 )
 
-function JsonFormsBooleanControl({
+const JsonFormsBooleanControl = ({
   data,
   label,
   id,
@@ -26,7 +26,7 @@ function JsonFormsBooleanControl({
   path,
   description,
   schema,
-}: ControlProps): JSX.Element {
+}: ControlProps): JSX.Element => {
   if (schema.const !== undefined) {
     return null
   }

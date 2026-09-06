@@ -33,7 +33,7 @@ import { DrawerHeader } from "./DrawerHeader"
 const heroSchema = getComponentSchema({ component: "hero" })
 const validateHeroFn = ajv.compile<IsomerComponent>(heroSchema)
 
-export default function HeroEditorDrawer(): JSX.Element {
+const HeroEditorDrawer = (): JSX.Element => {
   const {
     isOpen: isDiscardChangesModalOpen,
     onOpen: onDiscardChangesModalOpen,
@@ -255,3 +255,5 @@ const SaveButton = ({
     </Button>
   )
 }
+
+export default HeroEditorDrawer

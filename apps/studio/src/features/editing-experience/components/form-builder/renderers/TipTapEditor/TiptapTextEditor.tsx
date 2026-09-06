@@ -3,11 +3,11 @@ import { TextMenuBar } from "~/components/PageEditor/MenuBar"
 
 import { Editor } from "./components"
 
-export function TiptapTextEditor({
+export const TiptapTextEditor = ({
   editor,
 }: {
   editor: ReturnType<typeof useTextEditor>
-}) {
+}) => {
   // TODO: Add a loading state or use suspense
   if (!editor) return null
 

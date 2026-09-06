@@ -60,7 +60,7 @@ const generateSidebarItem = (
   )
 }
 
-export function CmsSidebarItems({ navItems }: CmsSidebarItemsProps) {
+export const CmsSidebarItems = ({ navItems }: CmsSidebarItemsProps) => {
   const router = useRouter()
 
   const renderedSidebarItems = useMemo(() => {

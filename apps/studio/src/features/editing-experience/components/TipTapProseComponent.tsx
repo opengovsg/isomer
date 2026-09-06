@@ -22,7 +22,7 @@ interface TipTapComponentProps {
   content: ProseProps
 }
 
-function TipTapProseComponent({ content }: TipTapComponentProps) {
+const TipTapProseComponent = ({ content }: TipTapComponentProps) => {
   const {
     isOpen: isDeleteBlockModalOpen,
     onOpen: onDeleteBlockModalOpen,

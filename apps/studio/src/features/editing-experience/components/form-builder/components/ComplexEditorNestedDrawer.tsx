@@ -26,7 +26,7 @@ interface ComplexEditorNestedDrawerProps {
   handleRemoveItem: () => void
 }
 
-export function ComplexEditorNestedDrawer({
+export const ComplexEditorNestedDrawer = ({
   renderers,
   cells,
   visible,
@@ -39,7 +39,7 @@ export function ComplexEditorNestedDrawer({
   handleRemoveItem,
   selectedIndex,
   maxIndex,
-}: ComplexEditorNestedDrawerProps) {
+}: ComplexEditorNestedDrawerProps) => {
   return (
     <VStack
       position="absolute"

@@ -16,7 +16,7 @@ const MAX_COLUMNS_OPTIONS = [
   { label: "3 columns", value: "3" },
 ]
 
-function JsonFormsMaxColumnsControl({
+const JsonFormsMaxColumnsControl = ({
   data,
   label,
   handleChange,
@@ -24,7 +24,7 @@ function JsonFormsMaxColumnsControl({
   description,
 }: Omit<ControlProps, "data"> & {
   data?: string
-}): JSX.Element | null {
+}): JSX.Element | null => {
   const ctx = useJsonForms()
 
   // Get sibling variant value

@@ -8,10 +8,10 @@ interface CmsSidebarProps {
   bottomNavItems?: CmsSidebarItem[]
 }
 
-export function CmsSidebar({
+export const CmsSidebar = ({
   topNavItems = [],
   bottomNavItems = [],
-}: CmsSidebarProps) {
+}: CmsSidebarProps) => {
   return (
     <VStack spacing="0.75rem" as="nav" justify="space-between" height="100%">
       <VStack spacing="0.75rem">

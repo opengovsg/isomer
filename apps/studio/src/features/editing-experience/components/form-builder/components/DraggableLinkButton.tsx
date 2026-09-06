@@ -62,7 +62,7 @@ interface DraggableLinkButtonProps extends Omit<
 }
 
 const DraggableLinkButton = forwardRef<DraggableLinkButtonProps, "div">(
-  (
+  function DraggableLinkButton(
     {
       draggableProps,
       dragHandleProps,
@@ -76,7 +76,7 @@ const DraggableLinkButton = forwardRef<DraggableLinkButtonProps, "div">(
       resetLink,
     },
     ref,
-  ) => {
+  ) {
     const ctx = useJsonForms()
     const label = computeChildLabel(
       ctx.core?.data,

@@ -27,7 +27,7 @@ interface JsonFormsImageControlProps extends ControlProps {
     allowedMimeTypeMappings?: Record<string, string>
   }
 }
-function JsonFormsImageControl({
+const JsonFormsImageControl = ({
   label,
   handleChange,
   path,
@@ -36,7 +36,7 @@ function JsonFormsImageControl({
   description,
   data,
   schema,
-}: JsonFormsImageControlProps) {
+}: JsonFormsImageControlProps) => {
   const { siteId, pageId, linkId } = useQueryParse(pageOrLinkSchema)
 
   return (

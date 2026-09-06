@@ -70,8 +70,8 @@ export const RemoveUserModal = () => {
               <UserInfoContent siteId={siteId} userId={userId} />
               <Text textStyle="body-1" color="base.content.default">
                 This user will no longer be able to access this site on Studio.
-                We won&apos;t notify them, but they&apos;ll know after logging in to
-                Studio.
+                We won&apos;t notify them, but they&apos;ll know after logging
+                in to Studio.
               </Text>
             </VStack>
           </ModalBody>

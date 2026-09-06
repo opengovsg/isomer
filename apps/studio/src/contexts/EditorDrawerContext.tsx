@@ -52,7 +52,7 @@ interface EditorDrawerProviderProps extends PropsWithChildren {
   title: string
 }
 
-export function EditorDrawerProvider({
+export const EditorDrawerProvider = ({
   children,
   initialPageState,
   type,
@@ -61,7 +61,7 @@ export function EditorDrawerProvider({
   pageId,
   updatedAt,
   title,
-}: EditorDrawerProviderProps) {
+}: EditorDrawerProviderProps) => {
   const [drawerState, setDrawerState] = useState<DrawerState>({
     state: "root",
   })
