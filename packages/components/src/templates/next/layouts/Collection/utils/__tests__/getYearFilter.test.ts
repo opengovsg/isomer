@@ -1,9 +1,9 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import { describe, expect, it } from "vitest"
-import { testCollectionItem } from "./testHelpers"
 
 import { NO_SPECIFIED_YEAR_FILTER_ID } from "../constants"
 import { getYearFilter } from "../getYearFilter"
+import { testCollectionItem } from "./testHelpers"
 
 describe("getYearFilter", () => {
   it("should return empty filter items when no items provided", () => {
@@ -26,19 +26,19 @@ describe("getYearFilter", () => {
     const items: ProcessedCollectionCardProps[] = [
       testCollectionItem({
         date: new Date("2023-01-01"),
-        }),
+      }),
       testCollectionItem({
         date: new Date("2023-06-15"),
-        }),
+      }),
       testCollectionItem({
         date: new Date("2022-12-31"),
-        }),
+      }),
       testCollectionItem({
         date: new Date("2022-01-01"),
-        }),
+      }),
       testCollectionItem({
         date: undefined,
-        }),
+      }),
     ]
 
     // Act
@@ -59,9 +59,21 @@ describe("getYearFilter", () => {
   it("should return a single item if all items have the same year", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
-      testCollectionItem({ title: "Item 1", description: "", date: new Date("2023-01-01") }),
-      testCollectionItem({ title: "Item 2", description: "", date: new Date("2023-01-01") }),
-      testCollectionItem({ title: "Item 3", description: "", date: new Date("2023-01-01") }),
+      testCollectionItem({
+        title: "Item 1",
+        description: "",
+        date: new Date("2023-01-01"),
+      }),
+      testCollectionItem({
+        title: "Item 2",
+        description: "",
+        date: new Date("2023-01-01"),
+      }),
+      testCollectionItem({
+        title: "Item 3",
+        description: "",
+        date: new Date("2023-01-01"),
+      }),
     ]
 
     // Act

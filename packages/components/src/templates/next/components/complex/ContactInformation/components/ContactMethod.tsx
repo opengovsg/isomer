@@ -34,9 +34,7 @@ export const ContactMethod = ({
     <div className={styles.container()}>
       <Icon
         className={
-          iconColor
-            ? twMerge(styles.icon(), iconColor)
-            : styles.icon()
+          iconColor ? twMerge(styles.icon(), iconColor) : styles.icon()
         }
       />
       <div className={styles.textContainer()}>

@@ -1,10 +1,10 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { AppliedFilter } from "~/templates/next/types/Filter"
 import { describe, expect, it } from "vitest"
-import { testCollectionItem } from "./testHelpers"
 
 import { NO_SPECIFIED_YEAR_FILTER_ID } from "../constants"
 import { getFilteredItems } from "../getFilteredItems"
+import { testCollectionItem } from "./testHelpers"
 
 describe("getFilteredItems", () => {
   it("returns all items when there is no search value and no applied filters", () => {
@@ -27,11 +27,11 @@ describe("getFilteredItems", () => {
       testCollectionItem({
         title: "Guide to Isomer",
         description: "",
-        }),
+      }),
       testCollectionItem({
         title: "Something else",
         description: "",
-        }),
+      }),
     ]
 
     // Act
@@ -47,7 +47,7 @@ describe("getFilteredItems", () => {
       testCollectionItem({
         title: "A",
         description: "Contains keyword here",
-        }),
+      }),
       testCollectionItem({ title: "B", description: "No match" }),
     ]
 
@@ -65,12 +65,12 @@ describe("getFilteredItems", () => {
         title: "A",
         description: "",
         date: new Date("2023-05-01"),
-        }),
+      }),
       testCollectionItem({
         title: "B",
         description: "",
         date: new Date("2022-05-01"),
-        }),
+      }),
     ]
     const appliedFilters: AppliedFilter[] = [
       { id: "year", items: [{ id: "2023" }] },
@@ -95,7 +95,7 @@ describe("getFilteredItems", () => {
         title: "B",
         description: "",
         date: new Date("2022-05-01"),
-        }),
+      }),
     ]
     const appliedFilters: AppliedFilter[] = [
       { id: "year", items: [{ id: NO_SPECIFIED_YEAR_FILTER_ID }] },
@@ -120,12 +120,12 @@ describe("getFilteredItems", () => {
         title: "B",
         description: "",
         tags: [{ selected: ["Articles"], category: "Category" }],
-        }),
+      }),
       testCollectionItem({
         title: "C",
         description: "",
         tags: [{ selected: ["Tutorials"], category: "Category" }],
-        }),
+      }),
     ]
     const appliedFilters: AppliedFilter[] = [
       {
@@ -159,7 +159,7 @@ describe("getFilteredItems", () => {
           { selected: ["Guides"], category: "Category" },
           { selected: ["Finance"], category: "Topic" },
         ],
-        }),
+      }),
     ]
     const appliedFilters: AppliedFilter[] = [
       { id: "Category", items: [{ id: "Guides" }] },
@@ -205,7 +205,7 @@ describe("getFilteredItems", () => {
         title: "Guide to something else",
         description: "",
         tags: [{ selected: ["Articles"], category: "Category" }],
-        }),
+      }),
     ]
     const appliedFilters: AppliedFilter[] = [
       { id: "Category", items: [{ id: "Guides" }] },
@@ -244,7 +244,7 @@ describe("getFilteredItems", () => {
         title:
           "Facilities Management(FM) Performance Appraisal Framework for FM Companies",
         description: "",
-        }),
+      }),
     ]
 
     // Act
@@ -261,11 +261,11 @@ describe("getFilteredItems", () => {
         title:
           "Facilities Management (FM) Performance Appraisal Framework for FM Companies",
         description: "",
-        }),
+      }),
       testCollectionItem({
         title: "Something else",
         description: "",
-        }),
+      }),
     ]
 
     // Act
@@ -281,11 +281,11 @@ describe("getFilteredItems", () => {
       testCollectionItem({
         title: "Unrelated title",
         description: undefined,
-        }),
+      }),
       testCollectionItem({
         title: "Another page",
         description: "Contains management (FM) guidance",
-        }),
+      }),
     ]
 
     // Act

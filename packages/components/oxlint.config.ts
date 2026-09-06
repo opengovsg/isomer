@@ -11,10 +11,7 @@ import {
 export default defineConfig({
   extends: [base, react, reactDoctor, antiSlop],
   settings: jsPluginSettings,
-  jsPlugins: [
-    ...reactDoctorJsPluginEntries,
-    ...(antiSlop.jsPlugins ?? []),
-  ],
+  jsPlugins: [...reactDoctorJsPluginEntries, ...(antiSlop.jsPlugins ?? [])],
   ignorePatterns: ["dist", "**/*.config.*", "!.storybook"],
   overrides: [
     {

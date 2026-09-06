@@ -31,9 +31,7 @@ export const mergeRefs = <T>(
 ) => {
   return (node: T | null) => {
     internalRef.current = node
-    if (
-      Object.prototype.toString.call(forwardedRef) === "[object Function]"
-    ) {
+    if (Object.prototype.toString.call(forwardedRef) === "[object Function]") {
       // SAFETY: runtime check confirms forwardedRef is a callback ref
       const callbackRef = forwardedRef as (node: T | null) => void
       callbackRef(node)

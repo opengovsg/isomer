@@ -1,10 +1,10 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { CollectionPageSchemaType } from "~/types"
 import { describe, expect, it } from "vitest"
-import { testCollectionItem } from "./testHelpers"
 import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
 
 import { getAvailableFilters } from "../getAvailableFilters"
+import { testCollectionItem } from "./testHelpers"
 
 describe("getAvailableFilters", () => {
   it("returns no filters when there are no items", () => {

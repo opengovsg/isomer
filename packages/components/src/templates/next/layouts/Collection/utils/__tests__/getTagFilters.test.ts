@@ -1,10 +1,10 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { CollectionPageSchemaType } from "~/types"
 import { describe, expect, it } from "vitest"
-import { testCollectionItem } from "./testHelpers"
 import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
 
 import { getTagFilters } from "../getTagFilters"
+import { testCollectionItem } from "./testHelpers"
 
 describe("getTagFilters", () => {
   it("returns filters grouped by tag category", () => {

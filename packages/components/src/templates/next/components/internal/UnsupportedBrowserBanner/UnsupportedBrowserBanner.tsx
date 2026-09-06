@@ -18,9 +18,7 @@ export const UnsupportedBrowserBanner = ({
 }: SupportedBrowserBannerProps) => {
   const navigatorUserAgent = useSyncExternalStore(
     subscribeToStaticSnapshot,
-    () =>
-      initialUserAgent ||
-      (globalThis.navigator?.userAgent ?? ""),
+    () => initialUserAgent || (globalThis.navigator?.userAgent ?? ""),
     () => initialUserAgent || "",
   )
 

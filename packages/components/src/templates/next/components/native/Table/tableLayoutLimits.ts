@@ -10,7 +10,10 @@ export const MAX_TABLE_ROWS = 1000
 
 type TableSpanAttribute = string | number | null | undefined
 
-const normalizeBoundedSpan = (value: TableSpanAttribute, max: number): number => {
+const normalizeBoundedSpan = (
+  value: TableSpanAttribute,
+  max: number,
+): number => {
   const numericSpan =
     value !== null &&
     value !== undefined &&

@@ -115,7 +115,7 @@ describe("resolveTableLayout", () => {
     })
   })
 
-type TableSpanAttribute = string | number | null | undefined
+  type TableSpanAttribute = string | number | null | undefined
 
   it("returns auto layout for hostile colspan values without throwing", () => {
     // Arrange
@@ -133,7 +133,9 @@ type TableSpanAttribute = string | number | null | undefined
       type: "tableRow" as const,
       content: cells,
     })
-    const toHostileTableRows = (hostileRow: ReturnType<typeof row>): TableRows => {
+    const toHostileTableRows = (
+      hostileRow: ReturnType<typeof row>,
+    ): TableRows => {
       // SAFETY: Test passes TipTap rows with hostile colspan attrs through resolveTableLayout.
       return [hostileRow] as TableRows
     }

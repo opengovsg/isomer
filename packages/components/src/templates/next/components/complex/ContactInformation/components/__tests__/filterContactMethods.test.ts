@@ -20,9 +20,7 @@ const hostileContactValues = (
   return values as ContactInformationUIProps["methods"][number]["values"]
 }
 
-const hostileContactValue = (
-  value: ExternalContactPayload,
-): string => {
+const hostileContactValue = (value: ExternalContactPayload): string => {
   // SAFETY: Test deliberately passes malformed external values through the filter boundary.
   return value as string
 }

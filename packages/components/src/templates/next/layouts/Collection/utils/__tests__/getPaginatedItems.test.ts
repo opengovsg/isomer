@@ -1,8 +1,8 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import { describe, expect, it } from "vitest"
-import { testCollectionItem } from "./testHelpers"
 
 import { getPaginatedItems } from "../getPaginatedItems"
+import { testCollectionItem } from "./testHelpers"
 
 const items: ProcessedCollectionCardProps[] = [
   testCollectionItem({ title: "Item 1", description: "" }),
