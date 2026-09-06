@@ -1,6 +1,8 @@
 import type { OrderedListProps, ProseContent } from "~/interfaces"
 import type { IsomerSchema } from "~/types"
 
+type ContentComponent = IsomerSchema["content"][number]
+
 const getNonEmptyStringOrDefault = (
   value: string | undefined,
   defaultValue: string,
@@ -24,8 +26,8 @@ const getTextContentOfProse = (proseContent: ProseContent): string => {
         break
       }
       default: {
-        const exhaustiveCheck: never = paragraphContentBlock
-        throw new Error(`Unexpected paragraph content type: ${exhaustiveCheck}`)
+        const _exhaustiveCheck: never = paragraphContentBlock
+        throw new Error("Unexpected paragraph content type")
       }
     }
   }
@@ -63,15 +65,15 @@ const getTextContentOfProse = (proseContent: ProseContent): string => {
           break
         }
         case "table": {
-          values.push((contentBlock.attrs.caption ?? "").trim())
+          values.push(contentBlock.attrs.caption.trim())
           break
         }
         case "divider": {
           break
         }
         default: {
-          const exhaustiveCheck: never = contentBlock
-          throw new Error(`Unexpected content block type: ${exhaustiveCheck}`)
+          const _exhaustiveCheck: never = contentBlock
+          throw new Error("Unexpected content block type")
         }
       }
     }
@@ -87,136 +89,91 @@ const getFilenameFromPath = (path: string): string => {
   return filename ?? ""
 }
 
-const getContentpicPreviewText = (
-  component: Extract<IsomerSchema["content"][number], { type: "contentpic" }>,
-): string => {
-  const textContentOfProse = getTextContentOfProse(component.content.content)
-  return textContentOfProse === ""
-    ? getFilenameFromPath(component.imageSrc)
-    : textContentOfProse
+const previewTextHandlers = {
+  accordion: (component: Extract<ContentComponent, { type: "accordion" }>) =>
+    component.summary,
+  antiscambanner: () => "Anti-scam disclaimer",
+  audio: (component: Extract<ContentComponent, { type: "audio" }>) =>
+    getNonEmptyStringOrDefault(component.title, "Audio embed"),
+  blockquote: (component: Extract<ContentComponent, { type: "blockquote" }>) =>
+    component.quote,
+  button: (component: Extract<ContentComponent, { type: "button" }>) =>
+    getNonEmptyStringOrDefault(component.buttonLabel, "Button"),
+  callout: (component: Extract<ContentComponent, { type: "callout" }>) =>
+    getTextContentOfProse(component.content.content),
+  childrenpages: () => "Child pages",
+  collectionblock: (
+    component: Extract<ContentComponent, { type: "collectionblock" }>,
+  ) => {
+    if (
+      component.customTitle !== undefined &&
+      component.customTitle !== ""
+    ) {
+      return component.customTitle
+    }
+
+    if (
+      component.customDescription !== undefined &&
+      component.customDescription !== ""
+    ) {
+      return component.customDescription
+    }
+
+    return "Collection block"
+  },
+  contactinformation: (
+    component: Extract<ContentComponent, { type: "contactinformation" }>,
+  ) =>
+    getNonEmptyStringOrDefault(component.title, "Contact Information"),
+  contentpic: (component: Extract<ContentComponent, { type: "contentpic" }>) => {
+    const textContentOfProse = getTextContentOfProse(component.content.content)
+    return textContentOfProse === ""
+      ? getFilenameFromPath(component.imageSrc)
+      : textContentOfProse
+  },
+  dynamiccomponentlist: () => "Dynamic Component List",
+  dynamicdatabanner: (
+    component: Extract<ContentComponent, { type: "dynamicdatabanner" }>,
+  ) => component.apiEndpoint,
+  formsg: (component: Extract<ContentComponent, { type: "formsg" }>) =>
+    getNonEmptyStringOrDefault(component.title, "FormSG form"),
+  hero: () => "",
+  iframe: () => "Iframe",
+  image: (component: Extract<ContentComponent, { type: "image" }>) =>
+    getFilenameFromPath(component.src),
+  imagegallery: () => "Image Gallery",
+  infobar: (component: Extract<ContentComponent, { type: "infobar" }>) =>
+    component.title,
+  infocards: (component: Extract<ContentComponent, { type: "infocards" }>) =>
+    component.title,
+  infocols: (component: Extract<ContentComponent, { type: "infocols" }>) =>
+    component.title,
+  infopic: (component: Extract<ContentComponent, { type: "infopic" }>) =>
+    component.title,
+  keystatistics: (
+    component: Extract<ContentComponent, { type: "keystatistics" }>,
+  ) => component.title,
+  logocloud: (component: Extract<ContentComponent, { type: "logocloud" }>) =>
+    getNonEmptyStringOrDefault(component.title, "Logo cloud"),
+  map: (component: Extract<ContentComponent, { type: "map" }>) =>
+    getNonEmptyStringOrDefault(component.title, "Map embed"),
+  prose: (component: Extract<ContentComponent, { type: "prose" }>) =>
+    getTextContentOfProse(component.content),
+  video: (component: Extract<ContentComponent, { type: "video" }>) =>
+    getNonEmptyStringOrDefault(component.title, "Video embed"),
+} satisfies {
+  [K in ContentComponent["type"]]: (
+    component: Extract<ContentComponent, { type: K }>,
+  ) => string
 }
 
-const getCollectionBlockPreviewText = (
-  component: Extract<
-    IsomerSchema["content"][number],
-    { type: "collectionblock" }
-  >,
-): string => {
-  if (
-    component.customTitle !== undefined &&
-    component.customTitle !== ""
-  ) {
-    return component.customTitle
-  }
-
-  if (
-    component.customDescription !== undefined &&
-    component.customDescription !== ""
-  ) {
-    return component.customDescription
-  }
-
-  return "Collection block"
-}
-
-const getFallbackPreviewText = (
-  component: IsomerSchema["content"][number],
-): string => {
-  const fallbackComponent = component as { type?: string }
-  return fallbackComponent.type ?? ""
-}
+const getPreviewTextForComponent = <T extends ContentComponent["type"]>(
+  type: T,
+  component: Extract<ContentComponent, { type: T }>,
+): string => previewTextHandlers[type](component)
 
 export const renderComponentPreviewText = ({
   component,
 }: {
-  component: IsomerSchema["content"][number]
-}): string => {
-  switch (component.type) {
-    case "accordion": {
-      return component.summary
-    }
-    case "blockquote": {
-      return component.quote
-    }
-    case "button": {
-      return getNonEmptyStringOrDefault(component.buttonLabel, "Button")
-    }
-    case "callout": {
-      return getTextContentOfProse(component.content.content)
-    }
-    case "formsg": {
-      return getNonEmptyStringOrDefault(component.title, "FormSG form")
-    }
-    case "hero": {
-      // should not show up in the sidebar
-      return ""
-    }
-    case "iframe": {
-      // not supported in the sidebar yet
-      return "Iframe"
-    }
-    case "image": {
-      return getFilenameFromPath(component.src)
-    }
-    case "infobar": {
-      return component.title
-    }
-    case "infocards": {
-      return component.title
-    }
-    case "infocols": {
-      return component.title
-    }
-    case "infopic": {
-      return component.title
-    }
-    case "contentpic": {
-      return getContentpicPreviewText(component)
-    }
-    case "keystatistics": {
-      return component.title
-    }
-    case "map": {
-      return getNonEmptyStringOrDefault(component.title, "Map embed")
-    }
-    case "logocloud": {
-      return getNonEmptyStringOrDefault(component.title, "Logo cloud")
-    }
-    case "prose": {
-      return getTextContentOfProse(component.content)
-    }
-    case "audio": {
-      return getNonEmptyStringOrDefault(component.title, "Audio embed")
-    }
-    case "video": {
-      return getNonEmptyStringOrDefault(component.title, "Video embed")
-    }
-    case "childrenpages": {
-      return "Child pages"
-    }
-    case "dynamicdatabanner": {
-      return component.apiEndpoint
-    }
-    case "antiscambanner": {
-      return "Anti-scam disclaimer"
-    }
-    case "collectionblock": {
-      return getCollectionBlockPreviewText(component)
-    }
-    case "imagegallery": {
-      return "Image Gallery"
-    }
-    case "contactinformation": {
-      return getNonEmptyStringOrDefault(
-        component.title,
-        "Contact Information",
-      )
-    }
-    case "dynamiccomponentlist": {
-      return "Dynamic Component List"
-    }
-    default: {
-      return getFallbackPreviewText(component)
-    }
-  }
-}
+  component: ContentComponent
+}): string => getPreviewTextForComponent(component.type, component)
