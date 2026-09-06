@@ -62,7 +62,7 @@ export function useArray({
       if (selectedIndex === index) {
         setSelectedIndex(undefined)
       } else if (selectedIndex > index) {
-        setSelectedIndex(selectedIndex - 1)
+        setSelectedIndex((prev) => (prev ?? 0) - 1)
       }
     },
     [isRemoveItemDisabled, removeItems, selectedIndex],

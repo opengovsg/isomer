@@ -15,7 +15,7 @@ import { trpc } from "~/utils/trpc"
  * This component is responsible for handling the callback from the Singpass
  * login.
  */
-export const SingpassCallback = (): JSX.Element => {
+export const SingpassCallback = (): React.ReactNode => {
   const { setHasLoginStateFlag } = useLoginState()
 
   const router = useRouter()

@@ -16,7 +16,8 @@
  */
 
 import { input } from "@inquirer/prompts"
-import { db, ResourceType } from "~/server/modules/database"
+import { db } from "~/server/modules/database/database"
+import { ResourceType } from "~/server/modules/database/types"
 
 import {
   asIndexBlob,
@@ -87,20 +88,21 @@ const buildConversionPlan = async (
     disallowedBlocks: [],
   }
 
-  const pagePlans: PagePlan[] = []
-  for (const child of pages) {
-    const blob = await getBlobOfResource({ db, resourceId: child.id })
-    const current = asPageBlob(blob.content)
-    pagePlans.push({
-      resourceId: child.id,
-      title: child.title,
-      permalink: child.permalink,
-      currentBlobId: blob.id,
-      currentBlob: blob.content,
-      nextBlob: buildArticleBlob(current, defaultCategory),
-      disallowedBlocks: findDisallowedBlocks(current.content),
-    })
-  }
+  const pagePlans: PagePlan[] = await Promise.all(
+    pages.map(async (child) => {
+      const blob = await getBlobOfResource({ db, resourceId: child.id })
+      const current = asPageBlob(blob.content)
+      return {
+        resourceId: child.id,
+        title: child.title,
+        permalink: child.permalink,
+        currentBlobId: blob.id,
+        currentBlob: blob.content,
+        nextBlob: buildArticleBlob(current, defaultCategory),
+        disallowedBlocks: findDisallowedBlocks(current.content),
+      }
+    }),
+  )
 
   return {
     folder,

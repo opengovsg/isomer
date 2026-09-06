@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test"
 import { sql } from "kysely"
-import { db } from "~/server/modules/database"
+import { db } from "~/server/modules/database/database"
 
 import { TEST_EMAILS, storageStateFor } from "../fixtures/auth"
 import { getSeedSiteId } from "../fixtures/seed"

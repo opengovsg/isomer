@@ -22,7 +22,7 @@ interface EditCollectionLinkPreviewProps {
 export const EditCollectionLinkPreview = ({
   link,
   title,
-}: EditCollectionLinkPreviewProps): JSX.Element => {
+}: EditCollectionLinkPreviewProps): React.ReactNode => {
   const { linkId, siteId } = useQueryParse(editLinkSchema)
   const [permalink] = trpc.page.getFullPermalink.useSuspenseQuery(
     {

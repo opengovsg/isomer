@@ -89,16 +89,16 @@ export const RoleBox = ({
           {value}
         </Text>
         <VStack justifyContent="flex-start" align="center" gap={1} w="100%">
-          {ROLES_LABELS.map((roleLabel, index) => {
+          {ROLES_LABELS.map((roleLabel) => {
             return permissionLabels.includes(roleLabel) ? (
               <HavePermissionContentItem
-                key={`have-permission-${index}`}
+                key={`have-permission-${roleLabel}`}
                 text={roleLabel}
                 isDisabled={isDisabled}
               />
             ) : (
               <NoPermissionContentItem
-                key={`no-permission-${index}`}
+                key={`no-permission-${roleLabel}`}
                 text={roleLabel}
               />
             )

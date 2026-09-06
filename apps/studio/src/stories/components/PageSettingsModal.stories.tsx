@@ -12,7 +12,7 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 
 // The modal is opened by its jotai atom rather than a prop, so a small wrapper
 // opens it on mount for the story.
-const OpenedPageSettingsModal = (): JSX.Element => {
+const OpenedPageSettingsModal = (): React.ReactNode => {
   const setState = useSetAtom(pageSettingsModalAtom)
   useEffect(() => {
     setState({ pageId: "1", type: ResourceType.Page })

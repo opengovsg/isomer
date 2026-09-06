@@ -51,7 +51,7 @@ interface StatusCellProps {
   status: GazetteStatus
 }
 
-export const StatusCell = ({ status }: StatusCellProps): JSX.Element => {
+export const StatusCell = ({ status }: StatusCellProps): React.ReactNode => {
   const config = STATUS_CONFIG[status]
 
   return (

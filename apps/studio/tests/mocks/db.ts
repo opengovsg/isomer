@@ -1,4 +1,4 @@
-import type { DB } from "~/server/modules/database"
+import type { DB } from "~/server/modules/database/types"
 import { PrismaPg } from "@prisma/adapter-pg"
 import { Kysely, PostgresDialect } from "kysely"
 import { randomUUID } from "node:crypto"

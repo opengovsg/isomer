@@ -1,6 +1,6 @@
 import fs from "fs/promises" // Use the promise-based version of fs for async/await
 import path from "path"
-import { db } from "~/server/modules/database"
+import { db } from "~/server/modules/database/database"
 
 import { FileLogger } from "../FileLogger"
 

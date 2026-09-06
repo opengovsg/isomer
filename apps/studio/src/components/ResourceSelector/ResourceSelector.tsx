@@ -131,8 +131,12 @@ const SuspensableResourceSelector = ({
     return (
       <Suspense fallback={<LoadingHeader />}>
         <SuspendableHeader
-          isSearchQueryEmpty={isSearchQueryEmpty}
-          hasParentInStack={hasParentInStack}
+          viewState={{
+            isSearchQueryEmpty,
+            hasParentInStack,
+            isLoading,
+            isHomeHighlighted,
+          }}
           handleClickBackButton={handleClickBackButton}
           resourceItemsWithAncestryStack={resourceItemsWithAncestryStack}
           handleOnClick={() =>
@@ -147,8 +151,6 @@ const SuspensableResourceSelector = ({
             ])
           }
           searchQuery={searchQuery}
-          isLoading={isLoading}
-          isHomeHighlighted={isHomeHighlighted}
         />
       </Suspense>
     )
@@ -171,12 +173,14 @@ const SuspensableResourceSelector = ({
           resourceItemsWithAncestryStack={resourceItemsWithAncestryStack}
           isResourceIdHighlighted={isResourceIdHighlighted}
           isResourceItemDisabled={isResourceItemDisabled}
-          hasAdditionalLeftPadding={hasAdditionalLeftPadding}
+          viewState={{
+            hasAdditionalLeftPadding,
+            isSearchQueryEmpty,
+            isLoading,
+          }}
           handleClickResourceItem={handleClickResourceItem}
-          isSearchQueryEmpty={isSearchQueryEmpty}
           searchQuery={searchQuery}
           clearSearchValue={clearSearchValue}
-          isLoading={isLoading}
         />
       </Suspense>
     )

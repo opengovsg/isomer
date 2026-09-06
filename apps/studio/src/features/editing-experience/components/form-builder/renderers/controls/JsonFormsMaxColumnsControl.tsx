@@ -24,7 +24,7 @@ const JsonFormsMaxColumnsControl = ({
   description,
 }: Omit<ControlProps, "data"> & {
   data?: string
-}): JSX.Element | null => {
+}): React.ReactNode | null => {
   const ctx = useJsonForms()
 
   // Get sibling variant value

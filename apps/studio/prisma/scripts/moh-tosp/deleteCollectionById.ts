@@ -1,4 +1,4 @@
-import { db } from "~/server/modules/database"
+import { db } from "~/server/modules/database/database"
 
 import { FileLogger } from "../FileLogger"
 

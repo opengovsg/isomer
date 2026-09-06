@@ -4,7 +4,7 @@ import getIP from "~/utils/getClientIp"
 import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 
 import { logAuthEvent } from "../audit/audit.service"
-import { db } from "../database"
+import { db } from "../database/database"
 import { emailSessionRouter } from "./email/email.router"
 import { singpassRouter } from "./singpass/singpass.router"
 

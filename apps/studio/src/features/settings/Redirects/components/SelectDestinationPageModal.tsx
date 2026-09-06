@@ -8,7 +8,7 @@ import {
   Text,
 } from "@chakra-ui/react"
 import { Button, ModalCloseButton } from "@opengovsg/design-system-react"
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { ResourceSelector } from "~/components/ResourceSelector"
 
 interface SelectDestinationPageModalProps {
@@ -25,17 +25,17 @@ export const SelectDestinationPageModal = ({
   siteId,
   onClose,
   onSelect,
-}: SelectDestinationPageModalProps): JSX.Element => {
+}: SelectDestinationPageModalProps): React.ReactNode => {
   const [selectedResourceId, setSelectedResourceId] = useState<string | null>(
     null,
   )
   // ResourceSelector already builds the selected resource's full permalink, so
   // we read it straight off onChange instead of re-fetching it on confirm.
-  const [selectedPermalink, setSelectedPermalink] = useState("")
+  const selectedPermalinkRef = useRef("")
 
   const handleClose = () => {
     setSelectedResourceId(null)
-    setSelectedPermalink("")
+    selectedPermalinkRef.current = ""
     onClose()
   }
 
@@ -43,7 +43,7 @@ export const SelectDestinationPageModal = ({
     if (!selectedResourceId) return
     // ResourceSelector's permalink has no leading slash; destinations are stored
     // as rooted paths, and conversion to a reference happens on save.
-    onSelect(`/${selectedPermalink}`)
+    onSelect(`/${selectedPermalinkRef.current}`)
     handleClose()
   }
 
@@ -64,7 +64,7 @@ export const SelectDestinationPageModal = ({
             siteId={siteId}
             onChange={(resourceId, fullPermalink) => {
               setSelectedResourceId(resourceId)
-              setSelectedPermalink(fullPermalink)
+              selectedPermalinkRef.current = fullPermalink
             }}
             selectedResourceId={selectedResourceId ?? undefined}
           />

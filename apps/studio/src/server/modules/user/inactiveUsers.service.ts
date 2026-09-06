@@ -9,11 +9,12 @@ import {
 import { createBaseLogger } from "~/lib/logger"
 import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 
-import type { ResourcePermission, Site, User } from "../database"
+import type { ResourcePermission, Site, User } from "../database/types"
 import type { BulkSendAccountDeactivationWarningEmailsProps } from "./types"
 import { logPermissionEvent } from "../audit/audit.service"
-import { db, RoleType, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
+import { db } from "../database/database"
+import { RoleType, sql } from "../database/types"
 import { MAX_DAYS_FROM_LAST_LOGIN } from "./constants"
 
 const logger = createBaseLogger({
@@ -107,23 +108,25 @@ export const bulkSendAccountDeactivationWarningEmails = async ({
       .groupBy("User.email")
       .execute()
 
-  for (const { userEmail, siteNames } of userAndSiteNames) {
-    // should not happen as we filter out users who have no site permissions
-    // but just in case, we add this as a safety net
-    if (siteNames.length === 0) continue
+  await Promise.all(
+    userAndSiteNames.map(async ({ userEmail, siteNames }) => {
+      // should not happen as we filter out users who have no site permissions
+      // but just in case, we add this as a safety net
+      if (siteNames.length === 0) return
 
-    try {
-      await sendAccountDeactivationWarningEmail({
-        recipientEmail: userEmail,
-        siteNames,
-        inHowManyDays,
-      })
-    } catch {
-      logger.error(
-        `Error sending account deactivation warning email for user ${userEmail}`,
-      )
-    }
-  }
+      try {
+        await sendAccountDeactivationWarningEmail({
+          recipientEmail: userEmail,
+          siteNames,
+          inHowManyDays,
+        })
+      } catch {
+        logger.error(
+          `Error sending account deactivation warning email for user ${userEmail}`,
+        )
+      }
+    }),
+  )
 }
 
 interface DeactivateUsersProps {
@@ -177,23 +180,29 @@ const deactivateUsers = async ({ userIds }: DeactivateUsersProps) => {
           .returningAll()
           .execute()
 
-        for (const after of updated) {
-          const before = permissionsToDelete.find((p) => p.id === after.id)
-          // Not expected: same tx/isolation level as the read above.
-          if (!before) {
-            throw new Error(
-              `Could not find pre-update state for ResourcePermission ${after.id}`,
-            )
-          }
+        const permissionsByUserId = new Map(
+          permissionsToDelete.map((permission) => [permission.id, permission]),
+        )
 
-          await logPermissionEvent(tx, {
-            eventType: AuditLogEvent.PermissionDelete,
-            by: systemUser,
-            delta: { before, after },
-            siteId: after.siteId,
-            metadata: { reason: "inactivity" },
-          })
-        }
+        await Promise.all(
+          updated.map(async (after) => {
+            const before = permissionsByUserId.get(after.id)
+            // Not expected: same tx/isolation level as the read above.
+            if (!before) {
+              throw new Error(
+                `Could not find pre-update state for ResourcePermission ${after.id}`,
+              )
+            }
+
+            await logPermissionEvent(tx, {
+              eventType: AuditLogEvent.PermissionDelete,
+              by: systemUser,
+              delta: { before, after },
+              siteId: after.siteId,
+              metadata: { reason: "inactivity" },
+            })
+          }),
+        )
 
         return updated
       })
@@ -219,12 +228,15 @@ const deactivateUsers = async ({ userIds }: DeactivateUsersProps) => {
     .selectAll()
     .execute()
 
-  return users.map((user) => ({
-    user,
-    siteIds: deletedPermissions
-      .filter((permission) => permission.userId === user.id)
-      .map((permission) => permission.siteId),
-  }))
+  return users.map((user) => {
+    const siteIds: number[] = []
+    for (const permission of deletedPermissions) {
+      if (permission.userId === user.id) {
+        siteIds.push(permission.siteId)
+      }
+    }
+    return { user, siteIds }
+  })
 }
 
 interface GetSiteAndAdminsProps {

@@ -114,23 +114,30 @@ export const parseRedirectCsv = (csv: string): ParseRedirectCsvResult => {
   }
 
   const expectedColumns = header.length
-  const rows = data
-    // Number every line (1-based) BEFORE dropping blanks, so a blank line still
-    // advances the count and rowNumber stays the true line in the uploaded file.
-    .map((row, index) => ({ row, rowNumber: index + 1 }))
-    .slice(headerIndex + 1)
-    .filter(({ row }) => !isBlankRow(row))
-    .map(({ row, rowNumber }) => ({
+  const rows: {
+    rowNumber: number
+    source: string
+    destination: string
+    malformed: boolean
+  }[] = []
+  for (let index = headerIndex + 1; index < data.length; index++) {
+    const row = data[index]
+    if (!row) {
+      continue
+    }
+    const rowNumber = index + 1
+    if (isBlankRow(row)) {
+      continue
+    }
+    rows.push({
       rowNumber,
       source: (row[sourceIndex] ?? "").trim(),
       destination: (row[destinationIndex] ?? "").trim(),
-      // Non-empty columns beyond the header mean a value contained an unquoted
-      // comma and got split into stray fields — papaparse keeps the pieces
-      // silently, so the destination read from its column would be truncated.
       malformed:
         row.length > expectedColumns &&
         row.slice(expectedColumns).some((cell) => cell.trim() !== ""),
-    }))
+    })
+  }
   if (rows.length === 0) {
     return {
       fileError:

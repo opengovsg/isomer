@@ -15,7 +15,7 @@ import { IconFlickr, IconInstagram, IconWhatsApp } from "~/components/icons"
 interface SocialMediaLink {
   type: NonNullable<FooterSchemaType["socialMediaLinks"]>[number]["type"]
   label: string
-  icon: JSX.Element
+  icon: React.ReactNode
   placeholder: string
 }
 

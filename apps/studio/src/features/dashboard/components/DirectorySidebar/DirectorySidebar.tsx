@@ -9,7 +9,7 @@ interface DirectorySidebarProps {
 
 export const DirectorySidebar = ({
   siteId,
-}: DirectorySidebarProps): JSX.Element => {
+}: DirectorySidebarProps): React.ReactNode => {
   return (
     <Flex flexDir="column" px="1.25rem" py="1.75rem">
       <DirectorySidebarContent

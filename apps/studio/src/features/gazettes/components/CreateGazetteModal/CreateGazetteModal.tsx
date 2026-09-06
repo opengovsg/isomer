@@ -37,7 +37,7 @@ export const CreateGazetteModal = ({
   onClose,
   siteId,
   collectionId,
-}: CreateGazetteModalProps): JSX.Element => {
+}: CreateGazetteModalProps): React.ReactNode => {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />

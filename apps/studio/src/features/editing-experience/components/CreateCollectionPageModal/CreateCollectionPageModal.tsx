@@ -17,7 +17,7 @@ export const CreateCollectionPageModal = ({
   onClose,
   siteId,
   collectionId,
-}: CreateCollectionPageModalProps): JSX.Element => {
+}: CreateCollectionPageModalProps): React.ReactNode => {
   return (
     <Modal size="full" isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />

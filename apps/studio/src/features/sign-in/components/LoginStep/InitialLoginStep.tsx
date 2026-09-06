@@ -8,7 +8,7 @@ import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
 import { EmailLoginForm } from "../EmailLogin"
 import { useSignInContext } from "../SignInContext"
 
-export const InitialLoginStep = (): JSX.Element => {
+export const InitialLoginStep = (): React.ReactNode => {
   const {
     env: { NEXT_PUBLIC_APP_NAME: title },
   } = useEnv()

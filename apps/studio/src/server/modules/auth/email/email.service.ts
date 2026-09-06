@@ -5,9 +5,10 @@ import {
   sendPublishAlertSiteAdminEmail,
 } from "~/features/mail/service"
 
-import type { DB, Transaction, User } from "../../database"
+import type { DB, Transaction, User } from "../../database/types"
 import { logUserEvent } from "../../audit/audit.service"
-import { AuditLogEvent, db, RoleType } from "../../database"
+import { db } from "../../database/database"
+import { AuditLogEvent, RoleType } from "../../database/types"
 
 interface UpsertUserParams {
   tx: Transaction<DB>
@@ -77,18 +78,19 @@ export const alertPublishWhenSingpassDisabled = async ({
   publisherId,
   publisherEmail,
 }: AlertPublishWhenSingpassDisabledParams) => {
-  const site = await db
-    .selectFrom("Site")
-    .where("id", "=", siteId)
-    .select("Site.name")
-    .executeTakeFirstOrThrow()
-
-  const resource = await db
-    .selectFrom("Resource")
-    .where("id", "=", resourceId)
-    .where("siteId", "=", siteId)
-    .selectAll()
-    .executeTakeFirstOrThrow()
+  const [site, resource] = await Promise.all([
+    db
+      .selectFrom("Site")
+      .where("id", "=", siteId)
+      .select("Site.name")
+      .executeTakeFirstOrThrow(),
+    db
+      .selectFrom("Resource")
+      .where("id", "=", resourceId)
+      .where("siteId", "=", siteId)
+      .selectAll()
+      .executeTakeFirstOrThrow(),
+  ])
 
   const allSiteAdminsMinusCurrentUser = await db
     .selectFrom("User")

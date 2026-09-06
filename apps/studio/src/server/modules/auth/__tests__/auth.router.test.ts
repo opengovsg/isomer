@@ -10,7 +10,7 @@ import { describe, expect, it } from "vitest"
 import { createCallerFactory } from "~/server/trpc"
 
 import * as authService from "../../audit/audit.service"
-import { db } from "../../database"
+import { db } from "../../database/database"
 import { authRouter } from "../auth.router"
 
 const createCaller = createCallerFactory(authRouter)

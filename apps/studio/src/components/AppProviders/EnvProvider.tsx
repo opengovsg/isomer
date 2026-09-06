@@ -19,7 +19,7 @@ export const EnvContext = createContext<EnvContextReturn | undefined>(undefined)
 export const EnvProvider = ({
   children,
   env,
-}: PropsWithChildren<EnvContextReturn>): JSX.Element => {
+}: PropsWithChildren<EnvContextReturn>): React.ReactNode => {
   const value = useMemo(() => ({ env }), [env])
 
   return <EnvContext.Provider value={value}>{children}</EnvContext.Provider>

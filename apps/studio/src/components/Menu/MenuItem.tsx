@@ -13,7 +13,7 @@ export const MenuItem = ({
   colorScheme,
   tooltip,
   ...menuItemProps
-}: MenuItemProps): JSX.Element => {
+}: MenuItemProps): React.ReactNode => {
   // Unable to use useMultiStyleConfig here because Menu parent still controls
   // other styles such as size and placement
   const extraStyles = useMemo(() => {

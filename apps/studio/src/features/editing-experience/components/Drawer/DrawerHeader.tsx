@@ -15,7 +15,7 @@ export const DrawerHeader = ({
   isDisabled,
   backAriaLabel,
   ...textProps
-}: DrawerHeaderProps): JSX.Element => {
+}: DrawerHeaderProps): React.ReactNode => {
   return (
     <Flex
       w="full"

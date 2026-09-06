@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useQuery } from "@tanstack/react-query"
 import { ASSETS_BASE_URL } from "~/utils/generateAssetUrl"
 
 const getImageAsFile = async (imageUrl: string): Promise<File> => {
@@ -11,18 +11,11 @@ const getImageAsFile = async (imageUrl: string): Promise<File> => {
 }
 
 export const useS3Image = (imagePath: string) => {
-  const [image, setImage] = useState<File | undefined>()
-
-  useEffect(() => {
-    if (!imagePath) {
-      return
-    }
-    getImageAsFile(`${ASSETS_BASE_URL}${imagePath}`)
-      .then((image) => {
-        setImage(image)
-      })
-      .catch(console.error)
-  }, [imagePath])
+  const { data: image } = useQuery({
+    queryKey: ["s3-image", imagePath],
+    queryFn: () => getImageAsFile(`${ASSETS_BASE_URL}${imagePath}`),
+    enabled: Boolean(imagePath),
+  })
 
   return {
     image: imagePath ? image : undefined,

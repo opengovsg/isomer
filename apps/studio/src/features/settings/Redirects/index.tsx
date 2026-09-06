@@ -22,7 +22,7 @@ const ADD_CARD_SKELETON_HEIGHT = "13rem"
 // away would tell an admin they lack access and then contradict itself.
 const AddRedirectSection = ({
   siteId,
-}: RedirectsSettingsProps): JSX.Element | null => {
+}: RedirectsSettingsProps): React.ReactNode | null => {
   const { canManageRedirects, isPending, isError } = useRedirectManagement()
 
   if (isPending) {
@@ -43,7 +43,7 @@ const AddRedirectSection = ({
 
 const RedirectsSettingsContent = ({
   siteId,
-}: RedirectsSettingsProps): JSX.Element => (
+}: RedirectsSettingsProps): React.ReactNode => (
   <Stack spacing="1.5rem" px="2rem" py="1.5rem" w="full">
     <RedirectsHeader />
 
@@ -57,7 +57,7 @@ const RedirectsSettingsContent = ({
 
 export const RedirectsSettings = ({
   siteId,
-}: RedirectsSettingsProps): JSX.Element => (
+}: RedirectsSettingsProps): React.ReactNode => (
   <RedirectManagementProvider siteId={siteId}>
     <RedirectsSettingsContent siteId={siteId} />
   </RedirectManagementProvider>

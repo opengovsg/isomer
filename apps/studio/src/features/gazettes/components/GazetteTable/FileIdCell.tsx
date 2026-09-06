@@ -13,7 +13,7 @@ export const FileIdCell = ({
   fileId,
   fileKey,
   siteId,
-}: FileIdCellProps): JSX.Element => {
+}: FileIdCellProps): React.ReactNode => {
   const { mutateAsync: getPresignedGetUrl, isPending } =
     trpc.gazette.getPresignedGetUrl.useMutation()
 

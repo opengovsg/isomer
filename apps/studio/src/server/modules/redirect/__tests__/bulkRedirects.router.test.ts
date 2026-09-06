@@ -16,7 +16,7 @@ import { createCallerFactory } from "~/server/trpc"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 
 import * as codebuildService from "../../aws/codebuild.service"
-import { db } from "../../database"
+import { db } from "../../database/database"
 import * as resourceService from "../../resource/resource.service"
 import { redirectRouter } from "../redirect.router"
 

@@ -1,5 +1,5 @@
 import { createId } from "@paralleldrive/cuid2"
-import { db } from "~/server/modules/database"
+import { db } from "~/server/modules/database/database"
 import { IsomerAdminRole, RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS } from "./auth"

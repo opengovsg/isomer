@@ -50,8 +50,10 @@ import {
 
 import { logResourceEvent } from "../audit/audit.service"
 import { alertPublishWhenSingpassDisabled } from "../auth/email/email.service"
-import { db, jsonb, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
+import { db } from "../database/database"
+import { sql } from "../database/types"
+import { jsonb } from "../database/utils"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 import { applyPermalinkChangeRedirects } from "../redirect/redirect.service"
 import {
@@ -192,9 +194,13 @@ export const pageRouter = router({
         .distinct()
         .execute()
 
-      const categories = blobs
-        .map((blob) => blob.category)
-        .filter((c) => !!c && !!c.trim())
+      const categories: string[] = []
+      for (const blob of blobs) {
+        const category = blob.category
+        if (category && category.trim()) {
+          categories.push(category)
+        }
+      }
 
       return { categories }
     }),
@@ -258,9 +264,11 @@ export const pageRouter = router({
           })
         }
 
-        const siteMeta = await getSiteConfig(tx, siteId)
-        const navbar = await getNavBar(tx, siteId)
-        const footer = await getFooter(tx, siteId)
+        const [siteMeta, navbar, footer] = await Promise.all([
+          getSiteConfig(tx, siteId),
+          getNavBar(tx, siteId),
+          getFooter(tx, siteId),
+        ])
 
         return {
           permalink,
@@ -347,15 +355,17 @@ export const pageRouter = router({
         // Insert at destination index
         actualBlocks.splice(to, 0, movedBlock)
 
-        const oldBlob = await getBlobOfResource({
-          db: tx,
-          resourceId: String(pageId),
-        })
-        const updatedBlob = await updateBlobById(tx, {
-          pageId,
-          content: { ...fullPage.content, content: actualBlocks },
-          siteId,
-        })
+        const [oldBlob, updatedBlob] = await Promise.all([
+          getBlobOfResource({
+            db: tx,
+            resourceId: String(pageId),
+          }),
+          updateBlobById(tx, {
+            pageId,
+            content: { ...fullPage.content, content: actualBlocks },
+            siteId,
+          }),
+        ])
         await logResourceEvent(tx, {
           siteId,
           eventType: AuditLogEvent.ResourceUpdate,
@@ -523,11 +533,13 @@ export const pageRouter = router({
         )
 
       await db.transaction().execute(async (tx) => {
-        const oldBlob = await getBlobOfResource({
-          db: tx,
-          resourceId: String(input.pageId),
-        })
-        const updatedBlob = await updateBlobById(tx, input)
+        const [oldBlob, updatedBlob] = await Promise.all([
+          getBlobOfResource({
+            db: tx,
+            resourceId: String(input.pageId),
+          }),
+          updateBlobById(tx, input),
+        ])
 
         await logResourceEvent(tx, {
           siteId: input.siteId,
@@ -744,12 +756,14 @@ export const pageRouter = router({
           ? rest
           : ({ ...rest, meta: newMeta } as PrismaJson.BlobJsonContent)
 
-        const oldBlob = await getBlobOfResource({ db: tx, resourceId })
-        const newBlob = await updateBlobById(tx, {
-          pageId: Number(resourceId),
-          content: newContent,
-          siteId,
-        })
+        const [oldBlob, newBlob] = await Promise.all([
+          getBlobOfResource({ db: tx, resourceId }),
+          updateBlobById(tx, {
+            pageId: Number(resourceId),
+            content: newContent,
+            siteId,
+          }),
+        ])
 
         await logResourceEvent(tx, {
           siteId,
@@ -969,29 +983,29 @@ export const pageRouter = router({
         resourceIds: [String(parentId)],
       })
 
-      const by = await db
-        .selectFrom("User")
-        .where("id", "=", ctx.user.id)
-        .selectAll()
-        .executeTakeFirstOrThrow(
-          () =>
-            new TRPCError({
-              code: "BAD_REQUEST",
-              message: "Please ensure that you are logged in",
-            }),
-        )
-
-      // Validate whether parentId exists and is a Folder or Collection
-      const parent = await db
-        .selectFrom("Resource")
-        .where("Resource.id", "=", parentId)
-        .where("Resource.siteId", "=", siteId)
-        .where("Resource.type", "in", [
-          ResourceType.Folder,
-          ResourceType.Collection,
-        ])
-        .select(["title", "type"])
-        .executeTakeFirst()
+      const [by, parent] = await Promise.all([
+        db
+          .selectFrom("User")
+          .where("id", "=", ctx.user.id)
+          .selectAll()
+          .executeTakeFirstOrThrow(
+            () =>
+              new TRPCError({
+                code: "BAD_REQUEST",
+                message: "Please ensure that you are logged in",
+              }),
+          ),
+        db
+          .selectFrom("Resource")
+          .where("Resource.id", "=", parentId)
+          .where("Resource.siteId", "=", siteId)
+          .where("Resource.type", "in", [
+            ResourceType.Folder,
+            ResourceType.Collection,
+          ])
+          .select(["title", "type"])
+          .executeTakeFirst(),
+      ])
 
       if (!parent) {
         throw new TRPCError({

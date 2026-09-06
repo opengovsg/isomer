@@ -96,7 +96,7 @@ const DestinationCell = ({
 }: {
   display: DestinationDisplay
   showWarning: boolean
-}): JSX.Element => {
+}): React.ReactNode => {
   const { ref, isTruncated } = useIsTruncated<HTMLParagraphElement>()
 
   if (display.status === "resolving") {
@@ -188,7 +188,7 @@ const SortableHeader = ({
   label: string
   isSorted: false | "asc" | "desc"
   onClick?: (event: unknown) => void
-}): JSX.Element => {
+}): React.ReactNode => {
   const icon = useMemo(() => {
     switch (isSorted) {
       case "asc":
@@ -221,7 +221,7 @@ const SortableHeader = ({
 // Renders a redirect source. A trailing "*" wildcard is shown as a badge rather
 // than literal text. The tooltip surfaces the full source only when the visible
 // text is clipped by the cell width.
-const SourceCell = ({ source }: { source: string }): JSX.Element => {
+const SourceCell = ({ source }: { source: string }): React.ReactNode => {
   // Measure both the text and the row: the text catches its own clamp, while the
   // row catches the case where the wildcard badge is clipped even though the
   // text is not.
@@ -387,7 +387,7 @@ interface RedirectsTableProps {
 
 export const RedirectsTable = ({
   siteId,
-}: RedirectsTableProps): JSX.Element => {
+}: RedirectsTableProps): React.ReactNode => {
   // While the roles are unknown we can't tell whether the delete column
   // belongs, so the table stays in its loading state rather than rendering a
   // column set it may have to change a moment later.
@@ -427,21 +427,16 @@ export const RedirectsTable = ({
   // for display, and every internal destination reports whether it currently
   // leads to a published page (for the not-yet-published warning). External
   // URLs need neither, so they're left out.
-  const internalDestinations = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          redirects
-            .map((redirect) => redirect.destination)
-            .filter(
-              (destination) =>
-                isReferenceDestination(destination) ||
-                destination.startsWith("/"),
-            ),
-        ),
-      ),
-    [redirects],
-  )
+  const internalDestinations = useMemo(() => {
+    const destinations = new Set<string>()
+    for (const redirect of redirects) {
+      const destination = redirect.destination
+      if (isReferenceDestination(destination) || destination.startsWith("/")) {
+        destinations.add(destination)
+      }
+    }
+    return Array.from(destinations)
+  }, [redirects])
   const { data: resolvedDestinations } = useResolveRedirectReferences(
     siteId,
     internalDestinations,

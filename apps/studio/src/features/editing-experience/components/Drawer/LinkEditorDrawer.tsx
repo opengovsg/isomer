@@ -119,7 +119,7 @@ const RawJsonEditorDrawer = ({
   handleSaveChanges,
   setDrawerState,
 }: LinkEditorDrawerStateProps) => {
-  const [pendingChanges, setPendingChanges] = useState(
+  const [pendingChanges, setPendingChanges] = useState(() =>
     JSON.stringify(savedPageState, null, 2),
   )
   const isPendingChangesValid = useMemo(() => {

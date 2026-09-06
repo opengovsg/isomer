@@ -42,7 +42,7 @@ export const ScheduledPublishingModal = ({
   siteId,
   onClose,
   ...rest
-}: ScheduledPublishingModalProps): JSX.Element => {
+}: ScheduledPublishingModalProps): React.ReactNode => {
   const toast = useToast()
   const utils = trpc.useUtils()
   const fireContentEditSurveyEvent = useFireContentEditSurveyEvent()

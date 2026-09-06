@@ -15,7 +15,7 @@ export interface MenubarNestedItem {
   description?: string
   icon?: IconType | ElementType
   useSecondaryColor?: boolean
-  leftItem?: JSX.Element
+  leftItem?: React.ReactNode
   action: () => void
   isActive?: () => boolean
   isHidden?: () => boolean

@@ -34,7 +34,7 @@ const HEADER_LABELS: Record<string, string> = {
   database: "Edit page header",
 }
 
-const MetadataEditorStateDrawer = (): JSX.Element => {
+const MetadataEditorStateDrawer = (): React.ReactNode => {
   const {
     isOpen: isDiscardChangesModalOpen,
     onOpen: onDiscardChangesModalOpen,

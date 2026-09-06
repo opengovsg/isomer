@@ -6,14 +6,14 @@
 
 import { createId } from "@paralleldrive/cuid2"
 
+import { db } from "../src/server/modules/database/database"
 import {
   IsomerAdminRole,
   ResourceState,
   ResourceType,
   RoleType,
-  db,
-  jsonb,
-} from "../src/server/modules/database"
+} from "../src/server/modules/database/types"
+import { jsonb } from "../src/server/modules/database/utils"
 import { createSite } from "../src/server/modules/site/site.service"
 import { addUsersToSite } from "./scripts/addUsersToSite"
 
@@ -31,43 +31,46 @@ const createPage = async ({
   parentId?: string | null
   userId: string
 }) => {
-  const { id: blobId } = await db
-    .insertInto("Blob")
-    .values({
-      content: jsonb({
-        version: "0.1.0",
-        layout: "content",
-        page: { contentPageHeader: { summary: `This is the ${title} page.` } },
-        content: [
-          {
-            type: "prose",
-            content: [
-              {
-                type: "paragraph",
-                content: [
-                  { type: "text", text: `Welcome to the ${title} page.` },
-                ],
-              },
-            ],
+  const [{ id: blobId }, { id: resourceId }] = await Promise.all([
+    db
+      .insertInto("Blob")
+      .values({
+        content: jsonb({
+          version: "0.1.0",
+          layout: "content",
+          page: {
+            contentPageHeader: { summary: `This is the ${title} page.` },
           },
-        ],
-      }),
-    })
-    .returning("id")
-    .executeTakeFirstOrThrow()
-
-  const { id: resourceId } = await db
-    .insertInto("Resource")
-    .values({
-      permalink,
-      siteId,
-      parentId: parentId ?? null,
-      type: ResourceType.Page,
-      state: ResourceState.Published,
-      title,
-    })
-    .returning("id")
-    .executeTakeFirstOrThrow()
+          content: [
+            {
+              type: "prose",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [
+                    { type: "text", text: `Welcome to the ${title} page.` },
+                  ],
+                },
+              ],
+            },
+          ],
+        }),
+      })
+      .returning("id")
+      .executeTakeFirstOrThrow(),
+    db
+      .insertInto("Resource")
+      .values({
+        permalink,
+        siteId,
+        parentId: parentId ?? null,
+        type: ResourceType.Page,
+        state: ResourceState.Published,
+        title,
+      })
+      .returning("id")
+      .executeTakeFirstOrThrow(),
+  ])
 
   const { id: versionId } = await db
     .insertInto("Version")
@@ -187,26 +190,26 @@ async function main() {
   })
 
   // Whitelist @open.gov.sg domain
-  await db
-    .insertInto("Whitelist")
-    .values({ email: "@open.gov.sg" })
-    .onConflict((oc) =>
-      oc
-        .column("email")
-        .doUpdateSet((eb) => ({ email: eb.ref("excluded.email") })),
-    )
-    .executeTakeFirstOrThrow()
-
-  // Assign IsomerAdmin (Core) to isomeradmin@open.gov.sg
-  await db
-    .insertInto("IsomerAdmin")
-    .values({ userId: isomerAdminUser.id, role: IsomerAdminRole.Core })
-    .onConflict((oc) =>
-      oc
-        .columns(["userId", "role"])
-        .doUpdateSet((eb) => ({ role: eb.ref("excluded.role") })),
-    )
-    .executeTakeFirstOrThrow()
+  await Promise.all([
+    db
+      .insertInto("Whitelist")
+      .values({ email: "@open.gov.sg" })
+      .onConflict((oc) =>
+        oc
+          .column("email")
+          .doUpdateSet((eb) => ({ email: eb.ref("excluded.email") })),
+      )
+      .executeTakeFirstOrThrow(),
+    db
+      .insertInto("IsomerAdmin")
+      .values({ userId: isomerAdminUser.id, role: IsomerAdminRole.Core })
+      .onConflict((oc) =>
+        oc
+          .columns(["userId", "role"])
+          .doUpdateSet((eb) => ({ role: eb.ref("excluded.role") })),
+      )
+      .executeTakeFirstOrThrow(),
+  ])
   console.log(`IsomerAdmin assigned: ${isomerAdminUser.email}`)
 
   // Create role-based users and assign site roles

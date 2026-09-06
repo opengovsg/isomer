@@ -17,7 +17,7 @@ export const CreatePageModal = ({
   onClose,
   siteId,
   folderId,
-}: CreatePageModalProps): JSX.Element => {
+}: CreatePageModalProps): React.ReactNode => {
   return (
     <Modal size="full" isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />

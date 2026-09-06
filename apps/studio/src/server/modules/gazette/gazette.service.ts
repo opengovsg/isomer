@@ -25,7 +25,8 @@ import {
   getContentDispositionForKey,
   getContentTypeFromKey,
 } from "../asset/asset.service"
-import { db, ResourceType, sql } from "../database"
+import { db } from "../database/database"
+import { ResourceType, sql } from "../database/types"
 import { isActiveIsomerAdmin } from "../permissions/permissions.service"
 import {
   EGAZETTE_DOCUMENT_INDEX,

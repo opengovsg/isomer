@@ -1,4 +1,4 @@
-import type { Site, User } from "~/server/modules/database"
+import type { Site, User } from "~/server/modules/database/types"
 import { resetTables } from "tests/integration/helpers/db"
 import {
   setupAdminPermissions,
@@ -13,7 +13,7 @@ import {
   sendAccountDeactivationEmail,
   sendAccountDeactivationWarningEmail,
 } from "~/features/mail/service"
-import { db } from "~/server/modules/database"
+import { db } from "~/server/modules/database/database"
 import { RoleType } from "~/server/modules/database/types"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 

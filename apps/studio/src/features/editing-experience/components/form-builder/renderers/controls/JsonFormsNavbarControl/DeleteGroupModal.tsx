@@ -24,7 +24,7 @@ export const DeleteGroupModal = ({
   isOpen,
   onClose,
   onDelete,
-}: DeleteGroupModalProps): JSX.Element => {
+}: DeleteGroupModalProps): React.ReactNode => {
   // NOTE: We add 1 to include the main navigation item itself
   const totalLinksToDelete = subItemsCount + 1
   const linkSingularPlural = totalLinksToDelete === 1 ? "link" : "links"

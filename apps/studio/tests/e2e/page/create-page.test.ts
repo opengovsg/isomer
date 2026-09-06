@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test"
 import crypto from "crypto"
-import { db } from "~/server/modules/database"
+import { db } from "~/server/modules/database/database"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 
 import { storageStateFor, TEST_EMAILS } from "../fixtures/auth"

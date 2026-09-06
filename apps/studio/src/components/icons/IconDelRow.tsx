@@ -1,7 +1,7 @@
 import { chakra } from "@chakra-ui/react"
 
 export const IconDelRow = chakra(
-  (props: React.SVGProps<SVGSVGElement>): JSX.Element => {
+  (props: React.SVGProps<SVGSVGElement>): React.ReactNode => {
     return (
       <svg
         width="24"
@@ -13,7 +13,7 @@ export const IconDelRow = chakra(
       >
         <path d="M1 4L23 4V12L1 12V4Z" stroke="#2C2E34" strokeWidth="1.5" />
         <path
-          d="M18.4453 14.7007L15.9702 17.1752L13.4957 14.7007L12.6709 15.5255L15.1454 18L12.6709 20.4745L13.4957 21.2994L15.9702 18.8249L18.4453 21.2994L19.2701 20.4745L16.7956 18L19.2701 15.5255L18.4453 14.7007Z"
+          d="M18.45 14.7L15.97 17.18L13.5 14.7L12.67 15.53L15.15 18L12.67 20.47L13.5 21.3L15.97 18.82L18.45 21.3L19.27 20.47L16.8 18L19.27 15.53L18.45 14.7Z"
           fill="#2C2E34"
         />
       </svg>

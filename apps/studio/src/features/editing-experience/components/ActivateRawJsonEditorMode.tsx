@@ -31,7 +31,7 @@ export const ActivateRawJsonEditorMode = ({
     const handleKeyDown = (event: KeyboardEvent) => {
       const currentCombo = COMBO[comboIndex] || ""
       if (event.key.toLowerCase() === currentCombo.toLowerCase()) {
-        setComboIndex(comboIndex + 1)
+        setComboIndex((prev) => prev + 1)
         setShowCounter(true)
         if (counterRef.current) {
           clearTimeout(counterRef.current)
@@ -51,7 +51,12 @@ export const ActivateRawJsonEditorMode = ({
     }
 
     window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown)
+      if (counterRef.current) {
+        clearTimeout(counterRef.current)
+      }
+    }
   }, [comboIndex, onActivate])
 
   return (

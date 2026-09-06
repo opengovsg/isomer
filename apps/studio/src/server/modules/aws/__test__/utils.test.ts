@@ -6,8 +6,8 @@ import {
   setupUser,
 } from "tests/integration/helpers/seed"
 
-import type { User } from "../../database"
-import { db } from "../../database"
+import type { User } from "../../database/types"
+import { db } from "../../database/database"
 import { updateStoppedBuild } from "../utils"
 
 describe("updateStoppedBuild", () => {

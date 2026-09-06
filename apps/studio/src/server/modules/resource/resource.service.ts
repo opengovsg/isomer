@@ -37,12 +37,14 @@ import type {
   Site,
   Transaction,
   User,
-} from "../database"
+} from "../database/types"
 import type { SearchResultResource } from "./resource.types"
 import { logPublishEvent, logRedirectEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
-import { db, jsonb, ResourceState, ResourceType, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
+import { db } from "../database/database"
+import { ResourceState, ResourceType, sql } from "../database/types"
+import { jsonb } from "../database/utils"
 import { getUserById } from "../user/user.service"
 import { incrementVersion } from "../version/version.service"
 import { type Page } from "./resource.types"
@@ -1322,30 +1324,34 @@ export const publishPageResource = async ({
         // captured, and there's no dedicated RedirectUpdate event.
         if (backfilled.length > 0) {
           const byUser = await getUserById(userId)
-          for (const rewritten of backfilled) {
-            const literalBefore: Redirect = {
-              ...rewritten,
-              destination: literalDestination,
-              deletedAt: null,
-            }
-            const literalAfter: Redirect = {
-              ...rewritten,
-              destination: literalDestination,
-              deletedAt: new Date(),
-            }
-            await logRedirectEvent(tx, {
-              siteId,
-              by: byUser,
-              eventType: AuditLogEvent.RedirectDelete,
-              delta: { before: literalBefore, after: literalAfter },
-            })
-            await logRedirectEvent(tx, {
-              siteId,
-              by: byUser,
-              eventType: AuditLogEvent.RedirectCreate,
-              delta: { before: null, after: rewritten },
-            })
-          }
+          await Promise.all(
+            backfilled.flatMap((rewritten) => {
+              const literalBefore: Redirect = {
+                ...rewritten,
+                destination: literalDestination,
+                deletedAt: null,
+              }
+              const literalAfter: Redirect = {
+                ...rewritten,
+                destination: literalDestination,
+                deletedAt: new Date(),
+              }
+              return [
+                logRedirectEvent(tx, {
+                  siteId,
+                  by: byUser,
+                  eventType: AuditLogEvent.RedirectDelete,
+                  delta: { before: literalBefore, after: literalAfter },
+                }),
+                logRedirectEvent(tx, {
+                  siteId,
+                  by: byUser,
+                  eventType: AuditLogEvent.RedirectCreate,
+                  delta: { before: null, after: rewritten },
+                }),
+              ]
+            }),
+          )
         }
       }
     }

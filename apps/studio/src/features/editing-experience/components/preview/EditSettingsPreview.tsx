@@ -81,6 +81,43 @@ const WindowButtons = () => {
   )
 }
 
+const CHROME_TAB_BASE_STYLE = {
+  display: "flex",
+  paddingTop: "8px",
+  paddingBottom: "8px",
+  paddingLeft: "16px",
+  paddingRight: "16px",
+  gap: "12px",
+  borderRadius: "10px 10px 0 0",
+  alignItems: "center",
+} as const
+
+const CHROME_TAB_FAVICON_STYLE = { width: "16px", height: "16px" } as const
+const CHROME_TAB_CLOSE_ICON_STYLE = { marginLeft: "2rem" } as const
+
+const ADDRESS_BAR_BASE_STYLE = {
+  display: "flex",
+  paddingTop: "8px",
+  paddingBottom: "8px",
+  paddingLeft: "12px",
+  paddingRight: "12px",
+  gap: "12px",
+  borderRadius: "10px 10px 0 0",
+  alignItems: "center",
+  width: "100%",
+} as const
+
+const ADDRESS_BAR_NAV_ICONS_STYLE = { display: "flex", gap: "4px" } as const
+const ADDRESS_BAR_NAV_ICON_STYLE = { margin: "8px" } as const
+
+const ADDRESS_BAR_INPUT_STYLE = {
+  borderRadius: "16777200px",
+  border: "1px solid rgba(0, 0, 0, 0.00)",
+  background: " #F1F3F4",
+  padding: "8px 16px",
+  width: "100%",
+} as const
+
 const ChromeTab = ({
   children,
   style,
@@ -92,21 +129,14 @@ const ChromeTab = ({
   return (
     <Box
       style={{
-        display: "flex",
-        paddingTop: "8px",
-        paddingBottom: "8px",
-        paddingLeft: "16px",
-        paddingRight: "16px",
-        gap: "12px",
-        borderRadius: "10px 10px 0 0",
+        ...CHROME_TAB_BASE_STYLE,
         background: bgColor,
-        alignItems: "center",
         ...style,
       }}
     >
       {favicon ? (
         <Image
-          style={{ width: "16px", height: "16px" }}
+          style={CHROME_TAB_FAVICON_STYLE}
           src={`https://${s3Domain}${favicon}`}
           alt="Site favicon"
           width="16"
@@ -116,7 +146,7 @@ const ChromeTab = ({
         <Icon as={BiGlobe} />
       )}
       {children}
-      <Icon as={BiX} style={{ marginLeft: "2rem" }} />
+      <Icon as={BiX} style={CHROME_TAB_CLOSE_ICON_STYLE} />
     </Box>
   )
 }
@@ -131,39 +161,21 @@ const AddressBar = ({
   return (
     <Box
       style={{
-        display: "flex",
-        paddingTop: "8px",
-        paddingBottom: "8px",
-        paddingLeft: "12px",
-        paddingRight: "12px",
-        gap: "12px",
-        borderRadius: "10px 10px 0 0",
+        ...ADDRESS_BAR_BASE_STYLE,
         background: bgColor,
-        alignItems: "center",
-        width: "100%",
         ...style,
       }}
     >
-      <Box style={{ display: "flex", gap: "4px" }}>
+      <Box style={ADDRESS_BAR_NAV_ICONS_STYLE}>
         {[BiChevronLeft, BiChevronRight, BiRevision].map((icon) => (
           <Icon
             key={icon.name}
             as={icon}
-            style={{ margin: "8px", fill: iconColor }}
+            style={{ ...ADDRESS_BAR_NAV_ICON_STYLE, fill: iconColor }}
           />
         ))}
       </Box>
-      <Box
-        style={{
-          borderRadius: "16777200px",
-          border: "1px solid rgba(0, 0, 0, 0.00)",
-          background: " #F1F3F4",
-          padding: "8px 16px",
-          width: "100%",
-        }}
-      >
-        {children}
-      </Box>
+      <Box style={ADDRESS_BAR_INPUT_STYLE}>{children}</Box>
     </Box>
   )
 }
@@ -178,6 +190,20 @@ type EditSettingsPreviewProps = Partial<Omit<IsomerSiteConfigProps, "theme">> &
     showChromeTab?: boolean
   }
 
+const handleSettingsPreviewIframeMount = async ({
+  document,
+}: IframeCallbackFnProps) => {
+  if (document) {
+    await waitForElement(document, FOOTER_QUERY_SELECTOR)
+    const footer = document.querySelector(FOOTER_QUERY_SELECTOR)
+
+    // Jump to the footer section
+    if (footer) {
+      footer.scrollIntoView()
+    }
+  }
+}
+
 export const EditSettingsPreview = ({
   siteName,
   theme,
@@ -185,25 +211,13 @@ export const EditSettingsPreview = ({
   jumpToFooter,
   showChromeTab = false,
   ...rest
-}: EditSettingsPreviewProps): JSX.Element => {
-  const handleIframeMount = async ({ document }: IframeCallbackFnProps) => {
-    if (document) {
-      await waitForElement(document, FOOTER_QUERY_SELECTOR)
-      const footer = document.querySelector(FOOTER_QUERY_SELECTOR)
-
-      // Jump to the footer section
-      if (footer) {
-        footer.scrollIntoView()
-      }
-    }
-  }
-
+}: EditSettingsPreviewProps): React.ReactNode => {
   const { siteId: rawSiteId } = useQueryParse(siteSchema)
   const siteId = Number(rawSiteId)
   const [{ id }] = trpc.page.getRootPage.useSuspenseQuery({
     siteId,
   })
-  const [{ content }] = trpc.page.readPageAndBlob.useSuspenseQuery({
+  const [{ content, updatedAt }] = trpc.page.readPageAndBlob.useSuspenseQuery({
     pageId: Number(id),
     siteId,
   })
@@ -223,7 +237,7 @@ export const EditSettingsPreview = ({
       <ViewportContainer
         siteId={siteId}
         theme={theme}
-        callback={jumpToFooter ? handleIframeMount : undefined}
+        callback={jumpToFooter ? handleSettingsPreviewIframeMount : undefined}
         header={
           previewMockContentPage && (
             <Tabs
@@ -274,7 +288,7 @@ export const EditSettingsPreview = ({
           siteId={siteId}
           resourceId={Number(id)}
           permalink="/"
-          lastModified={new Date().toISOString()}
+          lastModified={updatedAt.toISOString()}
           {...previewProps}
           overrides={{ site: { siteName, ...rest } }}
         />

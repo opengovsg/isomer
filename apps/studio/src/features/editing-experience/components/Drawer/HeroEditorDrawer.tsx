@@ -33,7 +33,7 @@ import { DrawerHeader } from "./DrawerHeader"
 const heroSchema = getComponentSchema({ component: "hero" })
 const validateHeroFn = ajv.compile<IsomerComponent>(heroSchema)
 
-const HeroEditorDrawer = (): JSX.Element => {
+const HeroEditorDrawer = (): React.ReactNode => {
   const {
     isOpen: isDiscardChangesModalOpen,
     onOpen: onDiscardChangesModalOpen,

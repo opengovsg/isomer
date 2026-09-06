@@ -57,7 +57,7 @@ export const ModifyGazetteModal = ({
   siteId,
   collectionId,
   initialData,
-}: ModifyGazetteModalProps): JSX.Element => {
+}: ModifyGazetteModalProps): React.ReactNode => {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />

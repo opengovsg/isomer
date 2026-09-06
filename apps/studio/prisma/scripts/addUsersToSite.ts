@@ -1,5 +1,6 @@
 import { createId } from "@paralleldrive/cuid2"
-import { db, RoleType } from "~/server/modules/database"
+import { db } from "~/server/modules/database/database"
+import { RoleType } from "~/server/modules/database/types"
 
 interface User {
   email: string

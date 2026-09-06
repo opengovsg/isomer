@@ -8,6 +8,20 @@ import { trpc } from "~/utils/trpc"
 
 import { FOOTER_QUERY_SELECTOR } from "../constants"
 
+const handleFooterPreviewIframeMount = async ({
+  document,
+}: IframeCallbackFnProps) => {
+  if (document) {
+    await waitForElement(document, FOOTER_QUERY_SELECTOR)
+    const footer = document.querySelector(FOOTER_QUERY_SELECTOR)
+
+    // Jump to the footer section
+    if (footer) {
+      footer.scrollIntoView()
+    }
+  }
+}
+
 interface EditFooterPreviewProps {
   siteId: number
   previewFooterState?: FooterSchemaType
@@ -17,18 +31,6 @@ export const EditFooterPreview = ({
   siteId,
   previewFooterState,
 }: EditFooterPreviewProps) => {
-  const handleIframeMount = async ({ document }: IframeCallbackFnProps) => {
-    if (document) {
-      await waitForElement(document, FOOTER_QUERY_SELECTOR)
-      const footer = document.querySelector(FOOTER_QUERY_SELECTOR)
-
-      // Jump to the footer section
-      if (footer) {
-        footer.scrollIntoView()
-      }
-    }
-  }
-
   const [{ id, title }] = trpc.page.getRootPage.useSuspenseQuery({
     siteId,
   })
@@ -39,7 +41,10 @@ export const EditFooterPreview = ({
   })
 
   return (
-    <ViewportContainer siteId={siteId} callback={handleIframeMount}>
+    <ViewportContainer
+      siteId={siteId}
+      callback={handleFooterPreviewIframeMount}
+    >
       <Preview
         {...merge(content, { page: { title } })}
         overrides={{

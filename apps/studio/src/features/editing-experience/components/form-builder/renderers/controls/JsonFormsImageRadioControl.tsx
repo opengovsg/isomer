@@ -115,7 +115,7 @@ const JsonFormsImageRadioControl = ({
   description,
   schema,
   required,
-}: ControlProps): JSX.Element => {
+}: ControlProps): React.ReactNode => {
   const options = getImageRadioOptions(schema)
 
   // Use Chakra's useRadioGroup instead of design-system Radio.RadioGroup.

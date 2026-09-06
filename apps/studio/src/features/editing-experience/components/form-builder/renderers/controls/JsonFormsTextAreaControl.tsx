@@ -15,7 +15,7 @@ import {
   TEXTAREA_MAX_ROWS,
 } from "~/constants/formBuilder"
 
-import { getCustomErrorMessage } from "./utils"
+import { getCustomErrorMessage } from "./utils/getCustomErrorMessage"
 
 export const jsonFormsTextAreaControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.TextAreaControl,

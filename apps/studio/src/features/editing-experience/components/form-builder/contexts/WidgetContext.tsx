@@ -11,7 +11,7 @@ import { AskgovLogo } from "~/components/Svg/Askgov"
 import { VicaLogo } from "~/components/Svg/Vica"
 
 interface Widget {
-  icon: JSX.Element
+  icon: React.ReactNode
   label: string
 }
 export const WIDGET_CONFIG: Record<WidgetType, Widget> = {
@@ -40,21 +40,30 @@ export const WidgetProvider = ({
   children,
   activeWidget: currentActiveWidget,
 }: PropsWithChildren<Pick<UseWidgetContextReturn, "activeWidget">>) => {
-  const [activeWidget, setActiveWidget] = useState<WidgetType | null>(
-    currentActiveWidget,
-  )
+  const [selectedWidget, setSelectedWidget] = useState(currentActiveWidget)
+  const [prevActiveWidget, setPrevActiveWidget] = useState(currentActiveWidget)
+
+  if (currentActiveWidget !== prevActiveWidget) {
+    setPrevActiveWidget(currentActiveWidget)
+    setSelectedWidget(currentActiveWidget)
+  }
+
   const getNextWidget = useCallback(
     (curWidget: WidgetType) => {
-      if (!activeWidget) return curWidget
+      if (!selectedWidget) return curWidget
 
-      return activeWidget === "askgov" ? "vica" : "askgov"
+      return selectedWidget === "askgov" ? "vica" : "askgov"
     },
-    [activeWidget],
+    [selectedWidget],
   )
 
   const contextValue = useMemo(
-    () => ({ activeWidget, setActiveWidget, getNextWidget }),
-    [activeWidget, getNextWidget],
+    () => ({
+      activeWidget: selectedWidget,
+      setActiveWidget: setSelectedWidget,
+      getNextWidget,
+    }),
+    [selectedWidget, getNextWidget],
   )
 
   return (

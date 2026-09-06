@@ -9,7 +9,7 @@ import {
 } from "@opengovsg/design-system-react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
-import { getCustomErrorMessage } from "./utils"
+import { getCustomErrorMessage } from "./utils/getCustomErrorMessage"
 
 export const jsonFormsDateControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.TextControl,

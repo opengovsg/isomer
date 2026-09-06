@@ -36,7 +36,7 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { getDgsIdFromString } from "~/features/editing-experience/utils"
 import { useZodForm } from "~/lib/form"
 
-import { getCustomErrorMessage } from "./utils"
+import { getCustomErrorMessage } from "./utils/getCustomErrorMessage"
 
 export const jsonFormsDgsDatasetIdControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.TextControl,
@@ -61,7 +61,7 @@ const DgsDatasetFeedbackMessage = ({
   errorMessage,
   isLoading,
   isValidDataset,
-}: DgsDatasetFeedbackMessageProps): JSX.Element | undefined => {
+}: DgsDatasetFeedbackMessageProps): React.ReactNode | undefined => {
   if (errorMessage) {
     return <FormErrorMessage>{errorMessage}</FormErrorMessage>
   }

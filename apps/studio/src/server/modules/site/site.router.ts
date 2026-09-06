@@ -25,7 +25,9 @@ import { IsomerAdminRole, RoleType } from "~prisma/generated/generatedEnums"
 
 import { logConfigEvent, logPublishEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
-import { AuditLogEvent, db, jsonb } from "../database"
+import { db } from "../database/database"
+import { AuditLogEvent } from "../database/types"
+import { jsonb } from "../database/utils"
 import {
   isActiveIsomerAdmin,
   validateUserIsIsomerAdmin,
@@ -124,17 +126,18 @@ export const siteRouter = router({
         action: "update",
       })
 
-      const user = await db
-        .selectFrom("User")
-        .where("id", "=", ctx.user.id)
-        .selectAll()
-        .executeTakeFirstOrThrow()
-
-      const site = await db
-        .selectFrom("Site")
-        .where("id", "=", siteId)
-        .selectAll()
-        .executeTakeFirstOrThrow()
+      const [user, site] = await Promise.all([
+        db
+          .selectFrom("User")
+          .where("id", "=", ctx.user.id)
+          .selectAll()
+          .executeTakeFirstOrThrow(),
+        db
+          .selectFrom("Site")
+          .where("id", "=", siteId)
+          .selectAll()
+          .executeTakeFirstOrThrow(),
+      ])
 
       const { config } = site
       const normalizedConfig = normalizeAskgovConfig({ ...rest, siteName })

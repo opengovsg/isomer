@@ -28,7 +28,7 @@ import { createDefaultTagOption } from "./constants"
 const DELETE_OPTION_UNDO_TEXT =
   "To undo this change, you will need to create and re-assign this option to all items."
 
-const DeleteOptionWarningFallback = (): JSX.Element => (
+const DeleteOptionWarningFallback = (): React.ReactNode => (
   <Text textStyle="body-1" color="base.content.strong">
     {DELETE_OPTION_UNDO_TEXT}
   </Text>

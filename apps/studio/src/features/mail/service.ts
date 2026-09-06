@@ -17,9 +17,9 @@ import type {
   PublishAlertSiteAdminEmailTemplateData,
   SchedulePageTemplateData,
   SuccessfulPublishTemplateData,
-} from "./templates"
+} from "./templates/types"
 import { sendMail } from "../../lib/mail"
-import { templates } from "./templates"
+import { templates } from "./templates/templates"
 
 const logger = createBaseLogger({ path: "features/mail/service" })
 

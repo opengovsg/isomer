@@ -14,8 +14,9 @@ import {
 } from "tests/integration/helpers/seed"
 import { ResourceType } from "~prisma/generated/prisma/client"
 
-import type { Resource } from "../../database"
-import { db, ResourceState } from "../../database"
+import type { Resource } from "../../database/types"
+import { db } from "../../database/database"
+import { ResourceState } from "../../database/types"
 import {
   getBatchAncestryWithSelfQuery,
   getFooter,

@@ -23,7 +23,7 @@ export const createUserInputSchema = z.object({
     .array(
       z.object({
         email: emailSchema,
-        role: z.nativeEnum(RoleType).optional().default(RoleType.Editor),
+        role: z.enum(RoleType).optional().default(RoleType.Editor),
       }),
     )
     .max(100),
@@ -33,7 +33,7 @@ export const createUserOutputSchema = z.array(
   z.object({
     id: z.string(),
     email: emailSchema,
-    role: z.nativeEnum(RoleType),
+    role: z.enum(RoleType),
   }),
 )
 
@@ -56,7 +56,7 @@ export const getUserOutputSchema = z.object({
   id: z.string(),
   name: z.string(),
   email: emailSchema,
-  role: z.nativeEnum(RoleType),
+  role: z.enum(RoleType),
   createdAt: z.date().nullable(),
   lastLoginAt: z.date().nullable(),
 })
@@ -77,7 +77,7 @@ export const listUsersOutputSchema = z.array(
     name: z.string().optional().nullable(),
     lastLoginAt: z.date().nullable(),
     createdAt: z.date().nullable(),
-    role: z.nativeEnum(RoleType),
+    role: z.enum(RoleType),
   }),
 )
 
@@ -91,14 +91,14 @@ export const countUsersOutputSchema = z.number()
 export const updateUserInputSchema = z.object({
   siteId: z.number().min(1),
   userId: z.string(),
-  role: z.nativeEnum(RoleType),
+  role: z.enum(RoleType),
 })
 
 export const updateUserOutputSchema = z.object({
   id: z.string().min(1),
   siteId: z.number().min(1),
   userId: z.string(),
-  role: z.nativeEnum(RoleType),
+  role: z.enum(RoleType),
 })
 
 export const updateUserDetailsInputSchema = z.object({
@@ -131,11 +131,11 @@ export const resendInviteInputSchema = z.object({
 })
 
 export const resendInviteOutputSchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
 })
 
 export const isIsomerAdminInputSchema = z.object({
-  roles: z.array(z.nativeEnum(IsomerAdminRole)).min(1),
+  roles: z.array(z.enum(IsomerAdminRole)).min(1),
 })
 
 export const isIsomerAdminOutputSchema = z.boolean()

@@ -18,7 +18,7 @@ interface UnableToUseSignpassModalProps {
 export const UnableToUseSignpassModal = ({
   isOpen,
   onClose,
-}: UnableToUseSignpassModalProps): JSX.Element => {
+}: UnableToUseSignpassModalProps): React.ReactNode => {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />

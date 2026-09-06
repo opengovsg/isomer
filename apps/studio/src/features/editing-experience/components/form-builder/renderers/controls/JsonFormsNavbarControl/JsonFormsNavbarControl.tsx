@@ -32,7 +32,7 @@ import { BiPlusCircle } from "react-icons/bi"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 import type { NavbarItems } from "./types"
-import { getParentPath } from "../utils"
+import { getParentPath } from "../utils/getParentPath"
 import { EditNavbarItem } from "./EditNavbarItem"
 import { StackableNavbarItem } from "./StackableNavbarItem"
 import { handleMoveItem, isFirstLevelLinksOverLimit } from "./utils"
@@ -55,7 +55,7 @@ const JsonFormsNavbarControl = ({
   cells,
   uischemas,
   uischema,
-}: ArrayLayoutProps): JSX.Element => {
+}: ArrayLayoutProps): React.ReactNode => {
   const ctx = useJsonForms()
   const [selectedPath, setSelectedPath] = useState<string>()
   const [droppableZoneElement, setDroppableZoneElement] =

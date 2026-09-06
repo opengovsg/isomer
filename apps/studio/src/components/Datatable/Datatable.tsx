@@ -48,7 +48,7 @@ export const Datatable = <T extends RowData>({
   onRowClick,
   isRowLink,
   ...tableProps
-}: DatatableProps<T>): JSX.Element => {
+}: DatatableProps<T>): React.ReactNode => {
   const { rows } = instance.getRowModel()
   const styles = useMultiStyleConfig("Table", tableProps)
 

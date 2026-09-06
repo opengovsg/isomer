@@ -90,9 +90,9 @@ export const DashboardLayout = ({
           display="flex"
           alignItems="center"
         >
-          {allBreadcrumbsExceptLast.map(({ href, label }, index) => {
+          {allBreadcrumbsExceptLast.map(({ href, label }) => {
             return (
-              <BreadcrumbItem key={index}>
+              <BreadcrumbItem key={href ?? label}>
                 <BreadcrumbLink href={href} as={NextLink}>
                   <Text
                     textStyle="caption-2"

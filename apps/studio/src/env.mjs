@@ -17,9 +17,9 @@ const r2Schema = z.object({
 })
 
 const cronHeartbeatSchema = z.object({
-  SCHEDULED_PUBLISHING_HEARTBEAT_URL: z.string().url().optional(),
-  DEACTIVATE_INACTIVE_USERS_HEARTBEAT_URL: z.string().url().optional(),
-  SCHEDULE_PUSH_DOCUMENT_JOB_HEARTBEAT_URL: z.string().url().optional(),
+  SCHEDULED_PUBLISHING_HEARTBEAT_URL: z.url().optional(),
+  DEACTIVATE_INACTIVE_USERS_HEARTBEAT_URL: z.url().optional(),
+  SCHEDULE_PUSH_DOCUMENT_JOB_HEARTBEAT_URL: z.url().optional(),
 })
 
 /**
@@ -43,22 +43,22 @@ const client = z
       .stringbool()
       .optional()
       .default(false),
-    NEXT_PUBLIC_APP_URL: z.string().url().optional(),
+    NEXT_PUBLIC_APP_URL: z.url().optional(),
     NEXT_PUBLIC_APP_NAME: z.string().default("Isomer Studio"),
     NEXT_PUBLIC_APP_VERSION: z.string().default("0.0.0"),
     NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY: z.string().optional(),
     NEXT_PUBLIC_INTERCOM_APP_ID: z.string().optional(),
     NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN: z.string().optional(),
-    NEXT_PUBLIC_POSTHOG_HOST: z.string().url().optional(),
-    NEXT_PUBLIC_POSTHOG_ASSETS_HOST: z.string().url().optional(),
+    NEXT_PUBLIC_POSTHOG_HOST: z.url().optional(),
+    NEXT_PUBLIC_POSTHOG_ASSETS_HOST: z.url().optional(),
   })
   .extend(s3Schema.shape)
   .extend(cronHeartbeatSchema.shape)
 
 const singpassSchema = z.object({
   SINGPASS_CLIENT_ID: z.string().min(1),
-  SINGPASS_ISSUER_ENDPOINT: z.string().url().min(1),
-  SINGPASS_REDIRECT_URI: z.string().url().optional(),
+  SINGPASS_ISSUER_ENDPOINT: z.url().min(1),
+  SINGPASS_REDIRECT_URI: z.url().optional(),
   SINGPASS_ENCRYPTION_PRIVATE_KEY: z.string().min(1),
   SINGPASS_ENCRYPTION_KEY_ALG: z.string().min(1).default("ECDH-ES+A256KW"),
   SINGPASS_SIGNING_PRIVATE_KEY: z.string().min(1),
@@ -71,7 +71,7 @@ const singpassSchema = z.object({
  */
 const server = z
   .object({
-    DATABASE_URL: z.string().url(),
+    DATABASE_URL: z.url(),
     CI: z.coerce.boolean().default(false),
     ENABLE_CRON_WORKERS: z.stringbool().optional().default(false),
     NODE_ENV: z.enum(["development", "test", "production"]),

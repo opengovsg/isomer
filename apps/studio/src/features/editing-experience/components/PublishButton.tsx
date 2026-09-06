@@ -26,8 +26,9 @@ import { trpc } from "~/utils/trpc"
 
 import { PUBLISHED_AFTER_EDITING_EVENT } from "../constants"
 import { useFireContentEditSurveyEvent } from "../hooks/useContentEditSurvey"
-import { PublishingModal, ScheduledPublishingModal } from "./PublishingModal"
 import { CancelSchedulePublishIndicator } from "./PublishingModal/CancelSchedulePublishIndicator"
+import { PublishingModal } from "./PublishingModal/PublishingModal"
+import { ScheduledPublishingModal } from "./PublishingModal/ScheduledPublishingModal"
 
 interface PublishButtonProps extends ButtonProps {
   pageId: number
@@ -38,7 +39,7 @@ const SuspendablePublishButton = ({
   pageId,
   siteId,
   ...rest
-}: PublishButtonProps): JSX.Element => {
+}: PublishButtonProps): React.ReactNode => {
   const toast = useToast()
   const utils = trpc.useUtils()
   const fireContentEditSurveyEvent = useFireContentEditSurveyEvent()

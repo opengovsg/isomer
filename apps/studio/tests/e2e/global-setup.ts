@@ -1,7 +1,7 @@
 import type { FullConfig } from "@playwright/test"
 import { chromium } from "@playwright/test"
 import crypto from "crypto"
-import { db } from "~/server/modules/database"
+import { db } from "~/server/modules/database/database"
 
 import { ROLES, storageStateFor, TEST_EMAILS } from "./fixtures/auth"
 import { LoginPage } from "./fixtures/login"

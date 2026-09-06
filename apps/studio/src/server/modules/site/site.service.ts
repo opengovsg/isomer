@@ -3,7 +3,7 @@ import type { Notification } from "~/schemas/site"
 import { getAskgovIdFromString } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { SEARCH_PAGE_PERMALINK } from "~/constants/sitemap"
-import { ResourceState, ResourceType } from "~/server/modules/database"
+import { ResourceState, ResourceType } from "~/server/modules/database/types"
 
 import type {
   DB,
@@ -11,10 +11,12 @@ import type {
   SafeKysely,
   Transaction,
   Version,
-} from "../database"
+} from "../database/types"
 import type { UserPermissionsProps } from "../permissions/permissions.type"
 import { logConfigEvent } from "../audit/audit.service"
-import { AuditLogEvent, db, jsonb, RoleType } from "../database"
+import { db } from "../database/database"
+import { AuditLogEvent, RoleType } from "../database/types"
+import { jsonb } from "../database/utils"
 import {
   definePermissionsForSite,
   isActiveIsomerAdmin,
@@ -424,28 +426,29 @@ export const createSite = async ({ siteName, userId }: CreateSiteProps) => {
     siteId,
     userId,
   }: CreateResourceProps) => {
-    const { id: blobId } = await tx
-      .insertInto("Blob")
-      .values({ content: jsonb(PAGE_BLOB) })
-      .returning("id")
-      .executeTakeFirstOrThrow()
-
-    const { id: resourceId } = await tx
-      .insertInto("Resource")
-      .values({
-        permalink: "",
-        siteId,
-        type: ResourceType.RootPage,
-        state: ResourceState.Published,
-        title: "Home",
-      })
-      .onConflict((oc) =>
-        oc.column("draftBlobId").doUpdateSet((eb) => ({
-          draftBlobId: eb.ref("excluded.draftBlobId"),
-        })),
-      )
-      .returning("id")
-      .executeTakeFirstOrThrow()
+    const [{ id: blobId }, { id: resourceId }] = await Promise.all([
+      tx
+        .insertInto("Blob")
+        .values({ content: jsonb(PAGE_BLOB) })
+        .returning("id")
+        .executeTakeFirstOrThrow(),
+      tx
+        .insertInto("Resource")
+        .values({
+          permalink: "",
+          siteId,
+          type: ResourceType.RootPage,
+          state: ResourceState.Published,
+          title: "Home",
+        })
+        .onConflict((oc) =>
+          oc.column("draftBlobId").doUpdateSet((eb) => ({
+            draftBlobId: eb.ref("excluded.draftBlobId"),
+          })),
+        )
+        .returning("id")
+        .executeTakeFirstOrThrow(),
+    ])
 
     const { id: versionId } = await tx
       .insertInto("Version")

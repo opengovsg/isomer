@@ -1,6 +1,6 @@
 import type { Ability } from "@casl/ability"
 
-import type { Resource as RawResource, Site } from "../database"
+import type { Resource as RawResource, Site } from "../database/types"
 
 type Resource = Pick<RawResource, "parentId">
 

@@ -169,7 +169,7 @@ const useCreateCollectionPageWizardContext = ({
 export const CreateCollectionPageWizardProvider = ({
   children,
   ...passthroughProps
-}: PropsWithChildren<CreateCollectionPageWizardProps>): JSX.Element => {
+}: PropsWithChildren<CreateCollectionPageWizardProps>): React.ReactNode => {
   const values = useCreateCollectionPageWizardContext(passthroughProps)
   return (
     <CreateCollectionPageWizardContext.Provider value={values}>

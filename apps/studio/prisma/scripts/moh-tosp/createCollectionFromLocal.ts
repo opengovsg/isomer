@@ -1,6 +1,7 @@
 import fs from "fs/promises"
 import path from "path"
-import { db, jsonb } from "~/server/modules/database"
+import { db } from "~/server/modules/database/database"
+import { jsonb } from "~/server/modules/database/utils"
 import { ResourceState, ResourceType } from "~prisma/generated/prisma/client"
 
 import { FileLogger } from "../FileLogger"

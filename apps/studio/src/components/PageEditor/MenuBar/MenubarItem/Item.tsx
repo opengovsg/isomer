@@ -9,7 +9,7 @@ export interface MenubarItemProps extends MenuItemProps {
 export const MenubarItem = ({
   isHidden,
   ...item
-}: MenubarItemProps): JSX.Element | null => {
+}: MenubarItemProps): React.ReactNode | null => {
   if (isHidden?.()) {
     return null
   }

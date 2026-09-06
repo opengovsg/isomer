@@ -28,7 +28,7 @@ import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 
-import { db } from "../../database"
+import { db } from "../../database/database"
 import { resourceRouter } from "../resource.router"
 import { getFullPageById } from "../resource.service"
 

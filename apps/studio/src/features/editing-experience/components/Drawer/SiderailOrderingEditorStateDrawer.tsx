@@ -172,7 +172,7 @@ const SiderailOrderingContent = ({
   )
 }
 
-const SiderailOrderingEditorStateDrawer = (): JSX.Element => {
+const SiderailOrderingEditorStateDrawer = (): React.ReactNode => {
   const {
     setDrawerState,
     savedPageState,

@@ -20,7 +20,9 @@ import {
   MOCK_TEST_USER_NAME,
 } from "tests/msw/constants"
 import { beforeAll, beforeEach, describe, expect, it } from "vitest"
-import { db, jsonb, RoleType } from "~/server/modules/database"
+import { db } from "~/server/modules/database/database"
+import { RoleType } from "~/server/modules/database/types"
+import { jsonb } from "~/server/modules/database/utils"
 import { createCallerFactory } from "~/server/trpc"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 

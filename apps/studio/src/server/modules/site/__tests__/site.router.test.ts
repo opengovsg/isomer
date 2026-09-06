@@ -21,8 +21,10 @@ import * as searchSgService from "~/server/modules/searchsg/searchsg.service"
 import { createCallerFactory } from "~/server/trpc"
 import { IsomerAdminRole, RoleType } from "~prisma/generated/generatedEnums"
 
-import type { User } from "../../database"
-import { AuditLogEvent, db, jsonb, ResourceType } from "../../database"
+import type { User } from "../../database/types"
+import { db } from "../../database/database"
+import { AuditLogEvent, ResourceType } from "../../database/types"
+import { jsonb } from "../../database/utils"
 import { siteRouter } from "../site.router"
 
 // Mock env to set production environment for SearchSG tests

@@ -12,7 +12,7 @@ interface ResourceSortMenuProps {
 export const ResourceSortMenu = ({
   value,
   onChange,
-}: ResourceSortMenuProps): JSX.Element => (
+}: ResourceSortMenuProps): React.ReactNode => (
   <HStack>
     <Text textStyle="caption-1" color="base.content.default">
       Sort by:

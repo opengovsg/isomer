@@ -33,7 +33,7 @@ interface DeleteFilterModalProps {
 const DELETE_FILTER_UNDO_TEXT =
   "To undo this change, you will need to recreate this filter and assign options to each item individually."
 
-const DeleteFilterUsageFallback = (): JSX.Element => (
+const DeleteFilterUsageFallback = (): React.ReactNode => (
   <Text textStyle="body-1" color="base.content.strong">
     {DELETE_FILTER_UNDO_TEXT}
   </Text>

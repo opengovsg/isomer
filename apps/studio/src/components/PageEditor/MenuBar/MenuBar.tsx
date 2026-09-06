@@ -1,12 +1,29 @@
 import type { Editor } from "@tiptap/react"
 import { HStack } from "@chakra-ui/react"
+import { useMemo } from "react"
 
 import type { PossibleMenubarItemProps } from "./MenubarItem/types"
 import { MenubarItemFactory } from "./MenubarItem"
 
-export type EditorMenuBar = ({ editor }: { editor: Editor }) => JSX.Element
+export type EditorMenuBar = ({ editor }: { editor: Editor }) => React.ReactNode
+
+const withMenubarItemKeys = (items: PossibleMenubarItemProps[]) => {
+  const typeCounts = new Map<string, number>()
+
+  return items.map((item) => {
+    if ("title" in item && item.title) {
+      return { item, key: `${item.type}-${item.title}` }
+    }
+
+    const typeCount = typeCounts.get(item.type) ?? 0
+    typeCounts.set(item.type, typeCount + 1)
+    return { item, key: `${item.type}-${typeCount}` }
+  })
+}
 
 export const MenuBar = ({ items }: { items: PossibleMenubarItemProps[] }) => {
+  const itemsWithKeys = useMemo(() => withMenubarItemKeys(items), [items])
+
   return (
     <HStack
       bgColor="base.canvas.alt"
@@ -21,8 +38,8 @@ export const MenuBar = ({ items }: { items: PossibleMenubarItemProps[] }) => {
       borderTopRadius="0.25rem"
       spacing="0.25rem"
     >
-      {items.map((item, index) => (
-        <MenubarItemFactory key={index} {...item} />
+      {itemsWithKeys.map(({ item, key }) => (
+        <MenubarItemFactory key={key} {...item} />
       ))}
     </HStack>
   )

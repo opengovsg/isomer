@@ -33,7 +33,7 @@ export const MenubarDetailedList = ({
   label,
   items,
   icon,
-}: MenubarDetailedListProps): JSX.Element | null => {
+}: MenubarDetailedListProps): React.ReactNode | null => {
   if (isHidden?.()) {
     return null
   }

@@ -1,14 +1,21 @@
 import { defineConfig } from "@isomer/oxlint-config"
 import base from "@isomer/oxlint-config/base"
 import { react } from "@isomer/oxlint-config/presets"
+import reactDoctor, {
+  jsPluginSettings,
+  reactDoctorJsPluginEntries,
+} from "@isomer/oxlint-config/react-doctor"
 
 export default defineConfig({
   extends: [
     base,
     react,
+    reactDoctor,
     // To enable this in following stacked PRs
     // next, vitest
   ],
+  settings: jsPluginSettings,
+  jsPlugins: reactDoctorJsPluginEntries,
   ignorePatterns: [
     ".next/**",
     "!.storybook/**",

@@ -7,7 +7,9 @@ import {
 } from "tests/integration/helpers/seed"
 import { beforeEach, describe, expect, it } from "vitest"
 
-import { AuditLogEvent, db, jsonb, RoleType } from "../../database"
+import { db } from "../../database/database"
+import { AuditLogEvent, RoleType } from "../../database/types"
+import { jsonb } from "../../database/utils"
 import {
   createCsvTransform,
   formatAuditLogDateRange,

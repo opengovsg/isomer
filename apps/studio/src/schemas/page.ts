@@ -51,11 +51,9 @@ export const reorderBlobSchema = z.object({
   to: z.number().min(0),
   siteId: z.number().min(1),
   blocks: z.array(
-    z
-      .object({
-        type: z.string(),
-      })
-      .passthrough(),
+    z.looseObject({
+      type: z.string(),
+    }),
   ),
 })
 
@@ -160,8 +158,8 @@ export const readPageOutputSchema = z.object({
   parentId: z.string().nullable(),
   publishedVersionId: z.string().nullable(),
   draftBlobId: z.string().nullable(),
-  state: z.nativeEnum(ResourceState).nullable(),
-  type: z.nativeEnum(ResourceType),
+  state: z.enum(ResourceState).nullable(),
+  type: z.enum(ResourceType),
   scheduledAt: z.date().nullable(),
   scheduledBy: z.string().nullable(),
   createdAt: z.date(),

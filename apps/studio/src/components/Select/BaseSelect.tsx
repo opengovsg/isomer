@@ -24,7 +24,7 @@ export interface BaseSelectProps<T> {
   formatOptionLabel?: (
     option: BaseSelectOption<T>,
     meta: FormatOptionLabelMeta<BaseSelectOption<T>>,
-  ) => JSX.Element
+  ) => React.ReactNode
   isSearchable?: boolean
   isClearable?: boolean
   customComponents?: SelectComponentsConfig<
@@ -38,7 +38,7 @@ interface BaseSelectComponent {
   <T>(
     props: BaseSelectProps<T> &
       React.RefAttributes<SelectInstance<BaseSelectOption<T>>>,
-  ): JSX.Element
+  ): React.ReactNode
   displayName?: string
 }
 

@@ -3,7 +3,7 @@ import { TouchableTooltip } from "@opengovsg/design-system-react"
 import { BiTimeFive } from "react-icons/bi"
 import { formatScheduledAtDate } from "~/lib/dates"
 
-import { CancelScheduleModal } from "."
+import { CancelScheduleModal } from "./CancelScheduleModal"
 
 interface CancelSchedulePublishIndicatorProps {
   pageId: number

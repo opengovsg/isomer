@@ -11,7 +11,7 @@ import PreviewWithCustomSitemap from "../preview/PreviewWithCustomSitemap"
 import { generatePreviewSitemap } from "../utils"
 import { useCreateCollectionPageWizard } from "./CreateCollectionPageWizardContext"
 
-export const PreviewLayout = (): JSX.Element => {
+export const PreviewLayout = (): React.ReactNode => {
   const isMobile = useIsMobile()
   const { currentType } = useCreateCollectionPageWizard()
 

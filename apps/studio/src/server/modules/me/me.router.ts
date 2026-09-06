@@ -1,6 +1,6 @@
 import { protectedProcedure, router } from "~/server/trpc"
 
-import { db } from "../database"
+import { db } from "../database/database"
 import { defaultUserSelect } from "./me.select"
 
 export const meRouter = router({

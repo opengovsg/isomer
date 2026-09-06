@@ -1,7 +1,7 @@
 import { test as base, expect } from "@playwright/test"
 import crypto from "crypto"
 import { env } from "~/env.mjs"
-import { db } from "~/server/modules/database"
+import { db } from "~/server/modules/database/database"
 
 import { LoginPage } from "./fixtures/login"
 

@@ -16,15 +16,15 @@ import { createCollectionPageSchema } from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
 
 import { logResourceEvent } from "../audit/audit.service"
+import { PG_ERROR_CODES } from "../database/constants"
+import { db } from "../database/database"
 import {
   AuditLogEvent,
-  db,
-  jsonb,
   ResourceState,
   ResourceType,
   sql,
-} from "../database"
-import { PG_ERROR_CODES } from "../database/constants"
+} from "../database/types"
+import { jsonb } from "../database/utils"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 import {
   applyResourceOrderBy,
@@ -487,27 +487,28 @@ export const collectionRouter = router({
                 }),
             )
 
-          const oldBlob = await getBlobOfResource({
-            db: tx,
-            resourceId: resource.id,
-          })
-
-          const blob = await updateBlobById(tx, {
-            content: {
-              ...content,
-              page: {
-                description,
-                ref,
-                date,
-                category,
-                image,
-                tags,
-                tagged,
+          const [oldBlob, blob] = await Promise.all([
+            getBlobOfResource({
+              db: tx,
+              resourceId: resource.id,
+            }),
+            updateBlobById(tx, {
+              content: {
+                ...content,
+                page: {
+                  description,
+                  ref,
+                  date,
+                  category,
+                  image,
+                  tags,
+                  tagged,
+                },
               },
-            },
-            pageId: linkId,
-            siteId,
-          })
+              pageId: linkId,
+              siteId,
+            }),
+          ])
 
           await logResourceEvent(tx, {
             siteId,

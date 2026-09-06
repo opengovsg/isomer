@@ -25,7 +25,8 @@ import { AuditLogExportStatus } from "~prisma/generated/generatedEnums"
 
 import type { BaseLogger } from "@isomer/logging"
 
-import { AuditLogExportReportType, db, RoleType } from "../database"
+import { db } from "../database/database"
+import { AuditLogExportReportType, RoleType } from "../database/types"
 import { getResourcePermission } from "../permissions/permissions.service"
 import { logAuditLogExportEvents } from "./audit.service"
 import {

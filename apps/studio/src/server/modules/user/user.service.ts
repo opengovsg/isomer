@@ -5,9 +5,10 @@ import { TRPCError } from "@trpc/server"
 import isEmail from "validator/lib/isEmail"
 import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 
-import type { DB, Transaction } from "../database"
+import type { DB, Transaction } from "../database/types"
 import { logPermissionEvent, logUserEvent } from "../audit/audit.service"
-import { db, RoleType } from "../database"
+import { db } from "../database/database"
+import { RoleType } from "../database/types"
 import { isEmailWhitelisted } from "../whitelist/whitelist.service"
 
 export const isUserDeleted = async (email: string) => {
@@ -245,28 +246,32 @@ export const deleteUserPermission = async ({
       })
     }
 
-    for (const deletedUserPermission of deletedUserPermissions) {
-      const before = userPermissionsToDelete.find(
-        (p) => p.id === deletedUserPermission.id,
-      )
+    const permissionsById = new Map(
+      userPermissionsToDelete.map((permission) => [permission.id, permission]),
+    )
 
-      // Note: this is technically impossible because we're executing
-      // inside a tx and we have checked previously that the user permission existed
-      if (!before) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message:
-            "Something went wrong while attempting to move your resource, please try again later",
+    await Promise.all(
+      deletedUserPermissions.map(async (deletedUserPermission) => {
+        const before = permissionsById.get(deletedUserPermission.id)
+
+        // Note: this is technically impossible because we're executing
+        // inside a tx and we have checked previously that the user permission existed
+        if (!before) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message:
+              "Something went wrong while attempting to move your resource, please try again later",
+          })
+        }
+
+        await logPermissionEvent(tx, {
+          eventType: AuditLogEvent.PermissionDelete,
+          by: byUser,
+          delta: { before, after: deletedUserPermission },
+          siteId,
         })
-      }
-
-      await logPermissionEvent(tx, {
-        eventType: AuditLogEvent.PermissionDelete,
-        by: byUser,
-        delta: { before, after: deletedUserPermission },
-        siteId,
-      })
-    }
+      }),
+    )
   })
 }
 

@@ -1,8 +1,8 @@
 import { TRPCError } from "@trpc/server"
 import { isValidEmail } from "~/utils/email"
 
-import type { DB, Transaction } from "../database"
-import { db } from "../database"
+import type { DB, Transaction } from "../database/types"
+import { db } from "../database/database"
 
 const normalise = (email: string) => {
   return email.toLowerCase().trim()
@@ -71,12 +71,10 @@ export const whitelistEmails = async ({
   // Use transaction for bulk insert
   return db.transaction().execute(async (tx) => {
     // Batch insert admin emails (no expiry) and vendor emails (90 day expiry)
-    const insertedAdmins = await insertAdminEmails(adminEmails, tx)
-    const insertedVendors = await insertVendorEmails(
-      vendorEmails,
-      vendorExpiry,
-      tx,
-    )
+    const [insertedAdmins, insertedVendors] = await Promise.all([
+      insertAdminEmails(adminEmails, tx),
+      insertVendorEmails(vendorEmails, vendorExpiry, tx),
+    ])
 
     return {
       adminCount: Number(insertedAdmins?.[0]?.numInsertedOrUpdatedRows ?? 0),

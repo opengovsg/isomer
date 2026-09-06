@@ -11,7 +11,7 @@ import { pageOrLinkSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { MAX_IMG_FILE_SIZE_BYTES } from "~/lib/fileUpload"
 
-import { getCustomErrorMessage } from "./utils"
+import { getCustomErrorMessage } from "./utils/getCustomErrorMessage"
 
 export const jsonFormsImageControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ImageControl,

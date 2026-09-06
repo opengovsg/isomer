@@ -39,7 +39,7 @@ interface AuditLogExportSectionProps {
 
 export const AuditLogExportSection = ({
   siteId,
-}: AuditLogExportSectionProps): JSX.Element | null => {
+}: AuditLogExportSectionProps): React.ReactNode | null => {
   const ability = useContext(UserManagementContext)
   const canManageUsers = ability.can("manage", "UserManagement")
 

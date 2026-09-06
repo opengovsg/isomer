@@ -32,7 +32,7 @@ export const TitleCell = ({
   siteId,
   id,
   scheduledAt,
-}: TitleCellProps): JSX.Element => {
+}: TitleCellProps): React.ReactNode => {
   const linkStyles = useStyleConfig("Link", {
     colorScheme: "neutral",
     variant: "standalone",

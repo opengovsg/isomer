@@ -88,7 +88,7 @@ export const GazetteTable = ({
 }: {
   siteId: number
   collectionId: number
-}): JSX.Element => {
+}): React.ReactNode => {
   const columns = useMemo(() => getColumns(siteId), [siteId])
   const { isOpen, onOpen, onClose } = useDisclosure()
   const {

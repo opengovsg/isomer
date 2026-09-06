@@ -4,7 +4,7 @@ import { BiWrench } from "react-icons/bi"
 
 import { REDIRECTS_SUPPORT_LINK } from "../constants"
 
-export const RedirectsHeader = (): JSX.Element => {
+export const RedirectsHeader = (): React.ReactNode => {
   return (
     <Flex justifyContent="space-between" align="center" gap="1rem" w="full">
       <Stack spacing="0.5rem">

@@ -1,5 +1,6 @@
 import crypto from "crypto"
-import { db, jsonb } from "~/server/modules/database"
+import { db } from "~/server/modules/database/database"
+import { jsonb } from "~/server/modules/database/utils"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS } from "./auth"

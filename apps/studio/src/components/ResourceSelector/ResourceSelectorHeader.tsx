@@ -100,25 +100,31 @@ export const LoadingHeader = () => {
   )
 }
 
-interface SuspendableHeaderProps {
+interface SuspendableHeaderViewState {
   isSearchQueryEmpty: boolean
   hasParentInStack: boolean
+  isLoading: boolean
+  isHomeHighlighted: boolean
+}
+
+interface SuspendableHeaderProps {
+  viewState: SuspendableHeaderViewState
   handleClickBackButton: () => void
   resourceItemsWithAncestryStack: ResourceItemContent[][] | undefined
   searchQuery: string
-  isLoading: boolean
   handleOnClick: ResourceItemProps["handleOnClick"]
-  isHomeHighlighted: boolean
 }
 export const SuspendableHeader = ({
-  isSearchQueryEmpty,
-  hasParentInStack,
+  viewState: {
+    isSearchQueryEmpty,
+    hasParentInStack,
+    isLoading,
+    isHomeHighlighted,
+  },
   handleClickBackButton,
   resourceItemsWithAncestryStack,
   searchQuery,
   handleOnClick,
-  isLoading,
-  isHomeHighlighted,
 }: SuspendableHeaderProps) => {
   if (isLoading) return <LoadingHeader />
 

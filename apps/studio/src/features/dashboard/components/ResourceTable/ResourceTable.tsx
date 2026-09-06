@@ -62,7 +62,7 @@ interface ResourceTableProps {
 export const ResourceTable = ({
   siteId,
   resourceId,
-}: ResourceTableProps): JSX.Element => {
+}: ResourceTableProps): React.ReactNode => {
   const [sortOption, setSortOption] =
     useState<ResourceOrderByOption>("updated-desc")
 

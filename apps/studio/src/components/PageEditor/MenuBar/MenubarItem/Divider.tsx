@@ -7,7 +7,7 @@ export interface MenubarDividerProps {
 
 export const MenubarDivider = ({
   isHidden,
-}: MenubarDividerProps): JSX.Element | null => {
+}: MenubarDividerProps): React.ReactNode | null => {
   if (isHidden?.()) {
     return null
   }

@@ -30,7 +30,7 @@ export const DraggableBlock = ({
   onClick,
   invalidProps,
   isHidden,
-}: DraggableBlockProps): JSX.Element => {
+}: DraggableBlockProps): React.ReactNode => {
   const { setHoveredBlockIndex } = useEditorDrawerContext()
 
   useEffect(() => {

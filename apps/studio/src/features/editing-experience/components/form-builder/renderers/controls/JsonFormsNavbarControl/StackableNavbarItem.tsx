@@ -256,12 +256,14 @@ export const StackableNavbarItem = ({
             subItems={subItems}
             index={index}
             itemDragHandleRef={mainItemDragHandleRef}
-            isNavbarItemDragging={isNavbarItemDragging}
+            dragPresentation={{
+              isNavbarItemDragging,
+              isItemBeingDraggedOver,
+              setIsItemBeingDraggedOver,
+              isInvalid: numberOfErrors > 0,
+            }}
             onEditItem={onEdit}
             onDeleteItem={onDeleteGroupModalOpen}
-            isItemBeingDraggedOver={isItemBeingDraggedOver}
-            setIsItemBeingDraggedOver={setIsItemBeingDraggedOver}
-            isInvalid={numberOfErrors > 0}
           />
 
           {hasSubItems ? (
@@ -283,7 +285,7 @@ export const StackableNavbarItem = ({
 
                   return (
                     <NavbarItemBox
-                      key={idx}
+                      key={subItem.name}
                       name={subItem.name}
                       description={
                         isInvalid
@@ -292,13 +294,12 @@ export const StackableNavbarItem = ({
                       }
                       index={idx}
                       parentIndex={index}
-                      isSubItem
+                      dragPresentation={{ isSubItem: true, isInvalid }}
                       onEditItem={() => onEdit(idx)}
                       onDeleteItem={() => {
                         setSubItemToDelete(idx)
                         onDeleteSubItemModalOpen()
                       }}
-                      isInvalid={isInvalid}
                     />
                   )
                 })}

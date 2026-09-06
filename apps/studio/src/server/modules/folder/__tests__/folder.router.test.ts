@@ -17,7 +17,12 @@ import {
 import { createCallerFactory } from "~/server/trpc"
 import { getReferenceLink } from "~/utils/link"
 
-import { AuditLogEvent, db, ResourceState, ResourceType } from "../../database"
+import { db } from "../../database/database"
+import {
+  AuditLogEvent,
+  ResourceState,
+  ResourceType,
+} from "../../database/types"
 import { folderRouter } from "../folder.router"
 
 const createCaller = createCallerFactory(folderRouter)

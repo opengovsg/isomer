@@ -1,6 +1,6 @@
 import { resetTables } from "tests/integration/helpers/db"
 import { setupUser } from "tests/integration/helpers/seed"
-import { db } from "~/server/modules/database"
+import { db } from "~/server/modules/database/database"
 import { AuditLogEvent } from "~prisma/generated/prisma/client"
 
 import { upsertUser } from "../email.service"
