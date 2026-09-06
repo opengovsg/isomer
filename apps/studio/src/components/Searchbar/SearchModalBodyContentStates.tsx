@@ -191,13 +191,7 @@ export const NoResultsState = () => {
     <ModalBody justifyContent="center">
       <HeaderTextAndContent
         content={
-          <VStack
-            align="center"
-            gap="1rem"
-            w="full"
-            h="full"
-            justify="center"
-          >
+          <VStack align="center" gap="1rem" w="full" h="full" justify="center">
             <VStack
               align="center"
               gap="0.5rem"

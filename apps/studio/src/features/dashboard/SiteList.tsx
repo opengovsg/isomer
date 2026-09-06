@@ -125,7 +125,8 @@ const SuspendableSiteList = (): JSX.Element => {
             You don&apos;t have access to any sites yet.
           </Text>
           <Text textStyle="body-2" textAlign="center">
-            Speak to your System Owner to get access.<br />
+            Speak to your System Owner to get access.
+            <br />
             If you think there is an error,{" "}
             <Link variant="inline" href={ISOMER_SUPPORT_LINK}>
               let us know

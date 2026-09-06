@@ -1,8 +1,8 @@
 import type { PropsWithChildren } from "react"
-import { createContext, useContext } from "react"
+import type { FallbackProps } from "react-error-boundary"
 import { Box, IconButton, Stack, Text } from "@chakra-ui/react"
 import { Infobox } from "@opengovsg/design-system-react"
-import type { FallbackProps } from "react-error-boundary"
+import { createContext, useContext } from "react"
 import { ErrorBoundary } from "react-error-boundary"
 import { BiTrash } from "react-icons/bi"
 

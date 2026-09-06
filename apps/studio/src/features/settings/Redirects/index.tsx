@@ -22,7 +22,7 @@ const ADD_CARD_SKELETON_HEIGHT = "13rem"
 // away would tell an admin they lack access and then contradict itself.
 const AddRedirectSection = ({
   siteId,
-}: RedirectsSettingsProps): JSX.Element => {
+}: RedirectsSettingsProps): JSX.Element | null => {
   const { canManageRedirects, isPending, isError } = useRedirectManagement()
 
   if (isPending) {

@@ -27,7 +27,7 @@ import FormBuilder from "../form-builder/FormBuilder"
 import { uploadModifiedAssets } from "../utils"
 import { DrawerHeader } from "./DrawerHeader"
 
-const ComplexEditorStateDrawer = (): JSX.Element => {
+const ComplexEditorStateDrawer = (): JSX.Element | null => {
   const {
     isOpen: isDeleteBlockModalOpen,
     onOpen: onDeleteBlockModalOpen,

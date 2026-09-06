@@ -26,7 +26,7 @@ const JsonFormsBooleanControl = ({
   path,
   description,
   schema,
-}: ControlProps): JSX.Element => {
+}: ControlProps): JSX.Element | null => {
   if (schema.const !== undefined) {
     return null
   }

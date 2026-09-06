@@ -1,8 +1,8 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { PropsWithChildren } from "react"
-import { useEffect } from "react"
 import { act, render, renderHook } from "@testing-library/react"
 import { createStore, Provider } from "jotai"
+import { useEffect } from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import {
   EditorDrawerProvider,
@@ -205,7 +205,9 @@ describe("useContentEditTracker", () => {
     // Arrange
     const store = createStore()
     renderTracker(store)
-    act(() => drawerContextRef.current!.setDrawerState({ state: "rawJsonEditor" }))
+    act(() =>
+      drawerContextRef.current!.setDrawerState({ state: "rawJsonEditor" }),
+    )
 
     // Act
     act(() =>

@@ -1,3 +1,4 @@
+import type { ElementType } from "react"
 import type { IconType } from "react-icons"
 
 import type { MenubarCustomProps } from "./Custom"
@@ -12,7 +13,7 @@ export interface MenubarNestedItem {
   type: "item"
   title: string
   description?: string
-  icon?: IconType
+  icon?: IconType | ElementType
   useSecondaryColor?: boolean
   leftItem?: JSX.Element
   action: () => void

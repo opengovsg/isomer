@@ -175,18 +175,20 @@ export const AuditLogExportSection = ({
               const handleChange = field.onChange
 
               return (
-              <FormControl isInvalid={!!fieldState.error} maxW="20.125rem">
-                <SingleSelect
-                  size="xs"
-                  name="month"
-                  value={field.value}
-                  onChange={handleChange}
-                  items={monthOptions}
-                  isClearable={false}
-                  isSearchable={false}
-                />
-                <FormErrorMessage>{fieldState.error?.message}</FormErrorMessage>
-              </FormControl>
+                <FormControl isInvalid={!!fieldState.error} maxW="20.125rem">
+                  <SingleSelect
+                    size="xs"
+                    name="month"
+                    value={field.value}
+                    onChange={handleChange}
+                    items={monthOptions}
+                    isClearable={false}
+                    isSearchable={false}
+                  />
+                  <FormErrorMessage>
+                    {fieldState.error?.message}
+                  </FormErrorMessage>
+                </FormControl>
               )
             }}
           />
@@ -216,28 +218,28 @@ export const AuditLogExportSection = ({
               const handleChange = field.onChange
 
               return (
-              <Radio.RadioGroup
-                display="flex"
-                flexDir="column"
-                gap="0.5rem"
-                onChange={handleChange}
-                value={field.value}
-              >
-                <Radio
-                  value={AuditLogExportScope.AllSites}
-                  allowDeselect={false}
-                  size="sm"
+                <Radio.RadioGroup
+                  display="flex"
+                  flexDir="column"
+                  gap="0.5rem"
+                  onChange={handleChange}
+                  value={field.value}
                 >
-                  All sites I have Admin access to
-                </Radio>
-                <Radio
-                  value={AuditLogExportScope.Site}
-                  allowDeselect={false}
-                  size="sm"
-                >
-                  This site only
-                </Radio>
-              </Radio.RadioGroup>
+                  <Radio
+                    value={AuditLogExportScope.AllSites}
+                    allowDeselect={false}
+                    size="sm"
+                  >
+                    All sites I have Admin access to
+                  </Radio>
+                  <Radio
+                    value={AuditLogExportScope.Site}
+                    allowDeselect={false}
+                    size="sm"
+                  >
+                    This site only
+                  </Radio>
+                </Radio.RadioGroup>
               )
             }}
           />

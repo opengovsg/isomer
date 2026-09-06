@@ -38,11 +38,7 @@ const TimeSelectDropdownIndicator = (): JSX.Element => (
 )
 
 const TimeSelectIndicatorSeparator = (): JSX.Element => (
-  <Divider
-    h="100%"
-    orientation="vertical"
-    borderColor="base.divider.strong"
-  />
+  <Divider h="100%" orientation="vertical" borderColor="base.divider.strong" />
 )
 
 const TimeSelectPlaceholder = (

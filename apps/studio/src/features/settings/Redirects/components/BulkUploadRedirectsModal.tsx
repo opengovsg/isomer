@@ -74,6 +74,11 @@ interface BulkUploadRedirectsModalProps {
   onClose: () => void
 }
 
+interface BulkUploadRedirectsModalContentProps {
+  siteId: number
+  onClose: () => void
+}
+
 // The modal walks through: pick a file → process (validate) → either fix errors
 // and re-upload, or review and publish the whole batch. `stage` tracks which of
 // those the user is on; validation holds the server's per-row verdicts.
@@ -136,7 +141,7 @@ const PublishingSpinner = (): JSX.Element => {
 const BulkUploadRedirectsModalContent = ({
   siteId,
   onClose,
-}: BulkUploadRedirectsModalProps): JSX.Element => {
+}: BulkUploadRedirectsModalContentProps): JSX.Element => {
   const toast = useToast(BRIEF_TOAST_SETTINGS)
   const { validate } = useBulkValidateRedirects(siteId)
   const { mutateAsync: publish } = useBulkCreateRedirects()

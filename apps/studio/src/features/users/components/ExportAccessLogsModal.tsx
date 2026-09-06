@@ -85,26 +85,26 @@ export const ExportAccessLogsModal = () => {
                   const handleChange = field.onChange
 
                   return (
-                  <Radio.RadioGroup
-                    display="flex"
-                    flexDir="column"
-                    gap="0.5rem"
-                    onChange={handleChange}
-                    value={field.value}
-                  >
-                    <Radio
-                      value={AuditLogExportScope.AllSites}
-                      allowDeselect={false}
+                    <Radio.RadioGroup
+                      display="flex"
+                      flexDir="column"
+                      gap="0.5rem"
+                      onChange={handleChange}
+                      value={field.value}
                     >
-                      All sites I have Admin access to
-                    </Radio>
-                    <Radio
-                      value={AuditLogExportScope.Site}
-                      allowDeselect={false}
-                    >
-                      This site only
-                    </Radio>
-                  </Radio.RadioGroup>
+                      <Radio
+                        value={AuditLogExportScope.AllSites}
+                        allowDeselect={false}
+                      >
+                        All sites I have Admin access to
+                      </Radio>
+                      <Radio
+                        value={AuditLogExportScope.Site}
+                        allowDeselect={false}
+                      >
+                        This site only
+                      </Radio>
+                    </Radio.RadioGroup>
                   )
                 }}
               />

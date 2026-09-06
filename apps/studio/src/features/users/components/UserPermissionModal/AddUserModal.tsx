@@ -148,11 +148,7 @@ export const AddUserModal = () => {
     if (!debouncedEmail || errors.email) return
 
     void checkWhitelist()
-  }, [
-    debouncedEmail,
-    errors.email,
-    checkWhitelist,
-  ])
+  }, [debouncedEmail, errors.email, checkWhitelist])
 
   const handleOnClose = useCallback(() => {
     reset()

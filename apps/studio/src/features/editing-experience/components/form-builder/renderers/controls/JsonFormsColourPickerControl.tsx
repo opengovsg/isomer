@@ -110,7 +110,7 @@ const JsonFormsColourPickerControl = ({
               }
               w="2rem"
               h="2rem"
-             />
+            />
           </HStack>
           {!data && (
             <FormErrorMessage>
@@ -147,7 +147,7 @@ const JsonFormsColourPickerControl = ({
                     (get(ctx.core?.data, p) as string | undefined) ??
                     `#${DEFAULT_CONTENT_INVERSE_COLOUR}`
                   }
-                 />
+                />
               )
             })}
           </Flex>
