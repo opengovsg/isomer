@@ -22,7 +22,6 @@ export default meta
 type Story = StoryObj<typeof Infobar>
 
 export const Default: Story = {
-  name: "Default",
   args: {
     sectionIdx: 0,
     title: "This is a place where you can put nice content",
@@ -81,7 +80,6 @@ export const DefaultDark: Story = {
 }
 
 export const Homepage: Story = {
-  name: "Homepage",
   args: {
     layout: "homepage",
     sectionIdx: 0,

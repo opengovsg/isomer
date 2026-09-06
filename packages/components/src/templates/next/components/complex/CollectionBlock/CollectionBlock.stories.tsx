@@ -148,12 +148,10 @@ const generateArgs = ({
 }
 
 export const WithImage: Story = {
-  name: "With Image",
   args: generateArgs({ displayThumbnail: true, displayCategory: true }),
 }
 
 export const WithImageFallback: Story = {
-  name: "With Image Fallback",
   args: generateArgs({
     displayThumbnail: true,
     displayCategory: true,
@@ -162,17 +160,14 @@ export const WithImageFallback: Story = {
 }
 
 export const WithoutImage: Story = {
-  name: "Without Image",
   args: generateArgs({ displayThumbnail: false, displayCategory: true }),
 }
 
 export const WithoutCategory: Story = {
-  name: "Without Category",
   args: generateArgs({ displayThumbnail: true, displayCategory: false }),
 }
 
 export const DatelessVariant: Story = {
-  name: "Dateless Variant",
   args: generateArgs({
     displayThumbnail: true,
     displayCategory: true,
@@ -181,7 +176,6 @@ export const DatelessVariant: Story = {
 }
 
 export const OneCard: Story = {
-  name: "One Card",
   args: generateArgs({
     displayThumbnail: true,
     displayCategory: true,
@@ -190,7 +184,6 @@ export const OneCard: Story = {
 }
 
 export const TwoCards: Story = {
-  name: "Two Cards",
   args: generateArgs({
     displayThumbnail: true,
     displayCategory: true,
@@ -199,7 +192,6 @@ export const TwoCards: Story = {
 }
 
 export const WithoutPlaintextTags: Story = {
-  name: "Without Plaintext Tags",
   args: generateArgs({
     displayThumbnail: true,
     displayCategory: true,
@@ -213,7 +205,6 @@ const TOPIC_OPTION_2_ID = "topic-option-wildlife"
 const REGION_OPTION_ID = "region-option-southeast-asia"
 
 export const MultiplePlaintextTags: Story = {
-  name: "Multiple Plaintext Tags",
   args: generateArgs({
     displayThumbnail: true,
     displayCategory: true,

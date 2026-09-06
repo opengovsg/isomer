@@ -58,7 +58,6 @@ export const Default: Story = {
 }
 
 export const WithoutNotificationNumber: Story = {
-  name: "Without Notification Number",
   args: {
     initialData: {
       title: "Another Gazette",

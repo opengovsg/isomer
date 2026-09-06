@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import type { IsomerSiteProps } from "~/types"
 import { generateSiteConfig } from "~/stories/helpers"
 
 import { LogoCloud } from "./LogoCloud"
@@ -55,7 +54,7 @@ export const LongTitle: Story = {
 export const HugeHorizontalLogo: Story = {
   args: {
     title: "Our partners",
-    images: [...Array(4).fill(IMAGE), HORIZONTAL_IMAGE],
+    images: [...Array.from({ length: 4 }, () => IMAGE), HORIZONTAL_IMAGE],
     site: generateSiteConfig(),
   },
 }
@@ -63,7 +62,7 @@ export const HugeHorizontalLogo: Story = {
 export const HugeVerticalLogo: Story = {
   args: {
     title: "Our partners",
-    images: [...Array(4).fill(IMAGE), VERTICAL_IMAGE],
+    images: [...Array.from({ length: 4 }, () => IMAGE), VERTICAL_IMAGE],
     site: generateSiteConfig(),
   },
 }

@@ -1,5 +1,9 @@
 import { defineConfig } from "@isomer/oxlint-config"
 import base from "@isomer/oxlint-config/base"
+import {
+  storybookIgnorePattern,
+  storybookOverrides,
+} from "@isomer/oxlint-config/storybook"
 // import { react, vitest } from "@isomer/oxlint-config/presets"
 
 export default defineConfig({
@@ -8,7 +12,7 @@ export default defineConfig({
     // To enable this in following stacked PRs
     // react, vitest
   ],
-  ignorePatterns: ["dist", "**/*.config.*", "!.storybook"],
+  ignorePatterns: ["dist", "**/*.config.*", storybookIgnorePattern],
   overrides: [
     {
       files: ["**/*.ts", "**/*.tsx"],
@@ -72,49 +76,6 @@ export default defineConfig({
       },
       plugins: ["react", "typescript"],
     },
-    {
-      files: [
-        "**/*.stories.ts",
-        "**/*.stories.tsx",
-        "**/*.stories.js",
-        "**/*.stories.jsx",
-        "**/*.stories.mjs",
-        "**/*.stories.cjs",
-        "**/*.story.ts",
-        "**/*.story.tsx",
-        "**/*.story.js",
-        "**/*.story.jsx",
-        "**/*.story.mjs",
-        "**/*.story.cjs",
-      ],
-      rules: {
-        "react-hooks/rules-of-hooks": "off",
-        "import/no-anonymous-default-export": "off",
-        "storybook/await-interactions": "error",
-        "storybook/context-in-play-function": "error",
-        "storybook/default-exports": "error",
-        "storybook/hierarchy-separator": "warn",
-        "storybook/no-redundant-story-name": "warn",
-        "storybook/no-renderer-packages": "error",
-        "storybook/prefer-pascal-case": "warn",
-        "storybook/story-exports": "error",
-        "storybook/use-storybook-expect": "error",
-        "storybook/use-storybook-testing-library": "error",
-      },
-      jsPlugins: ["eslint-plugin-storybook"],
-      plugins: ["react", "import"],
-    },
-    {
-      files: [
-        ".storybook/main.js",
-        ".storybook/main.cjs",
-        ".storybook/main.mjs",
-        ".storybook/main.ts",
-      ],
-      rules: {
-        "storybook/no-uninstalled-addons": "error",
-      },
-      jsPlugins: ["eslint-plugin-storybook"],
-    },
+    ...storybookOverrides,
   ],
 })
