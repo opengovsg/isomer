@@ -9,7 +9,7 @@ interface StatusConfig {
   color: string
 }
 
-const STATUS_CONFIG: Record<GazetteStatus, StatusConfig> = {
+const STATUS_CONFIG = {
   published: {
     icon: BiCheckCircle,
     label: "Published",
@@ -45,7 +45,7 @@ const STATUS_CONFIG: Record<GazetteStatus, StatusConfig> = {
     label: "Upload failure",
     color: "utility.feedback.critical",
   },
-}
+} satisfies Record<GazetteStatus, StatusConfig>
 
 interface StatusCellProps {
   status: GazetteStatus

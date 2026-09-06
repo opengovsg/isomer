@@ -12,7 +12,7 @@ export type LayoutRenderDataType = Record<
   }
 >
 
-export const LAYOUT_RENDER_DATA: LayoutRenderDataType = {
+export const LAYOUT_RENDER_DATA = {
   content: {
     title: "Standard layout",
     description: "This is the default layout for your content.",
@@ -32,4 +32,4 @@ export const LAYOUT_RENDER_DATA: LayoutRenderDataType = {
     imageSrc: "/assets/layout-card/database_layout_card.png",
     altText: "Image preview of Database layout",
   },
-}
+} satisfies LayoutRenderDataType

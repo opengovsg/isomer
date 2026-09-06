@@ -36,6 +36,7 @@ export function usePrefillForCards({ data, path }: UsePrefillParams) {
     RouterOutput["page"]["getPrefill"] | null
   >(null)
 
+  // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
   const resourceId = getResourceIdFromReferenceLink(data as string)
 
   // NOTE: Omit last item because that points to this link control
@@ -49,6 +50,7 @@ export function usePrefillForCards({ data, path }: UsePrefillParams) {
       data &&
       AUTOPOPULATED_FIELDS.some((field) =>
         isEmptyOrPlaceholder(
+          // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
           get(ctx.core?.data, `${basePath}.${field}`) as string | undefined,
         ),
       )
@@ -70,6 +72,7 @@ export function usePrefillForCards({ data, path }: UsePrefillParams) {
 
   const needsConfirmation = !AUTOPOPULATED_FIELDS.every((field) =>
     isEmptyOrPlaceholder(
+      // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
       get(ctx.core?.data, `${basePath}.${field}`) as string | undefined,
     ),
   )

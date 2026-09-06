@@ -42,6 +42,7 @@ const JsonFormsTagCategoriesArrayLayoutInner = (props: ArrayLayoutProps) => {
   const { hasErrorAt } = useBuilderErrors()
   const { core } = useJsonForms()
   const { pageId, siteId } = useQueryParse(pageSchema)
+  // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
   const page = core?.data as CollectionPagePageProps | undefined
   const { duplicate: duplicateFilterIndices } = useLiveLabelIssues({ path })
 

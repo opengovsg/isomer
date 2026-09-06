@@ -68,11 +68,16 @@ export const BaseLinkControl = ({
   "data" | "label" | "handleChange" | "path" | "required" | "errors"
 > &
   Pick<LinkEditorModalProps, "linkTypes"> & { description: string }) => {
-  const dataString = data && typeof data === "string" ? data : ""
+  // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
+  const dataString =
+    Object.prototype.toString.call(data) === "[object String]"
+      ? (data as string)
+      : ""
   const { isOpen, onOpen, onClose } = useDisclosure()
   const pageType = getLinkHrefType(dataString)
   const displayedHref = parseHref(
     dataString,
+    // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
     pageType as LinkTypesWithHrefFormat,
   )
   const { siteId } = useQueryParse(sitePageSchema)

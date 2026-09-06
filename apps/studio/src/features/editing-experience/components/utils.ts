@@ -20,12 +20,7 @@ import { transliterate } from "transliteration"
 
 import { PLACEHOLDER_IMAGE_FILENAME } from "./constants"
 
-export const EMBED_NAME_MAPPING: Record<
-  | keyof typeof MAPS_EMBED_URL_REGEXES
-  | keyof typeof VIDEO_EMBED_URL_REGEXES
-  | keyof typeof FORMSG_EMBED_URL_REGEXES,
-  string
-> = {
+export const EMBED_NAME_MAPPING = {
   googlemaps: "Google Map",
   onemap: "OneMap",
   ogpmaps: "Maps.gov.sg",
@@ -33,7 +28,12 @@ export const EMBED_NAME_MAPPING: Record<
   youtube: "YouTube",
   vimeo: "Vimeo",
   formsg: "FormSG",
-}
+} satisfies Record<
+  | keyof typeof MAPS_EMBED_URL_REGEXES
+  | keyof typeof VIDEO_EMBED_URL_REGEXES
+  | keyof typeof FORMSG_EMBED_URL_REGEXES,
+  string
+>
 
 export const generateResourceUrl = (value: string): string =>
   transliterate(value)
@@ -102,6 +102,7 @@ export const generatePreviewSitemap = (
   sitemap: typeof collectionSitemap,
   title = "Your filename",
 ) => {
+  // SAFETY: preview sitemap children are mapped from the collection fixture shape
   return {
     ...sitemap,
     children: sitemap.children.map(({ children, ...rest }) => ({
@@ -134,6 +135,7 @@ export const getEmbedNameFromUrl = (url: string) =>
 
     const [embedName, regex] = curr
     if (new RegExp(regex).test(url)) {
+      // SAFETY: caller invariant is checked immediately before this narrowing assertion
       return EMBED_NAME_MAPPING[embedName as keyof typeof EMBED_NAME_MAPPING]
     }
 

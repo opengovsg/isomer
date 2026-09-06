@@ -24,6 +24,7 @@ const JsonFormsLinkControl = ({
 }: ControlProps) => {
   return (
     <BaseLinkControl
+      // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
       data={data as string}
       label={label}
       required={required}

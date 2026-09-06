@@ -50,11 +50,17 @@ const MIN_PROCESSING_MS = 2000
 // Keyed by react-dropzone's ErrorCode values, inlined rather than imported since
 // react-dropzone is the design system's dependency and not one we declare. Same
 // voice as the parse-time file errors, since both render in the same place.
-const REJECTION_MESSAGES: Record<string, string | undefined> = {
+const REJECTION_MESSAGES = {
   "file-too-large": `This file is too big. Upload a file under ${formatFileSizeLimit({ bytes: MAX_BULK_REDIRECT_CSV_BYTES })} and try again.`,
   "file-invalid-type":
     "This file isn't a .csv. Upload a .csv file and try again.",
   "too-many-files": "Upload one file at a time.",
+} as const satisfies Record<string, string | undefined>
+
+const getRejectionMessage = (code: string): string | undefined => {
+  if (!Object.hasOwn(REJECTION_MESSAGES, code)) return undefined
+  // SAFETY: Object.hasOwn confirms code is a key of REJECTION_MESSAGES
+  return REJECTION_MESSAGES[code as keyof typeof REJECTION_MESSAGES]
 }
 
 // First mapped error wins, mirroring the dropzone's own ordering. Falls back to
@@ -62,7 +68,7 @@ const REJECTION_MESSAGES: Record<string, string | undefined> = {
 // screen with no explanation.
 const rejectionMessage = (rejection: FileRejections[number]): string => {
   for (const { code } of rejection.errors) {
-    const message = REJECTION_MESSAGES[code]
+    const message = getRejectionMessage(code)
     if (message !== undefined) return message
   }
   return "We couldn't read this file. Upload a valid .csv file."

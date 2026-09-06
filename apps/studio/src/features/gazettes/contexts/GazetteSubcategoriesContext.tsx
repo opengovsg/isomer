@@ -49,6 +49,7 @@ export const GazetteSubcategoriesProvider = ({
         value: option.id,
       })) ?? []
 
+    // SAFETY: subcategory labels are keyed by their stable option ids
     const subcategoryMap = Object.fromEntries(
       subcategories.map(({ value, label }) => [value, label]),
     ) as Record<string, string>

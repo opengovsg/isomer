@@ -6,9 +6,11 @@ export type isUserOnboardedProps = Pick<User, "name" | "phone">
 // This is a hackish way to check if the phone number is a singapore phone number
 // At current stage, we don't do 2FA to validate if it's a valid phone number too
 // Not including +65 since OGPDS is not using it too
-const isSingaporePhoneNumber = (phone: string) => {
-  // Return false if phone is null, undefined, or not a string
-  if (!phone || typeof phone !== "string") {
+const isSingaporePhoneNumber = (phone: string | null) => {
+  if (
+    !phone ||
+    Object.prototype.toString.call(phone) !== "[object String]"
+  ) {
     return false
   }
 

@@ -1,4 +1,4 @@
-import type * as ChakraUi from "@chakra-ui/react"
+import type { ReactNode } from "react"
 import type { ResourceAbility } from "~/server/modules/permissions/permissions.type"
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
 import { AbilityProvider } from "@casl/react"
@@ -16,8 +16,21 @@ import PublishButton from "../PublishButton"
 
 const noop = vi.fn()
 
+interface ChakraMenuModule {
+  Menu: (props: { children?: ReactNode }) => ReactNode
+  MenuButton: (props: {
+    children?: ReactNode
+    "aria-label"?: string
+  }) => ReactNode
+  MenuList: (props: { children?: ReactNode }) => ReactNode
+  MenuItem: (props: { children?: ReactNode }) => ReactNode
+}
+
 beforeAll(async () => {
-  const chakra = await vi.importActual<typeof ChakraUi>("@chakra-ui/react")
+  // SAFETY: importActual returns the real Chakra module; cast to the menu subset under test
+  const chakra = (await vi.importActual(
+    "@chakra-ui/react",
+  )) as ChakraMenuModule
   vi.spyOn(chakra, "Menu").mockImplementation(({ children }) => children)
   vi.spyOn(chakra, "MenuButton").mockImplementation(
     ({ "aria-label": ariaLabel }) => (

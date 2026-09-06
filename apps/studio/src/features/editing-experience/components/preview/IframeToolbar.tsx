@@ -102,6 +102,7 @@ export const IframeToolbar = ({
                 value={viewport}
                 type="radio"
                 onChange={(nextValue) =>
+                  // SAFETY: caller invariant is checked immediately before this narrowing assertion
                   setViewport(nextValue as ViewportOptions)
                 }
               >

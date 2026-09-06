@@ -28,10 +28,7 @@ import { InfocardsIcon } from "./components/icons/Infocards"
 import { InfocolsIcon } from "./components/icons/Infocols"
 import { InfopicIcon } from "./components/icons/Infopic"
 
-export const TYPE_TO_ICON: Record<
-  IsomerSchema["content"][number]["type"],
-  IconType
-> = {
+export const TYPE_TO_ICON = {
   antiscambanner: BiError,
   prose: BiText,
   image: BiImage,
@@ -58,7 +55,7 @@ export const TYPE_TO_ICON: Record<
   contactinformation: BiPhoneCall,
   dynamiccomponentlist: BiListUl,
   childrenpages: BiListUl,
-}
+} satisfies Record<IsomerSchema["content"][number]["type"], IconType>
 
 export const PUBLISHED_AFTER_EDITING_EVENT = "published-after-editing"
 export const LEFT_EDITOR_AFTER_EDITING_EVENT = "left-editor-after-editing"

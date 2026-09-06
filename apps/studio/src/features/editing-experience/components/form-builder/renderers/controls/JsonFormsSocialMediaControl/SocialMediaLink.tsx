@@ -35,6 +35,7 @@ export const SocialMediaLink = ({
   isInvalid,
 }: SocialMediaLinkProps) => {
   const ctx = useJsonForms()
+  // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
   const data = (get(ctx.core?.data, path) ?? {}) as Partial<
     NonNullable<FooterSchemaType["socialMediaLinks"]>[number]
   >

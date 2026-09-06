@@ -216,6 +216,7 @@ const SiderailOrderingEditorStateDrawer = (): React.ReactNode => {
 
   const childrenPagesBlock = useMemo(() => {
     if (childrenPagesBlockIndex === -1) return null
+    // SAFETY: childrenPagesBlockIndex points at a childrenpages block in content
     return previewPageState.content[childrenPagesBlockIndex] as
       | (IsomerComponent & { type: "childrenpages" })
       | undefined
@@ -235,6 +236,7 @@ const SiderailOrderingEditorStateDrawer = (): React.ReactNode => {
         ...updatedContent[childrenPagesBlockIndex],
         childrenPagesOrdering: newOrdering,
       }
+      // SAFETY: editor drawer state is narrowed to the active layout-specific page shape
       updatedContent[childrenPagesBlockIndex] = updatedBlock as IsomerComponent
 
       setPreviewPageState({

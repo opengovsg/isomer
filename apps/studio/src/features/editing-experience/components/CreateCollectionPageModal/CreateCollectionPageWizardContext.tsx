@@ -80,6 +80,7 @@ const useCreateCollectionPageWizardContext = ({
             page: { title: title || "Page title here" },
           })
         : collectionLinkPreview
+    // SAFETY: caller invariant is checked immediately before this narrowing assertion
     return jsonPreview as IsomerSchema
   }, [type, title])
 

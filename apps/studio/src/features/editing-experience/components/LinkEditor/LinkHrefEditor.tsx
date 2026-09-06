@@ -17,6 +17,7 @@ type HttpsLink = `https://${string}`
 
 const generateHttpsLink = (data: string): HttpsLink => {
   if (data.startsWith(HTTPS_PREFIX)) {
+    // SAFETY: caller invariant is checked immediately before this narrowing assertion
     return data as HttpsLink
   }
 

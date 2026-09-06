@@ -1,10 +1,22 @@
-import type { LayoutProps, RankedTester } from "@jsonforms/core"
+import type { LayoutProps, RankedTester, UISchemaElement } from "@jsonforms/core"
 import { Box, Divider, Heading } from "@chakra-ui/react"
 import { rankWith, uiTypeIs } from "@jsonforms/core"
 import { JsonFormsDispatch, withJsonFormsLayoutProps } from "@jsonforms/react"
 import React from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { isGroupLayout } from "~/types/schema"
+
+const getScopedElementKey = (element: UISchemaElement, path: string): string => {
+  if ("scope" in element) {
+    // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
+    const scope = (element as { scope?: unknown }).scope
+    if (Object.prototype.toString.call(scope) === "[object String]") {
+      // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
+      return scope as string
+    }
+  }
+  return `${path}-${JSON.stringify(element)}`
+}
 
 export const jsonFormsGroupLayoutTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.GroupLayoutRenderer,
@@ -42,11 +54,7 @@ const GroupComponent = React.memo(function GroupComponent({
 
       {elements.map((element) => (
         <JsonFormsDispatch
-          key={
-            "scope" in element && typeof element.scope === "string"
-              ? element.scope
-              : `${path}-${JSON.stringify(element)}`
-          }
+          key={getScopedElementKey(element, path)}
           uischema={element}
           schema={schema}
           path={path}

@@ -10,11 +10,14 @@ import {
 import { AskgovLogo } from "~/components/Svg/Askgov"
 import { VicaLogo } from "~/components/Svg/Vica"
 
+// zendesk is not user-editable in studio, so only pick the editable widget types
+export type WidgetType = Extract<ComplexIntegrations, "askgov" | "vica">
+
 interface Widget {
   icon: React.ReactNode
   label: string
 }
-export const WIDGET_CONFIG: Record<WidgetType, Widget> = {
+export const WIDGET_CONFIG = {
   askgov: {
     icon: <AskgovLogo width="5rem" />,
     label: "AskGov",
@@ -23,10 +26,7 @@ export const WIDGET_CONFIG: Record<WidgetType, Widget> = {
     icon: <VicaLogo width="5rem" ml="-8px" />,
     label: "VICA",
   },
-}
-
-// zendesk is not user-editable in studio, so only pick the editable widget types
-export type WidgetType = Extract<ComplexIntegrations, "askgov" | "vica">
+} satisfies Record<WidgetType, Widget>
 
 interface UseWidgetContextReturn {
   activeWidget: WidgetType | null

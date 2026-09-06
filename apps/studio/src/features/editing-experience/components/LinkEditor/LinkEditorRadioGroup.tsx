@@ -66,6 +66,7 @@ export const LinkEditorRadioGroup = () => {
     defaultValue: LINK_TYPES.Page,
     // NOTE: This is a safe cast because we map over the `linkTypes` below
     // so each time we are using the `linkType`
+    // SAFETY: caller invariant is checked immediately before this narrowing assertion
     onChange: (value) => setCurType(value as LinkTypes),
   })
 

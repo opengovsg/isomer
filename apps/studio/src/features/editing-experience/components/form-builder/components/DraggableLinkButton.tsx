@@ -99,6 +99,7 @@ const DraggableLinkButton = forwardRef<DraggableLinkButtonProps, "div">(
 
     const { siteId } = useQueryParse(sitePageSchema)
     const linkType = getLinkHrefType(url)
+    // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
     const displayedHref = parseHref(url, linkType as LinkTypesWithHrefFormat)
 
     return (

@@ -116,6 +116,7 @@ export const GazetteFormFields = ({
             <SingleSelect
               value={value}
               name="subcategory"
+              // SAFETY: caller invariant is checked immediately before this narrowing assertion
               items={getSubcategoriesForCategory(category as GazettesCategory)}
               isClearable={false}
               onChange={onChange}

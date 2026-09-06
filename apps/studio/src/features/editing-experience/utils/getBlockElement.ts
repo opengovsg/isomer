@@ -33,6 +33,7 @@ export const getBlockElement = (
     "[data-isomer-content-blocks]",
   )
 
+  // SAFETY: visibleIndex counts only visible content blocks in the preview iframe
   return contentBlocksContainer?.children[visibleIndex] as
     | HTMLElement
     | undefined

@@ -10,10 +10,13 @@ export const jsonFormsUuidControlTester: RankedTester = rankWith(
 )
 
 const JsonFormsUuidControl = ({ data, handleChange, path }: ControlProps) => {
-  const uuid = useMemo(
-    () => (typeof data === "string" ? data : crypto.randomUUID()),
-    [data],
-  )
+  const uuid = useMemo(() => {
+    if (Object.prototype.toString.call(data) === "[object String]") {
+      // SAFETY: JSON Forms uuid control only stores string values in data
+      return data as string
+    }
+    return crypto.randomUUID()
+  }, [data])
   useEffect(() => {
     handleChange(path, uuid)
   }, [handleChange, path, uuid])

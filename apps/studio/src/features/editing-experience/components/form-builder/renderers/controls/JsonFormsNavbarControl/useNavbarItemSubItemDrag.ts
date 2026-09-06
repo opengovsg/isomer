@@ -49,6 +49,7 @@ export const useNavbarItemSubItemDrag = ({
         args.source.data.navbarId === getNavbarItemPath(index, parentIndex)
       const isDraggedItemAChild =
         parentIndex !== undefined &&
+        // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
         (args.source.data.navbarId as string).startsWith(
           getNavbarItemPath(parentIndex),
         )
@@ -89,6 +90,7 @@ export const useNavbarItemSubItemDrag = ({
           attachClosestEdge(
             {
               type: "navbar-item",
+              // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
               navbarId: (element as HTMLDivElement).dataset.id,
               dropTargetId: getNavbarItemPath(index, parentIndex),
             },

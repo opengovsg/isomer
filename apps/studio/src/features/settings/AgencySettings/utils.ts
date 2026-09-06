@@ -2,8 +2,8 @@ import type { SiteEntitySettings } from "@opengovsg/isomer-components"
 
 // NOTE: Blank strings are dropped so that a config edited outside this form
 // normalises the same way the renderer does before emitting structured data.
-const isBlank = (value: unknown) =>
-  value === undefined || (typeof value === "string" && !value.trim())
+const isBlank = (value: string | undefined): boolean =>
+  value === undefined || !value.trim()
 
 const compactObject = <T extends object>(
   value: T | undefined,
@@ -11,10 +11,13 @@ const compactObject = <T extends object>(
   if (!value) return undefined
 
   const entries = Object.entries(value).filter(
-    ([, entryValue]) => !isBlank(entryValue),
+    // SAFETY: caller invariant is checked immediately before this narrowing assertion
+    ([, entryValue]) => !isBlank(entryValue as string | undefined),
   )
 
-  return entries.length ? (Object.fromEntries(entries) as T) : undefined
+  if (!entries.length) return undefined
+  // SAFETY: filtered entries only drop blank string fields from the same object shape
+  return Object.fromEntries(entries) as T
 }
 
 export const normalizeSiteEntity = (

@@ -30,9 +30,17 @@ const databasePageDatabaseSchema = getScopedSchema({
   scope: "page.database",
 })
 
-const validateFn = ajv.compile<Static<typeof databasePageDatabaseSchema>>(
-  databasePageDatabaseSchema,
-)
+type DatabaseFormData = DatabasePageSchemaType["page"]["database"]
+
+const validateFn = ajv.compile<DatabaseFormData>(databasePageDatabaseSchema)
+
+const getDatabaseFormData = (
+  pageState: IsomerSchema,
+): DatabaseFormData | undefined => {
+  if (pageState.layout !== ISOMER_USABLE_PAGE_LAYOUTS.Database) return undefined
+  // SAFETY: layout check confirms database page shape
+  return (pageState as DatabasePageSchemaType).page.database
+}
 
 const DatabaseEditorStateDrawer = (): React.ReactNode => {
   const {
@@ -85,16 +93,18 @@ const DatabaseEditorStateDrawer = (): React.ReactNode => {
     siteId,
   ])
 
-  const handleChange = (data: unknown) => {
-    const newPageState = {
-      ...previewPageState,
+  const handleChange = (data: DatabaseFormData) => {
+    if (previewPageState.layout !== ISOMER_USABLE_PAGE_LAYOUTS.Database) return
+    // SAFETY: layout check confirms database page shape
+    const databasePageState = previewPageState as DatabasePageSchemaType
+
+    setPreviewPageState({
+      ...databasePageState,
       page: {
-        ...previewPageState.page,
+        ...databasePageState.page,
         database: data,
       },
-    } as IsomerSchema
-
-    setPreviewPageState(newPageState)
+    })
   }
 
   const handleDiscardChanges = () => {
@@ -130,10 +140,7 @@ const DatabaseEditorStateDrawer = (): React.ReactNode => {
               <FormBuilder<Static<typeof databasePageDatabaseSchema>>
                 schema={databasePageDatabaseSchema}
                 validateFn={validateFn}
-                data={
-                  (previewPageState as unknown as DatabasePageSchemaType).page
-                    .database
-                }
+                data={getDatabaseFormData(previewPageState)}
                 handleChange={(data) => handleChange(data)}
               />
             </Box>

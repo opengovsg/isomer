@@ -16,7 +16,6 @@ import {
 import { FormLabel, useToast } from "@opengovsg/design-system-react"
 import { useAtomValue, useSetAtom } from "jotai"
 import { useEffect } from "react"
-import { z as zod } from "zod"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
 import { useZodForm } from "~/lib/form"
@@ -48,9 +47,7 @@ export const EditUserModal = () => {
   }
 
   const { watch, handleSubmit, setValue, reset } = useZodForm({
-    schema: zod.object({
-      role: updateUserInputSchema.shape.role,
-    }),
+    schema: updateUserInputSchema.pick({ role: true }),
     mode: "onChange",
     reValidateMode: "onChange",
     defaultValues: {

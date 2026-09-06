@@ -4,6 +4,7 @@ import { Box, FormControl, useRadio, useRadioGroup } from "@chakra-ui/react"
 import { rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel } from "@opengovsg/design-system-react"
+import { createElement } from "react"
 import {
   IconCalloutGoodToKnow,
   IconCalloutInformation,
@@ -17,7 +18,7 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 import { ImageRadioIndicator } from "./ImageRadioIndicator"
 
-const IMAGE_RADIO_ICONS: Record<string, typeof IconTagCategoryPills> = {
+const IMAGE_RADIO_ICONS = {
   "tagcategory/pills": IconTagCategoryPills,
   "tagcategory/plaintext": IconTagCategoryPlaintext,
   "callout/information": IconCalloutInformation,
@@ -25,6 +26,12 @@ const IMAGE_RADIO_ICONS: Record<string, typeof IconTagCategoryPills> = {
   "callout/warning": IconCalloutWarning,
   "callout/urgent": IconCalloutUrgent,
   "callout/note": IconCalloutNote,
+} as const satisfies Record<string, typeof IconTagCategoryPills>
+
+const getImageRadioIcon = (image: string): typeof IconTagCategoryPills => {
+  if (!Object.hasOwn(IMAGE_RADIO_ICONS, image)) return IconTagCategoryPills
+  // SAFETY: Object.hasOwn confirms image is a key of IMAGE_RADIO_ICONS
+  return IMAGE_RADIO_ICONS[image as keyof typeof IMAGE_RADIO_ICONS]
 }
 
 interface ImageRadioSchema {
@@ -48,7 +55,7 @@ const ImageRadioOption = ({
   ...rest
 }: ImageRadioOptionProps) => {
   const { getInputProps, getRadioProps } = useRadio(rest)
-  const ImageRadioIcon = IMAGE_RADIO_ICONS[image]
+  const ImageRadioIcon = getImageRadioIcon(image)
 
   return (
     <Box as="label" cursor="pointer" width="100%" lineHeight={0}>
@@ -70,14 +77,14 @@ const ImageRadioOption = ({
         overflow="hidden"
         padding="12px"
       >
-        {ImageRadioIcon && (
-          <ImageRadioIcon
-            width="100%"
-            height="auto"
-            display="block"
-            aria-hidden
-          />
-        )}
+        {ImageRadioIcon
+          ? createElement(ImageRadioIcon, {
+              width: "100%",
+              height: "auto",
+              display: "block",
+              "aria-hidden": true,
+            })
+          : null}
         <ImageRadioIndicator
           isSelected={isSelected}
           position="absolute"
@@ -92,6 +99,7 @@ const ImageRadioOption = ({
 }
 
 const getImageRadioOptions = (schema: ControlProps["schema"]) =>
+  // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
   ((schema as ImageRadioSchema).oneOf ?? []).map((option) => ({
     value: option.const,
     title: option.title,
@@ -123,6 +131,7 @@ const JsonFormsImageRadioControl = ({
   // circular control) that we cannot remove cleanly when the visual is a
   // full-bleed image card with a custom border. Same approach as LinkEditorRadioGroup.
   const { getRootProps, getRadioProps } = useRadioGroup({
+    // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
     value: data as string,
     onChange: (value) => {
       handleChange(path, value)

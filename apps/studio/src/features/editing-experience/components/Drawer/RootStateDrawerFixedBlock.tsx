@@ -26,7 +26,7 @@ interface FixedBlockContent {
   description: string
 }
 
-const FIXED_BLOCK_CONTENT: Record<string, FixedBlockContent> = {
+const FIXED_BLOCK_CONTENT = {
   article: {
     label: "Article page header",
     description: "Category, Date, and Summary",
@@ -43,6 +43,12 @@ const FIXED_BLOCK_CONTENT: Record<string, FixedBlockContent> = {
     label: "Header",
     description: "Summary, Button label and Button URL",
   },
+} as const satisfies Record<string, FixedBlockContent>
+
+const getFixedBlockContent = (layout: string): FixedBlockContent | undefined => {
+  if (!Object.hasOwn(FIXED_BLOCK_CONTENT, layout)) return undefined
+  // SAFETY: Object.hasOwn confirms layout is a key of FIXED_BLOCK_CONTENT
+  return FIXED_BLOCK_CONTENT[layout as keyof typeof FIXED_BLOCK_CONTENT]
 }
 
 export const FixedBlock = () => {
@@ -142,10 +148,11 @@ export const FixedBlock = () => {
         setDrawerState({ state: "metadataEditor" })
       }}
       label={
-        FIXED_BLOCK_CONTENT[pageLayout]?.label || "Page description and summary"
+        getFixedBlockContent(pageLayout)?.label ||
+        "Page description and summary"
       }
       description={
-        FIXED_BLOCK_CONTENT[pageLayout]?.description || "Click to edit"
+        getFixedBlockContent(pageLayout)?.description || "Click to edit"
       }
       icon={BiPin}
     />

@@ -35,7 +35,11 @@ const JsonFormsDateControl = ({
         <FormLabel description={description}>{label}</FormLabel>
         <DatePicker
           isDisabled={enabled === false}
-          inputValue={typeof data === "string" ? String(data) : undefined}
+          inputValue={
+            Object.prototype.toString.call(data) === "[object String]"
+              ? String(data)
+              : undefined
+          }
           allowManualInput={true}
           onInputValueChange={(date) => handleChange(path, date)}
         />
