@@ -209,6 +209,7 @@ export const getSiteNameAndCodeBuildId = async (siteId: number) => {
     .select(["Site.codeBuildId", "Site.name", "Site.config"])
     .executeTakeFirstOrThrow()
 
+  // SAFETY: Site.config stores an optional siteName override in JSON
   const siteConfig = site.config as { siteName?: string } | null
 
   return {

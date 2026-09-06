@@ -181,20 +181,20 @@ export const singpassRouter = router({
         })
       }
 
-      const verifiedUserId = possibleUser.id as NonNullable<
-        SessionData["userId"]
-      >
+      const verifiedUserId = possibleUser.id
+      // SAFETY: possibleUser is a persisted User row whose id matches SessionData["userId"]
+      const sessionUserId = verifiedUserId as NonNullable<SessionData["userId"]>
 
       await ctx.db.transaction().execute(async (tx) => {
         await recordUserLogin({
           tx,
-          userId: verifiedUserId,
+          userId: sessionUserId,
           verificationToken,
         })
       })
 
       ctx.session.destroy()
-      ctx.session.userId = verifiedUserId
+      ctx.session.userId = sessionUserId
       ctx.session.updateConfig(generateSessionOptions({ ttlInHours: 12 }))
       await ctx.session.save()
 

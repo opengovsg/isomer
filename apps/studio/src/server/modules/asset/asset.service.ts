@@ -30,10 +30,10 @@ export interface UploadConfig {
 }
 
 // Server-side allowlist: extension (lowercase, e.g. ".jpg") -> MIME (used for signed upload metadata)
-const EXTENSION_TO_MIME: Record<string, string> = {
+const EXTENSION_TO_MIME = {
   ...IMAGE_ACCEPTED_MIME_TYPE_MAPPING,
   ...FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
-}
+} satisfies Record<string, string>
 
 // NOTE: The format that s3 expects is in this format:
 // Tagging: "key1=value1&key2=value2"

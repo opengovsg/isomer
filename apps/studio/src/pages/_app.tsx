@@ -63,7 +63,7 @@ void gb.init({
   streaming: true,
 })
 
-const MyApp = ((props: AppPropsWithAuthAndLayout) => {
+const MyApp: AppType = (props: AppPropsWithAuthAndLayout) => {
   return (
     <EnvProvider env={env}>
       <LoginStateProvider>
@@ -89,7 +89,7 @@ const MyApp = ((props: AppPropsWithAuthAndLayout) => {
       </LoginStateProvider>
     </EnvProvider>
   )
-}) as AppType
+}
 
 // This is needed so suspense will be triggered for anything within the LayoutComponents which uses useSuspenseQuery
 const ChildWithLayout = ({

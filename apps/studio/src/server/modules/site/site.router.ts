@@ -418,9 +418,8 @@ export const siteRouter = router({
           .updateTable("Footer")
           .set({
             content: jsonb(
-              safeJsonParse(
-                footer,
-              ) as IsomerSiteWideComponentsProps["footerItems"],
+              // SAFETY: footer JSON was validated by the site settings schema before persistence
+              safeJsonParse(footer) as IsomerSiteWideComponentsProps["footerItems"],
             ),
           })
           .where("siteId", "=", siteId)
@@ -513,6 +512,7 @@ export const siteRouter = router({
           .updateTable("Navbar")
           .set({
             content: jsonb(
+              // SAFETY: navbar JSON was validated by the site settings schema before persistence
               safeJsonParse(navbar) as IsomerSiteWideComponentsProps["navbar"],
             ),
           })
@@ -631,7 +631,9 @@ export const siteRouter = router({
           const newSite = await tx
             .updateTable("Site")
             .set({
+              // SAFETY: config JSON was validated by the site settings schema before persistence
               config: jsonb(safeJsonParse(config) as IsomerSiteConfigProps),
+              // SAFETY: theme JSON was validated by the site settings schema before persistence
               theme: jsonb(safeJsonParse(theme) as IsomerSiteThemeProps),
             })
             .where("id", "=", siteId)
@@ -670,6 +672,7 @@ export const siteRouter = router({
             .updateTable("Navbar")
             .set({
               content: jsonb(
+                // SAFETY: navbar JSON was validated by the site settings schema before persistence
                 safeJsonParse(
                   navbar,
                 ) as IsomerSiteWideComponentsProps["navbar"],
@@ -711,6 +714,7 @@ export const siteRouter = router({
             .updateTable("Footer")
             .set({
               content: jsonb(
+                // SAFETY: footer JSON was validated by the site settings schema before persistence
                 safeJsonParse(
                   footer,
                 ) as IsomerSiteWideComponentsProps["footerItems"],

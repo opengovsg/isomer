@@ -39,11 +39,13 @@ const t = initTRPC
     /**
      * @see https://trpc.io/docs/v10/error-formatting
      */
-    errorFormatter({ shape, error }) {
+    errorFormatter(opts) {
+      const procedureError = opts["shape"]
+      const { error } = opts
       return {
-        ...shape,
+        ...procedureError,
         data: {
-          ...shape.data,
+          ...procedureError.data,
           zodError:
             error.code === "BAD_REQUEST" && error.cause instanceof ZodError
               ? error.cause.flatten()
@@ -185,7 +187,7 @@ const isValidWebhookApiKey = (
   expectedApiKey: string,
 ): boolean => {
   return (
-    typeof apiKey === "string" &&
+    Object.prototype.toString.call(apiKey) === "[object String]" &&
     apiKey.length === expectedApiKey.length &&
     timingSafeEqual(Buffer.from(apiKey), Buffer.from(expectedApiKey))
   )

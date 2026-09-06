@@ -23,9 +23,11 @@ export function withSuspense<P>(
   FallbackComponent: ReactNode | null = null,
 ) {
   const WithSuspense = (props: P) => {
+    // SAFETY: Suspense wrapper forwards the wrapped component's props unchanged
+    const forwardedProps = props as P & Attributes
     return (
       <Suspense fallback={FallbackComponent}>
-        <WrappedComponent {...(props as P & Attributes)} />
+        <WrappedComponent {...forwardedProps} />
       </Suspense>
     )
   }

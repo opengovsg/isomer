@@ -18,6 +18,11 @@ import type {
 
 type WithoutMeta<T> = Omit<T, "createdAt" | "updatedAt">
 
+type AuditLogMetadata = Record<
+  string,
+  string | number | boolean | null
+>
+
 // NOTE: Either a folder/collection that doesn't have a blob
 // or a page w/ blob
 type FullResource =
@@ -63,7 +68,7 @@ interface BaseResourceEventLogProps {
   by: User
   ip?: string
   siteId: Site["id"]
-  metadata?: Record<string, unknown>
+  metadata?: AuditLogMetadata
 }
 
 export type ResourceEventLogProps = {
@@ -246,7 +251,7 @@ type ConfigPublishEvent = { site: Site } & { navbar?: Navbar } & {
 interface PublishEventLogProps<
   Before,
   After,
-  Meta extends Record<string, unknown> | null,
+  Meta extends AuditLogMetadata | null,
 > {
   by: User
   delta: {
@@ -279,7 +284,7 @@ type ConfigPublishEventLogProps = PublishEventLogProps<
 type RepublishEventLogProps = PublishEventLogProps<
   null,
   null,
-  Record<string, unknown>
+  AuditLogMetadata
 >
 
 export const logPublishEvent: AuditLogger<
@@ -320,7 +325,7 @@ interface UserEventLogProps {
   by: User
   delta: CreateUserDelta | DeleteUserDelta | UpdateUserDelta
   eventType: Extract<AuditLogEvent, "UserCreate" | "UserUpdate" | "UserDelete">
-  metadata?: Record<string, unknown>
+  metadata?: AuditLogMetadata
   ip?: string
 }
 
@@ -366,7 +371,7 @@ interface PermissionEventLogProps {
   >
   by: User
   delta: CreatePermissionDelta | DeletePermissionDelta | UpdatePermissionDelta
-  metadata?: Record<string, unknown>
+  metadata?: AuditLogMetadata
   ip?: string
   siteId: Site["id"]
 }

@@ -1,6 +1,4 @@
 import type { GrowthBook } from "@growthbook/growthbook"
-import type { Mock } from "vitest"
-import type { env } from "~/env.mjs"
 import type { Session } from "~/lib/types/session"
 import type { User } from "~prisma/generated/prisma/client"
 import MockDate from "mockdate"
@@ -18,31 +16,13 @@ import {
   setupUser,
 } from "tests/integration/helpers/seed"
 import { TOPPAN_EMAIL_DOMAIN } from "~/constants/toppan"
-import {
-  sendFailedPublishEmail,
-  sendSuccessfulPublishEmail,
-} from "~/features/mail/service"
+import * as mailService from "~/features/mail/service"
 import { buildIdFromArn } from "~/schemas/webhook"
 import { WEBHOOK_X_API_KEY_HEADER, createCallerFactory } from "~/server/trpc"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { db } from "../../database/database"
 import { webhookRouter } from "../webhook.router"
-
-vi.mock("~/env.mjs", async () => {
-  const actual = await vi.importActual<{ env: typeof env }>("~/env.mjs")
-  return {
-    env: {
-      ...actual.env,
-      STUDIO_SSM_WEBHOOK_API_KEY: "test-webhook-api-key",
-    },
-  }
-})
-
-// Mock the publishSite function to avoid sending emails
-vi.mock("~/features/mail/service", () => ({
-  sendSuccessfulPublishEmail: vi.fn(),
-  sendFailedPublishEmail: vi.fn(),
-}))
 
 const getCallerWithMockGrowthbook = (
   session: Session,
@@ -62,6 +42,7 @@ const getCallerWithMockGrowthbook = (
     isOn: vi.fn().mockReturnValue(mockReturnValue),
     destroy: vi.fn(),
   }
+  // SAFETY: webhook tests only need GrowthBook feature-flag methods on the request
   mockRequest.gb = mockGrowthBook as GrowthBook
   return createCaller(mockRequest)
 }
@@ -74,6 +55,10 @@ describe("webhook.router", async () => {
   let user: User
   beforeEach(async () => {
     vi.clearAllMocks()
+    vi.spyOn(mailService, "mailService.sendSuccessfulPublishEmail").mockResolvedValue(
+      undefined,
+    )
+    vi.spyOn(mailService, "mailService.sendFailedPublishEmail").mockResolvedValue(undefined)
     await resetTables("CodeBuildJobs", "User", "Resource", "Site")
     user = await setupUser({
       userId: session.userId,
@@ -108,8 +93,8 @@ describe("webhook.router", async () => {
       })
 
       // Assert
-      expect(sendSuccessfulPublishEmail).toHaveBeenCalledOnce()
-      expect(sendSuccessfulPublishEmail).toHaveBeenCalledWith({
+      expect(mailService.sendSuccessfulPublishEmail).toHaveBeenCalledOnce()
+      expect(mailService.sendSuccessfulPublishEmail).toHaveBeenCalledWith({
         recipientEmail: user.email,
         isScheduled: true,
         resource: expect.objectContaining(page),
@@ -150,7 +135,7 @@ describe("webhook.router", async () => {
       })
 
       // Assert
-      expect(sendSuccessfulPublishEmail).not.toHaveBeenCalled()
+      expect(mailService.sendSuccessfulPublishEmail).not.toHaveBeenCalled()
       // the build status should still be updated, but no email should be sent
       const job = await db
         .selectFrom("CodeBuildJobs")
@@ -181,7 +166,7 @@ describe("webhook.router", async () => {
           status: "SUCCEEDED",
         }),
       ).rejects.toThrow("Invalid Webhook API key provided")
-      expect(sendSuccessfulPublishEmail).not.toHaveBeenCalled()
+      expect(mailService.sendSuccessfulPublishEmail).not.toHaveBeenCalled()
     })
     it("it should update the codebuildjobs table when multiple resources specify the same buildId", async () => {
       // Arrange
@@ -211,7 +196,7 @@ describe("webhook.router", async () => {
       })
 
       // Assert
-      expect(sendSuccessfulPublishEmail).toHaveBeenCalledTimes(
+      expect(mailService.sendSuccessfulPublishEmail).toHaveBeenCalledTimes(
         NUM_RESOURCES_WITH_SAME_BUILD_ID,
       )
       // check the codebuildjobs table to see if the status has been updated for all the jobs with the same buildId
@@ -245,8 +230,8 @@ describe("webhook.router", async () => {
       })
 
       // Assert
-      expect(sendFailedPublishEmail).toHaveBeenCalledOnce()
-      expect(sendFailedPublishEmail).toHaveBeenCalledWith({
+      expect(mailService.sendFailedPublishEmail).toHaveBeenCalledOnce()
+      expect(mailService.sendFailedPublishEmail).toHaveBeenCalledWith({
         isScheduled: true,
         recipientEmail: user.email,
         resource: expect.objectContaining(page),
@@ -286,7 +271,7 @@ describe("webhook.router", async () => {
       })
 
       // Assert
-      expect(sendSuccessfulPublishEmail).not.toHaveBeenCalled()
+      expect(mailService.sendSuccessfulPublishEmail).not.toHaveBeenCalled()
     })
     it("sends a success email with the correct isScheduled flag", async () => {
       // Arrange
@@ -307,8 +292,8 @@ describe("webhook.router", async () => {
       })
 
       // Assert
-      expect(sendSuccessfulPublishEmail).toHaveBeenCalledOnce()
-      expect(sendSuccessfulPublishEmail).toHaveBeenCalledWith({
+      expect(mailService.sendSuccessfulPublishEmail).toHaveBeenCalledOnce()
+      expect(mailService.sendSuccessfulPublishEmail).toHaveBeenCalledWith({
         recipientEmail: user.email,
         isScheduled: false,
         resource: expect.objectContaining(page),
@@ -333,8 +318,8 @@ describe("webhook.router", async () => {
       })
 
       // Assert
-      expect(sendFailedPublishEmail).toHaveBeenCalledOnce()
-      expect(sendFailedPublishEmail).toHaveBeenCalledWith({
+      expect(mailService.sendFailedPublishEmail).toHaveBeenCalledOnce()
+      expect(mailService.sendFailedPublishEmail).toHaveBeenCalledWith({
         recipientEmail: user.email,
         isScheduled: false,
         resource: expect.objectContaining(page),
@@ -359,7 +344,7 @@ describe("webhook.router", async () => {
       })
 
       // Assert
-      expect(sendSuccessfulPublishEmail).not.toHaveBeenCalled()
+      expect(mailService.sendSuccessfulPublishEmail).not.toHaveBeenCalled()
     })
     it("does not send a failure email if the feature flag is disabled", async () => {
       // Arrange
@@ -380,7 +365,7 @@ describe("webhook.router", async () => {
       })
 
       // Assert
-      expect(sendFailedPublishEmail).not.toHaveBeenCalled()
+      expect(mailService.sendFailedPublishEmail).not.toHaveBeenCalled()
     })
     it("sends a success email to multiple users if multiple builds are superseded by the same build id", async () => {
       // Arrange
@@ -414,17 +399,17 @@ describe("webhook.router", async () => {
       })
 
       // Assert
-      expect(sendSuccessfulPublishEmail).toHaveBeenCalledTimes(5) // once for the original build + 4 for the superseded builds
-      const calls = (sendSuccessfulPublishEmail as Mock).mock.calls
+      expect(mailService.sendSuccessfulPublishEmail).toHaveBeenCalledTimes(5) // once for the original build + 4 for the superseded builds
+      const calls = vi.mocked(mailService.sendSuccessfulPublishEmail).mock.calls
       // check that an email was sent to the original user
       const callsWithOriginalUser = calls
-        .map(([arg]) => arg as Parameters<typeof sendSuccessfulPublishEmail>[0])
+        .map(([arg]) => arg)
         .filter((call) => {
           return call.recipientEmail === user.email
         })
       // check that emails were sent to the user with the superseded builds
       const callsWithSupersededUser = calls
-        .map(([arg]) => arg as Parameters<typeof sendSuccessfulPublishEmail>[0])
+        .map(([arg]) => arg)
         .filter((call) => {
           return call.recipientEmail === userForSupersededBuilds.email
         })
@@ -474,7 +459,7 @@ describe("webhook.router", async () => {
       })
 
       // Assert
-      expect(sendSuccessfulPublishEmail).not.toHaveBeenCalled()
+      expect(mailService.sendSuccessfulPublishEmail).not.toHaveBeenCalled()
       // check the codebuildjobs table to see if the status has been updated
       await db
         .selectFrom("CodeBuildJobs")

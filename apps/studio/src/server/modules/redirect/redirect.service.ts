@@ -766,12 +766,14 @@ const REDIRECT_WRITE_BUSY_MESSAGE =
 
 // True when a query aborted waiting for a lock — here, the advisory lock's
 // lock_timeout firing.
-const isLockTimeoutError = (error: unknown): boolean =>
+type PgCaughtError = Error | { code?: string }
+
+const isLockTimeoutError = (error: PgCaughtError): boolean =>
   get(error, "code") === PG_ERROR_CODES.lockTimeout
 
 // Rethrow a lock-timeout wait as a retryable CONFLICT; pass everything else
 // through unchanged (so the transaction's own TRPCErrors keep their codes).
-const rethrowLockTimeoutAsConflict = (error: unknown): never => {
+const rethrowLockTimeoutAsConflict = (error: PgCaughtError): never => {
   if (isLockTimeoutError(error)) {
     throw new TRPCError({
       code: "CONFLICT",

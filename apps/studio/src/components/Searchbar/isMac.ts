@@ -1,3 +1,3 @@
 export const isMac =
-  typeof window !== "undefined" &&
+  globalThis.window !== undefined &&
   (navigator.userAgent || navigator.platform).toLowerCase().includes("mac")

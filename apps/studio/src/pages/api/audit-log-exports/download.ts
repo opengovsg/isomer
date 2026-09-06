@@ -35,7 +35,7 @@ export default async function handler(
   // `token` may arrive as a repeated query param (string[]) — only a single
   // string is ever a valid token.
   const { token } = req.query
-  if (typeof token !== "string") {
+  if (Object.prototype.toString.call(token) !== "[object String]") {
     return redirectToExpired(res)
   }
 

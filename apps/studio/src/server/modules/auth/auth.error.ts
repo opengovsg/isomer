@@ -1,18 +1,39 @@
-type ErrorCause = Record<string, unknown>
+type ErrorCauseValue =
+  | string
+  | number
+  | boolean
+  | null
+  | Error
+  | ErrorCauseFields
+type ErrorCauseFields = { [key: string]: ErrorCauseValue }
+
+type AuthMessageInput = string | Error | ErrorCauseFields
+
+const isStringMessage = (value: AuthMessageInput): value is string =>
+  Object.prototype.toString.call(value) === "[object String]"
+
+const isErrorCauseFields = (value: AuthMessageInput): value is ErrorCauseFields =>
+  !(value instanceof Error) && Object(value) === value
+
+const spreadErrorCause = (error: Error) => {
+  const cause = error.cause
+  // SAFETY: Error.cause is narrowed to ErrorCauseFields when it is a plain object
+  if (isErrorCauseFields(cause as AuthMessageInput)) {
+    return { err: error, ...cause } satisfies ErrorCauseFields
+  }
+  return { err: error } satisfies ErrorCauseFields
+}
 
 class AuthError extends Error {
-  constructor(message: string | Error | ErrorCause, cause?: ErrorCause) {
+  constructor(message: AuthMessageInput, cause?: ErrorCauseFields) {
     if (message instanceof Error) {
       super(undefined, {
-        // oxlint-disable-next-line @typescript-eslint/no-explicit-any
-        cause: { err: message, ...(message.cause as any), ...cause },
+        cause: { ...spreadErrorCause(message), ...cause },
       })
-    } else if (typeof message === "string") {
-      if (cause instanceof Error) {
-        // oxlint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
-        cause = { err: cause, ...(cause.cause as any) }
-      }
-      super(message, cause)
+    } else if (isStringMessage(message)) {
+      const resolvedCause =
+        cause instanceof Error ? spreadErrorCause(cause) : cause
+      super(message, resolvedCause)
     } else {
       super(undefined, message)
     }

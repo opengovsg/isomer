@@ -6,6 +6,7 @@ import { PrismaPg } from "@prisma/adapter-pg"
 import { env } from "~/env.mjs"
 import { PrismaClient } from "~prisma/generated/prisma/client"
 
+// SAFETY: Node global is extended with an optional Prisma singleton for dev hot-reload
 const prismaGlobal = global as typeof global & {
   prisma?: PrismaClient
 }

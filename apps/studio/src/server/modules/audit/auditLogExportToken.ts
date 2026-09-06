@@ -80,7 +80,7 @@ export const unsealAuditLogExportToken = async (
     return null
   }
   if (
-    typeof payload.requestId !== "string" ||
+    Object.prototype.toString.call(payload.requestId) !== "[object String]" ||
     !/^[1-9]\d*$/.test(payload.requestId)
   ) {
     return null

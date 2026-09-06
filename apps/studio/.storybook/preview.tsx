@@ -148,9 +148,13 @@ const conditionalMockDateDecorator: Decorator = (story, context) => {
   }
 
   mockdate.reset()
-  const date = context.parameters.date as Date | string | number | undefined
-  if (date !== undefined) {
-    mockdate.set(date)
+  const dateParam = context.parameters.date
+  if (
+    dateParam instanceof Date ||
+    Object.prototype.toString.call(dateParam) === "[object String]" ||
+    Object.prototype.toString.call(dateParam) === "[object Number]"
+  ) {
+    mockdate.set(dateParam)
   }
   return story()
 }

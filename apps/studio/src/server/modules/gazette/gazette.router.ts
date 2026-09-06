@@ -47,6 +47,17 @@ import {
   removeGazetteFromSearchIndex,
 } from "./gazette.service"
 
+type GazettePageBlobContent = { page?: { ref?: string } }
+type PgCaughtError = { code?: string }
+
+const readGazettePageRef = (
+  content: PrismaJson.BlobJsonContent | null | undefined,
+): string | undefined => {
+  // SAFETY: gazette blobs store page.ref inside PrismaJson.BlobJsonContent
+  const pageContent = content as GazettePageBlobContent | null | undefined
+  return pageContent?.page?.ref
+}
+
 interface GazetteBlobInputs {
   ref: string
   category: string
@@ -171,8 +182,7 @@ export const gazetteRouter = router({
       // components package.
       return Promise.all(
         results.map(async (result) => {
-          const ref = (result.content as { page?: { ref?: string } } | null)
-            ?.page?.ref
+          const ref = readGazettePageRef(result.content)
 
           if (!ref) {
             return {
@@ -313,11 +323,8 @@ export const gazetteRouter = router({
             })
             .returningAll()
             .executeTakeFirstOrThrow()
-            .catch((err: unknown) => {
-              if (
-                (err as { code?: string }).code ===
-                PG_ERROR_CODES.uniqueViolation
-              ) {
+            .catch((err: PgCaughtError) => {
+              if (err.code === PG_ERROR_CODES.uniqueViolation) {
                 throw new TRPCError({
                   code: "CONFLICT",
                   message: "A resource with the same permalink already exists",
@@ -426,9 +433,7 @@ export const gazetteRouter = router({
           db,
           resourceId: existingResource.id,
         })
-        const existingRef =
-          (existingBlob.content as { page?: { ref?: string } } | null)?.page
-            ?.ref ?? ""
+        const existingRef = readGazettePageRef(existingBlob.content) ?? ""
 
         // Resolve the final ref. Preference order:
         //   1. newRef (a fresh upload) — caller has already PUT to S3
@@ -686,8 +691,7 @@ export const gazetteRouter = router({
         db,
         resourceId: existingResource.id,
       })
-      const ref = (existingBlob.content as { page?: { ref?: string } } | null)
-        ?.page?.ref
+      const ref = readGazettePageRef(existingBlob.content)
 
       // Atomic transaction: delete PushDocumentJob + Resource + Blob, then log audits.
       // Logs go last so each entry describes a deletion that has actually happened.
@@ -897,8 +901,7 @@ export const gazetteRouter = router({
 
       // Fetch the blob to get the S3 ref
       const blob = await getBlobOfResource({ db, resourceId: gazette.id })
-      const ref = (blob.content as { page?: { ref?: string } } | null)?.page
-        ?.ref
+      const ref = readGazettePageRef(blob.content)
 
       if (!ref) {
         throw new TRPCError({

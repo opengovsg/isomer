@@ -12,7 +12,7 @@ interface ErrorProps {
   buttonText: string
 }
 
-const ERROR_COMPONENT_PROPS: Record<ResourceType, ErrorProps> = {
+const ERROR_COMPONENT_PROPS = {
   Collection: {
     title: "You don't have access to edit this collection.",
     description:
@@ -67,7 +67,7 @@ const ERROR_COMPONENT_PROPS: Record<ResourceType, ErrorProps> = {
       "To have access, ask your site admins to assign this folder to you",
     buttonText: "Back to My Sites",
   },
-} as const
+} satisfies Record<ResourceType, ErrorProps>
 
 interface PermissionsBoundaryProps {
   resourceType: ResourceType
