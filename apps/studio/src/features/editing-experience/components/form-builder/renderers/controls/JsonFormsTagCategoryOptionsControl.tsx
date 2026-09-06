@@ -28,6 +28,12 @@ import { createDefaultTagOption } from "./constants"
 const DELETE_OPTION_UNDO_TEXT =
   "To undo this change, you will need to create and re-assign this option to all items."
 
+const DeleteOptionWarningFallback = (): JSX.Element => (
+  <Text textStyle="body-1" color="base.content.strong">
+    {DELETE_OPTION_UNDO_TEXT}
+  </Text>
+)
+
 const DeleteOptionWarningBody = ({
   siteId,
   pageId,
@@ -286,13 +292,7 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
           label={deleteTarget.label}
           noun="filter option"
           warningBody={
-            <ErrorBoundary
-              fallbackRender={() => (
-                <Text textStyle="body-1" color="base.content.strong">
-                  {DELETE_OPTION_UNDO_TEXT}
-                </Text>
-              )}
-            >
+            <ErrorBoundary FallbackComponent={DeleteOptionWarningFallback}>
               <Suspense fallback={<Skeleton height="2.5em" width="100%" />}>
                 <DeleteOptionWarningBody
                   siteId={siteId}

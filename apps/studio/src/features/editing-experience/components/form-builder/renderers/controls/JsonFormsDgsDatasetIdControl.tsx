@@ -51,6 +51,36 @@ const generateDgsDatasetUrl = (datasetId: string | null) => {
   return `https://data.gov.sg/datasets/${datasetId}/view`
 }
 
+interface DgsDatasetFeedbackMessageProps {
+  errorMessage?: string
+  isLoading: boolean
+  isValidDataset: boolean
+}
+
+const DgsDatasetFeedbackMessage = ({
+  errorMessage,
+  isLoading,
+  isValidDataset,
+}: DgsDatasetFeedbackMessageProps): JSX.Element | undefined => {
+  if (errorMessage) {
+    return <FormErrorMessage>{errorMessage}</FormErrorMessage>
+  }
+  if (isLoading) {
+    return (
+      <Text fontSize="sm" color="base.content.medium" mt="0.5rem">
+        Validating dataset...
+      </Text>
+    )
+  }
+  if (isValidDataset) {
+    return (
+      <Text fontSize="sm" color="green.600" mt="0.5rem">
+        ✓ Valid CSV dataset
+      </Text>
+    )
+  }
+}
+
 interface DgsDatasetIdModalProps {
   isOpen: boolean
   onClose: () => void
@@ -141,26 +171,6 @@ const DgsDatasetIdModal = ({
     }
   })
 
-  const FeedbackMessage = () => {
-    if (errors.datasetId) {
-      return <FormErrorMessage>{errors.datasetId.message}</FormErrorMessage>
-    }
-    if (isLoading) {
-      return (
-        <Text fontSize="sm" color="base.content.medium" mt="0.5rem">
-          Validating dataset...
-        </Text>
-      )
-    }
-    if (isValidDataset) {
-      return (
-        <Text fontSize="sm" color="green.600" mt="0.5rem">
-          ✓ Valid CSV dataset
-        </Text>
-      )
-    }
-  }
-
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
@@ -188,7 +198,11 @@ const DgsDatasetIdModal = ({
                 aria-label={inputValue}
               />
 
-              <FeedbackMessage />
+              <DgsDatasetFeedbackMessage
+                errorMessage={errors.datasetId?.message}
+                isLoading={isLoading}
+                isValidDataset={isValidDataset}
+              />
             </FormControl>
           </ModalBody>
 

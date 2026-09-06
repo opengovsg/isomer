@@ -1,4 +1,8 @@
-import type { FormatOptionLabelMeta, SelectInstance } from "chakra-react-select"
+import type {
+  FormatOptionLabelMeta,
+  PlaceholderProps,
+  SelectInstance,
+} from "chakra-react-select"
 import { Divider, Flex, Icon, Text } from "@chakra-ui/react"
 import { components } from "chakra-react-select"
 import { format, parse, set } from "date-fns"
@@ -14,6 +18,59 @@ interface TimeSelectProps extends Omit<BaseSelectProps<string>, "options"> {
   earliestAllowableTime?: Date | null // the earliest time that can be selected, if any
   minutesStep?: 5 | 10 | 15 | 20 | 30 | 60 // determines granularity of time options
 }
+
+const TimeSelectTimezoneBadge = (): JSX.Element => (
+  <Text textStyle="caption-2" color="base.content.medium">
+    {getTimezoneAbbreviation()}
+  </Text>
+)
+
+const TimeSelectDropdownIndicator = (): JSX.Element => (
+  <Flex
+    height="100%"
+    w="2.75rem"
+    alignItems="center"
+    justifyContent="center"
+    cursor="pointer"
+  >
+    <Icon as={BiTimeFive} boxSize="1.25rem" />
+  </Flex>
+)
+
+const TimeSelectIndicatorSeparator = (): JSX.Element => (
+  <Divider
+    h="100%"
+    orientation="vertical"
+    borderColor="base.divider.strong"
+  />
+)
+
+const TimeSelectPlaceholder = (
+  props: PlaceholderProps<BaseSelectOption<string>>,
+): JSX.Element => (
+  <components.Placeholder {...props}>
+    <Flex align="center" justify="space-between" w="100%">
+      <Text>Select time</Text>
+      <TimeSelectTimezoneBadge />
+    </Flex>
+  </components.Placeholder>
+)
+
+const formatTimeSelectOptionLabel = (
+  option: BaseSelectOption<string>,
+  { context }: FormatOptionLabelMeta<BaseSelectOption<string>>,
+): JSX.Element => (
+  <Flex
+    align="center"
+    justify="space-between"
+    w="100%"
+    cursor="pointer"
+    flexDir="row"
+  >
+    <Text>{option.label}</Text>
+    {context === "value" && <TimeSelectTimezoneBadge />}
+  </Flex>
+)
 
 export const TimeSelect = React.forwardRef<
   SelectInstance<BaseSelectOption<string>>,
@@ -44,70 +101,17 @@ export const TimeSelect = React.forwardRef<
       return earliestAllowableTime ? optionTime >= earliestAllowableTime : true
     })
 
-  const TimezoneBadge = () => {
-    return (
-      <Text textStyle="caption-2" color="base.content.medium">
-        {getTimezoneAbbreviation()}
-      </Text>
-    )
-  }
-
-  const formatOptionLabel = (
-    option: BaseSelectOption<string>,
-    { context }: FormatOptionLabelMeta<BaseSelectOption<string>>,
-  ) => {
-    return (
-      <Flex
-        align="center"
-        justify="space-between"
-        w="100%"
-        cursor="pointer"
-        flexDir="row"
-      >
-        <Text>{option.label}</Text>
-        {context === "value" && <TimezoneBadge />}
-      </Flex>
-    )
-  }
-
   return (
     <BaseSelect
       ref={ref}
       value={value}
       options={options}
       placeholder="Select time"
-      formatOptionLabel={formatOptionLabel}
+      formatOptionLabel={formatTimeSelectOptionLabel}
       customComponents={{
-        DropdownIndicator: () => {
-          return (
-            <Flex
-              height="100%"
-              w="2.75rem"
-              alignItems="center"
-              justifyContent="center"
-              cursor="pointer"
-            >
-              <Icon as={BiTimeFive} boxSize="1.25rem" />
-            </Flex>
-          )
-        },
-        IndicatorSeparator: () => (
-          <Divider
-            h="100%"
-            orientation="vertical"
-            borderColor="base.divider.strong"
-          />
-        ),
-        Placeholder: (props) => {
-          return (
-            <components.Placeholder {...props}>
-              <Flex align="center" justify="space-between" w="100%">
-                <Text>Select time</Text>
-                <TimezoneBadge />
-              </Flex>
-            </components.Placeholder>
-          )
-        },
+        DropdownIndicator: TimeSelectDropdownIndicator,
+        IndicatorSeparator: TimeSelectIndicatorSeparator,
+        Placeholder: TimeSelectPlaceholder,
       }}
       {...rest}
     />

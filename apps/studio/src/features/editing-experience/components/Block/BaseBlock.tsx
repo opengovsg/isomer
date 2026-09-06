@@ -4,6 +4,48 @@ import type { IconType } from "react-icons"
 import { chakra, Flex, HStack, Icon, Stack, Text } from "@chakra-ui/react"
 import { BiGridVertical, BiSolidErrorCircle } from "react-icons/bi"
 
+const BaseBlockDescription = ({
+  invalidProps,
+  description,
+  dragHandle,
+}: {
+  invalidProps?: {
+    description: string
+  }
+  description?: string
+  dragHandle?: React.ReactNode
+}): JSX.Element | undefined => {
+  if (invalidProps) {
+    return (
+      <HStack gap="0.25rem">
+        <Icon
+          as={BiSolidErrorCircle}
+          fontSize="1rem"
+          color="utility.feedback.critical"
+        />
+        <Text textStyle="caption-1" color="utility.feedback.critical">
+          {invalidProps.description}
+        </Text>
+      </HStack>
+    )
+  }
+
+  if (description) {
+    return (
+      <Text
+        textStyle="caption-2"
+        color={
+          dragHandle
+            ? "interaction.support.placeholder"
+            : "base.content.default"
+        }
+      >
+        {description}
+      </Text>
+    )
+  }
+}
+
 export type BaseBlockProps = {
   dragHandle?: React.ReactNode
   label: string
@@ -42,38 +84,6 @@ export const BaseBlock = ({
   isHidden,
 }: BaseBlockProps): JSX.Element | null => {
   const actualDraggableProps = draggableProps ?? {}
-
-  const Description = () => {
-    if (invalidProps) {
-      return (
-        <HStack gap="0.25rem">
-          <Icon
-            as={BiSolidErrorCircle}
-            fontSize="1rem"
-            color="utility.feedback.critical"
-          />
-          <Text textStyle="caption-1" color="utility.feedback.critical">
-            {invalidProps.description}
-          </Text>
-        </HStack>
-      )
-    }
-
-    if (description) {
-      return (
-        <Text
-          textStyle="caption-2"
-          color={
-            dragHandle
-              ? "interaction.support.placeholder"
-              : "base.content.default"
-          }
-        >
-          {description}
-        </Text>
-      )
-    }
-  }
 
   if (isHidden) {
     return null
@@ -139,7 +149,11 @@ export const BaseBlock = ({
             <Text textStyle="subhead-2" noOfLines={1} wordBreak="break-word">
               {label}
             </Text>
-            <Description />
+            <BaseBlockDescription
+              invalidProps={invalidProps}
+              description={description}
+              dragHandle={dragHandle}
+            />
           </Stack>
         </Flex>
       ) : (
@@ -158,7 +172,11 @@ export const BaseBlock = ({
             <Text textStyle="subhead-2" noOfLines={1} wordBreak="break-word">
               {label}
             </Text>
-            <Description />
+            <BaseBlockDescription
+              invalidProps={invalidProps}
+              description={description}
+              dragHandle={dragHandle}
+            />
           </Stack>
         </>
       )}

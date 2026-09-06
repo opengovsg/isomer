@@ -33,6 +33,12 @@ interface DeleteFilterModalProps {
 const DELETE_FILTER_UNDO_TEXT =
   "To undo this change, you will need to recreate this filter and assign options to each item individually."
 
+const DeleteFilterUsageFallback = (): JSX.Element => (
+  <Text textStyle="body-1" color="base.content.strong">
+    {DELETE_FILTER_UNDO_TEXT}
+  </Text>
+)
+
 const FilterUsageInfobox = ({
   siteId,
   pageId,
@@ -80,13 +86,7 @@ export const DeleteFilterModal = ({
         <ModalBody>
           <VStack align="stretch" spacing="1.5rem">
             <Infobox width="100%" size="md" variant="warning">
-              <ErrorBoundary
-                fallbackRender={() => (
-                  <Text textStyle="body-1" color="base.content.strong">
-                    {DELETE_FILTER_UNDO_TEXT}
-                  </Text>
-                )}
-              >
+              <ErrorBoundary FallbackComponent={DeleteFilterUsageFallback}>
                 {/* Querying usage counts for very large filters is disallowed server-side
                 (see MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT) since the count is not worth the
                 request/SQL cost at that scale. Skip the query entirely and say so, rather
