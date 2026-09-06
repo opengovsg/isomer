@@ -1,6 +1,8 @@
-import * as fs from "fs/promises"
-import * as path from "path"
+import fs from "node:fs/promises"
+import path from "node:path"
 import ts from "typescript"
+
+// oxlint-disable unicorn/prefer-module -- CommonJS .cts script; __dirname is provided by tsx
 
 const TYPE_FOLDER = "../src/generated"
 // THIS MUST BE PREFIXED WITH A DOT
@@ -15,25 +17,26 @@ const SCHEMA_FILE = "./schema.prisma"
 // type. Fields of type `Unsupported(...)` without a `/// @kyselyType(...)`
 // doc comment stay omitted, matching prisma-kysely's default behaviour.
 const patchUnsupportedColumns = async () => {
-  const schema = await fs.readFile(path.join(__dirname, SCHEMA_FILE), "utf8")
+  const schema = await fs.readFile(path.join(__dirname, SCHEMA_FILE), "utf-8")
   const typesPath = path.join(__dirname, TYPE_FOLDER, TYPE_FILE)
-  let types = await fs.readFile(typesPath, "utf8")
+  let types = await fs.readFile(typesPath, "utf-8")
 
-  const modelPattern = /model\s+(\w+)\s+\{([\s\S]*?)\n\}/g
+  const modelPattern =
+    /model\s+(?<modelName>\w+)\s+\{(?<modelBody>[\s\S]*?)\n\}/gu
   const fieldPattern =
-    /\/\/\/\s*@kyselyType\(([^)]+)\)\s*\n\s*(\w+)\s+Unsupported\("[^"]+"\)(\?)?/g
+    /\/\/\/\s*@kyselyType\((?<kyselyType>[^)]+)\)\s*\n\s*(?<fieldName>\w+)\s+Unsupported\("[^"]+"\)(?<nullable>\?)?/gu
 
-  for (const [, modelName, modelBody] of schema.matchAll(modelPattern)) {
-    if (!modelName || !modelBody) {
+  for (const match of schema.matchAll(modelPattern)) {
+    const { modelName, modelBody } = match.groups ?? {}
+    if (modelName === undefined || modelBody === undefined) {
       continue
     }
-    for (const [, kyselyType, fieldName, nullable] of modelBody.matchAll(
-      fieldPattern,
-    )) {
-      if (!kyselyType || !fieldName) {
+    for (const fieldMatch of modelBody.matchAll(fieldPattern)) {
+      const { kyselyType, fieldName, nullable } = fieldMatch.groups ?? {}
+      if (kyselyType === undefined || fieldName === undefined) {
         continue
       }
-      const fieldType = `${kyselyType}${nullable ? " | null" : ""}`
+      const fieldType = `${kyselyType}${nullable === "?" ? " | null" : ""}`
       // prisma-kysely emits `export type X = {...};` (later rewritten to
       // `export interface X {...}` by oxlint's --fix), so handle both forms.
       const headers = [
@@ -46,18 +49,27 @@ const patchUnsupportedColumns = async () => {
           property: `  ${fieldName}: ${fieldType}\n`,
         },
       ]
-      const match = headers.find(({ header }) => types.includes(header))
-      if (!match) {
+      let matchedHeader: (typeof headers)[number] | undefined
+      for (const header of headers) {
+        if (types.includes(header.header)) {
+          matchedHeader = header
+          break
+        }
+      }
+      if (matchedHeader === undefined) {
         throw new Error(
           `Could not find generated type for model ${modelName} while injecting Unsupported column ${fieldName}`,
         )
       }
       // Idempotency guard: `prisma generate` rewrites the file before this
       // script runs, but skip re-injection if the script is run standalone.
-      if (new RegExp(`\\b${fieldName}\\s*[?:]`).test(types)) {
+      if (new RegExp(`\\b${fieldName}\\s*[?:]`, "u").test(types)) {
         continue
       }
-      types = types.replace(match.header, match.header + match.property)
+      types = types.replace(
+        matchedHeader.header,
+        matchedHeader.header + matchedHeader.property,
+      )
     }
   }
 
@@ -67,7 +79,7 @@ const patchUnsupportedColumns = async () => {
 const KYSELY_IMPORT = ts.factory.createImportDeclaration(
   undefined,
   ts.factory.createImportClause(
-    false,
+    undefined,
     undefined,
     ts.factory.createNamedImports([
       ts.factory.createImportSpecifier(
@@ -83,11 +95,11 @@ const KYSELY_IMPORT = ts.factory.createImportDeclaration(
 const GENERATED_IMPORT = ts.factory.createImportDeclaration(
   undefined,
   ts.factory.createImportClause(
-    true,
+    ts.SyntaxKind.TypeKeyword,
     undefined,
     ts.factory.createNamespaceImport(ts.factory.createIdentifier("T")),
   ),
-  ts.factory.createStringLiteral(TYPE_FILE.replace(/\.ts$/, "")),
+  ts.factory.createStringLiteral(TYPE_FILE.replace(/\.ts$/u, "")),
 )
 
 const HEADER = [
@@ -101,44 +113,42 @@ const HEADER = [
 ]
 
 const extractTableTypes = (source: ts.SourceFile) => {
-  const database = source.statements.find((statement) => {
-    if (statement.kind !== ts.SyntaxKind.TypeAliasDeclaration) {
-      return false
-    }
-    const declaration = statement as ts.TypeAliasDeclaration
-    const identifier = declaration.name
-    if (identifier.text === "DB") {
-      return true
-    }
-    return false
-  }) as ts.TypeAliasDeclaration | undefined
+  let database: ts.TypeAliasDeclaration | undefined
 
-  if (!database) {
-    throw new Error()
+  for (const statement of source.statements) {
+    if (!ts.isTypeAliasDeclaration(statement)) {
+      continue
+    }
+    if (statement.name.text !== "DB") {
+      continue
+    }
+    database = statement
+    break
   }
 
-  const { type } = database
-
-  if (type.kind !== ts.SyntaxKind.TypeLiteral) {
-    throw new Error()
+  if (database === undefined) {
+    throw new Error("Could not find DB type alias in generated types file")
   }
 
-  const schema = (type as ts.TypeLiteralNode).members
+  if (!ts.isTypeLiteralNode(database.type)) {
+    throw new Error("DB type alias must be a type literal")
+  }
 
   const tables: string[] = []
 
-  for (const entry of schema) {
-    if (entry.kind !== ts.SyntaxKind.PropertySignature) {
+  for (const entry of database.type.members) {
+    if (!ts.isPropertySignature(entry)) {
       continue
     }
-    const property = entry as ts.PropertySignature
-    const { type } = property
-    if (!type || type.kind !== ts.SyntaxKind.TypeReference) {
+    const { type: propertyType } = entry
+    if (propertyType === undefined || !ts.isTypeReferenceNode(propertyType)) {
       continue
     }
-    const reference = type as ts.TypeReferenceNode
-    const identifier = reference.typeName as ts.Identifier
-    tables.push(identifier.getText(source))
+    const { typeName } = propertyType
+    if (!ts.isIdentifier(typeName)) {
+      continue
+    }
+    tables.push(typeName.getText(source))
   }
   return tables
 }
@@ -173,7 +183,6 @@ export const generate = async () => {
                 ts.factory.createIdentifier("T"),
                 ts.factory.createIdentifier(tableType),
               ),
-              undefined,
             ),
           ],
         ),
@@ -192,4 +201,10 @@ export const generate = async () => {
   await fs.writeFile(output_file, printer.printFile(target))
 }
 
-generate().catch((error) => console.log(error))
+void (async () => {
+  try {
+    await generate()
+  } catch (error: unknown) {
+    console.log(error)
+  }
+})()

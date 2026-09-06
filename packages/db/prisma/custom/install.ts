@@ -1,5 +1,5 @@
-import fs from "fs/promises"
-import path from "path"
+import fs from "node:fs/promises"
+import path from "node:path"
 
 const __dirname = import.meta.dirname
 
@@ -27,41 +27,50 @@ const custom = async () => {
     withFileTypes: true,
   })
   const folders = files
-    .filter((file) => /^\d{14}_.+/.test(file.name) && file.isDirectory())
+    .filter(
+      (file) => /^\d{14}_.+/u.test(file.name) && file.isDirectory(),
+    )
     .filter((folder) => folder.name.includes(MIGRATION_NAME))
 
-  let statements = (await fs.readFile(CUSTOM_MIGRATIONS_RECORD))
+  const migrationRecord = await fs.readFile(CUSTOM_MIGRATIONS_RECORD)
+  let statements = migrationRecord
     .toString()
     .split(";")
-    .map((statement) => statement.trim() + ";")
-    .filter((statement) => !!statement.length)
+    .map((statement) => `${statement.trim()};`)
+    .filter((statement) => statement.length > 0)
 
-  for (const folder of folders) {
-    const filePath = path.join(
-      folder.parentPath,
-      folder.name,
-      MIGRATION_FILE_NAME,
-    )
+  const folderStatementSets = await Promise.all(
+    folders.map(async (folder) => {
+      const filePath = path.join(
+        folder.parentPath,
+        folder.name,
+        MIGRATION_FILE_NAME,
+      )
 
-    const file = await fs.readFile(filePath)
+      const file = await fs.readFile(filePath)
 
-    const fileStatements = file
-      .toString()
-      .split(";")
-      .map((statement) => statement.trim() + ";")
-      .filter((statement) => !!statement.length)
+      return new Set(
+        file
+          .toString()
+          .split(";")
+          .map((statement) => `${statement.trim()};`)
+          .filter((statement) => statement.length > 0),
+      )
+    }),
+  )
 
+  for (const fileStatements of folderStatementSets) {
     statements = statements.filter(
-      (statement) => !fileStatements.includes(statement),
+      (statement) => !fileStatements.has(statement),
     )
   }
 
-  if (!statements.length) {
+  if (statements.length === 0) {
     console.log("All custom migrations are up to date.")
     return
   }
 
-  statements = statements.map((statement) => statement.trim() + "\n\n")
+  statements = statements.map((statement) => `${statement.trim()}\n\n`)
 
   await fs.mkdir(path.join(PRISMA_MIGRATIONS_PATH, CUSTOM_MIGRATION_NAME))
   await fs.writeFile(
@@ -75,4 +84,8 @@ const custom = async () => {
   console.log("New custom migrations added.")
 }
 
-custom().catch((error) => console.error(error))
+try {
+  await custom()
+} catch (error: unknown) {
+  console.error(error)
+}

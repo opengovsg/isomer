@@ -1,6 +1,7 @@
 import type { KyselyConfig, KyselyPlugin, LogConfig } from "kysely"
 import { PostgresDialect } from "kysely"
-import pg from "pg"
+import { Pool } from "pg"
+import type { Pool as PgPool } from "pg"
 import Cursor from "pg-cursor"
 
 import type { DB } from "./generated/generatedTypes"
@@ -14,7 +15,7 @@ export interface CreateDbConfig {
    * Override the pg.Pool used by the underlying dialect. Useful for tests
    * that want to inject a mock pool or share a pool between callers.
    */
-  pool?: pg.Pool
+  pool?: PgPool
 }
 
 export const createDb = ({
@@ -24,8 +25,8 @@ export const createDb = ({
   pool,
 }: CreateDbConfig): Kysely<DB> => {
   const dialect = new PostgresDialect({
-    pool: pool ?? new pg.Pool({ connectionString }),
     cursor: Cursor,
+    pool: pool ?? new Pool({ connectionString }),
   })
 
   const config: KyselyConfig = {

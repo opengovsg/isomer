@@ -1,74 +1,70 @@
 export const ResourceState = {
-  Draft: "Draft",
-  Published: "Published",
-} as const
-export type ResourceState = (typeof ResourceState)[keyof typeof ResourceState]
+    Draft: "Draft",
+    Published: "Published"
+} as const;
+export type ResourceState = (typeof ResourceState)[keyof typeof ResourceState];
 export const ResourceType = {
-  RootPage: "RootPage",
-  Page: "Page",
-  Folder: "Folder",
-  Collection: "Collection",
-  CollectionMeta: "CollectionMeta",
-  CollectionLink: "CollectionLink",
-  CollectionPage: "CollectionPage",
-  IndexPage: "IndexPage",
-  FolderMeta: "FolderMeta",
-} as const
-export type ResourceType = (typeof ResourceType)[keyof typeof ResourceType]
+    RootPage: "RootPage",
+    Page: "Page",
+    Folder: "Folder",
+    Collection: "Collection",
+    CollectionMeta: "CollectionMeta",
+    CollectionLink: "CollectionLink",
+    CollectionPage: "CollectionPage",
+    IndexPage: "IndexPage",
+    FolderMeta: "FolderMeta"
+} as const;
+export type ResourceType = (typeof ResourceType)[keyof typeof ResourceType];
 export const RoleType = {
-  Admin: "Admin",
-  Editor: "Editor",
-  Publisher: "Publisher",
-} as const
-export type RoleType = (typeof RoleType)[keyof typeof RoleType]
+    Admin: "Admin",
+    Editor: "Editor",
+    Publisher: "Publisher"
+} as const;
+export type RoleType = (typeof RoleType)[keyof typeof RoleType];
 export const IsomerAdminRole = {
-  Core: "Core",
-  Migrator: "Migrator",
-} as const
-export type IsomerAdminRole =
-  (typeof IsomerAdminRole)[keyof typeof IsomerAdminRole]
+    Core: "Core",
+    Migrator: "Migrator"
+} as const;
+export type IsomerAdminRole = (typeof IsomerAdminRole)[keyof typeof IsomerAdminRole];
 export const AuditLogEvent = {
-  ResourceCreate: "ResourceCreate",
-  ResourceUpdate: "ResourceUpdate",
-  ResourceDelete: "ResourceDelete",
-  SchedulePublish: "SchedulePublish",
-  CancelSchedulePublish: "CancelSchedulePublish",
-  UserCreate: "UserCreate",
-  UserUpdate: "UserUpdate",
-  UserDelete: "UserDelete",
-  Publish: "Publish",
-  Login: "Login",
-  Logout: "Logout",
-  PermissionCreate: "PermissionCreate",
-  PermissionUpdate: "PermissionUpdate",
-  PermissionDelete: "PermissionDelete",
-  SiteConfigUpdate: "SiteConfigUpdate",
-  FooterUpdate: "FooterUpdate",
-  NavbarUpdate: "NavbarUpdate",
-  RedirectCreate: "RedirectCreate",
-  RedirectDelete: "RedirectDelete",
-  AuditLogExportCreate: "AuditLogExportCreate",
-} as const
-export type AuditLogEvent = (typeof AuditLogEvent)[keyof typeof AuditLogEvent]
+    ResourceCreate: "ResourceCreate",
+    ResourceUpdate: "ResourceUpdate",
+    ResourceDelete: "ResourceDelete",
+    SchedulePublish: "SchedulePublish",
+    CancelSchedulePublish: "CancelSchedulePublish",
+    UserCreate: "UserCreate",
+    UserUpdate: "UserUpdate",
+    UserDelete: "UserDelete",
+    Publish: "Publish",
+    Login: "Login",
+    Logout: "Logout",
+    PermissionCreate: "PermissionCreate",
+    PermissionUpdate: "PermissionUpdate",
+    PermissionDelete: "PermissionDelete",
+    SiteConfigUpdate: "SiteConfigUpdate",
+    FooterUpdate: "FooterUpdate",
+    NavbarUpdate: "NavbarUpdate",
+    RedirectCreate: "RedirectCreate",
+    RedirectDelete: "RedirectDelete",
+    AuditLogExportCreate: "AuditLogExportCreate"
+} as const;
+export type AuditLogEvent = (typeof AuditLogEvent)[keyof typeof AuditLogEvent];
 export const BuildStatusType = {
-  IN_PROGRESS: "IN_PROGRESS",
-  SUCCEEDED: "SUCCEEDED",
-  FAILED: "FAILED",
-  STOPPED: "STOPPED",
-} as const
-export type BuildStatusType =
-  (typeof BuildStatusType)[keyof typeof BuildStatusType]
+    IN_PROGRESS: "IN_PROGRESS",
+    SUCCEEDED: "SUCCEEDED",
+    FAILED: "FAILED",
+    STOPPED: "STOPPED"
+} as const;
+export type BuildStatusType = (typeof BuildStatusType)[keyof typeof BuildStatusType];
 export const AuditLogExportReportType = {
-  Access: "Access",
-  Activity: "Activity",
-} as const
-export type AuditLogExportReportType =
-  (typeof AuditLogExportReportType)[keyof typeof AuditLogExportReportType]
+    Access: "Access",
+    Activity: "Activity"
+} as const;
+export type AuditLogExportReportType = (typeof AuditLogExportReportType)[keyof typeof AuditLogExportReportType];
 export const AuditLogExportStatus = {
-  Pending: "Pending",
-  Processing: "Processing",
-  Done: "Done",
-  Failed: "Failed",
-} as const
-export type AuditLogExportStatus =
-  (typeof AuditLogExportStatus)[keyof typeof AuditLogExportStatus]
+    Pending: "Pending",
+    Processing: "Processing",
+    Done: "Done",
+    Failed: "Failed"
+} as const;
+export type AuditLogExportStatus = (typeof AuditLogExportStatus)[keyof typeof AuditLogExportStatus];

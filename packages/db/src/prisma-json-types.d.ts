@@ -12,7 +12,7 @@
  * collide.
  */
 
-/* oxlint-disable @typescript-eslint/no-namespace, @typescript-eslint/no-empty-object-type */
+/* oxlint-disable @typescript-eslint/no-namespace, @typescript-eslint/no-empty-object-type, typescript/no-empty-interface */
 // Empty interfaces (rather than `unknown` aliases) so the generated
 // `Json | null` column types don't trip oxlint's redundant-type-
 // constituents rule inside this package. The precise JSON column
@@ -28,4 +28,5 @@ declare global {
   }
 }
 
+// oxlint-disable-next-line unicorn/require-module-specifiers -- module marker for declare global
 export {}
