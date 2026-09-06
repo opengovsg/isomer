@@ -6,7 +6,7 @@ declare module "@fontsource/ibm-plex-mono"
 // This minimal stub covers the subset used in asset.service.ts.
 declare module "jsdom" {
   export class JSDOM {
-    constructor(html: string, options?: Record<string, unknown>)
+    constructor(html: string, options?: { url?: string })
     readonly window: Window & typeof globalThis
   }
 }

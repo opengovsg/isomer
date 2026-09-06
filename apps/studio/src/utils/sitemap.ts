@@ -15,6 +15,7 @@ import {
   getPublishedIndexBlobByParentId,
 } from "~/server/modules/resource/resource.service"
 import { ResourceType } from "~prisma/generated/generatedEnums"
+import { z } from "zod"
 
 // Projected in SQL from the first top-level image block of the page body, so
 // the body itself never has to leave the database
@@ -39,12 +40,8 @@ type ResourceDto = Omit<
 
 const parseTagged = (raw: string | null | undefined): string[] | undefined => {
   if (!raw) return undefined
-  try {
-    const parsed = JSON.parse(raw) as unknown
-    return Array.isArray(parsed) ? (parsed as string[]) : undefined
-  } catch {
-    return undefined
-  }
+  const parsed = z.array(z.string()).safeParse(JSON.parse(raw))
+  return parsed.success ? parsed.data : undefined
 }
 
 type CollectionItemResourceDto = Omit<ResourceDto, "type" | "parentId"> & {
@@ -265,13 +262,15 @@ export const injectTagMappings = async (
     }),
   ])
 
+  // SAFETY: collection items validated upstream only expose collection child page props
   const childPageProps = draftBlobOfResource.content.page as
     | ArticlePagePageProps
     | FileRefPageProps
     | LinkRefPageProps
 
+  // SAFETY: parent index blob for a collection item is always a collection page layout
   const collectionPageProps = publishedIndexBlob.content
-    .page as unknown as CollectionPagePageProps
+    .page as CollectionPagePageProps
 
   return _injectTagMappings(
     sitemapTree,

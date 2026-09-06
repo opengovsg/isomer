@@ -7,15 +7,16 @@ const posthogHost = env.NEXT_PUBLIC_POSTHOG_HOST
 // NOTE: Since this is an analytics tracker,
 // if we are missing the env vars, just no-op
 if (posthogProjectToken && posthogHost) {
-  posthog.init(posthogProjectToken, {
+  const initOptions: Parameters<typeof posthog.init>[1] = {
     api_host: posthogHost,
     asset_host: env.NEXT_PUBLIC_POSTHOG_ASSETS_HOST,
     cross_subdomain_cookie: false,
     defaults: "2026-01-30",
     capture_exceptions: true,
-    ...(env.NEXT_PUBLIC_APP_URL
-      ? { tracing_headers: [new URL(env.NEXT_PUBLIC_APP_URL).hostname] }
-      : {}),
     debug: env.NEXT_PUBLIC_APP_ENV === "development",
-  })
+  }
+  if (env.NEXT_PUBLIC_APP_URL) {
+    initOptions.tracing_headers = [new URL(env.NEXT_PUBLIC_APP_URL).hostname]
+  }
+  posthog.init(posthogProjectToken, initOptions)
 }

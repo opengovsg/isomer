@@ -6,8 +6,8 @@ import { env } from "~/env.mjs"
  * @note Server-only utility function.
  */
 export const getBaseUrl = () => {
-  if (typeof window !== "undefined") {
-    return window.location.origin
+  if (globalThis.window !== undefined) {
+    return globalThis.window.location.origin
   }
   if (env.NEXT_PUBLIC_APP_URL) {
     return env.NEXT_PUBLIC_APP_URL

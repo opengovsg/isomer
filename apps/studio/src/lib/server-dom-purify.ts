@@ -28,7 +28,9 @@ export interface ServerDomPurify {
 }
 
 const initServerDomPurify = (): ServerDomPurify => {
+  // SAFETY: jsdom's CJS export matches the JsdomExports subset used here
   const { JSDOM } = nodeRequire("jsdom") as JsdomExports
+  // SAFETY: isomorphic-dompurify's CJS default export is the DOMPurify API
   const DOMPurify = (
     nodeRequire("isomorphic-dompurify") as { default: DomPurifyLib }
   ).default

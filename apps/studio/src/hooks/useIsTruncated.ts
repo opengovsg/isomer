@@ -24,7 +24,7 @@ export const useIsTruncated = <T extends HTMLElement>() => {
     }
 
     measure()
-    if (typeof ResizeObserver === "undefined") return
+    if (globalThis.ResizeObserver === undefined) return
     const observer = new ResizeObserver(measure)
     observer.observe(element)
     observerRef.current = observer

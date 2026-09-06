@@ -39,19 +39,33 @@ export const isR2Configured = !!(
   env.R2_SECRET_ACCESS_KEY
 )
 
-const storage = new S3Client(
-  isR2Configured
-    ? {
-        region: "auto",
-        endpoint: `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-        forcePathStyle: true,
-        credentials: {
-          accessKeyId: env.R2_ACCESS_KEY_ID ?? "",
-          secretAccessKey: env.R2_SECRET_ACCESS_KEY ?? "",
-        },
-      }
-    : { region: env.NEXT_PUBLIC_S3_REGION },
-)
+const createDefaultStorage = () =>
+  new S3Client(
+    isR2Configured
+      ? {
+          region: "auto",
+          endpoint: `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+          forcePathStyle: true,
+          credentials: {
+            accessKeyId: env.R2_ACCESS_KEY_ID ?? "",
+            secretAccessKey: env.R2_SECRET_ACCESS_KEY ?? "",
+          },
+        }
+      : { region: env.NEXT_PUBLIC_S3_REGION },
+  )
+
+let storage = createDefaultStorage()
+
+/** @internal Injects a mock S3 client for unit tests. */
+export const setS3StorageForTests = (client: Pick<S3Client, "send">) => {
+  // SAFETY: test doubles only implement send(), which is all exercised s3 paths use
+  storage = client as S3Client
+}
+
+/** @internal Restores the default S3 client after unit tests. */
+export const resetS3StorageForTests = () => {
+  storage = createDefaultStorage()
+}
 
 export const generateSignedPutUrl = async ({
   Bucket,
@@ -211,24 +225,20 @@ export const setAssetAsPublished = async ({
     // Skip the (paid) self-copy when the disposition is already correct,
     // e.g. on a pg-boss retry after an earlier attempt already rewrote it.
     if (head.ContentDisposition !== ContentDisposition) {
-      await storage.send(
-        new CopyObjectCommand({
-          Bucket,
-          CopySource: getEncodedCopySource(Bucket, Key),
-          Key,
-          MetadataDirective: "REPLACE",
-          ContentDisposition,
-          // Only re-supply ContentType/Metadata when HeadObject actually
-          // returned them. Passing an explicit `undefined` value (rather
-          // than omitting the key) for these fields is a known
-          // aws-sdk-js-v3 SignatureDoesNotMatch trigger on
-          // CopyObjectCommand.
-          ...(head.ContentType ? { ContentType: head.ContentType } : {}),
-          ...(head.Metadata && Object.keys(head.Metadata).length > 0
-            ? { Metadata: head.Metadata }
-            : {}),
-        }),
-      )
+      const copyInput: CopyObjectCommandInput = {
+        Bucket,
+        CopySource: getEncodedCopySource(Bucket, Key),
+        Key,
+        MetadataDirective: "REPLACE",
+        ContentDisposition,
+      }
+      if (head.ContentType) {
+        copyInput.ContentType = head.ContentType
+      }
+      if (head.Metadata && Object.keys(head.Metadata).length > 0) {
+        copyInput.Metadata = head.Metadata
+      }
+      await storage.send(new CopyObjectCommand(copyInput))
     }
   }
 
@@ -273,12 +283,14 @@ export const setAssetAsPublished = async ({
 // or an HTTP 404. Every other failure (throttling, network blips, auth) is
 // transient/operational and MUST propagate — swallowing it as `null` would let
 // callers mistake a present object for a missing one.
-const isNotFoundError = (error: unknown): boolean => {
-  if (typeof error !== "object" || error === null) return false
-  const { name, $metadata } = error as {
-    name?: unknown
-    $metadata?: { httpStatusCode?: unknown }
-  }
+interface AwsS3NotFoundError {
+  name?: string
+  $metadata?: { httpStatusCode?: number }
+}
+
+const isNotFoundError = (error: AwsS3NotFoundError): boolean => {
+  if (error === null || Object(error) !== error) return false
+  const { name, $metadata } = error
   return (
     name === "NotFound" ||
     name === "NoSuchKey" ||
@@ -294,7 +306,8 @@ export const getFileSize = async ({
     const response = await storage.send(new HeadObjectCommand({ Bucket, Key }))
     return response.ContentLength ?? null
   } catch (error) {
-    if (isNotFoundError(error)) {
+    // SAFETY: only AWS error name and $metadata.httpStatusCode are inspected
+    if (isNotFoundError(error as AwsS3NotFoundError)) {
       return null
     }
     throw error
@@ -401,12 +414,39 @@ export const putObjectDirect = async (
 // loudly at call time rather than silently uploading to `undefined`. Exposed
 // so the orchestrator (next layer) can build keys / sign URLs against the
 // same bucket.
+let studioAssetsBucketNameOverride: string | undefined
+
+/** @internal Overrides the studio assets bucket name for unit tests. */
+export const setStudioAssetsBucketNameForTests = (bucket: string | undefined) => {
+  studioAssetsBucketNameOverride = bucket
+}
+
+/** @internal Clears the studio assets bucket override after unit tests. */
+export const resetStudioAssetsBucketNameForTests = () => {
+  studioAssetsBucketNameOverride = undefined
+}
+
 export const getStudioAssetsBucketName = (): string => {
-  const bucket = env.S3_STUDIO_ASSETS_BUCKET_NAME
+  const bucket =
+    studioAssetsBucketNameOverride ?? env.S3_STUDIO_ASSETS_BUCKET_NAME
   if (!bucket) {
     throw new Error("S3_STUDIO_ASSETS_BUCKET_NAME is not configured")
   }
   return bucket
+}
+
+type UploadConstructor = typeof Upload
+
+let UploadClass: UploadConstructor = Upload
+
+/** @internal Injects a mock Upload constructor for unit tests. */
+export const setUploadClassForTests = (ctor: UploadConstructor) => {
+  UploadClass = ctor
+}
+
+/** @internal Restores the default Upload constructor after unit tests. */
+export const resetUploadClassForTests = () => {
+  UploadClass = Upload
 }
 
 // Uploads a generated audit-log CSV export to the private studio assets
@@ -428,7 +468,7 @@ export const uploadAuditLogExport = async ({
 }): Promise<void> => {
   const Bucket = getStudioAssetsBucketName()
   const filename = key.split("/").pop() ?? key
-  const upload = new Upload({
+  const upload = new UploadClass({
     client: storage,
     params: {
       Bucket,

@@ -6,7 +6,8 @@ import getIP from "../getClientIp"
 const makeNextApiRequest = (
   headers: NextApiRequest["headers"],
   remoteAddress?: string,
-) =>
+): NextApiRequest =>
+  // SAFETY: test helper supplies only the NextApiRequest fields read by getIP
   ({
     headers,
     socket: {

@@ -1,27 +1,36 @@
-import { describe, expect, it, vi } from "vitest"
+import { afterAll, beforeEach, describe, expect, it, vi } from "vitest"
+
+import {
+  resetPosthogModuleLoaderForTests,
+  setPosthogModuleLoaderForTests,
+  withPosthog,
+} from "../posthog"
 
 const resetMock = vi.fn()
 const identifyMock = vi.fn()
 
-let releaseImport: () => void
-const importGate = new Promise<void>((resolve) => {
-  releaseImport = resolve
+afterAll(() => {
+  resetPosthogModuleLoaderForTests()
 })
-
-vi.mock("posthog-js", async () => {
-  // Simulate the dynamic import taking a while to resolve (e.g. the very
-  // first time the posthog-js chunk is fetched), so we can assert that
-  // calls made while it's still pending don't jump the queue.
-  await importGate
-  return { default: { reset: resetMock, identify: identifyMock } }
-})
-
-const { withPosthog } = await import("../posthog")
 
 describe("withPosthog", () => {
+  beforeEach(() => {
+    resetMock.mockClear()
+    identifyMock.mockClear()
+  })
+
   it("runs queued operations strictly in call order, even while the underlying import is still pending", async () => {
     // Arrange
     const order: number[] = []
+    let releaseImport: () => void = () => undefined
+    const importGate = new Promise<void>((resolve) => {
+      releaseImport = resolve
+    })
+
+    setPosthogModuleLoaderForTests(async () => {
+      await importGate
+      return { default: { reset: resetMock, identify: identifyMock } }
+    })
 
     // Act
     const first = withPosthog(() => order.push(1))

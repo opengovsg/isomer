@@ -14,6 +14,7 @@ export const useResourceLocalViewHistory = ({ siteId }: { siteId: string }) => {
 
     if (storedHistory) {
       try {
+        // SAFETY: stored history is written by upsert() as LocalViewHistory[]
         history = JSON.parse(storedHistory) as LocalViewHistory[]
       } catch (error) {
         console.error("Failed to parse local view history from storage:", error)

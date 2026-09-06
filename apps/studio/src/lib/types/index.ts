@@ -4,7 +4,7 @@ import type { ReactNode } from "react"
 export type GetLayout = (page: ReactNode) => ReactNode
 
 export type NextPageWithLayout<
-  TProps = Record<string, unknown>,
+  TProps = object,
   TInitialProps = TProps,
 > = NextPage<TProps, TInitialProps> & {
   getLayout?: GetLayout

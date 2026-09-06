@@ -14,6 +14,18 @@ import type {
 } from "@opengovsg/isomer-components"
 import type { Tagged } from "type-fest"
 
+type AuditLogJsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | AuditLogJsonValue[]
+  | AuditLogEntitySnapshot
+
+interface AuditLogEntitySnapshot {
+  [key: string]: AuditLogJsonValue
+}
+
 declare global {
   // oxlint-disable-next-line @typescript-eslint/no-namespace
   namespace PrismaJson {
@@ -31,19 +43,19 @@ declare global {
     >
     interface CreateLogEvent {
       before: null
-      after: Record<string, unknown>
+      after: AuditLogEntitySnapshot
     }
     interface DeleteLogEvent {
-      before: Record<string, unknown>
+      before: AuditLogEntitySnapshot
       after: null
     }
     interface FullLogEvent {
-      before: Record<string, unknown>
-      after: Record<string, unknown>
+      before: AuditLogEntitySnapshot
+      after: AuditLogEntitySnapshot
     }
     interface PublishLogEvent {
-      before: Record<string, unknown> | null
-      after: Record<string, unknown> | null
+      before: AuditLogEntitySnapshot | null
+      after: AuditLogEntitySnapshot | null
     }
     type AuditLogDeltaJsonContent =
       | FullLogEvent
