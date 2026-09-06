@@ -165,7 +165,11 @@ export const DynamicDataBannerClient = ({
 
   if (isError) {
     return (
-      <div ref={(node) => { if (node) loadDynamicData() }}>
+      <div
+        ref={(node) => {
+          if (node) loadDynamicData()
+        }}
+      >
         <DynamicDataBannerUI
           data={[]}
           url={url}
@@ -178,18 +182,28 @@ export const DynamicDataBannerClient = ({
 
   if (data.length !== DYNAMIC_DATA_BANNER_NUMBER_OF_DATA)
     return (
-      <div ref={(node) => { if (node) loadDynamicData() }}>
+      <div
+        ref={(node) => {
+          if (node) loadDynamicData()
+        }}
+      >
         <DynamicDataBannerUI data={[]} url={url} label={label} />
       </div>
     )
 
   return (
-    <div ref={(node) => { if (node) loadDynamicData() }}>
+    <div
+      ref={(node) => {
+        if (node) loadDynamicData()
+      }}
+    >
       <DynamicDataBannerUI
         title={!!title ? dynamicData[title] : undefined}
         data={data.map((singleData) => ({
           label: singleData.label,
-          value: isLoading ? undefined : dynamicData[singleData.key] || "-- : --",
+          value: isLoading
+            ? undefined
+            : dynamicData[singleData.key] || "-- : --",
         }))}
         url={url}
         label={label}

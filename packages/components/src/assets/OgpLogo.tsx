@@ -1,5 +1,7 @@
 /* oxlint-disable react-doctor/rendering-svg-precision -- brand asset SVG paths from design export */
-export const OgpLogo = (props: React.SVGProps<SVGSVGElement>): React.ReactNode => {
+export const OgpLogo = (
+  props: React.SVGProps<SVGSVGElement>,
+): React.ReactNode => {
   return (
     <svg
       width="126"

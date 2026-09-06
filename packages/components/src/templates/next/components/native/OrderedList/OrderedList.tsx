@@ -29,7 +29,12 @@ export const OrderedList = ({
       start={attrs?.start}
     >
       {content.map((item) => (
-        <ListItem key={getProseContentKey(item)} {...item} level={level} site={site} />
+        <ListItem
+          key={getProseContentKey(item)}
+          {...item}
+          level={level}
+          site={site}
+        />
       ))}
     </ol>
   )

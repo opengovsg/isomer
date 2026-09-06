@@ -23,7 +23,12 @@ export const UnorderedList = ({ content, level, site }: UnorderedListProps) => {
       className={`${level ? "mt-3" : "mt-6"} ps-9 marker:text-base-content ${getUnorderedListType(level)}`}
     >
       {content.map((item) => (
-        <ListItem key={getProseContentKey(item)} {...item} level={level} site={site} />
+        <ListItem
+          key={getProseContentKey(item)}
+          {...item}
+          level={level}
+          site={site}
+        />
       ))}
     </ul>
   )

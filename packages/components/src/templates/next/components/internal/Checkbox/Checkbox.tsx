@@ -200,9 +200,7 @@ const CheckboxRenderer = ({
         readOnly
         className="sr-only"
       />
-      <div
-        className="flex items-center justify-center before:invisible before:w-0 before:content-['hidden']"
-      >
+      <div className="flex items-center justify-center before:invisible before:w-0 before:content-['hidden']">
         <div
           className={boxStyles({
             isSelected: isSelected || isIndeterminate,

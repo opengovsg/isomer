@@ -150,7 +150,10 @@ export const HomepageContactInformationUI = ({
       <div className={compoundStyles.container()}>
         <div className={compoundStyles.titleAndDescriptionContainer()}>
           {(title || isLoading) && (
-            <DynamicHeading level={headingLevel} className={compoundStyles.title()}>
+            <DynamicHeading
+              level={headingLevel}
+              className={compoundStyles.title()}
+            >
               {isLoading ? "" : title}
             </DynamicHeading>
           )}

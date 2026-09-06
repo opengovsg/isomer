@@ -37,12 +37,13 @@ export const DynamicDGSSearchableTable = ({
 
   const params = {
     resourceId,
-    filters: filters?.reduce<
-      NonNullable<DgsApiDatasetSearchParams["filters"]>
-    >((acc, filter) => {
-      acc[filter.fieldKey] = filter.fieldValue
-      return acc
-    }, {}),
+    filters: filters?.reduce<NonNullable<DgsApiDatasetSearchParams["filters"]>>(
+      (acc, filter) => {
+        acc[filter.fieldKey] = filter.fieldValue
+        return acc
+      },
+      {},
+    ),
     sort,
   }
 
@@ -86,7 +87,11 @@ export const DynamicDGSSearchableTable = ({
       headers={headers}
       isLoading={isMetadataLoading || isDataLoading}
       isError={isMetadataError || isDataError}
-      search={{ input: searchInput, deferred: search, setSearch: setSearchInput }}
+      search={{
+        input: searchInput,
+        deferred: search,
+        setSearch: setSearchInput,
+      }}
       page={{ currPage, setCurrPage }}
       isInitiallyEmpty={isInitiallyEmpty}
       isFilteredEmpty={isFilteredEmpty}

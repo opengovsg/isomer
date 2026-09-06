@@ -1,12 +1,7 @@
 "use client"
 
 import type { NavbarClientProps } from "~/interfaces"
-import {
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react"
+import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import { BiMenu, BiSearch, BiX } from "react-icons/bi"
 import { useResizeObserver } from "usehooks-ts"
 import { tv } from "~/lib/tv"
@@ -129,7 +124,9 @@ export const NavbarClient = ({
     if (!header) return
 
     const observer = new ResizeObserver(() => {
-      setMobileNavbarTopPx(siteHeaderRef.current?.getBoundingClientRect().bottom)
+      setMobileNavbarTopPx(
+        siteHeaderRef.current?.getBoundingClientRect().bottom,
+      )
     })
     observer.observe(header)
     return () => observer.disconnect()

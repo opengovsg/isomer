@@ -19,12 +19,13 @@ export const DynamicComponentList = ({
   const params = {
     resourceId,
     sort,
-    filters: filters?.reduce<
-      NonNullable<DgsApiDatasetSearchParams["filters"]>
-    >((acc, filter) => {
-      acc[filter.fieldKey] = filter.fieldValue
-      return acc
-    }, {}),
+    filters: filters?.reduce<NonNullable<DgsApiDatasetSearchParams["filters"]>>(
+      (acc, filter) => {
+        acc[filter.fieldKey] = filter.fieldValue
+        return acc
+      },
+      {},
+    ),
   }
 
   const { records, isLoading, isError } = useDgsData(params)
