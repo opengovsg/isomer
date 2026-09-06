@@ -233,6 +233,7 @@ export const ImageGalleryClient = ({
 
         {/* Navigation Controls - Accessible via keyboard tab navigation */}
         <button
+          type="button"
           className="absolute left-4 top-1/2 z-20 -translate-y-1/2 rounded-full border-2 border-white bg-base-canvas-inverse-overlay/90 p-1 text-white hover:bg-base-canvas-inverse-overlay focus-visible:border-utility-highlight focus-visible:bg-base-canvas-inverse-overlay focus-visible:outline-none focus-visible:ring-[0.375rem] focus-visible:ring-utility-highlight"
           aria-label="Previous image"
           disabled={isPending}
@@ -245,6 +246,7 @@ export const ImageGalleryClient = ({
         </button>
 
         <button
+          type="button"
           className="absolute right-4 top-1/2 z-20 -translate-y-1/2 rounded-full border-2 border-white bg-base-canvas-inverse-overlay/90 p-1 text-white hover:bg-base-canvas-inverse-overlay focus-visible:border-utility-highlight focus-visible:bg-base-canvas-inverse-overlay focus-visible:outline-none focus-visible:ring-[0.375rem] focus-visible:ring-utility-highlight"
           aria-label="Next image"
           disabled={isPending}
@@ -276,6 +278,7 @@ export const ImageGalleryClient = ({
 
           return (
             <button
+              type="button"
               key={image.src + index} // in case of same src, use index as key
               className={compoundStyles.container({
                 isSelected: index === currentIndex,

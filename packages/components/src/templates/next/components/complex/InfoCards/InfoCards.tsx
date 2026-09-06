@@ -1,3 +1,4 @@
+import { createElement } from "react"
 import type { InfoCardsProps } from "~/interfaces"
 import {
   CARDS_WITH_FULL_IMAGES,
@@ -16,6 +17,80 @@ import {
   InfoCardWithFullImage,
   InfoCardWithImage,
 } from "./components"
+
+type InfoCardsToRenderProps = Pick<
+  InfoCardsProps,
+  | "variant"
+  | "cards"
+  | "maxColumns"
+  | "layout"
+  | "site"
+  | "shouldLazyLoad"
+  | "headingLevel"
+>
+
+const InfoCardsToRender = ({
+  variant,
+  cards,
+  maxColumns,
+  layout,
+  site,
+  shouldLazyLoad,
+  headingLevel,
+}: InfoCardsToRenderProps) => {
+  switch (variant) {
+    case CARDS_WITH_IMAGES:
+      return (
+        <>
+          {cards.map((card, idx) => (
+            <InfoCardWithImage
+              key={idx}
+              {...card}
+              maxColumns={maxColumns}
+              layout={layout}
+              site={site}
+              shouldLazyLoad={shouldLazyLoad}
+              headingLevel={headingLevel + 1}
+            />
+          ))}
+        </>
+      )
+    case CARDS_WITHOUT_IMAGES:
+      return (
+        <>
+          {cards.map((card, idx) => (
+            <InfoCardNoImage
+              key={idx}
+              {...card}
+              site={site}
+              headingLevel={headingLevel + 1}
+            />
+          ))}
+        </>
+      )
+    case CARDS_WITH_FULL_IMAGES: {
+      return (
+        <>
+          {cards.map((card, idx) => (
+            <InfoCardWithFullImage
+              key={idx}
+              {...card}
+              maxColumns={maxColumns}
+              layout={layout}
+              site={site}
+              shouldLazyLoad={shouldLazyLoad}
+              headingLevel={headingLevel + 1}
+            />
+          ))}
+        </>
+      )
+    }
+
+    default:
+      const _: never = variant
+      return null
+  }
+}
 
 export const InfoCards = ({
   id,
@@ -38,61 +113,6 @@ export const InfoCards = ({
       : INFOCARD_VARIANT.default
   const TitleTag = getHeadingTag(headingLevel)
 
-  const InfoCardsToRender = () => {
-    switch (variant) {
-      case CARDS_WITH_IMAGES:
-        return (
-          <>
-            {cards.map((card, idx) => (
-              <InfoCardWithImage
-                key={idx}
-                {...card}
-                maxColumns={maxColumns}
-                layout={layout}
-                site={site}
-                shouldLazyLoad={shouldLazyLoad}
-                headingLevel={headingLevel + 1}
-              />
-            ))}
-          </>
-        )
-      case CARDS_WITHOUT_IMAGES:
-        return (
-          <>
-            {cards.map((card, idx) => (
-              <InfoCardNoImage
-                key={idx}
-                {...card}
-                site={site}
-                headingLevel={headingLevel + 1}
-              />
-            ))}
-          </>
-        )
-      case CARDS_WITH_FULL_IMAGES: {
-        return (
-          <>
-            {cards.map((card, idx) => (
-              <InfoCardWithFullImage
-                key={idx}
-                {...card}
-                maxColumns={maxColumns}
-                layout={layout}
-                site={site}
-                shouldLazyLoad={shouldLazyLoad}
-                headingLevel={headingLevel + 1}
-              />
-            ))}
-          </>
-        )
-      }
-
-      default:
-        const _: never = variant
-        return null
-    }
-  }
-
   return (
     <section
       id={id}
@@ -106,7 +126,11 @@ export const InfoCards = ({
             variant: cardVariant,
           })}
         >
-          <TitleTag className={compoundStyles.headingTitle()}>{title}</TitleTag>
+          {createElement(
+            TitleTag,
+            { className: compoundStyles.headingTitle() },
+            title,
+          )}
 
           {subtitle && (
             <p
@@ -126,7 +150,15 @@ export const InfoCards = ({
           variant: cardVariant,
         })}
       >
-        <InfoCardsToRender />
+        <InfoCardsToRender
+          variant={variant}
+          cards={cards}
+          maxColumns={maxColumns}
+          layout={layout}
+          site={site}
+          shouldLazyLoad={shouldLazyLoad}
+          headingLevel={headingLevel}
+        />
       </div>
 
       {!!url && !!label && (

@@ -36,7 +36,7 @@ export const DGSSearchableTable = ({
       return metadata.columnMetadata.map(([key, label]) => ({ key, label }))
     }
     return []
-  }, [headers, metadata?.columnMetadata])
+  }, [headers, metadata])
 
   const labels = useMemo(
     () => resolvedHeaders.map((header) => header.label ?? header.key),

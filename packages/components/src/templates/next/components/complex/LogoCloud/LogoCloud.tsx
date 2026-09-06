@@ -27,6 +27,7 @@ export const LogoCloud = ({
       <div className={compoundStyles.logoContainer()}>
         {baseImages.map(({ src, alt }) => (
           <ImageClient
+            key={src}
             src={src}
             alt={alt}
             lazyLoading={shouldLazyLoad}

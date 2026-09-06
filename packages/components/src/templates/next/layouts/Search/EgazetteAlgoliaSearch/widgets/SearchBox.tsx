@@ -1,5 +1,5 @@
 import type { UseSearchBoxProps } from "react-instantsearch"
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { BiSearch } from "react-icons/bi"
 import { useSearchBox } from "react-instantsearch"
 
@@ -25,6 +25,12 @@ export const SearchBox = () => {
   }
 
   const value = draft ?? query
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current)
+    }
+  }, [])
 
   return (
     <label className="relative flex w-full items-center">
