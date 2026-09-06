@@ -42,6 +42,27 @@ export default defineConfig({
 
 Add package-specific `ignorePatterns` and `overrides` only—**`base.ts`** already sets `options.typeAware`, env, default ignores (`dist`, `**/*.config.*`), and the shared JS/TS/test rule blocks.
 
+### Storybook (`eslint-plugin-storybook`)
+
+Workspaces with Storybook should depend on **`eslint-plugin-storybook`** (catalog: `storybook`) and spread the shared overrides from `@isomer/oxlint-config/storybook`. Oxlint loads the plugin via [JS plugins](https://oxc.rs/docs/guide/usage/linter/js-plugins); ESLint itself is not required.
+
+```ts
+import {
+  storybookIgnorePattern,
+  storybookOverrides,
+} from "@isomer/oxlint-config/storybook";
+
+export default defineConfig({
+  ignorePatterns: ["dist", "**/*.config.*", storybookIgnorePattern],
+  overrides: [
+    // package-specific overrides…
+    ...storybookOverrides,
+  ],
+});
+```
+
+For Next.js apps, use `storybookIgnorePatternGlob` (`"!.storybook/**"`) instead of `storybookIgnorePattern`.
+
 ### Framework presets (React, Next.js, Vitest)
 
 Ultracite framework presets are re-exported from `@isomer/oxlint-config/presets`. Consumers only need `@isomer/oxlint-config` — not a direct `ultracite` dependency.
@@ -76,5 +97,6 @@ Or set `"options": { "typeAware": true }` in the root Oxlint config only.
 | `@isomer/oxlint-config` | `index.ts` (`defineConfig`, `OxlintConfig`) |
 | `@isomer/oxlint-config/base` | `base.ts` |
 | `@isomer/oxlint-config/presets` | `presets.ts` — Ultracite `react`, `next`, and `vitest` presets |
+| `@isomer/oxlint-config/storybook` | `storybook.ts` — shared `eslint-plugin-storybook` overrides for story files and `.storybook/main.*` |
 
 Add more JSON presets under `tooling/oxlint/` and list them under `exports` in `package.json` as you split shared vs app-specific rules.
