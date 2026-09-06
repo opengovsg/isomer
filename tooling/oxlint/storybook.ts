@@ -1,26 +1,8 @@
 import type { OxlintConfig } from "oxlint"
 
-const storyFiles = [
-  "**/*.stories.ts",
-  "**/*.stories.tsx",
-  "**/*.stories.js",
-  "**/*.stories.jsx",
-  "**/*.stories.mjs",
-  "**/*.stories.cjs",
-  "**/*.story.ts",
-  "**/*.story.tsx",
-  "**/*.story.js",
-  "**/*.story.jsx",
-  "**/*.story.mjs",
-  "**/*.story.cjs",
-] as const
+const storyFiles = ["**/*.stories.ts", "**/*.stories.tsx"] as const
 
-const storybookMainFiles = [
-  ".storybook/main.js",
-  ".storybook/main.cjs",
-  ".storybook/main.mjs",
-  ".storybook/main.ts",
-] as const
+const storybookMainFiles = [".storybook/main.ts"] as const
 
 /** Storybook recommended rules via eslint-plugin-storybook (Oxlint jsPlugins). */
 export const storybookOverrides: NonNullable<OxlintConfig["overrides"]> = [
