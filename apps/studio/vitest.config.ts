@@ -14,6 +14,7 @@ export default defineConfig({
   resolve: {
     tsconfigPaths: true,
     alias: {
+      "~server/db": path.resolve(studioRoot, "tests/mocks/db-index-shim.ts"),
       "~/server/modules/database/database": path.resolve(
         studioRoot,
         "tests/mocks/database-shim.ts",
