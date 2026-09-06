@@ -4,27 +4,36 @@ import { PgBoss } from "pg-boss"
 import type { BaseLogger } from "@isomer/logging"
 
 import { env } from "./env"
-import { type HeartbeatOptions, sendHeartbeat } from "./utils"
+import type { HeartbeatOptions } from "./utils"
+import { sendHeartbeat } from "./utils"
 
 export interface GlobalWithPgBoss {
   pgBoss: PgBoss | undefined
   registeredPgbossJobs: Set<string>
 }
 
-/* Singleton pattern using global for dev hot reload */
-const globalForPgboss = global as unknown as GlobalWithPgBoss
+declare global {
+  var pgBoss: PgBoss | undefined
+  var registeredPgbossJobs: Set<string> | undefined
+}
+
+const noopStop = async () => {
+  /* Cron workers are disabled; nothing to stop. */
+}
 
 const createPgbossClient = async (logger: BaseLogger): Promise<PgBoss> => {
   const boss = new PgBoss({ connectionString: env.DATABASE_URL })
-  boss.on("error", (err) => logger.error(err, "Pgboss client error"))
+  boss.on("error", (err) => {
+    logger.error(err, "Pgboss client error")
+  })
   await boss.start()
   logger.info("PgBoss client started")
   return boss
 }
 
 const getPgbossClient = async (logger: BaseLogger): Promise<PgBoss> => {
-  const boss = globalForPgboss.pgBoss ?? (await createPgbossClient(logger))
-  globalForPgboss.pgBoss = boss
+  const boss = globalThis.pgBoss ?? (await createPgbossClient(logger))
+  globalThis.pgBoss = boss
   return boss
 }
 
@@ -38,19 +47,28 @@ export const registerPgbossJob = async (
 ) => {
   if (!env.ENABLE_CRON_WORKERS) {
     logger.warn(`PgBoss job ${jobName} is disabled. Skipping registration.`)
-    return { stop: () => undefined }
+    return { stop: noopStop }
   }
 
   const boss = await getPgbossClient(logger)
-  if (globalForPgboss.registeredPgbossJobs.has(jobName)) {
+  const registeredJobs = globalThis.registeredPgbossJobs ?? new Set<string>()
+  globalThis.registeredPgbossJobs = registeredJobs
+
+  if (registeredJobs.has(jobName)) {
     logger.warn(
       `Pgboss job ${jobName} is already registered. Skipping registration.`,
     )
-    return { stop: () => boss.offWork(jobName) }
+    return {
+      stop: async () => {
+        await boss.offWork(jobName)
+      },
+    }
   }
   // Ensure the queue exists, else create it
   const queue = await boss.getQueue(jobName)
-  if (!queue) await boss.createQueue(jobName)
+  if (!queue) {
+    await boss.createQueue(jobName)
+  }
   // Set up the worker to process jobs
   await boss.work(jobName, async ([job]: Job[]) => {
     if (!job) {
@@ -60,8 +78,9 @@ export const registerPgbossJob = async (
     logger.info(`Received job ${job.id} for ${jobName}`)
     try {
       await handler(job)
-      if (heartbeatOptions)
+      if (heartbeatOptions) {
         await sendHeartbeat(logger, job.id, heartbeatOptions)
+      }
     } catch (error) {
       logger.error(error, `Error processing job ${job.id}:`)
       throw error
@@ -77,15 +96,21 @@ export const registerPgbossJob = async (
 
   // Schedule the job
   await boss.schedule(jobName, cronExpression, undefined, mergedScheduleOptions)
-  globalForPgboss.registeredPgbossJobs.add(jobName)
+  registeredJobs.add(jobName)
   logger.info(
     `Registered PgBoss job: ${jobName} with schedule ${cronExpression}`,
   )
-  return { stop: () => boss.offWork(jobName) }
+  return {
+    stop: async () => {
+      await boss.offWork(jobName)
+    },
+  }
 }
 
 export const stopAllPgbossJobs = async (logger: BaseLogger): Promise<void> => {
-  if (!env.ENABLE_CRON_WORKERS) return
+  if (!env.ENABLE_CRON_WORKERS) {
+    return
+  }
 
   const boss = await getPgbossClient(logger)
   try {
@@ -95,11 +120,10 @@ export const stopAllPgbossJobs = async (logger: BaseLogger): Promise<void> => {
     logger.error(error, "Error stopping PgBoss client:")
     throw error
   } finally {
-    globalForPgboss.pgBoss = undefined
-    globalForPgboss.registeredPgbossJobs = new Set<string>()
+    globalThis.pgBoss = undefined
+    globalThis.registeredPgbossJobs = new Set<string>()
     logger.info("Cleared PgBoss client and registered jobs")
   }
 }
 
-// oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
-globalForPgboss.registeredPgbossJobs ||= new Set<string>()
+globalThis.registeredPgbossJobs ??= new Set<string>()

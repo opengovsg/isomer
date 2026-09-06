@@ -2,7 +2,8 @@ import type { Mock } from "vitest"
 import type { HeartbeatOptions } from "~/utils"
 import { sendHeartbeat } from "~/utils"
 
-import { type BaseLogger, pino } from "@isomer/logging"
+import { pino } from "@isomer/logging"
+import type { BaseLogger } from "@isomer/logging"
 
 import type { GlobalWithPgBoss } from ".."
 import { registerPgbossJob } from ".."
@@ -10,12 +11,16 @@ import { env } from "../env"
 
 const logger: BaseLogger = pino({ level: "silent" })
 
+const getTestGlobalState = (): GlobalWithPgBoss => ({
+  pgBoss: globalThis.pgBoss,
+  registeredPgbossJobs:
+    globalThis.registeredPgbossJobs ?? new Set<string>(),
+})
+
 describe("client", () => {
-  let globalForPgboss: GlobalWithPgBoss
   beforeEach(() => {
-    globalForPgboss = global as unknown as GlobalWithPgBoss
-    globalForPgboss.pgBoss = undefined
-    globalForPgboss.registeredPgbossJobs = new Set<string>()
+    globalThis.pgBoss = undefined
+    globalThis.registeredPgbossJobs = new Set<string>()
   })
   afterEach(() => {
     env.ENABLE_CRON_WORKERS = true
@@ -24,7 +29,7 @@ describe("client", () => {
   describe("registerPgbossJob", () => {
     it("does not start PgBoss or register a job when cron workers are disabled", async () => {
       env.ENABLE_CRON_WORKERS = false
-      const handler = vi.fn().mockResolvedValue(undefined)
+      const handler = vi.fn().mockResolvedValue()
 
       const { stop } = await registerPgbossJob(
         logger,
@@ -33,14 +38,15 @@ describe("client", () => {
         handler,
       )
 
+      const globalForPgboss = getTestGlobalState()
       expect(globalForPgboss.pgBoss).toBeUndefined()
       expect(globalForPgboss.registeredPgbossJobs).toEqual(new Set())
       expect(handler).not.toHaveBeenCalled()
-      expect(stop()).toBeUndefined()
+      await stop()
     })
 
     it("creates queue, registers worker, and schedules job", async () => {
-      const handler = vi.fn().mockResolvedValue(undefined)
+      const handler = vi.fn().mockResolvedValue()
 
       const { stop } = await registerPgbossJob(
         logger,
@@ -49,6 +55,7 @@ describe("client", () => {
         handler,
       )
 
+      const globalForPgboss = getTestGlobalState()
       // expect the global PgBoss instance to have the job registered, as per singleton pattern
       expect(globalForPgboss.registeredPgbossJobs.has("test-job")).toBe(true)
       expect(globalForPgboss.pgBoss).toBeDefined()
@@ -58,7 +65,7 @@ describe("client", () => {
       // verify that the schedule was created in the database
       const existingSchedules = await globalForPgboss.pgBoss!.getSchedules()
       expect(existingSchedules.length).toBe(1)
-      const schedule = existingSchedules[0]
+      const [schedule] = existingSchedules
       expect(schedule!.cron).toBe("* * * * *")
       expect(schedule!.name).toBe("test-job")
 
@@ -75,7 +82,7 @@ describe("client", () => {
     })
 
     it("does not register the job again if already registered", async () => {
-      const handler = vi.fn().mockResolvedValue(undefined)
+      const handler = vi.fn().mockResolvedValue()
 
       // First registration
       await registerPgbossJob(logger, "test-job", "* * * * *", handler)
@@ -88,6 +95,7 @@ describe("client", () => {
         handler,
       )
 
+      const globalForPgboss = getTestGlobalState()
       // Verify that only one schedule exists in the database
       const existingSchedules = await globalForPgboss.pgBoss!.getSchedules()
       expect(existingSchedules.length).toBe(1)

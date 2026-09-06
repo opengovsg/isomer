@@ -1603,6 +1603,9 @@ importers:
       tsx:
         specifier: 'catalog:'
         version: 4.23.12
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.3
     devDependencies:
       '@isomer/db':
         specifier: workspace:*

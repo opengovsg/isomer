@@ -1,1 +1,5 @@
-export * from "./client"
+export {
+  registerPgbossJob,
+  stopAllPgbossJobs,
+  type GlobalWithPgBoss,
+} from "./client"

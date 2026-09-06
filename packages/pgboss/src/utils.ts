@@ -1,3 +1,5 @@
+import { setTimeout as delay } from "node:timers/promises"
+
 import type { BaseLogger } from "@isomer/logging"
 
 export interface HeartbeatOptions {
@@ -5,6 +7,7 @@ export interface HeartbeatOptions {
   delayMs?: number
   heartbeatURL: string
 }
+
 /**
  * Send heartbeat signals to a specified URL with retry logic
  * Do NOT log the heartbeat URL to avoid sensitive data exposure (e.g., since it contains a heartbeat token)
@@ -17,8 +20,9 @@ export const sendHeartbeat = async (
   jobId: string,
   { maxRetries = 3, delayMs = 1000, heartbeatURL }: HeartbeatOptions,
 ) => {
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+  for (let attempt = 1; attempt <= maxRetries; attempt += 1) {
     try {
+      // oxlint-disable-next-line no-await-in-loop -- heartbeat retries must run sequentially
       const response = await fetch(heartbeatURL, { method: "POST" })
       if (!response.ok) {
         throw new Error(
@@ -36,7 +40,8 @@ export const sendHeartbeat = async (
         `Error sending heartbeat for job attempt ${attempt}`,
       )
       if (attempt < maxRetries) {
-        await new Promise((resolve) => setTimeout(resolve, delayMs))
+        // oxlint-disable-next-line no-await-in-loop -- retries must run sequentially
+        await delay(delayMs)
       } else {
         logger.error(
           { jobId },
