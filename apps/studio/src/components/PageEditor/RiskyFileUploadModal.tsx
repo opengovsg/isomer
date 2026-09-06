@@ -49,7 +49,7 @@ export const RiskyFileUploadModal = ({
 
         <ModalBody>
           <Text textStyle="body-1" textColor="base.content.strong">
-            You're uploading a {fileExtension} file. This comes with two risks
+            You&apos;re uploading a {fileExtension} file. This comes with two risks
             you should be aware of:
           </Text>
           <br />
@@ -69,7 +69,7 @@ export const RiskyFileUploadModal = ({
                 <Text as="span" textStyle="subhead-1">
                   Accessibility:
                 </Text>{" "}
-                Not everyone can open {fileExtension}. It's difficult to view{" "}
+                Not everyone can open {fileExtension}. It&apos;s difficult to view{" "}
                 {fileExtension} files on mobile. Consider whether this affects
                 your users.
               </Text>
@@ -77,7 +77,7 @@ export const RiskyFileUploadModal = ({
           </UnorderedList>
           <br />
           <Text textStyle="body-1" textColor="base.content.strong">
-            Only continue uploading if you're comfortable managing these risks.
+            Only continue uploading if you&apos;re comfortable managing these risks.
             Otherwise, consider converting your file into a .pdf instead.
           </Text>
           <Checkbox
@@ -97,7 +97,7 @@ export const RiskyFileUploadModal = ({
           >
             <Stack spacing="0.625rem" align="flex-start">
               <Text textStyle="body-1" textColor="base.content.strong">
-                I've read and accept the risks.
+                I&apos;ve read and accept the risks.
               </Text>
               {showCheckboxError && (
                 <HStack gap="0.5rem" align="flex-start">

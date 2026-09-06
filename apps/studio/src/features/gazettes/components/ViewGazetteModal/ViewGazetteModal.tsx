@@ -224,7 +224,7 @@ export const ViewGazetteModal = ({
                 variant="clear"
                 colorScheme="neutral"
               >
-                No, don't delete
+                No, don&apos;t delete
               </Button>
               <Button
                 colorScheme="critical"

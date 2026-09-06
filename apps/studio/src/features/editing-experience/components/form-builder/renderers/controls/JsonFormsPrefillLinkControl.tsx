@@ -41,7 +41,7 @@ const ReplaceContentModal = ({
         </ModalHeader>
         <ModalBody>
           <Text>
-            If the linked page has a title, summary or thumbnail, they'll be
+            If the linked page has a title, summary or thumbnail, they&apos;ll be
             copied over.
           </Text>
         </ModalBody>

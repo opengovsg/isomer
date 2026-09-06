@@ -192,8 +192,8 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
                   borderColor="utility.feedback.info"
                 >
                   <Text textStyle="body-2">
-                    To change this Collection's title, go back to the Collection
-                    folder view and click on 'Collection settings'.
+                    To change this Collection&apos;s title, go back to the Collection
+                    folder view and click on &apos;Collection settings&apos;.
                   </Text>
                 </Infobox>
               </Box>

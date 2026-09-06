@@ -46,7 +46,7 @@ function JsonFormsAntiScamDisclaimerBannerLayout({ visible }: LayoutProps) {
           <FormLabel mb="0.5rem">Description</FormLabel>
         </FormControl>
         <Box textStyle="body-1" color="base.content.default">
-          If you're unsure if something is a scam, call ScamShield at 1799.
+          If you&apos;re unsure if something is a scam, call ScamShield at 1799.
         </Box>
       </Box>
     </VStack>

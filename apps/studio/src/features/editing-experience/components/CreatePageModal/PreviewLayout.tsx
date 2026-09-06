@@ -36,7 +36,7 @@ export const PreviewLayout = (): JSX.Element => {
               justify="center"
               whiteSpace="pre"
             >
-              You're previewing the{" "}
+              You&apos;re previewing the{" "}
               <Text as="span" textStyle="caption-1">
                 {LAYOUT_RENDER_DATA[currentLayout].title}
               </Text>

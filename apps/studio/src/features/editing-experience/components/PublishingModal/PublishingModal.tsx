@@ -46,7 +46,7 @@ export const PublishingModal = ({
             variant="clear"
             color="base.content.strong"
           >
-            No, don't publish
+            No, don&apos;t publish
           </Button>
           <Button
             onClick={() => {

@@ -55,8 +55,8 @@ const SearchButton = (props: ButtonProps) => {
           overflow="hidden"
           textOverflow="ellipsis"
         >
-          Search pages, collections, or folders by name. e.g. "Speech by
-          Minister"
+          Search pages, collections, or folders by name. e.g. &quot;Speech by
+          Minister&quot;
         </Text>
         <CommandKey mr="1.25rem" />
       </HStack>

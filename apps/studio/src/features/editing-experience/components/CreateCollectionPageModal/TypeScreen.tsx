@@ -73,7 +73,7 @@ export const CreateCollectionPageTypeScreen = () => {
                 </ListItem>
                 <ListItem>
                   Link or file: If you want to link an e-service, show a PDF
-                  report directly, or get site visitors to browse a page that's
+                  report directly, or get site visitors to browse a page that&apos;s
                   already on your website.
                 </ListItem>
               </UnorderedList>

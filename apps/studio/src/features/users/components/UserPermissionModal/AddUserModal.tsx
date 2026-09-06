@@ -201,7 +201,7 @@ export const AddUserModal = () => {
               />
               {errors.email && (
                 <FormErrorMessage>
-                  This doesn't look like a valid email address.
+                  This doesn&apos;t look like a valid email address.
                 </FormErrorMessage>
               )}
               {!errors.email && additionalEmailError && (

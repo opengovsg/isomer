@@ -95,7 +95,7 @@ const SiteListSection = ({
   return (
     <Flex flexDirection="column" gap="1.5rem" marginTop="0.75rem">
       <Text textStyle="body-2">
-        Don't see a site that you're supposed to have access to?{" "}
+        Don&apos;t see a site that you&apos;re supposed to have access to?{" "}
         <Link variant="inline" href={ISOMER_SUPPORT_LINK}>
           Let us know
         </Link>
@@ -122,7 +122,7 @@ const SuspendableSiteList = (): JSX.Element => {
         <NoResultIcon />
         <Flex flexDirection="column" gap="0.5rem" alignItems="center">
           <Text textStyle="h5" textAlign="center">
-            You don't have access to any sites yet.
+            You don&apos;t have access to any sites yet.
           </Text>
           <Text textStyle="body-2" textAlign="center">
             Speak to your System Owner to get access.<br></br>

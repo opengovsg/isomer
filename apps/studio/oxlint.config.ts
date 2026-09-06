@@ -1,12 +1,13 @@
 import { defineConfig } from "@isomer/oxlint-config"
 import base from "@isomer/oxlint-config/base"
-// import { next, react, vitest } from "@isomer/oxlint-config/presets"
+import { react } from "@isomer/oxlint-config/presets"
 
 export default defineConfig({
   extends: [
     base,
+    react,
     // To enable this in following stacked PRs
-    // next, react, vitest
+    // next, vitest
   ],
   ignorePatterns: [
     ".next/**",
