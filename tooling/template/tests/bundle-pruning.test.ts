@@ -45,7 +45,7 @@ describe("template (bundle pruning)", () => {
     // Arrange
     writeTemplateConfig(
       withTemplateConfig(originalConfig, (config) => {
-        ;(config.site as Record<string, unknown>).search = {
+        config.site.search = {
           type: "egazette-algolia",
           appId: "1V7DZGZJKK",
           searchApiKey: "bbc5751b3f9b7fdfc08c99712adfa397",

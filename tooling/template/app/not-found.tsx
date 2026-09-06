@@ -30,6 +30,7 @@ export const generateMetadata = async (
   // Suspected to be due to next15 changing app router SSG to render twice and in async manner
   // During deployment, publisher.sh duplicate homepage "_index.json" to "not-found.json"
   // For development, if `not-found.json` isn't found, simply manually copy and rename
+  // SAFETY: publisher-generated not-found schema JSON conforms to IsomerPageSchemaType at build time
   const schema = (await import(`@/schema/not-found.json`).then(
     (module) => module.default,
   )) as IsomerPageSchemaType

@@ -7,6 +7,30 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const TEMPLATE_DIR = join(__dirname, "..", "..")
 const OUT_DIR = join(TEMPLATE_DIR, "out")
 const CONFIG_PATH = join(TEMPLATE_DIR, "data", "config.json")
+
+interface TemplateSearchConfig {
+  type: string
+  appId?: string
+  searchApiKey?: string
+  indexName?: string
+  searchUrl?: string
+}
+
+interface TemplateSiteConfig {
+  siteName: string
+  url: string
+  agencyName?: string
+  theme?: string
+  logoUrl?: string
+  favicon?: string
+  isGovernment?: boolean
+  search?: TemplateSearchConfig
+}
+
+interface TemplateConfig {
+  site: TemplateSiteConfig
+}
+
 const run = (command: string, args: string[], cwd: string, timeout: number) => {
   const result = spawnSync(command, args, {
     cwd,
@@ -34,9 +58,10 @@ export const writeTemplateConfig = (config: string) => {
 
 export const withTemplateConfig = (
   baseConfig: string,
-  update: (config: Record<string, unknown>) => void,
+  update: (config: TemplateConfig) => void,
 ) => {
-  const config = JSON.parse(baseConfig) as Record<string, unknown>
+  // SAFETY: tooling/template data/config.json is owned by this package and matches TemplateConfig
+  const config = JSON.parse(baseConfig) as TemplateConfig
   update(config)
   return `${JSON.stringify(config, null, 2)}\n`
 }

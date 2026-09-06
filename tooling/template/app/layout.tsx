@@ -31,6 +31,7 @@ const jsonLd = getSiteJsonLd({
     assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,
   },
   footer,
+  // SAFETY: publisher-generated sitemap.json is validated at site build time
   sitemap: sitemap as IsomerSitemap,
 })
 

@@ -48,6 +48,7 @@ const lastUpdated =
 const getSchema = async ({ permalink }: Pick<ParamsContent, "permalink">) => {
   const joinedPermalink: string = permalink.join("/")
 
+  // SAFETY: publisher-generated schema JSON files conform to IsomerPageSchemaType at build time
   const schema = (await import(`@/schema/${joinedPermalink}.json`)
     // oxlint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
     .then((module) => module.default)
