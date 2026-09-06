@@ -281,7 +281,7 @@ const JsonFormsArrayLinkControl = ({
       } else if (selectedIndex === index) {
         setSelectedIndex(undefined)
       } else if (selectedIndex > index) {
-        setSelectedIndex((prev) => prev - 1)
+        setSelectedIndex((prev) => (prev ?? 0) - 1)
       }
     },
     [isRemoveItemDisabled, removeItems, selectedIndex],

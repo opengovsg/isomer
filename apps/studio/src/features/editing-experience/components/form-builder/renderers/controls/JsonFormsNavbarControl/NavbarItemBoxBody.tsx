@@ -175,8 +175,10 @@ export const NavbarItemBoxBody = ({
           <HStack gap="0.75rem" w="full">
             <Box
               display="flex"
-              ref={(itemDragHandleRef ??
-                itemDefaultDragHandleRef) as React.Ref<HTMLDivElement>}
+              ref={
+                (itemDragHandleRef ??
+                  itemDefaultDragHandleRef) as React.Ref<HTMLDivElement>
+              }
               cursor="grab"
               layerStyle="focusRing"
             >

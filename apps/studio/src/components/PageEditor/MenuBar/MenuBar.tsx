@@ -21,15 +21,8 @@ export const MenuBar = ({ items }: { items: PossibleMenubarItemProps[] }) => {
       borderTopRadius="0.25rem"
       spacing="0.25rem"
     >
-      {items.map((item) => (
-        <MenubarItemFactory
-          key={
-            "title" in item && item.title
-              ? `${item.type}-${item.title}`
-              : item.type
-          }
-          {...item}
-        />
+      {items.map((item, index) => (
+        <MenubarItemFactory key={`${item.type}-${index}`} {...item} />
       ))}
     </HStack>
   )

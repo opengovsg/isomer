@@ -38,8 +38,8 @@ vi.mock("~/env.mjs", () => ({
 
 // Keep the real database module (its `AuditLogEvent`, `sql`, types and utils
 // are used across the audit module) and override only `db` with our fake.
-vi.mock("../../database", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("../../database")>()),
+vi.mock("../../database/database", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../database/database")>()),
   db: mockDb,
 }))
 
