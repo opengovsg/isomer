@@ -35,7 +35,7 @@ import { PAGE_BLOB } from "./constants"
 
 describe("resource.service", () => {
   // TODO: Implement tests when publish works
-  describe.skip("publishPage", () => {
+  describe.todo("publishPage", () => {
     it.todo("should trigger a publish automatically on creation of a folder")
 
     it.todo("should trigger a publish automatically on deletion of a folder")
@@ -1828,9 +1828,9 @@ describe("resource.service", () => {
       })
     })
   })
-  describe.skip("getResourcePermalinkTree", () => {})
-  describe.skip("getResourceFullPermalink", () => {})
-  describe.skip("publishResource", () => {})
+  describe.todo("getResourcePermalinkTree", () => {})
+  describe.todo("getResourceFullPermalink", () => {})
+  describe.todo("publishResource", () => {})
 
   describe("getWithFullPermalink", () => {
     it("returns an empty array when given no resourceIds", async () => {
@@ -1924,8 +1924,8 @@ describe("resource.service", () => {
     })
   })
 
-  describe.skip("getSearchRecentlyEdited", () => {})
-  describe.skip("getSearchWithResourceIds", () => {})
+  describe.todo("getSearchRecentlyEdited", () => {})
+  describe.todo("getSearchWithResourceIds", () => {})
 })
 
 const linkDraftBlobToPage = ({

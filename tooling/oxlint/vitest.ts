@@ -39,7 +39,6 @@ export default defineConfig({
         "vitest/prefer-describe-function-title": "off",
         // Intentional todos/skips are common in this repo; do not require per-line disables.
         "vitest/warn-todo": "off",
-        "vitest/no-disabled-tests": "off",
         // Dummy matchers like empty toHaveBeenCalledWith() are worse than off.
         "vitest/prefer-called-with": "off",
         // Audit-log helpers wrap expect() internally; register them so tests aren't
