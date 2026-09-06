@@ -8,7 +8,7 @@ const URL = "https://example.gov.sg"
 describe("updateSearchSGConfig", () => {
   const mockWretch = vi.fn()
 
-  beforeEach(async () => {
+  beforeEach(() => {
     vi.clearAllMocks()
     vi.stubEnv("NEXT_PUBLIC_APP_ENV", "production")
     vi.stubEnv("SEARCHSG_API_KEY", "test-api-key")

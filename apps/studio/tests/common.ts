@@ -158,12 +158,14 @@ export const setup = async (
         }
       }
 
+const getExposedPort = (
+  port: number | { container: number; host: number },
+): number => ("container" in port ? port.container : port)
+
       return {
         name,
         container,
-        ports: ports.map((port) =>
-          Number.isFinite(port) ? port : port.container,
-        ),
+        ports: ports.map(getExposedPort),
         configuration,
       }
     }),

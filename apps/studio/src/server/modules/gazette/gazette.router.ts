@@ -47,8 +47,8 @@ import {
   removeGazetteFromSearchIndex,
 } from "./gazette.service"
 
-type GazettePageBlobContent = { page?: { ref?: string } }
-type PgCaughtError = { code?: string }
+interface GazettePageBlobContent { page?: { ref?: string } }
+interface PgCaughtError { code?: string }
 
 const readGazettePageRef = (
   content: PrismaJson.BlobJsonContent | null | undefined,

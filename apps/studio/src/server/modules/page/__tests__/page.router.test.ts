@@ -44,12 +44,12 @@ import { createDefaultPage } from "../page.service"
 
 const createCaller = createCallerFactory(pageRouter)
 
-type RedirectDeleteAuditDelta = {
+interface RedirectDeleteAuditDelta {
   before: { destination: string; deletedAt: string | null }
   after: { destination: string; deletedAt: string | null }
 }
 
-type RedirectCreateAuditDelta = {
+interface RedirectCreateAuditDelta {
   before: null
   after: { destination: string }
 }

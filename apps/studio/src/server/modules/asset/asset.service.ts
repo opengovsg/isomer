@@ -53,9 +53,16 @@ const getExtensionFromFilename = (filename: string): string =>
  * Derive trusted Content-Type from key. Key is only produced after schema validation,
  * so the file extension is always from the allowlist.
  */
+const hasMimeExtension = (
+  ext: string,
+): ext is keyof typeof EXTENSION_TO_MIME => ext in EXTENSION_TO_MIME
+
 export const getContentTypeFromKey = (key: string): string => {
   const ext = getExtensionFromFilename(getFilenameFromKey(key).toLowerCase())
-  return EXTENSION_TO_MIME[ext] ?? "application/octet-stream"
+  if (hasMimeExtension(ext)) {
+    return EXTENSION_TO_MIME[ext]
+  }
+  return "application/octet-stream"
 }
 
 /**

@@ -18,9 +18,7 @@ import { mockGrowthBook } from "./growthbook/mockInstance"
 
 type IronStoreValue = string | number | boolean | null | undefined
 
-interface IronStoreData {
-  [key: string]: IronStoreValue
-}
+type IronStoreData = Record<string, IronStoreValue>
 
 class MockIronStore {
   private static instance?: MockIronStore

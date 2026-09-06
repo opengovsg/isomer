@@ -140,6 +140,23 @@ const LoginStateDecorator: Decorator<Args> = (story, { parameters }) => {
   )
 }
 
+type StoryDateParam = string | number | Date | null | undefined
+
+const parseMockDateParam = (
+  value: StoryDateParam,
+): string | number | Date | undefined => {
+  if (value instanceof Date) {
+    return value
+  }
+  if (Object.prototype.toString.call(value) === "[object String]") {
+    return value
+  }
+  if (Object.prototype.toString.call(value) === "[object Number]") {
+    return value
+  }
+  return undefined
+}
+
 const conditionalMockDateDecorator: Decorator = (story, context) => {
   // NOTE: skip mock date if explicitly disabled — resetting mockdate during
   // render can interfere with React.
@@ -148,12 +165,11 @@ const conditionalMockDateDecorator: Decorator = (story, context) => {
   }
 
   mockdate.reset()
-  const dateParam = context.parameters.date
-  if (
-    dateParam instanceof Date ||
-    Object.prototype.toString.call(dateParam) === "[object String]" ||
-    Object.prototype.toString.call(dateParam) === "[object Number]"
-  ) {
+  // SAFETY: Storybook parameters.date is optionally a Date, ISO string, or timestamp
+  const dateParam = parseMockDateParam(
+    context.parameters.date as StoryDateParam,
+  )
+  if (dateParam !== undefined) {
     mockdate.set(dateParam)
   }
   return story()

@@ -33,7 +33,7 @@ export const formatAuditLogDateRange = (
   upperExclusive: string,
 ): string => `[${lowerInclusive},${upperExclusive})`
 
-type AuditLogDateRangeBounds = {
+interface AuditLogDateRangeBounds {
   lowerInclusive: string
   upperExclusive: string
 }
@@ -104,7 +104,7 @@ export const getMonthDateRange = (month: IsoMonth, now: Date): string => {
   return formatAuditLogDateRange(lowerInclusive, upperExclusive)
 }
 
-type ExportRange = { rangeStart: Date; rangeEnd: Date }
+interface ExportRange { rangeStart: Date; rangeEnd: Date }
 
 /**
  * The UTC instants bounding an export range, half-open: [rangeStart, rangeEnd).
@@ -465,7 +465,7 @@ type CsvSerializableValue =
   | CsvSerializableValue[]
   | { [key: string]: CsvSerializableValue }
 
-type CsvRow = { [key: string]: CsvSerializableValue }
+type CsvRow = Record<string, CsvSerializableValue>
 
 /**
  * Serialize report rows to CSV. Headers are the object keys (quotes stripped,

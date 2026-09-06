@@ -670,12 +670,12 @@ describe("schedulePushDocumentJobHandler", async () => {
       const ingestBody = ingestCall![1]?.body as string
       // SAFETY: parsed ingest body matches the SearchSG documents payload shape under test.
       const body = JSON.parse(ingestBody) as {
-        documentsToAdd: Array<{
+        documentsToAdd: {
           title: string
           content: string
           contentType: string
           categories: string[]
-        }>
+        }[]
       }
       expect(body.documentsToAdd).toHaveLength(1)
       expect(body.documentsToAdd[0]).toMatchObject({

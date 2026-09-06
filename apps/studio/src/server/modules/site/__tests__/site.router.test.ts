@@ -1034,10 +1034,9 @@ describe("site.router", async () => {
         ...MOCK_INTEGRATION_DATA,
         fake: "fake",
       }
-      // SAFETY: intentional extra field exercises the integrations schema rejection path.
       const result = await caller.updateSiteIntegrations({
         siteId: site.id,
-        data: invalidIntegrationData as typeof MOCK_INTEGRATION_DATA,
+        data: invalidIntegrationData,
       })
 
       // Assert

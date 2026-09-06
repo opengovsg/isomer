@@ -15,6 +15,7 @@ import {
 } from "tests/integration/helpers/seed"
 import { vi } from "vitest"
 import * as s3Lib from "~/lib/s3"
+import { resetS3StorageForTests, setS3StorageForTests } from "~/lib/s3"
 import { MAX_DELETE_FILE_KEYS } from "~/schemas/asset"
 import { createCallerFactory } from "~/server/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
@@ -39,13 +40,17 @@ describe("asset.router", async () => {
     await resetTables("Site", "ResourcePermission", "Resource")
     await setUpWhitelist({ email: TEST_VALID_EMAIL })
     vi.clearAllMocks()
+    setS3StorageForTests({ send: vi.fn().mockResolvedValue({ TagSet: [] }) })
     vi.spyOn(s3Lib, "generateSignedPutUrl").mockResolvedValue(
       "https://example.com/signed-url",
     )
     vi.spyOn(s3Lib, "putObjectDirect").mockResolvedValue(undefined)
     vi.spyOn(s3Lib, "deleteFile").mockResolvedValue(undefined)
     vi.spyOn(s3Lib, "markFileAsDeleted").mockResolvedValue(undefined)
-    vi.spyOn(s3Lib.storage, "send").mockResolvedValue({ TagSet: [] })
+  })
+
+  afterEach(() => {
+    resetS3StorageForTests()
   })
 
   describe("getPresignedPutUrl", () => {

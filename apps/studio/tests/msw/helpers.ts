@@ -18,10 +18,7 @@ export const asSiteJsonConfig = (
 
 export const asSiteThemeJson = (
   theme: PrismaJson.SiteThemeJson,
-): PrismaJson.SiteThemeJson => {
-  // SAFETY: MSW fixture matches SiteThemeJson fields used in Storybook/tests.
-  return theme as PrismaJson.SiteThemeJson
-}
+): PrismaJson.SiteThemeJson => theme
 
 interface BlobJsonPageFixture {
   ref?: string

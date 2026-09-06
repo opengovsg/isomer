@@ -26,13 +26,13 @@ type InsertOutcome =
   | { site: number; outcome: "inserted" | "conflict" }
   | { site: number; outcome: "error"; error: Error }
 
-type FakeExportRequestRow = {
+interface FakeExportRequestRow {
   id?: string
   siteId: number
   status?: string
 }
 
-type AuditLogExportCreateRow = {
+interface AuditLogExportCreateRow {
   eventType: string
   userId: string
   siteId: number
@@ -48,7 +48,7 @@ type InsertPayload =
   | AuditLogExportCreateRow[]
   | { siteId: number }
 
-type ConflictBuilder = {
+interface ConflictBuilder {
   columns: () => ConflictBuilder
   where: () => ConflictBuilder
   doNothing: () => ConflictBuilder

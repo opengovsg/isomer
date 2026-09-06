@@ -19,7 +19,7 @@ const EXPIRED_PAGE_PATH = "/audit-log-exports/expired"
 const signedUrlFor = (key: string) =>
   `https://${BUCKET}.s3.amazonaws.com/${key}?X-Amz-Signature=deadbeef`
 
-type SeedDownloadRequestValues = {
+interface SeedDownloadRequestValues {
   siteId: number
   userId: string
   auditLogDateRange: string
@@ -65,7 +65,7 @@ const seedRequest = async ({
     .executeTakeFirstOrThrow()
 }
 
-type MockRedirectResponse = {
+interface MockRedirectResponse {
   statusCode: number
   _getRedirectUrl: () => string
 }
@@ -90,8 +90,8 @@ describe("GET /api/audit-log-exports/download", () => {
       "Site",
     )
     vi.clearAllMocks()
-    vi.spyOn(s3Lib, "generateSignedGetUrl").mockImplementation(
-      async ({ Key }) => signedUrlFor(Key),
+    vi.spyOn(s3Lib, "generateSignedGetUrl").mockImplementation(({ Key }) =>
+      Promise.resolve(signedUrlFor(Key)),
     )
     vi.spyOn(s3Lib, "getStudioAssetsBucketName").mockReturnValue(BUCKET)
   })

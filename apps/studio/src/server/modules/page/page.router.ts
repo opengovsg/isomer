@@ -755,9 +755,17 @@ export const pageRouter = router({
         const pageMetaSchema = getLayoutMetadataSchema(fullPage.content.layout)
         const validateFn = ajv.compile(pageMetaSchema)
 
-        const newMeta = safeJsonParse(meta)
-        // SAFETY: validateFn is compiled from the layout-specific metadata schema for this page
-        const parsedMeta = newMeta as PrismaJson.BlobJsonContent | null
+        let parsedMeta: PrismaJson.BlobJsonContent | null | undefined
+        if (meta) {
+          try {
+            // SAFETY: validateFn is compiled from the layout-specific metadata schema for this page
+            parsedMeta = JSON.parse(meta) as PrismaJson.BlobJsonContent
+          } catch {
+            parsedMeta = undefined
+          }
+        } else {
+          parsedMeta = undefined
+        }
 
         // NOTE: if `meta` was originally passed, then we need to validate it
         // otherwise, the meta never existed and we don't need to validate anyways

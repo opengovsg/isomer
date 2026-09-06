@@ -52,8 +52,8 @@ const client = z
     NEXT_PUBLIC_POSTHOG_HOST: z.url().optional(),
     NEXT_PUBLIC_POSTHOG_ASSETS_HOST: z.url().optional(),
   })
-  .merge(s3Schema)
-  .merge(cronHeartbeatSchema)
+  .extend(s3Schema["shape"])
+  .extend(cronHeartbeatSchema["shape"])
 
 const singpassSchema = z.object({
   SINGPASS_CLIENT_ID: z.string().min(1),
@@ -93,10 +93,10 @@ const server = z
     ALGOLIA_INDEX_NAME: z.string(),
     SYSTEM_USER_EMAIL: z.email().optional().default(SYSTEM_USER_EMAIL),
   })
-  .merge(s3Schema)
-  .merge(r2Schema)
-  .merge(singpassSchema)
-  .merge(client)
+  .extend(s3Schema["shape"])
+  .extend(r2Schema["shape"])
+  .extend(singpassSchema["shape"])
+  .extend(client["shape"])
   .superRefine((data, ctx) => {
     // Which storage backend to use is decided by whether R2 credentials are
     // present, not by NEXT_PUBLIC_APP_ENV — so these must be set together.
@@ -226,7 +226,7 @@ const processEnv = {
 let env = /** @type {MergedOutput} */ (process.env)
 
 if (!!process.env.SKIP_ENV_VALIDATION == false) {
-  const isServer = typeof window === "undefined"
+  const isServer = globalThis.window === undefined
 
   const parsed = /** @type {MergedSafeParseReturn} */ (
     isServer
@@ -244,7 +244,7 @@ if (!!process.env.SKIP_ENV_VALIDATION == false) {
 
   env = new Proxy(parsed.data, {
     get(target, prop) {
-      if (typeof prop !== "string") return undefined
+      if (Object.prototype.toString.call(prop) !== "[object String]") return undefined
       // Throw a descriptive error if a server-side env var is accessed on the client
       // Otherwise it would just be returning `undefined` and be annoying to debug
       if (!isServer && !prop.startsWith("NEXT_PUBLIC_"))

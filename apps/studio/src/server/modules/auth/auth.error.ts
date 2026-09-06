@@ -1,31 +1,42 @@
-type ErrorCauseValue =
+interface ErrorCauseFields {
+  err?: Error
+}
+
+const isStringMessage = (
+  value: string | Error | ErrorCauseFields,
+): value is string =>
+  Object.prototype.toString.call(value) === "[object String]"
+
+type ErrorCauseInput =
+  | ErrorCauseFields
+  | Error
   | string
   | number
   | boolean
   | null
-  | Error
-  | ErrorCauseFields
-type ErrorCauseFields = { [key: string]: ErrorCauseValue }
+  | undefined
 
-type AuthMessageInput = string | Error | ErrorCauseFields
+const isErrorCauseFromInput = (value: ErrorCauseInput): value is ErrorCauseFields =>
+  value !== null &&
+  value !== undefined &&
+  !(value instanceof Error) &&
+  Object(value) === value &&
+  !Array.isArray(value)
 
-const isStringMessage = (value: AuthMessageInput): value is string =>
-  Object.prototype.toString.call(value) === "[object String]"
-
-const isErrorCauseFields = (value: AuthMessageInput): value is ErrorCauseFields =>
-  !(value instanceof Error) && Object(value) === value
-
-const spreadErrorCause = (error: Error) => {
-  const cause = error.cause
-  // SAFETY: Error.cause is narrowed to ErrorCauseFields when it is a plain object
-  if (isErrorCauseFields(cause as AuthMessageInput)) {
-    return { err: error, ...cause } satisfies ErrorCauseFields
+const spreadErrorCause = (error: Error): ErrorCauseFields => {
+  // SAFETY: Error.cause is only consumed after narrowing to plain ErrorCauseFields
+  const causeInput = error.cause as ErrorCauseInput
+  if (isErrorCauseFromInput(causeInput)) {
+    return { err: error, ...causeInput }
   }
-  return { err: error } satisfies ErrorCauseFields
+  return { err: error }
 }
 
 class AuthError extends Error {
-  constructor(message: AuthMessageInput, cause?: ErrorCauseFields) {
+  constructor(
+    message: string | Error | ErrorCauseFields,
+    cause?: ErrorCauseFields | Error,
+  ) {
     if (message instanceof Error) {
       super(undefined, {
         cause: { ...spreadErrorCause(message), ...cause },
@@ -33,9 +44,9 @@ class AuthError extends Error {
     } else if (isStringMessage(message)) {
       const resolvedCause =
         cause instanceof Error ? spreadErrorCause(cause) : cause
-      super(message, resolvedCause)
+      super(message, { cause: resolvedCause })
     } else {
-      super(undefined, message)
+      super(undefined, { cause: message })
     }
     Error.captureStackTrace(this, this.constructor)
     this.name =
