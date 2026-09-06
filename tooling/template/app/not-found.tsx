@@ -57,35 +57,33 @@ export const generateMetadata = async (
 
 const NotFound = () => {
   return (
-    <>
-      <RenderEngine
-        version={PAGE_SCHEMA_VERSION}
-        site={{
-          ...config.site,
-          environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
-          // TODO: fixup all the typing errors
-          // @ts-ignore to fix when types are proper
+    <RenderEngine
+      version={PAGE_SCHEMA_VERSION}
+      site={{
+        ...config.site,
+        environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
+        // TODO: fixup all the typing errors
+        // @ts-ignore to fix when types are proper
 
-          siteMap: sitemap,
-          navbar: navbar,
-          // TODO: fixup all the typing errors
-          // @ts-ignore to fix when types are proper
-          footerItems: footer,
-          assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,
-        }}
-        layout="notfound"
-        meta={{
-          noIndex: true,
-          description: PAGE_DESCRIPTION,
-        }}
-        page={{
-          title: PAGE_TITLE,
-          permalink: "/404.html",
-          lastModified: new Date().toISOString(),
-        }}
-        content={[]}
-      />
-    </>
+        siteMap: sitemap,
+        navbar: navbar,
+        // TODO: fixup all the typing errors
+        // @ts-ignore to fix when types are proper
+        footerItems: footer,
+        assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,
+      }}
+      layout="notfound"
+      meta={{
+        noIndex: true,
+        description: PAGE_DESCRIPTION,
+      }}
+      page={{
+        title: PAGE_TITLE,
+        permalink: "/404.html",
+        lastModified: new Date().toISOString(),
+      }}
+      content={[]}
+    />
   )
 }
 

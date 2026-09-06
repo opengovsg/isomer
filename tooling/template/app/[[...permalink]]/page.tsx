@@ -153,6 +153,7 @@ const Page = async (props: DynamicPageProps) => {
       />
       <script
         type="application/ld+json"
+        // oxlint-disable-next-line react/no-danger -- JSON-LD is serialized via serializeForInlineScript
         dangerouslySetInnerHTML={{
           __html: serializeForInlineScript(pageJsonLd),
         }}
