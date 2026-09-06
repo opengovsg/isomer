@@ -13,7 +13,7 @@ import { PdfReader } from "pdfreader"
  * `({ objectID: string } & Record<string, unknown>)[]` (the
  * saveObjectsToSearchIndex parameter type) without an unsafe cast.
  */
-export interface SearchRecord {
+export type SearchRecord = {
   objectID: string
   objectGroup: string
   title: string
@@ -31,8 +31,7 @@ export interface SearchRecord {
   fileUrl: string
   /** One text chunk (up to 7 000 chars) from the parsed PDF. */
   text: string
-  [key: string]: unknown
-}
+} & Record<string, string | number | undefined>
 
 /**
  * Derive a gazette's objectGroup — the S3 key (no leading slash), shared by
@@ -52,7 +51,7 @@ export const buildGazetteObjectGroupFilter = (objectGroup: string): string =>
 const getExtensionFromKey = (key: string): string => {
   const filename = key.split("/").pop() ?? ""
   return filename.includes(".")
-    ? filename.substring(filename.lastIndexOf("."))
+    ? filename.slice(filename.lastIndexOf("."))
     : ""
 }
 
@@ -71,7 +70,7 @@ export const getContentDispositionForTitle = (
   // content-disposition runs path.basename on the filename, which would
   // truncate a title containing "/" or "\" (e.g. "A/B" -> "B"). Replace path
   // separators up front so the full title survives in the download filename.
-  const filename = `${title}${extension}`.replace(/[/\\]/g, "-")
+  const filename = `${title}${extension}`.replaceAll(/[/\\]/gu, "-")
   return createContentDisposition(filename, { type: "inline" })
 }
 
@@ -93,20 +92,29 @@ export interface BuildGazetteSearchRecordsParams {
 // invocations.
 export const parseFullTextFromPDF = async (pdfBuffer: Uint8Array) => {
   const pdfReader = new PdfReader({})
-  const data: string[] = await new Promise((resolve, reject) => {
-    const parsedData: string[] = []
+  const parsedData: string[] = []
+
+  // oxlint-disable-next-line promise/avoid-new -- pdfreader only exposes a callback-based parseBuffer API
+  await new Promise<void>((resolve, reject) => {
     pdfReader.parseBuffer(Buffer.from(pdfBuffer), (err, item) => {
-      if (err) {
-        reject(new Error(err))
-      } else if (!item) {
-        resolve(parsedData)
-      } else if (item.text) {
-        parsedData.push(item.text)
+      if (err !== undefined && err !== null && err !== "") {
+        reject(new Error(`Failed to parse PDF: ${err}`))
+        return
+      }
+      if (item === null || item === undefined) {
+        resolve()
+        return
+      }
+      // SAFETY: pdfreader callbacks are untyped; only read optional text after confirming the key exists.
+      const text =
+        "text" in item ? (item as { text?: string }).text : undefined
+      if (text !== undefined && text.length > 0) {
+        parsedData.push(text)
       }
     })
   })
 
-  return data.join(" ")
+  return parsedData.join(" ")
 }
 
 /**
@@ -125,7 +133,7 @@ export const buildGazetteSearchRecords = ({
   fileUrl,
   scheduledAt,
 }: BuildGazetteSearchRecordsParams): SearchRecord[] => {
-  if (!parsedText) return []
+  if (!parsedText) {return []}
 
   // Split parsedText into chunks of up to 7 000 characters, ending on a
   // whitespace boundary where possible. This keeps each Algolia record well
@@ -145,7 +153,7 @@ export const buildGazetteSearchRecords = ({
   // at the first position from which it can consume up to 7000 chars ending at
   // the string boundary). Same behavior as egazette; gazette PDFs are
   // whitespace-delimited prose, so this does not arise in practice.
-  const CHUNK_REGEX = /.{1,7000}(?:\s|$)/g
+  const CHUNK_REGEX = /.{1,7000}(?:\s|$)/gu
 
   const chunks: string[] = []
   let match: RegExpExecArray | null
@@ -166,33 +174,33 @@ export const buildGazetteSearchRecords = ({
     "Asia/Singapore",
     "dd/MM/yyyy",
   )
-  const [day, month, year] = publishDate.split("/").map(Number) as [
-    number,
-    number,
-    number,
-  ]
+  const publishDateParts = publishDate.split("/").map(Number)
+  const day = publishDateParts[0] ?? 0
+  const month = publishDateParts[1] ?? 0
+  const year = publishDateParts[2] ?? 0
 
   // lexiNotificationNum is notificationNum left-padded to 10 digits.
   // 10 = egazette's MAX_NOTIFICATION_NUMBER_LENGTH; must match for consistent
   // sort ordering in Algolia.
-  const lexiNotificationNum = notificationNum
-    ? notificationNum.padStart(10, "0")
-    : undefined
+  const lexiNotificationNum =
+    notificationNum !== undefined && notificationNum.length > 0
+      ? notificationNum.padStart(10, "0")
+      : undefined
 
   return chunks.map((chunk, idx) => ({
-    objectID: `${objectGroup}-text-${idx}`,
-    objectGroup,
-    title,
     category,
-    subCategory,
-    notificationNum,
-    lexiNotificationNum,
-    publishDate,
-    publishYear: year,
-    publishMonth: month,
-    publishDay: day,
-    publishTimestamp: scheduledAt.getTime(),
     fileUrl,
+    lexiNotificationNum,
+    notificationNum,
+    objectGroup,
+    objectID: `${objectGroup}-text-${idx}`,
+    publishDate,
+    publishDay: day,
+    publishMonth: month,
+    publishTimestamp: scheduledAt.getTime(),
+    publishYear: year,
+    subCategory,
     text: chunk,
+    title,
   }))
 }

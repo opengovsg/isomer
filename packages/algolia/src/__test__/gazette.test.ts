@@ -50,14 +50,14 @@ describe("buildGazetteSearchRecords", () => {
   const SGT_DATE = new Date("2026-04-30T04:00:00.000Z")
 
   const BASE_PARAMS = {
-    parsedText: "Hello world",
-    objectGroup: "2026/Government Gazette/Public/notice-123.pdf",
-    title: "Government Gazette Notice 123",
     category: "Government Gazette",
-    subCategory: "Public",
     fileUrl:
       "https://gazettes.example/2026/Government Gazette/Public/notice-123.pdf",
+    objectGroup: "2026/Government Gazette/Public/notice-123.pdf",
+    parsedText: "Hello world",
     scheduledAt: SGT_DATE,
+    subCategory: "Public",
+    title: "Government Gazette Notice 123",
   }
 
   it("returns an empty array when parsedText is empty", () => {
@@ -87,7 +87,7 @@ describe("buildGazetteSearchRecords", () => {
     // Arrange — build text that exceeds one chunk boundary
     const chunk1 = "a".repeat(7000)
     const chunk2 = "b".repeat(100)
-    const longText = chunk1 + " " + chunk2
+    const longText = `${chunk1  } ${  chunk2}`
 
     // Act
     const result = buildGazetteSearchRecords({

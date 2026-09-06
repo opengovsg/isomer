@@ -10,6 +10,10 @@ export interface AlgoliaClientConfig {
   indexName: string
 }
 
+type AlgoliaSearchObject = {
+  objectID: string
+} & Record<string, string | number | boolean | null | undefined>
+
 /**
  * Create a client bound to a single Algolia index. This package does not read
  * application env — callers pass validated configuration (see
@@ -27,7 +31,7 @@ export const createAlgoliaClient = ({
    * Calling this with the same `objectID` overwrites the existing record cleanly.
    */
   const saveObjectsToSearchIndex = async (
-    objects: readonly ({ objectID: string } & Record<string, unknown>)[],
+    objects: readonly AlgoliaSearchObject[],
   ) => {
     await index.saveObjects(objects)
   }
@@ -44,5 +48,5 @@ export const createAlgoliaClient = ({
     await index.deleteBy({ filters })
   }
 
-  return { saveObjectsToSearchIndex, deleteObjectsFromSearchIndexByFilter }
+  return { deleteObjectsFromSearchIndexByFilter, saveObjectsToSearchIndex }
 }
