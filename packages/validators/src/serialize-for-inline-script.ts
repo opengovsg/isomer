@@ -1,3 +1,10 @@
+export type InlineScriptSerializable =
+  | string
+  | number
+  | boolean
+  | Record<string, string | number | boolean | null>
+  | null
+
 /**
  * Serializes a value for safe embedding in inline `<script>` content.
  *
@@ -8,5 +15,5 @@
  * literals inside script bodies.
  */
 export const serializeForInlineScript = (
-  value: string | number | boolean | object | null,
-): string => JSON.stringify(value).replace(/</g, "\\u003c")
+  value: InlineScriptSerializable,
+): string => JSON.stringify(value).replaceAll("<", "\\u003c")

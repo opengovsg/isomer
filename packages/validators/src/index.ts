@@ -1,1 +1,4 @@
-export { serializeForInlineScript } from "./serializeForInlineScript"
+export {
+  serializeForInlineScript,
+  type InlineScriptSerializable,
+} from "./serialize-for-inline-script"
