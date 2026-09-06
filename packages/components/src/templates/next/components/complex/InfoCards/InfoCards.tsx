@@ -1,5 +1,5 @@
-import { createElement } from "react"
 import type { InfoCardsProps } from "~/interfaces"
+import { createElement } from "react"
 import {
   CARDS_WITH_FULL_IMAGES,
   CARDS_WITH_IMAGES,
@@ -18,28 +18,17 @@ import {
   InfoCardWithImage,
 } from "./components"
 
-type InfoCardsToRenderProps = Pick<
+type InfoCardsToRenderProps = Omit<
   InfoCardsProps,
-  | "variant"
-  | "cards"
-  | "maxColumns"
-  | "layout"
-  | "site"
-  | "shouldLazyLoad"
-  | "headingLevel"
+  "type" | "id" | "title" | "subtitle" | "label" | "url"
 >
 
-const InfoCardsToRender = ({
-  variant,
-  cards,
-  maxColumns,
-  layout,
-  site,
-  shouldLazyLoad,
-  headingLevel,
-}: InfoCardsToRenderProps) => {
-  switch (variant) {
-    case CARDS_WITH_IMAGES:
+const InfoCardsToRender = (props: InfoCardsToRenderProps) => {
+  switch (props.variant) {
+    case CARDS_WITH_IMAGES: {
+      const { cards, maxColumns, layout, site, shouldLazyLoad, headingLevel } =
+        props as Extract<InfoCardsProps, { variant: typeof CARDS_WITH_IMAGES }>
+
       return (
         <>
           {cards.map((card, idx) => (
@@ -55,7 +44,13 @@ const InfoCardsToRender = ({
           ))}
         </>
       )
-    case CARDS_WITHOUT_IMAGES:
+    }
+    case CARDS_WITHOUT_IMAGES: {
+      const { cards, site, headingLevel } = props as Extract<
+        InfoCardsProps,
+        { variant: typeof CARDS_WITHOUT_IMAGES }
+      >
+
       return (
         <>
           {cards.map((card, idx) => (
@@ -68,7 +63,14 @@ const InfoCardsToRender = ({
           ))}
         </>
       )
+    }
     case CARDS_WITH_FULL_IMAGES: {
+      const { cards, maxColumns, layout, site, shouldLazyLoad, headingLevel } =
+        props as Extract<
+          InfoCardsProps,
+          { variant: typeof CARDS_WITH_FULL_IMAGES }
+        >
+
       return (
         <>
           {cards.map((card, idx) => (
@@ -86,9 +88,10 @@ const InfoCardsToRender = ({
       )
     }
 
-    default:
-      const _: never = variant
+    default: {
+      const _: never = props.variant
       return null
+    }
   }
 }
 

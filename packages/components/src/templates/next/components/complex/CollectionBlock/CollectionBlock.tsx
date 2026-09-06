@@ -1,9 +1,9 @@
-import { createElement } from "react"
 import type {
   CollectionBlockNumberOfCards,
   CollectionBlockProps,
   CollectionBlockSingleCardProps,
 } from "~/interfaces/complex/CollectionBlock"
+import { createElement } from "react"
 import { BiRightArrowAlt } from "react-icons/bi"
 import { tv } from "~/lib/tv"
 import { getHeadingTag } from "~/utils/getHeadingTag"
@@ -185,7 +185,7 @@ export const CollectionBlock = ({
   buttonLabel,
   shouldLazyLoad,
   headingLevel,
-}: CollectionBlockProps): JSX.Element => {
+}: CollectionBlockProps): JSX.Element | null => {
   const collectionId = getResourceIdFromReferenceLink(collectionReferenceLink)
 
   // This happens when no collection is selected yet on Studio when the user just added the block
