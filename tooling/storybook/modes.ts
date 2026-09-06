@@ -7,20 +7,20 @@
 export type ChromaticModeKey = keyof typeof modes
 
 export const modes = {
-  mobileSmall: {
-    viewport: "xs",
-  },
-  mobile: {
-    viewport: "sm",
-  },
-  tablet: {
-    viewport: "md",
+  desktop: {
+    viewport: "xl",
   },
   gsib: {
     viewport: "lg",
   },
-  desktop: {
-    viewport: "xl",
+  mobile: {
+    viewport: "sm",
+  },
+  mobileSmall: {
+    viewport: "xs",
+  },
+  tablet: {
+    viewport: "md",
   },
   // You can also combine modes by passing in the appropriate parameters
   // "dark desktop": {
@@ -31,6 +31,5 @@ export const modes = {
 }
 
 // Mainly for typing available viewports for use in storybook
-export const getViewportByMode = (viewport: ChromaticModeKey) => {
-  return modes[viewport].viewport
-}
+export const getViewportByMode = (viewport: ChromaticModeKey) =>
+  modes[viewport].viewport
