@@ -17,16 +17,14 @@ const emailSchema = z
   })
   .transform((val) => val.trim().toLowerCase())
 
+export const createSingleUserSchema = z.object({
+  email: emailSchema,
+  role: z.enum(RoleType).optional().default(RoleType.Editor),
+})
+
 export const createUserInputSchema = z.object({
   siteId: z.number().min(1),
-  users: z
-    .array(
-      z.object({
-        email: emailSchema,
-        role: z.enum(RoleType).optional().default(RoleType.Editor),
-      }),
-    )
-    .max(100),
+  users: z.array(createSingleUserSchema).max(100),
 })
 
 export const createUserOutputSchema = z.array(
@@ -64,10 +62,9 @@ export const getUserOutputSchema = z.object({
 const ADMIN_TYPE = z.enum(["agency", "isomer"] as const)
 export type AdminType = z.infer<typeof ADMIN_TYPE>
 
-export const listUsersInputSchema = z.object({
+export const listUsersInputSchema = offsetPaginationSchema.extend({
   siteId: z.number().min(1),
   adminType: ADMIN_TYPE.optional().default("agency"),
-  ...offsetPaginationSchema.shape,
 })
 
 export const listUsersOutputSchema = z.array(

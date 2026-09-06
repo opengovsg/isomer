@@ -23,7 +23,7 @@ export const getChildrenSchema = z
     siteId: z.string().min(0),
     includeSearchPage: z.boolean().optional().default(true),
   })
-  .extend(infiniteOffsetPaginationSchema.shape)
+  .merge(infiniteOffsetPaginationSchema)
 
 export const getChildrenOutputSchema = z.object({
   items: z.array(z.custom<ResourceItemContent>()),
@@ -77,7 +77,7 @@ export const listResourceSchema = z
     resourceId: z.number().optional(),
     orderBy: z.enum(resourceOrderByOptions).optional().default("updated-desc"),
   })
-  .extend(offsetPaginationSchema.shape)
+  .merge(offsetPaginationSchema)
 
 export const getFullPermalinkSchema = z.object({
   siteId: z.number(),
@@ -128,7 +128,7 @@ export const searchSchema = z
       .optional()
       .default(Object.values(ResourceType)),
   })
-  .extend(infiniteOffsetPaginationSchema.shape)
+  .merge(infiniteOffsetPaginationSchema)
 
 export const searchOutputSchema = z.object({
   totalCount: z.number().nullable(),

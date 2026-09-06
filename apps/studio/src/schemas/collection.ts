@@ -106,7 +106,7 @@ export const readCollectionSchema = z
     resourceId: z.number().min(1),
     orderBy: z.enum(resourceOrderByOptions).optional().default("updated-desc"),
   })
-  .extend(offsetPaginationSchema.shape)
+  .merge(offsetPaginationSchema)
 
 // Upper bound to limit request parsing and SQL cost (ANY(...) on text[]).
 // Arbitrary limit to prevent abuse; adjust if legitimate collections exceed this.
