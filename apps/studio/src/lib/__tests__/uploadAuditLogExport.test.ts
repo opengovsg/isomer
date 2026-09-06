@@ -61,7 +61,7 @@ describe("uploadAuditLogExport", () => {
 
   it("throws a clear error when the bucket env var is unset", async () => {
     // Arrange
-    setStudioAssetsBucketNameForTests(undefined)
+    setStudioAssetsBucketNameForTests("")
 
     // Act + Assert: fails loudly before any upload is even constructed
     await expect(

@@ -1,16 +1,13 @@
 // @vitest-environment jsdom
 import type { UserManagementAbility } from "~/server/modules/permissions/permissions.type"
-import * as growthbook from "@growthbook/growthbook-react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import { render, screen, waitFor } from "@testing-library/react"
-import * as nextRouter from "next/router"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { UserManagementContext } from "~/features/users"
 import { SITE_ID } from "~/lib/testing/constants"
 import AuditLogExportSettingsPage from "~/pages/sites/[siteId]/settings/audit-log"
 import { buildUserManagementPermissions } from "~/server/modules/permissions/permissions.util"
 import { theme } from "~/theme"
-import { trpc } from "~/utils/trpc"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 // jsdom has no `matchMedia`; Chakra's `FullscreenSpinner` (rendered on the
@@ -31,47 +28,45 @@ Object.defineProperty(window, "matchMedia", {
 
 const replace = vi.fn()
 
-let isGbReady = true
-let isAuditLogFlagOn = true
-let isRolesPending = false
-
-beforeEach(() => {
-  replace.mockClear()
-  isRolesPending = false
-  isGbReady = true
-  isAuditLogFlagOn = true
-
-  // @ts-expect-error partial NextRouter mock for unit test
-  vi.spyOn(nextRouter, "useRouter").mockReturnValue({
+vi.mock("next/router", () => ({
+  useRouter: () => ({
     query: { siteId: String(SITE_ID) },
     replace,
-  })
+  }),
+}))
 
-  // @ts-expect-error partial GrowthBook mock for unit test
-  vi.spyOn(growthbook, "useGrowthBook").mockImplementation(() => ({
-    ready: isGbReady,
-  }))
+// The page is additionally gated on the `is-audit-log-enabled` GrowthBook
+// flag, and defers to `gb.ready` so a slow flag fetch never bounces an admin.
+// Drive both per-test; `useFeatureValue` mirrors the real hook's behaviour of
+// returning the fallback until features are loaded.
+let isGbReady = true
+let isAuditLogFlagOn = true
+vi.mock("@growthbook/growthbook-react", () => ({
+  useGrowthBook: () => ({ ready: isGbReady }),
+  useFeatureValue: (_key: string, fallback: boolean) =>
+    isGbReady ? isAuditLogFlagOn : fallback,
+}))
 
-  vi.spyOn(growthbook, "useFeatureValue").mockImplementation(
-    (_key, fallback) => (isGbReady ? isAuditLogFlagOn : fallback),
-  )
-
-  // @ts-expect-error partial tRPC query mock for unit test
-  vi.spyOn(trpc.resource.getRolesFor, "useQuery").mockReturnValue({
-    isPending: isRolesPending,
-  })
-
-  // @ts-expect-error partial tRPC query mock for unit test
-  vi.spyOn(trpc.audit.getExportWindow, "useQuery").mockReturnValue({
-    data: { maxMonths: 12 },
-  })
-
-  // @ts-expect-error partial tRPC mutation mock for unit test
-  vi.spyOn(trpc.audit.createExportRequest, "useMutation").mockReturnValue({
-    mutate: vi.fn(),
-    isPending: false,
-  })
-})
+// The page reads `getRolesFor` only for its loading signal; the ability itself
+// comes from `UserManagementContext`. Drive `isPending` per-test.
+let isRolesPending = false
+vi.mock("~/utils/trpc", () => ({
+  trpc: {
+    resource: {
+      getRolesFor: {
+        useQuery: () => ({ isPending: isRolesPending }),
+      },
+    },
+    audit: {
+      getExportWindow: {
+        useQuery: () => ({ data: { maxMonths: 12 } }),
+      },
+      createExportRequest: {
+        useMutation: () => ({ mutate: vi.fn(), isPending: false }),
+      },
+    },
+  },
+}))
 
 const adminAbility = buildUserManagementPermissions([{ role: RoleType.Admin }])
 const editorAbility = buildUserManagementPermissions([
@@ -88,6 +83,13 @@ const renderWith = (ability: UserManagementAbility) =>
   )
 
 describe("AuditLogExportSettingsPage", () => {
+  beforeEach(() => {
+    replace.mockClear()
+    isRolesPending = false
+    isGbReady = true
+    isAuditLogFlagOn = true
+  })
+
   it("renders the export section for admins", () => {
     // Arrange / Act
     renderWith(adminAbility)

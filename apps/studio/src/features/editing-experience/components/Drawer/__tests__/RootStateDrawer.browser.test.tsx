@@ -1,58 +1,43 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import { render, screen } from "@testing-library/react"
-import * as nextRouter from "next/router"
-import posthog from "posthog-js"
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import { EditorDrawerProvider } from "~/contexts/EditorDrawerContext"
-import * as isomerAdminHook from "~/hooks/useIsUserIsomerAdmin"
-import * as collectionTagsHook from "~/hooks/useNewCollectionTagsManagement"
 import { theme } from "~/theme"
-import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import RootStateDrawer from "../RootStateDrawer"
 
-const noop = vi.fn()
+const noop = vi.hoisted(() => vi.fn())
 
-beforeEach(() => {
-  // @ts-expect-error partial NextRouter mock for unit test
-  vi.spyOn(nextRouter, "useRouter").mockReturnValue({
-    query: { pageId: "1", siteId: "1" },
-  })
+vi.mock("next/router", () => ({
+  useRouter: () => ({ query: { pageId: "1", siteId: "1" } }),
+}))
 
-  vi.spyOn(posthog, "capture").mockImplementation(noop)
+vi.mock("posthog-js", () => ({ default: { capture: noop } }))
 
-  vi.spyOn(isomerAdminHook, "useIsUserIsomerAdmin").mockReturnValue({
-    isAdmin: false,
-    isLoading: false,
-  })
+vi.mock("~/hooks/useIsUserIsomerAdmin", () => ({
+  useIsUserIsomerAdmin: () => ({ isAdmin: false, isLoading: false }),
+}))
 
-  vi.spyOn(
-    collectionTagsHook,
-    "useNewCollectionTagsManagement",
-  ).mockReturnValue(false)
+vi.mock("~/hooks/useNewCollectionTagsManagement", () => ({
+  useNewCollectionTagsManagement: () => false,
+}))
 
-  // @ts-expect-error partial tRPC suspense query mock for unit test
-  vi.spyOn(trpc.page.readPage, "useSuspenseQuery").mockReturnValue([
-    { scheduledAt: null },
-  ])
-
-  // @ts-expect-error partial tRPC mutation mock for unit test
-  vi.spyOn(trpc.page.reorderBlock, "useMutation").mockReturnValue({
-    mutate: noop,
-  })
-
-  // @ts-expect-error partial tRPC mutation mock for unit test
-  vi.spyOn(trpc.page.updatePageBlob, "useMutation").mockReturnValue({
-    mutate: noop,
-    isPending: false,
-  })
-
-  vi.spyOn(trpc, "useUtils").mockReturnValue(
-    // SAFETY: partial tRPC utils mock for unit test.
-    // @ts-expect-error partial tRPC utils mock for unit test
-    {
+vi.mock("~/utils/trpc", () => ({
+  trpc: {
+    page: {
+      readPage: {
+        useSuspenseQuery: () => [{ scheduledAt: null }],
+      },
+      reorderBlock: {
+        useMutation: () => ({ mutate: noop }),
+      },
+      updatePageBlob: {
+        useMutation: () => ({ mutate: noop, isPending: false }),
+      },
+    },
+    useUtils: () => ({
       page: {
         readPage: { invalidate: noop },
         readPageAndBlob: { invalidate: noop },
@@ -60,9 +45,9 @@ beforeEach(() => {
       collection: {
         countTagOptionsUsage: { invalidate: noop },
       },
-    } as ReturnType<typeof trpc.useUtils>,
-  )
-})
+    }),
+  },
+}))
 
 const SEARCH_PAGE: IsomerSchema = {
   page: { title: "Search", description: "Search results" },

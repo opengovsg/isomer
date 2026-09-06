@@ -785,7 +785,10 @@ const rethrowLockTimeoutAsConflict = (error: PgCaughtError): never => {
       message: REDIRECT_WRITE_BUSY_MESSAGE,
     })
   }
-  throw Object.assign(new Error("Redirect write failed"), error)
+  if (error instanceof Error) {
+    throw error
+  }
+  throw new Error("Redirect write failed")
 }
 
 // Taken by every redirect mutation path before its check-then-write, so a

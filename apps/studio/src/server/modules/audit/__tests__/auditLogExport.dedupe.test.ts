@@ -1,13 +1,55 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { getCurrentSingaporeMonth } from "~/schemas/audit"
 
-import { db } from "../../database/database"
-import * as permissionsService from "../../permissions/permissions.service"
-import { createAuditLogExportRequestsForSites } from "../auditLogExport.service"
-
-// This file deliberately stubs the DB (unlike the sibling integration tests) so
+// This file deliberately mocks the DB (unlike the sibling integration tests) so
 // it can drive the ONE code path that a real-Postgres test cannot deterministic-
-// ally reach: the race-loser.
+// ally reach: the race-loser. The in-flight fast-path SELECT and the partial
+// unique index share the same predicate, so any row that would trip the index
+// would also be seen by the SELECT — meaning the race-loser branch only runs
+// when a concurrent ask slips in between our SELECT and INSERT. Duplicate asks
+// are accepted IDEMPOTENTLY (ADR docs/adr/0005): losing that race must resolve
+// to the winner's in-flight row, never to an error. The batch INSERT targets
+// the partial unique index with ON CONFLICT DO NOTHING for every site in one
+// statement — Postgres evaluates the conflict per row, so a losing site's row
+// just comes back missing from the INSERT's RETURNING set (not a raised
+// unique-violation aborting the whole statement), and the service selects the
+// winner's row for exactly those sites. Vitest isolates module mocks per test
+// file, so mocking `../database` here does not affect the real-DB integration
+// tests in audit.router.test.ts.
+//
+// It also pins the audit trail contract: every ask records one
+// AuditLogExportCreate event per site in the same transaction, even when the
+// ask was idempotent-accepted and nothing was inserted for that site.
+
+const { mockDb, mockValidatePermissions } = vi.hoisted(() => ({
+  mockDb: { transaction: vi.fn() },
+  mockValidatePermissions: vi.fn(),
+}))
+
+vi.mock("~/env.mjs", () => ({
+  env: {
+    // oxlint-disable-next-line node/no-process-env
+    NODE_ENV: process.env.NODE_ENV ?? "test",
+    // oxlint-disable-next-line node/no-process-env
+    NEXT_PUBLIC_APP_ENV: process.env.NEXT_PUBLIC_APP_ENV ?? "test",
+    S3_STUDIO_ASSETS_BUCKET_NAME: "test-audit-bucket",
+  },
+}))
+
+// Keep the real database module (its `AuditLogEvent`, `sql`, types and utils
+// are used across the audit module) and override only `db` with our fake.
+vi.mock("../../database/database", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../database/database")>()),
+  db: mockDb,
+}))
+
+vi.mock("../../permissions/permissions.service", () => ({
+  validatePermissionsForManagingUsers: mockValidatePermissions,
+}))
+
+// Import after mocks are registered so the service binds to the mocked modules.
+const { createAuditLogExportRequestsForSites } =
+  await import("../auditLogExport.service")
 
 const VALID_MONTH = getCurrentSingaporeMonth()
 
@@ -26,45 +68,28 @@ type InsertOutcome =
   | { site: number; outcome: "inserted" | "conflict" }
   | { site: number; outcome: "error"; error: Error }
 
-interface FakeExportRequestRow {
-  id?: string
-  siteId: number
-  status?: string
-}
-
-interface AuditLogExportCreateRow {
-  eventType: string
-  userId: string
-  siteId: number
-  ipAddress?: string
-  delta: {
-    before: null
-    after: { reportType: string; auditLogDateRange: string }
-  }
-}
-
-type InsertPayload =
-  | AuditLogExportCreateRow
-  | AuditLogExportCreateRow[]
-  | { siteId: number }
-
-interface ConflictBuilder {
-  columns: () => ConflictBuilder
-  where: () => ConflictBuilder
-  doNothing: () => ConflictBuilder
-}
-
 interface TxScript {
-  selects?: FakeExportRequestRow[][]
-
+  // What each `AuditLogExportRequest` SELECT (`.execute()`) resolves with, in
+  // call order: [0] is the fast-path existing-rows SELECT, [1] (if present)
+  // is the race-loser SELECT.
+  selects?: Record<string, unknown>[][]
+  // One outcome per site in the batch INSERT's `values(...)` array, matched
+  // by the `siteId` on each scripted outcome.
   inserts?: InsertOutcome[]
 }
 
-type FakeTx = ReturnType<typeof makeTx>
-
+// Build a fake Kysely transaction driving `createAuditLogExportRequestsForSites`.
+// `AuditLogExportRequest` SELECTs consume `script.selects` in order; the
+// `AuditLogExportRequest` batch INSERT resolves per `script.inserts`
+// (recording every attempted row in `insertedValues`, keyed by the ones that
+// actually "inserted"); the `User` SELECT always resolves with FAKE_USER; the
+// one `AuditLog` INSERT (a single multi-row statement covering every site,
+// via `logAuditLogExportEvents`) always succeeds — its rows are flattened
+// into `auditLogValues`, one entry per site, so assertions don't need to care
+// whether it was one row or many.
 const makeTx = (script: TxScript) => {
-  const insertedValues: { siteId: number }[] = []
-  const auditLogValues: AuditLogExportCreateRow[] = []
+  const insertedValues: Record<string, unknown>[] = []
+  const auditLogValues: Record<string, unknown>[] = []
   let selectCall = 0
 
   const tx = {
@@ -97,13 +122,13 @@ const makeTx = (script: TxScript) => {
       },
     }),
     insertInto: (table: string) => {
-      let payload: InsertPayload | InsertPayload[] | undefined
+      let payload: unknown
       return {
-        values: function (v: InsertPayload | InsertPayload[]) {
+        values: function (v: unknown) {
           payload = v
           return this
         },
-        onConflict: function (cb: (oc: ConflictBuilder) => void) {
+        onConflict: function (cb: (oc: Record<string, unknown>) => unknown) {
           // Exercise the conflict-target builder so a broken callback fails
           // loudly, without modelling the SQL it produces.
           const oc = {
@@ -125,15 +150,10 @@ const makeTx = (script: TxScript) => {
         },
         execute: () => {
           if (table === "AuditLog") {
-            const events = payload
-            if (events === undefined) {
-              return Promise.resolve([])
-            }
-            const rows = Array.isArray(events) ? events : [events]
-            for (const row of rows) {
-              // SAFETY: dedupe test inserts AuditLogExportCreate rows with the expected shape.
-              auditLogValues.push(row as AuditLogExportCreateRow)
-            }
+            const events = payload as
+              | Record<string, unknown>
+              | Record<string, unknown>[]
+            auditLogValues.push(...(Array.isArray(events) ? events : [events]))
             return Promise.resolve([])
           }
 
@@ -143,10 +163,7 @@ const makeTx = (script: TxScript) => {
             )
           }
 
-          const rows = (Array.isArray(payload) ? payload : [payload]).filter(
-            (row): row is { siteId: number } =>
-              row !== undefined && "siteId" in row,
-          )
+          const rows = payload as { siteId: number }[]
           const outcomeBySite = new Map(
             (script.inserts ?? []).map((o) => [o.site, o]),
           )
@@ -176,25 +193,18 @@ const makeTx = (script: TxScript) => {
 // Wire `db.transaction().execute(cb)` to run the callback against `tx`. A
 // throwing callback simply rejects — mirroring kysely, which rolls the
 // transaction back (nothing committed) and re-surfaces the error.
-const useTx = (tx: FakeTx) => {
-  const transaction = {
-    execute: (cb: (innerTx: FakeTx) => void) =>
-      Promise.resolve().then(() => {
-        cb(tx)
-      }),
-  }
-  vi.spyOn(db, "transaction").mockReturnValue(
-    // SAFETY: fake transaction object mirrors the Kysely transaction surface under test.
-    // @ts-expect-error fake transaction object mirrors the Kysely transaction surface under test
-    transaction as ReturnType<typeof db.transaction>,
-  )
+const useTx = (tx: ReturnType<typeof makeTx>) => {
+  mockDb.transaction.mockReturnValue({
+    execute: (cb: (tx: unknown) => unknown) =>
+      Promise.resolve().then(() => cb(tx)),
+  })
 }
 
 // The AuditLogExportCreate event every ask must record. Shaped per the
 // audit.service.ts pattern: actor = requesting user, delta.after carries the
 // report type.
 const expectExportCreateEvent = (
-  value: AuditLogExportCreateRow | undefined,
+  value: Record<string, unknown> | undefined,
   expectedSiteId: number,
   expectedReportType: string,
   ipAddress?: string,
@@ -211,7 +221,8 @@ const expectExportCreateEvent = (
       after: { reportType: expectedReportType },
     },
   })
-  expect(value?.delta.after.auditLogDateRange).toMatch(
+  const delta = value?.delta as { after: { auditLogDateRange: string } }
+  expect(delta.after.auditLogDateRange).toMatch(
     /^\[\d{4}-\d{2}-\d{2},\d{4}-\d{2}-\d{2}\)$/,
   )
 }
@@ -219,10 +230,7 @@ const expectExportCreateEvent = (
 describe("createAuditLogExportRequestsForSites — idempotent accept", () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.spyOn(
-      permissionsService,
-      "validatePermissionsForManagingUsers",
-    ).mockResolvedValue(undefined)
+    mockValidatePermissions.mockResolvedValue(undefined)
   })
 
   it("resolves a race-losing insert to the winner's in-flight row (returned, not thrown)", async () => {

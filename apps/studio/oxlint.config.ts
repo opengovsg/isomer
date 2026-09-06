@@ -118,6 +118,28 @@ export default defineConfig({
     },
     {
       files: [
+        "src/features/settings/AuditLogExport/__tests__/auditSettingsPage.test.tsx",
+        "src/features/settings/AuditLogExport/__tests__/AuditLogExportSection.test.tsx",
+        "src/features/users/components/__tests__/ExportAccessLogsModal.test.tsx",
+        "src/features/editing-experience/components/__tests__/PublishButton.browser.test.tsx",
+        "src/features/editing-experience/__tests__/useContentEditSurvey.browser.test.tsx",
+        "src/features/settings/Redirects/__tests__/RedirectsSettings.browser.test.tsx",
+        "src/features/editing-experience/components/Drawer/__tests__/RootStateDrawer.browser.test.tsx",
+        "src/server/modules/searchsg/__tests__/searchsg.service.test.ts",
+        "src/server/modules/audit/__tests__/auditLogExport.dedupe.test.ts",
+      ],
+      rules: {
+        // vi.mock is required for tRPC proxies, wretch, and partial DB stubs.
+        "anti-slop/no-module-mocking": "off",
+        "anti-slop/no-unknown-parameters": "off",
+        "anti-slop/no-unknown-returns": "off",
+        "anti-slop/require-safety-comment-for-type-assertion": "off",
+        "anti-slop/no-unsafe-dictionary-type": "off",
+        "anti-slop/no-known-value-widening": "off",
+      },
+    },
+    {
+      files: [
         "playwright.config.ts",
         "vitest.config.ts",
         "tests/**/*.ts",

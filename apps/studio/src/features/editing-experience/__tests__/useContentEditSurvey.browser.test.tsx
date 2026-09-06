@@ -2,15 +2,12 @@ import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { PropsWithChildren } from "react"
 import { act, render, renderHook } from "@testing-library/react"
 import { createStore, Provider } from "jotai"
-import * as nextRouter from "next/router"
 import { useEffect } from "react"
-import { beforeEach, afterEach, describe, expect, it, vi } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 import {
   EditorDrawerProvider,
   useEditorDrawerContext,
 } from "~/contexts/EditorDrawerContext"
-import { env } from "~/env.mjs"
-import * as intercom from "~/lib/intercom"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { hasContentEditAtom } from "../atoms"
@@ -24,25 +21,30 @@ import {
   useLeftEditorSurveyTracker,
 } from "../hooks/useContentEditSurvey"
 
-const trackEventMock = vi.fn()
-const routeChangeStartHandlers: (() => void)[] = []
-let originalIntercomAppId: string | undefined
+const trackEventMock = vi.hoisted(() => vi.fn())
+vi.mock("@intercom/messenger-js-sdk", () => ({ trackEvent: trackEventMock }))
 
-vi.spyOn(intercom, "trackEvent").mockImplementation(trackEventMock)
+const mockEnv = vi.hoisted<{
+  env: { NEXT_PUBLIC_INTERCOM_APP_ID: string | undefined }
+}>(() => ({
+  env: { NEXT_PUBLIC_INTERCOM_APP_ID: "test-app-id" },
+}))
+vi.mock("~/env.mjs", () => mockEnv)
 
-// @ts-expect-error partial NextRouter mock for unit test
-vi.spyOn(nextRouter, "useRouter").mockReturnValue({
-  events: {
-    on: (_event: string, handler: () => void) => {
-      routeChangeStartHandlers.push(handler)
+const routeChangeStartHandlers = vi.hoisted<(() => void)[]>(() => [])
+vi.mock("next/router", () => ({
+  useRouter: () => ({
+    events: {
+      on: (_event: string, handler: () => void) => {
+        routeChangeStartHandlers.push(handler)
+      },
+      off: (_event: string, handler: () => void) => {
+        const index = routeChangeStartHandlers.indexOf(handler)
+        if (index !== -1) routeChangeStartHandlers.splice(index, 1)
+      },
     },
-    off: (_event: string, handler: () => void) => {
-      const index = routeChangeStartHandlers.indexOf(handler)
-      if (index !== -1) routeChangeStartHandlers.splice(index, 1)
-    },
-    emit: vi.fn(),
-  },
-})
+  }),
+}))
 
 const BASE_PAGE: IsomerSchema = {
   version: "0.1.0",
@@ -58,35 +60,17 @@ const jotaiWrapper = (store: ReturnType<typeof createStore>) => {
   return Wrapper
 }
 
-type EditorDrawerContextValue = ReturnType<typeof useEditorDrawerContext>
-
-let setPreviewPageState:
-  | EditorDrawerContextValue["setPreviewPageState"]
-  | undefined
-let setDrawerState: EditorDrawerContextValue["setDrawerState"] | undefined
+const drawerContextRef: {
+  current: ReturnType<typeof useEditorDrawerContext> | null
+} = { current: null }
 
 const TrackerHarness = () => {
   const drawerContext = useEditorDrawerContext()
   useContentEditTracker()
   useEffect(() => {
-    setPreviewPageState = drawerContext.setPreviewPageState
-    setDrawerState = drawerContext.setDrawerState
+    drawerContextRef.current = drawerContext
   }, [drawerContext])
   return null
-}
-
-const requireSetPreviewPageState = () => {
-  if (!setPreviewPageState) {
-    throw new Error("Editor drawer context is not ready")
-  }
-  return setPreviewPageState
-}
-
-const requireSetDrawerState = () => {
-  if (!setDrawerState) {
-    throw new Error("Editor drawer context is not ready")
-  }
-  return setDrawerState
 }
 
 const renderTracker = (store: ReturnType<typeof createStore>) =>
@@ -108,15 +92,9 @@ const renderTracker = (store: ReturnType<typeof createStore>) =>
 
 beforeEach(() => {
   trackEventMock.mockClear()
-  originalIntercomAppId = env.NEXT_PUBLIC_INTERCOM_APP_ID
-  env.NEXT_PUBLIC_INTERCOM_APP_ID = "test-app-id"
+  mockEnv.env.NEXT_PUBLIC_INTERCOM_APP_ID = "test-app-id"
   routeChangeStartHandlers.length = 0
-  setPreviewPageState = undefined
-  setDrawerState = undefined
-})
-
-afterEach(() => {
-  env.NEXT_PUBLIC_INTERCOM_APP_ID = originalIntercomAppId
+  drawerContextRef.current = null
 })
 
 describe("useFireContentEditSurveyEvent", () => {
@@ -170,7 +148,7 @@ describe("useFireContentEditSurveyEvent", () => {
 
   it("resets the flag without firing when NEXT_PUBLIC_INTERCOM_APP_ID is unset", () => {
     // Arrange
-    env.NEXT_PUBLIC_INTERCOM_APP_ID = undefined
+    mockEnv.env.NEXT_PUBLIC_INTERCOM_APP_ID = undefined
     const store = createStore()
     store.set(hasContentEditAtom, true)
     const { result } = renderHook(() => useFireContentEditSurveyEvent(), {
@@ -195,12 +173,12 @@ describe("useContentEditTracker", () => {
     // Act
     // setPreviewPageState uses flushSync internally, so state changes must be
     // wrapped in act() to flush the resulting effects deterministically
-    void act(() => {
-      requireSetPreviewPageState()((previous: IsomerSchema) => ({
+    act(() =>
+      drawerContextRef.current!.setPreviewPageState((previous) => ({
         ...previous,
         content: [...previous.content, { type: "prose", content: [] }],
-      }))
-    })
+      })),
+    )
 
     // Assert
     expect(store.get(hasContentEditAtom)).toBe(true)
@@ -212,12 +190,12 @@ describe("useContentEditTracker", () => {
     renderTracker(store)
 
     // Act
-    void act(() => {
-      requireSetPreviewPageState()((previous: IsomerSchema) => ({
+    act(() =>
+      drawerContextRef.current!.setPreviewPageState((previous) => ({
         ...previous,
         content: [...previous.content],
-      }))
-    })
+      })),
+    )
 
     // Assert
     expect(store.get(hasContentEditAtom)).toBe(false)
@@ -227,17 +205,17 @@ describe("useContentEditTracker", () => {
     // Arrange
     const store = createStore()
     renderTracker(store)
-    void act(() => {
-      requireSetDrawerState()({ state: "rawJsonEditor" })
-    })
+    act(() =>
+      drawerContextRef.current!.setDrawerState({ state: "rawJsonEditor" }),
+    )
 
     // Act
-    void act(() => {
-      requireSetPreviewPageState()((previous: IsomerSchema) => ({
+    act(() =>
+      drawerContextRef.current!.setPreviewPageState((previous) => ({
         ...previous,
         content: [...previous.content, { type: "prose", content: [] }],
-      }))
-    })
+      })),
+    )
 
     // Assert
     expect(store.get(hasContentEditAtom)).toBe(false)
@@ -245,9 +223,7 @@ describe("useContentEditTracker", () => {
     // Act: leaving raw JSON mode must not retroactively arm the flag
     // (docs/adr/0003-editing-survey-measuring-points.md) — pins that the
     // baseline ref is advanced before the rawJsonEditor guard
-    void act(() => {
-      requireSetDrawerState()({ state: "root" })
-    })
+    act(() => drawerContextRef.current!.setDrawerState({ state: "root" }))
 
     // Assert
     expect(store.get(hasContentEditAtom)).toBe(false)
@@ -262,12 +238,12 @@ describe("useContentEditTracker", () => {
     })
 
     // Act: first burst — diverge content, then fire
-    void act(() => {
-      requireSetPreviewPageState()((previous: IsomerSchema) => ({
+    act(() =>
+      drawerContextRef.current!.setPreviewPageState((previous) => ({
         ...previous,
         content: [...previous.content, { type: "prose", content: [] }],
-      }))
-    })
+      })),
+    )
     act(() => result.current(PUBLISHED_AFTER_EDITING_EVENT))
 
     // Assert
@@ -275,12 +251,12 @@ describe("useContentEditTracker", () => {
     expect(store.get(hasContentEditAtom)).toBe(false)
 
     // Act: second burst — a fresh divergence
-    void act(() => {
-      requireSetPreviewPageState()((previous: IsomerSchema) => ({
+    act(() =>
+      drawerContextRef.current!.setPreviewPageState((previous) => ({
         ...previous,
         content: [...previous.content, { type: "prose", content: [] }],
-      }))
-    })
+      })),
+    )
 
     // Assert: the consumed flag is re-armed
     expect(store.get(hasContentEditAtom)).toBe(true)

@@ -1,75 +1,71 @@
-import type { ReactNode } from "react"
 import type { ResourceAbility } from "~/server/modules/permissions/permissions.type"
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
 import { AbilityProvider } from "@casl/react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import { render, screen } from "@testing-library/react"
-import * as nextRouter from "next/router"
-import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest"
-import * as contentEditSurvey from "~/features/editing-experience/hooks/useContentEditSurvey"
+import { describe, expect, it, vi } from "vitest"
 import { buildPermissionsForResource } from "~/server/modules/permissions/permissions.util"
 import { theme } from "~/theme"
-import { trpc } from "~/utils/trpc"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import PublishButton from "../PublishButton"
 
-const noop = vi.fn()
-
-interface ChakraMenuModule {
-  Menu: (props: { children?: ReactNode }) => ReactNode
-  MenuButton: (props: {
-    children?: ReactNode
-    "aria-label"?: string
-  }) => ReactNode
-  MenuList: (props: { children?: ReactNode }) => ReactNode
-  MenuItem: (props: { children?: ReactNode }) => ReactNode
-}
-
-beforeAll(async () => {
-  // SAFETY: importActual returns the real Chakra module; cast to the menu subset under test
-  const chakra = (await vi.importActual("@chakra-ui/react")) as ChakraMenuModule
-  vi.spyOn(chakra, "Menu").mockImplementation(({ children }) => children)
-  vi.spyOn(chakra, "MenuButton").mockImplementation(
-    ({ "aria-label": ariaLabel }) => (
+// The "Schedule for later" dropdown relies on Chakra's Menu context, which does
+// not initialise under jsdom. It is unrelated to the permission gate under test,
+// so stub the menu primitives to plain passthroughs.
+vi.mock("@chakra-ui/react", async (importActual) => {
+  const actual = (await importActual()) as Record<string, unknown>
+  return {
+    ...actual,
+    Menu: ({ children }: { children: React.ReactNode }) => children,
+    MenuButton: ({ "aria-label": ariaLabel }: { "aria-label"?: string }) => (
       <button type="button" aria-label={ariaLabel} />
     ),
-  )
-  vi.spyOn(chakra, "MenuList").mockImplementation(({ children }) => children)
-  vi.spyOn(chakra, "MenuItem").mockImplementation(({ children }) => children)
+    MenuList: ({ children }: { children: React.ReactNode }) => children,
+    MenuItem: ({ children }: { children: React.ReactNode }) => children,
+  }
 })
 
-beforeEach(() => {
-  // @ts-expect-error partial NextRouter mock for unit test
-  vi.spyOn(nextRouter, "useRouter").mockReturnValue({
-    isReady: true,
-  })
+// PublishButton is wrapped in withSuspense, whose Suspense wrapper waits for the
+// Next.js router to be ready before mounting children. Provide a ready router.
+vi.mock("next/router", () => ({
+  useRouter: () => ({ isReady: true }),
+}))
 
-  vi.spyOn(contentEditSurvey, "useFireContentEditSurveyEvent").mockReturnValue(
-    vi.fn(),
-  )
+// useFireContentEditSurveyEvent pulls in ~/env.mjs, which reads process.env
+// directly at module scope — harmless under jsdom but a ReferenceError under
+// Browser Mode's real-browser runtime, where `process` doesn't exist. It's
+// unrelated to the permission gate under test, so stub it out.
+vi.mock("../../hooks/useContentEditSurvey", () => ({
+  useFireContentEditSurveyEvent: () => vi.fn(),
+}))
 
-  // @ts-expect-error partial tRPC suspense query mock for unit test
-  vi.spyOn(trpc.page.readPage, "useSuspenseQuery").mockReturnValue([
-    { draftBlobId: "draft-1", scheduledAt: null },
-  ])
-
-  // @ts-expect-error partial tRPC mutation mock for unit test
-  vi.spyOn(trpc.page.publishPage, "useMutation").mockReturnValue({
-    mutate: noop,
-    isPending: false,
-  })
-
-  vi.spyOn(trpc, "useUtils").mockReturnValue(
-    // SAFETY: partial tRPC utils mock for unit test.
-    // @ts-expect-error partial tRPC utils mock for unit test
-    {
+// PublishButton reads the current page (to decide the enabled/pending state) and
+// owns the publish mutation. Neither is what we are testing here — the regression
+// is purely about whether the <Can> permission gate shows the button — so stub
+// the tRPC surface with the minimum the component touches on render.
+vi.mock("~/utils/trpc", () => {
+  const noop = vi.fn()
+  return {
+    trpc: {
       page: {
-        readPage: { refetch: noop },
+        readPage: {
+          useSuspenseQuery: () => [
+            { draftBlobId: "draft-1", scheduledAt: null },
+          ],
+        },
+        publishPage: {
+          useMutation: () => ({ mutate: noop, isPending: false }),
+        },
       },
-      site: { getLocalisedSitemap: { invalidate: noop } },
-    } as ReturnType<typeof trpc.useUtils>,
-  )
+      useUtils: () => ({
+        page: {
+          readPage: { refetch: noop },
+        },
+        site: { getLocalisedSitemap: { invalidate: noop } },
+      }),
+    },
+  }
 })
 
 // Build the client ability exactly the way PermissionsProvider does, so this test
