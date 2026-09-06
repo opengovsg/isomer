@@ -189,7 +189,7 @@ const buildOrganisation = ({
     sitemapArray,
   )
 
-  return {
+  const organisation = {
     "@id": organisationId,
     "@type": getOrganisationType(site, entity),
     address: buildPostalAddress(entity),
@@ -201,10 +201,18 @@ const buildOrganisation = ({
       sitemapArray,
     }),
     description: getNonEmptyString(entity?.description),
-    ...(logo !== undefined ? { logo } : {}),
     name: organisationName,
     sameAs: sameAs !== undefined && sameAs.length > 0 ? sameAs : undefined,
     url: siteUrl,
+  }
+
+  if (logo === undefined) {
+    return organisation
+  }
+
+  return {
+    ...organisation,
+    logo,
   }
 }
 
