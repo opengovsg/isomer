@@ -1,8 +1,8 @@
 import { defineConfig } from "@isomer/oxlint-config"
+import base from "@isomer/oxlint-config/base"
 import {
   antiSlop,
   antiSlopJsPluginEntries,
-  core,
   jsPluginSettings,
   next,
   react,
@@ -12,7 +12,7 @@ import {
 
 export default defineConfig({
   extends: [
-    core,
+    base,
     react,
     reactDoctor,
     next,
