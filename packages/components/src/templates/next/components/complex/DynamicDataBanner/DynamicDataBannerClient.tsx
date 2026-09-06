@@ -1,7 +1,7 @@
 "use client"
 
 import type { DynamicDataBannerProps } from "~/interfaces"
-import { useEffect, useState } from "react"
+import { useRef, useState } from "react"
 import { BiError } from "react-icons/bi"
 import { DYNAMIC_DATA_BANNER_NUMBER_OF_DATA } from "~/interfaces/complex/DynamicDataBanner/constants"
 import { tv } from "~/lib/tv"
@@ -137,14 +137,16 @@ export const DynamicDataBannerClient = ({
   const [isLoading, setIsLoading] = useState(true)
   const [isError, setIsError] = useState(false)
   const [dynamicData, setDynamicData] = useState<Record<string, string>>({})
+  const hasFetchedRef = useRef(false)
 
-  // This is to ensure that the component is mounted before the query is executed
-  // because next.js will attempt to execute the query during static site generation
-  // which will fail because it requires "fetch" (browser API) to be available, which isn't the case
-  // Ref: https://nextjs.org/docs/app/building-your-application/deploying/static-exports#browser-apis
-  // Also not using react-query's useQuery hook because it's not compatible with this approach of using useEffect
-  useEffect(() => {
-    // we now have access to fetch here
+  const loadDynamicData = () => {
+    if (hasFetchedRef.current || typeof window === "undefined") return
+    hasFetchedRef.current = true
+
+    // This is to ensure that the component is mounted before the query is executed
+    // because next.js will attempt to execute the query during static site generation
+    // which will fail because it requires "fetch" (browser API) to be available, which isn't the case
+    // Ref: https://nextjs.org/docs/app/building-your-application/deploying/static-exports#browser-apis
     fetch(apiEndpoint)
       .then((res) => res.json())
       .then((apiData) => {
@@ -159,31 +161,39 @@ export const DynamicDataBannerClient = ({
         setIsLoading(false)
         setIsError(true)
       })
-  }, [apiEndpoint])
+  }
 
   if (isError) {
     return (
-      <DynamicDataBannerUI
-        data={[]}
-        url={url}
-        label={label}
-        errorMessageBaseParagraph={errorMessageBaseParagraph}
-      />
+      <div ref={(node) => { if (node) loadDynamicData() }}>
+        <DynamicDataBannerUI
+          data={[]}
+          url={url}
+          label={label}
+          errorMessageBaseParagraph={errorMessageBaseParagraph}
+        />
+      </div>
     )
   }
 
   if (data.length !== DYNAMIC_DATA_BANNER_NUMBER_OF_DATA)
-    return <DynamicDataBannerUI data={[]} url={url} label={label} />
+    return (
+      <div ref={(node) => { if (node) loadDynamicData() }}>
+        <DynamicDataBannerUI data={[]} url={url} label={label} />
+      </div>
+    )
 
   return (
-    <DynamicDataBannerUI
-      title={!!title ? dynamicData[title] : undefined}
-      data={data.map((singleData) => ({
-        label: singleData.label,
-        value: isLoading ? undefined : dynamicData[singleData.key] || "-- : --",
-      }))}
-      url={url}
-      label={label}
-    />
+    <div ref={(node) => { if (node) loadDynamicData() }}>
+      <DynamicDataBannerUI
+        title={!!title ? dynamicData[title] : undefined}
+        data={data.map((singleData) => ({
+          label: singleData.label,
+          value: isLoading ? undefined : dynamicData[singleData.key] || "-- : --",
+        }))}
+        url={url}
+        label={label}
+      />
+    </div>
   )
 }

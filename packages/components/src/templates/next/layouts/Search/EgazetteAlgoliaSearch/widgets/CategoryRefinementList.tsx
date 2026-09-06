@@ -24,9 +24,13 @@ export const CategoryRefinementList = () => {
     }
   })
 
-  const selectedValues = rows
-    .filter((row) => row.isRefined)
-    .map((row) => row.value)
+  const selectedValues: string[] = []
+
+  for (const row of rows) {
+    if (row.isRefined) {
+      selectedValues.push(row.value)
+    }
+  }
 
   return (
     <CheckboxGroup className="gap-2" value={selectedValues}>

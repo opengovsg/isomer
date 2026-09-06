@@ -1,90 +1,10 @@
 import type { InfobarProps } from "~/interfaces/complex/Infobar"
-import { createElement } from "react"
-import { DEFAULT_INFOBAR_VARIANT } from "~/interfaces/complex/Infobar/constants"
-import { tv } from "~/lib/tv"
-import { getHeadingTag } from "~/utils/getHeadingTag"
+import { DynamicHeading } from "~/utils/DynamicHeading"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
 
-import { ComponentContent } from "../../internal/customCssClass"
 import { LinkButton } from "../../internal/LinkButton"
-
-export const createInfobarStyles = tv({
-  slots: {
-    screenWideOuterContainer: "",
-    outerContainer: `${ComponentContent}`,
-    innerContainer: "mx-auto flex flex-col items-start",
-    headingContainer: "flex flex-col gap-6",
-    title: "break-words",
-    description: "",
-    buttonContainer: "flex flex-col gap-x-5 gap-y-4 sm:flex-row",
-  },
-  variants: {
-    layout: {
-      homepage: {
-        outerContainer: "mx-6 py-16 sm:mx-10 lg:py-24",
-        innerContainer:
-          "items-center gap-9 rounded-none text-center lg:max-w-3xl",
-        headingContainer: "gap-6",
-        title: "prose-display-lg",
-        description: "prose-headline-lg-regular",
-        buttonContainer: "items-center",
-      },
-      default: {
-        screenWideOuterContainer: "mt-12 rounded-lg first:mt-0",
-        innerContainer: "items-start gap-7 p-8",
-        headingContainer: "gap-4",
-        title: "prose-display-xs",
-        description: "prose-body-base",
-        buttonContainer: "items-start",
-      },
-    },
-    colorScheme: {
-      dark: {},
-      light: {},
-    },
-  },
-  compoundVariants: [
-    {
-      colorScheme: "dark",
-      layout: "homepage",
-      className: {
-        screenWideOuterContainer: "bg-base-canvas-inverse",
-        outerContainer: "bg-base-canvas-inverse text-base-canvas",
-      },
-    },
-    {
-      // NOTE: Should not have dark mode on non-homepage for now
-      // Copy the light + default variant
-      colorScheme: "dark",
-      layout: "default",
-      className: {
-        screenWideOuterContainer: "bg-base-canvas-backdrop",
-        outerContainer: "",
-      },
-    },
-    {
-      colorScheme: "light",
-      layout: "homepage",
-      className: {
-        outerContainer: "text-base-content-strong",
-        description: "text-base-content",
-      },
-    },
-    {
-      colorScheme: "light",
-      layout: "default",
-      className: {
-        screenWideOuterContainer: "bg-base-canvas-backdrop",
-        outerContainer: "",
-      },
-    },
-  ],
-  defaultVariants: {
-    layout: "homepage",
-    colorScheme: DEFAULT_INFOBAR_VARIANT,
-  },
-})
+import { createInfobarStyles } from "./infobarStyles"
 
 export const Infobar = ({
   variant,
@@ -99,7 +19,6 @@ export const Infobar = ({
   headingLevel,
 }: InfobarProps) => {
   const simplifiedLayout = getTailwindVariantLayout(layout)
-  const Tag = getHeadingTag(headingLevel)
   const hasPrimaryCTA = !!buttonLabel && !!buttonUrl
   const hasSecondaryCTA = !!secondaryButtonLabel && !!secondaryButtonUrl
 
@@ -119,7 +38,9 @@ export const Infobar = ({
       <div className={styles.outerContainer()}>
         <div className={styles.innerContainer()}>
           <div className={styles.headingContainer()}>
-            {createElement(Tag, { className: styles.title() }, title)}
+            <DynamicHeading level={headingLevel} className={styles.title()}>
+              {title}
+            </DynamicHeading>
             {description && (
               <p className={styles.description()}>{description}</p>
             )}

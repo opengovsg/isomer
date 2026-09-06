@@ -106,14 +106,19 @@ export const getCollectionItems = ({
     return []
   }
 
-  const items = currSitemap.children
-    .flatMap((child) => getSitemapAsArray(child))
-    .filter(
-      (item) =>
+  const items = []
+
+  for (const child of currSitemap.children) {
+    for (const item of getSitemapAsArray(child)) {
+      if (
         item.layout === "file" ||
         item.layout === "link" ||
-        item.layout === "article",
-    )
+        item.layout === "article"
+      ) {
+        items.push(item)
+      }
+    }
+  }
 
   const transformedItems = items.map((item) => {
     const date =

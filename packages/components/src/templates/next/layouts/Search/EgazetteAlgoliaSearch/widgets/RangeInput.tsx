@@ -71,17 +71,23 @@ export const RangeInput = ({
     max: bound?.max ?? range.max,
   }
 
-  const [min, setMin] = useState(toInputValue(minRaw))
-  const [max, setMax] = useState(toInputValue(maxRaw))
+  const [min, setMin] = useState(() => toInputValue(minRaw))
+  const [max, setMax] = useState(() => toInputValue(maxRaw))
   const [error, setError] = useState<string>()
-  const [prevRange, setPrevRange] = useState<
+  const [committedStart, setCommittedStart] = useState<
     [number | undefined, number | undefined]
   >([minRaw, maxRaw])
 
-  if (minRaw !== prevRange[0] || maxRaw !== prevRange[1]) {
-    setPrevRange([minRaw, maxRaw])
+  // Keep the inputs in sync when the active refinement changes outside of this
+  // form (URL hydration on deep-links, "Clear refinements", browser back/forward).
+  // Without this the inputs would show stale values that no longer match the
+  // applied filters.
+  if (minRaw !== committedStart[0] || maxRaw !== committedStart[1]) {
+    setCommittedStart([minRaw, maxRaw])
     setMin(toInputValue(minRaw))
     setMax(toInputValue(maxRaw))
+    // An external refinement change (e.g. "Clear refinements") makes any prior
+    // validation error stale, so reset it alongside the inputs.
     setError(undefined)
   }
 

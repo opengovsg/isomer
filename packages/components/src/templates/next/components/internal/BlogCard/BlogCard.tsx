@@ -5,7 +5,8 @@ import { isExternalUrl } from "~/utils/isExternalUrl"
 import { Title } from "../CollectionCard/Title" // Reusing since the logic is the same for both
 import { ImageClient } from "../ImageClient"
 import { Link } from "../Link"
-import { PillTags, PlaintextTags } from "../Tags"
+import { PillTags } from "../Tags/PillTags"
+import { PlaintextTags } from "../Tags/PlaintextTags"
 
 export const BlogCard = ({
   description,
@@ -24,7 +25,7 @@ export const BlogCard = ({
   shouldShowDate?: boolean
   siteAssetsBaseUrl: string | undefined
   headingLevel: number
-}): JSX.Element => {
+}): React.ReactNode => {
   const isExternalLink = !!referenceLinkHref && isExternalUrl(referenceLinkHref)
 
   return (
@@ -37,13 +38,15 @@ export const BlogCard = ({
     >
       {image && (
         <div className="relative mb-3 flex aspect-[2/1] h-auto min-h-40 shrink-0 items-center justify-center">
-          <ImageClient
-            src={imageSrc || ""}
-            alt={image.alt}
-            width="100%"
-            className={`absolute left-0 h-full w-full rounded ${isContainNeeded ? "object-contain" : "object-cover"}`}
-            assetsBaseUrl={siteAssetsBaseUrl}
-          />
+          
+            <ImageClient
+              src={imageSrc || ""}
+              alt={image.alt}
+              width="100%"
+              className={`absolute left-0 h-full w-full rounded ${isContainNeeded ? "object-contain" : "object-cover"}`}
+              assetsBaseUrl={siteAssetsBaseUrl}
+            />
+          
         </div>
       )}
       {shouldShowDate && (

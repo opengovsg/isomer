@@ -41,7 +41,7 @@ export const ScrollForMoreButton = ({ isFixed }: ScrollForMoreButtonProps) => {
           fill="none"
         >
           <path
-            d="M7.3418 12.4917L14 19.1499L20.6581 12.4917L19.0085 10.8421L14 15.8506L8.99146 10.8421L7.3418 12.4917Z"
+            d="M7.34 12.49L14 19.15L20.66 12.49L19.01 10.84L14 15.85L8.99 10.84L7.34 12.49Z"
             fill="white"
           />
         </svg>

@@ -1,6 +1,6 @@
 import type { NativeSearchableTableProps } from "~/interfaces"
 
-import { SearchableTableClient } from "../shared"
+import { SearchableTableClient } from "../shared/SearchableTableClient"
 
 export const NativeSearchableTable = ({
   items,

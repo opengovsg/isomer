@@ -2,7 +2,6 @@
 
 import type { NavbarClientProps } from "~/interfaces"
 import {
-  useCallback,
   useEffect,
   useLayoutEffect,
   useRef,
@@ -100,7 +99,7 @@ export const NavbarClient = ({
   // Reference for the site header
   const siteHeaderRef = useRef<HTMLDivElement>(null)
 
-  const refreshMenuOffset = useCallback((size?: Size) => {
+  const updateMenuOffset = (size?: Size) => {
     setMobileNavbarTopPx(siteHeaderRef.current?.getBoundingClientRect().bottom)
 
     if (!size) {
@@ -113,11 +112,11 @@ export const NavbarClient = ({
     } else {
       setIsHamburgerOpen(false)
     }
-  }, [])
+  }
 
   useResizeObserver({
     ref: siteHeaderRef,
-    onResize: refreshMenuOffset,
+    onResize: updateMenuOffset,
   })
 
   // When the hamburger menu is open, also watch the full <header> for height
@@ -129,28 +128,30 @@ export const NavbarClient = ({
     const header = siteHeaderRef.current?.closest("header")
     if (!header) return
 
-    const observer = new ResizeObserver(() => refreshMenuOffset())
+    const observer = new ResizeObserver(() => {
+      setMobileNavbarTopPx(siteHeaderRef.current?.getBoundingClientRect().bottom)
+    })
     observer.observe(header)
     return () => observer.disconnect()
-  }, [isHamburgerOpen, refreshMenuOffset])
+  }, [isHamburgerOpen])
 
-  const onCloseMenu = useCallback(() => {
+  const onCloseMenu = () => {
     setIsHamburgerOpen(false)
     setOpenNavItemIdx(-1)
-  }, [])
+  }
 
   const activeNavRef = useRef(null)
 
   useLayoutEffect(() => {
-    if (isMenuOpen) {
-      window.scrollTo({
-        top: 0,
-        left: 0,
-        behavior: isHamburgerOpen ? undefined : "smooth",
-      })
-      refreshMenuOffset()
-    }
-  }, [isHamburgerOpen, isMenuOpen, refreshMenuOffset])
+    if (!isMenuOpen) return
+
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: isHamburgerOpen ? undefined : "smooth",
+    })
+    setMobileNavbarTopPx(siteHeaderRef.current?.getBoundingClientRect().bottom)
+  }, [isHamburgerOpen, isMenuOpen])
 
   return (
     <div className={navbarStyles.navbar()}>
@@ -174,8 +175,8 @@ export const NavbarClient = ({
                   </p>
                 )}
                 <ul className={navbarStyles.utilityItemsList()}>
-                  {utility.items.map((item, index) => (
-                    <li key={`${item.name}-${index}`}>
+                  {utility.items.map((item) => (
+                    <li key={item.url}>
                       <Link
                         className={navbarStyles.utilityItem()}
                         href={item.url}
@@ -200,7 +201,7 @@ export const NavbarClient = ({
               >
                 {items.map((item, index) => (
                   <NavItem
-                    key={`${item.name}-${index}`}
+                    key={item.url}
                     ref={openNavItemIdx === index ? activeNavRef : null}
                     {...item}
                     onCloseMegamenu={onCloseMenu}

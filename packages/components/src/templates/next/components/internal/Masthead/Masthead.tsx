@@ -6,7 +6,7 @@ import { Link } from "../Link"
 const MastheadSummary = ({ isStaging }: { isStaging?: boolean }) => {
   return (
     <summary
-      aria-label="How to identify a Singapore Government Agency website"
+      aria-label="How to identify official government websites"
       className="group/summary flex w-full cursor-pointer list-none gap-1 text-start leading-5 outline-none lg:flex-row lg:items-center [&::-webkit-details-marker]:hidden"
     >
       <div className="mx-auto flex w-full max-w-screen-xl gap-1 px-6 text-start md:px-10 lg:flex-row lg:items-center">
@@ -49,7 +49,7 @@ const RestrictedContent = () => {
   return (
     <div className="mx-auto max-w-screen-xl px-6 py-2 pb-8 pt-4 text-[#474747] md:px-10 lg:pb-12 lg:pt-10">
       <div className="grid grid-cols-[1fr] gap-6 px-px lg:grid-cols-[repeat(auto-fit,_minmax(300px,1fr))] lg:gap-40">
-        <div className="flex gap-2 text-[0.6875rem] lg:gap-4 lg:text-base">
+        <div className="flex gap-2 text-xs lg:gap-4 lg:text-base">
           <div className="-mt-[0.1rem] lg:mt-[0.2rem]">
             <svg
               aria-hidden
@@ -60,7 +60,7 @@ const RestrictedContent = () => {
               fill="none"
               className="w-3 fill-[#242425] lg:w-[1.125rem]"
             >
-              <path d="M0.166016 5.6665V9.00067H0.999349V13.9998H0.166016V16.4998H0.999349H3.49935H5.16602H7.66601H9.33268H11.8327H13.4993L15.9993 16.5007V16.4998H16.8327V13.9998H15.9993V9.00067H16.8327V5.6665L8.49935 0.666504L0.166016 5.6665ZM3.49935 13.9998V9.00067H5.16602V13.9998H3.49935ZM7.66601 13.9998V9.00067H9.33268V13.9998H7.66601ZM13.4993 13.9998H11.8327V9.00067H13.4993V13.9998ZM10.166 5.6665C10.166 6.58651 9.41935 7.33317 8.49935 7.33317C7.57935 7.33317 6.83268 6.58651 6.83268 5.6665C6.83268 4.7465 7.57935 3.99984 8.49935 3.99984C9.41935 3.99984 10.166 4.7465 10.166 5.6665Z" />
+              <path d="M0.17 5.67V9H1V14H0.17V16.5H1H3.5H5.17H7.67H9.33H11.83H13.5L16 16.5V16.5H16.83V14H16V9H16.83V5.67L8.5 0.67L0.17 5.67ZM3.5 14V9H5.17V14H3.5ZM7.67 14V9H9.33V14H7.67ZM13.5 14H11.83V9H13.5V14ZM10.17 5.67C10.17 6.59 9.42 7.33 8.5 7.33C7.58 7.33 6.83 6.59 6.83 5.67C6.83 4.75 7.58 4 8.5 4C9.42 4 10.17 4.75 10.17 5.67Z" />
             </svg>
           </div>
           <div>
@@ -93,7 +93,7 @@ const RestrictedContent = () => {
             </article>
           </div>
         </div>
-        <div className="flex gap-2 text-[0.6875rem] lg:gap-4 lg:text-base">
+        <div className="flex gap-2 text-xs lg:gap-4 lg:text-base">
           <div className="-mt-[0.1rem]">
             <svg
               aria-hidden
@@ -104,7 +104,7 @@ const RestrictedContent = () => {
               fill="none"
               className="inline-block w-3 fill-[#242425] lg:w-[1.125rem]"
             >
-              <path d="M14.1663 9.00008C14.1663 8.08091 13.4188 7.33342 12.4997 7.33342H11.6663V4.83342C11.6663 2.53591 9.79717 0.666748 7.49967 0.666748C5.20217 0.666748 3.33301 2.53591 3.33301 4.83342V7.33342H2.49967C1.58051 7.33342 0.833008 8.08091 0.833008 9.00008V15.6667C0.833008 16.5859 1.58051 17.3334 2.49967 17.3334H12.4997C13.4188 17.3334 14.1663 16.5859 14.1663 15.6667V9.00008ZM4.99967 4.83342C4.99967 3.45508 6.12134 2.33341 7.49967 2.33341C8.87801 2.33341 9.99967 3.45508 9.99967 4.83342V7.33342H4.99967V4.83342Z" />
+              <path d="M14.17 9C14.17 8.08 13.42 7.33 12.5 7.33H11.67V4.83C11.67 2.54 9.8 0.67 7.5 0.67C5.2 0.67 3.33 2.54 3.33 4.83V7.33H2.5C1.58 7.33 0.83 8.08 0.83 9V15.67C0.83 16.59 1.58 17.33 2.5 17.33H12.5C13.42 17.33 14.17 16.59 14.17 15.67V9ZM5 4.83C5 3.46 6.12 2.33 7.5 2.33C8.88 2.33 10 3.46 10 4.83V7.33H5V4.83Z" />
             </svg>
           </div>
           <div>
@@ -122,7 +122,7 @@ const RestrictedContent = () => {
                 fill="none"
                 className="mb-[0.1875rem] inline-block h-[0.6rem] w-[0.6rem] fill-[#242425] lg:h-auto lg:w-auto"
               >
-                <path d="M14.1663 9.00008C14.1663 8.08091 13.4188 7.33342 12.4997 7.33342H11.6663V4.83342C11.6663 2.53591 9.79717 0.666748 7.49967 0.666748C5.20217 0.666748 3.33301 2.53591 3.33301 4.83342V7.33342H2.49967C1.58051 7.33342 0.833008 8.08091 0.833008 9.00008V15.6667C0.833008 16.5859 1.58051 17.3334 2.49967 17.3334H12.4997C13.4188 17.3334 14.1663 16.5859 14.1663 15.6667V9.00008ZM4.99967 4.83342C4.99967 3.45508 6.12134 2.33341 7.49967 2.33341C8.87801 2.33341 9.99967 3.45508 9.99967 4.83342V7.33342H4.99967V4.83342Z" />
+                <path d="M14.17 9C14.17 8.08 13.42 7.33 12.5 7.33H11.67V4.83C11.67 2.54 9.8 0.67 7.5 0.67C5.2 0.67 3.33 2.54 3.33 4.83V7.33H2.5C1.58 7.33 0.83 8.08 0.83 9V15.67C0.83 16.59 1.58 17.33 2.5 17.33H12.5C13.42 17.33 14.17 16.59 14.17 15.67V9ZM5 4.83C5 3.46 6.12 2.33 7.5 2.33C8.88 2.33 10 3.46 10 4.83V7.33H5V4.83Z" />
               </svg>
               ) or https:// as an added precaution. Share sensitive information
               only on official, secure websites.

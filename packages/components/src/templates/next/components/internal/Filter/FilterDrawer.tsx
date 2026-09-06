@@ -71,12 +71,18 @@ const transform = {
     )
   },
   toAppliedFilters: (holdingFiltersById: Record<string, string[]>) => {
-    return Object.entries(holdingFiltersById)
-      .map(([id, items]) => ({
-        id,
-        items: items.map((id) => ({ id })),
-      }))
-      .filter(({ items }) => items.length > 0)
+    const appliedFilters: AppliedFilter[] = []
+
+    for (const [id, items] of Object.entries(holdingFiltersById)) {
+      if (items.length > 0) {
+        appliedFilters.push({
+          id,
+          items: items.map((itemId) => ({ id: itemId })),
+        })
+      }
+    }
+
+    return appliedFilters
   },
 }
 
@@ -87,13 +93,21 @@ const FilterDrawerContent = ({
   handleClearFilter,
   setAppliedFilters,
 }: FilterDrawerProps) => {
-  const [showFilter, setShowFilter] = useState<Record<string, boolean>>(
+  const [showFilter, setShowFilter] = useState<Record<string, boolean>>(() =>
     filters.reduce((acc, { id }) => ({ ...acc, [id]: true }), {}),
   )
 
-  const [holdingFiltersById, setHoldingFiltersById] = useState(
+  const appliedFiltersKey = JSON.stringify(initialAppliedFilters)
+  const [holdingFiltersById, setHoldingFiltersById] = useState(() =>
     transform.toCheckboxes(initialAppliedFilters),
   )
+  const [prevAppliedFiltersKey, setPrevAppliedFiltersKey] =
+    useState(appliedFiltersKey)
+
+  if (appliedFiltersKey !== prevAppliedFiltersKey) {
+    setPrevAppliedFiltersKey(appliedFiltersKey)
+    setHoldingFiltersById(transform.toCheckboxes(initialAppliedFilters))
+  }
 
   const updateFilterToggle = (filterId: string) => {
     setShowFilter((prevFilters) => ({
@@ -166,8 +180,8 @@ const FilterDrawerContent = ({
   )
 }
 
-export const FilterDrawer = (props: FilterDrawerProps): JSX.Element => {
-  const { isOpen, onOpen, appliedFilters } = props
+export const FilterDrawer = (props: FilterDrawerProps): React.ReactNode => {
+  const { isOpen, onOpen } = props
 
   return (
     <Dialog open={isOpen} onClose={onOpen} className="relative z-40 lg:hidden">
@@ -192,10 +206,7 @@ export const FilterDrawer = (props: FilterDrawerProps): JSX.Element => {
             />
           </div>
 
-          <FilterDrawerContent
-            {...props}
-            key={`${String(isOpen)}-${JSON.stringify(appliedFilters)}`}
-          />
+          <FilterDrawerContent {...props} key={String(isOpen)} />
         </DialogPanel>
       </div>
     </Dialog>

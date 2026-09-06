@@ -14,7 +14,7 @@ export const InfoCardContainer = ({
   variant = INFOCARD_VARIANT.default,
 }: PropsWithChildren<
   Pick<SingleCardWithImageProps, "variant" | "url" | "site" | "isExternalLink">
->): JSX.Element => {
+>): React.ReactNode => {
   return url ? (
     <Link
       href={getReferenceLinkHref(url, site.siteMapArray, site.assetsBaseUrl)}

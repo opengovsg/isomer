@@ -94,10 +94,10 @@ export const DefaultContactInformationUI = ({
                     styles={contactMethodStyles}
                   />
                 ))
-            : filteredMethods.map((method, index) => {
+            : filteredMethods.map((method) => {
                 return (
                   <ContactMethod
-                    key={`contact-method-${index}`}
+                    key={`${method.method ?? "method"}-${method.values.join("-")}`}
                     {...method}
                     styles={contactMethodStyles}
                   />

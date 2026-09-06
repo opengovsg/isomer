@@ -27,10 +27,16 @@ export const getPillAndPlaintextTags = (
   const pillTags: TagGroup[] = []
   const plaintextTags: TagGroup[] = []
 
+  const taggedSet = new Set(tagged)
+
   for (const { id, label, options, display } of tagCategories) {
-    const selected = options
-      .filter(({ id: optionId }) => tagged.includes(optionId))
-      .map(({ label }) => label)
+    const selected: string[] = []
+
+    for (const { id: optionId, label: optionLabel } of options) {
+      if (taggedSet.has(optionId)) {
+        selected.push(optionLabel)
+      }
+    }
 
     if (selected.length === 0) {
       continue

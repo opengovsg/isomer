@@ -1,7 +1,7 @@
 "use client"
 
-import type { LinkProps } from "~/interfaces/internal/Link"
 import { createElement } from "react"
+import type { LinkProps } from "~/interfaces/internal/Link"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
 import { useLinkComponent } from "~/templates/next/context/LinkComponentContext"
@@ -17,6 +17,7 @@ const fvHighlightLinkStyles = tv({
   base: "outline-none outline-0",
 })
 
+// oxlint-disable-next-line react-doctor/no-many-boolean-props -- link presentation flags map to anchor attributes
 export const Link = ({
   href,
   current,
@@ -54,7 +55,7 @@ export const Link = ({
       disabled: isDisabled,
     },
     children,
-    showExternalIcon && createElement("span", { "aria-hidden": true }, " ↗"),
+    showExternalIcon && createElement("span", { "aria-hidden": "true" }, " ↗"),
     isExternal &&
       !label &&
       createElement("span", { className: "sr-only" }, " (opens in new tab)"),

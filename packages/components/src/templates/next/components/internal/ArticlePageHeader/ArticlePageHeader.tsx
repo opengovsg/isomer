@@ -2,7 +2,8 @@ import type { ArticlePageHeaderProps } from "~/interfaces"
 import { getFormattedDate } from "~/utils/getFormattedDate"
 
 import { Breadcrumb } from "../Breadcrumb"
-import { PillTags, PlaintextTags } from "../Tags"
+import { PillTags } from "../Tags/PillTags"
+import { PlaintextTags } from "../Tags/PlaintextTags"
 
 export const ArticlePageHeader = ({
   breadcrumb,

@@ -46,12 +46,12 @@ const seeAllLinkStyle = tv({
   base: "text-link underline-offset-4 hover:underline",
 })
 
-const generateSiderailItems = (items: Item[]): JSX.Element[] => {
+const generateSiderailItems = (items: Item[]): React.ReactNode[] => {
   return items
     .filter((item) => !item.isCurrent)
     .slice(0, MAX_SIBLINGS_LIMIT)
-    .map(({ url, title }, index) => (
-      <li key={index} className={compoundStyles.sibling()}>
+    .map(({ url, title }) => (
+      <li key={url} className={compoundStyles.sibling()}>
         <p className={compoundStyles.label()}>
           <Link href={url} className={siblingLinkStyle()}>
             {title}
@@ -65,7 +65,7 @@ export const Siderail = ({
   parentTitle,
   parentUrl,
   pages,
-}: SiderailProps): JSX.Element => {
+}: SiderailProps): React.ReactNode => {
   const siderailItems = generateSiderailItems(pages)
 
   return (

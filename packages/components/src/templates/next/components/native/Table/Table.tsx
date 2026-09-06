@@ -1,6 +1,7 @@
 import type { TableProps } from "~/interfaces"
 import { useId } from "react"
 import { tv } from "~/lib/tv"
+import { getProseContentKey } from "~/utils/getProseContentKey"
 import { handleHorizontalScrollKeyDown } from "~/utils/handleHorizontalScrollKeyDown"
 
 import { BaseParagraph } from "../../internal/BaseParagraph"
@@ -60,30 +61,35 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
             </colgroup>
           )}
           <tbody>
-            {content.map((row, index) => {
+            {content.map((row) => {
               const TableCellTag =
                 row.content[0]?.type === "tableHeader" ? "th" : "td"
 
               return (
-                <tr key={index} className="text-left">
-                  {row.content.map((cell, cellIndex) => {
+                <tr key={getProseContentKey(row)} className="text-left">
+                  {row.content.map((cell) => {
                     return (
                       <TableCellTag
-                        key={cellIndex}
+                        key={getProseContentKey(cell)}
                         colSpan={normalizeColspan(cell.attrs?.colspan)}
                         rowSpan={normalizeRowspan(cell.attrs?.rowspan)}
                         className={tableCellStyles({
                           isHeader: cell.type === "tableHeader",
                         })}
                       >
-                        {cell.content.map((cellContent, index) => {
+                        {cell.content.map((cellContent) => {
                           switch (cellContent.type) {
                             case "divider":
-                              return <Divider key={index} {...cellContent} />
+                              return (
+                                <Divider
+                                  key={getProseContentKey(cellContent)}
+                                  {...cellContent}
+                                />
+                              )
                             case "orderedList":
                               return (
                                 <OrderedList
-                                  key={index}
+                                  key={getProseContentKey(cellContent)}
                                   {...cellContent}
                                   site={site}
                                 />
@@ -91,7 +97,7 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
                             case "paragraph":
                               return (
                                 <Paragraph
-                                  key={index}
+                                  key={getProseContentKey(cellContent)}
                                   {...cellContent}
                                   site={site}
                                 />
@@ -99,7 +105,7 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
                             case "unorderedList":
                               return (
                                 <UnorderedList
-                                  key={index}
+                                  key={getProseContentKey(cellContent)}
                                   {...cellContent}
                                   site={site}
                                 />

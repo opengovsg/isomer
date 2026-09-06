@@ -83,9 +83,9 @@ export const KeyStatistics = ({
       {createElement(TitleTag, { className: compoundStyles.title() }, title)}
 
       <div className={compoundStyles.statistics()}>
-        {statistics.slice(0, MAX_ITEMS).map(({ label, value }, index) => (
+        {statistics.slice(0, MAX_ITEMS).map(({ label, value }) => (
           <div
-            key={index}
+            key={`${label}-${value}`}
             className={compoundStyles.itemContainer({ noOfItems })}
           >
             {createElement(

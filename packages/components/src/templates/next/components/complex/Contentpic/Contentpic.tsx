@@ -29,7 +29,7 @@ export const Contentpic = ({
   site,
   shouldLazyLoad = true,
   headingLevel,
-}: ContentpicProps): JSX.Element => {
+}: ContentpicProps): React.ReactNode => {
   return (
     <div className={compoundStyles.container()}>
       <ImageClient

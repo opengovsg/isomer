@@ -18,7 +18,7 @@ export const InfoCardWithImage = ({
   shouldLazyLoad = true,
   isFallback,
   headingLevel,
-}: SingleCardWithImageProps): JSX.Element => {
+}: SingleCardWithImageProps): React.ReactNode => {
   const isExternalLink = isExternalUrl(url)
   return (
     <InfoCardContainer url={url} site={site} isExternalLink={isExternalLink}>

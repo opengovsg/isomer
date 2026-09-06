@@ -21,7 +21,7 @@ import { usePress } from "@react-aria/interactions"
 import { mergeProps } from "@react-aria/utils"
 import { useCheckboxGroupState } from "@react-stately/checkbox"
 import { useToggleState } from "@react-stately/toggle"
-import { createContext, useContext, useMemo, useRef } from "react"
+import { createContext, useContext, useRef } from "react"
 import { BiCheck, BiMinus } from "react-icons/bi"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
@@ -63,16 +63,14 @@ export const CheckboxGroup = (props: CheckboxGroupProps) => {
     errorMessageProps,
   } = useCheckboxGroup(groupProps, state)
 
-  const contextValue = useMemo(
-    () => ({
-      state,
-      isDisabled: groupProps.isDisabled,
-      isReadOnly: groupProps.isReadOnly,
-    }),
-    [state, groupProps.isDisabled, groupProps.isReadOnly],
-  )
+  const contextValue = {
+    state,
+    isDisabled: groupProps.isDisabled,
+    isReadOnly: groupProps.isReadOnly,
+  }
 
   return (
+    // oxlint-disable-next-line react/jsx-no-constructed-context-values -- RAC group state must stay in sync with hooks
     <CheckboxGroupContext.Provider value={contextValue}>
       <div
         {...ariaGroupProps}
@@ -141,7 +139,6 @@ interface CheckboxProps extends AriaCheckboxProps {
   className?: string
 }
 
-// Shared props for checkbox rendering
 interface CheckboxRenderProps {
   children?: ReactNode
   className?: string
@@ -153,7 +150,7 @@ interface CheckboxRenderProps {
   isSelected: boolean
 }
 
-// Shared rendering component for both standalone and grouped checkboxes
+// oxlint-disable-next-line react-doctor/no-many-boolean-props -- RAC checkbox state flags map to visual variants
 const CheckboxRenderer = ({
   children,
   className,
@@ -168,9 +165,6 @@ const CheckboxRenderer = ({
   const { focusProps, isFocusVisible } = useFocusRing()
   const mergedInputProps = mergeProps(inputProps, focusProps)
 
-  // usePress handles both mouse and keyboard interactions
-  // For keyboard: onPress will be called (Enter/Space)
-  // For mouse: we prevent default to avoid double toggling, then onPress handles it
   const { pressProps, isPressed } = usePress({
     isDisabled,
     onPress: () => {
@@ -180,8 +174,6 @@ const CheckboxRenderer = ({
     },
   })
 
-  // Prevent native label click to avoid double toggling with mouse
-  // Keyboard events are handled by usePress's onPress
   const labelProps = mergeProps(pressProps, {
     onClick: (e: MouseEvent) => {
       e.preventDefault()
@@ -209,7 +201,6 @@ const CheckboxRenderer = ({
         className="sr-only"
       />
       <div
-        // Used to align icon with text
         className="flex items-center justify-center before:invisible before:w-0 before:content-['hidden']"
       >
         <div
@@ -232,7 +223,6 @@ const CheckboxRenderer = ({
   )
 }
 
-// Internal component for standalone checkboxes
 const StandaloneCheckbox = (props: CheckboxProps) => {
   const { children, className, ...checkboxProps } = props
   const ref = useRef<HTMLInputElement>(null)
@@ -254,14 +244,11 @@ const StandaloneCheckbox = (props: CheckboxProps) => {
   )
 }
 
-// Internal component for grouped checkboxes
-// This component is only rendered when isInGroup is true, so groupContext is guaranteed to exist
 const GroupedCheckbox = (props: CheckboxProps) => {
   const { children, className, ...checkboxProps } = props
   const groupContext = useContext(CheckboxGroupContext)
   const ref = useRef<HTMLInputElement>(null)
 
-  // groupContext is guaranteed to exist because this component is only rendered when isInGroup is true
   // oxlint-disable-next-line @typescript-eslint/no-non-null-assertion
   const context = groupContext!
   const state = context.state
@@ -299,8 +286,6 @@ export const Checkbox = (props: CheckboxProps) => {
   const groupContext = useContext(CheckboxGroupContext)
   const isInGroup = groupContext !== null && props.value !== undefined
 
-  // Conditionally render the appropriate component
-  // This allows us to only call useCheckboxGroupItem when actually in a group
   if (isInGroup) {
     return <GroupedCheckbox {...props} />
   }

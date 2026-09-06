@@ -3,7 +3,6 @@
 import type { SearchableTableClientProps } from "~/interfaces"
 import { useId, useRef } from "react"
 import { tv } from "~/lib/tv"
-import { handleHorizontalScrollKeyDown } from "~/utils/handleHorizontalScrollKeyDown"
 
 import { BaseParagraph } from "../../../internal/BaseParagraph"
 import { PaginationControls } from "../../../internal/PaginationControls"
@@ -60,8 +59,6 @@ interface SearchableTableClientUIProps extends Omit<
 }
 
 interface SearchableTableContentProps {
-  titleId: string
-  title: string | undefined
   isInitiallyEmpty: boolean
   isLoading: boolean
   isError: boolean
@@ -71,13 +68,14 @@ interface SearchableTableContentProps {
   setCurrPage: (currPage: number) => void
   searchMatchType: keyof typeof COPYWRITING_MAPPING
   paginatedItems: (string | number)[][]
+  headers: SearchableTableClientProps["headers"]
   maxNoOfColumns: number
-  headers: (string | number)[]
+  title?: string
+  titleId: string
 }
 
+// oxlint-disable-next-line react-doctor/no-many-boolean-props -- table state flags drive mutually exclusive views
 const SearchableTableContent = ({
-  titleId,
-  title,
   isInitiallyEmpty,
   isLoading,
   isError,
@@ -87,8 +85,10 @@ const SearchableTableContent = ({
   setCurrPage,
   searchMatchType,
   paginatedItems,
-  maxNoOfColumns,
   headers,
+  maxNoOfColumns,
+  title,
+  titleId,
 }: SearchableTableContentProps) => {
   if (isInitiallyEmpty || isLoading || isError) {
     return <FallbackEmptyState isLoading={isLoading} isError={isError} />
@@ -109,59 +109,51 @@ const SearchableTableContent = ({
 
   if (paginatedItems.length > 0) {
     return (
-      <>
-        {/* oxlint-disable jsx-a11y/no-noninteractive-tabindex, jsx-a11y/no-noninteractive-element-interactions -- keyboard-focusable scroll container for wide tables */}
-        <section
-          className={compoundStyles.tableContainer()}
-          tabIndex={0}
-          aria-label="Scrollable table"
-          onKeyDown={handleHorizontalScrollKeyDown}
+      <div className={compoundStyles.tableContainer()}>
+        <table
+          className={compoundStyles.table()}
+          aria-describedby={!!title ? titleId : undefined}
         >
-          <table
-            className={compoundStyles.table()}
-            aria-describedby={!!title ? titleId : undefined}
-          >
-            <tbody>
-              <tr className={compoundStyles.tableRow()}>
-                {headers.slice(0, maxNoOfColumns).map((header, index) => (
-                  <th
-                    key={index}
-                    className={compoundStyles.tableCell({ isHeader: true })}
-                  >
-                    <BaseParagraph content={String(header)} />
-                  </th>
-                ))}
-              </tr>
+          <tbody>
+            <tr className={compoundStyles.tableRow()}>
+              {headers.slice(0, maxNoOfColumns).map((header) => (
+                <th
+                  key={String(header)}
+                  className={compoundStyles.tableCell({ isHeader: true })}
+                >
+                  <BaseParagraph content={String(header)} />
+                </th>
+              ))}
+            </tr>
 
-              {paginatedItems.map((row, rowIndex) => {
-                return (
-                  <tr key={rowIndex} className={compoundStyles.tableRow()}>
-                    {row.slice(0, maxNoOfColumns).map((cell, cellIndex) => (
-                      <td
-                        key={cellIndex}
-                        className={compoundStyles.tableCell({
-                          isHeader: false,
-                        })}
-                      >
-                        {/* NOTE: Reference links are NOT supported within
+            {paginatedItems.map((row, rowIndex) => {
+              return (
+                <tr key={rowIndex} className={compoundStyles.tableRow()}>
+                  {row.slice(0, maxNoOfColumns).map((cell, cellIndex) => (
+                    <td
+                      key={cellIndex}
+                      className={compoundStyles.tableCell({
+                        isHeader: false,
+                      })}
+                    >
+                      {/* NOTE: Reference links are NOT supported within
                           SearchableTable cell contents */}
-                        <BaseParagraph content={String(cell)} />
-                      </td>
-                    ))}
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </section>
-        {/* oxlint-enable jsx-a11y/no-noninteractive-tabindex, jsx-a11y/no-noninteractive-element-interactions */}
-      </>
+                      <BaseParagraph content={String(cell)} />
+                    </td>
+                  ))}
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
     )
   }
 
   return null
 }
 
+// oxlint-disable-next-line react-doctor/no-many-boolean-props -- loading/error/empty flags drive mutually exclusive views
 export const SearchableTableClientUI = ({
   title,
   headers,
@@ -204,8 +196,6 @@ export const SearchableTableClientUI = ({
       />
 
       <SearchableTableContent
-        titleId={titleId}
-        title={title}
         isInitiallyEmpty={isInitiallyEmpty}
         isLoading={isLoading}
         isError={isError}
@@ -215,8 +205,10 @@ export const SearchableTableClientUI = ({
         setCurrPage={setCurrPage}
         searchMatchType={searchMatchType}
         paginatedItems={paginatedItems}
-        maxNoOfColumns={maxNoOfColumns}
         headers={headers}
+        maxNoOfColumns={maxNoOfColumns}
+        title={title}
+        titleId={titleId}
       />
 
       {filteredItemsLength > 0 && (

@@ -94,8 +94,7 @@ const InfoBoxes = ({
 }: Pick<InfoColsProps, "infoBoxes" | "site">) => {
   return (
     <div className={compoundStyles.infoBoxesContainer()}>
-      {infoBoxes.map(
-        ({ title, icon, description, buttonUrl, buttonLabel }, idx) => {
+      {infoBoxes.map(({ title, icon, description, buttonUrl, buttonLabel }) => {
           const hasLink = !!buttonUrl
           const isExternalLink = isExternalUrl(buttonUrl)
           const showTitleArrow = hasLink && !buttonLabel
@@ -106,7 +105,7 @@ const InfoBoxes = ({
                 site.siteMapArray,
                 site.assetsBaseUrl,
               )}
-              key={idx}
+              key={`${title}-${buttonUrl ?? ""}`}
               className={compoundStyles.infoBox()}
               isExternal={isExternalLink}
             >

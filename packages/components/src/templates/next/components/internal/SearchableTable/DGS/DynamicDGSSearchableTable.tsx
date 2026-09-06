@@ -5,7 +5,7 @@ import type {
   DGSSearchableTableProps,
   SearchableTableClientProps,
 } from "~/interfaces"
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import { useDebounce } from "~/hooks/useDebounce"
 import { useDgsData } from "~/hooks/useDgsData"
 import { isCkanInternalColumn } from "~/utils/dgs"
@@ -35,19 +35,16 @@ export const DynamicDGSSearchableTable = ({
   const search = useDebounce({ value: searchInput, delay: 300 })
   const [currPage, setCurrPage] = useState(1)
 
-  const params = useMemo(
-    () => ({
-      resourceId,
-      filters: filters?.reduce<
-        NonNullable<DgsApiDatasetSearchParams["filters"]>
-      >((acc, filter) => {
-        acc[filter.fieldKey] = filter.fieldValue
-        return acc
-      }, {}),
-      sort,
-    }),
-    [resourceId, filters, sort],
-  )
+  const params = {
+    resourceId,
+    filters: filters?.reduce<
+      NonNullable<DgsApiDatasetSearchParams["filters"]>
+    >((acc, filter) => {
+      acc[filter.fieldKey] = filter.fieldValue
+      return acc
+    }, {}),
+    sort,
+  }
 
   const { total } = useDgsData({ ...params, fetchAll: false })
 
@@ -65,11 +62,17 @@ export const DynamicDGSSearchableTable = ({
   })
 
   const items =
-    records?.map((record) =>
-      Object.entries(record)
-        .filter(([key]) => !isCkanInternalColumn(key))
-        .map(([, value]) => value),
-    ) ?? []
+    records?.map((record) => {
+      const row: (string | number)[] = []
+
+      for (const [key, value] of Object.entries(record)) {
+        if (!isCkanInternalColumn(key)) {
+          row.push(value)
+        }
+      }
+
+      return row
+    }) ?? []
 
   const isInitiallyEmpty =
     typeof total === "number" && (total === 0 || maxNoOfColumns === 0)
@@ -83,11 +86,7 @@ export const DynamicDGSSearchableTable = ({
       headers={headers}
       isLoading={isMetadataLoading || isDataLoading}
       isError={isMetadataError || isDataError}
-      search={{
-        input: searchInput,
-        deferred: search,
-        setSearch: setSearchInput,
-      }}
+      search={{ input: searchInput, deferred: search, setSearch: setSearchInput }}
       page={{ currPage, setCurrPage }}
       isInitiallyEmpty={isInitiallyEmpty}
       isFilteredEmpty={isFilteredEmpty}

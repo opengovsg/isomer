@@ -353,23 +353,29 @@ export const getRobotsTxt = (props: IsomerPageSchemaType) => {
 }
 
 export const getSitemapXml = (sitemap: IsomerSitemap, siteUrl?: string) => {
-  return getSitemapAsArray(sitemap)
-    .filter(
-      (item) =>
-        item.layout !== ISOMER_PAGE_LAYOUTS.File &&
-        item.layout !== ISOMER_PAGE_LAYOUTS.Link,
-    )
-    .map(({ permalink, lastModified }) => {
-      const permalinkWithTrailingSlash = permalink.endsWith("/")
-        ? permalink
-        : `${permalink}/`
+  const sitemapEntries = []
 
-      return {
-        url:
-          siteUrl !== undefined
-            ? `${siteUrl}${permalinkWithTrailingSlash}`
-            : permalinkWithTrailingSlash,
-        lastModified,
-      }
+  for (const item of getSitemapAsArray(sitemap)) {
+    if (
+      item.layout === ISOMER_PAGE_LAYOUTS.File ||
+      item.layout === ISOMER_PAGE_LAYOUTS.Link
+    ) {
+      continue
+    }
+
+    const { permalink, lastModified } = item
+    const permalinkWithTrailingSlash = permalink.endsWith("/")
+      ? permalink
+      : `${permalink}/`
+
+    sitemapEntries.push({
+      url:
+        siteUrl !== undefined
+          ? `${siteUrl}${permalinkWithTrailingSlash}`
+          : permalinkWithTrailingSlash,
+      lastModified,
     })
+  }
+
+  return sitemapEntries
 }

@@ -1,7 +1,6 @@
 import type { ContactInformationUIProps } from "~/interfaces"
-import { createElement } from "react"
 import { tv } from "~/lib/tv"
-import { getHeadingTag } from "~/utils/getHeadingTag"
+import { DynamicHeading } from "~/utils/DynamicHeading"
 
 import { BaseParagraph } from "../../../internal/BaseParagraph"
 import { LinkButton } from "../../../internal/LinkButton"
@@ -92,19 +91,17 @@ type NumberOfContactMethods =
 
 const MAX_CONTACT_METHODS_FOR_HOMEPAGE = 3
 
-interface CallToActionButtonProps {
-  className: string
-  referenceLinkHref: string
-  label: string
-}
-
 const CallToActionButton = ({
-  className,
   referenceLinkHref,
   label,
-}: CallToActionButtonProps) => {
+  urlButtonContainerClassName,
+}: {
+  referenceLinkHref: string
+  label: string
+  urlButtonContainerClassName: string
+}) => {
   return (
-    <div className={className}>
+    <div className={urlButtonContainerClassName}>
       <LinkButton
         href={referenceLinkHref}
         size="base"
@@ -128,7 +125,6 @@ export const HomepageContactInformationUI = ({
   acceptHtmlTags = false,
   headingLevel,
 }: ContactInformationUIProps) => {
-  const TitleTag = getHeadingTag(headingLevel)
   const filteredMethods = filterContactMethods({ methods, whitelistedMethods })
 
   const numberOfContactMethods: NumberOfContactMethods = isLoading
@@ -153,12 +149,11 @@ export const HomepageContactInformationUI = ({
     <section className={compoundStyles.screenWideOuterContainer()}>
       <div className={compoundStyles.container()}>
         <div className={compoundStyles.titleAndDescriptionContainer()}>
-          {(title || isLoading) &&
-            createElement(
-              TitleTag,
-              { className: compoundStyles.title() },
-              isLoading ? "" : title,
-            )}
+          {(title || isLoading) && (
+            <DynamicHeading level={headingLevel} className={compoundStyles.title()}>
+              {isLoading ? "" : title}
+            </DynamicHeading>
+          )}
           {(!!description || isLoading) &&
             (acceptHtmlTags ? (
               <BaseParagraph
@@ -171,11 +166,11 @@ export const HomepageContactInformationUI = ({
             ))}
           {!!referenceLinkHref && !!label && !isLoading && (
             <CallToActionButton
-              className={compoundStyles.urlButtonContainer({
-                isBottomButton: false,
-              })}
               referenceLinkHref={referenceLinkHref}
               label={label}
+              urlButtonContainerClassName={compoundStyles.urlButtonContainer({
+                isBottomButton: false,
+              })}
             />
           )}
         </div>
@@ -192,10 +187,10 @@ export const HomepageContactInformationUI = ({
               )
             : filteredMethods
                 .slice(0, MAX_CONTACT_METHODS_FOR_HOMEPAGE)
-                .map((method, index) => {
+                .map((method) => {
                   return (
                     <ContactMethod
-                      key={`contact-method-${index}`}
+                      key={`${method.method ?? "method"}-${method.values.join("-")}`}
                       {...method}
                       styles={contactMethodStyles}
                     />
@@ -205,11 +200,11 @@ export const HomepageContactInformationUI = ({
 
         {!!referenceLinkHref && !!label && !isLoading && (
           <CallToActionButton
-            className={compoundStyles.urlButtonContainer({
-              isBottomButton: true,
-            })}
             referenceLinkHref={referenceLinkHref}
             label={label}
+            urlButtonContainerClassName={compoundStyles.urlButtonContainer({
+              isBottomButton: true,
+            })}
           />
         )}
       </div>

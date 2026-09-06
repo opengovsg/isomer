@@ -10,7 +10,7 @@ export const InfoCardNoImage = ({
   url,
   site,
   headingLevel,
-}: SingleCardNoImageProps): JSX.Element => {
+}: SingleCardNoImageProps): React.ReactNode => {
   const isExternalLink = isExternalUrl(url)
   return (
     <InfoCardContainer url={url} site={site} isExternalLink={isExternalLink}>

@@ -1,22 +1,19 @@
 import type { InfoCardsProps } from "~/interfaces"
-import { createElement } from "react"
 import {
   CARDS_WITH_FULL_IMAGES,
   CARDS_WITH_IMAGES,
   CARDS_WITHOUT_IMAGES,
   INFOCARD_VARIANT,
 } from "~/interfaces/complex/InfoCards"
-import { getHeadingTag } from "~/utils/getHeadingTag"
+import { DynamicHeading } from "~/utils/DynamicHeading"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
 
 import { LinkButton } from "../../internal/LinkButton"
 import { compoundStyles } from "./common"
-import {
-  InfoCardNoImage,
-  InfoCardWithFullImage,
-  InfoCardWithImage,
-} from "./components"
+import { InfoCardNoImage } from "./components/InfoCardNoImage"
+import { InfoCardWithFullImage } from "./components/InfoCardWithFullImage"
+import { InfoCardWithImage } from "./components/InfoCardWithImage"
 
 type InfoCardsToRenderProps = Pick<
   InfoCardsProps,
@@ -30,70 +27,57 @@ type InfoCardsToRenderProps = Pick<
 >
 
 const InfoCardsToRender = (props: InfoCardsToRenderProps) => {
+  const { maxColumns, layout, site, shouldLazyLoad, headingLevel } = props
+
   switch (props.variant) {
     case CARDS_WITH_IMAGES: {
-      const { cards, maxColumns, layout, site, shouldLazyLoad, headingLevel } =
-        props as Extract<InfoCardsProps, { variant: typeof CARDS_WITH_IMAGES }>
-
-      return (
-        <>
-          {cards.map((card, idx) => (
-            <InfoCardWithImage
-              key={idx}
-              {...card}
-              maxColumns={maxColumns}
-              layout={layout}
-              site={site}
-              shouldLazyLoad={shouldLazyLoad}
-              headingLevel={headingLevel + 1}
-            />
-          ))}
-        </>
-      )
+      const { cards } = props as Extract<
+        InfoCardsProps,
+        { variant: typeof CARDS_WITH_IMAGES }
+      >
+      return cards.map((card) => (
+        <InfoCardWithImage
+          key={`${card.title}-${card.url ?? card.description ?? ""}`}
+          {...card}
+          maxColumns={maxColumns}
+          layout={layout}
+          site={site}
+          shouldLazyLoad={shouldLazyLoad}
+          headingLevel={headingLevel + 1}
+        />
+      ))
     }
     case CARDS_WITHOUT_IMAGES: {
-      const { cards, site, headingLevel } = props as Extract<
+      const { cards } = props as Extract<
         InfoCardsProps,
         { variant: typeof CARDS_WITHOUT_IMAGES }
       >
-
-      return (
-        <>
-          {cards.map((card, idx) => (
-            <InfoCardNoImage
-              key={idx}
-              {...card}
-              site={site}
-              headingLevel={headingLevel + 1}
-            />
-          ))}
-        </>
-      )
+      return cards.map((card) => (
+        <InfoCardNoImage
+          key={`${card.title}-${card.url ?? card.description ?? ""}`}
+          {...card}
+          site={site}
+          headingLevel={headingLevel + 1}
+        />
+      ))
     }
     case CARDS_WITH_FULL_IMAGES: {
-      const { cards, maxColumns, layout, site, shouldLazyLoad, headingLevel } =
-        props as Extract<
-          InfoCardsProps,
-          { variant: typeof CARDS_WITH_FULL_IMAGES }
-        >
-
-      return (
-        <>
-          {cards.map((card, idx) => (
-            <InfoCardWithFullImage
-              key={idx}
-              {...card}
-              maxColumns={maxColumns}
-              layout={layout}
-              site={site}
-              shouldLazyLoad={shouldLazyLoad}
-              headingLevel={headingLevel + 1}
-            />
-          ))}
-        </>
-      )
+      const { cards } = props as Extract<
+        InfoCardsProps,
+        { variant: typeof CARDS_WITH_FULL_IMAGES }
+      >
+      return cards.map((card) => (
+        <InfoCardWithFullImage
+          key={`${card.title}-${card.url ?? card.imageUrl}`}
+          {...card}
+          maxColumns={maxColumns}
+          layout={layout}
+          site={site}
+          shouldLazyLoad={shouldLazyLoad}
+          headingLevel={headingLevel + 1}
+        />
+      ))
     }
-
     default: {
       const _: never = props.variant
       return null
@@ -114,13 +98,12 @@ export const InfoCards = ({
   site,
   shouldLazyLoad,
   headingLevel,
-}: InfoCardsProps): JSX.Element => {
+}: InfoCardsProps): React.ReactNode => {
   const simplifiedLayout = getTailwindVariantLayout(layout)
   const cardVariant =
     variant === CARDS_WITH_FULL_IMAGES
       ? INFOCARD_VARIANT.bold
       : INFOCARD_VARIANT.default
-  const TitleTag = getHeadingTag(headingLevel)
 
   return (
     <section
@@ -135,11 +118,12 @@ export const InfoCards = ({
             variant: cardVariant,
           })}
         >
-          {createElement(
-            TitleTag,
-            { className: compoundStyles.headingTitle() },
-            title,
-          )}
+          <DynamicHeading
+            level={headingLevel}
+            className={compoundStyles.headingTitle()}
+          >
+            {title}
+          </DynamicHeading>
 
           {subtitle && (
             <p

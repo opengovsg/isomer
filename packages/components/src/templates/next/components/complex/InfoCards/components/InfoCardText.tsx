@@ -1,7 +1,6 @@
 import type { SingleCardWithImageProps } from "~/interfaces/complex/InfoCards"
-import { createElement } from "react"
 import { BiRightArrowAlt } from "react-icons/bi"
-import { getHeadingTag } from "~/utils/getHeadingTag"
+import { DynamicHeading } from "~/utils/DynamicHeading"
 
 import { compoundStyles, infoCardTitleStyle } from "../common"
 
@@ -20,25 +19,24 @@ export const InfoCardText = ({
   | "url"
   | "isExternalLink"
   | "headingLevel"
->): JSX.Element => {
-  const Tag = getHeadingTag(headingLevel)
+>): React.ReactNode => {
   return (
     <div className={compoundStyles.cardTextContainer({ variant })}>
-      {createElement(
-        Tag,
-        {
-          className: infoCardTitleStyle({ isClickableCard: !!url, variant }),
-        },
-        title,
-        url &&
-          createElement(BiRightArrowAlt, {
-            "aria-hidden": true,
-            className: compoundStyles.cardTitleArrow({
+      <DynamicHeading
+        level={headingLevel}
+        className={infoCardTitleStyle({ isClickableCard: !!url, variant })}
+      >
+        {title}
+        {url && (
+          <BiRightArrowAlt
+            aria-hidden
+            className={compoundStyles.cardTitleArrow({
               isExternalLink,
               variant,
-            }),
-          }),
-      )}
+            })}
+          />
+        )}
+      </DynamicHeading>
 
       {description && (
         <p className={compoundStyles.cardDescription()}>{description}</p>

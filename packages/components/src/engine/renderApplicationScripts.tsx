@@ -7,10 +7,8 @@ import {
   GoogleTagManagerPreload,
 } from "../templates/next/components/internal/GoogleTagManager"
 import { MicrosoftClarity } from "../templates/next/components/internal/MicrosoftClarity"
-import {
-  VicaStylesheet,
-  VicaWidget,
-} from "../templates/next/components/internal/Vica"
+import { VicaStylesheet } from "../templates/next/components/internal/Vica/VicaStylesheet"
+import { VicaWidget } from "../templates/next/components/internal/Vica/VicaWidget"
 import { ZendeskWidget } from "../templates/next/components/internal/Zendesk"
 
 interface RenderApplicationScriptsProps {

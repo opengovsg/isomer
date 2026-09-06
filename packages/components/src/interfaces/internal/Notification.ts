@@ -3,7 +3,7 @@ import type { PropsWithChildren } from "react"
 import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 
-import { TextSchema } from "../native"
+import { TextSchema } from "../native/Text"
 import { SimpleProseSchema } from "../native/Prose"
 
 export const NotificationSchema = Type.Object(

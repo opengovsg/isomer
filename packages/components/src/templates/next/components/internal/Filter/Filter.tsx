@@ -56,7 +56,7 @@ export const Filter = ({
   handleClearFilter,
   setAppliedFilters,
 }: FilterProps) => {
-  const [showFilter, setShowFilter] = useState<Record<string, boolean>>(
+  const [showFilter, setShowFilter] = useState<Record<string, boolean>>(() =>
     filters.reduce((acc, { id }) => ({ ...acc, [id]: true }), {}),
   )
 

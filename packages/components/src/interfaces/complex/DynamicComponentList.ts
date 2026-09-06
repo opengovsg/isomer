@@ -2,7 +2,7 @@ import type { Static } from "@sinclair/typebox"
 import type { IsomerPageLayoutType, IsomerSiteProps } from "~/types"
 import { Omit, Type } from "@sinclair/typebox"
 
-import { DgsDataSourceFieldsSchema } from "../integration"
+import { DgsDataSourceFieldsSchema } from "../integration/dgs"
 import { DgsContactInformationSchema } from "./ContactInformation/ContactInformation"
 
 const ContactInformationComponentSchema = Type.Intersect([
