@@ -1,5 +1,5 @@
-import { createElement } from "react"
 import type { HeroSearchbarProps } from "~/interfaces/complex/Hero"
+import { createElement } from "react"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 
 import { ComponentContent } from "../../../internal/customCssClass"

@@ -34,7 +34,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         type="button"
-      {...mergedProps}
+        {...mergedProps}
         ref={mergeRefs(internalRef, ref)}
         className={twMerge(
           buttonStyles({

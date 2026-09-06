@@ -1,5 +1,5 @@
-import { createElement } from "react"
 import type { ContactInformationUIProps } from "~/interfaces"
+import { createElement } from "react"
 import { tv } from "~/lib/tv"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 

@@ -3,10 +3,7 @@ import base from "@isomer/oxlint-config/base"
 import { react } from "@isomer/oxlint-config/presets"
 
 export default defineConfig({
-  extends: [
-    base,
-    react,
-  ],
+  extends: [base, react],
   ignorePatterns: ["dist", "**/*.config.*", "!.storybook"],
   overrides: [
     {

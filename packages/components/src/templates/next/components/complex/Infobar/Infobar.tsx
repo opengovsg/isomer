@@ -1,5 +1,5 @@
-import { createElement } from "react"
 import type { InfobarProps } from "~/interfaces/complex/Infobar"
+import { createElement } from "react"
 import { DEFAULT_INFOBAR_VARIANT } from "~/interfaces/complex/Infobar/constants"
 import { tv } from "~/lib/tv"
 import { getHeadingTag } from "~/utils/getHeadingTag"

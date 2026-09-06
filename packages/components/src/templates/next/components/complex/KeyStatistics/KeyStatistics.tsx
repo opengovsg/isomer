@@ -1,5 +1,5 @@
-import { createElement } from "react"
 import type { KeyStatisticsProps } from "~/interfaces"
+import { createElement } from "react"
 import { tv } from "~/lib/tv"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"

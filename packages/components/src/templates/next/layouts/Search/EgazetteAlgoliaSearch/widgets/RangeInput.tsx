@@ -74,10 +74,9 @@ export const RangeInput = ({
   const [min, setMin] = useState(toInputValue(minRaw))
   const [max, setMax] = useState(toInputValue(maxRaw))
   const [error, setError] = useState<string>()
-  const [prevRange, setPrevRange] = useState<[number | undefined, number | undefined]>([
-    minRaw,
-    maxRaw,
-  ])
+  const [prevRange, setPrevRange] = useState<
+    [number | undefined, number | undefined]
+  >([minRaw, maxRaw])
 
   if (minRaw !== prevRange[0] || maxRaw !== prevRange[1]) {
     setPrevRange([minRaw, maxRaw])

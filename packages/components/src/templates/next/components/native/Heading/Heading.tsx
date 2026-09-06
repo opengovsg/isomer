@@ -1,5 +1,5 @@
-import { createElement } from "react"
 import type { HeadingProps } from "~/interfaces"
+import { createElement } from "react"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getTextAsHtml } from "~/utils/getTextAsHtml"
 

@@ -50,7 +50,11 @@ export const SearchableTableClient = ({
       headers={headers}
       isLoading={isLoading}
       isError={isError}
-      search={{ input: searchInput, deferred: search, setSearch: setSearchInput }}
+      search={{
+        input: searchInput,
+        deferred: search,
+        setSearch: setSearchInput,
+      }}
       page={{ currPage, setCurrPage }}
       isInitiallyEmpty={isInitiallyEmpty}
       isFilteredEmpty={isFilteredEmpty}

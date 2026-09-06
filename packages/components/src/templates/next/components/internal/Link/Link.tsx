@@ -1,7 +1,7 @@
 "use client"
 
-import { createElement } from "react"
 import type { LinkProps } from "~/interfaces/internal/Link"
+import { createElement } from "react"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
 import { useLinkComponent } from "~/templates/next/context/LinkComponentContext"

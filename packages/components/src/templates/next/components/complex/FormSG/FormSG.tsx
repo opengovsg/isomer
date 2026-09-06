@@ -1,9 +1,9 @@
 import type { FormSGProps } from "~/interfaces"
 import { isValidFormSGEmbedUrl } from "~/utils/validation"
 
+import { IFRAME_SANDBOX } from "../../complex/Video/shared"
 import { BaseParagraph } from "../../internal/BaseParagraph"
 import { ComponentContent } from "../../internal/customCssClass"
-import { IFRAME_SANDBOX } from "../../complex/Video/shared"
 
 export const FormSG = ({ title, url, shouldLazyLoad = true }: FormSGProps) => {
   if (!isValidFormSGEmbedUrl(url)) {

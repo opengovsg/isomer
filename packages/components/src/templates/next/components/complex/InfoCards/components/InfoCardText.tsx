@@ -1,5 +1,5 @@
-import { createElement } from "react"
 import type { SingleCardWithImageProps } from "~/interfaces/complex/InfoCards"
+import { createElement } from "react"
 import { BiRightArrowAlt } from "react-icons/bi"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 

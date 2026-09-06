@@ -1,5 +1,5 @@
-import { createElement } from "react"
 import type { HeroBlockProps } from "~/interfaces/complex/Hero"
+import { createElement } from "react"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 

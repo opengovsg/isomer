@@ -117,42 +117,42 @@ const SearchableTableContent = ({
           aria-label="Scrollable table"
           onKeyDown={handleHorizontalScrollKeyDown}
         >
-        <table
-          className={compoundStyles.table()}
-          aria-describedby={!!title ? titleId : undefined}
-        >
-          <tbody>
-            <tr className={compoundStyles.tableRow()}>
-              {headers.slice(0, maxNoOfColumns).map((header, index) => (
-                <th
-                  key={index}
-                  className={compoundStyles.tableCell({ isHeader: true })}
-                >
-                  <BaseParagraph content={String(header)} />
-                </th>
-              ))}
-            </tr>
+          <table
+            className={compoundStyles.table()}
+            aria-describedby={!!title ? titleId : undefined}
+          >
+            <tbody>
+              <tr className={compoundStyles.tableRow()}>
+                {headers.slice(0, maxNoOfColumns).map((header, index) => (
+                  <th
+                    key={index}
+                    className={compoundStyles.tableCell({ isHeader: true })}
+                  >
+                    <BaseParagraph content={String(header)} />
+                  </th>
+                ))}
+              </tr>
 
-            {paginatedItems.map((row, rowIndex) => {
-              return (
-                <tr key={rowIndex} className={compoundStyles.tableRow()}>
-                  {row.slice(0, maxNoOfColumns).map((cell, cellIndex) => (
-                    <td
-                      key={cellIndex}
-                      className={compoundStyles.tableCell({
-                        isHeader: false,
-                      })}
-                    >
-                      {/* NOTE: Reference links are NOT supported within
+              {paginatedItems.map((row, rowIndex) => {
+                return (
+                  <tr key={rowIndex} className={compoundStyles.tableRow()}>
+                    {row.slice(0, maxNoOfColumns).map((cell, cellIndex) => (
+                      <td
+                        key={cellIndex}
+                        className={compoundStyles.tableCell({
+                          isHeader: false,
+                        })}
+                      >
+                        {/* NOTE: Reference links are NOT supported within
                           SearchableTable cell contents */}
-                      <BaseParagraph content={String(cell)} />
-                    </td>
-                  ))}
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
+                        <BaseParagraph content={String(cell)} />
+                      </td>
+                    ))}
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
         </section>
         {/* oxlint-enable jsx-a11y/no-noninteractive-tabindex, jsx-a11y/no-noninteractive-element-interactions */}
       </>

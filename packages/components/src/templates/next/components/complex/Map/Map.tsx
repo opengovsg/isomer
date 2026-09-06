@@ -2,9 +2,9 @@ import type { MapProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { isValidMapEmbedUrl, isValidOGPMapsEmbedUrl } from "~/utils/validation"
 
+import { IFRAME_SANDBOX } from "../../complex/Video/shared"
 import { BaseParagraph } from "../../internal/BaseParagraph"
 import { ComponentContent } from "../../internal/customCssClass"
-import { IFRAME_SANDBOX } from "../../complex/Video/shared"
 
 const createMapStyles = tv({
   slots: {

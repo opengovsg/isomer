@@ -70,7 +70,8 @@ export const CollectionResults = ({
             {searchValue !== "" && (
               <>
                 {" "}
-                for &quot;<span className="font-medium">{searchValue}</span>&quot;
+                for &quot;<span className="font-medium">{searchValue}</span>
+                &quot;
               </>
             )}
           </p>
