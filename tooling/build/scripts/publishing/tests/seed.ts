@@ -13,10 +13,10 @@ export const db = createDb({
 // Connection env vars for spawning the publishing script as a subprocess
 export const TEST_DB_ENV = {
   DB_HOST,
+  DB_NAME,
+  DB_PASSWORD,
   DB_PORT,
   DB_USERNAME,
-  DB_PASSWORD,
-  DB_NAME,
 }
 
 const USER_ID = "publishing-e2e-user"
@@ -25,13 +25,13 @@ export const NAVBAR_CONTENT = {
   items: [{ name: "Who we are", url: "/about" }],
 }
 export const FOOTER_CONTENT = {
-  siteNavItems: [{ title: "Who we are", url: "/about" }],
   contactUsLink: "/contact",
+  siteNavItems: [{ title: "Who we are", url: "/about" }],
 }
 export const SITE_CONFIG = {
+  isGovernment: true,
   siteName: "E2E Test Site",
   url: "https://e2e.example.com",
-  isGovernment: true,
 }
 // The site-theme Tailwind preset reads colors.brand.{canvas,interaction} at
 // template build time, so the seeded theme must be structurally valid
@@ -39,9 +39,9 @@ export const SITE_THEME = {
   colors: {
     brand: {
       canvas: {
-        default: "#e6ecef",
         alt: "#bfcfd7",
         backdrop: "#80a0af",
+        default: "#e6ecef",
         inverse: "#00405f",
       },
       interaction: {
@@ -64,7 +64,7 @@ const seedSite = async ({
 }) => {
   const site = await db
     .insertInto("Site")
-    .values({ name, config, theme })
+    .values({ config, name, theme })
     .returning("id")
     .executeTakeFirstOrThrow()
   return site.id
@@ -86,12 +86,12 @@ const seedFolder = async ({
   const folder = await db
     .insertInto("Resource")
     .values({
-      siteId,
-      type,
-      title,
-      permalink,
       parentId,
+      permalink,
+      siteId,
       state: ResourceState.Published,
+      title,
+      type,
     })
     .returning("id")
     .executeTakeFirstOrThrow()
@@ -124,14 +124,14 @@ const seedPage = async ({
   const page = await db
     .insertInto("Resource")
     .values({
-      siteId,
-      type,
-      title,
-      permalink,
       parentId,
+      permalink,
+      siteId,
+      title,
+      type,
       ...(publish
         ? { state: ResourceState.Published }
-        : { state: ResourceState.Draft, draftBlobId: blob.id }),
+        : { draftBlobId: blob.id, state: ResourceState.Draft }),
     })
     .returning("id")
     .executeTakeFirstOrThrow()
@@ -140,10 +140,10 @@ const seedPage = async ({
     const version = await db
       .insertInto("Version")
       .values({
-        versionNum: 1,
-        resourceId: page.id,
         blobId: blob.id,
         publishedBy: USER_ID,
+        resourceId: page.id,
+        versionNum: 1,
       })
       .returning("id")
       .executeTakeFirstOrThrow()
@@ -170,7 +170,7 @@ const seedRedirect = async ({
 }) => {
   await db
     .insertInto("Redirect")
-    .values({ siteId, source, destination, deletedAt })
+    .values({ deletedAt, destination, siteId, source })
     .execute()
 }
 
@@ -182,271 +182,271 @@ export const seedPublishingSite = async () => {
   await db
     .insertInto("User")
     .values({
+      email: "publishing-e2e@example.com",
       id: USER_ID,
       name: "Publishing E2E",
-      email: "publishing-e2e@example.com",
       phone: "",
     })
     .execute()
 
   const siteId = await seedSite({
-    name: "E2E Test Site",
     config: SITE_CONFIG,
+    name: "E2E Test Site",
     theme: SITE_THEME,
   })
   await db
     .insertInto("Navbar")
-    .values({ siteId, content: NAVBAR_CONTENT })
+    .values({ content: NAVBAR_CONTENT, siteId })
     .execute()
   await db
     .insertInto("Footer")
-    .values({ siteId, content: FOOTER_CONTENT })
+    .values({ content: FOOTER_CONTENT, siteId })
     .execute()
 
   const rootPageId = await seedPage({
-    siteId,
-    type: ResourceType.RootPage,
-    title: "Home",
-    permalink: "",
     content: {
-      version: "0.1.0",
+      content: [],
       layout: "homepage",
       page: { description: "The official E2E test site" },
-      content: [],
+      version: "0.1.0",
     },
+    permalink: "",
+    siteId,
+    title: "Home",
+    type: ResourceType.RootPage,
   })
 
   // Orders the root-level children; "_meta" must also be stripped from permalinks
   await seedPage({
-    siteId,
-    type: ResourceType.FolderMeta,
-    title: "Root meta",
-    permalink: "_meta",
     content: { order: ["news", "about", "dangling"] },
+    permalink: "_meta",
+    siteId,
+    title: "Root meta",
+    type: ResourceType.FolderMeta,
   })
 
   // A folder with its own index page and a child page
   const aboutFolderId = await seedFolder({
-    siteId,
-    type: ResourceType.Folder,
-    title: "Who we are",
     permalink: "about",
+    siteId,
+    title: "Who we are",
+    type: ResourceType.Folder,
   })
   const aboutIndexPageId = await seedPage({
-    siteId,
-    type: ResourceType.IndexPage,
-    title: "Who we are",
-    permalink: "_index",
-    parentId: aboutFolderId,
     content: {
-      version: "0.1.0",
+      content: [],
       layout: "index",
       page: { contentPageHeader: { summary: "All about us" } },
-      content: [],
+      version: "0.1.0",
     },
+    parentId: aboutFolderId,
+    permalink: "_index",
+    siteId,
+    title: "Who we are",
+    type: ResourceType.IndexPage,
   })
   const ourTeamPageId = await seedPage({
-    siteId,
-    type: ResourceType.Page,
-    title: "Our team",
-    permalink: "our-team",
-    parentId: aboutFolderId,
     content: {
-      version: "0.1.0",
+      content: [{ alt: "The team", src: "/images/team.png", type: "image" }],
       layout: "content",
       page: { contentPageHeader: { summary: ["Meet", "the team"] } },
-      content: [{ type: "image", src: "/images/team.png", alt: "The team" }],
+      version: "0.1.0",
     },
+    parentId: aboutFolderId,
+    permalink: "our-team",
+    siteId,
+    title: "Our team",
+    type: ResourceType.Page,
   })
 
   // A folder WITHOUT an index page: the script must auto-generate one
   const danglingFolderId = await seedFolder({
-    siteId,
-    type: ResourceType.Folder,
-    title: "All the danglers",
     permalink: "dangling",
+    siteId,
+    title: "All the danglers",
+    type: ResourceType.Folder,
   })
   await seedPage({
-    siteId,
-    type: ResourceType.Page,
-    title: "Lonely page",
-    permalink: "lonely-page",
-    parentId: danglingFolderId,
     content: {
-      version: "0.1.0",
+      content: [],
       layout: "content",
       page: { contentPageHeader: { summary: "A lonely page" } },
-      content: [],
+      version: "0.1.0",
     },
+    parentId: danglingFolderId,
+    permalink: "lonely-page",
+    siteId,
+    title: "Lonely page",
+    type: ResourceType.Page,
   })
 
   // A collection (also without an index page) with a page and a link
   const newsCollectionId = await seedFolder({
-    siteId,
-    type: ResourceType.Collection,
-    title: "News",
     permalink: "news",
+    siteId,
+    title: "News",
+    type: ResourceType.Collection,
   })
   await seedPage({
-    siteId,
-    type: ResourceType.CollectionPage,
-    title: "Zebra article",
-    permalink: "zebra-article",
-    parentId: newsCollectionId,
     content: {
-      version: "0.1.0",
+      content: [],
       layout: "article",
       page: {
-        date: "15/01/2026",
-        category: "Press releases",
         articlePageHeader: { summary: "Zebra article summary" },
-        image: { src: "/images/zebra.png", alt: "A zebra" },
+        category: "Press releases",
+        date: "15/01/2026",
+        image: { alt: "A zebra", src: "/images/zebra.png" },
       },
-      content: [],
+      version: "0.1.0",
     },
+    parentId: newsCollectionId,
+    permalink: "zebra-article",
+    siteId,
+    title: "Zebra article",
+    type: ResourceType.CollectionPage,
   })
   await seedPage({
-    siteId,
-    type: ResourceType.CollectionLink,
-    title: "Alpha link",
-    permalink: "alpha-link",
-    parentId: newsCollectionId,
     content: {
-      version: "0.1.0",
+      content: [],
       layout: "link",
       page: {
-        ref: "https://example.com",
-        date: "01/01/2026",
         category: "Press releases",
+        date: "01/01/2026",
         description: "An external link",
+        ref: "https://example.com",
       },
-      content: [],
+      version: "0.1.0",
     },
+    parentId: newsCollectionId,
+    permalink: "alpha-link",
+    siteId,
+    title: "Alpha link",
+    type: ResourceType.CollectionLink,
   })
 
   // A draft-only page: must NOT be published
   const draftPageId = await seedPage({
-    siteId,
-    type: ResourceType.Page,
-    title: "Secret draft",
-    permalink: "draft-page",
     content: {
-      version: "0.1.0",
+      content: [],
       layout: "content",
       page: { contentPageHeader: { summary: "Not ready yet" } },
-      content: [],
+      version: "0.1.0",
     },
+    permalink: "draft-page",
     publish: false,
+    siteId,
+    title: "Secret draft",
+    type: ResourceType.Page,
   })
 
-  await seedRedirect({ siteId, source: "/old-about", destination: "/about" })
-  await seedRedirect({ siteId, source: "/old-news", destination: "/news" })
+  await seedRedirect({ destination: "/about", siteId, source: "/old-about" })
+  await seedRedirect({ destination: "/news", siteId, source: "/old-news" })
   await seedRedirect({
+    deletedAt: new Date(),
+    destination: "/gone",
     siteId,
     source: "/deleted",
-    destination: "/gone",
-    deletedAt: new Date(),
   })
   // Reference destinations: resolved to the page's current permalink at publish
   await seedRedirect({
+    destination: `[resource:${siteId}:${ourTeamPageId}]`,
     siteId,
     source: "/ref-page",
-    destination: `[resource:${siteId}:${ourTeamPageId}]`,
   })
   // Reproduces ISOM-2525: a redirect created before a folder rename now
   // resolves to the exact same live URL as its source and must not be emitted.
   await seedRedirect({
+    destination: `[resource:${siteId}:${ourTeamPageId}]`,
     siteId,
     source: "/about/our-team",
-    destination: `[resource:${siteId}:${ourTeamPageId}]`,
   })
   // Folder variant of the same failure: the wildcard resolver appends the
   // matched remainder, so /about/* -> /about sends every request back to the
   // exact path it started from.
   await seedRedirect({
+    destination: `[resource:${siteId}:${aboutFolderId}]`,
     siteId,
     source: "/about/*",
-    destination: `[resource:${siteId}:${aboutFolderId}]`,
   })
   // A reference to an index page resolves to its folder (the "_index" segment
   // is stripped, matching what the editor displays)
   await seedRedirect({
+    destination: `[resource:${siteId}:${aboutIndexPageId}]`,
     siteId,
     source: "/ref-index",
-    destination: `[resource:${siteId}:${aboutIndexPageId}]`,
   })
   // A reference to the folder itself resolves via its published index page to
   // the folder's URL
   await seedRedirect({
+    destination: `[resource:${siteId}:${aboutFolderId}]`,
     siteId,
     source: "/ref-folder",
-    destination: `[resource:${siteId}:${aboutFolderId}]`,
   })
   // A reference to a folder with no published index page is dropped
   await seedRedirect({
+    destination: `[resource:${siteId}:${danglingFolderId}]`,
     siteId,
     source: "/ref-dangling-folder",
-    destination: `[resource:${siteId}:${danglingFolderId}]`,
   })
   // A reference to the root page resolves to "/"
   await seedRedirect({
+    destination: `[resource:${siteId}:${rootPageId}]`,
     siteId,
     source: "/ref-root",
-    destination: `[resource:${siteId}:${rootPageId}]`,
   })
   // A reference to an unpublished page is dropped
   await seedRedirect({
+    destination: `[resource:${siteId}:${draftPageId}]`,
     siteId,
     source: "/ref-draft",
-    destination: `[resource:${siteId}:${draftPageId}]`,
   })
   // A reference whose embedded siteId is not this site is dropped
   await seedRedirect({
+    destination: `[resource:${siteId + 999}:${ourTeamPageId}]`,
     siteId,
     source: "/ref-wrong-site",
-    destination: `[resource:${siteId + 999}:${ourTeamPageId}]`,
   })
 
   // A second site: nothing from it may leak into the output
   const otherSiteId = await seedSite({ name: "Other site" })
   await seedPage({
-    siteId: otherSiteId,
-    type: ResourceType.RootPage,
-    title: "Other home",
-    permalink: "",
     content: {
-      version: "0.1.0",
+      content: [],
       layout: "homepage",
       page: { description: "Other site" },
-      content: [],
+      version: "0.1.0",
     },
+    permalink: "",
+    siteId: otherSiteId,
+    title: "Other home",
+    type: ResourceType.RootPage,
   })
   await seedPage({
-    siteId: otherSiteId,
-    type: ResourceType.Page,
-    title: "Other page",
-    permalink: "other-page",
     content: {
-      version: "0.1.0",
+      content: [],
       layout: "content",
       page: { contentPageHeader: { summary: "Other site page" } },
-      content: [],
+      version: "0.1.0",
     },
+    permalink: "other-page",
+    siteId: otherSiteId,
+    title: "Other page",
+    type: ResourceType.Page,
   })
   await seedRedirect({
+    destination: "/other-new",
     siteId: otherSiteId,
     source: "/other-old",
-    destination: "/other-new",
   })
 
   return {
-    siteId,
     aboutFolderId,
-    danglingFolderId,
-    newsCollectionId,
-    rootPageId,
     aboutIndexPageId,
-    ourTeamPageId,
+    danglingFolderId,
     draftPageId,
+    newsCollectionId,
+    ourTeamPageId,
+    rootPageId,
+    siteId,
   }
 }

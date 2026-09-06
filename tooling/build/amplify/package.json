@@ -4,6 +4,7 @@
   "description": "",
   "license": "ISC",
   "author": "",
+  "type": "module",
   "main": "create-app.js",
   "scripts": {
     "create-apps": "node create-app.js",

@@ -1,150 +1,144 @@
-const {
+import {
   AmplifyClient,
   CreateAppCommand,
   CreateBranchCommand,
   StartJobCommand,
-} = require("@aws-sdk/client-amplify")
-const fs = require("fs")
-require("dotenv").config()
-const { generatePassword } = require("./utils")
-const { AMPLIFY_BUILD_SPEC } = require("./constants")
+} from "@aws-sdk/client-amplify"
+import dotenv from "dotenv"
+import fs from "node:fs"
 
-// TODO: UPDATE THIS TO THE ACTUAL APPS
+import { AMPLIFY_BUILD_SPEC } from "./constants.js"
+import { generatePassword } from "./utils.js"
+
+dotenv.config()
+
+// Apps to provision via this script
 const REPO_NAMES = ["hello-adrian-test-script-next"]
 
 const amplifyClient = new AmplifyClient({
+  maxAttempts: 3,
   region: "ap-southeast-1",
   retryMode: "standard",
-  maxAttempts: 3,
 })
 
-const createApp = (appName) => {
+const createApp = async (appName) => {
   console.log(`🚀 Creating Amplify app: ${appName}`)
-  let appId = ""
   const password = generatePassword()
 
   const params = new CreateAppCommand({
-    name: appName,
     accessToken: process.env.GITHUB_TOKEN,
-    repository: `https://github.com/isomerpages/${appName}`,
     buildSpec: AMPLIFY_BUILD_SPEC,
-    environmentVariables: {
-      NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT: "staging",
-    },
     customRules: [
       {
         source: "</^[^.]+$|\\.(?!(txt)$)([^.]+$)/>",
-        target: "/404.html",
         status: "404",
+        target: "/404.html",
       },
     ],
+    environmentVariables: {
+      NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT: "staging",
+    },
+    name: appName,
+    repository: `https://github.com/isomerpages/${appName}`,
   })
 
-  // Step 1: Create the Amplify app
-  console.log(`📱 Creating Amplify app from repository...`)
-  return amplifyClient
-    .send(params)
-    .then((appInfo) => {
-      appId = appInfo.app?.appId
-      console.log(`✅ Amplify app created with ID: ${appId}`)
-    })
-    .then(() => {
-      // Step 2: Create main branch
-      console.log(`🌿 Creating main branch...`)
-      return amplifyClient.send(
-        new CreateBranchCommand({
-          appId,
-          branchName: "main",
-          framework: "Next.js - SSG",
-          enableAutoBuild: true,
-          environmentVariables: {
-            NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT: "production",
-          },
-        }),
-      )
-    })
-    .then(() => {
-      // Step 3: Create staging branch
-      console.log(`🌿 Creating staging branch with basic auth credentials...`)
-      return amplifyClient.send(
-        new CreateBranchCommand({
-          appId,
-          branchName: "staging",
-          framework: "Next.js - SSG",
-          enableAutoBuild: true,
-          enableBasicAuth: true,
-          basicAuthCredentials: Buffer.from(
-            `${process.env.AMPLIFY_BASIC_AUTH_USERNAME}:${password}`,
-          ).toString("base64"),
-        }),
-      )
-    })
-    .then(() => {
-      // Step 4: Start build jobs (main branch)
-      console.log(`🔨 Starting build job for main branch...`)
-      return amplifyClient.send(
-        new StartJobCommand({
-          appId,
-          branchName: "main",
-          jobType: "RELEASE",
-        }),
-      )
-    })
-    .then(() => {
-      // Step 5: Start build jobs (staging branch)
-      console.log(`🔨 Starting build job for staging branch...`)
-      return amplifyClient.send(
-        new StartJobCommand({
-          appId,
-          branchName: "staging",
-          jobType: "RELEASE",
-        }),
-      )
-    })
-    .then(() => {
-      console.log(`🎉 Amplify app setup complete!`)
+  try {
+    // Step 1: Create the Amplify app
+    console.log(`📱 Creating Amplify app from repository...`)
+    const appInfo = await amplifyClient.send(params)
+    const appId = appInfo.app?.appId ?? ""
+    console.log(`✅ Amplify app created with ID: ${appId}`)
 
-      // Return app information for output file
-      return {
-        repoName: appName,
-        appId: appId,
-        password: password,
-      }
-    })
-    .catch((error) => {
-      console.error(`❌ Error creating Amplify app: ${error.message}`)
-      throw error
-    })
+    // Step 2: Create main branch
+    console.log(`🌿 Creating main branch...`)
+    await amplifyClient.send(
+      new CreateBranchCommand({
+        appId,
+        branchName: "main",
+        enableAutoBuild: true,
+        environmentVariables: {
+          NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT: "production",
+        },
+        framework: "Next.js - SSG",
+      }),
+    )
+
+    // Step 3: Create staging branch
+    console.log(`🌿 Creating staging branch with basic auth credentials...`)
+    await amplifyClient.send(
+      new CreateBranchCommand({
+        appId,
+        basicAuthCredentials: Buffer.from(
+          `${process.env.AMPLIFY_BASIC_AUTH_USERNAME}:${password}`,
+        ).toString("base64"),
+        branchName: "staging",
+        enableAutoBuild: true,
+        enableBasicAuth: true,
+        framework: "Next.js - SSG",
+      }),
+    )
+
+    // Step 4: Start build jobs (main branch)
+    console.log(`🔨 Starting build job for main branch...`)
+    await amplifyClient.send(
+      new StartJobCommand({
+        appId,
+        branchName: "main",
+        jobType: "RELEASE",
+      }),
+    )
+
+    // Step 5: Start build jobs (staging branch)
+    console.log(`🔨 Starting build job for staging branch...`)
+    await amplifyClient.send(
+      new StartJobCommand({
+        appId,
+        branchName: "staging",
+        jobType: "RELEASE",
+      }),
+    )
+
+    console.log(`🎉 Amplify app setup complete!`)
+
+    return {
+      appId,
+      password,
+      repoName: appName,
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    console.error(`❌ Error creating Amplify app: ${message}`)
+    throw error
+  }
 }
 
 const main = async () => {
-  // Check for required environment variables
   const requiredEnvVars = [
     {
-      name: "GITHUB_TOKEN",
       description: "GitHub personal access token",
       example: "export GITHUB_TOKEN=your_token_here",
+      name: "GITHUB_TOKEN",
     },
     {
-      name: "AMPLIFY_BASIC_AUTH_USERNAME",
       description: "Username for Amplify basic authentication",
       example: "export AMPLIFY_BASIC_AUTH_USERNAME=your_username",
+      name: "AMPLIFY_BASIC_AUTH_USERNAME",
     },
   ]
 
   const missingEnvVars = requiredEnvVars.filter(
-    (envVar) => !process.env[envVar.name],
+    (envVar) => process.env[envVar.name] === undefined,
   )
 
   if (missingEnvVars.length > 0) {
     console.error("❌ Error: Missing required environment variables:")
-    missingEnvVars.forEach((envVar) => {
+    for (const envVar of missingEnvVars) {
       console.error(`   - ${envVar.name}: ${envVar.description}`)
-    })
+    }
     console.log("\nPlease set the missing environment variables:")
-    missingEnvVars.forEach((envVar) => {
+    for (const envVar of missingEnvVars) {
       console.log(envVar.example)
-    })
+    }
     console.log("Or create a .env file with all required variables")
     process.exit(1)
   }
@@ -160,64 +154,40 @@ const main = async () => {
   console.log(`📋 Apps to create: ${REPO_NAMES.join(", ")}`)
   console.log("")
 
-  // Process each app sequentially using promises
-  let currentIndex = 0
-
-  const processNextApp = () => {
-    if (currentIndex >= REPO_NAMES.length) {
-      // All apps processed, generate output
-      generateOutput()
-      return
-    }
-
-    const app = REPO_NAMES[currentIndex]
+  for (const app of REPO_NAMES) {
     console.log(`\n📦 Processing: ${app}`)
     console.log("=".repeat(50))
 
-    createApp(app)
-      .then((result) => {
-        appResults.push(result)
-        console.log(`✅ Successfully created app: ${app}`)
-        currentIndex++
-      })
-      .then(() => {
-        processNextApp()
-      })
-      .catch((error) => {
-        console.error(`❌ Failed to create app ${app}:`, error.message)
-        currentIndex++
-        processNextApp()
-      })
-  }
-
-  const generateOutput = () => {
-    console.log(`\n🎉 Batch processing complete!`)
-    console.log(`📊 Processed ${REPO_NAMES.length} apps`)
-
-    // Generate output file
-    if (appResults.length > 0) {
-      const outputContent = appResults
-        .map(
-          (result) => `${result.repoName},${result.appId},${result.password}`,
-        )
-        .join("\n")
-
-      // Create timestamped filename
-      const now = new Date()
-      const timestamp = now.toISOString().replace(/[:.]/g, "-").slice(0, -5) // Format: YYYY-MM-DDTHH-MM-SS
-      const filename = `amplify-apps-output-${timestamp}.csv`
-
-      fs.writeFileSync(filename, outputContent)
-      console.log(`\n📄 Output file generated: ${filename}`)
-      console.log(
-        `📊 Successfully created ${appResults.length} out of ${REPO_NAMES.length} apps`,
-      )
-    } else {
-      console.log(`\n⚠️  No apps were successfully created`)
+    try {
+      const result = await createApp(app)
+      appResults.push(result)
+      console.log(`✅ Successfully created app: ${app}`)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      console.error(`❌ Failed to create app ${app}:`, message)
     }
   }
 
-  processNextApp()
+  console.log(`\n🎉 Batch processing complete!`)
+  console.log(`📊 Processed ${REPO_NAMES.length} apps`)
+
+  if (appResults.length > 0) {
+    const outputContent = appResults
+      .map((result) => `${result.repoName},${result.appId},${result.password}`)
+      .join("\n")
+
+    const now = new Date()
+    const timestamp = now.toISOString().replaceAll(/[:.]/gu, "-").slice(0, -5)
+    const filename = `amplify-apps-output-${timestamp}.csv`
+
+    fs.writeFileSync(filename, outputContent)
+    console.log(`\n📄 Output file generated: ${filename}`)
+    console.log(
+      `📊 Successfully created ${appResults.length} out of ${REPO_NAMES.length} apps`,
+    )
+  } else {
+    console.log(`\n⚠️  No apps were successfully created`)
+  }
 }
 
-main()
+void main()

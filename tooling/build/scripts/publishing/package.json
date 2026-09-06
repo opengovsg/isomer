@@ -13,13 +13,14 @@
     "test-ci:unit": "vitest run",
     "test:full-build": "vitest run --config vitest.build.config.ts",
     "test:watch": "vitest watch",
-    "upload-redirects": "tsx uploadRedirects.ts"
+    "upload-redirects": "tsx upload-redirects.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "catalog:aws-sdk",
     "dotenv": "catalog:",
     "pg": "catalog:pg",
-    "tsx": "catalog:"
+    "tsx": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@isomer/db": "workspace:*",

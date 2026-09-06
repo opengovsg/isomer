@@ -1,6 +1,6 @@
-const crypto = require("crypto")
+import crypto from "node:crypto"
 
-const generatePassword = () => {
+export const generatePassword = () => {
   let password = ""
 
   // Keep generating until we have at least 12 characters
@@ -8,11 +8,9 @@ const generatePassword = () => {
     const randomString = crypto
       .randomBytes(16)
       .toString("base64")
-      .replace(/[+/=]/g, "")
+      .replaceAll(/[+/=]/gu, "")
     password += randomString
   }
 
-  return password.substring(0, 12)
+  return password.slice(0, 12)
 }
-
-module.exports = { generatePassword }

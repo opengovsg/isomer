@@ -35,8 +35,8 @@ cd tooling/template
 find . schema
 start_time=$(date +%s)
 mkdir -p scripts/
-cp ../build/scripts/generate-sitemap.js scripts/
-node scripts/generate-sitemap.js
+cp ../build/scripts/generate-sitemap.ts scripts/
+node --experimental-strip-types scripts/generate-sitemap.ts
 echo "Sitemap generated"
 calculate_duration $start_time
 

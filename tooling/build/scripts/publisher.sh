@@ -203,7 +203,7 @@ start_time=$(date +%s)
 echo "Uploading redirect files to S3..."
 (
   cd ../../build/scripts/publishing
-  pnpm exec tsx uploadRedirects.ts \
+  pnpm exec tsx upload-redirects.ts \
     --redirects-json "$REDIRECTS_JSON" \
     --s3-bucket-name "$S3_BUCKET_NAME" \
     --site-name "$SITE_NAME" \

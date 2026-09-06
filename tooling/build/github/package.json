@@ -4,6 +4,7 @@
   "description": "GitHub repository creation automation script",
   "license": "ISC",
   "author": "",
+  "type": "module",
   "main": "create-repo.js",
   "scripts": {
     "create-repo": "node create-repo.js",

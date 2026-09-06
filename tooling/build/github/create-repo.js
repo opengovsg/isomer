@@ -1,16 +1,22 @@
 #!/usr/bin/env node
 
-const { Octokit } = require("@octokit/rest")
-require("dotenv").config()
+import { Octokit } from "@octokit/rest"
+import dotenv from "dotenv"
+import { setTimeout } from "node:timers/promises"
 
-// Configuration
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN
+dotenv.config()
+
+const { GITHUB_TOKEN } = process.env
 const ORG_NAME = "isomerpages"
 const TEMPLATE_REPO = "isomer-next-base-template"
 const COLLABORATOR_GROUP = "isomer-migrators"
-const COLLABORATOR_PERMISSION = "push" // 'push' gives write access
+const COLLABORATOR_PERMISSION = "push"
 const DEFAULT_BRANCH = "staging"
-const REPO_NAMES = ["hello-adrian-test-script-next"] // TODO: change to the actual repo names
+const REPO_NAMES = ["hello-adrian-test-script-next"]
+
+const delay = async (seconds = 2) => {
+  await setTimeout(seconds * 1000)
+}
 
 class GitHubRepoCreator {
   constructor() {
@@ -19,34 +25,27 @@ class GitHubRepoCreator {
     })
   }
 
-  async delay(seconds = 2) {
-    await new Promise((resolve) => setTimeout(resolve, seconds * 1000))
-  }
-
   async createRepositoryFromTemplate(repoName) {
     try {
       console.log(`🚀 Creating repository: ${repoName}`)
 
-      // Step 1: Create repository from template
       const createRepoResponse =
         await this.octokit.rest.repos.createUsingTemplate({
+          name: repoName,
+          owner: ORG_NAME,
+          private: true,
           template_owner: ORG_NAME,
           template_repo: TEMPLATE_REPO,
-          owner: ORG_NAME,
-          name: repoName,
-          private: true, // Set to true if you want private repos
         })
 
       console.log(`✅ Repository created: ${createRepoResponse.data.html_url}`)
-      await this.delay()
+      await delay()
 
-      // Step 2: Add collaborator group
       await this.addTeamToRepository(repoName)
-      await this.delay()
+      await delay()
 
-      // Step 3: Create staging branch and set as default
       await this.createStagingBranch(repoName)
-      await this.delay()
+      await delay()
 
       console.log(`🎉 Repository setup complete!`)
       console.log(`📋 Repository URL: ${createRepoResponse.data.html_url}`)
@@ -57,18 +56,19 @@ class GitHubRepoCreator {
 
       return createRepoResponse.data
     } catch (error) {
-      console.error("❌ Error creating repository:", error.message)
+      const err = error instanceof Error ? error : new Error(String(error))
+      console.error("❌ Error creating repository:", err.message)
 
-      if (error.status === 422) {
+      if ("status" in error && error.status === 422) {
         console.error("💡 This might be because:")
         console.error("   - Repository name already exists")
         console.error("   - Repository name contains invalid characters")
         console.error("   - Template repository is not accessible")
-      } else if (error.status === 401) {
+      } else if ("status" in error && error.status === 401) {
         console.error(
           "💡 Authentication failed. Please check your GITHUB_TOKEN.",
         )
-      } else if (error.status === 403) {
+      } else if ("status" in error && error.status === 403) {
         console.error(
           "💡 Permission denied. Please check your token permissions.",
         )
@@ -82,35 +82,31 @@ class GitHubRepoCreator {
     try {
       console.log(`👥 Adding collaborator group: ${COLLABORATOR_GROUP}`)
 
-      // First, try to get the team ID
       const teams = await this.octokit.rest.teams.list({
         org: ORG_NAME,
       })
 
       const team = teams.data.find((t) => t.slug === COLLABORATOR_GROUP)
-      if (!team) {
+      if (team === undefined) {
         throw new Error(
           `Team ${COLLABORATOR_GROUP} not found in organization ${ORG_NAME}`,
         )
       }
 
-      // Add the team to the repository
       await this.octokit.rest.teams.addOrUpdateRepoPermissionsInOrg({
         org: ORG_NAME,
-        team_slug: COLLABORATOR_GROUP,
         owner: ORG_NAME,
-        repo: repoName,
         permission: COLLABORATOR_PERMISSION,
+        repo: repoName,
+        team_slug: COLLABORATOR_GROUP,
       })
 
       console.log(
         `✅ Collaborator group added with ${COLLABORATOR_PERMISSION} access`,
       )
     } catch (error) {
-      console.error(
-        `⚠️  Warning: Could not add collaborator group: ${error.message}`,
-      )
-      // Don't throw here as this might fail due to group not existing or permissions
+      const message = error instanceof Error ? error.message : String(error)
+      console.error(`⚠️  Warning: Could not add collaborator group: ${message}`)
     }
   }
 
@@ -118,7 +114,6 @@ class GitHubRepoCreator {
     try {
       console.log(`🌿 Creating ${DEFAULT_BRANCH} branch and setting as default`)
 
-      // Get the default branch (usually 'main' or 'master')
       const repo = await this.octokit.rest.repos.get({
         owner: ORG_NAME,
         repo: repoName,
@@ -127,44 +122,40 @@ class GitHubRepoCreator {
       const defaultBranch = repo.data.default_branch
       console.log(`📋 Current default branch: ${defaultBranch}`)
 
-      // Get the SHA of the default branch
       const ref = await this.octokit.rest.git.getRef({
         owner: ORG_NAME,
-        repo: repoName,
         ref: `heads/${defaultBranch}`,
+        repo: repoName,
       })
 
-      const sha = ref.data.object.sha
+      const { sha } = ref.data.object
 
-      // Create the staging branch from the default branch
       await this.octokit.rest.git.createRef({
         owner: ORG_NAME,
-        repo: repoName,
         ref: `refs/heads/${DEFAULT_BRANCH}`,
-        sha: sha,
+        repo: repoName,
+        sha,
       })
 
       console.log(`✅ Created ${DEFAULT_BRANCH} branch`)
 
-      // Set staging as the default branch
       await this.octokit.rest.repos.update({
+        default_branch: DEFAULT_BRANCH,
         owner: ORG_NAME,
         repo: repoName,
-        default_branch: DEFAULT_BRANCH,
       })
 
       console.log(`✅ Set ${DEFAULT_BRANCH} as default branch`)
     } catch (error) {
-      console.error(`❌ Error creating staging branch: ${error.message}`)
+      const message = error instanceof Error ? error.message : String(error)
+      console.error(`❌ Error creating staging branch: ${message}`)
       throw error
     }
   }
 }
 
-// Main execution
-async function main() {
-  // Check for GitHub token first
-  if (!GITHUB_TOKEN) {
+const main = async () => {
+  if (GITHUB_TOKEN === undefined || GITHUB_TOKEN === "") {
     console.error("❌ Error: GITHUB_TOKEN environment variable is required")
     console.log("Please set your GitHub personal access token:")
     console.log("export GITHUB_TOKEN=your_token_here")
@@ -177,9 +168,8 @@ async function main() {
     process.exit(1)
   }
 
-  // Validate all repository names
   for (const repoName of REPO_NAMES) {
-    if (!/^[a-zA-Z0-9._-]+$/.test(repoName)) {
+    if (!/^[a-zA-Z0-9._-]+$/u.test(repoName)) {
       console.error(
         `❌ Error: Repository name "${repoName}" contains invalid characters`,
       )
@@ -196,7 +186,6 @@ async function main() {
   console.log(`📋 Repositories to create: ${REPO_NAMES.join(", ")}`)
   console.log("")
 
-  // Process each repository
   for (const repoName of REPO_NAMES) {
     try {
       console.log(`\n📦 Processing: ${repoName}`)
@@ -204,8 +193,8 @@ async function main() {
       await creator.createRepositoryFromTemplate(repoName)
       console.log(`✅ Successfully created: ${repoName}`)
     } catch (error) {
-      console.error(`❌ Failed to create ${repoName}:`, error.message)
-      // Continue with next repository instead of exiting
+      const message = error instanceof Error ? error.message : String(error)
+      console.error(`❌ Failed to create ${repoName}:`, message)
     }
   }
 
@@ -213,9 +202,6 @@ async function main() {
   console.log(`📊 Processed ${REPO_NAMES.length} repositories`)
 }
 
-// Run the script
-if (require.main === module) {
-  main()
-}
+void main()
 
-module.exports = { GitHubRepoCreator }
+export { GitHubRepoCreator }

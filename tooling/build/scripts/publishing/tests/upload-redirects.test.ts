@@ -8,11 +8,11 @@ import {
   partitionRedirects,
   resolveConcurrency,
   resolveUploadConfig,
-} from "../uploadRedirects"
+} from "../upload-redirects"
 
 const baseArgs = [
   "node",
-  "uploadRedirects.ts",
+  "upload-redirects.ts",
   "--redirects-json",
   "/tmp/redirects.json",
   "--s3-bucket-name",
@@ -28,16 +28,16 @@ const baseArgs = [
 describe("parseUploadCliArgs", () => {
   it("parses publisher flags from argv", () => {
     expect(parseUploadCliArgs([...baseArgs])).toEqual({
+      "build-number": "42",
+      concurrency: "100",
       "redirects-json": "/tmp/redirects.json",
       "s3-bucket-name": "my-bucket",
       "site-name": "my-site",
-      "build-number": "42",
-      concurrency: "100",
     })
   })
 
   it("returns empty values when flags are absent", () => {
-    expect(parseUploadCliArgs(["node", "uploadRedirects.ts"])).toEqual({})
+    expect(parseUploadCliArgs(["node", "upload-redirects.ts"])).toEqual({})
   })
 })
 
@@ -47,7 +47,7 @@ describe("resolveConcurrency", () => {
   })
 
   it("falls back to 20 when unset or invalid", () => {
-    expect(resolveConcurrency(undefined)).toBe(20)
+    expect(resolveConcurrency()).toBe(20)
     expect(resolveConcurrency("")).toBe(20)
     expect(resolveConcurrency("0")).toBe(20)
     expect(resolveConcurrency("-1")).toBe(20)
@@ -58,16 +58,16 @@ describe("resolveConcurrency", () => {
 describe("resolveUploadConfig", () => {
   it("reads all publisher inputs from argv", () => {
     expect(resolveUploadConfig([...baseArgs])).toEqual({
+      buildNumber: "42",
+      concurrency: 100,
       redirectsJson: "/tmp/redirects.json",
       s3BucketName: "my-bucket",
       siteName: "my-site",
-      buildNumber: "42",
-      concurrency: 100,
     })
   })
 
   it("returns null when required inputs are missing", () => {
-    expect(resolveUploadConfig(["node", "uploadRedirects.ts"])).toBeNull()
+    expect(resolveUploadConfig(["node", "upload-redirects.ts"])).toBeNull()
   })
 })
 
@@ -124,8 +124,8 @@ describe("isSelfReferentialRedirect", () => {
   it("detects an exact redirect whose resource reference resolved back to its source", () => {
     expect(
       isSelfReferentialRedirect({
-        source: "/resources/students/class-exam-timetable",
         destination: "/resources/students/class-exam-timetable",
+        source: "/resources/students/class-exam-timetable",
       }),
     ).toBe(true)
   })
@@ -133,8 +133,8 @@ describe("isSelfReferentialRedirect", () => {
   it("compares the request path after percent-decoding and removing query or fragment suffixes", () => {
     expect(
       isSelfReferentialRedirect({
-        source: "/students/class%2Dexam%2Dtimetable",
         destination: "/students/class-exam-timetable?year=2026#schedule",
+        source: "/students/class%2Dexam%2Dtimetable",
       }),
     ).toBe(true)
   })
@@ -142,8 +142,8 @@ describe("isSelfReferentialRedirect", () => {
   it("detects a wildcard that points back at its own prefix", () => {
     expect(
       isSelfReferentialRedirect({
-        source: "/resources/students/*",
         destination: "/resources/students",
+        source: "/resources/students/*",
       }),
     ).toBe(true)
   })
@@ -151,14 +151,14 @@ describe("isSelfReferentialRedirect", () => {
   it("allows redirects to a different internal path or an external URL", () => {
     expect(
       isSelfReferentialRedirect({
-        source: "/resources/students/*",
         destination: "/resources/alumni",
+        source: "/resources/students/*",
       }),
     ).toBe(false)
     expect(
       isSelfReferentialRedirect({
-        source: "/resources/students",
         destination: "https://www.example.gov.sg/resources/students",
+        source: "/resources/students",
       }),
     ).toBe(false)
   })
@@ -167,9 +167,9 @@ describe("isSelfReferentialRedirect", () => {
 describe("partitionRedirects", () => {
   it("splits exact from wildcard by source shape", () => {
     const { exact, manifestEntries } = partitionRedirects([
-      { source: "/faq", destination: "/faqs" },
-      { source: "/news/*", destination: "/newsroom" },
-      { source: "/promotions/*", destination: "https://x.gov.sg/g" },
+      { destination: "/faqs", source: "/faq" },
+      { destination: "/newsroom", source: "/news/*" },
+      { destination: "https://x.gov.sg/g", source: "/promotions/*" },
     ])
     expect(exact.map((r) => r.source)).toEqual(["/faq"])
     expect(manifestEntries.map((r) => r.source)).toEqual([
@@ -180,7 +180,7 @@ describe("partitionRedirects", () => {
 
   it("returns empty arrays when all rows are exact", () => {
     const { exact, manifestEntries } = partitionRedirects([
-      { source: "/a", destination: "/b" },
+      { destination: "/b", source: "/a" },
     ])
     expect(exact).toHaveLength(1)
     expect(manifestEntries).toHaveLength(0)
@@ -197,20 +197,20 @@ describe("buildManifest", () => {
   it("produces a versioned flat map keyed by source", () => {
     expect(
       buildManifest([
-        { source: "/news/*", destination: "/newsroom" },
-        { source: "/promotions/*", destination: "https://x.gov.sg/g" },
+        { destination: "/newsroom", source: "/news/*" },
+        { destination: "https://x.gov.sg/g", source: "/promotions/*" },
       ]),
     ).toEqual({
-      version: 1,
       redirects: {
         "/news/*": "/newsroom",
         "/promotions/*": "https://x.gov.sg/g",
       },
+      version: 1,
     })
   })
 
   it("returns an empty redirects map for an empty input", () => {
-    expect(buildManifest([])).toEqual({ version: 1, redirects: {} })
+    expect(buildManifest([])).toEqual({ redirects: {}, version: 1 })
   })
 
   describe("duplicate sources", () => {
@@ -219,10 +219,10 @@ describe("buildManifest", () => {
     })
 
     it("keeps the first destination and warns instead of silently overwriting", () => {
-      const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined)
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {})
       const result = buildManifest([
-        { source: "/news/*", destination: "/newsroom" },
-        { source: "/news/*", destination: "/second-wins-if-not-guarded" },
+        { destination: "/newsroom", source: "/news/*" },
+        { destination: "/second-wins-if-not-guarded", source: "/news/*" },
       ])
       expect(result.redirects["/news/*"]).toBe("/newsroom")
       expect(warn).toHaveBeenCalledWith(expect.stringContaining("/news/*"))

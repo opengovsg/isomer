@@ -1,12 +1,13 @@
 import { spawnSync } from "node:child_process"
 import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
-import { dirname, join } from "node:path"
-import { fileURLToPath } from "node:url"
+import path from "node:path"
 import { afterAll, beforeAll, describe, expect, it } from "vitest"
 
 import { ResourceType } from "@isomer/db"
 
+import type { TestSitemapEntry } from "../schemas"
+import { redirectsFileSchema, testSitemapEntrySchema } from "../schemas"
 import {
   db,
   FOOTER_CONTENT,
@@ -17,27 +18,10 @@ import {
   TEST_DB_ENV,
 } from "./seed"
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
-const PACKAGE_DIR = join(__dirname, "..")
-const TSX_BIN = join(PACKAGE_DIR, "node_modules", ".bin", "tsx")
+const PACKAGE_DIR = path.join(import.meta.dirname, "..")
+const TSX_BIN = path.join(PACKAGE_DIR, "node_modules", ".bin", "tsx")
 
-interface SitemapEntry {
-  id: string
-  type: string
-  title: string
-  permalink: string
-  lastModified: string
-  layout: string
-  summary: string
-  category?: string
-  date?: string
-  image?: { src?: string; alt?: string }
-  firstImage?: { src?: string; alt?: string }
-  ref?: string
-  children?: SitemapEntry[]
-}
-
-const collectPermalinks = (entry: SitemapEntry): string[] => [
+const collectPermalinks = (entry: TestSitemapEntry): string[] => [
   entry.permalink,
   ...(entry.children ?? []).flatMap(collectPermalinks),
 ]
@@ -49,9 +33,18 @@ let danglingFolderId: string
 let newsCollectionId: string
 
 const readOutput = (...segments: string[]) =>
-  JSON.parse(readFileSync(join(outputDir, ...segments), "utf-8"))
+  JSON.parse(readFileSync(path.join(outputDir, ...segments), "utf-8"))
 
-const readSitemap = () => readOutput("sitemap.json") as SitemapEntry
+interface RedirectRow {
+  source: string
+  destination: string
+}
+
+const readRedirects = (...segments: string[]): RedirectRow[] =>
+  redirectsFileSchema.parse(readOutput(...segments))
+
+const readSitemap = (): TestSitemapEntry =>
+  testSitemapEntrySchema.parse(readOutput("sitemap.json"))
 
 beforeAll(async () => {
   // Arrange: one rich site covering every code path the script handles
@@ -59,7 +52,7 @@ beforeAll(async () => {
     await seedPublishingSite())
 
   // Act: run the script exactly as CodeBuild does, via the tsx entrypoint
-  outputDir = mkdtempSync(join(tmpdir(), "publishing-e2e-"))
+  outputDir = mkdtempSync(path.join(tmpdir(), "publishing-e2e-"))
   const result = spawnSync(TSX_BIN, ["index.ts"], {
     cwd: PACKAGE_DIR,
     encoding: "utf-8",
@@ -83,7 +76,7 @@ beforeAll(async () => {
 afterAll(async () => {
   await db.destroy()
   if (outputDir) {
-    rmSync(outputDir, { recursive: true, force: true })
+    rmSync(outputDir, { force: true, recursive: true })
   }
 })
 
@@ -125,10 +118,10 @@ describe("sitemap.json", () => {
     // Assert
     expect(about).toMatchObject({
       id: aboutFolderId,
-      type: ResourceType.IndexPage,
-      title: "Who we are",
       layout: "index",
       summary: "All about us",
+      title: "Who we are",
+      type: ResourceType.IndexPage,
     })
   })
 
@@ -141,14 +134,12 @@ describe("sitemap.json", () => {
     // Assert
     expect(about?.children).toHaveLength(1)
     expect(about?.children?.[0]).toMatchObject({
-      type: ResourceType.Page,
-      title: "Our team",
-      permalink: "/about/our-team",
+      firstImage: { alt: "The team", src: "/images/team.png" },
       layout: "content",
-      // Array summaries are joined with spaces
+      permalink: "/about/our-team",
       summary: "Meet the team",
-      // The first image component in the page content is surfaced
-      firstImage: { src: "/images/team.png", alt: "The team" },
+      title: "Our team",
+      type: ResourceType.Page,
     })
   })
 
@@ -161,10 +152,10 @@ describe("sitemap.json", () => {
     // Assert
     expect(dangling).toMatchObject({
       id: danglingFolderId,
-      type: ResourceType.Folder,
-      title: "All the danglers",
       layout: "index",
       summary: "Pages in All the danglers",
+      title: "All the danglers",
+      type: ResourceType.Folder,
     })
     expect(dangling?.children?.map((child) => child.permalink)).toEqual([
       "/dangling/lonely-page",
@@ -180,9 +171,9 @@ describe("sitemap.json", () => {
     // Assert
     expect(news).toMatchObject({
       id: newsCollectionId,
-      type: ResourceType.Collection,
-      title: "News",
       layout: "collection",
+      title: "News",
+      type: ResourceType.Collection,
     })
     // No order is configured for the collection, so children sort by title
     expect(news?.children?.map((child) => child.permalink)).toEqual([
@@ -190,20 +181,20 @@ describe("sitemap.json", () => {
       "/news/zebra-article",
     ])
     expect(news?.children?.[0]).toMatchObject({
-      type: ResourceType.CollectionLink,
+      category: "Press releases",
+      date: "01/01/2026",
       layout: "link",
       ref: "https://example.com",
-      date: "01/01/2026",
-      category: "Press releases",
       summary: "An external link",
+      type: ResourceType.CollectionLink,
     })
     expect(news?.children?.[1]).toMatchObject({
-      type: ResourceType.CollectionPage,
-      layout: "article",
-      date: "15/01/2026",
       category: "Press releases",
+      date: "15/01/2026",
+      image: { alt: "A zebra", src: "/images/zebra.png" },
+      layout: "article",
       summary: "Zebra article summary",
-      image: { src: "/images/zebra.png", alt: "A zebra" },
+      type: ResourceType.CollectionPage,
     })
   })
 
@@ -227,29 +218,35 @@ describe("sitemap.json", () => {
 describe("schema files", () => {
   it("writes one file per published page", () => {
     // Arrange / Act / Assert
-    expect(existsSync(join(outputDir, "schema", "_index.json"))).toBe(true)
-    expect(existsSync(join(outputDir, "schema", "about", "_index.json"))).toBe(
-      true,
-    )
+    expect(existsSync(path.join(outputDir, "schema", "_index.json"))).toBe(true)
     expect(
-      existsSync(join(outputDir, "schema", "about", "our-team.json")),
+      existsSync(path.join(outputDir, "schema", "about", "_index.json")),
     ).toBe(true)
     expect(
-      existsSync(join(outputDir, "schema", "dangling", "lonely-page.json")),
+      existsSync(path.join(outputDir, "schema", "about", "our-team.json")),
     ).toBe(true)
     expect(
-      existsSync(join(outputDir, "schema", "news", "zebra-article.json")),
+      existsSync(
+        path.join(outputDir, "schema", "dangling", "lonely-page.json"),
+      ),
     ).toBe(true)
     expect(
-      existsSync(join(outputDir, "schema", "news", "alpha-link.json")),
+      existsSync(path.join(outputDir, "schema", "news", "zebra-article.json")),
+    ).toBe(true)
+    expect(
+      existsSync(path.join(outputDir, "schema", "news", "alpha-link.json")),
     ).toBe(true)
   })
 
   it("does not write files for drafts, meta resources or other sites", () => {
     // Arrange / Act / Assert
-    expect(existsSync(join(outputDir, "schema", "draft-page.json"))).toBe(false)
-    expect(existsSync(join(outputDir, "schema", "_meta.json"))).toBe(false)
-    expect(existsSync(join(outputDir, "schema", "other-page.json"))).toBe(false)
+    expect(existsSync(path.join(outputDir, "schema", "draft-page.json"))).toBe(
+      false,
+    )
+    expect(existsSync(path.join(outputDir, "schema", "_meta.json"))).toBe(false)
+    expect(existsSync(path.join(outputDir, "schema", "other-page.json"))).toBe(
+      false,
+    )
   })
 
   it("injects the resource title into the written page content", () => {
@@ -268,13 +265,13 @@ describe("schema files", () => {
 
     // Assert
     expect(folderIndex).toEqual({
-      version: "0.1.0",
+      content: [],
       layout: "index",
       page: {
-        title: "All the danglers",
         contentPageHeader: { summary: "Pages in All the danglers" },
+        title: "All the danglers",
       },
-      content: [],
+      version: "0.1.0",
     })
   })
 
@@ -284,14 +281,14 @@ describe("schema files", () => {
 
     // Assert
     expect(collectionIndex).toEqual({
-      version: "0.1.0",
+      content: [],
       layout: "collection",
       page: {
-        title: "News",
         contentPageHeader: { summary: "Pages in News" },
+        title: "News",
         variant: "collection",
       },
-      content: [],
+      version: "0.1.0",
     })
   })
 })
@@ -319,22 +316,19 @@ describe("site data files", () => {
 describe("redirects.json", () => {
   it("writes only the live redirects of the site", () => {
     // Arrange / Act
-    const redirects = readOutput("redirects.json") as {
-      source: string
-      destination: string
-    }[]
+    const redirects = readRedirects("redirects.json")
 
     // Assert: literal destinations pass through; references resolve to the
     // target's current permalink; the deleted, unpublished-reference, and
     // other-site redirects are all excluded
     expect(redirects).toEqual(
       expect.arrayContaining([
-        { source: "/old-about", destination: "/about" },
-        { source: "/old-news", destination: "/news" },
-        { source: "/ref-page", destination: "/about/our-team" },
-        { source: "/ref-index", destination: "/about" },
-        { source: "/ref-folder", destination: "/about" },
-        { source: "/ref-root", destination: "/" },
+        { destination: "/about", source: "/old-about" },
+        { destination: "/news", source: "/old-news" },
+        { destination: "/about/our-team", source: "/ref-page" },
+        { destination: "/about", source: "/ref-index" },
+        { destination: "/about", source: "/ref-folder" },
+        { destination: "/", source: "/ref-root" },
       ]),
     )
     expect(redirects).toHaveLength(6)
@@ -342,10 +336,7 @@ describe("redirects.json", () => {
 
   it("drops a redirect whose referenced page is unpublished", () => {
     // Arrange / Act
-    const redirects = readOutput("redirects.json") as {
-      source: string
-      destination: string
-    }[]
+    const redirects = readRedirects("redirects.json")
 
     // Assert
     expect(
@@ -355,10 +346,7 @@ describe("redirects.json", () => {
 
   it("drops a folder reference with no published index page", () => {
     // Arrange / Act
-    const redirects = readOutput("redirects.json") as {
-      source: string
-      destination: string
-    }[]
+    const redirects = readRedirects("redirects.json")
 
     // Assert
     expect(
@@ -368,10 +356,7 @@ describe("redirects.json", () => {
 
   it("drops a reference whose embedded siteId is not this site", () => {
     // Arrange / Act
-    const redirects = readOutput("redirects.json") as {
-      source: string
-      destination: string
-    }[]
+    const redirects = readRedirects("redirects.json")
 
     // Assert
     expect(
@@ -381,10 +366,7 @@ describe("redirects.json", () => {
 
   it("drops a redirect whose reference resolves back to its own source", () => {
     // Arrange / Act
-    const redirects = readOutput("redirects.json") as {
-      source: string
-      destination: string
-    }[]
+    const redirects = readRedirects("redirects.json")
 
     // Assert — publishing this row would replace the live page object with a
     // redirect to the same URL, causing the loop reported in ISOM-2525.
@@ -395,10 +377,7 @@ describe("redirects.json", () => {
 
   it("drops a wildcard whose folder reference resolves back to its own prefix", () => {
     // Arrange / Act
-    const redirects = readOutput("redirects.json") as {
-      source: string
-      destination: string
-    }[]
+    const redirects = readRedirects("redirects.json")
 
     // Assert — this exercises GET_REDIRECTS' wildcard prefix branch. The edge
     // resolver would otherwise append each matched remainder to /about and

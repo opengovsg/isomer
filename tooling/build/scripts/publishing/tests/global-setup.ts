@@ -1,13 +1,10 @@
 import { readdirSync, readFileSync, statSync } from "node:fs"
-import { dirname, join } from "node:path"
-import { fileURLToPath } from "node:url"
+import path from "node:path"
 import { Client } from "pg"
 import { GenericContainer, Wait } from "testcontainers"
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
-
-const prismaMigrationDir = join(
-  __dirname,
+const prismaMigrationDir = path.join(
+  import.meta.dirname,
   "..",
   "..",
   "..",
@@ -23,48 +20,52 @@ const DB_USERNAME = "root"
 const DB_PASSWORD = "root"
 const DB_NAME = "test"
 
-// Running migrations manually; dd-trace intercepts `exec` usage and prevents runs
-const applyMigrations = async (client: Client) => {
-  const directory = readdirSync(prismaMigrationDir).sort()
-  for (const file of directory) {
-    const name = `${prismaMigrationDir}/${file}`
+const applyMigrations = async (client: Client, migrationDirs: string[]) => {
+  const applyNext = async (index: number): Promise<void> => {
+    if (index >= migrationDirs.length) {
+      return
+    }
+
+    const name = migrationDirs[index]
     if (statSync(name).isDirectory()) {
-      const migration = readFileSync(`${name}/migration.sql`, "utf8")
+      const migration = readFileSync(`${name}/migration.sql`, "utf-8")
       await client.query(migration)
     }
+
+    await applyNext(index + 1)
   }
+
+  await applyNext(0)
 }
 
-export default async () => {
+const globalSetup = async () => {
   const container = await new GenericContainer("postgres:15-alpine")
     .withExposedPorts(5432)
     .withEnvironment({
-      POSTGRES_USER: DB_USERNAME,
-      POSTGRES_PASSWORD: DB_PASSWORD,
       POSTGRES_DB: DB_NAME,
+      POSTGRES_PASSWORD: DB_PASSWORD,
+      POSTGRES_USER: DB_USERNAME,
     })
     .withStartupTimeout(60_000)
-    // The Postgres image starts a temporary server during initialization before
-    // launching the final server. Wait for both readiness messages so clients
-    // cannot connect in between those two phases.
     .withWaitStrategy(
       Wait.forLogMessage("database system is ready to accept connections", 2),
     )
     .start()
 
   const client = new Client({
+    database: DB_NAME,
     host: container.getHost(),
+    password: DB_PASSWORD,
     port: container.getMappedPort(5432),
     user: DB_USERNAME,
-    password: DB_PASSWORD,
-    database: DB_NAME,
   })
   await client.connect()
-  await applyMigrations(client)
+  const migrationDirs = readdirSync(prismaMigrationDir)
+    .toSorted()
+    .map((file) => `${prismaMigrationDir}/${file}`)
+  await applyMigrations(client, migrationDirs)
   await client.end()
 
-  // Test workers fork off this process after global setup, so plain env
-  // assignments are visible to the test files
   process.env.TEST_DB_HOST = container.getHost()
   process.env.TEST_DB_PORT = String(container.getMappedPort(5432))
   process.env.TEST_DB_USERNAME = DB_USERNAME
@@ -75,3 +76,5 @@ export default async () => {
     await container.stop({ remove: true })
   }
 }
+
+export default globalSetup

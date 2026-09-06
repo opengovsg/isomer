@@ -1,12 +1,17 @@
 import * as dotenv from "dotenv"
-import * as fs from "fs"
-import * as path from "path"
-import { performance } from "perf_hooks"
+import fs from "node:fs"
+import path from "node:path"
+import { performance } from "node:perf_hooks"
 import { Client } from "pg"
 import { ResourceType } from "~generated/generatedEnums"
 
 import type { PageResourceType } from "./constants"
-import type { PageOnlySitemapEntry, Resource, SitemapEntry } from "./types"
+import type {
+  PageOnlySitemapEntry,
+  Resource,
+  ResourceContent,
+  SitemapEntry,
+} from "./types"
 import { FOLDER_RESOURCE_TYPES, PAGE_RESOURCE_TYPES } from "./constants"
 import {
   GET_ALL_RESOURCES_WITH_FULL_PERMALINKS,
@@ -18,41 +23,35 @@ import {
 import {
   getCollectionIndexPageContents,
   getFolderIndexPageContents,
-} from "./utils/getIndexPageContent"
-import { getResourceFirstImage } from "./utils/getResourceFirstImage"
+} from "./utils/get-index-page-content"
+import { getResourceFirstImage } from "./utils/get-resource-first-image"
 
 dotenv.config()
 
-// Env vars
-const DB_USERNAME = process.env.DB_USERNAME
-const DB_PASSWORD = process.env.DB_PASSWORD
-const DB_HOST = process.env.DB_HOST
-const DB_PORT = process.env.DB_PORT
-const DB_NAME = process.env.DB_NAME
+const { DB_USERNAME } = process.env
+const { DB_PASSWORD } = process.env
+const { DB_HOST } = process.env
+const { DB_PORT } = process.env
+const { DB_NAME } = process.env
 const DB_IAM_AUTH = process.env.DB_IAM_AUTH === "true"
-const DB_SSL_SERVERNAME = process.env.DB_SSL_SERVERNAME
+const { DB_SSL_SERVERNAME } = process.env
 const SITE_ID = Number(process.env.SITE_ID)
-// Defaults to this package's directory, which publisher.sh expects in production
-const OUTPUT_DIR = process.env.OUTPUT_DIR ?? __dirname
+const OUTPUT_DIR = process.env.OUTPUT_DIR ?? import.meta.dirname
 
-// Unique identifier for pages of dangling directories
-// Guaranteed to not be present in the database because we start from 1
 const DANGLING_DIRECTORY_PAGE_ID = "-1"
 const INDEX_PAGE_PERMALINK = "_index"
 const META_PERMALINK = "_meta"
 
 const getConvertedPermalink = (fullPermalink: string) => {
-  // NOTE: If the full permalink ends with `_index`,
-  // we should remove it because this function
-  // is called for generation of the permalink in the sitemap
-  // and reflects what the users see.
-  // Note that we can do an `endsWith` because
-  // we prohibit users from using `_` as a character
-  const fullPermalinkWithoutIndex = fullPermalink.endsWith(INDEX_PAGE_PERMALINK)
-    ? fullPermalink.slice(0, -INDEX_PAGE_PERMALINK.length)
-    : fullPermalink.endsWith(META_PERMALINK)
-      ? fullPermalink.slice(0, -META_PERMALINK.length)
-      : fullPermalink
+  let fullPermalinkWithoutIndex = fullPermalink
+  if (fullPermalink.endsWith(INDEX_PAGE_PERMALINK)) {
+    fullPermalinkWithoutIndex = fullPermalink.slice(
+      0,
+      -INDEX_PAGE_PERMALINK.length,
+    )
+  } else if (fullPermalink.endsWith(META_PERMALINK)) {
+    fullPermalinkWithoutIndex = fullPermalink.slice(0, -META_PERMALINK.length)
+  }
 
   if (fullPermalinkWithoutIndex.endsWith("/")) {
     return fullPermalinkWithoutIndex.slice(0, -1)
@@ -61,175 +60,137 @@ const getConvertedPermalink = (fullPermalink: string) => {
   return fullPermalinkWithoutIndex
 }
 
-// Wrapper function for debug logging
-function logDebug(message: string, ...optionalParams: any[]) {
+const logDebug = (message: string, ...optionalParams: unknown[]) => {
   if (process.env.DEBUG === "true") {
     console.log(message, ...optionalParams)
   }
 }
 
-async function main() {
-  const client = new Client({
-    user: DB_USERNAME,
-    host: DB_HOST,
-    database: DB_NAME,
-    password: DB_IAM_AUTH
-      ? (DB_PASSWORD ?? "")
-      : decodeURIComponent(DB_PASSWORD ?? ""),
-    port: Number(DB_PORT),
-    ...(DB_IAM_AUTH && DB_SSL_SERVERNAME
-      ? {
-          ssl: {
-            // IAM requires TLS. Node does not trust the Amazon RDS CA, and the
-            // SSM tunnel presents that cert on localhost, so we encrypt without
-            // verifying the issuer.
-            rejectUnauthorized: false,
-            servername: DB_SSL_SERVERNAME,
-          },
-        }
-      : {}),
-  })
+type JsonPrimitive = string | number | boolean | null
+type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue }
 
-  const start = performance.now() // Start profiling
+const writeJsonToFile = (content: JsonValue, filename: string) => {
+  const directoryPath = path.join(OUTPUT_DIR, "data")
 
   try {
-    await client.connect()
+    fs.mkdirSync(directoryPath, { recursive: true })
 
-    // Fetch and write navbar, footer, and config JSONs
-    await fetchAndWriteSiteData(client)
+    const filePath = path.join(directoryPath, filename)
+    fs.writeFileSync(filePath, JSON.stringify(content), "utf-8")
 
-    // Fetch and write redirects
-    await fetchAndWriteRedirects(client)
-
-    // Fetch all resources and their full permalinks
-    const resources = await getAllResourcesWithFullPermalinks(client)
-
-    // Construct an array of sitemap entries
-    const sitemapEntries: PageOnlySitemapEntry[] = []
-
-    // Process each resource
-    for (const resource of resources) {
-      logDebug(
-        `Processing resource with id ${resource.id}, fullPermalink: ${resource.fullPermalink}`,
-      )
-
-      // Ensure the resource is a page (we don't need to write folders)
-      if (
-        PAGE_RESOURCE_TYPES.find((t) => t === resource.type) &&
-        resource.content
-      ) {
-        // Inject page type and title into content before writing to file
-        resource.content.page = {
-          ...resource.content.page,
-          title: resource.title,
-        }
-
-        writeContentToFile(
-          resource.fullPermalink,
-          resource.content,
-          resource.parentId,
-        )
-
-        // NOTE: We remap the ID for _index pages to be the ID of the folder,
-        // as both will have the same permalink and the folder is recognized as
-        // the parent of all the children resources
-        const idOfFolder = resources.find(
-          (item) =>
-            resource.fullPermalink.endsWith(INDEX_PAGE_PERMALINK) &&
-            resource.type !== "RootPage" &&
-            item.fullPermalink ===
-              getConvertedPermalink(resource.fullPermalink),
-        )?.id
-
-        const sitemapEntry: PageOnlySitemapEntry = {
-          id: idOfFolder ?? resource.id,
-          type: resource.type as PageResourceType,
-          title: resource.title,
-          permalink: `/${getConvertedPermalink(resource.fullPermalink)}`,
-          lastModified: resource.updatedAt.toISOString(),
-          layout: resource.content.layout || "content",
-          summary:
-            (Array.isArray(resource.content.page.contentPageHeader?.summary)
-              ? resource.content.page.contentPageHeader.summary.join(" ")
-              : resource.content.page.contentPageHeader?.summary) ||
-            resource.content.page.articlePageHeader?.summary ||
-            resource.content.page.subtitle ||
-            resource.content.page.description ||
-            "",
-          category: resource.content.page.category,
-          tags: resource.content.page.tags,
-          tagged: resource.content.page.tagged,
-          date: resource.content.page.date,
-          image: resource.content.page.image,
-          firstImage: getResourceFirstImage(resource),
-          ref: resource.content.page.ref, // For file and link layouts
-          collectionPagePageProps: {
-            tagCategories: resource.content.page?.tagCategories,
-            sortOrder: resource.content.page?.sortOrder,
-            defaultSortBy: resource.content.page?.defaultSortBy,
-            defaultSortDirection: resource.content.page?.defaultSortDirection,
-            showThumbnail: resource.content.page?.showThumbnail,
-          },
-        }
-
-        sitemapEntries.push(sitemapEntry)
-      } else {
-        logDebug(
-          `Skipping resource with id ${resource.id} as it is not a Page or has no content.`,
-        )
-      }
-    }
-
-    logDebug("Sitemap entries:", sitemapEntries)
-
-    const rootPage = sitemapEntries.find(
-      (entry) => entry.type === ResourceType.RootPage,
-    ) ?? {
-      id: "0",
-      title: "Home",
-      permalink: "/",
-      lastModified: new Date().toISOString(),
-      layout: "homepage",
-      summary: "Home page",
-      type: ResourceType.RootPage,
-    }
-
-    const sitemap = {
-      ...rootPage,
-      children: generateSitemapTree(
-        resources,
-        sitemapEntries,
-        rootPage.permalink,
-      ),
-    }
-
-    logDebug("Intermediate sitemap:", JSON.stringify(sitemap, null, 2))
-
-    await processDanglingDirectories(resources, sitemap)
-
-    try {
-      // Create directories if they don't exist
-      fs.mkdirSync(OUTPUT_DIR, { recursive: true })
-
-      const filePath = path.join(OUTPUT_DIR, "sitemap.json")
-      fs.writeFileSync(filePath, JSON.stringify(sitemap), "utf-8")
-
-      logDebug(`Successfully wrote file: ${filePath}`)
-    } catch (error) {
-      console.error(`Error writing sitemap to file:`, error)
-    }
-  } finally {
-    await client.end()
-    const end = performance.now() // End profiling
-    console.log(`Program completed in ${(end - start) / 1000} seconds`)
+    logDebug(`Successfully wrote file: ${filePath}`)
+  } catch (error) {
+    console.error(`Error writing ${filename} to file:`, error)
   }
 }
 
-function generateSitemapTree(
+const writeContentToFile = (
+  fullPermalink: string | undefined,
+  content: ResourceContent,
+  parentId: number | null,
+) => {
+  try {
+    const sanitizedPermalink =
+      fullPermalink !== undefined && fullPermalink !== ""
+        ? path.join(
+            "./",
+            path
+              .normalize(fullPermalink)
+              .replace(/^(?<prefix>\.\.(?:\/|\\|$))+/u, ""),
+          )
+        : INDEX_PAGE_PERMALINK
+
+    const directoryPath =
+      parentId === null
+        ? path.join(OUTPUT_DIR, "schema")
+        : path.join(OUTPUT_DIR, "schema", path.dirname(sanitizedPermalink))
+
+    const fileName = `${path.basename(sanitizedPermalink)}.json`
+    const filePath = path.join(directoryPath, fileName)
+
+    fs.mkdirSync(directoryPath, { recursive: true })
+
+    if (fs.existsSync(filePath)) {
+      logDebug(`File already exists: ${filePath}`)
+      return
+    }
+
+    fs.writeFileSync(filePath, JSON.stringify(content), "utf-8")
+
+    logDebug(`Successfully wrote file: ${filePath}`)
+  } catch (error) {
+    console.error("Error writing content to file:", error)
+  }
+}
+
+const getAllResourcesWithFullPermalinks = async (
+  client: Client,
+): Promise<Resource[]> => {
+  const values = [SITE_ID]
+
+  try {
+    const res = await client.query(
+      GET_ALL_RESOURCES_WITH_FULL_PERMALINKS,
+      values,
+    )
+    logDebug("Fetched resources with full permalinks:", res.rows)
+    return res.rows
+  } catch (error) {
+    console.error("Error fetching resources:", error)
+    return []
+  }
+}
+
+const fetchAndWriteSiteData = async (client: Client) => {
+  try {
+    const navbarResult = await client.query(GET_NAVBAR, [SITE_ID])
+    if (navbarResult.rows.length > 0) {
+      writeJsonToFile(navbarResult.rows[0].content, "navbar.json")
+    }
+
+    const footerResult = await client.query(GET_FOOTER, [SITE_ID])
+    if (footerResult.rows.length > 0) {
+      writeJsonToFile(footerResult.rows[0].content, "footer.json")
+    }
+
+    const configResult = await client.query(GET_CONFIG, [SITE_ID])
+    if (configResult.rows.length > 0) {
+      const config = {
+        site: {
+          ...configResult.rows[0].config,
+        },
+        ...configResult.rows[0].theme,
+      }
+
+      writeJsonToFile(config, "config.json")
+    }
+  } catch (error) {
+    console.error("Error fetching site data:", error)
+  }
+}
+
+const fetchAndWriteRedirects = async (client: Client) => {
+  try {
+    const result = await client.query(GET_REDIRECTS, [SITE_ID])
+    const redirects: { source: string; destination: string }[] = result.rows
+    const filePath = path.join(OUTPUT_DIR, "redirects.json")
+    fs.writeFileSync(filePath, JSON.stringify(redirects), "utf-8")
+    logDebug(`Successfully wrote redirects: ${filePath}`)
+  } catch (error) {
+    console.error("Error fetching redirects:", error)
+    fs.writeFileSync(
+      path.join(OUTPUT_DIR, "redirects.json"),
+      JSON.stringify([]),
+      "utf-8",
+    )
+  }
+}
+
+const generateSitemapTree = (
   resources: Resource[],
   sitemapEntries: PageOnlySitemapEntry[],
   pathPrefix: string,
-): SitemapEntry[] | undefined {
+): SitemapEntry[] | undefined => {
   const pathPrefixWithoutLeadingSlash = pathPrefix.slice(1)
 
   const entriesWithPathPrefix = sitemapEntries.filter(
@@ -239,32 +200,24 @@ function generateSitemapTree(
       ) && entry.permalink !== "/",
   )
 
-  // Base case: No entries with the path prefix - this is a leaf node
   if (entriesWithPathPrefix.length === 0) {
     return undefined
   }
 
-  // NOTE: Get the immediate children of the current path
-  const childrenPaths = Array.from(
-    new Set(
+  const childrenPaths = [
+    ...new Set(
       entriesWithPathPrefix.map(
         (entry) =>
           entry.permalink
             .slice(
-              // NOTE: This is either one or two based on whether it is the root.
-              // This is because at this point, the path prefix would either be
-              // `/`if root, or `/a/b/` if not root.
-              // Hence, we have to remove the whole prefix based on whether it has
-              // just a single `/`(the single `/` is both leading and trailing) or both leading and trailing `/`
               pathPrefixWithoutLeadingSlash.length +
                 (pathPrefix.length === 1 ? 1 : 2),
             )
             .split("/")[0],
       ),
     ),
-  )
+  ]
 
-  // Identify children paths that might be dangling directories
   const danglingDirectories: SitemapEntry[] = childrenPaths
     .filter(
       (childPath) =>
@@ -280,7 +233,7 @@ function generateSitemapTree(
         ),
     )
     .map((danglingDirectory) => {
-      const pageName = danglingDirectory.replace(/-/g, " ")
+      const pageName = danglingDirectory.replaceAll("-", " ")
       const generatedTitle =
         pageName.charAt(0).toUpperCase() + pageName.slice(1)
 
@@ -290,7 +243,7 @@ function generateSitemapTree(
             (pathPrefixWithoutLeadingSlash.length === 0
               ? danglingDirectory
               : `${pathPrefixWithoutLeadingSlash}/${danglingDirectory}`) &&
-          FOLDER_RESOURCE_TYPES.find((t) => t === resource.type),
+          FOLDER_RESOURCE_TYPES.some((type) => type === resource.type),
       )
       const title = folder?.title ?? generatedTitle
 
@@ -306,11 +259,11 @@ function generateSitemapTree(
 
       return {
         id: folder?.id ?? DANGLING_DIRECTORY_PAGE_ID,
-        title,
-        permalink: `${pathPrefix.length === 1 ? "" : pathPrefix}/${danglingDirectory}`,
         lastModified: new Date().toISOString(),
         layout: folder?.type === "Collection" ? "collection" : "index",
+        permalink: `${pathPrefix.length === 1 ? "" : pathPrefix}/${danglingDirectory}`,
         summary: `Pages in ${title}`,
+        title,
         type: folder?.type ?? ResourceType.Folder,
       }
     })
@@ -326,10 +279,7 @@ function generateSitemapTree(
   )
   const children = [...existingChildren, ...danglingDirectories]
 
-  // Get the page sorting order from the FolderMeta resource
-  // TODO: delete this once `FolderMeta` is removed
-  /** @deprecated use `pageOrderFromIndex` instead; we should remove this once `FolderMeta` is removed from db */
-  const pageOrderFromMeta = resources.find(
+  const folderMetaOrder = resources.find(
     (resource) =>
       resource.type === "FolderMeta" &&
       resource.fullPermalink ===
@@ -337,6 +287,9 @@ function generateSitemapTree(
           ? META_PERMALINK
           : `${pathPrefixWithoutLeadingSlash}/${META_PERMALINK}`),
   )?.content?.order
+  const pageOrderFromMeta = Array.isArray(folderMetaOrder)
+    ? folderMetaOrder.filter((item): item is string => typeof item === "string")
+    : undefined
 
   const pageOrderFromIndex = resources
     .find(
@@ -351,32 +304,32 @@ function generateSitemapTree(
       ({ type }: { type: string }) => type === "childrenpages",
     )
     ?.childrenPagesOrdering?.map((id: string) => {
-      const child = children.find(({ id: childId }) => {
-        return id === childId
-      })
+      const child = children.find(({ id: childId }) => id === childId)
 
       return child?.permalink.split("/").pop()
     })
-    .filter((permalink: string | undefined) => !!permalink)
+    .filter((permalink: string | undefined) => permalink !== undefined)
 
-  const pageOrder = pageOrderFromIndex ?? pageOrderFromMeta
+  const pageOrder: string[] = pageOrderFromIndex ?? pageOrderFromMeta ?? []
 
   children.sort((a, b) => {
     const aPermalink = a.permalink.split("/").pop()
     const bPermalink = b.permalink.split("/").pop()
 
     if (
-      pageOrder === undefined ||
+      pageOrder.length === 0 ||
+      aPermalink === undefined ||
+      bPermalink === undefined ||
       pageOrder.indexOf(aPermalink) === pageOrder.indexOf(bPermalink)
     ) {
       return a.title.localeCompare(b.title, undefined, { numeric: true })
     }
 
-    if (pageOrder.indexOf(aPermalink) === -1) {
+    if (!pageOrder.includes(aPermalink)) {
       return 1
     }
 
-    if (pageOrder.indexOf(bPermalink) === -1) {
+    if (!pageOrder.includes(bPermalink)) {
       return -1
     }
 
@@ -389,25 +342,22 @@ function generateSitemapTree(
   }))
 }
 
-function getFoldersAndCollections(
+const getFoldersAndCollections = (
   resources: Resource[],
   sitemapEntry: SitemapEntry,
-): SitemapEntry[] {
-  // Base case: No children - this is a leaf node
-  if (!sitemapEntry.children) {
+): SitemapEntry[] => {
+  if (sitemapEntry.children === undefined) {
     return []
   }
 
-  // Get all immediate children that are folders
   const folders = sitemapEntry.children.filter((child) =>
     resources.some(
       (resource) =>
         resource.id === child.id &&
-        FOLDER_RESOURCE_TYPES.find((t) => t === resource.type),
+        FOLDER_RESOURCE_TYPES.some((type) => type === resource.type),
     ),
   )
 
-  // Recurse on all children
   return [
     ...folders,
     ...sitemapEntry.children.flatMap((child) =>
@@ -416,13 +366,11 @@ function getFoldersAndCollections(
   ]
 }
 
-// Create the index page for all dangling directories
-async function processDanglingDirectories(
+const processDanglingDirectories = (
   resources: Resource[],
   sitemapEntry: SitemapEntry,
-) {
-  // Base case: No children - this is a leaf node
-  if (!sitemapEntry.children) {
+) => {
+  if (sitemapEntry.children === undefined) {
     return
   }
 
@@ -434,162 +382,203 @@ async function processDanglingDirectories(
     (siteMapEntry) => siteMapEntry.type === ResourceType.Collection,
   )
 
-  // Create index page for all immediate children that are dangling directories
-  await Promise.all(
-    [
-      ...folders.map(({ title, permalink }) => {
-        const content = getFolderIndexPageContents(title)
-        return { title, permalink, content }
-      }),
-      ...collections.map(({ id, title, permalink }) => {
-        const meta = resources.find(
-          ({ type, parentId }) =>
-            parentId === Number(id) && type === "CollectionMeta",
-        )
-        const content = getCollectionIndexPageContents(
-          title,
-          meta?.content.variant,
-        )
-        return { title, permalink, content }
-      }),
-    ].map((child) => {
-      return writeContentToFile(
-        `${child.permalink}/${INDEX_PAGE_PERMALINK}`,
-        child.content,
-        Number(DANGLING_DIRECTORY_PAGE_ID),
-      )
+  const indexPages = [
+    ...folders.map(({ title, permalink }) => {
+      const content = getFolderIndexPageContents(title)
+      return { content, permalink, title }
     }),
+    ...collections.map(({ id, title, permalink }) => {
+      const meta = resources.find(
+        ({ type, parentId }) =>
+          parentId === Number(id) && type === "CollectionMeta",
+      )
+      const content = getCollectionIndexPageContents(
+        title,
+        meta?.content.variant,
+      )
+      return { content, permalink, title }
+    }),
+  ]
+
+  for (const child of indexPages) {
+    writeContentToFile(
+      `${child.permalink}/${INDEX_PAGE_PERMALINK}`,
+      child.content,
+      Number(DANGLING_DIRECTORY_PAGE_ID),
+    )
+  }
+}
+
+// SAFETY: PAGE_RESOURCE_TYPES is the canonical allow-list for page resource types.
+const isPageResourceType = (type: string): type is PageResourceType =>
+  (PAGE_RESOURCE_TYPES as readonly string[]).includes(type)
+
+const buildSitemapEntry = (
+  resource: Resource,
+  resources: Resource[],
+): PageOnlySitemapEntry => {
+  const idOfFolder = resources.find(
+    (item) =>
+      resource.fullPermalink.endsWith(INDEX_PAGE_PERMALINK) &&
+      resource.type !== "RootPage" &&
+      item.fullPermalink === getConvertedPermalink(resource.fullPermalink),
+  )?.id
+
+  return {
+    category: resource.content.page.category,
+    collectionPagePageProps: {
+      defaultSortBy: resource.content.page?.defaultSortBy,
+      defaultSortDirection: resource.content.page?.defaultSortDirection,
+      showThumbnail: resource.content.page?.showThumbnail,
+      sortOrder: resource.content.page?.sortOrder,
+      tagCategories: resource.content.page?.tagCategories,
+    },
+    date: resource.content.page.date,
+    firstImage: getResourceFirstImage(resource),
+    id: idOfFolder ?? resource.id,
+    image: resource.content.page.image,
+    lastModified: resource.updatedAt.toISOString(),
+    layout: resource.content.layout ?? "content",
+    permalink: `/${getConvertedPermalink(resource.fullPermalink)}`,
+    ref: resource.content.page.ref,
+    summary:
+      (Array.isArray(resource.content.page.contentPageHeader?.summary)
+        ? resource.content.page.contentPageHeader.summary.join(" ")
+        : resource.content.page.contentPageHeader?.summary) ??
+      resource.content.page.articlePageHeader?.summary ??
+      resource.content.page.subtitle ??
+      resource.content.page.description ??
+      "",
+    tagged: resource.content.page.tagged,
+    tags: resource.content.page.tags,
+    title: resource.title,
+    type: isPageResourceType(resource.type) ? resource.type : "Page",
+  }
+}
+
+const processPageResource = (
+  resource: Resource,
+  resources: Resource[],
+  sitemapEntries: PageOnlySitemapEntry[],
+) => {
+  resource.content.page = {
+    ...resource.content.page,
+    title: resource.title,
+  }
+
+  writeContentToFile(
+    resource.fullPermalink,
+    resource.content,
+    resource.parentId,
   )
+
+  sitemapEntries.push(buildSitemapEntry(resource, resources))
 }
 
-async function getAllResourcesWithFullPermalinks(
-  client: Client,
-): Promise<Resource[]> {
-  const values = [SITE_ID]
-
-  try {
-    const res = await client.query(
-      GET_ALL_RESOURCES_WITH_FULL_PERMALINKS,
-      values,
-    )
-    logDebug("Fetched resources with full permalinks:", res.rows)
-    return res.rows
-  } catch (err) {
-    console.error("Error fetching resources:", err)
-    return []
+const createDbClient = () => {
+  const clientConfig = {
+    database: DB_NAME,
+    host: DB_HOST,
+    password: DB_IAM_AUTH
+      ? (DB_PASSWORD ?? "")
+      : decodeURIComponent(DB_PASSWORD ?? ""),
+    port: Number(DB_PORT),
+    user: DB_USERNAME,
   }
+
+  if (
+    DB_IAM_AUTH &&
+    DB_SSL_SERVERNAME !== undefined &&
+    DB_SSL_SERVERNAME !== ""
+  ) {
+    return new Client({
+      ...clientConfig,
+      ssl: {
+        rejectUnauthorized: false,
+        servername: DB_SSL_SERVERNAME,
+      },
+    })
+  }
+
+  return new Client(clientConfig)
 }
 
-function writeContentToFile(
-  fullPermalink: string | undefined,
-  content: any,
-  parentId: number | null,
-) {
+const main = async () => {
+  const client = createDbClient()
+  const start = performance.now()
+
   try {
-    // NOTE: do a join with ./ here so that
-    // we don't end up with an absolute path to a special unix folder
-    const sanitizedPermalink = !fullPermalink
-      ? INDEX_PAGE_PERMALINK
-      : path.join(
-          "./",
-          path
-            // NOTE: normalization here will remove dual backslashes
-            // and also strip .. filepaths except as a prefix
-            .normalize(fullPermalink)
-            // NOTE: this matches on a leading ../
-            // or a leading ..\
-            // or a plain .. without any paths
-            .replace(/^(\.\.(\/|\\|$))+/, ""),
+    await client.connect()
+
+    await fetchAndWriteSiteData(client)
+    await fetchAndWriteRedirects(client)
+
+    const resources = await getAllResourcesWithFullPermalinks(client)
+    const sitemapEntries: PageOnlySitemapEntry[] = []
+
+    for (const resource of resources) {
+      logDebug(
+        `Processing resource with id ${resource.id}, fullPermalink: ${resource.fullPermalink}`,
+      )
+
+      const isPageResource = PAGE_RESOURCE_TYPES.some(
+        (type) => type === resource.type,
+      )
+      if (isPageResource && resource.content !== undefined) {
+        processPageResource(resource, resources, sitemapEntries)
+      } else {
+        logDebug(
+          `Skipping resource with id ${resource.id} as it is not a Page or has no content.`,
         )
-
-    const directoryPath =
-      parentId === null
-        ? path.join(OUTPUT_DIR, "schema")
-        : path.join(OUTPUT_DIR, "schema", path.dirname(sanitizedPermalink))
-
-    const fileName = `${path.basename(sanitizedPermalink)}.json`
-    const filePath = path.join(directoryPath, fileName)
-
-    // Create directories if they don't exist
-    fs.mkdirSync(directoryPath, { recursive: true })
-
-    // File may have already been written previously
-    if (fs.existsSync(filePath)) {
-      logDebug(`File already exists: ${filePath}`)
-      return
-    }
-
-    // Write JSON content to file
-    fs.writeFileSync(filePath, JSON.stringify(content), "utf-8")
-
-    logDebug(`Successfully wrote file: ${filePath}`)
-  } catch (error) {
-    console.error("Error writing content to file:", error)
-  }
-}
-
-async function fetchAndWriteSiteData(client: Client) {
-  try {
-    // Fetch navbar.json
-    const navbarResult = await client.query(GET_NAVBAR, [SITE_ID])
-    if (navbarResult.rows.length > 0) {
-      writeJsonToFile(navbarResult.rows[0].content, "navbar.json")
-    }
-
-    // Fetch footer.json
-    const footerResult = await client.query(GET_FOOTER, [SITE_ID])
-    if (footerResult.rows.length > 0) {
-      writeJsonToFile(footerResult.rows[0].content, "footer.json")
-    }
-
-    // Fetch config.json
-    const configResult = await client.query(GET_CONFIG, [SITE_ID])
-    if (configResult.rows.length > 0) {
-      const config = {
-        site: {
-          ...configResult.rows[0].config,
-        },
-        ...configResult.rows[0].theme,
       }
-
-      writeJsonToFile(config, "config.json")
     }
-  } catch (err) {
-    console.error("Error fetching site data:", err)
+
+    logDebug("Sitemap entries:", sitemapEntries)
+
+    const rootPage = sitemapEntries.find(
+      (entry) => entry.type === ResourceType.RootPage,
+    ) ?? {
+      id: "0",
+      lastModified: new Date().toISOString(),
+      layout: "homepage",
+      permalink: "/",
+      summary: "Home page",
+      title: "Home",
+      type: ResourceType.RootPage,
+    }
+
+    const sitemap = {
+      ...rootPage,
+      children: generateSitemapTree(
+        resources,
+        sitemapEntries,
+        rootPage.permalink,
+      ),
+    }
+
+    logDebug("Intermediate sitemap:", JSON.stringify(sitemap, null, 2))
+
+    processDanglingDirectories(resources, sitemap)
+
+    try {
+      fs.mkdirSync(OUTPUT_DIR, { recursive: true })
+
+      const filePath = path.join(OUTPUT_DIR, "sitemap.json")
+      fs.writeFileSync(filePath, JSON.stringify(sitemap), "utf-8")
+
+      logDebug(`Successfully wrote file: ${filePath}`)
+    } catch (error) {
+      console.error(`Error writing sitemap to file:`, error)
+    }
+  } finally {
+    await client.end()
+    const end = performance.now()
+    console.log(`Program completed in ${(end - start) / 1000} seconds`)
   }
 }
 
-async function fetchAndWriteRedirects(client: Client) {
-  try {
-    const result = await client.query(GET_REDIRECTS, [SITE_ID])
-    const redirects = result.rows as { source: string; destination: string }[]
-    const filePath = path.join(OUTPUT_DIR, "redirects.json")
-    fs.writeFileSync(filePath, JSON.stringify(redirects), "utf-8")
-    logDebug(`Successfully wrote redirects: ${filePath}`)
-  } catch (err) {
-    console.error("Error fetching redirects:", err)
-    fs.writeFileSync(
-      path.join(OUTPUT_DIR, "redirects.json"),
-      JSON.stringify([]),
-      "utf-8",
-    )
-  }
+try {
+  await main()
+} catch (error) {
+  console.error(error)
 }
-
-function writeJsonToFile(content: any, filename: string) {
-  const directoryPath = path.join(OUTPUT_DIR, "data")
-
-  try {
-    // Create directories if they don't exist
-    fs.mkdirSync(directoryPath, { recursive: true })
-
-    const filePath = path.join(directoryPath, filename)
-    fs.writeFileSync(filePath, JSON.stringify(content), "utf-8")
-
-    logDebug(`Successfully wrote file: ${filePath}`)
-  } catch (error) {
-    console.error(`Error writing ${filename} to file:`, error)
-  }
-}
-
-main().catch((err) => console.error(err))

@@ -1,22 +1,20 @@
 import { spawnSync } from "node:child_process"
 import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
-import { dirname, join } from "node:path"
-import { fileURLToPath } from "node:url"
+import path from "node:path"
 import { afterAll, beforeAll, describe, expect, it } from "vitest"
 
 import { seedPublishingSite, TEST_DB_ENV, db } from "../seed"
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
-const PACKAGE_DIR = join(__dirname, "..", "..")
-const TSX_BIN = join(PACKAGE_DIR, "node_modules", ".bin", "tsx")
+const PACKAGE_DIR = path.join(import.meta.dirname, "..", "..")
+const TSX_BIN = path.join(PACKAGE_DIR, "node_modules", ".bin", "tsx")
 
 // publisher.sh moves the script output into the template before building, so
 // the template's committed placeholder fixtures are swapped for the real
 // output here and restored afterwards
-const TEMPLATE_DIR = join(PACKAGE_DIR, "..", "..", "..", "template")
-const NEXT_BIN = join(TEMPLATE_DIR, "node_modules", ".bin", "next")
-const OUT_DIR = join(TEMPLATE_DIR, "out")
+const TEMPLATE_DIR = path.join(PACKAGE_DIR, "..", "..", "..", "template")
+const NEXT_BIN = path.join(TEMPLATE_DIR, "node_modules", ".bin", "next")
+const OUT_DIR = path.join(TEMPLATE_DIR, "out")
 const SWAPPED_PATHS = ["schema", "data", "sitemap.json"]
 
 let outputDir: string
@@ -27,15 +25,24 @@ let restored = false
 // If the process is killed mid-build, `git checkout tooling/template` restores
 // the fixtures manually.
 const restoreTemplate = () => {
-  if (restored || !backupDir) return
+  if (restored || backupDir === undefined) {
+    return
+  }
   for (const swappedPath of SWAPPED_PATHS) {
-    rmSync(join(TEMPLATE_DIR, swappedPath), { recursive: true, force: true })
-    cpSync(join(backupDir, swappedPath), join(TEMPLATE_DIR, swappedPath), {
+    rmSync(path.join(TEMPLATE_DIR, swappedPath), {
+      force: true,
       recursive: true,
     })
+    cpSync(
+      path.join(backupDir, swappedPath),
+      path.join(TEMPLATE_DIR, swappedPath),
+      {
+        recursive: true,
+      },
+    )
   }
-  rmSync(join(TEMPLATE_DIR, "public", "sitemap.json"), { force: true })
-  rmSync(OUT_DIR, { recursive: true, force: true })
+  rmSync(path.join(TEMPLATE_DIR, "public", "sitemap.json"), { force: true })
+  rmSync(OUT_DIR, { force: true, recursive: true })
   restored = true
 }
 
@@ -43,11 +50,10 @@ beforeAll(async () => {
   // Arrange: the same rich site the publishing suite asserts on
   const { siteId } = await seedPublishingSite()
 
-  outputDir = mkdtempSync(join(tmpdir(), "publishing-full-build-"))
+  outputDir = mkdtempSync(path.join(tmpdir(), "publishing-full-build-"))
   const publishResult = spawnSync(TSX_BIN, ["index.ts"], {
     cwd: PACKAGE_DIR,
     encoding: "utf-8",
-    timeout: 120_000,
     env: {
       ...process.env,
       // dd-trace (loaded via NODE_OPTIONS in CI) breaks spawned subprocesses
@@ -56,6 +62,7 @@ beforeAll(async () => {
       ...TEST_DB_ENV,
       OUTPUT_DIR: outputDir,
     },
+    timeout: 120_000,
   })
   if (publishResult.error || publishResult.status !== 0) {
     throw new Error(
@@ -69,41 +76,52 @@ beforeAll(async () => {
     // Phase 1: complete all backups before touching the template. backupDir is
     // only assigned once all copies succeed so restoreTemplate is never called
     // with a partial backup (which would crash on a missing path).
-    const tmpBackupDir = mkdtempSync(join(tmpdir(), "template-fixtures-"))
+    const tmpBackupDir = mkdtempSync(path.join(tmpdir(), "template-fixtures-"))
     for (const swappedPath of SWAPPED_PATHS) {
-      cpSync(join(TEMPLATE_DIR, swappedPath), join(tmpBackupDir, swappedPath), {
-        recursive: true,
-      })
+      cpSync(
+        path.join(TEMPLATE_DIR, swappedPath),
+        path.join(tmpBackupDir, swappedPath),
+        {
+          recursive: true,
+        },
+      )
     }
     backupDir = tmpBackupDir
     // Phase 2: replace template fixtures with publishing script output
     for (const swappedPath of SWAPPED_PATHS) {
-      rmSync(join(TEMPLATE_DIR, swappedPath), { recursive: true, force: true })
-      cpSync(join(outputDir, swappedPath), join(TEMPLATE_DIR, swappedPath), {
+      rmSync(path.join(TEMPLATE_DIR, swappedPath), {
+        force: true,
         recursive: true,
       })
+      cpSync(
+        path.join(outputDir, swappedPath),
+        path.join(TEMPLATE_DIR, swappedPath),
+        {
+          recursive: true,
+        },
+      )
     }
     cpSync(
-      join(outputDir, "sitemap.json"),
-      join(TEMPLATE_DIR, "public", "sitemap.json"),
+      path.join(outputDir, "sitemap.json"),
+      path.join(TEMPLATE_DIR, "public", "sitemap.json"),
     )
-    const indexJsonPath = join(TEMPLATE_DIR, "schema", "_index.json")
+    const indexJsonPath = path.join(TEMPLATE_DIR, "schema", "_index.json")
     if (!existsSync(indexJsonPath)) {
       throw new Error(
         "Publishing script did not produce schema/_index.json; check the root page seed",
       )
     }
-    cpSync(indexJsonPath, join(TEMPLATE_DIR, "schema", "not-found.json"))
-    rmSync(OUT_DIR, { recursive: true, force: true })
+    cpSync(indexJsonPath, path.join(TEMPLATE_DIR, "schema", "not-found.json"))
+    rmSync(OUT_DIR, { force: true, recursive: true })
 
     const buildResult = spawnSync(NEXT_BIN, ["build", "--webpack"], {
       cwd: TEMPLATE_DIR,
       encoding: "utf-8",
-      timeout: 600_000,
       env: {
         ...process.env,
         NODE_OPTIONS: "",
       },
+      timeout: 600_000,
     })
     if (buildResult.error || buildResult.status !== 0) {
       throw new Error(
@@ -119,11 +137,11 @@ beforeAll(async () => {
 afterAll(async () => {
   restoreTemplate()
   await db.destroy()
-  if (outputDir) {
-    rmSync(outputDir, { recursive: true, force: true })
+  if (outputDir !== undefined && outputDir !== "") {
+    rmSync(outputDir, { force: true, recursive: true })
   }
-  if (backupDir) {
-    rmSync(backupDir, { recursive: true, force: true })
+  if (backupDir !== undefined) {
+    rmSync(backupDir, { force: true, recursive: true })
   }
 })
 
@@ -132,28 +150,30 @@ describe("full template build", () => {
     // Arrange / Act / Assert
     const expectedPages = [
       "index.html",
-      join("about", "index.html"),
-      join("about", "our-team", "index.html"),
-      join("dangling", "index.html"),
-      join("dangling", "lonely-page", "index.html"),
-      join("news", "index.html"),
-      join("news", "zebra-article", "index.html"),
+      path.join("about", "index.html"),
+      path.join("about", "our-team", "index.html"),
+      path.join("dangling", "index.html"),
+      path.join("dangling", "lonely-page", "index.html"),
+      path.join("news", "index.html"),
+      path.join("news", "zebra-article", "index.html"),
     ]
     for (const page of expectedPages) {
-      expect(existsSync(join(OUT_DIR, page)), page).toBe(true)
+      expect(existsSync(path.join(OUT_DIR, page)), page).toBe(true)
     }
   })
 
   it("does not render pages for collection links or drafts", () => {
     // Arrange / Act / Assert
-    expect(existsSync(join(OUT_DIR, "news", "alpha-link"))).toBe(false)
-    expect(existsSync(join(OUT_DIR, "news", "alpha-link.html"))).toBe(false)
-    expect(existsSync(join(OUT_DIR, "draft-page"))).toBe(false)
+    expect(existsSync(path.join(OUT_DIR, "news", "alpha-link"))).toBe(false)
+    expect(existsSync(path.join(OUT_DIR, "news", "alpha-link.html"))).toBe(
+      false,
+    )
+    expect(existsSync(path.join(OUT_DIR, "draft-page"))).toBe(false)
   })
 
   it("renders the seeded site name into the homepage", () => {
     // Arrange / Act
-    const homepage = readFileSync(join(OUT_DIR, "index.html"), "utf-8")
+    const homepage = readFileSync(path.join(OUT_DIR, "index.html"), "utf-8")
 
     // Assert
     expect(homepage).toContain("E2E Test Site")
@@ -161,8 +181,8 @@ describe("full template build", () => {
 
   it("emits the 404 page and crawler files", () => {
     // Arrange / Act / Assert
-    expect(existsSync(join(OUT_DIR, "404.html"))).toBe(true)
-    expect(existsSync(join(OUT_DIR, "sitemap.xml"))).toBe(true)
-    expect(existsSync(join(OUT_DIR, "robots.txt"))).toBe(true)
+    expect(existsSync(path.join(OUT_DIR, "404.html"))).toBe(true)
+    expect(existsSync(path.join(OUT_DIR, "sitemap.xml"))).toBe(true)
+    expect(existsSync(path.join(OUT_DIR, "robots.txt"))).toBe(true)
   })
 })

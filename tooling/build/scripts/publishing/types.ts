@@ -6,8 +6,35 @@ import type { PAGE_RESOURCE_TYPES } from "./constants"
 // we defined in studio
 export interface Resource extends Omit<DbResource, "parentId"> {
   parentId: number | null
-  content?: any
+  content?: ResourceContent
   fullPermalink: string
+}
+
+export interface ResourcePageContent {
+  title?: string
+  category?: string
+  date?: string
+  image?: { src?: string; alt?: string }
+  contentPageHeader?: { summary?: string | string[] }
+  articlePageHeader?: { summary?: string }
+  subtitle?: string
+  description?: string
+  tags?: string[]
+  tagged?: unknown
+  ref?: string
+  defaultSortBy?: string
+  defaultSortDirection?: string
+  showThumbnail?: boolean
+  sortOrder?: string
+  tagCategories?: unknown
+  variant?: "blog" | "collection"
+}
+
+export interface ResourceContent {
+  layout?: string
+  page: ResourcePageContent
+  content?: { type: string; alt?: string; src?: string }[]
+  order?: string[]
 }
 
 interface Tag {
