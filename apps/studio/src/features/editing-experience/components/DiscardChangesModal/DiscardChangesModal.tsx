@@ -20,7 +20,7 @@ export const DiscardChangesModal = ({
   isOpen,
   onClose,
   onDiscard,
-}: DiscardChangesModalProps): JSX.Element => {
+}: DiscardChangesModalProps): React.ReactNode => {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />

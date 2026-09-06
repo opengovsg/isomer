@@ -12,7 +12,7 @@ const LinkErrorBoundaryResetLinkContext = createContext<
 
 const LinkErrorFallback = ({
   resetErrorBoundary,
-}: FallbackProps): JSX.Element => {
+}: FallbackProps): React.ReactNode => {
   const resetLink = useContext(LinkErrorBoundaryResetLinkContext)
   if (!resetLink) {
     throw new Error("LinkErrorFallback must be used within LinkErrorBoundary")

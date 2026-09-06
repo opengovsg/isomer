@@ -14,7 +14,7 @@ import type {
   User,
   VerificationToken,
   Version,
-} from "../database"
+} from "../database/types"
 
 type WithoutMeta<T> = Omit<T, "createdAt" | "updatedAt">
 

@@ -2,7 +2,7 @@ import { Badge, Box, HStack, Skeleton, Text, VStack } from "@chakra-ui/react"
 import { Suspense } from "react"
 import { trpc } from "~/utils/trpc"
 
-import { getLastLoginText } from "../../utils"
+import { getLastLoginText } from "../../utils/lastLogin"
 
 interface UserInfoContentProps {
   siteId: number

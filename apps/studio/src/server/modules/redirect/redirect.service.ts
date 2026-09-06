@@ -40,11 +40,12 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { Logger } from "@isomer/logging"
 
-import type { SafeKysely, Transaction } from "../database"
+import type { SafeKysely, Transaction } from "../database/types"
 import { logPublishEvent, logRedirectEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
-import { AuditLogEvent, db } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
+import { db } from "../database/database"
+import { AuditLogEvent } from "../database/types"
 import {
   getDescendantResourceIds,
   getPublishedDescendantResourceIds,
@@ -151,12 +152,12 @@ const getPublishedStateByResourceIds = async (
     .select(["Resource.id", "Resource.type", "Resource.publishedVersionId"])
     .execute()
 
-  const containerIds = resources
-    .filter(
-      (r) =>
-        r.type === ResourceType.Folder || r.type === ResourceType.Collection,
-    )
-    .map((r) => String(r.id))
+  const containerIds: string[] = []
+  for (const r of resources) {
+    if (r.type === ResourceType.Folder || r.type === ResourceType.Collection) {
+      containerIds.push(String(r.id))
+    }
+  }
   const publishedByContainerId = new Map<string, boolean>()
   if (containerIds.length > 0) {
     const indexPages = await db
@@ -1273,9 +1274,10 @@ export const bulkCreateRedirects = async ({
   byUserId: string
   logger: Logger<string>
 }): Promise<BulkCreateRedirectsResult> => {
-  const byUser = await getByUser(db, byUserId)
-
-  const { fileError, rows } = await runBulkValidation(siteId, csv)
+  const [byUser, { fileError, rows }] = await Promise.all([
+    getByUser(db, byUserId),
+    runBulkValidation(siteId, csv),
+  ])
   if (fileError !== null || rows.some((row) => row.error !== null)) {
     return { ok: false, validation: toValidationResult(fileError, rows) }
   }
@@ -1532,33 +1534,33 @@ export const createRedirectForPermalinkChange = async (
     siteId: String(siteId),
     resourceId: String(resourceId),
   })
-  const byUser = await getByUser(tx, byUserId)
-
-  const existing = await tx
-    .selectFrom("Redirect")
-    .selectAll()
-    .where("siteId", "=", siteId)
-    .where("source", "=", source)
-    .executeTakeFirst()
-
-  const created = await tx
-    .insertInto("Redirect")
-    .values({ siteId, source, destination })
-    .onConflict((oc) =>
-      oc
-        .columns(["siteId", "source"])
-        .doUpdateSet({ destination, deletedAt: null, createdAt: dbNow })
-        // Only revive a soft-deleted row; a live one must surface as a conflict.
-        .where("Redirect.deletedAt", "is not", null),
-    )
-    .returningAll()
-    .executeTakeFirstOrThrow(
-      () =>
-        new TRPCError({
-          code: "CONFLICT",
-          message: `A redirect already exists for ${source}`,
-        }),
-    )
+  const [byUser, existing, created] = await Promise.all([
+    getByUser(tx, byUserId),
+    tx
+      .selectFrom("Redirect")
+      .selectAll()
+      .where("siteId", "=", siteId)
+      .where("source", "=", source)
+      .executeTakeFirst(),
+    tx
+      .insertInto("Redirect")
+      .values({ siteId, source, destination })
+      .onConflict((oc) =>
+        oc
+          .columns(["siteId", "source"])
+          .doUpdateSet({ destination, deletedAt: null, createdAt: dbNow })
+          // Only revive a soft-deleted row; a live one must surface as a conflict.
+          .where("Redirect.deletedAt", "is not", null),
+      )
+      .returningAll()
+      .executeTakeFirstOrThrow(
+        () =>
+          new TRPCError({
+            code: "CONFLICT",
+            message: `A redirect already exists for ${source}`,
+          }),
+      ),
+  ])
 
   await logRedirectEvent(tx, {
     siteId,
@@ -1757,13 +1759,15 @@ const softDeleteReclaimedRedirect = async (
     return null
   }
 
-  const byUser = await getByUser(tx, byUserId)
-  const after = await tx
-    .updateTable("Redirect")
-    .set({ deletedAt: dbNow })
-    .where("id", "=", reclaimed.id)
-    .returningAll()
-    .executeTakeFirstOrThrow()
+  const [byUser, after] = await Promise.all([
+    getByUser(tx, byUserId),
+    tx
+      .updateTable("Redirect")
+      .set({ deletedAt: dbNow })
+      .where("id", "=", reclaimed.id)
+      .returningAll()
+      .executeTakeFirstOrThrow(),
+  ])
   await logRedirectEvent(tx, {
     siteId,
     by: byUser,
@@ -2143,15 +2147,17 @@ export const softDeleteRedirectsPointingToResource = async (
     .execute()
 
   const afterById = new Map(deleted.map((after) => [after.id, after]))
-  for (const before of toDelete) {
-    const after = afterById.get(before.id)
-    if (!after) continue
-    await logRedirectEvent(tx, {
-      siteId,
-      by: byUser,
-      eventType: AuditLogEvent.RedirectDelete,
-      delta: { before, after },
-    })
-  }
+  await Promise.all(
+    toDelete.map((before) => {
+      const after = afterById.get(before.id)
+      if (!after) return Promise.resolve()
+      return logRedirectEvent(tx, {
+        siteId,
+        by: byUser,
+        eventType: AuditLogEvent.RedirectDelete,
+        delta: { before, after },
+      })
+    }),
+  )
   return deleted
 }

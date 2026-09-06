@@ -25,10 +25,8 @@ import { Underline } from "@tiptap/extension-underline"
 import { Plugin, PluginKey } from "@tiptap/pm/state"
 import { textblockTypeInputRule } from "@tiptap/react"
 
-import {
-  createTableSelectionBorderPlugin,
-  getHtmlWithRelativeReferenceLinks,
-} from "../../utils"
+import { createTableSelectionBorderPlugin } from "../../utils/createTableSelectionBorderPlugin"
+import { getHtmlWithRelativeReferenceLinks } from "../../utils/getHtmlWithRelativeReferenceLinks"
 import { selectTableCellContent } from "./selectTableCellContent"
 
 export { TableRow } from "@tiptap/extension-table-row"

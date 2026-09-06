@@ -11,14 +11,10 @@ import {
 import { protectedProcedure, router } from "~/server/trpc"
 
 import { logResourceEvent } from "../audit/audit.service"
-import {
-  AuditLogEvent,
-  db,
-  jsonb,
-  ResourceState,
-  ResourceType,
-} from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
+import { db } from "../database/database"
+import { AuditLogEvent, ResourceState, ResourceType } from "../database/types"
+import { jsonb } from "../database/utils"
 import { createFolderIndexPage } from "../page/page.service"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 import { applyFolderPermalinkChangeRedirects } from "../redirect/redirect.service"
@@ -44,19 +40,20 @@ export const folderRouter = router({
           resourceIds: [!!parentFolderId ? String(parentFolderId) : null],
         })
 
-        // Get user information
-        const user = await db
-          .selectFrom("User")
-          .where("id", "=", ctx.user.id)
-          .selectAll()
-          .executeTakeFirstOrThrow(() => new TRPCError({ code: "NOT_FOUND" }))
-
-        // Validate site is valid
-        const site = await db
-          .selectFrom("Site")
-          .where("id", "=", siteId)
-          .select(["id"])
-          .executeTakeFirst()
+        const [user, site] = await Promise.all([
+          db
+            .selectFrom("User")
+            .where("id", "=", ctx.user.id)
+            .selectAll()
+            .executeTakeFirstOrThrow(
+              () => new TRPCError({ code: "NOT_FOUND" }),
+            ),
+          db
+            .selectFrom("Site")
+            .where("id", "=", siteId)
+            .select(["id"])
+            .executeTakeFirst(),
+        ])
 
         if (!site) {
           throw new TRPCError({
@@ -89,35 +86,37 @@ export const folderRouter = router({
         }
 
         const folder = await db.transaction().execute(async (tx) => {
-          const folder = await tx
-            .insertInto("Resource")
-            .values({
-              permalink,
-              siteId,
-              type: ResourceType.Folder,
-              title: folderTitle,
-              parentId: parentFolderId ? String(parentFolderId) : null,
-              state: ResourceState.Published,
-            })
-            .returningAll()
-            .executeTakeFirstOrThrow()
-            .catch((err) => {
-              if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
-                throw new TRPCError({
-                  code: "CONFLICT",
-                  message: "A resource with the same permalink already exists",
-                })
-              }
-              throw err
-            })
-
-          const indexPageBlob = await tx
-            .insertInto("Blob")
-            .values({
-              content: jsonb(createFolderIndexPage(folderTitle)),
-            })
-            .returning("id")
-            .executeTakeFirstOrThrow()
+          const [folder, indexPageBlob] = await Promise.all([
+            tx
+              .insertInto("Resource")
+              .values({
+                permalink,
+                siteId,
+                type: ResourceType.Folder,
+                title: folderTitle,
+                parentId: parentFolderId ? String(parentFolderId) : null,
+                state: ResourceState.Published,
+              })
+              .returningAll()
+              .executeTakeFirstOrThrow()
+              .catch((err) => {
+                if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
+                  throw new TRPCError({
+                    code: "CONFLICT",
+                    message:
+                      "A resource with the same permalink already exists",
+                  })
+                }
+                throw err
+              }),
+            tx
+              .insertInto("Blob")
+              .values({
+                content: jsonb(createFolderIndexPage(folderTitle)),
+              })
+              .returning("id")
+              .executeTakeFirstOrThrow(),
+          ])
 
           const indexPage = await tx
             .insertInto("Resource")
@@ -343,26 +342,27 @@ export const folderRouter = router({
         resourceIds: [resourceId],
       })
 
-      const { title } = await db
-        .selectFrom("Resource")
-        .where("Resource.siteId", "=", siteId)
-        .where("Resource.id", "=", resourceId)
-        .select("title")
-        .executeTakeFirstOrThrow()
-
-      const indexPage = await db
-        .selectFrom("Resource")
-        .where("Resource.siteId", "=", siteId)
-        .where("Resource.parentId", "=", resourceId)
-        .where("Resource.type", "=", ResourceType.IndexPage)
-        .select(["id", "draftBlobId"])
-        .executeTakeFirstOrThrow(
-          () =>
-            new TRPCError({
-              code: "NOT_FOUND",
-              message: "No existing index page found",
-            }),
-        )
+      const [{ title }, indexPage] = await Promise.all([
+        db
+          .selectFrom("Resource")
+          .where("Resource.siteId", "=", siteId)
+          .where("Resource.id", "=", resourceId)
+          .select("title")
+          .executeTakeFirstOrThrow(),
+        db
+          .selectFrom("Resource")
+          .where("Resource.siteId", "=", siteId)
+          .where("Resource.parentId", "=", resourceId)
+          .where("Resource.type", "=", ResourceType.IndexPage)
+          .select(["id", "draftBlobId"])
+          .executeTakeFirstOrThrow(
+            () =>
+              new TRPCError({
+                code: "NOT_FOUND",
+                message: "No existing index page found",
+              }),
+          ),
+      ])
 
       return { title, ...indexPage }
     }),

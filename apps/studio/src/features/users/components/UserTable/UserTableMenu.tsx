@@ -25,7 +25,7 @@ import { trpc } from "~/utils/trpc"
 import type { UserTableData } from "./types"
 import type { UserTableProps } from "./UserTable"
 import { removeUserModalAtom, updateUserModalAtom } from "../../atoms"
-import { canResendInviteToUser } from "../../utils"
+import { canResendInviteToUser } from "../../utils/canResendInviteToUser"
 
 interface UserTableMenuProps
   extends

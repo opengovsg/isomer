@@ -1,5 +1,5 @@
 import { scryptSync } from "crypto"
-import { db } from "~/server/modules/database"
+import { db } from "~/server/modules/database/database"
 
 export async function overwriteToken({
   factory,

@@ -6,4 +6,4 @@ export {
   default as reactDoctor,
   jsPluginSettings,
   reactDoctorJsPluginEntries,
-} from "./react-doctor.ts"
+} from "./react-doctor.js"

@@ -13,7 +13,8 @@ import {
 } from "@opengovsg/design-system-react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
-import { formatEnumLabel, getCustomErrorMessage } from "./utils"
+import { formatEnumLabel } from "./utils/formatEnumLabel"
+import { getCustomErrorMessage } from "./utils/getCustomErrorMessage"
 
 export const jsonFormsEnumControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.EnumControl,

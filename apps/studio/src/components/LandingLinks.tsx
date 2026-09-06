@@ -1,6 +1,6 @@
 import { HStack, Link } from "@chakra-ui/react"
 
-export const LandingLinks = (): JSX.Element => {
+export const LandingLinks = (): React.ReactNode => {
   return (
     <HStack spacing="1.5rem">
       <Link

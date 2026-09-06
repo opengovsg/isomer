@@ -30,9 +30,10 @@ import {
   ResourceType,
 } from "~prisma/generated/generatedEnums"
 
-import type { User } from "../../database"
+import type { User } from "../../database/types"
 import { assertAuditLogRows } from "../../audit/__tests__/utils"
-import { db, jsonb } from "../../database"
+import { db } from "../../database/database"
+import { jsonb } from "../../database/utils"
 import {
   getBlobOfResource,
   getPageById,

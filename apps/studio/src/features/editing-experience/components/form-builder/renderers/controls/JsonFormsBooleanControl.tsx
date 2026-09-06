@@ -9,7 +9,7 @@ import {
 } from "@opengovsg/design-system-react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
-import { getCustomErrorMessage } from "./utils"
+import { getCustomErrorMessage } from "./utils/getCustomErrorMessage"
 
 export const jsonFormsBooleanControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.BooleanControl,
@@ -26,7 +26,7 @@ const JsonFormsBooleanControl = ({
   path,
   description,
   schema,
-}: ControlProps): JSX.Element | null => {
+}: ControlProps): React.ReactNode | null => {
   if (schema.const !== undefined) {
     return null
   }

@@ -66,10 +66,12 @@ const OUTPUT_FOLDER = join(
 
 async function generateSigningKey({ alg, crv }: { alg: string; crv: string }) {
   const keyPair = await jose.generateKeyPair(alg, { crv, extractable: true })
-  const privateKey = await jose.exportPKCS8(keyPair.privateKey)
-  const publicKey = await jose.exportSPKI(keyPair.publicKey)
   const jwk = await jose.exportJWK(keyPair.publicKey)
-  const kid = await jose.calculateJwkThumbprint(jwk)
+  const [privateKey, publicKey, kid] = await Promise.all([
+    jose.exportPKCS8(keyPair.privateKey),
+    jose.exportSPKI(keyPair.publicKey),
+    jose.calculateJwkThumbprint(jwk),
+  ])
   const json = { ...jwk, kid, use: "sig", alg }
   return { privateKey, publicKey, jwk: json }
 }
@@ -82,22 +84,26 @@ async function generateEncryptionKey({
   crv: string
 }) {
   const keyPair = await jose.generateKeyPair(alg, { crv, extractable: true })
-  const privateKey = await jose.exportPKCS8(keyPair.privateKey)
-  const publicKey = await jose.exportSPKI(keyPair.publicKey)
   const jwk = await jose.exportJWK(keyPair.publicKey)
-  const kid = await jose.calculateJwkThumbprint(jwk)
+  const [privateKey, publicKey, kid] = await Promise.all([
+    jose.exportPKCS8(keyPair.privateKey),
+    jose.exportSPKI(keyPair.publicKey),
+    jose.calculateJwkThumbprint(jwk),
+  ])
   const json = { ...jwk, kid, use: "enc", alg }
   return { privateKey, publicKey, jwk: json }
 }
 
-const encryption = await generateEncryptionKey({
-  alg: opts.encryptionAlg,
-  crv: opts.encryptionCrv,
-})
-const signing = await generateSigningKey({
-  alg: opts.signingAlg,
-  crv: opts.signingCrv,
-})
+const [encryption, signing] = await Promise.all([
+  generateEncryptionKey({
+    alg: opts.encryptionAlg,
+    crv: opts.encryptionCrv,
+  }),
+  generateSigningKey({
+    alg: opts.signingAlg,
+    crv: opts.signingCrv,
+  }),
+])
 
 mkdirSync(OUTPUT_FOLDER, { recursive: true })
 

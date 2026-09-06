@@ -8,7 +8,8 @@ import {
 import { setupUser, setUpWhitelist } from "tests/integration/helpers/seed"
 import { expect, vi } from "vitest"
 import { env } from "~/env.mjs"
-import { AuditLogEvent, db } from "~/server/modules/database"
+import { db } from "~/server/modules/database/database"
+import { AuditLogEvent } from "~/server/modules/database/types"
 import { createCallerFactory } from "~/server/trpc"
 
 import { singpassRouter } from "../singpass.router"

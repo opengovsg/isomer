@@ -23,8 +23,10 @@ import { protectedProcedure, router } from "~/server/trpc"
 import { validateUserPermissionsForAsset } from "../asset/asset.service"
 import { logResourceEvent } from "../audit/audit.service"
 import { createCollectionLinkJson } from "../collection/collection.service"
-import { AuditLogEvent, db, jsonb, ResourceType, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
+import { db } from "../database/database"
+import { AuditLogEvent, ResourceType, sql } from "../database/types"
+import { jsonb } from "../database/utils"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 import {
   defaultResourceSelect,
@@ -397,28 +399,28 @@ export const gazetteRouter = router({
           resourceIds: [String(gazetteId)],
         })
 
-        const user = await db
-          .selectFrom("User")
-          .where("id", "=", ctx.user.id)
-          .selectAll()
-          .executeTakeFirstOrThrow(() => new TRPCError({ code: "BAD_REQUEST" }))
-
-        // Pre-fetch the existing blob so we know the current ref. Held briefly
-        // outside the transaction; the real consistency boundary is the tx
-        // below where we write the resolved ref.
-        const existingResource = await db
-          .selectFrom("Resource")
-          .where("Resource.id", "=", String(gazetteId))
-          .where("Resource.siteId", "=", siteId)
-          .where("Resource.type", "=", ResourceType.CollectionLink)
-          .selectAll()
-          .executeTakeFirstOrThrow(
-            () =>
-              new TRPCError({
-                code: "NOT_FOUND",
-                message: "Gazette not found",
-              }),
-          )
+        const [user, existingResource] = await Promise.all([
+          db
+            .selectFrom("User")
+            .where("id", "=", ctx.user.id)
+            .selectAll()
+            .executeTakeFirstOrThrow(
+              () => new TRPCError({ code: "BAD_REQUEST" }),
+            ),
+          db
+            .selectFrom("Resource")
+            .where("Resource.id", "=", String(gazetteId))
+            .where("Resource.siteId", "=", siteId)
+            .where("Resource.type", "=", ResourceType.CollectionLink)
+            .selectAll()
+            .executeTakeFirstOrThrow(
+              () =>
+                new TRPCError({
+                  code: "NOT_FOUND",
+                  message: "Gazette not found",
+                }),
+            ),
+        ])
 
         const existingBlob = await getBlobOfResource({
           db,
@@ -650,23 +652,28 @@ export const gazetteRouter = router({
         resourceIds: [String(gazetteId)],
       })
 
-      const user = await db
-        .selectFrom("User")
-        .where("id", "=", ctx.user.id)
-        .selectAll()
-        .executeTakeFirstOrThrow(() => new TRPCError({ code: "BAD_REQUEST" }))
-
-      // Pre-fetch the resource and blob for audit delta
-      const existingResource = await db
-        .selectFrom("Resource")
-        .where("Resource.id", "=", String(gazetteId))
-        .where("Resource.siteId", "=", siteId)
-        .where("Resource.type", "=", ResourceType.CollectionLink)
-        .selectAll()
-        .executeTakeFirstOrThrow(
-          () =>
-            new TRPCError({ code: "NOT_FOUND", message: "Gazette not found" }),
-        )
+      const [user, existingResource] = await Promise.all([
+        db
+          .selectFrom("User")
+          .where("id", "=", ctx.user.id)
+          .selectAll()
+          .executeTakeFirstOrThrow(
+            () => new TRPCError({ code: "BAD_REQUEST" }),
+          ),
+        db
+          .selectFrom("Resource")
+          .where("Resource.id", "=", String(gazetteId))
+          .where("Resource.siteId", "=", siteId)
+          .where("Resource.type", "=", ResourceType.CollectionLink)
+          .selectAll()
+          .executeTakeFirstOrThrow(
+            () =>
+              new TRPCError({
+                code: "NOT_FOUND",
+                message: "Gazette not found",
+              }),
+          ),
+      ])
 
       if (!existingResource.scheduledAt) {
         throw new TRPCError({
@@ -852,29 +859,29 @@ export const gazetteRouter = router({
         resourceIds: [String(gazetteId)],
       })
 
-      const user = await db
-        .selectFrom("User")
-        .where("id", "=", ctx.user.id)
-        .selectAll()
-        .executeTakeFirstOrThrow(() => new TRPCError({ code: "BAD_REQUEST" }))
-
-      // Next, fetch the gazettes that they are trying to delete and
-      // make sure that the time is within the allowed timeframe.
-      // This has to be on the version already cos otherwise they should be able to cancel the publish
-      const gazette = await db
-        .selectFrom("Resource")
-        .innerJoin("Version", "Version.id", "Resource.publishedVersionId")
-        .where("Resource.siteId", "=", siteId)
-        .where("Resource.id", "=", String(gazetteId))
-        .select([...defaultResourceSelect, "Version.publishedAt"])
-        .executeTakeFirstOrThrow(
-          () =>
-            new TRPCError({
-              message:
-                "The gazette you are trying to delete could not be found",
-              code: "NOT_FOUND",
-            }),
-        )
+      const [user, gazette] = await Promise.all([
+        db
+          .selectFrom("User")
+          .where("id", "=", ctx.user.id)
+          .selectAll()
+          .executeTakeFirstOrThrow(
+            () => new TRPCError({ code: "BAD_REQUEST" }),
+          ),
+        db
+          .selectFrom("Resource")
+          .innerJoin("Version", "Version.id", "Resource.publishedVersionId")
+          .where("Resource.siteId", "=", siteId)
+          .where("Resource.id", "=", String(gazetteId))
+          .select([...defaultResourceSelect, "Version.publishedAt"])
+          .executeTakeFirstOrThrow(
+            () =>
+              new TRPCError({
+                message:
+                  "The gazette you are trying to delete could not be found",
+                code: "NOT_FOUND",
+              }),
+          ),
+      ])
       const { publishedAt } = gazette
       const isWithinGracePeriod =
         publishedAt &&

@@ -23,7 +23,7 @@ interface NavigationBreadcrumbsProps {
 const NavigationBreadcrumbs = ({
   siteId,
   pageId,
-}: NavigationBreadcrumbsProps): JSX.Element => {
+}: NavigationBreadcrumbsProps): React.ReactNode => {
   const { data: resource, isLoading: isResourceLoading } =
     trpc.resource.getMetadataById.useQuery({
       siteId: Number(siteId),
@@ -92,7 +92,7 @@ const NavigationBreadcrumbs = ({
   )
 }
 
-export const LinkEditNavbar = (): JSX.Element => {
+export const LinkEditNavbar = (): React.ReactNode => {
   const { linkId, siteId } = useQueryParse(editLinkSchema)
 
   return (

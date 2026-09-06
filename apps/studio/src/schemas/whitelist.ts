@@ -2,7 +2,7 @@ import { z } from "zod"
 
 export const isEmailWhitelistedInputSchema = z.object({
   siteId: z.number().min(1),
-  email: z.string().email(),
+  email: z.email(),
 })
 
 export const isEmailWhitelistedOutputSchema = z.boolean()
@@ -11,12 +11,17 @@ export const isEmailWhitelistedOutputSchema = z.boolean()
 // Trims, lowercases, filters empty strings, and removes duplicates
 const emailArraySchema = z
   .array(z.string())
-  .transform((emails) => [
-    ...new Set(
-      emails.map((e) => e.trim().toLowerCase()).filter((e) => e.length > 0),
-    ),
-  ])
-  .pipe(z.array(z.string().email()))
+  .transform((emails) => {
+    const normalized = new Set<string>()
+    for (const email of emails) {
+      const trimmed = email.trim().toLowerCase()
+      if (trimmed.length > 0) {
+        normalized.add(trimmed)
+      }
+    }
+    return [...normalized]
+  })
+  .pipe(z.array(z.email()))
 
 export const whitelistEmailsInputSchema = z.object({
   adminEmails: emailArraySchema,

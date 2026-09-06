@@ -1,4 +1,4 @@
-import type { Resource } from "~/server/modules/database"
+import type { Resource } from "~/server/modules/database/types"
 import { ISOMER_SUPPORT_EMAIL, ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { env } from "~/env.mjs"
 import { ResourceType, RoleType } from "~prisma/generated/generatedEnums"

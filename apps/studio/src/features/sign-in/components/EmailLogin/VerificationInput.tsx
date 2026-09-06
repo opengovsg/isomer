@@ -29,7 +29,7 @@ import { trpc } from "~/utils/trpc"
 import { useSignInContext } from "../SignInContext"
 import { ResendOtpButton } from "./ResendOtpButton"
 
-export const VerificationInput = (): JSX.Element | null => {
+export const VerificationInput = (): React.ReactNode | null => {
   const [showOtpDelayMessage, setShowOtpDelayMessage] = useState(false)
   const { setHasLoginStateFlag } = useLoginState()
   const router = useRouter()

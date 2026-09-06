@@ -8,6 +8,22 @@ import { trpc } from "~/utils/trpc"
 
 import { MOBILE_NAVIGATION_MENU_QUERY_SELECTOR } from "../constants"
 
+const handleNavbarPreviewIframeMount = async ({
+  document,
+}: IframeCallbackFnProps) => {
+  if (document) {
+    await waitForElement(document, MOBILE_NAVIGATION_MENU_QUERY_SELECTOR)
+    const navbarButton = document.querySelector(
+      MOBILE_NAVIGATION_MENU_QUERY_SELECTOR,
+    )
+
+    // Click the navbar button to open the navbar menu
+    if (navbarButton) {
+      navbarButton.dispatchEvent(new MouseEvent("click", { bubbles: true }))
+    }
+  }
+}
+
 interface EditNavbarPreviewProps {
   siteId: number
   previewNavbarState?: NavbarSchemaType
@@ -17,20 +33,6 @@ export const EditNavbarPreview = ({
   siteId,
   previewNavbarState,
 }: EditNavbarPreviewProps) => {
-  const handleIframeMount = async ({ document }: IframeCallbackFnProps) => {
-    if (document) {
-      await waitForElement(document, MOBILE_NAVIGATION_MENU_QUERY_SELECTOR)
-      const navbarButton = document.querySelector(
-        MOBILE_NAVIGATION_MENU_QUERY_SELECTOR,
-      )
-
-      // Click the navbar button to open the navbar menu
-      if (navbarButton) {
-        navbarButton.dispatchEvent(new MouseEvent("click", { bubbles: true }))
-      }
-    }
-  }
-
   const [{ id, title }] = trpc.page.getRootPage.useSuspenseQuery({
     siteId,
   })
@@ -41,7 +43,10 @@ export const EditNavbarPreview = ({
   })
 
   return (
-    <ViewportContainer siteId={siteId} callback={handleIframeMount}>
+    <ViewportContainer
+      siteId={siteId}
+      callback={handleNavbarPreviewIframeMount}
+    >
       <Preview
         {...merge(content, { page: { title } })}
         overrides={{

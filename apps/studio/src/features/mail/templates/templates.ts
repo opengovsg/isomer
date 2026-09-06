@@ -29,7 +29,8 @@ import type {
   SchedulePageTemplateData,
   SuccessfulPublishTemplateData,
 } from "./types"
-import { escapeHtml, escapeTemplateArguments, unescapeHtml } from "../utils"
+import { escapeTemplateArguments } from "../utils/escapeTemplateArguments"
+import { escapeHtml, unescapeHtml } from "../utils/html"
 
 const getDownloadLinkLabel = (
   label: AuditLogExportDownloadLink["label"],

@@ -1,7 +1,8 @@
 import { resetTables } from "tests/integration/helpers/db"
 import { setupUser } from "tests/integration/helpers/seed"
 
-import { AuditLogEvent, db } from "../../database"
+import { db } from "../../database/database"
+import { AuditLogEvent } from "../../database/types"
 import { logUserEvent } from "../audit.service"
 
 describe("audit.service", () => {

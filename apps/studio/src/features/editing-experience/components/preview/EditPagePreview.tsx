@@ -14,7 +14,7 @@ import { LoadingPreview } from "./LoadingPreview"
 import PreviewWithCustomSitemap from "./PreviewWithCustomSitemap"
 import { ViewportContainer } from "./ViewportContainer"
 
-const LoadingState = (): JSX.Element => {
+const LoadingState = (): React.ReactNode => {
   return (
     <Box bg="base.canvas.backdrop" height="100%" flexDirection="column">
       <Box
@@ -31,7 +31,7 @@ const LoadingState = (): JSX.Element => {
   )
 }
 
-const SuspendableEditPagePreview = (): JSX.Element => {
+const SuspendableEditPagePreview = (): React.ReactNode => {
   const {
     previewPageState,
     pageId,

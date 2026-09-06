@@ -25,10 +25,10 @@ interface CmsSidebarItemsProps {
 
 const generateSidebarItem = (
   { icon: Icon, ...item }: CmsSidebarItem,
-  index: number,
   asPath: string,
 ) => {
   const isActive = item.isActive ?? (!!item.href && asPath === item.href)
+  const itemKey = item.href ?? item.label
   const handleClick = item.onClick
     ? () => {
         item.onClick()
@@ -36,11 +36,11 @@ const generateSidebarItem = (
     : undefined
 
   return (
-    <ListItem key={index}>
+    <ListItem key={itemKey}>
       <Tooltip label={item.label} placement="right">
         {item.href ? (
           <IconButton
-            key={index}
+            key={itemKey}
             as={NextLink}
             variant="clear"
             isActive={isActive}
@@ -54,7 +54,7 @@ const generateSidebarItem = (
           />
         ) : (
           <IconButton
-            key={index}
+            key={itemKey}
             variant="clear"
             aria-label={item.label}
             icon={<Icon fontSize="1.5rem" />}
@@ -70,9 +70,7 @@ export const CmsSidebarItems = ({ navItems }: CmsSidebarItemsProps) => {
   const router = useRouter()
 
   const renderedSidebarItems = useMemo(() => {
-    return navItems.map((item, index) =>
-      generateSidebarItem(item, index, router.asPath),
-    )
+    return navItems.map((item) => generateSidebarItem(item, router.asPath))
   }, [navItems, router.asPath])
 
   return <List spacing={3}>{renderedSidebarItems}</List>

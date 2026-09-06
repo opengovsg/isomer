@@ -20,7 +20,7 @@ export const BlockHighlightOverlay = ({
   height,
   label,
   isFading = false,
-}: BlockHighlightOverlayProps): JSX.Element => {
+}: BlockHighlightOverlayProps): React.ReactNode => {
   const [outlineColor, overlayBgColor, labelColor] = useToken("colors", [
     "interaction.main.default",
     "interaction.tinted.main.active",

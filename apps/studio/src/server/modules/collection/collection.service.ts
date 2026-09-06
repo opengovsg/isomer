@@ -6,7 +6,8 @@ import type { MergeExclusive, UnwrapTagged } from "type-fest"
 import { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 import { format } from "date-fns"
 
-import { db, ResourceType, sql } from "../database"
+import { db } from "../database/database"
+import { ResourceType, sql } from "../database/types"
 
 export const createCollectionPageJson = ({}: {
   type: typeof ResourceType.CollectionPage // Act as soft typeguard

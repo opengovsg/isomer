@@ -26,7 +26,7 @@ export const MenubarHorizontalList = ({
   label,
   defaultIcon,
   items,
-}: MenubarHorizontalListProps): JSX.Element | null => {
+}: MenubarHorizontalListProps): React.ReactNode | null => {
   if (isHidden?.()) {
     return null
   }
@@ -66,9 +66,9 @@ export const MenubarHorizontalList = ({
           <PopoverContent w="fit-content">
             <PopoverBody>
               <HStack>
-                {items.map((subItem, index) => (
+                {items.map((subItem) => (
                   <MenuItem
-                    key={index}
+                    key={subItem.title}
                     icon={subItem.icon}
                     title={subItem.title}
                     action={subItem.action}

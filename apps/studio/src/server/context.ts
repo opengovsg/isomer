@@ -7,7 +7,7 @@ import { type Session, type SessionData } from "~/lib/types/session"
 import { type User } from "~prisma/generated/prisma/client"
 
 import { generateSessionOptions } from "./modules/auth/session"
-import { db } from "./modules/database"
+import { db } from "./modules/database/database"
 import { type defaultUserSelect } from "./modules/me/me.select"
 import { prisma } from "./prisma"
 

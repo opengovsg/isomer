@@ -2,11 +2,18 @@ import { type NextApiRequest } from "next"
 
 const LOCALHOST_IP = "127.0.0.1"
 
-const getIpList = (header: string | string[] | null | undefined) =>
-  (Array.isArray(header) ? header : [header])
-    .flatMap((value) => value?.split(",") ?? [])
-    .map((value) => value.trim())
-    .filter((value) => value.length > 0)
+const getIpList = (header: string | string[] | null | undefined) => {
+  const ips: string[] = []
+  for (const value of Array.isArray(header) ? header : [header]) {
+    for (const part of value?.split(",") ?? []) {
+      const trimmed = part.trim()
+      if (trimmed.length > 0) {
+        ips.push(trimmed)
+      }
+    }
+  }
+  return ips
+}
 
 const getFirstIp = (header: string | string[] | null | undefined) =>
   getIpList(header)[0]

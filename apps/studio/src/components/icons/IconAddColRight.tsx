@@ -1,7 +1,7 @@
 import { chakra } from "@chakra-ui/react"
 
 export const IconAddColRight = chakra(
-  (props: React.SVGProps<SVGSVGElement>): JSX.Element => {
+  (props: React.SVGProps<SVGSVGElement>): React.ReactNode => {
     return (
       <svg
         width="24"
@@ -13,7 +13,7 @@ export const IconAddColRight = chakra(
       >
         <path d="M1 23V1H9V23H1Z" stroke="#2C2E34" strokeWidth="1.5" />
         <path
-          d="M17 7.84619C14.7096 7.84619 12.8462 9.70961 12.8462 12C12.8462 14.2905 14.7096 16.1539 17 16.1539C19.2905 16.1539 21.1539 14.2905 21.1539 12C21.1539 9.70961 19.2905 7.84619 17 7.84619Z"
+          d="M17 7.85C14.71 7.85 12.85 9.71 12.85 12C12.85 14.29 14.71 16.15 17 16.15C19.29 16.15 21.15 14.29 21.15 12C21.15 9.71 19.29 7.85 17 7.85Z"
           fill="white"
         />
         <path
@@ -21,7 +21,7 @@ export const IconAddColRight = chakra(
           fill="#2C2E34"
         />
         <path
-          d="M17 7C14.243 7 12 9.243 12 12C12 14.757 14.243 17 17 17C19.757 17 22 14.757 22 12C22 9.243 19.757 7 17 7ZM17 16C14.7945 16 13 14.2055 13 12C13 9.7945 14.7945 8 17 8C19.2055 8 21 9.7945 21 12C21 14.2055 19.2055 16 17 16Z"
+          d="M17 7C14.24 7 12 9.24 12 12C12 14.76 14.24 17 17 17C19.76 17 22 14.76 22 12C22 9.24 19.76 7 17 7ZM17 16C14.79 16 13 14.21 13 12C13 9.79 14.79 8 17 8C19.21 8 21 9.79 21 12C21 14.21 19.21 16 17 16Z"
           fill="#2C2E34"
         />
       </svg>

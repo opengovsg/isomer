@@ -22,7 +22,7 @@ export const DeleteBlockModal = ({
   isOpen,
   onClose,
   onDelete,
-}: DeleteBlockModalProps): JSX.Element => {
+}: DeleteBlockModalProps): React.ReactNode => {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />

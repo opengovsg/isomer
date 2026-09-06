@@ -131,7 +131,7 @@ const JsonFormsChildrenPagesLayoutControl = ({
   label,
   description,
   ...rest
-}: ReorderingControlProps): JSX.Element => {
+}: ReorderingControlProps): React.ReactNode => {
   const { pageId: indexPageId, siteId } = useQueryParse(pageSchema)
 
   return (

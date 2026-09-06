@@ -20,7 +20,7 @@ export const UnsavedSettingModal = ({
   isOpen,
   onClose,
   nextUrl: nextURL,
-}: UnsavedSettingModalProps): JSX.Element => {
+}: UnsavedSettingModalProps): React.ReactNode => {
   const router = useRouter()
   return (
     <Modal isOpen={isOpen} onClose={onClose}>

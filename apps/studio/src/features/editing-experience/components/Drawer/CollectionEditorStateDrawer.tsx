@@ -31,7 +31,7 @@ import { ErrorProvider, useBuilderErrors } from "../form-builder/ErrorProvider"
 import FormBuilder from "../form-builder/FormBuilder"
 import { DrawerHeader } from "./DrawerHeader"
 
-const CollectionEditorStateDrawer = (): JSX.Element => {
+const CollectionEditorStateDrawer = (): React.ReactNode => {
   const {
     isOpen: isDiscardChangesModalOpen,
     onOpen: onDiscardChangesModalOpen,

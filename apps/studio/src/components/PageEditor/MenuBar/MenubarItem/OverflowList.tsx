@@ -19,7 +19,7 @@ export interface MenubarOverflowListProps {
 
 export const MenubarOverflowList = ({
   items,
-}: MenubarOverflowListProps): JSX.Element | null => {
+}: MenubarOverflowListProps): React.ReactNode | null => {
   const visibleItems = items.filter((item) => !item.isHidden?.())
   if (visibleItems.length === 0) {
     return null
@@ -53,9 +53,9 @@ export const MenubarOverflowList = ({
           <PopoverContent w="fit-content">
             <PopoverBody>
               <HStack>
-                {visibleItems.map((subItem, index) => (
+                {visibleItems.map((subItem) => (
                   <MenuItem
-                    key={index}
+                    key={subItem.title}
                     icon={subItem.icon}
                     title={subItem.title}
                     action={subItem.action}

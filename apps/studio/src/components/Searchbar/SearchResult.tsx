@@ -27,7 +27,7 @@ export const SearchResult = ({
   const { id, title, type, fullPermalink, lastUpdatedAt } = item
   const titleWithHighlightedText: ReactNode[] = title
     .split(" ")
-    .map((titleWord, index) => {
+    .map((titleWord) => {
       let matchingSearchTerm: string | null = null
       for (const searchTerm of searchTerms) {
         if (titleWord.toLowerCase().startsWith(searchTerm.toLowerCase())) {
@@ -43,7 +43,7 @@ export const SearchResult = ({
         matchingSearchTerm?.length ?? 0,
       )
       return (
-        <Box key={index} display="flex" whiteSpace="nowrap">
+        <Box key={titleWord} display="flex" whiteSpace="nowrap">
           {!!highlightedText && (
             <Text
               textStyle="subhead-2"

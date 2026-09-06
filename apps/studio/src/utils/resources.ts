@@ -1,5 +1,5 @@
 import type { IconType } from "react-icons"
-import type { Resource } from "~/server/modules/database"
+import type { Resource } from "~/server/modules/database/types"
 import {
   BiCog,
   BiData,

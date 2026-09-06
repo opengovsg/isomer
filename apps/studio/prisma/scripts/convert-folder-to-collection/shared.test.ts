@@ -7,7 +7,7 @@ import {
   ResourceState,
   type Transaction,
   type DB,
-} from "~/server/modules/database"
+} from "~/server/modules/database/types"
 
 import type { ConversionPlan } from "./helpers"
 import {

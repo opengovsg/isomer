@@ -80,7 +80,7 @@ vi.mock("~/features/mail/service", () => ({
 
 import { getCurrentSingaporeMonth } from "~/schemas/audit"
 
-import { db } from "../../database"
+import { db } from "../../database/database"
 import { getMonthDateRange } from "../auditLogExport.query"
 import { processPendingAuditLogExports } from "../auditLogExport.service"
 

@@ -4,7 +4,7 @@ import { AUDIT_LOG_EXPORT_URL_EXPIRY_DAYS } from "~/constants/misc"
 import { createBaseLogger } from "~/lib/logger"
 import { generateSignedGetUrl, getStudioAssetsBucketName } from "~/lib/s3"
 import { unsealAuditLogExportToken } from "~/server/modules/audit/auditLogExportToken"
-import { db } from "~/server/modules/database"
+import { db } from "~/server/modules/database/database"
 
 // A completed export email links here with a sealed Download Token (ADR
 // 0006). We unseal it, re-read the request row (the source of truth), and —

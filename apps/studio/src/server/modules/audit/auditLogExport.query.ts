@@ -6,7 +6,8 @@ import { Transform } from "node:stream"
 import Papa from "papaparse"
 
 import type { AccessReportRow, AuditReportQueryParams } from "./audit.types"
-import { AuditLogEvent, db, sql } from "../database"
+import { db } from "../database/database"
+import { AuditLogEvent, sql } from "../database/types"
 
 // NOTE: Sentinel for middle of month to ensure that we always land inside a month
 // and not have to worry about TZ conversion

@@ -27,7 +27,7 @@ export const PublishingModal = ({
   isPublishingNow,
   onClose,
   ...rest
-}: PublishingModalProps): JSX.Element => {
+}: PublishingModalProps): React.ReactNode => {
   return (
     <Modal onClose={onClose} {...rest}>
       <ModalOverlay />

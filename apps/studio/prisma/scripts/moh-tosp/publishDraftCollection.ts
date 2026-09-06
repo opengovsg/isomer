@@ -1,4 +1,4 @@
-import { db } from "~/server/modules/database"
+import { db } from "~/server/modules/database/database"
 import { ResourceState } from "~prisma/generated/prisma/client"
 
 import { FileLogger } from "../FileLogger"
@@ -48,43 +48,45 @@ export const publishCollectionById = async ({
         .where("parentId", "=", collectionId)
         .execute()
 
-      for (const child of children) {
-        if (
-          child.state === ResourceState.Published ||
-          child.draftBlobId === null
-        ) {
-          logger.error(
-            `Child resource with ID ${child.id} cannot be published as it is either in Published state or draftBlobId is not present.`,
-          )
-          continue
-        }
+      await Promise.all(
+        children.map(async (child) => {
+          if (
+            child.state === ResourceState.Published ||
+            child.draftBlobId === null
+          ) {
+            logger.error(
+              `Child resource with ID ${child.id} cannot be published as it is either in Published state or draftBlobId is not present.`,
+            )
+            return
+          }
 
-        const childVersion = await tx
-          .insertInto("Version")
-          .values({
-            blobId: child.draftBlobId,
-            versionNum: 1,
-            resourceId: child.id,
-            publishedAt: new Date(),
-            publishedBy: publisherId,
-            updatedAt: new Date(),
-          })
-          .returning("id")
-          .executeTakeFirstOrThrow()
+          const childVersion = await tx
+            .insertInto("Version")
+            .values({
+              blobId: child.draftBlobId,
+              versionNum: 1,
+              resourceId: child.id,
+              publishedAt: new Date(),
+              publishedBy: publisherId,
+              updatedAt: new Date(),
+            })
+            .returning("id")
+            .executeTakeFirstOrThrow()
 
-        await tx
-          .updateTable("Resource")
-          .set({
-            state: ResourceState.Published,
-            publishedVersionId: childVersion.id,
-            draftBlobId: null,
-            updatedAt: new Date(),
-          })
-          .where("id", "=", child.id)
-          .executeTakeFirstOrThrow()
+          await tx
+            .updateTable("Resource")
+            .set({
+              state: ResourceState.Published,
+              publishedVersionId: childVersion.id,
+              draftBlobId: null,
+              updatedAt: new Date(),
+            })
+            .where("id", "=", child.id)
+            .executeTakeFirstOrThrow()
 
-        logger.info(`Published child resource with ID ${child.id}`)
-      }
+          logger.info(`Published child resource with ID ${child.id}`)
+        }),
+      )
     })
   } catch (error) {
     if (error instanceof Error) {

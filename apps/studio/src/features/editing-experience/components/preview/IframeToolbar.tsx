@@ -20,7 +20,7 @@ interface IframeToolbarProps {
 export const IframeToolbar = ({
   viewport,
   setViewport,
-}: IframeToolbarProps): JSX.Element => {
+}: IframeToolbarProps): React.ReactNode => {
   const toolbarTextLabels = useMemo(() => {
     switch (viewport) {
       case "mobile":

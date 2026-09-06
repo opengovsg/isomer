@@ -6,7 +6,7 @@ import { useLocalStorage } from "~/hooks/useLocalStorage"
 
 import { BannerSvgr } from "./BannerSvgr"
 
-export const CollectionBanner = (): JSX.Element | null => {
+export const CollectionBanner = (): React.ReactNode | null => {
   const [isBannerDismissed, setIsBannerDismissed] = useLocalStorage(
     "collection-banner-dismissed",
     false,

@@ -49,7 +49,7 @@ export const CreateCollectionModal = ({
   onClose,
   siteId,
   parentFolderId,
-}: CreateCollectionModalProps): JSX.Element => {
+}: CreateCollectionModalProps): React.ReactNode => {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />

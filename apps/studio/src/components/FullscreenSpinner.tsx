@@ -1,7 +1,7 @@
 import { Container } from "@chakra-ui/react"
 import { Spinner } from "@opengovsg/design-system-react"
 
-export const FullscreenSpinner = (): JSX.Element => {
+export const FullscreenSpinner = (): React.ReactNode => {
   return (
     <Container
       display="flex"

@@ -1,6 +1,6 @@
 import { Box, Grid, GridItem, Skeleton, VStack } from "@chakra-ui/react"
 
-export const LoadingPreview = (): JSX.Element => {
+export const LoadingPreview = (): React.ReactNode => {
   return (
     <Box
       position="relative"

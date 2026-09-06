@@ -16,7 +16,7 @@ import {
 import { publicProcedure, router } from "~/server/trpc"
 import { getBaseUrl } from "~/utils/getBaseUrl"
 
-import { db } from "../../database"
+import { db } from "../../database/database"
 import { defaultUserSelect } from "../../me/me.select"
 import { isUserDeleted } from "../../user/user.service"
 import { isEmailWhitelisted } from "../../whitelist/whitelist.service"
@@ -32,8 +32,10 @@ export const emailSessionRouter = router({
     .input(emailSignInSchema)
     .meta({ rateLimitOptions: {} })
     .mutation(async ({ ctx, input: { email } }) => {
-      const isWhitelisted = await isEmailWhitelisted(email)
-      const isDeleted = await isUserDeleted(email)
+      const [isWhitelisted, isDeleted] = await Promise.all([
+        isEmailWhitelisted(email),
+        isUserDeleted(email),
+      ])
 
       // Assert that the user is both whitelisted and not deleted
       if (!isWhitelisted || isDeleted) {

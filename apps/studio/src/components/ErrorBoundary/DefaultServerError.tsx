@@ -3,7 +3,7 @@ import { Button } from "@opengovsg/design-system-react"
 import NextLink from "next/link"
 import { ISOMER_SUPPORT_LINK } from "~/constants/misc"
 
-import { LiftUnderRepair } from "../Svg"
+import { LiftUnderRepair } from "../Svg/LiftUnderRepair"
 
 export const DefaultServerError = () => {
   return (

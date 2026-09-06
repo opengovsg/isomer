@@ -14,7 +14,7 @@ const BaseBlockDescription = ({
   }
   description?: string
   dragHandle?: React.ReactNode
-}): JSX.Element | undefined => {
+}): React.ReactNode | undefined => {
   if (invalidProps) {
     return (
       <HStack gap="0.25rem">
@@ -82,7 +82,7 @@ export const BaseBlock = ({
   onMouseLeave,
   invalidProps,
   isHidden,
-}: BaseBlockProps): JSX.Element | null => {
+}: BaseBlockProps): React.ReactNode | null => {
   const actualDraggableProps = draggableProps ?? {}
 
   if (isHidden) {
@@ -191,7 +191,7 @@ interface BaseBlockDragHandleProps extends ButtonProps {
 export const BaseBlockDragHandle = ({
   isDragging,
   ...handleProps
-}: BaseBlockDragHandleProps): JSX.Element => {
+}: BaseBlockDragHandleProps): React.ReactNode => {
   return (
     <chakra.button
       display="flex"

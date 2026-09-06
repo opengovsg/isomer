@@ -15,7 +15,7 @@ export const MenubarVerticalList = ({
   isHidden,
   items,
   defaultTitle,
-}: MenubarVerticalListProps): JSX.Element | null => {
+}: MenubarVerticalListProps): React.ReactNode | null => {
   if (isHidden?.()) {
     return null
   }
@@ -52,13 +52,13 @@ export const MenubarVerticalList = ({
             </Menu.Button>
 
             <Menu.List width="12.25rem">
-              {items.map((subItem, index) => {
+              {items.map((subItem) => {
                 const handleClick = () => {
                   subItem.action()
                 }
 
                 return (
-                  <Menu.Item key={index} onClick={handleClick}>
+                  <Menu.Item key={subItem.title} onClick={handleClick}>
                     {subItem.leftItem}
                     <Flex flexDirection="column">
                       {subItem.title && !subItem.icon && (

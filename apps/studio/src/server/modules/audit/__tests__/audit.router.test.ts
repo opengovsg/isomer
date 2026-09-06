@@ -16,8 +16,8 @@ import {
 import { getCurrentSingaporeMonth } from "~/schemas/audit"
 import { createCallerFactory } from "~/server/trpc"
 
-import type { User } from "../../database"
-import { db } from "../../database"
+import type { User } from "../../database/types"
+import { db } from "../../database/database"
 import { auditRouter } from "../audit.router"
 import { getMonthDateRange } from "../auditLogExport.query"
 

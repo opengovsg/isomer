@@ -10,7 +10,7 @@ interface CategoryCellProps {
 export const CategoryCell = ({
   category,
   subcategory,
-}: CategoryCellProps): JSX.Element => {
+}: CategoryCellProps): React.ReactNode => {
   const { subcategoryMap } = useGazetteSubcategoriesContext()
 
   return (

@@ -24,7 +24,7 @@ export const CancelScheduleModal = ({
   siteId,
   onClose,
   ...rest
-}: CancelScheduleModalProps): JSX.Element => {
+}: CancelScheduleModalProps): React.ReactNode => {
   const utils = trpc.useUtils()
   const toast = useToast()
   const { mutate, isPending } = trpc.page.cancelSchedulePage.useMutation({

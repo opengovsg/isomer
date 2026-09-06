@@ -9,7 +9,7 @@ import type { Resource } from "~prisma/generated/selectableTypes"
 import { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import { env } from "~/env.mjs"
-import { db } from "~/server/modules/database"
+import { db } from "~/server/modules/database/database"
 import {
   getBlobOfResource,
   getPublishedIndexBlobByParentId,
@@ -254,15 +254,16 @@ export const injectTagMappings = async (
   // NOTE: if the resource's parent is a collection,
   // we need to inject the tagged property into the returned sitemap
   // as well as the `tagCategories` property on the parent
-  const draftBlobOfResource = await getBlobOfResource({
-    db,
-    resourceId: resource.id,
-  })
-
-  const publishedIndexBlob = await getPublishedIndexBlobByParentId({
-    db,
-    resourceId: resource.parentId,
-  })
+  const [draftBlobOfResource, publishedIndexBlob] = await Promise.all([
+    getBlobOfResource({
+      db,
+      resourceId: resource.id,
+    }),
+    getPublishedIndexBlobByParentId({
+      db,
+      resourceId: resource.parentId,
+    }),
+  ])
 
   const childPageProps = draftBlobOfResource.content.page as
     | ArticlePagePageProps

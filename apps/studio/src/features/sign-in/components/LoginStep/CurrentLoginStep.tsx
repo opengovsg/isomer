@@ -5,7 +5,7 @@ import { useSignInContext } from "../SignInContext"
 import { InitialLoginStep } from "./InitialLoginStep"
 import { VerificationLoginStep } from "./VerificationLoginStep"
 
-export const CurrentLoginStep = (): JSX.Element => {
+export const CurrentLoginStep = (): React.ReactNode => {
   const { state } = useSignInContext()
 
   const stepToRender = useMemo(() => {

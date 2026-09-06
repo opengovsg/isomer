@@ -106,7 +106,7 @@ export const readCollectionSchema = z
     resourceId: z.number().min(1),
     orderBy: z.enum(resourceOrderByOptions).optional().default("updated-desc"),
   })
-  .merge(offsetPaginationSchema)
+  .extend(offsetPaginationSchema.shape)
 
 // Upper bound to limit request parsing and SQL cost (ANY(...) on text[]).
 // Arbitrary limit to prevent abuse; adjust if legitimate collections exceed this.
@@ -116,9 +116,7 @@ export const MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT = 100
 export const countTagOptionsUsageSchema = z.object({
   siteId: z.number().min(1),
   pageId: z.number().min(1), // pageId is the collection index page resource id
-  tagOptionIds: z
-    .array(z.string().uuid())
-    .max(MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT, {
-      message: `At most ${MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT} tag options can be queried at once`,
-    }),
+  tagOptionIds: z.array(z.uuid()).max(MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT, {
+    message: `At most ${MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT} tag options can be queried at once`,
+  }),
 })

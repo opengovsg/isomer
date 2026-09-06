@@ -15,7 +15,7 @@ import type {
   RequiresNewBuild,
   RequiresNoNewBuild,
 } from "./types"
-import { db } from "../database"
+import { db } from "../database/database"
 import { RECENT_BUILD_THRESHOLD_SECONDS } from "./constants"
 
 const client = new CodeBuildClient({ region: "ap-southeast-1" })

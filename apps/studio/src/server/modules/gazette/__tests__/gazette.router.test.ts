@@ -35,7 +35,7 @@ import {
 // before any test runs. Mock the whole module to prevent this.
 vi.mock("~/lib/algolia")
 
-import { db } from "../../database"
+import { db } from "../../database/database"
 import { gazetteRouter } from "../gazette.router"
 import * as gazetteService from "../gazette.service"
 

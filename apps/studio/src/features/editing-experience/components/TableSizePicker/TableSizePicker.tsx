@@ -153,7 +153,7 @@ const TableSizeGridPicker = ({ editor }: { editor: Editor }) => {
 
 export const TableSizePicker = ({
   editor,
-}: TableSizePickerProps): JSX.Element => {
+}: TableSizePickerProps): React.ReactNode => {
   if (editor.isActive("table")) {
     return <DeleteTableButton editor={editor} />
   }

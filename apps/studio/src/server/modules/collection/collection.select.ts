@@ -1,6 +1,6 @@
 import type { SelectExpression } from "kysely"
 
-import type { DB } from "../database"
+import type { DB } from "../database/types"
 
 export const defaultCollectionSelect = [
   "id",

@@ -25,7 +25,9 @@ import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
 
 import { assertAuditLogRows } from "../../audit/__tests__/utils"
-import { db, jsonb, ResourceState, ResourceType } from "../../database"
+import { db } from "../../database/database"
+import { ResourceState, ResourceType } from "../../database/types"
+import { jsonb } from "../../database/utils"
 import { getBlobOfResource } from "../../resource/resource.service"
 import { collectionRouter } from "../collection.router"
 import {

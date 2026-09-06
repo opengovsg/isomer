@@ -19,13 +19,13 @@ interface TimeSelectProps extends Omit<BaseSelectProps<string>, "options"> {
   minutesStep?: 5 | 10 | 15 | 20 | 30 | 60 // determines granularity of time options
 }
 
-const TimeSelectTimezoneBadge = (): JSX.Element => (
+const TimeSelectTimezoneBadge = (): React.ReactNode => (
   <Text textStyle="caption-2" color="base.content.medium">
     {getTimezoneAbbreviation()}
   </Text>
 )
 
-const TimeSelectDropdownIndicator = (): JSX.Element => (
+const TimeSelectDropdownIndicator = (): React.ReactNode => (
   <Flex
     height="100%"
     w="2.75rem"
@@ -37,13 +37,13 @@ const TimeSelectDropdownIndicator = (): JSX.Element => (
   </Flex>
 )
 
-const TimeSelectIndicatorSeparator = (): JSX.Element => (
+const TimeSelectIndicatorSeparator = (): React.ReactNode => (
   <Divider h="100%" orientation="vertical" borderColor="base.divider.strong" />
 )
 
 const TimeSelectPlaceholder = (
   props: PlaceholderProps<BaseSelectOption<string>>,
-): JSX.Element => (
+): React.ReactNode => (
   <components.Placeholder {...props}>
     <Flex align="center" justify="space-between" w="100%">
       <Text>Select time</Text>
@@ -55,7 +55,7 @@ const TimeSelectPlaceholder = (
 const formatTimeSelectOptionLabel = (
   option: BaseSelectOption<string>,
   { context }: FormatOptionLabelMeta<BaseSelectOption<string>>,
-): JSX.Element => (
+): React.ReactNode => (
   <Flex
     align="center"
     justify="space-between"
@@ -78,8 +78,13 @@ export const TimeSelect = React.forwardRef<
   const totalSlots = (24 * 60) / minutesStep
 
   // Generate all time slots in a day
-  const options = Array.from({ length: totalSlots })
-    .flatMap((_, i) => {
+  const options = (() => {
+    const slots: {
+      optionTime: Date
+      value: string
+      label: string
+    }[] = []
+    for (let i = 0; i < totalSlots; i++) {
       const minutesOfDay = i * minutesStep
       const optionTime = set(new Date(), {
         hours: Math.floor(minutesOfDay / 60),
@@ -87,15 +92,17 @@ export const TimeSelect = React.forwardRef<
         seconds: 0,
         milliseconds: 0,
       })
-      return {
+      if (earliestAllowableTime && optionTime < earliestAllowableTime) {
+        continue
+      }
+      slots.push({
         optionTime,
         value: format(optionTime, "HH:mm"),
         label: format(optionTime, "hh:mm a"),
-      }
-    })
-    .filter(({ optionTime }) => {
-      return earliestAllowableTime ? optionTime >= earliestAllowableTime : true
-    })
+      })
+    }
+    return slots
+  })()
 
   return (
     <BaseSelect

@@ -48,6 +48,7 @@ export default defineConfig({
           globals: true,
           browser: {
             enabled: true,
+            // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call -- vitest browser provider typing
             provider: playwright(),
             instances: [{ browser: "chromium" }],
             headless: !!process.env.CI,

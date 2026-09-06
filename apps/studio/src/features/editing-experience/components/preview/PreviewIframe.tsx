@@ -21,7 +21,7 @@ export const PreviewIframe = ({
   style,
   viewport,
   callback,
-}: PropsWithChildren<PreviewIframeProps>): JSX.Element => {
+}: PropsWithChildren<PreviewIframeProps>): React.ReactNode => {
   const extraProps = preventPointerEvents
     ? {
         initialContent: `<!DOCTYPE html><html><head></head><body><div id="frame-root" style="pointer-events: none;"></div></body></html>`,

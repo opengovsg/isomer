@@ -41,13 +41,22 @@ export const useResourceQuery = ({
   )
 
   const useResourceIdsFromSearch = !!resourceIds
+  const resourceIdsForAncestry = useResourceIdsFromSearch
+    ? resourceIds
+    : (() => {
+        const ids: string[] = []
+        for (const page of pages) {
+          for (const item of page.items) {
+            ids.push(item.id)
+          }
+        }
+        return ids
+      })()
   const { data: resourceItemsWithAncestryStack } =
     trpc.resource.getBatchAncestryWithSelf.useQuery(
       {
         siteId: String(siteId),
-        resourceIds: useResourceIdsFromSearch
-          ? resourceIds
-          : pages.flatMap(({ items }) => items).map((item) => item.id),
+        resourceIds: resourceIdsForAncestry,
       },
       {
         enabled: !isLoadingChildren,

@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test"
 import crypto from "crypto"
-import { db } from "~/server/modules/database"
+import { db } from "~/server/modules/database/database"
 
 import { storageStateFor, TEST_EMAILS } from "../fixtures/auth"
 import { getSeedSiteId } from "../fixtures/seed"

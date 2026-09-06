@@ -2,7 +2,7 @@ import type { CreateNextContextOptions } from "@trpc/server/adapters/next"
 import type { NextApiRequest, NextApiResponse } from "next"
 import type { Context } from "~/server/context"
 import { createGrowthBookContext } from "~/server/context"
-import { db } from "~/server/modules/database"
+import { db } from "~/server/modules/database/database"
 import { webhookRouter } from "~/server/modules/webhook/webhook.router"
 import { prisma } from "~/server/prisma"
 

@@ -26,7 +26,8 @@ import {
 } from "~/schemas/user"
 
 import { protectedProcedure, router } from "../../trpc"
-import { db, RoleType } from "../database"
+import { db } from "../database/database"
+import { RoleType } from "../database/types"
 import {
   getResourcePermission,
   isActiveIsomerAdmin,

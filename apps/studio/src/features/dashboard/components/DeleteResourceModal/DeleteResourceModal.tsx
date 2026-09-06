@@ -69,7 +69,7 @@ interface DeleteResourceModalProps {
 
 export const DeleteResourceModal = ({
   siteId,
-}: DeleteResourceModalProps): JSX.Element => {
+}: DeleteResourceModalProps): React.ReactNode => {
   const [{ resourceId, ...rest }, setDeleteCollectionModalState] = useAtom(
     deleteResourceModalAtom,
   )

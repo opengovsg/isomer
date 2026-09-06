@@ -25,7 +25,7 @@ export const codeBuildWebhookSchema = z
   .object({
     projectName: z.string(),
     arn: z.string(),
-    status: z.nativeEnum(BuildStatusType),
+    status: z.enum(BuildStatusType),
   })
   .transform(({ arn, ...rest }, ctx) => {
     const extractedBuildId = buildIdFromArn(arn)

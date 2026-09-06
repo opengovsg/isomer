@@ -2,14 +2,14 @@ import type { UnwrapTagged } from "type-fest"
 import { mkdirSync, readFileSync, writeFileSync } from "fs"
 import { dirname, join } from "path"
 import { fileURLToPath } from "url"
+import { db } from "~/server/modules/database/database"
 import {
-  db,
-  jsonb,
   ResourceState,
   ResourceType,
   type DB,
   type Transaction,
-} from "~/server/modules/database"
+} from "~/server/modules/database/types"
+import { jsonb } from "~/server/modules/database/utils"
 
 import {
   buildConversionReport,

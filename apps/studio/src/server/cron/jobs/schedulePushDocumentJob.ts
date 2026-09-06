@@ -6,7 +6,7 @@ import { ENABLE_SEARCHSG_GAZETTE_INGESTION } from "~/lib/growthbook"
 import { createBaseLogger } from "~/lib/logger"
 import { getBlob, setAssetAsPublished } from "~/lib/s3"
 import { createGrowthBookContext } from "~/server/context"
-import { db } from "~/server/modules/database"
+import { db } from "~/server/modules/database/database"
 import {
   generateDocumentId,
   pushDocumentsForIngestion,
@@ -96,16 +96,17 @@ const extractResourceData = async ({
 
   // NOTE: select the index page published blob also
   // as we need to derive the subcategory
-  const { content: indexPageContent } = await db
-    .selectFrom("Resource")
-    .innerJoin("Version", "Version.id", "Resource.publishedVersionId")
-    .innerJoin("Blob", "Blob.id", "Version.blobId")
-    .where("type", "=", "IndexPage")
-    .where("parentId", "=", parentId)
-    .select(["Blob.content"])
-    .executeTakeFirstOrThrow()
-
-  const blob = await getBlob(env.S3_GAZETTE_BUCKET_NAME, ref.slice(1))
+  const [{ content: indexPageContent }, blob] = await Promise.all([
+    db
+      .selectFrom("Resource")
+      .innerJoin("Version", "Version.id", "Resource.publishedVersionId")
+      .innerJoin("Blob", "Blob.id", "Version.blobId")
+      .where("type", "=", "IndexPage")
+      .where("parentId", "=", parentId)
+      .select(["Blob.content"])
+      .executeTakeFirstOrThrow(),
+    getBlob(env.S3_GAZETTE_BUCKET_NAME, ref.slice(1)),
+  ])
 
   // NOTE: Remove `scheduledAt` tags from our s3 object
   // so that the pdf is viewable to MOPs, and rename the download

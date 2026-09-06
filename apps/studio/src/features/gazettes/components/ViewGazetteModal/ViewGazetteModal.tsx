@@ -56,7 +56,7 @@ export const ViewGazetteModal = ({
   gazetteId,
   data,
   initialView = "view",
-}: ViewGazetteModalProps): JSX.Element => {
+}: ViewGazetteModalProps): React.ReactNode => {
   const { subcategoryMap } = useGazetteSubcategoriesContext()
 
   const canDelete = data.publishedAt

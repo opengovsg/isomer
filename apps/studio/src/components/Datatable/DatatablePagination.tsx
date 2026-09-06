@@ -9,7 +9,7 @@ interface DataTablePaginationProps<D extends RowData> {
 export const DatatablePagination = <T extends RowData>({
   instance,
   totalRowCount: totalRowCountProp,
-}: DataTablePaginationProps<T>): JSX.Element => {
+}: DataTablePaginationProps<T>): React.ReactNode => {
   const paginationState = instance.state.pagination
   const totalRowCount =
     totalRowCountProp ?? instance.getFilteredRowModel().rows.length

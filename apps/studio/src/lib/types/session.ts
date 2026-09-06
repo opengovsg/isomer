@@ -1,5 +1,5 @@
 import type { Tagged } from "type-fest"
-import type { VerificationToken } from "~/server/modules/database"
+import type { VerificationToken } from "~/server/modules/database/types"
 import { type IronSession } from "iron-session"
 import { type User } from "~prisma/generated/prisma/client"
 

@@ -6,7 +6,7 @@ import { SIGN_IN } from "~/lib/routes"
 import { trpc } from "~/utils/trpc"
 import { getRedirectUrl } from "~/utils/url"
 
-export const SingpassLoginButton = (): JSX.Element | null => {
+export const SingpassLoginButton = (): React.ReactNode | null => {
   const router = useRouter()
   const singpassLoginMutation = trpc.auth.singpass.login.useMutation({
     onSuccess: async ({ redirectUrl }) => {

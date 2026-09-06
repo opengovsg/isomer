@@ -9,6 +9,7 @@ import {
   useMemo,
   useState,
 } from "react"
+// oxlint-disable-next-line react-doctor/no-flush-sync -- JSONForms preview updates must flush synchronously; see commitPreviewPageState.
 import { flushSync } from "react-dom"
 import { type DrawerState } from "~/types/editorDrawer"
 

@@ -8,7 +8,7 @@ import {
   setUpWhitelist,
 } from "tests/integration/helpers/seed"
 import { beforeAll, beforeEach, describe, expect, it } from "vitest"
-import { db } from "~/server/modules/database"
+import { db } from "~/server/modules/database/database"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { createUserWithPermission, isUserDeleted } from "../user.service"

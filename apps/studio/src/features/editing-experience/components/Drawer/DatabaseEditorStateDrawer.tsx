@@ -34,7 +34,7 @@ const validateFn = ajv.compile<Static<typeof databasePageDatabaseSchema>>(
   databasePageDatabaseSchema,
 )
 
-const DatabaseEditorStateDrawer = (): JSX.Element => {
+const DatabaseEditorStateDrawer = (): React.ReactNode => {
   const {
     isOpen: isDiscardChangesModalOpen,
     onOpen: onDiscardChangesModalOpen,

@@ -66,7 +66,7 @@ interface CollectionTableProps {
 export const CollectionTable = ({
   siteId,
   resourceId,
-}: CollectionTableProps): JSX.Element => {
+}: CollectionTableProps): React.ReactNode => {
   const [sortOption, setSortOption] =
     useState<ResourceOrderByOption>("updated-desc")
 

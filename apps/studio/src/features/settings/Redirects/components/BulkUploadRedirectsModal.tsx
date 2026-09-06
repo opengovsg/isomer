@@ -102,7 +102,7 @@ export const BulkUploadRedirectsModal = ({
   siteId,
   isOpen,
   onClose,
-}: BulkUploadRedirectsModalProps): JSX.Element => {
+}: BulkUploadRedirectsModalProps): React.ReactNode => {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
@@ -113,7 +113,7 @@ export const BulkUploadRedirectsModal = ({
   )
 }
 
-const PublishingSpinner = (): JSX.Element => {
+const PublishingSpinner = (): React.ReactNode => {
   const [showSlowMessage, setShowSlowMessage] = useState(false)
 
   useEffect(() => {
@@ -141,7 +141,7 @@ const PublishingSpinner = (): JSX.Element => {
 const BulkUploadRedirectsModalContent = ({
   siteId,
   onClose,
-}: BulkUploadRedirectsModalContentProps): JSX.Element => {
+}: BulkUploadRedirectsModalContentProps): React.ReactNode => {
   const toast = useToast(BRIEF_TOAST_SETTINGS)
   const { validate } = useBulkValidateRedirects(siteId)
   const { mutateAsync: publish } = useBulkCreateRedirects()
@@ -156,7 +156,7 @@ const BulkUploadRedirectsModalContent = ({
   // The csv those verdicts were computed from. Publishing sends this rather than
   // whatever is in the picker now, so the batch that gets created is always the
   // one the editor reviewed on the success screen.
-  const [reviewedCsv, setReviewedCsv] = useState<string | null>(null)
+  const reviewedCsvRef = useRef<string | null>(null)
   // Covers the validation request plus MIN_PROCESSING_MS, so the button keeps
   // its spinner for the whole visible wait rather than the request alone.
   const [isProcessing, setIsProcessing] = useState(false)
@@ -188,7 +188,7 @@ const BulkUploadRedirectsModalContent = ({
     applyCsv(null)
     setFileError(null)
     setValidation(null)
-    setReviewedCsv(null)
+    reviewedCsvRef.current = null
     setIsProcessing(false)
     latestFileRef.current = null
     hasPendingRejectionRef.current = false
@@ -255,7 +255,7 @@ const BulkUploadRedirectsModalContent = ({
   // "re-upload the file with fixes"), so the corrected file can be dropped in.
   const enterErrorsStage = (result: BulkValidation) => {
     setValidation(result)
-    setReviewedCsv(null)
+    reviewedCsvRef.current = null
     setFile(null)
     applyCsv(null)
     setFileError(null)
@@ -295,7 +295,7 @@ const BulkUploadRedirectsModalContent = ({
         return
       }
       setValidation(result)
-      setReviewedCsv(processedCsv)
+      reviewedCsvRef.current = processedCsv
       setStage("success")
       finishProcessing()
     } catch {
@@ -316,12 +316,12 @@ const BulkUploadRedirectsModalContent = ({
   const handlePublish = async () => {
     // Publish exactly what the success screen reviewed, never the current picker
     // contents, so the created batch can't differ from the listed redirects.
-    if (!reviewedCsv) return
+    if (!reviewedCsvRef.current) return
     // Creating the batch and republishing the site is the slow step, so switch
     // to the full-screen spinner once the user commits.
     setStage("publishing")
     try {
-      const result = await publish({ siteId, csv: reviewedCsv })
+      const result = await publish({ siteId, csv: reviewedCsvRef.current })
       if (result.ok) {
         toast({
           title: `${result.publishedCount} redirect${result.publishedCount === 1 ? "" : "s"} published`,
@@ -419,7 +419,7 @@ const BulkUploadModalBody = ({
   onFileChange,
   onRejection,
   onDownloadErrors,
-}: BulkUploadModalBodyProps): JSX.Element => {
+}: BulkUploadModalBodyProps): React.ReactNode => {
   switch (stage) {
     case "publishing":
       return <PublishingSpinner />

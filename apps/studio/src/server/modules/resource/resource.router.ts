@@ -33,8 +33,9 @@ import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 
 import type { PermissionsProps } from "../permissions/permissions.type"
 import { logResourceEvent } from "../audit/audit.service"
-import { db, ResourceType } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
+import { db } from "../database/database"
+import { ResourceType } from "../database/types"
 import {
   bulkValidateUserPermissionsForResources,
   definePermissionsForResource,
@@ -89,16 +90,17 @@ const validateUserPermissionsForMove = async ({
   // we should fetch the oldest `parent` of this resource eventually.
   // Putting this in here first because eventually we'll have to lookup both
   // even though for now they are the same thing
-  const permsFrom = await definePermissionsForResource({
-    ...rest,
-    resourceId: null,
-  })
-  const permsTo = await definePermissionsForResource({
-    ...rest,
-    resourceId: null,
-  })
-
-  const resourceFrom = await fetchResource(from)
+  const [permsFrom, permsTo, resourceFrom] = await Promise.all([
+    definePermissionsForResource({
+      ...rest,
+      resourceId: null,
+    }),
+    definePermissionsForResource({
+      ...rest,
+      resourceId: null,
+    }),
+    fetchResource(from),
+  ])
 
   return (
     // NOTE: This is because we want to check whether we can move to within `to`

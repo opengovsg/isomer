@@ -11,7 +11,7 @@ import {
 import { JsonFormsDispatch } from "@jsonforms/react"
 import { Switch } from "@opengovsg/design-system-react"
 import { isEmpty } from "lodash-es"
-import { useMemo, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 import { withJsonFormsControlWithDetailProps } from "../../contexts/JsonFormsContext"
@@ -42,13 +42,14 @@ const JsonFormsBoxedGroupControl = ({
 }: ControlWithDetailProps) => {
   const [isChecked, setIsChecked] = useState(!isEmpty(data))
   // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const [dataSnapshot, setDataSnapshot] = useState(data)
+  const dataSnapshotRef = useRef(data)
   const handleToggle = () => {
     if (isChecked) {
-      setDataSnapshot(data)
+      // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment -- JsonForms data is schema-driven
+      dataSnapshotRef.current = data
       handleChange(path, undefined)
     } else {
-      handleChange(path, dataSnapshot)
+      handleChange(path, dataSnapshotRef.current)
     }
     setIsChecked((prev) => !prev)
   }

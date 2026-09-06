@@ -17,7 +17,7 @@ import { RawJsonEditor } from "../RawJsonEditor"
 
 const validateFn = ajv.compile<IsomerSchema>(schema)
 
-const RawJsonEditorModeStateDrawer = (): JSX.Element => {
+const RawJsonEditorModeStateDrawer = (): React.ReactNode => {
   const {
     setDrawerState,
     savedPageState,
@@ -27,7 +27,7 @@ const RawJsonEditorModeStateDrawer = (): JSX.Element => {
   } = useEditorDrawerContext()
   const { pageId, siteId } = useQueryParse(pageSchema)
   const toast = useToast()
-  const [pendingChanges, setPendingChanges] = useState(
+  const [pendingChanges, setPendingChanges] = useState(() =>
     JSON.stringify(savedPageState, null, 2),
   )
 

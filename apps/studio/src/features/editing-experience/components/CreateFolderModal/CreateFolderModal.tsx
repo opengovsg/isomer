@@ -46,7 +46,7 @@ export const CreateFolderModal = ({
   onClose,
   siteId,
   parentFolderId,
-}: CreateFolderModalProps): JSX.Element => {
+}: CreateFolderModalProps): React.ReactNode => {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />

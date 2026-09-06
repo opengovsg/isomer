@@ -17,13 +17,12 @@ import {
 } from "~/features/editing-experience/hooks/useTextEditor"
 import { useSimpleProseEditor } from "~/features/editing-experience/hooks/useTextEditor/useTextEditor"
 
-import {
-  TiptapAccordionEditor,
-  TiptapCalloutEditor,
-  TiptapProseEditor,
-} from "../TipTapEditor"
+import { TiptapAccordionEditor } from "../TipTapEditor/TiptapAccordionEditor"
+import { TiptapCalloutEditor } from "../TipTapEditor/TiptapCalloutEditor"
+import { TiptapProseEditor } from "../TipTapEditor/TiptapProseEditor"
 import { TiptapSimpleProseEditor } from "../TipTapEditor/TiptapSimpleProseEditor"
-import { getCustomErrorMessage, isTiptapEditorEmpty } from "./utils"
+import { getCustomErrorMessage } from "./utils/getCustomErrorMessage"
+import { isTiptapEditorEmpty } from "./utils/isTipTapEditorEmpty"
 
 export const jsonFormsProseControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ProseControl,

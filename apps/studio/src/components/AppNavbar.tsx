@@ -9,7 +9,7 @@ import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { AvatarMenu } from "./AvatarMenu"
 
-export const AppNavbar = (): JSX.Element => {
+export const AppNavbar = (): React.ReactNode => {
   const { isAdmin: isUserIsomerAdmin } = useIsUserIsomerAdmin({
     roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
   })

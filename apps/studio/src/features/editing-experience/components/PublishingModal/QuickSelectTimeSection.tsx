@@ -41,10 +41,14 @@ export const QuickSelectTimeSection = ({
       <Text textStyle="caption-2">Quick select a time?</Text>
       <HStack spacing="0.5rem">
         {optionsToShow.map((time) => {
-          const date = new Date()
-          date.setHours(time.hours, time.minutes, 0, 0)
-          const displayFormatted = format(date, "h:mm a")
-          const valueFormatted = format(date, "HH:mm")
+          const displayFormatted = format(
+            new Date(2000, 0, 1, time.hours, time.minutes),
+            "h:mm a",
+          )
+          const valueFormatted = format(
+            new Date(2000, 0, 1, time.hours, time.minutes),
+            "HH:mm",
+          )
           return (
             <Badge
               key={displayFormatted}

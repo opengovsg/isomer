@@ -13,8 +13,8 @@ import type {
   UserManagementActions,
 } from "./permissions.type"
 import { logPermissionEvent } from "../audit/audit.service"
-import { db } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
+import { db } from "../database/database"
 import { CRUD_ACTIONS } from "./permissions.type"
 import {
   buildPermissionsForResource,
@@ -144,10 +144,10 @@ export const bulkValidateUserPermissionsForResources = async ({
 
   // This executes 1 DB query
   // NOTE: not passing in resourceIds because we are using site-wide permissions
-  const perms = await definePermissionsForResource({ siteId, userId })
-
-  // This executes 0-1 DB query
-  const resources = await generateResources(resourceIds ?? [])
+  const [perms, resources] = await Promise.all([
+    definePermissionsForResource({ siteId, userId }),
+    generateResources(resourceIds ?? []),
+  ])
 
   await Promise.all(
     resources.map((resource) => {

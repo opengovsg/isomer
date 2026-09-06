@@ -1,4 +1,4 @@
-import type { Resource } from "~/server/modules/database"
+import type { Resource } from "~/server/modules/database/types"
 import { env } from "~/env.mjs"
 import { sendFailedPublishEmail } from "~/features/mail/service"
 import {
@@ -8,7 +8,7 @@ import {
 import { createBaseLogger } from "~/lib/logger"
 import { createGrowthBookContext } from "~/server/context"
 import { publishSite } from "~/server/modules/aws/codebuild.service"
-import { db } from "~/server/modules/database"
+import { db } from "~/server/modules/database/database"
 import {
   defaultResourceSelect,
   publishPageResource,
@@ -92,56 +92,58 @@ export const publishScheduledResources = async (
   // Reset the scheduledAt and scheduledBy fields for all resources that are being published
   await resetScheduledAtForPublishedResources(scheduledAtCutoff)
 
-  for (const resource of resourcesWithUser) {
-    const { id: resourceId, siteId, scheduledBy } = resource
-    if (!scheduledBy) {
-      logger.error(
-        `Resource ${resourceId} is missing user information, skipping publish`,
-      )
-      continue
-    }
-    try {
-      // publish the resources WITHOUT publishing the site yet
-      await publishPageResource({
-        logger,
-        resourceId,
-        siteId,
-        userId: scheduledBy,
-      })
-      logger.info(`Successfully published page for resource: ${resourceId}`)
-      // Group resources by siteId for site publishing later
-      siteResourcesMap[siteId] = siteResourcesMap[siteId] ?? []
-      siteResourcesMap[siteId].push({ ...resource, scheduledBy })
-    } catch (error) {
-      logger.error(
-        { error },
-        `Failed to publish page for resource: ${resourceId}`,
-      )
-      if (resource.userDeletedAt || !resource.email) {
-        logger.warn(
-          `Resource ${resourceId} is missing user email information or deleted, cannot send failed publish email`,
+  await Promise.all(
+    resourcesWithUser.map(async (resource) => {
+      const { id: resourceId, siteId, scheduledBy } = resource
+      if (!scheduledBy) {
+        logger.error(
+          `Resource ${resourceId} is missing user information, skipping publish`,
         )
-        continue
+        return
       }
-      if (enableEmailsForScheduledPublishes) {
-        try {
-          await sendFailedPublishEmail({
-            recipientEmail: resource.email,
-            isScheduled: true,
-            resource,
-          })
+      try {
+        // publish the resources WITHOUT publishing the site yet
+        await publishPageResource({
+          logger,
+          resourceId,
+          siteId,
+          userId: scheduledBy,
+        })
+        logger.info(`Successfully published page for resource: ${resourceId}`)
+        // Group resources by siteId for site publishing later
+        siteResourcesMap[siteId] = siteResourcesMap[siteId] ?? []
+        siteResourcesMap[siteId].push({ ...resource, scheduledBy })
+      } catch (error) {
+        logger.error(
+          { error },
+          `Failed to publish page for resource: ${resourceId}`,
+        )
+        if (resource.userDeletedAt || !resource.email) {
           logger.warn(
-            `Sent failed publish email to ${resource.email} for resource: ${resourceId}`,
+            `Resource ${resourceId} is missing user email information or deleted, cannot send failed publish email`,
           )
-        } catch (emailError) {
-          logger.error(
-            { error: emailError },
-            `Failed to send failed publish email to ${resource.email} for resource: ${resourceId}`,
-          )
+          return
+        }
+        if (enableEmailsForScheduledPublishes) {
+          try {
+            await sendFailedPublishEmail({
+              recipientEmail: resource.email,
+              isScheduled: true,
+              resource,
+            })
+            logger.warn(
+              `Sent failed publish email to ${resource.email} for resource: ${resourceId}`,
+            )
+          } catch (emailError) {
+            logger.error(
+              { error: emailError },
+              `Failed to send failed publish email to ${resource.email} for resource: ${resourceId}`,
+            )
+          }
         }
       }
-    }
-  }
+    }),
+  )
   return siteResourcesMap
 }
 
@@ -149,49 +151,53 @@ export const publishScheduledSites = async (
   siteResourcesMap: Record<string, ResourceWithUser[]>,
   enableCodebuildJobs: boolean,
 ) => {
-  for (const [siteId, resources] of Object.entries(siteResourcesMap)) {
-    try {
-      await publishSite(logger, {
-        siteId: Number(siteId),
-        codebuildJob: enableCodebuildJobs
-          ? {
-              isScheduled: true,
-              resourceWithUserIds: resources.map(
-                ({ id: resourceId, scheduledBy }) => {
-                  return { resourceId, userId: scheduledBy }
-                },
-              ),
+  await Promise.all(
+    Object.entries(siteResourcesMap).map(async ([siteId, resources]) => {
+      try {
+        await publishSite(logger, {
+          siteId: Number(siteId),
+          codebuildJob: enableCodebuildJobs
+            ? {
+                isScheduled: true,
+                resourceWithUserIds: resources.map(
+                  ({ id: resourceId, scheduledBy }) => {
+                    return { resourceId, userId: scheduledBy }
+                  },
+                ),
+              }
+            : undefined,
+        })
+        logger.info(`Successfully published site for siteId: ${siteId}`)
+      } catch (error) {
+        logger.error({ error }, `Failed to publish site for siteId: ${siteId}`)
+        await Promise.all(
+          resources.map(async (resource) => {
+            if (resource.userDeletedAt || !resource.email) {
+              logger.warn(
+                `Resource ${resource.id} is missing user email information or deleted, cannot send failed publish email`,
+              )
+              return
             }
-          : undefined,
-      })
-      logger.info(`Successfully published site for siteId: ${siteId}`)
-    } catch (error) {
-      logger.error({ error }, `Failed to publish site for siteId: ${siteId}`)
-      for (const resource of resources) {
-        if (resource.userDeletedAt || !resource.email) {
-          logger.warn(
-            `Resource ${resource.id} is missing user email information or deleted, cannot send failed publish email`,
-          )
-          continue
-        }
-        try {
-          await sendFailedPublishEmail({
-            recipientEmail: resource.email,
-            isScheduled: true,
-            resource,
-          })
-          logger.warn(
-            `Sent failed publish email to ${resource.email} for resource: ${resource.id}, since site publish failed for site ${siteId}`,
-          )
-        } catch (emailError) {
-          logger.error(
-            { error: emailError },
-            `Failed to send failed publish email to ${resource.email} for resource: ${resource.id}, since site publish failed for site ${siteId}`,
-          )
-        }
+            try {
+              await sendFailedPublishEmail({
+                recipientEmail: resource.email,
+                isScheduled: true,
+                resource,
+              })
+              logger.warn(
+                `Sent failed publish email to ${resource.email} for resource: ${resource.id}, since site publish failed for site ${siteId}`,
+              )
+            } catch (emailError) {
+              logger.error(
+                { error: emailError },
+                `Failed to send failed publish email to ${resource.email} for resource: ${resource.id}, since site publish failed for site ${siteId}`,
+              )
+            }
+          }),
+        )
       }
-    }
-  }
+    }),
+  )
 }
 
 /**

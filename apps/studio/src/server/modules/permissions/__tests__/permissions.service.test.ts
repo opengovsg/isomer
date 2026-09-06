@@ -15,7 +15,8 @@ import { describe, expect, it } from "vitest"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import type { ResourceAbility } from "../permissions.type"
-import { db, ResourceType, RoleType } from "../../database"
+import { db } from "../../database/database"
+import { ResourceType, RoleType } from "../../database/types"
 import {
   bulkValidateUserPermissionsForResources,
   definePermissionsForResource,

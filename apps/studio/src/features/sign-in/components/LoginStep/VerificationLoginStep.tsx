@@ -5,7 +5,7 @@ import { IsomerLogo } from "~/components/Svg"
 import { VerificationInput } from "../EmailLogin/VerificationInput"
 import { useSignInContext } from "../SignInContext"
 
-export const VerificationLoginStep = (): JSX.Element => {
+export const VerificationLoginStep = (): React.ReactNode => {
   const { backToInitial, vfnStepData } = useSignInContext()
 
   return (

@@ -17,8 +17,8 @@ import {
 import { createCallerFactory } from "~/server/trpc"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
-import type { User } from "../../database"
-import { db } from "../../database"
+import type { User } from "../../database/types"
+import { db } from "../../database/database"
 import { whitelistRouter } from "../whitelist.router"
 
 const createCaller = createCallerFactory(whitelistRouter)

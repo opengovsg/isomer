@@ -6,11 +6,12 @@ export function validateRequiredTags(
   tags: CollectionTags,
   tagged: ArticlePagePageProps["tagged"],
 ) {
+  const taggedSet = new Set(tagged ?? [])
   const unfilledRequiredCategories = tags.filter(
     ({ isRequired, options }) =>
       isRequired &&
       options.length > 0 &&
-      !options.some(({ id }) => tagged?.includes(id)),
+      !options.some(({ id }) => taggedSet.has(id)),
   )
 
   return {

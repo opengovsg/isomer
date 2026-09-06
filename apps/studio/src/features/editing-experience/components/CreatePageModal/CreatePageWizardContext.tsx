@@ -162,7 +162,7 @@ const useCreatePageWizardContext = ({
 export const CreatePageWizardProvider = ({
   children,
   ...passthroughProps
-}: PropsWithChildren<CreatePageWizardProps>): JSX.Element => {
+}: PropsWithChildren<CreatePageWizardProps>): React.ReactNode => {
   const values = useCreatePageWizardContext(passthroughProps)
   return (
     <CreatePageWizardContext.Provider value={values}>

@@ -18,26 +18,26 @@ const proseSchema = getComponentSchema({ component: "prose" })
 
 const validate = ajv.compile<ProseProps>(proseSchema)
 
-export const EditPageDrawer = (): JSX.Element => {
+const inferAsProse = (component?: IsomerComponent): ProseProps => {
+  if (!component) {
+    throw new Error("Expected component of type prose but got undefined")
+  }
+
+  if (validate(component)) {
+    return component
+  }
+
+  throw new Error(
+    `Expected component of type prose but got type ${component.type}`,
+  )
+}
+
+export const EditPageDrawer = (): React.ReactNode => {
   const {
     previewPageState,
     drawerState: currState,
     currActiveIdx,
   } = useEditorDrawerContext()
-
-  const inferAsProse = (component?: IsomerComponent): ProseProps => {
-    if (!component) {
-      throw new Error("Expected component of type prose but got undefined")
-    }
-
-    if (validate(component)) {
-      return component
-    }
-
-    throw new Error(
-      `Expected component of type prose but got type ${component.type}`,
-    )
-  }
 
   switch (currState.state) {
     case "root":

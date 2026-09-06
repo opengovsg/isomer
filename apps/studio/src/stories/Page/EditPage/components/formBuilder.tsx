@@ -13,7 +13,7 @@ export const FormBuilder = ({
   schema,
   data,
   readonly,
-}: FormBuilderProps): JSX.Element => {
+}: FormBuilderProps): React.ReactNode => {
   return (
     <JsonForms
       schema={schema}

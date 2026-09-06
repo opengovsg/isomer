@@ -182,27 +182,29 @@ const getAuditLogsForSite = async () => {
       ) as IsoMonth)
   const auditLogDateRange = getMonthDateRange(monthYear, new Date())
 
-  for (const siteId of SITES_WITH_AUDIT_LOGS) {
-    console.log(`Getting audit logs for siteId: ${siteId}`)
+  await Promise.all(
+    SITES_WITH_AUDIT_LOGS.map(async (siteId) => {
+      console.log(`Getting audit logs for siteId: ${siteId}`)
 
-    // Get users with access as of the end of the range (point-in-time)
-    const users = await getAccessReportRows({ siteId, auditLogDateRange })
+      // Get users with access as of the end of the range (point-in-time)
+      const [users, events] = await Promise.all([
+        getAccessReportRows({ siteId, auditLogDateRange }),
+        getActivityReportRows({ siteId, auditLogDateRange }),
+      ])
 
-    // Get events within the range
-    const events = await getActivityReportRows({ siteId, auditLogDateRange })
+      // Save as CSV files
+      const usersFilename = `useraccess_${siteId}_${monthYear}.csv`
+      const eventsFilename = `auditlogs_${siteId}_${monthYear}.csv`
 
-    // Save as CSV files
-    const usersFilename = `useraccess_${siteId}_${monthYear}.csv`
-    const eventsFilename = `auditlogs_${siteId}_${monthYear}.csv`
+      const outputDir = path.join(__dirname, "output")
+      if (!fs.existsSync(outputDir)) {
+        fs.mkdirSync(outputDir)
+      }
 
-    const outputDir = path.join(__dirname, "output")
-    if (!fs.existsSync(outputDir)) {
-      fs.mkdirSync(outputDir)
-    }
-
-    fs.writeFileSync(path.join(outputDir, usersFilename), toCsv(users))
-    fs.writeFileSync(path.join(outputDir, eventsFilename), toCsv(events))
-  }
+      fs.writeFileSync(path.join(outputDir, usersFilename), toCsv(users))
+      fs.writeFileSync(path.join(outputDir, eventsFilename), toCsv(events))
+    }),
+  )
 
   console.log('All audit logs saved in "output" folder')
 }

@@ -23,7 +23,8 @@
  */
 
 import { confirm, input } from "@inquirer/prompts"
-import { db, ResourceState, ResourceType } from "~/server/modules/database"
+import { db } from "~/server/modules/database/database"
+import { ResourceState, ResourceType } from "~/server/modules/database/types"
 
 import type { ConversionPlan } from "./helpers"
 import {
@@ -85,21 +86,25 @@ const massPublish = async (plan: ConversionPlan, userId: string) => {
   ]
 
   await db.transaction().execute(async (tx) => {
-    for (const resourceId of allResourceIds) {
-      const result = await incrementVersion({
-        tx,
-        siteId: plan.folder.siteId,
-        resourceId,
-        userId,
-      })
-      if (!result) {
-        console.log(`  - ${resourceId}: no draft (already published) — skipped`)
-      } else {
-        console.log(
-          `  - ${resourceId}: published v${result.newVersion.versionNum}`,
-        )
-      }
-    }
+    await Promise.all(
+      allResourceIds.map(async (resourceId) => {
+        const result = await incrementVersion({
+          tx,
+          siteId: plan.folder.siteId,
+          resourceId,
+          userId,
+        })
+        if (!result) {
+          console.log(
+            `  - ${resourceId}: no draft (already published) — skipped`,
+          )
+        } else {
+          console.log(
+            `  - ${resourceId}: published v${result.newVersion.versionNum}`,
+          )
+        }
+      }),
+    )
   })
 
   console.log(

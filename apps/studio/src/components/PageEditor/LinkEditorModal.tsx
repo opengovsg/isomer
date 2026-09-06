@@ -44,7 +44,7 @@ import { useZodForm } from "~/lib/form"
 import { getReferenceLink } from "~/utils/link"
 
 import { AttachmentData } from "../AttachmentData"
-import { ResourceSelector } from "../ResourceSelector"
+import { ResourceSelector } from "../ResourceSelector/ResourceSelector"
 import { FileAttachment } from "./FileAttachment"
 
 export const linkEditorSchema = z.object({

@@ -4,7 +4,7 @@ import { HStack } from "@chakra-ui/react"
 import type { PossibleMenubarItemProps } from "./MenubarItem/types"
 import { MenubarItemFactory } from "./MenubarItem"
 
-export type EditorMenuBar = ({ editor }: { editor: Editor }) => JSX.Element
+export type EditorMenuBar = ({ editor }: { editor: Editor }) => React.ReactNode
 
 export const MenuBar = ({ items }: { items: PossibleMenubarItemProps[] }) => {
   return (
@@ -21,8 +21,15 @@ export const MenuBar = ({ items }: { items: PossibleMenubarItemProps[] }) => {
       borderTopRadius="0.25rem"
       spacing="0.25rem"
     >
-      {items.map((item, index) => (
-        <MenubarItemFactory key={index} {...item} />
+      {items.map((item) => (
+        <MenubarItemFactory
+          key={
+            "title" in item && item.title
+              ? `${item.type}-${item.title}`
+              : item.type
+          }
+          {...item}
+        />
       ))}
     </HStack>
   )

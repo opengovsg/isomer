@@ -10,13 +10,13 @@ import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
 
-import { useTextEditor } from "../hooks/useTextEditor"
+import { useTextEditor } from "../hooks/useTextEditor/useTextEditor"
 import { pageSchema } from "../schema"
 import { CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE } from "./constants"
 import { DeleteBlockModal } from "./DeleteBlockModal"
 import { DiscardChangesModal } from "./DiscardChangesModal"
 import { DrawerHeader } from "./Drawer/DrawerHeader"
-import { TiptapTextEditor } from "./form-builder/renderers/TipTapEditor"
+import { TiptapTextEditor } from "./form-builder/renderers/TipTapEditor/TiptapTextEditor"
 
 interface TipTapComponentProps {
   content: ProseProps

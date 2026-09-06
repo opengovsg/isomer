@@ -25,7 +25,7 @@ import { formatFileSizeLimit } from "~/utils/formatFileSizeLimit"
 import { useAssetUpload } from "../../hooks/useAssetUpload"
 import { useS3Image } from "../../hooks/useS3Image"
 import { ACCEPTED_IMAGE_TYPES_MESSAGE } from "./constants"
-import { getCustomErrorMessage } from "./utils"
+import { getCustomErrorMessage } from "./utils/getCustomErrorMessage"
 
 export const jsonFormsMetaImageControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ImageControl,

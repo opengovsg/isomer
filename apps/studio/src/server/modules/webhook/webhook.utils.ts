@@ -13,7 +13,7 @@ import {
 
 import type { Logger } from "@isomer/logging"
 
-import { db } from "../database"
+import { db } from "../database/database"
 
 /**
  * Updates the status of the current build and any builds that have been superseded by it.
@@ -109,55 +109,65 @@ const sendEmails = async (
     .execute()
 
   const emailPromisesWithCodebuildJobId = compact(
-    buildsToSendEmails
-      .filter((build) => isEmailFunctionalityActive(gb, build.isScheduled))
-      .map((info) => {
-        switch (buildStatus) {
-          case "SUCCEEDED":
-            // Toppan users can only access gazettes in studio, and the
-            // successful publish email links to the raw studio resource which
-            // they cannot view. Suppress the email for them (Toppan users only
-            // ever publish gazettes).
-            if (info.email?.endsWith(TOPPAN_EMAIL_DOMAIN)) {
-              // Skip sending. This job's id is intentionally NOT added to
-              // `codebuildJobIdsForSentEmails`, so its `emailSent` stays `false` —
-              // no email was sent. This is deliberate, not a pending notification:
-              // the suppression is idempotent on every webhook retry, so a Toppan
-              // job is never emailed.
-              return
-            }
-            return {
-              id: info.codeBuildJobId, // codebuild job id
-              promise: sendSuccessfulPublishEmail({
-                isScheduled: info.isScheduled,
-                recipientEmail: info.email,
-                resource: info,
-              }),
-            }
-          case "FAILED":
-            return {
-              id: info.codeBuildJobId, // codebuild job id
-              promise: sendFailedPublishEmail({
-                isScheduled: info.isScheduled,
-                recipientEmail: info.email,
-                resource: info,
-              }),
-            }
-          default:
-            return // no emails for other statuses
-        }
-      }),
+    buildsToSendEmails.reduce<
+      ({ id: string; promise: Promise<unknown> } | undefined)[]
+    >((acc, info) => {
+      if (!isEmailFunctionalityActive(gb, info.isScheduled)) {
+        return acc
+      }
+
+      switch (buildStatus) {
+        case "SUCCEEDED":
+          // Toppan users can only access gazettes in studio, and the
+          // successful publish email links to the raw studio resource which
+          // they cannot view. Suppress the email for them (Toppan users only
+          // ever publish gazettes).
+          if (info.email?.endsWith(TOPPAN_EMAIL_DOMAIN)) {
+            // Skip sending. This job's id is intentionally NOT added to
+            // `codebuildJobIdsForSentEmails`, so its `emailSent` stays `false` —
+            // no email was sent. This is deliberate, not a pending notification:
+            // the suppression is idempotent on every webhook retry, so a Toppan
+            // job is never emailed.
+            return acc
+          }
+          acc.push({
+            id: info.codeBuildJobId, // codebuild job id
+            promise: sendSuccessfulPublishEmail({
+              isScheduled: info.isScheduled,
+              recipientEmail: info.email,
+              resource: info,
+            }),
+          })
+          return acc
+        case "FAILED":
+          acc.push({
+            id: info.codeBuildJobId, // codebuild job id
+            promise: sendFailedPublishEmail({
+              isScheduled: info.isScheduled,
+              recipientEmail: info.email,
+              resource: info,
+            }),
+          })
+          return acc
+        default:
+          return acc // no emails for other statuses
+      }
+    }, []),
   )
   const emailPromisesSettled = await Promise.allSettled(
     emailPromisesWithCodebuildJobId.map((t) => t.promise),
   )
   // get the codebuildJobIds for which the email was successfully sent
-  const codebuildJobIdsForSentEmails = emailPromisesWithCodebuildJobId
-    .map((info) => info.id)
-    .filter((_, idx) => {
-      const emailPromise = emailPromisesSettled[idx]
-      return emailPromise?.status === "fulfilled"
-    })
+  const codebuildJobIdsForSentEmails: string[] = []
+  for (let idx = 0; idx < emailPromisesWithCodebuildJobId.length; idx++) {
+    const emailPromise = emailPromisesSettled[idx]
+    if (emailPromise?.status === "fulfilled") {
+      const entry = emailPromisesWithCodebuildJobId[idx]
+      if (entry) {
+        codebuildJobIdsForSentEmails.push(entry.id)
+      }
+    }
+  }
 
   return codebuildJobIdsForSentEmails
 }

@@ -1,13 +1,13 @@
 export interface MenubarCustomProps {
   type: "custom"
-  render: () => JSX.Element
+  render: () => React.ReactNode
   isHidden?: () => boolean
 }
 
 export const MenubarCustom = ({
   isHidden,
   render,
-}: MenubarCustomProps): JSX.Element | null => {
+}: MenubarCustomProps): React.ReactNode | null => {
   if (isHidden?.()) {
     return null
   }

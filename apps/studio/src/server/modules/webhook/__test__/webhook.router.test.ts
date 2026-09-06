@@ -25,7 +25,7 @@ import {
 import { buildIdFromArn } from "~/schemas/webhook"
 import { WEBHOOK_X_API_KEY_HEADER, createCallerFactory } from "~/server/trpc"
 
-import { db } from "../../database"
+import { db } from "../../database/database"
 import { webhookRouter } from "../webhook.router"
 
 vi.mock("~/env.mjs", async () => {

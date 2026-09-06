@@ -29,7 +29,7 @@ const Site = ({
   siteId?: number
   siteName?: string
   siteLogoUrl?: string
-}): JSX.Element => {
+}): React.ReactNode => {
   return (
     <LinkBox cursor="pointer" role="group">
       <LinkOverlay
@@ -91,7 +91,7 @@ const SiteListSection = ({
   children,
 }: {
   children: React.ReactNode
-}): JSX.Element => {
+}): React.ReactNode => {
   return (
     <Flex flexDirection="column" gap="1.5rem" marginTop="0.75rem">
       <Text textStyle="body-2">
@@ -108,7 +108,7 @@ const SiteListSection = ({
   )
 }
 
-const SuspendableSiteList = (): JSX.Element => {
+const SuspendableSiteList = (): React.ReactNode => {
   const [sites] = trpc.site.list.useSuspenseQuery()
 
   if (sites.length === 0) {
@@ -154,7 +154,7 @@ const SuspendableSiteList = (): JSX.Element => {
   )
 }
 
-const SiteListSkeleton = (): JSX.Element => {
+const SiteListSkeleton = (): React.ReactNode => {
   return (
     <SiteListSection>
       {[1, 2, 3].map((index) => (

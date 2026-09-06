@@ -3,8 +3,8 @@ import { TRPCError } from "@trpc/server"
 import { ResourceState } from "~prisma/generated/generatedEnums"
 import { type DB } from "~prisma/generated/generatedTypes"
 
-import type { SafeKysely, Transaction } from "../database"
-import { db } from "../database"
+import type { SafeKysely, Transaction } from "../database/types"
+import { db } from "../database/database"
 import { getPageById, updatePageById } from "../resource/resource.service"
 
 interface Version {

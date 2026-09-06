@@ -17,7 +17,7 @@ import {
 import { getServerDomPurify } from "~/lib/server-dom-purify"
 
 import type { AssetPermissionsProps } from "../permissions/permissions.type"
-import { db } from "../database"
+import { db } from "../database/database"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 
 const logger = createBaseLogger({ path: "asset.service" })

@@ -13,7 +13,7 @@ interface RedirectsEmptyPlaceholderProps {
 // generic EmptyTablePlaceholder, this points users to the redirects guide.
 export const RedirectsEmptyPlaceholder = ({
   colSpan,
-}: RedirectsEmptyPlaceholderProps): JSX.Element => {
+}: RedirectsEmptyPlaceholderProps): React.ReactNode => {
   return (
     <Tr>
       <Td colSpan={colSpan} border="none">

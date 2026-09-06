@@ -40,9 +40,13 @@ const GroupComponent = React.memo(function GroupComponent({
         </Heading>
       </Box>
 
-      {elements.map((element, index) => (
+      {elements.map((element) => (
         <JsonFormsDispatch
-          key={`${path}-${index}`}
+          key={
+            "scope" in element && typeof element.scope === "string"
+              ? element.scope
+              : `${path}-${JSON.stringify(element)}`
+          }
           uischema={element}
           schema={schema}
           path={path}

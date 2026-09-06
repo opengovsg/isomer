@@ -41,7 +41,7 @@ import {
   getEmbedNameFromUrl,
   getIframeSrc,
 } from "../../../utils"
-import { getCustomErrorMessage } from "./utils"
+import { getCustomErrorMessage } from "./utils/getCustomErrorMessage"
 
 const SUPPORTED_FORMS = Object.keys(FORMSG_EMBED_URL_REGEXES).map(
   (key) => EMBED_NAME_MAPPING[key as keyof typeof FORMSG_EMBED_URL_REGEXES],

@@ -35,8 +35,12 @@ function getUiSchemaWithGroup(
     new Map(groups.map(({ label, fields }) => [label, fields])),
   )
 
-  const propertiesNotInGroup = Object.keys(jsonSchema.properties ?? {}).filter(
-    (property) => !groups.some(({ fields }) => fields.includes(property)),
+  const groupedFieldNames = new Set(groups.flatMap(({ fields }) => fields))
+
+  const propertiesNotInGroup = new Set(
+    Object.keys(jsonSchema.properties ?? {}).filter(
+      (property) => !groupedFieldNames.has(property),
+    ),
   )
 
   let tempUiSchema = [...uiSchema]
@@ -54,7 +58,7 @@ function getUiSchemaWithGroup(
 
     if (
       element.scope === undefined ||
-      propertiesNotInGroup.includes(element.scope.split("/").pop() || "")
+      propertiesNotInGroup.has(element.scope.split("/").pop() || "")
     ) {
       newUiSchema.push(element)
       tempUiSchema = tempUiSchema.slice(1)
@@ -62,15 +66,14 @@ function getUiSchemaWithGroup(
       continue
     }
 
-    const group = groups.find(({ fields }) =>
-      fields.includes(element.scope?.split("/").pop() || ""),
-    )
+    const scopeSuffix = element.scope?.split("/").pop() || ""
+    const group = groups.find(({ fields }) => fields.includes(scopeSuffix))
 
     if (group) {
       const { label } = group
-      const groupFields = groupMap.get(label) ?? []
+      const groupFields = new Set(groupMap.get(label) ?? [])
       const groupElements = uiSchema.filter((el) =>
-        groupFields.includes(el.scope?.split("/").pop() || ""),
+        groupFields.has(el.scope?.split("/").pop() || ""),
       )
 
       newUiSchema.push({
@@ -108,9 +111,13 @@ const JsonFormsVerticalLayoutRenderer = ({
 
   return (
     <Box w="100%" display="flex" flexDirection="column" gap="1.25rem" h="full">
-      {newElements.map((element, index) => (
+      {newElements.map((element) => (
         <JsonFormsDispatch
-          key={`${path}-${index}`}
+          key={
+            "scope" in element && typeof element.scope === "string"
+              ? element.scope
+              : `${path}-${JSON.stringify(element)}`
+          }
           uischema={element}
           schema={schema}
           path={path}

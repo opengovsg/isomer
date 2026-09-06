@@ -1,6 +1,5 @@
 import { Box, Flex, Skeleton, Stack, Text } from "@chakra-ui/react"
 import { useIsMobile } from "@opengovsg/design-system-react"
-import { format } from "date-fns"
 import { useMemo } from "react"
 import Suspense from "~/components/Suspense"
 import { useSiteThemeCssVars } from "~/features/preview/hooks/useSiteThemeCssVars"
@@ -10,7 +9,7 @@ import PreviewWithCustomSitemap from "../preview/PreviewWithCustomSitemap"
 import { LAYOUT_RENDER_DATA } from "./constants"
 import { useCreatePageWizard } from "./CreatePageWizardContext"
 
-export const PreviewLayout = (): JSX.Element => {
+export const PreviewLayout = (): React.ReactNode => {
   const isMobile = useIsMobile()
   const { currentLayout } = useCreatePageWizard()
 
@@ -70,7 +69,7 @@ const SuspendableLayoutPreview = () => {
       case "article": {
         return {
           page: {
-            date: format(new Date(), "dd MMM yyyy"),
+            date: "1 Jan 2026",
           },
         }
       }
@@ -97,7 +96,7 @@ const SuspendableLayoutPreview = () => {
           layout: "content",
           title: "Root",
           summary: "",
-          lastModified: new Date().toISOString(),
+          lastModified: "1970-01-01T00:00:00.000Z",
           permalink: "",
         }}
         {...layoutPreviewJson}

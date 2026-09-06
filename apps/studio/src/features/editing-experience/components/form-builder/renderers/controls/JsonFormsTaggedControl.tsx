@@ -62,55 +62,66 @@ const SuspendableJsonFormsTaggedControl = ({
   // this will also be rendered for Article pages
   // that are not part of a collection.
   // Hence, we render iff there is at least 1 tag
+  const tagCategories = tags.reduce<
+    {
+      label: string
+      options: (typeof tags)[number]["options"]
+      tagIsRequired: boolean | undefined
+    }[]
+  >((acc, { label, options, isRequired: tagIsRequired }) => {
+    if (options.length > 0) {
+      acc.push({ label, options, tagIsRequired })
+    }
+    return acc
+  }, [])
+
   return (
-    tags.length > 0 && (
+    tagCategories.length > 0 && (
       <VStack spacing="1.25rem">
-        {tags
-          .filter(({ options }) => options.length > 0)
-          .map(({ label, options, isRequired: tagIsRequired }) => {
-            const currentTagCategoryOptions = options.filter(({ id }) =>
-              data?.some((selectedTagId) => selectedTagId === id),
-            )
-            const tagOptionsIds = options.map(({ id }) => id)
+        {tagCategories.map(({ label, options, tagIsRequired }) => {
+          const selectedTagIds = new Set(data ?? [])
+          const currentTagCategoryOptions = options.filter(({ id }) =>
+            selectedTagIds.has(id),
+          )
+          const tagOptionsIds = new Set(options.map(({ id }) => id))
 
-            const isInvalid =
-              !!tagIsRequired && currentTagCategoryOptions.length === 0
+          const isInvalid =
+            !!tagIsRequired && currentTagCategoryOptions.length === 0
 
-            return (
-              <FormControl
-                key={label}
-                isRequired={tagIsRequired ?? false}
-                isInvalid={isInvalid}
-                gap="0.5rem"
-              >
-                <FormLabel description={description}>{label}</FormLabel>
-                <MultiSelect
-                  size="sm"
-                  nothingFoundLabel="No tags found."
-                  values={currentTagCategoryOptions.map(({ id }) => id)}
-                  name={label}
-                  items={options.map(({ id, label }) => {
-                    return {
-                      value: id,
-                      label,
-                    }
-                  })}
-                  // NOTE: `value` is the new set of selected options
-                  onChange={(value) => {
-                    const others =
-                      data?.filter((tagId) => !tagOptionsIds.includes(tagId)) ??
-                      []
-                    handleChange(path, [...others, ...value])
-                  }}
-                />
-                {isInvalid && (
-                  <FormErrorMessage>
-                    At least one option must be selected
-                  </FormErrorMessage>
-                )}
-              </FormControl>
-            )
-          })}
+          return (
+            <FormControl
+              key={label}
+              isRequired={tagIsRequired ?? false}
+              isInvalid={isInvalid}
+              gap="0.5rem"
+            >
+              <FormLabel description={description}>{label}</FormLabel>
+              <MultiSelect
+                size="sm"
+                nothingFoundLabel="No tags found."
+                values={currentTagCategoryOptions.map(({ id }) => id)}
+                name={label}
+                items={options.map(({ id, label }) => {
+                  return {
+                    value: id,
+                    label,
+                  }
+                })}
+                // NOTE: `value` is the new set of selected options
+                onChange={(value) => {
+                  const others =
+                    data?.filter((tagId) => !tagOptionsIds.has(tagId)) ?? []
+                  handleChange(path, [...others, ...value])
+                }}
+              />
+              {isInvalid && (
+                <FormErrorMessage>
+                  At least one option must be selected
+                </FormErrorMessage>
+              )}
+            </FormControl>
+          )
+        })}
       </VStack>
     )
   )

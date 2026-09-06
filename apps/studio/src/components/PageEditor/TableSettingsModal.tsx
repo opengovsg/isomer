@@ -43,7 +43,7 @@ export const TableSettingsModal = ({
   editor,
   isOpen,
   onClose,
-}: TableSettingsModalProps): JSX.Element => {
+}: TableSettingsModalProps): React.ReactNode => {
   const {
     register,
     watch,

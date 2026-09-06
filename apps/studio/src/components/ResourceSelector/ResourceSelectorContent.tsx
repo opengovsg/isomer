@@ -27,14 +27,15 @@ const ResourceItemsResults = ({
   isResourceItemDisabled,
   hasAdditionalLeftPadding,
   handleClickResourceItem,
-}: Pick<
-  SuspendableContentProps,
-  | "resourceItemsWithAncestryStack"
-  | "isResourceIdHighlighted"
-  | "isResourceItemDisabled"
-  | "hasAdditionalLeftPadding"
-  | "handleClickResourceItem"
->) => {
+}: {
+  resourceItemsWithAncestryStack: ResourceItemContent[][] | undefined
+  isResourceIdHighlighted: (resourceId: string) => boolean
+  isResourceItemDisabled: (resourceItem: ResourceItemContent) => boolean
+  hasAdditionalLeftPadding: boolean
+  handleClickResourceItem: (
+    resourceItemWithAncestryStack: ResourceItemContent[],
+  ) => void
+}) => {
   return (resourceItemsWithAncestryStack ?? []).map(
     (resourceItemWithAncestryStack) => {
       const lastChild = lastResourceItemInAncestryStack(
@@ -103,29 +104,31 @@ export const LoadingResourceItemsResults = () => {
   ))
 }
 
+interface SuspendableContentViewState {
+  hasAdditionalLeftPadding: boolean
+  isSearchQueryEmpty: boolean
+  isLoading: boolean
+}
+
 interface SuspendableContentProps {
   resourceItemsWithAncestryStack: ResourceItemContent[][] | undefined
   isResourceIdHighlighted: (resourceId: string) => boolean
   isResourceItemDisabled: (resourceItem: ResourceItemContent) => boolean
-  hasAdditionalLeftPadding: boolean
+  viewState: SuspendableContentViewState
   handleClickResourceItem: (
     resourceItemWithAncestryStack: ResourceItemContent[],
   ) => void
-  isSearchQueryEmpty: boolean
   searchQuery: string
   clearSearchValue: () => void
-  isLoading: boolean
 }
 export const SuspendableContent = ({
   resourceItemsWithAncestryStack,
   isResourceIdHighlighted,
   isResourceItemDisabled,
-  hasAdditionalLeftPadding,
+  viewState: { hasAdditionalLeftPadding, isSearchQueryEmpty, isLoading },
   handleClickResourceItem,
-  isSearchQueryEmpty,
   searchQuery,
   clearSearchValue,
-  isLoading,
 }: SuspendableContentProps) => {
   if (isLoading || !resourceItemsWithAncestryStack)
     return <LoadingResourceItemsResults />
