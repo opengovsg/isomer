@@ -8,5 +8,5 @@ export const DEFAULT_CHILDREN_PAGES_BLOCK = {
   variant: CHILDREN_PAGES_LAYOUT_OPTIONS.Rows,
   showSummary: true,
   showThumbnail: false,
-  childrenPagesOrdering: [] as string[],
+  childrenPagesOrdering: [] satisfies string[],
 }

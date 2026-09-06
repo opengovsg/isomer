@@ -12,14 +12,17 @@ const extractDgsFieldKey = (string: string): string => {
   return string.slice(PREFIX.length, -SUFFIX.length).trim()
 }
 
+type DgsFieldRecord = Record<string, string | number>
+
 export const transformDgsField = <T extends string | undefined | null>(
   field: T,
-  record: Record<string, unknown>,
+  record: DgsFieldRecord,
 ): T => {
   try {
     if (!field || !isStringDgs(field)) {
       return field
     }
+    // SAFETY: DGS field keys resolve to string values in the row record
     return record[extractDgsFieldKey(field)] as T
   } catch {
     return field

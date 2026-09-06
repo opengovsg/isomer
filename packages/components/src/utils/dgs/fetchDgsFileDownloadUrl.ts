@@ -31,6 +31,7 @@ export const fetchDgsFileDownloadUrl = async ({
       throw new Error("Failed to initiate download")
     }
 
+    // SAFETY: HTTP ok response body matches DownloadResponse contract
     const downloadData = (await downloadResponse.json()) as DownloadResponse
 
     return {

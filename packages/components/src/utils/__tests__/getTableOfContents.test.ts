@@ -95,6 +95,7 @@ describe("getTableOfContents", () => {
   it("strips hard breaks from level-2 heading toc entries", () => {
     // Arrange
     const site = generateSiteConfig()
+    // SAFETY: editor may insert hardBreak nodes into heading content at runtime
     const transformedContent = getTransformedPageContent([
       {
         type: "prose",
@@ -104,16 +105,13 @@ describe("getTableOfContents", () => {
             attrs: { level: 2 },
             content: [
               { type: "text", text: "Line one" },
-              { type: "hardBreak" } as unknown as {
-                type: "text"
-                text: string
-              },
+              { type: "hardBreak" },
               { type: "text", text: "Line two" },
             ],
           },
         ],
       },
-    ])
+    ] as IsomerComponent[])
 
     // Act
     const toc = getTableOfContents(site, transformedContent)
@@ -127,19 +125,14 @@ describe("getTableOfContents", () => {
   it("skips empty level-2 headings (e.g. containing only a hard break)", () => {
     // Arrange
     const site = generateSiteConfig()
-    const transformedContent = getTransformedPageContent([
+    const pageContent = [
       {
         type: "prose",
         content: [
           {
             type: "heading",
             attrs: { level: 2 },
-            content: [
-              { type: "hardBreak" } as unknown as {
-                type: "text"
-                text: string
-              },
-            ],
+            content: [{ type: "hardBreak" }],
           },
           {
             type: "heading",
@@ -148,7 +141,11 @@ describe("getTableOfContents", () => {
           },
         ],
       },
-    ])
+    ]
+    // SAFETY: editor may insert hardBreak nodes into heading content at runtime
+    const transformedContent = getTransformedPageContent(
+      pageContent as IsomerComponent[],
+    )
 
     // Act
     const toc = getTableOfContents(site, transformedContent)

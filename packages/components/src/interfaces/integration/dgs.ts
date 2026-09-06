@@ -54,9 +54,11 @@ export const createDgsSchema = <T extends TSchema>({
   componentName,
   nativeSchema,
 }: CreateDgsSchemaProps<T>) => {
-  const dgsFields = Object.keys(nativeSchema.properties).reduce(
-    (acc, key) => {
+  const dgsFields = Object.keys(nativeSchema.properties).reduce<
+    Record<string, TSchema>
+  >((acc, key) => {
       const unionSchema = Type.Union([
+        // SAFETY: key comes from Object.keys(nativeSchema.properties)
         nativeSchema.properties[key as keyof T["properties"]],
         Type.String({
           title: "Key",
@@ -73,9 +75,7 @@ export const createDgsSchema = <T extends TSchema>({
         : unionSchema
 
       return acc
-    },
-    {} as Record<string, any>,
-  )
+    }, {})
 
   return Type.Intersect([
     Type.Object({

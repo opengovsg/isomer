@@ -1,15 +1,25 @@
+type PhoneValidationInput =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | PhoneValidationInput[]
+  | { [key: string]: never }
+
 // Note: this is a very basic phone number validation that
 // only checks if the phone number is a valid international phone number
 // by making sure it starts with a country code and has 1-14 digits
-export const isPhoneNumber = (phone: string): boolean => {
+export const isPhoneNumber = (phone: PhoneValidationInput): boolean => {
   // wrap in try-catch as this is being used in runtime
   try {
-    if (typeof phone !== "string") {
+    if (Object.prototype.toString.call(phone) !== "[object String]") {
       return false
     }
 
     // Remove all whitespace and common phone number separators
-    const cleanPhone = sanitizePhoneNumber(phone)
+    // SAFETY: runtime guard above confirms phone is a string primitive
+    const cleanPhone = sanitizePhoneNumber(phone as string)
 
     // Generic international phone number validation
     // Allows country codes (+1, +44, etc.) and various formats

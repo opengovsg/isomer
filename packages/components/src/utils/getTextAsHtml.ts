@@ -8,7 +8,7 @@ import { getReferenceLinkHref } from "./getReferenceLinkHref"
 
 type MarkTypes = Marks["type"]
 
-const MARK_DOM_MAPPING: Record<MarkTypes, string> = {
+const MARK_DOM_MAPPING = {
   bold: "b",
   code: "code",
   italic: "i",
@@ -17,7 +17,7 @@ const MARK_DOM_MAPPING: Record<MarkTypes, string> = {
   subscript: "sub",
   superscript: "sup",
   underline: "u",
-}
+} as const satisfies Record<MarkTypes, string>
 
 interface GetTextAsHtmlArgs {
   site: IsomerSiteProps

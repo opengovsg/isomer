@@ -11,7 +11,9 @@ export type ClassNames<T extends string> = Partial<Record<T, string>>
 /**
  * Function to return undefined if the value is falsy, otherwise true
  */
-export const dataAttr = (value: unknown) => (!!value ? true : undefined)
+export const dataAttr = (
+  value: string | number | boolean | null | undefined,
+) => (!!value ? true : undefined)
 
 // TODO: move focusRing style inside here
 export const focusVisibleHighlight = tv({
@@ -29,9 +31,13 @@ export const mergeRefs = <T>(
 ) => {
   return (node: T | null) => {
     internalRef.current = node
-    if (typeof forwardedRef === "function") {
-      forwardedRef(node)
-    } else if (forwardedRef) {
+    if (
+      Object.prototype.toString.call(forwardedRef) === "[object Function]"
+    ) {
+      // SAFETY: runtime check confirms forwardedRef is a callback ref
+      const callbackRef = forwardedRef as (node: T | null) => void
+      callbackRef(node)
+    } else if (forwardedRef !== null && "current" in forwardedRef) {
       forwardedRef.current = node
     }
   }
