@@ -181,6 +181,7 @@ const buildOrganisation = ({
 }) => {
   const entity = site.siteEntity
   const organisationName = getNonEmptyString(site.agencyName) ?? siteName
+  const logo = getAbsoluteHttpUrl(buildLogoUrl(site), siteUrl)
   const sameAs = buildSameAsLinks(
     footer,
     siteUrl,
@@ -200,7 +201,7 @@ const buildOrganisation = ({
       sitemapArray,
     }),
     description: getNonEmptyString(entity?.description),
-    logo: getAbsoluteHttpUrl(buildLogoUrl(site), siteUrl),
+    ...(logo !== undefined ? { logo } : {}),
     name: organisationName,
     sameAs: sameAs !== undefined && sameAs.length > 0 ? sameAs : undefined,
     url: siteUrl,

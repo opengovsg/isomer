@@ -90,7 +90,7 @@ describe("generateDgsUrl", () => {
 
     // Assert
     expect(result).toBe(
-      "https://data.gov.sg/api/action/datastore_search?resource_id=test-resource-123&filters=%7B%22location%22%3A%22Singapore+%26+Malaysia%22%2C%22category%22%3A%22transport+%26+logistics%22%2C%22status%22%3A%22active%22%7D",
+      "https://data.gov.sg/api/action/datastore_search?resource_id=test-resource-123&filters=%7B%22category%22%3A%22transport+%26+logistics%22%2C%22location%22%3A%22Singapore+%26+Malaysia%22%2C%22status%22%3A%22active%22%7D",
     )
   })
 
@@ -178,7 +178,7 @@ describe("generateDgsUrl", () => {
 
     // Assert
     expect(result).toBe(
-      "https://data.gov.sg/api/action/datastore_search?resource_id=test-resource-123&filters=%7B%22year%22%3A%222023%22%2C%22count%22%3A%22100%22%2C%22active%22%3A%22true%22%7D",
+      "https://data.gov.sg/api/action/datastore_search?resource_id=test-resource-123&filters=%7B%22active%22%3A%22true%22%2C%22count%22%3A%22100%22%2C%22year%22%3A%222023%22%7D",
     )
   })
 
