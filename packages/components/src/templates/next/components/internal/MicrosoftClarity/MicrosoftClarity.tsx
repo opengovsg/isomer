@@ -22,9 +22,9 @@ export const MicrosoftClarity = ({ msClarityId }: MicrosoftClarityProps) => {
       const clarityWindow = globalThis.window as unknown as Window & {
         clarity: ((...args: unknown[]) => void) & { q?: unknown[] }
       }
-      clarityWindow.clarity = function () {
-        // oxlint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, prefer-rest-params
-        ;(clarityWindow.clarity.q = clarityWindow.clarity.q ?? []).push(arguments)
+      clarityWindow.clarity = function (...args: unknown[]) {
+        // oxlint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+        ;(clarityWindow.clarity.q = clarityWindow.clarity.q ?? []).push(...args)
       }
     }
   }, [])
