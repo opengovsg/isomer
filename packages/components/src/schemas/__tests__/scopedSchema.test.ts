@@ -1,6 +1,16 @@
+import type { TSchema } from "@sinclair/typebox"
 import { describe, expect, it } from "vitest"
 
 import { getScopedSchema } from "../scopedSchema"
+
+interface AllOfSubSchema extends TSchema {
+  properties?: Record<string, TSchema>
+  required?: string[]
+}
+
+function getSubSchemaPropertyKeys(subSchema: AllOfSubSchema): string[] {
+  return subSchema.properties ? Object.keys(subSchema.properties) : []
+}
 
 describe("getScopedSchema", () => {
   describe("database layout", () => {
@@ -247,10 +257,7 @@ describe("getScopedSchema", () => {
       expect(schema.allOf).toBeDefined()
 
       // Other fields like "variant" should still exist
-      const allProperties = schema.allOf.flatMap(
-        (s: Record<string, unknown>) =>
-          s.properties ? Object.keys(s.properties) : [],
-      )
+      const allProperties = schema.allOf.flatMap(getSubSchemaPropertyKeys)
       expect(allProperties).toContain("variant")
       expect(allProperties).not.toContain("subtitle")
     })
@@ -313,10 +320,7 @@ describe("getScopedSchema", () => {
       expect(schema).toBeDefined()
       expect(schema.allOf).toBeDefined()
 
-      const allProperties = schema.allOf.flatMap(
-        (s: Record<string, unknown>) =>
-          s.properties ? Object.keys(s.properties) : [],
-      )
+      const allProperties = schema.allOf.flatMap(getSubSchemaPropertyKeys)
       expect(allProperties).toEqual(["subtitle"])
     })
 
@@ -330,10 +334,7 @@ describe("getScopedSchema", () => {
       expect(schema).toBeDefined()
       expect(schema.allOf).toBeDefined()
 
-      const allProperties = schema.allOf.flatMap(
-        (s: Record<string, unknown>) =>
-          s.properties ? Object.keys(s.properties) : [],
-      )
+      const allProperties = schema.allOf.flatMap(getSubSchemaPropertyKeys)
       expect(allProperties).toContain("subtitle")
       expect(allProperties).toContain("variant")
       expect(allProperties).not.toContain("sortOrder")
