@@ -20,7 +20,7 @@ export const UnsupportedBrowserBanner = ({
     subscribeToStaticSnapshot,
     () =>
       initialUserAgent ||
-      (typeof navigator !== "undefined" ? navigator.userAgent : ""),
+      (globalThis.navigator?.userAgent ?? ""),
     () => initialUserAgent || "",
   )
 

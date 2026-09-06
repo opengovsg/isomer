@@ -43,7 +43,7 @@ describe("sortCollectionItems", () => {
         lastUpdated: "2024-01-01",
       },
       ...overrides,
-    } as AllCardProps
+    }
   }
 
   describe("sortBy is date", () => {

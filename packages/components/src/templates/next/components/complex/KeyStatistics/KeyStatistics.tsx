@@ -60,6 +60,13 @@ const createKeyStatisticsStyles = tv({
 
 const compoundStyles = createKeyStatisticsStyles()
 
+const toNoOfItemVariants = (length: number): NoOfItemVariants => {
+  if (length <= 1) return 1
+  if (length === 2) return 2
+  if (length === 3) return 3
+  return 4
+}
+
 export const KeyStatistics = ({
   id,
   title,
@@ -70,7 +77,7 @@ export const KeyStatistics = ({
   site,
   headingLevel,
 }: KeyStatisticsProps) => {
-  const noOfItems = Math.min(MAX_ITEMS, statistics.length) as NoOfItemVariants
+  const noOfItems = toNoOfItemVariants(Math.min(MAX_ITEMS, statistics.length))
   const simplifiedLayout = getTailwindVariantLayout(layout)
   const TitleTag = getHeadingTag(headingLevel)
   const ItemTag = getHeadingTag(headingLevel + 1)

@@ -20,7 +20,7 @@ type MethodMapping = Record<
   }
 >
 
-export const METHODS_MAPPING: MethodMapping = {
+export const METHODS_MAPPING = {
   telephone: {
     label: "Telephone",
     Icon: BiPhone,
@@ -54,4 +54,4 @@ export const METHODS_MAPPING: MethodMapping = {
     label: "Person",
     Icon: BiUser,
   },
-}
+} satisfies MethodMapping

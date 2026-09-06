@@ -34,15 +34,10 @@ const getLastModifiedDate = (item: AllCardProps): Date | undefined => {
 }
 
 const compareDates = (
-  a: AllCardProps,
-  b: AllCardProps,
+  aDate: Date,
+  bDate: Date,
   sortDirection: NonNullable<SortCollectionItemsProps["sortDirection"]>,
 ): number => {
-  // Type assertion because TS control-flow narrowing only works when
-  // check is done inline and not when we define the variable
-  const aDate = a.date as unknown as Date
-  const bDate = b.date as unknown as Date
-
   switch (sortDirection) {
     case "asc":
       return aDate.getTime() >= bDate.getTime() ? 1 : -1
@@ -115,7 +110,7 @@ const sortCollectionItemsByDate = ({
     // ===== Scenario 1: Both items have published dates =====
     // Sort by first priority: Published date
     if (bothHaveDates && !bothSameDate) {
-      return compareDates(a, b, sortDirection)
+      return compareDates(a.date, b.date, sortDirection)
     }
 
     // Sort by second priority: Last modified date
@@ -172,7 +167,7 @@ const sortCollectionItemsByTitle = ({
     // ===== Scenario 1: Both items have published dates =====
     // Sort by second priority: Published date
     if (bothHaveDates && !bothSameDate) {
-      return compareDates(a, b, sortDirection)
+      return compareDates(a.date, b.date, sortDirection)
     }
 
     // Sort by third priority: Last modified date
@@ -199,15 +194,39 @@ const sortCollectionItemsByTitle = ({
   })
 }
 
+type ParsedSortOrder = {
+  sortBy: SortBy
+  sortDirection: SortDirection
+}
+
+const parseSortOrder = (
+  sortOrder: NonNullable<GetCollectionItemsProps["sortOrder"]>,
+): ParsedSortOrder => {
+  switch (sortOrder) {
+    case "date-asc":
+      return { sortBy: "date", sortDirection: "asc" }
+    case "date-desc":
+      return { sortBy: "date", sortDirection: "desc" }
+    case "title-asc":
+      return { sortBy: "title", sortDirection: "asc" }
+    case "title-desc":
+      return { sortBy: "title", sortDirection: "desc" }
+    default: {
+      const _: never = sortOrder
+      return { sortBy: "date", sortDirection: "desc" }
+    }
+  }
+}
+
 export const sortCollectionItems = ({
   items,
   sortOrder,
   sortBy,
   sortDirection,
 }: SortCollectionItemsProps): AllCardProps[] => {
-  const derivedSortBy = sortOrder ? (sortOrder.split("-")[0] as SortBy) : sortBy
+  const derivedSortBy = sortOrder ? parseSortOrder(sortOrder).sortBy : sortBy
   const derivedSortDirection = sortOrder
-    ? (sortOrder.split("-")[1] as SortDirection)
+    ? parseSortOrder(sortOrder).sortDirection
     : sortDirection
 
   switch (derivedSortBy) {

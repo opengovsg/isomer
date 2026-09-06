@@ -26,7 +26,7 @@ export const ImageContainer = ({
 
   useEffect(() => {
     // to not render during static site generation on the server
-    if (typeof window === "undefined") return
+    if (globalThis.window == null) return
 
     const handleScroll = () => {
       if (!imageRef.current) return

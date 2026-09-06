@@ -47,7 +47,7 @@ export const createEgazetteRouting = (indexName: string) => ({
         maxMonth,
       }
     },
-    routeToState(routeState: EgazetteRouteState): Record<string, IndexUiState> {
+    routeToState(routeState: EgazetteRouteState) {
       const refinementList: Record<string, string[]> = {}
       const category = toArray(routeState.category)
       if (category) refinementList.category = category
@@ -60,12 +60,14 @@ export const createEgazetteRouting = (indexName: string) => ({
       const monthRange = joinRange(routeState.minMonth, routeState.maxMonth)
       if (monthRange) range.publishMonth = monthRange
 
+      const indexUiState: IndexUiState = {
+        query: routeState.q,
+        refinementList,
+        range,
+      }
+
       return {
-        [indexName]: {
-          query: routeState.q,
-          refinementList,
-          range,
-        },
+        [indexName]: indexUiState,
       }
     },
   },

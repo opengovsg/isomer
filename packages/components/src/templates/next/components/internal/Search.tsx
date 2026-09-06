@@ -58,7 +58,7 @@ export const SearchField = ({
 
   const isDisabled = props.isDisabled ?? false
   const isInvalid = props.isInvalid ?? false
-  const value = typeof inputProps.value === "string" ? inputProps.value : ""
+  const value = inputProps.value ?? ""
   const isEmpty = !value || value.length === 0
 
   const handleClear = () => {

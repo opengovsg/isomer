@@ -1,5 +1,6 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import { describe, expect, it } from "vitest"
+import { testCollectionItem } from "./testHelpers"
 
 import { NO_SPECIFIED_YEAR_FILTER_ID } from "../constants"
 import { getYearFilter } from "../getYearFilter"
@@ -23,21 +24,21 @@ describe("getYearFilter", () => {
   it("should count and format years correctly", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
-      {
+      testCollectionItem({
         date: new Date("2023-01-01"),
-      } as ProcessedCollectionCardProps,
-      {
+        }),
+      testCollectionItem({
         date: new Date("2023-06-15"),
-      } as ProcessedCollectionCardProps,
-      {
+        }),
+      testCollectionItem({
         date: new Date("2022-12-31"),
-      } as ProcessedCollectionCardProps,
-      {
+        }),
+      testCollectionItem({
         date: new Date("2022-01-01"),
-      } as ProcessedCollectionCardProps,
-      {
+        }),
+      testCollectionItem({
         date: undefined,
-      } as ProcessedCollectionCardProps,
+        }),
     ]
 
     // Act
@@ -58,9 +59,9 @@ describe("getYearFilter", () => {
   it("should return a single item if all items have the same year", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
-      { date: new Date("2023-01-01") } as ProcessedCollectionCardProps,
-      { date: new Date("2023-01-01") } as ProcessedCollectionCardProps,
-      { date: new Date("2023-01-01") } as ProcessedCollectionCardProps,
+      testCollectionItem({ title: "Item 1", description: "", date: new Date("2023-01-01") }),
+      testCollectionItem({ title: "Item 2", description: "", date: new Date("2023-01-01") }),
+      testCollectionItem({ title: "Item 3", description: "", date: new Date("2023-01-01") }),
     ]
 
     // Act
@@ -77,9 +78,9 @@ describe("getYearFilter", () => {
   it("should not return any items if all items have no dates", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
-      { date: undefined } as ProcessedCollectionCardProps,
-      { date: undefined } as ProcessedCollectionCardProps,
-      { date: undefined } as ProcessedCollectionCardProps,
+      testCollectionItem({ title: "Item 1", description: "", date: undefined }),
+      testCollectionItem({ title: "Item 2", description: "", date: undefined }),
+      testCollectionItem({ title: "Item 3", description: "", date: undefined }),
     ]
 
     // Act

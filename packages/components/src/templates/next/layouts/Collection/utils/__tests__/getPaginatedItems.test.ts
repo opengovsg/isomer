@@ -1,14 +1,15 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import { describe, expect, it } from "vitest"
+import { testCollectionItem } from "./testHelpers"
 
 import { getPaginatedItems } from "../getPaginatedItems"
 
-const items = [
-  { title: "Item 1" },
-  { title: "Item 2" },
-  { title: "Item 3" },
-  { title: "Item 4" },
-] as ProcessedCollectionCardProps[]
+const items: ProcessedCollectionCardProps[] = [
+  testCollectionItem({ title: "Item 1", description: "" }),
+  testCollectionItem({ title: "Item 2", description: "" }),
+  testCollectionItem({ title: "Item 3", description: "" }),
+  testCollectionItem({ title: "Item 4", description: "" }),
+]
 
 const itemsPerPage = 2
 

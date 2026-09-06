@@ -77,11 +77,12 @@ export const DynamicDGSSearchableTable = ({
       return row
     }) ?? []
 
+  const totalCount = Number(total)
   const isInitiallyEmpty =
-    typeof total === "number" && (total === 0 || maxNoOfColumns === 0)
+    Number.isFinite(totalCount) && (totalCount === 0 || maxNoOfColumns === 0)
 
   const isFilteredEmpty =
-    typeof total === "number" && total !== 0 && items.length === 0
+    Number.isFinite(totalCount) && totalCount !== 0 && items.length === 0
 
   return (
     <SearchableTableClientUI

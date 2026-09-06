@@ -89,7 +89,7 @@ export const Default: Story = {
         style={
           {
             "--color-brand-interaction-hover": "#00422C",
-          } as React.CSSProperties
+          } satisfies React.CSSProperties
         }
       >
         <Story />

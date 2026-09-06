@@ -334,6 +334,7 @@ const generateArgs = ({
           },
         ],
       },
+      // SAFETY: Homepage story composes hero props from a partial fixture object.
       heroProps as HeroProps,
       {
         type: "infobar",

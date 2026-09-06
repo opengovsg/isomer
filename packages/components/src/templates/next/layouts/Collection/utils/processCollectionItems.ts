@@ -43,6 +43,6 @@ export const processCollectionItems = (
       imageSrc: item.image?.src,
       itemTitle: `${item.title}${file ? ` [${file.type.toUpperCase()}, ${file.size.toUpperCase()}]` : ""}`,
       formattedDate: date ? getFormattedDate(date.toISOString()) : undefined,
-    } as Exact<ProcessedCollectionCardProps, ProcessedCollectionCardProps>
+    } satisfies Exact<ProcessedCollectionCardProps, ProcessedCollectionCardProps>
   })
 }

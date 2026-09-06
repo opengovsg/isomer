@@ -15,26 +15,14 @@ import { InfoCardNoImage } from "./components/InfoCardNoImage"
 import { InfoCardWithFullImage } from "./components/InfoCardWithFullImage"
 import { InfoCardWithImage } from "./components/InfoCardWithImage"
 
-type InfoCardsToRenderProps = Pick<
-  InfoCardsProps,
-  | "variant"
-  | "cards"
-  | "maxColumns"
-  | "layout"
-  | "site"
-  | "shouldLazyLoad"
-  | "headingLevel"
->
+type InfoCardsToRenderProps = InfoCardsProps
 
 const InfoCardsToRender = (props: InfoCardsToRenderProps) => {
   const { maxColumns, layout, site, shouldLazyLoad, headingLevel } = props
 
   switch (props.variant) {
     case CARDS_WITH_IMAGES: {
-      const { cards } = props as Extract<
-        InfoCardsProps,
-        { variant: typeof CARDS_WITH_IMAGES }
-      >
+      const { cards } = props
       return cards.map((card) => (
         <InfoCardWithImage
           key={`${card.title}-${card.url ?? card.description ?? ""}`}
@@ -48,10 +36,7 @@ const InfoCardsToRender = (props: InfoCardsToRenderProps) => {
       ))
     }
     case CARDS_WITHOUT_IMAGES: {
-      const { cards } = props as Extract<
-        InfoCardsProps,
-        { variant: typeof CARDS_WITHOUT_IMAGES }
-      >
+      const { cards } = props
       return cards.map((card) => (
         <InfoCardNoImage
           key={`${card.title}-${card.url ?? card.description ?? ""}`}
@@ -62,10 +47,7 @@ const InfoCardsToRender = (props: InfoCardsToRenderProps) => {
       ))
     }
     case CARDS_WITH_FULL_IMAGES: {
-      const { cards } = props as Extract<
-        InfoCardsProps,
-        { variant: typeof CARDS_WITH_FULL_IMAGES }
-      >
+      const { cards } = props
       return cards.map((card) => (
         <InfoCardWithFullImage
           key={`${card.title}-${card.url ?? card.imageUrl}`}

@@ -35,6 +35,7 @@ export const LiteVimeoEmbed = ({
       const response = await fetch(
         `https://vimeo.com/api/v2/video/${videoId}.json`,
       )
+      // SAFETY: Vimeo oEmbed returns an array of video metadata objects for the requested id.
       const data = (await response.json()) as VimeoVideoInfo[]
       // Use thumbnail_large (640px) for good quality
       // The URL format is like: https://i.vimeocdn.com/video/{id}_640.jpg

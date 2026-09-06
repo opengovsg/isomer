@@ -4,6 +4,36 @@ import { describe, expect, it } from "vitest"
 
 import { filterContactMethods } from "../filterContactMethods"
 
+type ExternalContactPayload =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | ExternalContactPayload[]
+  | { [key: string]: ExternalContactPayload }
+
+const hostileContactValues = (
+  values: ExternalContactPayload,
+): ContactInformationUIProps["methods"][number]["values"] => {
+  // SAFETY: Test deliberately passes malformed external values through the filter boundary.
+  return values as ContactInformationUIProps["methods"][number]["values"]
+}
+
+const hostileContactValue = (
+  value: ExternalContactPayload,
+): string => {
+  // SAFETY: Test deliberately passes malformed external values through the filter boundary.
+  return value as string
+}
+
+const hostileContactMethod = (
+  method: ExternalContactPayload,
+): ContactInformationUIProps["methods"][number]["method"] => {
+  // SAFETY: Test deliberately passes malformed external values through the filter boundary.
+  return method as ContactInformationUIProps["methods"][number]["method"]
+}
+
 // Helper function to create mock contact methods
 const createMockMethods = (
   methodTypes: (typeof CONTACT_INFORMATION_SUPPORT_METHODS)[number][],
@@ -190,8 +220,7 @@ describe("filterContactMethods", () => {
         },
         {
           // disable eslint because we want to test falsy method
-          // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
-          method: null as any, // Falsy method
+          method: hostileContactMethod(null),
           label: "Another Invalid",
           values: ["also-invalid"],
         },
@@ -255,32 +284,32 @@ describe("filterContactMethods", () => {
         {
           method: "telephone",
           label: "Phone with undefined",
-          values: undefined as unknown as string[],
+          values: hostileContactValues(undefined),
         },
         {
           method: "telephone",
           label: "Phone with null",
-          values: null as unknown as string[],
+          values: hostileContactValues(null),
         },
         {
           method: "telephone",
           label: "Phone with boolean",
-          values: [undefined as unknown as string],
+          values: [hostileContactValue(undefined)],
         },
         {
           method: "telephone",
           label: "Phone with object",
-          values: [{}] as unknown as string[],
+          values: hostileContactValues([{}]),
         },
         {
           method: "telephone",
           label: "Phone with boolean",
-          values: [true as unknown as string],
+          values: [hostileContactValue(true)],
         },
         {
           method: "telephone",
           label: "Phone with nested array",
-          values: [["+65-1234-5678"] as unknown as string],
+          values: [hostileContactValue(["+65-1234-5678"])],
         },
       ]
 

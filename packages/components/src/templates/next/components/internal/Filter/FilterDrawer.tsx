@@ -65,10 +65,11 @@ interface FilterDrawerProps extends FilterProps {
 
 const transform = {
   toCheckboxes: (appliedFilters: AppliedFilter[]) => {
-    return appliedFilters.reduce(
-      (acc, { id, items }) => ({ ...acc, [id]: items.map(({ id }) => id) }),
-      {} as Record<string, string[]>,
-    )
+    const checkboxesById: Record<string, string[]> = {}
+    for (const { id, items } of appliedFilters) {
+      checkboxesById[id] = items.map(({ id: itemId }) => itemId)
+    }
+    return checkboxesById
   },
   toAppliedFilters: (holdingFiltersById: Record<string, string[]>) => {
     const appliedFilters: AppliedFilter[] = []

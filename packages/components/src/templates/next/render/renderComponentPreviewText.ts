@@ -126,8 +126,10 @@ export function renderComponentPreviewText({
       return component.title || "Contact Information"
     case "dynamiccomponentlist":
       return "Dynamic Component List"
-    default:
+    default: {
       const _: never = component
+      // SAFETY: Exhaustiveness fallback reads the runtime component type for preview text.
       return (component as { type: string }).type || ""
+    }
   }
 }

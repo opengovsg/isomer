@@ -6,6 +6,14 @@ interface FilterContactMethodsProps {
   whitelistedMethods?: ContactInformationUIProps["whitelistedMethods"]
 }
 
+type ExternalContactValue = string | number | boolean | null | undefined
+
+const isNonEmptyContactValue = (value: ExternalContactValue): boolean => {
+  if (value === null || value === undefined) return false
+  if (String(value) !== value) return false
+  return value.trim() !== ""
+}
+
 export const filterContactMethods = ({
   methods,
   whitelistedMethods,
@@ -18,11 +26,7 @@ export const filterContactMethods = ({
       continue
     }
 
-    const values = compact(
-      method.values.filter(
-        (value) => typeof value === "string" && value.trim() !== "",
-      ),
-    )
+    const values = compact(method.values.filter(isNonEmptyContactValue))
 
     if (values.length > 0) {
       nonEmptyMethods.push({

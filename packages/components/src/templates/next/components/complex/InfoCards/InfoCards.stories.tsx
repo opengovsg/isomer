@@ -101,30 +101,37 @@ const generateArgs = ({
 
   const withoutImage = variant === "cardsWithoutImages"
 
-  if (withoutImage) {
-    cards.forEach((card) => {
-      delete (card as any).imageAlt
-      delete (card as any).imageUrl
-    })
-  }
+  const storyCards = allCards.map((card) => {
+    const { imageUrl, imageAlt, imageFit, ...rest } = card
 
-  if (!isImageFitContain) {
-    cards.forEach((card) => {
-      delete (card as any).imageFit
-    })
-  }
+    if (withoutImage) {
+      return rest
+    }
 
-  return {
+    if (!isImageFitContain) {
+      return { ...rest, imageUrl, imageAlt }
+    }
+
+    return card
+  })
+
+  const args: InfoCardsProps = {
     layout: layout,
     title: "Section title ministry highlights",
     subtitle:
       "Section subtitle, maximum 150 chars. These are some of the things we are working on. As a ministry, we focus on delivering value to the members of public.",
     maxColumns: maxColumns,
     variant,
-    cards: allCards,
+    cards: storyCards,
     headingLevel: 2,
-    ...(hasCTA ? { label: "This is a CTA", url: "/" } : {}),
-  } as InfoCardsProps
+  }
+
+  if (hasCTA) {
+    args.label = "This is a CTA"
+    args.url = "/"
+  }
+
+  return args
 }
 
 export const WithImage3Columns: Story = {

@@ -47,6 +47,7 @@ const HeadingsWithDirection = () => {
         return (
           <div key={String(dir)} className="mb-4">
             <Heading
+              // SAFETY: Story exercises heading dir attrs including invalid runtime values.
               attrs={{ level: 2, dir: dir as AttrsDirProps }}
               content={[{ type: "text", text: `ما ${dir} فائدته ؟` }]}
               site={generateSiteConfig()}

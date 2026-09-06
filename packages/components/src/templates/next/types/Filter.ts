@@ -23,19 +23,40 @@ export interface AppliedFilter {
   items: AppliedFilterItem[]
 }
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === "object" && value !== null && !Array.isArray(value)
+type AppliedFilterUrlJson =
+  | string
+  | number
+  | boolean
+  | null
+  | AppliedFilterUrlJson[]
+  | { [key: string]: AppliedFilterUrlJson }
 
-export const isAppliedFilters = (value: unknown): value is AppliedFilter[] =>
+interface UntrustedAppliedFilterCandidate {
+  id?: AppliedFilterUrlJson
+  items?: AppliedFilterUrlJson
+}
+
+const isPlainObject = (
+  value: AppliedFilterUrlJson,
+): value is UntrustedAppliedFilterCandidate =>
+  value !== null && !Array.isArray(value) && Object(value) === value
+
+const isNonEmptyString = (value: AppliedFilterUrlJson): value is string =>
+  value !== null && value !== undefined && String(value) === value
+
+export const isAppliedFilters = (
+  value: AppliedFilterUrlJson,
+): value is AppliedFilter[] =>
   Array.isArray(value) &&
   value.every(
     (filter) =>
-      isRecord(filter) &&
-      typeof filter.id === "string" &&
+      isPlainObject(filter) &&
+      isNonEmptyString(filter.id) &&
       Array.isArray(filter.items) &&
-      filter.items.every(
-        (item) => isRecord(item) && typeof item.id === "string",
-      ),
+      filter.items.every((item) => {
+        if (!isPlainObject(item)) return false
+        return isNonEmptyString(item.id)
+      }),
   )
 
 export interface FilterProps {
