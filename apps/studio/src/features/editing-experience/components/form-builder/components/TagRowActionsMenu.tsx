@@ -19,13 +19,13 @@ interface TagRowActionsMenuProps {
   onDelete: () => void
 }
 
-export function TagRowActionsMenu({
+export const TagRowActionsMenu = ({
   noun,
   index,
   isDisabled,
   isDragDisabled = false,
   onDelete,
-}: TagRowActionsMenuProps) {
+}: TagRowActionsMenuProps) => {
   return (
     <Menu isLazy>
       <MenuButton

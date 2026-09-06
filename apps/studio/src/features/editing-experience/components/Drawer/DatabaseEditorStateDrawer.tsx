@@ -34,7 +34,7 @@ const validateFn = ajv.compile<Static<typeof databasePageDatabaseSchema>>(
   databasePageDatabaseSchema,
 )
 
-export default function DatabaseEditorStateDrawer(): JSX.Element {
+const DatabaseEditorStateDrawer = (): JSX.Element => {
   const {
     isOpen: isDiscardChangesModalOpen,
     onOpen: onDiscardChangesModalOpen,
@@ -172,3 +172,5 @@ const SaveButton = ({
     </Button>
   )
 }
+
+export default DatabaseEditorStateDrawer

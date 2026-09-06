@@ -14,7 +14,7 @@ import {
 } from "@jsonforms/react"
 import { FormLabel, Radio, SingleSelect } from "@opengovsg/design-system-react"
 import { ARRAY_RADIO_FORMAT } from "@opengovsg/isomer-components"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 export const jsonFormsOneOfControlTester: RankedTester = rankWith(
@@ -31,7 +31,7 @@ interface JsonFormsCombinatorControlProps extends CombinatorRendererProps {
   combinatorType: "oneOf" | "anyOf"
 }
 
-function JsonFormsCombinatorControl({
+const JsonFormsCombinatorControl = ({
   schema,
   path,
   renderers,
@@ -45,8 +45,7 @@ function JsonFormsCombinatorControl({
   indexOfFittingSchema,
   data,
   combinatorType,
-}: JsonFormsCombinatorControlProps) {
-  const [variant, setVariant] = useState("")
+}: JsonFormsCombinatorControlProps) => {
   const combinatorSchemas = schema[combinatorType] ?? []
   const renderInfos = createCombinatorRenderInfos(
     combinatorSchemas,
@@ -72,6 +71,18 @@ function JsonFormsCombinatorControl({
     })
     .filter((option) => option !== null)
 
+  const [variant, setVariant] = useState(() => {
+    if (options.length === 0) {
+      return ""
+    }
+
+    if (indexOfFittingSchema >= 0 && options[indexOfFittingSchema]) {
+      return options[indexOfFittingSchema].label
+    }
+
+    return options[0]?.label ?? ""
+  })
+
   const onChange = (value: string) => {
     setVariant(value)
 
@@ -93,24 +104,6 @@ function JsonFormsCombinatorControl({
       }
     }
   }
-
-  useEffect(() => {
-    // Do nothing if there are no options
-    if (options.length === 0) {
-      return
-    }
-
-    if (indexOfFittingSchema >= 0 && options[indexOfFittingSchema]) {
-      setVariant(options[indexOfFittingSchema].label)
-      return
-    }
-
-    // Fallback to first option
-    if (options[0]) {
-      setVariant(options[0].label)
-    }
-    // oxlint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   return (
     <>
@@ -162,11 +155,11 @@ function JsonFormsCombinatorControl({
   )
 }
 
-function OneOfControl(props: CombinatorRendererProps) {
+const OneOfControl = (props: CombinatorRendererProps) => {
   return <JsonFormsCombinatorControl {...props} combinatorType="oneOf" />
 }
 
-function AnyOfControl(props: CombinatorRendererProps) {
+const AnyOfControl = (props: CombinatorRendererProps) => {
   return <JsonFormsCombinatorControl {...props} combinatorType="anyOf" />
 }
 

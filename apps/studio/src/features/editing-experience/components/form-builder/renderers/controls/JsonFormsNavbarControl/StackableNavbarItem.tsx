@@ -283,6 +283,7 @@ export const StackableNavbarItem = ({
 
                   return (
                     <NavbarItemBox
+                      key={idx}
                       name={subItem.name}
                       description={
                         isInvalid

@@ -150,7 +150,7 @@ const IframeInnerComponent = ({
       observer.disconnect()
       portalObserver.disconnect()
     }
-  }, [callback, iframeDocument, iframeDocument?.documentElement, iframeWindow])
+  }, [callback, iframeDocument, iframeWindow])
 
   return (
     <div ref={containerRef} style={style}>

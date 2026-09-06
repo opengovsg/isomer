@@ -228,8 +228,8 @@ const SuspensableResourceSelector = ({
             <Text textStyle="caption-1">You selected /{fullPermalink}</Text>
             {existingResource && (
               <Text textStyle="caption-2">
-                The URL for "{existingResource.title}" will change to /
-                {moveDestPermalink}
+                The URL for &quot;{existingResource.title}&quot; will change to
+                /{moveDestPermalink}
               </Text>
             )}
           </Flex>

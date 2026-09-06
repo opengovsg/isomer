@@ -1,10 +1,10 @@
-import type { MouseEventHandler } from "react"
+import type { ElementType, MouseEventHandler } from "react"
 import type { IconType } from "react-icons/lib"
 import { Divider, Icon, Tooltip } from "@chakra-ui/react"
 import { IconButton } from "@opengovsg/design-system-react"
 
 export interface MenuItemProps {
-  icon?: IconType
+  icon?: IconType | ElementType
   title?: string
   action?: MouseEventHandler<HTMLButtonElement>
   isActive?: null | (() => boolean)

@@ -5,11 +5,11 @@ import { SimpleProseMenuBar } from "~/components/PageEditor/MenuBar"
 import { BANNER_MAX_CHARACTERS } from "../../../constants"
 import { Editor } from "./components"
 
-export function TiptapSimpleProseEditor({
+export const TiptapSimpleProseEditor = ({
   editor,
 }: {
   editor: ReturnType<typeof useSimpleProseEditor>
-}) {
+}) => {
   // TODO: Add a loading state or use suspense
   if (!editor) return null
 

@@ -1,4 +1,4 @@
-import type { PropsWithChildren } from "react"
+import type { PropsWithChildren, ReactNode } from "react"
 import type { ResourceAbility } from "~/server/modules/permissions/permissions.type"
 import { usePermissions } from "~/features/permissions"
 
@@ -16,10 +16,10 @@ export const useCanManageCollectionFilters = (): boolean =>
 
 export const CanManageCollectionFilters = ({
   children,
-}: PropsWithChildren): JSX.Element | null => {
+}: PropsWithChildren): ReactNode => {
   const canManage = useCanManageCollectionFilters()
   if (!canManage) {
     return null
   }
-  return <>{children}</>
+  return children
 }

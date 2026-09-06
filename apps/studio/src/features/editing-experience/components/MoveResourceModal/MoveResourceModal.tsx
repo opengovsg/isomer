@@ -179,7 +179,7 @@ const MoveResourceContent = withSuspense(
 
     return (
       <ModalContent>
-        <ModalHeader mr="3.5rem">Move "{title}" to...</ModalHeader>
+        <ModalHeader mr="3.5rem">Move &quot;{title}&quot; to...</ModalHeader>
         <ModalCloseButton size="lg" />
         <ModalBody>
           <VStack alignItems="flex-start" spacing="1.25rem">

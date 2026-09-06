@@ -3,11 +3,11 @@ import { AccordionMenuBar } from "~/components/PageEditor/MenuBar"
 
 import { Editor } from "./components"
 
-export function TiptapAccordionEditor({
+export const TiptapAccordionEditor = ({
   editor,
 }: {
   editor: ReturnType<typeof useAccordionEditor>
-}) {
+}) => {
   // TODO: Add a loading state or use suspense
   if (!editor) return null
 

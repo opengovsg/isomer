@@ -1,12 +1,13 @@
 import { defineConfig } from "@isomer/oxlint-config"
 import base from "@isomer/oxlint-config/base"
-// import { next, react, vitest } from "@isomer/oxlint-config/presets"
+import { react } from "@isomer/oxlint-config/presets"
 
 export default defineConfig({
   extends: [
     base,
+    react,
     // To enable this in following stacked PRs
-    // next, react, vitest
+    // next, vitest
   ],
   ignorePatterns: [
     ".next/**",
@@ -19,6 +20,10 @@ export default defineConfig({
       files: ["**/*.js", "**/*.mjs", "**/*.ts", "**/*.tsx"],
       rules: {
         "react/react-in-jsx-scope": "off",
+        // Suppressions are harmless until React Compiler is enabled.
+        "react/rule-suppression": "off",
+        // Chakra `role="group"` is required for `_groupHover` / `_groupChecked`.
+        "jsx-a11y/prefer-tag-over-role": "off",
         "react-hooks/rules-of-hooks": "error",
         "react-hooks/exhaustive-deps": "warn",
         "@next/next/google-font-display": "warn",

@@ -18,7 +18,7 @@ const proseSchema = getComponentSchema({ component: "prose" })
 
 const validate = ajv.compile<ProseProps>(proseSchema)
 
-export function EditPageDrawer(): JSX.Element {
+export const EditPageDrawer = (): JSX.Element => {
   const {
     previewPageState,
     drawerState: currState,

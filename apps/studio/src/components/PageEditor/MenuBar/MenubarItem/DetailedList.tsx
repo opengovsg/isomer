@@ -58,46 +58,54 @@ export const MenubarDetailedList = ({
       <PopoverContent>
         <PopoverBody px={0} py="0.75rem">
           <VStack spacing="0.75rem">
-            {items.map(
-              (subItem) =>
-                !subItem.isHidden?.() && (
-                  <Button
-                    onClick={subItem.action}
-                    variant="clear"
-                    colorScheme="neutral"
-                    border="none"
-                    h="fit-content"
+            {items.map((subItem) => {
+              if (subItem.isHidden?.()) {
+                return null
+              }
+
+              const handleClick = () => {
+                subItem.action()
+              }
+
+              return (
+                <Button
+                  key={subItem.name}
+                  onClick={handleClick}
+                  variant="clear"
+                  colorScheme="neutral"
+                  border="none"
+                  h="fit-content"
+                  w="100%"
+                  textAlign="left"
+                  px={0}
+                  py="0.25rem"
+                  aria-label={label}
+                  borderRadius={0}
+                  _hover={{ bg: "base.canvas.brand-subtle" }}
+                >
+                  <HStack
                     w="100%"
-                    textAlign="left"
-                    px={0}
-                    py="0.25rem"
-                    aria-label={label}
-                    borderRadius={0}
-                    _hover={{ bg: "base.canvas.brand-subtle" }}
+                    px="1rem"
+                    py="0.75rem"
+                    spacing="0.75rem"
+                    alignItems="flex-start"
                   >
-                    <HStack
-                      w="100%"
-                      px="1rem"
-                      py="0.75rem"
-                      spacing="0.75rem"
-                      alignItems="flex-start"
-                    >
-                      <Icon
-                        as={subItem.icon}
-                        fontSize="3rem"
-                        borderWidth="1px"
-                        borderStyle="solid"
-                      />
-                      <Box>
-                        <Text textStyle="subhead-2" mb="0.25rem">
-                          {subItem.name}
-                        </Text>
-                        <Text textStyle="body-2">{subItem.description}</Text>
-                      </Box>
-                    </HStack>
-                  </Button>
-                ),
-            )}
+                    <Icon
+                      as={subItem.icon}
+                      fontSize="3rem"
+                      borderWidth="1px"
+                      borderStyle="solid"
+                    />
+                    <Box>
+                      <Text textStyle="subhead-2" mb="0.25rem">
+                        {subItem.name}
+                      </Text>
+                      <Text textStyle="body-2">{subItem.description}</Text>
+                    </Box>
+                  </HStack>
+                </Button>
+              )
+            })}
           </VStack>
         </PopoverBody>
       </PopoverContent>

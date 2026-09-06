@@ -81,7 +81,7 @@ export const EditCollectionLinkPreview = ({
       <PreviewWithCustomSitemap
         content={[]}
         page={{ title: parentTitle, tagCategories }}
-        layout={"collection"}
+        layout="collection"
         siteId={siteId}
         siteMap={siteMap}
         permalink={parentPermalink}

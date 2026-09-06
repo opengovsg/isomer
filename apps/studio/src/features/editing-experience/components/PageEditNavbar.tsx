@@ -131,7 +131,7 @@ export const PageEditNavbar = (): JSX.Element => {
         </TabLink>
       </Flex>
       {pageId && siteId && (
-        <Flex justifyContent={"end"} alignItems={"center"} flex={1}>
+        <Flex justifyContent="end" alignItems="center" flex={1}>
           <PublishButton pageId={pageId} siteId={siteId} />
         </Flex>
       )}

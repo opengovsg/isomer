@@ -2,6 +2,7 @@ import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { PropsWithChildren } from "react"
 import { act, render, renderHook } from "@testing-library/react"
 import { createStore, Provider } from "jotai"
+import { useEffect } from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import {
   EditorDrawerProvider,
@@ -59,11 +60,16 @@ const jotaiWrapper = (store: ReturnType<typeof createStore>) => {
   return Wrapper
 }
 
-let drawerContext: ReturnType<typeof useEditorDrawerContext>
+const drawerContextRef: {
+  current: ReturnType<typeof useEditorDrawerContext> | null
+} = { current: null }
 
 const TrackerHarness = () => {
+  const drawerContext = useEditorDrawerContext()
   useContentEditTracker()
-  drawerContext = useEditorDrawerContext()
+  useEffect(() => {
+    drawerContextRef.current = drawerContext
+  }, [drawerContext])
   return null
 }
 
@@ -88,6 +94,7 @@ beforeEach(() => {
   trackEventMock.mockClear()
   mockEnv.env.NEXT_PUBLIC_INTERCOM_APP_ID = "test-app-id"
   routeChangeStartHandlers.length = 0
+  drawerContextRef.current = null
 })
 
 describe("useFireContentEditSurveyEvent", () => {
@@ -167,7 +174,7 @@ describe("useContentEditTracker", () => {
     // setPreviewPageState uses flushSync internally, so state changes must be
     // wrapped in act() to flush the resulting effects deterministically
     act(() =>
-      drawerContext.setPreviewPageState((previous) => ({
+      drawerContextRef.current!.setPreviewPageState((previous) => ({
         ...previous,
         content: [...previous.content, { type: "prose", content: [] }],
       })),
@@ -184,7 +191,7 @@ describe("useContentEditTracker", () => {
 
     // Act
     act(() =>
-      drawerContext.setPreviewPageState((previous) => ({
+      drawerContextRef.current!.setPreviewPageState((previous) => ({
         ...previous,
         content: [...previous.content],
       })),
@@ -198,11 +205,13 @@ describe("useContentEditTracker", () => {
     // Arrange
     const store = createStore()
     renderTracker(store)
-    act(() => drawerContext.setDrawerState({ state: "rawJsonEditor" }))
+    act(() =>
+      drawerContextRef.current!.setDrawerState({ state: "rawJsonEditor" }),
+    )
 
     // Act
     act(() =>
-      drawerContext.setPreviewPageState((previous) => ({
+      drawerContextRef.current!.setPreviewPageState((previous) => ({
         ...previous,
         content: [...previous.content, { type: "prose", content: [] }],
       })),
@@ -214,7 +223,7 @@ describe("useContentEditTracker", () => {
     // Act: leaving raw JSON mode must not retroactively arm the flag
     // (docs/adr/0003-editing-survey-measuring-points.md) — pins that the
     // baseline ref is advanced before the rawJsonEditor guard
-    act(() => drawerContext.setDrawerState({ state: "root" }))
+    act(() => drawerContextRef.current!.setDrawerState({ state: "root" }))
 
     // Assert
     expect(store.get(hasContentEditAtom)).toBe(false)
@@ -230,7 +239,7 @@ describe("useContentEditTracker", () => {
 
     // Act: first burst — diverge content, then fire
     act(() =>
-      drawerContext.setPreviewPageState((previous) => ({
+      drawerContextRef.current!.setPreviewPageState((previous) => ({
         ...previous,
         content: [...previous.content, { type: "prose", content: [] }],
       })),
@@ -243,7 +252,7 @@ describe("useContentEditTracker", () => {
 
     // Act: second burst — a fresh divergence
     act(() =>
-      drawerContext.setPreviewPageState((previous) => ({
+      drawerContextRef.current!.setPreviewPageState((previous) => ({
         ...previous,
         content: [...previous.content, { type: "prose", content: [] }],
       })),

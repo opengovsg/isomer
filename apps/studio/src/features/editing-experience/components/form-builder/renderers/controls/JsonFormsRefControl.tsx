@@ -12,14 +12,14 @@ export const jsonFormsRefControlTester: RankedTester = rankWith(
   and(schemaMatches((schema) => schema.format === "ref")),
 )
 
-function JsonFormsRefControl({
+const JsonFormsRefControl = ({
   data,
   handleChange,
   path,
   label,
   required,
   errors,
-}: ControlProps) {
+}: ControlProps) => {
   return (
     <BaseLinkControl
       data={data as string}

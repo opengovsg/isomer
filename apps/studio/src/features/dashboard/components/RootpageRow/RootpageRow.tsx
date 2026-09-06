@@ -29,7 +29,7 @@ export const RootpageRow = ({ siteId }: RootpageRowProps) => {
       _hover={{ background: "interaction.muted.main.hover" }}
       data-group
     >
-      <BiHomeAlt fontSize={"1.25rem"} />
+      <BiHomeAlt fontSize="1.25rem" />
       <VStack flex={1} gap="0.25rem" alignItems="flex-start">
         <HStack gap="0.25rem">
           <Text textStyle="subhead-2">{title}</Text>

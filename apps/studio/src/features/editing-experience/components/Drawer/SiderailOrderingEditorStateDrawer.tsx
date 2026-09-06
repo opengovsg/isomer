@@ -172,7 +172,7 @@ const SiderailOrderingContent = ({
   )
 }
 
-export default function SiderailOrderingEditorStateDrawer(): JSX.Element {
+const SiderailOrderingEditorStateDrawer = (): JSX.Element => {
   const {
     setDrawerState,
     savedPageState,
@@ -307,7 +307,7 @@ export default function SiderailOrderingEditorStateDrawer(): JSX.Element {
                   boxSize="1rem"
                 />
                 <Text textStyle="caption-1" color="interaction.links.default">
-                  What's a siderail?
+                  What&apos;s a siderail?
                 </Text>
               </Button>
             </UsageTooltip>
@@ -315,7 +315,7 @@ export default function SiderailOrderingEditorStateDrawer(): JSX.Element {
 
           {childrenPagesBlockIndex === -1 ? (
             <Text textStyle="body-2" color="base.content.medium">
-              This page doesn't have a child pages block configured.
+              This page doesn&apos;t have a child pages block configured.
             </Text>
           ) : (
             <Suspense fallback={<Skeleton h="10rem" w="100%" />}>
@@ -341,3 +341,5 @@ export default function SiderailOrderingEditorStateDrawer(): JSX.Element {
     </Flex>
   )
 }
+
+export default SiderailOrderingEditorStateDrawer

@@ -12,13 +12,13 @@ export const jsonFormsCollectionVariantControlTester: RankedTester = rankWith(
   schemaMatches((schema) => schema.format === "collection-variant"),
 )
 
-function JsonFormsCollectionVariantControl({
+const JsonFormsCollectionVariantControl = ({
   data,
   label,
   handleChange,
   path,
   description,
-}: ControlProps): JSX.Element {
+}: ControlProps): JSX.Element => {
   return (
     <Box>
       <FormControl isRequired gap="0.5rem">

@@ -20,7 +20,7 @@ import { merge } from "lodash-es"
 import mockdate from "mockdate"
 import { mswLoader } from "msw-storybook-addon/csf3"
 import { setupWorker } from "msw/browser"
-import { useCallback, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { ErrorBoundary } from "react-error-boundary"
 import superjson from "superjson"
 import { AppBanner } from "~/components/AppBanner"
@@ -51,21 +51,25 @@ const SetupDecorator: Decorator = (Story, { parameters }) => {
   // oxlint-disable-next-line @typescript-eslint/no-unsafe-argument
   const gb = createMockGrowthBook(new Map(parameters.growthbook ?? []))
 
-  const [queryClient] = useState(
-    new QueryClient({
-      defaultOptions: {
-        queries: {
-          staleTime: Infinity,
-          retry: false,
-          refetchOnWindowFocus: false,
+  const queryClient = useMemo(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: Infinity,
+            retry: false,
+            refetchOnWindowFocus: false,
+          },
         },
-      },
-    }),
+      }),
+    [],
   )
-  const [trpcClient] = useState(() =>
-    trpc.createClient({
-      links: [httpLink({ url: "", transformer: superjson })],
-    }),
+  const trpcClient = useMemo(
+    () =>
+      trpc.createClient({
+        links: [httpLink({ url: "", transformer: superjson })],
+      }),
+    [],
   )
   return (
     <GrowthBookProvider growthbook={gb}>
@@ -108,26 +112,29 @@ const WithLayoutDecorator: Decorator = (Story, { parameters }) => {
 }
 
 const LoginStateDecorator: Decorator<Args> = (story, { parameters }) => {
-  const [hasLoginStateFlag, setLoginStateFlag] = useState(
+  const [hasLoginStateFlag, setHasLoginStateFlag] = useState(
     Boolean(parameters.loginState ?? true),
   )
 
-  const setHasLoginStateFlag = useCallback(() => {
-    setLoginStateFlag(true)
+  const setHasLoginStateFlagTrue = useCallback(() => {
+    setHasLoginStateFlag(true)
   }, [])
 
   const removeLoginStateFlag = useCallback(() => {
-    setLoginStateFlag(false)
+    setHasLoginStateFlag(false)
   }, [])
 
+  const contextValue = useMemo(
+    () => ({
+      hasLoginStateFlag,
+      removeLoginStateFlag,
+      setHasLoginStateFlag: setHasLoginStateFlagTrue,
+    }),
+    [hasLoginStateFlag, removeLoginStateFlag, setHasLoginStateFlagTrue],
+  )
+
   return (
-    <LoginStateContext.Provider
-      value={{
-        hasLoginStateFlag,
-        removeLoginStateFlag,
-        setHasLoginStateFlag,
-      }}
-    >
+    <LoginStateContext.Provider value={contextValue}>
       {story()}
     </LoginStateContext.Provider>
   )

@@ -14,14 +14,14 @@ export const jsonFormsLinkControlTester: RankedTester = rankWith(
   ),
 )
 
-function JsonFormsLinkControl({
+const JsonFormsLinkControl = ({
   data,
   label,
   handleChange,
   path,
   required,
   errors,
-}: ControlProps) {
+}: ControlProps) => {
   return (
     <BaseLinkControl
       data={data as string}

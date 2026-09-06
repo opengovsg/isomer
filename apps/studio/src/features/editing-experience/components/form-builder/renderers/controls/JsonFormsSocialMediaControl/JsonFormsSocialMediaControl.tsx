@@ -414,6 +414,7 @@ const JsonFormsSocialMediaControl = ({
 
                 return (
                   <SocialMediaLink
+                    key={index}
                     path={childPath}
                     isInvalid={hasError}
                     onDelete={() => setSelectedPathForDeletion(childPath)}

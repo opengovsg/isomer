@@ -107,7 +107,7 @@ export const jsonFormsImageRadioControlTester: RankedTester = rankWith(
   ),
 )
 
-function JsonFormsImageRadioControl({
+const JsonFormsImageRadioControl = ({
   data,
   label,
   handleChange,
@@ -115,7 +115,7 @@ function JsonFormsImageRadioControl({
   description,
   schema,
   required,
-}: ControlProps): JSX.Element {
+}: ControlProps): JSX.Element => {
   const options = getImageRadioOptions(schema)
 
   // Use Chakra's useRadioGroup instead of design-system Radio.RadioGroup.

@@ -148,13 +148,7 @@ export const AddUserModal = () => {
     if (!debouncedEmail || errors.email) return
 
     void checkWhitelist()
-  }, [
-    debouncedEmail,
-    isNonGovEmailInput,
-    errors.email,
-    checkWhitelist,
-    setAddUserModalState,
-  ])
+  }, [debouncedEmail, errors.email, checkWhitelist])
 
   const handleOnClose = useCallback(() => {
     reset()
@@ -201,7 +195,7 @@ export const AddUserModal = () => {
               />
               {errors.email && (
                 <FormErrorMessage>
-                  This doesn't look like a valid email address.
+                  This doesn&apos;t look like a valid email address.
                 </FormErrorMessage>
               )}
               {!errors.email && additionalEmailError && (

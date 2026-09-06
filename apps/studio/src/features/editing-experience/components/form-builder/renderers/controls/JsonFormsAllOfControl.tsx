@@ -12,7 +12,7 @@ export const jsonFormsAllOfControlTester: RankedTester = rankWith(
   isAllOfControl,
 )
 
-function JsonFormsAllOfControl({
+const JsonFormsAllOfControl = ({
   schema,
   path,
   renderers,
@@ -20,7 +20,7 @@ function JsonFormsAllOfControl({
   rootSchema,
   uischema,
   uischemas,
-}: CombinatorRendererProps) {
+}: CombinatorRendererProps) => {
   const allOfRenderInfos = createCombinatorRenderInfos(
     schema.allOf ?? [],
     rootSchema,

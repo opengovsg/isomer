@@ -65,7 +65,7 @@ const getEditorHookAndEditor = (
   }
 }
 
-function JsonFormsProseControl({
+const JsonFormsProseControl = ({
   data,
   label,
   handleChange,
@@ -74,7 +74,7 @@ function JsonFormsProseControl({
   errors,
   schema,
   required,
-}: ControlProps) {
+}: ControlProps) => {
   const { EditorHook, Editor } = useMemo(
     () => getEditorHookAndEditor(schema.format as ComponentsWithProse),
     [schema.format],
@@ -105,7 +105,7 @@ function JsonFormsProseControl({
       editor.commands.setContent(data, { emitUpdate: false })
       editor.commands.setTextSelection(selection)
     }
-  }, [data])
+  }, [data, editor])
 
   return (
     <Box>

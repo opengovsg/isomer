@@ -20,12 +20,12 @@ interface JsonFormsCollectionDropdownControlProps extends ControlProps {
   data: string
 }
 
-function SuspendableJsonFormsCollectionDropdownControl({
+const SuspendableJsonFormsCollectionDropdownControl = ({
   data,
   handleChange,
   path,
   label,
-}: JsonFormsCollectionDropdownControlProps) {
+}: JsonFormsCollectionDropdownControlProps) => {
   const { siteId } = useQueryParse(siteSchema)
 
   const [collections] = trpc.collection.getCollections.useSuspenseQuery({
@@ -52,12 +52,12 @@ function SuspendableJsonFormsCollectionDropdownControl({
   )
 }
 
-function JsonFormsCollectionDropdownControl({
+const JsonFormsCollectionDropdownControl = ({
   description,
   required,
   label,
   ...props
-}: ControlProps) {
+}: ControlProps) => {
   return (
     <FormControl isRequired={required} gap="0.5rem">
       <FormLabel description={description}>{label}</FormLabel>

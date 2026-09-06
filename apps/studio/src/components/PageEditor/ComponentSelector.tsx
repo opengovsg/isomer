@@ -23,7 +23,7 @@ import {
 import { type SectionType } from "./types"
 import { UsageTooltip } from "./UsageTooltip"
 
-function Section({ children }: React.PropsWithChildren) {
+const Section = ({ children }: React.PropsWithChildren) => {
   return (
     <VStack gap="1rem" alignItems="start" w="full">
       {children}
@@ -31,7 +31,7 @@ function Section({ children }: React.PropsWithChildren) {
   )
 }
 
-function SectionTitle({ title }: { title: string }) {
+const SectionTitle = ({ title }: { title: string }) => {
   return (
     <Text textStyle="subhead-2" textColor="base.content.medium">
       {title}
@@ -39,7 +39,7 @@ function SectionTitle({ title }: { title: string }) {
   )
 }
 
-function BlockList({ children }: React.PropsWithChildren) {
+const BlockList = ({ children }: React.PropsWithChildren) => {
   return <Stack w="full">{children}</Stack>
 }
 
@@ -51,13 +51,13 @@ type BlockItemProps = UsageTooltipProps & {
     disabledText: string
   }>
 
-function BlockItem({
+const BlockItem = ({
   onProceed,
   sectionType,
   isDisabled,
   disabledText,
   ...rest
-}: BlockItemProps) {
+}: BlockItemProps) => {
   const { icon, label, description } = rest
 
   const button = (
@@ -114,7 +114,7 @@ function BlockItem({
   return <UsageTooltip {...rest}>{button}</UsageTooltip>
 }
 
-function ComponentSelector() {
+const ComponentSelector = () => {
   const {
     setCurrActiveIdx,
     savedPageState,

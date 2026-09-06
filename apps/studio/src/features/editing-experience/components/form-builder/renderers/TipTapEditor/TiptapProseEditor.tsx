@@ -3,7 +3,11 @@ import { ProseMenuBar } from "~/components/PageEditor/MenuBar/ProseMenuBar"
 
 import { Editor } from "./components"
 
-export function TiptapProseEditor({ editor }: { editor: TiptapEditor | null }) {
+export const TiptapProseEditor = ({
+  editor,
+}: {
+  editor: TiptapEditor | null
+}) => {
   // TODO: Add a loading state or use suspense
   if (!editor) return null
 

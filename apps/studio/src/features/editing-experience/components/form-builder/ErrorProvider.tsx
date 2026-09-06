@@ -1,6 +1,12 @@
 import type { ErrorObject } from "ajv"
 import type { Dispatch, PropsWithChildren, SetStateAction } from "react"
-import { createContext, useCallback, useContext, useState } from "react"
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from "react"
 
 type MappedErrorObject = Record<string, ErrorObject[]>
 const ErrorContext = createContext<{
@@ -25,14 +31,17 @@ export const ErrorProvider = ({ children }: PropsWithChildren) => {
     [errors],
   )
 
+  const contextValue = useMemo(
+    () => ({
+      errors,
+      setErrors,
+      hasErrorAt,
+    }),
+    [errors, hasErrorAt],
+  )
+
   return (
-    <ErrorContext.Provider
-      value={{
-        errors,
-        setErrors,
-        hasErrorAt,
-      }}
-    >
+    <ErrorContext.Provider value={contextValue}>
       {children}
     </ErrorContext.Provider>
   )

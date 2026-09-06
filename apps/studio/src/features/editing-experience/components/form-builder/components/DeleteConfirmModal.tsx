@@ -29,14 +29,14 @@ interface DeleteConfirmModalProps {
   onConfirm: () => void
 }
 
-export function DeleteConfirmModal({
+export const DeleteConfirmModal = ({
   isOpen,
   label,
   noun,
   warningBody,
   onClose,
   onConfirm,
-}: DeleteConfirmModalProps) {
+}: DeleteConfirmModalProps) => {
   const [isChecked, setIsChecked] = useState(false)
 
   return (

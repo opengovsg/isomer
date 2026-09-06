@@ -172,7 +172,7 @@ const DrawerState = (
       return <RawJsonEditorDrawer {...props} setDrawerState={setDrawerState} />
     default:
       const _: never = drawerState
-      return <></>
+      return null
   }
 }
 

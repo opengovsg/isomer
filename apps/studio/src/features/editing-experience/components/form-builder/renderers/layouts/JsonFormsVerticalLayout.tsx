@@ -89,14 +89,14 @@ function getUiSchemaWithGroup(
   return newUiSchema
 }
 
-function JsonFormsVerticalLayoutRenderer({
+const JsonFormsVerticalLayoutRenderer = ({
   uischema,
   schema,
   path,
   enabled,
   renderers,
   cells,
-}: LayoutProps) {
+}: LayoutProps) => {
   // Note: We have to perform this check here due to inaccuracies in JSONForms'
   // type definitions.
   // Ref: https://github.com/eclipsesource/jsonforms/blob/c3cead71d08ff11837bdeb5fbea66e5313137218/packages/material-renderers/src/layouts/MaterialVerticalLayout.tsx#L57

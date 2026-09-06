@@ -34,7 +34,7 @@ const HEADER_LABELS: Record<string, string> = {
   database: "Edit page header",
 }
 
-export default function MetadataEditorStateDrawer(): JSX.Element {
+const MetadataEditorStateDrawer = (): JSX.Element => {
   const {
     isOpen: isDiscardChangesModalOpen,
     onOpen: onDiscardChangesModalOpen,
@@ -177,7 +177,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
                 >
                   <Text textStyle="body-2">
                     To change the page title, go to the folder and click on
-                    "Folder Settings"
+                    &quot;Folder Settings&quot;
                   </Text>
                 </Infobox>
               </Box>
@@ -259,3 +259,5 @@ const TagsAwareSaveButton = ({
     <SaveButton isLoading={isLoading} onClick={onClick} isTagsValid={isValid} />
   )
 }
+
+export default MetadataEditorStateDrawer

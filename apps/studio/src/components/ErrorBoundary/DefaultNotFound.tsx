@@ -20,7 +20,7 @@ export const DefaultNotFound = () => {
         </Text>
         <Text textStyle="body-2" textAlign="center">
           Double check to ensure that the URL is correct. <br />
-          If you think there's an error,{" "}
+          If you think there&apos;s an error,{" "}
           <Link variant="inline" href={ISOMER_SUPPORT_LINK}>
             let us know
           </Link>

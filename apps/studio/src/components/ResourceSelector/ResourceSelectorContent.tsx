@@ -84,8 +84,9 @@ const ZeroResult = ({
         gap="0.25rem"
       >
         <Text textStyle="subhead-2" textAlign="center">
-          We can't find anything with
-          <br />"{searchQuery}" in title
+          We can&apos;t find anything with
+          <br />
+          &quot;{searchQuery}&quot; in title
         </Text>
         <Text textStyle="caption-2">Try searching for something else.</Text>
       </VStack>

@@ -24,7 +24,7 @@ export const jsonFormsBoxedGroupControlTester: RankedTester = rankWith(
   ),
 )
 
-function JsonFormsBoxedGroupControl({
+const JsonFormsBoxedGroupControl = ({
   data,
   path,
   visible,
@@ -39,7 +39,7 @@ function JsonFormsBoxedGroupControl({
   uischemas,
   rootSchema,
   handleChange,
-}: ControlWithDetailProps) {
+}: ControlWithDetailProps) => {
   const [isChecked, setIsChecked] = useState(!isEmpty(data))
   // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const [dataSnapshot, setDataSnapshot] = useState(data)

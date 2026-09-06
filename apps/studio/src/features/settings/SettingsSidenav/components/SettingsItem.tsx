@@ -26,7 +26,7 @@ export const SettingsItem = ({ isActive, label, href }: SettingsItemProps) => {
         _activeLink={{
           textColor: "interaction.main.default",
         }}
-        textColor={"base.content.default"}
+        textColor="base.content.default"
       >
         {label}
       </Text>

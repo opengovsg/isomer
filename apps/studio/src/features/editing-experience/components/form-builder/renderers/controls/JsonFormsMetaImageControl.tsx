@@ -37,7 +37,7 @@ export const jsonFormsMetaImageControlTester: RankedTester = rankWith(
 interface JsonFormsMetaImageControlProps extends ControlProps {
   data: string
 }
-function JsonFormsMetaImageControl(props: JsonFormsMetaImageControlProps) {
+const JsonFormsMetaImageControl = (props: JsonFormsMetaImageControlProps) => {
   const { label, handleChange, path, required, errors, description, data } =
     props
   const { image } = useS3Image(data)

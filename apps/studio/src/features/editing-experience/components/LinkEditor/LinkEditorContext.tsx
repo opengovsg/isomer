@@ -24,14 +24,14 @@ const useLinkEditorContext = ({
   onChange,
 }: UseLinkEditorContextProps) => {
   const [curType, setCurType] = useState<LinkTypes>(LINK_TYPES.Page)
-  const [curHref, setHref] = useState(linkHref)
+  const [curHref, setCurHref] = useState(linkHref)
 
   return {
     linkTypes,
     curHref,
     setHref: (value: string) => {
       onChange(value)
-      setHref(value)
+      setCurHref(value)
     },
     error,
     curType,

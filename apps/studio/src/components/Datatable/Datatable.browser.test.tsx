@@ -28,8 +28,10 @@ const columns = columnsHelper.columns([
   }),
 ])
 
+const DEFAULT_LINKED_ROW_DATA: TestRowData[] = [{ title: "Test page" }]
+
 const LinkedRowTable = ({
-  data = [{ title: "Test page" }],
+  data = DEFAULT_LINKED_ROW_DATA,
 }: {
   data?: TestRowData[]
 }) => {

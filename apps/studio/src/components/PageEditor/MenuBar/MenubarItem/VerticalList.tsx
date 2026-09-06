@@ -52,39 +52,45 @@ export const MenubarVerticalList = ({
             </Menu.Button>
 
             <Menu.List width="12.25rem">
-              {items.map((subItem, index) => (
-                <Menu.Item key={index} onClick={subItem.action}>
-                  {subItem.leftItem}
-                  <Flex flexDirection="column">
-                    {subItem.title && !subItem.icon && (
-                      <Text
-                        textStyle="body-2"
-                        color="base.content.strong"
-                        fontWeight={subItem.isActive?.() ? 500 : undefined}
-                      >
-                        {subItem.title}
-                      </Text>
+              {items.map((subItem, index) => {
+                const handleClick = () => {
+                  subItem.action()
+                }
+
+                return (
+                  <Menu.Item key={index} onClick={handleClick}>
+                    {subItem.leftItem}
+                    <Flex flexDirection="column">
+                      {subItem.title && !subItem.icon && (
+                        <Text
+                          textStyle="body-2"
+                          color="base.content.strong"
+                          fontWeight={subItem.isActive?.() ? 500 : undefined}
+                        >
+                          {subItem.title}
+                        </Text>
+                      )}
+                      {subItem.description && (
+                        <Text
+                          wordBreak="break-word"
+                          color="base.content.medium"
+                          textStyle="caption-2"
+                        >
+                          {subItem.description}
+                        </Text>
+                      )}
+                    </Flex>
+                    {subItem.icon && (
+                      <MenuItem
+                        icon={subItem.icon}
+                        title={subItem.title}
+                        action={subItem.action}
+                        isActive={subItem.isActive}
+                      />
                     )}
-                    {subItem.description && (
-                      <Text
-                        wordBreak="break-word"
-                        color="base.content.medium"
-                        textStyle="caption-2"
-                      >
-                        {subItem.description}
-                      </Text>
-                    )}
-                  </Flex>
-                  {subItem.icon && (
-                    <MenuItem
-                      icon={subItem.icon}
-                      title={subItem.title}
-                      action={subItem.action}
-                      isActive={subItem.isActive}
-                    />
-                  )}
-                </Menu.Item>
-              ))}
+                  </Menu.Item>
+                )
+              })}
             </Menu.List>
           </>
         )

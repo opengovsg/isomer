@@ -9,11 +9,11 @@ interface FormBuilderProps {
   readonly?: boolean
 }
 
-export function FormBuilder({
+export const FormBuilder = ({
   schema,
   data,
   readonly,
-}: FormBuilderProps): JSX.Element {
+}: FormBuilderProps): JSX.Element => {
   return (
     <JsonForms
       schema={schema}

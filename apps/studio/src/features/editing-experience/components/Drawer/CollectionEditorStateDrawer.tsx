@@ -31,7 +31,7 @@ import { ErrorProvider, useBuilderErrors } from "../form-builder/ErrorProvider"
 import FormBuilder from "../form-builder/FormBuilder"
 import { DrawerHeader } from "./DrawerHeader"
 
-export default function CollectionEditorStateDrawer(): JSX.Element {
+const CollectionEditorStateDrawer = (): JSX.Element => {
   const {
     isOpen: isDiscardChangesModalOpen,
     onOpen: onDiscardChangesModalOpen,
@@ -192,8 +192,9 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
                   borderColor="utility.feedback.info"
                 >
                   <Text textStyle="body-2">
-                    To change this Collection's title, go back to the Collection
-                    folder view and click on 'Collection settings'.
+                    To change this Collection&apos;s title, go back to the
+                    Collection folder view and click on &apos;Collection
+                    settings&apos;.
                   </Text>
                 </Infobox>
               </Box>
@@ -246,3 +247,5 @@ const SaveButton = ({
     </Button>
   )
 }
+
+export default CollectionEditorStateDrawer

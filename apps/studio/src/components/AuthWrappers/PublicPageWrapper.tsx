@@ -1,5 +1,5 @@
 import { useRouter } from "next/router"
-import { type PropsWithChildren } from "react"
+import { type PropsWithChildren, type ReactNode } from "react"
 import { CALLBACK_URL_KEY } from "~/constants/params"
 import { useLoginState } from "~/features/auth"
 import { callbackUrlSchema } from "~/schemas/url"
@@ -19,7 +19,7 @@ type PublicPageWrapperProps =
 export const PublicPageWrapper = ({
   children,
   ...rest
-}: PropsWithChildren<PublicPageWrapperProps>): JSX.Element => {
+}: PropsWithChildren<PublicPageWrapperProps>): ReactNode => {
   const router = useRouter()
   const { hasLoginStateFlag } = useLoginState()
 
@@ -34,5 +34,5 @@ export const PublicPageWrapper = ({
     return <FullscreenSpinner />
   }
 
-  return <>{children}</>
+  return children
 }

@@ -23,12 +23,12 @@ interface TaggedControlProps extends Omit<ControlProps, "data"> {
   data: ArticlePagePageProps["tagged"]
 }
 
-export function JsonFormsTaggedControl({
+export const JsonFormsTaggedControl = ({
   data,
   path,
   description,
   handleChange,
-}: TaggedControlProps) {
+}: TaggedControlProps) => {
   return (
     <Suspense fallback={<Skeleton />}>
       <SuspendableJsonFormsTaggedControl

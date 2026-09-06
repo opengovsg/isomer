@@ -21,10 +21,13 @@ const UnauthorizedError = ({
 }
 
 // TODO: Make custom components for these
-export function DefaultTrpcError({
+export const DefaultTrpcError = ({
   code,
   resetErrorBoundary,
-}: { code: TRPC_ERROR_CODE_KEY } & Pick<FallbackProps, "resetErrorBoundary">) {
+}: { code: TRPC_ERROR_CODE_KEY } & Pick<
+  FallbackProps,
+  "resetErrorBoundary"
+>) => {
   switch (code) {
     case "NOT_FOUND":
       return <DefaultNotFound />

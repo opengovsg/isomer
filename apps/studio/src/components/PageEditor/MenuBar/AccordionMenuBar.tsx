@@ -1,5 +1,5 @@
 import type { Editor } from "@tiptap/react"
-import { Icon, useDisclosure } from "@chakra-ui/react"
+import { useDisclosure } from "@chakra-ui/react"
 import { useMemo } from "react"
 import {
   BiBold,
@@ -124,53 +124,49 @@ export const AccordionMenuBar = ({ editor }: { editor: Editor }) => {
         items: [
           {
             type: "item",
-            icon: () => (
-              <Icon color="base.content.medium" as={IconAddColRight} />
-            ),
+            icon: IconAddColRight,
             title: "Add column after",
             action: () => editor.chain().focus().addColumnAfter().run(),
           },
           {
             type: "item",
-            icon: () => (
-              <Icon as={IconAddColLeft} color="base.content.medium" />
-            ),
+            icon: IconAddColLeft,
             title: "Add column before",
             action: () => editor.chain().focus().addColumnBefore().run(),
           },
           {
             type: "item",
-            icon: () => <Icon as={IconDelCol} />,
+            icon: IconDelCol,
             title: "Delete column",
             action: () => editor.chain().focus().deleteColumn().run(),
           },
           {
             type: "item",
-            icon: () => <Icon as={IconAddRowAbove} />,
+            icon: IconAddRowAbove,
             title: "Add row before",
             action: () => editor.chain().focus().addRowBefore().run(),
           },
           {
             type: "item",
-            icon: () => <Icon as={IconAddRowBelow} />,
+            icon: IconAddRowBelow,
             title: "Add row after",
             action: () => editor.chain().focus().addRowAfter().run(),
           },
           {
             type: "item",
-            icon: () => <Icon as={IconDelRow} />,
+            icon: IconDelRow,
             title: "Delete row",
             action: () => editor.chain().focus().deleteRow().run(),
           },
           {
             type: "item",
-            icon: () => <Icon as={IconMergeCells} />,
+            icon: IconMergeCells,
             title: "Merge cells",
             action: () => editor.chain().focus().mergeCells().run(),
           },
           {
             type: "item",
-            icon: () => <Icon as={IconSplitCell} />,
+            icon: IconSplitCell,
             title: "Split cell",
             action: () => editor.chain().focus().splitCell().run(),
           },

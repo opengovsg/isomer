@@ -54,7 +54,7 @@ const SuspendableLabel = ({ siteId, resourceId }: SuspendableLabelProps) => {
 // JsonFormsLinkControl and JsonFormsRefControl share the same logic
 // for rendering the link editor modal without having to duplicate it
 // Also, this is a quick hack without doing deep refactoring
-export function BaseLinkControl({
+export const BaseLinkControl = ({
   data,
   label,
   required,
@@ -67,7 +67,7 @@ export function BaseLinkControl({
   ControlProps,
   "data" | "label" | "handleChange" | "path" | "required" | "errors"
 > &
-  Pick<LinkEditorModalProps, "linkTypes"> & { description: string }) {
+  Pick<LinkEditorModalProps, "linkTypes"> & { description: string }) => {
   const dataString = data && typeof data === "string" ? data : ""
   const { isOpen, onOpen, onClose } = useDisclosure()
   const pageType = getLinkHrefType(dataString)

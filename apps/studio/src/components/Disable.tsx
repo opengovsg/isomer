@@ -1,4 +1,4 @@
-import type { PropsWithChildren } from "react"
+import type { PropsWithChildren, ReactNode } from "react"
 import { Box } from "@chakra-ui/react"
 
 interface DisableProps {
@@ -8,7 +8,7 @@ interface DisableProps {
 export const Disable = ({
   when,
   children,
-}: PropsWithChildren<DisableProps>): JSX.Element => {
+}: PropsWithChildren<DisableProps>): ReactNode => {
   return when ? (
     // NOTE: This is done so that the cursor has the disabled icon
     // while not permitting any `onClick` events.
@@ -20,6 +20,6 @@ export const Disable = ({
       </Box>
     </Box>
   ) : (
-    <>{children}</>
+    children
   )
 }

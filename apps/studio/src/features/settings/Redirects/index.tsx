@@ -22,7 +22,7 @@ const ADD_CARD_SKELETON_HEIGHT = "13rem"
 // away would tell an admin they lack access and then contradict itself.
 const AddRedirectSection = ({
   siteId,
-}: RedirectsSettingsProps): JSX.Element => {
+}: RedirectsSettingsProps): JSX.Element | null => {
   const { canManageRedirects, isPending, isError } = useRedirectManagement()
 
   if (isPending) {
@@ -32,13 +32,13 @@ const AddRedirectSection = ({
   if (isError) {
     return (
       <Infobox variant="warning" size="sm">
-        We couldn't check your permissions, so adding and removing redirects is
-        unavailable. Refresh the page to try again.
+        We couldn&apos;t check your permissions, so adding and removing
+        redirects is unavailable. Refresh the page to try again.
       </Infobox>
     )
   }
 
-  return canManageRedirects ? <AddRedirectCard siteId={siteId} /> : <></>
+  return canManageRedirects ? <AddRedirectCard siteId={siteId} /> : null
 }
 
 const RedirectsSettingsContent = ({

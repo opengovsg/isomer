@@ -19,7 +19,7 @@ export const jsonFormsObjectControlTester: RankedTester = rankWith(
   isObjectControl,
 )
 
-function JsonFormsObjectControl({
+const JsonFormsObjectControl = ({
   data,
   path,
   visible,
@@ -34,7 +34,7 @@ function JsonFormsObjectControl({
   uischemas,
   rootSchema,
   handleChange,
-}: ControlWithDetailProps) {
+}: ControlWithDetailProps) => {
   const [isChecked, setIsChecked] = useState(!isEmpty(data))
   // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const [dataSnapshot, setDataSnapshot] = useState(data)

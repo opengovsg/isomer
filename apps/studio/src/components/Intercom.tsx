@@ -18,5 +18,5 @@ export const Intercom = () => {
     })
   }, [me])
 
-  return <></>
+  return null
 }

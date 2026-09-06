@@ -27,7 +27,7 @@ import FormBuilder from "../form-builder/FormBuilder"
 import { uploadModifiedAssets } from "../utils"
 import { DrawerHeader } from "./DrawerHeader"
 
-export default function ComplexEditorStateDrawer(): JSX.Element {
+const ComplexEditorStateDrawer = (): JSX.Element | null => {
   const {
     isOpen: isDeleteBlockModalOpen,
     onOpen: onDeleteBlockModalOpen,
@@ -290,11 +290,11 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
   }, [componentType, pageLayout])
 
   if (currActiveIdx === -1 || currActiveIdx > previewPageState.content.length) {
-    return <></>
+    return null
   }
 
   if (!component || !subSchema || !validateFn) {
-    return <></>
+    return null
   }
 
   const componentName = subSchema.title || "component"
@@ -395,3 +395,5 @@ const SaveButton = ({
     </Button>
   )
 }
+
+export default ComplexEditorStateDrawer

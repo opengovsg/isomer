@@ -225,12 +225,12 @@ interface FormBuilderProps<T> {
   handleChange: (data: T) => void
 }
 
-export default function FormBuilder<T>({
+const FormBuilder = <T,>({
   schema,
   validateFn,
   data,
   handleChange,
-}: FormBuilderProps<T>): JSX.Element {
+}: FormBuilderProps<T>): JSX.Element => {
   const { setErrors } = useBuilderErrors()
 
   return (
@@ -248,3 +248,5 @@ export default function FormBuilder<T>({
     />
   )
 }
+
+export default FormBuilder

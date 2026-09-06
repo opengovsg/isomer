@@ -70,12 +70,12 @@ interface EmbedCodeModalProps {
   urlPattern?: string
 }
 
-function EmbedCodeModal({
+const EmbedCodeModal = ({
   isOpen,
   onClose,
   onSave,
   urlPattern,
-}: EmbedCodeModalProps) {
+}: EmbedCodeModalProps) => {
   const {
     register,
     handleSubmit,
@@ -168,7 +168,7 @@ function EmbedCodeModal({
   )
 }
 
-function JsonFormsEmbedControl({
+const JsonFormsEmbedControl = ({
   data,
   label,
   handleChange,
@@ -177,7 +177,7 @@ function JsonFormsEmbedControl({
   required,
   errors,
   schema,
-}: ControlProps) {
+}: ControlProps) => {
   const {
     isOpen: isEmbedModalOpen,
     onOpen: onEmbedModalOpen,

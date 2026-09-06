@@ -21,7 +21,7 @@ export const DefaultServerError = () => {
           Something went wrong
         </Text>
         <Text textStyle="body-2" textAlign="center">
-          It's not you, it's us. Please try refreshing this page.
+          It&apos;s not you, it&apos;s us. Please try refreshing this page.
           <br />
           If this issue persists,{" "}
           <Link variant="inline" href={ISOMER_SUPPORT_LINK}>

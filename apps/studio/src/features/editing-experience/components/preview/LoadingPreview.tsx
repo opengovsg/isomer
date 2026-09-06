@@ -1,6 +1,6 @@
 import { Box, Grid, GridItem, Skeleton, VStack } from "@chakra-ui/react"
 
-export function LoadingPreview(): JSX.Element {
+export const LoadingPreview = (): JSX.Element => {
   return (
     <Box
       position="relative"

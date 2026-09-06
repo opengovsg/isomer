@@ -86,8 +86,8 @@ const SearchResultsHeader = ({
 }) => {
   return (
     <Text textStyle="caption-2" px="0.5rem" pt="0.25rem" pb="0.5rem">
-      {resultsCount} result{resultsCount > 1 ? "s" : ""} with "{searchQuery}" in
-      title
+      {resultsCount} result{resultsCount > 1 ? "s" : ""} with &quot;
+      {searchQuery}&quot; in title
     </Text>
   )
 }

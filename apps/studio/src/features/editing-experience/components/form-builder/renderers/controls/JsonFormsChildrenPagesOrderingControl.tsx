@@ -126,12 +126,12 @@ const SuspendableBlocks = ({
   return <DraggableBlocks data={resources} {...rest} />
 }
 
-function JsonFormsChildrenPagesLayoutControl({
+const JsonFormsChildrenPagesLayoutControl = ({
   data,
   label,
   description,
   ...rest
-}: ReorderingControlProps): JSX.Element {
+}: ReorderingControlProps): JSX.Element => {
   const { pageId: indexPageId, siteId } = useQueryParse(pageSchema)
 
   return (

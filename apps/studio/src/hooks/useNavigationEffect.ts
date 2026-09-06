@@ -31,5 +31,5 @@ export const useNavigationEffect = ({
     return () => {
       router.events.off("routeChangeStart", handleRouteChange)
     }
-  }, [isOpen, router.events, isDirty])
+  }, [isOpen, router.events, isDirty, callback])
 }

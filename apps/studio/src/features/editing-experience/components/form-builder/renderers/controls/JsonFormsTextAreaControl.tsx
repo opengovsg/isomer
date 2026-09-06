@@ -33,7 +33,7 @@ const getRemainingCharacterCount = (maxLength: number, data?: string) => {
   return Math.max(0, maxLength - data.length)
 }
 
-function JsonFormsTextAreaControl({
+const JsonFormsTextAreaControl = ({
   data,
   label,
   handleChange,
@@ -42,7 +42,7 @@ function JsonFormsTextAreaControl({
   required,
   errors,
   schema,
-}: ControlProps) {
+}: ControlProps) => {
   const { maxLength } = schema
   const remainingCharacterCount = maxLength
     ? getRemainingCharacterCount(maxLength, data ? String(data) : undefined)

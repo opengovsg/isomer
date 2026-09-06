@@ -1,6 +1,12 @@
 import type { ComplexIntegrations } from "@opengovsg/isomer-components"
 import type { PropsWithChildren } from "react"
-import { createContext, useContext, useState } from "react"
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from "react"
 import { AskgovLogo } from "~/components/Svg/Askgov"
 import { VicaLogo } from "~/components/Svg/Vica"
 
@@ -37,16 +43,22 @@ export const WidgetProvider = ({
   const [activeWidget, setActiveWidget] = useState<WidgetType | null>(
     currentActiveWidget,
   )
-  const getNextWidget = (curWidget: WidgetType) => {
-    if (!activeWidget) return curWidget
+  const getNextWidget = useCallback(
+    (curWidget: WidgetType) => {
+      if (!activeWidget) return curWidget
 
-    return activeWidget === "askgov" ? "vica" : "askgov"
-  }
+      return activeWidget === "askgov" ? "vica" : "askgov"
+    },
+    [activeWidget],
+  )
+
+  const contextValue = useMemo(
+    () => ({ activeWidget, setActiveWidget, getNextWidget }),
+    [activeWidget, getNextWidget],
+  )
 
   return (
-    <WidgetContext.Provider
-      value={{ activeWidget, setActiveWidget, getNextWidget }}
-    >
+    <WidgetContext.Provider value={contextValue}>
       {children}
     </WidgetContext.Provider>
   )

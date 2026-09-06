@@ -74,6 +74,11 @@ interface BulkUploadRedirectsModalProps {
   onClose: () => void
 }
 
+interface BulkUploadRedirectsModalContentProps {
+  siteId: number
+  onClose: () => void
+}
+
 // The modal walks through: pick a file → process (validate) → either fix errors
 // and re-upload, or review and publish the whole batch. `stage` tracks which of
 // those the user is on; validation holds the server's per-row verdicts.
@@ -98,6 +103,45 @@ export const BulkUploadRedirectsModal = ({
   isOpen,
   onClose,
 }: BulkUploadRedirectsModalProps): JSX.Element => {
+  return (
+    <Modal isOpen={isOpen} onClose={onClose}>
+      <ModalOverlay />
+      {isOpen ? (
+        <BulkUploadRedirectsModalContent siteId={siteId} onClose={onClose} />
+      ) : null}
+    </Modal>
+  )
+}
+
+const PublishingSpinner = (): JSX.Element => {
+  const [showSlowMessage, setShowSlowMessage] = useState(false)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowSlowMessage(true), 3000)
+    return () => clearTimeout(timer)
+  }, [])
+
+  return (
+    <Center flexDir="column" py="2.5rem" gap="1rem">
+      <Spinner />
+      <Stack spacing="0.25rem" textAlign="center">
+        <Text textStyle="body-2">
+          Publishing your redirects to your site...
+        </Text>
+        {showSlowMessage && (
+          <Text textStyle="body-2" color="base.content.medium">
+            This might take a while.
+          </Text>
+        )}
+      </Stack>
+    </Center>
+  )
+}
+
+const BulkUploadRedirectsModalContent = ({
+  siteId,
+  onClose,
+}: BulkUploadRedirectsModalContentProps): JSX.Element => {
   const toast = useToast(BRIEF_TOAST_SETTINGS)
   const { validate } = useBulkValidateRedirects(siteId)
   const { mutateAsync: publish } = useBulkCreateRedirects()
@@ -113,7 +157,6 @@ export const BulkUploadRedirectsModal = ({
   // whatever is in the picker now, so the batch that gets created is always the
   // one the editor reviewed on the success screen.
   const [reviewedCsv, setReviewedCsv] = useState<string | null>(null)
-  const [showSlowMessage, setShowSlowMessage] = useState(false)
   // Covers the validation request plus MIN_PROCESSING_MS, so the button keeps
   // its spinner for the whole visible wait rather than the request alone.
   const [isProcessing, setIsProcessing] = useState(false)
@@ -146,28 +189,10 @@ export const BulkUploadRedirectsModal = ({
     setFileError(null)
     setValidation(null)
     setReviewedCsv(null)
-    setShowSlowMessage(false)
     setIsProcessing(false)
     latestFileRef.current = null
     hasPendingRejectionRef.current = false
   }
-
-  // Start fresh every time the modal opens, so a previous run's file or errors
-  // never linger.
-  useEffect(() => {
-    if (isOpen) resetState()
-  }, [isOpen])
-
-  // Only show the "this might take a while" line once publishing runs long, per
-  // the design ("if it's quick, don't show the second message").
-  useEffect(() => {
-    if (stage !== "publishing") {
-      setShowSlowMessage(false)
-      return
-    }
-    const timer = setTimeout(() => setShowSlowMessage(true), 3000)
-    return () => clearTimeout(timer)
-  }, [stage])
 
   const handleClose = () => {
     resetState()
@@ -256,27 +281,35 @@ export const BulkUploadRedirectsModal = ({
     // was closed and reopened), so these verdicts describe something the editor
     // is no longer looking at. Drop them and leave the picker as they left it.
     const isStale = () => latestCsvRef.current !== processedCsv
+    const finishProcessing = () => setIsProcessing(false)
     try {
       const result = await validate(processedCsv)
       await loadingFloor
-      if (isStale()) return
+      if (isStale()) {
+        finishProcessing()
+        return
+      }
       if (result.fileError !== null || result.errorCount > 0) {
         enterErrorsStage(result)
+        finishProcessing()
         return
       }
       setValidation(result)
       setReviewedCsv(processedCsv)
       setStage("success")
+      finishProcessing()
     } catch {
       await loadingFloor
-      if (isStale()) return
+      if (isStale()) {
+        finishProcessing()
+        return
+      }
       toast({
         title: "We couldn't check your redirects",
         description: "Please try again.",
         status: "error",
       })
-    } finally {
-      setIsProcessing(false)
+      finishProcessing()
     }
   }
 
@@ -323,54 +356,49 @@ export const BulkUploadRedirectsModal = ({
   const validRows = validation?.rows.filter((row) => row.error === null) ?? []
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose}>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>{modalTitle(stage)}</ModalHeader>
-        <ModalCloseButton />
+    <ModalContent>
+      <ModalHeader>{modalTitle(stage)}</ModalHeader>
+      <ModalCloseButton />
 
-        <ModalBody>
-          <BulkUploadModalBody
-            stage={stage}
-            showSlowMessage={showSlowMessage}
-            validation={validation}
-            validRows={validRows}
-            file={file}
-            fileError={fileError}
-            onFileChange={handleFileChange}
-            onRejection={handleRejection}
-            onDownloadErrors={handleDownloadErrors}
-          />
-        </ModalBody>
+      <ModalBody>
+        <BulkUploadModalBody
+          stage={stage}
+          validation={validation}
+          validRows={validRows}
+          file={file}
+          fileError={fileError}
+          onFileChange={handleFileChange}
+          onRejection={handleRejection}
+          onDownloadErrors={handleDownloadErrors}
+        />
+      </ModalBody>
 
-        {stage !== "publishing" && (
-          <ModalFooter>
-            {stage === "success" ? (
-              <Button onClick={() => void handlePublish()}>
-                Publish {validRows.length} redirect
-                {validRows.length === 1 ? "" : "s"}
-              </Button>
-            ) : (
-              <Button
-                onClick={() => void handleProcess()}
-                isDisabled={isProcessDisabled}
-                isLoading={isProcessing}
-              >
-                {isProcessDisabled
-                  ? "Upload file to continue"
-                  : "Process redirects"}
-              </Button>
-            )}
-          </ModalFooter>
-        )}
-      </ModalContent>
-    </Modal>
+      {stage !== "publishing" && (
+        <ModalFooter>
+          {stage === "success" ? (
+            <Button onClick={() => void handlePublish()}>
+              Publish {validRows.length} redirect
+              {validRows.length === 1 ? "" : "s"}
+            </Button>
+          ) : (
+            <Button
+              onClick={() => void handleProcess()}
+              isDisabled={isProcessDisabled}
+              isLoading={isProcessing}
+            >
+              {isProcessDisabled
+                ? "Upload file to continue"
+                : "Process redirects"}
+            </Button>
+          )}
+        </ModalFooter>
+      )}
+    </ModalContent>
   )
 }
 
 interface BulkUploadModalBodyProps {
   stage: Stage
-  showSlowMessage: boolean
   validation: BulkValidation | null
   validRows: BulkValidation["rows"]
   file: File | null
@@ -384,7 +412,6 @@ interface BulkUploadModalBodyProps {
 // chain) so each stage reads as its own branch and the union stays exhaustive.
 const BulkUploadModalBody = ({
   stage,
-  showSlowMessage,
   validation,
   validRows,
   file,
@@ -395,21 +422,7 @@ const BulkUploadModalBody = ({
 }: BulkUploadModalBodyProps): JSX.Element => {
   switch (stage) {
     case "publishing":
-      return (
-        <Center flexDir="column" py="2.5rem" gap="1rem">
-          <Spinner />
-          <Stack spacing="0.25rem" textAlign="center">
-            <Text textStyle="body-2">
-              Publishing your redirects to your site...
-            </Text>
-            {showSlowMessage && (
-              <Text textStyle="body-2" color="base.content.medium">
-                This might take a while.
-              </Text>
-            )}
-          </Stack>
-        </Center>
-      )
+      return <PublishingSpinner />
     case "success":
       return (
         <Stack spacing="1.5rem">

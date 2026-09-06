@@ -19,7 +19,7 @@ export const jsonFormsDateControlTester: RankedTester = rankWith(
   ),
 )
 
-function JsonFormsDateControl({
+const JsonFormsDateControl = ({
   data,
   label,
   handleChange,
@@ -28,7 +28,7 @@ function JsonFormsDateControl({
   required,
   errors,
   enabled,
-}: ControlProps) {
+}: ControlProps) => {
   return (
     <Box>
       <FormControl isRequired={required} isInvalid={!!errors}>
