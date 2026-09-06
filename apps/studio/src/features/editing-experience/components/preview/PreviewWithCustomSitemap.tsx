@@ -3,7 +3,7 @@ import type {
   IsomerPageSchemaType,
   IsomerSchema,
 } from "@opengovsg/isomer-components"
-import type { PropsWithChildren } from "react"
+import type { AnchorHTMLAttributes, PropsWithChildren } from "react"
 import type { PartialDeep } from "type-fest"
 import { Skeleton } from "@chakra-ui/react"
 import {
@@ -26,15 +26,24 @@ export type PreviewProps = IsomerSchema & {
 }
 
 // Add a fake link component to prevent the preview from navigating away
-const FakeLink = forwardRef<HTMLAnchorElement, PropsWithChildren<unknown>>(
-  function FakeLink({ children, ...rest }, ref) {
-    return (
-      <a {...rest} ref={ref} onClick={(e) => e.preventDefault()}>
-        {children}
-      </a>
-    )
-  },
-)
+const FakeLink = forwardRef<
+  HTMLAnchorElement,
+  PropsWithChildren<AnchorHTMLAttributes<HTMLAnchorElement>>
+>(function FakeLink({ children, href, onClick, ...rest }, ref) {
+  return (
+    <a
+      {...rest}
+      href={href ?? "/"}
+      ref={ref}
+      onClick={(e) => {
+        e.preventDefault()
+        onClick?.(e)
+      }}
+    >
+      {children}
+    </a>
+  )
+})
 
 const defaultLastModified = new Date().toISOString()
 const DEFAULT_OVERRIDES: PartialDeep<IsomerPageSchemaType> = {}

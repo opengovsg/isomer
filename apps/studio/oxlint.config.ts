@@ -27,9 +27,13 @@ export default defineConfig({
         "react/no-deriving-state-in-effects": "off",
         "react/preserve-manual-memoization": "off",
         "react/refs": "off",
+        "react/globals": "off",
+        "react/immutability": "off",
         "react/rule-suppression": "off",
         "react/set-state-in-effect": "off",
         "react/todo": "off",
+        // Chakra `role="group"` is required for `_groupHover` / `_groupChecked`.
+        "jsx-a11y/prefer-tag-over-role": "off",
         "react-hooks/rules-of-hooks": "error",
         "react-hooks/exhaustive-deps": "warn",
         "@next/next/google-font-display": "warn",

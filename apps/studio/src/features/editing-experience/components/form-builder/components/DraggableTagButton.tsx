@@ -20,7 +20,7 @@ import {
 } from "@chakra-ui/react"
 import { withJsonFormsMasterListItemProps } from "@jsonforms/react"
 import { IconButton, Input } from "@opengovsg/design-system-react"
-import { createContext, useContext, useEffect, useMemo, useState } from "react"
+import { createContext, useContext, useMemo, useState } from "react"
 import { BiCheck, BiGridVertical, BiSolidInfoCircle, BiX } from "react-icons/bi"
 
 import { ROW_ACTION_ICON_BUTTON_PROPS } from "./constants"

@@ -59,13 +59,13 @@ const jotaiWrapper = (store: ReturnType<typeof createStore>) => {
   return Wrapper
 }
 
-const drawerContextRef.current!Ref: {
+const drawerContextRef: {
   current: ReturnType<typeof useEditorDrawerContext> | null
 } = { current: null }
 
 const TrackerHarness = () => {
   useContentEditTracker()
-  drawerContextRef.current!Ref.current = useEditorDrawerContext()
+  drawerContextRef.current = useEditorDrawerContext()
   return null
 }
 
