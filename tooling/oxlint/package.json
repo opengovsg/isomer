@@ -1,15 +1,17 @@
 {
   "name": "@isomer/oxlint-config",
-  "private": true,
   "version": "0.1.0",
+  "private": true,
   "description": "Shared Oxlint presets and pinned oxlint / oxlint-tsgolint for the monorepo and consumers",
   "type": "module",
   "exports": {
     ".": "./index.ts",
-    "./base": "./base.ts"
+    "./base": "./base.ts",
+    "./presets": "./presets.ts"
   },
   "dependencies": {
     "oxlint": "catalog:",
-    "oxlint-tsgolint": "catalog:"
+    "oxlint-tsgolint": "catalog:",
+    "ultracite": "catalog:"
   }
 }
