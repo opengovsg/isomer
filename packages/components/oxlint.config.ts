@@ -61,6 +61,8 @@ export default defineConfig({
           },
         ],
         "no-unused-vars": "warn",
+        // Base disables categories.correctness, so plugin rules must be listed explicitly.
+        // TODO: Replace with categories.correctness once base stops setting correctness to "off".
         "jsx-a11y/alt-text": "error",
         "jsx-a11y/anchor-ambiguous-text": "error",
         "jsx-a11y/anchor-has-content": "error",
