@@ -2,34 +2,38 @@
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { createStore, Provider } from "jotai"
+import posthog from "posthog-js"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { getCurrentSingaporeMonth } from "~/schemas/audit"
 import { theme } from "~/theme"
+import { trpc } from "~/utils/trpc"
 
 import { exportAccessLogsModalAtom } from "../../atoms"
 import { ExportAccessLogsModal } from "../ExportAccessLogsModal"
 
 const SITE_ID = 42
 
-// The shared export hook fires a PostHog capture on success.
-vi.mock("posthog-js", () => ({ default: { capture: vi.fn() } }))
+interface CreateExportRequestInput {
+  scope: "allSites" | "site"
+  siteId: number
+  month: string
+  reportType: "Access"
+}
+
+interface CreateExportMutationOptions {
+  onSuccess?: (data: void, variables: CreateExportRequestInput) => void
+}
 
 const mutate = vi.fn()
-let capturedOptions:
-  | { onSuccess?: (data: unknown, variables: unknown) => void }
-  | undefined
-vi.mock("~/utils/trpc", () => ({
-  trpc: {
-    audit: {
-      createExportRequest: {
-        useMutation: (options: typeof capturedOptions) => {
-          capturedOptions = options
-          return { mutate, isPending: false }
-        },
-      },
-    },
+let capturedOptions: CreateExportMutationOptions | undefined
+
+vi.spyOn(posthog, "capture").mockImplementation(vi.fn())
+vi.spyOn(trpc.audit.createExportRequest, "useMutation").mockImplementation(
+  (options?: CreateExportMutationOptions) => {
+    capturedOptions = options
+    return { mutate, isPending: false }
   },
-}))
+)
 
 const renderOpen = () => {
   const store = createStore()
@@ -75,8 +79,8 @@ describe("ExportAccessLogsModal", () => {
       name: "All sites I have Admin access to",
     })
     const siteOnly = screen.getByRole("radio", { name: "This site only" })
-    expect((allSites as HTMLInputElement).checked).toBe(true)
-    expect((siteOnly as HTMLInputElement).checked).toBe(false)
+    expect(allSites).toBeChecked()
+    expect(siteOnly).not.toBeChecked()
   })
 
   it("submits an Access export for the current month with the default 'allSites' scope", async () => {
@@ -118,7 +122,11 @@ describe("ExportAccessLogsModal", () => {
     // Act
     fireEvent.click(screen.getByRole("button", { name: "Export logs" }))
     await waitFor(() => expect(capturedOptions?.onSuccess).toBeDefined())
-    capturedOptions?.onSuccess?.(undefined, mutate.mock.lastCall?.[0])
+    capturedOptions?.onSuccess?.(
+      undefined,
+      // SAFETY: test fixture supplies only the fields required by the assertion under test
+      mutate.mock.lastCall?.[0] as CreateExportRequestInput,
+    )
 
     // Assert
     expect(store.get(exportAccessLogsModalAtom)).toEqual({

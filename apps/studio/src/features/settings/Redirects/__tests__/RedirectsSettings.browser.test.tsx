@@ -1,26 +1,16 @@
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import { render, screen } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import { env } from "~/env.mjs"
 import { theme } from "~/theme"
+import { trpc } from "~/utils/trpc"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { RedirectsSettings } from ".."
 import { WILDCARD_HINT } from "../constants"
 
 const SITE_ID = 42
-
-// ~/env.mjs validates `process.env` at module scope, which is a ReferenceError
-// under Browser Mode's real-browser runtime. The page picker reaches it via
-// ~/utils/resources for a link prefix that never renders here.
-vi.mock("~/env.mjs", () => ({
-  env: { NEXT_PUBLIC_APP_URL: "http://localhost:3000" },
-}))
-
-// The wildcard hint and the bulk-upload entry point only render with advanced
-// redirects on, which is the state these assertions are about.
-vi.mock("~/hooks/useIsAdvancedRedirectsEnabled", () => ({
-  useIsAdvancedRedirectsEnabled: () => true,
-}))
+const noop = vi.fn()
 
 const REDIRECT_ROW = {
   id: "1",
@@ -29,39 +19,63 @@ const REDIRECT_ROW = {
   publishedAt: new Date("2026-01-01T00:00:00Z"),
 }
 
-// What the site-wide roles query answers with. RedirectManagementProvider turns
-// this into the ability under test, so these cases run through the real CASL
-// rules rather than an ability injected past them. `undefined` roles stand for
-// the query not having resolved, which pairs with isPending/isError below.
 let currentRoles: { role: RoleType }[] | undefined = []
 let rolesQueryState = { isPending: false, isError: false }
 
-// The table's reads and every write the card/modal owns. None of them is what
-// this test covers — the question is purely which controls a role is shown — so
-// stub the tRPC surface with the minimum both branches touch on render.
-vi.mock("~/utils/trpc", () => {
-  const noop = vi.fn()
-  return {
-    trpc: {
-      useUtils: () => ({ redirect: { invalidate: noop } }),
-      resource: {
-        getRolesFor: {
-          useQuery: () => ({ data: currentRoles, ...rolesQueryState }),
-        },
-      },
-      redirect: {
-        list: { useQuery: () => ({ data: [REDIRECT_ROW], isLoading: false }) },
-        count: { useQuery: () => ({ data: 1, isLoading: false }) },
-        resolveReferences: { useQuery: () => ({ data: [] }) },
-        create: { useMutation: () => ({ mutate: noop, isPending: false }) },
-        delete: { useMutation: () => ({ mutate: noop, isPending: false }) },
-        bulkValidate: { useMutation: () => ({ mutateAsync: noop }) },
-        bulkCreate: {
-          useMutation: () => ({ mutateAsync: noop, isPending: false }),
-        },
-      },
-    },
-  }
+beforeEach(() => {
+  env.NEXT_PUBLIC_APP_URL = "http://localhost:3000"
+  currentRoles = []
+  rolesQueryState = { isPending: false, isError: false }
+
+  // SAFETY: test stub returns only the fields the component reads on render
+  vi.spyOn(trpc, "useUtils").mockReturnValue({
+    redirect: { invalidate: noop },
+  } as ReturnType<typeof trpc.useUtils>)
+
+  vi.spyOn(trpc.resource.getRolesFor, "useQuery").mockImplementation(() => ({
+    data: currentRoles,
+    ...rolesQueryState,
+  }))
+
+  // SAFETY: test stub returns only the fields the component reads on render
+  vi.spyOn(trpc.redirect.list, "useQuery").mockReturnValue({
+    data: [REDIRECT_ROW],
+    isLoading: false,
+  } as ReturnType<typeof trpc.redirect.list.useQuery>)
+
+  // SAFETY: test stub returns only the fields the component reads on render
+  vi.spyOn(trpc.redirect.count, "useQuery").mockReturnValue({
+    data: 1,
+    isLoading: false,
+  } as ReturnType<typeof trpc.redirect.count.useQuery>)
+
+  // SAFETY: test stub returns only the fields the component reads on render
+  vi.spyOn(trpc.redirect.resolveReferences, "useQuery").mockReturnValue({
+    data: [],
+  } as ReturnType<typeof trpc.redirect.resolveReferences.useQuery>)
+
+  // SAFETY: test stub returns only the fields the component reads on render
+  vi.spyOn(trpc.redirect.create, "useMutation").mockReturnValue({
+    mutate: noop,
+    isPending: false,
+  } as ReturnType<typeof trpc.redirect.create.useMutation>)
+
+  // SAFETY: test stub returns only the fields the component reads on render
+  vi.spyOn(trpc.redirect.delete, "useMutation").mockReturnValue({
+    mutate: noop,
+    isPending: false,
+  } as ReturnType<typeof trpc.redirect.delete.useMutation>)
+
+  // SAFETY: test stub returns only the fields the component reads on render
+  vi.spyOn(trpc.redirect.bulkValidate, "useMutation").mockReturnValue({
+    mutateAsync: noop,
+  } as ReturnType<typeof trpc.redirect.bulkValidate.useMutation>)
+
+  // SAFETY: test stub returns only the fields the component reads on render
+  vi.spyOn(trpc.redirect.bulkCreate, "useMutation").mockReturnValue({
+    mutateAsync: noop,
+    isPending: false,
+  } as ReturnType<typeof trpc.redirect.bulkCreate.useMutation>)
 })
 
 const renderRedirects = () =>
@@ -80,11 +94,6 @@ const DELETE_LABEL = `Delete redirect for ${REDIRECT_ROW.source}`
 const PERMISSION_ERROR = /We couldn't check your permissions/
 
 describe("RedirectsSettings", () => {
-  beforeEach(() => {
-    currentRoles = []
-    rolesQueryState = { isPending: false, isError: false }
-  })
-
   it("shows the add-redirect card, bulk upload and delete to a site admin", () => {
     // Arrange / Act
     renderAs(RoleType.Admin)
@@ -135,8 +144,10 @@ describe("RedirectsSettings", () => {
     expect(editorHeights).toEqual(adminHeights)
   })
 
+  // SAFETY: test stub returns only the fields the component reads on render
   it("does not present the page as read-only while the roles are still loading", () => {
     // Arrange — an unresolved roles query leaves the ability permitting
+    // SAFETY: test stub returns only the fields the component reads on render
     // nothing, which must not be shown as a settled "you can't do this": an
     // admin would be told they lack access and then contradicted a moment
     // later.

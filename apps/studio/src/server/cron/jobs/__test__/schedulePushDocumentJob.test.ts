@@ -1,4 +1,3 @@
-import type * as serverContextType from "~/server/context"
 import type { User } from "~prisma/generated/selectableTypes"
 import { addMinutes } from "date-fns"
 import MockDate from "mockdate"
@@ -10,23 +9,6 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 import { db } from "~server/db"
 
 import * as algoliaPkg from "@isomer/algolia"
-
-// algolia.ts constructs the Algolia client at module load via
-// algoliasearch(env.ALGOLIA_APP_ID, env.ALGOLIA_API_KEY). Those env vars are
-// not set in the test environment, so the import throws "appId is missing"
-// before any test runs. Mock the whole module to prevent this.
-vi.mock("~/lib/algolia")
-
-// Mock createGrowthBookContext so tests can control the flag without hitting
-// the remote GrowthBook CDN.
-vi.mock("~/server/context", async (importOriginal) => {
-  const actual = await importOriginal<typeof serverContextType>()
-  return {
-    ...actual,
-    createGrowthBookContext: vi.fn(),
-  }
-})
-
 import * as algoliaLib from "~/lib/algolia"
 import * as serverContext from "~/server/context"
 
@@ -34,14 +16,16 @@ import { schedulePushDocumentJobHandler } from "../schedulePushDocumentJob"
 
 const FIXED_NOW = new Date("2024-01-01T00:00:00.000Z")
 
+const isFetchUrlInput = (
+  input: Parameters<typeof fetch>[0],
+): input is string | URL =>
+  Object.prototype.toString.call(input) === "[object String]" ||
+  input instanceof URL
+
 // fetch's first argument can be string | URL | Request; URL has a
 // well-defined toString, but Request needs a property pull.
 const urlToString = (input: Parameters<typeof fetch>[0]): string =>
-  typeof input === "string"
-    ? input
-    : input instanceof URL
-      ? input.toString()
-      : input.url
+  isFetchUrlInput(input) ? String(input) : input.url
 
 // Replace the document blob's content with a shape the worker accepts.
 // The worker's Zod parse inspects `page.ref`, `page.category`, and
@@ -57,6 +41,7 @@ const setBlobContentForPushDocument = async (
   await db
     .updateTable("Blob")
     .set({
+      // SAFETY: test fixture narrows BlobJsonContent to the push-document page shape
       content: { page: { ref, category, tagged, description } } as never,
     })
     .where("id", "=", String(blobId))
@@ -95,6 +80,7 @@ const seedDocumentReadyForIngestion = async ({
   await db
     .updateTable("Blob")
     .set({
+      // SAFETY: test fixture narrows IndexPage blob content to collection tag categories
       content: {
         layout: "collection",
         page: {
@@ -171,11 +157,7 @@ describe("schedulePushDocumentJobHandler", async () => {
   let user: User
 
   beforeEach(async () => {
-    // clearAllMocks resets call counts / return-value overrides on the
-    // module-level vi.mock("~/lib/algolia") auto-mock (which restoreAllMocks
-    // would destroy, breaking vi.mocked(algoliaLib.*) calls below).
-    // restoreAllMocks then cleans up the vi.spyOn stubs re-registered each
-    // tick so they don't bleed across tests.
+    // clearAllMocks resets call counts on spies re-registered each tick.
     vi.clearAllMocks()
     vi.restoreAllMocks()
     MockDate.set(FIXED_NOW)
@@ -204,12 +186,13 @@ describe("schedulePushDocumentJobHandler", async () => {
     )
 
     // Default: flag OFF → Algolia path.
-    vi.mocked(serverContext.createGrowthBookContext).mockResolvedValue(
-      makeMockGb(false) as never,
+    vi.spyOn(serverContext, "createGrowthBookContext").mockResolvedValue(
+      makeMockGb(false),
     )
 
-    // Mock saveObjectsToSearchIndex (auto-mocked by vi.mock("~/lib/algolia")).
-    vi.mocked(algoliaLib.saveObjectsToSearchIndex).mockResolvedValue(undefined)
+    vi.spyOn(algoliaLib, "saveObjectsToSearchIndex").mockResolvedValue(
+      undefined,
+    )
 
     // Two sequential fetches: auth token, then ingest POST.
     vi.spyOn(global, "fetch").mockImplementation(
@@ -257,7 +240,7 @@ describe("schedulePushDocumentJobHandler", async () => {
 
       // Assert — Algolia saveObjects was called with correct fields.
       expect(algoliaLib.saveObjectsToSearchIndex).toHaveBeenCalledTimes(1)
-      const [records] = vi.mocked(algoliaLib.saveObjectsToSearchIndex).mock
+      const [records] = vi.spyOn(algoliaLib, "saveObjectsToSearchIndex").mock
         .calls[0]!
       expect(records.length).toBeGreaterThan(0)
       // objectGroup is the S3 key WITHOUT the leading slash.
@@ -366,7 +349,7 @@ describe("schedulePushDocumentJobHandler", async () => {
 
       // Assert
       expect(algoliaLib.saveObjectsToSearchIndex).toHaveBeenCalledTimes(1)
-      const [records] = vi.mocked(algoliaLib.saveObjectsToSearchIndex).mock
+      const [records] = vi.spyOn(algoliaLib, "saveObjectsToSearchIndex").mock
         .calls[0]!
       expect(records[0]).toMatchObject({ notificationNum: "12345" })
     })
@@ -434,13 +417,10 @@ describe("schedulePushDocumentJobHandler", async () => {
         .execute()
 
       // Make saveObjectsToSearchIndex throw for the bad resource's objectGroup.
-      vi.mocked(algoliaLib.saveObjectsToSearchIndex).mockImplementation(
+      vi.spyOn(algoliaLib, "saveObjectsToSearchIndex").mockImplementation(
         (records) => {
-          if (
-            records[0] &&
-            (records[0] as unknown as { objectGroup: string }).objectGroup ===
-              badRef.slice(1)
-          ) {
+          const firstRecord = records[0]
+          if (firstRecord?.objectGroup === badRef.slice(1)) {
             throw new Error("Algolia error")
           }
           return Promise.resolve()
@@ -497,7 +477,7 @@ describe("schedulePushDocumentJobHandler", async () => {
       // Assert — the gazette is indexed from the published Version's blob
       // and its S3 object is untagged, even though no draft blob remains.
       expect(algoliaLib.saveObjectsToSearchIndex).toHaveBeenCalledTimes(1)
-      const [records] = vi.mocked(algoliaLib.saveObjectsToSearchIndex).mock
+      const [records] = vi.spyOn(algoliaLib, "saveObjectsToSearchIndex").mock
         .calls[0]!
       expect(records[0]).toMatchObject({ objectGroup: ref.slice(1) })
       expect(s3Lib.setAssetAsPublished).toHaveBeenCalledTimes(1)
@@ -525,6 +505,7 @@ describe("schedulePushDocumentJobHandler", async () => {
         .where("resourceId", "=", String(resourceId))
         .select("id")
         .executeTakeFirstOrThrow()
+      // SAFETY: empty blob content is enough for the draft-version fixture setup
       const draftBlob = await db
         .insertInto("Blob")
         .values({ content: {} as never })
@@ -555,7 +536,7 @@ describe("schedulePushDocumentJobHandler", async () => {
 
       // Assert — records are built from the published ref, not the draft's.
       expect(algoliaLib.saveObjectsToSearchIndex).toHaveBeenCalledTimes(1)
-      const [records] = vi.mocked(algoliaLib.saveObjectsToSearchIndex).mock
+      const [records] = vi.spyOn(algoliaLib, "saveObjectsToSearchIndex").mock
         .calls[0]!
       expect(records[0]).toMatchObject({
         objectGroup: publishedRef.slice(1),
@@ -655,8 +636,8 @@ describe("schedulePushDocumentJobHandler", async () => {
   describe("SearchSG path (flag ON)", () => {
     beforeEach(() => {
       // Switch the GrowthBook mock to flag=ON for this suite.
-      vi.mocked(serverContext.createGrowthBookContext).mockResolvedValue(
-        makeMockGb(true) as never,
+      vi.spyOn(serverContext, "createGrowthBookContext").mockResolvedValue(
+        makeMockGb(true),
       )
     })
 
@@ -685,9 +666,16 @@ describe("schedulePushDocumentJobHandler", async () => {
         .mocked(global.fetch)
         .mock.calls.find(([u]) => urlToString(u).includes("/documents"))
       expect(ingestCall).toBeDefined()
+      // SAFETY: fetch mock returns a JSON string body from the SearchSG ingest fixture
       const ingestBody = ingestCall![1]?.body as string
+      // SAFETY: parsed ingest body matches the SearchSG documents payload shape under test.
       const body = JSON.parse(ingestBody) as {
-        documentsToAdd: Record<string, unknown>[]
+        documentsToAdd: Array<{
+          title: string
+          content: string
+          contentType: string
+          categories: string[]
+        }>
       }
       expect(body.documentsToAdd).toHaveLength(1)
       expect(body.documentsToAdd[0]).toMatchObject({

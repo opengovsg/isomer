@@ -1,5 +1,9 @@
+import path from "node:path"
+import { fileURLToPath } from "node:url"
 import { playwright } from "@vitest/browser-playwright"
 import { configDefaults, defineConfig } from "vitest/config"
+
+const studioRoot = fileURLToPath(new URL(".", import.meta.url))
 
 // Tests that need a real DOM (component/hook rendering) are named
 // `*.browser.test.{ts,tsx}` and run in real Chromium via Vitest Browser Mode
@@ -9,6 +13,13 @@ const BROWSER_TEST_PATTERN = "src/**/*.browser.test.{ts,tsx}"
 export default defineConfig({
   resolve: {
     tsconfigPaths: true,
+    alias: {
+      "~/server/modules/database/database": path.resolve(
+        studioRoot,
+        "tests/mocks/database-shim.ts",
+      ),
+      "~/server/prisma": path.resolve(studioRoot, "tests/mocks/database-shim.ts"),
+    },
   },
   test: {
     coverage: {

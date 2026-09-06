@@ -2,6 +2,7 @@
 import type { UserManagementAbility } from "~/server/modules/permissions/permissions.type"
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
+import posthog from "posthog-js"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { UserManagementContext } from "~/features/users"
 import { SITE_ID } from "~/lib/testing/constants"
@@ -11,55 +12,45 @@ import {
 } from "~/schemas/audit"
 import { buildUserManagementPermissions } from "~/server/modules/permissions/permissions.util"
 import { theme } from "~/theme"
+import { trpc } from "~/utils/trpc"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { AuditLogExportSection } from "../AuditLogExportSection"
 import { getMonthOptions } from "../utils"
 
-// PostHog capture calls run inside the mutation's onSuccess — mock the client
-// so they can be asserted on instead of hitting an uninitialised instance.
-const { posthogCapture } = vi.hoisted(() => ({ posthogCapture: vi.fn() }))
-vi.mock("posthog-js", () => ({
-  default: { capture: posthogCapture },
-}))
+interface CreateExportRequestInput {
+  scope: string
+  siteId: number
+  month: string
+  reportType: string
+}
 
-// Capture what the component passes to the mutation so we can assert on the
-// submitted payload and drive the onSuccess/onError branches ourselves.
-// react-query invokes onSuccess(data, variables, context), and the component
-// destructures the variables — so the harness must pass them too.
+interface CreateExportMutationOptions {
+  onSuccess?: (data: void, variables: CreateExportRequestInput) => void
+  onError?: (error: { message: string; data: { code: string } }) => void
+}
+
+const posthogCapture = vi.fn()
 const mutate = vi.fn()
-let capturedOptions:
-  | {
-      onSuccess?: (data: unknown, variables: unknown) => void
-      onError?: (error: unknown) => void
-    }
-  | undefined
+let capturedOptions: CreateExportMutationOptions | undefined
 
-// Replays the component's own submitted payload back through onSuccess, the
-// way react-query would after a successful mutation.
 const fireOnSuccessForLastMutation = () => {
-  const variables: unknown = mutate.mock.lastCall?.[0]
+  // SAFETY: test fixture supplies only the fields required by the assertion under test
+  const variables = mutate.mock.lastCall?.[0] as CreateExportRequestInput
   capturedOptions?.onSuccess?.(undefined, variables)
 }
 
-vi.mock("~/utils/trpc", () => ({
-  trpc: {
-    audit: {
-      // The full window, as if the site were old enough to offer it — the
-      // capped-window behaviour itself is covered by getMaxExportableMonths'
-      // and getMonthOptions' own unit tests.
-      getExportWindow: {
-        useQuery: () => ({ data: { maxMonths: 12 } }),
-      },
-      createExportRequest: {
-        useMutation: (options: typeof capturedOptions) => {
-          capturedOptions = options
-          return { mutate, isPending: false }
-        },
-      },
-    },
+vi.spyOn(posthog, "capture").mockImplementation(posthogCapture)
+// SAFETY: test stub returns only the fields the component reads on render
+vi.spyOn(trpc.audit.getExportWindow, "useQuery").mockReturnValue({
+  data: { maxMonths: 12 },
+} as ReturnType<typeof trpc.audit.getExportWindow.useQuery>)
+vi.spyOn(trpc.audit.createExportRequest, "useMutation").mockImplementation(
+  (options?: CreateExportMutationOptions) => {
+    capturedOptions = options
+    return { mutate, isPending: false }
   },
-}))
+)
 
 const adminAbility = buildUserManagementPermissions([{ role: RoleType.Admin }])
 const editorAbility = buildUserManagementPermissions([
@@ -96,7 +87,7 @@ describe("AuditLogExportSection", () => {
         .getAttribute("href"),
     ).toBe(`/sites/${SITE_ID}/users`)
     const submit = screen.getByRole("button", { name: "Export logs" })
-    expect((submit as HTMLButtonElement).disabled).toBe(false)
+    expect(submit).toBeEnabled()
   })
 
   it("defaults the export scope to 'This site only'", () => {
@@ -105,8 +96,8 @@ describe("AuditLogExportSection", () => {
     const allSites = screen.getByRole("radio", {
       name: "All sites I have Admin access to",
     })
-    expect((siteOnly as HTMLInputElement).checked).toBe(true)
-    expect((allSites as HTMLInputElement).checked).toBe(false)
+    expect(siteOnly).toBeChecked()
+    expect(allSites).not.toBeChecked()
   })
 
   // This section only ever requests the Activity log now — Access-log export
@@ -119,10 +110,7 @@ describe("AuditLogExportSection", () => {
     fireEvent.click(screen.getByRole("button", { name: "Export logs" }))
 
     await waitFor(() => expect(mutate).toHaveBeenCalledTimes(1))
-    const [payload] = mutate.mock.calls[0] as [
-      { scope: string; siteId: number; month: string; reportType: string },
-    ]
-    expect(payload).toEqual({
+    expect(mutate).toHaveBeenCalledWith({
       scope: AuditLogExportScope.Site,
       siteId: SITE_ID,
       month: getMonthOptions()[0]!.value,
@@ -141,8 +129,9 @@ describe("AuditLogExportSection", () => {
     fireEvent.click(screen.getByRole("button", { name: "Export logs" }))
 
     await waitFor(() => expect(mutate).toHaveBeenCalledTimes(1))
-    const [payload] = mutate.mock.calls[0] as [{ scope: string }]
-    expect(payload).toMatchObject({ scope: "allSites", siteId: 42 })
+    expect(mutate).toHaveBeenCalledWith(
+      expect.objectContaining({ scope: "allSites", siteId: 42 }),
+    )
   })
 
   // NOTE: there is no duplicate-request failure path any more — the server
@@ -168,6 +157,7 @@ describe("AuditLogExportSection", () => {
 
   // A duplicate ask is a success, not an error: submitting the same form
   // twice issues two identical mutations and the success handler runs for each.
+  // SAFETY: test stub returns only the fields the component reads on render
   it("treats a repeated identical submission as a plain success", async () => {
     renderWith(adminAbility)
 

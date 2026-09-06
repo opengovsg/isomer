@@ -44,6 +44,30 @@ import { createDefaultPage } from "../page.service"
 
 const createCaller = createCallerFactory(pageRouter)
 
+type RedirectDeleteAuditDelta = {
+  before: { destination: string; deletedAt: string | null }
+  after: { destination: string; deletedAt: string | null }
+}
+
+type RedirectCreateAuditDelta = {
+  before: null
+  after: { destination: string }
+}
+
+const asRedirectDeleteAuditDelta = (
+  delta: RedirectDeleteAuditDelta | RedirectCreateAuditDelta,
+): RedirectDeleteAuditDelta => {
+  // SAFETY: audit log row was written by redirect retirement in the same test
+  return delta as RedirectDeleteAuditDelta
+}
+
+const asRedirectCreateAuditDelta = (
+  delta: RedirectDeleteAuditDelta | RedirectCreateAuditDelta,
+): RedirectCreateAuditDelta => {
+  // SAFETY: audit log row was written by redirect adoption in the same test
+  return delta as RedirectCreateAuditDelta
+}
+
 describe("page.router", async () => {
   let caller: ReturnType<typeof createCaller>
   const session = await applyAuthedSession()
@@ -2209,10 +2233,7 @@ describe("page.router", async () => {
         .where("eventType", "=", "RedirectDelete")
         .executeTakeFirstOrThrow()
       expect(deleteEntry.userId).toBe(session.userId)
-      const deleteDelta = deleteEntry.delta as {
-        before: { destination: string; deletedAt: string | null }
-        after: { destination: string; deletedAt: string | null }
-      }
+      const deleteDelta = asRedirectDeleteAuditDelta(deleteEntry.delta)
       expect(deleteDelta.before.destination).toBe(literalDestination)
       expect(deleteDelta.before.deletedAt).toBeNull()
       expect(deleteDelta.after.destination).toBe(literalDestination)
@@ -2226,10 +2247,7 @@ describe("page.router", async () => {
         .where("eventType", "=", "RedirectCreate")
         .executeTakeFirstOrThrow()
       expect(createEntry.userId).toBe(session.userId)
-      const createDelta = createEntry.delta as {
-        before: null
-        after: { destination: string }
-      }
+      const createDelta = asRedirectCreateAuditDelta(createEntry.delta)
       expect(createDelta.before).toBeNull()
       expect(createDelta.after.destination).toBe(
         `[resource:${site.id}:${page.id}]`,

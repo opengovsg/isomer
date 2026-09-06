@@ -29,11 +29,7 @@ import {
   ResourceType,
 } from "~prisma/generated/generatedEnums"
 
-// algolia.ts constructs the Algolia client at module load via
-// algoliasearch(env.ALGOLIA_APP_ID, env.ALGOLIA_API_KEY). Those env vars are
-// not set in the test environment, so the import throws "appId is missing"
-// before any test runs. Mock the whole module to prevent this.
-vi.mock("~/lib/algolia")
+import * as algoliaLib from "~/lib/algolia"
 
 import { db } from "../../database/database"
 import { gazetteRouter } from "../gazette.router"
@@ -63,6 +59,7 @@ describe("gazette.router", async () => {
       "User",
     )
     caller = createCaller(createMockRequest(session))
+    vi.spyOn(algoliaLib, "saveObjectsToSearchIndex").mockResolvedValue(undefined)
   })
 
   afterEach(() => {
@@ -222,6 +219,7 @@ describe("gazette.router", async () => {
         .where("id", "=", resource.draftBlobId)
         .selectAll()
         .executeTakeFirstOrThrow()
+      // SAFETY: blob content is narrowed to the link page ref field under test.
       const page = (blob.content as { page?: { ref?: string } } | null)?.page
       expect(page?.ref).toBe("/1/abc/notice-123.pdf")
 
@@ -476,6 +474,7 @@ describe("gazette.router", async () => {
         .where("id", "=", resource.draftBlobId)
         .selectAll()
         .executeTakeFirstOrThrow()
+      // SAFETY: blob content is narrowed to link page fields asserted below.
       const page = (
         blob.content as {
           page?: {
@@ -541,6 +540,7 @@ describe("gazette.router", async () => {
         .where("id", "=", resource.draftBlobId)
         .selectAll()
         .executeTakeFirstOrThrow()
+      // SAFETY: blob content is narrowed to the link page ref field under test.
       expect(
         (blob.content as { page?: { ref?: string } } | null)?.page?.ref,
       ).toBe("/2026/Government Gazette/sub-1/notice.pdf")
@@ -729,9 +729,10 @@ describe("gazette.router", async () => {
     it("deletes the resource, blob, and push job atomically and emits both audit events", async () => {
       const { site, collection, user } = await seedToppanWithCollection()
       // S3 tagging is best-effort post-tx — stub so the test stays offline.
+      // SAFETY: s3 tagging response fields are unused by the delete flow under test.
       const markCancelled = vi
         .spyOn(s3Lib, "markScheduledAssetAsCancelled")
-        .mockResolvedValue({} as never)
+        .mockResolvedValue({} as Awaited<ReturnType<typeof s3Lib.markScheduledAssetAsCancelled>>)
 
       const { gazetteId } = await caller.create({
         siteId: site.id,
@@ -813,6 +814,7 @@ describe("gazette.router", async () => {
       const cancelLog = newAuditLogs.find(
         (l) => l.eventType === AuditLogEvent.CancelSchedulePublish,
       )
+      // SAFETY: audit log delta shape is narrowed to cancel-schedule fields under test.
       const delta = cancelLog?.delta as {
         before: {
           resourceId: string
@@ -1002,6 +1004,7 @@ describe("gazette.router", async () => {
       await db
         .updateTable("Blob")
         .set({
+          // SAFETY: partial link-layout page fixture supplies only fields read by ingestion.
           content: {
             page: {
               ref: "/test-bucket/gazette.pdf",

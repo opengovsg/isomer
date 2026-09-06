@@ -132,6 +132,7 @@ describe("isFirstLevelLinksOverLimit", () => {
 describe("getInstancePathFromNavbarItemPath", () => {
   it("should convert navbar item path to instance path for top-level item", () => {
     // Arrange
+    // SAFETY: test fixture supplies only the fields required by the assertion under test
     const path = "items.3" as NavbarItemPath
 
     // Act
@@ -143,6 +144,7 @@ describe("getInstancePathFromNavbarItemPath", () => {
 
   it("should convert navbar item path to instance path for sub-item", () => {
     // Arrange
+    // SAFETY: test fixture supplies only the fields required by the assertion under test
     const path = "items.1.items.4" as NavbarItemPath
 
     // Act

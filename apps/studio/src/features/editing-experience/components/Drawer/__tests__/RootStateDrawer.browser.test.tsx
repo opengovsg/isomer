@@ -1,53 +1,64 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import { render, screen } from "@testing-library/react"
-import { describe, expect, it, vi } from "vitest"
+import * as nextRouter from "next/router"
+import posthog from "posthog-js"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 import { EditorDrawerProvider } from "~/contexts/EditorDrawerContext"
+import * as isomerAdminHook from "~/hooks/useIsUserIsomerAdmin"
+import * as collectionTagsHook from "~/hooks/useNewCollectionTagsManagement"
 import { theme } from "~/theme"
+import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import RootStateDrawer from "../RootStateDrawer"
 
-const noop = vi.hoisted(() => vi.fn())
+const noop = vi.fn()
 
-vi.mock("next/router", () => ({
-  useRouter: () => ({ query: { pageId: "1", siteId: "1" } }),
-}))
+beforeEach(() => {
+  // SAFETY: test stub returns only the fields the component reads on render
+  vi.spyOn(nextRouter, "useRouter").mockReturnValue({
+    query: { pageId: "1", siteId: "1" },
+  } as ReturnType<typeof nextRouter.useRouter>)
 
-vi.mock("posthog-js", () => ({ default: { capture: noop } }))
+  vi.spyOn(posthog, "capture").mockImplementation(noop)
 
-vi.mock("~/hooks/useIsUserIsomerAdmin", () => ({
-  useIsUserIsomerAdmin: () => ({ isAdmin: false, isLoading: false }),
-}))
+  vi.spyOn(isomerAdminHook, "useIsUserIsomerAdmin").mockReturnValue({
+    isAdmin: false,
+    isLoading: false,
+  })
 
-vi.mock("~/hooks/useNewCollectionTagsManagement", () => ({
-  useNewCollectionTagsManagement: () => false,
-}))
+  vi.spyOn(collectionTagsHook, "useNewCollectionTagsManagement").mockReturnValue(
+    false,
+  )
 
-vi.mock("~/utils/trpc", () => ({
-  trpc: {
+  // SAFETY: test stub returns only the fields the component reads on render
+  vi.spyOn(trpc.page.readPage, "useSuspenseQuery").mockReturnValue([
+    { scheduledAt: null },
+  ] as ReturnType<typeof trpc.page.readPage.useSuspenseQuery>)
+
+  // SAFETY: test stub returns only the fields the component reads on render
+  vi.spyOn(trpc.page.reorderBlock, "useMutation").mockReturnValue({
+    mutate: noop,
+  } as ReturnType<typeof trpc.page.reorderBlock.useMutation>)
+
+  // SAFETY: test stub returns only the fields the component reads on render
+  vi.spyOn(trpc.page.updatePageBlob, "useMutation").mockReturnValue({
+    mutate: noop,
+    isPending: false,
+  } as ReturnType<typeof trpc.page.updatePageBlob.useMutation>)
+
+  // SAFETY: test stub returns only the fields the component reads on render
+  vi.spyOn(trpc, "useUtils").mockReturnValue({
     page: {
-      readPage: {
-        useSuspenseQuery: () => [{ scheduledAt: null }],
-      },
-      reorderBlock: {
-        useMutation: () => ({ mutate: noop }),
-      },
-      updatePageBlob: {
-        useMutation: () => ({ mutate: noop, isPending: false }),
-      },
+      readPage: { invalidate: noop },
+      readPageAndBlob: { invalidate: noop },
     },
-    useUtils: () => ({
-      page: {
-        readPage: { invalidate: noop },
-        readPageAndBlob: { invalidate: noop },
-      },
-      collection: {
-        countTagOptionsUsage: { invalidate: noop },
-      },
-    }),
-  },
-}))
+    collection: {
+      countTagOptionsUsage: { invalidate: noop },
+    },
+  } as ReturnType<typeof trpc.useUtils>)
+})
 
 const SEARCH_PAGE: IsomerSchema = {
   page: { title: "Search", description: "Search results" },

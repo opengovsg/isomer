@@ -24,14 +24,32 @@ import {
 
 // Shape used purely for asserting on builder output without TypeScript
 // narrowing on the `IsomerSchema` union for every property access.
+interface BuilderPageResult {
+  title?: string
+  subtitle?: string
+  sortOrder?: string
+  category?: string
+  date?: string
+  image?: { src: string; alt: string }
+  articlePageHeader?: { summary: string }
+  contentPageHeader?: { summary: string; showThumbnail?: boolean }
+}
+
 interface BuilderResult {
   version: string
   layout: string
-  page: Record<string, unknown>
+  page: BuilderPageResult
   content: unknown[]
 }
 
 const asResult = (s: IsomerSchema): BuilderResult => s
+
+const toIsomerSchema = (
+  blob: IndexBlob | ContentBlob | ArticleBlob,
+): IsomerSchema => {
+  // SAFETY: test fixtures are valid page blobs without the render-time site field.
+  return blob as IsomerSchema
+}
 
 const proseBlock: IsomerComponent = {
   type: "prose",
@@ -65,58 +83,88 @@ interface PageOverrides {
   image?: { src: string; alt: string }
 }
 
-const makeIndexBlob = (overrides?: PageOverrides): IndexBlob =>
-  ({
+const makeIndexBlob = (overrides?: PageOverrides): IndexBlob => {
+  const page: IndexBlob["page"] = {
+    title: "Index",
+    contentPageHeader: {
+      summary: overrides?.summary ?? "Index summary",
+      showThumbnail: false,
+    },
+  }
+  if (overrides?.image) {
+    page.image = overrides.image
+  }
+  return {
     version: "0.1.0",
     layout: "index",
-    page: {
-      title: "Index",
-      contentPageHeader: {
-        summary: overrides?.summary ?? "Index summary",
-        showThumbnail: false,
-      },
-      ...(overrides?.image ? { image: overrides.image } : {}),
-    },
+    page,
     content: [],
-  }) as unknown as IndexBlob
+  }
+}
 
 const makeContentBlob = (
   overrides?: PageOverrides,
   content: IsomerComponent[] = [],
-): ContentBlob =>
-  ({
+): ContentBlob => {
+  const page: ContentBlob["page"] = {
+    title: "Page",
+    contentPageHeader: {
+      summary: overrides?.summary ?? "Content summary",
+      showThumbnail: false,
+    },
+  }
+  if (overrides?.image) {
+    page.image = overrides.image
+  }
+  return {
     version: "0.1.0",
     layout: "content",
-    page: {
-      title: "Page",
-      contentPageHeader: {
-        summary: overrides?.summary ?? "Content summary",
-        showThumbnail: false,
-      },
-      ...(overrides?.image ? { image: overrides.image } : {}),
-    },
+    page,
     content,
-  }) as unknown as ContentBlob
+  }
+}
 
 const makeArticleBlob = (
   overrides?: PageOverrides & { category?: string; date?: string },
   content: IsomerComponent[] = [],
-): ArticleBlob =>
-  ({
+): ArticleBlob => {
+  const page: ArticleBlob["page"] = {
+    title: "Article",
+    category: overrides?.category ?? "News",
+    date: overrides?.date ?? "1 Jan 2024",
+    articlePageHeader: {
+      summary: overrides?.summary ?? "Article summary",
+    },
+  }
+  if (overrides?.image) {
+    page.image = overrides.image
+  }
+  return {
     version: "0.1.0",
     layout: "article",
-    page: {
-      title: "Article",
-      category: overrides?.category ?? "News",
-      date: overrides?.date ?? "1 Jan 2024",
-      articlePageHeader: {
-        summary: overrides?.summary ?? "Article summary",
-      },
-      ...(overrides?.image ? { image: overrides.image } : {}),
-    },
+    page,
     content,
-  }) as unknown as ArticleBlob
+  }
+}
 
+const withIndexContent = (
+  blob: IndexBlob,
+  content: IsomerComponent[],
+): IndexBlob => ({
+  ...blob,
+  content,
+})
+
+const withIndexPageSortOrder = (
+  blob: IndexBlob,
+  sortOrder: string,
+): IndexBlob => ({
+  ...blob,
+  page: {
+    ...blob.page,
+    sortOrder,
+  },
+})
 const makeConversionPlan = (
   overrides?: Partial<ConversionPlan>,
 ): ConversionPlan => ({
@@ -132,8 +180,8 @@ const makeConversionPlan = (
     title: "Index",
     permalink: "_index",
     currentBlobId: "blob-index",
-    currentBlob: makeIndexBlob() as unknown as IsomerSchema,
-    nextBlob: makeIndexBlob() as unknown as IsomerSchema,
+    currentBlob: toIsomerSchema(makeIndexBlob()),
+    nextBlob: toIsomerSchema(makeIndexBlob()),
     disallowedBlocks: [],
   },
   pages: [],
@@ -150,8 +198,8 @@ describe("buildConversionReport", () => {
           title: "Clean page",
           permalink: "clean",
           currentBlobId: "b1",
-          currentBlob: makeContentBlob() as unknown as IsomerSchema,
-          nextBlob: makeArticleBlob() as unknown as IsomerSchema,
+          currentBlob: toIsomerSchema(makeContentBlob()),
+          nextBlob: toIsomerSchema(makeArticleBlob()),
           disallowedBlocks: [],
         },
       ],
@@ -170,12 +218,10 @@ describe("buildConversionReport", () => {
           title: "Flagged",
           permalink: "flagged",
           currentBlobId: "b1",
-          currentBlob: makeContentBlob({}, [
-            infobarBlock,
-          ]) as unknown as IsomerSchema,
-          nextBlob: makeArticleBlob({}, [
-            infobarBlock,
-          ]) as unknown as IsomerSchema,
+          currentBlob: toIsomerSchema(
+            makeContentBlob({}, [infobarBlock]),
+          ),
+          nextBlob: toIsomerSchema(makeArticleBlob({}, [infobarBlock])),
           disallowedBlocks: [{ index: 0, type: "infobar" }],
         },
         {
@@ -183,8 +229,8 @@ describe("buildConversionReport", () => {
           title: "Clean",
           permalink: "clean",
           currentBlobId: "b2",
-          currentBlob: makeContentBlob() as unknown as IsomerSchema,
-          nextBlob: makeArticleBlob() as unknown as IsomerSchema,
+          currentBlob: toIsomerSchema(makeContentBlob()),
+          nextBlob: toIsomerSchema(makeArticleBlob()),
           disallowedBlocks: [],
         },
       ],
@@ -211,14 +257,12 @@ describe("buildConversionReport", () => {
           title: "Many flags",
           permalink: "many",
           currentBlobId: "b1",
-          currentBlob: makeContentBlob({}, [
-            infobarBlock,
-            infocardsBlock,
-          ]) as unknown as IsomerSchema,
-          nextBlob: makeArticleBlob({}, [
-            infobarBlock,
-            infocardsBlock,
-          ]) as unknown as IsomerSchema,
+          currentBlob: toIsomerSchema(
+            makeContentBlob({}, [infobarBlock, infocardsBlock]),
+          ),
+          nextBlob: toIsomerSchema(
+            makeArticleBlob({}, [infobarBlock, infocardsBlock]),
+          ),
           disallowedBlocks: [
             { index: 0, type: "infobar" },
             { index: 1, type: "infocards" },
@@ -247,8 +291,8 @@ describe("toFolderPlan", () => {
           title: "Page A",
           permalink: "a",
           currentBlobId: "b1",
-          currentBlob: makeContentBlob() as unknown as IsomerSchema,
-          nextBlob: makeArticleBlob() as unknown as IsomerSchema,
+          currentBlob: toIsomerSchema(makeContentBlob()),
+          nextBlob: toIsomerSchema(makeArticleBlob()),
           disallowedBlocks: [],
         },
         {
@@ -256,8 +300,8 @@ describe("toFolderPlan", () => {
           title: "Page B",
           permalink: "b",
           currentBlobId: "b2",
-          currentBlob: makeContentBlob() as unknown as IsomerSchema,
-          nextBlob: makeArticleBlob() as unknown as IsomerSchema,
+          currentBlob: toIsomerSchema(makeContentBlob()),
+          nextBlob: toIsomerSchema(makeArticleBlob()),
           disallowedBlocks: [],
         },
       ],
@@ -341,7 +385,7 @@ describe("findDisallowedBlocks", () => {
 describe("asIndexBlob", () => {
   it("returns the blob unchanged when layout is 'index'", () => {
     // Arrange
-    const blob = makeIndexBlob() as unknown as IsomerSchema
+    const blob = toIsomerSchema(makeIndexBlob())
 
     // Act
     const result = asIndexBlob(blob)
@@ -352,7 +396,7 @@ describe("asIndexBlob", () => {
 
   it("throws when layout is not 'index'", () => {
     // Arrange
-    const blob = makeContentBlob() as unknown as IsomerSchema
+    const blob = toIsomerSchema(makeContentBlob())
 
     // Act + Assert
     expect(() => asIndexBlob(blob)).toThrow(
@@ -364,7 +408,7 @@ describe("asIndexBlob", () => {
 describe("asPageBlob", () => {
   it("returns content blobs unchanged", () => {
     // Arrange
-    const blob = makeContentBlob() as unknown as IsomerSchema
+    const blob = toIsomerSchema(makeContentBlob())
 
     // Act
     const result = asPageBlob(blob)
@@ -375,7 +419,7 @@ describe("asPageBlob", () => {
 
   it("returns article blobs unchanged", () => {
     // Arrange
-    const blob = makeArticleBlob() as unknown as IsomerSchema
+    const blob = toIsomerSchema(makeArticleBlob())
 
     // Act
     const result = asPageBlob(blob)
@@ -386,7 +430,7 @@ describe("asPageBlob", () => {
 
   it("throws when layout is neither content nor article", () => {
     // Arrange
-    const blob = makeIndexBlob() as unknown as IsomerSchema
+    const blob = toIsomerSchema(makeIndexBlob())
 
     // Act + Assert
     expect(() => asPageBlob(blob)).toThrow(
@@ -398,7 +442,7 @@ describe("asPageBlob", () => {
 describe("asContentBlob", () => {
   it("returns the blob unchanged when layout is 'content'", () => {
     // Arrange
-    const blob = makeContentBlob() as unknown as IsomerSchema
+    const blob = toIsomerSchema(makeContentBlob())
 
     // Act
     const result = asContentBlob(blob)
@@ -409,7 +453,7 @@ describe("asContentBlob", () => {
 
   it("throws when layout is not 'content'", () => {
     // Arrange
-    const blob = makeIndexBlob() as unknown as IsomerSchema
+    const blob = toIsomerSchema(makeIndexBlob())
 
     // Act + Assert
     expect(() => asContentBlob(blob)).toThrow(
@@ -460,10 +504,10 @@ describe("buildCollectionIndexBlob", () => {
 
   it("empties the content array (collection pages have no body blocks)", () => {
     // Arrange
-    const current = {
-      ...makeIndexBlob({ summary: "x" }),
-      content: [proseBlock, infobarBlock],
-    } as unknown as IndexBlob
+    const current = withIndexContent(makeIndexBlob({ summary: "x" }), [
+      proseBlock,
+      infobarBlock,
+    ])
 
     // Act
     const result = asResult(buildCollectionIndexBlob(current, "Folder"))
@@ -507,13 +551,10 @@ describe("buildCollectionIndexBlob", () => {
 
   it("always emits sortOrder='date-desc'", () => {
     // Arrange — inject a different sortOrder on the source to verify it's overridden
-    const current = {
-      ...makeIndexBlob({ summary: "x" }),
-      page: {
-        ...makeIndexBlob({ summary: "x" }).page,
-        sortOrder: "date-asc",
-      },
-    } as unknown as IndexBlob
+    const current = withIndexPageSortOrder(
+      makeIndexBlob({ summary: "x" }),
+      "date-asc",
+    )
 
     // Act
     const result = asResult(buildCollectionIndexBlob(current, "Folder"))

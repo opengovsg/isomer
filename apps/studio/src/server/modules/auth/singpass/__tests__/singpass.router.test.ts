@@ -20,6 +20,20 @@ const TEST_VALID_EMAIL = "test@open.gov.sg"
 const MOCK_ORIGINAL_UUID = "2625dd66-2cbb-414b-a136-f62bb516653c"
 const MOCK_SINGPASS_UUID = "beef6054-985f-4073-ae91-cd61552e2a7d"
 
+type SingpassSessionUserId = NonNullable<
+  NonNullable<SessionData["singpass"]>["sessionState"]
+>["userId"]
+
+const asSingpassSessionUserId = (userId: string): SingpassSessionUserId => {
+  // SAFETY: singpass session fixtures use persisted user id strings from test seeds
+  return userId as SingpassSessionUserId
+}
+
+const emptyVerificationToken = () => {
+  // SAFETY: getUserProps only needs sessionState.userId; other fields are unused in these tests
+  return {} as never
+}
+
 describe("auth.singpass", () => {
   let caller: ReturnType<typeof createCaller>
   let session: ReturnType<typeof applySession>
@@ -61,9 +75,7 @@ describe("auth.singpass", () => {
 
       session.singpass = {
         sessionState: {
-          userId: "test-user-id" as NonNullable<
-            NonNullable<SessionData["singpass"]>["sessionState"]
-          >["userId"],
+          userId: asSingpassSessionUserId("test-user-id"),
           verificationToken,
           codeVerifier: "code-verifier",
           nonce: "nonce",
@@ -99,10 +111,8 @@ describe("auth.singpass", () => {
       // Arrange
       session.singpass = {
         sessionState: {
-          userId: "non-existent-user-id" as NonNullable<
-            NonNullable<SessionData["singpass"]>["sessionState"]
-          >["userId"],
-          verificationToken: {} as never,
+          userId: asSingpassSessionUserId("non-existent-user-id"),
+          verificationToken: emptyVerificationToken(),
           codeVerifier: "code-verifier",
           nonce: "nonce",
         },
@@ -127,10 +137,8 @@ describe("auth.singpass", () => {
         .executeTakeFirstOrThrow()
       session.singpass = {
         sessionState: {
-          userId: user.id as NonNullable<
-            NonNullable<SessionData["singpass"]>["sessionState"]
-          >["userId"],
-          verificationToken: {} as never,
+          userId: asSingpassSessionUserId(user.id),
+          verificationToken: emptyVerificationToken(),
           codeVerifier: "code-verifier",
           nonce: "nonce",
         },
@@ -169,10 +177,8 @@ describe("auth.singpass", () => {
       // Arrange
       session.singpass = {
         sessionState: {
-          userId: "user-id" as NonNullable<
-            NonNullable<SessionData["singpass"]>["sessionState"]
-          >["userId"],
-          verificationToken: {} as never,
+          userId: asSingpassSessionUserId("user-id"),
+          verificationToken: emptyVerificationToken(),
           codeVerifier: "code-verifier",
           nonce: "nonce",
         },
@@ -207,10 +213,8 @@ describe("auth.singpass", () => {
         .executeTakeFirstOrThrow()
       session.singpass = {
         sessionState: {
-          userId: user.id as NonNullable<
-            NonNullable<SessionData["singpass"]>["sessionState"]
-          >["userId"],
-          verificationToken: {} as never,
+          userId: asSingpassSessionUserId(user.id),
+          verificationToken: emptyVerificationToken(),
           codeVerifier: "code-verifier",
           nonce: "nonce",
         },
@@ -245,10 +249,8 @@ describe("auth.singpass", () => {
         .executeTakeFirstOrThrow()
       session.singpass = {
         sessionState: {
-          userId: user.id as NonNullable<
-            NonNullable<SessionData["singpass"]>["sessionState"]
-          >["userId"],
-          verificationToken: {} as never,
+          userId: asSingpassSessionUserId(user.id),
+          verificationToken: emptyVerificationToken(),
           codeVerifier: "code-verifier",
           nonce: "nonce",
         },
@@ -305,10 +307,8 @@ describe("auth.singpass", () => {
         .executeTakeFirstOrThrow()
       session.singpass = {
         sessionState: {
-          userId: user.id as NonNullable<
-            NonNullable<SessionData["singpass"]>["sessionState"]
-          >["userId"],
-          verificationToken: {} as never,
+          userId: asSingpassSessionUserId(user.id),
+          verificationToken: emptyVerificationToken(),
           codeVerifier: "code-verifier",
           nonce: "nonce",
         },

@@ -1,29 +1,24 @@
 import { sealData } from "iron-session"
-import { beforeEach, describe, expect, it, vi } from "vitest"
-
-// The token module seals/unseals with the shared iron password map, which is
-// derived from env.SESSION_SECRET (see modules/auth/session.ts). Pin a fixed
-// secret so the roundtrip and the cross-purpose-confusion case are
-// deterministic and independent of the real environment. The literal is
-// repeated inside the vi.mock factory below because that factory is hoisted
-// above all top-level bindings and cannot close over this const.
-const SESSION_SECRET = "test-session-secret-at-least-32-chars-long"
-
-vi.mock("~/env.mjs", () => ({
-  env: {
-    SESSION_SECRET: "test-session-secret-at-least-32-chars-long",
-  },
-}))
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest"
+import { env } from "~/env.mjs"
 
 import {
   sealAuditLogExportToken,
   unsealAuditLogExportToken,
 } from "../auditLogExportToken"
 
+// Pin a fixed secret so the roundtrip and cross-purpose-confusion cases are
+// deterministic and independent of the real environment.
+const SESSION_SECRET = "test-session-secret-at-least-32-chars-long"
+
+beforeAll(() => {
+  env.SESSION_SECRET = SESSION_SECRET
+})
+
 // The password map used everywhere (sessions AND export tokens). Sealing a
 // session-shaped blob with this same map is what the confusion test needs to
 // prove is rejected on the export side.
-const IRON_PASSWORD = { "1": SESSION_SECRET }
+const IRON_PASSWORD = { "1": env.SESSION_SECRET }
 
 describe("auditLogExportToken", () => {
   beforeEach(() => {

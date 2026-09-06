@@ -15,6 +15,7 @@ describe("settings.utils.ts", () => {
       const palette = getPalette("#00ffff")
 
       // Assert
+      // SAFETY: test fixture supplies only the fields required by the assertion under test
       const actual = passesContrastCheck(palette as Theme)
       expect(actual).toBeTruthy()
     })
@@ -30,6 +31,7 @@ describe("settings.utils.ts", () => {
       expect(palette).toHaveProperty("colors.brand.interaction.default")
       expect(palette).toHaveProperty("colors.brand.interaction.hover")
       expect(palette).toHaveProperty("colors.brand.interaction.pressed")
+      // SAFETY: test fixture supplies only the fields required by the assertion under test
       expect(passesContrastCheck(palette as Theme)).toBeTruthy()
     })
 
@@ -38,6 +40,7 @@ describe("settings.utils.ts", () => {
       const palette = getPalette("#300707")
 
       // Assert
+      // SAFETY: test fixture supplies only the fields required by the assertion under test
       expect(passesContrastCheck(palette as Theme)).toBeTruthy()
     })
 
@@ -46,6 +49,7 @@ describe("settings.utils.ts", () => {
       const palette = getPalette("#00ff00")
 
       // Assert
+      // SAFETY: test fixture supplies only the fields required by the assertion under test
       expect(passesContrastCheck(palette as Theme)).toBeTruthy()
     })
 
@@ -54,6 +58,7 @@ describe("settings.utils.ts", () => {
       const palette = getPalette("#fffbeb")
 
       // Assert
+      // SAFETY: test fixture supplies only the fields required by the assertion under test
       expect(passesContrastCheck(palette as Theme)).toBeTruthy()
     })
 
@@ -62,6 +67,7 @@ describe("settings.utils.ts", () => {
       const palette = getPalette("#f00")
 
       // Assert
+      // SAFETY: test fixture supplies only the fields required by the assertion under test
       expect(passesContrastCheck(palette as Theme)).toBeTruthy()
     })
 
@@ -70,6 +76,7 @@ describe("settings.utils.ts", () => {
       const palette = getPalette("0000ff")
 
       // Assert
+      // SAFETY: test fixture supplies only the fields required by the assertion under test
       expect(passesContrastCheck(palette as Theme)).toBeTruthy()
     })
 
@@ -91,6 +98,7 @@ describe("settings.utils.ts", () => {
       const palette = getPalette("#0")
 
       // Assert
+      // SAFETY: test fixture supplies only the fields required by the assertion under test
       expect(passesContrastCheck(palette as Theme)).toBeTruthy()
     })
   })

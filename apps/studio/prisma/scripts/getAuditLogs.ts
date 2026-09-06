@@ -174,6 +174,7 @@ const getAuditLogsForSite = async () => {
   // sound because "yyyy-MM" zero-pads the month (same pattern as
   // `getCurrentSingaporeMonth` in `~/schemas/audit`).
   // oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  // SAFETY: format with "yyyy-MM" always produces a valid IsoMonth string.
   const monthYear: IsoMonth = MONTH_YEAR
     ? MONTH_YEAR
     : (format(

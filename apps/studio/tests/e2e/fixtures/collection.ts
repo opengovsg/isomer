@@ -186,13 +186,20 @@ export const createCollectionPage = async ({
     .executeTakeFirstOrThrow()
 }
 
+const readBlobPageContent = (
+  content: PrismaJson.BlobJsonContent,
+): { page: { tagged?: string[] } } => {
+  // SAFETY: e2e fixtures only read optional tagged tags from article page blobs.
+  return content as { page: { tagged?: string[] } }
+}
+
 export const readBlobContent = async (blobId: string) => {
   const blob = await db
     .selectFrom("Blob")
     .where("id", "=", blobId)
     .select("content")
     .executeTakeFirstOrThrow()
-  return blob.content as unknown as { page: { tagged?: string[] } }
+  return readBlobPageContent(blob.content)
 }
 
 export const getRootPageId = async (siteId = getSeedSiteId()) => {

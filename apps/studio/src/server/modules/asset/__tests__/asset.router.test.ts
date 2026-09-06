@@ -14,27 +14,15 @@ import {
   setUpWhitelist,
 } from "tests/integration/helpers/seed"
 import { vi } from "vitest"
-import { deleteFile, generateSignedPutUrl, putObjectDirect } from "~/lib/s3"
+import * as s3Lib from "~/lib/s3"
 import { MAX_DELETE_FILE_KEYS } from "~/schemas/asset"
 import { createCallerFactory } from "~/server/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { assetRouter } from "../asset.router"
 
-// Mock the S3 client to prevent credential loading issues in CI
+// Spy on the S3 client to prevent credential loading issues in CI
 // Workaround as we do not really want to set up a full integration test here with S3
-vi.mock("~/lib/s3", () => ({
-  storage: {
-    send: vi.fn().mockResolvedValue({ TagSet: [] }),
-  },
-  generateSignedPutUrl: vi
-    .fn()
-    .mockResolvedValue("https://example.com/signed-url"),
-  markFileAsDeleted: vi.fn().mockResolvedValue(undefined),
-  deleteFile: vi.fn().mockResolvedValue(undefined),
-  putObjectDirect: vi.fn().mockResolvedValue(undefined),
-}))
-
 const createCaller = createCallerFactory(assetRouter)
 
 describe("asset.router", async () => {
@@ -51,10 +39,13 @@ describe("asset.router", async () => {
     await resetTables("Site", "ResourcePermission", "Resource")
     await setUpWhitelist({ email: TEST_VALID_EMAIL })
     vi.clearAllMocks()
-    vi.mocked(generateSignedPutUrl).mockResolvedValue(
+    vi.spyOn(s3Lib, "generateSignedPutUrl").mockResolvedValue(
       "https://example.com/signed-url",
     )
-    vi.mocked(putObjectDirect).mockResolvedValue(undefined)
+    vi.spyOn(s3Lib, "putObjectDirect").mockResolvedValue(undefined)
+    vi.spyOn(s3Lib, "deleteFile").mockResolvedValue(undefined)
+    vi.spyOn(s3Lib, "markFileAsDeleted").mockResolvedValue(undefined)
+    vi.spyOn(s3Lib.storage, "send").mockResolvedValue({ TagSet: [] })
   })
 
   describe("getPresignedPutUrl", () => {

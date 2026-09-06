@@ -1,13 +1,16 @@
 // @vitest-environment jsdom
 import type { UserManagementAbility } from "~/server/modules/permissions/permissions.type"
+import * as growthbook from "@growthbook/growthbook-react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import { render, screen, waitFor } from "@testing-library/react"
+import * as nextRouter from "next/router"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { UserManagementContext } from "~/features/users"
 import { SITE_ID } from "~/lib/testing/constants"
 import AuditLogExportSettingsPage from "~/pages/sites/[siteId]/settings/audit-log"
 import { buildUserManagementPermissions } from "~/server/modules/permissions/permissions.util"
 import { theme } from "~/theme"
+import { trpc } from "~/utils/trpc"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 // jsdom has no `matchMedia`; Chakra's `FullscreenSpinner` (rendered on the
@@ -28,45 +31,46 @@ Object.defineProperty(window, "matchMedia", {
 
 const replace = vi.fn()
 
-vi.mock("next/router", () => ({
-  useRouter: () => ({
-    query: { siteId: String(SITE_ID) },
-    replace,
-  }),
-}))
-
-// The page is additionally gated on the `is-audit-log-enabled` GrowthBook
-// flag, and defers to `gb.ready` so a slow flag fetch never bounces an admin.
-// Drive both per-test; `useFeatureValue` mirrors the real hook's behaviour of
-// returning the fallback until features are loaded.
 let isGbReady = true
 let isAuditLogFlagOn = true
-vi.mock("@growthbook/growthbook-react", () => ({
-  useGrowthBook: () => ({ ready: isGbReady }),
-  useFeatureValue: (_key: string, fallback: boolean) =>
-    isGbReady ? isAuditLogFlagOn : fallback,
-}))
-
-// The page reads `getRolesFor` only for its loading signal; the ability itself
-// comes from `UserManagementContext`. Drive `isPending` per-test.
 let isRolesPending = false
-vi.mock("~/utils/trpc", () => ({
-  trpc: {
-    resource: {
-      getRolesFor: {
-        useQuery: () => ({ isPending: isRolesPending }),
-      },
-    },
-    audit: {
-      getExportWindow: {
-        useQuery: () => ({ data: { maxMonths: 12 } }),
-      },
-      createExportRequest: {
-        useMutation: () => ({ mutate: vi.fn(), isPending: false }),
-      },
-    },
-  },
-}))
+
+beforeEach(() => {
+  replace.mockClear()
+  isRolesPending = false
+  isGbReady = true
+  isAuditLogFlagOn = true
+
+  // SAFETY: test stub returns only the fields the component reads on render
+  vi.spyOn(nextRouter, "useRouter").mockReturnValue({
+    query: { siteId: String(SITE_ID) },
+    replace,
+  } as ReturnType<typeof nextRouter.useRouter>)
+
+  vi.spyOn(growthbook, "useGrowthBook").mockImplementation(() => ({
+    ready: isGbReady,
+  }))
+
+  vi.spyOn(growthbook, "useFeatureValue").mockImplementation(
+    (_key, fallback) => (isGbReady ? isAuditLogFlagOn : fallback),
+  )
+
+  // SAFETY: test stub returns only the fields the component reads on render
+  vi.spyOn(trpc.resource.getRolesFor, "useQuery").mockReturnValue({
+    isPending: isRolesPending,
+  } as ReturnType<typeof trpc.resource.getRolesFor.useQuery>)
+
+  // SAFETY: test stub returns only the fields the component reads on render
+  vi.spyOn(trpc.audit.getExportWindow, "useQuery").mockReturnValue({
+    data: { maxMonths: 12 },
+  } as ReturnType<typeof trpc.audit.getExportWindow.useQuery>)
+
+  // SAFETY: test stub returns only the fields the component reads on render
+  vi.spyOn(trpc.audit.createExportRequest, "useMutation").mockReturnValue({
+    mutate: vi.fn(),
+    isPending: false,
+  } as ReturnType<typeof trpc.audit.createExportRequest.useMutation>)
+})
 
 const adminAbility = buildUserManagementPermissions([{ role: RoleType.Admin }])
 const editorAbility = buildUserManagementPermissions([
@@ -83,13 +87,6 @@ const renderWith = (ability: UserManagementAbility) =>
   )
 
 describe("AuditLogExportSettingsPage", () => {
-  beforeEach(() => {
-    replace.mockClear()
-    isRolesPending = false
-    isGbReady = true
-    isAuditLogFlagOn = true
-  })
-
   it("renders the export section for admins", () => {
     // Arrange / Act
     renderWith(adminAbility)

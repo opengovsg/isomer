@@ -26,6 +26,7 @@ const siteListQuery = ({
       {
         id: 1,
         name: "Ministry of Trade and Industry",
+        // SAFETY: MSW fixture matches SiteJsonConfig fields used in Storybook/tests.
         config: {
           theme: "isomer-next",
           siteName: "MTI",
@@ -39,6 +40,7 @@ const siteListQuery = ({
       {
         id: 2,
         name: "Having a really long name is cool i guess",
+        // SAFETY: MSW fixture matches SiteJsonConfig fields used in Storybook/tests.
         config: {
           theme: "isomer-next",
           siteName: "MTI",
@@ -52,6 +54,7 @@ const siteListQuery = ({
       {
         id: 3,
         name: "But not if it's too long then nobody can read your name anyway so why even bother",
+        // SAFETY: MSW fixture matches SiteJsonConfig fields used in Storybook/tests.
         config: {
           theme: "isomer-next",
           siteName: "MTI",
@@ -82,6 +85,7 @@ export const sitesHandlers = {
   getTheme: {
     default: () => {
       return trpcMsw.site.getTheme.query(() => {
+        // SAFETY: MSW fixture matches SiteThemeJson fields used in Storybook/tests.
         return {
           colors: {
             brand: {
@@ -105,6 +109,7 @@ export const sitesHandlers = {
   getConfig: {
     default: () => {
       return trpcMsw.site.getConfig.query(() => {
+        // SAFETY: MSW fixture matches SiteJsonConfig fields used in Storybook/tests.
         return {
           theme: "isomer-next",
           siteName: "Ministry of Test and Industry",
@@ -118,6 +123,7 @@ export const sitesHandlers = {
     },
     withFavicon: () => {
       return trpcMsw.site.getConfig.query(() => {
+        // SAFETY: MSW fixture matches SiteJsonConfig fields used in Storybook/tests.
         return {
           theme: "isomer-next",
           siteName: "Ministry of Test and Industry",
@@ -134,6 +140,7 @@ export const sitesHandlers = {
   getFooter: {
     default: () => {
       return trpcMsw.site.getFooter.query(() => {
+        // SAFETY: MSW fixture matches FooterJsonContent fields used in Storybook/tests.
         return {
           id: 1,
           siteId: 1,
@@ -178,6 +185,7 @@ export const sitesHandlers = {
   getNavbar: {
     default: () => {
       return trpcMsw.site.getNavbar.query(() => {
+        // SAFETY: MSW fixture matches NavbarJsonContent fields used in Storybook/tests.
         return {
           id: 1,
           siteId: 1,
@@ -232,6 +240,7 @@ export const sitesHandlers = {
     },
     withUtilityLinks: () => {
       return trpcMsw.site.getNavbar.query(() => {
+        // SAFETY: MSW fixture matches NavbarJsonContent fields used in Storybook/tests.
         return {
           id: 1,
           siteId: 1,
@@ -265,6 +274,7 @@ export const sitesHandlers = {
     },
     withCTA: () => {
       return trpcMsw.site.getNavbar.query(() => {
+        // SAFETY: MSW fixture matches NavbarJsonContent fields used in Storybook/tests.
         return {
           id: 1,
           siteId: 1,

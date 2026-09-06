@@ -4,13 +4,12 @@ import { AbilityProvider } from "@casl/react"
 import { render, screen } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 import { Can } from "~/features/permissions"
+import * as trpcUtils from "~/utils/trpc"
 
-// `~/features/permissions` re-exports `PermissionsContext.tsx`, which imports
-// `~/utils/trpc` at module scope. That module reads `env.mjs`, which reads
-// `process.env` directly — fine under Node, but `process` doesn't exist under
-// Vitest Browser Mode's real-browser runtime. Stub it out; this test never
-// calls a trpc procedure.
-vi.mock("~/utils/trpc", () => ({ trpc: {} }))
+vi.spyOn(trpcUtils, "trpc").mockReturnValue(
+  // SAFETY: test never calls tRPC; stub satisfies PermissionsContext module load
+  {} as typeof trpcUtils.trpc,
+)
 
 // These tests lock the @casl/react <Can> contract that our permission gates rely
 // on. @casl/react v7 changed the render-prop from a positional boolean
@@ -40,7 +39,6 @@ describe("<Can> render-prop contract", () => {
       </Can>,
     )
 
-    expect(typeof received).toBe("object")
     expect(received).toMatchObject({ isAllowed: true })
   })
 

@@ -3,11 +3,14 @@ import type { PropsWithChildren } from "react"
 import { act, render, renderHook } from "@testing-library/react"
 import { createStore, Provider } from "jotai"
 import { useEffect } from "react"
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { beforeEach, afterEach, describe, expect, it, vi } from "vitest"
 import {
   EditorDrawerProvider,
   useEditorDrawerContext,
 } from "~/contexts/EditorDrawerContext"
+import { env } from "~/env.mjs"
+import * as intercom from "~/lib/intercom"
+import * as nextRouter from "next/router"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { hasContentEditAtom } from "../atoms"
@@ -21,29 +24,22 @@ import {
   useLeftEditorSurveyTracker,
 } from "../hooks/useContentEditSurvey"
 
-const trackEventMock = vi.hoisted(() => vi.fn())
-vi.mock("@intercom/messenger-js-sdk", () => ({ trackEvent: trackEventMock }))
+const trackEventMock = vi.fn()
+const routeChangeStartHandlers: (() => void)[] = []
+let originalIntercomAppId: string | undefined
 
-const mockEnv = vi.hoisted<{
-  env: { NEXT_PUBLIC_INTERCOM_APP_ID: string | undefined }
-}>(() => ({
-  env: { NEXT_PUBLIC_INTERCOM_APP_ID: "test-app-id" },
-}))
-vi.mock("~/env.mjs", () => mockEnv)
+vi.spyOn(intercom, "trackEvent").mockImplementation(trackEventMock)
 
-const routeChangeStartHandlers = vi.hoisted<(() => void)[]>(() => [])
-vi.mock("next/router", () => ({
-  useRouter: () => ({
-    events: {
-      on: (_event: string, handler: () => void) => {
-        routeChangeStartHandlers.push(handler)
-      },
-      off: (_event: string, handler: () => void) => {
-        const index = routeChangeStartHandlers.indexOf(handler)
-        if (index !== -1) routeChangeStartHandlers.splice(index, 1)
-      },
+vi.spyOn(nextRouter, "useRouter").mockImplementation(() => ({
+  events: {
+    on: (_event: string, handler: () => void) => {
+      routeChangeStartHandlers.push(handler)
     },
-  }),
+    off: (_event: string, handler: () => void) => {
+      const index = routeChangeStartHandlers.indexOf(handler)
+      if (index !== -1) routeChangeStartHandlers.splice(index, 1)
+    },
+  },
 }))
 
 const BASE_PAGE: IsomerSchema = {
@@ -60,9 +56,8 @@ const jotaiWrapper = (store: ReturnType<typeof createStore>) => {
   return Wrapper
 }
 
-const drawerContextRef: {
-  current: ReturnType<typeof useEditorDrawerContext> | null
-} = { current: null }
+const drawerContextRef: { current: ReturnType<typeof useEditorDrawerContext> | null } =
+  { current: null }
 
 const TrackerHarness = () => {
   const drawerContext = useEditorDrawerContext()
@@ -92,9 +87,14 @@ const renderTracker = (store: ReturnType<typeof createStore>) =>
 
 beforeEach(() => {
   trackEventMock.mockClear()
-  mockEnv.env.NEXT_PUBLIC_INTERCOM_APP_ID = "test-app-id"
+  originalIntercomAppId = env.NEXT_PUBLIC_INTERCOM_APP_ID
+  env.NEXT_PUBLIC_INTERCOM_APP_ID = "test-app-id"
   routeChangeStartHandlers.length = 0
   drawerContextRef.current = null
+})
+
+afterEach(() => {
+  env.NEXT_PUBLIC_INTERCOM_APP_ID = originalIntercomAppId
 })
 
 describe("useFireContentEditSurveyEvent", () => {
@@ -148,7 +148,7 @@ describe("useFireContentEditSurveyEvent", () => {
 
   it("resets the flag without firing when NEXT_PUBLIC_INTERCOM_APP_ID is unset", () => {
     // Arrange
-    mockEnv.env.NEXT_PUBLIC_INTERCOM_APP_ID = undefined
+    env.NEXT_PUBLIC_INTERCOM_APP_ID = undefined
     const store = createStore()
     store.set(hasContentEditAtom, true)
     const { result } = renderHook(() => useFireContentEditSurveyEvent(), {

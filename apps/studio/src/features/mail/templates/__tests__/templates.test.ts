@@ -55,6 +55,7 @@ describe("invitationTemplate", () => {
     expect(() =>
       templates.invitation({
         ...mockData,
+        // SAFETY: test fixture supplies only the fields required by the assertion under test
         role: "InvalidRole" as RoleType,
       }),
     ).toThrow("Unknown role. Please check the role type.")

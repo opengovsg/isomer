@@ -15,6 +15,7 @@ import {
   buildConversionReport,
   toFolderPlan,
   type ConversionPlan,
+  type ConversionReportEntry,
   type FolderPlan,
   type PagePlan,
 } from "./helpers"
@@ -238,7 +239,7 @@ export const resourcePlanFileName = (resourceId: string) =>
 
 const writeJson = (
   fileName: string,
-  data: unknown,
+  data: ConversionPlan | FolderPlan | PagePlan | ConversionReportEntry[],
   baseDir: string = defaultOutDir(),
 ) => {
   mkdirSync(baseDir, { recursive: true })
@@ -270,12 +271,17 @@ export const loadConversionPlan = (
   baseDir: string = defaultOutDir(),
 ): ConversionPlan => {
   const folderPath = join(baseDir, folderPlanFileName(folderId))
-  const folderPlan = JSON.parse(readFileSync(folderPath, "utf-8")) as FolderPlan
+  // SAFETY: plan files are written by writePlanFiles using the same FolderPlan shape.
+  const folderPlan = JSON.parse(
+    readFileSync(folderPath, "utf-8"),
+  ) as FolderPlan
 
-  const readResource = (resourceId: string): PagePlan =>
-    JSON.parse(
+  const readResource = (resourceId: string): PagePlan => {
+    // SAFETY: resource plan files are written by writePlanFiles using PagePlan.
+    return JSON.parse(
       readFileSync(join(baseDir, resourcePlanFileName(resourceId)), "utf-8"),
     ) as PagePlan
+  }
 
   return {
     folder: {
@@ -294,6 +300,7 @@ export const loadConversionPlanFromPath = (
   path: string,
   baseDir: string = defaultOutDir(),
 ): ConversionPlan => {
+  // SAFETY: path points to a folder plan file written by writePlanFiles.
   const folderPlan = JSON.parse(readFileSync(path, "utf-8")) as FolderPlan
   return loadConversionPlan(folderPlan.id, baseDir)
 }
