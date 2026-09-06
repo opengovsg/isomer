@@ -12,7 +12,9 @@ import { ExportAccessLogsModal } from "../ExportAccessLogsModal"
 const SITE_ID = 42
 
 // The shared export hook fires a PostHog capture on success.
-vi.mock("posthog-js", () => ({ default: { capture: vi.fn() } }))
+vi.mock("posthog-js", () => ({
+  default: { capture: vi.fn() },
+}))
 
 const mutate = vi.fn()
 let capturedOptions:
@@ -87,7 +89,7 @@ describe("ExportAccessLogsModal", () => {
     fireEvent.click(screen.getByRole("button", { name: "Export logs" }))
 
     // Assert
-    await waitFor(() => expect(mutate).toHaveBeenCalledTimes(1))
+    await waitFor(() => expect(mutate).toHaveBeenCalledOnce())
     expect(mutate).toHaveBeenCalledWith({
       scope: "allSites",
       siteId: SITE_ID,
@@ -105,7 +107,7 @@ describe("ExportAccessLogsModal", () => {
     fireEvent.click(screen.getByRole("button", { name: "Export logs" }))
 
     // Assert
-    await waitFor(() => expect(mutate).toHaveBeenCalledTimes(1))
+    await waitFor(() => expect(mutate).toHaveBeenCalledOnce())
     expect(mutate).toHaveBeenCalledWith(
       expect.objectContaining({ scope: "site" }),
     )
@@ -121,7 +123,7 @@ describe("ExportAccessLogsModal", () => {
     capturedOptions?.onSuccess?.(undefined, mutate.mock.lastCall?.[0])
 
     // Assert
-    expect(store.get(exportAccessLogsModalAtom)).toEqual({
+    expect(store.get(exportAccessLogsModalAtom)).toStrictEqual({
       siteId: 0,
       isOpen: false,
     })
@@ -135,7 +137,7 @@ describe("ExportAccessLogsModal", () => {
     fireEvent.click(screen.getByRole("button", { name: /close/i }))
 
     // Assert
-    expect(store.get(exportAccessLogsModalAtom)).toEqual({
+    expect(store.get(exportAccessLogsModalAtom)).toStrictEqual({
       siteId: 0,
       isOpen: false,
     })

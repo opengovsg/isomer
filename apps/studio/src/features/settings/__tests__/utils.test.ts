@@ -9,14 +9,14 @@ import {
 } from "../utils"
 
 describe("settings.utils.ts", () => {
-  describe("getPalette", () => {
+  describe("palette from hex color", () => {
     it("should generate a theme palette that passes contrast for #00ffff", () => {
       // Act
       const palette = getPalette("#00ffff")
 
       // Assert
       const actual = passesContrastCheck(palette as Theme)
-      expect(actual).toBeTruthy()
+      expect(actual).toBe(true)
     })
 
     it("should generate a theme palette for bright colors like red", () => {
@@ -24,13 +24,15 @@ describe("settings.utils.ts", () => {
       const palette = getPalette("#ff0000")
 
       // Assert
-      expect(palette).toHaveProperty("colors.brand.canvas.default")
-      expect(palette).toHaveProperty("colors.brand.canvas.alt")
-      expect(palette).toHaveProperty("colors.brand.canvas.inverse")
-      expect(palette).toHaveProperty("colors.brand.interaction.default")
-      expect(palette).toHaveProperty("colors.brand.interaction.hover")
-      expect(palette).toHaveProperty("colors.brand.interaction.pressed")
-      expect(passesContrastCheck(palette as Theme)).toBeTruthy()
+      expect(palette).toMatchObject({
+        "colors.brand.canvas.default": expect.anything(),
+        "colors.brand.canvas.alt": expect.anything(),
+        "colors.brand.canvas.inverse": expect.anything(),
+        "colors.brand.interaction.default": expect.anything(),
+        "colors.brand.interaction.hover": expect.anything(),
+        "colors.brand.interaction.pressed": expect.anything(),
+      })
+      expect(passesContrastCheck(palette as Theme)).toBe(true)
     })
 
     it("should generate a theme palette for dark colors like dark brown", () => {
@@ -38,7 +40,7 @@ describe("settings.utils.ts", () => {
       const palette = getPalette("#300707")
 
       // Assert
-      expect(passesContrastCheck(palette as Theme)).toBeTruthy()
+      expect(passesContrastCheck(palette as Theme)).toBe(true)
     })
 
     it("should generate a theme palette for medium colors like green", () => {
@@ -46,7 +48,7 @@ describe("settings.utils.ts", () => {
       const palette = getPalette("#00ff00")
 
       // Assert
-      expect(passesContrastCheck(palette as Theme)).toBeTruthy()
+      expect(passesContrastCheck(palette as Theme)).toBe(true)
     })
 
     it("should generate a theme palette for light colors like baby pink", () => {
@@ -54,7 +56,7 @@ describe("settings.utils.ts", () => {
       const palette = getPalette("#fffbeb")
 
       // Assert
-      expect(passesContrastCheck(palette as Theme)).toBeTruthy()
+      expect(passesContrastCheck(palette as Theme)).toBe(true)
     })
 
     it("should handle 3-character hex colors", () => {
@@ -62,7 +64,7 @@ describe("settings.utils.ts", () => {
       const palette = getPalette("#f00")
 
       // Assert
-      expect(passesContrastCheck(palette as Theme)).toBeTruthy()
+      expect(passesContrastCheck(palette as Theme)).toBe(true)
     })
 
     it("should handle hex colors without # prefix", () => {
@@ -70,7 +72,7 @@ describe("settings.utils.ts", () => {
       const palette = getPalette("0000ff")
 
       // Assert
-      expect(passesContrastCheck(palette as Theme)).toBeTruthy()
+      expect(passesContrastCheck(palette as Theme)).toBe(true)
     })
 
     it("should generate different canvas and interaction colors", () => {
@@ -91,11 +93,11 @@ describe("settings.utils.ts", () => {
       const palette = getPalette("#0")
 
       // Assert
-      expect(passesContrastCheck(palette as Theme)).toBeTruthy()
+      expect(passesContrastCheck(palette as Theme)).toBe(true)
     })
   })
 
-  describe("passesContrastCheck", () => {
+  describe(passesContrastCheck, () => {
     it("should pass for a theme with sufficient contrast ratios", () => {
       // Arrange - A theme that should pass
       const theme: Theme = {
@@ -111,7 +113,7 @@ describe("settings.utils.ts", () => {
       const result = passesContrastCheck(theme)
 
       // Assert
-      expect(result).toBeTruthy()
+      expect(result).toBe(true)
     })
 
     it("should fail for a theme with insufficient contrast on light backgrounds", () => {
@@ -129,7 +131,7 @@ describe("settings.utils.ts", () => {
       const result = passesContrastCheck(theme)
 
       // Assert
-      expect(result).toBeFalsy()
+      expect(result).toBe(false)
     })
 
     it("should fail for a theme with insufficient contrast on dark backgrounds", () => {
@@ -147,7 +149,7 @@ describe("settings.utils.ts", () => {
       const result = passesContrastCheck(theme)
 
       // Assert
-      expect(result).toBeFalsy()
+      expect(result).toBe(false)
     })
 
     it("should check contrast for all light background colors", () => {
@@ -165,7 +167,7 @@ describe("settings.utils.ts", () => {
       const result = passesContrastCheck(theme)
 
       // Assert - Fails because we have black on white in canvas.alt
-      expect(result).toBeFalsy()
+      expect(result).toBe(false)
     })
 
     it("should check contrast for all dark background colors", () => {
@@ -183,7 +185,7 @@ describe("settings.utils.ts", () => {
       const result = passesContrastCheck(theme)
 
       // Assert
-      expect(result).toBeFalsy()
+      expect(result).toBe(false)
     })
 
     it("should validate all required theme properties are checked", () => {
@@ -201,7 +203,7 @@ describe("settings.utils.ts", () => {
       const result = passesContrastCheck(validTheme)
 
       // Assert
-      expect(result).toBeTruthy()
+      expect(result).toBe(true)
 
       // Verify background colors constants are being used
       expect(BACKGROUND_COLOURS.light).toHaveLength(2)
@@ -224,7 +226,7 @@ describe("settings.utils.ts", () => {
       const result = passesContrastCheck(theme)
 
       // Assert - Should pass with colors at or above 4.5:1
-      expect(result).toBeTruthy()
+      expect(result).toBe(true)
     })
 
     it("should use correct text colors for contrast checking", () => {
@@ -243,7 +245,7 @@ describe("settings.utils.ts", () => {
       }
 
       const result = passesContrastCheck(theme)
-      expect(result).toBeTruthy()
+      expect(result).toBe(true)
     })
   })
 })

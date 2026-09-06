@@ -40,7 +40,7 @@ describe("<Can> render-prop contract", () => {
       </Can>,
     )
 
-    expect(typeof received).toBe("object")
+    expect(received).toBeTypeOf("object")
     expect(received).toMatchObject({ isAllowed: true })
   })
 

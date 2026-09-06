@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
+import { describe, expect, it } from "vitest"
 
 import {
   BULK_REDIRECT_CSV_ERROR_HEADER,
@@ -24,7 +25,7 @@ describe("parseRedirectCsv", () => {
 
     // Assert
     expect(result.fileError).toBeUndefined()
-    expect(result.rows).toEqual([
+    expect(result.rows).toStrictEqual([
       { rowNumber: 2, source: "/old", destination: "/new", malformed: false },
       {
         rowNumber: 3,
@@ -44,7 +45,7 @@ describe("parseRedirectCsv", () => {
     const result = parseRedirectCsv(csv)
 
     // Assert
-    expect(result.rows).toEqual([
+    expect(result.rows).toStrictEqual([
       { rowNumber: 3, source: "/old", destination: "/new", malformed: false },
     ])
   })
@@ -84,7 +85,7 @@ describe("parseRedirectCsv", () => {
     const result = parseRedirectCsv(csv)
 
     // Assert
-    expect(result.rows).toEqual([
+    expect(result.rows).toStrictEqual([
       { rowNumber: 2, source: "/old", destination: "/new", malformed: false },
     ])
   })
@@ -162,7 +163,7 @@ describe("buildRedirectErrorsCsv", () => {
     expect(lines[0]).toContain(BULK_REDIRECT_CSV_ERROR_HEADER)
     expect(lines[1]).toContain("Enter a valid URL.")
     expect(csv).toContain(BULK_REDIRECT_CSV_NO_ERROR)
-    expect(reparsed.rows).toEqual([
+    expect(reparsed.rows).toStrictEqual([
       {
         rowNumber: 2,
         source: "/bad",

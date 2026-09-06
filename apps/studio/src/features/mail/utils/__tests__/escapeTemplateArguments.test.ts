@@ -1,3 +1,5 @@
+import { vi, describe, expect, it } from "vitest"
+
 import type { EmailTemplate } from "../../templates/types"
 import { escapeTemplateArguments } from "../escapeTemplateArguments"
 
@@ -34,7 +36,7 @@ describe("escapeTemplateArguments", () => {
       count: 2,
       scheduledAt: input.scheduledAt,
     })
-    expect(result).toEqual({ subject: escaped, body: escaped })
+    expect(result).toStrictEqual({ subject: escaped, body: escaped })
     expect(input.title).toBe(malicious)
   })
 
@@ -52,7 +54,9 @@ describe("escapeTemplateArguments", () => {
     }
 
     // Act / Assert
-    expect(() => wrapped.alert(input)).toThrow()
+    expect(() => wrapped.alert(input)).toThrow(
+      "Cannot escape a non-plain object",
+    )
     expect(template).not.toHaveBeenCalled()
   })
 

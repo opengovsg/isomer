@@ -9,6 +9,7 @@ import {
   createMockRequest,
 } from "tests/integration/helpers/iron-session"
 import { setupUser } from "tests/integration/helpers/seed"
+import { beforeEach, describe, expect, it } from "vitest"
 import { createCallerFactory } from "~/server/trpc"
 
 import { meRouter } from "../me.router"
@@ -48,7 +49,7 @@ describe("me.router", async () => {
       const result = await caller.get()
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         ...pick(user, ["id", "email", "name", "phone", "createdAt"]),
       })
     })

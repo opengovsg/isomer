@@ -11,6 +11,7 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
+import { beforeEach, vi, afterEach, describe, expect, it } from "vitest"
 import { BULK_REDIRECT_CSV_HEADERS } from "~/lib/redirectCsv"
 import { createCallerFactory } from "~/server/trpc"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
@@ -111,7 +112,7 @@ describe("redirect.router bulk upload", async () => {
 
       // Assert
       expect(result.fileError).not.toBeNull()
-      expect(result.rows).toEqual([])
+      expect(result.rows).toStrictEqual([])
     })
 
     it("flags a malformed row with the shared schema message", async () => {
@@ -123,7 +124,7 @@ describe("redirect.router bulk upload", async () => {
 
       // Assert
       expect(result.errorCount).toBe(1)
-      expect(errorFor(result, "https://evil.com")).toBeTruthy()
+      expect(errorFor(result, "https://evil.com")).not.toBeNull()
     })
 
     it("flags a source listed more than once in the file", async () => {
@@ -155,7 +156,7 @@ describe("redirect.router bulk upload", async () => {
       })
 
       // Assert
-      expect(errorFor(result, "/taken")).toBeTruthy()
+      expect(errorFor(result, "/taken")).not.toBeNull()
     })
 
     it("flags a source that shadows a live published page", async () => {
@@ -169,7 +170,7 @@ describe("redirect.router bulk upload", async () => {
       })
 
       // Assert
-      expect(errorFor(result, "/shadowed")).toBeTruthy()
+      expect(errorFor(result, "/shadowed")).not.toBeNull()
     })
 
     it("flags a wildcard source whose prefix is itself a live published page", async () => {
@@ -183,7 +184,7 @@ describe("redirect.router bulk upload", async () => {
       })
 
       // Assert
-      expect(errorFor(result, "/news/*")).toBeTruthy()
+      expect(errorFor(result, "/news/*")).not.toBeNull()
     })
 
     it("flags a wildcard source whose prefix has a live page nested under it", async () => {
@@ -211,7 +212,7 @@ describe("redirect.router bulk upload", async () => {
       })
 
       // Assert
-      expect(errorFor(result, "/news/*")).toBeTruthy()
+      expect(errorFor(result, "/news/*")).not.toBeNull()
     })
 
     it("does not flag a wildcard source when nothing lives under its prefix", async () => {
@@ -237,8 +238,8 @@ describe("redirect.router bulk upload", async () => {
 
       // Assert: both rows are flagged as loops.
       expect(result.errorCount).toBe(2)
-      expect(errorFor(result, "/a")).toBeTruthy()
-      expect(errorFor(result, "/b")).toBeTruthy()
+      expect(errorFor(result, "/a")).not.toBeNull()
+      expect(errorFor(result, "/b")).not.toBeNull()
     })
 
     it("flags a loop formed against an existing table redirect", async () => {
@@ -255,7 +256,7 @@ describe("redirect.router bulk upload", async () => {
       })
 
       // Assert
-      expect(errorFor(result, "/a")).toBeTruthy()
+      expect(errorFor(result, "/a")).not.toBeNull()
     })
 
     it("flags a loop even when the destination carries a query string", async () => {
@@ -292,8 +293,8 @@ describe("redirect.router bulk upload", async () => {
 
       // Assert: the whole cycle is rejected, not silently published.
       expect(result.errorCount).toBe(size)
-      expect(errorFor(result, "/n0")).toBeTruthy()
-      expect(errorFor(result, "/n11")).toBeTruthy()
+      expect(errorFor(result, "/n0")).not.toBeNull()
+      expect(errorFor(result, "/n11")).not.toBeNull()
     })
 
     it("flags only the cycle, not a source that merely points into a loop", async () => {
@@ -313,9 +314,9 @@ describe("redirect.router bulk upload", async () => {
 
       // Assert
       expect(errorFor(result, "/a")).toBeNull()
-      expect(errorFor(result, "/b")).toBeTruthy()
-      expect(errorFor(result, "/c")).toBeTruthy()
-      expect(errorFor(result, "/d")).toBeTruthy()
+      expect(errorFor(result, "/b")).not.toBeNull()
+      expect(errorFor(result, "/c")).not.toBeNull()
+      expect(errorFor(result, "/d")).not.toBeNull()
       expect(result.errorCount).toBe(3)
     })
 
@@ -342,8 +343,8 @@ describe("redirect.router bulk upload", async () => {
       })
 
       // Assert
-      expect(errorFor(result, "/a")).toBeTruthy()
-      expect(errorFor(result, "/b")).toBeTruthy()
+      expect(errorFor(result, "/a")).not.toBeNull()
+      expect(errorFor(result, "/b")).not.toBeNull()
     })
 
     it("flags a row split by an unquoted comma in the destination", async () => {
@@ -402,9 +403,8 @@ describe("redirect.router bulk upload", async () => {
 
       // Assert
       expect(result.ok).toBe(false)
-      if (!result.ok) {
-        expect(result.validation.errorCount).toBe(1)
-      }
+      if (result.ok) throw new Error("Expected bulk create to fail")
+      expect(result.validation.errorCount).toBe(1)
       expect(publishSpy).not.toHaveBeenCalled()
     })
 
@@ -422,8 +422,8 @@ describe("redirect.router bulk upload", async () => {
       })
 
       // Assert
-      expect(result).toEqual({ ok: true, publishedCount: 2 })
-      expect(publishSpy).toHaveBeenCalledTimes(1)
+      expect(result).toStrictEqual({ ok: true, publishedCount: 2 })
+      expect(publishSpy).toHaveBeenCalledOnce()
       const live = await db
         .selectFrom("Redirect")
         .select(["source", "destination"])
@@ -431,7 +431,7 @@ describe("redirect.router bulk upload", async () => {
         .where("deletedAt", "is", null)
         .orderBy("source")
         .execute()
-      expect(live).toEqual([
+      expect(live).toStrictEqual([
         { source: "/old-one", destination: "/new-one" },
         { source: "/old-two", destination: "https://example.gov.sg" },
       ])
@@ -454,8 +454,8 @@ describe("redirect.router bulk upload", async () => {
       })
 
       // Assert
-      expect(result).toEqual({ ok: true, publishedCount: 1 })
-      expect(publishSpy).toHaveBeenCalledTimes(1)
+      expect(result).toStrictEqual({ ok: true, publishedCount: 1 })
+      expect(publishSpy).toHaveBeenCalledOnce()
     })
 
     it("revives a soft-deleted redirect for a source in the batch", async () => {
@@ -477,7 +477,7 @@ describe("redirect.router bulk upload", async () => {
       })
 
       // Assert
-      expect(result).toEqual({ ok: true, publishedCount: 1 })
+      expect(result).toStrictEqual({ ok: true, publishedCount: 1 })
       const revived = await db
         .selectFrom("Redirect")
         .selectAll()
@@ -521,9 +521,7 @@ describe("redirect.router bulk upload", async () => {
       vi.spyOn(
         resourceService,
         "getResourceIdsByPermalinks",
-      ).mockImplementationOnce(() =>
-        Promise.resolve(new Map<string, number | null>()),
-      )
+      ).mockResolvedValueOnce(new Map<string, number | null>())
 
       // Act
       const result = await caller.bulkCreate({
@@ -534,9 +532,8 @@ describe("redirect.router bulk upload", async () => {
       // Assert: the batch aborts instead of committing a shadowing redirect, and
       // the offending row comes back flagged so the modal can show it.
       expect(result.ok).toBe(false)
-      if (!result.ok) {
-        expect(errorFor(result.validation, "/shadowed")).toBeTruthy()
-      }
+      if (result.ok) throw new Error("Expected bulk create to fail")
+      expect(errorFor(result.validation, "/shadowed")).not.toBeNull()
       expect(publishSpy).not.toHaveBeenCalled()
       const live = await db
         .selectFrom("Redirect")

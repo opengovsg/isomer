@@ -7,11 +7,17 @@
   "exports": {
     ".": "./index.ts",
     "./base": "./base.ts",
-    "./presets": "./presets.ts"
+    "./presets": "./presets.ts",
+    "./vitest": "./vitest.ts"
   },
   "dependencies": {
     "oxlint": "catalog:",
     "oxlint-tsgolint": "catalog:",
     "ultracite": "catalog:"
+  },
+  "devDependencies": {
+    "@isomer/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
   }
 }

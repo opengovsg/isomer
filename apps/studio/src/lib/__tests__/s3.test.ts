@@ -7,9 +7,16 @@ import {
 } from "@aws-sdk/client-s3"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
+type S3Command =
+  | CopyObjectCommand
+  | GetObjectTaggingCommand
+  | HeadObjectCommand
+  | PutObjectRetentionCommand
+  | PutObjectTaggingCommand
+
 // Mock the S3 client so we can observe which commands are dispatched without
 // hitting AWS. We keep the real command classes so we can assert on instances.
-const sendMock = vi.fn()
+const sendMock = vi.fn<(command: S3Command) => Promise<unknown>>()
 vi.mock("@aws-sdk/client-s3", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@aws-sdk/client-s3")>()
   return {
@@ -69,7 +76,7 @@ describe("deleteFile", () => {
     await deleteFile({ Key: "1/uuid/file.png", Bucket: "test-bucket" })
 
     // Assert: only the cheap Get ran, no Put
-    expect(sendMock).toHaveBeenCalledTimes(1)
+    expect(sendMock).toHaveBeenCalledOnce()
     expect(sendMock.mock.calls[0]?.[0]).toBeInstanceOf(GetObjectTaggingCommand)
     expect(
       sendMock.mock.calls.some(
@@ -183,7 +190,7 @@ describe("setAssetAsPublished", () => {
 
     // Assert: the self-copy replaces the disposition, preserves the object's
     // content type + metadata, and runs before the (irreversible) lock.
-    const commands = sendMock.mock.calls.map(([command]) => command as unknown)
+    const commands = sendMock.mock.calls.map(([command]) => command)
     expect(commands[1]).toBeInstanceOf(HeadObjectCommand)
     const copyIndex = commands.findIndex(
       (command) => command instanceof CopyObjectCommand,
@@ -221,7 +228,7 @@ describe("setAssetAsPublished", () => {
     // Assert: each path segment is encoded, but the Key itself stays raw
     // (the SDK encodes Key params on its own).
     const copyCommand = sendMock.mock.calls
-      .map(([command]) => command as unknown)
+      .map(([command]) => command)
       .find((command) => command instanceof CopyObjectCommand)
     expect(copyCommand?.input).toMatchObject({
       CopySource:
@@ -248,7 +255,7 @@ describe("setAssetAsPublished", () => {
 
     // Assert
     const copyCommand = sendMock.mock.calls
-      .map(([command]) => command as unknown)
+      .map(([command]) => command)
       .find((command) => command instanceof CopyObjectCommand)
     expect(copyCommand).toBeDefined()
     expect(copyCommand?.input).not.toHaveProperty("ContentType")
@@ -273,7 +280,7 @@ describe("setAssetAsPublished", () => {
     })
 
     // Assert: no copy issued, but the lock still applies.
-    const commands = sendMock.mock.calls.map(([command]) => command as unknown)
+    const commands = sendMock.mock.calls.map(([command]) => command)
     expect(
       commands.some((command) => command instanceof CopyObjectCommand),
     ).toBe(false)
@@ -294,7 +301,7 @@ describe("setAssetAsPublished", () => {
     })
 
     // Assert: no HeadObject/CopyObject issued, but the lock still applies.
-    const commands = sendMock.mock.calls.map(([command]) => command as unknown)
+    const commands = sendMock.mock.calls.map(([command]) => command)
     expect(
       commands.some((command) => command instanceof CopyObjectCommand),
     ).toBe(false)

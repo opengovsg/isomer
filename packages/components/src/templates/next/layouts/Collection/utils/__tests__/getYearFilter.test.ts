@@ -13,7 +13,7 @@ describe("getYearFilter", () => {
     const result = getYearFilter(items)
 
     // Assert
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       id: "year",
       label: "Year",
       items: [],
@@ -44,7 +44,7 @@ describe("getYearFilter", () => {
     const result = getYearFilter(items)
 
     // Assert
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       id: "year",
       label: "Year",
       items: [
@@ -67,7 +67,7 @@ describe("getYearFilter", () => {
     const result = getYearFilter(items)
 
     // Assert
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       id: "year",
       label: "Year",
       items: [{ id: "2023", label: "2023", count: 3 }],
@@ -86,7 +86,7 @@ describe("getYearFilter", () => {
     const result = getYearFilter(items)
 
     // Assert
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       id: "year",
       label: "Year",
       items: [],

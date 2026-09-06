@@ -92,7 +92,7 @@ describe("getCollectionParent", () => {
     const result = getCollectionParent({ site, collectionId })
 
     // Assert
-    expect(result).toEqual(collectionNode)
+    expect(result).toStrictEqual(collectionNode)
   })
 
   it("should throw an error when siteMap has no children", () => {
@@ -137,6 +137,6 @@ describe("getCollectionParent", () => {
     const result = getCollectionParent({ site, collectionId })
 
     // Assert
-    expect(result).toEqual(collectionNode)
+    expect(result).toStrictEqual(collectionNode)
   })
 })

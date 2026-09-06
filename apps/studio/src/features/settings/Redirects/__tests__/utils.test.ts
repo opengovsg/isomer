@@ -1,3 +1,5 @@
+import { beforeEach, vi, afterEach, describe, expect, it } from "vitest"
+
 import type { ResolvedDestination } from "../utils"
 import {
   formatAddedAt,
@@ -88,14 +90,14 @@ describe("isReferenceDestination", () => {
 
 describe("getDestinationDisplay", () => {
   it("shows a non-reference destination verbatim", () => {
-    expect(getDestinationDisplay("/about-us", new Map())).toEqual({
+    expect(getDestinationDisplay("/about-us", new Map())).toStrictEqual({
       status: "resolved",
       label: "/about-us",
     })
   })
 
   it("is resolving until the reference lookup lands", () => {
-    expect(getDestinationDisplay("[resource:1:2]", new Map())).toEqual({
+    expect(getDestinationDisplay("[resource:1:2]", new Map())).toStrictEqual({
       status: "resolving",
     })
   })
@@ -104,7 +106,9 @@ describe("getDestinationDisplay", () => {
     const infoByDestination = new Map<string, ResolvedDestination>([
       ["[resource:1:2]", { permalink: "/about/contact", warn: false }],
     ])
-    expect(getDestinationDisplay("[resource:1:2]", infoByDestination)).toEqual({
+    expect(
+      getDestinationDisplay("[resource:1:2]", infoByDestination),
+    ).toStrictEqual({
       status: "resolved",
       label: "/about/contact",
     })
@@ -114,7 +118,9 @@ describe("getDestinationDisplay", () => {
     const infoByDestination = new Map<string, ResolvedDestination>([
       ["[resource:1:2]", { permalink: null, warn: true }],
     ])
-    expect(getDestinationDisplay("[resource:1:2]", infoByDestination)).toEqual({
+    expect(
+      getDestinationDisplay("[resource:1:2]", infoByDestination),
+    ).toStrictEqual({
       status: "missing",
     })
   })

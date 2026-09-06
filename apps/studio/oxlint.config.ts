@@ -1,12 +1,14 @@
 import { defineConfig } from "@isomer/oxlint-config"
 import base from "@isomer/oxlint-config/base"
-// import { next, react, vitest } from "@isomer/oxlint-config/presets"
+import { vitest } from "@isomer/oxlint-config/presets"
+// import { next, react } from "@isomer/oxlint-config/presets"
 
 export default defineConfig({
   extends: [
     base,
+    vitest,
     // To enable this in following stacked PRs
-    // next, react, vitest
+    // next, react
   ],
   ignorePatterns: [
     ".next/**",
@@ -149,6 +151,22 @@ export default defineConfig({
       },
       jsPlugins: ["eslint-plugin-storybook"],
       plugins: ["react", "import"],
+    },
+    {
+      files: ["tests/e2e/**/*.ts"],
+      rules: {
+        // Playwright tests: do not apply vitest lint rules (boolean matchers, max-expects, etc.).
+        "vitest/prefer-importing-vitest-globals": "off",
+        "vitest/prefer-strict-boolean-matchers": "off",
+        "vitest/prefer-to-be-truthy": "off",
+        "vitest/prefer-to-be-falsy": "off",
+        "vitest/prefer-describe-function-title": "off",
+        "vitest/max-expects": "off",
+        "vitest/require-to-throw-message": "off",
+        "vitest/prefer-called-with": "off",
+        "vitest/warn-todo": "off",
+        "vitest/no-disabled-tests": "off",
+      },
     },
     {
       files: [

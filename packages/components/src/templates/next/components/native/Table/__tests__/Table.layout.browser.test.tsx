@@ -55,8 +55,9 @@ describe("Table layout", () => {
     const [h1Width = 0, h2h3Width = 0] = getCellWidths(table, 0)
     expect(h1Width).toBeGreaterThan(0)
     expect(h2h3Width).toBeGreaterThan(0)
-
-    expect(h1Width / tableWidth).toBeCloseTo(1 / 3, 1)
-    expect(h2h3Width / tableWidth).toBeCloseTo(2 / 3, 1)
+    expect([h1Width / tableWidth, h2h3Width / tableWidth]).toStrictEqual([
+      expect.closeTo(1 / 3, 1),
+      expect.closeTo(2 / 3, 1),
+    ])
   })
 })

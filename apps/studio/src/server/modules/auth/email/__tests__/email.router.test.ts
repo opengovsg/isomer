@@ -5,7 +5,7 @@ import {
   createMockRequest,
 } from "tests/integration/helpers/iron-session"
 import { setupUser, setUpWhitelist } from "tests/integration/helpers/seed"
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, it, vi, afterEach, beforeEach } from "vitest"
 import { env } from "~/env.mjs"
 import * as mailService from "~/features/mail/service"
 import * as growthbookLib from "~/lib/growthbook"
@@ -71,7 +71,7 @@ describe("auth.email", () => {
         recipient: TEST_VALID_EMAIL,
         subject: expect.stringContaining("Sign in to"),
       })
-      expect(result).toEqual(expectedReturn)
+      expect(result).toStrictEqual(expectedReturn)
     })
 
     it("should throw 401 if user is deleted", async () => {
@@ -143,7 +143,7 @@ describe("auth.email", () => {
         await expect(result).resolves.toMatchObject(expectedUser)
 
         // Session should have been set with logged in user.
-        expect(session.userId).toEqual(expectedUser.id)
+        expect(session.userId).toStrictEqual(expectedUser.id)
 
         // Audit log should have been created.
         const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
@@ -169,7 +169,7 @@ describe("auth.email", () => {
             email: TEST_VALID_EMAIL,
             token: INVALID_OTP,
           }),
-        ).rejects.toThrow()
+        ).rejects.toThrow("Token is invalid or has expired")
 
         const result = caller.verifyOtp({
           email: TEST_VALID_EMAIL,
@@ -184,12 +184,16 @@ describe("auth.email", () => {
         // Should return logged in user.
         await expect(result).resolves.toMatchObject(expectedUser)
         // Session should have been set with logged in user.
-        expect(session.userId).toEqual(expectedUser.id)
+        expect(session.userId).toStrictEqual(expectedUser.id)
         // Audit log should have been created.
         const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
         expect(auditLogs).toHaveLength(1)
-        expect(auditLogs[0]?.eventType).toBe(AuditLogEvent.Login)
-        expect(auditLogs[0]?.delta.before!.attempts).toBe(2)
+        expect(auditLogs[0]).toMatchObject({
+          eventType: AuditLogEvent.Login,
+          delta: expect.objectContaining({
+            before: expect.objectContaining({ attempts: 2 }),
+          }),
+        })
       })
 
       it("should set lastLoginAt when creating a new user", async () => {
@@ -309,7 +313,9 @@ describe("auth.email", () => {
         await expect(result).resolves.toMatchObject(expectedUser)
 
         // Session (singpass) should have been set with logged in user.
-        expect(session.singpass?.sessionState?.userId).toEqual(expectedUser.id)
+        expect(session.singpass?.sessionState?.userId).toStrictEqual(
+          expectedUser.id,
+        )
 
         // Audit log should not have been created yet
         const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
@@ -333,7 +339,7 @@ describe("auth.email", () => {
             email: TEST_VALID_EMAIL,
             token: INVALID_OTP,
           }),
-        ).rejects.toThrow()
+        ).rejects.toThrow("Token is invalid or has expired")
 
         const result = caller.verifyOtp({
           email: TEST_VALID_EMAIL,
@@ -349,7 +355,9 @@ describe("auth.email", () => {
         await expect(result).resolves.toMatchObject(expectedUser)
 
         // Session (singpass) should have been set with logged in user.
-        expect(session.singpass?.sessionState?.userId).toEqual(expectedUser.id)
+        expect(session.singpass?.sessionState?.userId).toStrictEqual(
+          expectedUser.id,
+        )
 
         // Audit log should not have been created yet
         const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()

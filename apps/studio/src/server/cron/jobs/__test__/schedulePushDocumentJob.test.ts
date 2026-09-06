@@ -5,6 +5,7 @@ import MockDate from "mockdate"
 import { resetTables } from "tests/integration/helpers/db"
 import { applyAuthedSession } from "tests/integration/helpers/iron-session"
 import { setupPageResource, setupUser } from "tests/integration/helpers/seed"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import * as s3Lib from "~/lib/s3"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { db } from "~server/db"
@@ -235,66 +236,85 @@ describe("schedulePushDocumentJobHandler", async () => {
   })
 
   describe("Algolia path (flag OFF)", () => {
-    it("dispatches a due row to Algolia and deletes it", async () => {
-      // Arrange
-      const { resourceId, ref } = await seedDocumentReadyForIngestion({
-        parentTitle: "Notices",
-        ref: "/some-bucket-key/file.pdf",
-        category: "Government Gazettes",
-        publishedBy: user.id,
+    describe("dispatches a due row to Algolia and deletes it", () => {
+      let ref: string
+      let expectedObjectGroup: string
+      let records: algoliaPkg.SearchRecord[]
+      let remainingJobCount: number
+      let setAssetAsPublishedArg: Parameters<
+        typeof s3Lib.setAssetAsPublished
+      >[0]
+
+      beforeEach(async () => {
+        // Arrange
+        const { resourceId, ref: seededRef } =
+          await seedDocumentReadyForIngestion({
+            parentTitle: "Notices",
+            ref: "/some-bucket-key/file.pdf",
+            category: "Government Gazettes",
+            publishedBy: user.id,
+          })
+        ref = seededRef
+        expectedObjectGroup = ref.slice(1)
+        await db
+          .insertInto("PushDocumentJob")
+          .values({
+            resourceId: String(resourceId),
+            scheduledAt: FIXED_NOW,
+            scheduledBy: user.id,
+          })
+          .execute()
+
+        // Act
+        await schedulePushDocumentJobHandler()
+
+        ;[records] = vi.mocked(algoliaLib.saveObjectsToSearchIndex).mock
+          .calls[0]! as [algoliaPkg.SearchRecord[]]
+
+        remainingJobCount = (
+          await db.selectFrom("PushDocumentJob").selectAll().execute()
+        ).length
+
+        setAssetAsPublishedArg = vi.mocked(s3Lib.setAssetAsPublished).mock
+          .calls[0]![0]!
       })
-      await db
-        .insertInto("PushDocumentJob")
-        .values({
-          resourceId: String(resourceId),
-          scheduledAt: FIXED_NOW,
-          scheduledBy: user.id,
+
+      it("saves Algolia records with the expected gazette fields", () => {
+        expect(algoliaLib.saveObjectsToSearchIndex).toHaveBeenCalledOnce()
+        expect(records.length).toBeGreaterThan(0)
+        expect(records[0]).toMatchObject({
+          objectGroup: expectedObjectGroup,
+          objectID: `${expectedObjectGroup}-text-0`,
+          title: "Document Title",
+          category: "Government Gazettes",
+          subCategory: "Public",
         })
-        .execute()
-
-      // Act
-      await schedulePushDocumentJobHandler()
-
-      // Assert — Algolia saveObjects was called with correct fields.
-      expect(algoliaLib.saveObjectsToSearchIndex).toHaveBeenCalledTimes(1)
-      const [records] = vi.mocked(algoliaLib.saveObjectsToSearchIndex).mock
-        .calls[0]!
-      expect(records.length).toBeGreaterThan(0)
-      // objectGroup is the S3 key WITHOUT the leading slash.
-      const expectedObjectGroup = ref.slice(1) // "some-bucket-key/file.pdf"
-      expect(records[0]).toMatchObject({
-        objectGroup: expectedObjectGroup,
-        objectID: `${expectedObjectGroup}-text-0`,
-        title: "Document Title",
-        category: "Government Gazettes",
-        subCategory: "Public",
       })
-      // fileUrl is the public URL (with scheme + domain).
-      expect(records[0]!.fileUrl).toMatch(/^https:\/\//)
-      expect(records[0]!.fileUrl).toContain(ref)
 
-      // SearchSG was NOT called.
-      expect(global.fetch).not.toHaveBeenCalled()
+      it("builds a public fileUrl from the S3 key", () => {
+        expect(records[0]!.fileUrl).toMatch(/^https:\/\//)
+        expect(records[0]!.fileUrl).toContain(ref)
+      })
 
-      // Row was cleaned up.
-      const remaining = await db
-        .selectFrom("PushDocumentJob")
-        .selectAll()
-        .execute()
-      expect(remaining).toHaveLength(0)
+      it("does not call SearchSG", () => {
+        expect(global.fetch).not.toHaveBeenCalled()
+      })
 
-      // S3 + PDF parser were each invoked exactly once.
-      expect(s3Lib.getBlob).toHaveBeenCalledTimes(1)
-      expect(algoliaPkg.parseFullTextFromPDF).toHaveBeenCalledTimes(1)
+      it("cleans up the PushDocumentJob row", () => {
+        expect(remainingJobCount).toBe(0)
+      })
 
-      // The published object's download filename is rewritten to the
-      // gazette title (extension carried over from the key).
-      expect(s3Lib.setAssetAsPublished).toHaveBeenCalledWith(
-        expect.objectContaining({
+      it("reads the PDF from S3 and parses its text", () => {
+        expect(s3Lib.getBlob).toHaveBeenCalledOnce()
+        expect(algoliaPkg.parseFullTextFromPDF).toHaveBeenCalledOnce()
+      })
+
+      it("rewrites the published object's download filename to the gazette title", () => {
+        expect(setAssetAsPublishedArg).toMatchObject({
           Key: expectedObjectGroup,
           ContentDisposition: `inline; filename="Document Title.pdf"`,
-        }),
-      )
+        })
+      })
     })
 
     it("passes the full PDF text to Algolia without truncating to 50k", async () => {
@@ -329,7 +349,7 @@ describe("schedulePushDocumentJobHandler", async () => {
 
       // Assert — records were built from the full text (>1 chunk because the
       // text exceeds one 7 000-char chunk), and no 50k truncation was applied.
-      expect(algoliaLib.saveObjectsToSearchIndex).toHaveBeenCalledTimes(1)
+      expect(algoliaLib.saveObjectsToSearchIndex).toHaveBeenCalledOnce()
       const builtRecords: algoliaPkg.SearchRecord[] =
         buildSpy.mock.results[0]!.value
       expect(builtRecords.length).toBeGreaterThan(1)
@@ -365,7 +385,7 @@ describe("schedulePushDocumentJobHandler", async () => {
       await schedulePushDocumentJobHandler()
 
       // Assert
-      expect(algoliaLib.saveObjectsToSearchIndex).toHaveBeenCalledTimes(1)
+      expect(algoliaLib.saveObjectsToSearchIndex).toHaveBeenCalledOnce()
       const [records] = vi.mocked(algoliaLib.saveObjectsToSearchIndex).mock
         .calls[0]!
       expect(records[0]).toMatchObject({ notificationNum: "12345" })
@@ -496,11 +516,11 @@ describe("schedulePushDocumentJobHandler", async () => {
 
       // Assert — the gazette is indexed from the published Version's blob
       // and its S3 object is untagged, even though no draft blob remains.
-      expect(algoliaLib.saveObjectsToSearchIndex).toHaveBeenCalledTimes(1)
+      expect(algoliaLib.saveObjectsToSearchIndex).toHaveBeenCalledOnce()
       const [records] = vi.mocked(algoliaLib.saveObjectsToSearchIndex).mock
         .calls[0]!
       expect(records[0]).toMatchObject({ objectGroup: ref.slice(1) })
-      expect(s3Lib.setAssetAsPublished).toHaveBeenCalledTimes(1)
+      expect(s3Lib.setAssetAsPublished).toHaveBeenCalledOnce()
       const remainingAfterPublish = await db
         .selectFrom("PushDocumentJob")
         .selectAll()
@@ -554,7 +574,7 @@ describe("schedulePushDocumentJobHandler", async () => {
       await schedulePushDocumentJobHandler()
 
       // Assert — records are built from the published ref, not the draft's.
-      expect(algoliaLib.saveObjectsToSearchIndex).toHaveBeenCalledTimes(1)
+      expect(algoliaLib.saveObjectsToSearchIndex).toHaveBeenCalledOnce()
       const [records] = vi.mocked(algoliaLib.saveObjectsToSearchIndex).mock
         .calls[0]!
       expect(records[0]).toMatchObject({
@@ -660,64 +680,78 @@ describe("schedulePushDocumentJobHandler", async () => {
       )
     })
 
-    it("dispatches a row whose scheduledAt has passed to SearchSG and deletes it", async () => {
-      // Arrange
-      const { resourceId } = await seedDocumentReadyForIngestion({
-        parentTitle: "Notices",
-        ref: "/some-bucket-key/file.pdf",
-        category: "Government Gazettes",
-        publishedBy: user.id,
-      })
-      await db
-        .insertInto("PushDocumentJob")
-        .values({
-          resourceId: String(resourceId),
-          scheduledAt: FIXED_NOW,
-          scheduledBy: user.id,
-        })
-        .execute()
-
-      // Act
-      await schedulePushDocumentJobHandler()
-
-      // Assert — SearchSG was called with a payload that includes our resource.
-      const ingestCall = vi
-        .mocked(global.fetch)
-        .mock.calls.find(([u]) => urlToString(u).includes("/documents"))
-      expect(ingestCall).toBeDefined()
-      const ingestBody = ingestCall![1]?.body as string
-      const body = JSON.parse(ingestBody) as {
+    describe("dispatches a row whose scheduledAt has passed to SearchSG and deletes it", () => {
+      let ingestBody: {
         documentsToAdd: Record<string, unknown>[]
       }
-      expect(body.documentsToAdd).toHaveLength(1)
-      expect(body.documentsToAdd[0]).toMatchObject({
-        title: "Document Title",
-        content: "parsed pdf text",
-        contentType: "Government Gazettes",
-        categories: ["Public"],
+      let remainingJobCount: number
+      let setAssetAsPublishedArg: Parameters<
+        typeof s3Lib.setAssetAsPublished
+      >[0]
+
+      beforeEach(async () => {
+        // Arrange
+        const { resourceId } = await seedDocumentReadyForIngestion({
+          parentTitle: "Notices",
+          ref: "/some-bucket-key/file.pdf",
+          category: "Government Gazettes",
+          publishedBy: user.id,
+        })
+        await db
+          .insertInto("PushDocumentJob")
+          .values({
+            resourceId: String(resourceId),
+            scheduledAt: FIXED_NOW,
+            scheduledBy: user.id,
+          })
+          .execute()
+
+        // Act
+        await schedulePushDocumentJobHandler()
+
+        const ingestCall = vi
+          .mocked(global.fetch)
+          .mock.calls.find(([u]) => urlToString(u).includes("/documents"))
+        ingestBody = JSON.parse(ingestCall![1]?.body as string) as {
+          documentsToAdd: Record<string, unknown>[]
+        }
+
+        remainingJobCount = (
+          await db.selectFrom("PushDocumentJob").selectAll().execute()
+        ).length
+
+        setAssetAsPublishedArg = vi.mocked(s3Lib.setAssetAsPublished).mock
+          .calls[0]![0]!
       })
 
-      // Algolia was NOT called.
-      expect(algoliaLib.saveObjectsToSearchIndex).not.toHaveBeenCalled()
+      it("posts the parsed PDF to SearchSG", () => {
+        expect(ingestBody.documentsToAdd).toHaveLength(1)
+        expect(ingestBody.documentsToAdd[0]).toMatchObject({
+          title: "Document Title",
+          content: "parsed pdf text",
+          contentType: "Government Gazettes",
+          categories: ["Public"],
+        })
+      })
 
-      // Row was cleaned up.
-      const remaining = await db
-        .selectFrom("PushDocumentJob")
-        .selectAll()
-        .execute()
-      expect(remaining).toHaveLength(0)
+      it("does not call Algolia", () => {
+        expect(algoliaLib.saveObjectsToSearchIndex).not.toHaveBeenCalled()
+      })
 
-      // S3 + PDF parser were each invoked exactly once.
-      expect(s3Lib.getBlob).toHaveBeenCalledTimes(1)
-      expect(algoliaPkg.parseFullTextFromPDF).toHaveBeenCalledTimes(1)
+      it("cleans up the PushDocumentJob row", () => {
+        expect(remainingJobCount).toBe(0)
+      })
 
-      // The published object's download filename is rewritten to the
-      // gazette title (extension carried over from the key).
-      expect(s3Lib.setAssetAsPublished).toHaveBeenCalledWith(
-        expect.objectContaining({
+      it("reads the PDF from S3 and parses its text", () => {
+        expect(s3Lib.getBlob).toHaveBeenCalledOnce()
+        expect(algoliaPkg.parseFullTextFromPDF).toHaveBeenCalledOnce()
+      })
+
+      it("rewrites the published object's download filename to the gazette title", () => {
+        expect(setAssetAsPublishedArg).toMatchObject({
           ContentDisposition: `inline; filename="Document Title.pdf"`,
-        }),
-      )
+        })
+      })
     })
 
     it("skips rows scheduled for the future", async () => {

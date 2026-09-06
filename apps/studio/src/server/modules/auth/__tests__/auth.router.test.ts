@@ -6,7 +6,7 @@ import {
   createMockRequest,
 } from "tests/integration/helpers/iron-session"
 import { setUpWhitelist } from "tests/integration/helpers/seed"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi, beforeEach } from "vitest"
 import { createCallerFactory } from "~/server/trpc"
 
 import * as authService from "../../audit/audit.service"
@@ -43,6 +43,7 @@ describe("auth.email", () => {
       )
       expect(spy).not.toHaveBeenCalled()
     })
+
     it("should log the user out and have an audit log of the change", async () => {
       // Arrange
       const spy = vi.spyOn(authService, "logAuthEvent")
@@ -54,7 +55,7 @@ describe("auth.email", () => {
       // NOTE: Not asserting argument becasuse this requires a tx,
       // we'll instead check that the db row exists
       expect(spy).toHaveBeenCalled()
-      expect(result.isLoggedIn).toBeFalsy()
+      expect(result.isLoggedIn).toBe(false)
       const user = db
         .selectFrom("User")
         .where("id", "=", session.userId!)

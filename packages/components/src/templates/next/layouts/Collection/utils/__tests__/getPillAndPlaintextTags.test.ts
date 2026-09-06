@@ -20,7 +20,10 @@ describe("getPillAndPlaintextTags", () => {
     const result = getPillAndPlaintextTags(undefined, tagCategories)
 
     // Assert
-    expect(result).toEqual({ pillTags: undefined, plaintextTags: undefined })
+    expect(result).toStrictEqual({
+      pillTags: undefined,
+      plaintextTags: undefined,
+    })
   })
 
   it("returns undefined for both when tagCategories is undefined", () => {
@@ -28,7 +31,10 @@ describe("getPillAndPlaintextTags", () => {
     const result = getPillAndPlaintextTags(["topic-opt-1"], undefined)
 
     // Assert
-    expect(result).toEqual({ pillTags: undefined, plaintextTags: undefined })
+    expect(result).toStrictEqual({
+      pillTags: undefined,
+      plaintextTags: undefined,
+    })
   })
 
   it("splits selected groups into pillTags and plaintextTags by display", () => {
@@ -55,10 +61,10 @@ describe("getPillAndPlaintextTags", () => {
     )
 
     // Assert
-    expect(result.pillTags).toEqual([
+    expect(result.pillTags).toStrictEqual([
       { id: "topic-1", category: "Topic", selected: ["Health"] },
     ])
-    expect(result.plaintextTags).toEqual([
+    expect(result.plaintextTags).toStrictEqual([
       { id: "cat-1", category: "Category", selected: ["Guides"] },
     ])
   })
@@ -77,10 +83,10 @@ describe("getPillAndPlaintextTags", () => {
     const result = getPillAndPlaintextTags(["topic-opt-1"], tagCategories)
 
     // Assert
-    expect(result.pillTags).toEqual([
+    expect(result.pillTags).toStrictEqual([
       { id: "topic-1", category: "Topic", selected: ["Health"] },
     ])
-    expect(result.plaintextTags).toEqual([])
+    expect(result.plaintextTags).toStrictEqual([])
   })
 
   it("excludes a group entirely from both lists when none of its options are selected", () => {
@@ -104,8 +110,8 @@ describe("getPillAndPlaintextTags", () => {
     const result = getPillAndPlaintextTags([], tagCategories)
 
     // Assert
-    expect(result.pillTags).toEqual([])
-    expect(result.plaintextTags).toEqual([])
+    expect(result.pillTags).toStrictEqual([])
+    expect(result.plaintextTags).toStrictEqual([])
   })
 
   it("keeps all selected options for a group, uncombined (joining is a render concern)", () => {
@@ -129,7 +135,7 @@ describe("getPillAndPlaintextTags", () => {
     )
 
     // Assert
-    expect(result.plaintextTags).toEqual([
+    expect(result.plaintextTags).toStrictEqual([
       { id: "cat-1", category: "Category", selected: ["Guides", "Articles"] },
     ])
   })

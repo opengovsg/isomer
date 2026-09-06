@@ -1,3 +1,5 @@
+import { describe, expect, it } from "vitest"
+
 import { LINK_TYPES } from "../constants"
 import { getLinkHrefType } from "../utils"
 

@@ -62,7 +62,10 @@ vi.mock("~/utils/trpc", () => ({
         useQuery: () => ({ data: { maxMonths: 12 } }),
       },
       createExportRequest: {
-        useMutation: () => ({ mutate: vi.fn(), isPending: false }),
+        useMutation: () => ({
+          mutate: vi.fn(),
+          isPending: false,
+        }),
       },
     },
   },

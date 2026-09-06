@@ -249,7 +249,7 @@ describe("createAuditLogExportRequestSchema", () => {
     })
   })
 
-  describe("getEarliestExportableMonth", () => {
+  describe(getEarliestExportableMonth, () => {
     it("should return the month 11 months before the current month", () => {
       // 12 months inclusive of the current month.
       expect(getEarliestExportableMonth("2026-06")).toBe("2025-07")

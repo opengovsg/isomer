@@ -59,7 +59,7 @@ describe("ExportAccessLogsButton", () => {
     fireEvent.click(screen.getByRole("button", { name: "Export user access" }))
 
     // Assert
-    expect(store.get(exportAccessLogsModalAtom)).toEqual({
+    expect(store.get(exportAccessLogsModalAtom)).toStrictEqual({
       siteId: SITE_ID,
       isOpen: true,
     })
@@ -86,7 +86,7 @@ describe("ExportAccessLogsButton", () => {
     expect(
       screen.queryByRole("button", { name: "Export user access" }),
     ).toBeNull()
-    expect(store.get(exportAccessLogsModalAtom)).toEqual({
+    expect(store.get(exportAccessLogsModalAtom)).toStrictEqual({
       siteId: 0,
       isOpen: false,
     })

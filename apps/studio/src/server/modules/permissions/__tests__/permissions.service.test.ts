@@ -11,7 +11,7 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, beforeEach } from "vitest"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import type { ResourceAbility } from "../permissions.type"
@@ -1151,36 +1151,9 @@ describe("getResourcePermission", () => {
     expect(permissions[0]?.role).toBe(RoleType.Admin)
   })
 
-  // TODO: add this back in when we have resource-specific permissions
-  it.skip("should return resource-specific permissions when resourceId is provided", async () => {
-    // Arrange
-    const user = await setupUser({ email: "test@example.com" })
-    const { page, site } = await setupPageResource({
-      resourceType: ResourceType.Page,
-    })
-
-    await db
-      .insertInto("ResourcePermission")
-      .values({
-        userId: user.id,
-        siteId: site.id,
-        resourceId: page.id,
-        role: RoleType.Admin,
-        deletedAt: null,
-      })
-      .execute()
-
-    // Act
-    const permissions = await getResourcePermission({
-      userId: user.id,
-      siteId: site.id,
-      resourceId: page.id,
-    })
-
-    // Assert
-    expect(permissions).toHaveLength(1)
-    expect(permissions[0]?.role).toBe(RoleType.Admin)
-  })
+  it.todo(
+    "should return resource-specific permissions when resourceId is provided",
+  )
 
   it("should return empty array when no permissions exist for user and site", async () => {
     // Arrange
@@ -1216,25 +1189,9 @@ describe("getResourcePermission", () => {
     expect(permissions).toHaveLength(0)
   })
 
-  // TODO: add this back in when we have resource-specific permissions
-  it.skip("should not return site-wide permissions when resourceId is provided and is not null", async () => {
-    // Arrange
-    const user = await setupUser({ email: "test@example.com" })
-    const { page, site } = await setupPageResource({
-      resourceType: ResourceType.Page,
-    })
-    await setupAdminPermissions({ userId: user.id, siteId: site.id })
-
-    // Act
-    const permissions = await getResourcePermission({
-      userId: user.id,
-      siteId: site.id,
-      resourceId: page.id,
-    })
-
-    // Assert
-    expect(permissions).toHaveLength(0)
-  })
+  it.todo(
+    "should not return site-wide permissions when resourceId is provided and is not null",
+  )
 
   it("should exclude soft-deleted permissions", async () => {
     // Arrange
@@ -1409,7 +1366,7 @@ describe("isActiveIsomerAdmin", () => {
     const user = await setupUser({ email: "test@example.com" })
     await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Core })
 
-    expect(await isActiveIsomerAdmin(user.id)).toBe(true)
+    await expect(isActiveIsomerAdmin(user.id)).resolves.toBe(true)
   })
 
   it("should return true for an active Isomer Admin with a future expiry", async () => {
@@ -1417,7 +1374,7 @@ describe("isActiveIsomerAdmin", () => {
     const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000)
     await setupIsomerAdmin({ userId: user.id, expiry: tomorrow })
 
-    expect(await isActiveIsomerAdmin(user.id)).toBe(true)
+    await expect(isActiveIsomerAdmin(user.id)).resolves.toBe(true)
   })
 
   it("should return false for an expired Isomer Admin", async () => {
@@ -1425,7 +1382,7 @@ describe("isActiveIsomerAdmin", () => {
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
     await setupIsomerAdmin({ userId: user.id, expiry: yesterday })
 
-    expect(await isActiveIsomerAdmin(user.id)).toBe(false)
+    await expect(isActiveIsomerAdmin(user.id)).resolves.toBe(false)
   })
 
   it("should return false for an Isomer Admin whose expiry is exactly now", async () => {
@@ -1434,13 +1391,13 @@ describe("isActiveIsomerAdmin", () => {
     const justExpired = new Date(Date.now() - 1000)
     await setupIsomerAdmin({ userId: user.id, expiry: justExpired })
 
-    expect(await isActiveIsomerAdmin(user.id)).toBe(false)
+    await expect(isActiveIsomerAdmin(user.id)).resolves.toBe(false)
   })
 
   it("should return false for a user with no IsomerAdmin row", async () => {
     const user = await setupUser({ email: "test@example.com" })
 
-    expect(await isActiveIsomerAdmin(user.id)).toBe(false)
+    await expect(isActiveIsomerAdmin(user.id)).resolves.toBe(false)
   })
 
   describe("role filtering", () => {
@@ -1448,9 +1405,9 @@ describe("isActiveIsomerAdmin", () => {
       const user = await setupUser({ email: "test@example.com" })
       await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Core })
 
-      expect(await isActiveIsomerAdmin(user.id, [IsomerAdminRole.Core])).toBe(
-        true,
-      )
+      await expect(
+        isActiveIsomerAdmin(user.id, [IsomerAdminRole.Core]),
+      ).resolves.toBe(true)
     })
 
     it("should return false when the user's role does not match the requested roles", async () => {
@@ -1460,9 +1417,9 @@ describe("isActiveIsomerAdmin", () => {
         role: IsomerAdminRole.Migrator,
       })
 
-      expect(await isActiveIsomerAdmin(user.id, [IsomerAdminRole.Core])).toBe(
-        false,
-      )
+      await expect(
+        isActiveIsomerAdmin(user.id, [IsomerAdminRole.Core]),
+      ).resolves.toBe(false)
     })
 
     it("should return true when the user's role is among multiple requested roles", async () => {
@@ -1472,12 +1429,12 @@ describe("isActiveIsomerAdmin", () => {
         role: IsomerAdminRole.Migrator,
       })
 
-      expect(
-        await isActiveIsomerAdmin(user.id, [
+      await expect(
+        isActiveIsomerAdmin(user.id, [
           IsomerAdminRole.Core,
           IsomerAdminRole.Migrator,
         ]),
-      ).toBe(true)
+      ).resolves.toBe(true)
     })
   })
 })

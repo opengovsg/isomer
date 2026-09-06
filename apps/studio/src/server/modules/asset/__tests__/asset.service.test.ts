@@ -10,7 +10,7 @@ import {
 } from "../asset.service"
 
 describe("asset.service", () => {
-  describe("getContentTypeFromKey", () => {
+  describe(getContentTypeFromKey, () => {
     it("should return image MIME for image extensions", () => {
       expect(getContentTypeFromKey("1/abc/test.png")).toBe("image/png")
       expect(getContentTypeFromKey("1/abc/photo.jpg")).toBe("image/jpeg")
@@ -45,7 +45,7 @@ describe("asset.service", () => {
     })
   })
 
-  describe("getContentDispositionForKey", () => {
+  describe(getContentDispositionForKey, () => {
     it("should return inline with filename from key segment", () => {
       const result = getContentDispositionForKey("1/abc-uuid/test.png")
       expect(result).toBe(`inline; filename=test.png`)
@@ -60,7 +60,7 @@ describe("asset.service", () => {
     })
   })
 
-  describe("getFileKey", () => {
+  describe(getFileKey, () => {
     it("should generate a file key with basic ASCII filename", () => {
       // Arrange
       const siteId = 123
@@ -194,7 +194,7 @@ describe("asset.service", () => {
       const result2 = getFileKey({ siteId, fileName })
 
       // Assert
-      expect(result1).not.toEqual(result2)
+      expect(result1).not.toStrictEqual(result2)
       expect(result1).toMatch(/同一个文件\.pdf$/)
       expect(result2).toMatch(/同一个文件\.pdf$/)
     })
@@ -212,7 +212,7 @@ describe("asset.service", () => {
     })
   })
 
-  describe("doAllFileKeysBelongToSite", () => {
+  describe(doAllFileKeysBelongToSite, () => {
     it("should return true when all file keys start with the siteId prefix", () => {
       expect(
         doAllFileKeysBelongToSite({
@@ -279,7 +279,7 @@ describe("asset.service", () => {
     })
   })
 
-  describe("sanitizeSvg", () => {
+  describe(sanitizeSvg, () => {
     it("should return sanitized content for a valid SVG without altering safe elements or attributes", () => {
       // Arrange
       const input =
@@ -289,7 +289,7 @@ describe("asset.service", () => {
       const result = sanitizeSvg(input)
 
       // Assert — DOMPurify normalises self-closing tags to explicit close tags
-      expect(result).toEqual(
+      expect(result).toBe(
         '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"></rect></svg>',
       )
     })
@@ -303,7 +303,7 @@ describe("asset.service", () => {
       const result = sanitizeSvg(input)
 
       // Assert
-      expect(result).toEqual(
+      expect(result).toBe(
         '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"></rect></svg>',
       )
     })
@@ -317,7 +317,7 @@ describe("asset.service", () => {
       const result = sanitizeSvg(input)
 
       // Assert
-      expect(result).toEqual(
+      expect(result).toBe(
         '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"></rect></svg>',
       )
     })
@@ -405,7 +405,7 @@ describe("asset.service", () => {
       const result = sanitizeSvg(input)
 
       // Assert
-      expect(result).toEqual(
+      expect(result).toBe(
         '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"></rect></svg>',
       )
     })
@@ -419,7 +419,7 @@ describe("asset.service", () => {
       const result = sanitizeSvg(input)
 
       // Assert
-      expect(result).toEqual(
+      expect(result).toBe(
         '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"></rect></svg>',
       )
     })
@@ -433,7 +433,7 @@ describe("asset.service", () => {
       const result = sanitizeSvg(input)
 
       // Assert
-      expect(result).toEqual(
+      expect(result).toBe(
         '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"></rect></svg>',
       )
     })
@@ -447,7 +447,7 @@ describe("asset.service", () => {
       const result = sanitizeSvg(input)
 
       // Assert
-      expect(result).toEqual(
+      expect(result).toBe(
         '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"></rect><image></image></svg>',
       )
     })
@@ -461,7 +461,7 @@ describe("asset.service", () => {
       const result = sanitizeSvg(input)
 
       // Assert
-      expect(result).toEqual(
+      expect(result).toBe(
         '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"></rect></svg>',
       )
     })

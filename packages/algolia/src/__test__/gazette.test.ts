@@ -68,7 +68,7 @@ describe("buildGazetteSearchRecords", () => {
     })
 
     // Assert
-    expect(result).toEqual([])
+    expect(result).toStrictEqual([])
   })
 
   it("returns a single record for short text", () => {

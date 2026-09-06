@@ -1,5 +1,6 @@
 import { resetTables } from "tests/integration/helpers/db"
 import { setupUser } from "tests/integration/helpers/seed"
+import { beforeEach, describe, expect, it } from "vitest"
 
 import { AuditLogEvent, db } from "../../database"
 import { logUserEvent } from "../audit.service"
@@ -9,7 +10,7 @@ describe("audit.service", () => {
     await resetTables("AuditLog", "User")
   })
 
-  describe("logUserEvent", () => {
+  describe(logUserEvent, () => {
     it("should log a resource event successfully", async () => {
       // Arrange
       const user = await setupUser({
@@ -36,8 +37,8 @@ describe("audit.service", () => {
         .executeTakeFirstOrThrow()
 
       expect(auditLogs).toBeDefined()
-      expect(auditLogs.userId).toEqual(user.id)
-      expect(auditLogs.eventType).toEqual(AuditLogEvent.UserCreate)
+      expect(auditLogs.userId).toStrictEqual(user.id)
+      expect(auditLogs.eventType).toStrictEqual(AuditLogEvent.UserCreate)
     })
 
     // NOTE: This test pertains to the DB trigger function that is used to
@@ -65,8 +66,10 @@ describe("audit.service", () => {
           .updateTable("AuditLog")
           .set({ eventType: AuditLogEvent.UserDelete })
           .execute(),
-      ).rejects.toThrow()
-      await expect(db.deleteFrom("AuditLog").execute()).rejects.toThrow()
+      ).rejects.toThrow('Cannot update or delete rows in table "AuditLog"')
+      await expect(db.deleteFrom("AuditLog").execute()).rejects.toThrow(
+        'Cannot update or delete rows in table "AuditLog"',
+      )
     })
   })
 })

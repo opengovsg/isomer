@@ -65,12 +65,22 @@ interface PageOverrides {
   image?: { src: string; alt: string }
 }
 
+const TEST_PAGE_META = {
+  permalink: "test-permalink",
+  lastModified: "2024-01-01T00:00:00.000Z",
+} as const
+
+const asIsomerSchema = (
+  blob: IndexBlob | ContentBlob | ArticleBlob,
+): IsomerSchema => blob as unknown as IsomerSchema
+
 const makeIndexBlob = (overrides?: PageOverrides): IndexBlob =>
   ({
     version: "0.1.0",
     layout: "index",
     page: {
       title: "Index",
+      ...TEST_PAGE_META,
       contentPageHeader: {
         summary: overrides?.summary ?? "Index summary",
         showThumbnail: false,
@@ -78,7 +88,7 @@ const makeIndexBlob = (overrides?: PageOverrides): IndexBlob =>
       ...(overrides?.image ? { image: overrides.image } : {}),
     },
     content: [],
-  }) as unknown as IndexBlob
+  }) as IndexBlob
 
 const makeContentBlob = (
   overrides?: PageOverrides,
@@ -89,6 +99,7 @@ const makeContentBlob = (
     layout: "content",
     page: {
       title: "Page",
+      ...TEST_PAGE_META,
       contentPageHeader: {
         summary: overrides?.summary ?? "Content summary",
         showThumbnail: false,
@@ -96,7 +107,7 @@ const makeContentBlob = (
       ...(overrides?.image ? { image: overrides.image } : {}),
     },
     content,
-  }) as unknown as ContentBlob
+  }) as ContentBlob
 
 const makeArticleBlob = (
   overrides?: PageOverrides & { category?: string; date?: string },
@@ -107,6 +118,7 @@ const makeArticleBlob = (
     layout: "article",
     page: {
       title: "Article",
+      ...TEST_PAGE_META,
       category: overrides?.category ?? "News",
       date: overrides?.date ?? "1 Jan 2024",
       articlePageHeader: {
@@ -115,7 +127,7 @@ const makeArticleBlob = (
       ...(overrides?.image ? { image: overrides.image } : {}),
     },
     content,
-  }) as unknown as ArticleBlob
+  }) as ArticleBlob
 
 const makeConversionPlan = (
   overrides?: Partial<ConversionPlan>,
@@ -132,8 +144,8 @@ const makeConversionPlan = (
     title: "Index",
     permalink: "_index",
     currentBlobId: "blob-index",
-    currentBlob: makeIndexBlob() as unknown as IsomerSchema,
-    nextBlob: makeIndexBlob() as unknown as IsomerSchema,
+    currentBlob: asIsomerSchema(makeIndexBlob()),
+    nextBlob: asIsomerSchema(makeIndexBlob()),
     disallowedBlocks: [],
   },
   pages: [],
@@ -150,15 +162,15 @@ describe("buildConversionReport", () => {
           title: "Clean page",
           permalink: "clean",
           currentBlobId: "b1",
-          currentBlob: makeContentBlob() as unknown as IsomerSchema,
-          nextBlob: makeArticleBlob() as unknown as IsomerSchema,
+          currentBlob: asIsomerSchema(makeContentBlob()),
+          nextBlob: asIsomerSchema(makeArticleBlob()),
           disallowedBlocks: [],
         },
       ],
     })
 
     // Act + Assert
-    expect(buildConversionReport(plan)).toEqual([])
+    expect(buildConversionReport(plan)).toStrictEqual([])
   })
 
   it("emits one entry per page with disallowed blocks", () => {
@@ -170,12 +182,8 @@ describe("buildConversionReport", () => {
           title: "Flagged",
           permalink: "flagged",
           currentBlobId: "b1",
-          currentBlob: makeContentBlob({}, [
-            infobarBlock,
-          ]) as unknown as IsomerSchema,
-          nextBlob: makeArticleBlob({}, [
-            infobarBlock,
-          ]) as unknown as IsomerSchema,
+          currentBlob: asIsomerSchema(makeContentBlob({}, [infobarBlock])),
+          nextBlob: asIsomerSchema(makeArticleBlob({}, [infobarBlock])),
           disallowedBlocks: [{ index: 0, type: "infobar" }],
         },
         {
@@ -183,8 +191,8 @@ describe("buildConversionReport", () => {
           title: "Clean",
           permalink: "clean",
           currentBlobId: "b2",
-          currentBlob: makeContentBlob() as unknown as IsomerSchema,
-          nextBlob: makeArticleBlob() as unknown as IsomerSchema,
+          currentBlob: asIsomerSchema(makeContentBlob()),
+          nextBlob: asIsomerSchema(makeArticleBlob()),
           disallowedBlocks: [],
         },
       ],
@@ -194,7 +202,7 @@ describe("buildConversionReport", () => {
     const report = buildConversionReport(plan)
 
     // Assert
-    expect(report).toEqual([
+    expect(report).toStrictEqual([
       {
         id: "159536",
         reason: "disallowed-in-article blocks: infobar@0",
@@ -211,14 +219,12 @@ describe("buildConversionReport", () => {
           title: "Many flags",
           permalink: "many",
           currentBlobId: "b1",
-          currentBlob: makeContentBlob({}, [
-            infobarBlock,
-            infocardsBlock,
-          ]) as unknown as IsomerSchema,
-          nextBlob: makeArticleBlob({}, [
-            infobarBlock,
-            infocardsBlock,
-          ]) as unknown as IsomerSchema,
+          currentBlob: asIsomerSchema(
+            makeContentBlob({}, [infobarBlock, infocardsBlock]),
+          ),
+          nextBlob: asIsomerSchema(
+            makeArticleBlob({}, [infobarBlock, infocardsBlock]),
+          ),
           disallowedBlocks: [
             { index: 0, type: "infobar" },
             { index: 1, type: "infocards" },
@@ -228,7 +234,7 @@ describe("buildConversionReport", () => {
     })
 
     // Act + Assert
-    expect(buildConversionReport(plan)).toEqual([
+    expect(buildConversionReport(plan)).toStrictEqual([
       {
         id: "99",
         reason: "disallowed-in-article blocks: infobar@0, infocards@1",
@@ -247,8 +253,8 @@ describe("toFolderPlan", () => {
           title: "Page A",
           permalink: "a",
           currentBlobId: "b1",
-          currentBlob: makeContentBlob() as unknown as IsomerSchema,
-          nextBlob: makeArticleBlob() as unknown as IsomerSchema,
+          currentBlob: asIsomerSchema(makeContentBlob()),
+          nextBlob: asIsomerSchema(makeArticleBlob()),
           disallowedBlocks: [],
         },
         {
@@ -256,8 +262,8 @@ describe("toFolderPlan", () => {
           title: "Page B",
           permalink: "b",
           currentBlobId: "b2",
-          currentBlob: makeContentBlob() as unknown as IsomerSchema,
-          nextBlob: makeArticleBlob() as unknown as IsomerSchema,
+          currentBlob: asIsomerSchema(makeContentBlob()),
+          nextBlob: asIsomerSchema(makeArticleBlob()),
           disallowedBlocks: [],
         },
       ],
@@ -267,7 +273,7 @@ describe("toFolderPlan", () => {
     const folderPlan = toFolderPlan(plan)
 
     // Assert
-    expect(folderPlan).toEqual({
+    expect(folderPlan).toStrictEqual({
       id: "159351",
       siteId: 1,
       title: "Folder",
@@ -315,7 +321,7 @@ describe("findDisallowedBlocks", () => {
     const result = findDisallowedBlocks([proseBlock, proseBlock])
 
     // Assert
-    expect(result).toEqual([])
+    expect(result).toStrictEqual([])
   })
 
   it("flags blocks that are content-only with their index and type", () => {
@@ -326,7 +332,7 @@ describe("findDisallowedBlocks", () => {
     const result = findDisallowedBlocks(content)
 
     // Assert
-    expect(result).toEqual([
+    expect(result).toStrictEqual([
       { index: 1, type: "infobar" },
       { index: 3, type: "infocards" },
     ])
@@ -334,7 +340,7 @@ describe("findDisallowedBlocks", () => {
 
   it("returns an empty array for an empty content array", () => {
     // Act + Assert
-    expect(findDisallowedBlocks([])).toEqual([])
+    expect(findDisallowedBlocks([])).toStrictEqual([])
   })
 })
 
@@ -444,7 +450,7 @@ describe("buildCollectionIndexBlob", () => {
     const result = asResult(buildCollectionIndexBlob(current, "Folder"))
 
     // Assert
-    expect(result.page.image).toEqual(image)
+    expect(result.page.image).toStrictEqual(image)
   })
 
   it("omits the image key entirely when the source page has none", () => {
@@ -469,7 +475,7 @@ describe("buildCollectionIndexBlob", () => {
     const result = asResult(buildCollectionIndexBlob(current, "Folder"))
 
     // Assert
-    expect(result.content).toEqual([])
+    expect(result.content).toStrictEqual([])
   })
 
   it("preserves the version field from the source blob", () => {
@@ -513,7 +519,7 @@ describe("buildCollectionIndexBlob", () => {
         ...makeIndexBlob({ summary: "x" }).page,
         sortOrder: "date-asc",
       },
-    } as unknown as IndexBlob
+    }
 
     // Act
     const result = asResult(buildCollectionIndexBlob(current, "Folder"))
@@ -534,7 +540,7 @@ describe("buildCollectionIndexBlob", () => {
     buildCollectionIndexBlob(current, "Folder")
 
     // Assert
-    expect(current).toEqual(snapshot)
+    expect(current).toStrictEqual(snapshot)
   })
 })
 
@@ -548,7 +554,7 @@ describe("buildArticleBlob", () => {
 
     // Assert
     expect(result.layout).toBe("article")
-    expect(result.page.articlePageHeader).toEqual({
+    expect(result.page.articlePageHeader).toStrictEqual({
       summary: "Article summary",
     })
   })
@@ -573,7 +579,7 @@ describe("buildArticleBlob", () => {
     const result = asResult(buildArticleBlob(current, "cat"))
 
     // Assert
-    expect(result.page.image).toEqual(image)
+    expect(result.page.image).toStrictEqual(image)
   })
 
   it("omits the image key entirely when the source page has none", () => {
@@ -599,7 +605,11 @@ describe("buildArticleBlob", () => {
     const result = asResult(buildArticleBlob(current, "cat"))
 
     // Assert
-    expect(result.content).toEqual([proseBlock, infobarBlock, infocardsBlock])
+    expect(result.content).toStrictEqual([
+      proseBlock,
+      infobarBlock,
+      infocardsBlock,
+    ])
   })
 
   it("preserves the version field from the source blob", () => {
@@ -636,7 +646,7 @@ describe("buildArticleBlob", () => {
     buildArticleBlob(current, "News")
 
     // Assert
-    expect(current).toEqual(snapshot)
+    expect(current).toStrictEqual(snapshot)
   })
 
   it("updates category on an already-article blob while preserving article fields", () => {

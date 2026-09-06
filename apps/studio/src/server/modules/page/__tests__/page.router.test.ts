@@ -1,6 +1,7 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { z } from "zod"
 import type { reorderBlobSchema, updatePageBlobSchema } from "~/schemas/page"
+import type { AuditLog } from "~prisma/generated/selectableTypes"
 import { TRPCError } from "@trpc/server"
 import { addDays, set, subDays } from "date-fns"
 import { omit, pick } from "lodash-es"
@@ -22,6 +23,7 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
+import { beforeAll, beforeEach, afterEach, describe, expect, it } from "vitest"
 import { normalizeRedirectPath } from "~/schemas/redirect"
 import { createCallerFactory } from "~/server/trpc"
 import {
@@ -164,7 +166,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         title: "Test Article Page",
         description: "Article summary text",
         thumbnail: "/images/article-thumb.jpg",
@@ -215,7 +217,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         title: "Test Content Page",
         description: "Content page summary",
         thumbnail: "/images/content-thumb.png",
@@ -266,7 +268,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         title: "Test Index Page",
         description: "Index page summary",
         thumbnail: "/images/index-thumb.png",
@@ -316,7 +318,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         title: "Test Database Page",
         description: "Database page description",
       })
@@ -364,7 +366,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         title: "Test Collection Page",
         description: "Collection subtitle text",
       })
@@ -413,7 +415,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         title: "Test File Page",
         description: "File description text",
         thumbnail: "/images/file-thumb.png",
@@ -464,7 +466,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         title: "Test Link Page",
         description: "Link description text",
         thumbnail: "/images/link-thumb.png",
@@ -512,7 +514,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         title: "Homepage",
       })
     })
@@ -559,7 +561,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         title: "Article Without Image",
         description: "Article without image",
         thumbnail: undefined,
@@ -612,7 +614,7 @@ describe("page.router", async () => {
       })
 
       // Assert - should get data from the IndexPage
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         title: "Collection Index",
         description: "Collection index page subtitle",
       })
@@ -664,7 +666,7 @@ describe("page.router", async () => {
       })
 
       // Assert - should get data from the IndexPage
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         title: "Folder Index Page",
         description: "Folder index summary",
         thumbnail: "/images/folder-index.png",
@@ -712,7 +714,7 @@ describe("page.router", async () => {
       const result = await caller.list({ siteId: site.id })
 
       // Assert
-      expect(result).toEqual([])
+      expect(result).toStrictEqual([])
     })
   })
 
@@ -819,8 +821,8 @@ describe("page.router", async () => {
       })
 
       // Assert
-      expect(result.siteId).toEqual(site.id)
-      expect(result.type).toEqual("Page")
+      expect(result.siteId).toStrictEqual(site.id)
+      expect(result.type).toBe("Page")
       expect(result).toMatchObject(expectedPage)
     })
 
@@ -841,8 +843,8 @@ describe("page.router", async () => {
       })
 
       // Assert
-      expect(result.siteId).toEqual(site.id)
-      expect(result.type).toEqual("CollectionPage")
+      expect(result.siteId).toStrictEqual(site.id)
+      expect(result.type).toBe("CollectionPage")
       expect(result).toMatchObject(expectedPage)
     })
 
@@ -863,8 +865,8 @@ describe("page.router", async () => {
       })
 
       // Assert
-      expect(result.siteId).toEqual(site.id)
-      expect(result.type).toEqual("RootPage")
+      expect(result.siteId).toStrictEqual(site.id)
+      expect(result.type).toBe("RootPage")
       expect(result).toMatchObject(expectedPage)
     })
 
@@ -985,7 +987,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      expect(result.type).toEqual("Page")
+      expect(result.type).toBe("Page")
       expect(result).toMatchObject(expected)
     })
 
@@ -1012,7 +1014,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      expect(result.type).toEqual("RootPage")
+      expect(result.type).toBe("RootPage")
       expect(result).toMatchObject(expected)
     })
 
@@ -1039,7 +1041,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      expect(result.type).toEqual("CollectionPage")
+      expect(result.type).toBe("CollectionPage")
       expect(result).toMatchObject(expected)
     })
 
@@ -1066,7 +1068,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      expect(result.type).toEqual("FolderMeta")
+      expect(result.type).toBe("FolderMeta")
       expect(result).toMatchObject(expected)
     })
 
@@ -1180,7 +1182,9 @@ describe("page.router", async () => {
           ],
         },
       ]
-      expect(unexpectedBlock).not.toEqual(pageToReorder.blob.content.content)
+      expect(unexpectedBlock).not.toStrictEqual(
+        pageToReorder.blob.content.content,
+      )
       await setupAdminPermissions({
         userId: session.userId ?? undefined,
         siteId: pageToReorder.site.id,
@@ -1321,8 +1325,8 @@ describe("page.router", async () => {
         .select("content")
         .executeTakeFirstOrThrow()
       const expectedBlocks = pageToReorder.blob.content.content.reverse()
-      expect(actual.content.content).toEqual(expectedBlocks)
-      expect(result).toEqual(expectedBlocks)
+      expect(actual.content.content).toStrictEqual(expectedBlocks)
+      expect(result).toStrictEqual(expectedBlocks)
       await assertAuditLogRows(1)
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog[0]).toMatchObject({
@@ -1483,7 +1487,7 @@ describe("page.router", async () => {
         .where("id", "=", pageToUpdate.draftBlobId)
         .select("content")
         .executeTakeFirstOrThrow()
-      expect(actual.content).toEqual(result.content)
+      expect(actual.content).toStrictEqual(result.content)
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog[0]).toMatchObject({
         eventType: "ResourceUpdate",
@@ -1907,8 +1911,9 @@ describe("page.router", async () => {
     })
 
     // TODO: Implement tests when permissions are implemented
-    it.skip("should throw 403 if user does not have write access to folder", async () => {})
-    it.skip("should throw 403 if user does not have write access to root", async () => {})
+    it.todo("should throw 403 if user does not have write access to folder")
+
+    it.todo("should throw 403 if user does not have write access to root")
   })
 
   describe("getRootPage", () => {
@@ -1973,9 +1978,9 @@ describe("page.router", async () => {
       )
     })
 
-    it.skip("should throw 403 if user does not have access to site", async () => {})
+    it.todo("should throw 403 if user does not have access to site")
 
-    it.skip("should throw 403 if user does not have read access to root", async () => {})
+    it.todo("should throw 403 if user does not have read access to root")
   })
 
   describe("publishPage", () => {
@@ -2031,7 +2036,7 @@ describe("page.router", async () => {
         .selectAll()
         .execute()
 
-      expect(previousVersions.length).toEqual(0)
+      expect(previousVersions).toHaveLength(0)
 
       // Act
       await caller.publishPage({ siteId: site.id, pageId: Number(page.id) })
@@ -2043,7 +2048,7 @@ describe("page.router", async () => {
         .selectAll()
         .execute()
 
-      expect(newVersions.length).toEqual(1)
+      expect(newVersions).toHaveLength(1)
       expect(newVersions[0]).toMatchObject({
         resourceId: page.id,
         versionNum: 1,
@@ -2055,7 +2060,7 @@ describe("page.router", async () => {
         .where("eventType", "=", AuditLogEvent.Publish)
         .selectAll()
         .execute()
-      expect(auditLogs.length).toEqual(1)
+      expect(auditLogs).toHaveLength(1)
     })
 
     it("should block the first publish when a live redirect occupies the page's URL", async () => {
@@ -2098,7 +2103,7 @@ describe("page.router", async () => {
         .where("resourceId", "=", page.id)
         .selectAll()
         .execute()
-      expect(versions.length).toEqual(0)
+      expect(versions).toHaveLength(0)
     })
 
     it("should allow publishing when a redirect exists at a different path", async () => {
@@ -2128,7 +2133,7 @@ describe("page.router", async () => {
         .where("resourceId", "=", page.id)
         .selectAll()
         .execute()
-      expect(versions.length).toEqual(1)
+      expect(versions).toHaveLength(1)
     })
 
     it("should not block re-publishing an already-published page whose URL has a redirect", async () => {
@@ -2162,77 +2167,87 @@ describe("page.router", async () => {
       ).resolves.toBeUndefined()
     })
 
-    it("should back-fill a literal redirect destination into a reference on first publish", async () => {
-      // Arrange — a draft page, plus a redirect whose destination is the page's
-      // literal path (created before the page was live). Publishing the page
-      // should rewrite that literal into a [resource:...] reference so the
-      // redirect follows the page's future moves.
-      const { site, page } = await setupPageResource({
-        resourceType: ResourceType.Page,
-      })
-      await setupPublisherPermissions({
-        userId: session.userId ?? undefined,
-        siteId: site.id,
-      })
-      const fullPermalink = await getResourceFullPermalink(
-        site.id,
-        Number(page.id),
-      )
-      const literalDestination = normalizeRedirectPath(fullPermalink!)
-      await db
-        .insertInto("Redirect")
-        .values({
-          siteId: site.id,
-          source: "/old-url",
-          destination: literalDestination,
+    describe("should back-fill a literal redirect destination into a reference on first publish", () => {
+      let site: Awaited<ReturnType<typeof setupPageResource>>["site"]
+      let page: Awaited<ReturnType<typeof setupPageResource>>["page"]
+      let literalDestination: string
+      let redirect: { destination: string }
+      let deleteEntry: AuditLog
+      let createEntry: AuditLog
+
+      beforeAll(async () => {
+        const setup = await setupPageResource({
+          resourceType: ResourceType.Page,
         })
-        .execute()
+        site = setup.site
+        page = setup.page
+        await setupPublisherPermissions({
+          userId: session.userId ?? undefined,
+          siteId: site.id,
+        })
+        const fullPermalink = await getResourceFullPermalink(
+          site.id,
+          Number(page.id),
+        )
+        literalDestination = normalizeRedirectPath(fullPermalink!)
+        await db
+          .insertInto("Redirect")
+          .values({
+            siteId: site.id,
+            source: "/old-url",
+            destination: literalDestination,
+          })
+          .execute()
 
-      // Act
-      await caller.publishPage({ siteId: site.id, pageId: Number(page.id) })
+        await caller.publishPage({ siteId: site.id, pageId: Number(page.id) })
 
-      // Assert — the literal destination is now a reference to the page
-      const redirect = await db
-        .selectFrom("Redirect")
-        .selectAll()
-        .where("siteId", "=", site.id)
-        .where("source", "=", "/old-url")
-        .executeTakeFirstOrThrow()
-      expect(redirect.destination).toEqual(`[resource:${site.id}:${page.id}]`)
+        redirect = await db
+          .selectFrom("Redirect")
+          .selectAll()
+          .where("siteId", "=", site.id)
+          .where("source", "=", "/old-url")
+          .executeTakeFirstOrThrow()
+        deleteEntry = await db
+          .selectFrom("AuditLog")
+          .selectAll()
+          .where("siteId", "=", site.id)
+          .where("eventType", "=", "RedirectDelete")
+          .executeTakeFirstOrThrow()
+        createEntry = await db
+          .selectFrom("AuditLog")
+          .selectAll()
+          .where("siteId", "=", site.id)
+          .where("eventType", "=", "RedirectCreate")
+          .executeTakeFirstOrThrow()
+      })
 
-      // Assert — a RedirectDelete entry records the literal form being retired
-      const deleteEntry = await db
-        .selectFrom("AuditLog")
-        .selectAll()
-        .where("siteId", "=", site.id)
-        .where("eventType", "=", "RedirectDelete")
-        .executeTakeFirstOrThrow()
-      expect(deleteEntry.userId).toBe(session.userId)
-      const deleteDelta = deleteEntry.delta as {
-        before: { destination: string; deletedAt: string | null }
-        after: { destination: string; deletedAt: string | null }
-      }
-      expect(deleteDelta.before.destination).toBe(literalDestination)
-      expect(deleteDelta.before.deletedAt).toBeNull()
-      expect(deleteDelta.after.destination).toBe(literalDestination)
-      expect(deleteDelta.after.deletedAt).not.toBeNull()
+      it("rewrites the redirect destination into a resource reference", () => {
+        expect(redirect.destination).toBe(`[resource:${site.id}:${page.id}]`)
+      })
 
-      // Assert — a RedirectCreate entry records the reference form being adopted
-      const createEntry = await db
-        .selectFrom("AuditLog")
-        .selectAll()
-        .where("siteId", "=", site.id)
-        .where("eventType", "=", "RedirectCreate")
-        .executeTakeFirstOrThrow()
-      expect(createEntry.userId).toBe(session.userId)
-      const createDelta = createEntry.delta as {
-        before: null
-        after: { destination: string }
-      }
-      expect(createDelta.before).toBeNull()
-      expect(createDelta.after.destination).toBe(
-        `[resource:${site.id}:${page.id}]`,
-      )
+      it("records a RedirectDelete audit entry for the literal form", () => {
+        const { before, after } = deleteEntry.delta as {
+          before: { destination: string; deletedAt: string | null }
+          after: { destination: string; deletedAt: string | null }
+        }
+
+        expect(deleteEntry.userId).toBe(session.userId)
+        expect(before.destination).toBe(literalDestination)
+        expect(before.deletedAt).toBeNull()
+        expect(after.destination).toBe(literalDestination)
+        expect(after.deletedAt).not.toBeNull()
+      })
+
+      it("records a RedirectCreate audit entry for the reference form", () => {
+        const { after } = createEntry.delta as {
+          before: null
+          after: { destination: string }
+        }
+
+        expect(createEntry.userId).toBe(session.userId)
+        expect(createEntry.delta.before).toBeNull()
+        expect(after.destination).toBe(`[resource:${site.id}:${page.id}]`)
+      })
     })
 
     it("should leave a literal redirect to a different path untouched on publish", async () => {
@@ -2264,7 +2279,7 @@ describe("page.router", async () => {
         .where("siteId", "=", site.id)
         .where("source", "=", "/old-url")
         .executeTakeFirstOrThrow()
-      expect(redirect.destination).toEqual("/some-other-page")
+      expect(redirect.destination).toBe("/some-other-page")
     })
 
     it("should back-fill a literal redirect to a folder URL into a container reference when the folder's index page is first published", async () => {
@@ -2309,7 +2324,7 @@ describe("page.router", async () => {
         .where("siteId", "=", site.id)
         .where("source", "=", "/old-url")
         .executeTakeFirstOrThrow()
-      expect(redirect.destination).toEqual(`[resource:${site.id}:${folder.id}]`)
+      expect(redirect.destination).toBe(`[resource:${site.id}:${folder.id}]`)
     })
   })
 
@@ -2378,7 +2393,7 @@ describe("page.router", async () => {
         .where("eventType", "=", AuditLogEvent.ResourceUpdate)
         .selectAll()
         .execute()
-      expect(auditLogs.length).toEqual(1)
+      expect(auditLogs).toHaveLength(1)
     })
   })
 
@@ -2435,7 +2450,7 @@ describe("page.router", async () => {
           shouldCreateRedirect: true,
         })
 
-        expect(await liveRedirects(site.id)).toHaveLength(0)
+        await expect(liveRedirects(site.id)).resolves.toHaveLength(0)
       })
 
       it("does not create a redirect when shouldCreateRedirect is false", async () => {
@@ -2450,7 +2465,7 @@ describe("page.router", async () => {
           shouldCreateRedirect: false,
         })
 
-        expect(await liveRedirects(site.id)).toHaveLength(0)
+        await expect(liveRedirects(site.id)).resolves.toHaveLength(0)
       })
 
       it("blocks renaming a published page onto a path a live redirect points elsewhere from", async () => {
@@ -2820,7 +2835,7 @@ describe("page.router", async () => {
       )
     })
 
-    it.skip("should throw 403 if user does not have write access to page", async () => {})
+    it.todo("should throw 403 if user does not have write access to page")
 
     it("should throw 400 if attempting to update the search page settings", async () => {
       // Arrange
@@ -2843,7 +2858,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message: "The search page settings cannot be edited",
@@ -2896,7 +2911,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual(`/${page.permalink}`)
+      expect(result).toBe(`/${page.permalink}`)
     })
 
     it("should return the full permalink of root page successfully", async () => {
@@ -2916,7 +2931,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual(`/`)
+      expect(result).toBe(`/`)
     })
 
     it("should return the full permalink of nested page successfully", async () => {
@@ -2939,7 +2954,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual(`/${folder.permalink}/${page.permalink}`)
+      expect(result).toBe(`/${folder.permalink}/${page.permalink}`)
     })
 
     it("should throw 403 if user does not have access to site", async () => {
@@ -2963,7 +2978,7 @@ describe("page.router", async () => {
       )
     })
 
-    it.skip("should throw 403 if user does not have read access to page", async () => {})
+    it.todo("should throw 403 if user does not have read access to page")
   })
 
   describe("getPermalinkTree", () => {
@@ -3027,7 +3042,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual([folder.permalink])
+      expect(result).toStrictEqual([folder.permalink])
     })
 
     it("should return the permalink tree of second-level page successfully", async () => {
@@ -3050,7 +3065,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual([folder.permalink, page.permalink])
+      expect(result).toStrictEqual([folder.permalink, page.permalink])
     })
 
     it("should throw 403 if user does not have access to site", async () => {
@@ -3073,7 +3088,7 @@ describe("page.router", async () => {
       )
     })
 
-    it.skip("should throw 403 if user does not have read access to root", async () => {})
+    it.todo("should throw 403 if user does not have read access to root")
   })
 
   describe("createIndexPage", () => {
@@ -3126,7 +3141,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({ pageId: expect.any(String) })
+      expect(result).toStrictEqual({ pageId: expect.any(String) })
     })
   })
   describe("schedulePage", () => {
@@ -3137,7 +3152,8 @@ describe("page.router", async () => {
     afterEach(() => {
       MockDate.reset() // Reset time after each test
     })
-    it("should throw 403 if user does not have publish access to the site", async () => {
+
+    it("should throw 403 when scheduling if user does not have publish access to the site", async () => {
       //  Arrange
       const { site, page: expectedPage } = await setupPageResource({
         resourceType: "Page",
@@ -3164,6 +3180,7 @@ describe("page.router", async () => {
         }),
       )
     })
+
     it("should set a scheduled time for a page", async () => {
       // Arrange
       const { site, page: expectedPage } = await setupPageResource({
@@ -3200,8 +3217,8 @@ describe("page.router", async () => {
         seconds: 0,
         milliseconds: 0,
       })
-      expect(actual.scheduledAt).toEqual(expectedDate)
-      expect(actual.scheduledBy).toEqual(session.userId)
+      expect(actual.scheduledAt).toStrictEqual(expectedDate)
+      expect(actual.scheduledBy).toStrictEqual(session.userId)
       // expect the audit log to be created, with the updated scheduledAt time
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog).toHaveLength(1)
@@ -3221,6 +3238,7 @@ describe("page.router", async () => {
         },
       })
     })
+
     it("providing a scheduled timestamp in the past leads to an error being thrown", async () => {
       // Arrange
       const { site, page: expectedPage } = await setupPageResource({
@@ -3239,7 +3257,7 @@ describe("page.router", async () => {
           pageId: Number(expectedPage.id),
           scheduledAt: subDays(FIXED_NOW, 1),
         }),
-      ).rejects.toThrow()
+      ).rejects.toThrow("Scheduled time must be in the future")
 
       // Assert
       // Since the request fails, expect scheduledAt to be null
@@ -3252,7 +3270,8 @@ describe("page.router", async () => {
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog).toHaveLength(0)
     })
-    it("should throw 403 if user does not have publish access to the site", async () => {
+
+    it("should throw 403 when scheduling as an editor without publish access", async () => {
       //  Arrange
       const { site, page: expectedPage } = await setupPageResource({
         resourceType: "Page",
@@ -3278,6 +3297,7 @@ describe("page.router", async () => {
         }),
       )
     })
+
     it("should throw 401 if not logged in", async () => {
       //  Arrange
       const { site, page: expectedPage } = await setupPageResource({
@@ -3297,6 +3317,7 @@ describe("page.router", async () => {
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
+
     it("should throw NOT_FOUND if the page resource does not exist", async () => {
       //  Arrange
       const { site, page: expectedPage } = await setupPageResource({
@@ -3327,6 +3348,7 @@ describe("page.router", async () => {
     afterEach(() => {
       MockDate.reset() // Reset time after each test
     })
+
     // TODO: check that the request fails if the job is already active - requires mocking the job queue
     it("cancelling a scheduled publish works correctly", async () => {
       // Arrange
@@ -3361,6 +3383,7 @@ describe("page.router", async () => {
       expect(actual.scheduledAt).toBeNull()
       expect(actual.scheduledBy).toBeNull()
     })
+
     it("cancelling a scheduled publish throws an error if the page is not scheduled", async () => {
       // Arrange
       const { site, page: expectedPage } = await setupPageResource({
@@ -3384,7 +3407,8 @@ describe("page.router", async () => {
         }),
       )
     })
-    it("should throw 403 if user does not have publish access to the site", async () => {
+
+    it("should throw 403 when cancelling schedule if user does not have publish access to the site", async () => {
       //  Arrange
       const { site, page: expectedPage } = await setupPageResource({
         resourceType: "Page",
@@ -3415,6 +3439,7 @@ describe("page.router", async () => {
         }),
       )
     })
+
     it("should throw 401 if not logged in", async () => {
       //  Arrange
       const { site, page: expectedPage } = await setupPageResource({
@@ -3439,6 +3464,7 @@ describe("page.router", async () => {
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
+
     it("should throw NOT_FOUND if the page resource does not exist", async () => {
       // Arrange
       const { site, page: expectedPage } = await setupPageResource({

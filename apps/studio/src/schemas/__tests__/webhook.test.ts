@@ -5,6 +5,7 @@ import { createMocks } from "node-mocks-http"
 import { resetTables } from "tests/integration/helpers/db"
 import { createTestUser } from "tests/integration/helpers/iron-session"
 import { setupCodeBuildJob, setupUser } from "tests/integration/helpers/seed"
+import { beforeEach, vi, describe, expect, it } from "vitest"
 import handler from "~/pages/api/webhooks/updateCodebuildWebhook"
 import { WEBHOOK_X_API_KEY_HEADER } from "~/server/trpc"
 
@@ -84,6 +85,7 @@ describe("webhook", () => {
       // Assert
       expect(res.statusCode).toBe(200)
     })
+
     it("providing an incorrect API key causes a 401", async () => {
       // Arrange
       const user = await setupUser(createTestUser())
@@ -104,6 +106,7 @@ describe("webhook", () => {
       // Assert
       expect(res.statusCode).toBe(401)
     })
+
     it("providing an incorrect API key with the expected length causes a 401", async () => {
       // Arrange
       const user = await setupUser(createTestUser())
@@ -124,6 +127,7 @@ describe("webhook", () => {
       // Assert
       expect(res.statusCode).toBe(401)
     })
+
     it("requests missing an API key causes a 401", async () => {
       // Arrange
       const user = await setupUser(createTestUser())

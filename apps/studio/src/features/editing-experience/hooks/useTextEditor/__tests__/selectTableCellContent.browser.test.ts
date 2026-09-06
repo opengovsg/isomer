@@ -226,7 +226,7 @@ describe("selectTableCellContent", () => {
     expect(selectedText(editor)).toBe("Cell One")
     expect(editor.state.selection.from).toBe(cellOne.from)
     expect(editor.state.selection.to).toBe(cellOne.to)
-    expect(await copiedText()).toBe("Cell One")
+    await expect(copiedText()).resolves.toBe("Cell One")
   })
 
   it("selects the header under the caret", async () => {
@@ -243,7 +243,7 @@ describe("selectTableCellContent", () => {
     expect(selectedText(editor)).toBe("Header A")
     expect(editor.state.selection.from).toBe(headerA.from)
     expect(editor.state.selection.to).toBe(headerA.to)
-    expect(await copiedText()).toBe("Header A")
+    await expect(copiedText()).resolves.toBe("Header A")
   })
 
   it("selects every paragraph in a multi-paragraph cell", async () => {
@@ -261,7 +261,7 @@ describe("selectTableCellContent", () => {
     // Assert
     expect(handled).toBe(true)
     expect(selectedText(editor)).toBe("First lineSecond line")
-    expect(await copiedText()).toBe("First line\n\nSecond line")
+    await expect(copiedText()).resolves.toBe("First line\n\nSecond line")
   })
 
   it("returns false outside a table", () => {
@@ -299,7 +299,7 @@ describe("IsomerTable Mod-a shortcut", () => {
     expect(selectedText(editor)).toBe("Cell Two")
     expect(editor.state.selection.from).toBe(cellTwo.from)
     expect(editor.state.selection.to).toBe(cellTwo.to)
-    expect(await copiedText()).toBe("Cell Two")
+    await expect(copiedText()).resolves.toBe("Cell Two")
   })
 
   it("selects the whole document on Mod-a outside a table", () => {

@@ -13,7 +13,7 @@ import {
   setupPublisherPermissions,
   setUpWhitelist,
 } from "tests/integration/helpers/seed"
-import { vi } from "vitest"
+import { vi, expect, beforeEach, describe, beforeAll, it } from "vitest"
 import { deleteFile, generateSignedPutUrl, putObjectDirect } from "~/lib/s3"
 import { MAX_DELETE_FILE_KEYS } from "~/schemas/asset"
 import { createCallerFactory } from "~/server/trpc"
@@ -662,7 +662,7 @@ describe("asset.router", async () => {
       await expect(result).resolves.toMatchObject({
         fileKey: expect.stringContaining(".svg"),
       })
-      expect(putObjectDirect).toHaveBeenCalledTimes(1)
+      expect(putObjectDirect).toHaveBeenCalledOnce()
     })
 
     it("should reject fileName not ending in .svg", async () => {

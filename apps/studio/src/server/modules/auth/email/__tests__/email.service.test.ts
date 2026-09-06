@@ -1,5 +1,6 @@
 import { resetTables } from "tests/integration/helpers/db"
 import { setupUser } from "tests/integration/helpers/seed"
+import { beforeEach, describe, expect, it } from "vitest"
 import { db } from "~/server/modules/database"
 import { AuditLogEvent } from "~prisma/generated/prisma/client"
 
@@ -12,7 +13,7 @@ describe("email.service", () => {
     await resetTables("AuditLog", "User")
   })
 
-  describe("upsertUser", () => {
+  describe(upsertUser, () => {
     it("should return an existing user if it already exists in the database", async () => {
       // Arrange
       await setupUser({ email: TEST_EMAIL })

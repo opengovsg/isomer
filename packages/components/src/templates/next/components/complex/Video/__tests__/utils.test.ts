@@ -9,7 +9,7 @@ import {
 } from "../utils"
 
 describe("utils", () => {
-  describe("getPrivacyEnhancedVimeoEmbedUrl", () => {
+  describe(getPrivacyEnhancedVimeoEmbedUrl, () => {
     it("adds dnt=true when URL has no existing query params", () => {
       expect(
         getPrivacyEnhancedVimeoEmbedUrl(
@@ -35,7 +35,7 @@ describe("utils", () => {
     })
   })
 
-  describe("getPrivacyEnhancedYouTubeEmbedUrl", () => {
+  describe(getPrivacyEnhancedYouTubeEmbedUrl, () => {
     it("rewrites www.youtube.com to www.youtube-nocookie.com for watch URLs", () => {
       const url = new URL("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
       expect(getPrivacyEnhancedYouTubeEmbedUrl(url)).toBe(
@@ -89,7 +89,7 @@ describe("utils", () => {
     })
   })
 
-  describe("getYouTubeVideoId", () => {
+  describe(getYouTubeVideoId, () => {
     it("should extract video ID from YouTube watch URLs", () => {
       const testCases = [
         {
@@ -169,7 +169,7 @@ describe("utils", () => {
     })
   })
 
-  describe("getVimeoVideoId", () => {
+  describe(getVimeoVideoId, () => {
     it("should extract video ID from Vimeo embed URLs", () => {
       const testCases = [
         {
@@ -225,7 +225,7 @@ describe("utils", () => {
     })
   })
 
-  describe("isFacebookReelEmbedUrl", () => {
+  describe(isFacebookReelEmbedUrl, () => {
     it("should return true for Facebook Reel embed URLs", () => {
       const testCases = [
         "https://www.facebook.com/plugins/video.php?height=476&href=https%3A%2F%2Fwww.facebook.com%2Freel%2F3028033664054832%2F&show_text=false&width=267&t=0",

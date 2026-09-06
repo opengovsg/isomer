@@ -13,6 +13,7 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
+import { beforeEach, vi, afterEach, describe, expect, it } from "vitest"
 import { createCallerFactory } from "~/server/trpc"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 
@@ -93,7 +94,7 @@ describe("redirect.router", async () => {
       const result = unauthedCaller.list({ siteId })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -106,7 +107,7 @@ describe("redirect.router", async () => {
       const result = caller.list({ siteId: otherSite.id })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -120,7 +121,7 @@ describe("redirect.router", async () => {
       const result = await caller.list({ siteId })
 
       // Assert
-      expect(result).toEqual([])
+      expect(result).toStrictEqual([])
     })
 
     it("should return live redirects with correct shape", async () => {
@@ -140,7 +141,7 @@ describe("redirect.router", async () => {
         destination: "/new",
       })
       expect(result[0]!.publishedAt).toBeInstanceOf(Date)
-      expect(typeof result[0]!.id).toBe("string")
+      expect(result[0]!.id).toBeTypeOf("string")
     })
 
     it("should not return soft-deleted redirects", async () => {
@@ -211,7 +212,7 @@ describe("redirect.router", async () => {
       const result = await caller.list({ siteId })
 
       // Assert
-      expect(result.map((row) => row.source)).toEqual([
+      expect(result.map((row) => row.source)).toStrictEqual([
         "/newest",
         "/middle",
         "/oldest",
@@ -288,12 +289,12 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      expect(ascending.map((row) => row.source)).toEqual([
+      expect(ascending.map((row) => row.source)).toStrictEqual([
         "/apple",
         "/banana",
         "/cherry",
       ])
-      expect(descending.map((row) => row.source)).toEqual([
+      expect(descending.map((row) => row.source)).toStrictEqual([
         "/cherry",
         "/banana",
         "/apple",
@@ -307,7 +308,7 @@ describe("redirect.router", async () => {
       const result = unauthedCaller.count({ siteId })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -320,7 +321,7 @@ describe("redirect.router", async () => {
       const result = caller.count({ siteId: otherSite.id })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -365,7 +366,7 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -382,7 +383,7 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -400,7 +401,7 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({ errors: [] })
+      expect(result).toStrictEqual({ errors: [] })
     })
 
     it("should report no issues for a redirect to a published page", async () => {
@@ -415,7 +416,7 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({ errors: [] })
+      expect(result).toStrictEqual({ errors: [] })
     })
 
     it("should error when a live redirect already exists for the source", async () => {
@@ -554,7 +555,7 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      expect(result.errors).toEqual([])
+      expect(result.errors).toStrictEqual([])
     })
 
     it("should error when the source is the URL of a published page", async () => {
@@ -590,7 +591,7 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      expect(result.errors).toEqual([])
+      expect(result.errors).toStrictEqual([])
     })
 
     it("should error when the source is the URL of a live folder (published index)", async () => {
@@ -641,7 +642,7 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -658,7 +659,7 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -727,7 +728,7 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "CONFLICT",
           message: "A redirect already exists for /page",
@@ -782,7 +783,7 @@ describe("redirect.router", async () => {
       const result = caller.create({ siteId, source: "/a", destination: "/b" })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         "This will trap visitors in a never-ending loop.",
       )
       const rows = await db
@@ -832,7 +833,7 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "PRECONDITION_FAILED",
           message:
@@ -960,7 +961,7 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError("CodeBuild unavailable")
+      await expect(result).rejects.toThrow("CodeBuild unavailable")
       expect(publishSpy).toHaveBeenCalledOnce()
       const rows = await db
         .selectFrom("Redirect")
@@ -1253,7 +1254,7 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual([
+      expect(result).toStrictEqual([
         { reference, permalink: "/target-page", warn: false },
       ])
     })
@@ -1275,7 +1276,7 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual([
+      expect(result).toStrictEqual([
         { reference, permalink: "/draft-page", warn: true },
       ])
     })
@@ -1303,7 +1304,7 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual([
+      expect(result).toStrictEqual([
         { reference, permalink: "/parent-folder/child-page", warn: false },
       ])
     })
@@ -1329,7 +1330,9 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual([{ reference, permalink: "/info", warn: false }])
+      expect(result).toStrictEqual([
+        { reference, permalink: "/info", warn: false },
+      ])
     })
 
     it("should resolve a deleted page's reference to null and warn", async () => {
@@ -1343,7 +1346,7 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual([{ reference, permalink: null, warn: true }])
+      expect(result).toStrictEqual([{ reference, permalink: null, warn: true }])
     })
 
     it("should resolve a reference whose embedded siteId is not this site to null and warn", async () => {
@@ -1363,7 +1366,7 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual([{ reference, permalink: null, warn: true }])
+      expect(result).toStrictEqual([{ reference, permalink: null, warn: true }])
     })
 
     it("should not resolve or warn for an external URL destination", async () => {
@@ -1377,7 +1380,9 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual([{ reference, permalink: null, warn: false }])
+      expect(result).toStrictEqual([
+        { reference, permalink: null, warn: false },
+      ])
     })
 
     it("should not warn for a literal path to a published page (no permalink echoed)", async () => {
@@ -1404,7 +1409,7 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual([
+      expect(result).toStrictEqual([
         { reference: "/leaf", permalink: null, warn: false },
       ])
     })
@@ -1433,7 +1438,7 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual([
+      expect(result).toStrictEqual([
         { reference: "/leaf#section", permalink: null, warn: false },
       ])
     })
@@ -1459,7 +1464,7 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual([
+      expect(result).toStrictEqual([
         { reference: "/draft-leaf", permalink: null, warn: true },
       ])
     })
@@ -1472,7 +1477,7 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual([
+      expect(result).toStrictEqual([
         { reference: "/missing", permalink: null, warn: true },
       ])
     })
@@ -1505,7 +1510,7 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual([
+      expect(result).toStrictEqual([
         { reference: "/folder", permalink: null, warn: false },
       ])
     })
@@ -1536,7 +1541,7 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual([
+      expect(result).toStrictEqual([
         { reference: "/folder", permalink: null, warn: true },
       ])
     })
@@ -1590,7 +1595,7 @@ describe("redirect.router", async () => {
       const result = unauthedCaller.delete({ siteId, id: "1" })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -1603,7 +1608,7 @@ describe("redirect.router", async () => {
       const result = caller.delete({ siteId: otherSite.id, id: "1" })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1639,7 +1644,7 @@ describe("redirect.router", async () => {
       const result = caller.delete({ siteId, id: "999999" })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "NOT_FOUND", message: "Redirect not found" }),
       )
     })
@@ -1673,7 +1678,7 @@ describe("redirect.router", async () => {
       const result = caller.delete({ siteId, id: inserted.id })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "NOT_FOUND", message: "Redirect not found" }),
       )
     })
@@ -1695,7 +1700,7 @@ describe("redirect.router", async () => {
       const result = caller.delete({ siteId, id: inserted.id })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "NOT_FOUND", message: "Redirect not found" }),
       )
       const row = await db
@@ -1721,7 +1726,7 @@ describe("redirect.router", async () => {
       const result = caller.delete({ siteId, id: inserted.id })
 
       // Assert
-      await expect(result).rejects.toThrowError("CodeBuild unavailable")
+      await expect(result).rejects.toThrow("CodeBuild unavailable")
       expect(publishSpy).toHaveBeenCalledOnce()
       const row = await db
         .selectFrom("Redirect")
@@ -1780,7 +1785,7 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1815,7 +1820,7 @@ describe("redirect.router", async () => {
       const result = await caller.getBySource({ siteId, source: "/old" })
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         destination: "https://www.example.gov.sg",
         destinationResourceId: null,
       })
@@ -1844,7 +1849,7 @@ describe("redirect.router", async () => {
 
       // Assert — destinationResourceId lets the caller detect a redirect that
       // points back at the page being edited
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         destination: "/target-page",
         destinationResourceId: Number(page.id),
       })
@@ -1865,7 +1870,7 @@ describe("redirect.router", async () => {
       const result = await caller.getBySource({ siteId, source: "old/" })
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         destination: "https://www.example.gov.sg",
         destinationResourceId: null,
       })
@@ -1903,7 +1908,7 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:

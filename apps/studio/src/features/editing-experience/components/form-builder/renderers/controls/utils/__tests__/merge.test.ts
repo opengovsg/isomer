@@ -1,3 +1,5 @@
+import { describe, expect, it } from "vitest"
+
 import { mergeResourcesWithOrdering } from "../mergeResourcesWithOrdering"
 
 describe("merge", () => {

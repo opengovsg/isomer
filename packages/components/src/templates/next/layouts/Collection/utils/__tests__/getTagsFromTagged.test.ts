@@ -23,7 +23,7 @@ describe("getTagsFromTagged", () => {
     const result = getTagsFromTagged(tagged, tagCategories)
 
     // Assert
-    expect(result).toEqual([
+    expect(result).toStrictEqual([
       { id: "topic-1", category: "Topic", selected: ["Health"] },
     ])
   })
@@ -49,7 +49,7 @@ describe("getTagsFromTagged", () => {
     const result = getTagsFromTagged(tagged, tagCategories)
 
     // Assert
-    expect(result).toEqual([
+    expect(result).toStrictEqual([
       { id: "topic-1", category: "Topic", selected: ["Health"] },
     ])
   })
@@ -70,7 +70,7 @@ describe("getTagsFromTagged", () => {
     const result = getTagsFromTagged(tagged, tagCategories)
 
     // Assert
-    expect(result).toEqual([])
+    expect(result).toStrictEqual([])
   })
 
   it("returns an empty array when tagCategories is empty", () => {
@@ -83,7 +83,7 @@ describe("getTagsFromTagged", () => {
     const result = getTagsFromTagged(tagged, tagCategories)
 
     // Assert
-    expect(result).toEqual([])
+    expect(result).toStrictEqual([])
   })
 
   it("keeps all tagged options for a category, uncombined", () => {
@@ -108,7 +108,7 @@ describe("getTagsFromTagged", () => {
     const result = getTagsFromTagged(tagged, tagCategories)
 
     // Assert
-    expect(result).toEqual([
+    expect(result).toStrictEqual([
       { id: "cat-1", category: "Category", selected: ["Guides", "Articles"] },
     ])
   })

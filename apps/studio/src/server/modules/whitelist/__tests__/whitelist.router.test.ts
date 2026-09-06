@@ -14,6 +14,7 @@ import {
   setupUser,
   setUpWhitelist,
 } from "tests/integration/helpers/seed"
+import { beforeEach, describe, expect, it } from "vitest"
 import { createCallerFactory } from "~/server/trpc"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
@@ -167,7 +168,7 @@ describe("whitelist.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         adminCount: 1,
         vendorCount: 0,
       })
@@ -196,7 +197,7 @@ describe("whitelist.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         adminCount: 0,
         vendorCount: 1,
       })
@@ -216,7 +217,7 @@ describe("whitelist.router", async () => {
       const expectedExpiry = new Date()
       expectedExpiry.setDate(expectedExpiry.getDate() + 90)
       expectedExpiry.setHours(0, 0, 0, 0)
-      expect(whitelistEntry?.expiry).toEqual(expectedExpiry)
+      expect(whitelistEntry?.expiry).toStrictEqual(expectedExpiry)
     })
 
     it("should whitelist emails successfully if user is an Isomer Migrator", async () => {
@@ -235,7 +236,7 @@ describe("whitelist.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         adminCount: 1,
         vendorCount: 1,
       })
@@ -271,7 +272,7 @@ describe("whitelist.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         adminCount: 2,
         vendorCount: 2,
       })
@@ -321,7 +322,7 @@ describe("whitelist.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         adminCount: 1,
         vendorCount: 0,
       })
@@ -418,7 +419,7 @@ describe("whitelist.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         adminCount: 0,
         vendorCount: 0,
       })

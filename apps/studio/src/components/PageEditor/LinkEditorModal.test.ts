@@ -33,9 +33,8 @@ describe("linkEditorSchema", () => {
       linkHref: "  https://isomer.gov.sg  ",
     })
     expect(result.success).toBe(true)
-    if (result.success) {
-      expect(result.data.linkHref).toBe("https://isomer.gov.sg")
-    }
+    if (!result.success) throw new Error("Expected parse to succeed")
+    expect(result.data.linkHref).toBe("https://isomer.gov.sg")
   })
 
   it("rejects a linkHref that is only whitespace", () => {

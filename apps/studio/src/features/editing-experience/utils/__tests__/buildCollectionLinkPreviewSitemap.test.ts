@@ -40,7 +40,7 @@ describe("buildCollectionLinkPreviewSitemap", () => {
       const result = buildSitemap()
 
       // Assert
-      expect(collectNodePermalinks(result)).toEqual([
+      expect(collectNodePermalinks(result)).toStrictEqual([
         "/",
         "/circulars",
         "/circulars/my-link",
@@ -57,7 +57,7 @@ describe("buildCollectionLinkPreviewSitemap", () => {
       })
 
       // Assert
-      expect(collectNodePermalinks(result)).toEqual([
+      expect(collectNodePermalinks(result)).toStrictEqual([
         "/",
         "/a",
         "/a/b",

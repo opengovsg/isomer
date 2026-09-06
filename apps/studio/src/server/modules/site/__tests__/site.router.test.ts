@@ -17,11 +17,12 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
+import { expect, vi, beforeEach, describe, beforeAll, it } from "vitest"
 import * as searchSgService from "~/server/modules/searchsg/searchsg.service"
 import { createCallerFactory } from "~/server/trpc"
 import { IsomerAdminRole, RoleType } from "~prisma/generated/generatedEnums"
 
-import type { User } from "../../database"
+import type { AuditLog, Footer, Navbar, Site, User } from "../../database"
 import { AuditLogEvent, db, jsonb, ResourceType } from "../../database"
 import { siteRouter } from "../site.router"
 
@@ -171,7 +172,7 @@ describe("site.router", async () => {
       const result = await caller.list()
 
       // Assert
-      expect(result).toEqual([])
+      expect(result).toStrictEqual([])
     })
 
     it("should include the Site if the user has any role permission for the site", async () => {
@@ -186,7 +187,7 @@ describe("site.router", async () => {
       const result = await caller.list()
 
       // Assert
-      expect(result).toEqual([
+      expect(result).toStrictEqual([
         {
           id: site.id,
           config: site.config,
@@ -208,7 +209,7 @@ describe("site.router", async () => {
       const result = await caller.list()
 
       // Assert
-      expect(result).toEqual([
+      expect(result).toStrictEqual([
         {
           id: site1.id,
           config: site1.config,
@@ -225,7 +226,7 @@ describe("site.router", async () => {
       const result = await caller.list()
 
       // Assert
-      expect(result).toEqual([])
+      expect(result).toStrictEqual([])
     })
 
     it("should only return sites if the permissions are not deleted for the site", async () => {
@@ -245,7 +246,7 @@ describe("site.router", async () => {
       const result = await caller.list()
 
       // Assert
-      expect(result).toEqual([
+      expect(result).toStrictEqual([
         {
           id: site2.id,
           config: site2.config,
@@ -267,7 +268,7 @@ describe("site.router", async () => {
       const result = await caller.list()
 
       // Assert
-      expect(result).toEqual(
+      expect(result).toStrictEqual(
         [site1, site2]
           .sort((a, b) => a.id - b.id)
           .map((site) => ({
@@ -294,7 +295,7 @@ describe("site.router", async () => {
       const result = await caller.list()
 
       // Assert
-      expect(result).toEqual([
+      expect(result).toStrictEqual([
         {
           id: site.id,
           config: site.config,
@@ -348,7 +349,9 @@ describe("site.router", async () => {
       const result = await caller.listAllSites()
 
       // Assert
-      expect(result).toEqual([pick(site, ["id", "config", "codeBuildId"])])
+      expect(result).toStrictEqual([
+        pick(site, ["id", "config", "codeBuildId"]),
+      ])
     })
   })
 
@@ -379,7 +382,7 @@ describe("site.router", async () => {
       const result = await caller.getSiteName({ siteId: site.id })
 
       // Assert
-      expect(result).toEqual({ name: site.name })
+      expect(result).toStrictEqual({ name: site.name })
     })
 
     it("should throw 403 if user does not have read access to the site", async () => {
@@ -444,7 +447,7 @@ describe("site.router", async () => {
       const result = await caller.getConfig({ id: site.id })
 
       // Assert
-      expect(result).toEqual(site.config)
+      expect(result).toStrictEqual(site.config)
     })
   })
 
@@ -468,6 +471,7 @@ describe("site.router", async () => {
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
+
     it("should throw 403 if the user does not have write access to the site", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -490,6 +494,7 @@ describe("site.router", async () => {
         }),
       )
     })
+
     it("should throw 403 if the user has publisher access to the site", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -561,7 +566,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         siteName: MOCK_SITE_NAME,
         logoUrl: MOCK_LOGO_URL,
         url: "https://www.isomer.gov.sg",
@@ -574,8 +579,9 @@ describe("site.router", async () => {
         .where("id", "=", site.id)
         .select("name")
         .executeTakeFirstOrThrow()
-      expect(updatedSite.name).toEqual(MOCK_SITE_NAME)
+      expect(updatedSite.name).toStrictEqual(MOCK_SITE_NAME)
     })
+
     it("should normalize an AskGov URL when updating the site config", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -598,8 +604,9 @@ describe("site.router", async () => {
       })
 
       // Assert
-      expect(result.askgov).toEqual({ "data-agency": "mha" })
+      expect(result.askgov).toStrictEqual({ "data-agency": "mha" })
     })
+
     it("should generate an audit log entry", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -620,6 +627,7 @@ describe("site.router", async () => {
       // Assert
       await assertAuditLog(session.userId)
     })
+
     it("should update searchsg if the update went through", async () => {
       // Arrange
       const mockSearch = {
@@ -664,7 +672,7 @@ describe("site.router", async () => {
         mockSearch.search.clientId,
         result.url,
       )
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         siteName: MOCK_SITE_NAME,
         logoUrl: MOCK_LOGO_URL,
         url: "https://www.isomer.gov.sg",
@@ -672,6 +680,7 @@ describe("site.router", async () => {
         ...mockSearch,
       })
     })
+
     it("should not allow a site admin to change the searchSG clientId", async () => {
       // Arrange
       const existingClientId = MOCK_SEARCHSG_CLIENT_ID
@@ -702,11 +711,12 @@ describe("site.router", async () => {
       })
 
       // Assert - the stored clientId should be the original DB value
-      expect(result.search).toEqual({
+      expect(result.search).toStrictEqual({
         type: "searchSG",
         clientId: existingClientId,
       })
     })
+
     it("should call updateSearchSGConfig with the DB clientId, not the user-supplied one", async () => {
       // Arrange
       const existingClientId = MOCK_SEARCHSG_CLIENT_ID
@@ -744,6 +754,7 @@ describe("site.router", async () => {
         result.url,
       )
     })
+
     it("uses clientId fixtures that pass the SearchSG format check", () => {
       // Guards the premise of the tampering tests below: a malformed clientId
       // is rejected downstream anyway, so the fixtures have to be well-formed
@@ -757,6 +768,7 @@ describe("site.router", async () => {
         ),
       ).toBe(true)
     })
+
     it("should not allow a site admin to enable searchSG with a supplied clientId", async () => {
       // Arrange - no search integration, so there is no clientId in the DB to
       // fall back on. The clientId is a valid UUID belonging to another site.
@@ -780,7 +792,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message:
@@ -788,6 +800,7 @@ describe("site.router", async () => {
         }),
       )
     })
+
     it("should not allow a site admin to switch search to egazette-algolia", async () => {
       // Arrange - site is not on egazette-algolia
       const { site } = await setupSite()
@@ -807,7 +820,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message:
@@ -815,6 +828,7 @@ describe("site.router", async () => {
         }),
       )
     })
+
     it("should not allow a site admin to switch search away from egazette-algolia", async () => {
       // Arrange - site is already on egazette-algolia
       const { site } = await setupSite()
@@ -844,7 +858,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message:
@@ -852,6 +866,7 @@ describe("site.router", async () => {
         }),
       )
     })
+
     it("should preserve the egazette-algolia config from DB and ignore tampered credentials", async () => {
       // Arrange - site is already on egazette-algolia
       const { site } = await setupSite()
@@ -886,7 +901,7 @@ describe("site.router", async () => {
       })
 
       // Assert - the stored search config is the original DB value
-      expect(result.search).toEqual(MOCK_EGAZETTE_ALGOLIA_SEARCH)
+      expect(result.search).toStrictEqual(MOCK_EGAZETTE_ALGOLIA_SEARCH)
     })
   })
 
@@ -914,6 +929,7 @@ describe("site.router", async () => {
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
+
     it("should throw 403 if the user does not have write access to the site", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -933,6 +949,7 @@ describe("site.router", async () => {
         }),
       )
     })
+
     it("should throw 403 if the user has publisher access to the site", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -955,6 +972,7 @@ describe("site.router", async () => {
         }),
       )
     })
+
     it("should update the site integrations if the user is a site admin", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -970,8 +988,9 @@ describe("site.router", async () => {
       })
 
       // Assert
-      expect(result.config).toEqual(MOCK_INTEGRATION_DATA)
+      expect(result.config).toStrictEqual(MOCK_INTEGRATION_DATA)
     })
+
     it.each([
       {
         input: "http://ask.gov.sg/mom/?topic=employment#contact",
@@ -1004,9 +1023,10 @@ describe("site.router", async () => {
         })
 
         // Assert
-        expect(result.config.askgov).toEqual({ "data-agency": expected })
+        expect(result.config.askgov).toStrictEqual({ "data-agency": expected })
       },
     )
+
     it("should generate an audit log entry", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -1039,11 +1059,14 @@ describe("site.router", async () => {
         data: {
           ...MOCK_INTEGRATION_DATA,
           fake: "fake",
-        } as unknown as typeof MOCK_INTEGRATION_DATA,
+        } as typeof MOCK_INTEGRATION_DATA & { fake: string },
       })
 
       // Assert
-      expect(result.config).toEqual({ ...MOCK_INTEGRATION_DATA, fake: "fake" })
+      expect(result.config).toStrictEqual({
+        ...MOCK_INTEGRATION_DATA,
+        fake: "fake",
+      })
     })
 
     it("should reject an invalid siteGtmId", async () => {
@@ -1098,11 +1121,12 @@ describe("site.router", async () => {
       })
 
       // Assert - the stored clientId should be the original DB value
-      expect(result.config.search).toEqual({
+      expect(result.config.search).toStrictEqual({
         type: "searchSG",
         clientId: MOCK_SEARCHSG_CLIENT_ID,
       })
     })
+
     it("should not allow a site admin to enable searchSG with a supplied clientId", async () => {
       // Arrange - no search integration, so there is no clientId in the DB
       const { site } = await setupSite()
@@ -1124,7 +1148,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message:
@@ -1132,6 +1156,7 @@ describe("site.router", async () => {
         }),
       )
     })
+
     it("should throw 400 if downgrading search integration from searchSG to localSearch", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -1161,7 +1186,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message:
@@ -1214,7 +1239,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message:
@@ -1251,7 +1276,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message:
@@ -1293,7 +1318,7 @@ describe("site.router", async () => {
       })
 
       // Assert - the stored search config is the original DB value
-      expect(result.config.search).toEqual(MOCK_EGAZETTE_ALGOLIA_SEARCH)
+      expect(result.config.search).toStrictEqual(MOCK_EGAZETTE_ALGOLIA_SEARCH)
     })
   })
 
@@ -1314,6 +1339,7 @@ describe("site.router", async () => {
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
+
     it("should throw 403 if the user does not have write access to the site", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -1333,6 +1359,7 @@ describe("site.router", async () => {
         }),
       )
     })
+
     it("should throw 403 if the user only has publisher access", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -1362,6 +1389,7 @@ describe("site.router", async () => {
         }),
       )
     })
+
     it("should throw 404 if the theme for the site could not be found", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -1384,6 +1412,7 @@ describe("site.router", async () => {
         }),
       )
     })
+
     it("should update the site theme if the user is a site admin", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -1408,6 +1437,7 @@ describe("site.router", async () => {
         theme: MOCK_ISOMER_THEME,
       })
     })
+
     it("should update searchsg if the user is a site admin", async () => {
       // Arrange
       const mockSearchSg = {
@@ -1450,6 +1480,7 @@ describe("site.router", async () => {
         site.config.url,
       )
     })
+
     it("should generate an audit log entry", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -1517,7 +1548,7 @@ describe("site.router", async () => {
       const result = await caller.getTheme({ id: site.id })
 
       // Assert
-      expect(result).toEqual(site.theme)
+      expect(result).toStrictEqual(site.theme)
     })
   })
 
@@ -1565,7 +1596,7 @@ describe("site.router", async () => {
       const result = await caller.getFooter({ id: site.id })
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         id: footer.id,
         content: footer.content,
         siteId: site.id,
@@ -1662,24 +1693,24 @@ describe("site.router", async () => {
         .where("siteId", "=", site.id)
         .selectAll()
         .executeTakeFirstOrThrow()
-      expect(newFooter.content).toEqual(footerContent)
+      expect(newFooter.content).toStrictEqual(footerContent)
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog).toHaveLength(2)
       expect(
         auditLog.some(({ eventType }) => {
           return eventType === AuditLogEvent.FooterUpdate
         }),
-      ).toEqual(true)
+      ).toBe(true)
       expect(
         auditLog.some(({ eventType }) => {
           return eventType === AuditLogEvent.Publish
         }),
-      ).toEqual(true)
+      ).toBe(true)
       expect(
         auditLog.every(({ userId }) => {
           return userId === session.userId
         }),
-      ).toEqual(true)
+      ).toBe(true)
     })
   })
 
@@ -1727,7 +1758,7 @@ describe("site.router", async () => {
       const result = await caller.getNavbar({ id: site.id })
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         id: navbar.id,
         content: navbar.content,
         siteId: site.id,
@@ -1824,24 +1855,24 @@ describe("site.router", async () => {
         .where("siteId", "=", site.id)
         .selectAll()
         .executeTakeFirstOrThrow()
-      expect(newNavbar.content).toEqual(navbarContent)
+      expect(newNavbar.content).toStrictEqual(navbarContent)
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog).toHaveLength(2)
       expect(
         auditLog.some(({ eventType }) => {
           return eventType === AuditLogEvent.NavbarUpdate
         }),
-      ).toEqual(true)
+      ).toBe(true)
       expect(
         auditLog.some(({ eventType }) => {
           return eventType === AuditLogEvent.Publish
         }),
-      ).toEqual(true)
+      ).toBe(true)
       expect(
         auditLog.every(({ userId }) => {
           return userId === session.userId
         }),
-      ).toEqual(true)
+      ).toBe(true)
     })
   })
 
@@ -1954,7 +1985,7 @@ describe("site.router", async () => {
       const result = await caller.getNotification({ siteId: site.id })
 
       // Assert
-      expect(result).toEqual({})
+      expect(result).toStrictEqual({})
     })
 
     it("should return the notification with the content in `prose` even if the base content is in `text` format", async () => {
@@ -1990,7 +2021,7 @@ describe("site.router", async () => {
       const actual = await caller.getNotification({ siteId: site.id })
 
       // Assert
-      expect(actual).toEqual(expected)
+      expect(actual).toStrictEqual(expected)
     })
   })
 
@@ -2108,24 +2139,26 @@ describe("site.router", async () => {
         .where("id", "=", site.id)
         .select("Site.config")
         .executeTakeFirstOrThrow()
-      expect(newSite.config.notification).toEqual(notification.notification)
+      expect(newSite.config.notification).toStrictEqual(
+        notification.notification,
+      )
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog).toHaveLength(2)
       expect(
         auditLog.some(({ eventType }) => {
           return eventType === AuditLogEvent.SiteConfigUpdate
         }),
-      ).toEqual(true)
+      ).toBe(true)
       expect(
         auditLog.some(({ eventType }) => {
           return eventType === AuditLogEvent.Publish
         }),
-      ).toEqual(true)
+      ).toBe(true)
       expect(
         auditLog.every(({ userId }) => {
           return userId === session.userId
         }),
-      ).toEqual(true)
+      ).toBe(true)
     })
 
     it("should add the site notification successfully if one did exist before", async () => {
@@ -2149,14 +2182,16 @@ describe("site.router", async () => {
         .where("id", "=", site.id)
         .select("Site.config")
         .executeTakeFirstOrThrow()
-      expect(newSite.config.notification).toEqual(notification.notification)
+      expect(newSite.config.notification).toStrictEqual(
+        notification.notification,
+      )
       const auditLog = await db
         .selectFrom("AuditLog")
         .selectAll()
         .executeTakeFirst()
       expect(auditLog).toBeDefined()
-      expect(auditLog?.eventType).toEqual(AuditLogEvent.SiteConfigUpdate)
-      expect(auditLog?.userId).toEqual(session.userId)
+      expect(auditLog?.eventType).toStrictEqual(AuditLogEvent.SiteConfigUpdate)
+      expect(auditLog?.userId).toStrictEqual(session.userId)
     })
 
     it("should remove the site notification successfully if notification is disabled", async () => {
@@ -2199,8 +2234,8 @@ describe("site.router", async () => {
         .selectAll()
         .executeTakeFirst()
       expect(auditLog).toBeDefined()
-      expect(auditLog?.eventType).toEqual(AuditLogEvent.SiteConfigUpdate)
-      expect(auditLog?.userId).toEqual(session.userId)
+      expect(auditLog?.eventType).toStrictEqual(AuditLogEvent.SiteConfigUpdate)
+      expect(auditLog?.userId).toStrictEqual(session.userId)
     })
   })
 
@@ -2253,126 +2288,164 @@ describe("site.router", async () => {
       )
     })
 
-    it("should save changes to the site config, navbar and footer successfully if user is an Isomer Core Admin", async () => {
-      // Arrange
+    describe("should save changes to the site config, navbar and footer successfully if user is an Isomer Core Admin", () => {
       const NEW_CONFIG = `"config"`
       const NEW_THEME = `"theme"`
       const NEW_NAVBAR = `"navbar"`
       const NEW_FOOTER = `"footer"`
-      const { site } = await setupSite()
-      await setupIsomerAdmin({
-        userId: session.userId!,
-        role: IsomerAdminRole.Core,
+      let site: Awaited<ReturnType<typeof setupSite>>["site"]
+      let newSite: Site
+      let newNavbar: Navbar
+      let newFooter: Footer
+      let auditLogs: AuditLog[]
+
+      beforeAll(async () => {
+        const setup = await setupSite()
+        site = setup.site
+        await setupIsomerAdmin({
+          userId: session.userId!,
+          role: IsomerAdminRole.Core,
+        })
+
+        await caller.setSiteConfigByAdmin({
+          siteId: site.id,
+          config: NEW_CONFIG,
+          theme: NEW_THEME,
+          navbar: NEW_NAVBAR,
+          footer: NEW_FOOTER,
+        })
+
+        newSite = await db
+          .selectFrom("Site")
+          .where("id", "=", site.id)
+          .selectAll()
+          .executeTakeFirstOrThrow()
+        newNavbar = await db
+          .selectFrom("Navbar")
+          .where("siteId", "=", site.id)
+          .selectAll()
+          .executeTakeFirstOrThrow()
+        newFooter = await db
+          .selectFrom("Footer")
+          .where("siteId", "=", site.id)
+          .selectAll()
+          .executeTakeFirstOrThrow()
+        auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
       })
 
-      // Act
-      await caller.setSiteConfigByAdmin({
-        siteId: site.id,
-        config: NEW_CONFIG,
-        theme: NEW_THEME,
-        navbar: NEW_NAVBAR,
-        footer: NEW_FOOTER,
+      it("should persist updated site config and theme", () => {
+        expect(newSite.config).toStrictEqual(NEW_CONFIG.replaceAll(`"`, ""))
+        expect(newSite.theme).toStrictEqual(NEW_THEME.replaceAll(`"`, ""))
       })
 
-      // Assert
-      const newSite = await db
-        .selectFrom("Site")
-        .where("id", "=", site.id)
-        .selectAll()
-        .executeTakeFirstOrThrow()
-      const newNavbar = await db
-        .selectFrom("Navbar")
-        .where("siteId", "=", site.id)
-        .selectAll()
-        .executeTakeFirstOrThrow()
-      const newFooter = await db
-        .selectFrom("Footer")
-        .where("siteId", "=", site.id)
-        .selectAll()
-        .executeTakeFirstOrThrow()
-      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
+      it("should persist updated navbar and footer content", () => {
+        expect(newNavbar.content).toStrictEqual(NEW_NAVBAR.replaceAll(`"`, ""))
+        expect(newFooter.content).toStrictEqual(NEW_FOOTER.replaceAll(`"`, ""))
+      })
 
-      expect(newSite.config).toEqual(NEW_CONFIG.replaceAll(`"`, ""))
-      expect(newSite.theme).toEqual(NEW_THEME.replaceAll(`"`, ""))
-      expect(newNavbar.content).toEqual(NEW_NAVBAR.replaceAll(`"`, ""))
-      expect(newFooter.content).toEqual(NEW_FOOTER.replaceAll(`"`, ""))
-      expect(auditLogs).toHaveLength(4)
-      expect(
-        auditLogs.some(
-          (log) => log.eventType === AuditLogEvent.SiteConfigUpdate,
-        ),
-      ).toBe(true)
-      expect(
-        auditLogs.some((log) => log.eventType === AuditLogEvent.NavbarUpdate),
-      ).toBe(true)
-      expect(
-        auditLogs.some((log) => log.eventType === AuditLogEvent.FooterUpdate),
-      ).toBe(true)
-      expect(
-        auditLogs.some((log) => log.eventType === AuditLogEvent.Publish),
-      ).toBe(true)
-      expect(auditLogs.every((log) => log.userId === session.userId)).toBe(true)
+      it("should create audit logs for each update", () => {
+        expect(auditLogs).toHaveLength(4)
+        expect(
+          auditLogs.some(
+            (log) => log.eventType === AuditLogEvent.SiteConfigUpdate,
+          ),
+        ).toBe(true)
+        expect(
+          auditLogs.some((log) => log.eventType === AuditLogEvent.NavbarUpdate),
+        ).toBe(true)
+        expect(
+          auditLogs.some((log) => log.eventType === AuditLogEvent.FooterUpdate),
+        ).toBe(true)
+        expect(
+          auditLogs.some((log) => log.eventType === AuditLogEvent.Publish),
+        ).toBe(true)
+      })
+
+      it("should attribute audit logs to the session user", () => {
+        expect(auditLogs.every((log) => log.userId === session.userId)).toBe(
+          true,
+        )
+      })
     })
 
-    it("should save changes to the site config, navbar and footer successfully if user is an Isomer Migrator Admin", async () => {
-      // Arrange
+    describe("should save changes to the site config, navbar and footer successfully if user is an Isomer Migrator Admin", () => {
       const NEW_CONFIG = `"config"`
       const NEW_THEME = `"theme"`
       const NEW_NAVBAR = `"navbar"`
       const NEW_FOOTER = `"footer"`
-      const { site } = await setupSite()
-      await setupIsomerAdmin({
-        userId: session.userId!,
-        role: IsomerAdminRole.Migrator,
+      let site: Awaited<ReturnType<typeof setupSite>>["site"]
+      let newSite: Site
+      let newNavbar: Navbar
+      let newFooter: Footer
+      let auditLogs: AuditLog[]
+
+      beforeAll(async () => {
+        const setup = await setupSite()
+        site = setup.site
+        await setupIsomerAdmin({
+          userId: session.userId!,
+          role: IsomerAdminRole.Migrator,
+        })
+
+        await caller.setSiteConfigByAdmin({
+          siteId: site.id,
+          config: NEW_CONFIG,
+          theme: NEW_THEME,
+          navbar: NEW_NAVBAR,
+          footer: NEW_FOOTER,
+        })
+
+        newSite = await db
+          .selectFrom("Site")
+          .where("id", "=", site.id)
+          .selectAll()
+          .executeTakeFirstOrThrow()
+        newNavbar = await db
+          .selectFrom("Navbar")
+          .where("siteId", "=", site.id)
+          .selectAll()
+          .executeTakeFirstOrThrow()
+        newFooter = await db
+          .selectFrom("Footer")
+          .where("siteId", "=", site.id)
+          .selectAll()
+          .executeTakeFirstOrThrow()
+        auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
       })
 
-      // Act
-      await caller.setSiteConfigByAdmin({
-        siteId: site.id,
-        config: NEW_CONFIG,
-        theme: NEW_THEME,
-        navbar: NEW_NAVBAR,
-        footer: NEW_FOOTER,
+      it("should persist updated site config and theme", () => {
+        expect(newSite.config).toStrictEqual(NEW_CONFIG.replaceAll(`"`, ""))
+        expect(newSite.theme).toStrictEqual(NEW_THEME.replaceAll(`"`, ""))
       })
 
-      // Assert
-      const newSite = await db
-        .selectFrom("Site")
-        .where("id", "=", site.id)
-        .selectAll()
-        .executeTakeFirstOrThrow()
-      const newNavbar = await db
-        .selectFrom("Navbar")
-        .where("siteId", "=", site.id)
-        .selectAll()
-        .executeTakeFirstOrThrow()
-      const newFooter = await db
-        .selectFrom("Footer")
-        .where("siteId", "=", site.id)
-        .selectAll()
-        .executeTakeFirstOrThrow()
-      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
+      it("should persist updated navbar and footer content", () => {
+        expect(newNavbar.content).toStrictEqual(NEW_NAVBAR.replaceAll(`"`, ""))
+        expect(newFooter.content).toStrictEqual(NEW_FOOTER.replaceAll(`"`, ""))
+      })
 
-      expect(newSite.config).toEqual(NEW_CONFIG.replaceAll(`"`, ""))
-      expect(newSite.theme).toEqual(NEW_THEME.replaceAll(`"`, ""))
-      expect(newNavbar.content).toEqual(NEW_NAVBAR.replaceAll(`"`, ""))
-      expect(newFooter.content).toEqual(NEW_FOOTER.replaceAll(`"`, ""))
-      expect(auditLogs).toHaveLength(4)
-      expect(
-        auditLogs.some(
-          (log) => log.eventType === AuditLogEvent.SiteConfigUpdate,
-        ),
-      ).toBe(true)
-      expect(
-        auditLogs.some((log) => log.eventType === AuditLogEvent.NavbarUpdate),
-      ).toBe(true)
-      expect(
-        auditLogs.some((log) => log.eventType === AuditLogEvent.FooterUpdate),
-      ).toBe(true)
-      expect(
-        auditLogs.some((log) => log.eventType === AuditLogEvent.Publish),
-      ).toBe(true)
-      expect(auditLogs.every((log) => log.userId === session.userId)).toBe(true)
+      it("should create audit logs for each update", () => {
+        expect(auditLogs).toHaveLength(4)
+        expect(
+          auditLogs.some(
+            (log) => log.eventType === AuditLogEvent.SiteConfigUpdate,
+          ),
+        ).toBe(true)
+        expect(
+          auditLogs.some((log) => log.eventType === AuditLogEvent.NavbarUpdate),
+        ).toBe(true)
+        expect(
+          auditLogs.some((log) => log.eventType === AuditLogEvent.FooterUpdate),
+        ).toBe(true)
+        expect(
+          auditLogs.some((log) => log.eventType === AuditLogEvent.Publish),
+        ).toBe(true)
+      })
+
+      it("should attribute audit logs to the session user", () => {
+        expect(auditLogs.every((log) => log.userId === session.userId)).toBe(
+          true,
+        )
+      })
     })
   })
 
@@ -2425,7 +2498,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         siteId: expect.any(Number),
         siteName: "foo",
       })
@@ -2517,15 +2590,15 @@ const assertAuditLog = async (sessionUserId?: string) => {
     auditLog.some(({ eventType }) => {
       return eventType === AuditLogEvent.SiteConfigUpdate
     }),
-  ).toEqual(true)
+  ).toBe(true)
   expect(
     auditLog.some(({ eventType }) => {
       return eventType === AuditLogEvent.Publish
     }),
-  ).toEqual(true)
+  ).toBe(true)
   expect(
     auditLog.every(({ userId }) => {
       return userId === sessionUserId
     }),
-  ).toEqual(true)
+  ).toBe(true)
 }

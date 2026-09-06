@@ -40,11 +40,13 @@ describe("auditLogExportToken", () => {
   })
 
   it("rejects garbage that is not an iron seal at all", async () => {
-    expect(await unsealAuditLogExportToken("")).toBeNull()
-    expect(await unsealAuditLogExportToken("not-a-real-token")).toBeNull()
-    expect(
-      await unsealAuditLogExportToken("Fe26.2**deadbeef**garbage"),
-    ).toBeNull()
+    await expect(unsealAuditLogExportToken("")).resolves.toBeNull()
+    await expect(
+      unsealAuditLogExportToken("not-a-real-token"),
+    ).resolves.toBeNull()
+    await expect(
+      unsealAuditLogExportToken("Fe26.2**deadbeef**garbage"),
+    ).resolves.toBeNull()
   })
 
   it("rejects a blob sealed with a DIFFERENT secret (forged/tampered)", async () => {
@@ -52,7 +54,7 @@ describe("auditLogExportToken", () => {
       { purpose: "audit-log-export", requestId: "12345" },
       { password: { "1": "some-other-secret-at-least-32-chars-longX" } },
     )
-    expect(await unsealAuditLogExportToken(foreignToken)).toBeNull()
+    await expect(unsealAuditLogExportToken(foreignToken)).resolves.toBeNull()
   })
 
   it("rejects a well-sealed blob whose purpose is wrong", async () => {
@@ -62,7 +64,7 @@ describe("auditLogExportToken", () => {
       { purpose: "something-else", requestId: "12345" },
       { password: IRON_PASSWORD },
     )
-    expect(await unsealAuditLogExportToken(wrongPurpose)).toBeNull()
+    await expect(unsealAuditLogExportToken(wrongPurpose)).resolves.toBeNull()
   })
 
   it("rejects a session-shaped blob sealed with the SAME key (cross-purpose confusion)", async () => {
@@ -74,7 +76,7 @@ describe("auditLogExportToken", () => {
       { userId: "some-user-id" },
       { password: IRON_PASSWORD },
     )
-    expect(await unsealAuditLogExportToken(sessionBlob)).toBeNull()
+    await expect(unsealAuditLogExportToken(sessionBlob)).resolves.toBeNull()
   })
 
   it("rejects a correctly-purposed blob whose requestId is not a positive integer string", async () => {
@@ -83,7 +85,7 @@ describe("auditLogExportToken", () => {
         { purpose: "audit-log-export", requestId },
         { password: IRON_PASSWORD },
       )
-      expect(await unsealAuditLogExportToken(token)).toBeNull()
+      await expect(unsealAuditLogExportToken(token)).resolves.toBeNull()
     }
   })
 
@@ -92,6 +94,6 @@ describe("auditLogExportToken", () => {
       { purpose: "audit-log-export", requestId: 12345 },
       { password: IRON_PASSWORD },
     )
-    expect(await unsealAuditLogExportToken(token)).toBeNull()
+    await expect(unsealAuditLogExportToken(token)).resolves.toBeNull()
   })
 })

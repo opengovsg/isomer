@@ -31,6 +31,6 @@ describe("withPosthog", () => {
     await Promise.all([first, second, third])
 
     // Assert
-    expect(order).toEqual([1, 2, 3])
+    expect(order).toStrictEqual([1, 2, 3])
   })
 })

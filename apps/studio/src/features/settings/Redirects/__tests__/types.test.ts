@@ -1,3 +1,5 @@
+import { expect, describe, it } from "vitest"
+
 import { addRedirectSchema } from "../types"
 
 const VALID = { source: "/old-page" }

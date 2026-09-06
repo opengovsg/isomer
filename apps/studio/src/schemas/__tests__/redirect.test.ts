@@ -154,21 +154,15 @@ describe("createRedirectSchema", () => {
 
       // Assert
       expect(result.success).toBe(false)
-      if (!result.success) {
-        expect(result.error.issues.map((issue) => issue.message)).toContain(
-          "Source path is too long",
-        )
-      }
+      if (result.success) throw new Error("Expected parse to fail")
+      expect(result.error.issues.map((issue) => issue.message)).toContain(
+        "Source path is too long",
+      )
     })
 
-    it("should reject sources under the reserved /_next prefix", () => {
-      // Arrange
-      // The prefix itself and anything nested beneath it is reserved, and the
-      // check is on the normalised value so a missing leading slash is caught
-      // too.
-      const reservedSources = ["/_next", "/_next/static/chunk.js", "_next/data"]
-
-      reservedSources.forEach((source) => {
+    it.each(["/_next", "/_next/static/chunk.js", "_next/data"])(
+      "should reject sources under the reserved /_next prefix: %s",
+      (source) => {
         // Act
         const result = createRedirectSchema.safeParse({
           ...VALID_REDIRECT,
@@ -177,13 +171,12 @@ describe("createRedirectSchema", () => {
 
         // Assert
         expect(result.success).toBe(false)
-        if (!result.success) {
-          expect(result.error.issues.map((issue) => issue.message)).toContain(
-            "This path is reserved and can't be used as a redirect source",
-          )
-        }
-      })
-    })
+        if (result.success) throw new Error("Expected parse to fail")
+        expect(result.error.issues.map((issue) => issue.message)).toContain(
+          "This path is reserved and can't be used as a redirect source",
+        )
+      },
+    )
 
     it("should accept a source that merely starts with the reserved prefix as a substring", () => {
       // Arrange / Act
@@ -197,15 +190,13 @@ describe("createRedirectSchema", () => {
       expect(result.success).toBe(true)
     })
 
-    it("should reject a source that is a full URL with the design copy", () => {
-      // Arrange
-      const urlSources = [
-        "https://example.gov.sg/page",
-        "http://example.com",
-        "ftp://example.com/file",
-      ]
-
-      urlSources.forEach((source) => {
+    it.each([
+      "https://example.gov.sg/page",
+      "http://example.com",
+      "ftp://example.com/file",
+    ])(
+      "should reject a source that is a full URL with the design copy: %s",
+      (source) => {
         // Act
         const result = createRedirectSchema.safeParse({
           ...VALID_REDIRECT,
@@ -214,13 +205,12 @@ describe("createRedirectSchema", () => {
 
         // Assert
         expect(result.success).toBe(false)
-        if (!result.success) {
-          expect(result.error.issues.map((issue) => issue.message)).toContain(
-            "Enter what comes behind your URL (e.g., /contact-us).",
-          )
-        }
-      })
-    })
+        if (result.success) throw new Error("Expected parse to fail")
+        expect(result.error.issues.map((issue) => issue.message)).toContain(
+          "Enter what comes behind your URL (e.g., /contact-us).",
+        )
+      },
+    )
 
     it("should trim surrounding whitespace from the source", () => {
       // Arrange / Act
@@ -233,11 +223,9 @@ describe("createRedirectSchema", () => {
       expect(result.source).toBe("/old-page")
     })
 
-    it("should reject mid-string and double wildcards", () => {
-      // Arrange
-      const invalidWildcardSources = ["/promo/**", "/pro*mo"]
-
-      invalidWildcardSources.forEach((source) => {
+    it.each(["/promo/**", "/pro*mo"])(
+      "should reject mid-string and double wildcards: %s",
+      (source) => {
         // Act
         const result = createRedirectSchema.safeParse({
           ...VALID_REDIRECT,
@@ -246,13 +234,12 @@ describe("createRedirectSchema", () => {
 
         // Assert
         expect(result.success).toBe(false)
-        if (!result.success) {
-          expect(result.error.issues.map((issue) => issue.message)).toContain(
-            "Use a wildcard only as a trailing /* on a path, e.g. /news/*",
-          )
-        }
-      })
-    })
+        if (result.success) throw new Error("Expected parse to fail")
+        expect(result.error.issues.map((issue) => issue.message)).toContain(
+          "Use a wildcard only as a trailing /* on a path, e.g. /news/*",
+        )
+      },
+    )
   })
 
   describe("wildcard sources", () => {
@@ -262,12 +249,15 @@ describe("createRedirectSchema", () => {
     it("accepts a single trailing /*", () => {
       const r = parseSource("/news/*")
       expect(r.success).toBe(true)
-      if (r.success) expect(r.data.source).toBe("/news/*")
+      if (!r.success) throw new Error("Expected parse to succeed")
+      expect(r.data.source).toBe("/news/*")
     })
 
     it("lowercases the path but keeps the /*", () => {
       const r = parseSource("/News/Press/*")
-      expect(r.success && r.data.source).toBe("/news/press/*")
+      expect(r.success).toBe(true)
+      if (!r.success) throw new Error("Expected parse to succeed")
+      expect(r.data.source).toBe("/news/press/*")
     })
 
     it("rejects a mid-string *", () => {
@@ -301,7 +291,7 @@ describe("createRedirectSchema", () => {
     })
   })
 
-  describe("redirectKind", () => {
+  describe(redirectKind, () => {
     it("classifies by the stored source string", () => {
       expect(redirectKind("/news/*")).toBe("wildcard")
       expect(redirectKind("/faq")).toBe("exact")
@@ -376,22 +366,17 @@ describe("createRedirectSchema", () => {
       expect(result.success).toBe(true)
     })
 
-    it("should reject destinations with other prefixes using the design copy", () => {
-      // Arrange
-      const invalidDestinations = [
-        "http://example.com",
-        "javascript:alert(1)",
-        "example.com/page",
-        "link with space",
-        // Doubled scheme parses as a URL with hostname "https" — a prefix check
-        // would let it through, the host-must-have-a-dot rule rejects it.
-        "https://https://www.isomer.gov.sg",
-        // Bare single-label hosts are never valid public redirect targets.
-        "https://localhost",
-        "https://",
-      ]
-
-      invalidDestinations.forEach((destination) => {
+    it.each([
+      "http://example.com",
+      "javascript:alert(1)",
+      "example.com/page",
+      "link with space",
+      "https://https://www.isomer.gov.sg",
+      "https://localhost",
+      "https://",
+    ])(
+      "should reject destinations with other prefixes using the design copy: %s",
+      (destination) => {
         // Act
         const result = createRedirectSchema.safeParse({
           ...VALID_REDIRECT,
@@ -400,13 +385,12 @@ describe("createRedirectSchema", () => {
 
         // Assert
         expect(result.success).toBe(false)
-        if (!result.success) {
-          expect(result.error.issues.map((issue) => issue.message)).toContain(
-            "Enter a valid path (/path-to-page) or URL (starts with www., http://, or https://).",
-          )
-        }
-      })
-    })
+        if (result.success) throw new Error("Expected parse to fail")
+        expect(result.error.issues.map((issue) => issue.message)).toContain(
+          "Enter a valid path (/path-to-page) or URL (starts with www., http://, or https://).",
+        )
+      },
+    )
 
     it("should accept a destination longer than the source limit", () => {
       // Arrange / Act
@@ -431,11 +415,10 @@ describe("createRedirectSchema", () => {
 
       // Assert
       expect(result.success).toBe(false)
-      if (!result.success) {
-        expect(result.error.issues.map((issue) => issue.message)).toContain(
-          "Destination is too long",
-        )
-      }
+      if (result.success) throw new Error("Expected parse to fail")
+      expect(result.error.issues.map((issue) => issue.message)).toContain(
+        "Destination is too long",
+      )
     })
 
     it("should strip control characters from an internal-path destination", () => {
@@ -580,11 +563,10 @@ describe("createRedirectSchema", () => {
 
       // Assert
       expect(result.success).toBe(false)
-      if (!result.success) {
-        expect(result.error.issues.map((issue) => issue.message)).toContain(
-          "You can't redirect a URL to itself.",
-        )
-      }
+      if (result.success) throw new Error("Expected parse to fail")
+      expect(result.error.issues.map((issue) => issue.message)).toContain(
+        "You can't redirect a URL to itself.",
+      )
     })
 
     it("should reject when source and destination differ only by normalisation", () => {

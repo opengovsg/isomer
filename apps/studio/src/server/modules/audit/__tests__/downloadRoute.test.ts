@@ -122,8 +122,7 @@ describe("GET /api/audit-log-exports/download", () => {
 
     expect(res.statusCode).toBe(302)
     // The route signed the correct object and redirected to it.
-    expect(mockGenerateSignedGetUrl).toHaveBeenCalledTimes(1)
-    expect(mockGenerateSignedGetUrl).toHaveBeenCalledWith({
+    expect(mockGenerateSignedGetUrl).toHaveBeenCalledExactlyOnceWith({
       Bucket: BUCKET,
       Key: objectKey,
     })

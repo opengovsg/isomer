@@ -169,7 +169,7 @@ describe("getSiteJsonLd", () => {
       },
     })
 
-    expect(jsonLd).toEqual({
+    expect(jsonLd).toStrictEqual({
       "@context": "https://schema.org",
       "@graph": [
         {
@@ -294,7 +294,7 @@ describe("getSiteJsonLd", () => {
       },
     })
 
-    expect(jsonLd["@graph"][1]).toEqual({
+    expect(jsonLd["@graph"][1]).toStrictEqual({
       "@type": "Organization",
       "@id": "https://community.example.com/#organization",
       name: "Community Site",
@@ -390,7 +390,7 @@ describe("getPageJsonLd", () => {
   } satisfies IsomerPageSchemaType
 
   it("generates a page entity linked to the site-wide graph", () => {
-    expect(getSerializedPageJsonLd(contentPage)).toEqual({
+    expect(getSerializedPageJsonLd(contentPage)).toStrictEqual({
       "@context": "https://schema.org",
       "@type": "WebPage",
       "@id": "https://example.gov.sg/about-us#webpage",

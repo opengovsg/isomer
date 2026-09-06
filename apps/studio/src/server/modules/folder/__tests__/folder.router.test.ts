@@ -14,6 +14,7 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
+import { beforeEach, describe, expect, it } from "vitest"
 import { createCallerFactory } from "~/server/trpc"
 import { getReferenceLink } from "~/utils/link"
 
@@ -102,7 +103,7 @@ describe("folder.router", async () => {
         userId: session.userId,
         siteId: site.id,
       })
-      expect(site.id).not.toEqual(invalidSiteId)
+      expect(site.id).not.toStrictEqual(invalidSiteId)
 
       // Act
       const result = caller.create({
@@ -203,14 +204,14 @@ describe("folder.router", async () => {
         siteId: secondSite.id,
         permalink: duplicatePermalink,
       })
-      expect(result).toEqual({ folderId: actualFolder.id })
+      expect(result).toStrictEqual({ folderId: actualFolder.id })
       const auditLogs = await db
         .selectFrom("AuditLog")
         .selectAll()
         .executeTakeFirst()
       expect(auditLogs).toBeDefined()
-      expect(auditLogs?.userId).toEqual(session.userId)
-      expect(auditLogs?.eventType).toEqual(AuditLogEvent.ResourceCreate)
+      expect(auditLogs?.userId).toStrictEqual(session.userId)
+      expect(auditLogs?.eventType).toStrictEqual(AuditLogEvent.ResourceCreate)
     })
 
     it("should create a folder", async () => {
@@ -234,14 +235,14 @@ describe("folder.router", async () => {
         permalink: permalinkToUse,
         siteId: site.id,
       })
-      expect(result).toEqual({ folderId: actualFolder.id })
+      expect(result).toStrictEqual({ folderId: actualFolder.id })
       const auditLogs = await db
         .selectFrom("AuditLog")
         .selectAll()
         .executeTakeFirst()
       expect(auditLogs).toBeDefined()
-      expect(auditLogs?.userId).toEqual(session.userId)
-      expect(auditLogs?.eventType).toEqual(AuditLogEvent.ResourceCreate)
+      expect(auditLogs?.userId).toStrictEqual(session.userId)
+      expect(auditLogs?.eventType).toStrictEqual(AuditLogEvent.ResourceCreate)
     })
 
     it("should create a nested folder if `parentFolderId` is provided", async () => {
@@ -266,15 +267,15 @@ describe("folder.router", async () => {
         permalink: permalinkToUse,
         siteId: site.id,
       })
-      expect(actualFolder.parentId).toEqual(parentFolder.id)
-      expect(result).toEqual({ folderId: actualFolder.id })
+      expect(actualFolder.parentId).toStrictEqual(parentFolder.id)
+      expect(result).toStrictEqual({ folderId: actualFolder.id })
       const auditLogs = await db
         .selectFrom("AuditLog")
         .selectAll()
         .executeTakeFirst()
       expect(auditLogs).toBeDefined()
-      expect(auditLogs?.userId).toEqual(session.userId)
-      expect(auditLogs?.eventType).toEqual(AuditLogEvent.ResourceCreate)
+      expect(auditLogs?.userId).toStrictEqual(session.userId)
+      expect(auditLogs?.eventType).toStrictEqual(AuditLogEvent.ResourceCreate)
     })
 
     it("should throw 403 if user does not have admin access to the site and tries to create a root level folder", async () => {
@@ -329,7 +330,9 @@ describe("folder.router", async () => {
       ).resolves.toHaveLength(0)
     })
 
-    it.skip("should throw 403 if user does not have write access to the parent folder", async () => {})
+    it.todo(
+      "should throw 403 if user does not have write access to the parent folder",
+    )
   })
 
   describe("getMetadata", () => {
@@ -354,7 +357,7 @@ describe("folder.router", async () => {
         userId: session.userId,
         siteId: site.id,
       })
-      expect(site.id).not.toEqual(invalidSiteId)
+      expect(site.id).not.toStrictEqual(invalidSiteId)
 
       // Act
       const result = caller.getMetadata({
@@ -432,7 +435,7 @@ describe("folder.router", async () => {
         .select(["Resource.title", "Resource.permalink", "Resource.parentId"])
         .where("id", "=", folder.id)
         .executeTakeFirst()
-      expect(result).toEqual(expected)
+      expect(result).toStrictEqual(expected)
     })
   })
 
@@ -516,8 +519,8 @@ describe("folder.router", async () => {
         .selectAll()
         .executeTakeFirst()
       expect(auditLogs).toBeDefined()
-      expect(auditLogs?.userId).toEqual(session.userId)
-      expect(auditLogs?.eventType).toEqual(AuditLogEvent.ResourceUpdate)
+      expect(auditLogs?.userId).toStrictEqual(session.userId)
+      expect(auditLogs?.eventType).toStrictEqual(AuditLogEvent.ResourceUpdate)
     })
 
     it("should throw 403 if `siteId` does not exist (no access to that site)", async () => {
@@ -528,7 +531,7 @@ describe("folder.router", async () => {
         userId: session.userId,
         siteId: site.id,
       })
-      expect(site.id).not.toEqual(invalidSiteId)
+      expect(site.id).not.toStrictEqual(invalidSiteId)
 
       // Act
       const result = caller.editFolder({
@@ -593,8 +596,8 @@ describe("folder.router", async () => {
         .selectAll()
         .executeTakeFirst()
       expect(auditLogs).toBeDefined()
-      expect(auditLogs?.userId).toEqual(session.userId)
-      expect(auditLogs?.eventType).toEqual(AuditLogEvent.ResourceUpdate)
+      expect(auditLogs?.userId).toStrictEqual(session.userId)
+      expect(auditLogs?.eventType).toStrictEqual(AuditLogEvent.ResourceUpdate)
     })
 
     it("should throw 403 if user does not have access to the site", async () => {
@@ -702,8 +705,8 @@ describe("folder.router", async () => {
         .selectAll()
         .executeTakeFirst()
       expect(auditLogs).toBeDefined()
-      expect(auditLogs?.userId).toEqual(session.userId)
-      expect(auditLogs?.eventType).toEqual(AuditLogEvent.ResourceUpdate)
+      expect(auditLogs?.userId).toStrictEqual(session.userId)
+      expect(auditLogs?.eventType).toStrictEqual(AuditLogEvent.ResourceUpdate)
     })
 
     it("should allow edits on a nested folder regardless of the role", async () => {
@@ -738,8 +741,8 @@ describe("folder.router", async () => {
         .selectAll()
         .executeTakeFirst()
       expect(auditLogs).toBeDefined()
-      expect(auditLogs?.userId).toEqual(session.userId)
-      expect(auditLogs?.eventType).toEqual(AuditLogEvent.ResourceUpdate)
+      expect(auditLogs?.userId).toStrictEqual(session.userId)
+      expect(auditLogs?.eventType).toStrictEqual(AuditLogEvent.ResourceUpdate)
     })
 
     describe("redirects on rename", () => {
@@ -929,7 +932,7 @@ describe("folder.router", async () => {
           .where("siteId", "=", site.id)
           .orderBy("source")
           .execute()
-        expect(redirects).toEqual([
+        expect(redirects).toStrictEqual([
           {
             source: "/students/class-exam-timetable",
             deletedAt: expect.any(Date),
@@ -977,7 +980,7 @@ describe("folder.router", async () => {
           .where("siteId", "=", site.id)
           .where("deletedAt", "is", null)
           .execute()
-        expect(live).toEqual([
+        expect(live).toStrictEqual([
           { source: "/new-folder/*", destination: folderRef },
         ])
       })
@@ -1040,7 +1043,7 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         title: folder.title,
         id: page.id,
         draftBlobId: blob.id,
@@ -1087,7 +1090,7 @@ describe("folder.router", async () => {
         userId: session.userId,
         siteId: site.id,
       })
-      expect(site.id).not.toEqual(invalidSiteId)
+      expect(site.id).not.toStrictEqual(invalidSiteId)
       const { page: indexPage } = await setupPageResource({
         parentId: folder.id,
         siteId: site.id,
@@ -1107,7 +1110,7 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      expect(result.childPages).toEqual([])
+      expect(result.childPages).toStrictEqual([])
     })
 
     it("should throw 403 if user does not have access to the site", async () => {

@@ -89,56 +89,44 @@ describe("getPresignedPutUrlSchema", () => {
       })
 
       // Test invalid extensions
-      it("should reject invalid file extensions", () => {
-        const invalidExtensions = [
-          "test.exe",
-          "test.bat",
-          "test.sh",
-          "test.js",
-          "test.html",
-          "test.php",
-          "test.py",
-          "test.zip",
-          "test.rar",
-          "test.html",
-        ]
-
-        invalidExtensions.forEach((fileName) => {
-          const result = getPresignedPutUrlSchema.safeParse({
-            ...validBaseData,
-            fileName,
-          })
-          expect(result.success).toBe(false)
-          if (!result.success) {
-            expect(result.error.issues[0]?.message).toBe(
-              "File type not allowed. Please upload a supported file type.",
-            )
-          }
+      it.each([
+        "test.exe",
+        "test.bat",
+        "test.sh",
+        "test.js",
+        "test.html",
+        "test.php",
+        "test.py",
+        "test.zip",
+        "test.rar",
+        "test.html",
+      ])("should reject invalid file extensions: %s", (fileName) => {
+        const result = getPresignedPutUrlSchema.safeParse({
+          ...validBaseData,
+          fileName,
         })
+        expect(result.success).toBe(false)
+        if (result.success) throw new Error("Expected parse to fail")
+        expect(result.error.issues[0]?.message).toBe(
+          "File type not allowed. Please upload a supported file type.",
+        )
       })
 
       // Test files without extensions
-      it("should reject files without extensions", () => {
-        const filesWithoutExtensions = [
-          "testfile",
-          "my-document",
-          "image",
-          "file",
-        ]
-
-        filesWithoutExtensions.forEach((fileName) => {
+      it.each(["testfile", "my-document", "image", "file"])(
+        "should reject files without extensions: %s",
+        (fileName) => {
           const result = getPresignedPutUrlSchema.safeParse({
             ...validBaseData,
             fileName,
           })
           expect(result.success).toBe(false)
-          if (!result.success) {
-            expect(result.error.issues[0]?.message).toBe(
-              "File type not allowed. Please upload a supported file type.",
-            )
-          }
-        })
-      })
+          if (result.success) throw new Error("Expected parse to fail")
+          expect(result.error.issues[0]?.message).toBe(
+            "File type not allowed. Please upload a supported file type.",
+          )
+        },
+      )
 
       // Test files with only dots
       it("should reject files with only dots", () => {
@@ -208,52 +196,50 @@ describe("getPresignedPutUrlSchema", () => {
         })
       })
 
-      it("should reject file names starting with invalid characters", () => {
-        const invalidNames = [
-          " test.png",
-          "@test.png",
-          "#test.png",
-          "$test.png",
-          "%test.png",
-          "&test.png",
-          "*test.png",
-          "(test.png",
-          ")test.png",
-          "+test.png",
-          "=test.png",
-          "[test.png",
-          "]test.png",
-          "{test.png",
-          "}test.png",
-          "|test.png",
-          "\\test.png",
-          "/test.png",
-          "?test.png",
-          "!test.png",
-          "~test.png",
-          "`test.png",
-          "'test.png",
-          '"test.png',
-          ";test.png",
-          ":test.png",
-          "<test.png",
-          ">test.png",
-          ",test.png",
-        ]
-
-        invalidNames.forEach((fileName) => {
+      it.each([
+        " test.png",
+        "@test.png",
+        "#test.png",
+        "$test.png",
+        "%test.png",
+        "&test.png",
+        "*test.png",
+        "(test.png",
+        ")test.png",
+        "+test.png",
+        "=test.png",
+        "[test.png",
+        "]test.png",
+        "{test.png",
+        "}test.png",
+        "|test.png",
+        "\\test.png",
+        "/test.png",
+        "?test.png",
+        "!test.png",
+        "~test.png",
+        "`test.png",
+        "'test.png",
+        '"test.png',
+        ";test.png",
+        ":test.png",
+        "<test.png",
+        ">test.png",
+        ",test.png",
+      ])(
+        "should reject file names starting with invalid characters: %s",
+        (fileName) => {
           const result = getPresignedPutUrlSchema.safeParse({
             ...validBaseData,
             fileName,
           })
           expect(result.success).toBe(false)
-          if (!result.success) {
-            expect(result.error.issues[0]?.message).toBe(
-              "File name must start with a letter, number, hyphen, or underscore",
-            )
-          }
-        })
-      })
+          if (result.success) throw new Error("Expected parse to fail")
+          expect(result.error.issues[0]?.message).toBe(
+            "File name must start with a letter, number, hyphen, or underscore",
+          )
+        },
+      )
     })
 
     describe("required field validation", () => {
@@ -263,9 +249,8 @@ describe("getPresignedPutUrlSchema", () => {
           // fileName is missing
         })
         expect(result.success).toBe(false)
-        if (!result.success) {
-          expect(result.error.issues[0]?.message).toBe("Missing file name")
-        }
+        if (result.success) throw new Error("Expected parse to fail")
+        expect(result.error.issues[0]?.message).toBe("Missing file name")
       })
 
       it("should reject when fileName is empty string", () => {
@@ -300,10 +285,9 @@ describe("getPresignedPutUrlSchema", () => {
       })
 
       expect(result.success).toBe(false)
-      if (!result.success) {
-        expect(result.error.issues[0]?.path).toEqual(["fileSize"])
-        expect(result.error.issues[0]?.message).toBe(message)
-      }
+      if (result.success) throw new Error("Expected parse to fail")
+      expect(result.error.issues[0]?.path).toStrictEqual(["fileSize"])
+      expect(result.error.issues[0]?.message).toBe(message)
     })
   })
 })
@@ -325,12 +309,11 @@ describe("fileNameAndSizeSchema", () => {
     })
 
     expect(result.success).toBe(false)
-    if (!result.success) {
-      expect(result.error.issues[0]?.path).toEqual(["fileSize"])
-      expect(result.error.issues[0]?.message).toBe(
-        "File size must not exceed 5 MB",
-      )
-    }
+    if (result.success) throw new Error("Expected parse to fail")
+    expect(result.error.issues[0]?.path).toStrictEqual(["fileSize"])
+    expect(result.error.issues[0]?.message).toBe(
+      "File size must not exceed 5 MB",
+    )
   })
 })
 
@@ -365,10 +348,9 @@ describe("deleteAssetsSchema", () => {
       fileKeys: makeFileKeys(MAX_DELETE_FILE_KEYS + 1),
     })
     expect(result.success).toBe(false)
-    if (!result.success) {
-      expect(result.error.issues[0]?.message).toBe(
-        `You can only delete up to ${MAX_DELETE_FILE_KEYS} assets at a time`,
-      )
-    }
+    if (result.success) throw new Error("Expected parse to fail")
+    expect(result.error.issues[0]?.message).toBe(
+      `You can only delete up to ${MAX_DELETE_FILE_KEYS} assets at a time`,
+    )
   })
 })

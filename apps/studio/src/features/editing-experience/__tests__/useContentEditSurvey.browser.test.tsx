@@ -84,13 +84,13 @@ const renderTracker = (store: ReturnType<typeof createStore>) =>
     </Provider>,
   )
 
-beforeEach(() => {
-  trackEventMock.mockClear()
-  mockEnv.env.NEXT_PUBLIC_INTERCOM_APP_ID = "test-app-id"
-  routeChangeStartHandlers.length = 0
-})
+describe(useFireContentEditSurveyEvent, () => {
+  beforeEach(() => {
+    trackEventMock.mockClear()
+    mockEnv.env.NEXT_PUBLIC_INTERCOM_APP_ID = "test-app-id"
+    routeChangeStartHandlers.length = 0
+  })
 
-describe("useFireContentEditSurveyEvent", () => {
   it("does nothing when no content edit has been made", () => {
     // Arrange
     const store = createStore()
@@ -118,8 +118,9 @@ describe("useFireContentEditSurveyEvent", () => {
     act(() => result.current(PUBLISHED_AFTER_EDITING_EVENT))
 
     // Assert
-    expect(trackEventMock).toHaveBeenCalledTimes(1)
-    expect(trackEventMock).toHaveBeenCalledWith(PUBLISHED_AFTER_EDITING_EVENT)
+    expect(trackEventMock).toHaveBeenCalledExactlyOnceWith(
+      PUBLISHED_AFTER_EDITING_EVENT,
+    )
     expect(store.get(hasContentEditAtom)).toBe(false)
   })
 
@@ -136,7 +137,7 @@ describe("useFireContentEditSurveyEvent", () => {
     act(() => result.current(PUBLISHED_AFTER_EDITING_EVENT))
 
     // Assert
-    expect(trackEventMock).toHaveBeenCalledTimes(1)
+    expect(trackEventMock).toHaveBeenCalledOnce()
   })
 
   it("resets the flag without firing when NEXT_PUBLIC_INTERCOM_APP_ID is unset", () => {
@@ -158,6 +159,12 @@ describe("useFireContentEditSurveyEvent", () => {
 })
 
 describe("useContentEditTracker", () => {
+  beforeEach(() => {
+    trackEventMock.mockClear()
+    mockEnv.env.NEXT_PUBLIC_INTERCOM_APP_ID = "test-app-id"
+    routeChangeStartHandlers.length = 0
+  })
+
   it("sets the flag when content diverges", () => {
     // Arrange
     const store = createStore()
@@ -238,7 +245,7 @@ describe("useContentEditTracker", () => {
     act(() => result.current(PUBLISHED_AFTER_EDITING_EVENT))
 
     // Assert
-    expect(trackEventMock).toHaveBeenCalledTimes(1)
+    expect(trackEventMock).toHaveBeenCalledOnce()
     expect(store.get(hasContentEditAtom)).toBe(false)
 
     // Act: second burst — a fresh divergence
@@ -261,6 +268,12 @@ describe("useContentEditTracker", () => {
 })
 
 describe("useLeftEditorSurveyTracker", () => {
+  beforeEach(() => {
+    trackEventMock.mockClear()
+    mockEnv.env.NEXT_PUBLIC_INTERCOM_APP_ID = "test-app-id"
+    routeChangeStartHandlers.length = 0
+  })
+
   it("fires the left-editor event on route change when a content edit has been made", () => {
     // Arrange
     const store = createStore()
@@ -273,8 +286,9 @@ describe("useLeftEditorSurveyTracker", () => {
     act(() => routeChangeStartHandlers.forEach((handler) => handler()))
 
     // Assert
-    expect(trackEventMock).toHaveBeenCalledTimes(1)
-    expect(trackEventMock).toHaveBeenCalledWith(LEFT_EDITOR_AFTER_EDITING_EVENT)
+    expect(trackEventMock).toHaveBeenCalledExactlyOnceWith(
+      LEFT_EDITOR_AFTER_EDITING_EVENT,
+    )
     expect(store.get(hasContentEditAtom)).toBe(false)
   })
 

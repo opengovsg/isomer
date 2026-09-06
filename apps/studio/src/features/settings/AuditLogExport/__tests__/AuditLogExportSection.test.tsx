@@ -18,7 +18,9 @@ import { getMonthOptions } from "../utils"
 
 // PostHog capture calls run inside the mutation's onSuccess — mock the client
 // so they can be asserted on instead of hitting an uninitialised instance.
-const { posthogCapture } = vi.hoisted(() => ({ posthogCapture: vi.fn() }))
+const { posthogCapture } = vi.hoisted(() => ({
+  posthogCapture: vi.fn(),
+}))
 vi.mock("posthog-js", () => ({
   default: { capture: posthogCapture },
 }))
@@ -118,11 +120,11 @@ describe("AuditLogExportSection", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Export logs" }))
 
-    await waitFor(() => expect(mutate).toHaveBeenCalledTimes(1))
+    await waitFor(() => expect(mutate).toHaveBeenCalledOnce())
     const [payload] = mutate.mock.calls[0] as [
       { scope: string; siteId: number; month: string; reportType: string },
     ]
-    expect(payload).toEqual({
+    expect(payload).toStrictEqual({
       scope: AuditLogExportScope.Site,
       siteId: SITE_ID,
       month: getMonthOptions()[0]!.value,
@@ -140,7 +142,7 @@ describe("AuditLogExportSection", () => {
     )
     fireEvent.click(screen.getByRole("button", { name: "Export logs" }))
 
-    await waitFor(() => expect(mutate).toHaveBeenCalledTimes(1))
+    await waitFor(() => expect(mutate).toHaveBeenCalledOnce())
     const [payload] = mutate.mock.calls[0] as [{ scope: string }]
     expect(payload).toMatchObject({ scope: "allSites", siteId: 42 })
   })
@@ -159,11 +161,11 @@ describe("AuditLogExportSection", () => {
       data: { code: "BAD_REQUEST" },
     })
 
-    expect(
-      await screen.findByText(
+    await expect(
+      screen.findByText(
         "You cannot export audit logs for a month that is in the future",
       ),
-    ).not.toBeNull()
+    ).resolves.not.toBeNull()
   })
 
   // A duplicate ask is a success, not an error: submitting the same form
@@ -173,12 +175,12 @@ describe("AuditLogExportSection", () => {
 
     // First ask.
     fireEvent.click(screen.getByRole("button", { name: "Export logs" }))
-    await waitFor(() => expect(mutate).toHaveBeenCalledTimes(1))
+    await waitFor(() => expect(mutate).toHaveBeenCalledOnce())
 
     fireOnSuccessForLastMutation()
 
     // The success handler also reports the requested log type to PostHog.
-    await waitFor(() => expect(posthogCapture).toHaveBeenCalledTimes(1))
+    await waitFor(() => expect(posthogCapture).toHaveBeenCalledOnce())
     expect(posthogCapture).toHaveBeenCalledWith(
       "audit_log_requested",
       expect.objectContaining({ site_id: SITE_ID }),
@@ -189,6 +191,6 @@ describe("AuditLogExportSection", () => {
     await waitFor(() => expect(mutate).toHaveBeenCalledTimes(2))
     // Identical payload both times — the duplicate is sent as-is; the server
     // idempotent-accepts it rather than erroring.
-    expect(mutate.mock.calls[1]).toEqual(mutate.mock.calls[0])
+    expect(mutate.mock.calls[1]).toStrictEqual(mutate.mock.calls[0])
   })
 })

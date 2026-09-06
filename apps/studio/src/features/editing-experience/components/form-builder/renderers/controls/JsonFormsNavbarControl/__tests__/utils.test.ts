@@ -1,3 +1,5 @@
+import { describe, expect, it } from "vitest"
+
 import type { NavbarItemPath } from "../types"
 import {
   getInstancePathFromNavbarItemPath,
@@ -320,7 +322,7 @@ describe("handleMoveItem", () => {
       },
       { name: "Item 2", url: "/item2" },
     ]
-    expect(actual).toEqual(expected)
+    expect(actual).toStrictEqual(expected)
   })
 
   it("should handle moving a subitem into another main item correctly", () => {
@@ -365,7 +367,7 @@ describe("handleMoveItem", () => {
         items: [{ name: "Subitem 1-2", url: "/item1/subitem2" }],
       },
     ]
-    expect(actual).toEqual(expected)
+    expect(actual).toStrictEqual(expected)
   })
 
   it("should handle reordering subitems within the same main item correctly", () => {
@@ -411,7 +413,7 @@ describe("handleMoveItem", () => {
       },
       { name: "Item 2", url: "/item2" },
     ]
-    expect(actual).toEqual(expected)
+    expect(actual).toStrictEqual(expected)
   })
 
   it("should handle reordering main items correctly", () => {
@@ -443,7 +445,7 @@ describe("handleMoveItem", () => {
       { name: "Item 3", url: "/item3" },
       { name: "Item 1", url: "/item1" },
     ]
-    expect(actual).toEqual(expected)
+    expect(actual).toStrictEqual(expected)
   })
 
   it("should handle moving subitems to become main items correctly", () => {
@@ -485,7 +487,7 @@ describe("handleMoveItem", () => {
       { name: "Subitem 1-1", url: "/item1/subitem1" },
       { name: "Item 2", url: "/item2" },
     ]
-    expect(actual).toEqual(expected)
+    expect(actual).toStrictEqual(expected)
   })
 
   it("should not move subitems to become main items if maxItems is reached", () => {
@@ -524,7 +526,7 @@ describe("handleMoveItem", () => {
     )
 
     // Assert
-    expect(actual).toEqual(prevData)
+    expect(actual).toStrictEqual(prevData)
   })
 
   it("should not change data for invalid move operations", () => {
@@ -557,6 +559,6 @@ describe("handleMoveItem", () => {
     )
 
     // Assert
-    expect(actual).toEqual(prevData)
+    expect(actual).toStrictEqual(prevData)
   })
 })

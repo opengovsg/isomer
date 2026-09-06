@@ -11,7 +11,7 @@ import {
 } from "../validation"
 
 describe("validation", () => {
-  describe("LINK_HREF_PATTERN", () => {
+  describe(LINK_HREF_PATTERN, () => {
     it("should allow external URLs beginning with https://", () => {
       const testCases = [
         "https://example.com",
@@ -124,7 +124,7 @@ describe("validation", () => {
     })
   })
 
-  describe("MAPS_EMBED_URL_PATTERN", () => {
+  describe(MAPS_EMBED_URL_PATTERN, () => {
     it("should allow Google Maps embed URLs", () => {
       const testCases = [
         "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3961.473373876674!2d103.8486973142665!3d1.3035969990313745!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31da19b8b4c6e1e1%3A0x2f1f6b8f0a1b2a7d!2sMinistry%20of%20Communications%20and%20Information!5e0!3m2!1sen!2ssg!4v1632291134655!5m2!1sen!2ssg",
@@ -208,7 +208,7 @@ describe("validation", () => {
     })
   })
 
-  describe("VIDEO_EMBED_URL_PATTERN", () => {
+  describe(VIDEO_EMBED_URL_PATTERN, () => {
     it("should allow YouTube watch URLs", () => {
       const testCases = [
         "https://www.youtube.com/watch?v=abcdefg",
@@ -294,7 +294,7 @@ describe("validation", () => {
     })
   })
 
-  describe("GTM_ID_STRING_REGEX", () => {
+  describe(GTM_ID_STRING_REGEX, () => {
     it("should allow valid Google tag IDs", () => {
       // Arrange
       const testCases = [

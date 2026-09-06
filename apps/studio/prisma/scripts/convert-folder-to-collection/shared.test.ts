@@ -39,6 +39,7 @@ interface ChainMock {
 
 const createChain = (): ChainMock => {
   const chain = {} as ChainMock
+  // oxlint-disable vitest/prefer-spy-on -- fluent Kysely chain mock
   chain.where = vi.fn().mockReturnValue(chain)
   chain.select = vi.fn().mockReturnValue(chain)
   chain.selectAll = vi.fn().mockReturnValue(chain)
@@ -49,6 +50,7 @@ const createChain = (): ChainMock => {
   chain.executeTakeFirstOrThrow = vi.fn()
   chain.executeTakeFirst = vi.fn()
   chain.execute = vi.fn()
+  // oxlint-enable vitest/prefer-spy-on
   return chain
 }
 
@@ -73,7 +75,7 @@ const makeConversionPlan = (): ConversionPlan => ({
         contentPageHeader: { summary: "Pages in folder is cool" },
       },
       content: [],
-    } as unknown as IsomerSchema,
+    },
     nextBlob: {
       layout: "collection",
       version: "0.1.0",
@@ -83,7 +85,7 @@ const makeConversionPlan = (): ConversionPlan => ({
         sortOrder: "date-desc",
       },
       content: [],
-    } as unknown as IsomerSchema,
+    },
     disallowedBlocks: [],
   },
   pages: [
@@ -100,7 +102,7 @@ const makeConversionPlan = (): ConversionPlan => ({
           contentPageHeader: { summary: "Summary A" },
         },
         content: [{ type: "prose", content: [] }],
-      } as unknown as IsomerSchema,
+      },
       nextBlob: {
         layout: "article",
         version: "0.1.0",
@@ -109,7 +111,7 @@ const makeConversionPlan = (): ConversionPlan => ({
           articlePageHeader: { summary: "Summary A" },
         },
         content: [{ type: "prose", content: [] }],
-      } as unknown as IsomerSchema,
+      },
       disallowedBlocks: [],
     },
     {
@@ -125,7 +127,7 @@ const makeConversionPlan = (): ConversionPlan => ({
           contentPageHeader: { summary: "Summary B" },
         },
         content: [{ type: "infobar", title: "CTA", description: "x" }],
-      } as unknown as IsomerSchema,
+      },
       nextBlob: {
         layout: "article",
         version: "0.1.0",
@@ -134,7 +136,7 @@ const makeConversionPlan = (): ConversionPlan => ({
           articlePageHeader: { summary: "Summary B" },
         },
         content: [{ type: "infobar", title: "CTA", description: "x" }],
-      } as unknown as IsomerSchema,
+      },
       disallowedBlocks: [{ index: 0, type: "infobar" }],
     },
   ],
@@ -183,7 +185,7 @@ describe("plan file I/O", () => {
     const loaded = loadConversionPlan(plan.folder.id, tempDir)
 
     // Assert
-    expect(loaded).toEqual(plan)
+    expect(loaded).toStrictEqual(plan)
   })
 
   it("loads a plan when given the folder plan path directly", () => {
@@ -198,7 +200,7 @@ describe("plan file I/O", () => {
     const loaded = loadConversionPlanFromPath(folderPath!, tempDir)
 
     // Assert
-    expect(loaded).toEqual(plan)
+    expect(loaded).toStrictEqual(plan)
   })
 
   it("findPlanForFolder returns the folder plan path when it exists", () => {
@@ -232,7 +234,7 @@ describe("plan file I/O", () => {
     const report = JSON.parse(readFileSync(reportPath, "utf-8"))
 
     // Assert
-    expect(report).toEqual([
+    expect(report).toStrictEqual([
       {
         id: "159537",
         reason: "disallowed-in-article blocks: infobar@0",
@@ -460,7 +462,7 @@ describe("incrementVersion", () => {
     })
 
     // Assert
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       previousVersion: null,
       newVersion,
     })
@@ -513,7 +515,7 @@ describe("incrementVersion", () => {
     })
 
     // Assert
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       previousVersion,
       newVersion,
     })

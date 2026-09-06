@@ -76,20 +76,21 @@ describe("formatBytes", () => {
   })
 
   describe("boundary conditions", () => {
-    it("should handle values at unit boundaries", () => {
+    it.each([
       // Just below 1 KB
-      expect(formatBytes(1023)).toBe("1023.00 B")
+      [1023, "1023.00 B"],
       // Exactly 1 KB
-      expect(formatBytes(1024)).toBe("1.00 KB")
+      [1024, "1.00 KB"],
       // Just above 1 KB
-      expect(formatBytes(1025)).toBe("1.00 KB")
-
+      [1025, "1.00 KB"],
       // Just below 1 MB
-      expect(formatBytes(1048575)).toBe("1024.00 KB")
+      [1048575, "1024.00 KB"],
       // Exactly 1 MB
-      expect(formatBytes(1048576)).toBe("1.00 MB")
+      [1048576, "1.00 MB"],
       // Just above 1 MB
-      expect(formatBytes(1048577)).toBe("1.00 MB")
+      [1048577, "1.00 MB"],
+    ])("should format %i bytes at unit boundaries", (bytes, expected) => {
+      expect(formatBytes(bytes)).toBe(expected)
     })
   })
 

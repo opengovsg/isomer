@@ -17,7 +17,7 @@ describe("redactLogInput", () => {
     const result = redactLogInput(input)
 
     // Assert
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       email: "user@example.com",
       token: "[REDACTED]",
       password: "[REDACTED]",
@@ -34,7 +34,7 @@ describe("redactLogInput", () => {
     const result = redactLogInput(input)
 
     // Assert
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       OTP: "[REDACTED]",
       Token: "[REDACTED]",
     })
@@ -54,7 +54,7 @@ describe("redactLogInput", () => {
     const result = redactLogInput(input)
 
     // Assert
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       users: [
         { email: "a@example.com", token: "[REDACTED]" },
         { email: "b@example.com", token: "[REDACTED]" },

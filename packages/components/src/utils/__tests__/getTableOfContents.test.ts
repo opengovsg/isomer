@@ -38,8 +38,8 @@ describe("getTableOfContents", () => {
 
     // Assert
     expect(toc).toHaveLength(2)
-    expect(toc.map((t) => t.content)).toEqual(["Overview", "Details"])
-    expect(toc.map((t) => t.anchorLink)).toEqual([
+    expect(toc.map((t) => t.content)).toStrictEqual(["Overview", "Details"])
+    expect(toc.map((t) => t.anchorLink)).toStrictEqual([
       expect.stringMatching(anchorPattern),
       expect.stringMatching(anchorPattern),
     ])
@@ -78,13 +78,13 @@ describe("getTableOfContents", () => {
     const toc = getTableOfContents(site, transformedContent)
 
     // Assert
-    expect(toc.map((t) => t.content)).toEqual([
+    expect(toc.map((t) => t.content)).toStrictEqual([
       "Quick links",
       "Info columns",
       "Image with text",
       "Key stats",
     ])
-    expect(toc.map((t) => t.anchorLink)).toEqual([
+    expect(toc.map((t) => t.anchorLink)).toStrictEqual([
       expect.stringMatching(anchorPattern),
       expect.stringMatching(anchorPattern),
       expect.stringMatching(anchorPattern),
@@ -155,8 +155,10 @@ describe("getTableOfContents", () => {
 
     // Assert
     expect(toc).toHaveLength(1)
-    expect(toc.map((t) => t.content)).toEqual(["Real heading"])
-    expect(toc[0]?.anchorLink).toEqual(expect.stringMatching(anchorPattern))
+    expect(toc.map((t) => t.content)).toStrictEqual(["Real heading"])
+    expect(toc[0]?.anchorLink).toStrictEqual(
+      expect.stringMatching(anchorPattern),
+    )
   })
 
   it("skips whitespace-only level-2 headings (spaces, tabs, non-breaking space)", () => {
@@ -190,8 +192,10 @@ describe("getTableOfContents", () => {
 
     // Assert
     expect(toc).toHaveLength(1)
-    expect(toc.map((t) => t.content)).toEqual(["Real heading"])
-    expect(toc[0]?.anchorLink).toEqual(expect.stringMatching(anchorPattern))
+    expect(toc.map((t) => t.content)).toStrictEqual(["Real heading"])
+    expect(toc[0]?.anchorLink).toStrictEqual(
+      expect.stringMatching(anchorPattern),
+    )
   })
 
   it("preserves order of toc entries across prose and blocks", () => {
@@ -227,8 +231,8 @@ describe("getTableOfContents", () => {
     const toc = getTableOfContents(site, transformedContent)
 
     // Assert
-    expect(toc.map((t) => t.content)).toEqual(["Overview", "Quick links"])
-    expect(toc.map((t) => t.anchorLink)).toEqual([
+    expect(toc.map((t) => t.content)).toStrictEqual(["Overview", "Quick links"])
+    expect(toc.map((t) => t.anchorLink)).toStrictEqual([
       expect.stringMatching(anchorPattern),
       expect.stringMatching(anchorPattern),
     ])

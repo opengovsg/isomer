@@ -1,11 +1,7 @@
 import { defineConfig } from "@isomer/oxlint-config"
 import base from "@isomer/oxlint-config/base"
-// import { vitest } from "@isomer/oxlint-config/presets"
+import { vitest } from "@isomer/oxlint-config/presets"
 
 export default defineConfig({
-  extends: [
-    base,
-    // To enable this in following stacked PRs
-    // vitest
-  ],
+  extends: [base, vitest],
 })

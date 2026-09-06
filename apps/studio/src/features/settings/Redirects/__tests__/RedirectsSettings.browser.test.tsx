@@ -16,12 +16,6 @@ vi.mock("~/env.mjs", () => ({
   env: { NEXT_PUBLIC_APP_URL: "http://localhost:3000" },
 }))
 
-// The wildcard hint and the bulk-upload entry point only render with advanced
-// redirects on, which is the state these assertions are about.
-vi.mock("~/hooks/useIsAdvancedRedirectsEnabled", () => ({
-  useIsAdvancedRedirectsEnabled: () => true,
-}))
-
 const REDIRECT_ROW = {
   id: "1",
   source: "/old-news",
@@ -132,7 +126,7 @@ describe("RedirectsSettings", () => {
 
     // Assert
     expect(adminHeights.length).toBeGreaterThan(0)
-    expect(editorHeights).toEqual(adminHeights)
+    expect(editorHeights).toStrictEqual(adminHeights)
   })
 
   it("does not present the page as read-only while the roles are still loading", () => {

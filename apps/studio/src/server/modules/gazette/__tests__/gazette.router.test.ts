@@ -1,3 +1,8 @@
+import type {
+  AuditLog,
+  Blob,
+  Resource,
+} from "~prisma/generated/selectableTypes"
 import { TRPCError } from "@trpc/server"
 import { subDays, subMinutes } from "date-fns"
 import MockDate from "mockdate"
@@ -114,7 +119,7 @@ describe("gazette.router", async () => {
           limit: 10,
           offset: 0,
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message: "You do not have access to the gazette feature",
@@ -145,7 +150,7 @@ describe("gazette.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual([])
+      expect(result).toStrictEqual([])
     })
 
     it("allows a Toppan-email user", async () => {
@@ -161,7 +166,7 @@ describe("gazette.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual([])
+      expect(result).toStrictEqual([])
     })
 
     it("rejects an unauthenticated caller before access is even evaluated", async () => {
@@ -177,57 +182,71 @@ describe("gazette.router", async () => {
           limit: 10,
           offset: 0,
         }),
-      ).rejects.toThrowError(new TRPCError({ code: "UNAUTHORIZED" }))
+      ).rejects.toThrow(new TRPCError({ code: "UNAUTHORIZED" }))
     })
   })
 
   describe("create", () => {
-    it("creates a gazette resource + blob + audit entries in one transaction", async () => {
-      // Arrange
-      const { site, collection, user } = await seedToppanWithCollection()
+    describe("creates a gazette resource + blob + audit entries in one transaction", () => {
+      let site: Awaited<ReturnType<typeof seedToppanWithCollection>>["site"]
+      let collection: Awaited<
+        ReturnType<typeof seedToppanWithCollection>
+      >["collection"]
+      let user: Awaited<ReturnType<typeof seedToppanWithCollection>>["user"]
+      let resource: Resource
+      let pageRef: string | undefined
+      let auditLogs: AuditLog[]
 
-      // Act
-      const { gazetteId } = await caller.create({
-        siteId: site.id,
-        collectionId: Number(collection.id),
-        title: "Notice 123",
-        permalink: crypto.randomUUID(),
-        ref: "/1/abc/notice-123.pdf",
-        category: "Government Gazette",
-        date: "30/04/2026",
-        description: "Notif #123",
-        tagged: ["sub-1"],
-        scheduledAt: PAST_DATE,
+      beforeEach(async () => {
+        const seed = await seedToppanWithCollection()
+        site = seed.site
+        collection = seed.collection
+        user = seed.user
+
+        const { gazetteId } = await caller.create({
+          siteId: site.id,
+          collectionId: Number(collection.id),
+          title: "Notice 123",
+          permalink: crypto.randomUUID(),
+          ref: "/1/abc/notice-123.pdf",
+          category: "Government Gazette",
+          date: "30/04/2026",
+          description: "Notif #123",
+          tagged: ["sub-1"],
+          scheduledAt: PAST_DATE,
+        })
+
+        resource = await db
+          .selectFrom("Resource")
+          .where("id", "=", String(gazetteId))
+          .selectAll()
+          .executeTakeFirstOrThrow()
+
+        const blob = await db
+          .selectFrom("Blob")
+          .where("id", "=", resource.draftBlobId)
+          .selectAll()
+          .executeTakeFirstOrThrow()
+        pageRef = (blob.content as { page?: { ref?: string } } | null)?.page
+          ?.ref
+
+        auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
       })
 
-      // Assert
-      // Resource was inserted with the past scheduledAt straight from the
-      // input — no future-only validation, no rewrite to null.
-      const resource = await db
-        .selectFrom("Resource")
-        .where("id", "=", String(gazetteId))
-        .selectAll()
-        .executeTakeFirstOrThrow()
-      expect(resource.parentId).toBe(String(collection.id))
-      expect(resource.type).toBe(ResourceType.CollectionLink)
-      expect(resource.scheduledAt).toEqual(PAST_DATE)
-      expect(resource.scheduledBy).toBe(user.id)
+      it("should persist the resource with the scheduled publish metadata", () => {
+        expect(resource.parentId).toBe(String(collection.id))
+        expect(resource.type).toBe(ResourceType.CollectionLink)
+        expect(resource.scheduledAt).toStrictEqual(PAST_DATE)
+        expect(resource.scheduledBy).toBe(user.id)
+      })
 
-      // Blob carries the gazette metadata. Note we deliberately do NOT
-      // store fileSize here — it stays a runtime S3 HEAD lookup so the
-      // BlobJsonContent contract with the components package isn't
-      // polluted with feature-specific fields.
-      const blob = await db
-        .selectFrom("Blob")
-        .where("id", "=", resource.draftBlobId)
-        .selectAll()
-        .executeTakeFirstOrThrow()
-      const page = (blob.content as { page?: { ref?: string } } | null)?.page
-      expect(page?.ref).toBe("/1/abc/notice-123.pdf")
+      it("should persist the blob ref without storing fileSize", () => {
+        expect(pageRef).toBe("/1/abc/notice-123.pdf")
+      })
 
-      // Both audit entries (resource create + schedule publish) emitted.
-      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
-      expect(auditLogs).toHaveLength(2)
+      it("should emit resource create and schedule publish audit entries", () => {
+        expect(auditLogs).toHaveLength(2)
+      })
     })
 
     it("rejects a non-Toppan, non-admin caller before any DB writes", async () => {
@@ -256,7 +275,7 @@ describe("gazette.router", async () => {
           tagged: ["sub-1"],
           scheduledAt: PAST_DATE,
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message: "You do not have access to the gazette feature",
@@ -265,7 +284,9 @@ describe("gazette.router", async () => {
 
       const resources = await db.selectFrom("Resource").selectAll().execute()
       // Only the collection itself exists — no link was created.
-      expect(resources.map((r) => r.type)).toEqual([ResourceType.Collection])
+      expect(resources.map((r) => r.type)).toStrictEqual([
+        ResourceType.Collection,
+      ])
     })
 
     it("rejects creation when a gazette with the same file ID already exists", async () => {
@@ -298,7 +319,7 @@ describe("gazette.router", async () => {
           tagged: ["sub-1"],
           scheduledAt: PAST_DATE,
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "CONFLICT",
           message: "A gazette with the same file ID already exists",
@@ -338,7 +359,7 @@ describe("gazette.router", async () => {
           tagged: ["sub-1"],
           scheduledAt: PAST_DATE,
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "CONFLICT",
           message: "A gazette with the same notification number already exists",
@@ -377,7 +398,7 @@ describe("gazette.router", async () => {
           tagged: ["Acts Supplement"], // Same subcategory
           scheduledAt: PAST_DATE,
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "CONFLICT",
           message: "A gazette with the same notification number already exists",
@@ -429,71 +450,94 @@ describe("gazette.router", async () => {
   })
 
   describe("update", () => {
-    it("rewrites the blob metadata and the resource title", async () => {
-      // Arrange
-      const { site, collection, user } = await seedToppanWithCollection()
-      const { gazetteId } = await caller.create({
-        siteId: site.id,
-        collectionId: Number(collection.id),
-        title: "Original",
-        permalink: crypto.randomUUID(),
-        ref: "/1/abc/notice.pdf",
-        category: "Government Gazette",
-        date: "30/04/2026",
-        description: "old-desc",
-        tagged: ["sub-1"],
-        scheduledAt: PAST_DATE,
+    describe("rewrites the blob metadata and the resource title", () => {
+      let user: Awaited<ReturnType<typeof seedToppanWithCollection>>["user"]
+      let resource: Resource
+      let page: {
+        ref?: string
+        category?: string
+        description?: string
+        tagged?: string[]
+      }
+      let markFileAsDeleted: ReturnType<typeof vi.spyOn>
+
+      beforeEach(async () => {
+        const {
+          site,
+          collection,
+          user: seedUser,
+        } = await seedToppanWithCollection()
+        user = seedUser
+
+        const { gazetteId } = await caller.create({
+          siteId: site.id,
+          collectionId: Number(collection.id),
+          title: "Original",
+          permalink: crypto.randomUUID(),
+          ref: "/1/abc/notice.pdf",
+          category: "Government Gazette",
+          date: "30/04/2026",
+          description: "old-desc",
+          tagged: ["sub-1"],
+          scheduledAt: PAST_DATE,
+        })
+
+        markFileAsDeleted = vi
+          .spyOn(gazetteService, "markFileAsDeleted")
+          .mockResolvedValue(undefined)
+
+        await caller.update({
+          siteId: site.id,
+          gazetteId: Number(gazetteId),
+          title: "Renamed",
+          newRef: "/1/abc/replacement.pdf",
+          category: "Other Supplements",
+          date: "30/04/2026",
+          description: "new-desc",
+          tagged: ["sub-2"],
+          scheduledAt: PAST_DATE,
+        })
+
+        resource = await db
+          .selectFrom("Resource")
+          .where("id", "=", String(gazetteId))
+          .selectAll()
+          .executeTakeFirstOrThrow()
+
+        const blob = await db
+          .selectFrom("Blob")
+          .where("id", "=", resource.draftBlobId)
+          .selectAll()
+          .executeTakeFirstOrThrow()
+        page =
+          (
+            blob.content as {
+              page?: {
+                ref?: string
+                category?: string
+                description?: string
+                tagged?: string[]
+              }
+            } | null
+          )?.page ?? {}
       })
 
-      const markFileAsDeleted = vi
-        .spyOn(gazetteService, "markFileAsDeleted")
-        .mockResolvedValue(undefined)
-
-      // Act
-      await caller.update({
-        siteId: site.id,
-        gazetteId: Number(gazetteId),
-        title: "Renamed",
-        newRef: "/1/abc/replacement.pdf",
-        category: "Other Supplements",
-        date: "30/04/2026",
-        description: "new-desc",
-        tagged: ["sub-2"],
-        scheduledAt: PAST_DATE,
+      it("should update the resource title and scheduledBy", () => {
+        expect(resource.title).toBe("Renamed")
+        expect(resource.scheduledBy).toBe(user.id)
       })
 
-      // Assert
-      const resource = await db
-        .selectFrom("Resource")
-        .where("id", "=", String(gazetteId))
-        .selectAll()
-        .executeTakeFirstOrThrow()
-      expect(resource.title).toBe("Renamed")
-      expect(resource.scheduledBy).toBe(user.id)
+      it("should rewrite the blob metadata", () => {
+        expect(page.ref).toBe("/1/abc/replacement.pdf")
+        expect(page.category).toBe("Other Supplements")
+        expect(page.description).toBe("new-desc")
+        expect(page.tagged).toStrictEqual(["sub-2"])
+      })
 
-      const blob = await db
-        .selectFrom("Blob")
-        .where("id", "=", resource.draftBlobId)
-        .selectAll()
-        .executeTakeFirstOrThrow()
-      const page = (
-        blob.content as {
-          page?: {
-            ref?: string
-            category?: string
-            description?: string
-            tagged?: string[]
-          }
-        } | null
-      )?.page
-      expect(page?.ref).toBe("/1/abc/replacement.pdf")
-      expect(page?.category).toBe("Other Supplements")
-      expect(page?.description).toBe("new-desc")
-      expect(page?.tagged).toEqual(["sub-2"])
-
-      // The superseded file (a different key) is soft-deleted after commit.
-      expect(markFileAsDeleted).toHaveBeenCalledExactlyOnceWith({
-        key: "1/abc/notice.pdf",
+      it("should soft-delete the superseded S3 object after commit", () => {
+        expect(markFileAsDeleted).toHaveBeenCalledExactlyOnceWith({
+          key: "1/abc/notice.pdf",
+        })
       })
     })
 
@@ -581,7 +625,7 @@ describe("gazette.router", async () => {
         .where("id", "=", collectionLink.id)
         .selectAll()
         .executeTakeFirstOrThrow()
-      expect(after.scheduledAt).toEqual(PAST_DATE)
+      expect(after.scheduledAt).toStrictEqual(PAST_DATE)
     })
 
     it("rejects update when changing to a file ID that already exists", async () => {
@@ -626,7 +670,7 @@ describe("gazette.router", async () => {
           tagged: ["sub-1"],
           scheduledAt: PAST_DATE,
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "CONFLICT",
           message: "A gazette with the same file ID already exists",
@@ -678,7 +722,7 @@ describe("gazette.router", async () => {
           tagged: ["sub-1"],
           scheduledAt: PAST_DATE,
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "CONFLICT",
           message: "A gazette with the same notification number already exists",
@@ -726,94 +770,18 @@ describe("gazette.router", async () => {
   })
 
   describe("cancelScheduledPublish", () => {
-    it("deletes the resource, blob, and push job atomically and emits both audit events", async () => {
-      const { site, collection, user } = await seedToppanWithCollection()
-      // S3 tagging is best-effort post-tx — stub so the test stays offline.
-      const markCancelled = vi
-        .spyOn(s3Lib, "markScheduledAssetAsCancelled")
-        .mockResolvedValue({} as never)
-
-      const { gazetteId } = await caller.create({
-        siteId: site.id,
-        collectionId: Number(collection.id),
-        title: "About to cancel",
-        permalink: crypto.randomUUID(),
-        ref: "/1/abc/about-to-cancel.pdf",
-        category: "Government Gazette",
-        date: "30/04/2026",
-        tagged: ["sub-1"],
-        scheduledAt: PAST_DATE,
-      })
-
-      const beforeBlob = await db
-        .selectFrom("Resource")
-        .where("id", "=", String(gazetteId))
-        .select("draftBlobId")
-        .executeTakeFirstOrThrow()
-
-      // Seed the PushDocumentJob row that create() inserts.
-      const pushJobBefore = await db
-        .selectFrom("PushDocumentJob")
-        .where("resourceId", "=", String(gazetteId))
-        .selectAll()
-        .execute()
-      expect(pushJobBefore).toHaveLength(1)
-
-      // AuditLog is append-only at the DB level (no DELETE permission), so
-      // capture the current high-water-mark id and assert on rows after it.
-      const lastIdBeforeCancel = await db
-        .selectFrom("AuditLog")
-        .select(({ fn }) => fn.max("id").as("maxId"))
-        .executeTakeFirstOrThrow()
-
-      await caller.cancelScheduledPublish({
-        siteId: site.id,
-        gazetteId: Number(gazetteId),
-      })
-
-      const resourceAfter = await db
-        .selectFrom("Resource")
-        .where("id", "=", String(gazetteId))
-        .selectAll()
-        .execute()
-      expect(resourceAfter).toHaveLength(0)
-
-      const blobAfter = beforeBlob.draftBlobId
-        ? await db
-            .selectFrom("Blob")
-            .where("id", "=", beforeBlob.draftBlobId)
-            .selectAll()
-            .execute()
-        : []
-      expect(blobAfter).toHaveLength(0)
-
-      const pushJobAfter = await db
-        .selectFrom("PushDocumentJob")
-        .where("resourceId", "=", String(gazetteId))
-        .selectAll()
-        .execute()
-      expect(pushJobAfter).toHaveLength(0)
-
-      const newAuditLogsQuery = db
-        .selectFrom("AuditLog")
-        .selectAll()
-        .orderBy("id", "asc")
-      const newAuditLogs = lastIdBeforeCancel.maxId
-        ? await newAuditLogsQuery
-            .where("id", ">", lastIdBeforeCancel.maxId)
-            .execute()
-        : await newAuditLogsQuery.execute()
-      const eventTypes = newAuditLogs.map((l) => l.eventType)
-      expect(eventTypes).toContain(AuditLogEvent.CancelSchedulePublish)
-      expect(eventTypes).toContain(AuditLogEvent.ResourceDelete)
-
-      // The CancelSchedulePublish delta records the deleted PushDocumentJob
-      // as `before` (truthful: that's the row that was cancelled), with
-      // `after: null` since the job is gone.
-      const cancelLog = newAuditLogs.find(
-        (l) => l.eventType === AuditLogEvent.CancelSchedulePublish,
-      )
-      const delta = cancelLog?.delta as {
+    describe("deletes the resource, blob, and push job atomically and emits both audit events", () => {
+      let gazetteId: string
+      let user: Awaited<ReturnType<typeof seedToppanWithCollection>>["user"]
+      let resourceAfter: Resource[]
+      let blobAfter: Blob[]
+      let pushJobAfter: Awaited<
+        ReturnType<
+          ReturnType<typeof db.selectFrom<"PushDocumentJob">>["execute"]
+        >
+      >
+      let eventTypes: string[]
+      let cancelDelta: {
         before: {
           resourceId: string
           scheduledAt: unknown
@@ -821,13 +789,106 @@ describe("gazette.router", async () => {
         }
         after: null
       }
-      expect(delta.before.resourceId).toBe(String(gazetteId))
-      expect(delta.before.scheduledAt).not.toBeNull()
-      expect(delta.before.scheduledBy).toBe(user.id)
-      expect(delta.after).toBeNull()
+      let markCancelled: ReturnType<typeof vi.spyOn>
 
-      // S3 was instructed to tag the asset as cancelled.
-      expect(markCancelled).toHaveBeenCalledTimes(1)
+      beforeEach(async () => {
+        const {
+          site,
+          collection,
+          user: seedUser,
+        } = await seedToppanWithCollection()
+        user = seedUser
+        markCancelled = vi
+          .spyOn(s3Lib, "markScheduledAssetAsCancelled")
+          .mockResolvedValue({} as never)
+
+        const createResult = await caller.create({
+          siteId: site.id,
+          collectionId: Number(collection.id),
+          title: "About to cancel",
+          permalink: crypto.randomUUID(),
+          ref: "/1/abc/about-to-cancel.pdf",
+          category: "Government Gazette",
+          date: "30/04/2026",
+          tagged: ["sub-1"],
+          scheduledAt: PAST_DATE,
+        })
+        gazetteId = createResult.gazetteId
+
+        const beforeBlob = await db
+          .selectFrom("Resource")
+          .where("id", "=", String(gazetteId))
+          .select("draftBlobId")
+          .executeTakeFirstOrThrow()
+
+        const lastIdBeforeCancel = await db
+          .selectFrom("AuditLog")
+          .select(({ fn }) => fn.max("id").as("maxId"))
+          .executeTakeFirstOrThrow()
+
+        await caller.cancelScheduledPublish({
+          siteId: site.id,
+          gazetteId: Number(gazetteId),
+        })
+
+        resourceAfter = await db
+          .selectFrom("Resource")
+          .where("id", "=", String(gazetteId))
+          .selectAll()
+          .execute()
+
+        blobAfter = beforeBlob.draftBlobId
+          ? await db
+              .selectFrom("Blob")
+              .where("id", "=", beforeBlob.draftBlobId)
+              .selectAll()
+              .execute()
+          : []
+
+        pushJobAfter = await db
+          .selectFrom("PushDocumentJob")
+          .where("resourceId", "=", String(gazetteId))
+          .selectAll()
+          .execute()
+
+        const newAuditLogsQuery = db
+          .selectFrom("AuditLog")
+          .selectAll()
+          .orderBy("id", "asc")
+        const newAuditLogs = lastIdBeforeCancel.maxId
+          ? await newAuditLogsQuery
+              .where("id", ">", lastIdBeforeCancel.maxId)
+              .execute()
+          : await newAuditLogsQuery.execute()
+        eventTypes = newAuditLogs.map((l) => l.eventType)
+
+        const cancelLog = newAuditLogs.find(
+          (l) => l.eventType === AuditLogEvent.CancelSchedulePublish,
+        )
+        cancelDelta = cancelLog?.delta as typeof cancelDelta
+      })
+
+      it("should delete the resource, blob, and push job", () => {
+        expect(resourceAfter).toHaveLength(0)
+        expect(blobAfter).toHaveLength(0)
+        expect(pushJobAfter).toHaveLength(0)
+      })
+
+      it("should emit CancelSchedulePublish and ResourceDelete audit events", () => {
+        expect(eventTypes).toContain(AuditLogEvent.CancelSchedulePublish)
+        expect(eventTypes).toContain(AuditLogEvent.ResourceDelete)
+      })
+
+      it("should record the cancelled push job in the audit delta", () => {
+        expect(cancelDelta.before.resourceId).toBe(String(gazetteId))
+        expect(cancelDelta.before.scheduledAt).not.toBeNull()
+        expect(cancelDelta.before.scheduledBy).toBe(user.id)
+        expect(cancelDelta.after).toBeNull()
+      })
+
+      it("should tag the S3 asset as cancelled", () => {
+        expect(markCancelled).toHaveBeenCalledOnce()
+      })
     })
 
     it("rejects a gazette that is not currently scheduled", async () => {
@@ -843,7 +904,7 @@ describe("gazette.router", async () => {
           siteId: site.id,
           gazetteId: Number(collectionLink.id),
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message: "Cannot cancel a gazette that is not scheduled",
@@ -908,7 +969,7 @@ describe("gazette.router", async () => {
       expect(result.fileKey).toMatch(
         /^2026\/Government Gazette\/Public\/notice-1\.pdf$/,
       )
-      expect(signedPutSpy).toHaveBeenCalledTimes(1)
+      expect(signedPutSpy).toHaveBeenCalledOnce()
       const signerArgs = signedPutSpy.mock.calls[0]![0]
       // Tags must reach the signer so S3's PutObject persists them; this is
       // the gazette-only deviation from the asset bucket signer.
@@ -949,7 +1010,7 @@ describe("gazette.router", async () => {
       })
 
       expect(result.presignedGetUrl).toBe("https://signed.example/get")
-      expect(signedGetSpy).toHaveBeenCalledTimes(1)
+      expect(signedGetSpy).toHaveBeenCalledOnce()
       const args = signedGetSpy.mock.calls[0]![0]
       expect(args.Key).toBe("2026/Government Gazette/Public/notice-1.pdf")
     })
@@ -962,7 +1023,7 @@ describe("gazette.router", async () => {
           siteId: site.id,
           fileKey: "/2026/Government Gazette/Public/notice-1.pdf",
         }),
-      ).rejects.toThrow()
+      ).rejects.toThrow("Invalid fileKey")
     })
 
     it("rejects a fileKey containing a `..` segment", async () => {
@@ -973,7 +1034,7 @@ describe("gazette.router", async () => {
           siteId: site.id,
           fileKey: "2026/../etc/passwd",
         }),
-      ).rejects.toThrow()
+      ).rejects.toThrow("Invalid fileKey")
     })
   })
 
@@ -1100,8 +1161,8 @@ describe("gazette.router", async () => {
 
       // External services should be called.
       // Flag is OFF (default) so the Algolia path runs.
-      expect(gazetteService.removeGazetteFromAlgolia).toHaveBeenCalledTimes(1)
-      expect(gazetteService.deleteGazetteAsset).toHaveBeenCalledTimes(1)
+      expect(gazetteService.removeGazetteFromAlgolia).toHaveBeenCalledOnce()
+      expect(gazetteService.deleteGazetteAsset).toHaveBeenCalledOnce()
     })
 
     it("deletes a gazette published exactly 15 minutes ago", async () => {
@@ -1145,7 +1206,7 @@ describe("gazette.router", async () => {
           siteId: site.id,
           gazetteId,
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1191,7 +1252,7 @@ describe("gazette.router", async () => {
           siteId: site.id,
           gazetteId,
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message: "You do not have access to the gazette feature",
@@ -1207,7 +1268,7 @@ describe("gazette.router", async () => {
           siteId: site.id,
           gazetteId: 999999,
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Resource not found",
@@ -1230,7 +1291,7 @@ describe("gazette.router", async () => {
           siteId: site.id,
           gazetteId: Number(collectionLink.id),
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "The gazette you are trying to delete could not be found",
@@ -1332,12 +1393,12 @@ describe("gazette.router", async () => {
       await caller.delete({ siteId: site.id, gazetteId })
 
       // Assert
-      expect(mailService.sendGazetteDeletionEmail).toHaveBeenCalledTimes(1)
+      expect(mailService.sendGazetteDeletionEmail).toHaveBeenCalledOnce()
       const call = vi.mocked(mailService.sendGazetteDeletionEmail).mock
         .calls[0]?.[0]
       expect(call?.recipientEmail).toBe(env.DD_DELETION_EMAIL)
       // The admins query has no ORDER BY, so compare cc as a sorted set
-      expect([...(call?.cc ?? [])].sort()).toEqual(
+      expect([...(call?.cc ?? [])].sort()).toStrictEqual(
         ["admin2@agency.gov.sg", "user@toppannext.com"].sort(),
       )
     })
@@ -1362,11 +1423,11 @@ describe("gazette.router", async () => {
       await caller.delete({ siteId: site.id, gazetteId })
 
       // Assert
-      expect(mailService.sendGazetteDeletionEmail).toHaveBeenCalledTimes(1)
+      expect(mailService.sendGazetteDeletionEmail).toHaveBeenCalledOnce()
       const call = vi.mocked(mailService.sendGazetteDeletionEmail).mock
         .calls[0]?.[0]
       expect(call?.recipientEmail).toBe(env.DD_DELETION_EMAIL)
-      expect(call?.cc).toEqual(["user@toppannext.com"])
+      expect(call?.cc).toStrictEqual(["user@toppannext.com"])
     })
 
     it("calls removeGazetteFromSearchIndex and NOT removeGazetteFromAlgolia when ENABLE_SEARCHSG_GAZETTE_INGESTION is ON", async () => {
@@ -1389,11 +1450,9 @@ describe("gazette.router", async () => {
       await caller.delete({ siteId: site.id, gazetteId })
 
       // Assert — SearchSG path was taken, Algolia path was not.
-      expect(gazetteService.removeGazetteFromSearchIndex).toHaveBeenCalledTimes(
-        1,
-      )
+      expect(gazetteService.removeGazetteFromSearchIndex).toHaveBeenCalledOnce()
       expect(gazetteService.removeGazetteFromAlgolia).not.toHaveBeenCalled()
-      expect(gazetteService.deleteGazetteAsset).toHaveBeenCalledTimes(1)
+      expect(gazetteService.deleteGazetteAsset).toHaveBeenCalledOnce()
     })
   })
 })

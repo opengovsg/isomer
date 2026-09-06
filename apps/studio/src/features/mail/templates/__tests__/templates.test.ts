@@ -1,4 +1,5 @@
 import type { Resource } from "~/server/modules/database"
+import { describe, expect, it } from "vitest"
 import { ISOMER_SUPPORT_EMAIL, ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { env } from "~/env.mjs"
 import { ResourceType, RoleType } from "~prisma/generated/generatedEnums"
@@ -28,9 +29,11 @@ describe("invitationTemplate", () => {
     expect(template.body).toContain(
       "edit and publish the content, as well as manage users and site settings",
     )
-    if (env.NEXT_PUBLIC_APP_URL) {
-      expect(template.body).toContain(env.NEXT_PUBLIC_APP_URL)
-    }
+    expect(
+      env.NEXT_PUBLIC_APP_URL
+        ? template.body.includes(env.NEXT_PUBLIC_APP_URL)
+        : true,
+    ).toBe(true)
   })
 
   it("should generate correct body content for Publisher role", () => {
@@ -105,9 +108,11 @@ describe("accountDeactivationWarningTemplate", () => {
 
     // Assert
     expect(template.body).toContain("please log in within the next 7 days")
-    if (env.NEXT_PUBLIC_APP_URL) {
-      expect(template.body).toContain(env.NEXT_PUBLIC_APP_URL)
-    }
+    expect(
+      env.NEXT_PUBLIC_APP_URL
+        ? template.body.includes(env.NEXT_PUBLIC_APP_URL)
+        : true,
+    ).toBe(true)
   })
 
   it("should include security measure message", () => {

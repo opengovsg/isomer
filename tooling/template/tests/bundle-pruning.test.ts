@@ -30,7 +30,7 @@ describe("template (bundle pruning)", () => {
     const result = scanBundleForAlgolia(defaultOutDir)
 
     // Assert
-    expect(result.matchedMarkers, result.matchedMarkers.join(", ")).toEqual([])
+    expect(result.matchedMarkers).toStrictEqual([])
   })
 
   it("excludes zod from the client bundle", () => {
@@ -38,7 +38,7 @@ describe("template (bundle pruning)", () => {
     const result = scanBundleForZod(defaultOutDir)
 
     // Assert
-    expect(result.matchedMarkers, result.matchedMarkers.join(", ")).toEqual([])
+    expect(result.matchedMarkers).toStrictEqual([])
   })
 
   it("includes Algolia search deps for egazette-algolia sites", () => {
@@ -60,10 +60,7 @@ describe("template (bundle pruning)", () => {
 
     // Assert
     for (const marker of ALGOLIA_MARKERS) {
-      expect(
-        result.matchedMarkers.includes(marker),
-        `expected bundle to include ${marker}`,
-      ).toBe(true)
+      expect(result.matchedMarkers).toContain(marker)
     }
   })
 })
