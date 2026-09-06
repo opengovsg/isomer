@@ -5,59 +5,59 @@ import { LINK_HREF_PATTERN } from "~/utils/validation"
 
 export const KeyStatisticsSchema = Type.Object(
   {
-    type: Type.Literal("keystatistics", { default: "keystatistics" }),
     id: Type.Optional(
       Type.String({
-        title: "Anchor ID",
         description: "The ID to use for anchor links",
         format: "hidden",
+        title: "Anchor ID",
       }),
     ),
-    title: Type.String({
-      title: "Title",
-    }),
+    label: Type.Optional(
+      Type.String({
+        description:
+          "Add a link under your block. Avoid generic text such as “Click here” or “Learn more”",
+        maxLength: 50,
+        title: "Link text",
+      }),
+    ),
     statistics: Type.Array(
       Type.Object({
         label: Type.String({
           title: "Description",
         }),
         value: Type.String({
-          title: "Number",
           description: "Keep it succinct, e.g., 3.3%, 880,000, $12M",
+          title: "Number",
         }),
       }),
       {
-        title: "Statistics",
-        minItems: 1,
         maxItems: 4,
+        minItems: 1,
+        title: "Statistics",
       },
     ),
-    label: Type.Optional(
-      Type.String({
-        title: "Link text",
-        maxLength: 50,
-        description:
-          "Add a link under your block. Avoid generic text such as “Click here” or “Learn more”",
-      }),
-    ),
+    title: Type.String({
+      title: "Title",
+    }),
+    type: Type.Literal("keystatistics", { default: "keystatistics" }),
     url: Type.Optional(
       Type.String({
-        title: "Link destination",
         description: "When this is clicked, open:",
         format: "link",
         pattern: LINK_HREF_PATTERN,
+        title: "Link destination",
       }),
     ),
   },
   {
+    description: "A component that displays KeyStatistics",
     groups: [
       {
-        label: "Add a call-to-action",
         fields: ["label", "url"],
+        label: "Add a call-to-action",
       },
     ],
     title: "Statistics",
-    description: "A component that displays KeyStatistics",
   },
 )
 

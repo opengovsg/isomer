@@ -6,7 +6,7 @@ import { useDeferredValue, useMemo, useState } from "react"
 import { MAX_NUMBER_OF_COLUMNS, PAGINATION_MAX_ITEMS } from "./constants"
 import { getFilteredItems } from "./getFilteredItems"
 import { getPaginatedItems } from "./getPaginatedItems"
-import { SearchableTableClientUI } from "./SearchableTableClientUI"
+import { SearchableTableClientUI } from "./SearchableTableClientUi"
 
 export const SearchableTableClient = ({
   title,
@@ -34,8 +34,8 @@ export const SearchableTableClient = ({
   const paginatedItems = useMemo(
     () =>
       getPaginatedItems({
-        items: filteredItems,
         currPage,
+        items: filteredItems,
         itemsPerPage: PAGINATION_MAX_ITEMS,
       }),
     [currPage, filteredItems],
@@ -51,8 +51,8 @@ export const SearchableTableClient = ({
       isLoading={isLoading}
       isError={isError}
       search={{
-        input: searchInput,
         deferred: search,
+        input: searchInput,
         setSearch: setSearchInput,
       }}
       page={{ currPage, setCurrPage }}

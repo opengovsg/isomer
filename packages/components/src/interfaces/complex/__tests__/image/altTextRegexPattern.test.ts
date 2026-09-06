@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 import { ALT_TEXT_REGEX_PATTERN } from "../../Image"
 
 describe("AltTextSchema", () => {
-  const altTextRegex = new RegExp(ALT_TEXT_REGEX_PATTERN)
+  const altTextRegex = new RegExp(ALT_TEXT_REGEX_PATTERN, "u")
 
   it("accepts valid alt text", () => {
     expect(altTextRegex.test("A fluffy cat sleeping")).toBe(true)

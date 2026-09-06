@@ -9,7 +9,7 @@ export const ZendeskWidget = ({ widgetKey }: ZendeskWidgetProps) => {
     widgetKey,
   )}`
 
-  useInteractionScriptLoader({ src: scriptUrl, id: "ze-snippet" })
+  useInteractionScriptLoader({ id: "ze-snippet", src: scriptUrl })
 
   return null
 }

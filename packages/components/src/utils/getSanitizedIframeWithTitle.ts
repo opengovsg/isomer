@@ -1,4 +1,4 @@
-import DOMPurify from "isomorphic-dompurify"
+import { sanitize } from "isomorphic-dompurify"
 
 const IFRAME_ALLOWED_ATTRIBUTES = [
   "src",
@@ -17,23 +17,23 @@ const IFRAME_ALLOWED_ATTRIBUTES = [
 ]
 
 const IFRAME_LAYOUT_ATTRIBUTES = {
+  class: "absolute top-0 left-0 bottom-0 right-0",
   height: "100%",
   width: "100%",
-  class: "absolute top-0 left-0 bottom-0 right-0",
 } as const
 
 // Sanitize iframe embeds to remove any potentially harmful attributes
 // and to insert the minimal accessibility
 export const getSanitizedIframeWithTitle = (content: string, title: string) => {
-  const sanitizedFragment = DOMPurify.sanitize(content, {
-    ALLOWED_TAGS: ["iframe"],
+  const sanitizedFragment = sanitize(content, {
     ALLOWED_ATTR: IFRAME_ALLOWED_ATTRIBUTES,
+    ALLOWED_TAGS: ["iframe"],
     RETURN_DOM_FRAGMENT: true,
   })
 
   const iframe = sanitizedFragment.querySelector<HTMLIFrameElement>("iframe")
 
-  if (!iframe) {
+  if (iframe === null) {
     return null
   }
 

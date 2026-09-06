@@ -5,7 +5,9 @@ import { PaginationControls } from "../../../../components/internal/PaginationCo
 export const Pagination = () => {
   const { currentRefinement, nbPages, refine } = usePagination()
 
-  if (nbPages <= 1) return null
+  if (nbPages <= 1) {
+    return null
+  }
 
   // PaginationControls derives its page count as ceil(totalItems / itemsPerPage)
   // and is 1-indexed; react-instantsearch pages are 0-indexed. Treating each

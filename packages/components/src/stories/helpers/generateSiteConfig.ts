@@ -5,20 +5,13 @@ export const generateSiteConfig = (
   overrides?: Partial<IsomerSiteProps>,
 ): IsomerSiteProps => {
   const defaultConfig: IsomerSiteProps = {
-    siteName: "Isomer Next",
-    siteMap: {
-      id: "1",
-      title: "Home",
-      permalink: "/",
-      lastModified: "",
-      layout: "homepage",
-      summary: "",
-      children: [],
+    footerItems: {
+      privacyStatementLink: "https://www.isomer.gov.sg/privacy",
+      siteNavItems: [],
+      termsOfUseLink: "https://www.isomer.gov.sg/terms",
     },
-    siteMapArray: [],
-    theme: "isomer-next",
     isGovernment: true,
-    url: "https://www.isomer.gov.sg",
+    lastUpdated: "1 Jan 2021",
     logoUrl: "/isomer-logo.svg",
     navbar: {
       items: [
@@ -27,27 +20,34 @@ export const generateSiteConfig = (
           url: "/",
         },
         {
-          name: "Newsroom",
-          url: "/newsroom",
           items: [
             {
               name: "News",
               url: "/newsroom/news",
             },
           ],
+          name: "Newsroom",
+          url: "/newsroom",
         },
       ],
     },
-    footerItems: {
-      privacyStatementLink: "https://www.isomer.gov.sg/privacy",
-      termsOfUseLink: "https://www.isomer.gov.sg/terms",
-      siteNavItems: [],
-    },
-    lastUpdated: "1 Jan 2021",
     search: {
-      type: "localSearch",
       searchUrl: "/search",
+      type: "localSearch",
     },
+    siteMap: {
+      children: [],
+      id: "1",
+      lastModified: "",
+      layout: "homepage",
+      permalink: "/",
+      summary: "",
+      title: "Home",
+    },
+    siteMapArray: [],
+    siteName: "Isomer Next",
+    theme: "isomer-next",
+    url: "https://www.isomer.gov.sg",
   }
 
   const site: IsomerSiteProps = {

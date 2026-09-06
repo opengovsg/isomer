@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import { http, HttpResponse } from "msw"
+import { delay, http, HttpResponse } from "msw"
 import { generateDgsUrl } from "~/hooks/useDgsData/generateDgsUrl"
 import { generateSiteConfig } from "~/stories/helpers/generateSiteConfig"
 
@@ -8,27 +8,26 @@ import { withChromaticModes } from "@isomer/storybook-config"
 import { DgsContactInformation } from "./DgsContactInformation"
 
 const meta: Meta<typeof DgsContactInformation> = {
-  title: "Next/Components/ContactInformation/DGS",
-  component: DgsContactInformation,
   argTypes: {},
-  tags: ["!autodocs"],
+  component: DgsContactInformation,
   parameters: {
-    layout: "fullscreen",
     chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
+    layout: "fullscreen",
     themes: {
       themeOverride: "Isomer Next",
     },
   },
-  args: generateSiteConfig(),
+  tags: ["!autodocs"],
+  title: "Next/Components/ContactInformation/DGS",
 }
 export default meta
 type Story = StoryObj<typeof DgsContactInformation>
 
 const DgsUrl = generateDgsUrl({
-  resourceId: "PLACEHOLDER_RESOURCE_ID",
   filters: {
     testFieldKey: "testFieldValue",
   },
+  resourceId: "PLACEHOLDER_RESOURCE_ID",
 })
 
 const DgsParameters = {
@@ -36,50 +35,49 @@ const DgsParameters = {
     handlers: [
       http.get(DgsUrl, () =>
         HttpResponse.json({
-          success: true,
           result: {
             records: [
               {
-                entity_name: "Sentosa",
                 description:
                   "Embassy of the Republic of Singapore - Algeria<br>should accept line break HTM tag",
+                entity_name: "Sentosa",
                 methods: JSON.stringify([
                   {
-                    method: "telephone",
                     label: "Telephone",
+                    method: "telephone",
                     values: ["+65-63798000 (MFA)"],
                   },
                   {
-                    method: "fax",
-                    label: "Fax",
-                    values: ["+65-64747885 (MFA)"],
                     caption: "Got people use meh?",
+                    label: "Fax",
+                    method: "fax",
+                    values: ["+65-64747885 (MFA)"],
                   },
                   {
-                    method: "email",
                     label: "Email",
+                    method: "email",
                     values: [
                       "do-not-reply@isomer.gov.sg",
                       "do-not-reply-pelase@isomer.gov.sg",
                     ],
                   },
                   {
-                    method: "website",
                     label: "Website",
+                    method: "website",
                     values: [
                       "https://www.isomer.gov.sg",
                       "https://sample.isomer.gov.sg",
                     ],
                   },
                   {
-                    method: "emergency_contact",
-                    label: "In the case of emergency",
-                    values: ["+65 5678 1234"],
                     caption: "(after hours)",
+                    label: "In the case of emergency",
+                    method: "emergency_contact",
+                    values: ["+65 5678 1234"],
                   },
                   {
-                    method: "operating_hours",
                     label: "Operating Hours",
+                    method: "operating_hours",
                     values: [
                       "Mon - Fri",
                       "8.30 am to 5.00 pm",
@@ -87,13 +85,13 @@ const DgsParameters = {
                     ],
                   },
                   {
-                    method: "person",
                     label: "Ambassador (Non-Resident)",
+                    method: "person",
                     values: ["Mr MOHAMMAD Alami Musa"],
                   },
                   {
-                    method: "address",
                     label: "Chancery",
+                    method: "address",
                     values: [
                       "c/o Ministry of Foreign Affairs",
                       "Tanglin",
@@ -101,13 +99,13 @@ const DgsParameters = {
                     ],
                   },
                   {
-                    method: "other_methods",
                     label: "Telegram",
+                    method: "other_methods",
                     values: ["https://t.me/isomer_gov_sg"],
                   },
                   {
-                    method: "other_methods",
                     label: "WhatsApp",
+                    method: "other_methods",
                     values: ["+65-63798000 (MFA)"],
                   },
                 ]),
@@ -120,6 +118,7 @@ const DgsParameters = {
               },
             ],
           },
+          success: true,
         }),
       ),
     ],
@@ -131,27 +130,26 @@ const EmptyFieldsParameters = {
     handlers: [
       http.get(DgsUrl, () =>
         HttpResponse.json({
-          success: true,
           result: {
             records: [
               {
-                entity_name: "Sentosa",
                 description:
                   "Embassy of the Republic of Singapore - Algeria<br>should accept line break HTM tag",
+                entity_name: "Sentosa",
                 methods: JSON.stringify([
                   {
-                    method: "telephone",
                     label: "Telephone",
+                    method: "telephone",
                     values: ["+65-63798000 (MFA)"],
                   },
                   {
-                    method: "fax",
                     label: "This is empty and should not be shown",
+                    method: "fax",
                     values: [],
                   },
                   {
-                    method: "fax",
                     label: "This should also not be shown",
+                    method: "fax",
                     values: ["  "],
                   },
                 ]),
@@ -162,6 +160,7 @@ const EmptyFieldsParameters = {
               },
             ],
           },
+          success: true,
         }),
       ),
     ],
@@ -169,188 +168,203 @@ const EmptyFieldsParameters = {
 }
 
 export const Default: Story = {
-  parameters: DgsParameters,
   args: {
-    headingLevel: 2,
     dataSource: {
-      type: "dgs",
-      resourceId: "PLACEHOLDER_RESOURCE_ID",
       filters: [
         {
           fieldKey: "testFieldKey",
           fieldValue: "testFieldValue",
         },
       ],
+      resourceId: "PLACEHOLDER_RESOURCE_ID",
+      type: "dgs",
     },
-    title: "[dgs:entity_name]", // to show that they can have different value from DGS
     description: "[dgs:description]",
+    headingLevel: 2,
     methods: "[dgs:methods]",
     otherInformation: "[dgs:other_information]",
+    title: "[dgs:entity_name]",
+    // to show that they can have different value from DGS,
   },
+  parameters: DgsParameters,
 }
 
 export const DefaultEmptyFields: Story = {
-  name: "Default (Empty Fields)",
-  parameters: EmptyFieldsParameters,
   args: {
-    headingLevel: 2,
     dataSource: {
-      type: "dgs",
-      resourceId: "PLACEHOLDER_RESOURCE_ID",
       filters: [
         {
           fieldKey: "testFieldKey",
           fieldValue: "testFieldValue",
         },
       ],
+      resourceId: "PLACEHOLDER_RESOURCE_ID",
+      type: "dgs",
     },
-    title: "[dgs:entity_name]", // to show that they can have different value from DGS
     description: "[dgs:description]",
+    headingLevel: 2,
     methods: "[dgs:methods]",
     otherInformation: "[dgs:other_information]",
+    title: "[dgs:entity_name]",
+    // to show that they can have different value from DGS,
   },
+  name: "Default (Empty Fields)",
+  parameters: EmptyFieldsParameters,
 }
 
 export const Partial: Story = {
-  name: "Part Native, Part DGS",
-  parameters: DgsParameters,
   args: {
-    headingLevel: 2,
     dataSource: {
-      type: "dgs",
-      resourceId: "PLACEHOLDER_RESOURCE_ID",
       filters: [
         {
           fieldKey: "testFieldKey",
           fieldValue: "testFieldValue",
         },
       ],
+      resourceId: "PLACEHOLDER_RESOURCE_ID",
+      type: "dgs",
     },
-    title: "This title is not from DGS",
     description: "This description is not from DGS",
+    headingLevel: 2,
     methods: "[dgs:methods]",
     otherInformation: {
       label: "This otherInformation is not from DGS",
       value:
         "For cats and dogs enquiries, please write to this-should-not-by-hyperlinked@isomer.gov.sg. Please note that the Isomer is the <b>bold authority</b> responsible for <a href='https://this-should-not-be-showup.isomer.gov.sg'>cats and dogs matters</a>.",
     },
+    title: "This title is not from DGS",
   },
+  name: "Part Native, Part DGS",
+  parameters: DgsParameters,
 }
 
 export const Homepage: Story = {
-  parameters: DgsParameters,
   args: {
-    headingLevel: 2,
-    layout: "homepage",
-    whitelistedMethods: ["telephone", "emergency_contact", "email"],
     dataSource: {
-      type: "dgs",
-      resourceId: "PLACEHOLDER_RESOURCE_ID",
       filters: [
         {
           fieldKey: "testFieldKey",
           fieldValue: "testFieldValue",
         },
       ],
+      resourceId: "PLACEHOLDER_RESOURCE_ID",
+      type: "dgs",
     },
-    title: "[dgs:entity_name]",
     description: "[dgs:description]",
+    headingLevel: 2,
+    layout: "homepage",
     methods: "[dgs:methods]",
     otherInformation: "[dgs:other_information]",
+    title: "[dgs:entity_name]",
+    whitelistedMethods: ["telephone", "emergency_contact", "email"],
   },
+  parameters: DgsParameters,
 }
 
 export const HomepageEmptyFields: Story = {
-  name: "Homepage (Empty Fields)",
-  parameters: EmptyFieldsParameters,
   args: {
-    headingLevel: 2,
-    layout: "homepage",
-    whitelistedMethods: ["telephone", "emergency_contact", "email"],
     dataSource: {
-      type: "dgs",
-      resourceId: "PLACEHOLDER_RESOURCE_ID",
       filters: [
         {
           fieldKey: "testFieldKey",
           fieldValue: "testFieldValue",
         },
       ],
+      resourceId: "PLACEHOLDER_RESOURCE_ID",
+      type: "dgs",
     },
-    title: "[dgs:entity_name]",
     description: "[dgs:description]",
+    headingLevel: 2,
+    layout: "homepage",
     methods: "[dgs:methods]",
     otherInformation: "[dgs:other_information]",
+    title: "[dgs:entity_name]",
+    whitelistedMethods: ["telephone", "emergency_contact", "email"],
   },
+  name: "Homepage (Empty Fields)",
+  parameters: EmptyFieldsParameters,
 }
 
 export const LoadingDefault: Story = {
+  args: {
+    dataSource: {
+      filters: [
+        {
+          fieldKey: "testFieldKey",
+          fieldValue: "testFieldValue",
+        },
+      ],
+      resourceId: "PLACEHOLDER_RESOURCE_ID",
+      type: "dgs",
+    },
+    description: "[dgs:description]",
+    headingLevel: 2,
+    methods: "[dgs:methods]",
+    otherInformation: "[dgs:other_information]",
+    title: "[dgs:entity_name]",
+  },
   name: "Loading (Default)",
   parameters: {
     msw: {
       handlers: [
-        http.get(DgsUrl, () => {
-          return new Promise(() => {
-            // Never resolve the promise
-          })
+        http.get(DgsUrl, async () => {
+          await delay("infinite")
         }),
       ],
     },
-  },
-  args: {
-    headingLevel: 2,
-    dataSource: {
-      type: "dgs",
-      resourceId: "PLACEHOLDER_RESOURCE_ID",
-      filters: [
-        {
-          fieldKey: "testFieldKey",
-          fieldValue: "testFieldValue",
-        },
-      ],
-    },
-    title: "[dgs:entity_name]",
-    description: "[dgs:description]",
-    methods: "[dgs:methods]",
-    otherInformation: "[dgs:other_information]",
   },
 }
 
 export const LoadingHomepage: Story = {
-  name: "Loading (Homepage)",
-  parameters: {
-    msw: {
-      handlers: [
-        http.get(DgsUrl, () => {
-          return new Promise(() => {
-            // Never resolve the promise
-          })
-        }),
-      ],
-    },
-  },
   args: {
-    headingLevel: 2,
-    layout: "homepage",
     dataSource: {
-      type: "dgs",
-      resourceId: "PLACEHOLDER_RESOURCE_ID",
       filters: [
         {
           fieldKey: "testFieldKey",
           fieldValue: "testFieldValue",
         },
       ],
+      resourceId: "PLACEHOLDER_RESOURCE_ID",
+      type: "dgs",
     },
-    title: "[dgs:entity_name]",
     description: "[dgs:description]",
+    headingLevel: 2,
+    layout: "homepage",
     methods: "[dgs:methods]",
     otherInformation: "[dgs:other_information]",
+    title: "[dgs:entity_name]",
+  },
+  name: "Loading (Homepage)",
+  parameters: {
+    msw: {
+      handlers: [
+        http.get(DgsUrl, async () => {
+          await delay("infinite")
+        }),
+      ],
+    },
   },
 }
 
 // Note: should not show anything - this is intentional
 export const Error: Story = {
+  args: {
+    dataSource: {
+      filters: [
+        {
+          fieldKey: "testFieldKey",
+          fieldValue: "testFieldValue",
+        },
+      ],
+      resourceId: "PLACEHOLDER_RESOURCE_ID",
+      type: "dgs",
+    },
+    description: "[dgs:description]",
+    headingLevel: 2,
+    methods: "[dgs:methods]",
+    otherInformation: "[dgs:other_information]",
+    title: "[dgs:entity_name]",
+  },
   parameters: {
     docs: {
       description: {
@@ -359,29 +373,14 @@ export const Error: Story = {
     },
     msw: {
       handlers: [
-        http.get(DgsUrl, () => {
-          return new HttpResponse(null, {
-            status: 500,
-          })
-        }),
+        http.get(
+          DgsUrl,
+          () =>
+            new HttpResponse(null, {
+              status: 500,
+            }),
+        ),
       ],
     },
-  },
-  args: {
-    headingLevel: 2,
-    dataSource: {
-      type: "dgs",
-      resourceId: "PLACEHOLDER_RESOURCE_ID",
-      filters: [
-        {
-          fieldKey: "testFieldKey",
-          fieldValue: "testFieldValue",
-        },
-      ],
-    },
-    title: "[dgs:entity_name]",
-    description: "[dgs:description]",
-    methods: "[dgs:methods]",
-    otherInformation: "[dgs:other_information]",
   },
 }

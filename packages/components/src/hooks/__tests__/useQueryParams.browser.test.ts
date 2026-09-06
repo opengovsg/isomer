@@ -57,7 +57,7 @@ describe("useQueryParams", () => {
 
   it("should stop emitting pushstate events after unmount", () => {
     // Arrange
-    const onPushState = vi.fn()
+    const onPushState = vi.fn<() => void>()
     window.addEventListener("pushstate", onPushState)
     const { unmount } = renderHook(() => useQueryParams())
     act(() => {

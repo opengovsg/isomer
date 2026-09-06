@@ -22,13 +22,13 @@ describe("generateDgsUrl", () => {
   it("should generate URL with all optional parameters", () => {
     // Arrange
     const params: DgsApiDatasetSearchParams = {
-      resourceId: "test-resource-123",
-      limit: 10,
-      offset: 20,
       filters: {
         category: "transport",
         year: "2023",
       },
+      limit: 10,
+      offset: 20,
+      resourceId: "test-resource-123",
       sort: "field4 desc",
     }
 
@@ -44,9 +44,9 @@ describe("generateDgsUrl", () => {
   it("should handle numeric limit and offset", () => {
     // Arrange
     const params: DgsApiDatasetSearchParams = {
-      resourceId: "test-resource-123",
       limit: 50,
       offset: 100,
+      resourceId: "test-resource-123",
     }
 
     // Act
@@ -61,8 +61,8 @@ describe("generateDgsUrl", () => {
   it("should handle empty filters object", () => {
     // Arrange
     const params: DgsApiDatasetSearchParams = {
-      resourceId: "test-resource-123",
       filters: {},
+      resourceId: "test-resource-123",
     }
 
     // Act
@@ -77,12 +77,12 @@ describe("generateDgsUrl", () => {
   it("should handle complex filters with special characters", () => {
     // Arrange
     const params: DgsApiDatasetSearchParams = {
-      resourceId: "test-resource-123",
       filters: {
-        location: "Singapore & Malaysia",
         category: "transport & logistics",
+        location: "Singapore & Malaysia",
         status: "active",
       },
+      resourceId: "test-resource-123",
     }
 
     // Act
@@ -90,7 +90,7 @@ describe("generateDgsUrl", () => {
 
     // Assert
     expect(result).toBe(
-      "https://data.gov.sg/api/action/datastore_search?resource_id=test-resource-123&filters=%7B%22location%22%3A%22Singapore+%26+Malaysia%22%2C%22category%22%3A%22transport+%26+logistics%22%2C%22status%22%3A%22active%22%7D",
+      "https://data.gov.sg/api/action/datastore_search?resource_id=test-resource-123&filters=%7B%22category%22%3A%22transport+%26+logistics%22%2C%22location%22%3A%22Singapore+%26+Malaysia%22%2C%22status%22%3A%22active%22%7D",
     )
   })
 
@@ -113,9 +113,9 @@ describe("generateDgsUrl", () => {
   it("should handle zero values for limit and offset", () => {
     // Arrange
     const params: DgsApiDatasetSearchParams = {
-      resourceId: "test-resource-123",
       limit: 0,
       offset: 0,
+      resourceId: "test-resource-123",
     }
 
     // Act
@@ -145,11 +145,11 @@ describe("generateDgsUrl", () => {
   it("should not include undefined optional parameters", () => {
     // Arrange
     const params: DgsApiDatasetSearchParams = {
-      resourceId: "test-resource-123",
-      q: undefined,
+      filters: undefined,
       limit: undefined,
       offset: undefined,
-      filters: undefined,
+      q: undefined,
+      resourceId: "test-resource-123",
       sort: undefined,
     }
 
@@ -165,12 +165,12 @@ describe("generateDgsUrl", () => {
   it("should handle filters with numeric values", () => {
     // Arrange
     const params: DgsApiDatasetSearchParams = {
-      resourceId: "test-resource-123",
       filters: {
-        year: "2023",
-        count: "100",
         active: "true",
+        count: "100",
+        year: "2023",
       },
+      resourceId: "test-resource-123",
     }
 
     // Act
@@ -178,15 +178,15 @@ describe("generateDgsUrl", () => {
 
     // Assert
     expect(result).toBe(
-      "https://data.gov.sg/api/action/datastore_search?resource_id=test-resource-123&filters=%7B%22year%22%3A%222023%22%2C%22count%22%3A%22100%22%2C%22active%22%3A%22true%22%7D",
+      "https://data.gov.sg/api/action/datastore_search?resource_id=test-resource-123&filters=%7B%22active%22%3A%22true%22%2C%22count%22%3A%22100%22%2C%22year%22%3A%222023%22%7D",
     )
   })
 
   it("should generate URL with q parameter", () => {
     // Arrange
     const params: DgsApiDatasetSearchParams = {
-      resourceId: "test-resource-123",
       q: "transport",
+      resourceId: "test-resource-123",
     }
 
     // Act
@@ -201,8 +201,8 @@ describe("generateDgsUrl", () => {
   it("should handle q parameter with special characters", () => {
     // Arrange
     const params: DgsApiDatasetSearchParams = {
-      resourceId: "test-resource-123",
       q: "transport & logistics",
+      resourceId: "test-resource-123",
     }
 
     // Act
@@ -217,8 +217,8 @@ describe("generateDgsUrl", () => {
   it("should handle q parameter with spaces and punctuation", () => {
     // Arrange
     const params: DgsApiDatasetSearchParams = {
-      resourceId: "test-resource-123",
       q: "Singapore's population data 2023",
+      resourceId: "test-resource-123",
     }
 
     // Act

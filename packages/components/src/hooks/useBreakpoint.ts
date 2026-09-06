@@ -3,12 +3,12 @@ import { useMediaQuery } from "usehooks-ts"
 // Unable to use breakpoints directly from tailwind config as it may not be available
 // depending on how this component is used.
 const breakpoints = {
-  xs: "576px",
-  sm: "640px",
-  md: "768px",
-  lg: "1024px",
-  xl: "1240px",
   "2xl": "1536px",
+  lg: "1024px",
+  md: "768px",
+  sm: "640px",
+  xl: "1240px",
+  xs: "576px",
 }
 
 /**

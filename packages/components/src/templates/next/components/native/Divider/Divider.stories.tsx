@@ -13,15 +13,15 @@ const Template = (props: DividerProps) => (
 )
 
 const meta: Meta<DividerProps> = {
-  title: "Next/Components/Divider",
-  component: Divider,
-  render: Template,
   argTypes: {},
+  component: Divider,
   parameters: {
     themes: {
       themeOverride: "Isomer Next",
     },
   },
+  render: Template,
+  title: "Next/Components/Divider",
 }
 export default meta
 type Story = StoryObj<typeof Divider>

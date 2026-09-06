@@ -17,7 +17,11 @@ export const useCollection = ({
 }) => {
   const [queryParams, updateQueryParams] = useQueryParams()
 
-  const currPage = parseInt(queryParams.page || "1", 10)
+  const pageParam =
+    queryParams.page !== undefined && queryParams.page !== ""
+      ? queryParams.page
+      : "1"
+  const currPage = Math.trunc(Number(pageParam))
   const setCurrPage = (page: number) => {
     updateQueryParams({
       newParams: { page: page.toString() },
@@ -25,12 +29,16 @@ export const useCollection = ({
   }
 
   const appliedFilters = (() => {
-    const filters = queryParams.filters
+    const { filters } = queryParams
     if (isEmpty(filters)) {
       return []
     }
     try {
-      const parsed: unknown = JSON.parse(filters || "[]")
+      const parsed: unknown = JSON.parse(
+        queryParams.filters !== undefined && queryParams.filters !== ""
+          ? queryParams.filters
+          : "[]",
+      )
       if (!isAppliedFilterUrlJson(parsed)) {
         return []
       }
@@ -47,15 +55,18 @@ export const useCollection = ({
     })
   }
 
-  const searchValue = queryParams.search || ""
+  const searchValue =
+    queryParams.search !== undefined && queryParams.search !== ""
+      ? queryParams.search
+      : ""
   const handleSearchValueChange = (value: string) => {
     updateQueryParams({
-      newParams: { search: value, page: "1" },
+      newParams: { page: "1", search: value },
     })
   }
 
   const handleFilterToggle = (id: string, itemId: string) => {
-    return updateAppliedFilters(appliedFilters, setAppliedFilters, id, itemId)
+    updateAppliedFilters(appliedFilters, setAppliedFilters, id, itemId)
   }
 
   const filteredItems = getFilteredItems(items, appliedFilters, searchValue)
@@ -67,22 +78,22 @@ export const useCollection = ({
 
   const handleClearFilter = () => {
     updateQueryParams({
-      newParams: { search: "", filters: "[]", page: "1" },
+      newParams: { filters: "[]", page: "1", search: "" },
     })
   }
 
   return {
-    paginatedItems,
-    filteredCount: filteredItems.length,
-    totalCount: items.length,
-    searchValue,
-    handleSearchValueChange,
-    handleClearFilter,
     appliedFilters,
-    handleFilterToggle,
-    setAppliedFilters,
     currPage,
+    filteredCount: filteredItems.length,
+    handleClearFilter,
+    handleFilterToggle,
+    handleSearchValueChange,
+    paginatedItems,
+    searchValue,
+    setAppliedFilters,
     setCurrPage,
+    totalCount: items.length,
   }
 }
 

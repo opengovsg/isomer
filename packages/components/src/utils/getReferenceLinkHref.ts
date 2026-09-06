@@ -1,22 +1,28 @@
 import type { IsomerSitemap } from "~/types"
-import DOMPurify from "isomorphic-dompurify"
+import { sanitize } from "isomorphic-dompurify"
+
+const REFERENCE_LINK_PREFIX_REGEX =
+  /^\[resource:(?<pageId>\d+):(?<refPageId>\d+)\]/u
+
+const ASSET_LINK_PREFIX_REGEX =
+  /^\/(?<siteId>\d+)\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\//u
 
 // This function returns a sanitized version of the provided URL string
-const getSanitizedLinkHref = (url?: string) => {
+const getSanitizedLinkHref = (url?: string): string | undefined => {
   if (url === undefined) {
     return undefined
   }
 
   // We use DOMPurify to create the document fragment as Node.js has no browser 'document' object.
-  const fragment = DOMPurify.sanitize("<a></a>", { RETURN_DOM_FRAGMENT: true })
+  const fragment = sanitize("<a></a>", { RETURN_DOM_FRAGMENT: true })
   const anchor = fragment.firstElementChild
 
-  if (!anchor) {
+  if (anchor === null) {
     return undefined
   }
 
   anchor.setAttribute("href", url)
-  DOMPurify.sanitize(anchor, { IN_PLACE: true })
+  sanitize(anchor, { IN_PLACE: true })
 
   const sanitizedUrl = anchor.getAttribute("href")
 
@@ -32,21 +38,21 @@ const convertReferenceLinks = (
   originalLink: string,
   sitemapArray: IsomerSitemap[],
 ) => {
-  const match = /^\[resource:(\d+):(\d+)\]/.exec(originalLink)
+  const match = REFERENCE_LINK_PREFIX_REGEX.exec(originalLink)
 
-  if (!match) {
+  if (match === null) {
     return originalLink
   }
 
-  const refPageId = match[2]
+  const refPageId = match.groups?.refPageId
 
-  if (!refPageId) {
+  if (refPageId === undefined || refPageId === "") {
     return originalLink
   }
 
   const refPage = sitemapArray.find(({ id }) => id === refPageId)
 
-  if (!refPage) {
+  if (refPage === undefined) {
     return originalLink
   }
 
@@ -59,16 +65,13 @@ const convertAssetLinks = (
   originalLink: string,
   assetsBaseUrl: string | undefined,
 ) => {
-  if (!assetsBaseUrl) {
+  if (assetsBaseUrl === undefined || assetsBaseUrl === "") {
     return originalLink
   }
 
-  const match =
-    /^\/(\d+)\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\//.exec(
-      originalLink,
-    )
+  const match = ASSET_LINK_PREFIX_REGEX.exec(originalLink)
 
-  if (!match) {
+  if (match === null) {
     return originalLink
   }
 
@@ -79,8 +82,8 @@ export const getReferenceLinkHref = (
   referenceLink: string | undefined,
   sitemapArray: IsomerSitemap[],
   assetsBaseUrl: string | undefined,
-) => {
-  if (!referenceLink) {
+): string | undefined => {
+  if (referenceLink === undefined || referenceLink === "") {
     return undefined
   }
 

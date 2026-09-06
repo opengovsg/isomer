@@ -8,15 +8,7 @@ export const ImageClient = forwardRef<
   HTMLImageElement,
   Omit<ImageClientProps, "ref">
 >(function ImageClient(
-  {
-    src,
-    alt,
-    width,
-    className,
-    assetsBaseUrl,
-    lazyLoading = true, // next/image defaults to lazy loading true too
-    onLoad,
-  },
+  { src, alt, width, className, assetsBaseUrl, lazyLoading = true, onLoad },
   ref,
 ) {
   const imgSrc =
@@ -34,12 +26,12 @@ export const ImageClient = forwardRef<
       className={className}
       onLoad={onLoad}
       onError={({ currentTarget }) => {
-        currentTarget.onerror = null
         currentTarget.src = `${assetsBaseUrl ?? ""}/placeholder_no_image.png`
       }}
       loading={lazyLoading ? "lazy" : "eager"}
       fetchPriority={lazyLoading ? "auto" : "high"}
-      decoding={lazyLoading ? "async" : "auto"} // sync decoding can block the main thread
+      // sync decoding can block the main thread
+      decoding={lazyLoading ? "async" : "auto"}
     />
   )
 })

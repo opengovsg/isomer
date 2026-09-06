@@ -14,19 +14,17 @@ import {
 
 const LAYOUT_METADATA_MAP = {
   article: ArticlePageMetaSchema,
+  collection: CollectionPageMetaSchema,
   content: ContentPageMetaSchema,
   database: DatabasePageMetaSchema,
+  file: FileRefMetaSchema,
   homepage: HomePageMetaSchema,
   index: ContentPageMetaSchema,
+  link: LinkRefMetaSchema,
   notfound: NotFoundPageMetaSchema,
   search: SearchPageMetaSchema,
-  link: LinkRefMetaSchema,
-  collection: CollectionPageMetaSchema,
-  file: FileRefMetaSchema,
 }
 
 export const getLayoutMetadataSchema = (
   layout: IsomerPageLayoutType,
-): TSchema => {
-  return LAYOUT_METADATA_MAP[layout]
-}
+): TSchema => LAYOUT_METADATA_MAP[layout]

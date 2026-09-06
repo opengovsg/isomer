@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unsafe-type-assertion, typescript/no-deprecated -- story/test fixtures use narrowed mock shapes */
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { http, HttpResponse } from "msw"
 import { generateSiteConfig } from "~/stories/helpers"
@@ -8,81 +9,62 @@ import { DynamicDataBanner } from "./DynamicDataBanner"
 import { getSingaporeDateYYYYMMDD } from "./utils"
 
 const meta: Meta<typeof DynamicDataBanner> = {
-  title: "Next/Components/DynamicDataBanner",
-  component: DynamicDataBanner,
-  parameters: {
-    layout: "fullscreen",
-    chromatic: withChromaticModes([
-      "mobileSmall",
-      "mobile",
-      "tablet",
-      "desktop",
-    ]),
-  },
   args: {
-    site: generateSiteConfig(),
     apiEndpoint: "https://jsonplaceholder.com/muis_prayers_time",
-    title: "hijriDate",
     data: [
       {
-        label: "Subuh",
         key: "subuh",
+        label: "Subuh",
       },
       {
-        label: "Syuruk",
         key: "syuruk",
+        label: "Syuruk",
       },
       {
-        label: "Zohor",
         key: "zohor",
+        label: "Zohor",
       },
       {
-        label: "Asar",
         key: "asar",
+        label: "Asar",
       },
       {
-        label: "Maghrib",
         key: "maghrib",
+        label: "Maghrib",
       },
       {
-        label: "Ishak",
         key: "isyak",
+        label: "Ishak",
       },
     ],
-    url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-    label: "View all dates",
     errorMessage: [
       {
         text: "Couldn't load prayer times. Try refreshing the page.",
         type: "text",
       },
     ],
+    label: "View all dates",
+    site: generateSiteConfig(),
+    title: "hijriDate",
+    url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
   },
+  component: DynamicDataBanner,
+  parameters: {
+    chromatic: withChromaticModes([
+      "mobileSmall",
+      "mobile",
+      "tablet",
+      "desktop",
+    ]),
+    layout: "fullscreen",
+  },
+  title: "Next/Components/DynamicDataBanner",
 }
 
 export default meta
 type Story = StoryObj<typeof DynamicDataBanner>
 
 export const Default: Story = {
-  parameters: {
-    msw: {
-      handlers: [
-        http.get("https://jsonplaceholder.com/muis_prayers_time", () => {
-          return HttpResponse.json({
-            [getSingaporeDateYYYYMMDD()]: {
-              hijriDate: "17 Jamadilawal 1442H",
-              subuh: "5:44am",
-              syuruk: "7:08am",
-              zohor: "1:10pm",
-              asar: "4:34pm",
-              maghrib: "7:11pm",
-              isyak: "8:25pm",
-            },
-          })
-        }),
-      ],
-    },
-  },
   decorators: [
     (Story) => (
       <div
@@ -97,17 +79,38 @@ export const Default: Story = {
       </div>
     ),
   ],
+  parameters: {
+    msw: {
+      handlers: [
+        http.get("https://jsonplaceholder.com/muis_prayers_time", () =>
+          HttpResponse.json({
+            [getSingaporeDateYYYYMMDD()]: {
+              asar: "4:34pm",
+              hijriDate: "17 Jamadilawal 1442H",
+              isyak: "8:25pm",
+              maghrib: "7:11pm",
+              subuh: "5:44am",
+              syuruk: "7:08am",
+              zohor: "1:10pm",
+            },
+          }),
+        ),
+      ],
+    },
+  },
 }
 
 export const Loading: Story = {
   parameters: {
     msw: {
       handlers: [
-        http.get("https://jsonplaceholder.com/muis_prayers_time", () => {
-          return new Promise(() => {
-            // Never resolve the promise
-          })
-        }),
+        http.get(
+          "https://jsonplaceholder.com/muis_prayers_time",
+          async () =>
+            await new Promise(() => {
+              // Never resolve the promise
+            }),
+        ),
       ],
     },
   },
@@ -117,11 +120,13 @@ export const Error: Story = {
   parameters: {
     msw: {
       handlers: [
-        http.get("https://jsonplaceholder.com/muis_prayers_time", () => {
-          return new HttpResponse(null, {
-            status: 500,
-          })
-        }),
+        http.get(
+          "https://jsonplaceholder.com/muis_prayers_time",
+          () =>
+            new HttpResponse(null, {
+              status: 500,
+            }),
+        ),
       ],
     },
   },

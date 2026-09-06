@@ -19,15 +19,15 @@ const inputStyles = tv({
 const fieldGroupStyles = tv({
   base: "group flex items-center gap-4 overflow-hidden rounded bg-white py-1 pl-4 shadow-[0_0_0_1.5px] forced-colors:bg-[Field]",
   variants: {
+    isDisabled: {
+      true: "border-gray-200 forced-colors:border-[GrayText]",
+    },
     isFocusWithin: {
       false: "shadow-brand-interaction forced-colors:border-[ButtonBorder]",
       true: "bg-interaction-main-subtle-hover shadow-[0_0_0_2px] shadow-utility-feedback-info",
     },
     isInvalid: {
       true: "border-red-600 forced-colors:border-[Mark]",
-    },
-    isDisabled: {
-      true: "border-gray-200 forced-colors:border-[GrayText]",
     },
   },
 })
@@ -62,6 +62,7 @@ export const SearchField = ({
   let value = ""
   if (Object.prototype.toString.call(rawValue) === "[object String]") {
     // SAFETY: Object.prototype.toString guard confirms rawValue is a string primitive
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- string guard via Object.prototype.toString
     value = rawValue as string
   }
   const isEmpty = !value || value.length === 0
@@ -78,13 +79,15 @@ export const SearchField = ({
       <div
         className={twMerge(
           fieldGroupStyles({
+            isDisabled,
             isFocusWithin,
             isInvalid,
-            isDisabled,
           }),
           classNames?.fieldgroup,
         )}
-        onFocus={() => setIsFocusWithin(true)}
+        onFocus={() => {
+          setIsFocusWithin(true)
+        }}
         onBlur={(e) => {
           if (!e.currentTarget.contains(e.relatedTarget)) {
             setIsFocusWithin(false)

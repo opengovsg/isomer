@@ -6,11 +6,11 @@ import { AccordionProseSchema } from "../native/Prose"
 
 export const AccordionSchema = Type.Object(
   {
-    type: Type.Literal("accordion", { default: "accordion" }),
+    details: AccordionProseSchema,
     summary: Type.String({
       title: "Title",
     }),
-    details: AccordionProseSchema,
+    type: Type.Literal("accordion", { default: "accordion" }),
   },
   { title: "Accordion" },
 )

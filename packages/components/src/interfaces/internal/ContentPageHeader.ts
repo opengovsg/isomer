@@ -8,37 +8,37 @@ import type { BreadcrumbProps } from "./Breadcrumb"
 
 export const ContentPageHeaderSchema = Type.Object(
   {
-    summary: Type.String({
-      title: "Page summary",
-      description: "Help users understand what this page is about",
-      format: "textarea",
-      maxLength: 500,
-    }),
     buttonLabel: Type.Optional(
       Type.String({
-        title: "Button label",
         description:
           "A descriptive text. Avoid generic text like “Here”, “Click here”, or “Learn more”",
+        title: "Button label",
       }),
     ),
     buttonUrl: Type.Optional(
       Type.String({
-        title: "Button destination",
         description: "When this is clicked, open:",
         format: "link",
         pattern: LINK_HREF_PATTERN,
+        title: "Button destination",
       }),
     ),
     showThumbnail: Type.Boolean({
-      title: "Show thumbnail",
-      format: "hidden",
       default: false,
+      format: "hidden",
+      title: "Show thumbnail",
+    }),
+    summary: Type.String({
+      description: "Help users understand what this page is about",
+      format: "textarea",
+      maxLength: 500,
+      title: "Page summary",
     }),
   },
   {
-    title: "Content page header",
     description:
       "The content page header is used to display the title, summary, and breadcrumbs of a content page.",
+    title: "Content page header",
   },
 )
 

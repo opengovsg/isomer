@@ -10,14 +10,14 @@ import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
 import { CollectionBlock } from "./CollectionBlock"
 
 const meta: Meta<CollectionBlockProps> = {
-  title: "Next/Components/CollectionBlock",
-  component: CollectionBlock,
   argTypes: {},
+  component: CollectionBlock,
   parameters: {
     themes: {
       themeOverride: "Isomer Next",
     },
   },
+  title: "Next/Components/CollectionBlock",
 }
 
 export default meta
@@ -32,11 +32,11 @@ type TagCategories = NonNullable<
 const DEFAULT_CATEGORY_OPTION_ID = "category-option-yes-i-am-a-category"
 const DEFAULT_TAG_CATEGORIES: TagCategories = [
   {
-    label: "Category",
+    display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
     id: "category-group",
     isRequired: true,
-    display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
-    options: [{ label: "yes i am a category", id: DEFAULT_CATEGORY_OPTION_ID }],
+    label: "Category",
+    options: [{ id: DEFAULT_CATEGORY_OPTION_ID, label: "yes i am a category" }],
   },
 ]
 
@@ -60,152 +60,152 @@ const generateArgs = ({
   }
 >): Partial<CollectionBlockProps> => {
   const firstCard: IsomerSitemap = {
+    children: [],
+    date: isDateless ? undefined : "2021-01-03",
     id: "3",
+    lastModified: isDateless ? "" : new Date("2021-01-03").toISOString(),
+    layout: "article",
+    permalink: "/collection-1/item-1",
+    summary: "",
+    tagged: taggedOptionIds,
     title:
       "Date of Government Gazette Notification on Dissolution of Parliament",
-    tagged: taggedOptionIds,
-    permalink: "/collection-1/item-1",
-    layout: "article",
-    summary: "",
-    date: isDateless ? undefined : "2021-01-03",
-    lastModified: isDateless ? "" : new Date("2021-01-03").toISOString(),
-    children: [],
   }
   if (!withImageFallback) {
     firstCard.image = {
-      src: "https://images.unsplash.com/photo-1573865526739-10659fec78a5?q=80&w=3715&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       alt: "Image 1",
+      src: "https://images.unsplash.com/photo-1573865526739-10659fec78a5?q=80&w=3715&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     }
   }
 
   const cards: IsomerSitemap[] = [
     firstCard,
     {
-      id: "4",
-      title: "Impact of Foreign Professionals on our Economy and Society",
-      tagged: taggedOptionIds,
-      permalink: "/collection-1/item-2",
-      layout: "article",
-      summary: "",
-      date: isDateless ? undefined : "2021-01-02",
-      lastModified: isDateless ? "" : new Date("2021-01-02").toISOString(),
       children: [],
+      date: isDateless ? undefined : "2021-01-02",
+      id: "4",
       image: {
-        src: "https://images.unsplash.com/photo-1533738363-b7f9aef128ce?q=80&w=3024&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         alt: "Image 2",
+        src: "https://images.unsplash.com/photo-1533738363-b7f9aef128ce?q=80&w=3024&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       },
+      lastModified: isDateless ? "" : new Date("2021-01-02").toISOString(),
+      layout: "article",
+      permalink: "/collection-1/item-2",
+      summary: "",
+      tagged: taggedOptionIds,
+      title: "Impact of Foreign Professionals on our Economy and Society",
     },
     {
-      id: "5",
-      title: "Where does Government revenue come from?",
-      tagged: taggedOptionIds,
-      permalink: "/collection-1/item-3",
-      layout: "article",
-      summary: "",
-      date: isDateless ? undefined : "2021-01-01",
-      lastModified: isDateless ? "" : new Date("2021-01-01").toISOString(),
       children: [],
+      date: isDateless ? undefined : "2021-01-01",
+      id: "5",
       image: {
-        src: "https://images.unsplash.com/photo-1511044568932-338cba0ad803?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         alt: "Image 3",
+        src: "https://images.unsplash.com/photo-1511044568932-338cba0ad803?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       },
+      lastModified: isDateless ? "" : new Date("2021-01-01").toISOString(),
+      layout: "article",
+      permalink: "/collection-1/item-3",
+      summary: "",
+      tagged: taggedOptionIds,
+      title: "Where does Government revenue come from?",
     },
   ]
 
   return {
-    type: "collectionblock",
-    collectionReferenceLink,
-    displayThumbnail,
-    displayCategory,
     buttonLabel,
+    collectionReferenceLink,
+    displayCategory,
+    displayThumbnail,
     headingLevel: 2,
     site: generateSiteConfig({
       siteMap: {
-        id: "1",
-        title: "Home",
-        permalink: "/",
-        lastModified: "",
-        layout: "homepage",
-        summary: "",
         children: [
           {
-            id: "2",
-            title: "Corrections and Clarifications",
-            permalink: "/collection-1",
-            layout: "collection",
-            summary:
-              "Clarifying widespread or common misperceptions of Government policy, or inaccurate assertions on matters of public concern that can harm Singapore's social fabric.",
-            lastModified: "2021-01-01",
             children: cards.slice(0, numberOfCards),
             collectionPagePageProps: {
               tagCategories,
             },
+            id: "2",
+            lastModified: "2021-01-01",
+            layout: "collection",
+            permalink: "/collection-1",
+            summary:
+              "Clarifying widespread or common misperceptions of Government policy, or inaccurate assertions on matters of public concern that can harm Singapore's social fabric.",
+            title: "Corrections and Clarifications",
           },
         ],
+        id: "1",
+        lastModified: "",
+        layout: "homepage",
+        permalink: "/",
+        summary: "",
+        title: "Home",
       },
     }),
+    type: "collectionblock",
   }
 }
 
 export const WithImage: Story = {
+  args: generateArgs({ displayCategory: true, displayThumbnail: true }),
   name: "With Image",
-  args: generateArgs({ displayThumbnail: true, displayCategory: true }),
 }
 
 export const WithImageFallback: Story = {
-  name: "With Image Fallback",
   args: generateArgs({
-    displayThumbnail: true,
     displayCategory: true,
+    displayThumbnail: true,
     withImageFallback: true,
   }),
+  name: "With Image Fallback",
 }
 
 export const WithoutImage: Story = {
+  args: generateArgs({ displayCategory: true, displayThumbnail: false }),
   name: "Without Image",
-  args: generateArgs({ displayThumbnail: false, displayCategory: true }),
 }
 
 export const WithoutCategory: Story = {
+  args: generateArgs({ displayCategory: false, displayThumbnail: true }),
   name: "Without Category",
-  args: generateArgs({ displayThumbnail: true, displayCategory: false }),
 }
 
 export const DatelessVariant: Story = {
-  name: "Dateless Variant",
   args: generateArgs({
-    displayThumbnail: true,
     displayCategory: true,
+    displayThumbnail: true,
     isDateless: true,
   }),
+  name: "Dateless Variant",
 }
 
 export const OneCard: Story = {
-  name: "One Card",
   args: generateArgs({
-    displayThumbnail: true,
     displayCategory: true,
+    displayThumbnail: true,
     numberOfCards: 1,
   }),
+  name: "One Card",
 }
 
 export const TwoCards: Story = {
-  name: "Two Cards",
   args: generateArgs({
-    displayThumbnail: true,
     displayCategory: true,
+    displayThumbnail: true,
     numberOfCards: 2,
   }),
+  name: "Two Cards",
 }
 
 export const WithoutPlaintextTags: Story = {
-  name: "Without Plaintext Tags",
   args: generateArgs({
-    displayThumbnail: true,
     displayCategory: true,
+    displayThumbnail: true,
     tagCategories: [],
     taggedOptionIds: [],
   }),
+  name: "Without Plaintext Tags",
 }
 
 const TOPIC_OPTION_1_ID = "topic-option-environment"
@@ -213,7 +213,6 @@ const TOPIC_OPTION_2_ID = "topic-option-wildlife"
 const REGION_OPTION_ID = "region-option-southeast-asia"
 
 export const MultiplePlaintextTags: Story = {
-  name: "Multiple Plaintext Tags",
   args: generateArgs({
     displayThumbnail: true,
     displayCategory: true,
@@ -221,23 +220,24 @@ export const MultiplePlaintextTags: Story = {
     // only 1, so both the comma and the dot separator are visible together
     tagCategories: [
       {
-        label: "Topic",
+        display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
         id: "topic-group",
         isRequired: true,
-        display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
+        label: "Topic",
         options: [
-          { label: "Environment", id: TOPIC_OPTION_1_ID },
-          { label: "Wildlife", id: TOPIC_OPTION_2_ID },
+          { id: TOPIC_OPTION_1_ID, label: "Environment" },
+          { id: TOPIC_OPTION_2_ID, label: "Wildlife" },
         ],
       },
       {
-        label: "Region",
+        display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
         id: "region-group",
         isRequired: true,
-        display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
-        options: [{ label: "Southeast Asia", id: REGION_OPTION_ID }],
+        label: "Region",
+        options: [{ id: REGION_OPTION_ID, label: "Southeast Asia" }],
       },
     ],
     taggedOptionIds: [TOPIC_OPTION_1_ID, TOPIC_OPTION_2_ID, REGION_OPTION_ID],
   }),
+  name: "Multiple Plaintext Tags",
 }

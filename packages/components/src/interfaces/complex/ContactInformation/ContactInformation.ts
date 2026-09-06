@@ -10,23 +10,23 @@ import { NativeDataSourceSchema } from "../../integration/native"
 import { CONTACT_INFORMATION_SUPPORT_METHODS } from "./constants"
 
 const BaseContactInformationSchema = Type.Object({
+  label: Type.Optional(
+    Type.String({
+      description:
+        "Add a link under your block. Avoid generic text such as “Click here” or “Learn more”",
+      maxLength: 50,
+      title: "Link text",
+    }),
+  ),
   type: Type.Literal("contactinformation", {
     default: "contactinformation",
   }),
-  label: Type.Optional(
-    Type.String({
-      title: "Link text",
-      maxLength: 50,
-      description:
-        "Add a link under your block. Avoid generic text such as “Click here” or “Learn more”",
-    }),
-  ),
   url: Type.Optional(
     Type.String({
-      title: "Link destination",
       description: "When this is clicked, open:",
       format: "link",
       pattern: LINK_HREF_PATTERN,
+      title: "Link destination",
     }),
   ),
   // Needed for MFA case where we want to
@@ -38,9 +38,9 @@ const BaseContactInformationSchema = Type.Object({
           Type.Literal(method, { default: method }),
         ),
         {
-          title: "Whitelisted Methods",
           description: "Only whitelisted methods will be displayed.",
           format: "hidden",
+          title: "Whitelisted Methods",
         },
       ),
     ),
@@ -54,11 +54,6 @@ const CHARACTER_LIMIT = 30
 
 const InjectableContactInformationSchema = Type.Object(
   {
-    title: Type.Optional(
-      Type.String({
-        title: "Title",
-      }),
-    ),
     description: Type.Optional(
       Type.String({
         title: "Description",
@@ -66,26 +61,32 @@ const InjectableContactInformationSchema = Type.Object(
     ),
     methods: Type.Array(
       Type.Object({
+        caption: Type.Optional(
+          Type.String({
+            maxLength: CHARACTER_LIMIT,
+            title: "Caption",
+          }),
+        ),
+        label: Type.Optional(
+          Type.String({
+            maxLength: CHARACTER_LIMIT,
+            title: "Label",
+          }),
+        ),
         method: Type.Optional(
           Type.Union(
             CONTACT_INFORMATION_SUPPORT_METHODS.map((method) =>
               Type.Literal(method, {
                 title:
                   method.charAt(0).toUpperCase() +
-                  method.slice(1).replace(/_/g, " "),
+                  method.slice(1).replaceAll("_", " "),
               }),
             ),
             {
-              title: "Type",
               description: "Select the type of contact information",
+              title: "Type",
             },
           ),
-        ),
-        label: Type.Optional(
-          Type.String({
-            title: "Label",
-            maxLength: CHARACTER_LIMIT,
-          }),
         ),
         values: Type.Array(
           Type.String({
@@ -93,17 +94,11 @@ const InjectableContactInformationSchema = Type.Object(
           }),
           { minItems: 1 },
         ),
-        caption: Type.Optional(
-          Type.String({
-            title: "Caption",
-            maxLength: CHARACTER_LIMIT,
-          }),
-        ),
       }),
       {
-        title: "Contact Methods",
         description: "Displayed in the order you add them here.",
         minItems: 1,
+        title: "Contact Methods",
       },
     ),
     otherInformation: Type.Optional(
@@ -113,7 +108,13 @@ const InjectableContactInformationSchema = Type.Object(
             title: "Other Information",
           }),
         ),
-        value: Type.String(), // note: there can be HTML tags in this field
+        // note: there can be HTML tags in this field
+        value: Type.String(),
+      }),
+    ),
+    title: Type.Optional(
+      Type.String({
+        title: "Title",
       }),
     ),
   },

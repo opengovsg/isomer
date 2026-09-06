@@ -9,6 +9,7 @@ import { DynamicHeading } from "~/utils/DynamicHeading"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { getResourceIdFromReferenceLink } from "~/utils/getResourceIdFromReferenceLink"
 import { isExternalUrl } from "~/utils/isExternalUrl"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { ComponentContent } from "../../internal/customCssClass"
 import { ImageClient } from "../../internal/ImageClient"
@@ -22,26 +23,38 @@ import {
 import { getCollectionParent } from "./utils/getCollectionParent"
 
 const createInfoCardsStyles = tv({
+  defaultVariants: {
+    imageFit: "cover",
+    numberOfCards: NUMBER_OF_PAGES_TO_DISPLAY,
+  },
   slots: {
-    container: `${ComponentContent} flex flex-col gap-8 py-12 first:pt-0 md:gap-12 md:py-16`,
-    headingContainer: "flex flex-col gap-2.5 lg:max-w-3xl",
-    headingTitle: "prose-display-sm break-words text-base-content-strong",
-    headingSubtitle: "prose-headline-lg-regular text-base-content",
-    grid: "grid grid-cols-1 items-start gap-10 md:gap-7 lg:gap-x-16 lg:gap-y-12",
+    cardCategory: "prose-label-sm-regular text-base-content-light",
     cardContainer: "group flex flex-col gap-5 outline-0",
+    cardDate: "prose-label-sm-medium text-base-content",
+    cardImage: "h-full w-full object-center",
     cardImageContainer:
       "aspect-[3/2] w-full overflow-hidden rounded-lg border border-base-divider-subtle bg-base-canvas drop-shadow-none transition ease-in",
-    cardImage: "h-full w-full object-center",
     cardTextContainer: "flex flex-col gap-1.5 sm:gap-2",
-    cardDate: "prose-label-sm-medium text-base-content",
     cardTitle:
       "prose-headline-lg-semibold text-base-content-strong group-hover:text-brand-canvas-inverse",
     cardTitleArrow:
       "mb-0.5 ml-1 inline h-auto w-6 transition ease-in group-hover:translate-x-1",
-    cardCategory: "prose-label-sm-regular text-base-content-light",
+    container: `${ComponentContent} flex flex-col gap-8 py-12 first:pt-0 md:gap-12 md:py-16`,
+    grid: "grid grid-cols-1 items-start gap-10 md:gap-7 lg:gap-x-16 lg:gap-y-12",
+    headingContainer: "flex flex-col gap-2.5 lg:max-w-3xl",
+    headingSubtitle: "prose-headline-lg-regular text-base-content",
+    headingTitle: "prose-display-sm break-words text-base-content-strong",
     urlButtonContainer: "mx-auto block",
   },
   variants: {
+    imageFit: {
+      contain: {
+        cardImage: "object-contain",
+      },
+      cover: {
+        cardImage: "object-cover",
+      },
+    },
     isExternalLink: {
       true: {
         cardTitleArrow: "rotate-[-45deg]",
@@ -52,25 +65,13 @@ const createInfoCardsStyles = tv({
         grid: "",
       },
       2: {
-        grid: "md:grid-cols-2",
         cardImageContainer: "aspect-[3/2] lg:aspect-[2/1]",
+        grid: "md:grid-cols-2",
       },
       3: {
         grid: "md:grid-cols-2 lg:grid-cols-3",
       },
     },
-    imageFit: {
-      cover: {
-        cardImage: "object-cover",
-      },
-      contain: {
-        cardImage: "object-contain",
-      },
-    },
-  },
-  defaultVariants: {
-    numberOfCards: NUMBER_OF_PAGES_TO_DISPLAY,
-    imageFit: "cover",
   },
 })
 
@@ -90,10 +91,11 @@ const SingleCard = ({
   formattedDate,
   headingLevel,
 }: CollectionBlockSingleCardProps): React.ReactNode => {
-  const isExternalLink = !!referenceLinkHref && isExternalUrl(referenceLinkHref)
+  const isExternalLink =
+    hasNonEmptyString(referenceLinkHref) && isExternalUrl(referenceLinkHref)
 
   const renderImage = () => {
-    if (!image?.src) {
+    if (!hasNonEmptyString(image?.src)) {
       return null
     }
 
@@ -104,7 +106,7 @@ const SingleCard = ({
           alt={image.alt}
           width="100%"
           className={compoundStyles.cardImage({
-            imageFit: isContainNeeded ? "contain" : "cover",
+            imageFit: isContainNeeded === true ? "contain" : "cover",
           })}
           lazyLoading={shouldLazyLoad}
           assetsBaseUrl={site.assetsBaseUrl}
@@ -121,7 +123,7 @@ const SingleCard = ({
     >
       {displayThumbnail && renderImage()}
       <div className={compoundStyles.cardTextContainer()}>
-        {formattedDate && (
+        {hasNonEmptyString(formattedDate) && (
           <p className={compoundStyles.cardDate()}>{formattedDate}</p>
         )}
 
@@ -158,27 +160,29 @@ const CollectionBlockSkeleton = ({
   title,
   description,
   headingLevel,
-}: CollectionBlockSkeletonProps) => {
-  return (
-    <section className={compoundStyles.container()}>
-      <div className={compoundStyles.headingContainer()}>
-        <DynamicHeading
-          level={headingLevel}
-          className={compoundStyles.headingTitle()}
-        >
-          {title}
-        </DynamicHeading>
-        <p>{description}</p>
-      </div>
-    </section>
-  )
-}
+}: CollectionBlockSkeletonProps) => (
+  <section className={compoundStyles.container()}>
+    <div className={compoundStyles.headingContainer()}>
+      <DynamicHeading
+        level={headingLevel}
+        className={compoundStyles.headingTitle()}
+      >
+        {title}
+      </DynamicHeading>
+      <p>{description}</p>
+    </div>
+  </section>
+)
 
 const toNumberOfCards = (
   length: number,
 ): CollectionBlockNumberOfCards["numberOfCards"] => {
-  if (length === 1) return 1
-  if (length === 2) return 2
+  if (length === 1) {
+    return 1
+  }
+  if (length === 2) {
+    return 2
+  }
   return 3
 }
 
@@ -206,15 +210,15 @@ export const CollectionBlock = ({
     )
   }
 
-  const collectionParent = getCollectionParent({ site, collectionId })
+  const collectionParent = getCollectionParent({ collectionId, site })
 
   if (!collectionParent) {
     return null
   }
 
   const collectionPages = getCollectionPages({
-    site,
     collectionParent,
+    site,
   })
 
   if (collectionPages.length === 0) {

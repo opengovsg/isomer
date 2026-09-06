@@ -7,33 +7,33 @@ import { withChromaticModes } from "@isomer/storybook-config"
 import { NotFoundLayout } from "./NotFound"
 
 const meta: Meta<typeof NotFoundLayout> = {
-  title: "Next/Layouts/NotFound",
-  component: NotFoundLayout,
   argTypes: {},
-  tags: ["!autodocs"],
+  component: NotFoundLayout,
   parameters: {
-    layout: "fullscreen",
     chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
+    layout: "fullscreen",
     themes: {
       themeOverride: "Isomer Next",
     },
   },
+  tags: ["!autodocs"],
+  title: "Next/Layouts/NotFound",
 }
 export default meta
 type Story = StoryObj<NotFoundPageSchemaType>
 
 export const Default: Story = {
-  name: "NotFound",
   args: {
     layout: "notfound",
-    site: generateSiteConfig(),
     meta: {
       description: "Search results",
     },
     page: {
-      title: "Search",
-      permalink: "/404.html",
       lastModified: "2024-05-02T14:12:57.160Z",
+      permalink: "/404.html",
+      title: "Search",
     },
+    site: generateSiteConfig(),
   },
+  name: "NotFound",
 }

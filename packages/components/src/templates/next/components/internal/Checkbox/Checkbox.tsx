@@ -26,6 +26,7 @@ import { BiCheck, BiMinus } from "react-icons/bi"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
 import { focusRing } from "~/utils/tailwind"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 interface CheckboxGroupContextValue {
   state: CheckboxGroupState
@@ -64,9 +65,9 @@ export const CheckboxGroup = (props: CheckboxGroupProps) => {
   } = useCheckboxGroup(groupProps, state)
 
   const contextValue = {
-    state,
     isDisabled: groupProps.isDisabled,
     isReadOnly: groupProps.isReadOnly,
+    state,
   }
 
   return (
@@ -76,7 +77,7 @@ export const CheckboxGroup = (props: CheckboxGroupProps) => {
         {...ariaGroupProps}
         className={twMerge("flex flex-col gap-4", className)}
       >
-        {label && (
+        {hasNonEmptyString(label) && (
           <div
             {...labelProps}
             className="prose-body-base-semibold text-base-content-strong"
@@ -84,7 +85,7 @@ export const CheckboxGroup = (props: CheckboxGroupProps) => {
             {label}
           </div>
         )}
-        {description && (
+        {hasNonEmptyString(description) && (
           <div
             {...descriptionProps}
             className="prose-body-base text-base-content"
@@ -93,7 +94,7 @@ export const CheckboxGroup = (props: CheckboxGroupProps) => {
           </div>
         )}
         {children}
-        {errorMessage && (
+        {hasNonEmptyString(errorMessage) && (
           <div {...errorMessageProps} className="prose-body-base text-red-700">
             {errorMessage}
           </div>
@@ -114,19 +115,19 @@ const checkboxStyles = tv({
 })
 
 const boxStyles = tv({
-  extend: focusRing,
   base: "flex h-5 w-5 flex-shrink-0 items-center justify-center rounded border-2 transition",
+  extend: focusRing,
   variants: {
-    isSelected: {
-      false:
-        "border-[--color] bg-white [--color:theme(colors.base.divider.medium)] group-data-[pressed]:[--color:theme(colors.base.divider.strong)]",
-      true: "border-[--color] bg-[--color] [--color:theme(colors.brand.interaction.DEFAULT)] group-data-[pressed]:[--color:theme(colors.brand.interaction.pressed)] forced-colors:![--color:Highlight]",
+    isDisabled: {
+      true: "[--color:theme(colors.gray.200)] forced-colors:![--color:GrayText]",
     },
     isInvalid: {
       true: "[--color:theme(colors.red.700)] group-data-[pressed]:[--color:theme(colors.red.800)] forced-colors:![--color:Mark]",
     },
-    isDisabled: {
-      true: "[--color:theme(colors.gray.200)] forced-colors:![--color:GrayText]",
+    isSelected: {
+      false:
+        "border-[--color] bg-white [--color:theme(colors.base.divider.medium)] group-data-[pressed]:[--color:theme(colors.base.divider.strong)]",
+      true: "border-[--color] bg-[--color] [--color:theme(colors.brand.interaction.DEFAULT)] group-data-[pressed]:[--color:theme(colors.brand.interaction.pressed)] forced-colors:![--color:Highlight]",
     },
   },
 })
@@ -192,10 +193,7 @@ const CheckboxRenderer = ({
     <label
       ref={labelRef}
       {...labelProps}
-      className={twMerge(
-        checkboxStyles({ isDisabled: !!isDisabled }),
-        className,
-      )}
+      className={twMerge(checkboxStyles({ isDisabled }), className)}
       data-pressed={isPressed ? "true" : undefined}
       data-selected={isSelected || isIndeterminate ? "true" : undefined}
     >
@@ -213,17 +211,16 @@ const CheckboxRenderer = ({
       >
         <div
           className={boxStyles({
-            isSelected: isSelected || isIndeterminate,
-            isInvalid,
-            isDisabled: !!isDisabled,
+            isDisabled,
             isFocusVisible,
+            isInvalid,
+            isSelected: isSelected || isIndeterminate,
           })}
         >
-          {isIndeterminate ? (
-            <BiMinus aria-hidden className={iconStyles} />
-          ) : isSelected ? (
+          {isIndeterminate && <BiMinus aria-hidden className={iconStyles} />}
+          {!isIndeterminate && isSelected && (
             <BiCheck aria-hidden className={iconStyles} />
-          ) : null}
+          )}
         </div>
       </div>
       {children}
@@ -263,7 +260,7 @@ const GroupedCheckbox = (props: CheckboxProps) => {
   // groupContext is guaranteed to exist because this component is only rendered when isInGroup is true
   // oxlint-disable-next-line @typescript-eslint/no-non-null-assertion
   const context = groupContext!
-  const state = context.state
+  const { state } = context
 
   const isDisabled = checkboxProps.isDisabled ?? context.isDisabled ?? false
   const isReadOnly = checkboxProps.isReadOnly ?? context.isReadOnly ?? false
@@ -271,9 +268,9 @@ const GroupedCheckbox = (props: CheckboxProps) => {
   const { inputProps } = useCheckboxGroupItem(
     {
       ...checkboxProps,
-      value: checkboxProps.value ?? "",
       isDisabled,
       isReadOnly,
+      value: checkboxProps.value ?? "",
     },
     state,
     ref,

@@ -1,11 +1,13 @@
-export const REFERENCE_LINK_REGEX = /\[resource:(\d+):(\d+)\]/
+export const REFERENCE_LINK_REGEX =
+  /\[resource:(?<pageId>\d+):(?<refPageId>\d+)\]/u
 
 export const getResourceIdFromReferenceLink = (
   referenceLink: string,
 ): string => {
   const match = REFERENCE_LINK_REGEX.exec(referenceLink)
-  if (!match) {
+  if (match === null) {
     return ""
   }
-  return match[2] || ""
+  const refPageId = match.groups?.refPageId
+  return refPageId ?? ""
 }

@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unsafe-type-assertion, typescript/no-deprecated -- story/test fixtures use narrowed mock shapes */
 import type { AllCardProps } from "~/interfaces"
 import { describe, expect, it } from "vitest"
 
@@ -9,39 +10,39 @@ describe("sortCollectionItems", () => {
   const createItem = (overrides?: Partial<AllCardProps>): AllCardProps => {
     itemCounter++
     const item = {
-      id: `test-${itemCounter}`,
-      title: "Collection Item",
       date: new Date(),
-      lastModified: "2024-12-01T12:00:00Z",
-      variant: "article",
-      url: "/test-item",
       description: "",
+      id: `test-${itemCounter}`,
+      lastModified: "2024-12-01T12:00:00Z",
       plaintextTags: [{ category: "Category", selected: ["Category"] }],
       site: {
+        footerItems: {
+          privacyStatementLink: "/privacy",
+          siteNavItems: [],
+          termsOfUseLink: "/terms",
+        },
+        lastUpdated: "2024-01-01",
+        logoUrl: "",
+        navbar: { items: [] },
+        search: {
+          searchUrl: "/search",
+          type: "localSearch",
+        },
         siteMap: {
           id: "root",
-          title: "Test Site",
-          summary: "",
           lastModified: "2024-01-01",
-          permalink: "/",
           layout: "homepage",
+          permalink: "/",
+          summary: "",
+          title: "Test Site",
         },
         siteName: "Test Site",
         theme: "isomer-next",
         url: "https://www.isomer.gov.sg",
-        logoUrl: "",
-        search: {
-          type: "localSearch",
-          searchUrl: "/search",
-        },
-        navbar: { items: [] },
-        footerItems: {
-          siteNavItems: [],
-          privacyStatementLink: "/privacy",
-          termsOfUseLink: "/terms",
-        },
-        lastUpdated: "2024-01-01",
       },
+      title: "Collection Item",
+      url: "/test-item",
+      variant: "article",
       ...overrides,
     }
     // SAFETY: test fixture builds a minimal collection card item
@@ -52,9 +53,9 @@ describe("sortCollectionItems", () => {
     it("should sort items by the published date (newest first by default)", () => {
       // Arrange
       const items = [
-        createItem({ title: "Oldest", date: new Date("2023-01-01") }),
-        createItem({ title: "Newest", date: new Date("2023-12-31") }),
-        createItem({ title: "Middle", date: new Date("2023-06-15") }),
+        createItem({ date: new Date("2023-01-01"), title: "Oldest" }),
+        createItem({ date: new Date("2023-12-31"), title: "Newest" }),
+        createItem({ date: new Date("2023-06-15"), title: "Middle" }),
       ]
 
       // Act
@@ -73,9 +74,9 @@ describe("sortCollectionItems", () => {
     it("should sort items by the published date (oldest first), if sort direction is specified as ascending", () => {
       // Arrange
       const items = [
-        createItem({ title: "Oldest", date: new Date("2023-01-01") }),
-        createItem({ title: "Newest", date: new Date("2023-12-31") }),
-        createItem({ title: "Middle", date: new Date("2023-06-15") }),
+        createItem({ date: new Date("2023-01-01"), title: "Oldest" }),
+        createItem({ date: new Date("2023-12-31"), title: "Newest" }),
+        createItem({ date: new Date("2023-06-15"), title: "Middle" }),
       ]
 
       // Act
@@ -100,19 +101,19 @@ describe("sortCollectionItems", () => {
       const sameDate = new Date("2023-01-01")
       const items = [
         createItem({
-          title: "Charlie",
           date: sameDate,
           lastModified: "2025-01-01T12:00:00Z",
+          title: "Charlie",
         }),
         createItem({
-          title: "Alice",
           date: sameDate,
           lastModified: "2025-03-01T12:00:00Z",
+          title: "Alice",
         }),
         createItem({
-          title: "Bob",
           date: sameDate,
           lastModified: "2025-02-01T12:00:00Z",
+          title: "Bob",
         }),
       ]
 
@@ -135,19 +136,19 @@ describe("sortCollectionItems", () => {
       const sameLastUpdated = "2025-01-01T12:00:00Z"
       const items = [
         createItem({
+          date: sameDate,
+          lastModified: sameLastUpdated,
           title: "Charlie",
-          date: sameDate,
-          lastModified: sameLastUpdated,
         }),
         createItem({
+          date: sameDate,
+          lastModified: sameLastUpdated,
           title: "Alice",
-          date: sameDate,
-          lastModified: sameLastUpdated,
         }),
         createItem({
-          title: "Bob",
           date: sameDate,
           lastModified: sameLastUpdated,
+          title: "Bob",
         }),
       ]
 
@@ -172,9 +173,9 @@ describe("sortCollectionItems", () => {
       // Arrange
       const sameDate = new Date("2023-01-01")
       const items = [
-        createItem({ title: "2 ogpeople", date: sameDate }),
-        createItem({ title: "1 ogpeople", date: sameDate }),
-        createItem({ title: "10 ogpeople", date: sameDate }),
+        createItem({ date: sameDate, title: "2 ogpeople" }),
+        createItem({ date: sameDate, title: "1 ogpeople" }),
+        createItem({ date: sameDate, title: "10 ogpeople" }),
       ]
 
       // Act
@@ -197,9 +198,9 @@ describe("sortCollectionItems", () => {
     it("should sort by title if articles do not have a published date", () => {
       // Arrange
       const items = [
-        createItem({ title: "Charlie", date: undefined }),
-        createItem({ title: "Alice", date: undefined }),
-        createItem({ title: "Bob", date: undefined }),
+        createItem({ date: undefined, title: "Charlie" }),
+        createItem({ date: undefined, title: "Alice" }),
+        createItem({ date: undefined, title: "Bob" }),
       ]
 
       // Act
@@ -223,19 +224,19 @@ describe("sortCollectionItems", () => {
       // Arrange
       const items = [
         createItem({
-          title: "Same Title",
           date: undefined,
           lastModified: "2025-01-01T12:00:00Z",
+          title: "Same Title",
         }),
         createItem({
-          title: "Same Title",
           date: undefined,
           lastModified: "2025-03-01T12:00:00Z",
+          title: "Same Title",
         }),
         createItem({
-          title: "Same Title",
           date: undefined,
           lastModified: "2025-02-01T12:00:00Z",
+          title: "Same Title",
         }),
       ]
 
@@ -263,10 +264,10 @@ describe("sortCollectionItems", () => {
     it("should sort items with published dates before items without published dates, sorted alphabetically by title", () => {
       // Arrange
       const items = [
-        createItem({ title: "No Date", date: undefined }),
-        createItem({ title: "Newest", date: new Date("2023-12-31") }),
-        createItem({ title: "Also No Date", date: undefined }),
-        createItem({ title: "Oldest", date: new Date("2023-01-01") }),
+        createItem({ date: undefined, title: "No Date" }),
+        createItem({ date: new Date("2023-12-31"), title: "Newest" }),
+        createItem({ date: undefined, title: "Also No Date" }),
+        createItem({ date: new Date("2023-01-01"), title: "Oldest" }),
       ]
 
       // Act
@@ -336,9 +337,9 @@ describe("sortCollectionItems", () => {
     it("should sort items by published date (oldest first) when titles are the same", () => {
       // Arrange
       const items = [
-        createItem({ title: "Same Title", date: new Date("2023-01-01") }),
-        createItem({ title: "Same Title", date: new Date("2023-12-31") }),
-        createItem({ title: "Same Title", date: new Date("2023-06-15") }),
+        createItem({ date: new Date("2023-01-01"), title: "Same Title" }),
+        createItem({ date: new Date("2023-12-31"), title: "Same Title" }),
+        createItem({ date: new Date("2023-06-15"), title: "Same Title" }),
       ]
 
       // Act
@@ -364,9 +365,9 @@ describe("sortCollectionItems", () => {
     it("should sort items by published date (oldest first) when titles are the same and sort direction is ascending", () => {
       // Arrange
       const items = [
-        createItem({ title: "Same Title", date: new Date("2023-01-01") }),
-        createItem({ title: "Same Title", date: new Date("2023-12-31") }),
-        createItem({ title: "Same Title", date: new Date("2023-06-15") }),
+        createItem({ date: new Date("2023-01-01"), title: "Same Title" }),
+        createItem({ date: new Date("2023-12-31"), title: "Same Title" }),
+        createItem({ date: new Date("2023-06-15"), title: "Same Title" }),
       ]
 
       // Act
@@ -419,19 +420,19 @@ describe("sortCollectionItems", () => {
       // Arrange
       const items = [
         createItem({
-          title: "Same Title",
           date: undefined,
           lastModified: "2025-01-01T12:00:00Z",
+          title: "Same Title",
         }),
         createItem({
-          title: "Same Title",
           date: undefined,
           lastModified: "2025-03-01T12:00:00Z",
+          title: "Same Title",
         }),
         createItem({
-          title: "Same Title",
           date: undefined,
           lastModified: "2025-02-01T12:00:00Z",
+          title: "Same Title",
         }),
       ]
 
@@ -463,10 +464,10 @@ describe("sortCollectionItems", () => {
     it("should sort items with published dates before items without published dates when they all have the same title", () => {
       // Arrange
       const items = [
-        createItem({ title: "Same title", date: undefined }),
-        createItem({ title: "Same title", date: new Date("2023-12-31") }),
-        createItem({ title: "Same title", date: undefined }),
-        createItem({ title: "Same title", date: new Date("2023-01-01") }),
+        createItem({ date: undefined, title: "Same title" }),
+        createItem({ date: new Date("2023-12-31"), title: "Same title" }),
+        createItem({ date: undefined, title: "Same title" }),
+        createItem({ date: new Date("2023-01-01"), title: "Same title" }),
       ]
 
       // Act

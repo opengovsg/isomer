@@ -25,34 +25,30 @@ export const SITE_ENTITY_TYPES = [
 
 export type SiteEntityType = (typeof SITE_ENTITY_TYPES)[number]
 
-// TODO: Change this to Type.Enum when we upgrade to TypeBox v1
+// NOTE: Change this to Type.Enum when we upgrade to TypeBox v1
 const SiteEntityTypeSchema = Type.Unsafe<SiteEntityType>(
   Type.String({
-    title: "Organisation type",
     description:
       "Choose the Schema.org type that best describes the organisation that owns this site. Leave this blank to derive the type from whether this is a government site.",
     enum: SITE_ENTITY_TYPES,
+    title: "Organisation type",
   }),
 )
 
 export const SiteEntitySettingsSchema = Type.Object(
   {
-    type: Type.Optional(SiteEntityTypeSchema),
-    description: Type.Optional(
-      Type.String({
-        title: "Organisation description",
-        description:
-          "A short description of the organisation, not the website.",
-        format: "textarea",
-      }),
-    ),
     address: Type.Optional(
       Type.Object(
         {
-          streetAddress: Type.Optional(
+          addressCountry: Type.Optional(
             Type.String({
-              title: "Street address",
-              description: "Include the building name and unit number, if any.",
+              description: "Use a two-letter country code, such as SG.",
+              errorMessage: {
+                pattern: "must be two letters, such as SG",
+              },
+              maxLength: 2,
+              pattern: "^[A-Za-z]{2}$",
+              title: "Country code",
             }),
           ),
           addressLocality: Type.Optional(
@@ -65,21 +61,16 @@ export const SiteEntitySettingsSchema = Type.Object(
               title: "Postal code",
             }),
           ),
-          addressCountry: Type.Optional(
+          streetAddress: Type.Optional(
             Type.String({
-              title: "Country code",
-              description: "Use a two-letter country code, such as SG.",
-              maxLength: 2,
-              pattern: "^[A-Za-z]{2}$",
-              errorMessage: {
-                pattern: "must be two letters, such as SG",
-              },
+              description: "Include the building name and unit number, if any.",
+              title: "Street address",
             }),
           ),
         },
         {
-          title: "Address",
           description: "The organisation's primary physical address.",
+          title: "Address",
         },
       ),
     ),
@@ -88,14 +79,8 @@ export const SiteEntitySettingsSchema = Type.Object(
         {
           contactType: Type.Optional(
             Type.String({
-              title: "Contact type",
               description: "For example, customer service or media enquiries.",
-            }),
-          ),
-          telephone: Type.Optional(
-            Type.String({
-              title: "Telephone",
-              description: "Include the country code, such as +65 6123 4567.",
+              title: "Contact type",
             }),
           ),
           email: Type.Optional(
@@ -103,64 +88,79 @@ export const SiteEntitySettingsSchema = Type.Object(
               title: "Email address",
             }),
           ),
+          telephone: Type.Optional(
+            Type.String({
+              description: "Include the country code, such as +65 6123 4567.",
+              title: "Telephone",
+            }),
+          ),
         },
         {
-          title: "Contact point",
           description:
             "The public contact details for the organisation. The contact page configured in the footer is also reused.",
+          title: "Contact point",
         },
       ),
     ),
+    description: Type.Optional(
+      Type.String({
+        description:
+          "A short description of the organisation, not the website.",
+        format: "textarea",
+        title: "Organisation description",
+      }),
+    ),
+    type: Type.Optional(SiteEntityTypeSchema),
   },
   {
-    title: "Organisation structured data",
     description:
       "Help search engines understand the organisation that owns this site.",
     format: "hidden",
+    title: "Organisation structured data",
   },
 )
 
 export const AgencySettingsSchema = Type.Object({
-  siteName: Type.String({
-    title: "Site name",
-    description:
-      "This is displayed on browser tabs, the footer, and the Search Results page. It’s also the default meta title of your homepage.",
-    pattern: NON_EMPTY_STRING_REGEX,
-    errorMessage: {
-      pattern: "cannot be empty or contain only spaces",
-    },
-  }),
   agencyName: Type.Optional(
     Type.String({
-      title: "Website is owned by",
       description: "This isn't displayed anywhere on your site.",
       readOnly: true,
+      title: "Website is owned by",
       tooltip: "To change the agency name, contact Isomer Support",
     }),
   ),
   siteEntity: Type.Optional(SiteEntitySettingsSchema),
+  siteName: Type.String({
+    description:
+      "This is displayed on browser tabs, the footer, and the Search Results page. It’s also the default meta title of your homepage.",
+    errorMessage: {
+      pattern: "cannot be empty or contain only spaces",
+    },
+    pattern: NON_EMPTY_STRING_REGEX,
+    title: "Site name",
+  }),
 })
 
 export const SimpleIntegrationsSettingsSchema = Type.Object({
-  siteGtmId: Type.Optional(
-    Type.String({
-      title: "Google Tag Manager (GTM) ID",
-      description:
-        "You can locate your GTM ID on your Google Tag Manager account. It should start with “GTM-”.",
-      pattern: GTM_ID_STRING_REGEX,
-    }),
-  ),
   search: Type.Optional(
     Type.Union(
       [LocalSearchSchema, SearchSGSearchSchema, EgazetteAlgoliaSearchSchema],
       {
-        title: "Search configuration",
         description: "Configuration for the search functionality of the site.",
+        format: "searchsg",
+        title: "Search configuration",
         // NOTE: Overriding the default `Union` with this because we should
         // not be showing the `localSearch` option to our agency users
-        format: "searchsg",
       },
     ),
+  ),
+  siteGtmId: Type.Optional(
+    Type.String({
+      description:
+        "You can locate your GTM ID on your Google Tag Manager account. It should start with “GTM-”.",
+      pattern: GTM_ID_STRING_REGEX,
+      title: "Google Tag Manager (GTM) ID",
+    }),
   ),
 })
 
@@ -176,20 +176,21 @@ export const IntegrationsSettingsSchema = Type.Intersect([
 ])
 
 export const LogoSettingsSchema = Type.Object({
-  logoUrl: generateImageSrcSchema({
-    title: "Logo",
-    description:
-      "The logo appears on the navigation bar. It may also be used as a thumbnail if there’s no thumbnail set on a page.",
-  }),
   favicon: Type.Optional(
     generateImageSrcSchema({
-      title: "Favicon",
+      allowedMimeTypeMappings: FAVICON_ACCEPTED_MIME_TYPE_MAPPING,
       description:
         "This appears on a browser tab to help people recognise your site. We recommend a minimum size of 24px by 24px, in .png or .svg format.",
-      allowedMimeTypeMappings: FAVICON_ACCEPTED_MIME_TYPE_MAPPING,
-      maxSizeInBytes: 20000, // NOTE: 20 kB
+      // NOTE: 20 kB
+      maxSizeInBytes: 20_000,
+      title: "Favicon",
     }),
   ),
+  logoUrl: generateImageSrcSchema({
+    description:
+      "The logo appears on the navigation bar. It may also be used as a thumbnail if there’s no thumbnail set on a page.",
+    title: "Logo",
+  }),
 })
 
 export const SiteConfigSchema = Type.Intersect([
@@ -197,23 +198,23 @@ export const SiteConfigSchema = Type.Intersect([
   IntegrationsSettingsSchema,
   LogoSettingsSchema,
   Type.Object({
-    url: Type.String({
-      title: "Base URL of the site",
-      description: "The base URL of the site.",
-      format: "hidden",
-    }),
+    isGovernment: Type.Optional(
+      Type.Boolean({
+        description:
+          "Whether the site is a Government site, affects the display of the masthead and the copyright footer.",
+        format: "hidden",
+        title: "Is this a Government site?",
+      }),
+    ),
     theme: Type.Literal("isomer-next", {
       default: "isomer-next",
       format: "hidden",
     }),
-    isGovernment: Type.Optional(
-      Type.Boolean({
-        title: "Is this a Government site?",
-        description:
-          "Whether the site is a Government site, affects the display of the masthead and the copyright footer.",
-        format: "hidden",
-      }),
-    ),
+    url: Type.String({
+      description: "The base URL of the site.",
+      format: "hidden",
+      title: "Base URL of the site",
+    }),
   }),
   NotificationSettingsSchema,
 ])

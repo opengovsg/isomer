@@ -1,19 +1,12 @@
 const ALLOWED_URL_REGEXES = {
   external: "^https:\\/\\/",
-  phone: "^tel:",
-  sms: "^sms:",
-  mail: "^mailto:",
-  internal: "^\\[resource:(\\d+):(\\d+)\\]$",
-  // NOTE: This is taken with reference from `convertAssetLinks`
-  // and should remain in sync.
-  // Unfortunately, typebox requires a string and hence, doubly escaped characters
-  // but `re.source` only gives us the actual string
-  // regex for asset links: /^\/(\d+)\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/
   files:
     "^\\/(\\d+)\\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\\/",
-  // These are the standard internal links that are used by sites on GitHub.
-  // We can drop them once all sites have fully migrated to Studio.
+  internal: "^\\[resource:(\\d+):(\\d+)\\]$",
   legacy: "^\\/",
+  mail: "^mailto:",
+  phone: "^tel:",
+  sms: "^sms:",
 } as const
 
 export const LINK_HREF_PATTERN =
@@ -25,14 +18,14 @@ export const REF_INTERNAL_HREF_PATTERN =
 
 // Validation for form-related embed URLs
 export const isValidFormSGEmbedUrl = (url: string) => {
-  if (!url) {
+  if (url === "") {
     return false
   }
 
   try {
     const urlObject = new URL(url)
     return urlObject.hostname === "form.gov.sg"
-  } catch (_) {
+  } catch {
     return false
   }
 }
@@ -46,13 +39,10 @@ export const FORMSG_EMBED_URL_PATTERN = Object.values(FORMSG_EMBED_URL_REGEXES)
   .join("|")
 
 // Validation for map-related embed URLs
-const isValidGoogleMapsEmbedUrl = (urlObject: URL) => {
-  return (
-    urlObject.hostname === "www.google.com" &&
-    (urlObject.pathname === "/maps/embed" ||
-      urlObject.pathname === "/maps/d/embed")
-  )
-}
+const isValidGoogleMapsEmbedUrl = (urlObject: URL) =>
+  urlObject.hostname === "www.google.com" &&
+  (urlObject.pathname === "/maps/embed" ||
+    urlObject.pathname === "/maps/d/embed")
 
 const isValidOneMapEmbedUrl = (urlObject: URL) => {
   if (urlObject.hostname === "www.onemap.gov.sg") {
@@ -69,14 +59,25 @@ const isValidOneMapEmbedUrl = (urlObject: URL) => {
   return false
 }
 
-export const isValidOGPMapsEmbedUrl = (urlObject: URL) => {
-  return (
-    urlObject.hostname === "maps.gov.sg" && urlObject.pathname.startsWith("/")
-  )
-}
+export const isValidOGPMapsEmbedUrl = (urlObject: URL) =>
+  urlObject.hostname === "maps.gov.sg" && urlObject.pathname.startsWith("/")
+
+// NOTE: This validation is still needed as this is the only validation method
+// that is supported inside the JSON schema. Components rely on the URL object
+// validation for better security.
+export const MAPS_EMBED_URL_REGEXES = {
+  googlemaps: "^https://www\\.google\\.com/maps(?:/d)?/embed(?:\\?.*)?$",
+  ogpmaps: `^https://maps\\.gov\\.sg/.*$`,
+  onemap:
+    "^https://www\\.onemap\\.gov\\.sg(/minimap/minimap\\.html|/amm/amm\\.html).*$|^https://mobile\\.onemap\\.gov\\.sg/.+$",
+} as const
+
+export const MAPS_EMBED_URL_PATTERN = Object.values(MAPS_EMBED_URL_REGEXES)
+  .map((re) => `(${re})`)
+  .join("|")
 
 export const isValidMapEmbedUrl = (url: string) => {
-  if (!url) {
+  if (url === "") {
     return false
   }
 
@@ -87,26 +88,12 @@ export const isValidMapEmbedUrl = (url: string) => {
       (isValidGoogleMapsEmbedUrl(urlObject) ||
         isValidOneMapEmbedUrl(urlObject) ||
         isValidOGPMapsEmbedUrl(urlObject)) &&
-      new RegExp(MAPS_EMBED_URL_PATTERN).test(url)
+      new RegExp(MAPS_EMBED_URL_PATTERN, "u").test(url)
     )
-  } catch (_) {
+  } catch {
     return false
   }
 }
-
-// NOTE: This validation is still needed as this is the only validation method
-// that is supported inside the JSON schema. Components rely on the URL object
-// validation for better security.
-export const MAPS_EMBED_URL_REGEXES = {
-  googlemaps: "^https://www\\.google\\.com/maps(?:/d)?/embed(?:\\?.*)?$",
-  onemap:
-    "^https://www\\.onemap\\.gov\\.sg(/minimap/minimap\\.html|/amm/amm\\.html).*$|^https://mobile\\.onemap\\.gov\\.sg/.+$",
-  ogpmaps: `^https://maps\\.gov\\.sg/.*$`,
-} as const
-
-export const MAPS_EMBED_URL_PATTERN = Object.values(MAPS_EMBED_URL_REGEXES)
-  .map((re) => `(${re})`)
-  .join("|")
 
 // Validation for video-related embed URLs
 export const YOUTUBE_PRIVACY_ENHANCED_DOMAINS = [
@@ -114,37 +101,21 @@ export const YOUTUBE_PRIVACY_ENHANCED_DOMAINS = [
   "youtube-nocookie.com",
 ] as const
 
-export const YOUTUBE_PRIVACY_ENHANCED_HOST = YOUTUBE_PRIVACY_ENHANCED_DOMAINS[0]
+const [YOUTUBE_PRIVACY_ENHANCED_HOST] = YOUTUBE_PRIVACY_ENHANCED_DOMAINS
+
+export { YOUTUBE_PRIVACY_ENHANCED_HOST }
 
 export const isYoutubePrivacyEnhancedHost = (hostname: string): boolean =>
   YOUTUBE_PRIVACY_ENHANCED_DOMAINS.some((h) => h === hostname)
 
 export const VALID_VIDEO_DOMAINS = {
+  fbvideo: ["www.facebook.com"],
+  vimeo: ["player.vimeo.com"],
   youtube: [
     "www.youtube.com",
     "youtube.com",
     ...YOUTUBE_PRIVACY_ENHANCED_DOMAINS,
   ],
-  vimeo: ["player.vimeo.com"],
-  fbvideo: ["www.facebook.com"],
-}
-
-export const isValidVideoUrl = (url: string) => {
-  if (!url) {
-    return false
-  }
-
-  try {
-    const urlObject = new URL(url)
-    const allValidVideoDomains = Object.values(VALID_VIDEO_DOMAINS).flat()
-
-    return (
-      allValidVideoDomains.includes(urlObject.hostname) &&
-      new RegExp(VIDEO_EMBED_URL_PATTERN).test(url)
-    )
-  } catch (_) {
-    return false
-  }
 }
 
 // NOTE: This validation is still needed as this is the only validation method
@@ -161,17 +132,35 @@ export const VIDEO_EMBED_URL_PATTERN = Object.values(VIDEO_EMBED_URL_REGEXES)
   .map((re) => `(${re})`)
   .join("|")
 
+export const isValidVideoUrl = (url: string) => {
+  if (url === "") {
+    return false
+  }
+
+  try {
+    const urlObject = new URL(url)
+    const allValidVideoDomains = Object.values(VALID_VIDEO_DOMAINS).flat()
+
+    return (
+      allValidVideoDomains.includes(urlObject.hostname) &&
+      new RegExp(VIDEO_EMBED_URL_PATTERN, "u").test(url)
+    )
+  } catch {
+    return false
+  }
+}
+
 // Validation for audio embed URLs (Spotify or Apple Podcast) for the "audio" component
 // Only these variants are supported: Spotify episode, show, or playlist; Apple Podcast show or episode
 const VALID_AUDIO_EMBED_DOMAINS = {
-  spotify: "open.spotify.com",
   applepodcast: "embed.podcasts.apple.com",
+  spotify: "open.spotify.com",
 }
 
 export const AUDIO_EMBED_URL_REGEXES = {
+  applepodcast: "^https://embed\\.podcasts\\.apple\\.com/[a-z]{2}/[a-z-]+/.*$",
   spotify:
     "^https://open\\.spotify\\.com/embed/(episode|show|playlist)/[a-zA-Z0-9]+.*$",
-  applepodcast: "^https://embed\\.podcasts\\.apple\\.com/[a-z]{2}/[a-z-]+/.*$",
 } as const
 
 export const AUDIO_EMBED_URL_PATTERN = Object.values(AUDIO_EMBED_URL_REGEXES)
@@ -179,7 +168,7 @@ export const AUDIO_EMBED_URL_PATTERN = Object.values(AUDIO_EMBED_URL_REGEXES)
   .join("|")
 
 export const isValidAudioEmbedUrl = (url: string) => {
-  if (!url) {
+  if (url === "") {
     return false
   }
 
@@ -190,9 +179,9 @@ export const isValidAudioEmbedUrl = (url: string) => {
     ).flat()
     return (
       allValidAudioEmbedDomains.includes(urlObject.hostname) &&
-      new RegExp(AUDIO_EMBED_URL_PATTERN).test(url)
+      new RegExp(AUDIO_EMBED_URL_PATTERN, "u").test(url)
     )
-  } catch (_) {
+  } catch {
     return false
   }
 }

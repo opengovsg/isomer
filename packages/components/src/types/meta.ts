@@ -6,10 +6,10 @@ export const META_IMAGE_FORMAT = "meta-image"
 const BaseItemMetaSchema = Type.Object({
   description: Type.Optional(
     Type.String({
-      title: "Meta description",
       description:
         "This is a description that appears on search engine results.",
       format: "textarea",
+      title: "Meta description",
     }),
   ),
 })
@@ -17,20 +17,20 @@ const BaseItemMetaSchema = Type.Object({
 const BasePageMetaSchema = Type.Composite([
   BaseItemMetaSchema,
   Type.Object({
-    noIndex: Type.Optional(
-      Type.Boolean({
-        description:
-          "If this is turned on, the page won't appear on Google search results.",
-        title: "Prevent search engines from indexing this page?",
-        default: false,
-      }),
-    ),
     image: Type.Optional(
       Type.String({
-        title: "Meta image",
         description:
           "This image may appear when the page is shared on social media such as LinkedIn or Facebook.",
         format: META_IMAGE_FORMAT,
+        title: "Meta image",
+      }),
+    ),
+    noIndex: Type.Optional(
+      Type.Boolean({
+        default: false,
+        description:
+          "If this is turned on, the page won't appear on Google search results.",
+        title: "Prevent search engines from indexing this page?",
       }),
     ),
   }),

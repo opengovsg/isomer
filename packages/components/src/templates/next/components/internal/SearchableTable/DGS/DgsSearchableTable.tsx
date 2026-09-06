@@ -4,9 +4,10 @@ import type { DGSSearchableTableProps } from "~/interfaces"
 import { useMemo } from "react"
 import { useDgsMetadata } from "~/hooks/useDgsMetadata"
 import { DGS_REQUEST_MAX_BYTES } from "~/utils/dgs"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
-import { DynamicDGSSearchableTable } from "./DynamicDGSSearchableTable"
-import { StaticDGSSearchableTable } from "./StaticDGSSearchableTable"
+import { DynamicDGSSearchableTable } from "./DynamicDgsSearchableTable"
+import { StaticDGSSearchableTable } from "./StaticDgsSearchableTable"
 
 export const DGSSearchableTable = ({
   dataSource,
@@ -20,7 +21,7 @@ export const DGSSearchableTable = ({
   } = useDgsMetadata({ resourceId: dataSource.resourceId })
 
   const resolvedTitle = useMemo(() => {
-    const hasUserProvidedTitle = !!title
+    const hasUserProvidedTitle = hasNonEmptyString(title)
     if (hasUserProvidedTitle) {
       return title
     }
@@ -29,7 +30,7 @@ export const DGSSearchableTable = ({
 
   const resolvedHeaders = useMemo(() => {
     const hasUserProvidedHeaders = headers && headers.length > 0
-    if (hasUserProvidedHeaders) {
+    if (hasUserProvidedHeaders === true) {
       return headers
     }
     if (metadata?.columnMetadata) {
@@ -43,7 +44,11 @@ export const DGSSearchableTable = ({
     [resolvedHeaders],
   )
 
-  if (metadata?.size && metadata.size < DGS_REQUEST_MAX_BYTES) {
+  if (
+    metadata !== undefined &&
+    metadata.size > 0 &&
+    metadata.size < DGS_REQUEST_MAX_BYTES
+  ) {
     // Load all the data into memory, so we can display and filter on the client side
     return (
       <StaticDGSSearchableTable
@@ -55,18 +60,17 @@ export const DGSSearchableTable = ({
         isMetadataError={isMetadataError}
       />
     )
-  } else {
-    // This is for datasets that are too large to load into memory,
-    // so we need to fetch the data on the server side, using DGS API
-    return (
-      <DynamicDGSSearchableTable
-        dataSource={dataSource}
-        title={resolvedTitle}
-        headers={labels}
-        isMetadataLoading={isMetadataLoading}
-        isMetadataError={isMetadataError}
-        maxNoOfColumns={labels.length}
-      />
-    )
   }
+  // This is for datasets that are too large to load into memory,
+  // so we need to fetch the data on the server side, using DGS API
+  return (
+    <DynamicDGSSearchableTable
+      dataSource={dataSource}
+      title={resolvedTitle}
+      headers={labels}
+      isMetadataLoading={isMetadataLoading}
+      isMetadataError={isMetadataError}
+      maxNoOfColumns={labels.length}
+    />
+  )
 }

@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unsafe-type-assertion, typescript/no-deprecated -- story/test fixtures use narrowed mock shapes */
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { CollectionPageSchemaType, IsomerSitemap } from "~/types"
 import { flatten, times } from "lodash-es"
@@ -12,44 +13,44 @@ import { CollectionLayout } from "./Collection"
 const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
   times(10, (index) => [
     {
+      category: "Category Name",
+      date: "07/05/2024",
       id: `${index}`,
-      title: `This is a publication title that is really long because ${index}`,
-      permalink: `/publications/item-one-${index}`,
       lastModified: "",
       layout: "article",
+      permalink: `/publications/item-one-${index}`,
       summary:
         "We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the months. We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the months.",
-      date: "07/05/2024",
-      category: "Category Name",
+      title: `This is a publication title that is really long because ${index}`,
     },
     {
+      category: "Category Name",
+      date: "07/05/2024",
+      fileDetails: { size: "1.2MB", type: "png" },
       id: `${index}`,
-      title: `This is the title for a collection item that shows the Isomer hero banner-${index}`,
-      permalink: `/publications/item-two-${index}`,
+      image: {
+        alt: "placeholder",
+        src: "https://images.unsplash.com/photo-1728931710331-7f74dca643eb?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      },
       lastModified: "",
       layout: "file",
-      image: {
-        src: "https://images.unsplash.com/photo-1728931710331-7f74dca643eb?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-        alt: "placeholder",
-      },
+      permalink: `/publications/item-two-${index}`,
+      ref: "https://www.isomer.gov.sg/images/Homepage/hero%20banner_10.png",
       summary:
         "This is supposed to be a description of the hero banner that Isomer uses on their official website.",
-      date: "07/05/2024",
-      category: "Category Name",
-      ref: "https://www.isomer.gov.sg/images/Homepage/hero%20banner_10.png",
-      fileDetails: { type: "png", size: "1.2MB" },
+      title: `This is the title for a collection item that shows the Isomer hero banner-${index}`,
     },
     {
+      category: "Category Name",
+      date: "12/08/2023",
       id: `${index}`,
-      title: `Isomer guide-${index}`,
-      permalink: `/publications/item-three-${index}`,
       lastModified: "",
       layout: "link",
+      permalink: `/publications/item-three-${index}`,
+      ref: "https://guide.isomer.gov.sg",
       summary:
         "Have a look at the Isomer guide to understand how to use the Isomer CMS.",
-      date: "12/08/2023",
-      category: "Category Name",
-      ref: "https://guide.isomer.gov.sg",
+      title: `Isomer guide-${index}`,
     },
   ]),
 )
@@ -62,59 +63,57 @@ const generateArgs = ({
   collectionItems?: IsomerSitemap[]
   variant?: CollectionPageSchemaType["page"]["variant"]
   tagCategories?: CollectionPageSchemaType["page"]["tagCategories"]
-} = {}): CollectionPageSchemaType => {
-  return {
-    layout: "collection",
-    site: generateSiteConfig({
-      siteName: "Isomer Next",
-      siteMap: {
-        id: "1",
-        title: "Home",
-        permalink: "/",
-        lastModified: "",
-        layout: "homepage",
-        summary: "",
-        children: [
-          {
-            id: "2",
-            title: "Publications and other press releases",
-            permalink: "/publications",
-            lastModified: "",
-            layout: "collection",
-            summary: "",
-            children: collectionItems,
-          },
-        ],
-      },
-    }),
-    meta: {
-      description: "A Next.js starter for Isomer",
+} = {}): CollectionPageSchemaType => ({
+  content: [],
+  layout: "collection",
+  meta: {
+    description: "A Next.js starter for Isomer",
+  },
+  page: {
+    lastModified: "2024-05-02T14:12:57.160Z",
+    permalink: "/publications",
+    subtitle:
+      "Since this page type supports text-heavy articles that are primarily for reading and absorbing information, the max content width on desktop is kept even smaller than its General Content Page counterpart.",
+    tagCategories,
+    title: "Publications and other press releases",
+    variant,
+  },
+  site: generateSiteConfig({
+    siteMap: {
+      children: [
+        {
+          children: collectionItems,
+          id: "2",
+          lastModified: "",
+          layout: "collection",
+          permalink: "/publications",
+          summary: "",
+          title: "Publications and other press releases",
+        },
+      ],
+      id: "1",
+      lastModified: "",
+      layout: "homepage",
+      permalink: "/",
+      summary: "",
+      title: "Home",
     },
-    page: {
-      title: "Publications and other press releases",
-      permalink: "/publications",
-      lastModified: "2024-05-02T14:12:57.160Z",
-      subtitle:
-        "Since this page type supports text-heavy articles that are primarily for reading and absorbing information, the max content width on desktop is kept even smaller than its General Content Page counterpart.",
-      variant,
-      tagCategories,
-    },
-    content: [],
-  }
-}
+    siteName: "Isomer Next",
+  }),
+})
 
 const meta: Meta<CollectionPageSchemaType> = {
-  title: "Next/Layouts/Collection",
-  component: CollectionLayout,
   argTypes: {},
-  tags: ["!autodocs"],
+  component: CollectionLayout,
   parameters: {
-    layout: "fullscreen",
     chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
+    layout: "fullscreen",
     themes: {
       themeOverride: "Isomer Next",
     },
   },
+  tags: ["!autodocs"],
+  title: "Next/Layouts/Collection",
 }
 export default meta
 type Story = StoryObj<typeof CollectionLayout>
@@ -128,7 +127,7 @@ export const WithFilters: Story = {
   args: generateArgs(),
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    await userEvent.click(screen.getByText(/2023 \(10\)/i))
+    await userEvent.click(screen.getByText(/2023 \(10\)/iu))
   },
 }
 
@@ -143,7 +142,7 @@ export const SearchingEmptyCollection: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
     const searchElem = screen.getByRole("searchbox", {
-      name: /Start typing to search/i,
+      name: /Start typing to search/iu,
     })
     await userEvent.type(searchElem, "anything")
   },
@@ -154,7 +153,7 @@ export const NoResults: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
     const searchElem = screen.getByRole("searchbox", {
-      name: /Start typing to search/i,
+      name: /Start typing to search/iu,
     })
     await userEvent.type(searchElem, "some whacky search term")
   },
@@ -167,41 +166,41 @@ const CATEGORY_TAG_CATEGORY: NonNullable<
   CollectionPageSchemaType["page"]["tagCategories"]
 > = [
   {
-    label: "Category",
+    display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
     id: "category-group",
     isRequired: true,
-    display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
-    options: [{ label: "Category Name 2", id: CATEGORY_NAME_2_OPTION_ID }],
+    label: "Category",
+    options: [{ id: CATEGORY_NAME_2_OPTION_ID, label: "Category Name 2" }],
   },
 ]
 
 export const FilteredEmptyResults: Story = {
   args: generateArgs({
-    tagCategories: CATEGORY_TAG_CATEGORY,
     collectionItems: [
       ...COLLECTION_ITEMS,
       {
+        date: "2025-05-07",
+        fileDetails: {
+          size: "1.2MB",
+          type: "png",
+        },
         id: "2025",
-        title: `2025 File`,
-        permalink: `/publications/item-twenty-twenty-five`,
         lastModified: "",
         layout: "file",
+        permalink: `/publications/item-twenty-twenty-five`,
+        ref: "https://www.isomer.gov.sg/images/Homepage/hero%20banner_10.png",
         summary:
           "This is supposed to be a description of the hero banner that Isomer uses on their official website.",
-        date: "2025-05-07",
         tagged: [CATEGORY_NAME_2_OPTION_ID],
-        ref: "https://www.isomer.gov.sg/images/Homepage/hero%20banner_10.png",
-        fileDetails: {
-          type: "png",
-          size: "1.2MB",
-        },
+        title: `2025 File`,
       },
     ],
+    tagCategories: CATEGORY_TAG_CATEGORY,
   }),
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    await userEvent.click(screen.getByText(/2024 \(20\)/i))
-    await userEvent.click(screen.getByText(/Category Name 2 \(1\)/i))
+    await userEvent.click(screen.getByText(/2024 \(20\)/iu))
+    await userEvent.click(screen.getByText(/Category Name 2 \(1\)/iu))
   },
 }
 
@@ -217,10 +216,10 @@ export const YearFilter: Story = {
   args: generateArgs({ collectionItems: threeItemsHaveUndefinedDate }),
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    const dateNotSpecified = screen.queryByText(/Not specified \(3\)/i)
+    const dateNotSpecified = screen.queryByText(/Not specified \(3\)/iu)
     await expect(dateNotSpecified).toBeInTheDocument()
 
-    const dateText = await screen.findAllByText(/7 May 2024/)
+    const dateText = await screen.findAllByText(/7 May 2024/u)
     await expect(dateText.length).toBe(10)
   },
 }
@@ -229,9 +228,9 @@ export const YearFilterSelectNotSpecified: Story = {
   args: generateArgs({ collectionItems: threeItemsHaveUndefinedDate }),
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    await userEvent.click(screen.getByText(/Not specified/i))
+    await userEvent.click(screen.getByText(/Not specified/iu))
 
-    const resultsHeader = await screen.findAllByText(/3 items/)
+    const resultsHeader = await screen.findAllByText(/3 items/u)
     await expect(resultsHeader.length).toBe(1)
   },
 }
@@ -246,10 +245,10 @@ export const AllResultsNoDate: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
 
-    const yearFilter = screen.queryByText(/Year/i)
+    const yearFilter = screen.queryByText(/Year/iu)
     await expect(yearFilter).not.toBeInTheDocument()
 
-    const lastWordOccurences = await screen.findAllByText(/Isomer guide-/)
+    const lastWordOccurences = await screen.findAllByText(/Isomer guide-/u)
     await expect(lastWordOccurences.length).toBe(10)
   },
 }
@@ -257,45 +256,47 @@ export const AllResultsNoDate: Story = {
 const THE_ONLY_CATEGORY_OPTION_ID = "the-only-category"
 
 export const AllResultsSameCategory: Story = {
-  name: "Should show category filter even if all items have same category",
   args: generateArgs({
-    tagCategories: [
-      {
-        label: "Category",
-        id: "category-group",
-        isRequired: true,
-        display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
-        options: [
-          { label: "The only category", id: THE_ONLY_CATEGORY_OPTION_ID },
-        ],
-      },
-    ],
     collectionItems: COLLECTION_ITEMS.map((item) => ({
       ...item,
       tagged: [THE_ONLY_CATEGORY_OPTION_ID],
     })),
+    tagCategories: [
+      {
+        display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
+        id: "category-group",
+        isRequired: true,
+        label: "Category",
+        options: [
+          { id: THE_ONLY_CATEGORY_OPTION_ID, label: "The only category" },
+        ],
+      },
+    ],
   }),
+  name: "Should show category filter even if all items have same category",
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    const categoryFilter = screen.queryByText(/Category/)
+    const categoryFilter = screen.queryByText(/Category/u)
     await expect(categoryFilter).toBeInTheDocument()
 
-    const categoryItems = await screen.findAllByText(/The only category \(30\)/)
+    const categoryItems = await screen.findAllByText(
+      /The only category \(30\)/u,
+    )
     await expect(categoryItems.length).toBe(1)
   },
 }
 
 export const AllResultsSameYear: Story = {
-  name: "Should show year filter if all items have same year",
   args: generateArgs({
     collectionItems: COLLECTION_ITEMS.map((item) => ({
       ...item,
       date: "2026-05-07",
     })),
   }),
+  name: "Should show year filter if all items have same year",
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    const yearFilter = screen.queryByText(/Year/i)
+    const yearFilter = screen.queryByText(/Year/iu)
     await expect(yearFilter).toBeInTheDocument()
   },
 }
@@ -307,28 +308,28 @@ const itemsWithNoFilterableAttributes = COLLECTION_ITEMS.map((item) => ({
 }))
 
 export const NoFiltersCollectionCard: Story = {
-  name: "No Filters (Collection Card)",
   args: generateArgs({
     collectionItems: itemsWithNoFilterableAttributes,
     variant: "collection",
   }),
+  name: "No Filters (Collection Card)",
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
 
-    const yearFilter = screen.queryByText(/Year/i)
+    const yearFilter = screen.queryByText(/Year/iu)
     await expect(yearFilter).not.toBeInTheDocument()
 
-    const filtersHeading = screen.queryByRole("heading", { name: /Filters/i })
+    const filtersHeading = screen.queryByRole("heading", { name: /Filters/iu })
     await expect(filtersHeading).not.toBeInTheDocument()
   },
 }
 
 export const NoFiltersBlogCard: Story = {
-  name: "No Filters (Blog Card)",
   args: generateArgs({
     collectionItems: itemsWithNoFilterableAttributes,
     variant: "blog",
   }),
+  name: "No Filters (Blog Card)",
   play: NoFiltersCollectionCard.play,
 }
 

@@ -17,19 +17,24 @@ export const DynamicComponentList = ({
   layout,
   headingLevel,
 }: DynamicComponentListProps) => {
-  const params = useMemo(
-    () => ({
+  const params = useMemo(() => {
+    let filterRecord:
+      | NonNullable<DgsApiDatasetSearchParams["filters"]>
+      | undefined
+
+    if (filters) {
+      filterRecord = {}
+      for (const filter of filters) {
+        filterRecord[filter.fieldKey] = filter.fieldValue
+      }
+    }
+
+    return {
+      filters: filterRecord,
       resourceId,
       sort,
-      filters: filters?.reduce<
-        NonNullable<DgsApiDatasetSearchParams["filters"]>
-      >((acc, filter) => {
-        acc[filter.fieldKey] = filter.fieldValue
-        return acc
-      }, {}),
-    }),
-    [resourceId, sort, filters],
-  )
+    }
+  }, [resourceId, sort, filters])
 
   const { records, isLoading, isError } = useDgsData(params)
 
@@ -41,7 +46,7 @@ export const DynamicComponentList = ({
 
   switch (component.type) {
     // Disabling for now so its easier to extend in the future
-    case "contactinformation":
+    case "contactinformation": {
       return (
         records ?? Array.from({ length: DEFAULT_NUMBER_OF_RECORDS_FOR_LOADING })
       ).map((record, index) => (
@@ -54,9 +59,11 @@ export const DynamicComponentList = ({
           headingLevel={headingLevel}
         />
       ))
+    }
 
-    default:
+    default: {
       const _exhaustiveCheck: never = component.type
       return null
+    }
   }
 }

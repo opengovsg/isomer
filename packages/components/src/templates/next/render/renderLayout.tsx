@@ -11,28 +11,38 @@ import { SearchLayout } from "../layouts/Search"
 
 export const renderLayout = (props: IsomerPageSchemaType) => {
   switch (props.layout) {
-    case "article":
+    case "article": {
       return <ArticleLayout {...props} />
-    case "collection":
+    }
+    case "collection": {
       return <CollectionLayout {...props} />
-    case "content":
+    }
+    case "content": {
       return <ContentLayout {...props} />
-    case "database":
+    }
+    case "database": {
       return <DatabaseLayout {...props} />
-    case "homepage":
+    }
+    case "homepage": {
       return <HomepageLayout {...props} />
-    case "index":
+    }
+    case "index": {
       return <IndexPageLayout {...props} />
-    case "notfound":
+    }
+    case "notfound": {
       return <NotFoundLayout {...props} />
-    case "search":
+    }
+    case "search": {
       return <SearchLayout {...props} />
+    }
     // These are references that we should not render to the user
     case "file":
-    case "link":
+    case "link": {
       return null
-    default:
+    }
+    default: {
       const _: never = props
       return null
+    }
   }
 }

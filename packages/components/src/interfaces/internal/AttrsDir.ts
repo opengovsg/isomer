@@ -6,7 +6,8 @@ export const AttrsDirSchema = Type.Optional(
     Type.Literal("auto"),
     Type.Literal("ltr"),
     Type.Literal("rtl"),
-    Type.Null(), // Used by tiptap-text-direction when the direction is not set
+    // Used by tiptap-text-direction when the direction is not set
+    Type.Null(),
   ]),
 )
 

@@ -5,39 +5,39 @@ import { generateSiteConfig } from "~/stories/helpers"
 import { Callout } from "./Callout"
 
 const meta: Meta<CalloutProps> = {
-  title: "Next/Components/Callout",
-  component: Callout,
   argTypes: {},
+  component: Callout,
   parameters: {
     themes: {
       themeOverride: "Isomer Next",
     },
   },
+  title: "Next/Components/Callout",
 }
 export default meta
 type Story = StoryObj<typeof Callout>
 
 const content: CalloutProps["content"] = {
-  type: "prose",
   content: [
     {
-      type: "paragraph",
       content: [
         {
-          type: "text",
           text: `As of December 1, 2024, the scheme is being reviewed for new criteria in 2025. To view the new criteria please refer to <a href="/faq">New Idea Scheme Proposal</a> while it is being updated.`,
+          type: "text",
         },
       ],
+      type: "paragraph",
     },
   ],
+  type: "prose",
 }
 
 // Default scenario
 export const Default: Story = {
   args: {
-    site: generateSiteConfig(),
-    headingLevel: 2,
     content,
+    headingLevel: 2,
+    site: generateSiteConfig(),
   },
 }
 
@@ -45,306 +45,306 @@ export const Default: Story = {
 // before "info" was renamed to "information".
 export const Info: Story = {
   args: {
-    site: generateSiteConfig(),
-    headingLevel: 2,
     content,
+    headingLevel: 2,
+    site: generateSiteConfig(),
     variant: "info",
   },
 }
 
 export const GoodToKnow: Story = {
   args: {
-    site: generateSiteConfig(),
-    headingLevel: 2,
     content,
+    headingLevel: 2,
+    site: generateSiteConfig(),
     variant: "goodToKnow",
   },
 }
 
 export const Warning: Story = {
   args: {
-    site: generateSiteConfig(),
-    headingLevel: 2,
     content,
+    headingLevel: 2,
+    site: generateSiteConfig(),
     variant: "warning",
   },
 }
 
 export const Urgent: Story = {
   args: {
-    site: generateSiteConfig(),
-    headingLevel: 2,
     content,
+    headingLevel: 2,
+    site: generateSiteConfig(),
     variant: "urgent",
   },
 }
 
 export const Note: Story = {
   args: {
-    site: generateSiteConfig(),
-    headingLevel: 2,
     content,
+    headingLevel: 2,
+    site: generateSiteConfig(),
     variant: "note",
   },
 }
 
 export const UnorderedListFirst: Story = {
   args: {
-    site: generateSiteConfig(),
-    headingLevel: 2,
     content: {
-      type: "prose",
       content: [
         {
-          type: "unorderedList",
           content: [
             {
-              type: "listItem",
               content: [
                 {
-                  type: "paragraph",
                   content: [
                     {
-                      type: "text",
                       text: "Feeds on grasses, leaves, and shoots.",
+                      type: "text",
                     },
                   ],
+                  type: "paragraph",
                 },
               ],
+              type: "listItem",
             },
             {
-              type: "listItem",
               content: [
                 {
-                  type: "paragraph",
                   content: [
                     {
-                      type: "text",
                       text: "Uses its horn for defence and foraging.",
+                      type: "text",
                     },
                   ],
+                  type: "paragraph",
                 },
               ],
+              type: "listItem",
             },
           ],
+          type: "unorderedList",
         },
         {
-          type: "paragraph",
           content: [
             {
-              type: "text",
               text: "Rhinos are large, sturdy mammals known for their thick, protective skin and one or two horns on their snouts.",
+              type: "text",
             },
           ],
+          type: "paragraph",
         },
       ],
+      type: "prose",
     },
+    headingLevel: 2,
+    site: generateSiteConfig(),
   },
 }
 
 export const UnorderedListOnly: Story = {
   args: {
-    site: generateSiteConfig(),
-    headingLevel: 2,
     content: {
-      type: "prose",
       content: [
         {
-          type: "unorderedList",
           content: [
             {
-              type: "listItem",
               content: [
                 {
-                  type: "paragraph",
                   content: [
                     {
-                      type: "text",
                       text: "Feeds on grasses, leaves, and shoots.",
+                      type: "text",
                     },
                   ],
+                  type: "paragraph",
                 },
               ],
+              type: "listItem",
             },
             {
-              type: "listItem",
               content: [
                 {
-                  type: "paragraph",
                   content: [
                     {
-                      type: "text",
                       text: "Uses its horn for defence and foraging.",
+                      type: "text",
                     },
                   ],
+                  type: "paragraph",
                 },
               ],
+              type: "listItem",
             },
           ],
+          type: "unorderedList",
         },
       ],
+      type: "prose",
     },
+    headingLevel: 2,
+    site: generateSiteConfig(),
   },
 }
 
 export const OrderedListFirst: Story = {
   args: {
-    site: generateSiteConfig(),
-    headingLevel: 2,
     content: {
-      type: "prose",
       content: [
         {
-          type: "orderedList",
           content: [
             {
-              type: "listItem",
               content: [
                 {
-                  type: "paragraph",
                   content: [
                     {
-                      type: "text",
                       text: "Feeds on grasses, leaves, and shoots.",
+                      type: "text",
                     },
                   ],
+                  type: "paragraph",
                 },
               ],
+              type: "listItem",
             },
             {
-              type: "listItem",
               content: [
                 {
-                  type: "paragraph",
                   content: [
                     {
-                      type: "text",
                       text: "Uses its horn for defence and foraging.",
+                      type: "text",
                     },
                   ],
+                  type: "paragraph",
                 },
               ],
+              type: "listItem",
             },
           ],
+          type: "orderedList",
         },
         {
-          type: "paragraph",
           content: [
             {
-              type: "text",
               text: "Rhinos are large, sturdy mammals known for their thick, protective skin and one or two horns on their snouts.",
+              type: "text",
             },
           ],
+          type: "paragraph",
         },
       ],
+      type: "prose",
     },
+    headingLevel: 2,
+    site: generateSiteConfig(),
   },
 }
 
 export const OrderedListOnly: Story = {
   args: {
-    site: generateSiteConfig(),
-    headingLevel: 2,
     content: {
-      type: "prose",
       content: [
         {
-          type: "orderedList",
           content: [
             {
-              type: "listItem",
               content: [
                 {
-                  type: "paragraph",
                   content: [
                     {
-                      type: "text",
                       text: "Feeds on grasses, leaves, and shoots.",
+                      type: "text",
                     },
                   ],
+                  type: "paragraph",
                 },
               ],
+              type: "listItem",
             },
             {
-              type: "listItem",
               content: [
                 {
-                  type: "paragraph",
                   content: [
                     {
-                      type: "text",
                       text: "Uses its horn for defence and foraging.",
+                      type: "text",
                     },
                   ],
+                  type: "paragraph",
                 },
               ],
+              type: "listItem",
             },
           ],
+          type: "orderedList",
         },
       ],
+      type: "prose",
     },
+    headingLevel: 2,
+    site: generateSiteConfig(),
   },
 }
 
 export const ListInMiddle: Story = {
   args: {
-    site: generateSiteConfig(),
-    headingLevel: 2,
     content: {
-      type: "prose",
       content: [
         {
-          type: "paragraph",
           content: [
             {
-              type: "text",
               text: "Rhinos are large, sturdy mammals known for their thick, protective skin and one or two horns on their snouts.",
-            },
-          ],
-        },
-        {
-          type: "unorderedList",
-          content: [
-            {
-              type: "listItem",
-              content: [
-                {
-                  type: "paragraph",
-                  content: [
-                    {
-                      type: "text",
-                      text: "Feeds on grasses, leaves, and shoots.",
-                    },
-                  ],
-                },
-              ],
-            },
-            {
-              type: "listItem",
-              content: [
-                {
-                  type: "paragraph",
-                  content: [
-                    {
-                      type: "text",
-                      text: "Uses its horn for defence and foraging.",
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-        {
-          type: "paragraph",
-          content: [
-            {
               type: "text",
-              text: "They are herbivorous mammals and one of the oldest groups of mammals still in existence.",
             },
           ],
+          type: "paragraph",
+        },
+        {
+          content: [
+            {
+              content: [
+                {
+                  content: [
+                    {
+                      text: "Feeds on grasses, leaves, and shoots.",
+                      type: "text",
+                    },
+                  ],
+                  type: "paragraph",
+                },
+              ],
+              type: "listItem",
+            },
+            {
+              content: [
+                {
+                  content: [
+                    {
+                      text: "Uses its horn for defence and foraging.",
+                      type: "text",
+                    },
+                  ],
+                  type: "paragraph",
+                },
+              ],
+              type: "listItem",
+            },
+          ],
+          type: "unorderedList",
+        },
+        {
+          content: [
+            {
+              text: "They are herbivorous mammals and one of the oldest groups of mammals still in existence.",
+              type: "text",
+            },
+          ],
+          type: "paragraph",
         },
       ],
+      type: "prose",
     },
+    headingLevel: 2,
+    site: generateSiteConfig(),
   },
 }

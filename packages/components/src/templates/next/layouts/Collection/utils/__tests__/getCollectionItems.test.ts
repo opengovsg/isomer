@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unsafe-type-assertion, typescript/no-deprecated -- story/test fixtures use narrowed mock shapes */
 import type { CollectionPageSchemaType, IsomerSitemap } from "~/types"
 import { describe, expect, it } from "vitest"
 import { generateSiteConfig } from "~/stories/helpers/generateSiteConfig"
@@ -8,9 +9,9 @@ import { getCollectionItems } from "../getCollectionItems"
 const SITE_LOGO_URL = "/isomer-logo.svg"
 const SITE_NAME = "Isomer Next"
 const SITE_LOGO_FALLBACK = {
-  src: SITE_LOGO_URL,
   alt: `${SITE_NAME} site logo`,
   isContainNeeded: true,
+  src: SITE_LOGO_URL,
 }
 
 const createArticleChild = (
@@ -18,11 +19,11 @@ const createArticleChild = (
 ): IsomerSitemap => {
   const child = {
     id: "article-1",
-    title: "Article 1",
-    summary: "Summary",
     lastModified: "2024-01-01",
-    permalink: "/collection/article-1",
     layout: "article" as const,
+    permalink: "/collection/article-1",
+    summary: "Summary",
+    title: "Article 1",
     ...overrides,
   }
   // SAFETY: test fixture builds a minimal article sitemap node
@@ -32,38 +33,38 @@ const createArticleChild = (
 const createSiteWithChildren = (children: IsomerSitemap[]) =>
   generateSiteConfig({
     siteMap: {
-      id: "root",
-      title: SITE_NAME,
-      summary: "",
-      lastModified: "2024-01-01",
-      permalink: "/",
-      layout: "homepage",
       children: [
         {
-          id: "collection",
-          title: "Collection",
-          summary: "",
-          lastModified: "2024-01-01",
-          permalink: "/collection",
-          layout: "collection",
           children,
+          id: "collection",
+          lastModified: "2024-01-01",
+          layout: "collection",
+          permalink: "/collection",
+          summary: "",
+          title: "Collection",
         },
       ],
+      id: "root",
+      lastModified: "2024-01-01",
+      layout: "homepage",
+      permalink: "/",
+      summary: "",
+      title: SITE_NAME,
     },
   })
 
 describe("getCollectionItems", () => {
   describe("showThumbnail is undefined", () => {
     it("should not include image when showThumbnail is undefined, even if item has an image", () => {
-      const itemImage = { src: "/images/thumbnail.png", alt: "Thumbnail" }
+      const itemImage = { alt: "Thumbnail", src: "/images/thumbnail.png" }
       const site = createSiteWithChildren([
         createArticleChild({ image: itemImage }),
       ])
 
       const result = getCollectionItems({
-        site,
         permalink: "/collection",
         showThumbnail: undefined,
+        site,
       })
 
       expect(result).toHaveLength(1)
@@ -77,9 +78,9 @@ describe("getCollectionItems", () => {
       ])
 
       const result = getCollectionItems({
-        site,
         permalink: "/collection",
         showThumbnail: undefined,
+        site,
       })
 
       expect(result).toHaveLength(1)
@@ -90,15 +91,15 @@ describe("getCollectionItems", () => {
 
   describe("showThumbnail with fallback 'logo'", () => {
     it("should use the item image when item has an image with a non-empty src", () => {
-      const itemImage = { src: "/images/thumbnail.png", alt: "Thumbnail" }
+      const itemImage = { alt: "Thumbnail", src: "/images/thumbnail.png" }
       const site = createSiteWithChildren([
         createArticleChild({ image: itemImage }),
       ])
 
       const result = getCollectionItems({
-        site,
         permalink: "/collection",
         showThumbnail: { fallback: "logo" },
+        site,
       })
 
       expect(result).toHaveLength(1)
@@ -112,9 +113,9 @@ describe("getCollectionItems", () => {
       ])
 
       const result = getCollectionItems({
-        site,
         permalink: "/collection",
         showThumbnail: { fallback: "logo" },
+        site,
       })
 
       expect(result).toHaveLength(1)
@@ -124,13 +125,13 @@ describe("getCollectionItems", () => {
 
     it("should fall back to site logo when item image has an empty src", () => {
       const site = createSiteWithChildren([
-        createArticleChild({ image: { src: "", alt: "" } }),
+        createArticleChild({ image: { alt: "", src: "" } }),
       ])
 
       const result = getCollectionItems({
-        site,
         permalink: "/collection",
         showThumbnail: { fallback: "logo" },
+        site,
       })
 
       expect(result).toHaveLength(1)
@@ -140,13 +141,13 @@ describe("getCollectionItems", () => {
 
     it("should fall back to site logo when item image has an empty src but non-empty alt", () => {
       const site = createSiteWithChildren([
-        createArticleChild({ image: { src: "", alt: "Some alt text" } }),
+        createArticleChild({ image: { alt: "Some alt text", src: "" } }),
       ])
 
       const result = getCollectionItems({
-        site,
         permalink: "/collection",
         showThumbnail: { fallback: "logo" },
+        site,
       })
 
       expect(result).toHaveLength(1)
@@ -155,15 +156,15 @@ describe("getCollectionItems", () => {
     })
 
     it("should ignore item firstImage when fallback is 'logo'", () => {
-      const firstImage = { src: "/images/first.png", alt: "First image" }
+      const firstImage = { alt: "First image", src: "/images/first.png" }
       const site = createSiteWithChildren([
-        createArticleChild({ image: undefined, firstImage }),
+        createArticleChild({ firstImage, image: undefined }),
       ])
 
       const result = getCollectionItems({
-        site,
         permalink: "/collection",
         showThumbnail: { fallback: "logo" },
+        site,
       })
 
       expect(result).toHaveLength(1)
@@ -174,16 +175,16 @@ describe("getCollectionItems", () => {
 
   describe("showThumbnail with fallback 'first-image'", () => {
     it("should use the item image when item has an image with a non-empty src, ignoring firstImage", () => {
-      const itemImage = { src: "/images/thumbnail.png", alt: "Thumbnail" }
-      const firstImage = { src: "/images/first.png", alt: "First image" }
+      const itemImage = { alt: "Thumbnail", src: "/images/thumbnail.png" }
+      const firstImage = { alt: "First image", src: "/images/first.png" }
       const site = createSiteWithChildren([
-        createArticleChild({ image: itemImage, firstImage }),
+        createArticleChild({ firstImage, image: itemImage }),
       ])
 
       const result = getCollectionItems({
-        site,
         permalink: "/collection",
         showThumbnail: { fallback: "first-image" },
+        site,
       })
 
       expect(result).toHaveLength(1)
@@ -192,15 +193,15 @@ describe("getCollectionItems", () => {
     })
 
     it("should fall back to firstImage when item has no image but has a firstImage", () => {
-      const firstImage = { src: "/images/first.png", alt: "First image" }
+      const firstImage = { alt: "First image", src: "/images/first.png" }
       const site = createSiteWithChildren([
-        createArticleChild({ image: undefined, firstImage }),
+        createArticleChild({ firstImage, image: undefined }),
       ])
 
       const result = getCollectionItems({
-        site,
         permalink: "/collection",
         showThumbnail: { fallback: "first-image" },
+        site,
       })
 
       expect(result).toHaveLength(1)
@@ -209,15 +210,15 @@ describe("getCollectionItems", () => {
     })
 
     it("should fall back to firstImage when item image has an empty src", () => {
-      const firstImage = { src: "/images/first.png", alt: "First image" }
+      const firstImage = { alt: "First image", src: "/images/first.png" }
       const site = createSiteWithChildren([
-        createArticleChild({ image: { src: "", alt: "" }, firstImage }),
+        createArticleChild({ firstImage, image: { alt: "", src: "" } }),
       ])
 
       const result = getCollectionItems({
-        site,
         permalink: "/collection",
         showThumbnail: { fallback: "first-image" },
+        site,
       })
 
       expect(result).toHaveLength(1)
@@ -227,13 +228,13 @@ describe("getCollectionItems", () => {
 
     it("should fall back to site logo when item has no image and no firstImage", () => {
       const site = createSiteWithChildren([
-        createArticleChild({ image: undefined, firstImage: undefined }),
+        createArticleChild({ firstImage: undefined, image: undefined }),
       ])
 
       const result = getCollectionItems({
-        site,
         permalink: "/collection",
         showThumbnail: { fallback: "first-image" },
+        site,
       })
 
       expect(result).toHaveLength(1)
@@ -244,15 +245,15 @@ describe("getCollectionItems", () => {
     it("should fall back to site logo when firstImage has an empty src", () => {
       const site = createSiteWithChildren([
         createArticleChild({
+          firstImage: { alt: "", src: "" },
           image: undefined,
-          firstImage: { src: "", alt: "" },
         }),
       ])
 
       const result = getCollectionItems({
-        site,
         permalink: "/collection",
         showThumbnail: { fallback: "first-image" },
+        site,
       })
 
       expect(result).toHaveLength(1)
@@ -263,24 +264,24 @@ describe("getCollectionItems", () => {
 
   describe("mixed items with showThumbnail", () => {
     it("should resolve images per-item with fallback 'logo'", () => {
-      const itemImage = { src: "/images/thumbnail.png", alt: "Thumbnail" }
+      const itemImage = { alt: "Thumbnail", src: "/images/thumbnail.png" }
       const site = createSiteWithChildren([
         createArticleChild({
           id: "article-1",
-          permalink: "/collection/article-1",
           image: itemImage,
+          permalink: "/collection/article-1",
         }),
         createArticleChild({
           id: "article-2",
-          permalink: "/collection/article-2",
           image: undefined,
+          permalink: "/collection/article-2",
         }),
       ])
 
       const result = getCollectionItems({
-        site,
         permalink: "/collection",
         showThumbnail: { fallback: "logo" },
+        site,
       })
 
       expect(result).toHaveLength(2)
@@ -291,32 +292,32 @@ describe("getCollectionItems", () => {
     })
 
     it("should resolve images per-item with fallback 'first-image'", () => {
-      const itemImage = { src: "/images/thumbnail.png", alt: "Thumbnail" }
-      const firstImage = { src: "/images/first.png", alt: "First image" }
+      const itemImage = { alt: "Thumbnail", src: "/images/thumbnail.png" }
+      const firstImage = { alt: "First image", src: "/images/first.png" }
       const site = createSiteWithChildren([
         createArticleChild({
           id: "article-1",
-          permalink: "/collection/article-1",
           image: itemImage,
+          permalink: "/collection/article-1",
         }),
         createArticleChild({
-          id: "article-2",
-          permalink: "/collection/article-2",
-          image: undefined,
           firstImage,
+          id: "article-2",
+          image: undefined,
+          permalink: "/collection/article-2",
         }),
         createArticleChild({
-          id: "article-3",
-          permalink: "/collection/article-3",
-          image: undefined,
           firstImage: undefined,
+          id: "article-3",
+          image: undefined,
+          permalink: "/collection/article-3",
         }),
       ])
 
       const result = getCollectionItems({
-        site,
         permalink: "/collection",
         showThumbnail: { fallback: "first-image" },
+        site,
       })
 
       expect(result).toHaveLength(3)
@@ -332,18 +333,18 @@ describe("getCollectionItems", () => {
   describe("plaintextTags resolution", () => {
     const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
       {
-        label: "Topic",
-        id: "topic-1",
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
-        options: [{ label: "Health", id: "topic-opt-1" }],
+        id: "topic-1",
+        label: "Topic",
+        options: [{ id: "topic-opt-1", label: "Health" }],
       },
       {
-        label: "Category",
-        id: "cat-1",
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
+        id: "cat-1",
+        label: "Category",
         options: [
-          { label: "Guides", id: "cat-opt-1" },
-          { label: "Articles", id: "cat-opt-2" },
+          { id: "cat-opt-1", label: "Guides" },
+          { id: "cat-opt-2", label: "Articles" },
         ],
       },
     ]
@@ -356,15 +357,15 @@ describe("getCollectionItems", () => {
 
       // Act
       const result = getCollectionItems({
-        site,
         permalink: "/collection",
+        site,
         tagCategories,
       })
 
       // Assert
       expect(result).toHaveLength(1)
       expect(result[0]!.plaintextTags).toEqual([
-        { id: "cat-1", category: "Category", selected: ["Guides"] },
+        { category: "Category", id: "cat-1", selected: ["Guides"] },
       ])
     })
 
@@ -376,15 +377,15 @@ describe("getCollectionItems", () => {
 
       // Act
       const result = getCollectionItems({
-        site,
         permalink: "/collection",
+        site,
         tagCategories,
       })
 
       // Assert
       expect(result).toHaveLength(1)
       expect(result[0]!.plaintextTags).toEqual([
-        { id: "cat-1", category: "Category", selected: ["Guides", "Articles"] },
+        { category: "Category", id: "cat-1", selected: ["Guides", "Articles"] },
       ])
     })
 
@@ -396,8 +397,8 @@ describe("getCollectionItems", () => {
 
       // Act
       const result = getCollectionItems({
-        site,
         permalink: "/collection",
+        site,
       })
 
       // Assert
@@ -413,8 +414,8 @@ describe("getCollectionItems", () => {
 
       // Act
       const result = getCollectionItems({
-        site,
         permalink: "/collection",
+        site,
         tagCategories,
       })
 
@@ -427,18 +428,18 @@ describe("getCollectionItems", () => {
   describe('pillTags include only display: "pills" groups', () => {
     const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
       {
-        label: "Topic",
-        id: "topic-1",
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
-        options: [{ label: "Health", id: "topic-opt-1" }],
+        id: "topic-1",
+        label: "Topic",
+        options: [{ id: "topic-opt-1", label: "Health" }],
       },
       {
-        label: "Category",
-        id: "cat-1",
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
+        id: "cat-1",
+        label: "Category",
         options: [
-          { label: "Guides", id: "cat-opt-1" },
-          { label: "Articles", id: "cat-opt-2" },
+          { id: "cat-opt-1", label: "Guides" },
+          { id: "cat-opt-2", label: "Articles" },
         ],
       },
     ]
@@ -451,19 +452,19 @@ describe("getCollectionItems", () => {
 
       // Act
       const result = getCollectionItems({
-        site,
         permalink: "/collection",
+        site,
         tagCategories,
       })
 
       // Assert
       expect(result).toHaveLength(1)
       expect(result[0]!.tags).toEqual([
-        { id: "topic-1", category: "Topic", selected: ["Health"] },
-        { id: "cat-1", category: "Category", selected: ["Guides"] },
+        { category: "Topic", id: "topic-1", selected: ["Health"] },
+        { category: "Category", id: "cat-1", selected: ["Guides"] },
       ])
       expect(result[0]!.pillTags).toEqual([
-        { id: "topic-1", category: "Topic", selected: ["Health"] },
+        { category: "Topic", id: "topic-1", selected: ["Health"] },
       ])
     })
 
@@ -475,8 +476,8 @@ describe("getCollectionItems", () => {
 
       // Act
       const result = getCollectionItems({
-        site,
         permalink: "/collection",
+        site,
       })
 
       // Assert
@@ -489,9 +490,9 @@ describe("getCollectionItems", () => {
       // Arrange
       const legacyTagCategories = [
         {
-          label: "Topic",
           id: "topic-1",
-          options: [{ label: "Health", id: "topic-opt-1" }],
+          label: "Topic",
+          options: [{ id: "topic-opt-1", label: "Health" }],
         },
       ] satisfies CollectionPageSchemaType["page"]["tagCategories"]
       const site = createSiteWithChildren([
@@ -500,15 +501,15 @@ describe("getCollectionItems", () => {
 
       // Act
       const result = getCollectionItems({
-        site,
         permalink: "/collection",
+        site,
         tagCategories: legacyTagCategories,
       })
 
       // Assert
       expect(result).toHaveLength(1)
       expect(result[0]!.pillTags).toEqual([
-        { id: "topic-1", category: "Topic", selected: ["Health"] },
+        { category: "Topic", id: "topic-1", selected: ["Health"] },
       ])
       expect(result[0]!.plaintextTags).toEqual([])
     })
@@ -517,10 +518,10 @@ describe("getCollectionItems", () => {
       // Arrange
       const singleTagCategory = [
         {
-          label: "Category",
-          id: "cat-1",
           display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
-          options: [{ label: "Guides", id: "cat-opt-1" }],
+          id: "cat-1",
+          label: "Category",
+          options: [{ id: "cat-opt-1", label: "Guides" }],
         },
       ]
       const site = createSiteWithChildren([
@@ -529,15 +530,15 @@ describe("getCollectionItems", () => {
 
       // Act
       const result = getCollectionItems({
-        site,
         permalink: "/collection",
+        site,
         tagCategories: singleTagCategory,
       })
 
       // Assert
       expect(result).toHaveLength(1)
       expect(result[0]!.tags).toEqual([
-        { id: "cat-1", category: "Category", selected: ["Guides"] },
+        { category: "Category", id: "cat-1", selected: ["Guides"] },
       ])
       expect(result[0]!.pillTags).toEqual([])
     })

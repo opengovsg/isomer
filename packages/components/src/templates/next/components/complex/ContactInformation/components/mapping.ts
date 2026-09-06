@@ -21,37 +21,37 @@ type MethodMapping = Record<
 >
 
 export const METHODS_MAPPING = {
-  telephone: {
-    label: "Telephone",
-    Icon: BiPhone,
-  },
-  fax: {
-    label: "Fax",
-    Icon: BiPrinter,
+  address: {
+    Icon: BiMap,
+    label: "Address",
   },
   email: {
-    label: "Email",
     Icon: BiMailSend,
-  },
-  website: {
-    label: "Website",
-    Icon: BiGlobe,
+    label: "Email",
   },
   emergency_contact: {
-    label: "Emergency Contact",
     Icon: BiPhoneCall,
     color: "text-utility-feedback-alert",
+    label: "Emergency Contact",
   },
-  address: {
-    label: "Address",
-    Icon: BiMap,
+  fax: {
+    Icon: BiPrinter,
+    label: "Fax",
   },
   operating_hours: {
-    label: "Operating Hours",
     Icon: BiTimeFive,
+    label: "Operating Hours",
   },
   person: {
-    label: "Person",
     Icon: BiUser,
+    label: "Person",
+  },
+  telephone: {
+    Icon: BiPhone,
+    label: "Telephone",
+  },
+  website: {
+    Icon: BiGlobe,
+    label: "Website",
   },
 } satisfies MethodMapping

@@ -6,14 +6,14 @@ export const SiteThemeSchema = Type.Object(
     colors: Type.Object({
       brand: Type.Object({
         canvas: Type.Object({
-          default: Type.String({ format: "hidden" }),
           alt: Type.String({ format: "hidden" }),
           backdrop: Type.String({ format: "hidden" }),
+          default: Type.String({ format: "hidden" }),
           inverse: Type.String({
-            title: "Main brand colour",
             description:
               "Enter a hex code of a colour that best represents your brand. If you have a design system or branding guide, this might be your primary colour.",
             format: "color-picker",
+            title: "Main brand colour",
           }),
         }),
         interaction: Type.Object({
@@ -25,8 +25,8 @@ export const SiteThemeSchema = Type.Object(
     }),
   },
   {
-    title: "Site Theme",
     description: "Schema for the theme configuration of the site.",
+    title: "Site Theme",
   },
 )
 

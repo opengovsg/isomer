@@ -11,18 +11,18 @@ describe("getTagFilters", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
       testCollectionItem({
-        title: "Item 1",
         tags: [
-          { selected: ["Brain", "Heart"], category: "Body parts" },
-          { selected: ["Acute"], category: "Condition" },
+          { category: "Body parts", selected: ["Brain", "Heart"] },
+          { category: "Condition", selected: ["Acute"] },
         ],
+        title: "Item 1",
       }),
       testCollectionItem({
-        title: "Item 2",
         tags: [
-          { selected: ["Brain"], category: "Body parts" },
-          { selected: ["Chronic"], category: "Condition" },
+          { category: "Body parts", selected: ["Brain"] },
+          { category: "Condition", selected: ["Chronic"] },
         ],
+        title: "Item 2",
       }),
     ]
 
@@ -32,22 +32,22 @@ describe("getTagFilters", () => {
     // Assert
     expect(result).toEqual([
       {
-        id: "Body parts",
-        label: "Body parts",
         display: "pills",
+        id: "Body parts",
         items: [
-          { id: "Brain", label: "Brain", count: 2 },
-          { id: "Heart", label: "Heart", count: 1 },
+          { count: 2, id: "Brain", label: "Brain" },
+          { count: 1, id: "Heart", label: "Heart" },
         ],
+        label: "Body parts",
       },
       {
-        id: "Condition",
-        label: "Condition",
         display: "pills",
+        id: "Condition",
         items: [
-          { id: "Acute", label: "Acute", count: 1 },
-          { id: "Chronic", label: "Chronic", count: 1 },
+          { count: 1, id: "Acute", label: "Acute" },
+          { count: 1, id: "Chronic", label: "Chronic" },
         ],
+        label: "Condition",
       },
     ])
   })
@@ -56,26 +56,26 @@ describe("getTagFilters", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
       testCollectionItem({
-        title: "Item 1",
         tags: [
-          { selected: ["Brain"], category: "Body parts" },
-          { selected: ["Acute"], category: "Condition" },
+          { category: "Body parts", selected: ["Brain"] },
+          { category: "Condition", selected: ["Acute"] },
         ],
+        title: "Item 1",
       }),
     ]
 
     const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
       {
-        label: "Condition",
-        id: "c-1",
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
-        options: [{ label: "Acute", id: "o-1" }],
+        id: "c-1",
+        label: "Condition",
+        options: [{ id: "o-1", label: "Acute" }],
       },
       {
-        label: "Body parts",
-        id: "b-1",
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
-        options: [{ label: "Brain", id: "o-2" }],
+        id: "b-1",
+        label: "Body parts",
+        options: [{ id: "o-2", label: "Brain" }],
       },
     ]
 
@@ -85,16 +85,16 @@ describe("getTagFilters", () => {
     // Assert
     expect(result).toEqual([
       {
-        id: "Condition",
-        label: "Condition",
         display: "pills",
-        items: [{ id: "Acute", label: "Acute", count: 1 }],
+        id: "Condition",
+        items: [{ count: 1, id: "Acute", label: "Acute" }],
+        label: "Condition",
       },
       {
-        id: "Body parts",
-        label: "Body parts",
         display: "pills",
-        items: [{ id: "Brain", label: "Brain", count: 1 }],
+        id: "Body parts",
+        items: [{ count: 1, id: "Brain", label: "Brain" }],
+        label: "Body parts",
       },
     ])
   })
@@ -103,39 +103,39 @@ describe("getTagFilters", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
       testCollectionItem({
-        title: "Item 1",
         tags: [
-          { selected: ["Brain", "Arm"], category: "Body parts" },
-          { selected: ["Acute"], category: "Condition" },
+          { category: "Body parts", selected: ["Brain", "Arm"] },
+          { category: "Condition", selected: ["Acute"] },
         ],
+        title: "Item 1",
       }),
       testCollectionItem({
-        title: "Item 2",
         tags: [
-          { selected: ["Heart"], category: "Body parts" },
-          { selected: ["Chronic"], category: "Condition" },
+          { category: "Body parts", selected: ["Heart"] },
+          { category: "Condition", selected: ["Chronic"] },
         ],
+        title: "Item 2",
       }),
     ]
 
     const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
       {
-        label: "Body parts",
-        id: "b-1",
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
+        id: "b-1",
+        label: "Body parts",
         options: [
-          { label: "Heart", id: "bp-heart" },
-          { label: "Brain", id: "bp-brain" },
-          { label: "Leg", id: "bp-leg" },
+          { id: "bp-heart", label: "Heart" },
+          { id: "bp-brain", label: "Brain" },
+          { id: "bp-leg", label: "Leg" },
         ],
       },
       {
-        label: "Condition",
-        id: "c-1",
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
+        id: "c-1",
+        label: "Condition",
         options: [
-          { label: "Chronic", id: "c-chronic" },
-          { label: "Acute", id: "c-acute" },
+          { id: "c-chronic", label: "Chronic" },
+          { id: "c-acute", label: "Acute" },
         ],
       },
     ]
@@ -146,23 +146,24 @@ describe("getTagFilters", () => {
     // Assert
     expect(result).toEqual([
       {
-        id: "Body parts",
-        label: "Body parts",
         display: "pills",
+        id: "Body parts",
         items: [
-          { id: "Arm", label: "Arm", count: 1 }, // Unlisted; comes first
-          { id: "Heart", label: "Heart", count: 1 },
-          { id: "Brain", label: "Brain", count: 1 },
+          // Unlisted; comes first
+          { count: 1, id: "Arm", label: "Arm" },
+          { count: 1, id: "Heart", label: "Heart" },
+          { count: 1, id: "Brain", label: "Brain" },
         ],
+        label: "Body parts",
       },
       {
-        id: "Condition",
-        label: "Condition",
         display: "pills",
+        id: "Condition",
         items: [
-          { id: "Chronic", label: "Chronic", count: 1 },
-          { id: "Acute", label: "Acute", count: 1 },
+          { count: 1, id: "Chronic", label: "Chronic" },
+          { count: 1, id: "Acute", label: "Acute" },
         ],
+        label: "Condition",
       },
     ])
   })
@@ -171,16 +172,16 @@ describe("getTagFilters", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
       testCollectionItem({
+        tags: [{ category: "Fruits", selected: ["Banana"] }],
         title: "Item 1",
-        tags: [{ selected: ["Banana"], category: "Fruits" }],
       }),
       testCollectionItem({
+        tags: [{ category: "Fruits", selected: ["Apple"] }],
         title: "Item 2",
-        tags: [{ selected: ["Apple"], category: "Fruits" }],
       }),
       testCollectionItem({
+        tags: [{ category: "Fruits", selected: ["Banana"] }],
         title: "Item 3",
-        tags: [{ selected: ["Banana"], category: "Fruits" }],
       }),
     ]
 
@@ -190,13 +191,13 @@ describe("getTagFilters", () => {
     // Assert
     expect(result).toEqual([
       {
-        id: "Fruits",
-        label: "Fruits",
         display: "pills",
+        id: "Fruits",
         items: [
-          { id: "Banana", label: "Banana", count: 2 },
-          { id: "Apple", label: "Apple", count: 1 },
+          { count: 2, id: "Banana", label: "Banana" },
+          { count: 1, id: "Apple", label: "Apple" },
         ],
+        label: "Fruits",
       },
     ])
   })
@@ -205,8 +206,8 @@ describe("getTagFilters", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
       testCollectionItem({
-        title: "Item 1",
         description: "Description 1",
+        title: "Item 1",
       }),
     ]
 
@@ -232,39 +233,39 @@ describe("getTagFilters", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
       testCollectionItem({
-        title: "Item 1",
         tags: [
-          { selected: ["Brain"], category: "Body parts" },
-          { selected: ["Acute"], category: "Condition" },
-          { selected: ["Red"], category: "Color" },
+          { category: "Body parts", selected: ["Brain"] },
+          { category: "Condition", selected: ["Acute"] },
+          { category: "Color", selected: ["Red"] },
         ],
+        title: "Item 1",
       }),
       testCollectionItem({
-        title: "Item 2",
         tags: [
-          { selected: ["Heart"], category: "Body parts" },
-          { selected: ["Blue"], category: "Color" },
+          { category: "Body parts", selected: ["Heart"] },
+          { category: "Color", selected: ["Blue"] },
         ],
+        title: "Item 2",
       }),
     ]
 
     const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
       {
-        label: "Condition",
-        id: "c-1",
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
+        id: "c-1",
+        label: "Condition",
         options: [
-          { label: "Acute", id: "c-acute" },
-          { label: "Chronic", id: "c-chronic" },
+          { id: "c-acute", label: "Acute" },
+          { id: "c-chronic", label: "Chronic" },
         ],
       },
       {
-        label: "Body parts",
-        id: "b-1",
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
+        id: "b-1",
+        label: "Body parts",
         options: [
-          { label: "Heart", id: "bp-heart" },
-          { label: "Brain", id: "bp-brain" },
+          { id: "bp-heart", label: "Heart" },
+          { id: "bp-brain", label: "Brain" },
         ],
       },
       // Note: "Color" category is NOT in tagCategories
@@ -276,28 +277,28 @@ describe("getTagFilters", () => {
     // Assert
     expect(result).toEqual([
       {
+        display: "pills",
         id: "Condition",
+        items: [{ count: 1, id: "Acute", label: "Acute" }],
         label: "Condition",
-        display: "pills",
-        items: [{ id: "Acute", label: "Acute", count: 1 }],
       },
       {
+        display: "pills",
         id: "Body parts",
-        label: "Body parts",
-        display: "pills",
         items: [
-          { id: "Heart", label: "Heart", count: 1 },
-          { id: "Brain", label: "Brain", count: 1 },
+          { count: 1, id: "Heart", label: "Heart" },
+          { count: 1, id: "Brain", label: "Brain" },
         ],
+        label: "Body parts",
       },
       {
-        id: "Color",
-        label: "Color",
         display: "pills",
+        id: "Color",
         items: [
-          { id: "Red", label: "Red", count: 1 },
-          { id: "Blue", label: "Blue", count: 1 },
+          { count: 1, id: "Red", label: "Red" },
+          { count: 1, id: "Blue", label: "Blue" },
         ],
+        label: "Color",
       },
     ])
   })
@@ -306,28 +307,29 @@ describe("getTagFilters", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
       testCollectionItem({
-        title: "Item 1",
         tags: [
-          { selected: ["Brain", "Heart"], category: "Body parts" },
-          { selected: ["Acute"], category: "Condition" },
+          { category: "Body parts", selected: ["Brain", "Heart"] },
+          { category: "Condition", selected: ["Acute"] },
         ],
+        title: "Item 1",
       }),
     ]
 
     const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
       {
-        label: "Condition",
-        id: "c-1",
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
-        options: [], // Empty options array
+        id: "c-1",
+        label: "Condition",
+        // Empty options array
+        options: [],
       },
       {
-        label: "Body parts",
-        id: "b-1",
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
+        id: "b-1",
+        label: "Body parts",
         options: [
-          { label: "Heart", id: "bp-heart" },
-          { label: "Brain", id: "bp-brain" },
+          { id: "bp-heart", label: "Heart" },
+          { id: "bp-brain", label: "Brain" },
         ],
       },
     ]
@@ -338,19 +340,20 @@ describe("getTagFilters", () => {
     // Assert
     expect(result).toEqual([
       {
-        id: "Condition",
-        label: "Condition",
         display: "pills",
-        items: [{ id: "Acute", label: "Acute", count: 1 }], // Unlisted item appears first
+        id: "Condition",
+        // Unlisted item appears first
+        items: [{ count: 1, id: "Acute", label: "Acute" }],
+        label: "Condition",
       },
       {
-        id: "Body parts",
-        label: "Body parts",
         display: "pills",
+        id: "Body parts",
         items: [
-          { id: "Heart", label: "Heart", count: 1 },
-          { id: "Brain", label: "Brain", count: 1 },
+          { count: 1, id: "Heart", label: "Heart" },
+          { count: 1, id: "Brain", label: "Brain" },
         ],
+        label: "Body parts",
       },
     ])
   })
@@ -359,25 +362,25 @@ describe("getTagFilters", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
       testCollectionItem({
+        tags: [
+          { category: "Body parts", selected: ["Brain", "Heart"] },
+          { category: "Condition", selected: ["Acute"] },
+        ],
         title: "Item 1",
-        tags: [
-          { selected: ["Brain", "Heart"], category: "Body parts" },
-          { selected: ["Acute"], category: "Condition" },
-        ],
       }),
       testCollectionItem({
+        tags: [
+          { category: "Body parts", selected: ["Brain"] },
+          { category: "Condition", selected: ["Acute", "Chronic"] },
+        ],
         title: "Item 2",
-        tags: [
-          { selected: ["Brain"], category: "Body parts" },
-          { selected: ["Acute", "Chronic"], category: "Condition" },
-        ],
       }),
       testCollectionItem({
-        title: "Item 3",
         tags: [
-          { selected: ["Heart"], category: "Body parts" },
-          { selected: ["Acute"], category: "Condition" },
+          { category: "Body parts", selected: ["Heart"] },
+          { category: "Condition", selected: ["Acute"] },
         ],
+        title: "Item 3",
       }),
     ]
 
@@ -387,22 +390,26 @@ describe("getTagFilters", () => {
     // Assert
     expect(result).toEqual([
       {
-        id: "Body parts",
-        label: "Body parts",
         display: "pills",
+        id: "Body parts",
         items: [
-          { id: "Brain", label: "Brain", count: 2 }, // Appears in 2 items
-          { id: "Heart", label: "Heart", count: 2 }, // Appears in 2 items
+          // Appears in 2 items
+          { count: 2, id: "Brain", label: "Brain" },
+          // Appears in 2 items
+          { count: 2, id: "Heart", label: "Heart" },
         ],
+        label: "Body parts",
       },
       {
-        id: "Condition",
-        label: "Condition",
         display: "pills",
+        id: "Condition",
         items: [
-          { id: "Acute", label: "Acute", count: 3 }, // Appears in 3 items
-          { id: "Chronic", label: "Chronic", count: 1 }, // Appears in 1 item
+          // Appears in 3 items
+          { count: 3, id: "Acute", label: "Acute" },
+          // Appears in 1 item
+          { count: 1, id: "Chronic", label: "Chronic" },
         ],
+        label: "Condition",
       },
     ])
   })
@@ -411,8 +418,8 @@ describe("getTagFilters", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
       testCollectionItem({
+        tags: [{ category: "Body parts", selected: ["Brain"] }],
         title: "Item 1",
-        tags: [{ selected: ["Brain"], category: "Body parts" }],
       }),
       testCollectionItem({
         title: "Item 2",
@@ -426,28 +433,30 @@ describe("getTagFilters", () => {
         itemTitle: "Item 2",
       }),
       testCollectionItem({
-        title: "Item 3",
-        tags: [], // Empty tags array
-        id: "item3",
-        description: "Description 3",
         date: new Date("2023-01-01"),
+        description: "Description 3",
+        id: "item3",
         image: undefined,
-        referenceLinkHref: undefined,
         imageSrc: undefined,
         itemTitle: "Item 3",
+        referenceLinkHref: undefined,
+        // Empty tags array
+        tags: [],
+        title: "Item 3",
       }),
       testCollectionItem({
-        title: "Item 4",
-        tags: [
-          { selected: [], category: "Body parts" }, // Empty selected array
-        ],
-        id: "item4",
-        description: "Description 4",
         date: new Date("2023-01-01"),
+        description: "Description 4",
+        id: "item4",
         image: undefined,
-        referenceLinkHref: undefined,
         imageSrc: undefined,
         itemTitle: "Item 4",
+        referenceLinkHref: undefined,
+        tags: [
+          // Empty selected array
+          { category: "Body parts", selected: [] },
+        ],
+        title: "Item 4",
       }),
     ]
 
@@ -457,10 +466,10 @@ describe("getTagFilters", () => {
     // Assert
     expect(result).toEqual([
       {
-        id: "Body parts",
-        label: "Body parts",
         display: "pills",
-        items: [{ id: "Brain", label: "Brain", count: 1 }],
+        id: "Body parts",
+        items: [{ count: 1, id: "Brain", label: "Brain" }],
+        label: "Body parts",
       },
     ])
   })
@@ -469,23 +478,23 @@ describe("getTagFilters", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
       testCollectionItem({
-        title: "Item 1",
         tags: [
-          { selected: ["Brain", "Heart"], category: "Body parts" },
-          { selected: ["Acute"], category: "Condition" },
-          { selected: ["Red"], category: "Color" },
+          { category: "Body parts", selected: ["Brain", "Heart"] },
+          { category: "Condition", selected: ["Acute"] },
+          { category: "Color", selected: ["Red"] },
         ],
+        title: "Item 1",
       }),
     ]
 
     const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
       {
-        label: "Body parts",
-        id: "b-1",
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
+        id: "b-1",
+        label: "Body parts",
         options: [
-          { label: "Heart", id: "bp-heart" },
-          { label: "Brain", id: "bp-brain" },
+          { id: "bp-heart", label: "Heart" },
+          { id: "bp-brain", label: "Brain" },
         ],
       },
       // Note: "Condition" and "Color" are not in tagCategories
@@ -497,25 +506,25 @@ describe("getTagFilters", () => {
     // Assert
     expect(result).toEqual([
       {
+        display: "pills",
         id: "Body parts",
-        label: "Body parts",
-        display: "pills",
         items: [
-          { id: "Heart", label: "Heart", count: 1 },
-          { id: "Brain", label: "Brain", count: 1 },
+          { count: 1, id: "Heart", label: "Heart" },
+          { count: 1, id: "Brain", label: "Brain" },
         ],
+        label: "Body parts",
       },
       {
+        display: "pills",
         id: "Condition",
+        items: [{ count: 1, id: "Acute", label: "Acute" }],
         label: "Condition",
-        display: "pills",
-        items: [{ id: "Acute", label: "Acute", count: 1 }],
       },
       {
-        id: "Color",
-        label: "Color",
         display: "pills",
-        items: [{ id: "Red", label: "Red", count: 1 }],
+        id: "Color",
+        items: [{ count: 1, id: "Red", label: "Red" }],
+        label: "Color",
       },
     ])
   })

@@ -7,40 +7,40 @@ import { REF_INTERNAL_HREF_PATTERN } from "~/utils/validation"
 
 export const CollectionBlockSchema = Type.Object(
   {
-    type: Type.Literal("collectionblock", {
-      default: "collectionblock",
+    buttonLabel: Type.String({
+      description:
+        "Clicking this button will open the main collection. You can’t change its destination.",
+      maxLength: 50,
+      title: "Button text",
     }),
     collectionReferenceLink: Type.String({
-      title: "Collection",
       description: "The collection to display pages from",
       format: COLLECTION_DROPDOWN_FORMAT,
       pattern: REF_INTERNAL_HREF_PATTERN,
+      title: "Collection",
     }),
-    // TODO: Add the option to enable/disable the custom title and description as a whole
+    // NOTE: Add the option to enable/disable the custom title and description as a whole
     // For now, we just assume that they will take effect if truthy
-    customTitle: Type.Optional(
-      Type.String({
-        title: "Custom title",
-      }),
-    ),
     customDescription: Type.Optional(
       Type.String({
         title: "Custom description",
       }),
     ),
-    displayThumbnail: Type.Boolean({
-      title: "Display thumbnail of all pages",
-      default: true,
-    }),
+    customTitle: Type.Optional(
+      Type.String({
+        title: "Custom title",
+      }),
+    ),
     displayCategory: Type.Boolean({
-      title: "Display category of all pages",
       default: true,
+      title: "Display category of all pages",
     }),
-    buttonLabel: Type.String({
-      title: "Button text",
-      maxLength: 50,
-      description:
-        "Clicking this button will open the main collection. You can’t change its destination.",
+    displayThumbnail: Type.Boolean({
+      default: true,
+      title: "Display thumbnail of all pages",
+    }),
+    type: Type.Literal("collectionblock", {
+      default: "collectionblock",
     }),
   },
   {

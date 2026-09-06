@@ -24,12 +24,18 @@ export const ImageContainer = ({
   const [isFixed, setIsFixed] = useState(false)
   const [shouldShowButton, setShouldShowButton] = useState(false)
 
+  // oxlint-disable-next-line react-doctor/effect-needs-cleanup -- SSR guard returns noop cleanup before listeners are registered
   useEffect(() => {
-    // to not render during static site generation on the server
-    if (globalThis.window == null) return
+    if (globalThis.window === undefined) {
+      return function noopCleanup() {
+        // noop
+      }
+    }
 
     const handleScroll = () => {
-      if (!imageRef.current) return
+      if (!imageRef.current) {
+        return
+      }
 
       const imageRect = imageRef.current.getBoundingClientRect()
 
@@ -64,7 +70,8 @@ export const ImageContainer = ({
         width="100%"
         className="aspect-square max-h-[60rem] w-full object-cover object-center md:aspect-[2/1]"
         assetsBaseUrl={assetsBaseUrl}
-        lazyLoading={false} // hero is always above the fold
+        // hero is always above the fold
+        lazyLoading={false}
       />
       {shouldShowButton && <ScrollForMoreButton isFixed={isFixed} />}
     </div>

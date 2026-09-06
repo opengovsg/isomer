@@ -18,8 +18,8 @@ describe("normalizeColspan", () => {
     [1, 1],
     [64, 64],
     [65, 64],
-    [99999999, MAX_TABLE_COLUMNS],
-    [4294967296, MAX_TABLE_COLUMNS],
+    [99_999_999, MAX_TABLE_COLUMNS],
+    [4_294_967_296, MAX_TABLE_COLUMNS],
   ] as const)("normalizes %j to %i", (value, expected) => {
     expect(normalizeColspan(value)).toBe(expected)
   })
@@ -37,7 +37,7 @@ describe("normalizeRowspan", () => {
     [65, 65],
     [64, 64],
     [1000, MAX_TABLE_ROWS],
-    [99999999, MAX_TABLE_ROWS],
+    [99_999_999, MAX_TABLE_ROWS],
   ] as const)("normalizes %j to %i", (value, expected) => {
     expect(normalizeRowspan(value)).toBe(expected)
   })

@@ -8,6 +8,7 @@ import {
 import { DynamicHeading } from "~/utils/DynamicHeading"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { LinkButton } from "../../internal/LinkButton"
 import { compoundStyles } from "./common"
@@ -15,6 +16,7 @@ import { InfoCardNoImage } from "./components/InfoCardNoImage"
 import { InfoCardWithFullImage } from "./components/InfoCardWithFullImage"
 import { InfoCardWithImage } from "./components/InfoCardWithImage"
 
+/* oxlint-disable typescript/no-unsafe-type-assertion -- variant switch narrows props per branch */
 type InfoCardsToRenderProps = Pick<
   InfoCardsProps,
   | "variant"
@@ -32,6 +34,7 @@ const InfoCardsToRender = (props: InfoCardsToRenderProps) => {
   switch (props.variant) {
     case CARDS_WITH_IMAGES: {
       // SAFETY: switch on variant narrows props to the cards-with-images branch
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- variant switch narrows InfoCardsProps
       const { cards } = props as Extract<
         InfoCardsProps,
         { variant: typeof CARDS_WITH_IMAGES }
@@ -50,6 +53,7 @@ const InfoCardsToRender = (props: InfoCardsToRenderProps) => {
     }
     case CARDS_WITHOUT_IMAGES: {
       // SAFETY: switch on variant narrows props to the cards-without-images branch
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- variant switch narrows InfoCardsProps
       const { cards } = props as Extract<
         InfoCardsProps,
         { variant: typeof CARDS_WITHOUT_IMAGES }
@@ -65,6 +69,7 @@ const InfoCardsToRender = (props: InfoCardsToRenderProps) => {
     }
     case CARDS_WITH_FULL_IMAGES: {
       // SAFETY: switch on variant narrows props to the cards-with-full-images branch
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- variant switch narrows InfoCardsProps
       const { cards } = props as Extract<
         InfoCardsProps,
         { variant: typeof CARDS_WITH_FULL_IMAGES }
@@ -113,11 +118,11 @@ export const InfoCards = ({
       id={id}
       className={compoundStyles.container({ layout: simplifiedLayout })}
     >
-      {(title || subtitle) && (
+      {(hasNonEmptyString(title) || hasNonEmptyString(subtitle)) && (
         <div
           className={compoundStyles.headingContainer({
-            layout: simplifiedLayout,
             imageStyle: cardVariant,
+            layout: simplifiedLayout,
             variant: cardVariant,
           })}
         >
@@ -128,7 +133,7 @@ export const InfoCards = ({
             {title}
           </DynamicHeading>
 
-          {subtitle && (
+          {hasNonEmptyString(subtitle) && (
             <p
               className={compoundStyles.headingSubtitle({
                 layout: simplifiedLayout,
@@ -157,7 +162,7 @@ export const InfoCards = ({
         />
       </div>
 
-      {!!url && !!label && (
+      {hasNonEmptyString(url) && hasNonEmptyString(label) && (
         <div className={compoundStyles.urlButtonContainer()}>
           <LinkButton
             href={getReferenceLinkHref(

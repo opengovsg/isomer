@@ -1,1 +1,1 @@
-export { FormSG } from "./FormSG"
+export { FormSG } from "./FormSg"

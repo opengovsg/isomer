@@ -3,6 +3,7 @@ import type { IsomerSitemap, IsomerSiteProps } from "~/types"
 import type { CollectionPagePageProps } from "~/types/page"
 import { getParsedDate } from "~/utils/getParsedDate"
 import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { getPillAndPlaintextTags } from "./getPillAndPlaintextTags"
 import { getTagsFromTagged } from "./getTagsFromTagged"
@@ -34,30 +35,33 @@ const getItemImage = ({
   }
 
   // If the item has an image, we will show the item's image
-  if (item.image?.src) {
+  if (hasNonEmptyString(item.image?.src)) {
     return item.image
   }
 
   switch (showThumbnail.fallback) {
-    case "logo":
+    case "logo": {
       return {
-        src: site.logoUrl,
         alt: `${site.siteName} site logo`,
         isContainNeeded: true,
+        src: site.logoUrl,
       }
-    case "first-image":
-      if (item.firstImage?.src) {
+    }
+    case "first-image": {
+      if (hasNonEmptyString(item.firstImage?.src)) {
         return item.firstImage
       }
 
       return {
-        src: site.logoUrl,
         alt: `${site.siteName} site logo`,
         isContainNeeded: true,
+        src: site.logoUrl,
       }
-    default:
+    }
+    default: {
       const _: never = showThumbnail.fallback
       return undefined
+    }
   }
 }
 
@@ -84,22 +88,22 @@ export const getCollectionItems = ({
   let currSitemap: IsomerSitemap = site.siteMap
   const permalinkParts = permalink.split("/")
 
-  for (let i = 2; i <= permalinkParts.length; i++) {
+  for (let i = 2; i <= permalinkParts.length; i += 1) {
     const currPermalink = permalinkParts.slice(0, i).join("/")
 
     if (!currSitemap.children) {
       return []
     }
 
-    const child = currSitemap.children.find(
-      (child) => child.permalink === currPermalink,
+    const sitemapChild = currSitemap.children.find(
+      (entry) => entry.permalink === currPermalink,
     )
 
-    if (!child) {
+    if (!sitemapChild) {
       return []
     }
 
-    currSitemap = child
+    currSitemap = sitemapChild
   }
 
   if (!currSitemap.children) {
@@ -125,58 +129,56 @@ export const getCollectionItems = ({
       showDate !== false && item.date !== undefined && item.date !== ""
         ? getParsedDate(item.date)
         : undefined
-    const image = getItemImage({ showThumbnail, item, site })
+    const image = getItemImage({ item, showThumbnail, site })
     const { pillTags, plaintextTags } = getPillAndPlaintextTags(
       item.tagged,
       tagCategories,
     )
 
     const baseItem = {
-      type: "collectionCard" as const,
-      id: item.permalink,
       date,
-      lastModified: item.lastModified,
-      plaintextTags,
-      title: item.title,
       description: item.summary,
+      id: item.permalink,
       image,
-      isContainNeeded: image?.isContainNeeded || false,
+      isContainNeeded: image?.isContainNeeded === true,
+      lastModified: item.lastModified,
+      pillTags,
+      plaintextTags,
       site,
-      // NOTE: `tags` no longer falls back to the legacy `item.tags` field — Collection
-      // Items are expected to carry `tagged` + the parent's `tagCategories` going forward.
       tags:
         tagCategories && item.tagged
           ? getTagsFromTagged(item.tagged, tagCategories)
           : undefined,
-      pillTags,
+      title: item.title,
+      type: "collectionCard" as const,
     }
 
     if (item.layout === "file") {
       return {
         ...baseItem,
-        variant: "file",
-        url: item.ref,
         fileDetails: item.fileDetails,
+        url: item.ref,
+        variant: "file",
       }
     } else if (item.layout === "link") {
       return {
         ...baseItem,
-        variant: "link",
         url: item.ref,
+        variant: "link",
       }
     }
 
     return {
       ...baseItem,
-      variant: "article",
       url: item.permalink,
+      variant: "article",
     }
   }) satisfies AllCardProps[]
 
   return sortCollectionItems({
     items: transformedItems,
-    sortOrder,
     sortBy,
     sortDirection,
+    sortOrder,
   })
 }

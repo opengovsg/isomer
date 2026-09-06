@@ -9,10 +9,9 @@ interface TitleProps {
   headingLevel: number
 }
 
-export const Title = ({ title, isExternalLink, headingLevel }: TitleProps) => {
-  return isExternalLink ? (
+export const Title = ({ title, isExternalLink, headingLevel }: TitleProps) =>
+  isExternalLink ? (
     <ExternalLinkTitle title={title} headingLevel={headingLevel} />
   ) : (
     <InternalLinkTitle title={title} headingLevel={headingLevel} />
   )
-}

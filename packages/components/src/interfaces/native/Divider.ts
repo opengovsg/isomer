@@ -7,9 +7,9 @@ export const DividerSchema = Type.Object(
   },
   {
     $id: "components-native-divider",
-    title: "Divider component",
     description:
       "A horizontal rule that serves as a divider to separate content",
+    title: "Divider component",
   },
 )
 

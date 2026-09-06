@@ -2,6 +2,7 @@ import { createElement } from "react"
 import { InfopicVariants } from "~/interfaces/complex/Infopic"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import type { InfopicProps } from "../types"
 import { LinkButton } from "../../../internal/LinkButton"
@@ -23,18 +24,19 @@ export const FullInfopic = ({
 }: FullInfopicProps) => {
   const Tag = getHeadingTag(headingLevel)
   const compoundStyles = infopicStyles({
+    colorScheme: "inverse",
     isTextOnRight,
     variant: InfopicVariants.Full.value,
-    colorScheme: "inverse",
   })
-  const hasLinkButton = !!buttonLabel && !!buttonUrl
+  const hasLinkButton =
+    hasNonEmptyString(buttonLabel) && hasNonEmptyString(buttonUrl)
 
   return (
     <section
       style={{
         backgroundImage: `url('${imageSrc}')`,
-        backgroundSize: "cover",
         backgroundPosition: "center",
+        backgroundSize: "cover",
       }}
       id={id}
     >

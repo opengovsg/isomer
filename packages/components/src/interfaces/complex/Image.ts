@@ -15,15 +15,14 @@ export const generateImageSrcSchema = ({
   description?: string
   allowedMimeTypeMappings?: Record<string, string>
   maxSizeInBytes?: number
-}) => {
-  return Type.String({
-    title,
-    format: "image",
-    description,
+}) =>
+  Type.String({
     allowedMimeTypeMappings,
+    description,
+    format: "image",
     maxSizeInBytes,
+    title,
   })
-}
 
 export const ImageSrcSchema = generateImageSrcSchema({})
 
@@ -34,27 +33,25 @@ export const ALT_TEXT_REGEX_PATTERN =
   "^(?=.*\\S)(?!(?:[Ii][Mm][Aa][Gg][Ee]|[Pp][Ii][Cc][Tt][Uu][Rr][Ee]|[Pp][Hh][Oo][Tt][Oo]|[Ll][Oo][Gg][Oo]|[Ss][Cc][Rr][Ee][Ee][Nn][Ss][Hh][Oo][Tt]|[Gg][Rr][Aa][Pp][Hh]|[Cc][Hh][Aa][Rr][Tt]|[Dd][Ii][Aa][Gg][Rr][Aa][Mm]|[Ii][Cc][Oo][Nn])$).*$"
 
 export const AltTextSchema = Type.String({
-  title: "Alternate text",
   description:
     "Add a descriptive text so that visually impaired users can understand your image",
-  pattern: ALT_TEXT_REGEX_PATTERN,
   errorMessage: {
     pattern:
       "must be descriptive. It cannot be empty, contain only spaces, or use generic terms like 'image', 'logo', 'graph', etc.",
   },
+  pattern: ALT_TEXT_REGEX_PATTERN,
+  title: "Alternate text",
 })
 
 export const ImageSchema = Type.Object(
   {
-    type: Type.Literal("image", { default: "image" }),
-    src: ImageSrcSchema,
     alt: AltTextSchema,
     caption: Type.Optional(
       Type.String({
-        title: "Caption",
         description:
           "Describe the image or add attributions. To make sure your caption is readable, keep it under 250 characters.",
         format: "textarea",
+        title: "Caption",
       }),
     ),
     size: Type.Optional(
@@ -64,15 +61,17 @@ export const ImageSchema = Type.Object(
           Type.Literal("smaller", { title: "Small" }),
         ],
         {
-          title: "Image size",
+          default: "default",
           description:
             "On mobile, images will always fill up to the page width even if you choose “Small”.",
           format: ARRAY_RADIO_FORMAT,
+          title: "Image size",
           type: "string",
-          default: "default",
         },
       ),
     ),
+    src: ImageSrcSchema,
+    type: Type.Literal("image", { default: "image" }),
   },
   {
     title: "Image",

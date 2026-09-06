@@ -3,8 +3,26 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 import { LinkButton } from "./LinkButton"
 
 const meta: Meta<typeof LinkButton> = {
-  title: "Next/Internal Components/LinkButton",
+  argTypes: {
+    colorScheme: {
+      control: {
+        type: "select",
+      },
+      options: ["default", "inverse"],
+    },
+    variant: {
+      control: {
+        type: "select",
+      },
+      options: ["solid", "outline"],
+    },
+  },
   component: LinkButton,
+  parameters: {
+    themes: {
+      themeOverride: "Isomer Next",
+    },
+  },
   render: (args) => {
     // Define matrices for link types and sizes
     const links = ["/", "https://www.google.com"] as const
@@ -12,7 +30,7 @@ const meta: Meta<typeof LinkButton> = {
 
     // Generate all combinations
     const combinations = sizes.flatMap((size) =>
-      links.map((link) => ({ size, link })),
+      links.map((link) => ({ link, size })),
     )
 
     return (
@@ -25,25 +43,7 @@ const meta: Meta<typeof LinkButton> = {
       </div>
     )
   },
-  argTypes: {
-    colorScheme: {
-      options: ["default", "inverse"],
-      control: {
-        type: "select",
-      },
-    },
-    variant: {
-      options: ["solid", "outline"],
-      control: {
-        type: "select",
-      },
-    },
-  },
-  parameters: {
-    themes: {
-      themeOverride: "Isomer Next",
-    },
-  },
+  title: "Next/Internal Components/LinkButton",
 }
 export default meta
 type Story = StoryObj<typeof LinkButton>
@@ -69,19 +69,19 @@ export const OutlineVariant: Story = {
 }
 
 export const InverseDefaultVariant: Story = {
-  decorators: [
-    (storyFn) => <div className="bg-base-canvas-inverse p-6">{storyFn()}</div>,
-  ],
   args: {
     ...Default.args,
     colorScheme: "inverse",
   },
+  decorators: [
+    (storyFn) => <div className="bg-base-canvas-inverse p-6">{storyFn()}</div>,
+  ],
 }
 
 export const InverseOutlineVariant: Story = {
-  decorators: InverseDefaultVariant.decorators,
   args: {
     ...OutlineVariant.args,
     colorScheme: "inverse",
   },
+  decorators: InverseDefaultVariant.decorators,
 }

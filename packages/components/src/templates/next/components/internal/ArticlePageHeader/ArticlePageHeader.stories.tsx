@@ -4,14 +4,14 @@ import type { ArticlePageHeaderProps } from "~/interfaces"
 import { ArticlePageHeader } from "./ArticlePageHeader"
 
 const meta: Meta<ArticlePageHeaderProps> = {
-  title: "Next/Internal Components/ArticlePageHeader",
-  component: ArticlePageHeader,
   argTypes: {},
+  component: ArticlePageHeader,
   parameters: {
     themes: {
       themeOverride: "Isomer Next",
     },
   },
+  title: "Next/Internal Components/ArticlePageHeader",
 }
 export default meta
 type Story = StoryObj<typeof ArticlePageHeader>
@@ -34,12 +34,12 @@ const ARTICLE = {
       },
     ],
   },
-  plaintextTags: [{ category: "Category", selected: ["NParks Happenings"] }],
-  title:
-    "Man sentenced to 24 months' imprisonment for smuggling 34.7 kg of rhinoceros horns",
   date: "1 May 2024",
+  plaintextTags: [{ category: "Category", selected: ["NParks Happenings"] }],
   summary:
     "20 pieces of rhinoceros horns were found in two pieces of transit baggage bound for Laos. The 34.7 kg seizure is the largest seizure of rhinoceros horns in Singapore to date.",
+  title:
+    "Man sentenced to 24 months' imprisonment for smuggling 34.7 kg of rhinoceros horns",
 }
 
 export const SingleSummaryItem: Story = {

@@ -18,9 +18,9 @@ export const CategoryRefinementList = () => {
   const rows = EGAZETTE_CATEGORIES.map(({ value, displayLabel }) => {
     const match = itemsByValue.get(value)
     return {
-      value,
-      label: displayLabel,
       isRefined: match?.isRefined ?? false,
+      label: displayLabel,
+      value,
     }
   })
 
@@ -39,7 +39,9 @@ export const CategoryRefinementList = () => {
           key={row.value}
           className="w-fit cursor-pointer"
           value={row.value}
-          onChange={() => refine(row.value)}
+          onChange={() => {
+            refine(row.value)
+          }}
         >
           {row.label}
         </Checkbox>

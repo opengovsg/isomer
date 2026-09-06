@@ -15,68 +15,68 @@ describe("getTableColumnCount", () => {
     // Arrange
     const rows = [
       {
-        type: "tableRow" as const,
         content: [
           {
-            type: "tableHeader" as const,
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableHeader" as const,
           },
           {
-            type: "tableHeader" as const,
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableHeader" as const,
           },
           {
-            type: "tableHeader" as const,
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableHeader" as const,
           },
         ],
+        type: "tableRow" as const,
       },
       {
-        type: "tableRow" as const,
         content: [
           {
-            type: "tableCell" as const,
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableCell" as const,
           },
           {
-            type: "tableCell" as const,
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableCell" as const,
           },
           {
-            type: "tableCell" as const,
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableCell" as const,
           },
         ],
+        type: "tableRow" as const,
       },
     ]
 
@@ -88,69 +88,69 @@ describe("getTableColumnCount", () => {
     // Arrange
     const rows = [
       {
-        type: "tableRow" as const,
         content: [
           {
-            type: "tableHeader" as const,
             attrs: { colspan: 1, rowspan: 1 },
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableHeader" as const,
           },
           {
-            type: "tableHeader" as const,
             attrs: { colspan: 2, rowspan: 1 },
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableHeader" as const,
           },
         ],
+        type: "tableRow" as const,
       },
       {
-        type: "tableRow" as const,
         content: [
           {
-            type: "tableCell" as const,
             attrs: { colspan: 2, rowspan: 2 },
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableCell" as const,
           },
           {
-            type: "tableCell" as const,
             attrs: { colspan: 1, rowspan: 1 },
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableCell" as const,
           },
         ],
+        type: "tableRow" as const,
       },
       {
-        type: "tableRow" as const,
         content: [
           {
-            type: "tableCell" as const,
             attrs: { colspan: 1, rowspan: 1 },
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableCell" as const,
           },
         ],
+        type: "tableRow" as const,
       },
     ]
 
@@ -162,60 +162,60 @@ describe("getTableColumnCount", () => {
     // Arrange
     const rows = [
       {
-        type: "tableRow" as const,
         content: [
           {
-            type: "tableHeader" as const,
             attrs: { colspan: 4 },
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableHeader" as const,
           },
         ],
+        type: "tableRow" as const,
       },
       {
-        type: "tableRow" as const,
         content: [
           {
-            type: "tableCell" as const,
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableCell" as const,
           },
           {
-            type: "tableCell" as const,
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableCell" as const,
           },
           {
-            type: "tableCell" as const,
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableCell" as const,
           },
           {
-            type: "tableCell" as const,
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableCell" as const,
           },
         ],
+        type: "tableRow" as const,
       },
     ]
 
@@ -227,27 +227,27 @@ describe("getTableColumnCount", () => {
     // Arrange
     const rows = [
       {
-        type: "tableRow" as const,
         content: [
           {
-            type: "tableHeader" as const,
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableHeader" as const,
           },
           {
-            type: "tableHeader" as const,
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableHeader" as const,
           },
         ],
+        type: "tableRow" as const,
       },
     ]
 
@@ -258,41 +258,48 @@ describe("getTableColumnCount", () => {
   it("counts columns for many rows with a rowspan without scanning every earlier row", () => {
     // Arrange
     const paragraph = {
+      content: [{ text: "", type: "text" as const }],
       type: "paragraph" as const,
-      content: [{ type: "text" as const, text: "" }],
     }
+    const getRowContent = (rowIndex: number) => {
+      if (rowIndex === 0) {
+        return [
+          {
+            attrs: { colspan: 1, rowspan: 2 },
+            content: [paragraph],
+            type: "tableCell" as const,
+          },
+          {
+            content: [paragraph],
+            type: "tableCell" as const,
+          },
+        ]
+      }
+
+      if (rowIndex === 1) {
+        return [
+          {
+            content: [paragraph],
+            type: "tableCell" as const,
+          },
+        ]
+      }
+
+      return [
+        {
+          content: [paragraph],
+          type: "tableCell" as const,
+        },
+        {
+          content: [paragraph],
+          type: "tableCell" as const,
+        },
+      ]
+    }
+
     const rows = Array.from({ length: 200 }, (_, rowIndex) => ({
+      content: getRowContent(rowIndex),
       type: "tableRow" as const,
-      content:
-        rowIndex === 0
-          ? [
-              {
-                type: "tableCell" as const,
-                attrs: { colspan: 1, rowspan: 2 },
-                content: [paragraph],
-              },
-              {
-                type: "tableCell" as const,
-                content: [paragraph],
-              },
-            ]
-          : rowIndex === 1
-            ? [
-                {
-                  type: "tableCell" as const,
-                  content: [paragraph],
-                },
-              ]
-            : [
-                {
-                  type: "tableCell" as const,
-                  content: [paragraph],
-                },
-                {
-                  type: "tableCell" as const,
-                  content: [paragraph],
-                },
-              ],
     }))
 
     // Act / Assert
@@ -302,21 +309,21 @@ describe("getTableColumnCount", () => {
   it("resolves a large table with a rowspan without quadratic blowup", () => {
     // Arrange: 1000×1000 cells; row 0 cell 0 has rowspan 2. Naive rescans are ~10^9 ops.
     const paragraph = {
+      content: [{ text: "", type: "text" as const }],
       type: "paragraph" as const,
-      content: [{ type: "text" as const, text: "" }],
     }
     const rowCount = 1000
     const cellsPerRow = 1000
     const rows = Array.from({ length: rowCount }, (_, rowIndex) => ({
-      type: "tableRow" as const,
       content: Array.from({ length: cellsPerRow }, (_, cellIndex) => ({
-        type: "tableCell" as const,
         attrs:
           rowIndex === 0 && cellIndex === 0
             ? { colspan: 1, rowspan: 2 }
             : { colspan: 1, rowspan: 1 },
         content: [paragraph],
+        type: "tableCell" as const,
       })),
+      type: "tableRow" as const,
     }))
 
     // Act

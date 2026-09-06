@@ -5,13 +5,13 @@ export const CollectionSearch = ({
   placeholder,
   search,
   setSearch,
-}: CollectionSearchProps) => {
-  return (
-    <SearchField
-      aria-label={placeholder}
-      placeholder={placeholder}
-      value={search}
-      onChange={(value) => setSearch(value)}
-    />
-  )
-}
+}: CollectionSearchProps) => (
+  <SearchField
+    aria-label={placeholder}
+    placeholder={placeholder}
+    value={search}
+    onChange={(value) => {
+      setSearch(value)
+    }}
+  />
+)

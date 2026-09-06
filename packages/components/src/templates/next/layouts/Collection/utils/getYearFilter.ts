@@ -9,43 +9,40 @@ export const getYearFilter = (
   const years: Record<string, number> = {}
   let numberOfUndefinedDates = 0
 
-  items.forEach(({ date }) => {
-    if (date) {
-      const year = date.getFullYear().toString()
-      if (year in years && years[year]) {
-        years[year] += 1
-      } else {
-        years[year] = 1
-      }
-    } else {
+  for (const { date } of items) {
+    if (date === undefined || date === null) {
       numberOfUndefinedDates += 1
+    } else {
+      const year = date.getFullYear().toString()
+      years[year] = (years[year] ?? 0) + 1
     }
-  })
+  }
 
   const yearFilterItems = Object.entries(years)
     .map(([label, count]) => ({
+      count,
       id: label.toLowerCase(),
       label,
-      count,
     }))
-    .sort((a, b) => parseInt(b.label) - parseInt(a.label))
+    .toSorted(
+      (a, b) => Math.trunc(Number(b.label)) - Math.trunc(Number(a.label)),
+    )
+
+  let filterItems = yearFilterItems
+  if (yearFilterItems.length > 0 && numberOfUndefinedDates > 0) {
+    filterItems = [
+      ...yearFilterItems,
+      {
+        count: numberOfUndefinedDates,
+        id: NO_SPECIFIED_YEAR_FILTER_ID,
+        label: "Not specified",
+      },
+    ]
+  }
 
   return {
     id: FILTER_ID_YEAR,
+    items: filterItems,
     label: "Year",
-    // do not show "not specified" option if all items have undefined dates
-    items:
-      yearFilterItems.length === 0
-        ? []
-        : numberOfUndefinedDates === 0
-          ? yearFilterItems
-          : [
-              ...yearFilterItems,
-              {
-                id: NO_SPECIFIED_YEAR_FILTER_ID,
-                label: "Not specified",
-                count: numberOfUndefinedDates,
-              },
-            ],
   }
 }

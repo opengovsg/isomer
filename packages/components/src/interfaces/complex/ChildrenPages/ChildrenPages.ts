@@ -7,28 +7,25 @@ import { CHILDREN_PAGES_LAYOUT_OPTIONS } from "./constants"
 
 export const ChildrenPagesSchema = Type.Object(
   {
-    type: Type.Literal("childrenpages", { default: "childrenpages" }),
-    variant: Type.Union(
-      [
-        Type.Literal(CHILDREN_PAGES_LAYOUT_OPTIONS.Boxes),
-        Type.Literal(CHILDREN_PAGES_LAYOUT_OPTIONS.Rows),
-      ],
-      {
-        title: "Layout",
-        format: "childrenpages",
-        default: CHILDREN_PAGES_LAYOUT_OPTIONS.Rows,
-      },
+    // NOTE: We set this to `Optional` for now due to backcompat
+    // NOTE: Remove this chunk after we run the forward migration to
+    // add this property to all index pages
+    childrenPagesOrdering: Type.Optional(
+      Type.Array(Type.String(), {
+        default: [],
+        description: "Drag and drop pages to reorder them",
+        format: "childrenPagesOrdering",
+        title: "Ordering of Child pages",
+      }),
     ),
-    showSummary: Type.Boolean({
-      title: "Show summary of all child pages",
-      default: true,
-    }),
-    showThumbnail: Type.Boolean({
-      title: "Show thumbnail of all child pages",
-      description:
-        "Publish the child page for thumbnail changes to appear here. Pages without a thumbnail will show the site’s logo.",
-      default: false,
-    }),
+    imageFit: Type.Optional(ChildrenPagesImageFitSchema),
+    isHidden: Type.Optional(
+      Type.Boolean({
+        default: false,
+        // Hide from form editor UI
+        format: "hidden",
+      }),
+    ),
     maxColumns: Type.Optional(
       Type.Union(
         [
@@ -36,37 +33,41 @@ export const ChildrenPagesSchema = Type.Object(
           Type.Literal("3", { title: "3 columns" }),
         ],
         {
-          title: "Number of columns",
+          default: "2",
           description:
             "This only affects how the block appears on large screens",
-          default: "2",
           format: "childPagesCols",
+          title: "Number of columns",
         },
       ),
     ),
-    imageFit: Type.Optional(ChildrenPagesImageFitSchema),
-    isHidden: Type.Optional(
-      Type.Boolean({
-        default: false,
-        format: "hidden", // Hide from form editor UI
-      }),
-    ),
-    // NOTE: We set this to `Optional` for now due to backcompat
-    // TODO: Remove this chunk after we run the forward migration to
-    // add this property to all index pages
-    childrenPagesOrdering: Type.Optional(
-      Type.Array(Type.String(), {
-        default: [],
-        format: "childrenPagesOrdering",
-        title: "Ordering of Child pages",
-        description: "Drag and drop pages to reorder them",
-      }),
+    showSummary: Type.Boolean({
+      default: true,
+      title: "Show summary of all child pages",
+    }),
+    showThumbnail: Type.Boolean({
+      default: false,
+      description:
+        "Publish the child page for thumbnail changes to appear here. Pages without a thumbnail will show the site’s logo.",
+      title: "Show thumbnail of all child pages",
+    }),
+    type: Type.Literal("childrenpages", { default: "childrenpages" }),
+    variant: Type.Union(
+      [
+        Type.Literal(CHILDREN_PAGES_LAYOUT_OPTIONS.Boxes),
+        Type.Literal(CHILDREN_PAGES_LAYOUT_OPTIONS.Rows),
+      ],
+      {
+        default: CHILDREN_PAGES_LAYOUT_OPTIONS.Rows,
+        format: "childrenpages",
+        title: "Layout",
+      },
     ),
   },
   {
-    title: "Child pages",
     description:
       "The child page component is used to display information about pages inside this folder",
+    title: "Child pages",
   },
 )
 

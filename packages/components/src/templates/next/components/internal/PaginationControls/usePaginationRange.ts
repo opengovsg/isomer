@@ -1,8 +1,7 @@
 import { useMemo } from "react"
 
-const range = (start: number, end: number) => {
-  return Array.from({ length: end - start }, (_, i) => start + i)
-}
+const range = (start: number, end: number) =>
+  Array.from({ length: end - start }, (_, i) => start + i)
 
 interface UsePaginationRangeProps<T = string> {
   /**

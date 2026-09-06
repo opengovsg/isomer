@@ -9,73 +9,73 @@ export const denseThreeColumnTable: Pick<TableProps, "attrs" | "content"> = {
   },
   content: [
     {
-      type: "tableRow",
       content: [
         {
-          type: "tableHeader",
           content: [
             {
+              content: [{ text: "Year", type: "text" }],
               type: "paragraph",
-              content: [{ type: "text", text: "Year" }],
             },
           ],
+          type: "tableHeader",
         },
         {
-          type: "tableHeader",
           content: [
             {
+              content: [{ text: "Description", type: "text" }],
               type: "paragraph",
-              content: [{ type: "text", text: "Description" }],
             },
           ],
+          type: "tableHeader",
         },
         {
-          type: "tableHeader",
           content: [
             {
+              content: [{ text: "Agency", type: "text" }],
               type: "paragraph",
-              content: [{ type: "text", text: "Agency" }],
             },
           ],
+          type: "tableHeader",
         },
       ],
+      type: "tableRow",
     },
     {
-      type: "tableRow",
       content: [
         {
-          type: "tableCell",
           content: [
             {
+              content: [{ text: "2024", type: "text" }],
               type: "paragraph",
-              content: [{ type: "text", text: "2024" }],
             },
           ],
+          type: "tableCell",
         },
         {
-          type: "tableCell",
           content: [
             {
+              content: [{ text: longDescription, type: "text" }],
               type: "paragraph",
-              content: [{ type: "text", text: longDescription }],
             },
           ],
+          type: "tableCell",
         },
         {
-          type: "tableCell",
           content: [
             {
-              type: "paragraph",
               content: [
                 {
-                  type: "text",
                   text: "Ministry of Sustainability and the Environment",
+                  type: "text",
                 },
               ],
+              type: "paragraph",
             },
           ],
+          type: "tableCell",
         },
       ],
+      type: "tableRow",
     },
   ],
 }

@@ -5,12 +5,12 @@ import { Type } from "@sinclair/typebox"
 import { CalloutProseSchema } from "../native/Prose"
 
 const CALLOUT_VARIANT_OPTIONS = {
+  GoodToKnow: "goodToKnow",
   Info: "info",
   Information: "information",
-  GoodToKnow: "goodToKnow",
-  Warning: "warning",
-  Urgent: "urgent",
   Note: "note",
+  Urgent: "urgent",
+  Warning: "warning",
 } as const
 
 export type CalloutVariant =
@@ -20,49 +20,49 @@ export const DEFAULT_CALLOUT_VARIANT = CALLOUT_VARIANT_OPTIONS.Information
 
 export const CalloutSchema = Type.Object(
   {
+    content: CalloutProseSchema,
     type: Type.Literal("callout", { default: "callout" }),
     variant: Type.Optional(
       Type.Unsafe<CalloutVariant>({
+        format: "image-radio/1col",
         oneOf: [
           {
             const: CALLOUT_VARIANT_OPTIONS.Information,
-            title: "Information",
             image: "callout/information",
+            title: "Information",
           },
           {
             const: CALLOUT_VARIANT_OPTIONS.GoodToKnow,
-            title: "Good to know",
             image: "callout/goodToKnow",
+            title: "Good to know",
           },
           {
             const: CALLOUT_VARIANT_OPTIONS.Warning,
-            title: "Warning",
             image: "callout/warning",
+            title: "Warning",
           },
           {
             const: CALLOUT_VARIANT_OPTIONS.Urgent,
-            title: "Urgent",
             image: "callout/urgent",
+            title: "Urgent",
           },
           {
             const: CALLOUT_VARIANT_OPTIONS.Note,
-            title: "Note",
             image: "callout/note",
+            title: "Note",
           },
         ],
-        title: "Message type",
         // NOTE: intentionally no `default` here — Studio runs AJV with
         // `useDefaults: true`, which would write the default into existing
         // pages on open and mark them dirty. The renderer and the image-radio
         // control both fall back to the first option for display instead.
-        format: "image-radio/1col",
+        title: "Message type",
       }),
     ),
-    content: CalloutProseSchema,
   },
   {
-    title: "Callout",
     description: "A component that highlights important information",
+    title: "Callout",
   },
 )
 

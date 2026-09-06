@@ -10,14 +10,14 @@ interface Copywriting {
   noResultsSubtitle: string
 }
 export const COPYWRITING_MAPPING = {
-  partialMatch: {
-    searchbarPlaceholder: "Enter a search term",
-    noResultsSubtitle:
-      "Check if you have a spelling error or try a different search term.",
-  },
   fullTextMatch: {
-    searchbarPlaceholder: "Type a whole word to search this table",
     noResultsSubtitle:
       "Check for spelling, or type the whole word, e.g. 'water' instead of 'w'.",
+    searchbarPlaceholder: "Type a whole word to search this table",
+  },
+  partialMatch: {
+    noResultsSubtitle:
+      "Check if you have a spelling error or try a different search term.",
+    searchbarPlaceholder: "Enter a search term",
   },
 } as const satisfies Record<string, Copywriting>

@@ -1,11 +1,12 @@
 import type { ButtonProps } from "~/interfaces"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { LinkButton } from "../../internal/LinkButton"
 
 const ALIGNMENT_STYLES = {
-  left: "justify-start",
   center: "justify-center",
+  left: "justify-start",
 } as const
 
 export const Button = ({
@@ -16,7 +17,9 @@ export const Button = ({
   secondaryButtonUrl,
   site,
 }: ButtonProps) => {
-  const hasSecondaryCTA = !!secondaryButtonLabel && !!secondaryButtonUrl
+  const hasSecondaryCTA =
+    hasNonEmptyString(secondaryButtonLabel) &&
+    hasNonEmptyString(secondaryButtonUrl)
 
   return (
     <div

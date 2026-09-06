@@ -11,17 +11,17 @@ import { withChromaticModes } from "@isomer/storybook-config"
 import { DatabaseLayout } from "./Database"
 
 const meta: Meta<typeof DatabaseLayout> = {
-  title: "Next/Layouts/Database",
-  component: DatabaseLayout,
   argTypes: {},
-  tags: ["!autodocs"],
+  component: DatabaseLayout,
   parameters: {
-    layout: "fullscreen",
     chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
+    layout: "fullscreen",
     themes: {
       themeOverride: "Isomer Next",
     },
   },
+  tags: ["!autodocs"],
+  title: "Next/Layouts/Database",
 }
 export default meta
 type Story = StoryObj<typeof DatabaseLayout>
@@ -32,108 +32,407 @@ const generateArgs = ({
 }: {
   database: DatabasePageSchemaType["page"]["database"]
   content?: DatabasePageSchemaType["content"]
-}): DatabasePageSchemaType => {
-  return {
-    layout: "database",
-    site: generateSiteConfig({
-      siteMap: {
-        id: "1",
-        title: "Isomer Next",
-        permalink: "/",
-        lastModified: "",
-        layout: "homepage",
-        summary: "",
-        children: [
-          {
-            id: "2",
-            title: "Parent page",
-            permalink: "/parent",
-            lastModified: "",
-            layout: "content",
-            summary: "",
-            children: [
-              {
-                id: "3",
-                title: "Irrationality",
-                permalink: "/parent/rationality",
-                lastModified: "",
-                layout: "content",
-                summary: "",
-                children: [
-                  {
-                    id: "4",
-                    title: "For Individuals",
-                    permalink: "/parent/rationality/child-page-2",
-                    lastModified: "",
-                    layout: "content",
-                    summary: "",
-                  },
-                  {
-                    id: "5",
-                    title: "Steven Pinker's Rationality",
-                    permalink: "/parent/rationality/child-page-2",
-                    lastModified: "",
-                    layout: "content",
-                    summary: "",
-                  },
-                ],
-              },
-              {
-                id: "6",
-                title: "Sibling",
-                permalink: "/parent/sibling",
-                lastModified: "",
-                layout: "content",
-                summary: "",
-                children: [
-                  {
-                    id: "7",
-                    title: "Child that should not appear",
-                    permalink: "/parent/sibling/child-page-2",
-                    lastModified: "",
-                    layout: "content",
-                    summary: "",
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            id: "8",
-            title: "Aunt/Uncle that should not appear",
-            permalink: "/aunt-uncle",
-            lastModified: "",
-            layout: "content",
-            summary: "",
-          },
-        ],
-      },
-    }),
-    meta: {
-      description: "A Next.js starter for Isomer",
+}): DatabasePageSchemaType => ({
+  content,
+  layout: "database",
+  meta: {
+    description: "A Next.js starter for Isomer",
+  },
+  page: {
+    contentPageHeader: {
+      buttonLabel: "Submit a proposal",
+      buttonUrl: "/submit-proposal",
+      showThumbnail: false,
+      summary:
+        "Steven Pinker's exploration of rationality delves into the intricacies of human cognition, shedding light on the mechanisms behind our decision-making processes. Through empirical research and insightful analysis, Pinker illuminates the rationality that underpins human behavior, challenging conventional wisdom and offering new perspectives on the rational mind.",
     },
-    page: {
-      permalink: "/parent/rationality",
-      title: "Irrationality",
-      lastModified: "2024-05-02T14:12:57.160Z",
-      contentPageHeader: {
-        showThumbnail: false,
-        summary:
-          "Steven Pinker's exploration of rationality delves into the intricacies of human cognition, shedding light on the mechanisms behind our decision-making processes. Through empirical research and insightful analysis, Pinker illuminates the rationality that underpins human behavior, challenging conventional wisdom and offering new perspectives on the rational mind.",
-        buttonLabel: "Submit a proposal",
-        buttonUrl: "/submit-proposal",
-      },
-      database: database,
+    database,
+    lastModified: "2024-05-02T14:12:57.160Z",
+    permalink: "/parent/rationality",
+    title: "Irrationality",
+  },
+  site: generateSiteConfig({
+    siteMap: {
+      children: [
+        {
+          children: [
+            {
+              children: [
+                {
+                  id: "4",
+                  lastModified: "",
+                  layout: "content",
+                  permalink: "/parent/rationality/child-page-2",
+                  summary: "",
+                  title: "For Individuals",
+                },
+                {
+                  id: "5",
+                  lastModified: "",
+                  layout: "content",
+                  permalink: "/parent/rationality/child-page-2",
+                  summary: "",
+                  title: "Steven Pinker's Rationality",
+                },
+              ],
+              id: "3",
+              lastModified: "",
+              layout: "content",
+              permalink: "/parent/rationality",
+              summary: "",
+              title: "Irrationality",
+            },
+            {
+              children: [
+                {
+                  id: "7",
+                  lastModified: "",
+                  layout: "content",
+                  permalink: "/parent/sibling/child-page-2",
+                  summary: "",
+                  title: "Child that should not appear",
+                },
+              ],
+              id: "6",
+              lastModified: "",
+              layout: "content",
+              permalink: "/parent/sibling",
+              summary: "",
+              title: "Sibling",
+            },
+          ],
+          id: "2",
+          lastModified: "",
+          layout: "content",
+          permalink: "/parent",
+          summary: "",
+          title: "Parent page",
+        },
+        {
+          id: "8",
+          lastModified: "",
+          layout: "content",
+          permalink: "/aunt-uncle",
+          summary: "",
+          title: "Aunt/Uncle that should not appear",
+        },
+      ],
+      id: "1",
+      lastModified: "",
+      layout: "homepage",
+      permalink: "/",
+      summary: "",
+      title: "Isomer Next",
     },
-    content: content,
-  }
-}
+  }),
+})
 
 export const Default: Story = {
-  name: "Native Searchable Table",
   args: generateArgs({
+    content: [
+      {
+        content: [
+          {
+            attrs: {
+              id: "section1",
+              level: 2,
+            },
+            content: [
+              {
+                text: "What does the Irrationality Principle support?",
+                type: "text",
+              },
+            ],
+            type: "heading",
+          },
+        ],
+        type: "prose",
+      },
+      {
+        content: {
+          content: [
+            {
+              content: [
+                {
+                  text: `As of December 1, 2024, the scheme is being reviewed for new criteria in 2025. To view the new criteria please refer to <a href="/faq">New Idea Scheme Proposal</a> while it is being updated.`,
+                  type: "text",
+                },
+              ],
+              type: "paragraph",
+            },
+          ],
+          type: "prose",
+        },
+        type: "callout",
+      },
+      {
+        content: [
+          {
+            content: [
+              {
+                text: "Our choices become a tangled web of contradictions, driven by instinct rather than careful deliberation. We cling to superstitions and fallacies, seeking comfort in the irrationality that offers solace amidst life's uncertainties. It is a paradoxical dance, where the irrational often masquerades as wisdom, leading us down paths fraught with confusion and folly. Yet, in embracing our irrationality, we find a peculiar sort of freedom, liberated from the constraints of logic and reason. We navigate the world with a blend of intuition and irrationality, embracing the chaos that defines the human experience. And so, in the tapestry of existence, irrationality weaves its intricate threads, adding depth and complexity to the fabric of our lives.",
+                type: "text",
+              },
+            ],
+            type: "paragraph",
+          },
+          {
+            content: [
+              {
+                content: [
+                  {
+                    content: [
+                      {
+                        text: "Steven Pinker's Rationality: An Overview Steven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An Overview",
+                        type: "text",
+                      },
+                    ],
+                    type: "paragraph",
+                  },
+                ],
+                type: "listItem",
+              },
+              {
+                content: [
+                  {
+                    content: [
+                      {
+                        text: "Steven Pinker's Rationality: An Overview Steven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An Overview",
+                        type: "text",
+                      },
+                    ],
+                    type: "paragraph",
+                  },
+                  {
+                    content: [
+                      {
+                        content: [
+                          {
+                            content: [
+                              {
+                                text: "Like this, you might have a list of equipments to bring to the luncheon",
+                                type: "text",
+                              },
+                            ],
+                            type: "paragraph",
+                          },
+                          {
+                            content: [
+                              {
+                                content: [
+                                  {
+                                    content: [
+                                      { text: "Luncheon meat", type: "text" },
+                                    ],
+                                    type: "paragraph",
+                                  },
+                                ],
+                                type: "listItem",
+                              },
+                              {
+                                content: [
+                                  {
+                                    content: [{ text: "Spam", type: "text" }],
+                                    type: "paragraph",
+                                  },
+                                  {
+                                    content: [
+                                      {
+                                        content: [
+                                          {
+                                            content: [
+                                              {
+                                                text: "Another level below",
+                                                type: "text",
+                                              },
+                                            ],
+                                            type: "paragraph",
+                                          },
+                                        ],
+                                        type: "listItem",
+                                      },
+                                      {
+                                        content: [
+                                          {
+                                            content: [
+                                              {
+                                                text: "This is very deep",
+                                                type: "text",
+                                              },
+                                            ],
+                                            type: "paragraph",
+                                          },
+                                        ],
+                                        type: "listItem",
+                                      },
+                                    ],
+                                    type: "unorderedList",
+                                  },
+                                ],
+                                type: "listItem",
+                              },
+                              {
+                                content: [
+                                  {
+                                    content: [{ text: "hello", type: "text" }],
+                                    type: "paragraph",
+                                  },
+                                ],
+                                type: "listItem",
+                              },
+                            ],
+                            type: "unorderedList",
+                          },
+                        ],
+                        type: "listItem",
+                      },
+                      {
+                        content: [
+                          {
+                            content: [{ text: "Back out again", type: "text" }],
+                            type: "paragraph",
+                          },
+                        ],
+                        type: "listItem",
+                      },
+                    ],
+                    type: "unorderedList",
+                  },
+                ],
+                type: "listItem",
+              },
+              {
+                content: [
+                  {
+                    content: [
+                      {
+                        text: "Through Pinker's exploration, readers gain a deeper appreciation for the complexities and nuances of human rationality. (Engaging for individuals curious about the intricacies of human behavior and decision-making processes.)",
+                        type: "text",
+                      },
+                    ],
+                    type: "paragraph",
+                  },
+                ],
+                type: "listItem",
+              },
+            ],
+            type: "unorderedList",
+          },
+          {
+            attrs: {
+              id: "section2",
+              level: 2,
+            },
+            content: [
+              { text: "Checklist for sheer irrationality", type: "text" },
+            ],
+            type: "heading",
+          },
+          {
+            attrs: {
+              id: "section1",
+              level: 3,
+            },
+            content: [{ text: "If you are a small business", type: "text" }],
+            type: "heading",
+          },
+          {
+            content: [{ text: "Your business must have:", type: "text" }],
+            type: "paragraph",
+          },
+          {
+            content: [
+              {
+                content: [
+                  {
+                    content: [
+                      {
+                        text: "Through Pinker's exploration, readers gain a deeper appreciation for the complexities and nuances of human rationality. (Engaging for individuals curious about the intricacies of human behavior and decision-making processes.)",
+                        type: "text",
+                      },
+                    ],
+                    type: "paragraph",
+                  },
+                ],
+                type: "listItem",
+              },
+              {
+                content: [
+                  {
+                    content: [
+                      {
+                        text: "(Suitable for those interested in the interdisciplinary study of cognitive science and psychology.)",
+                        type: "text",
+                      },
+                    ],
+                    type: "paragraph",
+                  },
+                ],
+                type: "listItem",
+              },
+              {
+                content: [
+                  {
+                    content: [
+                      {
+                        text: "Practical applications of rationality in daily life are elucidated by Pinker, offering actionable insights for better decision-making. (Beneficial for individuals seeking practical strategies to improve their decision-making processes.)",
+                        type: "text",
+                      },
+                    ],
+                    type: "paragraph",
+                  },
+                ],
+                type: "listItem",
+              },
+            ],
+            type: "unorderedList",
+          },
+          {
+            content: [
+              {
+                marks: [
+                  {
+                    attrs: {
+                      href: "[resource:1:8]",
+                    },
+                    type: "link",
+                  },
+                ],
+                text: "This is yet another paragraph",
+                type: "text",
+              },
+            ],
+            type: "paragraph",
+          },
+          {
+            attrs: {
+              id: "section3",
+              level: 4,
+            },
+            content: [{ text: "But then, if you are listed", type: "text" }],
+            type: "heading",
+          },
+          {
+            content: [
+              {
+                text: "In the realm of human cognition, irrationality often reigns supreme, defying the logic that ostensibly governs our decisions and actions. It manifests in myriad ways, from the subtle biases that influence our perceptions to the outright contradictions that confound our rational minds. We find ourselves ensnared in cognitive dissonance, grappling with conflicting beliefs and emotions that lead us astray from the path of reason. Despite our best intentions, we succumb to the allure of irrationality, surrendering to the whims of impulse and emotion. Our choices become a tangled web of contradictions, driven by instinct rather than careful deliberation. We cling to superstitions and fallacies, seeking comfort in the irrationality that offers solace amidst life's uncertainties. It is a paradoxical dance, where the irrational often masquerades as wisdom, leading us down paths fraught with confusion and folly. Yet, in embracing our irrationality, we find a peculiar sort of freedom, liberated from the constraints of logic and reason. We navigate the world with a blend of intuition and irrationality, embracing the chaos that defines the human experience. And so, in the tapestry of existence, irrationality weaves its intricate threads, adding depth and complexity to the fabric of our lives.",
+                type: "text",
+              },
+            ],
+            type: "paragraph",
+          },
+        ],
+        type: "prose",
+      },
+      {
+        alt: "alt",
+        caption: "A caption",
+        size: "smaller",
+        src: "/placeholder_no_image.png",
+        type: "image",
+      },
+    ],
     database: {
-      title: "The Cancer Drug List (CDL)",
       headers: [
         "Header",
         "Header",
@@ -340,311 +639,10 @@ export const Default: Story = {
           "Cell copy",
         ],
       ],
+      title: "The Cancer Drug List (CDL)",
     },
-    content: [
-      {
-        type: "prose",
-        content: [
-          {
-            type: "heading",
-            attrs: {
-              id: "section1",
-              level: 2,
-            },
-            content: [
-              {
-                type: "text",
-                text: "What does the Irrationality Principle support?",
-              },
-            ],
-          },
-        ],
-      },
-      {
-        type: "callout",
-        content: {
-          type: "prose",
-          content: [
-            {
-              type: "paragraph",
-              content: [
-                {
-                  type: "text",
-                  text: `As of December 1, 2024, the scheme is being reviewed for new criteria in 2025. To view the new criteria please refer to <a href="/faq">New Idea Scheme Proposal</a> while it is being updated.`,
-                },
-              ],
-            },
-          ],
-        },
-      },
-      {
-        type: "prose",
-        content: [
-          {
-            type: "paragraph",
-            content: [
-              {
-                type: "text",
-                text: "Our choices become a tangled web of contradictions, driven by instinct rather than careful deliberation. We cling to superstitions and fallacies, seeking comfort in the irrationality that offers solace amidst life's uncertainties. It is a paradoxical dance, where the irrational often masquerades as wisdom, leading us down paths fraught with confusion and folly. Yet, in embracing our irrationality, we find a peculiar sort of freedom, liberated from the constraints of logic and reason. We navigate the world with a blend of intuition and irrationality, embracing the chaos that defines the human experience. And so, in the tapestry of existence, irrationality weaves its intricate threads, adding depth and complexity to the fabric of our lives.",
-              },
-            ],
-          },
-          {
-            type: "unorderedList",
-            content: [
-              {
-                type: "listItem",
-                content: [
-                  {
-                    type: "paragraph",
-                    content: [
-                      {
-                        type: "text",
-                        text: "Steven Pinker's Rationality: An Overview Steven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An Overview",
-                      },
-                    ],
-                  },
-                ],
-              },
-              {
-                type: "listItem",
-                content: [
-                  {
-                    type: "paragraph",
-                    content: [
-                      {
-                        type: "text",
-                        text: "Steven Pinker's Rationality: An Overview Steven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An Overview",
-                      },
-                    ],
-                  },
-                  {
-                    type: "unorderedList",
-                    content: [
-                      {
-                        type: "listItem",
-                        content: [
-                          {
-                            type: "paragraph",
-                            content: [
-                              {
-                                type: "text",
-                                text: "Like this, you might have a list of equipments to bring to the luncheon",
-                              },
-                            ],
-                          },
-                          {
-                            type: "unorderedList",
-                            content: [
-                              {
-                                type: "listItem",
-                                content: [
-                                  {
-                                    type: "paragraph",
-                                    content: [
-                                      { type: "text", text: "Luncheon meat" },
-                                    ],
-                                  },
-                                ],
-                              },
-                              {
-                                type: "listItem",
-                                content: [
-                                  {
-                                    type: "paragraph",
-                                    content: [{ type: "text", text: "Spam" }],
-                                  },
-                                  {
-                                    type: "unorderedList",
-                                    content: [
-                                      {
-                                        type: "listItem",
-                                        content: [
-                                          {
-                                            type: "paragraph",
-                                            content: [
-                                              {
-                                                type: "text",
-                                                text: "Another level below",
-                                              },
-                                            ],
-                                          },
-                                        ],
-                                      },
-                                      {
-                                        type: "listItem",
-                                        content: [
-                                          {
-                                            type: "paragraph",
-                                            content: [
-                                              {
-                                                type: "text",
-                                                text: "This is very deep",
-                                              },
-                                            ],
-                                          },
-                                        ],
-                                      },
-                                    ],
-                                  },
-                                ],
-                              },
-                              {
-                                type: "listItem",
-                                content: [
-                                  {
-                                    type: "paragraph",
-                                    content: [{ type: "text", text: "hello" }],
-                                  },
-                                ],
-                              },
-                            ],
-                          },
-                        ],
-                      },
-                      {
-                        type: "listItem",
-                        content: [
-                          {
-                            type: "paragraph",
-                            content: [{ type: "text", text: "Back out again" }],
-                          },
-                        ],
-                      },
-                    ],
-                  },
-                ],
-              },
-              {
-                type: "listItem",
-                content: [
-                  {
-                    type: "paragraph",
-                    content: [
-                      {
-                        type: "text",
-                        text: "Through Pinker's exploration, readers gain a deeper appreciation for the complexities and nuances of human rationality. (Engaging for individuals curious about the intricacies of human behavior and decision-making processes.)",
-                      },
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            type: "heading",
-            attrs: {
-              id: "section2",
-              level: 2,
-            },
-            content: [
-              { type: "text", text: "Checklist for sheer irrationality" },
-            ],
-          },
-          {
-            type: "heading",
-            attrs: {
-              id: "section1",
-              level: 3,
-            },
-            content: [{ type: "text", text: "If you are a small business" }],
-          },
-          {
-            type: "paragraph",
-            content: [{ type: "text", text: "Your business must have:" }],
-          },
-          {
-            type: "unorderedList",
-            content: [
-              {
-                type: "listItem",
-                content: [
-                  {
-                    type: "paragraph",
-                    content: [
-                      {
-                        type: "text",
-                        text: "Through Pinker's exploration, readers gain a deeper appreciation for the complexities and nuances of human rationality. (Engaging for individuals curious about the intricacies of human behavior and decision-making processes.)",
-                      },
-                    ],
-                  },
-                ],
-              },
-              {
-                type: "listItem",
-                content: [
-                  {
-                    type: "paragraph",
-                    content: [
-                      {
-                        type: "text",
-                        text: "(Suitable for those interested in the interdisciplinary study of cognitive science and psychology.)",
-                      },
-                    ],
-                  },
-                ],
-              },
-              {
-                type: "listItem",
-                content: [
-                  {
-                    type: "paragraph",
-                    content: [
-                      {
-                        type: "text",
-                        text: "Practical applications of rationality in daily life are elucidated by Pinker, offering actionable insights for better decision-making. (Beneficial for individuals seeking practical strategies to improve their decision-making processes.)",
-                      },
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            type: "paragraph",
-            content: [
-              {
-                type: "text",
-                marks: [
-                  {
-                    type: "link",
-                    attrs: {
-                      href: "[resource:1:8]",
-                    },
-                  },
-                ],
-                text: "This is yet another paragraph",
-              },
-            ],
-          },
-          {
-            type: "heading",
-            attrs: {
-              id: "section3",
-              level: 4,
-            },
-            content: [{ type: "text", text: "But then, if you are listed" }],
-          },
-          {
-            type: "paragraph",
-            content: [
-              {
-                type: "text",
-                text: "In the realm of human cognition, irrationality often reigns supreme, defying the logic that ostensibly governs our decisions and actions. It manifests in myriad ways, from the subtle biases that influence our perceptions to the outright contradictions that confound our rational minds. We find ourselves ensnared in cognitive dissonance, grappling with conflicting beliefs and emotions that lead us astray from the path of reason. Despite our best intentions, we succumb to the allure of irrationality, surrendering to the whims of impulse and emotion. Our choices become a tangled web of contradictions, driven by instinct rather than careful deliberation. We cling to superstitions and fallacies, seeking comfort in the irrationality that offers solace amidst life's uncertainties. It is a paradoxical dance, where the irrational often masquerades as wisdom, leading us down paths fraught with confusion and folly. Yet, in embracing our irrationality, we find a peculiar sort of freedom, liberated from the constraints of logic and reason. We navigate the world with a blend of intuition and irrationality, embracing the chaos that defines the human experience. And so, in the tapestry of existence, irrationality weaves its intricate threads, adding depth and complexity to the fabric of our lives.",
-              },
-            ],
-          },
-        ],
-      },
-      {
-        type: "image",
-        src: "/placeholder_no_image.png",
-        size: "smaller",
-        alt: "alt",
-        caption: "A caption",
-      },
-    ],
   }),
+  name: "Native Searchable Table",
 }
 
 export const NoTitle: Story = {
@@ -670,7 +668,6 @@ export const NoTitle: Story = {
 export const Empty: Story = {
   args: generateArgs({
     database: {
-      title: "The Cancer Drug List (CDL)",
       headers: [
         "Header",
         "Header",
@@ -684,6 +681,7 @@ export const Empty: Story = {
         "Header",
       ],
       items: [],
+      title: "The Cancer Drug List (CDL)",
     },
   }),
 }
@@ -691,7 +689,6 @@ export const Empty: Story = {
 export const NoSearchResults: Story = {
   args: generateArgs({
     database: {
-      title: "The Cancer Drug List (CDL)",
       headers: [
         "Header",
         "Header",
@@ -898,13 +895,14 @@ export const NoSearchResults: Story = {
           "Cell copy",
         ],
       ],
+      title: "The Cancer Drug List (CDL)",
     },
   }),
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
 
     const searchElem = screen.getByRole("searchbox", {
-      name: /Search table/i,
+      name: /Search table/iu,
     })
 
     await expect(searchElem).toHaveAttribute(
@@ -923,60 +921,60 @@ export const NoSearchResults: Story = {
 }
 
 export const DGSSearchableTable: Story = {
-  name: "DGS Searchable Table",
   args: generateArgs({
     database: {
-      title: "Sample DGS Table",
       dataSource: {
-        type: "dgs",
         resourceId: DGS_SMALL_DATASET_RESOURCE_ID,
+        type: "dgs",
       },
+      title: "Sample DGS Table",
     },
   }),
+  name: "DGS Searchable Table",
 }
 
 export const DGSSearchableTableWithDefaultTitle: Story = {
-  name: "DGS Searchable Table (with default title)",
   args: generateArgs({
     database: {
       dataSource: {
-        type: "dgs",
         resourceId: DGS_SMALL_DATASET_RESOURCE_ID,
+        type: "dgs",
       },
     },
   }),
+  name: "DGS Searchable Table (with default title)",
 }
 
 export const DGSSearchableTableWithHeaders: Story = {
-  name: "DGS Searchable Table (with headers)",
   args: generateArgs({
     database: {
-      title: "Sample DGS Table",
       dataSource: {
-        type: "dgs",
         resourceId: DGS_SMALL_DATASET_RESOURCE_ID,
+        type: "dgs",
       },
       headers: [
-        { label: "Year", key: "year" },
-        { label: "University", key: "university" },
-        { label: "School", key: "school" },
-        { label: "Degree", key: "degree" },
-        { label: "Monthly Median", key: "gross_monthly_median" },
+        { key: "year", label: "Year" },
+        { key: "university", label: "University" },
+        { key: "school", label: "School" },
+        { key: "degree", label: "Degree" },
+        { key: "gross_monthly_median", label: "Monthly Median" },
       ],
+      title: "Sample DGS Table",
     },
   }),
+  name: "DGS Searchable Table (with headers)",
 }
 
 export const DGSSearchableTableWithFilters: Story = {
-  name: "DGS Searchable Table (with column filters)",
   args: generateArgs({
     database: {
-      title: "Graduate Employment by Year",
       dataSource: {
-        type: "dgs",
-        resourceId: DGS_SMALL_DATASET_RESOURCE_ID,
         filters: [{ fieldKey: "year", fieldValue: "2022" }],
+        resourceId: DGS_SMALL_DATASET_RESOURCE_ID,
+        type: "dgs",
       },
+      title: "Graduate Employment by Year",
     },
   }),
+  name: "DGS Searchable Table (with column filters)",
 }

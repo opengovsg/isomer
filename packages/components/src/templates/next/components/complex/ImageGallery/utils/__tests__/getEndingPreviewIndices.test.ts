@@ -7,58 +7,52 @@ describe("getEndingPreviewIndices", () => {
     const maxPreviewImages = 3
 
     it("should return all indices when there are fewer than or equal to the maximum number of preview images", () => {
-      // Arrange
       const cases = [
-        { numberOfImages: 0, expected: [] },
-        { numberOfImages: 1, expected: [0] },
-        { numberOfImages: 2, expected: [0, 1] },
-        { numberOfImages: 3, expected: [0, 1, 2] },
+        { expected: [], numberOfImages: 0 },
+        { expected: [0], numberOfImages: 1 },
+        { expected: [0, 1], numberOfImages: 2 },
+        { expected: [0, 1, 2], numberOfImages: 3 },
       ]
 
-      // Act & Assert
-      cases.forEach(({ numberOfImages, expected }) => {
+      for (const { numberOfImages, expected } of cases) {
         const result = getEndingPreviewIndices({
-          numberOfImages,
           maxPreviewImages,
+          numberOfImages,
         })
         expect(result).toEqual(expected)
-      })
+      }
     })
 
     it("should return the last N indices when there are more images than the maximum", () => {
-      // Arrange
       const cases = [
-        { numberOfImages: 5, expected: [2, 3, 4] },
-        { numberOfImages: 10, expected: [7, 8, 9] },
-        { numberOfImages: 20, expected: [17, 18, 19] },
+        { expected: [2, 3, 4], numberOfImages: 5 },
+        { expected: [7, 8, 9], numberOfImages: 10 },
+        { expected: [17, 18, 19], numberOfImages: 20 },
       ]
 
-      // Act & Assert
-      cases.forEach(({ numberOfImages, expected }) => {
+      for (const { numberOfImages, expected } of cases) {
         const result = getEndingPreviewIndices({
-          numberOfImages,
           maxPreviewImages,
+          numberOfImages,
         })
         expect(result).toEqual(expected)
-      })
+      }
     })
 
     it("should always return exactly the maximum number of preview images when there are more images than the maximum", () => {
-      // Arrange
       const cases = [
         { numberOfImages: 4 },
         { numberOfImages: 10 },
         { numberOfImages: 20 },
       ]
 
-      // Act & Assert
-      cases.forEach(({ numberOfImages }) => {
+      for (const { numberOfImages } of cases) {
         const result = getEndingPreviewIndices({
-          numberOfImages,
           maxPreviewImages,
+          numberOfImages,
         })
         expect(result.length).toBe(maxPreviewImages)
-      })
+      }
     })
   })
 
@@ -66,58 +60,52 @@ describe("getEndingPreviewIndices", () => {
     const maxPreviewImages = 5
 
     it("should return all indices when there are fewer than or equal to the maximum number of preview images", () => {
-      // Arrange
       const cases = [
-        { numberOfImages: 0, expected: [] },
-        { numberOfImages: 1, expected: [0] },
-        { numberOfImages: 3, expected: [0, 1, 2] },
-        { numberOfImages: 5, expected: [0, 1, 2, 3, 4] },
+        { expected: [], numberOfImages: 0 },
+        { expected: [0], numberOfImages: 1 },
+        { expected: [0, 1, 2], numberOfImages: 3 },
+        { expected: [0, 1, 2, 3, 4], numberOfImages: 5 },
       ]
 
-      // Act & Assert
-      cases.forEach(({ numberOfImages, expected }) => {
+      for (const { numberOfImages, expected } of cases) {
         const result = getEndingPreviewIndices({
-          numberOfImages,
           maxPreviewImages,
+          numberOfImages,
         })
         expect(result).toEqual(expected)
-      })
+      }
     })
 
     it("should return the last N indices when there are more images than the maximum", () => {
-      // Arrange
       const cases = [
-        { numberOfImages: 7, expected: [2, 3, 4, 5, 6] },
-        { numberOfImages: 10, expected: [5, 6, 7, 8, 9] },
-        { numberOfImages: 20, expected: [15, 16, 17, 18, 19] },
+        { expected: [2, 3, 4, 5, 6], numberOfImages: 7 },
+        { expected: [5, 6, 7, 8, 9], numberOfImages: 10 },
+        { expected: [15, 16, 17, 18, 19], numberOfImages: 20 },
       ]
 
-      // Act & Assert
-      cases.forEach(({ numberOfImages, expected }) => {
+      for (const { numberOfImages, expected } of cases) {
         const result = getEndingPreviewIndices({
-          numberOfImages,
           maxPreviewImages,
+          numberOfImages,
         })
         expect(result).toEqual(expected)
-      })
+      }
     })
 
     it("should always return exactly the maximum number of preview images when there are more images than the maximum", () => {
-      // Arrange
       const cases = [
         { numberOfImages: 6 },
         { numberOfImages: 10 },
         { numberOfImages: 20 },
       ]
 
-      // Act & Assert
-      cases.forEach(({ numberOfImages }) => {
+      for (const { numberOfImages } of cases) {
         const result = getEndingPreviewIndices({
-          numberOfImages,
           maxPreviewImages,
+          numberOfImages,
         })
         expect(result.length).toBe(maxPreviewImages)
-      })
+      }
     })
   })
 })

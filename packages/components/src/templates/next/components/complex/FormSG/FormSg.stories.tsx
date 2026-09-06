@@ -1,17 +1,17 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { FormSGProps } from "~/interfaces"
 
-import { FormSG } from "./FormSG"
+import { FormSG } from "./FormSg"
 
 const meta: Meta<FormSGProps> = {
-  title: "Next/Components/FormSG",
-  component: FormSG,
   argTypes: {},
+  component: FormSG,
   parameters: {
     themes: {
       themeOverride: "Isomer Next",
     },
   },
+  title: "Next/Components/FormSG",
 }
 export default meta
 type Story = StoryObj<typeof FormSG>

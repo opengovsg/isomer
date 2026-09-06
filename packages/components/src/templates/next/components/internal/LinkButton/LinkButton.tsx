@@ -3,6 +3,7 @@ import type { LinkProps } from "~/interfaces/internal/Link"
 import { BiLinkExternal } from "react-icons/bi"
 import { twMerge } from "~/lib/twMerge"
 import { isExternalUrl } from "~/utils/isExternalUrl"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { buttonIconStyles, buttonStyles } from "../Button/common"
 import { Link } from "../Link"
@@ -20,15 +21,15 @@ export const LinkButton = ({
   colorScheme,
   ...props
 }: LinkButtonProps) => {
-  const href = props.href
-  const isExternalLink = !!href && isExternalUrl(props.href)
+  const { href } = props
+  const isExternalLink = hasNonEmptyString(href) && isExternalUrl(props.href)
 
   if (isExternalLink) {
     return (
       <Link
         {...props}
         className={twMerge(
-          buttonStyles({ variant, size, className, colorScheme }),
+          buttonStyles({ className, colorScheme, size, variant }),
           className,
         )}
         isExternal={isExternalLink}
@@ -43,7 +44,7 @@ export const LinkButton = ({
     <Link
       {...props}
       className={twMerge(
-        buttonStyles({ variant, size, className, colorScheme }),
+        buttonStyles({ className, colorScheme, size, variant }),
         className,
       )}
     />

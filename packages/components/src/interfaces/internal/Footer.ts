@@ -21,88 +21,88 @@ export type SocialMediaType = (typeof SocialMediaTypes)[number]
 
 const FooterItemSchema = Type.Object({
   title: Type.String({
-    title: "Link label",
     maxLength: 50,
+    title: "Link label",
   }),
   url: Type.String({
-    title: "Link destination",
     format: "link",
     pattern: LINK_HREF_PATTERN,
+    title: "Link destination",
   }),
 })
 
 export const FooterSchema = Type.Object(
   {
-    siteNavItems: Type.Array(FooterItemSchema, {
-      title: "Footer column 1",
-      maxItems: 8,
-      format: "linkArray",
-    }),
-    customNavItems: Type.Optional(
-      Type.Array(FooterItemSchema, {
-        title: "Footer column 2",
-        maxItems: 8,
-        format: "linkArray",
-      }),
-    ),
-    socialMediaLinks: Type.Optional(
-      Type.Array(
-        Type.Object({
-          // TODO: Change this to Type.Enum when we upgrade to TypeBox v1
-          type: Type.Unsafe<SocialMediaType>(
-            Type.String({
-              title: "Social media",
-              enum: SocialMediaTypes,
-              default: "facebook",
-            }),
-          ),
-          url: Type.String({
-            title: "Link",
-            description: "Make sure you are linking an official account",
-            pattern: LINK_HREF_PATTERN,
-          }),
-        }),
-        {
-          title: "Social media links",
-          description: "Let the public connect with you.",
-          format: "socialMedia",
-        },
-      ),
-    ),
     contactUsLink: Type.Optional(
       Type.String({
-        title: "Contact us page",
         format: "link",
         pattern: LINK_HREF_PATTERN,
+        title: "Contact us page",
+      }),
+    ),
+    customNavItems: Type.Optional(
+      Type.Array(FooterItemSchema, {
+        format: "linkArray",
+        maxItems: 8,
+        title: "Footer column 2",
       }),
     ),
     feedbackFormLink: Type.Optional(
       Type.String({
-        title: "Feedback form",
         format: "link",
         pattern: LINK_HREF_PATTERN,
+        title: "Feedback form",
       }),
     ),
     privacyStatementLink: Type.String({
+      format: "link",
+      pattern: LINK_HREF_PATTERN,
       title: "Privacy statement page",
-      format: "link",
-      pattern: LINK_HREF_PATTERN,
     }),
+    siteNavItems: Type.Array(FooterItemSchema, {
+      format: "linkArray",
+      maxItems: 8,
+      title: "Footer column 1",
+    }),
+    socialMediaLinks: Type.Optional(
+      Type.Array(
+        Type.Object({
+          // NOTE: Change this to Type.Enum when we upgrade to TypeBox v1
+          type: Type.Unsafe<SocialMediaType>(
+            Type.String({
+              default: "facebook",
+              enum: SocialMediaTypes,
+              title: "Social media",
+            }),
+          ),
+          url: Type.String({
+            description: "Make sure you are linking an official account",
+            pattern: LINK_HREF_PATTERN,
+            title: "Link",
+          }),
+        }),
+        {
+          description: "Let the public connect with you.",
+          format: "socialMedia",
+          title: "Social media links",
+        },
+      ),
+    ),
     termsOfUseLink: Type.String({
-      title: "Terms of use page",
       format: "link",
       pattern: LINK_HREF_PATTERN,
+      title: "Terms of use page",
     }),
   },
   {
     groups: [
       {
-        label: "Contact and feedback form",
         fields: ["contactUsLink", "feedbackFormLink"],
+        label: "Contact and feedback form",
       },
       {
-        label: "Legal pages",
         fields: ["privacyStatementLink", "termsOfUseLink"],
+        label: "Legal pages",
       },
     ],
   },

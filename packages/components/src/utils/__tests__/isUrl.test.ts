@@ -13,9 +13,9 @@ describe("isUrl", () => {
         "http://subdomain.example.com",
       ]
 
-      validUrls.forEach((url) => {
+      for (const url of validUrls) {
         expect(isUrl(url)).toBe(true)
-      })
+      }
     })
 
     it("should return true for https URLs", () => {
@@ -27,9 +27,9 @@ describe("isUrl", () => {
         "https://subdomain.example.com",
       ]
 
-      validUrls.forEach((url) => {
+      for (const url of validUrls) {
         expect(isUrl(url)).toBe(true)
-      })
+      }
     })
 
     it("should return true for other protocol URLs with hostname", () => {
@@ -39,9 +39,9 @@ describe("isUrl", () => {
         "wss://example.com",
       ]
 
-      validUrls.forEach((url) => {
+      for (const url of validUrls) {
         expect(isUrl(url)).toBe(true)
-      })
+      }
     })
   })
 
@@ -53,9 +53,9 @@ describe("isUrl", () => {
         "mailto:someone+tag@example.org",
       ]
 
-      validUrls.forEach((url) => {
+      for (const url of validUrls) {
         expect(isUrl(url)).toBe(true)
-      })
+      }
     })
 
     it("should return true for tel URLs", () => {
@@ -65,9 +65,9 @@ describe("isUrl", () => {
         "tel:+44-123-456-789",
       ]
 
-      validUrls.forEach((url) => {
+      for (const url of validUrls) {
         expect(isUrl(url)).toBe(true)
-      })
+      }
     })
 
     it("should return true for file URLs", () => {
@@ -77,9 +77,9 @@ describe("isUrl", () => {
         "file://localhost/path/to/file",
       ]
 
-      validUrls.forEach((url) => {
+      for (const url of validUrls) {
         expect(isUrl(url)).toBe(true)
-      })
+      }
     })
 
     it("should return true for custom protocol URLs with pathname", () => {
@@ -89,9 +89,9 @@ describe("isUrl", () => {
         "app:action?param=value",
       ]
 
-      validUrls.forEach((url) => {
+      for (const url of validUrls) {
         expect(isUrl(url)).toBe(true)
-      })
+      }
     })
   })
 
@@ -106,9 +106,9 @@ describe("isUrl", () => {
         "custom:",
       ]
 
-      invalidUrls.forEach((url) => {
+      for (const url of invalidUrls) {
         expect(isUrl(url)).toBe(false)
-      })
+      }
     })
 
     it("should return false for relative paths", () => {
@@ -119,9 +119,9 @@ describe("isUrl", () => {
         "path/to/page",
       ]
 
-      invalidUrls.forEach((url) => {
+      for (const url of invalidUrls) {
         expect(isUrl(url)).toBe(false)
-      })
+      }
     })
 
     it("should return false for invalid strings", () => {
@@ -135,9 +135,9 @@ describe("isUrl", () => {
         "123456",
       ]
 
-      invalidUrls.forEach((url) => {
+      for (const url of invalidUrls) {
         expect(isUrl(url)).toBe(false)
-      })
+      }
     })
 
     it("should return false for malformed URLs", () => {
@@ -149,9 +149,9 @@ describe("isUrl", () => {
         "http:://example.com",
       ]
 
-      invalidUrls.forEach((url) => {
+      for (const url of invalidUrls) {
         expect(isUrl(url)).toBe(false)
-      })
+      }
     })
   })
 })

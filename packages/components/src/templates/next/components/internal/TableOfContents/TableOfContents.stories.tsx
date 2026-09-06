@@ -4,14 +4,14 @@ import type { TableOfContentsProps } from "~/interfaces"
 import { TableOfContents } from "./TableOfContents"
 
 const meta: Meta<TableOfContentsProps> = {
-  title: "Next/Internal Components/TableOfContents",
-  component: TableOfContents,
   argTypes: {},
+  component: TableOfContents,
   parameters: {
     themes: {
       themeOverride: "Isomer Next",
     },
   },
+  title: "Next/Internal Components/TableOfContents",
 }
 export default meta
 type Story = StoryObj<typeof TableOfContents>
@@ -21,16 +21,16 @@ export const Default: Story = {
   args: {
     items: [
       {
-        content: "What does the New Idea Scheme proposal support?",
         anchorLink: "#introduction",
-      },
-      {
         content: "What does the New Idea Scheme proposal support?",
-        anchorLink: "#first-paragraph",
       },
       {
-        content: "Something else",
+        anchorLink: "#first-paragraph",
+        content: "What does the New Idea Scheme proposal support?",
+      },
+      {
         anchorLink: "#second-paragraph",
+        content: "Something else",
       },
     ],
   },

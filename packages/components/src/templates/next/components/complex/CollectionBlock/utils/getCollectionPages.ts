@@ -24,14 +24,14 @@ export const getCollectionPages = ({
     ?.showThumbnail ?? { fallback: "logo" }
 
   const items = getCollectionItems({
-    site,
     permalink: collectionParent.permalink,
-    sortOrder: collectionParent.collectionPagePageProps?.sortOrder,
+    showThumbnail,
+    site,
     sortBy: collectionParent.collectionPagePageProps?.defaultSortBy,
     sortDirection:
       collectionParent.collectionPagePageProps?.defaultSortDirection,
+    sortOrder: collectionParent.collectionPagePageProps?.sortOrder,
     tagCategories: collectionParent.collectionPagePageProps?.tagCategories,
-    showThumbnail,
   })
 
   return processCollectionItems(items).slice(0, NUMBER_OF_PAGES_TO_DISPLAY)

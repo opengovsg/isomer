@@ -13,18 +13,22 @@ export const MicrosoftClarity = ({ msClarityId }: MicrosoftClarityProps) => {
   // 3. When the real Clarity script loads, it processes all queued calls
   useEffect(() => {
     // to not render during static site generation on the server
-    if (globalThis.window == null) return
+    if (globalThis.window === undefined) {
+      return
+    }
 
     // @ts-expect-error - Clarity is not typed
-    if (!globalThis.window.clarity) {
+    if (globalThis.window.clarity === undefined) {
       // SAFETY: Clarity bootstrap assigns an untyped queue function on window before its script loads
-      // oxlint-disable-next-line anti-slop/no-chained-type-assertions -- window clarity bootstrap is untyped
+      // oxlint-disable-next-line anti-slop/no-chained-type-assertions, typescript/no-unsafe-type-assertion -- window clarity bootstrap is untyped
       const clarityWindow = globalThis.window as unknown as Window & {
         clarity: ((...args: unknown[]) => void) & { q?: unknown[] }
       }
-      clarityWindow.clarity = function (...args: unknown[]) {
+      clarityWindow.clarity = function clarity(...args: unknown[]) {
         // oxlint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-        ;(clarityWindow.clarity.q = clarityWindow.clarity.q ?? []).push(...args)
+        const queue = clarityWindow.clarity.q ?? []
+        queue.push(...args)
+        clarityWindow.clarity.q = queue
       }
     }
   }, [])

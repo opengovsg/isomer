@@ -4,13 +4,14 @@ import type { SupportedBrowserBannerProps } from "~/utils/isSupportedBrowser"
 import { useSyncExternalStore } from "react"
 import { BiInfoCircle } from "react-icons/bi"
 import { isSupportedBrowser } from "~/utils/isSupportedBrowser"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
-// TODO: move this to a official isomer.gov.sg once we migrate that to Isomer Next
+// NOTE: move this to a official isomer.gov.sg once we migrate that to Isomer Next
 const supportedBrowserDocumentLink =
   "https://github.com/opengovsg/isomer/blob/main/packages/components/browser-support.md"
 
-const subscribeToStaticSnapshot = () => {
-  return () => undefined
+const subscribeToStaticSnapshot = () => () => {
+  // noop unsubscribe for static useSyncExternalStore snapshot
 }
 
 export const UnsupportedBrowserBanner = ({
@@ -18,8 +19,11 @@ export const UnsupportedBrowserBanner = ({
 }: SupportedBrowserBannerProps) => {
   const navigatorUserAgent = useSyncExternalStore(
     subscribeToStaticSnapshot,
-    () => initialUserAgent || (globalThis.navigator?.userAgent ?? ""),
-    () => initialUserAgent || "",
+    () =>
+      hasNonEmptyString(initialUserAgent)
+        ? initialUserAgent
+        : (globalThis.navigator?.userAgent ?? ""),
+    () => (hasNonEmptyString(initialUserAgent) ? initialUserAgent : ""),
   )
 
   if (isSupportedBrowser({ userAgent: navigatorUserAgent })) {

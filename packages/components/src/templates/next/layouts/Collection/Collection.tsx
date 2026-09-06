@@ -24,14 +24,14 @@ export const CollectionLayout = ({
   } = page
 
   const items = getCollectionItems({
-    site,
     permalink,
-    sortOrder,
-    sortBy: defaultSortBy,
-    sortDirection: defaultSortDirection,
-    tagCategories,
     showDate,
     showThumbnail,
+    site,
+    sortBy: defaultSortBy,
+    sortDirection: defaultSortDirection,
+    sortOrder,
+    tagCategories,
   })
   const processedItems = processCollectionItems(items)
   const breadcrumb = getBreadcrumbFromSiteMap(

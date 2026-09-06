@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unsafe-type-assertion -- HTTP response body matches FetchDgsMetadataResponse contract */
 import { isCkanInternalColumn } from "./isCkanInternalColumn"
 
 interface FetchDgsMetadataProps {
@@ -19,7 +20,7 @@ interface FetchDgsMetadataResponse {
   data: {
     name: string
     format: string
-    datasetSize: number // in bytes
+    datasetSize: number
     columnMetadata: {
       metaMapping: Record<string, MetaMappingType>
     }
@@ -31,9 +32,30 @@ export type FetchDgsMetadataOutput = Pick<
   "name" | "format"
 > & {
   size: FetchDgsMetadataResponse["data"]["datasetSize"]
-  columnMetadata:
-    | [string, string][] // 1st string is column field key, 2nd string is column title
-    | undefined
+  columnMetadata: [string, string][] | undefined
+}
+
+const extractColumnMetadata = (
+  data: FetchDgsMetadataResponse,
+): FetchDgsMetadataOutput["columnMetadata"] => {
+  try {
+    const sortedMappings = Object.values(data.data.columnMetadata.metaMapping)
+      .filter((mapping) => !isCkanInternalColumn(mapping.name))
+      .toSorted(
+        (a: MetaMappingType, b: MetaMappingType) =>
+          Number(a.index) - Number(b.index),
+      )
+
+    const columnMetadata: NonNullable<
+      FetchDgsMetadataOutput["columnMetadata"]
+    > = []
+    for (const mapping of sortedMappings) {
+      columnMetadata.push([mapping.name, mapping.columnTitle])
+    }
+    return columnMetadata
+  } catch {
+    return undefined
+  }
 }
 
 export const fetchDgsMetadata = async ({
@@ -54,28 +76,9 @@ export const fetchDgsMetadata = async ({
   const data = (await response.json()) as FetchDgsMetadataResponse
 
   return {
-    name: data.data.name,
-    format: data.data.format,
-    size: data.data.datasetSize,
     columnMetadata: extractColumnMetadata(data),
-  }
-}
-
-const extractColumnMetadata = (
-  data: FetchDgsMetadataResponse,
-): FetchDgsMetadataOutput["columnMetadata"] => {
-  try {
-    return Object.values(data.data.columnMetadata.metaMapping)
-      .filter((mapping) => !isCkanInternalColumn(mapping.name))
-      .sort((a, b) => Number(a.index) - Number(b.index))
-      .reduce<NonNullable<FetchDgsMetadataOutput["columnMetadata"]>>(
-        (acc, mapping) => {
-          acc.push([mapping.name, mapping.columnTitle])
-          return acc
-        },
-        [],
-      )
-  } catch {
-    return undefined
+    format: data.data.format,
+    name: data.data.name,
+    size: data.data.datasetSize,
   }
 }

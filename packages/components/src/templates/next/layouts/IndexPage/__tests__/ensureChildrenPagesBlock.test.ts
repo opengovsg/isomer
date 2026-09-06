@@ -22,10 +22,10 @@ describe("ensureChildrenPagesBlock", () => {
   it("appends default childrenpages block when content is missing it", () => {
     // Arrange
     const infocardsBlock = {
-      type: "infocards",
-      title: "Useful links",
-      variant: "cardsWithoutImages",
       cards: [{ title: "Card" }],
+      title: "Useful links",
+      type: "infocards",
+      variant: "cardsWithoutImages",
     } satisfies IndexPageSchemaType["content"][number]
     const content: IndexPageSchemaType["content"] = [infocardsBlock]
 

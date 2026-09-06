@@ -14,17 +14,16 @@ import {
 
 export const LAYOUT_PAGE_MAP = {
   article: ArticlePagePageSchema,
+  collection: CollectionPagePageSchema,
   content: ContentPagePageSchema,
   database: DatabasePagePageSchema,
+  file: FileRefPageSchema,
   homepage: HomePagePageSchema,
   index: IndexPagePageSchema,
+  link: LinkRefPageSchema,
   notfound: NotFoundPagePageSchema,
   search: SearchPagePageSchema,
-  link: LinkRefPageSchema,
-  collection: CollectionPagePageSchema,
-  file: FileRefPageSchema,
 } as const
 
-export const getLayoutPageSchema = (layout: IsomerPageLayoutType) => {
-  return LAYOUT_PAGE_MAP[layout]
-}
+export const getLayoutPageSchema = (layout: IsomerPageLayoutType) =>
+  LAYOUT_PAGE_MAP[layout]

@@ -1,5 +1,6 @@
 "use client"
 
+/* oxlint-disable eslint/complexity -- responsive navbar layout, search, and megamenu state are colocated */
 import type { NavbarClientProps } from "~/interfaces"
 import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import { BiMenu, BiSearch, BiX } from "react-icons/bi"
@@ -7,6 +8,7 @@ import { useResizeObserver } from "usehooks-ts"
 import { tv } from "~/lib/tv"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 import { focusVisibleHighlight } from "~/utils/tailwind"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { LinkButton } from "../../internal/LinkButton"
 import { LocalSearchInputBox } from "../../internal/LocalSearchInputBox"
@@ -24,46 +26,46 @@ interface Size {
 
 const createNavbarStyles = tv({
   slots: {
+    buttonsSection: "flex flex-row gap-1",
+    callToAction: "align-content h-fit",
+    hamburgerIcon: "flex h-[68px] items-center lg:hidden",
+    logo: "flex flex-shrink-0 rounded focus-visible:bg-utility-highlight",
+    navItemContainer: "hidden flex-1 items-center gap-x-4 pl-2 lg:flex",
     navbar: "relative flex flex-col",
     navbarContainer: "flex min-h-16 w-full bg-white lg:min-h-[4.25rem]",
-    logo: "flex flex-shrink-0 rounded focus-visible:bg-utility-highlight",
+    navbarItems:
+      "mx-auto flex w-full max-w-screen-xl items-center justify-between gap-x-4 pl-6 pr-3 md:px-10",
     navigationSection: "flex w-full flex-col items-center justify-between",
     primaryNavigationSection: "flex w-full items-center justify-end",
-    utilityNavigationSection:
-      "prose-label-sm-medium mt-3 hidden w-full items-center justify-end gap-4 lg:flex",
-    utilityItemsList: "flex items-center gap-4",
-    utilityItemsHeader: "prose-label-sm-medium text-base-content-strong",
+    searchBar: "mx-auto mb-4 w-full max-w-screen-xl px-6 lg:px-10",
+    searchIcon: "flex h-[68px] items-center",
     utilityItem: [
       focusVisibleHighlight(),
       "prose-label-sm-medium inline-block py-1 text-base-content-subtle hover:underline",
     ],
-    navbarItems:
-      "mx-auto flex w-full max-w-screen-xl items-center justify-between gap-x-4 pl-6 pr-3 md:px-10",
-    navItemContainer: "hidden flex-1 items-center gap-x-4 pl-2 lg:flex",
-    callToAction: "align-content h-fit",
-    buttonsSection: "flex flex-row gap-1",
-    searchIcon: "flex h-[68px] items-center",
-    hamburgerIcon: "flex h-[68px] items-center lg:hidden",
-    searchBar: "mx-auto mb-4 w-full max-w-screen-xl px-6 lg:px-10",
+    utilityItemsHeader: "prose-label-sm-medium text-base-content-strong",
+    utilityItemsList: "flex items-center gap-4",
+    utilityNavigationSection:
+      "prose-label-sm-medium mt-3 hidden w-full items-center justify-end gap-4 lg:flex",
   },
   variants: {
-    isSearchOpen: {
-      true: {
-        searchBar: "block",
+    isPinned: {
+      false: {
+        callToAction: "mx-5 hidden lg:flex",
       },
+      true: {
+        callToAction: "my-2 flex",
+        navbarContainer: "py-1 lg:py-0",
+        primaryNavigationSection: "gap-3",
+        searchIcon: "hidden lg:flex",
+      },
+    },
+    isSearchOpen: {
       false: {
         searchBar: "hidden",
       },
-    },
-    isPinned: {
       true: {
-        navbarContainer: "py-1 lg:py-0",
-        callToAction: "my-2 flex",
-        searchIcon: "hidden lg:flex",
-        primaryNavigationSection: "gap-3",
-      },
-      false: {
-        callToAction: "mx-5 hidden lg:flex",
+        searchBar: "block",
       },
     },
   },
@@ -79,7 +81,7 @@ export const NavbarClient = ({
   callToAction,
   utility,
 }: NavbarClientProps) => {
-  const isPinned = !!callToAction?.isPinnedOnMobile
+  const isPinned = callToAction?.isPinnedOnMobile === true
 
   const [openNavItemIdx, setOpenNavItemIdx] = useState(-1)
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false)
@@ -97,11 +99,11 @@ export const NavbarClient = ({
   const updateMenuOffset = (size?: Size) => {
     setMobileNavbarTopPx(siteHeaderRef.current?.getBoundingClientRect().bottom)
 
-    if (!size) {
+    if (size === undefined) {
       return
     }
 
-    if (size.width && size.width < 1024) {
+    if (size.width !== undefined && size.width < 1024) {
       // close any open nav items when resizing to mobile
       setOpenNavItemIdx(-1)
     } else {
@@ -110,18 +112,27 @@ export const NavbarClient = ({
   }
 
   useResizeObserver({
-    ref: siteHeaderRef,
     onResize: updateMenuOffset,
+    ref: siteHeaderRef,
   })
 
   // When the hamburger menu is open, also watch the full <header> for height
   // changes caused by siblings like masthead/notification toggling, since those
   // don't resize the navbar container but do shift its position.
+  // oxlint-disable-next-line react-doctor/effect-needs-cleanup -- menu/header guards return noop cleanup before observer is registered
   useEffect(() => {
-    if (!isHamburgerOpen) return
+    if (!isHamburgerOpen) {
+      return function noopCleanup() {
+        // noop
+      }
+    }
 
     const header = siteHeaderRef.current?.closest("header")
-    if (!header) return
+    if (header === null || header === undefined) {
+      return function noopCleanup() {
+        // noop
+      }
+    }
 
     const observer = new ResizeObserver(() => {
       setMobileNavbarTopPx(
@@ -129,7 +140,9 @@ export const NavbarClient = ({
       )
     })
     observer.observe(header)
-    return () => observer.disconnect()
+    return () => {
+      observer.disconnect()
+    }
   }, [isHamburgerOpen])
 
   const onCloseMenu = () => {
@@ -140,12 +153,14 @@ export const NavbarClient = ({
   const activeNavRef = useRef(null)
 
   useLayoutEffect(() => {
-    if (!isMenuOpen) return
+    if (!isMenuOpen) {
+      return
+    }
 
     window.scrollTo({
-      top: 0,
-      left: 0,
       behavior: isHamburgerOpen ? undefined : "smooth",
+      left: 0,
+      top: 0,
     })
     setMobileNavbarTopPx(siteHeaderRef.current?.getBoundingClientRect().bottom)
   }, [isHamburgerOpen, isMenuOpen])
@@ -164,9 +179,9 @@ export const NavbarClient = ({
           </Link>
 
           <div className={navbarStyles.navigationSection()}>
-            {!!utility && (
+            {utility !== undefined && utility !== null && (
               <div className={navbarStyles.utilityNavigationSection()}>
-                {!!utility.label && (
+                {hasNonEmptyString(utility.label) && (
                   <p className={navbarStyles.utilityItemsHeader()}>
                     {utility.label}
                   </p>
@@ -214,7 +229,7 @@ export const NavbarClient = ({
               </ul>
 
               {/* Call To Action button */}
-              {!!callToAction && (
+              {callToAction !== undefined && callToAction !== null && (
                 <LinkButton
                   href={callToAction.url}
                   isExternal={isExternalUrl(callToAction.url)}
@@ -234,28 +249,31 @@ export const NavbarClient = ({
 
               <div className={navbarStyles.buttonsSection()}>
                 {/* Search icon */}
-                {search && !isHamburgerOpen && layout !== "search" && (
-                  <div className={navbarStyles.searchIcon({ isPinned })}>
-                    {isSearchOpen ? (
-                      <IconButton
-                        onPress={() => {
-                          setIsSearchOpen(!isSearchOpen)
-                        }}
-                        aria-label="Close search bar"
-                        icon={BiX}
-                      />
-                    ) : (
-                      <IconButton
-                        onPress={() => {
-                          setOpenNavItemIdx(-1)
-                          setIsSearchOpen(!isSearchOpen)
-                        }}
-                        aria-label="Open search bar"
-                        icon={BiSearch}
-                      />
-                    )}
-                  </div>
-                )}
+                {search !== undefined &&
+                  search !== null &&
+                  !isHamburgerOpen &&
+                  layout !== "search" && (
+                    <div className={navbarStyles.searchIcon({ isPinned })}>
+                      {isSearchOpen ? (
+                        <IconButton
+                          onPress={() => {
+                            setIsSearchOpen(!isSearchOpen)
+                          }}
+                          aria-label="Close search bar"
+                          icon={BiX}
+                        />
+                      ) : (
+                        <IconButton
+                          onPress={() => {
+                            setOpenNavItemIdx(-1)
+                            setIsSearchOpen(!isSearchOpen)
+                          }}
+                          aria-label="Open search bar"
+                          icon={BiSearch}
+                        />
+                      )}
+                    </div>
+                  )}
 
                 {/* Hamburger menu for small screens */}
                 <div className={navbarStyles.hamburgerIcon()}>
@@ -283,7 +301,7 @@ export const NavbarClient = ({
       </div>
 
       {/* Search bar */}
-      {search && layout !== "search" && (
+      {search !== undefined && search !== null && layout !== "search" && (
         <div className={navbarStyles.searchBar({ isSearchOpen })}>
           {search.type === "localSearch" && (
             <LocalSearchInputBox searchUrl={search.searchUrl} />

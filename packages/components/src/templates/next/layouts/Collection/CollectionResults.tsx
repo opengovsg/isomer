@@ -26,14 +26,14 @@ const collection = tv({
   },
   variants: {
     variant: {
-      collection: {
-        collectionResults: "flex w-full flex-col gap-0",
-      },
       blog: {
         collectionResults:
           // NOTE: we remove the gap so that the blog cards can
           // render their own border between each item
           "grid grid-cols-1 sm:gap-0 md:grid-cols-2 md:gap-x-10 md:gap-y-5",
+      },
+      collection: {
+        collectionResults: "flex w-full flex-col gap-0",
       },
     },
   },

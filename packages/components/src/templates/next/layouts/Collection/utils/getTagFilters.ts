@@ -4,6 +4,22 @@ import { resolveTagCategoryDisplay } from "~/types/constants"
 
 import type { Filter, FilterItem } from "../../../types/Filter"
 
+const incrementTagCount = (
+  tagCategoryLabels: Map<string, Map<string, number>>,
+  category: string,
+  label: string,
+) => {
+  if (!tagCategoryLabels.has(category)) {
+    tagCategoryLabels.set(category, new Map())
+  }
+
+  const categoryMap = tagCategoryLabels.get(category) ?? new Map()
+  if (!categoryMap.has(label)) {
+    categoryMap.set(label, 0)
+  }
+  categoryMap.set(label, (categoryMap.get(label) ?? 0) + 1)
+}
+
 export const getTagFilters = (
   items: ProcessedCollectionCardProps[],
   tagCategories?: CollectionPageSchemaType["page"]["tagCategories"],
@@ -19,81 +35,76 @@ export const getTagFilters = (
   // card/article tag rendering (PillTags / PlaintextTags).
   const tagCategoryLabels = new Map<string, Map<string, number>>()
 
-  items.forEach(({ tags }) => {
-    if (tags) {
-      tags.forEach(({ selected: selectedLabels, category }) => {
-        if (!tagCategoryLabels.has(category)) {
-          tagCategoryLabels.set(category, new Map())
-        }
-        const categoryMap = tagCategoryLabels.get(category) ?? new Map()
-        selectedLabels.forEach((label) => {
-          if (!categoryMap.has(label)) {
-            categoryMap.set(label, 0)
-          }
-          categoryMap.set(label, (categoryMap.get(label) ?? 0) + 1)
-        })
-      })
+  for (const { tags } of items) {
+    if (tags === undefined) {
+      continue
     }
-  })
 
-  const filters = Array.from(tagCategoryLabels.entries()).reduce(
-    (acc: Filter[], [category, values]) => {
-      const items: FilterItem[] = Array.from(values.entries()).map(
-        ([label, count]) => ({
-          label,
-          count,
-          id: label,
-        }),
-      )
+    for (const { selected: selectedLabels, category } of tags) {
+      for (const label of selectedLabels) {
+        incrementTagCount(tagCategoryLabels, category, label)
+      }
+    }
+  }
 
-      const matchedCategory = tagCategories?.find(
-        (tagCategory) => tagCategory.label === category,
-      )
-
-      const filters: Filter[] = [
-        ...acc,
-        {
-          items,
-          id: category,
-          label: category,
-          display: resolveTagCategoryDisplay(matchedCategory?.display),
-        },
-      ]
-
-      return filters
-    },
-    [],
+  const tagCategoryByLabel = new Map(
+    tagCategories?.map((tagCategory) => [tagCategory.label, tagCategory]),
   )
 
-  if (!tagCategories || tagCategories.length === 0) {
+  const filters: Filter[] = []
+
+  for (const [category, values] of tagCategoryLabels.entries()) {
+    const filterItems: FilterItem[] = [...values.entries()].map(
+      ([label, count]) => ({
+        count,
+        id: label,
+        label,
+      }),
+    )
+
+    const matchedCategory = tagCategoryByLabel.get(category)
+
+    filters.push({
+      display: resolveTagCategoryDisplay(matchedCategory?.display),
+      id: category,
+      items: filterItems,
+      label: category,
+    })
+  }
+
+  if (tagCategories === undefined || tagCategories.length === 0) {
     return filters
   }
 
   const tagCategoryIds = tagCategories.map(({ label }) => label)
 
-  const sortedFilters = tagCategoryIds
-    ? filters.sort((a, b) => {
-        // NOTE: the label of the filter is the id
-        const indexA = tagCategoryIds.indexOf(a.id)
-        const indexB = tagCategoryIds.indexOf(b.id)
+  const sortedFilters = filters.toSorted((a, b) => {
+    // NOTE: the label of the filter is the id
+    const indexA = tagCategoryIds.indexOf(a.id)
+    const indexB = tagCategoryIds.indexOf(b.id)
 
-        if (indexA === -1 && indexB === -1) return 0
-        if (indexA === -1) return 1
-        if (indexB === -1) return -1
+    if (indexA === -1 && indexB === -1) {
+      return 0
+    }
+    if (indexA === -1) {
+      return 1
+    }
+    if (indexB === -1) {
+      return -1
+    }
 
-        return indexA - indexB
-      })
-    : filters
+    return indexA - indexB
+  })
 
   return sortedFilters.map((filter) => {
+    const category = tagCategoryByLabel.get(filter.id)
+    const tagOptionIds = category?.options?.map((option) => option.label) ?? []
+
     return {
       ...filter,
-      items: filter.items.sort((a, b) => {
-        const category = tagCategories.find((cat) => cat.label === filter.id)
-        const tagOptionIds =
-          category?.options?.map((option) => option.label) ?? []
-        return tagOptionIds.indexOf(a.id) - tagOptionIds.indexOf(b.id)
-      }),
+      items: filter.items.toSorted(
+        (a, b) => tagOptionIds.indexOf(a.id) - tagOptionIds.indexOf(b.id),
+      ),
     }
   })
 }

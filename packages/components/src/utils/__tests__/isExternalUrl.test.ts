@@ -20,7 +20,7 @@ describe("isExternalUrl", () => {
   })
 
   it("should return false for undefined or empty string", () => {
-    expect(isExternalUrl(undefined)).toBe(false)
+    expect(isExternalUrl()).toBe(false)
     expect(isExternalUrl("")).toBe(false)
   })
 })

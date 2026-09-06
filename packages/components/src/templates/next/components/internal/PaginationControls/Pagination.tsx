@@ -15,13 +15,13 @@ import { Button } from "../Button"
 
 const createPaginationStyles = tv({
   slots: {
-    nav: "flex",
-    content: "flex flex-row flex-wrap items-center gap-1 md:gap-3",
     button:
       "prose-caption-1 min-h-0 rounded-none px-2.5 py-1 tabular-nums current:bg-base-content-subtle current:text-white hover:bg-base-canvas-backdrop hover:current:bg-base-content-subtle",
+    content: "flex flex-row flex-wrap items-center gap-1 md:gap-3",
     item: "flex cursor-pointer select-none",
-    stepper: "flex items-center justify-center gap-1 px-0 py-1",
+    nav: "flex",
     separator: "flex h-6 w-6 items-center justify-center text-gray-500",
+    stepper: "flex items-center justify-center gap-1 px-0 py-1",
   },
   variants: {
     isDisabled: {
@@ -74,7 +74,7 @@ const PaginationButton = forwardRef<HTMLButtonElement, PaginationButtonProps>(
       <Button
         {...props}
         ref={ref}
-        aria-current={isActive ? "page" : undefined}
+        aria-current={isActive === true ? "page" : undefined}
         data-current={dataAttr(isActive)}
         variant="unstyled"
         size={size}

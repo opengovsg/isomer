@@ -4,7 +4,8 @@
 // which can change unpredictably if admins update the dataset schema.
 export interface DgsApiDatasetSearchParams {
   resourceId: string
-  q?: string // query string
+  // query string
+  q?: string
   limit?: number
   offset?: number
   filters?: Record<string, string>

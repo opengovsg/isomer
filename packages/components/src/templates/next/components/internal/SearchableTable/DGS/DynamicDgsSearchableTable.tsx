@@ -11,7 +11,7 @@ import { useDgsData } from "~/hooks/useDgsData"
 import { isCkanInternalColumn } from "~/utils/dgs"
 
 import { PAGINATION_MAX_ITEMS } from "../shared/constants"
-import { SearchableTableClientUI } from "../shared/SearchableTableClientUI"
+import { SearchableTableClientUI } from "../shared/SearchableTableClientUi"
 
 interface DynamicSearchableTableClientProps extends Omit<
   DGSSearchableTableProps,
@@ -29,25 +29,31 @@ export const DynamicDGSSearchableTable = ({
   headers,
   isMetadataLoading,
   isMetadataError,
-  maxNoOfColumns, // not using MAX_NUMBER_OF_COLUMNS as we should not arbitrarily slice the columns
+  // not using MAX_NUMBER_OF_COLUMNS as we should not arbitrarily slice the columns
+  maxNoOfColumns,
 }: DynamicSearchableTableClientProps) => {
   const [searchInput, setSearchInput] = useState("")
-  const search = useDebounce({ value: searchInput, delay: 300 })
+  const search = useDebounce({ delay: 300, value: searchInput })
   const [currPage, setCurrPage] = useState(1)
 
-  const params = useMemo(
-    () => ({
+  const params = useMemo(() => {
+    let filterRecord:
+      | NonNullable<DgsApiDatasetSearchParams["filters"]>
+      | undefined
+
+    if (filters) {
+      filterRecord = {}
+      for (const filter of filters) {
+        filterRecord[filter.fieldKey] = filter.fieldValue
+      }
+    }
+
+    return {
+      filters: filterRecord,
       resourceId,
-      filters: filters?.reduce<
-        NonNullable<DgsApiDatasetSearchParams["filters"]>
-      >((acc, filter) => {
-        acc[filter.fieldKey] = filter.fieldValue
-        return acc
-      }, {}),
       sort,
-    }),
-    [resourceId, filters, sort],
-  )
+    }
+  }, [resourceId, filters, sort])
 
   const { total } = useDgsData({ ...params, fetchAll: false })
 
@@ -58,10 +64,10 @@ export const DynamicDGSSearchableTable = ({
     isError: isDataError,
   } = useDgsData({
     ...params,
-    q: search,
+    fetchAll: false,
     limit: PAGINATION_MAX_ITEMS,
     offset: (currPage - 1) * PAGINATION_MAX_ITEMS,
-    fetchAll: false,
+    q: search,
   })
 
   const items =
@@ -91,8 +97,8 @@ export const DynamicDGSSearchableTable = ({
       isLoading={isMetadataLoading || isDataLoading}
       isError={isMetadataError || isDataError}
       search={{
-        input: searchInput,
         deferred: search,
+        input: searchInput,
         setSearch: setSearchInput,
       }}
       page={{ currPage, setCurrPage }}

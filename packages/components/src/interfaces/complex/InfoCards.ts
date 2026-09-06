@@ -19,22 +19,22 @@ export const INFOCARD_VARIANT = {
 type InfoCardVariants = keyof typeof INFOCARD_VARIANT
 
 const SingleCardNoImageSchema = Type.Object({
+  description: Type.Optional(
+    Type.String({
+      description:
+        "To make sure your description is readable, keep it under 150 characters.",
+      title: "Description",
+    }),
+  ),
   title: Type.String({
     title: "Title",
   }),
-  description: Type.Optional(
-    Type.String({
-      title: "Description",
-      description:
-        "To make sure your description is readable, keep it under 150 characters.",
-    }),
-  ),
   url: Type.Optional(
     Type.String({
-      title: "Link destination",
       description: "When this is clicked, open:",
       format: "prefill-link",
       pattern: LINK_HREF_PATTERN,
+      title: "Link destination",
     }),
   ),
 })
@@ -42,31 +42,30 @@ const SingleCardNoImageSchema = Type.Object({
 const SingleCardWithImageSchema = Type.Composite([
   SingleCardNoImageSchema,
   Type.Object({
-    imageUrl: ImageSrcSchema,
-    imageFit: Type.Optional(InfoCardsImageFitSchema),
     imageAlt: AltTextSchema,
+    imageFit: Type.Optional(InfoCardsImageFitSchema),
+    imageUrl: ImageSrcSchema,
   }),
 ])
 
 const InfoCardsBaseSchema = Type.Object({
-  type: Type.Literal("infocards", { default: "infocards" }),
   id: Type.Optional(
     Type.String({
-      title: "Anchor ID",
       description: "The ID to use for anchor links",
       format: "hidden",
+      title: "Anchor ID",
     }),
   ),
-  title: Type.String({
-    title: "Title",
-    pattern: NON_EMPTY_STRING_REGEX,
-    errorMessage: {
-      pattern: "cannot be empty or contain only spaces",
-    },
-  }),
-  subtitle: Type.Optional(
+  // NOTE: Remove "label" and "url"
+  // Context: This one is a stopgap measure in lieu of linking collections to the homepage
+  // Will be hidden in Studio for now
+  label: Type.Optional(
     Type.String({
-      title: "Description",
+      description:
+        "Add a link under your block. Avoid generic text such as “Click here” or “Learn more”",
+      format: "hidden",
+      maxLength: 50,
+      title: "Link text",
     }),
   ),
   maxColumns: Type.Optional(
@@ -77,44 +76,45 @@ const InfoCardsBaseSchema = Type.Object({
         Type.Literal("3", { title: "3 columns" }),
       ],
       {
-        title: "Number of columns",
-        description: "This only affects how the block appears on large screens",
         default: "3",
+        description: "This only affects how the block appears on large screens",
+        title: "Number of columns",
       },
     ),
   ),
-  // TODO: Remove "label" and "url"
-  // Context: This one is a stopgap measure in lieu of linking collections to the homepage
-  // Will be hidden in Studio for now
-  label: Type.Optional(
+  subtitle: Type.Optional(
     Type.String({
-      title: "Link text",
-      maxLength: 50,
-      description:
-        "Add a link under your block. Avoid generic text such as “Click here” or “Learn more”",
-      format: "hidden",
+      title: "Description",
     }),
   ),
+  title: Type.String({
+    errorMessage: {
+      pattern: "cannot be empty or contain only spaces",
+    },
+    pattern: NON_EMPTY_STRING_REGEX,
+    title: "Title",
+  }),
+  type: Type.Literal("infocards", { default: "infocards" }),
   url: Type.Optional(
     Type.String({
-      title: "Link destination",
       description: "When this is clicked, open:",
       // should be link but needs to be hidden for now
       // shall not overcomlicate the schema for now since it's unavailable in Studio
       format: "hidden",
+      title: "Link destination",
     }),
   ),
 })
 
 const InfoCardsWithImageSchema = Type.Object(
   {
-    variant: Type.Literal(CARDS_WITH_IMAGES, { default: CARDS_WITH_IMAGES }),
     cards: Type.Array(SingleCardWithImageSchema, {
-      title: "Cards",
-      minItems: 1,
-      maxItems: 30,
       default: [],
+      maxItems: 30,
+      minItems: 1,
+      title: "Cards",
     }),
+    variant: Type.Literal(CARDS_WITH_IMAGES, { default: CARDS_WITH_IMAGES }),
   },
   {
     title: "Cards with images",
@@ -123,14 +123,14 @@ const InfoCardsWithImageSchema = Type.Object(
 
 const InfoCardsWithFullImageSchema = Type.Object(
   {
+    cards: Type.Array(Type.Omit(SingleCardWithImageSchema, ["description"]), {
+      default: [],
+      maxItems: 30,
+      minItems: 1,
+      title: "Cards",
+    }),
     variant: Type.Literal(CARDS_WITH_FULL_IMAGES, {
       default: CARDS_WITH_FULL_IMAGES,
-    }),
-    cards: Type.Array(Type.Omit(SingleCardWithImageSchema, ["description"]), {
-      title: "Cards",
-      minItems: 1,
-      maxItems: 30,
-      default: [],
     }),
   },
   {
@@ -140,14 +140,14 @@ const InfoCardsWithFullImageSchema = Type.Object(
 
 const InfoCardsNoImageSchema = Type.Object(
   {
+    cards: Type.Array(SingleCardNoImageSchema, {
+      default: [],
+      maxItems: 30,
+      minItems: 1,
+      title: "Cards",
+    }),
     variant: Type.Literal(CARDS_WITHOUT_IMAGES, {
       default: CARDS_WITHOUT_IMAGES,
-    }),
-    cards: Type.Array(SingleCardNoImageSchema, {
-      title: "Cards",
-      minItems: 1,
-      maxItems: 30,
-      default: [],
     }),
   },
   {
@@ -165,13 +165,13 @@ export const InfoCardsSchema = Type.Intersect(
       | Static<typeof InfoCardsNoImageSchema>
       | Static<typeof InfoCardsWithFullImageSchema>
     >({
+      discriminator: { propertyName: "variant" },
+      format: ARRAY_RADIO_FORMAT,
       oneOf: [
         InfoCardsWithImageSchema,
         InfoCardsNoImageSchema,
         InfoCardsWithFullImageSchema,
       ],
-      discriminator: { propertyName: "variant" },
-      format: ARRAY_RADIO_FORMAT,
       title: "Style",
     }),
   ],
@@ -200,7 +200,8 @@ export type SingleCardWithImageProps = Static<
 export type InfoCardsProps = Static<typeof InfoCardsSchema> & {
   layout: IsomerPageLayoutType
   site: IsomerSiteProps
-  sectionIdx?: number // TODO: Remove this property, only used in classic theme
+  // NOTE: Remove this property, only used in classic theme
+  sectionIdx?: number
   shouldLazyLoad?: boolean
   headingLevel: number
 }

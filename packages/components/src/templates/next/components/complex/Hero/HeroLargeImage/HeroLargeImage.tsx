@@ -2,6 +2,7 @@ import type { HeroLargeImageProps } from "~/interfaces/complex/Hero"
 import { createElement } from "react"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { ComponentContent } from "../../../internal/customCssClass"
 import { LinkButton } from "../../../internal/LinkButton/LinkButton"
@@ -28,12 +29,12 @@ export const HeroLargeImage = ({
         {/* Text container */}
         <div className="flex flex-col items-center gap-5 text-base-content-strong sm:items-start md:gap-6 md:text-center lg:mx-auto lg:max-w-[66.67%]">
           {createElement(Tag, { className: "prose-display-xl w-full" }, title)}
-          {subtitle && (
+          {hasNonEmptyString(subtitle) && (
             <p className="prose-title-lg-regular w-full">{subtitle}</p>
           )}
         </div>
         {/* Button container */}
-        {buttonLabel && buttonUrl && (
+        {hasNonEmptyString(buttonLabel) && hasNonEmptyString(buttonUrl) && (
           <div className="flex flex-col items-start justify-center gap-x-5 gap-y-4 md:flex-row md:items-center">
             <LinkButton
               href={getReferenceLinkHref(
@@ -46,20 +47,21 @@ export const HeroLargeImage = ({
             >
               {buttonLabel}
             </LinkButton>
-            {secondaryButtonLabel && secondaryButtonUrl && (
-              <LinkButton
-                variant="outline"
-                size="lg"
-                href={getReferenceLinkHref(
-                  secondaryButtonUrl,
-                  site.siteMapArray,
-                  site.assetsBaseUrl,
-                )}
-                isWithFocusVisibleHighlight
-              >
-                {secondaryButtonLabel}
-              </LinkButton>
-            )}
+            {hasNonEmptyString(secondaryButtonLabel) &&
+              hasNonEmptyString(secondaryButtonUrl) && (
+                <LinkButton
+                  variant="outline"
+                  size="lg"
+                  href={getReferenceLinkHref(
+                    secondaryButtonUrl,
+                    site.siteMapArray,
+                    site.assetsBaseUrl,
+                  )}
+                  isWithFocusVisibleHighlight
+                >
+                  {secondaryButtonLabel}
+                </LinkButton>
+              )}
           </div>
         )}
       </div>

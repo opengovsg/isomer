@@ -10,12 +10,12 @@ export const imageSchemaObject = Type.Object({
   image: Type.Optional(
     Type.Object(
       {
+        alt: AltTextSchema,
         src: generateImageSrcSchema({
-          title: "Thumbnail",
           description:
             "Upload an image if you want to have a custom thumbnail for this item",
+          title: "Thumbnail",
         }),
-        alt: AltTextSchema,
       },
       {
         title: "Set a thumbnail image",

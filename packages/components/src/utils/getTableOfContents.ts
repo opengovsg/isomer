@@ -3,41 +3,48 @@ import type { IsomerComponent, IsomerSiteProps } from "~/types"
 
 import { getTextAsHtml } from "./getTextAsHtml"
 
+const BR_TAG_REGEX = /<br\s*\/?>/giu
+const WHITESPACE_REGEX = /\s+/gu
+
 // Generates the table of contents given the blocks of the page
 export const getTableOfContents = (
   site: IsomerSiteProps,
   content: IsomerComponent[],
-): HeadingLink[] => {
-  return content.flatMap((block) => {
+): HeadingLink[] =>
+  content.flatMap((block) => {
     if (
       (block.type === "infocards" ||
         block.type === "infocols" ||
         block.type === "infopic" ||
         block.type === "keystatistics") &&
-      block.title
+      block.title !== undefined &&
+      block.title !== ""
     ) {
       return [
         {
-          content: block.title,
           anchorLink: `#${block.id}`,
+          content: block.title,
         },
       ]
     }
 
-    if (block.type === "prose" && block.content) {
-      const result = []
+    if (block.type === "prose" && block.content !== undefined) {
+      const result: HeadingLink[] = []
 
       for (const component of block.content) {
         if (component.type === "heading" && component.attrs.level === 2) {
-          const content = getTextAsHtml({ site, content: component.content })
-            .replace(/<br\s*\/?>/gi, " ")
-            .replace(/\s+/g, " ")
+          const headingContent = getTextAsHtml({
+            content: component.content,
+            site,
+          })
+            .replaceAll(BR_TAG_REGEX, " ")
+            .replaceAll(WHITESPACE_REGEX, " ")
             .trim()
 
-          if (content) {
+          if (headingContent !== "") {
             result.push({
-              content,
-              anchorLink: "#" + component.attrs.id,
+              anchorLink: `#${component.attrs.id}`,
+              content: headingContent,
             })
           }
         }
@@ -48,4 +55,3 @@ export const getTableOfContents = (
 
     return []
   })
-}

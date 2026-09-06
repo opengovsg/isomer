@@ -10,10 +10,10 @@ const NotificationContent = ({
   content,
   site,
 }: Pick<NotificationProps, "content" | "site">) => {
-  if (content instanceof Array) {
+  if (Array.isArray(content)) {
     return (
       <BaseParagraph
-        content={getTextAsHtml({ site, content })}
+        content={getTextAsHtml({ content, site })}
         className="prose-body-base"
       />
     )
@@ -29,10 +29,8 @@ const NotificationContent = ({
   return null
 }
 
-export const Notification = ({ content, title, site }: NotificationProps) => {
-  return (
-    <NotificationClient title={title}>
-      <NotificationContent content={content} site={site} />
-    </NotificationClient>
-  )
-}
+export const Notification = ({ content, title, site }: NotificationProps) => (
+  <NotificationClient title={title}>
+    <NotificationContent content={content} site={site} />
+  </NotificationClient>
+)

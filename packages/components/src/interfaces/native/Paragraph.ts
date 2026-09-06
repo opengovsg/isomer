@@ -8,7 +8,6 @@ import { TextSchema } from "./Text"
 
 export const ParagraphSchema = Type.Object(
   {
-    type: Type.Literal("paragraph", { default: "paragraph" }),
     attrs: Type.Optional(
       Type.Object({
         dir: AttrsDirSchema,
@@ -16,15 +15,16 @@ export const ParagraphSchema = Type.Object(
     ),
     content: Type.Optional(
       Type.Array(Type.Union([HardBreakSchema, TextSchema]), {
-        title: "Paragraph content",
         description: "The content of the paragraph",
+        title: "Paragraph content",
       }),
     ),
+    type: Type.Literal("paragraph", { default: "paragraph" }),
   },
   {
     $id: "components-native-paragraph",
-    title: "Paragraph component",
     description: "A paragraph of text",
+    title: "Paragraph component",
   },
 )
 

@@ -2,6 +2,7 @@ import { createElement } from "react"
 import { InfopicVariants } from "~/interfaces/complex/Infopic"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import type { InfopicProps } from "../types"
 import { ImageClient } from "../../../internal/ImageClient"
@@ -23,11 +24,12 @@ export const BlockInfopic = ({
 }: Omit<InfopicProps, "variant">) => {
   const Tag = getHeadingTag(headingLevel)
   const compoundStyles = infopicStyles({
+    colorScheme: "default",
     isTextOnRight,
     variant: InfopicVariants.Block.value,
-    colorScheme: "default",
   })
-  const hasLinkButton = !!buttonLabel && !!buttonUrl
+  const hasLinkButton =
+    hasNonEmptyString(buttonLabel) && hasNonEmptyString(buttonUrl)
 
   return (
     <section id={id} className={compoundStyles.container()}>

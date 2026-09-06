@@ -7,7 +7,7 @@ import type {
 } from "~/interfaces"
 import { twMerge } from "~/lib/twMerge"
 
-import { useSearchSGScript } from "../../../../../hooks/useSearchSGScript"
+import { useSearchSgScript } from "../../../../../hooks/useSearchSgScript"
 
 interface BaseSearchSGInputBoxProps {
   clientId: SearchSGInputBoxProps["clientId"]
@@ -19,7 +19,7 @@ const BaseSearchSGInputBox = ({
   className,
   shouldLoadScript = true,
 }: BaseSearchSGInputBoxProps) => {
-  useSearchSGScript({ clientId, shouldLoad: shouldLoadScript })
+  useSearchSgScript({ clientId, shouldLoad: shouldLoadScript })
 
   return (
     <div
@@ -32,19 +32,17 @@ const BaseSearchSGInputBox = ({
 export const NavbarSearchSGInputBox = ({
   clientId,
   isOpen = false,
-}: Omit<NavbarSearchSGInputBoxProps, "type">) => {
-  return <BaseSearchSGInputBox clientId={clientId} shouldLoadScript={isOpen} />
-}
+}: Omit<NavbarSearchSGInputBoxProps, "type">) => (
+  <BaseSearchSGInputBox clientId={clientId} shouldLoadScript={isOpen} />
+)
 
 export const HomepageSearchSGInputBox = ({
   clientId,
   className,
-}: Omit<HomepageSearchSGInputBoxProps, "type">) => {
-  return (
-    <BaseSearchSGInputBox
-      clientId={clientId}
-      className={className}
-      shouldLoadScript={true}
-    />
-  )
-}
+}: Omit<HomepageSearchSGInputBoxProps, "type">) => (
+  <BaseSearchSGInputBox
+    clientId={clientId}
+    className={className}
+    shouldLoadScript={true}
+  />
+)

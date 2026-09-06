@@ -39,38 +39,38 @@ import {
 
 export const IsomerComplexComponentsMap = {
   accordion: AccordionSchema,
+  antiscambanner: AntiScamDisclaimerBannerSchema,
+  audio: AudioSchema,
   blockquote: BlockquoteSchema,
   button: ButtonSchema,
   callout: CalloutSchema,
+  childrenpages: ChildrenPagesSchema,
+  collectionblock: CollectionBlockSchema,
+  contactinformation: ContactInformationSchema,
+  contentpic: ContentpicSchema,
+  dynamiccomponentlist: DynamicComponentListSchema,
+  dynamicdatabanner: DynamicDataBannerSchema,
   formsg: FormSGSchema,
   hero: HeroSchema,
   iframe: IframeSchema,
   image: ImageSchema,
+  imagegallery: ImageGallerySchema,
   infobar: InfobarHomepageSchema,
   infocards: InfoCardsSchema,
   infocols: InfoColsSchema,
   infopic: InfopicSchema,
-  contentpic: ContentpicSchema,
   keystatistics: KeyStatisticsSchema,
-  map: MapSchema,
-  audio: AudioSchema,
-  video: VideoSchema,
-  childrenpages: ChildrenPagesSchema,
-  dynamicdatabanner: DynamicDataBannerSchema,
-  antiscambanner: AntiScamDisclaimerBannerSchema,
   logocloud: LogoCloudSchema,
-  collectionblock: CollectionBlockSchema,
-  imagegallery: ImageGallerySchema,
-  contactinformation: ContactInformationSchema,
-  dynamiccomponentlist: DynamicComponentListSchema,
+  map: MapSchema,
+  video: VideoSchema,
 }
 
 export const IsomerNativeComponentsMap = {
-  prose: ProseSchema,
   divider: DividerSchema,
   heading: HeadingSchema,
   orderedList: OrderedListSchema,
   paragraph: ParagraphSchema,
+  prose: ProseSchema,
   table: TableSchema,
   unorderedList: UnorderedListSchema,
 }
@@ -102,9 +102,7 @@ const generateComponentSchema = ({ component, layout }: ComponentSchema) => {
 export const getComponentSchema = ({
   component,
   layout,
-}: ComponentSchema): TSchema => {
-  return {
-    ...generateComponentSchema({ component, layout }),
-    ...componentSchemaDefinitions,
-  }
-}
+}: ComponentSchema): TSchema => ({
+  ...generateComponentSchema({ component, layout }),
+  ...componentSchemaDefinitions,
+})

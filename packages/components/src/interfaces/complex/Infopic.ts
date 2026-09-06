@@ -7,49 +7,51 @@ import { AltTextSchema, ImageSrcSchema } from "./Image"
 
 export const InfopicVariants = {
   Block: {
-    value: "block",
     label: "Block (Default)",
+    value: "block",
   },
   Full: {
-    value: "full",
     label: "Full-image",
+    value: "full",
   },
 } as const
 
 export const InfopicSchema = Type.Object(
   {
-    type: Type.Literal("infopic", { default: "infopic" }),
-    id: Type.Optional(
+    buttonLabel: Type.Optional(
       Type.String({
-        title: "Anchor ID",
-        description: "The ID to use for anchor links",
-        format: "hidden",
+        description:
+          "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
+        maxLength: 50,
+        title: "Button text",
       }),
     ),
-    title: Type.String({
-      title: "Title",
-    }),
+    buttonUrl: Type.Optional(
+      Type.String({
+        description: "When this is clicked, open:",
+        format: "link",
+        pattern: LINK_HREF_PATTERN,
+        title: "Button destination",
+      }),
+    ),
     description: Type.Optional(
       Type.String({
         title: "Description",
       }),
     ),
-    buttonLabel: Type.Optional(
+    id: Type.Optional(
       Type.String({
-        title: "Button text",
-        maxLength: 50,
-        description:
-          "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
+        description: "The ID to use for anchor links",
+        format: "hidden",
+        title: "Anchor ID",
       }),
     ),
-    buttonUrl: Type.Optional(
-      Type.String({
-        title: "Button destination",
-        description: "When this is clicked, open:",
-        format: "link",
-        pattern: LINK_HREF_PATTERN,
-      }),
-    ),
+    imageAlt: AltTextSchema,
+    imageSrc: ImageSrcSchema,
+    title: Type.String({
+      title: "Title",
+    }),
+    type: Type.Literal("infopic", { default: "infopic" }),
     variant: Type.Optional(
       Type.Union(
         [
@@ -61,26 +63,27 @@ export const InfopicSchema = Type.Object(
           }),
         ],
         {
-          title: "Infopic style",
           default: InfopicVariants.Block.value,
           format: "hidden",
+          title: "Infopic style",
         },
       ),
     ),
-    imageSrc: ImageSrcSchema,
-    imageAlt: AltTextSchema,
   },
   {
-    title: "Image with text",
     description:
       "The infopic component is used to display an image with accompanying text",
+    title: "Image with text",
   },
 )
 
 export type InfopicProps = Static<typeof InfopicSchema> & {
-  sectionIndex?: number // TODO: Remove this property, only used in classic theme
-  subtitle?: string // Subtitle that is only used in the classic theme
-  isTextOnRight?: boolean // Automatically determined based on position in page
+  // NOTE: Remove this property, only used in classic theme
+  sectionIndex?: number
+  // Subtitle that is only used in the classic theme
+  subtitle?: string
+  // Automatically determined based on position in page
+  isTextOnRight?: boolean
   shouldLazyLoad?: boolean
   site: IsomerSiteProps
   headingLevel: number

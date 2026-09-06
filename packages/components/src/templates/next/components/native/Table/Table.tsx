@@ -25,8 +25,8 @@ const tableCellStyles = tv({
   base: "max-w-40 break-words border border-base-divider-medium px-4 py-3 align-top [&_li]:mb-4 [&_li]:mt-0 [&_li]:pl-1 [&_ol]:mt-0 [&_ol]:ps-5 [&_ul]:mt-0 [&_ul]:ps-5",
   variants: {
     isHeader: {
-      true: "bg-base-canvas-backdrop [&_ol]:prose-label-md-medium [&_p]:prose-label-md-medium",
       false: "bg-base-canvas-alt [&_ol]:prose-body-sm [&_p]:prose-body-sm",
+      true: "bg-base-canvas-backdrop [&_ol]:prose-label-md-medium [&_p]:prose-label-md-medium",
     },
   },
 })
@@ -67,57 +67,60 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
 
               return (
                 <tr key={getProseContentKey(row)} className="text-left">
-                  {row.content.map((cell) => {
-                    return (
-                      <TableCellTag
-                        key={getProseContentKey(cell)}
-                        colSpan={normalizeColspan(cell.attrs?.colspan)}
-                        rowSpan={normalizeRowspan(cell.attrs?.rowspan)}
-                        className={tableCellStyles({
-                          isHeader: cell.type === "tableHeader",
-                        })}
-                      >
-                        {cell.content.map((cellContent) => {
-                          switch (cellContent.type) {
-                            case "divider":
-                              return (
-                                <Divider
-                                  key={getProseContentKey(cellContent)}
-                                  {...cellContent}
-                                />
-                              )
-                            case "orderedList":
-                              return (
-                                <OrderedList
-                                  key={getProseContentKey(cellContent)}
-                                  {...cellContent}
-                                  site={site}
-                                />
-                              )
-                            case "paragraph":
-                              return (
-                                <Paragraph
-                                  key={getProseContentKey(cellContent)}
-                                  {...cellContent}
-                                  site={site}
-                                />
-                              )
-                            case "unorderedList":
-                              return (
-                                <UnorderedList
-                                  key={getProseContentKey(cellContent)}
-                                  {...cellContent}
-                                  site={site}
-                                />
-                              )
-                            default:
-                              const _: never = cellContent
-                              return null
+                  {row.content.map((cell) => (
+                    <TableCellTag
+                      key={getProseContentKey(cell)}
+                      colSpan={normalizeColspan(cell.attrs?.colspan)}
+                      rowSpan={normalizeRowspan(cell.attrs?.rowspan)}
+                      className={tableCellStyles({
+                        isHeader: cell.type === "tableHeader",
+                      })}
+                    >
+                      {cell.content.map((cellContent) => {
+                        switch (cellContent.type) {
+                          case "divider": {
+                            return (
+                              <Divider
+                                key={getProseContentKey(cellContent)}
+                                {...cellContent}
+                              />
+                            )
                           }
-                        })}
-                      </TableCellTag>
-                    )
-                  })}
+                          case "orderedList": {
+                            return (
+                              <OrderedList
+                                key={getProseContentKey(cellContent)}
+                                {...cellContent}
+                                site={site}
+                              />
+                            )
+                          }
+                          case "paragraph": {
+                            return (
+                              <Paragraph
+                                key={getProseContentKey(cellContent)}
+                                {...cellContent}
+                                site={site}
+                              />
+                            )
+                          }
+                          case "unorderedList": {
+                            return (
+                              <UnorderedList
+                                key={getProseContentKey(cellContent)}
+                                {...cellContent}
+                                site={site}
+                              />
+                            )
+                          }
+                          default: {
+                            const _: never = cellContent
+                            return null
+                          }
+                        }
+                      })}
+                    </TableCellTag>
+                  ))}
                 </tr>
               )
             })}

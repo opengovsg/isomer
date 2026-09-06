@@ -1,4 +1,4 @@
 export {
   NavbarSearchSGInputBox,
   HomepageSearchSGInputBox,
-} from "./SearchSGInputBox"
+} from "./SearchSgInputBox"

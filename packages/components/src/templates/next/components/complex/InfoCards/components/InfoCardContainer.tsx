@@ -2,6 +2,7 @@ import type { PropsWithChildren } from "react"
 import type { SingleCardWithImageProps } from "~/interfaces/complex/InfoCards"
 import { INFOCARD_VARIANT } from "~/interfaces/complex/InfoCards"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { Link } from "../../../internal/Link"
 import { compoundStyles } from "../common"
@@ -14,8 +15,8 @@ export const InfoCardContainer = ({
   variant = INFOCARD_VARIANT.default,
 }: PropsWithChildren<
   Pick<SingleCardWithImageProps, "variant" | "url" | "site" | "isExternalLink">
->): React.ReactNode => {
-  return url ? (
+>): React.ReactNode =>
+  hasNonEmptyString(url) ? (
     <Link
       href={getReferenceLinkHref(url, site.siteMapArray, site.assetsBaseUrl)}
       className={compoundStyles.cardContainer({ variant })}
@@ -26,4 +27,3 @@ export const InfoCardContainer = ({
   ) : (
     <div className={compoundStyles.cardContainer({ variant })}>{children}</div>
   )
-}

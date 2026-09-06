@@ -8,8 +8,8 @@ import { LinkButton } from "../../components/internal/LinkButton"
 const getPathnameSnapshot = () => window.location.pathname
 const getPathnameServerSnapshot = () => ""
 
-const subscribeToStaticSnapshot = () => {
-  return () => undefined
+const subscribeToStaticSnapshot = () => () => {
+  // noop unsubscribe for static useSyncExternalStore snapshot
 }
 
 export const NotFoundSearchButton = () => {

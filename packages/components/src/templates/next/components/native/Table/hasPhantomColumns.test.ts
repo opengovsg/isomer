@@ -17,68 +17,68 @@ describe("hasPhantomColumns", () => {
     // Arrange
     const rows = [
       {
-        type: "tableRow" as const,
         content: [
           {
-            type: "tableHeader" as const,
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableHeader" as const,
           },
           {
-            type: "tableHeader" as const,
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableHeader" as const,
           },
           {
-            type: "tableHeader" as const,
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableHeader" as const,
           },
         ],
+        type: "tableRow" as const,
       },
       {
-        type: "tableRow" as const,
         content: [
           {
-            type: "tableCell" as const,
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableCell" as const,
           },
           {
-            type: "tableCell" as const,
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableCell" as const,
           },
           {
-            type: "tableCell" as const,
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableCell" as const,
           },
         ],
+        type: "tableRow" as const,
       },
     ]
 
@@ -90,69 +90,69 @@ describe("hasPhantomColumns", () => {
     // Arrange
     const rows = [
       {
-        type: "tableRow" as const,
         content: [
           {
-            type: "tableHeader" as const,
             attrs: { colspan: 1, rowspan: 1 },
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableHeader" as const,
           },
           {
-            type: "tableHeader" as const,
             attrs: { colspan: 2, rowspan: 1 },
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableHeader" as const,
           },
         ],
+        type: "tableRow" as const,
       },
       {
-        type: "tableRow" as const,
         content: [
           {
-            type: "tableCell" as const,
             attrs: { colspan: 2, rowspan: 2 },
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableCell" as const,
           },
           {
-            type: "tableCell" as const,
             attrs: { colspan: 1, rowspan: 1 },
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableCell" as const,
           },
         ],
+        type: "tableRow" as const,
       },
       {
-        type: "tableRow" as const,
         content: [
           {
-            type: "tableCell" as const,
             attrs: { colspan: 1, rowspan: 1 },
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableCell" as const,
           },
         ],
+        type: "tableRow" as const,
       },
     ]
 
@@ -164,60 +164,60 @@ describe("hasPhantomColumns", () => {
     // Arrange
     const rows = [
       {
-        type: "tableRow" as const,
         content: [
           {
-            type: "tableHeader" as const,
             attrs: { colspan: 4 },
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableHeader" as const,
           },
         ],
+        type: "tableRow" as const,
       },
       {
-        type: "tableRow" as const,
         content: [
           {
-            type: "tableCell" as const,
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableCell" as const,
           },
           {
-            type: "tableCell" as const,
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableCell" as const,
           },
           {
-            type: "tableCell" as const,
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableCell" as const,
           },
           {
-            type: "tableCell" as const,
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableCell" as const,
           },
         ],
+        type: "tableRow" as const,
       },
     ]
 
@@ -228,19 +228,19 @@ describe("hasPhantomColumns", () => {
   it("returns false for tables above MAX_TABLE_ROWS without scanning every row", () => {
     // Arrange
     const paragraph = {
+      content: [{ text: "", type: "text" as const }],
       type: "paragraph" as const,
-      content: [{ type: "text" as const, text: "" }],
     }
     // SAFETY: Test builds a large TipTap table fixture for row-cap behavior.
     const rows = Array.from({ length: MAX_TABLE_ROWS + 1 }, () => ({
-      type: "tableRow" as const,
       content: [
         {
-          type: "tableCell" as const,
           attrs: { colspan: 1, rowspan: 2 },
           content: [paragraph],
+          type: "tableCell" as const,
         },
       ],
+      type: "tableRow" as const,
     })) as TableProps["content"]
 
     // Act / Assert

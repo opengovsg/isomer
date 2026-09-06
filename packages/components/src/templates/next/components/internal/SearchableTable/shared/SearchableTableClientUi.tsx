@@ -4,6 +4,7 @@ import type { SearchableTableClientProps } from "~/interfaces"
 import { useId, useRef } from "react"
 import { tv } from "~/lib/tv"
 import { handleHorizontalScrollKeyDown } from "~/utils/handleHorizontalScrollKeyDown"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { BaseParagraph } from "../../../internal/BaseParagraph"
 import { PaginationControls } from "../../../internal/PaginationControls"
@@ -14,23 +15,23 @@ import { EmptyState, FallbackEmptyState } from "./EmptyState"
 const createSearchableTableStyles = tv({
   slots: {
     container: "mx-auto w-full",
-    title: "prose-display-sm mb-9 break-words text-base-content-strong",
-    tableContainer: "mt-8 overflow-x-auto",
+    pagination: "mt-8 flex w-full justify-center lg:justify-end",
     table:
       "[&_>_tbody_>_tr:nth-child(even)_>_td]:bg-base-canvas-default w-full border-collapse border-spacing-0 [&_>_tbody_>_tr:nth-child(odd)_>_td]:bg-base-canvas-alt",
-    tableRow: "text-left",
     tableCell:
       "max-w-40 break-words border border-base-divider-medium px-4 py-3 align-top last:max-w-full [&_li]:my-0 [&_li]:pl-1 [&_ol]:mt-0 [&_ol]:ps-5 [&_ul]:mt-0 [&_ul]:ps-5",
-    pagination: "mt-8 flex w-full justify-center lg:justify-end",
+    tableContainer: "mt-8 overflow-x-auto",
+    tableRow: "text-left",
+    title: "prose-display-sm mb-9 break-words text-base-content-strong",
   },
   variants: {
     isHeader: {
+      false: {
+        tableCell: "text-base-content [&_ol]:prose-body-sm [&_p]:prose-body-sm",
+      },
       true: {
         tableCell:
           "bg-brand-interaction text-base-content-inverse [&_ol]:prose-label-md-medium [&_p]:prose-label-md-medium",
-      },
-      false: {
-        tableCell: "text-base-content [&_ol]:prose-body-sm [&_p]:prose-body-sm",
       },
     },
   },
@@ -120,7 +121,7 @@ const SearchableTableContent = ({
         >
           <table
             className={compoundStyles.table()}
-            aria-describedby={!!title ? titleId : undefined}
+            aria-describedby={hasNonEmptyString(title) ? titleId : undefined}
           >
             <tbody>
               <tr className={compoundStyles.tableRow()}>
@@ -134,24 +135,22 @@ const SearchableTableContent = ({
                 ))}
               </tr>
 
-              {paginatedItems.map((row, rowIndex) => {
-                return (
-                  <tr key={rowIndex} className={compoundStyles.tableRow()}>
-                    {row.slice(0, maxNoOfColumns).map((cell, cellIndex) => (
-                      <td
-                        key={cellIndex}
-                        className={compoundStyles.tableCell({
-                          isHeader: false,
-                        })}
-                      >
-                        {/* NOTE: Reference links are NOT supported within
+              {paginatedItems.map((row, rowIndex) => (
+                <tr key={rowIndex} className={compoundStyles.tableRow()}>
+                  {row.slice(0, maxNoOfColumns).map((cell, cellIndex) => (
+                    <td
+                      key={cellIndex}
+                      className={compoundStyles.tableCell({
+                        isHeader: false,
+                      })}
+                    >
+                      {/* NOTE: Reference links are NOT supported within
                           SearchableTable cell contents */}
-                        <BaseParagraph content={String(cell)} />
-                      </td>
-                    ))}
-                  </tr>
-                )
-              })}
+                      <BaseParagraph content={String(cell)} />
+                    </td>
+                  ))}
+                </tr>
+              ))}
             </tbody>
           </table>
         </section>
@@ -189,7 +188,7 @@ export const SearchableTableClientUI = ({
 
   return (
     <div className={compoundStyles.container()} ref={sectionTopRef}>
-      {!!title && (
+      {hasNonEmptyString(title) && (
         <h2 id={titleId} className={compoundStyles.title()}>
           {title}
         </h2>

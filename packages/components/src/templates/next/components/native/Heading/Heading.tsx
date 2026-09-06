@@ -16,19 +16,19 @@ export const Heading = ({
 }: Omit<HeadingProps, "type">) => {
   const Tag = getHeadingTag(headingLevel)
   const textContent = getTextAsHtml({
-    site,
     content,
     shouldHideEmptyHardBreak: true,
+    site,
   })
 
   if (level === 2) {
     return createElement(
       Tag,
       {
-        id,
         className:
           "prose-display-sm text-base-content-strong [&:not(:first-child)]:mt-14 [&:not(:last-child)]:mb-6",
         dir: dir ?? undefined,
+        id,
       },
       textContent,
     )
@@ -37,10 +37,10 @@ export const Heading = ({
     return createElement(
       Tag,
       {
-        id,
         className:
           "prose-display-xs text-base-content-strong [&:not(:first-child)]:mt-9 [&:not(:last-child)]:mb-6",
         dir: dir ?? undefined,
+        id,
       },
       textContent,
     )
@@ -49,10 +49,10 @@ export const Heading = ({
     return createElement(
       Tag,
       {
-        id,
         className:
           "prose-title-md-semibold text-base-content-strong [&:not(:first-child)]:mt-8 [&:not(:last-child)]:mb-6",
         dir: dir ?? undefined,
+        id,
       },
       textContent,
     )
@@ -61,10 +61,10 @@ export const Heading = ({
     return createElement(
       Tag,
       {
-        id,
         className:
           "prose-headline-lg-semibold text-base-content-strong [&:not(:first-child)]:mt-7 [&:not(:last-child)]:mb-6",
         dir: dir ?? undefined,
+        id,
       },
       textContent,
     )
@@ -72,10 +72,10 @@ export const Heading = ({
   return createElement(
     Tag,
     {
-      id,
       className:
         "prose-headline-base-semibold text-base-content-strong [&:not(:first-child)]:mt-6 [&:not(:last-child)]:mb-6",
       dir: dir ?? undefined,
+      id,
     },
     textContent,
   )

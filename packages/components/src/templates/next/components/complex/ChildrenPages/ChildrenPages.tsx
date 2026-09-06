@@ -8,6 +8,7 @@ import { createChildrenPagesComparator } from "~/utils/createChildrenPagesCompar
 import { getNodeFromSiteMap } from "~/utils/getNodeFromSiteMap"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { groupFocusVisibleHighlight } from "~/utils/tailwind"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { ComponentContent } from "../../internal/customCssClass"
 import { ImageClient } from "../../internal/ImageClient"
@@ -51,65 +52,67 @@ const BoxLayout = ({
   maxColumns = "2",
   imageFit = "cover",
   headingLevel,
-}: ChildpageLayoutProps) => {
-  return (
-    <div
-      className={compoundStyles.grid({
-        maxColumns,
-        variant: "default",
-        class: "[&:not(:first-child)]:mt-7",
-      })}
-    >
-      {childpages.map(({ id, title, description, url, image }) => {
-        if (showThumbnail) {
-          const hasImage = !!image?.src
-          const imageUrl = hasImage ? image.src : fallback.src
-          const imageAlt = hasImage ? (image.alt ?? "") : fallback.alt
-
-          return (
-            <InfoCardWithImage
-              key={id}
-              title={title}
-              description={showSummary ? description : undefined}
-              url={url}
-              imageUrl={imageUrl}
-              imageAlt={imageAlt}
-              imageFit={imageFit}
-              maxColumns={maxColumns}
-              layout="index"
-              site={site}
-              isFallback={!hasImage}
-              shouldLazyLoad={shouldLazyLoad}
-              headingLevel={headingLevel}
-            />
-          )
-        }
+}: ChildpageLayoutProps) => (
+  <div
+    className={compoundStyles.grid({
+      class: "[&:not(:first-child)]:mt-7",
+      maxColumns,
+      variant: "default",
+    })}
+  >
+    {childpages.map(({ id, title, description, url, image }) => {
+      if (showThumbnail) {
+        const hasImage = hasNonEmptyString(image?.src)
+        const imageUrl = hasImage ? image.src : fallback.src
+        const imageAlt = hasImage ? (image.alt ?? "") : fallback.alt
 
         return (
-          <InfoCardNoImage
+          <InfoCardWithImage
             key={id}
             title={title}
             description={showSummary ? description : undefined}
             url={url}
+            imageUrl={imageUrl}
+            imageAlt={imageAlt}
+            imageFit={imageFit}
+            maxColumns={maxColumns}
+            layout="index"
             site={site}
+            isFallback={!hasImage}
+            shouldLazyLoad={shouldLazyLoad}
             headingLevel={headingLevel}
           />
         )
-      })}
-    </div>
-  )
-}
+      }
+
+      return (
+        <InfoCardNoImage
+          key={id}
+          title={title}
+          description={showSummary ? description : undefined}
+          url={url}
+          site={site}
+          headingLevel={headingLevel}
+        />
+      )
+    })}
+  </div>
+)
 
 const createRowStyles = tv({
+  defaultVariants: {
+    layout: "default",
+  },
   slots: {
     container: `${ComponentContent} grid grid-cols-3 gap-9 md:grid-cols-6 lg:grid-cols-12 [&:not(:first-child)]:mt-7`,
+    contentContainer:
+      "max-md:grid-rows-[1fr fit-content] group grid grid-cols-subgrid max-md:col-span-full max-md:gap-y-5 md:col-span-6 lg:col-span-12",
+    description: "prose-body-base text-base-content",
     image: "bg-white",
     imageContainer:
       "flex aspect-[3/2] h-full w-full justify-center overflow-hidden rounded-lg border bg-base-canvas drop-shadow-none transition ease-in group-hover:drop-shadow-md max-md:col-span-full max-md:row-span-1 md:col-span-2 lg:col-span-3",
     textContainer:
       "flex flex-col justify-center gap-2 break-words max-md:col-span-full max-md:row-span-1",
-    contentContainer:
-      "max-md:grid-rows-[1fr fit-content] group grid grid-cols-subgrid max-md:col-span-full max-md:gap-y-5 md:col-span-6 lg:col-span-12",
     title: [
       groupFocusVisibleHighlight(),
       infoCardTitleStyle({
@@ -117,34 +120,29 @@ const createRowStyles = tv({
         variant: INFOCARD_VARIANT.default,
       }),
     ],
-    description: "prose-body-base text-base-content",
   },
   variants: {
-    layout: {
-      default: {},
-    },
-    imageFit: {
-      cover: {
-        image: "object-cover",
-      },
-      contain: {
-        image: "object-contain",
-      },
-    },
-    hasThumbnail: {
-      true: {
-        textContainer: "md:col-span-4 md:ml-[-1.25rem] lg:col-span-9",
-        contentContainer: "p-0",
-      },
-      false: { textContainer: "md:col-span-6 lg:col-span-12" },
-    },
     hasFallbackImage: {
       true: { image: "h-auto w-2/3 object-contain" },
     },
-  },
-
-  defaultVariants: {
-    layout: "default",
+    hasThumbnail: {
+      false: { textContainer: "md:col-span-6 lg:col-span-12" },
+      true: {
+        contentContainer: "p-0",
+        textContainer: "md:col-span-4 md:ml-[-1.25rem] lg:col-span-9",
+      },
+    },
+    imageFit: {
+      contain: {
+        image: "object-contain",
+      },
+      cover: {
+        image: "object-cover",
+      },
+    },
+    layout: {
+      default: {},
+    },
   },
 })
 
@@ -163,7 +161,7 @@ const RowLayout = ({
   return (
     <div className={styles.container()}>
       {childpages.map(({ id, title, description, url, image }) => {
-        const renderedImage = image?.src ? image : fallback
+        const renderedImage = hasNonEmptyString(image?.src) ? image : fallback
 
         return (
           <Link
@@ -174,7 +172,7 @@ const RowLayout = ({
             )}
             key={id}
             className={styles.contentContainer({
-              hasThumbnail: !!showThumbnail,
+              hasThumbnail: showThumbnail ?? false,
             })}
           >
             {showThumbnail && (
@@ -186,7 +184,7 @@ const RowLayout = ({
                   alt={renderedImage.alt}
                   width="100%"
                   className={styles.image({
-                    hasFallbackImage: !image?.src,
+                    hasFallbackImage: !hasNonEmptyString(image?.src),
                     imageFit,
                   })}
                 />
@@ -194,12 +192,12 @@ const RowLayout = ({
             )}
             <div
               className={styles.textContainer({
-                hasThumbnail: !!showThumbnail,
+                hasThumbnail: showThumbnail ?? false,
               })}
             >
               <p className={styles.title()}>
                 <span>{title}</span>
-                {url && (
+                {hasNonEmptyString(url) && (
                   <BiRightArrowAlt
                     aria-hidden
                     className={compoundStyles.cardTitleArrow({
@@ -228,7 +226,7 @@ export const ChildrenPages = ({
   permalink,
   site,
   variant,
-  showSummary = true,
+  showSummary,
   showThumbnail,
   shouldLazyLoad,
   maxColumns = "2",
@@ -244,13 +242,13 @@ export const ChildrenPages = ({
   const comparator = createChildrenPagesComparator(childrenPagesOrdering)
   const children = currentPageNode.children
     .map((child) => ({
+      description: child.summary,
       id: child.id,
+      image: child.image,
       title: child.title,
       url: child.permalink,
-      description: child.summary,
-      image: child.image,
     }))
-    .sort(comparator)
+    .toSorted(comparator)
 
   if (variant === "boxes") {
     return (
@@ -259,7 +257,7 @@ export const ChildrenPages = ({
         childpages={children}
         showSummary={showSummary}
         showThumbnail={showThumbnail}
-        fallback={{ src: site.logoUrl, alt: "Default logo of the site" }}
+        fallback={{ alt: "Default logo of the site", src: site.logoUrl }}
         shouldLazyLoad={shouldLazyLoad}
         site={site}
         maxColumns={maxColumns}
@@ -279,7 +277,7 @@ export const ChildrenPages = ({
       childpages={children}
       showSummary={showSummary}
       showThumbnail={showThumbnail}
-      fallback={{ src: site.logoUrl, alt: "Default logo of the site" }}
+      fallback={{ alt: "Default logo of the site", src: site.logoUrl }}
       shouldLazyLoad={shouldLazyLoad}
       site={site}
       imageFit={imageFit}

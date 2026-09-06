@@ -10,18 +10,50 @@ const generateInfobarSchema = ({
   includeDarkVariant,
 }: {
   includeDarkVariant: boolean
-}) => {
-  return Type.Object(
+}) =>
+  Type.Object(
     {
-      type: Type.Literal("infobar", { default: "infobar" }),
-      title: Type.String({
-        title: "Title",
-      }),
+      buttonLabel: Type.Optional(
+        Type.String({
+          description:
+            "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
+          maxLength: 50,
+          title: "Button text",
+        }),
+      ),
+      buttonUrl: Type.Optional(
+        Type.String({
+          description: "When this is clicked, open:",
+          format: "link",
+          pattern: LINK_HREF_PATTERN,
+          title: "Button destination",
+        }),
+      ),
       description: Type.Optional(
         Type.String({
           title: "Description",
         }),
       ),
+      secondaryButtonLabel: Type.Optional(
+        Type.String({
+          description:
+            "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
+          maxLength: 50,
+          title: "Secondary button text",
+        }),
+      ),
+      secondaryButtonUrl: Type.Optional(
+        Type.String({
+          description: "When this is clicked, open:",
+          format: "link",
+          pattern: LINK_HREF_PATTERN,
+          title: "Secondary button destination",
+        }),
+      ),
+      title: Type.String({
+        title: "Title",
+      }),
+      type: Type.Literal("infobar", { default: "infobar" }),
       variant: Type.Optional(
         Type.Union(
           [
@@ -38,60 +70,27 @@ const generateInfobarSchema = ({
           ],
           {
             default: DEFAULT_INFOBAR_VARIANT,
-            title: "Call-to-Action style",
             format: includeDarkVariant ? ARRAY_RADIO_FORMAT : "hidden",
+            title: "Call-to-Action style",
             type: "string",
           },
         ),
-      ),
-      buttonLabel: Type.Optional(
-        Type.String({
-          title: "Button text",
-          description:
-            "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
-          maxLength: 50,
-        }),
-      ),
-      buttonUrl: Type.Optional(
-        Type.String({
-          title: "Button destination",
-          description: "When this is clicked, open:",
-          format: "link",
-          pattern: LINK_HREF_PATTERN,
-        }),
-      ),
-      secondaryButtonLabel: Type.Optional(
-        Type.String({
-          title: "Secondary button text",
-          maxLength: 50,
-          description:
-            "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
-        }),
-      ),
-      secondaryButtonUrl: Type.Optional(
-        Type.String({
-          title: "Secondary button destination",
-          description: "When this is clicked, open:",
-          format: "link",
-          pattern: LINK_HREF_PATTERN,
-        }),
       ),
     },
     {
       groups: [
         {
-          label: "Primary call-to-action",
           fields: ["buttonLabel", "buttonUrl"],
+          label: "Primary call-to-action",
         },
         {
-          label: "Secondary call-to-action",
           fields: ["secondaryButtonLabel", "secondaryButtonUrl"],
+          label: "Secondary call-to-action",
         },
       ],
       title: "Call-to-Action",
     },
   )
-}
 
 export const InfobarHomepageSchema = generateInfobarSchema({
   includeDarkVariant: true,
@@ -102,8 +101,10 @@ export const InfobarDefaultSchema = generateInfobarSchema({
 })
 
 export type InfobarProps = Static<typeof InfobarHomepageSchema> & {
-  sectionIdx?: number // TODO: Remove this property, only used in classic theme
-  subtitle?: string // Subtitle that is only used in the classic theme
+  // NOTE: Remove this property, only used in classic theme
+  sectionIdx?: number
+  // Subtitle that is only used in the classic theme
+  subtitle?: string
   layout: IsomerPageLayoutType
   site: IsomerSiteProps
   headingLevel: number

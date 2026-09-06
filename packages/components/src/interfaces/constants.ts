@@ -1,4 +1,4 @@
 export const IMAGE_FIT = {
-  Cover: "cover",
   Content: "contain",
+  Cover: "cover",
 } as const

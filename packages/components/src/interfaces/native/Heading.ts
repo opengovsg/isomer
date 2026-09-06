@@ -10,31 +10,31 @@ export const HeadingLevels = [2, 3, 4, 5, 6] as const
 
 export const HeadingSchema = Type.Object(
   {
-    type: Type.Literal("heading", { default: "heading" }),
     attrs: Type.Object({
+      dir: AttrsDirSchema,
       // Used for anchor links
       id: Type.Optional(
         Type.String({
-          title: "Heading anchor ID",
           description: "The ID to use for this heading in anchor links",
+          title: "Heading anchor ID",
         }),
       ),
       level: Type.Union(
         HeadingLevels.map((level) => Type.Literal(level)),
         {
-          title: "Heading level",
           description: "The level of the heading to use",
+          title: "Heading level",
           type: "integer",
         },
       ),
-      dir: AttrsDirSchema,
     }),
     content: Type.Optional(Type.Array(TextSchema)),
+    type: Type.Literal("heading", { default: "heading" }),
   },
   {
     $id: "components-native-heading",
-    title: "Heading component",
     description: "A heading element that defines a title for a section",
+    title: "Heading component",
   },
 )
 

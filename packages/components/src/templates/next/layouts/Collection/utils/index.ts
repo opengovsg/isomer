@@ -1,3 +1,4 @@
+/* oxlint-disable oxc/no-barrel-file -- intentional public API exports */
 export * from "./getAvailableFilters"
 export * from "./getFilteredItems"
 export * from "./getPaginatedItems"

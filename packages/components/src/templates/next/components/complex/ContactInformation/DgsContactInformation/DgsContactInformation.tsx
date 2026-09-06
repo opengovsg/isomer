@@ -14,19 +14,62 @@ import { safeJsonParse } from "~/utils/safeJsonParse"
 
 import { ContactInformationUI } from "../components"
 
+const buildDgsFilters = (
+  filters: DgsContactInformationProps["dataSource"]["filters"],
+): NonNullable<DgsApiDatasetSearchParams["filters"]> => {
+  const result: NonNullable<DgsApiDatasetSearchParams["filters"]> = {}
+
+  if (filters === undefined) {
+    return result
+  }
+
+  for (const filter of filters) {
+    result[filter.fieldKey] = filter.fieldValue
+  }
+
+  return result
+}
+
+export const DgsTransformedContactInformation = ({
+  record,
+  isLoading,
+  ...rest
+}: DgsTransformedContactInformationProps) => {
+  const title = transformDgsField(rest.title, record)
+  const description = transformDgsField(rest.description, record)
+
+  const methods = safeJsonParse<ContactInformationUIProps["methods"]>(
+    transformDgsField(rest.methods, record),
+  )
+
+  const otherInformation = safeJsonParse<
+    NonNullable<ContactInformationUIProps["otherInformation"]>
+  >(transformDgsField(rest.otherInformation, record))
+
+  return (
+    <ContactInformationUI
+      isLoading={isLoading}
+      title={title ?? undefined}
+      description={description ?? undefined}
+      methods={methods ?? []}
+      otherInformation={otherInformation}
+      type={rest.type}
+      layout={rest.layout}
+      headingLevel={rest.headingLevel}
+      {...omit(rest, InjectableContactInformationKeys)}
+      acceptHtmlTags
+    />
+  )
+}
+
 export const DgsContactInformation = ({
   dataSource: { resourceId, filters },
   ...rest
 }: DgsContactInformationProps) => {
   const params = useMemo(
     () => ({
+      filters: buildDgsFilters(filters),
       resourceId,
-      filters: filters?.reduce<
-        NonNullable<DgsApiDatasetSearchParams["filters"]>
-      >((acc, filter) => {
-        acc[filter.fieldKey] = filter.fieldValue
-        return acc
-      }, {}),
     }),
     [resourceId, filters],
   )
@@ -37,7 +80,7 @@ export const DgsContactInformation = ({
     return (
       <ContactInformationUI
         isLoading={isLoading}
-        methods={[]} // not needed for loading state but its required prop
+        methods={[]}
         {...pick(rest, "type", "layout", "headingLevel")}
         acceptHtmlTags
       />
@@ -48,50 +91,9 @@ export const DgsContactInformation = ({
 
   // Should display nothing if there is an realtime error
   // as any rendering will likely seems jank and useless
-  if (isError || !record) {
+  if (isError || record === undefined) {
     return null
   }
 
   return <DgsTransformedContactInformation {...rest} record={record} />
-}
-
-export const DgsTransformedContactInformation = ({
-  record,
-  isLoading,
-  ...rest
-}: DgsTransformedContactInformationProps) => {
-  // SAFETY: transformDgsField returns the DGS record value typed as the configured field contract.
-  const title = transformDgsField(
-    rest.title,
-    record,
-  ) as ContactInformationUIProps["title"]
-
-  // SAFETY: transformDgsField returns the DGS record value typed as the configured field contract.
-  const description = transformDgsField(
-    rest.description,
-    record,
-  ) as ContactInformationUIProps["description"]
-
-  const methods = safeJsonParse<ContactInformationUIProps["methods"]>(
-    transformDgsField(rest.methods, record),
-  )
-
-  const otherInformation = safeJsonParse<
-    ContactInformationUIProps["otherInformation"]
-  >(transformDgsField(rest.otherInformation, record))
-
-  return (
-    <ContactInformationUI
-      isLoading={isLoading}
-      title={title}
-      description={description}
-      methods={methods ?? []}
-      otherInformation={otherInformation}
-      type={rest.type}
-      layout={rest.layout}
-      headingLevel={rest.headingLevel}
-      {...omit(rest, InjectableContactInformationKeys)}
-      acceptHtmlTags
-    />
-  )
 }

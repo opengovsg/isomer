@@ -13,26 +13,26 @@ describe("SiteEntitySettingsSchema", () => {
   // (in Studio) is what actually enforces it at runtime.
   it("limits the organisation-type field to the supported values", () => {
     expect(SiteEntitySettingsSchema.properties.type).toMatchObject({
-      type: "string",
       enum: SITE_ENTITY_TYPES,
+      type: "string",
     })
   })
 
   it("accepts structured address and contact-point metadata", () => {
     expect(
       Value.Check(SiteEntitySettingsSchema, {
-        type: "GovernmentOrganization",
         address: {
-          streetAddress: "1 Example Street",
+          addressCountry: "SG",
           addressLocality: "Singapore",
           postalCode: "123456",
-          addressCountry: "SG",
+          streetAddress: "1 Example Street",
         },
         contactPoint: {
           contactType: "Customer service",
-          telephone: "+65 6123 4567",
           email: "hello@example.gov.sg",
+          telephone: "+65 6123 4567",
         },
+        type: "GovernmentOrganization",
       }),
     ).toBe(true)
   })

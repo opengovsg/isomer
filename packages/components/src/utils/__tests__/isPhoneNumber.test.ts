@@ -14,9 +14,9 @@ describe("isPhoneNumber", () => {
         "91234567",
       ]
 
-      validPhones.forEach((phone) => {
+      for (const phone of validPhones) {
         expect(isPhoneNumber(phone)).toBe(true)
-      })
+      }
     })
 
     it("should return false for invalid phone numbers", () => {
@@ -27,22 +27,24 @@ describe("isPhoneNumber", () => {
         "12",
         "+",
         "++1234567890",
-        "12345678901234567890123456789012345", // Too long
-        "0123456789", // Starts with 0
+        "12345678901234567890123456789012345",
+        // Too long
+        "0123456789",
+        // Starts with 0
       ]
 
-      invalidPhones.forEach((phone) => {
+      for (const phone of invalidPhones) {
         expect(isPhoneNumber(phone)).toBe(false)
-      })
+      }
     })
 
     // edge case related to runtime validation
     it("should return false for non-string inputs", () => {
-      const invalidInputs = [null, undefined, 12345678, {}, [], true, false]
+      const invalidInputs = [null, undefined, 12_345_678, {}, [], true, false]
 
-      invalidInputs.forEach((input) => {
+      for (const input of invalidInputs) {
         expect(isPhoneNumber(input)).toBe(false)
-      })
+      }
     })
   })
 
@@ -57,9 +59,9 @@ describe("isPhoneNumber", () => {
         " 9123 4567 ",
       ]
 
-      phonesWithWhitespace.forEach((phone) => {
+      for (const phone of phonesWithWhitespace) {
         expect(isPhoneNumber(phone)).toBe(true)
-      })
+      }
     })
 
     it("should handle phone numbers with various whitespace characters", () => {
@@ -71,9 +73,9 @@ describe("isPhoneNumber", () => {
         "44\n123\n456\n789",
       ]
 
-      phonesWithWhitespace.forEach((phone) => {
+      for (const phone of phonesWithWhitespace) {
         expect(isPhoneNumber(phone)).toBe(true)
-      })
+      }
     })
 
     it("should handle phone numbers with hyphens and other separators", () => {
@@ -91,9 +93,9 @@ describe("isPhoneNumber", () => {
         "+44.123.456.789",
       ]
 
-      phonesWithSeparators.forEach((phone) => {
-        expect(isPhoneNumber(phone)).toBe(true) // These should now pass as separators are removed
-      })
+      for (const phone of phonesWithSeparators) {
+        expect(isPhoneNumber(phone)).toBe(true)
+      }
     })
   })
 
@@ -101,9 +103,9 @@ describe("isPhoneNumber", () => {
     it("should handle empty strings and whitespace-only strings", () => {
       const emptyInputs = ["", " ", "  ", "\t", "\n", "\t\n"]
 
-      emptyInputs.forEach((input) => {
+      for (const input of emptyInputs) {
         expect(isPhoneNumber(input)).toBe(false)
-      })
+      }
     })
 
     it("should handle very long strings", () => {

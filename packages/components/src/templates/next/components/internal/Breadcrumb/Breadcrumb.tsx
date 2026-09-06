@@ -4,30 +4,31 @@ import { BiChevronRight } from "react-icons/bi"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
 import { focusVisibleHighlight } from "~/utils/tailwind"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { Link } from "../Link"
 
 const createBreadcrumbLinkStyles = tv({
-  extend: focusVisibleHighlight,
   base: "",
+  defaultVariants: { colorScheme: "default" },
+  extend: focusVisibleHighlight,
   slots: {
     container: "flex items-center gap-1",
-    link: "prose-label-md-regular line-clamp-1 underline decoration-transparent underline-offset-4 transition current:prose-label-md-medium hover:decoration-inherit current:hover:decoration-transparent",
     icon: "h-5 w-5 flex-shrink-0",
+    link: "prose-label-md-regular line-clamp-1 underline decoration-transparent underline-offset-4 transition current:prose-label-md-medium hover:decoration-inherit current:hover:decoration-transparent",
   },
   variants: {
     colorScheme: {
       default: {
-        link: "text-base-content active:text-interaction-link-active current:text-base-content-medium",
         icon: "text-base-content-subtle",
+        link: "text-base-content active:text-interaction-link-active current:text-base-content-medium",
       },
       inverse: {
-        link: "text-base-content-inverse",
         icon: "text-base-content-inverse",
+        link: "text-base-content-inverse",
       },
     },
   },
-  defaultVariants: { colorScheme: "default" },
 })
 
 type BaseBreadcrumbsProps = ComponentPropsWithoutRef<"div"> & {
@@ -39,19 +40,17 @@ const BaseBreadcrumbs = ({
   children,
   "aria-label": ariaLabel = "Breadcrumb",
   ...props
-}: BaseBreadcrumbsProps) => {
-  return (
-    <nav
-      {...props}
-      aria-label={ariaLabel}
-      className={twMerge("flex flex-wrap gap-1", className)}
-    >
-      <ol className="m-0 flex list-none flex-wrap items-center gap-1 p-0">
-        {children}
-      </ol>
-    </nav>
-  )
-}
+}: BaseBreadcrumbsProps) => (
+  <nav
+    {...props}
+    aria-label={ariaLabel}
+    className={twMerge("flex flex-wrap gap-1", className)}
+  >
+    <ol className="m-0 flex list-none flex-wrap items-center gap-1 p-0">
+      {children}
+    </ol>
+  </nav>
+)
 
 type BaseBreadcrumbProps = LinkProps & {
   colorScheme?: "default" | "inverse"
@@ -79,7 +78,9 @@ const BaseBreadcrumb = ({
       >
         {children}
       </Link>
-      {href && <BiChevronRight aria-hidden="true" className={styles.icon()} />}
+      {hasNonEmptyString(href) && (
+        <BiChevronRight aria-hidden="true" className={styles.icon()} />
+      )}
     </li>
   )
 }

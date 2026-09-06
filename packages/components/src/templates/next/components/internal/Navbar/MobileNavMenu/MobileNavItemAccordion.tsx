@@ -21,24 +21,27 @@ interface ParentItemLinkProps extends Pick<
 }
 
 const mobileItemStyles = tv({
+  defaultVariants: {
+    itemType: "default",
+  },
   slots: {
-    container: "flex flex-col gap-3 border-b border-b-base-divider-subtle",
-    menuItemsContainer: "",
-    item: "group prose-headline-base-medium flex w-full items-center px-6 py-3 text-left text-base-content outline-0",
-    sublist: "flex w-full flex-col gap-3.5",
-    nestedItem: "prose-body-base text-base-content-medium",
     chevron:
       "text-[1.5rem] transition-transform duration-300 ease-in-out motion-reduce:transition-none",
+    container: "flex flex-col gap-3 border-b border-b-base-divider-subtle",
+    item: "group prose-headline-base-medium flex w-full items-center px-6 py-3 text-left text-base-content outline-0",
+    menuItemsContainer: "",
+    nestedItem: "prose-body-base text-base-content-medium",
+    sublist: "flex w-full flex-col gap-3.5",
   },
   variants: {
     isOpen: {
-      true: {
-        container: "pb-6",
-        chevron: "-rotate-180",
-        menuItemsContainer: "flex flex-col gap-6",
-      },
       false: {
         menuItemsContainer: "hidden",
+      },
+      true: {
+        chevron: "-rotate-180",
+        container: "pb-6",
+        menuItemsContainer: "flex flex-col gap-6",
       },
     },
     itemType: {
@@ -56,9 +59,6 @@ const mobileItemStyles = tv({
       },
     },
   },
-  defaultVariants: {
-    itemType: "default",
-  },
 })
 
 const { item, chevron, container, nestedItem, sublist, menuItemsContainer } =
@@ -73,7 +73,7 @@ const ParentItemLink = ({
   // This is a hack to ensure that the rightArrow is always at the end of the last word even on smaller screens
   const words = name.trim().split(" ")
   const allButLastWord = words.slice(0, -1).join(" ")
-  const lastWord = words[words.length - 1]
+  const lastWord = words.at(-1)
 
   return (
     <div
@@ -149,8 +149,8 @@ export const MobileNavItemAccordion = ({
             aria-controls={`menu-content-${index}`}
             onClick={onClick}
             className={item({
-              isOpen,
               className: focusVisibleHighlight(),
+              isOpen,
             })}
           >
             {name}

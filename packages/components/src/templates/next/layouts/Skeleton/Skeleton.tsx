@@ -1,4 +1,5 @@
 import type { IsomerPageSchemaType } from "~/types"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { Footer } from "../../components/internal/Footer"
 import { Masthead } from "../../components/internal/Masthead"
@@ -25,9 +26,9 @@ export const Skeleton = ({
       <header>
         <SkipToContent />
 
-        {site.isGovernment && <Masthead isStaging={isStaging} />}
+        {site.isGovernment === true && <Masthead isStaging={isStaging} />}
 
-        {site.notification?.title && (
+        {hasNonEmptyString(site.notification?.title) && (
           <Notification {...site.notification} site={site} />
         )}
 
@@ -58,7 +59,9 @@ export const Skeleton = ({
       <Footer
         isGovernment={site.isGovernment}
         siteName={site.siteName}
-        agencyName={site.agencyName || site.siteName}
+        agencyName={
+          hasNonEmptyString(site.agencyName) ? site.agencyName : site.siteName
+        }
         lastUpdated={site.lastUpdated}
         site={site}
         {...site.footerItems}

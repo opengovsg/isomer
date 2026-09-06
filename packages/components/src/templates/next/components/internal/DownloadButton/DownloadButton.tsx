@@ -9,6 +9,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { BiDownload, BiLoaderAlt } from "react-icons/bi"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { buttonIconStyles, buttonStyles } from "../Button/common"
 import { defaultDownloadStrategies, directDownloadStrategy } from "./strategies"
@@ -25,15 +26,17 @@ const downloadIconStyles = tv({
 const downloadFile = (url: string) => {
   const a = document.createElement("a")
   a.href = url
-  a.download = "" // filename will be set by the browser
-  document.body.appendChild(a)
+  // filename will be set by the browser
+  a.download = ""
+  document.body.append(a)
   a.click()
-  document.body.removeChild(a)
+  a.remove()
 }
 
 interface DownloadButtonProps
-  extends AriaButtonProps<"button">, VariantProps<typeof buttonStyles> {
-  url: string // URL to download the file from
+  extends AriaButtonProps, VariantProps<typeof buttonStyles> {
+  // URL to download the file from
+  url: string
   className?: string
 }
 
@@ -56,18 +59,22 @@ export const DownloadButton = ({
   const strategy = useMemo(
     () =>
       defaultDownloadStrategies.find((s) => s.canHandle(url)) ??
-      directDownloadStrategy, // assume direct download if no strategy is found
+      // assume direct download if no strategy is found
+      directDownloadStrategy,
     [url],
   )
 
   const handleDownload = async () => {
-    if (isDownloading) return // Prevent multiple simultaneous downloads
+    if (isDownloading) {
+      // Prevent multiple simultaneous downloads
+      return
+    }
 
     try {
       setIsDownloading(true)
 
       const downloadUrl = await strategy.getDownloadUrl(url)
-      if (downloadUrl) {
+      if (hasNonEmptyString(downloadUrl)) {
         downloadFile(downloadUrl)
       } else {
         console.error("Failed to get download URL")
@@ -83,7 +90,7 @@ export const DownloadButton = ({
     const updateDisplayText = async () => {
       try {
         const displayText = await strategy.getDisplayText(url)
-        if (displayText) {
+        if (hasNonEmptyString(displayText)) {
           setText(displayText)
         }
       } catch (error) {
@@ -114,11 +121,11 @@ export const DownloadButton = ({
       ref={ref}
       className={twMerge(
         buttonStyles({
-          isFocusVisible,
-          isDisabled: isDownloading,
-          variant,
-          size,
           colorScheme,
+          isDisabled: isDownloading,
+          isFocusVisible,
+          size,
+          variant,
         }),
         className,
       )}
@@ -126,7 +133,7 @@ export const DownloadButton = ({
       {text}
       {isDownloading ? (
         <BiLoaderAlt
-          className={downloadIconStyles({ size, isLoading: isDownloading })}
+          className={downloadIconStyles({ isLoading: isDownloading, size })}
         />
       ) : (
         <BiDownload className={downloadIconStyles({ size })} />

@@ -16,8 +16,8 @@ describe("getYearFilter", () => {
     // Assert
     expect(result).toEqual({
       id: "year",
-      label: "Year",
       items: [],
+      label: "Year",
     })
   })
 
@@ -47,12 +47,12 @@ describe("getYearFilter", () => {
     // Assert
     expect(result).toEqual({
       id: "year",
-      label: "Year",
       items: [
-        { id: "2023", label: "2023", count: 2 },
-        { id: "2022", label: "2022", count: 2 },
-        { id: NO_SPECIFIED_YEAR_FILTER_ID, label: "Not specified", count: 1 },
+        { count: 2, id: "2023", label: "2023" },
+        { count: 2, id: "2022", label: "2022" },
+        { count: 1, id: NO_SPECIFIED_YEAR_FILTER_ID, label: "Not specified" },
       ],
+      label: "Year",
     })
   })
 
@@ -60,19 +60,19 @@ describe("getYearFilter", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
       testCollectionItem({
+        date: new Date("2023-01-01"),
+        description: "",
         title: "Item 1",
-        description: "",
-        date: new Date("2023-01-01"),
       }),
       testCollectionItem({
+        date: new Date("2023-01-01"),
+        description: "",
         title: "Item 2",
-        description: "",
-        date: new Date("2023-01-01"),
       }),
       testCollectionItem({
-        title: "Item 3",
-        description: "",
         date: new Date("2023-01-01"),
+        description: "",
+        title: "Item 3",
       }),
     ]
 
@@ -82,17 +82,17 @@ describe("getYearFilter", () => {
     // Assert
     expect(result).toEqual({
       id: "year",
+      items: [{ count: 3, id: "2023", label: "2023" }],
       label: "Year",
-      items: [{ id: "2023", label: "2023", count: 3 }],
     })
   })
 
   it("should not return any items if all items have no dates", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
-      testCollectionItem({ title: "Item 1", description: "", date: undefined }),
-      testCollectionItem({ title: "Item 2", description: "", date: undefined }),
-      testCollectionItem({ title: "Item 3", description: "", date: undefined }),
+      testCollectionItem({ date: undefined, description: "", title: "Item 1" }),
+      testCollectionItem({ date: undefined, description: "", title: "Item 2" }),
+      testCollectionItem({ date: undefined, description: "", title: "Item 3" }),
     ]
 
     // Act
@@ -101,8 +101,8 @@ describe("getYearFilter", () => {
     // Assert
     expect(result).toEqual({
       id: "year",
-      label: "Year",
       items: [],
+      label: "Year",
     })
   })
 })

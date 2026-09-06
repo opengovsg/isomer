@@ -4,76 +4,76 @@ import { describe, expect, it } from "vitest"
 import { getNodeFromSiteMap } from "../getNodeFromSiteMap"
 
 const DEFAULT_SITEMAP: IsomerSitemap = {
-  id: "1",
-  title: "Isomer Next",
-  permalink: "/",
-  lastModified: "",
-  layout: "homepage",
-  summary: "",
   children: [
     {
-      id: "2",
-      title: "Parent page",
-      permalink: "/parent",
-      lastModified: "",
-      layout: "content",
-      summary: "",
       children: [
         {
-          id: "3",
-          title: "Irrationality",
-          permalink: "/parent/rationality",
-          lastModified: "",
-          layout: "content",
-          summary: "Pages in Irrationality",
           children: [
             {
               id: "4",
-              title: "For Individuals",
-              permalink: "/parent/rationality/child-page-1",
               lastModified: "",
               layout: "content",
+              permalink: "/parent/rationality/child-page-1",
               summary: "",
+              title: "For Individuals",
             },
             {
               id: "5",
-              title: "Steven Pinker's Rationality",
-              permalink: "/parent/rationality/child-page-2",
               lastModified: "",
               layout: "content",
+              permalink: "/parent/rationality/child-page-2",
               summary: "",
+              title: "Steven Pinker's Rationality",
             },
           ],
-        },
-        {
-          id: "6",
-          title: "Sibling",
-          permalink: "/parent/sibling",
+          id: "3",
           lastModified: "",
           layout: "content",
-          summary: "Pages in Sibling",
+          permalink: "/parent/rationality",
+          summary: "Pages in Irrationality",
+          title: "Irrationality",
+        },
+        {
           children: [
             {
               id: "7",
-              title: "Child that should not appear",
-              permalink: "/parent/sibling/child-page-2",
               lastModified: "",
               layout: "content",
+              permalink: "/parent/sibling/child-page-2",
               summary: "",
+              title: "Child that should not appear",
             },
           ],
+          id: "6",
+          lastModified: "",
+          layout: "content",
+          permalink: "/parent/sibling",
+          summary: "Pages in Sibling",
+          title: "Sibling",
         },
       ],
+      id: "2",
+      lastModified: "",
+      layout: "content",
+      permalink: "/parent",
+      summary: "",
+      title: "Parent page",
     },
     {
       id: "8",
-      title: "Aunt/Uncle that should not appear",
-      permalink: "/aunt-uncle",
       lastModified: "",
       layout: "content",
+      permalink: "/aunt-uncle",
       summary: "",
+      title: "Aunt/Uncle that should not appear",
     },
   ],
+  id: "1",
+  lastModified: "",
+  layout: "homepage",
+  permalink: "/",
+  summary: "",
+  title: "Isomer Next",
 }
 
 describe("getNodeFromSiteMap", () => {
@@ -87,11 +87,11 @@ describe("getNodeFromSiteMap", () => {
     // Assert
     expect(result).toStrictEqual({
       id: "4",
-      title: "For Individuals",
-      permalink: "/parent/rationality/child-page-1",
       lastModified: "",
       layout: "content",
+      permalink: "/parent/rationality/child-page-1",
       summary: "",
+      title: "For Individuals",
     })
   })
 
@@ -104,30 +104,30 @@ describe("getNodeFromSiteMap", () => {
 
     // Assert
     expect(result).toStrictEqual({
-      id: "3",
-      title: "Irrationality",
-      permalink: "/parent/rationality",
-      lastModified: "",
-      layout: "content",
-      summary: "Pages in Irrationality",
       children: [
         {
           id: "4",
-          title: "For Individuals",
-          permalink: "/parent/rationality/child-page-1",
           lastModified: "",
           layout: "content",
+          permalink: "/parent/rationality/child-page-1",
           summary: "",
+          title: "For Individuals",
         },
         {
           id: "5",
-          title: "Steven Pinker's Rationality",
-          permalink: "/parent/rationality/child-page-2",
           lastModified: "",
           layout: "content",
+          permalink: "/parent/rationality/child-page-2",
           summary: "",
+          title: "Steven Pinker's Rationality",
         },
       ],
+      id: "3",
+      lastModified: "",
+      layout: "content",
+      permalink: "/parent/rationality",
+      summary: "Pages in Irrationality",
+      title: "Irrationality",
     })
   })
 

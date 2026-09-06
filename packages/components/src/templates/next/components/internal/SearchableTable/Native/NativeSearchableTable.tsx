@@ -7,8 +7,8 @@ export const NativeSearchableTable = ({
   ...rest
 }: NativeSearchableTableProps) => {
   const cacheItems = items.map((item) => ({
-    row: item,
     key: item.join(" ").toLowerCase(),
+    row: item,
   }))
 
   return <SearchableTableClient items={cacheItems} {...rest} />

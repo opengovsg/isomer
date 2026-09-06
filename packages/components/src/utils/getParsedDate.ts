@@ -12,36 +12,32 @@ const SUPPORTED_DATE_FORMATS = [
 ]
 
 export const getParsedDate = (dateString: string) => {
-  const parsedDate = SUPPORTED_DATE_FORMATS.reduce<Date | undefined>(
-    (acc, format) => {
-      if (acc) {
-        // Date has already been parsed by an earlier format
-        return acc
-      }
+  let parsedDate: Date | undefined
 
-      try {
-        if (isMatch(dateString, format)) {
-          let offsetDate = dateString
-          if (format === TIMEZONE_DATE_FORMAT) {
-            const localTimezoneOffsetInSeconds =
-              new Date().getTimezoneOffset() * 60 * 1000
+  for (const format of SUPPORTED_DATE_FORMATS) {
+    if (parsedDate !== undefined) {
+      break
+    }
 
-            offsetDate = new Date(
-              new Date(dateString).getTime() - localTimezoneOffsetInSeconds,
-            ).toISOString()
-          }
-          return parse(offsetDate, format, new Date())
+    try {
+      if (isMatch(dateString, format)) {
+        let offsetDate = dateString
+        if (format === TIMEZONE_DATE_FORMAT) {
+          const localTimezoneOffsetInSeconds =
+            new Date().getTimezoneOffset() * 60 * 1000
+
+          offsetDate = new Date(
+            new Date(dateString).getTime() - localTimezoneOffsetInSeconds,
+          ).toISOString()
         }
-      } catch (e) {
-        return new Date()
+        parsedDate = parse(offsetDate, format, new Date())
       }
+    } catch {
+      parsedDate = new Date()
+    }
+  }
 
-      return acc
-    },
-    undefined,
-  )
-
-  if (parsedDate) {
+  if (parsedDate !== undefined) {
     return parsedDate
   }
 

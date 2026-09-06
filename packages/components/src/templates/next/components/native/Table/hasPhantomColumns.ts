@@ -27,12 +27,12 @@ export interface PhantomColumnsResult {
  */
 export const checkPhantomColumns = (rows: TableRows): PhantomColumnsResult => {
   if (rows.length === 0 || rows.length > MAX_TABLE_ROWS) {
-    return { hasPhantomColumns: false, columnCount: 0 }
+    return { columnCount: 0, hasPhantomColumns: false }
   }
 
   const columnCount = getTableColumnCount(rows)
   if (columnCount <= 1 || columnCount > MAX_TABLE_COLUMNS) {
-    return { hasPhantomColumns: false, columnCount }
+    return { columnCount, hasPhantomColumns: false }
   }
 
   // grid[row][col] = the cell (by colspan) covering that slot, once placed.
@@ -41,7 +41,7 @@ export const checkPhantomColumns = (rows: TableRows): PhantomColumnsResult => {
   )
   const hasExclusiveCell = Array.from({ length: columnCount }, () => false)
 
-  for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+  for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
     const row = rows[rowIndex]
     if (!row) {
       continue
@@ -87,7 +87,7 @@ export const checkPhantomColumns = (rows: TableRows): PhantomColumnsResult => {
   }
 
   return {
-    hasPhantomColumns: hasExclusiveCell.some((hasExclusive) => !hasExclusive),
     columnCount,
+    hasPhantomColumns: hasExclusiveCell.some((hasExclusive) => !hasExclusive),
   }
 }

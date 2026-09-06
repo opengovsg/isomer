@@ -5,21 +5,21 @@ import {
   withSearchSgSetup,
 } from "~/stories/decorators"
 
-import { NavbarSearchSGInputBox } from "./SearchSGInputBox"
+import { NavbarSearchSGInputBox } from "./SearchSgInputBox"
 
 const meta: Meta<NavbarSearchSGInputBoxProps> = {
-  title: "Next/Internal Components/SearchSGInputBox",
-  component: NavbarSearchSGInputBox,
-  decorators: [withSearchSgSetup()],
   argTypes: {},
   args: {
     clientId: SEARCHSG_TEST_CLIENT_ID,
   },
+  component: NavbarSearchSGInputBox,
+  decorators: [withSearchSgSetup()],
   parameters: {
     themes: {
       themeOverride: "Isomer Next",
     },
   },
+  title: "Next/Internal Components/SearchSGInputBox",
 }
 export default meta
 type Story = StoryObj<typeof NavbarSearchSGInputBox>

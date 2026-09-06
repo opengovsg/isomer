@@ -4,7 +4,10 @@ import { expect, within } from "storybook/test"
 import { Checkbox } from "./Checkbox"
 
 const meta: Meta<typeof Checkbox> = {
-  title: "Next/Internal Components/Checkbox",
+  args: {
+    children: "Checkbox",
+    isDisabled: false,
+  },
   component: Checkbox,
   decorators: [
     (Story) => (
@@ -13,10 +16,7 @@ const meta: Meta<typeof Checkbox> = {
       </div>
     ),
   ],
-  args: {
-    children: "Checkbox",
-    isDisabled: false,
-  },
+  title: "Next/Internal Components/Checkbox",
 }
 
 export default meta

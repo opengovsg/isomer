@@ -15,25 +15,46 @@ interface DownloadStrategy {
   getDisplayText: (url: string) => Promise<string | null>
 }
 
+const renderDownloadText = ({
+  format,
+  size,
+}: {
+  format: string | undefined
+  size: number | undefined
+}) => {
+  const formattedSize = size === undefined ? null : formatBytes(size)
+  const hasFormat = format !== undefined && format !== ""
+  const hasFormattedSize = formattedSize !== null && formattedSize !== ""
+
+  if (hasFormat && hasFormattedSize) {
+    return `Download ${format} (${formattedSize})`
+  }
+
+  if (hasFormat) {
+    return `Download ${format}`
+  }
+
+  if (hasFormattedSize) {
+    return `Download (${formattedSize})`
+  }
+
+  return "Download"
+}
+
 const dgsDownloadStrategy: DownloadStrategy = {
   canHandle: (url: string) => {
     const dgsId = getDgsIdFromDgsLink(url)
     return dgsId !== null
   },
-  getDownloadUrl: async (url: string) => {
-    const dgsId = getDgsIdFromDgsLink(url)
-    if (!dgsId) return null
-
-    const result = await fetchDgsFileDownloadUrl({ resourceId: dgsId })
-    return result?.downloadUrl || null
-  },
   getDisplayText: async (url: string) => {
     const dgsId = getDgsIdFromDgsLink(url)
-    if (!dgsId) return null
+    if (dgsId === null) {
+      return null
+    }
 
     try {
       const metadata = await fetchDgsMetadata({ resourceId: dgsId })
-      if (metadata) {
+      if (metadata !== undefined && metadata !== null) {
         return renderDownloadText(metadata)
       }
     } catch (error) {
@@ -41,21 +62,26 @@ const dgsDownloadStrategy: DownloadStrategy = {
     }
     return null
   },
+  getDownloadUrl: async (url: string) => {
+    const dgsId = getDgsIdFromDgsLink(url)
+    if (dgsId === null) {
+      return null
+    }
+
+    const result = await fetchDgsFileDownloadUrl({ resourceId: dgsId })
+    const downloadUrl = result?.downloadUrl
+    return downloadUrl !== undefined && downloadUrl !== "" ? downloadUrl : null
+  },
 }
 
 export const directDownloadStrategy: DownloadStrategy = {
-  canHandle: () => {
+  canHandle: () =>
     // Handle direct file URLs or any URL that doesn't match other strategies
-    return true
-  },
-  getDownloadUrl: (url: string) => {
-    // For direct URLs, return the URL as-is
-    return Promise.resolve(url)
-  },
+    true,
   getDisplayText: async (url: string) => {
     try {
       const metadata = await fetchFileMetadata({ url })
-      if (metadata) {
+      if (metadata !== undefined && metadata !== null) {
         return renderDownloadText(metadata)
       }
     } catch (error) {
@@ -63,6 +89,9 @@ export const directDownloadStrategy: DownloadStrategy = {
     }
     return null
   },
+  getDownloadUrl: async (url: string) =>
+    // For direct URLs, return the URL as-is
+    await Promise.resolve(url),
 }
 
 /**
@@ -70,22 +99,5 @@ export const directDownloadStrategy: DownloadStrategy = {
  */
 export const defaultDownloadStrategies: DownloadStrategy[] = [
   dgsDownloadStrategy,
-  directDownloadStrategy, // Fallback strategy
+  directDownloadStrategy,
 ]
-
-interface RenderDownloadTextProps {
-  format: string | undefined
-  size: number | undefined
-}
-const renderDownloadText = ({ format, size }: RenderDownloadTextProps) => {
-  const formattedSize = size !== undefined ? formatBytes(size) : null
-  if (format && formattedSize) {
-    return `Download ${format} (${formattedSize})`
-  } else if (format) {
-    return `Download ${format}`
-  } else if (formattedSize) {
-    return `Download (${formattedSize})`
-  } else {
-    return "Download"
-  }
-}

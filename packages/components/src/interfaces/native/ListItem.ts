@@ -26,7 +26,6 @@ export const listItemSchemaBuilder = <T extends TSchema, U extends TSchema>(
 ) =>
   Type.Object(
     {
-      type: Type.Literal("listItem", { default: "listItem" }),
       content: Type.Array(
         Type.Union([
           Type.Ref(ParagraphSchema),
@@ -34,16 +33,17 @@ export const listItemSchemaBuilder = <T extends TSchema, U extends TSchema>(
           Type.Ref(unorderedListSchema),
         ]),
         {
-          title: "List item contents",
           minItems: 1,
+          title: "List item contents",
         },
       ),
+      type: Type.Literal("listItem", { default: "listItem" }),
     },
     {
       $id: "components-native-listItem",
-      title: "List item component",
       description:
         "A list item that can contain paragraphs or nested ordered lists and unordered lists",
+      title: "List item component",
     },
   )
 

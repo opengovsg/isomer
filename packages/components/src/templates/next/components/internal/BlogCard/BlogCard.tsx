@@ -1,8 +1,10 @@
 import type { CollectionCardProps } from "~/interfaces"
 import type { CollectionPageSchemaType } from "~/types"
 import { isExternalUrl } from "~/utils/isExternalUrl"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
-import { Title } from "../CollectionCard/Title" // Reusing since the logic is the same for both
+// Reusing since the logic is the same for both
+import { Title } from "../CollectionCard/Title"
 import { ImageClient } from "../ImageClient"
 import { Link } from "../Link"
 import { PillTags } from "../Tags/PillTags"
@@ -26,7 +28,8 @@ export const BlogCard = ({
   siteAssetsBaseUrl: string | undefined
   headingLevel: number
 }): React.ReactNode => {
-  const isExternalLink = !!referenceLinkHref && isExternalUrl(referenceLinkHref)
+  const isExternalLink =
+    hasNonEmptyString(referenceLinkHref) && isExternalUrl(referenceLinkHref)
 
   return (
     // NOTE: In smaller viewports, we render a border between items for easy distinguishing
@@ -36,20 +39,20 @@ export const BlogCard = ({
       className="group flex flex-1 flex-col gap-3 border-b pb-5 pt-5 md:pt-0"
       isExternal={isExternalLink}
     >
-      {image && (
+      {image !== undefined && image !== null && (
         <div className="relative mb-3 flex aspect-[2/1] h-auto min-h-40 shrink-0 items-center justify-center">
           <ImageClient
-            src={imageSrc || ""}
+            src={hasNonEmptyString(imageSrc) ? imageSrc : ""}
             alt={image.alt}
             width="100%"
-            className={`absolute left-0 h-full w-full rounded ${isContainNeeded ? "object-contain" : "object-cover"}`}
+            className={`absolute left-0 h-full w-full rounded ${isContainNeeded === true ? "object-contain" : "object-cover"}`}
             assetsBaseUrl={siteAssetsBaseUrl}
           />
         </div>
       )}
       {shouldShowDate && (
         <p className="prose-label-md-regular shrink-0 text-base-content-subtle">
-          {formattedDate ? formattedDate : "-"}
+          {hasNonEmptyString(formattedDate) ? formattedDate : "-"}
         </p>
       )}
       <div className="flex flex-grow flex-col gap-3 text-base-content">
@@ -63,7 +66,7 @@ export const BlogCard = ({
           className="flex w-full flex-wrap items-center gap-1.5"
           containerClassName="-mt-1 flex flex-col gap-2"
         />
-        {description && description.trim() !== "" && (
+        {hasNonEmptyString(description) && description.trim() !== "" && (
           <p className="prose-body-base line-clamp-3 whitespace-pre-wrap">
             {description}
           </p>

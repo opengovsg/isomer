@@ -8,24 +8,37 @@ import { handleHorizontalScrollKeyDown } from "~/utils/handleHorizontalScrollKey
 import { Prose } from "../../native/Prose"
 
 const CALLOUT_CONFIG = {
+  goodToKnow: { icon: BiCheckCircle, label: "Positive update" },
   info: { label: "Information" },
   information: { label: "Information" },
-  goodToKnow: { label: "Positive update", icon: BiCheckCircle },
-  warning: { label: "Warning", icon: BiErrorCircle },
-  urgent: { label: "Needs urgent action", icon: BiError },
   note: { label: "Note" },
+  urgent: { icon: BiError, label: "Needs urgent action" },
+  warning: { icon: BiErrorCircle, label: "Warning" },
 } satisfies Record<CalloutVariant, { label: string; icon?: IconType }>
 
 const calloutStyles = tv({
+  defaultVariants: {
+    hasIcon: false,
+    variant: DEFAULT_CALLOUT_VARIANT,
+  },
   slots: {
     container:
       "flex items-start gap-3 rounded-lg border-[1.5px] [&:not(:first-child)]:mt-7",
-    icon: "h-6 w-6 flex-shrink-0",
     content:
       "prose-headline-lg-regular min-w-0 flex-1 overflow-x-auto [&>:is(ol,ul):first-child>li:first-child]:mt-0 [&>:is(ol,ul):first-child]:mt-0 [&>:is(ol,ul):last-child>li:last-child]:mb-0",
+    icon: "h-6 w-6 flex-shrink-0",
   },
   variants: {
+    hasIcon: {
+      false: { container: "px-5 py-4" },
+      true: { container: "px-4 py-3" },
+    },
     variant: {
+      goodToKnow: {
+        container:
+          "border-utility-feedback-success-subtle bg-utility-feedback-success-faint",
+        icon: "text-utility-feedback-success",
+      },
       info: {
         container:
           "border-utility-feedback-info bg-utility-feedback-info-subtle",
@@ -34,33 +47,20 @@ const calloutStyles = tv({
         container:
           "border-utility-feedback-info bg-utility-feedback-info-subtle",
       },
-      goodToKnow: {
-        container:
-          "border-utility-feedback-success-subtle bg-utility-feedback-success-faint",
-        icon: "text-utility-feedback-success",
-      },
-      warning: {
-        container:
-          "border-utility-feedback-warning-subtle bg-utility-feedback-warning-faint",
-        icon: "text-utility-feedback-warning",
+      note: {
+        container: "border-base-divider-medium bg-base-canvas-backdrop",
       },
       urgent: {
         container:
           "border-utility-feedback-alert-subtle bg-utility-feedback-alert-faint",
         icon: "text-utility-feedback-alert",
       },
-      note: {
-        container: "border-base-divider-medium bg-base-canvas-backdrop",
+      warning: {
+        container:
+          "border-utility-feedback-warning-subtle bg-utility-feedback-warning-faint",
+        icon: "text-utility-feedback-warning",
       },
     },
-    hasIcon: {
-      true: { container: "px-4 py-3" },
-      false: { container: "px-5 py-4" },
-    },
-  },
-  defaultVariants: {
-    variant: DEFAULT_CALLOUT_VARIANT,
-    hasIcon: false,
   },
 })
 
@@ -71,9 +71,9 @@ export const Callout = ({
   variant = DEFAULT_CALLOUT_VARIANT,
 }: CalloutProps) => {
   const config = CALLOUT_CONFIG[variant]
-  const label = config.label
+  const { label } = config
   const Icon = "icon" in config ? config.icon : undefined
-  const styles = calloutStyles({ variant, hasIcon: !!Icon })
+  const styles = calloutStyles({ hasIcon: !!Icon, variant })
 
   return (
     <fieldset className={styles.container()} aria-label={label}>

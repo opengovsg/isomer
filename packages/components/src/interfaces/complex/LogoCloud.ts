@@ -6,21 +6,21 @@ import { AltTextSchema, ImageSrcSchema } from "./Image"
 
 export const LogoCloudSchema = Type.Object(
   {
-    type: Type.Literal("logocloud", { default: "logocloud" }),
+    images: Type.Array(
+      Type.Object({
+        alt: AltTextSchema,
+        src: ImageSrcSchema,
+      }),
+      {
+        maxItems: 10,
+        minItems: 1,
+        title: "Logos",
+      },
+    ),
     title: Type.String({
       title: "Title",
     }),
-    images: Type.Array(
-      Type.Object({
-        src: ImageSrcSchema,
-        alt: AltTextSchema,
-      }),
-      {
-        title: "Logos",
-        minItems: 1,
-        maxItems: 10,
-      },
-    ),
+    type: Type.Literal("logocloud", { default: "logocloud" }),
   },
   {
     title: "Logo cloud",

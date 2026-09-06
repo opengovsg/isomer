@@ -6,14 +6,17 @@ export const GoogleTagManagerHeader = ({
   siteGtmId,
   ScriptComponent,
 }: GoogleTagManagerHeaderProps) => {
-  if (!ScriptComponent) return null
+  if (ScriptComponent === undefined || ScriptComponent === null) {
+    return null
+  }
 
   const sanitizedGtmId = serializeForInlineScript(siteGtmId)
 
   return (
     <ScriptComponent
       id={`_next-gtm-init-${siteGtmId}`}
-      strategy="afterInteractive" // next/script's default but just in case Vercel changes it in the future
+      // next/script's default but just in case Vercel changes it in the future
+      strategy="afterInteractive"
       // oxlint-disable-next-line react/no-danger -- GTM bootstrap snippet must run as inline script
       dangerouslySetInnerHTML={{
         __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':

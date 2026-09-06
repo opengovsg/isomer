@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 
 const getQueryParams = (params: URLSearchParams) => {
-  const entries = Array.from(params.entries())
+  const entries = [...params.entries()]
   return Object.fromEntries(entries)
 }
 
@@ -44,7 +44,7 @@ export const useQueryParams = (): [
   const updateQueryParams = ({ newParams }: UpdateQueryParams) => {
     const params = new URLSearchParams(queryParams)
     for (const key in newParams) {
-      if (newParams[key] == undefined || newParams[key] === "") {
+      if (newParams[key] === undefined || newParams[key] === "") {
         params.delete(key)
       } else {
         params.set(key, newParams[key])

@@ -22,18 +22,18 @@ describe("getAvailableFilters", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
       testCollectionItem({
-        title: "Item 1",
-        tags: [{ selected: ["Guides"], category: "Category" }],
         date: new Date("2023-01-01"),
+        tags: [{ category: "Category", selected: ["Guides"] }],
+        title: "Item 1",
       }),
     ]
     const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
       {
-        label: "Category",
+        display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         id: "cat-1",
         isRequired: true,
-        display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
-        options: [{ label: "Guides", id: "opt-1" }],
+        label: "Category",
+        options: [{ id: "opt-1", label: "Guides" }],
       },
     ]
 
@@ -44,10 +44,10 @@ describe("getAvailableFilters", () => {
     const categoryFilters = result.filter((filter) => filter.id === "Category")
     expect(categoryFilters).toHaveLength(1)
     expect(categoryFilters[0]).toEqual({
-      id: "Category",
-      label: "Category",
       display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
-      items: [{ id: "Guides", label: "Guides", count: 1 }],
+      id: "Category",
+      items: [{ count: 1, id: "Guides", label: "Guides" }],
+      label: "Category",
     })
   })
 
@@ -55,9 +55,9 @@ describe("getAvailableFilters", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
       testCollectionItem({
-        title: "Item 1",
-        tags: [{ selected: ["Guides"], category: "Category" }],
         date: new Date("2023-01-01"),
+        tags: [{ category: "Category", selected: ["Guides"] }],
+        title: "Item 1",
       }),
     ]
 
@@ -72,9 +72,9 @@ describe("getAvailableFilters", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
       testCollectionItem({
-        title: "Item 1",
-        tags: [],
         date: undefined,
+        tags: [],
+        title: "Item 1",
       }),
     ]
 

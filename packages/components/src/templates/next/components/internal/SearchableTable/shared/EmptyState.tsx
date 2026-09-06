@@ -4,21 +4,21 @@ import { COPYWRITING_MAPPING } from "./constants"
 
 const createEmptyStateStyles = tv({
   slots: {
+    button:
+      "prose-headline-base-medium text-link visited:text-link-visited hover:text-link-hover",
     container:
       "flex flex-col items-center justify-center gap-8 self-stretch px-10 py-20 pt-24",
     headings: "text-center",
-    title: "prose-headline-lg-regular text-center",
     subtitle: "prose-headline-lg-regular mt-3 text-base-content",
-    button:
-      "prose-headline-base-medium text-link visited:text-link-visited hover:text-link-hover",
+    title: "prose-headline-lg-regular text-center",
   },
   variants: {
     bold: {
-      true: {
-        title: "text-base-content-strong",
-      },
       false: {
         title: "text-base-content-subtle",
+      },
+      true: {
+        title: "text-base-content-strong",
       },
     },
   },
@@ -36,26 +36,24 @@ export const EmptyState = ({
   search,
   onClick,
   searchMatchType,
-}: EmptyStateProps) => {
-  return (
-    <div className={styles.container()}>
-      <div className={styles.headings()}>
-        <p className={styles.title({ bold: false })}>
-          No search results for “
-          <b className={styles.title({ bold: true })}>{search}</b>”
-        </p>
+}: EmptyStateProps) => (
+  <div className={styles.container()}>
+    <div className={styles.headings()}>
+      <p className={styles.title({ bold: false })}>
+        No search results for “
+        <b className={styles.title({ bold: true })}>{search}</b>”
+      </p>
 
-        <p className={styles.subtitle()}>
-          {COPYWRITING_MAPPING[searchMatchType].noResultsSubtitle}
-        </p>
-      </div>
-
-      <button type="button" className={styles.button()} onClick={onClick}>
-        Clear search
-      </button>
+      <p className={styles.subtitle()}>
+        {COPYWRITING_MAPPING[searchMatchType].noResultsSubtitle}
+      </p>
     </div>
-  )
-}
+
+    <button type="button" className={styles.button()} onClick={onClick}>
+      Clear search
+    </button>
+  </div>
+)
 
 interface FallbackEmptyStateProps {
   isLoading: boolean

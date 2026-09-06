@@ -1,8 +1,8 @@
-import { type SearchPageSchemaType } from "~/types"
+import type { SearchPageSchemaType } from "~/types"
 
 import { Skeleton } from "../Skeleton"
 import { EgazetteAlgoliaSearch } from "./EgazetteAlgoliaSearch"
-import { SearchSG } from "./SearchSG"
+import { SearchSG } from "./SearchSg"
 
 export const SearchLayout = ({ site, page, layout }: SearchPageSchemaType) => {
   const clientId =

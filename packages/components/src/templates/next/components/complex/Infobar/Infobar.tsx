@@ -2,6 +2,7 @@ import type { InfobarProps } from "~/interfaces/complex/Infobar"
 import { DynamicHeading } from "~/utils/DynamicHeading"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { LinkButton } from "../../internal/LinkButton"
 import { createInfobarStyles } from "./infobarStyles"
@@ -19,12 +20,15 @@ export const Infobar = ({
   headingLevel,
 }: InfobarProps) => {
   const simplifiedLayout = getTailwindVariantLayout(layout)
-  const hasPrimaryCTA = !!buttonLabel && !!buttonUrl
-  const hasSecondaryCTA = !!secondaryButtonLabel && !!secondaryButtonUrl
+  const hasPrimaryCTA =
+    hasNonEmptyString(buttonLabel) && hasNonEmptyString(buttonUrl)
+  const hasSecondaryCTA =
+    hasNonEmptyString(secondaryButtonLabel) &&
+    hasNonEmptyString(secondaryButtonUrl)
 
   const styles = createInfobarStyles({
-    layout: simplifiedLayout,
     colorScheme: variant,
+    layout: simplifiedLayout,
   })
 
   // NOTE: Should not have dark mode on non-homepage for now
@@ -41,7 +45,7 @@ export const Infobar = ({
             <DynamicHeading level={headingLevel} className={styles.title()}>
               {title}
             </DynamicHeading>
-            {description && (
+            {hasNonEmptyString(description) && (
               <p className={styles.description()}>{description}</p>
             )}
           </div>

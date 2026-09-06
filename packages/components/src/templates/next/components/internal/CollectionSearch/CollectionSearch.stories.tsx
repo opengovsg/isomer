@@ -13,14 +13,14 @@ const Template = (
 }
 
 const meta: Meta<typeof Template> = {
-  title: "Next/Internal Components/CollectionSearch",
-  component: Template,
   argTypes: {},
+  component: Template,
   parameters: {
     themes: {
       themeOverride: "Isomer Next",
     },
   },
+  title: "Next/Internal Components/CollectionSearch",
 }
 export default meta
 type Story = StoryObj<typeof CollectionSearch>

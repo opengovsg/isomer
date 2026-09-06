@@ -14,16 +14,20 @@ interface UseInteractionScriptLoaderOptions {
 export const useInteractionScriptLoader = ({
   src,
   id,
-  timeout = 3000, // 3 seconds from manual testing
+  // 3 seconds from manual testing
+  timeout = 3000,
 }: UseInteractionScriptLoaderOptions) => {
   const documentRef = useRef<Document | null>(globalThis.document ?? null)
   const [shouldLoad, setShouldLoad] = useState(false)
 
-  const triggerLoad = () => setShouldLoad(true)
+  const triggerLoad = () => {
+    setShouldLoad(true)
+  }
 
   // Load script on user interactions (scroll, click, touchstart, mousemove, keydown)
   useEventListener("scroll", triggerLoad, documentRef, { passive: true })
-  useEventListener("click", triggerLoad, documentRef) // as we might need to call preventDefault
+  useEventListener("click", triggerLoad, documentRef)
+  // as we might need to call preventDefault
   useEventListener("touchstart", triggerLoad, documentRef, { passive: true })
   useEventListener("mousemove", triggerLoad, documentRef, { passive: true })
   useEventListener("keydown", triggerLoad, documentRef, { passive: true })

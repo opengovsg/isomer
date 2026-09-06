@@ -42,7 +42,7 @@ export const getPillAndPlaintextTags = (
       continue
     }
 
-    const group: TagGroup = { id, category: label, selected }
+    const group: TagGroup = { category: label, id, selected }
 
     if (
       resolveTagCategoryDisplay(display) === TAG_CATEGORY_DISPLAY_OPTIONS.Pills

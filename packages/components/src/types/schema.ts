@@ -41,182 +41,182 @@ import {
 
 const BaseItemSchema = Type.Object({
   version: Type.String({
-    description: "The version of the Isomer Next schema to use",
     default: "0.1.0",
+    description: "The version of the Isomer Next schema to use",
   }),
 })
 
 export const ArticlePageSchema = Type.Object(
   {
+    content: Type.Array(IsomerComponentsSchemas, {
+      title: "Page content",
+    }),
     layout: Type.Literal(ISOMER_PAGE_LAYOUTS.Article, {
       default: ISOMER_PAGE_LAYOUTS.Article,
     }),
     meta: Type.Optional(ArticlePageMetaSchema),
     page: ArticlePagePageSchema,
-    content: Type.Array(IsomerComponentsSchemas, {
-      title: "Page content",
-    }),
   },
   {
-    title: "Article",
     description:
       "Designed for the perfect reading experience. Use this layout for text-heavy content, such as news, press releases, and speeches",
+    title: "Article",
   },
 )
 
 export const CollectionPageSchema = Type.Object(
   {
+    content: Type.Array(IsomerComponentsSchemas, {
+      default: [],
+      description:
+        "This should be empty for collection pages, make sure to remove any items here.",
+      maxItems: 0,
+      minItems: 0,
+      title: "Page content",
+    }),
     layout: Type.Literal(ISOMER_PAGE_LAYOUTS.Collection, {
       default: ISOMER_PAGE_LAYOUTS.Collection,
     }),
     meta: Type.Optional(CollectionPageMetaSchema),
     page: CollectionPagePageSchema,
-    content: Type.Array(IsomerComponentsSchemas, {
-      title: "Page content",
-      description:
-        "This should be empty for collection pages, make sure to remove any items here.",
-      default: [],
-      minItems: 0,
-      maxItems: 0,
-    }),
   },
   {
-    title: "Collection",
     description:
       "Use this layout for displaying a list of items, such as events, publications, or news articles.",
+    title: "Collection",
   },
 )
 
 export const ContentPageSchema = Type.Object(
   {
+    content: Type.Array(IsomerComponentsSchemas, {
+      title: "Page content",
+    }),
     layout: Type.Literal(ISOMER_PAGE_LAYOUTS.Content, {
       default: ISOMER_PAGE_LAYOUTS.Content,
     }),
     meta: Type.Optional(ContentPageMetaSchema),
     page: ContentPagePageSchema,
-    content: Type.Array(IsomerComponentsSchemas, {
-      title: "Page content",
-    }),
   },
   {
-    title: "Default",
     description: "This is the most basic layout for your content.",
+    title: "Default",
   },
 )
 
 export const HomePageSchema = Type.Object(
   {
+    content: Type.Array(IsomerComponentsSchemas, {
+      title: "Page content",
+    }),
     layout: Type.Literal(ISOMER_PAGE_LAYOUTS.Homepage, {
       default: ISOMER_PAGE_LAYOUTS.Homepage,
     }),
     meta: Type.Optional(HomePageMetaSchema),
     page: HomePagePageSchema,
-    content: Type.Array(IsomerComponentsSchemas, {
-      title: "Page content",
-    }),
   },
   {
-    title: "Homepage",
     description: "This is the main landing page for your site.",
+    title: "Homepage",
   },
 )
 
 export const SearchPageSchema = Type.Object(
   {
+    content: Type.Array(IsomerComponentsSchemas, {
+      title: "Page content",
+    }),
     layout: Type.Literal(ISOMER_PAGE_LAYOUTS.Search, {
       default: ISOMER_PAGE_LAYOUTS.Search,
     }),
     meta: Type.Optional(SearchPageMetaSchema),
     page: SearchPagePageSchema,
-    content: Type.Array(IsomerComponentsSchemas, {
-      title: "Page content",
-    }),
   },
   {
-    title: "Search",
     description: "This is the search page for your site.",
+    title: "Search",
   },
 )
 
 export const IndexPageSchema = Type.Object(
   {
+    content: Type.Array(IsomerComponentsSchemas, {
+      title: "Page content",
+    }),
     layout: Type.Literal(ISOMER_PAGE_LAYOUTS.Index, {
       default: ISOMER_PAGE_LAYOUTS.Index,
     }),
     meta: Type.Optional(ContentPageMetaSchema),
     page: IndexPagePageSchema,
-    content: Type.Array(IsomerComponentsSchemas, {
-      title: "Page content",
-    }),
   },
   {
-    title: "Default",
     description:
       "This is a special type of content page layout that is for index pages.",
+    title: "Default",
   },
 )
 
 export const DatabasePageSchema = Type.Object(
   {
+    content: Type.Array(IsomerComponentsSchemas, {
+      title: "Page content",
+    }),
     layout: Type.Literal(ISOMER_PAGE_LAYOUTS.Database, {
       default: ISOMER_PAGE_LAYOUTS.Database,
     }),
     meta: Type.Optional(DatabasePageMetaSchema),
     page: DatabasePagePageSchema,
-    content: Type.Array(IsomerComponentsSchemas, {
-      title: "Page content",
-    }),
   },
   {
-    title: "Database",
     description:
       "This is a special kind of content page that also displays a searchable database of items at the bottom of the page.",
+    title: "Database",
   },
 )
 
 export const FileRefSchema = Type.Object(
   {
+    content: Type.Array(IsomerComponentsSchemas, {
+      default: [],
+      description:
+        "This should be empty for file pages, make sure to remove any items here.",
+      maxItems: 0,
+      minItems: 0,
+      title: "Page content",
+    }),
     layout: Type.Literal(ISOMER_PAGE_LAYOUTS.File, {
       default: ISOMER_PAGE_LAYOUTS.File,
     }),
     meta: Type.Optional(FileRefMetaSchema),
     page: FileRefPageSchema,
-    content: Type.Array(IsomerComponentsSchemas, {
-      title: "Page content",
-      description:
-        "This should be empty for file pages, make sure to remove any items here.",
-      default: [],
-      minItems: 0,
-      maxItems: 0,
-    }),
   },
   {
-    title: "File Reference",
     description:
       "This is a layout used exclusively within collections. Use this layout if you want to link to a file, such as a PDF or a Word document, from within a Collection page.",
+    title: "File Reference",
   },
 )
 
 export const LinkRefSchema = Type.Object(
   {
+    content: Type.Array(IsomerComponentsSchemas, {
+      default: [],
+      description:
+        "This should be empty for link pages, make sure to remove any items here.",
+      maxItems: 0,
+      minItems: 0,
+      title: "Page content",
+    }),
     layout: Type.Literal(ISOMER_PAGE_LAYOUTS.Link, {
       default: ISOMER_PAGE_LAYOUTS.Link,
     }),
     meta: Type.Optional(LinkRefMetaSchema),
     page: LinkRefPageSchema,
-    content: Type.Array(IsomerComponentsSchemas, {
-      title: "Page content",
-      description:
-        "This should be empty for link pages, make sure to remove any items here.",
-      default: [],
-      minItems: 0,
-      maxItems: 0,
-    }),
   },
   {
-    title: "Link Reference",
     description:
       "This is a layout used exclusively within collections. Use this layout if you want to link to an external page from within a Collection page.",
+    title: "Link Reference",
   },
 )
 
