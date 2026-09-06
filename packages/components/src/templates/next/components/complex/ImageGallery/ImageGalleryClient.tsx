@@ -233,39 +233,39 @@ export const ImageGalleryClient = ({
             }
 
             return (
-                <div
-                  // in case of same src, use index as key
-                  key={image.src + index}
-                  className={`absolute inset-0 h-full w-full transition-opacity duration-150 ease-out motion-reduce:transition-none ${
-                    // z-index ensures the current image always appears on top,
-                    // preventing visual glitches when images overlap during transitions or when rapidly changing slides.
-                    isCurrentImage ? "z-10 opacity-100" : "z-0 opacity-0"
-                  }`}
-                  aria-hidden={!isCurrentImage}
-                >
-                  <div className="relative h-full w-full">
-                    <ImageClient
-                      src={image.src}
-                      alt={image.alt}
-                      width="100%"
-                      className="h-full w-full object-contain"
-                      assetsBaseUrl={assetsBaseUrl}
-                      lazyLoading={
-                        // Only the current image should respect the shouldLazyLoad prop.
-                        // Non-current images are hidden (opacity-0) and should always lazy load
-                        // to avoid eagerly fetching images that aren't visible on page load.
-                        // They will be force-loaded on demand via preloadImage() when needed.
-                        isCurrentImage ? shouldLazyLoad : true
-                      }
-                    />
-                    {hasNonEmptyString(image.caption) && (
-                      <div className="prose-label-sm-medium absolute bottom-0 left-0 right-0 bg-base-canvas-inverse-overlay/90 p-3 text-white">
-                        <div className="line-clamp-3">{image.caption}</div>
-                      </div>
-                    )}
-                  </div>
+              <div
+                // in case of same src, use index as key
+                key={image.src + index}
+                className={`absolute inset-0 h-full w-full transition-opacity duration-150 ease-out motion-reduce:transition-none ${
+                  // z-index ensures the current image always appears on top,
+                  // preventing visual glitches when images overlap during transitions or when rapidly changing slides.
+                  isCurrentImage ? "z-10 opacity-100" : "z-0 opacity-0"
+                }`}
+                aria-hidden={!isCurrentImage}
+              >
+                <div className="relative h-full w-full">
+                  <ImageClient
+                    src={image.src}
+                    alt={image.alt}
+                    width="100%"
+                    className="h-full w-full object-contain"
+                    assetsBaseUrl={assetsBaseUrl}
+                    lazyLoading={
+                      // Only the current image should respect the shouldLazyLoad prop.
+                      // Non-current images are hidden (opacity-0) and should always lazy load
+                      // to avoid eagerly fetching images that aren't visible on page load.
+                      // They will be force-loaded on demand via preloadImage() when needed.
+                      isCurrentImage ? shouldLazyLoad : true
+                    }
+                  />
+                  {hasNonEmptyString(image.caption) && (
+                    <div className="prose-label-sm-medium absolute bottom-0 left-0 right-0 bg-base-canvas-inverse-overlay/90 p-3 text-white">
+                      <div className="line-clamp-3">{image.caption}</div>
+                    </div>
+                  )}
                 </div>
-              )
+              </div>
+            )
           })}
         </div>
 

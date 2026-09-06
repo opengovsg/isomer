@@ -99,11 +99,7 @@ export default defineConfig({
       },
     },
     {
-      files: [
-        "**/*.test.ts",
-        "**/*.test.tsx",
-        "**/__tests__/**",
-      ],
+      files: ["**/*.test.ts", "**/*.test.tsx", "**/__tests__/**"],
       rules: {
         "eslint/no-plusplus": "off",
         "eslint/no-shadow": "off",

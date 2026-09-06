@@ -37,7 +37,9 @@ export const DynamicDGSSearchableTable = ({
   const [currPage, setCurrPage] = useState(1)
 
   const params = useMemo(() => {
-    let filterRecord: NonNullable<DgsApiDatasetSearchParams["filters"]> | undefined
+    let filterRecord:
+      | NonNullable<DgsApiDatasetSearchParams["filters"]>
+      | undefined
 
     if (filters) {
       filterRecord = {}

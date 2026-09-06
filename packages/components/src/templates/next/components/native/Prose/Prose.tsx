@@ -52,7 +52,9 @@ const ProseComponent = ({
     }
     default: {
       const missingType: never = component
-      throw new Error(`Unknown prose component type: ${JSON.stringify(missingType)}`)
+      throw new Error(
+        `Unknown prose component type: ${JSON.stringify(missingType)}`,
+      )
     }
   }
 }

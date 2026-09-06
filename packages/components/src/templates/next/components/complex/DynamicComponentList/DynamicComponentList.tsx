@@ -18,7 +18,9 @@ export const DynamicComponentList = ({
   headingLevel,
 }: DynamicComponentListProps) => {
   const params = useMemo(() => {
-    let filterRecord: NonNullable<DgsApiDatasetSearchParams["filters"]> | undefined
+    let filterRecord:
+      | NonNullable<DgsApiDatasetSearchParams["filters"]>
+      | undefined
 
     if (filters) {
       filterRecord = {}

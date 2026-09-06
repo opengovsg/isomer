@@ -2,10 +2,9 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { AppliedFilter } from "~/templates/next/types/Filter"
 import { useState } from "react"
 import { userEvent, within } from "storybook/test"
+import { updateAppliedFilters } from "~/templates/next/layouts/Collection/utils/updateAppliedFilters"
 
 import { getViewportByMode, withChromaticModes } from "@isomer/storybook-config"
-
-import { updateAppliedFilters } from "~/templates/next/layouts/Collection/utils/updateAppliedFilters"
 
 import { Filter } from "./Filter"
 

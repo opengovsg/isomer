@@ -193,10 +193,7 @@ const CheckboxRenderer = ({
     <label
       ref={labelRef}
       {...labelProps}
-      className={twMerge(
-        checkboxStyles({ isDisabled }),
-        className,
-      )}
+      className={twMerge(checkboxStyles({ isDisabled }), className)}
       data-pressed={isPressed ? "true" : undefined}
       data-selected={isSelected || isIndeterminate ? "true" : undefined}
     >

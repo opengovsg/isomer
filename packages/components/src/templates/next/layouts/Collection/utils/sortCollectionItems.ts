@@ -113,7 +113,6 @@ const compareBothWithDates = (
   const bothSameDate = a.date.getTime() === b.date.getTime()
   const bothSameLastModified =
     getLastModifiedDate(a)?.getTime() === getLastModifiedDate(b)?.getTime()
-  const bothSameTitle = a.title === b.title
 
   if (!bothSameDate) {
     return compareDates(a.date, b.date, sortDirection)

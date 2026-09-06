@@ -26,7 +26,9 @@ export const StaticDGSSearchableTable = ({
   isMetadataError,
 }: StaticDGSSearchableTableProps) => {
   const params = useMemo(() => {
-    let filterRecord: NonNullable<DgsApiDatasetSearchParams["filters"]> | undefined
+    let filterRecord:
+      | NonNullable<DgsApiDatasetSearchParams["filters"]>
+      | undefined
 
     if (filters) {
       filterRecord = {}

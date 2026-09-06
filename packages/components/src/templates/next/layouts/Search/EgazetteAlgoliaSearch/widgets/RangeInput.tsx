@@ -29,7 +29,10 @@ const validate = (
   maxNum: number | undefined,
   bound: { min?: number; max?: number } | undefined,
 ): string | undefined => {
-  const checkBound = (value: number | undefined, label: string): string | undefined => {
+  const checkBound = (
+    value: number | undefined,
+    label: string,
+  ): string | undefined => {
     if (value === undefined) {
       return undefined
     }
