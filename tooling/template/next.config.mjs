@@ -29,7 +29,7 @@ const nextConfig = {
       config.plugins.push(
         new webpack.NormalModuleReplacementPlugin(
           /[\\/]templates[\\/]next[\\/]layouts[\\/]Search[\\/]EgazetteAlgoliaSearch[\\/]index\.js$/,
-          path.join(__dirname, "stubs/EgazetteAlgoliaSearch.js"),
+          path.join(__dirname, "stubs/egazette-algolia-search.js"),
         ),
       )
     }

@@ -39,58 +39,58 @@ const getPatchedPermalink = async (
 
 const timeNow = new Date()
 const lastUpdated =
-  timeNow.getDate().toString().padStart(2, "0") +
-  " " +
-  timeNow.toLocaleString("default", { month: "short" }) +
-  " " +
-  timeNow.getFullYear()
+  `${timeNow.getDate().toString().padStart(2, "0")} ` +
+  `${timeNow.toLocaleString("default", { month: "short" })} ` +
+  `${timeNow.getFullYear()}`
+
+const loadSchemaJson = async (schemaPath: string) => {
+  // oxlint-disable-next-line typescript/no-unsafe-assignment -- dynamic JSON schema imports are untyped at build time
+  const schemaModule = await import(`@/schema/${schemaPath}.json`)
+  // oxlint-disable-next-line typescript/no-unsafe-member-access, typescript/no-unsafe-return -- publisher-generated schema JSON
+  return schemaModule.default
+}
 
 const getSchema = async ({ permalink }: Pick<ParamsContent, "permalink">) => {
-  const joinedPermalink: string = permalink.join("/")
+  const joinedPermalink = permalink.join("/")
 
-  const schema = (await import(`@/schema/${joinedPermalink}.json`)
-    // oxlint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
-    .then((module) => module.default)
-    // NOTE: If the initial import is missing,
-    // this might be the case where the file is an index page
-    // and has `_index` appended to the original permalink
-    // so we have to do another import w the appended index path
-    .catch(async () => {
-      if (joinedPermalink === "") {
-        // oxlint-disable-next-line @typescript-eslint/no-unsafe-return
-        return import(`@/schema/${INDEX_PAGE_PERMALINK}.json`).then(
-          // oxlint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
-          (module) => module.default,
-        )
-      }
-      // oxlint-disable-next-line @typescript-eslint/no-unsafe-return
-      return import(
-        `@/schema/${joinedPermalink}/${INDEX_PAGE_PERMALINK}.json`
-        // oxlint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
-      ).then((module) => module.default)
-    })) as IsomerPageSchemaType
+  const fallbackPath =
+    joinedPermalink === ""
+      ? INDEX_PAGE_PERMALINK
+      : `${joinedPermalink}/${INDEX_PAGE_PERMALINK}`
+
+  let schemaJson
+  try {
+    // oxlint-disable-next-line typescript/no-unsafe-assignment -- publisher-generated schema JSON
+    schemaJson = await loadSchemaJson(joinedPermalink)
+  } catch {
+    // oxlint-disable-next-line typescript/no-unsafe-assignment -- publisher-generated schema JSON
+    schemaJson = await loadSchemaJson(fallbackPath)
+  }
+
+  // SAFETY: publisher-generated schema JSON files conform to IsomerPageSchemaType at build time
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- publisher-generated schema JSON
+  const schema = schemaJson as IsomerPageSchemaType
 
   const lastModified =
-    // TODO: fixup all the typing errors
+    // typing(isomer): fix when types are proper
     // @ts-expect-error to fix when types are proper
     getSitemapXml(sitemap).find(
       ({ url }) =>
-        joinedPermalink === url.replace(/^\//, "").replace(/\/$/, ""),
+        joinedPermalink === url.replace(/^\//u, "").replace(/\/$/u, ""),
     ).lastModified || new Date().toISOString()
 
-  schema.page.permalink = "/" + joinedPermalink
+  schema.page.permalink = `/${joinedPermalink}`
   schema.page.lastModified = lastModified
 
   return schema
 }
 
-export const generateStaticParams = () => {
-  // TODO: fixup all the typing errors
+export const generateStaticParams = () =>
+  // typing(isomer): fix when types are proper
   // @ts-expect-error to fix when types are proper
-  return getSitemapXml(sitemap).map(({ url }) => ({
-    permalink: url.replace(/^\//, "").replace(/\/$/, "").split("/"),
+  getSitemapXml(sitemap).map(({ url }) => ({
+    permalink: url.replace(/^\//u, "").replace(/\/$/u, "").split("/"),
   }))
-}
 
 export const generateMetadata = async (
   props: DynamicPageProps,
@@ -101,16 +101,16 @@ export const generateMetadata = async (
   })
   schema.site = {
     ...config.site,
+    assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,
     environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
-    // TODO: fixup all the typing errors
-    // @ts-ignore to fix when types are proper
-    siteMap: sitemap,
-    navbar: navbar,
-    // TODO: fixup all the typing errors
-    // @ts-ignore to fix when types are proper
+    // typing(isomer): fix when types are proper
+    // @ts-expect-error to fix when types are proper
     footerItems: footer,
     lastUpdated,
-    assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,
+    navbar,
+    // typing(isomer): fix when types are proper
+    // @ts-expect-error to fix when types are proper
+    siteMap: sitemap,
   }
   return getMetadata(schema)
 }
@@ -131,28 +131,29 @@ const Page = async (props: DynamicPageProps) => {
     <>
       <RenderEngine
         {...renderSchema}
-        site={{
-          ...config.site,
-          environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
-          // TODO: fixup all the typing errors
-          // @ts-ignore to fix when types are proper
-          siteMap: sitemap,
-          navbar: navbar,
-          // TODO: fixup all the typing errors
-          // @ts-ignore to fix when types are proper
-          footerItems: footer,
-          lastUpdated,
-          assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,
-        }}
         meta={{
-          // TODO: fixup all the typing errors
+          // typing(isomer): fix when types are proper
           noIndex: shouldBlockIndexing(
             process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
           ),
         }}
+        site={{
+          ...config.site,
+          assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,
+          environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
+          // typing(isomer): fix when types are proper
+          // @ts-expect-error to fix when types are proper
+          footerItems: footer,
+          lastUpdated,
+          navbar,
+          // typing(isomer): fix when types are proper
+          // @ts-expect-error to fix when types are proper
+          siteMap: sitemap,
+        }}
       />
       <script
         type="application/ld+json"
+        // oxlint-disable-next-line react/no-danger -- JSON-LD is serialized via serializeForInlineScript
         dangerouslySetInnerHTML={{
           __html: serializeForInlineScript(pageJsonLd),
         }}

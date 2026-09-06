@@ -5,12 +5,12 @@ import {
   readTemplateConfig,
   withTemplateConfig,
   writeTemplateConfig,
-} from "./helpers/buildTemplate"
+} from "./helpers/build-template"
 import {
   ALGOLIA_MARKERS,
   scanBundleForAlgolia,
   scanBundleForZod,
-} from "./helpers/scanBundle"
+} from "./helpers/scan-bundle"
 
 describe("template (bundle pruning)", () => {
   let originalConfig: string
@@ -45,11 +45,11 @@ describe("template (bundle pruning)", () => {
     // Arrange
     writeTemplateConfig(
       withTemplateConfig(originalConfig, (config) => {
-        ;(config.site as Record<string, unknown>).search = {
-          type: "egazette-algolia",
+        config.site.search = {
           appId: "1V7DZGZJKK",
-          searchApiKey: "bbc5751b3f9b7fdfc08c99712adfa397",
           indexName: "staging_ogp_egazettes_index",
+          searchApiKey: "bbc5751b3f9b7fdfc08c99712adfa397",
+          type: "egazette-algolia",
         }
       }),
     )

@@ -7,10 +7,13 @@
   "exports": {
     ".": "./index.ts",
     "./base": "./base.ts",
-    "./presets": "./presets.ts"
+    "./presets": "./presets.ts",
+    "./anti-slop": "./anti-slop.ts",
+    "./react-doctor": "./react-doctor.ts"
   },
   "dependencies": {
     "oxlint": "catalog:",
+    "oxlint-plugin-react-doctor": "catalog:",
     "oxlint-tsgolint": "catalog:",
     "ultracite": "catalog:"
   }

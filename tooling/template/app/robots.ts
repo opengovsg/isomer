@@ -9,26 +9,23 @@ export const dynamic = "force-static"
 
 const timeNow = new Date()
 const lastUpdated =
-  timeNow.getDate().toString().padStart(2, "0") +
-  " " +
-  timeNow.toLocaleString("default", { month: "short" }) +
-  " " +
-  timeNow.getFullYear()
+  `${timeNow.getDate().toString().padStart(2, "0")} ` +
+  `${timeNow.toLocaleString("default", { month: "short" })} ` +
+  `${timeNow.getFullYear()}`
 
 export default function robots(): MetadataRoute.Robots {
   return getRobotsTxt({
-    // TODO: fixup all the typing errors
     site: {
       ...config.site,
       environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
-      // TODO: fixup all the typing errors
-      // @ts-ignore to fix when types are proper
-      siteMap: sitemap,
-      navbar: navbar,
-      // TODO: fixup all the typing errors
-      // @ts-ignore to fix when types are proper
+      // typing(isomer): fix when types are proper
+      // @ts-expect-error to fix when types are proper
       footerItems: footer,
       lastUpdated,
+      navbar,
+      // typing(isomer): fix when types are proper
+      // @ts-expect-error to fix when types are proper
+      siteMap: sitemap,
     },
   })
 }
