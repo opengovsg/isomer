@@ -100,7 +100,10 @@ const DynamicDataBannerUI = ({
           {data
             .slice(0, DYNAMIC_DATA_BANNER_NUMBER_OF_DATA)
             .map((singleData) => (
-              <div className={compoundStyles.individualDataContainer()}>
+              <div
+                key={singleData.label}
+                className={compoundStyles.individualDataContainer()}
+              >
                 <div className={compoundStyles.individualDataLabel()}>
                   {singleData.label}
                 </div>
@@ -131,8 +134,8 @@ export const DynamicDataBannerClient = ({
   label,
   errorMessageBaseParagraph,
 }: DynamicDataBannerClientProps) => {
-  const [isLoading, setLoading] = useState(true)
-  const [isError, setError] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isError, setIsError] = useState(false)
   const [dynamicData, setDynamicData] = useState<Record<string, string>>({})
 
   // This is to ensure that the component is mounted before the query is executed
@@ -149,14 +152,14 @@ export const DynamicDataBannerClient = ({
           throw new Error("No data found for current date")
         }
         setDynamicData(apiData[getSingaporeDateYYYYMMDD()])
-        setLoading(false)
+        setIsLoading(false)
       })
       .catch((error) => {
         console.error("Error fetching data:", error)
-        setLoading(false)
-        setError(true)
+        setIsLoading(false)
+        setIsError(true)
       })
-  }, [])
+  }, [apiEndpoint])
 
   if (isError) {
     return (

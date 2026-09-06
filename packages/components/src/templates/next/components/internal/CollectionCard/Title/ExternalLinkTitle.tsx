@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { createElement, useEffect, useRef, useState } from "react"
 import { BiLinkExternal } from "react-icons/bi"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 
@@ -35,21 +35,26 @@ export const ExternalLinkTitle = ({
     return () => window.removeEventListener("resize", checkTruncation)
   }, [title])
 
-  return (
-    <Tag className={collectionCardLinkStyle()}>
-      <span ref={textRef} className="line-clamp-3" title={title}>
-        {title}
-        {!isTruncated && (
-          <BiLinkExternal className="ml-1 inline-block h-auto w-3.5 align-middle lg:ml-1.5 lg:w-4" />
-        )}
-      </span>
-
-      {/* Show icon below text if truncated */}
-      {isTruncated && (
-        <div className="mt-1">
-          <BiLinkExternal className="h-auto w-3.5 text-base-content-subtle lg:w-4" />
-        </div>
-      )}
-    </Tag>
+  return createElement(
+    Tag,
+    { className: collectionCardLinkStyle() },
+    createElement(
+      "span",
+      { ref: textRef, className: "line-clamp-3", title },
+      title,
+      !isTruncated &&
+        createElement(BiLinkExternal, {
+          className:
+            "ml-1 inline-block h-auto w-3.5 align-middle lg:ml-1.5 lg:w-4",
+        }),
+    ),
+    isTruncated &&
+      createElement(
+        "div",
+        { className: "mt-1" },
+        createElement(BiLinkExternal, {
+          className: "h-auto w-3.5 text-base-content-subtle lg:w-4",
+        }),
+      ),
   )
 }

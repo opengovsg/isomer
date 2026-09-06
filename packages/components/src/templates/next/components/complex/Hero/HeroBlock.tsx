@@ -47,9 +47,11 @@ export const HeroBlock = ({
           className={`flex w-full max-w-[548px] flex-col justify-center gap-9 ${heroTextColour}`}
         >
           <div className="flex flex-col gap-6">
-            <Tag className="wrap-break-word prose-display-xl text-balance">
-              {title}
-            </Tag>
+            {createElement(
+              Tag,
+              { className: "wrap-break-word prose-display-xl text-balance" },
+              title,
+            )}
             {subtitle && <p className="prose-title-lg-regular">{subtitle}</p>}
           </div>
           {buttonLabel && buttonUrl && (

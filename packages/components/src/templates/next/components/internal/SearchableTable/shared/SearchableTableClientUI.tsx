@@ -58,6 +58,100 @@ interface SearchableTableClientUIProps extends Omit<
   searchMatchType: keyof typeof COPYWRITING_MAPPING
 }
 
+interface SearchableTableContentProps {
+  titleId: string
+  title: string | undefined
+  isInitiallyEmpty: boolean
+  isLoading: boolean
+  isError: boolean
+  isFilteredEmpty: boolean
+  deferredSearch: string
+  setSearch: (search: string) => void
+  setCurrPage: (currPage: number) => void
+  searchMatchType: keyof typeof COPYWRITING_MAPPING
+  paginatedItems: (string | number)[][]
+  maxNoOfColumns: number
+  headers: (string | number)[]
+}
+
+const SearchableTableContent = ({
+  titleId,
+  title,
+  isInitiallyEmpty,
+  isLoading,
+  isError,
+  isFilteredEmpty,
+  deferredSearch,
+  setSearch,
+  setCurrPage,
+  searchMatchType,
+  paginatedItems,
+  maxNoOfColumns,
+  headers,
+}: SearchableTableContentProps) => {
+  if (isInitiallyEmpty || isLoading || isError) {
+    return <FallbackEmptyState isLoading={isLoading} isError={isError} />
+  }
+
+  if (isFilteredEmpty) {
+    return (
+      <EmptyState
+        search={deferredSearch}
+        onClick={() => {
+          setSearch("")
+          setCurrPage(1)
+        }}
+        searchMatchType={searchMatchType}
+      />
+    )
+  }
+
+  if (paginatedItems.length > 0) {
+    return (
+      <div className={compoundStyles.tableContainer()} tabIndex={0}>
+        <table
+          className={compoundStyles.table()}
+          aria-describedby={!!title ? titleId : undefined}
+        >
+          <tbody>
+            <tr className={compoundStyles.tableRow()}>
+              {headers.slice(0, maxNoOfColumns).map((header, index) => (
+                <th
+                  key={index}
+                  className={compoundStyles.tableCell({ isHeader: true })}
+                >
+                  <BaseParagraph content={String(header)} />
+                </th>
+              ))}
+            </tr>
+
+            {paginatedItems.map((row, rowIndex) => {
+              return (
+                <tr key={rowIndex} className={compoundStyles.tableRow()}>
+                  {row.slice(0, maxNoOfColumns).map((cell, cellIndex) => (
+                    <td
+                      key={cellIndex}
+                      className={compoundStyles.tableCell({
+                        isHeader: false,
+                      })}
+                    >
+                      {/* NOTE: Reference links are NOT supported within
+                          SearchableTable cell contents */}
+                      <BaseParagraph content={String(cell)} />
+                    </td>
+                  ))}
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    )
+  }
+
+  return null
+}
+
 export const SearchableTableClientUI = ({
   title,
   headers,
@@ -81,70 +175,6 @@ export const SearchableTableClientUI = ({
     })
   }
 
-  const Content = () => {
-    if (isInitiallyEmpty || isLoading || isError) {
-      return <FallbackEmptyState isLoading={isLoading} isError={isError} />
-    }
-
-    if (isFilteredEmpty) {
-      return (
-        <EmptyState
-          search={deferredSearch}
-          onClick={() => {
-            setSearch("")
-            setCurrPage(1)
-          }}
-          searchMatchType={searchMatchType}
-        />
-      )
-    }
-
-    if (paginatedItems.length > 0) {
-      return (
-        <div className={compoundStyles.tableContainer()} tabIndex={0}>
-          <table
-            className={compoundStyles.table()}
-            aria-describedby={!!title ? titleId : undefined}
-          >
-            <tbody>
-              <tr className={compoundStyles.tableRow()}>
-                {headers.slice(0, maxNoOfColumns).map((header, index) => (
-                  <th
-                    key={index}
-                    className={compoundStyles.tableCell({ isHeader: true })}
-                  >
-                    <BaseParagraph content={String(header)} />
-                  </th>
-                ))}
-              </tr>
-
-              {paginatedItems.map((row, rowIndex) => {
-                return (
-                  <tr key={rowIndex} className={compoundStyles.tableRow()}>
-                    {row.slice(0, maxNoOfColumns).map((cell, cellIndex) => (
-                      <td
-                        key={cellIndex}
-                        className={compoundStyles.tableCell({
-                          isHeader: false,
-                        })}
-                      >
-                        {/* NOTE: Reference links are NOT supported within
-                            SearchableTable cell contents */}
-                        <BaseParagraph content={String(cell)} />
-                      </td>
-                    ))}
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
-      )
-    }
-
-    return null
-  }
-
   return (
     <div className={compoundStyles.container()} ref={sectionTopRef}>
       {!!title && (
@@ -163,7 +193,21 @@ export const SearchableTableClientUI = ({
         }}
       />
 
-      <Content />
+      <SearchableTableContent
+        titleId={titleId}
+        title={title}
+        isInitiallyEmpty={isInitiallyEmpty}
+        isLoading={isLoading}
+        isError={isError}
+        isFilteredEmpty={isFilteredEmpty}
+        deferredSearch={deferredSearch}
+        setSearch={setSearch}
+        setCurrPage={setCurrPage}
+        searchMatchType={searchMatchType}
+        paginatedItems={paginatedItems}
+        maxNoOfColumns={maxNoOfColumns}
+        headers={headers}
+      />
 
       {filteredItemsLength > 0 && (
         <div className={compoundStyles.pagination()}>

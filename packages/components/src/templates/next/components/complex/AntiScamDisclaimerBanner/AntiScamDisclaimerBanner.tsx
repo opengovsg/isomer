@@ -5,9 +5,8 @@ import { Link } from "../../internal/Link"
 
 export const AntiScamDisclaimerBanner = () => {
   return (
-    <div
+    <section
       className={`${ComponentContent} w-full rounded-lg bg-base-canvas px-5 py-12 md:px-6 lg:w-fit lg:max-w-full lg:py-16`}
-      role="region"
       aria-label="Anti-scam notice"
     >
       <div className="flex flex-col gap-5 lg:flex-row lg:items-start">
@@ -23,7 +22,7 @@ export const AntiScamDisclaimerBanner = () => {
             phone call.
           </p>
           <p className="prose-headline-lg-regular m-0 text-base-content-medium">
-            If you're unsure if something is a scam, call{" "}
+            If you&apos;re unsure if something is a scam, call{" "}
             <Link
               href="https://www.scamshield.gov.sg"
               isExternal
@@ -37,6 +36,6 @@ export const AntiScamDisclaimerBanner = () => {
           </p>
         </div>
       </div>
-    </div>
+    </section>
   )
 }
