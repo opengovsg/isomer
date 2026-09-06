@@ -54,9 +54,8 @@ export const createDgsSchema = <T extends TSchema>({
   componentName,
   nativeSchema,
 }: CreateDgsSchemaProps<T>) => {
-  const dgsFields = Object.keys(nativeSchema.properties).reduce<
-    Record<string, TSchema>
-  >((acc, key) => {
+  const dgsFields = Object.keys(nativeSchema.properties).reduce(
+    (acc, key) => {
       const unionSchema = Type.Union([
         // SAFETY: key comes from Object.keys(nativeSchema.properties)
         nativeSchema.properties[key as keyof T["properties"]],
@@ -75,7 +74,11 @@ export const createDgsSchema = <T extends TSchema>({
         : unionSchema
 
       return acc
-    }, {})
+    },
+    // SAFETY: reduce accumulator is populated for every nativeSchema property key
+    // oxlint-disable-next-line anti-slop/no-unsafe-dictionary-type -- TypeBox schema map requires dynamic property assignment
+    {} as Record<string, any>,
+  )
 
   return Type.Intersect([
     Type.Object({

@@ -101,37 +101,44 @@ const generateArgs = ({
 
   const withoutImage = variant === "cardsWithoutImages"
 
-  const storyCards = allCards.map((card) => {
-    const { imageUrl, imageAlt, imageFit, ...rest } = card
+  if (withoutImage) {
+    cards.forEach((card) => {
+      // SAFETY: Story args omit image fields for cardsWithoutImages variant
+      delete (card as { imageAlt?: string; imageUrl?: string }).imageAlt
+      // SAFETY: Story args omit image fields for cardsWithoutImages variant
+      delete (card as { imageAlt?: string; imageUrl?: string }).imageUrl
+    })
+  }
 
-    if (withoutImage) {
-      return rest
-    }
+  if (!isImageFitContain) {
+    cards.forEach((card) => {
+      // SAFETY: Story args omit imageFit unless testing contain fit
+      delete (card as { imageFit?: string }).imageFit
+    })
+  }
 
-    if (!isImageFitContain) {
-      return { ...rest, imageUrl, imageAlt }
-    }
-
-    return card
-  })
-
-  const args: InfoCardsProps = {
+  const baseArgs = {
     layout: layout,
     title: "Section title ministry highlights",
     subtitle:
       "Section subtitle, maximum 150 chars. These are some of the things we are working on. As a ministry, we focus on delivering value to the members of public.",
     maxColumns: maxColumns,
     variant,
-    cards: storyCards,
+    cards: allCards,
     headingLevel: 2,
   }
 
   if (hasCTA) {
-    args.label = "This is a CTA"
-    args.url = "/"
+    // SAFETY: generateArgs builds a complete InfoCardsProps object for Storybook
+    return {
+      ...baseArgs,
+      label: "This is a CTA",
+      url: "/",
+    } as InfoCardsProps
   }
 
-  return args
+  // SAFETY: generateArgs builds a complete InfoCardsProps object for Storybook
+  return baseArgs as InfoCardsProps
 }
 
 export const WithImage3Columns: Story = {

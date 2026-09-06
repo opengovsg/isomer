@@ -70,7 +70,9 @@ export const Callout = ({
   headingLevel,
   variant = DEFAULT_CALLOUT_VARIANT,
 }: CalloutProps) => {
-  const { icon: Icon, label } = CALLOUT_CONFIG[variant]
+  const config = CALLOUT_CONFIG[variant]
+  const label = config.label
+  const Icon = "icon" in config ? config.icon : undefined
   const styles = calloutStyles({ variant, hasIcon: !!Icon })
 
   return (

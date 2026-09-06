@@ -1,14 +1,29 @@
+import type { ImageProps } from "~/interfaces"
 import type { ProcessedCollectionCardProps } from "~/interfaces"
+import type { FormattedDate, TagGroup } from "~/types"
+
+interface TestCollectionItemInput {
+  title?: string
+  description?: string
+  id?: string
+  itemTitle?: string
+  referenceLinkHref?: string | undefined
+  imageSrc?: string | undefined
+  date?: Date
+  tags?: TagGroup[]
+  pillTags?: TagGroup[]
+  plaintextTags?: TagGroup[]
+  image?: Pick<ImageProps, "src" | "alt">
+  isContainNeeded?: boolean
+  formattedDate?: FormattedDate
+}
 
 export const testCollectionItem = (
-  overrides: Partial<ProcessedCollectionCardProps> &
-    Pick<ProcessedCollectionCardProps, "title"> & {
-      description?: ProcessedCollectionCardProps["description"]
-    },
+  overrides: TestCollectionItemInput = {},
 ): ProcessedCollectionCardProps => {
-  const { title, description = "", ...rest } = overrides
+  const { title = "Test Title", description = "", ...rest } = overrides
 
-  return {
+  const item = {
     id: "test-id",
     itemTitle: title,
     referenceLinkHref: undefined,
@@ -17,4 +32,6 @@ export const testCollectionItem = (
     description,
     ...rest,
   }
+  // SAFETY: test fixture only supplies known ProcessedCollectionCardProps fields
+  return item as ProcessedCollectionCardProps
 }

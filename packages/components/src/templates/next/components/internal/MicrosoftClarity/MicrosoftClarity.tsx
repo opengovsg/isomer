@@ -17,12 +17,12 @@ export const MicrosoftClarity = ({ msClarityId }: MicrosoftClarityProps) => {
 
     // @ts-expect-error - Clarity is not typed
     if (!globalThis.window.clarity) {
-      // SAFETY: Clarity's bootstrap assigns an untyped queue function on window before its script loads.
-      const clarityWindow = globalThis.window as Window & {
+      // SAFETY: Clarity bootstrap assigns an untyped queue function on window before its script loads
+      // oxlint-disable-next-line anti-slop/no-chained-type-assertions -- window clarity bootstrap is untyped
+      const clarityWindow = globalThis.window as unknown as Window & {
         clarity: ((...args: unknown[]) => void) & { q?: unknown[] }
       }
       clarityWindow.clarity = function () {
-        // @ts-expect-error - Clarity is not typed
         // oxlint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, prefer-rest-params
         ;(clarityWindow.clarity.q = clarityWindow.clarity.q ?? []).push(arguments)
       }

@@ -110,7 +110,9 @@ const sortCollectionItemsByDate = ({
     // ===== Scenario 1: Both items have published dates =====
     // Sort by first priority: Published date
     if (bothHaveDates && !bothSameDate) {
-      return compareDates(a.date, b.date, sortDirection)
+      if (a.date instanceof Date && b.date instanceof Date) {
+        return compareDates(a.date, b.date, sortDirection)
+      }
     }
 
     // Sort by second priority: Last modified date
@@ -167,7 +169,9 @@ const sortCollectionItemsByTitle = ({
     // ===== Scenario 1: Both items have published dates =====
     // Sort by second priority: Published date
     if (bothHaveDates && !bothSameDate) {
-      return compareDates(a.date, b.date, sortDirection)
+      if (a.date instanceof Date && b.date instanceof Date) {
+        return compareDates(a.date, b.date, sortDirection)
+      }
     }
 
     // Sort by third priority: Last modified date

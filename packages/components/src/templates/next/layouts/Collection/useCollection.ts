@@ -3,7 +3,7 @@ import { isEmpty } from "lodash-es"
 import { useQueryParams } from "~/hooks/useQueryParams"
 
 import type { AppliedFilter } from "../../types/Filter"
-import { isAppliedFilters } from "../../types/Filter"
+import { isAppliedFilterUrlJson, parseAppliedFilters } from "../../types/Filter"
 import { getFilteredItems } from "./utils/getFilteredItems"
 import { getPaginatedItems } from "./utils/getPaginatedItems"
 import { updateAppliedFilters } from "./utils/updateAppliedFilters"
@@ -31,7 +31,10 @@ export const useCollection = ({
     }
     try {
       const parsed: unknown = JSON.parse(filters || "[]")
-      return isAppliedFilters(parsed) ? parsed : []
+      if (!isAppliedFilterUrlJson(parsed)) {
+        return []
+      }
+      return parseAppliedFilters(parsed)
     } catch {
       // Malformed URL param (e.g. ?filters=hello) — treat as no filters rather than crashing.
       return []

@@ -23,41 +23,86 @@ export interface AppliedFilter {
   items: AppliedFilterItem[]
 }
 
-type AppliedFilterUrlJson =
+interface AppliedFilterUrlJsonObject {
+  [key: string]: AppliedFilterUrlJson
+}
+
+export type AppliedFilterUrlJson =
   | string
   | number
   | boolean
   | null
   | AppliedFilterUrlJson[]
-  | { [key: string]: AppliedFilterUrlJson }
-
-interface UntrustedAppliedFilterCandidate {
-  id?: AppliedFilterUrlJson
-  items?: AppliedFilterUrlJson
-}
+  | AppliedFilterUrlJsonObject
 
 const isPlainObject = (
   value: AppliedFilterUrlJson,
-): value is UntrustedAppliedFilterCandidate =>
+): value is AppliedFilterUrlJsonObject =>
   value !== null && !Array.isArray(value) && Object(value) === value
 
 const isNonEmptyString = (value: AppliedFilterUrlJson): value is string =>
   Object.prototype.toString.call(value) === "[object String]" && value !== ""
 
-export const isAppliedFilters = (
-  value: AppliedFilterUrlJson,
-): value is AppliedFilter[] =>
+// URL query JSON boundary parser
+export const isAppliedFilterUrlJson = (
+  // oxlint-disable-next-line anti-slop/no-unknown-parameters -- validates untrusted JSON.parse output
+  value: unknown,
+): value is AppliedFilterUrlJson => {
+  if (
+    value === null ||
+    Object.prototype.toString.call(value) === "[object String]" ||
+    Object.prototype.toString.call(value) === "[object Number]" ||
+    Object.prototype.toString.call(value) === "[object Boolean]"
+  ) {
+    return true
+  }
+
+  if (Array.isArray(value)) {
+    return value.every(isAppliedFilterUrlJson)
+  }
+
+  if (Object(value) === value && !Array.isArray(value)) {
+    // SAFETY: object branch only runs after excluding arrays and primitives
+    return Object.values(value as AppliedFilterUrlJsonObject).every(
+      isAppliedFilterUrlJson,
+    )
+  }
+
+  return false
+}
+
+const isAppliedFiltersArray = (value: AppliedFilterUrlJson): boolean =>
   Array.isArray(value) &&
-  value.every(
-    (filter) =>
-      isPlainObject(filter) &&
-      isNonEmptyString(filter.id) &&
-      Array.isArray(filter.items) &&
-      filter.items.every((item) => {
-        if (!isPlainObject(item)) return false
-        return isNonEmptyString(item.id)
-      }),
-  )
+  value.every((filter) => {
+    if (!isPlainObject(filter)) return false
+
+    const filterId = filter["id"]
+    const filterItems = filter["items"]
+    if (filterId === undefined || !isNonEmptyString(filterId)) {
+      return false
+    }
+    if (!Array.isArray(filterItems)) {
+      return false
+    }
+
+    return filterItems.every((item) => {
+      if (!isPlainObject(item)) return false
+      const itemId = item["id"]
+      return itemId !== undefined && isNonEmptyString(itemId)
+    })
+  })
+
+export const parseAppliedFilters = (
+  value: AppliedFilterUrlJson,
+): AppliedFilter[] => {
+  if (!isAppliedFiltersArray(value)) {
+    return []
+  }
+
+  // SAFETY: isAppliedFiltersArray validates the AppliedFilter[] shape at the URL boundary
+  // oxlint-disable-next-line anti-slop/no-chained-type-assertions -- validated URL JSON maps to AppliedFilter[]
+  return value as unknown as AppliedFilter[]
+}
 
 export interface FilterProps {
   filters: Filter[]
