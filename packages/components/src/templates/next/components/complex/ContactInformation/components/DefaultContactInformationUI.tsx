@@ -1,4 +1,5 @@
 import type { ContactInformationUIProps } from "~/interfaces"
+import { createElement } from "react"
 import { tv } from "~/lib/tv"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 
@@ -65,11 +66,12 @@ export const DefaultContactInformationUI = ({
     <section className={compoundStyles.screenWideOuterContainer()}>
       <div className={compoundStyles.container()}>
         <div className={compoundStyles.titleAndDescriptionContainer()}>
-          {(title || isLoading) && (
-            <TitleTag className={compoundStyles.title()}>
-              {isLoading ? "" : title}
-            </TitleTag>
-          )}
+          {(title || isLoading) &&
+            createElement(
+              TitleTag,
+              { className: compoundStyles.title() },
+              isLoading ? "" : title,
+            )}
           {(!!description || isLoading) &&
             (acceptHtmlTags ? (
               <BaseParagraph
@@ -107,11 +109,11 @@ export const DefaultContactInformationUI = ({
           !!otherInformation.value &&
           otherInformation.value.trim() !== "" && (
             <div className={compoundStyles.otherInformationContainer()}>
-              <OtherInformationTitleTag
-                className={compoundStyles.otherInformationTitle()}
-              >
-                {otherInformation.label ?? "Other Information"}
-              </OtherInformationTitleTag>
+              {createElement(
+                OtherInformationTitleTag,
+                { className: compoundStyles.otherInformationTitle() },
+                otherInformation.label ?? "Other Information",
+              )}
               {acceptHtmlTags ? (
                 <BaseParagraph
                   content={otherInformation.value}

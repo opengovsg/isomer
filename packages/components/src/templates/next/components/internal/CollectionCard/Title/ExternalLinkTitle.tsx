@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { createElement, useEffect, useRef, useState } from "react"
 import { BiLinkExternal } from "react-icons/bi"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 
@@ -16,27 +16,29 @@ export const ExternalLinkTitle = ({
   title: string
   headingLevel: number
 }) => {
-  const Tag = getHeadingTag(headingLevel)
   const textRef = useRef<HTMLSpanElement | null>(null)
 
   const [isTruncated, setIsTruncated] = useState(false)
 
   useEffect(() => {
-    const checkTruncation = () => {
-      const element = textRef.current
-      if (!element) return
+    const element = textRef.current
+    if (!element) return
 
+    const checkTruncation = () => {
       setIsTruncated(element.scrollHeight > element.clientHeight)
     }
 
     checkTruncation()
 
-    window.addEventListener("resize", checkTruncation)
-    return () => window.removeEventListener("resize", checkTruncation)
-  }, [title])
+    const observer = new ResizeObserver(checkTruncation)
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [])
 
-  return (
-    <Tag className={collectionCardLinkStyle()}>
+  return createElement(
+    getHeadingTag(headingLevel),
+    { className: collectionCardLinkStyle() },
+    <>
       <span ref={textRef} className="line-clamp-3" title={title}>
         {title}
         {!isTruncated && (
@@ -50,6 +52,6 @@ export const ExternalLinkTitle = ({
           <BiLinkExternal className="h-auto w-3.5 text-base-content-subtle lg:w-4" />
         </div>
       )}
-    </Tag>
+    </>,
   )
 }

@@ -14,6 +14,7 @@ export const GoogleTagManagerHeader = ({
     <ScriptComponent
       id={`_next-gtm-init-${siteGtmId}`}
       strategy="afterInteractive" // next/script's default but just in case Vercel changes it in the future
+      // oxlint-disable-next-line react/no-danger -- GTM bootstrap snippet must run as inline script
       dangerouslySetInnerHTML={{
         __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
           new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],

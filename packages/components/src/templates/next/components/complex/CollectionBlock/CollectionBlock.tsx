@@ -3,6 +3,7 @@ import type {
   CollectionBlockProps,
   CollectionBlockSingleCardProps,
 } from "~/interfaces/complex/CollectionBlock"
+import { createElement } from "react"
 import { BiRightArrowAlt } from "react-icons/bi"
 import { tv } from "~/lib/tv"
 import { getHeadingTag } from "~/utils/getHeadingTag"
@@ -126,15 +127,17 @@ const SingleCard = ({
           <p className={compoundStyles.cardDate()}>{formattedDate}</p>
         )}
 
-        <CardTitleTag className={compoundStyles.cardTitle()}>
-          {title}
-          <BiRightArrowAlt
-            aria-hidden
-            className={compoundStyles.cardTitleArrow({
+        {createElement(
+          CardTitleTag,
+          { className: compoundStyles.cardTitle() },
+          title,
+          createElement(BiRightArrowAlt, {
+            "aria-hidden": true,
+            className: compoundStyles.cardTitleArrow({
               isExternalLink,
-            })}
-          />
-        </CardTitleTag>
+            }),
+          }),
+        )}
 
         {displayCategory && (
           <PlaintextTags
@@ -161,7 +164,11 @@ const CollectionBlockSkeleton = ({
   return (
     <section className={compoundStyles.container()}>
       <div className={compoundStyles.headingContainer()}>
-        <TitleTag className={compoundStyles.headingTitle()}>{title}</TitleTag>
+        {createElement(
+          TitleTag,
+          { className: compoundStyles.headingTitle() },
+          title,
+        )}
         <p>{description}</p>
       </div>
     </section>
@@ -178,7 +185,7 @@ export const CollectionBlock = ({
   buttonLabel,
   shouldLazyLoad,
   headingLevel,
-}: CollectionBlockProps): JSX.Element => {
+}: CollectionBlockProps): JSX.Element | null => {
   const collectionId = getResourceIdFromReferenceLink(collectionReferenceLink)
 
   // This happens when no collection is selected yet on Studio when the user just added the block
@@ -195,7 +202,7 @@ export const CollectionBlock = ({
   const collectionParent = getCollectionParent({ site, collectionId })
 
   if (!collectionParent) {
-    return <></>
+    return null
   }
 
   const collectionPages = getCollectionPages({
@@ -204,7 +211,7 @@ export const CollectionBlock = ({
   })
 
   if (collectionPages.length === 0) {
-    return <></>
+    return null
   }
 
   const numberOfCards =
@@ -214,9 +221,11 @@ export const CollectionBlock = ({
   return (
     <section className={compoundStyles.container()}>
       <div className={compoundStyles.headingContainer()}>
-        <TitleTag className={compoundStyles.headingTitle()}>
-          {customTitle ?? collectionParent.title}
-        </TitleTag>
+        {createElement(
+          TitleTag,
+          { className: compoundStyles.headingTitle() },
+          customTitle ?? collectionParent.title,
+        )}
         <p>{customDescription ?? collectionParent.summary}</p>
       </div>
 

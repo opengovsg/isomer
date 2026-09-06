@@ -70,7 +70,8 @@ export const CollectionResults = ({
             {searchValue !== "" && (
               <>
                 {" "}
-                for "<span className="font-medium">{searchValue}</span>"
+                for &quot;<span className="font-medium">{searchValue}</span>
+                &quot;
               </>
             )}
           </p>
@@ -105,6 +106,7 @@ export const CollectionResults = ({
             We couldn’t find any items. Try different search terms or filters.
           </p>
           <button
+            type="button"
             className="prose-headline-base-medium mx-auto w-fit text-link underline-offset-4 hover:underline"
             onClick={handleClearFilter}
           >

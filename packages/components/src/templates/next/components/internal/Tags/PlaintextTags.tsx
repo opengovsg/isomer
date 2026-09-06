@@ -7,7 +7,12 @@ interface PlaintextTagsProps {
   className?: string
 }
 
-export const PlaintextTags = ({ tags = [], className }: PlaintextTagsProps) => {
+const DEFAULT_TAGS: TagGroup[] = []
+
+export const PlaintextTags = ({
+  tags = DEFAULT_TAGS,
+  className,
+}: PlaintextTagsProps) => {
   if (tags.length === 0) {
     return null
   }

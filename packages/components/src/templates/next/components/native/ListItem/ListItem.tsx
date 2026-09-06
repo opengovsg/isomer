@@ -30,7 +30,7 @@ export const ListItem = ({ content, level, site }: ListItemProps) => {
           )
         } else {
           const _: never = item
-          return <></>
+          return null
         }
       })}
     </li>

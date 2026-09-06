@@ -41,10 +41,10 @@ const navbarItemStyles = tv({
 const { item, chevron, megamenu } = navbarItemStyles()
 
 export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
-  (
+  function NavItem(
     { items, name, url, description, isOpen, onClick, onCloseMegamenu },
     ref,
-  ): JSX.Element => {
+  ): JSX.Element {
     if (!items || items.length === 0) {
       return (
         <li className={item({ isOpen })}>
@@ -63,6 +63,7 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
     return (
       <li>
         <button
+          type="button"
           ref={ref}
           className={item({ isOpen })}
           onClick={onClick}
@@ -84,6 +85,7 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
     )
   },
 )
+NavItem.displayName = "NavItem"
 
 const Megamenu = ({
   name,
@@ -124,8 +126,10 @@ const Megamenu = ({
 
   return (
     <div className="absolute left-0 right-0 top-full z-50">
-      <div
-        className="absolute bottom-0 left-0 right-0 top-full z-[1] h-screen bg-canvas-overlay/40"
+      <button
+        type="button"
+        aria-label="Close navigation menu"
+        className="absolute bottom-0 left-0 right-0 top-full z-[1] h-screen cursor-default border-0 bg-canvas-overlay/40 p-0"
         onClick={onCloseMegamenu}
       />
       <FocusScope contain restoreFocus>

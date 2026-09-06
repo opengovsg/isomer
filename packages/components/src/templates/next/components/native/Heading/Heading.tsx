@@ -1,4 +1,5 @@
 import type { HeadingProps } from "~/interfaces"
+import { createElement } from "react"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getTextAsHtml } from "~/utils/getTextAsHtml"
 
@@ -21,56 +22,61 @@ export const Heading = ({
   })
 
   if (level === 2) {
-    return (
-      <Tag
-        id={id}
-        className="prose-display-sm text-base-content-strong [&:not(:first-child)]:mt-14 [&:not(:last-child)]:mb-6"
-        dir={dir ?? undefined}
-      >
-        {textContent}
-      </Tag>
+    return createElement(
+      Tag,
+      {
+        id,
+        className:
+          "prose-display-sm text-base-content-strong [&:not(:first-child)]:mt-14 [&:not(:last-child)]:mb-6",
+        dir: dir ?? undefined,
+      },
+      textContent,
     )
   }
   if (level === 3) {
-    return (
-      <Tag
-        id={id}
-        className="prose-display-xs text-base-content-strong [&:not(:first-child)]:mt-9 [&:not(:last-child)]:mb-6"
-        dir={dir ?? undefined}
-      >
-        {textContent}
-      </Tag>
+    return createElement(
+      Tag,
+      {
+        id,
+        className:
+          "prose-display-xs text-base-content-strong [&:not(:first-child)]:mt-9 [&:not(:last-child)]:mb-6",
+        dir: dir ?? undefined,
+      },
+      textContent,
     )
   }
   if (level === 4) {
-    return (
-      <Tag
-        id={id}
-        className="prose-title-md-semibold text-base-content-strong [&:not(:first-child)]:mt-8 [&:not(:last-child)]:mb-6"
-        dir={dir ?? undefined}
-      >
-        {textContent}
-      </Tag>
+    return createElement(
+      Tag,
+      {
+        id,
+        className:
+          "prose-title-md-semibold text-base-content-strong [&:not(:first-child)]:mt-8 [&:not(:last-child)]:mb-6",
+        dir: dir ?? undefined,
+      },
+      textContent,
     )
   }
   if (level === 5) {
-    return (
-      <Tag
-        id={id}
-        className="prose-headline-lg-semibold text-base-content-strong [&:not(:first-child)]:mt-7 [&:not(:last-child)]:mb-6"
-        dir={dir ?? undefined}
-      >
-        {textContent}
-      </Tag>
+    return createElement(
+      Tag,
+      {
+        id,
+        className:
+          "prose-headline-lg-semibold text-base-content-strong [&:not(:first-child)]:mt-7 [&:not(:last-child)]:mb-6",
+        dir: dir ?? undefined,
+      },
+      textContent,
     )
   }
-  return (
-    <Tag
-      id={id}
-      className="prose-headline-base-semibold text-base-content-strong [&:not(:first-child)]:mt-6 [&:not(:last-child)]:mb-6"
-      dir={dir ?? undefined}
-    >
-      {textContent}
-    </Tag>
+  return createElement(
+    Tag,
+    {
+      id,
+      className:
+        "prose-headline-base-semibold text-base-content-strong [&:not(:first-child)]:mt-6 [&:not(:last-child)]:mb-6",
+      dir: dir ?? undefined,
+    },
+    textContent,
   )
 }

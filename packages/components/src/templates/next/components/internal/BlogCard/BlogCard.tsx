@@ -37,15 +37,13 @@ export const BlogCard = ({
     >
       {image && (
         <div className="relative mb-3 flex aspect-[2/1] h-auto min-h-40 shrink-0 items-center justify-center">
-          {
-            <ImageClient
-              src={imageSrc || ""}
-              alt={image.alt}
-              width="100%"
-              className={`absolute left-0 h-full w-full rounded ${isContainNeeded ? "object-contain" : "object-cover"}`}
-              assetsBaseUrl={siteAssetsBaseUrl}
-            />
-          }
+          <ImageClient
+            src={imageSrc || ""}
+            alt={image.alt}
+            width="100%"
+            className={`absolute left-0 h-full w-full rounded ${isContainNeeded ? "object-contain" : "object-cover"}`}
+            assetsBaseUrl={siteAssetsBaseUrl}
+          />
         </div>
       )}
       {shouldShowDate && (

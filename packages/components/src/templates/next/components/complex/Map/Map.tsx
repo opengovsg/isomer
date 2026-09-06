@@ -2,6 +2,7 @@ import type { MapProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { isValidMapEmbedUrl, isValidOGPMapsEmbedUrl } from "~/utils/validation"
 
+import { IFRAME_SANDBOX } from "../../complex/Video/shared"
 import { BaseParagraph } from "../../internal/BaseParagraph"
 import { ComponentContent } from "../../internal/customCssClass"
 
@@ -23,7 +24,7 @@ const createMapStyles = tv({
 
 export const Map = ({ title, url, shouldLazyLoad = true }: MapProps) => {
   if (!isValidMapEmbedUrl(url)) {
-    return <></>
+    return null
   }
 
   const isOgpMapsEmbed = isValidOGPMapsEmbedUrl(new URL(url))
@@ -49,6 +50,7 @@ export const Map = ({ title, url, shouldLazyLoad = true }: MapProps) => {
           className={compoundStyles.iframe()}
           src={url}
           title={title || "Map embedded in the page"}
+          sandbox={IFRAME_SANDBOX}
           allowFullScreen
           loading={shouldLazyLoad ? "lazy" : "eager"}
           referrerPolicy="no-referrer-when-downgrade"

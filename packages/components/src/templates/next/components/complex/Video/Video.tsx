@@ -4,7 +4,7 @@ import { isValidVideoUrl, VALID_VIDEO_DOMAINS } from "~/utils/validation"
 import { ComponentContent } from "../../internal/customCssClass"
 import { LiteVimeoEmbed } from "./LiteVimeoEmbed"
 import { LiteYouTubeEmbed } from "./LiteYouTubeEmbed"
-import { IFRAME_ALLOW, IFRAME_CLASSNAME } from "./shared"
+import { IFRAME_ALLOW, IFRAME_CLASSNAME, IFRAME_SANDBOX } from "./shared"
 import {
   getPrivacyEnhancedVimeoEmbedUrl,
   getPrivacyEnhancedYouTubeEmbedUrl,
@@ -90,6 +90,7 @@ export const Video = ({ title, url, shouldLazyLoad = true }: VideoProps) => {
             width="100%"
             className={IFRAME_CLASSNAME}
             allow={IFRAME_ALLOW}
+            sandbox={IFRAME_SANDBOX}
             referrerPolicy="strict-origin-when-cross-origin"
             allowFullScreen
           />

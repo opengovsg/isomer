@@ -1,12 +1,13 @@
 import type { FormSGProps } from "~/interfaces"
 import { isValidFormSGEmbedUrl } from "~/utils/validation"
 
+import { IFRAME_SANDBOX } from "../../complex/Video/shared"
 import { BaseParagraph } from "../../internal/BaseParagraph"
 import { ComponentContent } from "../../internal/customCssClass"
 
 export const FormSG = ({ title, url, shouldLazyLoad = true }: FormSGProps) => {
   if (!isValidFormSGEmbedUrl(url)) {
-    return <></>
+    return null
   }
 
   return (
@@ -26,12 +27,13 @@ export const FormSG = ({ title, url, shouldLazyLoad = true }: FormSGProps) => {
             overflow: "auto",
           }}
           title={title || "FormSG form embedded in the page"}
+          sandbox={IFRAME_SANDBOX}
           loading={shouldLazyLoad ? "lazy" : "eager"}
         />
       </div>
 
       <BaseParagraph
-        content={`Powered by <a href="https://form.gov.sg">Form</a>.`}
+        content='Powered by <a href="https://form.gov.sg">Form</a>.'
         className="prose-body-base pb-2 pt-1 text-base-content-subtle"
       />
     </section>

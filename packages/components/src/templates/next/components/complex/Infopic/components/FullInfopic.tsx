@@ -1,3 +1,4 @@
+import { createElement } from "react"
 import { InfopicVariants } from "~/interfaces/complex/Infopic"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
@@ -52,7 +53,7 @@ export const FullInfopic = ({
         >
           <div className={compoundStyles.container()}>
             <div className={compoundStyles.content()}>
-              <Tag className={compoundStyles.title()}>{title}</Tag>
+              {createElement(Tag, { className: compoundStyles.title() }, title)}
               <p className={compoundStyles.description()}>{description}</p>
               {hasLinkButton && (
                 <div className={compoundStyles.button()}>
@@ -70,7 +71,7 @@ export const FullInfopic = ({
                 </div>
               )}
             </div>
-            <div className={compoundStyles.imageContainer()}></div>
+            <div className={compoundStyles.imageContainer()} />
           </div>
         </div>
       </div>

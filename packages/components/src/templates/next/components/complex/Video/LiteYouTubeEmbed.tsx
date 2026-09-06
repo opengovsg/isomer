@@ -5,7 +5,7 @@ import { useEffect, useState } from "react"
 import { twMerge } from "~/lib/twMerge"
 
 import { ImageClient } from "../../internal/ImageClient"
-import { IFRAME_ALLOW, IFRAME_CLASSNAME } from "./shared"
+import { IFRAME_ALLOW, IFRAME_CLASSNAME, IFRAME_SANDBOX } from "./shared"
 
 export interface LiteYouTubeEmbedProps {
   src: string
@@ -29,9 +29,10 @@ export const LiteYouTubeEmbed = ({
   useEffect(() => {
     // For playlist/video-series embeds, fetch an actual preview image via oEmbed.
     if (videoId) {
-      setOEmbedThumbnailUrl(null)
       return
     }
+
+    let cancelled = false
 
     const fetchThumbnail = async () => {
       try {
@@ -40,6 +41,7 @@ export const LiteYouTubeEmbed = ({
         if (!response.ok) return
 
         const data = (await response.json()) as { thumbnail_url?: string }
+        if (cancelled) return
         if (data.thumbnail_url) {
           // Prefer sddefault; oEmbed returns hqdefault. Fallback to hqdefault is handled in onLoad.
           setOEmbedThumbnailUrl(
@@ -52,6 +54,10 @@ export const LiteYouTubeEmbed = ({
     }
 
     void fetchThumbnail()
+
+    return () => {
+      cancelled = true
+    }
   }, [src, videoId])
 
   //  We add autoplay here because the user already click on the facade button once,
@@ -109,6 +115,7 @@ export const LiteYouTubeEmbed = ({
           src={srcWithAutoplay()}
           title={title || "Video player"}
           allow={`${IFRAME_ALLOW}; autoplay`} // autoplay needed to allow Youtube to autoplay
+          sandbox={IFRAME_SANDBOX}
           referrerPolicy="strict-origin-when-cross-origin"
           allowFullScreen
         />

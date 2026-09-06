@@ -1,4 +1,5 @@
 import type { HeroFloatingProps } from "~/interfaces/complex/Hero"
+import { createElement } from "react"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
@@ -66,7 +67,11 @@ export const HeroFloating = ({
         >
           {/* Text container */}
           <div className={`flex flex-col gap-6 text-start ${heroTitleColour}`}>
-            <Tag className={`prose-display-xl ${heroTitleColour}`}>{title}</Tag>
+            {createElement(
+              Tag,
+              { className: `prose-display-xl ${heroTitleColour}` },
+              title,
+            )}
             {subtitle && (
               <p className={`prose-title-lg-regular ${heroSubtitleColour}`}>
                 {subtitle}

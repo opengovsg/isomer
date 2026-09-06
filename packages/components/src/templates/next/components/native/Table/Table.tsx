@@ -1,6 +1,7 @@
 import type { TableProps } from "~/interfaces"
 import { useId } from "react"
 import { tv } from "~/lib/tv"
+import { handleHorizontalScrollKeyDown } from "~/utils/handleHorizontalScrollKeyDown"
 
 import { BaseParagraph } from "../../internal/BaseParagraph"
 import { Divider } from "../Divider"
@@ -40,7 +41,13 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
         content={caption}
         className="prose-label-md-regular text-base-content-subtle [&:not(:last-child)]:mb-0"
       />
-      <div className="overflow-x-auto" tabIndex={0}>
+      {/* oxlint-disable jsx-a11y/no-noninteractive-tabindex, jsx-a11y/no-noninteractive-element-interactions -- keyboard-focusable scroll container for wide tables */}
+      <section
+        className="overflow-x-auto"
+        tabIndex={0}
+        aria-label="Scrollable table"
+        onKeyDown={handleHorizontalScrollKeyDown}
+      >
         <table
           className={tableStyles({ isFixedLayout: layout.kind === "fixed" })}
           aria-describedby={tableDescriptionId}
@@ -99,7 +106,7 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
                               )
                             default:
                               const _: never = cellContent
-                              return <></>
+                              return null
                           }
                         })}
                       </TableCellTag>
@@ -110,7 +117,8 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
             })}
           </tbody>
         </table>
-      </div>
+      </section>
+      {/* oxlint-enable jsx-a11y/no-noninteractive-tabindex, jsx-a11y/no-noninteractive-element-interactions */}
     </div>
   )
 }

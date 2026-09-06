@@ -143,6 +143,7 @@ export const MobileNavItemAccordion = ({
       <div>
         <h2>
           <button
+            type="button"
             id={`accordion-button-${index}`}
             aria-expanded={isOpen}
             aria-controls={`menu-content-${index}`}
@@ -157,10 +158,9 @@ export const MobileNavItemAccordion = ({
           </button>
         </h2>
       </div>
-      <div
+      <section
         id={`menu-content-${index}`}
         aria-labelledby={`accordion-button-${index}`}
-        role="region"
         className={menuItemsContainer({ isOpen })}
       >
         <ul className={sublist()}>
@@ -192,7 +192,7 @@ export const MobileNavItemAccordion = ({
             onCloseMenu={onCloseMenu}
           />
         )}
-      </div>
+      </section>
     </section>
   )
 }

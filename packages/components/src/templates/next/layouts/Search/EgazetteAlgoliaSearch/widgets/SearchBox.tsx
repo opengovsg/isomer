@@ -15,12 +15,16 @@ const queryHook: NonNullable<UseSearchBoxProps["queryHook"]> = (
 
 export const SearchBox = () => {
   const { query, refine } = useSearchBox({ queryHook })
-  const [value, setValue] = useState(query)
+  const [draft, setDraft] = useState<string | undefined>(undefined)
+  const [prevQuery, setPrevQuery] = useState(query)
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
-  useEffect(() => {
-    setValue(query)
-  }, [query])
+  if (query !== prevQuery) {
+    setPrevQuery(query)
+    setDraft(undefined)
+  }
+
+  const value = draft ?? query
 
   useEffect(() => {
     return () => {
@@ -42,7 +46,7 @@ export const SearchBox = () => {
         value={value}
         onChange={(event) => {
           const next = event.target.value
-          setValue(next)
+          setDraft(next)
           if (timerRef.current) clearTimeout(timerRef.current)
           timerRef.current = setTimeout(() => refine(next), DEBOUNCE_MS)
         }}

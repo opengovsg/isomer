@@ -1,22 +1,23 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useSyncExternalStore } from "react"
 import { getWordsFromPermalink } from "~/utils/getWordsFromPermalink"
 
 import { LinkButton } from "../../components/internal/LinkButton"
 
-export const NotFoundSearchButton = () => {
-  const [permalink, setPermalink] = useState("")
+const getPathnameSnapshot = () => window.location.pathname
+const getPathnameServerSnapshot = () => ""
 
-  useEffect(() => {
-    // The check for typeof window and navigator ensures this only runs in browser environments, not during server-side rendering
-    if (
-      typeof window !== "undefined" &&
-      typeof window.location !== "undefined"
-    ) {
-      setPermalink(window.location.pathname)
-    }
-  }, [])
+const subscribeToStaticSnapshot = () => {
+  return () => undefined
+}
+
+export const NotFoundSearchButton = () => {
+  const permalink = useSyncExternalStore(
+    subscribeToStaticSnapshot,
+    getPathnameSnapshot,
+    getPathnameServerSnapshot,
+  )
 
   const missingPath = getWordsFromPermalink(permalink)
 

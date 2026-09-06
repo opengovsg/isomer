@@ -28,7 +28,7 @@ type MobileNavMenuProps = Omit<
 }
 
 export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
-  (
+  function MobileNavMenu(
     {
       top,
       items,
@@ -41,7 +41,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
       search,
     },
     mobileMenuRef,
-  ) => {
+  ) {
     useScrollLock()
     const buttonRef = useRef<HTMLButtonElement>(null)
     const { buttonProps } = useButton({ onPress: onCloseMenu }, buttonRef)
@@ -127,6 +127,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
             )}
 
             <button
+              type="button"
               {...mergedButtonProps}
               ref={buttonRef}
               className={focusVisibleHighlight({
@@ -142,3 +143,4 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
     )
   },
 )
+MobileNavMenu.displayName = "MobileNavMenu"

@@ -1,11 +1,12 @@
 import type { AudioProps } from "~/interfaces"
 import { isApplePodcastUrl, isValidAudioEmbedUrl } from "~/utils/validation"
 
+import { IFRAME_SANDBOX } from "../../complex/Video/shared"
 import { ComponentContent } from "../../internal/customCssClass"
 
 export const Audio = ({ title, url, shouldLazyLoad = true }: AudioProps) => {
   if (!isValidAudioEmbedUrl(url)) {
-    return <></>
+    return null
   }
 
   if (isApplePodcastUrl(url)) {
@@ -25,7 +26,7 @@ export const Audio = ({ title, url, shouldLazyLoad = true }: AudioProps) => {
             src={url}
             title={title || "Audio embed"}
             allow="autoplay *; encrypted-media *; fullscreen *; clipboard-write"
-            sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation"
+            sandbox={IFRAME_SANDBOX}
             referrerPolicy="strict-origin-when-cross-origin"
             loading={shouldLazyLoad ? "lazy" : "eager"}
           />
@@ -45,6 +46,7 @@ export const Audio = ({ title, url, shouldLazyLoad = true }: AudioProps) => {
           src={url}
           title={title || "Audio embed"}
           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+          sandbox={IFRAME_SANDBOX}
           referrerPolicy="strict-origin-when-cross-origin"
           loading={shouldLazyLoad ? "lazy" : "eager"}
         />

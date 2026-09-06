@@ -3,6 +3,7 @@
 import type { SearchableTableClientProps } from "~/interfaces"
 import { useId, useRef } from "react"
 import { tv } from "~/lib/tv"
+import { handleHorizontalScrollKeyDown } from "~/utils/handleHorizontalScrollKeyDown"
 
 import { BaseParagraph } from "../../../internal/BaseParagraph"
 import { PaginationControls } from "../../../internal/PaginationControls"
@@ -58,50 +59,64 @@ interface SearchableTableClientUIProps extends Omit<
   searchMatchType: keyof typeof COPYWRITING_MAPPING
 }
 
-export const SearchableTableClientUI = ({
-  title,
-  headers,
-  isLoading = false,
-  isError = false,
-  search: { input: searchInput, deferred: deferredSearch, setSearch },
-  page: { currPage, setCurrPage },
-  isInitiallyEmpty,
-  isFilteredEmpty,
-  maxNoOfColumns,
-  paginatedItems,
-  filteredItemsLength,
-  searchMatchType,
-}: SearchableTableClientUIProps) => {
-  const titleId = useId()
+interface SearchableTableContentProps {
+  titleId: string
+  title: string | undefined
+  isInitiallyEmpty: boolean
+  isLoading: boolean
+  isError: boolean
+  isFilteredEmpty: boolean
+  deferredSearch: string
+  setSearch: (search: string) => void
+  setCurrPage: (currPage: number) => void
+  searchMatchType: keyof typeof COPYWRITING_MAPPING
+  paginatedItems: (string | number)[][]
+  maxNoOfColumns: number
+  headers: (string | number)[]
+}
 
-  const sectionTopRef = useRef<HTMLDivElement>(null)
-  const onPageChange = () => {
-    sectionTopRef.current?.scrollIntoView({
-      block: "start",
-    })
+const SearchableTableContent = ({
+  titleId,
+  title,
+  isInitiallyEmpty,
+  isLoading,
+  isError,
+  isFilteredEmpty,
+  deferredSearch,
+  setSearch,
+  setCurrPage,
+  searchMatchType,
+  paginatedItems,
+  maxNoOfColumns,
+  headers,
+}: SearchableTableContentProps) => {
+  if (isInitiallyEmpty || isLoading || isError) {
+    return <FallbackEmptyState isLoading={isLoading} isError={isError} />
   }
 
-  const Content = () => {
-    if (isInitiallyEmpty || isLoading || isError) {
-      return <FallbackEmptyState isLoading={isLoading} isError={isError} />
-    }
+  if (isFilteredEmpty) {
+    return (
+      <EmptyState
+        search={deferredSearch}
+        onClick={() => {
+          setSearch("")
+          setCurrPage(1)
+        }}
+        searchMatchType={searchMatchType}
+      />
+    )
+  }
 
-    if (isFilteredEmpty) {
-      return (
-        <EmptyState
-          search={deferredSearch}
-          onClick={() => {
-            setSearch("")
-            setCurrPage(1)
-          }}
-          searchMatchType={searchMatchType}
-        />
-      )
-    }
-
-    if (paginatedItems.length > 0) {
-      return (
-        <div className={compoundStyles.tableContainer()} tabIndex={0}>
+  if (paginatedItems.length > 0) {
+    return (
+      <>
+        {/* oxlint-disable jsx-a11y/no-noninteractive-tabindex, jsx-a11y/no-noninteractive-element-interactions -- keyboard-focusable scroll container for wide tables */}
+        <section
+          className={compoundStyles.tableContainer()}
+          tabIndex={0}
+          aria-label="Scrollable table"
+          onKeyDown={handleHorizontalScrollKeyDown}
+        >
           <table
             className={compoundStyles.table()}
             aria-describedby={!!title ? titleId : undefined}
@@ -129,7 +144,7 @@ export const SearchableTableClientUI = ({
                         })}
                       >
                         {/* NOTE: Reference links are NOT supported within
-                            SearchableTable cell contents */}
+                          SearchableTable cell contents */}
                         <BaseParagraph content={String(cell)} />
                       </td>
                     ))}
@@ -138,11 +153,36 @@ export const SearchableTableClientUI = ({
               })}
             </tbody>
           </table>
-        </div>
-      )
-    }
+        </section>
+        {/* oxlint-enable jsx-a11y/no-noninteractive-tabindex, jsx-a11y/no-noninteractive-element-interactions */}
+      </>
+    )
+  }
 
-    return null
+  return null
+}
+
+export const SearchableTableClientUI = ({
+  title,
+  headers,
+  isLoading = false,
+  isError = false,
+  search: { input: searchInput, deferred: deferredSearch, setSearch },
+  page: { currPage, setCurrPage },
+  isInitiallyEmpty,
+  isFilteredEmpty,
+  maxNoOfColumns,
+  paginatedItems,
+  filteredItemsLength,
+  searchMatchType,
+}: SearchableTableClientUIProps) => {
+  const titleId = useId()
+
+  const sectionTopRef = useRef<HTMLDivElement>(null)
+  const onPageChange = () => {
+    sectionTopRef.current?.scrollIntoView({
+      block: "start",
+    })
   }
 
   return (
@@ -163,7 +203,21 @@ export const SearchableTableClientUI = ({
         }}
       />
 
-      <Content />
+      <SearchableTableContent
+        titleId={titleId}
+        title={title}
+        isInitiallyEmpty={isInitiallyEmpty}
+        isLoading={isLoading}
+        isError={isError}
+        isFilteredEmpty={isFilteredEmpty}
+        deferredSearch={deferredSearch}
+        setSearch={setSearch}
+        setCurrPage={setCurrPage}
+        searchMatchType={searchMatchType}
+        paginatedItems={paginatedItems}
+        maxNoOfColumns={maxNoOfColumns}
+        headers={headers}
+      />
 
       {filteredItemsLength > 0 && (
         <div className={compoundStyles.pagination()}>

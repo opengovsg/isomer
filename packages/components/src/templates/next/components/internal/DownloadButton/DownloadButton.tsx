@@ -72,9 +72,9 @@ export const DownloadButton = ({
       } else {
         console.error("Failed to get download URL")
       }
+      setIsDownloading(false)
     } catch (error) {
       console.error("Download failed:", error)
-    } finally {
       setIsDownloading(false)
     }
   }
@@ -109,6 +109,7 @@ export const DownloadButton = ({
 
   return (
     <button
+      type="button"
       {...mergedProps}
       ref={ref}
       className={twMerge(

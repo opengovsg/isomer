@@ -34,13 +34,17 @@ export const useDgsMetadata = ({
         })
         setMetadata(metadata)
         setIsError(false)
+        if (!controller.signal.aborted) {
+          setIsLoading(false)
+        }
       } catch (error) {
         if (error instanceof DOMException && error.name === "AbortError") {
           return
         }
         setIsError(true)
-      } finally {
-        if (!controller.signal.aborted) setIsLoading(false)
+        if (!controller.signal.aborted) {
+          setIsLoading(false)
+        }
       }
     }
 

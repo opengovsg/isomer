@@ -31,8 +31,8 @@ export const DynamicDGSSearchableTable = ({
   isMetadataError,
   maxNoOfColumns, // not using MAX_NUMBER_OF_COLUMNS as we should not arbitrarily slice the columns
 }: DynamicSearchableTableClientProps) => {
-  const [_search, setSearch] = useState("")
-  const search = useDebounce({ value: _search, delay: 300 })
+  const [searchInput, setSearchInput] = useState("")
+  const search = useDebounce({ value: searchInput, delay: 300 })
   const [currPage, setCurrPage] = useState(1)
 
   const params = useMemo(
@@ -83,7 +83,11 @@ export const DynamicDGSSearchableTable = ({
       headers={headers}
       isLoading={isMetadataLoading || isDataLoading}
       isError={isMetadataError || isDataError}
-      search={{ input: _search, deferred: search, setSearch }}
+      search={{
+        input: searchInput,
+        deferred: search,
+        setSearch: setSearchInput,
+      }}
       page={{ currPage, setCurrPage }}
       isInitiallyEmpty={isInitiallyEmpty}
       isFilteredEmpty={isFilteredEmpty}

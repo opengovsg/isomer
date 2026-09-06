@@ -1,4 +1,5 @@
 import type { HeroSearchbarProps } from "~/interfaces/complex/Hero"
+import { createElement } from "react"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 
 import { ComponentContent } from "../../../internal/customCssClass"
@@ -44,7 +45,11 @@ export const SearchbarContent = ({
       className={`relative mx-auto flex w-full flex-col items-center gap-6 px-6 pb-12 pt-11 md:gap-9 lg:pb-20 lg:pt-16 ${ComponentContent}`}
     >
       <div className="flex w-full max-w-[760px] flex-col items-center gap-5 text-center md:gap-6">
-        <Tag className="prose-display-lg w-full text-center">{title}</Tag>
+        {createElement(
+          Tag,
+          { className: "prose-display-lg w-full text-center" },
+          title,
+        )}
         {!!subtitle && (
           <p className="prose-title-lg-regular w-full text-center">
             {subtitle}

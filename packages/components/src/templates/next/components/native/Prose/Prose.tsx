@@ -53,7 +53,7 @@ export const Prose = ({
   headingLevel,
 }: ProseProps) => {
   if (!content) {
-    return <></>
+    return null
   }
 
   return (

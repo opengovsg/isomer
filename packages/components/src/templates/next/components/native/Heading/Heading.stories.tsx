@@ -22,7 +22,7 @@ const DefaultHeadings = () => {
     <div>
       {HeadingLevels.map((level) => {
         return (
-          <div className="mb-4">
+          <div key={level} className="mb-4">
             <Heading
               attrs={{ level }}
               content={[{ type: "text", text: `This is a heading-${level}` }]}
@@ -45,7 +45,7 @@ const HeadingsWithDirection = () => {
     <div>
       {["auto", "ltr", "rtl", null, undefined].map((dir) => {
         return (
-          <div className="mb-4">
+          <div key={String(dir)} className="mb-4">
             <Heading
               attrs={{ level: 2, dir: dir as AttrsDirProps }}
               content={[{ type: "text", text: `ما ${dir} فائدته ؟` }]}

@@ -83,7 +83,11 @@ export const ContactMethod = ({
                 </Link>
               )
             }
-            return <div className={styles.value()}>{value}</div>
+            return (
+              <div key={value} className={styles.value()}>
+                {value}
+              </div>
+            )
           })}
           {!!caption && <div className={styles.caption()}>{caption}</div>}
         </div>

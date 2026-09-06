@@ -1,4 +1,5 @@
 import type { ContactInformationUIProps } from "~/interfaces"
+import { createElement } from "react"
 import { tv } from "~/lib/tv"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 
@@ -91,6 +92,31 @@ type NumberOfContactMethods =
 
 const MAX_CONTACT_METHODS_FOR_HOMEPAGE = 3
 
+interface CallToActionButtonProps {
+  className: string
+  referenceLinkHref: string
+  label: string
+}
+
+const CallToActionButton = ({
+  className,
+  referenceLinkHref,
+  label,
+}: CallToActionButtonProps) => {
+  return (
+    <div className={className}>
+      <LinkButton
+        href={referenceLinkHref}
+        size="base"
+        variant="outline"
+        isWithFocusVisibleHighlight
+      >
+        {label}
+      </LinkButton>
+    </div>
+  )
+}
+
 export const HomepageContactInformationUI = ({
   whitelistedMethods,
   title,
@@ -121,40 +147,18 @@ export const HomepageContactInformationUI = ({
     isLoading,
   })
 
-  const CallToActionButton = ({
-    isBottomButton,
-  }: {
-    isBottomButton: boolean
-  }) => {
-    return (
-      <div
-        className={compoundStyles.urlButtonContainer({
-          isBottomButton,
-        })}
-      >
-        <LinkButton
-          href={referenceLinkHref}
-          size="base"
-          variant="outline"
-          isWithFocusVisibleHighlight
-        >
-          {label}
-        </LinkButton>
-      </div>
-    )
-  }
-
   const descriptionText = isLoading ? "" : (description ?? "")
 
   return (
     <section className={compoundStyles.screenWideOuterContainer()}>
       <div className={compoundStyles.container()}>
         <div className={compoundStyles.titleAndDescriptionContainer()}>
-          {(title || isLoading) && (
-            <TitleTag className={compoundStyles.title()}>
-              {isLoading ? "" : title}
-            </TitleTag>
-          )}
+          {(title || isLoading) &&
+            createElement(
+              TitleTag,
+              { className: compoundStyles.title() },
+              isLoading ? "" : title,
+            )}
           {(!!description || isLoading) &&
             (acceptHtmlTags ? (
               <BaseParagraph
@@ -166,7 +170,13 @@ export const HomepageContactInformationUI = ({
               <p className={compoundStyles.description()}>{descriptionText}</p>
             ))}
           {!!referenceLinkHref && !!label && !isLoading && (
-            <CallToActionButton isBottomButton={false} />
+            <CallToActionButton
+              className={compoundStyles.urlButtonContainer({
+                isBottomButton: false,
+              })}
+              referenceLinkHref={referenceLinkHref}
+              label={label}
+            />
           )}
         </div>
 
@@ -194,7 +204,13 @@ export const HomepageContactInformationUI = ({
         </div>
 
         {!!referenceLinkHref && !!label && !isLoading && (
-          <CallToActionButton isBottomButton={true} />
+          <CallToActionButton
+            className={compoundStyles.urlButtonContainer({
+              isBottomButton: true,
+            })}
+            referenceLinkHref={referenceLinkHref}
+            label={label}
+          />
         )}
       </div>
     </section>

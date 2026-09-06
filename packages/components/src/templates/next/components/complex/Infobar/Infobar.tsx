@@ -1,4 +1,5 @@
 import type { InfobarProps } from "~/interfaces/complex/Infobar"
+import { createElement } from "react"
 import { DEFAULT_INFOBAR_VARIANT } from "~/interfaces/complex/Infobar/constants"
 import { tv } from "~/lib/tv"
 import { getHeadingTag } from "~/utils/getHeadingTag"
@@ -118,7 +119,7 @@ export const Infobar = ({
       <div className={styles.outerContainer()}>
         <div className={styles.innerContainer()}>
           <div className={styles.headingContainer()}>
-            <Tag className={styles.title()}>{title}</Tag>
+            {createElement(Tag, { className: styles.title() }, title)}
             {description && (
               <p className={styles.description()}>{description}</p>
             )}

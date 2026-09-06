@@ -20,13 +20,13 @@ interface PaginationControlsProps extends PaginationProps {
   onPageChange?: () => void
 }
 
-export function PaginationControls({
+export const PaginationControls = ({
   totalItems,
   itemsPerPage,
   currPage,
   setCurrPage,
   onPageChange,
-}: PaginationControlsProps) {
+}: PaginationControlsProps) => {
   const isTablet = useBreakpoint("md")
 
   const paginationRange = usePaginationRange<typeof SEPARATOR>({
