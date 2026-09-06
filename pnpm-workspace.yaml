@@ -148,6 +148,7 @@ catalog:
   openid-client: ^5.7.1
   oxfmt: ^0.62.0
   oxlint: ^1.80.0
+  oxlint-plugin-react-doctor: ^0.9.13
   oxlint-tsgolint: ^7.0.2001
   papaparse: ^5.5.4
   pg-boss: ^12.27.0
