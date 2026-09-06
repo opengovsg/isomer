@@ -10,7 +10,7 @@
     "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo.json",
     "module": "esnext"
   },
-  "exclude": ["node_modules", ".next", "out", "dist"],
+  "exclude": ["node_modules", ".next", "out", "dist", "oxlint.config.ts"],
   "include": [
     ".",
     ".next/types/**/*.ts",
