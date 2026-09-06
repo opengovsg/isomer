@@ -24,9 +24,7 @@ export const MicrosoftClarity = ({ msClarityId }: MicrosoftClarityProps) => {
       }
       clarityWindow.clarity = function () {
         // oxlint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, prefer-rest-params
-        ;(clarityWindow.clarity.q = clarityWindow.clarity.q ?? []).push(
-          arguments,
-        )
+        ;(clarityWindow.clarity.q = clarityWindow.clarity.q ?? []).push(arguments)
       }
     }
   }, [])
