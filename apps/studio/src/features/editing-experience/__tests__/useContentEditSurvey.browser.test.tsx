@@ -21,7 +21,7 @@ import {
 } from "../hooks/useContentEditSurvey"
 
 const trackEventMock = vi.hoisted(() => vi.fn())
-vi.mock("~/lib/intercom", () => ({ trackEvent: trackEventMock }))
+vi.mock("@intercom/messenger-js-sdk", () => ({ trackEvent: trackEventMock }))
 
 const mockEnv = vi.hoisted<{
   env: { NEXT_PUBLIC_INTERCOM_APP_ID: string | undefined }
