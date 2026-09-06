@@ -18,9 +18,15 @@ import {
   InfoCardWithImage,
 } from "./components"
 
-type InfoCardsToRenderProps = Omit<
+type InfoCardsToRenderProps = Pick<
   InfoCardsProps,
-  "type" | "id" | "title" | "subtitle" | "label" | "url"
+  | "variant"
+  | "cards"
+  | "maxColumns"
+  | "layout"
+  | "site"
+  | "shouldLazyLoad"
+  | "headingLevel"
 >
 
 const InfoCardsToRender = (props: InfoCardsToRenderProps) => {
