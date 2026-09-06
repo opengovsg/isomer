@@ -50,6 +50,7 @@ export const Iframe = ({
         className={`relative w-full overflow-hidden ${getPaddingForEmbed(
           iframeUrl,
         )}`}
+        // oxlint-disable-next-line react/no-danger -- sanitized iframe HTML from trusted CMS content
         dangerouslySetInnerHTML={{ __html: sanitizedIframe.outerHTML }}
       />
     </section>

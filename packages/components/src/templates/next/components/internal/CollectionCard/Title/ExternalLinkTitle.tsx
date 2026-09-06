@@ -16,45 +16,42 @@ export const ExternalLinkTitle = ({
   title: string
   headingLevel: number
 }) => {
-  const Tag = getHeadingTag(headingLevel)
   const textRef = useRef<HTMLSpanElement | null>(null)
 
   const [isTruncated, setIsTruncated] = useState(false)
 
   useEffect(() => {
-    const checkTruncation = () => {
-      const element = textRef.current
-      if (!element) return
+    const element = textRef.current
+    if (!element) return
 
+    const checkTruncation = () => {
       setIsTruncated(element.scrollHeight > element.clientHeight)
     }
 
     checkTruncation()
 
-    window.addEventListener("resize", checkTruncation)
-    return () => window.removeEventListener("resize", checkTruncation)
-  }, [title])
+    const observer = new ResizeObserver(checkTruncation)
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [])
 
   return createElement(
-    Tag,
+    getHeadingTag(headingLevel),
     { className: collectionCardLinkStyle() },
-    createElement(
-      "span",
-      { ref: textRef, className: "line-clamp-3", title },
-      title,
-      !isTruncated &&
-        createElement(BiLinkExternal, {
-          className:
-            "ml-1 inline-block h-auto w-3.5 align-middle lg:ml-1.5 lg:w-4",
-        }),
-    ),
-    isTruncated &&
-      createElement(
-        "div",
-        { className: "mt-1" },
-        createElement(BiLinkExternal, {
-          className: "h-auto w-3.5 text-base-content-subtle lg:w-4",
-        }),
-      ),
+    <>
+      <span ref={textRef} className="line-clamp-3" title={title}>
+        {title}
+        {!isTruncated && (
+          <BiLinkExternal className="ml-1 inline-block h-auto w-3.5 align-middle lg:ml-1.5 lg:w-4" />
+        )}
+      </span>
+
+      {/* Show icon below text if truncated */}
+      {isTruncated && (
+        <div className="mt-1">
+          <BiLinkExternal className="h-auto w-3.5 text-base-content-subtle lg:w-4" />
+        </div>
+      )}
+    </>,
   )
 }

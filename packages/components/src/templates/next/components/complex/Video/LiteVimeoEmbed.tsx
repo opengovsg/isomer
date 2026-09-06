@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { twMerge } from "~/lib/twMerge"
 
 import { ImageClient } from "../../internal/ImageClient"
-import { IFRAME_ALLOW, IFRAME_CLASSNAME } from "./shared"
+import { IFRAME_ALLOW, IFRAME_CLASSNAME, IFRAME_SANDBOX } from "./shared"
 
 // Vimeo API v2 response shape (partial)
 interface VimeoVideoInfo {
@@ -87,6 +87,7 @@ export const LiteVimeoEmbed = ({
           src={srcWithAutoplay()}
           title={title || "Video player"}
           allow={`${IFRAME_ALLOW}; autoplay`} // autoplay needed to allow Vimeo to autoplay
+          sandbox={IFRAME_SANDBOX}
           referrerPolicy="strict-origin-when-cross-origin"
           allowFullScreen
         />

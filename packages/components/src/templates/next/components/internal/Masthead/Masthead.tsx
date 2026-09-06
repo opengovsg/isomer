@@ -5,7 +5,10 @@ import { Link } from "../Link"
 
 const MastheadSummary = ({ isStaging }: { isStaging?: boolean }) => {
   return (
-    <summary className="group/summary flex w-full cursor-pointer list-none gap-1 text-start leading-5 outline-none lg:flex-row lg:items-center [&::-webkit-details-marker]:hidden">
+    <summary
+      aria-label="How to identify a Singapore Government Agency website"
+      className="group/summary flex w-full cursor-pointer list-none gap-1 text-start leading-5 outline-none lg:flex-row lg:items-center [&::-webkit-details-marker]:hidden"
+    >
       <div className="mx-auto flex w-full max-w-screen-xl gap-1 px-6 text-start md:px-10 lg:flex-row lg:items-center">
         <svg
           aria-hidden

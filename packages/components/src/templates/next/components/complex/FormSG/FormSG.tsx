@@ -3,6 +3,7 @@ import { isValidFormSGEmbedUrl } from "~/utils/validation"
 
 import { BaseParagraph } from "../../internal/BaseParagraph"
 import { ComponentContent } from "../../internal/customCssClass"
+import { IFRAME_SANDBOX } from "../../complex/Video/shared"
 
 export const FormSG = ({ title, url, shouldLazyLoad = true }: FormSGProps) => {
   if (!isValidFormSGEmbedUrl(url)) {
@@ -26,6 +27,7 @@ export const FormSG = ({ title, url, shouldLazyLoad = true }: FormSGProps) => {
             overflow: "auto",
           }}
           title={title || "FormSG form embedded in the page"}
+          sandbox={IFRAME_SANDBOX}
           loading={shouldLazyLoad ? "lazy" : "eager"}
         />
       </div>

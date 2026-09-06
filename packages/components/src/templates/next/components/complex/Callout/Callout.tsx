@@ -3,6 +3,7 @@ import type { CalloutProps, CalloutVariant } from "~/interfaces"
 import { BiCheckCircle, BiError, BiErrorCircle } from "react-icons/bi"
 import { DEFAULT_CALLOUT_VARIANT } from "~/interfaces/complex/Callout"
 import { tv } from "~/lib/tv"
+import { handleHorizontalScrollKeyDown } from "~/utils/handleHorizontalScrollKeyDown"
 
 import { Prose } from "../../native/Prose"
 
@@ -76,11 +77,18 @@ export const Callout = ({
   const styles = calloutStyles({ variant, hasIcon: !!Icon })
 
   return (
-    <section className={styles.container()} aria-label={label}>
+    <fieldset className={styles.container()} aria-label={label}>
       {Icon && <Icon aria-hidden className={styles.icon()} />}
-      <div className={styles.content()} tabIndex={0}>
+      {/* oxlint-disable jsx-a11y/no-noninteractive-tabindex, jsx-a11y/no-noninteractive-element-interactions -- keyboard-focusable scroll container for wide callout content */}
+      <section
+        className={styles.content()}
+        tabIndex={0}
+        aria-label={`${label} content`}
+        onKeyDown={handleHorizontalScrollKeyDown}
+      >
         <Prose {...content} site={site} headingLevel={headingLevel} />
-      </div>
-    </section>
+      </section>
+      {/* oxlint-enable jsx-a11y/no-noninteractive-tabindex, jsx-a11y/no-noninteractive-element-interactions */}
+    </fieldset>
   )
 }
