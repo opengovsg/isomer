@@ -19,5 +19,5 @@ export default function Suspense(props: ComponentProps<typeof ReactSuspense>) {
   if (isMounted) {
     return <ReactSuspense {...props} />
   }
-  return <>{props.fallback}</>
+  return props.fallback
 }
