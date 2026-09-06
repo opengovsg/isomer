@@ -1,5 +1,7 @@
 type JsonPrimitive = string | number | boolean | null
-type ParsedJsonRecord = { [key: string]: ParsedJsonValue }
+interface ParsedJsonRecord {
+  [key: string]: ParsedJsonValue
+}
 type ParsedJsonValue = JsonPrimitive | ParsedJsonValue[] | ParsedJsonRecord
 type UnparsedJsonInput = string | ParsedJsonValue | undefined
 

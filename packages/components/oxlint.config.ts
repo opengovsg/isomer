@@ -1,6 +1,7 @@
 import { defineConfig } from "@isomer/oxlint-config"
 import base from "@isomer/oxlint-config/base"
 import {
+  antiSlop,
   jsPluginSettings,
   react,
   reactDoctor,
@@ -8,9 +9,12 @@ import {
 } from "@isomer/oxlint-config/presets"
 
 export default defineConfig({
-  extends: [base, react, reactDoctor],
+  extends: [base, react, reactDoctor, antiSlop],
   settings: jsPluginSettings,
-  jsPlugins: reactDoctorJsPluginEntries,
+  jsPlugins: [
+    ...reactDoctorJsPluginEntries,
+    ...(antiSlop.jsPlugins ?? []),
+  ],
   ignorePatterns: ["dist", "**/*.config.*", "!.storybook"],
   overrides: [
     {

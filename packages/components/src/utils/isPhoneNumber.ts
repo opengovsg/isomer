@@ -5,7 +5,7 @@ type PhoneValidationInput =
   | null
   | undefined
   | PhoneValidationInput[]
-  | { [key: string]: never }
+  | Record<string, never>
 
 // Note: this is a very basic phone number validation that
 // only checks if the phone number is a valid international phone number

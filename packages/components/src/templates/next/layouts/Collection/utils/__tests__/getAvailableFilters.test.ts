@@ -25,10 +25,10 @@ describe("getAvailableFilters", () => {
         title: "Item 1",
         tags: [{ selected: ["Guides"], category: "Category" }],
         date: new Date("2023-01-01"),
-        }),
+      }),
     ]
     const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
-      testCollectionItem({
+      {
         label: "Category",
         id: "cat-1",
         isRequired: true,
@@ -54,11 +54,11 @@ describe("getAvailableFilters", () => {
   it("orders tag filters (including a migrated Category group) before the year filter", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
-      {
+      testCollectionItem({
         title: "Item 1",
         tags: [{ selected: ["Guides"], category: "Category" }],
         date: new Date("2023-01-01"),
-        }),
+      }),
     ]
 
     // Act
@@ -75,7 +75,7 @@ describe("getAvailableFilters", () => {
         title: "Item 1",
         tags: [],
         date: undefined,
-        }),
+      }),
     ]
 
     // Act

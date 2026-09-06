@@ -42,7 +42,7 @@ const isPlainObject = (
   value !== null && !Array.isArray(value) && Object(value) === value
 
 const isNonEmptyString = (value: AppliedFilterUrlJson): value is string =>
-  value !== null && value !== undefined && String(value) === value
+  Object.prototype.toString.call(value) === "[object String]" && value !== ""
 
 export const isAppliedFilters = (
   value: AppliedFilterUrlJson,

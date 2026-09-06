@@ -194,7 +194,7 @@ const sortCollectionItemsByTitle = ({
   })
 }
 
-type ParsedSortOrder = {
+interface ParsedSortOrder {
   sortBy: SortBy
   sortDirection: SortDirection
 }
