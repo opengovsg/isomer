@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unsafe-type-assertion, anti-slop/no-chained-type-assertions -- test fixtures deliberately pass malformed external values through the filter boundary */
 import type { ContactInformationUIProps } from "~/interfaces"
 import type { CONTACT_INFORMATION_SUPPORT_METHODS } from "~/interfaces/complex/ContactInformation/constants"
 import { describe, expect, it } from "vitest"
@@ -281,7 +282,8 @@ describe("filterContactMethods", () => {
         {
           label: "Phone with undefined",
           method: "telephone",
-          values: hostileContactValues(),
+          // oxlint-disable-next-line unicorn/no-useless-undefined -- explicit undefined tests malformed external payload
+          values: hostileContactValues(undefined),
         },
         {
           label: "Phone with null",
@@ -291,7 +293,7 @@ describe("filterContactMethods", () => {
         {
           label: "Phone with boolean",
           method: "telephone",
-          values: [hostileContactValue()],
+          values: [hostileContactValue(true)],
         },
         {
           label: "Phone with object",

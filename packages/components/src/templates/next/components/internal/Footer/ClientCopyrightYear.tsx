@@ -1,5 +1,3 @@
 "use client"
 
-export const ClientCopyrightYear = () => 
-  <>&copy; {new Date().getFullYear()}</>
-
+export const ClientCopyrightYear = () => <>&copy; {new Date().getFullYear()}</>

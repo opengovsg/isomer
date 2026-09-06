@@ -3,6 +3,7 @@ import { tv } from "~/lib/tv"
 import { getFormattedDate } from "~/utils/getFormattedDate"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { isExternalUrl } from "~/utils/isExternalUrl"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { Breadcrumb } from "../Breadcrumb"
 import { ImageClient } from "../ImageClient"
@@ -57,7 +58,7 @@ export const ContentPageHeader = ({
   showThumbnail,
   colorScheme = "default",
 }: ContentPageHeaderProps) => {
-  const hasImage = !!image?.src
+  const hasImage = hasNonEmptyString(image?.src)
   const styles = createContentPageHeaderStyles({ colorScheme })
 
   return (
@@ -74,7 +75,7 @@ export const ContentPageHeader = ({
               <h1 className={styles.title()}>{title}</h1>
               <p className={styles.summary()}>{summary}</p>
             </div>
-            {buttonLabel && buttonUrl && (
+            {hasNonEmptyString(buttonLabel) && hasNonEmptyString(buttonUrl) && (
               <div className={styles.buttonPadding()}>
                 <LinkButton
                   href={getReferenceLinkHref(

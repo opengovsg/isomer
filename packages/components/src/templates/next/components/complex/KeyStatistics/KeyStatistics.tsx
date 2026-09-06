@@ -4,6 +4,7 @@ import { tv } from "~/lib/tv"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { ComponentContent } from "../../internal/customCssClass"
 import { LinkButton } from "../../internal/LinkButton"
@@ -61,9 +62,15 @@ const createKeyStatisticsStyles = tv({
 const compoundStyles = createKeyStatisticsStyles()
 
 const toNoOfItemVariants = (length: number): NoOfItemVariants => {
-  if (length <= 1) {return 1}
-  if (length === 2) {return 2}
-  if (length === 3) {return 3}
+  if (length <= 1) {
+    return 1
+  }
+  if (length === 2) {
+    return 2
+  }
+  if (length === 3) {
+    return 3
+  }
   return 4
 }
 
@@ -90,9 +97,9 @@ export const KeyStatistics = ({
       {createElement(TitleTag, { className: compoundStyles.title() }, title)}
 
       <div className={compoundStyles.statistics()}>
-        {statistics.slice(0, MAX_ITEMS).map(({ label, value }) => (
+        {statistics.slice(0, MAX_ITEMS).map(({ label: statLabel, value }) => (
           <div
-            key={`${label}-${value}`}
+            key={`${statLabel}-${value}`}
             className={compoundStyles.itemContainer({ noOfItems })}
           >
             {createElement(
@@ -101,12 +108,12 @@ export const KeyStatistics = ({
               value.slice(0, MAX_CHAR_LIMIT),
             )}
 
-            <p className={compoundStyles.itemLabel()}>{label}</p>
+            <p className={compoundStyles.itemLabel()}>{statLabel}</p>
           </div>
         ))}
       </div>
 
-      {!!url && (
+      {hasNonEmptyString(url) && (
         <div className={compoundStyles.urlButtonContainer()}>
           <LinkButton
             href={getReferenceLinkHref(
@@ -118,7 +125,7 @@ export const KeyStatistics = ({
             variant="outline"
             isWithFocusVisibleHighlight
           >
-            {label ? label : "Our achievements"}
+            {hasNonEmptyString(label) ? label : "Our achievements"}
           </LinkButton>
         </div>
       )}

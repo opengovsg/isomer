@@ -36,26 +36,24 @@ export const EmptyState = ({
   search,
   onClick,
   searchMatchType,
-}: EmptyStateProps) => 
-  (
-    <div className={styles.container()}>
-      <div className={styles.headings()}>
-        <p className={styles.title({ bold: false })}>
-          No search results for “
-          <b className={styles.title({ bold: true })}>{search}</b>”
-        </p>
+}: EmptyStateProps) => (
+  <div className={styles.container()}>
+    <div className={styles.headings()}>
+      <p className={styles.title({ bold: false })}>
+        No search results for “
+        <b className={styles.title({ bold: true })}>{search}</b>”
+      </p>
 
-        <p className={styles.subtitle()}>
-          {COPYWRITING_MAPPING[searchMatchType].noResultsSubtitle}
-        </p>
-      </div>
-
-      <button type="button" className={styles.button()} onClick={onClick}>
-        Clear search
-      </button>
+      <p className={styles.subtitle()}>
+        {COPYWRITING_MAPPING[searchMatchType].noResultsSubtitle}
+      </p>
     </div>
-  )
 
+    <button type="button" className={styles.button()} onClick={onClick}>
+      Clear search
+    </button>
+  </div>
+)
 
 interface FallbackEmptyStateProps {
   isLoading: boolean

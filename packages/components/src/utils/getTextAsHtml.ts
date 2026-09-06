@@ -64,8 +64,10 @@ export const getTextAsHtml = ({
 
     const currentNodeLinkMark = node.marks?.find((mark) => mark.type === "link")
     const isLinkMarkNew =
-      (previousNodeLinkMark === undefined && currentNodeLinkMark !== undefined) ||
-      (previousNodeLinkMark !== undefined && currentNodeLinkMark === undefined) ||
+      (previousNodeLinkMark === undefined &&
+        currentNodeLinkMark !== undefined) ||
+      (previousNodeLinkMark !== undefined &&
+        currentNodeLinkMark === undefined) ||
       !isEqual(previousNodeLinkMark, currentNodeLinkMark)
 
     // Close off the existing link mark if it is different

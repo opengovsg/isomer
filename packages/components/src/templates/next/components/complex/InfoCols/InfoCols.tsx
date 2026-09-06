@@ -9,6 +9,7 @@ import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 import { groupFocusVisibleHighlight } from "~/utils/tailwind"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
@@ -74,7 +75,9 @@ const InfoBoxIcon = ({
   icon?: SupportedIconName
   hasLink: boolean
 }) => {
-  if (!icon) {return null}
+  if (!icon) {
+    return null
+  }
 
   const Icon = SUPPORTED_ICONS_MAP[icon]
 
@@ -91,64 +94,62 @@ const InfoBoxIcon = ({
 const InfoBoxes = ({
   infoBoxes,
   site,
-}: Pick<InfoColsProps, "infoBoxes" | "site">) => 
-  (
-    <div className={compoundStyles.infoBoxesContainer()}>
-      {infoBoxes.map(({ title, icon, description, buttonUrl, buttonLabel }) => {
-        const hasLink = !!buttonUrl
-        const isExternalLink = isExternalUrl(buttonUrl)
-        const showTitleArrow = hasLink && !buttonLabel
-        return (
-          <Link
-            href={getReferenceLinkHref(
-              buttonUrl,
-              site.siteMapArray,
-              site.assetsBaseUrl,
-            )}
-            key={`${title}-${buttonUrl ?? ""}`}
-            className={compoundStyles.infoBox()}
-            isExternal={isExternalLink}
+}: Pick<InfoColsProps, "infoBoxes" | "site">) => (
+  <div className={compoundStyles.infoBoxesContainer()}>
+    {infoBoxes.map(({ title, icon, description, buttonUrl, buttonLabel }) => {
+      const hasLink = hasNonEmptyString(buttonUrl)
+      const isExternalLink = isExternalUrl(buttonUrl)
+      const showTitleArrow = hasLink && !hasNonEmptyString(buttonLabel)
+      return (
+        <Link
+          href={getReferenceLinkHref(
+            buttonUrl,
+            site.siteMapArray,
+            site.assetsBaseUrl,
+          )}
+          key={`${title}-${hasNonEmptyString(buttonUrl) ?? ""}`}
+          className={compoundStyles.infoBox()}
+          isExternal={isExternalLink}
+        >
+          {hasNonEmptyString(icon) && (
+            <InfoBoxIcon icon={icon} hasLink={hasLink} />
+          )}
+
+          <h3
+            className={compoundStyles.infoBoxTitle({
+              hasLink,
+            })}
           >
-            {icon && <InfoBoxIcon icon={icon} hasLink={hasLink} />}
-
-            <h3
-              className={compoundStyles.infoBoxTitle({
-                hasLink,
-              })}
-            >
-              {title}
-              {showTitleArrow && (
-                <BiRightArrowAlt
-                  aria-hidden
-                  className={compoundStyles.infoBoxButtonIcon({
-                    isExternalLink,
-                  })}
-                />
-              )}
-            </h3>
-
-            {description && (
-              <p className={compoundStyles.infoBoxDescription()}>
-                {description}
-              </p>
+            {title}
+            {showTitleArrow && (
+              <BiRightArrowAlt
+                aria-hidden
+                className={compoundStyles.infoBoxButtonIcon({
+                  isExternalLink,
+                })}
+              />
             )}
+          </h3>
 
-            {hasLink && !showTitleArrow && (
-              <div className={compoundStyles.infoBoxButton()}>
-                {buttonLabel}
-                <BiRightArrowAlt
-                  className={compoundStyles.infoBoxButtonIcon({
-                    isExternalLink,
-                  })}
-                />
-              </div>
-            )}
-          </Link>
-        )
-      })}
-    </div>
-  )
+          {hasNonEmptyString(description) && (
+            <p className={compoundStyles.infoBoxDescription()}>{description}</p>
+          )}
 
+          {hasLink && !showTitleArrow && (
+            <div className={compoundStyles.infoBoxButton()}>
+              {buttonLabel}
+              <BiRightArrowAlt
+                className={compoundStyles.infoBoxButtonIcon({
+                  isExternalLink,
+                })}
+              />
+            </div>
+          )}
+        </Link>
+      )
+    })}
+  </div>
+)
 
 export const InfoCols = ({
   id,
@@ -175,7 +176,7 @@ export const InfoCols = ({
               title,
             )}
 
-            {subtitle && (
+            {hasNonEmptyString(subtitle) && (
               <p
                 className={compoundStyles.headerSubtitle({
                   layout: simplifiedLayout,

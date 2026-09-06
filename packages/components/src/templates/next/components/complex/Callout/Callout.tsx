@@ -71,7 +71,7 @@ export const Callout = ({
   variant = DEFAULT_CALLOUT_VARIANT,
 }: CalloutProps) => {
   const config = CALLOUT_CONFIG[variant]
-  const {label} = config
+  const { label } = config
   const Icon = "icon" in config ? config.icon : undefined
   const styles = calloutStyles({ hasIcon: !!Icon, variant })
 

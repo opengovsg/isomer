@@ -29,16 +29,14 @@ export const buttonStyles = tv({
       variant: "outline",
     },
     {
-      variant: "outline",
-      size: "lg",
-      // -1 px for border
       className: "px-[23px] py-[13px]",
+      size: "lg",
+      variant: "outline",
     },
     {
-      variant: "outline",
-      size: "base",
-      // -1 px for border
       className: "px-[19px] py-[11px]",
+      size: "base",
+      variant: "outline",
     },
     {
       className:

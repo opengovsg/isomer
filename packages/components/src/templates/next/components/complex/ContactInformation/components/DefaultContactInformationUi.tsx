@@ -60,9 +60,7 @@ const renderOtherInformation = ({
   OtherInformationTitleTag,
 }: {
   acceptHtmlTags: boolean
-  otherInformation: NonNullable<
-    ContactInformationUIProps["otherInformation"]
-  >
+  otherInformation: NonNullable<ContactInformationUIProps["otherInformation"]>
   styles: ReturnType<typeof createDefaultContactInformationStyles>
   OtherInformationTitleTag: ReturnType<typeof getHeadingTag>
 }) => (
@@ -73,10 +71,7 @@ const renderOtherInformation = ({
       otherInformation.label ?? "Other Information",
     )}
     {acceptHtmlTags ? (
-      <BaseParagraph
-        content={otherInformation.value}
-        allowedTags={["b"]}
-      />
+      <BaseParagraph content={otherInformation.value} allowedTags={["b"]} />
     ) : (
       <div>{otherInformation.value}</div>
     )}
@@ -116,15 +111,13 @@ export const DefaultContactInformationUI = ({
   })
 
   const descriptionText = isLoading === true ? "" : (description ?? "")
-  const showDescription =
-    hasNonEmptyString(description) || isLoading === true
+  const showDescription = hasNonEmptyString(description) || isLoading === true
   const showReferenceLink =
     hasNonEmptyString(referenceLinkHref) &&
     hasNonEmptyString(label) &&
     isLoading !== true
   const showOtherInformation =
-    otherInformation !== undefined &&
-    hasNonEmptyString(otherInformation.value)
+    otherInformation !== undefined && hasNonEmptyString(otherInformation.value)
 
   return (
     <section className={compoundStyles.screenWideOuterContainer()}>

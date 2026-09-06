@@ -6,6 +6,7 @@ import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
 import { useLinkComponent } from "~/templates/next/context/LinkComponentContext"
 import { focusRing, focusVisibleHighlight } from "~/utils/tailwind"
+import { hasNonEmptyString, isNullableBooleanTrue } from "~/utils/truthiness"
 
 const linkStyles = tv({
   base: "",
@@ -32,13 +33,17 @@ export const Link = ({
 }: LinkProps) => {
   const LinkComponent = useLinkComponent()
   const cssStyles = twMerge(
-    isWithFocusVisibleHighlight ? fvHighlightLinkStyles() : linkStyles(),
+    isNullableBooleanTrue(isWithFocusVisibleHighlight)
+      ? fvHighlightLinkStyles()
+      : linkStyles(),
     className,
   )
-  const externalLinkProps = isExternal
+  const externalLinkProps = isNullableBooleanTrue(isExternal)
     ? { rel: "noopener nofollow", target: "_blank" }
     : {}
-  const ElementToRender = href ? (LinkComponent ?? "a") : "span"
+  const ElementToRender = hasNonEmptyString(href)
+    ? (LinkComponent ?? "a")
+    : "span"
 
   return createElement(
     ElementToRender,
@@ -46,18 +51,19 @@ export const Link = ({
       ...externalLinkProps,
       ...rest,
       "aria-current": current,
-      "aria-label": label
-        ? `${label}${isExternal ? " (opens in new tab)" : ""}`
+      "aria-label": hasNonEmptyString(label)
+        ? `${label}${isNullableBooleanTrue(isExternal) ? " (opens in new tab)" : ""}`
         : undefined,
       className: cssStyles,
-      "data-current": !!current || undefined,
+      "data-current": current === true ? true : undefined,
       disabled: isDisabled,
       href,
     },
     children,
-    showExternalIcon && createElement("span", { "aria-hidden": "true" }, " ↗"),
-    isExternal &&
-      !label &&
+    isNullableBooleanTrue(showExternalIcon) &&
+      createElement("span", { "aria-hidden": "true" }, " ↗"),
+    isNullableBooleanTrue(isExternal) &&
+      !hasNonEmptyString(label) &&
       createElement("span", { className: "sr-only" }, " (opens in new tab)"),
   )
 }

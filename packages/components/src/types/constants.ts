@@ -2,10 +2,10 @@ export const ISOMER_USABLE_PAGE_LAYOUTS = {
   Article: "article",
   Collection: "collection",
   Content: "content",
-  Homepage: "homepage",
-  Index: "index",
   Database: "database",
   File: "file",
+  Homepage: "homepage",
+  Index: "index",
   Link: "link",
 } as const
 

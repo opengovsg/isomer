@@ -1,13 +1,26 @@
+/* oxlint-disable anti-slop/no-unknown-parameters -- preview text accepts partial CMS component shapes at render boundary */
 import type { OrderedListProps, ProseContent } from "~/interfaces"
 import type { IsomerSchema } from "~/types"
 
 type ContentComponent = IsomerSchema["content"][number]
 
 const getNonEmptyStringOrDefault = (
-  value: string | undefined,
+  value: string | undefined | null,
   defaultValue: string,
 ): string =>
-  value !== undefined && value !== "" ? value : defaultValue
+  value !== undefined && value !== null && value !== "" ? value : defaultValue
+
+const asOptionalString = (value: unknown): string | undefined => {
+  if (value === undefined || value === null) {
+    return undefined
+  }
+  if (Object.prototype.toString.call(value) !== "[object String]") {
+    return undefined
+  }
+  // SAFETY: Object.prototype.toString guard confirms value is a string primitive
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- preview text accepts CMS string fields
+  return value as string
+}
 
 const getTextContentOfProse = (proseContent: ProseContent): string => {
   const values: string[] = []
@@ -105,10 +118,7 @@ const previewTextHandlers = {
   collectionblock: (
     component: Extract<ContentComponent, { type: "collectionblock" }>,
   ) => {
-    if (
-      component.customTitle !== undefined &&
-      component.customTitle !== ""
-    ) {
+    if (component.customTitle !== undefined && component.customTitle !== "") {
       return component.customTitle
     }
 
@@ -124,8 +134,13 @@ const previewTextHandlers = {
   contactinformation: (
     component: Extract<ContentComponent, { type: "contactinformation" }>,
   ) =>
-    getNonEmptyStringOrDefault(component.title, "Contact Information"),
-  contentpic: (component: Extract<ContentComponent, { type: "contentpic" }>) => {
+    getNonEmptyStringOrDefault(
+      asOptionalString(component.title),
+      "Contact Information",
+    ),
+  contentpic: (
+    component: Extract<ContentComponent, { type: "contentpic" }>,
+  ) => {
     const textContentOfProse = getTextContentOfProse(component.content.content)
     return textContentOfProse === ""
       ? getFilenameFromPath(component.imageSrc)
@@ -170,7 +185,15 @@ const previewTextHandlers = {
 const getPreviewTextForComponent = <T extends ContentComponent["type"]>(
   type: T,
   component: Extract<ContentComponent, { type: T }>,
-): string => previewTextHandlers[type](component)
+): string => {
+  const handler =
+    // SAFETY: preview handlers are keyed by component type at compile time
+    // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- handler map keyed by component type
+    previewTextHandlers[type] as (
+      component: Extract<ContentComponent, { type: T }>,
+    ) => string
+  return handler(component)
+}
 
 export const renderComponentPreviewText = ({
   component,

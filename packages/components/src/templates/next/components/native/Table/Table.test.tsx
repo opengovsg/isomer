@@ -91,9 +91,9 @@ describe("Table colgroup", () => {
     expect(html).toContain("table-fixed")
     expect(html).toContain("<colgroup>")
     // SSR <col> with inline width; trailing /> is optional in React markup.
-    const colWidths = [...html.matchAll(/<col style="width:([^"]+)"\/?>/g)].map(
-      (match) => match[1],
-    )
+    const colWidths = [
+      ...html.matchAll(/<col style="width:(?<width>[^"]+)"\/?>/gu),
+    ].map((match) => match.groups?.width)
     expect(colWidths).toEqual([`${100 / 3}%`, `${100 / 3}%`, `${100 / 3}%`])
     expect(html).toContain('colSpan="2"')
     expect(html).toContain('rowspan="2"')
@@ -138,7 +138,7 @@ describe("Table colgroup", () => {
     expect(html).not.toContain("table-fixed")
     expect(html).not.toContain("<colgroup>")
     // No <col> tags at all when colgroup is omitted.
-    expect(html).not.toMatch(/<col[\s>]/)
+    expect(html).not.toMatch(/<col[\s>]/u)
   })
 
   it("keeps auto layout when a header span still has exclusive body cells", () => {

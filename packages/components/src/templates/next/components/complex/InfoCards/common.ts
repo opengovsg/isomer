@@ -113,16 +113,13 @@ const createInfoCardsStyles = tv({
   },
   extend: singleInfoCardStyle,
   slots: {
-    container: `${ComponentContent} flex flex-col`,
-    headingContainer: "flex flex-col",
-    headingTitle: "prose-display-sm break-words text-base-content-strong",
-    headingSubtitle: "text-base-content",
-    // auto-rows-max and grid-template-rows:max-content are needed to make the grid items have the same height,
-    // which otherwise would be an issue on some versions of Safari
-    // Ref: https://github.com/opengovsg/isomer/pull/1392
-    grid: "grid auto-rows-max grid-cols-1 [grid-template-rows:max-content]",
-    urlButtonContainer: "mx-auto block pt-8 sm:pt-12", // temp: following headingContainer's mb
     cardImageContainer: "",
+    container: `${ComponentContent} flex flex-col`,
+    grid: "grid auto-rows-max grid-cols-1 [grid-template-rows:max-content]",
+    headingContainer: "flex flex-col",
+    headingSubtitle: "text-base-content",
+    headingTitle: "prose-display-sm break-words text-base-content-strong",
+    urlButtonContainer: "mx-auto block pt-8 sm:pt-12",
   },
   variants: {
     imageStyle: {

@@ -1,4 +1,5 @@
-/* oxlint-disable typescript/no-unsafe-type-assertion -- DGS field keys resolve to string values in the row record */
+/* oxlint-disable anti-slop/no-unknown-parameters -- DGS field keys resolve to string values in the row record */
+/* oxlint-disable typescript/no-unsafe-type-assertion, anti-slop/no-runtime-typeof -- DGS field keys resolve to string values in the row record */
 const PREFIX = "[dgs:" as const
 const SUFFIX = "]" as const
 
@@ -13,24 +14,27 @@ const extractDgsFieldKey = (string: string): string =>
 
 type DgsFieldRecord = Record<string, string | number>
 
-export const transformDgsField = <T extends string | undefined | null>(
-  field: T,
+export const transformDgsField = (
+  field: unknown,
   record: DgsFieldRecord,
-): T => {
+): string | undefined | null => {
   try {
-    if (
-      field === undefined ||
-      field === null ||
-      field === "" ||
-      !isStringDgs(field)
-    ) {
+    if (field === undefined || field === null) {
+      return field
+    }
+    if (typeof field !== "string") {
+      return undefined
+    }
+    if (field === "" || !isStringDgs(field)) {
       return field
     }
     const transformedValue = record[extractDgsFieldKey(field)]
     // SAFETY: DGS field keys resolve to string values in the row record
-    const resolvedField: T = transformedValue as T
-    return resolvedField
+    return typeof transformedValue === "string" ||
+      typeof transformedValue === "number"
+      ? String(transformedValue)
+      : undefined
   } catch {
-    return field
+    return typeof field === "string" ? field : undefined
   }
 }

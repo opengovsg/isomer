@@ -41,7 +41,7 @@ export const checkPhantomColumns = (rows: TableRows): PhantomColumnsResult => {
   )
   const hasExclusiveCell = Array.from({ length: columnCount }, () => false)
 
-  for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+  for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
     const row = rows[rowIndex]
     if (!row) {
       continue

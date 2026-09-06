@@ -1,4 +1,5 @@
 import type { TagGroup } from "~/types"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { Tag } from "../Tag"
 
@@ -31,7 +32,7 @@ export const PillTags = ({
     </div>
   ))
 
-  if (!containerClassName) {
+  if (!hasNonEmptyString(containerClassName)) {
     return rows
   }
 

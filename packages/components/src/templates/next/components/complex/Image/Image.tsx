@@ -1,5 +1,6 @@
 import type { ImageProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { ImageClient } from "../../internal/ImageClient"
 
@@ -24,16 +25,12 @@ const createImageStyles = tv({
 const compoundStyles = createImageStyles()
 
 // NOTE: This should match the smallest width possible for that size
-const getSizeWidth = (size: ImageProps["size"]) => {
-  switch (size) {
-    case "smaller": {
-      return "50%"
-    }
-    case "default":
-    default: {
-      return "100%"
-    }
+const getSizeWidth = (size: ImageProps["size"] = "default") => {
+  if (size === "smaller") {
+    return "50%"
   }
+
+  return "100%"
 }
 
 export const Image = ({
@@ -43,19 +40,19 @@ export const Image = ({
   size,
   site,
   shouldLazyLoad = true,
-}: ImageProps) => 
-  (
-    <div className={compoundStyles.container()}>
-      <ImageClient
-        src={src}
-        alt={alt}
-        width={getSizeWidth(size)}
-        className={compoundStyles.image({ size: size ?? "default" })}
-        assetsBaseUrl={site.assetsBaseUrl}
-        lazyLoading={shouldLazyLoad}
-      />
+}: ImageProps) => (
+  <div className={compoundStyles.container()}>
+    <ImageClient
+      src={src}
+      alt={alt}
+      width={getSizeWidth(size)}
+      className={compoundStyles.image({ size: size ?? "default" })}
+      assetsBaseUrl={site.assetsBaseUrl}
+      lazyLoading={shouldLazyLoad}
+    />
 
-      {caption && <p className={compoundStyles.caption()}>{caption}</p>}
-    </div>
-  )
-
+    {hasNonEmptyString(caption) && (
+      <p className={compoundStyles.caption()}>{caption}</p>
+    )}
+  </div>
+)

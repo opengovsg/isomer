@@ -23,7 +23,9 @@ type ParsedVideo =
  * Returns null for invalid URLs.
  */
 const parseVideo = (url: string): ParsedVideo | null => {
-  if (!isValidVideoUrl(url)) {return null}
+  if (!isValidVideoUrl(url)) {
+    return null
+  }
 
   const urlObject = new URL(url)
 
@@ -46,13 +48,14 @@ const parseVideo = (url: string): ParsedVideo | null => {
       type: "facebook",
     }
   }
-    return null
-  
+  return null
 }
 
 export const Video = ({ title, url, shouldLazyLoad = true }: VideoProps) => {
   const parsedVideo = parseVideo(url)
-  if (!parsedVideo) {return null}
+  if (!parsedVideo) {
+    return null
+  }
 
   // Facebook Reels are vertical (9:16) videos. Rendering them in the default
   // landscape (16:9) box clips the content, so we use a portrait aspect ratio

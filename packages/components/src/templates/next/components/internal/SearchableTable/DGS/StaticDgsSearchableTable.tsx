@@ -25,19 +25,22 @@ export const StaticDGSSearchableTable = ({
   isMetadataLoading,
   isMetadataError,
 }: StaticDGSSearchableTableProps) => {
-  const params = useMemo(
-    () => ({
-      filters: filters?.reduce<
-        NonNullable<DgsApiDatasetSearchParams["filters"]>
-      >((acc, filter) => {
-        acc[filter.fieldKey] = filter.fieldValue
-        return acc
-      }, {}),
+  const params = useMemo(() => {
+    let filterRecord: NonNullable<DgsApiDatasetSearchParams["filters"]> | undefined
+
+    if (filters) {
+      filterRecord = {}
+      for (const filter of filters) {
+        filterRecord[filter.fieldKey] = filter.fieldValue
+      }
+    }
+
+    return {
+      filters: filterRecord,
       resourceId,
       sort,
-    }),
-    [resourceId, filters, sort],
-  )
+    }
+  }, [resourceId, filters, sort])
 
   const {
     records,

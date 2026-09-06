@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unsafe-type-assertion, typescript/no-deprecated -- story/test fixtures use narrowed mock shapes */
 import type { ImageProps, ProcessedCollectionCardProps } from "~/interfaces"
 import type { FormattedDate, TagGroup } from "~/types"
 

@@ -56,9 +56,13 @@ export const Filter = ({
   handleClearFilter,
   setAppliedFilters,
 }: FilterProps) => {
-  const [showFilter, setShowFilter] = useState<Record<string, boolean>>(() =>
-    filters.reduce((acc, { id }) => ({ ...acc, [id]: true }), {}),
-  )
+  const [showFilter, setShowFilter] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {}
+    for (const { id } of filters) {
+      initial[id] = true
+    }
+    return initial
+  })
 
   const appliedItemsById: Record<string, string[]> = {}
   for (const { id, items } of appliedFilters) {
@@ -68,7 +72,7 @@ export const Filter = ({
   const updateFilterToggle = (filterId: string) => {
     setShowFilter((prevFilters) => ({
       ...prevFilters,
-      [filterId]: !prevFilters[filterId],
+      [filterId]: !(prevFilters[filterId] ?? false),
     }))
   }
 
@@ -83,7 +87,9 @@ export const Filter = ({
       <Button
         className="prose-headline-lg-semibold flex w-full items-center justify-between gap-1 rounded border-[1.5px] border-base-content-strong bg-white px-4 py-3.5 text-base-content-strong lg:hidden"
         variant="unstyled"
-        onPress={() =>{  setMobileFiltersOpen(true); }}
+        onPress={() => {
+          setMobileFiltersOpen(true)
+        }}
       >
         Filter results
         <BiChevronRight className="h-6 w-6 shrink-0" />
@@ -121,16 +127,22 @@ export const Filter = ({
             <FilterSectionButton
               label={label}
               isOpen={showFilter[id] ?? false}
-              onToggle={() =>{  updateFilterToggle(id); }}
+              onToggle={() => {
+                updateFilterToggle(id)
+              }}
             />
 
-            <div className={showFilter[id] ? "flex flex-col" : "hidden"}>
+            <div
+              className={showFilter[id] === true ? "flex flex-col" : "hidden"}
+            >
               {items.map(({ id: itemId, label: itemLabel, count }) => (
                 <Checkbox
                   key={itemId}
                   className="w-fit cursor-pointer p-2"
                   value={itemId}
-                  onChange={() =>{  handleFilterToggle(id, itemId); }}
+                  onChange={() => {
+                    handleFilterToggle(id, itemId)
+                  }}
                 >
                   {itemLabel} ({count.toLocaleString()})
                 </Checkbox>

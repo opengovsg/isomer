@@ -50,6 +50,10 @@ const ProseComponent = ({
     case "unorderedList": {
       return <UnorderedList {...component} site={site} />
     }
+    default: {
+      const missingType: never = component
+      throw new Error(`Unknown prose component type: ${JSON.stringify(missingType)}`)
+    }
   }
 }
 
@@ -59,7 +63,7 @@ export const Prose = ({
   shouldStripContentHtmlTags = false,
   headingLevel,
 }: ProseProps) => {
-  if (!content) {
+  if (content === undefined || content.length === 0) {
     return null
   }
 

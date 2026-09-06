@@ -27,6 +27,6 @@ export const ChildrenPagesImageFitSchema = generateImageFitSchema({
 })
 
 export const InfoCardsImageFitSchema = generateImageFitSchema({
-  title: "Image display",
   description: `Select "Resize image to fit" only if the image has a white background.`,
+  title: "Image display",
 })

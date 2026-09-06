@@ -26,6 +26,7 @@ import { BiCheck, BiMinus } from "react-icons/bi"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
 import { focusRing } from "~/utils/tailwind"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 interface CheckboxGroupContextValue {
   state: CheckboxGroupState
@@ -76,7 +77,7 @@ export const CheckboxGroup = (props: CheckboxGroupProps) => {
         {...ariaGroupProps}
         className={twMerge("flex flex-col gap-4", className)}
       >
-        {label && (
+        {hasNonEmptyString(label) && (
           <div
             {...labelProps}
             className="prose-body-base-semibold text-base-content-strong"
@@ -84,7 +85,7 @@ export const CheckboxGroup = (props: CheckboxGroupProps) => {
             {label}
           </div>
         )}
-        {description && (
+        {hasNonEmptyString(description) && (
           <div
             {...descriptionProps}
             className="prose-body-base text-base-content"
@@ -93,7 +94,7 @@ export const CheckboxGroup = (props: CheckboxGroupProps) => {
           </div>
         )}
         {children}
-        {errorMessage && (
+        {hasNonEmptyString(errorMessage) && (
           <div {...errorMessageProps} className="prose-body-base text-red-700">
             {errorMessage}
           </div>
@@ -193,7 +194,7 @@ const CheckboxRenderer = ({
       ref={labelRef}
       {...labelProps}
       className={twMerge(
-        checkboxStyles({ isDisabled: !!isDisabled }),
+        checkboxStyles({ isDisabled }),
         className,
       )}
       data-pressed={isPressed ? "true" : undefined}
@@ -213,17 +214,16 @@ const CheckboxRenderer = ({
       >
         <div
           className={boxStyles({
-            isDisabled: !!isDisabled,
+            isDisabled,
             isFocusVisible,
             isInvalid,
             isSelected: isSelected || isIndeterminate,
           })}
         >
-          {isIndeterminate ? (
-            <BiMinus aria-hidden className={iconStyles} />
-          ) : (isSelected ? (
+          {isIndeterminate && <BiMinus aria-hidden className={iconStyles} />}
+          {!isIndeterminate && isSelected && (
             <BiCheck aria-hidden className={iconStyles} />
-          ) : null)}
+          )}
         </div>
       </div>
       {children}
@@ -263,7 +263,7 @@ const GroupedCheckbox = (props: CheckboxProps) => {
   // groupContext is guaranteed to exist because this component is only rendered when isInGroup is true
   // oxlint-disable-next-line @typescript-eslint/no-non-null-assertion
   const context = groupContext!
-  const {state} = context
+  const { state } = context
 
   const isDisabled = checkboxProps.isDisabled ?? context.isDisabled ?? false
   const isReadOnly = checkboxProps.isReadOnly ?? context.isReadOnly ?? false

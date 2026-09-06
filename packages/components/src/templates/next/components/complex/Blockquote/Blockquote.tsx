@@ -2,6 +2,7 @@ import type { BlockquoteProps } from "~/interfaces"
 import { BiSolidQuoteAltLeft } from "react-icons/bi"
 import { tv } from "~/lib/tv"
 import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { ComponentContent } from "../../internal/customCssClass"
 import { ImageClient } from "../../internal/ImageClient"
@@ -79,7 +80,7 @@ export const Blockquote = ({
           </div>
         </div>
 
-        {imageSrc && imageAlt && (
+        {hasNonEmptyString(imageSrc) && hasNonEmptyString(imageAlt) && (
           <ImageClient
             src={imageSrc}
             alt={imageAlt}

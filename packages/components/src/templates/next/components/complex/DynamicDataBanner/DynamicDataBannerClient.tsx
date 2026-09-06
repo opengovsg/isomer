@@ -6,6 +6,7 @@ import { BiError } from "react-icons/bi"
 import { DYNAMIC_DATA_BANNER_NUMBER_OF_DATA } from "~/interfaces/complex/DynamicDataBanner/constants"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
@@ -13,20 +14,14 @@ import { getSingaporeDateLong, getSingaporeDateYYYYMMDD } from "./utils"
 
 const createDynamicDataBannerStyles = tv({
   slots: {
-    // hardcoded bg color for now since MUIS is the only use case
-    // consider moving into site config if used by other sites
-    screenWideOuterContainer: "bg-[#E1EAE6]",
-    outerContainer: `${ComponentContent} md:gap-auto flex flex-col gap-6 p-6 md:flex-row md:items-center md:justify-between md:px-10 md:py-5`,
     basicInfoContainer:
       "flex flex-col items-center gap-0.5 md:items-start md:gap-1",
-    title: "prose-headline-lg-semibold whitespace-nowrap text-base-content",
-    dateAndUrlContainer: "align-center flex justify-center gap-2",
-    date: "prose-body-sm whitespace-nowrap text-base-content-medium",
-    url: "prose-label-md-regular text-link underline-offset-4 visited:text-link-visited hover:text-link-hover hover:underline",
     dataInfoContainer:
       "md:max-lg:col-gap-10 grid grid-cols-3 justify-items-center gap-y-4 md:justify-items-end md:gap-y-2 md:max-lg:grid-cols-[auto,auto,auto] md:max-lg:gap-x-6 lg:flex lg:gap-11",
-    errorMessageContainer: `${ComponentContent} flex flex-row gap-2 px-6 py-3 md:items-center md:gap-1`,
+    date: "prose-body-sm whitespace-nowrap text-base-content-medium",
+    dateAndUrlContainer: "align-center flex justify-center gap-2",
     errorIcon: "h-full min-h-4 min-w-4",
+    errorMessageContainer: `${ComponentContent} flex flex-row gap-2 px-6 py-3 md:items-center md:gap-1`,
     individualDataContainer:
       "flex w-fit flex-col items-center justify-center gap-0.5 md:flex-row md:gap-1.5 lg:flex-col lg:items-end",
     individualDataLabel: "prose-headline-base-medium text-base-content",
@@ -34,8 +29,14 @@ const createDynamicDataBannerStyles = tv({
       "prose-headline-lg-semibold text-brand-interaction-hover md:max-lg:w-[70px] md:max-lg:text-right",
     individualDataValueLoading:
       "md:h-4.5 h-4 w-11 animate-pulse rounded-sm bg-[#0000001a]",
-    urlShowOnMobileOnly: "block text-center md:hidden",
+    outerContainer: `${ComponentContent} md:gap-auto flex flex-col gap-6 p-6 md:flex-row md:items-center md:justify-between md:px-10 md:py-5`,
+    // hardcoded bg color for now since MUIS is the only use case
+    // consider moving into site config if used by other sites
+    screenWideOuterContainer: "bg-[#E1EAE6]",
+    title: "prose-headline-lg-semibold whitespace-nowrap text-base-content",
+    url: "prose-label-md-regular text-link underline-offset-4 visited:text-link-visited hover:text-link-hover hover:underline",
     urlHideOnMobile: "hidden md:block",
+    urlShowOnMobileOnly: "block text-center md:hidden",
   },
 })
 const compoundStyles = createDynamicDataBannerStyles()
@@ -59,20 +60,21 @@ const DynamicDataBannerUI = ({
 > & {
   data: { label: string; value?: string }[]
 }) => {
-  const shouldRenderUrl: boolean = !!url && !!label
+  const shouldRenderUrl = hasNonEmptyString(url) && hasNonEmptyString(label)
   const renderUrl = ({
     className,
   }: {
     className?: string
-  }): React.ReactNode => 
-    (
-      <Link href={url} className={twMerge(compoundStyles.url(), className)}>
-        {label}
-      </Link>
-    )
-  
+  }): React.ReactNode => (
+    <Link href={url} className={twMerge(compoundStyles.url(), className)}>
+      {label}
+    </Link>
+  )
 
-  if (errorMessageBaseParagraph) {
+  if (
+    errorMessageBaseParagraph !== undefined &&
+    errorMessageBaseParagraph !== null
+  ) {
     return (
       <div className={compoundStyles.screenWideOuterContainer()}>
         <div className={compoundStyles.errorMessageContainer()}>
@@ -87,7 +89,9 @@ const DynamicDataBannerUI = ({
     <div className={compoundStyles.screenWideOuterContainer()}>
       <div className={compoundStyles.outerContainer()}>
         <div className={compoundStyles.basicInfoContainer()}>
-          {!!title && <div className={compoundStyles.title()}>{title}</div>}
+          {hasNonEmptyString(title) && (
+            <div className={compoundStyles.title()}>{title}</div>
+          )}
           <div className={compoundStyles.dateAndUrlContainer()}>
             <span className={compoundStyles.date()}>
               {getSingaporeDateLong()}
@@ -107,7 +111,7 @@ const DynamicDataBannerUI = ({
                 <div className={compoundStyles.individualDataLabel()}>
                   {singleData.label}
                 </div>
-                {singleData.value ? (
+                {hasNonEmptyString(singleData.value) ? (
                   <div className={compoundStyles.individualDataValue()}>
                     {singleData.value}
                   </div>
@@ -139,8 +143,10 @@ export const DynamicDataBannerClient = ({
   const [dynamicData, setDynamicData] = useState<Record<string, string>>({})
   const hasFetchedRef = useRef(false)
 
-  const loadDynamicData = () => {
-    if (hasFetchedRef.current || globalThis.window == null) {return}
+  const loadDynamicData = async () => {
+    if (hasFetchedRef.current || globalThis.window === undefined) {
+      return
+    }
     hasFetchedRef.current = true
 
     // This is to ensure that the component is mounted before the query is executed
@@ -149,27 +155,32 @@ export const DynamicDataBannerClient = ({
     // Ref: https://nextjs.org/docs/app/building-your-application/deploying/static-exports#browser-apis
     // Also not using react-query's useQuery hook because it's not compatible with this approach of using useEffect
     // we now have access to fetch here
-    fetch(apiEndpoint)
-      .then( async (res) => await res.json())
-      .then((apiData) => {
-        if (!apiData?.[getSingaporeDateYYYYMMDD()]) {
-          throw new Error("No data found for current date")
-        }
-        setDynamicData(apiData[getSingaporeDateYYYYMMDD()])
-        setIsLoading(false)
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error)
+    try {
+      const res = await fetch(apiEndpoint)
+      const apiData: Record<string, Record<string, string>> = await res.json()
+      const dateKey = getSingaporeDateYYYYMMDD()
+      if (apiData[dateKey] === undefined) {
+        console.error("No data found for current date")
         setIsLoading(false)
         setIsError(true)
-      })
+        return
+      }
+      setDynamicData(apiData[dateKey])
+      setIsLoading(false)
+    } catch (error: unknown) {
+      console.error("Error fetching data:", error)
+      setIsLoading(false)
+      setIsError(true)
+    }
   }
 
   if (isError) {
     return (
       <div
         ref={(node) => {
-          if (node) {loadDynamicData()}
+          if (node !== undefined && node !== null) {
+            void loadDynamicData()
+          }
         }}
       >
         <DynamicDataBannerUI
@@ -182,30 +193,35 @@ export const DynamicDataBannerClient = ({
     )
   }
 
-  if (data.length !== DYNAMIC_DATA_BANNER_NUMBER_OF_DATA)
-    {return (
+  if (data.length !== DYNAMIC_DATA_BANNER_NUMBER_OF_DATA) {
+    return (
       <div
         ref={(node) => {
-          if (node) {loadDynamicData()}
+          if (node !== undefined && node !== null) {
+            void loadDynamicData()
+          }
         }}
       >
         <DynamicDataBannerUI data={[]} url={url} label={label} />
       </div>
-    )}
+    )
+  }
 
   return (
     <div
       ref={(node) => {
-        if (node) {loadDynamicData()}
+        if (node !== undefined && node !== null) {
+          void loadDynamicData()
+        }
       }}
     >
       <DynamicDataBannerUI
-        title={title ? dynamicData[title] : undefined}
+        title={hasNonEmptyString(title) ? dynamicData[title] : undefined}
         data={data.map((singleData) => ({
           label: singleData.label,
           value: isLoading
             ? undefined
-            : dynamicData[singleData.key] || "-- : --",
+            : (dynamicData[singleData.key] ?? "-- : --"),
         }))}
         url={url}
         label={label}

@@ -54,7 +54,7 @@ export const PaginationControls = ({
             }}
           />
         </PaginationItem>
-        {paginationRange.map((p, i) => 
+        {paginationRange.map((p, i) =>
           p === SEPARATOR ? (
             <PaginationEllipsis key={paginationKeys[i]} />
           ) : (
@@ -69,7 +69,7 @@ export const PaginationControls = ({
                 {p}
               </PaginationButton>
             </PaginationItem>
-          )
+          ),
         )}
         <PaginationItem>
           <PaginationNext

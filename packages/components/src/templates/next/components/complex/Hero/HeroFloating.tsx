@@ -2,6 +2,7 @@ import type { HeroFloatingProps } from "~/interfaces/complex/Hero"
 import { createElement } from "react"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { ComponentContent } from "../../internal/customCssClass"
 import { ImageClient } from "../../internal/ImageClient"
@@ -72,7 +73,7 @@ export const HeroFloating = ({
               { className: `prose-display-xl ${heroTitleColour}` },
               title,
             )}
-            {subtitle && (
+            {hasNonEmptyString(subtitle) && (
               <p className={`prose-title-lg-regular ${heroSubtitleColour}`}>
                 {subtitle}
               </p>
@@ -80,7 +81,7 @@ export const HeroFloating = ({
           </div>
 
           {/* Button container */}
-          {buttonLabel && buttonUrl && (
+          {hasNonEmptyString(buttonLabel) && hasNonEmptyString(buttonUrl) && (
             <div className="flex flex-col justify-start gap-x-5 gap-y-4 md:flex-row">
               <LinkButton
                 href={getReferenceLinkHref(
@@ -95,21 +96,22 @@ export const HeroFloating = ({
               >
                 {buttonLabel}
               </LinkButton>
-              {secondaryButtonLabel && secondaryButtonUrl && (
-                <LinkButton
-                  href={getReferenceLinkHref(
-                    secondaryButtonUrl,
-                    site.siteMapArray,
-                    site.assetsBaseUrl,
-                  )}
-                  variant="outline"
-                  size="lg"
-                  colorScheme={heroButton}
-                  isWithFocusVisibleHighlight
-                >
-                  {secondaryButtonLabel}
-                </LinkButton>
-              )}
+              {hasNonEmptyString(secondaryButtonLabel) &&
+                hasNonEmptyString(secondaryButtonUrl) && (
+                  <LinkButton
+                    href={getReferenceLinkHref(
+                      secondaryButtonUrl,
+                      site.siteMapArray,
+                      site.assetsBaseUrl,
+                    )}
+                    variant="outline"
+                    size="lg"
+                    colorScheme={heroButton}
+                    isWithFocusVisibleHighlight
+                  >
+                    {secondaryButtonLabel}
+                  </LinkButton>
+                )}
             </div>
           )}
         </div>

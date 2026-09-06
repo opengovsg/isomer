@@ -20,25 +20,23 @@ export const LogoCloud = ({
   title,
   site: { assetsBaseUrl },
   shouldLazyLoad = true,
-}: LogoCloudProps) => 
-  (
-    <div className={compoundStyles.container()}>
-      {title && <p className={compoundStyles.title()}>{title}</p>}
-      <div className={compoundStyles.logoContainer()}>
-        {baseImages.map(({ src, alt }) => (
-          <ImageClient
-            key={src}
-            src={src}
-            alt={alt}
-            lazyLoading={shouldLazyLoad}
-            // have to pass in here instead of w-fit because
-            // flex-wrap in parent div doesn't work well with w-fit for safari
-            width="auto"
-            className={compoundStyles.logo()}
-            assetsBaseUrl={assetsBaseUrl}
-          />
-        ))}
-      </div>
+}: LogoCloudProps) => (
+  <div className={compoundStyles.container()}>
+    {title && <p className={compoundStyles.title()}>{title}</p>}
+    <div className={compoundStyles.logoContainer()}>
+      {baseImages.map(({ src, alt }) => (
+        <ImageClient
+          key={src}
+          src={src}
+          alt={alt}
+          lazyLoading={shouldLazyLoad}
+          // have to pass in here instead of w-fit because
+          // flex-wrap in parent div doesn't work well with w-fit for safari
+          width="auto"
+          className={compoundStyles.logo()}
+          assetsBaseUrl={assetsBaseUrl}
+        />
+      ))}
     </div>
-  )
-
+  </div>
+)

@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unsafe-type-assertion, typescript/no-deprecated -- story/test fixtures use narrowed mock shapes */
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { CollectionPageSchemaType, IsomerSitemap } from "~/types"
 import { flatten, times } from "lodash-es"
@@ -141,7 +142,7 @@ export const SearchingEmptyCollection: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
     const searchElem = screen.getByRole("searchbox", {
-      name: /Start typing to search/i,
+      name: /Start typing to search/iu,
     })
     await userEvent.type(searchElem, "anything")
   },
@@ -152,7 +153,7 @@ export const NoResults: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
     const searchElem = screen.getByRole("searchbox", {
-      name: /Start typing to search/i,
+      name: /Start typing to search/iu,
     })
     await userEvent.type(searchElem, "some whacky search term")
   },
@@ -218,7 +219,7 @@ export const YearFilter: Story = {
     const dateNotSpecified = screen.queryByText(/Not specified \(3\)/iu)
     await expect(dateNotSpecified).toBeInTheDocument()
 
-    const dateText = await screen.findAllByText(/7 May 2024/)
+    const dateText = await screen.findAllByText(/7 May 2024/u)
     await expect(dateText.length).toBe(10)
   },
 }
@@ -229,7 +230,7 @@ export const YearFilterSelectNotSpecified: Story = {
     const screen = within(canvasElement)
     await userEvent.click(screen.getByText(/Not specified/iu))
 
-    const resultsHeader = await screen.findAllByText(/3 items/)
+    const resultsHeader = await screen.findAllByText(/3 items/u)
     await expect(resultsHeader.length).toBe(1)
   },
 }
@@ -247,7 +248,7 @@ export const AllResultsNoDate: Story = {
     const yearFilter = screen.queryByText(/Year/iu)
     await expect(yearFilter).not.toBeInTheDocument()
 
-    const lastWordOccurences = await screen.findAllByText(/Isomer guide-/)
+    const lastWordOccurences = await screen.findAllByText(/Isomer guide-/u)
     await expect(lastWordOccurences.length).toBe(10)
   },
 }
@@ -275,10 +276,12 @@ export const AllResultsSameCategory: Story = {
   name: "Should show category filter even if all items have same category",
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    const categoryFilter = screen.queryByText(/Category/)
+    const categoryFilter = screen.queryByText(/Category/u)
     await expect(categoryFilter).toBeInTheDocument()
 
-    const categoryItems = await screen.findAllByText(/The only category \(30\)/)
+    const categoryItems = await screen.findAllByText(
+      /The only category \(30\)/u,
+    )
     await expect(categoryItems.length).toBe(1)
   },
 }
@@ -316,7 +319,7 @@ export const NoFiltersCollectionCard: Story = {
     const yearFilter = screen.queryByText(/Year/iu)
     await expect(yearFilter).not.toBeInTheDocument()
 
-    const filtersHeading = screen.queryByRole("heading", { name: /Filters/i })
+    const filtersHeading = screen.queryByRole("heading", { name: /Filters/iu })
     await expect(filtersHeading).not.toBeInTheDocument()
   },
 }

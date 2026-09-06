@@ -64,10 +64,10 @@ interface IconButtonProps
 }
 
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
-  (
+  function IconButton(
     { icon: Icon, className, variant, size, colorScheme, isDisabled, ...props },
     ref,
-  ) => {
+  ) {
     const buttonRef = useRef<HTMLButtonElement>(null)
     const { buttonProps } = useButton({ ...props, isDisabled }, buttonRef)
     const { focusProps, isFocusVisible } = useFocusRing()

@@ -1,3 +1,4 @@
+import { hasNonEmptyString } from "~/utils/truthiness"
 import {
   isYoutubePrivacyEnhancedHost,
   VALID_VIDEO_DOMAINS,
@@ -26,7 +27,9 @@ export const getPrivacyEnhancedYouTubeEmbedUrl = (
   }
   if (pathname.startsWith("/watch")) {
     const videoId = searchParams.get("v")
-    if (!videoId) {return ""}
+    if (!hasNonEmptyString(videoId)) {
+      return ""
+    }
     urlObject.pathname = `/embed/${videoId}`
     urlObject.search = ""
     return urlObject.toString()
@@ -46,13 +49,16 @@ export const getYouTubeVideoId = (url: string): string | null => {
     }
     const { pathname, searchParams } = urlObject
     if (pathname.startsWith("/embed/")) {
-      const id = pathname.slice("/embed/".length).split("?")[0]
+      const [id] = pathname.slice("/embed/".length).split("?")
       // "videoseries" is a playlist embed path, not a video ID
-      if (!id || id === "videoseries") {return null}
+      if (!hasNonEmptyString(id) || id === "videoseries") {
+        return null
+      }
       return id
     }
     if (pathname.startsWith("/watch")) {
-      return searchParams.get("v") || null
+      const videoId = searchParams.get("v")
+      return hasNonEmptyString(videoId) ? videoId : null
     }
     return null
   } catch {
@@ -80,7 +86,7 @@ export const isFacebookReelEmbedUrl = (url: string): boolean => {
       return false
     }
     const href = urlObject.searchParams.get("href")
-    if (!href) {
+    if (!hasNonEmptyString(href)) {
       return false
     }
     return new URL(href).pathname.startsWith("/reel/")
@@ -110,8 +116,8 @@ export const getVimeoVideoId = (url: string): string | null => {
     }
     const { pathname } = urlObject
     if (pathname.startsWith("/video/")) {
-      const id = pathname.slice("/video/".length).split(/[?/]/)[0]
-      return id || null
+      const [id] = pathname.slice("/video/".length).split(/[?/]/u)
+      return hasNonEmptyString(id) ? id : null
     }
     return null
   } catch {

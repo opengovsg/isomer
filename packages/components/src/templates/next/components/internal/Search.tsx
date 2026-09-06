@@ -62,6 +62,7 @@ export const SearchField = ({
   let value = ""
   if (Object.prototype.toString.call(rawValue) === "[object String]") {
     // SAFETY: Object.prototype.toString guard confirms rawValue is a string primitive
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- string guard via Object.prototype.toString
     value = rawValue as string
   }
   const isEmpty = !value || value.length === 0
@@ -84,7 +85,9 @@ export const SearchField = ({
           }),
           classNames?.fieldgroup,
         )}
-        onFocus={() =>{  setIsFocusWithin(true); }}
+        onFocus={() => {
+          setIsFocusWithin(true)
+        }}
         onBlur={(e) => {
           if (!e.currentTarget.contains(e.relatedTarget)) {
             setIsFocusWithin(false)

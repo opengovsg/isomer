@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unsafe-type-assertion, typescript/no-deprecated -- story/test fixtures use narrowed mock shapes */
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { InfoCardsProps } from "~/interfaces"
 import type { IsomerPageLayoutType } from "~/types"

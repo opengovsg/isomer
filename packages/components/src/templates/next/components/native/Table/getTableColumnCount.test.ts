@@ -261,37 +261,44 @@ describe("getTableColumnCount", () => {
       content: [{ text: "", type: "text" as const }],
       type: "paragraph" as const,
     }
+    const getRowContent = (rowIndex: number) => {
+      if (rowIndex === 0) {
+        return [
+          {
+            attrs: { colspan: 1, rowspan: 2 },
+            content: [paragraph],
+            type: "tableCell" as const,
+          },
+          {
+            content: [paragraph],
+            type: "tableCell" as const,
+          },
+        ]
+      }
+
+      if (rowIndex === 1) {
+        return [
+          {
+            content: [paragraph],
+            type: "tableCell" as const,
+          },
+        ]
+      }
+
+      return [
+        {
+          content: [paragraph],
+          type: "tableCell" as const,
+        },
+        {
+          content: [paragraph],
+          type: "tableCell" as const,
+        },
+      ]
+    }
+
     const rows = Array.from({ length: 200 }, (_, rowIndex) => ({
-      content:
-        rowIndex === 0
-          ? [
-              {
-                attrs: { colspan: 1, rowspan: 2 },
-                content: [paragraph],
-                type: "tableCell" as const,
-              },
-              {
-                content: [paragraph],
-                type: "tableCell" as const,
-              },
-            ]
-          : rowIndex === 1
-            ? [
-                {
-                  content: [paragraph],
-                  type: "tableCell" as const,
-                },
-              ]
-            : [
-                {
-                  content: [paragraph],
-                  type: "tableCell" as const,
-                },
-                {
-                  content: [paragraph],
-                  type: "tableCell" as const,
-                },
-              ],
+      content: getRowContent(rowIndex),
       type: "tableRow" as const,
     }))
 

@@ -17,7 +17,11 @@ export const useCollection = ({
 }) => {
   const [queryParams, updateQueryParams] = useQueryParams()
 
-  const currPage = Number.parseInt(queryParams.page || "1", 10)
+  const pageParam =
+    queryParams.page !== undefined && queryParams.page !== ""
+      ? queryParams.page
+      : "1"
+  const currPage = Math.trunc(Number(pageParam))
   const setCurrPage = (page: number) => {
     updateQueryParams({
       newParams: { page: page.toString() },
@@ -25,12 +29,16 @@ export const useCollection = ({
   }
 
   const appliedFilters = (() => {
-    const {filters} = queryParams
+    const { filters } = queryParams
     if (isEmpty(filters)) {
       return []
     }
     try {
-      const parsed: unknown = JSON.parse(filters || "[]")
+      const parsed: unknown = JSON.parse(
+        queryParams.filters !== undefined && queryParams.filters !== ""
+          ? queryParams.filters
+          : "[]",
+      )
       if (!isAppliedFilterUrlJson(parsed)) {
         return []
       }
@@ -47,16 +55,19 @@ export const useCollection = ({
     })
   }
 
-  const searchValue = queryParams.search || ""
+  const searchValue =
+    queryParams.search !== undefined && queryParams.search !== ""
+      ? queryParams.search
+      : ""
   const handleSearchValueChange = (value: string) => {
     updateQueryParams({
       newParams: { page: "1", search: value },
     })
   }
 
-  const handleFilterToggle = (id: string, itemId: string) =>{  
-    updateAppliedFilters(appliedFilters, setAppliedFilters, id, itemId); }
-  
+  const handleFilterToggle = (id: string, itemId: string) => {
+    updateAppliedFilters(appliedFilters, setAppliedFilters, id, itemId)
+  }
 
   const filteredItems = getFilteredItems(items, appliedFilters, searchValue)
   const paginatedItems = getPaginatedItems(

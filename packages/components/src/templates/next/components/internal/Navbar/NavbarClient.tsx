@@ -1,5 +1,6 @@
 "use client"
 
+/* oxlint-disable eslint/complexity -- responsive navbar layout, search, and megamenu state are colocated */
 import type { NavbarClientProps } from "~/interfaces"
 import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import { BiMenu, BiSearch, BiX } from "react-icons/bi"
@@ -7,6 +8,7 @@ import { useResizeObserver } from "usehooks-ts"
 import { tv } from "~/lib/tv"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 import { focusVisibleHighlight } from "~/utils/tailwind"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { LinkButton } from "../../internal/LinkButton"
 import { LocalSearchInputBox } from "../../internal/LocalSearchInputBox"
@@ -79,7 +81,7 @@ export const NavbarClient = ({
   callToAction,
   utility,
 }: NavbarClientProps) => {
-  const isPinned = !!callToAction?.isPinnedOnMobile
+  const isPinned = callToAction?.isPinnedOnMobile === true
 
   const [openNavItemIdx, setOpenNavItemIdx] = useState(-1)
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false)
@@ -97,11 +99,11 @@ export const NavbarClient = ({
   const updateMenuOffset = (size?: Size) => {
     setMobileNavbarTopPx(siteHeaderRef.current?.getBoundingClientRect().bottom)
 
-    if (!size) {
+    if (size === undefined) {
       return
     }
 
-    if (size.width && size.width < 1024) {
+    if (size.width !== undefined && size.width < 1024) {
       // close any open nav items when resizing to mobile
       setOpenNavItemIdx(-1)
     } else {
@@ -117,11 +119,20 @@ export const NavbarClient = ({
   // When the hamburger menu is open, also watch the full <header> for height
   // changes caused by siblings like masthead/notification toggling, since those
   // don't resize the navbar container but do shift its position.
+  // oxlint-disable-next-line react-doctor/effect-needs-cleanup -- menu/header guards return noop cleanup before observer is registered
   useEffect(() => {
-    if (!isHamburgerOpen) {return}
+    if (!isHamburgerOpen) {
+      return function noopCleanup() {
+        // noop
+      }
+    }
 
     const header = siteHeaderRef.current?.closest("header")
-    if (!header) {return}
+    if (header === null || header === undefined) {
+      return function noopCleanup() {
+        // noop
+      }
+    }
 
     const observer = new ResizeObserver(() => {
       setMobileNavbarTopPx(
@@ -129,7 +140,9 @@ export const NavbarClient = ({
       )
     })
     observer.observe(header)
-    return () =>{  observer.disconnect(); }
+    return () => {
+      observer.disconnect()
+    }
   }, [isHamburgerOpen])
 
   const onCloseMenu = () => {
@@ -140,7 +153,9 @@ export const NavbarClient = ({
   const activeNavRef = useRef(null)
 
   useLayoutEffect(() => {
-    if (!isMenuOpen) {return}
+    if (!isMenuOpen) {
+      return
+    }
 
     window.scrollTo({
       behavior: isHamburgerOpen ? undefined : "smooth",
@@ -164,9 +179,9 @@ export const NavbarClient = ({
           </Link>
 
           <div className={navbarStyles.navigationSection()}>
-            {!!utility && (
+            {utility !== undefined && utility !== null && (
               <div className={navbarStyles.utilityNavigationSection()}>
-                {!!utility.label && (
+                {hasNonEmptyString(utility.label) && (
                   <p className={navbarStyles.utilityItemsHeader()}>
                     {utility.label}
                   </p>
@@ -214,7 +229,7 @@ export const NavbarClient = ({
               </ul>
 
               {/* Call To Action button */}
-              {!!callToAction && (
+              {callToAction !== undefined && callToAction !== null && (
                 <LinkButton
                   href={callToAction.url}
                   isExternal={isExternalUrl(callToAction.url)}
@@ -234,28 +249,31 @@ export const NavbarClient = ({
 
               <div className={navbarStyles.buttonsSection()}>
                 {/* Search icon */}
-                {search && !isHamburgerOpen && layout !== "search" && (
-                  <div className={navbarStyles.searchIcon({ isPinned })}>
-                    {isSearchOpen ? (
-                      <IconButton
-                        onPress={() => {
-                          setIsSearchOpen(!isSearchOpen)
-                        }}
-                        aria-label="Close search bar"
-                        icon={BiX}
-                      />
-                    ) : (
-                      <IconButton
-                        onPress={() => {
-                          setOpenNavItemIdx(-1)
-                          setIsSearchOpen(!isSearchOpen)
-                        }}
-                        aria-label="Open search bar"
-                        icon={BiSearch}
-                      />
-                    )}
-                  </div>
-                )}
+                {search !== undefined &&
+                  search !== null &&
+                  !isHamburgerOpen &&
+                  layout !== "search" && (
+                    <div className={navbarStyles.searchIcon({ isPinned })}>
+                      {isSearchOpen ? (
+                        <IconButton
+                          onPress={() => {
+                            setIsSearchOpen(!isSearchOpen)
+                          }}
+                          aria-label="Close search bar"
+                          icon={BiX}
+                        />
+                      ) : (
+                        <IconButton
+                          onPress={() => {
+                            setOpenNavItemIdx(-1)
+                            setIsSearchOpen(!isSearchOpen)
+                          }}
+                          aria-label="Open search bar"
+                          icon={BiSearch}
+                        />
+                      )}
+                    </div>
+                  )}
 
                 {/* Hamburger menu for small screens */}
                 <div className={navbarStyles.hamburgerIcon()}>
@@ -283,7 +301,7 @@ export const NavbarClient = ({
       </div>
 
       {/* Search bar */}
-      {search && layout !== "search" && (
+      {search !== undefined && search !== null && layout !== "search" && (
         <div className={navbarStyles.searchBar({ isSearchOpen })}>
           {search.type === "localSearch" && (
             <LocalSearchInputBox searchUrl={search.searchUrl} />

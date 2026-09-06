@@ -52,7 +52,8 @@ export const Navbar = ({
         className: navbarLogoStyles({
           variant: utility ? "utility" : "default",
         }),
-        lazyLoading: false, // will always be above the fold
+        // will always be above the fold
+        lazyLoading: false,
         src: logoUrl,
         width: "100%",
       }}

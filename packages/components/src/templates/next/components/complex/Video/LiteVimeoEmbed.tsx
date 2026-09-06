@@ -2,9 +2,28 @@
 
 import { useRef, useState } from "react"
 import { twMerge } from "~/lib/twMerge"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { ImageClient } from "../../internal/ImageClient"
 import { IFRAME_ALLOW, IFRAME_CLASSNAME, IFRAME_SANDBOX } from "./shared"
+
+const VimeoPlayButton = () => (
+  <span
+    className="pointer-events-none flex h-10 w-[65px] shrink-0 items-center justify-center rounded-lg bg-[#15D5FF]"
+    aria-hidden
+  >
+    <span
+      className="ml-1"
+      style={{
+        borderColor: "transparent transparent transparent #000",
+        borderStyle: "solid",
+        borderWidth: "10px 0 10px 20px",
+        height: 0,
+        width: 0,
+      }}
+    />
+  </span>
+)
 
 // Vimeo API v2 response shape (partial)
 interface VimeoVideoInfo {
@@ -36,10 +55,11 @@ export const LiteVimeoEmbed = ({
         `https://vimeo.com/api/v2/video/${videoId}.json`,
       )
       // SAFETY: Vimeo oEmbed returns an array of video metadata objects for the requested id.
+      // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- untyped Vimeo API JSON boundary
       const data = (await response.json()) as VimeoVideoInfo[]
       // Use thumbnail_large (640px) for good quality
       // The URL format is like: https://i.vimeocdn.com/video/{id}_640.jpg
-      if (data[0]?.thumbnail_large) {
+      if (hasNonEmptyString(data[0]?.thumbnail_large)) {
         setThumbnailUrl(data[0].thumbnail_large)
       }
     } catch {
@@ -48,7 +68,9 @@ export const LiteVimeoEmbed = ({
   }
 
   const startThumbnailFetch = () => {
-    if (thumbnailFetchStarted.current) {return}
+    if (thumbnailFetchStarted.current) {
+      return
+    }
     thumbnailFetchStarted.current = true
     void fetchThumbnail()
   }
@@ -63,10 +85,10 @@ export const LiteVimeoEmbed = ({
 
   return (
     <>
-      {thumbnailUrl ? (
+      {hasNonEmptyString(thumbnailUrl) ? (
         <ImageClient
           src={thumbnailUrl}
-          alt={`Thumbnail for ${title || "video"}`}
+          alt={`Thumbnail for ${hasNonEmptyString(title) ? title : "video"}`}
           width="100%"
           lazyLoading={shouldLazyLoad}
           className={twMerge(
@@ -77,7 +99,9 @@ export const LiteVimeoEmbed = ({
       ) : (
         <div
           ref={(node) => {
-            if (node) {startThumbnailFetch()}
+            if (node !== undefined && node !== null) {
+              startThumbnailFetch()
+            }
           }}
           className={twMerge(
             "absolute inset-0 h-full w-full bg-black",
@@ -92,8 +116,9 @@ export const LiteVimeoEmbed = ({
           width="100%"
           className={IFRAME_CLASSNAME}
           src={srcWithAutoplay()}
-          title={title || "Video player"}
-          allow={`${IFRAME_ALLOW}; autoplay`} // autoplay needed to allow Vimeo to autoplay
+          title={hasNonEmptyString(title) ? title : "Video player"}
+          // autoplay needed to allow Vimeo to autoplay
+          allow={`${IFRAME_ALLOW}; autoplay`}
           sandbox={IFRAME_SANDBOX}
           referrerPolicy="strict-origin-when-cross-origin"
           allowFullScreen
@@ -101,9 +126,11 @@ export const LiteVimeoEmbed = ({
       ) : (
         <button
           type="button"
-          onClick={() =>{  setActivated(true); }}
+          onClick={() => {
+            setActivated(true)
+          }}
           className="group absolute inset-0 flex cursor-pointer items-center justify-center focus:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-utility-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-          aria-label={`Play ${title || "video"}`}
+          aria-label={`Play ${hasNonEmptyString(title) ? title : "video"}`}
         >
           <VimeoPlayButton />
         </button>
@@ -111,21 +138,3 @@ export const LiteVimeoEmbed = ({
     </>
   )
 }
-
-const VimeoPlayButton = () => (
-  <span
-    className="pointer-events-none flex h-10 w-[65px] shrink-0 items-center justify-center rounded-lg bg-[#15D5FF]"
-    aria-hidden
-  >
-    <span
-      className="ml-1"
-      style={{
-        borderColor: "transparent transparent transparent #000",
-        borderStyle: "solid",
-        borderWidth: "10px 0 10px 20px",
-        height: 0,
-        width: 0,
-      }}
-    />
-  </span>
-)

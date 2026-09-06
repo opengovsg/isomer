@@ -38,7 +38,7 @@ export const Default: Story = {
 
 export const ManyImages: Story = {
   args: {
-    images: Array(10).fill(IMAGE),
+    images: Array.from({ length: 10 }, () => IMAGE),
     site: generateSiteConfig(),
     title: "Our partners and accolades",
   },
@@ -46,7 +46,7 @@ export const ManyImages: Story = {
 
 export const LongTitle: Story = {
   args: {
-    images: Array(5).fill(IMAGE),
+    images: Array.from({ length: 5 }, () => IMAGE),
     site: generateSiteConfig(),
     title: "Our agency partners that have joined us on our journey since 2019",
   },
@@ -54,7 +54,7 @@ export const LongTitle: Story = {
 
 export const HugeHorizontalLogo: Story = {
   args: {
-    images: [...Array(4).fill(IMAGE), HORIZONTAL_IMAGE],
+    images: [...Array.from({ length: 4 }, () => IMAGE), HORIZONTAL_IMAGE],
     site: generateSiteConfig(),
     title: "Our partners",
   },
@@ -62,7 +62,7 @@ export const HugeHorizontalLogo: Story = {
 
 export const HugeVerticalLogo: Story = {
   args: {
-    images: [...Array(4).fill(IMAGE), VERTICAL_IMAGE],
+    images: [...Array.from({ length: 4 }, () => IMAGE), VERTICAL_IMAGE],
     site: generateSiteConfig(),
     title: "Our partners",
   },

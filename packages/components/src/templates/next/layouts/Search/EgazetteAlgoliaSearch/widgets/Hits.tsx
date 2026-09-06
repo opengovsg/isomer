@@ -2,6 +2,7 @@ import { BiFile } from "react-icons/bi"
 import { Highlight, Snippet, useHits } from "react-instantsearch"
 import { Link } from "~/templates/next/components/internal/Link"
 import { getFormattedDate } from "~/utils/getFormattedDate"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 interface EgazetteHit {
   fileUrl: string
@@ -14,7 +15,9 @@ interface EgazetteHit {
 }
 
 const formatDate = (timestamp: number) => {
-  if (!Number.isFinite(timestamp)) {return ""}
+  if (!Number.isFinite(timestamp)) {
+    return ""
+  }
   return getFormattedDate(new Date(timestamp).toISOString())
 }
 
@@ -25,7 +28,9 @@ export const Hits = () => {
     // Artificial results are the placeholder response rendered before the
     // first Algolia response arrives — showing "no results" then would flash
     // the empty state on every page load.
-    if (results?.__isArtificial) {return null}
+    if (results?.__isArtificial === true) {
+      return null
+    }
 
     return (
       <div className="flex flex-col gap-1 py-32 text-center">
@@ -61,14 +66,14 @@ export const Hits = () => {
           <div className="flex flex-col gap-2 pl-8">
             <p className="prose-body-base text-base-content">
               Category: <Highlight attribute="category" hit={hit} />
-              {hit.subCategory && (
+              {hasNonEmptyString(hit.subCategory) && (
                 <>
                   , Sub-Category:{" "}
                   <Highlight attribute="subCategory" hit={hit} />
                 </>
               )}
             </p>
-            {hit.notificationNum && (
+            {hasNonEmptyString(hit.notificationNum) && (
               <p className="prose-body-base text-base-content">
                 Number: <Highlight attribute="notificationNum" hit={hit} />
               </p>
@@ -76,7 +81,7 @@ export const Hits = () => {
             <p className="prose-body-base text-base-content">
               Date of publication: {formatDate(hit.publishTimestamp)}
             </p>
-            {hit.text && (
+            {hasNonEmptyString(hit.text) && (
               <p className="prose-body-base text-base-content">
                 Content: <Snippet attribute="text" hit={hit} />
               </p>

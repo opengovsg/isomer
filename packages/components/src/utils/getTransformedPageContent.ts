@@ -36,8 +36,7 @@ export const getTransformedPageContent = (
 
             return { ...component, attrs: newAttrs }
           }
-            return component
-          
+          return component
         }),
       }
     } else if (
@@ -51,7 +50,6 @@ export const getTransformedPageContent = (
         id: getDigestFromText(`${JSON.stringify(block)}_${index}`),
       }
     }
-      return block
-    
+    return block
   })
 }

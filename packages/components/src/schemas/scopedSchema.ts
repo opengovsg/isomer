@@ -18,13 +18,13 @@ type ScopedSchemaLayout =
 
 const LAYOUT_SCHEMA_MAP = {
   article: ArticlePageSchema,
+  collection: CollectionPageSchema,
   content: ContentPageSchema,
   database: DatabasePageSchema,
+  file: FileRefSchema,
   homepage: HomePageSchema,
   index: IndexPageSchema,
   link: LinkRefSchema,
-  collection: CollectionPageSchema,
-  file: FileRefSchema,
 } as const satisfies Record<ScopedSchemaLayout, TSchema>
 
 // Utility type to extract all possible dot-separated paths from an object type
@@ -73,28 +73,26 @@ interface FilterableSchemaObject extends TSchema {
 
 type FilterMode = "include" | "exclude"
 
-function shouldKeepField(
+const shouldKeepField = (
   field: string,
   fieldSet: Set<string>,
   mode: FilterMode,
-): boolean {
-  return mode === "include" ? fieldSet.has(field) : !fieldSet.has(field)
-}
+): boolean => (mode === "include" ? fieldSet.has(field) : !fieldSet.has(field))
 
-function hasPropertiesRecord(
+const hasPropertiesRecord = (
   schema: FilterableSchemaObject,
 ): schema is FilterableSchemaObject & {
   properties: Record<string, TSchema>
-} {
+} => {
   const { properties } = schema
   return properties !== undefined && !Array.isArray(properties)
 }
 
-function filterRequiredFields(
+const filterRequiredFields = (
   schema: FilterableSchemaObject,
   fieldSet: Set<string>,
   mode: FilterMode,
-): void {
+): void => {
   if (Array.isArray(schema.required)) {
     const filteredRequired = schema.required.filter((field) =>
       shouldKeepField(field, fieldSet, mode),
@@ -109,11 +107,11 @@ function filterRequiredFields(
 
 // Filters a single schema object's properties and required fields.
 // Returns null if all properties were removed.
-function filterSchemaProperties(
+const filterSchemaProperties = (
   schema: FilterableSchemaObject,
   fieldSet: Set<string>,
   mode: FilterMode,
-): FilterableSchemaObject | null {
+): FilterableSchemaObject | null => {
   if (!hasPropertiesRecord(schema)) {
     return schema
   }
@@ -134,6 +132,19 @@ function filterSchemaProperties(
   return result
 }
 
+const buildFieldSet = (
+  include: string[] | undefined,
+  exclude: string[] | undefined,
+): Set<string> | null => {
+  if ((include?.length ?? 0) > 0) {
+    return new Set(include)
+  }
+  if ((exclude?.length ?? 0) > 0) {
+    return new Set(exclude)
+  }
+  return null
+}
+
 /**
  * ```ts
  * // ✅ Valid - "page.database" exists in DatabasePageSchema
@@ -150,7 +161,7 @@ function filterSchemaProperties(
  * })
  * ```
  */
-export function getScopedSchema<T extends ScopedSchemaLayout>({
+export const getScopedSchema = <T extends ScopedSchemaLayout>({
   layout,
   scope,
   exclude,
@@ -160,14 +171,15 @@ export function getScopedSchema<T extends ScopedSchemaLayout>({
   scope: T extends keyof ScopeLayoutMap ? ScopeLayoutMap[T] : never
   exclude?: string[]
   include?: string[]
-}): TSchema {
-  if (exclude?.length && include?.length) {
+}): TSchema => {
+  if ((exclude?.length ?? 0) > 0 && (include?.length ?? 0) > 0) {
     throw new Error(
       "getScopedSchema: 'include' and 'exclude' are mutually exclusive — specify one or neither",
     )
   }
 
-  let currentSchema: FilterableSchemaObject = LAYOUT_SCHEMA_MAP[layout] // root schema
+  // root schema
+  let currentSchema: FilterableSchemaObject = LAYOUT_SCHEMA_MAP[layout]
 
   for (const part of scope.split(".")) {
     // just in case runtime error occurs (should not be since we control what's passed in)
@@ -180,12 +192,8 @@ export function getScopedSchema<T extends ScopedSchemaLayout>({
     currentSchema = currentSchema.properties[part]
   }
 
-  const fieldSet = include?.length
-    ? new Set(include)
-    : exclude?.length
-      ? new Set(exclude)
-      : null
-  const mode: FilterMode = include?.length ? "include" : "exclude"
+  const fieldSet = buildFieldSet(include, exclude)
+  const mode: FilterMode = (include?.length ?? 0) > 0 ? "include" : "exclude"
 
   if (fieldSet) {
     if (currentSchema.allOf) {

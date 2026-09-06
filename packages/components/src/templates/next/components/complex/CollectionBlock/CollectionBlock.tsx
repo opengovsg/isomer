@@ -9,6 +9,7 @@ import { DynamicHeading } from "~/utils/DynamicHeading"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { getResourceIdFromReferenceLink } from "~/utils/getResourceIdFromReferenceLink"
 import { isExternalUrl } from "~/utils/isExternalUrl"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { ComponentContent } from "../../internal/customCssClass"
 import { ImageClient } from "../../internal/ImageClient"
@@ -90,10 +91,11 @@ const SingleCard = ({
   formattedDate,
   headingLevel,
 }: CollectionBlockSingleCardProps): React.ReactNode => {
-  const isExternalLink = !!referenceLinkHref && isExternalUrl(referenceLinkHref)
+  const isExternalLink =
+    hasNonEmptyString(referenceLinkHref) && isExternalUrl(referenceLinkHref)
 
   const renderImage = () => {
-    if (!image?.src) {
+    if (!hasNonEmptyString(image?.src)) {
       return null
     }
 
@@ -104,7 +106,7 @@ const SingleCard = ({
           alt={image.alt}
           width="100%"
           className={compoundStyles.cardImage({
-            imageFit: isContainNeeded ? "contain" : "cover",
+            imageFit: isContainNeeded === true ? "contain" : "cover",
           })}
           lazyLoading={shouldLazyLoad}
           assetsBaseUrl={site.assetsBaseUrl}
@@ -121,7 +123,7 @@ const SingleCard = ({
     >
       {displayThumbnail && renderImage()}
       <div className={compoundStyles.cardTextContainer()}>
-        {formattedDate && (
+        {hasNonEmptyString(formattedDate) && (
           <p className={compoundStyles.cardDate()}>{formattedDate}</p>
         )}
 
@@ -158,27 +160,29 @@ const CollectionBlockSkeleton = ({
   title,
   description,
   headingLevel,
-}: CollectionBlockSkeletonProps) => 
-  (
-    <section className={compoundStyles.container()}>
-      <div className={compoundStyles.headingContainer()}>
-        <DynamicHeading
-          level={headingLevel}
-          className={compoundStyles.headingTitle()}
-        >
-          {title}
-        </DynamicHeading>
-        <p>{description}</p>
-      </div>
-    </section>
-  )
-
+}: CollectionBlockSkeletonProps) => (
+  <section className={compoundStyles.container()}>
+    <div className={compoundStyles.headingContainer()}>
+      <DynamicHeading
+        level={headingLevel}
+        className={compoundStyles.headingTitle()}
+      >
+        {title}
+      </DynamicHeading>
+      <p>{description}</p>
+    </div>
+  </section>
+)
 
 const toNumberOfCards = (
   length: number,
 ): CollectionBlockNumberOfCards["numberOfCards"] => {
-  if (length === 1) {return 1}
-  if (length === 2) {return 2}
+  if (length === 1) {
+    return 1
+  }
+  if (length === 2) {
+    return 2
+  }
   return 3
 }
 

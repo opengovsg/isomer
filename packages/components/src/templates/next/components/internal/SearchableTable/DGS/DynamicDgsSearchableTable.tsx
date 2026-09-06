@@ -29,25 +29,29 @@ export const DynamicDGSSearchableTable = ({
   headers,
   isMetadataLoading,
   isMetadataError,
-  maxNoOfColumns, // not using MAX_NUMBER_OF_COLUMNS as we should not arbitrarily slice the columns
+  // not using MAX_NUMBER_OF_COLUMNS as we should not arbitrarily slice the columns
+  maxNoOfColumns,
 }: DynamicSearchableTableClientProps) => {
   const [searchInput, setSearchInput] = useState("")
   const search = useDebounce({ delay: 300, value: searchInput })
   const [currPage, setCurrPage] = useState(1)
 
-  const params = useMemo(
-    () => ({
-      filters: filters?.reduce<
-        NonNullable<DgsApiDatasetSearchParams["filters"]>
-      >((acc, filter) => {
-        acc[filter.fieldKey] = filter.fieldValue
-        return acc
-      }, {}),
+  const params = useMemo(() => {
+    let filterRecord: NonNullable<DgsApiDatasetSearchParams["filters"]> | undefined
+
+    if (filters) {
+      filterRecord = {}
+      for (const filter of filters) {
+        filterRecord[filter.fieldKey] = filter.fieldValue
+      }
+    }
+
+    return {
+      filters: filterRecord,
       resourceId,
       sort,
-    }),
-    [resourceId, filters, sort],
-  )
+    }
+  }, [resourceId, filters, sort])
 
   const { total } = useDgsData({ ...params, fetchAll: false })
 

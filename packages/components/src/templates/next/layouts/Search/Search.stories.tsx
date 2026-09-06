@@ -90,12 +90,12 @@ export const EgazetteAlgoliaWithCategorySelected: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(
-      canvas.getByRole("checkbox", { name: /^Government Gazette/ }),
+      canvas.getByRole("checkbox", { name: /^Government Gazette/u }),
     )
     // Sub-category section appears only once a category is selected, in the
     // order declared by the taxonomy, with zero-count rows dimmed + disabled.
     await expect(
-      await canvas.findByRole("checkbox", { name: /^Advertisements/ }),
+      await canvas.findByRole("checkbox", { name: /^Advertisements/u }),
     ).toBeInTheDocument()
   },
 }
@@ -208,13 +208,13 @@ export const EgazetteAlgoliaWithDeepLink: Story = {
     await waitFor(
       async () => {
         await expect(
-          canvas.getByRole("checkbox", { name: /^Government Gazette/ }),
+          canvas.getByRole("checkbox", { name: /^Government Gazette/u }),
         ).toBeChecked()
       },
       { timeout: 10_000 },
     )
     await expect(
-      await canvas.findByRole("checkbox", { name: /^Advertisements/ }),
+      await canvas.findByRole("checkbox", { name: /^Advertisements/u }),
     ).toBeInTheDocument()
   },
 }

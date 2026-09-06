@@ -10,7 +10,7 @@ const generateInfobarSchema = ({
   includeDarkVariant,
 }: {
   includeDarkVariant: boolean
-}) => 
+}) =>
   Type.Object(
     {
       buttonLabel: Type.Optional(
@@ -91,7 +91,6 @@ const generateInfobarSchema = ({
       title: "Call-to-Action",
     },
   )
-
 
 export const InfobarHomepageSchema = generateInfobarSchema({
   includeDarkVariant: true,

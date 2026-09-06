@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unsafe-type-assertion, typescript/no-deprecated -- story/test fixtures use narrowed mock shapes */
 import type { TableProps } from "~/interfaces"
 import { describe, expect, it } from "vitest"
 

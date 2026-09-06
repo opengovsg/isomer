@@ -30,6 +30,38 @@ const buildDgsFilters = (
   return result
 }
 
+export const DgsTransformedContactInformation = ({
+  record,
+  isLoading,
+  ...rest
+}: DgsTransformedContactInformationProps) => {
+  const title = transformDgsField(rest.title, record)
+  const description = transformDgsField(rest.description, record)
+
+  const methods = safeJsonParse<ContactInformationUIProps["methods"]>(
+    transformDgsField(rest.methods, record),
+  )
+
+  const otherInformation = safeJsonParse<
+    NonNullable<ContactInformationUIProps["otherInformation"]>
+  >(transformDgsField(rest.otherInformation, record))
+
+  return (
+    <ContactInformationUI
+      isLoading={isLoading}
+      title={title ?? undefined}
+      description={description ?? undefined}
+      methods={methods ?? []}
+      otherInformation={otherInformation}
+      type={rest.type}
+      layout={rest.layout}
+      headingLevel={rest.headingLevel}
+      {...omit(rest, InjectableContactInformationKeys)}
+      acceptHtmlTags
+    />
+  )
+}
+
 export const DgsContactInformation = ({
   dataSource: { resourceId, filters },
   ...rest
@@ -64,45 +96,4 @@ export const DgsContactInformation = ({
   }
 
   return <DgsTransformedContactInformation {...rest} record={record} />
-}
-
-export const DgsTransformedContactInformation = ({
-  record,
-  isLoading,
-  ...rest
-}: DgsTransformedContactInformationProps) => {
-  // SAFETY: transformDgsField returns the DGS record value typed as the configured field contract.
-  const title = transformDgsField(
-    rest.title,
-    record,
-  ) as ContactInformationUIProps["title"]
-
-  // SAFETY: transformDgsField returns the DGS record value typed as the configured field contract.
-  const description = transformDgsField(
-    rest.description,
-    record,
-  ) as ContactInformationUIProps["description"]
-
-  const methods = safeJsonParse<ContactInformationUIProps["methods"]>(
-    transformDgsField(rest.methods, record),
-  )
-
-  const otherInformation = safeJsonParse<
-    ContactInformationUIProps["otherInformation"]
-  >(transformDgsField(rest.otherInformation, record))
-
-  return (
-    <ContactInformationUI
-      isLoading={isLoading}
-      title={title}
-      description={description}
-      methods={methods ?? []}
-      otherInformation={otherInformation}
-      type={rest.type}
-      layout={rest.layout}
-      headingLevel={rest.headingLevel}
-      {...omit(rest, InjectableContactInformationKeys)}
-      acceptHtmlTags
-    />
-  )
 }

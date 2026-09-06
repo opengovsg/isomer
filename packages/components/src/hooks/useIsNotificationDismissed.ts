@@ -1,5 +1,4 @@
 import { useSessionStorage } from "usehooks-ts"
 
-export const useIsNotificationDismissed = () => 
+export const useIsNotificationDismissed = () =>
   useSessionStorage("notification-dismissed", false)
-

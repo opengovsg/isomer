@@ -24,7 +24,7 @@ export const renderPageContent = ({
 }: RenderPageContentParams) => {
   // Filter out hidden childrenpages blocks
   const visibleContent = content.filter((component) =>
-    component.type === "childrenpages" ? !component.isHidden : true,
+    component.type === "childrenpages" ? component.isHidden !== true : true,
   )
 
   // Find index of first component with image

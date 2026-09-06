@@ -1,6 +1,7 @@
 import type { SingleCardWithImageProps } from "~/interfaces/complex/InfoCards"
 import { BiRightArrowAlt } from "react-icons/bi"
 import { DynamicHeading } from "~/utils/DynamicHeading"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { compoundStyles, infoCardTitleStyle } from "../common"
 
@@ -19,28 +20,29 @@ export const InfoCardText = ({
   | "url"
   | "isExternalLink"
   | "headingLevel"
->): React.ReactNode => 
-  (
-    <div className={compoundStyles.cardTextContainer({ variant })}>
-      <DynamicHeading
-        level={headingLevel}
-        className={infoCardTitleStyle({ isClickableCard: !!url, variant })}
-      >
-        {title}
-        {url && (
-          <BiRightArrowAlt
-            aria-hidden
-            className={compoundStyles.cardTitleArrow({
-              isExternalLink,
-              variant,
-            })}
-          />
-        )}
-      </DynamicHeading>
-
-      {description && (
-        <p className={compoundStyles.cardDescription()}>{description}</p>
+>): React.ReactNode => (
+  <div className={compoundStyles.cardTextContainer({ variant })}>
+    <DynamicHeading
+      level={headingLevel}
+      className={infoCardTitleStyle({
+        isClickableCard: hasNonEmptyString(url),
+        variant,
+      })}
+    >
+      {title}
+      {hasNonEmptyString(url) && (
+        <BiRightArrowAlt
+          aria-hidden
+          className={compoundStyles.cardTitleArrow({
+            isExternalLink,
+            variant,
+          })}
+        />
       )}
-    </div>
-  )
+    </DynamicHeading>
 
+    {hasNonEmptyString(description) && (
+      <p className={compoundStyles.cardDescription()}>{description}</p>
+    )}
+  </div>
+)

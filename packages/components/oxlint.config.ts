@@ -13,7 +13,12 @@ export default defineConfig({
   extends: [base, core, react, reactDoctor, antiSlop],
   settings: jsPluginSettings,
   jsPlugins: [...reactDoctorJsPluginEntries, ...(antiSlop.jsPlugins ?? [])],
-  ignorePatterns: ["dist", "**/*.config.*", "!.storybook"],
+  ignorePatterns: [
+    "dist",
+    "**/*.config.*",
+    "!.storybook",
+    "public/mockServiceWorker.js",
+  ],
   overrides: [
     {
       files: ["**/*.ts", "**/*.tsx"],
@@ -79,12 +84,33 @@ export default defineConfig({
             ],
           },
         ],
+        "eslint/prefer-arrow-callback": "off",
         "no-unused-vars": "warn",
       },
       globals: {
         React: "writable",
       },
       plugins: ["react", "typescript"],
+    },
+    {
+      files: ["src/presets/**/*.ts"],
+      rules: {
+        "eslint/sort-keys": "off",
+      },
+    },
+    {
+      files: [
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/__tests__/**",
+      ],
+      rules: {
+        "eslint/no-plusplus": "off",
+        "eslint/no-shadow": "off",
+        "eslint/no-use-before-define": "off",
+        "eslint/sort-keys": "off",
+        "unicorn/consistent-function-scoping": "off",
+      },
     },
     {
       files: [
@@ -102,6 +128,10 @@ export default defineConfig({
         "**/*.story.cjs",
       ],
       rules: {
+        "eslint/prefer-destructuring": "off",
+        "eslint/no-shadow": "off",
+        "eslint/sort-keys": "off",
+        "promise/avoid-new": "off",
         "react-hooks/rules-of-hooks": "off",
         "import/no-anonymous-default-export": "off",
         "storybook/await-interactions": "error",

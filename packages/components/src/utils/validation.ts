@@ -39,13 +39,10 @@ export const FORMSG_EMBED_URL_PATTERN = Object.values(FORMSG_EMBED_URL_REGEXES)
   .join("|")
 
 // Validation for map-related embed URLs
-const isValidGoogleMapsEmbedUrl = (urlObject: URL) => 
-  (
-    urlObject.hostname === "www.google.com" &&
-    (urlObject.pathname === "/maps/embed" ||
-      urlObject.pathname === "/maps/d/embed")
-  )
-
+const isValidGoogleMapsEmbedUrl = (urlObject: URL) =>
+  urlObject.hostname === "www.google.com" &&
+  (urlObject.pathname === "/maps/embed" ||
+    urlObject.pathname === "/maps/d/embed")
 
 const isValidOneMapEmbedUrl = (urlObject: URL) => {
   if (urlObject.hostname === "www.onemap.gov.sg") {

@@ -9,8 +9,12 @@ interface FilterContactMethodsProps {
 type ExternalContactValue = string | number | boolean | null | undefined
 
 const isNonEmptyContactValue = (value: ExternalContactValue): boolean => {
-  if (value === null || value === undefined) {return false}
-  if (String(value) !== value) {return false}
+  if (value === null || value === undefined) {
+    return false
+  }
+  if (String(value) !== value) {
+    return false
+  }
   return value.trim() !== ""
 }
 
@@ -44,7 +48,10 @@ export const filterContactMethods = ({
   // Filter methods that have a valid method type and are whitelisted
   const whitelistedMethodSet = new Set(whitelistedMethods)
   const filteredMethods = nonEmptyMethods.filter(
-    (method) => method.method && whitelistedMethodSet.has(method.method),
+    (method) =>
+      method.method !== undefined &&
+      method.method !== null &&
+      whitelistedMethodSet.has(method.method),
   )
 
   // Sort the filtered methods according to the order in whitelistedMethods

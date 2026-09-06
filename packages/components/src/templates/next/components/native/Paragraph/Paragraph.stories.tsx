@@ -297,11 +297,7 @@ export const MobileLinkHardBreak: Story = {
     const secondLinkStyle = getComputedStyle(secondLink)
 
     // Assert line height for both links (should be at least 24px to meet touch target requirements)
-    await expect(
-      Number.parseFloat(firstLinkStyle.lineHeight),
-    ).toBeGreaterThanOrEqual(24)
-    await expect(
-      Number.parseFloat(secondLinkStyle.lineHeight),
-    ).toBeGreaterThanOrEqual(24)
+    await expect(Number(firstLinkStyle.lineHeight)).toBeGreaterThanOrEqual(24)
+    await expect(Number(secondLinkStyle.lineHeight)).toBeGreaterThanOrEqual(24)
   },
 }

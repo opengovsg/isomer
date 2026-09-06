@@ -14,14 +14,12 @@ export const createInfobarStyles = tv({
       layout: "homepage",
     },
     {
-      // NOTE: Should not have dark mode on non-homepage for now
-      // Copy the light + default variant
-      colorScheme: "dark",
-      layout: "default",
       className: {
         outerContainer: "",
         screenWideOuterContainer: "bg-base-canvas-backdrop",
       },
+      colorScheme: "dark",
+      layout: "default",
     },
     {
       className: {

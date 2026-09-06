@@ -4,6 +4,7 @@ import { BiChevronRight } from "react-icons/bi"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
 import { focusVisibleHighlight } from "~/utils/tailwind"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { Link } from "../Link"
 
@@ -39,19 +40,17 @@ const BaseBreadcrumbs = ({
   children,
   "aria-label": ariaLabel = "Breadcrumb",
   ...props
-}: BaseBreadcrumbsProps) => 
-  (
-    <nav
-      {...props}
-      aria-label={ariaLabel}
-      className={twMerge("flex flex-wrap gap-1", className)}
-    >
-      <ol className="m-0 flex list-none flex-wrap items-center gap-1 p-0">
-        {children}
-      </ol>
-    </nav>
-  )
-
+}: BaseBreadcrumbsProps) => (
+  <nav
+    {...props}
+    aria-label={ariaLabel}
+    className={twMerge("flex flex-wrap gap-1", className)}
+  >
+    <ol className="m-0 flex list-none flex-wrap items-center gap-1 p-0">
+      {children}
+    </ol>
+  </nav>
+)
 
 type BaseBreadcrumbProps = LinkProps & {
   colorScheme?: "default" | "inverse"
@@ -79,7 +78,9 @@ const BaseBreadcrumb = ({
       >
         {children}
       </Link>
-      {href && <BiChevronRight aria-hidden="true" className={styles.icon()} />}
+      {hasNonEmptyString(href) && (
+        <BiChevronRight aria-hidden="true" className={styles.icon()} />
+      )}
     </li>
   )
 }

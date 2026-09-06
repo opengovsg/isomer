@@ -11,6 +11,7 @@ import {
   focusVisibleHighlight,
   groupFocusVisibleHighlight,
 } from "~/utils/tailwind"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { IconButton } from "../IconButton"
 import { Link } from "../Link"
@@ -39,53 +40,6 @@ const navbarItemStyles = tv({
 })
 
 const { item, chevron, megamenu } = navbarItemStyles()
-
-export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
-  (
-    { items, name, url, description, isOpen, onClick, onCloseMegamenu },
-    ref,
-  ): React.ReactNode => {
-    if (!items || items.length === 0) {
-      return (
-        <li className={item({ isOpen })}>
-          <Link
-            isExternal={isExternalUrl(url)}
-            showExternalIcon={isExternalUrl(url)}
-            href={url}
-            className={focusVisibleHighlight()}
-          >
-            {name}
-          </Link>
-        </li>
-      )
-    }
-
-    return (
-      <li>
-        <button
-          type="button"
-          ref={ref}
-          className={item({ isOpen })}
-          onClick={onClick}
-          aria-expanded={isOpen}
-        >
-          <span className={groupFocusVisibleHighlight()}>{name}</span>
-          <BiChevronDown className={chevron({ isOpen })} />
-        </button>
-        {isOpen && (
-          <Megamenu
-            name={name}
-            description={description}
-            url={url}
-            items={items}
-            onCloseMegamenu={onCloseMegamenu}
-          />
-        )}
-      </li>
-    )
-  },
-)
-NavItem.displayName = "NavItem"
 
 const Megamenu = ({
   name,
@@ -140,7 +94,7 @@ const Megamenu = ({
                 <h2 className="prose-display-xs text-base-content">
                   {renderTitleContent()}
                 </h2>
-                {description && (
+                {hasNonEmptyString(description) && (
                   <p className="prose-label-sm-regular text-base-content-subtle">
                     {description}
                   </p>
@@ -190,3 +144,50 @@ const Megamenu = ({
     </div>
   )
 }
+
+export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
+  function NavItem(
+    { items, name, url, description, isOpen, onClick, onCloseMegamenu },
+    ref,
+  ): React.ReactNode {
+    if (!items || items.length === 0) {
+      return (
+        <li className={item({ isOpen })}>
+          <Link
+            isExternal={isExternalUrl(url)}
+            showExternalIcon={isExternalUrl(url)}
+            href={url}
+            className={focusVisibleHighlight()}
+          >
+            {name}
+          </Link>
+        </li>
+      )
+    }
+
+    return (
+      <li>
+        <button
+          type="button"
+          ref={ref}
+          className={item({ isOpen })}
+          onClick={onClick}
+          aria-expanded={isOpen}
+        >
+          <span className={groupFocusVisibleHighlight()}>{name}</span>
+          <BiChevronDown className={chevron({ isOpen })} />
+        </button>
+        {isOpen && (
+          <Megamenu
+            name={name}
+            description={description}
+            url={url}
+            items={items}
+            onCloseMegamenu={onCloseMegamenu}
+          />
+        )}
+      </li>
+    )
+  },
+)
+NavItem.displayName = "NavItem"

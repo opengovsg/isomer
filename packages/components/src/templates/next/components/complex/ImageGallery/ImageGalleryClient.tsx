@@ -1,9 +1,11 @@
 "use client"
 
+/* oxlint-disable eslint/complexity, react-doctor/no-giant-component -- carousel state, preload, and keyboard navigation are intentionally colocated */
 import type { ImageGalleryClientProps } from "~/interfaces/complex/ImageGallery"
 import { useRef, useState, useTransition } from "react"
 import { useBreakpoint } from "~/hooks/useBreakpoint"
 import { tv } from "~/lib/tv"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { ImageClient } from "../../internal/ImageClient"
 import { LEFT_ARROW_SVG, RIGHT_ARROW_SVG } from "./assets"
@@ -45,6 +47,22 @@ const createImagePreviewStyles = tv({
 
 const compoundStyles = createImagePreviewStyles()
 
+const getPreviewVisibility = (
+  index: number,
+  previewIndicesForSmMdSet: Set<number>,
+  previewIndicesForLgSet: Set<number>,
+): "all" | "lgOnly" | "none" => {
+  if (previewIndicesForSmMdSet.has(index)) {
+    return "all"
+  }
+
+  if (previewIndicesForLgSet.has(index)) {
+    return "lgOnly"
+  }
+
+  return "none"
+}
+
 export const ImageGalleryClient = ({
   images,
   assetsBaseUrl,
@@ -84,21 +102,30 @@ export const ImageGalleryClient = ({
 
   const preloadImage = (index: number) => {
     // Out of bounds
-    if (index < 0 || index >= images.length) {return}
+    if (index < 0 || index >= images.length) {
+      return
+    }
 
     // If the image is the current image, we don't need to preload it
-    if (index === currentIndex) {return}
+    if (index === currentIndex) {
+      return
+    }
 
     const image = containerRef.current?.querySelectorAll("img")[index]
-    if (!image) {return} // should never happen since we render all images
+    if (!image) {
+      return
+      // should never happen since we render all images
+    }
 
     // Image has already been loaded
-    if (image.complete) {return}
+    if (image.complete) {
+      return
+    }
 
     // Image not loaded yet, force load it!
     if (image.getAttribute("loading") === "lazy") {
       image.removeAttribute("loading")
-      const {src} = image
+      const { src } = image
       image.src = ""
       image.src = src
     }
@@ -106,7 +133,10 @@ export const ImageGalleryClient = ({
 
   const preloadNextImage = (numberOfImagesAheadOfCurrentPreview = 1) => {
     const lastIndexInPreview = previewIndices.at(-1)
-    if (!lastIndexInPreview) {return} // should never happen since there's always at least one image in the preview sequence
+    if (lastIndexInPreview === undefined || lastIndexInPreview === null) {
+      return
+      // should never happen since there's always at least one image in the preview sequence
+    }
     preloadImage(lastIndexInPreview + numberOfImagesAheadOfCurrentPreview)
   }
 
@@ -120,7 +150,8 @@ export const ImageGalleryClient = ({
     })
 
     if (direction === "next") {
-      preloadNextImage(2) // the new currentIndex + 1
+      // the new currentIndex + 1
+      preloadNextImage(2)
     }
   }
 
@@ -133,31 +164,38 @@ export const ImageGalleryClient = ({
   const handlePreviewButtonEngagement = () => {
     // By design, all preview images have been loaded
     // Except when we are on the first image and the last few images have not been loaded yet
-    if (currentIndex !== 0) {return}
+    if (currentIndex !== 0) {
+      return
+    }
 
     // In which case we need to preload the last few images in the preview sequence
-    getEndingPreviewIndices({
+    for (const index of getEndingPreviewIndices({
       maxPreviewImages,
       numberOfImages: images.length,
-    }).map((index: number) =>{  preloadImage(index); })
+    })) {
+      preloadImage(index)
+    }
   }
 
   const handlePreviewImageEngagement = (index: number) => {
-    if (index === currentIndex) {return}
+    if (index === currentIndex) {
+      return
+    }
 
     switch (maxPreviewImages) {
-      case 3: { // At most 1 non-preloaded image can be loaded
+      case 3: {
+        // At most 1 non-preloaded image can be loaded
         preloadImage(index + 1)
         break
       }
-      case 5: { // At most 2 non-preloaded images can be loaded
+      case 5: {
+        // At most 2 non-preloaded images can be loaded
         preloadImage(index + 1)
         preloadImage(index + 2)
         break
       }
       default: {
-        const _exhaustiveCheck: never = maxPreviewImages
-        return _exhaustiveCheck
+        throw new Error("Unexpected maxPreviewImages value")
       }
     }
   }
@@ -190,10 +228,14 @@ export const ImageGalleryClient = ({
               // to ensure smooth transitioning when navigating to the first image from the last
               (currentIndex === images.length - 1 && index === 0)
 
+            if (!shouldPreload) {
+              return null
+            }
+
             return (
-              shouldPreload && (
                 <div
-                  key={image.src + index} // in case of same src, use index as key
+                  // in case of same src, use index as key
+                  key={image.src + index}
                   className={`absolute inset-0 h-full w-full transition-opacity duration-150 ease-out motion-reduce:transition-none ${
                     // z-index ensures the current image always appears on top,
                     // preventing visual glitches when images overlap during transitions or when rapidly changing slides.
@@ -216,7 +258,7 @@ export const ImageGalleryClient = ({
                         isCurrentImage ? shouldLazyLoad : true
                       }
                     />
-                    {image.caption && (
+                    {hasNonEmptyString(image.caption) && (
                       <div className="prose-label-sm-medium absolute bottom-0 left-0 right-0 bg-base-canvas-inverse-overlay/90 p-3 text-white">
                         <div className="line-clamp-3">{image.caption}</div>
                       </div>
@@ -224,7 +266,6 @@ export const ImageGalleryClient = ({
                   </div>
                 </div>
               )
-            )
           })}
         </div>
 
@@ -234,10 +275,18 @@ export const ImageGalleryClient = ({
           className="absolute left-4 top-1/2 z-20 -translate-y-1/2 rounded-full border-2 border-white bg-base-canvas-inverse-overlay/90 p-1 text-white hover:bg-base-canvas-inverse-overlay focus-visible:border-utility-highlight focus-visible:bg-base-canvas-inverse-overlay focus-visible:outline-none focus-visible:ring-[0.375rem] focus-visible:ring-utility-highlight"
           aria-label="Previous image"
           disabled={isPending}
-          onMouseEnter={() =>{  handlePreviewButtonEngagement(); }}
-          onTouchStart={() =>{  handlePreviewButtonEngagement(); }}
-          onFocus={() =>{  handlePreviewButtonEngagement(); }}
-          onClick={() =>{  navigateToImageByDirection("prev"); }}
+          onMouseEnter={() => {
+            handlePreviewButtonEngagement()
+          }}
+          onTouchStart={() => {
+            handlePreviewButtonEngagement()
+          }}
+          onFocus={() => {
+            handlePreviewButtonEngagement()
+          }}
+          onClick={() => {
+            navigateToImageByDirection("prev")
+          }}
         >
           {LEFT_ARROW_SVG}
         </button>
@@ -247,10 +296,18 @@ export const ImageGalleryClient = ({
           className="absolute right-4 top-1/2 z-20 -translate-y-1/2 rounded-full border-2 border-white bg-base-canvas-inverse-overlay/90 p-1 text-white hover:bg-base-canvas-inverse-overlay focus-visible:border-utility-highlight focus-visible:bg-base-canvas-inverse-overlay focus-visible:outline-none focus-visible:ring-[0.375rem] focus-visible:ring-utility-highlight"
           aria-label="Next image"
           disabled={isPending}
-          onTouchStart={() =>{  preloadNextImage(); }}
-          onMouseEnter={() =>{  preloadNextImage(); }}
-          onFocus={() =>{  preloadNextImage(); }}
-          onClick={() =>{  navigateToImageByDirection("next"); }}
+          onTouchStart={() => {
+            preloadNextImage()
+          }}
+          onMouseEnter={() => {
+            preloadNextImage()
+          }}
+          onFocus={() => {
+            preloadNextImage()
+          }}
+          onClick={() => {
+            navigateToImageByDirection("next")
+          }}
         >
           {RIGHT_ARROW_SVG}
         </button>
@@ -267,27 +324,36 @@ export const ImageGalleryClient = ({
           // Given that current total image count is capped at 30, this has minimal performance impact (as they are basic DOM elements)
           // Visibility is CSS-driven to avoid hydration layout shift (see comment above).
           // sm/md shows 3 previews, lg shows 5 — items only in the lg set are hidden on smaller screens.
-          const visibility = previewIndicesForSmMdSet.has(index)
-            ? "all"
-            : (previewIndicesForLgSet.has(index)
-              ? "lgOnly"
-              : "none")
+          const visibility = getPreviewVisibility(
+            index,
+            previewIndicesForSmMdSet,
+            previewIndicesForLgSet,
+          )
 
           return (
             <button
               type="button"
-              key={image.src + index} // in case of same src, use index as key
+              // in case of same src, use index as key
+              key={image.src + index}
               className={compoundStyles.container({
                 isSelected: index === currentIndex,
                 visibility,
               })}
-              onClick={() =>{  navigateToImageByIndex(index); }}
+              onClick={() => {
+                navigateToImageByIndex(index)
+              }}
               aria-label={`View image ${index + 1} of ${images.length}`}
               aria-current={index === currentIndex}
               disabled={currentIndex === index || isPending}
-              onMouseEnter={() =>{  handlePreviewImageEngagement(index); }}
-              onTouchStart={() =>{  handlePreviewImageEngagement(index); }}
-              onFocus={() =>{  handlePreviewImageEngagement(index); }}
+              onMouseEnter={() => {
+                handlePreviewImageEngagement(index)
+              }}
+              onTouchStart={() => {
+                handlePreviewImageEngagement(index)
+              }}
+              onFocus={() => {
+                handlePreviewImageEngagement(index)
+              }}
             >
               <ImageClient
                 src={image.src}

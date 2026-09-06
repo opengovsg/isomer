@@ -4,6 +4,7 @@ import type { SearchableTableClientProps } from "~/interfaces"
 import { useId, useRef } from "react"
 import { tv } from "~/lib/tv"
 import { handleHorizontalScrollKeyDown } from "~/utils/handleHorizontalScrollKeyDown"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { BaseParagraph } from "../../../internal/BaseParagraph"
 import { PaginationControls } from "../../../internal/PaginationControls"
@@ -120,7 +121,7 @@ const SearchableTableContent = ({
         >
           <table
             className={compoundStyles.table()}
-            aria-describedby={title ? titleId : undefined}
+            aria-describedby={hasNonEmptyString(title) ? titleId : undefined}
           >
             <tbody>
               <tr className={compoundStyles.tableRow()}>
@@ -134,24 +135,22 @@ const SearchableTableContent = ({
                 ))}
               </tr>
 
-              {paginatedItems.map((row, rowIndex) => 
-                (
-                  <tr key={rowIndex} className={compoundStyles.tableRow()}>
-                    {row.slice(0, maxNoOfColumns).map((cell, cellIndex) => (
-                      <td
-                        key={cellIndex}
-                        className={compoundStyles.tableCell({
-                          isHeader: false,
-                        })}
-                      >
-                        {/* NOTE: Reference links are NOT supported within
+              {paginatedItems.map((row, rowIndex) => (
+                <tr key={rowIndex} className={compoundStyles.tableRow()}>
+                  {row.slice(0, maxNoOfColumns).map((cell, cellIndex) => (
+                    <td
+                      key={cellIndex}
+                      className={compoundStyles.tableCell({
+                        isHeader: false,
+                      })}
+                    >
+                      {/* NOTE: Reference links are NOT supported within
                           SearchableTable cell contents */}
-                        <BaseParagraph content={String(cell)} />
-                      </td>
-                    ))}
-                  </tr>
-                )
-              )}
+                      <BaseParagraph content={String(cell)} />
+                    </td>
+                  ))}
+                </tr>
+              ))}
             </tbody>
           </table>
         </section>
@@ -189,7 +188,7 @@ export const SearchableTableClientUI = ({
 
   return (
     <div className={compoundStyles.container()} ref={sectionTopRef}>
-      {!!title && (
+      {hasNonEmptyString(title) && (
         <h2 id={titleId} className={compoundStyles.title()}>
           {title}
         </h2>

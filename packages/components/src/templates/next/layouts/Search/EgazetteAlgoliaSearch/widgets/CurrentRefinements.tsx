@@ -15,16 +15,20 @@ export const CurrentRefinements = () => {
   // Built once from a static constant rather than on every render.
   const labelLookup = useMemo(() => {
     const lookup = new Map<string, string>()
-    EGAZETTE_CATEGORIES.forEach((category) => {
+    for (const category of EGAZETTE_CATEGORIES) {
       lookup.set(category.value, category.displayLabel)
-      category.subCategories?.forEach((sub) => {
-        lookup.set(sub.value, sub.displayLabel)
-      })
-    })
+      if (category.subCategories) {
+        for (const sub of category.subCategories) {
+          lookup.set(sub.value, sub.displayLabel)
+        }
+      }
+    }
     return lookup
   }, [])
 
-  if (items.length === 0) {return null}
+  if (items.length === 0) {
+    return null
+  }
 
   return (
     <ul className="flex flex-wrap gap-2">
@@ -40,7 +44,9 @@ export const CurrentRefinements = () => {
               {display}
               <Button
                 variant="unstyled"
-                onPress={() =>{  refine(refinement); }}
+                onPress={() => {
+                  refine(refinement)
+                }}
                 className="inline-flex h-auto min-h-0 items-center gap-0 rounded-full p-0 transition-colors active:bg-base-canvas-backdrop/80"
               >
                 <BiX aria-hidden className="h-4 w-4" />

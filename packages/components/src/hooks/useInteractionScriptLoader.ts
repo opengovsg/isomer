@@ -20,7 +20,9 @@ export const useInteractionScriptLoader = ({
   const documentRef = useRef<Document | null>(globalThis.document ?? null)
   const [shouldLoad, setShouldLoad] = useState(false)
 
-  const triggerLoad = () =>{  setShouldLoad(true); }
+  const triggerLoad = () => {
+    setShouldLoad(true)
+  }
 
   // Load script on user interactions (scroll, click, touchstart, mousemove, keydown)
   useEventListener("scroll", triggerLoad, documentRef, { passive: true })

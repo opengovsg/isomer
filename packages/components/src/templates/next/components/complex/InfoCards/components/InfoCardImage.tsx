@@ -1,6 +1,7 @@
 import type { SingleCardWithImageProps } from "~/interfaces/complex/InfoCards"
 import { INFOCARD_VARIANT } from "~/interfaces/complex/InfoCards"
 import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import type { With4Cols } from "./types"
 import { ImageClient } from "../../../internal/ImageClient"
@@ -29,28 +30,26 @@ export const InfoCardImage = ({
   | "site"
   | "shouldLazyLoad"
   | "variant"
->): React.ReactNode => 
-  (
-    <div
-      className={compoundStyles.cardImageContainer({
-        isClickableCard: !!url,
+>): React.ReactNode => (
+  <div
+    className={compoundStyles.cardImageContainer({
+      isClickableCard: hasNonEmptyString(url),
+      isFallback,
+      layout: getTailwindVariantLayout(layout),
+      maxColumns,
+      variant,
+    })}
+  >
+    <ImageClient
+      src={imageUrl}
+      alt={imageAlt}
+      width="100%"
+      className={compoundStyles.cardImage({
+        imageFit,
         isFallback,
-        layout: getTailwindVariantLayout(layout),
-        maxColumns,
-        variant,
       })}
-    >
-      <ImageClient
-        src={imageUrl}
-        alt={imageAlt}
-        width="100%"
-        className={compoundStyles.cardImage({
-          imageFit,
-          isFallback,
-        })}
-        assetsBaseUrl={site.assetsBaseUrl}
-        lazyLoading={shouldLazyLoad}
-      />
-    </div>
-  )
-
+      assetsBaseUrl={site.assetsBaseUrl}
+      lazyLoading={shouldLazyLoad}
+    />
+  </div>
+)

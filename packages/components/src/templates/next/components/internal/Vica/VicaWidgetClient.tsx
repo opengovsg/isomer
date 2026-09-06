@@ -7,9 +7,10 @@ export const VicaWidgetClient = ({
   useDevStagingScript,
   ...vicaProps
 }: VicaWidgetClientProps) => {
-  const scriptUrl = useDevStagingScript
-    ? "https://webchat.mol-vica.com/static/js/chat.js"
-    : "https://webchat.vica.gov.sg/static/js/chat.js"
+  const scriptUrl =
+    useDevStagingScript === true
+      ? "https://webchat.mol-vica.com/static/js/chat.js"
+      : "https://webchat.vica.gov.sg/static/js/chat.js"
 
   useInteractionScriptLoader({ src: scriptUrl })
 

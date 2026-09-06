@@ -20,11 +20,11 @@ export const isomerSiteTheme = plugin.withOptions(
   ({ colors }: SiteThemeOptions) =>
     ({ addBase }) => {
       addBase({
-        // TODO: Inject dynamically based on whatever is passed in.
+        // NOTE: Inject dynamically based on whatever is passed in.
         ":root": {
-          "--color-brand-canvas-default": colors.canvas.default,
           "--color-brand-canvas-alt": colors.canvas.alt,
           "--color-brand-canvas-backdrop": colors.canvas.backdrop,
+          "--color-brand-canvas-default": colors.canvas.default,
           "--color-brand-canvas-inverse": colors.canvas.inverse,
           "--color-brand-interaction-default": colors.interaction.default,
           "--color-brand-interaction-hover": colors.interaction.hover,

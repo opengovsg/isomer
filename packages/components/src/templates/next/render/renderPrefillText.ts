@@ -86,7 +86,9 @@ export const renderPrefillText = (content: IsomerSchema): PrefillContent => {
       }
     }
     case "homepage":
-    case "search":
+    case "search": {
+      return {}
+    }
     default: {
       return {}
     }

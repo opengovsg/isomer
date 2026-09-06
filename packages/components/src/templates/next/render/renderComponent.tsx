@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/complexity -- exhaustive component-type switch is intentionally colocated */
 import type {
   IsomerComponent,
   IsomerPageLayoutType,
@@ -77,6 +78,7 @@ export const renderComponent = ({
       return <Hero key={elementKey} {...component} {...rest} />
     }
     case "iframe": {
+      // oxlint-disable-next-line typescript/no-deprecated -- legacy iframe embed still rendered for existing content
       return <Iframe key={elementKey} {...component} {...rest} />
     }
     case "image": {

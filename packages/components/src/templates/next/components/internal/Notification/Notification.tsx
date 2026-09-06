@@ -29,10 +29,8 @@ const NotificationContent = ({
   return null
 }
 
-export const Notification = ({ content, title, site }: NotificationProps) => 
-  (
-    <NotificationClient title={title}>
-      <NotificationContent content={content} site={site} />
-    </NotificationClient>
-  )
-
+export const Notification = ({ content, title, site }: NotificationProps) => (
+  <NotificationClient title={title}>
+    <NotificationContent content={content} site={site} />
+  </NotificationClient>
+)

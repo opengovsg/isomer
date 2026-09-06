@@ -39,7 +39,9 @@ export const CategoryRefinementList = () => {
           key={row.value}
           className="w-fit cursor-pointer"
           value={row.value}
-          onChange={() =>{  refine(row.value); }}
+          onChange={() => {
+            refine(row.value)
+          }}
         >
           {row.label}
         </Checkbox>

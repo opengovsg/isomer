@@ -70,7 +70,7 @@ export const ExternalLink: Story = {
   }),
 }
 
-// TODO: ideally when the text is being truncated,
+// NOTE: ideally when the text is being truncated,
 // the external link icon should be at the end of the text instead of the newline
 export const ExternalLinkLongText: Story = {
   args: generateArgs({ isExternalLink: true }),

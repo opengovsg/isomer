@@ -3,6 +3,7 @@ import type { IsomerSitemap, IsomerSiteProps } from "~/types"
 import type { CollectionPagePageProps } from "~/types/page"
 import { getParsedDate } from "~/utils/getParsedDate"
 import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { getPillAndPlaintextTags } from "./getPillAndPlaintextTags"
 import { getTagsFromTagged } from "./getTagsFromTagged"
@@ -34,7 +35,7 @@ const getItemImage = ({
   }
 
   // If the item has an image, we will show the item's image
-  if (item.image?.src) {
+  if (hasNonEmptyString(item.image?.src)) {
     return item.image
   }
 
@@ -47,7 +48,7 @@ const getItemImage = ({
       }
     }
     case "first-image": {
-      if (item.firstImage?.src) {
+      if (hasNonEmptyString(item.firstImage?.src)) {
         return item.firstImage
       }
 
@@ -87,22 +88,22 @@ export const getCollectionItems = ({
   let currSitemap: IsomerSitemap = site.siteMap
   const permalinkParts = permalink.split("/")
 
-  for (let i = 2; i <= permalinkParts.length; i++) {
+  for (let i = 2; i <= permalinkParts.length; i += 1) {
     const currPermalink = permalinkParts.slice(0, i).join("/")
 
     if (!currSitemap.children) {
       return []
     }
 
-    const child = currSitemap.children.find(
-      (child) => child.permalink === currPermalink,
+    const sitemapChild = currSitemap.children.find(
+      (entry) => entry.permalink === currPermalink,
     )
 
-    if (!child) {
+    if (!sitemapChild) {
       return []
     }
 
-    currSitemap = child
+    currSitemap = sitemapChild
   }
 
   if (!currSitemap.children) {
@@ -135,23 +136,21 @@ export const getCollectionItems = ({
     )
 
     const baseItem = {
-      type: "collectionCard" as const,
-      id: item.permalink,
       date,
-      lastModified: item.lastModified,
-      plaintextTags,
-      title: item.title,
       description: item.summary,
+      id: item.permalink,
       image,
-      isContainNeeded: image?.isContainNeeded || false,
+      isContainNeeded: image?.isContainNeeded === true,
+      lastModified: item.lastModified,
+      pillTags,
+      plaintextTags,
       site,
-      // NOTE: `tags` no longer falls back to the legacy `item.tags` field — Collection
-      // Items are expected to carry `tagged` + the parent's `tagCategories` going forward.
       tags:
         tagCategories && item.tagged
           ? getTagsFromTagged(item.tagged, tagCategories)
           : undefined,
-      pillTags,
+      title: item.title,
+      type: "collectionCard" as const,
     }
 
     if (item.layout === "file") {

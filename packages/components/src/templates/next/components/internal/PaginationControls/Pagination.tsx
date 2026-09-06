@@ -48,17 +48,17 @@ Pagination.displayName = "Pagination"
 const PaginationContent = React.forwardRef<
   HTMLUListElement,
   React.ComponentProps<"ul">
->(({ className, ...props }, ref) => 
-  <ul ref={ref} className={content({ className })} {...props} />
-)
+>(function PaginationContent({ className, ...props }, ref) {
+  return <ul ref={ref} className={content({ className })} {...props} />
+})
 PaginationContent.displayName = "PaginationContent"
 
 const PaginationItem = React.forwardRef<
   HTMLLIElement,
   React.ComponentProps<"li">
->(({ className, ...props }, ref) => 
-  <li ref={ref} className={item({ className })} {...props} />
-)
+>(function PaginationItem({ className, ...props }, ref) {
+  return <li ref={ref} className={item({ className })} {...props} />
+})
 PaginationItem.displayName = "PaginationItem"
 
 type PaginationButtonProps = {
@@ -66,15 +66,15 @@ type PaginationButtonProps = {
 } & ButtonProps
 
 const PaginationButton = forwardRef<HTMLButtonElement, PaginationButtonProps>(
-  (
+  function PaginationButton(
     { className, isActive, size, isDisabled, ...props },
     ref,
-  ) => 
-    (
+  ) {
+    return (
       <Button
         {...props}
         ref={ref}
-        aria-current={isActive ? "page" : undefined}
+        aria-current={isActive === true ? "page" : undefined}
         data-current={dataAttr(isActive)}
         variant="unstyled"
         size={size}
@@ -87,7 +87,7 @@ const PaginationButton = forwardRef<HTMLButtonElement, PaginationButtonProps>(
         )}
       />
     )
-  ,
+  },
 )
 PaginationButton.displayName = "PaginationButton"
 

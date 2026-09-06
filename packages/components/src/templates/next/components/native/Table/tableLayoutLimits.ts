@@ -21,7 +21,9 @@ const normalizeBoundedSpan = (
     Number.isFinite(Number(value))
       ? Number(value)
       : Number.NaN
-  if (!Number.isFinite(numericSpan)) {return 1}
+  if (!Number.isFinite(numericSpan)) {
+    return 1
+  }
   const span = Math.floor(numericSpan)
   return span < 1 ? 1 : Math.min(span, max)
 }

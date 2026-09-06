@@ -17,19 +17,22 @@ export const DynamicComponentList = ({
   layout,
   headingLevel,
 }: DynamicComponentListProps) => {
-  const params = useMemo(
-    () => ({
-      filters: filters?.reduce<
-        NonNullable<DgsApiDatasetSearchParams["filters"]>
-      >((acc, filter) => {
-        acc[filter.fieldKey] = filter.fieldValue
-        return acc
-      }, {}),
+  const params = useMemo(() => {
+    let filterRecord: NonNullable<DgsApiDatasetSearchParams["filters"]> | undefined
+
+    if (filters) {
+      filterRecord = {}
+      for (const filter of filters) {
+        filterRecord[filter.fieldKey] = filter.fieldValue
+      }
+    }
+
+    return {
+      filters: filterRecord,
       resourceId,
       sort,
-    }),
-    [resourceId, sort, filters],
-  )
+    }
+  }, [resourceId, sort, filters])
 
   const { records, isLoading, isError } = useDgsData(params)
 

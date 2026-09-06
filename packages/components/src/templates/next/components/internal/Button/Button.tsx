@@ -21,10 +21,10 @@ export interface ButtonProps
  * Use `LinkButton` component instead.
  */
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  (
+  function Button(
     { className, variant, colorScheme, size, isDisabled, children, ...props },
     ref,
-  ) => {
+  ) {
     const internalRef = useRef<HTMLButtonElement>(null)
     const { buttonProps } = useButton({ ...props, isDisabled }, internalRef)
     const { focusProps, isFocusVisible } = useFocusRing()

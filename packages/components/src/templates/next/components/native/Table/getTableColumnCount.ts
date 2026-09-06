@@ -35,7 +35,7 @@ export const getTableColumnCount = (rows: TableRows): number => {
   // instead of rescanned from history so each cell is only visited once.
   const carryExpiry = new Map<number, number>()
 
-  for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+  for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
     const expiring = carryExpiry.get(rowIndex)
     if (expiring !== undefined) {
       activeCarry -= expiring

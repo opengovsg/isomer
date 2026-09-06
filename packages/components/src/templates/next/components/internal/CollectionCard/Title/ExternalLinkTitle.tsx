@@ -20,9 +20,14 @@ export const ExternalLinkTitle = ({
 
   const [isTruncated, setIsTruncated] = useState(false)
 
+  // oxlint-disable-next-line react-doctor/effect-needs-cleanup -- missing ref returns noop cleanup before observer is registered
   useEffect(() => {
     const element = textRef.current
-    if (!element) {return}
+    if (!element) {
+      return function noopCleanup() {
+        // noop
+      }
+    }
 
     const checkTruncation = () => {
       setIsTruncated(element.scrollHeight > element.clientHeight)
@@ -32,7 +37,9 @@ export const ExternalLinkTitle = ({
 
     const observer = new ResizeObserver(checkTruncation)
     observer.observe(element)
-    return () =>{  observer.disconnect(); }
+    return () => {
+      observer.disconnect()
+    }
   }, [])
 
   return createElement(

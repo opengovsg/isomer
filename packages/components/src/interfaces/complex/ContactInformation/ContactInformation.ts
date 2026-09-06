@@ -79,7 +79,7 @@ const InjectableContactInformationSchema = Type.Object(
               Type.Literal(method, {
                 title:
                   method.charAt(0).toUpperCase() +
-                  method.slice(1).replaceAll('_', " "),
+                  method.slice(1).replaceAll("_", " "),
               }),
             ),
             {

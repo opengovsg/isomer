@@ -47,6 +47,10 @@ export const getTagFilters = (
     }
   }
 
+  const tagCategoryByLabel = new Map(
+    tagCategories?.map((tagCategory) => [tagCategory.label, tagCategory]),
+  )
+
   const filters: Filter[] = []
 
   for (const [category, values] of tagCategoryLabels.entries()) {
@@ -58,9 +62,7 @@ export const getTagFilters = (
       }),
     )
 
-    const matchedCategory = tagCategories?.find(
-      (tagCategory) => tagCategory.label === category,
-    )
+    const matchedCategory = tagCategoryByLabel.get(category)
 
     filters.push({
       display: resolveTagCategoryDisplay(matchedCategory?.display),
@@ -76,7 +78,7 @@ export const getTagFilters = (
 
   const tagCategoryIds = tagCategories.map(({ label }) => label)
 
-  const sortedFilters = filters.sort((a, b) => {
+  const sortedFilters = filters.toSorted((a, b) => {
     // NOTE: the label of the filter is the id
     const indexA = tagCategoryIds.indexOf(a.id)
     const indexB = tagCategoryIds.indexOf(b.id)
@@ -95,12 +97,12 @@ export const getTagFilters = (
   })
 
   return sortedFilters.map((filter) => {
-    const category = tagCategories.find((cat) => cat.label === filter.id)
+    const category = tagCategoryByLabel.get(filter.id)
     const tagOptionIds = category?.options?.map((option) => option.label) ?? []
 
     return {
       ...filter,
-      items: filter.items.sort(
+      items: filter.items.toSorted(
         (a, b) => tagOptionIds.indexOf(a.id) - tagOptionIds.indexOf(b.id),
       ),
     }

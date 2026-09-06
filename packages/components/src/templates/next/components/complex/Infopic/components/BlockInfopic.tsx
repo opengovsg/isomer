@@ -2,6 +2,7 @@ import { createElement } from "react"
 import { InfopicVariants } from "~/interfaces/complex/Infopic"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import type { InfopicProps } from "../types"
 import { ImageClient } from "../../../internal/ImageClient"
@@ -27,7 +28,8 @@ export const BlockInfopic = ({
     isTextOnRight,
     variant: InfopicVariants.Block.value,
   })
-  const hasLinkButton = !!buttonLabel && !!buttonUrl
+  const hasLinkButton =
+    hasNonEmptyString(buttonLabel) && hasNonEmptyString(buttonUrl)
 
   return (
     <section id={id} className={compoundStyles.container()}>

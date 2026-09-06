@@ -20,15 +20,15 @@ describe("BackToTopLink", () => {
     // "Back to top" is an action, so it must be a <button>. Using a <button>
     // (instead of an <a href="#">) is what avoids the Studio preview iframe
     // navigating the whole Studio app into itself ("studioception").
-    const button = screen.getByRole("button", { name: /back to top/i })
+    const button = screen.getByRole("button", { name: /back to top/iu })
     expect(button.tagName).toBe("BUTTON")
-    expect(screen.queryByRole("link", { name: /back to top/i })).toBeNull()
+    expect(screen.queryByRole("link", { name: /back to top/iu })).toBeNull()
   })
 
   it("scrolls to the top on click", () => {
     // Arrange
     render(<BackToTopLink />)
-    const button = screen.getByRole("button", { name: /back to top/i })
+    const button = screen.getByRole("button", { name: /back to top/iu })
 
     // Act
     fireEvent.click(button)

@@ -13,5 +13,5 @@ const HEADING_TAGS = [
 // invalid tag — HTML only defines h1 through h6.
 export const getHeadingTag = (level: number): HeadingTag => {
   const clamped = Math.min(Math.max(Math.round(level), 1), 6)
-  return HEADING_TAGS[clamped - 1]
+  return HEADING_TAGS[clamped - 1] ?? "h1"
 }

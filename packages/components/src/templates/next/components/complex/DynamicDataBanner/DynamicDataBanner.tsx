@@ -13,23 +13,21 @@ export const DynamicDataBanner = ({
   label,
   errorMessage,
   site,
-}: DynamicDataBannerProps) => 
-  (
-    <DynamicDataBannerClient
-      apiEndpoint={apiEndpoint}
-      title={title}
-      data={data}
-      url={getReferenceLinkHref(url, site.siteMapArray, site.assetsBaseUrl)}
-      label={label}
-      errorMessageBaseParagraph={
-        <BaseParagraph
-          content={getTextAsHtml({
-            content: errorMessage,
-            site,
-          })}
-          className="prose-label-sm-medium [&:not(:first-child)]:mt-0 [&:not(:last-child)]:mb-0"
-        />
-      }
-    />
-  )
-
+}: DynamicDataBannerProps) => (
+  <DynamicDataBannerClient
+    apiEndpoint={apiEndpoint}
+    title={title}
+    data={data}
+    url={getReferenceLinkHref(url, site.siteMapArray, site.assetsBaseUrl)}
+    label={label}
+    errorMessageBaseParagraph={
+      <BaseParagraph
+        content={getTextAsHtml({
+          content: errorMessage,
+          site,
+        })}
+        className="prose-label-sm-medium [&:not(:first-child)]:mt-0 [&:not(:last-child)]:mb-0"
+      />
+    }
+  />
+)

@@ -8,9 +8,9 @@ import { LinkButton } from "../../components/internal/LinkButton"
 const getPathnameSnapshot = () => window.location.pathname
 const getPathnameServerSnapshot = () => ""
 
-const subscribeToStaticSnapshot = () => 
-  () => {}
-
+const subscribeToStaticSnapshot = () => () => {
+  // noop unsubscribe for static useSyncExternalStore snapshot
+}
 
 export const NotFoundSearchButton = () => {
   const permalink = useSyncExternalStore(

@@ -89,7 +89,7 @@ const buildLogoUrl = (
     return `${site.assetsBaseUrl.replace(TRAILING_SLASH_REGEX, "")}${site.logoUrl}`
   }
 
-  return site.logoUrl
+  return site.logoUrl ?? ""
 }
 
 const buildSameAsLinks = (
@@ -202,8 +202,7 @@ const buildOrganisation = ({
     description: getNonEmptyString(entity?.description),
     logo: getAbsoluteHttpUrl(buildLogoUrl(site), siteUrl),
     name: organisationName,
-    sameAs:
-      sameAs !== undefined && sameAs.length > 0 ? sameAs : undefined,
+    sameAs: sameAs !== undefined && sameAs.length > 0 ? sameAs : undefined,
     url: siteUrl,
   }
 }
@@ -256,9 +255,7 @@ const getOpenGraphTitle = (props: IsomerPageSchemaType) =>
   // displaying the page preview, which can be confusing for users
   props.page.permalink === "/" ? props.site.siteName : props.page.title
 
-const getMetaDescription = (
-  props: GetPageJsonLdProps,
-): string | undefined => {
+const getMetaDescription = (props: GetPageJsonLdProps): string | undefined => {
   const metaDescription = props.meta?.description
   if (metaDescription !== undefined && metaDescription !== "") {
     return metaDescription

@@ -7,6 +7,7 @@ import { isExternalUrl } from "~/utils/isExternalUrl"
 import { isPhoneNumber, sanitizePhoneNumber } from "~/utils/isPhoneNumber"
 import { isUrl } from "~/utils/isUrl"
 import { focusVisibleHighlight } from "~/utils/tailwind"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import type { commonContactMethodStyles } from "./common"
 import { METHODS_MAPPING } from "./mapping"
@@ -24,17 +25,20 @@ export const ContactMethod = ({
 }: ContactMethodProps) => {
   const methodMapping = method ? METHODS_MAPPING[method] : undefined
   const Icon = methodMapping?.Icon ?? BiEnvelope
-  const iconColor =
-    methodMapping && "color" in methodMapping
-      ? // SAFETY: color is only present on emergency_contact mapping entries
-        (methodMapping as { color?: string }).color
-      : undefined
+  let iconColor: string | undefined
+  if (methodMapping && "color" in methodMapping) {
+    // SAFETY: color is only present on emergency_contact mapping entries
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- emergency_contact mapping includes optional color
+    iconColor = (methodMapping as { color?: string }).color
+  }
 
   return (
     <div className={styles.container()}>
       <Icon
         className={
-          iconColor ? twMerge(styles.icon(), iconColor) : styles.icon()
+          hasNonEmptyString(iconColor)
+            ? twMerge(styles.icon(), iconColor)
+            : styles.icon()
         }
       />
       <div className={styles.textContainer()}>
@@ -92,7 +96,9 @@ export const ContactMethod = ({
               </div>
             )
           })}
-          {!!caption && <div className={styles.caption()}>{caption}</div>}
+          {hasNonEmptyString(caption) && (
+            <div className={styles.caption()}>{caption}</div>
+          )}
         </div>
       </div>
     </div>
@@ -103,17 +109,15 @@ interface LoadingContactMethodProps {
   styles: ReturnType<typeof commonContactMethodStyles>
 }
 
-export const LoadingContactMethod = ({ styles }: LoadingContactMethodProps) => 
-  (
-    <div className={styles.container()}>
-      <div className={styles.icon()} />
-      <div className={styles.textContainer()}>
-        <div className={styles.label()} />
-        <div className={styles.valuesAndCaptionContainer()}>
-          <div className={styles.value()} />
-          <div className={styles.caption()} />
-        </div>
+export const LoadingContactMethod = ({ styles }: LoadingContactMethodProps) => (
+  <div className={styles.container()}>
+    <div className={styles.icon()} />
+    <div className={styles.textContainer()}>
+      <div className={styles.label()} />
+      <div className={styles.valuesAndCaptionContainer()}>
+        <div className={styles.value()} />
+        <div className={styles.caption()} />
       </div>
     </div>
-  )
-
+  </div>
+)

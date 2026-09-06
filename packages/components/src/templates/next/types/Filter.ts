@@ -63,6 +63,7 @@ export const isAppliedFilterUrlJson = (
 
   if (Object(value) === value && !Array.isArray(value)) {
     // SAFETY: object branch only runs after excluding arrays and primitives
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- validated plain object branch
     return Object.values(value as AppliedFilterUrlJsonObject).every(
       isAppliedFilterUrlJson,
     )
@@ -74,7 +75,9 @@ export const isAppliedFilterUrlJson = (
 const isAppliedFiltersArray = (value: AppliedFilterUrlJson): boolean =>
   Array.isArray(value) &&
   value.every((filter) => {
-    if (!isPlainObject(filter)) {return false}
+    if (!isPlainObject(filter)) {
+      return false
+    }
 
     const filterId = filter.id
     const filterItems = filter.items
@@ -86,7 +89,9 @@ const isAppliedFiltersArray = (value: AppliedFilterUrlJson): boolean =>
     }
 
     return filterItems.every((item) => {
-      if (!isPlainObject(item)) {return false}
+      if (!isPlainObject(item)) {
+        return false
+      }
       const itemId = item.id
       return itemId !== undefined && isNonEmptyString(itemId)
     })
@@ -100,7 +105,7 @@ export const parseAppliedFilters = (
   }
 
   // SAFETY: isAppliedFiltersArray validates the AppliedFilter[] shape at the URL boundary
-  // oxlint-disable-next-line anti-slop/no-chained-type-assertions -- validated URL JSON maps to AppliedFilter[]
+  // oxlint-disable-next-line anti-slop/no-chained-type-assertions, typescript/no-unsafe-type-assertion -- validated URL JSON maps to AppliedFilter[]
   return value as unknown as AppliedFilter[]
 }
 

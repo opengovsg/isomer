@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/complexity -- date/title/last-modified sort tie-break rules are intentionally colocated */
 import type { AllCardProps } from "~/interfaces"
 
 import type { GetCollectionItemsProps } from "./getCollectionItems"
@@ -100,112 +101,126 @@ const compareLastModified = (
   return 0
 }
 
+const compareBothWithDates = (
+  a: AllCardProps,
+  b: AllCardProps,
+  sortDirection: NonNullable<SortCollectionItemsProps["sortDirection"]>,
+): number => {
+  if (!(a.date instanceof Date) || !(b.date instanceof Date)) {
+    return 0
+  }
+
+  const bothSameDate = a.date.getTime() === b.date.getTime()
+  const bothSameLastModified =
+    getLastModifiedDate(a)?.getTime() === getLastModifiedDate(b)?.getTime()
+  const bothSameTitle = a.title === b.title
+
+  if (!bothSameDate) {
+    return compareDates(a.date, b.date, sortDirection)
+  }
+
+  if (!bothSameLastModified) {
+    return compareLastModified(a, b, sortDirection)
+  }
+
+  return compareTitles(a, b, "asc")
+}
+
+const compareBothWithoutDates = (
+  a: AllCardProps,
+  b: AllCardProps,
+  sortDirection: NonNullable<SortCollectionItemsProps["sortDirection"]>,
+): number => {
+  if (a.title !== b.title) {
+    return compareTitles(a, b, "asc")
+  }
+
+  return compareLastModified(a, b, sortDirection)
+}
+
+const compareCollectionItemsByDate = (
+  a: AllCardProps,
+  b: AllCardProps,
+  sortDirection: NonNullable<SortCollectionItemsProps["sortDirection"]>,
+): number => {
+  const bothHaveDates = a.date instanceof Date && b.date instanceof Date
+  const aNoDate = a.date === undefined
+  const bNoDate = b.date === undefined
+
+  if (bothHaveDates) {
+    return compareBothWithDates(a, b, sortDirection)
+  }
+
+  if (aNoDate && bNoDate) {
+    return compareBothWithoutDates(a, b, sortDirection)
+  }
+
+  if (aNoDate) {
+    return 1
+  }
+  if (bNoDate) {
+    return -1
+  }
+
+  return a.date instanceof Date ? -1 : 1
+}
+
 // Sort by published date, followed by last modified date, tiebreaker by title
 // If published date is not available, sort by title first, followed by last
 // modified date
 const sortCollectionItemsByDate = ({
   items,
   sortDirection = "desc",
-}: Omit<SortCollectionItemsProps, "sortBy">) => 
-  items.sort((a, b) => {
-    const bothHaveDates = a.date instanceof Date && b.date instanceof Date
-    const bothSameDate = a.date?.getTime() === b.date?.getTime()
-    const bothSameLastModified =
-      getLastModifiedDate(a)?.getTime() === getLastModifiedDate(b)?.getTime()
-    const bothSameTitle = a.title === b.title
-    const aNoDate = a.date === undefined
-    const bNoDate = b.date === undefined
+}: Omit<SortCollectionItemsProps, "sortBy">) =>
+  items.toSorted((a, b) => compareCollectionItemsByDate(a, b, sortDirection))
 
-    // ===== Scenario 1: Both items have published dates =====
-    // Sort by first priority: Published date
-    if (bothHaveDates && !bothSameDate) {
-      if (a.date instanceof Date && b.date instanceof Date) {
-        return compareDates(a.date, b.date, sortDirection)
-      }
-    }
+const compareCollectionItemsByTitle = (
+  a: AllCardProps,
+  b: AllCardProps,
+  sortDirection: NonNullable<SortCollectionItemsProps["sortDirection"]>,
+): number => {
+  const bothSameTitle = a.title === b.title
+  const bothHaveDates = a.date instanceof Date && b.date instanceof Date
+  const bothSameDate = a.date?.getTime() === b.date?.getTime()
+  const aNoDate = a.date === undefined
+  const bNoDate = b.date === undefined
 
-    // Sort by second priority: Last modified date
-    if (bothHaveDates && bothSameDate && !bothSameLastModified) {
-      return compareLastModified(a, b, sortDirection)
-    }
+  if (!bothSameTitle) {
+    return compareTitles(a, b, sortDirection)
+  }
 
-    // Sort by third priority: Title
-    if (bothHaveDates && bothSameDate && bothSameLastModified) {
-      return compareTitles(a, b, "asc") // Always sort titles in ascending order
-    }
+  if (
+    bothHaveDates &&
+    !bothSameDate &&
+    a.date instanceof Date &&
+    b.date instanceof Date
+  ) {
+    return compareDates(a.date, b.date, sortDirection)
+  }
 
-    // ===== Scenario 2: Both items do not have published dates =====
-    // Sort by first priority: Title
-    if (aNoDate && bNoDate && !bothSameTitle) {
-      return compareTitles(a, b, "asc") // Always sort titles in ascending order
-    }
+  if (bothHaveDates && bothSameDate) {
+    return compareLastModified(a, b, sortDirection)
+  }
 
-    // Sort by second priority: Last modified date
-    if (aNoDate && bNoDate && bothSameTitle) {
-      return compareLastModified(a, b, sortDirection)
-    }
+  if (aNoDate && bNoDate) {
+    return compareLastModified(a, b, sortDirection)
+  }
 
-    // ===== Scenario 3: One item has a published date, the other does not =====
-    // If one has a date and the other does not, place the one with a date first
-    if (aNoDate) {
-      return 1 // Place items without dates at the end
-    } else if (bNoDate) {
-      return -1 // Place items without dates at the end
-    }
+  if (aNoDate && !bNoDate) {
+    return 1
+  }
+  if (!aNoDate && bNoDate) {
+    return -1
+  }
 
-    // This should never be reached
-    return a.date instanceof Date ? -1 : 1
-  })
+  return a.date instanceof Date ? -1 : 1
+}
 
-
-// Sort by title, followed by published date, tiebreaker by last modified date
 const sortCollectionItemsByTitle = ({
   items,
   sortDirection = "asc",
-}: Omit<SortCollectionItemsProps, "sortBy">) => 
-  items.sort((a, b) => {
-    const bothSameTitle = a.title === b.title
-    const bothHaveDates = a.date instanceof Date && b.date instanceof Date
-    const bothSameDate = a.date?.getTime() === b.date?.getTime()
-    const aNoDate = a.date === undefined
-    const bNoDate = b.date === undefined
-
-    // Sort by first priority: Title
-    if (!bothSameTitle) {
-      return compareTitles(a, b, sortDirection)
-    }
-
-    // ===== Scenario 1: Both items have published dates =====
-    // Sort by second priority: Published date
-    if (bothHaveDates && !bothSameDate) {
-      if (a.date instanceof Date && b.date instanceof Date) {
-        return compareDates(a.date, b.date, sortDirection)
-      }
-    }
-
-    // Sort by third priority: Last modified date
-    if (bothHaveDates && bothSameDate) {
-      return compareLastModified(a, b, sortDirection)
-    }
-
-    // ===== Scenario 2: Both items do not have published dates =====
-    // Sort by second priority: Last modified date
-    if (aNoDate && bNoDate) {
-      return compareLastModified(a, b, sortDirection)
-    }
-
-    // ===== Scenario 3: One item has a published date, the other does not =====
-    // If one has a date and the other does not, place the one with a date first
-    if (aNoDate && !bNoDate) {
-      return 1 // Place items without dates at the end
-    } else if (!aNoDate && bNoDate) {
-      return -1 // Place items without dates at the end
-    }
-
-    // This should never be reached
-    return a.date instanceof Date ? -1 : 1
-  })
-
+}: Omit<SortCollectionItemsProps, "sortBy">) =>
+  items.toSorted((a, b) => compareCollectionItemsByTitle(a, b, sortDirection))
 
 interface ParsedSortOrder {
   sortBy: SortBy

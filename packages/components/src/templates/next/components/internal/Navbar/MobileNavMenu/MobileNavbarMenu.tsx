@@ -9,6 +9,7 @@ import { forwardRef, useRef } from "react"
 import { useScrollLock } from "usehooks-ts"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 import { focusVisibleHighlight } from "~/utils/tailwind"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { Link } from "../../Link"
 import { LinkButton } from "../../LinkButton/LinkButton"
@@ -28,7 +29,7 @@ type MobileNavMenuProps = Omit<
 }
 
 export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
-  (
+  function MobileNavMenu(
     {
       top,
       items,
@@ -41,7 +42,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
       search,
     },
     mobileMenuRef,
-  ) => {
+  ) {
     useScrollLock()
     const buttonRef = useRef<HTMLButtonElement>(null)
     const { buttonProps } = useButton({ onPress: onCloseMenu }, buttonRef)
@@ -58,7 +59,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
       >
         <FocusScope restoreFocus>
           <div className="absolute inset-0 overflow-auto border-t border-t-base-divider-subtle bg-white">
-            {isPinned && !!search && (
+            {isPinned === true && !!search && (
               <div className="border-y border-b-base-divider-subtle bg-base-canvas-alt px-6 py-3">
                 {search.type === "localSearch" && (
                   <LocalSearchInputBox searchUrl={search.searchUrl} />
@@ -68,30 +69,32 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
                 )}
               </div>
             )}
-            {!isPinned && !!callToAction && (
-              <div className="border-y border-b-base-divider-subtle bg-base-canvas-alt px-6 py-3">
-                <LinkButton
-                  href={callToAction.url}
-                  isExternal={isExternalUrl(callToAction.url)}
-                  className="h-fit w-full justify-center"
-                  isWithFocusVisibleHighlight
-                  onClick={onCloseMenu}
-                >
-                  {callToAction.label}
-                </LinkButton>
-              </div>
-            )}
+            {isPinned !== true &&
+              callToAction !== undefined &&
+              callToAction !== null && (
+                <div className="border-y border-b-base-divider-subtle bg-base-canvas-alt px-6 py-3">
+                  <LinkButton
+                    href={callToAction.url}
+                    isExternal={isExternalUrl(callToAction.url)}
+                    className="h-fit w-full justify-center"
+                    isWithFocusVisibleHighlight
+                    onClick={onCloseMenu}
+                  >
+                    {callToAction.label}
+                  </LinkButton>
+                </div>
+              )}
 
             {items.map((item, index) => (
               <MobileNavItemAccordion
                 key={item.url}
                 index={index}
                 isOpen={index === openNavItemIdx}
-                onClick={() =>{ 
+                onClick={() => {
                   setOpenNavItemIdx((currIdx) =>
                     currIdx === index ? -1 : index,
-                  ); }
-                }
+                  )
+                }}
                 onCloseMenu={onCloseMenu}
                 {...item}
               />
@@ -99,7 +102,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
 
             {!!utility && (
               <div className="flex flex-col items-start gap-1 self-stretch bg-base-canvas-alt px-6 py-4">
-                {!!utility.label && (
+                {hasNonEmptyString(utility.label) && (
                   <p className="prose-label-sm-medium text-base-content-strong">
                     {utility.label}
                   </p>

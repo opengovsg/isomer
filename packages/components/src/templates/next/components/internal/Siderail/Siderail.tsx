@@ -46,9 +46,9 @@ const seeAllLinkStyle = tv({
   extend: focusVisibleHighlight,
 })
 
-const generateSiderailItems = (items: Item[]): React.ReactNode[] => 
+const generateSiderailItems = (items: Item[]): React.ReactNode[] =>
   items
-    .filter((item) => !item.isCurrent)
+    .filter((item) => item.isCurrent !== true)
     .slice(0, MAX_SIBLINGS_LIMIT)
     .map(({ url, title }) => (
       <li key={url} className={compoundStyles.sibling()}>
@@ -59,7 +59,6 @@ const generateSiderailItems = (items: Item[]): React.ReactNode[] =>
         </p>
       </li>
     ))
-
 
 export const Siderail = ({
   parentTitle,

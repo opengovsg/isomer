@@ -1,5 +1,6 @@
 import type { IframeProps } from "~/interfaces"
 import { getSanitizedIframeWithTitle } from "~/utils/getSanitizedIframeWithTitle"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { ComponentContent } from "../../internal/customCssClass"
 
@@ -8,7 +9,7 @@ import { ComponentContent } from "../../internal/customCssClass"
 // 75% is a 4:3 aspect ratio (4/3 * 100 = 75)
 // FormSG embeds require a fixed height of 600px
 const getPaddingForEmbed = (url: string | null) => {
-  if (!url) {
+  if (!hasNonEmptyString(url)) {
     return "pt-[100%]"
   }
 

@@ -31,7 +31,7 @@ const InfoBoxSchema = Type.Object({
       SUPPORTED_ICON_NAMES.map((icon) =>
         Type.Literal(icon, {
           title:
-            icon.charAt(0).toUpperCase() + icon.slice(1).replaceAll('-', " "),
+            icon.charAt(0).toUpperCase() + icon.slice(1).replaceAll("-", " "),
         }),
       ),
       {

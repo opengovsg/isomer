@@ -25,7 +25,8 @@ describe("getPillAndPlaintextTags", () => {
 
   it("returns undefined for both when tagCategories is undefined", () => {
     // Act
-    const result = getPillAndPlaintextTags(["topic-opt-1"])
+    // oxlint-disable-next-line unicorn/no-useless-undefined -- explicit undefined required by function signature
+    const result = getPillAndPlaintextTags(["topic-opt-1"], undefined)
 
     // Assert
     expect(result).toEqual({ pillTags: undefined, plaintextTags: undefined })

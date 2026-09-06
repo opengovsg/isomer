@@ -1,5 +1,6 @@
 import type { ButtonProps } from "~/interfaces"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { LinkButton } from "../../internal/LinkButton"
 
@@ -16,7 +17,9 @@ export const Button = ({
   secondaryButtonUrl,
   site,
 }: ButtonProps) => {
-  const hasSecondaryCTA = !!secondaryButtonLabel && !!secondaryButtonUrl
+  const hasSecondaryCTA =
+    hasNonEmptyString(secondaryButtonLabel) &&
+    hasNonEmptyString(secondaryButtonUrl)
 
   return (
     <div

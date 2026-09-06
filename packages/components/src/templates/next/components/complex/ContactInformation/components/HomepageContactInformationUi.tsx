@@ -185,14 +185,14 @@ export const HomepageContactInformationUI = ({
           {showReferenceLink &&
             hasNonEmptyString(referenceLinkHref) &&
             hasNonEmptyString(label) && (
-            <CallToActionButton
-              referenceLinkHref={referenceLinkHref}
-              label={label}
-              urlButtonContainerClassName={compoundStyles.urlButtonContainer({
-                isBottomButton: false,
-              })}
-            />
-          )}
+              <CallToActionButton
+                referenceLinkHref={referenceLinkHref}
+                label={label}
+                urlButtonContainerClassName={compoundStyles.urlButtonContainer({
+                  isBottomButton: false,
+                })}
+              />
+            )}
         </div>
 
         <div className={compoundStyles.contactMethodsContainer()}>
@@ -219,14 +219,14 @@ export const HomepageContactInformationUI = ({
         {showReferenceLink &&
           hasNonEmptyString(referenceLinkHref) &&
           hasNonEmptyString(label) && (
-          <CallToActionButton
-            referenceLinkHref={referenceLinkHref}
-            label={label}
-            urlButtonContainerClassName={compoundStyles.urlButtonContainer({
-              isBottomButton: true,
-            })}
-          />
-        )}
+            <CallToActionButton
+              referenceLinkHref={referenceLinkHref}
+              label={label}
+              urlButtonContainerClassName={compoundStyles.urlButtonContainer({
+                isBottomButton: true,
+              })}
+            />
+          )}
       </div>
     </section>
   )

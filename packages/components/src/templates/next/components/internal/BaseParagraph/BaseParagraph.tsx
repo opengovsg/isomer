@@ -3,16 +3,18 @@ import type { BaseParagraphProps } from "~/interfaces"
 import { ALLOWED_TAG_LIST, Interweave } from "interweave"
 import { twMerge } from "~/lib/twMerge"
 import { isExternalUrl } from "~/utils/isExternalUrl"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { Link } from "../Link"
 
 // This will be tree-shaken out of client bundles
-if (globalThis.window == null) {
+if (globalThis.window === undefined) {
   // NOTE: We need this polyfill as interweave uses a DOM to perform the
   // conversion of HTML to React components
-  void import("interweave-ssr").then(({ polyfill }) => {
+  void (async () => {
+    const { polyfill } = await import("interweave-ssr")
     polyfill()
-  })
+  })()
 }
 
 // Explicitly excluding span tags as they can be abused to adjust the font size,
@@ -24,7 +26,7 @@ const ALLOWED_TAG_LIST_WITHOUT_SPAN = ALLOWED_TAG_LIST.filter(
 const transform = (node: HTMLElement, children: Node[]): React.ReactNode => {
   if (node.tagName.toLocaleLowerCase() === "a") {
     const href = node.getAttribute("href") ?? undefined
-    const isExternalLink = !!href && isExternalUrl(href)
+    const isExternalLink = hasNonEmptyString(href) && isExternalUrl(href)
 
     return (
       <Link
@@ -37,6 +39,8 @@ const transform = (node: HTMLElement, children: Node[]): React.ReactNode => {
       </Link>
     )
   }
+
+  return undefined
 }
 
 export const BaseParagraph = ({

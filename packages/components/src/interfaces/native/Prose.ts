@@ -79,7 +79,6 @@ const generateProseSchema = ({
   )
 }
 
-
 // NOTE: We need this for other parts of our codebase
 // that relies on json forms but is not part of components.
 // because our original prose schema uses `Type.Ref`,

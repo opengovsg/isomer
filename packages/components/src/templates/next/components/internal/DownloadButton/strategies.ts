@@ -70,9 +70,7 @@ const dgsDownloadStrategy: DownloadStrategy = {
 
     const result = await fetchDgsFileDownloadUrl({ resourceId: dgsId })
     const downloadUrl = result?.downloadUrl
-    return downloadUrl !== undefined && downloadUrl !== ""
-      ? downloadUrl
-      : null
+    return downloadUrl !== undefined && downloadUrl !== "" ? downloadUrl : null
   },
 }
 

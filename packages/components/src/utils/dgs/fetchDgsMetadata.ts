@@ -32,9 +32,7 @@ export type FetchDgsMetadataOutput = Pick<
   "name" | "format"
 > & {
   size: FetchDgsMetadataResponse["data"]["datasetSize"]
-  columnMetadata:
-    | [string, string][]
-    | undefined
+  columnMetadata: [string, string][] | undefined
 }
 
 const extractColumnMetadata = (
@@ -43,10 +41,14 @@ const extractColumnMetadata = (
   try {
     const sortedMappings = Object.values(data.data.columnMetadata.metaMapping)
       .filter((mapping) => !isCkanInternalColumn(mapping.name))
-      .toSorted((a, b) => Number(a.index) - Number(b.index))
+      .toSorted(
+        (a: MetaMappingType, b: MetaMappingType) =>
+          Number(a.index) - Number(b.index),
+      )
 
-    const columnMetadata: NonNullable<FetchDgsMetadataOutput["columnMetadata"]> =
-      []
+    const columnMetadata: NonNullable<
+      FetchDgsMetadataOutput["columnMetadata"]
+    > = []
     for (const mapping of sortedMappings) {
       columnMetadata.push([mapping.name, mapping.columnTitle])
     }

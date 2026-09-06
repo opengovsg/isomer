@@ -29,7 +29,8 @@ describe("getCollectionPages", () => {
     ],
     lastUpdated: "2021-01-01",
     // IsomerSiteWideComponentsProps
-    navbar: { items: [] }, // Provide minimal valid value
+    // Provide minimal valid value
+    navbar: { items: [] },
     footerItems: {
       contactUsLink: "/contact-us",
       privacyStatementLink: "/privacy",

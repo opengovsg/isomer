@@ -149,7 +149,8 @@ describe("getTagFilters", () => {
         display: "pills",
         id: "Body parts",
         items: [
-          { count: 1, id: "Arm", label: "Arm" }, // Unlisted; comes first
+          // Unlisted; comes first
+          { count: 1, id: "Arm", label: "Arm" },
           { count: 1, id: "Heart", label: "Heart" },
           { count: 1, id: "Brain", label: "Brain" },
         ],
@@ -319,7 +320,8 @@ describe("getTagFilters", () => {
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         id: "c-1",
         label: "Condition",
-        options: [], // Empty options array
+        // Empty options array
+        options: [],
       },
       {
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
@@ -340,7 +342,8 @@ describe("getTagFilters", () => {
       {
         display: "pills",
         id: "Condition",
-        items: [{ count: 1, id: "Acute", label: "Acute" }], // Unlisted item appears first
+        // Unlisted item appears first
+        items: [{ count: 1, id: "Acute", label: "Acute" }],
         label: "Condition",
       },
       {
@@ -390,8 +393,10 @@ describe("getTagFilters", () => {
         display: "pills",
         id: "Body parts",
         items: [
-          { count: 2, id: "Brain", label: "Brain" }, // Appears in 2 items
-          { count: 2, id: "Heart", label: "Heart" }, // Appears in 2 items
+          // Appears in 2 items
+          { count: 2, id: "Brain", label: "Brain" },
+          // Appears in 2 items
+          { count: 2, id: "Heart", label: "Heart" },
         ],
         label: "Body parts",
       },
@@ -399,8 +404,10 @@ describe("getTagFilters", () => {
         display: "pills",
         id: "Condition",
         items: [
-          { count: 3, id: "Acute", label: "Acute" }, // Appears in 3 items
-          { count: 1, id: "Chronic", label: "Chronic" }, // Appears in 1 item
+          // Appears in 3 items
+          { count: 3, id: "Acute", label: "Acute" },
+          // Appears in 1 item
+          { count: 1, id: "Chronic", label: "Chronic" },
         ],
         label: "Condition",
       },
@@ -433,7 +440,8 @@ describe("getTagFilters", () => {
         imageSrc: undefined,
         itemTitle: "Item 3",
         referenceLinkHref: undefined,
-        tags: [], // Empty tags array
+        // Empty tags array
+        tags: [],
         title: "Item 3",
       }),
       testCollectionItem({
@@ -445,7 +453,8 @@ describe("getTagFilters", () => {
         itemTitle: "Item 4",
         referenceLinkHref: undefined,
         tags: [
-          { category: "Body parts", selected: [] }, // Empty selected array
+          // Empty selected array
+          { category: "Body parts", selected: [] },
         ],
         title: "Item 4",
       }),

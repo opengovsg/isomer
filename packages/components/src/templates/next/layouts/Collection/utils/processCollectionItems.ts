@@ -8,7 +8,7 @@ import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
 export const processCollectionItems = (
   items: AllCardProps[],
-): ProcessedCollectionCardProps[] => 
+): ProcessedCollectionCardProps[] =>
   items.map((item) => {
     const {
       id,
@@ -45,9 +45,9 @@ export const processCollectionItems = (
       title,
     }
     // SAFETY: Exact<> enforces no extra props; cast is required for Record<string, never> intersection
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Exact<> validates processed card shape
     return processedItem as Exact<
       ProcessedCollectionCardProps,
       ProcessedCollectionCardProps
     >
   })
-

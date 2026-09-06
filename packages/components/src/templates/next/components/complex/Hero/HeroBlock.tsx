@@ -2,6 +2,7 @@ import type { HeroBlockProps } from "~/interfaces/complex/Hero"
 import { createElement } from "react"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { ImageClient } from "../../internal/ImageClient"
 import { LinkButton } from "../../internal/LinkButton/LinkButton"
@@ -52,9 +53,11 @@ export const HeroBlock = ({
               { className: "wrap-break-word prose-display-xl text-balance" },
               title,
             )}
-            {subtitle && <p className="prose-title-lg-regular">{subtitle}</p>}
+            {hasNonEmptyString(subtitle) && (
+              <p className="prose-title-lg-regular">{subtitle}</p>
+            )}
           </div>
-          {buttonLabel && buttonUrl && (
+          {hasNonEmptyString(buttonLabel) && hasNonEmptyString(buttonUrl) && (
             <div className="flex flex-col justify-start gap-x-5 gap-y-4 sm:flex-row">
               <LinkButton
                 href={getReferenceLinkHref(
@@ -69,21 +72,22 @@ export const HeroBlock = ({
               >
                 {buttonLabel}
               </LinkButton>
-              {secondaryButtonLabel && secondaryButtonUrl && (
-                <LinkButton
-                  colorScheme={heroButton}
-                  variant="outline"
-                  size="lg"
-                  href={getReferenceLinkHref(
-                    secondaryButtonUrl,
-                    site.siteMapArray,
-                    site.assetsBaseUrl,
-                  )}
-                  isWithFocusVisibleHighlight
-                >
-                  {secondaryButtonLabel}
-                </LinkButton>
-              )}
+              {hasNonEmptyString(secondaryButtonLabel) &&
+                hasNonEmptyString(secondaryButtonUrl) && (
+                  <LinkButton
+                    colorScheme={heroButton}
+                    variant="outline"
+                    size="lg"
+                    href={getReferenceLinkHref(
+                      secondaryButtonUrl,
+                      site.siteMapArray,
+                      site.assetsBaseUrl,
+                    )}
+                    isWithFocusVisibleHighlight
+                  >
+                    {secondaryButtonLabel}
+                  </LinkButton>
+                )}
             </div>
           )}
         </div>
@@ -98,7 +102,8 @@ export const HeroBlock = ({
           width="100%"
           className="absolute inset-0 h-full w-full object-cover object-center"
           assetsBaseUrl={site.assetsBaseUrl}
-          lazyLoading={false} // hero is always above the fold
+          // hero is always above the fold
+          lazyLoading={false}
         />
       </div>
     </section>

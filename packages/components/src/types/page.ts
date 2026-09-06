@@ -14,10 +14,8 @@ import {
   TRIMMED_NON_EMPTY_STRING_REGEX,
 } from "~/utils/validation"
 
-import {
-  TAG_CATEGORY_DISPLAY_OPTIONS,
-  type TagCategoryDisplay,
-} from "./constants"
+import type { TagCategoryDisplay } from "./constants"
+import { TAG_CATEGORY_DISPLAY_OPTIONS } from "./constants"
 
 // NOTE: a tag value is simply a uuid that maps to a given label;
 // essentially, it is just a pointer
@@ -25,26 +23,26 @@ const generateUuidSchema = (options: Omit<StringOptions, "format">) =>
   Type.String({ format: "uuid", ...options })
 
 const TagOptionUuidSchema = generateUuidSchema({
-  title: "Uuid of a single tag option",
   description:
     "This is the uuid of a single tag option and will be used to uniquely identify it. This is the uuid of the options of each category",
+  title: "Uuid of a single tag option",
 })
 const TagCategoryUuidSchema = generateUuidSchema({
-  title: "Uuid of a single tag",
   description:
     "This is the uuid of a single tag category and will be used to uniquely identify it.",
+  title: "Uuid of a single tag",
 })
 
 const TagCategorySchema = Type.Composite([
   Type.Object({
+    id: TagCategoryUuidSchema,
     label: Type.String({
-      title: "Filter name",
-      pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
       errorMessage: {
         pattern: "cannot be empty or have leading/trailing spaces",
       },
+      pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
+      title: "Filter name",
     }),
-    id: TagCategoryUuidSchema,
   }),
   Type.Object({
     // Optional for backward compatibility. Missing/`undefined` must be read as `false`.
@@ -53,9 +51,9 @@ const TagCategorySchema = Type.Composite([
     // the tag-categories JsonForms control when adding an item.
     isRequired: Type.Optional(
       Type.Boolean({
-        title: "This filter is required",
         description:
           "Every item must have at least one option selected from this filter.",
+        title: "This filter is required",
       }),
     ),
   }),
@@ -68,6 +66,7 @@ const TagCategorySchema = Type.Composite([
     // when adding an item.
     display: Type.Optional(
       Type.Unsafe<TagCategoryDisplay>({
+        format: "image-radio/2col",
         oneOf: [
           {
             const: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
@@ -79,27 +78,26 @@ const TagCategorySchema = Type.Composite([
           },
         ],
         title: "Show as",
-        format: "image-radio/2col",
       }),
     ),
   }),
   Type.Object({
     options: Type.Array(
       Type.Object({
+        id: TagOptionUuidSchema,
         label: Type.String({
-          title: "Option name",
-          pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
           errorMessage: {
             pattern: "cannot be empty or have leading/trailing spaces",
           },
+          pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
+          title: "Option name",
         }),
-        id: TagOptionUuidSchema,
       }),
       {
-        title: "Options",
         description:
           "Collection filter will display options in this order. Only options that are in use will appear on the Preview.",
         format: "tag-category-options",
+        title: "Options",
       },
     ),
   }),
@@ -108,10 +106,10 @@ const TagCategorySchema = Type.Composite([
 const TagCategoriesSchema = Type.Object({
   tagCategories: Type.Optional(
     Type.Array(TagCategorySchema, {
-      title: "Filters",
       description:
         "Add filters so visitors can find what they need. Editors can assign these options on items they create.",
       format: "tag-categories",
+      title: "Filters",
     }),
   ),
 })
@@ -127,18 +125,19 @@ const TaggedSchema = Type.Optional(
 
 const categorySchemaObject = Type.Object({
   category: Type.String({
-    title: "Article category",
-    format: "hidden", // We will properly deprecate this key during the post-launch cleanup. Hiding it in Studio UI in the meantime.
     description:
       "The category is used for filtering in the parent collection page",
+    // We will properly deprecate this key during the post-launch cleanup. Hiding it in Studio UI in the meantime.
+    format: "hidden",
+    title: "Article category",
   }),
 })
 
 const dateSchemaObject = Type.Object({
   date: Type.Optional(
     Type.String({
-      title: "Article date",
       format: "date",
+      title: "Article date",
     }),
   ),
 })
@@ -149,21 +148,21 @@ const BaseRefPageSchema = Type.Composite([
   dateSchemaObject,
   imageSchemaObject,
   Type.Object({
-    ref: Type.String({
-      title: "Link",
-      description: "Choose a page or file to link to this Collection item",
-      format: "ref",
-      pattern: REF_HREF_PATTERN,
-    }),
     description: Type.Optional(
       Type.String({
-        title: "Summary",
         description:
           "Add a short description to explain what this collection item is about",
         format: "textarea",
         maxLength: 500,
+        title: "Summary",
       }),
     ),
+    ref: Type.String({
+      description: "Choose a page or file to link to this Collection item",
+      format: "ref",
+      pattern: REF_HREF_PATTERN,
+      title: "Link",
+    }),
   }),
 ])
 
@@ -171,8 +170,8 @@ const BaseRefPageSchema = Type.Composite([
 // because we sit on the `tag` key,
 // we cannot reuse it for our new tags
 const TagSchema = Type.Object({
-  selected: Type.Array(Type.String()),
   category: Type.String(),
+  selected: Type.Array(Type.String()),
 })
 const TagsSchema = Type.Object(
   {
@@ -210,23 +209,89 @@ const COLLECTION_PAGE_SORT_DIRECTION = {
 export const CollectionPagePageSchema = Type.Intersect([
   Type.Object({
     subtitle: Type.String({
-      title: "Summary",
       format: "textarea",
+      title: "Summary",
     }),
   }),
   Type.Object({
-    variant: Type.Optional(
+    defaultSortBy: Type.Optional(
       Type.Union(
         [
-          Type.Literal(COLLECTION_VARIANT_OPTIONS.Collection, {
-            title: "1-column",
-          }),
-          Type.Literal(COLLECTION_VARIANT_OPTIONS.Blog, { title: "2-column" }),
+          Type.Literal(COLLECTION_PAGE_SORT_BY.date, { title: "Date" }),
+          Type.Literal(COLLECTION_PAGE_SORT_BY.title, { title: "Title" }),
         ],
         {
-          title: "Layout",
-          format: "collection-variant",
-          default: COLLECTION_VARIANT_OPTIONS.Collection,
+          default: COLLECTION_PAGE_SORT_BY.date,
+          description: "The default sort order of the collection",
+          format: "hidden",
+          title: "Default sort by",
+          type: "string",
+        },
+      ),
+    ),
+    defaultSortDirection: Type.Optional(
+      Type.Union(
+        [
+          Type.Literal(COLLECTION_PAGE_SORT_DIRECTION.asc, {
+            title: "Ascending",
+          }),
+          Type.Literal(COLLECTION_PAGE_SORT_DIRECTION.desc, {
+            title: "Descending",
+          }),
+        ],
+        {
+          default: COLLECTION_PAGE_SORT_DIRECTION.desc,
+          description: "The default sort direction of the collection",
+          format: "hidden",
+          title: "Default sort direction",
+          type: "string",
+        },
+      ),
+    ),
+    image: Type.Optional(
+      Type.Object(
+        {
+          alt: AltTextSchema,
+          src: generateImageSrcSchema({
+            description:
+              "Upload an image if you want to have a custom thumbnail",
+            title: "Thumbnail",
+          }),
+        },
+        {
+          description:
+            "When this page is linked elsewhere on your site, this thumbnail may appear alongside it.",
+          title: "Set a thumbnail",
+        },
+      ),
+    ),
+    showDate: Type.Optional(
+      Type.Boolean({
+        default: true,
+        description:
+          "If an item doesn't have a date, we'll display a dash (-).",
+        title: "Show date on all items",
+      }),
+    ),
+    showThumbnail: Type.Optional(
+      Type.Object(
+        {
+          fallback: Type.Union(
+            [
+              Type.Literal("logo", { title: "Use site logo" }),
+              Type.Literal("first-image", {
+                title: "Use first image on page, if available",
+              }),
+            ],
+            {
+              default: "logo",
+              format: ARRAY_RADIO_FORMAT,
+              title: "If an item doesn’t have a thumbnail",
+            },
+          ),
+        },
+        {
+          title: "Display thumbnail on all items",
         },
       ),
     ),
@@ -243,93 +308,25 @@ export const CollectionPagePageSchema = Type.Intersect([
           Type.Literal("title-desc", { title: "By title, Z → A" }),
         ],
         {
-          title: "Sort items by",
-          description: "This might take a while to reflect on the preview.",
-          type: "string",
           default: "date-desc",
+          description: "This might take a while to reflect on the preview.",
+          title: "Sort items by",
+          type: "string",
         },
       ),
     ),
-    // Deprecated, will be replaced with sortOrder above
-    defaultSortBy: Type.Optional(
+    variant: Type.Optional(
       Type.Union(
         [
-          Type.Literal(COLLECTION_PAGE_SORT_BY.date, { title: "Date" }),
-          Type.Literal(COLLECTION_PAGE_SORT_BY.title, { title: "Title" }),
+          Type.Literal(COLLECTION_VARIANT_OPTIONS.Collection, {
+            title: "1-column",
+          }),
+          Type.Literal(COLLECTION_VARIANT_OPTIONS.Blog, { title: "2-column" }),
         ],
         {
-          title: "Default sort by",
-          description: "The default sort order of the collection",
-          format: "hidden",
-          type: "string",
-          default: COLLECTION_PAGE_SORT_BY.date,
-        },
-      ),
-    ),
-    // Deprecated, will be replaced with sortOrder above
-    defaultSortDirection: Type.Optional(
-      Type.Union(
-        [
-          Type.Literal(COLLECTION_PAGE_SORT_DIRECTION.asc, {
-            title: "Ascending",
-          }),
-          Type.Literal(COLLECTION_PAGE_SORT_DIRECTION.desc, {
-            title: "Descending",
-          }),
-        ],
-        {
-          title: "Default sort direction",
-          description: "The default sort direction of the collection",
-          format: "hidden",
-          type: "string",
-          default: COLLECTION_PAGE_SORT_DIRECTION.desc,
-        },
-      ),
-    ),
-    showThumbnail: Type.Optional(
-      Type.Object(
-        {
-          fallback: Type.Union(
-            [
-              Type.Literal("logo", { title: "Use site logo" }),
-              Type.Literal("first-image", {
-                title: "Use first image on page, if available",
-              }),
-            ],
-            {
-              title: "If an item doesn’t have a thumbnail",
-              format: ARRAY_RADIO_FORMAT,
-              default: "logo",
-            },
-          ),
-        },
-        {
-          title: "Display thumbnail on all items",
-        },
-      ),
-    ),
-    showDate: Type.Optional(
-      Type.Boolean({
-        title: "Show date on all items",
-        description:
-          "If an item doesn't have a date, we'll display a dash (-).",
-        default: true,
-      }),
-    ),
-    image: Type.Optional(
-      Type.Object(
-        {
-          src: generateImageSrcSchema({
-            title: "Thumbnail",
-            description:
-              "Upload an image if you want to have a custom thumbnail",
-          }),
-          alt: AltTextSchema,
-        },
-        {
-          title: "Set a thumbnail",
-          description:
-            "When this page is linked elsewhere on your site, this thumbnail may appear alongside it.",
+          default: COLLECTION_VARIANT_OPTIONS.Collection,
+          format: "collection-variant",
+          title: "Layout",
         },
       ),
     ),

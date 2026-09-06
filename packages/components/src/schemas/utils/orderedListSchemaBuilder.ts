@@ -6,25 +6,25 @@ export const orderedListSchemaBuilder = <T extends TSchema>(
 ) =>
   Type.Object(
     {
-      type: Type.Literal("orderedList", { default: "orderedList" }),
       attrs: Type.Optional(
         Type.Object({
           start: Type.Optional(
             Type.Number({
-              title: "Starting number",
               description: "The number to start the ordered list at",
+              title: "Starting number",
             }),
           ),
         }),
       ),
       content: Type.Array(listItemSchema, {
-        title: "List items",
         minItems: 1,
+        title: "List items",
       }),
+      type: Type.Literal("orderedList", { default: "orderedList" }),
     },
     {
       $id: "components-native-orderedList",
-      title: "Ordered list component",
       description: "A list of items that have numbers as bullets",
+      title: "Ordered list component",
     },
   )

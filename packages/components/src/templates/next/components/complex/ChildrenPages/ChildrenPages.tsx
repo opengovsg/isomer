@@ -8,6 +8,7 @@ import { createChildrenPagesComparator } from "~/utils/createChildrenPagesCompar
 import { getNodeFromSiteMap } from "~/utils/getNodeFromSiteMap"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { groupFocusVisibleHighlight } from "~/utils/tailwind"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { ComponentContent } from "../../internal/customCssClass"
 import { ImageClient } from "../../internal/ImageClient"
@@ -51,54 +52,52 @@ const BoxLayout = ({
   maxColumns = "2",
   imageFit = "cover",
   headingLevel,
-}: ChildpageLayoutProps) => 
-  (
-    <div
-      className={compoundStyles.grid({
-        class: "[&:not(:first-child)]:mt-7",
-        maxColumns,
-        variant: "default",
-      })}
-    >
-      {childpages.map(({ id, title, description, url, image }) => {
-        if (showThumbnail) {
-          const hasImage = !!image?.src
-          const imageUrl = hasImage ? image.src : fallback.src
-          const imageAlt = hasImage ? (image.alt ?? "") : fallback.alt
-
-          return (
-            <InfoCardWithImage
-              key={id}
-              title={title}
-              description={showSummary ? description : undefined}
-              url={url}
-              imageUrl={imageUrl}
-              imageAlt={imageAlt}
-              imageFit={imageFit}
-              maxColumns={maxColumns}
-              layout="index"
-              site={site}
-              isFallback={!hasImage}
-              shouldLazyLoad={shouldLazyLoad}
-              headingLevel={headingLevel}
-            />
-          )
-        }
+}: ChildpageLayoutProps) => (
+  <div
+    className={compoundStyles.grid({
+      class: "[&:not(:first-child)]:mt-7",
+      maxColumns,
+      variant: "default",
+    })}
+  >
+    {childpages.map(({ id, title, description, url, image }) => {
+      if (showThumbnail) {
+        const hasImage = hasNonEmptyString(image?.src)
+        const imageUrl = hasImage ? image.src : fallback.src
+        const imageAlt = hasImage ? (image.alt ?? "") : fallback.alt
 
         return (
-          <InfoCardNoImage
+          <InfoCardWithImage
             key={id}
             title={title}
             description={showSummary ? description : undefined}
             url={url}
+            imageUrl={imageUrl}
+            imageAlt={imageAlt}
+            imageFit={imageFit}
+            maxColumns={maxColumns}
+            layout="index"
             site={site}
+            isFallback={!hasImage}
+            shouldLazyLoad={shouldLazyLoad}
             headingLevel={headingLevel}
           />
         )
-      })}
-    </div>
-  )
+      }
 
+      return (
+        <InfoCardNoImage
+          key={id}
+          title={title}
+          description={showSummary ? description : undefined}
+          url={url}
+          site={site}
+          headingLevel={headingLevel}
+        />
+      )
+    })}
+  </div>
+)
 
 const createRowStyles = tv({
   defaultVariants: {
@@ -162,7 +161,7 @@ const RowLayout = ({
   return (
     <div className={styles.container()}>
       {childpages.map(({ id, title, description, url, image }) => {
-        const renderedImage = image?.src ? image : fallback
+        const renderedImage = hasNonEmptyString(image?.src) ? image : fallback
 
         return (
           <Link
@@ -173,7 +172,7 @@ const RowLayout = ({
             )}
             key={id}
             className={styles.contentContainer({
-              hasThumbnail: !!showThumbnail,
+              hasThumbnail: showThumbnail ?? false,
             })}
           >
             {showThumbnail && (
@@ -185,7 +184,7 @@ const RowLayout = ({
                   alt={renderedImage.alt}
                   width="100%"
                   className={styles.image({
-                    hasFallbackImage: !image?.src,
+                    hasFallbackImage: !hasNonEmptyString(image?.src),
                     imageFit,
                   })}
                 />
@@ -193,12 +192,12 @@ const RowLayout = ({
             )}
             <div
               className={styles.textContainer({
-                hasThumbnail: !!showThumbnail,
+                hasThumbnail: showThumbnail ?? false,
               })}
             >
               <p className={styles.title()}>
                 <span>{title}</span>
-                {url && (
+                {hasNonEmptyString(url) && (
                   <BiRightArrowAlt
                     aria-hidden
                     className={compoundStyles.cardTitleArrow({
@@ -227,7 +226,7 @@ export const ChildrenPages = ({
   permalink,
   site,
   variant,
-  showSummary = true,
+  showSummary,
   showThumbnail,
   shouldLazyLoad,
   maxColumns = "2",
@@ -249,7 +248,7 @@ export const ChildrenPages = ({
       title: child.title,
       url: child.permalink,
     }))
-    .sort(comparator)
+    .toSorted(comparator)
 
   if (variant === "boxes") {
     return (

@@ -9,7 +9,6 @@ import { DgsContactInformation } from "./DgsContactInformation"
 
 const meta: Meta<typeof DgsContactInformation> = {
   argTypes: {},
-  args: generateSiteConfig(),
   component: DgsContactInformation,
   parameters: {
     chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),

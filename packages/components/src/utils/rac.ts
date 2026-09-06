@@ -40,10 +40,11 @@ const isCallbackRef = <T>(
   ref: React.ForwardedRef<T>,
 ): ref is (node: T | null) => void => typeof ref === "function"
 
-export const mergeRefs = <T>(
-  internalRef: React.MutableRefObject<T | null>,
-  forwardedRef: React.ForwardedRef<T>,
-) =>
+export const mergeRefs =
+  <T>(
+    internalRef: React.MutableRefObject<T | null>,
+    forwardedRef: React.ForwardedRef<T>,
+  ) =>
   (node: T | null) => {
     internalRef.current = node
     if (isCallbackRef(forwardedRef)) {

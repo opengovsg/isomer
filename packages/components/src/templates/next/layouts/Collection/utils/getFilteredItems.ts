@@ -32,13 +32,15 @@ export const getFilteredItems = (
     )
     if (
       yearFilter &&
-      !yearFilter.items.some((filterItem) =>
-        item.date
-          ? // if date is defined, check if year matches
-            item.date.getFullYear().toString() === filterItem.id
-          : // if undefined date, check if "not specified" filter is applied
-            filterItem.id === NO_SPECIFIED_YEAR_FILTER_ID,
-      )
+      !yearFilter.items.some((filterItem) => {
+        if (item.date) {
+          // if date is defined, check if year matches
+          return item.date.getFullYear().toString() === filterItem.id
+        }
+
+        // if undefined date, check if "not specified" filter is applied
+        return filterItem.id === NO_SPECIFIED_YEAR_FILTER_ID
+      })
     ) {
       return false
     }
@@ -50,18 +52,15 @@ export const getFilteredItems = (
     // Step 3: Compute set intersection between remaining filters and the set of items.
     // Take note that we use OR between items within the same filter and AND between filters.
     return remainingFilters
-      .map(({ items: activeFilters, id }) => 
-        item.tags?.some(({ category, selected: itemLabels }) => 
-          (
+      .map(({ items: activeFilters, id }) =>
+        item.tags?.some(
+          ({ category, selected: itemLabels }) =>
             category === id &&
-            activeFilters
-              .map(({ id }) => id)
-              .reduce((prev, cur) => 
-                prev || itemLabels.includes(cur)
-              , false) //includes(itemLabels)
-          )
-        )
+            activeFilters.some(({ id: filterItemId }) =>
+              itemLabels.includes(filterItemId),
+            ),
+        ),
       )
-      .every((x) => x)
+      .every((x) => x === true)
   })
 }

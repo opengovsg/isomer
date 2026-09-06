@@ -5,6 +5,4 @@ import { ContactInformationUI } from "../components"
 export const NativeContactInformation = ({
   dataSource: _dataSource,
   ...rest
-}: NativeContactInformationProps) => 
-  <ContactInformationUI {...rest} />
-
+}: NativeContactInformationProps) => <ContactInformationUI {...rest} />

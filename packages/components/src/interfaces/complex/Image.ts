@@ -15,7 +15,7 @@ export const generateImageSrcSchema = ({
   description?: string
   allowedMimeTypeMappings?: Record<string, string>
   maxSizeInBytes?: number
-}) => 
+}) =>
   Type.String({
     allowedMimeTypeMappings,
     description,
@@ -23,7 +23,6 @@ export const generateImageSrcSchema = ({
     maxSizeInBytes,
     title,
   })
-
 
 export const ImageSrcSchema = generateImageSrcSchema({})
 

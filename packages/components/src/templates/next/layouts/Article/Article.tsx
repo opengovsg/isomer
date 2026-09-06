@@ -51,12 +51,11 @@ export const ArticleLayout = ({
             data-isomer-content-blocks
           >
             {renderPageContent({
-              site,
-              layout,
               content,
-              permalink: page.permalink,
-              // ArticlePageHeader above already owns the page's h1.
               headingLevel: 2,
+              layout,
+              permalink: page.permalink,
+              site,
             })}
           </div>
           <BackToTopLink />

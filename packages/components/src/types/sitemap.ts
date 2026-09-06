@@ -11,7 +11,7 @@ interface IsomerBaseSitemap {
   lastModified: string
   permalink: string
   category?: string
-  // TODO: we should aim to separate BaseSiteMap into different types
+  // NOTE: we should aim to separate BaseSiteMap into different types
   // so that the properties that are exclusive to, for example, `CollectionCard`
   // will only be available there
   image?: CollectionCardProps["image"]
@@ -30,7 +30,7 @@ interface IsomerPageSitemap extends IsomerBaseSitemap {
 
 export interface IsomerCollectionPageSitemap extends IsomerBaseSitemap {
   layout: Extract<IsomerPageLayoutType, "collection">
-  // TODO: Reconsider how this is done as currently every item in the sitemap has the same props
+  // NOTE: Reconsider how this is done as currently every item in the sitemap has the same props
   collectionPagePageProps?: {
     tagCategories?: CollectionPagePageProps["tagCategories"]
     sortOrder?: CollectionPagePageProps["sortOrder"]

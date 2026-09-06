@@ -55,11 +55,10 @@ export const IndexPageLayout = ({
           <div data-isomer-content-blocks>
             {renderPageContent({
               content: transformedContent,
-              layout,
-              site,
-              permalink: page.permalink,
-              // ContentPageHeader above already owns the page's h1.
               headingLevel: 2,
+              layout,
+              permalink: page.permalink,
+              site,
             })}
           </div>
         </div>

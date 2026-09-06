@@ -1,3 +1,5 @@
+import { hasNonEmptyString } from "~/utils/truthiness"
+
 interface IndexUiState {
   query?: string
   refinementList?: Record<string, string[]>
@@ -20,13 +22,20 @@ const toArray = (value: string | string[] | undefined) =>
   value === undefined || Array.isArray(value) ? value : [value]
 
 const splitRange = (range: string | undefined) => {
-  if (!range) {return [undefined, undefined] as const}
+  if (!hasNonEmptyString(range)) {
+    return [undefined, undefined] as const
+  }
   const [min, max] = range.split(":")
-  return [min || undefined, max || undefined] as const
+  return [
+    hasNonEmptyString(min) ? min : undefined,
+    hasNonEmptyString(max) ? max : undefined,
+  ] as const
 }
 
 const joinRange = (min: string | undefined, max: string | undefined) =>
-  min || max ? `${min ?? ""}:${max ?? ""}` : ""
+  hasNonEmptyString(min) || hasNonEmptyString(max)
+    ? `${min ?? ""}:${max ?? ""}`
+    : ""
 
 // Round-trips the egazette search UI state through URL params so searches are shareable —
 // matches the param shape (q, category, subCategory, minYear/maxYear, minMonth/maxMonth)
@@ -36,15 +45,27 @@ export const createEgazetteRouting = (indexName: string) => ({
     routeToState(routeState: EgazetteRouteState) {
       const refinementList: Record<string, string[]> = {}
       const category = toArray(routeState.category)
-      if (category) {refinementList.category = category}
+      if (category !== undefined && category !== null) {
+        refinementList.category = category
+      }
       const subCategory = toArray(routeState.subCategory)
-      if (subCategory) {refinementList.subCategory = subCategory}
+      if (subCategory !== undefined && subCategory !== null) {
+        refinementList.subCategory = subCategory
+      }
 
       const range: Record<string, string> = {}
       const yearRange = joinRange(routeState.minYear, routeState.maxYear)
-      if (yearRange) {range.publishYear = yearRange}
+      if (yearRange !== undefined && yearRange !== null && yearRange !== "") {
+        range.publishYear = yearRange
+      }
       const monthRange = joinRange(routeState.minMonth, routeState.maxMonth)
-      if (monthRange) {range.publishMonth = monthRange}
+      if (
+        monthRange !== undefined &&
+        monthRange !== null &&
+        monthRange !== ""
+      ) {
+        range.publishMonth = monthRange
+      }
 
       const indexUiState: IndexUiState = {
         query: routeState.q,

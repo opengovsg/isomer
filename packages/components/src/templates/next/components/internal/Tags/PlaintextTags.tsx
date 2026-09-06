@@ -9,6 +9,15 @@ interface PlaintextTagsProps {
 
 const DEFAULT_TAGS: TagGroup[] = []
 
+// NOTE: CSS-only middot — a styled div instead of an SVG, so it isn't a
+// separate asset re-fetched per separator when a page has multiple groups.
+const TagSeparator = () => (
+  <div
+    aria-hidden
+    className="h-0.5 w-0.5 shrink-0 rounded-full bg-base-content"
+  />
+)
+
 export const PlaintextTags = ({
   tags = DEFAULT_TAGS,
   className,
@@ -28,14 +37,3 @@ export const PlaintextTags = ({
     </div>
   )
 }
-
-// NOTE: CSS-only middot — a styled div instead of an SVG, so it isn't a
-// separate asset re-fetched per separator when a page has multiple groups.
-const TagSeparator = () => 
-  (
-    <div
-      aria-hidden
-      className="h-0.5 w-0.5 shrink-0 rounded-full bg-base-content"
-    />
-  )
-

@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useRange } from "react-instantsearch"
 import { tv } from "~/lib/tv"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 interface RangeInputProps {
   attribute: string
@@ -28,13 +29,17 @@ const validate = (
   maxNum: number | undefined,
   bound: { min?: number; max?: number } | undefined,
 ): string | undefined => {
-  const checkBound = (value: number | undefined, label: string) => {
-    if (value === undefined) {return}
-    if (bound?.min !== undefined && value < bound.min)
-      {return `${label} must be ${bound.min} or later`}
-    if (bound?.max !== undefined && value > bound.max)
-      {return `${label} must be ${bound.max} or earlier`}
-    return
+  const checkBound = (value: number | undefined, label: string): string | undefined => {
+    if (value === undefined) {
+      return undefined
+    }
+    if (bound?.min !== undefined && value < bound.min) {
+      return `${label} must be ${bound.min} or later`
+    }
+    if (bound?.max !== undefined && value > bound.max) {
+      return `${label} must be ${bound.max} or earlier`
+    }
+    return undefined
   }
 
   return (
@@ -103,7 +108,7 @@ export const RangeInput = ({
       return
     }
     const validationError = validate(minNum, maxNum, effectiveBound)
-    if (validationError) {
+    if (hasNonEmptyString(validationError)) {
       setError(validationError)
       return
     }
@@ -127,7 +132,9 @@ export const RangeInput = ({
               range.min === undefined ? undefined : String(range.min)
             }
             value={min}
-            onChange={(event) =>{  setMin(event.target.value); }}
+            onChange={(event) => {
+              setMin(event.target.value)
+            }}
             disabled={!canRefine}
             aria-invalid={error !== undefined}
             className={inputClassName}
@@ -144,7 +151,9 @@ export const RangeInput = ({
               range.max === undefined ? undefined : String(range.max)
             }
             value={max}
-            onChange={(event) =>{  setMax(event.target.value); }}
+            onChange={(event) => {
+              setMax(event.target.value)
+            }}
             disabled={!canRefine}
             aria-invalid={error !== undefined}
             className={inputClassName}
@@ -158,7 +167,7 @@ export const RangeInput = ({
           Go
         </button>
       </div>
-      {error ? (
+      {hasNonEmptyString(error) ? (
         <span
           role="alert"
           className="prose-body-sm text-utility-feedback-alert"

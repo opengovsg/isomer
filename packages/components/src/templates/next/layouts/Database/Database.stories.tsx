@@ -902,7 +902,7 @@ export const NoSearchResults: Story = {
     const screen = within(canvasElement)
 
     const searchElem = screen.getByRole("searchbox", {
-      name: /Search table/i,
+      name: /Search table/iu,
     })
 
     await expect(searchElem).toHaveAttribute(
