@@ -110,6 +110,13 @@ export default defineConfig({
       plugins: ["node"],
     },
     {
+      files: ["tests/mocks/db.ts"],
+      rules: {
+        // Vitest setup must mock the DB singleton before app modules load.
+        "anti-slop/no-module-mocking": "off",
+      },
+    },
+    {
       files: [
         "playwright.config.ts",
         "vitest.config.ts",

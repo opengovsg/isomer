@@ -94,9 +94,13 @@ const prisma: PrismaClient = new PrismaClient({
   adapter: new PrismaPg({ connectionString }),
 })
 
-import { setTestDatabase } from "./database-shim"
+vi.mock("../../src/server/modules/database/database", () => ({
+  db,
+}))
 
-setTestDatabase(db, prisma)
+vi.mock("../../src/server/prisma", () => ({
+  prisma,
+}))
 
 const pgClient = await setupPgClient()
 await pgClient.connect()
