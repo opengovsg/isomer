@@ -1,14 +1,23 @@
 import { defineConfig } from "@isomer/oxlint-config"
 import base from "@isomer/oxlint-config/base"
-import { react } from "@isomer/oxlint-config/presets"
+import {
+  jsPluginSettings,
+  react,
+  reactDoctor,
+  reactDoctorJsPluginEntries,
+} from "@isomer/oxlint-config/presets"
 
 export default defineConfig({
   extends: [
     base,
     react,
+    reactDoctor,
     // To enable this in following stacked PRs
     // next, vitest
   ],
+  // Oxlint does not merge `settings` or `jsPlugins` from extended configs.
+  settings: jsPluginSettings,
+  jsPlugins: reactDoctorJsPluginEntries,
   ignorePatterns: [".next/**", "!.storybook/**", "out/**"],
   overrides: [
     {

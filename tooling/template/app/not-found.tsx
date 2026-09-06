@@ -80,7 +80,7 @@ const NotFound = () => {
       page={{
         title: PAGE_TITLE,
         permalink: "/404.html",
-        lastModified: new Date().toISOString(),
+        lastModified: timeNow.toISOString(),
       }}
       content={[]}
     />
