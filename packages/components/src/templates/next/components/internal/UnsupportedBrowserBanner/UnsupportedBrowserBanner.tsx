@@ -3,7 +3,6 @@
 import type { SupportedBrowserBannerProps } from "~/utils/isSupportedBrowser"
 import { useSyncExternalStore } from "react"
 import { BiInfoCircle } from "react-icons/bi"
-import { emptyExternalStoreSubscribe } from "~/utils/emptyExternalStoreSubscribe"
 import { isSupportedBrowser } from "~/utils/isSupportedBrowser"
 
 // TODO: move this to a official isomer.gov.sg once we migrate that to Isomer Next
@@ -14,7 +13,7 @@ export const UnsupportedBrowserBanner = ({
   userAgent: initialUserAgent,
 }: SupportedBrowserBannerProps) => {
   const navigatorUserAgent = useSyncExternalStore(
-    emptyExternalStoreSubscribe,
+    () => () => {},
     () =>
       initialUserAgent ||
       (typeof navigator !== "undefined" ? navigator.userAgent : ""),
