@@ -30,7 +30,7 @@ const createBreadcrumbLinkStyles = tv({
   defaultVariants: { colorScheme: "default" },
 })
 
-type BaseBreadcrumbsProps = ComponentPropsWithoutRef<"div"> & {
+type BaseBreadcrumbsProps = ComponentPropsWithoutRef<"nav"> & {
   children: ReactNode
 }
 
@@ -41,16 +41,15 @@ function BaseBreadcrumbs({
   ...props
 }: BaseBreadcrumbsProps) {
   return (
-    <div
+    <nav
       {...props}
       aria-label={ariaLabel}
-      role="navigation"
       className={twMerge("flex flex-wrap gap-1", className)}
     >
       <ol className="m-0 flex list-none flex-wrap items-center gap-1 p-0">
         {children}
       </ol>
-    </div>
+    </nav>
   )
 }
 

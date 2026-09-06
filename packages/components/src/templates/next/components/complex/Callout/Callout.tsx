@@ -76,11 +76,11 @@ export const Callout = ({
   const styles = calloutStyles({ variant, hasIcon: !!Icon })
 
   return (
-    <div className={styles.container()} role="group" aria-label={label}>
+    <section className={styles.container()} aria-label={label}>
       {Icon && <Icon aria-hidden className={styles.icon()} />}
-      <div className={styles.content()} tabIndex={0}>
+      <div className={styles.content()}>
         <Prose {...content} site={site} headingLevel={headingLevel} />
       </div>
-    </div>
+    </section>
   )
 }

@@ -7,6 +7,7 @@ export const GoogleTagManagerBody = ({
   return (
     <noscript>
       <iframe
+        title="Google Tag Manager"
         src={`https://www.googletagmanager.com/ns.html?id=${encodeURIComponent(siteGtmId)}`}
         height="0"
         width="0"

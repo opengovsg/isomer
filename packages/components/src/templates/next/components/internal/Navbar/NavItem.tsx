@@ -124,9 +124,11 @@ const Megamenu = ({
 
   return (
     <div className="absolute left-0 right-0 top-full z-50">
-      <div
-        className="absolute bottom-0 left-0 right-0 top-full z-[1] h-screen bg-canvas-overlay/40"
+      <button
+        type="button"
+        className="absolute bottom-0 left-0 right-0 top-full z-[1] h-screen cursor-default border-0 bg-canvas-overlay/40 p-0"
         onClick={onCloseMegamenu}
+        aria-label="Close menu"
       />
       <FocusScope contain restoreFocus>
         <div className={megamenu()}>

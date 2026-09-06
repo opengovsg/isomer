@@ -40,7 +40,7 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
         content={caption}
         className="prose-label-md-regular text-base-content-subtle [&:not(:last-child)]:mb-0"
       />
-      <div className="overflow-x-auto" tabIndex={0}>
+      <div className="overflow-x-auto">
         <table
           className={tableStyles({ isFixedLayout: layout.kind === "fixed" })}
           aria-describedby={tableDescriptionId}

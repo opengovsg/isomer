@@ -5,9 +5,8 @@ import { Link } from "../../internal/Link"
 
 export const AntiScamDisclaimerBanner = () => {
   return (
-    <div
+    <section
       className={`${ComponentContent} w-full rounded-lg bg-base-canvas px-5 py-12 md:px-6 lg:w-fit lg:max-w-full lg:py-16`}
-      role="region"
       aria-label="Anti-scam notice"
     >
       <div className="flex flex-col gap-5 lg:flex-row lg:items-start">
@@ -37,6 +36,6 @@ export const AntiScamDisclaimerBanner = () => {
           </p>
         </div>
       </div>
-    </div>
+    </section>
   )
 }

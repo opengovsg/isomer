@@ -101,7 +101,7 @@ export const SearchableTableClientUI = ({
 
     if (paginatedItems.length > 0) {
       return (
-        <div className={compoundStyles.tableContainer()} tabIndex={0}>
+        <div className={compoundStyles.tableContainer()}>
           <table
             className={compoundStyles.table()}
             aria-describedby={!!title ? titleId : undefined}

@@ -37,7 +37,6 @@ export const SearchBox = () => {
       <span className="sr-only">Search</span>
       <input
         type="search"
-        autoFocus
         placeholder="Start typing to search"
         value={value}
         onChange={(event) => {
