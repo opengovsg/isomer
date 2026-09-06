@@ -15,34 +15,30 @@ type ExternalContactPayload =
 
 const hostileContactValues = (
   values: ExternalContactPayload,
-): ContactInformationUIProps["methods"][number]["values"] => 
+): ContactInformationUIProps["methods"][number]["values"] =>
   // SAFETY: Test deliberately passes malformed external values through the filter boundary.
-  values as ContactInformationUIProps["methods"][number]["values"]
+  values as unknown as ContactInformationUIProps["methods"][number]["values"]
 
-
-const hostileContactValue = (value: ExternalContactPayload): string => 
+const hostileContactValue = (value: ExternalContactPayload): string =>
   // SAFETY: Test deliberately passes malformed external values through the filter boundary.
-  value as string
-
+  value as unknown as string
 
 const hostileContactMethod = (
   method: ExternalContactPayload,
-): ContactInformationUIProps["methods"][number]["method"] => 
+): ContactInformationUIProps["methods"][number]["method"] =>
   // SAFETY: Test deliberately passes malformed external values through the filter boundary.
-  method as ContactInformationUIProps["methods"][number]["method"]
-
+  method as unknown as ContactInformationUIProps["methods"][number]["method"]
 
 // Helper function to create mock contact methods
 const createMockMethods = (
   methodTypes: (typeof CONTACT_INFORMATION_SUPPORT_METHODS)[number][],
-): ContactInformationUIProps["methods"] => 
+): ContactInformationUIProps["methods"] =>
   methodTypes.map((method, index) => ({
     caption: `${method} caption ${index + 1}`,
     label: `${method} label ${index + 1}`,
     method,
     values: [`${method} value ${index + 1}`],
   }))
-
 
 describe("filterContactMethods", () => {
   describe("when whitelistedMethods is undefined", () => {
@@ -129,8 +125,10 @@ describe("filterContactMethods", () => {
         [
           "telephone",
           "email",
-          "telephone", // Duplicate
-          "email", // Duplicate
+          "telephone",
+          // Duplicate
+          "email",
+          // Duplicate
         ]
 
       // Act
@@ -208,7 +206,8 @@ describe("filterContactMethods", () => {
         },
         {
           label: "Invalid Method",
-          method: undefined, // Falsy method
+          method: undefined,
+          // Falsy method
           values: ["invalid"],
         },
         {
@@ -218,8 +217,8 @@ describe("filterContactMethods", () => {
         },
         {
           // disable eslint because we want to test falsy method
-          method: hostileContactMethod(null),
           label: "Another Invalid",
+          method: hostileContactMethod(null),
           values: ["also-invalid"],
         },
       ]

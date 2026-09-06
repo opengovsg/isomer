@@ -10,43 +10,39 @@ import { Masthead } from "../Masthead"
 import { Notification } from "../Notification"
 import { Navbar } from "./Navbar"
 
-const Renderer = (props: NavbarProps) => 
-  (
-    <div className="flex min-h-dvh flex-col">
-      <header>
-        <Masthead />
-        <Navbar {...props} />
-      </header>
-      <div className="h-[calc(100vh+300px)] bg-red-500">
-        This mimics content that may overflow in a real preview
-        <div>
-          <Button>Focusable button</Button>
-        </div>
+const Renderer = (props: NavbarProps) => (
+  <div className="flex min-h-dvh flex-col">
+    <header>
+      <Masthead />
+      <Navbar {...props} />
+    </header>
+    <div className="h-[calc(100vh+300px)] bg-red-500">
+      This mimics content that may overflow in a real preview
+      <div>
+        <Button>Focusable button</Button>
       </div>
     </div>
-  )
+  </div>
+)
 
-
-const RendererWithNotification = (props: NavbarProps) => 
-  (
-    <div className="flex min-h-dvh flex-col">
-      <header>
-        <Masthead />
-        <Notification
-          title="This is an important site notification"
-          site={generateSiteConfig()}
-        />
-        <Navbar {...props} />
-      </header>
-      <div className="h-[calc(100vh+300px)] bg-red-500">
-        This mimics content that may overflow in a real preview
-        <div>
-          <Button>Focusable button</Button>
-        </div>
+const RendererWithNotification = (props: NavbarProps) => (
+  <div className="flex min-h-dvh flex-col">
+    <header>
+      <Masthead />
+      <Notification
+        title="This is an important site notification"
+        site={generateSiteConfig()}
+      />
+      <Navbar {...props} />
+    </header>
+    <div className="h-[calc(100vh+300px)] bg-red-500">
+      This mimics content that may overflow in a real preview
+      <div>
+        <Button>Focusable button</Button>
       </div>
     </div>
-  )
-
+  </div>
+)
 
 const meta: Meta<NavbarProps> = {
   component: Renderer,
@@ -66,114 +62,110 @@ type Story = StoryObj<typeof Navbar>
 
 const generateNavbarArgs = (
   overrides?: Partial<NavbarProps>,
-): Partial<NavbarProps> => (
-  {
-    items: [
-      {
-        description: "This is a description of the item.",
-        items: [
-          {
-            description:
-              "Join us on our journey to improve community engagement in Singapore",
-            name: "Join us",
-            url: "/item-one/pa-network-one",
-          },
-          {
-            description: "OGP Website",
-            name: "External Link",
-            url: "https://open.gov.sg",
-          },
-          {
-            description: "This is our leadership and senior management team",
-            name: "Our team",
-            url: "/item-one/pa-network-two",
-          },
-          {
-            name: "PA's network three",
-            url: "/item-one/pa-network-three",
-          },
-          {
-            description:
-              "This one has a pretty long one. If the description gets very very long, it might be worth truncating the description at some point.",
-            name: "PA's network four",
-            url: "/item-one/pa-network-four",
-          },
-          {
-            description:
-              "This one has a pretty long one. If the description gets very very long, it might be worth truncating the description at some point.",
-            name: "PA's network five",
-            url: "/item-one/pa-network-five",
-          },
-          {
-            name: "PA's network six",
-            url: "/item-one/pa-network-six",
-          },
-        ],
-        name: "Max 70 chars",
-        url: "",
-      },
-      {
-        description: "This navbar item has a reference link",
-        items: [
-          {
-            description:
-              "Click here and brace yourself for mild disappointment.",
-            name: "A sub item",
-            url: "/item-two/sub-item",
-          },
-          {
-            name: "Another sub item",
-            url: "/item-two/another-sub-item",
-          },
-        ],
-        name: "Longer item with 30 characters",
-        url: "/item-two",
-      },
-      {
-        items: [
-          {
-            name: "A sub item",
-            url: "/item-three/sub-item",
-          },
-          {
-            description:
-              "Click here and brace yourself for mild disappointment.",
-            name: "Another sub item",
-            url: "/item-three/another-sub-item",
-          },
-        ],
-        name: "Please",
-        url: "/item-three",
-      },
-      {
-        items: [
-          {
-            name: "A sub item",
-            url: "/item-four/sub-item",
-          },
-          {
-            name: "Another sub item",
-            url: "/item-four/another-sub-item",
-          },
-        ],
-        name: "Test item",
-        url: "/item-four",
-      },
-      {
-        name: "eServices",
-        url: "/single-item",
-      },
-    ],
-    logoAlt: "Isomer logo",
-    logoUrl: "/isomer-logo.svg",
-    search: {
-      searchUrl: "/search",
-      type: "localSearch",
+): Partial<NavbarProps> => ({
+  items: [
+    {
+      description: "This is a description of the item.",
+      items: [
+        {
+          description:
+            "Join us on our journey to improve community engagement in Singapore",
+          name: "Join us",
+          url: "/item-one/pa-network-one",
+        },
+        {
+          description: "OGP Website",
+          name: "External Link",
+          url: "https://open.gov.sg",
+        },
+        {
+          description: "This is our leadership and senior management team",
+          name: "Our team",
+          url: "/item-one/pa-network-two",
+        },
+        {
+          name: "PA's network three",
+          url: "/item-one/pa-network-three",
+        },
+        {
+          description:
+            "This one has a pretty long one. If the description gets very very long, it might be worth truncating the description at some point.",
+          name: "PA's network four",
+          url: "/item-one/pa-network-four",
+        },
+        {
+          description:
+            "This one has a pretty long one. If the description gets very very long, it might be worth truncating the description at some point.",
+          name: "PA's network five",
+          url: "/item-one/pa-network-five",
+        },
+        {
+          name: "PA's network six",
+          url: "/item-one/pa-network-six",
+        },
+      ],
+      name: "Max 70 chars",
+      url: "",
     },
-    site: generateSiteConfig(),
-    ...overrides,
-  }
-)
+    {
+      description: "This navbar item has a reference link",
+      items: [
+        {
+          description: "Click here and brace yourself for mild disappointment.",
+          name: "A sub item",
+          url: "/item-two/sub-item",
+        },
+        {
+          name: "Another sub item",
+          url: "/item-two/another-sub-item",
+        },
+      ],
+      name: "Longer item with 30 characters",
+      url: "/item-two",
+    },
+    {
+      items: [
+        {
+          name: "A sub item",
+          url: "/item-three/sub-item",
+        },
+        {
+          description: "Click here and brace yourself for mild disappointment.",
+          name: "Another sub item",
+          url: "/item-three/another-sub-item",
+        },
+      ],
+      name: "Please",
+      url: "/item-three",
+    },
+    {
+      items: [
+        {
+          name: "A sub item",
+          url: "/item-four/sub-item",
+        },
+        {
+          name: "Another sub item",
+          url: "/item-four/another-sub-item",
+        },
+      ],
+      name: "Test item",
+      url: "/item-four",
+    },
+    {
+      name: "eServices",
+      url: "/single-item",
+    },
+  ],
+  logoAlt: "Isomer logo",
+  logoUrl: "/isomer-logo.svg",
+  search: {
+    searchUrl: "/search",
+    type: "localSearch",
+  },
+  site: generateSiteConfig(),
+  ...overrides,
+})
 
 // Default scenario
 export const Default: Story = {
@@ -207,7 +199,9 @@ export const ExpandFirstItem: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await userEvent.click(canvas.getByRole("button", { name: /max 70 chars/i }))
+    await userEvent.click(
+      canvas.getByRole("button", { name: /max 70 chars/iu }),
+    )
 
     const text = await canvas.findByText("This is a description of the item.")
     await expect(text).toBeVisible()
@@ -225,7 +219,7 @@ export const ExpandNavbarItemWithLink: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(
-      canvas.getByRole("button", { name: /Longer item with 30 characters/i }),
+      canvas.getByRole("button", { name: /Longer item with 30 characters/iu }),
     )
 
     const text = await canvas.findByText(
@@ -241,7 +235,7 @@ export const ExpandSearch: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(
-      canvas.getByRole("button", { name: /open search bar/i }),
+      canvas.getByRole("button", { name: /open search bar/iu }),
     )
 
     const text = await canvas.findByPlaceholderText("Search this site")
@@ -260,7 +254,7 @@ export const Mobile: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(
-      canvas.getByRole("button", { name: /open navigation menu/i }),
+      canvas.getByRole("button", { name: /open navigation menu/iu }),
     )
   },
 }
@@ -276,9 +270,11 @@ export const ExpandMobile: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(
-      canvas.getByRole("button", { name: /open navigation menu/i }),
+      canvas.getByRole("button", { name: /open navigation menu/iu }),
     )
-    await userEvent.click(canvas.getByRole("button", { name: /max 70 chars/i }))
+    await userEvent.click(
+      canvas.getByRole("button", { name: /max 70 chars/iu }),
+    )
   },
 }
 
@@ -298,7 +294,7 @@ export const MobileCallToAction: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(
-      canvas.getByRole("button", { name: /open navigation menu/i }),
+      canvas.getByRole("button", { name: /open navigation menu/iu }),
     )
   },
 }
@@ -315,9 +311,9 @@ export const ExpandMobileWithLinkOneWord: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(
-      canvas.getByRole("button", { name: /open navigation menu/i }),
+      canvas.getByRole("button", { name: /open navigation menu/iu }),
     )
-    await userEvent.click(canvas.getByRole("button", { name: /Please/i }))
+    await userEvent.click(canvas.getByRole("button", { name: /Please/iu }))
   },
 }
 
@@ -333,10 +329,10 @@ export const ExpandMobileWithLinkMultipleWords: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(
-      canvas.getByRole("button", { name: /open navigation menu/i }),
+      canvas.getByRole("button", { name: /open navigation menu/iu }),
     )
     await userEvent.click(
-      canvas.getByRole("button", { name: /Longer item with 30 characters/i }),
+      canvas.getByRole("button", { name: /Longer item with 30 characters/iu }),
     )
   },
 }
@@ -378,7 +374,7 @@ export const UtilityLinksMobile: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(
-      canvas.getByRole("button", { name: /open navigation menu/i }),
+      canvas.getByRole("button", { name: /open navigation menu/iu }),
     )
   },
 }
@@ -418,7 +414,7 @@ export const UtilityLinksNoLabelMobile: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(
-      canvas.getByRole("button", { name: /open navigation menu/i }),
+      canvas.getByRole("button", { name: /open navigation menu/iu }),
     )
   },
 }
@@ -468,7 +464,7 @@ export const CTAAndUtilityLinksMobile: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(
-      canvas.getByRole("button", { name: /open navigation menu/i }),
+      canvas.getByRole("button", { name: /open navigation menu/iu }),
     )
   },
 }
@@ -516,7 +512,7 @@ export const PinnedCTAMobileExpanded: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(
-      canvas.getByRole("button", { name: /open navigation menu/i }),
+      canvas.getByRole("button", { name: /open navigation menu/iu }),
     )
   },
 }
@@ -564,11 +560,11 @@ export const MobileNavbarAfterMastheadCollapsed: Story = {
   ...mobileRegressionBase,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await userEvent.click(canvas.getByText(/how to identify/i))
+    await userEvent.click(canvas.getByText(/how to identify/iu))
     await userEvent.click(
-      canvas.getByRole("button", { name: /open navigation menu/i }),
+      canvas.getByRole("button", { name: /open navigation menu/iu }),
     )
-    await userEvent.click(canvas.getByText(/how to identify/i))
+    await userEvent.click(canvas.getByText(/how to identify/iu))
   },
 }
 
@@ -577,10 +573,10 @@ export const MobileNavbarAfterNotificationDismissed: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(
-      canvas.getByRole("button", { name: /open navigation menu/i }),
+      canvas.getByRole("button", { name: /open navigation menu/iu }),
     )
     await userEvent.click(
-      canvas.getByRole("button", { name: /dismiss notification/i }),
+      canvas.getByRole("button", { name: /dismiss notification/iu }),
     )
   },
 }
@@ -589,13 +585,13 @@ export const MobileNavbarAfterMastheadAndNotificationClosed: Story = {
   ...mobileRegressionWithNotificationBase,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await userEvent.click(canvas.getByText(/how to identify/i))
+    await userEvent.click(canvas.getByText(/how to identify/iu))
     await userEvent.click(
-      canvas.getByRole("button", { name: /open navigation menu/i }),
+      canvas.getByRole("button", { name: /open navigation menu/iu }),
     )
-    await userEvent.click(canvas.getByText(/how to identify/i))
+    await userEvent.click(canvas.getByText(/how to identify/iu))
     await userEvent.click(
-      canvas.getByRole("button", { name: /dismiss notification/i }),
+      canvas.getByRole("button", { name: /dismiss notification/iu }),
     )
   },
 }

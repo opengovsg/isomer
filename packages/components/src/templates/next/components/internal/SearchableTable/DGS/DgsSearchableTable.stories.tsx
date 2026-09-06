@@ -105,11 +105,10 @@ export const Loading: Story = {
           generateDgsUrl({
             resourceId: DGS_SMALL_DATASET_RESOURCE_ID,
           }),
-           async () => 
+          async () =>
             await new Promise(() => {
               // Never resolve the promise
-            })
-          ,
+            }),
         ),
       ],
     },
@@ -125,11 +124,10 @@ export const Error: Story = {
           generateDgsUrl({
             resourceId: DGS_SMALL_DATASET_RESOURCE_ID,
           }),
-          () => 
+          () =>
             new HttpResponse(null, {
               status: 500,
-            })
-          ,
+            }),
         ),
       ],
     },

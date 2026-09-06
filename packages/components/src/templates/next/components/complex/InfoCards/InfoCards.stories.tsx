@@ -95,7 +95,9 @@ const generateArgs = ({
   const remainder = numCards % cardsLength
   const quotient = Math.floor(numCards / cardsLength)
 
-  const quotientCards = Array(quotient).fill(cards).flat()
+  const quotientCards = Array.from({ length: quotient }, () => [
+    ...cards,
+  ]).flat()
   const remainderCards = cards.slice(0, remainder)
   const allCards = [...quotientCards, ...remainderCards]
 

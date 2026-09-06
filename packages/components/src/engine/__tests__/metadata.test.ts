@@ -131,10 +131,9 @@ describe("getMetadata", () => {
 
 const getSerializedJsonLd = (
   input: Parameters<typeof getSiteJsonLd>[0],
-): ReturnType<typeof getSiteJsonLd> => 
+): ReturnType<typeof getSiteJsonLd> =>
   // SAFETY: JSON round-trip preserves the JSON-LD object shape for assertions
   structuredClone(getSiteJsonLd(input))
-
 
 describe("getSiteJsonLd", () => {
   it("generates linked website and organisation entities from configured values", () => {
@@ -373,10 +372,9 @@ describe("getSiteJsonLd", () => {
 
 const getSerializedPageJsonLd = (
   input: Parameters<typeof getPageJsonLd>[0],
-): ReturnType<typeof getPageJsonLd> => 
+): ReturnType<typeof getPageJsonLd> =>
   // SAFETY: JSON round-trip preserves the JSON-LD object shape for assertions
   structuredClone(getPageJsonLd(input))
-
 
 describe("getPageJsonLd", () => {
   const contentPage = {

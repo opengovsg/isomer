@@ -20,15 +20,13 @@ const meta: Meta<typeof Accordion> = {
       themeOverride: "Isomer Next",
     },
   },
-  render: ({ summary, ...args }) => 
-    (
-      <>
-        <Accordion summary={`${summary}1`} {...args} />
-        <Accordion summary={`${summary}2`} {...args} />
-        <Accordion summary={`${summary}3`} {...args} />
-      </>
-    )
-  ,
+  render: ({ summary, ...args }) => (
+    <>
+      <Accordion summary={`${summary}1`} {...args} />
+      <Accordion summary={`${summary}2`} {...args} />
+      <Accordion summary={`${summary}3`} {...args} />
+    </>
+  ),
   title: "Next/Components/Accordion",
 }
 export default meta

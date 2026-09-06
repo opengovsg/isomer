@@ -81,7 +81,7 @@ export const Default: Story = {
   parameters: {
     msw: {
       handlers: [
-        http.get("https://jsonplaceholder.com/muis_prayers_time", () => 
+        http.get("https://jsonplaceholder.com/muis_prayers_time", () =>
           HttpResponse.json({
             [getSingaporeDateYYYYMMDD()]: {
               asar: "4:34pm",
@@ -92,7 +92,7 @@ export const Default: Story = {
               syuruk: "7:08am",
               zohor: "1:10pm",
             },
-          })
+          }),
         ),
       ],
     },
@@ -103,10 +103,12 @@ export const Loading: Story = {
   parameters: {
     msw: {
       handlers: [
-        http.get("https://jsonplaceholder.com/muis_prayers_time",  async () => 
-          await new Promise(() => {
-            // Never resolve the promise
-          })
+        http.get(
+          "https://jsonplaceholder.com/muis_prayers_time",
+          async () =>
+            await new Promise(() => {
+              // Never resolve the promise
+            }),
         ),
       ],
     },
@@ -117,10 +119,12 @@ export const Error: Story = {
   parameters: {
     msw: {
       handlers: [
-        http.get("https://jsonplaceholder.com/muis_prayers_time", () => 
-          new HttpResponse(null, {
-            status: 500,
-          })
+        http.get(
+          "https://jsonplaceholder.com/muis_prayers_time",
+          () =>
+            new HttpResponse(null, {
+              status: 500,
+            }),
         ),
       ],
     },

@@ -32,102 +32,100 @@ const generateArgs = ({
 }: {
   database: DatabasePageSchemaType["page"]["database"]
   content?: DatabasePageSchemaType["content"]
-}): DatabasePageSchemaType => (
-  {
-    content,
-    layout: "database",
-    meta: {
-      description: "A Next.js starter for Isomer",
+}): DatabasePageSchemaType => ({
+  content,
+  layout: "database",
+  meta: {
+    description: "A Next.js starter for Isomer",
+  },
+  page: {
+    contentPageHeader: {
+      buttonLabel: "Submit a proposal",
+      buttonUrl: "/submit-proposal",
+      showThumbnail: false,
+      summary:
+        "Steven Pinker's exploration of rationality delves into the intricacies of human cognition, shedding light on the mechanisms behind our decision-making processes. Through empirical research and insightful analysis, Pinker illuminates the rationality that underpins human behavior, challenging conventional wisdom and offering new perspectives on the rational mind.",
     },
-    page: {
-      contentPageHeader: {
-        buttonLabel: "Submit a proposal",
-        buttonUrl: "/submit-proposal",
-        showThumbnail: false,
-        summary:
-          "Steven Pinker's exploration of rationality delves into the intricacies of human cognition, shedding light on the mechanisms behind our decision-making processes. Through empirical research and insightful analysis, Pinker illuminates the rationality that underpins human behavior, challenging conventional wisdom and offering new perspectives on the rational mind.",
-      },
-      database,
-      lastModified: "2024-05-02T14:12:57.160Z",
-      permalink: "/parent/rationality",
-      title: "Irrationality",
+    database,
+    lastModified: "2024-05-02T14:12:57.160Z",
+    permalink: "/parent/rationality",
+    title: "Irrationality",
+  },
+  site: generateSiteConfig({
+    siteMap: {
+      children: [
+        {
+          children: [
+            {
+              children: [
+                {
+                  id: "4",
+                  lastModified: "",
+                  layout: "content",
+                  permalink: "/parent/rationality/child-page-2",
+                  summary: "",
+                  title: "For Individuals",
+                },
+                {
+                  id: "5",
+                  lastModified: "",
+                  layout: "content",
+                  permalink: "/parent/rationality/child-page-2",
+                  summary: "",
+                  title: "Steven Pinker's Rationality",
+                },
+              ],
+              id: "3",
+              lastModified: "",
+              layout: "content",
+              permalink: "/parent/rationality",
+              summary: "",
+              title: "Irrationality",
+            },
+            {
+              children: [
+                {
+                  id: "7",
+                  lastModified: "",
+                  layout: "content",
+                  permalink: "/parent/sibling/child-page-2",
+                  summary: "",
+                  title: "Child that should not appear",
+                },
+              ],
+              id: "6",
+              lastModified: "",
+              layout: "content",
+              permalink: "/parent/sibling",
+              summary: "",
+              title: "Sibling",
+            },
+          ],
+          id: "2",
+          lastModified: "",
+          layout: "content",
+          permalink: "/parent",
+          summary: "",
+          title: "Parent page",
+        },
+        {
+          id: "8",
+          lastModified: "",
+          layout: "content",
+          permalink: "/aunt-uncle",
+          summary: "",
+          title: "Aunt/Uncle that should not appear",
+        },
+      ],
+      id: "1",
+      lastModified: "",
+      layout: "homepage",
+      permalink: "/",
+      summary: "",
+      title: "Isomer Next",
     },
-    site: generateSiteConfig({
-      siteMap: {
-        children: [
-          {
-            children: [
-              {
-                children: [
-                  {
-                    id: "4",
-                    lastModified: "",
-                    layout: "content",
-                    permalink: "/parent/rationality/child-page-2",
-                    summary: "",
-                    title: "For Individuals",
-                  },
-                  {
-                    id: "5",
-                    lastModified: "",
-                    layout: "content",
-                    permalink: "/parent/rationality/child-page-2",
-                    summary: "",
-                    title: "Steven Pinker's Rationality",
-                  },
-                ],
-                id: "3",
-                lastModified: "",
-                layout: "content",
-                permalink: "/parent/rationality",
-                summary: "",
-                title: "Irrationality",
-              },
-              {
-                children: [
-                  {
-                    id: "7",
-                    lastModified: "",
-                    layout: "content",
-                    permalink: "/parent/sibling/child-page-2",
-                    summary: "",
-                    title: "Child that should not appear",
-                  },
-                ],
-                id: "6",
-                lastModified: "",
-                layout: "content",
-                permalink: "/parent/sibling",
-                summary: "",
-                title: "Sibling",
-              },
-            ],
-            id: "2",
-            lastModified: "",
-            layout: "content",
-            permalink: "/parent",
-            summary: "",
-            title: "Parent page",
-          },
-          {
-            id: "8",
-            lastModified: "",
-            layout: "content",
-            permalink: "/aunt-uncle",
-            summary: "",
-            title: "Aunt/Uncle that should not appear",
-          },
-        ],
-        id: "1",
-        lastModified: "",
-        layout: "homepage",
-        permalink: "/",
-        summary: "",
-        title: "Isomer Next",
-      },
-    }),
-  }
-)
+  }),
+})
 
 export const Default: Story = {
   args: generateArgs({

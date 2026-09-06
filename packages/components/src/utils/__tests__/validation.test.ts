@@ -36,9 +36,9 @@ describe("validation", () => {
       ]
 
       for (const testCase of testCases.map((tc) => `mailto:${tc}`)) {
-          const result = new RegExp(LINK_HREF_PATTERN, "u").test(testCase)
-          expect(result).toBe(true)
-        }
+        const result = new RegExp(LINK_HREF_PATTERN, "u").test(testCase)
+        expect(result).toBe(true)
+      }
     })
 
     it("should allow tel links", () => {
@@ -344,7 +344,9 @@ describe("validation", () => {
       ]
 
       for (const testCase of testCases) {
-        expect(new RegExp(AUDIO_EMBED_URL_PATTERN, "u").test(testCase)).toBe(true)
+        expect(new RegExp(AUDIO_EMBED_URL_PATTERN, "u").test(testCase)).toBe(
+          true,
+        )
         expect(isValidAudioEmbedUrl(testCase)).toBe(true)
       }
     })
@@ -357,7 +359,9 @@ describe("validation", () => {
       ]
 
       for (const testCase of testCases) {
-        expect(new RegExp(AUDIO_EMBED_URL_PATTERN, "u").test(testCase)).toBe(true)
+        expect(new RegExp(AUDIO_EMBED_URL_PATTERN, "u").test(testCase)).toBe(
+          true,
+        )
         expect(isValidAudioEmbedUrl(testCase)).toBe(true)
       }
     })
@@ -370,7 +374,9 @@ describe("validation", () => {
       ]
 
       for (const testCase of testCases) {
-        expect(new RegExp(AUDIO_EMBED_URL_PATTERN, "u").test(testCase)).toBe(false)
+        expect(new RegExp(AUDIO_EMBED_URL_PATTERN, "u").test(testCase)).toBe(
+          false,
+        )
         expect(isValidAudioEmbedUrl(testCase)).toBe(false)
       }
     })
@@ -386,7 +392,9 @@ describe("validation", () => {
       ]
 
       for (const testCase of testCases) {
-        expect(new RegExp(AUDIO_EMBED_URL_PATTERN, "u").test(testCase)).toBe(false)
+        expect(new RegExp(AUDIO_EMBED_URL_PATTERN, "u").test(testCase)).toBe(
+          false,
+        )
         expect(isValidAudioEmbedUrl(testCase)).toBe(false)
       }
     })

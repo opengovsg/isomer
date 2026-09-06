@@ -11,70 +11,70 @@ import "../src/index.css"
 import { viewport } from "@isomer/storybook-config"
 
 const CUSTOM_GENERAL_VIEWPORTS = {
-  smallDesktop: {
-    name: "Small Desktop",
-    styles: {
-      width: "1280px",
-      height: "720px",
-    },
-  },
-  mediumDesktop: {
-    name: "Medium Desktop",
-    styles: {
-      width: "1366px",
-      height: "768px",
-    },
-  },
-  largeDesktop: {
-    name: "Large Desktop",
-    styles: {
-      width: "1920px",
-      height: "1080px",
-    },
-  },
   iphone14: {
     name: "iPhone 12/13/14",
     styles: {
-      width: "390px",
       height: "844px",
+      width: "390px",
     },
   },
   iphone15ProMax: {
     name: "iPhone 14/15 Pro Max",
     styles: {
-      width: "430px",
       height: "932px",
+      width: "430px",
+    },
+  },
+  largeDesktop: {
+    name: "Large Desktop",
+    styles: {
+      height: "1080px",
+      width: "1920px",
+    },
+  },
+  mediumDesktop: {
+    name: "Medium Desktop",
+    styles: {
+      height: "768px",
+      width: "1366px",
+    },
+  },
+  smallDesktop: {
+    name: "Small Desktop",
+    styles: {
+      height: "720px",
+      width: "1280px",
     },
   },
 }
 
 const CUSTOM_GSIB_VIEWPORTS = {
-  gsibEdgeFav: {
-    name: "GSIB Edge with Favorites Bar",
+  gsibChrome: {
+    name: "GSIB Chrome without Bookmarks Bar",
     styles: {
-      width: "1272px",
-      height: "652px",
-    },
-  },
-  gsibEdge: {
-    name: "GSIB Edge without Favorites Bar",
-    styles: {
-      width: "1272px",
-      height: "686px",
+      height: "683.33px",
+      width: "1280px",
     },
   },
   gsibChromeBookmarks: {
     name: "GSIB Chrome with Bookmarks Bar",
     styles: {
-      width: "1280px",
       height: "651.33px",
+      width: "1280px",
     },
   },
-  gsibChrome: {
-    name: "GSIB Chrome without Bookmarks Bar",
+  gsibEdge: {
+    name: "GSIB Edge without Favorites Bar",
     styles: {
-      width: "1280px",
-      height: "683.33px",
+      height: "686px",
+      width: "1272px",
+    },
+  },
+  gsibEdgeFav: {
+    name: "GSIB Edge with Favorites Bar",
+    styles: {
+      height: "652px",
+      width: "1272px",
     },
   },
 }
@@ -85,7 +85,9 @@ const resetIsomerQueryParams = () => {
   const url = new URL(window.location.href)
   const previousSearch = url.search
 
-  ISOMER_QUERY_PARAM_KEYS.forEach((key) => url.searchParams.delete(key))
+  for (const key of ISOMER_QUERY_PARAM_KEYS) {
+    url.searchParams.delete(key)
+  }
 
   if (url.search !== previousSearch) {
     window.history.replaceState(
@@ -113,14 +115,6 @@ const preview: Preview = {
   ],
 
   parameters: {
-    viewport: {
-      options: {
-        ...viewport.viewports,
-        ...MINIMAL_VIEWPORTS,
-        ...CUSTOM_GENERAL_VIEWPORTS,
-        ...CUSTOM_GSIB_VIEWPORTS,
-      },
-    },
     /**
      * If tablet view is needed, add it on a per-story basis.
      * @example
@@ -134,6 +128,14 @@ const preview: Preview = {
      */
     chromatic: {
       prefersReducedMotion: "reduce",
+    },
+    viewport: {
+      options: {
+        ...viewport.viewports,
+        ...MINIMAL_VIEWPORTS,
+        ...CUSTOM_GENERAL_VIEWPORTS,
+        ...CUSTOM_GSIB_VIEWPORTS,
+      },
     },
   },
 
@@ -156,10 +158,10 @@ const MockDateDecorator: Decorator = (Story) => {
 
 export const decorators: Decorator[] = [
   withThemeByDataAttribute({
+    defaultTheme: "Isomer Next",
     themes: {
       "Isomer Next": "isomer-next",
     },
-    defaultTheme: "Isomer Next",
   }),
   LayoutDecorator,
   MockDateDecorator,

@@ -99,9 +99,9 @@ const meta: Meta<typeof Filter> = {
         filters={filters}
         appliedFilters={appliedFilters}
         setAppliedFilters={setAppliedFilters}
-        handleFilterToggle={(id: string, itemId: string) =>{ 
-          updateAppliedFilters(appliedFilters, setAppliedFilters, id, itemId); }
-        }
+        handleFilterToggle={(id: string, itemId: string) => {
+          updateAppliedFilters(appliedFilters, setAppliedFilters, id, itemId)
+        }}
         handleClearFilter={handleClearFilter}
       />
     )
@@ -144,7 +144,7 @@ export const MobileFilterDrawer: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
     const button = await screen.findByRole("button", {
-      name: /filter results/i,
+      name: /filter results/iu,
     })
     await userEvent.click(button)
   },
@@ -161,7 +161,7 @@ export const MobileFilterDrawerClearAll: Story = {
 
     await MobileFilterDrawer.play?.(context)
     await userEvent.click(
-      screen.getByRole("button", { name: /clear all filters/i }),
+      screen.getByRole("button", { name: /clear all filters/iu }),
     )
   },
 }

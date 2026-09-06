@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import { http, HttpResponse } from "msw"
+import { delay, http, HttpResponse } from "msw"
 import { generateDgsUrl } from "~/hooks/useDgsData/generateDgsUrl"
 import { generateSiteConfig } from "~/stories/helpers/generateSiteConfig"
 
@@ -184,7 +184,8 @@ export const Default: Story = {
     headingLevel: 2,
     methods: "[dgs:methods]",
     otherInformation: "[dgs:other_information]",
-    title: "[dgs:entity_name]", // to show that they can have different value from DGS,
+    title: "[dgs:entity_name]",
+    // to show that they can have different value from DGS,
   },
   parameters: DgsParameters,
 }
@@ -205,7 +206,8 @@ export const DefaultEmptyFields: Story = {
     headingLevel: 2,
     methods: "[dgs:methods]",
     otherInformation: "[dgs:other_information]",
-    title: "[dgs:entity_name]", // to show that they can have different value from DGS,
+    title: "[dgs:entity_name]",
+    // to show that they can have different value from DGS,
   },
   name: "Default (Empty Fields)",
   parameters: EmptyFieldsParameters,
@@ -306,11 +308,9 @@ export const LoadingDefault: Story = {
   parameters: {
     msw: {
       handlers: [
-        http.get(DgsUrl,  async () => 
-          await new Promise(() => {
-            // Never resolve the promise
-          })
-        ),
+        http.get(DgsUrl, async () => {
+          await delay("infinite")
+        }),
       ],
     },
   },
@@ -339,11 +339,9 @@ export const LoadingHomepage: Story = {
   parameters: {
     msw: {
       handlers: [
-        http.get(DgsUrl,  async () => 
-          await new Promise(() => {
-            // Never resolve the promise
-          })
-        ),
+        http.get(DgsUrl, async () => {
+          await delay("infinite")
+        }),
       ],
     },
   },
@@ -376,10 +374,12 @@ export const Error: Story = {
     },
     msw: {
       handlers: [
-        http.get(DgsUrl, () => 
-          new HttpResponse(null, {
-            status: 500,
-          })
+        http.get(
+          DgsUrl,
+          () =>
+            new HttpResponse(null, {
+              status: 500,
+            }),
         ),
       ],
     },

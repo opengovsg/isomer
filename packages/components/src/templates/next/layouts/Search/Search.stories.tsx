@@ -107,11 +107,20 @@ export const EgazetteAlgoliaWithYearRange: Story = {
     const canvas = within(canvasElement)
     // Range inputs stay disabled until the first Algolia response arrives.
     const yearFromInput = canvas.getAllByLabelText("From")[0]
-    if (!yearFromInput) {throw new Error("Year range input not found")}
-    await waitFor( async () =>{  await expect(yearFromInput).toBeEnabled(); }, { timeout: 10_000 })
+    if (!yearFromInput) {
+      throw new Error("Year range input not found")
+    }
+    await waitFor(
+      async () => {
+        await expect(yearFromInput).toBeEnabled()
+      },
+      { timeout: 10_000 },
+    )
     await userEvent.type(yearFromInput, "2024")
     const goButton = canvas.getAllByRole("button", { name: "Go" })[0]
-    if (!goButton) {throw new Error("Year range submit button not found")}
+    if (!goButton) {
+      throw new Error("Year range submit button not found")
+    }
     await userEvent.click(goButton)
   },
 }
@@ -126,19 +135,28 @@ export const EgazetteAlgoliaYearOutOfRange: Story = {
     const canvas = within(canvasElement)
     // The year "To" field is the first "To" input (year precedes month).
     const yearToInput = canvas.getAllByLabelText("To")[0]
-    if (!yearToInput) {throw new Error("Year range input not found")}
-    await waitFor( async () =>{  await expect(yearToInput).toBeEnabled(); }, { timeout: 10_000 })
+    if (!yearToInput) {
+      throw new Error("Year range input not found")
+    }
+    await waitFor(
+      async () => {
+        await expect(yearToInput).toBeEnabled()
+      },
+      { timeout: 10_000 },
+    )
     await userEvent.type(yearToInput, "3000")
     const goButton = canvas.getAllByRole("button", { name: "Go" })[0]
-    if (!goButton) {throw new Error("Year range submit button not found")}
+    if (!goButton) {
+      throw new Error("Year range submit button not found")
+    }
     await userEvent.click(goButton)
-    await expect(await canvas.findByText(/or earlier/i)).toBeInTheDocument()
+    await expect(await canvas.findByText(/or earlier/iu)).toBeInTheDocument()
   },
 }
 
 // Seeds the URL with egazette deep-link params before <InstantSearch> mounts,
 // then restores the original URL on unmount so other stories are unaffected.
-const withDeepLinkParams = (search: string): Decorator => 
+const withDeepLinkParams = (search: string): Decorator =>
   function WithDeepLinkParams(StoryComponent) {
     const original = `${window.location.pathname}${window.location.search}`
     window.history.replaceState(
@@ -147,12 +165,14 @@ const withDeepLinkParams = (search: string): Decorator =>
       `${window.location.pathname}${search}`,
     )
     // oxlint-disable-next-line rules-of-hooks -- decorators render as components
-    useEffect(() => 
-      () =>{  window.history.replaceState(null, "", original); }
-    , [original])
+    useEffect(
+      () => () => {
+        window.history.replaceState(null, "", original)
+      },
+      [original],
+    )
     return <StoryComponent />
   }
-
 
 export const EgazetteAlgoliaNoResults: Story = {
   args: EGAZETTE_ARGS,
@@ -161,10 +181,11 @@ export const EgazetteAlgoliaNoResults: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await waitFor(
-       async () =>{ 
+      async () => {
         await expect(
           canvas.getByText("We couldn’t find any results."),
-        ).toBeInTheDocument(); },
+        ).toBeInTheDocument()
+      },
       { timeout: 10_000 },
     )
     await expect(
@@ -185,10 +206,11 @@ export const EgazetteAlgoliaWithDeepLink: Story = {
     await expect(canvas.getByRole("searchbox")).toHaveValue("tender")
     // isRefined on the checkbox only reflects once the first Algolia response lands
     await waitFor(
-       async () =>{ 
+      async () => {
         await expect(
           canvas.getByRole("checkbox", { name: /^Government Gazette/ }),
-        ).toBeChecked(); },
+        ).toBeChecked()
+      },
       { timeout: 10_000 },
     )
     await expect(

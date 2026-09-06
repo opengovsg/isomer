@@ -19,123 +19,121 @@ const DEFAULT_INDEX_PAGE = {
 const generateIndexPage = (
   page: IndexPageSchemaType["page"],
   overrides?: Partial<IndexPageSchemaType>,
-): Partial<IndexPageSchemaType> => (
-  {
-    content: [],
-    layout: "index",
-    meta: {
-      description: "A Next.js starter for Isomer",
+): Partial<IndexPageSchemaType> => ({
+  content: [],
+  layout: "index",
+  meta: {
+    description: "A Next.js starter for Isomer",
+  },
+  page,
+  site: generateSiteConfig({
+    siteMap: {
+      children: [
+        {
+          children: [
+            {
+              children: [
+                {
+                  id: "4",
+                  lastModified: "",
+                  layout: "content",
+                  permalink: "/parent/rationality/child-page-2",
+                  summary: "",
+                  title: "For Individuals",
+                },
+                {
+                  id: "5",
+                  lastModified: "",
+                  layout: "content",
+                  permalink: "/parent/rationality/child-page-2",
+                  summary: "",
+                  title: "Steven Pinker's Rationality",
+                },
+              ],
+              id: "3",
+              lastModified: "",
+              layout: "content",
+              permalink: "/parent/rationality",
+              summary: "Pages in Irrationality",
+              title: "Irrationality",
+            },
+            {
+              children: [
+                {
+                  id: "7",
+                  lastModified: "",
+                  layout: "content",
+                  permalink: "/parent/sibling/child-page-2",
+                  summary: "",
+                  title: "Child that should not appear",
+                },
+              ],
+              id: "6",
+              image: {
+                alt: "funny cat",
+                src: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTqBmkS5UiA-cppkrliK5R5csepf8jJ4BfMcQ&s",
+              },
+              lastModified: "",
+              layout: "content",
+              permalink: "/parent/sibling",
+              summary: "Pages in Sibling",
+              title: "Sibling",
+            },
+            {
+              id: "5",
+              lastModified: "",
+              layout: "content",
+              permalink: "/parent/child-page-2",
+              summary: "",
+              title: "Steven Pinker's Rationality",
+            },
+            {
+              id: "9",
+              image: {
+                alt: "Thumbnail for Database page with thumbnail",
+                src: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=400&h=300&fit=crop",
+              },
+              lastModified: "",
+              layout: "database",
+              permalink: "/parent/database-page-with-thumbnail",
+              summary: "Database page with thumbnail",
+              title: "Database page with thumbnail",
+            },
+            {
+              id: "10",
+              lastModified: "",
+              layout: "database",
+              permalink: "/parent/database-page-without-thumbnail",
+              summary: "Database page without thumbnail",
+              title: "Database page without thumbnail",
+            },
+          ],
+          id: "2",
+          lastModified: "",
+          layout: "content",
+          permalink: "/parent",
+          summary: "",
+          title: "Parent page",
+        },
+        {
+          id: "8",
+          lastModified: "",
+          layout: "content",
+          permalink: "/aunt-uncle",
+          summary: "",
+          title: "Aunt/Uncle that should not appear",
+        },
+      ],
+      id: "1",
+      lastModified: "",
+      layout: "homepage",
+      permalink: "/",
+      summary: "",
+      title: "Isomer Next",
     },
-    page,
-    site: generateSiteConfig({
-      siteMap: {
-        children: [
-          {
-            children: [
-              {
-                children: [
-                  {
-                    id: "4",
-                    lastModified: "",
-                    layout: "content",
-                    permalink: "/parent/rationality/child-page-2",
-                    summary: "",
-                    title: "For Individuals",
-                  },
-                  {
-                    id: "5",
-                    lastModified: "",
-                    layout: "content",
-                    permalink: "/parent/rationality/child-page-2",
-                    summary: "",
-                    title: "Steven Pinker's Rationality",
-                  },
-                ],
-                id: "3",
-                lastModified: "",
-                layout: "content",
-                permalink: "/parent/rationality",
-                summary: "Pages in Irrationality",
-                title: "Irrationality",
-              },
-              {
-                children: [
-                  {
-                    id: "7",
-                    lastModified: "",
-                    layout: "content",
-                    permalink: "/parent/sibling/child-page-2",
-                    summary: "",
-                    title: "Child that should not appear",
-                  },
-                ],
-                id: "6",
-                image: {
-                  alt: "funny cat",
-                  src: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTqBmkS5UiA-cppkrliK5R5csepf8jJ4BfMcQ&s",
-                },
-                lastModified: "",
-                layout: "content",
-                permalink: "/parent/sibling",
-                summary: "Pages in Sibling",
-                title: "Sibling",
-              },
-              {
-                id: "5",
-                lastModified: "",
-                layout: "content",
-                permalink: "/parent/child-page-2",
-                summary: "",
-                title: "Steven Pinker's Rationality",
-              },
-              {
-                id: "9",
-                image: {
-                  alt: "Thumbnail for Database page with thumbnail",
-                  src: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=400&h=300&fit=crop",
-                },
-                lastModified: "",
-                layout: "database",
-                permalink: "/parent/database-page-with-thumbnail",
-                summary: "Database page with thumbnail",
-                title: "Database page with thumbnail",
-              },
-              {
-                id: "10",
-                lastModified: "",
-                layout: "database",
-                permalink: "/parent/database-page-without-thumbnail",
-                summary: "Database page without thumbnail",
-                title: "Database page without thumbnail",
-              },
-            ],
-            id: "2",
-            lastModified: "",
-            layout: "content",
-            permalink: "/parent",
-            summary: "",
-            title: "Parent page",
-          },
-          {
-            id: "8",
-            lastModified: "",
-            layout: "content",
-            permalink: "/aunt-uncle",
-            summary: "",
-            title: "Aunt/Uncle that should not appear",
-          },
-        ],
-        id: "1",
-        lastModified: "",
-        layout: "homepage",
-        permalink: "/",
-        summary: "",
-        title: "Isomer Next",
-      },
-    }),
-    ...overrides,
-  }
-)
+  }),
+  ...overrides,
+})
 
 const meta: Meta<typeof IndexPageLayout> = {
   argTypes: {},

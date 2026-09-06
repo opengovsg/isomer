@@ -1,4 +1,4 @@
-import type { ImageProps,ProcessedCollectionCardProps } from "~/interfaces"
+import type { ImageProps, ProcessedCollectionCardProps } from "~/interfaces"
 import type { FormattedDate, TagGroup } from "~/types"
 
 interface TestCollectionItemInput {

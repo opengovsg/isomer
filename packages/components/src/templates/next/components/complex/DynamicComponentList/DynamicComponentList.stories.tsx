@@ -58,7 +58,7 @@ export const ContactInformation: Story = {
   parameters: {
     msw: {
       handlers: [
-        http.get(DgsUrl, () => 
+        http.get(DgsUrl, () =>
           HttpResponse.json({
             result: {
               records: [
@@ -170,7 +170,7 @@ export const ContactInformation: Story = {
               ],
             },
             success: true,
-          })
+          }),
         ),
       ],
     },
@@ -205,10 +205,12 @@ export const ContactInformationLoading: Story = {
   parameters: {
     msw: {
       handlers: [
-        http.get(DgsUrl,  async () => 
-          await new Promise(() => {
-            // Never resolve the promise
-          })
+        http.get(
+          DgsUrl,
+          async () =>
+            await new Promise(() => {
+              // Never resolve the promise
+            }),
         ),
       ],
     },

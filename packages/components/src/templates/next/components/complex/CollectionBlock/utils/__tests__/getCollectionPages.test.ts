@@ -257,14 +257,14 @@ describe("getCollectionPages", () => {
 
       // Assert
       // Both items should resolve to the site logo since showThumbnail is undefined
-      result.forEach((item) => {
+      for (const item of result) {
         expect(item.image).toEqual({
           alt: `${site.siteName} site logo`,
           isContainNeeded: true,
           src: site.logoUrl,
         })
         expect(item.isContainNeeded).toBe(true)
-      })
+      }
     })
 
     it("should fall back to the site logo when showThumbnail.fallback is 'logo'", () => {

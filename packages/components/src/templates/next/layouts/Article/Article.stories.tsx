@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import { generateSiteConfig } from "~/stories/helpers"
 import type { ArticlePageSchemaType } from "~/types"
+import { generateSiteConfig } from "~/stories/helpers"
 import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
 
 import { ArticleLayout } from "./Article"
@@ -24,150 +24,148 @@ const generateArgs = ({
   summary,
 }: {
   summary: string
-}): ArticlePageSchemaType => (
-  {
-    content: [
-      {
-        content: [
-          {
-            content: [
-              {
-                text: "Singapore - In a bid to foster community spirit and celebrate the rich tapestry of its diverse population, Singapore is gearing up to host its first-ever Citizens' Festival. This unprecedented event promises to be a dazzling extravaganza filled with entertainment, cultural showcases, and gastronomic delights.",
-                type: "text",
-              },
-            ],
-            type: "paragraph",
-          },
-          {
-            attrs: {
-              id: "section2",
-              level: 2,
-            },
-            content: [
-              {
-                text: "It does look a bit odd but we can't fix until the typography scale is rejigged",
-                type: "text",
-              },
-            ],
-            type: "heading",
-          },
-          {
-            content: [
-              {
-                text: "One of the highlights of the festival is the Cultural Village, where visitors can immerse themselves in the sights, sounds, and flavors of Singapore's various ethnic communities. From traditional Malay dance performances to Chinese calligraphy demonstrations and Indian culinary workshops, attendees will have the opportunity to gain a deeper appreciation for the country's multicultural heritage.",
-                type: "text",
-              },
-            ],
-            type: "paragraph",
-          },
-          {
-            content: [
-              {
-                text: "This is a Chat-GPT4 generated article for visual testing purposes.",
-                type: "text",
-              },
-            ],
-            type: "paragraph",
-          },
-        ],
-        type: "prose",
-      },
-    ],
-    layout: "article",
-    page: {
-      articlePageHeader: {
-        summary,
-      },
-      category: "Citizen Engagement",
-      date: "1 May 2024",
-      lastModified: "2024-05-02T14:12:57.160Z",
-      permalink:
-        "/newsroom/news/man-sentenced-to-24-months-imprisonment-for-smuggling-34-7-kg-of-rhinoceros-horns",
-      title:
-        "Singapore's Spectacular Citizens' Festival: a Celebration of Unity and Diversity",
-    },
-    site: generateSiteConfig({
-      navbar: {
-        items: [
-          {
-            name: "Home",
-            url: "/",
-          },
-          {
-            items: [
-              {
-                name: "News",
-                url: "/newsroom/news",
-              },
-            ],
-            name: "Newsroom",
-            url: "/newsroom",
-          },
-        ],
-        utility: {
-          items: [
+}): ArticlePageSchemaType => ({
+  content: [
+    {
+      content: [
+        {
+          content: [
             {
-              name: "eServices & Forms",
-              url: "/quick-link-1",
-            },
-            {
-              name: "Student Login",
-              url: "/quick-link-2",
-            },
-            {
-              name: "Staff Login",
-              url: "/quick-link-3",
-            },
-            {
-              name: "Employer Login",
-              url: "/quick-link-4",
+              text: "Singapore - In a bid to foster community spirit and celebrate the rich tapestry of its diverse population, Singapore is gearing up to host its first-ever Citizens' Festival. This unprecedented event promises to be a dazzling extravaganza filled with entertainment, cultural showcases, and gastronomic delights.",
+              type: "text",
             },
           ],
+          type: "paragraph",
         },
-      },
-      siteMap: {
-        children: [
+        {
+          attrs: {
+            id: "section2",
+            level: 2,
+          },
+          content: [
+            {
+              text: "It does look a bit odd but we can't fix until the typography scale is rejigged",
+              type: "text",
+            },
+          ],
+          type: "heading",
+        },
+        {
+          content: [
+            {
+              text: "One of the highlights of the festival is the Cultural Village, where visitors can immerse themselves in the sights, sounds, and flavors of Singapore's various ethnic communities. From traditional Malay dance performances to Chinese calligraphy demonstrations and Indian culinary workshops, attendees will have the opportunity to gain a deeper appreciation for the country's multicultural heritage.",
+              type: "text",
+            },
+          ],
+          type: "paragraph",
+        },
+        {
+          content: [
+            {
+              text: "This is a Chat-GPT4 generated article for visual testing purposes.",
+              type: "text",
+            },
+          ],
+          type: "paragraph",
+        },
+      ],
+      type: "prose",
+    },
+  ],
+  layout: "article",
+  page: {
+    articlePageHeader: {
+      summary,
+    },
+    category: "Citizen Engagement",
+    date: "1 May 2024",
+    lastModified: "2024-05-02T14:12:57.160Z",
+    permalink:
+      "/newsroom/news/man-sentenced-to-24-months-imprisonment-for-smuggling-34-7-kg-of-rhinoceros-horns",
+    title:
+      "Singapore's Spectacular Citizens' Festival: a Celebration of Unity and Diversity",
+  },
+  site: generateSiteConfig({
+    navbar: {
+      items: [
+        {
+          name: "Home",
+          url: "/",
+        },
+        {
+          items: [
+            {
+              name: "News",
+              url: "/newsroom/news",
+            },
+          ],
+          name: "Newsroom",
+          url: "/newsroom",
+        },
+      ],
+      utility: {
+        items: [
           {
-            children: [
-              {
-                children: [
-                  {
-                    id: "4",
-                    lastModified: "",
-                    layout: "content",
-                    permalink:
-                      "/newsroom/news/man-sentenced-to-24-months-imprisonment-for-smuggling-34-7-kg-of-rhinoceros-horns",
-                    summary: "",
-                    title:
-                      "Man sentenced to 24 months' imprisonment for smuggling 34.7 kg of rhinoceros horns",
-                  },
-                ],
-                id: "3",
-                lastModified: "",
-                layout: "content",
-                permalink: "/newsroom/news",
-                summary: "",
-                title: "News",
-              },
-            ],
-            id: "2",
-            lastModified: "",
-            layout: "content",
-            permalink: "/newsroom",
-            summary: "",
-            title: "Newsroom",
+            name: "eServices & Forms",
+            url: "/quick-link-1",
+          },
+          {
+            name: "Student Login",
+            url: "/quick-link-2",
+          },
+          {
+            name: "Staff Login",
+            url: "/quick-link-3",
+          },
+          {
+            name: "Employer Login",
+            url: "/quick-link-4",
           },
         ],
-        id: "1",
-        lastModified: "",
-        layout: "homepage",
-        permalink: "/",
-        summary: "",
-        title: "Home",
       },
-    }),
-  }
-)
+    },
+    siteMap: {
+      children: [
+        {
+          children: [
+            {
+              children: [
+                {
+                  id: "4",
+                  lastModified: "",
+                  layout: "content",
+                  permalink:
+                    "/newsroom/news/man-sentenced-to-24-months-imprisonment-for-smuggling-34-7-kg-of-rhinoceros-horns",
+                  summary: "",
+                  title:
+                    "Man sentenced to 24 months' imprisonment for smuggling 34.7 kg of rhinoceros horns",
+                },
+              ],
+              id: "3",
+              lastModified: "",
+              layout: "content",
+              permalink: "/newsroom/news",
+              summary: "",
+              title: "News",
+            },
+          ],
+          id: "2",
+          lastModified: "",
+          layout: "content",
+          permalink: "/newsroom",
+          summary: "",
+          title: "Newsroom",
+        },
+      ],
+      id: "1",
+      lastModified: "",
+      layout: "homepage",
+      permalink: "/",
+      summary: "",
+      title: "Home",
+    },
+  }),
+})
 
 export const Default: Story = {
   args: {

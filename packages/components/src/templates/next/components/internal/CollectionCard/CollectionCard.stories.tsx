@@ -30,27 +30,25 @@ const generateArgs = ({
   shouldShowDate?: boolean
 }): Partial<CollectionCardProps> & {
   shouldShowDate?: boolean
-} => (
-  {
-    date: new Date("2023-12-02"),
-    description:
-      "We've looked at how people's spending correlates with how much microscopic plastic they consumed over the year. We've looked at how people's spending correlates with how much microscopic plastic they consumed over the year.",
-    image: {
-      alt: "placeholder",
-      src: "https://placehold.co/500x500",
-    },
-    imageSrc: "https://placehold.co/500x500",
-    itemTitle:
-      "A journal on microscopic plastic and their correlation to the number of staycations enjoyed per millennials between the ages of 30-42, substantiated by research from IDK university",
-    pillTags: [],
-    plaintextTags: [{ category: "Category", selected: ["Research"] }],
-    referenceLinkHref: isExternalLink ? "https://www.google.com" : "/",
-    shouldShowDate,
-    title:
-      "A journal on microscopic plastic and their correlation to the number of staycations enjoyed per millennials between the ages of 30-42, substantiated by research from IDK university",
-    ...overrides,
-  }
-)
+} => ({
+  date: new Date("2023-12-02"),
+  description:
+    "We've looked at how people's spending correlates with how much microscopic plastic they consumed over the year. We've looked at how people's spending correlates with how much microscopic plastic they consumed over the year.",
+  image: {
+    alt: "placeholder",
+    src: "https://placehold.co/500x500",
+  },
+  imageSrc: "https://placehold.co/500x500",
+  itemTitle:
+    "A journal on microscopic plastic and their correlation to the number of staycations enjoyed per millennials between the ages of 30-42, substantiated by research from IDK university",
+  pillTags: [],
+  plaintextTags: [{ category: "Category", selected: ["Research"] }],
+  referenceLinkHref: isExternalLink ? "https://www.google.com" : "/",
+  shouldShowDate,
+  title:
+    "A journal on microscopic plastic and their correlation to the number of staycations enjoyed per millennials between the ages of 30-42, substantiated by research from IDK university",
+  ...overrides,
+})
 
 export const Default: Story = {
   args: generateArgs({}),

@@ -8,9 +8,8 @@ interface AllOfSubSchema extends TSchema {
   required?: string[]
 }
 
-function getSubSchemaPropertyKeys(subSchema: AllOfSubSchema): string[] {
-  return subSchema.properties ? Object.keys(subSchema.properties) : []
-}
+const getSubSchemaPropertyKeys = (subSchema: AllOfSubSchema): string[] =>
+  subSchema.properties === undefined ? [] : Object.keys(subSchema.properties)
 
 describe("getScopedSchema", () => {
   describe("database layout", () => {
@@ -33,9 +32,11 @@ describe("getScopedSchema", () => {
 
       expect(schema).toBeDefined()
       // Check for TypeBox schema structure (type property or allOf for Intersect schemas)
-      expect(schema.type || schema.allOf).toBeDefined()
+      expect(schema.type !== undefined || schema.allOf !== undefined).toBe(true)
       // For Intersect schemas, properties are in allOf array
-      expect(schema.allOf || schema.properties).toBeDefined()
+      expect(
+        schema.allOf !== undefined || schema.properties !== undefined,
+      ).toBe(true)
     })
 
     it("should return schema for page", () => {
@@ -125,7 +126,9 @@ describe("getScopedSchema", () => {
       expect(schema).toBeDefined()
       expect(schema).toHaveProperty("type")
       // For Intersect schemas, properties are in allOf array
-      expect(schema.allOf || schema.properties).toBeDefined()
+      expect(
+        schema.allOf !== undefined || schema.properties !== undefined,
+      ).toBe(true)
     })
   })
 
@@ -158,9 +161,9 @@ describe("getScopedSchema", () => {
   describe("exclude functionality", () => {
     it("should exclude specified fields from database page schema", () => {
       const schema = getScopedSchema({
+        exclude: ["contentPageHeader"],
         layout: "database",
         scope: "page",
-        exclude: ["contentPageHeader"],
       })
 
       expect(schema).toBeDefined()
@@ -172,9 +175,9 @@ describe("getScopedSchema", () => {
 
     it("should exclude multiple fields from database page schema", () => {
       const schema = getScopedSchema({
+        exclude: ["contentPageHeader", "database"],
         layout: "database",
         scope: "page",
-        exclude: ["contentPageHeader", "database"],
       })
 
       expect(schema).toBeDefined()
@@ -186,9 +189,9 @@ describe("getScopedSchema", () => {
 
     it("should work with content layout and exclude fields", () => {
       const schema = getScopedSchema({
+        exclude: ["contentPageHeader"],
         layout: "content",
         scope: "page",
-        exclude: ["contentPageHeader"],
       })
 
       expect(schema).toBeDefined()
@@ -199,21 +202,23 @@ describe("getScopedSchema", () => {
 
     it("should work with nested scope and exclude fields", () => {
       const schema = getScopedSchema({
+        exclude: ["title"],
         layout: "database",
         scope: "page.database",
-        exclude: ["title"],
       })
 
       expect(schema).toBeDefined()
       // For Intersect schemas, properties are in allOf array
-      expect(schema.allOf || schema.properties).toBeDefined()
+      expect(
+        schema.allOf !== undefined || schema.properties !== undefined,
+      ).toBe(true)
     })
 
     it("should exclude fields from allOf sub-schemas in collection layout", () => {
       const schema = getScopedSchema({
+        exclude: ["subtitle"],
         layout: "collection",
         scope: "page",
-        exclude: ["subtitle"],
       })
 
       expect(schema).toBeDefined()
@@ -221,7 +226,7 @@ describe("getScopedSchema", () => {
 
       // "subtitle" should not appear in any allOf sub-schema
       for (const subSchema of schema.allOf) {
-        if (subSchema.properties) {
+        if (subSchema.properties !== undefined) {
           expect(subSchema.properties.subtitle).toBeUndefined()
         }
       }
@@ -229,16 +234,16 @@ describe("getScopedSchema", () => {
 
     it("should exclude multiple fields across different allOf sub-schemas in collection layout", () => {
       const schema = getScopedSchema({
+        exclude: ["subtitle", "variant", "image"],
         layout: "collection",
         scope: "page",
-        exclude: ["subtitle", "variant", "image"],
       })
 
       expect(schema).toBeDefined()
       expect(schema.allOf).toBeDefined()
 
       for (const subSchema of schema.allOf) {
-        if (subSchema.properties) {
+        if (subSchema.properties !== undefined) {
           expect(subSchema.properties.subtitle).toBeUndefined()
           expect(subSchema.properties.variant).toBeUndefined()
           expect(subSchema.properties.image).toBeUndefined()
@@ -248,9 +253,9 @@ describe("getScopedSchema", () => {
 
     it("should preserve non-excluded fields in allOf sub-schemas", () => {
       const schema = getScopedSchema({
+        exclude: ["subtitle"],
         layout: "collection",
         scope: "page",
-        exclude: ["subtitle"],
       })
 
       expect(schema).toBeDefined()
@@ -264,9 +269,9 @@ describe("getScopedSchema", () => {
 
     it("should remove excluded fields from required array in allOf sub-schemas", () => {
       const schema = getScopedSchema({
+        exclude: ["subtitle"],
         layout: "collection",
         scope: "page",
-        exclude: ["subtitle"],
       })
 
       expect(schema).toBeDefined()
@@ -282,9 +287,9 @@ describe("getScopedSchema", () => {
 
     it("should remove excluded fields from required array in non-allOf schemas", () => {
       const schema = getScopedSchema({
+        exclude: ["contentPageHeader"],
         layout: "database",
         scope: "page",
-        exclude: ["contentPageHeader"],
       })
 
       expect(schema).toBeDefined()
@@ -300,9 +305,9 @@ describe("getScopedSchema", () => {
       })
 
       const schemaWithEmptyExclude = getScopedSchema({
+        exclude: [],
         layout: "database",
         scope: "page",
-        exclude: [],
       })
 
       expect(schemaWithEmptyExclude).toEqual(originalSchema)
@@ -312,9 +317,9 @@ describe("getScopedSchema", () => {
   describe("include functionality", () => {
     it("should keep only specified fields in collection layout (allOf)", () => {
       const schema = getScopedSchema({
+        include: ["subtitle"],
         layout: "collection",
         scope: "page",
-        include: ["subtitle"],
       })
 
       expect(schema).toBeDefined()
@@ -326,9 +331,9 @@ describe("getScopedSchema", () => {
 
     it("should keep multiple specified fields across allOf sub-schemas", () => {
       const schema = getScopedSchema({
+        include: ["subtitle", "variant"],
         layout: "collection",
         scope: "page",
-        include: ["subtitle", "variant"],
       })
 
       expect(schema).toBeDefined()
@@ -343,9 +348,9 @@ describe("getScopedSchema", () => {
 
     it("should keep only specified fields in flat (non-allOf) schemas", () => {
       const schema = getScopedSchema({
+        include: ["database"],
         layout: "database",
         scope: "page",
-        include: ["database"],
       })
 
       expect(schema).toBeDefined()
@@ -356,9 +361,9 @@ describe("getScopedSchema", () => {
 
     it("should filter required array to only included fields", () => {
       const schema = getScopedSchema({
+        include: ["subtitle"],
         layout: "collection",
         scope: "page",
-        include: ["subtitle"],
       })
 
       expect(schema).toBeDefined()
@@ -374,10 +379,10 @@ describe("getScopedSchema", () => {
     it("should throw when both include and exclude are provided", () => {
       expect(() =>
         getScopedSchema({
+          exclude: ["variant"],
+          include: ["subtitle"],
           layout: "collection",
           scope: "page",
-          include: ["subtitle"],
-          exclude: ["variant"],
         }),
       ).toThrow("mutually exclusive")
     })
@@ -389,9 +394,9 @@ describe("getScopedSchema", () => {
       })
 
       const schemaWithEmptyInclude = getScopedSchema({
+        include: [],
         layout: "database",
         scope: "page",
-        include: [],
       })
 
       expect(schemaWithEmptyInclude).toEqual(originalSchema)

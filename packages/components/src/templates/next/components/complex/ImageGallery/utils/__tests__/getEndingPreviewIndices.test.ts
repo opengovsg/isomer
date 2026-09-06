@@ -40,7 +40,11 @@ describe("getEndingPreviewIndices", () => {
     })
 
     it("should always return exactly the maximum number of preview images when there are more images than the maximum", () => {
-      const cases = [{ numberOfImages: 4 }, { numberOfImages: 10 }, { numberOfImages: 20 }]
+      const cases = [
+        { numberOfImages: 4 },
+        { numberOfImages: 10 },
+        { numberOfImages: 20 },
+      ]
 
       for (const { numberOfImages } of cases) {
         const result = getEndingPreviewIndices({
@@ -89,7 +93,11 @@ describe("getEndingPreviewIndices", () => {
     })
 
     it("should always return exactly the maximum number of preview images when there are more images than the maximum", () => {
-      const cases = [{ numberOfImages: 6 }, { numberOfImages: 10 }, { numberOfImages: 20 }]
+      const cases = [
+        { numberOfImages: 6 },
+        { numberOfImages: 10 },
+        { numberOfImages: 20 },
+      ]
 
       for (const { numberOfImages } of cases) {
         const result = getEndingPreviewIndices({

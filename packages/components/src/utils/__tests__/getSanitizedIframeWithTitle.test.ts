@@ -49,13 +49,10 @@ describe("getSanitizedIframeWithTitle", () => {
     }
 
     // SAFETY: DOMPurify fragment firstChild is an HTMLIFrameElement for iframe HTML input
-    const unrelated = sanitize(
-      '<iframe src="https://other.com"></iframe>',
-      {
-        ALLOWED_TAGS: ["iframe"],
-        RETURN_DOM_FRAGMENT: true,
-      },
-    ).firstChild as HTMLIFrameElement
+    const unrelated = sanitize('<iframe src="https://other.com"></iframe>', {
+      ALLOWED_TAGS: ["iframe"],
+      RETURN_DOM_FRAGMENT: true,
+    }).firstChild as HTMLIFrameElement
 
     expect(unrelated.getAttribute("title")).toBeNull()
   })

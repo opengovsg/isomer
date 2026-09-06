@@ -275,7 +275,7 @@ describe("getTableColumnCount", () => {
                 type: "tableCell" as const,
               },
             ]
-          : (rowIndex === 1
+          : rowIndex === 1
             ? [
                 {
                   content: [paragraph],
@@ -291,7 +291,7 @@ describe("getTableColumnCount", () => {
                   content: [paragraph],
                   type: "tableCell" as const,
                 },
-              ]),
+              ],
       type: "tableRow" as const,
     }))
 

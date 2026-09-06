@@ -135,10 +135,10 @@ describe("resolveTableLayout", () => {
     })
     const toHostileTableRows = (
       hostileRow: ReturnType<typeof row>,
-    ): TableRows => 
+    ): TableRows =>
       // SAFETY: Test passes TipTap rows with hostile colspan attrs through resolveTableLayout.
       [hostileRow] as TableRows
-    
+
     const hostileCases = [
       { kind: "fixed", rows: toHostileTableRows(row(cell(4_294_967_296))) },
       { kind: "auto", rows: toHostileTableRows(row(cell(-5))) },

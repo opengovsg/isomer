@@ -62,46 +62,44 @@ const generateArgs = ({
   collectionItems?: IsomerSitemap[]
   variant?: CollectionPageSchemaType["page"]["variant"]
   tagCategories?: CollectionPageSchemaType["page"]["tagCategories"]
-} = {}): CollectionPageSchemaType => (
-  {
-    content: [],
-    layout: "collection",
-    meta: {
-      description: "A Next.js starter for Isomer",
+} = {}): CollectionPageSchemaType => ({
+  content: [],
+  layout: "collection",
+  meta: {
+    description: "A Next.js starter for Isomer",
+  },
+  page: {
+    lastModified: "2024-05-02T14:12:57.160Z",
+    permalink: "/publications",
+    subtitle:
+      "Since this page type supports text-heavy articles that are primarily for reading and absorbing information, the max content width on desktop is kept even smaller than its General Content Page counterpart.",
+    tagCategories,
+    title: "Publications and other press releases",
+    variant,
+  },
+  site: generateSiteConfig({
+    siteMap: {
+      children: [
+        {
+          children: collectionItems,
+          id: "2",
+          lastModified: "",
+          layout: "collection",
+          permalink: "/publications",
+          summary: "",
+          title: "Publications and other press releases",
+        },
+      ],
+      id: "1",
+      lastModified: "",
+      layout: "homepage",
+      permalink: "/",
+      summary: "",
+      title: "Home",
     },
-    page: {
-      lastModified: "2024-05-02T14:12:57.160Z",
-      permalink: "/publications",
-      subtitle:
-        "Since this page type supports text-heavy articles that are primarily for reading and absorbing information, the max content width on desktop is kept even smaller than its General Content Page counterpart.",
-      tagCategories,
-      title: "Publications and other press releases",
-      variant,
-    },
-    site: generateSiteConfig({
-      siteMap: {
-        children: [
-          {
-            children: collectionItems,
-            id: "2",
-            lastModified: "",
-            layout: "collection",
-            permalink: "/publications",
-            summary: "",
-            title: "Publications and other press releases",
-          },
-        ],
-        id: "1",
-        lastModified: "",
-        layout: "homepage",
-        permalink: "/",
-        summary: "",
-        title: "Home",
-      },
-      siteName: "Isomer Next",
-    }),
-  }
-)
+    siteName: "Isomer Next",
+  }),
+})
 
 const meta: Meta<CollectionPageSchemaType> = {
   argTypes: {},
@@ -128,7 +126,7 @@ export const WithFilters: Story = {
   args: generateArgs(),
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    await userEvent.click(screen.getByText(/2023 \(10\)/i))
+    await userEvent.click(screen.getByText(/2023 \(10\)/iu))
   },
 }
 
@@ -200,8 +198,8 @@ export const FilteredEmptyResults: Story = {
   }),
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    await userEvent.click(screen.getByText(/2024 \(20\)/i))
-    await userEvent.click(screen.getByText(/Category Name 2 \(1\)/i))
+    await userEvent.click(screen.getByText(/2024 \(20\)/iu))
+    await userEvent.click(screen.getByText(/Category Name 2 \(1\)/iu))
   },
 }
 
@@ -217,7 +215,7 @@ export const YearFilter: Story = {
   args: generateArgs({ collectionItems: threeItemsHaveUndefinedDate }),
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    const dateNotSpecified = screen.queryByText(/Not specified \(3\)/i)
+    const dateNotSpecified = screen.queryByText(/Not specified \(3\)/iu)
     await expect(dateNotSpecified).toBeInTheDocument()
 
     const dateText = await screen.findAllByText(/7 May 2024/)
@@ -229,7 +227,7 @@ export const YearFilterSelectNotSpecified: Story = {
   args: generateArgs({ collectionItems: threeItemsHaveUndefinedDate }),
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    await userEvent.click(screen.getByText(/Not specified/i))
+    await userEvent.click(screen.getByText(/Not specified/iu))
 
     const resultsHeader = await screen.findAllByText(/3 items/)
     await expect(resultsHeader.length).toBe(1)
@@ -246,7 +244,7 @@ export const AllResultsNoDate: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
 
-    const yearFilter = screen.queryByText(/Year/i)
+    const yearFilter = screen.queryByText(/Year/iu)
     await expect(yearFilter).not.toBeInTheDocument()
 
     const lastWordOccurences = await screen.findAllByText(/Isomer guide-/)
@@ -295,7 +293,7 @@ export const AllResultsSameYear: Story = {
   name: "Should show year filter if all items have same year",
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    const yearFilter = screen.queryByText(/Year/i)
+    const yearFilter = screen.queryByText(/Year/iu)
     await expect(yearFilter).toBeInTheDocument()
   },
 }
@@ -315,7 +313,7 @@ export const NoFiltersCollectionCard: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
 
-    const yearFilter = screen.queryByText(/Year/i)
+    const yearFilter = screen.queryByText(/Year/iu)
     await expect(yearFilter).not.toBeInTheDocument()
 
     const filtersHeading = screen.queryByRole("heading", { name: /Filters/i })
