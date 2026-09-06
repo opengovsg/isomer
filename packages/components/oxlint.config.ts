@@ -2,6 +2,7 @@ import { defineConfig } from "@isomer/oxlint-config"
 import base from "@isomer/oxlint-config/base"
 import {
   antiSlop,
+  core,
   jsPluginSettings,
   react,
   reactDoctor,
@@ -9,7 +10,7 @@ import {
 } from "@isomer/oxlint-config/presets"
 
 export default defineConfig({
-  extends: [base, react, reactDoctor, antiSlop],
+  extends: [base, core, react, reactDoctor, antiSlop],
   settings: jsPluginSettings,
   jsPlugins: [...reactDoctorJsPluginEntries, ...(antiSlop.jsPlugins ?? [])],
   ignorePatterns: ["dist", "**/*.config.*", "!.storybook"],
@@ -31,6 +32,15 @@ export default defineConfig({
           "error",
           {
             ignorePrimitives: true,
+          },
+        ],
+        "unicorn/filename-case": [
+          "error",
+          {
+            cases: {
+              camelCase: true,
+              pascalCase: true,
+            },
           },
         ],
         "no-restricted-imports": [

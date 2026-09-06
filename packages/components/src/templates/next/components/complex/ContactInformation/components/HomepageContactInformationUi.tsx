@@ -1,6 +1,7 @@
 import type { ContactInformationUIProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { DynamicHeading } from "~/utils/DynamicHeading"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { BaseParagraph } from "../../../internal/BaseParagraph"
 import { LinkButton } from "../../../internal/LinkButton"
@@ -90,9 +91,6 @@ type NumberOfContactMethods =
   keyof typeof createHomepageContactMethodStyles.variants.numberOfContactMethods
 
 const MAX_CONTACT_METHODS_FOR_HOMEPAGE = 3
-
-const hasNonEmptyString = (value: string | undefined): boolean =>
-  value !== undefined && value !== ""
 
 const getNumberOfContactMethods = (
   isLoading: ContactInformationUIProps["isLoading"],
@@ -184,7 +182,9 @@ export const HomepageContactInformationUI = ({
             ) : (
               <p className={compoundStyles.description()}>{descriptionText}</p>
             ))}
-          {showReferenceLink && (
+          {showReferenceLink &&
+            hasNonEmptyString(referenceLinkHref) &&
+            hasNonEmptyString(label) && (
             <CallToActionButton
               referenceLinkHref={referenceLinkHref}
               label={label}
@@ -216,7 +216,9 @@ export const HomepageContactInformationUI = ({
                 ))}
         </div>
 
-        {showReferenceLink && (
+        {showReferenceLink &&
+          hasNonEmptyString(referenceLinkHref) &&
+          hasNonEmptyString(label) && (
           <CallToActionButton
             referenceLinkHref={referenceLinkHref}
             label={label}
