@@ -6,78 +6,8 @@ import {
   setupUser,
 } from "tests/integration/helpers/seed"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-
-interface ReadyEmailArg {
-  recipientEmail: string
-  siteName: string
-  month: string
-  link: { label: "access" | "audit"; url: string }
-}
-
-interface FailedEmailArg {
-  recipientEmail: string
-  siteName: string
-  month: string
-}
-
-const {
-  mockUploadAuditLogExport,
-  mockGetStudioAssetsBucketName,
-  mockGetFileSize,
-  mockSendAuditLogExportReadyEmail,
-  mockSendAuditLogExportFailedEmail,
-} = vi.hoisted(() => ({
-  mockUploadAuditLogExport:
-    vi.fn<(args: { key: string; body: unknown }) => Promise<void>>(),
-  mockGetStudioAssetsBucketName: vi.fn<() => string>(),
-  // HeadObject-backed existence probe used by the Complete-Artifact reuse
-  // fork: a byte size means the object exists, null means it is gone.
-  mockGetFileSize: vi.fn<() => Promise<number | null>>(),
-  mockSendAuditLogExportReadyEmail:
-    vi.fn<(data: ReadyEmailArg) => Promise<void>>(),
-  mockSendAuditLogExportFailedEmail:
-    vi.fn<(data: FailedEmailArg) => Promise<void>>(),
-}))
-
-// `~/lib/s3` (mocked below) is the only thing in this service's import chain
-// that requires `S3_STUDIO_ASSETS_BUCKET_NAME`, and `~/lib/logger` only
-// reads NODE_ENV / NEXT_PUBLIC_APP_ENV. The DB still needs the real connection
-// string, which dotenv-cli has already loaded into `process.env` from
-// `.env.test`. We bypass the validated env schema (which would reject the
-// missing audit-bucket var) and read what we need straight from `process.env`.
-vi.mock("~/env.mjs", () => ({
-  env: {
-    // oxlint-disable-next-line node/no-process-env
-    NODE_ENV: process.env.NODE_ENV ?? "test",
-    // oxlint-disable-next-line node/no-process-env
-    NEXT_PUBLIC_APP_ENV: process.env.NEXT_PUBLIC_APP_ENV ?? "test",
-    // oxlint-disable-next-line node/no-process-env
-    DATABASE_URL: process.env.DATABASE_URL,
-    S3_STUDIO_ASSETS_BUCKET_NAME: "test-audit-bucket",
-    // The emailed download link is `${NEXT_PUBLIC_APP_URL}/api/...` and the
-    // Download Token is sealed with SESSION_SECRET — both are read via the
-    // fulfilment path now, so the mocked env must supply them.
-    NEXT_PUBLIC_APP_URL: "https://studio.test.gov.sg",
-    SESSION_SECRET: "test-session-secret-at-least-32-chars-long",
-  },
-}))
-
-// Mock only the external boundaries (S3 + mail). The DB is NOT mocked — the
-// request rows, sites, users and permissions are seeded into a real Postgres.
-// Fulfilment no longer presigns at export time (it emails a sealed Download
-// Token instead — ADR 0006), so generateSignedGetUrl is no longer part of
-// this path and is not mocked here.
-vi.mock("~/lib/s3", () => ({
-  uploadAuditLogExport: mockUploadAuditLogExport,
-  getStudioAssetsBucketName: mockGetStudioAssetsBucketName,
-  getFileSize: mockGetFileSize,
-}))
-
-vi.mock("~/features/mail/service", () => ({
-  sendAuditLogExportReadyEmail: mockSendAuditLogExportReadyEmail,
-  sendAuditLogExportFailedEmail: mockSendAuditLogExportFailedEmail,
-}))
-
+import * as mailService from "~/features/mail/service"
+import * as s3Lib from "~/lib/s3"
 import { getCurrentSingaporeMonth } from "~/schemas/audit"
 
 import { db } from "../../database/database"
@@ -91,6 +21,18 @@ const AUDIT_LOG_DATE_RANGE = getMonthDateRange(MONTH, new Date()) // [2024-03-01
 
 // Each row produces exactly one report.
 type ReportType = "Access" | "Activity"
+
+interface SeedRequestValues {
+  siteId: number
+  userId: string
+  auditLogDateRange: string
+  reportType: ReportType
+  status: "Pending" | "Processing" | "Done" | "Failed"
+  attempts: number
+  updatedAt?: Date
+  objectKey?: string
+  completedAt?: Date
+}
 
 const seedRequest = async ({
   siteId,
@@ -116,19 +58,27 @@ const seedRequest = async ({
   objectKey?: string
   completedAt?: Date
 }) => {
+  const values: SeedRequestValues = {
+    siteId,
+    userId,
+    auditLogDateRange,
+    reportType,
+    status,
+    attempts,
+  }
+  if (updatedAt) {
+    values.updatedAt = updatedAt
+  }
+  if (objectKey) {
+    values.objectKey = objectKey
+  }
+  if (completedAt) {
+    values.completedAt = completedAt
+  }
+
   return db
     .insertInto("AuditLogExportRequest")
-    .values({
-      siteId,
-      userId,
-      auditLogDateRange,
-      reportType,
-      status,
-      attempts,
-      ...(updatedAt ? { updatedAt } : {}),
-      ...(objectKey ? { objectKey } : {}),
-      ...(completedAt ? { completedAt } : {}),
-    })
+    .values(values)
     .returningAll()
     .executeTakeFirstOrThrow()
 }
@@ -152,22 +102,34 @@ describe("auditLogExport processor", () => {
       "AuditLog",
     )
     vi.clearAllMocks()
-    mockGetStudioAssetsBucketName.mockReturnValue("test-audit-bucket")
+    vi.spyOn(s3Lib, "getStudioAssetsBucketName").mockReturnValue(
+      "test-audit-bucket",
+    )
     // The real upload consumes the streamed CSV body; the mock must drain it
     // too so the underlying Postgres cursor is fully read and its connection
     // released. Otherwise an unconsumed stream would leave the cursor dangling
     // across tests and could exhaust the pool.
-    mockUploadAuditLogExport.mockImplementation(async ({ body }) => {
-      if (typeof body !== "string" && Symbol.asyncIterator in Object(body)) {
-        for await (const _chunk of body as AsyncIterable<unknown>) {
-          // drain
+    vi.spyOn(s3Lib, "uploadAuditLogExport").mockImplementation(
+      async ({ body }) => {
+        if (
+          Object.prototype.toString.call(body) !== "[object String]" &&
+          Symbol.asyncIterator in Object(body)
+        ) {
+          // SAFETY: upload body is a readable stream in the fulfilment path under test
+          for await (const _chunk of body as AsyncIterable<string>) {
+            // drain
+          }
         }
-      }
-    })
+      },
+    )
     // By default every candidate artifact still exists in S3.
-    mockGetFileSize.mockResolvedValue(1024)
-    mockSendAuditLogExportReadyEmail.mockResolvedValue(undefined)
-    mockSendAuditLogExportFailedEmail.mockResolvedValue(undefined)
+    vi.spyOn(s3Lib, "getFileSize").mockResolvedValue(1024)
+    vi.spyOn(mailService, "sendAuditLogExportReadyEmail").mockResolvedValue(
+      undefined,
+    )
+    vi.spyOn(mailService, "sendAuditLogExportFailedEmail").mockResolvedValue(
+      undefined,
+    )
   })
 
   it("processes an Access request: one upload with an inclusive-end key, one link, status Done", async () => {
@@ -193,11 +155,16 @@ describe("auditLogExport processor", () => {
     // Assert: the S3 key renders the half-open range [2024-03-01,2024-04-01)
     // with an inclusive end — `2024-03-01-to-2024-03-31`.
     const expectedKey = `audit-log-exports/${site.id}/${request.id}/access-2024-03-01-to-2024-03-31.csv`
-    expect(mockUploadAuditLogExport).toHaveBeenCalledTimes(1)
-    expect(mockUploadAuditLogExport.mock.calls[0]![0].key).toBe(expectedKey)
+    expect(vi.mocked(s3Lib.uploadAuditLogExport)).toHaveBeenCalledTimes(1)
+    expect(vi.mocked(s3Lib.uploadAuditLogExport).mock.calls[0]![0].key).toBe(
+      expectedKey,
+    )
 
-    expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledTimes(1)
-    const emailArg = mockSendAuditLogExportReadyEmail.mock.calls[0]![0]
+    expect(
+      vi.mocked(mailService.sendAuditLogExportReadyEmail),
+    ).toHaveBeenCalledTimes(1)
+    const emailArg = vi.mocked(mailService.sendAuditLogExportReadyEmail).mock
+      .calls[0]![0]
     // The emailed link points at the Studio redemption endpoint carrying a
     // sealed Download Token (ADR 0006), NOT a presigned S3 URL. This pins the
     // actual bug: no signing-credential-lifetime-capped amazonaws.com URL is
@@ -209,7 +176,9 @@ describe("auditLogExport processor", () => {
     expect(emailArg.link.url).not.toContain("amazonaws.com")
     expect(emailArg.recipientEmail).toBe("admin@vendor.com.sg")
     expect(emailArg.month).toBe("March 2024")
-    expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
+    expect(
+      vi.mocked(mailService.sendAuditLogExportFailedEmail),
+    ).not.toHaveBeenCalled()
 
     const updated = await getRequest(request.id)
     expect(updated.status).toBe("Done")
@@ -235,8 +204,10 @@ describe("auditLogExport processor", () => {
     await processPendingAuditLogExports()
 
     // Assert
-    expect(mockUploadAuditLogExport).toHaveBeenCalledTimes(1)
-    expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledWith(
+    expect(vi.mocked(s3Lib.uploadAuditLogExport)).toHaveBeenCalledTimes(1)
+    expect(
+      vi.mocked(mailService.sendAuditLogExportReadyEmail),
+    ).toHaveBeenCalledWith(
       expect.objectContaining({ recipientEmail: admin.email }),
     )
     expect((await getRequest(request.id)).status).toBe("Done")
@@ -258,17 +229,21 @@ describe("auditLogExport processor", () => {
     // immediately hits the download route's status guard and sees "expired".
     let statusAtSendTime: string | null = null
     let completedAtSendTime: Date | null = null
-    mockSendAuditLogExportReadyEmail.mockImplementation(async () => {
-      const row = await getRequest(request.id)
-      statusAtSendTime = row.status
-      completedAtSendTime = row.completedAt
-    })
+    vi.mocked(mailService.sendAuditLogExportReadyEmail).mockImplementation(
+      async () => {
+        const row = await getRequest(request.id)
+        statusAtSendTime = row.status
+        completedAtSendTime = row.completedAt
+      },
+    )
 
     // Act
     await processPendingAuditLogExports()
 
     // Assert
-    expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledTimes(1)
+    expect(
+      vi.mocked(mailService.sendAuditLogExportReadyEmail),
+    ).toHaveBeenCalledTimes(1)
     expect(statusAtSendTime).toBe("Done")
     expect(completedAtSendTime).not.toBeNull()
   })
@@ -283,7 +258,9 @@ describe("auditLogExport processor", () => {
       userId: admin.id,
       reportType: "Access",
     })
-    mockSendAuditLogExportReadyEmail.mockRejectedValue(new Error("ses down"))
+    vi.mocked(mailService.sendAuditLogExportReadyEmail).mockRejectedValue(
+      new Error("ses down"),
+    )
 
     // Act
     await processPendingAuditLogExports()
@@ -294,7 +271,9 @@ describe("auditLogExport processor", () => {
     const updated = await getRequest(request.id)
     expect(updated.status).toBe("Pending")
     expect(updated.attempts).toBe(1)
-    expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
+    expect(
+      vi.mocked(mailService.sendAuditLogExportFailedEmail),
+    ).not.toHaveBeenCalled()
   })
 
   it("processes two independent pending rows in one sweep: two uploads, two single-link emails, both Done", async () => {
@@ -320,10 +299,13 @@ describe("auditLogExport processor", () => {
 
     // Assert: two uploads and two independent ready emails, each with exactly
     // one link (no cross-job coordination).
-    expect(mockUploadAuditLogExport).toHaveBeenCalledTimes(2)
-    expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledTimes(2)
-    const labels = mockSendAuditLogExportReadyEmail.mock.calls
-      .map(([arg]) => arg.link.label)
+    expect(vi.mocked(s3Lib.uploadAuditLogExport)).toHaveBeenCalledTimes(2)
+    expect(
+      vi.mocked(mailService.sendAuditLogExportReadyEmail),
+    ).toHaveBeenCalledTimes(2)
+    const labels = vi
+      .mocked(mailService.sendAuditLogExportReadyEmail)
+      .mock.calls.map(([arg]) => arg.link.label)
       .sort()
     expect(labels).toEqual(["access", "audit"])
 
@@ -359,8 +341,10 @@ describe("auditLogExport processor", () => {
     await processPendingAuditLogExports()
 
     // Assert
-    expect(mockUploadAuditLogExport).toHaveBeenCalledTimes(1)
-    expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledTimes(1)
+    expect(vi.mocked(s3Lib.uploadAuditLogExport)).toHaveBeenCalledTimes(1)
+    expect(
+      vi.mocked(mailService.sendAuditLogExportReadyEmail),
+    ).toHaveBeenCalledTimes(1)
 
     const updated = await getRequest(request.id)
     expect(updated.status).toBe("Done")
@@ -371,7 +355,9 @@ describe("auditLogExport processor", () => {
     const { site } = await setupSite()
     const admin = await setupUser({ email: "admin4@vendor.com.sg" })
     await setupAdminPermissions({ userId: admin.id, siteId: site.id })
-    mockUploadAuditLogExport.mockRejectedValue(new Error("s3 down"))
+    vi.mocked(s3Lib.uploadAuditLogExport).mockRejectedValue(
+      new Error("s3 down"),
+    )
 
     const request = await seedRequest({
       siteId: site.id,
@@ -386,28 +372,37 @@ describe("auditLogExport processor", () => {
     let updated = await getRequest(request.id)
     expect(updated.attempts).toBe(1)
     expect(updated.status).toBe("Pending")
-    expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
+    expect(
+      vi.mocked(mailService.sendAuditLogExportFailedEmail),
+    ).not.toHaveBeenCalled()
 
     // Act: second sweep → attempt 2, still re-queued.
     await processPendingAuditLogExports()
     updated = await getRequest(request.id)
     expect(updated.attempts).toBe(2)
     expect(updated.status).toBe("Pending")
-    expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
+    expect(
+      vi.mocked(mailService.sendAuditLogExportFailedEmail),
+    ).not.toHaveBeenCalled()
 
     // Act: third sweep → attempt 3, Failed + failed email sent.
     await processPendingAuditLogExports()
     updated = await getRequest(request.id)
     expect(updated.attempts).toBe(3)
     expect(updated.status).toBe("Failed")
-    expect(mockSendAuditLogExportFailedEmail).toHaveBeenCalledTimes(1)
-    const failedArg = mockSendAuditLogExportFailedEmail.mock.calls[0]![0]
+    expect(
+      vi.mocked(mailService.sendAuditLogExportFailedEmail),
+    ).toHaveBeenCalledTimes(1)
+    const failedArg = vi.mocked(mailService.sendAuditLogExportFailedEmail).mock
+      .calls[0]![0]
     expect(failedArg.recipientEmail).toBe("admin4@vendor.com.sg")
     // The failure email's month label derives from the daterange lower bound.
     expect(failedArg.month).toBe("March 2024")
 
     // The ready email must never have been sent.
-    expect(mockSendAuditLogExportReadyEmail).not.toHaveBeenCalled()
+    expect(
+      vi.mocked(mailService.sendAuditLogExportReadyEmail),
+    ).not.toHaveBeenCalled()
   })
 
   it("does not reprocess a request that is not Pending", async () => {
@@ -427,8 +422,10 @@ describe("auditLogExport processor", () => {
     await processPendingAuditLogExports()
 
     // Assert: a Done row is never claimed, so no S3/mail work happens for it.
-    expect(mockUploadAuditLogExport).not.toHaveBeenCalled()
-    expect(mockSendAuditLogExportReadyEmail).not.toHaveBeenCalled()
+    expect(vi.mocked(s3Lib.uploadAuditLogExport)).not.toHaveBeenCalled()
+    expect(
+      vi.mocked(mailService.sendAuditLogExportReadyEmail),
+    ).not.toHaveBeenCalled()
 
     const updated = await getRequest(doneRequest.id)
     expect(updated.status).toBe("Done")
@@ -455,9 +452,13 @@ describe("auditLogExport processor", () => {
     await processPendingAuditLogExports()
 
     // Assert: the stale row was re-claimed, processed, and finished.
-    expect(mockUploadAuditLogExport).toHaveBeenCalledTimes(1)
-    expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledTimes(1)
-    expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
+    expect(vi.mocked(s3Lib.uploadAuditLogExport)).toHaveBeenCalledTimes(1)
+    expect(
+      vi.mocked(mailService.sendAuditLogExportReadyEmail),
+    ).toHaveBeenCalledTimes(1)
+    expect(
+      vi.mocked(mailService.sendAuditLogExportFailedEmail),
+    ).not.toHaveBeenCalled()
 
     const updated = await getRequest(request.id)
     expect(updated.status).toBe("Done")
@@ -476,7 +477,9 @@ describe("auditLogExport processor", () => {
     const { site } = await setupSite()
     const admin = await setupUser({ email: "stalefail@vendor.com.sg" })
     await setupAdminPermissions({ userId: admin.id, siteId: site.id })
-    mockUploadAuditLogExport.mockRejectedValue(new Error("s3 down"))
+    vi.mocked(s3Lib.uploadAuditLogExport).mockRejectedValue(
+      new Error("s3 down"),
+    )
 
     const staleUpdatedAt = new Date(Date.now() - 30 * 60 * 1000) // 30 min ago
     const request = await seedRequest({
@@ -495,7 +498,9 @@ describe("auditLogExport processor", () => {
     const updated = await getRequest(request.id)
     expect(updated.attempts).toBe(2)
     expect(updated.status).toBe("Pending")
-    expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
+    expect(
+      vi.mocked(mailService.sendAuditLogExportFailedEmail),
+    ).not.toHaveBeenCalled()
   })
 
   it("does not touch a fresh Processing row within the lease window", async () => {
@@ -518,9 +523,13 @@ describe("auditLogExport processor", () => {
     await processPendingAuditLogExports()
 
     // Assert: no work happened and the row is untouched.
-    expect(mockUploadAuditLogExport).not.toHaveBeenCalled()
-    expect(mockSendAuditLogExportReadyEmail).not.toHaveBeenCalled()
-    expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
+    expect(vi.mocked(s3Lib.uploadAuditLogExport)).not.toHaveBeenCalled()
+    expect(
+      vi.mocked(mailService.sendAuditLogExportReadyEmail),
+    ).not.toHaveBeenCalled()
+    expect(
+      vi.mocked(mailService.sendAuditLogExportFailedEmail),
+    ).not.toHaveBeenCalled()
 
     const updated = await getRequest(request.id)
     expect(updated.status).toBe("Processing")
@@ -547,7 +556,7 @@ describe("auditLogExport processor", () => {
         reportType: "Access",
       })
       await processPendingAuditLogExports()
-      expect(mockUploadAuditLogExport).toHaveBeenCalledTimes(1)
+      expect(vi.mocked(s3Lib.uploadAuditLogExport)).toHaveBeenCalledTimes(1)
 
       // A SECOND admin asks for the same (site, range, type): the artifact is
       // a function of (site, range, type) only, so their request qualifies.
@@ -564,7 +573,7 @@ describe("auditLogExport processor", () => {
 
       // Assert: ONE upload across both requests — the second run reused the
       // first artifact's key and only re-signed + re-emailed it.
-      expect(mockUploadAuditLogExport).toHaveBeenCalledTimes(1)
+      expect(vi.mocked(s3Lib.uploadAuditLogExport)).toHaveBeenCalledTimes(1)
       const updatedFirst = await getRequest(first.id)
       const updatedSecond = await getRequest(second.id)
       expect(updatedSecond.status).toBe("Done")
@@ -573,8 +582,11 @@ describe("auditLogExport processor", () => {
       expect(updatedSecond.errorMessage).toBeNull()
 
       // A fresh ready email went to the SECOND requester.
-      expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledTimes(2)
-      const secondEmail = mockSendAuditLogExportReadyEmail.mock.calls[1]![0]
+      expect(
+        vi.mocked(mailService.sendAuditLogExportReadyEmail),
+      ).toHaveBeenCalledTimes(2)
+      const secondEmail = vi.mocked(mailService.sendAuditLogExportReadyEmail)
+        .mock.calls[1]![0]
       expect(secondEmail.recipientEmail).toBe("second@vendor.com.sg")
       // Reuse still emails a Download Token link (against the reused row's own
       // token), never a presigned S3 URL.
@@ -583,7 +595,9 @@ describe("auditLogExport processor", () => {
         "https://studio.test.gov.sg/api/audit-log-exports/download?token=",
       )
       expect(secondEmail.link.url).not.toContain("amazonaws.com")
-      expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
+      expect(
+        vi.mocked(mailService.sendAuditLogExportFailedEmail),
+      ).not.toHaveBeenCalled()
     })
 
     it("does NOT reuse an in-progress-month snapshot (completedAt before the range end)", async () => {
@@ -605,7 +619,7 @@ describe("auditLogExport processor", () => {
         auditLogDateRange: currentMonthRange,
       })
       await processPendingAuditLogExports()
-      expect(mockUploadAuditLogExport).toHaveBeenCalledTimes(1)
+      expect(vi.mocked(s3Lib.uploadAuditLogExport)).toHaveBeenCalledTimes(1)
 
       const second = await seedRequest({
         siteId: site.id,
@@ -619,7 +633,7 @@ describe("auditLogExport processor", () => {
 
       // Assert: the snapshot was regenerated, not reused — a second upload
       // under the second request's own key.
-      expect(mockUploadAuditLogExport).toHaveBeenCalledTimes(2)
+      expect(vi.mocked(s3Lib.uploadAuditLogExport)).toHaveBeenCalledTimes(2)
       const updatedFirst = await getRequest(first.id)
       const updatedSecond = await getRequest(second.id)
       expect(updatedSecond.status).toBe("Done")
@@ -645,7 +659,7 @@ describe("auditLogExport processor", () => {
       })
 
       let uploadStartedAt: Date | undefined
-      mockUploadAuditLogExport.mockImplementationOnce(async () => {
+      vi.mocked(s3Lib.uploadAuditLogExport).mockImplementationOnce(async () => {
         uploadStartedAt = new Date()
         // Real delay so delivery time is measurably after the query instant.
         await new Promise((resolve) => setTimeout(resolve, 25))
@@ -696,7 +710,7 @@ describe("auditLogExport processor", () => {
       await processPendingAuditLogExports()
 
       // Assert: generated fresh under this request's own key.
-      expect(mockUploadAuditLogExport).toHaveBeenCalledTimes(1)
+      expect(vi.mocked(s3Lib.uploadAuditLogExport)).toHaveBeenCalledTimes(1)
       const updated = await getRequest(request.id)
       expect(updated.status).toBe("Done")
       expect(updated.objectKey).toContain(`/${request.id}/`)
@@ -719,7 +733,7 @@ describe("auditLogExport processor", () => {
         objectKey: goneKey,
         completedAt: new Date(),
       })
-      mockGetFileSize.mockResolvedValue(null)
+      vi.mocked(s3Lib.getFileSize).mockResolvedValue(null)
 
       const request = await seedRequest({
         siteId: site.id,
@@ -732,16 +746,18 @@ describe("auditLogExport processor", () => {
 
       // Assert: the existence check ran against the candidate, found nothing,
       // and the report was regenerated + uploaded under a fresh key.
-      expect(mockGetFileSize).toHaveBeenCalledWith({
+      expect(vi.mocked(s3Lib.getFileSize)).toHaveBeenCalledWith({
         Bucket: "test-audit-bucket",
         Key: goneKey,
       })
-      expect(mockUploadAuditLogExport).toHaveBeenCalledTimes(1)
+      expect(vi.mocked(s3Lib.uploadAuditLogExport)).toHaveBeenCalledTimes(1)
       const updated = await getRequest(request.id)
       expect(updated.status).toBe("Done")
       expect(updated.objectKey).toContain(`/${request.id}/`)
       expect(updated.objectKey).not.toBe(goneKey)
-      expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledTimes(1)
+      expect(
+        vi.mocked(mailService.sendAuditLogExportReadyEmail),
+      ).toHaveBeenCalledTimes(1)
     })
 
     it("re-queues (Pending) without regenerating when the existence probe hits a transient S3 error", async () => {
@@ -766,7 +782,7 @@ describe("auditLogExport processor", () => {
         name: "SlowDown",
         $metadata: { httpStatusCode: 503 },
       })
-      mockGetFileSize.mockRejectedValue(transientError)
+      vi.mocked(s3Lib.getFileSize).mockRejectedValue(transientError)
 
       const request = await seedRequest({
         siteId: site.id,
@@ -780,12 +796,14 @@ describe("auditLogExport processor", () => {
       // Assert: the probe ran, but the transient failure short-circuited the
       // attempt — no regeneration, no upload, no email — and the row is left
       // Pending for the next sweep.
-      expect(mockGetFileSize).toHaveBeenCalledWith({
+      expect(vi.mocked(s3Lib.getFileSize)).toHaveBeenCalledWith({
         Bucket: "test-audit-bucket",
         Key: reusableKey,
       })
-      expect(mockUploadAuditLogExport).not.toHaveBeenCalled()
-      expect(mockSendAuditLogExportReadyEmail).not.toHaveBeenCalled()
+      expect(vi.mocked(s3Lib.uploadAuditLogExport)).not.toHaveBeenCalled()
+      expect(
+        vi.mocked(mailService.sendAuditLogExportReadyEmail),
+      ).not.toHaveBeenCalled()
       const updated = await getRequest(request.id)
       expect(updated.status).toBe("Pending")
       expect(updated.objectKey).toBeNull()

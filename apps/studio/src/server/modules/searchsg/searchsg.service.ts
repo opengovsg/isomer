@@ -115,7 +115,7 @@ export const updateSearchSGConfig = async (
     `[INFO] Updating searchsg config for ${url} with searchsg client id: ${searchsgClientId}`,
   )
 
-  const logAndRethrow = (error: unknown): never => {
+  const logAndRethrow = (error: Error): never => {
     logger.error(
       { error },
       `[ERROR] Failed to update searchsg config for ${url} with searchsg client id: ${searchsgClientId}`,
@@ -164,6 +164,7 @@ export const updateSearchSGConfig = async (
         .catch(logAndRethrow)
     default: {
       const exhaustiveCheck: never = kind
+      // SAFETY: unreachable default branch — kind is narrowed to the UpdateSearchSGConfigProps union
       const invalidKind = exhaustiveCheck as string
       logger.error(
         { kind: invalidKind },

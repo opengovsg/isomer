@@ -17,6 +17,8 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
+import { beforeAll, vi } from "vitest"
+import { env } from "~/env.mjs"
 import * as searchSgService from "~/server/modules/searchsg/searchsg.service"
 import { createCallerFactory } from "~/server/trpc"
 import { IsomerAdminRole, RoleType } from "~prisma/generated/generatedEnums"
@@ -27,16 +29,8 @@ import { AuditLogEvent, ResourceType } from "../../database/types"
 import { jsonb } from "../../database/utils"
 import { siteRouter } from "../site.router"
 
-// Mock env to set production environment for SearchSG tests
-vi.mock("~/env.mjs", async () => {
-  // Import the real module first to get all default values
-  const actual = await vi.importActual("~/env.mjs")
-  return {
-    env: {
-      ...(actual as { env: Record<string, unknown> }).env,
-      NEXT_PUBLIC_APP_ENV: "production",
-    },
-  }
+beforeAll(() => {
+  env.NEXT_PUBLIC_APP_ENV = "production"
 })
 
 const createCaller = createCallerFactory(siteRouter)
@@ -1036,12 +1030,13 @@ describe("site.router", async () => {
       })
 
       // Act
+      const invalidIntegrationData = {
+        ...MOCK_INTEGRATION_DATA,
+        fake: "fake",
+      }
       const result = await caller.updateSiteIntegrations({
         siteId: site.id,
-        data: {
-          ...MOCK_INTEGRATION_DATA,
-          fake: "fake",
-        } as unknown as typeof MOCK_INTEGRATION_DATA,
+        data: invalidIntegrationData,
       })
 
       // Assert

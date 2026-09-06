@@ -29,6 +29,7 @@ describe("isUserOnboarded", () => {
 
       // Act & Assert
       usersWithoutName.forEach((user) => {
+        // SAFETY: test fixture supplies only the fields required by the assertion under test
         expect(isUserOnboarded(user as isUserOnboardedProps)).toBe(false)
       })
     })
@@ -43,6 +44,7 @@ describe("isUserOnboarded", () => {
 
       // Act & Assert
       usersWithoutPhone.forEach((user) => {
+        // SAFETY: test fixture supplies only the fields required by the assertion under test
         expect(isUserOnboarded(user as isUserOnboardedProps)).toBe(false)
       })
     })

@@ -15,9 +15,11 @@ export const getNavbarItemPath = (
   parentIndex?: number,
 ): NavbarItemPath => {
   if (parentIndex !== undefined) {
+    // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
     return `items.${parentIndex}.items.${index}` as NavbarItemPath
   }
 
+  // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
   return `items.${index}` as NavbarItemPath
 }
 
@@ -150,6 +152,7 @@ const moveSingleMainItemToBecomeSubitem = (
   moveItemIndices: NavbarItemIndices,
   targetLocationIndices: NavbarItemIndices,
 ) => {
+  // SAFETY: navbar item path resolves to a top-level or nested navbar item record
   const itemToMove = get({ items: data }, originalPath) as
     | NavbarItems["items"][number]
     | undefined
@@ -233,6 +236,7 @@ const moveSubItemToBecomeMainItem = (
     return data
   }
 
+  // SAFETY: navbar item path resolves to a top-level or nested navbar item record
   const itemToMove = get({ items: data }, originalPath) as
     | NavbarItems["items"][number]
     | undefined

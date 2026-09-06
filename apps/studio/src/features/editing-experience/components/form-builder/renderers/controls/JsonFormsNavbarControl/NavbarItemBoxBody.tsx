@@ -85,6 +85,7 @@ export const NavbarItemBoxBody = ({
         )}
 
       <Box
+        // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
         ref={itemRef as React.Ref<HTMLDivElement>}
         aria-invalid={isInvalid && !isItemBeingDraggedOver}
         data-id={getNavbarItemPath(index, parentIndex)}
@@ -176,6 +177,7 @@ export const NavbarItemBoxBody = ({
             <Box
               display="flex"
               ref={
+                // SAFETY: drag handle ref is attached to either the custom or default handle element
                 (itemDragHandleRef ??
                   itemDefaultDragHandleRef) as React.Ref<HTMLDivElement>
               }

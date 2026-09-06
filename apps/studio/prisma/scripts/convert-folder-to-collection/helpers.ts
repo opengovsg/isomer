@@ -117,29 +117,41 @@ interface PageWithContentHeader {
   image?: { src: string; alt: string }
 }
 
-const optionalPageImage = (page: PageWithContentHeader) =>
-  page.image ? { image: page.image } : {}
+const optionalPageImage = (page: PageWithContentHeader) => {
+  if (!page.image) {
+    return {}
+  }
+  return { image: page.image }
+}
 
 export const asIndexBlob = (s: IsomerSchema): IndexBlob => {
   if (s.layout !== "index") {
     throw new Error(`Expected layout="index", got "${s.layout}"`)
   }
-  return s as unknown as IndexBlob
+  // SAFETY: layout discriminator confirms index page schema shape.
+  // @ts-expect-error IsomerSchema union is wider than IndexBlob at compile time.
+  return s as IndexBlob
 }
 
 export const asContentBlob = (s: IsomerSchema): ContentBlob => {
   if (s.layout !== "content") {
     throw new Error(`Expected layout="content", got "${s.layout}"`)
   }
-  return s as unknown as ContentBlob
+  // SAFETY: layout discriminator confirms content page schema shape.
+  // @ts-expect-error IsomerSchema union is wider than ContentBlob at compile time.
+  return s as ContentBlob
 }
 
 export const asPageBlob = (s: IsomerSchema): PageBlob => {
   if (s.layout === "content") {
-    return s as unknown as ContentBlob
+    // SAFETY: layout discriminator confirms content page schema shape.
+    // @ts-expect-error IsomerSchema union is wider than ContentBlob at compile time.
+    return s as ContentBlob
   }
   if (s.layout === "article") {
-    return s as unknown as ArticleBlob
+    // SAFETY: layout discriminator confirms article page schema shape.
+    // @ts-expect-error IsomerSchema union is wider than ArticleBlob at compile time.
+    return s as ArticleBlob
   }
   throw new Error(`Expected layout="content" or "article", got "${s.layout}"`)
 }
@@ -147,45 +159,56 @@ export const asPageBlob = (s: IsomerSchema): PageBlob => {
 export const buildCollectionIndexBlob = (
   current: IndexBlob,
   folderTitle: string,
-): IsomerSchema =>
-  ({
+): IsomerSchema => {
+  const page = {
+    title: folderTitle,
+    subtitle: current.page.contentPageHeader.summary,
+    sortOrder: "date-desc" as const,
+    ...optionalPageImage(current.page),
+  }
+  const blob = {
     ...current,
-    layout: "collection",
-    page: {
-      title: folderTitle,
-      subtitle: current.page.contentPageHeader.summary,
-      sortOrder: "date-desc",
-      ...optionalPageImage(current.page),
-    },
+    layout: "collection" as const,
+    page,
     content: [],
-  }) as unknown as IsomerSchema
+  }
+  // SAFETY: transforms a validated IndexBlob into collection layout per conversion rules.
+  // @ts-expect-error collection layout blob is a valid IsomerSchema at runtime.
+  return blob as IsomerSchema
+}
 
 export const buildArticleBlob = (
   current: PageBlob,
   defaultCategory: string,
 ): IsomerSchema => {
   if (current.layout === "article") {
-    return {
+    const blob = {
       ...current,
-      layout: "article",
+      layout: "article" as const,
       page: {
         ...current.page,
         category: defaultCategory,
       },
       content: current.content,
-    } as unknown as IsomerSchema
+    }
+    // SAFETY: article layout fields are preserved while updating category.
+    // @ts-expect-error article layout blob is a valid IsomerSchema at runtime.
+    return blob as IsomerSchema
   }
 
-  return {
-    ...current,
-    layout: "article",
-    page: {
-      category: defaultCategory,
-      articlePageHeader: {
-        summary: current.page.contentPageHeader.summary,
-      },
-      ...optionalPageImage(current.page),
+  const page = {
+    category: defaultCategory,
+    articlePageHeader: {
+      summary: current.page.contentPageHeader.summary,
     },
+    ...optionalPageImage(current.page),
+  }
+  const blob = {
+    ...current,
+    layout: "article" as const,
+    page,
     content: current.content,
-  } as unknown as IsomerSchema
+  }
+  // SAFETY: content page fields are mapped to article layout per conversion rules.
+  return blob as IsomerSchema
 }

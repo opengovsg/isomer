@@ -309,10 +309,7 @@ export const DEFAULT_BLOCKS = {
   },
 }
 
-export const BLOCK_TO_META: Record<
-  IsomerComponent["type"],
-  { label: string; description: string; usageText?: string; imageSrc?: string }
-> = {
+export const BLOCK_TO_META = {
   hero: {
     label: "Hero banner",
     description: "Title, summary, hero image, and Call-to-Action.",
@@ -469,7 +466,10 @@ export const BLOCK_TO_META: Record<
       "Get mailing list sign-ups or quick feedback directly on the page.",
     imageSrc: "/assets/block-images/FormSG.png",
   },
-} as const
+} satisfies Record<
+  IsomerComponent["type"],
+  { label: string; description: string; usageText?: string; imageSrc?: string }
+>
 
 type AllowedBlockSections = {
   label: string

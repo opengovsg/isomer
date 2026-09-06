@@ -1,7 +1,4 @@
-import type {
-  CollectionPagePageProps,
-  IsomerSchema,
-} from "@opengovsg/isomer-components"
+import type { IsomerSchema } from "@opengovsg/isomer-components"
 import {
   COLLECTION_VARIANT_OPTIONS,
   getLayoutMetadataSchema,
@@ -75,19 +72,36 @@ import { createDefaultPage, createFolderIndexPage } from "./page.service"
 
 const schemaValidator = ajv.compile<IsomerSchema>(schema)
 
+type UnparsedProcedureInput =
+  | string
+  | number
+  | boolean
+  | null
+  | { content: string }
+  | { [key: string]: UnparsedProcedureInput }
+
+const isPageContentInput = (
+  input: UnparsedProcedureInput,
+): input is { content: string } => {
+  if (input === null || typeof input !== "object" || !("content" in input)) {
+    return false
+  }
+  // SAFETY: content field presence is checked above before narrowing to string
+  const record = input as { content: UnparsedProcedureInput }
+  return Object.prototype.toString.call(record.content) === "[object String]"
+}
+
 // TODO: Need to do validation like checking for existence of the page
 // and whether the user has write-access to said page: replace protectorProcedure in this with the new procedure
 const validatedPageProcedure = protectedProcedure.use(
   async ({ next, getRawInput }) => {
-    const rawInput = await getRawInput()
+    const rawInput =
+      // SAFETY: tRPC raw input is validated immediately by isPageContentInput below
+      (await getRawInput()) as UnparsedProcedureInput
 
-    if (
-      typeof rawInput === "object" &&
-      rawInput !== null &&
-      "content" in rawInput
-    ) {
+    if (isPageContentInput(rawInput)) {
       // NOTE: content will be the entire page schema for now...
-      if (!schemaValidator(safeJsonParse(rawInput.content as string))) {
+      if (!schemaValidator(safeJsonParse(rawInput.content))) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Schema validation failed.",
@@ -738,11 +752,21 @@ export const pageRouter = router({
         const pageMetaSchema = getLayoutMetadataSchema(fullPage.content.layout)
         const validateFn = ajv.compile(pageMetaSchema)
 
-        const newMeta = safeJsonParse(meta) as PrismaJson.BlobJsonContent | null
+        let parsedMeta: PrismaJson.BlobJsonContent | null | undefined
+        if (meta) {
+          try {
+            // SAFETY: validateFn is compiled from the layout-specific metadata schema for this page
+            parsedMeta = JSON.parse(meta) as PrismaJson.BlobJsonContent
+          } catch {
+            parsedMeta = undefined
+          }
+        } else {
+          parsedMeta = undefined
+        }
 
         // NOTE: if `meta` was originally passed, then we need to validate it
         // otherwise, the meta never existed and we don't need to validate anyways
-        const isValid = !meta || validateFn(newMeta)
+        const isValid = !meta || validateFn(parsedMeta)
 
         if (!isValid) {
           throw new TRPCError({
@@ -752,9 +776,13 @@ export const pageRouter = router({
           })
         }
 
-        const newContent = !newMeta
+        // SAFETY: parsedMeta passed validateFn for this page's layout metadata schema
+        const newContent = !parsedMeta
           ? rest
-          : ({ ...rest, meta: newMeta } as PrismaJson.BlobJsonContent)
+          : ({
+              ...rest,
+              meta: parsedMeta,
+            } as PrismaJson.BlobJsonContent)
 
         const [oldBlob, newBlob] = await Promise.all([
           getBlobOfResource({ db: tx, resourceId }),
@@ -1023,7 +1051,7 @@ export const pageRouter = router({
                 subtitle: `Read more on ${parent.title.toLowerCase()} here.`,
                 sortOrder: "date-desc",
                 variant: COLLECTION_VARIANT_OPTIONS.Collection,
-              } as CollectionPagePageProps,
+              },
               content: [],
               version: "0.1.0",
             }

@@ -14,27 +14,16 @@ import {
   setUpWhitelist,
 } from "tests/integration/helpers/seed"
 import { vi } from "vitest"
-import { deleteFile, generateSignedPutUrl, putObjectDirect } from "~/lib/s3"
+import * as s3Lib from "~/lib/s3"
+import { resetS3StorageForTests, setS3StorageForTests } from "~/lib/s3"
 import { MAX_DELETE_FILE_KEYS } from "~/schemas/asset"
 import { createCallerFactory } from "~/server/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { assetRouter } from "../asset.router"
 
-// Mock the S3 client to prevent credential loading issues in CI
+// Spy on the S3 client to prevent credential loading issues in CI
 // Workaround as we do not really want to set up a full integration test here with S3
-vi.mock("~/lib/s3", () => ({
-  storage: {
-    send: vi.fn().mockResolvedValue({ TagSet: [] }),
-  },
-  generateSignedPutUrl: vi
-    .fn()
-    .mockResolvedValue("https://example.com/signed-url"),
-  markFileAsDeleted: vi.fn().mockResolvedValue(undefined),
-  deleteFile: vi.fn().mockResolvedValue(undefined),
-  putObjectDirect: vi.fn().mockResolvedValue(undefined),
-}))
-
 const createCaller = createCallerFactory(assetRouter)
 
 describe("asset.router", async () => {
@@ -51,10 +40,16 @@ describe("asset.router", async () => {
     await resetTables("Site", "ResourcePermission", "Resource")
     await setUpWhitelist({ email: TEST_VALID_EMAIL })
     vi.clearAllMocks()
-    vi.mocked(generateSignedPutUrl).mockResolvedValue(
+    setS3StorageForTests({ send: vi.fn().mockResolvedValue({ TagSet: [] }) })
+    vi.spyOn(s3Lib, "generateSignedPutUrl").mockResolvedValue(
       "https://example.com/signed-url",
     )
-    vi.mocked(putObjectDirect).mockResolvedValue(undefined)
+    vi.spyOn(s3Lib, "putObjectDirect").mockResolvedValue(undefined)
+    vi.spyOn(s3Lib, "deleteFile").mockResolvedValue(undefined)
+  })
+
+  afterEach(() => {
+    resetS3StorageForTests()
   })
 
   describe("getPresignedPutUrl", () => {
@@ -173,7 +168,7 @@ describe("asset.router", async () => {
       })
 
       // Assert: backend-derived ContentType and ContentDisposition are signed (not client-controlled)
-      expect(generateSignedPutUrl).toHaveBeenCalledWith({
+      expect(s3Lib.generateSignedPutUrl).toHaveBeenCalledWith({
         Bucket: expect.any(String),
         Key: expect.stringContaining("test-image.png"),
         ContentType: "image/png",
@@ -452,9 +447,9 @@ describe("asset.router", async () => {
       })
 
       // Assert
-      expect(deleteFile).toHaveBeenCalledTimes(fileKeys.length)
+      expect(s3Lib.deleteFile).toHaveBeenCalledTimes(fileKeys.length)
       fileKeys.forEach((fileKey) => {
-        expect(deleteFile).toHaveBeenCalledWith({
+        expect(s3Lib.deleteFile).toHaveBeenCalledWith({
           Bucket: expect.any(String),
           Key: fileKey,
         })
@@ -488,7 +483,7 @@ describe("asset.router", async () => {
             "One or more file keys do not belong to the specified site. You may only delete assets for the site you are authorized for.",
         }),
       )
-      expect(deleteFile).not.toHaveBeenCalled()
+      expect(s3Lib.deleteFile).not.toHaveBeenCalled()
     })
 
     it("should reject and not call deleteFile when fileKeys exceeds the cap", async () => {
@@ -519,7 +514,7 @@ describe("asset.router", async () => {
         `You can only delete up to ${MAX_DELETE_FILE_KEYS} assets at a time`,
       )
       await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
-      expect(deleteFile).not.toHaveBeenCalled()
+      expect(s3Lib.deleteFile).not.toHaveBeenCalled()
     })
   })
 
@@ -662,7 +657,7 @@ describe("asset.router", async () => {
       await expect(result).resolves.toMatchObject({
         fileKey: expect.stringContaining(".svg"),
       })
-      expect(putObjectDirect).toHaveBeenCalledTimes(1)
+      expect(s3Lib.putObjectDirect).toHaveBeenCalledTimes(1)
     })
 
     it("should reject fileName not ending in .svg", async () => {

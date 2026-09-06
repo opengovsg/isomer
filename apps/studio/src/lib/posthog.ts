@@ -1,6 +1,24 @@
 import type PostHogInstance from "posthog-js"
 
+interface PosthogModule {
+  default: typeof PostHogInstance
+}
+
+let loadPosthogModule: () => Promise<PosthogModule> = () => import("posthog-js")
+
 let queue: Promise<void> = Promise.resolve()
+
+/** @internal Injects a posthog-js module loader for unit tests. */
+export const setPosthogModuleLoaderForTests = (
+  loader: () => Promise<PosthogModule>,
+) => {
+  loadPosthogModule = loader
+}
+
+/** @internal Restores the default posthog-js module loader after unit tests. */
+export const resetPosthogModuleLoaderForTests = () => {
+  loadPosthogModule = () => import("posthog-js")
+}
 
 /**
  * Runs `fn` against the posthog-js client, strictly after every previously
@@ -12,7 +30,7 @@ let queue: Promise<void> = Promise.resolve()
  */
 export const withPosthog = (fn: (posthog: typeof PostHogInstance) => void) => {
   queue = queue
-    .then(() => import("posthog-js"))
+    .then(() => loadPosthogModule())
     .then(({ default: posthog }) => {
       fn(posthog)
     })

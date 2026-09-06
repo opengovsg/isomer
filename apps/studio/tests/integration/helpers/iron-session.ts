@@ -16,12 +16,16 @@ import { createContextInner } from "~/server/context"
 import { auth } from "./auth"
 import { mockGrowthBook } from "./growthbook/mockInstance"
 
+type IronStoreValue = string | number | boolean | null | undefined
+
+type IronStoreData = Record<string, IronStoreValue>
+
 class MockIronStore {
   private static instance?: MockIronStore
 
-  private saved: Record<string, string | object | number>
+  private saved: IronStoreData
 
-  private unsaved: Record<string, string | object | number>
+  private unsaved: IronStoreData
 
   private constructor() {
     this.saved = {}
@@ -37,7 +41,7 @@ class MockIronStore {
     return this.unsaved[key] || undefined
   }
 
-  set(key: string, val: string | object | number) {
+  set(key: string, val: IronStoreValue) {
     this.unsaved[key] = val
   }
 
@@ -61,7 +65,7 @@ export const createMockRequest = (
 ): Context => {
   const innerContext = createContextInner({ session })
 
-  const { req, res } = createMocks(
+  const mocks = createMocks(
     {
       ...reqOptions,
       headers: {
@@ -70,7 +74,9 @@ export const createMockRequest = (
       },
     },
     resOptions,
-  ) as unknown as { req: NextApiRequest; res: NextApiResponse }
+  )
+  // SAFETY: node-mocks-http createMocks returns compatible Next.js API types for tests.
+  const { req, res } = mocks as { req: NextApiRequest; res: NextApiResponse }
 
   return {
     ...innerContext,
@@ -97,9 +103,9 @@ export const applySession = () => {
     updateConfig() {
       // No-op in tests since we don't need to actually update config for tests
     },
-  } as unknown as Session
-
-  return session
+  }
+  // SAFETY: MockIronStore implements the subset of IronSession used in integration tests.
+  return session as Session
 }
 
 export const createTestUser = (): Omit<User, "id"> => ({
@@ -118,6 +124,7 @@ export const createTestUser = (): Omit<User, "id"> => ({
 export const applyAuthedSession = async (user?: User) => {
   const authedUser = await auth(user ?? createTestUser())
   const session = applySession()
+  // SAFETY: auth() returns a user id compatible with the session userId branded type.
   session.userId = authedUser.id as typeof session.userId
   await session.save()
   return session

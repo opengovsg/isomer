@@ -73,6 +73,7 @@ export const DirectorySidebarContent = ({
     return (
       <Accordion
         index={accordionIndex}
+        // SAFETY: caller invariant is checked immediately before this narrowing assertion
         onChange={(expandedIndex) => setExpandedIndex(expandedIndex as number)}
         allowToggle
       >

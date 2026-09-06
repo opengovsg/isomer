@@ -275,6 +275,7 @@ const getSearchSGAuthToken = async () => {
     throw new Error(`Failed to get SearchSG auth token: ${response.statusText}`)
   }
 
+  // SAFETY: SearchSG auth endpoint returns accessToken and tokenType on success
   const { accessToken, tokenType } = (await response.json()) as {
     accessToken: string
     tokenType: string

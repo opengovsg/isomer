@@ -44,7 +44,7 @@ export const gazetteListSchema = z
     siteId: z.number().min(1),
     collectionId: z.number().min(1),
   })
-  .extend(offsetPaginationSchema.shape)
+  .extend(offsetPaginationSchema["shape"])
 
 export const createGazetteServerSchema = gazetteMetadataSchema.extend({
   siteId: z.number().min(1),

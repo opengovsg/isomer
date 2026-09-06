@@ -85,8 +85,9 @@ const BaseSelectComponent = <T,>(
   )
 }
 
-export const BaseSelect = React.forwardRef(
-  BaseSelectComponent,
-) as BaseSelectComponent
+const BaseSelectForwardRef = React.forwardRef(BaseSelectComponent)
+export const BaseSelect =
+  // SAFETY: forwardRef preserves the generic select props contract for callers
+  BaseSelectForwardRef as BaseSelectComponent
 
 BaseSelect.displayName = "BaseSelect"

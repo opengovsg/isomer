@@ -61,6 +61,7 @@ const TipTapProseComponent = ({ content }: TipTapComponentProps) => {
   const updatePageState = (editorContent: JSONContent | undefined) => {
     const updatedBlocks = Array.from(previewPageState.content)
     // TODO: actual validation
+    // SAFETY: caller invariant is checked immediately before this narrowing assertion
     updatedBlocks[currActiveIdx] = editorContent as ProseProps
     const newPageState = {
       ...previewPageState,

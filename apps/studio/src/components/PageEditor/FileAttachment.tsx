@@ -7,7 +7,7 @@ import { useEffect, useState } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useAssetUpload } from "~/features/editing-experience/components/form-builder/hooks/useAssetUpload"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
-import { RISKY_FILE_EXTENSIONS } from "~/lib/fileUpload"
+import { isRiskyFileExtension } from "~/lib/fileUpload"
 import { fileNameAndSizeSchema, uploadSvgSchema } from "~/schemas/asset"
 import { formatFileSizeLimit } from "~/utils/formatFileSizeLimit"
 import { getFileExtension } from "~/utils/getFileExtension"
@@ -98,7 +98,7 @@ export const FileAttachment = ({
               }
 
               const ext = getFileExtension(file.name)
-              if (enableRiskyFileWarning && RISKY_FILE_EXTENSIONS.has(ext)) {
+              if (enableRiskyFileWarning && isRiskyFileExtension(ext)) {
                 setPendingAckRiskyFile(file)
                 return
               }

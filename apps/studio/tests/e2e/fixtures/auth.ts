@@ -11,14 +11,14 @@ export const ROLES = [
 ] as const
 export type Role = (typeof ROLES)[number]
 
-export const TEST_EMAILS: Record<Role, string> = {
+export const TEST_EMAILS = {
   editor: "editor@open.gov.sg",
   publisher: "publisher@open.gov.sg",
   admin: "admin-e2e@open.gov.sg",
   nomember: "nomember-e2e@open.gov.sg",
   core: "core-e2e@open.gov.sg",
   migrator: "migrator-e2e@open.gov.sg",
-}
+} satisfies Record<Role, string>
 
 const STORAGE_DIR = fileURLToPath(new URL("../storage-state", import.meta.url))
 

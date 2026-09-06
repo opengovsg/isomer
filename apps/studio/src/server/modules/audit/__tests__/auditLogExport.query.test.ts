@@ -7,6 +7,13 @@ import {
 } from "tests/integration/helpers/seed"
 import { beforeEach, describe, expect, it } from "vitest"
 
+type AuditLogMetadata = Record<string, string | number | boolean | null>
+
+type CsvRow = Record<
+  string,
+  string | number | boolean | Date | null | undefined
+>
+
 import { db } from "../../database/database"
 import { AuditLogEvent, RoleType } from "../../database/types"
 import { jsonb } from "../../database/utils"
@@ -71,7 +78,7 @@ const insertAuditLog = async ({
   userId: string
   siteId: number | null
   delta: unknown
-  metadata?: Record<string, unknown>
+  metadata?: AuditLogMetadata
   ipAddress?: string | null
   createdAt: Date
 }) => {
@@ -82,6 +89,7 @@ const insertAuditLog = async ({
       userId,
       siteId,
       // delta/metadata are jsonb columns
+      // SAFETY: integration fixtures supply JSON-compatible audit log payloads
       delta: jsonb(delta) as never,
       metadata: jsonb(metadata),
       ipAddress,
@@ -178,7 +186,9 @@ describe("auditLogExport.query", () => {
       // Casts bypass the `IsoMonth` compile-time guard on purpose: these
       // exercise the runtime defense for values arriving through untyped
       // paths (e.g. raw DB reads or JSON).
+      // SAFETY: intentionally invalid month strings test runtime validation
       expect(() => getMonthDateRange("2024-13" as IsoMonth, NOW)).toThrow()
+      // SAFETY: intentionally invalid month strings test runtime validation
       expect(() => getMonthDateRange("not-a-month" as IsoMonth, NOW)).toThrow()
     })
   })
@@ -1128,9 +1138,7 @@ describe("auditLogExport.query", () => {
   describe("createCsvTransform", () => {
     // Drive rows through the streaming serializer and collect the emitted CSV
     // text, so we can assert it byte-for-byte against the buffered `toCsv`.
-    const collect = async (
-      rows: Record<string, unknown>[],
-    ): Promise<string> => {
+    const collect = async (rows: CsvRow[]): Promise<string> => {
       const transform = createCsvTransform()
       const chunks: string[] = []
       transform.on("data", (chunk: Buffer | string) =>

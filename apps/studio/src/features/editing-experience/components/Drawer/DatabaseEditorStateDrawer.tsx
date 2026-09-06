@@ -30,9 +30,18 @@ const databasePageDatabaseSchema = getScopedSchema({
   scope: "page.database",
 })
 
-const validateFn = ajv.compile<Static<typeof databasePageDatabaseSchema>>(
-  databasePageDatabaseSchema,
-)
+type DatabaseFormData = DatabasePageSchemaType["page"]["database"]
+
+const validateFn = ajv.compile<DatabaseFormData>(databasePageDatabaseSchema)
+
+const getDatabaseFormData = (
+  pageState: IsomerSchema,
+): DatabaseFormData | undefined => {
+  if (pageState.layout !== ISOMER_USABLE_PAGE_LAYOUTS.Database) return undefined
+  // SAFETY: layout check confirms database page shape.
+  // @ts-expect-error IsomerSchema union is wider than DatabasePageSchemaType at compile time.
+  return (pageState as DatabasePageSchemaType).page.database
+}
 
 const DatabaseEditorStateDrawer = (): React.ReactNode => {
   const {
@@ -85,16 +94,22 @@ const DatabaseEditorStateDrawer = (): React.ReactNode => {
     siteId,
   ])
 
-  const handleChange = (data: unknown) => {
-    const newPageState = {
-      ...previewPageState,
+  const handleChange = (data: DatabaseFormData) => {
+    if (previewPageState.layout !== ISOMER_USABLE_PAGE_LAYOUTS.Database) return
+    // SAFETY: layout check confirms database page shape.
+    // @ts-expect-error IsomerSchema union is wider than DatabasePageSchemaType at compile time.
+    const databasePageState = previewPageState as DatabasePageSchemaType
+
+    const nextState = {
+      ...databasePageState,
       page: {
-        ...previewPageState.page,
+        ...databasePageState.page,
         database: data,
       },
-    } as IsomerSchema
-
-    setPreviewPageState(newPageState)
+    }
+    // SAFETY: nextState preserves database layout while updating nested form data.
+    // @ts-expect-error updated database page remains a valid preview page state.
+    setPreviewPageState(nextState as typeof previewPageState)
   }
 
   const handleDiscardChanges = () => {
@@ -130,11 +145,11 @@ const DatabaseEditorStateDrawer = (): React.ReactNode => {
               <FormBuilder<Static<typeof databasePageDatabaseSchema>>
                 schema={databasePageDatabaseSchema}
                 validateFn={validateFn}
-                data={
-                  (previewPageState as unknown as DatabasePageSchemaType).page
-                    .database
-                }
-                handleChange={(data) => handleChange(data)}
+                data={getDatabaseFormData(previewPageState)}
+                handleChange={(data) => {
+                  // @ts-expect-error FormBuilder data matches database form schema at runtime.
+                  handleChange(data)
+                }}
               />
             </Box>
           </Box>

@@ -34,6 +34,7 @@ const versionLink: TRPCLink<AppRouter> = () => {
           if (!value.context) {
             return observer.next(value)
           }
+          // SAFETY: tRPC context.response is a fetch Response when present on the client
           const response = value.context.response as
             | Partial<Response> // Looser type for caution
             | undefined
@@ -100,8 +101,10 @@ const custom401Link: TRPCLink<AppRouter> = () => {
   }
 }
 
-const isErrorRetryableOnClient = (error: unknown): boolean => {
-  if (typeof window === "undefined") return true
+type ClientRetryError = TRPCClientError<AppRouter> | Error
+
+const isErrorRetryableOnClient = (error: ClientRetryError): boolean => {
+  if (globalThis.window === undefined) return true
   if (!(error instanceof TRPCClientError)) return true
   const res = TRPCWithErrorCodeSchema.safeParse(error)
   return !res.success || !NON_RETRYABLE_ERROR_CODES.has(res.data)

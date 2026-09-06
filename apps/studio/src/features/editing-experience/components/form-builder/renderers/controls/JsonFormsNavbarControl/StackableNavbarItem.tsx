@@ -35,11 +35,9 @@ import { DeleteSubItemModal } from "./DeleteSubItemModal"
 import { NavbarItemBox } from "./NavbarItemBox"
 import { getInstancePathFromNavbarItemPath, getNavbarItemPath } from "./utils"
 
-const getNumberOfErrors = (
-  // oxlint-disable-next-line @typescript-eslint/no-explicit-any
-  errors: ErrorObject<string, Record<string, any>, unknown>[],
-  path: string,
-) => {
+type NavbarAjvError = ErrorObject<string, Record<string, never>, unknown>
+
+const getNumberOfErrors = (errors: NavbarAjvError[], path: string) => {
   const instancePath = `/${path.replace(/\./g, "/")}`
   return errors.filter((error) => error.instancePath.startsWith(instancePath))
     .length
@@ -47,8 +45,7 @@ const getNumberOfErrors = (
 
 interface StackableNavbarItemProps {
   index: number
-  // oxlint-disable-next-line @typescript-eslint/no-explicit-any
-  errors: ErrorObject<string, Record<string, any>, unknown>[]
+  errors: NavbarAjvError[]
   onEdit: (subItemIndex?: number) => void
   removeItem: (subItemIndex?: number) => void
   name?: string
@@ -171,6 +168,7 @@ export const StackableNavbarItem = ({
             attachInstruction(
               {
                 type: "navbar-item",
+                // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
                 navbarId: (element as HTMLDivElement).dataset.id,
                 dropTargetId: getNavbarItemPath(index),
               },

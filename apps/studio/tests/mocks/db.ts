@@ -1,6 +1,5 @@
-import type { DB } from "~/server/modules/database/types"
 import { PrismaPg } from "@prisma/adapter-pg"
-import { Kysely, PostgresDialect } from "kysely"
+import { PostgresDialect } from "kysely"
 import { randomUUID } from "node:crypto"
 import { readdirSync, readFileSync, statSync } from "node:fs"
 import { dirname, join } from "node:path"
@@ -9,6 +8,8 @@ import { Client, Pool } from "pg"
 import Cursor from "pg-cursor"
 import { parse } from "superjson"
 import { PrismaClient } from "~prisma/generated/prisma/client"
+
+import { Kysely, type DB } from "@isomer/db"
 
 import { CONTAINER_INFORMATION_SCHEMA } from "../common"
 

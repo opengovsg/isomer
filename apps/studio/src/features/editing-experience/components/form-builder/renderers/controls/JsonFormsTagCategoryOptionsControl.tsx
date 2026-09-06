@@ -81,6 +81,7 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
   const { core, dispatch } = useJsonForms()
   const { hasErrorAt } = useBuilderErrors()
   const { pageId, siteId } = useQueryParse(pageSchema)
+  // SAFETY: JSON Forms path resolves tag category option rows from navbar data
   const items = get(core?.data, path) as
     | { label?: string; id: string }[]
     | undefined

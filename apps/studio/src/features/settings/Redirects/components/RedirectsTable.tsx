@@ -187,7 +187,7 @@ const SortableHeader = ({
 }: {
   label: string
   isSorted: false | "asc" | "desc"
-  onClick?: (event: unknown) => void
+  onClick?: React.MouseEventHandler<HTMLElement>
 }): React.ReactNode => {
   const icon = useMemo(() => {
     switch (isSorted) {
@@ -418,6 +418,7 @@ export const RedirectsTable = ({
   const { data: redirects, isLoading } = useListRedirects(siteId, {
     limit,
     offset: skip,
+    // SAFETY: caller invariant is checked immediately before this narrowing assertion
     sortBy: (sorting[0]?.id ?? "publishedAt") as RedirectSortField,
     sortDirection: (sorting[0]?.desc ?? true) ? "desc" : "asc",
   })

@@ -1,9 +1,15 @@
+import { z } from "zod"
+
 interface HandleUploadParams {
   file: File
   presignedPutUrl: string
   contentType: string
   contentDisposition: string
 }
+
+const uploadErrorResponseSchema = z.object({
+  error: z.string(),
+})
 
 // Use server-signed Content-Type and Content-Disposition so upload metadata
 // cannot be overridden by the client (prevents stored XSS via type confusion).
@@ -23,7 +29,7 @@ export const handleAssetUpload = async ({
   })
 
   if (!response.ok) {
-    const data = (await response.json()) as unknown as { error: string }
+    const data = uploadErrorResponseSchema.parse(await response.json())
     throw new Error(data.error)
   }
 }

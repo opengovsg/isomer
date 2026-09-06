@@ -163,9 +163,9 @@ const ComponentSelector = () => {
     // the rest should use json forms
     const nextState: DrawerState["state"] =
       sectionType === "prose" ? "nativeEditor" : "complexEditor"
-    const newComponent = DEFAULT_BLOCKS[sectionType] as
-      | IsomerComponent
-      | undefined
+    const newComponent =
+      // SAFETY: DEFAULT_BLOCKS keys align with sectionType and return valid Isomer components
+      DEFAULT_BLOCKS[sectionType] as IsomerComponent | undefined
 
     const updatedBlocks = newComponent
       ? [...savedPageState.content, newComponent]

@@ -94,6 +94,7 @@ const JsonFormsPrefillLinkControl = ({
   } = useDisclosure()
   const overrideFields = useCallback(() => {
     if (!prefill?.data) return
+    // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
     const prefillData = prefill.data as Record<string, string | undefined>
     AUTOPOPULATED_FIELDS.forEach((field) => {
       const prefillField = prefillFieldMappings[field]
@@ -135,6 +136,7 @@ const JsonFormsPrefillLinkControl = ({
   return (
     <>
       <BaseLinkControl
+        // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
         data={data as string}
         label={label}
         required={required}

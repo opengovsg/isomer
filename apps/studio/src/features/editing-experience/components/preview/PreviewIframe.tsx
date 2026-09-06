@@ -108,6 +108,7 @@ const IframeInnerComponent = ({
     const observer = new MutationObserver((mutationList) => {
       mutationList.forEach((mutation) => {
         if (mutation.attributeName === "style") {
+          // SAFETY: caller invariant is checked immediately before this narrowing assertion
           const mutationTarget = mutation.target as Element
           const newStyles = mutationTarget.getAttribute("style")
           if (newStyles) {

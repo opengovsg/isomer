@@ -256,12 +256,12 @@ export const normalizeDestinationScheme = (value: string): string => {
 // redirect and a CSV row are validated by exactly the same rules.
 export const redirectRowSchema = z
   .object({
-    source: createRedirectObjectSchema.shape.source,
+    source: sourceSchema,
     destination: z
       .string()
       .trim()
       .transform(normalizeDestinationScheme)
-      .pipe(createRedirectObjectSchema.shape.destination),
+      .pipe(destinationSchema),
   })
   .superRefine(refineSourceDestinationDiffer)
 export type RedirectRowInput = z.infer<typeof redirectRowSchema>
@@ -305,11 +305,10 @@ export type DeleteRedirectInput = z.infer<typeof deleteRedirectSchema>
 const redirectSortFieldSchema = z.enum(["source", "destination", "publishedAt"])
 export type RedirectSortField = z.infer<typeof redirectSortFieldSchema>
 
-export const listRedirectsSchema = z.object({
+export const listRedirectsSchema = offsetPaginationSchema.extend({
   siteId: z.number().min(1),
   sortBy: redirectSortFieldSchema.default("publishedAt"),
   sortDirection: z.enum(["asc", "desc"]).default("desc"),
-  ...offsetPaginationSchema.shape,
   // Override the shared (uncapped) limit with a bounded one — see
   // MAX_REDIRECT_PAGE_SIZE.
   limit: z

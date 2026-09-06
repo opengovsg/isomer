@@ -35,6 +35,7 @@ const JsonFormsChildrenPagesLayoutControl = ({
           onChange={(value) => {
             handleChange(path, value)
           }}
+          // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
           value={data as string}
         >
           <Radio

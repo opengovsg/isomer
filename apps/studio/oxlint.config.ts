@@ -1,4 +1,7 @@
 import { defineConfig } from "@isomer/oxlint-config"
+import antiSlop, {
+  antiSlopJsPluginEntries,
+} from "@isomer/oxlint-config/anti-slop"
 import base from "@isomer/oxlint-config/base"
 import { react } from "@isomer/oxlint-config/presets"
 import reactDoctor, {
@@ -10,12 +13,16 @@ export default defineConfig({
   extends: [
     base,
     react,
+    antiSlop,
     reactDoctor,
     // To enable this in following stacked PRs
     // next, vitest
   ],
   settings: jsPluginSettings,
-  jsPlugins: reactDoctorJsPluginEntries,
+  jsPlugins: [
+    ...(reactDoctorJsPluginEntries ?? []),
+    ...(antiSlopJsPluginEntries ?? []),
+  ],
   ignorePatterns: [
     ".next/**",
     "!.storybook/**",
@@ -101,6 +108,35 @@ export default defineConfig({
         "node/no-process-env": "off",
       },
       plugins: ["node"],
+    },
+    {
+      files: ["tests/mocks/db.ts"],
+      rules: {
+        // Vitest setup must mock the DB singleton before app modules load.
+        "anti-slop/no-module-mocking": "off",
+      },
+    },
+    {
+      files: [
+        "src/features/settings/AuditLogExport/__tests__/auditSettingsPage.test.tsx",
+        "src/features/settings/AuditLogExport/__tests__/AuditLogExportSection.test.tsx",
+        "src/features/users/components/__tests__/ExportAccessLogsModal.test.tsx",
+        "src/features/editing-experience/components/__tests__/PublishButton.browser.test.tsx",
+        "src/features/editing-experience/__tests__/useContentEditSurvey.browser.test.tsx",
+        "src/features/settings/Redirects/__tests__/RedirectsSettings.browser.test.tsx",
+        "src/features/editing-experience/components/Drawer/__tests__/RootStateDrawer.browser.test.tsx",
+        "src/server/modules/searchsg/__tests__/searchsg.service.test.ts",
+        "src/server/modules/audit/__tests__/auditLogExport.dedupe.test.ts",
+      ],
+      rules: {
+        // vi.mock is required for tRPC proxies, wretch, and partial DB stubs.
+        "anti-slop/no-module-mocking": "off",
+        "anti-slop/no-unknown-parameters": "off",
+        "anti-slop/no-unknown-returns": "off",
+        "anti-slop/require-safety-comment-for-type-assertion": "off",
+        "anti-slop/no-unsafe-dictionary-type": "off",
+        "anti-slop/no-known-value-widening": "off",
+      },
     },
     {
       files: [

@@ -17,6 +17,7 @@ export function useLiveLabelIssues({
   editingDraftLabel = "",
 }: UseLiveLabelIssuesArgs): { blank: Set<number>; duplicate: Set<number> } {
   const { core } = useJsonForms()
+  // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
   const items = get(core?.data, path) as { label?: string }[] | undefined
 
   return useMemo(() => {

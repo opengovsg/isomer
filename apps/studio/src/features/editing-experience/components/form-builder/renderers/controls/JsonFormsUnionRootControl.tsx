@@ -19,6 +19,7 @@ export const jsonFormsUnionRootControlTester: RankedTester = rankWith(
     return (
       newElements.length === 1 &&
       newElements[0]?.type === "Control" &&
+      // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
       (newElements[0] as ControlElement).scope === "#"
     )
   },

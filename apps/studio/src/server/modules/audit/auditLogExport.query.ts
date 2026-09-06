@@ -33,6 +33,11 @@ export const formatAuditLogDateRange = (
   upperExclusive: string,
 ): string => `[${lowerInclusive},${upperExclusive})`
 
+interface AuditLogDateRangeBounds {
+  lowerInclusive: string
+  upperExclusive: string
+}
+
 /**
  * Parse a canonical daterange string back into its SGT calendar-date bounds.
  * Throws on non-canonical input — defensive only, since the DB CHECK plus
@@ -40,7 +45,7 @@ export const formatAuditLogDateRange = (
  */
 export const parseAuditLogDateRange = (
   auditLogDateRange: string,
-): { lowerInclusive: string; upperExclusive: string } => {
+): AuditLogDateRangeBounds => {
   const match = AUDIT_LOG_DATE_RANGE_REGEX.exec(auditLogDateRange)
   if (!match?.[1] || !match[2]) {
     throw new Error(
@@ -71,7 +76,12 @@ export const getMonthDateRange = (month: IsoMonth, now: Date): string => {
   }
   // Safe after the regex test above: the pattern guarantees exactly two numeric
   // segments in `yyyy-MM` form.
-  const [year, monthIndex] = month.split("-").map(Number) as [number, number]
+  const monthParts = month.split("-").map(Number)
+  const year = monthParts[0]
+  const monthIndex = monthParts[1]
+  if (year === undefined || monthIndex === undefined) {
+    throw new Error(`Invalid month, expected "yyyy-MM" but got: ${month}`)
+  }
 
   // A UTC instant mid-month falls inside the target month in every timezone,
   // so we can derive the SGT month start from it without boundary surprises.
@@ -94,6 +104,11 @@ export const getMonthDateRange = (month: IsoMonth, now: Date): string => {
   return formatAuditLogDateRange(lowerInclusive, upperExclusive)
 }
 
+interface ExportRange {
+  rangeStart: Date
+  rangeEnd: Date
+}
+
 /**
  * The UTC instants bounding an export range, half-open: [rangeStart, rangeEnd).
  * Each SGT calendar-date bound of the stored daterange maps to its SGT-midnight
@@ -101,9 +116,7 @@ export const getMonthDateRange = (month: IsoMonth, now: Date): string => {
  * upper bound becomes `rangeEnd`. Singapore has no DST, so SGT midnight is
  * unambiguous.
  */
-export const getExportRange = (
-  auditLogDateRange: string,
-): { rangeStart: Date; rangeEnd: Date } => {
+export const getExportRange = (auditLogDateRange: string): ExportRange => {
   const { lowerInclusive, upperExclusive } =
     parseAuditLogDateRange(auditLogDateRange)
   return {
@@ -202,10 +215,7 @@ type DisplayableAuditLogEvent = Exclude<
   | "CancelSchedulePublish"
 >
 
-const AUDIT_LOGS_EVENTS_QUERIES: Record<
-  DisplayableAuditLogEvent,
-  RawBuilder<unknown>
-> = {
+const AUDIT_LOGS_EVENTS_QUERIES = {
   ResourceCreate: sql<string>`CONCAT('"', al.delta -> 'after' -> 'resource' ->> 'title', '" (', al.delta -> 'after' -> 'resource' ->> 'type', ' ', al.delta -> 'after' -> 'resource' ->> 'id', ') created')`,
   ResourceUpdate: sql<string>`CONCAT('"', al.delta -> 'before' -> 'resource' ->> 'title', '" (', al.delta -> 'before' -> 'resource' ->> 'type', ' ', al.delta -> 'before' -> 'resource' ->> 'id', ') updated')`,
   ResourceDelete: sql<string>`CONCAT('"', al.delta -> 'before' ->> 'title', '" (', al.delta -> 'before' ->> 'type', ' ', al.delta -> 'before' ->> 'id', ') deleted')`,
@@ -222,7 +232,12 @@ const AUDIT_LOGS_EVENTS_QUERIES: Record<
   // The delta stores the REQUESTED report type, so the description reflects
   // the user's ask verbatim.
   AuditLogExportCreate: sql<string>`CONCAT('Audit log export requested for ', al.delta -> 'after' ->> 'auditLogDateRange', ' (', al.delta -> 'after' ->> 'reportType', ')')`,
-}
+} satisfies Record<DisplayableAuditLogEvent, RawBuilder<string>>
+
+// SAFETY: keys are drawn from a map typed as Record<DisplayableAuditLogEvent, RawBuilder<string>>
+const DISPLAYABLE_AUDIT_LOG_EVENTS = Object.keys(
+  AUDIT_LOGS_EVENTS_QUERIES,
+) as DisplayableAuditLogEvent[]
 
 // NOTE: As with the access report, string-alias columns keep their quotes in
 // the runtime key (e.g. `"Event type"`), while `.as("Description")` /
@@ -371,13 +386,7 @@ export const activityReportQuery = ({
     .where((eb) =>
       eb.or([
         eb.and([
-          eb(
-            "al.eventType",
-            "in",
-            Object.keys(
-              AUDIT_LOGS_EVENTS_QUERIES,
-            ) as DisplayableAuditLogEvent[],
-          ),
+          eb("al.eventType", "in", DISPLAYABLE_AUDIT_LOG_EVENTS),
           eb.or([
             eb.eb("al.siteId", "=", siteId),
             eb.eb(
@@ -446,6 +455,18 @@ export type ActivityReportRow = Awaited<
   ReturnType<typeof getActivityReportRows>
 >[number]
 
+type CsvSerializableValue =
+  | string
+  | number
+  | boolean
+  | Date
+  | null
+  | undefined
+  | CsvSerializableValue[]
+  | { [key: string]: CsvSerializableValue }
+
+type CsvRow = Record<string, CsvSerializableValue>
+
 /**
  * Serialize report rows to CSV. Headers are the object keys (quotes stripped,
  * matching the script). Values are stringified as: `Date` → ISO-8601 in
@@ -454,7 +475,7 @@ export type ActivityReportRow = Awaited<
  * the script's UTC `toISOString`) keeps the file coherent with the SGT month it
  * is scoped to and shows timestamps in the auditor's local wall-clock time.
  */
-export const getStringifiedValue = (value: unknown): string => {
+export const getStringifiedValue = (value: CsvSerializableValue): string => {
   if (value === null || value === undefined) {
     return ""
   }
@@ -465,8 +486,9 @@ export const getStringifiedValue = (value: unknown): string => {
       "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
     )
   }
-  if (typeof value === "string") {
-    return value
+  if (Object.prototype.toString.call(value) === "[object String]") {
+    // SAFETY: [object String] tag confirms a string primitive.
+    return value as string
   }
   return JSON.stringify(value)
 }
@@ -483,18 +505,18 @@ const toCsvLine = (fields: string[]): string =>
 // Header labels are the row keys with quotes stripped (string-alias columns
 // like `"Event type"` keep their quotes in the runtime key; method-aliased
 // columns like `Description` do not).
-const csvHeaderFields = (row: Record<string, unknown>): string[] =>
+const csvHeaderFields = (row: CsvRow): string[] =>
   Object.keys(row).map((key) => key.replaceAll('"', ""))
 
 // Values in insertion (select-list) order, each stringified consistently.
-const csvDataFields = (row: Record<string, unknown>): string[] =>
+const csvDataFields = (row: CsvRow): string[] =>
   Object.values(row).map((value) => getStringifiedValue(value))
 
 // Buffered serializer. Header derived from the first row's keys; empty string
 // for zero rows (an empty export is an empty file). This is the format
 // specification the streaming transform reuses via the shared helpers above,
 // so its unit test also pins the streamed output byte-for-byte.
-export const toCsv = (rows: Record<string, unknown>[]): string => {
+export const toCsv = (rows: CsvRow[]): string => {
   const first = rows[0]
   if (first === undefined) {
     return ""
@@ -515,7 +537,7 @@ export const createCsvTransform = (): Transform => {
   let headerWritten = false
   return new Transform({
     writableObjectMode: true,
-    transform(row: Record<string, unknown>, _encoding, callback) {
+    transform(row: CsvRow, _encoding, callback) {
       try {
         if (!headerWritten) {
           this.push(toCsvLine(csvHeaderFields(row)))
@@ -524,7 +546,7 @@ export const createCsvTransform = (): Transform => {
         this.push(CSV_LINE_SEPARATOR + toCsvLine(csvDataFields(row)))
         callback()
       } catch (error) {
-        callback(error as Error)
+        callback(error instanceof Error ? error : new Error(String(error)))
       }
     },
   })

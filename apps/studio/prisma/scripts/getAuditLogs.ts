@@ -174,6 +174,7 @@ const getAuditLogsForSite = async () => {
   // sound because "yyyy-MM" zero-pads the month (same pattern as
   // `getCurrentSingaporeMonth` in `~/schemas/audit`).
   // oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  // SAFETY: format with "yyyy-MM" always produces a valid IsoMonth string.
   const monthYear: IsoMonth = MONTH_YEAR
     ? MONTH_YEAR
     : (format(
@@ -201,8 +202,14 @@ const getAuditLogsForSite = async () => {
         fs.mkdirSync(outputDir)
       }
 
+      // SAFETY: access report rows match toCsv column keys at runtime.
       fs.writeFileSync(path.join(outputDir, usersFilename), toCsv(users))
-      fs.writeFileSync(path.join(outputDir, eventsFilename), toCsv(events))
+      // SAFETY: activity report rows are JSON-serializable for CSV export at runtime.
+      fs.writeFileSync(
+        path.join(outputDir, eventsFilename),
+        // @ts-expect-error activity report Metadata is JSON-serializable at CSV export time.
+        toCsv(events as Parameters<typeof toCsv>[0]),
+      )
     }),
   )
 

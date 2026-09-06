@@ -1,6 +1,7 @@
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 
 import { MOCK_STORY_DATE } from "../constants"
+import { asBlobJsonContent } from "../helpers"
 import { trpcMsw } from "../mockTrpc"
 
 export const DEFAULT_COLLECTION_ITEMS = [
@@ -61,7 +62,7 @@ export const collectionHandlers = {
   readCollectionLink: {
     default: () => {
       return trpcMsw.collection.readCollectionLink.query(() => ({
-        content: {
+        content: asBlobJsonContent({
           page: {
             ref: "",
             date: "24-10-2024",
@@ -71,16 +72,13 @@ export const collectionHandlers = {
           layout: "link",
           content: [],
           version: "0.1.0",
-          // TODO: not too sure why this error happens
-          // but there's a typing issue where we are not satisfying the opaque type
-          // oddly enough, this doesn't happen on other handlers
-        } as unknown as PrismaJson.BlobJsonContent,
+        }),
         title: "yet another link",
       }))
     },
     thumbnail: () => {
       return trpcMsw.collection.readCollectionLink.query(() => ({
-        content: {
+        content: asBlobJsonContent({
           page: {
             ref: "",
             date: "24-10-2024",
@@ -91,10 +89,7 @@ export const collectionHandlers = {
           layout: "link",
           content: [],
           version: "0.1.0",
-          // TODO: not too sure why this error happens
-          // but there's a typing issue where we are not satisfying the opaque type
-          // oddly enough, this doesn't happen on other handlers
-        } as unknown as PrismaJson.BlobJsonContent,
+        }),
         title: "Link with image",
       }))
     },

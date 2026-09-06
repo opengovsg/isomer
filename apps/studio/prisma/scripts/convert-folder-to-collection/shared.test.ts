@@ -24,6 +24,42 @@ import {
   writeReportFile,
 } from "./shared"
 
+interface TestBlobFixture {
+  layout: string
+  version: string
+  page: Record<string, string | { summary: string } | undefined>
+  content: {
+    type: string
+    content?: unknown[]
+    title?: string
+    description?: string
+  }[]
+}
+
+const asTestIsomerSchema = (blob: TestBlobFixture): IsomerSchema => {
+  // SAFETY: fixture matches conversion-plan blob layout shapes under test.
+  return blob as IsomerSchema
+}
+
+type GetBlobDb = Parameters<typeof getBlobOfResource>[0]["db"]
+
+const asGetBlobDb = (db: {
+  selectFrom: ReturnType<typeof vi.fn>
+}): GetBlobDb => {
+  // SAFETY: test double implements only the selectFrom chain used by getBlobOfResource.
+  return db as GetBlobDb
+}
+
+interface TransactionTestDouble {
+  selectFrom: ReturnType<typeof vi.fn>
+  insertInto?: ReturnType<typeof vi.fn>
+  updateTable?: ReturnType<typeof vi.fn>
+}
+
+const asTransaction = (tx: TransactionTestDouble): Transaction<DB> =>
+  // @ts-expect-error test double implements only the Kysely calls exercised in these tests
+  tx
+
 interface ChainMock {
   where: ReturnType<typeof vi.fn>
   select: ReturnType<typeof vi.fn>
@@ -38,17 +74,25 @@ interface ChainMock {
 }
 
 const createChain = (): ChainMock => {
-  const chain = {} as ChainMock
-  chain.where = vi.fn().mockReturnValue(chain)
-  chain.select = vi.fn().mockReturnValue(chain)
-  chain.selectAll = vi.fn().mockReturnValue(chain)
-  chain.set = vi.fn().mockReturnValue(chain)
-  chain.values = vi.fn().mockReturnValue(chain)
-  chain.returningAll = vi.fn().mockReturnValue(chain)
-  chain.returning = vi.fn().mockReturnValue(chain)
-  chain.executeTakeFirstOrThrow = vi.fn()
-  chain.executeTakeFirst = vi.fn()
-  chain.execute = vi.fn()
+  const chain: ChainMock = {
+    where: vi.fn(),
+    select: vi.fn(),
+    selectAll: vi.fn(),
+    set: vi.fn(),
+    values: vi.fn(),
+    returningAll: vi.fn(),
+    returning: vi.fn(),
+    executeTakeFirstOrThrow: vi.fn(),
+    executeTakeFirst: vi.fn(),
+    execute: vi.fn(),
+  }
+  chain.where.mockReturnValue(chain)
+  chain.select.mockReturnValue(chain)
+  chain.selectAll.mockReturnValue(chain)
+  chain.set.mockReturnValue(chain)
+  chain.values.mockReturnValue(chain)
+  chain.returningAll.mockReturnValue(chain)
+  chain.returning.mockReturnValue(chain)
   return chain
 }
 
@@ -65,7 +109,7 @@ const makeConversionPlan = (): ConversionPlan => ({
     title: "folder is cool",
     permalink: "_index",
     currentBlobId: "158085",
-    currentBlob: {
+    currentBlob: asTestIsomerSchema({
       layout: "index",
       version: "0.1.0",
       page: {
@@ -73,8 +117,8 @@ const makeConversionPlan = (): ConversionPlan => ({
         contentPageHeader: { summary: "Pages in folder is cool" },
       },
       content: [],
-    } as unknown as IsomerSchema,
-    nextBlob: {
+    }),
+    nextBlob: asTestIsomerSchema({
       layout: "collection",
       version: "0.1.0",
       page: {
@@ -83,7 +127,7 @@ const makeConversionPlan = (): ConversionPlan => ({
         sortOrder: "date-desc",
       },
       content: [],
-    } as unknown as IsomerSchema,
+    }),
     disallowedBlocks: [],
   },
   pages: [
@@ -92,7 +136,7 @@ const makeConversionPlan = (): ConversionPlan => ({
       title: "Page A",
       permalink: "page-a",
       currentBlobId: "158086",
-      currentBlob: {
+      currentBlob: asTestIsomerSchema({
         layout: "content",
         version: "0.1.0",
         page: {
@@ -100,8 +144,8 @@ const makeConversionPlan = (): ConversionPlan => ({
           contentPageHeader: { summary: "Summary A" },
         },
         content: [{ type: "prose", content: [] }],
-      } as unknown as IsomerSchema,
-      nextBlob: {
+      }),
+      nextBlob: asTestIsomerSchema({
         layout: "article",
         version: "0.1.0",
         page: {
@@ -109,7 +153,7 @@ const makeConversionPlan = (): ConversionPlan => ({
           articlePageHeader: { summary: "Summary A" },
         },
         content: [{ type: "prose", content: [] }],
-      } as unknown as IsomerSchema,
+      }),
       disallowedBlocks: [],
     },
     {
@@ -117,7 +161,7 @@ const makeConversionPlan = (): ConversionPlan => ({
       title: "Page B",
       permalink: "page-b",
       currentBlobId: "158087",
-      currentBlob: {
+      currentBlob: asTestIsomerSchema({
         layout: "content",
         version: "0.1.0",
         page: {
@@ -125,8 +169,8 @@ const makeConversionPlan = (): ConversionPlan => ({
           contentPageHeader: { summary: "Summary B" },
         },
         content: [{ type: "infobar", title: "CTA", description: "x" }],
-      } as unknown as IsomerSchema,
-      nextBlob: {
+      }),
+      nextBlob: asTestIsomerSchema({
         layout: "article",
         version: "0.1.0",
         page: {
@@ -134,7 +178,7 @@ const makeConversionPlan = (): ConversionPlan => ({
           articlePageHeader: { summary: "Summary B" },
         },
         content: [{ type: "infobar", title: "CTA", description: "x" }],
-      } as unknown as IsomerSchema,
+      }),
       disallowedBlocks: [{ index: 0, type: "infobar" }],
     },
   ],
@@ -254,11 +298,11 @@ describe("getBlobOfResource", () => {
     })
     blobChain.executeTakeFirstOrThrow.mockResolvedValue(draftBlob)
 
-    const db = {
+    const db = asGetBlobDb({
       selectFrom: vi.fn((table: string) =>
         table === "Resource" ? resourceChain : blobChain,
       ),
-    } as unknown as Parameters<typeof getBlobOfResource>[0]["db"]
+    })
 
     // Act
     const result = await getBlobOfResource({ db, resourceId: "42" })
@@ -281,11 +325,11 @@ describe("getBlobOfResource", () => {
     })
     blobChain.executeTakeFirstOrThrow.mockResolvedValue(publishedBlob)
 
-    const db = {
+    const db = asGetBlobDb({
       selectFrom: vi.fn((table: string) =>
         table === "Resource" ? resourceChain : blobChain,
       ),
-    } as unknown as Parameters<typeof getBlobOfResource>[0]["db"]
+    })
 
     // Act
     const result = await getBlobOfResource({ db, resourceId: "42" })
@@ -302,9 +346,9 @@ describe("getBlobOfResource", () => {
       publishedVersionId: null,
     })
 
-    const db = {
+    const db = asGetBlobDb({
       selectFrom: vi.fn(() => resourceChain),
-    } as unknown as Parameters<typeof getBlobOfResource>[0]["db"]
+    })
 
     // Act + Assert
     await expect(getBlobOfResource({ db, resourceId: "42" })).rejects.toThrow(
@@ -314,12 +358,12 @@ describe("getBlobOfResource", () => {
 })
 
 describe("updateBlobById", () => {
-  const nextContent = {
+  const nextContent = asTestIsomerSchema({
     layout: "article",
     version: "0.1.0",
     page: { category: "News", articlePageHeader: { summary: "x" } },
     content: [],
-  } as unknown as IsomerSchema
+  })
 
   it("creates a draft blob and links it when the resource has no draft", async () => {
     // Arrange
@@ -332,11 +376,11 @@ describe("updateBlobById", () => {
     insertChain.executeTakeFirstOrThrow.mockResolvedValue(newBlob)
     updateChain.execute.mockResolvedValue(undefined)
 
-    const tx = {
+    const tx = asTransaction({
       selectFrom: vi.fn(() => selectChain),
       insertInto: vi.fn(() => insertChain),
       updateTable: vi.fn(() => updateChain),
-    } as unknown as Transaction<DB>
+    })
 
     // Act
     const result = await updateBlobById(tx, {
@@ -363,11 +407,11 @@ describe("updateBlobById", () => {
     })
     updateChain.executeTakeFirstOrThrow.mockResolvedValue(updatedBlob)
 
-    const tx = {
+    const tx = asTransaction({
       selectFrom: vi.fn(() => selectChain),
       insertInto: vi.fn(),
       updateTable: vi.fn(() => updateChain),
-    } as unknown as Transaction<DB>
+    })
 
     // Act
     const result = await updateBlobById(tx, {
@@ -391,9 +435,9 @@ describe("updateBlobById", () => {
     const selectChain = createChain()
     selectChain.executeTakeFirst.mockResolvedValue(undefined)
 
-    const tx = {
+    const tx = asTransaction({
       selectFrom: vi.fn(() => selectChain),
-    } as unknown as Transaction<DB>
+    })
 
     // Act + Assert
     await expect(
@@ -415,9 +459,9 @@ describe("incrementVersion", () => {
       publishedVersionId: "pub-1",
     })
 
-    const tx = {
+    const tx = asTransaction({
       selectFrom: vi.fn(() => selectChain),
-    } as unknown as Transaction<DB>
+    })
 
     // Act
     const result = await incrementVersion({
@@ -445,11 +489,11 @@ describe("incrementVersion", () => {
     insertChain.executeTakeFirstOrThrow.mockResolvedValue(newVersion)
     updateChain.execute.mockResolvedValue(undefined)
 
-    const tx = {
+    const tx = asTransaction({
       selectFrom: vi.fn(() => selectChain),
       insertInto: vi.fn(() => insertChain),
       updateTable: vi.fn(() => updateChain),
-    } as unknown as Transaction<DB>
+    })
 
     // Act
     const result = await incrementVersion({
@@ -496,13 +540,13 @@ describe("incrementVersion", () => {
     insertChain.executeTakeFirstOrThrow.mockResolvedValue(newVersion)
     updateChain.execute.mockResolvedValue(undefined)
 
-    const tx = {
+    const tx = asTransaction({
       selectFrom: vi.fn((table: string) =>
         table === "Resource" ? selectChain : versionChain,
       ),
       insertInto: vi.fn(() => insertChain),
       updateTable: vi.fn(() => updateChain),
-    } as unknown as Transaction<DB>
+    })
 
     // Act
     const result = await incrementVersion({

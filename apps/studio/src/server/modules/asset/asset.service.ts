@@ -30,10 +30,10 @@ export interface UploadConfig {
 }
 
 // Server-side allowlist: extension (lowercase, e.g. ".jpg") -> MIME (used for signed upload metadata)
-const EXTENSION_TO_MIME: Record<string, string> = {
+const EXTENSION_TO_MIME = {
   ...IMAGE_ACCEPTED_MIME_TYPE_MAPPING,
   ...FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
-}
+} satisfies Record<string, string>
 
 // NOTE: The format that s3 expects is in this format:
 // Tagging: "key1=value1&key2=value2"
@@ -53,9 +53,15 @@ const getExtensionFromFilename = (filename: string): string =>
  * Derive trusted Content-Type from key. Key is only produced after schema validation,
  * so the file extension is always from the allowlist.
  */
+const hasMimeExtension = (ext: string): ext is keyof typeof EXTENSION_TO_MIME =>
+  ext in EXTENSION_TO_MIME
+
 export const getContentTypeFromKey = (key: string): string => {
   const ext = getExtensionFromFilename(getFilenameFromKey(key).toLowerCase())
-  return EXTENSION_TO_MIME[ext] ?? "application/octet-stream"
+  if (hasMimeExtension(ext)) {
+    return EXTENSION_TO_MIME[ext]
+  }
+  return "application/octet-stream"
 }
 
 /**

@@ -30,6 +30,7 @@ const JsonFormsCollectionVariantControl = ({
           onChange={(value) => {
             handleChange(path, value)
           }}
+          // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
           value={data as string}
           defaultValue={COLLECTION_VARIANT_OPTIONS.Collection}
         >

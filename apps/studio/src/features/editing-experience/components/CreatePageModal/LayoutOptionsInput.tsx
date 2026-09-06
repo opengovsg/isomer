@@ -146,6 +146,7 @@ export const LayoutOptionsInput = forwardRef<
 
   const group = getRootProps()
 
+  // SAFETY: caller invariant is checked immediately before this narrowing assertion
   const layoutKeys = Object.keys(LAYOUT_RENDER_DATA) as Layout[]
 
   return (

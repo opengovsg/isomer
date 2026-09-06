@@ -118,8 +118,7 @@ export const getEarliestExportableMonth = (
     new Date(year, month - 1, 1),
     AUDIT_LOG_EXPORT_MAX_MONTHS - 1,
   )
-  // The "yyyy-MM" token always yields a zero-padded month, so the cast is
-  // sound; date-fns just types `format` as returning plain `string`.
+  // SAFETY: date-fns format with "yyyy-MM" always returns a zero-padded ISO month
   return format(earliest, "yyyy-MM") as IsoMonth
 }
 
@@ -130,7 +129,7 @@ export const getEarliestExportableMonth = (
 // Intl locale trick (e.g. "en-CA"), which depends on ICU locale data and can
 // silently format differently on minimal-ICU runtimes.
 export const getCurrentSingaporeMonth = (): IsoMonth =>
-  // Same reasoning as above: "yyyy-MM" always zero-pads, so the cast is sound.
+  // SAFETY: date-fns-tz format with "yyyy-MM" always returns a zero-padded ISO month
   formatInTimeZone(new Date(), SINGAPORE_TIME_ZONE, "yyyy-MM") as IsoMonth
 
 // Input for the query that tells the client how many months back the picker
@@ -174,9 +173,10 @@ export const createAuditLogExportRequestSchema = z.object({
     .regex(MONTH_REGEX, {
       message: "Enter a month in the format YYYY-MM, e.g. 2026-03",
     })
-    // The regex above guarantees the shape at runtime; narrow the inferred
-    // output from `string` to `IsoMonth` so consumers get the real type.
-    .transform((month) => month as IsoMonth),
+    .transform((month) => {
+      // SAFETY: MONTH_REGEX guarantees yyyy-MM shape at runtime; narrow to IsoMonth for consumers
+      return month as IsoMonth
+    }),
   reportType: z.enum(AuditLogExportRequestedReportType, {
     message: "Select a report type",
   }),

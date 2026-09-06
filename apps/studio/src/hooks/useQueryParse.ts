@@ -3,6 +3,6 @@ import { useRouter } from "next/router"
 
 export const useQueryParse = <T extends ZodTypeAny>(schema: T) => {
   const { query } = useRouter()
-  // oxlint-disable-next-line @typescript-eslint/no-unsafe-return
+  // SAFETY: schema.parse validates router query against the caller's Zod schema
   return schema.parse(query) as T["_output"]
 }

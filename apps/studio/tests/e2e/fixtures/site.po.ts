@@ -58,7 +58,7 @@ export class SitePO {
 
 // Labels come from SIDENAV_ITEMS in:
 // apps/studio/src/features/settings/SettingsSidenav/SettingsSidenav.tsx
-const SETTINGS_SECTION_LABELS: Record<SettingsSection, string> = {
+const SETTINGS_SECTION_LABELS = {
   agency: "Name and agency",
   colours: "Colours",
   footer: "Footer",
@@ -67,4 +67,4 @@ const SETTINGS_SECTION_LABELS: Record<SettingsSection, string> = {
   navbar: "Navigation bar", // spec said "Navbar" — actual label is "Navigation bar"
   notification: "Notification banner", // spec said "Notification" — actual label is "Notification banner"
   redirects: "Redirects",
-}
+} satisfies Record<SettingsSection, string>

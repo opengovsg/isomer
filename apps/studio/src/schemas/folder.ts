@@ -32,7 +32,7 @@ export const readFolderSchema = z
     siteId: z.number().min(1),
     resourceId: z.number().min(1),
   })
-  .extend(offsetPaginationSchema.shape)
+  .extend(offsetPaginationSchema["shape"])
 
 const baseFolderSchema = z.object({
   resourceId: z.string(),

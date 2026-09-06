@@ -4,6 +4,7 @@ import { buildFileUploadMetaSuffix } from "../buildFileUploadMetaSuffix"
 import { stripFileUploadMetaSuffix } from "../stripFileUploadMetaSuffix"
 
 /** Minimal stand-in for browser `File` (implementation only uses `name` and `size`). */
+// SAFETY: test helper only supplies the File fields read by the suffix utilities
 const mockFile = (name: string, size: number): File => ({ name, size }) as File
 
 describe("buildFileUploadMetaSuffix", () => {

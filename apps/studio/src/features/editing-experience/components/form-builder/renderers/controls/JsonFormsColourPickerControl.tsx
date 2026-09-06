@@ -45,7 +45,11 @@ const JsonFormsColourPickerControl = ({
   description,
   errors,
 }: ControlProps) => {
-  const data: string | undefined = typeof _data === "string" ? _data : undefined
+  // SAFETY: JSON Forms colour control only stores string values in data
+  const data: string | undefined =
+    Object.prototype.toString.call(_data) === "[object String]"
+      ? (_data as string)
+      : undefined
 
   const ctx = useJsonForms()
   const [displayedColour, setDisplayedColour] = useState(data)
@@ -144,6 +148,7 @@ const JsonFormsColourPickerControl = ({
                   borderLeftRadius={isFirst ? "6px" : "auto"}
                   borderRightRadius={isLast ? "6px" : "auto"}
                   bgColor={
+                    // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
                     (get(ctx.core?.data, p) as string | undefined) ??
                     `#${DEFAULT_CONTENT_INVERSE_COLOUR}`
                   }

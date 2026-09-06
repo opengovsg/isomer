@@ -38,12 +38,14 @@ export const jsonFormsProseControlTester: RankedTester = rankWith(
   ),
 )
 
-const getEditorHookAndEditor = (
-  format: ComponentsWithProse,
-): {
+interface EditorHookAndEditor {
   EditorHook: (props: BaseEditorProps) => BaseEditorType
   Editor: typeof TiptapProseEditor
-} => {
+}
+
+const getEditorHookAndEditor = (
+  format: ComponentsWithProse,
+): EditorHookAndEditor => {
   switch (format) {
     case "simple-prose":
       return {
@@ -75,7 +77,11 @@ const JsonFormsProseControl = ({
   required,
 }: ControlProps) => {
   const { EditorHook, Editor } = useMemo(
-    () => getEditorHookAndEditor(schema.format as ComponentsWithProse),
+    () =>
+      getEditorHookAndEditor(
+        // SAFETY: prose control tester only matches known prose component formats
+        schema.format as ComponentsWithProse,
+      ),
     [schema.format],
   )
 

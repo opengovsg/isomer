@@ -5,10 +5,7 @@ import { GenericContainer, Wait } from "testcontainers"
 import { z } from "zod"
 
 type ContainerType = "database" | "mockpass"
-export const CONTAINER_CONFIGURATIONS: Record<
-  ContainerType,
-  ContainerConfiguration
-> = {
+export const CONTAINER_CONFIGURATIONS = {
   database: {
     name: "database",
     image: "postgres:15-alpine",
@@ -37,7 +34,7 @@ export const CONTAINER_CONFIGURATIONS: Record<
     wait: { type: "PORT" },
     type: "image",
   },
-}
+} satisfies Record<ContainerType, ContainerConfiguration>
 
 const baseContainerConfiguration = z.object({
   name: z.string(),
@@ -161,12 +158,21 @@ export const setup = async (
         }
       }
 
+      const exposedPortSchema = z.union([
+        z.number(),
+        z
+          .object({ container: z.number(), host: z.number() })
+          .transform(({ container }) => container),
+      ])
+
+      const getExposedPort = (
+        port: z.input<typeof exposedPortSchema>,
+      ): number => exposedPortSchema.parse(port)
+
       return {
         name,
         container,
-        ports: ports.map((port) =>
-          typeof port === "number" ? port : port.container,
-        ),
+        ports: ports.map(getExposedPort),
         configuration,
       }
     }),

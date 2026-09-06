@@ -108,6 +108,7 @@ export const createCollectionFromLocal = async ({
         const blob = await tx
           .insertInto("Blob")
           .values({
+            // SAFETY: parsedFileContent was validated against collection schema before insert.
             content: parsedFileContent as PrismaJson.BlobJsonContent,
             createdAt: new Date(),
             updatedAt: new Date(),

@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import type { UserManagementAbility } from "~/server/modules/permissions/permissions.type"
+import * as growthbook from "@growthbook/growthbook-react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import { fireEvent, render, screen } from "@testing-library/react"
 import { createStore, Provider } from "jotai"
@@ -16,10 +17,6 @@ import { ExportAccessLogsButton } from "../ExportAccessLogsButton"
 // The button is hidden while the is-audit-log-enabled flag is off (or not yet
 // loaded) — drive the flag per-test.
 let isAuditLogFlagOn = true
-vi.mock("@growthbook/growthbook-react", () => ({
-  useFeatureValue: (_key: string, fallback: boolean) =>
-    isAuditLogFlagOn || fallback,
-}))
 
 const adminAbility = buildUserManagementPermissions([{ role: RoleType.Admin }])
 const editorAbility = buildUserManagementPermissions([
@@ -46,6 +43,9 @@ describe("ExportAccessLogsButton", () => {
   beforeEach(() => {
     store = createStore()
     isAuditLogFlagOn = true
+    vi.spyOn(growthbook, "useFeatureValue").mockImplementation(
+      (_key, fallback) => isAuditLogFlagOn || fallback,
+    )
   })
 
   // The button itself no longer requests an export directly — it opens

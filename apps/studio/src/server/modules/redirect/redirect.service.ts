@@ -41,7 +41,12 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 import type { Logger } from "@isomer/logging"
 
 import type { SafeKysely, Transaction } from "../database/types"
-import { logPublishEvent, logRedirectEvent } from "../audit/audit.service"
+import {
+  logPublishEvent,
+  logRedirectEvent,
+  toAuditLogDelta,
+  toRepublishMetadata,
+} from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
 import { PG_ERROR_CODES } from "../database/constants"
 import { db } from "../database/database"
@@ -720,7 +725,7 @@ export const createRedirect = async ({
         by: byUser,
         delta: { before: null, after: null },
         eventType: AuditLogEvent.Publish,
-        metadata: { redirects: { created: [created] } },
+        metadata: toRepublishMetadata({ redirects: { created: [created] } }),
       })
 
       return created
@@ -766,19 +771,24 @@ const REDIRECT_WRITE_BUSY_MESSAGE =
 
 // True when a query aborted waiting for a lock — here, the advisory lock's
 // lock_timeout firing.
-const isLockTimeoutError = (error: unknown): boolean =>
+type PgCaughtError = Error | { code?: string }
+
+const isLockTimeoutError = (error: PgCaughtError): boolean =>
   get(error, "code") === PG_ERROR_CODES.lockTimeout
 
 // Rethrow a lock-timeout wait as a retryable CONFLICT; pass everything else
 // through unchanged (so the transaction's own TRPCErrors keep their codes).
-const rethrowLockTimeoutAsConflict = (error: unknown): never => {
+const rethrowLockTimeoutAsConflict = (error: PgCaughtError): never => {
   if (isLockTimeoutError(error)) {
     throw new TRPCError({
       code: "CONFLICT",
       message: REDIRECT_WRITE_BUSY_MESSAGE,
     })
   }
-  throw error
+  if (error instanceof Error) {
+    throw error
+  }
+  throw new Error("Redirect write failed")
 }
 
 // Taken by every redirect mutation path before its check-then-write, so a
@@ -1434,10 +1444,10 @@ export const bulkCreateRedirects = async ({
       const auditValues = insertedRows.map((row) => ({
         siteId,
         eventType: AuditLogEvent.RedirectCreate,
-        delta: {
+        delta: toAuditLogDelta({
           before: existingBySource.get(row.source) ?? null,
           after: row,
-        },
+        }),
         userId: byUser.id,
         metadata: {},
       }))
@@ -1454,7 +1464,9 @@ export const bulkCreateRedirects = async ({
         by: byUser,
         delta: { before: null, after: null },
         eventType: AuditLogEvent.Publish,
-        metadata: { redirects: { createdCount: insertedRows.length } },
+        metadata: toRepublishMetadata({
+          redirects: { createdCount: insertedRows.length },
+        }),
       })
 
       return insertedRows
@@ -1465,9 +1477,9 @@ export const bulkCreateRedirects = async ({
 
     return { ok: true, publishedCount: created.length }
   } catch (error) {
-    // A writer that waited past the lock_timeout for the per-site advisory lock
-    // aborts here; surface it as a retryable conflict rather than a 500.
-    if (isLockTimeoutError(error)) {
+    const caughtError: unknown = error
+    // SAFETY: lock-timeout detection only reads postgres error fields.
+    if (isLockTimeoutError(caughtError as PgCaughtError)) {
       throw new TRPCError({
         code: "CONFLICT",
         message: REDIRECT_WRITE_BUSY_MESSAGE,
@@ -1722,7 +1734,7 @@ const assertDescendantsNotShadowed = async (
           {
             siteId,
             eventType: AuditLogEvent.RedirectDelete,
-            delta: { before, after },
+            delta: toAuditLogDelta({ before, after }),
             userId: byUser.id,
             metadata: {},
           },
@@ -2015,7 +2027,7 @@ export const deleteRedirect = async ({
       by: byUser,
       delta: { before: null, after: null },
       eventType: AuditLogEvent.Publish,
-      metadata: { redirects: { deleted: [deleted] } },
+      metadata: toRepublishMetadata({ redirects: { deleted: [deleted] } }),
     })
   })
 

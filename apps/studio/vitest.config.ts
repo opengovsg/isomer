@@ -26,6 +26,11 @@ export default defineConfig({
         extends: true,
         test: {
           name: "node",
+          env: {
+            // Unit tests expect a stable public app URL in audit export emails;
+            // omit from .env.test so E2E Singpass OAuth keeps localhost redirects.
+            NEXT_PUBLIC_APP_URL: "https://studio.test.gov.sg",
+          },
           include: ["src/**/*.test.{ts,tsx}", "prisma/scripts/**/*.test.ts"],
           exclude: [
             ...configDefaults.exclude,

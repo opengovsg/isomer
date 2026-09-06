@@ -1,40 +1,20 @@
 import type { NextApiRequest, NextApiResponse } from "next"
 import type { z } from "zod"
-import type { env } from "~/env.mjs"
 import { createMocks } from "node-mocks-http"
 import { resetTables } from "tests/integration/helpers/db"
 import { createTestUser } from "tests/integration/helpers/iron-session"
 import { setupCodeBuildJob, setupUser } from "tests/integration/helpers/seed"
+import { beforeEach, describe, expect, it, vi } from "vitest"
+import { env } from "~/env.mjs"
+import * as mailService from "~/features/mail/service"
 import handler from "~/pages/api/webhooks/updateCodebuildWebhook"
 import { WEBHOOK_X_API_KEY_HEADER } from "~/server/trpc"
 
 import type { codeBuildWebhookSchema } from "../webhook"
 
-const { WEBHOOK_API_KEY, INVALID_WEBHOOK_API_KEY_WITH_EXPECTED_LENGTH } =
-  vi.hoisted(() => ({
-    WEBHOOK_API_KEY: "00000000-0000-4000-8000-000000000000",
-    INVALID_WEBHOOK_API_KEY_WITH_EXPECTED_LENGTH:
-      "11111111-1111-4111-8111-111111111111",
-  }))
-
-vi.mock("~/env.mjs", async () => {
-  // Import the real module first to get all default values
-  const actual = await vi.importActual<{ env: typeof env }>("~/env.mjs")
-  return {
-    env: {
-      ...actual.env,
-      // override some env variables for testing
-      STUDIO_SSM_WEBHOOK_API_KEY: WEBHOOK_API_KEY,
-      GROWTHBOOK_CLIENT_KEY: "test-growthbook-client-key",
-    },
-  }
-})
-
-// Mock the publishSite function to avoid sending emails
-vi.mock("~/features/mail/service", () => ({
-  sendSuccessfulScheduledPublishEmail: vi.fn(),
-  sendFailedSchedulePublishEmail: vi.fn(),
-}))
+const WEBHOOK_API_KEY = "00000000-0000-4000-8000-000000000000"
+const INVALID_WEBHOOK_API_KEY_WITH_EXPECTED_LENGTH =
+  "11111111-1111-4111-8111-111111111111"
 
 const createMockRequest = ({
   arn,
@@ -48,13 +28,18 @@ const createMockRequest = ({
     arn,
     status: "SUCCEEDED",
   }
+  const headers: { "content-type": string } & Partial<
+    Record<typeof WEBHOOK_X_API_KEY_HEADER, string>
+  > = {
+    "content-type": "application/json",
+  }
+  if (apiKey !== null) {
+    headers[WEBHOOK_X_API_KEY_HEADER] = apiKey
+  }
   const { req, res }: { req: NextApiRequest; res: NextApiResponse } =
     createMocks({
       method: "POST",
-      headers: {
-        "content-type": "application/json",
-        ...(apiKey === null ? {} : { [WEBHOOK_X_API_KEY_HEADER]: apiKey }),
-      },
+      headers,
       body,
     })
   return { req, res }
@@ -62,6 +47,12 @@ const createMockRequest = ({
 
 describe("webhook", () => {
   beforeEach(async () => {
+    env.STUDIO_SSM_WEBHOOK_API_KEY = WEBHOOK_API_KEY
+    env.GROWTHBOOK_CLIENT_KEY = "test-growthbook-client-key"
+    vi.spyOn(mailService, "sendSuccessfulPublishEmail").mockResolvedValue(
+      undefined,
+    )
+    vi.spyOn(mailService, "sendFailedPublishEmail").mockResolvedValue(undefined)
     await resetTables("CodeBuildJobs", "Resource", "Site")
   })
   describe("updateCodebuildWebhook", () => {

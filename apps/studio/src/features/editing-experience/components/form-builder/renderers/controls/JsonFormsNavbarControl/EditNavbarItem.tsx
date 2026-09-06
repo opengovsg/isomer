@@ -48,6 +48,7 @@ export const EditNavbarItem = ({
     onClose: onDeleteGroupModalClose,
   } = useDisclosure()
   const ctx = useJsonForms()
+  // SAFETY: JSON Forms path resolves nested navbar items for the edited group
   const subItems = get(ctx.core?.data, `${path}.items`) as
     | NavbarItems["items"]
     | undefined

@@ -1719,7 +1719,8 @@ describe("resource.service", () => {
         // `alt` is required by the schema but nothing enforces it on the stored
         // JSON, so the cast reproduces a blob that omits it
         const node = await setupCollectionWithItemBody([
-          { type: "image", src: "/no-alt.jpg" } as unknown as PageBody[number],
+          // SAFETY: reproduces a stored blob that omits required image alt text.
+          { type: "image", src: "/no-alt.jpg" } as PageBody[number],
         ])
 
         // Assert

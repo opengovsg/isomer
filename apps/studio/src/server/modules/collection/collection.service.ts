@@ -47,6 +47,7 @@ export const createCollectionLinkJson = ({}: {
 export const createCollectionIndexJson = (title: string) => {
   return {
     layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,
+    // SAFETY: collection index pages use Collection layout defaults validated by schema
     page: {
       title,
       subtitle: `Read up-to-date news articles, speeches, and press releases here.`,

@@ -87,6 +87,7 @@ const useCreatePageWizardContext = ({
         jsonPreview = databaseLayoutPreview
         break
     }
+    // SAFETY: layout preview JSON is merged with the wizard title before save
     return merge(jsonPreview, {
       page: {
         title: title || "Page title here",

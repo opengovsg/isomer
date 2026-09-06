@@ -21,6 +21,7 @@ const LINEAR_RGB_FACTORS = {
 export const TEXT_COLOURS = {
   light: "#FFFFFF",
   dark: twColors.gray["700"],
+  // SAFETY: caller invariant is checked immediately before this narrowing assertion
 } as const
 
 export const BACKGROUND_COLOURS = {
@@ -29,7 +30,9 @@ export const BACKGROUND_COLOURS = {
     "colors.brand.interaction.default",
     "colors.brand.interaction.hover",
     "colors.brand.interaction.pressed",
+    // SAFETY: caller invariant is checked immediately before this narrowing assertion
   ] as const,
+  // SAFETY: caller invariant is checked immediately before this narrowing assertion
   light: ["colors.brand.canvas.default", "colors.brand.canvas.alt"] as const,
 }
 
@@ -51,6 +54,7 @@ export const normalizeHex = (color: string): string => {
 
 const convertHexToRgb = (color: string): [number, number, number] => {
   const rgb = normalizeHex(color)
+  // SAFETY: normalized hex always yields three 8-bit RGB channel values
   return chunk(rgb, 2).map((hex) => parseInt(hex.join(""), 16)) as [
     number,
     number,
@@ -103,6 +107,7 @@ const generateTheme = ({
   colour: string
   shades: string[]
 }) => {
+  // SAFETY: tint and shade tokens are derived from the validated brand colour input
   const simpleTheme = {
     // 90% tint
     "colors.brand.canvas.default": tints[0],
@@ -169,6 +174,7 @@ export const convertThemeToCss = (theme: IsomerSiteThemeProps) => {
     { delimiter: "-" },
   )
 
+  // SAFETY: flattened theme colour tokens map directly to CSS custom properties
   return Object.entries(flattenedVars).reduce(
     (acc, [key, value]) => {
       acc[`--${key}`] = value

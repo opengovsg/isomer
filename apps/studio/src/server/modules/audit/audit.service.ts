@@ -1,3 +1,4 @@
+import type { AuditLogMetadata } from "../../../../prisma/types"
 import type {
   AuditLogEvent,
   AuditLogExportReportType,
@@ -17,6 +18,14 @@ import type {
 } from "../database/types"
 
 type WithoutMeta<T> = Omit<T, "createdAt" | "updatedAt">
+
+export const toAuditLogDelta = (
+  delta: PrismaJson.AuditLogDeltaJsonContent,
+): PrismaJson.AuditLogDeltaJsonContent => delta
+
+export const toRepublishMetadata = (
+  metadata: PublishEventMetadata,
+): PublishEventMetadata => metadata
 
 // NOTE: Either a folder/collection that doesn't have a blob
 // or a page w/ blob
@@ -63,7 +72,7 @@ interface BaseResourceEventLogProps {
   by: User
   ip?: string
   siteId: Site["id"]
-  metadata?: Record<string, unknown>
+  metadata?: AuditLogMetadata
 }
 
 export type ResourceEventLogProps = {
@@ -84,7 +93,7 @@ export const logResourceEvent: AuditLogger<ResourceEventLogProps> = async (
     .insertInto("AuditLog")
     .values({
       eventType,
-      delta,
+      delta: toAuditLogDelta(delta),
       userId: by.id,
       ipAddress: ip,
       metadata,
@@ -146,7 +155,7 @@ export const logConfigEvent: AuditLogger<ConfigEventLogProps> = async (
     .values({
       siteId,
       eventType,
-      delta,
+      delta: toAuditLogDelta(delta),
       userId: by.id,
       ipAddress: ip,
       metadata: {},
@@ -189,7 +198,7 @@ export const logRedirectEvent: AuditLogger<RedirectEventLogProps> = async (
     .values({
       siteId,
       eventType,
-      delta,
+      delta: toAuditLogDelta(delta),
       userId: by.id,
       ipAddress: ip,
       metadata: {},
@@ -223,7 +232,7 @@ export const logAuthEvent: AuditLogger<AuthEventLogProps> = async (
     .insertInto("AuditLog")
     .values({
       eventType,
-      delta,
+      delta: toAuditLogDelta(delta),
       userId: by.id,
       ipAddress: ip,
       metadata: {},
@@ -243,10 +252,16 @@ type ConfigPublishEvent = { site: Site } & { navbar?: Navbar } & {
   footer?: Footer
 }
 
+type PublishEventMetadata =
+  | AuditLogMetadata
+  | BlobPublishEvent
+  | Resource
+  | ConfigPublishEvent
+
 interface PublishEventLogProps<
   Before,
   After,
-  Meta extends Record<string, unknown> | null,
+  Meta extends PublishEventMetadata | null,
 > {
   by: User
   delta: {
@@ -279,7 +294,7 @@ type ConfigPublishEventLogProps = PublishEventLogProps<
 type RepublishEventLogProps = PublishEventLogProps<
   null,
   null,
-  Record<string, unknown>
+  PublishEventMetadata
 >
 
 export const logPublishEvent: AuditLogger<
@@ -292,7 +307,7 @@ export const logPublishEvent: AuditLogger<
     .insertInto("AuditLog")
     .values({
       eventType,
-      delta,
+      delta: toAuditLogDelta(delta),
       userId: by.id,
       ipAddress: ip,
       metadata,
@@ -320,7 +335,7 @@ interface UserEventLogProps {
   by: User
   delta: CreateUserDelta | DeleteUserDelta | UpdateUserDelta
   eventType: Extract<AuditLogEvent, "UserCreate" | "UserUpdate" | "UserDelete">
-  metadata?: Record<string, unknown>
+  metadata?: AuditLogMetadata
   ip?: string
 }
 
@@ -332,7 +347,7 @@ export const logUserEvent: AuditLogger<UserEventLogProps> = async (
     .insertInto("AuditLog")
     .values({
       eventType,
-      delta,
+      delta: toAuditLogDelta(delta),
       userId: by.id,
       ipAddress: ip,
       metadata,
@@ -366,7 +381,7 @@ interface PermissionEventLogProps {
   >
   by: User
   delta: CreatePermissionDelta | DeletePermissionDelta | UpdatePermissionDelta
-  metadata?: Record<string, unknown>
+  metadata?: AuditLogMetadata
   ip?: string
   siteId: Site["id"]
 }
@@ -379,7 +394,7 @@ export const logPermissionEvent: AuditLogger<PermissionEventLogProps> = async (
     .insertInto("AuditLog")
     .values({
       eventType,
-      delta,
+      delta: toAuditLogDelta(delta),
       userId: by.id,
       ipAddress: ip,
       siteId,
@@ -421,7 +436,7 @@ export const logAuditLogExportEvents: AuditLogger<
       events.map(({ eventType, delta, by, ip, siteId }) => ({
         siteId,
         eventType,
-        delta,
+        delta: toAuditLogDelta(delta),
         userId: by.id,
         ipAddress: ip,
         metadata: {},

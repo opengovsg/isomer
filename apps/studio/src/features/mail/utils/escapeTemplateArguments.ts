@@ -18,12 +18,28 @@ export const escapeTemplateArguments = <T extends EmailTemplateMap>(
       template(escapeTemplateArgument(data)),
   )
 
-const escapeTemplateArgument = <T>(value: T): T => {
-  if (typeof value === "string") {
+const isStringValue = (value: TemplateArgumentValue): value is string =>
+  Object.prototype.toString.call(value) === "[object String]"
+
+type TemplateArgumentValue =
+  | string
+  | number
+  | boolean
+  | null
+  | Date
+  | TemplateArgumentValue[]
+  | { [key: string]: TemplateArgumentValue }
+
+const escapeTemplateArgument = <T extends TemplateArgumentValue>(
+  value: T,
+): T => {
+  if (isStringValue(value)) {
+    // SAFETY: isStringValue narrows value to string before HTML escaping
     return escapeHtml(value) as T
   }
 
   if (Array.isArray(value)) {
+    // SAFETY: recursive escape preserves the array element type
     return value.map(escapeTemplateArgument) as T
   }
 
@@ -32,6 +48,7 @@ const escapeTemplateArgument = <T>(value: T): T => {
   }
 
   if (isPlainObject(value)) {
+    // SAFETY: plain-object branch only recurses over own enumerable entries
     return mapValues(value as object, escapeTemplateArgument) as T
   }
 

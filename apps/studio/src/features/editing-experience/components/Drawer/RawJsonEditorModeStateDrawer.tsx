@@ -68,6 +68,7 @@ const RawJsonEditorModeStateDrawer = (): React.ReactNode => {
 
   const handleChange = (data: string) => {
     setPendingChanges(data)
+    // SAFETY: editor drawer state is narrowed to the active layout-specific page shape
     const parsedPendingChanges = safeJsonParse(data) as unknown
 
     if (validateFn(parsedPendingChanges)) {

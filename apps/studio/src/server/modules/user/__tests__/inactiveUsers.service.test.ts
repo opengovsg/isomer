@@ -9,6 +9,7 @@ import {
 } from "tests/integration/helpers/seed"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { env } from "~/env.mjs"
+import * as mailService from "~/features/mail/service"
 import {
   sendAccountDeactivationEmail,
   sendAccountDeactivationWarningEmail,
@@ -18,12 +19,6 @@ import { RoleType } from "~/server/modules/database/types"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { MAX_DAYS_FROM_LAST_LOGIN } from "../constants"
-
-// Mock must be at module level to be hoisted correctly
-vi.mock("~/features/mail/service", () => ({
-  sendAccountDeactivationEmail: vi.fn(),
-  sendAccountDeactivationWarningEmail: vi.fn(),
-}))
 import {
   bulkDeactivateInactiveUsers,
   bulkSendAccountDeactivationWarningEmails,
@@ -131,6 +126,13 @@ describe("inactiveUsers.service", () => {
 
     beforeEach(async () => {
       vi.clearAllMocks()
+      vi.spyOn(mailService, "sendAccountDeactivationEmail").mockResolvedValue(
+        undefined,
+      )
+      vi.spyOn(
+        mailService,
+        "sendAccountDeactivationWarningEmail",
+      ).mockResolvedValue(undefined)
       await resetTables("Site", "User", "ResourcePermission", "AuditLog")
 
       const { site: _site } = await setupSite()
@@ -190,6 +192,7 @@ describe("inactiveUsers.service", () => {
           metadata: { reason: "inactivity" },
         }),
       )
+      // SAFETY: audit log delta shape is narrowed to the permission-delete fields under test.
       const delta = auditLogs[0]?.delta as {
         before: { userId: string; deletedAt: string | null }
         after: { userId: string; deletedAt: string | null }

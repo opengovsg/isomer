@@ -1,4 +1,3 @@
-import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
 import { Box, Flex, Text, useDisclosure } from "@chakra-ui/react"
 import { Button, Infobox, useToast } from "@opengovsg/design-system-react"
@@ -27,11 +26,17 @@ import { ErrorProvider, useBuilderErrors } from "../form-builder/ErrorProvider"
 import FormBuilder from "../form-builder/FormBuilder"
 import { DrawerHeader } from "./DrawerHeader"
 
-const HEADER_LABELS: Record<string, string> = {
+const HEADER_LABELS = {
   article: "Edit article page header",
   content: "Edit content page header",
   index: "Edit index page header",
   database: "Edit page header",
+} as const satisfies Record<string, string>
+
+const getHeaderLabel = (layout: string): string => {
+  if (!Object.hasOwn(HEADER_LABELS, layout)) return "Edit header information"
+  // SAFETY: Object.hasOwn confirms layout is a key of HEADER_LABELS
+  return HEADER_LABELS[layout as keyof typeof HEADER_LABELS]
 }
 
 const MetadataEditorStateDrawer = (): React.ReactNode => {
@@ -126,14 +131,12 @@ const MetadataEditorStateDrawer = (): React.ReactNode => {
     siteId,
   ])
 
-  const handleChange = (data: unknown) => {
+  const handleChange = (data: Static<typeof metadataSchema>) => {
     // TODO: Perform actual validation on the data
-    const newPageState = {
+    setPreviewPageState({
       ...previewPageState,
       page: data,
-    } as IsomerSchema
-
-    setPreviewPageState(newPageState)
+    })
   }
 
   const handleDiscardChanges = () => {
@@ -160,9 +163,7 @@ const MetadataEditorStateDrawer = (): React.ReactNode => {
               handleDiscardChanges()
             }
           }}
-          label={
-            HEADER_LABELS[savedPageState.layout] || "Edit header information"
-          }
+          label={getHeaderLabel(savedPageState.layout)}
         />
 
         <ErrorProvider>
@@ -203,6 +204,7 @@ const MetadataEditorStateDrawer = (): React.ReactNode => {
                 isLoading={isPending}
                 onClick={handleSaveChanges}
                 tags={collectionTags}
+                // SAFETY: editor drawer state is narrowed to the active layout-specific page shape
                 tagged={(previewPageState.page as { tagged?: string[] }).tagged}
               />
             ) : (

@@ -10,10 +10,9 @@ export const jsonFormsAntiScamDisclaimerBannerLayoutTester: RankedTester =
     JSON_FORMS_RANKING.AntiScamDisclaimerBannerLayoutRenderer,
     (uischema, schema) => {
       if (uischema.type !== "VerticalLayout") return false
-      const typeSchema = (
-        schema.properties as Record<string, unknown> | undefined
-      )?.type as { const?: unknown } | undefined
-      return typeSchema?.const === "antiscambanner"
+      const typeProperty = schema.properties?.type
+      if (!typeProperty || !("const" in typeProperty)) return false
+      return typeProperty.const === "antiscambanner"
     },
   )
 

@@ -5,50 +5,29 @@ import { createMocks } from "node-mocks-http"
 import { resetTables } from "tests/integration/helpers/db"
 import { setupSite, setupUser } from "tests/integration/helpers/seed"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-
-// Repeated as literals inside the vi.mock factories below: those factories are
-// hoisted above all top-level bindings, so they cannot close over these consts.
-const SESSION_SECRET = "test-session-secret-at-least-32-chars-long"
-const BUCKET = "test-audit-bucket"
-
-// `~/lib/s3` and the token module both read the validated env, which would
-// reject the missing audit-bucket var in test. Bypass it and feed exactly what
-// the route needs; the DB still uses the real connection string dotenv-cli
-// loaded into process.env from `.env.test`.
-vi.mock("~/env.mjs", () => ({
-  env: {
-    // oxlint-disable-next-line node/no-process-env
-    NODE_ENV: process.env.NODE_ENV ?? "test",
-    // oxlint-disable-next-line node/no-process-env
-    NEXT_PUBLIC_APP_ENV: process.env.NEXT_PUBLIC_APP_ENV ?? "test",
-    // oxlint-disable-next-line node/no-process-env
-    DATABASE_URL: process.env.DATABASE_URL,
-    S3_STUDIO_ASSETS_BUCKET_NAME: "test-audit-bucket",
-    SESSION_SECRET: "test-session-secret-at-least-32-chars-long",
-  },
-}))
-
-const { mockGenerateSignedGetUrl } = vi.hoisted(() => ({
-  mockGenerateSignedGetUrl: vi.fn<() => Promise<string>>(),
-}))
-
-// Mock only the S3 presign boundary — the route builds a real signed URL at
-// click time. The DB is NOT mocked; request rows are seeded into real Postgres.
-vi.mock("~/lib/s3", () => ({
-  generateSignedGetUrl: mockGenerateSignedGetUrl,
-  getStudioAssetsBucketName: () => "test-audit-bucket",
-}))
-
+import * as s3Lib from "~/lib/s3"
 import handler from "~/pages/api/audit-log-exports/download"
 import { sealAuditLogExportToken } from "~/server/modules/audit/auditLogExportToken"
 import { db } from "~/server/modules/database/database"
 
+const BUCKET = "test-audit-bucket"
 const EXPIRED_PAGE_PATH = "/audit-log-exports/expired"
 
 // A presigned S3 URL echoing the object key, so the happy-path assertion can
 // prove the route signed the RIGHT object.
 const signedUrlFor = (key: string) =>
   `https://${BUCKET}.s3.amazonaws.com/${key}?X-Amz-Signature=deadbeef`
+
+interface SeedDownloadRequestValues {
+  siteId: number
+  userId: string
+  auditLogDateRange: string
+  reportType: "Access"
+  status: "Pending" | "Processing" | "Done" | "Failed"
+  attempts: number
+  objectKey?: string | null
+  completedAt?: Date | null
+}
 
 const seedRequest = async ({
   siteId,
@@ -63,20 +42,31 @@ const seedRequest = async ({
   objectKey?: string | null
   completedAt?: Date | null
 }) => {
+  const values: SeedDownloadRequestValues = {
+    siteId,
+    userId,
+    auditLogDateRange: "[2024-03-01,2024-04-01)",
+    reportType: "Access",
+    status,
+    attempts: 0,
+  }
+  if (objectKey !== undefined) {
+    values.objectKey = objectKey
+  }
+  if (completedAt !== undefined) {
+    values.completedAt = completedAt
+  }
+
   return db
     .insertInto("AuditLogExportRequest")
-    .values({
-      siteId,
-      userId,
-      auditLogDateRange: "[2024-03-01,2024-04-01)",
-      reportType: "Access",
-      status,
-      attempts: 0,
-      ...(objectKey !== undefined ? { objectKey } : {}),
-      ...(completedAt !== undefined ? { completedAt } : {}),
-    })
+    .values(values)
     .returningAll()
     .executeTakeFirstOrThrow()
+}
+
+interface MockRedirectResponse {
+  statusCode: number
+  _getRedirectUrl: () => string
 }
 
 const callRoute = async (
@@ -86,10 +76,9 @@ const callRoute = async (
   const { req, res }: { req: NextApiRequest; res: NextApiResponse } =
     createMocks({ method, query })
   await handler(req, res)
-  return res as unknown as {
-    statusCode: number
-    _getRedirectUrl: () => string
-  }
+  const response: unknown = res
+  // SAFETY: node-mocks-http augments NextApiResponse with redirect helpers used below
+  return response as MockRedirectResponse
 }
 
 describe("GET /api/audit-log-exports/download", () => {
@@ -101,13 +90,16 @@ describe("GET /api/audit-log-exports/download", () => {
       "Site",
     )
     vi.clearAllMocks()
+    vi.spyOn(s3Lib, "generateSignedGetUrl").mockImplementation(({ Key }) =>
+      Promise.resolve(signedUrlFor(Key ?? "")),
+    )
+    vi.spyOn(s3Lib, "getStudioAssetsBucketName").mockReturnValue(BUCKET)
   })
 
   it("302s to a fresh presigned URL for the row's objectKey (happy path)", async () => {
     const { site } = await setupSite()
     const user = await setupUser({ email: "admin@vendor.com.sg" })
     const objectKey = `audit-log-exports/${site.id}/1/access.csv`
-    mockGenerateSignedGetUrl.mockResolvedValue(signedUrlFor(objectKey))
 
     const request = await seedRequest({
       siteId: site.id,
@@ -122,8 +114,8 @@ describe("GET /api/audit-log-exports/download", () => {
 
     expect(res.statusCode).toBe(302)
     // The route signed the correct object and redirected to it.
-    expect(mockGenerateSignedGetUrl).toHaveBeenCalledTimes(1)
-    expect(mockGenerateSignedGetUrl).toHaveBeenCalledWith({
+    expect(s3Lib.generateSignedGetUrl).toHaveBeenCalledTimes(1)
+    expect(s3Lib.generateSignedGetUrl).toHaveBeenCalledWith({
       Bucket: BUCKET,
       Key: objectKey,
     })
@@ -146,7 +138,7 @@ describe("GET /api/audit-log-exports/download", () => {
 
     expect(res.statusCode).toBe(302)
     expect(res._getRedirectUrl()).toBe(EXPIRED_PAGE_PATH)
-    expect(mockGenerateSignedGetUrl).not.toHaveBeenCalled()
+    expect(s3Lib.generateSignedGetUrl).not.toHaveBeenCalled()
   })
 
   it("redirects to the expired page once the Download Window has elapsed", async () => {
@@ -166,7 +158,7 @@ describe("GET /api/audit-log-exports/download", () => {
 
     expect(res.statusCode).toBe(302)
     expect(res._getRedirectUrl()).toBe(EXPIRED_PAGE_PATH)
-    expect(mockGenerateSignedGetUrl).not.toHaveBeenCalled()
+    expect(s3Lib.generateSignedGetUrl).not.toHaveBeenCalled()
   })
 
   it("treats the window boundary (completedAt + exactly 3 days) as expired", async () => {
@@ -188,14 +180,13 @@ describe("GET /api/audit-log-exports/download", () => {
 
     expect(res.statusCode).toBe(302)
     expect(res._getRedirectUrl()).toBe(EXPIRED_PAGE_PATH)
-    expect(mockGenerateSignedGetUrl).not.toHaveBeenCalled()
+    expect(s3Lib.generateSignedGetUrl).not.toHaveBeenCalled()
   })
 
   it("still serves a row completed just under 3 days ago (inside the window)", async () => {
     const { site } = await setupSite()
     const user = await setupUser({ email: "inside@vendor.com.sg" })
     const objectKey = `audit-log-exports/${site.id}/1/access.csv`
-    mockGenerateSignedGetUrl.mockResolvedValue(signedUrlFor(objectKey))
     const request = await seedRequest({
       siteId: site.id,
       userId: user.id,
@@ -219,7 +210,9 @@ describe("GET /api/audit-log-exports/download", () => {
     const objectKey = `audit-log-exports/${site.id}/1/access.csv`
     // Infrastructure failure at the last step — a prober must not be able to
     // distinguish this from an expired link, and the handler must not 500.
-    mockGenerateSignedGetUrl.mockRejectedValue(new Error("S3 unavailable"))
+    vi.spyOn(s3Lib, "generateSignedGetUrl").mockRejectedValue(
+      new Error("S3 unavailable"),
+    )
     const request = await seedRequest({
       siteId: site.id,
       userId: user.id,
@@ -239,7 +232,7 @@ describe("GET /api/audit-log-exports/download", () => {
     const res = await callRoute({ token: "not-a-real-token" })
     expect(res.statusCode).toBe(302)
     expect(res._getRedirectUrl()).toBe(EXPIRED_PAGE_PATH)
-    expect(mockGenerateSignedGetUrl).not.toHaveBeenCalled()
+    expect(s3Lib.generateSignedGetUrl).not.toHaveBeenCalled()
   })
 
   it("redirects to the expired page for a valid token pointing at an unknown row", async () => {
@@ -249,20 +242,21 @@ describe("GET /api/audit-log-exports/download", () => {
     const res = await callRoute({ token })
     expect(res.statusCode).toBe(302)
     expect(res._getRedirectUrl()).toBe(EXPIRED_PAGE_PATH)
-    expect(mockGenerateSignedGetUrl).not.toHaveBeenCalled()
+    expect(s3Lib.generateSignedGetUrl).not.toHaveBeenCalled()
   })
 
   it("redirects to the expired page for a session-shaped blob sealed with the same key", async () => {
+    const { env } = await import("~/env.mjs")
     // Cross-purpose confusion: a session cookie sealed with the shared key
     // must never be redeemed as a download link.
     const sessionBlob = await sealData(
       { userId: "some-user" },
-      { password: { "1": SESSION_SECRET } },
+      { password: { "1": env.SESSION_SECRET } },
     )
     const res = await callRoute({ token: sessionBlob })
     expect(res.statusCode).toBe(302)
     expect(res._getRedirectUrl()).toBe(EXPIRED_PAGE_PATH)
-    expect(mockGenerateSignedGetUrl).not.toHaveBeenCalled()
+    expect(s3Lib.generateSignedGetUrl).not.toHaveBeenCalled()
   })
 
   it("rejects non-GET methods with 405", async () => {

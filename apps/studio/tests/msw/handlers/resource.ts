@@ -12,6 +12,7 @@ export const resourceHandlers = {
           const items = DEFAULT_PAGE_ITEMS.map((item) => ({
             title: item.title,
             permalink: item.permalink,
+            // SAFETY: DEFAULT_PAGE_ITEMS only uses these child resource types.
             type: item.type as
               | "Page"
               | "Folder"

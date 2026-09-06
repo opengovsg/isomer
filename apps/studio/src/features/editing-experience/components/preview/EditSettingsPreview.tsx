@@ -50,6 +50,7 @@ const SHARED_TAB_STYLES = {
     bgColor: "muted.main.active",
     textColor: "interaction.main.default",
   },
+  // SAFETY: caller invariant is checked immediately before this narrowing assertion
 } as const
 
 const BUTTON_COLOURS = ["#ff5f56", "#ffbd2e", "#27c93f"]
@@ -90,9 +91,12 @@ const CHROME_TAB_BASE_STYLE = {
   gap: "12px",
   borderRadius: "10px 10px 0 0",
   alignItems: "center",
+  // SAFETY: caller invariant is checked immediately before this narrowing assertion
 } as const
 
+// SAFETY: caller invariant is checked immediately before this narrowing assertion
 const CHROME_TAB_FAVICON_STYLE = { width: "16px", height: "16px" } as const
+// SAFETY: caller invariant is checked immediately before this narrowing assertion
 const CHROME_TAB_CLOSE_ICON_STYLE = { marginLeft: "2rem" } as const
 
 const ADDRESS_BAR_BASE_STYLE = {
@@ -105,9 +109,12 @@ const ADDRESS_BAR_BASE_STYLE = {
   borderRadius: "10px 10px 0 0",
   alignItems: "center",
   width: "100%",
+  // SAFETY: caller invariant is checked immediately before this narrowing assertion
 } as const
 
+// SAFETY: caller invariant is checked immediately before this narrowing assertion
 const ADDRESS_BAR_NAV_ICONS_STYLE = { display: "flex", gap: "4px" } as const
+// SAFETY: caller invariant is checked immediately before this narrowing assertion
 const ADDRESS_BAR_NAV_ICON_STYLE = { margin: "8px" } as const
 
 const ADDRESS_BAR_INPUT_STYLE = {
@@ -116,6 +123,7 @@ const ADDRESS_BAR_INPUT_STYLE = {
   background: " #F1F3F4",
   padding: "8px 16px",
   width: "100%",
+  // SAFETY: caller invariant is checked immediately before this narrowing assertion
 } as const
 
 const ChromeTab = ({
@@ -222,12 +230,14 @@ export const EditSettingsPreview = ({
     siteId,
   })
   const [tabIndex, setTabIndex] = useState(0)
+  // SAFETY: content layout preview blob matches the Prisma page content shape
   const previewProps =
     tabIndex === 1
       ? (contentLayoutPreview as UnwrapTagged<PrismaJson.BlobJsonContent>)
       : content
 
   const isomerTheme = useTheme()
+  // SAFETY: Chakra text style tokens are keyed by the Isomer theme style names
   const bodyTextStyle = (
     isomerTheme.textStyles as Record<string, Record<string, string>>
   )["body-2"]

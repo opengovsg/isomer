@@ -23,6 +23,7 @@ export const callbackUrlSchema = z
     } catch (error) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
+        // SAFETY: validator.parse throws a standard Error with a message string
         message: (error as Error).message,
       })
       return z.NEVER

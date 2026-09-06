@@ -1,20 +1,54 @@
-type ErrorCause = Record<string, unknown>
+interface ErrorCauseFields {
+  err?: Error
+}
+
+const isStringMessage = (
+  value: string | Error | ErrorCauseFields,
+): value is string =>
+  Object.prototype.toString.call(value) === "[object String]"
+
+type ErrorCauseInput =
+  | ErrorCauseFields
+  | Error
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+
+const isErrorCauseFromInput = (
+  value: ErrorCauseInput,
+): value is ErrorCauseFields =>
+  value !== null &&
+  value !== undefined &&
+  !(value instanceof Error) &&
+  Object(value) === value &&
+  !Array.isArray(value)
+
+const spreadErrorCause = (error: Error): ErrorCauseFields => {
+  // SAFETY: Error.cause is only consumed after narrowing to plain ErrorCauseFields
+  const causeInput = error.cause as ErrorCauseInput
+  if (isErrorCauseFromInput(causeInput)) {
+    return { err: error, ...causeInput }
+  }
+  return { err: error }
+}
 
 class AuthError extends Error {
-  constructor(message: string | Error | ErrorCause, cause?: ErrorCause) {
+  constructor(
+    message: string | Error | ErrorCauseFields,
+    cause?: ErrorCauseFields | Error,
+  ) {
     if (message instanceof Error) {
       super(undefined, {
-        // oxlint-disable-next-line @typescript-eslint/no-explicit-any
-        cause: { err: message, ...(message.cause as any), ...cause },
+        cause: { ...spreadErrorCause(message), ...cause },
       })
-    } else if (typeof message === "string") {
-      if (cause instanceof Error) {
-        // oxlint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
-        cause = { err: cause, ...(cause.cause as any) }
-      }
-      super(message, cause)
+    } else if (isStringMessage(message)) {
+      const resolvedCause =
+        cause instanceof Error ? spreadErrorCause(cause) : cause
+      super(message, { cause: resolvedCause })
     } else {
-      super(undefined, message)
+      super(undefined, { cause: message })
     }
     Error.captureStackTrace(this, this.constructor)
     this.name =

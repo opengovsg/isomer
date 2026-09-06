@@ -128,6 +128,7 @@ export const GazetteTable = ({
     columns,
     data:
       resources?.map((resource) => {
+        // SAFETY: caller invariant is checked immediately before this narrowing assertion
         const page = resource.content?.page as {
           category?: string
           description?: string

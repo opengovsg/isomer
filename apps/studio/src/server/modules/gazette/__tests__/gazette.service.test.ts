@@ -2,16 +2,10 @@ import { TRPCError } from "@trpc/server"
 import { resetTables } from "tests/integration/helpers/db"
 import { setupIsomerAdmin, setupUser } from "tests/integration/helpers/seed"
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import { env } from "~/env.mjs"
+import * as algoliaLib from "~/lib/algolia"
 import * as s3Lib from "~/lib/s3"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
-
-// algolia.ts constructs the Algolia client at module load via
-// algoliasearch(env.ALGOLIA_APP_ID, env.ALGOLIA_API_KEY). Those env vars are
-// not set in the test environment, so the import throws "appId is missing"
-// before any test runs. Mock the whole module to prevent this.
-vi.mock("~/lib/algolia")
-
-import * as algoliaLib from "~/lib/algolia"
 
 import {
   assertGazetteAccess,
@@ -23,6 +17,16 @@ import {
 describe("gazette.service", () => {
   beforeEach(async () => {
     vi.restoreAllMocks()
+    env.ALGOLIA_APP_ID = "test-app-id"
+    env.ALGOLIA_API_KEY = "test-api-key"
+    env.ALGOLIA_INDEX_NAME = "test-index"
+    vi.spyOn(algoliaLib, "saveObjectsToSearchIndex").mockResolvedValue(
+      undefined,
+    )
+    vi.spyOn(
+      algoliaLib,
+      "deleteObjectsFromSearchIndexByFilter",
+    ).mockResolvedValue(undefined)
     await resetTables(
       "AuditLog",
       "ResourcePermission",
@@ -89,7 +93,10 @@ describe("gazette.service", () => {
     })
 
     it("invokes copyFile with the new key built from the sanitized filename", async () => {
-      const copySpy = vi.spyOn(s3Lib, "copyFile").mockResolvedValue({} as never)
+      const copySpy = vi.spyOn(s3Lib, "copyFile").mockResolvedValue(
+        // SAFETY: s3 copy response fields are unused by copyFileWithNewName.
+        {} as Awaited<ReturnType<typeof s3Lib.copyFile>>,
+      )
 
       const newKey = await copyFileWithNewName({
         sourceKey: "2026/Government Gazette/Public/original.pdf",

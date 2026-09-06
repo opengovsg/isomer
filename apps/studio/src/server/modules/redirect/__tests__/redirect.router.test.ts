@@ -140,7 +140,7 @@ describe("redirect.router", async () => {
         destination: "/new",
       })
       expect(result[0]!.publishedAt).toBeInstanceOf(Date)
-      expect(typeof result[0]!.id).toBe("string")
+      expect(result[0]!.id).toEqual(expect.any(String))
     })
 
     it("should not return soft-deleted redirects", async () => {
@@ -1750,6 +1750,7 @@ describe("redirect.router", async () => {
         .where("eventType", "=", "RedirectDelete")
         .executeTakeFirstOrThrow()
       expect(auditEntry.userId).toBe(session.userId)
+      // SAFETY: audit log delta shape is narrowed to redirect-delete fields under test.
       const delta = auditEntry.delta as {
         before: { source: string; deletedAt: string | null }
         after: { source: string; deletedAt: string | null }

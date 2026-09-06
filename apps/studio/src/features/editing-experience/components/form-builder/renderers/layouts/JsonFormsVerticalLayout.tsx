@@ -16,6 +16,24 @@ type UISchemaElementWithScope = UISchemaElement & {
   elements?: UISchemaElementWithScope[]
 }
 
+const isStringValue = (
+  value: UISchemaElementWithScope["scope"],
+): value is string =>
+  Object.prototype.toString.call(value) === "[object String]"
+
+const getScopedElementKey = (
+  element: UISchemaElementWithScope,
+  path: string,
+): string => {
+  if ("scope" in element) {
+    const scope = element.scope
+    if (isStringValue(scope)) {
+      return scope
+    }
+  }
+  return `${path}-${JSON.stringify(element)}`
+}
+
 export const jsonFormsVerticalLayoutTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.VerticalLayoutRenderer,
   uiTypeIs("VerticalLayout"),
@@ -106,6 +124,7 @@ const JsonFormsVerticalLayoutRenderer = ({
   const elements = isVerticalLayout(uischema) ? uischema.elements : []
   const newElements = getUiSchemaWithGroup(
     schema,
+    // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
     elements as UISchemaElementWithScope[],
   )
 
@@ -113,11 +132,7 @@ const JsonFormsVerticalLayoutRenderer = ({
     <Box w="100%" display="flex" flexDirection="column" gap="1.25rem" h="full">
       {newElements.map((element) => (
         <JsonFormsDispatch
-          key={
-            "scope" in element && typeof element.scope === "string"
-              ? element.scope
-              : `${path}-${JSON.stringify(element)}`
-          }
+          key={getScopedElementKey(element, path)}
           uischema={element}
           schema={schema}
           path={path}

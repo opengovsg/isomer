@@ -24,7 +24,6 @@ describe("editing-experience schemas", () => {
       // Assert
       if (result.success) {
         expect(result.data.siteId).toBe("456")
-        expect(typeof result.data.siteId).toBe("string")
       }
     })
   })
@@ -45,8 +44,6 @@ describe("editing-experience schemas", () => {
       // Assert
       if (result.success) {
         expect(result.data).toEqual({ siteId: 789, pageId: 101 })
-        expect(typeof result.data.siteId).toBe("number")
-        expect(typeof result.data.pageId).toBe("number")
       }
     })
 
@@ -91,9 +88,6 @@ describe("editing-experience schemas", () => {
       // Assert
       if (result.success) {
         expect(result.data).toEqual({ siteId: 123, pageId: 456, linkId: 789 })
-        expect(typeof result.data.siteId).toBe("number")
-        expect(typeof result.data.pageId).toBe("number")
-        expect(typeof result.data.linkId).toBe("number")
       }
     })
 
@@ -162,9 +156,6 @@ describe("editing-experience schemas", () => {
       // Assert
       if (result.success) {
         expect(result.data).toEqual({ siteId: 123, pageId: 456, linkId: 789 })
-        expect(typeof result.data.siteId).toBe("number")
-        expect(typeof result.data.pageId).toBe("number")
-        expect(typeof result.data.linkId).toBe("number")
       }
     })
 

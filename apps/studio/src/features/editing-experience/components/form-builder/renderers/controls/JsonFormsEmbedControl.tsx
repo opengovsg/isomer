@@ -44,14 +44,17 @@ import {
 import { getCustomErrorMessage } from "./utils/getCustomErrorMessage"
 
 const SUPPORTED_FORMS = Object.keys(FORMSG_EMBED_URL_REGEXES).map(
+  // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
   (key) => EMBED_NAME_MAPPING[key as keyof typeof FORMSG_EMBED_URL_REGEXES],
 )
 
 const SUPPORTED_MAPS = Object.keys(MAPS_EMBED_URL_REGEXES).map(
+  // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
   (key) => EMBED_NAME_MAPPING[key as keyof typeof MAPS_EMBED_URL_REGEXES],
 )
 
 const SUPPORTED_VIDEOS = Object.keys(VIDEO_EMBED_URL_REGEXES).map(
+  // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
   (key) => EMBED_NAME_MAPPING[key as keyof typeof VIDEO_EMBED_URL_REGEXES],
 )
 

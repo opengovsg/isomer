@@ -12,11 +12,12 @@ export const useLocalStorage = <T>(
   // parse stored json or return initialValue
   const readValue = useCallback(() => {
     // Prevent build error "window is undefined" but keep keep working
-    if (typeof window === "undefined") {
+    if (globalThis.window === undefined) {
       return initialValue
     }
     try {
-      const item = window.localStorage.getItem(key)
+      const item = globalThis.window.localStorage.getItem(key)
+      // SAFETY: callers constrain T; corrupt storage falls back to initialValue
       return item ? (JSON.parse(item) as T) : initialValue
     } catch {
       return initialValue

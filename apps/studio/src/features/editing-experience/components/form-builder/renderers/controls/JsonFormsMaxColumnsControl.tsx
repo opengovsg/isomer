@@ -29,6 +29,7 @@ const JsonFormsMaxColumnsControl = ({
 
   // Get sibling variant value
   const variant = get(
+    // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
     ctx.core?.data as Record<string, string | undefined>,
     "variant",
   )

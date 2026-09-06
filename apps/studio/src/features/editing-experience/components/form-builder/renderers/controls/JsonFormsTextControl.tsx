@@ -26,11 +26,13 @@ const getRemainingCharacterCount = (maxLength: number, data?: string) => {
   return Math.max(0, maxLength - data.length)
 }
 
-// NOTE: Typeguard so ts doesn't complain
 const isSchemaWithTooltip = (
   schema: ControlProps["schema"],
 ): schema is ControlProps["schema"] & { tooltip: string } => {
-  return (schema as unknown as { tooltip?: string }).tooltip !== undefined
+  if (!schema || !("tooltip" in schema)) return false
+  // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
+  const { tooltip } = schema as { tooltip?: unknown }
+  return Object.prototype.toString.call(tooltip) === "[object String]"
 }
 
 export const JsonFormsTextControl = ({

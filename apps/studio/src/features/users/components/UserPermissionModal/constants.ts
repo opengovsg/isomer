@@ -6,11 +6,11 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 export const ISOMER_GUIDE_URL =
   "https://support.isomer.gov.sg/en/articles/10425945-adding-and-removing-collaborators"
 
-export const ROLES_ICONS: Record<RoleType, IconType> = {
+export const ROLES_ICONS = {
   [RoleType.Editor]: BiPencil,
   [RoleType.Publisher]: BiRocket,
   [RoleType.Admin]: BiCheckShield,
-} as const
+} as const satisfies Record<RoleType, IconType>
 
 export const ROLES_LABELS = [
   "Edit content",

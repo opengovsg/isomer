@@ -91,6 +91,7 @@ const JsonFormsNavbarControl = ({
       ctx.dispatch?.(
         Actions.update(path, (prevData) =>
           handleMoveItem(
+            // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
             prevData as NavbarItems["items"],
             !!(arraySchema.maxItems && data >= arraySchema.maxItems),
             originalPath,
@@ -132,6 +133,7 @@ const JsonFormsNavbarControl = ({
         onDrop: (args) => {
           // NOTE: The data on the navbar can be obtained from args.source.data.*
           // The dropzone can be found at args.location.current.dropTargets[0]
+          // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
           const originalPath = args.source.data.navbarId as string
           const newDestination = args.location.current.dropTargets[0]?.data
 
@@ -139,6 +141,7 @@ const JsonFormsNavbarControl = ({
             return
           }
 
+          // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
           const newPath = newDestination.dropTargetId as string | undefined
           const closestEdge = extractClosestEdge(newDestination)
           const instruction = extractInstruction(newDestination)
@@ -265,6 +268,7 @@ const JsonFormsNavbarControl = ({
                     schema,
                   )({ jsonforms: ctx })
 
+                  // SAFETY: JSON Forms child path resolves a navbar item subtree
                   const childItem = get(
                     ctx.core?.data,
                     childPath,
@@ -275,7 +279,12 @@ const JsonFormsNavbarControl = ({
                       key={index}
                       index={index}
                       name={childItem.name}
-                      errors={arrayErrors}
+                      errors={
+                        // SAFETY: JsonForms error tree matches StackableNavbarItem error prop shape.
+                        arrayErrors as Parameters<
+                          typeof StackableNavbarItem
+                        >[0]["errors"]
+                      }
                       description={childItem.description}
                       onEdit={(subItemIndex) => {
                         if (subItemIndex !== undefined) {

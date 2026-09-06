@@ -8,6 +8,7 @@ import {
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 
 import { MOCK_STORY_DATE } from "../constants"
+import { asBlobJsonContent } from "../helpers"
 import { trpcMsw } from "../mockTrpc"
 
 interface GazetteContentInputs {
@@ -23,7 +24,7 @@ export const createGazetteContent = ({
   description,
   tagged,
 }: GazetteContentInputs) =>
-  ({
+  asBlobJsonContent({
     layout: "link",
     page: {
       ref,
@@ -34,7 +35,7 @@ export const createGazetteContent = ({
     },
     content: [],
     version: "0.1.0",
-  }) as unknown as PrismaJson.BlobJsonContent
+  })
 
 type GazetteItem = RouterOutput["gazette"]["list"][number]
 

@@ -1,50 +1,39 @@
 import type { Upload as UploadType } from "@aws-sdk/lib-storage"
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { afterAll, beforeEach, describe, expect, it, vi } from "vitest"
 
-// Mock the env module so we can control whether the audit-log export bucket is
-// configured. The bucket name is mutated per-test via the mutable holder below.
-const { envHolder } = vi.hoisted(() => {
-  const envHolder: {
-    NEXT_PUBLIC_S3_REGION: string
-    S3_STUDIO_ASSETS_BUCKET_NAME: string | undefined
-  } = {
-    NEXT_PUBLIC_S3_REGION: "ap-southeast-1",
-    S3_STUDIO_ASSETS_BUCKET_NAME: "audit-export-bucket",
-  }
-  return { envHolder }
-})
-
-vi.mock("~/env.mjs", () => ({
-  get env() {
-    return envHolder
-  },
-}))
+import {
+  resetStudioAssetsBucketNameForTests,
+  resetUploadClassForTests,
+  setStudioAssetsBucketNameForTests,
+  setUploadClassForTests,
+  uploadAuditLogExport,
+} from "../s3"
 
 // The upload path streams through lib-storage's `Upload` (multipart-capable),
-// not a one-shot PutObjectCommand — mock Upload itself so no real AWS calls
-// happen, and capture its constructor options to assert on the S3 params.
-const { doneMock, uploadCtorMock } = vi.hoisted(() => ({
-  doneMock: vi.fn(),
-  uploadCtorMock: vi.fn(),
-}))
-vi.mock("@aws-sdk/lib-storage", () => ({
-  Upload: vi.fn(function (
-    options: ConstructorParameters<typeof UploadType>[0],
-  ) {
-    uploadCtorMock(options)
-    return { done: doneMock, on: vi.fn() }
-  }),
-}))
+// not a one-shot PutObjectCommand — inject Upload so no real AWS calls happen,
+// and capture its constructor options to assert on the S3 params.
+const doneMock = vi.fn()
+const uploadCtorMock = vi.fn()
 
-const { uploadAuditLogExport } = await import("../s3")
+beforeEach(() => {
+  setStudioAssetsBucketNameForTests("audit-export-bucket")
+  setUploadClassForTests(
+    // @ts-expect-error test stub implements only the Upload constructor surface used by uploadAuditLogExport
+    vi.fn(function (options: ConstructorParameters<typeof UploadType>[0]) {
+      uploadCtorMock(options)
+      return { done: doneMock, on: vi.fn() }
+    }),
+  )
+  vi.clearAllMocks()
+  doneMock.mockResolvedValue({})
+})
+
+afterAll(() => {
+  resetStudioAssetsBucketNameForTests()
+  resetUploadClassForTests()
+})
 
 describe("uploadAuditLogExport", () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    envHolder.S3_STUDIO_ASSETS_BUCKET_NAME = "audit-export-bucket"
-    doneMock.mockResolvedValue({})
-  })
-
   it("streams the CSV to the configured bucket with text/csv and attachment disposition", async () => {
     // Act
     await uploadAuditLogExport({
@@ -56,6 +45,7 @@ describe("uploadAuditLogExport", () => {
     expect(uploadCtorMock).toHaveBeenCalledTimes(1)
     expect(doneMock).toHaveBeenCalledTimes(1)
 
+    // SAFETY: uploadCtorMock is wired to the Upload constructor under test
     const options = uploadCtorMock.mock.calls[0]?.[0] as ConstructorParameters<
       typeof UploadType
     >[0]
@@ -71,7 +61,7 @@ describe("uploadAuditLogExport", () => {
 
   it("throws a clear error when the bucket env var is unset", async () => {
     // Arrange
-    envHolder.S3_STUDIO_ASSETS_BUCKET_NAME = undefined
+    setStudioAssetsBucketNameForTests("")
 
     // Act + Assert: fails loudly before any upload is even constructed
     await expect(

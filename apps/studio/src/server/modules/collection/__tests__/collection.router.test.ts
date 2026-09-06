@@ -1589,6 +1589,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
+      // SAFETY: article page content under test includes an optional date field.
       expect((expected.content.page as { date?: string }).date).toEqual(
         "31/01/2024",
       )

@@ -178,15 +178,17 @@ export const emailSessionRouter = router({
             email,
           })
 
-          const userId = user.id as NonNullable<SessionData["userId"]>
+          const userId = user.id
+          // SAFETY: upsertUser returns a persisted User row whose id matches SessionData["userId"]
+          const sessionUserId = userId as NonNullable<SessionData["userId"]>
 
           await recordUserLogin({
             tx,
-            userId,
+            userId: sessionUserId,
             verificationToken: oldVerificationToken,
           })
 
-          ctx.session.userId = userId
+          ctx.session.userId = sessionUserId
           await ctx.session.save()
           return pick(user, defaultUserSelect)
         })
