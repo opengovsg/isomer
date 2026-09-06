@@ -103,6 +103,7 @@ export const getTextAsHtml = ({
         }
       })
     } else {
+      // Continue with the rest of the marks
       for (const mark of node.marks) {
         if (mark.type !== "link") {
           output.push(`<${MARK_DOM_MAPPING[mark.type]}>`)

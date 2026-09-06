@@ -139,6 +139,7 @@ interface CheckboxProps extends AriaCheckboxProps {
   className?: string
 }
 
+// Shared props for checkbox rendering
 interface CheckboxRenderProps {
   children?: ReactNode
   className?: string
@@ -150,6 +151,7 @@ interface CheckboxRenderProps {
   isSelected: boolean
 }
 
+// Shared rendering component for both standalone and grouped checkboxes
 // oxlint-disable-next-line react-doctor/no-many-boolean-props -- RAC checkbox state flags map to visual variants
 const CheckboxRenderer = ({
   children,
@@ -165,6 +167,9 @@ const CheckboxRenderer = ({
   const { focusProps, isFocusVisible } = useFocusRing()
   const mergedInputProps = mergeProps(inputProps, focusProps)
 
+  // usePress handles both mouse and keyboard interactions
+  // For keyboard: onPress will be called (Enter/Space)
+  // For mouse: we prevent default to avoid double toggling, then onPress handles it
   const { pressProps, isPressed } = usePress({
     isDisabled,
     onPress: () => {
@@ -174,6 +179,8 @@ const CheckboxRenderer = ({
     },
   })
 
+  // Prevent native label click to avoid double toggling with mouse
+  // Keyboard events are handled by usePress's onPress
   const labelProps = mergeProps(pressProps, {
     onClick: (e: MouseEvent) => {
       e.preventDefault()
@@ -200,7 +207,10 @@ const CheckboxRenderer = ({
         readOnly
         className="sr-only"
       />
-      <div className="flex items-center justify-center before:invisible before:w-0 before:content-['hidden']">
+      <div
+        // Used to align icon with text
+        className="flex items-center justify-center before:invisible before:w-0 before:content-['hidden']"
+      >
         <div
           className={boxStyles({
             isSelected: isSelected || isIndeterminate,
@@ -221,6 +231,7 @@ const CheckboxRenderer = ({
   )
 }
 
+// Internal component for standalone checkboxes
 const StandaloneCheckbox = (props: CheckboxProps) => {
   const { children, className, ...checkboxProps } = props
   const ref = useRef<HTMLInputElement>(null)
@@ -242,11 +253,14 @@ const StandaloneCheckbox = (props: CheckboxProps) => {
   )
 }
 
+// Internal component for grouped checkboxes
+// This component is only rendered when isInGroup is true, so groupContext is guaranteed to exist
 const GroupedCheckbox = (props: CheckboxProps) => {
   const { children, className, ...checkboxProps } = props
   const groupContext = useContext(CheckboxGroupContext)
   const ref = useRef<HTMLInputElement>(null)
 
+  // groupContext is guaranteed to exist because this component is only rendered when isInGroup is true
   // oxlint-disable-next-line @typescript-eslint/no-non-null-assertion
   const context = groupContext!
   const state = context.state
@@ -284,6 +298,8 @@ export const Checkbox = (props: CheckboxProps) => {
   const groupContext = useContext(CheckboxGroupContext)
   const isInGroup = groupContext !== null && props.value !== undefined
 
+  // Conditionally render the appropriate component
+  // This allows us to only call useCheckboxGroupItem when actually in a group
   if (isInGroup) {
     return <GroupedCheckbox {...props} />
   }

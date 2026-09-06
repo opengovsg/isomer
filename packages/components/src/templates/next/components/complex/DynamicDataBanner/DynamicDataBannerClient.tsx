@@ -147,6 +147,8 @@ export const DynamicDataBannerClient = ({
     // because next.js will attempt to execute the query during static site generation
     // which will fail because it requires "fetch" (browser API) to be available, which isn't the case
     // Ref: https://nextjs.org/docs/app/building-your-application/deploying/static-exports#browser-apis
+    // Also not using react-query's useQuery hook because it's not compatible with this approach of using useEffect
+    // we now have access to fetch here
     fetch(apiEndpoint)
       .then((res) => res.json())
       .then((apiData) => {

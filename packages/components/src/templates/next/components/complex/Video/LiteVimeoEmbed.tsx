@@ -29,6 +29,7 @@ export const LiteVimeoEmbed = ({
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null)
   const thumbnailFetchStarted = useRef(false)
 
+  // Fetch the thumbnail URL from Vimeo's oEmbed API
   const fetchThumbnail = async () => {
     try {
       const response = await fetch(
