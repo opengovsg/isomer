@@ -89,7 +89,7 @@ export const InfoCards = ({
 
       default:
         const _: never = variant
-        return <></>
+        return null
     }
   }
 

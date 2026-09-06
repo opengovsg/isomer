@@ -129,7 +129,7 @@ const SocialMediaSection = ({
   site,
 }: Pick<FooterProps, "socialMediaLinks" | "site">) => {
   if (!socialMediaLinks || socialMediaLinks.length === 0) {
-    return <></>
+    return null
   }
 
   return (
@@ -272,7 +272,7 @@ const LegalSection = ({
             />
           )}
           {isGovernment && (
-            <FooterItem title="REACH" url={"https://www.reach.gov.sg"} />
+            <FooterItem title="REACH" url="https://www.reach.gov.sg" />
           )}
         </div>
       </div>

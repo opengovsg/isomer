@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useRange } from "react-instantsearch"
 import { tv } from "~/lib/tv"
 
@@ -74,19 +74,17 @@ export const RangeInput = ({
   const [min, setMin] = useState(toInputValue(minRaw))
   const [max, setMax] = useState(toInputValue(maxRaw))
   const [error, setError] = useState<string>()
+  const [prevRange, setPrevRange] = useState<[number | undefined, number | undefined]>([
+    minRaw,
+    maxRaw,
+  ])
 
-  // Keep the inputs in sync when the active refinement changes outside of this
-  // form (URL hydration on deep-links, "Clear refinements", browser back/forward).
-  // Without this the inputs would show stale values that no longer match the
-  // applied filters. `minRaw`/`maxRaw` are stable primitives, so the effect only
-  // fires when the refinement actually changes.
-  useEffect(() => {
+  if (minRaw !== prevRange[0] || maxRaw !== prevRange[1]) {
+    setPrevRange([minRaw, maxRaw])
     setMin(toInputValue(minRaw))
     setMax(toInputValue(maxRaw))
-    // An external refinement change (e.g. "Clear refinements") makes any prior
-    // validation error stale, so reset it alongside the inputs.
     setError(undefined)
-  }, [minRaw, maxRaw])
+  }
 
   const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()

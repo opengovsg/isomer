@@ -41,10 +41,10 @@ const navbarItemStyles = tv({
 const { item, chevron, megamenu } = navbarItemStyles()
 
 export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
-  (
+  function NavItem(
     { items, name, url, description, isOpen, onClick, onCloseMegamenu },
     ref,
-  ): JSX.Element => {
+  ): JSX.Element {
     if (!items || items.length === 0) {
       return (
         <li className={item({ isOpen })}>
@@ -63,6 +63,7 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
     return (
       <li>
         <button
+          type="button"
           ref={ref}
           className={item({ isOpen })}
           onClick={onClick}
@@ -84,6 +85,7 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
     )
   },
 )
+NavItem.displayName = "NavItem"
 
 const Megamenu = ({
   name,

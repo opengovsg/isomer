@@ -173,7 +173,7 @@ export const ImageGalleryClient = ({
   return (
     <section
       className="mt-6 w-full first:mt-0"
-      role="region"
+      
       aria-label="Image gallery"
     >
       {/* Main Slideshow */}

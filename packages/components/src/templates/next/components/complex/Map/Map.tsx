@@ -23,7 +23,7 @@ const createMapStyles = tv({
 
 export const Map = ({ title, url, shouldLazyLoad = true }: MapProps) => {
   if (!isValidMapEmbedUrl(url)) {
-    return <></>
+    return null
   }
 
   const isOgpMapsEmbed = isValidOGPMapsEmbedUrl(new URL(url))

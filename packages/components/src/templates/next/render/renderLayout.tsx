@@ -30,9 +30,9 @@ export const renderLayout = (props: IsomerPageSchemaType) => {
     // These are references that we should not render to the user
     case "file":
     case "link":
-      return <></>
+      return null
     default:
       const _: never = props
-      return <></>
+      return null
   }
 }

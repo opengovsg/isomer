@@ -34,23 +34,22 @@ type BaseBreadcrumbsProps = ComponentPropsWithoutRef<"div"> & {
   children: ReactNode
 }
 
-function BaseBreadcrumbs({
+const BaseBreadcrumbs = ({
   className,
   children,
   "aria-label": ariaLabel = "Breadcrumb",
   ...props
-}: BaseBreadcrumbsProps) {
+}: BaseBreadcrumbsProps) => {
   return (
-    <div
+    <nav
       {...props}
       aria-label={ariaLabel}
-      role="navigation"
       className={twMerge("flex flex-wrap gap-1", className)}
     >
       <ol className="m-0 flex list-none flex-wrap items-center gap-1 p-0">
         {children}
       </ol>
-    </div>
+    </nav>
   )
 }
 
@@ -58,14 +57,14 @@ type BaseBreadcrumbProps = LinkProps & {
   colorScheme?: "default" | "inverse"
 }
 
-function BaseBreadcrumb({
+const BaseBreadcrumb = ({
   colorScheme,
   children,
   label,
   className,
   href,
   ...linkProps
-}: BaseBreadcrumbProps) {
+}: BaseBreadcrumbProps) => {
   const styles = createBreadcrumbLinkStyles({ colorScheme })
   const mergedLinkClassName = twMerge(styles.link(), className)
 

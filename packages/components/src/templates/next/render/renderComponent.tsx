@@ -111,6 +111,6 @@ export const renderComponent = ({
       return <DynamicComponentList key={elementKey} {...component} {...rest} />
     default:
       const _: never = component
-      return <></>
+      return null
   }
 }

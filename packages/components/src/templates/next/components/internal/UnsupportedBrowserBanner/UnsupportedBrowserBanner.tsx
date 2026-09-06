@@ -1,7 +1,7 @@
 "use client"
 
 import type { SupportedBrowserBannerProps } from "~/utils/isSupportedBrowser"
-import { useEffect, useState } from "react"
+import { useSyncExternalStore } from "react"
 import { BiInfoCircle } from "react-icons/bi"
 import { isSupportedBrowser } from "~/utils/isSupportedBrowser"
 
@@ -9,28 +9,21 @@ import { isSupportedBrowser } from "~/utils/isSupportedBrowser"
 const supportedBrowserDocumentLink =
   "https://github.com/opengovsg/isomer/blob/main/packages/components/browser-support.md"
 
+const subscribe = () => () => {}
+
 export const UnsupportedBrowserBanner = ({
   userAgent: initialUserAgent,
 }: SupportedBrowserBannerProps) => {
-  const [navigatorUserAgent, setNavigatorUserAgent] = useState(
-    initialUserAgent || "",
+  const navigatorUserAgent = useSyncExternalStore(
+    subscribe,
+    () =>
+      initialUserAgent ||
+      (typeof navigator !== "undefined" ? navigator.userAgent : ""),
+    () => initialUserAgent || "",
   )
 
-  useEffect(() => {
-    // If no userAgent prop is provided, and we're on the client-side, set navigatorUserAgent from navigator
-    // The check for typeof window and navigator ensures this only runs in browser environments, not during server-side rendering
-    // We use setNavigatorUserAgent to update the state, which will trigger a re-render with the correct user agent
-    if (
-      !initialUserAgent &&
-      typeof window !== "undefined" &&
-      typeof navigator !== "undefined"
-    ) {
-      setNavigatorUserAgent(navigator.userAgent)
-    }
-  }, [initialUserAgent])
-
   if (isSupportedBrowser({ userAgent: navigatorUserAgent })) {
-    return <></>
+    return null
   }
 
   return (
@@ -47,6 +40,7 @@ export const UnsupportedBrowserBanner = ({
             <a
               href={supportedBrowserDocumentLink}
               target="_blank"
+              rel="noreferrer"
               className="underline"
             >
               View our supported browsers

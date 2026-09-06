@@ -29,9 +29,11 @@ export const LiteYouTubeEmbed = ({
   useEffect(() => {
     // For playlist/video-series embeds, fetch an actual preview image via oEmbed.
     if (videoId) {
-      setOEmbedThumbnailUrl(null)
       return
     }
+
+    let cancelled = false
+    setOEmbedThumbnailUrl(null)
 
     const fetchThumbnail = async () => {
       try {
@@ -40,6 +42,7 @@ export const LiteYouTubeEmbed = ({
         if (!response.ok) return
 
         const data = (await response.json()) as { thumbnail_url?: string }
+        if (cancelled) return
         if (data.thumbnail_url) {
           // Prefer sddefault; oEmbed returns hqdefault. Fallback to hqdefault is handled in onLoad.
           setOEmbedThumbnailUrl(

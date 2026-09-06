@@ -45,7 +45,7 @@ interface CheckboxGroupProps extends AriaCheckboxGroupProps {
   className?: string
 }
 
-export function CheckboxGroup(props: CheckboxGroupProps) {
+export const CheckboxGroup = (props: CheckboxGroupProps) => {
   const {
     label,
     children,
@@ -151,7 +151,7 @@ interface CheckboxRenderProps {
 }
 
 // Shared rendering component for both standalone and grouped checkboxes
-function CheckboxRenderer({
+const CheckboxRenderer = ({
   children,
   className,
   inputProps,
@@ -160,7 +160,7 @@ function CheckboxRenderer({
   isInvalid,
   isIndeterminate,
   isSelected,
-}: CheckboxRenderProps) {
+}: CheckboxRenderProps) => {
   const labelRef = useRef<HTMLLabelElement>(null)
   const { focusProps, isFocusVisible } = useFocusRing()
   const mergedInputProps = mergeProps(inputProps, focusProps)
@@ -229,7 +229,7 @@ function CheckboxRenderer({
 }
 
 // Internal component for standalone checkboxes
-function StandaloneCheckbox(props: CheckboxProps) {
+const StandaloneCheckbox = (props: CheckboxProps) => {
   const { children, className, ...checkboxProps } = props
   const ref = useRef<HTMLInputElement>(null)
   const state = useToggleState(checkboxProps)
@@ -251,7 +251,7 @@ function StandaloneCheckbox(props: CheckboxProps) {
 
 // Internal component for grouped checkboxes
 // This component is only rendered when isInGroup is true, so groupContext is guaranteed to exist
-function GroupedCheckbox(props: CheckboxProps) {
+const GroupedCheckbox = (props: CheckboxProps) => {
   const { children, className, ...checkboxProps } = props
   const groupContext = useContext(CheckboxGroupContext)
   const ref = useRef<HTMLInputElement>(null)
@@ -289,7 +289,7 @@ function GroupedCheckbox(props: CheckboxProps) {
   )
 }
 
-export function Checkbox(props: CheckboxProps) {
+export const Checkbox = (props: CheckboxProps) => {
   const groupContext = useContext(CheckboxGroupContext)
   const isInGroup = groupContext !== null && props.value !== undefined
 

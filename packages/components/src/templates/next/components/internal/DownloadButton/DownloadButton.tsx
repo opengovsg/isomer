@@ -109,6 +109,7 @@ export const DownloadButton = ({
 
   return (
     <button
+      type="button"
       {...mergedProps}
       ref={ref}
       className={twMerge(

@@ -1,3 +1,4 @@
+import { createElement } from "react"
 import type { KeyStatisticsProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { getHeadingTag } from "~/utils/getHeadingTag"
@@ -79,7 +80,7 @@ export const KeyStatistics = ({
       id={id}
       className={compoundStyles.container({ layout: simplifiedLayout })}
     >
-      <TitleTag className={compoundStyles.title()}>{title}</TitleTag>
+      {createElement(TitleTag, { className: compoundStyles.title() }, title)}
 
       <div className={compoundStyles.statistics()}>
         {statistics.slice(0, MAX_ITEMS).map(({ label, value }, index) => (
@@ -87,9 +88,11 @@ export const KeyStatistics = ({
             key={index}
             className={compoundStyles.itemContainer({ noOfItems })}
           >
-            <ItemTag className={compoundStyles.itemValue()}>
-              {value.slice(0, MAX_CHAR_LIMIT)}
-            </ItemTag>
+            {createElement(
+              ItemTag,
+              { className: compoundStyles.itemValue() },
+              value.slice(0, MAX_CHAR_LIMIT),
+            )}
 
             <p className={compoundStyles.itemLabel()}>{label}</p>
           </div>

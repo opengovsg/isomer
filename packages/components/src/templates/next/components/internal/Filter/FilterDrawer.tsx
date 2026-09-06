@@ -38,6 +38,7 @@ const ExpandFilterButton = ({
 
   return (
     <button
+      type="button"
       {...mergedProps}
       ref={buttonRef}
       className={twMerge(
@@ -93,11 +94,6 @@ const FilterDrawerContent = ({
   const [holdingFiltersById, setHoldingFiltersById] = useState(
     transform.toCheckboxes(initialAppliedFilters),
   )
-
-  // Synchronize the applied filters with the holding filters
-  useEffect(() => {
-    setHoldingFiltersById(transform.toCheckboxes(initialAppliedFilters))
-  }, [initialAppliedFilters])
 
   const updateFilterToggle = (filterId: string) => {
     setShowFilter((prevFilters) => ({
@@ -171,7 +167,7 @@ const FilterDrawerContent = ({
 }
 
 export const FilterDrawer = (props: FilterDrawerProps): JSX.Element => {
-  const { isOpen, onOpen } = props
+  const { isOpen, onOpen, appliedFilters } = props
 
   return (
     <Dialog open={isOpen} onClose={onOpen} className="relative z-40 lg:hidden">
@@ -196,7 +192,10 @@ export const FilterDrawer = (props: FilterDrawerProps): JSX.Element => {
             />
           </div>
 
-          <FilterDrawerContent {...props} key={String(isOpen)} />
+          <FilterDrawerContent
+            {...props}
+            key={`${String(isOpen)}-${JSON.stringify(appliedFilters)}`}
+          />
         </DialogPanel>
       </div>
     </Dialog>

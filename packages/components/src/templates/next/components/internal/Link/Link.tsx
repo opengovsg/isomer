@@ -1,5 +1,6 @@
 "use client"
 
+import { createElement } from "react"
 import type { LinkProps } from "~/interfaces/internal/Link"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
@@ -38,24 +39,24 @@ export const Link = ({
     : {}
   const ElementToRender = href ? (LinkComponent ?? "a") : "span"
 
-  return (
-    <ElementToRender
-      {...externalLinkProps}
-      {...rest}
-      href={href}
-      className={cssStyles}
-      aria-label={
-        label ? `${label}${isExternal ? " (opens in new tab)" : ""}` : undefined
-      }
-      aria-current={current}
-      data-current={!!current || undefined}
-      disabled={isDisabled}
-    >
-      {children}
-      {showExternalIcon && <span aria-hidden="true"> ↗</span>}
-      {isExternal && !label && (
-        <span className="sr-only"> (opens in new tab)</span>
-      )}
-    </ElementToRender>
+  return createElement(
+    ElementToRender,
+    {
+      ...externalLinkProps,
+      ...rest,
+      href,
+      className: cssStyles,
+      "aria-label": label
+        ? `${label}${isExternal ? " (opens in new tab)" : ""}`
+        : undefined,
+      "aria-current": current,
+      "data-current": !!current || undefined,
+      disabled: isDisabled,
+    },
+    children,
+    showExternalIcon && createElement("span", { "aria-hidden": true }, " ↗"),
+    isExternal &&
+      !label &&
+      createElement("span", { className: "sr-only" }, " (opens in new tab)"),
   )
 }

@@ -218,8 +218,11 @@ const RowLayout = ({
   )
 }
 
+const DEFAULT_CHILDREN_PAGES_ORDERING: ChildrenPagesProps["childrenPagesOrdering"] =
+  []
+
 export const ChildrenPages = ({
-  childrenPagesOrdering = [],
+  childrenPagesOrdering = DEFAULT_CHILDREN_PAGES_ORDERING,
   permalink,
   site,
   variant,
@@ -233,7 +236,7 @@ export const ChildrenPages = ({
   const currentPageNode = getNodeFromSiteMap(site.siteMap, permalink)
 
   if (!currentPageNode?.children) {
-    return <></>
+    return null
   }
 
   const comparator = createChildrenPagesComparator(childrenPagesOrdering)
