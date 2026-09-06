@@ -1,8 +1,8 @@
 import { defineConfig } from "@isomer/oxlint-config"
-import base from "@isomer/oxlint-config/base"
 import {
   antiSlop,
   antiSlopJsPluginEntries,
+  core,
   jsPluginSettings,
   next,
   react,
@@ -12,7 +12,7 @@ import {
 
 export default defineConfig({
   extends: [
-    base,
+    core,
     react,
     reactDoctor,
     next,
@@ -23,7 +23,7 @@ export default defineConfig({
   // Oxlint does not merge `settings` or `jsPlugins` from extended configs.
   settings: jsPluginSettings,
   jsPlugins: [...reactDoctorJsPluginEntries, ...antiSlopJsPluginEntries],
-  ignorePatterns: [".next/**", "!.storybook/**", "out/**"],
+  ignorePatterns: ["**/*.config.*", "!.storybook/**"],
   overrides: [
     {
       files: ["**/*.ts", "**/*.tsx"],

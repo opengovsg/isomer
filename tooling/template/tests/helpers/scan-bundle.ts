@@ -1,21 +1,21 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs"
-import { join } from "node:path"
+import path from "node:path"
 
 // These dependency signatures survive webpack minification.
 export const ALGOLIA_MARKERS = ["react-instantsearch", "algoliasearch"] as const
 export const ZOD_MARKERS = ["ZodError"] as const
 
 const scanBundleForMarkers = (outDir: string, markers: readonly string[]) => {
-  const staticDir = join(outDir, "_next/static")
+  const staticDir = path.join(outDir, "_next/static")
   if (!existsSync(staticDir)) {
     throw new Error(
       `${staticDir} not found — did the template build emit a static export?`,
     )
   }
 
-  const jsFiles = readdirSync(staticDir, { recursive: true, encoding: "utf-8" })
+  const jsFiles = readdirSync(staticDir, { encoding: "utf-8", recursive: true })
     .filter((name) => name.endsWith(".js"))
-    .map((name) => join(staticDir, name))
+    .map((name) => path.join(staticDir, name))
 
   const matchedMarkers = new Set<string>()
   for (const file of jsFiles) {

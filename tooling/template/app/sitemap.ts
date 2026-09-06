@@ -6,7 +6,7 @@ import { getSitemapXml } from "@opengovsg/isomer-components"
 export const dynamic = "force-static"
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  // TODO: fixup all the typing errors
+  // typing(isomer): fix when types are proper
   // @ts-expect-error to fix when types are proper
   return getSitemapXml(sitemapJson, config.site.url)
 }
