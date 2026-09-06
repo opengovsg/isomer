@@ -44,7 +44,7 @@ export {
   type SearchSGInputBoxProps,
   type NavbarSearchSGInputBoxProps,
   type HomepageSearchSGInputBoxProps,
-} from "./SearchSGInputBox"
+} from "./SearchSgInputBox"
 export type { SidePaneProps } from "./SidePane"
 export type { SiderailProps } from "./Siderail"
 export type { TableOfContentsProps } from "./TableOfContents"

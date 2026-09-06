@@ -4,9 +4,9 @@ export const CHILDREN_PAGES_LAYOUT_OPTIONS = {
 } as const
 
 export const DEFAULT_CHILDREN_PAGES_BLOCK = {
-  type: "childrenpages" as const,
-  variant: CHILDREN_PAGES_LAYOUT_OPTIONS.Rows,
+  childrenPagesOrdering: [] satisfies string[],
   showSummary: true,
   showThumbnail: false,
-  childrenPagesOrdering: [] satisfies string[],
+  type: "childrenpages" as const,
+  variant: CHILDREN_PAGES_LAYOUT_OPTIONS.Rows,
 }

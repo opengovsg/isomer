@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unsafe-type-assertion -- HTTP response body matches DgsApiDatasetSearchResponse contract */
 import type {
   DgsApiDatasetSearchParams,
   DgsApiDatasetSearchResponse,

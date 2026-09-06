@@ -3,15 +3,20 @@ import { format } from "date-fns"
 
 import { getParsedDate } from "./getParsedDate"
 
+const DATE_DISPLAY_FORMAT = "d MMMM yyyy"
+
+const toFormattedDate = (value: string): FormattedDate => {
+  const formatted: FormattedDate = value
+  return formatted
+}
+
 // Standardise the format of dates displayed on the site
 export const getFormattedDate = (dateString?: string): FormattedDate => {
   if (dateString === undefined) {
-    // SAFETY: format() always returns the "d MMMM yyyy" pattern expected by FormattedDate
-    return format(new Date(), "d MMMM yyyy") as FormattedDate
+    return toFormattedDate(format(new Date(), DATE_DISPLAY_FORMAT))
   }
 
   const date = getParsedDate(dateString)
 
-  // SAFETY: format() always returns the "d MMMM yyyy" pattern expected by FormattedDate
-  return format(date, "d MMMM yyyy") as FormattedDate
+  return toFormattedDate(format(date, DATE_DISPLAY_FORMAT))
 }

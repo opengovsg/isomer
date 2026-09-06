@@ -1,5 +1,22 @@
 import type { IsomerSitemap } from "~/types"
 
+const findChildByPermalink = (
+  children: IsomerSitemap[] | undefined,
+  permalink: string,
+): IsomerSitemap | undefined => {
+  if (children === undefined) {
+    return undefined
+  }
+
+  for (const child of children) {
+    if (child.permalink === permalink) {
+      return child
+    }
+  }
+
+  return undefined
+}
+
 // This function traverses through the sitemap to find the node that corresponds
 // to the given permalink
 export const getNodeFromSiteMap = (
@@ -8,25 +25,23 @@ export const getNodeFromSiteMap = (
 ): IsomerSitemap | null => {
   const permalinkParts = permalink.split("/").filter((part) => part !== "")
 
-  let node = sitemap
+  let currentNode = sitemap
   let currentPath = ""
-  let i = 0
+  let index = 0
 
-  while (i < permalinkParts.length) {
-    currentPath += "/" + permalinkParts[i]
-    const nextNode = node.children?.find(
-      (node) => node.permalink === currentPath,
-    )
+  while (index < permalinkParts.length) {
+    currentPath += `/${permalinkParts[index]}`
+    const childNode = findChildByPermalink(currentNode.children, currentPath)
 
-    if (!nextNode) {
+    if (childNode === undefined) {
       // NOTE: This would be unexpected, as we should be able to traverse to the
       // node that corresponds to the permalink
       return null
     }
 
-    node = nextNode
-    i++
+    currentNode = childNode
+    index += 1
   }
 
-  return node
+  return currentNode
 }

@@ -14,7 +14,7 @@ describe("formatBytes", () => {
     })
 
     it("should return undefined for NaN", () => {
-      expect(formatBytes(NaN)).toBeUndefined()
+      expect(formatBytes(Number.NaN)).toBeUndefined()
     })
   })
 
@@ -31,38 +31,38 @@ describe("formatBytes", () => {
       expect(formatBytes(1024)).toBe("1.00 KB")
       expect(formatBytes(1536)).toBe("1.50 KB")
       expect(formatBytes(2048)).toBe("2.00 KB")
-      expect(formatBytes(1048575)).toBe("1024.00 KB")
+      expect(formatBytes(1_048_575)).toBe("1024.00 KB")
     })
   })
 
   describe("megabytes (MB)", () => {
     it("should format megabytes correctly", () => {
-      expect(formatBytes(1048576)).toBe("1.00 MB")
-      expect(formatBytes(1572864)).toBe("1.50 MB")
-      expect(formatBytes(2097152)).toBe("2.00 MB")
-      expect(formatBytes(1073741823)).toBe("1024.00 MB")
+      expect(formatBytes(1_048_576)).toBe("1.00 MB")
+      expect(formatBytes(1_572_864)).toBe("1.50 MB")
+      expect(formatBytes(2_097_152)).toBe("2.00 MB")
+      expect(formatBytes(1_073_741_823)).toBe("1024.00 MB")
     })
   })
 
   describe("gigabytes (GB)", () => {
     it("should format gigabytes correctly", () => {
-      expect(formatBytes(1073741824)).toBe("1.00 GB")
-      expect(formatBytes(1610612736)).toBe("1.50 GB")
-      expect(formatBytes(2147483648)).toBe("2.00 GB")
-      expect(formatBytes(1099511627775)).toBe("1024.00 GB")
+      expect(formatBytes(1_073_741_824)).toBe("1.00 GB")
+      expect(formatBytes(1_610_612_736)).toBe("1.50 GB")
+      expect(formatBytes(2_147_483_648)).toBe("2.00 GB")
+      expect(formatBytes(1_099_511_627_775)).toBe("1024.00 GB")
     })
   })
 
   describe("terabytes (TB)", () => {
     it("should format terabytes correctly", () => {
-      expect(formatBytes(1099511627776)).toBe("1.00 TB")
-      expect(formatBytes(1649267441664)).toBe("1.50 TB")
-      expect(formatBytes(2199023255552)).toBe("2.00 TB")
+      expect(formatBytes(1_099_511_627_776)).toBe("1.00 TB")
+      expect(formatBytes(1_649_267_441_664)).toBe("1.50 TB")
+      expect(formatBytes(2_199_023_255_552)).toBe("2.00 TB")
     })
 
     it("should handle very large values", () => {
-      expect(formatBytes(1125899906842624)).toBe("1024.00 TB")
-      expect(formatBytes(1152921504606846976)).toBe("1048576.00 TB")
+      expect(formatBytes(1_125_899_906_842_624)).toBe("1024.00 TB")
+      expect(formatBytes(1_152_921_504_606_846_976)).toBe("1048576.00 TB")
     })
   })
 
@@ -85,11 +85,11 @@ describe("formatBytes", () => {
       expect(formatBytes(1025)).toBe("1.00 KB")
 
       // Just below 1 MB
-      expect(formatBytes(1048575)).toBe("1024.00 KB")
+      expect(formatBytes(1_048_575)).toBe("1024.00 KB")
       // Exactly 1 MB
-      expect(formatBytes(1048576)).toBe("1.00 MB")
+      expect(formatBytes(1_048_576)).toBe("1.00 MB")
       // Just above 1 MB
-      expect(formatBytes(1048577)).toBe("1.00 MB")
+      expect(formatBytes(1_048_577)).toBe("1.00 MB")
     })
   })
 
@@ -98,11 +98,11 @@ describe("formatBytes", () => {
       // Small text file
       expect(formatBytes(1024)).toBe("1.00 KB")
       // Medium image
-      expect(formatBytes(2097152)).toBe("2.00 MB")
+      expect(formatBytes(2_097_152)).toBe("2.00 MB")
       // Large video file
-      expect(formatBytes(1073741824)).toBe("1.00 GB")
+      expect(formatBytes(1_073_741_824)).toBe("1.00 GB")
       // Very large file
-      expect(formatBytes(1099511627776)).toBe("1.00 TB")
+      expect(formatBytes(1_099_511_627_776)).toBe("1.00 TB")
     })
   })
 })

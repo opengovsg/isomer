@@ -8,8 +8,8 @@ import { NativeDataSourceSchema } from "../integration/native"
 const BaseSearchableTableSchema = Type.Object({
   title: Type.Optional(
     Type.String({
-      title: "Title",
       description: "The title of the table",
+      title: "Title",
     }),
   ),
 })
@@ -23,8 +23,10 @@ const NativeSearchableTableSchema = Type.Intersect(
     }),
   ],
   {
-    title: "Native", // TODO: think of a better title that makes sense for user
-    format: "hidden", // currently we don't support this for Studio users
+    // currently we don't support this for Studio users
+    format: "hidden",
+    // NOTE: think of a better title that makes sense for user
+    title: "Native",
   },
 )
 
@@ -36,18 +38,19 @@ const DGSSearchableTableSchema = Type.Intersect(
         Type.Array(
           Type.Object({
             key: Type.String({
-              title: "Key",
               description: "Column name in DGS table",
+              title: "Key",
             }),
             label: Type.Optional(
               Type.String({
-                title: "Label",
                 description: "Rename the column's header",
+                title: "Label",
               }),
             ),
           }),
           {
-            format: "hidden", // don't want to expose this to Studio users yet
+            // don't want to expose this to Studio users yet
+            format: "hidden",
           },
         ),
       ),
@@ -62,13 +65,13 @@ export const SearchableTableSchema = Type.Intersect(
   [
     BaseSearchableTableSchema,
     Type.Union([NativeSearchableTableSchema, DGSSearchableTableSchema], {
-      title: "Data source",
       format: ARRAY_RADIO_FORMAT,
+      title: "Data source",
     }),
   ],
   {
-    title: "Database",
     description: "Displays a table with search and pagination functionality.",
+    title: "Database",
   },
 )
 

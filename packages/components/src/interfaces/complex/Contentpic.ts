@@ -7,15 +7,15 @@ import { AltTextSchema, ImageSrcSchema } from "./Image"
 
 export const ContentpicSchema = Type.Object(
   {
-    type: Type.Literal("contentpic", { default: "contentpic" }),
-    imageSrc: ImageSrcSchema,
-    imageAlt: AltTextSchema,
     content: ContentpicProseSchema,
+    imageAlt: AltTextSchema,
+    imageSrc: ImageSrcSchema,
+    type: Type.Literal("contentpic", { default: "contentpic" }),
   },
   {
-    title: "Image with text",
     description:
       "The contentpic component is used to display an image with accompanying text only in content pages",
+    title: "Image with text",
   },
 )
 

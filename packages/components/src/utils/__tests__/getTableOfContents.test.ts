@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unsafe-type-assertion -- test fixtures use partial content shapes with hardBreak nodes */
 import type { IsomerComponent } from "~/types"
 import { describe, expect, it } from "vitest"
 import { generateSiteConfig } from "~/stories/helpers/generateSiteConfig"
@@ -5,31 +6,31 @@ import { getTableOfContents } from "~/utils/getTableOfContents"
 import { getTransformedPageContent } from "~/utils/getTransformedPageContent"
 
 describe("getTableOfContents", () => {
-  const anchorPattern = /^#[a-f0-9]{32}$/
+  const anchorPattern = /^#[a-f0-9]{32}$/u
 
   it("generates toc entries from level-2 prose headings only", () => {
     // Arrange
     const site = generateSiteConfig()
     const transformedContent = getTransformedPageContent([
       {
-        type: "prose",
         content: [
           {
-            type: "heading",
             attrs: { level: 2 },
-            content: [{ type: "text", text: "Overview" }],
+            content: [{ text: "Overview", type: "text" }],
+            type: "heading",
           },
           {
-            type: "heading",
             attrs: { level: 3 },
-            content: [{ type: "text", text: "Hidden from toc" }],
+            content: [{ text: "Hidden from toc", type: "text" }],
+            type: "heading",
           },
           {
-            type: "heading",
             attrs: { level: 2 },
-            content: [{ type: "text", text: "Details" }],
+            content: [{ text: "Details", type: "text" }],
+            type: "heading",
           },
         ],
+        type: "prose",
       },
     ])
 
@@ -50,26 +51,26 @@ describe("getTableOfContents", () => {
     const site = generateSiteConfig()
     const content: IsomerComponent[] = [
       {
-        type: "infocards",
-        title: "Quick links",
-        variant: "cardsWithoutImages",
         cards: [{ title: "Card" }],
+        title: "Quick links",
+        type: "infocards",
+        variant: "cardsWithoutImages",
       },
       {
-        type: "infocols",
-        title: "Info columns",
         infoBoxes: [{ title: "Column" }],
+        title: "Info columns",
+        type: "infocols",
       },
       {
-        type: "infopic",
-        title: "Image with text",
-        imageSrc: "/image.png",
         imageAlt: "Diagram showing process flow",
+        imageSrc: "/image.png",
+        title: "Image with text",
+        type: "infopic",
       },
       {
-        type: "keystatistics",
-        title: "Key stats",
         statistics: [{ label: "Metric", value: "100" }],
+        title: "Key stats",
+        type: "keystatistics",
       },
     ]
     const transformedContent = getTransformedPageContent(content)
@@ -98,18 +99,18 @@ describe("getTableOfContents", () => {
     // SAFETY: editor may insert hardBreak nodes into heading content at runtime
     const transformedContent = getTransformedPageContent([
       {
-        type: "prose",
         content: [
           {
-            type: "heading",
             attrs: { level: 2 },
             content: [
-              { type: "text", text: "Line one" },
+              { text: "Line one", type: "text" },
               { type: "hardBreak" },
-              { type: "text", text: "Line two" },
+              { text: "Line two", type: "text" },
             ],
+            type: "heading",
           },
         ],
+        type: "prose",
       },
     ] as IsomerComponent[])
 
@@ -127,19 +128,19 @@ describe("getTableOfContents", () => {
     const site = generateSiteConfig()
     const pageContent = [
       {
-        type: "prose",
         content: [
           {
-            type: "heading",
             attrs: { level: 2 },
             content: [{ type: "hardBreak" }],
+            type: "heading",
           },
           {
-            type: "heading",
             attrs: { level: 2 },
-            content: [{ type: "text", text: "Real heading" }],
+            content: [{ text: "Real heading", type: "text" }],
+            type: "heading",
           },
         ],
+        type: "prose",
       },
     ]
     // SAFETY: editor may insert hardBreak nodes into heading content at runtime
@@ -161,24 +162,24 @@ describe("getTableOfContents", () => {
     const site = generateSiteConfig()
     const transformedContent = getTransformedPageContent([
       {
-        type: "prose",
         content: [
           {
-            type: "heading",
             attrs: { level: 2 },
-            content: [{ type: "text", text: "   \t " }],
+            content: [{ text: "   \t ", type: "text" }],
+            type: "heading",
           },
           {
-            type: "heading",
             attrs: { level: 2 },
-            content: [{ type: "text", text: " " }],
+            content: [{ text: " ", type: "text" }],
+            type: "heading",
           },
           {
-            type: "heading",
             attrs: { level: 2 },
-            content: [{ type: "text", text: "Real heading" }],
+            content: [{ text: "Real heading", type: "text" }],
+            type: "heading",
           },
         ],
+        type: "prose",
       },
     ])
 
@@ -195,25 +196,25 @@ describe("getTableOfContents", () => {
     // Arrange
     const content: IsomerComponent[] = [
       {
-        type: "prose",
         content: [
           {
-            type: "heading",
             attrs: { level: 2 },
-            content: [{ type: "text", text: "Overview" }],
+            content: [{ text: "Overview", type: "text" }],
+            type: "heading",
           },
           {
-            type: "heading",
             attrs: { level: 3 },
-            content: [{ type: "text", text: "Hidden from toc" }],
+            content: [{ text: "Hidden from toc", type: "text" }],
+            type: "heading",
           },
         ],
+        type: "prose",
       },
       {
-        type: "infocards",
-        title: "Quick links",
-        variant: "cardsWithoutImages",
         cards: [{ title: "Card" }],
+        title: "Quick links",
+        type: "infocards",
+        variant: "cardsWithoutImages",
       },
     ]
 

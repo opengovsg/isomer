@@ -13,9 +13,20 @@ export type ClassNames<T extends string> = Partial<Record<T, string>>
  */
 export const dataAttr = (
   value: string | number | boolean | null | undefined,
-) => (!!value ? true : undefined)
+): true | undefined => {
+  if (
+    value === null ||
+    value === undefined ||
+    value === false ||
+    value === ""
+  ) {
+    return undefined
+  }
 
-// TODO: move focusRing style inside here
+  return true
+}
+
+// Move focusRing style inside here when consolidating RAC utilities.
 export const focusVisibleHighlight = tv({
   base: "",
   variants: {
@@ -25,18 +36,19 @@ export const focusVisibleHighlight = tv({
   },
 })
 
+const isCallbackRef = <T>(
+  ref: React.ForwardedRef<T>,
+): ref is (node: T | null) => void => typeof ref === "function"
+
 export const mergeRefs = <T>(
   internalRef: React.MutableRefObject<T | null>,
   forwardedRef: React.ForwardedRef<T>,
-) => {
-  return (node: T | null) => {
+) =>
+  (node: T | null) => {
     internalRef.current = node
-    if (Object.prototype.toString.call(forwardedRef) === "[object Function]") {
-      // SAFETY: runtime check confirms forwardedRef is a callback ref
-      const callbackRef = forwardedRef as (node: T | null) => void
-      callbackRef(node)
+    if (isCallbackRef(forwardedRef)) {
+      forwardedRef(node)
     } else if (forwardedRef !== null && "current" in forwardedRef) {
       forwardedRef.current = node
     }
   }
-}

@@ -5,20 +5,20 @@ import { Type } from "@sinclair/typebox"
 import { AltTextSchema, ImageSrcSchema } from "./Image"
 
 const SingleImageSchema = Type.Object({
-  src: ImageSrcSchema,
   alt: AltTextSchema,
   caption: Type.Optional(Type.String()),
+  src: ImageSrcSchema,
 })
 
 export const ImageGallerySchema = Type.Object(
   {
+    images: Type.Array(SingleImageSchema, {
+      maxItems: 30,
+      minItems: 2,
+      title: "Images",
+    }),
     type: Type.Literal("imagegallery", {
       default: "imagegallery",
-    }),
-    images: Type.Array(SingleImageSchema, {
-      title: "Images",
-      minItems: 2,
-      maxItems: 30,
     }),
   },
   {

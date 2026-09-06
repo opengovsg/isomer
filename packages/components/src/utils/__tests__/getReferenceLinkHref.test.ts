@@ -5,22 +5,22 @@ import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
 import { getReferenceLinkHref } from "../getReferenceLinkHref"
 
 const EXAMPLE_SITEMAP_ARRAY: IsomerSitemap[] = getSitemapAsArray({
-  id: "1",
-  title: "Home",
-  summary: "",
-  lastModified: "",
-  permalink: "/",
-  layout: "homepage",
   children: [
     {
       id: "2",
-      title: "Page 1",
-      summary: "",
       lastModified: "",
-      permalink: "/page-1",
       layout: "content",
+      permalink: "/page-1",
+      summary: "",
+      title: "Page 1",
     },
   ],
+  id: "1",
+  lastModified: "",
+  layout: "homepage",
+  permalink: "/",
+  summary: "",
+  title: "Home",
 })
 
 describe("getReferenceLinkHref", () => {
@@ -43,14 +43,14 @@ describe("getReferenceLinkHref", () => {
       "/2012/looks-like-asset-link",
     ]
 
-    testCases.forEach((testCase) => {
+    for (const testCase of testCases) {
       const result = getReferenceLinkHref(
         testCase,
         EXAMPLE_SITEMAP_ARRAY,
         "https://assets.example.com",
       )
       expect(result).toBe(testCase)
-    })
+    }
   })
 
   it("should return permalink if referenceLink is a reference link", () => {

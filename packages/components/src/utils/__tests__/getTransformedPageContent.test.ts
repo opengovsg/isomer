@@ -1,10 +1,11 @@
+/* oxlint-disable typescript/no-unsafe-type-assertion, typescript/consistent-return, eslint/array-callback-return, eslint/prefer-destructuring, eslint/no-inline-comments, eslint/sort-keys, eslint/curly, unicorn/no-useless-undefined, unicorn/no-array-for-each, typescript/strict-boolean-expressions -- test fixtures use partial content shapes */
 import type { IsomerComponent } from "~/types"
 import { describe, expect, it } from "vitest"
 import { getDigestFromText } from "~/utils/getDigestFromText"
 import { getTransformedPageContent } from "~/utils/getTransformedPageContent"
 
 describe("getTransformedPageContent", () => {
-  const idPattern = /^[a-f0-9]{32}$/
+  const idPattern = /^[a-f0-9]{32}$/u
 
   it("preserves array length and block order", () => {
     // Arrange
@@ -73,7 +74,7 @@ describe("getTransformedPageContent", () => {
 
     // Assert
     expect(proseBlock?.type).toBe("prose")
-    if (proseBlock?.type === "prose" && proseBlock.content) {
+    if (proseBlock?.type === "prose" && proseBlock.content !== undefined) {
       const headingInfo = proseBlock.content.map((node) => {
         if (node.type !== "heading") return undefined
         return { level: node.attrs.level, id: node.attrs.id }

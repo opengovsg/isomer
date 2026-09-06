@@ -1,4 +1,5 @@
-import DOMPurify from "isomorphic-dompurify"
+/* oxlint-disable typescript/no-unsafe-type-assertion -- DOMPurify fragment firstChild is an HTMLIFrameElement for iframe HTML input */
+import { sanitize } from "isomorphic-dompurify"
 import { describe, expect, it } from "vitest"
 
 import { getSanitizedIframeWithTitle } from "../getSanitizedIframeWithTitle"
@@ -40,7 +41,7 @@ describe("getSanitizedIframeWithTitle", () => {
   })
 
   it("does not leak hooks across multiple calls", () => {
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 10; i += 1) {
       getSanitizedIframeWithTitle(
         `<iframe src="https://example.com/${i}"></iframe>`,
         `Title ${i}`,
@@ -48,7 +49,7 @@ describe("getSanitizedIframeWithTitle", () => {
     }
 
     // SAFETY: DOMPurify fragment firstChild is an HTMLIFrameElement for iframe HTML input
-    const unrelated = DOMPurify.sanitize(
+    const unrelated = sanitize(
       '<iframe src="https://other.com"></iframe>',
       {
         ALLOWED_TAGS: ["iframe"],

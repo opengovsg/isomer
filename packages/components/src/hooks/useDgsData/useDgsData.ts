@@ -31,11 +31,11 @@ export const useDgsData = ({
   // which will cause infinite re-renders for the subsequent useCallback hooks.
   const memoizedParams = useMemo(
     () => ({
-      resourceId,
-      q,
+      filters,
       limit,
       offset,
-      filters,
+      q,
+      resourceId,
       sort,
     }),
     [resourceId, q, limit, offset, filters, sort],
@@ -43,7 +43,7 @@ export const useDgsData = ({
 
   const fetchAllRecords = useCallback(async () => {
     // arbitrary large number to fetch all records
-    const fetchAllLimit = 10000
+    const fetchAllLimit = 10_000
 
     // 1st API call to attempt to fetch all records
     const initialResponse = await fetchDataFromDgsApiDataset({
@@ -82,11 +82,7 @@ export const useDgsData = ({
     const fetchData = async () => {
       setIsLoading(true)
       try {
-        if (fetchAll) {
-          await fetchAllRecords()
-        } else {
-          await fetchRecords()
-        }
+        await (fetchAll ? fetchAllRecords() : fetchRecords())
         setIsError(false)
         setIsLoading(false)
       } catch {
@@ -99,9 +95,9 @@ export const useDgsData = ({
   }, [fetchAll, fetchAllRecords, fetchRecords])
 
   return {
+    isError,
+    isLoading,
     records: data?.result.records,
     total: data?.result.total,
-    isLoading,
-    isError,
   }
 }

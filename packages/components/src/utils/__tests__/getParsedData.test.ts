@@ -41,12 +41,15 @@ describe("getParsedDate", () => {
   it("returns current date for unsupported format", () => {
     const result = getParsedDate("unsupported format")
     expect(result).toBeInstanceOf(Date)
-    expect(result.getTime()).toBeCloseTo(new Date().getTime(), -3) // Allow 1 second difference
+    // Allow 1 second difference
+    expect(result.getTime()).toBeCloseTo(Date.now(), -3)
   })
 
   it("returns current date for invalid date", () => {
-    const result = getParsedDate("32/13/2023") // Invalid date
+    // Invalid date
+    const result = getParsedDate("32/13/2023")
     expect(result).toBeInstanceOf(Date)
-    expect(result.getTime()).toBeCloseTo(new Date().getTime(), -3) // Allow 1 second difference
+    // Allow 1 second difference
+    expect(result.getTime()).toBeCloseTo(Date.now(), -3)
   })
 })

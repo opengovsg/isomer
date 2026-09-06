@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unsafe-type-assertion, typescript/no-unnecessary-type-assertion, eslint/sort-keys -- test fixtures use partial mock page shapes */
 import type { IsomerComponent } from "~/types"
 import type { IsomerPageSchemaType } from "~/types/schema"
 import type { IsomerSitemap } from "~/types/sitemap"
@@ -8,9 +9,9 @@ import { ISOMER_PAGE_LAYOUTS } from "~/types/constants"
 import { getMetadata, getPageJsonLd, getSiteJsonLd } from "../metadata"
 
 const baseSite = generateSiteConfig({
+  logoUrl: "/logo.svg",
   siteName: "Ministry of Foreign Affairs",
   url: "https://www.mfa.gov.sg",
-  logoUrl: "/logo.svg",
 })
 
 const basePage = {
@@ -24,10 +25,10 @@ describe("getMetadata", () => {
       // Arrange
       // SAFETY: test fixture contains the fields getMetadata reads for homepage layout
       const props = {
-        layout: ISOMER_PAGE_LAYOUTS.Homepage,
-        site: baseSite,
-        page: basePage,
         content: [{ type: "hero", subtitle: "Welcome to our site" }],
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
+        page: basePage,
+        site: baseSite,
       } as IsomerPageSchemaType
 
       // Act
@@ -41,10 +42,10 @@ describe("getMetadata", () => {
       // Arrange
       // SAFETY: test fixture contains the fields getMetadata reads for homepage layout
       const props = {
-        layout: ISOMER_PAGE_LAYOUTS.Homepage,
-        site: baseSite,
-        page: basePage,
         content: [{ type: "hero", subtitle: "" }],
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
+        page: basePage,
+        site: baseSite,
       } as IsomerPageSchemaType
 
       // Act
@@ -58,10 +59,10 @@ describe("getMetadata", () => {
       // Arrange
       // SAFETY: test fixture contains the fields getMetadata reads for homepage layout
       const props = {
-        layout: ISOMER_PAGE_LAYOUTS.Homepage,
-        site: baseSite,
-        page: basePage,
         content: [] as IsomerComponent[],
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
+        page: basePage,
+        site: baseSite,
       } as IsomerPageSchemaType
 
       // Act
@@ -75,11 +76,11 @@ describe("getMetadata", () => {
       // Arrange
       // SAFETY: test fixture contains the fields getMetadata reads for homepage layout
       const props = {
-        layout: ISOMER_PAGE_LAYOUTS.Homepage,
-        site: baseSite,
-        page: basePage,
-        meta: { description: "Custom description" },
         content: [{ type: "hero", subtitle: "Welcome to our site" }],
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
+        meta: { description: "Custom description" },
+        page: basePage,
+        site: baseSite,
       } as IsomerPageSchemaType
 
       // Act
@@ -95,10 +96,10 @@ describe("getMetadata", () => {
       // Arrange
       // SAFETY: test fixture contains the fields getMetadata reads for content layout
       const props = {
-        layout: ISOMER_PAGE_LAYOUTS.Content,
-        site: baseSite,
-        page: { ...basePage, contentPageHeader: { summary: "Page summary" } },
         content: [] as IsomerComponent[],
+        layout: ISOMER_PAGE_LAYOUTS.Content,
+        page: { ...basePage, contentPageHeader: { summary: "Page summary" } },
+        site: baseSite,
       } as IsomerPageSchemaType
 
       // Act
@@ -112,11 +113,11 @@ describe("getMetadata", () => {
       // Arrange
       // SAFETY: test fixture contains the fields getMetadata reads for content layout
       const props = {
-        layout: ISOMER_PAGE_LAYOUTS.Content,
-        site: baseSite,
-        page: { ...basePage, contentPageHeader: { summary: "Page summary" } },
-        meta: { description: "Custom description" },
         content: [] as IsomerComponent[],
+        layout: ISOMER_PAGE_LAYOUTS.Content,
+        meta: { description: "Custom description" },
+        page: { ...basePage, contentPageHeader: { summary: "Page summary" } },
+        site: baseSite,
       } as IsomerPageSchemaType
 
       // Act
@@ -130,39 +131,14 @@ describe("getMetadata", () => {
 
 const getSerializedJsonLd = (
   input: Parameters<typeof getSiteJsonLd>[0],
-): ReturnType<typeof getSiteJsonLd> => {
+): ReturnType<typeof getSiteJsonLd> => 
   // SAFETY: JSON round-trip preserves the JSON-LD object shape for assertions
-  return JSON.parse(JSON.stringify(getSiteJsonLd(input))) as ReturnType<
-    typeof getSiteJsonLd
-  >
-}
+  structuredClone(getSiteJsonLd(input))
+
 
 describe("getSiteJsonLd", () => {
   it("generates linked website and organisation entities from configured values", () => {
     const jsonLd = getSerializedJsonLd({
-      site: {
-        siteName: "Public Service Portal",
-        agencyName: "Example Ministry",
-        url: "https://example.gov.sg",
-        logoUrl: "/images/logo.svg",
-        assetsBaseUrl: "https://assets.example.gov.sg/",
-        isGovernment: true,
-        siteEntity: {
-          type: "GovernmentOrganization",
-          description: "  We serve the public.  ",
-          address: {
-            streetAddress: "1 Example Street",
-            addressLocality: "Singapore",
-            postalCode: "123456",
-            addressCountry: "SG",
-          },
-          contactPoint: {
-            contactType: "Customer service",
-            telephone: "+65 6123 4567",
-            email: "hello@example.gov.sg",
-          },
-        },
-      },
       footer: {
         contactUsLink: "/contact-us",
         socialMediaLinks: [
@@ -176,45 +152,68 @@ describe("getSiteJsonLd", () => {
           },
         ],
       },
+      site: {
+        agencyName: "Example Ministry",
+        assetsBaseUrl: "https://assets.example.gov.sg/",
+        isGovernment: true,
+        logoUrl: "/images/logo.svg",
+        siteEntity: {
+          address: {
+            addressCountry: "SG",
+            addressLocality: "Singapore",
+            postalCode: "123456",
+            streetAddress: "1 Example Street",
+          },
+          contactPoint: {
+            contactType: "Customer service",
+            email: "hello@example.gov.sg",
+            telephone: "+65 6123 4567",
+          },
+          description: "  We serve the public.  ",
+          type: "GovernmentOrganization",
+        },
+        siteName: "Public Service Portal",
+        url: "https://example.gov.sg",
+      },
     })
 
     expect(jsonLd).toEqual({
       "@context": "https://schema.org",
       "@graph": [
         {
-          "@type": "WebSite",
           "@id": "https://example.gov.sg/#website",
+          "@type": "WebSite",
           name: "Public Service Portal",
-          url: "https://example.gov.sg/",
           publisher: {
             "@id": "https://example.gov.sg/#organization",
           },
+          url: "https://example.gov.sg/",
         },
         {
-          "@type": "GovernmentOrganization",
           "@id": "https://example.gov.sg/#organization",
-          name: "Example Ministry",
-          url: "https://example.gov.sg/",
-          logo: "https://assets.example.gov.sg/images/logo.svg",
-          description: "We serve the public.",
+          "@type": "GovernmentOrganization",
           address: {
             "@type": "PostalAddress",
-            streetAddress: "1 Example Street",
+            addressCountry: "SG",
             addressLocality: "Singapore",
             postalCode: "123456",
-            addressCountry: "SG",
+            streetAddress: "1 Example Street",
           },
           contactPoint: {
             "@type": "ContactPoint",
             contactType: "Customer service",
-            telephone: "+65 6123 4567",
             email: "hello@example.gov.sg",
+            telephone: "+65 6123 4567",
             url: "https://example.gov.sg/contact-us",
           },
+          description: "We serve the public.",
+          logo: "https://assets.example.gov.sg/images/logo.svg",
+          name: "Example Ministry",
           sameAs: [
             "https://www.linkedin.com/company/example-ministry",
             "https://www.instagram.com/exampleministry",
           ],
+          url: "https://example.gov.sg/",
         },
       ],
     })
@@ -222,12 +221,6 @@ describe("getSiteJsonLd", () => {
 
   it("prepends the assets base URL to internal file links", () => {
     const jsonLd = getSerializedJsonLd({
-      site: {
-        siteName: "Community Site",
-        url: "https://community.example.com",
-        assetsBaseUrl: "https://assets.example.com/",
-        isGovernment: false,
-      },
       footer: {
         contactUsLink: "/1/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee/contact-us.pdf",
         socialMediaLinks: [
@@ -236,6 +229,12 @@ describe("getSiteJsonLd", () => {
             url: "/1/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee/poster.png",
           },
         ],
+      },
+      site: {
+        assetsBaseUrl: "https://assets.example.com/",
+        isGovernment: false,
+        siteName: "Community Site",
+        url: "https://community.example.com",
       },
     })
 
@@ -252,12 +251,6 @@ describe("getSiteJsonLd", () => {
 
   it("resolves a resource contact link using the sitemap", () => {
     const sitemap: IsomerSitemap = {
-      id: "1",
-      title: "Home",
-      summary: "",
-      lastModified: "",
-      permalink: "/",
-      layout: "homepage",
       children: [
         {
           id: "2",
@@ -268,15 +261,21 @@ describe("getSiteJsonLd", () => {
           layout: "content",
         },
       ],
+      id: "1",
+      lastModified: "",
+      layout: "homepage",
+      permalink: "/",
+      summary: "",
+      title: "Home",
     }
     const jsonLd = getSerializedJsonLd({
-      site: {
-        siteName: "Community Site",
-        url: "https://community.example.com",
-        isGovernment: false,
-      },
       footer: {
         contactUsLink: "[resource:1:2]",
+      },
+      site: {
+        isGovernment: false,
+        siteName: "Community Site",
+        url: "https://community.example.com",
       },
       sitemap,
     })
@@ -291,21 +290,21 @@ describe("getSiteJsonLd", () => {
 
   it("uses existing site settings as fallbacks and omits empty metadata", () => {
     const jsonLd = getSerializedJsonLd({
-      site: {
-        siteName: "Community Site",
-        url: "https://community.example.com",
-        logoUrl: "",
-        isGovernment: false,
-      },
       footer: {
         contactUsLink: "[resource:1:999]",
         socialMediaLinks: [],
       },
+      site: {
+        isGovernment: false,
+        logoUrl: "",
+        siteName: "Community Site",
+        url: "https://community.example.com",
+      },
     })
 
     expect(jsonLd["@graph"][1]).toEqual({
-      "@type": "Organization",
       "@id": "https://community.example.com/#organization",
+      "@type": "Organization",
       name: "Community Site",
       url: "https://community.example.com/",
     })
@@ -313,11 +312,11 @@ describe("getSiteJsonLd", () => {
 
   it("defaults to Organization when the government flag is absent", () => {
     const jsonLd = getSerializedJsonLd({
+      footer: {},
       site: {
         siteName: "Community Site",
         url: "https://community.example.com",
       },
-      footer: {},
     })
 
     expect(jsonLd["@graph"][1]?.["@type"]).toBe("Organization")
@@ -325,16 +324,16 @@ describe("getSiteJsonLd", () => {
 
   it("uses the selected organisation subtype", () => {
     const jsonLd = getSerializedJsonLd({
+      footer: {},
       site: {
-        siteName: "Example School",
-        url: "https://school.edu.sg",
-        logoUrl: "/logo.png",
         isGovernment: true,
+        logoUrl: "/logo.png",
         siteEntity: {
           type: "EducationalOrganization",
         },
+        siteName: "Example School",
+        url: "https://school.edu.sg",
       },
-      footer: {},
     })
 
     expect(jsonLd["@graph"][1]?.["@type"]).toBe("EducationalOrganization")
@@ -342,14 +341,14 @@ describe("getSiteJsonLd", () => {
 
   it("does not prepend the asset base URL to an absolute logo URL", () => {
     const jsonLd = getSerializedJsonLd({
+      footer: {},
       site: {
-        siteName: "Example School",
-        url: "https://school.edu.sg",
-        logoUrl: "https://logos.example.com/school.png",
         assetsBaseUrl: "https://assets.example.com",
         isGovernment: true,
+        logoUrl: "https://logos.example.com/school.png",
+        siteName: "Example School",
+        url: "https://school.edu.sg",
       },
-      footer: {},
     })
 
     expect(jsonLd["@graph"][1]).toMatchObject({
@@ -359,13 +358,13 @@ describe("getSiteJsonLd", () => {
 
   it("omits a missing logo when an asset base URL is configured", () => {
     const jsonLd = getSerializedJsonLd({
+      footer: {},
       site: {
-        siteName: "Example School",
-        url: "https://school.edu.sg",
         assetsBaseUrl: "https://assets.example.com",
         isGovernment: true,
+        siteName: "Example School",
+        url: "https://school.edu.sg",
       },
-      footer: {},
     })
 
     expect(jsonLd["@graph"][1]).not.toHaveProperty("logo")
@@ -374,27 +373,25 @@ describe("getSiteJsonLd", () => {
 
 const getSerializedPageJsonLd = (
   input: Parameters<typeof getPageJsonLd>[0],
-): ReturnType<typeof getPageJsonLd> => {
+): ReturnType<typeof getPageJsonLd> => 
   // SAFETY: JSON round-trip preserves the JSON-LD object shape for assertions
-  return JSON.parse(JSON.stringify(getPageJsonLd(input))) as ReturnType<
-    typeof getPageJsonLd
-  >
-}
+  structuredClone(getPageJsonLd(input))
+
 
 describe("getPageJsonLd", () => {
   const contentPage = {
+    content: [],
     layout: "content",
     meta: {},
     page: {
-      title: "About us",
-      permalink: "/about-us",
-      lastModified: "2026-08-18T10:00:00.000Z",
       contentPageHeader: {
-        summary: "Learn about our work.",
         showThumbnail: false,
+        summary: "Learn about our work.",
       },
+      lastModified: "2026-08-18T10:00:00.000Z",
+      permalink: "/about-us",
+      title: "About us",
     },
-    content: [],
     site: generateSiteConfig({
       url: "https://example.gov.sg",
     }),
@@ -403,19 +400,19 @@ describe("getPageJsonLd", () => {
   it("generates a page entity linked to the site-wide graph", () => {
     expect(getSerializedPageJsonLd(contentPage)).toEqual({
       "@context": "https://schema.org",
-      "@type": "WebPage",
       "@id": "https://example.gov.sg/about-us#webpage",
-      url: "https://example.gov.sg/about-us",
-      name: "About us",
-      description: "Learn about our work.",
+      "@type": "WebPage",
       dateModified: "2026-08-18T10:00:00.000Z",
+      description: "Learn about our work.",
       inLanguage: "en",
       isPartOf: {
         "@id": "https://example.gov.sg/#website",
       },
+      name: "About us",
       publisher: {
         "@id": "https://example.gov.sg/#organization",
       },
+      url: "https://example.gov.sg/about-us",
     })
   })
 

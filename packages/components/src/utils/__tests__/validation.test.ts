@@ -21,10 +21,10 @@ describe("validation", () => {
         "https://gov.sg",
       ]
 
-      testCases.forEach((testCase) => {
-        const result = new RegExp(LINK_HREF_PATTERN).test(testCase)
+      for (const testCase of testCases) {
+        const result = new RegExp(LINK_HREF_PATTERN, "u").test(testCase)
         expect(result).toBe(true)
-      })
+      }
     })
 
     it("should allow mailto links", () => {
@@ -35,12 +35,10 @@ describe("validation", () => {
         "Capital_Letters@example.gov.sg",
       ]
 
-      testCases
-        .map((testCase) => `mailto:${testCase}`)
-        .forEach((testCase) => {
-          const result = new RegExp(LINK_HREF_PATTERN).test(testCase)
+      for (const testCase of testCases.map((tc) => `mailto:${tc}`)) {
+          const result = new RegExp(LINK_HREF_PATTERN, "u").test(testCase)
           expect(result).toBe(true)
-        })
+        }
     })
 
     it("should allow tel links", () => {
@@ -52,10 +50,10 @@ describe("validation", () => {
         "tel:1800 123 4567",
       ]
 
-      testCases.forEach((testCase) => {
-        const result = new RegExp(LINK_HREF_PATTERN).test(testCase)
+      for (const testCase of testCases) {
+        const result = new RegExp(LINK_HREF_PATTERN, "u").test(testCase)
         expect(result).toBe(true)
-      })
+      }
     })
 
     it("should allow sms links", () => {
@@ -65,10 +63,10 @@ describe("validation", () => {
         "sms:+6512345678?body=Hello",
       ]
 
-      testCases.forEach((testCase) => {
-        const result = new RegExp(LINK_HREF_PATTERN).test(testCase)
+      for (const testCase of testCases) {
+        const result = new RegExp(LINK_HREF_PATTERN, "u").test(testCase)
         expect(result).toBe(true)
-      })
+      }
     })
 
     it("should allow internal links", () => {
@@ -78,10 +76,10 @@ describe("validation", () => {
         "[resource:999:999]",
       ]
 
-      testCases.forEach((testCase) => {
-        const result = new RegExp(LINK_HREF_PATTERN).test(testCase)
+      for (const testCase of testCases) {
+        const result = new RegExp(LINK_HREF_PATTERN, "u").test(testCase)
         expect(result).toBe(true)
-      })
+      }
     })
 
     it("should allow files links", () => {
@@ -93,10 +91,10 @@ describe("validation", () => {
         "/430/e57f4738-7bf2-490a-a083-0a8c166e4bfb/favicon.ico",
       ]
 
-      testCases.forEach((testCase) => {
-        const result = new RegExp(LINK_HREF_PATTERN).test(testCase)
+      for (const testCase of testCases) {
+        const result = new RegExp(LINK_HREF_PATTERN, "u").test(testCase)
         expect(result).toBe(true)
-      })
+      }
     })
 
     it("should allow legacy internal links", () => {
@@ -108,19 +106,19 @@ describe("validation", () => {
         "/images/logo.png",
       ]
 
-      testCases.forEach((testCase) => {
-        const result = new RegExp(LINK_HREF_PATTERN).test(testCase)
+      for (const testCase of testCases) {
+        const result = new RegExp(LINK_HREF_PATTERN, "u").test(testCase)
         expect(result).toBe(true)
-      })
+      }
     })
 
     it("should not allow external links with protocols other than https, tel, sms and mailto", () => {
       const testCases = ["http://example.com", "ftp://example.net"]
 
-      testCases.forEach((testCase) => {
-        const result = new RegExp(LINK_HREF_PATTERN).test(testCase)
+      for (const testCase of testCases) {
+        const result = new RegExp(LINK_HREF_PATTERN, "u").test(testCase)
         expect(result).toBe(false)
-      })
+      }
     })
   })
 
@@ -132,10 +130,10 @@ describe("validation", () => {
         "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d997.1986718091739!2d103.84951406959217!3d1.2979038406790597!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31da19ec2599519d%3A0x809fd655663da6d0!2sLazada%20One!5e0!3m2!1sen!2ssg!4v1731681752852!5m2!1sen!2ssg",
       ]
 
-      testCases.forEach((testCase) => {
-        const result = new RegExp(MAPS_EMBED_URL_PATTERN).test(testCase)
+      for (const testCase of testCases) {
+        const result = new RegExp(MAPS_EMBED_URL_PATTERN, "u").test(testCase)
         expect(result).toBe(true)
-      })
+      }
     })
 
     it("should allow Google My Maps embed URLs", () => {
@@ -143,10 +141,10 @@ describe("validation", () => {
         "https://www.google.com/maps/d/embed?mid=1Mgnp3R1e7rYXGY2Vn1efD-AWXlfZa8o&ehbc=2E312F",
       ]
 
-      testCases.forEach((testCase) => {
-        const result = new RegExp(MAPS_EMBED_URL_PATTERN).test(testCase)
+      for (const testCase of testCases) {
+        const result = new RegExp(MAPS_EMBED_URL_PATTERN, "u").test(testCase)
         expect(result).toBe(true)
-      })
+      }
     })
 
     it("should allow OneMap embed URLs", () => {
@@ -157,10 +155,10 @@ describe("validation", () => {
         "https://mobile.onemap.gov.sg/minimap/minimap.html?mapStyle=Default&zoomLevel=15",
       ]
 
-      testCases.forEach((testCase) => {
-        const result = new RegExp(MAPS_EMBED_URL_PATTERN).test(testCase)
+      for (const testCase of testCases) {
+        const result = new RegExp(MAPS_EMBED_URL_PATTERN, "u").test(testCase)
         expect(result).toBe(true)
-      })
+      }
     })
 
     it("should allow mobile OneMap embed URLs via isValidMapEmbedUrl", () => {
@@ -169,9 +167,9 @@ describe("validation", () => {
         "https://mobile.onemap.gov.sg/minimap/minimap.html?mapStyle=Default&zoomLevel=15",
       ]
 
-      testCases.forEach((testCase) => {
+      for (const testCase of testCases) {
         expect(isValidMapEmbedUrl(testCase)).toBe(true)
-      })
+      }
     })
 
     it("should allow OGP Maps embed URLs", () => {
@@ -183,10 +181,10 @@ describe("validation", () => {
         "https://maps.gov.sg/abc-def_ghi-jkl",
       ]
 
-      testCases.forEach((testCase) => {
-        const result = new RegExp(MAPS_EMBED_URL_PATTERN).test(testCase)
+      for (const testCase of testCases) {
+        const result = new RegExp(MAPS_EMBED_URL_PATTERN, "u").test(testCase)
         expect(result).toBe(true)
-      })
+      }
     })
 
     it("should not allow any other site's URLs", () => {
@@ -201,10 +199,10 @@ describe("validation", () => {
         "https://evil.onemap.gov.sg/nparks/heritageTrees.html",
       ]
 
-      testCases.forEach((testCase) => {
-        const result = new RegExp(MAPS_EMBED_URL_PATTERN).test(testCase)
+      for (const testCase of testCases) {
+        const result = new RegExp(MAPS_EMBED_URL_PATTERN, "u").test(testCase)
         expect(result).toBe(false)
-      })
+      }
     })
   })
 
@@ -217,10 +215,10 @@ describe("validation", () => {
         "https://www.youtube.com/watch?v=dQw4w9WgXcQ&feature=youtu.be",
       ]
 
-      testCases.forEach((testCase) => {
-        const result = new RegExp(VIDEO_EMBED_URL_PATTERN).test(testCase)
+      for (const testCase of testCases) {
+        const result = new RegExp(VIDEO_EMBED_URL_PATTERN, "u").test(testCase)
         expect(result).toBe(true)
-      })
+      }
     })
 
     it("should allow YouTube embed URLs", () => {
@@ -234,10 +232,10 @@ describe("validation", () => {
         "https://www.youtube.com/embed/dQw4w9WgXcQ?si=7dAKYmJw2jTNNqkr&amp;controls=0&amp;start=60",
       ]
 
-      testCases.forEach((testCase) => {
-        const result = new RegExp(VIDEO_EMBED_URL_PATTERN).test(testCase)
+      for (const testCase of testCases) {
+        const result = new RegExp(VIDEO_EMBED_URL_PATTERN, "u").test(testCase)
         expect(result).toBe(true)
-      })
+      }
     })
 
     it("should allow YouTube nocookie embed URLs", () => {
@@ -249,10 +247,10 @@ describe("validation", () => {
         "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?si=7dAKYmJw2jTNNqkr&amp;controls=0&amp;start=60",
       ]
 
-      testCases.forEach((testCase) => {
-        const result = new RegExp(VIDEO_EMBED_URL_PATTERN).test(testCase)
+      for (const testCase of testCases) {
+        const result = new RegExp(VIDEO_EMBED_URL_PATTERN, "u").test(testCase)
         expect(result).toBe(true)
-      })
+      }
     })
 
     it("should allow Vimeo embed URLs", () => {
@@ -260,10 +258,10 @@ describe("validation", () => {
         "https://player.vimeo.com/video/984159615?h=945031e683",
       ]
 
-      testCases.forEach((testCase) => {
-        const result = new RegExp(VIDEO_EMBED_URL_PATTERN).test(testCase)
+      for (const testCase of testCases) {
+        const result = new RegExp(VIDEO_EMBED_URL_PATTERN, "u").test(testCase)
         expect(result).toBe(true)
-      })
+      }
     })
 
     it("should allow Facebook Watch embed URLs", () => {
@@ -271,10 +269,10 @@ describe("validation", () => {
         "https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2FCLCsg%2Fvideos%2F443087086248211%2F&show_text=0&width=560",
       ]
 
-      testCases.forEach((testCase) => {
-        const result = new RegExp(VIDEO_EMBED_URL_PATTERN).test(testCase)
+      for (const testCase of testCases) {
+        const result = new RegExp(VIDEO_EMBED_URL_PATTERN, "u").test(testCase)
         expect(result).toBe(true)
-      })
+      }
     })
 
     it("should not allow any other site's URLs", () => {
@@ -287,10 +285,10 @@ describe("validation", () => {
         "https://www.facebook.com/plugins/videoXphp?href=https%3A%2F%2Fwww.facebook.com%2FCLCsg%2Fvideos%2F443087086248211%2F",
       ]
 
-      testCases.forEach((testCase) => {
-        const result = new RegExp(VIDEO_EMBED_URL_PATTERN).test(testCase)
+      for (const testCase of testCases) {
+        const result = new RegExp(VIDEO_EMBED_URL_PATTERN, "u").test(testCase)
         expect(result).toBe(false)
-      })
+      }
     })
   })
 
@@ -301,17 +299,19 @@ describe("validation", () => {
         "GTM-ABC123",
         "GTM-1234567",
         "GTM-ABCDEFGHIJ",
-        "G-ABC123", // GA4 measurement IDs work with GTM snippet in practice
-        "GT-ABC123", // GT- IDs observed working in manual testing
+        "G-ABC123",
+        // GA4 measurement IDs work with GTM snippet in practice
+        "GT-ABC123",
+        // GT- IDs observed working in manual testing
       ]
 
-      testCases.forEach((testCase) => {
+      for (const testCase of testCases) {
         // Act
-        const result = new RegExp(GTM_ID_STRING_REGEX).test(testCase)
+        const result = new RegExp(GTM_ID_STRING_REGEX, "u").test(testCase)
 
         // Assert
         expect(result).toBe(true)
-      })
+      }
     })
 
     it("should reject invalid or malicious GTM IDs", () => {
@@ -324,13 +324,13 @@ describe("validation", () => {
         "",
       ]
 
-      testCases.forEach((testCase) => {
+      for (const testCase of testCases) {
         // Act
-        const result = new RegExp(GTM_ID_STRING_REGEX).test(testCase)
+        const result = new RegExp(GTM_ID_STRING_REGEX, "u").test(testCase)
 
         // Assert
         expect(result).toBe(false)
-      })
+      }
     })
   })
 
@@ -343,10 +343,10 @@ describe("validation", () => {
         "https://open.spotify.com/embed/playlist/1apUfsI3NR7LqzFOlGieBT",
       ]
 
-      testCases.forEach((testCase) => {
-        expect(new RegExp(AUDIO_EMBED_URL_PATTERN).test(testCase)).toBe(true)
+      for (const testCase of testCases) {
+        expect(new RegExp(AUDIO_EMBED_URL_PATTERN, "u").test(testCase)).toBe(true)
         expect(isValidAudioEmbedUrl(testCase)).toBe(true)
-      })
+      }
     })
 
     it("should allow Apple Podcast embed URLs for show and episode", () => {
@@ -356,10 +356,10 @@ describe("validation", () => {
         "https://embed.podcasts.apple.com/sg/podcast/another-podcast/id987654321",
       ]
 
-      testCases.forEach((testCase) => {
-        expect(new RegExp(AUDIO_EMBED_URL_PATTERN).test(testCase)).toBe(true)
+      for (const testCase of testCases) {
+        expect(new RegExp(AUDIO_EMBED_URL_PATTERN, "u").test(testCase)).toBe(true)
         expect(isValidAudioEmbedUrl(testCase)).toBe(true)
-      })
+      }
     })
 
     it("should not allow Spotify album, track, or artist (only episode, show, and playlist supported)", () => {
@@ -369,10 +369,10 @@ describe("validation", () => {
         "https://open.spotify.com/embed/artist/0OdUWJ0sBJDrq8yp90n0ID",
       ]
 
-      testCases.forEach((testCase) => {
-        expect(new RegExp(AUDIO_EMBED_URL_PATTERN).test(testCase)).toBe(false)
+      for (const testCase of testCases) {
+        expect(new RegExp(AUDIO_EMBED_URL_PATTERN, "u").test(testCase)).toBe(false)
         expect(isValidAudioEmbedUrl(testCase)).toBe(false)
-      })
+      }
     })
 
     it("should not allow non-audio or invalid embed URLs", () => {
@@ -385,10 +385,10 @@ describe("validation", () => {
         "https://embed.podcasts.apple.com/",
       ]
 
-      testCases.forEach((testCase) => {
-        expect(new RegExp(AUDIO_EMBED_URL_PATTERN).test(testCase)).toBe(false)
+      for (const testCase of testCases) {
+        expect(new RegExp(AUDIO_EMBED_URL_PATTERN, "u").test(testCase)).toBe(false)
         expect(isValidAudioEmbedUrl(testCase)).toBe(false)
-      })
+      }
     })
   })
 })

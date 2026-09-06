@@ -13,11 +13,11 @@ const ContactInformationComponentSchema = Type.Intersect([
 ])
 
 export const DynamicComponentListSchema = Type.Object({
+  component: Type.Union([ContactInformationComponentSchema]),
+  dataSource: Type.Union([DgsDataSourceFieldsSchema]),
   type: Type.Literal("dynamiccomponentlist", {
     default: "dynamiccomponentlist",
   }),
-  dataSource: Type.Union([DgsDataSourceFieldsSchema]),
-  component: Type.Union([ContactInformationComponentSchema]),
 })
 
 export type DynamicComponentListProps = Static<

@@ -10,7 +10,7 @@ export {
 } from "./Callout"
 export { type CardsProps } from "./Cards"
 export { ContentpicSchema, type ContentpicProps } from "./Contentpic"
-export { FormSGSchema, type FormSGProps } from "./FormSG"
+export { FormSGSchema, type FormSGProps } from "./FormSg"
 export { HERO_STYLE, HeroSchema, type HeroProps } from "./Hero"
 export { IframeSchema, type IframeProps } from "./Iframe"
 export {

@@ -7,15 +7,15 @@ import { Type } from "@sinclair/typebox"
 export const ZendeskSchema = Type.Object(
   {
     widgetKey: Type.String({
-      title: "Zendesk Widget Key",
       description:
         'This is the value of the "key" query parameter in the Zendesk Widget snippet URL (e.g. for src="https://static.zdassets.com/ekr/snippet.js?key=abc-123", the widget key is "abc-123").',
+      title: "Zendesk Widget Key",
     }),
   },
   {
-    title: "Zendesk Widget",
     description: "Schema for the Zendesk widget integration.",
     format: "hidden",
+    title: "Zendesk Widget",
   },
 )
 

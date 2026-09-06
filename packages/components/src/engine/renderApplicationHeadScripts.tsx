@@ -7,8 +7,8 @@ interface RenderApplicationHeadScriptsProps {
 
 export const RenderApplicationHeadScripts = ({
   site,
-}: RenderApplicationHeadScriptsProps) => {
-  return (
+}: RenderApplicationHeadScriptsProps) => 
+  (
     <>
       {/* NOTE: we load in WOGAA regardless of whether the site is  */}
       {/* a government site as WOGAA still requires the agency to register their site */}
@@ -18,4 +18,4 @@ export const RenderApplicationHeadScripts = ({
       <Wogaa environment={site.environment} />
     </>
   )
-}
+

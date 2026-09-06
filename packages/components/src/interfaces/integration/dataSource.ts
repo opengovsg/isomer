@@ -1,4 +1,4 @@
 export const DATA_SOURCE_TYPE = {
-  native: "native",
   dgs: "dgs",
+  native: "native",
 } as const

@@ -19,12 +19,12 @@ export const getSiderailFromSiteMap = (
   }
 
   return {
-    parentTitle: parentNode.title,
-    parentUrl: parentNode.permalink,
     pages: parentNode.children.map((sibling) => ({
+      isCurrent: sibling.permalink === permalink,
       title: sibling.title,
       url: sibling.permalink,
-      isCurrent: sibling.permalink === permalink,
     })),
+    parentTitle: parentNode.title,
+    parentUrl: parentNode.permalink,
   }
 }

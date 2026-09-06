@@ -4,22 +4,22 @@ import { MAPS_EMBED_URL_PATTERN } from "~/utils/validation"
 
 export const MapSchema = Type.Object(
   {
-    type: Type.Literal("map", { default: "map" }),
-    url: Type.String({
-      title: "Map to embed",
-      pattern: MAPS_EMBED_URL_PATTERN,
-      format: "embed",
-    }),
     title: Type.String({
-      title: "Label for screen readers",
       description:
         "This is not shown on the page, but is compulsory for accessibility",
+      title: "Label for screen readers",
+    }),
+    type: Type.Literal("map", { default: "map" }),
+    url: Type.String({
+      format: "embed",
+      pattern: MAPS_EMBED_URL_PATTERN,
+      title: "Map to embed",
     }),
   },
   {
-    title: "Map",
     description:
       "The map component is used to embed a map of a location or area within the current page.",
+    title: "Map",
   },
 )
 

@@ -19,10 +19,10 @@ interface RenderApplicationScriptsProps {
 export const RenderApplicationScripts = ({
   site,
   ScriptComponent,
-}: RenderApplicationScriptsProps) => {
-  return (
+}: RenderApplicationScriptsProps) => 
+  (
     <>
-      {!!site.siteGtmId && (
+      {site.siteGtmId !== undefined && site.siteGtmId !== "" && (
         <>
           <GoogleTagManagerPreload />
           <GoogleTagManagerHeader
@@ -33,7 +33,7 @@ export const RenderApplicationScripts = ({
         </>
       )}
 
-      {!!site.isomerMsClarityId && (
+      {site.isomerMsClarityId !== undefined && site.isomerMsClarityId !== "" && (
         <MicrosoftClarity msClarityId={site.isomerMsClarityId} />
       )}
 
@@ -51,4 +51,4 @@ export const RenderApplicationScripts = ({
       {site.zendesk && <ZendeskWidget {...site.zendesk} />}
     </>
   )
-}
+

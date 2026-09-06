@@ -7,7 +7,7 @@ import type {
 } from "~/interfaces"
 import { twMerge } from "~/lib/twMerge"
 
-import { useSearchSGScript } from "../../../../../hooks/useSearchSGScript"
+import { useSearchSgScript } from "../../../../../hooks/useSearchSgScript"
 
 interface BaseSearchSGInputBoxProps {
   clientId: SearchSGInputBoxProps["clientId"]
@@ -19,7 +19,7 @@ const BaseSearchSGInputBox = ({
   className,
   shouldLoadScript = true,
 }: BaseSearchSGInputBoxProps) => {
-  useSearchSGScript({ clientId, shouldLoad: shouldLoadScript })
+  useSearchSgScript({ clientId, shouldLoad: shouldLoadScript })
 
   return (
     <div

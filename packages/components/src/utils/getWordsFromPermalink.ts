@@ -8,8 +8,8 @@ export const getWordsFromPermalink = (permalink: string): string => {
   // This is because we might have run-on spaces from sequences of symbols
   // like: `+=`, which would lead to 2 spaces
   return decodeURIComponent(lastUrlSegment)
-    .replaceAll(/[\W_]/gi, " ")
+    .replaceAll(/[\W_]/giu, " ")
     .split(" ")
-    .filter((v) => !!v)
+    .filter((segment) => segment !== "")
     .join("+")
 }

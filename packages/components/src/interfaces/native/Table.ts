@@ -13,16 +13,16 @@ import { UnorderedListSchema } from "./UnorderedList"
 const TableBaseCellSchema = Type.Object({
   colspan: Type.Optional(
     Type.Integer({
-      title: "Table cell column span",
       description: "The number of columns the cell spans",
       minimum: 1,
+      title: "Table cell column span",
     }),
   ),
   rowspan: Type.Optional(
     Type.Integer({
-      title: "Table cell row span",
       description: "The number of rows the cell spans",
       minimum: 1,
+      title: "Table cell row span",
     }),
   ),
 })
@@ -45,7 +45,6 @@ type TableCellProps = {
 // TypeScript where the type instantiation is too deep.
 const TableCellSchema = Type.Unsafe<TableCellProps>(
   Type.Object({
-    type: Type.Literal("tableCell", { default: "tableCell" }),
     attrs: Type.Optional(TableBaseCellSchema),
     content: Type.Array(
       Type.Union([
@@ -54,31 +53,32 @@ const TableCellSchema = Type.Unsafe<TableCellProps>(
         Type.Ref(UnorderedListSchema),
       ]),
       {
-        title: "Table cell contents",
         description: "The contents of the table cell",
         minItems: 1,
+        title: "Table cell contents",
       },
     ),
+    type: Type.Literal("tableCell", { default: "tableCell" }),
   }),
 )
 
 const TableHeaderCellSchema = Type.Object({
-  type: Type.Literal("tableHeader", { default: "tableHeader" }),
   attrs: Type.Optional(TableBaseCellSchema),
   content: Type.Array(Type.Ref(ParagraphSchema), {
-    title: "Table header cell contents",
     description: "The contents of the table header cell",
     minItems: 1,
+    title: "Table header cell contents",
   }),
+  type: Type.Literal("tableHeader", { default: "tableHeader" }),
 })
 
 const TableContentRowSchema = Type.Object(
   {
-    type: Type.Literal("tableRow", { default: "tableRow" }),
     content: Type.Array(Type.Union([TableCellSchema, TableHeaderCellSchema]), {
-      title: "Table cells",
       minItems: 1,
+      title: "Table cells",
     }),
+    type: Type.Literal("tableRow", { default: "tableRow" }),
   },
   {
     title: "Table row",
@@ -87,11 +87,11 @@ const TableContentRowSchema = Type.Object(
 
 const TableHeaderRowSchema = Type.Object(
   {
-    type: Type.Literal("tableRow", { default: "tableRow" }),
     content: Type.Array(TableHeaderCellSchema, {
-      title: "Table header cells",
       minItems: 1,
+      title: "Table header cells",
     }),
+    type: Type.Literal("tableRow", { default: "tableRow" }),
   },
   {
     title: "Table header row",
@@ -100,20 +100,20 @@ const TableHeaderRowSchema = Type.Object(
 
 export const TableSchema = Type.Object(
   {
-    type: Type.Literal("table", { default: "table" }),
     attrs: Type.Object({
       caption: Type.String({
-        title: "Table caption",
         description: "The caption of the table",
+        title: "Table caption",
       }),
     }),
     content: Type.Array(
       Type.Union([TableHeaderRowSchema, TableContentRowSchema]),
       {
-        title: "Table rows",
         minItems: 1,
+        title: "Table rows",
       },
     ),
+    type: Type.Literal("table", { default: "table" }),
   },
   {
     $id: "components-native-table",

@@ -30,8 +30,11 @@ const ItalicMarkSchema = Type.Object(
 
 const BaseLinkMarkSchema = Type.Object(
   {
-    type: Type.Literal("link", { default: "link" }),
     attrs: Type.Object({
+      // NOTE: The href given by tiptap here
+      // https://github.com/ueberdosis/tiptap/blob/main/packages/extension-link/src/link.ts
+      // defaults to `null` href
+      href: Type.Union([Type.String(), Type.Null()]),
       target: Type.Optional(
         Type.Union([
           Type.Literal("_self"),
@@ -39,11 +42,8 @@ const BaseLinkMarkSchema = Type.Object(
           Type.Literal(""),
         ]),
       ),
-      // NOTE: The href given by tiptap here
-      // https://github.com/ueberdosis/tiptap/blob/main/packages/extension-link/src/link.ts
-      // defaults to `null` href
-      href: Type.Union([Type.String(), Type.Null()]),
     }),
+    type: Type.Literal("link", { default: "link" }),
   },
   {
     title: "Hyperlink",
@@ -91,7 +91,6 @@ const UnderlineMarkSchema = Type.Object(
 
 export const TextSchema = Type.Object(
   {
-    type: Type.Literal("text", { default: "text" }),
     marks: Type.Optional(
       Type.Array(
         Type.Union([
@@ -107,6 +106,7 @@ export const TextSchema = Type.Object(
       ),
     ),
     text: Type.String(),
+    type: Type.Literal("text", { default: "text" }),
   },
   {
     title: "Text content",

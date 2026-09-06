@@ -1,6 +1,23 @@
 import type { BreadcrumbProps } from "~/interfaces"
 import type { IsomerSitemap } from "~/types"
 
+const findChildByPermalink = (
+  children: IsomerSitemap[] | undefined,
+  permalink: string,
+): IsomerSitemap | undefined => {
+  if (children === undefined) {
+    return undefined
+  }
+
+  for (const child of children) {
+    if (child.permalink === permalink) {
+      return child
+    }
+  }
+
+  return undefined
+}
+
 // Traverse the sitemap to get the breadcrumb for the page with the given
 // permalink
 export const getBreadcrumbFromSiteMap = (
@@ -13,24 +30,22 @@ export const getBreadcrumbFromSiteMap = (
       url: "/",
     },
   ]
-  let node = sitemap
+  let currentNode = sitemap
   let currentPath = ""
 
   for (const pathSegment of permalink) {
-    currentPath += "/" + pathSegment
-    const nextNode = node.children?.find(
-      (node) => node.permalink === currentPath,
-    )
+    currentPath += `/${pathSegment}`
+    const childNode = findChildByPermalink(currentNode.children, currentPath)
 
-    if (!nextNode) {
-      // TODO: handle this unexpected case where cannot traverse to permalink in the sitemap
+    if (childNode === undefined) {
+      // Handle unexpected case where we cannot traverse to permalink in the sitemap
       break
     }
 
-    node = nextNode
+    currentNode = childNode
     breadcrumb.push({
-      title: node.title,
-      url: node.permalink,
+      title: currentNode.title,
+      url: currentNode.permalink,
     })
   }
 

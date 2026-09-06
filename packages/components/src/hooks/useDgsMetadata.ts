@@ -18,21 +18,23 @@ export const useDgsMetadata = ({
   const [metadata, setMetadata] = useState<FetchDgsMetadataOutput | undefined>()
 
   useEffect(() => {
-    if (!enabled) {
-      return
-    }
-
     const controller = new AbortController()
 
-    const fetchMetadata = async () => {
+    if (!enabled) {
+      return () => {
+        controller.abort()
+      }
+    }
+
+    const fetchMetadata = async (): Promise<void> => {
       setIsLoading(true)
       setMetadata(undefined)
       try {
-        const metadata = await fetchDgsMetadata({
+        const fetchedMetadata = await fetchDgsMetadata({
           resourceId,
           signal: controller.signal,
         })
-        setMetadata(metadata)
+        setMetadata(fetchedMetadata)
         setIsError(false)
         if (!controller.signal.aborted) {
           setIsLoading(false)
@@ -56,8 +58,8 @@ export const useDgsMetadata = ({
   }, [resourceId, enabled])
 
   return {
-    metadata,
-    isLoading,
     isError,
+    isLoading,
+    metadata,
   }
 }

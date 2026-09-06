@@ -10,7 +10,7 @@ export const getTransformedPageContent = (
   const usedHeadingIds = new Set<string>()
 
   return content.map((block, index) => {
-    if (block.type === "prose" && block.content) {
+    if (block.type === "prose" && block.content !== undefined) {
       return {
         ...block,
         content: block.content.map((component, componentIndex) => {
@@ -35,9 +35,9 @@ export const getTransformedPageContent = (
             }
 
             return { ...component, attrs: newAttrs }
-          } else {
-            return component
           }
+            return component
+          
         }),
       }
     } else if (
@@ -50,8 +50,8 @@ export const getTransformedPageContent = (
         ...block,
         id: getDigestFromText(`${JSON.stringify(block)}_${index}`),
       }
-    } else {
-      return block
     }
+      return block
+    
   })
 }

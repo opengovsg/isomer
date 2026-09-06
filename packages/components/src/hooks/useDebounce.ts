@@ -8,7 +8,7 @@ interface UseDebounceProps<T> {
 }
 
 // Simplified version to avoid adding a new dependency
-export function useDebounce<T>({ value, delay }: UseDebounceProps<T>): T {
+export const useDebounce = <T>({ value, delay }: UseDebounceProps<T>): T => {
   const [debouncedValue, setDebouncedValue] = useState(value)
 
   useEffect(() => {

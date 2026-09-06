@@ -12,14 +12,15 @@ export const fetchFileMetadata = async ({
 }: FetchFileMetadataProps): Promise<FetchFileMetadataOutput | null> => {
   let pathname: string | null = null
   try {
-    pathname = new URL(url).pathname
+    const { pathname: urlPathname } = new URL(url)
+    pathname = urlPathname
   } catch {
     if (url.startsWith("/")) {
       pathname = url
     }
   }
 
-  if (!pathname) {
+  if (pathname === null) {
     return null
   }
 
@@ -40,11 +41,12 @@ export const fetchFileMetadata = async ({
   // Fallback to extension from URL if format is missing or generic
   // `octet-stream` is a generic MIME type (`application/octet-stream`) used when server doesn't know the file's specific type.
   // It just means "binary data," so the code tries to get the file extension from the URL instead for a more useful format.
-  let format = response.headers
-    .get("content-type")
-    ?.split("/")[1] //
-    ?.split(";")[0] // Correctly remove MIME type parameters e.g. "text/plain; charset=utf-8" will correctly extract "plain" instead of "plain; charset=utf-8".
-  if (!format || format === "octet-stream") {
+  const contentType = response.headers.get("content-type")
+  const [, subtype] = contentType?.split("/") ?? []
+  const [formatFromHeader] = subtype?.split(";") ?? []
+  let format = formatFromHeader
+  // Correctly remove MIME type parameters e.g. "text/plain; charset=utf-8" will correctly extract "plain" instead of "plain; charset=utf-8".
+  if (format === undefined || format === "" || format === "octet-stream") {
     const pathnameParts = pathname.split(".")
     if (pathnameParts.length > 1) {
       format = pathnameParts.pop()?.toLowerCase()
@@ -54,10 +56,10 @@ export const fetchFileMetadata = async ({
   const contentLength = response.headers.get("content-length")
 
   // Parse content length safely, handling invalid values
-  let size
-  if (contentLength) {
-    const parsedLength = parseInt(contentLength, 10)
-    if (!isNaN(parsedLength) && parsedLength > 0) {
+  let size: number | undefined
+  if (contentLength !== null && contentLength !== "") {
+    const parsedLength = Math.trunc(Number(contentLength))
+    if (!Number.isNaN(parsedLength) && parsedLength > 0) {
       size = parsedLength
     }
   }

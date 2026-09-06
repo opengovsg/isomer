@@ -20,55 +20,48 @@ const HiddenOptionalString = Type.Optional(Type.String({ format: "hidden" }))
 // Nevertheless, keeping them here for reference
 export const VicaSchema = Type.Object(
   {
-    // UI Theme
-    "app-id": Type.String({
-      title: "VICA ID",
-      description:
-        "You can get this from [VICA Support](https://www.vica.gov.sg/contact-us/) after onboarding. If the widget doesn’t appear on your site, check that you have the correct ID.",
-    }),
-    "app-name": HiddenOptionalString,
-    "app-icon": HiddenOptionalString,
-    "app-subtitle": HiddenOptionalString, // configuration disabled (according to docs)
-    "app-welcome-message": HiddenOptionalString,
-    "app-font-family": HiddenOptionalString,
-    "app-base-font-size": HiddenOptionalString,
-    // General Color
-    "app-color": HiddenOptionalString,
-    "app-foreground-color1": HiddenOptionalString,
-    "app-background-color2": HiddenOptionalString,
-    "app-foreground-color2": HiddenOptionalString,
-    "app-canvas-background-color": HiddenOptionalString,
-    "app-button-border-color": HiddenOptionalString,
-    "app-quick-reply-button-background-color": HiddenOptionalString,
-    // Autocomplete
-    "app-enable-auto-complete": Type.Optional(BooleanStringOptions),
     "app-auto-complete-background-color": HiddenOptionalString,
+    "app-auto-complete-divider-color": HiddenOptionalString,
     "app-auto-complete-foreground-color": HiddenOptionalString,
     "app-auto-complete-hover-color": HiddenOptionalString,
-    "app-auto-complete-divider-color": HiddenOptionalString,
-    // Recommendations
-    "app-enable-recommendations": Type.Optional(BooleanStringOptions),
-    "app-recommendations-background-color": HiddenOptionalString,
-    "app-recommendations-foreground-color": HiddenOptionalString,
-    "app-recommendations-hover-color": HiddenOptionalString,
-    // UI Behaviours
-    "app-orchestrator-timeout": Type.Optional(
-      Type.Number({ format: "hidden" }),
-    ),
     "app-auto-launch": Type.Optional(BooleanStringOptions),
+    "app-background-color2": HiddenOptionalString,
+    "app-base-font-size": HiddenOptionalString,
+    "app-bot-response-trigger-event": HiddenOptionalString,
+    "app-button-border-color": HiddenOptionalString,
+    "app-canvas-background-color": HiddenOptionalString,
+    "app-color": HiddenOptionalString,
+    "app-disable-csat": Type.Optional(BooleanStringOptions),
+    "app-enable-auto-complete": Type.Optional(BooleanStringOptions),
+    "app-enable-hide-translation": Type.Optional(BooleanStringOptions),
+    "app-enable-recommendations": Type.Optional(BooleanStringOptions),
+    "app-environment-override": HiddenOptionalString,
+    "app-font-family": HiddenOptionalString,
+    "app-foreground-color1": HiddenOptionalString,
+    "app-foreground-color2": HiddenOptionalString,
+    "app-icon": HiddenOptionalString,
+    "app-id": Type.String({
+      description:
+        "You can get this from [VICA Support](https://www.vica.gov.sg/contact-us/) after onboarding. If the widget doesn’t appear on your site, check that you have the correct ID.",
+      title: "VICA ID",
+    }),
     "app-launched-animation-iteration": Type.Optional(
       Type.Number({ format: "hidden" }),
     ),
-    "app-disable-csat": Type.Optional(BooleanStringOptions),
-    // Chatbot Behaviours
+    "app-name": HiddenOptionalString,
+    "app-orchestrator-timeout": Type.Optional(
+      Type.Number({ format: "hidden" }),
+    ),
     "app-quick-launch-event": HiddenOptionalString,
     "app-quick-launch-event-force-trigger": Type.Optional(BooleanStringOptions),
-    "app-bot-response-trigger-event": HiddenOptionalString,
-    "app-environment-override": HiddenOptionalString,
+    "app-quick-reply-button-background-color": HiddenOptionalString,
+    "app-recommendations-background-color": HiddenOptionalString,
+    "app-recommendations-foreground-color": HiddenOptionalString,
+    "app-recommendations-hover-color": HiddenOptionalString,
+    "app-subtitle": HiddenOptionalString,
     "app-translation-languages": HiddenOptionalString,
-    "app-enable-hide-translation": Type.Optional(BooleanStringOptions),
-    // Dev Testing
-    // note: this is only enabled so that VICA's engineering team can test changes to the script
+    "app-welcome-message": HiddenOptionalString,
+    // NOTE: this is only enabled so that VICA's engineering team can test changes to the script
     // agency's users testing their draft bot should still use the production script
     // with "app-environment-override"=draft
     // Reference: https://opengovproducts.slack.com/archives/C087MUEJAMA/p1761820927407499?thread_ts=1761800290.229459&cid=C087MUEJAMA

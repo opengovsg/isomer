@@ -23,8 +23,8 @@ const PROSE_CONTENT_SCHEMA = Type.Array(
     Type.Ref(UnorderedListSchema),
   ]),
   {
-    title: "Content",
     minItems: 1,
+    title: "Content",
   },
 )
 
@@ -48,20 +48,37 @@ const generateProseSchema = ({
   format?: ComponentsWithProse
   isRequired?: boolean
 }) => {
+  const metadata = {
+    ...BASE_PROSE_META,
+    format,
+  }
+
+  if (id !== undefined && id !== "") {
+    return Type.Object(
+      {
+        content: isRequired
+          ? PROSE_CONTENT_SCHEMA
+          : Type.Optional(PROSE_CONTENT_SCHEMA),
+        type: Type.Literal("prose"),
+      },
+      {
+        $id: id,
+        ...metadata,
+      },
+    )
+  }
+
   return Type.Object(
     {
-      type: Type.Literal("prose"),
       content: isRequired
         ? PROSE_CONTENT_SCHEMA
         : Type.Optional(PROSE_CONTENT_SCHEMA),
+      type: Type.Literal("prose"),
     },
-    {
-      ...(id && { $id: id }),
-      ...BASE_PROSE_META,
-      format,
-    },
+    metadata,
   )
 }
+
 
 // NOTE: We need this for other parts of our codebase
 // that relies on json forms but is not part of components.
@@ -70,8 +87,8 @@ const generateProseSchema = ({
 // leading to errors
 export const SimpleProseSchema = Type.Object(
   {
-    type: Type.Literal("prose"),
     content: PROSE_CONTENT_VALUE_SCHEMA,
+    type: Type.Literal("prose"),
   },
   { format: "simple-prose" },
 )

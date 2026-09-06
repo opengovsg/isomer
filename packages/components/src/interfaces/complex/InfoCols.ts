@@ -5,9 +5,22 @@ import { SUPPORTED_ICON_NAMES } from "~/common/icons"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 
 const InfoBoxSchema = Type.Object({
-  title: Type.String({
-    title: "Title",
-  }),
+  buttonLabel: Type.Optional(
+    Type.String({
+      description:
+        "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
+      maxLength: 50,
+      title: "Link text",
+    }),
+  ),
+  buttonUrl: Type.Optional(
+    Type.String({
+      description: "When this is clicked, open:",
+      format: "link",
+      pattern: LINK_HREF_PATTERN,
+      title: "Link destination",
+    }),
+  ),
   description: Type.Optional(
     Type.String({
       title: "Description",
@@ -18,7 +31,7 @@ const InfoBoxSchema = Type.Object({
       SUPPORTED_ICON_NAMES.map((icon) =>
         Type.Literal(icon, {
           title:
-            icon.charAt(0).toUpperCase() + icon.slice(1).replace(/-/g, " "),
+            icon.charAt(0).toUpperCase() + icon.slice(1).replaceAll('-', " "),
         }),
       ),
       {
@@ -27,47 +40,34 @@ const InfoBoxSchema = Type.Object({
       },
     ),
   ),
-  buttonLabel: Type.Optional(
-    Type.String({
-      title: "Link text",
-      maxLength: 50,
-      description:
-        "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
-    }),
-  ),
-  buttonUrl: Type.Optional(
-    Type.String({
-      title: "Link destination",
-      description: "When this is clicked, open:",
-      format: "link",
-      pattern: LINK_HREF_PATTERN,
-    }),
-  ),
+  title: Type.String({
+    title: "Title",
+  }),
 })
 
 export const InfoColsSchema = Type.Object(
   {
-    type: Type.Literal("infocols", { default: "infocols" }),
     id: Type.Optional(
       Type.String({
-        title: "Anchor ID",
         description: "The ID to use for anchor links",
         format: "hidden",
+        title: "Anchor ID",
       }),
     ),
-    title: Type.String({
-      title: "Title",
+    infoBoxes: Type.Array(InfoBoxSchema, {
+      maxItems: 6,
+      minItems: 1,
+      title: "Content",
     }),
     subtitle: Type.Optional(
       Type.String({
         title: "Description",
       }),
     ),
-    infoBoxes: Type.Array(InfoBoxSchema, {
-      title: "Content",
-      minItems: 1,
-      maxItems: 6,
+    title: Type.String({
+      title: "Title",
     }),
+    type: Type.Literal("infocols", { default: "infocols" }),
   },
   {
     title: "Columns of text",
@@ -75,7 +75,8 @@ export const InfoColsSchema = Type.Object(
 )
 
 export type InfoColsProps = Static<typeof InfoColsSchema> & {
-  sectionIdx?: number // TODO: Remove this property, only used in classic theme
+  // NOTE: Remove this property, only used in classic theme
+  sectionIdx?: number
   layout: IsomerPageLayoutType
   site: IsomerSiteProps
   headingLevel: number

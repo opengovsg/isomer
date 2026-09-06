@@ -1,7 +1,7 @@
 import type { HardBreakProps } from "~/interfaces"
 import type { Marks, TextProps } from "~/interfaces/native/Text"
 import type { IsomerSiteProps } from "~/types"
-import DOMPurify from "isomorphic-dompurify"
+import { sanitize } from "isomorphic-dompurify"
 import { isEqual } from "lodash-es"
 
 import { getReferenceLinkHref } from "./getReferenceLinkHref"
@@ -27,65 +27,66 @@ interface GetTextAsHtmlArgs {
 }
 
 // We want to prevent user-injected HTML tags from breaking the formatting
-function stripHtmlTags(input: string): string {
-  return DOMPurify.sanitize(input, { ALLOWED_TAGS: [] })
-}
+const stripHtmlTags = (input: string): string =>
+  sanitize(input, { ALLOWED_TAGS: [] })
 
 // Converts the text node with marks into the appropriate HTML
+// oxlint-disable-next-line eslint/complexity -- link mark open/close state is intentionally handled in one pass
 export const getTextAsHtml = ({
   site,
   content,
   shouldHideEmptyHardBreak,
-  shouldStripContentHtmlTags = false, // needed for content from tiptap editor
+  // needed for content from tiptap editor
+  shouldStripContentHtmlTags = false,
 }: GetTextAsHtmlArgs) => {
-  if (!content) {
+  if (content === undefined) {
     // Note: We need to return a <br /> tag to ensure that the paragraph is not collapsed
-    return shouldHideEmptyHardBreak ? "" : "<br />"
+    return shouldHideEmptyHardBreak === true ? "" : "<br />"
   }
 
   const output: string[] = []
-  let previousNodeLinkMark: Marks | undefined = undefined
+  let previousNodeLinkMark: Marks | undefined
 
   // At every step, we will close off all marks except for links
   // First encounter with a link, always open it first before other marks
   // Close all other marks first before closing the link mark
-  content.forEach((node) => {
+  for (const node of content) {
     if (node.type === "hardBreak") {
       // Close off the existing link mark if it exists
-      if (previousNodeLinkMark) {
+      if (previousNodeLinkMark !== undefined) {
         output.push(`</${MARK_DOM_MAPPING.link}>`)
         previousNodeLinkMark = undefined
       }
 
       output.push("<br />")
-      return
+      continue
     }
 
     const currentNodeLinkMark = node.marks?.find((mark) => mark.type === "link")
     const isLinkMarkNew =
-      (!previousNodeLinkMark && !!currentNodeLinkMark) ||
-      (!!previousNodeLinkMark && !currentNodeLinkMark) ||
+      (previousNodeLinkMark === undefined && currentNodeLinkMark !== undefined) ||
+      (previousNodeLinkMark !== undefined && currentNodeLinkMark === undefined) ||
       !isEqual(previousNodeLinkMark, currentNodeLinkMark)
 
     // Close off the existing link mark if it is different
-    if (isLinkMarkNew && !!previousNodeLinkMark) {
+    if (isLinkMarkNew && previousNodeLinkMark !== undefined) {
       output.push(`</${MARK_DOM_MAPPING.link}>`)
       previousNodeLinkMark = undefined
     }
 
     // If there are no marks, just push the text
-    if (!node.marks) {
+    if (node.marks === undefined) {
       output.push(
         shouldStripContentHtmlTags ? stripHtmlTags(node.text) : node.text,
       )
-      return
+      continue
     }
 
     if (isLinkMarkNew) {
       previousNodeLinkMark = currentNodeLinkMark
 
       // Sort such that the link mark is the first item
-      node.marks.sort((a, b) => {
+      node.marks.sort((a, _b) => {
         if (a.type === "link") {
           return -1
         }
@@ -93,15 +94,20 @@ export const getTextAsHtml = ({
         return 1
       })
 
-      node.marks.forEach((mark) => {
+      for (const mark of node.marks) {
         if (mark.type === "link") {
+          const { attrs } = mark
+          const target =
+            attrs.target !== undefined && attrs.target !== ""
+              ? attrs.target
+              : "_self"
           output.push(
-            `<${MARK_DOM_MAPPING.link} target="${mark.attrs.target || "_self"}" href="${getReferenceLinkHref(mark.attrs.href ?? "", site.siteMapArray, site.assetsBaseUrl)}">`,
+            `<${MARK_DOM_MAPPING.link} target="${target}" href="${getReferenceLinkHref(attrs.href ?? "", site.siteMapArray, site.assetsBaseUrl)}">`,
           )
         } else {
           output.push(`<${MARK_DOM_MAPPING[mark.type]}>`)
         }
-      })
+      }
     } else {
       // Continue with the rest of the marks
       for (const mark of node.marks) {
@@ -118,20 +124,19 @@ export const getTextAsHtml = ({
 
     // Close off all marks except for links in reverse order
     const marksToClose = node.marks.filter((mark) => mark.type !== "link")
-    while (marksToClose.length) {
+    while (marksToClose.length > 0) {
       const mark = marksToClose.pop()
 
-      if (!mark) {
+      if (mark === undefined) {
         break
       }
 
       output.push(`</${MARK_DOM_MAPPING[mark.type]}>`)
     }
-  })
+  }
 
   // Close off the last link mark if it exists
-  // oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (previousNodeLinkMark) {
+  if (previousNodeLinkMark !== undefined) {
     output.push(`</${MARK_DOM_MAPPING.link}>`)
   }
 

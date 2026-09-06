@@ -8,21 +8,21 @@ import { TextSchema } from "../native/Text"
 
 export const NotificationSchema = Type.Object(
   {
-    title: Type.String({
-      title: "Notification title",
-      maxLength: 150,
-    }),
     content: Type.Optional(
       Type.Union([Type.Array(TextSchema), SimpleProseSchema], {
         format: "simple-prose",
         maxLength: 300,
       }),
     ),
+    title: Type.String({
+      maxLength: 150,
+      title: "Notification title",
+    }),
   },
   {
-    title: "Display a banner",
     description:
       "The site notification will always be visible on the site until it is dismissed by the user.",
+    title: "Display a banner",
   },
 )
 

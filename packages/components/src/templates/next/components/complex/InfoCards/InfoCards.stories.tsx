@@ -102,19 +102,19 @@ const generateArgs = ({
   const withoutImage = variant === "cardsWithoutImages"
 
   if (withoutImage) {
-    cards.forEach((card) => {
+    for (const card of cards) {
       // SAFETY: Story args omit image fields for cardsWithoutImages variant
       delete (card as { imageAlt?: string; imageUrl?: string }).imageAlt
       // SAFETY: Story args omit image fields for cardsWithoutImages variant
       delete (card as { imageAlt?: string; imageUrl?: string }).imageUrl
-    })
+    }
   }
 
   if (!isImageFitContain) {
-    cards.forEach((card) => {
+    for (const card of cards) {
       // SAFETY: Story args omit imageFit unless testing contain fit
       delete (card as { imageFit?: string }).imageFit
-    })
+    }
   }
 
   const baseArgs = {
