@@ -61,7 +61,6 @@ export const WithoutDeleteButton: Story = {
 }
 
 export const WithoutNotificationNumber: Story = {
-  name: "Without Notification Number",
   args: {
     data: {
       title: "Another Published Gazette",

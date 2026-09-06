@@ -21,6 +21,15 @@ const meta: Meta<InfoCardsProps> = {
 export default meta
 type Story = StoryObj<typeof InfoCards>
 
+interface StoryInfoCard {
+  title: string
+  description?: string
+  imageUrl?: string
+  imageAlt?: string
+  imageFit?: string
+  url?: string
+}
+
 const generateArgs = ({
   layout = "content",
   maxColumns,
@@ -36,7 +45,7 @@ const generateArgs = ({
   variant?: InfoCardsProps["variant"]
   numCards?: number
 }): InfoCardsProps => {
-  const cards = [
+  const cards: StoryInfoCard[] = [
     {
       title:
         "Testing for a card with a long line length that spans across two lines or more",
@@ -92,26 +101,22 @@ const generateArgs = ({
   ]
 
   const cardsLength = cards.length
-  const remainder = numCards % cardsLength
-  const quotient = Math.floor(numCards / cardsLength)
-
-  const quotientCards = Array(quotient).fill(cards).flat()
-  const remainderCards = cards.slice(0, remainder)
-  const allCards = [...quotientCards, ...remainderCards]
+  const allCards = Array.from({ length: numCards }, (_, index) => ({
+    ...cards[index % cardsLength],
+  }))
 
   const withoutImage = variant === "cardsWithoutImages"
 
   if (withoutImage) {
-    cards.forEach((card) => {
-      delete (card as any).imageAlt
-      delete (card as any).imageUrl
-    })
-  }
-
-  if (!isImageFitContain) {
-    cards.forEach((card) => {
-      delete (card as any).imageFit
-    })
+    for (const card of allCards) {
+      delete card.imageAlt
+      delete card.imageUrl
+      delete card.imageFit
+    }
+  } else if (!isImageFitContain) {
+    for (const card of allCards) {
+      delete card.imageFit
+    }
   }
 
   return {
@@ -174,7 +179,6 @@ export const WithLink: Story = {
 }
 
 export const HomepageFullImage: Story = {
-  name: "Homepage Full Image",
   args: generateArgs({
     maxColumns: "3",
     variant: "cardsWithFullImages",

@@ -923,7 +923,6 @@ export const NoSearchResults: Story = {
 }
 
 export const DGSSearchableTable: Story = {
-  name: "DGS Searchable Table",
   args: generateArgs({
     database: {
       title: "Sample DGS Table",
