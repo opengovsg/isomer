@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-// TODO: This package duplicates the NEXT_PUBLIC_APP_ENV / NEXT_PUBLIC_APP_VERSION
+// NOTE: This package duplicates the NEXT_PUBLIC_APP_ENV / NEXT_PUBLIC_APP_VERSION
 // validation that already lives in apps/studio/src/env.mjs and quietly couples
 // this "shared" package to Next.js conventions:
 //   - A non-Next.js consumer (standalone worker, CLI) wont set NEXT_PUBLIC_*
@@ -26,7 +26,7 @@ const schema = z.object({
 })
 
 const skipValidation =
-  !!process.env.SKIP_ENV_VALIDATION ||
+  process.env.SKIP_ENV_VALIDATION === "true" ||
   process.env.npm_lifecycle_event === "lint"
 
 export const env = skipValidation

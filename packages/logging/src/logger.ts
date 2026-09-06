@@ -4,16 +4,16 @@ import pino from "pino"
 import pinoPretty from "pino-pretty"
 
 // use syslog protocol levels as per https://datatracker.ietf.org/doc/html/rfc5424#page-10
-const levels: Record<string, number> = {
-  emerg: 80,
+const levels = {
   alert: 70,
   crit: 60,
-  error: 50,
-  warn: 40,
-  notice: 30,
-  info: 20,
   debug: 10,
-}
+  emerg: 80,
+  error: 50,
+  info: 20,
+  notice: 30,
+  warn: 40,
+} satisfies Record<string, number>
 
 interface LoggerOptions {
   nodeEnv: string
@@ -23,69 +23,68 @@ interface LoggerOptions {
   traceId?: string
 }
 
-class PinoLogger {
-  private static instance?: pino.Logger<string>
-  // TODO: the singleton-with-args shape here is a footgun — `nodeEnv` and
-  // `appEnvLabel` are only honoured on the first call and silently ignored
-  // afterwards. Split into a one-shot `initRootLogger({ nodeEnv, appEnvLabel })`
-  // plus a `createChildLogger(bindings)` (or throw on conflicting args) in a
-  // follow-up. This PR focuses on pure porting rather than refactoring.
-  private static getInstance(nodeEnv: string, appEnvLabel: string) {
-    PinoLogger.instance ??= PinoLogger.createBaseLogger(nodeEnv, appEnvLabel)
-    return PinoLogger.instance
-  }
-  private static createBaseLogger = (
-    nodeEnv: string,
-    appEnvLabel: string,
-  ): Logger<string> => {
-    let transport: DestinationStream
-    if (nodeEnv === "development" || nodeEnv === "test") {
-      transport = pinoPretty({
-        colorize: true,
-        hideObject: true,
-      })
-    } else {
-      transport = pino.destination(1)
-    }
-    return pino(
-      {
-        // oxlint-disable-next-line node/no-process-env
-        level: process.env.PINO_LOG_LEVEL || "info",
-        customLevels: levels,
-        useOnlyCustomLevels: true,
-        timestamp: () => `,"timestamp":"${new Date(Date.now()).toISOString()}"`,
-        formatters: {
-          bindings: () => {
-            return {
-              env: appEnvLabel,
-            }
-          },
-          level: (label) => {
-            return { level: label.toUpperCase() }
-          },
-        },
+let rootLogger: pino.Logger<string> | undefined
+
+// NOTE: the singleton-with-args shape here is a footgun — `nodeEnv` and
+// `appEnvLabel` are only honoured on the first call and silently ignored
+// afterwards. Split into a one-shot `initRootLogger({ nodeEnv, appEnvLabel })`
+// plus a `createChildLogger(bindings)` (or throw on conflicting args) in a
+// follow-up. This change focuses on pure porting rather than refactoring.
+const createRootLogger = (
+  nodeEnv: string,
+  appEnvLabel: string,
+): Logger<string> => {
+  const transport: DestinationStream =
+    nodeEnv === "development" || nodeEnv === "test"
+      ? pinoPretty({
+          colorize: true,
+          hideObject: true,
+        })
+      : pino.destination(1)
+
+  const configuredLevel = process.env.PINO_LOG_LEVEL
+  return pino(
+    {
+      // oxlint-disable-next-line node/no-process-env
+      customLevels: levels,
+      formatters: {
+        bindings: () => ({
+          env: appEnvLabel,
+        }),
+        level: (label) => ({
+          level: label.toUpperCase(),
+        }),
       },
-      transport,
-    )
-  }
-  /*
-  The logger we use inherits the bindings and transport from the parent singleton instance
-  Use child loggers to avoid creating a new instance for every trpc call
-  */
-  public static logger = ({
-    nodeEnv,
-    appEnvLabel,
-    path,
-    clientIp,
-    traceId,
-  }: LoggerOptions) => {
-    return PinoLogger.getInstance(nodeEnv, appEnvLabel).child({
-      path,
-      clientIp,
-      id: nanoid<string>(),
-      trace_id: traceId,
-    })
-  }
+      level:
+        configuredLevel !== undefined && configuredLevel.length > 0
+          ? configuredLevel
+          : "info",
+      timestamp: () => `,"timestamp":"${new Date(Date.now()).toISOString()}"`,
+      useOnlyCustomLevels: true,
+    },
+    transport,
+  )
 }
 
-export const createBaseLogger = PinoLogger.logger
+const getRootLogger = (nodeEnv: string, appEnvLabel: string) => {
+  rootLogger ??= createRootLogger(nodeEnv, appEnvLabel)
+  return rootLogger
+}
+
+/*
+The logger we use inherits the bindings and transport from the parent singleton instance
+Use child loggers to avoid creating a new instance for every trpc call
+*/
+export const createBaseLogger = ({
+  nodeEnv,
+  appEnvLabel,
+  path,
+  clientIp,
+  traceId,
+}: LoggerOptions) =>
+  getRootLogger(nodeEnv, appEnvLabel).child({
+    clientIp,
+    id: nanoid<string>(),
+    path,
+    trace_id: traceId,
+  })
