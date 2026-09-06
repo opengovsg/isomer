@@ -1,6 +1,6 @@
 import { Accordion, AccordionItem, AccordionPanel } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { getResourceSubpath } from "~/utils/resource"
 import { getIcon } from "~/utils/resources"
 import { trpc } from "~/utils/trpc"
@@ -67,16 +67,12 @@ export const DirectorySidebarContent = ({
   const hasChildren = data?.pages.some(({ items }) => items.length > 0)
 
   // Expand on sidebar (if visible) when resource is active
-  useEffect(() => {
-    if (isActive) {
-      setExpandedIndex(0)
-    }
-  }, [isActive])
+  const accordionIndex = isActive ? 0 : expandedIndex
 
   if (isExpandable) {
     return (
       <Accordion
-        index={expandedIndex}
+        index={accordionIndex}
         onChange={(expandedIndex) => setExpandedIndex(expandedIndex as number)}
         allowToggle
       >

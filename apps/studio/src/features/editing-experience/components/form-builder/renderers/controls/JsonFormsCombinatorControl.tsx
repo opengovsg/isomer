@@ -14,7 +14,7 @@ import {
 } from "@jsonforms/react"
 import { FormLabel, Radio, SingleSelect } from "@opengovsg/design-system-react"
 import { ARRAY_RADIO_FORMAT } from "@opengovsg/isomer-components"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 export const jsonFormsOneOfControlTester: RankedTester = rankWith(
@@ -46,7 +46,6 @@ const JsonFormsCombinatorControl = ({
   data,
   combinatorType,
 }: JsonFormsCombinatorControlProps) => {
-  const [variant, setVariant] = useState("")
   const combinatorSchemas = schema[combinatorType] ?? []
   const renderInfos = createCombinatorRenderInfos(
     combinatorSchemas,
@@ -72,6 +71,18 @@ const JsonFormsCombinatorControl = ({
     })
     .filter((option) => option !== null)
 
+  const [variant, setVariant] = useState(() => {
+    if (options.length === 0) {
+      return ""
+    }
+
+    if (indexOfFittingSchema >= 0 && options[indexOfFittingSchema]) {
+      return options[indexOfFittingSchema].label
+    }
+
+    return options[0]?.label ?? ""
+  })
+
   const onChange = (value: string) => {
     setVariant(value)
 
@@ -93,24 +104,6 @@ const JsonFormsCombinatorControl = ({
       }
     }
   }
-
-  useEffect(() => {
-    // Do nothing if there are no options
-    if (options.length === 0) {
-      return
-    }
-
-    if (indexOfFittingSchema >= 0 && options[indexOfFittingSchema]) {
-      setVariant(options[indexOfFittingSchema].label)
-      return
-    }
-
-    // Fallback to first option
-    if (options[0]) {
-      setVariant(options[0].label)
-    }
-    // oxlint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   return (
     <>

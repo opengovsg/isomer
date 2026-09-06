@@ -59,11 +59,13 @@ const jotaiWrapper = (store: ReturnType<typeof createStore>) => {
   return Wrapper
 }
 
-let drawerContext: ReturnType<typeof useEditorDrawerContext>
+const drawerContextRef.current!Ref: {
+  current: ReturnType<typeof useEditorDrawerContext> | null
+} = { current: null }
 
 const TrackerHarness = () => {
   useContentEditTracker()
-  drawerContext = useEditorDrawerContext()
+  drawerContextRef.current!Ref.current = useEditorDrawerContext()
   return null
 }
 
@@ -167,7 +169,7 @@ describe("useContentEditTracker", () => {
     // setPreviewPageState uses flushSync internally, so state changes must be
     // wrapped in act() to flush the resulting effects deterministically
     act(() =>
-      drawerContext.setPreviewPageState((previous) => ({
+      drawerContextRef.current!.setPreviewPageState((previous) => ({
         ...previous,
         content: [...previous.content, { type: "prose", content: [] }],
       })),
@@ -184,7 +186,7 @@ describe("useContentEditTracker", () => {
 
     // Act
     act(() =>
-      drawerContext.setPreviewPageState((previous) => ({
+      drawerContextRef.current!.setPreviewPageState((previous) => ({
         ...previous,
         content: [...previous.content],
       })),
@@ -198,11 +200,11 @@ describe("useContentEditTracker", () => {
     // Arrange
     const store = createStore()
     renderTracker(store)
-    act(() => drawerContext.setDrawerState({ state: "rawJsonEditor" }))
+    act(() => drawerContextRef.current!.setDrawerState({ state: "rawJsonEditor" }))
 
     // Act
     act(() =>
-      drawerContext.setPreviewPageState((previous) => ({
+      drawerContextRef.current!.setPreviewPageState((previous) => ({
         ...previous,
         content: [...previous.content, { type: "prose", content: [] }],
       })),
@@ -214,7 +216,7 @@ describe("useContentEditTracker", () => {
     // Act: leaving raw JSON mode must not retroactively arm the flag
     // (docs/adr/0003-editing-survey-measuring-points.md) — pins that the
     // baseline ref is advanced before the rawJsonEditor guard
-    act(() => drawerContext.setDrawerState({ state: "root" }))
+    act(() => drawerContextRef.current!.setDrawerState({ state: "root" }))
 
     // Assert
     expect(store.get(hasContentEditAtom)).toBe(false)
@@ -230,7 +232,7 @@ describe("useContentEditTracker", () => {
 
     // Act: first burst — diverge content, then fire
     act(() =>
-      drawerContext.setPreviewPageState((previous) => ({
+      drawerContextRef.current!.setPreviewPageState((previous) => ({
         ...previous,
         content: [...previous.content, { type: "prose", content: [] }],
       })),
@@ -243,7 +245,7 @@ describe("useContentEditTracker", () => {
 
     // Act: second burst — a fresh divergence
     act(() =>
-      drawerContext.setPreviewPageState((previous) => ({
+      drawerContextRef.current!.setPreviewPageState((previous) => ({
         ...previous,
         content: [...previous.content, { type: "prose", content: [] }],
       })),

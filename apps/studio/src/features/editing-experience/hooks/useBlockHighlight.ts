@@ -30,17 +30,16 @@ export const useBlockHighlight = ({
   content,
 }: UseBlockHighlightParams): UseBlockHighlightReturn => {
   const [rect, setRect] = useState<HighlightRect | null>(null)
+  const shouldTrack = hoveredBlockIndex !== null && iframeDocument !== null
 
   useEffect(() => {
-    if (hoveredBlockIndex === null || !iframeDocument) {
-      setRect(null)
+    if (!shouldTrack || hoveredBlockIndex === null || !iframeDocument) {
       return
     }
 
     const blockEl = getBlockElement(iframeDocument, content, hoveredBlockIndex)
 
     if (!blockEl) {
-      setRect(null)
       return
     }
 
@@ -69,7 +68,7 @@ export const useBlockHighlight = ({
     return () => {
       resizeObserver.disconnect()
     }
-  }, [hoveredBlockIndex, iframeDocument, content])
+  }, [shouldTrack, hoveredBlockIndex, iframeDocument, content])
 
   const block =
     hoveredBlockIndex !== null ? content[hoveredBlockIndex] : undefined
@@ -80,5 +79,5 @@ export const useBlockHighlight = ({
       : (getComponentSchema({ component: block.type }).title ?? "Unknown")
     : undefined
 
-  return { rect, label }
+  return { rect: shouldTrack ? rect : null, label }
 }

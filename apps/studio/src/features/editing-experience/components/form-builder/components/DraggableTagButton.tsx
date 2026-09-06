@@ -36,7 +36,7 @@ interface RootProps {
   children: ReactNode
 }
 
-const Root = forwardRef<RootProps, "div">(function (
+const Root = forwardRef<RootProps, "div">(function DraggableTagButtonRoot(
   { draggableProps, isError, isDragDisabled = false, children },
   ref,
 ) {
@@ -253,10 +253,6 @@ const EditableLabel = ({
 }: EditableLabelProps) => {
   const { isDragDisabled } = useDraggableTagButton()
   const [draft, setDraft] = useState(value)
-
-  useEffect(() => {
-    if (!isEditing) setDraft(value)
-  }, [isEditing, value])
 
   const isDirty = draft !== value
 

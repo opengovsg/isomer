@@ -22,7 +22,7 @@ interface LayoutTileProps extends UseRadioProps {
 }
 
 const LayoutOptionRadio = forwardRef<HTMLInputElement, LayoutTileProps>(
-  function (props, ref) {
+  function LayoutOptionRadio(props, ref) {
     const [isHover, setIsHover] = useState(false)
 
     const hoverTileColorFullOpacity = useToken(
@@ -34,7 +34,7 @@ const LayoutOptionRadio = forwardRef<HTMLInputElement, LayoutTileProps>(
 
     const { getInputProps, getRadioProps } = useRadio(props)
     const { value } = props
-    const input = getInputProps(undefined, ref)
+    const input = getInputProps()
     const checkbox = getRadioProps()
 
     const { title, description, imageSrc, altText } = LAYOUT_RENDER_DATA[value]
@@ -43,7 +43,7 @@ const LayoutOptionRadio = forwardRef<HTMLInputElement, LayoutTileProps>(
 
     return (
       <Box as="label">
-        <input {...input} />
+        <input {...input} ref={ref} />
         <VStack
           gap="1.25rem"
           align="start"
@@ -141,7 +141,7 @@ type LayoutOptionsInputProps = UseRadioGroupProps
 export const LayoutOptionsInput = forwardRef<
   HTMLInputElement,
   LayoutOptionsInputProps
->(function (props, ref) {
+>(function LayoutOptionsInput(props, ref) {
   const { getRootProps, getRadioProps } = useRadioGroup(props)
 
   const group = getRootProps()

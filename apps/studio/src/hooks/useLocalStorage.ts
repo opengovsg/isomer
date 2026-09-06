@@ -24,7 +24,9 @@ export const useLocalStorage = <T>(
   }, [initialValue, key])
   // State to store our value
   // Pass initial state function to useState so logic is only executed once
-  const [storedValue, setStoredValue] = useState(readValue)
+  const [storedValue, setStoredValue] = useState<T | undefined>(() =>
+    readValue(),
+  )
   // Return a wrapped version of useState's setter function that ...
   // ... persists the new value to localStorage.
   const setValue = (value: SetStateAction<T | undefined>) => {
@@ -46,9 +48,6 @@ export const useLocalStorage = <T>(
       // TODO (#2640) Pass in some sort of logger here.
     }
   }
-  useEffect(() => {
-    setStoredValue(readValue())
-  }, [readValue])
   useEffect(() => {
     const handleStorageChange = () => {
       setStoredValue(readValue())

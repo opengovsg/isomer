@@ -12,11 +12,11 @@ export const jsonFormsUuidControlTester: RankedTester = rankWith(
 const JsonFormsUuidControl = ({ data, handleChange, path }: ControlProps) => {
   const uuid = useMemo(
     () => (typeof data === "string" ? data : crypto.randomUUID()),
-    [path],
+    [data],
   )
   useEffect(() => {
     handleChange(path, uuid)
-  }, [])
+  }, [handleChange, path, uuid])
 
   return (
     // NOTE: hide this because we want our rangers

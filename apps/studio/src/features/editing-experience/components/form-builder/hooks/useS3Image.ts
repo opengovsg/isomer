@@ -15,7 +15,6 @@ export const useS3Image = (imagePath: string) => {
 
   useEffect(() => {
     if (!imagePath) {
-      setImage(undefined)
       return
     }
     getImageAsFile(`${ASSETS_BASE_URL}${imagePath}`)
@@ -26,6 +25,6 @@ export const useS3Image = (imagePath: string) => {
   }, [imagePath])
 
   return {
-    image,
+    image: imagePath ? image : undefined,
   }
 }

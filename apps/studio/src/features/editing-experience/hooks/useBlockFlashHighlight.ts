@@ -20,17 +20,18 @@ export const useBlockFlashHighlight = ({
   flashBlockIndex,
   onFlashEnd,
 }: UseBlockFlashHighlightParams): UseBlockFlashHighlightReturn => {
-  const [isFading, setIsFading] = useState(false)
+  const [fadeState, setFadeState] = useState<{
+    blockIndex: number | null
+    isFading: boolean
+  }>({ blockIndex: null, isFading: false })
 
   useEffect(() => {
     if (flashBlockIndex === null) {
-      setIsFading(false)
       return
     }
 
-    setIsFading(false)
     const fadeTimeout = setTimeout(
-      () => setIsFading(true),
+      () => setFadeState({ blockIndex: flashBlockIndex, isFading: true }),
       FLASH_HOLD_DURATION_MS,
     )
     const endTimeout = setTimeout(
@@ -42,8 +43,12 @@ export const useBlockFlashHighlight = ({
       clearTimeout(fadeTimeout)
       clearTimeout(endTimeout)
     }
-    // oxlint-disable-next-line react-hooks/exhaustive-deps
-  }, [flashBlockIndex])
+  }, [flashBlockIndex, onFlashEnd])
 
-  return { isFading }
+  return {
+    isFading:
+      flashBlockIndex !== null &&
+      fadeState.blockIndex === flashBlockIndex &&
+      fadeState.isFading,
+  }
 }

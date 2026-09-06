@@ -60,12 +60,13 @@ export const TableSettingsModal = ({
   const caption = watch("caption")
 
   useEffect(() => {
-    // set default values here instead
+    if (!isOpen) {
+      return
+    }
+
     const { caption } = editor.getAttributes("table")
     setValue("caption", String(caption || ""))
-    // only done once per every time the modal is opened
-    // oxlint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen])
+  }, [editor, isOpen, setValue])
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>

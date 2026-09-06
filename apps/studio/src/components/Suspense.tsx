@@ -1,25 +1,17 @@
 import type { ComponentProps } from "react"
 import { useRouter } from "next/router"
-import { Suspense as ReactSuspense, useEffect, useState } from "react"
+import { Suspense as ReactSuspense } from "react"
 
 const Suspense = (props: ComponentProps<typeof ReactSuspense>) => {
-  // Tracking mounted state is needed so we only attempt to render and fire the queries within the suspense wrapper on mount instead
-  // Not doing this will cause an error that the router instance has not been instantiated, and also will call trpc routes uninstantiated context
-  const [isMounted, setIsMounted] = useState(false)
   const router = useRouter()
 
-  useEffect(() => {
-    // isReady conditional is needed so that suspenseQueries do not fire twice.
-    // Without this, the child component will fire a query with an `undefined` query param followed by the actual query with param defined
-    if (router.isReady) {
-      setIsMounted(true)
-    }
-  }, [router.isReady])
-
-  if (isMounted) {
-    return <ReactSuspense {...props} />
+  // Wait until the router is ready so suspense queries do not fire twice with
+  // undefined params before the actual route values are available.
+  if (!router.isReady) {
+    return props.fallback
   }
-  return props.fallback
+
+  return <ReactSuspense {...props} />
 }
 
 export default Suspense

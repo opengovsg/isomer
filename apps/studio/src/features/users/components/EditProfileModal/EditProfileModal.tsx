@@ -18,7 +18,7 @@ import {
   useToast,
 } from "@opengovsg/design-system-react"
 import { useAtomValue, useSetAtom } from "jotai"
-import { useCallback, useEffect } from "react"
+import { useEffect } from "react"
 import { Controller } from "react-hook-form"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useMe } from "~/features/me/api"
@@ -88,10 +88,10 @@ export const EditProfileModal = () => {
     })
   }, [me, reset])
 
-  const handleClose = useCallback(() => {
+  const handleClose = () => {
     reset()
     setIsOpen(false)
-  }, [reset, setIsOpen])
+  }
 
   const onSubmit = handleSubmit((data) => {
     updateDetails(

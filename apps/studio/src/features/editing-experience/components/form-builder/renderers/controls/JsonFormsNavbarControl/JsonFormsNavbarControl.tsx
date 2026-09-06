@@ -152,7 +152,7 @@ const JsonFormsNavbarControl = ({
         getIsSticky: () => true,
       }),
     )
-  }, [arraySchema.maxItems, data, droppableZoneElement, handleMove])
+  }, [arraySchema.maxItems, droppableZoneElement, handleMove])
 
   if (selectedPath !== undefined) {
     return (
@@ -272,6 +272,7 @@ const JsonFormsNavbarControl = ({
 
                   return (
                     <StackableNavbarItem
+                      key={index}
                       index={index}
                       name={childItem.name}
                       errors={arrayErrors}

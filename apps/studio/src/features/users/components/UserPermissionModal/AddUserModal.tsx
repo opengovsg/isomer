@@ -153,7 +153,6 @@ export const AddUserModal = () => {
     isNonGovEmailInput,
     errors.email,
     checkWhitelist,
-    setAddUserModalState,
   ])
 
   const handleOnClose = useCallback(() => {

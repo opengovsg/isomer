@@ -105,7 +105,7 @@ const JsonFormsProseControl = ({
       editor.commands.setContent(data, { emitUpdate: false })
       editor.commands.setTextSelection(selection)
     }
-  }, [data])
+  }, [data, editor])
 
   return (
     <Box>

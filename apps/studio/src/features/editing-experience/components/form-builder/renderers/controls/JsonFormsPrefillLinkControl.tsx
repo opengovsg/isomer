@@ -13,7 +13,7 @@ import {
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { Button, useToast } from "@opengovsg/design-system-react"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 
@@ -92,12 +92,12 @@ const JsonFormsPrefillLinkControl = ({
     onClose: onPrefillModalClose,
     onOpen: onPrefillModalOpen,
   } = useDisclosure()
-  const overrideFields = () => {
+  const overrideFields = useCallback(() => {
     if (!prefill?.data) return
-    const data = prefill.data as Record<string, string | undefined>
+    const prefillData = prefill.data as Record<string, string | undefined>
     AUTOPOPULATED_FIELDS.forEach((field) => {
       const prefillField = prefillFieldMappings[field]
-      const value = data[prefillField]
+      const value = prefillData[prefillField]
       if (value) handleChange(`${prefill.basePath}.${field}`, value)
     })
     toast({
@@ -106,22 +106,31 @@ const JsonFormsPrefillLinkControl = ({
       ...BRIEF_TOAST_SETTINGS,
     })
     setCanPrefill(false)
-  }
+  }, [handleChange, prefill, toast])
 
   useEffect(() => {
     if (!prefill?.data) return
     if (!canPrefill) return
+    if (!data) return
 
-    if (!prefill.needsConfirmation && data) {
-      overrideFields()
-      return
-    }
+    const timeoutId = setTimeout(() => {
+      if (!prefill.needsConfirmation) {
+        overrideFields()
+        return
+      }
 
-    if (prefill.needsConfirmation && data) {
       onPrefillModalOpen()
-      return
-    }
-  }, [data, prefill?.data, onPrefillModalOpen, canPrefill])
+    }, 0)
+
+    return () => clearTimeout(timeoutId)
+  }, [
+    canPrefill,
+    data,
+    onPrefillModalOpen,
+    overrideFields,
+    prefill?.data,
+    prefill?.needsConfirmation,
+  ])
 
   return (
     <>

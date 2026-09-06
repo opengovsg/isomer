@@ -39,12 +39,12 @@ export const useAssetUpload = ({
         }
         return src
       }, getAssetUploadBackoffOptions({ numOfAttempts, baseTimeoutMs }))
+      setIsLoading(false)
       return src
     } catch (e) {
+      setIsLoading(false)
       console.error(e)
       throw e
-    } finally {
-      setIsLoading(false)
     }
   }
 

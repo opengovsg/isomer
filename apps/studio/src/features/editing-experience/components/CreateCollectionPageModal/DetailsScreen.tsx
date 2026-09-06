@@ -80,7 +80,7 @@ export const CreateCollectionPageDetailsScreen = () => {
         },
       )
     }
-  }, [getFieldState, setValue, title])
+  }, [getFieldState, setValue, title, type])
 
   return (
     <>
