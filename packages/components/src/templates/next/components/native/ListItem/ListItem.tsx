@@ -1,4 +1,5 @@
 import type { ListItemProps } from "~/interfaces"
+import { getProseContentKey } from "~/utils/getProseContentKey"
 
 import { OrderedList } from "../OrderedList"
 import { Paragraph } from "../Paragraph"
@@ -7,13 +8,15 @@ import { UnorderedList } from "../UnorderedList"
 export const ListItem = ({ content, level, site }: ListItemProps) => {
   return (
     <li className="my-3 pl-2 [&_>_p]:inline">
-      {content.map((item, index) => {
+      {content.map((item) => {
         if (item.type === "paragraph") {
-          return <Paragraph key={index} {...item} site={site} />
+          return (
+            <Paragraph key={getProseContentKey(item)} {...item} site={site} />
+          )
         } else if (item.type === "orderedList") {
           return (
             <OrderedList
-              key={index}
+              key={getProseContentKey(item)}
               {...item}
               level={!!level ? level + 1 : 1}
               site={site}
@@ -22,7 +25,7 @@ export const ListItem = ({ content, level, site }: ListItemProps) => {
         } else if (item.type === "unorderedList") {
           return (
             <UnorderedList
-              key={index}
+              key={getProseContentKey(item)}
               {...item}
               level={!!level ? level + 1 : 1}
               site={site}

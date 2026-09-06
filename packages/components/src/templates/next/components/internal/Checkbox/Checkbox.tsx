@@ -21,7 +21,7 @@ import { usePress } from "@react-aria/interactions"
 import { mergeProps } from "@react-aria/utils"
 import { useCheckboxGroupState } from "@react-stately/checkbox"
 import { useToggleState } from "@react-stately/toggle"
-import { createContext, useContext, useMemo, useRef } from "react"
+import { createContext, useContext, useRef } from "react"
 import { BiCheck, BiMinus } from "react-icons/bi"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
@@ -63,16 +63,14 @@ export const CheckboxGroup = (props: CheckboxGroupProps) => {
     errorMessageProps,
   } = useCheckboxGroup(groupProps, state)
 
-  const contextValue = useMemo(
-    () => ({
-      state,
-      isDisabled: groupProps.isDisabled,
-      isReadOnly: groupProps.isReadOnly,
-    }),
-    [state, groupProps.isDisabled, groupProps.isReadOnly],
-  )
+  const contextValue = {
+    state,
+    isDisabled: groupProps.isDisabled,
+    isReadOnly: groupProps.isReadOnly,
+  }
 
   return (
+    // oxlint-disable-next-line react/jsx-no-constructed-context-values -- RAC group state must stay in sync with hooks
     <CheckboxGroupContext.Provider value={contextValue}>
       <div
         {...ariaGroupProps}
@@ -154,6 +152,7 @@ interface CheckboxRenderProps {
 }
 
 // Shared rendering component for both standalone and grouped checkboxes
+// oxlint-disable-next-line react-doctor/no-many-boolean-props -- RAC checkbox state flags map to visual variants
 const CheckboxRenderer = ({
   children,
   className,

@@ -1,5 +1,6 @@
 import type { JSX } from "react"
 import type { ProseProps } from "~/interfaces"
+import { getProseContentKey } from "~/utils/getProseContentKey"
 import { getTextAsHtml } from "~/utils/getTextAsHtml"
 
 import { BaseParagraph } from "../../internal/BaseParagraph"
@@ -58,10 +59,10 @@ export const Prose = ({
 
   return (
     <>
-      {content.map((component, index) => (
+      {content.map((component) => (
         <ProseComponent
           component={component}
-          key={index}
+          key={getProseContentKey(component)}
           site={site}
           shouldStripContentHtmlTags={shouldStripContentHtmlTags}
           headingLevel={headingLevel}

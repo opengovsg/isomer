@@ -72,9 +72,10 @@ interface SearchableTableContentProps {
   searchMatchType: keyof typeof COPYWRITING_MAPPING
   paginatedItems: (string | number)[][]
   maxNoOfColumns: number
-  headers: (string | number)[]
+  headers: SearchableTableClientProps["headers"]
 }
 
+// oxlint-disable-next-line react-doctor/no-many-boolean-props -- table state flags drive mutually exclusive views
 const SearchableTableContent = ({
   titleId,
   title,
@@ -123,9 +124,9 @@ const SearchableTableContent = ({
           >
             <tbody>
               <tr className={compoundStyles.tableRow()}>
-                {headers.slice(0, maxNoOfColumns).map((header, index) => (
+                {headers.slice(0, maxNoOfColumns).map((header) => (
                   <th
-                    key={index}
+                    key={String(header)}
                     className={compoundStyles.tableCell({ isHeader: true })}
                   >
                     <BaseParagraph content={String(header)} />
@@ -162,6 +163,7 @@ const SearchableTableContent = ({
   return null
 }
 
+// oxlint-disable-next-line react-doctor/no-many-boolean-props -- loading/error/empty flags drive mutually exclusive views
 export const SearchableTableClientUI = ({
   title,
   headers,

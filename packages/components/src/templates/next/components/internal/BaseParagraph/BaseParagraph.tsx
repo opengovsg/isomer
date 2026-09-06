@@ -21,30 +21,30 @@ const ALLOWED_TAG_LIST_WITHOUT_SPAN = ALLOWED_TAG_LIST.filter(
   (tag) => tag !== "span",
 )
 
+const transform = (node: HTMLElement, children: Node[]): React.ReactNode => {
+  if (node.tagName.toLocaleLowerCase() === "a") {
+    const href = node.getAttribute("href") ?? undefined
+    const isExternalLink = !!href && isExternalUrl(href)
+
+    return (
+      <Link
+        href={href}
+        isExternal={isExternalLink}
+        isWithFocusVisibleHighlight
+        showExternalIcon={isExternalLink}
+      >
+        {children}
+      </Link>
+    )
+  }
+}
+
 export const BaseParagraph = ({
   content,
   allowedTags,
   className,
   attrs,
 }: BaseParagraphProps) => {
-  const transform = (node: HTMLElement, children: Node[]): React.ReactNode => {
-    if (node.tagName.toLocaleLowerCase() === "a") {
-      const href = node.getAttribute("href") ?? undefined
-      const isExternalLink = !!href && isExternalUrl(href)
-
-      return (
-        <Link
-          href={href}
-          isExternal={isExternalLink}
-          isWithFocusVisibleHighlight
-          showExternalIcon={isExternalLink}
-        >
-          {children}
-        </Link>
-      )
-    }
-  }
-
   const isContentEmpty = content.trim() === ""
 
   return (

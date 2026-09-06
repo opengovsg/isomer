@@ -1,1 +1,2 @@
-export { Infobar, createInfobarStyles } from "./Infobar"
+export { createInfobarStyles } from "./infobarStyles"
+export { Infobar } from "./Infobar"

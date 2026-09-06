@@ -5,7 +5,8 @@ import { isExternalUrl } from "~/utils/isExternalUrl"
 import { Title } from "../CollectionCard/Title" // Reusing since the logic is the same for both
 import { ImageClient } from "../ImageClient"
 import { Link } from "../Link"
-import { PillTags, PlaintextTags } from "../Tags"
+import { PillTags } from "../Tags/PillTags"
+import { PlaintextTags } from "../Tags/PlaintextTags"
 
 export const BlogCard = ({
   description,
@@ -24,7 +25,7 @@ export const BlogCard = ({
   shouldShowDate?: boolean
   siteAssetsBaseUrl: string | undefined
   headingLevel: number
-}): JSX.Element => {
+}): React.ReactNode => {
   const isExternalLink = !!referenceLinkHref && isExternalUrl(referenceLinkHref)
 
   return (

@@ -14,23 +14,24 @@ interface BackToTopLinkProps {
   className?: string
 }
 
+const handleBackToTopClick = () => {
+  window.scrollTo({ top: 0 })
+}
+
 export const BackToTopLink = ({
   className,
-}: BackToTopLinkProps): JSX.Element => {
+}: BackToTopLinkProps): React.ReactNode => {
   // "Back to top" scrolls the page — it is an action, not navigation — so it
   // renders a <button> that scrolls in JS. This avoids an <a href="#">, which
   // both mutates the URL (can disrupt the SPA router) and, inside the Studio
   // preview iframe (rendered without a src), resolves against the parent
   // document and loads the whole Studio app into the preview area.
-  const handleClick = () => {
-    window.scrollTo({ top: 0 })
-  }
 
   return (
     <button
       type="button"
       className={twMerge(buttonStyle(), className)}
-      onClick={handleClick}
+      onClick={handleBackToTopClick}
     >
       <BiUpArrowAlt aria-hidden className="h-6 w-6" />
       Back to top

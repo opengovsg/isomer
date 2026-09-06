@@ -1,7 +1,7 @@
 "use client"
 
 import type { ImageGalleryClientProps } from "~/interfaces/complex/ImageGallery"
-import { useCallback, useMemo, useRef, useState, useTransition } from "react"
+import { useRef, useState, useTransition } from "react"
 import { useBreakpoint } from "~/hooks/useBreakpoint"
 import { tv } from "~/lib/tv"
 
@@ -54,7 +54,7 @@ export const ImageGalleryClient = ({
   const [isPending, startTransition] = useTransition()
 
   const isDesktop = useBreakpoint("lg")
-  const maxPreviewImages = useMemo(() => (isDesktop ? 5 : 3), [isDesktop])
+  const maxPreviewImages = isDesktop ? 5 : 3
 
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -63,6 +63,7 @@ export const ImageGalleryClient = ({
     currentIndex,
     maxPreviewImages,
   })
+  const previewIndexSet = new Set(previewIndices)
 
   // `useBreakpoint` starts from the SSR-safe mobile value, so relying on it here
   // would show 3 previews on the first desktop paint before updating after mount.
@@ -78,57 +79,50 @@ export const ImageGalleryClient = ({
     currentIndex,
     maxPreviewImages: 5,
   })
+  const previewIndicesForSmMdSet = new Set(previewIndicesForSmMd)
+  const previewIndicesForLgSet = new Set(previewIndicesForLg)
 
-  const preloadImage = useCallback(
-    (index: number) => {
-      // Out of bounds
-      if (index < 0 || index >= images.length) return
+  const preloadImage = (index: number) => {
+    // Out of bounds
+    if (index < 0 || index >= images.length) return
 
-      // If the image is the current image, we don't need to preload it
-      if (index === currentIndex) return
+    // If the image is the current image, we don't need to preload it
+    if (index === currentIndex) return
 
-      const image = containerRef.current?.querySelectorAll("img")[index]
-      if (!image) return // should never happen since we render all images
+    const image = containerRef.current?.querySelectorAll("img")[index]
+    if (!image) return // should never happen since we render all images
 
-      // Image has already been loaded
-      if (image.complete) return
+    // Image has already been loaded
+    if (image.complete) return
 
-      // Image not loaded yet, force load it!
-      if (image.getAttribute("loading") === "lazy") {
-        image.removeAttribute("loading")
-        const src = image.src
-        image.src = ""
-        image.src = src
-      }
-    },
-    [images, currentIndex],
-  )
+    // Image not loaded yet, force load it!
+    if (image.getAttribute("loading") === "lazy") {
+      image.removeAttribute("loading")
+      const src = image.src
+      image.src = ""
+      image.src = src
+    }
+  }
 
-  const preloadNextImage = useCallback(
-    (numberOfImagesAheadOfCurrentPreview = 1) => {
-      const lastIndexInPreview = previewIndices[previewIndices.length - 1]
-      if (!lastIndexInPreview) return // should never happen since there's always at least one image in the preview sequence
-      preloadImage(lastIndexInPreview + numberOfImagesAheadOfCurrentPreview)
-    },
-    [preloadImage, previewIndices],
-  )
+  const preloadNextImage = (numberOfImagesAheadOfCurrentPreview = 1) => {
+    const lastIndexInPreview = previewIndices[previewIndices.length - 1]
+    if (!lastIndexInPreview) return // should never happen since there's always at least one image in the preview sequence
+    preloadImage(lastIndexInPreview + numberOfImagesAheadOfCurrentPreview)
+  }
 
-  const navigateToImageByDirection = useCallback(
-    (direction: "prev" | "next") => {
-      startTransition(() => {
-        setCurrentIndex((current) =>
-          direction === "next"
-            ? (current + 1) % images.length
-            : (current - 1 + images.length) % images.length,
-        )
-      })
+  const navigateToImageByDirection = (direction: "prev" | "next") => {
+    startTransition(() => {
+      setCurrentIndex((current) =>
+        direction === "next"
+          ? (current + 1) % images.length
+          : (current - 1 + images.length) % images.length,
+      )
+    })
 
-      if (direction === "next") {
-        preloadNextImage(2) // the new currentIndex + 1
-      }
-    },
-    [images.length, preloadNextImage, startTransition],
-  )
+    if (direction === "next") {
+      preloadNextImage(2) // the new currentIndex + 1
+    }
+  }
 
   const navigateToImageByIndex = (index: number) => {
     startTransition(() => {
@@ -185,7 +179,7 @@ export const ImageGalleryClient = ({
             // Ensure all images that can be navigated to are rendered to ensure smooth transitions
             const shouldPreload =
               // Preload the image if it is in the preview thumbnail sequence
-              previewIndices.includes(index) ||
+              previewIndexSet.has(index) ||
               // Preload the last image if currently displaying the first image
               // to ensure smooth transitioning when navigating to the last image from the first
               (currentIndex === 0 && index === images.length - 1) ||
@@ -270,9 +264,9 @@ export const ImageGalleryClient = ({
           // Given that current total image count is capped at 30, this has minimal performance impact (as they are basic DOM elements)
           // Visibility is CSS-driven to avoid hydration layout shift (see comment above).
           // sm/md shows 3 previews, lg shows 5 — items only in the lg set are hidden on smaller screens.
-          const visibility = previewIndicesForSmMd.includes(index)
+          const visibility = previewIndicesForSmMdSet.has(index)
             ? "all"
-            : previewIndicesForLg.includes(index)
+            : previewIndicesForLgSet.has(index)
               ? "lgOnly"
               : "none"
 

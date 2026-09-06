@@ -38,6 +38,9 @@ export const PaginationControls = ({
   })
 
   const totalPageCount = Math.ceil(totalItems / itemsPerPage)
+  const paginationKeys = paginationRange.map((p, i) =>
+    p === SEPARATOR ? `ellipsis-${i}` : `page-${p}`,
+  )
 
   return (
     <Pagination className="not-prose items-center gap-2">
@@ -53,9 +56,9 @@ export const PaginationControls = ({
         </PaginationItem>
         {paginationRange.map((p, i) => {
           return p === SEPARATOR ? (
-            <PaginationEllipsis key={i} />
+            <PaginationEllipsis key={paginationKeys[i]} />
           ) : (
-            <PaginationItem key={i}>
+            <PaginationItem key={paginationKeys[i]}>
               <PaginationButton
                 isActive={currPage === p}
                 onPress={() => {

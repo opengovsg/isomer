@@ -94,60 +94,58 @@ const InfoBoxes = ({
 }: Pick<InfoColsProps, "infoBoxes" | "site">) => {
   return (
     <div className={compoundStyles.infoBoxesContainer()}>
-      {infoBoxes.map(
-        ({ title, icon, description, buttonUrl, buttonLabel }, idx) => {
-          const hasLink = !!buttonUrl
-          const isExternalLink = isExternalUrl(buttonUrl)
-          const showTitleArrow = hasLink && !buttonLabel
-          return (
-            <Link
-              href={getReferenceLinkHref(
-                buttonUrl,
-                site.siteMapArray,
-                site.assetsBaseUrl,
-              )}
-              key={idx}
-              className={compoundStyles.infoBox()}
-              isExternal={isExternalLink}
+      {infoBoxes.map(({ title, icon, description, buttonUrl, buttonLabel }) => {
+        const hasLink = !!buttonUrl
+        const isExternalLink = isExternalUrl(buttonUrl)
+        const showTitleArrow = hasLink && !buttonLabel
+        return (
+          <Link
+            href={getReferenceLinkHref(
+              buttonUrl,
+              site.siteMapArray,
+              site.assetsBaseUrl,
+            )}
+            key={`${title}-${buttonUrl ?? ""}`}
+            className={compoundStyles.infoBox()}
+            isExternal={isExternalLink}
+          >
+            {icon && <InfoBoxIcon icon={icon} hasLink={hasLink} />}
+
+            <h3
+              className={compoundStyles.infoBoxTitle({
+                hasLink,
+              })}
             >
-              {icon && <InfoBoxIcon icon={icon} hasLink={hasLink} />}
-
-              <h3
-                className={compoundStyles.infoBoxTitle({
-                  hasLink,
-                })}
-              >
-                {title}
-                {showTitleArrow && (
-                  <BiRightArrowAlt
-                    aria-hidden
-                    className={compoundStyles.infoBoxButtonIcon({
-                      isExternalLink,
-                    })}
-                  />
-                )}
-              </h3>
-
-              {description && (
-                <p className={compoundStyles.infoBoxDescription()}>
-                  {description}
-                </p>
+              {title}
+              {showTitleArrow && (
+                <BiRightArrowAlt
+                  aria-hidden
+                  className={compoundStyles.infoBoxButtonIcon({
+                    isExternalLink,
+                  })}
+                />
               )}
+            </h3>
 
-              {hasLink && !showTitleArrow && (
-                <div className={compoundStyles.infoBoxButton()}>
-                  {buttonLabel}
-                  <BiRightArrowAlt
-                    className={compoundStyles.infoBoxButtonIcon({
-                      isExternalLink,
-                    })}
-                  />
-                </div>
-              )}
-            </Link>
-          )
-        },
-      )}
+            {description && (
+              <p className={compoundStyles.infoBoxDescription()}>
+                {description}
+              </p>
+            )}
+
+            {hasLink && !showTitleArrow && (
+              <div className={compoundStyles.infoBoxButton()}>
+                {buttonLabel}
+                <BiRightArrowAlt
+                  className={compoundStyles.infoBoxButtonIcon({
+                    isExternalLink,
+                  })}
+                />
+              </div>
+            )}
+          </Link>
+        )
+      })}
     </div>
   )
 }

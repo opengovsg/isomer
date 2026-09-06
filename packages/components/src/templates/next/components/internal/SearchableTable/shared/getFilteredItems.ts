@@ -8,7 +8,15 @@ interface GetFilteredItemsParams {
 export const getFilteredItems = ({
   items,
   searchValue,
-}: GetFilteredItemsParams) =>
-  items
-    .filter((item) => item.key.includes(searchValue.toLowerCase()))
-    .map((item) => item.row)
+}: GetFilteredItemsParams) => {
+  const loweredSearch = searchValue.toLowerCase()
+  const rows: SearchableTableClientProps["items"][number]["row"][] = []
+
+  for (const item of items) {
+    if (item.key.includes(loweredSearch)) {
+      rows.push(item.row)
+    }
+  }
+
+  return rows
+}

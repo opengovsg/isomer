@@ -2,7 +2,7 @@
 
 import type { NavbarProps } from "~/interfaces/internal/Navbar"
 import { FocusScope } from "@react-aria/focus"
-import { forwardRef } from "react"
+import React, { forwardRef } from "react"
 import { BiChevronDown, BiRightArrowAlt, BiX } from "react-icons/bi"
 import { useScrollLock } from "usehooks-ts"
 import { tv } from "~/lib/tv"
@@ -44,7 +44,7 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
   function NavItem(
     { items, name, url, description, isOpen, onClick, onCloseMegamenu },
     ref,
-  ): JSX.Element {
+  ): React.ReactNode {
     if (!items || items.length === 0) {
       return (
         <li className={item({ isOpen })}>
@@ -128,9 +128,9 @@ const Megamenu = ({
     <div className="absolute left-0 right-0 top-full z-50">
       <button
         type="button"
-        aria-label="Close navigation menu"
-        className="absolute bottom-0 left-0 right-0 top-full z-[1] h-screen cursor-default border-0 bg-canvas-overlay/40 p-0"
+        className="absolute bottom-0 left-0 right-0 top-full z-[1] h-screen border-0 bg-canvas-overlay/40 p-0"
         onClick={onCloseMegamenu}
+        aria-label="Close navigation menu"
       />
       <FocusScope contain restoreFocus>
         <div className={megamenu()}>

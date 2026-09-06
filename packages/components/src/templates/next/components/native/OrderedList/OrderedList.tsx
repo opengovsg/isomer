@@ -1,4 +1,5 @@
 import type { OrderedListProps } from "~/interfaces"
+import { getProseContentKey } from "~/utils/getProseContentKey"
 
 import { ListItem } from "../ListItem"
 
@@ -27,8 +28,13 @@ export const OrderedList = ({
       className={`${level ? "mt-3" : "mt-6"} ps-9 marker:text-base-content ${getOrderedListType(level)}`}
       start={attrs?.start}
     >
-      {content.map((item, index) => (
-        <ListItem key={index} {...item} level={level} site={site} />
+      {content.map((item) => (
+        <ListItem
+          key={getProseContentKey(item)}
+          {...item}
+          level={level}
+          site={site}
+        />
       ))}
     </ol>
   )

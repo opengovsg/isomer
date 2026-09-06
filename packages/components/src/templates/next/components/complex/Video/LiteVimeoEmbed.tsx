@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useRef, useState } from "react"
 import { twMerge } from "~/lib/twMerge"
 
 import { ImageClient } from "../../internal/ImageClient"
@@ -27,27 +27,30 @@ export const LiteVimeoEmbed = ({
 }: LiteVimeoEmbedProps) => {
   const [activated, setActivated] = useState(false)
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null)
+  const thumbnailFetchStarted = useRef(false)
 
   // Fetch the thumbnail URL from Vimeo's oEmbed API
-  useEffect(() => {
-    const fetchThumbnail = async () => {
-      try {
-        const response = await fetch(
-          `https://vimeo.com/api/v2/video/${videoId}.json`,
-        )
-        const data = (await response.json()) as VimeoVideoInfo[]
-        // Use thumbnail_large (640px) for good quality
-        // The URL format is like: https://i.vimeocdn.com/video/{id}_640.jpg
-        if (data[0]?.thumbnail_large) {
-          setThumbnailUrl(data[0].thumbnail_large)
-        }
-      } catch {
-        // Silently fail - we'll just show a black background
+  const fetchThumbnail = async () => {
+    try {
+      const response = await fetch(
+        `https://vimeo.com/api/v2/video/${videoId}.json`,
+      )
+      const data = (await response.json()) as VimeoVideoInfo[]
+      // Use thumbnail_large (640px) for good quality
+      // The URL format is like: https://i.vimeocdn.com/video/{id}_640.jpg
+      if (data[0]?.thumbnail_large) {
+        setThumbnailUrl(data[0].thumbnail_large)
       }
+    } catch {
+      // Silently fail - we'll just show a black background
     }
+  }
 
+  const startThumbnailFetch = () => {
+    if (thumbnailFetchStarted.current) return
+    thumbnailFetchStarted.current = true
     void fetchThumbnail()
-  }, [videoId])
+  }
 
   // We add autoplay here because the user already clicked on the facade button once,
   // and we don't want them to have to click again to play.
@@ -72,6 +75,9 @@ export const LiteVimeoEmbed = ({
         />
       ) : (
         <div
+          ref={(node) => {
+            if (node) startThumbnailFetch()
+          }}
           className={twMerge(
             "absolute inset-0 h-full w-full bg-black",
             activated && "pointer-events-none opacity-0",

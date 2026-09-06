@@ -1,4 +1,5 @@
 import type { UnorderedListProps } from "~/interfaces"
+import { getProseContentKey } from "~/utils/getProseContentKey"
 
 import { ListItem } from "../ListItem"
 
@@ -21,8 +22,13 @@ export const UnorderedList = ({ content, level, site }: UnorderedListProps) => {
     <ul
       className={`${level ? "mt-3" : "mt-6"} ps-9 marker:text-base-content ${getUnorderedListType(level)}`}
     >
-      {content.map((item, index) => (
-        <ListItem key={index} {...item} level={level} site={site} />
+      {content.map((item) => (
+        <ListItem
+          key={getProseContentKey(item)}
+          {...item}
+          level={level}
+          site={site}
+        />
       ))}
     </ul>
   )

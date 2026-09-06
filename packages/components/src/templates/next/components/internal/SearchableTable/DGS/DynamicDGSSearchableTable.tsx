@@ -65,11 +65,17 @@ export const DynamicDGSSearchableTable = ({
   })
 
   const items =
-    records?.map((record) =>
-      Object.entries(record)
-        .filter(([key]) => !isCkanInternalColumn(key))
-        .map(([, value]) => value),
-    ) ?? []
+    records?.map((record) => {
+      const row: (string | number)[] = []
+
+      for (const [key, value] of Object.entries(record)) {
+        if (!isCkanInternalColumn(key)) {
+          row.push(value)
+        }
+      }
+
+      return row
+    }) ?? []
 
   const isInitiallyEmpty =
     typeof total === "number" && (total === 0 || maxNoOfColumns === 0)

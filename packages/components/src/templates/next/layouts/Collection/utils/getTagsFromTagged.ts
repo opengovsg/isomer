@@ -8,17 +8,26 @@ export const getTagsFromTagged = (
   tagged: NonNullable<ArticlePagePageProps["tagged"]>,
   tagCategories: NonNullable<CollectionPagePageProps["tagCategories"]>,
 ): TagGroup[] => {
-  return tagCategories
-    .map(({ id, options, label }) => {
-      return {
+  const taggedSet = new Set(tagged)
+  const tagGroups: TagGroup[] = []
+
+  for (const { id, options, label } of tagCategories) {
+    const selected: string[] = []
+
+    for (const { id: optionId, label: optionLabel } of options) {
+      if (taggedSet.has(optionId)) {
+        selected.push(optionLabel)
+      }
+    }
+
+    if (selected.length > 0) {
+      tagGroups.push({
         id,
         category: label,
-        selected: options
-          .filter(({ id: optionId }) => tagged.includes(optionId))
-          .map(({ label }) => label),
-      }
-    })
-    .filter(({ selected }) => {
-      return selected.length > 0
-    })
+        selected,
+      })
+    }
+  }
+
+  return tagGroups
 }

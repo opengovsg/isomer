@@ -56,6 +56,30 @@ export default defineConfig({
 });
 ```
 
+### React Doctor preset
+
+`reactDoctor` loads `oxlint-plugin-react-doctor`. Use it with Ultracite's `react` preset, not instead of it. Ported react, react-hooks, and jsx-a11y rules are omitted here so Ultracite does not lint them twice.
+
+`react-doctor/react-compiler-no-manual-memoization` is off in `react-doctor.ts` until we use React Compiler.
+
+```ts
+import { defineConfig } from "@isomer/oxlint-config";
+import base from "@isomer/oxlint-config/base";
+import {
+  jsPluginSettings,
+  react,
+  reactDoctor,
+  reactDoctorJsPluginEntries,
+} from "@isomer/oxlint-config/presets";
+
+export default defineConfig({
+  extends: [base, react, reactDoctor],
+  // Oxlint does not merge `settings` or `jsPlugins` from extended configs.
+  settings: jsPluginSettings,
+  jsPlugins: reactDoctorJsPluginEntries,
+});
+```
+
 ### Other repositories
 
 1. Add the dependency (publish `@isomer/oxlint-config` or use `file:` / git / workspace protocol).
@@ -75,6 +99,7 @@ Or set `"options": { "typeAware": true }` in the root Oxlint config only.
 |--------|------|
 | `@isomer/oxlint-config` | `index.ts` (`defineConfig`, `OxlintConfig`) |
 | `@isomer/oxlint-config/base` | `base.ts` |
-| `@isomer/oxlint-config/presets` | `presets.ts` — Ultracite `react`, `next`, and `vitest` presets |
+| `@isomer/oxlint-config/presets` | `presets.ts` — Ultracite `react`, `next`, and `vitest` presets, plus standalone `reactDoctor` |
+| `@isomer/oxlint-config/react-doctor` | `react-doctor.ts` — React Doctor preset and JS plugin helpers |
 
 Add more JSON presets under `tooling/oxlint/` and list them under `exports` in `package.json` as you split shared vs app-specific rules.

@@ -2,10 +2,8 @@ import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { IsomerSiteProps } from "~/types"
 import type { IsomerCollectionPageSitemap } from "~/types/sitemap"
 
-import {
-  getCollectionItems,
-  processCollectionItems,
-} from "../../../../layouts/Collection/utils"
+import { getCollectionItems } from "../../../../layouts/Collection/utils/getCollectionItems"
+import { processCollectionItems } from "../../../../layouts/Collection/utils/processCollectionItems"
 
 interface GetCollectionPagesProps {
   site: IsomerSiteProps

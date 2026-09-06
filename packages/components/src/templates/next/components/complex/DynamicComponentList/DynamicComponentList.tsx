@@ -5,7 +5,7 @@ import type { DynamicComponentListProps } from "~/interfaces"
 import { useMemo } from "react"
 import { useDgsData } from "~/hooks/useDgsData"
 
-import { DgsTransformedContactInformation } from "../ContactInformation"
+import { DgsTransformedContactInformation } from "../ContactInformation/DgsContactInformation/DgsContactInformation"
 
 // We do not know how many records will be returned
 // thus we play safe and just return 1 for loading state

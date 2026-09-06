@@ -7,7 +7,7 @@ import { getTransformedPageContent } from "~/utils/getTransformedPageContent"
 import { ContentPageHeader } from "../../components/internal/ContentPageHeader"
 import { SearchableTable } from "../../components/internal/SearchableTable"
 import { TableOfContents } from "../../components/internal/TableOfContents"
-import { renderPageContent } from "../../render"
+import { renderPageContent } from "../../render/renderPageContent"
 import { Skeleton } from "../Skeleton"
 
 const createDatabaseLayoutStyles = tv({

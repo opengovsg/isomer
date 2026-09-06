@@ -3,7 +3,8 @@ import { isExternalUrl } from "~/utils/isExternalUrl"
 
 import { ImageClient } from "../ImageClient"
 import { Link } from "../Link"
-import { PillTags, PlaintextTags } from "../Tags"
+import { PillTags } from "../Tags/PillTags"
+import { PlaintextTags } from "../Tags/PlaintextTags"
 import { Title } from "./Title"
 
 export const CollectionCard = ({
@@ -23,7 +24,7 @@ export const CollectionCard = ({
   shouldShowDate?: boolean
   siteAssetsBaseUrl: string | undefined
   headingLevel: number
-}): JSX.Element => {
+}): React.ReactNode => {
   const isExternalLink = !!referenceLinkHref && isExternalUrl(referenceLinkHref)
 
   return (

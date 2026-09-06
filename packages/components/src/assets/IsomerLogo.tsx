@@ -1,6 +1,7 @@
+/* oxlint-disable react-doctor/rendering-svg-precision -- brand asset SVG paths from design export */
 export const IsomerLogo = (
   props: React.SVGProps<SVGSVGElement>,
-): JSX.Element => {
+): React.ReactNode => {
   return (
     <svg
       width="114"

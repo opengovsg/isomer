@@ -2,7 +2,7 @@ import type { IndexPageSchemaType } from "~/types"
 import { describe, expect, it } from "vitest"
 import { DEFAULT_CHILDREN_PAGES_BLOCK } from "~/interfaces/complex/ChildrenPages/constants"
 
-import { ensureChildrenPagesBlock } from "../IndexPage"
+import { ensureChildrenPagesBlock } from "../ensureChildrenPagesBlock"
 
 describe("ensureChildrenPagesBlock", () => {
   it("returns the same content array when childrenpages block already exists", () => {

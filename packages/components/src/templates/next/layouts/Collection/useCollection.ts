@@ -1,15 +1,12 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import { isEmpty } from "lodash-es"
-import { useCallback, useMemo } from "react"
 import { useQueryParams } from "~/hooks/useQueryParams"
 
 import type { AppliedFilter } from "../../types/Filter"
 import { isAppliedFilters } from "../../types/Filter"
-import {
-  getFilteredItems,
-  getPaginatedItems,
-  updateAppliedFilters,
-} from "./utils"
+import { getFilteredItems } from "./utils/getFilteredItems"
+import { getPaginatedItems } from "./utils/getPaginatedItems"
+import { updateAppliedFilters } from "./utils/updateAppliedFilters"
 
 export const ITEMS_PER_PAGE = 10
 
@@ -20,20 +17,14 @@ export const useCollection = ({
 }) => {
   const [queryParams, updateQueryParams] = useQueryParams()
 
-  const currPage = useMemo(
-    () => parseInt(queryParams.page || "1", 10),
-    [queryParams.page],
-  )
-  const setCurrPage = useCallback(
-    (page: number) => {
-      updateQueryParams({
-        newParams: { page: page.toString() },
-      })
-    },
-    [updateQueryParams],
-  )
+  const currPage = parseInt(queryParams.page || "1", 10)
+  const setCurrPage = (page: number) => {
+    updateQueryParams({
+      newParams: { page: page.toString() },
+    })
+  }
 
-  const appliedFilters = useMemo(() => {
+  const appliedFilters = (() => {
     const filters = queryParams.filters
     if (isEmpty(filters)) {
       return []
@@ -45,47 +36,37 @@ export const useCollection = ({
       // Malformed URL param (e.g. ?filters=hello) — treat as no filters rather than crashing.
       return []
     }
-  }, [queryParams.filters])
-  const setAppliedFilters = useCallback(
-    (filters: AppliedFilter[]) => {
-      updateQueryParams({
-        newParams: { filters: JSON.stringify(filters), page: "1" },
-      })
-    },
-    [updateQueryParams],
-  )
+  })()
 
-  const searchValue = useMemo(
-    () => queryParams.search || "",
-    [queryParams.search],
-  )
-  const handleSearchValueChange = useCallback(
-    (value: string) => {
-      updateQueryParams({
-        newParams: { search: value, page: "1" },
-      })
-    },
-    [updateQueryParams],
-  )
+  const setAppliedFilters = (filters: AppliedFilter[]) => {
+    updateQueryParams({
+      newParams: { filters: JSON.stringify(filters), page: "1" },
+    })
+  }
 
-  const handleFilterToggle = useCallback(
-    (id: string, itemId: string) => {
-      return updateAppliedFilters(appliedFilters, setAppliedFilters, id, itemId)
-    },
-    [appliedFilters, setAppliedFilters],
-  )
+  const searchValue = queryParams.search || ""
+  const handleSearchValueChange = (value: string) => {
+    updateQueryParams({
+      newParams: { search: value, page: "1" },
+    })
+  }
+
+  const handleFilterToggle = (id: string, itemId: string) => {
+    return updateAppliedFilters(appliedFilters, setAppliedFilters, id, itemId)
+  }
 
   const filteredItems = getFilteredItems(items, appliedFilters, searchValue)
-  const paginatedItems = useMemo(
-    () => getPaginatedItems(filteredItems, ITEMS_PER_PAGE, currPage),
-    [currPage, filteredItems],
+  const paginatedItems = getPaginatedItems(
+    filteredItems,
+    ITEMS_PER_PAGE,
+    currPage,
   )
 
-  const handleClearFilter = useCallback(() => {
+  const handleClearFilter = () => {
     updateQueryParams({
       newParams: { search: "", filters: "[]", page: "1" },
     })
-  }, [updateQueryParams])
+  }
 
   return {
     paginatedItems,

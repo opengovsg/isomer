@@ -1,6 +1,6 @@
 import { type HomePageSchemaType } from "~/types"
 
-import { renderPageContent } from "../../render"
+import { renderPageContent } from "../../render/renderPageContent"
 import { Skeleton } from "../Skeleton"
 
 export const HomepageLayout = ({

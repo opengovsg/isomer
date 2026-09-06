@@ -2,7 +2,8 @@ import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
 import { ARRAY_RADIO_FORMAT } from "../format"
-import { DgsDataSourceSchema, NativeDataSourceSchema } from "../integration"
+import { DgsDataSourceSchema } from "../integration/dgs"
+import { NativeDataSourceSchema } from "../integration/native"
 
 const BaseSearchableTableSchema = Type.Object({
   title: Type.Optional(

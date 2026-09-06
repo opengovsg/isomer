@@ -88,14 +88,16 @@ export const Breadcrumb = ({
   links,
   colorScheme = "default",
 }: BreadcrumbProps) => {
+  const lastLink = links.at(-1)
+
   return (
     <BaseBreadcrumbs>
-      {links.map(({ title, url }, index) => (
+      {links.map(({ title, url }) => (
         <BaseBreadcrumb
           colorScheme={colorScheme}
-          key={index}
-          current={index === links.length - 1 ? "page" : undefined}
-          href={index === links.length - 1 ? undefined : url}
+          key={`${title}-${url}`}
+          current={url === lastLink?.url ? "page" : undefined}
+          href={url === lastLink?.url ? undefined : url}
         >
           {title}
         </BaseBreadcrumb>

@@ -173,11 +173,17 @@ export function getScopedSchema<T extends ScopedSchemaLayout>({
 
   if (fieldSet) {
     if (currentSchema.allOf) {
-      const filteredAllOf = currentSchema.allOf
-        .map((subSchema: Record<string, unknown>) =>
-          filterSchemaProperties(subSchema, fieldSet, mode),
+      const filteredAllOf = []
+      for (const subSchema of currentSchema.allOf) {
+        const filtered = filterSchemaProperties(
+          subSchema as Record<string, unknown>,
+          fieldSet,
+          mode,
         )
-        .filter(Boolean)
+        if (filtered) {
+          filteredAllOf.push(filtered)
+        }
+      }
 
       return {
         ...currentSchema,

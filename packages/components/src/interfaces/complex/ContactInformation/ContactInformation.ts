@@ -5,7 +5,8 @@ import type { IsomerPageLayoutType, IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 
-import { createDgsSchema, NativeDataSourceSchema } from "../../integration"
+import { createDgsSchema } from "../../integration/dgs"
+import { NativeDataSourceSchema } from "../../integration/native"
 import { CONTACT_INFORMATION_SUPPORT_METHODS } from "./constants"
 
 const BaseContactInformationSchema = Type.Object({

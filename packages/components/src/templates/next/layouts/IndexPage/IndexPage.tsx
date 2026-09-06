@@ -1,5 +1,4 @@
 import type { IndexPageSchemaType } from "~/types"
-import { DEFAULT_CHILDREN_PAGES_BLOCK } from "~/interfaces/complex/ChildrenPages/constants"
 import { tv } from "~/lib/tv"
 import { getBreadcrumbFromSiteMap } from "~/utils/getBreadcrumbFromSiteMap"
 import { getTableOfContents } from "~/utils/getTableOfContents"
@@ -7,8 +6,9 @@ import { getTransformedPageContent } from "~/utils/getTransformedPageContent"
 
 import { ContentPageHeader } from "../../components/internal/ContentPageHeader"
 import { TableOfContents } from "../../components/internal/TableOfContents"
-import { renderPageContent } from "../../render"
+import { renderPageContent } from "../../render/renderPageContent"
 import { Skeleton } from "../Skeleton"
+import { ensureChildrenPagesBlock } from "./ensureChildrenPagesBlock"
 
 const createIndexPageLayoutStyles = tv({
   slots: {
@@ -20,18 +20,6 @@ const createIndexPageLayoutStyles = tv({
 })
 
 const compoundStyles = createIndexPageLayoutStyles()
-
-export const ensureChildrenPagesBlock = (
-  content: IndexPageSchemaType["content"],
-): IndexPageSchemaType["content"] => {
-  const hasChildrenPagesBlock = content.some(
-    ({ type }) => type === "childrenpages",
-  )
-
-  return hasChildrenPagesBlock
-    ? content
-    : [...content, DEFAULT_CHILDREN_PAGES_BLOCK]
-}
 
 export const IndexPageLayout = ({
   site,

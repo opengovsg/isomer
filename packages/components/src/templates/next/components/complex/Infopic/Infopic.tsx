@@ -11,7 +11,7 @@ export const Infopic = ({
   // NOTE: We need to set a default value here for back-compat
   variant = InfopicVariants.Block.value,
   ...rest
-}: InfopicProps): JSX.Element => {
+}: InfopicProps): React.ReactNode => {
   const imgSrc =
     isExternalUrl(imageSrc) || site.assetsBaseUrl === undefined
       ? imageSrc

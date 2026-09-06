@@ -13,9 +13,11 @@ import { ComponentContent } from "../../internal/customCssClass"
 import { ImageClient } from "../../internal/ImageClient"
 import { Link } from "../../internal/Link"
 import { compoundStyles, infoCardTitleStyle } from "../InfoCards/common"
-import { InfoCardNoImage, InfoCardWithImage } from "../InfoCards/components"
+import { InfoCardNoImage } from "../InfoCards/components/InfoCardNoImage"
+import { InfoCardWithImage } from "../InfoCards/components/InfoCardWithImage"
 
 interface Childpage {
+  id: string
   title: string
   url: string
   description: string
@@ -58,7 +60,7 @@ const BoxLayout = ({
         class: "[&:not(:first-child)]:mt-7",
       })}
     >
-      {childpages.map(({ title, description, url, image }, idx) => {
+      {childpages.map(({ id, title, description, url, image }) => {
         if (showThumbnail) {
           const hasImage = !!image?.src
           const imageUrl = hasImage ? image.src : fallback.src
@@ -66,7 +68,7 @@ const BoxLayout = ({
 
           return (
             <InfoCardWithImage
-              key={`${title}-${idx}`}
+              key={id}
               title={title}
               description={showSummary ? description : undefined}
               url={url}
@@ -85,7 +87,7 @@ const BoxLayout = ({
 
         return (
           <InfoCardNoImage
-            key={`${title}-${idx}`}
+            key={id}
             title={title}
             description={showSummary ? description : undefined}
             url={url}
@@ -155,12 +157,12 @@ const RowLayout = ({
   shouldLazyLoad,
   site,
   imageFit,
-}: ChildpageLayoutProps): JSX.Element => {
+}: ChildpageLayoutProps): React.ReactNode => {
   const styles = createRowStyles()
 
   return (
     <div className={styles.container()}>
-      {childpages.map(({ title, description, url, image }, idx) => {
+      {childpages.map(({ id, title, description, url, image }) => {
         const renderedImage = image?.src ? image : fallback
 
         return (
@@ -170,7 +172,7 @@ const RowLayout = ({
               site.siteMapArray,
               site.assetsBaseUrl,
             )}
-            key={`${title}-${idx}`}
+            key={id}
             className={styles.contentContainer({
               hasThumbnail: !!showThumbnail,
             })}

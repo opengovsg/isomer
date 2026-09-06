@@ -29,7 +29,7 @@ export const InfoCardImage = ({
   | "site"
   | "shouldLazyLoad"
   | "variant"
->): JSX.Element => {
+>): React.ReactNode => {
   return (
     <div
       className={compoundStyles.cardImageContainer({

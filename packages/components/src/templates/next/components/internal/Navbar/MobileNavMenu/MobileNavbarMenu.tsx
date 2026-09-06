@@ -84,7 +84,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
 
             {items.map((item, index) => (
               <MobileNavItemAccordion
-                key={`${item.name}-${index}`}
+                key={item.url}
                 index={index}
                 isOpen={index === openNavItemIdx}
                 onClick={() =>
@@ -106,8 +106,8 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
                 )}
 
                 <ul className="flex flex-col gap-1">
-                  {utility.items.map((item, index) => (
-                    <li key={`${item.name}-${index}`}>
+                  {utility.items.map((item) => (
+                    <li key={item.url}>
                       <Link
                         className={focusVisibleHighlight({
                           className:

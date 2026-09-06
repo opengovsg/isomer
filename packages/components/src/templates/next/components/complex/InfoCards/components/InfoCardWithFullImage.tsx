@@ -19,7 +19,7 @@ export const InfoCardWithFullImage = ({
   shouldLazyLoad = true,
   isFallback,
   headingLevel,
-}: With4Cols<SingleCardWithImageProps>): JSX.Element => {
+}: With4Cols<SingleCardWithImageProps>): React.ReactNode => {
   const isExternalLink = isExternalUrl(url)
 
   return (

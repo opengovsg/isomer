@@ -8,7 +8,7 @@ import type {
 import { useMemo } from "react"
 import { useDgsData } from "~/hooks/useDgsData"
 
-import { SearchableTableClient } from "../shared"
+import { SearchableTableClient } from "../shared/SearchableTableClient"
 
 interface StaticDGSSearchableTableProps extends DGSSearchableTableProps {
   headers: NonNullable<DGSSearchableTableProps["headers"]>
@@ -48,18 +48,15 @@ export const StaticDGSSearchableTable = ({
     fetchAll: true,
   })
 
-  const items: SearchableTableClientProps["items"] = useMemo(() => {
-    const keys = headers.map((header) => header.key)
-    return (
-      records?.map((record) => {
-        const content = keys.map((field) => String(record[field] ?? ""))
-        return {
-          key: content.join(" ").toLowerCase(),
-          row: content,
-        }
-      }) ?? []
-    )
-  }, [records, headers])
+  const keys = headers.map((header) => header.key)
+  const items: SearchableTableClientProps["items"] =
+    records?.map((record) => {
+      const content = keys.map((field) => String(record[field] ?? ""))
+      return {
+        key: content.join(" ").toLowerCase(),
+        row: content,
+      }
+    }) ?? []
 
   return (
     <SearchableTableClient

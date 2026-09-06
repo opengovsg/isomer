@@ -3,10 +3,9 @@ import type {
   CollectionBlockProps,
   CollectionBlockSingleCardProps,
 } from "~/interfaces/complex/CollectionBlock"
-import { createElement } from "react"
 import { BiRightArrowAlt } from "react-icons/bi"
 import { tv } from "~/lib/tv"
-import { getHeadingTag } from "~/utils/getHeadingTag"
+import { DynamicHeading } from "~/utils/DynamicHeading"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { getResourceIdFromReferenceLink } from "~/utils/getResourceIdFromReferenceLink"
 import { isExternalUrl } from "~/utils/isExternalUrl"
@@ -15,12 +14,12 @@ import { ComponentContent } from "../../internal/customCssClass"
 import { ImageClient } from "../../internal/ImageClient"
 import { Link } from "../../internal/Link"
 import { LinkButton } from "../../internal/LinkButton"
-import { PlaintextTags } from "../../internal/Tags"
+import { PlaintextTags } from "../../internal/Tags/PlaintextTags"
 import {
   getCollectionPages,
-  getCollectionParent,
   NUMBER_OF_PAGES_TO_DISPLAY,
-} from "./utils"
+} from "./utils/getCollectionPages"
+import { getCollectionParent } from "./utils/getCollectionParent"
 
 const createInfoCardsStyles = tv({
   slots: {
@@ -90,9 +89,8 @@ const SingleCard = ({
   numberOfCards,
   formattedDate,
   headingLevel,
-}: CollectionBlockSingleCardProps): JSX.Element => {
+}: CollectionBlockSingleCardProps): React.ReactNode => {
   const isExternalLink = !!referenceLinkHref && isExternalUrl(referenceLinkHref)
-  const CardTitleTag = getHeadingTag(headingLevel)
 
   const renderImage = () => {
     if (!image?.src) {
@@ -127,17 +125,18 @@ const SingleCard = ({
           <p className={compoundStyles.cardDate()}>{formattedDate}</p>
         )}
 
-        {createElement(
-          CardTitleTag,
-          { className: compoundStyles.cardTitle() },
-          title,
-          createElement(BiRightArrowAlt, {
-            "aria-hidden": true,
-            className: compoundStyles.cardTitleArrow({
+        <DynamicHeading
+          level={headingLevel}
+          className={compoundStyles.cardTitle()}
+        >
+          {title}
+          <BiRightArrowAlt
+            aria-hidden
+            className={compoundStyles.cardTitleArrow({
               isExternalLink,
-            }),
-          }),
-        )}
+            })}
+          />
+        </DynamicHeading>
 
         {displayCategory && (
           <PlaintextTags
@@ -160,15 +159,15 @@ const CollectionBlockSkeleton = ({
   description,
   headingLevel,
 }: CollectionBlockSkeletonProps) => {
-  const TitleTag = getHeadingTag(headingLevel)
   return (
     <section className={compoundStyles.container()}>
       <div className={compoundStyles.headingContainer()}>
-        {createElement(
-          TitleTag,
-          { className: compoundStyles.headingTitle() },
-          title,
-        )}
+        <DynamicHeading
+          level={headingLevel}
+          className={compoundStyles.headingTitle()}
+        >
+          {title}
+        </DynamicHeading>
         <p>{description}</p>
       </div>
     </section>
@@ -185,7 +184,7 @@ export const CollectionBlock = ({
   buttonLabel,
   shouldLazyLoad,
   headingLevel,
-}: CollectionBlockProps): JSX.Element | null => {
+}: CollectionBlockProps): React.ReactNode => {
   const collectionId = getResourceIdFromReferenceLink(collectionReferenceLink)
 
   // This happens when no collection is selected yet on Studio when the user just added the block
@@ -216,16 +215,16 @@ export const CollectionBlock = ({
 
   const numberOfCards =
     collectionPages.length as CollectionBlockNumberOfCards["numberOfCards"]
-  const TitleTag = getHeadingTag(headingLevel)
 
   return (
     <section className={compoundStyles.container()}>
       <div className={compoundStyles.headingContainer()}>
-        {createElement(
-          TitleTag,
-          { className: compoundStyles.headingTitle() },
-          customTitle ?? collectionParent.title,
-        )}
+        <DynamicHeading
+          level={headingLevel}
+          className={compoundStyles.headingTitle()}
+        >
+          {customTitle ?? collectionParent.title}
+        </DynamicHeading>
         <p>{customDescription ?? collectionParent.summary}</p>
       </div>
 

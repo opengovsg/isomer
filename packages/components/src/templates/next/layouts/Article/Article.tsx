@@ -4,7 +4,7 @@ import { getIndexByPermalink } from "~/utils/getIndexByPermalink"
 
 import { ArticlePageHeader } from "../../components/internal/ArticlePageHeader"
 import { BackToTopLink } from "../../components/internal/BackToTopLink"
-import { renderPageContent } from "../../render"
+import { renderPageContent } from "../../render/renderPageContent"
 import { getPillAndPlaintextTags } from "../Collection/utils/getPillAndPlaintextTags"
 import { Skeleton } from "../Skeleton"
 

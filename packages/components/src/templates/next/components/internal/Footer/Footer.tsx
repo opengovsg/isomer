@@ -91,9 +91,9 @@ const NavSection = ({
   return (
     <div className="prose-body-sm flex flex-col gap-8 lg:flex-row lg:gap-10">
       <div className="flex flex-col gap-3 lg:w-64">
-        {siteNavItems.map((item, index) => (
+        {siteNavItems.map((item) => (
           <FooterItem
-            key={index}
+            key={`${item.title}-${item.url}`}
             title={item.title}
             url={
               getReferenceLinkHref(
@@ -106,9 +106,9 @@ const NavSection = ({
         ))}
       </div>
       <div className="flex flex-col gap-3 lg:w-64">
-        {customNavItems?.map((item, index) => (
+        {customNavItems?.map((item) => (
           <FooterItem
-            key={index}
+            key={`${item.title}-${item.url}`}
             title={item.title}
             url={
               getReferenceLinkHref(
