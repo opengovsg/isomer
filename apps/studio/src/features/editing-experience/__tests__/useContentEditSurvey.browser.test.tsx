@@ -1,5 +1,6 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { PropsWithChildren } from "react"
+import { useEffect } from "react"
 import { act, render, renderHook } from "@testing-library/react"
 import { createStore, Provider } from "jotai"
 import { beforeEach, describe, expect, it, vi } from "vitest"
@@ -64,8 +65,11 @@ const drawerContextRef: {
 } = { current: null }
 
 const TrackerHarness = () => {
+  const drawerContext = useEditorDrawerContext()
   useContentEditTracker()
-  drawerContextRef.current = useEditorDrawerContext()
+  useEffect(() => {
+    drawerContextRef.current = drawerContext
+  }, [drawerContext])
   return null
 }
 
@@ -90,6 +94,7 @@ beforeEach(() => {
   trackEventMock.mockClear()
   mockEnv.env.NEXT_PUBLIC_INTERCOM_APP_ID = "test-app-id"
   routeChangeStartHandlers.length = 0
+  drawerContextRef.current = null
 })
 
 describe("useFireContentEditSurveyEvent", () => {

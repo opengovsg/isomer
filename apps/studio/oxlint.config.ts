@@ -20,18 +20,11 @@ export default defineConfig({
       files: ["**/*.js", "**/*.mjs", "**/*.ts", "**/*.tsx"],
       rules: {
         "react/react-in-jsx-scope": "off",
-        // React Compiler rules — enable when babel-plugin-react-compiler is
-        // added to apps/studio (stacked PR after this one).
+        // Deferred: high-churn effect refactors; enable in a follow-up PR.
         "react/exhaustive-effect-dependencies": "off",
-        "react/memo-dependencies": "off",
-        "react/no-deriving-state-in-effects": "off",
-        "react/preserve-manual-memoization": "off",
-        "react/refs": "off",
-        "react/globals": "off",
-        "react/immutability": "off",
-        "react/rule-suppression": "off",
         "react/set-state-in-effect": "off",
-        "react/todo": "off",
+        // Suppressions are harmless until React Compiler is enabled.
+        "react/rule-suppression": "off",
         // Chakra `role="group"` is required for `_groupHover` / `_groupChecked`.
         "jsx-a11y/prefer-tag-over-role": "off",
         "react-hooks/rules-of-hooks": "error",
