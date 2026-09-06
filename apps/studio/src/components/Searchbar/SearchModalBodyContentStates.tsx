@@ -188,35 +188,32 @@ export const SearchResultsState = ({
 
 export const NoResultsState = () => {
   return (
-    <ModalBody
-      children={
-        <HeaderTextAndContent
-          content={
+    <ModalBody justifyContent="center">
+      <HeaderTextAndContent
+        content={
+          <VStack
+            align="center"
+            gap="1rem"
+            w="full"
+            h="full"
+            justify="center"
+          >
             <VStack
               align="center"
-              gap="1rem"
+              gap="0.5rem"
               w="full"
               h="full"
               justify="center"
             >
-              <VStack
-                align="center"
-                gap="0.5rem"
-                w="full"
-                h="full"
-                justify="center"
-              >
-                <NoSearchResultSvgr />
-                <Text textStyle="subhead-2">
-                  We’ve looked everywhere, but we’re getting nothing.
-                </Text>
-              </VStack>
-              <SearchResultHint maxW="27.5rem" />
+              <NoSearchResultSvgr />
+              <Text textStyle="subhead-2">
+                We’ve looked everywhere, but we’re getting nothing.
+              </Text>
             </VStack>
-          }
-        />
-      }
-      justifyContent="center"
-    />
+            <SearchResultHint maxW="27.5rem" />
+          </VStack>
+        }
+      />
+    </ModalBody>
   )
 }

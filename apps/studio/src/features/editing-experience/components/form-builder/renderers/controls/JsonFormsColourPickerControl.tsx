@@ -110,7 +110,7 @@ const JsonFormsColourPickerControl = ({
               }
               w="2rem"
               h="2rem"
-            ></Box>
+             />
           </HStack>
           {!data && (
             <FormErrorMessage>
@@ -120,9 +120,7 @@ const JsonFormsColourPickerControl = ({
         </FormControl>
         <Box alignSelf="flex-start">
           <FormLabel
-            description={
-              "We’ve generated this palette from your brand colour. It makes your website compliant with accessibility standards."
-            }
+            description="We’ve generated this palette from your brand colour. It makes your website compliant with accessibility standards."
             mb={0}
             isRequired
           >
@@ -135,6 +133,7 @@ const JsonFormsColourPickerControl = ({
 
               return (
                 <Box
+                  key={p}
                   h="full"
                   flex={1}
                   borderTop="2px solid"
@@ -148,7 +147,7 @@ const JsonFormsColourPickerControl = ({
                     (get(ctx.core?.data, p) as string | undefined) ??
                     `#${DEFAULT_CONTENT_INVERSE_COLOUR}`
                   }
-                ></Box>
+                 />
               )
             })}
           </Flex>

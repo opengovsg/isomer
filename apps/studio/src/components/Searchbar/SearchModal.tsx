@@ -89,7 +89,7 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
             minW={minWidth}
             maxW={maxWidth}
             // border={0}
-            placeholder={`Search pages, collections, or folders by name. e.g. "Speech by Minister"`}
+            placeholder='Search pages, collections, or folders by name. e.g. "Speech by Minister"'
           />
         </ModalHeader>
         {renderModalBody()}

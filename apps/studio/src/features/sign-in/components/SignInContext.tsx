@@ -1,6 +1,6 @@
 import type { Dispatch, PropsWithChildren, SetStateAction } from "react"
 import { useGrowthBook } from "@growthbook/growthbook-react"
-import { createContext, useCallback, useContext, useState } from "react"
+import { createContext, useCallback, useContext, useMemo, useState } from "react"
 import { useInterval } from "usehooks-ts"
 
 type SignInStateType = "initial" | "verification"
@@ -80,20 +80,31 @@ export const SignInContextProvider = ({
     !!vfnStepData && timer > 0 ? 1000 : null,
   )
 
+  const contextValue = useMemo(
+    () => ({
+      vfnStepData,
+      setVfnStepData,
+      timer,
+      resetTimer,
+      proceedToVerification,
+      backToInitial,
+      state,
+      errorState,
+      setErrorState,
+    }),
+    [
+      vfnStepData,
+      timer,
+      resetTimer,
+      proceedToVerification,
+      backToInitial,
+      state,
+      errorState,
+    ],
+  )
+
   return (
-    <SignInContext.Provider
-      value={{
-        vfnStepData,
-        setVfnStepData,
-        timer,
-        resetTimer,
-        proceedToVerification,
-        backToInitial,
-        state,
-        errorState,
-        setErrorState,
-      }}
-    >
+    <SignInContext.Provider value={contextValue}>
       {children}
     </SignInContext.Provider>
   )

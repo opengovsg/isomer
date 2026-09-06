@@ -171,20 +171,24 @@ export const AuditLogExportSection = ({
           <Controller
             control={form.control}
             name="month"
-            render={({ field, fieldState }) => (
+            render={({ field, fieldState }) => {
+              const handleChange = field.onChange
+
+              return (
               <FormControl isInvalid={!!fieldState.error} maxW="20.125rem">
                 <SingleSelect
                   size="xs"
                   name="month"
                   value={field.value}
-                  onChange={field.onChange}
+                  onChange={handleChange}
                   items={monthOptions}
                   isClearable={false}
                   isSearchable={false}
                 />
                 <FormErrorMessage>{fieldState.error?.message}</FormErrorMessage>
               </FormControl>
-            )}
+              )
+            }}
           />
           {isCurrentMonthSelected && (
             <HStack spacing="0.25rem" align="center" mt="0.75rem" w="full">
@@ -208,12 +212,15 @@ export const AuditLogExportSection = ({
           <Controller
             control={form.control}
             name="scope"
-            render={({ field }) => (
+            render={({ field }) => {
+              const handleChange = field.onChange
+
+              return (
               <Radio.RadioGroup
                 display="flex"
                 flexDir="column"
                 gap="0.5rem"
-                onChange={field.onChange}
+                onChange={handleChange}
                 value={field.value}
               >
                 <Radio
@@ -231,7 +238,8 @@ export const AuditLogExportSection = ({
                   This site only
                 </Radio>
               </Radio.RadioGroup>
-            )}
+              )
+            }}
           />
         </Box>
 

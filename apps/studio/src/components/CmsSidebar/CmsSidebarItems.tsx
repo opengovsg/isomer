@@ -29,6 +29,12 @@ const generateSidebarItem = (
   asPath: string,
 ) => {
   const isActive = item.isActive ?? (!!item.href && asPath === item.href)
+  const handleClick = item.onClick
+    ? () => {
+        item.onClick()
+      }
+    : undefined
+
   return (
     <ListItem key={index}>
       <Tooltip label={item.label} placement="right">
@@ -52,7 +58,7 @@ const generateSidebarItem = (
             variant="clear"
             aria-label={item.label}
             icon={<Icon fontSize="1.5rem" />}
-            onClick={item.onClick}
+            onClick={handleClick}
           />
         )}
       </Tooltip>

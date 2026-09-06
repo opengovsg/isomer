@@ -58,11 +58,19 @@ export const MenubarDetailedList = ({
       <PopoverContent>
         <PopoverBody px={0} py="0.75rem">
           <VStack spacing="0.75rem">
-            {items.map(
-              (subItem) =>
-                !subItem.isHidden?.() && (
-                  <Button
-                    onClick={subItem.action}
+            {items.map((subItem) => {
+              if (subItem.isHidden?.()) {
+                return null
+              }
+
+              const handleClick = () => {
+                subItem.action()
+              }
+
+              return (
+                <Button
+                  key={subItem.name}
+                  onClick={handleClick}
                     variant="clear"
                     colorScheme="neutral"
                     border="none"
@@ -96,8 +104,8 @@ export const MenubarDetailedList = ({
                       </Box>
                     </HStack>
                   </Button>
-                ),
-            )}
+                )
+            })}
           </VStack>
         </PopoverBody>
       </PopoverContent>

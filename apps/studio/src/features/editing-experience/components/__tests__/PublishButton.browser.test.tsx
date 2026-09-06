@@ -19,7 +19,7 @@ vi.mock("@chakra-ui/react", async (importActual) => {
     ...actual,
     Menu: ({ children }: { children: React.ReactNode }) => children,
     MenuButton: ({ "aria-label": ariaLabel }: { "aria-label"?: string }) => (
-      <button aria-label={ariaLabel} />
+      <button type="button" aria-label={ariaLabel} />
     ),
     MenuList: ({ children }: { children: React.ReactNode }) => children,
     MenuItem: ({ children }: { children: React.ReactNode }) => children,

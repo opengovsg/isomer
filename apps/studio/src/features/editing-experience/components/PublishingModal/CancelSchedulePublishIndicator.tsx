@@ -17,6 +17,8 @@ export const CancelSchedulePublishIndicator = ({
   scheduledAt,
 }: CancelSchedulePublishIndicatorProps) => {
   const cancelScheduleDisclosure = useDisclosure()
+  const handleOpen = cancelScheduleDisclosure.onOpen
+
   return (
     <>
       {cancelScheduleDisclosure.isOpen && (
@@ -35,10 +37,7 @@ export const CancelSchedulePublishIndicator = ({
             </Text>
           </HStack>
         </TouchableTooltip>
-        <Button
-          colorScheme="critical"
-          onClick={cancelScheduleDisclosure.onOpen}
-        >
+        <Button colorScheme="critical" onClick={handleOpen}>
           Cancel schedule
         </Button>
       </HStack>

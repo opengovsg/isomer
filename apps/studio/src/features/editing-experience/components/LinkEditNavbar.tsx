@@ -113,7 +113,7 @@ export const LinkEditNavbar = (): JSX.Element => {
       <NavigationBreadcrumbs siteId={String(siteId)} pageId={String(linkId)} />
 
       {linkId && siteId && (
-        <Flex justifyContent={"end"} alignItems={"center"} flex={1}>
+        <Flex justifyContent="end" alignItems="center" flex={1}>
           <PublishButton pageId={linkId} siteId={siteId} />
         </Flex>
       )}

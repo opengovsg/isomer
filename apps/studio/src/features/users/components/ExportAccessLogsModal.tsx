@@ -81,12 +81,15 @@ export const ExportAccessLogsModal = () => {
               <Controller
                 control={form.control}
                 name="scope"
-                render={({ field }) => (
+                render={({ field }) => {
+                  const handleChange = field.onChange
+
+                  return (
                   <Radio.RadioGroup
                     display="flex"
                     flexDir="column"
                     gap="0.5rem"
-                    onChange={field.onChange}
+                    onChange={handleChange}
                     value={field.value}
                   >
                     <Radio
@@ -102,7 +105,8 @@ export const ExportAccessLogsModal = () => {
                       This site only
                     </Radio>
                   </Radio.RadioGroup>
-                )}
+                  )
+                }}
               />
             </VStack>
           </VStack>

@@ -14,11 +14,14 @@ export const PermissionsErrorBoundary = ({
   buttonText,
 }: PermissionsErrorBoundaryProps) => {
   const router = useRouter()
+  const handleBack = () => {
+    router.back()
+  }
 
   return (
     <Center minH="$100vh" minW="full">
       <Stack alignItems="center" dir="vertical" gap="3rem">
-        <HeadScratch></HeadScratch>
+        <HeadScratch />
         <Stack gap="1.75rem" alignItems="center">
           <Flex flexDir="column" alignItems="center">
             <Text as="h4" textStyle="h4">
@@ -26,7 +29,7 @@ export const PermissionsErrorBoundary = ({
             </Text>
             <Text textStyle="body-1">{description}</Text>
           </Flex>
-          <Button onClick={router.back} size="md">
+          <Button onClick={handleBack} size="md">
             {buttonText}
           </Button>
         </Stack>

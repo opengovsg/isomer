@@ -68,6 +68,7 @@ const WindowButtons = () => {
     >
       {BUTTON_COLOURS.map((color) => (
         <Box
+          key={color}
           style={{
             borderRadius: "50%",
             background: color,
@@ -145,7 +146,11 @@ const AddressBar = ({
     >
       <Box style={{ display: "flex", gap: "4px" }}>
         {[BiChevronLeft, BiChevronRight, BiRevision].map((icon) => (
-          <Icon as={icon} style={{ margin: "8px", fill: iconColor }} />
+          <Icon
+            key={icon.name}
+            as={icon}
+            style={{ margin: "8px", fill: iconColor }}
+          />
         ))}
       </Box>
       <Box
@@ -268,7 +273,7 @@ export const EditSettingsPreview = ({
         <Preview
           siteId={siteId}
           resourceId={Number(id)}
-          permalink={"/"}
+          permalink="/"
           lastModified={new Date().toISOString()}
           {...previewProps}
           overrides={{ site: { siteName, ...rest } }}

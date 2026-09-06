@@ -225,7 +225,7 @@ const PageSettingsModalContent = ({
                 name="permalink"
                 render={({ field: { onChange, ...field } }) => (
                   <Input
-                    placeholder={"URL will be autopopulated if left untouched"}
+                    placeholder="URL will be autopopulated if left untouched"
                     noOfLines={1}
                     mt="0.5rem"
                     w="100%"

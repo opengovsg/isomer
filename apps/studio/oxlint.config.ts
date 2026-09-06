@@ -20,6 +20,16 @@ export default defineConfig({
       files: ["**/*.js", "**/*.mjs", "**/*.ts", "**/*.tsx"],
       rules: {
         "react/react-in-jsx-scope": "off",
+        // React Compiler rules — enable when babel-plugin-react-compiler is
+        // added to apps/studio (stacked PR after this one).
+        "react/exhaustive-effect-dependencies": "off",
+        "react/memo-dependencies": "off",
+        "react/no-deriving-state-in-effects": "off",
+        "react/preserve-manual-memoization": "off",
+        "react/refs": "off",
+        "react/rule-suppression": "off",
+        "react/set-state-in-effect": "off",
+        "react/todo": "off",
         "react-hooks/rules-of-hooks": "error",
         "react-hooks/exhaustive-deps": "warn",
         "@next/next/google-font-display": "warn",

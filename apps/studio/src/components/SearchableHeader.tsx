@@ -26,7 +26,7 @@ export const SearchableHeader = ({ siteId }: SearchableHeaderProps) => {
       alignItems="start"
     >
       <Flex alignItems="center" as={GridItem}>
-        <Tooltip label={"Back to sites"} placement="right">
+        <Tooltip label="Back to sites" placement="right">
           <IconButton
             mr="0.5rem"
             as={NextLink}

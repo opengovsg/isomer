@@ -52,8 +52,13 @@ export const MenubarVerticalList = ({
             </Menu.Button>
 
             <Menu.List width="12.25rem">
-              {items.map((subItem, index) => (
-                <Menu.Item key={index} onClick={subItem.action}>
+              {items.map((subItem, index) => {
+                const handleClick = () => {
+                  subItem.action()
+                }
+
+                return (
+                <Menu.Item key={index} onClick={handleClick}>
                   {subItem.leftItem}
                   <Flex flexDirection="column">
                     {subItem.title && !subItem.icon && (
@@ -84,7 +89,8 @@ export const MenubarVerticalList = ({
                     />
                   )}
                 </Menu.Item>
-              ))}
+                )
+              })}
             </Menu.List>
           </>
         )

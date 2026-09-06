@@ -111,7 +111,7 @@ export const SettingsSidenav = ({ onSidenavClose }: SettingsSidenavProps) => {
     >
       {SIDENAV_ITEMS.map(({ header, items }) => {
         return (
-          <VStack align="start">
+          <VStack key={header.label} align="start">
             <HeaderRow {...header} />
             <VStack
               borderLeft="1px solid"

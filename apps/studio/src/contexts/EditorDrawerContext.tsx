@@ -2,7 +2,7 @@ import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { Dispatch, PropsWithChildren, SetStateAction } from "react"
 import type { ModifiedAsset } from "~/types/assets"
 import type { ResourceType } from "~prisma/generated/generatedEnums"
-import { createContext, useCallback, useContext, useState } from "react"
+import { createContext, useCallback, useContext, useMemo, useState } from "react"
 import { flushSync } from "react-dom"
 import { type DrawerState } from "~/types/editorDrawer"
 
@@ -71,7 +71,7 @@ export const EditorDrawerProvider = ({
   const [savedPageState, setSavedPageState] =
     useState<IsomerSchema>(initialPageState)
   // State of the page to render in the preview
-  const [previewPageState, _setPreviewPageState] =
+  const [previewPageState, setPreviewPageState] =
     useState<IsomerSchema>(initialPageState)
   // Holding state for images/files that have been modified in the page
   const [modifiedAssets, setModifiedAssets] = useState<ModifiedAsset[]>([])
@@ -82,8 +82,8 @@ export const EditorDrawerProvider = ({
   const [flashBlockIndex, setFlashBlockIndex] = useState<number | null>(null)
   const [iframeDocument, setIframeDocument] = useState<Document | null>(null)
 
-  const setPreviewPageState = useCallback(
-    (previewPageState: SetStateAction<IsomerSchema>) => {
+  const commitPreviewPageState = useCallback(
+    (nextPreviewPageState: SetStateAction<IsomerSchema>) => {
       // NOTE: We need this because our `JSONForms` instance writes to this state
       // which is immediately `setState` here.
       // This causes a skipped render issue, where the earlier update might get skipped
@@ -91,41 +91,61 @@ export const EditorDrawerProvider = ({
       // `flushSync` causes react to flush the callbacks and trigger the updates together
       // which will cause the updates to go through successfully rather than being dropped.
       flushSync(() => {
-        _setPreviewPageState(previewPageState)
+        setPreviewPageState(nextPreviewPageState)
       })
     },
     [],
   )
 
+  const contextValue = useMemo(
+    () => ({
+      currActiveIdx,
+      setCurrActiveIdx,
+      drawerState,
+      setDrawerState,
+      savedPageState,
+      setSavedPageState,
+      previewPageState,
+      setPreviewPageState: commitPreviewPageState,
+      modifiedAssets,
+      setModifiedAssets,
+      addedBlockIndex,
+      setAddedBlockIndex,
+      hoveredBlockIndex,
+      setHoveredBlockIndex,
+      flashBlockIndex,
+      setFlashBlockIndex,
+      iframeDocument,
+      setIframeDocument,
+      type,
+      permalink,
+      siteId,
+      pageId,
+      updatedAt,
+      title,
+    }),
+    [
+      currActiveIdx,
+      drawerState,
+      savedPageState,
+      previewPageState,
+      commitPreviewPageState,
+      modifiedAssets,
+      addedBlockIndex,
+      hoveredBlockIndex,
+      flashBlockIndex,
+      iframeDocument,
+      type,
+      permalink,
+      siteId,
+      pageId,
+      updatedAt,
+      title,
+    ],
+  )
+
   return (
-    <EditorDrawerContext.Provider
-      value={{
-        currActiveIdx,
-        setCurrActiveIdx,
-        drawerState,
-        setDrawerState,
-        savedPageState,
-        setSavedPageState,
-        previewPageState,
-        setPreviewPageState,
-        modifiedAssets,
-        setModifiedAssets,
-        addedBlockIndex,
-        setAddedBlockIndex,
-        hoveredBlockIndex,
-        setHoveredBlockIndex,
-        flashBlockIndex,
-        setFlashBlockIndex,
-        iframeDocument,
-        setIframeDocument,
-        type,
-        permalink,
-        siteId,
-        pageId,
-        updatedAt,
-        title,
-      }}
-    >
+    <EditorDrawerContext.Provider value={contextValue}>
       {children}
     </EditorDrawerContext.Provider>
   )

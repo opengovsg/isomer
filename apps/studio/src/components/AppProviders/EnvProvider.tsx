@@ -1,5 +1,5 @@
 import type { PropsWithChildren } from "react"
-import { createContext } from "react"
+import { createContext, useMemo } from "react"
 import { type env } from "~/env.mjs"
 
 // This file allows us to pass in environment variables to our app.
@@ -20,5 +20,7 @@ export const EnvProvider = ({
   children,
   env,
 }: PropsWithChildren<EnvContextReturn>): JSX.Element => {
-  return <EnvContext.Provider value={{ env }}>{children}</EnvContext.Provider>
+  const value = useMemo(() => ({ env }), [env])
+
+  return <EnvContext.Provider value={value}>{children}</EnvContext.Provider>
 }

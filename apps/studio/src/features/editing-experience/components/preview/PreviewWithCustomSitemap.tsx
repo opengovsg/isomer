@@ -27,7 +27,7 @@ export type PreviewProps = IsomerSchema & {
 
 // Add a fake link component to prevent the preview from navigating away
 const FakeLink = forwardRef<HTMLAnchorElement, PropsWithChildren<unknown>>(
-  function ({ children, ...rest }, ref) {
+  function FakeLink({ children, ...rest }, ref) {
     return (
       <a {...rest} ref={ref} onClick={(e) => e.preventDefault()}>
         {children}
@@ -37,12 +37,13 @@ const FakeLink = forwardRef<HTMLAnchorElement, PropsWithChildren<unknown>>(
 )
 
 const defaultLastModified = new Date().toISOString()
+const DEFAULT_OVERRIDES: PartialDeep<IsomerPageSchemaType> = {}
 
 const SuspendablePreviewWithCustomSitemap = ({
   permalink,
   lastModified = defaultLastModified,
   siteId,
-  overrides = {},
+  overrides = DEFAULT_OVERRIDES,
   siteMap,
   ...props
 }: PreviewProps) => {

@@ -20,7 +20,7 @@ const ResourceItemContainer = (props: ButtonProps) => {
       variant="clear"
       w="full"
       justifyContent="flex-start"
-      color={"base.content.default"}
+      color="base.content.default"
       height="fit-content"
       alignItems="flex-start"
       gap="0.25rem"
