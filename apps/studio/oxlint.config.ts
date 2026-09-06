@@ -1,11 +1,10 @@
 import { defineConfig } from "@isomer/oxlint-config"
 import base from "@isomer/oxlint-config/base"
-import {
+import { react } from "@isomer/oxlint-config/presets"
+import reactDoctor, {
   jsPluginSettings,
-  react,
-  reactDoctor,
   reactDoctorJsPluginEntries,
-} from "@isomer/oxlint-config/presets"
+} from "@isomer/oxlint-config/react-doctor"
 
 export default defineConfig({
   extends: [
