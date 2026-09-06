@@ -63,18 +63,18 @@ describe("useCollection", () => {
 
     it.each([
       {
-        invalidShape: "filter id is not a string",
+        invalidFilterCase: "filter id is not a string",
         filters: [{ id: 123, items: [] }],
       },
       {
-        invalidShape: "filter items is not an array",
+        invalidFilterCase: "filter items is not an array",
         filters: [{ id: "category", items: { id: "guides" } }],
       },
       {
-        invalidShape: "filter item id is not a string",
+        invalidFilterCase: "filter item id is not a string",
         filters: [{ id: "category", items: [{ id: 123 }] }],
       },
-    ])("returns empty array when $invalidShape", ({ filters }) => {
+    ])("returns empty array when $invalidFilterCase", ({ filters }) => {
       // Arrange
       window.history.replaceState(
         {},

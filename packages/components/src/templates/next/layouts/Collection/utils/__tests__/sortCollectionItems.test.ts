@@ -8,7 +8,7 @@ describe("sortCollectionItems", () => {
 
   const createItem = (overrides?: Partial<AllCardProps>): AllCardProps => {
     itemCounter++
-    return {
+    const item = {
       id: `test-${itemCounter}`,
       title: "Collection Item",
       date: new Date(),
@@ -43,7 +43,9 @@ describe("sortCollectionItems", () => {
         lastUpdated: "2024-01-01",
       },
       ...overrides,
-    } as AllCardProps
+    }
+    // SAFETY: test fixture builds a minimal collection card item
+    return item as AllCardProps
   }
 
   describe("sortBy is date", () => {

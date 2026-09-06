@@ -140,7 +140,7 @@ export const DynamicDataBannerClient = ({
   const hasFetchedRef = useRef(false)
 
   const loadDynamicData = () => {
-    if (hasFetchedRef.current || typeof window === "undefined") return
+    if (hasFetchedRef.current || globalThis.window == null) return
     hasFetchedRef.current = true
 
     // This is to ensure that the component is mounted before the query is executed

@@ -50,6 +50,7 @@ export const fetchDgsMetadata = async ({
     throw new Error(`HTTP error! status: ${response.status}`)
   }
 
+  // SAFETY: HTTP ok response body matches FetchDgsMetadataResponse contract
   const data = (await response.json()) as FetchDgsMetadataResponse
 
   return {

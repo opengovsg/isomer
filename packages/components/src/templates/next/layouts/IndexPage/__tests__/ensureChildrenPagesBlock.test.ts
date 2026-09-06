@@ -26,7 +26,7 @@ describe("ensureChildrenPagesBlock", () => {
       title: "Useful links",
       variant: "cardsWithoutImages",
       cards: [{ title: "Card" }],
-    } as IndexPageSchemaType["content"][number]
+    } satisfies IndexPageSchemaType["content"][number]
     const content: IndexPageSchemaType["content"] = [infocardsBlock]
 
     // Act

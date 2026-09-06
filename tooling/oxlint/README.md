@@ -46,6 +46,8 @@ Add package-specific `ignorePatterns` and `overrides` only—**`base.ts`** alrea
 
 Ultracite framework presets are re-exported from `@isomer/oxlint-config/presets`. Consumers only need `@isomer/oxlint-config` — not a direct `ultracite` dependency.
 
+`antiSlop` is opt-in and stricter — enable it only in workspaces that have cleared its violations (currently `packages/components`).
+
 ```ts
 import { defineConfig } from "@isomer/oxlint-config";
 import base from "@isomer/oxlint-config/base";
@@ -99,7 +101,7 @@ Or set `"options": { "typeAware": true }` in the root Oxlint config only.
 |--------|------|
 | `@isomer/oxlint-config` | `index.ts` (`defineConfig`, `OxlintConfig`) |
 | `@isomer/oxlint-config/base` | `base.ts` |
-| `@isomer/oxlint-config/presets` | `presets.ts` — Ultracite `react`, `next`, and `vitest` presets, plus standalone `reactDoctor` |
+| `@isomer/oxlint-config/presets` | `presets.ts` — Ultracite `react`, `next`, `vitest`, and opt-in `antiSlop`, plus standalone `reactDoctor` |
 | `@isomer/oxlint-config/react-doctor` | `react-doctor.ts` — React Doctor preset and JS plugin helpers |
 
 Add more JSON presets under `tooling/oxlint/` and list them under `exports` in `package.json` as you split shared vs app-specific rules.

@@ -5,7 +5,7 @@ export interface SupportedBrowserBannerProps {
 }
 
 const getUserAgent = (): string | undefined => {
-  return typeof window !== "undefined" ? window.navigator.userAgent : undefined
+  return globalThis.window?.navigator.userAgent
 }
 
 export const isSupportedBrowser = ({

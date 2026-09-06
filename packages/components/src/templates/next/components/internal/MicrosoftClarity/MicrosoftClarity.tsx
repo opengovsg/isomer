@@ -13,15 +13,18 @@ export const MicrosoftClarity = ({ msClarityId }: MicrosoftClarityProps) => {
   // 3. When the real Clarity script loads, it processes all queued calls
   useEffect(() => {
     // to not render during static site generation on the server
-    if (typeof window === "undefined") return
+    if (globalThis.window == null) return
 
     // @ts-expect-error - Clarity is not typed
-    if (!window.clarity) {
-      // oxlint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
-      ;(window as any).clarity = function () {
-        // @ts-expect-error - Clarity is not typed
-        // oxlint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, prefer-rest-params
-        ;(window.clarity.q = window.clarity.q || []).push(arguments)
+    if (!globalThis.window.clarity) {
+      // SAFETY: Clarity bootstrap assigns an untyped queue function on window before its script loads
+      // oxlint-disable-next-line anti-slop/no-chained-type-assertions -- window clarity bootstrap is untyped
+      const clarityWindow = globalThis.window as unknown as Window & {
+        clarity: ((...args: unknown[]) => void) & { q?: unknown[] }
+      }
+      clarityWindow.clarity = function (...args: unknown[]) {
+        // oxlint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+        ;(clarityWindow.clarity.q = clarityWindow.clarity.q ?? []).push(...args)
       }
     }
   }, [])

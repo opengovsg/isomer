@@ -174,6 +174,14 @@ const CollectionBlockSkeleton = ({
   )
 }
 
+const toNumberOfCards = (
+  length: number,
+): CollectionBlockNumberOfCards["numberOfCards"] => {
+  if (length === 1) return 1
+  if (length === 2) return 2
+  return 3
+}
+
 export const CollectionBlock = ({
   site,
   collectionReferenceLink,
@@ -213,8 +221,7 @@ export const CollectionBlock = ({
     return null
   }
 
-  const numberOfCards =
-    collectionPages.length as CollectionBlockNumberOfCards["numberOfCards"]
+  const numberOfCards = toNumberOfCards(collectionPages.length)
 
   return (
     <section className={compoundStyles.container()}>

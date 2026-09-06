@@ -16,9 +16,7 @@ export const useInteractionScriptLoader = ({
   id,
   timeout = 3000, // 3 seconds from manual testing
 }: UseInteractionScriptLoaderOptions) => {
-  const documentRef = useRef<Document | null>(
-    typeof document !== "undefined" ? document : null,
-  )
+  const documentRef = useRef<Document | null>(globalThis.document ?? null)
   const [shouldLoad, setShouldLoad] = useState(false)
 
   const triggerLoad = () => setShouldLoad(true)

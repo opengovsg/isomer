@@ -24,14 +24,17 @@ export const ContactMethod = ({
 }: ContactMethodProps) => {
   const methodMapping = method ? METHODS_MAPPING[method] : undefined
   const Icon = methodMapping?.Icon ?? BiEnvelope
+  const iconColor =
+    methodMapping && "color" in methodMapping
+      ? // SAFETY: color is only present on emergency_contact mapping entries
+        (methodMapping as { color?: string }).color
+      : undefined
 
   return (
     <div className={styles.container()}>
       <Icon
         className={
-          methodMapping?.color
-            ? twMerge(styles.icon(), methodMapping.color)
-            : styles.icon()
+          iconColor ? twMerge(styles.icon(), iconColor) : styles.icon()
         }
       />
       <div className={styles.textContainer()}>

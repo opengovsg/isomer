@@ -21,9 +21,7 @@ export const Pagination = () => {
           // Pagination sits below the results, so paging otherwise leaves the
           // viewport at the bottom of the previous page's list. Jump back to the
           // top so the new page starts in view, matching the legacy eGazette.
-          if (typeof window !== "undefined") {
-            window.scrollTo({ top: 0 })
-          }
+          globalThis.window?.scrollTo({ top: 0 })
         }}
       />
     </div>

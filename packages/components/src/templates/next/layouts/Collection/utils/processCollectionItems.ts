@@ -25,7 +25,7 @@ export const processCollectionItems = (
       pillTags,
     } = item
     const file = variant === "file" ? item.fileDetails : null
-    return {
+    const processedItem = {
       id,
       date,
       plaintextTags,
@@ -43,6 +43,11 @@ export const processCollectionItems = (
       imageSrc: item.image?.src,
       itemTitle: `${item.title}${file ? ` [${file.type.toUpperCase()}, ${file.size.toUpperCase()}]` : ""}`,
       formattedDate: date ? getFormattedDate(date.toISOString()) : undefined,
-    } as Exact<ProcessedCollectionCardProps, ProcessedCollectionCardProps>
+    }
+    // SAFETY: Exact<> enforces no extra props; cast is required for Record<string, never> intersection
+    return processedItem as Exact<
+      ProcessedCollectionCardProps,
+      ProcessedCollectionCardProps
+    >
   })
 }

@@ -1,3 +1,4 @@
+import type { IsomerComponent } from "~/types"
 import type { IsomerPageSchemaType } from "~/types/schema"
 import type { IsomerSitemap } from "~/types/sitemap"
 import { describe, expect, it } from "vitest"
@@ -6,27 +7,28 @@ import { ISOMER_PAGE_LAYOUTS } from "~/types/constants"
 
 import { getMetadata, getPageJsonLd, getSiteJsonLd } from "../metadata"
 
-const baseSite = {
+const baseSite = generateSiteConfig({
   siteName: "Ministry of Foreign Affairs",
   url: "https://www.mfa.gov.sg",
   logoUrl: "/logo.svg",
-} as IsomerPageSchemaType["site"]
+})
 
 const basePage = {
   permalink: "/",
   title: "Home",
-} as IsomerPageSchemaType["page"]
+}
 
 describe("getMetadata", () => {
   describe("Homepage", () => {
     it("uses the hero subtitle as the meta description when present", () => {
       // Arrange
+      // SAFETY: test fixture contains the fields getMetadata reads for homepage layout
       const props = {
         layout: ISOMER_PAGE_LAYOUTS.Homepage,
         site: baseSite,
         page: basePage,
         content: [{ type: "hero", subtitle: "Welcome to our site" }],
-      } as unknown as IsomerPageSchemaType
+      } as IsomerPageSchemaType
 
       // Act
       const actual = getMetadata(props).description
@@ -37,12 +39,13 @@ describe("getMetadata", () => {
 
     it("falls back to the site name when the hero subtitle is empty", () => {
       // Arrange
+      // SAFETY: test fixture contains the fields getMetadata reads for homepage layout
       const props = {
         layout: ISOMER_PAGE_LAYOUTS.Homepage,
         site: baseSite,
         page: basePage,
         content: [{ type: "hero", subtitle: "" }],
-      } as unknown as IsomerPageSchemaType
+      } as IsomerPageSchemaType
 
       // Act
       const actual = getMetadata(props).description
@@ -53,12 +56,13 @@ describe("getMetadata", () => {
 
     it("falls back to the site name when there is no hero block", () => {
       // Arrange
+      // SAFETY: test fixture contains the fields getMetadata reads for homepage layout
       const props = {
         layout: ISOMER_PAGE_LAYOUTS.Homepage,
         site: baseSite,
         page: basePage,
-        content: [],
-      } as unknown as IsomerPageSchemaType
+        content: [] as IsomerComponent[],
+      } as IsomerPageSchemaType
 
       // Act
       const actual = getMetadata(props).description
@@ -69,13 +73,14 @@ describe("getMetadata", () => {
 
     it("uses the overridden meta description when set", () => {
       // Arrange
+      // SAFETY: test fixture contains the fields getMetadata reads for homepage layout
       const props = {
         layout: ISOMER_PAGE_LAYOUTS.Homepage,
         site: baseSite,
         page: basePage,
         meta: { description: "Custom description" },
         content: [{ type: "hero", subtitle: "Welcome to our site" }],
-      } as unknown as IsomerPageSchemaType
+      } as IsomerPageSchemaType
 
       // Act
       const actual = getMetadata(props).description
@@ -88,12 +93,13 @@ describe("getMetadata", () => {
   describe("Content", () => {
     it("uses the page summary as the meta description", () => {
       // Arrange
+      // SAFETY: test fixture contains the fields getMetadata reads for content layout
       const props = {
         layout: ISOMER_PAGE_LAYOUTS.Content,
         site: baseSite,
         page: { ...basePage, contentPageHeader: { summary: "Page summary" } },
-        content: [],
-      } as unknown as IsomerPageSchemaType
+        content: [] as IsomerComponent[],
+      } as IsomerPageSchemaType
 
       // Act
       const actual = getMetadata(props).description
@@ -104,13 +110,14 @@ describe("getMetadata", () => {
 
     it("uses the overridden meta description when set", () => {
       // Arrange
+      // SAFETY: test fixture contains the fields getMetadata reads for content layout
       const props = {
         layout: ISOMER_PAGE_LAYOUTS.Content,
         site: baseSite,
         page: { ...basePage, contentPageHeader: { summary: "Page summary" } },
         meta: { description: "Custom description" },
-        content: [],
-      } as unknown as IsomerPageSchemaType
+        content: [] as IsomerComponent[],
+      } as IsomerPageSchemaType
 
       // Act
       const actual = getMetadata(props).description
@@ -123,10 +130,12 @@ describe("getMetadata", () => {
 
 const getSerializedJsonLd = (
   input: Parameters<typeof getSiteJsonLd>[0],
-): ReturnType<typeof getSiteJsonLd> =>
-  JSON.parse(JSON.stringify(getSiteJsonLd(input))) as ReturnType<
+): ReturnType<typeof getSiteJsonLd> => {
+  // SAFETY: JSON round-trip preserves the JSON-LD object shape for assertions
+  return JSON.parse(JSON.stringify(getSiteJsonLd(input))) as ReturnType<
     typeof getSiteJsonLd
   >
+}
 
 describe("getSiteJsonLd", () => {
   it("generates linked website and organisation entities from configured values", () => {
@@ -365,10 +374,12 @@ describe("getSiteJsonLd", () => {
 
 const getSerializedPageJsonLd = (
   input: Parameters<typeof getPageJsonLd>[0],
-): ReturnType<typeof getPageJsonLd> =>
-  JSON.parse(JSON.stringify(getPageJsonLd(input))) as ReturnType<
+): ReturnType<typeof getPageJsonLd> => {
+  // SAFETY: JSON round-trip preserves the JSON-LD object shape for assertions
+  return JSON.parse(JSON.stringify(getPageJsonLd(input))) as ReturnType<
     typeof getPageJsonLd
   >
+}
 
 describe("getPageJsonLd", () => {
   const contentPage = {

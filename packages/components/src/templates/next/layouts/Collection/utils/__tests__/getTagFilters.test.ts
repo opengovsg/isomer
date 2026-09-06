@@ -4,25 +4,26 @@ import { describe, expect, it } from "vitest"
 import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
 
 import { getTagFilters } from "../getTagFilters"
+import { testCollectionItem } from "./testHelpers"
 
 describe("getTagFilters", () => {
   it("returns filters grouped by tag category", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
-      {
+      testCollectionItem({
         title: "Item 1",
         tags: [
           { selected: ["Brain", "Heart"], category: "Body parts" },
           { selected: ["Acute"], category: "Condition" },
         ],
-      } as ProcessedCollectionCardProps,
-      {
+      }),
+      testCollectionItem({
         title: "Item 2",
         tags: [
           { selected: ["Brain"], category: "Body parts" },
           { selected: ["Chronic"], category: "Condition" },
         ],
-      } as ProcessedCollectionCardProps,
+      }),
     ]
 
     // Act
@@ -54,13 +55,13 @@ describe("getTagFilters", () => {
   it("orders categories according to tagCategories label order; unlisted last", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
-      {
+      testCollectionItem({
         title: "Item 1",
         tags: [
           { selected: ["Brain"], category: "Body parts" },
           { selected: ["Acute"], category: "Condition" },
         ],
-      } as ProcessedCollectionCardProps,
+      }),
     ]
 
     const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
@@ -101,20 +102,20 @@ describe("getTagFilters", () => {
   it("orders items within a category by options order; unlisted come first", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
-      {
+      testCollectionItem({
         title: "Item 1",
         tags: [
           { selected: ["Brain", "Arm"], category: "Body parts" },
           { selected: ["Acute"], category: "Condition" },
         ],
-      } as ProcessedCollectionCardProps,
-      {
+      }),
+      testCollectionItem({
         title: "Item 2",
         tags: [
           { selected: ["Heart"], category: "Body parts" },
           { selected: ["Chronic"], category: "Condition" },
         ],
-      } as ProcessedCollectionCardProps,
+      }),
     ]
 
     const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
@@ -169,18 +170,18 @@ describe("getTagFilters", () => {
   it("does not enforce item ordering when tagCategories is omitted (insertion order)", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
-      {
+      testCollectionItem({
         title: "Item 1",
         tags: [{ selected: ["Banana"], category: "Fruits" }],
-      } as ProcessedCollectionCardProps,
-      {
+      }),
+      testCollectionItem({
         title: "Item 2",
         tags: [{ selected: ["Apple"], category: "Fruits" }],
-      } as ProcessedCollectionCardProps,
-      {
+      }),
+      testCollectionItem({
         title: "Item 3",
         tags: [{ selected: ["Banana"], category: "Fruits" }],
-      } as ProcessedCollectionCardProps,
+      }),
     ]
 
     // Act
@@ -203,10 +204,10 @@ describe("getTagFilters", () => {
   it("returns empty array when no items have tags", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
-      {
+      testCollectionItem({
         title: "Item 1",
         description: "Description 1",
-      } as ProcessedCollectionCardProps,
+      }),
     ]
 
     // Act
@@ -230,21 +231,21 @@ describe("getTagFilters", () => {
   it("handles mixed scenarios: some categories in tagCategories, some not", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
-      {
+      testCollectionItem({
         title: "Item 1",
         tags: [
           { selected: ["Brain"], category: "Body parts" },
           { selected: ["Acute"], category: "Condition" },
           { selected: ["Red"], category: "Color" },
         ],
-      } as ProcessedCollectionCardProps,
-      {
+      }),
+      testCollectionItem({
         title: "Item 2",
         tags: [
           { selected: ["Heart"], category: "Body parts" },
           { selected: ["Blue"], category: "Color" },
         ],
-      } as ProcessedCollectionCardProps,
+      }),
     ]
 
     const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
@@ -304,13 +305,13 @@ describe("getTagFilters", () => {
   it("handles empty options arrays in tagCategories", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
-      {
+      testCollectionItem({
         title: "Item 1",
         tags: [
           { selected: ["Brain", "Heart"], category: "Body parts" },
           { selected: ["Acute"], category: "Condition" },
         ],
-      } as ProcessedCollectionCardProps,
+      }),
     ]
 
     const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
@@ -357,27 +358,27 @@ describe("getTagFilters", () => {
   it("handles duplicate tags across multiple items correctly", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
-      {
+      testCollectionItem({
         title: "Item 1",
         tags: [
           { selected: ["Brain", "Heart"], category: "Body parts" },
           { selected: ["Acute"], category: "Condition" },
         ],
-      } as ProcessedCollectionCardProps,
-      {
+      }),
+      testCollectionItem({
         title: "Item 2",
         tags: [
           { selected: ["Brain"], category: "Body parts" },
           { selected: ["Acute", "Chronic"], category: "Condition" },
         ],
-      } as ProcessedCollectionCardProps,
-      {
+      }),
+      testCollectionItem({
         title: "Item 3",
         tags: [
           { selected: ["Heart"], category: "Body parts" },
           { selected: ["Acute"], category: "Condition" },
         ],
-      } as ProcessedCollectionCardProps,
+      }),
     ]
 
     // Act
@@ -409,11 +410,11 @@ describe("getTagFilters", () => {
   it("handles items with no tags gracefully", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
-      {
+      testCollectionItem({
         title: "Item 1",
         tags: [{ selected: ["Brain"], category: "Body parts" }],
-      } as ProcessedCollectionCardProps,
-      {
+      }),
+      testCollectionItem({
         title: "Item 2",
         // No tags property
         id: "item2",
@@ -423,8 +424,8 @@ describe("getTagFilters", () => {
         referenceLinkHref: undefined,
         imageSrc: undefined,
         itemTitle: "Item 2",
-      } as ProcessedCollectionCardProps,
-      {
+      }),
+      testCollectionItem({
         title: "Item 3",
         tags: [], // Empty tags array
         id: "item3",
@@ -434,8 +435,8 @@ describe("getTagFilters", () => {
         referenceLinkHref: undefined,
         imageSrc: undefined,
         itemTitle: "Item 3",
-      } as unknown as ProcessedCollectionCardProps,
-      {
+      }),
+      testCollectionItem({
         title: "Item 4",
         tags: [
           { selected: [], category: "Body parts" }, // Empty selected array
@@ -447,7 +448,7 @@ describe("getTagFilters", () => {
         referenceLinkHref: undefined,
         imageSrc: undefined,
         itemTitle: "Item 4",
-      } as unknown as ProcessedCollectionCardProps,
+      }),
     ]
 
     // Act
@@ -467,14 +468,14 @@ describe("getTagFilters", () => {
   it("handles partial tagCategories configuration", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
-      {
+      testCollectionItem({
         title: "Item 1",
         tags: [
           { selected: ["Brain", "Heart"], category: "Body parts" },
           { selected: ["Acute"], category: "Condition" },
           { selected: ["Red"], category: "Color" },
         ],
-      } as ProcessedCollectionCardProps,
+      }),
     ]
 
     const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [

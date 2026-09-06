@@ -334,6 +334,7 @@ export const NoFiltersBlogCard: Story = {
 
 export const FileCard: Story = {
   args: generateArgs({
+    // SAFETY: Story fixture provides a partial sitemap item for collection stories.
     collectionItems: [COLLECTION_ITEMS[1]] as IsomerSitemap[],
   }),
 }
@@ -341,6 +342,7 @@ export const FileCard: Story = {
 export const FileCardNoImage: Story = {
   args: generateArgs({
     collectionItems: [
+      // SAFETY: Story fixture provides a partial sitemap item for collection stories.
       { ...COLLECTION_ITEMS[1], image: undefined } as IsomerSitemap,
     ],
   }),

@@ -4,13 +4,14 @@ import { describe, expect, it } from "vitest"
 
 import { NO_SPECIFIED_YEAR_FILTER_ID } from "../constants"
 import { getFilteredItems } from "../getFilteredItems"
+import { testCollectionItem } from "./testHelpers"
 
 describe("getFilteredItems", () => {
   it("returns all items when there is no search value and no applied filters", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
-      { title: "A", description: "" } as ProcessedCollectionCardProps,
-      { title: "B", description: "" } as ProcessedCollectionCardProps,
+      testCollectionItem({ title: "A", description: "" }),
+      testCollectionItem({ title: "B", description: "" }),
     ]
 
     // Act
@@ -23,14 +24,14 @@ describe("getFilteredItems", () => {
   it("filters by search value matching the title, case-insensitively", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
-      {
+      testCollectionItem({
         title: "Guide to Isomer",
         description: "",
-      } as ProcessedCollectionCardProps,
-      {
+      }),
+      testCollectionItem({
         title: "Something else",
         description: "",
-      } as ProcessedCollectionCardProps,
+      }),
     ]
 
     // Act
@@ -43,11 +44,11 @@ describe("getFilteredItems", () => {
   it("filters by search value matching the description", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
-      {
+      testCollectionItem({
         title: "A",
         description: "Contains keyword here",
-      } as ProcessedCollectionCardProps,
-      { title: "B", description: "No match" } as ProcessedCollectionCardProps,
+      }),
+      testCollectionItem({ title: "B", description: "No match" }),
     ]
 
     // Act
@@ -60,16 +61,16 @@ describe("getFilteredItems", () => {
   it("filters by year matching the item's date", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
-      {
+      testCollectionItem({
         title: "A",
         description: "",
         date: new Date("2023-05-01"),
-      } as ProcessedCollectionCardProps,
-      {
+      }),
+      testCollectionItem({
         title: "B",
         description: "",
         date: new Date("2022-05-01"),
-      } as ProcessedCollectionCardProps,
+      }),
     ]
     const appliedFilters: AppliedFilter[] = [
       { id: "year", items: [{ id: "2023" }] },
@@ -85,16 +86,16 @@ describe("getFilteredItems", () => {
   it("filters items with no date via the 'not specified' year option", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
-      {
+      testCollectionItem({
         title: "A",
         description: "",
         date: undefined,
-      } as ProcessedCollectionCardProps,
-      {
+      }),
+      testCollectionItem({
         title: "B",
         description: "",
         date: new Date("2022-05-01"),
-      } as ProcessedCollectionCardProps,
+      }),
     ]
     const appliedFilters: AppliedFilter[] = [
       { id: "year", items: [{ id: NO_SPECIFIED_YEAR_FILTER_ID }] },
@@ -110,24 +111,27 @@ describe("getFilteredItems", () => {
   it("filters a migrated 'Category' group exactly like any other tag category (OR within group)", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
-      {
+      testCollectionItem({
         title: "A",
         description: "",
         tags: [{ selected: ["Guides"], category: "Category" }],
-      } as ProcessedCollectionCardProps,
-      {
+      }),
+      testCollectionItem({
         title: "B",
         description: "",
         tags: [{ selected: ["Articles"], category: "Category" }],
-      } as ProcessedCollectionCardProps,
-      {
+      }),
+      testCollectionItem({
         title: "C",
         description: "",
         tags: [{ selected: ["Tutorials"], category: "Category" }],
-      } as ProcessedCollectionCardProps,
+      }),
     ]
     const appliedFilters: AppliedFilter[] = [
-      { id: "Category", items: [{ id: "Guides" }, { id: "Articles" }] },
+      {
+        id: "Category",
+        items: [{ id: "Guides" }, { id: "Articles" }],
+      },
     ]
 
     // Act
@@ -140,22 +144,22 @@ describe("getFilteredItems", () => {
   it("applies AND semantics across different filter groups, including a migrated Category group", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
-      {
+      testCollectionItem({
         title: "A",
         description: "",
         tags: [
           { selected: ["Guides"], category: "Category" },
           { selected: ["Health"], category: "Topic" },
         ],
-      } as ProcessedCollectionCardProps,
-      {
+      }),
+      testCollectionItem({
         title: "B",
         description: "",
         tags: [
           { selected: ["Guides"], category: "Category" },
           { selected: ["Finance"], category: "Topic" },
         ],
-      } as ProcessedCollectionCardProps,
+      }),
     ]
     const appliedFilters: AppliedFilter[] = [
       { id: "Category", items: [{ id: "Guides" }] },
@@ -172,11 +176,11 @@ describe("getFilteredItems", () => {
   it("excludes items that have no tags at all when a tag filter is applied", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
-      {
+      testCollectionItem({
         title: "A",
         description: "",
         tags: undefined,
-      } as ProcessedCollectionCardProps,
+      }),
     ]
     const appliedFilters: AppliedFilter[] = [
       { id: "Category", items: [{ id: "Guides" }] },
@@ -192,16 +196,16 @@ describe("getFilteredItems", () => {
   it("combines search value with tag filters", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
-      {
+      testCollectionItem({
         title: "Guide to Isomer",
         description: "",
         tags: [{ selected: ["Guides"], category: "Category" }],
-      } as ProcessedCollectionCardProps,
-      {
+      }),
+      testCollectionItem({
         title: "Guide to something else",
         description: "",
         tags: [{ selected: ["Articles"], category: "Category" }],
-      } as ProcessedCollectionCardProps,
+      }),
     ]
     const appliedFilters: AppliedFilter[] = [
       { id: "Category", items: [{ id: "Guides" }] },
@@ -217,11 +221,11 @@ describe("getFilteredItems", () => {
   it("matches titles with fullwidth parentheses when searching with ASCII parentheses", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
-      {
+      testCollectionItem({
         title:
           "CIRCULAR ON NEW FEEDBACK CHANNEL ON PUBLIC SECTOR FACILITIES MANAGEMENT （FM） PROJECTS",
         description: "",
-      } as ProcessedCollectionCardProps,
+      }),
     ]
     const search =
       "CIRCULAR ON NEW FEEDBACK CHANNEL ON PUBLIC SECTOR FACILITIES MANAGEMENT (FM)"
@@ -236,11 +240,11 @@ describe("getFilteredItems", () => {
   it("matches titles without a space before parentheses when the search includes one", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
-      {
+      testCollectionItem({
         title:
           "Facilities Management(FM) Performance Appraisal Framework for FM Companies",
         description: "",
-      } as ProcessedCollectionCardProps,
+      }),
     ]
 
     // Act
@@ -253,15 +257,15 @@ describe("getFilteredItems", () => {
   it("matches a partial search from the middle of the title", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
-      {
+      testCollectionItem({
         title:
           "Facilities Management (FM) Performance Appraisal Framework for FM Companies",
         description: "",
-      } as ProcessedCollectionCardProps,
-      {
+      }),
+      testCollectionItem({
         title: "Something else",
         description: "",
-      } as ProcessedCollectionCardProps,
+      }),
     ]
 
     // Act
@@ -274,14 +278,14 @@ describe("getFilteredItems", () => {
   it("matches via description when title does not match and description is missing", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
-      {
+      testCollectionItem({
         title: "Unrelated title",
         description: undefined,
-      } as unknown as ProcessedCollectionCardProps,
-      {
+      }),
+      testCollectionItem({
         title: "Another page",
         description: "Contains management (FM) guidance",
-      } as ProcessedCollectionCardProps,
+      }),
     ]
 
     // Act

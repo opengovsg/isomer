@@ -7,17 +7,14 @@ import { handleHorizontalScrollKeyDown } from "~/utils/handleHorizontalScrollKey
 
 import { Prose } from "../../native/Prose"
 
-const CALLOUT_CONFIG: Record<
-  CalloutVariant,
-  { label: string; icon?: IconType }
-> = {
+const CALLOUT_CONFIG = {
   info: { label: "Information" },
   information: { label: "Information" },
   goodToKnow: { label: "Positive update", icon: BiCheckCircle },
   warning: { label: "Warning", icon: BiErrorCircle },
   urgent: { label: "Needs urgent action", icon: BiError },
   note: { label: "Note" },
-}
+} satisfies Record<CalloutVariant, { label: string; icon?: IconType }>
 
 const calloutStyles = tv({
   slots: {
@@ -73,7 +70,9 @@ export const Callout = ({
   headingLevel,
   variant = DEFAULT_CALLOUT_VARIANT,
 }: CalloutProps) => {
-  const { icon: Icon, label } = CALLOUT_CONFIG[variant]
+  const config = CALLOUT_CONFIG[variant]
+  const label = config.label
+  const Icon = "icon" in config ? config.icon : undefined
   const styles = calloutStyles({ variant, hasIcon: !!Icon })
 
   return (

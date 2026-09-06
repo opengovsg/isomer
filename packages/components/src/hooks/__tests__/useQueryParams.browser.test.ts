@@ -7,7 +7,7 @@ describe("useQueryParams", () => {
   let originalPushState: History["pushState"]
 
   beforeEach(() => {
-    ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
+    Reflect.set(globalThis, "IS_REACT_ACT_ENVIRONMENT", true)
     originalPushState = window.history.pushState
     window.history.replaceState({}, "", "/")
   })

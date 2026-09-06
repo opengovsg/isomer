@@ -16,7 +16,7 @@ import { componentSchemaDefinitions } from "./components"
 type ScopedSchemaLayout =
   (typeof ISOMER_USABLE_PAGE_LAYOUTS)[keyof typeof ISOMER_USABLE_PAGE_LAYOUTS]
 
-const LAYOUT_SCHEMA_MAP: Record<ScopedSchemaLayout, TSchema> = {
+const LAYOUT_SCHEMA_MAP = {
   article: ArticlePageSchema,
   content: ContentPageSchema,
   database: DatabasePageSchema,
@@ -25,7 +25,7 @@ const LAYOUT_SCHEMA_MAP: Record<ScopedSchemaLayout, TSchema> = {
   link: LinkRefSchema,
   collection: CollectionPageSchema,
   file: FileRefSchema,
-} as const
+} as const satisfies Record<ScopedSchemaLayout, TSchema>
 
 // Utility type to extract all possible dot-separated paths from an object type
 // This recursively builds paths like "page", "page.database", "page.contentPageHeader", etc.
@@ -65,6 +65,12 @@ interface ScopeLayoutMap {
   file: SchemaPathsFrom<typeof FileRefSchema>
 }
 
+interface FilterableSchemaObject extends TSchema {
+  properties?: Record<string, TSchema>
+  required?: string[]
+  allOf?: FilterableSchemaObject[]
+}
+
 type FilterMode = "include" | "exclude"
 
 function shouldKeepField(
@@ -75,13 +81,22 @@ function shouldKeepField(
   return mode === "include" ? fieldSet.has(field) : !fieldSet.has(field)
 }
 
+function hasPropertiesRecord(
+  schema: FilterableSchemaObject,
+): schema is FilterableSchemaObject & {
+  properties: Record<string, TSchema>
+} {
+  const { properties } = schema
+  return properties !== undefined && !Array.isArray(properties)
+}
+
 function filterRequiredFields(
-  schema: Record<string, unknown>,
+  schema: FilterableSchemaObject,
   fieldSet: Set<string>,
   mode: FilterMode,
 ): void {
   if (Array.isArray(schema.required)) {
-    const filteredRequired = (schema.required as string[]).filter((field) =>
+    const filteredRequired = schema.required.filter((field) =>
       shouldKeepField(field, fieldSet, mode),
     )
     if (filteredRequired.length > 0) {
@@ -95,14 +110,14 @@ function filterRequiredFields(
 // Filters a single schema object's properties and required fields.
 // Returns null if all properties were removed.
 function filterSchemaProperties(
-  schema: Record<string, unknown>,
+  schema: FilterableSchemaObject,
   fieldSet: Set<string>,
   mode: FilterMode,
-): Record<string, unknown> | null {
-  if (!schema.properties || typeof schema.properties !== "object") {
+): FilterableSchemaObject | null {
+  if (!hasPropertiesRecord(schema)) {
     return schema
   }
-  const filteredProperties: Record<string, unknown> = {}
+  const filteredProperties: Record<string, TSchema> = {}
   for (const [key, value] of Object.entries(schema.properties)) {
     if (shouldKeepField(key, fieldSet, mode)) {
       filteredProperties[key] = value
@@ -111,10 +126,10 @@ function filterSchemaProperties(
   if (Object.keys(filteredProperties).length === 0) {
     return null
   }
-  const result: Record<string, unknown> = {
+  const result = {
     ...schema,
     properties: filteredProperties,
-  }
+  } satisfies FilterableSchemaObject
   filterRequiredFields(result, fieldSet, mode)
   return result
 }
@@ -152,7 +167,7 @@ export function getScopedSchema<T extends ScopedSchemaLayout>({
     )
   }
 
-  let currentSchema = LAYOUT_SCHEMA_MAP[layout] // root schema
+  let currentSchema: FilterableSchemaObject = LAYOUT_SCHEMA_MAP[layout] // root schema
 
   for (const part of scope.split(".")) {
     // just in case runtime error occurs (should not be since we control what's passed in)
@@ -161,7 +176,8 @@ export function getScopedSchema<T extends ScopedSchemaLayout>({
         `Invalid scope path: "${scope}". Property "${part}" not found in schema for layout "${layout}"`,
       )
     }
-    currentSchema = currentSchema.properties[part] as TSchema
+    // SAFETY: existence validated by guard above; nested layout property is always a TypeBox schema.
+    currentSchema = currentSchema.properties[part]
   }
 
   const fieldSet = include?.length
@@ -175,11 +191,7 @@ export function getScopedSchema<T extends ScopedSchemaLayout>({
     if (currentSchema.allOf) {
       const filteredAllOf = []
       for (const subSchema of currentSchema.allOf) {
-        const filtered = filterSchemaProperties(
-          subSchema as Record<string, unknown>,
-          fieldSet,
-          mode,
-        )
+        const filtered = filterSchemaProperties(subSchema, fieldSet, mode)
         if (filtered) {
           filteredAllOf.push(filtered)
         }
@@ -200,7 +212,7 @@ export function getScopedSchema<T extends ScopedSchemaLayout>({
       return {
         ...result,
         ...componentSchemaDefinitions,
-      } as TSchema
+      }
     }
   }
 

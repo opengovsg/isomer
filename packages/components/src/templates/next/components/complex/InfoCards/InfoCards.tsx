@@ -31,6 +31,7 @@ const InfoCardsToRender = (props: InfoCardsToRenderProps) => {
 
   switch (props.variant) {
     case CARDS_WITH_IMAGES: {
+      // SAFETY: switch on variant narrows props to the cards-with-images branch
       const { cards } = props as Extract<
         InfoCardsProps,
         { variant: typeof CARDS_WITH_IMAGES }
@@ -48,6 +49,7 @@ const InfoCardsToRender = (props: InfoCardsToRenderProps) => {
       ))
     }
     case CARDS_WITHOUT_IMAGES: {
+      // SAFETY: switch on variant narrows props to the cards-without-images branch
       const { cards } = props as Extract<
         InfoCardsProps,
         { variant: typeof CARDS_WITHOUT_IMAGES }
@@ -62,6 +64,7 @@ const InfoCardsToRender = (props: InfoCardsToRenderProps) => {
       ))
     }
     case CARDS_WITH_FULL_IMAGES: {
+      // SAFETY: switch on variant narrows props to the cards-with-full-images branch
       const { cards } = props as Extract<
         InfoCardsProps,
         { variant: typeof CARDS_WITH_FULL_IMAGES }

@@ -15,6 +15,7 @@ export const fetchDataFromDgsApiDataset = async (
     throw new Error("Failed to fetch data from DGS API")
   }
 
+  // SAFETY: HTTP ok response body matches DgsApiDatasetSearchResponse contract
   const data = (await res.json()) as DgsApiDatasetSearchResponse
 
   // Safety check:

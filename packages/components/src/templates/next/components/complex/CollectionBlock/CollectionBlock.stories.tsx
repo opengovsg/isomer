@@ -59,27 +59,27 @@ const generateArgs = ({
     taggedOptionIds?: string[]
   }
 >): Partial<CollectionBlockProps> => {
+  const firstCard: IsomerSitemap = {
+    id: "3",
+    title:
+      "Date of Government Gazette Notification on Dissolution of Parliament",
+    tagged: taggedOptionIds,
+    permalink: "/collection-1/item-1",
+    layout: "article",
+    summary: "",
+    date: isDateless ? undefined : "2021-01-03",
+    lastModified: isDateless ? "" : new Date("2021-01-03").toISOString(),
+    children: [],
+  }
+  if (!withImageFallback) {
+    firstCard.image = {
+      src: "https://images.unsplash.com/photo-1573865526739-10659fec78a5?q=80&w=3715&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      alt: "Image 1",
+    }
+  }
+
   const cards: IsomerSitemap[] = [
-    {
-      id: "3",
-      title:
-        "Date of Government Gazette Notification on Dissolution of Parliament",
-      tagged: taggedOptionIds,
-      permalink: "/collection-1/item-1",
-      layout: "article",
-      summary: "",
-      date: isDateless ? undefined : "2021-01-03",
-      lastModified: isDateless ? "" : new Date("2021-01-03").toISOString(),
-      children: [],
-      ...(withImageFallback
-        ? {}
-        : {
-            image: {
-              src: "https://images.unsplash.com/photo-1573865526739-10659fec78a5?q=80&w=3715&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-              alt: "Image 1",
-            },
-          }),
-    },
+    firstCard,
     {
       id: "4",
       title: "Impact of Foreign Professionals on our Economy and Society",

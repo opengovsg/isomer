@@ -11,11 +11,12 @@ export const getCollectionParent = ({
   collectionId,
 }: GetCollectionParentProps): IsomerCollectionPageSitemap | null => {
   const collectionParent = site.siteMapArray.find(
-    (item) => item.id === collectionId && item.layout === "collection",
+    (item): item is IsomerCollectionPageSitemap =>
+      item.id === collectionId && item.layout === "collection",
   )
 
   if (collectionParent) {
-    return collectionParent as IsomerCollectionPageSitemap
+    return collectionParent
   }
 
   // NOTE: Signal an error to the caller that no parent could be found

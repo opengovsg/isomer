@@ -47,6 +47,7 @@ describe("getSanitizedIframeWithTitle", () => {
       )
     }
 
+    // SAFETY: DOMPurify fragment firstChild is an HTMLIFrameElement for iframe HTML input
     const unrelated = DOMPurify.sanitize(
       '<iframe src="https://other.com"></iframe>',
       {

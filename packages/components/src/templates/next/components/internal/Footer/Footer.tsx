@@ -32,7 +32,7 @@ import { focusVisibleHighlight } from "~/utils/tailwind"
 import { Link } from "../Link"
 import { ClientCopyrightYear } from "./ClientCopyrightYear"
 
-const SocialMediaTypeToIconMap: Record<SocialMediaType, IconType> = {
+const SocialMediaTypeToIconMap = {
   facebook: FaFacebook,
   twitter: FaXTwitter,
   instagram: FaInstagram,
@@ -44,7 +44,7 @@ const SocialMediaTypeToIconMap: Record<SocialMediaType, IconType> = {
   whatsapp: FaWhatsapp,
   flickr: FaFlickr,
   threads: FaThreads,
-}
+} satisfies Record<SocialMediaType, IconType>
 
 const SiteNameSection = ({ siteName }: Pick<FooterProps, "siteName">) => {
   return <h2 className="prose-display-xs">{siteName}</h2>

@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest"
 import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
 
 import { getAvailableFilters } from "../getAvailableFilters"
+import { testCollectionItem } from "./testHelpers"
 
 describe("getAvailableFilters", () => {
   it("returns no filters when there are no items", () => {
@@ -20,11 +21,11 @@ describe("getAvailableFilters", () => {
   it("renders a migrated 'Category' tagCategories group as an ordinary tag filter, not duplicated", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
-      {
+      testCollectionItem({
         title: "Item 1",
         tags: [{ selected: ["Guides"], category: "Category" }],
         date: new Date("2023-01-01"),
-      } as ProcessedCollectionCardProps,
+      }),
     ]
     const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
       {
@@ -53,11 +54,11 @@ describe("getAvailableFilters", () => {
   it("orders tag filters (including a migrated Category group) before the year filter", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
-      {
+      testCollectionItem({
         title: "Item 1",
         tags: [{ selected: ["Guides"], category: "Category" }],
         date: new Date("2023-01-01"),
-      } as ProcessedCollectionCardProps,
+      }),
     ]
 
     // Act
@@ -70,11 +71,11 @@ describe("getAvailableFilters", () => {
   it("omits filters that have no items", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
-      {
+      testCollectionItem({
         title: "Item 1",
         tags: [],
         date: undefined,
-      } as unknown as ProcessedCollectionCardProps,
+      }),
     ]
 
     // Act

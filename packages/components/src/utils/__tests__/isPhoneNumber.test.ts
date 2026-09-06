@@ -41,7 +41,7 @@ describe("isPhoneNumber", () => {
       const invalidInputs = [null, undefined, 12345678, {}, [], true, false]
 
       invalidInputs.forEach((input) => {
-        expect(isPhoneNumber(input as any)).toBe(false)
+        expect(isPhoneNumber(input)).toBe(false)
       })
     })
   })

@@ -87,6 +87,7 @@ export const Default: Story = {
     (Story) => (
       <div
         style={
+          // SAFETY: CSS custom properties are valid at runtime but omitted from React.CSSProperties
           {
             "--color-brand-interaction-hover": "#00422C",
           } as React.CSSProperties

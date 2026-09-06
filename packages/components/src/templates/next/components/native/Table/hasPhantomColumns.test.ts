@@ -231,6 +231,7 @@ describe("hasPhantomColumns", () => {
       type: "paragraph" as const,
       content: [{ type: "text" as const, text: "" }],
     }
+    // SAFETY: Test builds a large TipTap table fixture for row-cap behavior.
     const rows = Array.from({ length: MAX_TABLE_ROWS + 1 }, () => ({
       type: "tableRow" as const,
       content: [

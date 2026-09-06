@@ -40,6 +40,7 @@ export const LiteYouTubeEmbed = ({
         const response = await fetch(oEmbedUrl)
         if (!response.ok) return
 
+        // SAFETY: YouTube oEmbed returns a JSON object with an optional thumbnail_url field.
         const data = (await response.json()) as { thumbnail_url?: string }
         if (cancelled) return
         if (data.thumbnail_url) {

@@ -58,7 +58,12 @@ export const SearchField = ({
 
   const isDisabled = props.isDisabled ?? false
   const isInvalid = props.isInvalid ?? false
-  const value = typeof inputProps.value === "string" ? inputProps.value : ""
+  const rawValue = inputProps.value
+  let value = ""
+  if (Object.prototype.toString.call(rawValue) === "[object String]") {
+    // SAFETY: Object.prototype.toString guard confirms rawValue is a string primitive
+    value = rawValue as string
+  }
   const isEmpty = !value || value.length === 0
 
   const handleClear = () => {

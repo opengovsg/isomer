@@ -115,9 +115,11 @@ describe("resolveTableLayout", () => {
     })
   })
 
+  type TableSpanAttribute = string | number | null | undefined
+
   it("returns auto layout for hostile colspan values without throwing", () => {
     // Arrange
-    const cell = (colspan: unknown) => ({
+    const cell = (colspan: TableSpanAttribute) => ({
       type: "tableCell" as const,
       attrs: colspan !== undefined ? { colspan } : undefined,
       content: [
@@ -131,10 +133,16 @@ describe("resolveTableLayout", () => {
       type: "tableRow" as const,
       content: cells,
     })
+    const toHostileTableRows = (
+      hostileRow: ReturnType<typeof row>,
+    ): TableRows => {
+      // SAFETY: Test passes TipTap rows with hostile colspan attrs through resolveTableLayout.
+      return [hostileRow] as TableRows
+    }
     const hostileCases = [
-      { rows: [row(cell(4294967296))] as unknown as TableRows, kind: "fixed" },
-      { rows: [row(cell(-5))] as unknown as TableRows, kind: "auto" },
-      { rows: [row(cell("1e9"))] as unknown as TableRows, kind: "auto" },
+      { rows: toHostileTableRows(row(cell(4294967296))), kind: "fixed" },
+      { rows: toHostileTableRows(row(cell(-5))), kind: "auto" },
+      { rows: toHostileTableRows(row(cell("1e9"))), kind: "auto" },
     ]
 
     for (const { rows, kind } of hostileCases) {

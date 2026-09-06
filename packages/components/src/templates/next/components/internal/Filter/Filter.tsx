@@ -60,10 +60,10 @@ export const Filter = ({
     filters.reduce((acc, { id }) => ({ ...acc, [id]: true }), {}),
   )
 
-  const appliedItemsById = appliedFilters.reduce(
-    (acc, { id, items }) => ({ ...acc, [id]: items.map(({ id }) => id) }),
-    {} as Record<string, string[]>,
-  )
+  const appliedItemsById: Record<string, string[]> = {}
+  for (const { id, items } of appliedFilters) {
+    appliedItemsById[id] = items.map(({ id: itemId }) => itemId)
+  }
 
   const updateFilterToggle = (filterId: string) => {
     setShowFilter((prevFilters) => ({

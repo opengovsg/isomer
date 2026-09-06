@@ -60,11 +60,13 @@ export const DgsTransformedContactInformation = ({
   isLoading,
   ...rest
 }: DgsTransformedContactInformationProps) => {
+  // SAFETY: transformDgsField returns the DGS record value typed as the configured field contract.
   const title = transformDgsField(
     rest.title,
     record,
   ) as ContactInformationUIProps["title"]
 
+  // SAFETY: transformDgsField returns the DGS record value typed as the configured field contract.
   const description = transformDgsField(
     rest.description,
     record,

@@ -15,8 +15,8 @@ const SITE_LOGO_FALLBACK = {
 
 const createArticleChild = (
   overrides?: Partial<IsomerSitemap>,
-): IsomerSitemap =>
-  ({
+): IsomerSitemap => {
+  const child = {
     id: "article-1",
     title: "Article 1",
     summary: "Summary",
@@ -24,7 +24,10 @@ const createArticleChild = (
     permalink: "/collection/article-1",
     layout: "article" as const,
     ...overrides,
-  }) as IsomerSitemap
+  }
+  // SAFETY: test fixture builds a minimal article sitemap node
+  return child as IsomerSitemap
+}
 
 const createSiteWithChildren = (children: IsomerSitemap[]) =>
   generateSiteConfig({

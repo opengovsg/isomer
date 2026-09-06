@@ -103,18 +103,21 @@ const generateArgs = ({
 
   if (withoutImage) {
     cards.forEach((card) => {
-      delete (card as any).imageAlt
-      delete (card as any).imageUrl
+      // SAFETY: Story args omit image fields for cardsWithoutImages variant
+      delete (card as { imageAlt?: string; imageUrl?: string }).imageAlt
+      // SAFETY: Story args omit image fields for cardsWithoutImages variant
+      delete (card as { imageAlt?: string; imageUrl?: string }).imageUrl
     })
   }
 
   if (!isImageFitContain) {
     cards.forEach((card) => {
-      delete (card as any).imageFit
+      // SAFETY: Story args omit imageFit unless testing contain fit
+      delete (card as { imageFit?: string }).imageFit
     })
   }
 
-  return {
+  const baseArgs = {
     layout: layout,
     title: "Section title ministry highlights",
     subtitle:
@@ -123,8 +126,19 @@ const generateArgs = ({
     variant,
     cards: allCards,
     headingLevel: 2,
-    ...(hasCTA ? { label: "This is a CTA", url: "/" } : {}),
-  } as InfoCardsProps
+  }
+
+  if (hasCTA) {
+    // SAFETY: generateArgs builds a complete InfoCardsProps object for Storybook
+    return {
+      ...baseArgs,
+      label: "This is a CTA",
+      url: "/",
+    } as InfoCardsProps
+  }
+
+  // SAFETY: generateArgs builds a complete InfoCardsProps object for Storybook
+  return baseArgs as InfoCardsProps
 }
 
 export const WithImage3Columns: Story = {
