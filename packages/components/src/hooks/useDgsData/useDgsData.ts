@@ -88,9 +88,9 @@ export const useDgsData = ({
           await fetchRecords()
         }
         setIsError(false)
+        setIsLoading(false)
       } catch {
         setIsError(true)
-      } finally {
         setIsLoading(false)
       }
     }

@@ -21,7 +21,7 @@ import { usePress } from "@react-aria/interactions"
 import { mergeProps } from "@react-aria/utils"
 import { useCheckboxGroupState } from "@react-stately/checkbox"
 import { useToggleState } from "@react-stately/toggle"
-import { createContext, useContext, useRef } from "react"
+import { createContext, useContext, useMemo, useRef } from "react"
 import { BiCheck, BiMinus } from "react-icons/bi"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
@@ -63,14 +63,17 @@ export const CheckboxGroup = (props: CheckboxGroupProps) => {
     errorMessageProps,
   } = useCheckboxGroup(groupProps, state)
 
+  const contextValue = useMemo(
+    () => ({
+      state,
+      isDisabled: groupProps.isDisabled,
+      isReadOnly: groupProps.isReadOnly,
+    }),
+    [state, groupProps.isDisabled, groupProps.isReadOnly],
+  )
+
   return (
-    <CheckboxGroupContext.Provider
-      value={{
-        state,
-        isDisabled: groupProps.isDisabled,
-        isReadOnly: groupProps.isReadOnly,
-      }}
-    >
+    <CheckboxGroupContext.Provider value={contextValue}>
       <div
         {...ariaGroupProps}
         className={twMerge("flex flex-col gap-4", className)}
@@ -202,6 +205,7 @@ const CheckboxRenderer = ({
         ref={inputRef}
         type="checkbox"
         checked={isSelected || isIndeterminate}
+        readOnly
         className="sr-only"
       />
       <div
@@ -237,7 +241,6 @@ const StandaloneCheckbox = (props: CheckboxProps) => {
 
   return (
     <CheckboxRenderer
-      children={children}
       className={className}
       inputProps={inputProps}
       inputRef={ref}
@@ -245,7 +248,9 @@ const StandaloneCheckbox = (props: CheckboxProps) => {
       isInvalid={checkboxProps.isInvalid ?? false}
       isIndeterminate={checkboxProps.isIndeterminate ?? false}
       isSelected={state.isSelected}
-    />
+    >
+      {children}
+    </CheckboxRenderer>
   )
 }
 
@@ -277,7 +282,6 @@ const GroupedCheckbox = (props: CheckboxProps) => {
 
   return (
     <CheckboxRenderer
-      children={children}
       className={className}
       inputProps={inputProps}
       inputRef={ref}
@@ -285,7 +289,9 @@ const GroupedCheckbox = (props: CheckboxProps) => {
       isInvalid={checkboxProps.isInvalid ?? false}
       isIndeterminate={checkboxProps.isIndeterminate ?? false}
       isSelected={state.isSelected(checkboxProps.value ?? "")}
-    />
+    >
+      {children}
+    </CheckboxRenderer>
   )
 }
 

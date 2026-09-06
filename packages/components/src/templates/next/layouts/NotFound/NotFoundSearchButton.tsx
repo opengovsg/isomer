@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore } from "react"
 import { getWordsFromPermalink } from "~/utils/getWordsFromPermalink"
+import { emptyExternalStoreSubscribe } from "~/utils/emptyExternalStoreSubscribe"
 
 import { LinkButton } from "../../components/internal/LinkButton"
 
@@ -10,7 +11,7 @@ const getPathnameServerSnapshot = () => ""
 
 export const NotFoundSearchButton = () => {
   const permalink = useSyncExternalStore(
-    () => () => {},
+    emptyExternalStoreSubscribe,
     getPathnameSnapshot,
     getPathnameServerSnapshot,
   )

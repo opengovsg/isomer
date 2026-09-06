@@ -4,6 +4,7 @@ import { isValidMapEmbedUrl, isValidOGPMapsEmbedUrl } from "~/utils/validation"
 
 import { BaseParagraph } from "../../internal/BaseParagraph"
 import { ComponentContent } from "../../internal/customCssClass"
+import { IFRAME_SANDBOX } from "../../complex/Video/shared"
 
 const createMapStyles = tv({
   slots: {
@@ -49,6 +50,7 @@ export const Map = ({ title, url, shouldLazyLoad = true }: MapProps) => {
           className={compoundStyles.iframe()}
           src={url}
           title={title || "Map embedded in the page"}
+          sandbox={IFRAME_SANDBOX}
           allowFullScreen
           loading={shouldLazyLoad ? "lazy" : "eager"}
           referrerPolicy="no-referrer-when-downgrade"
