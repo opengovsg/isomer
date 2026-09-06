@@ -4,6 +4,18 @@ import { fileURLToPath } from "node:url"
 import { configDefaults, defineConfig } from "vitest/config"
 
 const studioRoot = fileURLToPath(new URL(".", import.meta.url))
+const databaseShim = path.resolve(studioRoot, "tests/mocks/database-shim.ts")
+const dbIndexShim = path.resolve(studioRoot, "tests/mocks/db-index-shim.ts")
+
+// Alias resolved module paths so relative imports (e.g. ../database/database)
+// use the test DB shim, not the production connection from .env.test.
+const testDatabaseAliases = {
+  [path.resolve(studioRoot, "src/server/modules/database/database.ts")]:
+    databaseShim,
+  [path.resolve(studioRoot, "src/server/modules/database/index.ts")]:
+    dbIndexShim,
+  [path.resolve(studioRoot, "src/server/prisma.ts")]: databaseShim,
+} as const
 
 // Tests that need a real DOM (component/hook rendering) are named
 // `*.browser.test.{ts,tsx}` and run in real Chromium via Vitest Browser Mode
@@ -14,15 +26,7 @@ export default defineConfig({
   resolve: {
     tsconfigPaths: true,
     alias: {
-      "~server/db": path.resolve(studioRoot, "tests/mocks/db-index-shim.ts"),
-      "~/server/modules/database/database": path.resolve(
-        studioRoot,
-        "tests/mocks/database-shim.ts",
-      ),
-      "~/server/prisma": path.resolve(
-        studioRoot,
-        "tests/mocks/database-shim.ts",
-      ),
+      ...testDatabaseAliases,
     },
   },
   test: {
