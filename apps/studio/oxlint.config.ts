@@ -1,6 +1,9 @@
 import { defineConfig } from "@isomer/oxlint-config"
+import antiSlop, {
+  antiSlopJsPluginEntries,
+} from "@isomer/oxlint-config/anti-slop"
 import base from "@isomer/oxlint-config/base"
-import { antiSlop, antiSlopJsPluginEntries, react } from "@isomer/oxlint-config/presets"
+import { react } from "@isomer/oxlint-config/presets"
 import reactDoctor, {
   jsPluginSettings,
   reactDoctorJsPluginEntries,
@@ -16,7 +19,10 @@ export default defineConfig({
     // next, vitest
   ],
   settings: jsPluginSettings,
-  jsPlugins: [...reactDoctorJsPluginEntries, ...antiSlopJsPluginEntries],
+  jsPlugins: [
+    ...(reactDoctorJsPluginEntries ?? []),
+    ...(antiSlopJsPluginEntries ?? []),
+  ],
   ignorePatterns: [
     ".next/**",
     "!.storybook/**",

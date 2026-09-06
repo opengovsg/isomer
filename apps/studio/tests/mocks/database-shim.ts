@@ -1,5 +1,6 @@
-import type { Kysely, DB } from "@isomer/db"
 import type { PrismaClient } from "~prisma/generated/prisma/client"
+
+import type { Kysely, DB } from "@isomer/db"
 
 /** Populated by `tests/mocks/db.ts` during Vitest setup. */
 export let db: Kysely<DB>

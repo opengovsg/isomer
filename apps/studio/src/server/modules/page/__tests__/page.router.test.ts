@@ -55,16 +55,16 @@ interface RedirectCreateAuditDelta {
 }
 
 const asRedirectDeleteAuditDelta = (
-  delta: RedirectDeleteAuditDelta | RedirectCreateAuditDelta,
+  delta: PrismaJson.AuditLogDeltaJsonContent,
 ): RedirectDeleteAuditDelta => {
-  // SAFETY: audit log row was written by redirect retirement in the same test
+  // SAFETY: audit log row was written by redirect retirement in the same test.
   return delta as RedirectDeleteAuditDelta
 }
 
 const asRedirectCreateAuditDelta = (
-  delta: RedirectDeleteAuditDelta | RedirectCreateAuditDelta,
+  delta: PrismaJson.AuditLogDeltaJsonContent,
 ): RedirectCreateAuditDelta => {
-  // SAFETY: audit log row was written by redirect adoption in the same test
+  // SAFETY: audit log row was written by redirect adoption in the same test.
   return delta as RedirectCreateAuditDelta
 }
 

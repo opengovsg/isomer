@@ -6,7 +6,6 @@ import { resetTables } from "tests/integration/helpers/db"
 import { setupSite, setupUser } from "tests/integration/helpers/seed"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import * as s3Lib from "~/lib/s3"
-
 import handler from "~/pages/api/audit-log-exports/download"
 import { sealAuditLogExportToken } from "~/server/modules/audit/auditLogExportToken"
 import { db } from "~/server/modules/database/database"
@@ -43,14 +42,14 @@ const seedRequest = async ({
   objectKey?: string | null
   completedAt?: Date | null
 }) => {
-  const values = {
+  const values: SeedDownloadRequestValues = {
     siteId,
     userId,
     auditLogDateRange: "[2024-03-01,2024-04-01)",
     reportType: "Access",
     status,
     attempts: 0,
-  } satisfies SeedDownloadRequestValues
+  }
   if (objectKey !== undefined) {
     values.objectKey = objectKey
   }
@@ -77,8 +76,9 @@ const callRoute = async (
   const { req, res }: { req: NextApiRequest; res: NextApiResponse } =
     createMocks({ method, query })
   await handler(req, res)
+  const response: unknown = res
   // SAFETY: node-mocks-http augments NextApiResponse with redirect helpers used below
-  return res as MockRedirectResponse
+  return response as MockRedirectResponse
 }
 
 describe("GET /api/audit-log-exports/download", () => {
@@ -91,7 +91,7 @@ describe("GET /api/audit-log-exports/download", () => {
     )
     vi.clearAllMocks()
     vi.spyOn(s3Lib, "generateSignedGetUrl").mockImplementation(({ Key }) =>
-      Promise.resolve(signedUrlFor(Key)),
+      Promise.resolve(signedUrlFor(Key ?? "")),
     )
     vi.spyOn(s3Lib, "getStudioAssetsBucketName").mockReturnValue(BUCKET)
   })

@@ -1,17 +1,15 @@
 /** MSW fixture helpers — single SAFETY boundary for PrismaJson opaque types. */
 
-export const asSiteJsonConfig = (
-  config: {
-    theme: string
-    siteName: string
-    url: string
-    logoUrl: string
-    search: undefined
-    isGovernment: boolean
-    agencyName?: string
-    favicon?: string
-  },
-): PrismaJson.SiteJsonConfig => {
+export const asSiteJsonConfig = (config: {
+  theme: string
+  siteName: string
+  url: string
+  logoUrl: string
+  search: undefined
+  isGovernment: boolean
+  agencyName?: string
+  favicon?: string
+}): PrismaJson.SiteJsonConfig => {
   // SAFETY: MSW fixture matches SiteJsonConfig fields used in Storybook/tests.
   return config as PrismaJson.SiteJsonConfig
 }
@@ -30,14 +28,12 @@ interface BlobJsonPageFixture {
   image?: { src: string; alt: string }
 }
 
-export const asBlobJsonContent = (
-  content: {
-    layout: string
-    page: BlobJsonPageFixture
-    content: unknown[]
-    version: string
-  },
-): PrismaJson.BlobJsonContent => {
+export const asBlobJsonContent = (content: {
+  layout: string
+  page: BlobJsonPageFixture
+  content: unknown[]
+  version: string
+}): PrismaJson.BlobJsonContent => {
   // SAFETY: MSW fixture matches blob layout shapes used by collection/gazette handlers.
   return content as PrismaJson.BlobJsonContent
 }

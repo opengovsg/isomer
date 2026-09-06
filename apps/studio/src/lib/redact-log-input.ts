@@ -26,7 +26,9 @@ type RedactableValue =
   | RedactableValue[]
   | RedactableObject
 
-const isRedactableRecord = (input: RedactableValue): input is RedactableObject =>
+const isRedactableRecord = (
+  input: RedactableValue,
+): input is RedactableObject =>
   input !== null && Object(input) === input && !Array.isArray(input)
 
 export const redactLogInput = (input: RedactableValue): RedactableValue => {

@@ -1,12 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from "next"
 import type { z } from "zod"
-import { beforeEach, describe, expect, it, vi } from "vitest"
 import { createMocks } from "node-mocks-http"
 import { resetTables } from "tests/integration/helpers/db"
 import { createTestUser } from "tests/integration/helpers/iron-session"
 import { setupCodeBuildJob, setupUser } from "tests/integration/helpers/seed"
-import * as mailService from "~/features/mail/service"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 import { env } from "~/env.mjs"
+import * as mailService from "~/features/mail/service"
 import handler from "~/pages/api/webhooks/updateCodebuildWebhook"
 import { WEBHOOK_X_API_KEY_HEADER } from "~/server/trpc"
 
@@ -28,7 +28,9 @@ const createMockRequest = ({
     arn,
     status: "SUCCEEDED",
   }
-  const headers = {
+  const headers: { "content-type": string } & Partial<
+    Record<typeof WEBHOOK_X_API_KEY_HEADER, string>
+  > = {
     "content-type": "application/json",
   }
   if (apiKey !== null) {
@@ -47,13 +49,10 @@ describe("webhook", () => {
   beforeEach(async () => {
     env.STUDIO_SSM_WEBHOOK_API_KEY = WEBHOOK_API_KEY
     env.GROWTHBOOK_CLIENT_KEY = "test-growthbook-client-key"
-    vi.spyOn(
-      mailService,
-      "sendSuccessfulScheduledPublishEmail",
-    ).mockResolvedValue(undefined)
-    vi.spyOn(mailService, "sendFailedSchedulePublishEmail").mockResolvedValue(
+    vi.spyOn(mailService, "sendSuccessfulPublishEmail").mockResolvedValue(
       undefined,
     )
+    vi.spyOn(mailService, "sendFailedPublishEmail").mockResolvedValue(undefined)
     await resetTables("CodeBuildJobs", "Resource", "Site")
   })
   describe("updateCodebuildWebhook", () => {

@@ -15,11 +15,11 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { TOPPAN_EMAIL_DOMAIN } from "~/constants/toppan"
 import * as mailService from "~/features/mail/service"
 import { buildIdFromArn } from "~/schemas/webhook"
 import { WEBHOOK_X_API_KEY_HEADER, createCallerFactory } from "~/server/trpc"
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { db } from "../../database/database"
 import { webhookRouter } from "../webhook.router"
@@ -55,10 +55,10 @@ describe("webhook.router", async () => {
   let user: User
   beforeEach(async () => {
     vi.clearAllMocks()
-    vi.spyOn(mailService, "mailService.sendSuccessfulPublishEmail").mockResolvedValue(
+    vi.spyOn(mailService, "sendSuccessfulPublishEmail").mockResolvedValue(
       undefined,
     )
-    vi.spyOn(mailService, "mailService.sendFailedPublishEmail").mockResolvedValue(undefined)
+    vi.spyOn(mailService, "sendFailedPublishEmail").mockResolvedValue(undefined)
     await resetTables("CodeBuildJobs", "User", "Resource", "Site")
     user = await setupUser({
       userId: session.userId,

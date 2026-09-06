@@ -279,7 +279,12 @@ const JsonFormsNavbarControl = ({
                       key={index}
                       index={index}
                       name={childItem.name}
-                      errors={arrayErrors}
+                      errors={
+                        // SAFETY: JsonForms error tree matches StackableNavbarItem error prop shape.
+                        arrayErrors as Parameters<
+                          typeof StackableNavbarItem
+                        >[0]["errors"]
+                      }
                       description={childItem.description}
                       onEdit={(subItemIndex) => {
                         if (subItemIndex !== undefined) {

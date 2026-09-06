@@ -1,6 +1,6 @@
+import { playwright } from "@vitest/browser-playwright"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
-import { playwright } from "@vitest/browser-playwright"
 import { configDefaults, defineConfig } from "vitest/config"
 
 const studioRoot = fileURLToPath(new URL(".", import.meta.url))
@@ -18,7 +18,10 @@ export default defineConfig({
         studioRoot,
         "tests/mocks/database-shim.ts",
       ),
-      "~/server/prisma": path.resolve(studioRoot, "tests/mocks/database-shim.ts"),
+      "~/server/prisma": path.resolve(
+        studioRoot,
+        "tests/mocks/database-shim.ts",
+      ),
     },
   },
   test: {

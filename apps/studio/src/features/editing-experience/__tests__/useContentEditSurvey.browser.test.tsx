@@ -2,6 +2,7 @@ import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { PropsWithChildren } from "react"
 import { act, render, renderHook } from "@testing-library/react"
 import { createStore, Provider } from "jotai"
+import * as nextRouter from "next/router"
 import { useEffect } from "react"
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest"
 import {
@@ -10,7 +11,6 @@ import {
 } from "~/contexts/EditorDrawerContext"
 import { env } from "~/env.mjs"
 import * as intercom from "~/lib/intercom"
-import * as nextRouter from "next/router"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { hasContentEditAtom } from "../atoms"
@@ -30,7 +30,7 @@ let originalIntercomAppId: string | undefined
 
 vi.spyOn(intercom, "trackEvent").mockImplementation(trackEventMock)
 
-// SAFETY: test stub returns only the router event hooks the hook under test subscribes to
+// @ts-expect-error partial NextRouter mock for unit test
 vi.spyOn(nextRouter, "useRouter").mockReturnValue({
   events: {
     on: (_event: string, handler: () => void) => {
@@ -42,7 +42,7 @@ vi.spyOn(nextRouter, "useRouter").mockReturnValue({
     },
     emit: vi.fn(),
   },
-} as ReturnType<typeof nextRouter.useRouter>)
+})
 
 const BASE_PAGE: IsomerSchema = {
   version: "0.1.0",

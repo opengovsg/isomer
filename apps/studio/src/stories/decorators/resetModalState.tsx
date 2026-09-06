@@ -1,4 +1,4 @@
-import type { Decorator } from "@storybook/nextjs"
+import type { ComponentType } from "react"
 import { useSetAtom } from "jotai"
 import { useEffect } from "react"
 import {
@@ -16,7 +16,7 @@ import {
  * Decorator that resets the EditUserModal state between story renders
  * Use this to ensure the edit user modal doesn't persist between stories
  */
-export const ResetEditUserModalDecorator: Decorator = (Story) => {
+export const ResetEditUserModalDecorator = (Story: ComponentType) => {
   const setUpdateUserModalState = useSetAtom(updateUserModalAtom)
 
   // Reset modal state when the decorator mounts
@@ -31,7 +31,7 @@ export const ResetEditUserModalDecorator: Decorator = (Story) => {
  * Decorator that resets the UpdateProfileModal state between story renders
  * Use this to ensure the update profile modal doesn't persist between stories
  */
-export const ResetUpdateProfileModalDecorator: Decorator = (Story) => {
+export const ResetUpdateProfileModalDecorator = (Story: ComponentType) => {
   const setUpdateProfileModalState = useSetAtom(updateProfileModalOpenAtom)
 
   // Reset modal state when the decorator mounts
@@ -46,7 +46,7 @@ export const ResetUpdateProfileModalDecorator: Decorator = (Story) => {
  * Decorator that resets the AddUserModal state between story renders
  * Use this to ensure the add user modal doesn't persist between stories
  */
-export const ResetAddUserModalDecorator: Decorator = (Story) => {
+export const ResetAddUserModalDecorator = (Story: ComponentType) => {
   const setAddUserModalState = useSetAtom(addUserModalAtom)
 
   // Reset modal state when the decorator mounts
@@ -61,7 +61,7 @@ export const ResetAddUserModalDecorator: Decorator = (Story) => {
  * Decorator that resets the RemoveUserModal state between story renders
  * Use this to ensure the remove user modal doesn't persist between stories
  */
-export const ResetRemoveUserModalDecorator: Decorator = (Story) => {
+export const ResetRemoveUserModalDecorator = (Story: ComponentType) => {
   const setRemoveUserModalState = useSetAtom(removeUserModalAtom)
 
   // Reset modal state when the decorator mounts

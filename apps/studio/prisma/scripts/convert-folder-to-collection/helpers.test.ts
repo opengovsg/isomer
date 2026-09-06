@@ -48,6 +48,7 @@ const toIsomerSchema = (
   blob: IndexBlob | ContentBlob | ArticleBlob,
 ): IsomerSchema => {
   // SAFETY: test fixtures are valid page blobs without the render-time site field.
+  // @ts-expect-error test blobs omit render-time site props required by IsomerSchema.
   return blob as IsomerSchema
 }
 
@@ -84,7 +85,7 @@ interface PageOverrides {
 }
 
 const makeIndexBlob = (overrides?: PageOverrides): IndexBlob => {
-  const page: IndexBlob["page"] = {
+  const page = {
     title: "Index",
     contentPageHeader: {
       summary: overrides?.summary ?? "Index summary",
@@ -92,21 +93,24 @@ const makeIndexBlob = (overrides?: PageOverrides): IndexBlob => {
     },
   }
   if (overrides?.image) {
-    page.image = overrides.image
+    Object.assign(page, { image: overrides.image })
   }
-  return {
+  const blob = {
     version: "0.1.0",
     layout: "index",
     page,
     content: [],
   }
+  // SAFETY: test fixture matches IndexBlob layout discriminator.
+  // @ts-expect-error test fixture uses string layout literal without full IndexBlob typing.
+  return blob as IndexBlob
 }
 
 const makeContentBlob = (
   overrides?: PageOverrides,
   content: IsomerComponent[] = [],
 ): ContentBlob => {
-  const page: ContentBlob["page"] = {
+  const page = {
     title: "Page",
     contentPageHeader: {
       summary: overrides?.summary ?? "Content summary",
@@ -114,21 +118,24 @@ const makeContentBlob = (
     },
   }
   if (overrides?.image) {
-    page.image = overrides.image
+    Object.assign(page, { image: overrides.image })
   }
-  return {
+  const blob = {
     version: "0.1.0",
     layout: "content",
     page,
     content,
   }
+  // SAFETY: test fixture matches ContentBlob layout discriminator.
+  // @ts-expect-error test fixture uses string layout literal without full ContentBlob typing.
+  return blob as ContentBlob
 }
 
 const makeArticleBlob = (
   overrides?: PageOverrides & { category?: string; date?: string },
   content: IsomerComponent[] = [],
 ): ArticleBlob => {
-  const page: ArticleBlob["page"] = {
+  const page = {
     title: "Article",
     category: overrides?.category ?? "News",
     date: overrides?.date ?? "1 Jan 2024",
@@ -137,14 +144,17 @@ const makeArticleBlob = (
     },
   }
   if (overrides?.image) {
-    page.image = overrides.image
+    Object.assign(page, { image: overrides.image })
   }
-  return {
+  const blob = {
     version: "0.1.0",
     layout: "article",
     page,
     content,
   }
+  // SAFETY: test fixture matches ArticleBlob layout discriminator.
+  // @ts-expect-error test fixture uses string layout literal without full ArticleBlob typing.
+  return blob as ArticleBlob
 }
 
 const withIndexContent = (
@@ -158,13 +168,17 @@ const withIndexContent = (
 const withIndexPageSortOrder = (
   blob: IndexBlob,
   sortOrder: string,
-): IndexBlob => ({
-  ...blob,
-  page: {
-    ...blob.page,
-    sortOrder,
-  },
-})
+): IndexBlob => {
+  const updated = {
+    ...blob,
+    page: {
+      ...blob.page,
+      sortOrder,
+    },
+  }
+  // SAFETY: test fixture preserves IndexBlob layout while updating sortOrder.
+  return updated
+}
 const makeConversionPlan = (
   overrides?: Partial<ConversionPlan>,
 ): ConversionPlan => ({
@@ -218,9 +232,7 @@ describe("buildConversionReport", () => {
           title: "Flagged",
           permalink: "flagged",
           currentBlobId: "b1",
-          currentBlob: toIsomerSchema(
-            makeContentBlob({}, [infobarBlock]),
-          ),
+          currentBlob: toIsomerSchema(makeContentBlob({}, [infobarBlock])),
           nextBlob: toIsomerSchema(makeArticleBlob({}, [infobarBlock])),
           disallowedBlocks: [{ index: 0, type: "infobar" }],
         },

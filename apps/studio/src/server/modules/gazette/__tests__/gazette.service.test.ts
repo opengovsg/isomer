@@ -3,8 +3,8 @@ import { resetTables } from "tests/integration/helpers/db"
 import { setupIsomerAdmin, setupUser } from "tests/integration/helpers/seed"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { env } from "~/env.mjs"
-import * as s3Lib from "~/lib/s3"
 import * as algoliaLib from "~/lib/algolia"
+import * as s3Lib from "~/lib/s3"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import {
@@ -20,10 +20,13 @@ describe("gazette.service", () => {
     env.ALGOLIA_APP_ID = "test-app-id"
     env.ALGOLIA_API_KEY = "test-api-key"
     env.ALGOLIA_INDEX_NAME = "test-index"
-    vi.spyOn(algoliaLib, "saveObjectsToSearchIndex").mockResolvedValue(undefined)
-    vi.spyOn(algoliaLib, "deleteObjectsFromSearchIndexByFilter").mockResolvedValue(
+    vi.spyOn(algoliaLib, "saveObjectsToSearchIndex").mockResolvedValue(
       undefined,
     )
+    vi.spyOn(
+      algoliaLib,
+      "deleteObjectsFromSearchIndexByFilter",
+    ).mockResolvedValue(undefined)
     await resetTables(
       "AuditLog",
       "ResourcePermission",

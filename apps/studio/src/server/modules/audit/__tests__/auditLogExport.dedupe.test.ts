@@ -129,7 +129,11 @@ const makeTx = (script: TxScript) => {
             if (events === undefined) {
               return Promise.resolve([])
             }
-            auditLogValues.push(...(Array.isArray(events) ? events : [events]))
+            const rows = Array.isArray(events) ? events : [events]
+            for (const row of rows) {
+              // SAFETY: dedupe test inserts AuditLogExportCreate rows with the expected shape.
+              auditLogValues.push(row as AuditLogExportCreateRow)
+            }
             return Promise.resolve([])
           }
 
@@ -173,13 +177,17 @@ const makeTx = (script: TxScript) => {
 // throwing callback simply rejects — mirroring kysely, which rolls the
 // transaction back (nothing committed) and re-surfaces the error.
 const useTx = (tx: FakeTx) => {
-  // SAFETY: fake transaction object mirrors the Kysely transaction surface under test
-  vi.spyOn(db, "transaction").mockReturnValue({
+  const transaction = {
     execute: (cb: (innerTx: FakeTx) => void) =>
       Promise.resolve().then(() => {
         cb(tx)
       }),
-  } as ReturnType<typeof db.transaction>)
+  }
+  vi.spyOn(db, "transaction").mockReturnValue(
+    // SAFETY: fake transaction object mirrors the Kysely transaction surface under test.
+    // @ts-expect-error fake transaction object mirrors the Kysely transaction surface under test
+    transaction as ReturnType<typeof db.transaction>,
+  )
 }
 
 // The AuditLogExportCreate event every ask must record. Shaped per the

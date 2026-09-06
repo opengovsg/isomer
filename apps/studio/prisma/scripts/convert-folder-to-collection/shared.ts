@@ -272,9 +272,7 @@ export const loadConversionPlan = (
 ): ConversionPlan => {
   const folderPath = join(baseDir, folderPlanFileName(folderId))
   // SAFETY: plan files are written by writePlanFiles using the same FolderPlan shape.
-  const folderPlan = JSON.parse(
-    readFileSync(folderPath, "utf-8"),
-  ) as FolderPlan
+  const folderPlan = JSON.parse(readFileSync(folderPath, "utf-8")) as FolderPlan
 
   const readResource = (resourceId: string): PagePlan => {
     // SAFETY: resource plan files are written by writePlanFiles using PagePlan.

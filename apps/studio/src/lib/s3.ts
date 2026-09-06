@@ -417,7 +417,9 @@ export const putObjectDirect = async (
 let studioAssetsBucketNameOverride: string | undefined
 
 /** @internal Overrides the studio assets bucket name for unit tests. */
-export const setStudioAssetsBucketNameForTests = (bucket: string | undefined) => {
+export const setStudioAssetsBucketNameForTests = (
+  bucket: string | undefined,
+) => {
   studioAssetsBucketNameOverride = bucket
 }
 

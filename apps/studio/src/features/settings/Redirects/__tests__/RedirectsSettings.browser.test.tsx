@@ -27,55 +27,59 @@ beforeEach(() => {
   currentRoles = []
   rolesQueryState = { isPending: false, isError: false }
 
-  // SAFETY: test stub returns only the fields the component reads on render
-  vi.spyOn(trpc, "useUtils").mockReturnValue({
-    redirect: { invalidate: noop },
-  } as ReturnType<typeof trpc.useUtils>)
+  vi.spyOn(trpc, "useUtils").mockReturnValue(
+    // SAFETY: partial tRPC utils mock for unit test.
+    // @ts-expect-error partial tRPC utils mock for unit test
+    {
+      redirect: { invalidate: noop },
+    } as ReturnType<typeof trpc.useUtils>,
+  )
 
+  // @ts-expect-error partial tRPC query mock for unit test
   vi.spyOn(trpc.resource.getRolesFor, "useQuery").mockImplementation(() => ({
     data: currentRoles,
     ...rolesQueryState,
   }))
 
-  // SAFETY: test stub returns only the fields the component reads on render
+  // @ts-expect-error partial tRPC query mock for unit test
   vi.spyOn(trpc.redirect.list, "useQuery").mockReturnValue({
     data: [REDIRECT_ROW],
     isLoading: false,
-  } as ReturnType<typeof trpc.redirect.list.useQuery>)
+  })
 
-  // SAFETY: test stub returns only the fields the component reads on render
+  // @ts-expect-error partial tRPC query mock for unit test
   vi.spyOn(trpc.redirect.count, "useQuery").mockReturnValue({
     data: 1,
     isLoading: false,
-  } as ReturnType<typeof trpc.redirect.count.useQuery>)
+  })
 
-  // SAFETY: test stub returns only the fields the component reads on render
+  // @ts-expect-error partial tRPC query mock for unit test
   vi.spyOn(trpc.redirect.resolveReferences, "useQuery").mockReturnValue({
     data: [],
-  } as ReturnType<typeof trpc.redirect.resolveReferences.useQuery>)
+  })
 
-  // SAFETY: test stub returns only the fields the component reads on render
+  // @ts-expect-error partial tRPC mutation mock for unit test
   vi.spyOn(trpc.redirect.create, "useMutation").mockReturnValue({
     mutate: noop,
     isPending: false,
-  } as ReturnType<typeof trpc.redirect.create.useMutation>)
+  })
 
-  // SAFETY: test stub returns only the fields the component reads on render
+  // @ts-expect-error partial tRPC mutation mock for unit test
   vi.spyOn(trpc.redirect.delete, "useMutation").mockReturnValue({
     mutate: noop,
     isPending: false,
-  } as ReturnType<typeof trpc.redirect.delete.useMutation>)
+  })
 
-  // SAFETY: test stub returns only the fields the component reads on render
+  // @ts-expect-error partial tRPC mutation mock for unit test
   vi.spyOn(trpc.redirect.bulkValidate, "useMutation").mockReturnValue({
     mutateAsync: noop,
-  } as ReturnType<typeof trpc.redirect.bulkValidate.useMutation>)
+  })
 
-  // SAFETY: test stub returns only the fields the component reads on render
+  // @ts-expect-error partial tRPC mutation mock for unit test
   vi.spyOn(trpc.redirect.bulkCreate, "useMutation").mockReturnValue({
     mutateAsync: noop,
     isPending: false,
-  } as ReturnType<typeof trpc.redirect.bulkCreate.useMutation>)
+  })
 })
 
 const renderRedirects = () =>

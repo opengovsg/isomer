@@ -41,12 +41,13 @@ beforeEach(() => {
   isGbReady = true
   isAuditLogFlagOn = true
 
-  // SAFETY: test stub returns only the fields the component reads on render
+  // @ts-expect-error partial NextRouter mock for unit test
   vi.spyOn(nextRouter, "useRouter").mockReturnValue({
     query: { siteId: String(SITE_ID) },
     replace,
-  } as ReturnType<typeof nextRouter.useRouter>)
+  })
 
+  // @ts-expect-error partial GrowthBook mock for unit test
   vi.spyOn(growthbook, "useGrowthBook").mockImplementation(() => ({
     ready: isGbReady,
   }))
@@ -55,21 +56,21 @@ beforeEach(() => {
     (_key, fallback) => (isGbReady ? isAuditLogFlagOn : fallback),
   )
 
-  // SAFETY: test stub returns only the fields the component reads on render
+  // @ts-expect-error partial tRPC query mock for unit test
   vi.spyOn(trpc.resource.getRolesFor, "useQuery").mockReturnValue({
     isPending: isRolesPending,
-  } as ReturnType<typeof trpc.resource.getRolesFor.useQuery>)
+  })
 
-  // SAFETY: test stub returns only the fields the component reads on render
+  // @ts-expect-error partial tRPC query mock for unit test
   vi.spyOn(trpc.audit.getExportWindow, "useQuery").mockReturnValue({
     data: { maxMonths: 12 },
-  } as ReturnType<typeof trpc.audit.getExportWindow.useQuery>)
+  })
 
-  // SAFETY: test stub returns only the fields the component reads on render
+  // @ts-expect-error partial tRPC mutation mock for unit test
   vi.spyOn(trpc.audit.createExportRequest, "useMutation").mockReturnValue({
     mutate: vi.fn(),
     isPending: false,
-  } as ReturnType<typeof trpc.audit.createExportRequest.useMutation>)
+  })
 })
 
 const adminAbility = buildUserManagementPermissions([{ role: RoleType.Admin }])

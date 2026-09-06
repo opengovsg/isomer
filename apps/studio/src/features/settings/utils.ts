@@ -21,7 +21,7 @@ const LINEAR_RGB_FACTORS = {
 export const TEXT_COLOURS = {
   light: "#FFFFFF",
   dark: twColors.gray["700"],
-// SAFETY: caller invariant is checked immediately before this narrowing assertion
+  // SAFETY: caller invariant is checked immediately before this narrowing assertion
 } as const
 
 export const BACKGROUND_COLOURS = {
@@ -30,7 +30,7 @@ export const BACKGROUND_COLOURS = {
     "colors.brand.interaction.default",
     "colors.brand.interaction.hover",
     "colors.brand.interaction.pressed",
-  // SAFETY: caller invariant is checked immediately before this narrowing assertion
+    // SAFETY: caller invariant is checked immediately before this narrowing assertion
   ] as const,
   // SAFETY: caller invariant is checked immediately before this narrowing assertion
   light: ["colors.brand.canvas.default", "colors.brand.canvas.alt"] as const,

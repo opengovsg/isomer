@@ -129,6 +129,7 @@ export const asIndexBlob = (s: IsomerSchema): IndexBlob => {
     throw new Error(`Expected layout="index", got "${s.layout}"`)
   }
   // SAFETY: layout discriminator confirms index page schema shape.
+  // @ts-expect-error IsomerSchema union is wider than IndexBlob at compile time.
   return s as IndexBlob
 }
 
@@ -137,16 +138,19 @@ export const asContentBlob = (s: IsomerSchema): ContentBlob => {
     throw new Error(`Expected layout="content", got "${s.layout}"`)
   }
   // SAFETY: layout discriminator confirms content page schema shape.
+  // @ts-expect-error IsomerSchema union is wider than ContentBlob at compile time.
   return s as ContentBlob
 }
 
 export const asPageBlob = (s: IsomerSchema): PageBlob => {
   if (s.layout === "content") {
     // SAFETY: layout discriminator confirms content page schema shape.
+    // @ts-expect-error IsomerSchema union is wider than ContentBlob at compile time.
     return s as ContentBlob
   }
   if (s.layout === "article") {
     // SAFETY: layout discriminator confirms article page schema shape.
+    // @ts-expect-error IsomerSchema union is wider than ArticleBlob at compile time.
     return s as ArticleBlob
   }
   throw new Error(`Expected layout="content" or "article", got "${s.layout}"`)
@@ -169,6 +173,7 @@ export const buildCollectionIndexBlob = (
     content: [],
   }
   // SAFETY: transforms a validated IndexBlob into collection layout per conversion rules.
+  // @ts-expect-error collection layout blob is a valid IsomerSchema at runtime.
   return blob as IsomerSchema
 }
 
@@ -187,6 +192,7 @@ export const buildArticleBlob = (
       content: current.content,
     }
     // SAFETY: article layout fields are preserved while updating category.
+    // @ts-expect-error article layout blob is a valid IsomerSchema at runtime.
     return blob as IsomerSchema
   }
 

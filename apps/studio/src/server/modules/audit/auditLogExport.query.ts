@@ -104,7 +104,10 @@ export const getMonthDateRange = (month: IsoMonth, now: Date): string => {
   return formatAuditLogDateRange(lowerInclusive, upperExclusive)
 }
 
-interface ExportRange { rangeStart: Date; rangeEnd: Date }
+interface ExportRange {
+  rangeStart: Date
+  rangeEnd: Date
+}
 
 /**
  * The UTC instants bounding an export range, half-open: [rangeStart, rangeEnd).
@@ -383,11 +386,7 @@ export const activityReportQuery = ({
     .where((eb) =>
       eb.or([
         eb.and([
-          eb(
-            "al.eventType",
-            "in",
-            DISPLAYABLE_AUDIT_LOG_EVENTS,
-          ),
+          eb("al.eventType", "in", DISPLAYABLE_AUDIT_LOG_EVENTS),
           eb.or([
             eb.eb("al.siteId", "=", siteId),
             eb.eb(
@@ -462,6 +461,7 @@ type CsvSerializableValue =
   | boolean
   | Date
   | null
+  | undefined
   | CsvSerializableValue[]
   | { [key: string]: CsvSerializableValue }
 
@@ -487,7 +487,8 @@ export const getStringifiedValue = (value: CsvSerializableValue): string => {
     )
   }
   if (Object.prototype.toString.call(value) === "[object String]") {
-    return value
+    // SAFETY: [object String] tag confirms a string primitive.
+    return value as string
   }
   return JSON.stringify(value)
 }

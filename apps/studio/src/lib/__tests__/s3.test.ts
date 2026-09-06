@@ -1,3 +1,4 @@
+import type { PutObjectTaggingCommandInput } from "@aws-sdk/client-s3"
 import {
   CopyObjectCommand,
   GetObjectTaggingCommand,
@@ -5,7 +6,6 @@ import {
   PutObjectRetentionCommand,
   PutObjectTaggingCommand,
 } from "@aws-sdk/client-s3"
-import type { PutObjectTaggingCommandInput } from "@aws-sdk/client-s3"
 import { afterAll, beforeEach, describe, expect, it, vi } from "vitest"
 
 import {
@@ -26,7 +26,7 @@ type S3TestCommand =
 
 // Inject a mock S3 client so we can observe which commands are dispatched without
 // hitting AWS. We keep the real command classes so we can assert on instances.
-const sendMock = vi.fn<(command: S3TestCommand) => Promise<void>>()
+const sendMock = vi.fn<(command: S3TestCommand) => Promise<object>>()
 
 beforeEach(() => {
   setS3StorageForTests({ send: sendMock })

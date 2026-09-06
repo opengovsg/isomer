@@ -64,7 +64,11 @@ const loggerMiddleware = t.middleware(
       path,
       req: ctx.req,
     })
-    const rawInput = redactLogInput(await getRawInput())
+    const unparsedInput: unknown = await getRawInput()
+    // SAFETY: procedure inputs are JSON-serializable values at log time.
+    const rawInput = redactLogInput(
+      unparsedInput as Parameters<typeof redactLogInput>[0],
+    )
 
     const result = await next({
       ctx: { logger },
@@ -186,10 +190,14 @@ const isValidWebhookApiKey = (
   apiKey: string | string[] | undefined,
   expectedApiKey: string,
 ): boolean => {
+  if (Object.prototype.toString.call(apiKey) !== "[object String]") {
+    return false
+  }
+  // SAFETY: [object String] tag confirms a string primitive.
+  const key = apiKey as string
   return (
-    Object.prototype.toString.call(apiKey) === "[object String]" &&
-    apiKey.length === expectedApiKey.length &&
-    timingSafeEqual(Buffer.from(apiKey), Buffer.from(expectedApiKey))
+    key.length === expectedApiKey.length &&
+    timingSafeEqual(Buffer.from(key), Buffer.from(expectedApiKey))
   )
 }
 

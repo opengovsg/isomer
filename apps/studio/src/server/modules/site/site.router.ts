@@ -419,7 +419,9 @@ export const siteRouter = router({
           .set({
             content: jsonb(
               // SAFETY: footer JSON was validated by the site settings schema before persistence
-              safeJsonParse(footer) as IsomerSiteWideComponentsProps["footerItems"],
+              safeJsonParse(
+                footer,
+              ) as IsomerSiteWideComponentsProps["footerItems"],
             ),
           })
           .where("siteId", "=", siteId)

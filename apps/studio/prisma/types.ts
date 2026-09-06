@@ -19,12 +19,15 @@ type AuditLogJsonValue =
   | number
   | boolean
   | null
+  | Date
   | AuditLogJsonValue[]
   | AuditLogEntitySnapshot
 
-interface AuditLogEntitySnapshot {
+export interface AuditLogEntitySnapshot {
   [key: string]: AuditLogJsonValue
 }
+
+export type AuditLogMetadata = AuditLogEntitySnapshot
 
 declare global {
   // oxlint-disable-next-line @typescript-eslint/no-namespace

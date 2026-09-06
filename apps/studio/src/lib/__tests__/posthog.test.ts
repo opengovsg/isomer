@@ -27,6 +27,7 @@ describe("withPosthog", () => {
       releaseImport = resolve
     })
 
+    // @ts-expect-error test stub supplies only the PostHog methods exercised by withPosthog
     setPosthogModuleLoaderForTests(async () => {
       await importGate
       return { default: { reset: resetMock, identify: identifyMock } }

@@ -45,7 +45,9 @@ const FIXED_BLOCK_CONTENT = {
   },
 } as const satisfies Record<string, FixedBlockContent>
 
-const getFixedBlockContent = (layout: string): FixedBlockContent | undefined => {
+const getFixedBlockContent = (
+  layout: string,
+): FixedBlockContent | undefined => {
   if (!Object.hasOwn(FIXED_BLOCK_CONTENT, layout)) return undefined
   // SAFETY: Object.hasOwn confirms layout is a key of FIXED_BLOCK_CONTENT
   return FIXED_BLOCK_CONTENT[layout as keyof typeof FIXED_BLOCK_CONTENT]

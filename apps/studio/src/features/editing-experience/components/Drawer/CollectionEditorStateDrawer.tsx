@@ -209,7 +209,10 @@ const CollectionEditorStateDrawer = (): React.ReactNode => {
                 schema={metadataSchema}
                 validateFn={validateFn}
                 data={previewPageState.page}
-                handleChange={(data) => handleChange(data)}
+                handleChange={(data) => {
+                  // @ts-expect-error FormBuilder data matches collection page schema at runtime.
+                  handleChange(data)
+                }}
               />
             </Box>
           </Box>

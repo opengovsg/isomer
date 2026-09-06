@@ -28,7 +28,12 @@ interface TestBlobFixture {
   layout: string
   version: string
   page: Record<string, string | { summary: string } | undefined>
-  content: { type: string; content?: unknown[]; title?: string; description?: string }[]
+  content: {
+    type: string
+    content?: unknown[]
+    title?: string
+    description?: string
+  }[]
 }
 
 const asTestIsomerSchema = (blob: TestBlobFixture): IsomerSchema => {
@@ -38,7 +43,9 @@ const asTestIsomerSchema = (blob: TestBlobFixture): IsomerSchema => {
 
 type GetBlobDb = Parameters<typeof getBlobOfResource>[0]["db"]
 
-const asGetBlobDb = (db: { selectFrom: ReturnType<typeof vi.fn> }): GetBlobDb => {
+const asGetBlobDb = (db: {
+  selectFrom: ReturnType<typeof vi.fn>
+}): GetBlobDb => {
   // SAFETY: test double implements only the selectFrom chain used by getBlobOfResource.
   return db as GetBlobDb
 }
@@ -49,10 +56,9 @@ interface TransactionTestDouble {
   updateTable?: ReturnType<typeof vi.fn>
 }
 
-const asTransaction = (tx: TransactionTestDouble): Transaction<DB> => {
-  // SAFETY: test double implements only the Kysely calls exercised in these tests.
-  return tx as Transaction<DB>
-}
+const asTransaction = (tx: TransactionTestDouble): Transaction<DB> =>
+  // @ts-expect-error test double implements only the Kysely calls exercised in these tests
+  tx
 
 interface ChainMock {
   where: ReturnType<typeof vi.fn>

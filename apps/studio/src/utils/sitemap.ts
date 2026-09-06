@@ -7,6 +7,7 @@ import type {
 } from "@opengovsg/isomer-components"
 import type { Resource } from "~prisma/generated/selectableTypes"
 import { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
+import { z } from "zod"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import { env } from "~/env.mjs"
 import { db } from "~/server/modules/database/database"
@@ -15,7 +16,6 @@ import {
   getPublishedIndexBlobByParentId,
 } from "~/server/modules/resource/resource.service"
 import { ResourceType } from "~prisma/generated/generatedEnums"
-import { z } from "zod"
 
 // Projected in SQL from the first top-level image block of the page body, so
 // the body itself never has to leave the database

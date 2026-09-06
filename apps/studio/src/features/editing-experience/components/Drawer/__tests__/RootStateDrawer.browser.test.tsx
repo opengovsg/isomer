@@ -16,10 +16,10 @@ import RootStateDrawer from "../RootStateDrawer"
 const noop = vi.fn()
 
 beforeEach(() => {
-  // SAFETY: test stub returns only the fields the component reads on render
+  // @ts-expect-error partial NextRouter mock for unit test
   vi.spyOn(nextRouter, "useRouter").mockReturnValue({
     query: { pageId: "1", siteId: "1" },
-  } as ReturnType<typeof nextRouter.useRouter>)
+  })
 
   vi.spyOn(posthog, "capture").mockImplementation(noop)
 
@@ -28,36 +28,40 @@ beforeEach(() => {
     isLoading: false,
   })
 
-  vi.spyOn(collectionTagsHook, "useNewCollectionTagsManagement").mockReturnValue(
-    false,
-  )
+  vi.spyOn(
+    collectionTagsHook,
+    "useNewCollectionTagsManagement",
+  ).mockReturnValue(false)
 
-  // SAFETY: test stub returns only the fields the component reads on render
+  // @ts-expect-error partial tRPC suspense query mock for unit test
   vi.spyOn(trpc.page.readPage, "useSuspenseQuery").mockReturnValue([
     { scheduledAt: null },
-  ] as ReturnType<typeof trpc.page.readPage.useSuspenseQuery>)
+  ])
 
-  // SAFETY: test stub returns only the fields the component reads on render
+  // @ts-expect-error partial tRPC mutation mock for unit test
   vi.spyOn(trpc.page.reorderBlock, "useMutation").mockReturnValue({
     mutate: noop,
-  } as ReturnType<typeof trpc.page.reorderBlock.useMutation>)
+  })
 
-  // SAFETY: test stub returns only the fields the component reads on render
+  // @ts-expect-error partial tRPC mutation mock for unit test
   vi.spyOn(trpc.page.updatePageBlob, "useMutation").mockReturnValue({
     mutate: noop,
     isPending: false,
-  } as ReturnType<typeof trpc.page.updatePageBlob.useMutation>)
+  })
 
-  // SAFETY: test stub returns only the fields the component reads on render
-  vi.spyOn(trpc, "useUtils").mockReturnValue({
-    page: {
-      readPage: { invalidate: noop },
-      readPageAndBlob: { invalidate: noop },
-    },
-    collection: {
-      countTagOptionsUsage: { invalidate: noop },
-    },
-  } as ReturnType<typeof trpc.useUtils>)
+  vi.spyOn(trpc, "useUtils").mockReturnValue(
+    // SAFETY: partial tRPC utils mock for unit test.
+    // @ts-expect-error partial tRPC utils mock for unit test
+    {
+      page: {
+        readPage: { invalidate: noop },
+        readPageAndBlob: { invalidate: noop },
+      },
+      collection: {
+        countTagOptionsUsage: { invalidate: noop },
+      },
+    } as ReturnType<typeof trpc.useUtils>,
+  )
 })
 
 const SEARCH_PAGE: IsomerSchema = {

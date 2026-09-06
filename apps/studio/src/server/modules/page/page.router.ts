@@ -1,7 +1,4 @@
-import type {
-  CollectionPagePageProps,
-  IsomerSchema,
-} from "@opengovsg/isomer-components"
+import type { IsomerSchema } from "@opengovsg/isomer-components"
 import {
   COLLECTION_VARIANT_OPTIONS,
   getLayoutMetadataSchema,
@@ -86,7 +83,7 @@ type UnparsedProcedureInput =
 const isPageContentInput = (
   input: UnparsedProcedureInput,
 ): input is { content: string } => {
-  if (input === null || Object(input) !== input || !("content" in input)) {
+  if (input === null || typeof input !== "object" || !("content" in input)) {
     return false
   }
   // SAFETY: content field presence is checked above before narrowing to string
@@ -1054,8 +1051,7 @@ export const pageRouter = router({
                 subtitle: `Read more on ${parent.title.toLowerCase()} here.`,
                 sortOrder: "date-desc",
                 variant: COLLECTION_VARIANT_OPTIONS.Collection,
-                // SAFETY: collection index pages always use the Collection layout variant defaults
-              } satisfies CollectionPagePageProps,
+              },
               content: [],
               version: "0.1.0",
             }

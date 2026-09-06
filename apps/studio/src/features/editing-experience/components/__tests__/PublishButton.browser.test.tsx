@@ -28,9 +28,7 @@ interface ChakraMenuModule {
 
 beforeAll(async () => {
   // SAFETY: importActual returns the real Chakra module; cast to the menu subset under test
-  const chakra = (await vi.importActual(
-    "@chakra-ui/react",
-  )) as ChakraMenuModule
+  const chakra = (await vi.importActual("@chakra-ui/react")) as ChakraMenuModule
   vi.spyOn(chakra, "Menu").mockImplementation(({ children }) => children)
   vi.spyOn(chakra, "MenuButton").mockImplementation(
     ({ "aria-label": ariaLabel }) => (
@@ -42,33 +40,36 @@ beforeAll(async () => {
 })
 
 beforeEach(() => {
-  // SAFETY: test stub returns only the fields the component reads on render
+  // @ts-expect-error partial NextRouter mock for unit test
   vi.spyOn(nextRouter, "useRouter").mockReturnValue({
     isReady: true,
-  } as ReturnType<typeof nextRouter.useRouter>)
+  })
 
   vi.spyOn(contentEditSurvey, "useFireContentEditSurveyEvent").mockReturnValue(
     vi.fn(),
   )
 
-  // SAFETY: test stub returns only the fields the component reads on render
+  // @ts-expect-error partial tRPC suspense query mock for unit test
   vi.spyOn(trpc.page.readPage, "useSuspenseQuery").mockReturnValue([
     { draftBlobId: "draft-1", scheduledAt: null },
-  ] as ReturnType<typeof trpc.page.readPage.useSuspenseQuery>)
+  ])
 
-  // SAFETY: test stub returns only the fields the component reads on render
+  // @ts-expect-error partial tRPC mutation mock for unit test
   vi.spyOn(trpc.page.publishPage, "useMutation").mockReturnValue({
     mutate: noop,
     isPending: false,
-  } as ReturnType<typeof trpc.page.publishPage.useMutation>)
+  })
 
-  // SAFETY: test stub returns only the fields the component reads on render
-  vi.spyOn(trpc, "useUtils").mockReturnValue({
-    page: {
-      readPage: { refetch: noop },
-    },
-    site: { getLocalisedSitemap: { invalidate: noop } },
-  } as ReturnType<typeof trpc.useUtils>)
+  vi.spyOn(trpc, "useUtils").mockReturnValue(
+    // SAFETY: partial tRPC utils mock for unit test.
+    // @ts-expect-error partial tRPC utils mock for unit test
+    {
+      page: {
+        readPage: { refetch: noop },
+      },
+      site: { getLocalisedSitemap: { invalidate: noop } },
+    } as ReturnType<typeof trpc.useUtils>,
+  )
 })
 
 // Build the client ability exactly the way PermissionsProvider does, so this test

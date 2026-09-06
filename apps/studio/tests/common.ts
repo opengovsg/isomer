@@ -158,9 +158,16 @@ export const setup = async (
         }
       }
 
-const getExposedPort = (
-  port: number | { container: number; host: number },
-): number => ("container" in port ? port.container : port)
+      const exposedPortSchema = z.union([
+        z.number(),
+        z
+          .object({ container: z.number(), host: z.number() })
+          .transform(({ container }) => container),
+      ])
+
+      const getExposedPort = (
+        port: z.input<typeof exposedPortSchema>,
+      ): number => exposedPortSchema.parse(port)
 
       return {
         name,

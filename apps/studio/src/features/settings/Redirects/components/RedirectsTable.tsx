@@ -187,7 +187,7 @@ const SortableHeader = ({
 }: {
   label: string
   isSorted: false | "asc" | "desc"
-  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void
+  onClick?: React.MouseEventHandler<HTMLElement>
 }): React.ReactNode => {
   const icon = useMemo(() => {
     switch (isSorted) {

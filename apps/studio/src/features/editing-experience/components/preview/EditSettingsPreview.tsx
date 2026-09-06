@@ -50,7 +50,7 @@ const SHARED_TAB_STYLES = {
     bgColor: "muted.main.active",
     textColor: "interaction.main.default",
   },
-// SAFETY: caller invariant is checked immediately before this narrowing assertion
+  // SAFETY: caller invariant is checked immediately before this narrowing assertion
 } as const
 
 const BUTTON_COLOURS = ["#ff5f56", "#ffbd2e", "#27c93f"]
@@ -91,7 +91,7 @@ const CHROME_TAB_BASE_STYLE = {
   gap: "12px",
   borderRadius: "10px 10px 0 0",
   alignItems: "center",
-// SAFETY: caller invariant is checked immediately before this narrowing assertion
+  // SAFETY: caller invariant is checked immediately before this narrowing assertion
 } as const
 
 // SAFETY: caller invariant is checked immediately before this narrowing assertion
@@ -109,7 +109,7 @@ const ADDRESS_BAR_BASE_STYLE = {
   borderRadius: "10px 10px 0 0",
   alignItems: "center",
   width: "100%",
-// SAFETY: caller invariant is checked immediately before this narrowing assertion
+  // SAFETY: caller invariant is checked immediately before this narrowing assertion
 } as const
 
 // SAFETY: caller invariant is checked immediately before this narrowing assertion
@@ -123,7 +123,7 @@ const ADDRESS_BAR_INPUT_STYLE = {
   background: " #F1F3F4",
   padding: "8px 16px",
   width: "100%",
-// SAFETY: caller invariant is checked immediately before this narrowing assertion
+  // SAFETY: caller invariant is checked immediately before this narrowing assertion
 } as const
 
 const ChromeTab = ({

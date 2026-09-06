@@ -44,7 +44,9 @@ export default async function handler(
   // would let a prober distinguish transient errors from expired links. The
   // log line is the operator's only signal, so it must never be skipped.
   try {
-    const requestId = await unsealAuditLogExportToken(token)
+    // SAFETY: token guard above rejects non-string query values.
+    const sealedToken = token as string
+    const requestId = await unsealAuditLogExportToken(sealedToken)
     if (requestId === null) {
       return redirectToExpired(res)
     }

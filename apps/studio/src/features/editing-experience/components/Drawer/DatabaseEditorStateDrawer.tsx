@@ -38,7 +38,8 @@ const getDatabaseFormData = (
   pageState: IsomerSchema,
 ): DatabaseFormData | undefined => {
   if (pageState.layout !== ISOMER_USABLE_PAGE_LAYOUTS.Database) return undefined
-  // SAFETY: layout check confirms database page shape
+  // SAFETY: layout check confirms database page shape.
+  // @ts-expect-error IsomerSchema union is wider than DatabasePageSchemaType at compile time.
   return (pageState as DatabasePageSchemaType).page.database
 }
 
@@ -95,16 +96,20 @@ const DatabaseEditorStateDrawer = (): React.ReactNode => {
 
   const handleChange = (data: DatabaseFormData) => {
     if (previewPageState.layout !== ISOMER_USABLE_PAGE_LAYOUTS.Database) return
-    // SAFETY: layout check confirms database page shape
+    // SAFETY: layout check confirms database page shape.
+    // @ts-expect-error IsomerSchema union is wider than DatabasePageSchemaType at compile time.
     const databasePageState = previewPageState as DatabasePageSchemaType
 
-    setPreviewPageState({
+    const nextState = {
       ...databasePageState,
       page: {
         ...databasePageState.page,
         database: data,
       },
-    })
+    }
+    // SAFETY: nextState preserves database layout while updating nested form data.
+    // @ts-expect-error updated database page remains a valid preview page state.
+    setPreviewPageState(nextState as typeof previewPageState)
   }
 
   const handleDiscardChanges = () => {
@@ -141,7 +146,10 @@ const DatabaseEditorStateDrawer = (): React.ReactNode => {
                 schema={databasePageDatabaseSchema}
                 validateFn={validateFn}
                 data={getDatabaseFormData(previewPageState)}
-                handleChange={(data) => handleChange(data)}
+                handleChange={(data) => {
+                  // @ts-expect-error FormBuilder data matches database form schema at runtime.
+                  handleChange(data)
+                }}
               />
             </Box>
           </Box>

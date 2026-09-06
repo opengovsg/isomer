@@ -17,9 +17,9 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
-import * as searchSgService from "~/server/modules/searchsg/searchsg.service"
-import { env } from "~/env.mjs"
 import { beforeAll, vi } from "vitest"
+import { env } from "~/env.mjs"
+import * as searchSgService from "~/server/modules/searchsg/searchsg.service"
 import { createCallerFactory } from "~/server/trpc"
 import { IsomerAdminRole, RoleType } from "~prisma/generated/generatedEnums"
 

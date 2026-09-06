@@ -79,16 +79,16 @@ const PostHogIdentity = () => {
         posthog.reset()
       }
 
-interface PosthogIdentifyProperties {
-  email: string
-  site_roles: string[]
-  name?: string
-}
+      interface PosthogIdentifyProperties {
+        email: string
+        site_roles: string[]
+        name?: string
+      }
 
-      const identifyProperties = {
+      const identifyProperties: PosthogIdentifyProperties = {
         email: user.email,
         site_roles: sites.map((site) => `${site.id}:${site.role}`),
-      } satisfies PosthogIdentifyProperties
+      }
       if (user.name) {
         identifyProperties.name = user.name
       }

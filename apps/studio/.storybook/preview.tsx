@@ -149,10 +149,12 @@ const parseMockDateParam = (
     return value
   }
   if (Object.prototype.toString.call(value) === "[object String]") {
-    return value
+    // SAFETY: [object String] tag confirms a string primitive.
+    return value as string
   }
   if (Object.prototype.toString.call(value) === "[object Number]") {
-    return value
+    // SAFETY: [object Number] tag confirms a number primitive.
+    return value as number
   }
   return undefined
 }

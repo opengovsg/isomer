@@ -46,6 +46,7 @@ vi.spyOn(trpc.audit.getExportWindow, "useQuery").mockReturnValue({
   data: { maxMonths: 12 },
 } as ReturnType<typeof trpc.audit.getExportWindow.useQuery>)
 vi.spyOn(trpc.audit.createExportRequest, "useMutation").mockImplementation(
+  // @ts-expect-error partial mutation stub for component under test
   (options?: CreateExportMutationOptions) => {
     capturedOptions = options
     return { mutate, isPending: false }

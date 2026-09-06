@@ -29,6 +29,7 @@ let capturedOptions: CreateExportMutationOptions | undefined
 
 vi.spyOn(posthog, "capture").mockImplementation(vi.fn())
 vi.spyOn(trpc.audit.createExportRequest, "useMutation").mockImplementation(
+  // @ts-expect-error partial mutation stub for component under test
   (options?: CreateExportMutationOptions) => {
     capturedOptions = options
     return { mutate, isPending: false }

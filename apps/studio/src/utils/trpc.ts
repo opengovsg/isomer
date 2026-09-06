@@ -101,7 +101,9 @@ const custom401Link: TRPCLink<AppRouter> = () => {
   }
 }
 
-const isErrorRetryableOnClient = (error: TRPCClientError<AppRouter>): boolean => {
+type ClientRetryError = TRPCClientError<AppRouter> | Error
+
+const isErrorRetryableOnClient = (error: ClientRetryError): boolean => {
   if (globalThis.window === undefined) return true
   if (!(error instanceof TRPCClientError)) return true
   const res = TRPCWithErrorCodeSchema.safeParse(error)

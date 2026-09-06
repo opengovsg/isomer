@@ -20,6 +20,7 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { env } from "~/env.mjs"
 import * as mailService from "~/features/mail/service"
+import * as algoliaLib from "~/lib/algolia"
 import { ENABLE_SEARCHSG_GAZETTE_INGESTION } from "~/lib/growthbook"
 import * as s3Lib from "~/lib/s3"
 import { createCallerFactory } from "~/server/trpc"
@@ -28,8 +29,6 @@ import {
   IsomerAdminRole,
   ResourceType,
 } from "~prisma/generated/generatedEnums"
-
-import * as algoliaLib from "~/lib/algolia"
 
 import { db } from "../../database/database"
 import { gazetteRouter } from "../gazette.router"
@@ -59,7 +58,9 @@ describe("gazette.router", async () => {
       "User",
     )
     caller = createCaller(createMockRequest(session))
-    vi.spyOn(algoliaLib, "saveObjectsToSearchIndex").mockResolvedValue(undefined)
+    vi.spyOn(algoliaLib, "saveObjectsToSearchIndex").mockResolvedValue(
+      undefined,
+    )
   })
 
   afterEach(() => {
@@ -732,7 +733,9 @@ describe("gazette.router", async () => {
       // SAFETY: s3 tagging response fields are unused by the delete flow under test.
       const markCancelled = vi
         .spyOn(s3Lib, "markScheduledAssetAsCancelled")
-        .mockResolvedValue({} as Awaited<ReturnType<typeof s3Lib.markScheduledAssetAsCancelled>>)
+        .mockResolvedValue(
+          {} as Awaited<ReturnType<typeof s3Lib.markScheduledAssetAsCancelled>>,
+        )
 
       const { gazetteId } = await caller.create({
         siteId: site.id,

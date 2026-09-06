@@ -79,12 +79,15 @@ export const unsealAuditLogExportToken = async (
   if (payload.purpose !== AUDIT_LOG_EXPORT_TOKEN_PURPOSE) {
     return null
   }
-  if (
-    Object.prototype.toString.call(payload.requestId) !== "[object String]" ||
-    !/^[1-9]\d*$/.test(payload.requestId)
-  ) {
+  if (Object.prototype.toString.call(payload.requestId) !== "[object String]") {
+    return null
+  }
+  // SAFETY: [object String] tag confirms a string primitive.
+  // oxlint-disable-next-line typescript/non-nullable-type-assertion-style -- string tag guard above
+  const requestId = payload.requestId as string
+  if (!/^[1-9]\d*$/.test(requestId)) {
     return null
   }
 
-  return payload.requestId
+  return requestId
 }

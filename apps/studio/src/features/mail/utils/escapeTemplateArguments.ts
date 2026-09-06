@@ -30,7 +30,9 @@ type TemplateArgumentValue =
   | TemplateArgumentValue[]
   | { [key: string]: TemplateArgumentValue }
 
-const escapeTemplateArgument = <T extends TemplateArgumentValue>(value: T): T => {
+const escapeTemplateArgument = <T extends TemplateArgumentValue>(
+  value: T,
+): T => {
   if (isStringValue(value)) {
     // SAFETY: isStringValue narrows value to string before HTML escaping
     return escapeHtml(value) as T

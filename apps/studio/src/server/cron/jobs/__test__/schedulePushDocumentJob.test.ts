@@ -1,16 +1,17 @@
+import type { GrowthBook } from "@growthbook/growthbook"
 import type { User } from "~prisma/generated/selectableTypes"
 import { addMinutes } from "date-fns"
 import MockDate from "mockdate"
 import { resetTables } from "tests/integration/helpers/db"
 import { applyAuthedSession } from "tests/integration/helpers/iron-session"
 import { setupPageResource, setupUser } from "tests/integration/helpers/seed"
+import * as algoliaLib from "~/lib/algolia"
 import * as s3Lib from "~/lib/s3"
+import * as serverContext from "~/server/context"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { db } from "~server/db"
 
 import * as algoliaPkg from "@isomer/algolia"
-import * as algoliaLib from "~/lib/algolia"
-import * as serverContext from "~/server/context"
 
 import { schedulePushDocumentJobHandler } from "../schedulePushDocumentJob"
 
@@ -147,10 +148,12 @@ const seedDocumentReadyForIngestion = async ({
 }
 
 /** Build a mock GrowthBook instance where isOn returns the given value. */
-const makeMockGb = (isOn: boolean) => ({
-  isOn: vi.fn().mockReturnValue(isOn),
-  destroy: vi.fn(),
-})
+const makeMockGb = (isOn: boolean): GrowthBook =>
+  // @ts-expect-error partial GrowthBook mock for unit test
+  ({
+    isOn: vi.fn().mockReturnValue(isOn),
+    destroy: vi.fn(),
+  })
 
 describe("schedulePushDocumentJobHandler", async () => {
   const session = await applyAuthedSession()

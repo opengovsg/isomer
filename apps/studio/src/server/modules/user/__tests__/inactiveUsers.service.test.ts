@@ -19,7 +19,6 @@ import { RoleType } from "~/server/modules/database/types"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { MAX_DAYS_FROM_LAST_LOGIN } from "../constants"
-
 import {
   bulkDeactivateInactiveUsers,
   bulkSendAccountDeactivationWarningEmails,

@@ -16,7 +16,9 @@ type ErrorCauseInput =
   | null
   | undefined
 
-const isErrorCauseFromInput = (value: ErrorCauseInput): value is ErrorCauseFields =>
+const isErrorCauseFromInput = (
+  value: ErrorCauseInput,
+): value is ErrorCauseFields =>
   value !== null &&
   value !== undefined &&
   !(value instanceof Error) &&
