@@ -116,8 +116,8 @@ export const InfoCards = ({
       {(title || subtitle) && (
         <div
           className={compoundStyles.headingContainer({
-            layout: simplifiedLayout,
             imageStyle: cardVariant,
+            layout: simplifiedLayout,
             variant: cardVariant,
           })}
         >

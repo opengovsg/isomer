@@ -8,8 +8,8 @@ export const VicaWidget = ({
   site,
   "app-icon": appIcon,
   ...rest
-}: VicaWidgetProps) => {
-  return (
+}: VicaWidgetProps) => 
+  (
     <VicaWidgetClient
       app-icon={
         appIcon
@@ -34,4 +34,4 @@ export const VicaWidget = ({
       app-recommendations-foreground-color={colors.base.content.strong}
     />
   )
-}
+

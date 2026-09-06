@@ -16,9 +16,9 @@ const createContentLayoutStyles = tv({
   slots: {
     container:
       "mx-auto grid max-w-screen-xl grid-cols-12 px-6 py-12 md:px-10 md:py-16 lg:gap-6 xl:gap-10",
-    siderailContainer: "relative col-span-3 hidden lg:block",
     content:
       "col-span-12 flex flex-col gap-16 break-words lg:col-span-9 lg:mr-24",
+    siderailContainer: "relative col-span-3 hidden lg:block",
   },
 })
 
@@ -33,9 +33,9 @@ export const ContentLayout = ({
   const isParentPageRoot = page.permalink.split("/").length === 2
 
   // Note: We do not show side rail for first-level pages
-  const sideRail = !isParentPageRoot
-    ? getSiderailFromSiteMap(site.siteMap, page.permalink)
-    : null
+  const sideRail = isParentPageRoot
+    ? null
+    : getSiderailFromSiteMap(site.siteMap, page.permalink)
 
   // auto-inject ids for heading level 2 blocks if does not exist
   const transformedContent = getTransformedPageContent(content)

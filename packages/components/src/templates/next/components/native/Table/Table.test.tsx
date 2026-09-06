@@ -7,69 +7,69 @@ import { MAX_TABLE_COLUMNS, MAX_TABLE_ROWS } from "./tableLayoutLimits"
 
 const staggeredMergesContent = [
   {
-    type: "tableRow" as const,
     content: [
       {
-        type: "tableHeader" as const,
         attrs: { colspan: 1, rowspan: 1 },
         content: [
           {
+            content: [{ text: "H1", type: "text" as const }],
             type: "paragraph" as const,
-            content: [{ type: "text" as const, text: "H1" }],
           },
         ],
+        type: "tableHeader" as const,
       },
       {
-        type: "tableHeader" as const,
         attrs: { colspan: 2, rowspan: 1 },
         content: [
           {
+            content: [{ text: "H2 + H3", type: "text" as const }],
             type: "paragraph" as const,
-            content: [{ type: "text" as const, text: "H2 + H3" }],
           },
         ],
+        type: "tableHeader" as const,
       },
     ],
+    type: "tableRow" as const,
   },
   {
-    type: "tableRow" as const,
     content: [
       {
-        type: "tableCell" as const,
         attrs: { colspan: 2, rowspan: 2 },
         content: [
           {
+            content: [{ text: "A1+B1 / A2+B2", type: "text" as const }],
             type: "paragraph" as const,
-            content: [{ type: "text" as const, text: "A1+B1 / A2+B2" }],
           },
         ],
+        type: "tableCell" as const,
       },
       {
-        type: "tableCell" as const,
         attrs: { colspan: 1, rowspan: 1 },
         content: [
           {
+            content: [{ text: "C1", type: "text" as const }],
             type: "paragraph" as const,
-            content: [{ type: "text" as const, text: "C1" }],
           },
         ],
+        type: "tableCell" as const,
       },
     ],
+    type: "tableRow" as const,
   },
   {
-    type: "tableRow" as const,
     content: [
       {
-        type: "tableCell" as const,
         attrs: { colspan: 1, rowspan: 1 },
         content: [
           {
+            content: [{ text: "C2", type: "text" as const }],
             type: "paragraph" as const,
-            content: [{ type: "text" as const, text: "C2" }],
           },
         ],
+        type: "tableCell" as const,
       },
     ],
+    type: "tableRow" as const,
   },
 ]
 
@@ -108,27 +108,27 @@ describe("Table colgroup", () => {
         attrs={{ caption: "Two columns" }}
         content={[
           {
-            type: "tableRow",
             content: [
               {
-                type: "tableHeader",
                 content: [
                   {
+                    content: [{ text: "A", type: "text" }],
                     type: "paragraph",
-                    content: [{ type: "text", text: "A" }],
                   },
                 ],
+                type: "tableHeader",
               },
               {
-                type: "tableHeader",
                 content: [
                   {
+                    content: [{ text: "B", type: "text" }],
                     type: "paragraph",
-                    content: [{ type: "text", text: "B" }],
                   },
                 ],
+                type: "tableHeader",
               },
             ],
+            type: "tableRow",
           },
         ]}
       />,
@@ -150,51 +150,51 @@ describe("Table colgroup", () => {
         attrs={{ caption: "Full-width header" }}
         content={[
           {
-            type: "tableRow",
             content: [
               {
-                type: "tableHeader",
                 attrs: { colspan: 3 },
                 content: [
                   {
+                    content: [{ text: "Title", type: "text" }],
                     type: "paragraph",
-                    content: [{ type: "text", text: "Title" }],
                   },
                 ],
+                type: "tableHeader",
               },
             ],
+            type: "tableRow",
           },
           {
-            type: "tableRow",
             content: [
               {
-                type: "tableCell",
                 content: [
                   {
+                    content: [{ text: "A", type: "text" }],
                     type: "paragraph",
-                    content: [{ type: "text", text: "A" }],
                   },
                 ],
+                type: "tableCell",
               },
               {
-                type: "tableCell",
                 content: [
                   {
+                    content: [{ text: "B", type: "text" }],
                     type: "paragraph",
-                    content: [{ type: "text", text: "B" }],
                   },
                 ],
+                type: "tableCell",
               },
               {
-                type: "tableCell",
                 content: [
                   {
+                    content: [{ text: "C", type: "text" }],
                     type: "paragraph",
-                    content: [{ type: "text", text: "C" }],
                   },
                 ],
+                type: "tableCell",
               },
             ],
+            type: "tableRow",
           },
         ]}
       />,
@@ -214,19 +214,19 @@ describe("Table colgroup", () => {
         attrs={{ caption: "Hostile spans" }}
         content={[
           {
-            type: "tableRow",
             content: [
               {
-                type: "tableCell",
                 attrs: { colspan: 1_000_000, rowspan: 1_000_000 },
                 content: [
                   {
+                    content: [{ text: "A", type: "text" }],
                     type: "paragraph",
-                    content: [{ type: "text", text: "A" }],
                   },
                 ],
+                type: "tableCell",
               },
             ],
+            type: "tableRow",
           },
         ]}
       />,
@@ -248,19 +248,19 @@ describe("Table colgroup", () => {
         attrs={{ caption: "Long rowspan" }}
         content={[
           {
-            type: "tableRow",
             content: [
               {
-                type: "tableCell",
                 attrs: { colspan: 1, rowspan: 65 },
                 content: [
                   {
+                    content: [{ text: "A", type: "text" }],
                     type: "paragraph",
-                    content: [{ type: "text", text: "A" }],
                   },
                 ],
+                type: "tableCell",
               },
             ],
+            type: "tableRow",
           },
         ]}
       />,

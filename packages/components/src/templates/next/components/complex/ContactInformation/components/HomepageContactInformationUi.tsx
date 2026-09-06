@@ -12,62 +12,62 @@ import { ContactMethod, LoadingContactMethod } from "./ContactMethod"
 import { filterContactMethods } from "./filterContactMethods"
 
 const createHomepageContactInformationStyles = tv({
-  extend: commonContactInformationStyles,
-  slots: {
-    ...commonContactInformationStyles.slots,
-    container: "gap-12 py-12 md:py-16",
-    titleAndDescriptionContainer: "gap-2.5",
-    description: "prose-headline-lg-regular",
-    contactMethodsContainer: "grid grid-cols-1 gap-10",
-  },
-  variants: {
-    numberOfContactMethods: {
-      2: {
-        container: "md:flex-row md:gap-10",
-        titleAndDescriptionContainer: "max-w-[24.5rem]",
-        contactMethodsContainer:
-          "md:flex md:flex-1 md:flex-col lg:grid lg:grid-cols-2",
-      },
-      3: {
-        titleAndDescriptionContainer: "lg:max-w-3xl",
-        contactMethodsContainer: "md:grid md:grid-cols-3",
-      },
-    },
-    isBottomButton: {
-      true: {},
-      false: {},
-    },
-  },
   compoundVariants: [
     {
-      numberOfContactMethods: 2,
-      isBottomButton: false,
       class: {
         urlButtonContainer: "mt-10 hidden md:mx-0 md:block",
       },
+      isBottomButton: false,
+      numberOfContactMethods: 2,
     },
     {
-      numberOfContactMethods: 2,
-      isBottomButton: true,
       class: {
         urlButtonContainer: "block md:mx-0 md:hidden",
       },
+      isBottomButton: true,
+      numberOfContactMethods: 2,
     },
     {
-      numberOfContactMethods: 3,
-      isBottomButton: false,
       class: {
         urlButtonContainer: "hidden",
       },
+      isBottomButton: false,
+      numberOfContactMethods: 3,
     },
     {
-      numberOfContactMethods: 3,
-      isBottomButton: true,
       class: {
         urlButtonContainer: "block",
       },
+      isBottomButton: true,
+      numberOfContactMethods: 3,
     },
   ],
+  extend: commonContactInformationStyles,
+  slots: {
+    ...commonContactInformationStyles.slots,
+    contactMethodsContainer: "grid grid-cols-1 gap-10",
+    container: "gap-12 py-12 md:py-16",
+    description: "prose-headline-lg-regular",
+    titleAndDescriptionContainer: "gap-2.5",
+  },
+  variants: {
+    isBottomButton: {
+      false: {},
+      true: {},
+    },
+    numberOfContactMethods: {
+      2: {
+        contactMethodsContainer:
+          "md:flex md:flex-1 md:flex-col lg:grid lg:grid-cols-2",
+        container: "md:flex-row md:gap-10",
+        titleAndDescriptionContainer: "max-w-[24.5rem]",
+      },
+      3: {
+        contactMethodsContainer: "md:grid md:grid-cols-3",
+        titleAndDescriptionContainer: "lg:max-w-3xl",
+      },
+    },
+  },
 })
 
 const createHomepageContactMethodStyles = tv({
@@ -77,10 +77,10 @@ const createHomepageContactMethodStyles = tv({
       2: {},
       3: {
         container: "md:items-center",
-        textContainer: "md:items-center",
         label: "md:text-center",
-        valuesAndCaptionContainer: "md:items-center",
+        textContainer: "md:items-center",
         value: "md:text-center",
+        valuesAndCaptionContainer: "md:items-center",
       },
     },
   },
@@ -91,6 +91,22 @@ type NumberOfContactMethods =
 
 const MAX_CONTACT_METHODS_FOR_HOMEPAGE = 3
 
+const hasNonEmptyString = (value: string | undefined): boolean =>
+  value !== undefined && value !== ""
+
+const getNumberOfContactMethods = (
+  isLoading: ContactInformationUIProps["isLoading"],
+  filteredMethodsCount: number,
+): NumberOfContactMethods => {
+  if (isLoading === true) {
+    return MAX_CONTACT_METHODS_FOR_HOMEPAGE
+  }
+
+  return filteredMethodsCount >= MAX_CONTACT_METHODS_FOR_HOMEPAGE
+    ? MAX_CONTACT_METHODS_FOR_HOMEPAGE
+    : 2
+}
+
 const CallToActionButton = ({
   referenceLinkHref,
   label,
@@ -99,20 +115,18 @@ const CallToActionButton = ({
   referenceLinkHref: string
   label: string
   urlButtonContainerClassName: string
-}) => {
-  return (
-    <div className={urlButtonContainerClassName}>
-      <LinkButton
-        href={referenceLinkHref}
-        size="base"
-        variant="outline"
-        isWithFocusVisibleHighlight
-      >
-        {label}
-      </LinkButton>
-    </div>
-  )
-}
+}) => (
+  <div className={urlButtonContainerClassName}>
+    <LinkButton
+      href={referenceLinkHref}
+      size="base"
+      variant="outline"
+      isWithFocusVisibleHighlight
+    >
+      {label}
+    </LinkButton>
+  </div>
+)
 
 export const HomepageContactInformationUI = ({
   whitelistedMethods,
@@ -127,37 +141,40 @@ export const HomepageContactInformationUI = ({
 }: ContactInformationUIProps) => {
   const filteredMethods = filterContactMethods({ methods, whitelistedMethods })
 
-  const numberOfContactMethods: NumberOfContactMethods = isLoading
-    ? MAX_CONTACT_METHODS_FOR_HOMEPAGE
-    : filteredMethods.length >= MAX_CONTACT_METHODS_FOR_HOMEPAGE
-      ? MAX_CONTACT_METHODS_FOR_HOMEPAGE
-      : 2
+  const numberOfContactMethods = getNumberOfContactMethods(
+    isLoading,
+    filteredMethods.length,
+  )
 
   const compoundStyles = createHomepageContactInformationStyles({
-    numberOfContactMethods,
     isLoading,
+    numberOfContactMethods,
   })
 
   const contactMethodStyles = createHomepageContactMethodStyles({
-    numberOfContactMethods,
     isLoading,
+    numberOfContactMethods,
   })
 
-  const descriptionText = isLoading ? "" : (description ?? "")
+  const descriptionText = isLoading === true ? "" : (description ?? "")
+  const showReferenceLink =
+    hasNonEmptyString(referenceLinkHref) &&
+    hasNonEmptyString(label) &&
+    isLoading !== true
 
   return (
     <section className={compoundStyles.screenWideOuterContainer()}>
       <div className={compoundStyles.container()}>
         <div className={compoundStyles.titleAndDescriptionContainer()}>
-          {(title || isLoading) && (
+          {(hasNonEmptyString(title) || isLoading === true) && (
             <DynamicHeading
               level={headingLevel}
               className={compoundStyles.title()}
             >
-              {isLoading ? "" : title}
+              {isLoading === true ? "" : title}
             </DynamicHeading>
           )}
-          {(!!description || isLoading) &&
+          {(hasNonEmptyString(description) || isLoading === true) &&
             (acceptHtmlTags ? (
               <BaseParagraph
                 content={descriptionText}
@@ -167,7 +184,7 @@ export const HomepageContactInformationUI = ({
             ) : (
               <p className={compoundStyles.description()}>{descriptionText}</p>
             ))}
-          {!!referenceLinkHref && !!label && !isLoading && (
+          {showReferenceLink && (
             <CallToActionButton
               referenceLinkHref={referenceLinkHref}
               label={label}
@@ -179,7 +196,7 @@ export const HomepageContactInformationUI = ({
         </div>
 
         <div className={compoundStyles.contactMethodsContainer()}>
-          {isLoading
+          {isLoading === true
             ? Array.from({ length: MAX_CONTACT_METHODS_FOR_HOMEPAGE }).map(
                 (_, index) => (
                   <LoadingContactMethod
@@ -190,18 +207,16 @@ export const HomepageContactInformationUI = ({
               )
             : filteredMethods
                 .slice(0, MAX_CONTACT_METHODS_FOR_HOMEPAGE)
-                .map((method) => {
-                  return (
-                    <ContactMethod
-                      key={`${method.method ?? "method"}-${method.values.join("-")}`}
-                      {...method}
-                      styles={contactMethodStyles}
-                    />
-                  )
-                })}
+                .map((method) => (
+                  <ContactMethod
+                    key={`${method.method ?? "method"}-${method.values.join("-")}`}
+                    {...method}
+                    styles={contactMethodStyles}
+                  />
+                ))}
         </div>
 
-        {!!referenceLinkHref && !!label && !isLoading && (
+        {showReferenceLink && (
           <CallToActionButton
             referenceLinkHref={referenceLinkHref}
             label={label}

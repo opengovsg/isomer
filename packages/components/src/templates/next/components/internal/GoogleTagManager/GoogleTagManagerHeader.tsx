@@ -6,7 +6,7 @@ export const GoogleTagManagerHeader = ({
   siteGtmId,
   ScriptComponent,
 }: GoogleTagManagerHeaderProps) => {
-  if (!ScriptComponent) return null
+  if (!ScriptComponent) {return null}
 
   const sanitizedGtmId = serializeForInlineScript(siteGtmId)
 

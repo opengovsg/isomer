@@ -8,75 +8,97 @@ import { withChromaticModes } from "@isomer/storybook-config"
 import { DynamicComponentList } from "./DynamicComponentList"
 
 const meta: Meta<DynamicComponentListProps> = {
-  title: "Next/Components/DynamicComponentList",
-  component: DynamicComponentList,
   argTypes: {},
-  tags: ["!autodocs"],
+  component: DynamicComponentList,
   parameters: {
-    layout: "fullscreen",
     chromatic: withChromaticModes(["desktop"]),
+    layout: "fullscreen",
     themes: {
       themeOverride: "Isomer Next",
     },
   },
+  tags: ["!autodocs"],
+  title: "Next/Components/DynamicComponentList",
 }
 export default meta
 type Story = StoryObj<typeof DynamicComponentList>
 
 const DgsUrl = generateDgsUrl({
-  resourceId: "PLACEHOLDER_RESOURCE_ID",
   filters: {
     headerKey1: "value1",
     headerKey2: "value2",
   },
+  resourceId: "PLACEHOLDER_RESOURCE_ID",
 })
 
 export const ContactInformation: Story = {
+  args: {
+    component: {
+      description: "[dgs:description]",
+      methods: "[dgs:methods]",
+      otherInformation: "[dgs:other_information]",
+      title: "[dgs:entity_name]",
+      type: "contactinformation",
+    },
+    dataSource: {
+      filters: [
+        {
+          fieldKey: "headerKey1",
+          fieldValue: "value1",
+        },
+        {
+          fieldKey: "headerKey2",
+          fieldValue: "value2",
+        },
+      ],
+      resourceId: "PLACEHOLDER_RESOURCE_ID",
+      type: "dgs",
+    },
+  },
   parameters: {
     msw: {
       handlers: [
-        http.get(DgsUrl, () => {
-          return HttpResponse.json({
-            success: true,
+        http.get(DgsUrl, () => 
+          HttpResponse.json({
             result: {
               records: [
                 {
-                  entity_name: "Sentosa",
                   description: "Embassy of the Republic of Singapore - Algeria",
+                  entity_name: "Sentosa",
                   methods: JSON.stringify([
                     {
-                      method: "person",
                       label: "Ambassador (Non-Resident)",
+                      method: "person",
                       values: ["Mr MOHAMMAD Alami Musa"],
                     },
                     {
-                      method: "address",
                       label: "Chancery",
+                      method: "address",
                       values: ["c/o Ministry of Foreign Affairs"],
                     },
                     {
-                      method: "telephone",
                       label: "Telephone",
+                      method: "telephone",
                       values: ["+65-63798000 (MFA)"],
                     },
                     {
-                      method: "fax",
                       label: "Fax",
+                      method: "fax",
                       values: ["+65-64747885 (MFA)"],
                     },
                     {
-                      method: "email",
                       label: "Email",
+                      method: "email",
                       values: ["do-not-reply@isomer.gov.sg"],
                     },
                     {
-                      method: "website",
                       label: "Website",
+                      method: "website",
                       values: ["https://www.isomer.gov.sg"],
                     },
                     {
-                      method: "operating_hours",
                       label: "Operating Hours",
+                      method: "operating_hours",
                       values: ["8.30 am to 5.00 pm"],
                     },
                     {
@@ -93,43 +115,43 @@ export const ContactInformation: Story = {
                   }),
                 },
                 {
-                  entity_name: "Sentosa 2",
                   description:
                     "Embassy of the Republic of Singapore - Algeria 2",
+                  entity_name: "Sentosa 2",
                   methods: JSON.stringify([
                     {
-                      method: "person",
                       label: "Ambassador (Non-Resident) 2",
+                      method: "person",
                       values: ["Mr MOHAMMAD Alami Musa 2"],
                     },
                     {
-                      method: "address",
                       label: "Chancery 2",
+                      method: "address",
                       values: ["c/o Ministry of Foreign Affairs 2"],
                     },
                     {
-                      method: "telephone",
                       label: "Telephone",
+                      method: "telephone",
                       values: ["+65-63798000 (MFA)"],
                     },
                     {
-                      method: "fax",
                       label: "Fax 2",
+                      method: "fax",
                       values: ["+65-64747885 (MFA) 2"],
                     },
                     {
-                      method: "email",
                       label: "Email 2",
+                      method: "email",
                       values: ["do-not-reply-2@isomer.gov.sg"],
                     },
                     {
-                      method: "website",
                       label: "Website 2",
+                      method: "website",
                       values: ["https://www.isomer-2.gov.sg"],
                     },
                     {
-                      method: "operating_hours",
                       label: "Operating Hours 2",
+                      method: "operating_hours",
                       values: ["8.30 am to 5.00 pm 2"],
                     },
                     {
@@ -147,53 +169,24 @@ export const ContactInformation: Story = {
                 },
               ],
             },
+            success: true,
           })
-        }),
+        ),
       ],
-    },
-  },
-  args: {
-    dataSource: {
-      type: "dgs",
-      resourceId: "PLACEHOLDER_RESOURCE_ID",
-      filters: [
-        {
-          fieldKey: "headerKey1",
-          fieldValue: "value1",
-        },
-        {
-          fieldKey: "headerKey2",
-          fieldValue: "value2",
-        },
-      ],
-    },
-    component: {
-      type: "contactinformation",
-      title: "[dgs:entity_name]",
-      description: "[dgs:description]",
-      methods: "[dgs:methods]",
-      otherInformation: "[dgs:other_information]",
     },
   },
 }
 
 export const ContactInformationLoading: Story = {
-  name: "ContactInformation (Loading)",
-  parameters: {
-    msw: {
-      handlers: [
-        http.get(DgsUrl, () => {
-          return new Promise(() => {
-            // Never resolve the promise
-          })
-        }),
-      ],
-    },
-  },
   args: {
+    component: {
+      description: "[dgs:description]",
+      methods: "[dgs:methods]",
+      otherInformation: "[dgs:other_information]",
+      title: "[dgs:entity_name]",
+      type: "contactinformation",
+    },
     dataSource: {
-      type: "dgs",
-      resourceId: "PLACEHOLDER_RESOURCE_ID",
       filters: [
         {
           fieldKey: "headerKey1",
@@ -204,13 +197,20 @@ export const ContactInformationLoading: Story = {
           fieldValue: "value2",
         },
       ],
+      resourceId: "PLACEHOLDER_RESOURCE_ID",
+      type: "dgs",
     },
-    component: {
-      type: "contactinformation",
-      title: "[dgs:entity_name]",
-      description: "[dgs:description]",
-      methods: "[dgs:methods]",
-      otherInformation: "[dgs:other_information]",
+  },
+  name: "ContactInformation (Loading)",
+  parameters: {
+    msw: {
+      handlers: [
+        http.get(DgsUrl,  async () => 
+          await new Promise(() => {
+            // Never resolve the promise
+          })
+        ),
+      ],
     },
   },
 }

@@ -10,7 +10,7 @@ export const getFilteredItems = (
   searchValue: string,
 ): ProcessedCollectionCardProps[] => {
   const normalizedSearchValue =
-    searchValue !== "" ? normalizeCollectionSearchText(searchValue) : ""
+    searchValue === "" ? "" : normalizeCollectionSearchText(searchValue)
 
   return items.filter((item) => {
     // Step 1: Filter based on search value
@@ -50,18 +50,18 @@ export const getFilteredItems = (
     // Step 3: Compute set intersection between remaining filters and the set of items.
     // Take note that we use OR between items within the same filter and AND between filters.
     return remainingFilters
-      .map(({ items: activeFilters, id }) => {
-        return item.tags?.some(({ category, selected: itemLabels }) => {
-          return (
+      .map(({ items: activeFilters, id }) => 
+        item.tags?.some(({ category, selected: itemLabels }) => 
+          (
             category === id &&
             activeFilters
               .map(({ id }) => id)
-              .reduce((prev, cur) => {
-                return prev || itemLabels.includes(cur)
-              }, false) //includes(itemLabels)
+              .reduce((prev, cur) => 
+                prev || itemLabels.includes(cur)
+              , false) //includes(itemLabels)
           )
-        })
-      })
+        )
+      )
       .every((x) => x)
   })
 }

@@ -14,28 +14,32 @@ interface SearchInputBoxProps {
 }
 const SearchInputBox = ({ search }: SearchInputBoxProps) => {
   switch (search.type) {
-    case "searchSG":
-      if (!search.clientId) return null
+    case "searchSG": {
+      if (!search.clientId) {return null}
       return (
         <HomepageSearchSGInputBox
           clientId={search.clientId}
           {...SEARCH_INPUT_COMMON_PROPS}
         />
       )
-    case "localSearch":
-      if (!search.searchUrl) return null
+    }
+    case "localSearch": {
+      if (!search.searchUrl) {return null}
       return (
         <LocalSearchInputBox
           searchUrl={search.searchUrl}
           {...SEARCH_INPUT_COMMON_PROPS}
         />
       )
-    case "egazette-algolia":
+    }
+    case "egazette-algolia": {
       // Egazette Algolia search runs on a dedicated search page, not from the Hero searchbar.
       return null
-    default:
+    }
+    default: {
       const _exhaustiveCheck: never = search
       return null
+    }
   }
 }
 
@@ -44,8 +48,8 @@ export const SearchbarContent = ({
   subtitle,
   site,
   headingLevel,
-}: HeroSearchbarProps) => {
-  return (
+}: HeroSearchbarProps) => 
+  (
     <div
       className={`relative mx-auto flex w-full flex-col items-center gap-6 px-6 pb-12 pt-11 md:gap-9 lg:pb-20 lg:pt-16 ${ComponentContent}`}
     >
@@ -65,4 +69,4 @@ export const SearchbarContent = ({
       </div>
     </div>
   )
-}
+

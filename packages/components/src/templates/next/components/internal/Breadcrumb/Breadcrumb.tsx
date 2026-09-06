@@ -8,26 +8,26 @@ import { focusVisibleHighlight } from "~/utils/tailwind"
 import { Link } from "../Link"
 
 const createBreadcrumbLinkStyles = tv({
-  extend: focusVisibleHighlight,
   base: "",
+  defaultVariants: { colorScheme: "default" },
+  extend: focusVisibleHighlight,
   slots: {
     container: "flex items-center gap-1",
-    link: "prose-label-md-regular line-clamp-1 underline decoration-transparent underline-offset-4 transition current:prose-label-md-medium hover:decoration-inherit current:hover:decoration-transparent",
     icon: "h-5 w-5 flex-shrink-0",
+    link: "prose-label-md-regular line-clamp-1 underline decoration-transparent underline-offset-4 transition current:prose-label-md-medium hover:decoration-inherit current:hover:decoration-transparent",
   },
   variants: {
     colorScheme: {
       default: {
-        link: "text-base-content active:text-interaction-link-active current:text-base-content-medium",
         icon: "text-base-content-subtle",
+        link: "text-base-content active:text-interaction-link-active current:text-base-content-medium",
       },
       inverse: {
-        link: "text-base-content-inverse",
         icon: "text-base-content-inverse",
+        link: "text-base-content-inverse",
       },
     },
   },
-  defaultVariants: { colorScheme: "default" },
 })
 
 type BaseBreadcrumbsProps = ComponentPropsWithoutRef<"div"> & {
@@ -39,8 +39,8 @@ const BaseBreadcrumbs = ({
   children,
   "aria-label": ariaLabel = "Breadcrumb",
   ...props
-}: BaseBreadcrumbsProps) => {
-  return (
+}: BaseBreadcrumbsProps) => 
+  (
     <nav
       {...props}
       aria-label={ariaLabel}
@@ -51,7 +51,7 @@ const BaseBreadcrumbs = ({
       </ol>
     </nav>
   )
-}
+
 
 type BaseBreadcrumbProps = LinkProps & {
   colorScheme?: "default" | "inverse"

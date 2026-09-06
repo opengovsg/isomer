@@ -48,7 +48,7 @@ export const LiteVimeoEmbed = ({
   }
 
   const startThumbnailFetch = () => {
-    if (thumbnailFetchStarted.current) return
+    if (thumbnailFetchStarted.current) {return}
     thumbnailFetchStarted.current = true
     void fetchThumbnail()
   }
@@ -77,7 +77,7 @@ export const LiteVimeoEmbed = ({
       ) : (
         <div
           ref={(node) => {
-            if (node) startThumbnailFetch()
+            if (node) {startThumbnailFetch()}
           }}
           className={twMerge(
             "absolute inset-0 h-full w-full bg-black",
@@ -101,7 +101,7 @@ export const LiteVimeoEmbed = ({
       ) : (
         <button
           type="button"
-          onClick={() => setActivated(true)}
+          onClick={() =>{  setActivated(true); }}
           className="group absolute inset-0 flex cursor-pointer items-center justify-center focus:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-utility-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-black"
           aria-label={`Play ${title || "video"}`}
         >
@@ -120,11 +120,11 @@ const VimeoPlayButton = () => (
     <span
       className="ml-1"
       style={{
-        width: 0,
-        height: 0,
+        borderColor: "transparent transparent transparent #000",
         borderStyle: "solid",
         borderWidth: "10px 0 10px 20px",
-        borderColor: "transparent transparent transparent #000",
+        height: 0,
+        width: 0,
       }}
     />
   </span>

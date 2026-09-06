@@ -28,7 +28,7 @@ type MobileNavMenuProps = Omit<
 }
 
 export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
-  function MobileNavMenu(
+  (
     {
       top,
       items,
@@ -41,7 +41,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
       search,
     },
     mobileMenuRef,
-  ) {
+  ) => {
     useScrollLock()
     const buttonRef = useRef<HTMLButtonElement>(null)
     const { buttonProps } = useButton({ onPress: onCloseMenu }, buttonRef)
@@ -87,10 +87,10 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
                 key={item.url}
                 index={index}
                 isOpen={index === openNavItemIdx}
-                onClick={() =>
+                onClick={() =>{ 
                   setOpenNavItemIdx((currIdx) =>
                     currIdx === index ? -1 : index,
-                  )
+                  ); }
                 }
                 onCloseMenu={onCloseMenu}
                 {...item}

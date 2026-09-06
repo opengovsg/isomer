@@ -7,33 +7,33 @@ import { withChromaticModes } from "@isomer/storybook-config"
 import { Infopic } from "../Infopic"
 
 const meta: Meta<InfopicProps> = {
-  title: "Next/Components/Infopic/Full",
-  component: Infopic,
   argTypes: {},
-  parameters: {
-    layout: "fullscreen",
-    themes: {
-      themeOverride: "Isomer Next",
-    },
-    chromatic: {
-      ...withChromaticModes(["desktop", "mobile"]),
-    },
-  },
   args: {
-    variant: "full",
-    title:
-      "Explore your great neighbourhood with us can’t stretch all the way so this needs a max width",
+    buttonLabel: "Sign up",
+    buttonUrl: "/",
     description:
       "They will try to close the door on you, just open it. Lion! The other day the grass was brown, now it’s green because I ain’t give up. Never surrender.",
+    headingLevel: 2,
     imageAlt:
       "Two rhinos. A rhino is peacefully grazing on grass in a field in front of the other rhino.",
     imageSrc:
       "https://images.unsplash.com/photo-1527436826045-8805c615a6df?w=1280",
-    buttonLabel: "Sign up",
-    buttonUrl: "/",
     site: generateSiteConfig(),
-    headingLevel: 2,
+    title:
+      "Explore your great neighbourhood with us can’t stretch all the way so this needs a max width",
+    variant: "full",
   },
+  component: Infopic,
+  parameters: {
+    chromatic: {
+      ...withChromaticModes(["desktop", "mobile"]),
+    },
+    layout: "fullscreen",
+    themes: {
+      themeOverride: "Isomer Next",
+    },
+  },
+  title: "Next/Components/Infopic/Full",
 }
 export default meta
 type Story = StoryObj<typeof Infopic>
@@ -64,28 +64,28 @@ export const TallImage: Story = {
 
 export const LongImage: Story = {
   args: {
-    title: "Don't put all your baskets in one egg",
-    description: "",
     buttonUrl: "",
+    description: "",
     imageSrc:
       "https://images.unsplash.com/photo-1444858440655-e7cf0269024e?q=80&w=2048&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    title: "Don't put all your baskets in one egg",
   },
 }
 
 export const LongImageWithDesc: Story = {
   args: {
-    title: "Don't put all your baskets in one egg",
     imageSrc:
       "https://images.unsplash.com/photo-1713098372674-cbf10e8c2bba?q=80&w=3869&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    title: "Don't put all your baskets in one egg",
   },
 }
 
 export const LongTitleAndDesc: Story = {
   args: {
-    title: "Supercalifraagelisticexpalidocioussdffwhyishtislolong",
     description:
       "SupercalifraagelisticexpalidocioussdffwhSupercalifraagelisticexpalidocioussdffwhyishtislolongSupercalifraagelisticexpalidocioussdffwhyishtislolongSupercalifraagelisticexpalidocioussdffwhyishtislolongSupercalifraagelisticexpalidocioussdffwhyishtislolongSupercalifraagelisticexpalidocioussdffwhyishtislolongSupercalifraagelisticexpalidocioussdffwhyishtislolongSupercalifraagelisticexpalidocioussdffwhyishtislolongyishtislolongSupercalifraagelisticexpalidocioussdffwhyishtislolongSupercalifraagelisticexpalidocioussdffwhyishtislolongSupercalifraagelisticexpalidocioussdffwhyishtislolongSupercalifraagelisticexpalidocioussdffwhyishtislolong",
     imageSrc:
       "https://images.unsplash.com/photo-1713098372674-cbf10e8c2bba?q=80&w=3869&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    title: "Supercalifraagelisticexpalidocioussdffwhyishtislolong",
   },
 }

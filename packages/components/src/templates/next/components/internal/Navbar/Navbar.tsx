@@ -6,14 +6,14 @@ import { NavbarClient } from "./NavbarClient"
 
 const navbarLogoStyles = tv({
   base: "object-contain object-left",
-  variants: {
-    variant: {
-      utility: "max-h-[48px] max-w-[128px] lg:max-h-[68px] lg:max-w-[180px]",
-      default: "max-h-[48px] max-w-[128px]",
-    },
-  },
   defaultVariants: {
     variant: "default",
+  },
+  variants: {
+    variant: {
+      default: "max-h-[48px] max-w-[128px]",
+      utility: "max-h-[48px] max-w-[128px] lg:max-h-[68px] lg:max-w-[180px]",
+    },
   },
 })
 
@@ -35,10 +35,10 @@ export const Navbar = ({
     item: NavbarProps["items"][number],
   ): NavbarProps["items"][number] => ({
     ...item,
+    items: item.items?.map(processNavItem),
     url:
       getReferenceLinkHref(item.url, site.siteMapArray, site.assetsBaseUrl) ??
       item.url,
-    items: item.items?.map(processNavItem),
   })
 
   return (
@@ -47,18 +47,19 @@ export const Navbar = ({
       search={search}
       items={items.map(processNavItem)}
       imageClientProps={{
-        src: logoUrl,
         alt: logoAlt,
-        width: "100%",
-        className: navbarLogoStyles({
-          variant: !!utility ? "utility" : "default",
-        }),
         assetsBaseUrl: site.assetsBaseUrl,
+        className: navbarLogoStyles({
+          variant: utility ? "utility" : "default",
+        }),
         lazyLoading: false, // will always be above the fold
+        src: logoUrl,
+        width: "100%",
       }}
       callToAction={
-        !!callToAction
+        callToAction
           ? {
+              isPinnedOnMobile: callToAction.isPinnedOnMobile,
               label: callToAction.label,
               url:
                 getReferenceLinkHref(
@@ -66,14 +67,12 @@ export const Navbar = ({
                   site.siteMapArray,
                   site.assetsBaseUrl,
                 ) ?? callToAction.url,
-              isPinnedOnMobile: callToAction.isPinnedOnMobile,
             }
           : undefined
       }
       utility={
-        !!utility
+        utility
           ? {
-              label: utility.label,
               items: utility.items.map((item) => ({
                 name: item.name,
                 url:
@@ -83,6 +82,7 @@ export const Navbar = ({
                     site.assetsBaseUrl,
                   ) ?? item.url,
               })),
+              label: utility.label,
             }
           : undefined
       }

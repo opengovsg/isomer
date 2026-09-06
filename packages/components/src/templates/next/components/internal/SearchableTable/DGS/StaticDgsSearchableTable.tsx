@@ -27,13 +27,13 @@ export const StaticDGSSearchableTable = ({
 }: StaticDGSSearchableTableProps) => {
   const params = useMemo(
     () => ({
-      resourceId,
       filters: filters?.reduce<
         NonNullable<DgsApiDatasetSearchParams["filters"]>
       >((acc, filter) => {
         acc[filter.fieldKey] = filter.fieldValue
         return acc
       }, {}),
+      resourceId,
       sort,
     }),
     [resourceId, filters, sort],

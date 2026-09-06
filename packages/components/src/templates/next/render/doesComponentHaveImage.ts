@@ -19,8 +19,9 @@ export const doesComponentHaveImage = ({
     case "dynamicdatabanner":
     case "antiscambanner":
     case "contactinformation":
-    case "dynamiccomponentlist": // The content are fetched, so they eager load has no impact
+    case "dynamiccomponentlist": { // The content are fetched, so they eager load has no impact
       return false
+    }
     case "image":
     case "infopic":
     case "formsg":
@@ -32,16 +33,21 @@ export const doesComponentHaveImage = ({
     case "audio":
     case "video":
     case "imagegallery":
-    case "childrenpages":
+    case "childrenpages": {
       return true
-    case "infocards":
+    }
+    case "infocards": {
       return component.cards.some((card) => "imageUrl" in card)
-    case "collectionblock":
+    }
+    case "collectionblock": {
       return component.displayThumbnail
-    case "blockquote":
+    }
+    case "blockquote": {
       return component.imageSrc !== undefined
-    default:
+    }
+    default: {
       const _: never = component
       return false
+    }
   }
 }

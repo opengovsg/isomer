@@ -3,8 +3,8 @@ import type { GoogleTagManagerBodyProps } from "~/interfaces"
 // Needed in the event that the user has disabled scripts
 export const GoogleTagManagerBody = ({
   siteGtmId,
-}: GoogleTagManagerBodyProps) => {
-  return (
+}: GoogleTagManagerBodyProps) => 
+  (
     <noscript>
       <iframe
         src={`https://www.googletagmanager.com/ns.html?id=${encodeURIComponent(siteGtmId)}`}
@@ -16,4 +16,4 @@ export const GoogleTagManagerBody = ({
       />
     </noscript>
   )
-}
+

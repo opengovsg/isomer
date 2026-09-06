@@ -26,12 +26,15 @@ export const ContactInformation = ({
 
   const { type } = dataSource
   switch (type) {
-    case DATA_SOURCE_TYPE.native:
+    case DATA_SOURCE_TYPE.native: {
       return <NativeContactInformation {...uiProps} />
-    case DATA_SOURCE_TYPE.dgs:
+    }
+    case DATA_SOURCE_TYPE.dgs: {
       return <DgsContactInformation dataSource={dataSource} {...uiProps} />
-    default:
+    }
+    default: {
       const _exhaustiveCheck: never = type
       return _exhaustiveCheck
+    }
   }
 }

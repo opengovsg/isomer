@@ -4,15 +4,15 @@ import type { SiderailProps } from "~/interfaces"
 import { Siderail } from "./Siderail"
 
 const meta: Meta<SiderailProps> = {
-  title: "Next/Internal Components/Siderail",
+  argTypes: {},
   component: Siderail,
   decorators: [(storyFn) => <div className="max-w-sm">{storyFn()}</div>],
-  argTypes: {},
   parameters: {
     themes: {
       themeOverride: "Isomer Next",
     },
   },
+  title: "Next/Internal Components/Siderail",
 }
 export default meta
 type Story = StoryObj<typeof Siderail>
@@ -20,8 +20,6 @@ type Story = StoryObj<typeof Siderail>
 // Default scenario
 export const Default: Story = {
   args: {
-    parentTitle: "Alice and Peter Tan Research Grant",
-    parentUrl: "/",
     pages: [
       {
         title: "Learn about the research grant",
@@ -32,28 +30,30 @@ export const Default: Story = {
         url: "/item-2",
       },
       {
+        isCurrent: true,
         title: "Are you eligible for the research grant?",
         url: "/item-3",
-        isCurrent: true,
       },
       {
         title: "FAQs on research grant",
         url: "/item-4",
       },
     ],
+    parentTitle: "Alice and Peter Tan Research Grant",
+    parentUrl: "/",
   },
 }
 
 export const NoSiblings: Story = {
   args: {
-    parentTitle: "Alice and Peter Tan Research Grant",
-    parentUrl: "/",
     pages: [
       {
+        isCurrent: true,
         title: "Are you eligible for the research grant?",
         url: "/item-3",
-        isCurrent: true,
       },
     ],
+    parentTitle: "Alice and Peter Tan Research Grant",
+    parentUrl: "/",
   },
 }

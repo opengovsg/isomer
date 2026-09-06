@@ -26,7 +26,7 @@ export const getPrivacyEnhancedYouTubeEmbedUrl = (
   }
   if (pathname.startsWith("/watch")) {
     const videoId = searchParams.get("v")
-    if (!videoId) return ""
+    if (!videoId) {return ""}
     urlObject.pathname = `/embed/${videoId}`
     urlObject.search = ""
     return urlObject.toString()
@@ -48,7 +48,7 @@ export const getYouTubeVideoId = (url: string): string | null => {
     if (pathname.startsWith("/embed/")) {
       const id = pathname.slice("/embed/".length).split("?")[0]
       // "videoseries" is a playlist embed path, not a video ID
-      if (!id || id === "videoseries") return null
+      if (!id || id === "videoseries") {return null}
       return id
     }
     if (pathname.startsWith("/watch")) {

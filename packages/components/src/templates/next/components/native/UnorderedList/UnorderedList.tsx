@@ -9,13 +9,13 @@ const getUnorderedListType = (level?: number) => {
     return "list-disc"
   } else if (level % 3 === 1) {
     return "list-[circle]"
-  } else {
-    return "list-[square]"
   }
+    return "list-[square]"
+  
 }
 
-export const UnorderedList = ({ content, level, site }: UnorderedListProps) => {
-  return (
+export const UnorderedList = ({ content, level, site }: UnorderedListProps) => 
+  (
     // Nested sublists (level set) use `mt-3` to match the item rhythm (`my-3`
     // on ListItem). Top-level lists keep `mt-6` because preceding blocks like
     // Table or Callout have no bottom margin to collapse over a smaller value.
@@ -32,4 +32,4 @@ export const UnorderedList = ({ content, level, site }: UnorderedListProps) => {
       ))}
     </ul>
   )
-}
+

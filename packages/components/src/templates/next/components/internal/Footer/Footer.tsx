@@ -34,25 +34,25 @@ import { ClientCopyrightYear } from "./ClientCopyrightYear"
 
 const SocialMediaTypeToIconMap = {
   facebook: FaFacebook,
-  twitter: FaXTwitter,
+  flickr: FaFlickr,
+  github: IoLogoGithub,
   instagram: FaInstagram,
   linkedin: FaLinkedin,
   telegram: FaTelegram,
-  youtube: FaYoutube,
-  github: IoLogoGithub,
-  tiktok: FaTiktok,
-  whatsapp: FaWhatsapp,
-  flickr: FaFlickr,
   threads: FaThreads,
+  tiktok: FaTiktok,
+  twitter: FaXTwitter,
+  whatsapp: FaWhatsapp,
+  youtube: FaYoutube,
 } satisfies Record<SocialMediaType, IconType>
 
-const SiteNameSection = ({ siteName }: Pick<FooterProps, "siteName">) => {
-  return <h2 className="prose-display-xs">{siteName}</h2>
-}
+const SiteNameSection = ({ siteName }: Pick<FooterProps, "siteName">) => 
+  <h2 className="prose-display-xs">{siteName}</h2>
+
 
 const footerItemLinkStyle = tv({
-  extend: focusVisibleHighlight,
   base: "prose-body-sm line-clamp-1 flex w-fit items-center gap-1 text-base-content-inverse outline-none hover:text-base-content-inverse hover:underline hover:underline-offset-4 focus-visible:-m-0.5 focus-visible:p-0.5 focus-visible:shadow-none",
+  extend: focusVisibleHighlight,
 })
 
 const FooterItem = ({ title, url }: FooterItemType) => {
@@ -87,8 +87,8 @@ const NavSection = ({
   site,
   siteNavItems,
   customNavItems,
-}: Pick<FooterProps, "site" | "siteNavItems" | "customNavItems">) => {
-  return (
+}: Pick<FooterProps, "site" | "siteNavItems" | "customNavItems">) => 
+  (
     <div className="prose-body-sm flex flex-col gap-8 lg:flex-row lg:gap-10">
       <div className="flex flex-col gap-3 lg:w-64">
         {siteNavItems.map((item) => (
@@ -122,7 +122,7 @@ const NavSection = ({
       </div>
     </div>
   )
-}
+
 
 const SocialMediaSection = ({
   socialMediaLinks,
@@ -164,8 +164,8 @@ const ContactUsSection = ({
   site,
   contactUsLink,
   feedbackFormLink,
-}: Pick<FooterProps, "site" | "contactUsLink" | "feedbackFormLink">) => {
-  return (
+}: Pick<FooterProps, "site" | "contactUsLink" | "feedbackFormLink">) => 
+  (
     <div className="prose-body-sm flex flex-col gap-3">
       {contactUsLink && (
         <FooterItem
@@ -193,7 +193,7 @@ const ContactUsSection = ({
       )}
     </div>
   )
-}
+
 
 const ReachUsSection = ({
   site,
@@ -203,8 +203,8 @@ const ReachUsSection = ({
 }: Pick<
   FooterProps,
   "site" | "socialMediaLinks" | "contactUsLink" | "feedbackFormLink"
->) => {
-  return (
+>) => 
+  (
     <div className="flex flex-col gap-6 lg:w-fit">
       <SocialMediaSection socialMediaLinks={socialMediaLinks} site={site} />
       <ContactUsSection
@@ -214,7 +214,7 @@ const ReachUsSection = ({
       />
     </div>
   )
-}
+
 
 const LegalSection = ({
   site,
@@ -231,8 +231,8 @@ const LegalSection = ({
   | "lastUpdated"
   | "privacyStatementLink"
   | "termsOfUseLink"
->) => {
-  return (
+>) => 
+  (
     <div className="flex h-full">
       <div className="flex flex-col justify-end gap-4 lg:gap-2">
         <p className="prose-label-md-regular text-base-content-inverse-subtle">
@@ -278,10 +278,10 @@ const LegalSection = ({
       </div>
     </div>
   )
-}
 
-const CreditsSection = () => {
-  return (
+
+const CreditsSection = () => 
+  (
     <div className="prose-label-md-regular flex flex-col gap-6 lg:flex-row lg:gap-8 xl:gap-20">
       <Link
         href="https://www.isomer.gov.sg"
@@ -319,7 +319,7 @@ const CreditsSection = () => {
       </Link>
     </div>
   )
-}
+
 
 // below lg
 const FooterMobile = ({
@@ -335,8 +335,8 @@ const FooterMobile = ({
   feedbackFormLink,
   privacyStatementLink,
   termsOfUseLink,
-}: FooterProps) => {
-  return (
+}: FooterProps) => 
+  (
     <div className="flex flex-col gap-8 px-6 py-11 md:px-10 lg:hidden lg:py-16">
       <SiteNameSection siteName={siteName} />
       <NavSection
@@ -363,7 +363,7 @@ const FooterMobile = ({
       </div>
     </div>
   )
-}
+
 
 // lg and above
 const FooterDesktop = ({
@@ -379,8 +379,8 @@ const FooterDesktop = ({
   feedbackFormLink,
   privacyStatementLink,
   termsOfUseLink,
-}: FooterProps) => {
-  return (
+}: FooterProps) => 
+  (
     <div className="hidden px-10 py-14 lg:block">
       <div className="mx-auto flex max-w-[72.5rem] flex-col gap-6">
         <SiteNameSection siteName={siteName} />
@@ -417,13 +417,13 @@ const FooterDesktop = ({
       </div>
     </div>
   )
-}
 
-export const Footer = (props: FooterProps) => {
-  return (
+
+export const Footer = (props: FooterProps) => 
+  (
     <footer className="bg-base-canvas-inverse text-base-content-inverse">
       <FooterMobile {...props} />
       <FooterDesktop {...props} />
     </footer>
   )
-}
+

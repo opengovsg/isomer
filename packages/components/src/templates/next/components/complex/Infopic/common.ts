@@ -17,31 +17,31 @@ export const infopicStyles = tv({
     overlay: "",
   },
   variants: {
-    isTextOnRight: {
-      true: {
-        container: "lg:[grid-template-areas:'img_content']",
-        content: "lg:justify-self-start lg:pl-24",
-      },
-      false: {
-        container: "lg:[grid-template-areas:'content_img']",
-        content: "lg:w-full lg:justify-self-end lg:pr-24",
-      },
-    },
     colorScheme: {
       default: {
         container: "bg-base-canvas-backdrop",
         title: "text-base-content-strong",
       },
       inverse: {
-        title: "text-base-content-inverse",
         description: "text-base-content-inverse",
+        title: "text-base-content-inverse",
+      },
+    },
+    isTextOnRight: {
+      false: {
+        container: "lg:[grid-template-areas:'content_img']",
+        content: "lg:w-full lg:justify-self-end lg:pr-24",
+      },
+      true: {
+        container: "lg:[grid-template-areas:'img_content']",
+        content: "lg:justify-self-start lg:pl-24",
       },
     },
     variant: {
       [InfopicVariants.Block.value]: {
+        container: "[grid-template-rows:auto_1fr]",
         imageContainer:
           "relative max-h-[400px] min-h-[200px] w-full lg:max-h-full",
-        container: "[grid-template-rows:auto_1fr]",
       },
       [InfopicVariants.Full.value]: {
         container: "[grid-template-rows:1fr_1fr]",

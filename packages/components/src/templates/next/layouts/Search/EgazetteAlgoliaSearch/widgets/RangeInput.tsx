@@ -14,8 +14,8 @@ const inputStyles = tv({
   base: "h-10 w-full rounded border bg-white px-2 disabled:cursor-not-allowed",
   variants: {
     hasError: {
-      true: "border-utility-feedback-alert",
       false: "border-base-content-strong",
+      true: "border-utility-feedback-alert",
     },
   },
 })
@@ -29,12 +29,12 @@ const validate = (
   bound: { min?: number; max?: number } | undefined,
 ): string | undefined => {
   const checkBound = (value: number | undefined, label: string) => {
-    if (value === undefined) return undefined
+    if (value === undefined) {return}
     if (bound?.min !== undefined && value < bound.min)
-      return `${label} must be ${bound.min} or later`
+      {return `${label} must be ${bound.min} or later`}
     if (bound?.max !== undefined && value > bound.max)
-      return `${label} must be ${bound.max} or earlier`
-    return undefined
+      {return `${label} must be ${bound.max} or earlier`}
+    return
   }
 
   return (
@@ -58,8 +58,8 @@ export const RangeInput = ({
   // connector level.
   const { start, range, refine, canRefine } = useRange({
     attribute,
-    min: bound?.min,
     max: bound?.max,
+    min: bound?.min,
   })
   const [minRaw, maxRaw] = start
 
@@ -67,8 +67,8 @@ export const RangeInput = ({
   // when no explicit `bound` was passed. Without this a visitor can submit a
   // year/month outside the data's range — a filter that matches nothing.
   const effectiveBound = {
-    min: bound?.min ?? range.min,
     max: bound?.max ?? range.max,
+    min: bound?.min ?? range.min,
   }
 
   const [min, setMin] = useState(() => toInputValue(minRaw))
@@ -124,10 +124,10 @@ export const RangeInput = ({
             min={bound?.min}
             max={bound?.max}
             placeholder={
-              range.min !== undefined ? String(range.min) : undefined
+              range.min === undefined ? undefined : String(range.min)
             }
             value={min}
-            onChange={(event) => setMin(event.target.value)}
+            onChange={(event) =>{  setMin(event.target.value); }}
             disabled={!canRefine}
             aria-invalid={error !== undefined}
             className={inputClassName}
@@ -141,10 +141,10 @@ export const RangeInput = ({
             min={bound?.min}
             max={bound?.max}
             placeholder={
-              range.max !== undefined ? String(range.max) : undefined
+              range.max === undefined ? undefined : String(range.max)
             }
             value={max}
-            onChange={(event) => setMax(event.target.value)}
+            onChange={(event) =>{  setMax(event.target.value); }}
             disabled={!canRefine}
             aria-invalid={error !== undefined}
             className={inputClassName}

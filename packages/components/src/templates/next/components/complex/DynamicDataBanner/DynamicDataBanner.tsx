@@ -13,8 +13,8 @@ export const DynamicDataBanner = ({
   label,
   errorMessage,
   site,
-}: DynamicDataBannerProps) => {
-  return (
+}: DynamicDataBannerProps) => 
+  (
     <DynamicDataBannerClient
       apiEndpoint={apiEndpoint}
       title={title}
@@ -24,12 +24,12 @@ export const DynamicDataBanner = ({
       errorMessageBaseParagraph={
         <BaseParagraph
           content={getTextAsHtml({
-            site,
             content: errorMessage,
+            site,
           })}
           className="prose-label-sm-medium [&:not(:first-child)]:mt-0 [&:not(:last-child)]:mb-0"
         />
       }
     />
   )
-}
+

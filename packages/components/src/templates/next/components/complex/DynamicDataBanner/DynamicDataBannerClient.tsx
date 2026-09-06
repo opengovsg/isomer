@@ -64,13 +64,13 @@ const DynamicDataBannerUI = ({
     className,
   }: {
     className?: string
-  }): React.ReactNode => {
-    return (
+  }): React.ReactNode => 
+    (
       <Link href={url} className={twMerge(compoundStyles.url(), className)}>
         {label}
       </Link>
     )
-  }
+  
 
   if (errorMessageBaseParagraph) {
     return (
@@ -140,7 +140,7 @@ export const DynamicDataBannerClient = ({
   const hasFetchedRef = useRef(false)
 
   const loadDynamicData = () => {
-    if (hasFetchedRef.current || globalThis.window == null) return
+    if (hasFetchedRef.current || globalThis.window == null) {return}
     hasFetchedRef.current = true
 
     // This is to ensure that the component is mounted before the query is executed
@@ -150,7 +150,7 @@ export const DynamicDataBannerClient = ({
     // Also not using react-query's useQuery hook because it's not compatible with this approach of using useEffect
     // we now have access to fetch here
     fetch(apiEndpoint)
-      .then((res) => res.json())
+      .then( async (res) => await res.json())
       .then((apiData) => {
         if (!apiData?.[getSingaporeDateYYYYMMDD()]) {
           throw new Error("No data found for current date")
@@ -169,7 +169,7 @@ export const DynamicDataBannerClient = ({
     return (
       <div
         ref={(node) => {
-          if (node) loadDynamicData()
+          if (node) {loadDynamicData()}
         }}
       >
         <DynamicDataBannerUI
@@ -183,24 +183,24 @@ export const DynamicDataBannerClient = ({
   }
 
   if (data.length !== DYNAMIC_DATA_BANNER_NUMBER_OF_DATA)
-    return (
+    {return (
       <div
         ref={(node) => {
-          if (node) loadDynamicData()
+          if (node) {loadDynamicData()}
         }}
       >
         <DynamicDataBannerUI data={[]} url={url} label={label} />
       </div>
-    )
+    )}
 
   return (
     <div
       ref={(node) => {
-        if (node) loadDynamicData()
+        if (node) {loadDynamicData()}
       }}
     >
       <DynamicDataBannerUI
-        title={!!title ? dynamicData[title] : undefined}
+        title={title ? dynamicData[title] : undefined}
         data={data.map((singleData) => ({
           label: singleData.label,
           value: isLoading

@@ -19,8 +19,8 @@ export const InfoCardText = ({
   | "url"
   | "isExternalLink"
   | "headingLevel"
->): React.ReactNode => {
-  return (
+>): React.ReactNode => 
+  (
     <div className={compoundStyles.cardTextContainer({ variant })}>
       <DynamicHeading
         level={headingLevel}
@@ -43,4 +43,4 @@ export const InfoCardText = ({
       )}
     </div>
   )
-}
+

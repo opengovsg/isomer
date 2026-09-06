@@ -7,15 +7,15 @@ import { withChromaticModes } from "@isomer/storybook-config"
 import { Masthead } from "./Masthead"
 
 const meta: Meta<MastheadProps> = {
-  title: "Next/Internal Components/Masthead",
-  component: Masthead,
   argTypes: {},
+  component: Masthead,
   parameters: {
+    chromatic: withChromaticModes(["desktop", "tablet", "mobile"]),
     themes: {
       themeOverride: "Isomer Next",
     },
-    chromatic: withChromaticModes(["desktop", "tablet", "mobile"]),
   },
+  title: "Next/Internal Components/Masthead",
 }
 export default meta
 type Story = StoryObj<typeof Masthead>

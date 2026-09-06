@@ -23,8 +23,8 @@ export const Infobar = ({
   const hasSecondaryCTA = !!secondaryButtonLabel && !!secondaryButtonUrl
 
   const styles = createInfobarStyles({
-    layout: simplifiedLayout,
     colorScheme: variant,
+    layout: simplifiedLayout,
   })
 
   // NOTE: Should not have dark mode on non-homepage for now

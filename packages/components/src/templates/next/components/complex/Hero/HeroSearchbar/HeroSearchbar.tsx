@@ -29,7 +29,7 @@ export const HeroSearchbar = (props: HeroSearchbarProps) => {
         </div>
       </section>
     )
-  } else {
+  }
     return (
       <section
         className="flex w-full flex-col justify-center text-base-content-strong md:min-h-80 lg:min-h-96"
@@ -42,5 +42,5 @@ export const HeroSearchbar = (props: HeroSearchbarProps) => {
         <SearchbarContent {...props} />
       </section>
     )
-  }
+  
 }

@@ -3,8 +3,8 @@ import { BiError } from "react-icons/bi"
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
 
-export const AntiScamDisclaimerBanner = () => {
-  return (
+export const AntiScamDisclaimerBanner = () => 
+  (
     <section
       className={`${ComponentContent} w-full rounded-lg bg-base-canvas px-5 py-12 md:px-6 lg:w-fit lg:max-w-full lg:py-16`}
       aria-label="Anti-scam notice"
@@ -38,4 +38,4 @@ export const AntiScamDisclaimerBanner = () => {
       </div>
     </section>
   )
-}
+

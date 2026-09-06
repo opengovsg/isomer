@@ -12,7 +12,7 @@ import { mergeRefs } from "~/utils/rac"
 import { buttonStyles } from "./common"
 
 export interface ButtonProps
-  extends AriaButtonProps<"button">, VariantProps<typeof buttonStyles> {
+  extends AriaButtonProps, VariantProps<typeof buttonStyles> {
   className?: string
 }
 
@@ -21,10 +21,10 @@ export interface ButtonProps
  * Use `LinkButton` component instead.
  */
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  function Button(
+  (
     { className, variant, colorScheme, size, isDisabled, children, ...props },
     ref,
-  ) {
+  ) => {
     const internalRef = useRef<HTMLButtonElement>(null)
     const { buttonProps } = useButton({ ...props, isDisabled }, internalRef)
     const { focusProps, isFocusVisible } = useFocusRing()
@@ -38,11 +38,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={mergeRefs(internalRef, ref)}
         className={twMerge(
           buttonStyles({
-            isFocusVisible,
-            isDisabled,
-            variant,
-            size,
             colorScheme,
+            isDisabled,
+            isFocusVisible,
+            size,
+            variant,
           }),
           className,
         )}

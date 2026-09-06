@@ -22,8 +22,8 @@ export const getTagsFromTagged = (
 
     if (selected.length > 0) {
       tagGroups.push({
-        id,
         category: label,
+        id,
         selected,
       })
     }

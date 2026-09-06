@@ -7,23 +7,23 @@ describe("getCollectionParent", () => {
   let site: IsomerSiteProps = {
     // IsomerGeneratedSiteProps
     siteMap: {
-      id: "root",
-      title: "Homepage",
-      permalink: "/",
-      layout: "homepage",
-      summary: "Homepage summary",
-      lastModified: "2021-01-01",
       children: [],
+      id: "root",
+      lastModified: "2021-01-01",
+      layout: "homepage",
+      permalink: "/",
+      summary: "Homepage summary",
+      title: "Homepage",
     },
     siteMapArray: [
       {
-        id: "root",
-        title: "Homepage",
-        permalink: "/",
-        layout: "homepage",
-        summary: "Homepage summary",
-        lastModified: "2021-01-01",
         children: [],
+        id: "root",
+        lastModified: "2021-01-01",
+        layout: "homepage",
+        permalink: "/",
+        summary: "Homepage summary",
+        title: "Homepage",
       },
     ],
     lastUpdated: "2021-01-01",
@@ -32,26 +32,26 @@ describe("getCollectionParent", () => {
     footerItems: {
       contactUsLink: "/contact-us",
       privacyStatementLink: "/privacy",
-      termsOfUseLink: "/terms",
       siteNavItems: [],
+      termsOfUseLink: "/terms",
     },
     // IsomerSiteConfigProps
     siteName: "Test Site",
     theme: "isomer-next",
     url: "https://www.isomer.gov.sg",
     logoUrl: "/images/logo.svg",
-    search: { type: "localSearch", searchUrl: "/search" },
+    search: { searchUrl: "/search", type: "localSearch" },
   }
   const collectionId = "111"
   const collectionPermalink = `/this-is-a-test-collection`
 
   const collectionNode: IsomerSitemap = {
     id: collectionId,
-    title: "Collection 1",
-    permalink: collectionPermalink,
-    layout: "collection",
-    summary: "Collection 1 summary",
     lastModified: new Date("2021-01-01").toISOString(),
+    layout: "collection",
+    permalink: collectionPermalink,
+    summary: "Collection 1 summary",
+    title: "Collection 1",
   }
 
   it("should return `null` when collectionId does not match any siteMap child", () => {
@@ -69,8 +69,8 @@ describe("getCollectionParent", () => {
 
     // Act + Assert
     const actual = getCollectionParent({
-      site,
       collectionId: nonExistentCollectionId,
+      site,
     })
 
     expect(actual).toBeNull()
@@ -89,7 +89,7 @@ describe("getCollectionParent", () => {
     }
 
     // Act
-    const result = getCollectionParent({ site, collectionId })
+    const result = getCollectionParent({ collectionId, site })
 
     // Assert
     expect(result).toEqual(collectionNode)
@@ -108,20 +108,20 @@ describe("getCollectionParent", () => {
     }
 
     // Act + Assert
-    const actual = getCollectionParent({ site, collectionId })
+    const actual = getCollectionParent({ collectionId, site })
     expect(actual).toBeNull()
   })
 
   it("should find the collection node even if nested", () => {
     // Arrange
     const nestedCollectionNode: IsomerSitemap = {
-      id: "nested-parent",
-      title: "Nested Parent",
-      permalink: "/nested-parent",
-      layout: "content",
-      summary: "Nested parent summary",
-      lastModified: "2021-01-01",
       children: [collectionNode],
+      id: "nested-parent",
+      lastModified: "2021-01-01",
+      layout: "content",
+      permalink: "/nested-parent",
+      summary: "Nested parent summary",
+      title: "Nested Parent",
     }
     const updatedSitemap = {
       ...site.siteMap,
@@ -134,7 +134,7 @@ describe("getCollectionParent", () => {
     }
 
     // Act
-    const result = getCollectionParent({ site, collectionId })
+    const result = getCollectionParent({ collectionId, site })
 
     // Assert
     expect(result).toEqual(collectionNode)

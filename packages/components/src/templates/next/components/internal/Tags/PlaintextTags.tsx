@@ -31,11 +31,11 @@ export const PlaintextTags = ({
 
 // NOTE: CSS-only middot — a styled div instead of an SVG, so it isn't a
 // separate asset re-fetched per separator when a page has multiple groups.
-const TagSeparator = () => {
-  return (
+const TagSeparator = () => 
+  (
     <div
       aria-hidden
       className="h-0.5 w-0.5 shrink-0 rounded-full bg-base-content"
     />
   )
-}
+

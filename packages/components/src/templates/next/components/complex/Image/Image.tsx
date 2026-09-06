@@ -5,18 +5,18 @@ import { ImageClient } from "../../internal/ImageClient"
 
 const createImageStyles = tv({
   slots: {
-    container: "mt-0 [&:not(:first-child)]:mt-7",
     caption:
       "overflow-wrap break-word prose-label-sm-medium mt-2 max-w-[70ch] text-base-content-subtle md:mx-auto md:text-center",
+    container: "mt-0 [&:not(:first-child)]:mt-7",
     image: "mx-auto h-auto max-w-full rounded",
   },
   variants: {
     size: {
-      smaller: {
-        image: "min-w-full max-w-full md:min-w-[67%] lg:min-w-[50%]",
-      },
       default: {
         image: "min-w-full max-w-full",
+      },
+      smaller: {
+        image: "min-w-full max-w-full md:min-w-[67%] lg:min-w-[50%]",
       },
     },
   },
@@ -26,11 +26,13 @@ const compoundStyles = createImageStyles()
 // NOTE: This should match the smallest width possible for that size
 const getSizeWidth = (size: ImageProps["size"]) => {
   switch (size) {
-    case "smaller":
+    case "smaller": {
       return "50%"
+    }
     case "default":
-    default:
+    default: {
       return "100%"
+    }
   }
 }
 
@@ -41,8 +43,8 @@ export const Image = ({
   size,
   site,
   shouldLazyLoad = true,
-}: ImageProps) => {
-  return (
+}: ImageProps) => 
+  (
     <div className={compoundStyles.container()}>
       <ImageClient
         src={src}
@@ -56,4 +58,4 @@ export const Image = ({
       {caption && <p className={compoundStyles.caption()}>{caption}</p>}
     </div>
   )
-}
+

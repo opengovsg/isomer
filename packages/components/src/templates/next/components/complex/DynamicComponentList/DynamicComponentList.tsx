@@ -19,14 +19,14 @@ export const DynamicComponentList = ({
 }: DynamicComponentListProps) => {
   const params = useMemo(
     () => ({
-      resourceId,
-      sort,
       filters: filters?.reduce<
         NonNullable<DgsApiDatasetSearchParams["filters"]>
       >((acc, filter) => {
         acc[filter.fieldKey] = filter.fieldValue
         return acc
       }, {}),
+      resourceId,
+      sort,
     }),
     [resourceId, sort, filters],
   )
@@ -41,7 +41,7 @@ export const DynamicComponentList = ({
 
   switch (component.type) {
     // Disabling for now so its easier to extend in the future
-    case "contactinformation":
+    case "contactinformation": {
       return (
         records ?? Array.from({ length: DEFAULT_NUMBER_OF_RECORDS_FOR_LOADING })
       ).map((record, index) => (
@@ -54,9 +54,11 @@ export const DynamicComponentList = ({
           headingLevel={headingLevel}
         />
       ))
+    }
 
-    default:
+    default: {
       const _exhaustiveCheck: never = component.type
       return null
+    }
   }
 }

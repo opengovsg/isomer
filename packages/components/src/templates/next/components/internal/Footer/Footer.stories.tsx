@@ -5,17 +5,17 @@ import { generateSiteConfig } from "~/stories/helpers"
 import { Footer } from "./Footer"
 
 const meta: Meta<FooterProps> = {
-  title: "Next/Internal Components/Footer",
-  component: Footer,
   argTypes: {},
+  args: {
+    site: generateSiteConfig(),
+  },
+  component: Footer,
   parameters: {
     themes: {
       themeOverride: "Isomer Next",
     },
   },
-  args: {
-    site: generateSiteConfig(),
-  },
+  title: "Next/Internal Components/Footer",
 }
 export default meta
 type Story = StoryObj<typeof Footer>
@@ -23,9 +23,30 @@ type Story = StoryObj<typeof Footer>
 // Default scenario
 export const Default: Story = {
   args: {
-    siteName: "Ministry of Trade and Industry",
+    contactUsLink: "/",
+    customNavItems: [
+      {
+        title: "Careers",
+        url: "/",
+      },
+      {
+        title: "2024 budget increase",
+        url: "/",
+      },
+      {
+        title: "Events calendar",
+        url: "/",
+      },
+      {
+        title: "Our Corp Site",
+        url: "https://www.google.com",
+      },
+    ],
+    feedbackFormLink: "https://www.google.com",
     isGovernment: true,
     lastUpdated: "11 Mar 2024",
+    privacyStatementLink: "/",
+    siteName: "Ministry of Trade and Industry",
     siteNavItems: [
       {
         title: "About us",
@@ -50,24 +71,6 @@ export const Default: Story = {
       {
         title: "Resources",
         url: "/",
-      },
-    ],
-    customNavItems: [
-      {
-        title: "Careers",
-        url: "/",
-      },
-      {
-        title: "2024 budget increase",
-        url: "/",
-      },
-      {
-        title: "Events calendar",
-        url: "/",
-      },
-      {
-        title: "Our Corp Site",
-        url: "https://www.google.com",
       },
     ],
     socialMediaLinks: [
@@ -116,19 +119,37 @@ export const Default: Story = {
         url: "https://www.facebook.com",
       },
     ],
-    contactUsLink: "/",
-    feedbackFormLink: "https://www.google.com",
-    privacyStatementLink: "/",
     termsOfUseLink: "/",
   },
 }
 
 export const NonGovernment: Story = {
   args: {
-    siteName: "IsoCon 2024",
     agencyName: "IsoCorp",
+    contactUsLink: "/",
+    customNavItems: [
+      {
+        title: "Careers",
+        url: "/",
+      },
+      {
+        title: "2024 budget increase",
+        url: "/",
+      },
+      {
+        title: "Events calendar",
+        url: "/",
+      },
+      {
+        title: "Our Corp Site",
+        url: "https://www.google.com",
+      },
+    ],
+    feedbackFormLink: "https://www.google.com",
     isGovernment: false,
     lastUpdated: "11 Mar 2024",
+    privacyStatementLink: "/",
+    siteName: "IsoCon 2024",
     siteNavItems: [
       {
         title: "About us",
@@ -153,24 +174,6 @@ export const NonGovernment: Story = {
       {
         title: "Resources",
         url: "/",
-      },
-    ],
-    customNavItems: [
-      {
-        title: "Careers",
-        url: "/",
-      },
-      {
-        title: "2024 budget increase",
-        url: "/",
-      },
-      {
-        title: "Events calendar",
-        url: "/",
-      },
-      {
-        title: "Our Corp Site",
-        url: "https://www.google.com",
       },
     ],
     socialMediaLinks: [
@@ -211,44 +214,13 @@ export const NonGovernment: Story = {
         url: "https://www.facebook.com",
       },
     ],
-    contactUsLink: "/",
-    feedbackFormLink: "https://www.google.com",
-    privacyStatementLink: "/",
     termsOfUseLink: "/",
   },
 }
 
 export const NoSocmed: Story = {
   args: {
-    siteName: "Ministry of Trade and Industry",
-    isGovernment: true,
-    lastUpdated: "11 Mar 2024",
-    siteNavItems: [
-      {
-        title: "About us",
-        url: "/",
-      },
-      {
-        title: "Our partners",
-        url: "/",
-      },
-      {
-        title: "Grants and programmes",
-        url: "/",
-      },
-      {
-        title: "Contact us",
-        url: "/",
-      },
-      {
-        title: "Something else",
-        url: "/",
-      },
-      {
-        title: "Resources",
-        url: "/",
-      },
-    ],
+    contactUsLink: "/",
     customNavItems: [
       {
         title: "Careers",
@@ -267,18 +239,11 @@ export const NoSocmed: Story = {
         url: "https://www.google.com",
       },
     ],
-    contactUsLink: "/",
     feedbackFormLink: "https://www.google.com",
-    privacyStatementLink: "/",
-    termsOfUseLink: "/",
-  },
-}
-
-export const NoCustomItems: Story = {
-  args: {
-    siteName: "Ministry of Trade and Industry",
     isGovernment: true,
     lastUpdated: "11 Mar 2024",
+    privacyStatementLink: "/",
+    siteName: "Ministry of Trade and Industry",
     siteNavItems: [
       {
         title: "About us",
@@ -305,9 +270,44 @@ export const NoCustomItems: Story = {
         url: "/",
       },
     ],
+    termsOfUseLink: "/",
+  },
+}
+
+export const NoCustomItems: Story = {
+  args: {
     contactUsLink: "/",
     feedbackFormLink: "https://www.google.com",
+    isGovernment: true,
+    lastUpdated: "11 Mar 2024",
     privacyStatementLink: "/",
+    siteName: "Ministry of Trade and Industry",
+    siteNavItems: [
+      {
+        title: "About us",
+        url: "/",
+      },
+      {
+        title: "Our partners",
+        url: "/",
+      },
+      {
+        title: "Grants and programmes",
+        url: "/",
+      },
+      {
+        title: "Contact us",
+        url: "/",
+      },
+      {
+        title: "Something else",
+        url: "/",
+      },
+      {
+        title: "Resources",
+        url: "/",
+      },
+    ],
     termsOfUseLink: "/",
   },
 }

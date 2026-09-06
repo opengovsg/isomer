@@ -24,7 +24,7 @@ export const CurrentRefinements = () => {
     return lookup
   }, [])
 
-  if (items.length === 0) return null
+  if (items.length === 0) {return null}
 
   return (
     <ul className="flex flex-wrap gap-2">
@@ -40,7 +40,7 @@ export const CurrentRefinements = () => {
               {display}
               <Button
                 variant="unstyled"
-                onPress={() => refine(refinement)}
+                onPress={() =>{  refine(refinement); }}
                 className="inline-flex h-auto min-h-0 items-center gap-0 rounded-full p-0 transition-colors active:bg-base-canvas-backdrop/80"
               >
                 <BiX aria-hidden className="h-4 w-4" />

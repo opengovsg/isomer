@@ -5,25 +5,24 @@ import { generateSiteConfig } from "~/stories/helpers"
 import { KeyStatistics } from "./KeyStatistics"
 
 const meta: Meta<KeyStatisticsProps> = {
-  title: "Next/Components/KeyStatistics",
-  component: KeyStatistics,
   argTypes: {},
+  args: {
+    headingLevel: 2,
+    site: generateSiteConfig(),
+  },
+  component: KeyStatistics,
   parameters: {
     themes: {
       themeOverride: "Isomer Next",
     },
   },
-  args: {
-    site: generateSiteConfig(),
-    headingLevel: 2,
-  },
+  title: "Next/Components/KeyStatistics",
 }
 export default meta
 type Story = StoryObj<typeof KeyStatistics>
 
 export const Top: Story = {
   args: {
-    title: "Work life in numbers",
     statistics: [
       {
         label: "Average all nighters pulled in a typical calendar month",
@@ -33,12 +32,12 @@ export const Top: Story = {
       { label: "Creative blocks met per single evening", value: "89" },
       { label: "Number of lies in this stat block", value: "4.0" },
     ],
+    title: "Work life in numbers",
   },
 }
 
 export const TopLong: Story = {
   args: {
-    title: "Work life in numbers",
     statistics: [
       {
         label: "Average all nighters pulled in a typical calendar month",
@@ -52,13 +51,12 @@ export const TopLong: Story = {
         value: "4.0",
       },
     ],
+    title: "Work life in numbers",
   },
 }
 
 export const ThreeStats: Story = {
   args: {
-    title:
-      "A long title that should wrap properly, if the max width of the title is done well",
     statistics: [
       {
         label: "Average all nighters pulled in a typical calendar month",
@@ -71,12 +69,13 @@ export const ThreeStats: Story = {
         value: "4.0",
       },
     ],
+    title:
+      "A long title that should wrap properly, if the max width of the title is done well",
   },
 }
 
 export const WithLink: Story = {
   args: {
-    title: "Short title",
     statistics: [
       {
         label: "Average all nighters pulled in a typical calendar month",
@@ -89,13 +88,14 @@ export const WithLink: Story = {
         value: "4.0",
       },
     ],
+    title: "Short title",
     url: "/",
   },
 }
 
 export const WithLinkAndLabel: Story = {
   args: {
-    title: "Short title",
+    label: "We have no achievements",
     statistics: [
       {
         label: "Average all nighters pulled in a typical calendar month",
@@ -108,7 +108,7 @@ export const WithLinkAndLabel: Story = {
         value: "4.0",
       },
     ],
+    title: "Short title",
     url: "/",
-    label: "We have no achievements",
   },
 }

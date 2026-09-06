@@ -14,7 +14,7 @@ interface EgazetteHit {
 }
 
 const formatDate = (timestamp: number) => {
-  if (!Number.isFinite(timestamp)) return ""
+  if (!Number.isFinite(timestamp)) {return ""}
   return getFormattedDate(new Date(timestamp).toISOString())
 }
 
@@ -25,7 +25,7 @@ export const Hits = () => {
     // Artificial results are the placeholder response rendered before the
     // first Algolia response arrives — showing "no results" then would flash
     // the empty state on every page load.
-    if (results?.__isArtificial) return null
+    if (results?.__isArtificial) {return null}
 
     return (
       <div className="flex flex-col gap-1 py-32 text-center">

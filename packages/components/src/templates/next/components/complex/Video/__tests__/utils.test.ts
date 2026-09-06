@@ -93,12 +93,12 @@ describe("utils", () => {
     it("should extract video ID from YouTube watch URLs", () => {
       const testCases = [
         {
-          url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
           expected: "dQw4w9WgXcQ",
+          url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         },
         {
-          url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ&feature=youtu.be",
           expected: "dQw4w9WgXcQ",
+          url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ&feature=youtu.be",
         },
       ]
 
@@ -110,24 +110,24 @@ describe("utils", () => {
     it("should extract video ID from YouTube embed URLs", () => {
       const testCases = [
         {
+          expected: "dQw4w9WgXcQ",
           url: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-          expected: "dQw4w9WgXcQ",
         },
         {
+          expected: "dQw4w9WgXcQ",
           url: "https://www.youtube.com/embed/dQw4w9WgXcQ?si=7dAKYmJw2jTNNqkr",
-          expected: "dQw4w9WgXcQ",
         },
         {
+          expected: "dQw4w9WgXcQ",
           url: "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ",
-          expected: "dQw4w9WgXcQ",
         },
         {
+          expected: "dQw4w9WgXcQ",
           url: "https://youtube.com/embed/dQw4w9WgXcQ?start=30",
-          expected: "dQw4w9WgXcQ",
         },
         {
-          url: "https://youtube-nocookie.com/embed/dQw4w9WgXcQ?controls=0",
           expected: "dQw4w9WgXcQ",
+          url: "https://youtube-nocookie.com/embed/dQw4w9WgXcQ?controls=0",
         },
       ]
 
@@ -173,16 +173,16 @@ describe("utils", () => {
     it("should extract video ID from Vimeo embed URLs", () => {
       const testCases = [
         {
-          url: "https://player.vimeo.com/video/984159615",
           expected: "984159615",
+          url: "https://player.vimeo.com/video/984159615",
         },
         {
-          url: "https://player.vimeo.com/video/357274789?dnt=true",
           expected: "357274789",
+          url: "https://player.vimeo.com/video/357274789?dnt=true",
         },
         {
-          url: "https://player.vimeo.com/video/123456789?h=abc123&dnt=true",
           expected: "123456789",
+          url: "https://player.vimeo.com/video/123456789?h=abc123&dnt=true",
         },
       ]
 

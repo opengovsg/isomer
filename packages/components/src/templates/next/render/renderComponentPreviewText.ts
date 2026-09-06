@@ -1,135 +1,222 @@
 import type { OrderedListProps, ProseContent } from "~/interfaces"
 import type { IsomerSchema } from "~/types"
 
-function getTextContentOfProse(content: ProseContent): string {
+const getNonEmptyStringOrDefault = (
+  value: string | undefined,
+  defaultValue: string,
+): string =>
+  value !== undefined && value !== "" ? value : defaultValue
+
+const getTextContentOfProse = (proseContent: ProseContent): string => {
   const values: string[] = []
 
-  function recursiveSearch(
-    content: ProseContent | OrderedListProps["content"],
-  ) {
-    content.forEach((contentBlock) => {
-      switch (contentBlock.type) {
-        case "heading":
-          values.push(
-            contentBlock.content
-              ?.map((textBlock) => textBlock.text.trim())
-              .join(" ") || "",
-          )
-          break
-        case "orderedList":
-        case "unorderedList":
-          contentBlock.content.forEach((listItemBlock) => {
-            recursiveSearch(listItemBlock.content)
-          })
-          break
-        case "listItem":
-          recursiveSearch(contentBlock.content)
-          break
-        case "paragraph":
-          contentBlock.content?.forEach((paragraphContentBlock) => {
-            switch (paragraphContentBlock.type) {
-              case "text":
-                values.push(paragraphContentBlock.text.trim())
-                break
-              case "hardBreak":
-                break
-              default:
-                const exhaustiveCheck: never = paragraphContentBlock
-                return exhaustiveCheck
-            }
-          })
-          break
-        case "table":
-          values.push((contentBlock.attrs.caption || "").trim())
-          break
-        case "divider":
-          break
-        default:
-          const exhaustiveCheck: never = contentBlock
-          return exhaustiveCheck
+  const processParagraphContent = (
+    paragraphContentBlock: NonNullable<
+      Extract<ProseContent[number], { type: "paragraph" }>["content"]
+    >[number],
+  ) => {
+    switch (paragraphContentBlock.type) {
+      case "text": {
+        values.push(paragraphContentBlock.text.trim())
+        break
       }
-    })
+      case "hardBreak": {
+        break
+      }
+      default: {
+        const exhaustiveCheck: never = paragraphContentBlock
+        throw new Error(`Unexpected paragraph content type: ${exhaustiveCheck}`)
+      }
+    }
   }
 
-  recursiveSearch(content)
+  const recursiveSearch = (
+    contentBlocks: ProseContent | OrderedListProps["content"],
+  ) => {
+    for (const contentBlock of contentBlocks) {
+      switch (contentBlock.type) {
+        case "heading": {
+          const headingText =
+            contentBlock.content
+              ?.map((textBlock) => textBlock.text.trim())
+              .join(" ") ?? ""
+          values.push(headingText)
+          break
+        }
+        case "orderedList":
+        case "unorderedList": {
+          for (const listItemBlock of contentBlock.content) {
+            recursiveSearch(listItemBlock.content)
+          }
+          break
+        }
+        case "listItem": {
+          recursiveSearch(contentBlock.content)
+          break
+        }
+        case "paragraph": {
+          if (contentBlock.content !== undefined) {
+            for (const paragraphContentBlock of contentBlock.content) {
+              processParagraphContent(paragraphContentBlock)
+            }
+          }
+          break
+        }
+        case "table": {
+          values.push((contentBlock.attrs.caption ?? "").trim())
+          break
+        }
+        case "divider": {
+          break
+        }
+        default: {
+          const exhaustiveCheck: never = contentBlock
+          throw new Error(`Unexpected content block type: ${exhaustiveCheck}`)
+        }
+      }
+    }
+  }
+
+  recursiveSearch(proseContent)
   return values.join(" ")
 }
 
-function getFilenameFromPath(path: string): string {
-  return path.split("/").pop() || ""
+const getFilenameFromPath = (path: string): string => {
+  const segments = path.split("/")
+  const filename = segments.at(-1)
+  return filename ?? ""
 }
 
-export function renderComponentPreviewText({
+const getContentpicPreviewText = (
+  component: Extract<IsomerSchema["content"][number], { type: "contentpic" }>,
+): string => {
+  const textContentOfProse = getTextContentOfProse(component.content.content)
+  return textContentOfProse === ""
+    ? getFilenameFromPath(component.imageSrc)
+    : textContentOfProse
+}
+
+const getCollectionBlockPreviewText = (
+  component: Extract<
+    IsomerSchema["content"][number],
+    { type: "collectionblock" }
+  >,
+): string => {
+  if (
+    component.customTitle !== undefined &&
+    component.customTitle !== ""
+  ) {
+    return component.customTitle
+  }
+
+  if (
+    component.customDescription !== undefined &&
+    component.customDescription !== ""
+  ) {
+    return component.customDescription
+  }
+
+  return "Collection block"
+}
+
+const getFallbackPreviewText = (
+  component: IsomerSchema["content"][number],
+): string => {
+  const fallbackComponent = component as { type?: string }
+  return fallbackComponent.type ?? ""
+}
+
+export const renderComponentPreviewText = ({
   component,
 }: {
   component: IsomerSchema["content"][number]
-}): string {
+}): string => {
   switch (component.type) {
-    case "accordion":
+    case "accordion": {
       return component.summary
-    case "blockquote":
+    }
+    case "blockquote": {
       return component.quote
-    case "button":
-      return component.buttonLabel || "Button"
-    case "callout":
+    }
+    case "button": {
+      return getNonEmptyStringOrDefault(component.buttonLabel, "Button")
+    }
+    case "callout": {
       return getTextContentOfProse(component.content.content)
-    case "formsg":
-      return component.title || "FormSG form"
-    case "hero":
-      return "" // should not show up in the sidebar
-    case "iframe":
-      return "Iframe" // not supported in the sidebar yet
-    case "image":
+    }
+    case "formsg": {
+      return getNonEmptyStringOrDefault(component.title, "FormSG form")
+    }
+    case "hero": {
+      // should not show up in the sidebar
+      return ""
+    }
+    case "iframe": {
+      // not supported in the sidebar yet
+      return "Iframe"
+    }
+    case "image": {
       return getFilenameFromPath(component.src)
-    case "infobar":
+    }
+    case "infobar": {
       return component.title
-    case "infocards":
+    }
+    case "infocards": {
       return component.title
-    case "infocols":
+    }
+    case "infocols": {
       return component.title
-    case "infopic":
+    }
+    case "infopic": {
       return component.title
-    case "contentpic":
-      const textContentOfProse = getTextContentOfProse(
-        component.content.content,
-      )
-      return textContentOfProse === ""
-        ? getFilenameFromPath(component.imageSrc)
-        : textContentOfProse
-    case "keystatistics":
+    }
+    case "contentpic": {
+      return getContentpicPreviewText(component)
+    }
+    case "keystatistics": {
       return component.title
-    case "map":
-      return component.title || "Map embed"
-    case "logocloud":
-      return component.title || "Logo cloud"
-    case "prose":
+    }
+    case "map": {
+      return getNonEmptyStringOrDefault(component.title, "Map embed")
+    }
+    case "logocloud": {
+      return getNonEmptyStringOrDefault(component.title, "Logo cloud")
+    }
+    case "prose": {
       return getTextContentOfProse(component.content)
-    case "audio":
-      return component.title || "Audio embed"
-    case "video":
-      return component.title || "Video embed"
-    case "childrenpages":
+    }
+    case "audio": {
+      return getNonEmptyStringOrDefault(component.title, "Audio embed")
+    }
+    case "video": {
+      return getNonEmptyStringOrDefault(component.title, "Video embed")
+    }
+    case "childrenpages": {
       return "Child pages"
-    case "dynamicdatabanner":
+    }
+    case "dynamicdatabanner": {
       return component.apiEndpoint
-    case "antiscambanner":
+    }
+    case "antiscambanner": {
       return "Anti-scam disclaimer"
-    case "collectionblock":
-      return (
-        component.customTitle ||
-        component.customDescription ||
-        `Collection block`
-      )
-    case "imagegallery":
+    }
+    case "collectionblock": {
+      return getCollectionBlockPreviewText(component)
+    }
+    case "imagegallery": {
       return "Image Gallery"
-    case "contactinformation":
-      return component.title || "Contact Information"
-    case "dynamiccomponentlist":
+    }
+    case "contactinformation": {
+      return getNonEmptyStringOrDefault(
+        component.title,
+        "Contact Information",
+      )
+    }
+    case "dynamiccomponentlist": {
       return "Dynamic Component List"
+    }
     default: {
-      // SAFETY: Exhaustiveness fallback reads the runtime component type for preview text.
-      const fallbackComponent = component as { type?: string }
-      return fallbackComponent.type || ""
+      return getFallbackPreviewText(component)
     }
   }
 }

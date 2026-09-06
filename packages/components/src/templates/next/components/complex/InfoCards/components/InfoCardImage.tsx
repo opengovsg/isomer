@@ -29,15 +29,15 @@ export const InfoCardImage = ({
   | "site"
   | "shouldLazyLoad"
   | "variant"
->): React.ReactNode => {
-  return (
+>): React.ReactNode => 
+  (
     <div
       className={compoundStyles.cardImageContainer({
+        isClickableCard: !!url,
+        isFallback,
         layout: getTailwindVariantLayout(layout),
         maxColumns,
-        isClickableCard: !!url,
         variant,
-        isFallback,
       })}
     >
       <ImageClient
@@ -53,4 +53,4 @@ export const InfoCardImage = ({
       />
     </div>
   )
-}
+

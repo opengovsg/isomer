@@ -21,7 +21,7 @@ export const SubCategoryRefinementList = () => {
 
   // Match the Jekyll behavior: hide the sub-category section entirely (heading
   // and trailing divider included) until a category is picked.
-  if (selectedCategoryValues.size === 0) return null
+  if (selectedCategoryValues.size === 0) {return null}
 
   const availableSubCategories = EGAZETTE_CATEGORIES.flatMap((category) =>
     selectedCategoryValues.has(category.value)
@@ -36,10 +36,10 @@ export const SubCategoryRefinementList = () => {
   const rows = availableSubCategories.map(({ value, displayLabel }) => {
     const match = refinementByValue.get(value)
     return {
-      value,
-      label: displayLabel,
       count: match?.count ?? 0,
       isRefined: match?.isRefined ?? false,
+      label: displayLabel,
+      value,
     }
   })
 
@@ -66,7 +66,7 @@ export const SubCategoryRefinementList = () => {
                 className="w-fit cursor-pointer"
                 value={row.value}
                 isDisabled={isDisabled}
-                onChange={() => refine(row.value)}
+                onChange={() =>{  refine(row.value); }}
               >
                 {row.label}
               </Checkbox>

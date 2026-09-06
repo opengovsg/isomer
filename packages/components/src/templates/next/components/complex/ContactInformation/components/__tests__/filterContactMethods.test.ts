@@ -15,34 +15,34 @@ type ExternalContactPayload =
 
 const hostileContactValues = (
   values: ExternalContactPayload,
-): ContactInformationUIProps["methods"][number]["values"] => {
+): ContactInformationUIProps["methods"][number]["values"] => 
   // SAFETY: Test deliberately passes malformed external values through the filter boundary.
-  return values as ContactInformationUIProps["methods"][number]["values"]
-}
+  values as ContactInformationUIProps["methods"][number]["values"]
 
-const hostileContactValue = (value: ExternalContactPayload): string => {
+
+const hostileContactValue = (value: ExternalContactPayload): string => 
   // SAFETY: Test deliberately passes malformed external values through the filter boundary.
-  return value as string
-}
+  value as string
+
 
 const hostileContactMethod = (
   method: ExternalContactPayload,
-): ContactInformationUIProps["methods"][number]["method"] => {
+): ContactInformationUIProps["methods"][number]["method"] => 
   // SAFETY: Test deliberately passes malformed external values through the filter boundary.
-  return method as ContactInformationUIProps["methods"][number]["method"]
-}
+  method as ContactInformationUIProps["methods"][number]["method"]
+
 
 // Helper function to create mock contact methods
 const createMockMethods = (
   methodTypes: (typeof CONTACT_INFORMATION_SUPPORT_METHODS)[number][],
-): ContactInformationUIProps["methods"] => {
-  return methodTypes.map((method, index) => ({
-    method,
-    label: `${method} label ${index + 1}`,
-    values: [`${method} value ${index + 1}`],
+): ContactInformationUIProps["methods"] => 
+  methodTypes.map((method, index) => ({
     caption: `${method} caption ${index + 1}`,
+    label: `${method} label ${index + 1}`,
+    method,
+    values: [`${method} value ${index + 1}`],
   }))
-}
+
 
 describe("filterContactMethods", () => {
   describe("when whitelistedMethods is undefined", () => {
@@ -148,34 +148,34 @@ describe("filterContactMethods", () => {
       // Arrange - Create methods with multiple instances of the same type
       const methods: ContactInformationUIProps["methods"] = [
         {
-          method: "telephone",
-          label: "Main Phone",
-          values: ["+65-1234-5678"],
           caption: "Main office",
-        },
-        {
-          method: "email",
-          label: "General Email",
-          values: ["info@example.com"],
-          caption: "General inquiries",
-        },
-        {
+          label: "Main Phone",
           method: "telephone",
-          label: "Emergency Phone",
-          values: ["+65-9876-5432"],
-          caption: "Emergency only",
+          values: ["+65-1234-5678"],
         },
         {
-          method: "website",
-          label: "Main Website",
-          values: ["https://example.com"],
-          caption: "Official website",
-        },
-        {
+          caption: "General inquiries",
+          label: "General Email",
           method: "email",
-          label: "Support Email",
-          values: ["support@example.com"],
+          values: ["info@example.com"],
+        },
+        {
+          caption: "Emergency only",
+          label: "Emergency Phone",
+          method: "telephone",
+          values: ["+65-9876-5432"],
+        },
+        {
+          caption: "Official website",
+          label: "Main Website",
+          method: "website",
+          values: ["https://example.com"],
+        },
+        {
           caption: "Technical support",
+          label: "Support Email",
+          method: "email",
+          values: ["support@example.com"],
         },
       ]
       const whitelistedMethods: ContactInformationUIProps["whitelistedMethods"] =
@@ -202,18 +202,18 @@ describe("filterContactMethods", () => {
       // Arrange - Include methods with falsy method values
       const methods: ContactInformationUIProps["methods"] = [
         {
-          method: "telephone",
           label: "Phone",
+          method: "telephone",
           values: ["+65-1234-5678"],
         },
         {
-          method: undefined, // Falsy method
           label: "Invalid Method",
+          method: undefined, // Falsy method
           values: ["invalid"],
         },
         {
-          method: "email",
           label: "Email",
+          method: "email",
           values: ["info@example.com"],
         },
         {
@@ -239,8 +239,8 @@ describe("filterContactMethods", () => {
       // Arrange
       const methods: ContactInformationUIProps["methods"] = [
         {
-          method: "telephone",
           label: "Phone",
+          method: "telephone",
           values: ["            ", "", "hello"],
         },
       ]
@@ -260,53 +260,53 @@ describe("filterContactMethods", () => {
       // Arrange
       const methods: ContactInformationUIProps["methods"] = [
         {
-          method: "telephone",
           label: "Phone",
+          method: "telephone",
           values: ["+65-1234-5678"],
         },
         {
-          method: "telephone",
           label: "Phone with whitespace",
+          method: "telephone",
           values: ["   "],
         },
         {
-          method: "telephone",
           label: "Phone with empty string",
+          method: "telephone",
           values: [""],
         },
         {
-          method: "telephone",
           label: "Phone with empty array",
+          method: "telephone",
           values: [],
         },
         {
-          method: "telephone",
           label: "Phone with undefined",
-          values: hostileContactValues(undefined),
+          method: "telephone",
+          values: hostileContactValues(),
         },
         {
-          method: "telephone",
           label: "Phone with null",
+          method: "telephone",
           values: hostileContactValues(null),
         },
         {
-          method: "telephone",
           label: "Phone with boolean",
-          values: [hostileContactValue(undefined)],
+          method: "telephone",
+          values: [hostileContactValue()],
         },
         {
-          method: "telephone",
           label: "Phone with object",
+          method: "telephone",
           values: hostileContactValues([{}]),
         },
         {
-          method: "telephone",
           label: "Phone with boolean",
+          method: "telephone",
           values: [hostileContactValue(true)],
         },
         {
-          method: "telephone",
           label: "Phone with nested array",
+          method: "telephone",
           values: [hostileContactValue(["+65-1234-5678"])],
         },
       ]

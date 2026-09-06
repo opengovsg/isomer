@@ -26,13 +26,13 @@ const downloadFile = (url: string) => {
   const a = document.createElement("a")
   a.href = url
   a.download = "" // filename will be set by the browser
-  document.body.appendChild(a)
+  document.body.append(a)
   a.click()
   document.body.removeChild(a)
 }
 
 interface DownloadButtonProps
-  extends AriaButtonProps<"button">, VariantProps<typeof buttonStyles> {
+  extends AriaButtonProps, VariantProps<typeof buttonStyles> {
   url: string // URL to download the file from
   className?: string
 }
@@ -61,7 +61,7 @@ export const DownloadButton = ({
   )
 
   const handleDownload = async () => {
-    if (isDownloading) return // Prevent multiple simultaneous downloads
+    if (isDownloading) {return} // Prevent multiple simultaneous downloads
 
     try {
       setIsDownloading(true)
@@ -114,11 +114,11 @@ export const DownloadButton = ({
       ref={ref}
       className={twMerge(
         buttonStyles({
-          isFocusVisible,
-          isDisabled: isDownloading,
-          variant,
-          size,
           colorScheme,
+          isDisabled: isDownloading,
+          isFocusVisible,
+          size,
+          variant,
         }),
         className,
       )}
@@ -126,7 +126,7 @@ export const DownloadButton = ({
       {text}
       {isDownloading ? (
         <BiLoaderAlt
-          className={downloadIconStyles({ size, isLoading: isDownloading })}
+          className={downloadIconStyles({ isLoading: isDownloading, size })}
         />
       ) : (
         <BiDownload className={downloadIconStyles({ size })} />

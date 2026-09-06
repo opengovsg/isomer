@@ -9,28 +9,28 @@ import {
   DGS_SMALL_DATASET_RESOURCE_ID,
 } from "~/stories/helpers"
 
-import { DGSSearchableTable } from "./DGSSearchableTable"
+import { DGSSearchableTable } from "./DgsSearchableTable"
 
 const meta: Meta<DGSSearchableTableProps> = {
-  title: "Next/Internal Components/SearchableTable/DGS",
-  component: DGSSearchableTable,
   argTypes: {},
+  component: DGSSearchableTable,
   parameters: {
     themes: {
       themeOverride: "Isomer Next",
     },
   },
+  title: "Next/Internal Components/SearchableTable/DGS",
 }
 
 export default meta
 type Story = StoryObj<typeof DGSSearchableTable>
 
 const commonArgs: Partial<DGSSearchableTableProps> = {
-  title: "Sample DGS Table",
   dataSource: {
-    type: "dgs",
     resourceId: DGS_SMALL_DATASET_RESOURCE_ID,
+    type: "dgs",
   },
+  title: "Sample DGS Table",
 }
 
 export const Default: Story = {
@@ -41,11 +41,11 @@ export const SelectedHeaders: Story = {
   args: {
     ...commonArgs,
     headers: [
-      { label: "Year", key: "year" },
-      { label: "University", key: "university" },
-      { label: "School", key: "school" },
-      { label: "Degree", key: "degree" },
-      { label: "Monthly Median", key: "gross_monthly_median" },
+      { key: "year", label: "Year" },
+      { key: "university", label: "University" },
+      { key: "school", label: "School" },
+      { key: "degree", label: "Degree" },
+      { key: "gross_monthly_median", label: "Monthly Median" },
     ],
   },
 }
@@ -57,8 +57,8 @@ export const DefaultTitleWhenUnspecified: Story = {
 export const LargeDataset: Story = {
   args: {
     dataSource: {
-      type: "dgs",
       resourceId: DGS_LARGE_DATASET_RESOURCE_ID,
+      type: "dgs",
     },
   },
 }
@@ -66,8 +66,8 @@ export const LargeDataset: Story = {
 export const LargeDatasetNoSearchResults: Story = {
   args: {
     dataSource: {
-      type: "dgs",
       resourceId: DGS_LARGE_DATASET_RESOURCE_ID,
+      type: "dgs",
     },
   },
   play: async ({ canvasElement }) => {
@@ -105,11 +105,11 @@ export const Loading: Story = {
           generateDgsUrl({
             resourceId: DGS_SMALL_DATASET_RESOURCE_ID,
           }),
-          () => {
-            return new Promise(() => {
+           async () => 
+            await new Promise(() => {
               // Never resolve the promise
             })
-          },
+          ,
         ),
       ],
     },
@@ -125,11 +125,11 @@ export const Error: Story = {
           generateDgsUrl({
             resourceId: DGS_SMALL_DATASET_RESOURCE_ID,
           }),
-          () => {
-            return new HttpResponse(null, {
+          () => 
+            new HttpResponse(null, {
               status: 500,
             })
-          },
+          ,
         ),
       ],
     },

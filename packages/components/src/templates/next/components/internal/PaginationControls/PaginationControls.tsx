@@ -30,11 +30,11 @@ export const PaginationControls = ({
   const isTablet = useBreakpoint("md")
 
   const paginationRange = usePaginationRange<typeof SEPARATOR>({
-    totalCount: totalItems,
-    pageSize: itemsPerPage,
     currentPage: currPage,
+    pageSize: itemsPerPage,
     separator: SEPARATOR,
     siblingCount: isTablet ? 1 : 0,
+    totalCount: totalItems,
   })
 
   const totalPageCount = Math.ceil(totalItems / itemsPerPage)
@@ -54,8 +54,8 @@ export const PaginationControls = ({
             }}
           />
         </PaginationItem>
-        {paginationRange.map((p, i) => {
-          return p === SEPARATOR ? (
+        {paginationRange.map((p, i) => 
+          p === SEPARATOR ? (
             <PaginationEllipsis key={paginationKeys[i]} />
           ) : (
             <PaginationItem key={paginationKeys[i]}>
@@ -70,7 +70,7 @@ export const PaginationControls = ({
               </PaginationButton>
             </PaginationItem>
           )
-        })}
+        )}
         <PaginationItem>
           <PaginationNext
             isDisabled={currPage >= totalPageCount}

@@ -4,13 +4,13 @@ import { BiSearch } from "react-icons/bi"
 import { IconButton } from "./IconButton"
 
 const meta: Meta<typeof IconButton> = {
-  title: "Next/Internal Components/IconButton",
   component: IconButton,
   parameters: {
     themes: {
       themeOverride: "Isomer Next",
     },
   },
+  title: "Next/Internal Components/IconButton",
 }
 export default meta
 type Story = StoryObj<typeof IconButton>

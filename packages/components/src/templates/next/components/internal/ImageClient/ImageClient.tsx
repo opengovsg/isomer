@@ -7,7 +7,7 @@ import { isExternalUrl } from "~/utils/isExternalUrl"
 export const ImageClient = forwardRef<
   HTMLImageElement,
   Omit<ImageClientProps, "ref">
->(function ImageClient(
+>((
   {
     src,
     alt,
@@ -18,7 +18,7 @@ export const ImageClient = forwardRef<
     onLoad,
   },
   ref,
-) {
+) => {
   const imgSrc =
     isExternalUrl(src) || assetsBaseUrl === undefined
       ? src

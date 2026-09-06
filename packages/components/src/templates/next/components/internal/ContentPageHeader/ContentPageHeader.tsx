@@ -9,24 +9,24 @@ import { ImageClient } from "../ImageClient"
 import { LinkButton } from "../LinkButton"
 
 const createContentPageHeaderStyles = tv({
+  defaultVariants: {
+    colorScheme: "default",
+    hasImage: false,
+  },
   slots: {
+    buttonPadding: "mt-9",
     container: "text-base-content-strong",
-    innerContainer: "mx-auto flex max-w-screen-xl flex-col gap-8",
     contentContainer: "grid-rows-[1fr fit-content] grid gap-10 lg:grid-cols-12",
-    textContainer: "max-w-[54rem] flex-col px-6 md:px-10",
-    textPadding: "mt-8 flex flex-col gap-5 md:mt-6",
     image:
       "row-span-1 h-full object-cover md:col-span-1 lg:col-span-5 lg:pr-10",
+    innerContainer: "mx-auto flex max-w-screen-xl flex-col gap-8",
     lastUpdated: "prose-body-sm mt-8",
-    title: "prose-display-lg break-words",
     summary: "prose-title-lg-regular mt-5",
-    buttonPadding: "mt-9",
+    textContainer: "max-w-[54rem] flex-col px-6 md:px-10",
+    textPadding: "mt-8 flex flex-col gap-5 md:mt-6",
+    title: "prose-display-lg break-words",
   },
   variants: {
-    hasImage: {
-      true: { textContainer: "pt-8 max-md:row-span-1 lg:col-span-7 lg:py-8" },
-      false: { textContainer: "py-8 max-md:row-span-2 lg:col-span-12" },
-    },
     colorScheme: {
       default: {
         container: "bg-brand-canvas",
@@ -34,14 +34,14 @@ const createContentPageHeaderStyles = tv({
       },
       inverse: {
         container: "bg-brand-canvas-inverse",
-        textContainer: "text-base-content-inverse",
         lastUpdated: "text-base-content-inverse",
+        textContainer: "text-base-content-inverse",
       },
     },
-  },
-  defaultVariants: {
-    colorScheme: "default",
-    hasImage: false,
+    hasImage: {
+      false: { textContainer: "py-8 max-md:row-span-2 lg:col-span-12" },
+      true: { textContainer: "pt-8 max-md:row-span-1 lg:col-span-7 lg:py-8" },
+    },
   },
 })
 

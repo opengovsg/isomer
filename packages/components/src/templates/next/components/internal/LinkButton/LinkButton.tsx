@@ -20,7 +20,7 @@ export const LinkButton = ({
   colorScheme,
   ...props
 }: LinkButtonProps) => {
-  const href = props.href
+  const {href} = props
   const isExternalLink = !!href && isExternalUrl(props.href)
 
   if (isExternalLink) {
@@ -28,7 +28,7 @@ export const LinkButton = ({
       <Link
         {...props}
         className={twMerge(
-          buttonStyles({ variant, size, className, colorScheme }),
+          buttonStyles({ className, colorScheme, size, variant }),
           className,
         )}
         isExternal={isExternalLink}
@@ -43,7 +43,7 @@ export const LinkButton = ({
     <Link
       {...props}
       className={twMerge(
-        buttonStyles({ variant, size, className, colorScheme }),
+        buttonStyles({ className, colorScheme, size, variant }),
         className,
       )}
     />

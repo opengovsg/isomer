@@ -5,8 +5,8 @@ const FORMAT_CHARS = /[\u00AD\u200B-\u200F\u202A-\u202E\u2060-\u2069\uFEFF]/g
 // ideographic space, etc.) except U+0085 NEL, which we include explicitly.
 const WHITESPACE = /[\s\u0085]+/g
 
-export const normalizeCollectionSearchText = (text: string): string => {
-  return (
+export const normalizeCollectionSearchText = (text: string): string => 
+  (
     text
       // NFKC: map compatibility forms to their usual ASCII equivalents (e.g. fullwidth （FM） → (FM)).
       .normalize("NFKC")
@@ -17,6 +17,6 @@ export const normalizeCollectionSearchText = (text: string): string => {
       .toLowerCase()
       // Treat optional whitespace around parentheses as equivalent, e.g.
       // "MANAGEMENT (FM)" vs "MANAGEMENT(FM)".
-      .replace(/\s*([()])\s*/g, "$1")
+      .replaceAll(/\s*([()])\s*/g, "$1")
   )
-}
+

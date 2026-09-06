@@ -9,10 +9,10 @@ describe("getPillAndPlaintextTags", () => {
     // Arrange
     const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
       {
-        label: "Topic",
-        id: "topic-1",
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
-        options: [{ label: "Health", id: "topic-opt-1" }],
+        id: "topic-1",
+        label: "Topic",
+        options: [{ id: "topic-opt-1", label: "Health" }],
       },
     ]
 
@@ -25,7 +25,7 @@ describe("getPillAndPlaintextTags", () => {
 
   it("returns undefined for both when tagCategories is undefined", () => {
     // Act
-    const result = getPillAndPlaintextTags(["topic-opt-1"], undefined)
+    const result = getPillAndPlaintextTags(["topic-opt-1"])
 
     // Assert
     expect(result).toEqual({ pillTags: undefined, plaintextTags: undefined })
@@ -35,16 +35,16 @@ describe("getPillAndPlaintextTags", () => {
     // Arrange
     const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
       {
-        label: "Topic",
-        id: "topic-1",
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
-        options: [{ label: "Health", id: "topic-opt-1" }],
+        id: "topic-1",
+        label: "Topic",
+        options: [{ id: "topic-opt-1", label: "Health" }],
       },
       {
-        label: "Category",
-        id: "cat-1",
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
-        options: [{ label: "Guides", id: "cat-opt-1" }],
+        id: "cat-1",
+        label: "Category",
+        options: [{ id: "cat-opt-1", label: "Guides" }],
       },
     ]
 
@@ -56,10 +56,10 @@ describe("getPillAndPlaintextTags", () => {
 
     // Assert
     expect(result.pillTags).toEqual([
-      { id: "topic-1", category: "Topic", selected: ["Health"] },
+      { category: "Topic", id: "topic-1", selected: ["Health"] },
     ])
     expect(result.plaintextTags).toEqual([
-      { id: "cat-1", category: "Category", selected: ["Guides"] },
+      { category: "Category", id: "cat-1", selected: ["Guides"] },
     ])
   })
 
@@ -67,9 +67,9 @@ describe("getPillAndPlaintextTags", () => {
     // Arrange
     const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
       {
-        label: "Topic",
         id: "topic-1",
-        options: [{ label: "Health", id: "topic-opt-1" }],
+        label: "Topic",
+        options: [{ id: "topic-opt-1", label: "Health" }],
       },
     ]
 
@@ -78,7 +78,7 @@ describe("getPillAndPlaintextTags", () => {
 
     // Assert
     expect(result.pillTags).toEqual([
-      { id: "topic-1", category: "Topic", selected: ["Health"] },
+      { category: "Topic", id: "topic-1", selected: ["Health"] },
     ])
     expect(result.plaintextTags).toEqual([])
   })
@@ -87,16 +87,16 @@ describe("getPillAndPlaintextTags", () => {
     // Arrange
     const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
       {
-        label: "Topic",
-        id: "topic-1",
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
-        options: [{ label: "Health", id: "topic-opt-1" }],
+        id: "topic-1",
+        label: "Topic",
+        options: [{ id: "topic-opt-1", label: "Health" }],
       },
       {
-        label: "Category",
-        id: "cat-1",
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
-        options: [{ label: "Guides", id: "cat-opt-1" }],
+        id: "cat-1",
+        label: "Category",
+        options: [{ id: "cat-opt-1", label: "Guides" }],
       },
     ]
 
@@ -112,12 +112,12 @@ describe("getPillAndPlaintextTags", () => {
     // Arrange
     const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
       {
-        label: "Category",
-        id: "cat-1",
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
+        id: "cat-1",
+        label: "Category",
         options: [
-          { label: "Guides", id: "cat-opt-1" },
-          { label: "Articles", id: "cat-opt-2" },
+          { id: "cat-opt-1", label: "Guides" },
+          { id: "cat-opt-2", label: "Articles" },
         ],
       },
     ]
@@ -130,7 +130,7 @@ describe("getPillAndPlaintextTags", () => {
 
     // Assert
     expect(result.plaintextTags).toEqual([
-      { id: "cat-1", category: "Category", selected: ["Guides", "Articles"] },
+      { category: "Category", id: "cat-1", selected: ["Guides", "Articles"] },
     ])
   })
 })

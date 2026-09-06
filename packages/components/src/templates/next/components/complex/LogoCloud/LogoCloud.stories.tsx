@@ -5,26 +5,26 @@ import { generateSiteConfig } from "~/stories/helpers"
 import { LogoCloud } from "./LogoCloud"
 
 const meta: Meta<typeof LogoCloud> = {
-  title: "Next/Components/Logo Cloud",
-  component: LogoCloud,
   argTypes: {},
+  component: LogoCloud,
   parameters: {
     themes: {
       themeOverride: "Isomer Next",
     },
   },
+  title: "Next/Components/Logo Cloud",
 }
 export default meta
 type Story = StoryObj<typeof LogoCloud>
 
-const IMAGE = { src: "https://placehold.co/150", alt: "placeholder" }
+const IMAGE = { alt: "placeholder", src: "https://placehold.co/150" }
 const HORIZONTAL_IMAGE = {
-  src: "https://placehold.co/1000x100",
   alt: "placeholder",
+  src: "https://placehold.co/1000x100",
 }
 const VERTICAL_IMAGE = {
-  src: "https://placehold.co/100x1000",
   alt: "placeholder",
+  src: "https://placehold.co/100x1000",
 }
 
 // Default scenario
@@ -54,16 +54,16 @@ export const LongTitle: Story = {
 
 export const HugeHorizontalLogo: Story = {
   args: {
-    title: "Our partners",
     images: [...Array(4).fill(IMAGE), HORIZONTAL_IMAGE],
     site: generateSiteConfig(),
+    title: "Our partners",
   },
 }
 
 export const HugeVerticalLogo: Story = {
   args: {
-    title: "Our partners",
     images: [...Array(4).fill(IMAGE), VERTICAL_IMAGE],
     site: generateSiteConfig(),
+    title: "Our partners",
   },
 }

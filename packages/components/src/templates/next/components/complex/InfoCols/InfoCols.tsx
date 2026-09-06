@@ -14,38 +14,35 @@ import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
 
 const createInfoColsStyles = tv({
+  defaultVariants: {
+    layout: "default",
+  },
   slots: {
-    section: "bg-white",
-    outerContainer: `${ComponentContent}`,
-    innerContainer: "flex flex-col gap-12",
     header: "flex w-full max-w-[47.5rem] flex-col items-start text-left",
-    headerTitle: "prose-display-sm break-words text-base-content-strong",
     headerSubtitle: "prose-headline-lg-regular text-base-content",
-    infoBoxesContainer:
-      "grid grid-cols-1 gap-x-16 gap-y-10 md:grid-cols-2 md:gap-y-12 lg:grid-cols-3",
+    headerTitle: "prose-display-sm break-words text-base-content-strong",
     infoBox: "group flex flex-col items-start gap-3 text-left outline-0",
+    infoBoxButton:
+      "prose-headline-base-medium items-center gap-1 text-base-content-strong",
+    infoBoxButtonIcon:
+      "mb-0.5 ml-1 inline text-[1.375rem] transition ease-in group-hover:translate-x-1",
+    infoBoxDescription: "prose-body-base text-base-content",
     infoBoxIcon: "h-auto w-6 text-base-content-strong",
     infoBoxTitle: [
       groupFocusVisibleHighlight(),
       "prose-headline-lg-semibold text-base-content-strong",
     ],
-    infoBoxDescription: "prose-body-base text-base-content",
-    infoBoxButton:
-      "prose-headline-base-medium items-center gap-1 text-base-content-strong",
-    infoBoxButtonIcon:
-      "mb-0.5 ml-1 inline text-[1.375rem] transition ease-in group-hover:translate-x-1",
+    infoBoxesContainer:
+      "grid grid-cols-1 gap-x-16 gap-y-10 md:grid-cols-2 md:gap-y-12 lg:grid-cols-3",
+    innerContainer: "flex flex-col gap-12",
+    outerContainer: ComponentContent,
+    section: "bg-white",
   },
   variants: {
-    layout: {
-      homepage: {
-        outerContainer: "py-12 md:py-16",
-        header: "gap-2.5",
-        headerSubtitle: "prose-headline-lg-regular",
-      },
-      default: {
-        outerContainer: "mt-14",
-        header: "gap-6",
-        headerSubtitle: "prose-body-base",
+    hasLink: {
+      true: {
+        infoBoxIcon: "group-hover:text-brand-interaction",
+        infoBoxTitle: "group-hover:text-brand-interaction",
       },
     },
     isExternalLink: {
@@ -53,15 +50,18 @@ const createInfoColsStyles = tv({
         infoBoxButtonIcon: "rotate-[-45deg]",
       },
     },
-    hasLink: {
-      true: {
-        infoBoxTitle: "group-hover:text-brand-interaction",
-        infoBoxIcon: "group-hover:text-brand-interaction",
+    layout: {
+      default: {
+        header: "gap-6",
+        headerSubtitle: "prose-body-base",
+        outerContainer: "mt-14",
+      },
+      homepage: {
+        header: "gap-2.5",
+        headerSubtitle: "prose-headline-lg-regular",
+        outerContainer: "py-12 md:py-16",
       },
     },
-  },
-  defaultVariants: {
-    layout: "default",
   },
 })
 
@@ -74,7 +74,7 @@ const InfoBoxIcon = ({
   icon?: SupportedIconName
   hasLink: boolean
 }) => {
-  if (!icon) return null
+  if (!icon) {return null}
 
   const Icon = SUPPORTED_ICONS_MAP[icon]
 
@@ -91,8 +91,8 @@ const InfoBoxIcon = ({
 const InfoBoxes = ({
   infoBoxes,
   site,
-}: Pick<InfoColsProps, "infoBoxes" | "site">) => {
-  return (
+}: Pick<InfoColsProps, "infoBoxes" | "site">) => 
+  (
     <div className={compoundStyles.infoBoxesContainer()}>
       {infoBoxes.map(({ title, icon, description, buttonUrl, buttonLabel }) => {
         const hasLink = !!buttonUrl
@@ -148,7 +148,7 @@ const InfoBoxes = ({
       })}
     </div>
   )
-}
+
 
 export const InfoCols = ({
   id,

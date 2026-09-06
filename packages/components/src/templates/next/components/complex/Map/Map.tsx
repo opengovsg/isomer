@@ -8,9 +8,9 @@ import { ComponentContent } from "../../internal/customCssClass"
 
 const createMapStyles = tv({
   slots: {
-    outerContainer: `${ComponentContent} mt-7 first:mt-0`,
-    innerContainer: "relative w-full overflow-hidden pt-[75%]",
     iframe: "absolute bottom-0 left-0 right-0 top-0 border-0",
+    innerContainer: "relative w-full overflow-hidden pt-[75%]",
+    outerContainer: `${ComponentContent} mt-7 first:mt-0`,
     paragraph: "prose-body-base text-base-content",
   },
   variants: {

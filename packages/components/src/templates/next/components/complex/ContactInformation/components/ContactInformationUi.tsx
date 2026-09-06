@@ -1,19 +1,22 @@
 import type { ContactInformationUIProps } from "~/interfaces"
 import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
 
-import { DefaultContactInformationUI } from "./DefaultContactInformationUI"
-import { HomepageContactInformationUI } from "./HomepageContactInformationUI"
+import { DefaultContactInformationUI } from "./DefaultContactInformationUi"
+import { HomepageContactInformationUI } from "./HomepageContactInformationUi"
 
 export const ContactInformationUI = (props: ContactInformationUIProps) => {
   const simplifiedLayout = getTailwindVariantLayout(props.layout)
 
   switch (simplifiedLayout) {
-    case "default":
+    case "default": {
       return <DefaultContactInformationUI {...props} />
-    case "homepage":
+    }
+    case "homepage": {
       return <HomepageContactInformationUI {...props} />
-    default:
+    }
+    default: {
       const _exhaustiveCheck: never = simplifiedLayout
       return _exhaustiveCheck
+    }
   }
 }

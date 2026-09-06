@@ -5,17 +5,17 @@ import { generateSiteConfig } from "~/stories/helpers"
 import { Paragraph } from "./Paragraph"
 
 const meta: Meta<typeof Paragraph> = {
-  title: "Next/Components/Paragraph",
-  component: Paragraph,
   argTypes: {},
+  args: {
+    site: generateSiteConfig(),
+  },
+  component: Paragraph,
   parameters: {
     themes: {
       themeOverride: "Isomer Next",
     },
   },
-  args: {
-    site: generateSiteConfig(),
-  },
+  title: "Next/Components/Paragraph",
 }
 export default meta
 type Story = StoryObj<typeof Paragraph>
@@ -24,81 +24,81 @@ export const Default: Story = {
   args: {
     content: [
       {
-        type: "text",
         text: "This is a paragraph of text. It can contain ",
+        type: "text",
       },
       {
-        type: "text",
         marks: [
           {
-            type: "link",
             attrs: {
               href: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
               target: "_blank",
             },
+            type: "link",
           },
         ],
         text: "external links",
+        type: "text",
       },
       {
-        type: "text",
         text: " (and ",
+        type: "text",
       },
       {
-        type: "text",
         marks: [
           {
-            type: "link",
             attrs: {
               href: "/contact",
               target: "_blank",
             },
+            type: "link",
           },
         ],
         text: "internal ones",
+        type: "text",
       },
       {
-        type: "text",
         text: "), ",
+        type: "text",
       },
       {
-        type: "text",
         marks: [
           {
             type: "code",
           },
         ],
         text: "code",
+        type: "text",
       },
       {
-        type: "text",
         text: ", and line breaks. We can also use ",
+        type: "text",
       },
       {
-        type: "text",
         marks: [
           {
             type: "subscript",
           },
         ],
         text: "subscript",
+        type: "text",
       },
       {
-        type: "text",
         text: " and ",
+        type: "text",
       },
       {
-        type: "text",
         marks: [
           {
             type: "superscript",
           },
         ],
         text: "superscript",
+        type: "text",
       },
       {
-        type: "text",
         text: " text.",
+        type: "text",
       },
     ],
   },
@@ -108,8 +108,8 @@ export const Simple: Story = {
   args: {
     content: [
       {
-        type: "text",
         text: "This is a simple paragraph",
+        type: "text",
       },
     ],
   },
@@ -119,27 +119,26 @@ export const Combined: Story = {
   args: {
     content: [
       {
-        type: "text",
         marks: [
           {
-            type: "link",
             attrs: {
               href: "https://www.google.com",
               target: "_blank",
             },
+            type: "link",
           },
         ],
         text: "Create customised ",
+        type: "text",
       },
       {
-        type: "text",
         marks: [
           {
-            type: "link",
             attrs: {
               href: "https://www.google.com",
               target: "_blank",
             },
+            type: "link",
           },
           {
             type: "superscript",
@@ -149,48 +148,49 @@ export const Combined: Story = {
           },
         ],
         text: "business",
+        type: "text",
       },
       {
-        type: "text",
         marks: [
           {
-            type: "link",
             attrs: {
               href: "https://www.google.com",
               target: "_blank",
             },
+            type: "link",
           },
           {
             type: "italic",
           },
         ],
         text: "custom",
+        type: "text",
       },
       {
-        type: "text",
         marks: [
           {
-            type: "link",
             attrs: {
               href: "https://www.google.com",
               target: "_blank",
             },
+            type: "link",
           },
         ],
         text: " solutions for growth",
+        type: "text",
       },
       {
-        type: "text",
         marks: [
           {
-            type: "link",
             attrs: {
               href: "https://www.google2.com",
               target: "_blank",
             },
+            type: "link",
           },
         ],
         text: " Another link",
+        type: "text",
       },
     ],
   },
@@ -203,8 +203,8 @@ export const WithDirectionLTR: Story = {
     },
     content: [
       {
-        type: "text",
         text: "نص لوريم إيبسوم القياسي والمستخدم ltr منذ القرن الخامس عشر",
+        type: "text",
       },
     ],
   },
@@ -217,8 +217,8 @@ export const WithDirectionRTL: Story = {
     },
     content: [
       {
-        type: "text",
         text: "نص لوريم إيبسوم القياسي والمستخدم rtl منذ القرن الخامس عشر",
+        type: "text",
       },
     ],
   },
@@ -231,8 +231,8 @@ export const WithDirectionAuto: Story = {
     },
     content: [
       {
-        type: "text",
         text: "نص لوريم إيبسوم القياسي والمستخدم auto منذ القرن الخامس عشر",
+        type: "text",
       },
     ],
   },
@@ -245,8 +245,8 @@ export const WithDirectionNull: Story = {
     },
     content: [
       {
-        type: "text",
         text: "نص لوريم إيبسوم القياسي والمستخدم null منذ القرن الخامس عشر",
+        type: "text",
       },
     ],
   },
@@ -257,33 +257,33 @@ export const MobileLinkHardBreak: Story = {
   args: {
     content: [
       {
-        type: "text",
         marks: [
           {
-            type: "link",
             attrs: {
               href: "https://example.com/first-link",
               target: "_blank",
             },
+            type: "link",
           },
         ],
         text: "First Link",
+        type: "text",
       },
       {
         type: "hardBreak",
       },
       {
-        type: "text",
         marks: [
           {
-            type: "link",
             attrs: {
               href: "https://example.com/second-link",
               target: "_blank",
             },
+            type: "link",
           },
         ],
         text: "Second Link",
+        type: "text",
       },
     ],
   },
@@ -297,10 +297,10 @@ export const MobileLinkHardBreak: Story = {
     const secondLinkStyle = getComputedStyle(secondLink)
 
     // Assert line height for both links (should be at least 24px to meet touch target requirements)
-    await expect(parseFloat(firstLinkStyle.lineHeight)).toBeGreaterThanOrEqual(
+    await expect(Number.parseFloat(firstLinkStyle.lineHeight)).toBeGreaterThanOrEqual(
       24,
     )
-    await expect(parseFloat(secondLinkStyle.lineHeight)).toBeGreaterThanOrEqual(
+    await expect(Number.parseFloat(secondLinkStyle.lineHeight)).toBeGreaterThanOrEqual(
       24,
     )
   },

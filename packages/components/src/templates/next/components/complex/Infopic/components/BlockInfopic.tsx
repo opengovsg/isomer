@@ -23,9 +23,9 @@ export const BlockInfopic = ({
 }: Omit<InfopicProps, "variant">) => {
   const Tag = getHeadingTag(headingLevel)
   const compoundStyles = infopicStyles({
+    colorScheme: "default",
     isTextOnRight,
     variant: InfopicVariants.Block.value,
-    colorScheme: "default",
   })
   const hasLinkButton = !!buttonLabel && !!buttonUrl
 

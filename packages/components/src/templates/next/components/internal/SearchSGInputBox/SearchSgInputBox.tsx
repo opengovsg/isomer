@@ -32,19 +32,19 @@ const BaseSearchSGInputBox = ({
 export const NavbarSearchSGInputBox = ({
   clientId,
   isOpen = false,
-}: Omit<NavbarSearchSGInputBoxProps, "type">) => {
-  return <BaseSearchSGInputBox clientId={clientId} shouldLoadScript={isOpen} />
-}
+}: Omit<NavbarSearchSGInputBoxProps, "type">) => 
+  <BaseSearchSGInputBox clientId={clientId} shouldLoadScript={isOpen} />
+
 
 export const HomepageSearchSGInputBox = ({
   clientId,
   className,
-}: Omit<HomepageSearchSGInputBoxProps, "type">) => {
-  return (
+}: Omit<HomepageSearchSGInputBoxProps, "type">) => 
+  (
     <BaseSearchSGInputBox
       clientId={clientId}
       className={className}
       shouldLoadScript={true}
     />
   )
-}
+

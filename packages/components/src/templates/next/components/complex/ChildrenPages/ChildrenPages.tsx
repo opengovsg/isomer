@@ -51,13 +51,13 @@ const BoxLayout = ({
   maxColumns = "2",
   imageFit = "cover",
   headingLevel,
-}: ChildpageLayoutProps) => {
-  return (
+}: ChildpageLayoutProps) => 
+  (
     <div
       className={compoundStyles.grid({
+        class: "[&:not(:first-child)]:mt-7",
         maxColumns,
         variant: "default",
-        class: "[&:not(:first-child)]:mt-7",
       })}
     >
       {childpages.map(({ id, title, description, url, image }) => {
@@ -98,18 +98,22 @@ const BoxLayout = ({
       })}
     </div>
   )
-}
+
 
 const createRowStyles = tv({
+  defaultVariants: {
+    layout: "default",
+  },
   slots: {
     container: `${ComponentContent} grid grid-cols-3 gap-9 md:grid-cols-6 lg:grid-cols-12 [&:not(:first-child)]:mt-7`,
+    contentContainer:
+      "max-md:grid-rows-[1fr fit-content] group grid grid-cols-subgrid max-md:col-span-full max-md:gap-y-5 md:col-span-6 lg:col-span-12",
+    description: "prose-body-base text-base-content",
     image: "bg-white",
     imageContainer:
       "flex aspect-[3/2] h-full w-full justify-center overflow-hidden rounded-lg border bg-base-canvas drop-shadow-none transition ease-in group-hover:drop-shadow-md max-md:col-span-full max-md:row-span-1 md:col-span-2 lg:col-span-3",
     textContainer:
       "flex flex-col justify-center gap-2 break-words max-md:col-span-full max-md:row-span-1",
-    contentContainer:
-      "max-md:grid-rows-[1fr fit-content] group grid grid-cols-subgrid max-md:col-span-full max-md:gap-y-5 md:col-span-6 lg:col-span-12",
     title: [
       groupFocusVisibleHighlight(),
       infoCardTitleStyle({
@@ -117,34 +121,29 @@ const createRowStyles = tv({
         variant: INFOCARD_VARIANT.default,
       }),
     ],
-    description: "prose-body-base text-base-content",
   },
   variants: {
-    layout: {
-      default: {},
-    },
-    imageFit: {
-      cover: {
-        image: "object-cover",
-      },
-      contain: {
-        image: "object-contain",
-      },
-    },
-    hasThumbnail: {
-      true: {
-        textContainer: "md:col-span-4 md:ml-[-1.25rem] lg:col-span-9",
-        contentContainer: "p-0",
-      },
-      false: { textContainer: "md:col-span-6 lg:col-span-12" },
-    },
     hasFallbackImage: {
       true: { image: "h-auto w-2/3 object-contain" },
     },
-  },
-
-  defaultVariants: {
-    layout: "default",
+    hasThumbnail: {
+      false: { textContainer: "md:col-span-6 lg:col-span-12" },
+      true: {
+        contentContainer: "p-0",
+        textContainer: "md:col-span-4 md:ml-[-1.25rem] lg:col-span-9",
+      },
+    },
+    imageFit: {
+      contain: {
+        image: "object-contain",
+      },
+      cover: {
+        image: "object-cover",
+      },
+    },
+    layout: {
+      default: {},
+    },
   },
 })
 
@@ -244,11 +243,11 @@ export const ChildrenPages = ({
   const comparator = createChildrenPagesComparator(childrenPagesOrdering)
   const children = currentPageNode.children
     .map((child) => ({
+      description: child.summary,
       id: child.id,
+      image: child.image,
       title: child.title,
       url: child.permalink,
-      description: child.summary,
-      image: child.image,
     }))
     .sort(comparator)
 
@@ -259,7 +258,7 @@ export const ChildrenPages = ({
         childpages={children}
         showSummary={showSummary}
         showThumbnail={showThumbnail}
-        fallback={{ src: site.logoUrl, alt: "Default logo of the site" }}
+        fallback={{ alt: "Default logo of the site", src: site.logoUrl }}
         shouldLazyLoad={shouldLazyLoad}
         site={site}
         maxColumns={maxColumns}
@@ -279,7 +278,7 @@ export const ChildrenPages = ({
       childpages={children}
       showSummary={showSummary}
       showThumbnail={showThumbnail}
-      fallback={{ src: site.logoUrl, alt: "Default logo of the site" }}
+      fallback={{ alt: "Default logo of the site", src: site.logoUrl }}
       shouldLazyLoad={shouldLazyLoad}
       site={site}
       imageFit={imageFit}

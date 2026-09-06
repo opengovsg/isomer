@@ -13,7 +13,7 @@ export const MicrosoftClarity = ({ msClarityId }: MicrosoftClarityProps) => {
   // 3. When the real Clarity script loads, it processes all queued calls
   useEffect(() => {
     // to not render during static site generation on the server
-    if (globalThis.window == null) return
+    if (globalThis.window == null) {return}
 
     // @ts-expect-error - Clarity is not typed
     if (!globalThis.window.clarity) {
@@ -22,7 +22,7 @@ export const MicrosoftClarity = ({ msClarityId }: MicrosoftClarityProps) => {
       const clarityWindow = globalThis.window as unknown as Window & {
         clarity: ((...args: unknown[]) => void) & { q?: unknown[] }
       }
-      clarityWindow.clarity = function (...args: unknown[]) {
+      clarityWindow.clarity = function  clarity(...args: unknown[]) {
         // oxlint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         ;(clarityWindow.clarity.q = clarityWindow.clarity.q ?? []).push(...args)
       }

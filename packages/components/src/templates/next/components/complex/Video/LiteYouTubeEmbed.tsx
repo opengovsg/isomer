@@ -38,11 +38,11 @@ export const LiteYouTubeEmbed = ({
       try {
         const oEmbedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(src)}&format=json`
         const response = await fetch(oEmbedUrl)
-        if (!response.ok) return
+        if (!response.ok) {return}
 
         // SAFETY: YouTube oEmbed returns a JSON object with an optional thumbnail_url field.
         const data = (await response.json()) as { thumbnail_url?: string }
-        if (cancelled) return
+        if (cancelled) {return}
         if (data.thumbnail_url) {
           // Prefer sddefault; oEmbed returns hqdefault. Fallback to hqdefault is handled in onLoad.
           setOEmbedThumbnailUrl(
@@ -85,7 +85,7 @@ export const LiteYouTubeEmbed = ({
           alt={`Thumbnail for ${title || "video"}`}
           width="100%"
           lazyLoading={shouldLazyLoad}
-          onLoad={(e: SyntheticEvent<HTMLImageElement, Event>) => {
+          onLoad={(e: SyntheticEvent<HTMLImageElement>) => {
             const { currentTarget } = e
             // When sddefault.jpg is missing, YouTube returns HTTP 404 with a valid 120×90 JPEG
             // (a placeholder). The browser then fires onLoad, not onError, so we detect the
@@ -123,7 +123,7 @@ export const LiteYouTubeEmbed = ({
       ) : (
         <button
           type="button"
-          onClick={() => setActivated(true)}
+          onClick={() =>{  setActivated(true); }}
           className="group absolute inset-0 flex cursor-pointer items-center justify-center focus:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-utility-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-black"
           aria-label={`Play ${title || "video"}`}
         >

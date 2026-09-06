@@ -4,17 +4,17 @@ import type { LocalSearchProps } from "~/interfaces"
 import { LocalSearchInputBox } from "./LocalSearchInputBox"
 
 const meta: Meta<LocalSearchProps> = {
-  title: "Next/Internal Components/LocalSearchInputBox",
-  component: LocalSearchInputBox,
   argTypes: {},
+  args: {
+    searchUrl: "/search",
+  },
+  component: LocalSearchInputBox,
   parameters: {
     themes: {
       themeOverride: "Isomer Next",
     },
   },
-  args: {
-    searchUrl: "/search",
-  },
+  title: "Next/Internal Components/LocalSearchInputBox",
 }
 export default meta
 type Story = StoryObj<typeof LocalSearchInputBox>

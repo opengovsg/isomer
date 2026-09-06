@@ -8,21 +8,21 @@ import { ImageClient } from "../../internal/ImageClient"
 import { LinkButton } from "../../internal/LinkButton/LinkButton"
 
 const HERO_THEME_MAPPINGS = {
+  button: {
+    default: "inverse",
+    inverse: "default",
+  },
   hero: {
     default: "bg-brand-canvas-inverse",
     inverse: "bg-brand-canvas",
-  },
-  title: {
-    default: "text-base-content-inverse",
-    inverse: "text-base-content-strong",
   },
   subtitle: {
     default: "text-base-content-inverse",
     inverse: "text-base-content",
   },
-  button: {
-    default: "inverse",
-    inverse: "default",
+  title: {
+    default: "text-base-content-inverse",
+    inverse: "text-base-content-strong",
   },
 } as const
 

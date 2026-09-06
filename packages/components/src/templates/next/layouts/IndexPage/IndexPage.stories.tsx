@@ -7,148 +7,148 @@ import { withChromaticModes } from "@isomer/storybook-config"
 import { IndexPageLayout } from "./IndexPage"
 
 const DEFAULT_INDEX_PAGE = {
-  permalink: "/parent",
-  title: "Index page",
-  lastModified: "2024-05-02T14:12:57.160Z",
   contentPageHeader: {
     showThumbnail: false,
     summary: "Pages in Index page",
   },
+  lastModified: "2024-05-02T14:12:57.160Z",
+  permalink: "/parent",
+  title: "Index page",
 }
 
 const generateIndexPage = (
   page: IndexPageSchemaType["page"],
   overrides?: Partial<IndexPageSchemaType>,
-): Partial<IndexPageSchemaType> => {
-  return {
+): Partial<IndexPageSchemaType> => (
+  {
+    content: [],
     layout: "index",
-    site: generateSiteConfig({
-      siteMap: {
-        id: "1",
-        title: "Isomer Next",
-        permalink: "/",
-        lastModified: "",
-        layout: "homepage",
-        summary: "",
-        children: [
-          {
-            id: "2",
-            title: "Parent page",
-            permalink: "/parent",
-            lastModified: "",
-            layout: "content",
-            summary: "",
-            children: [
-              {
-                id: "3",
-                title: "Irrationality",
-                permalink: "/parent/rationality",
-                lastModified: "",
-                layout: "content",
-                summary: "Pages in Irrationality",
-                children: [
-                  {
-                    id: "4",
-                    title: "For Individuals",
-                    permalink: "/parent/rationality/child-page-2",
-                    lastModified: "",
-                    layout: "content",
-                    summary: "",
-                  },
-                  {
-                    id: "5",
-                    title: "Steven Pinker's Rationality",
-                    permalink: "/parent/rationality/child-page-2",
-                    lastModified: "",
-                    layout: "content",
-                    summary: "",
-                  },
-                ],
-              },
-              {
-                id: "6",
-                title: "Sibling",
-                permalink: "/parent/sibling",
-                lastModified: "",
-                layout: "content",
-                summary: "Pages in Sibling",
-                image: {
-                  src: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTqBmkS5UiA-cppkrliK5R5csepf8jJ4BfMcQ&s",
-                  alt: "funny cat",
-                },
-                children: [
-                  {
-                    id: "7",
-                    title: "Child that should not appear",
-                    permalink: "/parent/sibling/child-page-2",
-                    lastModified: "",
-                    layout: "content",
-                    summary: "",
-                  },
-                ],
-              },
-              {
-                id: "5",
-                title: "Steven Pinker's Rationality",
-                permalink: "/parent/child-page-2",
-                lastModified: "",
-                layout: "content",
-                summary: "",
-              },
-              {
-                id: "9",
-                title: "Database page with thumbnail",
-                permalink: "/parent/database-page-with-thumbnail",
-                lastModified: "",
-                layout: "database",
-                summary: "Database page with thumbnail",
-                image: {
-                  src: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=400&h=300&fit=crop",
-                  alt: "Thumbnail for Database page with thumbnail",
-                },
-              },
-              {
-                id: "10",
-                title: "Database page without thumbnail",
-                permalink: "/parent/database-page-without-thumbnail",
-                lastModified: "",
-                layout: "database",
-                summary: "Database page without thumbnail",
-              },
-            ],
-          },
-          {
-            id: "8",
-            title: "Aunt/Uncle that should not appear",
-            permalink: "/aunt-uncle",
-            lastModified: "",
-            layout: "content",
-            summary: "",
-          },
-        ],
-      },
-    }),
     meta: {
       description: "A Next.js starter for Isomer",
     },
     page,
-    content: [],
+    site: generateSiteConfig({
+      siteMap: {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    id: "4",
+                    lastModified: "",
+                    layout: "content",
+                    permalink: "/parent/rationality/child-page-2",
+                    summary: "",
+                    title: "For Individuals",
+                  },
+                  {
+                    id: "5",
+                    lastModified: "",
+                    layout: "content",
+                    permalink: "/parent/rationality/child-page-2",
+                    summary: "",
+                    title: "Steven Pinker's Rationality",
+                  },
+                ],
+                id: "3",
+                lastModified: "",
+                layout: "content",
+                permalink: "/parent/rationality",
+                summary: "Pages in Irrationality",
+                title: "Irrationality",
+              },
+              {
+                children: [
+                  {
+                    id: "7",
+                    lastModified: "",
+                    layout: "content",
+                    permalink: "/parent/sibling/child-page-2",
+                    summary: "",
+                    title: "Child that should not appear",
+                  },
+                ],
+                id: "6",
+                image: {
+                  alt: "funny cat",
+                  src: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTqBmkS5UiA-cppkrliK5R5csepf8jJ4BfMcQ&s",
+                },
+                lastModified: "",
+                layout: "content",
+                permalink: "/parent/sibling",
+                summary: "Pages in Sibling",
+                title: "Sibling",
+              },
+              {
+                id: "5",
+                lastModified: "",
+                layout: "content",
+                permalink: "/parent/child-page-2",
+                summary: "",
+                title: "Steven Pinker's Rationality",
+              },
+              {
+                id: "9",
+                image: {
+                  alt: "Thumbnail for Database page with thumbnail",
+                  src: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=400&h=300&fit=crop",
+                },
+                lastModified: "",
+                layout: "database",
+                permalink: "/parent/database-page-with-thumbnail",
+                summary: "Database page with thumbnail",
+                title: "Database page with thumbnail",
+              },
+              {
+                id: "10",
+                lastModified: "",
+                layout: "database",
+                permalink: "/parent/database-page-without-thumbnail",
+                summary: "Database page without thumbnail",
+                title: "Database page without thumbnail",
+              },
+            ],
+            id: "2",
+            lastModified: "",
+            layout: "content",
+            permalink: "/parent",
+            summary: "",
+            title: "Parent page",
+          },
+          {
+            id: "8",
+            lastModified: "",
+            layout: "content",
+            permalink: "/aunt-uncle",
+            summary: "",
+            title: "Aunt/Uncle that should not appear",
+          },
+        ],
+        id: "1",
+        lastModified: "",
+        layout: "homepage",
+        permalink: "/",
+        summary: "",
+        title: "Isomer Next",
+      },
+    }),
     ...overrides,
   }
-}
+)
 
 const meta: Meta<typeof IndexPageLayout> = {
-  title: "Next/Layouts/IndexPage",
-  component: IndexPageLayout,
   argTypes: {},
-  tags: ["!autodocs"],
+  component: IndexPageLayout,
   parameters: {
-    layout: "fullscreen",
     chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
+    layout: "fullscreen",
     themes: {
       themeOverride: "Isomer Next",
     },
   },
+  tags: ["!autodocs"],
+  title: "Next/Layouts/IndexPage",
 }
 export default meta
 type Story = StoryObj<typeof IndexPageLayout>
@@ -180,18 +180,18 @@ export const Custom: Story = {
     {
       content: [
         {
-          type: "prose",
           content: [
             {
-              type: "paragraph",
               content: [
                 {
-                  type: "text",
                   text: "This is a customisable index page in which content can be placed before the list of children.",
+                  type: "text",
                 },
               ],
+              type: "paragraph",
             },
           ],
+          type: "prose",
         },
       ],
     },
@@ -202,29 +202,29 @@ export const WithTableOfContents: Story = {
   args: generateIndexPage(DEFAULT_INDEX_PAGE, {
     content: [
       {
-        type: "prose",
         content: [
           {
-            type: "heading",
             attrs: { level: 2 },
-            content: [{ type: "text", text: "First Section" }],
-          },
-          {
-            type: "paragraph",
-            content: [{ type: "text", text: "Content for the first section." }],
-          },
-          {
+            content: [{ text: "First Section", type: "text" }],
             type: "heading",
-            attrs: { level: 2 },
-            content: [{ type: "text", text: "Second Section" }],
           },
           {
+            content: [{ text: "Content for the first section.", type: "text" }],
             type: "paragraph",
+          },
+          {
+            attrs: { level: 2 },
+            content: [{ text: "Second Section", type: "text" }],
+            type: "heading",
+          },
+          {
             content: [
-              { type: "text", text: "Content for the second section." },
+              { text: "Content for the second section.", type: "text" },
             ],
+            type: "paragraph",
           },
         ],
+        type: "prose",
       },
     ],
   }),
@@ -234,11 +234,11 @@ export const Rows: Story = {
   args: generateIndexPage(DEFAULT_INDEX_PAGE, {
     content: [
       {
-        type: "childrenpages",
-        variant: "rows",
+        childrenPagesOrdering: [],
         showSummary: false,
         showThumbnail: false,
-        childrenPagesOrdering: [],
+        type: "childrenpages",
+        variant: "rows",
       },
     ],
   }),
@@ -249,10 +249,10 @@ export const RowsWithImageOnly: Story = {
     content: [
       {
         childrenPagesOrdering: [],
-        type: "childrenpages",
-        variant: "rows",
         showSummary: false,
         showThumbnail: true,
+        type: "childrenpages",
+        variant: "rows",
       },
     ],
   }),
@@ -263,10 +263,10 @@ export const RowsWithDescriptionOnly: Story = {
     content: [
       {
         childrenPagesOrdering: [],
-        type: "childrenpages",
-        variant: "rows",
         showSummary: true,
         showThumbnail: false,
+        type: "childrenpages",
+        variant: "rows",
       },
     ],
   }),
@@ -277,10 +277,10 @@ export const RowsWithImageAndDescription: Story = {
     content: [
       {
         childrenPagesOrdering: [],
-        type: "childrenpages",
-        variant: "rows",
         showSummary: true,
         showThumbnail: true,
+        type: "childrenpages",
+        variant: "rows",
       },
     ],
   }),
@@ -290,11 +290,11 @@ export const RowsWithContainAndImageAndDescription: Story = {
     content: [
       {
         childrenPagesOrdering: [],
-        type: "childrenpages",
-        variant: "rows",
         imageFit: "contain",
         showSummary: true,
         showThumbnail: true,
+        type: "childrenpages",
+        variant: "rows",
       },
     ],
   }),
@@ -304,26 +304,26 @@ export const RowsWithImageAndDescriptionAndContent: Story = {
   args: generateIndexPage(DEFAULT_INDEX_PAGE, {
     content: [
       {
-        type: "prose",
         content: [
           {
-            type: "heading",
             attrs: { level: 2 },
             content: [
               {
-                type: "text",
                 text: "This is a customisable index page in which content can be placed before the list of children.",
+                type: "text",
               },
             ],
+            type: "heading",
           },
         ],
+        type: "prose",
       },
       {
         childrenPagesOrdering: [],
-        type: "childrenpages",
-        variant: "rows",
         showSummary: true,
         showThumbnail: true,
+        type: "childrenpages",
+        variant: "rows",
       },
     ],
   }),
@@ -334,10 +334,10 @@ export const Boxes: Story = {
     content: [
       {
         childrenPagesOrdering: [],
-        type: "childrenpages",
-        variant: "boxes",
         showSummary: false,
         showThumbnail: false,
+        type: "childrenpages",
+        variant: "boxes",
       },
     ],
   }),
@@ -348,10 +348,10 @@ export const BoxesWithImageOnly: Story = {
     content: [
       {
         childrenPagesOrdering: [],
-        type: "childrenpages",
-        variant: "boxes",
         showSummary: false,
         showThumbnail: true,
+        type: "childrenpages",
+        variant: "boxes",
       },
     ],
   }),
@@ -362,10 +362,10 @@ export const BoxesWithDescriptionOnly: Story = {
     content: [
       {
         childrenPagesOrdering: [],
-        type: "childrenpages",
-        variant: "boxes",
         showSummary: true,
         showThumbnail: false,
+        type: "childrenpages",
+        variant: "boxes",
       },
     ],
   }),
@@ -376,10 +376,10 @@ export const BoxesWithImageAndDescription: Story = {
     content: [
       {
         childrenPagesOrdering: [],
-        type: "childrenpages",
-        variant: "boxes",
         showSummary: true,
         showThumbnail: true,
+        type: "childrenpages",
+        variant: "boxes",
       },
     ],
   }),
@@ -390,11 +390,11 @@ export const BoxesWithContainAndImageAndDescription: Story = {
     content: [
       {
         childrenPagesOrdering: [],
-        type: "childrenpages",
-        variant: "boxes",
         imageFit: "contain",
         showSummary: true,
         showThumbnail: true,
+        type: "childrenpages",
+        variant: "boxes",
       },
     ],
   }),
@@ -405,10 +405,10 @@ export const BoxesWithCustomOrdering: Story = {
     content: [
       {
         childrenPagesOrdering: ["6", "3", "5"],
-        type: "childrenpages",
-        variant: "boxes",
         showSummary: true,
         showThumbnail: true,
+        type: "childrenpages",
+        variant: "boxes",
       },
     ],
   }),
@@ -418,26 +418,26 @@ export const BoxesWithImageAndDescriptionAndContent: Story = {
   args: generateIndexPage(DEFAULT_INDEX_PAGE, {
     content: [
       {
-        type: "prose",
         content: [
           {
-            type: "heading",
             attrs: { level: 2 },
             content: [
               {
-                type: "text",
                 text: "This is a customisable index page in which content can be placed before the list of children.",
+                type: "text",
               },
             ],
+            type: "heading",
           },
         ],
+        type: "prose",
       },
       {
         childrenPagesOrdering: [],
-        type: "childrenpages",
-        variant: "boxes",
         showSummary: true,
         showThumbnail: true,
+        type: "childrenpages",
+        variant: "boxes",
       },
     ],
   }),

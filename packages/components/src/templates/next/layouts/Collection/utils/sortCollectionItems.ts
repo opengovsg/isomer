@@ -39,13 +39,16 @@ const compareDates = (
   sortDirection: NonNullable<SortCollectionItemsProps["sortDirection"]>,
 ): number => {
   switch (sortDirection) {
-    case "asc":
+    case "asc": {
       return aDate.getTime() >= bDate.getTime() ? 1 : -1
-    case "desc":
+    }
+    case "desc": {
       return aDate.getTime() <= bDate.getTime() ? 1 : -1
-    default:
+    }
+    default: {
       const _: never = sortDirection
       return 1
+    }
   }
 }
 
@@ -55,13 +58,16 @@ const compareTitles = (
   sortDirection: NonNullable<SortCollectionItemsProps["sortDirection"]>,
 ): number => {
   switch (sortDirection) {
-    case "asc":
+    case "asc": {
       return a.title.localeCompare(b.title, undefined, { numeric: true })
-    case "desc":
+    }
+    case "desc": {
       return b.title.localeCompare(a.title, undefined, { numeric: true })
-    default:
+    }
+    default: {
       const _: never = sortDirection
       return 1
+    }
   }
 }
 
@@ -78,13 +84,16 @@ const compareLastModified = (
     const bDate = bLastModified.getTime()
 
     switch (sortDirection) {
-      case "asc":
+      case "asc": {
         return aDate >= bDate ? 1 : -1
-      case "desc":
+      }
+      case "desc": {
         return aDate <= bDate ? 1 : -1
-      default:
+      }
+      default: {
         const _: never = sortDirection
         return 1
+      }
     }
   }
 
@@ -97,8 +106,8 @@ const compareLastModified = (
 const sortCollectionItemsByDate = ({
   items,
   sortDirection = "desc",
-}: Omit<SortCollectionItemsProps, "sortBy">) => {
-  return items.sort((a, b) => {
+}: Omit<SortCollectionItemsProps, "sortBy">) => 
+  items.sort((a, b) => {
     const bothHaveDates = a.date instanceof Date && b.date instanceof Date
     const bothSameDate = a.date?.getTime() === b.date?.getTime()
     const bothSameLastModified =
@@ -147,14 +156,14 @@ const sortCollectionItemsByDate = ({
     // This should never be reached
     return a.date instanceof Date ? -1 : 1
   })
-}
+
 
 // Sort by title, followed by published date, tiebreaker by last modified date
 const sortCollectionItemsByTitle = ({
   items,
   sortDirection = "asc",
-}: Omit<SortCollectionItemsProps, "sortBy">) => {
-  return items.sort((a, b) => {
+}: Omit<SortCollectionItemsProps, "sortBy">) => 
+  items.sort((a, b) => {
     const bothSameTitle = a.title === b.title
     const bothHaveDates = a.date instanceof Date && b.date instanceof Date
     const bothSameDate = a.date?.getTime() === b.date?.getTime()
@@ -196,7 +205,7 @@ const sortCollectionItemsByTitle = ({
     // This should never be reached
     return a.date instanceof Date ? -1 : 1
   })
-}
+
 
 interface ParsedSortOrder {
   sortBy: SortBy
@@ -207,14 +216,18 @@ const parseSortOrder = (
   sortOrder: NonNullable<GetCollectionItemsProps["sortOrder"]>,
 ): ParsedSortOrder => {
   switch (sortOrder) {
-    case "date-asc":
+    case "date-asc": {
       return { sortBy: "date", sortDirection: "asc" }
-    case "date-desc":
+    }
+    case "date-desc": {
       return { sortBy: "date", sortDirection: "desc" }
-    case "title-asc":
+    }
+    case "title-asc": {
       return { sortBy: "title", sortDirection: "asc" }
-    case "title-desc":
+    }
+    case "title-desc": {
       return { sortBy: "title", sortDirection: "desc" }
+    }
     default: {
       const _: never = sortOrder
       return { sortBy: "date", sortDirection: "desc" }
@@ -235,18 +248,21 @@ export const sortCollectionItems = ({
 
   switch (derivedSortBy) {
     case "date":
-    case undefined:
+    case undefined: {
       return sortCollectionItemsByDate({
         items,
         sortDirection: derivedSortDirection,
       })
-    case "title":
+    }
+    case "title": {
       return sortCollectionItemsByTitle({
         items,
         sortDirection: derivedSortDirection,
       })
-    default:
+    }
+    default: {
       const _: never = derivedSortBy
       return []
+    }
   }
 }

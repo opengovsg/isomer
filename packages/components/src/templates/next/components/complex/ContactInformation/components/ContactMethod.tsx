@@ -50,8 +50,8 @@ export const ContactMethod = ({
                   isExternal={isExternalLink}
                   showExternalIcon={isExternalLink}
                   className={styles.value({
-                    isLink: true,
                     className: focusVisibleHighlight(),
+                    isLink: true,
                   })}
                 >
                   {value}
@@ -64,8 +64,8 @@ export const ContactMethod = ({
                   key={value}
                   href={`mailto:${value}`}
                   className={styles.value({
-                    isLink: true,
                     className: focusVisibleHighlight(),
+                    isLink: true,
                   })}
                 >
                   {value}
@@ -78,8 +78,8 @@ export const ContactMethod = ({
                   key={value}
                   href={`tel:${sanitizePhoneNumber(value)}`}
                   className={styles.value({
-                    isLink: true,
                     className: focusVisibleHighlight(),
+                    isLink: true,
                   })}
                 >
                   {value}
@@ -103,8 +103,8 @@ interface LoadingContactMethodProps {
   styles: ReturnType<typeof commonContactMethodStyles>
 }
 
-export const LoadingContactMethod = ({ styles }: LoadingContactMethodProps) => {
-  return (
+export const LoadingContactMethod = ({ styles }: LoadingContactMethodProps) => 
+  (
     <div className={styles.container()}>
       <div className={styles.icon()} />
       <div className={styles.textContainer()}>
@@ -116,4 +116,4 @@ export const LoadingContactMethod = ({ styles }: LoadingContactMethodProps) => {
       </div>
     </div>
   )
-}
+

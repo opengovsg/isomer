@@ -53,21 +53,21 @@ export const renderPageContent = ({
         isTextOnRight: isInfopicTextOnRight,
       }
       return renderComponent({
-        elementKey: index,
         component: formattedComponent,
-        shouldLazyLoad,
+        elementKey: index,
         headingLevel: currentHeadingLevel,
         layout,
+        shouldLazyLoad,
         ...rest,
       })
     }
 
     return renderComponent({
-      elementKey: index,
       component,
-      shouldLazyLoad,
+      elementKey: index,
       headingLevel: currentHeadingLevel,
       layout,
+      shouldLazyLoad,
       ...rest,
     })
   })

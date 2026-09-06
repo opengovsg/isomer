@@ -5,15 +5,15 @@ import { withChromaticModes } from "@isomer/storybook-config"
 import { UnsupportedBrowserBanner } from "./UnsupportedBrowserBanner"
 
 const meta: Meta = {
-  title: "Next/Internal Components/UnsupportedBrowserBanner",
-  component: UnsupportedBrowserBanner,
   argTypes: {},
+  component: UnsupportedBrowserBanner,
   parameters: {
+    chromatic: withChromaticModes(["desktop", "tablet", "mobile"]),
     themes: {
       themeOverride: "Isomer Next",
     },
-    chromatic: withChromaticModes(["desktop", "tablet", "mobile"]),
   },
+  title: "Next/Internal Components/UnsupportedBrowserBanner",
 }
 export default meta
 type Story = StoryObj

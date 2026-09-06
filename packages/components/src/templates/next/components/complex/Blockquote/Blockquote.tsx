@@ -7,43 +7,43 @@ import { ComponentContent } from "../../internal/customCssClass"
 import { ImageClient } from "../../internal/ImageClient"
 
 const createBlockquoteStyles = tv({
+  defaultVariants: {
+    layout: "default",
+  },
   slots: {
-    outerContainer: "bg-base-canvas-alt",
-    innerContainer: `${ComponentContent} flex`,
-    quoteContainer: "flex w-full flex-col gap-3",
-    openApostrophe: "text-brand-canvas-inverse",
-    textContainer: "flex flex-col",
     blockquote: "text-base-content-strong",
     citation: "text-base-content-default not-italic",
     image: "object-cover",
+    innerContainer: `${ComponentContent} flex`,
+    openApostrophe: "text-brand-canvas-inverse",
+    outerContainer: "bg-base-canvas-alt",
+    quoteContainer: "flex w-full flex-col gap-3",
+    textContainer: "flex flex-col",
   },
   variants: {
     layout: {
-      homepage: {
-        innerContainer:
-          "flex-col-reverse gap-10 px-6 py-16 sm:flex-row-reverse sm:px-10 lg:py-24",
-        quoteContainer: "gap-4",
-        openApostrophe: "text-[64px]",
-        textContainer: "gap-4",
-        blockquote: "prose-display-sm not-italic",
-        citation: "prose-headline-lg-medium",
-        image: "h-60 min-h-60 w-60 min-w-60",
-      },
       default: {
-        outerContainer:
-          "mt-6 border-l-4 border-brand-canvas-inverse first:mt-0",
-        innerContainer: "flex-col gap-6 px-5 py-4 sm:flex-row sm:gap-10",
-        quoteContainer: "sm:flex-row",
-        openApostrophe: "text-[32px]",
-        textContainer: "gap-3",
         blockquote: "prose-headline-base-medium italic",
         citation: "prose-body-sm",
         image: "h-24 min-h-24 w-24 min-w-24 rounded-full",
+        innerContainer: "flex-col gap-6 px-5 py-4 sm:flex-row sm:gap-10",
+        openApostrophe: "text-[32px]",
+        outerContainer:
+          "mt-6 border-l-4 border-brand-canvas-inverse first:mt-0",
+        quoteContainer: "sm:flex-row",
+        textContainer: "gap-3",
+      },
+      homepage: {
+        blockquote: "prose-display-sm not-italic",
+        citation: "prose-headline-lg-medium",
+        image: "h-60 min-h-60 w-60 min-w-60",
+        innerContainer:
+          "flex-col-reverse gap-10 px-6 py-16 sm:flex-row-reverse sm:px-10 lg:py-24",
+        openApostrophe: "text-[64px]",
+        quoteContainer: "gap-4",
+        textContainer: "gap-4",
       },
     },
-  },
-  defaultVariants: {
-    layout: "default",
   },
 })
 

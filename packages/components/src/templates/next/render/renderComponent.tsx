@@ -47,45 +47,63 @@ export const renderComponent = ({
   ...rest
 }: RenderComponentProps) => {
   switch (component.type) {
-    case "logocloud":
+    case "logocloud": {
       return <LogoCloud key={elementKey} {...component} {...rest} />
-    case "accordion":
+    }
+    case "accordion": {
       return <Accordion key={elementKey} {...component} {...rest} />
-    case "antiscambanner":
+    }
+    case "antiscambanner": {
       return (
         <AntiScamDisclaimerBanner key={elementKey} {...component} {...rest} />
       )
-    case "blockquote":
+    }
+    case "blockquote": {
       return <Blockquote key={elementKey} {...component} {...rest} />
-    case "button":
+    }
+    case "button": {
       return <Button key={elementKey} {...component} {...rest} />
-    case "callout":
+    }
+    case "callout": {
       return <Callout key={elementKey} {...component} {...rest} />
-    case "contentpic":
+    }
+    case "contentpic": {
       return <Contentpic key={elementKey} {...component} {...rest} />
-    case "formsg":
+    }
+    case "formsg": {
       return <FormSG key={elementKey} {...component} {...rest} />
-    case "hero":
+    }
+    case "hero": {
       return <Hero key={elementKey} {...component} {...rest} />
-    case "iframe":
+    }
+    case "iframe": {
       return <Iframe key={elementKey} {...component} {...rest} />
-    case "image":
+    }
+    case "image": {
       return <Image key={elementKey} {...component} {...rest} />
-    case "infobar":
+    }
+    case "infobar": {
       return <Infobar key={elementKey} {...component} {...rest} />
-    case "infocards":
+    }
+    case "infocards": {
       return <InfoCards key={elementKey} {...component} {...rest} />
-    case "infocols":
+    }
+    case "infocols": {
       return <InfoCols key={elementKey} {...component} {...rest} />
-    case "infopic":
+    }
+    case "infopic": {
       return <Infopic key={elementKey} {...component} {...rest} />
-    case "keystatistics":
+    }
+    case "keystatistics": {
       return <KeyStatistics key={elementKey} {...component} {...rest} />
-    case "map":
+    }
+    case "map": {
       return <Map key={elementKey} {...component} {...rest} />
-    case "childrenpages":
+    }
+    case "childrenpages": {
       return <ChildrenPages key={elementKey} {...component} {...rest} />
-    case "prose":
+    }
+    case "prose": {
       return (
         <Prose
           key={elementKey}
@@ -94,23 +112,32 @@ export const renderComponent = ({
           shouldStripContentHtmlTags
         />
       )
-    case "audio":
+    }
+    case "audio": {
       return <Audio key={elementKey} {...component} {...rest} />
-    case "video":
+    }
+    case "video": {
       return <Video key={elementKey} {...component} {...rest} />
-    case "dynamicdatabanner":
+    }
+    case "dynamicdatabanner": {
       return <DynamicDataBanner key={elementKey} {...component} {...rest} />
+    }
 
-    case "collectionblock":
+    case "collectionblock": {
       return <CollectionBlock key={elementKey} {...component} {...rest} />
-    case "imagegallery":
+    }
+    case "imagegallery": {
       return <ImageGallery key={elementKey} {...component} {...rest} />
-    case "contactinformation":
+    }
+    case "contactinformation": {
       return <ContactInformation key={elementKey} {...component} {...rest} />
-    case "dynamiccomponentlist":
+    }
+    case "dynamiccomponentlist": {
       return <DynamicComponentList key={elementKey} {...component} {...rest} />
-    default:
+    }
+    default: {
       const _: never = component
       return null
+    }
   }
 }

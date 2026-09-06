@@ -16,8 +16,8 @@ import { Checkbox, CheckboxGroup } from "../Checkbox"
 import { IconButton } from "../IconButton"
 
 const expandFilterButtonStyle = tv({
-  extend: focusRing,
   base: "prose-headline-base-semibold flex w-full flex-row items-center justify-between gap-4 text-left text-base-content",
+  extend: focusRing,
 })
 
 interface ExpandFilterButtonProps {
@@ -64,13 +64,6 @@ interface FilterDrawerProps extends FilterProps {
 }
 
 const transform = {
-  toCheckboxes: (appliedFilters: AppliedFilter[]) => {
-    const checkboxesById: Record<string, string[]> = {}
-    for (const { id, items } of appliedFilters) {
-      checkboxesById[id] = items.map(({ id: itemId }) => itemId)
-    }
-    return checkboxesById
-  },
   toAppliedFilters: (holdingFiltersById: Record<string, string[]>) => {
     const appliedFilters: AppliedFilter[] = []
 
@@ -84,6 +77,13 @@ const transform = {
     }
 
     return appliedFilters
+  },
+  toCheckboxes: (appliedFilters: AppliedFilter[]) => {
+    const checkboxesById: Record<string, string[]> = {}
+    for (const { id, items } of appliedFilters) {
+      checkboxesById[id] = items.map(({ id: itemId }) => itemId)
+    }
+    return checkboxesById
   },
 }
 
@@ -141,7 +141,7 @@ const FilterDrawerContent = ({
             <ExpandFilterButton
               label={label}
               isExpanded={showFilter[id] ?? false}
-              onPress={() => updateFilterToggle(id)}
+              onPress={() =>{  updateFilterToggle(id); }}
             />
 
             <div className={showFilter[id] ? "flex flex-col" : "hidden"}>
@@ -202,7 +202,7 @@ export const FilterDrawer = (props: FilterDrawerProps): React.ReactNode => {
             </h2>
             <IconButton
               icon={BiX}
-              onPress={() => onOpen(false)}
+              onPress={() =>{  onOpen(false); }}
               aria-label="Close filter menu"
             />
           </div>

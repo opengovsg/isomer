@@ -4,14 +4,14 @@ import type { MapProps } from "~/interfaces"
 import { Map } from "./Map"
 
 const meta: Meta<MapProps> = {
-  title: "Next/Components/Map",
-  component: Map,
   argTypes: {},
+  component: Map,
   parameters: {
     themes: {
       themeOverride: "Isomer Next",
     },
   },
+  title: "Next/Components/Map",
 }
 export default meta
 type Story = StoryObj<typeof Map>
@@ -31,17 +31,17 @@ export const GoogleMapsRegion: Story = {
 }
 
 export const OneMapLocation: Story = {
-  name: "OneMap location",
   args: {
     title: "Singapore region",
     url: "https://www.onemap.gov.sg/minimap/minimap.html?mapStyle=Default&zoomLevel=15&latLng=1.29793747849037,103.850182257356&ewt=JTNDcCUzRSUzQ3N0cm9uZyUzRU9wZW4lMjBHb3Zlcm5tZW50JTIwUHJvZHVjdHMlMjBvZmZpY2UlM0MlMkZzdHJvbmclM0UlM0MlMkZwJTNF&popupWidth=200&showPopup=true",
   },
+  name: "OneMap location",
 }
 
 export const OGPMaps: Story = {
-  name: "Maps.gov.sg",
   args: {
     title: "Public AED Locations",
     url: "https://maps.gov.sg/scdf-aed",
   },
+  name: "Maps.gov.sg",
 }

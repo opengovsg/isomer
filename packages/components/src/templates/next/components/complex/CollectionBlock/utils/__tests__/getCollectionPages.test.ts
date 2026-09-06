@@ -8,23 +8,23 @@ describe("getCollectionPages", () => {
   let site: IsomerSiteProps = {
     // IsomerGeneratedSiteProps
     siteMap: {
-      id: "root",
-      title: "Homepage",
-      permalink: "/",
-      layout: "homepage",
-      summary: "Homepage summary",
-      lastModified: "2021-01-01",
       children: [],
+      id: "root",
+      lastModified: "2021-01-01",
+      layout: "homepage",
+      permalink: "/",
+      summary: "Homepage summary",
+      title: "Homepage",
     },
     siteMapArray: [
       {
-        id: "root",
-        title: "Homepage",
-        permalink: "/",
-        layout: "homepage",
-        summary: "Homepage summary",
-        lastModified: "2021-01-01",
         children: [],
+        id: "root",
+        lastModified: "2021-01-01",
+        layout: "homepage",
+        permalink: "/",
+        summary: "Homepage summary",
+        title: "Homepage",
       },
     ],
     lastUpdated: "2021-01-01",
@@ -33,15 +33,15 @@ describe("getCollectionPages", () => {
     footerItems: {
       contactUsLink: "/contact-us",
       privacyStatementLink: "/privacy",
-      termsOfUseLink: "/terms",
       siteNavItems: [],
+      termsOfUseLink: "/terms",
     },
     // IsomerSiteConfigProps
     siteName: "Test Site",
     theme: "isomer-next",
     url: "https://www.isomer.gov.sg",
     logoUrl: "/images/logo.svg",
-    search: { type: "localSearch", searchUrl: "/search" },
+    search: { searchUrl: "/search", type: "localSearch" },
   }
   const collectionId = "111"
   const collectionPermalink = `/this-is-a-test-collection`
@@ -63,29 +63,29 @@ describe("getCollectionPages", () => {
     category?: string
     tagged?: string[]
   }): IsomerSitemap => ({
+    category,
+    date,
+    firstImage,
     id,
-    title: `${id} title`,
-    permalink,
-    summary: "Placeholder summary",
+    image,
     lastModified: date,
     layout: "article",
-    date,
-    category,
+    permalink,
+    summary: "Placeholder summary",
     tagged,
-    image,
-    firstImage,
+    title: `${id} title`,
   })
 
   it("should return an empty array when the collection exists but has no items", () => {
     // Arrange
     const collectionParent: IsomerSitemap = {
-      id: collectionId,
-      title: "Collection 1",
-      permalink: collectionPermalink,
-      layout: "collection",
-      summary: "Collection 1 summary",
-      lastModified: new Date("2021-01-01").toISOString(),
       children: [],
+      id: collectionId,
+      lastModified: new Date("2021-01-01").toISOString(),
+      layout: "collection",
+      permalink: collectionPermalink,
+      summary: "Collection 1 summary",
+      title: "Collection 1",
     }
     site = {
       ...site,
@@ -96,19 +96,13 @@ describe("getCollectionPages", () => {
     }
 
     // Act + Assert
-    const actual = getCollectionPages({ site, collectionParent })
+    const actual = getCollectionPages({ collectionParent, site })
     expect(actual).toStrictEqual([])
   })
 
   it("should return 3 items", () => {
     // Arrange
     const collectionParent: IsomerSitemap = {
-      id: collectionId,
-      title: "Collection 1",
-      permalink: collectionPermalink,
-      layout: "collection",
-      summary: "Collection 1 summary",
-      lastModified: new Date("2021-01-01").toISOString(),
       children: [
         createMockCollectionItem({
           id: `${collectionId}1`,
@@ -127,6 +121,12 @@ describe("getCollectionPages", () => {
           permalink: `${collectionPermalink}/4`,
         }),
       ],
+      id: collectionId,
+      lastModified: new Date("2021-01-01").toISOString(),
+      layout: "collection",
+      permalink: collectionPermalink,
+      summary: "Collection 1 summary",
+      title: "Collection 1",
     }
     site = {
       ...site,
@@ -137,7 +137,7 @@ describe("getCollectionPages", () => {
     }
 
     // Act
-    const result = getCollectionPages({ site, collectionParent })
+    const result = getCollectionPages({ collectionParent, site })
 
     // Assert
     expect(result).toHaveLength(3)
@@ -151,12 +151,6 @@ describe("getCollectionPages", () => {
   it("should use specific defaultSortBy/defaultSortDirection from collectionPagePageProps if present", () => {
     // Arrange
     const collectionParent: IsomerSitemap = {
-      id: collectionId,
-      title: "Collection 1",
-      permalink: collectionPermalink,
-      layout: "collection",
-      summary: "Collection 1 summary",
-      lastModified: new Date("2021-01-01").toISOString(),
       children: [
         createMockCollectionItem({
           id: `${collectionId}1`,
@@ -171,6 +165,12 @@ describe("getCollectionPages", () => {
         defaultSortBy: "title",
         defaultSortDirection: "desc",
       },
+      id: collectionId,
+      lastModified: new Date("2021-01-01").toISOString(),
+      layout: "collection",
+      permalink: collectionPermalink,
+      summary: "Collection 1 summary",
+      title: "Collection 1",
     }
     site = {
       ...site,
@@ -181,7 +181,7 @@ describe("getCollectionPages", () => {
     }
 
     // Act
-    const result = getCollectionPages({ site, collectionParent })
+    const result = getCollectionPages({ collectionParent, site })
 
     // Assert
     expect(result[0]?.itemTitle).toEqual(`${collectionId}2 title`)
@@ -191,13 +191,13 @@ describe("getCollectionPages", () => {
   describe("thumbnail resolution", () => {
     const itemWithImage = createMockCollectionItem({
       id: `${collectionId}1`,
+      image: { alt: "Item image", src: "/item-image.jpg" },
       permalink: `${collectionPermalink}/1`,
-      image: { src: "/item-image.jpg", alt: "Item image" },
     })
     const itemWithoutImageButWithFirstImage = createMockCollectionItem({
+      firstImage: { alt: "First image", src: "/first-image.jpg" },
       id: `${collectionId}2`,
       permalink: `${collectionPermalink}/2`,
-      firstImage: { src: "/first-image.jpg", alt: "First image" },
     })
     const itemWithNoImages = createMockCollectionItem({
       id: `${collectionId}3`,
@@ -217,25 +217,25 @@ describe("getCollectionPages", () => {
     it("should use the item's own image when present, regardless of showThumbnail setting", () => {
       // Arrange
       collectionParent = {
-        id: collectionId,
-        title: "Collection 1",
-        permalink: collectionPermalink,
-        layout: "collection",
-        summary: "summary",
-        lastModified: new Date("2021-01-01").toISOString(),
         children: [itemWithImage],
         collectionPagePageProps: {
           showThumbnail: { fallback: "first-image" },
         },
+        id: collectionId,
+        lastModified: new Date("2021-01-01").toISOString(),
+        layout: "collection",
+        permalink: collectionPermalink,
+        summary: "summary",
+        title: "Collection 1",
       }
 
       // Act
-      const result = getCollectionPages({ site: buildSite(), collectionParent })
+      const result = getCollectionPages({ collectionParent, site: buildSite() })
 
       // Assert
       expect(result[0]?.image).toEqual({
-        src: "/item-image.jpg",
         alt: "Item image",
+        src: "/item-image.jpg",
       })
       expect(result[0]?.isContainNeeded).toBeFalsy()
     })
@@ -243,25 +243,25 @@ describe("getCollectionPages", () => {
     it("should fall back to the site logo when showThumbnail is undefined on the referenced Collection", () => {
       // Arrange
       collectionParent = {
-        id: collectionId,
-        title: "Collection 1",
-        permalink: collectionPermalink,
-        layout: "collection",
-        summary: "summary",
-        lastModified: new Date("2021-01-01").toISOString(),
         children: [itemWithoutImageButWithFirstImage, itemWithNoImages],
+        id: collectionId,
+        lastModified: new Date("2021-01-01").toISOString(),
+        layout: "collection",
+        permalink: collectionPermalink,
+        summary: "summary",
+        title: "Collection 1",
       }
 
       // Act
-      const result = getCollectionPages({ site: buildSite(), collectionParent })
+      const result = getCollectionPages({ collectionParent, site: buildSite() })
 
       // Assert
       // Both items should resolve to the site logo since showThumbnail is undefined
       result.forEach((item) => {
         expect(item.image).toEqual({
-          src: site.logoUrl,
           alt: `${site.siteName} site logo`,
           isContainNeeded: true,
+          src: site.logoUrl,
         })
         expect(item.isContainNeeded).toBe(true)
       })
@@ -270,46 +270,46 @@ describe("getCollectionPages", () => {
     it("should fall back to the site logo when showThumbnail.fallback is 'logo'", () => {
       // Arrange
       collectionParent = {
-        id: collectionId,
-        title: "Collection 1",
-        permalink: collectionPermalink,
-        layout: "collection",
-        summary: "summary",
-        lastModified: new Date("2021-01-01").toISOString(),
         children: [itemWithoutImageButWithFirstImage],
         collectionPagePageProps: {
           showThumbnail: { fallback: "logo" },
         },
+        id: collectionId,
+        lastModified: new Date("2021-01-01").toISOString(),
+        layout: "collection",
+        permalink: collectionPermalink,
+        summary: "summary",
+        title: "Collection 1",
       }
 
       // Act
-      const result = getCollectionPages({ site: buildSite(), collectionParent })
+      const result = getCollectionPages({ collectionParent, site: buildSite() })
 
       // Assert
       expect(result[0]?.image).toEqual({
-        src: site.logoUrl,
         alt: `${site.siteName} site logo`,
         isContainNeeded: true,
+        src: site.logoUrl,
       })
     })
 
     it("should fall back to the first image on the page when showThumbnail.fallback is 'first-image'", () => {
       // Arrange
       collectionParent = {
-        id: collectionId,
-        title: "Collection 1",
-        permalink: collectionPermalink,
-        layout: "collection",
-        summary: "summary",
-        lastModified: new Date("2021-01-01").toISOString(),
         children: [itemWithoutImageButWithFirstImage, itemWithNoImages],
         collectionPagePageProps: {
           showThumbnail: { fallback: "first-image" },
         },
+        id: collectionId,
+        lastModified: new Date("2021-01-01").toISOString(),
+        layout: "collection",
+        permalink: collectionPermalink,
+        summary: "summary",
+        title: "Collection 1",
       }
 
       // Act
-      const result = getCollectionPages({ site: buildSite(), collectionParent })
+      const result = getCollectionPages({ collectionParent, site: buildSite() })
 
       // Assert
       const first = result.find(
@@ -317,15 +317,15 @@ describe("getCollectionPages", () => {
       )
       const second = result.find((r) => r.id === itemWithNoImages.permalink)
       expect(first?.image).toEqual({
-        src: "/first-image.jpg",
         alt: "First image",
+        src: "/first-image.jpg",
       })
       // When 'first-image' is set but no firstImage exists, should still
       // fall back to the site logo
       expect(second?.image).toEqual({
-        src: site.logoUrl,
         alt: `${site.siteName} site logo`,
         isContainNeeded: true,
+        src: site.logoUrl,
       })
     })
   })
@@ -333,24 +333,24 @@ describe("getCollectionPages", () => {
   it("should use default sort values (date desc) when collectionPagePageProps sort values are absent", () => {
     // Arrange
     const collectionParent: IsomerSitemap = {
-      id: collectionId,
-      title: "Collection 1",
-      permalink: collectionPermalink,
-      layout: "collection",
-      summary: "Collection 1 summary",
-      lastModified: new Date("2021-01-01").toISOString(),
       children: [
         createMockCollectionItem({
+          date: "2021-01-01",
           id: `${collectionId}1`,
           permalink: `${collectionPermalink}/1`,
-          date: "2021-01-01",
         }),
         createMockCollectionItem({
+          date: "2021-01-02",
           id: `${collectionId}2`,
           permalink: `${collectionPermalink}/2`,
-          date: "2021-01-02",
         }),
       ],
+      id: collectionId,
+      lastModified: new Date("2021-01-01").toISOString(),
+      layout: "collection",
+      permalink: collectionPermalink,
+      summary: "Collection 1 summary",
+      title: "Collection 1",
     }
     site = {
       ...site,
@@ -361,7 +361,7 @@ describe("getCollectionPages", () => {
     }
 
     // Act
-    const result = getCollectionPages({ site, collectionParent })
+    const result = getCollectionPages({ collectionParent, site })
 
     // Assert
     expect(result[0]?.itemTitle).toEqual(`${collectionId}2 title`)
@@ -372,12 +372,6 @@ describe("getCollectionPages", () => {
     it("threads the referenced Collection's tagCategories through to derive each card's plaintextTags from its tagged options", () => {
       // Arrange
       const collectionParent: IsomerSitemap = {
-        id: collectionId,
-        title: "Collection 1",
-        permalink: collectionPermalink,
-        layout: "collection",
-        summary: "Collection 1 summary",
-        lastModified: new Date("2021-01-01").toISOString(),
         children: [
           createMockCollectionItem({
             id: `${collectionId}1`,
@@ -388,13 +382,19 @@ describe("getCollectionPages", () => {
         collectionPagePageProps: {
           tagCategories: [
             {
-              label: "Category",
-              id: "cat-1",
               display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
-              options: [{ label: "Guides", id: "cat-opt-1" }],
+              id: "cat-1",
+              label: "Category",
+              options: [{ id: "cat-opt-1", label: "Guides" }],
             },
           ],
         },
+        id: collectionId,
+        lastModified: new Date("2021-01-01").toISOString(),
+        layout: "collection",
+        permalink: collectionPermalink,
+        summary: "Collection 1 summary",
+        title: "Collection 1",
       }
       site = {
         ...site,
@@ -405,23 +405,17 @@ describe("getCollectionPages", () => {
       }
 
       // Act
-      const result = getCollectionPages({ site, collectionParent })
+      const result = getCollectionPages({ collectionParent, site })
 
       // Assert
       expect(result[0]?.plaintextTags).toEqual([
-        { id: "cat-1", category: "Category", selected: ["Guides"] },
+        { category: "Category", id: "cat-1", selected: ["Guides"] },
       ])
     })
 
     it("resolves plaintextTags to undefined when the referenced Collection has no tagCategories", () => {
       // Arrange
       const collectionParent: IsomerSitemap = {
-        id: collectionId,
-        title: "Collection 1",
-        permalink: collectionPermalink,
-        layout: "collection",
-        summary: "Collection 1 summary",
-        lastModified: new Date("2021-01-01").toISOString(),
         children: [
           createMockCollectionItem({
             id: `${collectionId}1`,
@@ -429,6 +423,12 @@ describe("getCollectionPages", () => {
             tagged: ["cat-opt-1"],
           }),
         ],
+        id: collectionId,
+        lastModified: new Date("2021-01-01").toISOString(),
+        layout: "collection",
+        permalink: collectionPermalink,
+        summary: "Collection 1 summary",
+        title: "Collection 1",
       }
       site = {
         ...site,
@@ -439,7 +439,7 @@ describe("getCollectionPages", () => {
       }
 
       // Act
-      const result = getCollectionPages({ site, collectionParent })
+      const result = getCollectionPages({ collectionParent, site })
 
       // Assert
       expect(result[0]?.plaintextTags).toBeUndefined()

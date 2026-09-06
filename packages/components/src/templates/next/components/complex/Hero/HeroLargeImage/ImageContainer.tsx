@@ -26,10 +26,10 @@ export const ImageContainer = ({
 
   useEffect(() => {
     // to not render during static site generation on the server
-    if (globalThis.window == null) return
+    if (globalThis.window == null) {return}
 
     const handleScroll = () => {
-      if (!imageRef.current) return
+      if (!imageRef.current) {return}
 
       const imageRect = imageRef.current.getBoundingClientRect()
 

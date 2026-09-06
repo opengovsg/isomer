@@ -1,4 +1,4 @@
-import { type HomePageSchemaType } from "~/types"
+import type { HomePageSchemaType } from "~/types"
 
 import { renderPageContent } from "../../render/renderPageContent"
 import { Skeleton } from "../Skeleton"
@@ -8,8 +8,8 @@ export const HomepageLayout = ({
   page,
   layout,
   content,
-}: HomePageSchemaType) => {
-  return (
+}: HomePageSchemaType) => 
+  (
     <Skeleton site={site} page={page} layout={layout}>
       <div
         // ComponentContent = "component-content" (customCssClass.ts) is imported by all Homepage components,
@@ -30,4 +30,4 @@ export const HomepageLayout = ({
       </div>
     </Skeleton>
   )
-}
+

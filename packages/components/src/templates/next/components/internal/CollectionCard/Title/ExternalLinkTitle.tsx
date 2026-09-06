@@ -22,7 +22,7 @@ export const ExternalLinkTitle = ({
 
   useEffect(() => {
     const element = textRef.current
-    if (!element) return
+    if (!element) {return}
 
     const checkTruncation = () => {
       setIsTruncated(element.scrollHeight > element.clientHeight)
@@ -32,7 +32,7 @@ export const ExternalLinkTitle = ({
 
     const observer = new ResizeObserver(checkTruncation)
     observer.observe(element)
-    return () => observer.disconnect()
+    return () =>{  observer.disconnect(); }
   }, [])
 
   return createElement(

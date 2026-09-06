@@ -4,32 +4,32 @@ import type { VideoProps } from "~/interfaces"
 import { Video } from "./Video"
 
 const meta: Meta<VideoProps> = {
-  title: "Next/Components/Video",
-  component: Video,
   argTypes: {},
+  component: Video,
   parameters: {
     themes: {
       themeOverride: "Isomer Next",
     },
   },
+  title: "Next/Components/Video",
 }
 export default meta
 type Story = StoryObj<typeof Video>
 
 export const YouTube: Story = {
-  name: "YouTube",
   args: {
     title: "Rick Astley - Never Gonna Give You Up",
     url: "https://www.youtube.com/embed/dQw4w9WgXcQ?si=ggGGn4uvFWAIelWD",
   },
+  name: "YouTube",
 }
 
 export const YouTubeVideoSeries: Story = {
-  name: "YouTube video series (playlist)",
   args: {
     title: "YouTube playlist embed",
     url: "https://www.youtube.com/embed/videoseries?si=FyxmgTc4hGelVqNi&list=PLH2CR4s1lqyhblReuK5ULf6cB100TO-VU",
   },
+  name: "YouTube video series (playlist)",
 }
 
 // needed to test for presence of thumbnail urls and fallback to hqdefault.jpg

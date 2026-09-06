@@ -64,9 +64,9 @@ export const CheckboxGroup = (props: CheckboxGroupProps) => {
   } = useCheckboxGroup(groupProps, state)
 
   const contextValue = {
-    state,
     isDisabled: groupProps.isDisabled,
     isReadOnly: groupProps.isReadOnly,
+    state,
   }
 
   return (
@@ -114,19 +114,19 @@ const checkboxStyles = tv({
 })
 
 const boxStyles = tv({
-  extend: focusRing,
   base: "flex h-5 w-5 flex-shrink-0 items-center justify-center rounded border-2 transition",
+  extend: focusRing,
   variants: {
-    isSelected: {
-      false:
-        "border-[--color] bg-white [--color:theme(colors.base.divider.medium)] group-data-[pressed]:[--color:theme(colors.base.divider.strong)]",
-      true: "border-[--color] bg-[--color] [--color:theme(colors.brand.interaction.DEFAULT)] group-data-[pressed]:[--color:theme(colors.brand.interaction.pressed)] forced-colors:![--color:Highlight]",
+    isDisabled: {
+      true: "[--color:theme(colors.gray.200)] forced-colors:![--color:GrayText]",
     },
     isInvalid: {
       true: "[--color:theme(colors.red.700)] group-data-[pressed]:[--color:theme(colors.red.800)] forced-colors:![--color:Mark]",
     },
-    isDisabled: {
-      true: "[--color:theme(colors.gray.200)] forced-colors:![--color:GrayText]",
+    isSelected: {
+      false:
+        "border-[--color] bg-white [--color:theme(colors.base.divider.medium)] group-data-[pressed]:[--color:theme(colors.base.divider.strong)]",
+      true: "border-[--color] bg-[--color] [--color:theme(colors.brand.interaction.DEFAULT)] group-data-[pressed]:[--color:theme(colors.brand.interaction.pressed)] forced-colors:![--color:Highlight]",
     },
   },
 })
@@ -213,17 +213,17 @@ const CheckboxRenderer = ({
       >
         <div
           className={boxStyles({
-            isSelected: isSelected || isIndeterminate,
-            isInvalid,
             isDisabled: !!isDisabled,
             isFocusVisible,
+            isInvalid,
+            isSelected: isSelected || isIndeterminate,
           })}
         >
           {isIndeterminate ? (
             <BiMinus aria-hidden className={iconStyles} />
-          ) : isSelected ? (
+          ) : (isSelected ? (
             <BiCheck aria-hidden className={iconStyles} />
-          ) : null}
+          ) : null)}
         </div>
       </div>
       {children}
@@ -263,7 +263,7 @@ const GroupedCheckbox = (props: CheckboxProps) => {
   // groupContext is guaranteed to exist because this component is only rendered when isInGroup is true
   // oxlint-disable-next-line @typescript-eslint/no-non-null-assertion
   const context = groupContext!
-  const state = context.state
+  const {state} = context
 
   const isDisabled = checkboxProps.isDisabled ?? context.isDisabled ?? false
   const isReadOnly = checkboxProps.isReadOnly ?? context.isReadOnly ?? false
@@ -271,9 +271,9 @@ const GroupedCheckbox = (props: CheckboxProps) => {
   const { inputProps } = useCheckboxGroupItem(
     {
       ...checkboxProps,
-      value: checkboxProps.value ?? "",
       isDisabled,
       isReadOnly,
+      value: checkboxProps.value ?? "",
     },
     state,
     ref,

@@ -10,8 +10,8 @@ import { Masthead } from "../Masthead"
 import { Notification } from "../Notification"
 import { Navbar } from "./Navbar"
 
-const Renderer = (props: NavbarProps) => {
-  return (
+const Renderer = (props: NavbarProps) => 
+  (
     <div className="flex min-h-dvh flex-col">
       <header>
         <Masthead />
@@ -25,10 +25,10 @@ const Renderer = (props: NavbarProps) => {
       </div>
     </div>
   )
-}
 
-const RendererWithNotification = (props: NavbarProps) => {
-  return (
+
+const RendererWithNotification = (props: NavbarProps) => 
+  (
     <div className="flex min-h-dvh flex-col">
       <header>
         <Masthead />
@@ -46,114 +46,106 @@ const RendererWithNotification = (props: NavbarProps) => {
       </div>
     </div>
   )
-}
+
 
 const meta: Meta<NavbarProps> = {
-  title: "Next/Internal Components/Navbar",
   component: Renderer,
   parameters: {
+    chromatic: {
+      prefersReducedMotion: "reduce",
+    },
     layout: "fullscreen",
     themes: {
       themeOverride: "Isomer Next",
     },
-    chromatic: {
-      prefersReducedMotion: "reduce",
-    },
   },
+  title: "Next/Internal Components/Navbar",
 }
 export default meta
 type Story = StoryObj<typeof Navbar>
 
 const generateNavbarArgs = (
   overrides?: Partial<NavbarProps>,
-): Partial<NavbarProps> => {
-  return {
-    logoUrl: "/isomer-logo.svg",
-    logoAlt: "Isomer logo",
-    search: {
-      type: "localSearch",
-      searchUrl: "/search",
-    },
+): Partial<NavbarProps> => (
+  {
     items: [
       {
-        name: "Max 70 chars",
         description: "This is a description of the item.",
-        url: "",
         items: [
           {
-            name: "Join us",
-            url: "/item-one/pa-network-one",
             description:
               "Join us on our journey to improve community engagement in Singapore",
+            name: "Join us",
+            url: "/item-one/pa-network-one",
           },
           {
+            description: "OGP Website",
             name: "External Link",
             url: "https://open.gov.sg",
-            description: "OGP Website",
           },
           {
+            description: "This is our leadership and senior management team",
             name: "Our team",
             url: "/item-one/pa-network-two",
-            description: "This is our leadership and senior management team",
           },
           {
             name: "PA's network three",
             url: "/item-one/pa-network-three",
           },
           {
+            description:
+              "This one has a pretty long one. If the description gets very very long, it might be worth truncating the description at some point.",
             name: "PA's network four",
             url: "/item-one/pa-network-four",
-            description:
-              "This one has a pretty long one. If the description gets very very long, it might be worth truncating the description at some point.",
           },
           {
-            name: "PA's network five",
-            url: "/item-one/pa-network-five",
             description:
               "This one has a pretty long one. If the description gets very very long, it might be worth truncating the description at some point.",
+            name: "PA's network five",
+            url: "/item-one/pa-network-five",
           },
           {
             name: "PA's network six",
             url: "/item-one/pa-network-six",
           },
         ],
+        name: "Max 70 chars",
+        url: "",
       },
       {
-        name: "Longer item with 30 characters",
-        url: "/item-two",
         description: "This navbar item has a reference link",
         items: [
           {
-            name: "A sub item",
-            url: "/item-two/sub-item",
             description:
               "Click here and brace yourself for mild disappointment.",
+            name: "A sub item",
+            url: "/item-two/sub-item",
           },
           {
             name: "Another sub item",
             url: "/item-two/another-sub-item",
           },
         ],
+        name: "Longer item with 30 characters",
+        url: "/item-two",
       },
       {
-        name: "Please",
-        url: "/item-three",
         items: [
           {
             name: "A sub item",
             url: "/item-three/sub-item",
           },
           {
-            name: "Another sub item",
-            url: "/item-three/another-sub-item",
             description:
               "Click here and brace yourself for mild disappointment.",
+            name: "Another sub item",
+            url: "/item-three/another-sub-item",
           },
         ],
+        name: "Please",
+        url: "/item-three",
       },
       {
-        name: "Test item",
-        url: "/item-four",
         items: [
           {
             name: "A sub item",
@@ -164,16 +156,24 @@ const generateNavbarArgs = (
             url: "/item-four/another-sub-item",
           },
         ],
+        name: "Test item",
+        url: "/item-four",
       },
       {
         name: "eServices",
         url: "/single-item",
       },
     ],
+    logoAlt: "Isomer logo",
+    logoUrl: "/isomer-logo.svg",
+    search: {
+      searchUrl: "/search",
+      type: "localSearch",
+    },
     site: generateSiteConfig(),
     ...overrides,
   }
-}
+)
 
 // Default scenario
 export const Default: Story = {
@@ -304,11 +304,11 @@ export const MobileCallToAction: Story = {
 }
 
 export const ExpandMobileWithLinkOneWord: Story = {
-  name: "Expand Mobile With Link (one word)",
   args: generateNavbarArgs(),
   globals: {
     viewport: getViewportByMode("mobile"),
   },
+  name: "Expand Mobile With Link (one word)",
   parameters: {
     chromatic: withChromaticModes(["mobileSmall", "mobile"]),
   },
@@ -322,11 +322,11 @@ export const ExpandMobileWithLinkOneWord: Story = {
 }
 
 export const ExpandMobileWithLinkMultipleWords: Story = {
-  name: "Expand Mobile With Link (multiple words)",
   args: generateNavbarArgs(),
   globals: {
     viewport: getViewportByMode("mobile"),
   },
+  name: "Expand Mobile With Link (multiple words)",
   parameters: {
     chromatic: withChromaticModes(["mobileSmall", "mobile"]),
   },
@@ -344,13 +344,13 @@ export const ExpandMobileWithLinkMultipleWords: Story = {
 export const UtilityLinksDesktop: Story = {
   args: generateNavbarArgs({
     utility: {
-      label: "Custom label",
       items: [
         { name: "First link", url: "/link-1" },
         { name: "Linkedua", url: "/link-2" },
         { name: "Link 3", url: "/link-3" },
         { name: "Quad link", url: "/link-4" },
       ],
+      label: "Custom label",
     },
   }),
   parameters: {
@@ -361,12 +361,12 @@ export const UtilityLinksDesktop: Story = {
 export const UtilityLinksMobile: Story = {
   args: generateNavbarArgs({
     utility: {
-      label: "Quick links",
       items: [
         { name: "Link 1", url: "/link-1" },
         { name: "Link 2", url: "/link-2" },
         { name: "Link 3", url: "/link-3" },
       ],
+      label: "Quick links",
     },
   }),
   globals: {
@@ -430,13 +430,13 @@ export const CTAAndUtilityLinksDesktop: Story = {
       url: "/call-to-action",
     },
     utility: {
-      label: "Custom label",
       items: [
         { name: "First link", url: "/link-1" },
         { name: "Linkedua", url: "/link-2" },
         { name: "Link 3", url: "/link-3" },
         { name: "Quad link", url: "/link-4" },
       ],
+      label: "Custom label",
     },
   }),
   parameters: {
@@ -451,12 +451,12 @@ export const CTAAndUtilityLinksMobile: Story = {
       url: "/call-to-action",
     },
     utility: {
-      label: "Quick links",
       items: [
         { name: "Link 1", url: "/link-1" },
         { name: "Link 2", url: "/link-2" },
         { name: "Link 3", url: "/link-3" },
       ],
+      label: "Quick links",
     },
   }),
   globals: {
@@ -478,9 +478,9 @@ export const CTAAndUtilityLinksMobile: Story = {
 export const PinnedCTA: Story = {
   args: generateNavbarArgs({
     callToAction: {
+      isPinnedOnMobile: true,
       label: "Report Now",
       url: "/report",
-      isPinnedOnMobile: true,
     },
   }),
   globals: {
@@ -494,17 +494,17 @@ export const PinnedCTA: Story = {
 export const PinnedCTAMobileExpanded: Story = {
   args: generateNavbarArgs({
     callToAction: {
+      isPinnedOnMobile: true,
       label: "Report Now",
       url: "/report",
-      isPinnedOnMobile: true,
     },
     utility: {
-      label: "Quick links",
       items: [
         { name: "Link 1", url: "/link-1" },
         { name: "Link 2", url: "/link-2" },
         { name: "Link 3", url: "/link-3" },
       ],
+      label: "Quick links",
     },
   }),
   globals: {
@@ -522,17 +522,17 @@ export const PinnedCTAMobileExpanded: Story = {
 }
 
 export const PinnedCTATruncatedLabel: Story = {
-  name: "Pinned CTA — 25-char label (truncation)",
   args: generateNavbarArgs({
     callToAction: {
+      isPinnedOnMobile: true,
       label: "Report a Safety Incident",
       url: "/report",
-      isPinnedOnMobile: true,
     },
   }),
   globals: {
     viewport: getViewportByMode("mobile"),
   },
+  name: "Pinned CTA — 25-char label (truncation)",
   parameters: {
     chromatic: withChromaticModes(["mobileSmall", "mobile"]),
   },
@@ -554,10 +554,10 @@ const mobileRegressionBase: Story = {
 
 const mobileRegressionWithNotificationBase: Story = {
   ...mobileRegressionBase,
-  render: (args) => <RendererWithNotification {...args} />,
   beforeEach: () => {
     sessionStorage.removeItem("notification-dismissed")
   },
+  render: (args) => <RendererWithNotification {...args} />,
 }
 
 export const MobileNavbarAfterMastheadCollapsed: Story = {

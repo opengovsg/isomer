@@ -3,8 +3,26 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 import { DownloadButton } from "./DownloadButton"
 
 const meta: Meta<typeof DownloadButton> = {
-  title: "Next/Internal Components/DownloadButton",
+  argTypes: {
+    colorScheme: {
+      control: {
+        type: "select",
+      },
+      options: ["default", "inverse"],
+    },
+    variant: {
+      control: {
+        type: "select",
+      },
+      options: ["solid", "outline"],
+    },
+  },
   component: DownloadButton,
+  parameters: {
+    themes: {
+      themeOverride: "Isomer Next",
+    },
+  },
   render: (args) => {
     // Define matrices for link types and sizes
     const links = ["/sample-file.pdf"] as const
@@ -12,7 +30,7 @@ const meta: Meta<typeof DownloadButton> = {
 
     // Generate all combinations
     const combinations = sizes.flatMap((size) =>
-      links.map((link) => ({ size, link })),
+      links.map((link) => ({ link, size })),
     )
 
     return (
@@ -29,25 +47,7 @@ const meta: Meta<typeof DownloadButton> = {
       </div>
     )
   },
-  argTypes: {
-    colorScheme: {
-      options: ["default", "inverse"],
-      control: {
-        type: "select",
-      },
-    },
-    variant: {
-      options: ["solid", "outline"],
-      control: {
-        type: "select",
-      },
-    },
-  },
-  parameters: {
-    themes: {
-      themeOverride: "Isomer Next",
-    },
-  },
+  title: "Next/Internal Components/DownloadButton",
 }
 export default meta
 type Story = StoryObj<typeof DownloadButton>
@@ -73,27 +73,27 @@ export const OutlineVariant: Story = {
 }
 
 export const InverseDefaultVariant: Story = {
-  decorators: [
-    (storyFn) => <div className="bg-base-canvas-inverse p-6">{storyFn()}</div>,
-  ],
   args: {
     ...Default.args,
     colorScheme: "inverse",
   },
+  decorators: [
+    (storyFn) => <div className="bg-base-canvas-inverse p-6">{storyFn()}</div>,
+  ],
 }
 
 export const InverseOutlineVariant: Story = {
-  decorators: InverseDefaultVariant.decorators,
   args: {
     ...OutlineVariant.args,
     colorScheme: "inverse",
   },
+  decorators: InverseDefaultVariant.decorators,
 }
 
 export const DgsLink: Story = {
-  name: "Download DGS Button",
   args: {
     ...Default.args,
     url: "[dgs:d_688b934f82c1059ed0a6993d2a829089]",
   },
+  name: "Download DGS Button",
 }

@@ -9,8 +9,8 @@ interface FilterContactMethodsProps {
 type ExternalContactValue = string | number | boolean | null | undefined
 
 const isNonEmptyContactValue = (value: ExternalContactValue): boolean => {
-  if (value === null || value === undefined) return false
-  if (String(value) !== value) return false
+  if (value === null || value === undefined) {return false}
+  if (String(value) !== value) {return false}
   return value.trim() !== ""
 }
 

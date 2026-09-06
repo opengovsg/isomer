@@ -4,8 +4,8 @@ import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { LinkButton } from "../../internal/LinkButton"
 
 const ALIGNMENT_STYLES = {
-  left: "justify-start",
   center: "justify-center",
+  left: "justify-start",
 } as const
 
 export const Button = ({

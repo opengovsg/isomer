@@ -7,10 +7,10 @@ import { ImageClient } from "../../internal/ImageClient"
 const createLogoCloudStyles = tv({
   slots: {
     container: `${ComponentContent} flex flex-col gap-9 py-16`,
+    logo: "inset-0 max-h-20 object-contain md:max-h-24",
+    logoContainer: "flex flex-wrap justify-center gap-x-6 gap-y-4",
     title:
       "prose-headline-lg-medium self-center text-center text-base-content-subtle",
-    logoContainer: "flex flex-wrap justify-center gap-x-6 gap-y-4",
-    logo: "inset-0 max-h-20 object-contain md:max-h-24",
   },
 })
 const compoundStyles = createLogoCloudStyles()
@@ -20,8 +20,8 @@ export const LogoCloud = ({
   title,
   site: { assetsBaseUrl },
   shouldLazyLoad = true,
-}: LogoCloudProps) => {
-  return (
+}: LogoCloudProps) => 
+  (
     <div className={compoundStyles.container()}>
       {title && <p className={compoundStyles.title()}>{title}</p>}
       <div className={compoundStyles.logoContainer()}>
@@ -41,4 +41,4 @@ export const LogoCloud = ({
       </div>
     </div>
   )
-}
+

@@ -5,8 +5,8 @@ import { z } from "zod"
 // NOTE: This is a temporary construct and the long term fix should be
 // to migrate IsomerSchema to use `Type.Intersect` rather than `Type.Composite`
 const imageSchema = z.object({
-  src: z.string(),
   alt: z.string(),
+  src: z.string(),
 })
 
 const articlePageHeaderSchema = z.object({
@@ -87,7 +87,8 @@ export const renderPrefillText = (content: IsomerSchema): PrefillContent => {
     }
     case "homepage":
     case "search":
-    default:
+    default: {
       return {}
+    }
   }
 }

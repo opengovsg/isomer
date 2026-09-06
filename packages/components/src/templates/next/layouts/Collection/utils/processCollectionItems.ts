@@ -8,8 +8,8 @@ import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
 export const processCollectionItems = (
   items: AllCardProps[],
-): ProcessedCollectionCardProps[] => {
-  return items.map((item) => {
+): ProcessedCollectionCardProps[] => 
+  items.map((item) => {
     const {
       id,
       site,
@@ -26,23 +26,23 @@ export const processCollectionItems = (
     } = item
     const file = variant === "file" ? item.fileDetails : null
     const processedItem = {
-      id,
       date,
-      plaintextTags,
-      title,
       description,
+      formattedDate: date ? getFormattedDate(date.toISOString()) : undefined,
+      id,
       image,
+      imageSrc: item.image?.src,
       isContainNeeded,
-      tags,
+      itemTitle: `${item.title}${file ? ` [${file.type.toUpperCase()}, ${file.size.toUpperCase()}]` : ""}`,
       pillTags,
+      plaintextTags,
       referenceLinkHref: getReferenceLinkHref(
         url,
         site.siteMapArray,
         site.assetsBaseUrl,
       ),
-      imageSrc: item.image?.src,
-      itemTitle: `${item.title}${file ? ` [${file.type.toUpperCase()}, ${file.size.toUpperCase()}]` : ""}`,
-      formattedDate: date ? getFormattedDate(date.toISOString()) : undefined,
+      tags,
+      title,
     }
     // SAFETY: Exact<> enforces no extra props; cast is required for Record<string, never> intersection
     return processedItem as Exact<
@@ -50,4 +50,4 @@ export const processCollectionItems = (
       ProcessedCollectionCardProps
     >
   })
-}
+

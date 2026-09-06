@@ -6,22 +6,19 @@ import { withChromaticModes } from "@isomer/storybook-config"
 import { Breadcrumb } from "./Breadcrumb"
 
 const meta: Meta<BreadcrumbProps> = {
-  title: "Next/Internal Components/Breadcrumb",
-  component: Breadcrumb,
   argTypes: {},
+  component: Breadcrumb,
   parameters: {
     themes: {
       themeOverride: "Isomer Next",
     },
   },
+  title: "Next/Internal Components/Breadcrumb",
 }
 export default meta
 type Story = StoryObj<typeof Breadcrumb>
 
 export const Grandchild: Story = {
-  parameters: {
-    chromatic: withChromaticModes(["desktop", "mobile"]),
-  },
   args: {
     links: [
       {
@@ -38,6 +35,9 @@ export const Grandchild: Story = {
         url: "/irrationality/individuals/pinker-rationality",
       },
     ],
+  },
+  parameters: {
+    chromatic: withChromaticModes(["desktop", "mobile"]),
   },
 }
 

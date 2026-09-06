@@ -29,8 +29,8 @@ export const Contentpic = ({
   site,
   shouldLazyLoad = true,
   headingLevel,
-}: ContentpicProps): React.ReactNode => {
-  return (
+}: ContentpicProps): React.ReactNode => 
+  (
     <div className={compoundStyles.container()}>
       <ImageClient
         src={imageSrc}
@@ -46,4 +46,4 @@ export const Contentpic = ({
       </div>
     </div>
   )
-}
+

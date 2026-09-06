@@ -10,11 +10,11 @@ describe("getTagsFromTagged", () => {
     const tagCategories: NonNullable<CollectionPagePageProps["tagCategories"]> =
       [
         {
-          label: "Topic",
           id: "topic-1",
+          label: "Topic",
           options: [
-            { label: "Health", id: "topic-opt-1" },
-            { label: "Education", id: "topic-opt-2" },
+            { id: "topic-opt-1", label: "Health" },
+            { id: "topic-opt-2", label: "Education" },
           ],
         },
       ]
@@ -24,7 +24,7 @@ describe("getTagsFromTagged", () => {
 
     // Assert
     expect(result).toEqual([
-      { id: "topic-1", category: "Topic", selected: ["Health"] },
+      { category: "Topic", id: "topic-1", selected: ["Health"] },
     ])
   })
 
@@ -34,14 +34,14 @@ describe("getTagsFromTagged", () => {
     const tagCategories: NonNullable<CollectionPagePageProps["tagCategories"]> =
       [
         {
-          label: "Topic",
           id: "topic-1",
-          options: [{ label: "Health", id: "topic-opt-1" }],
+          label: "Topic",
+          options: [{ id: "topic-opt-1", label: "Health" }],
         },
         {
-          label: "Category",
           id: "cat-1",
-          options: [{ label: "Guides", id: "cat-opt-1" }],
+          label: "Category",
+          options: [{ id: "cat-opt-1", label: "Guides" }],
         },
       ]
 
@@ -50,7 +50,7 @@ describe("getTagsFromTagged", () => {
 
     // Assert
     expect(result).toEqual([
-      { id: "topic-1", category: "Topic", selected: ["Health"] },
+      { category: "Topic", id: "topic-1", selected: ["Health"] },
     ])
   })
 
@@ -60,9 +60,9 @@ describe("getTagsFromTagged", () => {
     const tagCategories: NonNullable<CollectionPagePageProps["tagCategories"]> =
       [
         {
-          label: "Topic",
           id: "topic-1",
-          options: [{ label: "Health", id: "topic-opt-1" }],
+          label: "Topic",
+          options: [{ id: "topic-opt-1", label: "Health" }],
         },
       ]
 
@@ -95,11 +95,11 @@ describe("getTagsFromTagged", () => {
     const tagCategories: NonNullable<CollectionPagePageProps["tagCategories"]> =
       [
         {
-          label: "Category",
           id: "cat-1",
+          label: "Category",
           options: [
-            { label: "Guides", id: "cat-opt-1" },
-            { label: "Articles", id: "cat-opt-2" },
+            { id: "cat-opt-1", label: "Guides" },
+            { id: "cat-opt-2", label: "Articles" },
           ],
         },
       ]
@@ -109,7 +109,7 @@ describe("getTagsFromTagged", () => {
 
     // Assert
     expect(result).toEqual([
-      { id: "cat-1", category: "Category", selected: ["Guides", "Articles"] },
+      { category: "Category", id: "cat-1", selected: ["Guides", "Articles"] },
     ])
   })
 })

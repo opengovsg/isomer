@@ -5,8 +5,8 @@ import { twMerge } from "~/lib/twMerge"
 export const LocalSearchInputBox = ({
   searchUrl,
   className,
-}: Omit<LocalSearchProps, "type">) => {
-  return (
+}: Omit<LocalSearchProps, "type">) => 
+  (
     <form
       action={searchUrl}
       method="get"
@@ -24,4 +24,4 @@ export const LocalSearchInputBox = ({
       </button>
     </form>
   )
-}
+

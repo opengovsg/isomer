@@ -1,5 +1,4 @@
-import type { ImageProps } from "~/interfaces"
-import type { ProcessedCollectionCardProps } from "~/interfaces"
+import type { ImageProps,ProcessedCollectionCardProps } from "~/interfaces"
 import type { FormattedDate, TagGroup } from "~/types"
 
 interface TestCollectionItemInput {
@@ -24,12 +23,12 @@ export const testCollectionItem = (
   const { title = "Test Title", description = "", ...rest } = overrides
 
   const item = {
+    description,
     id: "test-id",
+    imageSrc: undefined,
     itemTitle: title,
     referenceLinkHref: undefined,
-    imageSrc: undefined,
     title,
-    description,
     ...rest,
   }
   // SAFETY: test fixture only supplies known ProcessedCollectionCardProps fields

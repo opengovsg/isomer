@@ -14,8 +14,8 @@ export const InfoCardContainer = ({
   variant = INFOCARD_VARIANT.default,
 }: PropsWithChildren<
   Pick<SingleCardWithImageProps, "variant" | "url" | "site" | "isExternalLink">
->): React.ReactNode => {
-  return url ? (
+>): React.ReactNode => 
+  url ? (
     <Link
       href={getReferenceLinkHref(url, site.siteMapArray, site.assetsBaseUrl)}
       className={compoundStyles.cardContainer({ variant })}
@@ -26,4 +26,4 @@ export const InfoCardContainer = ({
   ) : (
     <div className={compoundStyles.cardContainer({ variant })}>{children}</div>
   )
-}
+

@@ -6,12 +6,12 @@ import { focusVisibleHighlight } from "~/utils/tailwind"
 import { Link } from "../Link"
 
 const linkStyle = tv({
-  extend: focusVisibleHighlight,
   base: "w-fit text-link underline-offset-4 visited:text-link-visited hover:text-link-hover hover:underline",
+  extend: focusVisibleHighlight,
 })
 
-export const TableOfContents = ({ items }: TableOfContentsProps) => {
-  return (
+export const TableOfContents = ({ items }: TableOfContentsProps) => 
+  (
     <nav
       aria-label="Table of Contents"
       className="flex flex-col gap-3 rounded-lg bg-base-canvas-alt p-6"
@@ -31,4 +31,4 @@ export const TableOfContents = ({ items }: TableOfContentsProps) => {
       </ul>
     </nav>
   )
-}
+

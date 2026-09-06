@@ -20,7 +20,7 @@ const toArray = (value: string | string[] | undefined) =>
   value === undefined || Array.isArray(value) ? value : [value]
 
 const splitRange = (range: string | undefined) => {
-  if (!range) return [undefined, undefined] as const
+  if (!range) {return [undefined, undefined] as const}
   const [min, max] = range.split(":")
   return [min || undefined, max || undefined] as const
 }
@@ -33,41 +33,41 @@ const joinRange = (min: string | undefined, max: string | undefined) =>
 // used by the legacy Jekyll template.
 export const createEgazetteRouting = (indexName: string) => ({
   stateMapping: {
+    routeToState(routeState: EgazetteRouteState) {
+      const refinementList: Record<string, string[]> = {}
+      const category = toArray(routeState.category)
+      if (category) {refinementList.category = category}
+      const subCategory = toArray(routeState.subCategory)
+      if (subCategory) {refinementList.subCategory = subCategory}
+
+      const range: Record<string, string> = {}
+      const yearRange = joinRange(routeState.minYear, routeState.maxYear)
+      if (yearRange) {range.publishYear = yearRange}
+      const monthRange = joinRange(routeState.minMonth, routeState.maxMonth)
+      if (monthRange) {range.publishMonth = monthRange}
+
+      const indexUiState: IndexUiState = {
+        query: routeState.q,
+        range,
+        refinementList,
+      }
+
+      return {
+        [indexName]: indexUiState,
+      }
+    },
     stateToRoute(uiState: Record<string, IndexUiState>): EgazetteRouteState {
       const indexUiState = uiState[indexName] ?? {}
       const [minYear, maxYear] = splitRange(indexUiState.range?.publishYear)
       const [minMonth, maxMonth] = splitRange(indexUiState.range?.publishMonth)
       return {
-        q: indexUiState.query,
         category: indexUiState.refinementList?.category,
-        subCategory: indexUiState.refinementList?.subCategory,
-        minYear,
+        maxMonth,
         maxYear,
         minMonth,
-        maxMonth,
-      }
-    },
-    routeToState(routeState: EgazetteRouteState) {
-      const refinementList: Record<string, string[]> = {}
-      const category = toArray(routeState.category)
-      if (category) refinementList.category = category
-      const subCategory = toArray(routeState.subCategory)
-      if (subCategory) refinementList.subCategory = subCategory
-
-      const range: Record<string, string> = {}
-      const yearRange = joinRange(routeState.minYear, routeState.maxYear)
-      if (yearRange) range.publishYear = yearRange
-      const monthRange = joinRange(routeState.minMonth, routeState.maxMonth)
-      if (monthRange) range.publishMonth = monthRange
-
-      const indexUiState: IndexUiState = {
-        query: routeState.q,
-        refinementList,
-        range,
-      }
-
-      return {
-        [indexName]: indexUiState,
+        minYear,
+        q: indexUiState.query,
+        subCategory: indexUiState.refinementList?.subCategory,
       }
     },
   },

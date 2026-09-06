@@ -18,12 +18,15 @@ export const Infopic = ({
       : `${site.assetsBaseUrl}${imageSrc}`
 
   switch (variant) {
-    case InfopicVariants.Block.value:
+    case InfopicVariants.Block.value: {
       return <BlockInfopic {...rest} site={site} imageSrc={imgSrc} />
-    case InfopicVariants.Full.value:
+    }
+    case InfopicVariants.Full.value: {
       return <FullInfopic {...rest} site={site} imageSrc={imgSrc} />
-    default:
+    }
+    default: {
       const missingVariant: never = variant
       return missingVariant
+    }
   }
 }

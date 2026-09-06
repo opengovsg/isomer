@@ -9,9 +9,9 @@ const getOrderedListType = (level?: number) => {
     return "list-decimal"
   } else if (level % 3 === 1) {
     return "list-[lower-alpha]"
-  } else {
-    return "list-[lower-roman]"
   }
+    return "list-[lower-roman]"
+  
 }
 
 export const OrderedList = ({
@@ -19,8 +19,8 @@ export const OrderedList = ({
   content,
   level,
   site,
-}: OrderedListProps) => {
-  return (
+}: OrderedListProps) => 
+  (
     // Nested sublists (level set) use `mt-3` to match the item rhythm (`my-3`
     // on ListItem). Top-level lists keep `mt-6` because preceding blocks like
     // Table or Callout have no bottom margin to collapse over a smaller value.
@@ -38,4 +38,4 @@ export const OrderedList = ({
       ))}
     </ol>
   )
-}
+

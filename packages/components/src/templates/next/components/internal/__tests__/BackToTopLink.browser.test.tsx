@@ -5,7 +5,7 @@ import { BackToTopLink } from "../BackToTopLink"
 
 describe("BackToTopLink", () => {
   beforeEach(() => {
-    vi.spyOn(window, "scrollTo").mockImplementation(() => undefined)
+    vi.spyOn(window, "scrollTo").mockImplementation(() => {})
   })
 
   afterEach(() => {

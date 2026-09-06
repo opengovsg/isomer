@@ -74,10 +74,10 @@ export const isAppliedFilterUrlJson = (
 const isAppliedFiltersArray = (value: AppliedFilterUrlJson): boolean =>
   Array.isArray(value) &&
   value.every((filter) => {
-    if (!isPlainObject(filter)) return false
+    if (!isPlainObject(filter)) {return false}
 
-    const filterId = filter["id"]
-    const filterItems = filter["items"]
+    const filterId = filter.id
+    const filterItems = filter.items
     if (filterId === undefined || !isNonEmptyString(filterId)) {
       return false
     }
@@ -86,8 +86,8 @@ const isAppliedFiltersArray = (value: AppliedFilterUrlJson): boolean =>
     }
 
     return filterItems.every((item) => {
-      if (!isPlainObject(item)) return false
-      const itemId = item["id"]
+      if (!isPlainObject(item)) {return false}
+      const itemId = item.id
       return itemId !== undefined && isNonEmptyString(itemId)
     })
   })

@@ -10,15 +10,15 @@ import { withChromaticModes } from "@isomer/storybook-config"
 import { Hero } from "./Hero"
 
 const meta: Meta<typeof Hero> = {
-  title: "Next/Components/Hero",
-  component: Hero,
   argTypes: {},
+  component: Hero,
   parameters: {
     chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
     themes: {
       themeOverride: "Isomer Next",
     },
   },
+  title: "Next/Components/Hero",
 }
 
 export default meta
@@ -26,175 +26,174 @@ type Story = StoryObj<typeof Hero>
 
 export const Gradient: Story = {
   args: {
-    headingLevel: 1,
-    site: generateSiteConfig(),
     backgroundUrl: "/hero-banner.png",
-    title: "Ministry of Trade and Industry",
-    subtitle:
-      "A leading global city of enterprise and talent, a vibrant nation of innovation and opportunity",
     buttonLabel: "Main CTA",
     buttonUrl: "/",
+    headingLevel: 1,
     secondaryButtonLabel: "Sub CTA",
     secondaryButtonUrl: "/",
+    site: generateSiteConfig(),
+    subtitle:
+      "A leading global city of enterprise and talent, a vibrant nation of innovation and opportunity",
+    title: "Ministry of Trade and Industry",
     variant: "gradient",
   },
 }
 
 export const ColourBlock: Story = {
   args: {
-    headingLevel: 1,
-    site: generateSiteConfig(),
     backgroundUrl:
       "https://images.unsplash.com/photo-1725652264563-9f8eea4e2995?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    title: "Your hero title goes here, please keep it short and sweet",
-    subtitle:
-      "A test for a long subtitle that will expand the hero banner. What will happen if the text is very very very long?",
     buttonLabel: "Main CTA",
     buttonUrl: "/",
+    headingLevel: 1,
     secondaryButtonLabel: "Sub CTA",
     secondaryButtonUrl: "/",
-    variant: "block",
+    site: generateSiteConfig(),
+    subtitle:
+      "A test for a long subtitle that will expand the hero banner. What will happen if the text is very very very long?",
     theme: "default",
+    title: "Your hero title goes here, please keep it short and sweet",
+    variant: "block",
   },
 }
 
 export const ColourBlockInverse: Story = {
   args: {
-    headingLevel: 1,
-    site: generateSiteConfig(),
     backgroundUrl:
       "https://images.unsplash.com/photo-1725652264563-9f8eea4e2995?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    title: "Your hero title goes here, please keep it short and sweet",
-    subtitle:
-      "A test for a long subtitle that will expand the hero banner. What will happen if the text is very very very long?",
     buttonLabel: "Main CTA",
     buttonUrl: "/",
+    headingLevel: 1,
     secondaryButtonLabel: "Sub CTA",
     secondaryButtonUrl: "/",
-    variant: "block",
+    site: generateSiteConfig(),
+    subtitle:
+      "A test for a long subtitle that will expand the hero banner. What will happen if the text is very very very long?",
     theme: "inverse",
+    title: "Your hero title goes here, please keep it short and sweet",
+    variant: "block",
   },
 }
 
 export const ColourBlockLongWord: Story = {
   args: {
-    headingLevel: 1,
-    site: generateSiteConfig(),
     backgroundUrl:
       "https://images.unsplash.com/photo-1725652264563-9f8eea4e2995?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    title: "International Accreditation Pronouncements",
-    subtitle:
-      "A test for a long subtitle that will expand the hero banner. What will happen if the text is very very very long?",
     buttonLabel: "Main CTA",
     buttonUrl: "/",
+    headingLevel: 1,
     secondaryButtonLabel: "Sub CTA",
     secondaryButtonUrl: "/",
-    variant: "block",
+    site: generateSiteConfig(),
+    subtitle:
+      "A test for a long subtitle that will expand the hero banner. What will happen if the text is very very very long?",
     theme: "default",
+    title: "International Accreditation Pronouncements",
+    variant: "block",
   },
 }
 
 export const LargeImage: Story = {
   args: {
-    headingLevel: 1,
-    site: generateSiteConfig(),
     backgroundUrl:
       "https://images.unsplash.com/photo-1560114928-40f1f1eb26a0?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    title: "Your hero title goes here, please keep it short and sweet",
-    subtitle:
-      "A test for a long subtitle that will expand the hero banner. What will happen if the text is very very very long?",
     buttonLabel: "Main CTA",
     buttonUrl: "/",
+    headingLevel: 1,
     secondaryButtonLabel: "Sub CTA",
     secondaryButtonUrl: "/",
+    site: generateSiteConfig(),
+    subtitle:
+      "A test for a long subtitle that will expand the hero banner. What will happen if the text is very very very long?",
+    title: "Your hero title goes here, please keep it short and sweet",
     variant: "largeImage",
   },
 }
 
 export const Floating: Story = {
   args: {
-    headingLevel: 1,
-    site: generateSiteConfig(),
     backgroundUrl:
       "https://images.unsplash.com/photo-1560114928-40f1f1eb26a0?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    title: "Youths, the future of our nation",
-    subtitle:
-      "Empowering the next generation to lead with courage, creativity, and community spirit. Today's youth are shaping tomorrow’s world — and the future looks bright.",
     buttonLabel: "Explore now",
     buttonUrl: "/",
+    headingLevel: 1,
     secondaryButtonLabel: "Explore now",
     secondaryButtonUrl: "/",
+    site: generateSiteConfig(),
+    subtitle:
+      "Empowering the next generation to lead with courage, creativity, and community spirit. Today's youth are shaping tomorrow’s world — and the future looks bright.",
+    title: "Youths, the future of our nation",
     variant: "floating",
   },
 }
 
 export const FloatingInverse: Story = {
   args: {
-    headingLevel: 1,
-    site: generateSiteConfig(),
     backgroundUrl:
       "https://images.unsplash.com/photo-1560114928-40f1f1eb26a0?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    title: "Youths, the future of our nation",
-    subtitle:
-      "Empowering the next generation to lead with courage, creativity, and community spirit. Today's youth are shaping tomorrow’s world — and the future looks bright.",
     buttonLabel: "Explore now",
     buttonUrl: "/",
+    headingLevel: 1,
     secondaryButtonLabel: "Explore now",
     secondaryButtonUrl: "/",
-    variant: "floating",
+    site: generateSiteConfig(),
+    subtitle:
+      "Empowering the next generation to lead with courage, creativity, and community spirit. Today's youth are shaping tomorrow’s world — and the future looks bright.",
     theme: "inverse",
+    title: "Youths, the future of our nation",
+    variant: "floating",
   },
 }
 
 export const FloatingShortText: Story = {
   args: {
-    headingLevel: 1,
-    site: generateSiteConfig(),
     backgroundUrl:
       "https://images.unsplash.com/photo-1560114928-40f1f1eb26a0?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    title: "Short",
-    subtitle: "Is Still Full Width",
     buttonLabel: "Explore now",
     buttonUrl: "/",
+    headingLevel: 1,
     secondaryButtonLabel: "Explore now",
     secondaryButtonUrl: "/",
+    site: generateSiteConfig(),
+    subtitle: "Is Still Full Width",
+    title: "Short",
     variant: "floating",
   },
 }
 
 export const Searchbar: Story = {
-  decorators: [withSearchSgSetup()],
   args: {
     headingLevel: 1,
     site: generateSiteConfig({
       search: {
-        type: "searchSG",
         clientId: SEARCHSG_TEST_CLIENT_ID,
+        type: "searchSG",
       },
     }),
-    title: "Temasek Polytechnic",
     subtitle:
       "APEX connects agencies and the public through a single, secure hub for Singapore’s government APIs.",
+    title: "Temasek Polytechnic",
     variant: "searchbar",
   },
+  decorators: [withSearchSgSetup()],
 }
 
 export const SearchbarWithImage: Story = {
-  decorators: [withSearchSgSetup()],
   args: {
+    backgroundUrl:
+      "https://images.unsplash.com/photo-1594318142972-1e2ea7487a3e?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1740",
     headingLevel: 1,
     site: generateSiteConfig({
       search: {
-        type: "searchSG",
         clientId: SEARCHSG_TEST_CLIENT_ID,
+        type: "searchSG",
       },
     }),
-
-    title: "Temasek Polytechnic",
     subtitle:
       "APEX connects agencies and the public through a single, secure hub for Singapore’s government APIs.",
-    backgroundUrl:
-      "https://images.unsplash.com/photo-1594318142972-1e2ea7487a3e?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1740",
+    title: "Temasek Polytechnic",
     variant: "searchbar",
   },
+  decorators: [withSearchSgSetup()],
 }

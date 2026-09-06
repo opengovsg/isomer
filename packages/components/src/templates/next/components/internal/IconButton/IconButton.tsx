@@ -15,39 +15,39 @@ import { focusRing } from "~/utils/tailwind"
 
 const iconButtonStyles = tv({
   base: "box-border flex w-fit cursor-pointer items-center justify-center rounded text-center transition",
+  compoundVariants: [
+    {
+      className: "text-base-content",
+      colorScheme: "default",
+      variant: "clear",
+    },
+    {
+      className:
+        "bg-utility-highlight text-base-content-strong transition-none",
+      isFocusVisible: true,
+      variant: "clear",
+    },
+  ],
+  defaultVariants: {
+    colorScheme: "default",
+    size: "base",
+    variant: "clear",
+  },
   extend: focusRing,
   variants: {
-    variant: {
-      clear:
-        "bg-transparent active:bg-base-canvas-backdrop/80 hover:bg-base-canvas-backdrop/50",
+    colorScheme: {
+      default: "",
     },
     isDisabled: {
       true: "cursor-not-allowed",
     },
-    colorScheme: {
-      default: "",
-    },
     size: {
       base: "h-12 w-12 p-2",
     },
-  },
-  compoundVariants: [
-    {
-      variant: "clear",
-      colorScheme: "default",
-      className: "text-base-content",
+    variant: {
+      clear:
+        "bg-transparent active:bg-base-canvas-backdrop/80 hover:bg-base-canvas-backdrop/50",
     },
-    {
-      variant: "clear",
-      isFocusVisible: true,
-      className:
-        "bg-utility-highlight text-base-content-strong transition-none",
-    },
-  ],
-  defaultVariants: {
-    size: "base",
-    variant: "clear",
-    colorScheme: "default",
   },
 })
 
@@ -57,17 +57,17 @@ const iconButtonIconStyles = tv({
 
 interface IconButtonProps
   extends
-    SetRequired<Omit<AriaButtonProps<"button">, "children">, "aria-label">,
+    SetRequired<Omit<AriaButtonProps, "children">, "aria-label">,
     VariantProps<typeof iconButtonStyles> {
   icon: IconType
   className?: string
 }
 
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
-  function IconButton(
+  (
     { icon: Icon, className, variant, size, colorScheme, isDisabled, ...props },
     ref,
-  ) {
+  ) => {
     const buttonRef = useRef<HTMLButtonElement>(null)
     const { buttonProps } = useButton({ ...props, isDisabled }, buttonRef)
     const { focusProps, isFocusVisible } = useFocusRing()
@@ -81,11 +81,11 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
         ref={mergeRefs(buttonRef, ref)}
         className={twMerge(
           iconButtonStyles({
-            isFocusVisible,
-            isDisabled,
-            variant,
-            size,
             colorScheme,
+            isDisabled,
+            isFocusVisible,
+            size,
+            variant,
           }),
           className,
         )}

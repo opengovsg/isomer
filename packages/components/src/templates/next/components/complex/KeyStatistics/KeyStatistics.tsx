@@ -19,17 +19,28 @@ type NoOfItemVariants = 1 | 2 | 3 | 4
 const MAX_CHAR_LIMIT = 7
 
 const createKeyStatisticsStyles = tv({
+  defaultVariants: {
+    layout: "default",
+  },
   slots: {
     container: `${ComponentContent} flex flex-col`,
+    itemContainer: "flex grow flex-col gap-3",
+    itemLabel: "prose-label-md-medium text-base-content-subtle",
+    itemValue: "prose-display-lg text-pretty text-brand-canvas-inverse",
+    statistics: "flex flex-col flex-wrap gap-x-8 gap-y-12 md:flex-row",
     title:
       "prose-display-sm w-full max-w-[47.5rem] break-words text-base-content-strong",
     urlButtonContainer: "mx-auto mt-2 block",
-    statistics: "flex flex-col flex-wrap gap-x-8 gap-y-12 md:flex-row",
-    itemContainer: "flex grow flex-col gap-3",
-    itemValue: "prose-display-lg text-pretty text-brand-canvas-inverse",
-    itemLabel: "prose-label-md-medium text-base-content-subtle",
   },
   variants: {
+    layout: {
+      default: {
+        container: "mt-14 gap-12 first:mt-0",
+      },
+      homepage: {
+        container: "gap-10 py-12 xs:py-24 lg:gap-12",
+      },
+    },
     noOfItems: {
       1: {
         itemContainer: "md:basis-full",
@@ -44,26 +55,15 @@ const createKeyStatisticsStyles = tv({
         itemContainer: "md:basis-[calc((100%-7.5rem)/4)]",
       },
     },
-    layout: {
-      homepage: {
-        container: "gap-10 py-12 xs:py-24 lg:gap-12",
-      },
-      default: {
-        container: "mt-14 gap-12 first:mt-0",
-      },
-    },
-  },
-  defaultVariants: {
-    layout: "default",
   },
 })
 
 const compoundStyles = createKeyStatisticsStyles()
 
 const toNoOfItemVariants = (length: number): NoOfItemVariants => {
-  if (length <= 1) return 1
-  if (length === 2) return 2
-  if (length === 3) return 3
+  if (length <= 1) {return 1}
+  if (length === 2) {return 2}
+  if (length === 3) {return 3}
   return 4
 }
 
@@ -118,7 +118,7 @@ export const KeyStatistics = ({
             variant="outline"
             isWithFocusVisibleHighlight
           >
-            {!!label ? label : "Our achievements"}
+            {label ? label : "Our achievements"}
           </LinkButton>
         </div>
       )}

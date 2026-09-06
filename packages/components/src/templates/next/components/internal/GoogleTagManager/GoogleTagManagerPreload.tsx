@@ -1,5 +1,5 @@
 import { PreloadHelper } from "../utils/PreloadHelper"
 
-export const GoogleTagManagerPreload = () => {
-  return <PreloadHelper href="https://www.googletagmanager.com" />
-}
+export const GoogleTagManagerPreload = () => 
+  <PreloadHelper href="https://www.googletagmanager.com" />
+

@@ -24,11 +24,11 @@ export const getYearFilter = (
 
   const yearFilterItems = Object.entries(years)
     .map(([label, count]) => ({
+      count,
       id: label.toLowerCase(),
       label,
-      count,
     }))
-    .sort((a, b) => parseInt(b.label) - parseInt(a.label))
+    .sort((a, b) => Number.parseInt(b.label) - Number.parseInt(a.label))
 
   return {
     id: FILTER_ID_YEAR,
@@ -37,15 +37,15 @@ export const getYearFilter = (
     items:
       yearFilterItems.length === 0
         ? []
-        : numberOfUndefinedDates === 0
+        : (numberOfUndefinedDates === 0
           ? yearFilterItems
           : [
               ...yearFilterItems,
               {
+                count: numberOfUndefinedDates,
                 id: NO_SPECIFIED_YEAR_FILTER_ID,
                 label: "Not specified",
-                count: numberOfUndefinedDates,
               },
-            ],
+            ]),
   }
 }

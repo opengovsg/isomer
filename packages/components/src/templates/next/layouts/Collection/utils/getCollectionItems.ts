@@ -39,25 +39,28 @@ const getItemImage = ({
   }
 
   switch (showThumbnail.fallback) {
-    case "logo":
+    case "logo": {
       return {
-        src: site.logoUrl,
         alt: `${site.siteName} site logo`,
         isContainNeeded: true,
+        src: site.logoUrl,
       }
-    case "first-image":
+    }
+    case "first-image": {
       if (item.firstImage?.src) {
         return item.firstImage
       }
 
       return {
-        src: site.logoUrl,
         alt: `${site.siteName} site logo`,
         isContainNeeded: true,
+        src: site.logoUrl,
       }
-    default:
+    }
+    default: {
       const _: never = showThumbnail.fallback
       return undefined
+    }
   }
 }
 
@@ -125,7 +128,7 @@ export const getCollectionItems = ({
       showDate !== false && item.date !== undefined && item.date !== ""
         ? getParsedDate(item.date)
         : undefined
-    const image = getItemImage({ showThumbnail, item, site })
+    const image = getItemImage({ item, showThumbnail, site })
     const { pillTags, plaintextTags } = getPillAndPlaintextTags(
       item.tagged,
       tagCategories,
@@ -154,29 +157,29 @@ export const getCollectionItems = ({
     if (item.layout === "file") {
       return {
         ...baseItem,
-        variant: "file",
-        url: item.ref,
         fileDetails: item.fileDetails,
+        url: item.ref,
+        variant: "file",
       }
     } else if (item.layout === "link") {
       return {
         ...baseItem,
-        variant: "link",
         url: item.ref,
+        variant: "link",
       }
     }
 
     return {
       ...baseItem,
-      variant: "article",
       url: item.permalink,
+      variant: "article",
     }
   }) satisfies AllCardProps[]
 
   return sortCollectionItems({
     items: transformedItems,
-    sortOrder,
     sortBy,
     sortDirection,
+    sortOrder,
   })
 }

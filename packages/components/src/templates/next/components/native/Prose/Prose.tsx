@@ -22,28 +22,34 @@ const ProseComponent = ({
   "site" | "shouldStripContentHtmlTags" | "headingLevel"
 >): JSX.Element => {
   switch (component.type) {
-    case "divider":
+    case "divider": {
       return <Divider {...component} />
-    case "heading":
+    }
+    case "heading": {
       return <Heading {...component} site={site} headingLevel={headingLevel} />
-    case "orderedList":
+    }
+    case "orderedList": {
       return <OrderedList {...component} site={site} />
-    case "paragraph":
+    }
+    case "paragraph": {
       return (
         <BaseParagraph
           content={getTextAsHtml({
-            site,
             content: component.content,
-            shouldStripContentHtmlTags: shouldStripContentHtmlTags,
+            shouldStripContentHtmlTags,
+            site,
           })}
           className="prose-body-base text-base-content"
           attrs={component.attrs}
         />
       )
-    case "table":
+    }
+    case "table": {
       return <Table {...component} site={site} />
-    case "unorderedList":
+    }
+    case "unorderedList": {
       return <UnorderedList {...component} site={site} />
+    }
   }
 }
 

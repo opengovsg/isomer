@@ -4,14 +4,14 @@ import type { IframeProps } from "~/interfaces"
 import { Iframe } from "./Iframe"
 
 const meta: Meta<IframeProps> = {
-  title: "Next/Components/Iframe",
-  component: Iframe,
   argTypes: {},
+  component: Iframe,
   parameters: {
     themes: {
       themeOverride: "Isomer Next",
     },
   },
+  title: "Next/Components/Iframe",
 }
 export default meta
 type Story = StoryObj<typeof Iframe>

@@ -14,8 +14,8 @@ export const CollectionPageHeader = ({
   breadcrumb,
   subtitle,
   children,
-}: CollectionPageHeaderProps) => {
-  return (
+}: CollectionPageHeaderProps) => 
+  (
     <div className="bg-brand-canvas text-base-content-strong">
       <div className="mx-auto flex max-w-screen-xl flex-col gap-8 px-6 py-8 md:px-10">
         <div className="flex flex-col">
@@ -29,4 +29,4 @@ export const CollectionPageHeader = ({
       </div>
     </div>
   )
-}
+

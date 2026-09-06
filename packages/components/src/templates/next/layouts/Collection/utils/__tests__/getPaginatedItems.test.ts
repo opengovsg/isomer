@@ -5,17 +5,17 @@ import { getPaginatedItems } from "../getPaginatedItems"
 import { testCollectionItem } from "./testHelpers"
 
 const items: ProcessedCollectionCardProps[] = [
-  testCollectionItem({ title: "Item 1", description: "" }),
-  testCollectionItem({ title: "Item 2", description: "" }),
-  testCollectionItem({ title: "Item 3", description: "" }),
-  testCollectionItem({ title: "Item 4", description: "" }),
+  testCollectionItem({ description: "", title: "Item 1" }),
+  testCollectionItem({ description: "", title: "Item 2" }),
+  testCollectionItem({ description: "", title: "Item 3" }),
+  testCollectionItem({ description: "", title: "Item 4" }),
 ]
 
 const itemsPerPage = 2
 
 describe("getPaginatedItems", () => {
   it("returns the first page when currPage is NaN", () => {
-    expect(getPaginatedItems(items, itemsPerPage, NaN)).toEqual([
+    expect(getPaginatedItems(items, itemsPerPage, Number.NaN)).toEqual([
       items[0],
       items[1],
     ])

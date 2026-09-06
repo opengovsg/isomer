@@ -9,9 +9,9 @@ import { isSupportedBrowser } from "~/utils/isSupportedBrowser"
 const supportedBrowserDocumentLink =
   "https://github.com/opengovsg/isomer/blob/main/packages/components/browser-support.md"
 
-const subscribeToStaticSnapshot = () => {
-  return () => undefined
-}
+const subscribeToStaticSnapshot = () => 
+  () => {}
+
 
 export const UnsupportedBrowserBanner = ({
   userAgent: initialUserAgent,

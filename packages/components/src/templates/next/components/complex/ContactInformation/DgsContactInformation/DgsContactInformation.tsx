@@ -14,19 +14,30 @@ import { safeJsonParse } from "~/utils/safeJsonParse"
 
 import { ContactInformationUI } from "../components"
 
+const buildDgsFilters = (
+  filters: DgsContactInformationProps["dataSource"]["filters"],
+): NonNullable<DgsApiDatasetSearchParams["filters"]> => {
+  const result: NonNullable<DgsApiDatasetSearchParams["filters"]> = {}
+
+  if (filters === undefined) {
+    return result
+  }
+
+  for (const filter of filters) {
+    result[filter.fieldKey] = filter.fieldValue
+  }
+
+  return result
+}
+
 export const DgsContactInformation = ({
   dataSource: { resourceId, filters },
   ...rest
 }: DgsContactInformationProps) => {
   const params = useMemo(
     () => ({
+      filters: buildDgsFilters(filters),
       resourceId,
-      filters: filters?.reduce<
-        NonNullable<DgsApiDatasetSearchParams["filters"]>
-      >((acc, filter) => {
-        acc[filter.fieldKey] = filter.fieldValue
-        return acc
-      }, {}),
     }),
     [resourceId, filters],
   )
@@ -37,7 +48,7 @@ export const DgsContactInformation = ({
     return (
       <ContactInformationUI
         isLoading={isLoading}
-        methods={[]} // not needed for loading state but its required prop
+        methods={[]}
         {...pick(rest, "type", "layout", "headingLevel")}
         acceptHtmlTags
       />
@@ -48,7 +59,7 @@ export const DgsContactInformation = ({
 
   // Should display nothing if there is an realtime error
   // as any rendering will likely seems jank and useless
-  if (isError || !record) {
+  if (isError || record === undefined) {
     return null
   }
 

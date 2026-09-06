@@ -5,15 +5,15 @@ import { withChromaticModes } from "@isomer/storybook-config"
 import { AntiScamDisclaimerBanner } from "./AntiScamDisclaimerBanner"
 
 const meta: Meta<typeof AntiScamDisclaimerBanner> = {
-  title: "Next/Components/AntiScamDisclaimerBanner",
-  component: AntiScamDisclaimerBanner,
-  parameters: {
-    layout: "fullscreen",
-    chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
-  },
   args: {
     type: "antiscambanner",
   },
+  component: AntiScamDisclaimerBanner,
+  parameters: {
+    chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
+    layout: "fullscreen",
+  },
+  title: "Next/Components/AntiScamDisclaimerBanner",
 }
 
 export default meta

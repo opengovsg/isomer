@@ -3,8 +3,8 @@ import { BiChevronDown } from "react-icons/bi"
 
 import { Link } from "../Link"
 
-const MastheadSummary = ({ isStaging }: { isStaging?: boolean }) => {
-  return (
+const MastheadSummary = ({ isStaging }: { isStaging?: boolean }) => 
+  (
     <summary
       aria-label="How to identify official government websites"
       className="group/summary flex w-full cursor-pointer list-none gap-1 text-start leading-5 outline-none lg:flex-row lg:items-center [&::-webkit-details-marker]:hidden"
@@ -43,10 +43,10 @@ const MastheadSummary = ({ isStaging }: { isStaging?: boolean }) => {
       </div>
     </summary>
   )
-}
 
-const RestrictedContent = () => {
-  return (
+
+const RestrictedContent = () => 
+  (
     <div className="mx-auto max-w-screen-xl px-6 py-2 pb-8 pt-4 text-[#474747] md:px-10 lg:pb-12 lg:pt-10">
       <div className="grid grid-cols-[1fr] gap-6 px-px lg:grid-cols-[repeat(auto-fit,_minmax(300px,1fr))] lg:gap-40">
         <div className="flex gap-2 text-xs lg:gap-4 lg:text-base">
@@ -132,10 +132,10 @@ const RestrictedContent = () => {
       </div>
     </div>
   )
-}
 
-export const Masthead = ({ isStaging }: MastheadProps) => {
-  return (
+
+export const Masthead = ({ isStaging }: MastheadProps) => 
+  (
     <div className="bg-base-canvas-backdrop">
       <details className="group">
         <MastheadSummary isStaging={isStaging} />
@@ -143,4 +143,4 @@ export const Masthead = ({ isStaging }: MastheadProps) => {
       </details>
     </div>
   )
-}
+

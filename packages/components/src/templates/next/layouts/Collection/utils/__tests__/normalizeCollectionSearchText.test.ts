@@ -32,7 +32,7 @@ describe("normalizeCollectionSearchText", () => {
 
   it("normalizes a non-breaking space before parentheses", () => {
     // Arrange
-    const text = "MANAGEMENT\u00a0(FM)"
+    const text = "MANAGEMENT\u00A0(FM)"
 
     // Act
     const result = normalizeCollectionSearchText(text)
@@ -43,7 +43,7 @@ describe("normalizeCollectionSearchText", () => {
 
   it("removes soft hyphens", () => {
     // Arrange
-    const text = "MANAGEMENT\u00ad(FM)"
+    const text = "MANAGEMENT\u00AD(FM)"
 
     // Act
     const result = normalizeCollectionSearchText(text)
@@ -54,7 +54,7 @@ describe("normalizeCollectionSearchText", () => {
 
   it("removes zero-width spaces", () => {
     // Arrange
-    const text = "MANAGEMENT\u200b(FM)"
+    const text = "MANAGEMENT\u200B(FM)"
 
     // Act
     const result = normalizeCollectionSearchText(text)
@@ -65,7 +65,7 @@ describe("normalizeCollectionSearchText", () => {
 
   it("removes zero-width non-joiners", () => {
     // Arrange
-    const text = "MANAGEMENT\u200c(FM)"
+    const text = "MANAGEMENT\u200C(FM)"
 
     // Act
     const result = normalizeCollectionSearchText(text)

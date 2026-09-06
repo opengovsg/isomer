@@ -12,8 +12,8 @@ export const ArticlePageHeader = ({
   date,
   summary,
   pillTags,
-}: ArticlePageHeaderProps) => {
-  return (
+}: ArticlePageHeaderProps) => 
+  (
     <div className="mx-auto w-full">
       <div className="my-16">
         <Breadcrumb links={breadcrumb.links} />
@@ -49,4 +49,4 @@ export const ArticlePageHeader = ({
       </div>
     </div>
   )
-}
+

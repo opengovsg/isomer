@@ -7,17 +7,17 @@ import { focusVisibleHighlight } from "~/utils/tailwind"
 import { Prose } from "../../native/Prose"
 
 const summaryStyle = tv({
-  extend: focusVisibleHighlight,
   base: "prose-headline-lg-medium flex list-none flex-row items-center justify-between gap-3 text-base-content-strong hover:cursor-pointer",
+  extend: focusVisibleHighlight,
 })
 
 const createAccordionStyles = tv({
   slots: {
+    content:
+      "pt-5 text-base-content-strong [&>:is(ol,ul):first-child>li:first-child]:mt-0 [&>:is(ol,ul):first-child]:mt-0 [&>:is(ol,ul):last-child>li:last-child]:mb-0",
     details:
       "group mt-7 border-y border-divider-medium px-4 py-5 first:mt-0 has-[+_details]:border-b-0 [&+details]:mt-0",
     icon: "h-6 w-6 flex-shrink-0 [&.minus]:hidden [&.minus]:group-open:block [&.plus]:block [&.plus]:group-open:hidden",
-    content:
-      "pt-5 text-base-content-strong [&>:is(ol,ul):first-child>li:first-child]:mt-0 [&>:is(ol,ul):first-child]:mt-0 [&>:is(ol,ul):last-child>li:last-child]:mb-0",
   },
 })
 
@@ -31,8 +31,8 @@ export const Accordion = ({
   details,
   site,
   headingLevel,
-}: AccordionProps) => {
-  return (
+}: AccordionProps) => 
+  (
     <details className={accordionStyles.details()}>
       <summary className={summaryStyle()}>
         {summary}
@@ -55,4 +55,4 @@ export const Accordion = ({
       </div>
     </details>
   )
-}
+

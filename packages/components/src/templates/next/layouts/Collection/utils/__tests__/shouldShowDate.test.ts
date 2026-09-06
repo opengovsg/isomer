@@ -8,14 +8,14 @@ describe("shouldShowDate", () => {
   it("returns true if any item has date", () => {
     const items = [
       testCollectionItem({
-        title: "Item 1",
-        description: "Description 1",
         date: new Date("2023-01-01"),
+        description: "Description 1",
+        title: "Item 1",
       }),
       testCollectionItem({
-        title: "Item 2",
-        description: "Description 2",
         date: undefined,
+        description: "Description 2",
+        title: "Item 2",
       }),
     ]
 
@@ -25,14 +25,14 @@ describe("shouldShowDate", () => {
   it("returns false if no items have date", () => {
     const items = [
       testCollectionItem({
-        title: "Item 1",
-        description: "Description 1",
         date: undefined,
+        description: "Description 1",
+        title: "Item 1",
       }),
       testCollectionItem({
-        title: "Item 2",
-        description: "Description 2",
         date: undefined,
+        description: "Description 2",
+        title: "Item 2",
       }),
     ]
 

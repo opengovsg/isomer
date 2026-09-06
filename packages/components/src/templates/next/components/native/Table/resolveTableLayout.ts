@@ -18,7 +18,7 @@ export const resolveTableLayout = (rows: TableRows): TableLayout => {
   const columnWidth = `${100 / columnCount}%`
 
   return {
-    kind: "fixed",
     columnWidths: Array.from({ length: columnCount }, () => columnWidth),
+    kind: "fixed",
   }
 }

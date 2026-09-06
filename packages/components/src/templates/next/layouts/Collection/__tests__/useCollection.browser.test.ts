@@ -63,16 +63,16 @@ describe("useCollection", () => {
 
     it.each([
       {
-        invalidFilterCase: "filter id is not a string",
         filters: [{ id: 123, items: [] }],
+        invalidFilterCase: "filter id is not a string",
       },
       {
-        invalidFilterCase: "filter items is not an array",
         filters: [{ id: "category", items: { id: "guides" } }],
+        invalidFilterCase: "filter items is not an array",
       },
       {
-        invalidFilterCase: "filter item id is not a string",
         filters: [{ id: "category", items: [{ id: 123 }] }],
+        invalidFilterCase: "filter item id is not a string",
       },
     ])("returns empty array when $invalidFilterCase", ({ filters }) => {
       // Arrange

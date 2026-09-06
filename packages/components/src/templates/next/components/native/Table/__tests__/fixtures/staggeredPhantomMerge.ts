@@ -6,69 +6,69 @@ export const staggeredPhantomMerge: Pick<TableProps, "attrs" | "content"> = {
   },
   content: [
     {
-      type: "tableRow",
       content: [
         {
-          type: "tableHeader",
           attrs: { colspan: 1, rowspan: 1 },
           content: [
             {
+              content: [{ text: "H1", type: "text" }],
               type: "paragraph",
-              content: [{ type: "text", text: "H1" }],
             },
           ],
+          type: "tableHeader",
         },
         {
-          type: "tableHeader",
           attrs: { colspan: 2, rowspan: 1 },
           content: [
             {
+              content: [{ text: "H2 + H3", type: "text" }],
               type: "paragraph",
-              content: [{ type: "text", text: "H2 + H3" }],
             },
           ],
+          type: "tableHeader",
         },
       ],
+      type: "tableRow",
     },
     {
-      type: "tableRow",
       content: [
         {
-          type: "tableCell",
           attrs: { colspan: 2, rowspan: 2 },
           content: [
             {
+              content: [{ text: "A1+B1 / A2+B2", type: "text" }],
               type: "paragraph",
-              content: [{ type: "text", text: "A1+B1 / A2+B2" }],
             },
           ],
+          type: "tableCell",
         },
         {
-          type: "tableCell",
           attrs: { colspan: 1, rowspan: 1 },
           content: [
             {
+              content: [{ text: "C1", type: "text" }],
               type: "paragraph",
-              content: [{ type: "text", text: "C1" }],
             },
           ],
+          type: "tableCell",
         },
       ],
+      type: "tableRow",
     },
     {
-      type: "tableRow",
       content: [
         {
-          type: "tableCell",
           attrs: { colspan: 1, rowspan: 1 },
           content: [
             {
+              content: [{ text: "C2", type: "text" }],
               type: "paragraph",
-              content: [{ type: "text", text: "C2" }],
             },
           ],
+          type: "tableCell",
         },
       ],
+      type: "tableRow",
     },
   ],
 }

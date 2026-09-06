@@ -12,66 +12,66 @@ import { withChromaticModes } from "@isomer/storybook-config"
 import { SearchLayout } from "./Search"
 
 const meta: Meta<typeof SearchLayout> = {
-  title: "Next/Layouts/Search",
+  argTypes: {},
   component: SearchLayout,
   decorators: [withSearchSgSetup({ pageType: "search" })],
-  argTypes: {},
-  tags: ["!autodocs"],
   parameters: {
     chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
     themes: {
       themeOverride: "Isomer Next",
     },
   },
+  tags: ["!autodocs"],
+  title: "Next/Layouts/Search",
 }
 
 export default meta
 type Story = StoryObj<typeof SearchLayout>
 
 export const SearchSG: Story = {
-  name: "SearchSG",
   args: {
     layout: "search",
-    site: generateSiteConfig({
-      search: {
-        type: "searchSG",
-        clientId: SEARCHSG_TEST_CLIENT_ID,
-      },
-    }),
     meta: {
       description: "Search results",
     },
     page: {
-      title: "Search",
-      permalink: "/search",
       lastModified: "2024-05-02T14:12:57.160Z",
+      permalink: "/search",
+      title: "Search",
     },
+    site: generateSiteConfig({
+      search: {
+        clientId: SEARCHSG_TEST_CLIENT_ID,
+        type: "searchSG",
+      },
+    }),
   },
+  name: "SearchSG",
 }
 
 // Staging Algolia credentials reused from the legacy Jekyll egazette template — safe to commit
 // because these are public search-only keys that ship in the browser bundle today.
 const EGAZETTE_STAGING_CONFIG = {
-  type: "egazette-algolia" as const,
   appId: "1V7DZGZJKK",
-  searchApiKey: "bbc5751b3f9b7fdfc08c99712adfa397",
   indexName: "staging_ogp_egazettes_index",
+  searchApiKey: "bbc5751b3f9b7fdfc08c99712adfa397",
+  type: "egazette-algolia" as const,
 }
 
 const EGAZETTE_ARGS: Story["args"] = {
   layout: "search",
-  site: generateSiteConfig({
-    siteName: "Singapore Government e-Gazette",
-    search: EGAZETTE_STAGING_CONFIG,
-  }),
   meta: {
     description: "Search the Singapore Government e-Gazette",
   },
   page: {
-    title: "Search the e-Gazette",
-    permalink: "/search",
     lastModified: "2026-01-15T00:00:00.000Z",
+    permalink: "/search",
+    title: "Search the e-Gazette",
   },
+  site: generateSiteConfig({
+    search: EGAZETTE_STAGING_CONFIG,
+    siteName: "Singapore Government e-Gazette",
+  }),
 }
 
 export const EgazetteAlgolia: Story = {
@@ -107,11 +107,11 @@ export const EgazetteAlgoliaWithYearRange: Story = {
     const canvas = within(canvasElement)
     // Range inputs stay disabled until the first Algolia response arrives.
     const yearFromInput = canvas.getAllByLabelText("From")[0]
-    if (!yearFromInput) throw new Error("Year range input not found")
-    await waitFor(() => expect(yearFromInput).toBeEnabled(), { timeout: 10000 })
+    if (!yearFromInput) {throw new Error("Year range input not found")}
+    await waitFor( async () =>{  await expect(yearFromInput).toBeEnabled(); }, { timeout: 10_000 })
     await userEvent.type(yearFromInput, "2024")
     const goButton = canvas.getAllByRole("button", { name: "Go" })[0]
-    if (!goButton) throw new Error("Year range submit button not found")
+    if (!goButton) {throw new Error("Year range submit button not found")}
     await userEvent.click(goButton)
   },
 }
@@ -126,11 +126,11 @@ export const EgazetteAlgoliaYearOutOfRange: Story = {
     const canvas = within(canvasElement)
     // The year "To" field is the first "To" input (year precedes month).
     const yearToInput = canvas.getAllByLabelText("To")[0]
-    if (!yearToInput) throw new Error("Year range input not found")
-    await waitFor(() => expect(yearToInput).toBeEnabled(), { timeout: 10000 })
+    if (!yearToInput) {throw new Error("Year range input not found")}
+    await waitFor( async () =>{  await expect(yearToInput).toBeEnabled(); }, { timeout: 10_000 })
     await userEvent.type(yearToInput, "3000")
     const goButton = canvas.getAllByRole("button", { name: "Go" })[0]
-    if (!goButton) throw new Error("Year range submit button not found")
+    if (!goButton) {throw new Error("Year range submit button not found")}
     await userEvent.click(goButton)
     await expect(await canvas.findByText(/or earlier/i)).toBeInTheDocument()
   },
@@ -138,8 +138,8 @@ export const EgazetteAlgoliaYearOutOfRange: Story = {
 
 // Seeds the URL with egazette deep-link params before <InstantSearch> mounts,
 // then restores the original URL on unmount so other stories are unaffected.
-const withDeepLinkParams = (search: string): Decorator => {
-  return function WithDeepLinkParams(StoryComponent) {
+const withDeepLinkParams = (search: string): Decorator => 
+  function WithDeepLinkParams(StoryComponent) {
     const original = `${window.location.pathname}${window.location.search}`
     window.history.replaceState(
       null,
@@ -147,25 +147,25 @@ const withDeepLinkParams = (search: string): Decorator => {
       `${window.location.pathname}${search}`,
     )
     // oxlint-disable-next-line rules-of-hooks -- decorators render as components
-    useEffect(() => {
-      return () => window.history.replaceState(null, "", original)
-    }, [original])
+    useEffect(() => 
+      () =>{  window.history.replaceState(null, "", original); }
+    , [original])
     return <StoryComponent />
   }
-}
+
 
 export const EgazetteAlgoliaNoResults: Story = {
   args: EGAZETTE_ARGS,
-  parameters: liveAlgoliaParameters,
   decorators: [withDeepLinkParams("?q=zzzzquerywithnoresultszzzz")],
+  parameters: liveAlgoliaParameters,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await waitFor(
-      () =>
-        expect(
+       async () =>{ 
+        await expect(
           canvas.getByText("We couldn’t find any results."),
-        ).toBeInTheDocument(),
-      { timeout: 10000 },
+        ).toBeInTheDocument(); },
+      { timeout: 10_000 },
     )
     await expect(
       canvas.getByText("Try different search terms or filters."),
@@ -175,21 +175,21 @@ export const EgazetteAlgoliaNoResults: Story = {
 
 export const EgazetteAlgoliaWithDeepLink: Story = {
   args: EGAZETTE_ARGS,
-  parameters: liveAlgoliaParameters,
   decorators: [
     withDeepLinkParams("?q=tender&category=Government%20Gazette&minYear=2024"),
   ],
+  parameters: liveAlgoliaParameters,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     // URL params hydrate the initial UI state on mount.
     await expect(canvas.getByRole("searchbox")).toHaveValue("tender")
     // isRefined on the checkbox only reflects once the first Algolia response lands
     await waitFor(
-      () =>
-        expect(
+       async () =>{ 
+        await expect(
           canvas.getByRole("checkbox", { name: /^Government Gazette/ }),
-        ).toBeChecked(),
-      { timeout: 10000 },
+        ).toBeChecked(); },
+      { timeout: 10_000 },
     )
     await expect(
       await canvas.findByRole("checkbox", { name: /^Advertisements/ }),

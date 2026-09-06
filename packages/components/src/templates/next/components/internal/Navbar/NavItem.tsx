@@ -23,16 +23,16 @@ type NavbarItemProps = NavbarProps["items"][number] & {
 
 const navbarItemStyles = tv({
   slots: {
-    megamenu: "max-h-full overflow-auto bg-white shadow-md",
-    item: "group prose-label-md-medium flex flex-row items-center gap-0.5 border-b-2 border-transparent pb-5 pt-6 text-base-content-strong outline-0 transition-colors hover:text-brand-interaction-hover motion-reduce:transition-none",
     chevron:
       "text-base transition-transform duration-300 ease-in-out motion-reduce:transition-none",
+    item: "group prose-label-md-medium flex flex-row items-center gap-0.5 border-b-2 border-transparent pb-5 pt-6 text-base-content-strong outline-0 transition-colors hover:text-brand-interaction-hover motion-reduce:transition-none",
+    megamenu: "max-h-full overflow-auto bg-white shadow-md",
   },
   variants: {
     isOpen: {
       true: {
-        item: "border-brand-interaction text-brand-interaction",
         chevron: "-rotate-180",
+        item: "border-brand-interaction text-brand-interaction",
       },
     },
   },
@@ -41,10 +41,10 @@ const navbarItemStyles = tv({
 const { item, chevron, megamenu } = navbarItemStyles()
 
 export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
-  function NavItem(
+  (
     { items, name, url, description, isOpen, onClick, onCloseMegamenu },
     ref,
-  ): React.ReactNode {
+  ): React.ReactNode => {
     if (!items || items.length === 0) {
       return (
         <li className={item({ isOpen })}>

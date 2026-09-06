@@ -5,8 +5,26 @@ import { Button } from "./Button"
 const BUTTON_SIZES = ["sm", "base", "lg"] as const
 
 const meta: Meta<typeof Button> = {
-  title: "Next/Internal Components/Button",
+  argTypes: {
+    colorScheme: {
+      control: {
+        type: "select",
+      },
+      options: ["default", "inverse"],
+    },
+    variant: {
+      control: {
+        type: "select",
+      },
+      options: ["solid", "outline"],
+    },
+  },
   component: Button,
+  parameters: {
+    themes: {
+      themeOverride: "Isomer Next",
+    },
+  },
   render: (args) => (
     <div className="flex flex-wrap gap-2">
       {BUTTON_SIZES.map((size) => (
@@ -14,25 +32,7 @@ const meta: Meta<typeof Button> = {
       ))}
     </div>
   ),
-  argTypes: {
-    colorScheme: {
-      options: ["default", "inverse"],
-      control: {
-        type: "select",
-      },
-    },
-    variant: {
-      options: ["solid", "outline"],
-      control: {
-        type: "select",
-      },
-    },
-  },
-  parameters: {
-    themes: {
-      themeOverride: "Isomer Next",
-    },
-  },
+  title: "Next/Internal Components/Button",
 }
 export default meta
 type Story = StoryObj<typeof Button>
@@ -58,19 +58,19 @@ export const OutlineButton: Story = {
 }
 
 export const InverseDefaultButton: Story = {
-  decorators: [
-    (storyFn) => <div className="bg-base-canvas-inverse p-6">{storyFn()}</div>,
-  ],
   args: {
     ...Default.args,
     colorScheme: "inverse",
   },
+  decorators: [
+    (storyFn) => <div className="bg-base-canvas-inverse p-6">{storyFn()}</div>,
+  ],
 }
 
 export const InverseOutlineButton: Story = {
-  decorators: InverseDefaultButton.decorators,
   args: {
     ...OutlineButton.args,
     colorScheme: "inverse",
   },
+  decorators: InverseDefaultButton.decorators,
 }

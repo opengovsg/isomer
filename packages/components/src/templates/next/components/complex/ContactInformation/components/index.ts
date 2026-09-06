@@ -1,1 +1,1 @@
-export { ContactInformationUI } from "./ContactInformationUI"
+export { ContactInformationUI } from "./ContactInformationUi"

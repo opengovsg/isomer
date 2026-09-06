@@ -8,13 +8,13 @@ import { useLinkComponent } from "~/templates/next/context/LinkComponentContext"
 import { focusRing, focusVisibleHighlight } from "~/utils/tailwind"
 
 const linkStyles = tv({
-  extend: focusRing,
   base: "",
+  extend: focusRing,
 })
 
 const fvHighlightLinkStyles = tv({
-  extend: focusVisibleHighlight,
   base: "outline-none outline-0",
+  extend: focusVisibleHighlight,
 })
 
 // oxlint-disable-next-line react-doctor/no-many-boolean-props -- link presentation flags map to anchor attributes
@@ -36,7 +36,7 @@ export const Link = ({
     className,
   )
   const externalLinkProps = isExternal
-    ? { target: "_blank", rel: "noopener nofollow" }
+    ? { rel: "noopener nofollow", target: "_blank" }
     : {}
   const ElementToRender = href ? (LinkComponent ?? "a") : "span"
 
@@ -45,14 +45,14 @@ export const Link = ({
     {
       ...externalLinkProps,
       ...rest,
-      href,
-      className: cssStyles,
+      "aria-current": current,
       "aria-label": label
         ? `${label}${isExternal ? " (opens in new tab)" : ""}`
         : undefined,
-      "aria-current": current,
+      className: cssStyles,
       "data-current": !!current || undefined,
       disabled: isDisabled,
+      href,
     },
     children,
     showExternalIcon && createElement("span", { "aria-hidden": "true" }, " ↗"),

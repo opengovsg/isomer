@@ -23,36 +23,36 @@ type ParsedVideo =
  * Returns null for invalid URLs.
  */
 const parseVideo = (url: string): ParsedVideo | null => {
-  if (!isValidVideoUrl(url)) return null
+  if (!isValidVideoUrl(url)) {return null}
 
   const urlObject = new URL(url)
 
   if (VALID_VIDEO_DOMAINS.youtube.includes(urlObject.hostname)) {
     return {
-      type: "youtube",
       embedUrl: getPrivacyEnhancedYouTubeEmbedUrl(urlObject) ?? "",
+      type: "youtube",
       videoId: getYouTubeVideoId(url) ?? "",
     }
   } else if (VALID_VIDEO_DOMAINS.vimeo.includes(urlObject.hostname)) {
     return {
-      type: "vimeo",
       embedUrl: getPrivacyEnhancedVimeoEmbedUrl(url),
+      type: "vimeo",
       videoId: getVimeoVideoId(url) ?? "",
     }
   } else if (VALID_VIDEO_DOMAINS.fbvideo.includes(urlObject.hostname)) {
     return {
-      type: "facebook",
       embedUrl: url,
       isReel: isFacebookReelEmbedUrl(url),
+      type: "facebook",
     }
-  } else {
-    return null
   }
+    return null
+  
 }
 
 export const Video = ({ title, url, shouldLazyLoad = true }: VideoProps) => {
   const parsedVideo = parseVideo(url)
-  if (!parsedVideo) return null
+  if (!parsedVideo) {return null}
 
   // Facebook Reels are vertical (9:16) videos. Rendering them in the default
   // landscape (16:9) box clips the content, so we use a portrait aspect ratio
@@ -61,7 +61,7 @@ export const Video = ({ title, url, shouldLazyLoad = true }: VideoProps) => {
 
   const renderVideo = () => {
     switch (parsedVideo.type) {
-      case "youtube":
+      case "youtube": {
         return (
           <LiteYouTubeEmbed
             src={parsedVideo.embedUrl}
@@ -70,7 +70,8 @@ export const Video = ({ title, url, shouldLazyLoad = true }: VideoProps) => {
             shouldLazyLoad={shouldLazyLoad}
           />
         )
-      case "vimeo":
+      }
+      case "vimeo": {
         return (
           <LiteVimeoEmbed
             src={parsedVideo.embedUrl}
@@ -79,7 +80,8 @@ export const Video = ({ title, url, shouldLazyLoad = true }: VideoProps) => {
             shouldLazyLoad={shouldLazyLoad}
           />
         )
-      case "facebook":
+      }
+      case "facebook": {
         // there's no lite facebook embed to copy from
         return (
           <iframe
@@ -95,9 +97,11 @@ export const Video = ({ title, url, shouldLazyLoad = true }: VideoProps) => {
             allowFullScreen
           />
         )
-      default:
+      }
+      default: {
         const _exhaustiveCheck: never = parsedVideo
         return null
+      }
     }
   }
 

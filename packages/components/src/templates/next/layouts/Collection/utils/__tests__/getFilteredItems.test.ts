@@ -10,8 +10,8 @@ describe("getFilteredItems", () => {
   it("returns all items when there is no search value and no applied filters", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
-      testCollectionItem({ title: "A", description: "" }),
-      testCollectionItem({ title: "B", description: "" }),
+      testCollectionItem({ description: "", title: "A" }),
+      testCollectionItem({ description: "", title: "B" }),
     ]
 
     // Act
@@ -25,12 +25,12 @@ describe("getFilteredItems", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
       testCollectionItem({
-        title: "Guide to Isomer",
         description: "",
+        title: "Guide to Isomer",
       }),
       testCollectionItem({
-        title: "Something else",
         description: "",
+        title: "Something else",
       }),
     ]
 
@@ -45,10 +45,10 @@ describe("getFilteredItems", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
       testCollectionItem({
-        title: "A",
         description: "Contains keyword here",
+        title: "A",
       }),
-      testCollectionItem({ title: "B", description: "No match" }),
+      testCollectionItem({ description: "No match", title: "B" }),
     ]
 
     // Act
@@ -62,14 +62,14 @@ describe("getFilteredItems", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
       testCollectionItem({
-        title: "A",
-        description: "",
         date: new Date("2023-05-01"),
+        description: "",
+        title: "A",
       }),
       testCollectionItem({
-        title: "B",
-        description: "",
         date: new Date("2022-05-01"),
+        description: "",
+        title: "B",
       }),
     ]
     const appliedFilters: AppliedFilter[] = [
@@ -87,14 +87,14 @@ describe("getFilteredItems", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
       testCollectionItem({
-        title: "A",
-        description: "",
         date: undefined,
+        description: "",
+        title: "A",
       }),
       testCollectionItem({
-        title: "B",
-        description: "",
         date: new Date("2022-05-01"),
+        description: "",
+        title: "B",
       }),
     ]
     const appliedFilters: AppliedFilter[] = [
@@ -112,19 +112,19 @@ describe("getFilteredItems", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
       testCollectionItem({
+        description: "",
+        tags: [{ category: "Category", selected: ["Guides"] }],
         title: "A",
-        description: "",
-        tags: [{ selected: ["Guides"], category: "Category" }],
       }),
       testCollectionItem({
+        description: "",
+        tags: [{ category: "Category", selected: ["Articles"] }],
         title: "B",
-        description: "",
-        tags: [{ selected: ["Articles"], category: "Category" }],
       }),
       testCollectionItem({
-        title: "C",
         description: "",
-        tags: [{ selected: ["Tutorials"], category: "Category" }],
+        tags: [{ category: "Category", selected: ["Tutorials"] }],
+        title: "C",
       }),
     ]
     const appliedFilters: AppliedFilter[] = [
@@ -145,20 +145,20 @@ describe("getFilteredItems", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
       testCollectionItem({
-        title: "A",
         description: "",
         tags: [
-          { selected: ["Guides"], category: "Category" },
-          { selected: ["Health"], category: "Topic" },
+          { category: "Category", selected: ["Guides"] },
+          { category: "Topic", selected: ["Health"] },
         ],
+        title: "A",
       }),
       testCollectionItem({
-        title: "B",
         description: "",
         tags: [
-          { selected: ["Guides"], category: "Category" },
-          { selected: ["Finance"], category: "Topic" },
+          { category: "Category", selected: ["Guides"] },
+          { category: "Topic", selected: ["Finance"] },
         ],
+        title: "B",
       }),
     ]
     const appliedFilters: AppliedFilter[] = [
@@ -177,9 +177,9 @@ describe("getFilteredItems", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
       testCollectionItem({
-        title: "A",
         description: "",
         tags: undefined,
+        title: "A",
       }),
     ]
     const appliedFilters: AppliedFilter[] = [
@@ -197,14 +197,14 @@ describe("getFilteredItems", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
       testCollectionItem({
-        title: "Guide to Isomer",
         description: "",
-        tags: [{ selected: ["Guides"], category: "Category" }],
+        tags: [{ category: "Category", selected: ["Guides"] }],
+        title: "Guide to Isomer",
       }),
       testCollectionItem({
-        title: "Guide to something else",
         description: "",
-        tags: [{ selected: ["Articles"], category: "Category" }],
+        tags: [{ category: "Category", selected: ["Articles"] }],
+        title: "Guide to something else",
       }),
     ]
     const appliedFilters: AppliedFilter[] = [
@@ -222,9 +222,9 @@ describe("getFilteredItems", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
       testCollectionItem({
+        description: "",
         title:
           "CIRCULAR ON NEW FEEDBACK CHANNEL ON PUBLIC SECTOR FACILITIES MANAGEMENT （FM） PROJECTS",
-        description: "",
       }),
     ]
     const search =
@@ -241,9 +241,9 @@ describe("getFilteredItems", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
       testCollectionItem({
+        description: "",
         title:
           "Facilities Management(FM) Performance Appraisal Framework for FM Companies",
-        description: "",
       }),
     ]
 
@@ -258,13 +258,13 @@ describe("getFilteredItems", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
       testCollectionItem({
+        description: "",
         title:
           "Facilities Management (FM) Performance Appraisal Framework for FM Companies",
-        description: "",
       }),
       testCollectionItem({
-        title: "Something else",
         description: "",
+        title: "Something else",
       }),
     ]
 
@@ -279,12 +279,12 @@ describe("getFilteredItems", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
       testCollectionItem({
-        title: "Unrelated title",
         description: undefined,
+        title: "Unrelated title",
       }),
       testCollectionItem({
-        title: "Another page",
         description: "Contains management (FM) guidance",
+        title: "Another page",
       }),
     ]
 

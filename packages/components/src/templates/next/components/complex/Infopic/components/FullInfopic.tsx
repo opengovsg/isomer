@@ -23,9 +23,9 @@ export const FullInfopic = ({
 }: FullInfopicProps) => {
   const Tag = getHeadingTag(headingLevel)
   const compoundStyles = infopicStyles({
+    colorScheme: "inverse",
     isTextOnRight,
     variant: InfopicVariants.Full.value,
-    colorScheme: "inverse",
   })
   const hasLinkButton = !!buttonLabel && !!buttonUrl
 
@@ -33,8 +33,8 @@ export const FullInfopic = ({
     <section
       style={{
         backgroundImage: `url('${imageSrc}')`,
-        backgroundSize: "cover",
         backgroundPosition: "center",
+        backgroundSize: "cover",
       }}
       id={id}
     >

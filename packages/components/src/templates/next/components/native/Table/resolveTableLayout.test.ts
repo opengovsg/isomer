@@ -10,27 +10,27 @@ describe("resolveTableLayout", () => {
     // Arrange
     const rows = [
       {
-        type: "tableRow" as const,
         content: [
           {
-            type: "tableHeader" as const,
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableHeader" as const,
           },
           {
-            type: "tableHeader" as const,
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableHeader" as const,
           },
         ],
+        type: "tableRow" as const,
       },
     ]
 
@@ -42,76 +42,76 @@ describe("resolveTableLayout", () => {
     // Arrange
     const rows = [
       {
-        type: "tableRow" as const,
         content: [
           {
-            type: "tableHeader" as const,
             attrs: { colspan: 1, rowspan: 1 },
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableHeader" as const,
           },
           {
-            type: "tableHeader" as const,
             attrs: { colspan: 2, rowspan: 1 },
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableHeader" as const,
           },
         ],
+        type: "tableRow" as const,
       },
       {
-        type: "tableRow" as const,
         content: [
           {
-            type: "tableCell" as const,
             attrs: { colspan: 2, rowspan: 2 },
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableCell" as const,
           },
           {
-            type: "tableCell" as const,
             attrs: { colspan: 1, rowspan: 1 },
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableCell" as const,
           },
         ],
+        type: "tableRow" as const,
       },
       {
-        type: "tableRow" as const,
         content: [
           {
-            type: "tableCell" as const,
             attrs: { colspan: 1, rowspan: 1 },
             content: [
               {
+                content: [{ text: "", type: "text" as const }],
                 type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
               },
             ],
+            type: "tableCell" as const,
           },
         ],
+        type: "tableRow" as const,
       },
     ]
 
     // Act / Assert
     expect(resolveTableLayout(rows)).toEqual({
-      kind: "fixed",
       columnWidths: [`${100 / 3}%`, `${100 / 3}%`, `${100 / 3}%`],
+      kind: "fixed",
     })
   })
 
@@ -120,29 +120,29 @@ describe("resolveTableLayout", () => {
   it("returns auto layout for hostile colspan values without throwing", () => {
     // Arrange
     const cell = (colspan: TableSpanAttribute) => ({
-      type: "tableCell" as const,
-      attrs: colspan !== undefined ? { colspan } : undefined,
+      attrs: colspan === undefined ? undefined : { colspan },
       content: [
         {
+          content: [{ text: "", type: "text" as const }],
           type: "paragraph" as const,
-          content: [{ type: "text" as const, text: "" }],
         },
       ],
+      type: "tableCell" as const,
     })
     const row = (...cells: ReturnType<typeof cell>[]) => ({
-      type: "tableRow" as const,
       content: cells,
+      type: "tableRow" as const,
     })
     const toHostileTableRows = (
       hostileRow: ReturnType<typeof row>,
-    ): TableRows => {
+    ): TableRows => 
       // SAFETY: Test passes TipTap rows with hostile colspan attrs through resolveTableLayout.
-      return [hostileRow] as TableRows
-    }
+      [hostileRow] as TableRows
+    
     const hostileCases = [
-      { rows: toHostileTableRows(row(cell(4294967296))), kind: "fixed" },
-      { rows: toHostileTableRows(row(cell(-5))), kind: "auto" },
-      { rows: toHostileTableRows(row(cell("1e9"))), kind: "auto" },
+      { kind: "fixed", rows: toHostileTableRows(row(cell(4_294_967_296))) },
+      { kind: "auto", rows: toHostileTableRows(row(cell(-5))) },
+      { kind: "auto", rows: toHostileTableRows(row(cell("1e9"))) },
     ]
 
     for (const { rows, kind } of hostileCases) {
