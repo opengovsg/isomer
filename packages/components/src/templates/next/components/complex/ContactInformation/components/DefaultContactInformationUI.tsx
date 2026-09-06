@@ -66,13 +66,12 @@ export const DefaultContactInformationUI = ({
     <section className={compoundStyles.screenWideOuterContainer()}>
       <div className={compoundStyles.container()}>
         <div className={compoundStyles.titleAndDescriptionContainer()}>
-          {(title || isLoading) && (
-            {createElement(
+          {(title || isLoading) &&
+            createElement(
               TitleTag,
               { className: compoundStyles.title() },
               isLoading ? "" : title,
             )}
-          )}
           {(!!description || isLoading) &&
             (acceptHtmlTags ? (
               <BaseParagraph

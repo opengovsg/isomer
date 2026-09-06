@@ -109,13 +109,14 @@ const SearchableTableContent = ({
 
   if (paginatedItems.length > 0) {
     return (
-      {/* oxlint-disable jsx-a11y/no-noninteractive-tabindex, jsx-a11y/no-noninteractive-element-interactions -- keyboard-focusable scroll container for wide tables */}
-      <section
-        className={compoundStyles.tableContainer()}
-        tabIndex={0}
-        aria-label="Scrollable table"
-        onKeyDown={handleHorizontalScrollKeyDown}
-      >
+      <>
+        {/* oxlint-disable jsx-a11y/no-noninteractive-tabindex, jsx-a11y/no-noninteractive-element-interactions -- keyboard-focusable scroll container for wide tables */}
+        <section
+          className={compoundStyles.tableContainer()}
+          tabIndex={0}
+          aria-label="Scrollable table"
+          onKeyDown={handleHorizontalScrollKeyDown}
+        >
         <table
           className={compoundStyles.table()}
           aria-describedby={!!title ? titleId : undefined}
@@ -152,8 +153,9 @@ const SearchableTableContent = ({
             })}
           </tbody>
         </table>
-      </section>
-      {/* oxlint-enable jsx-a11y/no-noninteractive-tabindex, jsx-a11y/no-noninteractive-element-interactions */}
+        </section>
+        {/* oxlint-enable jsx-a11y/no-noninteractive-tabindex, jsx-a11y/no-noninteractive-element-interactions */}
+      </>
     )
   }
 
