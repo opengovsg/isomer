@@ -152,7 +152,7 @@ const JsonFormsNavbarControl = ({
         getIsSticky: () => true,
       }),
     )
-  }, [arraySchema.maxItems, droppableZoneElement, handleMove])
+  }, [droppableZoneElement, handleMove])
 
   if (selectedPath !== undefined) {
     return (

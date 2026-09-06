@@ -20,9 +20,6 @@ export default defineConfig({
       files: ["**/*.js", "**/*.mjs", "**/*.ts", "**/*.tsx"],
       rules: {
         "react/react-in-jsx-scope": "off",
-        // Deferred: high-churn effect refactors; enable in a follow-up PR.
-        "react/exhaustive-effect-dependencies": "off",
-        "react/set-state-in-effect": "off",
         // Suppressions are harmless until React Compiler is enabled.
         "react/rule-suppression": "off",
         // Chakra `role="group"` is required for `_groupHover` / `_groupChecked`.

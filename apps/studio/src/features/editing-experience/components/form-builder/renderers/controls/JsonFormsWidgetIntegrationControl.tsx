@@ -8,7 +8,7 @@ import {
 } from "@jsonforms/core"
 import { JsonFormsDispatch } from "@jsonforms/react"
 import { Switch } from "@opengovsg/design-system-react"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 import type { WidgetType } from "../../contexts/WidgetContext"
@@ -33,8 +33,7 @@ const JsonFormsWidgetIntegrationControl = ({
   enabled,
 }: ControlWithDetailProps) => {
   const { activeWidget, setActiveWidget, getNextWidget } = useWidget()
-  // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const [snapshot, setSnapshot] = useState(data)
+  const snapshotRef = useRef(data)
   const detailUiSchema = useMemo(
     () =>
       findUISchema(
@@ -51,9 +50,10 @@ const JsonFormsWidgetIntegrationControl = ({
   )
 
   useEffect(() => {
-    // NOTE: sync data with snapshot
-    // if data exists
-    if (data) setSnapshot(data)
+    if (data) {
+      // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      snapshotRef.current = data
+    }
   }, [data])
 
   const variant = extractVariantFromFormat(schema.format)
@@ -61,13 +61,13 @@ const JsonFormsWidgetIntegrationControl = ({
 
   useEffect(() => {
     if (isChecked && !data) {
-      handleChange(path, snapshot)
+      handleChange(path, snapshotRef.current)
     }
 
     if (!isChecked) {
       handleChange(path, undefined)
     }
-  }, [isChecked, data, handleChange, path, snapshot])
+  }, [isChecked, data, handleChange, path])
 
   const handleToggle = () => {
     const next = isChecked ? null : getNextWidget(variant)
