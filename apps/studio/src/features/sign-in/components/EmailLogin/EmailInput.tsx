@@ -37,7 +37,7 @@ const EmailInputErrorMessage = ({ type, message }: Partial<FieldError>) => {
       )
     case "UNAUTHORIZED":
     default:
-      return <>{message}</>
+      return message
   }
 }
 

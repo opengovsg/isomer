@@ -9,7 +9,7 @@ export const jsonFormsHiddenControlTester: RankedTester = rankWith(
 )
 
 function JsonFormsHiddenControl() {
-  return <></>
+  return null
 }
 
 export default withJsonFormsControlProps(JsonFormsHiddenControl)

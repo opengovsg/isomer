@@ -28,7 +28,7 @@ function JsonFormsBooleanControl({
   schema,
 }: ControlProps): JSX.Element {
   if (schema.const !== undefined) {
-    return <></>
+    return null
   }
 
   return (

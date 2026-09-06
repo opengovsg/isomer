@@ -34,7 +34,7 @@ export const ToppanRouteGuard = ({ children }: PropsWithChildren) => {
   }, [shouldRestrictToGazettesPath, isGazettesOnlyRoute, router, gazettesPath])
 
   if (isGazettesOnlyRoute) {
-    return <>{children}</>
+    return children
   }
 
   return <FullscreenSpinner />

@@ -34,5 +34,5 @@ export const PublicPageWrapper = ({
     return <FullscreenSpinner />
   }
 
-  return <>{children}</>
+  return children
 }

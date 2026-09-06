@@ -12,7 +12,7 @@ export const jsonFormsConstControlTester: RankedTester = rankWith(
 )
 
 function JsonFormsConstControl() {
-  return <></>
+  return null
 }
 
 export default withJsonFormsControlProps(JsonFormsConstControl)

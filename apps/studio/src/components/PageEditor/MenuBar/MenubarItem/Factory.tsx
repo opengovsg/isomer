@@ -9,7 +9,7 @@ import { MenubarVerticalList } from "./VerticalList"
 
 export const MenubarItemFactory = (
   item: PossibleMenubarItemProps,
-): React.JSX.Element => {
+): React.JSX.Element | null => {
   switch (item.type) {
     case "divider":
       return <MenubarDivider {...item} />
@@ -27,6 +27,6 @@ export const MenubarItemFactory = (
       return <MenubarCustom {...item} />
     default:
       const _: never = item
-      return <></>
+      return null
   }
 }

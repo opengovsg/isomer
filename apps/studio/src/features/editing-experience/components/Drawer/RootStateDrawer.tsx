@@ -607,7 +607,7 @@ export default function RootStateDrawer() {
                                 {previewPageState.content.map(
                                   (block, index) => {
                                     if (isHeroFixedBlock && index === 0) {
-                                      return <></>
+                                      return null
                                     }
 
                                     // Check if block is a hidden childrenpages block

@@ -21,5 +21,5 @@ export const CanManageCollectionFilters = ({
   if (!canManage) {
     return null
   }
-  return <>{children}</>
+  return children
 }

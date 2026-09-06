@@ -290,11 +290,11 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
   }, [componentType, pageLayout])
 
   if (currActiveIdx === -1 || currActiveIdx > previewPageState.content.length) {
-    return <></>
+    return null
   }
 
   if (!component || !subSchema || !validateFn) {
-    return <></>
+    return null
   }
 
   const componentName = subSchema.title || "component"

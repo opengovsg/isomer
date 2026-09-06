@@ -17,12 +17,12 @@ vi.mock("@chakra-ui/react", async (importActual) => {
   const actual = (await importActual()) as Record<string, unknown>
   return {
     ...actual,
-    Menu: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+    Menu: ({ children }: { children: React.ReactNode }) => children,
     MenuButton: ({ "aria-label": ariaLabel }: { "aria-label"?: string }) => (
       <button aria-label={ariaLabel} />
     ),
-    MenuList: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-    MenuItem: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+    MenuList: ({ children }: { children: React.ReactNode }) => children,
+    MenuItem: ({ children }: { children: React.ReactNode }) => children,
   }
 })
 

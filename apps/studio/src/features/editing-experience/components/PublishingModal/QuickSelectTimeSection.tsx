@@ -36,35 +36,31 @@ export const QuickSelectTimeSection = ({
 
   const { setValue } =
     useFormContext<z.input<typeof schedulePublishClientSchema>>()
-  return (
-    <>
-      {optionsToShow.length > 0 && (
-        <VStack align="stretch" spacing="0.25rem">
-          <Text textStyle="caption-2">Quick select a time?</Text>
-          <HStack spacing="0.5rem">
-            {optionsToShow.map((time) => {
-              const date = new Date()
-              date.setHours(time.hours, time.minutes, 0, 0)
-              const displayFormatted = format(date, "h:mm a")
-              const valueFormatted = format(date, "HH:mm")
-              return (
-                <Badge
-                  key={displayFormatted}
-                  variant="outline"
-                  cursor="pointer"
-                  borderWidth="1px"
-                  borderColor="blue.200"
-                  onClick={() => setValue("publishTime", valueFormatted)}
-                >
-                  <Text textStyle="legal" color="interaction.main.default">
-                    {displayFormatted}
-                  </Text>
-                </Badge>
-              )
-            })}
-          </HStack>
-        </VStack>
-      )}
-    </>
-  )
+  return optionsToShow.length > 0 ? (
+    <VStack align="stretch" spacing="0.25rem">
+      <Text textStyle="caption-2">Quick select a time?</Text>
+      <HStack spacing="0.5rem">
+        {optionsToShow.map((time) => {
+          const date = new Date()
+          date.setHours(time.hours, time.minutes, 0, 0)
+          const displayFormatted = format(date, "h:mm a")
+          const valueFormatted = format(date, "HH:mm")
+          return (
+            <Badge
+              key={displayFormatted}
+              variant="outline"
+              cursor="pointer"
+              borderWidth="1px"
+              borderColor="blue.200"
+              onClick={() => setValue("publishTime", valueFormatted)}
+            >
+              <Text textStyle="legal" color="interaction.main.default">
+                {displayFormatted}
+              </Text>
+            </Badge>
+          )
+        })}
+      </HStack>
+    </VStack>
+  ) : null
 }

@@ -16,7 +16,7 @@ export const CurrentLoginStep = (): JSX.Element => {
         return <VerificationLoginStep />
       default:
         const _: never = state
-        return <></>
+        return null
     }
   }, [state])
 

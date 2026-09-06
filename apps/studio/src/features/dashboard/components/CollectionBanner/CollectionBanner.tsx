@@ -49,7 +49,7 @@ export const CollectionBanner = (): JSX.Element | null => {
             size="xs"
             variant="standalone"
             isExternal
-            externalLinkIcon={<></>}
+            externalLinkIcon={null}
             p={0}
             as={NextLink}
             href="https://support.isomer.gov.sg/en/articles/11693839-introducing-collections"

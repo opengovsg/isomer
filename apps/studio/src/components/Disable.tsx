@@ -20,6 +20,6 @@ export const Disable = ({
       </Box>
     </Box>
   ) : (
-    <>{children}</>
+    children
   )
 }
