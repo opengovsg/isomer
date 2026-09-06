@@ -5,15 +5,7 @@ import MockDate from "mockdate"
 import { resetTables } from "tests/integration/helpers/db"
 import { applyAuthedSession } from "tests/integration/helpers/iron-session"
 import { setupPageResource, setupUser } from "tests/integration/helpers/seed"
-import {
-  afterEach,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi,
-} from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import * as s3Lib from "~/lib/s3"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { db } from "~server/db"
@@ -253,7 +245,7 @@ describe("schedulePushDocumentJobHandler", async () => {
         typeof s3Lib.setAssetAsPublished
       >[0]
 
-      beforeAll(async () => {
+      beforeEach(async () => {
         // Arrange
         const { resourceId, ref: seededRef } =
           await seedDocumentReadyForIngestion({
@@ -697,7 +689,7 @@ describe("schedulePushDocumentJobHandler", async () => {
         typeof s3Lib.setAssetAsPublished
       >[0]
 
-      beforeAll(async () => {
+      beforeEach(async () => {
         // Arrange
         const { resourceId } = await seedDocumentReadyForIngestion({
           parentTitle: "Notices",

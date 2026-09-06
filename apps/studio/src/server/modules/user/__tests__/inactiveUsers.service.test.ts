@@ -8,7 +8,7 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
-import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 import { env } from "~/env.mjs"
 import {
   sendAccountDeactivationEmail,
@@ -174,7 +174,7 @@ describe("inactiveUsers.service", () => {
         after: { userId: string; deletedAt: string | null }
       }
 
-      beforeAll(async () => {
+      beforeEach(async () => {
         user = await setupUserWrapper({
           siteId: site.id,
           createdDaysAgo: 91,
@@ -378,7 +378,7 @@ describe("inactiveUsers.service", () => {
           >
         | undefined
 
-      beforeAll(async () => {
+      beforeEach(async () => {
         userToDeactivate = await setupUserWrapper({
           siteId: site.id,
           createdDaysAgo: 91,
@@ -962,7 +962,7 @@ describe("inactiveUsers.service", () => {
       let userCreatedLongAgo: User
       let userCreatedRecently: User
 
-      beforeAll(async () => {
+      beforeEach(async () => {
         userCreatedVeryLongAgo = await setupUserWrapper({
           siteId: site.id,
           createdDaysAgo: 120,

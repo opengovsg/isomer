@@ -171,7 +171,7 @@ describe("user.service", () => {
         ReturnType<ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]>
       >
 
-      beforeAll(async () => {
+      beforeEach(async () => {
         user = await setupUser({ email: TEST_EMAIL, isDeleted: true })
         await setupAdminPermissions({ userId: user.id, siteId })
 
@@ -435,7 +435,7 @@ describe("user.service", () => {
         ReturnType<ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]>
       >
 
-      beforeAll(async () => {
+      beforeEach(async () => {
         const result = await db.transaction().execute((tx) => {
           return createUserWithPermission({
             byUserId: creatorUserId,
@@ -542,7 +542,7 @@ describe("user.service", () => {
         ReturnType<ReturnType<typeof db.selectFrom<"AuditLog">>["execute"]>
       >
 
-      beforeAll(async () => {
+      beforeEach(async () => {
         const result = await db.transaction().execute((tx) => {
           return createUserWithPermission({
             byUserId: creatorUserId,

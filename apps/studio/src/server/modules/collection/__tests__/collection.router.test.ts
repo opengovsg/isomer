@@ -22,7 +22,7 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
-import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
 
@@ -1501,7 +1501,7 @@ describe("collection.router", async () => {
       let auditEntry: AuditLog
       let actual: Awaited<ReturnType<typeof getCollectionItemByPermalink>>
 
-      beforeAll(async () => {
+      beforeEach(async () => {
         const setup = await setupPageResource({
           resourceType: "CollectionLink",
           state: "Published",
@@ -1562,7 +1562,7 @@ describe("collection.router", async () => {
       let expected: Awaited<ReturnType<typeof caller.updateCollectionLink>>
       let auditEntry: AuditLog
 
-      beforeAll(async () => {
+      beforeEach(async () => {
         const setup = await setupPageResource({
           resourceType: "CollectionLink",
         })

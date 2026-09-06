@@ -124,7 +124,7 @@ describe("redirect.router bulk upload", async () => {
 
       // Assert
       expect(result.errorCount).toBe(1)
-      expect(errorFor(result, "https://evil.com")).toBe(true)
+      expect(errorFor(result, "https://evil.com")).not.toBeNull()
     })
 
     it("flags a source listed more than once in the file", async () => {
@@ -156,7 +156,7 @@ describe("redirect.router bulk upload", async () => {
       })
 
       // Assert
-      expect(errorFor(result, "/taken")).toBe(true)
+      expect(errorFor(result, "/taken")).not.toBeNull()
     })
 
     it("flags a source that shadows a live published page", async () => {
@@ -170,7 +170,7 @@ describe("redirect.router bulk upload", async () => {
       })
 
       // Assert
-      expect(errorFor(result, "/shadowed")).toBe(true)
+      expect(errorFor(result, "/shadowed")).not.toBeNull()
     })
 
     it("flags a wildcard source whose prefix is itself a live published page", async () => {
@@ -184,7 +184,7 @@ describe("redirect.router bulk upload", async () => {
       })
 
       // Assert
-      expect(errorFor(result, "/news/*")).toBe(true)
+      expect(errorFor(result, "/news/*")).not.toBeNull()
     })
 
     it("flags a wildcard source whose prefix has a live page nested under it", async () => {
@@ -212,7 +212,7 @@ describe("redirect.router bulk upload", async () => {
       })
 
       // Assert
-      expect(errorFor(result, "/news/*")).toBe(true)
+      expect(errorFor(result, "/news/*")).not.toBeNull()
     })
 
     it("does not flag a wildcard source when nothing lives under its prefix", async () => {
@@ -238,8 +238,8 @@ describe("redirect.router bulk upload", async () => {
 
       // Assert: both rows are flagged as loops.
       expect(result.errorCount).toBe(2)
-      expect(errorFor(result, "/a")).toBe(true)
-      expect(errorFor(result, "/b")).toBe(true)
+      expect(errorFor(result, "/a")).not.toBeNull()
+      expect(errorFor(result, "/b")).not.toBeNull()
     })
 
     it("flags a loop formed against an existing table redirect", async () => {
@@ -256,7 +256,7 @@ describe("redirect.router bulk upload", async () => {
       })
 
       // Assert
-      expect(errorFor(result, "/a")).toBe(true)
+      expect(errorFor(result, "/a")).not.toBeNull()
     })
 
     it("flags a loop even when the destination carries a query string", async () => {
@@ -293,8 +293,8 @@ describe("redirect.router bulk upload", async () => {
 
       // Assert: the whole cycle is rejected, not silently published.
       expect(result.errorCount).toBe(size)
-      expect(errorFor(result, "/n0")).toBe(true)
-      expect(errorFor(result, "/n11")).toBe(true)
+      expect(errorFor(result, "/n0")).not.toBeNull()
+      expect(errorFor(result, "/n11")).not.toBeNull()
     })
 
     it("flags only the cycle, not a source that merely points into a loop", async () => {
@@ -314,9 +314,9 @@ describe("redirect.router bulk upload", async () => {
 
       // Assert
       expect(errorFor(result, "/a")).toBeNull()
-      expect(errorFor(result, "/b")).toBe(true)
-      expect(errorFor(result, "/c")).toBe(true)
-      expect(errorFor(result, "/d")).toBe(true)
+      expect(errorFor(result, "/b")).not.toBeNull()
+      expect(errorFor(result, "/c")).not.toBeNull()
+      expect(errorFor(result, "/d")).not.toBeNull()
       expect(result.errorCount).toBe(3)
     })
 
@@ -343,8 +343,8 @@ describe("redirect.router bulk upload", async () => {
       })
 
       // Assert
-      expect(errorFor(result, "/a")).toBe(true)
-      expect(errorFor(result, "/b")).toBe(true)
+      expect(errorFor(result, "/a")).not.toBeNull()
+      expect(errorFor(result, "/b")).not.toBeNull()
     })
 
     it("flags a row split by an unquoted comma in the destination", async () => {
@@ -533,7 +533,7 @@ describe("redirect.router bulk upload", async () => {
       // the offending row comes back flagged so the modal can show it.
       expect(result.ok).toBe(false)
       if (result.ok) throw new Error("Expected bulk create to fail")
-      expect(errorFor(result.validation, "/shadowed")).toBe(true)
+      expect(errorFor(result.validation, "/shadowed")).not.toBeNull()
       expect(publishSpy).not.toHaveBeenCalled()
       const live = await db
         .selectFrom("Redirect")

@@ -129,7 +129,7 @@ describe("user.router", () => {
       let userAuditEntry: AuditLog[]
       let permissionAuditEntry: AuditLog[]
 
-      beforeAll(async () => {
+      beforeEach(async () => {
         await setupAdminPermissions({ userId: session.userId, siteId })
         user = await setupUser({ email: TEST_EMAIL, isDeleted: true })
 
@@ -398,7 +398,7 @@ describe("user.router", () => {
       let userAuditEntries: AuditLog[]
       let permissionAuditEntry: AuditLog[]
 
-      beforeAll(async () => {
+      beforeEach(async () => {
         await setupAdminPermissions({ userId: session.userId, siteId })
         existingUser = await setupUser({ email: TEST_EMAIL, isDeleted: false })
 
@@ -482,7 +482,7 @@ describe("user.router", () => {
       let userAuditEntries: AuditLog[]
       let permissionAuditEntry: AuditLog[]
 
-      beforeAll(async () => {
+      beforeEach(async () => {
         await setupAdminPermissions({ userId: session.userId, siteId })
 
         createdUsers = await caller.create({
@@ -766,7 +766,7 @@ describe("user.router", () => {
       let userDeleteAuditLogs: AuditLog[]
       let permissionsAuditLogs: AuditLog[]
 
-      beforeAll(async () => {
+      beforeEach(async () => {
         await setupAdminPermissions({ userId: session.userId, siteId })
         userToDelete = await setupUser({
           email: TEST_EMAIL,
@@ -853,7 +853,7 @@ describe("user.router", () => {
         | undefined
       let permissionsAuditLogs: AuditLog[]
 
-      beforeAll(async () => {
+      beforeEach(async () => {
         await setupAdminPermissions({ userId: session.userId, siteId })
         userToDelete = await setupUser({
           email: TEST_EMAIL,
@@ -1742,7 +1742,7 @@ describe("user.router", () => {
       let newPermission: ResourcePermission | undefined
       let newPermissionAuditLogs: AuditLog[]
 
-      beforeAll(async () => {
+      beforeEach(async () => {
         await setupAdminPermissions({ userId: session.userId, siteId })
         userToUpdate = await setupUser({
           email: "test@coolvendor.com",
@@ -1840,7 +1840,7 @@ describe("user.router", () => {
       let newPermission: ResourcePermission | undefined
       let newPermissionAuditLogs: AuditLog[]
 
-      beforeAll(async () => {
+      beforeEach(async () => {
         await setupAdminPermissions({ userId: session.userId, siteId })
         userToUpdate = await setupUser({
           email: TEST_EMAIL,
@@ -1942,7 +1942,7 @@ describe("user.router", () => {
       let deletedPermissionAuditLogs: AuditLog[]
       let createdPermissionAuditLogs: AuditLog[]
 
-      beforeAll(async () => {
+      beforeEach(async () => {
         await setupAdminPermissions({ userId: session.userId, siteId })
         userToUpdate = await setupUser({
           email: TEST_EMAIL,

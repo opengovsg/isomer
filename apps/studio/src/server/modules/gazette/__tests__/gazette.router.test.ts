@@ -22,15 +22,7 @@ import {
   setupIsomerAdmin,
   setupUser,
 } from "tests/integration/helpers/seed"
-import {
-  afterEach,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi,
-} from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { env } from "~/env.mjs"
 import * as mailService from "~/features/mail/service"
 import { ENABLE_SEARCHSG_GAZETTE_INGESTION } from "~/lib/growthbook"
@@ -205,7 +197,7 @@ describe("gazette.router", async () => {
       let pageRef: string | undefined
       let auditLogs: AuditLog[]
 
-      beforeAll(async () => {
+      beforeEach(async () => {
         const seed = await seedToppanWithCollection()
         site = seed.site
         collection = seed.collection
@@ -469,7 +461,7 @@ describe("gazette.router", async () => {
       }
       let markFileAsDeleted: ReturnType<typeof vi.spyOn>
 
-      beforeAll(async () => {
+      beforeEach(async () => {
         const {
           site,
           collection,
@@ -799,7 +791,7 @@ describe("gazette.router", async () => {
       }
       let markCancelled: ReturnType<typeof vi.spyOn>
 
-      beforeAll(async () => {
+      beforeEach(async () => {
         const {
           site,
           collection,

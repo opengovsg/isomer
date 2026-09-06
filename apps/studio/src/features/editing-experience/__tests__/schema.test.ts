@@ -222,7 +222,11 @@ describe("editing-experience schemas", () => {
       // Assert
       expect(result.success).toBe(true)
       if (!result.success) throw new Error("Expected parse to succeed")
-      expect(result.data).toStrictEqual({ siteId: 123 })
+      expect(result.data).toStrictEqual({
+        siteId: 123,
+        pageId: undefined,
+        linkId: undefined,
+      })
     })
   })
 })

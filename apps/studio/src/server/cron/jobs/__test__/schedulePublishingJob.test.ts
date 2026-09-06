@@ -10,15 +10,7 @@ import {
   setupPublisherPermissions,
   setupUser,
 } from "tests/integration/helpers/seed"
-import {
-  afterEach,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi,
-} from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import * as emailService from "~/features/mail/service"
 import * as awsUtils from "~/server/modules/aws/utils"
 import { db } from "~/server/modules/database"
@@ -92,7 +84,7 @@ describe("schedulePublishingJob", async () => {
       let versions: VersionRows
       let auditLogs: AuditLogRows
 
-      beforeAll(async () => {
+      beforeEach(async () => {
         // Arrange
         ;({ site, page } = await setupPageResource({
           resourceType: ResourceType.Page,
@@ -215,7 +207,7 @@ describe("schedulePublishingJob", async () => {
       let versionsPage1: VersionRows
       let versionsPage2: VersionRows
 
-      beforeAll(async () => {
+      beforeEach(async () => {
         // Arrange
         ;({ site, page } = await setupPageResource({
           resourceType: ResourceType.Page,
@@ -297,7 +289,7 @@ describe("schedulePublishingJob", async () => {
       let versionsPage1: VersionRows
       let versionsPage2: VersionRows
 
-      beforeAll(async () => {
+      beforeEach(async () => {
         // Arrange
         ;({ site, page } = await setupPageResource({
           resourceType: ResourceType.Page,
@@ -362,7 +354,7 @@ describe("schedulePublishingJob", async () => {
       let versionsPage1: VersionRows
       let versionsPage2: VersionRows
 
-      beforeAll(async () => {
+      beforeEach(async () => {
         // Arrange
         ;({ site, page } = await setupPageResource({
           resourceType: ResourceType.Page,
