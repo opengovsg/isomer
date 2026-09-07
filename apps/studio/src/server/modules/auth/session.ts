@@ -10,7 +10,9 @@ import { env } from "~/env.mjs"
 // duplicated) so there is a single source of truth for what key material
 // Studio trusts.
 export const getIronPassword = (): SessionOptions["password"] => ({
-  "1": env.SESSION_SECRET,
+  // Read from process.env so production builds always use the runtime secret.
+  // oxlint-disable-next-line node/no-process-env -- iron-session must use live runtime secret
+  "1": process.env.SESSION_SECRET ?? env.SESSION_SECRET,
 })
 
 interface GenerateSessionOptionsProps {

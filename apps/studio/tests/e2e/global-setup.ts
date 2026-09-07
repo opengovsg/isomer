@@ -1,95 +1,104 @@
-import type { BrowserContext, Cookie, FullConfig } from "@playwright/test"
+import type { FullConfig } from "@playwright/test"
+import type { NextApiRequest, NextApiResponse } from "next"
+import type { SessionData } from "~/lib/types/session"
 import { chromium } from "@playwright/test"
+import { getIronSession } from "iron-session"
+import { createMocks } from "node-mocks-http"
 import crypto from "node:crypto"
+import { LOGGED_IN_KEY } from "~/constants/localStorage"
+import { generateSessionOptions } from "~/server/modules/auth/session"
 import { db } from "~/server/modules/database/database"
 
 import { ROLES, storageStateFor, TEST_EMAILS } from "./fixtures/auth"
-import { LoginPage } from "./fixtures/login"
 import { seedRolesForE2E } from "./fixtures/seed"
 
-const setSingpassUuidFor = async (email: string, uuid: string) => {
+const ensureSingpassUser = async (email: string) => {
   await db
     .updateTable("User")
-    .set({ name: "test-e2e", phone: "82345678", singpassUuid: uuid })
+    .set({
+      name: "test-e2e",
+      phone: "82345678",
+      singpassUuid: crypto.randomUUID(),
+    })
     .where("email", "=", email)
     .execute()
 }
 
-const addCookiesFromResponse = async (
-  ctx: BrowserContext,
-  baseURL: string,
-  setCookieHeader: string | string[],
-) => {
+const sealUserSessionCookie = async (userId: string) => {
+  const mocks = createMocks({ method: "GET" })
+  const { req, res } = mocks as {
+    req: NextApiRequest
+    res: NextApiResponse
+  }
+  const session = await getIronSession<SessionData>(
+    req,
+    res,
+    generateSessionOptions({ ttlInHours: 12 }),
+  )
+  session.userId = userId as NonNullable<SessionData["userId"]>
+  await session.save()
+
+  const setCookieHeader = res.getHeader("set-cookie")
+  if (!setCookieHeader) {
+    throw new Error("iron-session did not emit a Set-Cookie header")
+  }
+
   const cookieStrings = Array.isArray(setCookieHeader)
     ? setCookieHeader
     : [setCookieHeader]
-
-  await ctx.addCookies(
-    cookieStrings.map((cookieString) => {
-      const [nameValue, ...attributeParts] = cookieString.split(";")
-      const [name, ...valueParts] = nameValue.trim().split("=")
-
-      let httpOnly = false
-      let secure = false
-      let sameSite: Cookie["sameSite"]
-
-      for (const attribute of attributeParts) {
-        const [rawKey, ...rawValueParts] = attribute.trim().split("=")
-        const key = rawKey.toLowerCase()
-        const attributeValue = rawValueParts.join("=")
-
-        if (key === "httponly") {
-          httpOnly = true
-        } else if (key === "secure") {
-          secure = true
-        } else if (key === "samesite") {
-          sameSite = attributeValue as Cookie["sameSite"]
-        }
-      }
-
-      return {
-        httpOnly,
-        name,
-        sameSite,
-        secure,
-        url: baseURL,
-        value: valueParts.join("="),
-      } satisfies Cookie
-    }),
+  const { cookieName } = generateSessionOptions({ ttlInHours: 12 })
+  const sessionCookie = cookieStrings.find((cookie) =>
+    cookie.startsWith(`${cookieName}=`),
   )
+  if (!sessionCookie) {
+    throw new Error(`Missing ${cookieName} in Set-Cookie header`)
+  }
+
+  const [cookiePair] = sessionCookie.split(";")
+  if (!cookiePair) {
+    throw new Error(`Invalid ${cookieName} Set-Cookie header`)
+  }
+  const [, ...valueParts] = cookiePair.split("=")
+  return valueParts.join("=")
 }
 
-const signInOnce = async (role: keyof typeof TEST_EMAILS, baseURL: string) => {
+const createAuthenticatedStorageState = async (
+  role: keyof typeof TEST_EMAILS,
+  baseURL: string,
+) => {
   const email = TEST_EMAILS[role]
-  const uuid = crypto.randomUUID()
-  await setSingpassUuidFor(email, uuid)
+  await ensureSingpassUser(email)
+
+  const user = await db
+    .selectFrom("User")
+    .select(["id"])
+    .where("email", "=", email)
+    .executeTakeFirstOrThrow()
+
+  const { cookieName } = generateSessionOptions({ ttlInHours: 12 })
+  const sessionCookieValue = await sealUserSessionCookie(user.id)
+  const { protocol } = new URL(baseURL)
 
   const browser = await chromium.launch()
   const ctx = await browser.newContext({ baseURL })
-  const page = await ctx.newPage()
-  const loginPage = new LoginPage(page)
-
-  await page.goto("/sign-in")
-  await loginPage.fillEmail(email)
-  await page.getByText("Enter OTP").waitFor()
-  await loginPage.fillToken(email)
-
-  const [verifyOtpResponse] = await Promise.all([
-    page.waitForResponse(
-      (response) =>
-        response.url().includes("verifyOtp") && response.status() === 200,
-    ),
-    page.getByRole("button", { name: "Sign in" }).click(),
+  await ctx.addCookies([
+    {
+      httpOnly: true,
+      name: cookieName,
+      sameSite: "Lax",
+      secure: protocol === "https:",
+      url: baseURL,
+      value: sessionCookieValue,
+    },
   ])
 
-  const setCookieHeader = verifyOtpResponse.headers()["set-cookie"]
-  if (setCookieHeader) {
-    await addCookiesFromResponse(ctx, baseURL, setCookieHeader)
-  }
+  const page = await ctx.newPage()
+  await page.addInitScript((storageKey) => {
+    globalThis.localStorage.setItem(storageKey, JSON.stringify(true))
+  }, LOGGED_IN_KEY)
 
-  await page.goto("/sign-in/singpass")
-  await loginPage.mockpassLoginWith(uuid)
-  await page.waitForURL(`${baseURL}/`)
+  await page.goto("/")
+  await page.getByText("Your sites").waitFor({ state: "visible" })
 
   await ctx.storageState({ path: storageStateFor(role) })
   await browser.close()
@@ -101,7 +110,7 @@ const globalSetup = async (config: FullConfig) => {
   await seedRolesForE2E()
 
   for (const role of ROLES) {
-    await signInOnce(role, baseURL)
+    await createAuthenticatedStorageState(role, baseURL)
   }
 }
 
