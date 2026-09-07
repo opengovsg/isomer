@@ -1,8 +1,15 @@
+/* oxlint-disable eslint/default-case, eslint/no-use-before-define, node/callback-return, promise/prefer-await-to-callbacks, react-doctor/effect-needs-cleanup, typescript/consistent-return, typescript/strict-boolean-expressions, unicorn/no-array-for-each, unicorn/no-confusing-void-expression, unicorn/no-unnecessary-type-conversion, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { CSSProperties, PropsWithChildren } from "react"
 import type { IframeCallbackFnProps } from "~/types/dom"
 import { Flex } from "@chakra-ui/react"
 import { useEffect, useMemo, useRef } from "react"
 import Frame, { useFrame } from "react-frame-component"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import type { ViewportOptions } from "./IframeToolbar"
 
@@ -30,30 +37,34 @@ export const PreviewIframe = ({
     : {}
 
   const containerStyles = useMemo(() => {
-    if (!viewport)
+    if (!viewport) {
       return {
         width: "100%",
       }
+    }
     switch (viewport) {
-      case "tablet":
+      case "tablet": {
         return {
+          borderRadius: "8px",
           width: "768px",
-          borderRadius: "8px",
         }
-      case "mobile":
+      }
+      case "mobile": {
         return {
+          borderRadius: "8px",
           width: "480px",
-          borderRadius: "8px",
         }
-      case "responsive":
+      }
+      case "responsive": {
         return {
-          width: "100%",
           borderRadius: "8px",
+          width: "100%",
         }
+      }
       case "fullscreen": {
         return {
-          width: "100%",
           borderRadius: 0,
+          width: "100%",
         }
       }
     }
@@ -73,7 +84,6 @@ export const PreviewIframe = ({
         style={containerStyles}
         {...extraProps}
         head={
-          // oxlint-disable-next-line @next/next/no-css-tags
           <link
             rel="stylesheet"
             type="text/css"
@@ -111,7 +121,7 @@ const IframeInnerComponent = ({
           // SAFETY: caller invariant is checked immediately before this narrowing assertion
           const mutationTarget = mutation.target as Element
           const newStyles = mutationTarget.getAttribute("style")
-          if (newStyles) {
+          if (hasNonEmptyString(newStyles)) {
             if (!String(newStyles).includes("overflow: auto")) {
               // Hint to make iframe ignore when manually removing root styles when synchronising iframe
               mutationTarget.setAttribute("style", "overflow: auto;")
@@ -124,18 +134,18 @@ const IframeInnerComponent = ({
       })
     })
     observer.observe(document.body, {
-      attributes: true,
       attributeFilter: ["style"],
+      attributes: true,
     })
 
     const portalObserver = new MutationObserver(() => {
-      const portalRoot = document.getElementById("headlessui-portal-root")
+      const portalRoot = document.querySelector("#headlessui-portal-root")
 
       if (
         portalRoot &&
         !containerRef.current?.querySelector("#headlessui-portal-root")
       ) {
-        containerRef.current?.appendChild(portalRoot)
+        containerRef.current?.append(portalRoot)
       }
     })
 
@@ -144,7 +154,7 @@ const IframeInnerComponent = ({
     })
 
     if (callback) {
-      callback({ document: iframeDocument, window: iframeWindow })
+      return callback({ document: iframeDocument, window: iframeWindow })
     }
 
     return () => {

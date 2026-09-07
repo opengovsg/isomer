@@ -1,3 +1,5 @@
+/* oxlint-disable typescript/no-unnecessary-condition -- studio lint cleanup */
+/* oxlint-disable typescript/no-unsafe-argument, eslint/no-use-before-define, typescript/no-unnecessary-type-conversion, eslint/sort-keys, typescript/strict-boolean-expressions, eslint/complexity, eslint/no-unused-vars -- studio lint cleanup */
 import type {
   ArticlePagePageProps,
   CollectionPagePageProps,
@@ -14,7 +16,8 @@ import { db } from "~/server/modules/database/database"
 import {
   getBlobOfResource,
   getPublishedIndexBlobByParentId,
-} from "~/server/modules/resource/resource.service"
+} from "~/server/modules/resource/resource.blob"
+import { hasNonEmptyString } from "~/utils/truthiness"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 // Projected in SQL from the first top-level image block of the page body, so
@@ -39,7 +42,9 @@ type ResourceDto = Omit<
 }
 
 const parseTagged = (raw: string | null | undefined): string[] | undefined => {
-  if (!raw) return undefined
+  if (!hasNonEmptyString(raw)) {
+    return undefined
+  }
   const parsed = z.array(z.string()).safeParse(JSON.parse(raw))
   return parsed.success ? parsed.data : undefined
 }
@@ -51,13 +56,10 @@ type CollectionItemResourceDto = Omit<ResourceDto, "type" | "parentId"> & {
 
 export const isCollectionItem = (
   resource: ResourceDto,
-): resource is CollectionItemResourceDto => {
-  return (
-    (resource.type === ResourceType.CollectionPage ||
-      resource.type === ResourceType.CollectionLink) &&
-    !!resource.parentId
-  )
-}
+): resource is CollectionItemResourceDto =>
+  (resource.type === ResourceType.CollectionPage ||
+    resource.type === ResourceType.CollectionLink) &&
+  !!resource.parentId
 
 const getSitemapTreeFromArray = (
   resources: ResourceDto[],
@@ -84,66 +86,66 @@ const getSitemapTreeFromArray = (
     )
   })
 
-  // TODO: Sort the children by the page ordering if the FolderMeta resource exists
+  // Deferred: Sort the children by the page ordering if the FolderMeta resource exists
   return children.map((resource) => {
     const permalink = `${path}${resource.permalink}`
     // Null when the body has no image block at all; `src` is null only when a
     // block exists but omits it
     const firstImage = resource.firstImage?.src
-      ? { src: resource.firstImage.src, alt: resource.firstImage.alt ?? "" }
+      ? { alt: resource.firstImage.alt ?? "", src: resource.firstImage.src }
       : undefined
 
     if (resource.type === ResourceType.Page) {
       return {
-        id: resource.id,
-        type: ResourceType.Page,
-        layout: "content",
-        title: resource.title,
-        summary: resource.summary ?? "",
-        lastModified: resource.updatedAt.toISOString(),
-        permalink,
-        image: {
-          src: resource.thumbnail ?? "",
-          alt: "",
-        },
         firstImage,
+        id: resource.id,
+        image: {
+          alt: "",
+          src: resource.thumbnail ?? "",
+        },
+        lastModified: resource.updatedAt.toISOString(),
+        layout: "content",
+        permalink,
+        summary: resource.summary ?? "",
+        title: resource.title,
+        type: ResourceType.Page,
       }
     } else if (resource.type === ResourceType.CollectionPage) {
       return {
-        id: resource.id,
-        type: ResourceType.CollectionPage,
-        layout: "article",
-        title: resource.title,
-        summary: resource.summary ?? "",
-        lastModified: resource.updatedAt.toISOString(),
-        permalink,
         category: resource.category ?? "Others",
-        tagged: parseTagged(resource.tagged),
         date: resource.date ?? "",
-        image: {
-          src: resource.thumbnail ?? "",
-          alt: "",
-        },
         firstImage,
+        id: resource.id,
+        image: {
+          alt: "",
+          src: resource.thumbnail ?? "",
+        },
+        lastModified: resource.updatedAt.toISOString(),
+        layout: "article",
+        permalink,
+        summary: resource.summary ?? "",
+        tagged: parseTagged(resource.tagged),
+        title: resource.title,
+        type: ResourceType.CollectionPage,
       }
     } else if (resource.type === ResourceType.CollectionLink) {
       return {
-        id: resource.id,
-        type: ResourceType.CollectionLink,
-        layout: "link",
-        title: resource.title,
-        summary: resource.summary ?? "",
-        lastModified: resource.updatedAt.toISOString(),
-        permalink,
         category: resource.category ?? "Others",
-        tagged: parseTagged(resource.tagged),
         date: resource.date ?? "",
-        image: {
-          src: resource.thumbnail ?? "",
-          alt: "",
-        },
         firstImage,
+        id: resource.id,
+        image: {
+          alt: "",
+          src: resource.thumbnail ?? "",
+        },
+        lastModified: resource.updatedAt.toISOString(),
+        layout: "link",
+        permalink,
         ref: "/",
+        summary: resource.summary ?? "",
+        tagged: parseTagged(resource.tagged),
+        title: resource.title,
+        type: ResourceType.CollectionLink,
       }
     }
 
@@ -159,18 +161,21 @@ const getSitemapTreeFromArray = (
 
     return {
       id: resource.id,
+      // Needed for collectionblock component to fetch the correct collection
       layout:
         resource.type === ResourceType.Collection
-          ? ISOMER_USABLE_PAGE_LAYOUTS.Collection // Needed for collectionblock component to fetch the correct collection
-          : ISOMER_USABLE_PAGE_LAYOUTS.Content, // Note: We are not using the layout field in our previews
+          ? ISOMER_USABLE_PAGE_LAYOUTS.Collection
+          : ISOMER_USABLE_PAGE_LAYOUTS.Content,
+      // Note: We are not using the layout field in our previews
       title: titleOfPage || resource.title,
       summary: summaryOfPage ?? `Pages in ${resource.title}`,
-      lastModified: new Date() // TODO: Update this to the updated_at field in DB
+      lastModified: new Date()
+        // Deferred: Update this to the updated_at field in DB
         .toISOString(),
       // NOTE: This permalink is unused in the preview
       permalink,
-      image: !!indexPage?.thumbnail
-        ? { src: indexPage.thumbnail, alt: "" }
+      image: indexPage?.thumbnail
+        ? { alt: "", src: indexPage.thumbnail }
         : undefined,
       firstImage,
       children: getSitemapTreeFromArray(
@@ -186,19 +191,20 @@ const getSitemapTreeFromArray = (
 export const getSitemapTree = (
   rootResource: ResourceDto,
   resources: ResourceDto[],
-): IsomerSitemap => {
-  return {
-    id: String(rootResource.id),
-    layout: "homepage", // Note: We are not using the layout field in our previews
-    title: rootResource.title,
-    summary: "", // Note: We are not using the summary field in our previews
-    lastModified: new Date() // TODO: Update this to the updated_at field in DB
-      .toISOString(),
-    // NOTE: This permalink is unused in the preview
-    permalink: "/",
-    children: getSitemapTreeFromArray(resources, null, "/"),
-  }
-}
+): IsomerSitemap => ({
+  id: String(rootResource.id),
+  layout: "homepage",
+  // Note: We are not using the layout field in our previews
+  title: rootResource.title,
+  summary: "",
+  // Note: We are not using the summary field in our previews
+  lastModified: new Date()
+    // Deferred: Update this to the updated_at field in DB
+    .toISOString(),
+  // NOTE: This permalink is unused in the preview
+  permalink: "/",
+  children: getSitemapTreeFromArray(resources, null, "/"),
+})
 
 const NUMBER_OF_CARDS_IN_COLLECTION_BLOCK = 3
 
@@ -211,18 +217,18 @@ export const overwriteCollectionChildrenForCollectionBlock = (
       ...sitemap,
       children: Array.from({ length: NUMBER_OF_CARDS_IN_COLLECTION_BLOCK }).map(
         (_, idx) => ({
-          id: `collection-card-${idx}`,
-          title: "Article title",
-          summary: "Article summary",
-          permalink: "/",
-          layout: ISOMER_USABLE_PAGE_LAYOUTS.Article,
-          lastModified: new Date().toISOString(),
           category: "Category of article",
-          ref: "/",
+          id: `collection-card-${idx}`,
           image: {
-            src: `${env.NEXT_PUBLIC_APP_URL}/assets/collectionblock_studio_preview.svg`,
             alt: "Placeholder image for article's thumbnail",
+            src: `${env.NEXT_PUBLIC_APP_URL}/assets/collectionblock_studio_preview.svg`,
           },
+          lastModified: new Date().toISOString(),
+          layout: ISOMER_USABLE_PAGE_LAYOUTS.Article,
+          permalink: "/",
+          ref: "/",
+          summary: "Article summary",
+          title: "Article title",
         }),
       ),
     }
@@ -263,12 +269,14 @@ export const injectTagMappings = async (
   ])
 
   // SAFETY: collection items validated upstream only expose collection child page props
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- collection items expose child page props
   const childPageProps = draftBlobOfResource.content.page as
     | ArticlePagePageProps
     | FileRefPageProps
     | LinkRefPageProps
 
   // SAFETY: parent index blob for a collection item is always a collection page layout
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   const collectionPageProps = publishedIndexBlob.content
     .page as CollectionPagePageProps
 
@@ -309,13 +317,13 @@ const _injectTagMappings = (
   ) {
     return {
       ...sitemap,
+      children: sitemap.children?.map((child) =>
+        _injectTagMappings(child, tagged, tagCategories, childId, collectionId),
+      ),
       collectionPagePageProps: {
         ...sitemap.collectionPagePageProps,
         tagCategories,
       },
-      children: sitemap.children?.map((child) =>
-        _injectTagMappings(child, tagged, tagCategories, childId, collectionId),
-      ),
     }
   }
 

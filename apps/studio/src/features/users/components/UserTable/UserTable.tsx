@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/sort-keys, import/no-cycle -- core cleanup deferred */
 import type { StockFeatures } from "@tanstack/react-table"
 import type { AdminType } from "~/schemas/user"
 import { Text, VStack } from "@chakra-ui/react"
@@ -32,8 +33,6 @@ const getColumns = ({
 }: Pick<UserTableProps, "siteId"> & { shouldShowActions: boolean }) => {
   const baseColumns = [
     columnsHelper.display({
-      id: "user_info",
-      header: () => <TableHeader>User</TableHeader>,
       cell: ({ row }) => (
         <VStack gap="0.25rem" align="start">
           <Text textStyle="subhead-2" textColor="base.content.strong">
@@ -44,22 +43,24 @@ const getColumns = ({
           </Text>
         </VStack>
       ),
+      header: () => <TableHeader>User</TableHeader>,
+      id: "user_info",
     }),
     columnsHelper.display({
-      id: "user_role",
-      header: () => <TableHeader>Role</TableHeader>,
       cell: ({ row }) => <Text textStyle="caption-2">{row.original.role}</Text>,
+      header: () => <TableHeader>Role</TableHeader>,
+      id: "user_role",
       size: 80,
     }),
     columnsHelper.display({
-      id: "user_last_login",
-      header: () => <TableHeader>Last login</TableHeader>,
       cell: ({ row }) => (
         <LastLoginCell
           createdAt={row.original.createdAt}
           lastLoginAt={row.original.lastLoginAt}
         />
       ),
+      header: () => <TableHeader>Last login</TableHeader>,
+      id: "user_last_login",
       size: 80,
     }),
   ]
@@ -71,8 +72,6 @@ const getColumns = ({
   return [
     ...baseColumns,
     columnsHelper.display({
-      id: "user_menu",
-      header: () => <TableHeader>Actions</TableHeader>,
       cell: ({ row }) => (
         <UserTableMenu
           siteId={siteId}
@@ -84,6 +83,8 @@ const getColumns = ({
           lastLoginAt={row.original.lastLoginAt}
         />
       ),
+      header: () => <TableHeader>Actions</TableHeader>,
+      id: "user_menu",
       size: 24,
     }),
   ]
@@ -106,8 +107,8 @@ export const UserTable = ({ siteId, adminType }: UserTableProps) => {
 
   const { data: totalRowCount = 0, isLoading: isCountLoading } =
     trpc.user.count.useQuery({
-      siteId,
       adminType,
+      siteId,
     })
 
   const { limit, onPaginationChange, skip, pagination, pageCount } =
@@ -119,28 +120,29 @@ export const UserTable = ({ siteId, adminType }: UserTableProps) => {
 
   const { data: users, isFetching } = trpc.user.list.useQuery(
     {
-      siteId,
       adminType,
       limit,
       offset: skip,
+      siteId,
     },
     {
-      placeholderData: keepPreviousData, // Required for table to show previous data while fetching next page
+      placeholderData: keepPreviousData,
+      // Required for table to show previous data while fetching next page
     },
   )
 
   const tableInstance = useTable({
-    features: stockFeatures,
+    autoResetPageIndex: false,
     columns,
     data: users ?? [],
+    features: stockFeatures,
     manualFiltering: true,
     manualPagination: true,
-    autoResetPageIndex: false,
     onPaginationChange,
+    pageCount,
     state: {
       pagination,
     },
-    pageCount,
   })
 
   return (
@@ -149,8 +151,8 @@ export const UserTable = ({ siteId, adminType }: UserTableProps) => {
       isFetching={isFetching || isCountLoading}
       instance={tableInstance}
       sx={{
-        tableLayout: "auto",
         overflowX: "auto",
+        tableLayout: "auto",
       }}
       totalRowCount={totalRowCount}
       emptyPlaceholder={

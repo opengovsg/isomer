@@ -7,28 +7,29 @@ const OTHER_REQUIRED_OPTION_ID = "8db9da32-1fcf-33f3-a2d6-22e26gf652e0"
 
 const requiredCategory: CollectionTags[number] = {
   id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
-  label: "Topic",
   isRequired: true,
+  label: "Topic",
   options: [{ id: REQUIRED_OPTION_ID, label: "Technology" }],
 }
 
 const optionalCategory: CollectionTags[number] = {
   id: "a58bd21c-69dd-5483-b678-1f13c3d4e580",
-  label: "Region",
   isRequired: false,
+  label: "Region",
   options: [{ id: OPTIONAL_OPTION_ID, label: "Central" }],
 }
 
 const otherRequiredCategory: CollectionTags[number] = {
   id: "b69ce32d-7aee-6594-c789-2g24d4e5f691",
-  label: "Type",
   isRequired: true,
+  label: "Type",
   options: [{ id: OTHER_REQUIRED_OPTION_ID, label: "Notice" }],
 }
 
 describe("validateRequiredTags", () => {
   it("returns valid when there are no tag categories", () => {
     // Act
+    // oxlint-disable-next-line unicorn/no-confusing-void-expression -- core cleanup deferred
     const result = validateRequiredTags([], ["anything"])
 
     // Assert
@@ -38,7 +39,8 @@ describe("validateRequiredTags", () => {
 
   it("returns valid when no categories are required", () => {
     // Act
-    const result = validateRequiredTags([optionalCategory], undefined)
+    // oxlint-disable-next-line unicorn/no-confusing-void-expression -- core cleanup deferred
+    const result = validateRequiredTags([optionalCategory])
 
     // Assert
     expect(result.isValid).toBe(true)
@@ -47,6 +49,7 @@ describe("validateRequiredTags", () => {
 
   it("returns valid when every required category has a selected option", () => {
     // Act
+    // oxlint-disable-next-line unicorn/no-confusing-void-expression -- core cleanup deferred
     const result = validateRequiredTags(
       [requiredCategory, optionalCategory],
       [REQUIRED_OPTION_ID],
@@ -59,6 +62,7 @@ describe("validateRequiredTags", () => {
 
   it("returns invalid when a required category has no selection", () => {
     // Act
+    // oxlint-disable-next-line unicorn/no-confusing-void-expression -- core cleanup deferred
     const result = validateRequiredTags([requiredCategory], [])
 
     // Assert
@@ -68,7 +72,8 @@ describe("validateRequiredTags", () => {
 
   it("returns invalid when tagged is undefined and a category is required", () => {
     // Act
-    const result = validateRequiredTags([requiredCategory], undefined)
+    // oxlint-disable-next-line unicorn/no-confusing-void-expression -- core cleanup deferred
+    const result = validateRequiredTags([requiredCategory])
 
     // Assert
     expect(result.isValid).toBe(false)
@@ -77,6 +82,7 @@ describe("validateRequiredTags", () => {
 
   it("does not require selections for optional categories", () => {
     // Act
+    // oxlint-disable-next-line unicorn/no-confusing-void-expression -- core cleanup deferred
     const result = validateRequiredTags(
       [requiredCategory, optionalCategory],
       [REQUIRED_OPTION_ID],
@@ -89,6 +95,7 @@ describe("validateRequiredTags", () => {
 
   it("returns only unfilled required categories when multiple are configured", () => {
     // Act
+    // oxlint-disable-next-line unicorn/no-confusing-void-expression -- core cleanup deferred
     const result = validateRequiredTags(
       [requiredCategory, otherRequiredCategory, optionalCategory],
       [REQUIRED_OPTION_ID],
@@ -103,12 +110,13 @@ describe("validateRequiredTags", () => {
     // Arrange
     const emptyRequiredCategory: CollectionTags[number] = {
       id: "d81ef54f-9cgg-87b6-e9ab-4i46f6g7h813",
-      label: "Deleted options",
       isRequired: true,
+      label: "Deleted options",
       options: [],
     }
 
     // Act
+    // oxlint-disable-next-line unicorn/no-confusing-void-expression -- core cleanup deferred
     const result = validateRequiredTags(
       [emptyRequiredCategory, requiredCategory],
       [],
@@ -128,10 +136,8 @@ describe("validateRequiredTags", () => {
     }
 
     // Act
-    const result = validateRequiredTags(
-      [categoryWithoutRequiredFlag],
-      undefined,
-    )
+    // oxlint-disable-next-line unicorn/no-confusing-void-expression -- core cleanup deferred
+    const result = validateRequiredTags([categoryWithoutRequiredFlag])
 
     // Assert
     expect(result.isValid).toBe(true)

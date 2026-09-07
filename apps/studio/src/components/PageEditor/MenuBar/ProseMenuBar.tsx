@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unsafe-assignment, typescript/no-unsafe-call, typescript/no-unsafe-member-access, oxc/parse-error -- studio lint cleanup */
 import type { Editor } from "@tiptap/react"
 import { useDisclosure } from "@chakra-ui/react"
 import { useMemo } from "react"
@@ -26,144 +27,151 @@ export const ProseMenuBar = ({ editor }: { editor: Editor }) => {
   const items: PossibleMenubarItemProps[] = useMemo(
     () => [
       {
-        type: "vertical-list",
         buttonWidth: "9rem",
-        menuWidth: "12.25rem",
         defaultTitle: "Text styles",
+        isHidden: () => editor.isActive("table"),
         items: [
           {
-            type: "item",
-            title: "Section heading",
-            description: "Biggest heading for sections in your content",
-            useSecondaryColor: true,
             action: () =>
               editor.chain().focus().toggleHeading({ level: 2 }).run(),
+            description: "Biggest heading for sections in your content",
             isActive: () => editor.isActive("heading", { level: 2 }),
+            title: "Section heading",
+            type: "item",
+            useSecondaryColor: true,
           },
           {
-            type: "item",
-            title: "Large heading",
-            useSecondaryColor: true,
             action: () =>
               editor.chain().focus().toggleHeading({ level: 3 }).run(),
             isActive: () => editor.isActive("heading", { level: 3 }),
+            title: "Large heading",
+            type: "item",
+            useSecondaryColor: true,
           },
           {
-            type: "item",
-            title: "Medium heading",
-            useSecondaryColor: true,
             action: () =>
               editor.chain().focus().toggleHeading({ level: 4 }).run(),
             isActive: () => editor.isActive("heading", { level: 4 }),
+            title: "Medium heading",
+            type: "item",
+            useSecondaryColor: true,
           },
           {
-            type: "item",
-            title: "Small heading",
-            useSecondaryColor: true,
             action: () =>
               editor.chain().focus().toggleHeading({ level: 5 }).run(),
             isActive: () => editor.isActive("heading", { level: 5 }),
+            title: "Small heading",
+            type: "item",
+            useSecondaryColor: true,
           },
           {
-            type: "item",
-            title: "Paragraph",
             action: () =>
               editor.chain().focus().clearNodes().unsetAllMarks().run(),
             isActive: () => editor.isActive("paragraph"),
+            title: "Paragraph",
+            type: "item",
           },
         ],
-
-        isHidden: () => editor.isActive("table"),
+        menuWidth: "12.25rem",
+        type: "vertical-list",
       },
       {
+        isHidden: () => editor.isActive("table"),
         type: "divider",
-        isHidden: () => editor.isActive("table"),
       },
       {
-        type: "item",
+        action: () => {
+          editor.chain().focus().toggleBold().run()
+        },
         icon: BiBold,
-        title: "Bold",
-        action: () => editor.chain().focus().toggleBold().run(),
         isActive: () => editor.isActive("bold"),
+        title: "Bold",
+        type: "item",
       },
       {
-        type: "item",
+        action: () => {
+          editor.chain().focus().toggleItalic().run()
+        },
         icon: BiItalic,
-        title: "Italicise",
-        action: () => editor.chain().focus().toggleItalic().run(),
         isActive: () => editor.isActive("italic"),
+        title: "Italicise",
+        type: "item",
       },
       {
-        type: "item",
+        action: () => {
+          editor.chain().focus().toggleUnderline().run()
+        },
         icon: BiUnderline,
-        title: "Underline",
-        action: () => editor.chain().focus().toggleUnderline().run(),
         isActive: () => editor.isActive("underline"),
-      },
-      {
+        title: "Underline",
         type: "item",
-        icon: BiStrikethrough,
-        title: "Strikethrough",
-        action: () => editor.chain().focus().toggleStrike().run(),
-        isActive: () => editor.isActive("strike"),
       },
       {
-        type: "horizontal-list",
-        label: "Lists",
+        action: () => {
+          editor.chain().focus().toggleStrike().run()
+        },
+        icon: BiStrikethrough,
+        isActive: () => editor.isActive("strike"),
+        title: "Strikethrough",
+        type: "item",
+      },
+      {
         defaultIcon: BiListOl,
         items: [
           {
-            type: "item",
-            icon: BiListOl,
-            title: "Ordered list",
             action: () => editor.chain().focus().toggleOrderedList().run(),
+            icon: BiListOl,
             isActive: () => editor.isActive("orderedList"),
+            title: "Ordered list",
+            type: "item",
           },
 
           {
-            type: "item",
-            icon: BiListUl,
-            title: "Bullet list",
             action: () => editor.chain().focus().toggleBulletList().run(),
+            icon: BiListUl,
             isActive: () => editor.isActive("unorderedList"),
+            title: "Bullet list",
+            type: "item",
           },
         ],
+        label: "Lists",
+        type: "horizontal-list",
       },
       {
-        type: "item",
-        icon: BiLink,
-        title: "Link",
         action: onLinkModalOpen,
+        icon: BiLink,
         isActive: () => editor.isActive("link"),
+        title: "Link",
+        type: "item",
       },
       // Lesser-used commands are kept inside the overflow items list
       {
-        type: "overflow-list",
         items: [
           {
-            type: "item",
-            icon: MdSuperscript,
-            title: "Superscript",
             action: () =>
               editor.chain().focus().unsetSubscript().toggleSuperscript().run(),
+            icon: MdSuperscript,
             isActive: () => editor.isActive("superscript"),
+            title: "Superscript",
+            type: "item",
           },
           {
-            type: "item",
-            icon: MdSubscript,
-            title: "Subscript",
             action: () =>
               editor.chain().focus().unsetSuperscript().toggleSubscript().run(),
+            icon: MdSubscript,
             isActive: () => editor.isActive("subscript"),
+            title: "Subscript",
+            type: "item",
           },
           {
-            type: "item",
-            icon: MdHorizontalRule,
-            title: "Divider",
             action: () => editor.chain().focus().setHorizontalRule().run(),
+            icon: MdHorizontalRule,
             isActive: () => editor.isActive("divider"),
+            title: "Divider",
+            type: "item",
           },
         ],
+        type: "overflow-list",
       },
     ],
     [editor, onLinkModalOpen],

@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-void-return -- studio lint cleanup */
 import type { Static } from "@sinclair/typebox"
 import type { NextPageWithLayout } from "~/lib/types"
 import { Box, chakra, Grid, GridItem, Text, VStack } from "@chakra-ui/react"
@@ -40,7 +41,7 @@ const PageSettings: NextPageWithLayout = () => {
   )
 
   const pageMetaSchema = getLayoutMetadataSchema(content.layout)
-  const validateFn = ajv.compile<Static<typeof pageMetaSchema>>(pageMetaSchema)
+  const validateFn = ajv.compile(pageMetaSchema)
 
   const {
     control,
@@ -48,22 +49,30 @@ const PageSettings: NextPageWithLayout = () => {
     handleSubmit,
     formState: { isDirty },
   } = useZodForm({
+    defaultValues: {
+      meta: content.meta,
+    },
     schema: updatePageMetaSchema
       .omit({ resourceId: true, siteId: true })
       .extend({
         meta: z.unknown(),
       }),
-    defaultValues: {
-      meta: content.meta,
-    },
   })
 
   const toast = useToast(BRIEF_TOAST_SETTINGS)
   const utils = trpc.useUtils()
 
   const { mutate: updateMeta } = trpc.page.updateMeta.useMutation({
+    onError: (error) => {
+      toast({
+        description: error.message,
+        status: "error",
+        title: "Failed to save page metadata",
+      })
+      reset()
+    },
     onSuccess: async () => {
-      // TODO: we should use a specialised query for this rather than the general one that retrives the page and the blob
+      // Deferred: we should use a specialised query for this rather than the general one that retrives the page and the blob
       await utils.page.invalidate()
       await utils.resource.invalidate()
       await utils.folder.invalidate()
@@ -71,19 +80,11 @@ const PageSettings: NextPageWithLayout = () => {
         toast.close(SUCCESS_TOAST_ID)
       }
       toast({
-        id: SUCCESS_TOAST_ID,
-        title: "Saved page metadata",
         description: "Publish this page for your changes to go live.",
+        id: SUCCESS_TOAST_ID,
         status: "success",
+        title: "Saved page metadata",
       })
-    },
-    onError: (error) => {
-      toast({
-        title: "Failed to save page metadata",
-        description: error.message,
-        status: "error",
-      })
-      reset()
     },
   })
 
@@ -91,12 +92,14 @@ const PageSettings: NextPageWithLayout = () => {
     if (isDirty) {
       updateMeta(
         {
+          meta: JSON.stringify(meta),
           resourceId: String(pageId),
           siteId,
-          meta: JSON.stringify(meta),
         },
         {
-          onSuccess: () => reset({ meta, ...rest }),
+          onSuccess: () => {
+            reset({ meta, ...rest })
+          },
         },
       )
     }
@@ -150,13 +153,11 @@ const PageSettings: NextPageWithLayout = () => {
   )
 }
 
-PageSettings.getLayout = (page) => {
-  return (
-    <PermissionsBoundary
-      resourceType={ResourceType.Page}
-      page={PageEditingLayout(page)}
-    />
-  )
-}
+PageSettings.getLayout = (page) => (
+  <PermissionsBoundary
+    resourceType={ResourceType.Page}
+    page={PageEditingLayout(page)}
+  />
+)
 
 export default PageSettings

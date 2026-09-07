@@ -1,3 +1,4 @@
+import type { NextPageWithLayout } from "~/lib/types"
 import { Box, HStack, Text, VStack } from "@chakra-ui/react"
 import { PiUsersBold } from "react-icons/pi"
 import { z } from "zod"
@@ -14,7 +15,6 @@ import {
 } from "~/features/users/components"
 import { CollaboratorsDescription } from "~/features/users/components/CollaboratorsDescription"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { type NextPageWithLayout } from "~/lib/types"
 import { SiteBasicLayout } from "~/templates/layouts/SiteBasicLayout"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
@@ -83,15 +83,11 @@ const SiteUsersPage: NextPageWithLayout = () => {
   )
 }
 
-SiteUsersPage.getLayout = (page: React.ReactNode) => {
-  return (
-    <PermissionsBoundary
-      resourceType={ResourceType.RootPage}
-      page={SiteBasicLayout(
-        <UserManagementLayout>{page}</UserManagementLayout>,
-      )}
-    />
-  )
-}
+SiteUsersPage.getLayout = (page: React.ReactNode) => (
+  <PermissionsBoundary
+    resourceType={ResourceType.RootPage}
+    page={SiteBasicLayout(<UserManagementLayout>{page}</UserManagementLayout>)}
+  />
+)
 
 export default SiteUsersPage

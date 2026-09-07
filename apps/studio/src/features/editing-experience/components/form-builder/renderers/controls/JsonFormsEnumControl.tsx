@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
 import type {
   ControlProps,
   OwnPropsOfEnum,
@@ -12,6 +13,12 @@ import {
   SingleSelect,
 } from "@opengovsg/design-system-react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { formatEnumLabel } from "./utils/formatEnumLabel"
 import { getCustomErrorMessage } from "./utils/getCustomErrorMessage"
@@ -31,38 +38,32 @@ const JsonFormsEnumControl = ({
   path,
   enabled,
   handleChange,
-}: ControlProps & OwnPropsOfEnum) => {
-  return (
-    <Box>
-      <FormControl isRequired={required} isInvalid={!!errors}>
-        <FormLabel description={description}>{label}</FormLabel>
+}: ControlProps & OwnPropsOfEnum) => (
+  <Box>
+    <FormControl isRequired={required} isInvalid={!!errors}>
+      <FormLabel description={description}>{label}</FormLabel>
 
-        <SingleSelect
-          // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          value={data}
-          name={label}
-          items={
-            options?.map((option) => {
-              return {
-                label: formatEnumLabel(option.label),
-                // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                value: option.value,
-              }
-            }) ?? []
-          }
-          isClearable={!required}
-          isDisabled={!enabled}
-          onChange={(value) => {
-            handleChange(path, value || undefined)
-          }}
-        />
+      <SingleSelect
+        value={data}
+        name={label}
+        items={
+          options?.map((option) => ({
+            label: formatEnumLabel(option.label),
+            value: option.value,
+          })) ?? []
+        }
+        isClearable={!isNullableBooleanTrue(required)}
+        isDisabled={!enabled}
+        onChange={(value) => {
+          handleChange(path, value || undefined)
+        }}
+      />
 
-        <FormErrorMessage>
-          {label} {getCustomErrorMessage(errors)}
-        </FormErrorMessage>
-      </FormControl>
-    </Box>
-  )
-}
+      <FormErrorMessage>
+        {label} {getCustomErrorMessage(errors)}
+      </FormErrorMessage>
+    </FormControl>
+  </Box>
+)
 
 export default withJsonFormsEnumProps(JsonFormsEnumControl)

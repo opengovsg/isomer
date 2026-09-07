@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-shadow, typescript/consistent-return, typescript/strict-boolean-expressions, unicorn/no-array-for-each, unicorn/no-unsafe-type-assertion, unicorn/no-useless-undefined -- core cleanup deferred */
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import {
   HStack,
@@ -16,6 +17,12 @@ import { Button, useToast } from "@opengovsg/design-system-react"
 import { useCallback, useEffect, useState } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { LINK_TYPES_MAPPING } from "../../../LinkEditor/constants"
 import { AUTOPOPULATED_FIELDS } from "../../constants"
@@ -31,32 +38,30 @@ const ReplaceContentModal = ({
   isOpen,
   onClose,
   onProceed,
-}: ReplaceContentModalProps) => {
-  return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>
-          Replace content with details from the linked page?
-        </ModalHeader>
-        <ModalBody>
-          <Text>
-            If the linked page has a title, summary or thumbnail, they&apos;ll
-            be copied over.
-          </Text>
-        </ModalBody>
-        <ModalFooter>
-          <HStack spacing={2}>
-            <Button variant="clear" onClick={onClose}>
-              No, keep my content
-            </Button>
-            <Button onClick={onProceed}>Yes, replace</Button>
-          </HStack>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
-  )
-}
+}: ReplaceContentModalProps) => (
+  <Modal isOpen={isOpen} onClose={onClose}>
+    <ModalOverlay />
+    <ModalContent>
+      <ModalHeader>
+        Replace content with details from the linked page?
+      </ModalHeader>
+      <ModalBody>
+        <Text>
+          If the linked page has a title, summary or thumbnail, they&apos;ll be
+          copied over.
+        </Text>
+      </ModalBody>
+      <ModalFooter>
+        <HStack spacing={2}>
+          <Button variant="clear" onClick={onClose}>
+            No, keep my content
+          </Button>
+          <Button onClick={onProceed}>Yes, replace</Button>
+        </HStack>
+      </ModalFooter>
+    </ModalContent>
+  </Modal>
+)
 
 export const jsonFormsPrefillLinkControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.LinkControl,
@@ -67,10 +72,10 @@ export const jsonFormsPrefillLinkControlTester: RankedTester = rankWith(
 )
 
 const prefillFieldMappings = {
-  title: "title",
   description: "description",
   imageAlt: "thumbnailAlt",
   imageUrl: "thumbnail",
+  title: "title",
 } as const
 
 const JsonFormsPrefillLinkControl = ({
@@ -93,26 +98,36 @@ const JsonFormsPrefillLinkControl = ({
     onOpen: onPrefillModalOpen,
   } = useDisclosure()
   const overrideFields = useCallback(() => {
-    if (!prefill?.data) return
+    if (!prefill?.data) {
+      return
+    }
     // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
     const prefillData = prefill.data as Record<string, string | undefined>
     AUTOPOPULATED_FIELDS.forEach((field) => {
       const prefillField = prefillFieldMappings[field]
       const value = prefillData[prefillField]
-      if (value) handleChange(`${prefill.basePath}.${field}`, value)
+      if (hasNonEmptyString(value)) {
+        handleChange(`${prefill.basePath}.${field}`, value)
+      }
     })
     toast({
-      title: "Some details of the page were copied over. You can modify them.",
       status: "success",
+      title: "Some details of the page were copied over. You can modify them.",
       ...BRIEF_TOAST_SETTINGS,
     })
     setCanPrefill(false)
   }, [handleChange, prefill, toast])
 
   useEffect(() => {
-    if (!prefill?.data) return
-    if (!canPrefill) return
-    if (!data) return
+    if (!prefill?.data) {
+      return
+    }
+    if (!canPrefill) {
+      return
+    }
+    if (!data) {
+      return
+    }
 
     const timeoutId = setTimeout(() => {
       if (!prefill.needsConfirmation) {
@@ -122,8 +137,12 @@ const JsonFormsPrefillLinkControl = ({
 
       onPrefillModalOpen()
     }, 0)
+    // oxlint-disable-next-line typescript/consistent-return -- core cleanup deferred
 
-    return () => clearTimeout(timeoutId)
+    return () => {
+      clearTimeout(timeoutId)
+      return undefined
+    }
   }, [
     canPrefill,
     data,

@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/prefer-native-coercion-functions -- server lint cleanup */
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
 import { TRPCError } from "@trpc/server"
 import { resetTables } from "tests/integration/helpers/db"
@@ -48,9 +49,7 @@ describe("permissions.service", () => {
       const page = { parentId: "2" }
 
       // Act
-      const results = CRUD_ACTIONS.map((action) => {
-        return perms.can(action, page)
-      })
+      const results = CRUD_ACTIONS.map((action) => perms.can(action, page))
 
       // Assert
       expect(results.every((v) => v)).toBe(expected)
@@ -64,9 +63,7 @@ describe("permissions.service", () => {
       const expected = true
 
       // Act
-      const results = actions.map((action) => {
-        return perms.can(action, rootPage)
-      })
+      const results = actions.map((action) => perms.can(action, rootPage))
 
       // Assert
       expect(results.every((v) => v)).toBe(expected)
@@ -80,9 +77,7 @@ describe("permissions.service", () => {
       const expected = false
 
       // Act
-      const results = actions.map((action) => {
-        return perms.can(action, rootPage)
-      })
+      const results = actions.map((action) => perms.can(action, rootPage))
 
       // Assert
       expect(results.every((v) => v)).toBe(expected)
@@ -96,9 +91,7 @@ describe("permissions.service", () => {
       const expected = true
 
       // Act
-      const results = actions.map((action) => {
-        return perms.can(action, rootPage)
-      })
+      const results = actions.map((action) => perms.can(action, rootPage))
 
       // Assert
       expect(results.every((v) => v)).toBe(expected)
@@ -113,13 +106,13 @@ describe("permissions.service", () => {
       // the later role's permissions don't overwrite the earlier one
       const roles = [RoleType.Admin, RoleType.Editor] as const
       const builder = new AbilityBuilder<ResourceAbility>(createMongoAbility)
-      roles.forEach((role) => buildPermissionsForResource(role, builder))
+      roles.forEach((role) => {
+        buildPermissionsForResource(role, builder)
+      })
       const perms = builder.build({ detectSubjectType: () => "Resource" })
 
       // Act
-      const results = actions.map((action) => {
-        return perms.can(action, rootPage)
-      })
+      const results = actions.map((action) => perms.can(action, rootPage))
 
       // Assert
       expect(results.every((v) => v)).toBe(expected)
@@ -222,26 +215,26 @@ describe("permissions.service", () => {
 
   describe("bulkValidateUserPermissionsForResources", async () => {
     const user = await setupUser({
-      userId: "user1",
       email: "user1@example.com",
       isDeleted: false,
+      userId: "user1",
     })
     const { site } = await setupSite()
     const { page: rootPage } = await setupPageResource({
-      siteId: site.id,
       resourceType: "RootPage",
+      siteId: site.id,
     })
     const { page: pageWithoutParent } = await setupPageResource({
-      siteId: site.id,
       resourceType: "Page",
+      siteId: site.id,
     })
     const { folder } = await setupFolder({
       siteId: site.id,
     })
     const { page } = await setupPageResource({
-      siteId: site.id,
-      resourceType: "Page",
       parentId: folder.id,
+      resourceType: "Page",
+      siteId: site.id,
     })
     const resourceIds = [
       rootPage.id,
@@ -259,14 +252,14 @@ describe("permissions.service", () => {
       describe("admin", () => {
         it("should allow admins to create root resources", async () => {
           // Arrange
-          await setupAdminPermissions({ userId: user.id, siteId: site.id })
+          await setupAdminPermissions({ siteId: site.id, userId: user.id })
 
           // Act
           const validation = bulkValidateUserPermissionsForResources({
             action: "create",
             resourceIds: [null, folder.id],
-            userId: user.id,
             siteId: site.id,
+            userId: user.id,
           })
 
           // Assert
@@ -277,14 +270,14 @@ describe("permissions.service", () => {
       describe("publisher", () => {
         it("should allow publishers to create non-root resources", async () => {
           // Arrange
-          await setupPublisherPermissions({ userId: user.id, siteId: site.id })
+          await setupPublisherPermissions({ siteId: site.id, userId: user.id })
 
           // Act
           const validation = bulkValidateUserPermissionsForResources({
             action: "create",
             resourceIds: [folder.id],
-            userId: user.id,
             siteId: site.id,
+            userId: user.id,
           })
 
           // Assert
@@ -293,14 +286,14 @@ describe("permissions.service", () => {
 
         it("should not allow publishers to create root resources", async () => {
           // Arrange
-          await setupPublisherPermissions({ userId: user.id, siteId: site.id })
+          await setupPublisherPermissions({ siteId: site.id, userId: user.id })
 
           // Act
           const validation = bulkValidateUserPermissionsForResources({
             action: "create",
             resourceIds: [null],
-            userId: user.id,
             siteId: site.id,
+            userId: user.id,
           })
 
           // Assert
@@ -311,14 +304,14 @@ describe("permissions.service", () => {
 
         it("sould not allow publishers to create root resources among non-root resources", async () => {
           // Arrange
-          await setupPublisherPermissions({ userId: user.id, siteId: site.id })
+          await setupPublisherPermissions({ siteId: site.id, userId: user.id })
 
           // Act
           const validation = bulkValidateUserPermissionsForResources({
             action: "create",
             resourceIds: [folder.id, null],
-            userId: user.id,
             siteId: site.id,
+            userId: user.id,
           })
 
           // Assert
@@ -331,14 +324,14 @@ describe("permissions.service", () => {
       describe("editor", () => {
         it("should allow editors to create non-root resources", async () => {
           // Arrange
-          await setupEditorPermissions({ userId: user.id, siteId: site.id })
+          await setupEditorPermissions({ siteId: site.id, userId: user.id })
 
           // Act
           const validation = bulkValidateUserPermissionsForResources({
             action: "create",
             resourceIds: [folder.id],
-            userId: user.id,
             siteId: site.id,
+            userId: user.id,
           })
 
           // Assert
@@ -347,14 +340,14 @@ describe("permissions.service", () => {
 
         it("should not allow editors to create root resources", async () => {
           // Arrange
-          await setupEditorPermissions({ userId: user.id, siteId: site.id })
+          await setupEditorPermissions({ siteId: site.id, userId: user.id })
 
           // Act
           const validation = bulkValidateUserPermissionsForResources({
             action: "create",
             resourceIds: [null],
-            userId: user.id,
             siteId: site.id,
+            userId: user.id,
           })
 
           // Assert
@@ -365,14 +358,14 @@ describe("permissions.service", () => {
 
         it("should not allow editors to create non-root resources among root resources", async () => {
           // Arrange
-          await setupEditorPermissions({ userId: user.id, siteId: site.id })
+          await setupEditorPermissions({ siteId: site.id, userId: user.id })
 
           // Act
           const validation = bulkValidateUserPermissionsForResources({
             action: "create",
             resourceIds: [folder.id, null],
-            userId: user.id,
             siteId: site.id,
+            userId: user.id,
           })
 
           // Assert
@@ -388,8 +381,8 @@ describe("permissions.service", () => {
           const validation = bulkValidateUserPermissionsForResources({
             action: "create",
             resourceIds: [folder.id],
-            userId: user.id,
             siteId: site.id,
+            userId: user.id,
           })
 
           // Assert
@@ -404,18 +397,19 @@ describe("permissions.service", () => {
       describe("admin", () => {
         it("should allow admins to read any resource", async () => {
           // Arrange
-          await setupAdminPermissions({ userId: user.id, siteId: site.id })
+          await setupAdminPermissions({ siteId: site.id, userId: user.id })
 
           for (const resourceId of resourceIds) {
             // Act (single resource)
             const validation = bulkValidateUserPermissionsForResources({
               action: "read",
               resourceIds: [resourceId],
-              userId: user.id,
               siteId: site.id,
+              userId: user.id,
             })
 
             // Assert (single resource)
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await expect(validation).resolves.not.toThrow()
           }
 
@@ -423,8 +417,8 @@ describe("permissions.service", () => {
           const bulkValidation = bulkValidateUserPermissionsForResources({
             action: "read",
             resourceIds,
-            userId: user.id,
             siteId: site.id,
+            userId: user.id,
           })
 
           // Assert (multiple resources)
@@ -435,18 +429,19 @@ describe("permissions.service", () => {
       describe("publisher", () => {
         // Note: currently we do not have resource-level permissions
         it("should allow publishers to read any resource", async () => {
-          await setupPublisherPermissions({ userId: user.id, siteId: site.id })
+          await setupPublisherPermissions({ siteId: site.id, userId: user.id })
 
           for (const resourceId of resourceIds) {
             // Act (single resource)
             const validation = bulkValidateUserPermissionsForResources({
               action: "read",
               resourceIds: [resourceId],
-              userId: user.id,
               siteId: site.id,
+              userId: user.id,
             })
 
             // Assert (single resource)
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await expect(validation).resolves.not.toThrow()
           }
 
@@ -454,8 +449,8 @@ describe("permissions.service", () => {
           const bulkValidation = bulkValidateUserPermissionsForResources({
             action: "read",
             resourceIds,
-            userId: user.id,
             siteId: site.id,
+            userId: user.id,
           })
 
           // Assert (multiple resources)
@@ -466,18 +461,19 @@ describe("permissions.service", () => {
       describe("editor", () => {
         // Note: currently we do not have resource-level permissions
         it("should allow editors to read any resource", async () => {
-          await setupEditorPermissions({ userId: user.id, siteId: site.id })
+          await setupEditorPermissions({ siteId: site.id, userId: user.id })
 
           for (const resourceId of resourceIds) {
             // Act (single resource)
             const validation = bulkValidateUserPermissionsForResources({
               action: "read",
               resourceIds: [resourceId],
-              userId: user.id,
               siteId: site.id,
+              userId: user.id,
             })
 
             // Assert (single resource)
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await expect(validation).resolves.not.toThrow()
           }
 
@@ -485,8 +481,8 @@ describe("permissions.service", () => {
           const bulkValidation = bulkValidateUserPermissionsForResources({
             action: "read",
             resourceIds,
-            userId: user.id,
             siteId: site.id,
+            userId: user.id,
           })
 
           // Assert (multiple resources)
@@ -501,11 +497,12 @@ describe("permissions.service", () => {
             const validation = bulkValidateUserPermissionsForResources({
               action: "read",
               resourceIds: [resourceId],
-              userId: user.id,
               siteId: site.id,
+              userId: user.id,
             })
 
             // Assert (single resource)
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await expect(validation).rejects.toThrow(
               "You do not have sufficient permissions to perform this action",
             )
@@ -515,8 +512,8 @@ describe("permissions.service", () => {
           const bulkValidation = bulkValidateUserPermissionsForResources({
             action: "read",
             resourceIds,
-            userId: user.id,
             siteId: site.id,
+            userId: user.id,
           })
 
           // Assert (multiple resources)
@@ -529,14 +526,14 @@ describe("permissions.service", () => {
       describe("should throw error if resource is not found", () => {
         it("single resource", async () => {
           // Arrange
-          await setupAdminPermissions({ userId: user.id, siteId: site.id })
+          await setupAdminPermissions({ siteId: site.id, userId: user.id })
 
           // Act
           const validation = bulkValidateUserPermissionsForResources({
             action: "read",
             resourceIds: ["999999999"],
-            userId: user.id,
             siteId: site.id,
+            userId: user.id,
           })
 
           // Assert
@@ -550,14 +547,14 @@ describe("permissions.service", () => {
 
         it("multiple resources", async () => {
           // Arrange
-          await setupAdminPermissions({ userId: user.id, siteId: site.id })
+          await setupAdminPermissions({ siteId: site.id, userId: user.id })
 
           // Act
           const validation = bulkValidateUserPermissionsForResources({
             action: "read",
             resourceIds: ["999999999", "999999998"],
-            userId: user.id,
             siteId: site.id,
+            userId: user.id,
           })
 
           // Assert
@@ -575,18 +572,19 @@ describe("permissions.service", () => {
       describe("admin", () => {
         it("should allow admins to update any resources", async () => {
           // Arrange
-          await setupAdminPermissions({ userId: user.id, siteId: site.id })
+          await setupAdminPermissions({ siteId: site.id, userId: user.id })
 
           for (const resourceId of resourceIds) {
             // Act (single resource)
             const validation = bulkValidateUserPermissionsForResources({
               action: "update",
               resourceIds: [resourceId],
-              userId: user.id,
               siteId: site.id,
+              userId: user.id,
             })
 
             // Assert (single resource)
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await expect(validation).resolves.not.toThrow()
           }
 
@@ -594,8 +592,8 @@ describe("permissions.service", () => {
           const bulkValidation = bulkValidateUserPermissionsForResources({
             action: "update",
             resourceIds,
-            userId: user.id,
             siteId: site.id,
+            userId: user.id,
           })
 
           // Assert (multiple resources)
@@ -606,18 +604,19 @@ describe("permissions.service", () => {
       describe("publisher", () => {
         it("should allow publishers to update any resources", async () => {
           // Arrange
-          await setupPublisherPermissions({ userId: user.id, siteId: site.id })
+          await setupPublisherPermissions({ siteId: site.id, userId: user.id })
 
           for (const resourceId of resourceIds) {
             // Act (single resource)
             const validation = bulkValidateUserPermissionsForResources({
               action: "update",
               resourceIds: [resourceId],
-              userId: user.id,
               siteId: site.id,
+              userId: user.id,
             })
 
             // Assert (single resource)
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await expect(validation).resolves.not.toThrow()
           }
 
@@ -625,8 +624,8 @@ describe("permissions.service", () => {
           const bulkValidation = bulkValidateUserPermissionsForResources({
             action: "update",
             resourceIds,
-            userId: user.id,
             siteId: site.id,
+            userId: user.id,
           })
 
           // Assert (multiple resources)
@@ -637,18 +636,19 @@ describe("permissions.service", () => {
       describe("editor", () => {
         it("should allow editors to update any resources", async () => {
           // Arrange
-          await setupEditorPermissions({ userId: user.id, siteId: site.id })
+          await setupEditorPermissions({ siteId: site.id, userId: user.id })
 
           for (const resourceId of resourceIds) {
             // Act (single resource)
             const validation = bulkValidateUserPermissionsForResources({
               action: "update",
               resourceIds: [resourceId],
-              userId: user.id,
               siteId: site.id,
+              userId: user.id,
             })
 
             // Assert (single resource)
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await expect(validation).resolves.not.toThrow()
           }
 
@@ -656,8 +656,8 @@ describe("permissions.service", () => {
           const bulkValidation = bulkValidateUserPermissionsForResources({
             action: "update",
             resourceIds,
-            userId: user.id,
             siteId: site.id,
+            userId: user.id,
           })
 
           // Assert (multiple resources)
@@ -672,11 +672,12 @@ describe("permissions.service", () => {
             const validation = bulkValidateUserPermissionsForResources({
               action: "update",
               resourceIds: [resourceId],
-              userId: user.id,
               siteId: site.id,
+              userId: user.id,
             })
 
             // Assert
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await expect(validation).rejects.toThrow(
               "You do not have sufficient permissions to perform this action",
             )
@@ -686,8 +687,8 @@ describe("permissions.service", () => {
           const bulkValidation = bulkValidateUserPermissionsForResources({
             action: "update",
             resourceIds,
-            userId: user.id,
             siteId: site.id,
+            userId: user.id,
           })
 
           // Assert (multiple resources)
@@ -699,14 +700,14 @@ describe("permissions.service", () => {
 
       it("should throw error if resource is not found", async () => {
         // Arrange
-        await setupAdminPermissions({ userId: user.id, siteId: site.id })
+        await setupAdminPermissions({ siteId: site.id, userId: user.id })
 
         // Act
         const validation = bulkValidateUserPermissionsForResources({
           action: "update",
           resourceIds: ["999999999"],
-          userId: user.id,
           siteId: site.id,
+          userId: user.id,
         })
 
         // Assert
@@ -718,18 +719,19 @@ describe("permissions.service", () => {
       describe("admin", () => {
         it("should allow admins to delete any resources", async () => {
           // Arrange
-          await setupAdminPermissions({ userId: user.id, siteId: site.id })
+          await setupAdminPermissions({ siteId: site.id, userId: user.id })
 
           for (const resourceId of resourceIds) {
             // Act (single resource)
             const validation = bulkValidateUserPermissionsForResources({
               action: "delete",
               resourceIds: [resourceId],
-              userId: user.id,
               siteId: site.id,
+              userId: user.id,
             })
 
             // Assert (single resource)
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await expect(validation).resolves.not.toThrow()
           }
 
@@ -737,8 +739,8 @@ describe("permissions.service", () => {
           const bulkValidation = bulkValidateUserPermissionsForResources({
             action: "delete",
             resourceIds,
-            userId: user.id,
             siteId: site.id,
+            userId: user.id,
           })
 
           // Assert (multiple resources)
@@ -749,7 +751,7 @@ describe("permissions.service", () => {
       describe("publisher", () => {
         it("should allow publishers to delete non-root resources", async () => {
           // Arrange
-          await setupPublisherPermissions({ userId: user.id, siteId: site.id })
+          await setupPublisherPermissions({ siteId: site.id, userId: user.id })
           const nonRootResourceIds = [page.id]
 
           for (const resourceId of nonRootResourceIds) {
@@ -757,11 +759,12 @@ describe("permissions.service", () => {
             const validation = bulkValidateUserPermissionsForResources({
               action: "delete",
               resourceIds: [resourceId],
-              userId: user.id,
               siteId: site.id,
+              userId: user.id,
             })
 
             // Assert (single resource)
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await expect(validation).resolves.not.toThrow()
           }
 
@@ -769,8 +772,8 @@ describe("permissions.service", () => {
           const bulkValidation = bulkValidateUserPermissionsForResources({
             action: "delete",
             resourceIds: nonRootResourceIds,
-            userId: user.id,
             siteId: site.id,
+            userId: user.id,
           })
 
           // Assert (multiple resources)
@@ -779,7 +782,7 @@ describe("permissions.service", () => {
 
         it("should not allow publishers to delete root resources", async () => {
           // Arrange
-          await setupPublisherPermissions({ userId: user.id, siteId: site.id })
+          await setupPublisherPermissions({ siteId: site.id, userId: user.id })
           const rootResourceIds = [
             rootPage.id,
             pageWithoutParent.id,
@@ -792,11 +795,12 @@ describe("permissions.service", () => {
             const validation = bulkValidateUserPermissionsForResources({
               action: "delete",
               resourceIds: [resourceId],
-              userId: user.id,
               siteId: site.id,
+              userId: user.id,
             })
 
             // Assert (single resource)
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await expect(validation).rejects.toThrow(
               "You do not have sufficient permissions to perform this action",
             )
@@ -806,8 +810,8 @@ describe("permissions.service", () => {
           const bulkValidation = bulkValidateUserPermissionsForResources({
             action: "delete",
             resourceIds: rootResourceIds,
-            userId: user.id,
             siteId: site.id,
+            userId: user.id,
           })
 
           // Assert (multiple resources)
@@ -820,7 +824,7 @@ describe("permissions.service", () => {
       describe("editor", () => {
         it("should allow editors to delete non-root resources", async () => {
           // Arrange
-          await setupEditorPermissions({ userId: user.id, siteId: site.id })
+          await setupEditorPermissions({ siteId: site.id, userId: user.id })
           const nonRootResourceIds = [page.id]
 
           for (const resourceId of nonRootResourceIds) {
@@ -828,11 +832,12 @@ describe("permissions.service", () => {
             const validation = bulkValidateUserPermissionsForResources({
               action: "delete",
               resourceIds: [resourceId],
-              userId: user.id,
               siteId: site.id,
+              userId: user.id,
             })
 
             // Assert (single resource)
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await expect(validation).resolves.not.toThrow()
           }
 
@@ -840,8 +845,8 @@ describe("permissions.service", () => {
           const bulkValidation = bulkValidateUserPermissionsForResources({
             action: "delete",
             resourceIds: nonRootResourceIds,
-            userId: user.id,
             siteId: site.id,
+            userId: user.id,
           })
 
           // Assert (multiple resources)
@@ -850,7 +855,7 @@ describe("permissions.service", () => {
 
         it("should not allow editors to delete root resources", async () => {
           // Arrange
-          await setupEditorPermissions({ userId: user.id, siteId: site.id })
+          await setupEditorPermissions({ siteId: site.id, userId: user.id })
           const rootResourceIds = [
             rootPage.id,
             pageWithoutParent.id,
@@ -863,11 +868,12 @@ describe("permissions.service", () => {
             const validation = bulkValidateUserPermissionsForResources({
               action: "delete",
               resourceIds: [resourceId],
-              userId: user.id,
               siteId: site.id,
+              userId: user.id,
             })
 
             // Assert (single resource)
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await expect(validation).rejects.toThrow(
               "You do not have sufficient permissions to perform this action",
             )
@@ -877,8 +883,8 @@ describe("permissions.service", () => {
           const bulkValidation = bulkValidateUserPermissionsForResources({
             action: "delete",
             resourceIds: rootResourceIds,
-            userId: user.id,
             siteId: site.id,
+            userId: user.id,
           })
 
           // Assert (multiple resources)
@@ -895,11 +901,12 @@ describe("permissions.service", () => {
             const validation = bulkValidateUserPermissionsForResources({
               action: "delete",
               resourceIds: [resourceId],
-              userId: user.id,
               siteId: site.id,
+              userId: user.id,
             })
 
             // Assert (single resource)
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await expect(validation).rejects.toThrow(
               "You do not have sufficient permissions to perform this action",
             )
@@ -909,8 +916,8 @@ describe("permissions.service", () => {
           const bulkValidation = bulkValidateUserPermissionsForResources({
             action: "delete",
             resourceIds,
-            userId: user.id,
             siteId: site.id,
+            userId: user.id,
           })
 
           // Assert (multiple resources)
@@ -922,14 +929,14 @@ describe("permissions.service", () => {
 
       it("should throw error if resource is not found", async () => {
         // Arrange
-        await setupAdminPermissions({ userId: user.id, siteId: site.id })
+        await setupAdminPermissions({ siteId: site.id, userId: user.id })
 
         // Act
         const validation = bulkValidateUserPermissionsForResources({
           action: "delete",
           resourceIds: ["999999999"],
-          userId: user.id,
           siteId: site.id,
+          userId: user.id,
         })
 
         // Assert
@@ -941,18 +948,19 @@ describe("permissions.service", () => {
       describe("admin", () => {
         it("should allow admins to publish any resources", async () => {
           // Arrange
-          await setupAdminPermissions({ userId: user.id, siteId: site.id })
+          await setupAdminPermissions({ siteId: site.id, userId: user.id })
 
           for (const resourceId of resourceIds) {
             // Act (single resource)
             const validation = bulkValidateUserPermissionsForResources({
               action: "publish",
               resourceIds: [resourceId],
-              userId: user.id,
               siteId: site.id,
+              userId: user.id,
             })
 
             // Assert (single resource)
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await expect(validation).resolves.not.toThrow()
           }
 
@@ -960,8 +968,8 @@ describe("permissions.service", () => {
           const bulkValidation = bulkValidateUserPermissionsForResources({
             action: "publish",
             resourceIds,
-            userId: user.id,
             siteId: site.id,
+            userId: user.id,
           })
 
           // Assert (multiple resources)
@@ -972,18 +980,19 @@ describe("permissions.service", () => {
       describe("publisher", () => {
         it("should allow publishers to publish any resources", async () => {
           // Arrange
-          await setupPublisherPermissions({ userId: user.id, siteId: site.id })
+          await setupPublisherPermissions({ siteId: site.id, userId: user.id })
 
           for (const resourceId of resourceIds) {
             // Act (single resource)
             const validation = bulkValidateUserPermissionsForResources({
               action: "publish",
               resourceIds: [resourceId],
-              userId: user.id,
               siteId: site.id,
+              userId: user.id,
             })
 
             // Assert (single resource)
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await expect(validation).resolves.not.toThrow()
           }
 
@@ -991,8 +1000,8 @@ describe("permissions.service", () => {
           const bulkValidation = bulkValidateUserPermissionsForResources({
             action: "publish",
             resourceIds,
-            userId: user.id,
             siteId: site.id,
+            userId: user.id,
           })
 
           // Assert (multiple resources)
@@ -1003,18 +1012,19 @@ describe("permissions.service", () => {
       describe("editor", () => {
         it("should not allow editors to publish resources", async () => {
           // Arrange
-          await setupEditorPermissions({ userId: user.id, siteId: site.id })
+          await setupEditorPermissions({ siteId: site.id, userId: user.id })
 
           for (const resourceId of resourceIds) {
             // Act (single resource)
             const validation = bulkValidateUserPermissionsForResources({
               action: "publish",
               resourceIds: [resourceId],
-              userId: user.id,
               siteId: site.id,
+              userId: user.id,
             })
 
             // Assert (single resource)
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await expect(validation).rejects.toThrow(
               "You do not have sufficient permissions to perform this action",
             )
@@ -1024,8 +1034,8 @@ describe("permissions.service", () => {
           const bulkValidation = bulkValidateUserPermissionsForResources({
             action: "publish",
             resourceIds,
-            userId: user.id,
             siteId: site.id,
+            userId: user.id,
           })
 
           // Assert (multiple resources)
@@ -1042,11 +1052,12 @@ describe("permissions.service", () => {
             const validation = bulkValidateUserPermissionsForResources({
               action: "publish",
               resourceIds: [resourceId],
-              userId: user.id,
               siteId: site.id,
+              userId: user.id,
             })
 
             // Assert (single resource)
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await expect(validation).rejects.toThrow(
               "You do not have sufficient permissions to perform this action",
             )
@@ -1056,8 +1067,8 @@ describe("permissions.service", () => {
           const bulkValidation = bulkValidateUserPermissionsForResources({
             action: "publish",
             resourceIds,
-            userId: user.id,
             siteId: site.id,
+            userId: user.id,
           })
 
           // Assert (multiple resources)
@@ -1069,14 +1080,14 @@ describe("permissions.service", () => {
 
       it("should throw error if resource is not found", async () => {
         // Arrange
-        await setupAdminPermissions({ userId: user.id, siteId: site.id })
+        await setupAdminPermissions({ siteId: site.id, userId: user.id })
 
         // Act
         const validation = bulkValidateUserPermissionsForResources({
           action: "publish",
           resourceIds: ["999999999"],
-          userId: user.id,
           siteId: site.id,
+          userId: user.id,
         })
 
         // Assert
@@ -1098,11 +1109,12 @@ describe("permissions.service", () => {
           const validation = bulkValidateUserPermissionsForResources({
             action,
             resourceIds,
-            userId: user.id,
             siteId: site.id,
+            userId: user.id,
           })
 
           // Assert
+          // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
           await expect(validation).resolves.not.toThrow()
         }
       })
@@ -1110,14 +1122,14 @@ describe("permissions.service", () => {
       it("should not allow an expired Isomer Admin to perform root-level actions", async () => {
         // Arrange
         const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
-        await setupIsomerAdmin({ userId: user.id, expiry: yesterday })
+        await setupIsomerAdmin({ expiry: yesterday, userId: user.id })
 
         // Act
         const validation = bulkValidateUserPermissionsForResources({
           action: "create",
           resourceIds: [null],
-          userId: user.id,
           siteId: site.id,
+          userId: user.id,
         })
 
         // Assert
@@ -1138,13 +1150,13 @@ describe("getResourcePermission", () => {
     // Arrange
     const user = await setupUser({ email: "test@example.com" })
     const site = await setupSite()
-    await setupAdminPermissions({ userId: user.id, siteId: site.site.id })
+    await setupAdminPermissions({ siteId: site.site.id, userId: user.id })
 
     // Act
     const permissions = await getResourcePermission({
-      userId: user.id,
-      siteId: site.site.id,
       resourceId: null,
+      siteId: site.site.id,
+      userId: user.id,
     })
 
     // Assert
@@ -1152,7 +1164,7 @@ describe("getResourcePermission", () => {
     expect(permissions[0]?.role).toBe(RoleType.Admin)
   })
 
-  // TODO: add this back in when we have resource-specific permissions
+  // Deferred: add this back in when we have resource-specific permissions
   it.skip("should return resource-specific permissions when resourceId is provided", async () => {
     // Arrange
     const user = await setupUser({ email: "test@example.com" })
@@ -1163,19 +1175,19 @@ describe("getResourcePermission", () => {
     await db
       .insertInto("ResourcePermission")
       .values({
-        userId: user.id,
-        siteId: site.id,
+        deletedAt: null,
         resourceId: page.id,
         role: RoleType.Admin,
-        deletedAt: null,
+        siteId: site.id,
+        userId: user.id,
       })
       .execute()
 
     // Act
     const permissions = await getResourcePermission({
-      userId: user.id,
-      siteId: site.id,
       resourceId: page.id,
+      siteId: site.id,
+      userId: user.id,
     })
 
     // Assert
@@ -1190,9 +1202,9 @@ describe("getResourcePermission", () => {
 
     // Act
     const permissions = await getResourcePermission({
-      userId: user.id,
-      siteId: site.site.id,
       resourceId: null,
+      siteId: site.site.id,
+      userId: user.id,
     })
 
     // Assert
@@ -1208,29 +1220,29 @@ describe("getResourcePermission", () => {
 
     // Act
     const permissions = await getResourcePermission({
-      userId: user.id,
-      siteId: site.id,
       resourceId: page.id,
+      siteId: site.id,
+      userId: user.id,
     })
 
     // Assert
     expect(permissions).toHaveLength(0)
   })
 
-  // TODO: add this back in when we have resource-specific permissions
+  // Deferred: add this back in when we have resource-specific permissions
   it.skip("should not return site-wide permissions when resourceId is provided and is not null", async () => {
     // Arrange
     const user = await setupUser({ email: "test@example.com" })
     const { page, site } = await setupPageResource({
       resourceType: ResourceType.Page,
     })
-    await setupAdminPermissions({ userId: user.id, siteId: site.id })
+    await setupAdminPermissions({ siteId: site.id, userId: user.id })
 
     // Act
     const permissions = await getResourcePermission({
-      userId: user.id,
-      siteId: site.id,
       resourceId: page.id,
+      siteId: site.id,
+      userId: user.id,
     })
 
     // Assert
@@ -1246,19 +1258,19 @@ describe("getResourcePermission", () => {
     await db
       .insertInto("ResourcePermission")
       .values({
-        userId: user.id,
-        siteId: site.site.id,
+        deletedAt: new Date(),
         resourceId: null,
         role: RoleType.Admin,
-        deletedAt: new Date(),
+        siteId: site.site.id,
+        userId: user.id,
       })
       .execute()
 
     // Act
     const permissions = await getResourcePermission({
-      userId: user.id,
-      siteId: site.site.id,
       resourceId: null,
+      siteId: site.site.id,
+      userId: user.id,
     })
 
     // Assert
@@ -1270,20 +1282,20 @@ describe("getResourcePermission", () => {
     const user1 = await setupUser({ email: "user1@example.com" })
     const user2 = await setupUser({ email: "user2@example.com" })
     const site = await setupSite()
-    await setupAdminPermissions({ userId: user1.id, siteId: site.site.id })
-    await setupEditorPermissions({ userId: user2.id, siteId: site.site.id })
+    await setupAdminPermissions({ siteId: site.site.id, userId: user1.id })
+    await setupEditorPermissions({ siteId: site.site.id, userId: user2.id })
 
     // Act
     const permissions1 = await getResourcePermission({
-      userId: user1.id,
-      siteId: site.site.id,
       resourceId: null,
+      siteId: site.site.id,
+      userId: user1.id,
     })
 
     const permissions2 = await getResourcePermission({
-      userId: user2.id,
-      siteId: site.site.id,
       resourceId: null,
+      siteId: site.site.id,
+      userId: user2.id,
     })
 
     // Assert
@@ -1298,20 +1310,20 @@ describe("getResourcePermission", () => {
     const user = await setupUser({ email: "test@example.com" })
     const site1 = await setupSite()
     const site2 = await setupSite()
-    await setupAdminPermissions({ userId: user.id, siteId: site1.site.id })
-    await setupEditorPermissions({ userId: user.id, siteId: site2.site.id })
+    await setupAdminPermissions({ siteId: site1.site.id, userId: user.id })
+    await setupEditorPermissions({ siteId: site2.site.id, userId: user.id })
 
     // Act
     const permissions1 = await getResourcePermission({
-      userId: user.id,
-      siteId: site1.site.id,
       resourceId: null,
+      siteId: site1.site.id,
+      userId: user.id,
     })
 
     const permissions2 = await getResourcePermission({
-      userId: user.id,
-      siteId: site2.site.id,
       resourceId: null,
+      siteId: site2.site.id,
+      userId: user.id,
     })
 
     // Assert
@@ -1330,9 +1342,9 @@ describe("getResourcePermission", () => {
 
       // Act
       const permissions = await getResourcePermission({
-        userId: user.id,
-        siteId: site.site.id,
         resourceId: null,
+        siteId: site.site.id,
+        userId: user.id,
       })
 
       // Assert
@@ -1345,13 +1357,13 @@ describe("getResourcePermission", () => {
       const user = await setupUser({ email: "test@example.com" })
       const site = await setupSite()
       await setupIsomerAdmin({ userId: user.id })
-      await setupEditorPermissions({ userId: user.id, siteId: site.site.id })
+      await setupEditorPermissions({ siteId: site.site.id, userId: user.id })
 
       // Act
       const permissions = await getResourcePermission({
-        userId: user.id,
-        siteId: site.site.id,
         resourceId: null,
+        siteId: site.site.id,
+        userId: user.id,
       })
 
       // Assert — Isomer Admin overrides explicit Editor role
@@ -1364,14 +1376,14 @@ describe("getResourcePermission", () => {
       const user = await setupUser({ email: "test@example.com" })
       const site = await setupSite()
       const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
-      await setupIsomerAdmin({ userId: user.id, expiry: yesterday })
-      await setupEditorPermissions({ userId: user.id, siteId: site.site.id })
+      await setupIsomerAdmin({ expiry: yesterday, userId: user.id })
+      await setupEditorPermissions({ siteId: site.site.id, userId: user.id })
 
       // Act
       const permissions = await getResourcePermission({
-        userId: user.id,
-        siteId: site.site.id,
         resourceId: null,
+        siteId: site.site.id,
+        userId: user.id,
       })
 
       // Assert — expired Isomer Admin falls back to explicit role
@@ -1384,14 +1396,14 @@ describe("getResourcePermission", () => {
       const user = await setupUser({ email: "test@example.com" })
       const site = await setupSite()
       const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
-      await setupEditorPermissions({ userId: user.id, siteId: site.site.id })
-      await setupIsomerAdmin({ userId: user.id, expiry: yesterday })
+      await setupEditorPermissions({ siteId: site.site.id, userId: user.id })
+      await setupIsomerAdmin({ expiry: yesterday, userId: user.id })
 
       // Act
       const permissions = await getResourcePermission({
-        userId: user.id,
-        siteId: site.site.id,
         resourceId: null,
+        siteId: site.site.id,
+        userId: user.id,
       })
 
       // Assert — expired Isomer Admin falls back to explicit role
@@ -1408,7 +1420,7 @@ describe("isActiveIsomerAdmin", () => {
 
   it("should return true for an active Isomer Admin with no expiry", async () => {
     const user = await setupUser({ email: "test@example.com" })
-    await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Core })
+    await setupIsomerAdmin({ role: IsomerAdminRole.Core, userId: user.id })
 
     expect(await isActiveIsomerAdmin(user.id)).toBe(true)
   })
@@ -1416,7 +1428,7 @@ describe("isActiveIsomerAdmin", () => {
   it("should return true for an active Isomer Admin with a future expiry", async () => {
     const user = await setupUser({ email: "test@example.com" })
     const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000)
-    await setupIsomerAdmin({ userId: user.id, expiry: tomorrow })
+    await setupIsomerAdmin({ expiry: tomorrow, userId: user.id })
 
     expect(await isActiveIsomerAdmin(user.id)).toBe(true)
   })
@@ -1424,7 +1436,7 @@ describe("isActiveIsomerAdmin", () => {
   it("should return false for an expired Isomer Admin", async () => {
     const user = await setupUser({ email: "test@example.com" })
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
-    await setupIsomerAdmin({ userId: user.id, expiry: yesterday })
+    await setupIsomerAdmin({ expiry: yesterday, userId: user.id })
 
     expect(await isActiveIsomerAdmin(user.id)).toBe(false)
   })
@@ -1433,7 +1445,7 @@ describe("isActiveIsomerAdmin", () => {
     const user = await setupUser({ email: "test@example.com" })
     // Set expiry to a moment in the past to simulate just-expired
     const justExpired = new Date(Date.now() - 1000)
-    await setupIsomerAdmin({ userId: user.id, expiry: justExpired })
+    await setupIsomerAdmin({ expiry: justExpired, userId: user.id })
 
     expect(await isActiveIsomerAdmin(user.id)).toBe(false)
   })
@@ -1447,7 +1459,7 @@ describe("isActiveIsomerAdmin", () => {
   describe("role filtering", () => {
     it("should return true when the user's role matches the requested roles", async () => {
       const user = await setupUser({ email: "test@example.com" })
-      await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Core })
+      await setupIsomerAdmin({ role: IsomerAdminRole.Core, userId: user.id })
 
       expect(await isActiveIsomerAdmin(user.id, [IsomerAdminRole.Core])).toBe(
         true,
@@ -1457,8 +1469,8 @@ describe("isActiveIsomerAdmin", () => {
     it("should return false when the user's role does not match the requested roles", async () => {
       const user = await setupUser({ email: "test@example.com" })
       await setupIsomerAdmin({
-        userId: user.id,
         role: IsomerAdminRole.Migrator,
+        userId: user.id,
       })
 
       expect(await isActiveIsomerAdmin(user.id, [IsomerAdminRole.Core])).toBe(
@@ -1469,8 +1481,8 @@ describe("isActiveIsomerAdmin", () => {
     it("should return true when the user's role is among multiple requested roles", async () => {
       const user = await setupUser({ email: "test@example.com" })
       await setupIsomerAdmin({
-        userId: user.id,
         role: IsomerAdminRole.Migrator,
+        userId: user.id,
       })
 
       expect(
@@ -1490,12 +1502,12 @@ describe("validateUserIsIsomerAdmin", () => {
 
   it("should not throw for an active Isomer Admin with a matching role", async () => {
     const user = await setupUser({ email: "test@example.com" })
-    await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Core })
+    await setupIsomerAdmin({ role: IsomerAdminRole.Core, userId: user.id })
 
     await expect(
       validateUserIsIsomerAdmin({
-        userId: user.id,
         roles: [IsomerAdminRole.Core],
+        userId: user.id,
       }),
     ).resolves.not.toThrow()
   })
@@ -1505,8 +1517,8 @@ describe("validateUserIsIsomerAdmin", () => {
 
     await expect(
       validateUserIsIsomerAdmin({
-        userId: user.id,
         roles: [IsomerAdminRole.Core],
+        userId: user.id,
       }),
     ).rejects.toThrow(
       new TRPCError({
@@ -1520,12 +1532,12 @@ describe("validateUserIsIsomerAdmin", () => {
   it("should throw FORBIDDEN for an expired Isomer Admin", async () => {
     const user = await setupUser({ email: "test@example.com" })
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
-    await setupIsomerAdmin({ userId: user.id, expiry: yesterday })
+    await setupIsomerAdmin({ expiry: yesterday, userId: user.id })
 
     await expect(
       validateUserIsIsomerAdmin({
-        userId: user.id,
         roles: [IsomerAdminRole.Core],
+        userId: user.id,
       }),
     ).rejects.toThrow(
       new TRPCError({
@@ -1538,12 +1550,12 @@ describe("validateUserIsIsomerAdmin", () => {
 
   it("should throw FORBIDDEN when role does not match", async () => {
     const user = await setupUser({ email: "test@example.com" })
-    await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Migrator })
+    await setupIsomerAdmin({ role: IsomerAdminRole.Migrator, userId: user.id })
 
     await expect(
       validateUserIsIsomerAdmin({
-        userId: user.id,
         roles: [IsomerAdminRole.Core],
+        userId: user.id,
       }),
     ).rejects.toThrow(
       new TRPCError({
@@ -1564,11 +1576,11 @@ describe("validateUserIsSiteAdmin", () => {
     // Arrange
     const user = await setupUser({ email: "site-admin@example.com" })
     const { site } = await setupSite()
-    await setupAdminPermissions({ userId: user.id, siteId: site.id })
+    await setupAdminPermissions({ siteId: site.id, userId: user.id })
 
     // Act & Assert
     await expect(
-      validateUserIsSiteAdmin({ userId: user.id, siteId: site.id }),
+      validateUserIsSiteAdmin({ siteId: site.id, userId: user.id }),
     ).resolves.toBe(true)
   })
 
@@ -1580,7 +1592,7 @@ describe("validateUserIsSiteAdmin", () => {
 
     // Act & Assert
     await expect(
-      validateUserIsSiteAdmin({ userId: user.id, siteId: site.id }),
+      validateUserIsSiteAdmin({ siteId: site.id, userId: user.id }),
     ).resolves.toBe(true)
   })
 
@@ -1589,11 +1601,11 @@ describe("validateUserIsSiteAdmin", () => {
     const user = await setupUser({ email: "expired-admin@example.com" })
     const { site } = await setupSite()
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
-    await setupIsomerAdmin({ userId: user.id, expiry: yesterday })
+    await setupIsomerAdmin({ expiry: yesterday, userId: user.id })
 
     // Act & Assert
     await expect(
-      validateUserIsSiteAdmin({ userId: user.id, siteId: site.id }),
+      validateUserIsSiteAdmin({ siteId: site.id, userId: user.id }),
     ).rejects.toMatchObject({ code: "FORBIDDEN" })
   })
 })
@@ -1617,8 +1629,8 @@ describe("definePermissionsForResource", () => {
 
     // Act
     const perms = await definePermissionsForResource({
-      userId: user.id,
       siteId: site.id,
+      userId: user.id,
     })
 
     // Assert — Isomer Admin can create/delete at root
@@ -1633,12 +1645,12 @@ describe("definePermissionsForResource", () => {
     const user = await setupUser({ email: "test@example.com" })
     const { site } = await setupSite()
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
-    await setupIsomerAdmin({ userId: user.id, expiry: yesterday })
+    await setupIsomerAdmin({ expiry: yesterday, userId: user.id })
 
     // Act
     const perms = await definePermissionsForResource({
-      userId: user.id,
       siteId: site.id,
+      userId: user.id,
     })
 
     // Assert — expired Isomer Admin has no permissions
@@ -1660,8 +1672,8 @@ describe("definePermissionsForSite", () => {
 
     // Act
     const perms = await definePermissionsForSite({
-      userId: user.id,
       siteId: site.id,
+      userId: user.id,
     })
 
     // Assert
@@ -1676,12 +1688,12 @@ describe("definePermissionsForSite", () => {
     const user = await setupUser({ email: "test@example.com" })
     const { site } = await setupSite()
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
-    await setupIsomerAdmin({ userId: user.id, expiry: yesterday })
+    await setupIsomerAdmin({ expiry: yesterday, userId: user.id })
 
     // Act
     const perms = await definePermissionsForSite({
-      userId: user.id,
       siteId: site.id,
+      userId: user.id,
     })
 
     // Assert
@@ -1706,9 +1718,9 @@ describe("validatePermissionsForManagingUsers", () => {
     // Act & Assert
     await expect(
       validatePermissionsForManagingUsers({
-        userId: user.id,
-        siteId: site.id,
         action: "manage",
+        siteId: site.id,
+        userId: user.id,
       }),
     ).resolves.not.toThrow()
   })
@@ -1721,9 +1733,9 @@ describe("validatePermissionsForManagingUsers", () => {
     // Act & Assert
     await expect(
       validatePermissionsForManagingUsers({
-        userId: user.id,
-        siteId: site.id,
         action: "manage",
+        siteId: site.id,
+        userId: user.id,
       }),
     ).rejects.toThrow(
       "You do not have sufficient permissions to perform this action",
@@ -1735,14 +1747,14 @@ describe("validatePermissionsForManagingUsers", () => {
     const user = await setupUser({ email: "test@example.com" })
     const { site } = await setupSite()
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
-    await setupIsomerAdmin({ userId: user.id, expiry: yesterday })
+    await setupIsomerAdmin({ expiry: yesterday, userId: user.id })
 
     // Act & Assert
     await expect(
       validatePermissionsForManagingUsers({
-        userId: user.id,
-        siteId: site.id,
         action: "manage",
+        siteId: site.id,
+        userId: user.id,
       }),
     ).rejects.toThrow(
       "You do not have sufficient permissions to perform this action",

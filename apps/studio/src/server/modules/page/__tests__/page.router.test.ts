@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unnecessary-type-conversion, typescript/no-confusing-void-expression, typescript/no-unsafe-type-assertion -- server lint cleanup */
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { z } from "zod"
 import type { reorderBlobSchema, updatePageBlobSchema } from "~/schemas/page"
@@ -56,17 +57,15 @@ interface RedirectCreateAuditDelta {
 
 const asRedirectDeleteAuditDelta = (
   delta: PrismaJson.AuditLogDeltaJsonContent,
-): RedirectDeleteAuditDelta => {
+): RedirectDeleteAuditDelta =>
   // SAFETY: audit log row was written by redirect retirement in the same test.
-  return delta as RedirectDeleteAuditDelta
-}
+  delta as RedirectDeleteAuditDelta
 
 const asRedirectCreateAuditDelta = (
   delta: PrismaJson.AuditLogDeltaJsonContent,
-): RedirectCreateAuditDelta => {
+): RedirectCreateAuditDelta =>
   // SAFETY: audit log row was written by redirect adoption in the same test.
-  return delta as RedirectCreateAuditDelta
-}
+  delta as RedirectCreateAuditDelta
 
 describe("page.router", async () => {
   let caller: ReturnType<typeof createCaller>
@@ -85,9 +84,9 @@ describe("page.router", async () => {
     )
     caller = createCaller(createMockRequest(session))
     user = await setupUser({
-      userId: session.userId ?? undefined,
       email: "test@mock.com",
       isDeleted: false,
+      userId: session.userId ?? undefined,
     })
     await auth(user)
   })
@@ -97,7 +96,7 @@ describe("page.router", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
-      const result = unauthedCaller.getPrefill({ siteId: 1, resourceId: "1" })
+      const result = unauthedCaller.getPrefill({ resourceId: "1", siteId: 1 })
 
       await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
@@ -112,8 +111,8 @@ describe("page.router", async () => {
 
       // Act
       const result = caller.getPrefill({
-        siteId: site.id,
         resourceId: page.id,
+        siteId: site.id,
       })
 
       // Assert
@@ -130,14 +129,14 @@ describe("page.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupEditorPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       const result = caller.getPrefill({
-        siteId: site.id,
         resourceId: "99999",
+        siteId: site.id,
       })
 
       // Assert
@@ -152,12 +151,12 @@ describe("page.router", async () => {
         .insertInto("Blob")
         .values({
           content: jsonb({
+            content: [],
             layout: "article",
             page: {
               articlePageHeader: { summary: "Article summary text" },
-              image: { src: "/images/article-thumb.jpg", alt: "Article image" },
+              image: { alt: "Article image", src: "/images/article-thumb.jpg" },
             },
-            content: [],
             version: "0.1.0",
           }),
         })
@@ -168,32 +167,32 @@ describe("page.router", async () => {
       const page = await db
         .insertInto("Resource")
         .values({
-          title: "Test Article Page",
+          draftBlobId: articleBlob.id,
           permalink: "test-article",
           siteId: site.id,
-          draftBlobId: articleBlob.id,
+          title: "Test Article Page",
           type: ResourceType.Page,
         })
         .returningAll()
         .executeTakeFirstOrThrow()
 
       await setupEditorPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       const result = await caller.getPrefill({
-        siteId: site.id,
         resourceId: page.id,
+        siteId: site.id,
       })
 
       // Assert
       expect(result).toEqual({
-        title: "Test Article Page",
         description: "Article summary text",
         thumbnail: "/images/article-thumb.jpg",
         thumbnailAlt: "Article image",
+        title: "Test Article Page",
       })
     })
 
@@ -203,12 +202,12 @@ describe("page.router", async () => {
         .insertInto("Blob")
         .values({
           content: jsonb({
+            content: [],
             layout: "content",
             page: {
               contentPageHeader: { summary: "Content page summary" },
-              image: { src: "/images/content-thumb.png", alt: "Content image" },
+              image: { alt: "Content image", src: "/images/content-thumb.png" },
             },
-            content: [],
             version: "0.1.0",
           }),
         })
@@ -219,32 +218,32 @@ describe("page.router", async () => {
       const page = await db
         .insertInto("Resource")
         .values({
-          title: "Test Content Page",
+          draftBlobId: contentBlob.id,
           permalink: "test-content",
           siteId: site.id,
-          draftBlobId: contentBlob.id,
+          title: "Test Content Page",
           type: ResourceType.Page,
         })
         .returningAll()
         .executeTakeFirstOrThrow()
 
       await setupEditorPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       const result = await caller.getPrefill({
-        siteId: site.id,
         resourceId: page.id,
+        siteId: site.id,
       })
 
       // Assert
       expect(result).toEqual({
-        title: "Test Content Page",
         description: "Content page summary",
         thumbnail: "/images/content-thumb.png",
         thumbnailAlt: "Content image",
+        title: "Test Content Page",
       })
     })
 
@@ -254,12 +253,12 @@ describe("page.router", async () => {
         .insertInto("Blob")
         .values({
           content: jsonb({
+            content: [],
             layout: "index",
             page: {
               contentPageHeader: { summary: "Index page summary" },
-              image: { src: "/images/index-thumb.png", alt: "Index image" },
+              image: { alt: "Index image", src: "/images/index-thumb.png" },
             },
-            content: [],
             version: "0.1.0",
           }),
         })
@@ -270,32 +269,32 @@ describe("page.router", async () => {
       const page = await db
         .insertInto("Resource")
         .values({
-          title: "Test Index Page",
+          draftBlobId: indexBlob.id,
           permalink: "_index",
           siteId: site.id,
-          draftBlobId: indexBlob.id,
+          title: "Test Index Page",
           type: ResourceType.IndexPage,
         })
         .returningAll()
         .executeTakeFirstOrThrow()
 
       await setupEditorPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       const result = await caller.getPrefill({
-        siteId: site.id,
         resourceId: page.id,
+        siteId: site.id,
       })
 
       // Assert
       expect(result).toEqual({
-        title: "Test Index Page",
         description: "Index page summary",
         thumbnail: "/images/index-thumb.png",
         thumbnailAlt: "Index image",
+        title: "Test Index Page",
       })
     })
 
@@ -305,11 +304,11 @@ describe("page.router", async () => {
         .insertInto("Blob")
         .values({
           content: jsonb({
+            content: [],
             layout: "database",
             page: {
               contentPageHeader: { summary: "Database page description" },
             },
-            content: [],
             version: "0.1.0",
           }),
         })
@@ -320,30 +319,30 @@ describe("page.router", async () => {
       const page = await db
         .insertInto("Resource")
         .values({
-          title: "Test Database Page",
+          draftBlobId: databaseBlob.id,
           permalink: "test-database",
           siteId: site.id,
-          draftBlobId: databaseBlob.id,
+          title: "Test Database Page",
           type: ResourceType.Page,
         })
         .returningAll()
         .executeTakeFirstOrThrow()
 
       await setupEditorPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       const result = await caller.getPrefill({
-        siteId: site.id,
         resourceId: page.id,
+        siteId: site.id,
       })
 
       // Assert
       expect(result).toEqual({
-        title: "Test Database Page",
         description: "Database page description",
+        title: "Test Database Page",
       })
     })
 
@@ -353,11 +352,11 @@ describe("page.router", async () => {
         .insertInto("Blob")
         .values({
           content: jsonb({
+            content: [],
             layout: "collection",
             page: {
               subtitle: "Collection subtitle text",
             },
-            content: [],
             version: "0.1.0",
           }),
         })
@@ -368,30 +367,30 @@ describe("page.router", async () => {
       const page = await db
         .insertInto("Resource")
         .values({
-          title: "Test Collection Page",
+          draftBlobId: collectionBlob.id,
           permalink: "test-collection",
           siteId: site.id,
-          draftBlobId: collectionBlob.id,
+          title: "Test Collection Page",
           type: ResourceType.IndexPage,
         })
         .returningAll()
         .executeTakeFirstOrThrow()
 
       await setupEditorPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       const result = await caller.getPrefill({
-        siteId: site.id,
         resourceId: page.id,
+        siteId: site.id,
       })
 
       // Assert
       expect(result).toEqual({
-        title: "Test Collection Page",
         description: "Collection subtitle text",
+        title: "Test Collection Page",
       })
     })
 
@@ -401,12 +400,12 @@ describe("page.router", async () => {
         .insertInto("Blob")
         .values({
           content: jsonb({
+            content: [],
             layout: "file",
             page: {
               description: "File description text",
-              image: { src: "/images/file-thumb.png", alt: "File image" },
+              image: { alt: "File image", src: "/images/file-thumb.png" },
             },
-            content: [],
             version: "0.1.0",
           }),
         })
@@ -417,32 +416,32 @@ describe("page.router", async () => {
       const page = await db
         .insertInto("Resource")
         .values({
-          title: "Test File Page",
+          draftBlobId: fileBlob.id,
           permalink: "test-file",
           siteId: site.id,
-          draftBlobId: fileBlob.id,
+          title: "Test File Page",
           type: ResourceType.Page,
         })
         .returningAll()
         .executeTakeFirstOrThrow()
 
       await setupEditorPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       const result = await caller.getPrefill({
-        siteId: site.id,
         resourceId: page.id,
+        siteId: site.id,
       })
 
       // Assert
       expect(result).toEqual({
-        title: "Test File Page",
         description: "File description text",
         thumbnail: "/images/file-thumb.png",
         thumbnailAlt: "File image",
+        title: "Test File Page",
       })
     })
 
@@ -452,12 +451,12 @@ describe("page.router", async () => {
         .insertInto("Blob")
         .values({
           content: jsonb({
+            content: [],
             layout: "link",
             page: {
               description: "Link description text",
-              image: { src: "/images/link-thumb.png", alt: "Link image" },
+              image: { alt: "Link image", src: "/images/link-thumb.png" },
             },
-            content: [],
             version: "0.1.0",
           }),
         })
@@ -468,32 +467,32 @@ describe("page.router", async () => {
       const page = await db
         .insertInto("Resource")
         .values({
-          title: "Test Link Page",
+          draftBlobId: linkBlob.id,
           permalink: "test-link",
           siteId: site.id,
-          draftBlobId: linkBlob.id,
+          title: "Test Link Page",
           type: ResourceType.Page,
         })
         .returningAll()
         .executeTakeFirstOrThrow()
 
       await setupEditorPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       const result = await caller.getPrefill({
-        siteId: site.id,
         resourceId: page.id,
+        siteId: site.id,
       })
 
       // Assert
       expect(result).toEqual({
-        title: "Test Link Page",
         description: "Link description text",
         thumbnail: "/images/link-thumb.png",
         thumbnailAlt: "Link image",
+        title: "Test Link Page",
       })
     })
 
@@ -503,9 +502,9 @@ describe("page.router", async () => {
         .insertInto("Blob")
         .values({
           content: jsonb({
+            content: [],
             layout: "homepage",
             page: {},
-            content: [],
             version: "0.1.0",
           }),
         })
@@ -516,24 +515,24 @@ describe("page.router", async () => {
       const page = await db
         .insertInto("Resource")
         .values({
-          title: "Homepage",
+          draftBlobId: homepageBlob.id,
           permalink: "",
           siteId: site.id,
-          draftBlobId: homepageBlob.id,
+          title: "Homepage",
           type: ResourceType.RootPage,
         })
         .returningAll()
         .executeTakeFirstOrThrow()
 
       await setupEditorPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       const result = await caller.getPrefill({
-        siteId: site.id,
         resourceId: page.id,
+        siteId: site.id,
       })
 
       // Assert
@@ -548,11 +547,11 @@ describe("page.router", async () => {
         .insertInto("Blob")
         .values({
           content: jsonb({
+            content: [],
             layout: "article",
             page: {
               articlePageHeader: { summary: "Article without image" },
             },
-            content: [],
             version: "0.1.0",
           }),
         })
@@ -563,32 +562,32 @@ describe("page.router", async () => {
       const page = await db
         .insertInto("Resource")
         .values({
-          title: "Article Without Image",
+          draftBlobId: articleBlob.id,
           permalink: "article-no-image",
           siteId: site.id,
-          draftBlobId: articleBlob.id,
+          title: "Article Without Image",
           type: ResourceType.Page,
         })
         .returningAll()
         .executeTakeFirstOrThrow()
 
       await setupEditorPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       const result = await caller.getPrefill({
-        siteId: site.id,
         resourceId: page.id,
+        siteId: site.id,
       })
 
       // Assert
       expect(result).toEqual({
-        title: "Article Without Image",
         description: "Article without image",
         thumbnail: undefined,
         thumbnailAlt: undefined,
+        title: "Article Without Image",
       })
     })
 
@@ -601,11 +600,11 @@ describe("page.router", async () => {
         .insertInto("Blob")
         .values({
           content: jsonb({
+            content: [],
             layout: "collection",
             page: {
               subtitle: "Collection index page subtitle",
             },
-            content: [],
             version: "0.1.0",
           }),
         })
@@ -615,31 +614,31 @@ describe("page.router", async () => {
       await db
         .insertInto("Resource")
         .values({
-          title: "Collection Index",
+          draftBlobId: indexBlob.id,
+          parentId: collection.id,
           permalink: "_index",
           siteId: site.id,
-          parentId: collection.id,
-          draftBlobId: indexBlob.id,
+          title: "Collection Index",
           type: ResourceType.IndexPage,
         })
         .returningAll()
         .executeTakeFirstOrThrow()
 
       await setupEditorPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act - request prefill for the Collection resource
       const result = await caller.getPrefill({
-        siteId: site.id,
         resourceId: collection.id,
+        siteId: site.id,
       })
 
       // Assert - should get data from the IndexPage
       expect(result).toEqual({
-        title: "Collection Index",
         description: "Collection index page subtitle",
+        title: "Collection Index",
       })
     })
 
@@ -652,12 +651,12 @@ describe("page.router", async () => {
         .insertInto("Blob")
         .values({
           content: jsonb({
+            content: [],
             layout: "index",
             page: {
               contentPageHeader: { summary: "Folder index summary" },
-              image: { src: "/images/folder-index.png", alt: "Folder" },
+              image: { alt: "Folder", src: "/images/folder-index.png" },
             },
-            content: [],
             version: "0.1.0",
           }),
         })
@@ -667,33 +666,33 @@ describe("page.router", async () => {
       await db
         .insertInto("Resource")
         .values({
-          title: "Folder Index Page",
+          draftBlobId: indexBlob.id,
+          parentId: folder.id,
           permalink: "_index",
           siteId: site.id,
-          parentId: folder.id,
-          draftBlobId: indexBlob.id,
+          title: "Folder Index Page",
           type: ResourceType.IndexPage,
         })
         .returningAll()
         .executeTakeFirstOrThrow()
 
       await setupEditorPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act - request prefill for the Folder resource
       const result = await caller.getPrefill({
-        siteId: site.id,
         resourceId: folder.id,
+        siteId: site.id,
       })
 
       // Assert - should get data from the IndexPage
       expect(result).toEqual({
-        title: "Folder Index Page",
         description: "Folder index summary",
         thumbnail: "/images/folder-index.png",
         thumbnailAlt: "Folder",
+        title: "Folder Index Page",
       })
     })
   })
@@ -729,8 +728,8 @@ describe("page.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupEditorPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
@@ -746,7 +745,7 @@ describe("page.router", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
-      const result = unauthedCaller.getCategories({ siteId: 1, pageId: 1 })
+      const result = unauthedCaller.getCategories({ pageId: 1, siteId: 1 })
 
       await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
@@ -761,8 +760,8 @@ describe("page.router", async () => {
 
       // Act
       const result = caller.getCategories({
-        siteId: site.id,
         pageId: Number(page.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -779,19 +778,19 @@ describe("page.router", async () => {
       // Arrange
       const { collection, site } = await setupCollection()
       const { page } = await setupPageResource({
-        siteId: site.id,
         parentId: collection.id,
         resourceType: ResourceType.CollectionPage,
+        siteId: site.id,
       })
       await setupEditorPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       const result = await caller.getCategories({
-        siteId: site.id,
         pageId: Number(page.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -804,7 +803,7 @@ describe("page.router", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
-      const result = unauthedCaller.readPage({ siteId: 1, pageId: 1 })
+      const result = unauthedCaller.readPage({ pageId: 1, siteId: 1 })
 
       await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
@@ -813,11 +812,11 @@ describe("page.router", async () => {
 
     it("should return 404 if page does not exist", async () => {
       // Act
-      const mockSite = { siteId: 1, pageId: 1 }
+      const mockSite = { pageId: 1, siteId: 1 }
       const site = await setupSite(mockSite.siteId)
       await setupAdminPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.site.id,
+        userId: session.userId ?? undefined,
       })
       const result = caller.readPage(mockSite)
 
@@ -833,14 +832,14 @@ describe("page.router", async () => {
         resourceType: "Page",
       })
       await setupEditorPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       const result = await caller.readPage({
-        siteId: site.id,
         pageId: Number(expectedPage.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -855,14 +854,14 @@ describe("page.router", async () => {
         resourceType: "CollectionPage",
       })
       await setupEditorPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       const result = await caller.readPage({
-        siteId: site.id,
         pageId: Number(expectedPage.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -877,14 +876,14 @@ describe("page.router", async () => {
         resourceType: "RootPage",
       })
       await setupEditorPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       const result = await caller.readPage({
-        siteId: site.id,
         pageId: Number(expectedPage.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -897,14 +896,14 @@ describe("page.router", async () => {
       // Arrange
       const { site, folder } = await setupFolder()
       await setupEditorPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       const result = caller.readPage({
-        siteId: site.id,
         pageId: Number(folder.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -921,8 +920,8 @@ describe("page.router", async () => {
 
       // Act
       const result = caller.readPage({
-        siteId: site.id,
         pageId: Number(expectedPage.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -941,7 +940,7 @@ describe("page.router", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
-      const result = unauthedCaller.readPageAndBlob({ siteId: 1, pageId: 1 })
+      const result = unauthedCaller.readPageAndBlob({ pageId: 1, siteId: 1 })
 
       await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
@@ -956,8 +955,8 @@ describe("page.router", async () => {
 
       // Act
       const result = caller.readPageAndBlob({
-        siteId: site.id,
         pageId: Number(page.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -971,11 +970,11 @@ describe("page.router", async () => {
     })
 
     it("should return 404 if page does not exist", async () => {
-      const mockSite = { siteId: 1, pageId: 1 }
+      const mockSite = { pageId: 1, siteId: 1 }
       const site = await setupSite(mockSite.siteId)
       await setupEditorPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
@@ -993,20 +992,20 @@ describe("page.router", async () => {
         resourceType: "Page",
       })
       await setupEditorPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
       const expected = {
         ...pick(page, ["permalink", "title", "type"]),
-        navbar: omit(navbar, ["createdAt", "updatedAt"]),
-        footer: omit(footer, ["createdAt", "updatedAt"]),
         content: blob.content,
+        footer: omit(footer, ["createdAt", "updatedAt"]),
+        navbar: omit(navbar, ["createdAt", "updatedAt"]),
       }
 
       // Act
       const result = await caller.readPageAndBlob({
-        siteId: site.id,
         pageId: Number(page.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -1020,20 +1019,20 @@ describe("page.router", async () => {
         resourceType: "RootPage",
       })
       await setupEditorPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
       const expected = {
         ...pick(page, ["permalink", "title", "type"]),
-        navbar: omit(navbar, ["createdAt", "updatedAt"]),
-        footer: omit(footer, ["createdAt", "updatedAt"]),
         content: blob.content,
+        footer: omit(footer, ["createdAt", "updatedAt"]),
+        navbar: omit(navbar, ["createdAt", "updatedAt"]),
       }
 
       // Act
       const result = await caller.readPageAndBlob({
-        siteId: site.id,
         pageId: Number(page.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -1047,20 +1046,20 @@ describe("page.router", async () => {
         resourceType: "CollectionPage",
       })
       await setupEditorPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
       const expected = {
         ...pick(page, ["permalink", "title", "type"]),
-        navbar: omit(navbar, ["createdAt", "updatedAt"]),
-        footer: omit(footer, ["createdAt", "updatedAt"]),
         content: blob.content,
+        footer: omit(footer, ["createdAt", "updatedAt"]),
+        navbar: omit(navbar, ["createdAt", "updatedAt"]),
       }
 
       // Act
       const result = await caller.readPageAndBlob({
-        siteId: site.id,
         pageId: Number(page.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -1074,20 +1073,20 @@ describe("page.router", async () => {
         resourceType: "FolderMeta",
       })
       await setupEditorPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
       const expected = {
         ...pick(page, ["permalink", "title", "type"]),
-        navbar: omit(navbar, ["createdAt", "updatedAt"]),
-        footer: omit(footer, ["createdAt", "updatedAt"]),
         content: blob.content,
+        footer: omit(footer, ["createdAt", "updatedAt"]),
+        navbar: omit(navbar, ["createdAt", "updatedAt"]),
       }
 
       // Act
       const result = await caller.readPageAndBlob({
-        siteId: site.id,
         pageId: Number(page.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -1099,14 +1098,14 @@ describe("page.router", async () => {
       // Arrange
       const { site, folder } = await setupFolder()
       await setupEditorPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       const result = caller.readPageAndBlob({
-        siteId: site.id,
         pageId: Number(folder.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -1128,11 +1127,11 @@ describe("page.router", async () => {
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
       const result = unauthedCaller.reorderBlock({
-        siteId: 1,
-        pageId: 1,
-        from: 0,
-        to: 1,
         blocks: pageToReorder.blob.content.content,
+        from: 0,
+        pageId: 1,
+        siteId: 1,
+        to: 1,
       })
 
       await expect(result).rejects.toThrow(
@@ -1144,11 +1143,11 @@ describe("page.router", async () => {
     it("should throw 403 if user does not have update access to the page", async () => {
       // Act
       const result = caller.reorderBlock({
-        siteId: pageToReorder.site.id,
-        pageId: Number(pageToReorder.page.id),
-        from: 0,
-        to: 1,
         blocks: pageToReorder.blob.content.content,
+        from: 0,
+        pageId: Number(pageToReorder.page.id),
+        siteId: pageToReorder.site.id,
+        to: 1,
       })
 
       // Assert
@@ -1164,17 +1163,18 @@ describe("page.router", async () => {
     it("should return 404 if page does not exist", async () => {
       //Arrange
       await setupAdminPermissions({
-        userId: session.userId ?? undefined,
         siteId: pageToReorder.site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       const result = caller.reorderBlock({
-        siteId: pageToReorder.site.id,
-        pageId: 999999, // should not exist
-        from: 0,
-        to: 1,
         blocks: pageToReorder.blob.content.content,
+        from: 0,
+        pageId: 999_999,
+        // should not exist
+        siteId: pageToReorder.site.id,
+        to: 1,
       })
 
       // Assert
@@ -1191,7 +1191,6 @@ describe("page.router", async () => {
       // Arrange
       const unexpectedBlock: z.input<typeof reorderBlobSchema>["blocks"] = [
         {
-          type: "prose",
           content: [
             {
               type: "paragraph",
@@ -1203,21 +1202,22 @@ describe("page.router", async () => {
               ],
             },
           ],
+          type: "prose",
         },
       ]
       expect(unexpectedBlock).not.toEqual(pageToReorder.blob.content.content)
       await setupAdminPermissions({
-        userId: session.userId ?? undefined,
         siteId: pageToReorder.site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       const result = caller.reorderBlock({
-        siteId: pageToReorder.site.id,
-        pageId: Number(pageToReorder.page.id),
-        from: 0,
-        to: 1,
         blocks: unexpectedBlock,
+        from: 0,
+        pageId: Number(pageToReorder.page.id),
+        siteId: pageToReorder.site.id,
+        to: 1,
       })
 
       // Assert
@@ -1235,17 +1235,18 @@ describe("page.router", async () => {
       // Arrange
       const fromArg = pageToReorder.blob.content.content.length + 10
       await setupAdminPermissions({
-        userId: session.userId ?? undefined,
         siteId: pageToReorder.site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       const result = caller.reorderBlock({
-        siteId: pageToReorder.site.id,
-        pageId: Number(pageToReorder.page.id),
-        from: fromArg, // should not exist
-        to: 1,
         blocks: pageToReorder.blob.content.content,
+        from: fromArg,
+        // should not exist
+        pageId: Number(pageToReorder.page.id),
+        siteId: pageToReorder.site.id,
+        to: 1,
       })
 
       // Assert
@@ -1258,18 +1259,18 @@ describe("page.router", async () => {
     it("should fail validation if `from` arg is negative index", async () => {
       //Arrange
       await setupAdminPermissions({
-        userId: session.userId ?? undefined,
         siteId: pageToReorder.site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act & Assert
       await expect(
         caller.reorderBlock({
-          siteId: pageToReorder.site.id,
-          pageId: Number(pageToReorder.page.id),
-          from: -1,
-          to: 1,
           blocks: pageToReorder.blob.content.content,
+          from: -1,
+          pageId: Number(pageToReorder.page.id),
+          siteId: pageToReorder.site.id,
+          to: 1,
         }),
       ).rejects.toThrow("Too small: expected number to be >=0")
       await assertAuditLogRows()
@@ -1279,17 +1280,18 @@ describe("page.router", async () => {
       // Arrange
       const toArg = pageToReorder.blob.content.content.length + 10
       await setupAdminPermissions({
-        userId: session.userId ?? undefined,
         siteId: pageToReorder.site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       const result = caller.reorderBlock({
-        siteId: pageToReorder.site.id,
-        pageId: Number(pageToReorder.page.id),
-        from: 1,
-        to: toArg, // should not exist
         blocks: pageToReorder.blob.content.content,
+        from: 1,
+        pageId: Number(pageToReorder.page.id),
+        siteId: pageToReorder.site.id,
+        to: toArg,
+        // should not exist,
       })
 
       // Assert
@@ -1302,18 +1304,18 @@ describe("page.router", async () => {
     it("should fail validation if `to` arg is negative index", async () => {
       // Arrange
       await setupAdminPermissions({
-        userId: session.userId ?? undefined,
         siteId: pageToReorder.site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act & Assert
       await expect(
         caller.reorderBlock({
-          siteId: pageToReorder.site.id,
-          pageId: Number(pageToReorder.page.id),
-          from: 1,
-          to: -1,
           blocks: pageToReorder.blob.content.content,
+          from: 1,
+          pageId: Number(pageToReorder.page.id),
+          siteId: pageToReorder.site.id,
+          to: -1,
         }),
       ).rejects.toThrow("Too small: expected number to be >=0")
       await assertAuditLogRows()
@@ -1322,8 +1324,8 @@ describe("page.router", async () => {
     it("should reorder block if args are valid", async () => {
       // Arrange
       await setupAdminPermissions({
-        userId: session.userId ?? undefined,
         siteId: pageToReorder.site.id,
+        userId: session.userId ?? undefined,
       })
       const oldBlob = db
         .selectFrom("Blob")
@@ -1332,11 +1334,11 @@ describe("page.router", async () => {
 
       // Act
       const result = await caller.reorderBlock({
-        siteId: pageToReorder.site.id,
-        pageId: Number(pageToReorder.page.id),
-        from: 0,
-        to: 1,
         blocks: pageToReorder.blob.content.content,
+        from: 0,
+        pageId: Number(pageToReorder.page.id),
+        siteId: pageToReorder.site.id,
+        to: 1,
       })
 
       // Assert
@@ -1345,23 +1347,23 @@ describe("page.router", async () => {
         .where("id", "=", pageToReorder.blob.id)
         .select("content")
         .executeTakeFirstOrThrow()
-      const expectedBlocks = pageToReorder.blob.content.content.reverse()
+      const expectedBlocks = pageToReorder.blob.content.content.toReversed()
       expect(actual.content.content).toEqual(expectedBlocks)
       expect(result).toEqual(expectedBlocks)
       await assertAuditLogRows(1)
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog[0]).toMatchObject({
-        eventType: "ResourceUpdate",
         delta: {
-          before: {
-            blob: oldBlob,
-            resource: omit(pageToReorder.page, ["updatedAt", "createdAt"]),
-          },
           after: {
             blob: actual,
             resource: omit(pageToReorder.page, ["updatedAt", "createdAt"]),
           },
+          before: {
+            blob: oldBlob,
+            resource: omit(pageToReorder.page, ["updatedAt", "createdAt"]),
+          },
         },
+        eventType: "ResourceUpdate",
       })
     })
   })
@@ -1369,43 +1371,41 @@ describe("page.router", async () => {
   describe("updatePageBlob", () => {
     const NEW_PAGE_BLOCKS: IsomerSchema["content"] = [
       {
-        type: "prose",
         content: [
           {
             type: "paragraph",
             content: [{ type: "text", text: "This is the new block" }],
           },
         ],
+        type: "prose",
       },
       {
-        type: "callout",
         content: {
-          type: "prose",
           content: [
             {
               type: "paragraph",
               content: [{ type: "text", text: "Test Callout content" }],
             },
           ],
+          type: "prose",
         },
+        type: "callout",
       },
     ]
 
     type Page = Awaited<ReturnType<typeof setupPageResource>>["page"]
     let pageToUpdate: Page
     type UpdatePageOutput = z.output<typeof updatePageBlobSchema>
-    const createPageUpdateArgs = (page: Page) => {
-      return {
-        pageId: Number(page.id),
-        siteId: page.siteId,
-        content: JSON.stringify({
-          content: NEW_PAGE_BLOCKS,
-          layout: "content",
-          page: pick(page, ["title", "permalink"]),
-          version: "0.1.0",
-        } satisfies UpdatePageOutput["content"]),
-      }
-    }
+    const createPageUpdateArgs = (page: Page) => ({
+      pageId: Number(page.id),
+      siteId: page.siteId,
+      content: JSON.stringify({
+        content: NEW_PAGE_BLOCKS,
+        layout: "content",
+        page: pick(page, ["title", "permalink"]),
+        version: "0.1.0",
+      } satisfies UpdatePageOutput["content"]),
+    })
 
     beforeEach(async () => {
       const { page } = await setupPageResource({ resourceType: "Page" })
@@ -1449,14 +1449,15 @@ describe("page.router", async () => {
       // Arrange
       const pageUpdateArgs = createPageUpdateArgs(pageToUpdate)
       await setupAdminPermissions({
-        userId: session.userId ?? undefined,
         siteId: pageToUpdate.siteId,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       const result = caller.updatePageBlob({
         ...pageUpdateArgs,
-        pageId: 999999, // should not exist
+        pageId: 999_999,
+        // should not exist
       })
 
       // Assert
@@ -1470,8 +1471,8 @@ describe("page.router", async () => {
       // Arrange
       const pageUpdateArgs = createPageUpdateArgs(pageToUpdate)
       await setupAdminPermissions({
-        userId: session.userId ?? undefined,
         siteId: pageToUpdate.siteId,
+        userId: session.userId ?? undefined,
       })
 
       // Act
@@ -1489,13 +1490,14 @@ describe("page.router", async () => {
       // Arrange
       const pageUpdateArgs = createPageUpdateArgs(pageToUpdate)
       await setupAdminPermissions({
-        userId: session.userId ?? undefined,
         siteId: pageToUpdate.siteId,
+        userId: session.userId ?? undefined,
       })
       const oldBlob = await db
         .transaction()
-        .execute((tx) =>
-          getBlobOfResource({ db: tx, resourceId: pageToUpdate.id }),
+        .execute(
+          async (tx) =>
+            await getBlobOfResource({ db: tx, resourceId: pageToUpdate.id }),
         )
 
       // Act
@@ -1511,17 +1513,17 @@ describe("page.router", async () => {
       expect(actual.content).toEqual(result.content)
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog[0]).toMatchObject({
-        eventType: "ResourceUpdate",
         delta: {
-          before: {
-            blob: omit(oldBlob, ["updatedAt", "createdAt"]),
-            resource: omit(pageToUpdate, ["updatedAt", "createdAt"]),
-          },
           after: {
             blob: omit(actual, ["publishedVersionId", "draftBlobId"]),
             resource: omit(pageToUpdate, ["updatedAt", "createdAt"]),
           },
+          before: {
+            blob: omit(oldBlob, ["updatedAt", "createdAt"]),
+            resource: omit(pageToUpdate, ["updatedAt", "createdAt"]),
+          },
         },
+        eventType: "ResourceUpdate",
       })
     })
 
@@ -1533,17 +1535,19 @@ describe("page.router", async () => {
         userId: session.userId,
       })
       await setupAdminPermissions({
-        userId: session.userId ?? undefined,
         siteId: publishedPageToUpdate.siteId,
+        userId: session.userId ?? undefined,
       })
       expect(publishedPageToUpdate.publishedVersionId).not.toBeNull()
       expect(publishedPageToUpdate.draftBlobId).toBeNull()
       const pageUpdateArgs = createPageUpdateArgs(publishedPageToUpdate)
-      const oldBlob = await db
-        .transaction()
-        .execute((tx) =>
-          getBlobOfResource({ db: tx, resourceId: publishedPageToUpdate.id }),
-        )
+      const oldBlob = await db.transaction().execute(
+        async (tx) =>
+          await getBlobOfResource({
+            db: tx,
+            resourceId: publishedPageToUpdate.id,
+          }),
+      )
 
       // Act
       const result = await caller.updatePageBlob(pageUpdateArgs)
@@ -1561,23 +1565,23 @@ describe("page.router", async () => {
         .executeTakeFirstOrThrow()
       expect(actual).toMatchObject({
         content: result.content,
-        publishedVersionId: publishedPageToUpdate.publishedVersionId,
         draftBlobId: expect.any(String),
+        publishedVersionId: publishedPageToUpdate.publishedVersionId,
       })
       await assertAuditLogRows(1)
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog[0]).toMatchObject({
-        eventType: "ResourceUpdate",
         delta: {
-          before: {
-            blob: omit(oldBlob, ["updatedAt", "createdAt"]),
-            resource: omit(publishedPageToUpdate, ["updatedAt", "createdAt"]),
-          },
           after: {
             blob: omit(actual, ["publishedVersionId", "draftBlobId"]),
             resource: omit(publishedPageToUpdate, ["updatedAt", "createdAt"]),
           },
+          before: {
+            blob: omit(oldBlob, ["updatedAt", "createdAt"]),
+            resource: omit(publishedPageToUpdate, ["updatedAt", "createdAt"]),
+          },
         },
+        eventType: "ResourceUpdate",
       })
     })
   })
@@ -1590,10 +1594,10 @@ describe("page.router", async () => {
 
       // Act
       const result = unauthedCaller.createPage({
+        layout: "content",
+        permalink: "test-page",
         siteId: 1,
         title: "Test Page",
-        permalink: "test-page",
-        layout: "content",
       })
 
       // Assert
@@ -1607,9 +1611,9 @@ describe("page.router", async () => {
       // Arrange
       const { site } = await setupSite()
       const expectedPageArgs = {
+        permalink: "test-page",
         siteId: site.id,
         title: "Test Page",
-        permalink: "test-page",
       }
 
       // Act
@@ -1631,10 +1635,11 @@ describe("page.router", async () => {
     it("should return 404 if site does not exist", async () => {
       // Act
       const result = caller.createPage({
-        siteId: 999999, // should not exist
-        title: "Test Page",
-        permalink: "test-page",
         layout: "content",
+        permalink: "test-page",
+        siteId: 999_999,
+        // should not exist
+        title: "Test Page",
       })
 
       // Assert
@@ -1652,16 +1657,16 @@ describe("page.router", async () => {
       // Arrange
       const { site, page } = await setupPageResource({ resourceType: "Page" })
       await setupAdminPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       const result = caller.createPage({
+        layout: "content",
+        permalink: page.permalink,
         siteId: site.id,
         title: "Test Page",
-        permalink: page.permalink,
-        layout: "content",
       })
 
       // Assert
@@ -1678,13 +1683,13 @@ describe("page.router", async () => {
       // Arrange
       const { site } = await setupSite()
       const expectedPageArgs = {
+        permalink: "test-page",
         siteId: site.id,
         title: "Test Page",
-        permalink: "test-page",
       }
       await setupAdminPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
@@ -1709,7 +1714,7 @@ describe("page.router", async () => {
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog).toHaveLength(1)
       expect(auditLog[0]).toMatchObject({
-        delta: { before: null, after: { blob: { content: actual.content } } },
+        delta: { after: { blob: { content: actual.content } }, before: null },
       })
     })
 
@@ -1717,13 +1722,13 @@ describe("page.router", async () => {
       // Arrange
       const { site } = await setupSite()
       const expectedPageArgs = {
+        permalink: "test-page",
         siteId: site.id,
         title: "Test Page",
-        permalink: "test-page",
       }
       await setupAdminPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
@@ -1748,7 +1753,7 @@ describe("page.router", async () => {
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog).toHaveLength(1)
       expect(auditLog[0]).toMatchObject({
-        delta: { before: null, after: { blob: { content: actual.content } } },
+        delta: { after: { blob: { content: actual.content } }, before: null },
       })
     })
 
@@ -1756,13 +1761,13 @@ describe("page.router", async () => {
       // Arrange
       const { site } = await setupSite()
       const expectedPageArgs = {
+        permalink: "test-database-page",
         siteId: site.id,
         title: "Test Database Page",
-        permalink: "test-database-page",
       }
       await setupAdminPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
@@ -1787,7 +1792,7 @@ describe("page.router", async () => {
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog).toHaveLength(1)
       expect(auditLog[0]).toMatchObject({
-        delta: { before: null, after: { blob: { content: actual.content } } },
+        delta: { after: { blob: { content: actual.content } }, before: null },
       })
     })
 
@@ -1795,13 +1800,13 @@ describe("page.router", async () => {
       // Arrange
       const { site } = await setupSite()
       const expectedPageArgs = {
+        permalink: "test-page",
         siteId: site.id,
         title: "Test Page",
-        permalink: "test-page",
       }
       await setupAdminPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
@@ -1823,7 +1828,7 @@ describe("page.router", async () => {
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog).toHaveLength(1)
       expect(auditLog[0]).toMatchObject({
-        delta: { before: null, after: { blob: { content: actual.content } } },
+        delta: { after: { blob: { content: actual.content } }, before: null },
       })
     })
 
@@ -1831,20 +1836,20 @@ describe("page.router", async () => {
       // Arrange
       const { site, folder } = await setupFolder()
       const expectedPageArgs = {
+        permalink: "test-page",
         siteId: site.id,
         title: "Test Page",
-        permalink: "test-page",
       }
       await setupAdminPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       const result = await caller.createPage({
         ...expectedPageArgs,
-        layout: "content",
         folderId: Number(folder.id),
+        layout: "content",
       })
 
       // Assert
@@ -1864,14 +1869,14 @@ describe("page.router", async () => {
       expect(result).toMatchObject({ pageId: expect.any(String) })
       expect(actual).toMatchObject({
         ...expectedPageArgs,
-        parentId: folder.id,
         content: createDefaultPage({ layout: "content" }),
+        parentId: folder.id,
       })
       await assertAuditLogRows(1)
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog).toHaveLength(1)
       expect(auditLog[0]).toMatchObject({
-        delta: { before: null, after: { blob: { content: actual.content } } },
+        delta: { after: { blob: { content: actual.content } }, before: null },
       })
     })
 
@@ -1879,14 +1884,15 @@ describe("page.router", async () => {
       // Arrange
       const { site } = await setupSite()
       const expectedPageArgs = {
+        folderId: 999_999,
+        // should not exist
+        permalink: "test-page",
         siteId: site.id,
         title: "Test Page",
-        permalink: "test-page",
-        folderId: 999999, // should not exist
       }
       await setupAdminPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
@@ -1907,14 +1913,14 @@ describe("page.router", async () => {
       // Arrange
       const { site, page } = await setupPageResource({ resourceType: "Page" })
       const expectedPageArgs = {
+        folderId: Number(page.id),
+        permalink: "test-page",
         siteId: site.id,
         title: "Test Page",
-        permalink: "test-page",
-        folderId: Number(page.id),
       }
       await setupAdminPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
@@ -1931,7 +1937,7 @@ describe("page.router", async () => {
       await assertAuditLogRows()
     })
 
-    // TODO: Implement tests when permissions are implemented
+    // Deferred: Implement tests when permissions are implemented
     it.skip("should throw 403 if user does not have write access to folder", async () => {})
     it.skip("should throw 403 if user does not have write access to root", async () => {})
   })
@@ -1951,7 +1957,8 @@ describe("page.router", async () => {
     it("should return 404 if site does not exist", async () => {
       // Act
       const result = caller.getRootPage({
-        siteId: 999999, // should not exist
+        siteId: 999_999,
+        // should not exist
       })
 
       // Assert
@@ -1970,8 +1977,8 @@ describe("page.router", async () => {
         resourceType: "RootPage",
       })
       await setupEditorPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
@@ -2008,7 +2015,7 @@ describe("page.router", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
-      const result = unauthedCaller.publishPage({ siteId: 1, pageId: 1 })
+      const result = unauthedCaller.publishPage({ pageId: 1, siteId: 1 })
 
       await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
@@ -2021,14 +2028,14 @@ describe("page.router", async () => {
         resourceType: ResourceType.Page,
       })
       await setupEditorPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       const result = caller.publishPage({
-        siteId: site.id,
         pageId: Number(page.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -2047,8 +2054,8 @@ describe("page.router", async () => {
         resourceType: ResourceType.Page,
       })
       await setupPublisherPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
       const previousVersions = await db
         .selectFrom("Version")
@@ -2059,7 +2066,7 @@ describe("page.router", async () => {
       expect(previousVersions.length).toEqual(0)
 
       // Act
-      await caller.publishPage({ siteId: site.id, pageId: Number(page.id) })
+      await caller.publishPage({ pageId: Number(page.id), siteId: site.id })
 
       // Assert - DB (Version)
       const newVersions = await db
@@ -2089,8 +2096,8 @@ describe("page.router", async () => {
         resourceType: ResourceType.Page,
       })
       await setupPublisherPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
       const fullPermalink = await getResourceFullPermalink(
         site.id,
@@ -2099,16 +2106,16 @@ describe("page.router", async () => {
       await db
         .insertInto("Redirect")
         .values({
+          destination: "https://www.example.gov.sg",
           siteId: site.id,
           source: normalizeRedirectPath(fullPermalink!),
-          destination: "https://www.example.gov.sg",
         })
         .execute()
 
       // Act
       const result = caller.publishPage({
-        siteId: site.id,
         pageId: Number(page.id),
+        siteId: site.id,
       })
 
       // Assert — blocked, and nothing published
@@ -2132,20 +2139,20 @@ describe("page.router", async () => {
         resourceType: ResourceType.Page,
       })
       await setupPublisherPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
       await db
         .insertInto("Redirect")
         .values({
+          destination: "https://www.example.gov.sg",
           siteId: site.id,
           source: "/some-unrelated-path",
-          destination: "https://www.example.gov.sg",
         })
         .execute()
 
       // Act
-      await caller.publishPage({ siteId: site.id, pageId: Number(page.id) })
+      await caller.publishPage({ pageId: Number(page.id), siteId: site.id })
 
       // Assert — published normally
       const versions = await db
@@ -2165,8 +2172,8 @@ describe("page.router", async () => {
         userId: session.userId ?? undefined,
       })
       await setupPublisherPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
       const fullPermalink = await getResourceFullPermalink(
         site.id,
@@ -2175,15 +2182,15 @@ describe("page.router", async () => {
       await db
         .insertInto("Redirect")
         .values({
+          destination: "https://www.example.gov.sg",
           siteId: site.id,
           source: normalizeRedirectPath(fullPermalink!),
-          destination: "https://www.example.gov.sg",
         })
         .execute()
 
       // Act / Assert — re-publish is not blocked
       await expect(
-        caller.publishPage({ siteId: site.id, pageId: Number(page.id) }),
+        caller.publishPage({ pageId: Number(page.id), siteId: site.id }),
       ).resolves.toBeUndefined()
     })
 
@@ -2196,8 +2203,8 @@ describe("page.router", async () => {
         resourceType: ResourceType.Page,
       })
       await setupPublisherPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
       const fullPermalink = await getResourceFullPermalink(
         site.id,
@@ -2207,14 +2214,14 @@ describe("page.router", async () => {
       await db
         .insertInto("Redirect")
         .values({
+          destination: literalDestination,
           siteId: site.id,
           source: "/old-url",
-          destination: literalDestination,
         })
         .execute()
 
       // Act
-      await caller.publishPage({ siteId: site.id, pageId: Number(page.id) })
+      await caller.publishPage({ pageId: Number(page.id), siteId: site.id })
 
       // Assert — the literal destination is now a reference to the page
       const redirect = await db
@@ -2261,20 +2268,20 @@ describe("page.router", async () => {
         resourceType: ResourceType.Page,
       })
       await setupPublisherPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
       await db
         .insertInto("Redirect")
         .values({
+          destination: "/some-other-page",
           siteId: site.id,
           source: "/old-url",
-          destination: "/some-other-page",
         })
         .execute()
 
       // Act
-      await caller.publishPage({ siteId: site.id, pageId: Number(page.id) })
+      await caller.publishPage({ pageId: Number(page.id), siteId: site.id })
 
       // Assert — destination is unchanged
       const redirect = await db
@@ -2293,13 +2300,13 @@ describe("page.router", async () => {
       // reference to the CONTAINER (folder), not the index page itself.
       const { site, folder } = await setupFolder({ permalink: "guides" })
       const { page: indexPage } = await setupPageResource({
-        siteId: site.id,
-        resourceType: ResourceType.IndexPage,
         parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
       })
       await setupPublisherPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
       const fullPermalink = await getResourceFullPermalink(
         site.id,
@@ -2308,16 +2315,16 @@ describe("page.router", async () => {
       await db
         .insertInto("Redirect")
         .values({
+          destination: normalizeRedirectPath(fullPermalink!),
           siteId: site.id,
           source: "/old-url",
-          destination: normalizeRedirectPath(fullPermalink!),
         })
         .execute()
 
       // Act — publish the folder's index page (first publish)
       await caller.publishPage({
-        siteId: site.id,
         pageId: Number(indexPage.id),
+        siteId: site.id,
       })
 
       // Assert — the literal destination now references the folder, so it will
@@ -2338,9 +2345,9 @@ describe("page.router", async () => {
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
       const result = unauthedCaller.updateMeta({
-        siteId: 1,
-        resourceId: "1",
         meta: "Test Meta",
+        resourceId: "1",
+        siteId: 1,
       })
 
       await expect(result).rejects.toThrow(
@@ -2356,9 +2363,9 @@ describe("page.router", async () => {
 
       // Act
       const result = caller.updateMeta({
-        siteId: site.id,
-        resourceId: page.id,
         meta: JSON.stringify({ description: "Test Meta" }),
+        resourceId: page.id,
+        siteId: site.id,
       })
 
       // Assert
@@ -2377,19 +2384,20 @@ describe("page.router", async () => {
         resourceType: ResourceType.Page,
       })
       await setupPublisherPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       const result = await caller.updateMeta({
-        siteId: site.id,
-        resourceId: page.id,
         meta: JSON.stringify({ description: "Test Meta" }),
+        resourceId: page.id,
+        siteId: site.id,
       })
 
       // Assert
-      expect(result).toBeUndefined() // not returning anything
+      expect(result).toBeUndefined()
+      // not returning anything
 
       // Assert - DB (AuditLog)
       const auditLogs = await db
@@ -2403,8 +2411,8 @@ describe("page.router", async () => {
 
   describe("updateSettings", () => {
     describe("redirect on settings change", () => {
-      const liveRedirects = (siteId: number) =>
-        db
+      const liveRedirects = async (siteId: number) =>
+        await db
           .selectFrom("Redirect")
           .selectAll()
           .where("siteId", "=", siteId)
@@ -2413,25 +2421,25 @@ describe("page.router", async () => {
 
       const setupPublishedPage = async (permalink: string) => {
         const { site, page } = await setupPageResource({
-          resourceType: ResourceType.Page,
           permalink,
+          resourceType: ResourceType.Page,
           state: ResourceState.Published,
           userId: session.userId,
         })
-        await setupAdminPermissions({ userId: session.userId, siteId: site.id })
-        return { site, page }
+        await setupAdminPermissions({ siteId: site.id, userId: session.userId })
+        return { page, site }
       }
 
       it("creates a redirect from the old URL when the permalink changes", async () => {
         const { site, page } = await setupPublishedPage("old-page")
 
         await caller.updateSettings({
-          siteId: site.id,
           pageId: Number(page.id),
-          type: "Page",
-          title: "Contact us",
           permalink: "new-page",
           shouldCreateRedirect: true,
+          siteId: site.id,
+          title: "Contact us",
+          type: "Page",
         })
 
         const redirects = await liveRedirects(site.id)
@@ -2446,12 +2454,12 @@ describe("page.router", async () => {
         const { site, page } = await setupPublishedPage("stay")
 
         await caller.updateSettings({
-          siteId: site.id,
           pageId: Number(page.id),
-          type: "Page",
-          title: "Renamed title only",
           permalink: "stay",
           shouldCreateRedirect: true,
+          siteId: site.id,
+          title: "Renamed title only",
+          type: "Page",
         })
 
         expect(await liveRedirects(site.id)).toHaveLength(0)
@@ -2461,12 +2469,12 @@ describe("page.router", async () => {
         const { site, page } = await setupPublishedPage("old-page")
 
         await caller.updateSettings({
-          siteId: site.id,
           pageId: Number(page.id),
-          type: "Page",
-          title: "Contact us",
           permalink: "new-page",
           shouldCreateRedirect: false,
+          siteId: site.id,
+          title: "Contact us",
+          type: "Page",
         })
 
         expect(await liveRedirects(site.id)).toHaveLength(0)
@@ -2479,19 +2487,19 @@ describe("page.router", async () => {
         await db
           .insertInto("Redirect")
           .values({
+            destination: "https://example.gov.sg/elsewhere",
             siteId: site.id,
             source: "/new-page",
-            destination: "https://example.gov.sg/elsewhere",
           })
           .execute()
 
         const result = caller.updateSettings({
-          siteId: site.id,
           pageId: Number(page.id),
-          type: "Page",
-          title: "Contact us",
           permalink: "new-page",
           shouldCreateRedirect: false,
+          siteId: site.id,
+          title: "Contact us",
+          type: "Page",
         })
 
         // Assert — blocked, and the whole edit is rolled back (permalink unchanged).
@@ -2511,19 +2519,19 @@ describe("page.router", async () => {
         await db
           .insertInto("Redirect")
           .values({
+            destination: `[resource:${site.id}:${page.id}]`,
             siteId: site.id,
             source: "/new-page",
-            destination: `[resource:${site.id}:${page.id}]`,
           })
           .execute()
 
         await caller.updateSettings({
-          siteId: site.id,
           pageId: Number(page.id),
-          type: "Page",
-          title: "Contact us",
           permalink: "new-page",
           shouldCreateRedirect: true,
+          siteId: site.id,
+          title: "Contact us",
+          type: "Page",
         })
 
         // The self-pointing redirect at /new-page is reclaimed (soft-deleted)...
@@ -2548,21 +2556,21 @@ describe("page.router", async () => {
         const stale = await db
           .insertInto("Redirect")
           .values({
+            deletedAt: new Date(),
+            destination: "https://example.gov.sg/stale",
             siteId: site.id,
             source: "/old-page",
-            destination: "https://example.gov.sg/stale",
-            deletedAt: new Date(),
           })
           .returningAll()
           .executeTakeFirstOrThrow()
 
         await caller.updateSettings({
-          siteId: site.id,
           pageId: Number(page.id),
-          type: "Page",
-          title: "Contact us",
           permalink: "new-page",
           shouldCreateRedirect: true,
+          siteId: site.id,
+          title: "Contact us",
+          type: "Page",
         })
 
         // Exactly one row at the old source — the stale one, revived in place.
@@ -2586,10 +2594,10 @@ describe("page.router", async () => {
 
       // Act
       const result = unauthedCaller.updateSettings({
-        siteId: 1,
         pageId: 1,
-        title: "Test Page",
         permalink: "test-page",
+        siteId: 1,
+        title: "Test Page",
         type: "Page",
       })
 
@@ -2602,12 +2610,12 @@ describe("page.router", async () => {
     it("should return 404 if page does not exist", async () => {
       // Act
       const { site } = await setupSite()
-      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      await setupAdminPermissions({ siteId: site.id, userId: session.userId })
       const result = caller.updateSettings({
-        siteId: site.id,
         pageId: 1,
-        title: "Test Page",
         permalink: "test-page",
+        siteId: site.id,
+        title: "Test Page",
         type: "Page",
       })
 
@@ -2626,18 +2634,18 @@ describe("page.router", async () => {
       // Arrange
       const { site, page } = await setupPageResource({ resourceType: "Page" })
       const expectedSettings = {
-        title: "New Title",
         permalink: "new-permalink",
+        title: "New Title",
       }
       await setupAdminPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       const result = await caller.updateSettings({
-        siteId: site.id,
         pageId: Number(page.id),
+        siteId: site.id,
         type: "Page",
         ...expectedSettings,
       })
@@ -2664,17 +2672,17 @@ describe("page.router", async () => {
       // Arrange
       const { site, page } = await setupPageResource({ resourceType: "Page" })
       await setupAdminPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       await caller.updateSettings({
-        siteId: site.id,
         pageId: Number(page.id),
-        type: "Page",
-        title: "New Title",
         permalink: "new-permalink",
+        siteId: site.id,
+        title: "New Title",
+        type: "Page",
       })
 
       // Assert
@@ -2694,17 +2702,17 @@ describe("page.router", async () => {
         userId: session.userId,
       })
       await setupAdminPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       await caller.updateSettings({
-        siteId: site.id,
         pageId: Number(page.id),
-        type: "Page",
-        title: "New Title",
         permalink: "new-permalink",
+        siteId: site.id,
+        title: "New Title",
+        type: "Page",
       })
 
       // Assert
@@ -2722,15 +2730,15 @@ describe("page.router", async () => {
         resourceType: "RootPage",
       })
       await setupAdminPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
-      const expectedSettings = { title: "New Title", permalink: "" }
+      const expectedSettings = { permalink: "", title: "New Title" }
 
       // Act
       const result = await caller.updateSettings({
-        siteId: site.id,
         pageId: Number(page.id),
+        siteId: site.id,
         type: "RootPage",
         ...expectedSettings,
       })
@@ -2757,16 +2765,16 @@ describe("page.router", async () => {
         resourceType: "Page",
       })
       await setupAdminPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       await caller.updateSettings({
-        siteId: site.id,
         pageId: Number(page.id),
-        type: "RootPage",
+        siteId: site.id,
         title: "Attempted RootPage",
+        type: "RootPage",
       })
 
       // Assert: type should remain unchanged
@@ -2786,8 +2794,8 @@ describe("page.router", async () => {
         resourceType: "Page",
       })
       await setupAdminPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       const { page } = await setupPageResource({
@@ -2797,10 +2805,10 @@ describe("page.router", async () => {
 
       // Act
       const result = caller.updateSettings({
-        siteId: site.id,
         pageId: Number(page.id),
-        title: "New Title",
         permalink: reusedPermalink,
+        siteId: site.id,
+        title: "New Title",
         type: "Page",
       })
 
@@ -2817,14 +2825,14 @@ describe("page.router", async () => {
       // Arrange
       const { site, page } = await setupPageResource({ resourceType: "Page" })
       const expectedSettings = {
-        title: "New Title",
         permalink: "new-permalink",
+        title: "New Title",
       }
 
       // Act
       const result = caller.updateSettings({
-        siteId: site.id,
         pageId: Number(page.id),
+        siteId: site.id,
         type: "Page",
         ...expectedSettings,
       })
@@ -2844,25 +2852,25 @@ describe("page.router", async () => {
     it("should throw 400 if attempting to update the search page settings", async () => {
       // Arrange
       const { site, page } = await setupPageResource({
-        resourceType: "Page",
         permalink: "search",
+        resourceType: "Page",
       })
       await setupAdminPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       const result = caller.updateSettings({
-        siteId: site.id,
         pageId: Number(page.id),
-        type: "Page",
-        title: "New Title",
         permalink: "search",
+        siteId: site.id,
+        title: "New Title",
+        type: "Page",
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message: "The search page settings cannot be edited",
@@ -2876,7 +2884,7 @@ describe("page.router", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
-      const result = unauthedCaller.getFullPermalink({ siteId: 1, pageId: 1 })
+      const result = unauthedCaller.getFullPermalink({ pageId: 1, siteId: 1 })
 
       await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
@@ -2886,10 +2894,13 @@ describe("page.router", async () => {
     it("should return 404 if page does not exist", async () => {
       // Arrange
       const { site } = await setupSite()
-      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      await setupAdminPermissions({ siteId: site.id, userId: session.userId })
 
       // Act
-      const result = caller.getFullPermalink({ siteId: site.id, pageId: 99999 })
+      const result = caller.getFullPermalink({
+        pageId: 99_999,
+        siteId: site.id,
+      })
 
       // Assert
       await expect(result).rejects.toThrow(
@@ -2904,14 +2915,14 @@ describe("page.router", async () => {
       // Arrange
       const { site, page } = await setupPageResource({ resourceType: "Page" })
       await setupAdminPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       const result = await caller.getFullPermalink({
-        siteId: site.id,
         pageId: Number(page.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -2924,14 +2935,14 @@ describe("page.router", async () => {
         resourceType: "RootPage",
       })
       await setupAdminPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       const result = await caller.getFullPermalink({
-        siteId: site.id,
         pageId: Number(page.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -2942,19 +2953,19 @@ describe("page.router", async () => {
       // Arrange
       const { site, folder } = await setupFolder()
       const { page } = await setupPageResource({
-        resourceType: "Page",
         parentId: folder.id,
+        resourceType: "Page",
         siteId: site.id,
       })
       await setupAdminPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       const result = await caller.getFullPermalink({
-        siteId: site.id,
         pageId: Number(page.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -2968,8 +2979,8 @@ describe("page.router", async () => {
       })
       // Act
       const result = caller.getFullPermalink({
-        siteId: site.id,
         pageId: Number(page.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -3001,7 +3012,8 @@ describe("page.router", async () => {
       // Act
       const result = caller.getPermalinkTree({
         pageId: 1,
-        siteId: 999999, // should not exist
+        siteId: 999_999,
+        // should not exist
       })
 
       // Assert
@@ -3019,7 +3031,10 @@ describe("page.router", async () => {
       const { site } = await setupSite()
 
       // Act
-      const result = caller.getPermalinkTree({ siteId: site.id, pageId: 99999 })
+      const result = caller.getPermalinkTree({
+        pageId: 99_999,
+        siteId: site.id,
+      })
 
       // Assert
       await expect(result).rejects.toThrow(
@@ -3035,14 +3050,14 @@ describe("page.router", async () => {
       // Arrange
       const { site, folder } = await setupFolder()
       await setupAdminPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       const result = await caller.getPermalinkTree({
-        siteId: site.id,
         pageId: Number(folder.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -3053,19 +3068,19 @@ describe("page.router", async () => {
       // Arrange
       const { site, folder } = await setupFolder()
       const { page } = await setupPageResource({
-        resourceType: "Page",
         parentId: folder.id,
+        resourceType: "Page",
         siteId: site.id,
       })
       await setupAdminPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       const result = await caller.getPermalinkTree({
-        siteId: site.id,
         pageId: Number(page.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -3078,8 +3093,8 @@ describe("page.router", async () => {
 
       // Act
       const result = caller.getPermalinkTree({
-        siteId: site.id,
         pageId: Number(folder.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -3101,8 +3116,8 @@ describe("page.router", async () => {
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
       const result = unauthedCaller.createIndexPage({
-        siteId: 1,
         parentId: "1",
+        siteId: 1,
       })
 
       await expect(result).rejects.toThrow(
@@ -3116,8 +3131,8 @@ describe("page.router", async () => {
 
       // Act
       const result = caller.createIndexPage({
-        siteId: site.id,
         parentId: folder.id,
+        siteId: site.id,
       })
 
       // Assert
@@ -3134,14 +3149,14 @@ describe("page.router", async () => {
       // Arrange
       const { site, folder } = await setupFolder()
       await setupAdminPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       const result = await caller.createIndexPage({
-        siteId: site.id,
         parentId: folder.id,
+        siteId: site.id,
       })
 
       // Assert
@@ -3151,10 +3166,12 @@ describe("page.router", async () => {
   describe("schedulePage", () => {
     const FIXED_NOW = new Date("2024-01-01T00:00:00.000Z")
     beforeEach(() => {
-      MockDate.set(FIXED_NOW) // Freeze time before each test
+      MockDate.set(FIXED_NOW)
+      // Freeze time before each test
     })
     afterEach(() => {
-      MockDate.reset() // Reset time after each test
+      MockDate.reset()
+      // Reset time after each test
     })
     it("should throw 403 if user does not have publish access to the site", async () => {
       //  Arrange
@@ -3164,7 +3181,6 @@ describe("page.router", async () => {
 
       // Act
       const scheduleCaller = caller.schedulePage({
-        siteId: site.id,
         pageId: Number(expectedPage.id),
         scheduledAt: set(addDays(FIXED_NOW, 1), {
           hours: 10,
@@ -3172,6 +3188,7 @@ describe("page.router", async () => {
           seconds: 0,
           milliseconds: 0,
         }),
+        siteId: site.id,
       })
 
       // Assert
@@ -3190,20 +3207,20 @@ describe("page.router", async () => {
       })
       const scheduledAt = set(addDays(FIXED_NOW, 1), {
         hours: 10,
+        milliseconds: 0,
         minutes: 0,
         seconds: 0,
-        milliseconds: 0,
       })
       await setupPublisherPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       await caller.schedulePage({
-        siteId: site.id,
         pageId: Number(expectedPage.id),
         scheduledAt,
+        siteId: site.id,
       })
 
       // Assert
@@ -3215,9 +3232,9 @@ describe("page.router", async () => {
       // expect the scheduledAt to be tomorrow at 10am
       const expectedDate = set(addDays(FIXED_NOW, 1), {
         hours: 10,
+        milliseconds: 0,
         minutes: 0,
         seconds: 0,
-        milliseconds: 0,
       })
       expect(actual.scheduledAt).toEqual(expectedDate)
       expect(actual.scheduledBy).toEqual(session.userId)
@@ -3225,7 +3242,6 @@ describe("page.router", async () => {
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog).toHaveLength(1)
       expect(auditLog[0]).toMatchObject({
-        eventType: AuditLogEvent.SchedulePublish,
         delta: {
           before: omit(expectedPage, ["updatedAt", "createdAt"]),
           // NOTE: Need to convert expectedDate to ISO string as the comparison is done with the DB value which is in ISO format
@@ -3238,6 +3254,7 @@ describe("page.router", async () => {
             ["updatedAt", "createdAt"],
           ),
         },
+        eventType: AuditLogEvent.SchedulePublish,
       })
     })
     it("providing a scheduled timestamp in the past leads to an error being thrown", async () => {
@@ -3246,17 +3263,17 @@ describe("page.router", async () => {
         resourceType: "Page",
       })
       await setupPublisherPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       // This should throw an error on the frontend or backend based on the value specified in MINIMUM_SCHEDULE_LEAD_TIME_MINUTES
       await expect(
         caller.schedulePage({
-          siteId: site.id,
           pageId: Number(expectedPage.id),
           scheduledAt: subDays(FIXED_NOW, 1),
+          siteId: site.id,
         }),
       ).rejects.toThrow()
 
@@ -3278,14 +3295,14 @@ describe("page.router", async () => {
       })
       // The user is only an editor, not a publisher
       await setupEditorPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
       // Act
       const scheduleCaller = caller.schedulePage({
-        siteId: site.id,
         pageId: Number(expectedPage.id),
         scheduledAt: subDays(FIXED_NOW, 1),
+        siteId: site.id,
       })
 
       // Assert
@@ -3307,9 +3324,9 @@ describe("page.router", async () => {
 
       // Act
       const result = unauthedCaller.schedulePage({
-        siteId: site.id,
         pageId: Number(expectedPage.id),
         scheduledAt: subDays(FIXED_NOW, 1),
+        siteId: site.id,
       })
 
       await expect(result).rejects.toThrow(
@@ -3322,14 +3339,15 @@ describe("page.router", async () => {
         resourceType: "Page",
       })
       await setupPublisherPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
       // Act
       const scheduleCaller = caller.schedulePage({
-        siteId: site.id,
-        pageId: Number(expectedPage.id) + 1, // Invalid pageId should lead to an error being thrown
+        pageId: Number(expectedPage.id) + 1,
+        // Invalid pageId should lead to an error being thrown
         scheduledAt: addDays(FIXED_NOW, 1),
+        siteId: site.id,
       })
 
       // Assert
@@ -3341,33 +3359,35 @@ describe("page.router", async () => {
   describe("cancelSchedulePage", () => {
     const FIXED_NOW = new Date("2024-01-01T00:00:00.000Z")
     beforeEach(() => {
-      MockDate.set(FIXED_NOW) // Freeze time before each test
+      MockDate.set(FIXED_NOW)
+      // Freeze time before each test
     })
     afterEach(() => {
-      MockDate.reset() // Reset time after each test
+      MockDate.reset()
+      // Reset time after each test
     })
-    // TODO: check that the request fails if the job is already active - requires mocking the job queue
+    // Deferred: check that the request fails if the job is already active - requires mocking the job queue
     it("cancelling a scheduled publish works correctly", async () => {
       // Arrange
       const scheduledAt = set(addDays(FIXED_NOW, 1), {
         hours: 10,
+        milliseconds: 0,
         minutes: 0,
         seconds: 0,
-        milliseconds: 0,
       })
       const { site, page: expectedPage } = await setupPageResource({
         resourceType: "Page",
         scheduledAt,
       })
       await setupPublisherPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       await caller.cancelSchedulePage({
-        siteId: site.id,
         pageId: Number(expectedPage.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -3386,15 +3406,15 @@ describe("page.router", async () => {
         resourceType: "Page",
       })
       await setupPublisherPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act & Assert
       await expect(
         caller.cancelSchedulePage({
-          siteId: site.id,
           pageId: Number(expectedPage.id),
+          siteId: site.id,
         }),
       ).rejects.toThrow(
         new TRPCError({
@@ -3409,20 +3429,20 @@ describe("page.router", async () => {
         resourceType: "Page",
         scheduledAt: set(addDays(FIXED_NOW, 1), {
           hours: 10,
+          milliseconds: 0,
           minutes: 0,
           seconds: 0,
-          milliseconds: 0,
         }),
       })
       // The user is only an editor, not a publisher
       await setupEditorPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
       // Act
       const scheduleCaller = caller.cancelSchedulePage({
-        siteId: site.id,
         pageId: Number(expectedPage.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -3440,9 +3460,9 @@ describe("page.router", async () => {
         resourceType: "Page",
         scheduledAt: set(addDays(FIXED_NOW, 1), {
           hours: 10,
+          milliseconds: 0,
           minutes: 0,
           seconds: 0,
-          milliseconds: 0,
         }),
       })
       const unauthedSession = applySession()
@@ -3450,8 +3470,8 @@ describe("page.router", async () => {
 
       // Act
       const result = unauthedCaller.cancelSchedulePage({
-        siteId: site.id,
         pageId: Number(expectedPage.id),
+        siteId: site.id,
       })
 
       await expect(result).rejects.toThrow(
@@ -3464,20 +3484,21 @@ describe("page.router", async () => {
         resourceType: "Page",
         scheduledAt: set(addDays(FIXED_NOW, 1), {
           hours: 10,
+          milliseconds: 0,
           minutes: 0,
           seconds: 0,
-          milliseconds: 0,
         }),
       })
       await setupPublisherPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       const cancelScheduleCaller = caller.cancelSchedulePage({
+        pageId: Number(expectedPage.id) + 1,
+        // Invalid pageId should lead to an error being thrown
         siteId: site.id,
-        pageId: Number(expectedPage.id) + 1, // Invalid pageId should lead to an error being thrown
       })
 
       // Assert

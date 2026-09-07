@@ -30,14 +30,14 @@ const SINGPASS_ENCRYPTION_KEY = await exportJWK(
 
 export const SINGPASS_SIGNING_JWK = {
   ...SINGPASS_SIGNING_KEY,
-  use: "sig",
   alg: env.SINGPASS_SIGNING_KEY_ALG,
   kid: await calculateJwkThumbprint(SINGPASS_SIGNING_KEY),
+  use: "sig",
 }
 
 export const SINGPASS_ENCRYPTION_JWK = {
   ...SINGPASS_ENCRYPTION_KEY,
-  use: "enc",
   alg: env.SINGPASS_ENCRYPTION_KEY_ALG,
   kid: await calculateJwkThumbprint(SINGPASS_ENCRYPTION_KEY),
+  use: "enc",
 }

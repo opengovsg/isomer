@@ -14,10 +14,12 @@ describe("updateStoppedBuild", () => {
   let user: User
   const FIXED_NOW = new Date("2024-01-01T00:15:00.000Z")
   afterEach(() => {
-    MockDate.reset() // Reset time after each test
+    MockDate.reset()
+    // Reset time after each test
   })
   beforeEach(async () => {
-    MockDate.set(FIXED_NOW) // Freeze time before each test
+    MockDate.set(FIXED_NOW)
+    // Freeze time before each test
     vi.clearAllMocks()
     await resetTables("CodeBuildJobs", "User", "Resource", "Site")
     user = await setupUser({})
@@ -28,16 +30,16 @@ describe("updateStoppedBuild", () => {
     const NUMBER_SUPERSEDED_BUILDS = 4
     const NEWLY_STARTED_BUILD_ID = "newly-started-build-id"
     const { codebuildJob, page: pageForMainBuild } = await setupCodeBuildJob({
-      userId: user.id,
       arn: "build/test-id",
-      status: "IN_PROGRESS",
-      startedAt: FIXED_NOW,
       isScheduled: true,
+      startedAt: FIXED_NOW,
+      status: "IN_PROGRESS",
+      userId: user.id,
     })
     await createSupersededBuildRows({
       numberOfSupersededBuilds: NUMBER_SUPERSEDED_BUILDS,
-      supersedingBuild: codebuildJob,
       resourceId: pageForMainBuild.id,
+      supersedingBuild: codebuildJob,
       userId: user.id,
     })
 
@@ -48,8 +50,8 @@ describe("updateStoppedBuild", () => {
       throw new Error("Codebuild job has no buildId provided")
     }
     await updateStoppedBuild({
-      stoppedBuildId: codebuildJob.buildId,
       startedBuildId: NEWLY_STARTED_BUILD_ID,
+      stoppedBuildId: codebuildJob.buildId,
     })
 
     // Assert
@@ -58,7 +60,8 @@ describe("updateStoppedBuild", () => {
       .selectAll()
       .where("supersededByBuildId", "=", NEWLY_STARTED_BUILD_ID)
       .execute()
-    expect(allSupersededBuilds.length).toEqual(NUMBER_SUPERSEDED_BUILDS + 1) // +1 for the main build
+    expect(allSupersededBuilds.length).toEqual(NUMBER_SUPERSEDED_BUILDS + 1)
+    // +1 for the main build
     // expect all superseded builds to have status STOPPED
     allSupersededBuilds.forEach((build) => {
       expect(build.status).toEqual("STOPPED")

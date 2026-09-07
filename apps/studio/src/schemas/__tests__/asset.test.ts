@@ -15,9 +15,9 @@ import {
 
 describe("getPresignedPutUrlSchema", () => {
   const validBaseData = {
-    siteId: 1,
-    resourceId: "test-resource-id",
     fileSize: 1,
+    resourceId: "test-resource-id",
+    siteId: 1,
   }
 
   describe("fileName validation", () => {
@@ -336,8 +336,8 @@ describe("fileNameAndSizeSchema", () => {
 
 describe("deleteAssetsSchema", () => {
   const validBaseData = {
-    siteId: 1,
     resourceId: "test-resource-id",
+    siteId: 1,
   }
 
   const makeFileKeys = (count: number) =>

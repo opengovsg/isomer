@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-use-before-define, typescript/strict-void-return -- core cleanup deferred */
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import {
   Modal,
@@ -13,7 +14,7 @@ import {
   useToast,
 } from "@opengovsg/design-system-react"
 import { format, parse } from "date-fns"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
 import { useState } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useUploadGazetteMutation } from "~/hooks/useUploadGazetteMutation"
@@ -37,19 +38,17 @@ export const CreateGazetteModal = ({
   onClose,
   siteId,
   collectionId,
-}: CreateGazetteModalProps): React.ReactNode => {
-  return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <ModalOverlay />
-      <CreateGazetteModalContent
-        key={String(isOpen)}
-        onClose={onClose}
-        siteId={siteId}
-        collectionId={collectionId}
-      />
-    </Modal>
-  )
-}
+}: CreateGazetteModalProps): React.ReactNode => (
+  <Modal isOpen={isOpen} onClose={onClose}>
+    <ModalOverlay />
+    <CreateGazetteModalContent
+      key={String(isOpen)}
+      onClose={onClose}
+      siteId={siteId}
+      collectionId={collectionId}
+    />
+  </Modal>
+)
 
 const CreateGazetteModalContent = ({
   onClose,
@@ -68,24 +67,24 @@ const CreateGazetteModalContent = ({
     formState: { errors, isValid },
   } = useZodForm({
     defaultValues: {
-      title: "",
       category: "Government Gazette",
-      subcategory: "",
+      fileId: "",
       notificationNumber: "",
       publishDate: new Date(),
       publishTime: "16:45",
-      fileId: "",
+      subcategory: "",
+      title: "",
     },
-    schema: createGazetteSchema,
     mode: "onChange",
+    schema: createGazetteSchema,
   })
 
   const utils = trpc.useUtils()
 
   const { mutateAsync: uploadFile, isPending: isUploading } =
     useUploadGazetteMutation({
-      siteId,
       resourceId: String(collectionId),
+      siteId,
     })
 
   const { mutateAsync: createGazette, isPending: isCreating } =
@@ -107,32 +106,32 @@ const CreateGazetteModalContent = ({
 
     try {
       const { path: ref } = await uploadFile({
+        category: data.category,
         file,
         fileName: data.fileId,
         scheduledAt,
-        year: data.publishDate.getFullYear(),
-        category: data.category,
         subcategory: subcategoryMap[data.subcategory] ?? data.subcategory,
+        year: data.publishDate.getFullYear(),
       })
 
       await createGazette({
-        siteId,
-        collectionId,
-        title: data.title,
-        permalink: crypto.randomUUID(),
-        ref,
         category: data.category,
+        collectionId,
         date: format(data.publishDate, "dd/MM/yyyy"),
         description: data.notificationNumber,
-        tagged: [data.subcategory],
+        permalink: crypto.randomUUID(),
+        ref,
         scheduledAt,
+        siteId,
+        tagged: [data.subcategory],
+        title: data.title,
       })
 
-      posthog.capture("gazette_created", {
-        site_id: siteId,
+      posthogJs.capture("gazette_created", {
         category: data.category,
         has_subcategory: !!data.subcategory,
         is_scheduled: scheduledAt > new Date(),
+        site_id: siteId,
       })
       void utils.gazette.list.invalidate()
       toast({
@@ -143,10 +142,10 @@ const CreateGazetteModalContent = ({
       onClose()
     } catch (error) {
       toast({
-        status: "error",
-        title: "Failed to create gazette",
         description:
           error instanceof Error ? error.message : "An error occurred",
+        status: "error",
+        title: "Failed to create gazette",
         ...BRIEF_TOAST_SETTINGS,
       })
     }

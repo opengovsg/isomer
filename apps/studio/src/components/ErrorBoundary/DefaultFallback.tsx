@@ -1,5 +1,5 @@
-import { type ComponentType } from "react"
-import { type FallbackProps } from "react-error-boundary"
+import type { ComponentType } from "react"
+import type { FallbackProps } from "react-error-boundary"
 import { TRPCWithErrorCodeSchema } from "~/utils/error"
 
 import { DefaultTrpcError } from "./DefaultTrpcError"
@@ -13,7 +13,9 @@ export const DefaultFallback: ComponentType<FallbackProps> = ({
 
   const res = TRPCWithErrorCodeSchema.safeParse(error)
 
-  if (!res.success) return <UnexpectedErrorCard />
+  if (!res.success) {
+    return <UnexpectedErrorCard />
+  }
 
   return (
     <DefaultTrpcError code={res.data} resetErrorBoundary={resetErrorBoundary} />

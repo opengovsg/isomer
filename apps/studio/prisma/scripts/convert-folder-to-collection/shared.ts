@@ -1,24 +1,21 @@
+/* oxlint-disable typescript/no-unsafe-call, eslint/no-unused-vars, unicorn/import-style -- studio lint cleanup */
 import type { UnwrapTagged } from "type-fest"
-import { mkdirSync, readFileSync, writeFileSync } from "fs"
-import { dirname, join } from "path"
-import { fileURLToPath } from "url"
+import type { DB, Transaction } from "~/server/modules/database/types"
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
+import { dirname, join } from "node:path"
+import { fileURLToPath } from "node:url"
 import { db } from "~/server/modules/database/database"
-import {
-  ResourceState,
-  ResourceType,
-  type DB,
-  type Transaction,
-} from "~/server/modules/database/types"
+import { ResourceState, ResourceType } from "~/server/modules/database/types"
 import { jsonb } from "~/server/modules/database/utils"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
-import {
-  buildConversionReport,
-  toFolderPlan,
-  type ConversionPlan,
-  type ConversionReportEntry,
-  type FolderPlan,
-  type PagePlan,
+import type {
+  ConversionPlan,
+  ConversionReportEntry,
+  FolderPlan,
+  PagePlan,
 } from "./helpers"
+import { buildConversionReport, toFolderPlan } from "./helpers"
 
 // ---------------------------------------------------------------------------
 // Blob helpers (local copies — avoid resource.service, which imports
@@ -42,21 +39,21 @@ export const getBlobOfResource = async ({
       () => new Error(`Resource ${resourceId} not found`),
     )
 
-  if (draftBlobId) {
-    return database
+  if (hasNonEmptyString(draftBlobId)) {
+    return await database
       .selectFrom("Blob")
       .where("id", "=", draftBlobId)
       .selectAll()
       .executeTakeFirstOrThrow()
   }
 
-  if (!publishedVersionId) {
+  if (!hasNonEmptyString(publishedVersionId)) {
     throw new Error(
       `Resource ${resourceId} has no draft blob and no published version`,
     )
   }
 
-  return database
+  return await database
     .selectFrom("Blob")
     .selectAll()
     .where("Blob.id", "=", (eb) =>
@@ -91,7 +88,7 @@ export const updateBlobById = async (
     throw new Error(`Resource ${pageId} not found`)
   }
 
-  if (!page.draftBlobId) {
+  if (!hasNonEmptyString(page.draftBlobId)) {
     const newBlob = await tx
       .insertInto("Blob")
       .values({ content: jsonb(content) })
@@ -105,7 +102,7 @@ export const updateBlobById = async (
     return newBlob
   }
 
-  return tx
+  return await tx
     .updateTable("Blob")
     .set({ content: jsonb(content) })
     .where("Blob.id", "=", page.draftBlobId)
@@ -143,11 +140,13 @@ export const incrementVersion = async ({
   if (!page) {
     throw new Error(`Resource ${resourceId} not found`)
   }
-  if (!page.draftBlobId) return null
+  if (!hasNonEmptyString(page.draftBlobId)) {
+    return null
+  }
 
   let newVersionNum = 1
   let previousVersion: ScriptVersion | null = null
-  if (page.publishedVersionId) {
+  if (hasNonEmptyString(page.publishedVersionId)) {
     previousVersion = await tx
       .selectFrom("Version")
       .where("id", "=", page.publishedVersionId)
@@ -159,11 +158,11 @@ export const incrementVersion = async ({
   const newVersion = await tx
     .insertInto("Version")
     .values({
-      versionNum: newVersionNum,
-      resourceId,
       blobId: page.draftBlobId,
       publishedAt: new Date(),
       publishedBy: userId,
+      resourceId,
+      versionNum: newVersionNum,
     })
     .returning(["id", "versionNum"])
     .executeTakeFirstOrThrow()
@@ -171,8 +170,8 @@ export const incrementVersion = async ({
   await tx
     .updateTable("Resource")
     .set({
-      publishedVersionId: newVersion.id,
       draftBlobId: null,
+      publishedVersionId: newVersion.id,
       state: ResourceState.Published,
     })
     .where("id", "=", resourceId)
@@ -192,7 +191,9 @@ export const verifySite = async (siteId: number) => {
     .where("id", "=", siteId)
     .select(["id", "name"])
     .executeTakeFirst()
-  if (!site) throw new Error(`Site ${siteId} not found`)
+  if (!site) {
+    throw new Error(`Site ${siteId} not found`)
+  }
   return site
 }
 
@@ -220,7 +221,9 @@ export const verifyUser = async (userId: string) => {
     .where("id", "=", userId)
     .select("id")
     .executeTakeFirst()
-  if (!user) throw new Error(`User ${userId} not found`)
+  if (!user) {
+    throw new Error(`User ${userId} not found`)
+  }
   return user
 }
 
@@ -228,8 +231,7 @@ export const verifyUser = async (userId: string) => {
 // Plan + report I/O
 // ---------------------------------------------------------------------------
 
-const defaultOutDir = () =>
-  join(dirname(fileURLToPath(import.meta.url)), ".out")
+const defaultOutDir = () => join(import.meta.dirname, ".out")
 
 export const folderPlanFileName = (folderId: string) =>
   `convert-folder-${folderId}.json`
@@ -271,24 +273,28 @@ export const loadConversionPlan = (
   baseDir: string = defaultOutDir(),
 ): ConversionPlan => {
   const folderPath = join(baseDir, folderPlanFileName(folderId))
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   // SAFETY: plan files are written by writePlanFiles using the same FolderPlan shape.
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   const folderPlan = JSON.parse(readFileSync(folderPath, "utf-8")) as FolderPlan
 
-  const readResource = (resourceId: string): PagePlan => {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
+  const readResource = (resourceId: string): PagePlan =>
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
     // SAFETY: resource plan files are written by writePlanFiles using PagePlan.
-    return JSON.parse(
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
+    JSON.parse(
       readFileSync(join(baseDir, resourcePlanFileName(resourceId)), "utf-8"),
     ) as PagePlan
-  }
 
   return {
+    defaultCategory: folderPlan.defaultCategory,
     folder: {
       id: folderPlan.id,
+      permalink: folderPlan.permalink,
       siteId: folderPlan.siteId,
       title: folderPlan.title,
-      permalink: folderPlan.permalink,
     },
-    defaultCategory: folderPlan.defaultCategory,
     indexPage: readResource(folderPlan.indexPageId),
     pages: folderPlan.pageIds.map(readResource),
   }
@@ -296,9 +302,13 @@ export const loadConversionPlan = (
 
 export const loadConversionPlanFromPath = (
   path: string,
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   baseDir: string = defaultOutDir(),
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
 ): ConversionPlan => {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   // SAFETY: path points to a folder plan file written by writePlanFiles.
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   const folderPlan = JSON.parse(readFileSync(path, "utf-8")) as FolderPlan
   return loadConversionPlan(folderPlan.id, baseDir)
 }
@@ -321,7 +331,7 @@ export const writeReportFile = (
   baseDir: string = defaultOutDir(),
 ): string => {
   const fileName = folderPlanFileName(plan.folder.id).replace(
-    /\.json$/,
+    /\.json$/u,
     ".report.json",
   )
   mkdirSync(baseDir, { recursive: true })
@@ -370,7 +380,9 @@ export const printPlan = (plan: ConversionPlan) => {
     console.log(
       `\n⚠  Article layout does not list these as allowed editor blocks:`,
     )
-    for (const [t, n] of flaggedTypes) console.log(`     - ${t}: ${n}`)
+    for (const [t, n] of flaggedTypes) {
+      console.log(`     - ${t}: ${n}`)
+    }
     console.log(
       "   The blocks will be preserved in the blob — they will continue to render —",
     )
@@ -385,4 +397,4 @@ export const printPlan = (plan: ConversionPlan) => {
 // ---------------------------------------------------------------------------
 
 export const validateNumericId = (label: string) => (v: string) =>
-  /^\d+$/.test(v.trim()) || `${label} must be a numeric string`
+  /^\d+$/u.test(v.trim()) || `${label} must be a numeric string`

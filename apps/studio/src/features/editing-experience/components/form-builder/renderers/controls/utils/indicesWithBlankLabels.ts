@@ -1,9 +1,19 @@
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 /** Indices of items whose `label` is missing/blank/whitespace-only. */
-export function indicesWithBlankLabels(
+export const indicesWithBlankLabels = (
   items: { label?: string }[] | undefined,
-): Set<number> {
-  if (!items?.length) return new Set()
+): Set<number> => {
+  if (!isDefinedNumber(items?.length)) {
+    return new Set()
+  }
   return new Set(
-    items.flatMap((item, index) => (!item.label?.trim() ? [index] : [])),
+    items.flatMap((item, index) =>
+      hasNonEmptyString(item.label?.trim()) ? [] : [index],
+    ),
   )
 }

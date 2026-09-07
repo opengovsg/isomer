@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-use-before-define, typescript/strict-void-return -- core cleanup deferred */
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import {
   Box,
@@ -25,6 +26,12 @@ import { BiInfoCircle, BiTrash } from "react-icons/bi"
 import { ALLOWED_GAZETTE_DELETION_TIMEFRAME_IN_MINUTES } from "~/constants/gazette"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { useGazetteSubcategoriesContext } from "../../contexts/GazetteSubcategoriesContext"
 
@@ -74,23 +81,23 @@ export const ViewGazetteModal = ({
 
   const { mutateAsync: deleteGazette, isPending: isDeleting } =
     trpc.gazette.delete.useMutation({
+      onError: (error) => {
+        toast({
+          description: error.message,
+          status: "error",
+          title: "Failed to delete gazette",
+          ...BRIEF_TOAST_SETTINGS,
+        })
+      },
       onSuccess: () => {
         toast({
+          description: "The gazette has been permanently deleted.",
           status: "success",
           title: "Gazette deleted",
-          description: "The gazette has been permanently deleted.",
           ...BRIEF_TOAST_SETTINGS,
         })
         void utils.gazette.list.invalidate()
         handleClose()
-      },
-      onError: (error) => {
-        toast({
-          status: "error",
-          title: "Failed to delete gazette",
-          description: error.message,
-          ...BRIEF_TOAST_SETTINGS,
-        })
       },
     })
 
@@ -102,8 +109,8 @@ export const ViewGazetteModal = ({
 
   const onDelete = async () => {
     await deleteGazette({
-      siteId,
       gazetteId: Number(gazetteId),
+      siteId,
     })
   }
 
@@ -118,19 +125,15 @@ export const ViewGazetteModal = ({
             <ModalBody pb="2rem">
               <VStack alignItems="flex-start" spacing="1.5rem">
                 <DataField label="Title" value={data.title} />
-
                 <HStack spacing="2.5rem" w="100%" alignItems="flex-start">
                   <DataField label="Category" value={data.category} />
                   <DataField label="Subcategory" value={subcategoryLabel} />
                 </HStack>
-
                 <DataField
                   label="Notification Number"
                   value={data.notificationNumber ?? "-"}
                 />
-
                 <DataField label="File ID" value={data.fileId} />
-
                 <DataField
                   label="Date of Publication"
                   value={
@@ -148,7 +151,9 @@ export const ViewGazetteModal = ({
                       variant="outline"
                       colorScheme="critical"
                       leftIcon={<BiTrash />}
-                      onClick={() => setView("delete")}
+                      onClick={() => {
+                        setView("delete")
+                      }}
                     >
                       Delete this Gazette permanently
                     </Button>
@@ -189,7 +194,7 @@ export const ViewGazetteModal = ({
                     label="Category / Subcategory"
                     value={`${data.category} / ${subcategoryLabel}`}
                   />
-                  {data.notificationNumber && (
+                  {hasNonEmptyString(data.notificationNumber) && (
                     <DeleteDataField
                       label="Notification Number"
                       value={data.notificationNumber}
@@ -209,7 +214,9 @@ export const ViewGazetteModal = ({
               <Box mt="1.5rem">
                 <Checkbox
                   isChecked={isConfirmed}
-                  onChange={(e) => setIsConfirmed(e.target.checked)}
+                  onChange={(e) => {
+                    setIsConfirmed(e.target.checked)
+                  }}
                 >
                   <Text textStyle="body-2">
                     Yes, delete this Gazette permanently
@@ -247,28 +254,24 @@ interface DataFieldProps {
   value: string
 }
 
-const DataField = ({ label, value }: DataFieldProps) => {
-  return (
-    <Box w="100%">
-      <Text textStyle="subhead-2" color="base.content.medium" mb="0.25rem">
-        {label}
-      </Text>
-      <Text textStyle="subhead-2" color="base.content.strong">
-        {value}
-      </Text>
-    </Box>
-  )
-}
+const DataField = ({ label, value }: DataFieldProps) => (
+  <Box w="100%">
+    <Text textStyle="subhead-2" color="base.content.medium" mb="0.25rem">
+      {label}
+    </Text>
+    <Text textStyle="subhead-2" color="base.content.strong">
+      {value}
+    </Text>
+  </Box>
+)
 
-const DeleteDataField = ({ label, value }: DataFieldProps) => {
-  return (
-    <Box>
-      <Text textStyle="caption-1" color="base.content.medium">
-        {label}
-      </Text>
-      <Text textStyle="body-2" color="base.content.strong">
-        {value}
-      </Text>
-    </Box>
-  )
-}
+const DeleteDataField = ({ label, value }: DataFieldProps) => (
+  <Box>
+    <Text textStyle="caption-1" color="base.content.medium">
+      {label}
+    </Text>
+    <Text textStyle="body-2" color="base.content.strong">
+      {value}
+    </Text>
+  </Box>
+)

@@ -36,6 +36,7 @@ import {
   redirectRowSchema,
 } from "~/schemas/redirect"
 import { getReferenceLink } from "~/utils/link"
+import { hasNonEmptyString, isNullableBooleanTrue } from "~/utils/truthiness"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { Logger } from "@isomer/logging"
@@ -63,9 +64,9 @@ import {
 // Sort field → column. `publishedAt` maps to `createdAt`; `satisfies` keeps the
 // map exhaustive so a new sort field without a column is a compile error.
 const SORT_FIELD_TO_COLUMN = {
-  source: "source",
   destination: "destination",
   publishedAt: "createdAt",
+  source: "source",
 } as const satisfies Record<
   RedirectSortField,
   "source" | "destination" | "createdAt"
@@ -76,6 +77,7 @@ const SORT_FIELD_TO_COLUMN = {
 // reference when it is exactly one.
 const REFERENCE_DESTINATION_REGEX = new RegExp(
   `^${REFERENCE_LINK_REGEX.source}$`,
+  "u",
 )
 
 // Write timestamps with the database clock, matching the columns' @default(now()).
@@ -118,8 +120,9 @@ const resolveDestinationForStorage = async (
   const parsed = parseDestination(destination)
   switch (parsed.type) {
     case "reference":
-    case "external":
+    case "external": {
       return parsed.value
+    }
     case "internalPath": {
       if (parsed.value.includes("?") || parsed.value.includes("#")) {
         return parsed.value
@@ -130,9 +133,13 @@ const resolveDestinationForStorage = async (
         return parsed.value
       }
       return getReferenceLink({
-        siteId: String(siteId),
         resourceId: String(resourceId),
+        siteId: String(siteId),
       })
+    }
+    default: {
+      const _exhaustive: never = parsed
+      return _exhaustive
     }
   }
 }
@@ -160,7 +167,7 @@ const getPublishedStateByResourceIds = async (
   const containerIds: string[] = []
   for (const r of resources) {
     if (r.type === ResourceType.Folder || r.type === ResourceType.Collection) {
-      containerIds.push(String(r.id))
+      containerIds.push(r.id)
     }
   }
   const publishedByContainerId = new Map<string, boolean>()
@@ -187,7 +194,7 @@ const getPublishedStateByResourceIds = async (
     result.set(
       Number(resource.id),
       isContainer
-        ? (publishedByContainerId.get(String(resource.id)) ?? false)
+        ? (publishedByContainerId.get(resource.id) ?? false)
         : resource.publishedVersionId !== null,
     )
   }
@@ -198,7 +205,7 @@ const getPublishedStateByResourceIds = async (
 // first "?" or "#". A redirect source is always a clean path, so a destination
 // like "/b?x" has to compare as "/b" — both when resolving it for display and
 // when matching it against sources for loop detection.
-const stripQueryFragment = (value: string) => value.split(/[?#]/)[0] ?? value
+const stripQueryFragment = (value: string) => value.split(/[?#]/u)[0] ?? value
 
 // Resolves stored internal destinations (both [resource:...] references and
 // literal "/paths") for the table. For references it returns the destination
@@ -221,33 +228,33 @@ export const resolveRedirectReferences = async ({
     const match = REFERENCE_DESTINATION_REGEX.exec(reference)
     if (match) {
       const resourceId = Number(match[1]) === siteId ? Number(match[2]) : null
-      return { reference, kind: "reference" as const, resourceId, path: null }
+      return { kind: "reference" as const, path: null, reference, resourceId }
     }
     if (reference.startsWith("/")) {
       return {
-        reference,
         kind: "literal" as const,
-        resourceId: null,
         path: stripQueryFragment(reference),
+        reference,
+        resourceId: null,
       }
     }
     return {
-      reference,
       kind: "external" as const,
-      resourceId: null,
       path: null,
+      reference,
+      resourceId: null,
     }
   })
 
   const idByPath = await getResourceIdsByPermalinks(
     siteId,
-    classified.flatMap(({ path }) => (path !== null ? [path] : [])),
+    classified.flatMap(({ path }) => (path === null ? [] : [path])),
   )
 
   const parsed = classified.map(({ reference, kind, resourceId, path }) => ({
-    reference,
     kind,
-    resourceId: path !== null ? (idByPath.get(path) ?? null) : resourceId,
+    reference,
+    resourceId: path === null ? resourceId : (idByPath.get(path) ?? null),
   }))
 
   const resourceIds = parsed
@@ -260,7 +267,7 @@ export const resolveRedirectReferences = async ({
 
   return parsed.map(({ reference, kind, resourceId }) => {
     if (kind === "external") {
-      return { reference, permalink: null, warn: false }
+      return { permalink: null, reference, warn: false }
     }
     // Only references render the resolved permalink; a literal path shows as
     // typed, so its display permalink stays null.
@@ -274,7 +281,7 @@ export const resolveRedirectReferences = async ({
     const isMissing =
       resourceId === null || (kind === "reference" && permalink === null)
     const warn = isMissing || !(publishedState.get(resourceId ?? -1) ?? false)
-    return { reference, permalink, warn }
+    return { permalink, reference, warn }
   })
 }
 
@@ -283,7 +290,7 @@ export const resolveRedirectReferences = async ({
 // pool — that second connection can block indefinitely behind locks the open
 // transaction itself holds, hanging until the outer transaction commits.
 const getByUser = async (dbInstance: SafeKysely, byUserId: string) =>
-  dbInstance
+  await dbInstance
     .selectFrom("User")
     .selectAll()
     .where("id", "=", byUserId)
@@ -295,11 +302,11 @@ const getByUser = async (dbInstance: SafeKysely, byUserId: string) =>
         }),
     )
 
-const getLiveRedirectBySource = (
+const getLiveRedirectBySource = async (
   dbInstance: SafeKysely,
   { siteId, source }: { siteId: number; source: string },
 ) =>
-  dbInstance
+  await dbInstance
     .selectFrom("Redirect")
     .selectAll()
     .where("siteId", "=", siteId)
@@ -318,7 +325,7 @@ export const shadowingSourceCandidates = (permalink: string): string[] => {
   const source = normalizeRedirectSource(permalink)
   const segments = source.split("/").filter((segment) => segment.length > 0)
   const candidates = [source]
-  for (let depth = segments.length - 1; depth >= 1; depth--) {
+  for (let depth = segments.length - 1; depth >= 1; depth -= 1) {
     candidates.push(`/${segments.slice(0, depth).join("/")}/*`)
   }
   return [...new Set(candidates)]
@@ -336,13 +343,17 @@ const resolveShadowingMatch = <
   excludeDestination?: string,
 ): T | null => {
   const [exactSource, ...wildcardCandidates] = candidates
-  const exactMatch = exactSource ? bySource.get(exactSource) : undefined
+  const exactMatch = hasNonEmptyString(exactSource)
+    ? bySource.get(exactSource)
+    : undefined
   if (exactMatch && exactMatch.destination !== excludeDestination) {
     return exactMatch
   }
   for (const candidate of wildcardCandidates) {
     const match = bySource.get(candidate)
-    if (match) return match
+    if (match) {
+      return match
+    }
   }
   return null
 }
@@ -440,7 +451,7 @@ const getChainedRedirect = async (
   const isLoop =
     target.startsWith("/") && normalizeRedirectSource(target) === source
 
-  return { redirect, normalizedDestination, target, isLoop }
+  return { isLoop, normalizedDestination, redirect, target }
 }
 
 // True when a live (published) page already sits at `source` — the exact path
@@ -456,13 +467,14 @@ const hasLivePageAtSource = async (
 ): Promise<boolean> => {
   if (redirectKind(source) !== "wildcard") {
     const pageAtSource = await getResourceByFullPermalink({
-      siteId,
       fullPermalink: source,
+      siteId,
     })
     return !!pageAtSource && pageAtSource.publishedVersionId !== null
   }
 
-  const prefix = source.slice(0, -2) // strip trailing "/*"
+  const prefix = source.slice(0, -2)
+  // strip trailing "/*"
   const segments = prefix.split("/").filter(Boolean)
   // The root wildcard ("/*") is already rejected by the schema, so this can't
   // be empty in practice — guarded anyway since an empty prefix has no single
@@ -487,16 +499,23 @@ const hasLivePageAtSource = async (
     .execute()
   let parentId: string | null = null
   let current: (typeof candidates)[number] | undefined
-  for (const segment of segments) {
-    current = candidates.find(
+  const findPrefixResource = (
+    segment: string,
+    currentParentId: string | null,
+  ): (typeof candidates)[number] | undefined =>
+    candidates.find(
       (candidate) =>
-        candidate.permalink === segment && candidate.parentId === parentId,
+        candidate.permalink === segment &&
+        candidate.parentId === currentParentId,
     )
+
+  for (const segment of segments) {
+    current = findPrefixResource(segment, parentId)
     if (!current) {
       // Nothing lives at the prefix, so nothing can be published under it.
       return false
     }
-    parentId = String(current.id)
+    parentId = current.id
   }
   if (!current) {
     return false
@@ -559,12 +578,12 @@ export const validateRedirect = async ({
     })
   }
 
-  const chained = await getChainedRedirect(db, { siteId, source, destination })
-  if (chained?.isLoop) {
+  const chained = await getChainedRedirect(db, { destination, siteId, source })
+  if (isNullableBooleanTrue(chained?.isLoop)) {
     errors.push({
       code: RedirectValidationCode.RedirectLoop,
-      message: REDIRECT_MESSAGES.loop,
       description: `${chained.normalizedDestination} already redirects to ${source}. Visitors will get stuck in between pages. Delete existing redirects or direct to a different page.`,
+      message: REDIRECT_MESSAGES.loop,
     })
   }
 
@@ -592,7 +611,7 @@ export const listRedirects = async ({
     query = query.orderBy("source", sortDirection)
   }
 
-  return query
+  return await query
     .orderBy("id", sortDirection)
     .limit(limit)
     .offset(offset)
@@ -627,6 +646,7 @@ export const createRedirect = async ({
       // So a single create and a concurrent bulk create can't each miss the
       // other's uncommitted row in the loop/shadow guards below and both publish
       // a loop. The timed-out wait aborts as a CONFLICT (see the .catch).
+      // oxlint-disable-next-line eslint/no-use-before-define -- hoisting would split lock helpers from bulk section
       await acquireRedirectWriteLock(tx, siteId)
 
       // Reject creating over a live redirect. A soft-deleted row for the same
@@ -650,11 +670,11 @@ export const createRedirect = async ({
       // create can't slip the other half of a mirror pair (/a->/b and /b->/a)
       // past this read — the later writer waits, then sees the committed row.
       const chained = await getChainedRedirect(tx, {
+        destination,
         siteId,
         source,
-        destination,
       })
-      if (chained?.isLoop) {
+      if (isNullableBooleanTrue(chained?.isLoop)) {
         // UNPROCESSABLE_CONTENT is reserved for the loop guard — the form maps it
         // to the loop message on the destination field; don't reuse it elsewhere.
         throw new TRPCError({
@@ -684,18 +704,16 @@ export const createRedirect = async ({
         destination,
       )
 
-      const created = await tx
+      const insertedRedirect = await tx
         .insertInto("Redirect")
-        .values({ siteId, source, destination: storedDestination })
+        .values({ destination: storedDestination, siteId, source })
         .onConflict((oc) =>
           oc
             .columns(["siteId", "source"])
             .doUpdateSet({
-              destination: storedDestination,
-              deletedAt: null,
-              // Revived rows republish now, so refresh createdAt (the publish
-              // time shown to users).
               createdAt: dbNow,
+              deletedAt: null,
+              destination: storedDestination,
             })
             // Only soft-deleted rows may be revived; a concurrent live create
             // must surface as a conflict, not silently overwrite.
@@ -713,23 +731,26 @@ export const createRedirect = async ({
 
       // delta holds the real before/after rows committed.
       await logRedirectEvent(tx, {
-        siteId,
         by: byUser,
+        delta: { after: insertedRedirect, before: existing ?? null },
         eventType: AuditLogEvent.RedirectCreate,
-        delta: { before: existing ?? null, after: created },
+        siteId,
       })
 
       // Every mutation republishes the site; audited as a separate Publish event.
       await logPublishEvent(tx, {
-        siteId,
         by: byUser,
-        delta: { before: null, after: null },
+        delta: { after: null, before: null },
         eventType: AuditLogEvent.Publish,
-        metadata: toRepublishMetadata({ redirects: { created: [created] } }),
+        metadata: toRepublishMetadata({
+          redirects: { created: [insertedRedirect] },
+        }),
+        siteId,
       })
 
-      return created
+      return insertedRedirect
     })
+    // oxlint-disable-next-line eslint/no-use-before-define -- hoisting would split lock helpers from bulk section
     .catch(rethrowLockTimeoutAsConflict)
 
   // Publish after the transaction commits so the external CodeBuild call is off
@@ -755,7 +776,8 @@ const BULK_REDIRECT_INSERT_CHUNK_SIZE = 500
 // each other. There is no other advisory-lock user, but the two-key form keeps
 // this from ever colliding with a future one; pg_advisory_xact_lock releases
 // automatically when the transaction ends.
-const REDIRECT_WRITE_LOCK_NAMESPACE = 0x5244 // "RD"
+const REDIRECT_WRITE_LOCK_NAMESPACE = 0x52_44
+// "RD"
 
 // Cap how long a redirect write waits for the per-site advisory lock. A writer
 // that waits longer aborts (Postgres 55P03) rather than blocking indefinitely on
@@ -773,12 +795,15 @@ const REDIRECT_WRITE_BUSY_MESSAGE =
 // lock_timeout firing.
 type PgCaughtError = Error | { code?: string }
 
-const isLockTimeoutError = (error: PgCaughtError): boolean =>
+// oxlint-disable-next-line anti-slop/no-unknown-parameters -- pg driver error shape at query boundary
+const isLockTimeoutError = (error: unknown): boolean =>
+  // oxlint-disable-next-line typescript/no-confusing-void-expression -- PG error code check at driver boundary
   get(error, "code") === PG_ERROR_CODES.lockTimeout
 
 // Rethrow a lock-timeout wait as a retryable CONFLICT; pass everything else
 // through unchanged (so the transaction's own TRPCErrors keep their codes).
-const rethrowLockTimeoutAsConflict = (error: PgCaughtError): never => {
+// oxlint-disable-next-line anti-slop/no-unknown-parameters -- pg driver error shape at query boundary
+const rethrowLockTimeoutAsConflict = (error: unknown): never => {
   if (isLockTimeoutError(error)) {
     throw new TRPCError({
       code: "CONFLICT",
@@ -812,7 +837,9 @@ const acquireRedirectWriteLock = async (
 // skipped it, a shortfall) or a page was published at it (the in-txn recheck).
 // bulkCreate catches it to re-validate and return fresh row verdicts rather than
 // surface a generic failure.
-class BulkRedirectRaceError extends Error {}
+class BulkRedirectRaceError extends Error {
+  override name = "BulkRedirectRaceError"
+}
 
 // One row after evaluation: the values as the editor typed them (for the errors
 // file + preview), the normalized values (for the DB checks + insert), and the
@@ -882,7 +909,7 @@ const resolveStoredDestinationsToSources = async (
     const permalink = permalinks.get(resourceId)
     result.set(
       destination,
-      permalink ? normalizeRedirectSource(permalink) : null,
+      hasNonEmptyString(permalink) ? normalizeRedirectSource(permalink) : null,
     )
   }
   return result
@@ -931,8 +958,8 @@ const resolveDestinationsForStorage = async (
       resourceId === null
         ? path
         : getReferenceLink({
-            siteId: String(siteId),
             resourceId: String(resourceId),
+            siteId: String(siteId),
           }),
     )
   }
@@ -990,6 +1017,7 @@ const findCycleNodes = (edges: Map<string, string | null>): Set<string> => {
 // precedence order: format → duplicate-in-file → already-on-table → shadows a
 // page → loop. Returns the internal rows (with normalized values) so the caller
 // can both build the public verdict and insert the surviving rows.
+// oxlint-disable-next-line eslint/complexity -- legacy bulk validation flow
 const runBulkValidation = async (
   siteId: number,
   csv: string,
@@ -1004,30 +1032,30 @@ const runBulkValidation = async (
   // rejected first — its parsed destination is truncated, so it can't be trusted.
   const rows: EvaluatedRedirectRow[] = parsed.rows.map(
     ({ rowNumber, source, destination, malformed }) => {
-      const base = { rowNumber, source, destination }
+      const base = { destination, rowNumber, source }
       if (malformed) {
         return {
           ...base,
-          normalizedSource: null,
-          normalizedDestination: null,
           error: BULK_MALFORMED_ROW_MESSAGE,
+          normalizedDestination: null,
+          normalizedSource: null,
         }
       }
-      const result = redirectRowSchema.safeParse({ source, destination })
+      const result = redirectRowSchema.safeParse({ destination, source })
       if (!result.success) {
         return {
           ...base,
-          normalizedSource: null,
-          normalizedDestination: null,
           error:
             result.error.issues[0]?.message ?? "This redirect isn't valid.",
+          normalizedDestination: null,
+          normalizedSource: null,
         }
       }
       return {
         ...base,
-        normalizedSource: result.data.source,
-        normalizedDestination: result.data.destination,
         error: null,
+        normalizedDestination: result.data.destination,
+        normalizedSource: result.data.source,
       }
     },
   )
@@ -1110,7 +1138,7 @@ const runBulkValidation = async (
     )
     for (const source of exactSources) {
       const resourceId = idByPermalink.get(source) ?? null
-      if (resourceId !== null && publishedState.get(resourceId)) {
+      if (resourceId !== null && publishedState.get(resourceId) === true) {
         shadowedSources.add(source)
       }
     }
@@ -1155,9 +1183,7 @@ const runBulkValidation = async (
         .select("subtree.rootId")
         .distinct()
         .execute()
-      const shadowedRootIds = new Set(
-        shadowedRoots.map((row) => String(row.rootId)),
-      )
+      const shadowedRootIds = new Set(shadowedRoots.map((row) => row.rootId))
       for (const [source, prefix] of wildcardPrefixBySource) {
         const rootId = rootIdByPrefix.get(prefix)
         if (
@@ -1215,9 +1241,9 @@ const runBulkValidation = async (
     // existing edge.
     edges.set(
       row.normalizedSource,
-      row.normalizedDestination !== null
-        ? (resolvedDestinations.get(row.normalizedDestination) ?? null)
-        : null,
+      row.normalizedDestination === null
+        ? null
+        : (resolvedDestinations.get(row.normalizedDestination) ?? null),
     )
   }
   const cycleNodes = findCycleNodes(edges)
@@ -1239,17 +1265,17 @@ const toValidationResult = (
 ): BulkRedirectValidationResult => {
   const publicRows: BulkRedirectRowResult[] = rows.map(
     ({ rowNumber, source, destination, error }) => ({
-      rowNumber,
-      source,
       destination,
       error,
+      rowNumber,
+      source,
     }),
   )
   return {
+    errorCount: publicRows.filter((row) => row.error !== null).length,
     fileError,
     rows: publicRows,
     validCount: publicRows.filter((row) => row.error === null).length,
-    errorCount: publicRows.filter((row) => row.error !== null).length,
   }
 }
 
@@ -1299,8 +1325,8 @@ export const bulkCreateRedirects = async ({
     row.normalizedSource !== null && row.normalizedDestination !== null
       ? [
           {
-            source: row.normalizedSource,
             destination: row.normalizedDestination,
+            source: row.normalizedSource,
           },
         ]
       : [],
@@ -1310,9 +1336,9 @@ export const bulkCreateRedirects = async ({
     validRows.map((row) => row.destination),
   )
   const valuesToInsert = validRows.map((row) => ({
+    destination: storedByDestination.get(row.destination) ?? row.destination,
     siteId,
     source: row.source,
-    destination: storedByDestination.get(row.destination) ?? row.destination,
   }))
   const sources = valuesToInsert.map((value) => value.source)
 
@@ -1330,18 +1356,18 @@ export const bulkCreateRedirects = async ({
       // first, so each audit entry's `before` is the real committed row. Chunked
       // so a large batch's WHERE source IN (...) can't exceed Postgres' 65535
       // bind-parameter cap.
-      const existingRows = (
-        await Promise.all(
-          chunk(sources, BULK_REDIRECT_INSERT_CHUNK_SIZE).map((batch) =>
-            tx
+      const existingRowChunks = await Promise.all(
+        chunk(sources, BULK_REDIRECT_INSERT_CHUNK_SIZE).map(
+          async (batch) =>
+            await tx
               .selectFrom("Redirect")
               .selectAll()
               .where("siteId", "=", siteId)
               .where("source", "in", batch)
               .execute(),
-          ),
-        )
-      ).flat()
+        ),
+      )
+      const existingRows = existingRowChunks.flat()
       const existingBySource = new Map(
         existingRows.map((row) => [row.source, row]),
       )
@@ -1376,6 +1402,7 @@ export const bulkCreateRedirects = async ({
         valuesToInsert,
         BULK_REDIRECT_INSERT_CHUNK_SIZE,
       )) {
+        // oxlint-disable-next-line eslint/no-await-in-loop -- chunked inserts must stay ordered for shortfall detection
         const inserted = await tx
           .insertInto("Redirect")
           .values(batch)
@@ -1383,11 +1410,9 @@ export const bulkCreateRedirects = async ({
             oc
               .columns(["siteId", "source"])
               .doUpdateSet((eb) => ({
-                destination: eb.ref("excluded.destination"),
-                deletedAt: null,
-                // Revived rows republish now, so refresh createdAt (the publish
-                // time shown to users).
                 createdAt: dbNow,
+                deletedAt: null,
+                destination: eb.ref("excluded.destination"),
               }))
               // Only soft-deleted rows may be revived; a live one must not be
               // silently overwritten.
@@ -1442,16 +1467,17 @@ export const bulkCreateRedirects = async ({
       // otherwise run thousands of sequential inserts inside the transaction,
       // holding locks and a connection far longer than needed.
       const auditValues = insertedRows.map((row) => ({
-        siteId,
-        eventType: AuditLogEvent.RedirectCreate,
         delta: toAuditLogDelta({
-          before: existingBySource.get(row.source) ?? null,
           after: row,
+          before: existingBySource.get(row.source) ?? null,
         }),
-        userId: byUser.id,
+        eventType: AuditLogEvent.RedirectCreate,
         metadata: {},
+        siteId,
+        userId: byUser.id,
       }))
       for (const batch of chunk(auditValues, BULK_REDIRECT_INSERT_CHUNK_SIZE)) {
+        // oxlint-disable-next-line eslint/no-await-in-loop -- audit batches are intentionally sequential
         await tx.insertInto("AuditLog").values(batch).execute()
       }
 
@@ -1460,13 +1486,13 @@ export const bulkCreateRedirects = async ({
       // entries above, so embedding every inserted row would just bloat this one
       // AuditLog row (thousands of rows on a large upload).
       await logPublishEvent(tx, {
-        siteId,
         by: byUser,
-        delta: { before: null, after: null },
+        delta: { after: null, before: null },
         eventType: AuditLogEvent.Publish,
         metadata: toRepublishMetadata({
           redirects: { createdCount: insertedRows.length },
         }),
+        siteId,
       })
 
       return insertedRows
@@ -1479,7 +1505,7 @@ export const bulkCreateRedirects = async ({
   } catch (error) {
     const caughtError: unknown = error
     // SAFETY: lock-timeout detection only reads postgres error fields.
-    if (isLockTimeoutError(caughtError as PgCaughtError)) {
+    if (isLockTimeoutError(caughtError)) {
       throw new TRPCError({
         code: "CONFLICT",
         message: REDIRECT_WRITE_BUSY_MESSAGE,
@@ -1490,8 +1516,9 @@ export const bulkCreateRedirects = async ({
       // and the insert. Re-validate against the now-current table so the modal
       // shows the offending row(s) rather than a generic failure — this keeps
       // the ok:false contract.
-      const { fileError, rows } = await runBulkValidation(siteId, csv)
-      const validation = toValidationResult(fileError, rows)
+      const { fileError: validationFileError, rows: validationRows } =
+        await runBulkValidation(siteId, csv)
+      const validation = toValidationResult(validationFileError, validationRows)
       // The race may have cleared by the time we re-validate (e.g. the
       // conflicting redirect was deleted). With nothing left to flag, ok:false
       // would strand the modal on an errors screen listing no rows, so surface a
@@ -1543,8 +1570,8 @@ export const createRedirectForPermalinkChange = async (
     wildcard ? `${oldFullPermalink}/*` : oldFullPermalink,
   )
   const destination = getReferenceLink({
+    resourceId,
     siteId: String(siteId),
-    resourceId: String(resourceId),
   })
   const [byUser, existing, created] = await Promise.all([
     getByUser(tx, byUserId),
@@ -1556,11 +1583,11 @@ export const createRedirectForPermalinkChange = async (
       .executeTakeFirst(),
     tx
       .insertInto("Redirect")
-      .values({ siteId, source, destination })
+      .values({ destination, siteId, source })
       .onConflict((oc) =>
         oc
           .columns(["siteId", "source"])
-          .doUpdateSet({ destination, deletedAt: null, createdAt: dbNow })
+          .doUpdateSet({ createdAt: dbNow, deletedAt: null, destination })
           // Only revive a soft-deleted row; a live one must surface as a conflict.
           .where("Redirect.deletedAt", "is not", null),
       )
@@ -1575,10 +1602,10 @@ export const createRedirectForPermalinkChange = async (
   ])
 
   await logRedirectEvent(tx, {
-    siteId,
     by: byUser,
+    delta: { after: created, before: existing ?? null },
     eventType: AuditLogEvent.RedirectCreate,
-    delta: { before: existing ?? null, after: created },
+    siteId,
   })
 
   return created
@@ -1598,13 +1625,13 @@ export const assertPermalinkNotShadowed = async (
   }: { siteId: number; newFullPermalink: string; resourceId: string },
 ) => {
   const reference = getReferenceLink({
+    resourceId,
     siteId: String(siteId),
-    resourceId: String(resourceId),
   })
   const shadowing = await findShadowingRedirect(tx, {
-    siteId,
-    permalink: newFullPermalink,
     excludeDestination: reference,
+    permalink: newFullPermalink,
+    siteId,
   })
   if (shadowing) {
     throw new TRPCError({
@@ -1639,8 +1666,8 @@ const assertDescendantsNotShadowed = async (
   }: { siteId: number; resourceId: string; byUserId: string },
 ) => {
   const descendantIds = await getPublishedDescendantResourceIds(tx, {
-    siteId,
     resourceId,
+    siteId,
   })
   if (descendantIds.length === 0) {
     return
@@ -1657,12 +1684,12 @@ const assertDescendantsNotShadowed = async (
     }
     return [
       {
+        candidates: shadowingSourceCandidates(newFullPermalink),
         newFullPermalink,
         reference: getReferenceLink({
+          resourceId: descendantId,
           siteId: String(siteId),
-          resourceId: String(descendantId),
         }),
-        candidates: shadowingSourceCandidates(newFullPermalink),
       },
     ]
   })
@@ -1676,19 +1703,19 @@ const assertDescendantsNotShadowed = async (
   const allCandidates = [
     ...new Set(descendants.flatMap(({ candidates }) => candidates)),
   ]
-  const rows = (
-    await Promise.all(
-      chunk(allCandidates, BULK_REDIRECT_INSERT_CHUNK_SIZE).map((batch) =>
-        tx
+  const redirectRowChunks = await Promise.all(
+    chunk(allCandidates, BULK_REDIRECT_INSERT_CHUNK_SIZE).map(
+      async (batch) =>
+        await tx
           .selectFrom("Redirect")
           .selectAll()
           .where("siteId", "=", siteId)
           .where("source", "in", batch)
           .where("deletedAt", "is", null)
           .execute(),
-      ),
-    )
-  ).flat()
+    ),
+  )
+  const rows = redirectRowChunks.flat()
   const bySource = new Map(rows.map((row) => [row.source, row]))
 
   for (const { newFullPermalink, reference, candidates } of descendants) {
@@ -1705,8 +1732,10 @@ const assertDescendantsNotShadowed = async (
   // at itself) is a self-loop otherwise — soft-delete every one in one update
   // plus one audit insert, instead of a select+update+insert per descendant.
   const reclaimed = descendants.flatMap(({ candidates, reference }) => {
-    const exactSource = candidates[0]
-    const match = exactSource ? bySource.get(exactSource) : undefined
+    const [exactSource] = candidates
+    const match = hasNonEmptyString(exactSource)
+      ? bySource.get(exactSource)
+      : undefined
     return match && match.destination === reference ? [match] : []
   })
   if (reclaimed.length === 0) {
@@ -1714,34 +1743,35 @@ const assertDescendantsNotShadowed = async (
   }
   const byUser = await getByUser(tx, byUserId)
   const reclaimedIds = reclaimed.map((row) => row.id)
-  const afterRows = (
-    await Promise.all(
-      chunk(reclaimedIds, BULK_REDIRECT_INSERT_CHUNK_SIZE).map((batch) =>
-        tx
+  const reclaimedUpdateChunks = await Promise.all(
+    chunk(reclaimedIds, BULK_REDIRECT_INSERT_CHUNK_SIZE).map(
+      async (batch) =>
+        await tx
           .updateTable("Redirect")
           .set({ deletedAt: dbNow })
           .where("id", "in", batch)
           .returningAll()
           .execute(),
-      ),
-    )
-  ).flat()
+    ),
+  )
+  const afterRows = reclaimedUpdateChunks.flat()
   const beforeById = new Map(reclaimed.map((row) => [row.id, row]))
   const auditValues = afterRows.flatMap((after) => {
     const before = beforeById.get(after.id)
     return before
       ? [
           {
-            siteId,
+            delta: toAuditLogDelta({ after, before }),
             eventType: AuditLogEvent.RedirectDelete,
-            delta: toAuditLogDelta({ before, after }),
-            userId: byUser.id,
             metadata: {},
+            siteId,
+            userId: byUser.id,
           },
         ]
       : []
   })
   for (const batch of chunk(auditValues, BULK_REDIRECT_INSERT_CHUNK_SIZE)) {
+    // oxlint-disable-next-line eslint/no-await-in-loop -- audit batches are intentionally sequential
     await tx.insertInto("AuditLog").values(batch).execute()
   }
 }
@@ -1781,10 +1811,10 @@ const softDeleteReclaimedRedirect = async (
       .executeTakeFirstOrThrow(),
   ])
   await logRedirectEvent(tx, {
-    siteId,
     by: byUser,
+    delta: { after, before: reclaimed },
     eventType: AuditLogEvent.RedirectDelete,
-    delta: { before: reclaimed, after },
+    siteId,
   })
   return after
 }
@@ -1807,14 +1837,14 @@ export const clearReclaimedRedirect = async (
     byUserId: string
   },
 ) =>
-  softDeleteReclaimedRedirect(tx, {
+  await softDeleteReclaimedRedirect(tx, {
+    byUserId,
+    reference: getReferenceLink({
+      resourceId,
+      siteId: String(siteId),
+    }),
     siteId,
     source: normalizeRedirectSource(newFullPermalink),
-    reference: getReferenceLink({
-      siteId: String(siteId),
-      resourceId: String(resourceId),
-    }),
-    byUserId,
   })
 
 // Folder analogue of clearReclaimedRedirect. A folder move that lands back on a
@@ -1838,14 +1868,14 @@ const clearReclaimedFolderWildcard = async (
     byUserId: string
   },
 ) =>
-  softDeleteReclaimedRedirect(tx, {
+  await softDeleteReclaimedRedirect(tx, {
+    byUserId,
+    reference: getReferenceLink({
+      resourceId,
+      siteId: String(siteId),
+    }),
     siteId,
     source: normalizeRedirectSource(`${newFullPermalink}/*`),
-    reference: getReferenceLink({
-      siteId: String(siteId),
-      resourceId: String(resourceId),
-    }),
-    byUserId,
   })
 
 // Single entry point both permalink-change flows (move and rename) call to keep
@@ -1886,25 +1916,25 @@ export const applyPermalinkChangeRedirects = async (
   // throw rolls back the enclosing move/rename.
   if (isPublished) {
     await assertPermalinkNotShadowed(tx, {
-      siteId,
       newFullPermalink,
       resourceId,
+      siteId,
     })
   }
   // Drop any redirect that pointed back here (it would self-shadow).
   await clearReclaimedRedirect(tx, {
-    siteId,
+    byUserId,
     newFullPermalink,
     resourceId,
-    byUserId,
+    siteId,
   })
   // Preserve the old URL when asked, for a published page.
   if (shouldCreateRedirect && isPublished) {
     await createRedirectForPermalinkChange(tx, {
-      siteId,
+      byUserId,
       oldFullPermalink,
       resourceId,
-      byUserId,
+      siteId,
     })
   }
 }
@@ -1951,30 +1981,30 @@ export const applyFolderPermalinkChangeRedirects = async (
     // instead of tripping the descendant guard below on the folder's own
     // wildcard.
     await clearReclaimedFolderWildcard(tx, {
-      siteId,
+      byUserId,
       newFullPermalink,
       resourceId,
-      byUserId,
+      siteId,
     })
     await assertPermalinkNotShadowed(tx, {
-      siteId,
       newFullPermalink,
       resourceId,
+      siteId,
     })
-    await assertDescendantsNotShadowed(tx, { siteId, resourceId, byUserId })
+    await assertDescendantsNotShadowed(tx, { byUserId, resourceId, siteId })
   }
   await clearReclaimedRedirect(tx, {
-    siteId,
+    byUserId,
     newFullPermalink,
     resourceId,
-    byUserId,
+    siteId,
   })
   if (shouldCreateRedirect && hasLiveContent) {
     await createRedirectForPermalinkChange(tx, {
-      siteId,
+      byUserId,
       oldFullPermalink,
       resourceId,
-      byUserId,
+      siteId,
       wildcard: true,
     })
   }
@@ -2015,19 +2045,19 @@ export const deleteRedirect = async ({
 
     // delta holds the real before/after rows committed.
     await logRedirectEvent(tx, {
-      siteId,
       by: byUser,
+      delta: { after: deleted, before },
       eventType: AuditLogEvent.RedirectDelete,
-      delta: { before, after: deleted },
+      siteId,
     })
 
     // Every mutation republishes the site; audited as a separate Publish event.
     await logPublishEvent(tx, {
-      siteId,
       by: byUser,
-      delta: { before: null, after: null },
+      delta: { after: null, before: null },
       eventType: AuditLogEvent.Publish,
       metadata: toRepublishMetadata({ redirects: { deleted: [deleted] } }),
+      siteId,
     })
   })
 
@@ -2055,8 +2085,8 @@ export const getRedirectBySource = async ({
   destinationResourceId: number | null
 } | null> => {
   const redirect = await findShadowingRedirect(db, {
-    siteId,
     permalink: source,
+    siteId,
   })
   if (!redirect) {
     return null
@@ -2085,11 +2115,11 @@ const getDescendantReferences = async (
   { siteId, resourceId }: { siteId: number; resourceId: string },
 ): Promise<string[]> => {
   const resourceIds = await getDescendantResourceIds(trx, {
-    siteId,
     resourceId,
+    siteId,
   })
   return resourceIds.map((id) =>
-    getReferenceLink({ siteId: String(siteId), resourceId: id }),
+    getReferenceLink({ resourceId: id, siteId: String(siteId) }),
   )
 }
 
@@ -2100,7 +2130,7 @@ export const countRedirectsPointingToResource = async ({
   siteId,
   resourceId,
 }: CountRedirectsByDestinationInput): Promise<number> => {
-  const references = await getDescendantReferences(db, { siteId, resourceId })
+  const references = await getDescendantReferences(db, { resourceId, siteId })
   // An empty `in` list is invalid SQL, so guard like getWithFullPermalink.
   if (references.length === 0) {
     return 0
@@ -2127,7 +2157,7 @@ export const softDeleteRedirectsPointingToResource = async (
     byUserId,
   }: { siteId: number; resourceId: string; byUserId: string },
 ) => {
-  const references = await getDescendantReferences(tx, { siteId, resourceId })
+  const references = await getDescendantReferences(tx, { resourceId, siteId })
   // An empty `in` list is invalid SQL, so guard like getWithFullPermalink.
   if (references.length === 0) {
     return []
@@ -2160,14 +2190,16 @@ export const softDeleteRedirectsPointingToResource = async (
 
   const afterById = new Map(deleted.map((after) => [after.id, after]))
   await Promise.all(
-    toDelete.map((before) => {
+    toDelete.map(async (before) => {
       const after = afterById.get(before.id)
-      if (!after) return Promise.resolve()
-      return logRedirectEvent(tx, {
-        siteId,
+      if (!after) {
+        return
+      }
+      await logRedirectEvent(tx, {
         by: byUser,
+        delta: { after, before },
         eventType: AuditLogEvent.RedirectDelete,
-        delta: { before, after },
+        siteId,
       })
     }),
   )

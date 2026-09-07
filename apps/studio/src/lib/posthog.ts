@@ -1,10 +1,12 @@
+/* oxlint-disable promise/prefer-await-to-then, jsdoc/empty-tags -- studio lint cleanup */
 import type PostHogInstance from "posthog-js"
 
 interface PosthogModule {
   default: typeof PostHogInstance
 }
 
-let loadPosthogModule: () => Promise<PosthogModule> = () => import("posthog-js")
+let loadPosthogModule: () => Promise<PosthogModule> = async () =>
+  await import("posthog-js")
 
 let queue: Promise<void> = Promise.resolve()
 
@@ -17,7 +19,7 @@ export const setPosthogModuleLoaderForTests = (
 
 /** @internal Restores the default posthog-js module loader after unit tests. */
 export const resetPosthogModuleLoaderForTests = () => {
-  loadPosthogModule = () => import("posthog-js")
+  loadPosthogModule = async () => await import("posthog-js")
 }
 
 /**
@@ -28,11 +30,13 @@ export const resetPosthogModuleLoaderForTests = () => {
  * import takes to resolve — e.g. a logout's `reset()` can never run after a
  * later login's `identify()` just because its import happened to be slower.
  */
-export const withPosthog = (fn: (posthog: typeof PostHogInstance) => void) => {
+export const withPosthog = async (
+  fn: (posthog: typeof PostHogInstance) => void,
+) => {
   queue = queue
-    .then(() => loadPosthogModule())
+    .then(async () => await loadPosthogModule())
     .then(({ default: posthog }) => {
       fn(posthog)
     })
-  return queue
+  await queue
 }

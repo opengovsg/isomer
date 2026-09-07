@@ -1,3 +1,5 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
+/* oxlint-disable eslint/no-shadow, unicorn/no-new-array -- core cleanup deferred */
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import { Box, HStack, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
@@ -11,6 +13,12 @@ import {
 } from "@jsonforms/core"
 import { withJsonFormsArrayLayoutProps } from "@jsonforms/react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { AddItemButton } from "../../components/AddItemButton"
 import { DraggableTagButton } from "../../components/DraggableTagButton"
@@ -43,16 +51,16 @@ const JsonFormsArrayControl = (props: ArrayLayoutProps) => {
   } = props
   const { hasErrorAt } = useBuilderErrors()
   const arrayResult = useArray({
-    data,
-    path,
     arraySchema,
-    schema,
-    rootSchema,
-    uischemas,
-    uischema,
-    removeItems,
-    moveUp,
+    data,
     moveDown,
+    moveUp,
+    path,
+    removeItems,
+    rootSchema,
+    schema,
+    uischema,
+    uischemas,
   })
   const {
     setSelectedIndex,
@@ -80,13 +88,16 @@ const JsonFormsArrayControl = (props: ArrayLayoutProps) => {
               Add item
             </AddItemButton>
           </HStack>
-          {description && (
+          {hasNonEmptyString(description) && (
             <Text textStyle="body-2" textColor="base.content.default">
               {description}
             </Text>
           )}
         </VStack>
-        <Box w="full" mt={description ? "0.75rem" : "0.25rem"}>
+        <Box
+          w="full"
+          mt={hasNonEmptyString(description) ? "0.75rem" : "0.25rem"}
+        >
           <DragDropContext onDragEnd={onDragEnd}>
             <Droppable droppableId="blocks">
               {({ droppableProps, innerRef, placeholder }) => (
@@ -100,7 +111,7 @@ const JsonFormsArrayControl = (props: ArrayLayoutProps) => {
                 >
                   {data === 0 && <EmptyArray />}
 
-                  {[...Array(data).keys()].map((index) => {
+                  {[...new Array(data).keys()].map((index) => {
                     const childPath = composePaths(path, `${index}`)
                     const hasError = hasErrorAt(childPath)
 
@@ -122,7 +133,9 @@ const JsonFormsArrayControl = (props: ArrayLayoutProps) => {
                               py={hasError ? "0.75rem" : "1.25rem"}
                             />
                             <DraggableTagButton.Body
-                              onClick={() => setSelectedIndex(index)}
+                              onClick={() => {
+                                setSelectedIndex(index)
+                              }}
                               py={hasError ? "0.75rem" : "1rem"}
                             >
                               <DraggableTagButton.Content>

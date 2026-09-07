@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unnecessary-condition, typescript/strict-boolean-expressions -- studio lint cleanup */
 import type { IconType } from "react-icons"
 import type { MergeExclusive } from "type-fest"
 import { List, ListItem, Tooltip } from "@chakra-ui/react"
@@ -5,6 +6,7 @@ import { IconButton } from "@opengovsg/design-system-react"
 import NextLink from "next/link"
 import { useRouter } from "next/router"
 import { useMemo } from "react"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 export type CmsSidebarItem = {
   icon: IconType
@@ -38,7 +40,7 @@ const generateSidebarItem = (
   return (
     <ListItem key={itemKey}>
       <Tooltip label={item.label} placement="right">
-        {item.href ? (
+        {hasNonEmptyString(item.href) ? (
           <IconButton
             key={itemKey}
             as={NextLink}
@@ -47,8 +49,8 @@ const generateSidebarItem = (
             aria-label={item.label}
             icon={<Icon fontSize="1.5rem" fill="base.content.default" />}
             _active={{
-              fill: "base.content.brand",
               bg: "interaction.muted.main.active",
+              fill: "base.content.brand",
             }}
             href={item.href}
           />
@@ -69,9 +71,10 @@ const generateSidebarItem = (
 export const CmsSidebarItems = ({ navItems }: CmsSidebarItemsProps) => {
   const router = useRouter()
 
-  const renderedSidebarItems = useMemo(() => {
-    return navItems.map((item) => generateSidebarItem(item, router.asPath))
-  }, [navItems, router.asPath])
+  const renderedSidebarItems = useMemo(
+    () => navItems.map((item) => generateSidebarItem(item, router.asPath)),
+    [navItems, router.asPath],
+  )
 
   return <List spacing={3}>{renderedSidebarItems}</List>
 }

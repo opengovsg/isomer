@@ -6,7 +6,23 @@ import { ViewGazetteModal } from "~/features/gazettes"
 const recentPublishedAt = new Date()
 
 const meta: Meta<typeof ViewGazetteModal> = {
-  title: "Pages/eGazette/Delete Gazette Modal",
+  args: {
+    data: {
+      category: "Government Gazette",
+      fileId: "26gg5734.pdf",
+      notificationNumber: "2145",
+      publishedAt: recentPublishedAt,
+      subcategory: "Notices under other Acts",
+      title: "Limited Liability Partnerships Act 2005 - Section 64",
+    },
+    gazetteId: "gazette-123",
+    initialView: "delete",
+    isOpen: true,
+    onClose: () => {
+      console.log("close")
+    },
+    siteId: 1,
+  },
   component: ViewGazetteModal,
   decorators: [
     (storyFn) => (
@@ -16,24 +32,10 @@ const meta: Meta<typeof ViewGazetteModal> = {
     ),
   ],
   parameters: {
-    layout: "fullscreen",
     chromatic: { delay: 200 },
+    layout: "fullscreen",
   },
-  args: {
-    isOpen: true,
-    onClose: () => console.log("close"),
-    siteId: 1,
-    gazetteId: "gazette-123",
-    initialView: "delete",
-    data: {
-      title: "Limited Liability Partnerships Act 2005 - Section 64",
-      category: "Government Gazette",
-      subcategory: "Notices under other Acts",
-      notificationNumber: "2145",
-      fileId: "26gg5734.pdf",
-      publishedAt: recentPublishedAt,
-    },
-  },
+  title: "Pages/eGazette/Delete Gazette Modal",
 }
 
 export default meta
@@ -45,14 +47,14 @@ export const Default: Story = {
 }
 
 export const WithoutNotificationNumber: Story = {
-  name: "Without Notification Number",
   args: {
     data: {
-      title: "Another Published Gazette",
       category: "Government Gazette",
-      subcategory: "Advertisements",
       fileId: "abc123.pdf",
       publishedAt: recentPublishedAt,
+      subcategory: "Advertisements",
+      title: "Another Published Gazette",
     },
   },
+  name: "Without Notification Number",
 }

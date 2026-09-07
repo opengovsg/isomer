@@ -1,4 +1,5 @@
-import { type Attributes, type ComponentType, type ReactNode } from "react"
+/* oxlint-disable import/consistent-type-specifier-style, typescript/no-import-type-side-effects, eslint/func-style, typescript/no-unsafe-type-assertion -- Suspense HOC forwards props */
+import type { Attributes, ComponentType, ReactNode } from "react"
 import Suspense from "~/components/Suspense"
 
 /**

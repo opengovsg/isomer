@@ -31,7 +31,7 @@ const isRedactableRecord = (
 ): input is RedactableObject =>
   input !== null && Object(input) === input && !Array.isArray(input)
 
-export const redactLogInput = (input: RedactableValue): RedactableValue => {
+export const redactLogInput = (input?: RedactableValue): RedactableValue => {
   if (input === null || input === undefined) {
     return input
   }

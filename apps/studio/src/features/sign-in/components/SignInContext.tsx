@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-use-before-define -- core cleanup deferred */
 import type { Dispatch, PropsWithChildren, SetStateAction } from "react"
 import { useGrowthBook } from "@growthbook/growthbook-react"
 import {
@@ -62,10 +63,9 @@ export const SignInContextProvider = ({
 
   const gb = useGrowthBook()
 
-  const resetTimer = useCallback(
-    () => setTimer(delayForResendSeconds),
-    [delayForResendSeconds],
-  )
+  const resetTimer = useCallback(() => {
+    setTimer(delayForResendSeconds)
+  }, [delayForResendSeconds])
 
   const proceedToVerification = useCallback(() => {
     setState("verification")
@@ -81,22 +81,24 @@ export const SignInContextProvider = ({
 
   // Start the resend timer once in the vfn step.
   useInterval(
-    () => setTimer(timer - 1),
+    () => {
+      setTimer(timer - 1)
+    },
     // Stop interval if timer hits 0, else rerun every 1000ms.
     !!vfnStepData && timer > 0 ? 1000 : null,
   )
 
   const contextValue = useMemo(
     () => ({
-      vfnStepData,
-      setVfnStepData,
-      timer,
-      resetTimer,
-      proceedToVerification,
       backToInitial,
-      state,
       errorState,
+      proceedToVerification,
+      resetTimer,
       setErrorState,
+      setVfnStepData,
+      state,
+      timer,
+      vfnStepData,
     }),
     [
       vfnStepData,

@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import { Box, FormControl } from "@chakra-ui/react"
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
@@ -28,27 +29,27 @@ const JsonFormsDateControl = ({
   required,
   errors,
   enabled,
-}: ControlProps) => {
-  return (
-    <Box>
-      <FormControl isRequired={required} isInvalid={!!errors}>
-        <FormLabel description={description}>{label}</FormLabel>
-        <DatePicker
-          isDisabled={enabled === false}
-          inputValue={
-            Object.prototype.toString.call(data) === "[object String]"
-              ? String(data)
-              : undefined
-          }
-          allowManualInput={true}
-          onInputValueChange={(date) => handleChange(path, date)}
-        />
-        <FormErrorMessage>
-          {label} {getCustomErrorMessage(errors)}
-        </FormErrorMessage>
-      </FormControl>
-    </Box>
-  )
-}
+}: ControlProps) => (
+  <Box>
+    <FormControl isRequired={required} isInvalid={!!errors}>
+      <FormLabel description={description}>{label}</FormLabel>
+      <DatePicker
+        isDisabled={!enabled}
+        inputValue={
+          Object.prototype.toString.call(data) === "[object String]"
+            ? String(data)
+            : undefined
+        }
+        allowManualInput={true}
+        onInputValueChange={(date) => {
+          handleChange(path, date)
+        }}
+      />
+      <FormErrorMessage>
+        {label} {getCustomErrorMessage(errors)}
+      </FormErrorMessage>
+    </FormControl>
+  </Box>
+)
 
 export default withJsonFormsControlProps(JsonFormsDateControl)

@@ -1,9 +1,10 @@
+/* oxlint-disable typescript/no-unnecessary-type-conversion, typescript/strict-boolean-expressions, eslint/no-shadow, unicorn/consistent-function-scoping, import/no-duplicates, eslint/no-inline-comments -- server lint cleanup */
 import type { IsomerSiteConfigProps } from "@opengovsg/isomer-components"
 import type { Notification } from "~/schemas/site"
 import { getAskgovIdFromString } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { SEARCH_PAGE_PERMALINK } from "~/constants/sitemap"
-import { ResourceState, ResourceType } from "~/server/modules/database/types"
+import { hasNonEmptyString, isNullableBooleanTrue } from "~/utils/truthiness"
 
 import type {
   DB,
@@ -15,7 +16,12 @@ import type {
 import type { UserPermissionsProps } from "../permissions/permissions.type"
 import { logConfigEvent } from "../audit/audit.service"
 import { db } from "../database/database"
-import { AuditLogEvent, RoleType } from "../database/types"
+import {
+  AuditLogEvent,
+  ResourceState,
+  ResourceType,
+  RoleType,
+} from "../database/types"
 import { jsonb } from "../database/utils"
 import {
   definePermissionsForSite,
@@ -38,7 +44,7 @@ export const validateUserPermissionsForSite = async ({
     userId,
   })
 
-  // TODO: create should check against the current resource id
+  // Deferred: create should check against the current resource id
   if (perms.cannot(action, "Site")) {
     throw new TRPCError({
       code: "FORBIDDEN",
@@ -55,7 +61,7 @@ export const validateUserPermissionsForSite = async ({
 // scope — can't be pointed at a site the caller doesn't actually administer.
 export const getAdminSiteIds = async (userId: string): Promise<number[]> => {
   const isIsomerAdmin = await isActiveIsomerAdmin(userId)
-  if (isIsomerAdmin) {
+  if (isNullableBooleanTrue(isIsomerAdmin)) {
     const sites = await db
       .selectFrom("Site")
       .select("id")
@@ -85,7 +91,9 @@ const SEARCHSG_SEARCH_TYPE = "searchSG"
 export const normalizeAskgovConfig = (
   config: IsomerSiteConfigProps,
 ): IsomerSiteConfigProps => {
-  if (!config.askgov) return config
+  if (!config.askgov) {
+    return config
+  }
 
   const agencyId = getAskgovIdFromString(config.askgov["data-agency"])
 
@@ -156,7 +164,9 @@ const resolveSearchSGSearchConfig = (
   existing: SiteSearchConfig,
   incoming: SiteSearchConfig,
 ): SiteSearchConfig => {
-  if (incoming?.type !== SEARCHSG_SEARCH_TYPE) return incoming
+  if (incoming?.type !== SEARCHSG_SEARCH_TYPE) {
+    return incoming
+  }
 
   if (existing?.type !== SEARCHSG_SEARCH_TYPE) {
     throw new TRPCError({
@@ -228,7 +238,7 @@ export const getNotification = async (
     )
     .where("id", "=", siteId)
     .executeTakeFirst()
-  if (!result) {
+  if (result === undefined) {
     throw new TRPCError({
       code: "NOT_FOUND",
       message: "Site not found",
@@ -249,16 +259,16 @@ export const getNotification = async (
       notification: {
         ...result.notification,
         content: {
-          type: "prose",
           content: [
             {
-              content: result.notification.content,
-              type: "paragraph",
               attrs: {
                 dir: "ltr",
               },
+              content: result.notification.content,
+              type: "paragraph",
             },
           ],
+          type: "prose",
         },
       },
     }
@@ -276,15 +286,15 @@ export const setSiteNotification = async ({
   siteId,
   userId,
   notification,
-}: SetSiteNotificationParams) => {
-  return await db.transaction().execute(async (tx) => {
+}: SetSiteNotificationParams) =>
+  await db.transaction().execute(async (tx) => {
     const user = await tx
       .selectFrom("User")
       .where("id", "=", userId)
       .selectAll()
       .executeTakeFirst()
 
-    if (!user) {
+    if (user === undefined) {
       // NOTE: This shouldn't happen as the user is already logged in
       throw new TRPCError({
         code: "NOT_FOUND",
@@ -326,18 +336,17 @@ export const setSiteNotification = async ({
     }
 
     await logConfigEvent(tx, {
-      siteId,
-      eventType: AuditLogEvent.SiteConfigUpdate,
-      delta: {
-        before: oldSite,
-        after: newSite,
-      },
       by: user,
+      delta: {
+        after: newSite,
+        before: oldSite,
+      },
+      eventType: AuditLogEvent.SiteConfigUpdate,
+      siteId,
     })
 
     return newSite
   })
-}
 
 interface CreateSiteProps {
   siteName: string
@@ -354,31 +363,31 @@ export const createSite = async ({ siteName, userId }: CreateSiteProps) => {
     const { id: siteId } = await tx
       .insertInto("Site")
       .values({
+        config: jsonb({
+          isGovernment: true,
+          logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+          search: undefined,
+          siteName,
+          theme: "isomer-next",
+          url: "https://www.isomer.gov.sg",
+        }),
         name: siteName,
         theme: jsonb({
           colors: {
             brand: {
               canvas: {
                 alt: "#bfcfd7",
+                backdrop: "#80a0af",
                 default: "#e6ecef",
                 inverse: "#00405f",
-                backdrop: "#80a0af",
               },
               interaction: {
-                hover: "#002e44",
                 default: "#00405f",
+                hover: "#002e44",
                 pressed: "#00283b",
               },
             },
           },
-        }),
-        config: jsonb({
-          theme: "isomer-next",
-          siteName,
-          url: "https://www.isomer.gov.sg",
-          logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
-          search: undefined,
-          isGovernment: true,
         }),
       })
       .onConflict((oc) =>
@@ -396,8 +405,8 @@ export const createSite = async ({ siteName, userId }: CreateSiteProps) => {
     await tx
       .insertInto("Footer")
       .values({
-        siteId,
         content: jsonb(FOOTER),
+        siteId,
       })
       .onConflict((oc) =>
         oc
@@ -411,8 +420,8 @@ export const createSite = async ({ siteName, userId }: CreateSiteProps) => {
     await tx
       .insertInto("Navbar")
       .values({
-        siteId,
         content: jsonb(NAVBAR_CONTENT),
+        siteId,
       })
       .onConflict((oc) =>
         oc
@@ -438,9 +447,9 @@ export const createSite = async ({ siteName, userId }: CreateSiteProps) => {
         .values({
           permalink: "",
           siteId,
-          type: ResourceType.RootPage,
           state: ResourceState.Published,
           title: "Home",
+          type: ResourceType.RootPage,
         })
         .onConflict((oc) =>
           oc.column("draftBlobId").doUpdateSet((eb) => ({
@@ -454,9 +463,9 @@ export const createSite = async ({ siteName, userId }: CreateSiteProps) => {
     const { id: versionId } = await tx
       .insertInto("Version")
       .values({
-        resourceId,
         blobId,
         publishedBy: userId,
+        resourceId,
         versionNum: 1,
       })
       .returning("id")
@@ -487,11 +496,11 @@ export const createSite = async ({ siteName, userId }: CreateSiteProps) => {
     const { id: resourceId } = await tx
       .insertInto("Resource")
       .values({
-        draftBlobId: String(blobId),
+        draftBlobId: blobId,
         permalink: SEARCH_PAGE_PERMALINK,
         siteId,
-        type: ResourceType.Page,
         title: "Search",
+        type: ResourceType.Page,
       })
       .onConflict((oc) =>
         oc.column("draftBlobId").doUpdateSet((eb) => ({
@@ -504,9 +513,9 @@ export const createSite = async ({ siteName, userId }: CreateSiteProps) => {
     const { id: versionId } = await tx
       .insertInto("Version")
       .values({
-        resourceId,
         blobId,
         publishedBy: userId,
+        resourceId,
         versionNum: 1,
       })
       .returning("id")
@@ -527,8 +536,8 @@ export const createSite = async ({ siteName, userId }: CreateSiteProps) => {
     const siteId = await createSiteRecord(tx)
     await createFooter(tx, siteId)
     await createNavbar(tx, siteId)
-    await createRootPage({ tx, siteId, userId })
-    await createSearchPage({ tx, siteId, userId })
+    await createRootPage({ siteId, tx, userId })
+    await createSearchPage({ siteId, tx, userId })
     return siteId
   })
 

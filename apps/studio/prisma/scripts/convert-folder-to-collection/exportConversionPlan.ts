@@ -19,14 +19,13 @@ import { input } from "@inquirer/prompts"
 import { db } from "~/server/modules/database/database"
 import { ResourceType } from "~/server/modules/database/types"
 
+import type { ConversionPlan, PagePlan } from "./helpers"
 import {
   asIndexBlob,
   asPageBlob,
   buildArticleBlob,
   buildCollectionIndexBlob,
   findDisallowedBlocks,
-  type ConversionPlan,
-  type PagePlan,
 } from "./helpers"
 import {
   getBlobOfResource,
@@ -39,7 +38,7 @@ import {
 } from "./shared"
 
 const loadChildren = async (folderId: string) =>
-  db
+  await db
     .selectFrom("Resource")
     .where("parentId", "=", folderId)
     .select(["id", "title", "permalink", "type", "state", "draftBlobId"])
@@ -74,18 +73,20 @@ const buildConversionPlan = async (
   }
 
   const [indexPage] = indexPages
-  if (!indexPage) throw new Error("Index page missing after guard check")
+  if (!indexPage) {
+    throw new Error("Index page missing after guard check")
+  }
 
   const indexBlob = await getBlobOfResource({ db, resourceId: indexPage.id })
   const indexCurrent = asIndexBlob(indexBlob.content)
   const indexPagePlan: PagePlan = {
+    currentBlob: indexBlob.content,
+    currentBlobId: indexBlob.id,
+    disallowedBlocks: [],
+    nextBlob: buildCollectionIndexBlob(indexCurrent, folder.title),
+    permalink: indexPage.permalink,
     resourceId: indexPage.id,
     title: indexPage.title,
-    permalink: indexPage.permalink,
-    currentBlobId: indexBlob.id,
-    currentBlob: indexBlob.content,
-    nextBlob: buildCollectionIndexBlob(indexCurrent, folder.title),
-    disallowedBlocks: [],
   }
 
   const pagePlans: PagePlan[] = await Promise.all(
@@ -93,22 +94,22 @@ const buildConversionPlan = async (
       const blob = await getBlobOfResource({ db, resourceId: child.id })
       const current = asPageBlob(blob.content)
       return {
+        currentBlob: blob.content,
+        currentBlobId: blob.id,
+        disallowedBlocks: findDisallowedBlocks(current.content),
+        nextBlob: buildArticleBlob(current, defaultCategory),
+        permalink: child.permalink,
         resourceId: child.id,
         title: child.title,
-        permalink: child.permalink,
-        currentBlobId: blob.id,
-        currentBlob: blob.content,
-        nextBlob: buildArticleBlob(current, defaultCategory),
-        disallowedBlocks: findDisallowedBlocks(current.content),
       }
     }),
   )
 
   return {
+    defaultCategory,
     folder,
     indexPage: indexPagePlan,
     pages: pagePlans,
-    defaultCategory,
   }
 }
 
@@ -129,16 +130,16 @@ const main = async () => {
   const folder = await verifyFolder(folderId.trim(), siteId)
 
   const defaultCategory = await input({
-    message: "Default category to apply to ALL converted articles",
     default: "Feature Articles",
+    message: "Default category to apply to ALL converted articles",
   })
 
   const plan = await buildConversionPlan(
     {
       id: folder.id,
+      permalink: folder.permalink,
       siteId: folder.siteId,
       title: folder.title,
-      permalink: folder.permalink,
     },
     defaultCategory,
   )
@@ -148,7 +149,9 @@ const main = async () => {
   const jsonPaths = writePlanFiles(plan)
   const reportPath = writeReportFile(plan)
   console.log(`\nPlans written (${jsonPaths.length} files):`)
-  for (const p of jsonPaths) console.log(`  ${p}`)
+  for (const p of jsonPaths) {
+    console.log(`  ${p}`)
+  }
   console.log(`\nReport written to: ${reportPath}`)
   console.log(
     `\nNext step: review the report, then run applyConversionPlan.ts to write back to DB.`,
@@ -157,8 +160,8 @@ const main = async () => {
 
 try {
   await main()
-} catch (err) {
-  console.error("\n✗ Export failed:", err)
+} catch (error) {
+  console.error("\n✗ Export failed:", error)
   process.exitCode = 1
 } finally {
   await db.destroy()

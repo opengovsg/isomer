@@ -36,6 +36,6 @@ export const getMonthOptions = (
     // Construct each month from the Singapore-anchored year/month so the
     // label and value never drift across a UTC day boundary.
     const date = new Date(Date.UTC(year, monthIndex - offset, 1, 0, 0, 0))
-    return { value: toMonthValue(date), label: toMonthLabel(date) }
+    return { label: toMonthLabel(date), value: toMonthValue(date) }
   })
 }

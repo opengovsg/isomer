@@ -31,8 +31,8 @@ const baseHandlers = [
 ]
 
 const meta: Meta<typeof GazettesPage> = {
-  title: "Pages/eGazette/Gazettes Page",
   component: GazettesPage,
+  decorators: [],
   parameters: {
     getLayout: GazettesPage.getLayout,
     growthbook: [
@@ -52,7 +52,7 @@ const meta: Meta<typeof GazettesPage> = {
       },
     },
   },
-  decorators: [],
+  title: "Pages/eGazette/Gazettes Page",
 }
 
 export default meta
@@ -76,14 +76,14 @@ export const EmptyNotificationNumber: Story = {
         ...baseHandlers,
         gazetteHandlers.list.withItems([
           createGazetteItem({
-            id: "201",
-            title: "Notice with no notification number assigned",
             content: createGazetteContent({
               ref: "/gazettes/26gg0001.pdf",
               category: "Government Gazette",
               description: "",
               tagged: [governmentGazetteSubcategories.NOTICES_UNDER_OTHER_ACTS],
             }),
+            id: "201",
+            title: "Notice with no notification number assigned",
           }),
         ]),
       ],
@@ -101,15 +101,15 @@ export const OverflowingFileId: Story = {
         ...baseHandlers,
         gazetteHandlers.list.withItems([
           createGazetteItem({
-            id: "202",
-            title:
-              "Government Gazette Extraordinary Supplement - Section 64 Notice",
             content: createGazetteContent({
               ref: "/gazettes/26gg-government-gazette-extraordinary-supplement-section-64-revised-statutes-2024-09-12.pdf",
               category: "Government Gazette",
               description: "2145",
               tagged: [governmentGazetteSubcategories.NOTICES_UNDER_OTHER_ACTS],
             }),
+            id: "202",
+            title:
+              "Government Gazette Extraordinary Supplement - Section 64 Notice",
           }),
         ]),
       ],
@@ -126,14 +126,14 @@ export const InlineExternalLinkIcon: Story = {
         ...baseHandlers,
         gazetteHandlers.list.withItems([
           createGazetteItem({
-            id: "203",
-            title: "Bills Supplement - Companies (Amendment) Bill 2024",
             content: createGazetteContent({
               ref: "/gazettes/26gg-bills-supplement-companies-amendment.pdf",
               category: "Legislative Supplements",
               description: "2199",
               tagged: ["Bills Supplement"],
             }),
+            id: "203",
+            title: "Bills Supplement - Companies (Amendment) Bill 2024",
           }),
         ]),
       ],
@@ -166,7 +166,7 @@ export const DuplicateNotificationNumber: Story = {
     const screen = within(canvasElement.ownerDocument.body)
 
     await userEvent.click(
-      await screen.findByRole("button", { name: /Add a new Gazette/i }),
+      await screen.findByRole("button", { name: /Add a new Gazette/iu }),
     )
 
     await userEvent.type(
@@ -180,6 +180,7 @@ export const DuplicateNotificationNumber: Story = {
     // seeded table row, so matching the option by its visible text stays
     // unambiguous. Government Gazette duplicates are detected by category and
     // year regardless of subcategory, so this is still a duplicate.
+    // oxlint-disable-next-line unicorn/no-await-expression-member -- core cleanup deferred
     const subcategoryCombobox = (await screen.findAllByRole("combobox"))[1]
     if (!subcategoryCombobox) {
       throw new Error("Expected a subcategory combobox to be rendered")
@@ -204,7 +205,7 @@ export const DuplicateNotificationNumber: Story = {
     )
 
     await userEvent.click(
-      await screen.findByRole("button", { name: /Add Gazette/i }),
+      await screen.findByRole("button", { name: /Add Gazette/iu }),
     )
 
     // The CONFLICT message is surfaced in the error toast's description.

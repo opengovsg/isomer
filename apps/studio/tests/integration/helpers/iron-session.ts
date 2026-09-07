@@ -1,8 +1,10 @@
+/* oxlint-disable unicorn/no-object-as-default-parameter, typescript/no-dynamic-delete -- studio lint cleanup */
+import type { NextApiRequest, NextApiResponse } from "next"
 import type { RequestOptions, ResponseOptions } from "node-mocks-http"
+import type { Session } from "~/lib/types/session"
 import type { Context } from "~/server/context"
 import type { User } from "~server/db"
 import { nanoid } from "nanoid"
-import { type NextApiRequest, type NextApiResponse } from "next"
 import { createMocks } from "node-mocks-http"
 import {
   MOCK_STORY_DATE,
@@ -10,7 +12,6 @@ import {
   MOCK_TEST_USER_NAME,
   MOCK_TEST_UUID,
 } from "tests/msw/constants"
-import { type Session } from "~/lib/types/session"
 import { createContextInner } from "~/server/context"
 
 import { auth } from "./auth"
@@ -69,7 +70,8 @@ export const createMockRequest = (
     {
       ...reqOptions,
       headers: {
-        "content-type": "application/json", // will always be application/json
+        "content-type": "application/json",
+        // will always be application/json
         ...reqOptions.headers,
       },
     },
@@ -80,9 +82,9 @@ export const createMockRequest = (
 
   return {
     ...innerContext,
+    gb: mockGrowthBook,
     req,
     res,
-    gb: mockGrowthBook,
   }
 }
 
@@ -109,22 +111,25 @@ export const applySession = () => {
 }
 
 export const createTestUser = (): Omit<User, "id"> => ({
-  email: `test${nanoid()}@example.com`,
-  name: MOCK_TEST_USER_NAME,
   createdAt: MOCK_STORY_DATE,
-  updatedAt: MOCK_STORY_DATE,
+  deletedAt: null,
+  email: `test${nanoid()}@example.com`,
+  lastLoginAt: null,
+  name: MOCK_TEST_USER_NAME,
   phone: MOCK_TEST_PHONE,
   singpassUuid: MOCK_TEST_UUID,
-  deletedAt: null,
-  lastLoginAt: null,
+  updatedAt: MOCK_STORY_DATE,
 })
 
 // NOTE: The argument to this function was changed from
 // `Partial<User>` to `User`
 export const applyAuthedSession = async (user?: User) => {
   const authedUser = await auth(user ?? createTestUser())
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   const session = applySession()
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   // SAFETY: auth() returns a user id compatible with the session userId branded type.
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   session.userId = authedUser.id as typeof session.userId
   await session.save()
   return session

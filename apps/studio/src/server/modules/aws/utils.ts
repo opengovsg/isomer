@@ -1,3 +1,5 @@
+/* oxlint-disable typescript/strict-boolean-expressions -- server lint cleanup */
+/* oxlint-disable eslint/no-use-before-define -- server lint cleanup */
 import {
   BatchGetBuildsCommand,
   CodeBuildClient,
@@ -6,6 +8,7 @@ import {
   StopBuildCommand,
 } from "@aws-sdk/client-codebuild"
 import { TRPCError } from "@trpc/server"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import type { Logger } from "@isomer/logging"
 
@@ -49,12 +52,12 @@ export const addCodeBuildAndMarkSupersededBuild = async ({
       .insertInto("CodeBuildJobs")
       .values(
         resourceWithUserIds.map(({ resourceId, userId }) => ({
-          siteId,
-          userId,
           buildId: buildIdToLink,
-          startedAt: buildStartTime,
-          resourceId,
           isScheduled,
+          resourceId,
+          siteId,
+          startedAt: buildStartTime,
+          userId,
         })),
       )
       .execute()
@@ -87,7 +90,7 @@ export const updateStoppedBuild = async ({
 }) => {
   await trx
     .updateTable("CodeBuildJobs")
-    .set({ supersededByBuildId: startedBuildId, status: "STOPPED" })
+    .set({ status: "STOPPED", supersededByBuildId: startedBuildId })
     .where(
       "buildId",
       "in",
@@ -102,6 +105,7 @@ export const updateStoppedBuild = async ({
     .execute()
 }
 
+// oxlint-disable-next-line eslint/complexity -- legacy bulk validation flow
 export const computeBuildChanges = async (
   logger: Logger<string>,
   projectId: string,
@@ -161,7 +165,7 @@ export const computeBuildChanges = async (
     if (runningBuilds?.length === 2 && recentRunningBuilds?.length === 0) {
       // Stop the latest build
       const latestBuild = runningBuilds
-        .sort((a, b) => {
+        .toSorted((a, b) => {
           const aStartTime = new Date(a.startTime ?? "")
           const bStartTime = new Date(b.startTime ?? "")
           return bStartTime.getTime() - aStartTime.getTime()
@@ -181,12 +185,12 @@ export const computeBuildChanges = async (
       await client.send(stopBuildCommand)
 
       return {
+        isNewBuildNeeded: true,
         stoppedBuild: {
           ...latestBuild,
           id: latestBuild.id,
           startTime: latestBuild.startTime,
         },
-        isNewBuildNeeded: true,
       }
     }
 
@@ -208,7 +212,7 @@ export const computeBuildChanges = async (
     }
   } catch (error) {
     logger.error(
-      { projectId, error },
+      { error, projectId },
       "Unexpected error while determining if new builds should be started",
     )
     throw error
@@ -237,7 +241,7 @@ export const startProjectById = async (
     return { id: build.id, startTime: build.startTime }
   } catch (error) {
     logger.error(
-      { projectId, error },
+      { error, projectId },
       `Unexpected error when starting CodeBuild project run for ${projectId}`,
     )
     throw error

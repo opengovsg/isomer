@@ -1,5 +1,11 @@
 import { useToken } from "@chakra-ui/react"
 import { BLOCK_FLASH_FADE_DURATION_MS } from "~/features/editing-experience/hooks/useBlockFlashHighlight"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 interface BlockHighlightOverlayProps {
   top: number
@@ -34,32 +40,32 @@ export const BlockHighlightOverlay = ({
   return (
     <div
       style={{
-        position: "absolute",
-        top,
-        left,
-        width,
+        backgroundColor: overlayBgColor,
         height,
+        left,
+        opacity: isFading ? 0 : 1,
         outline: `${spacing2px} solid ${outlineColor}`,
         outlineOffset: spacing2px,
-        backgroundColor: overlayBgColor,
         pointerEvents: "none",
-        zIndex: 9999,
-        opacity: isFading ? 0 : 1,
+        position: "absolute",
+        top,
         transition: `opacity ${BLOCK_FLASH_FADE_DURATION_MS}ms ease-out`,
+        width,
+        zIndex: 9999,
       }}
     >
-      {label && (
+      {hasNonEmptyString(label) && (
         <div
           style={{
-            position: "absolute",
-            top: 0,
-            right: 0,
-            padding: `${spacing2px} ${spacing8px}`,
-            fontSize: labelFontSize,
-            lineHeight: labelLineHeight,
-            color: labelColor,
             backgroundColor: outlineColor,
             borderRadius: `0 0 0 ${labelBorderRadius}`,
+            color: labelColor,
+            fontSize: labelFontSize,
+            lineHeight: labelLineHeight,
+            padding: `${spacing2px} ${spacing8px}`,
+            position: "absolute",
+            right: 0,
+            top: 0,
           }}
         >
           {label}

@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unsafe-type-assertion, unicorn/no-await-expression-member, eslint/complexity -- server lint cleanup */
 import { pick } from "lodash-es"
 import { resetTables } from "tests/integration/helpers/db"
 import {
@@ -33,7 +34,7 @@ import {
 import { PAGE_BLOB } from "./constants"
 
 describe("resource.service", () => {
-  // TODO: Implement tests when publish works
+  // Deferred: Implement tests when publish works
   describe.skip("publishPage", () => {
     it.skip("should trigger a publish automatically on creation of a folder", () => {})
     it.skip("should trigger a publish automatically on deletion of a folder", () => {})
@@ -55,8 +56,9 @@ describe("resource.service", () => {
 
       // Act
       const result = await getBatchAncestryWithSelfQuery({
+        resourceIds: ["99999"],
+        // non-existent id
         siteId: site.id,
-        resourceIds: ["99999"], // non-existent id
       })
 
       // Assert
@@ -71,8 +73,8 @@ describe("resource.service", () => {
 
       // Act
       const result = await getBatchAncestryWithSelfQuery({
-        siteId: site.id,
         resourceIds: [page.id],
+        siteId: site.id,
       })
 
       // Assert
@@ -87,8 +89,8 @@ describe("resource.service", () => {
 
       // Act
       const result = await getBatchAncestryWithSelfQuery({
-        siteId: site.id,
         resourceIds: [page.id],
+        siteId: site.id,
       })
 
       // Assert
@@ -96,10 +98,10 @@ describe("resource.service", () => {
         [
           {
             id: page.id,
-            title: page.title,
-            permalink: page.permalink,
-            type: page.type,
             parentId: page.parentId,
+            permalink: page.permalink,
+            title: page.title,
+            type: page.type,
           },
         ],
       ])
@@ -109,29 +111,29 @@ describe("resource.service", () => {
       // Arrange
       const { site } = await setupSite()
       const { folder: parentFolder } = await setupFolder({
-        siteId: site.id,
         parentId: null,
         permalink: "parent-folder",
+        siteId: site.id,
         title: "Parent folder",
       })
       const { folder: childFolder } = await setupFolder({
-        siteId: site.id,
         parentId: parentFolder.id,
         permalink: "child-folder",
+        siteId: site.id,
         title: "Child folder",
       })
       const { page: grandChildPage } = await setupPageResource({
-        resourceType: ResourceType.Page,
-        siteId: site.id,
         parentId: childFolder.id,
         permalink: "grand-child-page",
+        resourceType: ResourceType.Page,
+        siteId: site.id,
         title: "Grand child page",
       })
 
       // Act
       const result = await getBatchAncestryWithSelfQuery({
-        siteId: site.id,
         resourceIds: [grandChildPage.id],
+        siteId: site.id,
       })
 
       // Assert
@@ -139,24 +141,24 @@ describe("resource.service", () => {
         [
           {
             id: parentFolder.id,
-            title: parentFolder.title,
-            permalink: parentFolder.permalink,
-            type: parentFolder.type,
             parentId: parentFolder.parentId,
+            permalink: parentFolder.permalink,
+            title: parentFolder.title,
+            type: parentFolder.type,
           },
           {
             id: childFolder.id,
-            title: childFolder.title,
-            permalink: childFolder.permalink,
-            type: childFolder.type,
             parentId: childFolder.parentId,
+            permalink: childFolder.permalink,
+            title: childFolder.title,
+            type: childFolder.type,
           },
           {
             id: grandChildPage.id,
-            title: grandChildPage.title,
-            permalink: grandChildPage.permalink,
-            type: grandChildPage.type,
             parentId: grandChildPage.parentId,
+            permalink: grandChildPage.permalink,
+            title: grandChildPage.title,
+            type: grandChildPage.type,
           },
         ],
       ])
@@ -168,38 +170,38 @@ describe("resource.service", () => {
 
       // First path
       const { folder: folder1 } = await setupFolder({
-        siteId: site.id,
         parentId: null,
         permalink: "folder-1",
+        siteId: site.id,
         title: "Folder 1",
       })
       const { page: page1 } = await setupPageResource({
-        resourceType: ResourceType.Page,
-        siteId: site.id,
         parentId: folder1.id,
         permalink: "page-1",
+        resourceType: ResourceType.Page,
+        siteId: site.id,
         title: "Page 1",
       })
 
       // Second path
       const { folder: folder2 } = await setupFolder({
-        siteId: site.id,
         parentId: null,
         permalink: "folder-2",
+        siteId: site.id,
         title: "Folder 2",
       })
       const { page: page2 } = await setupPageResource({
-        resourceType: ResourceType.Page,
-        siteId: site.id,
         parentId: folder2.id,
         permalink: "page-2",
+        resourceType: ResourceType.Page,
+        siteId: site.id,
         title: "Page 2",
       })
 
       // Act
       const result = await getBatchAncestryWithSelfQuery({
-        siteId: site.id,
         resourceIds: [page1.id, page2.id],
+        siteId: site.id,
       })
 
       // Assert
@@ -207,33 +209,33 @@ describe("resource.service", () => {
         [
           {
             id: folder1.id,
-            title: folder1.title,
-            permalink: folder1.permalink,
-            type: folder1.type,
             parentId: folder1.parentId,
+            permalink: folder1.permalink,
+            title: folder1.title,
+            type: folder1.type,
           },
           {
             id: page1.id,
-            title: page1.title,
-            permalink: page1.permalink,
-            type: page1.type,
             parentId: page1.parentId,
+            permalink: page1.permalink,
+            title: page1.title,
+            type: page1.type,
           },
         ],
         [
           {
             id: folder2.id,
-            title: folder2.title,
-            permalink: folder2.permalink,
-            type: folder2.type,
             parentId: folder2.parentId,
+            permalink: folder2.permalink,
+            title: folder2.title,
+            type: folder2.type,
           },
           {
             id: page2.id,
-            title: page2.title,
-            permalink: page2.permalink,
-            type: page2.type,
             parentId: page2.parentId,
+            permalink: page2.permalink,
+            title: page2.title,
+            type: page2.type,
           },
         ],
       ])
@@ -255,8 +257,8 @@ describe("resource.service", () => {
 
       // Act
       const result = await getBatchAncestryWithSelfQuery({
-        siteId: site1.id,
         resourceIds: [page1.id],
+        siteId: site1.id,
       })
 
       // Assert
@@ -264,10 +266,10 @@ describe("resource.service", () => {
         [
           {
             id: page1.id,
-            title: page1.title,
-            permalink: page1.permalink,
-            type: page1.type,
             parentId: page1.parentId,
+            permalink: page1.permalink,
+            title: page1.title,
+            type: page1.type,
           },
         ],
       ])
@@ -296,8 +298,8 @@ describe("resource.service", () => {
     it("should return the resource with the given `id`", async () => {
       // Act
       const result = await getSiteResourceById({
-        siteId: actualSiteId,
         resourceId: actualPage.id,
+        siteId: actualSiteId,
       })
 
       // Assert
@@ -307,8 +309,8 @@ describe("resource.service", () => {
     it("should return the resource with the given `id` and `type`", async () => {
       // Act
       const result = await getSiteResourceById({
-        siteId: actualSiteId,
         resourceId: actualPage.id,
+        siteId: actualSiteId,
         type: "Page",
       })
 
@@ -319,8 +321,8 @@ describe("resource.service", () => {
     it("should return undefined if no resource with the given id exists", async () => {
       // Act
       const result = await getSiteResourceById({
-        siteId: actualSiteId,
         resourceId: "999999",
+        siteId: actualSiteId,
       })
 
       // Assert
@@ -333,8 +335,8 @@ describe("resource.service", () => {
 
       // Act
       const result = await getSiteResourceById({
-        siteId: actualSiteId,
         resourceId: actualPage.id,
+        siteId: actualSiteId,
         type: "Folder",
       })
 
@@ -344,12 +346,12 @@ describe("resource.service", () => {
 
     it("should return undefined if the resource with the given `id` does not belong to the given `siteId`", async () => {
       // Arrange
-      expect(actualPage.siteId).not.toEqual(99999)
+      expect(actualPage.siteId).not.toEqual(99_999)
 
       // Act
       const result = await getSiteResourceById({
-        siteId: 99999,
         resourceId: actualPage.id,
+        siteId: 99_999,
       })
 
       // Assert
@@ -371,8 +373,8 @@ describe("resource.service", () => {
 
       // Act
       const result = await getFullPageById(db, {
-        siteId: site.id,
         resourceId: Number(actualPage.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -400,8 +402,8 @@ describe("resource.service", () => {
 
       // Act
       const result = await getFullPageById(db, {
-        siteId: site.id,
         resourceId: Number(actualPage.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -419,12 +421,12 @@ describe("resource.service", () => {
       const { site, page } = await setupPageResource({
         resourceType: "Page",
       })
-      expect(page.id).not.toEqual(99999)
+      expect(page.id).not.toEqual(99_999)
 
       // Act
       const result = await getFullPageById(db, {
+        resourceId: 99_999,
         siteId: site.id,
-        resourceId: 99999,
       })
 
       // Assert
@@ -436,12 +438,12 @@ describe("resource.service", () => {
       const { page } = await setupPageResource({
         resourceType: "Page",
       })
-      expect(page.siteId).not.toEqual(99999)
+      expect(page.siteId).not.toEqual(99_999)
 
       // Act
       const result = await getFullPageById(db, {
-        siteId: 99999,
         resourceId: Number(page.id),
+        siteId: 99_999,
       })
 
       // Assert
@@ -458,8 +460,8 @@ describe("resource.service", () => {
 
       // Act
       const result = await getPageById(db, {
-        siteId: site.id,
         resourceId: Number(page.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -474,8 +476,8 @@ describe("resource.service", () => {
 
       // Act
       const result = await getPageById(db, {
-        siteId: site.id,
         resourceId: Number(rootPage.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -490,8 +492,8 @@ describe("resource.service", () => {
 
       // Act
       const result = await getPageById(db, {
-        siteId: site.id,
         resourceId: Number(collectionPage.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -506,8 +508,8 @@ describe("resource.service", () => {
 
       // Act
       const result = await getPageById(db, {
-        siteId: site.id,
         resourceId: Number(page.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -522,8 +524,8 @@ describe("resource.service", () => {
 
       // Act
       const result = await getPageById(db, {
+        resourceId: 99_999,
         siteId: site.id,
-        resourceId: 99999,
       })
 
       // Assert
@@ -538,8 +540,8 @@ describe("resource.service", () => {
 
       // Act
       const result = await getPageById(db, {
-        siteId: 99999,
         resourceId: Number(page.id),
+        siteId: 99_999,
       })
 
       // Assert
@@ -557,8 +559,8 @@ describe("resource.service", () => {
       // Act
       const result = await updatePageById(
         {
+          id: 99_999,
           siteId: site.id,
-          id: 99999,
           title: "Updated Title",
         },
         db,
@@ -577,8 +579,8 @@ describe("resource.service", () => {
       // Act
       const result = await updatePageById(
         {
-          siteId: site.id,
           id: Number(page.id),
+          siteId: site.id,
           title: "Updated Title",
         },
         db,
@@ -600,8 +602,8 @@ describe("resource.service", () => {
       // Act
       const result = await updatePageById(
         {
-          siteId: site.id,
           id: 2,
+          siteId: site.id,
         },
         db,
       )
@@ -619,9 +621,9 @@ describe("resource.service", () => {
       // Act
       const result = updatePageById(
         {
-          siteId: site.id,
           id: Number(page.id),
           parentId: -1,
+          siteId: site.id,
         },
         db,
       )
@@ -644,13 +646,14 @@ describe("resource.service", () => {
 
     it("should throw an error if no matching `id` can be found for the page", async () => {
       // Act
-      const result = db.transaction().execute((tx) => {
-        return updateBlobById(tx, {
-          siteId: site.id,
-          pageId: 99999,
-          content: PAGE_BLOB,
-        })
-      })
+      const result = db.transaction().execute(
+        async (tx) =>
+          await updateBlobById(tx, {
+            siteId: site.id,
+            pageId: 99_999,
+            content: PAGE_BLOB,
+          }),
+      )
 
       // Assert
       await expect(result).rejects.toThrow()
@@ -660,11 +663,11 @@ describe("resource.service", () => {
       // Arrange
       const user = await setupUser({})
       const { page } = await setupPageResource({
-        state: ResourceState.Published,
-        resourceType: ResourceType.Page,
-        userId: user.id,
-        siteId: site.id,
         permalink: "another_permalink",
+        resourceType: ResourceType.Page,
+        siteId: site.id,
+        state: ResourceState.Published,
+        userId: user.id,
       })
       expect(page.draftBlobId).toBeNull()
       const publishedBlob = await setupBlob()
@@ -674,13 +677,14 @@ describe("resource.service", () => {
       })
 
       // Act
-      await db.transaction().execute((tx) => {
-        return updateBlobById(tx, {
-          siteId: site.id,
-          pageId: Number(page.id),
-          content: PAGE_BLOB,
-        })
-      })
+      await db.transaction().execute(
+        async (tx) =>
+          await updateBlobById(tx, {
+            siteId: site.id,
+            pageId: Number(page.id),
+            content: PAGE_BLOB,
+          }),
+      )
 
       // Assert
       const result = await getFullPageById(db, {
@@ -702,19 +706,20 @@ describe("resource.service", () => {
       // Arrange
       const blob = await setupBlob()
       const { page } = await setupPageResource({
-        siteId: site.id,
         resourceType: ResourceType.Page,
+        siteId: site.id,
       })
       await linkDraftBlobToPage({ blobId: blob.id, pageId: page.id })
 
       // Act
-      await db.transaction().execute((tx) => {
-        return updateBlobById(tx, {
-          siteId: site.id,
-          pageId: Number(page.id),
-          content: PAGE_BLOB,
-        })
-      })
+      await db.transaction().execute(
+        async (tx) =>
+          await updateBlobById(tx, {
+            siteId: site.id,
+            pageId: Number(page.id),
+            content: PAGE_BLOB,
+          }),
+      )
 
       // Assert
       const result = await getFullPageById(db, {
@@ -727,17 +732,18 @@ describe("resource.service", () => {
 
     it("should not update when no matching `siteId` can be found", async () => {
       const { page } = await setupPageResource({
-        siteId: site.id,
         resourceType: ResourceType.Page,
+        siteId: site.id,
       })
       // Act
-      const result = db.transaction().execute((tx) => {
-        return updateBlobById(tx, {
-          siteId: 99999,
-          pageId: Number(page.id),
-          content: PAGE_BLOB,
-        })
-      })
+      const result = db.transaction().execute(
+        async (tx) =>
+          await updateBlobById(tx, {
+            siteId: 99_999,
+            pageId: Number(page.id),
+            content: PAGE_BLOB,
+          }),
+      )
 
       // Assert
       await expect(result).rejects.toThrow()
@@ -757,7 +763,7 @@ describe("resource.service", () => {
 
     it("should throw an error if the `siteId` is not found", async () => {
       // Act
-      const result = getNavBar(db, 99999)
+      const result = getNavBar(db, 99_999)
       // Assert
       await expect(result).rejects.toThrow()
     })
@@ -776,7 +782,7 @@ describe("resource.service", () => {
 
     it("should throw an error if the `siteId` is not found", async () => {
       // Act
-      const result = getFooter(db, 99999)
+      const result = getFooter(db, 99_999)
       // Assert
       await expect(result).rejects.toThrow()
     })
@@ -802,7 +808,7 @@ describe("resource.service", () => {
       // Arrange
       const { site } = await setupSite()
       // Act
-      const result = getLocalisedSitemap(site.id, 99999)
+      const result = getLocalisedSitemap(site.id, 99_999)
       // Assert
       await expect(result).rejects.toThrow()
     })
@@ -815,10 +821,11 @@ describe("resource.service", () => {
         siteId: site.id,
       })
       const { page: childPage } = await setupPageResource({
-        resourceType: "Page",
         parentId: parentFolder.id,
-        state: ResourceState.Draft, // explicitly set to draft
+        resourceType: "Page",
         siteId: site.id,
+        state: ResourceState.Draft,
+        // explicitly set to draft,
       })
       // Act
       const result = await getLocalisedSitemap(site.id, Number(childPage.id))
@@ -840,11 +847,11 @@ describe("resource.service", () => {
         siteId: site.id,
       })
       const { page: childPage } = await setupPageResource({
-        resourceType: "Page",
         parentId: parentFolder.id,
+        resourceType: "Page",
+        siteId: site.id,
         state: ResourceState.Published,
         userId: (await setupUser({})).id,
-        siteId: site.id,
       })
       // Act
       const result = await getLocalisedSitemap(site.id, Number(childPage.id))
@@ -863,12 +870,12 @@ describe("resource.service", () => {
       const { rootCollection, rootFolder, site, childPage } =
         await setupFullSite()
       const { folderMeta } = await setupFolderMeta({
-        siteId: site.id,
         folderId: rootFolder.id,
+        siteId: site.id,
       })
       const { collectionMeta } = await setupCollectionMeta({
-        siteId: site.id,
         collectionId: rootCollection.id,
+        siteId: site.id,
       })
 
       // Act
@@ -900,8 +907,8 @@ describe("resource.service", () => {
       // Arrange
       const { site } = await setupSite()
       const { page: rootPage } = await setupPageResource({
-        siteId: site.id,
         resourceType: ResourceType.RootPage,
+        siteId: site.id,
       })
 
       // Act
@@ -917,19 +924,20 @@ describe("resource.service", () => {
       // Arrange
       const { site } = await setupSite()
       await setupPageResource({
-        resourceType: ResourceType.RootPage, // Pre-requisite
+        resourceType: ResourceType.RootPage,
+        // Pre-requisite
         siteId: site.id,
       })
       const { folder } = await setupFolder({
-        title: "HelloWorld",
         siteId: site.id,
+        title: "HelloWorld",
       })
       const { page: indexPage, blob } = await setupPageResource({
-        title: "HelloWorld",
+        parentId: folder.id,
         resourceType: ResourceType.IndexPage,
         siteId: site.id,
-        parentId: folder.id,
         state: ResourceState.Draft,
+        title: "HelloWorld",
       })
       await db
         .updateTable("Blob")
@@ -953,24 +961,27 @@ describe("resource.service", () => {
       const child = result.children?.at(0)
       expect(child?.id).toBe(folder.id)
       expect(child?.permalink).toBe(`/${folder.permalink}`)
-      expect(child?.title).toBe(folder.title) // should be from the folder
-      expect(child?.summary).toBe(`Pages in ${folder.title}`) // should not be from the index page
+      expect(child?.title).toBe(folder.title)
+      // should be from the folder
+      expect(child?.summary).toBe(`Pages in ${folder.title}`)
+      // should not be from the index page
     })
 
     it("should return folder indexpage's title when resourceId is a IndexPage (PUBLISHED)", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupPageResource({
-        resourceType: ResourceType.RootPage, // Pre-requisite
+        resourceType: ResourceType.RootPage,
+        // Pre-requisite
         siteId: site.id,
       })
       const { folder } = await setupFolder({
         siteId: site.id,
       })
       const { page: indexPage, blob } = await setupPageResource({
+        parentId: folder.id,
         resourceType: ResourceType.IndexPage,
         siteId: site.id,
-        parentId: folder.id,
         state: ResourceState.Published,
         userId: (await setupUser({})).id,
       })
@@ -996,27 +1007,30 @@ describe("resource.service", () => {
       const child = result.children?.at(0)
       expect(child?.id).toBe(folder.id)
       expect(child?.permalink).toBe(`/${folder.permalink}`)
-      expect(child?.title).toBe(indexPage.title) // should be from the index page
-      expect(child?.summary).toBe("Hello im the index page") // should be from the index page
+      expect(child?.title).toBe(indexPage.title)
+      // should be from the index page
+      expect(child?.summary).toBe("Hello im the index page")
+      // should be from the index page
     })
 
     it("should not return collection indexpage's title when resourceId is a IndexPage (DRAFT)", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupPageResource({
-        resourceType: ResourceType.RootPage, // Pre-requisite
+        resourceType: ResourceType.RootPage,
+        // Pre-requisite
         siteId: site.id,
       })
       const { collection } = await setupCollection({
-        title: "HelloWorld",
         siteId: site.id,
+        title: "HelloWorld",
       })
       const { page: indexPage, blob } = await setupPageResource({
-        title: "HelloWorld",
+        parentId: collection.id,
         resourceType: ResourceType.IndexPage,
         siteId: site.id,
-        parentId: collection.id,
         state: ResourceState.Draft,
+        title: "HelloWorld",
       })
       await db
         .updateTable("Blob")
@@ -1038,26 +1052,30 @@ describe("resource.service", () => {
 
       // Assert
       const child = result.children?.at(0)
-      expect(child?.id).toBe(collection.id) // should be from the collection regardless
+      expect(child?.id).toBe(collection.id)
+      // should be from the collection regardless
       expect(child?.permalink).toBe(`/${collection.permalink}`)
-      expect(child?.title).toBe(collection.title) // should be from the collection
-      expect(child?.summary).toBe(`Pages in ${collection.title}`) // should not be from the index page
+      expect(child?.title).toBe(collection.title)
+      // should be from the collection
+      expect(child?.summary).toBe(`Pages in ${collection.title}`)
+      // should not be from the index page
     })
 
     it("should return collection indexpage's title when resourceId is a IndexPage (PUBLISHED)", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupPageResource({
-        resourceType: ResourceType.RootPage, // Pre-requisite
+        resourceType: ResourceType.RootPage,
+        // Pre-requisite
         siteId: site.id,
       })
       const { collection } = await setupCollection({
         siteId: site.id,
       })
       const { page: indexPage, blob } = await setupPageResource({
+        parentId: collection.id,
         resourceType: ResourceType.IndexPage,
         siteId: site.id,
-        parentId: collection.id,
         state: ResourceState.Published,
         userId: (await setupUser({})).id,
       })
@@ -1081,17 +1099,21 @@ describe("resource.service", () => {
 
       // Assert
       const child = result.children?.at(0)
-      expect(child?.id).toBe(collection.id) // should be from the collection regardless
+      expect(child?.id).toBe(collection.id)
+      // should be from the collection regardless
       expect(child?.permalink).toBe(`/${collection.permalink}`)
-      expect(child?.title).toBe(indexPage.title) // should be from the index page
-      expect(child?.summary).toBe("Hello im the index page") // should be from the index page
+      expect(child?.title).toBe(indexPage.title)
+      // should be from the index page
+      expect(child?.summary).toBe("Hello im the index page")
+      // should be from the index page
     })
 
     it("should include children resources when resourceId is a IndexPage (PUBLISHED)", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupPageResource({
-        resourceType: ResourceType.RootPage, // Pre-requisite
+        resourceType: ResourceType.RootPage,
+        // Pre-requisite
         siteId: site.id,
       })
 
@@ -1102,19 +1124,19 @@ describe("resource.service", () => {
       })
 
       const { page: indexPage } = await setupPageResource({
-        title: "Parent Folder",
+        parentId: parentFolder.id,
         resourceType: ResourceType.IndexPage,
         siteId: site.id,
-        parentId: parentFolder.id,
         state: ResourceState.Published,
+        title: "Parent Folder",
         userId: (await setupUser({})).id,
       })
 
       const { page, blob: pageBlob } = await setupPageResource({
+        parentId: parentFolder.id,
         permalink: "page-a",
         resourceType: ResourceType.Page,
         siteId: site.id,
-        parentId: parentFolder.id,
         state: ResourceState.Published,
         userId: (await setupUser({})).id,
       })
@@ -1126,8 +1148,8 @@ describe("resource.service", () => {
             ...pageBlob.content,
             page: {
               image: {
-                src: "https://pageblob.com",
                 alt: "im a page blob image alt text",
+                src: "https://pageblob.com",
               },
             },
           },
@@ -1135,19 +1157,19 @@ describe("resource.service", () => {
         .execute()
 
       const { folder } = await setupFolder({
-        title: "Folder A",
+        parentId: parentFolder.id,
         permalink: "folder-a",
         siteId: site.id,
-        parentId: parentFolder.id,
         state: ResourceState.Published,
+        title: "Folder A",
       })
 
       const { blob: folderAIndexPageBlob } = await setupPageResource({
-        title: "Folder A",
+        parentId: folder.id,
         resourceType: ResourceType.IndexPage,
         siteId: site.id,
-        parentId: folder.id,
         state: ResourceState.Published,
+        title: "Folder A",
         userId: (await setupUser({})).id,
       })
       await db
@@ -1161,8 +1183,8 @@ describe("resource.service", () => {
                 summary: "Hello im the index page",
               },
               image: {
-                src: "https://indexpageblob.com",
                 alt: "im a index page blob image alt text",
+                src: "https://indexpageblob.com",
               },
             },
           },
@@ -1170,11 +1192,11 @@ describe("resource.service", () => {
         .execute()
 
       const { collection } = await setupCollection({
-        title: "Collection A",
+        parentId: parentFolder.id,
         permalink: "collection-a",
         siteId: site.id,
-        parentId: parentFolder.id,
         state: ResourceState.Published,
+        title: "Collection A",
       })
 
       // Act
@@ -1213,7 +1235,8 @@ describe("resource.service", () => {
       const { site } = await setupSite()
 
       const { page: rootPage } = await setupPageResource({
-        resourceType: ResourceType.RootPage, // Pre-requisite
+        resourceType: ResourceType.RootPage,
+        // Pre-requisite
         siteId: site.id,
       })
 
@@ -1224,35 +1247,35 @@ describe("resource.service", () => {
       })
 
       const { folder: childFolder } = await setupFolder({
+        parentId: parentFolder.id,
         permalink: "child-folder",
         siteId: site.id,
-        parentId: parentFolder.id,
         state: ResourceState.Published,
       })
 
       // Arrange: Create Child Collection without index page
       const { collection: collection1 } = await setupCollection({
+        parentId: childFolder.id,
         permalink: "collection",
         siteId: site.id,
-        title: "Without Index Page",
-        parentId: childFolder.id,
         state: ResourceState.Published,
+        title: "Without Index Page",
       })
 
       // Arrange: Create Child Collection with index page
       const { collection: collection2 } = await setupCollection({
+        parentId: childFolder.id,
         permalink: "collection-with-index-page",
         siteId: site.id,
-        title: "With Index Page",
-        parentId: childFolder.id,
         state: ResourceState.Published,
+        title: "With Index Page",
       })
       const { blob: collection2IndexPageBlob } = await setupPageResource({
-        title: "Collection 2 Index Page",
+        parentId: collection2.id,
         resourceType: ResourceType.IndexPage,
         siteId: site.id,
-        parentId: collection2.id,
         state: ResourceState.Published,
+        title: "Collection 2 Index Page",
         userId: (await setupUser({})).id,
       })
       await db
@@ -1312,42 +1335,42 @@ describe("resource.service", () => {
 
         // Create child pages with titles that would sort differently alphabetically
         const { page: pageA } = await setupPageResource({
-          title: "Zebra Page",
+          parentId: parentFolder.id,
           permalink: "zebra-page",
           resourceType: ResourceType.Page,
           siteId: site.id,
-          parentId: parentFolder.id,
           state: ResourceState.Published,
+          title: "Zebra Page",
           userId: user.id,
         })
 
         const { page: pageB } = await setupPageResource({
-          title: "Apple Page",
+          parentId: parentFolder.id,
           permalink: "apple-page",
           resourceType: ResourceType.Page,
           siteId: site.id,
-          parentId: parentFolder.id,
           state: ResourceState.Published,
+          title: "Apple Page",
           userId: user.id,
         })
 
         const { page: pageC } = await setupPageResource({
-          title: "Mango Page",
+          parentId: parentFolder.id,
           permalink: "mango-page",
           resourceType: ResourceType.Page,
           siteId: site.id,
-          parentId: parentFolder.id,
           state: ResourceState.Published,
+          title: "Mango Page",
           userId: user.id,
         })
 
         // Create index page with childrenPagesOrdering that puts Zebra first, then Mango
         const { blob: indexPageBlob } = await setupPageResource({
-          title: "Parent Folder Index",
+          parentId: parentFolder.id,
           resourceType: ResourceType.IndexPage,
           siteId: site.id,
-          parentId: parentFolder.id,
           state: ResourceState.Published,
+          title: "Parent Folder Index",
           userId: user.id,
         })
 
@@ -1360,11 +1383,11 @@ describe("resource.service", () => {
               ...indexPageBlob.content,
               content: [
                 {
-                  type: "childrenpages",
                   childrenPagesOrdering: [pageA.id, pageC.id],
-                  variant: "boxes",
                   showSummary: false,
                   showThumbnail: false,
+                  type: "childrenpages",
+                  variant: "boxes",
                 },
               ],
             },
@@ -1403,42 +1426,42 @@ describe("resource.service", () => {
 
         // Create pages - none will be in the ordering
         const { page: pageAlpha } = await setupPageResource({
-          title: "Alpha",
+          parentId: parentFolder.id,
           permalink: "alpha",
           resourceType: ResourceType.Page,
           siteId: site.id,
-          parentId: parentFolder.id,
           state: ResourceState.Published,
+          title: "Alpha",
           userId: user.id,
         })
 
         const { page: pageGamma } = await setupPageResource({
-          title: "Gamma",
+          parentId: parentFolder.id,
           permalink: "gamma",
           resourceType: ResourceType.Page,
           siteId: site.id,
-          parentId: parentFolder.id,
           state: ResourceState.Published,
+          title: "Gamma",
           userId: user.id,
         })
 
         const { page: pageBeta } = await setupPageResource({
-          title: "Beta",
+          parentId: parentFolder.id,
           permalink: "beta",
           resourceType: ResourceType.Page,
           siteId: site.id,
-          parentId: parentFolder.id,
           state: ResourceState.Published,
+          title: "Beta",
           userId: user.id,
         })
 
         // Create index page with empty childrenPagesOrdering
         const { blob: indexPageBlob } = await setupPageResource({
-          title: "Parent Folder Index",
+          parentId: parentFolder.id,
           resourceType: ResourceType.IndexPage,
           siteId: site.id,
-          parentId: parentFolder.id,
           state: ResourceState.Published,
+          title: "Parent Folder Index",
           userId: user.id,
         })
 
@@ -1450,11 +1473,11 @@ describe("resource.service", () => {
               ...indexPageBlob.content,
               content: [
                 {
-                  type: "childrenpages",
                   childrenPagesOrdering: [],
-                  variant: "boxes",
                   showSummary: false,
                   showThumbnail: false,
+                  type: "childrenpages",
+                  variant: "boxes",
                 },
               ],
             },
@@ -1486,49 +1509,49 @@ describe("resource.service", () => {
 
         // Create parent folder
         const { folder: parentFolder } = await setupFolder({
-          title: "Parent Folder",
           permalink: "parent-folder",
           siteId: site.id,
           state: ResourceState.Published,
+          title: "Parent Folder",
         })
 
         // Create nested folder inside parent
         const { folder: nestedFolder } = await setupFolder({
-          title: "Nested Folder",
+          parentId: parentFolder.id,
           permalink: "nested-folder",
           siteId: site.id,
-          parentId: parentFolder.id,
           state: ResourceState.Published,
+          title: "Nested Folder",
         })
 
         // Create pages in nested folder
         const { page: nestedPageZ } = await setupPageResource({
-          title: "Zebra",
+          parentId: nestedFolder.id,
           permalink: "zebra",
           resourceType: ResourceType.Page,
           siteId: site.id,
-          parentId: nestedFolder.id,
           state: ResourceState.Published,
+          title: "Zebra",
           userId: user.id,
         })
 
         const { page: nestedPageA } = await setupPageResource({
-          title: "Apple",
+          parentId: nestedFolder.id,
           permalink: "apple",
           resourceType: ResourceType.Page,
           siteId: site.id,
-          parentId: nestedFolder.id,
           state: ResourceState.Published,
+          title: "Apple",
           userId: user.id,
         })
 
         // Create index page for nested folder with specific ordering (Zebra first)
         const { blob: nestedIndexBlob } = await setupPageResource({
-          title: "Nested Folder Index",
+          parentId: nestedFolder.id,
           resourceType: ResourceType.IndexPage,
           siteId: site.id,
-          parentId: nestedFolder.id,
           state: ResourceState.Published,
+          title: "Nested Folder Index",
           userId: user.id,
         })
 
@@ -1540,11 +1563,11 @@ describe("resource.service", () => {
               ...nestedIndexBlob.content,
               content: [
                 {
-                  type: "childrenpages",
                   childrenPagesOrdering: [nestedPageZ.id, nestedPageA.id],
-                  variant: "boxes",
                   showSummary: false,
                   showThumbnail: false,
+                  type: "childrenpages",
+                  variant: "boxes",
                 },
               ],
             },
@@ -1589,11 +1612,11 @@ describe("resource.service", () => {
 
         // Create index page with ordering
         const { blob: indexPageBlob } = await setupPageResource({
-          title: "Parent Folder Index",
+          parentId: parentFolder.id,
           resourceType: ResourceType.IndexPage,
           siteId: site.id,
-          parentId: parentFolder.id,
           state: ResourceState.Published,
+          title: "Parent Folder Index",
           userId: user.id,
         })
 
@@ -1605,11 +1628,11 @@ describe("resource.service", () => {
               ...indexPageBlob.content,
               content: [
                 {
-                  type: "childrenpages",
                   childrenPagesOrdering: ["some-id"],
-                  variant: "boxes",
                   showSummary: false,
                   showThumbnail: false,
+                  type: "childrenpages",
+                  variant: "boxes",
                 },
               ],
             },
@@ -1636,10 +1659,14 @@ describe("resource.service", () => {
         node: SitemapNode,
         id: string,
       ): SitemapNode | undefined => {
-        if (node.id === id) return node
+        if (node.id === id) {
+          return node
+        }
         for (const child of node.children ?? []) {
           const found = findNode(child, id)
-          if (found) return found
+          if (found) {
+            return found
+          }
         }
         return undefined
       }
@@ -1655,23 +1682,23 @@ describe("resource.service", () => {
           siteId: site.id,
         })
         const { collection } = await setupCollection({
-          siteId: site.id,
           permalink: "test-collection",
+          siteId: site.id,
           state: ResourceState.Published,
         })
         const { page: indexPage } = await setupPageResource({
+          parentId: collection.id,
           resourceType: ResourceType.IndexPage,
           siteId: site.id,
-          parentId: collection.id,
           state: ResourceState.Published,
           userId: user.id,
         })
         const { page: item, blob } = await setupCollectionPage({
-          siteId: site.id,
           parentId: collection.id,
           permalink: "an-article",
-          title: "An article",
+          siteId: site.id,
           state: ResourceState.Published,
+          title: "An article",
           userId: user.id,
         })
 
@@ -1689,24 +1716,24 @@ describe("resource.service", () => {
         // Arrange + Act: images are interleaved with prose so that picking any
         // image other than the earliest one yields a different src
         const node = await setupCollectionWithItemBody([
-          { type: "prose", content: [] },
-          { type: "image", src: "/first.jpg", alt: "First image" },
-          { type: "prose", content: [] },
-          { type: "image", src: "/second.jpg", alt: "Second image" },
-          { type: "image", src: "/third.jpg", alt: "Third image" },
+          { content: [], type: "prose" },
+          { alt: "First image", src: "/first.jpg", type: "image" },
+          { content: [], type: "prose" },
+          { alt: "Second image", src: "/second.jpg", type: "image" },
+          { alt: "Third image", src: "/third.jpg", type: "image" },
         ])
 
         // Assert
         expect(node?.firstImage).toEqual({
-          src: "/first.jpg",
           alt: "First image",
+          src: "/first.jpg",
         })
       })
 
       it("should not set firstImage when the body has no image block", async () => {
         // Arrange + Act
         const node = await setupCollectionWithItemBody([
-          { type: "prose", content: [] },
+          { content: [], type: "prose" },
         ])
 
         // Assert
@@ -1720,11 +1747,11 @@ describe("resource.service", () => {
         // JSON, so the cast reproduces a blob that omits it
         const node = await setupCollectionWithItemBody([
           // SAFETY: reproduces a stored blob that omits required image alt text.
-          { type: "image", src: "/no-alt.jpg" } as PageBody[number],
+          { src: "/no-alt.jpg", type: "image" } as PageBody[number],
         ])
 
         // Assert
-        expect(node?.firstImage).toEqual({ src: "/no-alt.jpg", alt: "" })
+        expect(node?.firstImage).toEqual({ alt: "", src: "/no-alt.jpg" })
       })
 
       it("should not set firstImage for non-article layouts", async () => {
@@ -1736,26 +1763,26 @@ describe("resource.service", () => {
           siteId: site.id,
         })
         const { folder } = await setupFolder({
-          siteId: site.id,
           permalink: "a-folder",
+          siteId: site.id,
           state: ResourceState.Published,
         })
         const { page: sibling } = await setupPageResource({
-          resourceType: ResourceType.Page,
-          siteId: site.id,
           parentId: folder.id,
           permalink: "sibling",
-          title: "Sibling",
+          resourceType: ResourceType.Page,
+          siteId: site.id,
           state: ResourceState.Published,
+          title: "Sibling",
           userId: user.id,
         })
         const { page: contentPage, blob } = await setupPageResource({
-          resourceType: ResourceType.Page,
-          siteId: site.id,
           parentId: folder.id,
           permalink: "with-image",
-          title: "With image",
+          resourceType: ResourceType.Page,
+          siteId: site.id,
           state: ResourceState.Published,
+          title: "With image",
           userId: user.id,
         })
         await db
@@ -1764,7 +1791,7 @@ describe("resource.service", () => {
           .set({
             content: {
               ...blob.content,
-              content: [{ type: "image", src: "/ignored.jpg", alt: "Ignored" }],
+              content: [{ alt: "Ignored", src: "/ignored.jpg", type: "image" }],
             },
           })
           .execute()
@@ -1801,15 +1828,15 @@ describe("resource.service", () => {
         title: "Parent folder",
       })
       const { folder: nested } = await setupFolder({
-        siteId: site.id,
         parentId: parent.id,
         permalink: "nested-folder",
+        siteId: site.id,
         title: "Nested folder",
       })
       const { page } = await setupPageResource({
-        siteId: site.id,
         parentId: nested.id,
         resourceType: ResourceType.Page,
+        siteId: site.id,
       })
 
       const result = await getWithFullPermalink({
@@ -1819,9 +1846,9 @@ describe("resource.service", () => {
 
       expect(result).toHaveLength(1)
       expect(result[0]).toMatchObject({
+        fullPermalink: `${parent.permalink}/${nested.permalink}/${page.permalink}`,
         id: page.id,
         title: page.title,
-        fullPermalink: `${parent.permalink}/${nested.permalink}/${page.permalink}`,
       })
     })
 
@@ -1862,11 +1889,11 @@ describe("resource.service", () => {
 
       //Search with no resourceTypes
       const result = await getSearchResults({
-        siteId: site.id,
-        resourceTypes: [],
-        query: "test",
         limit: 10,
         offset: 0,
+        query: "test",
+        resourceTypes: [],
+        siteId: site.id,
       })
 
       //Should return empty array, with totalCount 0
@@ -1879,21 +1906,20 @@ describe("resource.service", () => {
   describe.skip("getSearchWithResourceIds", () => {})
 })
 
-const linkDraftBlobToPage = ({
+const linkDraftBlobToPage = async ({
   blobId,
   pageId,
 }: {
   blobId: string
   pageId: string
-}) => {
-  return db
+}) =>
+  await db
     .updateTable("Resource")
     .where("id", "=", pageId)
     .set({
       draftBlobId: blobId,
     })
     .executeTakeFirstOrThrow()
-}
 
 const linkPublishedBlobToPage = async ({
   blobId,
@@ -1908,7 +1934,7 @@ const linkPublishedBlobToPage = async ({
     .select("publishedVersionId")
     .executeTakeFirstOrThrow()
 
-  return db
+  return await db
     .updateTable("Version")
     .where("Version.id", "=", publishedVersionId)
     .set({

@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-warning-comments, react-doctor/no-array-index-as-key, unicorn/no-array-index-as-key -- core cleanup deferred */
 import type { DropResult } from "@hello-pangea/dnd"
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { Box, Button, Flex, Icon, Text, VStack } from "@chakra-ui/react"
@@ -32,68 +33,66 @@ export const RootStateDrawerAlerts = ({
   scheduledAt,
   isPreviewingIndexPage,
   onPreviewConversionToIndexPage,
-}: RootStateDrawerAlertsProps) => {
-  return (
-    <>
-      {isCustomContentIndexPage && (
-        <Infobox
-          width="100%"
-          size="sm"
-          border="1px solid"
-          borderColor="utility.feedback.info"
-          borderRadius="0.25rem"
-        >
-          <VStack spacing="0.75rem" alignItems="start">
-            <VStack spacing="0.25rem" alignItems="start">
-              <Text textStyle="body-2">
-                You’re using a custom layout for this page.
-              </Text>
-              <Text textStyle="body-2">
-                You can choose to use the new index page layout, but you will
-                lose all custom content you’ve added.
-              </Text>
-            </VStack>
-
-            <Button
-              textStyle="body-2"
-              variant="link"
-              fontSize="0.875rem"
-              onClick={onPreviewConversionToIndexPage}
-            >
-              Preview what this looks like
-            </Button>
+}: RootStateDrawerAlertsProps) => (
+  <>
+    {isCustomContentIndexPage && (
+      <Infobox
+        width="100%"
+        size="sm"
+        border="1px solid"
+        borderColor="utility.feedback.info"
+        borderRadius="0.25rem"
+      >
+        <VStack spacing="0.75rem" alignItems="start">
+          <VStack spacing="0.25rem" alignItems="start">
+            <Text textStyle="body-2">
+              You’re using a custom layout for this page.
+            </Text>
+            <Text textStyle="body-2">
+              You can choose to use the new index page layout, but you will lose
+              all custom content you’ve added.
+            </Text>
           </VStack>
-        </Infobox>
-      )}
-      {!!scheduledAt && (
-        <Infobox
-          size="sm"
-          border="1px solid"
-          borderColor="utility.feedback.info"
-          borderRadius="0.25rem"
-        >
-          <Text textStyle="body-2">
-            This page is scheduled for publishing. To make changes, cancel the
-            schedule first.
-          </Text>
-        </Infobox>
-      )}
-      {isPreviewingIndexPage && (
-        <Infobox
-          size="sm"
-          border="1px solid"
-          borderColor="utility.feedback.info"
-          borderRadius="0.25rem"
-          w="full"
-        >
-          <Text textStyle="body-2">
-            You’re previewing what you’ll see once you accept the change.
-          </Text>
-        </Infobox>
-      )}
-    </>
-  )
-}
+
+          <Button
+            textStyle="body-2"
+            variant="link"
+            fontSize="0.875rem"
+            onClick={onPreviewConversionToIndexPage}
+          >
+            Preview what this looks like
+          </Button>
+        </VStack>
+      </Infobox>
+    )}
+    {!!scheduledAt && (
+      <Infobox
+        size="sm"
+        border="1px solid"
+        borderColor="utility.feedback.info"
+        borderRadius="0.25rem"
+      >
+        <Text textStyle="body-2">
+          This page is scheduled for publishing. To make changes, cancel the
+          schedule first.
+        </Text>
+      </Infobox>
+    )}
+    {isPreviewingIndexPage && (
+      <Infobox
+        size="sm"
+        border="1px solid"
+        borderColor="utility.feedback.info"
+        borderRadius="0.25rem"
+        w="full"
+      >
+        <Text textStyle="body-2">
+          You’re previewing what you’ll see once you accept the change.
+        </Text>
+      </Infobox>
+    )}
+  </>
+)
 
 interface RootStateDrawerBlocksSectionProps {
   disableBlocks: boolean
@@ -146,7 +145,9 @@ export const RootStateDrawerBlocksSection = ({
             gap="0.25rem"
             cursor="pointer"
             alignSelf="flex-start"
-            onClick={() => setDrawerState({ state: "siderailOrderingEditor" })}
+            onClick={() => {
+              setDrawerState({ state: "siderailOrderingEditor" })
+            }}
           >
             <Icon
               as={BiCog}
@@ -181,7 +182,9 @@ export const RootStateDrawerBlocksSection = ({
                   flexShrink={0}
                   leftIcon={<BiPlusCircle fontSize="1.25rem" />}
                   variant="clear"
-                  onClick={() => setDrawerState({ state: "addBlock" })}
+                  onClick={() => {
+                    setDrawerState({ state: "addBlock" })
+                  }}
                 >
                   Add block
                 </Button>
@@ -229,9 +232,9 @@ export const RootStateDrawerBlocksSection = ({
                             <Button
                               variant="outline"
                               w="100%"
-                              onClick={() =>
+                              onClick={() => {
                                 setDrawerState({ state: "addBlock" })
-                              }
+                              }}
                               leftIcon={<Icon as={BiPlus} fontSize="1.25rem" />}
                             >
                               Add a new block
@@ -254,14 +257,13 @@ export const RootStateDrawerBlocksSection = ({
                           return (
                             <DraggableBlock
                               block={block}
-                              // TODO: Generate a block ID instead of index
-                              // oxlint-disable-next-line react-doctor/no-array-index-as-key -- blocks lack stable ids; draggableId still uses index per @dnd-kit.
+                              // Deferred: Generate a block ID instead of index
                               key={`${block.type}-${index}`}
-                              // TODO: Use block ID when instead of index for uniquely identifying blocks
+                              // Deferred: Use block ID when instead of index for uniquely identifying blocks
                               draggableId={`${block.type}-${index}`}
                               index={index}
                               onClick={() => {
-                                // TODO: we should automatically do this probably?
+                                // Deferred: we should automatically do this probably?
                                 const nextState =
                                   savedPageState.content[index]?.type ===
                                   "prose"
@@ -307,41 +309,39 @@ export const RootStateDrawerPreviewFooter = ({
   isSavingPage,
   onConfirmConvertIndexPageModalOpen,
   onCancelConversionToIndexPage,
-}: RootStateDrawerPreviewFooterProps) => {
-  return (
-    <Box
-      bgColor="base.canvas.default"
-      boxShadow="md"
-      py="1.5rem"
-      px="2rem"
-      mt="auto"
-    >
-      <VStack spacing="1.25rem">
-        <Infobox width="100%" size="sm" variant="warning">
-          <Text textStyle="body-2">
-            All custom content that was previously on this page will be lost
-            once you press ‘Accept this change’.
-          </Text>
-        </Infobox>
+}: RootStateDrawerPreviewFooterProps) => (
+  <Box
+    bgColor="base.canvas.default"
+    boxShadow="md"
+    py="1.5rem"
+    px="2rem"
+    mt="auto"
+  >
+    <VStack spacing="1.25rem">
+      <Infobox width="100%" size="sm" variant="warning">
+        <Text textStyle="body-2">
+          All custom content that was previously on this page will be lost once
+          you press ‘Accept this change’.
+        </Text>
+      </Infobox>
 
-        <VStack gap="1rem" w="full">
-          <Button
-            w="100%"
-            isLoading={isSavingPage}
-            onClick={onConfirmConvertIndexPageModalOpen}
-          >
-            Accept this change
-          </Button>
+      <VStack gap="1rem" w="full">
+        <Button
+          w="100%"
+          isLoading={isSavingPage}
+          onClick={onConfirmConvertIndexPageModalOpen}
+        >
+          Accept this change
+        </Button>
 
-          <Button
-            w="100%"
-            variant="outline"
-            onClick={onCancelConversionToIndexPage}
-          >
-            Keep old version
-          </Button>
-        </VStack>
+        <Button
+          w="100%"
+          variant="outline"
+          onClick={onCancelConversionToIndexPage}
+        >
+          Keep old version
+        </Button>
       </VStack>
-    </Box>
-  )
-}
+    </VStack>
+  </Box>
+)

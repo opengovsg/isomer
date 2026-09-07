@@ -1,3 +1,5 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
+/* oxlint-disable unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
@@ -21,20 +23,18 @@ const JsonFormsLinkControl = ({
   path,
   required,
   errors,
-}: ControlProps) => {
-  return (
-    <BaseLinkControl
-      // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
-      data={data as string}
-      label={label}
-      required={required}
-      handleChange={handleChange}
-      path={path}
-      linkTypes={LINK_TYPES_MAPPING}
-      description="Link a page, file, external URL, or an email address"
-      errors={errors}
-    />
-  )
-}
+}: ControlProps) => (
+  <BaseLinkControl
+    // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
+    data={data as string}
+    label={label}
+    required={required}
+    handleChange={handleChange}
+    path={path}
+    linkTypes={LINK_TYPES_MAPPING}
+    description="Link a page, file, external URL, or an email address"
+    errors={errors}
+  />
+)
 
 export default withJsonFormsControlProps(JsonFormsLinkControl)

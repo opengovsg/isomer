@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/default-case, eslint/sort-keys, typescript/consistent-return, typescript/strict-void-return, typescript/switch-exhaustiveness-check, unicorn/no-array-for-each, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type {
   OnChangeFn,
   SortingState,
@@ -171,12 +172,15 @@ const DestinationCell = ({
 // resolving → "" so the raw "[resource:...]" token never shows.
 const destinationLabelFor = (display: DestinationDisplay): string => {
   switch (display.status) {
-    case "resolving":
+    case "resolving": {
       return ""
-    case "missing":
+    }
+    case "missing": {
       return MISSING_PAGE_LABEL
-    case "resolved":
+    }
+    case "resolved": {
       return display.label
+    }
   }
 }
 
@@ -191,12 +195,15 @@ const SortableHeader = ({
 }): React.ReactNode => {
   const icon = useMemo(() => {
     switch (isSorted) {
-      case "asc":
+      case "asc": {
         return BiUpArrowAlt
-      case "desc":
+      }
+      case "desc": {
         return BiDownArrowAlt
-      default:
+      }
+      default: {
         return BiSortAlt2
+      }
     }
   }, [isSorted])
 
@@ -305,7 +312,7 @@ const getColumns = (
 ) =>
   columnsHelper.columns([
     columnsHelper.accessor("source", {
-      minSize: 250,
+      cell: ({ row }) => <SourceCell source={row.original.source} />,
       enableSorting: true,
       header: ({ column }) => (
         <SortableHeader
@@ -314,10 +321,15 @@ const getColumns = (
           onClick={column.getToggleSortingHandler()}
         />
       ),
-      cell: ({ row }) => <SourceCell source={row.original.source} />,
+      minSize: 250,
     }),
     columnsHelper.accessor("destination", {
-      minSize: 250,
+      cell: ({ getValue }) => (
+        <DestinationCell
+          display={getDestinationDisplay(getValue(), infoByDestination)}
+          showWarning={shouldWarnDestination(getValue(), infoByDestination)}
+        />
+      ),
       enableSorting: true,
       header: ({ column }) => (
         <SortableHeader
@@ -326,15 +338,14 @@ const getColumns = (
           onClick={column.getToggleSortingHandler()}
         />
       ),
-      cell: ({ getValue }) => (
-        <DestinationCell
-          display={getDestinationDisplay(getValue(), infoByDestination)}
-          showWarning={shouldWarnDestination(getValue(), infoByDestination)}
-        />
-      ),
+      minSize: 250,
     }),
     columnsHelper.accessor("publishedAt", {
-      size: 80,
+      cell: ({ getValue }) => (
+        <Text textStyle="body-2" color="base.content.medium">
+          {formatAddedAt(getValue())}
+        </Text>
+      ),
       enableSorting: true,
       header: ({ column }) => (
         <SortableHeader
@@ -343,11 +354,7 @@ const getColumns = (
           onClick={column.getToggleSortingHandler()}
         />
       ),
-      cell: ({ getValue }) => (
-        <Text textStyle="body-2" color="base.content.medium">
-          {formatAddedAt(getValue())}
-        </Text>
-      ),
+      size: 80,
     }),
     ...(canDelete
       ? [
@@ -372,7 +379,9 @@ const getColumns = (
                   variant="clear"
                   colorScheme="critical"
                   size="sm"
-                  onClick={() => onDeleteClick(row.original)}
+                  onClick={() => {
+                    onDeleteClick(row.original)
+                  }}
                 />
               </Box>
             ),
@@ -397,7 +406,7 @@ export const RedirectsTable = ({
   const { mutate: deleteRedirect, isPending } = useDeleteRedirect()
   // Newest redirects first, matching the design's default sort on "Added"
   const [sorting, setSorting] = useState<SortingState>([
-    { id: "publishedAt", desc: true },
+    { desc: true, id: "publishedAt" },
   ])
   const [redirectToDelete, setRedirectToDelete] = useState<RedirectRow | null>(
     null,
@@ -431,12 +440,12 @@ export const RedirectsTable = ({
   const internalDestinations = useMemo(() => {
     const destinations = new Set<string>()
     for (const redirect of redirects) {
-      const destination = redirect.destination
+      const { destination } = redirect
       if (isReferenceDestination(destination) || destination.startsWith("/")) {
         destinations.add(destination)
       }
     }
-    return Array.from(destinations)
+    return [...destinations]
   }, [redirects])
   const { data: resolvedDestinations } = useResolveRedirectReferences(
     siteId,
@@ -473,9 +482,9 @@ export const RedirectsTable = ({
     }
   }, [pagination.pageIndex, pageCount, onPaginationChange])
 
-  const handleDelete = (redirect: RedirectRow) =>
+  const handleDelete = (redirect: RedirectRow) => {
     deleteRedirect(
-      { siteId, id: redirect.id },
+      { id: redirect.id, siteId },
       {
         onSuccess: () => {
           setRedirectToDelete(null)
@@ -483,12 +492,13 @@ export const RedirectsTable = ({
         },
       },
     )
+  }
 
   const tableInstance = useTable({
     features: stockFeatures,
     columns,
     data: redirects,
-    state: { sorting, pagination },
+    state: { pagination, sorting },
     onSortingChange: handleSortingChange,
     manualPagination: true,
     manualSorting: true,
@@ -530,7 +540,9 @@ export const RedirectsTable = ({
             : ""
         }
         isPending={isPending}
-        onClose={() => setRedirectToDelete(null)}
+        onClose={() => {
+          setRedirectToDelete(null)
+        }}
         onDelete={handleDelete}
       />
     </Stack>

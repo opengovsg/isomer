@@ -14,6 +14,12 @@ import {
   dropTargetForElements,
 } from "@atlaskit/pragmatic-drag-and-drop/element/adapter"
 import { useEffect, useRef, useState } from "react"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { getNavbarItemPath } from "./utils"
 
@@ -38,7 +44,11 @@ export const useNavbarItemSubItemDrag = ({
     const itemElement = itemRef.current
     const dragHandleElement = itemDefaultDragHandleRef.current
 
-    if (!isSubItem || !itemElement || !dragHandleElement) {
+    if (
+      !isNullableBooleanTrue(isSubItem) ||
+      !itemElement ||
+      !dragHandleElement
+    ) {
       return
     }
 
@@ -50,6 +60,7 @@ export const useNavbarItemSubItemDrag = ({
       const isDraggedItemAChild =
         parentIndex !== undefined &&
         // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
+        // oxlint-disable-next-line unicorn/no-unsafe-type-assertion -- core cleanup deferred
         (args.source.data.navbarId as string).startsWith(
           getNavbarItemPath(parentIndex),
         )
@@ -61,14 +72,15 @@ export const useNavbarItemSubItemDrag = ({
       }
     }
 
+    // oxlint-disable-next-line typescript/consistent-return -- core cleanup deferred
     return combine(
       draggable({
-        element: itemElement,
         dragHandle: dragHandleElement,
+        element: itemElement,
         getInitialData: () => ({
-          type: "navbar-item",
-          navbarId: itemElement.dataset.id,
           dropTargetId: getNavbarItemPath(index, parentIndex),
+          navbarId: itemElement.dataset.id,
+          type: "navbar-item",
         }),
         onDragStart: () => {
           itemElement.style.opacity = "0.5"
@@ -88,31 +100,37 @@ export const useNavbarItemSubItemDrag = ({
         element: itemElement,
         getData: ({ input, element }) =>
           attachClosestEdge(
+            // oxlint-disable-next-line eslint/sort-keys -- core cleanup deferred
             {
               type: "navbar-item",
               // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
+              // oxlint-disable-next-line unicorn/no-unsafe-type-assertion -- core cleanup deferred
               navbarId: (element as HTMLDivElement).dataset.id,
               dropTargetId: getNavbarItemPath(index, parentIndex),
             },
             {
-              input,
-              element,
               allowedEdges: ["top", "bottom"],
+              element,
+              input,
             },
           ),
         getIsSticky: () => true,
-        onDragEnter: handleDrag,
         onDrag: handleDrag,
-        onDragLeave: () => setNavbarItemClosestEdge(null),
-        onDrop: () => setNavbarItemClosestEdge(null),
+        onDragEnter: handleDrag,
+        onDragLeave: () => {
+          setNavbarItemClosestEdge(null)
+        },
+        onDrop: () => {
+          setNavbarItemClosestEdge(null)
+        },
       }),
     )
   }, [index, isSubItem, parentIndex])
 
   return {
-    itemRef,
-    itemDefaultDragHandleRef,
     isSubItemDragging,
+    itemDefaultDragHandleRef,
+    itemRef,
     navbarItemClosestEdge,
   }
 }

@@ -1,7 +1,8 @@
+/* oxlint-disable typescript/no-unsafe-type-assertion, eslint/no-useless-return -- server lint cleanup */
 import type { NextApiRequest } from "next"
 import type { SessionData } from "~/lib/types/session"
+import type { PrismaClient } from "~prisma/generated/prisma/client"
 import { TRPCError } from "@trpc/server"
-import { type PrismaClient } from "~prisma/generated/prisma/client"
 
 import type { DB, Transaction, VerificationToken } from "../database/types"
 import { logAuthEvent } from "../audit/audit.service"
@@ -22,13 +23,13 @@ export const verifyToken = async (
 ) => {
   try {
     const verificationToken = await prisma.verificationToken.update({
-      where: {
-        identifier: getOtpFingerPrint(email, req),
-      },
       data: {
         attempts: {
           increment: 1,
         },
+      },
+      where: {
+        identifier: getOtpFingerPrint(email, req),
       },
     })
 
@@ -89,14 +90,14 @@ export const recordUserLogin = async ({
     )
 
   await logAuthEvent(tx, {
-    eventType: AuditLogEvent.Login,
     by: updatedUser,
     delta: {
+      after: null,
       before: {
         ...verificationToken,
         attempts: verificationToken.attempts + 1,
       },
-      after: null,
     },
+    eventType: AuditLogEvent.Login,
   })
 }

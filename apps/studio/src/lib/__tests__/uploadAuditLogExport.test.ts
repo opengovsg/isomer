@@ -19,10 +19,10 @@ beforeEach(() => {
   setStudioAssetsBucketNameForTests("audit-export-bucket")
   setUploadClassForTests(
     // @ts-expect-error test stub implements only the Upload constructor surface used by uploadAuditLogExport
-    vi.fn(function (options: ConstructorParameters<typeof UploadType>[0]) {
+    function MockUpload(options: ConstructorParameters<typeof UploadType>[0]) {
       uploadCtorMock(options)
       return { done: doneMock, on: vi.fn() }
-    }),
+    },
   )
   vi.clearAllMocks()
   doneMock.mockResolvedValue({})
@@ -37,8 +37,8 @@ describe("uploadAuditLogExport", () => {
   it("streams the CSV to the configured bucket with text/csv and attachment disposition", async () => {
     // Act
     await uploadAuditLogExport({
-      key: "site-1/2026-06/access.csv",
       body: "a,b,c\n1,2,3",
+      key: "site-1/2026-06/access.csv",
     })
 
     // Assert: one Upload, awaited to completion, with the expected S3 params
@@ -46,6 +46,7 @@ describe("uploadAuditLogExport", () => {
     expect(doneMock).toHaveBeenCalledTimes(1)
 
     // SAFETY: uploadCtorMock is wired to the Upload constructor under test
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
     const options = uploadCtorMock.mock.calls[0]?.[0] as ConstructorParameters<
       typeof UploadType
     >[0]
@@ -65,7 +66,7 @@ describe("uploadAuditLogExport", () => {
 
     // Act + Assert: fails loudly before any upload is even constructed
     await expect(
-      uploadAuditLogExport({ key: "site-1/2026-06/access.csv", body: "x" }),
+      uploadAuditLogExport({ body: "x", key: "site-1/2026-06/access.csv" }),
     ).rejects.toThrow("S3_STUDIO_ASSETS_BUCKET_NAME is not configured")
     expect(uploadCtorMock).not.toHaveBeenCalled()
     expect(doneMock).not.toHaveBeenCalled()

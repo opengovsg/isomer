@@ -1,3 +1,4 @@
+/* oxlint-disable import/no-named-as-default -- core cleanup deferred */
 import type { ControlProps } from "@jsonforms/core"
 import type { Extensions, JSONContent } from "@tiptap/react"
 import CharacterCount from "@tiptap/extension-character-count"
@@ -27,6 +28,7 @@ const useBaseEditor = ({
   handleChange,
   extensions,
 }: BaseEditorProps & { extensions: Extensions }) =>
+  // oxlint-disable-next-line eslint/sort-keys -- core cleanup deferred
   useEditor({
     immediatelyRender: false,
     shouldRerenderOnTransaction: true,

@@ -1,10 +1,11 @@
+/* oxlint-disable unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { DropResult } from "@hello-pangea/dnd"
 import type { IsomerComponent } from "@opengovsg/isomer-components"
 import { Box, Flex, Icon, Skeleton, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import { Button, useToast } from "@opengovsg/design-system-react"
 import { isEqual } from "lodash-es"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
 import { useCallback, useMemo } from "react"
 import { BiInfoCircle } from "react-icons/bi"
 import { UsageTooltip } from "~/components/PageEditor/UsageTooltip"
@@ -14,6 +15,12 @@ import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { getIcon } from "~/utils/resources"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { pageSchema } from "../../schema"
@@ -34,40 +41,38 @@ interface DraggablePageItemProps {
   index: number
 }
 
-const DraggablePageItem = ({ page, index }: DraggablePageItemProps) => {
-  return (
-    <Draggable
-      draggableId={page.id}
-      index={index}
-      disableInteractiveElementBlocking
-    >
-      {(provided, snapshot) => {
-        const isDragging = snapshot.isDragging || snapshot.isDropAnimating
-        return (
-          <Box
-            ref={provided.innerRef}
-            {...provided.draggableProps}
-            w="100%"
-            position="relative"
-            role="group"
-          >
-            <BaseBlock
-              icon={getIcon(page.type)}
-              label={page.title}
-              description={page.permalink}
-              dragHandle={
-                <BaseBlockDragHandle
-                  isDragging={isDragging}
-                  {...provided.dragHandleProps}
-                />
-              }
-            />
-          </Box>
-        )
-      }}
-    </Draggable>
-  )
-}
+const DraggablePageItem = ({ page, index }: DraggablePageItemProps) => (
+  <Draggable
+    draggableId={page.id}
+    index={index}
+    disableInteractiveElementBlocking
+  >
+    {(provided, snapshot) => {
+      const isDragging = snapshot.isDragging || snapshot.isDropAnimating
+      return (
+        <Box
+          ref={provided.innerRef}
+          {...provided.draggableProps}
+          w="100%"
+          position="relative"
+          role="group"
+        >
+          <BaseBlock
+            icon={getIcon(page.type)}
+            label={page.title}
+            description={page.permalink}
+            dragHandle={
+              <BaseBlockDragHandle
+                isDragging={isDragging}
+                {...provided.dragHandleProps}
+              />
+            }
+          />
+        </Box>
+      )
+    }}
+  </Draggable>
+)
 
 interface SiderailOrderingContentProps {
   ordering: string[]
@@ -81,8 +86,8 @@ const SiderailOrderingContent = ({
   const { pageId, siteId } = useQueryParse(pageSchema)
 
   const [{ childPages }] = trpc.folder.listChildPages.useSuspenseQuery({
-    siteId: String(siteId),
     indexPageId: String(pageId),
+    siteId: String(siteId),
   })
 
   const mappings = useMemo(
@@ -90,7 +95,7 @@ const SiderailOrderingContent = ({
       new Map(
         childPages.map(({ title, id, type, permalink }) => [
           id,
-          { type, title, permalink },
+          { permalink, title, type },
         ]),
       ),
     [childPages],
@@ -113,8 +118,8 @@ const SiderailOrderingContent = ({
 
         return {
           id: resourceId,
-          title: resource?.title ?? "Unknown page",
           permalink: `/${resource?.permalink ?? ""}`,
+          title: resource?.title ?? "Unknown page",
           type: resource?.type ?? ResourceType.Page,
         }
       }),
@@ -123,19 +128,26 @@ const SiderailOrderingContent = ({
 
   const handleDragEnd = useCallback(
     ({ source, destination }: DropResult) => {
-      if (!destination) return
+      if (!destination) {
+        return
+      }
 
       const from = source.index
       const to = destination.index
 
-      if (from === to) return
-      if (from >= pages.length || to >= pages.length || from < 0 || to < 0)
+      if (from === to) {
         return
+      }
+      if (from >= pages.length || to >= pages.length || from < 0 || to < 0) {
+        return
+      }
 
-      const updatedOrdering = Array.from(mergedOrdering)
+      const updatedOrdering = [...mergedOrdering]
       const [movedItem] = updatedOrdering.splice(from, 1)
 
-      if (!movedItem) return
+      if (!hasNonEmptyString(movedItem)) {
+        return
+      }
 
       updatedOrdering.splice(to, 0, movedItem)
       onOrderingChange(updatedOrdering)
@@ -186,21 +198,21 @@ const SiderailOrderingEditorStateDrawer = (): React.ReactNode => {
   const utils = trpc.useUtils()
 
   const { mutate, isPending } = trpc.page.updatePageBlob.useMutation({
+    onError: (error) => {
+      toast({
+        description: error.message,
+        status: "error",
+        title: "Failed to save changes",
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    },
     onSuccess: async () => {
-      posthog.capture("page_changes_saved", { site_id: siteId })
+      posthogJs.capture("page_changes_saved", { site_id: siteId })
       await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
       await utils.page.readPage.invalidate({ pageId, siteId })
       toast({
         status: "success",
         title: CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
-        ...BRIEF_TOAST_SETTINGS,
-      })
-    },
-    onError: (error) => {
-      toast({
-        status: "error",
-        title: "Failed to save changes",
-        description: error.message,
         ...BRIEF_TOAST_SETTINGS,
       })
     },
@@ -215,21 +227,25 @@ const SiderailOrderingEditorStateDrawer = (): React.ReactNode => {
   )
 
   const childrenPagesBlock = useMemo(() => {
-    if (childrenPagesBlockIndex === -1) return null
+    if (childrenPagesBlockIndex === -1) {
+      return null
+    }
     // SAFETY: childrenPagesBlockIndex points at a childrenpages block in content
-    return previewPageState.content[childrenPagesBlockIndex] as
-      | (IsomerComponent & { type: "childrenpages" })
-      | undefined
+    return previewPageState.content[childrenPagesBlockIndex]
   }, [previewPageState.content, childrenPagesBlockIndex])
 
-  const currentOrdering = useMemo(
-    () => childrenPagesBlock?.childrenPagesOrdering ?? [],
-    [childrenPagesBlock],
-  )
+  const currentOrdering = useMemo(() => {
+    if (childrenPagesBlock && childrenPagesBlock.type === "childrenpages") {
+      return childrenPagesBlock.childrenPagesOrdering ?? []
+    }
+    return []
+  }, [childrenPagesBlock])
 
   const handleOrderingChange = useCallback(
     (newOrdering: string[]) => {
-      if (childrenPagesBlockIndex === -1) return
+      if (childrenPagesBlockIndex === -1) {
+        return
+      }
 
       const updatedContent = [...previewPageState.content]
       const updatedBlock = {
@@ -250,9 +266,9 @@ const SiderailOrderingEditorStateDrawer = (): React.ReactNode => {
   const handleSaveChanges = useCallback(() => {
     mutate(
       {
+        content: JSON.stringify(previewPageState),
         pageId,
         siteId,
-        content: JSON.stringify(previewPageState),
       },
       {
         onSuccess: () => {

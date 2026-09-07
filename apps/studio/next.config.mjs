@@ -1,13 +1,19 @@
+/** @param {string | null | undefined} value - String to test for non-empty content. */
+const hasNonEmptyString = (value) =>
+  value !== undefined && value !== null && value !== ""
+
 /**
  * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially useful
  * for Docker builds.
  */
 const { env } = await import("./src/env.mjs")
 
+const s3AssetsDomain = env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME
+
 // NOTE: Keep the `unsafe-eval` for `script-src` as the removal
 // led to nextjs crashing on start
 
-// TODO: Stricten the CSP for images
+// Deferred: Stricten the CSP for images
 // Intercom CSP: https://www.intercom.com/help/en/articles/3894-using-intercom-with-content-security-policy
 const ContentSecurityPolicy = `
   default-src 'none';
@@ -86,12 +92,12 @@ const ContentSecurityPolicy = `
     https://*.browser-intake-datadoghq.com
     https://vitals.vercel-insights.com
     https://*.amazonaws.com
-    ${env.R2_ACCOUNT_ID ? `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com` : ""}
+    ${hasNonEmptyString(env.R2_ACCOUNT_ID) ? `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com` : ""}
     https://*.wogaa.sg
     https://placehold.co
     https://cdn.growthbook.io
     ${
-      !!env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME
+      hasNonEmptyString(env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME)
         ? `https://${env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}`
         : "https://*.by.gov.sg"
     }
@@ -141,7 +147,7 @@ const ContentSecurityPolicy = `
 `
 
 /**
- * @link https://nextjs.org/docs/api-reference/next.config.js/introduction
+ * @see https://nextjs.org/docs/api-reference/next.config.js/introduction
  */
 /** @type {import("next").NextConfig} */
 const config = {
@@ -170,23 +176,22 @@ const config = {
     "@opengovsg/validators",
   ],
   images: {
-    remotePatterns: env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME
+    remotePatterns: hasNonEmptyString(s3AssetsDomain)
       ? [
           {
-            protocol: /** @type {"https"} */ ("https"),
-            hostname: env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME,
+            hostname: s3AssetsDomain,
+            protocol: "https",
           },
         ]
       : [],
   },
-  async headers() {
+  headers() {
     return [
       {
-        source: "/(.*)",
         headers: [
           {
             key: "Content-Security-Policy",
-            value: ContentSecurityPolicy.replace(/\s{2,}/g, " ").trim(),
+            value: ContentSecurityPolicy.replaceAll(/\s{2,}/gu, " ").trim(),
           },
           {
             key: "Cross-Origin-Opener-Policy",
@@ -217,6 +222,7 @@ const config = {
             value: "max-age=31536000",
           },
         ],
+        source: "/(.*)",
       },
     ]
   },

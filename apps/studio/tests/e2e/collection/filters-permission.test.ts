@@ -1,5 +1,5 @@
 import { test } from "@playwright/test"
-import crypto from "crypto"
+import crypto from "node:crypto"
 import { db } from "~/server/modules/database/database"
 
 import { storageStateFor, TEST_EMAILS } from "../fixtures/auth"
@@ -12,19 +12,19 @@ import { getSeedSiteId } from "../fixtures/seed"
 
 const siteId = getSeedSiteId()
 
-const dismissWelcomeModal = (email: string) =>
-  db
+const dismissWelcomeModal = async (email: string) =>
+  await db
     .updateTable("User")
     .set({ name: "test-e2e", phone: "82345678" })
     .where("email", "=", email)
     .execute()
 
-const seedCollection = () =>
-  createCollectionWithTagCategories([
+const seedCollection = async () =>
+  await createCollectionWithTagCategories([
     {
       id: crypto.randomUUID(),
-      label: "Topic",
       isRequired: false,
+      label: "Topic",
       options: [{ id: crypto.randomUUID(), label: "Technology" }],
     },
   ])

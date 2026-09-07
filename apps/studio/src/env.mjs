@@ -1,24 +1,29 @@
+/* oxlint-disable typescript/no-unnecessary-condition -- studio lint cleanup */
 import { z } from "zod"
+
+/** @param {string | null | undefined} value - The string value to test for non-emptiness. */
+const hasNonEmptyString = (value) =>
+  value !== undefined && value !== null && value !== ""
 
 const SYSTEM_USER_EMAIL = "system@isomer.gov.sg"
 
 const s3Schema = z.object({
-  NEXT_PUBLIC_S3_REGION: z.string().default("us-east-1"),
-  NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME: z.string(),
   NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME: z.string(),
+  NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME: z.string(),
+  NEXT_PUBLIC_S3_REGION: z.string().default("us-east-1"),
 })
 
 // R2 is the S3-compatible storage backend used when its credentials are
 // present (currently: preview environments); otherwise falls back to AWS S3.
 const r2Schema = z.object({
-  R2_ACCOUNT_ID: z.string().optional(),
   R2_ACCESS_KEY_ID: z.string().optional(),
+  R2_ACCOUNT_ID: z.string().optional(),
   R2_SECRET_ACCESS_KEY: z.string().optional(),
 })
 
 const cronHeartbeatSchema = z.object({
-  SCHEDULED_PUBLISHING_HEARTBEAT_URL: z.url().optional(),
   DEACTIVATE_INACTIVE_USERS_HEARTBEAT_URL: z.url().optional(),
+  SCHEDULED_PUBLISHING_HEARTBEAT_URL: z.url().optional(),
   SCHEDULE_PUSH_DOCUMENT_JOB_HEARTBEAT_URL: z.url().optional(),
 })
 
@@ -52,17 +57,17 @@ const client = z
     NEXT_PUBLIC_POSTHOG_HOST: z.url().optional(),
     NEXT_PUBLIC_POSTHOG_ASSETS_HOST: z.url().optional(),
   })
-  .extend(s3Schema["shape"])
-  .extend(cronHeartbeatSchema["shape"])
+  .extend(s3Schema.shape)
+  .extend(cronHeartbeatSchema.shape)
 
 const singpassSchema = z.object({
   SINGPASS_CLIENT_ID: z.string().min(1),
+  SINGPASS_ENCRYPTION_KEY_ALG: z.string().min(1).default("ECDH-ES+A256KW"),
+  SINGPASS_ENCRYPTION_PRIVATE_KEY: z.string().min(1),
   SINGPASS_ISSUER_ENDPOINT: z.url().min(1),
   SINGPASS_REDIRECT_URI: z.url().optional(),
-  SINGPASS_ENCRYPTION_PRIVATE_KEY: z.string().min(1),
-  SINGPASS_ENCRYPTION_KEY_ALG: z.string().min(1).default("ECDH-ES+A256KW"),
-  SINGPASS_SIGNING_PRIVATE_KEY: z.string().min(1),
   SINGPASS_SIGNING_KEY_ALG: z.string().min(1).default("ES512"),
+  SINGPASS_SIGNING_PRIVATE_KEY: z.string().min(1),
 })
 
 /**
@@ -93,10 +98,10 @@ const server = z
     ALGOLIA_INDEX_NAME: z.string(),
     SYSTEM_USER_EMAIL: z.email().optional().default(SYSTEM_USER_EMAIL),
   })
-  .extend(s3Schema["shape"])
-  .extend(r2Schema["shape"])
-  .extend(singpassSchema["shape"])
-  .extend(client["shape"])
+  .extend(s3Schema.shape)
+  .extend(r2Schema.shape)
+  .extend(singpassSchema.shape)
+  .extend(client.shape)
   .superRefine((data, ctx) => {
     // Which storage backend to use is decided by whether R2 credentials are
     // present, not by NEXT_PUBLIC_APP_ENV — so these must be set together.
@@ -107,7 +112,7 @@ const server = z
     ]
     if (r2Vars.some(Boolean) && !r2Vars.every(Boolean)) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message:
           "R2_ACCOUNT_ID, R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY must be set together",
         path: ["R2_ACCOUNT_ID"],
@@ -117,10 +122,10 @@ const server = z
     // outside preview — a boot-time failure, not an operational assumption.
     if (
       data.NEXT_PUBLIC_APP_ENV !== "preview" &&
-      data.DANGEROUSLY_SET_STATIC_OTP
+      hasNonEmptyString(data.DANGEROUSLY_SET_STATIC_OTP)
     ) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message:
           "DANGEROUSLY_SET_STATIC_OTP may only be set in preview environments",
         path: ["DANGEROUSLY_SET_STATIC_OTP"],
@@ -134,7 +139,7 @@ const server = z
       data.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS
     ) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message:
           "NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS may only be set in preview environments",
         path: ["NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS"],
@@ -199,11 +204,21 @@ const processEnv = {
   // The reusable AWS deploy workflow always forwards these as Docker
   // build-args, so an unset input arrives here as "" rather than absent —
   // normalize to undefined so `.optional()` in the schema still applies.
-  NEXT_PUBLIC_POSTHOG_ASSETS_HOST:
-    process.env.NEXT_PUBLIC_POSTHOG_ASSETS_HOST || undefined,
-  NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST || undefined,
-  NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN:
-    process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN || undefined,
+  NEXT_PUBLIC_POSTHOG_ASSETS_HOST: hasNonEmptyString(
+    process.env.NEXT_PUBLIC_POSTHOG_ASSETS_HOST,
+  )
+    ? process.env.NEXT_PUBLIC_POSTHOG_ASSETS_HOST
+    : undefined,
+  NEXT_PUBLIC_POSTHOG_HOST: hasNonEmptyString(
+    process.env.NEXT_PUBLIC_POSTHOG_HOST,
+  )
+    ? process.env.NEXT_PUBLIC_POSTHOG_HOST
+    : undefined,
+  NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN: hasNonEmptyString(
+    process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN,
+  )
+    ? process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN
+    : undefined,
   NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY:
     process.env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY,
   NEXT_PUBLIC_INTERCOM_APP_ID: process.env.NEXT_PUBLIC_INTERCOM_APP_ID,
@@ -222,21 +237,21 @@ const processEnv = {
 /** @typedef {z.infer<typeof server>} MergedOutput */
 /** @typedef {z.ZodSafeParseResult<MergedOutput>} MergedSafeParseReturn */
 
-// @ts-expect-error Types are wonky from refinement
-let env = /** @type {MergedOutput} */ (process.env)
+const processEnvRef = process.env
+let env = /** @type {MergedOutput} */ (/** @type {unknown} */ (processEnvRef))
 
-if (!!process.env.SKIP_ENV_VALIDATION == false) {
+if (!hasNonEmptyString(process.env.SKIP_ENV_VALIDATION)) {
   const isServer = globalThis.window === undefined
 
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Zod safeParse boundary
   const parsed = /** @type {MergedSafeParseReturn} */ (
-    isServer
-      ? server.safeParse(processEnv) // on server we can validate all env vars
-      : client.safeParse(processEnv) // on client we can only validate the ones that are exposed
+    isServer ? server.safeParse(processEnv) : client.safeParse(processEnv)
   )
 
-  if (parsed.success === false) {
+  if (!parsed.success) {
     console.error(
       "❌ Invalid environment variables:",
+      // oxlint-disable-next-line typescript/no-deprecated -- z.treeifyError migration deferred
       parsed.error.flatten().fieldErrors,
     )
     throw new Error("Invalid environment variables")
@@ -244,27 +259,30 @@ if (!!process.env.SKIP_ENV_VALIDATION == false) {
 
   env = new Proxy(parsed.data, {
     get(target, prop) {
-      if (Object.prototype.toString.call(prop) !== "[object String]")
+      if (Object.prototype.toString.call(prop) !== "[object String]") {
         return undefined
+      }
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Proxy property key
       const key = /** @type {string} */ (prop)
-      // Throw a descriptive error if a server-side env var is accessed on the client
-      // Otherwise it would just be returning `undefined` and be annoying to debug
-      if (!isServer && !key.startsWith("NEXT_PUBLIC_"))
+      if (!isServer && !key.startsWith("NEXT_PUBLIC_")) {
         throw new Error(
           process.env.NODE_ENV === "production"
             ? "❌ Attempted to access a server-side environment variable on the client"
             : `❌ Attempted to access server-side environment variable '${key}' on the client`,
         )
+      }
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Proxy property key
       return target[/** @type {keyof typeof target} */ (key)]
     },
   })
-} else if (process.env.STORYBOOK) {
+} else if (hasNonEmptyString(process.env.STORYBOOK)) {
   const parsed = client
     .partial()
     .safeParse(JSON.parse(process.env.STORYBOOK_ENVIRONMENT ?? "{}"))
-  if (parsed.success === false) {
+  if (!parsed.success) {
     console.error(
       "❌ Invalid environment variables:",
+      // oxlint-disable-next-line typescript/no-deprecated -- z.treeifyError migration deferred
       parsed.error.flatten().fieldErrors,
     )
     throw new Error("Invalid environment variables")

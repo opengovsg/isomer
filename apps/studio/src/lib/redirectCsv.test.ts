@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/prefer-destructuring -- studio lint cleanup */
 import { readFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 
@@ -25,12 +26,12 @@ describe("parseRedirectCsv", () => {
     // Assert
     expect(result.fileError).toBeUndefined()
     expect(result.rows).toEqual([
-      { rowNumber: 2, source: "/old", destination: "/new", malformed: false },
+      { destination: "/new", malformed: false, rowNumber: 2, source: "/old" },
       {
-        rowNumber: 3,
-        source: "/blog",
         destination: "https://example.gov.sg",
         malformed: false,
+        rowNumber: 3,
+        source: "/blog",
       },
     ])
   })
@@ -45,7 +46,7 @@ describe("parseRedirectCsv", () => {
 
     // Assert
     expect(result.rows).toEqual([
-      { rowNumber: 3, source: "/old", destination: "/new", malformed: false },
+      { destination: "/new", malformed: false, rowNumber: 3, source: "/old" },
     ])
   })
 
@@ -58,7 +59,7 @@ describe("parseRedirectCsv", () => {
     const result = parseRedirectCsv(csv)
 
     // Assert
-    expect(result.rows?.[0]).toMatchObject({ source: "/old", malformed: true })
+    expect(result.rows?.[0]).toMatchObject({ malformed: true, source: "/old" })
   })
 
   it("does not flag a well-formed row (or a benign trailing comma) as malformed", () => {
@@ -85,7 +86,7 @@ describe("parseRedirectCsv", () => {
 
     // Assert
     expect(result.rows).toEqual([
-      { rowNumber: 2, source: "/old", destination: "/new", malformed: false },
+      { destination: "/new", malformed: false, rowNumber: 2, source: "/old" },
     ])
   })
 
@@ -149,8 +150,8 @@ describe("buildRedirectErrorsCsv", () => {
   it("lists failed rows first, keeps passing rows marked 'No error', and round-trips", () => {
     // Arrange
     const rows = [
-      { source: "/ok", destination: "/fine", error: null },
-      { source: "/bad", destination: "not a url", error: "Enter a valid URL." },
+      { destination: "/fine", error: null, source: "/ok" },
+      { destination: "not a url", error: "Enter a valid URL.", source: "/bad" },
     ]
 
     // Act
@@ -158,18 +159,18 @@ describe("buildRedirectErrorsCsv", () => {
     const reparsed = parseRedirectCsv(csv)
 
     // Assert: failed row is first, and the Error column is ignored on re-parse.
-    const lines = csv.split(/\r?\n/)
+    const lines = csv.split(/\r?\n/u)
     expect(lines[0]).toContain(BULK_REDIRECT_CSV_ERROR_HEADER)
     expect(lines[1]).toContain("Enter a valid URL.")
     expect(csv).toContain(BULK_REDIRECT_CSV_NO_ERROR)
     expect(reparsed.rows).toEqual([
       {
-        rowNumber: 2,
-        source: "/bad",
         destination: "not a url",
         malformed: false,
+        rowNumber: 2,
+        source: "/bad",
       },
-      { rowNumber: 3, source: "/ok", destination: "/fine", malformed: false },
+      { destination: "/fine", malformed: false, rowNumber: 3, source: "/ok" },
     ])
   })
 })
@@ -182,8 +183,8 @@ describe("redirects template file", () => {
     )
 
     // Act
-    const contents = readFileSync(templatePath, "utf8")
-    const firstLine = contents.replace(/^\uFEFF/, "").split(/\r?\n/)[0]
+    const contents = readFileSync(templatePath, "utf-8")
+    const firstLine = contents.replace(/^\uFEFF/u, "").split(/\r?\n/u)[0]
 
     // Assert
     expect(firstLine).toBe(`${SOURCE_HEADER},${DESTINATION_HEADER}`)

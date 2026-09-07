@@ -1,5 +1,5 @@
-import fs from "fs/promises"
-import path from "path"
+import fs from "node:fs/promises"
+import path from "node:path"
 import { db } from "~/server/modules/database/database"
 import { jsonb } from "~/server/modules/database/utils"
 import { ResourceState, ResourceType } from "~prisma/generated/prisma/client"
@@ -12,8 +12,10 @@ const logger = new FileLogger("./createCollectionFromLocal.log")
 interface CreateCollectionFromLocalInput {
   collectionName: string
   contentDir: string
-  indexPageName: string // should be placed outside the folder e.g. "cost-financing.json"
-  indexPageTitle: string // title of the index page e.g. "Cost financing"
+  indexPageName: string
+  // should be placed outside the folder e.g. "cost-financing.json"
+  indexPageTitle: string
+  // title of the index page e.g. "Cost financing"
   nameOfNewCollectionToCreate: string
   siteId: number
 }
@@ -35,12 +37,12 @@ export const createCollectionFromLocal = async ({
       const collection = await tx
         .insertInto("Resource")
         .values({
-          title: nameOfNewCollectionToCreate,
-          permalink: nameOfNewCollectionToCreate,
-          siteId: siteId,
-          type: ResourceType.Collection,
-          state: ResourceState.Draft,
           createdAt: new Date(),
+          permalink: nameOfNewCollectionToCreate,
+          siteId,
+          state: ResourceState.Draft,
+          title: nameOfNewCollectionToCreate,
+          type: ResourceType.Collection,
           updatedAt: new Date(),
         })
         .returning("id")
@@ -62,14 +64,14 @@ export const createCollectionFromLocal = async ({
       const indexPage = await tx
         .insertInto("Resource")
         .values({
-          title: indexPageTitle,
-          permalink: "_index",
-          siteId: siteId,
-          type: ResourceType.IndexPage,
-          parentId: collectionId,
-          draftBlobId: indexPageBlob.id,
-          state: ResourceState.Draft,
           createdAt: new Date(),
+          draftBlobId: indexPageBlob.id,
+          parentId: collectionId,
+          permalink: "_index",
+          siteId,
+          state: ResourceState.Draft,
+          title: indexPageTitle,
+          type: ResourceType.IndexPage,
           updatedAt: new Date(),
         })
         .returning("id")
@@ -107,8 +109,11 @@ export const createCollectionFromLocal = async ({
 
         const blob = await tx
           .insertInto("Blob")
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
           .values({
+            // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
             // SAFETY: parsedFileContent was validated against collection schema before insert.
+            // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
             content: parsedFileContent as PrismaJson.BlobJsonContent,
             createdAt: new Date(),
             updatedAt: new Date(),
@@ -121,8 +126,10 @@ export const createCollectionFromLocal = async ({
           .values({
             // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             title: parsedFileContent.page.title,
-            permalink: file.replace(/\.json$/, ""), // remove the .json at the back on permalinks
-            siteId: siteId, // Replace with appropriate site ID
+            permalink: file.replace(/\.json$/u, ""),
+            // remove the .json at the back on permalinks
+            siteId,
+            // Replace with appropriate site ID
             type: ResourceType.CollectionPage,
             parentId: collectionId,
             state: "Draft",
@@ -154,14 +161,15 @@ const contentDir = "/Users/XYZ/<your-path>"
 const indexPageName = "cost-financing.json"
 const indexPageTitle = "Cost financing"
 const collectionName = "cost-financing"
-const nameOfNewCollectionToCreate = "cost-financing-new" // will also be the permalink
+const nameOfNewCollectionToCreate = "cost-financing-new"
+// will also be the permalink
 const siteId = 0
 
 await createCollectionFromLocal({
+  collectionName,
   contentDir,
   indexPageName,
   indexPageTitle,
-  collectionName,
   nameOfNewCollectionToCreate,
   siteId,
 })

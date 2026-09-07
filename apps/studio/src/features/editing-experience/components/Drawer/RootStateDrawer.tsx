@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-extra-boolean-cast, eslint/prefer-named-capture-group, unicorn/no-array-reduce -- core cleanup deferred */
 import type { DropResult } from "@hello-pangea/dnd"
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { Flex, Text, useDisclosure, VStack } from "@chakra-ui/react"
@@ -6,7 +7,7 @@ import {
   ISOMER_USABLE_PAGE_LAYOUTS,
   schema,
 } from "@opengovsg/isomer-components"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
 import { useCallback, useState } from "react"
 import { Disable } from "~/components/Disable"
 import { DEFAULT_BLOCKS } from "~/components/PageEditor/constants"
@@ -17,6 +18,12 @@ import { useNewCollectionTagsManagement } from "~/hooks/useNewCollectionTagsMana
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 import { IsomerAdminRole, ResourceType } from "~prisma/generated/generatedEnums"
 
 import { pageSchema } from "../../schema"
@@ -59,9 +66,6 @@ const RootStateDrawer = () => {
   })
   const toast = useToast()
   const { mutate } = trpc.page.reorderBlock.useMutation({
-    onSuccess: async () => {
-      await utils.page.readPage.invalidate({ pageId, siteId })
-    },
     onError: (error, variables) => {
       // NOTE: rollback to last known good state
       // @ts-expect-error Our zod validator runs between frontend and backend
@@ -78,18 +82,21 @@ const RootStateDrawer = () => {
         content: variables.blocks,
       }))
       toast({
-        title: "Failed to update blocks",
         description: error.message,
         status: "error",
+        title: "Failed to update blocks",
         ...BRIEF_TOAST_SETTINGS,
       })
+    },
+    onSuccess: async () => {
+      await utils.page.readPage.invalidate({ pageId, siteId })
     },
   })
 
   const { mutate: savePage, isPending: isSavingPage } =
     trpc.page.updatePageBlob.useMutation({
       onSuccess: async () => {
-        posthog.capture("page_changes_saved", { site_id: siteId })
+        posthogJs.capture("page_changes_saved", { site_id: siteId })
         await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
         await utils.page.readPage.invalidate({ pageId, siteId })
         if (type === ResourceType.CollectionPage) {
@@ -105,19 +112,22 @@ const RootStateDrawer = () => {
 
   const onDragEnd = useCallback(
     (result: DropResult) => {
-      if (!result.destination) return
+      if (!result.destination) {
+        return
+      }
 
       const from = result.source.index
       const to = result.destination.index
       const contentLength = savedPageState.content.length
 
-      if (from >= contentLength || to >= contentLength || from < 0 || to < 0)
+      if (from >= contentLength || to >= contentLength || from < 0 || to < 0) {
         return
+      }
 
       // NOTE: We eagerly update their page state here
       // and if it fails on the backend,
       // we rollback to what we passed them
-      const updatedBlocks = Array.from(savedPageState.content)
+      const updatedBlocks = [...savedPageState.content]
       const [movedBlock] = updatedBlocks.splice(from, 1)
 
       if (!!movedBlock) {
@@ -131,7 +141,7 @@ const RootStateDrawer = () => {
       }
 
       // NOTE: drive an update to the db with the updated index
-      mutate({ pageId, from, to, blocks: savedPageState.content, siteId })
+      mutate({ blocks: savedPageState.content, from, pageId, siteId, to })
     },
     [
       mutate,
@@ -166,9 +176,9 @@ const RootStateDrawer = () => {
   const handleSaveConversionToIndexPage = useCallback(() => {
     savePage(
       {
+        content: JSON.stringify(previewPageState),
         pageId,
         siteId,
-        content: JSON.stringify(previewPageState),
       },
       {
         onSuccess: () => {
@@ -197,12 +207,13 @@ const RootStateDrawer = () => {
     pageLayout !== "collection"
 
   validateFn(savedPageState)
+  // oxlint-disable-next-line eslint/prefer-named-capture-group -- core cleanup deferred
 
-  const contentIndexRegex = /^\/content\/(\d+)/
+  const contentIndexRegex = /^\/content\/(\d+)/u
   const invalidBlockIndexes = new Set(
     (validateFn.errors ?? []).reduce<number[]>((indexes, error) => {
       const match = contentIndexRegex.exec(error.instancePath)?.[1]
-      if (match) {
+      if (hasNonEmptyString(match)) {
         indexes.push(Number(match))
       }
       return indexes
@@ -222,7 +233,9 @@ const RootStateDrawer = () => {
       <VStack gap="1.5rem" p="1.5rem" flex={1}>
         {isUserIsomerAdmin && (
           <ActivateRawJsonEditorMode
-            onActivate={() => setDrawerState({ state: "rawJsonEditor" })}
+            onActivate={() => {
+              setDrawerState({ state: "rawJsonEditor" })
+            }}
           />
         )}
 

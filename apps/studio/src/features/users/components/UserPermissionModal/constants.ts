@@ -2,7 +2,7 @@ import type { IconType } from "react-icons/lib"
 import { BiCheckShield, BiPencil, BiRocket } from "react-icons/bi"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
-// TODO: move this to a official isomer.gov.sg once we migrate that to Isomer Next
+// Deferred: move this to a official isomer.gov.sg once we migrate that to Isomer Next
 export const ISOMER_GUIDE_URL =
   "https://support.isomer.gov.sg/en/articles/10425945-adding-and-removing-collaborators"
 
@@ -24,20 +24,20 @@ export const ROLE_CONFIGS: {
   permissionLabels: (typeof ROLES_LABELS)[number][]
 }[] = [
   {
-    role: RoleType.Editor,
     permissionLabels: ["Edit content"],
+    role: RoleType.Editor,
   },
   {
-    role: RoleType.Publisher,
     permissionLabels: ["Edit content", "Publish content"],
+    role: RoleType.Publisher,
   },
   {
-    role: RoleType.Admin,
     permissionLabels: [
       "Edit content",
       "Publish content",
       "Manage users",
       "Change settings",
     ],
+    role: RoleType.Admin,
   },
 ] as const

@@ -14,31 +14,27 @@ export interface ResourceItemProps {
   isLoading?: boolean
 }
 
-const ResourceItemContainer = (props: ButtonProps) => {
-  return (
-    <Button
-      variant="clear"
-      w="full"
-      justifyContent="flex-start"
-      color="base.content.default"
-      height="fit-content"
-      alignItems="flex-start"
-      gap="0.25rem"
-      {...props}
-    />
-  )
-}
+const ResourceItemContainer = (props: ButtonProps) => (
+  <Button
+    variant="clear"
+    w="full"
+    justifyContent="flex-start"
+    color="base.content.default"
+    height="fit-content"
+    alignItems="flex-start"
+    gap="0.25rem"
+    {...props}
+  />
+)
 
-export const ResourceItemSkeleton = () => {
-  return (
-    <ResourceItemContainer isDisabled>
-      <VStack alignItems="flex-start" textAlign="left" gap="0.25rem">
-        <Skeleton width="12rem" height="1.125rem" variant="pulse" />
-        <Skeleton width="18rem" height="1.125rem" variant="pulse" />
-      </VStack>
-    </ResourceItemContainer>
-  )
-}
+export const ResourceItemSkeleton = () => (
+  <ResourceItemContainer isDisabled>
+    <VStack alignItems="flex-start" textAlign="left" gap="0.25rem">
+      <Skeleton width="12rem" height="1.125rem" variant="pulse" />
+      <Skeleton width="18rem" height="1.125rem" variant="pulse" />
+    </VStack>
+  </ResourceItemContainer>
+)
 
 export const ResourceItem = ({
   item,
@@ -46,31 +42,29 @@ export const ResourceItem = ({
   isHighlighted = false,
   handleOnClick,
   hasAdditionalLeftPadding = false,
-}: ResourceItemProps) => {
-  return (
-    <ResourceItemContainer
-      data-selected={dataAttr(isHighlighted)}
-      _selected={{
-        color: "interaction.main.default",
+}: ResourceItemProps) => (
+  <ResourceItemContainer
+    data-selected={dataAttr(isHighlighted)}
+    _selected={{
+      _hover: {
         bg: "interaction.muted.main.active",
-        _hover: {
-          color: "interaction.main.default",
-          bg: "interaction.muted.main.active",
-        },
-      }}
-      {...(hasAdditionalLeftPadding && { pl: "2.25rem" })}
-      onClick={handleOnClick}
-      leftIcon={<Icon as={getIcon(item.type)} />}
-      isDisabled={isDisabled}
-    >
-      <VStack alignItems="flex-start" textAlign="left" gap="0.25rem">
-        <Text noOfLines={1} textStyle="caption-1">
-          {item.title}
-        </Text>
-        <Text noOfLines={1} textStyle="caption-2">
-          {`/${item.permalink}`}
-        </Text>
-      </VStack>
-    </ResourceItemContainer>
-  )
-}
+        color: "interaction.main.default",
+      },
+      bg: "interaction.muted.main.active",
+      color: "interaction.main.default",
+    }}
+    {...(hasAdditionalLeftPadding && { pl: "2.25rem" })}
+    onClick={handleOnClick}
+    leftIcon={<Icon as={getIcon(item.type)} />}
+    isDisabled={isDisabled}
+  >
+    <VStack alignItems="flex-start" textAlign="left" gap="0.25rem">
+      <Text noOfLines={1} textStyle="caption-1">
+        {item.title}
+      </Text>
+      <Text noOfLines={1} textStyle="caption-2">
+        {`/${item.permalink}`}
+      </Text>
+    </VStack>
+  </ResourceItemContainer>
+)

@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/consistent-function-scoping -- studio lint cleanup */
 // Shared CSV parsing + errors-file generation for the bulk-upload-redirects
 // feature. Isomorphic (papaparse runs in both the browser and Node): the client
 // parses a picked file for instant file-level errors and the preview, and the
@@ -10,8 +11,8 @@ import Papa from "papaparse"
 // labels. The downloadable template and the errors file share these exact
 // strings so a corrected errors file re-uploads without renaming anything.
 export const BULK_REDIRECT_CSV_HEADERS = {
-  source: "When someone visits",
   destination: "Redirect them to",
+  source: "When someone visits",
 } as const
 
 // Appended to the errors file only. Not one of the required columns, so it is
@@ -56,7 +57,7 @@ export const parseRedirectCsv = (csv: string): ParseRedirectCsvResult => {
   // Strip a leading UTF-8 BOM (spreadsheet exports add one) so it doesn't become
   // part of the first header cell. `\uFEFF` rather than a literal BOM so the
   // intent is visible and editors/formatters can't silently drop it.
-  const cleaned = csv.replace(/^\uFEFF/, "")
+  const cleaned = csv.replace(/^\uFEFF/u, "")
   // Catch an empty (or whitespace-only) file up front — papaparse reports it as
   // a parse error rather than empty data, and we want the clearer "empty" copy.
   if (cleaned.trim().length === 0) {
@@ -120,7 +121,7 @@ export const parseRedirectCsv = (csv: string): ParseRedirectCsvResult => {
     destination: string
     malformed: boolean
   }[] = []
-  for (let index = headerIndex + 1; index < data.length; index++) {
+  for (let index = headerIndex + 1; index < data.length; index += 1) {
     const row = data[index]
     if (!row) {
       continue
@@ -130,12 +131,12 @@ export const parseRedirectCsv = (csv: string): ParseRedirectCsvResult => {
       continue
     }
     rows.push({
-      rowNumber,
-      source: (row[sourceIndex] ?? "").trim(),
       destination: (row[destinationIndex] ?? "").trim(),
       malformed:
         row.length > expectedColumns &&
         row.slice(expectedColumns).some((cell) => cell.trim() !== ""),
+      rowNumber,
+      source: (row[sourceIndex] ?? "").trim(),
     })
   }
   if (rows.length === 0) {
@@ -166,15 +167,15 @@ export const buildRedirectErrorsCsv = (
     ...rows.filter((row) => row.error === null),
   ]
   return Papa.unparse({
-    fields: [
-      BULK_REDIRECT_CSV_HEADERS.source,
-      BULK_REDIRECT_CSV_HEADERS.destination,
-      BULK_REDIRECT_CSV_ERROR_HEADER,
-    ],
     data: failedFirst.map((row) => [
       row.source,
       row.destination,
       row.error ?? BULK_REDIRECT_CSV_NO_ERROR,
     ]),
+    fields: [
+      BULK_REDIRECT_CSV_HEADERS.source,
+      BULK_REDIRECT_CSV_HEADERS.destination,
+      BULK_REDIRECT_CSV_ERROR_HEADER,
+    ],
   })
 }

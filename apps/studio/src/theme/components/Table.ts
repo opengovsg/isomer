@@ -11,11 +11,11 @@ const { defineMultiStyleConfig, definePartsStyle } =
 
 const baseStyle = definePartsStyle({
   tr: {
-    pos: "relative",
-    textStyle: "body-2",
     _last: {
       borderBottomWidth: 0,
     },
+    pos: "relative",
+    textStyle: "body-2",
   },
 })
 
@@ -24,14 +24,14 @@ const sizes = {
     container: {
       p: "0.75rem",
     },
-    th: {
-      py: "0.625rem",
-      minH: "1.5rem",
-      ...textStyles["body-2"],
-    },
     td: {
-      py: "0.5rem",
       px: "1rem",
+      py: "0.5rem",
+    },
+    th: {
+      minH: "1.5rem",
+      py: "0.625rem",
+      ...textStyles["body-2"],
     },
   }),
 }
@@ -48,27 +48,25 @@ const getSubtleVariantThStyles = (): SystemStyleObject => {
   }
 }
 
-const variantSubtle = definePartsStyle(() => {
-  return {
-    container: {
-      bg: "white",
-      borderRadius: "8px",
-      border: "1px solid",
-      borderColor: "base.divider.medium",
-    },
-    table: {
-      bg: "white",
-    },
-    thead: {
-      opacity: 1,
-      zIndex: 1,
-    },
-    th: getSubtleVariantThStyles(),
-    td: {
-      color: "base.content.default",
-    },
-  }
-})
+const variantSubtle = definePartsStyle(() => ({
+  container: {
+    bg: "white",
+    border: "1px solid",
+    borderColor: "base.divider.medium",
+    borderRadius: "8px",
+  },
+  table: {
+    bg: "white",
+  },
+  td: {
+    color: "base.content.default",
+  },
+  th: getSubtleVariantThStyles(),
+  thead: {
+    opacity: 1,
+    zIndex: 1,
+  },
+}))
 
 const variants = {
   subtle: variantSubtle,
@@ -76,11 +74,11 @@ const variants = {
 
 export const Table = defineMultiStyleConfig({
   baseStyle,
-  variants,
   defaultProps: {
-    variant: "subtle",
-    size: "md",
     colorScheme: "neutral",
+    size: "md",
+    variant: "subtle",
   },
   sizes,
+  variants,
 })

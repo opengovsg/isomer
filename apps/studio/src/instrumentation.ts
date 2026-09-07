@@ -1,6 +1,6 @@
 import { env } from "~/env.mjs"
 
-export async function register() {
+export const register = async () => {
   // make sure you only run on nodejs runtime or you will have errors with built-in modules not being defined
   // oxlint-disable-next-line node/no-process-env
   if (process.env.NEXT_RUNTIME === "nodejs") {

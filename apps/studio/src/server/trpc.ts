@@ -11,17 +11,18 @@
 import { initTRPC, TRPCError } from "@trpc/server"
 import { timingSafeEqual } from "node:crypto"
 import superjson from "superjson"
-import { ZodError } from "zod"
+import { z, ZodError } from "zod"
 import { APP_VERSION_HEADER_KEY } from "~/constants/version"
 import { env } from "~/env.mjs"
 import { createBaseLogger } from "~/lib/logger"
 import { redactLogInput } from "~/lib/redact-log-input"
+import { hasNonEmptyString, isNullableBooleanTrue } from "~/utils/truthiness"
 
+import type { Context } from "./context"
 import type { RateLimitMetaOptions } from "./modules/rate-limit/types"
-import { type Context } from "./context"
 import { db } from "./modules/database/database"
 import { defaultUserSelect } from "./modules/me/me.select"
-import { checkRateLimit } from "./modules/rate-limit/rate-limit.service"
+import { checkRateLimit } from "./modules/rate-limit/rateLimit.service"
 import { isEmailWhitelisted } from "./modules/whitelist/whitelist.service"
 
 interface Meta {
@@ -33,14 +34,11 @@ const t = initTRPC
   .meta<Meta>()
   .create({
     /**
-     * @see https://trpc.io/docs/v10/data-transformers
-     */
-    transformer: superjson,
-    /**
      * @see https://trpc.io/docs/v10/error-formatting
      */
     errorFormatter(opts) {
-      const procedureError = opts["shape"]
+      // oxlint-disable-next-line anti-slop/no-shape-in-symbol-names -- tRPC error formatter API
+      const { shape: procedureError } = opts
       const { error } = opts
       return {
         ...procedureError,
@@ -48,11 +46,15 @@ const t = initTRPC
           ...procedureError.data,
           zodError:
             error.code === "BAD_REQUEST" && error.cause instanceof ZodError
-              ? error.cause.flatten()
+              ? z.treeifyError(error.cause)
               : null,
         },
       }
     },
+    /**
+     * @see https://trpc.io/docs/v10/data-transformers
+     */
+    transformer: superjson,
   })
 
 // Setting outer context with tRPC will not get us correct path during request batching,
@@ -67,9 +69,11 @@ const loggerMiddleware = t.middleware(
     const unparsedInput: unknown = await getRawInput()
     // SAFETY: procedure inputs are JSON-serializable values at log time.
     const rawInput = redactLogInput(
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion
       unparsedInput as Parameters<typeof redactLogInput>[0],
     )
 
+    // oxlint-disable-next-line node/callback-return
     const result = await next({
       ctx: { logger },
     })
@@ -102,9 +106,14 @@ const loggerWithVersionMiddleware = loggerMiddleware.unstable_pipe(
     const { req, res, logger } = ctx
 
     const serverVersion = env.NEXT_PUBLIC_APP_VERSION
-    const clientVersion = req.headers[APP_VERSION_HEADER_KEY.toLowerCase()]
 
-    if (clientVersion && serverVersion !== clientVersion) {
+    const clientVersionHeader =
+      req.headers[APP_VERSION_HEADER_KEY.toLowerCase()]
+    const clientVersion = Array.isArray(clientVersionHeader)
+      ? undefined
+      : clientVersionHeader
+
+    if (hasNonEmptyString(clientVersion) && serverVersion !== clientVersion) {
       logger.warn(
         {
           clientVersion,
@@ -112,7 +121,7 @@ const loggerWithVersionMiddleware = loggerMiddleware.unstable_pipe(
         },
         "Application version mismatch",
       )
-    } else if (!clientVersion) {
+    } else if (!hasNonEmptyString(clientVersion)) {
       logger.warn(
         {
           serverVersion,
@@ -123,25 +132,32 @@ const loggerWithVersionMiddleware = loggerMiddleware.unstable_pipe(
 
     res.setHeader(APP_VERSION_HEADER_KEY, serverVersion)
 
-    return next()
+    return await next()
   },
 )
 
 const contentTypeHeaderMiddleware = t.middleware(async ({ ctx, next }) => {
-  if (ctx.req.body && ctx.req.headers["content-type"] !== "application/json") {
+  // Only validate Content-Type when a body is present. Next.js can set `req.body`
+  // to "" on GET requests; treating that as a body rejects tRPC queries.
+  if (
+    ctx.req.body !== undefined &&
+    ctx.req.body !== null &&
+    ctx.req.body !== "" &&
+    ctx.req.headers["content-type"] !== "application/json"
+  ) {
     throw new TRPCError({
       code: "BAD_REQUEST",
       message: "Invalid Content-Type",
     })
   }
-  return next()
+  return await next()
 })
 
 const baseMiddleware = t.middleware(async ({ ctx, next }) => {
   if (ctx.session === undefined) {
     throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" })
   }
-  return next({
+  return await next({
     ctx: {
       session: ctx.session,
     },
@@ -172,7 +188,7 @@ const authMiddleware = t.middleware(async ({ next, ctx }) => {
     throw new TRPCError({ code: "UNAUTHORIZED" })
   }
 
-  return next({
+  return await next({
     ctx: {
       user,
     },
@@ -194,6 +210,7 @@ const isValidWebhookApiKey = (
     return false
   }
   // SAFETY: [object String] tag confirms a string primitive.
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
   const key = apiKey as string
   return (
     key.length === expectedApiKey.length &&
@@ -204,7 +221,7 @@ const isValidWebhookApiKey = (
 const webhookMiddleware = t.middleware(async ({ next, ctx }) => {
   const apiKey = ctx.req.headers[WEBHOOK_X_API_KEY_HEADER]
   // Ensure that the API key is set in the env
-  if (!env.STUDIO_SSM_WEBHOOK_API_KEY) {
+  if (!hasNonEmptyString(env.STUDIO_SSM_WEBHOOK_API_KEY)) {
     throw new TRPCError({
       code: "INTERNAL_SERVER_ERROR",
       message: "Webhook API key is not configured",
@@ -217,7 +234,7 @@ const webhookMiddleware = t.middleware(async ({ next, ctx }) => {
       message: "Invalid Webhook API key provided",
     })
   }
-  return next()
+  return await next()
 })
 
 // GrowthBook registers each instance in a module-level global Map on init().
@@ -232,30 +249,32 @@ const growthbookCleanupMiddleware = t.middleware(async ({ ctx, next }) => {
 
 const rateLimitMiddleware = t.middleware(async ({ next, ctx, meta }) => {
   if (meta?.rateLimitOptions === undefined) {
-    return next()
+    return await next()
   }
 
   if (
     env.NODE_ENV === "test" &&
-    !meta.rateLimitOptions._internalUseRateLimiterInTestEnv
+    !isNullableBooleanTrue(
+      meta.rateLimitOptions._internalUseRateLimiterInTestEnv,
+    )
   ) {
-    return next()
+    return await next()
   }
 
   await checkRateLimit({
-    req: ctx.req,
-    rateLimitOptions: meta.rateLimitOptions,
     prisma: ctx.prisma,
+    rateLimitOptions: meta.rateLimitOptions,
+    req: ctx.req,
   })
 
-  return next()
+  return await next()
 })
 
 /**
  * Create a router
  * @see https://trpc.io/docs/v10/router
  */
-export const router = t.router
+export const { router } = t
 
 const baseProcedure = t.procedure
   .use(growthbookCleanupMiddleware)

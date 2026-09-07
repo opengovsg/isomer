@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-unnecessary-type-conversion -- core cleanup deferred */
 import {
   BreadcrumbItem,
   BreadcrumbLink,
@@ -13,6 +14,12 @@ import { ADMIN_NAVBAR_HEIGHT } from "~/constants/layouts"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { getResourceSubpath } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { pageSchema } from "../schema"
 import PublishButton from "./PublishButton"
@@ -28,21 +35,22 @@ const NavigationBreadcrumbs = ({
 }: NavigationBreadcrumbsProps): React.ReactNode => {
   const { data: resource, isLoading: isResourceLoading } =
     trpc.resource.getMetadataById.useQuery({
-      siteId: Number(siteId),
       resourceId: pageId,
+      siteId: Number(siteId),
     })
 
   const { data: parentResource, isLoading: isParentResourceLoading } =
     trpc.resource.getMetadataById.useQuery(
       {
-        siteId: Number(siteId),
         resourceId: resource?.parentId ?? "",
+        siteId: Number(siteId),
       },
-      { enabled: !!resource?.parentId },
+      { enabled: !!hasNonEmptyString(resource?.parentId) },
     )
 
   const isBreadcrumbLoaded =
-    (!resource?.parentId || !isParentResourceLoading) && !isResourceLoading
+    (!hasNonEmptyString(resource?.parentId) || !isParentResourceLoading) &&
+    !isResourceLoading
 
   return (
     <Breadcrumb size="sm" flex={1}>

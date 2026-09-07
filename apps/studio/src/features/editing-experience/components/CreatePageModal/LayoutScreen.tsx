@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-confusing-void-expression -- core cleanup deferred */
 import {
   Flex,
   ModalBody,

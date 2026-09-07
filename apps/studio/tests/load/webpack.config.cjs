@@ -1,22 +1,16 @@
-const path = require("path")
+/* oxlint-disable eslint/require-unicode-regexp, eslint/prefer-named-capture-group, typescript/no-unsafe-assignment, typescript/no-unsafe-call -- studio lint cleanup */
+const path = require("node:path")
 const { CleanWebpackPlugin } = require("clean-webpack-plugin")
 const GlobEntries = require("webpack-glob-entries")
 
 module.exports = {
-  mode: "production",
   entry: GlobEntries(path.join(__dirname, "*.test.ts")),
-  output: {
-    path: path.join(__dirname, "build"),
-    libraryTarget: "commonjs",
-    filename: "[name].js",
-  },
-  resolve: {
-    extensions: [".ts", ".js"],
-  },
+  externals: /^(k6|https?:\/\/)(\/.*)?(?!-trpc)/u,
+  mode: "production",
   module: {
     rules: [
       {
-        test: /\.ts$/,
+        test: /\.ts$/u,
         use: {
           loader: "babel-loader",
           options: {
@@ -31,13 +25,20 @@ module.exports = {
       },
     ],
   },
-  externals: /^(k6|https?:\/\/)(\/.*)?(?!-trpc)/,
-  stats: {
-    colors: true,
-  },
-  plugins: [new CleanWebpackPlugin()],
   optimization: {
     // Don't minimize, as it's not used in the browser
     minimize: false,
+  },
+  output: {
+    filename: "[name].js",
+    libraryTarget: "commonjs",
+    path: path.join(__dirname, "build"),
+  },
+  plugins: [new CleanWebpackPlugin()],
+  resolve: {
+    extensions: [".ts", ".js"],
+  },
+  stats: {
+    colors: true,
   },
 }

@@ -1,13 +1,14 @@
+/* oxlint-disable jsdoc/check-tag-names, typescript/no-unnecessary-condition, node/callback-return, eslint/sort-keys -- studio lint cleanup */
 import type { TRPCLink } from "@trpc/client"
+import type { inferRouterOutputs } from "@trpc/server"
+import type { TRPC_ERROR_CODE_KEY } from "@trpc/server/rpc"
+import type { NextPageContext } from "next"
 // ℹ️ Type-only import:
 // https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-8.html#type-only-imports-and-export
 import type { AppRouter } from "~/server/modules/_app"
 import { httpLink, loggerLink, TRPCClientError } from "@trpc/client"
 import { createTRPCNext } from "@trpc/next"
-import { type inferRouterOutputs } from "@trpc/server"
 import { observable } from "@trpc/server/observable"
-import { type TRPC_ERROR_CODE_KEY } from "@trpc/server/rpc"
-import { type NextPageContext } from "next"
 import superjson from "superjson"
 import { LOGGED_IN_KEY } from "~/constants/localStorage"
 import {
@@ -16,6 +17,7 @@ import {
 } from "~/constants/version"
 import { env } from "~/env.mjs"
 import { TRPCWithErrorCodeSchema } from "~/utils/error"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { getBaseUrl } from "./getBaseUrl"
 
@@ -26,54 +28,61 @@ const NON_RETRYABLE_ERROR_CODES = new Set<TRPC_ERROR_CODE_KEY>([
   "NOT_FOUND",
 ])
 
-const versionLink: TRPCLink<AppRouter> = () => {
-  return ({ next, op }) => {
-    return observable((observer) => {
+const versionLink: TRPCLink<AppRouter> =
+  () =>
+  ({ next, op }) =>
+    observable((observer) => {
       const unsubscribe = next(op).subscribe({
+        complete() {
+          observer.complete()
+        },
+        error(err) {
+          observer.error(err)
+        },
         next(value) {
           if (!value.context) {
-            return observer.next(value)
+            observer.next(value)
+            return
           }
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
           // SAFETY: tRPC context.response is a fetch Response when present on the client
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
           const response = value.context.response as
-            | Partial<Response> // Looser type for caution
+            | Partial<Response>
+            // Looser type for caution
             | undefined
           if (!response) {
-            return observer.next(value)
+            observer.next(value)
+            return
           }
           const { headers } = response
           if (!headers) {
-            return observer.next(value)
+            observer.next(value)
+            return
           }
           const serverVersion = headers.get(APP_VERSION_HEADER_KEY)
-          if (!serverVersion) {
-            return observer.next(value)
+          if (!hasNonEmptyString(serverVersion)) {
+            observer.next(value)
+            return
           }
           const clientVersion = env.NEXT_PUBLIC_APP_VERSION
           if (clientVersion !== serverVersion) {
             window.dispatchEvent(new Event(REQUIRE_UPDATE_EVENT))
           }
-          return observer.next(value)
-        },
-        error(err) {
-          observer.error(err)
-        },
-        complete() {
-          observer.complete()
+          observer.next(value)
         },
       })
       return unsubscribe
     })
-  }
-}
 
-const custom401Link: TRPCLink<AppRouter> = () => {
+const custom401Link: TRPCLink<AppRouter> =
+  () =>
   // here we just got initialized in the app - this happens once per app
   // useful for storing cache for instance
-  return ({ next, op }) => {
+  ({ next, op }) =>
     // this is when passing the result to the next link
     // each link needs to return an observable which propagates results
-    return observable((observer) => {
+    observable((observer) => {
       const unsubscribe = next(op).subscribe({
         next(value) {
           observer.next(value)
@@ -98,14 +107,16 @@ const custom401Link: TRPCLink<AppRouter> = () => {
       })
       return unsubscribe
     })
-  }
-}
 
 type ClientRetryError = TRPCClientError<AppRouter> | Error
 
 const isErrorRetryableOnClient = (error: ClientRetryError): boolean => {
-  if (globalThis.window === undefined) return true
-  if (!(error instanceof TRPCClientError)) return true
+  if (globalThis.window === undefined) {
+    return true
+  }
+  if (!(error instanceof TRPCClientError)) {
+    return true
+  }
   const res = TRPCWithErrorCodeSchema.safeParse(error)
   return !res.success || !NON_RETRYABLE_ERROR_CODES.has(res.data)
 }
@@ -150,15 +161,16 @@ export const trpc = createTRPCNext<AppRouter, SSRContext>({
             (opts.direction === "down" && opts.result instanceof Error),
         }),
         httpLink({
-          url: `${getBaseUrl()}/api/trpc`,
-          transformer: superjson,
           /**
            * Provide a function that will invoke the current global
            * window.fetch. We do this to pick up any changes to fetch
            * at runtime, eg, by Datadog RUM
            */
-          fetch(url, options) {
-            return fetch(url, options)
+          async fetch(url, options) {
+            return await fetch(url, {
+              ...options,
+              credentials: "include",
+            })
           },
           /**
            * Set custom request headers on every request from tRPC
@@ -182,6 +194,8 @@ export const trpc = createTRPCNext<AppRouter, SSRContext>({
               [APP_VERSION_HEADER_KEY]: env.NEXT_PUBLIC_APP_VERSION,
             }
           },
+          transformer: superjson,
+          url: `${getBaseUrl()}/api/trpc`,
         }),
       ],
       /**
@@ -189,15 +203,18 @@ export const trpc = createTRPCNext<AppRouter, SSRContext>({
        */
       queryClientConfig: {
         defaultOptions: {
-          queries: {
-            staleTime: 1000 * 10, // 10 seconds
-            retry: (failureCount, error) => {
-              if (!isErrorRetryableOnClient(error)) return false
-              return failureCount < 3
-            },
-          },
           mutations: {
             retry: false,
+          },
+          queries: {
+            retry: (failureCount, error) => {
+              if (!isErrorRetryableOnClient(error)) {
+                return false
+              }
+              return failureCount < 3
+            },
+            staleTime: 1000 * 10,
+            // 10 seconds,
           },
         },
       },

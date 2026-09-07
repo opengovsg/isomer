@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/parameter-properties -- studio lint cleanup */
 import type { Page } from "@playwright/test"
 import { expect } from "@playwright/test"
 
@@ -42,24 +43,24 @@ export class CollectionPO {
 
   async expectCollectionDisplayVisible() {
     await expect(
-      this.page.getByRole("button", { name: /Collection display/i }),
+      this.page.getByRole("button", { name: /Collection display/iu }),
     ).toBeVisible()
   }
 
   async expectFiltersVisible() {
     await expect(
-      this.page.getByRole("button", { name: /Filters/i }),
+      this.page.getByRole("button", { name: /Filters/iu }),
     ).toBeVisible()
   }
 
   async expectFiltersHidden() {
     await expect(
-      this.page.getByRole("button", { name: /Filters/i }),
+      this.page.getByRole("button", { name: /Filters/iu }),
     ).not.toBeVisible()
   }
 
   async openFilters() {
-    await this.page.getByRole("button", { name: /Filters/i }).click()
+    await this.page.getByRole("button", { name: /Filters/iu }).click()
   }
 
   async expectManageFiltersDrawerOpen() {

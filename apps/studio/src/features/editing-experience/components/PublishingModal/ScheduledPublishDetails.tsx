@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-shadow -- core cleanup deferred */
 import type { z } from "zod"
 import type { schedulePublishClientSchema } from "~/schemas/schedule"
 import { FormControl, HStack, VStack } from "@chakra-ui/react"
@@ -47,8 +48,8 @@ export const SchedulePublishDetails = () => {
       resetField("publishTime")
     }
     return {
-      earliestSchedule,
       earliestAllowableTime,
+      earliestSchedule,
     }
   }, [publishDate, publishTime, resetField])
 
@@ -65,12 +66,9 @@ export const SchedulePublishDetails = () => {
                 {...field}
                 size="sm"
                 shouldSetDateOnTodayButtonClick={true}
-                isDateUnavailable={(date) => {
-                  return isBefore(
-                    startOfDay(date),
-                    startOfDay(earliestSchedule),
-                  )
-                }}
+                isDateUnavailable={(date) =>
+                  isBefore(startOfDay(date), startOfDay(earliestSchedule))
+                }
               />
             )}
           />

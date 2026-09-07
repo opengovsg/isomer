@@ -10,9 +10,9 @@ const emailSchema = z
   .superRefine((val, ctx) => {
     const result = _emailValidator.safeParse(val)
     if (!result.success) {
-      result.error.issues.forEach((issue) => {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: issue.message })
-      })
+      for (const issue of result.error.issues) {
+        ctx.addIssue({ code: "custom", message: issue.message })
+      }
     }
   })
   .transform((val) => val.trim().toLowerCase())
@@ -29,8 +29,8 @@ export const createUserInputSchema = z.object({
 
 export const createUserOutputSchema = z.array(
   z.object({
-    id: z.string(),
     email: emailSchema,
+    id: z.string(),
     role: z.enum(RoleType),
   }),
 )
@@ -41,8 +41,8 @@ export const deleteUserInputSchema = z.object({
 })
 
 export const deleteUserOutputSchema = z.object({
-  id: z.string(),
   email: emailSchema,
+  id: z.string(),
 })
 
 export const getUserInputSchema = z.object({
@@ -51,51 +51,51 @@ export const getUserInputSchema = z.object({
 })
 
 export const getUserOutputSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  email: emailSchema,
-  role: z.enum(RoleType),
   createdAt: z.date().nullable(),
+  email: emailSchema,
+  id: z.string(),
   lastLoginAt: z.date().nullable(),
+  name: z.string(),
+  role: z.enum(RoleType),
 })
 
 const ADMIN_TYPE = z.enum(["agency", "isomer"] as const)
 export type AdminType = z.infer<typeof ADMIN_TYPE>
 
 export const listUsersInputSchema = offsetPaginationSchema.extend({
-  siteId: z.number().min(1),
   adminType: ADMIN_TYPE.optional().default("agency"),
+  siteId: z.number().min(1),
 })
 
 export const listUsersOutputSchema = z.array(
   z.object({
-    id: z.string(),
-    email: emailSchema,
-    name: z.string().optional().nullable(),
-    lastLoginAt: z.date().nullable(),
     createdAt: z.date().nullable(),
+    email: emailSchema,
+    id: z.string(),
+    lastLoginAt: z.date().nullable(),
+    name: z.string().optional().nullable(),
     role: z.enum(RoleType),
   }),
 )
 
 export const countUsersInputSchema = z.object({
-  siteId: z.number().min(1),
   adminType: ADMIN_TYPE.optional().default("agency"),
+  siteId: z.number().min(1),
 })
 
 export const countUsersOutputSchema = z.number()
 
 export const updateUserInputSchema = z.object({
+  role: z.enum(RoleType),
   siteId: z.number().min(1),
   userId: z.string(),
-  role: z.enum(RoleType),
 })
 
 export const updateUserOutputSchema = z.object({
   id: z.string().min(1),
+  role: z.enum(RoleType),
   siteId: z.number().min(1),
   userId: z.string(),
-  role: z.enum(RoleType),
 })
 
 export const updateUserDetailsInputSchema = z.object({
@@ -104,10 +104,11 @@ export const updateUserDetailsInputSchema = z.object({
     .string()
     .trim()
     .min(1, "Phone number is required")
-    .transform((phone) => phone.replace(/\s+/g, ""))
-    .transform((phone) => (phone.startsWith("+65") ? phone.slice(3) : phone)) // Remove country code if present
+    .transform((phone) => phone.replaceAll(/\s+/gu, ""))
+    .transform((phone) => (phone.startsWith("+65") ? phone.slice(3) : phone))
+    // Remove country code if present
     .refine(
-      (phone) => !isNaN(Number(phone)) && phone.length === 8,
+      (phone) => !Number.isNaN(Number(phone)) && phone.length === 8,
       "Phone number must be exactly 8 digits",
     )
     .refine(

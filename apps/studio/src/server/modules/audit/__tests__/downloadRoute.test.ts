@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/require-await, typescript/no-unsafe-type-assertion -- server lint cleanup */
 import type { NextApiRequest, NextApiResponse } from "next"
 import { addMinutes, subDays } from "date-fns"
 import { sealData } from "iron-session"
@@ -43,12 +44,12 @@ const seedRequest = async ({
   completedAt?: Date | null
 }) => {
   const values: SeedDownloadRequestValues = {
-    siteId,
-    userId,
+    attempts: 0,
     auditLogDateRange: "[2024-03-01,2024-04-01)",
     reportType: "Access",
+    siteId,
     status,
-    attempts: 0,
+    userId,
   }
   if (objectKey !== undefined) {
     values.objectKey = objectKey
@@ -57,7 +58,7 @@ const seedRequest = async ({
     values.completedAt = completedAt
   }
 
-  return db
+  return await db
     .insertInto("AuditLogExportRequest")
     .values(values)
     .returningAll()
@@ -90,8 +91,8 @@ describe("GET /api/audit-log-exports/download", () => {
       "Site",
     )
     vi.clearAllMocks()
-    vi.spyOn(s3Lib, "generateSignedGetUrl").mockImplementation(({ Key }) =>
-      Promise.resolve(signedUrlFor(Key ?? "")),
+    vi.spyOn(s3Lib, "generateSignedGetUrl").mockImplementation(
+      async ({ Key }) => signedUrlFor(Key ?? ""),
     )
     vi.spyOn(s3Lib, "getStudioAssetsBucketName").mockReturnValue(BUCKET)
   })
@@ -102,11 +103,11 @@ describe("GET /api/audit-log-exports/download", () => {
     const objectKey = `audit-log-exports/${site.id}/1/access.csv`
 
     const request = await seedRequest({
-      siteId: site.id,
-      userId: user.id,
-      status: "Done",
-      objectKey,
       completedAt: new Date(),
+      objectKey,
+      siteId: site.id,
+      status: "Done",
+      userId: user.id,
     })
     const token = await sealAuditLogExportToken(request.id)
 
@@ -126,11 +127,11 @@ describe("GET /api/audit-log-exports/download", () => {
     const { site } = await setupSite()
     const user = await setupUser({ email: "pending@vendor.com.sg" })
     const request = await seedRequest({
-      siteId: site.id,
-      userId: user.id,
-      status: "Pending",
-      objectKey: null,
       completedAt: null,
+      objectKey: null,
+      siteId: site.id,
+      status: "Pending",
+      userId: user.id,
     })
     const token = await sealAuditLogExportToken(request.id)
 
@@ -168,11 +169,11 @@ describe("GET /api/audit-log-exports/download", () => {
     // boundary is exclusive (must be strictly after now), so this is expired.
     const now = new Date()
     const request = await seedRequest({
-      siteId: site.id,
-      userId: user.id,
-      status: "Done",
-      objectKey: `audit-log-exports/${site.id}/1/access.csv`,
       completedAt: subDays(now, 3),
+      objectKey: `audit-log-exports/${site.id}/1/access.csv`,
+      siteId: site.id,
+      status: "Done",
+      userId: user.id,
     })
     const token = await sealAuditLogExportToken(request.id)
 
@@ -214,11 +215,11 @@ describe("GET /api/audit-log-exports/download", () => {
       new Error("S3 unavailable"),
     )
     const request = await seedRequest({
-      siteId: site.id,
-      userId: user.id,
-      status: "Done",
-      objectKey,
       completedAt: new Date(),
+      objectKey,
+      siteId: site.id,
+      status: "Done",
+      userId: user.id,
     })
     const token = await sealAuditLogExportToken(request.id)
 

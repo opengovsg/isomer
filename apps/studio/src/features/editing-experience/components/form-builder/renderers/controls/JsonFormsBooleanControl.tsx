@@ -1,3 +1,5 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
+/* oxlint-disable typescript/strict-boolean-expressions -- core cleanup deferred */
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import { Box, Flex, FormControl } from "@chakra-ui/react"
 import { isBooleanControl, rankWith } from "@jsonforms/core"
@@ -51,7 +53,9 @@ const JsonFormsBooleanControl = ({
             id={id}
             isDisabled={!enabled}
             isChecked={!!data}
-            onChange={(e) => handleChange(path, e.target.checked)}
+            onChange={(e) => {
+              handleChange(path, e.target.checked)
+            }}
           />
           <FormErrorMessage>{getCustomErrorMessage(errors)}</FormErrorMessage>
         </Flex>

@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unsafe-assignment, typescript/no-invalid-void-type -- studio lint cleanup */
 import type { z } from "zod"
 import type { getPresignedPutUrlSchema } from "~/schemas/gazette"
 import { useMutation } from "@tanstack/react-query"
@@ -43,12 +44,11 @@ export const useUploadGazetteMutation = ({
       }) => {
         const { fileKey, presignedPutUrl, contentType, contentDisposition } =
           await getPresignedPutUrl({
-            siteId,
-            resourceId,
+            category,
             fileName: fileName ?? file.name,
             fileSize: file.size,
-            year,
-            category,
+            resourceId,
+            siteId,
             subcategory,
             tags: scheduledAt
               ? [
@@ -58,11 +58,12 @@ export const useUploadGazetteMutation = ({
                   },
                 ]
               : undefined,
+            year,
           })
         const path = await performUpload(file, fileKey, {
-          presignedPutUrl,
-          contentType,
           contentDisposition,
+          contentType,
+          presignedPutUrl,
         })
 
         return { path }

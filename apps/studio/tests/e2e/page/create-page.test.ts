@@ -1,5 +1,7 @@
-import { expect, test, type Page } from "@playwright/test"
-import crypto from "crypto"
+/* oxlint-disable unicorn/no-await-expression-member, eslint/require-unicode-regexp -- studio lint cleanup */
+import type { Page } from "@playwright/test"
+import { expect, test } from "@playwright/test"
+import crypto from "node:crypto"
 import { db } from "~/server/modules/database/database"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 
@@ -10,8 +12,8 @@ const UNIQUE_TITLE = () => `E2E Test Page ${crypto.randomUUID().slice(0, 8)}`
 
 // The welcome modal blocks the dashboard until the user has a name + phone, so
 // set them before the create flow is reachable.
-const dismissWelcomeModal = (email: string) =>
-  db
+const dismissWelcomeModal = async (email: string) =>
+  await db
     .updateTable("User")
     .set({ name: "test-e2e", phone: "82345678" })
     .where("email", "=", email)
@@ -37,31 +39,33 @@ const createPageViaWizard = async (
   await page.getByRole("button", { name: "Start editing" }).click()
 
   // Router pushes to /sites/{siteId}/pages/{pageId}.
-  await page.waitForURL(new RegExp(`/sites/${getSeedSiteId()}/pages/\\d+$`))
+  await page.waitForURL(
+    new RegExp(`/sites/${getSeedSiteId()}/pages/\\d+$`, "u"),
+  )
 }
 
 // A folder isn't part of the seed, so create one per-test to nest pages under.
 // Returns the folder id (BigInt columns are serialized as strings).
-const createSeedFolder = () =>
-  db
+const createSeedFolder = async () =>
+  await db
     .insertInto("Resource")
     .values({
-      permalink: `e2e-test-folder-${crypto.randomUUID().slice(0, 8)}`,
-      siteId: getSeedSiteId(),
-      parentId: null,
-      title: "E2E Test Folder",
       draftBlobId: null,
-      state: ResourceState.Draft,
-      type: ResourceType.Folder,
+      parentId: null,
+      permalink: `e2e-test-folder-${crypto.randomUUID().slice(0, 8)}`,
       publishedVersionId: null,
+      siteId: getSeedSiteId(),
+      state: ResourceState.Draft,
+      title: "E2E Test Folder",
+      type: ResourceType.Folder,
     })
     .returning("id")
     .executeTakeFirstOrThrow()
 
 // Deleting the folder cascades to its child pages (Resource.parent is
 // onDelete: Cascade), so this also clears anything the wizard created under it.
-const deleteFolder = (folderId: string) =>
-  db.deleteFrom("Resource").where("id", "=", folderId).execute()
+const deleteFolder = async (folderId: string) =>
+  await db.deleteFrom("Resource").where("id", "=", folderId).execute()
 
 test.describe("admin", () => {
   test.use({ storageState: storageStateFor("admin") })

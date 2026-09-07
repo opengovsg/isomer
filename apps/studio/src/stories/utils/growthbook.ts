@@ -27,21 +27,22 @@ export const createBannerGbParameters = ({
 }: {
   variant: BannerProps["variant"]
   message: string
-}) => {
-  return [BANNER_FEATURE_KEY, { variant, message }]
-}
+}) => [BANNER_FEATURE_KEY, { message, variant }]
 
-export const createSingpassEnabledGbParameters = (isEnabled: boolean) => {
-  return [IS_SINGPASS_ENABLED_FEATURE_KEY, isEnabled]
-}
+export const createSingpassEnabledGbParameters = (isEnabled: boolean) => [
+  IS_SINGPASS_ENABLED_FEATURE_KEY,
+  isEnabled,
+]
 
-export const createAntiScamBannerEnabledGbParameters = (isEnabled: boolean) => {
-  return [IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY, isEnabled]
-}
+export const createAntiScamBannerEnabledGbParameters = (isEnabled: boolean) => [
+  IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY,
+  isEnabled,
+]
 
-export const createAuditLogEnabledGbParameters = (isEnabled: boolean) => {
-  return [IS_AUDIT_LOG_ENABLED_FEATURE_KEY, isEnabled]
-}
+export const createAuditLogEnabledGbParameters = (isEnabled: boolean) => [
+  IS_AUDIT_LOG_ENABLED_FEATURE_KEY,
+  isEnabled,
+]
 
 export const createEgazetteInfoGbParameters = ({
   siteId,
@@ -49,6 +50,4 @@ export const createEgazetteInfoGbParameters = ({
 }: {
   siteId: string
   gazettesCollectionId: string
-}) => {
-  return [EGAZETTE_INFO_FEATURE_KEY, { siteId, gazettesCollectionId }]
-}
+}) => [EGAZETTE_INFO_FEATURE_KEY, { gazettesCollectionId, siteId }]

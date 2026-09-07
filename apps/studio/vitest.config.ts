@@ -12,45 +12,41 @@ export default defineConfig({
   },
   test: {
     coverage: {
-      provider: "istanbul",
-      include: ["src/**/*.{ts,tsx}"],
       exclude: [
         "**/__tests__/**",
         "**/*.test.{ts,tsx}",
         "**/*.stories.{ts,tsx}",
         "**/*.d.ts",
       ],
+      include: ["src/**/*.{ts,tsx}"],
+      provider: "istanbul",
     },
     projects: [
       {
         extends: true,
         test: {
-          name: "node",
           env: {
             // Unit tests expect a stable public app URL in audit export emails;
             // omit from .env.test so E2E Singpass OAuth keeps localhost redirects.
             NEXT_PUBLIC_APP_URL: "https://studio.test.gov.sg",
           },
-          include: ["src/**/*.test.{ts,tsx}", "prisma/scripts/**/*.test.ts"],
           exclude: [
             ...configDefaults.exclude,
             "**/tests/e2e/**",
             "tests/load/**",
             BROWSER_TEST_PATTERN,
           ],
-          retry: 0,
-          globals: true,
-          setupFiles: ["tests/mocks/db.ts", "tests/mocks/mockpass.ts"],
           globalSetup: ["tests/global-setup.ts"],
+          globals: true,
+          include: ["src/**/*.test.{ts,tsx}", "prisma/scripts/**/*.test.ts"],
+          name: "node",
+          retry: 0,
+          setupFiles: ["tests/mocks/db.ts", "tests/mocks/mockpass.ts"],
         },
       },
       {
         extends: true,
         test: {
-          name: "browser",
-          include: [BROWSER_TEST_PATTERN],
-          retry: 0,
-          globals: true,
           browser: {
             enabled: true,
             // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call -- vitest browser provider typing
@@ -58,6 +54,10 @@ export default defineConfig({
             instances: [{ browser: "chromium" }],
             headless: !!process.env.CI,
           },
+          globals: true,
+          include: [BROWSER_TEST_PATTERN],
+          name: "browser",
+          retry: 0,
         },
       },
     ],

@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-unnecessary-type-conversion -- core cleanup deferred */
 import { Badge, Tab, Text, useTab } from "@chakra-ui/react"
 import React from "react"
 
@@ -9,7 +10,8 @@ interface UserTableTabProps {
 export const UserTableTab = React.forwardRef<
   HTMLButtonElement,
   UserTableTabProps
->(function ({ label, count, ...props }, ref) {
+  // oxlint-disable-next-line react/function-component-definition -- core cleanup deferred
+>(({ label, count, ...props }, ref) => {
   const tabProps = useTab({ ...props, ref })
   const isSelected = !!tabProps["aria-selected"]
 
@@ -19,16 +21,16 @@ export const UserTableTab = React.forwardRef<
       textTransform="none"
       transition="all 0.2s"
       _hover={{
-        color: "base.content.brand",
         borderBottomColor: isSelected ? "base.content.brand" : "gray.200",
+        color: "base.content.brand",
       }}
       _selected={{
-        color: "base.content.brand",
         borderBottomColor: "base.content.brand",
+        color: "base.content.brand",
       }}
       _focus={{
-        outline: "none",
         boxShadow: "none",
+        outline: "none",
       }}
       _focusVisible={{
         boxShadow: "outline",

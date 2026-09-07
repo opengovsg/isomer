@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-warning-comments -- core cleanup deferred */
 import {
   chakra,
   Flex,
@@ -23,6 +24,12 @@ import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
 import { MAX_PAGE_URL_LENGTH, MAX_TITLE_LENGTH } from "~/schemas/page"
 import { AppGrid } from "~/templates/AppGrid"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { generateResourceUrl } from "../utils"
@@ -113,7 +120,12 @@ export const CreateCollectionPageDetailsScreen = () => {
             >
               Change page type
             </Button>
-            <Button onClick={handleCreatePage} isLoading={isLoading}>
+            <Button
+              onClick={() => {
+                void handleCreatePage
+              }}
+              isLoading={isLoading}
+            >
               Start editing
             </Button>
           </Wrap>
@@ -167,7 +179,7 @@ export const CreateCollectionPageDetailsScreen = () => {
                   my="0.5rem"
                   {...register("title")}
                 />
-                {errors.title?.message ? (
+                {hasNonEmptyString(errors.title?.message) ? (
                   <FormErrorMessage>{errors.title.message}</FormErrorMessage>
                 ) : (
                   <FormHelperText mt="0.5rem" color="base.content.medium">
@@ -222,7 +234,7 @@ export const CreateCollectionPageDetailsScreen = () => {
                   </Text>
                 </Infobox>
 
-                {errors.permalink?.message ? (
+                {hasNonEmptyString(errors.permalink?.message) ? (
                   <FormErrorMessage>
                     {errors.permalink.message}
                   </FormErrorMessage>

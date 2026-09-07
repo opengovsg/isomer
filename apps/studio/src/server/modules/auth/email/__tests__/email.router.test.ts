@@ -78,11 +78,11 @@ describe("auth.email", () => {
     it("should throw 401 if user is deleted", async () => {
       // Arrange
       await setupUser({
-        name: "Deleted",
-        userId: "deleted123",
         email: TEST_VALID_EMAIL,
-        phone: "123",
         isDeleted: true,
+        name: "Deleted",
+        phone: "123",
+        userId: "deleted123",
       })
 
       // Act
@@ -137,8 +137,8 @@ describe("auth.email", () => {
 
         // Assert
         const expectedUser = {
-          id: expect.any(String),
           email: TEST_VALID_EMAIL,
+          id: expect.any(String),
         }
         // Should return logged in user.
         await expect(result).resolves.toMatchObject(expectedUser)
@@ -179,8 +179,8 @@ describe("auth.email", () => {
 
         // Assert
         const expectedUser = {
-          id: expect.any(String),
           email: TEST_VALID_EMAIL,
+          id: expect.any(String),
         }
         // Should return logged in user.
         await expect(result).resolves.toMatchObject(expectedUser)
@@ -234,9 +234,9 @@ describe("auth.email", () => {
         await prisma.user.create({
           data: {
             email: TEST_VALID_EMAIL,
+            lastLoginAt: null,
             name: "Test User",
             phone: "",
-            lastLoginAt: null,
           },
         })
 
@@ -284,6 +284,15 @@ describe("auth.email", () => {
     })
 
     describe("when singpass is enabled", () => {
+      beforeEach(() => {
+        vi.spyOn(growthbookLib, "getIsSingpassEnabled").mockReturnValue(true)
+        caller = createCaller(createMockRequest(session))
+      })
+
+      afterEach(() => {
+        vi.restoreAllMocks()
+      })
+
       it("should successfully set session on first valid OTP", async () => {
         // Arrange
         await setupUser({ email: TEST_VALID_EMAIL })
@@ -303,8 +312,8 @@ describe("auth.email", () => {
 
         // Assert
         const expectedUser = {
-          id: expect.any(String),
           email: TEST_VALID_EMAIL,
+          id: expect.any(String),
         }
         // Should return logged in user.
         await expect(result).resolves.toMatchObject(expectedUser)
@@ -343,8 +352,8 @@ describe("auth.email", () => {
 
         // Assert
         const expectedUser = {
-          id: expect.any(String),
           email: TEST_VALID_EMAIL,
+          id: expect.any(String),
         }
         // Should return logged in user.
         await expect(result).resolves.toMatchObject(expectedUser)
@@ -395,9 +404,9 @@ describe("auth.email", () => {
         await prisma.user.create({
           data: {
             email: TEST_VALID_EMAIL,
+            lastLoginAt: null,
             name: "Test User",
             phone: "",
-            lastLoginAt: null,
           },
         })
 
@@ -517,10 +526,11 @@ describe("auth.email", () => {
       // Arrange
       await prisma.verificationToken.create({
         data: {
+          attempts: 6,
+          // Currently hardcoded to 5 attempts.
           expires: new Date(Date.now() + env.OTP_EXPIRY * 1000),
           identifier: TEST_OTP_FINGERPRINT,
           token: VALID_TOKEN_HASH,
-          attempts: 6, // Currently hardcoded to 5 attempts.
         },
       })
 

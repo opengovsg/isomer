@@ -10,6 +10,12 @@ import {
 import { Button, ModalCloseButton } from "@opengovsg/design-system-react"
 import { useRef, useState } from "react"
 import { ResourceSelector } from "~/components/ResourceSelector"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 interface SelectDestinationPageModalProps {
   isOpen: boolean
@@ -40,7 +46,9 @@ export const SelectDestinationPageModal = ({
   }
 
   const handleConfirm = () => {
-    if (!selectedResourceId) return
+    if (!hasNonEmptyString(selectedResourceId)) {
+      return
+    }
     // ResourceSelector's permalink has no leading slash; destinations are stored
     // as rooted paths, and conversion to a reference happens on save.
     onSelect(`/${selectedPermalinkRef.current}`)
@@ -71,7 +79,10 @@ export const SelectDestinationPageModal = ({
         </ModalBody>
 
         <ModalFooter>
-          <Button isDisabled={!selectedResourceId} onClick={handleConfirm}>
+          <Button
+            isDisabled={!hasNonEmptyString(selectedResourceId)}
+            onClick={handleConfirm}
+          >
             Redirect here
           </Button>
         </ModalFooter>

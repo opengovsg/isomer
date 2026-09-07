@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-confusing-void-expression -- studio lint cleanup */
 import type { NextApiRequest, NextApiResponse } from "next"
 import { TRPCError } from "@trpc/server"
 import { getHTTPStatusCodeFromError } from "@trpc/server/http"
@@ -7,20 +8,24 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  if (req.method !== "POST") return res.status(405).send("Method Not Allowed")
+  if (req.method !== "POST") {
+    res.status(405).send("Method Not Allowed")
+    return
+  }
   try {
     const result = await webhookHandlers.updateCodebuildWebhook(req, res)
     res.status(200).json(result)
-  } catch (err) {
-    if (err instanceof TRPCError) {
-      const httpCode = getHTTPStatusCodeFromError(err)
-      return res.status(httpCode).json({
-        error: err.message,
+  } catch (error) {
+    if (error instanceof TRPCError) {
+      const httpCode = getHTTPStatusCodeFromError(error)
+      res.status(httpCode).json({
+        error: error.message,
       })
-    } else {
-      res.status(500).json({
-        error: err instanceof Error ? err.message : "Unknown error encountered",
-      })
+      return
     }
+    res.status(500).json({
+      error:
+        error instanceof Error ? error.message : "Unknown error encountered",
+    })
   }
 }

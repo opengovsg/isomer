@@ -1,3 +1,5 @@
+/* oxlint-disable import/no-empty-named-blocks, typescript/no-import-type-side-effects, unicorn/require-module-specifiers -- server lint cleanup */
+/* oxlint-disable typescript/no-unsafe-type-assertion, eslint/prefer-destructuring, typescript/no-unnecessary-type-conversion, typescript/strict-boolean-expressions -- server lint cleanup */
 import { TRPCError } from "@trpc/server"
 import { subDays, subMinutes } from "date-fns"
 import MockDate from "mockdate"
@@ -24,6 +26,7 @@ import * as algoliaLib from "~/lib/algolia"
 import { ENABLE_SEARCHSG_GAZETTE_INGESTION } from "~/lib/growthbook"
 import * as s3Lib from "~/lib/s3"
 import { createCallerFactory } from "~/server/trpc"
+import {} from "~/utils/truthiness"
 import {
   AuditLogEvent,
   IsomerAdminRole,
@@ -58,9 +61,7 @@ describe("gazette.router", async () => {
       "User",
     )
     caller = createCaller(createMockRequest(session))
-    vi.spyOn(algoliaLib, "saveObjectsToSearchIndex").mockResolvedValue(
-      undefined,
-    )
+    vi.spyOn(algoliaLib, "saveObjectsToSearchIndex").mockResolvedValue()
   })
 
   afterEach(() => {
@@ -78,41 +79,41 @@ describe("gazette.router", async () => {
    */
   const seedToppanWithCollection = async () => {
     const user = await setupUser({
-      userId: session.userId ?? undefined,
       email: "user@toppannext.com",
+      userId: session.userId ?? undefined,
     })
     await auth(user)
     const { site, collection } = await setupCollection({})
     await setupAdminPermissions({
-      userId: session.userId ?? undefined,
       siteId: site.id,
+      userId: session.userId ?? undefined,
     })
-    return { user, site, collection }
+    return { collection, site, user }
   }
 
   describe("assertGazetteAccess (via gazette.list)", () => {
     it("rejects an ordinary site member with no Toppan email and no admin role", async () => {
       // Arrange
       const user = await setupUser({
-        userId: session.userId ?? undefined,
         email: "user@example.com",
+        userId: session.userId ?? undefined,
       })
       await auth(user)
       const { site, collection } = await setupCollection({})
       await setupAdminPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act & Assert
       await expect(
         caller.list({
-          siteId: site.id,
           collectionId: Number(collection.id),
           limit: 10,
           offset: 0,
+          siteId: site.id,
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message: "You do not have access to the gazette feature",
@@ -123,23 +124,23 @@ describe("gazette.router", async () => {
     it("allows an IsomerAdmin Core user even without a Toppan email", async () => {
       // Arrange
       const user = await setupUser({
-        userId: session.userId ?? undefined,
         email: "admin@example.com",
+        userId: session.userId ?? undefined,
       })
       await auth(user)
-      await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Core })
+      await setupIsomerAdmin({ role: IsomerAdminRole.Core, userId: user.id })
       const { site, collection } = await setupCollection({})
       await setupAdminPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act
       const result = await caller.list({
-        siteId: site.id,
         collectionId: Number(collection.id),
         limit: 10,
         offset: 0,
+        siteId: site.id,
       })
 
       // Assert
@@ -152,10 +153,10 @@ describe("gazette.router", async () => {
 
       // Act
       const result = await caller.list({
-        siteId: site.id,
         collectionId: Number(collection.id),
         limit: 10,
         offset: 0,
+        siteId: site.id,
       })
 
       // Assert
@@ -170,12 +171,12 @@ describe("gazette.router", async () => {
       // Act & Assert
       await expect(
         unauthedCaller.list({
-          siteId: 1,
           collectionId: 1,
           limit: 10,
           offset: 0,
+          siteId: 1,
         }),
-      ).rejects.toThrowError(new TRPCError({ code: "UNAUTHORIZED" }))
+      ).rejects.toThrow(new TRPCError({ code: "UNAUTHORIZED" }))
     })
   })
 
@@ -186,16 +187,16 @@ describe("gazette.router", async () => {
 
       // Act
       const { gazetteId } = await caller.create({
-        siteId: site.id,
-        collectionId: Number(collection.id),
-        title: "Notice 123",
-        permalink: crypto.randomUUID(),
-        ref: "/1/abc/notice-123.pdf",
         category: "Government Gazette",
+        collectionId: Number(collection.id),
         date: "30/04/2026",
         description: "Notif #123",
-        tagged: ["sub-1"],
+        permalink: crypto.randomUUID(),
+        ref: "/1/abc/notice-123.pdf",
         scheduledAt: PAST_DATE,
+        siteId: site.id,
+        tagged: ["sub-1"],
+        title: "Notice 123",
       })
 
       // Assert
@@ -232,30 +233,30 @@ describe("gazette.router", async () => {
     it("rejects a non-Toppan, non-admin caller before any DB writes", async () => {
       // Arrange
       const user = await setupUser({
-        userId: session.userId ?? undefined,
         email: "user@example.com",
+        userId: session.userId ?? undefined,
       })
       await auth(user)
       const { site, collection } = await setupCollection({})
       await setupAdminPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       // Act & Assert
       await expect(
         caller.create({
-          siteId: site.id,
+          category: "Government Gazette",
           collectionId: Number(collection.id),
-          title: "Notice 123",
+          date: "30/04/2026",
           permalink: crypto.randomUUID(),
           ref: "/1/abc/notice.pdf",
-          category: "Government Gazette",
-          date: "30/04/2026",
-          tagged: ["sub-1"],
           scheduledAt: PAST_DATE,
+          siteId: site.id,
+          tagged: ["sub-1"],
+          title: "Notice 123",
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message: "You do not have access to the gazette feature",
@@ -273,31 +274,32 @@ describe("gazette.router", async () => {
 
       // Create first gazette with a specific filename
       await caller.create({
-        siteId: site.id,
+        category: "Government Gazette",
         collectionId: Number(collection.id),
-        title: "First Notice",
+        date: "30/04/2026",
         permalink: crypto.randomUUID(),
         ref: "/sites/1/gazettes/uuid1/duplicate-file.pdf",
-        category: "Government Gazette",
-        date: "30/04/2026",
-        tagged: ["sub-1"],
         scheduledAt: PAST_DATE,
+        siteId: site.id,
+        tagged: ["sub-1"],
+        title: "First Notice",
       })
 
       // Act & Assert: creating a second gazette with the same filename is rejected
       await expect(
         caller.create({
-          siteId: site.id,
-          collectionId: Number(collection.id),
-          title: "Second Notice",
-          permalink: crypto.randomUUID(),
-          ref: "/sites/1/gazettes/uuid2/duplicate-file.pdf", // Same filename
           category: "Government Gazette",
+          collectionId: Number(collection.id),
           date: "30/04/2026",
-          tagged: ["sub-1"],
+          permalink: crypto.randomUUID(),
+          ref: "/sites/1/gazettes/uuid2/duplicate-file.pdf",
+          // Same filename
           scheduledAt: PAST_DATE,
+          siteId: site.id,
+          tagged: ["sub-1"],
+          title: "Second Notice",
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "CONFLICT",
           message: "A gazette with the same file ID already exists",
@@ -311,33 +313,35 @@ describe("gazette.router", async () => {
 
       // Create first gazette with a specific notification number
       await caller.create({
-        siteId: site.id,
-        collectionId: Number(collection.id),
-        title: "First Notice",
-        permalink: crypto.randomUUID(),
-        ref: "/sites/1/gazettes/uuid1/first-file.pdf",
         category: "Government Gazette",
+        collectionId: Number(collection.id),
         date: "30/04/2026",
         description: "N-2026-001",
-        tagged: ["sub-1"],
+        permalink: crypto.randomUUID(),
+        ref: "/sites/1/gazettes/uuid1/first-file.pdf",
         scheduledAt: PAST_DATE,
+        siteId: site.id,
+        tagged: ["sub-1"],
+        title: "First Notice",
       })
 
       // Act & Assert: creating a second gazette with the same notification number is rejected
       await expect(
         caller.create({
-          siteId: site.id,
-          collectionId: Number(collection.id),
-          title: "Second Notice",
-          permalink: crypto.randomUUID(),
-          ref: "/sites/1/gazettes/uuid2/second-file.pdf", // Different filename
           category: "Government Gazette",
+          collectionId: Number(collection.id),
           date: "30/04/2026",
-          description: "N-2026-001", // Same notification number
-          tagged: ["sub-1"],
+          description: "N-2026-001",
+          // Same notification number
+          permalink: crypto.randomUUID(),
+          ref: "/sites/1/gazettes/uuid2/second-file.pdf",
+          // Different filename
           scheduledAt: PAST_DATE,
+          siteId: site.id,
+          tagged: ["sub-1"],
+          title: "Second Notice",
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "CONFLICT",
           message: "A gazette with the same notification number already exists",
@@ -350,33 +354,36 @@ describe("gazette.router", async () => {
       const { site, collection } = await seedToppanWithCollection()
 
       await caller.create({
-        siteId: site.id,
-        collectionId: Number(collection.id),
-        title: "First Supplement",
-        permalink: crypto.randomUUID(),
-        ref: "/sites/1/gazettes/uuid1/first-file.pdf",
         category: "Legislative Supplements",
+        collectionId: Number(collection.id),
         date: "30/04/2026",
         description: "N-2026-001",
-        tagged: ["Acts Supplement"],
+        permalink: crypto.randomUUID(),
+        ref: "/sites/1/gazettes/uuid1/first-file.pdf",
         scheduledAt: PAST_DATE,
+        siteId: site.id,
+        tagged: ["Acts Supplement"],
+        title: "First Supplement",
       })
 
       // Act & Assert: same notification number + same year + same subcategory is a duplicate
       await expect(
         caller.create({
-          siteId: site.id,
-          collectionId: Number(collection.id),
-          title: "Second Supplement",
-          permalink: crypto.randomUUID(),
-          ref: "/sites/1/gazettes/uuid2/second-file.pdf", // Different filename
           category: "Legislative Supplements",
+          collectionId: Number(collection.id),
           date: "30/04/2026",
-          description: "N-2026-001", // Same notification number
-          tagged: ["Acts Supplement"], // Same subcategory
+          description: "N-2026-001",
+          // Same notification number
+          permalink: crypto.randomUUID(),
+          ref: "/sites/1/gazettes/uuid2/second-file.pdf",
+          // Different filename
           scheduledAt: PAST_DATE,
+          siteId: site.id,
+          tagged: ["Acts Supplement"],
+          // Same subcategory
+          title: "Second Supplement",
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "CONFLICT",
           message: "A gazette with the same notification number already exists",
@@ -389,32 +396,34 @@ describe("gazette.router", async () => {
       const { site, collection } = await seedToppanWithCollection()
 
       await caller.create({
-        siteId: site.id,
-        collectionId: Number(collection.id),
-        title: "First Supplement",
-        permalink: crypto.randomUUID(),
-        ref: "/sites/1/gazettes/uuid1/first-file.pdf",
         category: "Legislative Supplements",
+        collectionId: Number(collection.id),
         date: "30/04/2026",
         description: "N-2026-001",
-        tagged: ["Acts Supplement"],
+        permalink: crypto.randomUUID(),
+        ref: "/sites/1/gazettes/uuid1/first-file.pdf",
         scheduledAt: PAST_DATE,
+        siteId: site.id,
+        tagged: ["Acts Supplement"],
+        title: "First Supplement",
       })
 
       // Act: same notification number + same year but a different subcategory.
       // For non-Government Gazette categories the subcategory disambiguates, so
       // this is not a duplicate and must be allowed.
       const { gazetteId } = await caller.create({
-        siteId: site.id,
+        category: "Legislative Supplements",
         collectionId: Number(collection.id),
-        title: "Second Supplement",
+        date: "30/04/2026",
+        description: "N-2026-001",
+        // Same notification number
         permalink: crypto.randomUUID(),
         ref: "/sites/1/gazettes/uuid2/second-file.pdf",
-        category: "Legislative Supplements",
-        date: "30/04/2026",
-        description: "N-2026-001", // Same notification number
-        tagged: ["Bills Supplement"], // Different subcategory
         scheduledAt: PAST_DATE,
+        siteId: site.id,
+        tagged: ["Bills Supplement"],
+        // Different subcategory
+        title: "Second Supplement",
       })
 
       // Assert: the second gazette was created
@@ -432,33 +441,33 @@ describe("gazette.router", async () => {
       // Arrange
       const { site, collection, user } = await seedToppanWithCollection()
       const { gazetteId } = await caller.create({
-        siteId: site.id,
-        collectionId: Number(collection.id),
-        title: "Original",
-        permalink: crypto.randomUUID(),
-        ref: "/1/abc/notice.pdf",
         category: "Government Gazette",
+        collectionId: Number(collection.id),
         date: "30/04/2026",
         description: "old-desc",
-        tagged: ["sub-1"],
+        permalink: crypto.randomUUID(),
+        ref: "/1/abc/notice.pdf",
         scheduledAt: PAST_DATE,
+        siteId: site.id,
+        tagged: ["sub-1"],
+        title: "Original",
       })
 
       const markFileAsDeleted = vi
         .spyOn(gazetteService, "markFileAsDeleted")
-        .mockResolvedValue(undefined)
+        .mockResolvedValue()
 
       // Act
       await caller.update({
-        siteId: site.id,
-        gazetteId: Number(gazetteId),
-        title: "Renamed",
-        newRef: "/1/abc/replacement.pdf",
         category: "Other Supplements",
         date: "30/04/2026",
         description: "new-desc",
-        tagged: ["sub-2"],
+        gazetteId: Number(gazetteId),
+        newRef: "/1/abc/replacement.pdf",
         scheduledAt: PAST_DATE,
+        siteId: site.id,
+        tagged: ["sub-2"],
+        title: "Renamed",
       })
 
       // Assert
@@ -503,30 +512,30 @@ describe("gazette.router", async () => {
       // on the SAME key — cleanup must be skipped or it tombstones the live file.
       const { site, collection } = await seedToppanWithCollection()
       const { gazetteId } = await caller.create({
-        siteId: site.id,
+        category: "Government Gazette",
         collectionId: Number(collection.id),
-        title: "Original",
+        date: "30/04/2026",
         permalink: crypto.randomUUID(),
         ref: "/2026/Government Gazette/sub-1/notice.pdf",
-        category: "Government Gazette",
-        date: "30/04/2026",
-        tagged: ["sub-1"],
         scheduledAt: PAST_DATE,
+        siteId: site.id,
+        tagged: ["sub-1"],
+        title: "Original",
       })
       const markFileAsDeleted = vi
         .spyOn(gazetteService, "markFileAsDeleted")
-        .mockResolvedValue(undefined)
+        .mockResolvedValue()
 
       // Act: re-upload to the same key
       await caller.update({
-        siteId: site.id,
-        gazetteId: Number(gazetteId),
-        title: "Original",
-        newRef: "/2026/Government Gazette/sub-1/notice.pdf",
         category: "Government Gazette",
         date: "30/04/2026",
-        tagged: ["sub-1"],
+        gazetteId: Number(gazetteId),
+        newRef: "/2026/Government Gazette/sub-1/notice.pdf",
         scheduledAt: PAST_DATE,
+        siteId: site.id,
+        tagged: ["sub-1"],
+        title: "Original",
       })
 
       // Assert: the gazette still points at the ref, and it was never tombstoned
@@ -554,9 +563,9 @@ describe("gazette.router", async () => {
 
       // Seed a link directly so we don't need to mock the email side-effect.
       const { collectionLink } = await setupCollectionLink({
-        siteId: site.id,
         collectionId: collection.id,
         permalink: "egazette-link",
+        siteId: site.id,
       })
       // Set a future schedule on it so the update test moves it backwards.
       await db
@@ -567,13 +576,13 @@ describe("gazette.router", async () => {
 
       // Act
       await caller.update({
-        siteId: site.id,
-        gazetteId: Number(collectionLink.id),
-        title: "ImmediatePublish",
         category: "Government Gazette",
         date: "30/04/2026",
-        tagged: ["sub-1"],
+        gazetteId: Number(collectionLink.id),
         scheduledAt: PAST_DATE,
+        siteId: site.id,
+        tagged: ["sub-1"],
+        title: "ImmediatePublish",
       })
 
       // Assert
@@ -591,43 +600,44 @@ describe("gazette.router", async () => {
 
       // Create first gazette
       await caller.create({
-        siteId: site.id,
+        category: "Government Gazette",
         collectionId: Number(collection.id),
-        title: "First Notice",
+        date: "30/04/2026",
         permalink: crypto.randomUUID(),
         ref: "/sites/1/gazettes/uuid1/existing-file.pdf",
-        category: "Government Gazette",
-        date: "30/04/2026",
-        tagged: ["sub-1"],
         scheduledAt: PAST_DATE,
+        siteId: site.id,
+        tagged: ["sub-1"],
+        title: "First Notice",
       })
 
       // Create second gazette with a different filename
       const { gazetteId } = await caller.create({
-        siteId: site.id,
+        category: "Government Gazette",
         collectionId: Number(collection.id),
-        title: "Second Notice",
+        date: "30/04/2026",
         permalink: crypto.randomUUID(),
         ref: "/sites/1/gazettes/uuid2/different-file.pdf",
-        category: "Government Gazette",
-        date: "30/04/2026",
-        tagged: ["sub-1"],
         scheduledAt: PAST_DATE,
+        siteId: site.id,
+        tagged: ["sub-1"],
+        title: "Second Notice",
       })
 
       // Act & Assert: updating to a filename already used by another gazette is rejected
       await expect(
         caller.update({
-          siteId: site.id,
-          gazetteId: Number(gazetteId),
-          title: "Second Notice",
-          newRef: "/sites/1/gazettes/uuid3/existing-file.pdf", // Same filename as first
           category: "Government Gazette",
           date: "30/04/2026",
-          tagged: ["sub-1"],
+          gazetteId: Number(gazetteId),
+          newRef: "/sites/1/gazettes/uuid3/existing-file.pdf",
+          // Same filename as first
           scheduledAt: PAST_DATE,
+          siteId: site.id,
+          tagged: ["sub-1"],
+          title: "Second Notice",
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "CONFLICT",
           message: "A gazette with the same file ID already exists",
@@ -641,45 +651,46 @@ describe("gazette.router", async () => {
 
       // Create first gazette with a notification number
       await caller.create({
-        siteId: site.id,
-        collectionId: Number(collection.id),
-        title: "First Notice",
-        permalink: crypto.randomUUID(),
-        ref: "/sites/1/gazettes/uuid1/first-file.pdf",
         category: "Government Gazette",
+        collectionId: Number(collection.id),
         date: "30/04/2026",
         description: "N-2026-001",
-        tagged: ["sub-1"],
+        permalink: crypto.randomUUID(),
+        ref: "/sites/1/gazettes/uuid1/first-file.pdf",
         scheduledAt: PAST_DATE,
+        siteId: site.id,
+        tagged: ["sub-1"],
+        title: "First Notice",
       })
 
       // Create second gazette with a different notification number
       const { gazetteId } = await caller.create({
-        siteId: site.id,
-        collectionId: Number(collection.id),
-        title: "Second Notice",
-        permalink: crypto.randomUUID(),
-        ref: "/sites/1/gazettes/uuid2/second-file.pdf",
         category: "Government Gazette",
+        collectionId: Number(collection.id),
         date: "30/04/2026",
         description: "N-2026-002",
-        tagged: ["sub-1"],
+        permalink: crypto.randomUUID(),
+        ref: "/sites/1/gazettes/uuid2/second-file.pdf",
         scheduledAt: PAST_DATE,
+        siteId: site.id,
+        tagged: ["sub-1"],
+        title: "Second Notice",
       })
 
       // Act & Assert: updating to a notification number used by another gazette is rejected
       await expect(
         caller.update({
-          siteId: site.id,
-          gazetteId: Number(gazetteId),
-          title: "Second Notice",
           category: "Government Gazette",
           date: "30/04/2026",
-          description: "N-2026-001", // Same notification number as first
-          tagged: ["sub-1"],
+          description: "N-2026-001",
+          // Same notification number as first
+          gazetteId: Number(gazetteId),
           scheduledAt: PAST_DATE,
+          siteId: site.id,
+          tagged: ["sub-1"],
+          title: "Second Notice",
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "CONFLICT",
           message: "A gazette with the same notification number already exists",
@@ -691,29 +702,30 @@ describe("gazette.router", async () => {
       // Arrange
       const { site, collection } = await seedToppanWithCollection()
       const { gazetteId } = await caller.create({
-        siteId: site.id,
-        collectionId: Number(collection.id),
-        title: "Original",
-        permalink: crypto.randomUUID(),
-        ref: "/sites/1/gazettes/uuid1/file.pdf",
         category: "Government Gazette",
+        collectionId: Number(collection.id),
         date: "30/04/2026",
         description: "N-2026-001",
-        tagged: ["sub-1"],
+        permalink: crypto.randomUUID(),
+        ref: "/sites/1/gazettes/uuid1/file.pdf",
         scheduledAt: PAST_DATE,
+        siteId: site.id,
+        tagged: ["sub-1"],
+        title: "Original",
       })
 
       // Act: editing other fields while retaining the same notification number
       // must not trip the duplicate check against the gazette's own record.
       await caller.update({
-        siteId: site.id,
-        gazetteId: Number(gazetteId),
-        title: "Renamed",
         category: "Government Gazette",
         date: "30/04/2026",
-        description: "N-2026-001", // Unchanged
-        tagged: ["sub-1"],
+        description: "N-2026-001",
+        // Unchanged
+        gazetteId: Number(gazetteId),
         scheduledAt: PAST_DATE,
+        siteId: site.id,
+        tagged: ["sub-1"],
+        title: "Renamed",
       })
 
       // Assert
@@ -738,15 +750,15 @@ describe("gazette.router", async () => {
         )
 
       const { gazetteId } = await caller.create({
-        siteId: site.id,
+        category: "Government Gazette",
         collectionId: Number(collection.id),
-        title: "About to cancel",
+        date: "30/04/2026",
         permalink: crypto.randomUUID(),
         ref: "/1/abc/about-to-cancel.pdf",
-        category: "Government Gazette",
-        date: "30/04/2026",
-        tagged: ["sub-1"],
         scheduledAt: PAST_DATE,
+        siteId: site.id,
+        tagged: ["sub-1"],
+        title: "About to cancel",
       })
 
       const beforeBlob = await db
@@ -771,8 +783,8 @@ describe("gazette.router", async () => {
         .executeTakeFirstOrThrow()
 
       await caller.cancelScheduledPublish({
-        siteId: site.id,
         gazetteId: Number(gazetteId),
+        siteId: site.id,
       })
 
       const resourceAfter = await db
@@ -838,17 +850,17 @@ describe("gazette.router", async () => {
     it("rejects a gazette that is not currently scheduled", async () => {
       const { site, collection } = await seedToppanWithCollection()
       const { collectionLink } = await setupCollectionLink({
-        siteId: site.id,
         collectionId: collection.id,
         permalink: "not-scheduled",
+        siteId: site.id,
       })
 
       await expect(
         caller.cancelScheduledPublish({
-          siteId: site.id,
           gazetteId: Number(collectionLink.id),
+          siteId: site.id,
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message: "Cannot cancel a gazette that is not scheduled",
@@ -863,22 +875,22 @@ describe("gazette.router", async () => {
       )
 
       const { gazetteId } = await caller.create({
-        siteId: site.id,
+        category: "Government Gazette",
         collectionId: Number(collection.id),
-        title: "S3 will fail",
+        date: "30/04/2026",
         permalink: crypto.randomUUID(),
         ref: "/1/abc/s3-fail.pdf",
-        category: "Government Gazette",
-        date: "30/04/2026",
-        tagged: ["sub-1"],
         scheduledAt: PAST_DATE,
+        siteId: site.id,
+        tagged: ["sub-1"],
+        title: "S3 will fail",
       })
 
       // Should NOT throw — DB tx commits first, S3 is best-effort.
       await expect(
         caller.cancelScheduledPublish({
-          siteId: site.id,
           gazetteId: Number(gazetteId),
+          siteId: site.id,
         }),
       ).resolves.toBeDefined()
 
@@ -899,19 +911,19 @@ describe("gazette.router", async () => {
         .mockResolvedValue("https://signed.example/put")
 
       const result = await caller.getPresignedPutUrl({
-        siteId: site.id,
-        resourceId: collection.id,
-        year: 2026,
         category: "Government Gazette",
-        subcategory: "Public",
         fileName: "notice-1.pdf",
         fileSize: 1234,
+        resourceId: collection.id,
+        siteId: site.id,
+        subcategory: "Public",
         tags: [{ key: "scheduledAt", value: "1700000000000" }],
+        year: 2026,
       })
 
       expect(result.presignedPutUrl).toBe("https://signed.example/put")
       expect(result.fileKey).toMatch(
-        /^2026\/Government Gazette\/Public\/notice-1\.pdf$/,
+        /^2026\/Government Gazette\/Public\/notice-1\.pdf$/u,
       )
       expect(signedPutSpy).toHaveBeenCalledTimes(1)
       const signerArgs = signedPutSpy.mock.calls[0]![0]
@@ -927,13 +939,13 @@ describe("gazette.router", async () => {
         .mockResolvedValue("https://signed.example/put")
 
       await caller.getPresignedPutUrl({
-        siteId: site.id,
-        resourceId: collection.id,
-        year: 2026,
         category: "Government Gazette",
-        subcategory: "Public",
         fileName: "notice-2.pdf",
         fileSize: 1234,
+        resourceId: collection.id,
+        siteId: site.id,
+        subcategory: "Public",
+        year: 2026,
       })
 
       const signerArgs = signedPutSpy.mock.calls[0]![0]
@@ -949,8 +961,8 @@ describe("gazette.router", async () => {
         .mockResolvedValue("https://signed.example/get")
 
       const result = await caller.getPresignedGetUrl({
-        siteId: site.id,
         fileKey: "2026/Government Gazette/Public/notice-1.pdf",
+        siteId: site.id,
       })
 
       expect(result.presignedGetUrl).toBe("https://signed.example/get")
@@ -964,8 +976,8 @@ describe("gazette.router", async () => {
 
       await expect(
         caller.getPresignedGetUrl({
-          siteId: site.id,
           fileKey: "/2026/Government Gazette/Public/notice-1.pdf",
+          siteId: site.id,
         }),
       ).rejects.toThrow()
     })
@@ -975,8 +987,8 @@ describe("gazette.router", async () => {
 
       await expect(
         caller.getPresignedGetUrl({
-          siteId: site.id,
           fileKey: "2026/../etc/passwd",
+          siteId: site.id,
         }),
       ).rejects.toThrow()
     })
@@ -998,9 +1010,9 @@ describe("gazette.router", async () => {
       userId: string
     }) => {
       const { collectionLink, blob } = await setupCollectionLink({
-        siteId,
         collectionId,
         permalink: `gazette-${crypto.randomUUID()}`,
+        siteId,
       })
 
       // Set the blob content to include a ref (S3 key)
@@ -1010,8 +1022,8 @@ describe("gazette.router", async () => {
           // SAFETY: partial link-layout page fixture supplies only fields read by ingestion.
           content: {
             page: {
-              ref: "/test-bucket/gazette.pdf",
               category: "Government Gazette",
+              ref: "/test-bucket/gazette.pdf",
               tagged: ["sub-1"],
             },
           } as never,
@@ -1023,11 +1035,11 @@ describe("gazette.router", async () => {
       const version = await db
         .insertInto("Version")
         .values({
-          versionNum: 1,
-          resourceId: collectionLink.id,
           blobId: blob.id,
-          publishedBy: userId,
           publishedAt,
+          publishedBy: userId,
+          resourceId: collectionLink.id,
+          versionNum: 1,
         })
         .returningAll()
         .executeTakeFirstOrThrow()
@@ -1039,7 +1051,7 @@ describe("gazette.router", async () => {
         .where("id", "=", collectionLink.id)
         .execute()
 
-      return { gazetteId: Number(collectionLink.id), version, blob }
+      return { blob, gazetteId: Number(collectionLink.id), version }
     }
 
     beforeEach(() => {
@@ -1048,19 +1060,13 @@ describe("gazette.router", async () => {
       // The flag ENABLE_SEARCHSG_GAZETTE_INGESTION is OFF by default in tests
       // (not in mockFeatureFlags), so the Algolia path is exercised here.
       // SearchSG is mocked too so tests that enable the flag don't hit the network.
-      vi.spyOn(gazetteService, "removeGazetteFromAlgolia").mockResolvedValue(
-        undefined,
-      )
+      vi.spyOn(gazetteService, "removeGazetteFromAlgolia").mockResolvedValue()
       vi.spyOn(
         gazetteService,
         "removeGazetteFromSearchIndex",
-      ).mockResolvedValue(undefined)
-      vi.spyOn(gazetteService, "deleteGazetteAsset").mockResolvedValue(
-        undefined,
-      )
-      vi.spyOn(mailService, "sendGazetteDeletionEmail").mockResolvedValue(
-        undefined,
-      )
+      ).mockResolvedValue()
+      vi.spyOn(gazetteService, "deleteGazetteAsset").mockResolvedValue()
+      vi.spyOn(mailService, "sendGazetteDeletionEmail").mockResolvedValue()
     })
 
     afterEach(() => {
@@ -1074,18 +1080,19 @@ describe("gazette.router", async () => {
 
     it("deletes a gazette within the 15-minute grace period", async () => {
       const { site, collection, user } = await seedToppanWithCollection()
-      const publishedAt = subMinutes(FIXED_NOW, 10) // 10 minutes ago
+      const publishedAt = subMinutes(FIXED_NOW, 10)
+      // 10 minutes ago
 
       const { gazetteId } = await seedPublishedGazette({
-        siteId: site.id,
         collectionId: collection.id,
         publishedAt,
+        siteId: site.id,
         userId: user.id,
       })
 
       await caller.delete({
-        siteId: site.id,
         gazetteId,
+        siteId: site.id,
       })
 
       // Resource should be deleted
@@ -1112,18 +1119,19 @@ describe("gazette.router", async () => {
 
     it("deletes a gazette published exactly 15 minutes ago", async () => {
       const { site, collection, user } = await seedToppanWithCollection()
-      const publishedAt = subMinutes(FIXED_NOW, 15) // exactly 15 minutes ago
+      const publishedAt = subMinutes(FIXED_NOW, 15)
+      // exactly 15 minutes ago
 
       const { gazetteId } = await seedPublishedGazette({
-        siteId: site.id,
         collectionId: collection.id,
         publishedAt,
+        siteId: site.id,
         userId: user.id,
       })
 
       await caller.delete({
-        siteId: site.id,
         gazetteId,
+        siteId: site.id,
       })
 
       // Resource should be deleted
@@ -1137,21 +1145,22 @@ describe("gazette.router", async () => {
 
     it("rejects deletion after the 30-minute grace period", async () => {
       const { site, collection, user } = await seedToppanWithCollection()
-      const publishedAt = subMinutes(FIXED_NOW, 31) // 31 minutes ago
+      const publishedAt = subMinutes(FIXED_NOW, 31)
+      // 31 minutes ago
 
       const { gazetteId } = await seedPublishedGazette({
-        siteId: site.id,
         collectionId: collection.id,
         publishedAt,
+        siteId: site.id,
         userId: user.id,
       })
 
       await expect(
         caller.delete({
-          siteId: site.id,
           gazetteId,
+          siteId: site.id,
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1175,29 +1184,29 @@ describe("gazette.router", async () => {
 
     it("rejects deletion for non-Toppan, non-admin users", async () => {
       const user = await setupUser({
-        userId: session.userId ?? undefined,
         email: "user@example.com",
+        userId: session.userId ?? undefined,
       })
       await auth(user)
       const { site, collection } = await setupCollection({})
       await setupAdminPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       const { gazetteId } = await seedPublishedGazette({
-        siteId: site.id,
         collectionId: collection.id,
         publishedAt: subMinutes(FIXED_NOW, 5),
+        siteId: site.id,
         userId: user.id,
       })
 
       await expect(
         caller.delete({
-          siteId: site.id,
           gazetteId,
+          siteId: site.id,
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message: "You do not have access to the gazette feature",
@@ -1210,10 +1219,10 @@ describe("gazette.router", async () => {
 
       await expect(
         caller.delete({
+          gazetteId: 999_999,
           siteId: site.id,
-          gazetteId: 999999,
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Resource not found",
@@ -1226,17 +1235,17 @@ describe("gazette.router", async () => {
 
       // Create a gazette without a published version
       const { collectionLink } = await setupCollectionLink({
-        siteId: site.id,
         collectionId: collection.id,
         permalink: `gazette-${crypto.randomUUID()}`,
+        siteId: site.id,
       })
 
       await expect(
         caller.delete({
-          siteId: site.id,
           gazetteId: Number(collectionLink.id),
+          siteId: site.id,
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "The gazette you are trying to delete could not be found",
@@ -1246,27 +1255,27 @@ describe("gazette.router", async () => {
 
     it("allows IsomerAdmin Core user to delete gazette", async () => {
       const user = await setupUser({
-        userId: session.userId ?? undefined,
         email: "admin@example.com",
+        userId: session.userId ?? undefined,
       })
       await auth(user)
-      await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Core })
+      await setupIsomerAdmin({ role: IsomerAdminRole.Core, userId: user.id })
       const { site, collection } = await setupCollection({})
       await setupAdminPermissions({
-        userId: session.userId ?? undefined,
         siteId: site.id,
+        userId: session.userId ?? undefined,
       })
 
       const { gazetteId } = await seedPublishedGazette({
-        siteId: site.id,
         collectionId: collection.id,
         publishedAt: subMinutes(FIXED_NOW, 5),
+        siteId: site.id,
         userId: user.id,
       })
 
       await caller.delete({
-        siteId: site.id,
         gazetteId,
+        siteId: site.id,
       })
 
       // Resource should be deleted
@@ -1287,9 +1296,9 @@ describe("gazette.router", async () => {
       const publishedAt = subMinutes(FIXED_NOW, 5)
 
       const { gazetteId } = await seedPublishedGazette({
-        siteId: site.id,
         collectionId: collection.id,
         publishedAt,
+        siteId: site.id,
         userId: user.id,
       })
 
@@ -1303,8 +1312,8 @@ describe("gazette.router", async () => {
         .execute()
 
       await caller.delete({
-        siteId: site.id,
         gazetteId,
+        siteId: site.id,
       })
 
       const resource = await db
@@ -1326,16 +1335,16 @@ describe("gazette.router", async () => {
       // Arrange
       const { site, collection, user } = await seedToppanWithCollection()
       const otherAdmin = await setupUser({ email: "admin2@agency.gov.sg" })
-      await setupAdminPermissions({ userId: otherAdmin.id, siteId: site.id })
+      await setupAdminPermissions({ siteId: site.id, userId: otherAdmin.id })
       const { gazetteId } = await seedPublishedGazette({
-        siteId: site.id,
         collectionId: collection.id,
         publishedAt: subMinutes(FIXED_NOW, 5),
+        siteId: site.id,
         userId: user.id,
       })
 
       // Act
-      await caller.delete({ siteId: site.id, gazetteId })
+      await caller.delete({ gazetteId, siteId: site.id })
 
       // Assert
       expect(mailService.sendGazetteDeletionEmail).toHaveBeenCalledTimes(1)
@@ -1343,8 +1352,12 @@ describe("gazette.router", async () => {
         .calls[0]?.[0]
       expect(call?.recipientEmail).toBe(env.DD_DELETION_EMAIL)
       // The admins query has no ORDER BY, so compare cc as a sorted set
-      expect([...(call?.cc ?? [])].sort()).toEqual(
-        ["admin2@agency.gov.sg", "user@toppannext.com"].sort(),
+      expect(
+        [...(call?.cc ?? [])].toSorted((a, b) => a.localeCompare(b)),
+      ).toEqual(
+        ["admin2@agency.gov.sg", "user@toppannext.com"].toSorted((a, b) =>
+          a.localeCompare(b),
+        ),
       )
     })
 
@@ -1353,19 +1366,19 @@ describe("gazette.router", async () => {
       const { site, collection, user } = await seedToppanWithCollection()
       const isomerAdminUser = await setupUser({ email: "core@open.gov.sg" })
       await setupAdminPermissions({
-        userId: isomerAdminUser.id,
         siteId: site.id,
+        userId: isomerAdminUser.id,
       })
       await setupIsomerAdmin({ userId: isomerAdminUser.id })
       const { gazetteId } = await seedPublishedGazette({
-        siteId: site.id,
         collectionId: collection.id,
         publishedAt: subMinutes(FIXED_NOW, 5),
+        siteId: site.id,
         userId: user.id,
       })
 
       // Act
-      await caller.delete({ siteId: site.id, gazetteId })
+      await caller.delete({ gazetteId, siteId: site.id })
 
       // Assert
       expect(mailService.sendGazetteDeletionEmail).toHaveBeenCalledTimes(1)
@@ -1379,9 +1392,9 @@ describe("gazette.router", async () => {
       // Arrange
       const { site, collection, user } = await seedToppanWithCollection()
       const { gazetteId } = await seedPublishedGazette({
-        siteId: site.id,
         collectionId: collection.id,
         publishedAt: subMinutes(FIXED_NOW, 5),
+        siteId: site.id,
         userId: user.id,
       })
 
@@ -1392,7 +1405,7 @@ describe("gazette.router", async () => {
       )
 
       // Act
-      await caller.delete({ siteId: site.id, gazetteId })
+      await caller.delete({ gazetteId, siteId: site.id })
 
       // Assert — SearchSG path was taken, Algolia path was not.
       expect(gazetteService.removeGazetteFromSearchIndex).toHaveBeenCalledTimes(

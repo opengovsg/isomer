@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-confusing-void-expression -- server lint cleanup */
 import type { Notification } from "~/schemas/site"
 import { TRPCError } from "@trpc/server"
 import { pick } from "lodash-es"
@@ -21,6 +22,7 @@ import { beforeAll, vi } from "vitest"
 import { env } from "~/env.mjs"
 import * as searchSgService from "~/server/modules/searchsg/searchsg.service"
 import { createCallerFactory } from "~/server/trpc"
+import { hasNonEmptyString } from "~/utils/truthiness"
 import { IsomerAdminRole, RoleType } from "~prisma/generated/generatedEnums"
 
 import type { User } from "../../database/types"
@@ -44,22 +46,22 @@ const MOCK_SEARCHSG_CLIENT_ID = "550e8400-e29b-41d4-a716-446655440000"
 const MOCK_OTHER_SITE_SEARCHSG_CLIENT_ID =
   "11111111-2222-4333-8444-555555555555"
 const MOCK_EGAZETTE_ALGOLIA_SEARCH = {
-  type: "egazette-algolia",
   appId: "MOCK_APP_ID",
-  searchApiKey: "mock-search-only-key",
-  indexName: "egazette",
   categories: [
     { value: "notices", displayLabel: "Notices" },
     { value: "acts", displayLabel: "Acts" },
   ],
+  indexName: "egazette",
+  searchApiKey: "mock-search-only-key",
+  type: "egazette-algolia",
 } as const
 const MOCK_ISOMER_THEME = {
   colors: {
     brand: {
       canvas: {
-        default: "#123c5d",
         alt: "#456789",
         backdrop: "#abcdef",
+        default: "#123c5d",
         inverse: "#fedcba",
       },
       interaction: {
@@ -74,9 +76,9 @@ const MOCK_BLACK_THEME = {
   colors: {
     brand: {
       canvas: {
-        default: "#000000",
         alt: "#000000",
         backdrop: "#000000",
+        default: "#000000",
         inverse: "#000000",
       },
       interaction: {
@@ -101,13 +103,14 @@ const generateNotification = ({
     },
   }
 
-  if (!content) return baseNotification satisfies Notification
+  if (!hasNonEmptyString(content)) {
+    return baseNotification satisfies Notification
+  }
 
   return {
     notification: {
       ...baseNotification.notification,
       content: {
-        type: "prose",
         content: [
           {
             content: [
@@ -122,6 +125,7 @@ const generateNotification = ({
             },
           },
         ],
+        type: "prose",
       },
     },
   } satisfies Notification
@@ -139,8 +143,8 @@ describe("site.router", async () => {
   beforeEach(async () => {
     await resetTables("Site", "ResourcePermission", "IsomerAdmin", "User")
     user = await setupUser({
-      userId: session.userId,
       email: "test@mock.com",
+      userId: session.userId,
     })
     await auth(user)
     // Re-create the caller after resetTables to ensure a clean state
@@ -174,8 +178,8 @@ describe("site.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
@@ -184,8 +188,8 @@ describe("site.router", async () => {
       // Assert
       expect(result).toEqual([
         {
-          id: site.id,
           config: site.config,
+          id: site.id,
           role: RoleType.Editor,
         },
       ])
@@ -196,8 +200,8 @@ describe("site.router", async () => {
       const { site: site1 } = await setupSite()
       const { site: _site2 } = await setupSite()
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site1.id,
+        userId: session.userId,
       })
 
       // Act
@@ -206,8 +210,8 @@ describe("site.router", async () => {
       // Assert
       expect(result).toEqual([
         {
-          id: site1.id,
           config: site1.config,
+          id: site1.id,
           role: RoleType.Editor,
         },
       ])
@@ -228,13 +232,13 @@ describe("site.router", async () => {
       const { site: site1 } = await setupSite()
       const { site: site2 } = await setupSite()
       await setupEditorPermissions({
-        userId: session.userId,
-        siteId: site1.id,
         isDeleted: true,
+        siteId: site1.id,
+        userId: session.userId,
       })
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site2.id,
+        userId: session.userId,
       })
 
       // Act
@@ -243,8 +247,8 @@ describe("site.router", async () => {
       // Assert
       expect(result).toEqual([
         {
-          id: site2.id,
           config: site2.config,
+          id: site2.id,
           role: RoleType.Editor,
         },
       ])
@@ -255,8 +259,8 @@ describe("site.router", async () => {
       const { site: site1 } = await setupSite()
       const { site: site2 } = await setupSite()
       await setupIsomerAdmin({
-        userId: session.userId!,
         role: IsomerAdminRole.Core,
+        userId: session.userId!,
       })
 
       // Act
@@ -265,10 +269,10 @@ describe("site.router", async () => {
       // Assert
       expect(result).toEqual(
         [site1, site2]
-          .sort((a, b) => a.id - b.id)
+          .toSorted((a, b) => a.id - b.id)
           .map((site) => ({
-            id: site.id,
             config: site.config,
+            id: site.id,
             role: RoleType.Admin,
           })),
       )
@@ -278,12 +282,12 @@ describe("site.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       await setupIsomerAdmin({
-        userId: session.userId!,
         role: IsomerAdminRole.Core,
+        userId: session.userId!,
       })
 
       // Act
@@ -292,8 +296,8 @@ describe("site.router", async () => {
       // Assert
       expect(result).toEqual([
         {
-          id: site.id,
           config: site.config,
+          id: site.id,
           role: RoleType.Admin,
         },
       ])
@@ -336,8 +340,8 @@ describe("site.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupIsomerAdmin({
-        userId: session.userId!,
         role: IsomerAdminRole.Core,
+        userId: session.userId!,
       })
 
       // Act
@@ -367,8 +371,8 @@ describe("site.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
@@ -432,8 +436,8 @@ describe("site.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
@@ -452,11 +456,11 @@ describe("site.router", async () => {
 
       // Act
       const result = unauthedCaller.updateSiteConfig({
-        siteName: MOCK_SITE_NAME,
         logoUrl: MOCK_LOGO_URL,
-        url: "https://www.isomer.gov.sg",
-        theme: "isomer-next",
         siteId: 1,
+        siteName: MOCK_SITE_NAME,
+        theme: "isomer-next",
+        url: "https://www.isomer.gov.sg",
       })
 
       // Assert
@@ -470,11 +474,11 @@ describe("site.router", async () => {
 
       // Act
       const result = caller.updateSiteConfig({
-        siteName: MOCK_SITE_NAME,
         logoUrl: MOCK_LOGO_URL,
-        url: "https://www.isomer.gov.sg",
-        theme: "isomer-next",
         siteId: site.id,
+        siteName: MOCK_SITE_NAME,
+        theme: "isomer-next",
+        url: "https://www.isomer.gov.sg",
       })
 
       // Assert
@@ -490,16 +494,16 @@ describe("site.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupPublisherPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       // Act
       const result = caller.updateSiteConfig({
-        siteName: MOCK_SITE_NAME,
         logoUrl: MOCK_LOGO_URL,
-        url: "https://www.isomer.gov.sg",
-        theme: "isomer-next",
         siteId: site.id,
+        siteName: MOCK_SITE_NAME,
+        theme: "isomer-next",
+        url: "https://www.isomer.gov.sg",
       })
 
       // Assert
@@ -518,17 +522,17 @@ describe("site.router", async () => {
         // Arrange
         const { site } = await setupSite()
         await setupAdminPermissions({
-          userId: session.userId,
           siteId: site.id,
+          userId: session.userId,
         })
 
         // Act
         const result = caller.updateSiteConfig({
-          siteName,
           logoUrl: MOCK_LOGO_URL,
-          url: "https://www.isomer.gov.sg",
-          theme: "isomer-next",
           siteId: site.id,
+          siteName,
+          theme: "isomer-next",
+          url: "https://www.isomer.gov.sg",
         })
 
         // Assert
@@ -543,25 +547,25 @@ describe("site.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = await caller.updateSiteConfig({
-        siteName: MOCK_SITE_NAME,
         logoUrl: MOCK_LOGO_URL,
-        url: "https://www.isomer.gov.sg",
-        theme: "isomer-next",
         siteId: site.id,
+        siteName: MOCK_SITE_NAME,
+        theme: "isomer-next",
+        url: "https://www.isomer.gov.sg",
       })
 
       // Assert
       expect(result).toEqual({
-        siteName: MOCK_SITE_NAME,
         logoUrl: MOCK_LOGO_URL,
-        url: "https://www.isomer.gov.sg",
+        siteName: MOCK_SITE_NAME,
         theme: "isomer-next",
+        url: "https://www.isomer.gov.sg",
       })
 
       // Verify Site.name column is also updated
@@ -576,21 +580,21 @@ describe("site.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = await caller.updateSiteConfig({
-        siteName: MOCK_SITE_NAME,
-        logoUrl: MOCK_LOGO_URL,
-        url: "https://www.isomer.gov.sg",
-        theme: "isomer-next",
-        siteId: site.id,
         askgov: {
           "data-agency":
             "https://www.ask.gov.sg/mha/questions/question-id?from=widget",
         },
+        logoUrl: MOCK_LOGO_URL,
+        siteId: site.id,
+        siteName: MOCK_SITE_NAME,
+        theme: "isomer-next",
+        url: "https://www.isomer.gov.sg",
       })
 
       // Assert
@@ -600,17 +604,17 @@ describe("site.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       await caller.updateSiteConfig({
-        siteName: MOCK_SITE_NAME,
         logoUrl: MOCK_LOGO_URL,
-        url: "https://www.isomer.gov.sg",
-        theme: "isomer-next",
         siteId: site.id,
+        siteName: MOCK_SITE_NAME,
+        theme: "isomer-next",
+        url: "https://www.isomer.gov.sg",
       })
 
       // Assert
@@ -620,8 +624,8 @@ describe("site.router", async () => {
       // Arrange
       const mockSearch = {
         search: {
-          type: "searchSG",
           clientId: MOCK_SEARCHSG_CLIENT_ID,
+          type: "searchSG",
         },
       } as const
       const searchSpy = vi.spyOn(searchSgService, "updateSearchSGConfig")
@@ -637,34 +641,34 @@ describe("site.router", async () => {
         .execute()
 
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = await caller.updateSiteConfig({
-        siteName: MOCK_SITE_NAME,
         logoUrl: MOCK_LOGO_URL,
-        url: "https://www.isomer.gov.sg",
-        theme: "isomer-next",
         siteId: site.id,
+        siteName: MOCK_SITE_NAME,
+        theme: "isomer-next",
+        url: "https://www.isomer.gov.sg",
         ...mockSearch,
       })
 
       // Assert
       expect(searchSpy).toHaveBeenCalledWith(
         {
-          name: MOCK_SITE_NAME,
           _kind: "name",
+          name: MOCK_SITE_NAME,
         },
         mockSearch.search.clientId,
         result.url,
       )
       expect(result).toEqual({
-        siteName: MOCK_SITE_NAME,
         logoUrl: MOCK_LOGO_URL,
-        url: "https://www.isomer.gov.sg",
+        siteName: MOCK_SITE_NAME,
         theme: "isomer-next",
+        url: "https://www.isomer.gov.sg",
         ...mockSearch,
       })
     })
@@ -677,30 +681,30 @@ describe("site.router", async () => {
         .set({
           config: {
             ...site.config,
-            search: { type: "searchSG", clientId: existingClientId },
+            search: { clientId: existingClientId, type: "searchSG" },
           },
         })
         .where("id", "=", site.id)
         .execute()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act - submit with a different clientId
       const result = await caller.updateSiteConfig({
-        siteName: MOCK_SITE_NAME,
         logoUrl: MOCK_LOGO_URL,
-        url: "https://www.isomer.gov.sg",
-        theme: "isomer-next",
+        search: { clientId: "../../other-client-id", type: "searchSG" },
         siteId: site.id,
-        search: { type: "searchSG", clientId: "../../other-client-id" },
+        siteName: MOCK_SITE_NAME,
+        theme: "isomer-next",
+        url: "https://www.isomer.gov.sg",
       })
 
       // Assert - the stored clientId should be the original DB value
       expect(result.search).toEqual({
-        type: "searchSG",
         clientId: existingClientId,
+        type: "searchSG",
       })
     })
     it("should call updateSearchSGConfig with the DB clientId, not the user-supplied one", async () => {
@@ -713,29 +717,29 @@ describe("site.router", async () => {
         .set({
           config: {
             ...site.config,
-            search: { type: "searchSG", clientId: existingClientId },
+            search: { clientId: existingClientId, type: "searchSG" },
           },
         })
         .where("id", "=", site.id)
         .execute()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act - submit with a different clientId and changed siteName to trigger searchsg update
       const result = await caller.updateSiteConfig({
-        siteName: MOCK_SITE_NAME,
         logoUrl: MOCK_LOGO_URL,
-        url: "https://www.isomer.gov.sg",
-        theme: "isomer-next",
+        search: { clientId: "../../other-client-id", type: "searchSG" },
         siteId: site.id,
-        search: { type: "searchSG", clientId: "../../other-client-id" },
+        siteName: MOCK_SITE_NAME,
+        theme: "isomer-next",
+        url: "https://www.isomer.gov.sg",
       })
 
       // Assert - updateSearchSGConfig is called with the preserved DB clientId
       expect(searchSpy).toHaveBeenCalledWith(
-        { name: MOCK_SITE_NAME, _kind: "name" },
+        { _kind: "name", name: MOCK_SITE_NAME },
         existingClientId,
         result.url,
       )
@@ -758,25 +762,25 @@ describe("site.router", async () => {
       // fall back on. The clientId is a valid UUID belonging to another site.
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = caller.updateSiteConfig({
-        siteName: MOCK_SITE_NAME,
         logoUrl: MOCK_LOGO_URL,
-        url: "https://www.isomer.gov.sg",
-        theme: "isomer-next",
-        siteId: site.id,
         search: {
-          type: "searchSG",
           clientId: MOCK_OTHER_SITE_SEARCHSG_CLIENT_ID,
+          type: "searchSG",
         },
+        siteId: site.id,
+        siteName: MOCK_SITE_NAME,
+        theme: "isomer-next",
+        url: "https://www.isomer.gov.sg",
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message:
@@ -788,22 +792,22 @@ describe("site.router", async () => {
       // Arrange - site is not on egazette-algolia
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act - attempt to introduce egazette-algolia (admin-managed) credentials
       const result = caller.updateSiteConfig({
-        siteName: MOCK_SITE_NAME,
         logoUrl: MOCK_LOGO_URL,
-        url: "https://www.isomer.gov.sg",
-        theme: "isomer-next",
-        siteId: site.id,
         search: MOCK_EGAZETTE_ALGOLIA_SEARCH,
+        siteId: site.id,
+        siteName: MOCK_SITE_NAME,
+        theme: "isomer-next",
+        url: "https://www.isomer.gov.sg",
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message:
@@ -825,22 +829,22 @@ describe("site.router", async () => {
         .where("id", "=", site.id)
         .execute()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act - attempt to downgrade to localSearch
       const result = caller.updateSiteConfig({
-        siteName: MOCK_SITE_NAME,
         logoUrl: MOCK_LOGO_URL,
-        url: "https://www.isomer.gov.sg",
-        theme: "isomer-next",
+        search: { searchUrl: "/search", type: "localSearch" },
         siteId: site.id,
-        search: { type: "localSearch", searchUrl: "/search" },
+        siteName: MOCK_SITE_NAME,
+        theme: "isomer-next",
+        url: "https://www.isomer.gov.sg",
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message:
@@ -862,23 +866,23 @@ describe("site.router", async () => {
         .where("id", "=", site.id)
         .execute()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act - submit egazette-algolia with tampered credentials
       const result = await caller.updateSiteConfig({
-        siteName: MOCK_SITE_NAME,
         logoUrl: MOCK_LOGO_URL,
-        url: "https://www.isomer.gov.sg",
-        theme: "isomer-next",
-        siteId: site.id,
         search: {
           ...MOCK_EGAZETTE_ALGOLIA_SEARCH,
           appId: "attacker-app-id",
-          searchApiKey: "attacker-key",
           indexName: "attacker-index",
+          searchApiKey: "attacker-key",
         },
+        siteId: site.id,
+        siteName: MOCK_SITE_NAME,
+        theme: "isomer-next",
+        url: "https://www.isomer.gov.sg",
       })
 
       // Assert - the stored search config is the original DB value
@@ -888,8 +892,8 @@ describe("site.router", async () => {
 
   describe("updateSiteIntegrations", () => {
     const MOCK_INTEGRATION_DATA = {
-      siteName: MOCK_SITE_NAME,
       logoUrl: MOCK_LOGO_URL,
+      siteName: MOCK_SITE_NAME,
       theme: "isomer-next",
       url: "https://www.isomer.gov.sg",
     } as const
@@ -901,8 +905,8 @@ describe("site.router", async () => {
 
       // Act
       const result = unauthedCaller.updateSiteIntegrations({
-        siteId: 1,
         data: MOCK_INTEGRATION_DATA,
+        siteId: 1,
       })
 
       // Assert
@@ -916,8 +920,8 @@ describe("site.router", async () => {
 
       // Act
       const result = caller.updateSiteIntegrations({
-        siteId: site.id,
         data: MOCK_INTEGRATION_DATA,
+        siteId: site.id,
       })
 
       // Assert
@@ -933,13 +937,13 @@ describe("site.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupPublisherPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       // Act
       const result = caller.updateSiteIntegrations({
-        siteId: site.id,
         data: MOCK_INTEGRATION_DATA,
+        siteId: site.id,
       })
 
       // Assert
@@ -955,8 +959,8 @@ describe("site.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
@@ -970,24 +974,24 @@ describe("site.router", async () => {
     })
     it.each([
       {
-        input: "http://ask.gov.sg/mom/?topic=employment#contact",
-        expected: "mom",
         description: "URL",
+        expected: "mom",
+        input: "http://ask.gov.sg/mom/?topic=employment#contact",
       },
       {
-        input: "www.ask.gov.sg/help/questions/question-id",
-        expected: "help",
         description: "scheme-less URL",
+        expected: "help",
+        input: "www.ask.gov.sg/help/questions/question-id",
       },
-      { input: "mha", expected: "mha", description: "ID" },
+      { description: "ID", expected: "mha", input: "mha" },
     ])(
       "should store an AskGov $description as the agency ID when updating site integrations",
       async ({ input, expected }) => {
         // Arrange
         const { site } = await setupSite()
         await setupAdminPermissions({
-          userId: session.userId,
           siteId: site.id,
+          userId: session.userId,
         })
 
         // Act
@@ -1007,14 +1011,14 @@ describe("site.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       await caller.updateSiteIntegrations({
-        siteId: site.id,
         data: MOCK_INTEGRATION_DATA,
+        siteId: site.id,
       })
 
       // Assert
@@ -1025,8 +1029,8 @@ describe("site.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
@@ -1035,8 +1039,8 @@ describe("site.router", async () => {
         fake: "fake",
       }
       const result = await caller.updateSiteIntegrations({
-        siteId: site.id,
         data: invalidIntegrationData,
+        siteId: site.id,
       })
 
       // Assert
@@ -1047,17 +1051,17 @@ describe("site.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = caller.updateSiteIntegrations({
-        siteId: site.id,
         data: {
           ...MOCK_INTEGRATION_DATA,
           siteGtmId: "');alert(document.cookie);//",
         },
+        siteId: site.id,
       })
 
       // Assert
@@ -1072,56 +1076,56 @@ describe("site.router", async () => {
         .set({
           config: {
             ...site.config,
-            search: { type: "searchSG", clientId: MOCK_SEARCHSG_CLIENT_ID },
+            search: { clientId: MOCK_SEARCHSG_CLIENT_ID, type: "searchSG" },
           },
         })
         .where("id", "=", site.id)
         .execute()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act - submit another site's clientId
       const result = await caller.updateSiteIntegrations({
-        siteId: site.id,
         data: {
           ...MOCK_INTEGRATION_DATA,
           search: {
-            type: "searchSG",
             clientId: MOCK_OTHER_SITE_SEARCHSG_CLIENT_ID,
+            type: "searchSG",
           },
         },
+        siteId: site.id,
       })
 
       // Assert - the stored clientId should be the original DB value
       expect(result.config.search).toEqual({
-        type: "searchSG",
         clientId: MOCK_SEARCHSG_CLIENT_ID,
+        type: "searchSG",
       })
     })
     it("should not allow a site admin to enable searchSG with a supplied clientId", async () => {
       // Arrange - no search integration, so there is no clientId in the DB
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = caller.updateSiteIntegrations({
-        siteId: site.id,
         data: {
           ...MOCK_INTEGRATION_DATA,
           search: {
-            type: "searchSG",
             clientId: MOCK_OTHER_SITE_SEARCHSG_CLIENT_ID,
+            type: "searchSG",
           },
         },
+        siteId: site.id,
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message:
@@ -1133,8 +1137,8 @@ describe("site.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       // Set the site config to have searchSG integration
       await db
@@ -1142,7 +1146,7 @@ describe("site.router", async () => {
         .set({
           config: jsonb({
             ...MOCK_INTEGRATION_DATA,
-            search: { type: "searchSG", clientId: "mock-client-id" },
+            search: { clientId: "mock-client-id", type: "searchSG" },
           }),
         })
         .where("id", "=", site.id)
@@ -1150,15 +1154,15 @@ describe("site.router", async () => {
 
       // Act
       const result = caller.updateSiteIntegrations({
-        siteId: site.id,
         data: {
           ...MOCK_INTEGRATION_DATA,
-          search: { type: "localSearch", searchUrl: "/search" },
+          search: { searchUrl: "/search", type: "localSearch" },
         },
+        siteId: site.id,
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message:
@@ -1171,21 +1175,21 @@ describe("site.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act — searchUrl must match pattern "^/" (enforced by LocalSearchSchema);
       // an absolute URL would enable open redirect via the form action.
       const result = caller.updateSiteIntegrations({
-        siteId: site.id,
         data: {
           ...MOCK_INTEGRATION_DATA,
           search: {
-            type: "localSearch",
             searchUrl: "https://attacker.com",
+            type: "localSearch",
           },
         },
+        siteId: site.id,
       })
 
       // Assert — validation is enforced by LocalSearchSchema's pattern "^/" via AJV;
@@ -1197,21 +1201,21 @@ describe("site.router", async () => {
       // Arrange - site is not on egazette-algolia
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act - attempt to introduce egazette-algolia (admin-managed) credentials
       const result = caller.updateSiteIntegrations({
-        siteId: site.id,
         data: {
           ...MOCK_INTEGRATION_DATA,
           search: MOCK_EGAZETTE_ALGOLIA_SEARCH,
         },
+        siteId: site.id,
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message:
@@ -1224,8 +1228,8 @@ describe("site.router", async () => {
       // Arrange - site is already on egazette-algolia
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       await db
         .updateTable("Site")
@@ -1240,15 +1244,15 @@ describe("site.router", async () => {
 
       // Act - attempt to downgrade to localSearch
       const result = caller.updateSiteIntegrations({
-        siteId: site.id,
         data: {
           ...MOCK_INTEGRATION_DATA,
-          search: { type: "localSearch", searchUrl: "/search" },
+          search: { searchUrl: "/search", type: "localSearch" },
         },
+        siteId: site.id,
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message:
@@ -1261,8 +1265,8 @@ describe("site.router", async () => {
       // Arrange - site is already on egazette-algolia
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       await db
         .updateTable("Site")
@@ -1277,16 +1281,16 @@ describe("site.router", async () => {
 
       // Act - submit egazette-algolia with tampered credentials
       const result = await caller.updateSiteIntegrations({
-        siteId: site.id,
         data: {
           ...MOCK_INTEGRATION_DATA,
           search: {
             ...MOCK_EGAZETTE_ALGOLIA_SEARCH,
             appId: "attacker-app-id",
-            searchApiKey: "attacker-key",
             indexName: "attacker-index",
+            searchApiKey: "attacker-key",
           },
         },
+        siteId: site.id,
       })
 
       // Assert - the stored search config is the original DB value
@@ -1302,8 +1306,8 @@ describe("site.router", async () => {
 
       // Act
       const result = unauthedCaller.setTheme({
-        theme: MOCK_ISOMER_THEME,
         siteId: 1,
+        theme: MOCK_ISOMER_THEME,
       })
 
       // Assert
@@ -1317,8 +1321,8 @@ describe("site.router", async () => {
 
       // Act
       const result = caller.setTheme({
-        theme: MOCK_ISOMER_THEME,
         siteId: site.id,
+        theme: MOCK_ISOMER_THEME,
       })
 
       // Assert
@@ -1340,14 +1344,14 @@ describe("site.router", async () => {
         .execute()
 
       await setupPublisherPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = caller.setTheme({
-        theme: MOCK_ISOMER_THEME,
         siteId: site.id,
+        theme: MOCK_ISOMER_THEME,
       })
 
       // Assert
@@ -1363,14 +1367,14 @@ describe("site.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = caller.setTheme({
-        theme: MOCK_ISOMER_THEME,
         siteId: site.id,
+        theme: MOCK_ISOMER_THEME,
       })
 
       // Assert
@@ -1390,14 +1394,14 @@ describe("site.router", async () => {
         .where("id", "=", site.id)
         .execute()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = await caller.setTheme({
-        theme: MOCK_ISOMER_THEME,
         siteId: site.id,
+        theme: MOCK_ISOMER_THEME,
       })
 
       // Assert
@@ -1408,30 +1412,30 @@ describe("site.router", async () => {
     it("should update searchsg if the user is a site admin", async () => {
       // Arrange
       const mockSearchSg = {
-        search: { type: "searchSG", clientId: MOCK_SEARCHSG_CLIENT_ID },
+        search: { clientId: MOCK_SEARCHSG_CLIENT_ID, type: "searchSG" },
       } as const
       const { site } = await setupSite()
       const spy = vi.spyOn(searchSgService, "updateSearchSGConfig")
       await db
         .updateTable("Site")
         .set({
-          theme: jsonb(MOCK_BLACK_THEME),
           config: {
             ...site.config,
             ...mockSearchSg,
           },
+          theme: jsonb(MOCK_BLACK_THEME),
         })
         .where("id", "=", site.id)
         .execute()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = await caller.setTheme({
-        theme: MOCK_ISOMER_THEME,
         siteId: site.id,
+        theme: MOCK_ISOMER_THEME,
       })
 
       // Assert
@@ -1451,8 +1455,8 @@ describe("site.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       await db
         .updateTable("Site")
@@ -1462,8 +1466,8 @@ describe("site.router", async () => {
 
       // Act
       await caller.setTheme({
-        theme: MOCK_ISOMER_THEME,
         siteId: site.id,
+        theme: MOCK_ISOMER_THEME,
       })
 
       // Assert
@@ -1506,8 +1510,8 @@ describe("site.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
@@ -1554,8 +1558,8 @@ describe("site.router", async () => {
       // Arrange
       const { site, footer } = await setupSite()
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
@@ -1563,8 +1567,8 @@ describe("site.router", async () => {
 
       // Assert
       expect(result).toEqual({
-        id: footer.id,
         content: footer.content,
+        id: footer.id,
         siteId: site.id,
       })
     })
@@ -1579,8 +1583,8 @@ describe("site.router", async () => {
 
       // Act
       const result = unauthedCaller.setFooter({
-        siteId: 1,
         footer: footerContent,
+        siteId: 1,
       })
 
       // Assert
@@ -1597,8 +1601,8 @@ describe("site.router", async () => {
 
       // Act
       const result = caller.setFooter({
-        siteId: site.id,
         footer: footerContent,
+        siteId: site.id,
       })
 
       // Assert
@@ -1617,14 +1621,14 @@ describe("site.router", async () => {
       const { site } = await setupSite()
       const footerContent = JSON.stringify({ foo: "bar" })
       await setupPublisherPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = caller.setFooter({
-        siteId: site.id,
         footer: footerContent,
+        siteId: site.id,
       })
 
       // Assert
@@ -1643,14 +1647,14 @@ describe("site.router", async () => {
       const { site } = await setupSite()
       const footerContent = { foo: "bar" }
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       await caller.setFooter({
-        siteId: site.id,
         footer: JSON.stringify(footerContent),
+        siteId: site.id,
       })
 
       // Assert
@@ -1663,20 +1667,16 @@ describe("site.router", async () => {
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog).toHaveLength(2)
       expect(
-        auditLog.some(({ eventType }) => {
-          return eventType === AuditLogEvent.FooterUpdate
-        }),
+        auditLog.some(
+          ({ eventType }) => eventType === AuditLogEvent.FooterUpdate,
+        ),
       ).toEqual(true)
       expect(
-        auditLog.some(({ eventType }) => {
-          return eventType === AuditLogEvent.Publish
-        }),
+        auditLog.some(({ eventType }) => eventType === AuditLogEvent.Publish),
       ).toEqual(true)
-      expect(
-        auditLog.every(({ userId }) => {
-          return userId === session.userId
-        }),
-      ).toEqual(true)
+      expect(auditLog.every(({ userId }) => userId === session.userId)).toEqual(
+        true,
+      )
     })
   })
 
@@ -1716,8 +1716,8 @@ describe("site.router", async () => {
       // Arrange
       const { site, navbar } = await setupSite()
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
@@ -1725,8 +1725,8 @@ describe("site.router", async () => {
 
       // Assert
       expect(result).toEqual({
-        id: navbar.id,
         content: navbar.content,
+        id: navbar.id,
         siteId: site.id,
       })
     })
@@ -1741,8 +1741,8 @@ describe("site.router", async () => {
 
       // Act
       const result = unauthedCaller.setNavbar({
-        siteId: 1,
         navbar: navbarContent,
+        siteId: 1,
       })
 
       // Assert
@@ -1759,8 +1759,8 @@ describe("site.router", async () => {
 
       // Act
       const result = caller.setNavbar({
-        siteId: site.id,
         navbar: navbarContent,
+        siteId: site.id,
       })
 
       // Assert
@@ -1779,14 +1779,14 @@ describe("site.router", async () => {
       const { site } = await setupSite()
       const navbarContent = JSON.stringify({ foo: "bar" })
       await setupPublisherPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = caller.setNavbar({
-        siteId: site.id,
         navbar: navbarContent,
+        siteId: site.id,
       })
 
       // Assert
@@ -1805,14 +1805,14 @@ describe("site.router", async () => {
       const { site } = await setupSite()
       const navbarContent = { foo: "bar" }
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       await caller.setNavbar({
-        siteId: site.id,
         navbar: JSON.stringify(navbarContent),
+        siteId: site.id,
       })
 
       // Assert
@@ -1825,20 +1825,16 @@ describe("site.router", async () => {
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog).toHaveLength(2)
       expect(
-        auditLog.some(({ eventType }) => {
-          return eventType === AuditLogEvent.NavbarUpdate
-        }),
+        auditLog.some(
+          ({ eventType }) => eventType === AuditLogEvent.NavbarUpdate,
+        ),
       ).toEqual(true)
       expect(
-        auditLog.some(({ eventType }) => {
-          return eventType === AuditLogEvent.Publish
-        }),
+        auditLog.some(({ eventType }) => eventType === AuditLogEvent.Publish),
       ).toEqual(true)
-      expect(
-        auditLog.every(({ userId }) => {
-          return userId === session.userId
-        }),
-      ).toEqual(true)
+      expect(auditLog.every(({ userId }) => userId === session.userId)).toEqual(
+        true,
+      )
     })
   })
 
@@ -1850,8 +1846,8 @@ describe("site.router", async () => {
 
       // Act
       const result = unauthedCaller.getLocalisedSitemap({
-        siteId: 1,
         resourceId: 1,
+        siteId: 1,
       })
 
       // Assert
@@ -1868,8 +1864,8 @@ describe("site.router", async () => {
 
       // Act
       const result = caller.getLocalisedSitemap({
+        resourceId: Math.trunc(Number(page.id)),
         siteId: site.id,
-        resourceId: parseInt(page.id),
       })
 
       // Assert
@@ -1888,18 +1884,19 @@ describe("site.router", async () => {
         resourceType: ResourceType.Page,
       })
       await setupPageResource({
-        resourceType: ResourceType.RootPage, // prerequisite
+        resourceType: ResourceType.RootPage,
+        // prerequisite
         siteId: site.id,
       })
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = await caller.getLocalisedSitemap({
+        resourceId: Math.trunc(Number(page.id)),
         siteId: site.id,
-        resourceId: parseInt(page.id),
       })
 
       // Assert
@@ -1943,8 +1940,8 @@ describe("site.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
@@ -1969,8 +1966,8 @@ describe("site.router", async () => {
             jsonb({
               // NOTE: This is in the old format
               notification: {
-                title,
                 content: [{ type: "text", text: content }],
+                title,
               },
             }),
           ),
@@ -1978,10 +1975,10 @@ describe("site.router", async () => {
         .where("id", "=", site.id)
         .execute()
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
-      const expected = generateNotification({ title, content })
+      const expected = generateNotification({ content, title })
 
       // Act
       const actual = await caller.getNotification({ siteId: site.id })
@@ -2003,10 +2000,10 @@ describe("site.router", async () => {
 
       // Act
       const result = unauthedCaller.setNotification({
-        siteId: 1,
         notification: {
           notification: { title: "foo" },
         },
+        siteId: 1,
       })
 
       // Assert
@@ -2020,16 +2017,16 @@ describe("site.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = caller.setNotification({
-        siteId: site.id,
         notification: {
           notification: { title: "foo" },
         },
+        siteId: site.id,
       })
 
       // Assert
@@ -2047,16 +2044,16 @@ describe("site.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupPublisherPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = caller.setNotification({
-        siteId: site.id,
         notification: {
           notification: { title: "foo" },
         },
+        siteId: site.id,
       })
 
       // Assert
@@ -2081,22 +2078,22 @@ describe("site.router", async () => {
             "||",
             // @ts-expect-error JSON concat operator replaces the entire notification object if it exists, but Kysely does not have types for this.
             jsonb({
-              notification: { content: [{ type: "text", text: "bar" }] },
+              notification: { content: [{ text: "bar", type: "text" }] },
             }),
           ),
         }))
         .where("id", "=", site.id)
         .execute()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       const notification = generateNotification({ title: "foo" })
 
       // Act
       await caller.setNotification({
-        siteId: site.id,
         notification,
+        siteId: site.id,
       })
 
       // Assert
@@ -2109,35 +2106,31 @@ describe("site.router", async () => {
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog).toHaveLength(2)
       expect(
-        auditLog.some(({ eventType }) => {
-          return eventType === AuditLogEvent.SiteConfigUpdate
-        }),
+        auditLog.some(
+          ({ eventType }) => eventType === AuditLogEvent.SiteConfigUpdate,
+        ),
       ).toEqual(true)
       expect(
-        auditLog.some(({ eventType }) => {
-          return eventType === AuditLogEvent.Publish
-        }),
+        auditLog.some(({ eventType }) => eventType === AuditLogEvent.Publish),
       ).toEqual(true)
-      expect(
-        auditLog.every(({ userId }) => {
-          return userId === session.userId
-        }),
-      ).toEqual(true)
+      expect(auditLog.every(({ userId }) => userId === session.userId)).toEqual(
+        true,
+      )
     })
 
     it("should add the site notification successfully if one did exist before", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       const notification = generateNotification({ title: "foo" })
 
       // Act
       await caller.setNotification({
-        siteId: site.id,
         notification,
+        siteId: site.id,
       })
 
       // Assert
@@ -2167,21 +2160,21 @@ describe("site.router", async () => {
             "||",
             // @ts-expect-error JSON concat operator replaces the entire notification object if it exists, but Kysely does not have types for this.
             jsonb({
-              notification: { content: [{ type: "text", text: "bar" }] },
+              notification: { content: [{ text: "bar", type: "text" }] },
             }),
           ),
         }))
         .where("id", "=", site.id)
         .execute()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       await caller.setNotification({
-        siteId: site.id,
         notification: {},
+        siteId: site.id,
       })
 
       // Assert
@@ -2213,11 +2206,11 @@ describe("site.router", async () => {
 
       // Act
       const result = unauthedCaller.setSiteConfigByAdmin({
-        siteId: 1,
         config: "config",
-        theme: "theme",
-        navbar: "navbar",
         footer: "footer",
+        navbar: "navbar",
+        siteId: 1,
+        theme: "theme",
       })
 
       // Assert
@@ -2233,11 +2226,11 @@ describe("site.router", async () => {
 
       // Act
       const result = caller.setSiteConfigByAdmin({
-        siteId: 1,
         config: "config",
-        theme: "theme",
-        navbar: "navbar",
         footer: "footer",
+        navbar: "navbar",
+        siteId: 1,
+        theme: "theme",
       })
 
       // Assert
@@ -2258,17 +2251,17 @@ describe("site.router", async () => {
       const NEW_FOOTER = `"footer"`
       const { site } = await setupSite()
       await setupIsomerAdmin({
-        userId: session.userId!,
         role: IsomerAdminRole.Core,
+        userId: session.userId!,
       })
 
       // Act
       await caller.setSiteConfigByAdmin({
-        siteId: site.id,
         config: NEW_CONFIG,
-        theme: NEW_THEME,
-        navbar: NEW_NAVBAR,
         footer: NEW_FOOTER,
+        navbar: NEW_NAVBAR,
+        siteId: site.id,
+        theme: NEW_THEME,
       })
 
       // Assert
@@ -2319,17 +2312,17 @@ describe("site.router", async () => {
       const NEW_FOOTER = `"footer"`
       const { site } = await setupSite()
       await setupIsomerAdmin({
-        userId: session.userId!,
         role: IsomerAdminRole.Migrator,
+        userId: session.userId!,
       })
 
       // Act
       await caller.setSiteConfigByAdmin({
-        siteId: site.id,
         config: NEW_CONFIG,
-        theme: NEW_THEME,
-        navbar: NEW_NAVBAR,
         footer: NEW_FOOTER,
+        navbar: NEW_NAVBAR,
+        siteId: site.id,
+        theme: NEW_THEME,
       })
 
       // Assert
@@ -2412,8 +2405,8 @@ describe("site.router", async () => {
     it("should create a new site successfully if user is an Isomer Core Admin", async () => {
       // Arrange
       await setupIsomerAdmin({
-        userId: session.userId!,
         role: IsomerAdminRole.Core,
+        userId: session.userId!,
       })
 
       // Act
@@ -2433,8 +2426,8 @@ describe("site.router", async () => {
       async (siteName) => {
         // Arrange
         await setupIsomerAdmin({
-          userId: session.userId!,
           role: IsomerAdminRole.Core,
+          userId: session.userId!,
         })
 
         // Act
@@ -2492,8 +2485,8 @@ describe("site.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupIsomerAdmin({
-        userId: session.userId!,
         role: IsomerAdminRole.Core,
+        userId: session.userId!,
       })
 
       // Act
@@ -2502,7 +2495,8 @@ describe("site.router", async () => {
       })
 
       // Assert
-      expect(result).toBeUndefined() // does not return anything
+      expect(result).toBeUndefined()
+      // does not return anything
     })
   })
 })
@@ -2511,18 +2505,12 @@ const assertAuditLog = async (sessionUserId?: string) => {
   const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
   expect(auditLog).toHaveLength(2)
   expect(
-    auditLog.some(({ eventType }) => {
-      return eventType === AuditLogEvent.SiteConfigUpdate
-    }),
+    auditLog.some(
+      ({ eventType }) => eventType === AuditLogEvent.SiteConfigUpdate,
+    ),
   ).toEqual(true)
   expect(
-    auditLog.some(({ eventType }) => {
-      return eventType === AuditLogEvent.Publish
-    }),
+    auditLog.some(({ eventType }) => eventType === AuditLogEvent.Publish),
   ).toEqual(true)
-  expect(
-    auditLog.every(({ userId }) => {
-      return userId === sessionUserId
-    }),
-  ).toEqual(true)
+  expect(auditLog.every(({ userId }) => userId === sessionUserId)).toEqual(true)
 }

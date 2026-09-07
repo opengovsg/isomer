@@ -7,7 +7,7 @@ import {
 } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
 import { useSetAtom } from "jotai"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
 import { useContext } from "react"
 import {
   BiDotsVerticalRounded,
@@ -55,18 +55,18 @@ export const UserTableMenu = ({
 
   const { mutate: resendInvite, isPending: isResendingInvite } =
     trpc.user.resendInvite.useMutation({
+      onError: (err) => {
+        toast({
+          description: err.message,
+          status: "error",
+          title: "Failed to resend invite",
+        })
+      },
       onSuccess: (result) => {
-        posthog.capture("user_invite_resent", { site_id: siteId })
+        posthogJs.capture("user_invite_resent", { site_id: siteId })
         toast({
           status: "success",
           title: `Invite resent to ${result.email}`,
-        })
-      },
-      onError: (err) => {
-        toast({
-          status: "error",
-          title: "Failed to resend invite",
-          description: err.message,
         })
       },
     })
@@ -85,9 +85,9 @@ export const UserTableMenu = ({
           {ability.can("manage", "UserManagement") && (
             <>
               <MenuItem
-                onClick={() =>
-                  setUpdateUserModalState({ siteId, userId, email, role })
-                }
+                onClick={() => {
+                  setUpdateUserModalState({ email, role, siteId, userId })
+                }}
                 icon={<BiPencil fontSize="1rem" />}
                 aria-label={`Edit user ${userName}`}
                 isDisabled={!isSingpassEnabled}
@@ -101,7 +101,9 @@ export const UserTableMenu = ({
               </MenuItem>
               {canResendInviteToUser({ createdAt, lastLoginAt }) && (
                 <MenuItem
-                  onClick={() => resendInvite({ siteId, userId })}
+                  onClick={() => {
+                    resendInvite({ siteId, userId })
+                  }}
                   isDisabled={isResendingInvite || !isSingpassEnabled}
                   icon={<BiMailSend fontSize="1rem" />}
                   tooltip={
@@ -114,7 +116,9 @@ export const UserTableMenu = ({
                 </MenuItem>
               )}
               <MenuItem
-                onClick={() => setRemoveUserModalState({ siteId, userId })}
+                onClick={() => {
+                  setRemoveUserModalState({ siteId, userId })
+                }}
                 colorScheme="critical"
                 icon={<BiTrash fontSize="1rem" />}
                 aria-label={`Remove user access for ${userName}`}

@@ -21,9 +21,9 @@ export const whitelistRouter = router({
       // and allows checking if emails are whitelisted. This ensures proper
       // access control even though the operation itself is read-only.
       await validatePermissionsForManagingUsers({
+        action: "manage",
         siteId,
         userId: ctx.user.id,
-        action: "manage",
       })
 
       return await isEmailWhitelisted(email)
@@ -32,10 +32,10 @@ export const whitelistRouter = router({
     .input(whitelistEmailsInputSchema)
     .mutation(async ({ ctx, input: { adminEmails, vendorEmails } }) => {
       await validateUserIsIsomerAdmin({
-        userId: ctx.user.id,
         roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
+        userId: ctx.user.id,
       })
 
-      return whitelistEmails({ adminEmails, vendorEmails })
+      return await whitelistEmails({ adminEmails, vendorEmails })
     }),
 })

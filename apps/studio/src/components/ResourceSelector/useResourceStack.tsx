@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-boolean-expressions -- studio lint cleanup */
 import type { ResourceItemContent } from "~/schemas/resource"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { trpc } from "~/utils/trpc"
@@ -18,9 +19,9 @@ export const useResourceStack = ({
 
   const { data: pendingMovedItemAncestryStack } =
     trpc.resource.getAncestryStack.useQuery({
-      siteId: String(siteId),
-      resourceId: selectedResourceId ?? existingResource?.id,
       includeSelf: !!selectedResourceId,
+      resourceId: selectedResourceId ?? existingResource?.id,
+      siteId: String(siteId),
     })
 
   // NOTE: getAncestryStack's underlying query excludes RootPage from its base
@@ -29,11 +30,11 @@ export const useResourceStack = ({
   // selection still highlights "Home" instead of showing nothing selected.
   const isSelectedResourceHome = selectedResourceId === rootPage.id
   const homeAncestryItem: ResourceItemContent = {
-    title: "Home",
-    permalink: "",
-    type: ResourceType.RootPage,
     id: rootPage.id,
     parentId: null,
+    permalink: "",
+    title: "Home",
+    type: ResourceType.RootPage,
   }
 
   // NOTE: This is the stack of user's navigation through the resource tree
@@ -45,19 +46,24 @@ export const useResourceStack = ({
       : (pendingMovedItemAncestryStack ?? []),
   )
 
-  useEffect(() => {
-    return () => setResourceStack([])
-  }, [])
+  useEffect(
+    () => () => {
+      setResourceStack([])
+    },
+    [],
+  )
 
   const [isResourceHighlighted, setIsResourceHighlighted] =
     useState<boolean>(!!selectedResourceId)
 
   const moveDest = useMemo(
-    () => resourceStack[resourceStack.length - 1], // last item in stack
+    () => resourceStack.at(-1),
+    // last item in stack
     [resourceStack],
   )
   const parentDest = useMemo(
-    () => resourceStack[resourceStack.length - 2], // second last item in stack
+    () => resourceStack.at(-2),
+    // second last item in stack
     [resourceStack],
   )
 
@@ -73,9 +79,10 @@ export const useResourceStack = ({
     [],
   )
 
-  const fullPermalink = useMemo(() => {
-    return resourceStack.map((resource) => resource.permalink).join("/")
-  }, [resourceStack])
+  const fullPermalink = useMemo(
+    () => resourceStack.map((resource) => resource.permalink).join("/"),
+    [resourceStack],
+  )
 
   const moveDestPermalink = useMemo(() => {
     const resourcesForPath = [...resourceStack]
@@ -89,15 +96,15 @@ export const useResourceStack = ({
 
   // currently do not support fetching next page for search
   return {
-    rootPage,
     fullPermalink,
-    moveDestPermalink,
-    moveDest,
-    parentDest,
-    resourceStack,
     isResourceHighlighted,
+    moveDest,
+    moveDestPermalink,
+    parentDest,
+    removeFromStack,
+    resourceStack,
+    rootPage,
     setIsResourceHighlighted,
     setResourceStack,
-    removeFromStack,
   }
 }

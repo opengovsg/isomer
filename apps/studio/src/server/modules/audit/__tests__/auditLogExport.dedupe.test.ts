@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/require-array-sort-compare, typescript/no-unsafe-type-assertion, promise/no-callback-in-promise, promise/prefer-await-to-callbacks, typescript/require-await -- server lint cleanup */
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { getCurrentSingaporeMonth } from "~/schemas/audit"
 
@@ -55,7 +56,7 @@ const VALID_MONTH = getCurrentSingaporeMonth()
 
 // The requesting user, as the service's in-transaction `User` lookup returns
 // it (the actor of the AuditLogExportCreate event).
-const FAKE_USER = { id: "user-1", email: "admin@vendor.com.sg" }
+const FAKE_USER = { email: "admin@vendor.com.sg", id: "user-1" }
 
 // What the batch INSERT does with one row of its multi-row `values(...)`:
 // - "inserted": the row comes back in the INSERT's RETURNING set.
@@ -93,74 +94,45 @@ const makeTx = (script: TxScript) => {
   let selectCall = 0
 
   const tx = {
-    insertedValues,
     auditLogValues,
-    selectFrom: (table: string) => ({
-      where: function () {
-        return this
-      },
-      selectAll: function () {
-        return this
-      },
-      execute: () => {
-        if (table !== "AuditLogExportRequest") {
-          return Promise.reject(
-            new Error(`Unexpected execute() SELECT on ${table}`),
-          )
-        }
-        const result = script.selects?.[selectCall] ?? []
-        selectCall += 1
-        return Promise.resolve(result)
-      },
-      executeTakeFirstOrThrow: () => {
-        if (table === "User") {
-          return Promise.resolve(FAKE_USER)
-        }
-        return Promise.reject(
-          new Error(`Unexpected executeTakeFirstOrThrow SELECT on ${table}`),
-        )
-      },
-    }),
     insertInto: (table: string) => {
       let payload: unknown
       return {
-        values: function (v: unknown) {
+        values(v: unknown) {
           payload = v
           return this
         },
-        onConflict: function (cb: (oc: Record<string, unknown>) => unknown) {
+        onConflict(cb: (oc: Record<string, unknown>) => unknown) {
           // Exercise the conflict-target builder so a broken callback fails
           // loudly, without modelling the SQL it produces.
           const oc = {
-            columns: function () {
+            columns() {
               return this
             },
-            where: function () {
+            where() {
               return this
             },
-            doNothing: function () {
+            doNothing() {
               return this
             },
           }
           cb(oc)
           return this
         },
-        returningAll: function () {
+        returningAll() {
           return this
         },
-        execute: () => {
+        execute: async () => {
           if (table === "AuditLog") {
             const events = payload as
               | Record<string, unknown>
               | Record<string, unknown>[]
             auditLogValues.push(...(Array.isArray(events) ? events : [events]))
-            return Promise.resolve([])
+            return []
           }
 
           if (table !== "AuditLogExportRequest") {
-            return Promise.reject(
-              new Error(`Unexpected execute() INSERT into ${table}`),
-            )
+            throw new Error(`Unexpected execute() INSERT into ${table}`)
           }
 
           const rows = payload as { siteId: number }[]
@@ -171,7 +143,7 @@ const makeTx = (script: TxScript) => {
             .map((row) => outcomeBySite.get(row.siteId))
             .find((o) => o?.outcome === "error")
           if (errorOutcome?.outcome === "error") {
-            return Promise.reject(errorOutcome.error)
+            throw errorOutcome.error
           }
 
           const returned = rows
@@ -182,10 +154,33 @@ const makeTx = (script: TxScript) => {
               insertedValues.push(row)
               return { id: `row-${i}`, ...row }
             })
-          return Promise.resolve(returned)
+          return returned
         },
       }
     },
+    insertedValues,
+    selectFrom: (table: string) => ({
+      where() {
+        return this
+      },
+      selectAll() {
+        return this
+      },
+      execute: async () => {
+        if (table !== "AuditLogExportRequest") {
+          throw new Error(`Unexpected execute() SELECT on ${table}`)
+        }
+        const result = script.selects?.[selectCall] ?? []
+        selectCall += 1
+        return result
+      },
+      executeTakeFirstOrThrow: async () => {
+        if (table === "User") {
+          return FAKE_USER
+        }
+        throw new Error(`Unexpected executeTakeFirstOrThrow SELECT on ${table}`)
+      },
+    }),
   }
   return tx
 }
@@ -195,8 +190,8 @@ const makeTx = (script: TxScript) => {
 // transaction back (nothing committed) and re-surfaces the error.
 const useTx = (tx: ReturnType<typeof makeTx>) => {
   mockDb.transaction.mockReturnValue({
-    execute: (cb: (tx: unknown) => unknown) =>
-      Promise.resolve().then(() => cb(tx)),
+    execute: async (cb: (tx: unknown) => unknown) =>
+      await Promise.resolve().then(() => cb(tx)),
   })
 }
 
@@ -217,40 +212,41 @@ const expectExportCreateEvent = (
     // matching sibling resource/permission/login events.
     ipAddress,
     delta: {
-      before: null,
       after: { reportType: expectedReportType },
+      before: null,
     },
   })
   const delta = value?.delta as { after: { auditLogDateRange: string } }
   expect(delta.after.auditLogDateRange).toMatch(
-    /^\[\d{4}-\d{2}-\d{2},\d{4}-\d{2}-\d{2}\)$/,
+    /^\[\d{4}-\d{2}-\d{2},\d{4}-\d{2}-\d{2}\)$/u,
   )
 }
 
 describe("createAuditLogExportRequestsForSites — idempotent accept", () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mockValidatePermissions.mockResolvedValue(undefined)
+    // oxlint-disable-next-line unicorn/no-useless-undefined, typescript/require-await -- vitest mock void return
+    mockValidatePermissions.mockImplementation(async () => undefined)
   })
 
   it("resolves a race-losing insert to the winner's in-flight row (returned, not thrown)", async () => {
     // Arrange: the fast-path SELECT sees no in-flight row, the INSERT loses
     // the race (ON CONFLICT DO NOTHING → no row), and the follow-up SELECT
     // finds the winner's now-visible in-flight row.
-    const winnerRow = { id: "winner-row", siteId: 1, reportType: "Access" }
+    const winnerRow = { id: "winner-row", reportType: "Access", siteId: 1 }
     const tx = makeTx({
-      selects: [[], [winnerRow]],
       inserts: [{ site: 1, outcome: "conflict" }],
+      selects: [[], [winnerRow]],
     })
     useTx(tx)
 
     // Act
     const result = await createAuditLogExportRequestsForSites({
-      siteIds: [1],
-      userId: "user-1",
+      ip: "203.0.113.7",
       month: VALID_MONTH,
       reportType: "Access",
-      ip: "203.0.113.7",
+      siteIds: [1],
+      userId: "user-1",
     })
 
     // Assert: the caller gets the winner's row as a plain success; nothing of
@@ -271,30 +267,30 @@ describe("createAuditLogExportRequestsForSites — idempotent accept", () => {
     // also visible to that SELECT; the more recent `createdAt` disambiguates
     // the real race winner from it.
     const staleRow = {
-      id: "stale-row",
-      siteId: 1,
-      reportType: "Access",
       createdAt: new Date("2026-01-01T00:00:00Z"),
+      id: "stale-row",
+      reportType: "Access",
+      siteId: 1,
     }
     const winnerRowNowDone = {
-      id: "winner-row",
-      siteId: 1,
-      reportType: "Access",
-      status: "Done",
       createdAt: new Date("2026-06-01T00:00:00Z"),
+      id: "winner-row",
+      reportType: "Access",
+      siteId: 1,
+      status: "Done",
     }
     const tx = makeTx({
-      selects: [[], [staleRow, winnerRowNowDone]],
       inserts: [{ site: 1, outcome: "conflict" }],
+      selects: [[], [staleRow, winnerRowNowDone]],
     })
     useTx(tx)
 
     // Act
     const result = await createAuditLogExportRequestsForSites({
-      siteIds: [1],
-      userId: "user-1",
       month: VALID_MONTH,
       reportType: "Access",
+      siteIds: [1],
+      userId: "user-1",
     })
 
     // Assert: the newer (winner's) row wins over the stale one, and it is
@@ -308,17 +304,17 @@ describe("createAuditLogExportRequestsForSites — idempotent accept", () => {
     // Arrange: a genuine DB error must not be masked as an idempotent accept.
     const otherError = new Error("connection reset")
     const tx = makeTx({
-      selects: [[]],
       inserts: [{ site: 1, outcome: "error", error: otherError }],
+      selects: [[]],
     })
     useTx(tx)
 
     // Act
     const result = createAuditLogExportRequestsForSites({
-      siteIds: [1],
-      userId: "user-1",
       month: VALID_MONTH,
       reportType: "Access",
+      siteIds: [1],
+      userId: "user-1",
     })
 
     // Assert: surfaced as-is; the rejected transaction callback rolls the
@@ -331,18 +327,18 @@ describe("createAuditLogExportRequestsForSites — idempotent accept", () => {
     // (siteId, userId, range, reportType).
     const existingRow = {
       id: "existing-row",
-      siteId: 1,
       reportType: "Activity",
+      siteId: 1,
     }
     const tx = makeTx({ selects: [[existingRow]] })
     useTx(tx)
 
     // Act
     const result = await createAuditLogExportRequestsForSites({
-      siteIds: [1],
-      userId: "user-1",
       month: VALID_MONTH,
       reportType: "Activity",
+      siteIds: [1],
+      userId: "user-1",
     })
 
     // Assert: the existing row is returned, no INSERT was ever issued, and —
@@ -358,21 +354,21 @@ describe("createAuditLogExportRequestsForSites — idempotent accept", () => {
     // does not and gets freshly inserted — both in the same batch statement.
     const existingRow = {
       id: "existing-row-2",
-      siteId: 2,
       reportType: "Activity",
+      siteId: 2,
     }
     const tx = makeTx({
-      selects: [[existingRow]],
       inserts: [{ site: 1, outcome: "inserted" }],
+      selects: [[existingRow]],
     })
     useTx(tx)
 
     // Act
     const result = await createAuditLogExportRequestsForSites({
-      siteIds: [1, 2],
-      userId: "user-1",
       month: VALID_MONTH,
       reportType: "Activity",
+      siteIds: [1, 2],
+      userId: "user-1",
     })
 
     // Assert: one row per site, one INSERT row (only for site 1), one audit
@@ -387,7 +383,7 @@ describe("createAuditLogExportRequestsForSites — idempotent accept", () => {
     expect(tx.insertedValues).toHaveLength(1)
     expect(tx.insertedValues[0]).toMatchObject({ siteId: 1 })
     expect(tx.auditLogValues).toHaveLength(2)
-    const siteIdsLogged = tx.auditLogValues.map((v) => v.siteId).sort()
+    const siteIdsLogged = tx.auditLogValues.map((v) => v.siteId).toSorted()
     expect(siteIdsLogged).toEqual([1, 2])
   })
 })

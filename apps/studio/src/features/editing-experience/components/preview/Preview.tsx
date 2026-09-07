@@ -11,8 +11,8 @@ const SuspendablePreview = ({
   ...rest
 }: Omit<PreviewProps, "siteMap"> & { resourceId: number }) => {
   const [siteMap] = trpc.site.getLocalisedSitemap.useSuspenseQuery({
-    siteId,
     resourceId,
+    siteId,
   })
 
   return (

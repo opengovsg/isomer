@@ -1,4 +1,5 @@
 import { parse } from "superjson"
+import { isDefinedNumber } from "~/utils/truthiness"
 
 import { CONTAINER_INFORMATION_SCHEMA } from "../common"
 
@@ -16,7 +17,7 @@ if (!container) {
 const { host, ports } = container
 const port = ports.get(5156)
 
-if (!port) {
+if (!isDefinedNumber(port)) {
   throw new Error("Cannot find mapped port for mockpass")
 }
 

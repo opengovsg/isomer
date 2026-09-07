@@ -3,7 +3,13 @@ import { Center, Flex, Icon, Text } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { isEmpty } from "lodash-es"
 import { useRouter } from "next/router"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { useBuilderErrors } from "../editing-experience/components/form-builder/ErrorProvider"
 import { Can } from "../permissions"
@@ -49,13 +55,13 @@ export const SettingsHeader = ({
           type="submit"
           isLoading={isLoading}
           onClick={() => {
-            posthog.capture("settings_saved", {
-              site_id: router.query.siteId,
+            posthogJs.capture("settings_saved", {
               settings_section: router.pathname.split("/").pop(),
+              site_id: router.query.siteId,
             })
             onClick()
           }}
-          isDisabled={isDisabledProp || isDisabled}
+          isDisabled={isNullableBooleanTrue(isDisabledProp) || isDisabled}
           size="xs"
         >
           Publish

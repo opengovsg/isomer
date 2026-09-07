@@ -1,8 +1,9 @@
-import fs from "fs"
-import path from "path"
+/* oxlint-disable promise/prefer-await-to-callbacks, eslint/class-methods-use-this -- studio lint cleanup */
+import fs from "node:fs"
+import path from "node:path"
 
 export class FileLogger {
-  private logFilePath: string
+  private readonly logFilePath: string
 
   constructor(logFilePath: string) {
     this.logFilePath = logFilePath

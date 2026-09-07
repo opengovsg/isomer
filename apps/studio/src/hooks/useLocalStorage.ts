@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-warning-comments, unicorn/no-instanceof-builtins, typescript/strict-boolean-expressions, typescript/no-unsafe-type-assertion -- E2E compatibility */
 import type { SetStateAction } from "react"
 import { useCallback, useEffect, useState } from "react"
 import { LOCAL_STORAGE_EVENT } from "~/constants/localStorage"

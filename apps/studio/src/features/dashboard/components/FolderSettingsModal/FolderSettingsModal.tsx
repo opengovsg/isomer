@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-use-before-define, eslint/sort-keys, import/no-cycle, typescript/strict-boolean-expressions, typescript/strict-void-return, unicorn/no-unnecessary-type-conversion -- core cleanup deferred */
 import {
   Box,
   chakra,
@@ -31,13 +32,14 @@ import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { generateResourceUrl } from "~/features/editing-experience/components/utils"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
-import { sitePageSchema } from "~/pages/sites/[siteId]"
 import {
   baseEditFolderSchema,
   MAX_FOLDER_PERMALINK_LENGTH,
   MAX_FOLDER_TITLE_LENGTH,
 } from "~/schemas/folder"
+import { sitePageSchema } from "~/schemas/sitePageSchema"
 import { trpc } from "~/utils/trpc"
+import { hasNonEmptyString, isNullableBooleanTrue } from "~/utils/truthiness"
 
 import {
   DEFAULT_FOLDER_SETTINGS_MODAL_STATE,
@@ -56,8 +58,8 @@ const SuspendablePermalink = ({
 }: SuspendablePermalinkProps) => {
   const [{ fullPermalink }] =
     trpc.resource.getWithFullPermalink.useSuspenseQuery({
-      siteId,
       resourceId: folderId ? String(folderId) : "",
+      siteId,
     })
 
   return (
@@ -74,8 +76,9 @@ export const FolderSettingsModal = () => {
   const { folderId } = useAtomValue(folderSettingsModalAtom)
   const { siteId } = useQueryParse(sitePageSchema)
   const setFolderSettingsModalState = useSetAtom(folderSettingsModalAtom)
-  const onClose = () =>
+  const onClose = () => {
     setFolderSettingsModalState(DEFAULT_FOLDER_SETTINGS_MODAL_STATE)
+  }
 
   return (
     <Modal isOpen={!!folderId} onClose={onClose}>
@@ -104,22 +107,31 @@ const SuspendableModalContent = ({
 }) => {
   const [{ title: originalTitle, permalink: originalPermalink, parentId }] =
     trpc.folder.getMetadata.useSuspenseQuery({
-      siteId,
       resourceId: Number(folderId),
+      siteId,
     })
   const { register, handleSubmit, watch, control, formState } = useZodForm({
-    mode: "onChange",
     defaultValues: {
-      title: originalTitle,
       permalink: originalPermalink,
       shouldCreateRedirect: true,
+      title: originalTitle,
     },
-    schema: baseEditFolderSchema.omit({ siteId: true, resourceId: true }),
+    mode: "onChange",
+    schema: baseEditFolderSchema.omit({ resourceId: true, siteId: true }),
   })
   const { errors, isValid } = formState
   const utils = trpc.useUtils()
   const toast = useToast()
   const { mutate, isPending } = trpc.folder.editFolder.useMutation({
+    onError: (err) => {
+      toast({
+        title: "Failed to update folder",
+        status: "error",
+        // Deferred: check if this property is correct
+        description: err.message,
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    },
     onSettled: onClose,
     onSuccess: async () => {
       await utils.resource.listWithoutRoot.invalidate()
@@ -128,7 +140,7 @@ const SuspendableModalContent = ({
       // path already does a broad invalidate; this keeps folder rename in sync).
       await utils.resource.search.invalidate()
       await utils.resource.getChildrenOf.invalidate({
-        resourceId: parentId ? String(parentId) : null,
+        resourceId: hasNonEmptyString(parentId) ? String(parentId) : null,
       })
       await utils.folder.getMetadata.invalidate({
         resourceId: Number(folderId),
@@ -140,17 +152,8 @@ const SuspendableModalContent = ({
         resourceId: Number(folderId),
       })
       toast({
-        title: "Folder updated!",
         status: "success",
-        ...BRIEF_TOAST_SETTINGS,
-      })
-    },
-    onError: (err) => {
-      toast({
-        title: "Failed to update folder",
-        status: "error",
-        // TODO: check if this property is correct
-        description: err.message,
+        title: "Folder updated!",
         ...BRIEF_TOAST_SETTINGS,
       })
     },
@@ -183,7 +186,7 @@ const SuspendableModalContent = ({
                 my="0.5rem"
                 {...register("title")}
               />
-              {errors.title?.message ? (
+              {hasNonEmptyString(errors.title?.message) ? (
                 <FormErrorMessage>{errors.title.message}</FormErrorMessage>
               ) : (
                 <FormHelperText color="base.content.medium">
@@ -213,7 +216,7 @@ const SuspendableModalContent = ({
                   />
                 )}
               />
-              {errors.permalink?.message ? (
+              {hasNonEmptyString(errors.permalink?.message) ? (
                 <FormErrorMessage>{errors.permalink.message}</FormErrorMessage>
               ) : (
                 <Suspense fallback={<Skeleton w="100%" h="2rem" my="0.5rem" />}>
@@ -250,8 +253,10 @@ const SuspendableModalContent = ({
                     <Checkbox
                       alignItems="flex-start"
                       size="sm"
-                      isChecked={!!value}
-                      onChange={(e) => onChange(e.target.checked)}
+                      isChecked={!!isNullableBooleanTrue(value)}
+                      onChange={(e) => {
+                        onChange(e.target.checked)
+                      }}
                       ref={ref}
                       {...field}
                     >

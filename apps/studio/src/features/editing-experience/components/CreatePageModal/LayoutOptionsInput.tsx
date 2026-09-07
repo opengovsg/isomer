@@ -1,3 +1,4 @@
+/* oxlint-disable react/function-component-definition, typescript/strict-boolean-expressions, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { UseRadioGroupProps, UseRadioProps } from "@chakra-ui/react"
 import {
   Box,
@@ -21,8 +22,9 @@ interface LayoutTileProps extends UseRadioProps {
   value: Layout
 }
 
+// oxlint-disable-next-line react/display-name -- core cleanup deferred
 const LayoutOptionRadio = forwardRef<HTMLInputElement, LayoutTileProps>(
-  function LayoutOptionRadio(props, ref) {
+  (props, ref) => {
     const [isHover, setIsHover] = useState(false)
 
     const hoverTileColorFullOpacity = useToken(
@@ -50,8 +52,12 @@ const LayoutOptionRadio = forwardRef<HTMLInputElement, LayoutTileProps>(
           role="group"
           {...checkbox}
           cursor="pointer"
-          onMouseEnter={() => setIsHover(true)}
-          onMouseLeave={() => setIsHover(false)}
+          onMouseEnter={() => {
+            setIsHover(true)
+          }}
+          onMouseLeave={() => {
+            setIsHover(false)
+          }}
         >
           <Box
             borderWidth="2px"
@@ -59,8 +65,8 @@ const LayoutOptionRadio = forwardRef<HTMLInputElement, LayoutTileProps>(
             bg="interaction.muted.main.hover"
             borderColor="base.divider.medium"
             _groupChecked={{
-              borderColor: "base.divider.brand",
               bg: "interaction.muted.main.active",
+              borderColor: "base.divider.brand",
             }}
             transitionProperty="common"
             transitionDuration="normal"
@@ -138,10 +144,12 @@ const LayoutOptionRadio = forwardRef<HTMLInputElement, LayoutTileProps>(
 
 type LayoutOptionsInputProps = UseRadioGroupProps
 
+// oxlint-disable-next-line react/display-name -- core cleanup deferred
 export const LayoutOptionsInput = forwardRef<
   HTMLInputElement,
   LayoutOptionsInputProps
->(function LayoutOptionsInput(props, ref) {
+  // oxlint-disable-next-line react/function-component-definition -- core cleanup deferred
+>((props, ref) => {
   const { getRootProps, getRadioProps } = useRadioGroup(props)
 
   const group = getRootProps()

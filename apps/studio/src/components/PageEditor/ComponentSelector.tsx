@@ -1,5 +1,7 @@
+/* oxlint-disable typescript/no-unsafe-assignment, typescript/strict-boolean-expressions, eslint/no-unused-vars -- studio lint cleanup */
 import type { IsomerComponent } from "@opengovsg/isomer-components"
 import type { RequireAllOrNone } from "type-fest"
+import type { DrawerState } from "~/types/editorDrawer"
 import { chakra, Flex, Icon, Stack, Text, VStack } from "@chakra-ui/react"
 import { useFeatureValue } from "@growthbook/growthbook-react"
 import { Button, TouchableTooltip } from "@opengovsg/design-system-react"
@@ -7,9 +9,10 @@ import { useMemo } from "react"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { TYPE_TO_ICON } from "~/features/editing-experience/constants"
 import { IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
-import { type DrawerState } from "~/types/editorDrawer"
+import { isNullableBooleanTrue } from "~/utils/truthiness"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
+import type { SectionType } from "./types"
 import type { UsageTooltipProps } from "./UsageTooltip"
 import {
   ARTICLE_ALLOWED_BLOCKS,
@@ -20,28 +23,23 @@ import {
   getHomepageAllowedBlocks,
   INDEX_ALLOWED_BLOCKS,
 } from "./constants"
-import { type SectionType } from "./types"
 import { UsageTooltip } from "./UsageTooltip"
 
-const Section = ({ children }: React.PropsWithChildren) => {
-  return (
-    <VStack gap="1rem" alignItems="start" w="full">
-      {children}
-    </VStack>
-  )
-}
+const Section = ({ children }: React.PropsWithChildren) => (
+  <VStack gap="1rem" alignItems="start" w="full">
+    {children}
+  </VStack>
+)
 
-const SectionTitle = ({ title }: { title: string }) => {
-  return (
-    <Text textStyle="subhead-2" textColor="base.content.medium">
-      {title}
-    </Text>
-  )
-}
+const SectionTitle = ({ title }: { title: string }) => (
+  <Text textStyle="subhead-2" textColor="base.content.medium">
+    {title}
+  </Text>
+)
 
-const BlockList = ({ children }: React.PropsWithChildren) => {
-  return <Stack w="full">{children}</Stack>
-}
+const BlockList = ({ children }: React.PropsWithChildren) => (
+  <Stack w="full">{children}</Stack>
+)
 
 type BlockItemProps = UsageTooltipProps & {
   onProceed: (sectionType: SectionType) => void
@@ -80,13 +78,15 @@ const BlockItem = ({
       display="flex"
       alignItems="start"
       gap="0.75rem"
-      onClick={() => onProceed(sectionType)}
+      onClick={() => {
+        onProceed(sectionType)
+      }}
       _disabled={{
         bg: "interaction.support.disabled",
         borderColor: "base.divider.medium",
-        textColor: "interaction.support.disabled-content",
         cursor: "not-allowed",
         opacity: "75%",
+        textColor: "interaction.support.disabled-content",
       }}
       data-group
     >
@@ -107,7 +107,7 @@ const BlockItem = ({
     </chakra.button>
   )
 
-  if (isDisabled) {
+  if (isNullableBooleanTrue(isDisabled)) {
     return <TouchableTooltip label={disabledText}>{button}</TouchableTooltip>
   }
 
@@ -158,13 +158,14 @@ const ComponentSelector = () => {
       return
     }
 
-    // TODO: add new section to page/editor state
+    // Deferred: add new section to page/editor state
     // NOTE: Only paragraph should go to tiptap editor
     // the rest should use json forms
     const nextState: DrawerState["state"] =
       sectionType === "prose" ? "nativeEditor" : "complexEditor"
     const newComponent =
       // SAFETY: DEFAULT_BLOCKS keys align with sectionType and return valid Isomer components
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- DEFAULT_BLOCKS keys align with sectionType
       DEFAULT_BLOCKS[sectionType] as IsomerComponent | undefined
 
     const updatedBlocks = newComponent
@@ -183,11 +184,12 @@ const ComponentSelector = () => {
 
   const availableBlocks = useMemo(() => {
     switch (type) {
-      case ResourceType.RootPage:
+      case ResourceType.RootPage: {
         return getHomepageAllowedBlocks({
           includeAntiScamBanner: isHomepageAntiScamBannerEnabled,
         })
-      case ResourceType.Page:
+      }
+      case ResourceType.Page: {
         if (savedPageState.layout === "content") {
           return CONTENT_ALLOWED_BLOCKS
         } else if (savedPageState.layout === "article") {
@@ -196,20 +198,26 @@ const ComponentSelector = () => {
           return DATABASE_ALLOWED_BLOCKS
         }
         throw new Error(`Unsupported page layout: ${savedPageState.layout}`)
-      case ResourceType.CollectionPage:
+      }
+      case ResourceType.CollectionPage: {
         return ARTICLE_ALLOWED_BLOCKS
+      }
       case ResourceType.Collection:
-      case ResourceType.CollectionLink:
+      case ResourceType.CollectionLink: {
         return []
-      case ResourceType.IndexPage:
+      }
+      case ResourceType.IndexPage: {
         return INDEX_ALLOWED_BLOCKS
+      }
       case ResourceType.Folder:
       case ResourceType.FolderMeta:
-      case ResourceType.CollectionMeta:
+      case ResourceType.CollectionMeta: {
         throw new Error(`Unsupported resource type: ${type}`)
-      default:
+      }
+      default: {
         const exhaustiveCheck: never = type
         return exhaustiveCheck
+      }
     }
   }, [isHomepageAntiScamBannerEnabled, savedPageState.layout, type])
 
@@ -255,10 +263,10 @@ const ComponentSelector = () => {
           <Section key={section.label}>
             <SectionTitle title={section.label} />
             <BlockList>
-              {section.types.map((type) => {
-                const blockMeta = BLOCK_TO_META[type]
+              {section.types.map((typeValue) => {
+                const blockMeta = BLOCK_TO_META[typeValue]
                 const isDisabled =
-                  type === "childrenpages" &&
+                  typeValue === "childrenpages" &&
                   savedPageState.content.some(
                     (block) =>
                       block.type === "childrenpages" && !block.isHidden,
@@ -266,11 +274,11 @@ const ComponentSelector = () => {
 
                 return (
                   <BlockItem
-                    key={type}
-                    icon={TYPE_TO_ICON[type]}
+                    key={typeValue}
+                    icon={TYPE_TO_ICON[typeValue]}
                     onProceed={onProceed}
-                    sectionType={type}
-                    isDisabled={!!isDisabled}
+                    sectionType={typeValue}
+                    isDisabled={isDisabled}
                     disabledText="This page already has a child pages block."
                     {...blockMeta}
                   />

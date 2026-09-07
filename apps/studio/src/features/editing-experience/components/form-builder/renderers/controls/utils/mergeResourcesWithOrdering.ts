@@ -14,12 +14,13 @@ export const mergeResourcesWithOrdering = (
   const toAdd = difference(all, base)
   const toRemoveFromBaseSet = new Set(toRemoveFromBase)
 
+  // oxlint-disable-next-line unicorn/prefer-spread -- core cleanup deferred
   return base
     .filter((resourceId) => !toRemoveFromBaseSet.has(resourceId))
     .concat(
       // NOTE: We have to assume default sort order (alphabetical)
       // when we shift in new items
-      Array.from(toAdd).toSorted((a, b) => {
+      [...toAdd].toSorted((a, b) => {
         const aTitle = mappings.get(a) ?? ""
         const bTitle = mappings.get(b) ?? ""
 

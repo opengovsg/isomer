@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unnecessary-type-conversion -- server lint cleanup */
 import { TRPCError } from "@trpc/server"
 import { omit, pick } from "lodash-es"
 import { auth } from "tests/integration/helpers/auth"
@@ -59,9 +60,9 @@ describe("resource.router", async () => {
       "ResourcePermission",
     )
     const user = await setupUser({
-      userId: session.userId,
       email: "test@mock.com",
       isDeleted: false,
+      userId: session.userId,
     })
     await auth(user)
   })
@@ -74,8 +75,8 @@ describe("resource.router", async () => {
 
       // Act
       const result = unauthedCaller.getMetadataById({
-        siteId: 1,
         resourceId: "1",
+        siteId: 1,
       })
 
       // Assert
@@ -88,14 +89,14 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = caller.getMetadataById({
-        siteId: site.id,
         resourceId: "1",
+        siteId: site.id,
       })
 
       // Assert
@@ -119,16 +120,16 @@ describe("resource.router", async () => {
 
       // Act
       const result = caller.getMetadataById({
-        siteId: site.id,
         resourceId: page.id,
+        siteId: site.id,
       })
 
       // Assert
       const expected = {
         id: page.id,
-        title: page.title,
-        permalink: page.permalink,
         parentId: page.parentId,
+        permalink: page.permalink,
+        title: page.title,
         type: "Page",
       }
       await expect(result).resolves.toMatchObject(expected)
@@ -142,8 +143,8 @@ describe("resource.router", async () => {
 
       // Act
       const result = caller.getMetadataById({
-        siteId: site.id,
         resourceId: page.id,
+        siteId: site.id,
       })
 
       // Assert
@@ -167,9 +168,9 @@ describe("resource.router", async () => {
 
       // Act
       const result = unauthedCaller.getFolderChildrenOf({
+        limit: 25,
         resourceId: "1",
         siteId: "1",
-        limit: 25,
       })
 
       // Assert
@@ -188,9 +189,9 @@ describe("resource.router", async () => {
 
       // Act
       const result = caller.getFolderChildrenOf({
+        limit: 25,
         resourceId: "1",
         siteId: String(site.id),
-        limit: 25,
       })
 
       // Assert
@@ -214,8 +215,8 @@ describe("resource.router", async () => {
 
       // Act
       const result = caller.getFolderChildrenOf({
-        siteId: String(site.id),
         resourceId: page.id,
+        siteId: String(site.id),
       })
 
       // Assert
@@ -226,9 +227,9 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       const { folder } = await setupFolder({
-        siteId: site.id,
         parentId: null,
         permalink: "parent-folder",
+        siteId: site.id,
         title: "Parent folder",
       })
       await setupEditorPermissions({
@@ -238,9 +239,10 @@ describe("resource.router", async () => {
 
       // Act
       const result = await caller.getFolderChildrenOf({
-        siteId: String(site.id),
+        cursor: 600,
+        // does not exist
         resourceId: folder.id,
-        cursor: 600, // does not exist
+        siteId: String(site.id),
       })
 
       // Assert
@@ -257,9 +259,9 @@ describe("resource.router", async () => {
       const rootLevelFolders = await Promise.all(
         Array.from({ length: 30 }, (_, i) => i).map(async (i) => {
           const { folder } = await setupFolder({
-            siteId: site.id,
             parentId: null,
             permalink: `folder-${i}`,
+            siteId: site.id,
             title: `Test folder ${i}`,
           })
           return pick(folder, ["title", "permalink", "type", "id"])
@@ -267,13 +269,13 @@ describe("resource.router", async () => {
       )
       // Extra resources to assert that they are not returned
       await setupPageResource({
-        siteId: site.id,
         resourceType: "Page",
+        siteId: site.id,
       })
       await setupPageResource({
-        siteId: site.id,
         parentId: rootLevelFolders[3]!.id,
         resourceType: "Page",
+        siteId: site.id,
       })
       await setupEditorPermissions({
         siteId: site.id,
@@ -282,16 +284,19 @@ describe("resource.router", async () => {
 
       // Act
       const result = caller.getFolderChildrenOf({
-        siteId: String(site.id),
         resourceId: null,
+        siteId: String(site.id),
       })
 
       // Assert
       const expected = {
         items: rootLevelFolders
-          .sort((a, b) => a.title.localeCompare(b.title)) // should be sorted by title
-          .slice(0, 10), // should only have 10 items
-        nextOffset: 10, // default limit is 10
+          .toSorted((a, b) => a.title.localeCompare(b.title))
+          // should be sorted by title
+          .slice(0, 10),
+        // should only have 10 items
+        nextOffset: 10,
+        // default limit is 10
       }
       await expect(result).resolves.toMatchObject(expected)
     })
@@ -300,17 +305,17 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       const { folder: parentFolder } = await setupFolder({
-        siteId: site.id,
         parentId: null,
         permalink: "parent-folder",
+        siteId: site.id,
         title: "Parent folder",
       })
       const childFolders = await Promise.all(
         Array.from({ length: 30 }, (_, i) => i).map(async (i) => {
           const { folder } = await setupFolder({
-            siteId: site.id,
             parentId: parentFolder.id,
             permalink: `child-folder-${i}`,
+            siteId: site.id,
             title: `Child folder ${i}`,
           })
           return pick(folder, ["title", "permalink", "type", "id"])
@@ -323,16 +328,19 @@ describe("resource.router", async () => {
 
       // Act
       const result = caller.getFolderChildrenOf({
-        siteId: String(site.id),
         resourceId: parentFolder.id,
+        siteId: String(site.id),
       })
 
       // Assert
       const expected = {
         items: childFolders
-          .sort((a, b) => a.title.localeCompare(b.title)) // should be sorted by title
-          .slice(0, 10), // should only have 10 items
-        nextOffset: 10, // default limit is 10
+          .toSorted((a, b) => a.title.localeCompare(b.title))
+          // should be sorted by title
+          .slice(0, 10),
+        // should only have 10 items
+        nextOffset: 10,
+        // default limit is 10
       }
       await expect(result).resolves.toMatchObject(expected)
     })
@@ -342,17 +350,17 @@ describe("resource.router", async () => {
       const setLimit = 5
       const { site } = await setupSite()
       const { folder: parentFolder } = await setupFolder({
-        siteId: site.id,
         parentId: null,
         permalink: "parent-folder",
+        siteId: site.id,
         title: "Parent folder",
       })
       const childFolders = await Promise.all(
         Array.from({ length: 30 }, (_, i) => i).map(async (i) => {
           const { folder } = await setupFolder({
-            siteId: site.id,
             parentId: parentFolder.id,
             permalink: `child-folder-${i}`,
+            siteId: site.id,
             title: `Child folder ${i}`,
           })
           return pick(folder, ["title", "permalink", "type", "id"])
@@ -365,17 +373,20 @@ describe("resource.router", async () => {
 
       // Act
       const result = caller.getFolderChildrenOf({
-        siteId: String(site.id),
-        resourceId: parentFolder.id,
         limit: setLimit,
+        resourceId: parentFolder.id,
+        siteId: String(site.id),
       })
 
       // Assert
       const expected = {
         items: childFolders
-          .sort((a, b) => a.title.localeCompare(b.title)) // should be sorted by title
-          .slice(0, setLimit), // should only have 5 items
-        nextOffset: setLimit, // limit is 5
+          .toSorted((a, b) => a.title.localeCompare(b.title))
+          // should be sorted by title
+          .slice(0, setLimit),
+        // should only have 5 items
+        nextOffset: setLimit,
+        // limit is 5
       }
       await expect(result).resolves.toMatchObject(expected)
     })
@@ -386,17 +397,17 @@ describe("resource.router", async () => {
       const nextLimit = 10
       const { site } = await setupSite()
       const { folder: parentFolder } = await setupFolder({
-        siteId: site.id,
         parentId: null,
         permalink: "parent-folder",
+        siteId: site.id,
         title: "Parent folder",
       })
       const childFolders = await Promise.all(
         Array.from({ length: 30 }, (_, i) => i).map(async (i) => {
           const { folder } = await setupFolder({
-            siteId: site.id,
             parentId: parentFolder.id,
             permalink: `child-folder-${i}`,
+            siteId: site.id,
             title: `Child folder ${i}`,
           })
           return pick(folder, ["title", "permalink", "type", "id"])
@@ -409,18 +420,21 @@ describe("resource.router", async () => {
 
       // Act
       const result = await caller.getFolderChildrenOf({
-        siteId: String(site.id),
-        resourceId: parentFolder.id,
-        limit: nextLimit,
         cursor,
+        limit: nextLimit,
+        resourceId: parentFolder.id,
+        siteId: String(site.id),
       })
 
       // Assert
       const expected = {
         items: childFolders
-          .sort((a, b) => a.title.localeCompare(b.title)) // should be sorted by title
-          .slice(cursor, cursor + nextLimit), // should only have 5 items
-        nextOffset: cursor + nextLimit, // limit is 5
+          .toSorted((a, b) => a.title.localeCompare(b.title))
+          // should be sorted by title
+          .slice(cursor, cursor + nextLimit),
+        // should only have 5 items
+        nextOffset: cursor + nextLimit,
+        // limit is 5
       }
       expect(result).toMatchObject(expected)
     })
@@ -431,17 +445,17 @@ describe("resource.router", async () => {
       const numberOfItems = 3
       const { site } = await setupSite()
       const { folder: parentFolder } = await setupFolder({
-        siteId: site.id,
         parentId: null,
         permalink: "parent-folder",
+        siteId: site.id,
         title: "Parent folder",
       })
       const childFolders = await Promise.all(
         Array.from({ length: numberOfItems }, (_, i) => i).map(async (i) => {
           const { folder } = await setupFolder({
-            siteId: site.id,
             parentId: parentFolder.id,
             permalink: `child-folder-${i}`,
+            siteId: site.id,
             title: `Child folder ${i}`,
           })
           return pick(folder, ["title", "permalink", "type", "id"])
@@ -454,14 +468,15 @@ describe("resource.router", async () => {
 
       // Act
       const result = await caller.getFolderChildrenOf({
-        siteId: String(site.id),
-        resourceId: parentFolder.id,
         limit: setLimit,
+        resourceId: parentFolder.id,
+        siteId: String(site.id),
       })
 
       // Assert
       const expected = {
-        items: childFolders.sort((a, b) => a.title.localeCompare(b.title)), // should be sorted by title
+        items: childFolders.toSorted((a, b) => a.title.localeCompare(b.title)),
+        // should be sorted by title
         nextOffset: null,
       }
       expect(result).toMatchObject(expected)
@@ -473,8 +488,8 @@ describe("resource.router", async () => {
 
       // Act
       const result = caller.getFolderChildrenOf({
-        siteId: String(site.id),
         resourceId: null,
+        siteId: String(site.id),
       })
 
       // Assert
@@ -498,9 +513,9 @@ describe("resource.router", async () => {
 
       // Act
       const result = unauthedCaller.getChildrenOf({
+        limit: 25,
         resourceId: "1",
         siteId: "1",
-        limit: 25,
       })
 
       // Assert
@@ -519,9 +534,9 @@ describe("resource.router", async () => {
 
       // Act
       const result = caller.getChildrenOf({
+        limit: 25,
         resourceId: "1",
         siteId: String(site.id),
-        limit: 25,
       })
 
       // Assert
@@ -545,8 +560,8 @@ describe("resource.router", async () => {
 
       // Act
       const result = caller.getChildrenOf({
-        siteId: String(site.id),
         resourceId: page.id,
+        siteId: String(site.id),
       })
 
       // Assert
@@ -558,18 +573,18 @@ describe("resource.router", async () => {
       const { site } = await setupSite()
       // Create a root page
       await setupPageResource({
-        siteId: site.id,
         resourceType: "RootPage",
+        siteId: site.id,
         title: "___Root page, should not be returned",
       })
       // Create first-level pages
       const childPages = await Promise.all(
         Array.from({ length: 3 }, (_, i) => i).map(async (i) => {
           const { page } = await setupPageResource({
-            siteId: site.id,
             permalink: `child-page-${i}`,
-            title: `Child page ${i}`,
             resourceType: "Page",
+            siteId: site.id,
+            title: `Child page ${i}`,
           })
           return pick(page, ["title", "permalink", "type", "id"])
         }),
@@ -581,14 +596,14 @@ describe("resource.router", async () => {
 
       // Act
       const result = await caller.getChildrenOf({
-        siteId: String(site.id),
         resourceId: null,
+        siteId: String(site.id),
       })
 
       // Assert
       const expected = {
         // should not have rootPage returned
-        items: childPages.sort((a, b) => a.title.localeCompare(b.title)),
+        items: childPages.toSorted((a, b) => a.title.localeCompare(b.title)),
         nextOffset: null,
       }
       expect(result).toMatchObject(expected)
@@ -598,15 +613,15 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupPageResource({
-        siteId: site.id,
-        resourceType: "Page",
         permalink: "search",
+        resourceType: "Page",
+        siteId: site.id,
         title: "Search",
       })
       await setupPageResource({
-        siteId: site.id,
-        resourceType: "Page",
         permalink: "about",
+        resourceType: "Page",
+        siteId: site.id,
         title: "About",
       })
       await setupEditorPermissions({
@@ -616,13 +631,13 @@ describe("resource.router", async () => {
 
       // Act
       const linkPickerResult = await caller.getChildrenOf({
-        siteId: String(site.id),
         resourceId: null,
+        siteId: String(site.id),
       })
       const directorySidebarResult = await caller.getChildrenOf({
-        siteId: String(site.id),
-        resourceId: null,
         includeSearchPage: false,
+        resourceId: null,
+        siteId: String(site.id),
       })
 
       // Assert
@@ -640,9 +655,9 @@ describe("resource.router", async () => {
       const { site } = await setupSite()
       // Create a folder
       const { folder } = await setupFolder({
-        siteId: site.id,
         parentId: null,
         permalink: "parent-folder",
+        siteId: site.id,
         title: "Parent folder",
       })
       const { collection } = await setupCollection({
@@ -650,27 +665,27 @@ describe("resource.router", async () => {
       })
       // Create FolderMeta, CollectionMeta, and CollectionLink
       await setupFolderMeta({
-        siteId: site.id,
         folderId: folder.id,
+        siteId: site.id,
       })
       await setupCollectionMeta({
-        siteId: site.id,
         collectionId: collection.id,
+        siteId: site.id,
       })
       await setupCollectionLink({
-        siteId: site.id,
         collectionId: collection.id,
+        siteId: site.id,
         title: "Collection Link",
       })
       // Create children pages of folder
       const childPages = await Promise.all(
         Array.from({ length: 3 }, (_, i) => i).map(async (i) => {
           const { page } = await setupPageResource({
-            siteId: site.id,
-            permalink: `child-page-${i}`,
-            title: `Child page ${i}`,
-            resourceType: "Page",
             parentId: folder.id,
+            permalink: `child-page-${i}`,
+            resourceType: "Page",
+            siteId: site.id,
+            title: `Child page ${i}`,
           })
           return pick(page, ["title", "permalink", "type", "id"])
         }),
@@ -679,11 +694,11 @@ describe("resource.router", async () => {
       const childCollectionPages = await Promise.all(
         Array.from({ length: 3 }, (_, i) => i).map(async (i) => {
           const { page } = await setupPageResource({
-            siteId: site.id,
-            permalink: `collection-child-page-${i}`,
-            title: `Collection Child page ${i}`,
-            resourceType: "Page",
             parentId: collection.id,
+            permalink: `collection-child-page-${i}`,
+            resourceType: "Page",
+            siteId: site.id,
+            title: `Collection Child page ${i}`,
           })
           return pick(page, ["title", "permalink", "type", "id"])
         }),
@@ -695,21 +710,21 @@ describe("resource.router", async () => {
 
       // Act
       const resultFolder = await caller.getChildrenOf({
-        siteId: String(site.id),
         resourceId: folder.id,
+        siteId: String(site.id),
       })
       const resultCollection = await caller.getChildrenOf({
-        siteId: String(site.id),
         resourceId: collection.id,
+        siteId: String(site.id),
       })
 
       // Assert
       const expectedFolder = {
-        items: childPages.sort((a, b) => a.title.localeCompare(b.title)),
+        items: childPages.toSorted((a, b) => a.title.localeCompare(b.title)),
         nextOffset: null,
       }
       const expectedCollection = {
-        items: childCollectionPages.sort((a, b) =>
+        items: childCollectionPages.toSorted((a, b) =>
           a.title.localeCompare(b.title),
         ),
         nextOffset: null,
@@ -722,9 +737,9 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       const { folder } = await setupFolder({
-        siteId: site.id,
         parentId: null,
         permalink: "parent-folder",
+        siteId: site.id,
         title: "Parent folder",
       })
       await setupEditorPermissions({
@@ -734,9 +749,10 @@ describe("resource.router", async () => {
 
       // Act
       const result = await caller.getChildrenOf({
-        siteId: String(site.id),
+        cursor: 600,
+        // does not exist
         resourceId: folder.id,
-        cursor: 600, // does not exist
+        siteId: String(site.id),
       })
 
       // Assert
@@ -753,9 +769,9 @@ describe("resource.router", async () => {
       const rootLevelFolders = await Promise.all(
         Array.from({ length: 15 }, (_, i) => i).map(async (i) => {
           const { folder } = await setupFolder({
-            siteId: site.id,
             parentId: null,
             permalink: `folder-${i}`,
+            siteId: site.id,
             title: `Test folder ${i}`,
           })
           return pick(folder, ["title", "permalink", "type", "id"])
@@ -763,17 +779,17 @@ describe("resource.router", async () => {
       )
       // Extra root-level resources to assert that they are also returned
       const { page: rootLevelPage } = await setupPageResource({
+        resourceType: "Page",
         siteId: site.id,
         title: "__this should be returned",
-        resourceType: "Page",
       })
 
       // Extra nested resources to assert these are not returned
       await setupPageResource({
-        siteId: site.id,
-        title: "__this should not return",
         parentId: rootLevelFolders[3]!.id,
         resourceType: "Page",
+        siteId: site.id,
+        title: "__this should not return",
       })
       await setupEditorPermissions({
         siteId: site.id,
@@ -782,8 +798,8 @@ describe("resource.router", async () => {
 
       // Act
       const result = await caller.getChildrenOf({
-        siteId: String(site.id),
         resourceId: null,
+        siteId: String(site.id),
       })
 
       // Assert
@@ -793,9 +809,11 @@ describe("resource.router", async () => {
           pick(rootLevelPage, ["title", "permalink", "type", "id"]),
         ]
           // case sensitive sort to follow db order
-          .sort((a, b) => a.title.localeCompare(b.title))
-          .slice(0, 10), // should only have 10 items
-        nextOffset: 10, // default limit is 10
+          .toSorted((a, b) => a.title.localeCompare(b.title))
+          .slice(0, 10),
+        // should only have 10 items
+        nextOffset: 10,
+        // default limit is 10
       }
       expect(result).toMatchObject(expected)
     })
@@ -804,17 +822,17 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       const { folder: parentFolder } = await setupFolder({
-        siteId: site.id,
         parentId: null,
         permalink: "parent-folder",
+        siteId: site.id,
         title: "Parent folder",
       })
       const childFolders = await Promise.all(
         Array.from({ length: 30 }, (_, i) => i).map(async (i) => {
           const { folder } = await setupFolder({
-            siteId: site.id,
             parentId: parentFolder.id,
             permalink: `child-folder-${i}`,
+            siteId: site.id,
             title: `Child folder ${i}`,
           })
           return pick(folder, ["title", "permalink", "type", "id"])
@@ -823,11 +841,11 @@ describe("resource.router", async () => {
       const childPages = await Promise.all(
         Array.from({ length: 2 }, (_, i) => i).map(async (i) => {
           const { page } = await setupPageResource({
-            siteId: site.id,
             parentId: parentFolder.id,
             permalink: `child-page-${i}`,
-            title: `__should be returned Child page ${i}`,
             resourceType: "Page",
+            siteId: site.id,
+            title: `__should be returned Child page ${i}`,
           })
           return pick(page, ["title", "permalink", "type", "id"])
         }),
@@ -836,9 +854,9 @@ describe("resource.router", async () => {
       await Promise.all(
         Array.from({ length: 3 }, (_, i) => i).map(async (i) => {
           const { folder } = await setupFolder({
-            siteId: site.id,
             parentId: null,
             permalink: `root-folder-${i}`,
+            siteId: site.id,
             title: `____Root folder, should not be returned ${i}`,
           })
           return pick(folder, ["title", "permalink", "type", "id"])
@@ -851,16 +869,19 @@ describe("resource.router", async () => {
 
       // Act
       const result = caller.getChildrenOf({
-        siteId: String(site.id),
         resourceId: parentFolder.id,
+        siteId: String(site.id),
       })
 
       // Assert
       const expected = {
         items: [...childFolders, ...childPages]
-          .sort((a, b) => a.title.localeCompare(b.title)) // should be sorted by title
-          .slice(0, 10), // should only have 10 items
-        nextOffset: 10, // default limit is 10
+          .toSorted((a, b) => a.title.localeCompare(b.title))
+          // should be sorted by title
+          .slice(0, 10),
+        // should only have 10 items
+        nextOffset: 10,
+        // default limit is 10
       }
       await expect(result).resolves.toMatchObject(expected)
     })
@@ -870,17 +891,17 @@ describe("resource.router", async () => {
       const setLimit = 5
       const { site } = await setupSite()
       const { folder: parentFolder } = await setupFolder({
-        siteId: site.id,
         parentId: null,
         permalink: "parent-folder",
+        siteId: site.id,
         title: "Parent folder",
       })
       const childFolders = await Promise.all(
         Array.from({ length: 30 }, (_, i) => i).map(async (i) => {
           const { folder } = await setupFolder({
-            siteId: site.id,
             parentId: parentFolder.id,
             permalink: `child-folder-${i}`,
+            siteId: site.id,
             title: `Child folder ${i}`,
           })
           return pick(folder, ["title", "permalink", "type", "id"])
@@ -889,11 +910,11 @@ describe("resource.router", async () => {
       const childPages = await Promise.all(
         Array.from({ length: 5 }, (_, i) => i).map(async (i) => {
           const { page } = await setupPageResource({
-            siteId: site.id,
             parentId: parentFolder.id,
             permalink: `child-page-${i}`,
-            title: `__underscore to return first and should be returned page ${i}`,
             resourceType: "Page",
+            siteId: site.id,
+            title: `__underscore to return first and should be returned page ${i}`,
           })
           return pick(page, ["title", "permalink", "type", "id"])
         }),
@@ -905,17 +926,20 @@ describe("resource.router", async () => {
 
       // Act
       const result = caller.getChildrenOf({
-        siteId: String(site.id),
-        resourceId: parentFolder.id,
         limit: setLimit,
+        resourceId: parentFolder.id,
+        siteId: String(site.id),
       })
 
       // Assert
       const expected = {
         items: [...childFolders, ...childPages]
-          .sort((a, b) => a.title.localeCompare(b.title)) // should be sorted by title
-          .slice(0, setLimit), // should only have 5 items
-        nextOffset: setLimit, // limit is 5
+          .toSorted((a, b) => a.title.localeCompare(b.title))
+          // should be sorted by title
+          .slice(0, setLimit),
+        // should only have 5 items
+        nextOffset: setLimit,
+        // limit is 5
       }
       await expect(result).resolves.toMatchObject(expected)
     })
@@ -926,17 +950,17 @@ describe("resource.router", async () => {
       const nextLimit = 10
       const { site } = await setupSite()
       const { folder: parentFolder } = await setupFolder({
-        siteId: site.id,
         parentId: null,
         permalink: "parent-folder",
+        siteId: site.id,
         title: "Parent folder",
       })
       const childFolders = await Promise.all(
         Array.from({ length: 30 }, (_, i) => i).map(async (i) => {
           const { folder } = await setupFolder({
-            siteId: site.id,
             parentId: parentFolder.id,
             permalink: `child-folder-${i}`,
+            siteId: site.id,
             title: `Child folder ${i}`,
           })
           return pick(folder, ["title", "permalink", "type", "id"])
@@ -945,11 +969,11 @@ describe("resource.router", async () => {
       const childPages = await Promise.all(
         Array.from({ length: 5 }, (_, i) => i).map(async (i) => {
           const { page } = await setupPageResource({
-            siteId: site.id,
             parentId: parentFolder.id,
             permalink: `child-page-${i}`,
-            title: `__underscore to return first and should be returned page ${i}`,
             resourceType: "Page",
+            siteId: site.id,
+            title: `__underscore to return first and should be returned page ${i}`,
           })
           return pick(page, ["title", "permalink", "type", "id"])
         }),
@@ -961,18 +985,21 @@ describe("resource.router", async () => {
 
       // Act
       const result = await caller.getChildrenOf({
-        siteId: String(site.id),
-        resourceId: parentFolder.id,
-        limit: nextLimit,
         cursor,
+        limit: nextLimit,
+        resourceId: parentFolder.id,
+        siteId: String(site.id),
       })
 
       // Assert
       const expected = {
         items: [...childFolders, ...childPages]
-          .sort((a, b) => a.title.localeCompare(b.title)) // should be sorted by title
-          .slice(cursor, cursor + nextLimit), // should only have 5 items
-        nextOffset: cursor + nextLimit, // limit is 5
+          .toSorted((a, b) => a.title.localeCompare(b.title))
+          // should be sorted by title
+          .slice(cursor, cursor + nextLimit),
+        // should only have 5 items
+        nextOffset: cursor + nextLimit,
+        // limit is 5
       }
       expect(result).toMatchObject(expected)
     })
@@ -986,17 +1013,17 @@ describe("resource.router", async () => {
 
       const { site } = await setupSite()
       const { folder: parentFolder } = await setupFolder({
-        siteId: site.id,
         parentId: null,
         permalink: "parent-folder",
+        siteId: site.id,
         title: "Parent folder",
       })
       const childFolders = await Promise.all(
         Array.from({ length: numberOfFolders }, (_, i) => i).map(async (i) => {
           const { folder } = await setupFolder({
-            siteId: site.id,
             parentId: parentFolder.id,
             permalink: `child-folder-${i}`,
+            siteId: site.id,
             title: `Child folder ${i}`,
           })
           return pick(folder, ["title", "permalink", "type", "id"])
@@ -1005,11 +1032,11 @@ describe("resource.router", async () => {
       const childPages = await Promise.all(
         Array.from({ length: numberOfPages }, (_, i) => i).map(async (i) => {
           const { page } = await setupPageResource({
-            siteId: site.id,
             parentId: parentFolder.id,
             permalink: `child-page-${i}`,
-            title: `__underscore to return first and should be returned page ${i}`,
             resourceType: "Page",
+            siteId: site.id,
+            title: `__underscore to return first and should be returned page ${i}`,
           })
           return pick(page, ["title", "permalink", "type", "id"])
         }),
@@ -1021,16 +1048,17 @@ describe("resource.router", async () => {
 
       // Act
       const result = await caller.getChildrenOf({
-        siteId: String(site.id),
-        resourceId: parentFolder.id,
         limit: setLimit,
+        resourceId: parentFolder.id,
+        siteId: String(site.id),
       })
 
       // Assert
       const expected = {
-        items: [...childFolders, ...childPages].sort((a, b) =>
+        items: [...childFolders, ...childPages].toSorted((a, b) =>
           a.title.localeCompare(b.title),
-        ), // should be sorted by title
+        ),
+        // should be sorted by title
         nextOffset: null,
       }
       expect(result).toMatchObject(expected)
@@ -1042,8 +1070,8 @@ describe("resource.router", async () => {
 
       // Act
       const result = caller.getChildrenOf({
-        siteId: String(site.id),
         resourceId: null,
+        siteId: String(site.id),
       })
 
       // Assert
@@ -1089,8 +1117,8 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
@@ -1112,18 +1140,18 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       const { page } = await setupPageResource({
-        siteId: site.id,
         resourceType: "Page",
+        siteId: site.id,
       })
 
       // Act
       const result = caller.getNestedFolderChildrenOf({
-        siteId: String(site.id),
         resourceId: page.id,
+        siteId: String(site.id),
       })
 
       // Assert
@@ -1136,8 +1164,8 @@ describe("resource.router", async () => {
 
       // Act
       const result = caller.getNestedFolderChildrenOf({
-        siteId: String(site.id),
         resourceId: folder.id,
+        siteId: String(site.id),
       })
 
       // Assert
@@ -1156,38 +1184,38 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       const { folder: parentFolder } = await setupFolder({
-        siteId: site.id,
         parentId: null,
         permalink: "parent-folder",
+        siteId: site.id,
         title: "Parent folder",
       })
       const { folder: childFolder } = await setupFolder({
-        siteId: site.id,
         parentId: parentFolder.id,
         permalink: "child-folder",
+        siteId: site.id,
         title: "Child folder",
       })
       const { folder: grandChildFolder } = await setupFolder({
-        siteId: site.id,
         parentId: childFolder.id,
         permalink: "grand-child-folder",
+        siteId: site.id,
         title: "Grand child folder",
       })
       const { folder: grandChildFolder2 } = await setupFolder({
-        siteId: site.id,
         parentId: childFolder.id,
         permalink: "grand-child-folder-2",
+        siteId: site.id,
         title: "Grand child folder 2",
       })
 
       // Act
       const result = await caller.getNestedFolderChildrenOf({
-        siteId: String(site.id),
         resourceId: parentFolder.id,
+        siteId: String(site.id),
       })
 
       // Assert
@@ -1203,23 +1231,23 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       const { folder: folderA } = await setupFolder({
-        siteId: site.id,
         parentId: null,
         permalink: "cyclic-a",
+        siteId: site.id,
       })
       const { folder: folderB } = await setupFolder({
-        siteId: site.id,
         parentId: folderA.id,
         permalink: "cyclic-b",
+        siteId: site.id,
       })
       const { folder: folderC } = await setupFolder({
-        siteId: site.id,
         parentId: folderB.id,
         permalink: "cyclic-c",
+        siteId: site.id,
       })
 
       // Seed legacy corruption: A <-> B cycle.
@@ -1231,8 +1259,8 @@ describe("resource.router", async () => {
 
       // Act
       const result = await caller.getNestedFolderChildrenOf({
-        siteId: String(site.id),
         resourceId: folderA.id,
+        siteId: String(site.id),
       })
 
       // Assert
@@ -1258,9 +1286,9 @@ describe("resource.router", async () => {
 
       // Act
       const result = unauthedCaller.move({
-        siteId: site.id,
-        movedResourceId: "1",
         destinationResourceId: "1",
+        movedResourceId: "1",
+        siteId: site.id,
       })
 
       // Assert
@@ -1275,16 +1303,17 @@ describe("resource.router", async () => {
       const { site } = await setupSite()
       const { folder } = await setupFolder()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
 
       // Act
       const result = caller.move({
-        siteId: site.id,
-        movedResourceId: "99999", // should not exist
         destinationResourceId: folder.id,
+        movedResourceId: "99999",
+        // should not exist
+        siteId: site.id,
       })
 
       // Assert
@@ -1299,16 +1328,17 @@ describe("resource.router", async () => {
       const { folder } = await setupFolder()
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
 
       // Act
       const result = caller.move({
-        siteId: site.id,
+        destinationResourceId: "99999",
+        // should not exist
         movedResourceId: folder.id,
-        destinationResourceId: "99999", // should not exist
+        siteId: site.id,
       })
 
       // Assert
@@ -1328,21 +1358,21 @@ describe("resource.router", async () => {
         resourceType: "Page",
       })
       const { page: anotherPage } = await setupPageResource({
+        permalink: "another-page",
         resourceType: "Page",
         siteId: site.id,
-        permalink: "another-page",
       })
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
 
       // Act
       const result = caller.move({
-        siteId: site.id,
-        movedResourceId: pageToMove.id,
         destinationResourceId: anotherPage.id,
+        movedResourceId: pageToMove.id,
+        siteId: site.id,
       })
 
       // Assert
@@ -1362,21 +1392,21 @@ describe("resource.router", async () => {
         permalink: "origin-folder",
       })
       const { page: pageToMove } = await setupPageResource({
+        parentId: originFolder.id,
         resourceType: "Page",
         siteId: site.id,
-        parentId: originFolder.id,
       })
       const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: pageToMove.siteId,
+        userId: session.userId,
       })
 
       // Act
       const result = caller.move({
-        siteId: pageToMove.siteId,
-        movedResourceId: pageToMove.id,
         destinationResourceId: pageToMove.parentId,
+        movedResourceId: pageToMove.id,
+        siteId: pageToMove.siteId,
       })
 
       // Assert
@@ -1400,20 +1430,20 @@ describe("resource.router", async () => {
         siteId: site.id,
       })
       const { page: pageToMove } = await setupPageResource({
+        parentId: originFolder.id,
         resourceType: "Page",
         siteId: site.id,
-        parentId: originFolder.id,
       })
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = caller.move({
-        siteId: site.id,
-        movedResourceId: pageToMove.id,
         destinationResourceId: null,
+        movedResourceId: pageToMove.id,
+        siteId: site.id,
       })
 
       // Assert
@@ -1430,30 +1460,30 @@ describe("resource.router", async () => {
     it("should return 400 if resource to move is the search page (permalink /search, no parent)", async () => {
       // Arrange
       const { page: searchPage, site } = await setupPageResource({
-        resourceType: "Page",
-        permalink: "search",
         parentId: null,
+        permalink: "search",
+        resourceType: "Page",
       })
       const { folder: destinationFolder } = await setupFolder({
-        siteId: site.id,
         permalink: "destination-folder",
+        siteId: site.id,
       })
       const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = caller.move({
-        siteId: site.id,
-        movedResourceId: searchPage.id,
         destinationResourceId: destinationFolder.id,
+        movedResourceId: searchPage.id,
+        siteId: site.id,
       })
 
       // Assert
       expect(auditSpy).not.toHaveBeenCalled()
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message: "The search page cannot be moved",
@@ -1471,15 +1501,15 @@ describe("resource.router", async () => {
         await setupFolder()
       expect(originSite.id).not.toEqual(destinationSite.id)
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: originSite.id,
+        userId: session.userId,
       })
 
       // Act
       const result = caller.move({
-        siteId: originSite.id,
-        movedResourceId: originPage.id,
         destinationResourceId: destinationFolder.id,
+        movedResourceId: originPage.id,
+        siteId: originSite.id,
       })
 
       // Assert
@@ -1503,20 +1533,20 @@ describe("resource.router", async () => {
       })
       const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
       const { page: pageToMove } = await setupPageResource({
+        parentId: originFolder.id,
         resourceType: "Page",
         siteId: site.id,
-        parentId: originFolder.id,
       })
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = await caller.move({
-        siteId: site.id,
-        movedResourceId: pageToMove.id,
         destinationResourceId: null,
+        movedResourceId: pageToMove.id,
+        siteId: site.id,
       })
 
       // Assert
@@ -1544,24 +1574,24 @@ describe("resource.router", async () => {
         permalink: "origin-folder",
       })
       const { page: pageToMove } = await setupPageResource({
+        parentId: originFolder.id,
         resourceType: "Page",
         siteId: site.id,
-        parentId: originFolder.id,
       })
       const { folder: destinationFolder } = await setupFolder({
-        siteId: site.id,
         permalink: "destination-folder",
+        siteId: site.id,
       })
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = await caller.move({
-        siteId: site.id,
-        movedResourceId: pageToMove.id,
         destinationResourceId: destinationFolder.id,
+        movedResourceId: pageToMove.id,
+        siteId: site.id,
       })
 
       // Assert
@@ -1592,23 +1622,23 @@ describe("resource.router", async () => {
       // Arrange
       const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
       const { page: pageToMove, site } = await setupPageResource({
-        resourceType: "Page",
         parentId: null,
+        resourceType: "Page",
       })
       const { folder: destinationFolder } = await setupFolder({
-        siteId: site.id,
         permalink: "destination-folder",
+        siteId: site.id,
       })
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = await caller.move({
-        siteId: site.id,
-        movedResourceId: pageToMove.id,
         destinationResourceId: destinationFolder.id,
+        movedResourceId: pageToMove.id,
+        siteId: site.id,
       })
 
       // Assert
@@ -1636,20 +1666,20 @@ describe("resource.router", async () => {
         permalink: "parent-folder",
       })
       const { folder: childFolder } = await setupFolder({
-        siteId: site.id,
-        permalink: "child-folder",
         parentId: parentFolder.id,
+        permalink: "child-folder",
+        siteId: site.id,
       })
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act - try to move parent folder into its child (would create A -> B -> A cycle)
       const result = caller.move({
-        siteId: site.id,
-        movedResourceId: parentFolder.id,
         destinationResourceId: childFolder.id,
+        movedResourceId: parentFolder.id,
+        siteId: site.id,
       })
 
       // Assert
@@ -1669,30 +1699,30 @@ describe("resource.router", async () => {
         permalink: "grandparent-folder",
       })
       const { folder: parentFolder } = await setupFolder({
-        siteId: site.id,
-        permalink: "parent-folder",
         parentId: grandparentFolder.id,
+        permalink: "parent-folder",
+        siteId: site.id,
       })
       const { folder: childFolder } = await setupFolder({
-        siteId: site.id,
-        permalink: "child-folder",
         parentId: parentFolder.id,
+        permalink: "child-folder",
+        siteId: site.id,
       })
       const { folder: grandchildFolder } = await setupFolder({
-        siteId: site.id,
-        permalink: "grandchild-folder",
         parentId: childFolder.id,
+        permalink: "grandchild-folder",
+        siteId: site.id,
       })
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act - try to move grandparent folder into its grandchild (would create cycle)
       const result = caller.move({
-        siteId: site.id,
-        movedResourceId: grandparentFolder.id,
         destinationResourceId: grandchildFolder.id,
+        movedResourceId: grandparentFolder.id,
+        siteId: site.id,
       })
 
       // Assert
@@ -1712,18 +1742,18 @@ describe("resource.router", async () => {
         permalink: "cyclic-folder-a",
       })
       const { folder: folderB } = await setupFolder({
-        siteId: site.id,
-        permalink: "cyclic-folder-b",
         parentId: folderA.id,
+        permalink: "cyclic-folder-b",
+        siteId: site.id,
       })
       const { folder: folderC } = await setupFolder({
-        siteId: site.id,
-        permalink: "cyclic-folder-c",
         parentId: folderB.id,
+        permalink: "cyclic-folder-c",
+        siteId: site.id,
       })
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Seed legacy corruption: A -> B and B -> A cycle.
@@ -1735,9 +1765,9 @@ describe("resource.router", async () => {
 
       // Act
       const result = caller.move({
-        siteId: site.id,
-        movedResourceId: folderA.id,
         destinationResourceId: folderC.id,
+        movedResourceId: folderA.id,
+        siteId: site.id,
       })
 
       // Assert
@@ -1757,19 +1787,19 @@ describe("resource.router", async () => {
         permalink: "folder-a",
       })
       const { folder: folderB } = await setupFolder({
-        siteId: site.id,
         permalink: "folder-b",
+        siteId: site.id,
       })
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act - move folder A into folder B (siblings, not descendants)
       const result = await caller.move({
-        siteId: site.id,
-        movedResourceId: folderA.id,
         destinationResourceId: folderB.id,
+        movedResourceId: folderA.id,
+        siteId: site.id,
       })
 
       // Assert
@@ -1784,20 +1814,20 @@ describe("resource.router", async () => {
         resourceType: "RootPage",
       })
       const { folder } = await setupFolder({
-        siteId: site.id,
-        permalink: "child-folder",
         parentId: rootPage.id,
+        permalink: "child-folder",
+        siteId: site.id,
       })
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act - try to move RootPage into its child folder (would create cycle)
       const result = caller.move({
-        siteId: site.id,
-        movedResourceId: rootPage.id,
         destinationResourceId: folder.id,
+        movedResourceId: rootPage.id,
+        siteId: site.id,
       })
 
       // Assert
@@ -1817,19 +1847,19 @@ describe("resource.router", async () => {
         permalink: "my-collection",
       })
       const { folder: destinationFolder } = await setupFolder({
-        siteId: site.id,
         permalink: "destination-folder",
+        siteId: site.id,
       })
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = await caller.move({
-        siteId: site.id,
-        movedResourceId: collection.id,
         destinationResourceId: destinationFolder.id,
+        movedResourceId: collection.id,
+        siteId: site.id,
       })
 
       // Assert
@@ -1863,24 +1893,24 @@ describe("resource.router", async () => {
         permalink: "collection-to-move",
       })
       const { collection: destinationCollection } = await setupCollection({
-        siteId: site.id,
         permalink: "destination-collection",
+        siteId: site.id,
       })
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = caller.move({
-        siteId: site.id,
-        movedResourceId: collectionToMove.id,
         destinationResourceId: destinationCollection.id,
+        movedResourceId: collectionToMove.id,
+        siteId: site.id,
       })
 
       // Assert
       expect(auditSpy).not.toHaveBeenCalled()
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message: "Folder items can only be moved to another folder",
@@ -1895,19 +1925,19 @@ describe("resource.router", async () => {
     describe("redirect on move", () => {
       const setup = async () => {
         const { page: rootPage, site } = await setupPageResource({
-          resourceType: ResourceType.RootPage,
           parentId: null,
+          resourceType: ResourceType.RootPage,
         })
         const { folder } = await setupFolder({
-          siteId: site.id,
           permalink: "dest",
+          siteId: site.id,
         })
-        await setupAdminPermissions({ userId: session.userId, siteId: site.id })
-        return { site, rootPage, folder }
+        await setupAdminPermissions({ siteId: site.id, userId: session.userId })
+        return { folder, rootPage, site }
       }
 
-      const liveRedirects = (siteId: number) =>
-        db
+      const liveRedirects = async (siteId: number) =>
+        await db
           .selectFrom("Redirect")
           .selectAll()
           .where("siteId", "=", siteId)
@@ -1917,19 +1947,19 @@ describe("resource.router", async () => {
       it("creates a redirect from the old URL for a published page", async () => {
         const { site, rootPage, folder } = await setup()
         const { page } = await setupPageResource({
-          siteId: site.id,
-          resourceType: ResourceType.Page,
           parentId: rootPage.id,
           permalink: "old-page",
+          resourceType: ResourceType.Page,
+          siteId: site.id,
           state: ResourceState.Published,
           userId: session.userId,
         })
 
         await caller.move({
-          siteId: site.id,
-          movedResourceId: page.id,
           destinationResourceId: folder.id,
+          movedResourceId: page.id,
           shouldCreateRedirect: true,
+          siteId: site.id,
         })
 
         const redirects = await liveRedirects(site.id)
@@ -1943,19 +1973,19 @@ describe("resource.router", async () => {
       it("does not create a redirect when shouldCreateRedirect is false", async () => {
         const { site, rootPage, folder } = await setup()
         const { page } = await setupPageResource({
-          siteId: site.id,
-          resourceType: ResourceType.Page,
           parentId: rootPage.id,
           permalink: "old-page",
+          resourceType: ResourceType.Page,
+          siteId: site.id,
           state: ResourceState.Published,
           userId: session.userId,
         })
 
         await caller.move({
-          siteId: site.id,
-          movedResourceId: page.id,
           destinationResourceId: folder.id,
+          movedResourceId: page.id,
           shouldCreateRedirect: false,
+          siteId: site.id,
         })
 
         expect(await liveRedirects(site.id)).toHaveLength(0)
@@ -1964,18 +1994,18 @@ describe("resource.router", async () => {
       it("does not create a redirect for an unpublished page", async () => {
         const { site, rootPage, folder } = await setup()
         const { page } = await setupPageResource({
-          siteId: site.id,
-          resourceType: ResourceType.Page,
           parentId: rootPage.id,
           permalink: "old-page",
+          resourceType: ResourceType.Page,
+          siteId: site.id,
           state: ResourceState.Draft,
         })
 
         await caller.move({
-          siteId: site.id,
-          movedResourceId: page.id,
           destinationResourceId: folder.id,
+          movedResourceId: page.id,
           shouldCreateRedirect: true,
+          siteId: site.id,
         })
 
         expect(await liveRedirects(site.id)).toHaveLength(0)
@@ -1984,10 +2014,10 @@ describe("resource.router", async () => {
       it("soft-deletes a redirect pointing back at the page when it reclaims that URL", async () => {
         const { site, rootPage, folder } = await setup()
         const { page } = await setupPageResource({
-          siteId: site.id,
-          resourceType: ResourceType.Page,
           parentId: rootPage.id,
           permalink: "old-page",
+          resourceType: ResourceType.Page,
+          siteId: site.id,
           state: ResourceState.Published,
           userId: session.userId,
         })
@@ -1995,17 +2025,17 @@ describe("resource.router", async () => {
         await db
           .insertInto("Redirect")
           .values({
+            destination: `[resource:${site.id}:${page.id}]`,
             siteId: site.id,
             source: "/dest/old-page",
-            destination: `[resource:${site.id}:${page.id}]`,
           })
           .execute()
 
         await caller.move({
-          siteId: site.id,
-          movedResourceId: page.id,
           destinationResourceId: folder.id,
+          movedResourceId: page.id,
           shouldCreateRedirect: false,
+          siteId: site.id,
         })
 
         const reclaimed = await db
@@ -2020,10 +2050,10 @@ describe("resource.router", async () => {
       it("blocks moving a published page onto a path a live redirect points elsewhere from", async () => {
         const { site, rootPage, folder } = await setup()
         const { page } = await setupPageResource({
-          siteId: site.id,
-          resourceType: ResourceType.Page,
           parentId: rootPage.id,
           permalink: "old-page",
+          resourceType: ResourceType.Page,
+          siteId: site.id,
           state: ResourceState.Published,
           userId: session.userId,
         })
@@ -2032,17 +2062,17 @@ describe("resource.router", async () => {
         await db
           .insertInto("Redirect")
           .values({
+            destination: "https://example.gov.sg/elsewhere",
             siteId: site.id,
             source: "/dest/old-page",
-            destination: "https://example.gov.sg/elsewhere",
           })
           .execute()
 
         const result = caller.move({
-          siteId: site.id,
-          movedResourceId: page.id,
           destinationResourceId: folder.id,
+          movedResourceId: page.id,
           shouldCreateRedirect: false,
+          siteId: site.id,
         })
 
         // Assert — blocked, and the whole move is rolled back (page stays put).
@@ -2058,18 +2088,18 @@ describe("resource.router", async () => {
       it("allows moving an unpublished page onto a path with a live redirect", async () => {
         const { site, rootPage, folder } = await setup()
         const { page } = await setupPageResource({
-          siteId: site.id,
-          resourceType: ResourceType.Page,
           parentId: rootPage.id,
           permalink: "old-page",
+          resourceType: ResourceType.Page,
+          siteId: site.id,
           state: ResourceState.Draft,
         })
         await db
           .insertInto("Redirect")
           .values({
+            destination: "https://example.gov.sg/elsewhere",
             siteId: site.id,
             source: "/dest/old-page",
-            destination: "https://example.gov.sg/elsewhere",
           })
           .execute()
 
@@ -2077,10 +2107,10 @@ describe("resource.router", async () => {
         // guarded separately, so the move is allowed.
         await expect(
           caller.move({
-            siteId: site.id,
-            movedResourceId: page.id,
             destinationResourceId: folder.id,
+            movedResourceId: page.id,
             shouldCreateRedirect: true,
+            siteId: site.id,
           }),
         ).resolves.toMatchObject({ id: page.id })
       })
@@ -2090,24 +2120,24 @@ describe("resource.router", async () => {
         const { site, collection: srcCollection } = await setupCollection({
           permalink: "src-collection",
         })
-        await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+        await setupAdminPermissions({ siteId: site.id, userId: session.userId })
         const { collection: destCollection } = await setupCollection({
-          siteId: site.id,
           permalink: "dest-collection",
+          siteId: site.id,
         })
         const { page } = await setupCollectionPage({
-          siteId: site.id,
           parentId: srcCollection.id,
           permalink: "old-article",
+          siteId: site.id,
           state: ResourceState.Published,
           userId: session.userId,
         })
 
         await caller.move({
-          siteId: site.id,
-          movedResourceId: page.id,
           destinationResourceId: destCollection.id,
+          movedResourceId: page.id,
           shouldCreateRedirect: true,
+          siteId: site.id,
         })
 
         const redirects = await liveRedirects(site.id)
@@ -2124,19 +2154,19 @@ describe("resource.router", async () => {
         const setupMoveWithPublishedChild = async () => {
           const { site, rootPage, folder: destinationFolder } = await setup()
           const { folder: sourceFolder } = await setupFolder({
-            siteId: site.id,
             parentId: rootPage.id,
             permalink: "src-folder",
+            siteId: site.id,
           })
           await setupPageResource({
-            siteId: site.id,
-            resourceType: ResourceType.Page,
             parentId: sourceFolder.id,
             permalink: "child",
+            resourceType: ResourceType.Page,
+            siteId: site.id,
             state: ResourceState.Published,
             userId: session.userId,
           })
-          return { site, rootPage, sourceFolder, destinationFolder }
+          return { destinationFolder, rootPage, site, sourceFolder }
         }
 
         it("creates a wildcard redirect from the old path for a published folder", async () => {
@@ -2144,10 +2174,10 @@ describe("resource.router", async () => {
             await setupMoveWithPublishedChild()
 
           await caller.move({
-            siteId: site.id,
-            movedResourceId: sourceFolder.id,
             destinationResourceId: destinationFolder.id,
+            movedResourceId: sourceFolder.id,
             shouldCreateRedirect: true,
+            siteId: site.id,
           })
 
           const redirects = await liveRedirects(site.id)
@@ -2164,17 +2194,17 @@ describe("resource.router", async () => {
           await db
             .insertInto("Redirect")
             .values({
+              destination: "https://example.gov.sg/elsewhere",
               siteId: site.id,
               source: "/dest/src-folder/child",
-              destination: "https://example.gov.sg/elsewhere",
             })
             .execute()
 
           const result = caller.move({
-            siteId: site.id,
-            movedResourceId: sourceFolder.id,
             destinationResourceId: destinationFolder.id,
+            movedResourceId: sourceFolder.id,
             shouldCreateRedirect: false,
+            siteId: site.id,
           })
 
           await expect(result).rejects.toMatchObject({ code: "CONFLICT" })
@@ -2217,7 +2247,8 @@ describe("resource.router", async () => {
 
       // Act
       const result = caller.countWithoutRoot({
-        resourceId: 99999, // should not exist
+        resourceId: 99_999,
+        // should not exist
         siteId: site.id,
       })
 
@@ -2233,8 +2264,10 @@ describe("resource.router", async () => {
     it("should return 404 if site does not exist", async () => {
       // Act
       const result = caller.countWithoutRoot({
-        resourceId: 99999, // should not exist
-        siteId: 99999, // should not exist also
+        resourceId: 99_999,
+        // should not exist
+        siteId: 99_999,
+        // should not exist also
       })
 
       // Assert
@@ -2289,26 +2322,26 @@ describe("resource.router", async () => {
       const { site } = await setupSite()
       // Create root page, should not be returned in the count
       await setupPageResource({
-        siteId: site.id,
         resourceType: "RootPage",
+        siteId: site.id,
       })
       const numberOfPages = 3
       const numberOfFolders = 2
       await Promise.all(
         Array.from({ length: numberOfPages }, (_, i) => i).map(async (i) => {
           await setupPageResource({
-            siteId: site.id,
             permalink: `page-${i}`,
-            title: `Test page ${i}`,
             resourceType: "Page",
+            siteId: site.id,
+            title: `Test page ${i}`,
           })
         }),
       )
       const folders = await Promise.all(
         Array.from({ length: numberOfFolders }, (_, i) => i).map(async (i) => {
           const { folder } = await setupFolder({
-            siteId: site.id,
             permalink: `folder-${i}`,
+            siteId: site.id,
             title: `Test folder ${i}`,
           })
           return folder.id
@@ -2318,17 +2351,17 @@ describe("resource.router", async () => {
       await Promise.all(
         Array.from({ length: 10 }, (_, i) => i).map(async (i) => {
           await setupPageResource({
-            siteId: site.id,
             parentId: folders[1],
-            resourceType: "Page",
             permalink: `nested-page-${i}`,
+            resourceType: "Page",
+            siteId: site.id,
             title: `Nested page ${i}`,
           })
         }),
       )
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
@@ -2344,20 +2377,20 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupPageResource({
-        siteId: site.id,
         permalink: "search",
-        title: "Search",
         resourceType: "Page",
+        siteId: site.id,
+        title: "Search",
       })
       await setupPageResource({
-        siteId: site.id,
         permalink: "about",
-        title: "About",
         resourceType: "Page",
+        siteId: site.id,
+        title: "About",
       })
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
@@ -2379,11 +2412,11 @@ describe("resource.router", async () => {
       await Promise.all(
         Array.from({ length: numberOfPages }, (_, i) => i).map(async (i) => {
           await setupPageResource({
-            siteId: site.id,
             parentId: folderToUse.id,
             permalink: `page-${i}`,
-            title: `Test page ${i}`,
             resourceType: "Page",
+            siteId: site.id,
+            title: `Test page ${i}`,
           })
         }),
       )
@@ -2391,9 +2424,9 @@ describe("resource.router", async () => {
       const nestedFolders = await Promise.all(
         Array.from({ length: numberOfFolders }, (_, i) => i).map(async (i) => {
           const { folder } = await setupFolder({
-            siteId: site.id,
             parentId: folderToUse.id,
             permalink: `folder-${i}`,
+            siteId: site.id,
             title: `Test folder ${i}`,
           })
           return folder.id
@@ -2403,17 +2436,17 @@ describe("resource.router", async () => {
       await Promise.all(
         Array.from({ length: 10 }, (_, i) => i).map(async (i) => {
           await setupPageResource({
-            siteId: site.id,
             parentId: nestedFolders[1],
-            resourceType: "Page",
             permalink: `nested-page-${i}`,
+            resourceType: "Page",
+            siteId: site.id,
             title: `Nested page ${i}`,
           })
         }),
       )
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
@@ -2480,8 +2513,8 @@ describe("resource.router", async () => {
 
       // Act
       const result = unauthedCaller.listWithoutRoot({
-        siteId: 1,
         limit: 25,
+        siteId: 1,
       })
 
       // Assert
@@ -2493,8 +2526,9 @@ describe("resource.router", async () => {
     it("should return 403 if site does not exist", async () => {
       // Act
       const result = caller.listWithoutRoot({
-        siteId: 99999, // should not exist
         limit: 25,
+        siteId: 99_999,
+        // should not exist,
       })
 
       // Assert
@@ -2517,8 +2551,8 @@ describe("resource.router", async () => {
 
       // Act
       const result = await caller.listWithoutRoot({
-        siteId: site.id,
         limit: 25,
+        siteId: site.id,
       })
 
       // Assert
@@ -2537,8 +2571,8 @@ describe("resource.router", async () => {
 
       // Act
       const result = await caller.listWithoutRoot({
-        siteId: site.id,
         limit: 25,
+        siteId: site.id,
       })
 
       // Assert
@@ -2555,9 +2589,10 @@ describe("resource.router", async () => {
 
       // Act
       const result = caller.listWithoutRoot({
-        siteId: site.id,
-        resourceId: 99999, // should not exist
         limit: 25,
+        resourceId: 99_999,
+        // should not exist
+        siteId: site.id,
       })
 
       // Assert
@@ -2578,9 +2613,9 @@ describe("resource.router", async () => {
 
       // Act
       const result = await caller.listWithoutRoot({
-        siteId: site.id,
-        resourceId: Number(page.id),
         limit: 25,
+        resourceId: Number(page.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -2597,9 +2632,9 @@ describe("resource.router", async () => {
 
       // Act
       const result = await caller.listWithoutRoot({
-        siteId: site.id,
-        resourceId: Number(folder.id),
         limit: 25,
+        resourceId: Number(folder.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -2611,18 +2646,18 @@ describe("resource.router", async () => {
       const { site } = await setupSite()
       // Create root page, should not be returned in the count
       await setupPageResource({
-        siteId: site.id,
         resourceType: "RootPage",
+        siteId: site.id,
       })
       const numberOfPages = 30
       const numberOfFolders = 2
       const pages = await Promise.all(
         Array.from({ length: numberOfPages }, (_, i) => i).map(async (i) => {
           const { page } = await setupPageResource({
-            siteId: site.id,
             permalink: `page-${i}`,
-            title: `Test page ${i}`,
             resourceType: "Page",
+            siteId: site.id,
+            title: `Test page ${i}`,
           })
           return pick(page, RESOURCE_FIELDS_TO_PICK)
         }),
@@ -2630,8 +2665,8 @@ describe("resource.router", async () => {
       const folders = await Promise.all(
         Array.from({ length: numberOfFolders }, (_, i) => i).map(async (i) => {
           const { folder } = await setupFolder({
-            siteId: site.id,
             permalink: `folder-${i}`,
+            siteId: site.id,
             title: `Test folder ${i}`,
           })
           return pick(folder, RESOURCE_FIELDS_TO_PICK)
@@ -2649,7 +2684,7 @@ describe("resource.router", async () => {
 
       // Assert
       const expected = [...pages, ...folders]
-        .sort(testListComparable)
+        .toSorted(testListComparable)
         .slice(0, 10)
       expect(expected).toMatchObject(result)
     })
@@ -2658,16 +2693,16 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupPageResource({
-        siteId: site.id,
         permalink: "search",
-        title: "Search",
         resourceType: "Page",
+        siteId: site.id,
+        title: "Search",
       })
       await setupPageResource({
-        siteId: site.id,
         permalink: "about",
-        title: "About",
         resourceType: "Page",
+        siteId: site.id,
+        title: "About",
       })
       await setupEditorPermissions({
         siteId: site.id,
@@ -2693,11 +2728,11 @@ describe("resource.router", async () => {
       const pages = await Promise.all(
         Array.from({ length: numberOfPages }, (_, i) => i).map(async (i) => {
           const { page } = await setupPageResource({
-            siteId: site.id,
             parentId: folderToUse.id,
             permalink: `page-${i}`,
-            title: `Test page ${i}`,
             resourceType: "Page",
+            siteId: site.id,
+            title: `Test page ${i}`,
           })
           return pick(page, RESOURCE_FIELDS_TO_PICK)
         }),
@@ -2706,9 +2741,9 @@ describe("resource.router", async () => {
       const folders = await Promise.all(
         Array.from({ length: numberOfFolders }, (_, i) => i).map(async (i) => {
           const { folder } = await setupFolder({
-            siteId: site.id,
             parentId: folderToUse.id,
             permalink: `folder-${i}`,
+            siteId: site.id,
             title: `Test folder ${i}`,
           })
           return pick(folder, RESOURCE_FIELDS_TO_PICK)
@@ -2727,7 +2762,7 @@ describe("resource.router", async () => {
 
       // Assert
       const expected = [...pages, ...folders]
-        .sort(testListComparable)
+        .toSorted(testListComparable)
         .slice(0, 10)
       expect(expected).toMatchObject(result)
     })
@@ -2745,13 +2780,14 @@ describe("resource.router", async () => {
       const sharedTitle = "Identical title"
       const permalinks = ["page-1", "page-2", "page-3", "page-4"]
       const pages = await Promise.all(
-        permalinks.map((permalink) =>
-          setupPageResource({
-            siteId: site.id,
-            resourceType: "Page",
-            title: sharedTitle,
-            permalink,
-          }),
+        permalinks.map(
+          async (permalink) =>
+            await setupPageResource({
+              permalink,
+              resourceType: "Page",
+              siteId: site.id,
+              title: sharedTitle,
+            }),
         ),
       )
 
@@ -2768,19 +2804,19 @@ describe("resource.router", async () => {
 
       // Act
       const page1First = await caller.listWithoutRoot({
-        siteId: site.id,
         limit: 2,
         offset: 0,
+        siteId: site.id,
       })
       const page1Second = await caller.listWithoutRoot({
-        siteId: site.id,
         limit: 2,
         offset: 0,
+        siteId: site.id,
       })
       const page2Result = await caller.listWithoutRoot({
-        siteId: site.id,
         limit: 2,
         offset: 2,
+        siteId: site.id,
       })
 
       // Assert: repeated calls to the same page return identical results
@@ -2810,28 +2846,28 @@ describe("resource.router", async () => {
       })
 
       await setupPageResource({
-        siteId: site.id,
-        resourceType: "Page",
-        title: "cherry",
         permalink: "cherry",
+        resourceType: "Page",
+        siteId: site.id,
+        title: "cherry",
       })
       await setupPageResource({
-        siteId: site.id,
-        resourceType: "Page",
-        title: "apple",
         permalink: "apple",
+        resourceType: "Page",
+        siteId: site.id,
+        title: "apple",
       })
       await setupPageResource({
-        siteId: site.id,
-        resourceType: "Page",
-        title: "Banana",
         permalink: "banana",
+        resourceType: "Page",
+        siteId: site.id,
+        title: "Banana",
       })
 
       // Act
       const result = await caller.listWithoutRoot({
-        siteId: site.id,
         orderBy: "title-asc",
+        siteId: site.id,
       })
 
       // Assert
@@ -2847,28 +2883,28 @@ describe("resource.router", async () => {
       })
 
       await setupPageResource({
-        siteId: site.id,
-        resourceType: "Page",
-        title: "Zulu",
         permalink: "charlie",
+        resourceType: "Page",
+        siteId: site.id,
+        title: "Zulu",
       })
       await setupPageResource({
-        siteId: site.id,
-        resourceType: "Page",
-        title: "Alpha",
         permalink: "alpha",
+        resourceType: "Page",
+        siteId: site.id,
+        title: "Alpha",
       })
       await setupPageResource({
-        siteId: site.id,
-        resourceType: "Page",
-        title: "Mike",
         permalink: "bravo",
+        resourceType: "Page",
+        siteId: site.id,
+        title: "Mike",
       })
 
       // Act
       const result = await caller.listWithoutRoot({
-        siteId: site.id,
         orderBy: "permalink-asc",
+        siteId: site.id,
       })
 
       // Assert
@@ -2891,32 +2927,32 @@ describe("resource.router", async () => {
       })
 
       await setupPageResource({
-        siteId: site.id,
         parentId: folder.id,
-        resourceType: "Page",
-        title: "Zulu",
         permalink: "charlie",
+        resourceType: "Page",
+        siteId: site.id,
+        title: "Zulu",
       })
       await setupPageResource({
-        siteId: site.id,
         parentId: folder.id,
-        resourceType: "Page",
-        title: "Alpha",
         permalink: "alpha",
+        resourceType: "Page",
+        siteId: site.id,
+        title: "Alpha",
       })
       await setupPageResource({
-        siteId: site.id,
         parentId: folder.id,
-        resourceType: "Page",
-        title: "Mike",
         permalink: "bravo",
+        resourceType: "Page",
+        siteId: site.id,
+        title: "Mike",
       })
 
       // Act
       const result = await caller.listWithoutRoot({
-        siteId: site.id,
-        resourceId: Number(folder.id),
         orderBy: "permalink-asc",
+        resourceId: Number(folder.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -2976,14 +3012,15 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
 
       // Act
       const result = caller.delete({
-        resourceId: "99999", // should not exist
+        resourceId: "99999",
+        // should not exist
         siteId: site.id,
       })
 
@@ -3001,8 +3038,8 @@ describe("resource.router", async () => {
       })
       const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       const fullPage = getFullPageById(db, {
         resourceId: Number(page.id),
@@ -3037,13 +3074,13 @@ describe("resource.router", async () => {
     it("should soft-delete redirects pointing to the deleted page", async () => {
       // Arrange — a live redirect whose destination references the page
       const { page, site } = await setupPageResource({ resourceType: "Page" })
-      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      await setupAdminPermissions({ siteId: site.id, userId: session.userId })
       const redirect = await db
         .insertInto("Redirect")
         .values({
+          destination: `[resource:${site.id}:${page.id}]`,
           siteId: site.id,
           source: "/old",
-          destination: `[resource:${site.id}:${page.id}]`,
         })
         .returningAll()
         .executeTakeFirstOrThrow()
@@ -3070,19 +3107,19 @@ describe("resource.router", async () => {
     it("should soft-delete redirects pointing to descendant pages of a deleted folder", async () => {
       // Arrange — a redirect to a page nested inside the folder being deleted
       const { folder, site } = await setupFolder()
-      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      await setupAdminPermissions({ siteId: site.id, userId: session.userId })
       const { page } = await setupPageResource({
-        siteId: site.id,
         parentId: folder.id,
         permalink: "leaf",
         resourceType: "Page",
+        siteId: site.id,
       })
       const redirect = await db
         .insertInto("Redirect")
         .values({
+          destination: `[resource:${site.id}:${page.id}]`,
           siteId: site.id,
           source: "/old",
-          destination: `[resource:${site.id}:${page.id}]`,
         })
         .returningAll()
         .executeTakeFirstOrThrow()
@@ -3102,18 +3139,18 @@ describe("resource.router", async () => {
     it("should leave redirects pointing elsewhere untouched when deleting a page", async () => {
       // Arrange — a redirect to a different page must survive
       const { page, site } = await setupPageResource({ resourceType: "Page" })
-      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      await setupAdminPermissions({ siteId: site.id, userId: session.userId })
       const { page: other } = await setupPageResource({
-        siteId: site.id,
         permalink: "other",
         resourceType: "Page",
+        siteId: site.id,
       })
       const redirect = await db
         .insertInto("Redirect")
         .values({
+          destination: `[resource:${site.id}:${other.id}]`,
           siteId: site.id,
           source: "/old",
-          destination: `[resource:${site.id}:${other.id}]`,
         })
         .returningAll()
         .executeTakeFirstOrThrow()
@@ -3135,17 +3172,17 @@ describe("resource.router", async () => {
       const { folder: folderToUse, site } = await setupFolder()
       const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       const nestedPages = await Promise.all(
         Array.from({ length: 3 }, (_, i) => i).map(async (i) => {
           const { page } = await setupPageResource({
-            siteId: site.id,
             parentId: folderToUse.id,
             permalink: `page-${i}`,
-            title: `Test page ${i}`,
             resourceType: "Page",
+            siteId: site.id,
+            title: `Test page ${i}`,
           })
           return page.id
         }),
@@ -3153,9 +3190,9 @@ describe("resource.router", async () => {
       const nestedFolders = await Promise.all(
         Array.from({ length: 2 }, (_, i) => i).map(async (i) => {
           const { folder } = await setupFolder({
-            siteId: site.id,
             parentId: folderToUse.id,
             permalink: `folder-${i}`,
+            siteId: site.id,
             title: `Test folder ${i}`,
           })
           return folder.id
@@ -3165,10 +3202,10 @@ describe("resource.router", async () => {
       const nestedInNested = await Promise.all(
         Array.from({ length: 3 }, (_, i) => i).map(async (i) => {
           const { page } = await setupPageResource({
-            siteId: site.id,
             parentId: nestedFolders[1],
-            resourceType: "Page",
             permalink: `nested-page-${i}`,
+            resourceType: "Page",
+            siteId: site.id,
             title: `Nested page ${i}`,
           })
           return page.id
@@ -3213,8 +3250,8 @@ describe("resource.router", async () => {
       })
       const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
@@ -3233,14 +3270,14 @@ describe("resource.router", async () => {
     it("should return 400 if resource to delete is the search page (permalink /search, no parent)", async () => {
       // Arrange
       const { page, site } = await setupPageResource({
-        resourceType: "Page",
-        permalink: "search",
         parentId: null,
+        permalink: "search",
+        resourceType: "Page",
       })
       const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
@@ -3266,8 +3303,8 @@ describe("resource.router", async () => {
       })
       // Editor has no delete permissions
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
@@ -3309,13 +3346,14 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = caller.getParentOf({
-        resourceId: "99999", // should not exist
+        resourceId: "99999",
+        // should not exist
         siteId: site.id,
       })
 
@@ -3331,8 +3369,8 @@ describe("resource.router", async () => {
         resourceType: "RootPage",
       })
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
@@ -3358,13 +3396,13 @@ describe("resource.router", async () => {
         title: "Parent folder",
       })
       const { page: nestedPage } = await setupPageResource({
-        siteId: site.id,
         parentId: parentFolder.id,
         resourceType: "Page",
+        siteId: site.id,
       })
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
@@ -3390,8 +3428,8 @@ describe("resource.router", async () => {
         resourceType: "Page",
       })
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
@@ -3443,8 +3481,8 @@ describe("resource.router", async () => {
 
       // Act
       const result = unauthedCaller.getWithFullPermalink({
-        siteId: 1,
         resourceId: "1",
+        siteId: 1,
       })
 
       // Assert
@@ -3456,8 +3494,8 @@ describe("resource.router", async () => {
     it("should return 404 if resource does not exist", async () => {
       // Act
       const result = caller.getWithFullPermalink({
-        siteId: 1,
         resourceId: "99999",
+        siteId: 1,
       })
 
       // Assert
@@ -3472,20 +3510,20 @@ describe("resource.router", async () => {
         resourceType: "Page",
       })
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = await caller.getWithFullPermalink({
-        siteId: site.id,
         resourceId: page.id,
+        siteId: site.id,
       })
 
       // Assert
       const expected = {
         ...pick(page, ["id", "title"]),
-        fullPermalink: `${page.permalink}`,
+        fullPermalink: page.permalink,
       }
       expect(result).toMatchObject(expected)
     })
@@ -3497,32 +3535,32 @@ describe("resource.router", async () => {
         title: "Parent folder",
       })
       const { folder: nestedFolder } = await setupFolder({
-        siteId: site.id,
         parentId: parentFolder.id,
         permalink: "nested-folder",
+        siteId: site.id,
         title: "Nested folder",
       })
       const { page: nestedPage } = await setupPageResource({
-        siteId: site.id,
         parentId: nestedFolder.id,
         resourceType: "Page",
+        siteId: site.id,
       })
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = await caller.getWithFullPermalink({
-        siteId: site.id,
         resourceId: nestedPage.id,
+        siteId: site.id,
       })
 
       // Assert
       expect(result).toMatchObject({
+        fullPermalink: `${parentFolder.permalink}/${nestedFolder.permalink}/${nestedPage.permalink}`,
         id: nestedPage.id,
         title: nestedPage.title,
-        fullPermalink: `${parentFolder.permalink}/${nestedFolder.permalink}/${nestedPage.permalink}`,
       })
     })
 
@@ -3534,8 +3572,8 @@ describe("resource.router", async () => {
 
       // Act
       const result = caller.getWithFullPermalink({
-        siteId: site.id,
         resourceId: page.id,
+        siteId: site.id,
       })
 
       // Assert
@@ -3581,14 +3619,14 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = caller.getAncestryStack({
-        siteId: String(site.id),
         resourceId: "99999",
+        siteId: String(site.id),
       })
 
       // Assert
@@ -3603,8 +3641,8 @@ describe("resource.router", async () => {
         resourceType: "RootPage",
       })
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
@@ -3621,8 +3659,8 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
@@ -3640,31 +3678,31 @@ describe("resource.router", async () => {
         resourceType: "RootPage",
       })
       const { folder: parentFolder } = await setupFolder({
-        siteId: site.id,
         permalink: "parent-folder",
+        siteId: site.id,
         title: "Parent folder",
       })
       const { folder: nestedFolder } = await setupFolder({
-        siteId: site.id,
         parentId: parentFolder.id,
         permalink: "nested-folder",
+        siteId: site.id,
         title: "Nested folder",
       })
       const { page: nestedPage } = await setupPageResource({
-        siteId: site.id,
         parentId: nestedFolder.id,
         resourceType: "Page",
+        siteId: site.id,
       })
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = await caller.getAncestryStack({
+        includeSelf: true,
         resourceId: nestedPage.id,
         siteId: String(site.id),
-        includeSelf: true,
       })
 
       // Assert
@@ -3682,15 +3720,15 @@ describe("resource.router", async () => {
         resourceType: "Page",
       })
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = await caller.getAncestryStack({
+        includeSelf: true,
         resourceId: page.id,
         siteId: String(site.id),
-        includeSelf: true,
       })
 
       // Assert
@@ -3707,26 +3745,26 @@ describe("resource.router", async () => {
         title: "Parent folder",
       })
       const { folder: nestedFolder } = await setupFolder({
-        siteId: site.id,
         parentId: parentFolder.id,
         permalink: "nested-folder",
+        siteId: site.id,
         title: "Nested folder",
       })
       const { page: nestedPage } = await setupPageResource({
-        siteId: site.id,
         parentId: nestedFolder.id,
         resourceType: "Page",
+        siteId: site.id,
       })
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = await caller.getAncestryStack({
+        includeSelf: false,
         resourceId: nestedPage.id,
         siteId: String(site.id),
-        includeSelf: false,
       })
 
       // Assert
@@ -3744,9 +3782,9 @@ describe("resource.router", async () => {
 
       // Act
       const result = caller.getAncestryStack({
+        includeSelf: true,
         resourceId: page.id,
         siteId: String(site.id),
-        includeSelf: true,
       })
 
       // Assert
@@ -3798,19 +3836,19 @@ describe("resource.router", async () => {
         title: "Parent folder",
       })
       const { folder: nestedFolder } = await setupFolder({
-        siteId: site.id,
         parentId: parentFolder.id,
         permalink: "nested-folder",
+        siteId: site.id,
         title: "Nested folder",
       })
       const { page: nestedPage } = await setupPageResource({
-        siteId: site.id,
         parentId: nestedFolder.id,
         resourceType: "Page",
+        siteId: site.id,
       })
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
@@ -3855,22 +3893,22 @@ describe("resource.router", async () => {
     it("should accept requests up to MAX_BATCH_RESOURCE_IDS", async () => {
       // Arrange - use one existing resource ID repeated to hit the limit
       const { site } = await setupSite()
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
 
       const resourceIds: string[] = []
       for (let i = 0; i < MAX_BATCH_RESOURCE_IDS; i++) {
         const { page } = await setupPageResource({
-          siteId: site.id,
-          resourceType: "Page",
           permalink: `page-${i + 1}`,
+          resourceType: "Page",
+          siteId: site.id,
         })
         resourceIds.push(page.id)
       }
 
       // Act
       const result = await caller.getBatchAncestryWithSelf({
-        siteId: String(site.id),
         resourceIds,
+        siteId: String(site.id),
       })
 
       // Assert
@@ -3880,12 +3918,12 @@ describe("resource.router", async () => {
     it("should reject requests over MAX_BATCH_RESOURCE_IDS", async () => {
       // Arrange
       const { site } = await setupSite()
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
 
       // Act
       const result = caller.getBatchAncestryWithSelf({
-        siteId: String(site.id),
         resourceIds: makeResourceIds(MAX_BATCH_RESOURCE_IDS + 1),
+        siteId: String(site.id),
       })
 
       // Assert
@@ -3911,8 +3949,8 @@ describe("resource.router", async () => {
 
       // Act
       const result = unauthedCaller.search({
-        siteId: "1",
         query: "test",
+        siteId: "1",
       })
 
       // Assert
@@ -3927,8 +3965,8 @@ describe("resource.router", async () => {
 
       // Act
       const result = caller.search({
-        siteId: String(site.id),
         query: "test",
+        siteId: String(site.id),
       })
 
       // Assert
@@ -3947,22 +3985,22 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = await caller.search({
-        siteId: String(site.id),
         query: "test",
+        siteId: String(site.id),
       })
 
       // Assert
       const expected = {
-        totalCount: 0,
-        resources: [],
-        recentlyEdited: [],
         nextOffset: null,
+        recentlyEdited: [],
+        resources: [],
+        totalCount: 0,
       }
       expect(result).toEqual(expected)
     })
@@ -3971,31 +4009,32 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       const { folder: folder1 } = await setupFolder({
         siteId: site.id,
       })
       const { folder: folder2 } = await setupFolder({
-        siteId: site.id,
         parentId: folder1.id,
+        siteId: site.id,
       })
       const { page } = await setupPageResource({
+        parentId: folder2.id,
         resourceType: "Page",
         siteId: site.id,
-        parentId: folder2.id,
       })
 
       // Act
       const result = await caller.search({
-        siteId: String(site.id),
         query: "test",
+        siteId: String(site.id),
       })
 
       // Assert
       const expected = {
-        totalCount: 3,
+        nextOffset: null,
+        recentlyEdited: [],
         resources: [
           {
             ...pick(page, RESOURCE_FIELDS_TO_PICK),
@@ -4009,12 +4048,11 @@ describe("resource.router", async () => {
           },
           {
             ...pick(folder1, RESOURCE_FIELDS_TO_PICK),
-            fullPermalink: `${folder1.permalink}`,
+            fullPermalink: folder1.permalink,
             lastUpdatedAt: folder1.updatedAt,
           },
         ],
-        recentlyEdited: [],
-        nextOffset: null,
+        totalCount: 3,
       }
       expect(result).toEqual(expected)
     })
@@ -4023,20 +4061,20 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       const blob = await setupBlob()
       const { page: page1 } = await setupPageResource({
+        blobId: blob.id,
+        permalink: "page-1",
         resourceType: "Page",
         siteId: site.id,
-        permalink: "page-1",
-        blobId: blob.id,
       })
       const { page: page2 } = await setupPageResource({
+        permalink: "page-2",
         resourceType: "Page",
         siteId: site.id,
-        permalink: "page-2",
       })
       const updatedBlob = await db
         .updateTable("Blob")
@@ -4047,51 +4085,53 @@ describe("resource.router", async () => {
 
       // Act
       const result = await caller.search({
-        siteId: String(site.id),
         query: "test",
+        siteId: String(site.id),
       })
 
       // Assert
       const expected = {
-        totalCount: 2,
+        nextOffset: null,
+        recentlyEdited: [],
         resources: [
           {
             ...pick(page1, RESOURCE_FIELDS_TO_PICK),
-            fullPermalink: `${page1.permalink}`,
+            fullPermalink: page1.permalink,
             lastUpdatedAt: updatedBlob.updatedAt,
           },
           {
             ...pick(page2, RESOURCE_FIELDS_TO_PICK),
-            fullPermalink: `${page2.permalink}`,
+            fullPermalink: page2.permalink,
             lastUpdatedAt: page2.updatedAt,
           },
         ],
-        recentlyEdited: [],
-        nextOffset: null,
+        totalCount: 2,
       }
       expect(result).toEqual(expected)
     })
 
     it("should return totalCount as a number", async () => {
       // Arrange
-      const numberOfPages = 15 // arbitrary number above the default limit of 10
+      const numberOfPages = 15
+      // arbitrary number above the default limit of 10
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       for (let index = 0; index < numberOfPages; index++) {
+        // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
         await setupPageResource({
-          siteId: site.id,
-          resourceType: "Page",
           permalink: `page-${index + 1}`,
+          resourceType: "Page",
+          siteId: site.id,
         })
       }
 
       // Act
       const result = await caller.search({
-        siteId: String(site.id),
         query: "test",
+        siteId: String(site.id),
       })
 
       // Assert
@@ -4102,15 +4142,15 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       await setupPageResource({ resourceType: "Page", siteId: site.id })
 
       // Act
       const result = await caller.search({
-        siteId: String(site.id),
         query: "test",
+        siteId: String(site.id),
       })
 
       // Assert
@@ -4121,46 +4161,49 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       const { page: page1 } = await setupPageResource({
-        resourceType: "Page",
-        siteId: site.id,
-        title: "apple banana cherry durian", // matches all search terms
         permalink: "apple-banana-cherry-durian",
-      })
-      await setupPageResource({
         resourceType: "Page",
         siteId: site.id,
-        title: "apple banana cherry", // missing durian
+        title: "apple banana cherry durian",
+        // matches all search terms,
+      })
+      await setupPageResource({
         permalink: "apple-banana-cherry",
-      })
-      await setupPageResource({
         resourceType: "Page",
         siteId: site.id,
-        title: "banana", // missing apple and durian
+        title: "apple banana cherry",
+        // missing durian,
+      })
+      await setupPageResource({
         permalink: "banana",
+        resourceType: "Page",
+        siteId: site.id,
+        title: "banana",
+        // missing apple and durian,
       })
 
       // Act
       const result = await caller.search({
-        siteId: String(site.id),
         query: "apple banana durian",
+        siteId: String(site.id),
       })
 
       // Assert
       const expected = {
-        totalCount: 1,
+        nextOffset: null,
+        recentlyEdited: [],
         resources: [
           {
             ...pick(page1, RESOURCE_FIELDS_TO_PICK),
-            fullPermalink: `${page1.permalink}`,
+            fullPermalink: page1.permalink,
             lastUpdatedAt: page1.updatedAt,
           },
         ],
-        recentlyEdited: [],
-        nextOffset: null,
+        totalCount: 1,
       }
       expect(result).toEqual(expected)
     })
@@ -4169,28 +4212,28 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       await setupPageResource({
+        permalink: "apple-pie",
         resourceType: "Page",
         siteId: site.id,
         title: "apple pie",
-        permalink: "apple-pie",
       })
 
       // Act
       const result = await caller.search({
-        siteId: String(site.id),
         query: "apple banana",
+        siteId: String(site.id),
       })
 
       // Assert
       const expected = {
-        totalCount: 0,
-        resources: [],
-        recentlyEdited: [],
         nextOffset: null,
+        recentlyEdited: [],
+        resources: [],
+        totalCount: 0,
       }
       expect(result).toEqual(expected)
     })
@@ -4199,34 +4242,34 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       const { page } = await setupPageResource({
+        permalink: "guide-to-apple-services",
         resourceType: "Page",
         siteId: site.id,
         title: "Guide to Apple Services",
-        permalink: "guide-to-apple-services",
       })
 
       // Act
       const result = await caller.search({
-        siteId: String(site.id),
         query: "guide apple",
+        siteId: String(site.id),
       })
 
       // Assert
       const expected = {
-        totalCount: 1,
+        nextOffset: null,
+        recentlyEdited: [],
         resources: [
           {
             ...pick(page, RESOURCE_FIELDS_TO_PICK),
-            fullPermalink: `${page.permalink}`,
+            fullPermalink: page.permalink,
             lastUpdatedAt: page.updatedAt,
           },
         ],
-        recentlyEdited: [],
-        nextOffset: null,
+        totalCount: 1,
       }
       expect(result).toEqual(expected)
     })
@@ -4235,34 +4278,34 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       const { page } = await setupPageResource({
+        permalink: "annual-budget-report",
         resourceType: "Page",
         siteId: site.id,
         title: "Annual Budget Report",
-        permalink: "annual-budget-report",
       })
 
       // Act
       const result = await caller.search({
-        siteId: String(site.id),
         query: "ANNUAL budget",
+        siteId: String(site.id),
       })
 
       // Assert
       const expected = {
-        totalCount: 1,
+        nextOffset: null,
+        recentlyEdited: [],
         resources: [
           {
             ...pick(page, RESOURCE_FIELDS_TO_PICK),
-            fullPermalink: `${page.permalink}`,
+            fullPermalink: page.permalink,
             lastUpdatedAt: page.updatedAt,
           },
         ],
-        recentlyEdited: [],
-        nextOffset: null,
+        totalCount: 1,
       }
       expect(result).toEqual(expected)
     })
@@ -4271,43 +4314,43 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       const { page: page1 } = await setupPageResource({
+        permalink: "page-1",
         resourceType: "Page",
         siteId: site.id,
-        permalink: "page-1",
       })
       const { page: page2 } = await setupPageResource({
+        permalink: "page-2",
         resourceType: "Page",
         siteId: site.id,
-        permalink: "page-2",
       })
 
       // Act
       const result = await caller.search({
-        siteId: String(site.id),
         query: "test",
+        siteId: String(site.id),
       })
 
       // Assert
       const expected = {
-        totalCount: 2,
+        nextOffset: null,
+        recentlyEdited: [],
         resources: [
           {
             ...pick(page2, RESOURCE_FIELDS_TO_PICK),
-            fullPermalink: `${page2.permalink}`,
+            fullPermalink: page2.permalink,
             lastUpdatedAt: page2.updatedAt,
           },
           {
             ...pick(page1, RESOURCE_FIELDS_TO_PICK),
-            fullPermalink: `${page1.permalink}`,
+            fullPermalink: page1.permalink,
             lastUpdatedAt: page1.updatedAt,
           },
         ],
-        recentlyEdited: [],
-        nextOffset: null,
+        totalCount: 2,
       }
       expect(result).toEqual(expected)
     })
@@ -4316,40 +4359,40 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       await setupPageResource({
+        permalink: "shouldnotmatch",
         resourceType: "Page",
         siteId: site.id,
         title: "shouldnotmatch",
-        permalink: "shouldnotmatch",
       })
       const { page } = await setupPageResource({
+        permalink: "match",
         resourceType: "Page",
         siteId: site.id,
         title: "match",
-        permalink: "match",
       })
 
       // Act
       const result = await caller.search({
-        siteId: String(site.id),
         query: "match",
+        siteId: String(site.id),
       })
 
       // Assert
       const expected = {
-        totalCount: 1,
+        nextOffset: null,
+        recentlyEdited: [],
         resources: [
           {
             ...pick(page, RESOURCE_FIELDS_TO_PICK),
-            fullPermalink: `${page.permalink}`,
+            fullPermalink: page.permalink,
             lastUpdatedAt: page.updatedAt,
           },
         ],
-        recentlyEdited: [],
-        nextOffset: null,
+        totalCount: 1,
       }
       expect(result).toEqual(expected)
     })
@@ -4358,45 +4401,45 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       const { page: page1 } = await setupPageResource({
+        permalink: "banana-banana-apple",
         resourceType: "Page",
         siteId: site.id,
         title: "banana banana apple",
-        permalink: "banana-banana-apple",
       })
       const { page: page2 } = await setupPageResource({
+        permalink: "banana-apple",
         resourceType: "Page",
         siteId: site.id,
         title: "banana apple",
-        permalink: "banana-apple",
       })
 
       // Act
       const result = await caller.search({
-        siteId: String(site.id),
         query: "banana apple",
+        siteId: String(site.id),
       })
 
       // Assert
       const expected = {
-        totalCount: 2,
+        nextOffset: null,
+        recentlyEdited: [],
         resources: [
           {
             ...pick(page2, RESOURCE_FIELDS_TO_PICK),
-            fullPermalink: `${page2.permalink}`,
+            fullPermalink: page2.permalink,
             lastUpdatedAt: page2.updatedAt,
           },
           {
             ...pick(page1, RESOURCE_FIELDS_TO_PICK),
-            fullPermalink: `${page1.permalink}`,
+            fullPermalink: page1.permalink,
             lastUpdatedAt: page1.updatedAt,
           },
         ],
-        recentlyEdited: [],
-        nextOffset: null,
+        totalCount: 2,
       }
       expect(result).toEqual(expected)
     })
@@ -4406,40 +4449,40 @@ describe("resource.router", async () => {
       // "long" for "longterm") must not count as a match
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       const { page: matchingPage } = await setupPageResource({
+        permalink: "longterm-short",
         resourceType: "Page",
         siteId: site.id,
         title: "longterm short",
-        permalink: "longterm-short",
       })
       await setupPageResource({
+        permalink: "long-short",
         resourceType: "Page",
         siteId: site.id,
         title: "long short",
-        permalink: "long-short",
       })
 
       // Act
       const result = await caller.search({
-        siteId: String(site.id),
         query: "longterm short",
+        siteId: String(site.id),
       })
 
       // Assert
       const expected = {
-        totalCount: 1,
+        nextOffset: null,
+        recentlyEdited: [],
         resources: [
           {
             ...pick(matchingPage, RESOURCE_FIELDS_TO_PICK),
-            fullPermalink: `${matchingPage.permalink}`,
+            fullPermalink: matchingPage.permalink,
             lastUpdatedAt: matchingPage.updatedAt,
           },
         ],
-        recentlyEdited: [],
-        nextOffset: null,
+        totalCount: 1,
       }
       expect(result).toEqual(expected)
     })
@@ -4448,8 +4491,8 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       await setupPageResource({
         resourceType: "Page",
@@ -4459,16 +4502,16 @@ describe("resource.router", async () => {
 
       // Act
       const result = await caller.search({
-        siteId: String(site.id),
         query: "test",
+        siteId: String(site.id),
       })
 
       // Assert
       const expected = {
-        totalCount: 0,
-        resources: [],
-        recentlyEdited: [],
         nextOffset: null,
+        recentlyEdited: [],
+        resources: [],
+        totalCount: 0,
       }
       expect(result).toEqual(expected)
     })
@@ -4477,40 +4520,40 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       const { page: page1 } = await setupPageResource({
+        permalink: "test",
         resourceType: "Page",
         siteId: site.id,
         title: "test",
-        permalink: "test",
       })
       await setupPageResource({
+        permalink: "something-else",
         resourceType: "Page",
         siteId: site.id,
         title: "something else",
-        permalink: "something-else",
       })
 
       // Act
       const result = await caller.search({
-        siteId: String(site.id),
         query: "test  test",
+        siteId: String(site.id),
       })
 
       // Assert
       const expected = {
-        totalCount: 1,
+        nextOffset: null,
+        recentlyEdited: [],
         resources: [
           {
             ...pick(page1, RESOURCE_FIELDS_TO_PICK),
-            fullPermalink: `${page1.permalink}`,
+            fullPermalink: page1.permalink,
             lastUpdatedAt: page1.updatedAt,
           },
         ],
-        recentlyEdited: [],
-        nextOffset: null,
+        totalCount: 1,
       }
       expect(result).toEqual(expected)
     })
@@ -4519,8 +4562,8 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       const { collection: collection1 } = await setupCollection({
         siteId: site.id,
@@ -4535,22 +4578,23 @@ describe("resource.router", async () => {
         siteId: site.id,
       })
       const { collectionLink } = await setupCollectionLink({
-        siteId: site.id,
         collectionId: collection1.id,
+        siteId: site.id,
       })
       await setupPageResource({ resourceType: "IndexPage", siteId: site.id })
-      await setupFolderMeta({ siteId: site.id, folderId: folder1.id })
+      await setupFolderMeta({ folderId: folder1.id, siteId: site.id })
 
       // Act
       const result = await caller.search({
-        siteId: String(site.id),
         query: "test",
         resourceTypes: USER_VIEWABLE_RESOURCE_TYPES,
+        siteId: String(site.id),
       })
 
       // Assert
       const expected = {
-        totalCount: 5,
+        nextOffset: null,
+        recentlyEdited: [],
         resources: [
           {
             ...pick(collectionLink, RESOURCE_FIELDS_TO_PICK),
@@ -4559,27 +4603,26 @@ describe("resource.router", async () => {
           },
           {
             ...pick(collectionPage, RESOURCE_FIELDS_TO_PICK),
-            fullPermalink: `${collectionPage.permalink}`,
+            fullPermalink: collectionPage.permalink,
             lastUpdatedAt: collectionPage.updatedAt,
           },
           {
             ...pick(page1, RESOURCE_FIELDS_TO_PICK),
-            fullPermalink: `${page1.permalink}`,
+            fullPermalink: page1.permalink,
             lastUpdatedAt: page1.updatedAt,
           },
           {
             ...pick(folder1, RESOURCE_FIELDS_TO_PICK),
-            fullPermalink: `${folder1.permalink}`,
+            fullPermalink: folder1.permalink,
             lastUpdatedAt: folder1.updatedAt,
           },
           {
             ...pick(collection1, RESOURCE_FIELDS_TO_PICK),
-            fullPermalink: `${collection1.permalink}`,
+            fullPermalink: collection1.permalink,
             lastUpdatedAt: collection1.updatedAt,
           },
         ],
-        recentlyEdited: [],
-        nextOffset: null,
+        totalCount: 5,
       }
       expect(result).toEqual(expected)
     })
@@ -4588,28 +4631,28 @@ describe("resource.router", async () => {
       // Arrange
       const { site: site1 } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site1.id,
+        userId: session.userId,
       })
       const { site: site2 } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site2.id,
+        userId: session.userId,
       })
       await setupPageResource({ resourceType: "Page", siteId: site1.id })
 
       // Act
       const result = await caller.search({
-        siteId: String(site2.id),
         query: "test",
+        siteId: String(site2.id),
       })
 
       // Assert
       const expected = {
-        totalCount: 0,
-        resources: [],
-        recentlyEdited: [],
         nextOffset: null,
+        recentlyEdited: [],
+        resources: [],
+        totalCount: 0,
       }
       expect(result).toEqual(expected)
     })
@@ -4618,8 +4661,8 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       const { page: page1 } = await setupPageResource({
         resourceType: "Page",
@@ -4628,22 +4671,22 @@ describe("resource.router", async () => {
 
       // Act
       const result = await caller.search({
-        siteId: String(site.id),
         query: "",
+        siteId: String(site.id),
       })
 
       // Assert
       const expected = {
-        totalCount: null,
-        resources: [],
+        nextOffset: null,
         recentlyEdited: [
           {
             ...pick(page1, RESOURCE_FIELDS_TO_PICK),
-            fullPermalink: `${page1.permalink}`,
+            fullPermalink: page1.permalink,
             lastUpdatedAt: page1.updatedAt,
           },
         ],
-        nextOffset: null,
+        resources: [],
+        totalCount: null,
       }
       expect(result).toEqual(expected)
     })
@@ -4652,8 +4695,8 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       const { page: page1 } = await setupPageResource({
         resourceType: "Page",
@@ -4662,22 +4705,22 @@ describe("resource.router", async () => {
 
       // Act
       const result = await caller.search({
-        siteId: String(site.id),
         query: "       ",
+        siteId: String(site.id),
       })
 
       // Assert
       const expected = {
-        totalCount: null,
-        resources: [],
+        nextOffset: null,
         recentlyEdited: [
           {
             ...pick(page1, RESOURCE_FIELDS_TO_PICK),
-            fullPermalink: `${page1.permalink}`,
+            fullPermalink: page1.permalink,
             lastUpdatedAt: page1.updatedAt,
           },
         ],
-        nextOffset: null,
+        resources: [],
+        totalCount: null,
       }
       expect(result).toEqual(expected)
     })
@@ -4686,8 +4729,8 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       const { page: page1 } = await setupPageResource({
         resourceType: "Page",
@@ -4701,16 +4744,16 @@ describe("resource.router", async () => {
 
       // Assert
       const expected = {
-        totalCount: null,
-        resources: [],
+        nextOffset: null,
         recentlyEdited: [
           {
             ...pick(page1, RESOURCE_FIELDS_TO_PICK),
-            fullPermalink: `${page1.permalink}`,
+            fullPermalink: page1.permalink,
             lastUpdatedAt: page1.updatedAt,
           },
         ],
-        nextOffset: null,
+        resources: [],
+        totalCount: null,
       }
       expect(result).toEqual(expected)
     })
@@ -4719,20 +4762,20 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       const { page: page1 } = await setupPageResource({
+        permalink: "page-1",
         resourceType: "Page",
         siteId: site.id,
         title: "page 1",
-        permalink: "page-1",
       })
       const { page: page2 } = await setupPageResource({
+        permalink: "page-2",
         resourceType: "Page",
         siteId: site.id,
         title: "page 2",
-        permalink: "page-2",
       })
 
       // Act
@@ -4742,21 +4785,21 @@ describe("resource.router", async () => {
 
       // Assert
       const expected = {
-        totalCount: null,
-        resources: [],
+        nextOffset: null,
         recentlyEdited: [
           {
             ...pick(page2, RESOURCE_FIELDS_TO_PICK),
-            fullPermalink: `${page2.permalink}`,
+            fullPermalink: page2.permalink,
             lastUpdatedAt: page2.updatedAt,
           },
           {
             ...pick(page1, RESOURCE_FIELDS_TO_PICK),
-            fullPermalink: `${page1.permalink}`,
+            fullPermalink: page1.permalink,
             lastUpdatedAt: page1.updatedAt,
           },
         ],
-        nextOffset: null,
+        resources: [],
+        totalCount: null,
       }
       expect(result).toEqual(expected)
     })
@@ -4765,12 +4808,12 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       await setupPageResource({ resourceType: "RootPage", siteId: site.id })
       const { folder: folder1 } = await setupFolder({ siteId: site.id })
-      await setupFolderMeta({ siteId: site.id, folderId: folder1.id })
+      await setupFolderMeta({ folderId: folder1.id, siteId: site.id })
       await setupCollection({ siteId: site.id })
 
       // Act
@@ -4780,10 +4823,10 @@ describe("resource.router", async () => {
 
       // Assert
       const expected = {
-        totalCount: null,
-        resources: [],
-        recentlyEdited: [],
         nextOffset: null,
+        recentlyEdited: [],
+        resources: [],
+        totalCount: null,
       }
       expect(result).toEqual(expected)
     })
@@ -4793,42 +4836,43 @@ describe("resource.router", async () => {
         // Arrange
         const { site } = await setupSite()
         await setupAdminPermissions({
-          userId: session.userId,
           siteId: site.id,
+          userId: session.userId,
         })
         const pages = []
         for (let index = 0; index < 11; index++) {
           pages.push(
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await setupPageResource({
-              siteId: site.id,
-              resourceType: "Page",
               permalink: `page-${index + 1}`,
+              resourceType: "Page",
+              siteId: site.id,
             }),
           )
         }
 
         // Act
         const result = await caller.search({
-          siteId: String(site.id),
           query: "test",
+          siteId: String(site.id),
         })
 
         // Assert
         const expected = {
-          totalCount: 11,
+          nextOffset: 10,
+          recentlyEdited: [],
           resources: pages
-            .reverse()
+            .toReversed()
             .slice(0, 10)
             .map((page) => {
               const { page: pageX } = page
               return {
                 ...pick(pageX, RESOURCE_FIELDS_TO_PICK),
-                fullPermalink: `${pageX.permalink}`,
+                fullPermalink: pageX.permalink,
                 lastUpdatedAt: pageX.updatedAt,
               }
             }),
-          recentlyEdited: [],
-          nextOffset: 10,
+          totalCount: 11,
         }
         expect(result).toEqual(expected)
       })
@@ -4837,49 +4881,49 @@ describe("resource.router", async () => {
         // Arrange
         const { site } = await setupSite()
         await setupAdminPermissions({
-          userId: session.userId,
           siteId: site.id,
+          userId: session.userId,
         })
         await setupPageResource({
-          siteId: site.id,
-          resourceType: "Page",
           permalink: "page-1",
+          resourceType: "Page",
+          siteId: site.id,
         })
         const { page: page2 } = await setupPageResource({
-          siteId: site.id,
-          resourceType: "Page",
           permalink: "page-2",
+          resourceType: "Page",
+          siteId: site.id,
         })
         const { page: page3 } = await setupPageResource({
-          siteId: site.id,
-          resourceType: "Page",
           permalink: "page-3",
+          resourceType: "Page",
+          siteId: site.id,
         })
 
         // Act
         const result = await caller.search({
-          siteId: String(site.id),
-          query: "test",
           limit: 2,
+          query: "test",
+          siteId: String(site.id),
         })
 
         // Assert
         const expected = {
-          totalCount: 3,
+          nextOffset: 2,
+          recentlyEdited: [],
           resources: [
             {
               ...pick(page3, RESOURCE_FIELDS_TO_PICK),
-              fullPermalink: `${page3.permalink}`,
+              fullPermalink: page3.permalink,
               lastUpdatedAt: page3.updatedAt,
             },
             {
               ...pick(page2, RESOURCE_FIELDS_TO_PICK),
-              fullPermalink: `${page2.permalink}`,
+              fullPermalink: page2.permalink,
               lastUpdatedAt: page2.updatedAt,
             },
           ],
-          recentlyEdited: [],
-          nextOffset: 2,
+          totalCount: 3,
         }
         expect(result).toEqual(expected)
       })
@@ -4888,8 +4932,8 @@ describe("resource.router", async () => {
         // Arrange
         const { site } = await setupSite()
         await setupAdminPermissions({
-          userId: session.userId,
           siteId: site.id,
+          userId: session.userId,
         })
         const { page: page1 } = await setupPageResource({
           resourceType: "Page",
@@ -4898,23 +4942,23 @@ describe("resource.router", async () => {
 
         // Act
         const result = await caller.search({
-          siteId: String(site.id),
-          query: "test",
           limit: 2,
+          query: "test",
+          siteId: String(site.id),
         })
 
         // Assert
         const expected = {
-          totalCount: 1,
+          nextOffset: null,
+          recentlyEdited: [],
           resources: [
             {
               ...pick(page1, RESOURCE_FIELDS_TO_PICK),
-              fullPermalink: `${page1.permalink}`,
+              fullPermalink: page1.permalink,
               lastUpdatedAt: page1.updatedAt,
             },
           ],
-          recentlyEdited: [],
-          nextOffset: null,
+          totalCount: 1,
         }
         expect(result).toEqual(expected)
       })
@@ -4925,23 +4969,23 @@ describe("resource.router", async () => {
         // Arrange
         const { site } = await setupSite()
         await setupAdminPermissions({
-          userId: session.userId,
           siteId: site.id,
+          userId: session.userId,
         })
         await setupPageResource({ resourceType: "Page", siteId: site.id })
 
         // Act
         const result = await caller.search({
-          siteId: String(site.id),
-          query: "test",
           cursor: 600,
+          query: "test",
+          siteId: String(site.id),
         })
 
         const expected = {
-          totalCount: 1,
-          resources: [],
-          recentlyEdited: [],
           nextOffset: null,
+          recentlyEdited: [],
+          resources: [],
+          totalCount: 1,
         }
         expect(result).toEqual(expected)
       })
@@ -4950,43 +4994,44 @@ describe("resource.router", async () => {
         // Arrange
         const { site } = await setupSite()
         await setupAdminPermissions({
-          userId: session.userId,
           siteId: site.id,
+          userId: session.userId,
         })
         const pages = []
         for (let index = 0; index < 31; index++) {
           pages.push(
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await setupPageResource({
-              siteId: site.id,
-              resourceType: "Page",
               permalink: `page-${index + 1}`,
+              resourceType: "Page",
+              siteId: site.id,
             }),
           )
         }
 
         // Act
         const result = await caller.search({
-          siteId: String(site.id),
-          query: "test",
           cursor: 10,
+          query: "test",
+          siteId: String(site.id),
         })
 
         // Assert
         const expected = {
-          totalCount: 31,
+          nextOffset: 20,
+          recentlyEdited: [],
           resources: pages
-            .reverse()
+            .toReversed()
             .slice(10, 20)
             .map((page) => {
               const { page: pageX } = page
               return {
                 ...pick(pageX, RESOURCE_FIELDS_TO_PICK),
-                fullPermalink: `${pageX.permalink}`,
+                fullPermalink: pageX.permalink,
                 lastUpdatedAt: pageX.updatedAt,
               }
             }),
-          recentlyEdited: [],
-          nextOffset: 20,
+          totalCount: 31,
         }
         expect(result).toEqual(expected)
       })
@@ -5019,8 +5064,8 @@ describe("resource.router", async () => {
         resourceType: "Page",
       })
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
@@ -5033,7 +5078,7 @@ describe("resource.router", async () => {
       expect(result).toEqual([
         {
           ...pick(page, RESOURCE_FIELDS_TO_PICK),
-          fullPermalink: `${page.permalink}`,
+          fullPermalink: page.permalink,
           lastUpdatedAt: null,
         },
       ])
@@ -5063,22 +5108,22 @@ describe("resource.router", async () => {
 
     it("should accept requests up to MAX_BATCH_RESOURCE_IDS", async () => {
       const { site } = await setupSite()
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
 
       const resourceIds: string[] = []
       for (let i = 0; i < MAX_BATCH_RESOURCE_IDS; i++) {
         const { page } = await setupPageResource({
-          siteId: site.id,
-          resourceType: "Page",
           permalink: `page-${i + 1}`,
+          resourceType: "Page",
+          siteId: site.id,
         })
         resourceIds.push(page.id)
       }
 
       // Act
       const result = await caller.searchWithResourceIds({
-        siteId: String(site.id),
         resourceIds,
+        siteId: String(site.id),
       })
 
       // Assert - route accepts input (DB returns unique rows so 1 result)
@@ -5088,12 +5133,12 @@ describe("resource.router", async () => {
     it("should reject requests over MAX_BATCH_RESOURCE_IDS", async () => {
       // Arrange
       const { site } = await setupSite()
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
 
       // Act
       const result = caller.searchWithResourceIds({
-        siteId: String(site.id),
         resourceIds: makeResourceIds(MAX_BATCH_RESOURCE_IDS + 1),
+        siteId: String(site.id),
       })
 
       // Assert
@@ -5104,14 +5149,14 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = caller.searchWithResourceIds({
-        siteId: String(site.id),
         resourceIds: ["01", "2"],
+        siteId: String(site.id),
       })
 
       // Assert
@@ -5131,8 +5176,8 @@ describe("resource.router", async () => {
 
       // Act
       const result = unauthedCaller.getIndexPage({
-        siteId: 1,
         parentId: "1",
+        siteId: 1,
       })
 
       // Assert
@@ -5145,14 +5190,14 @@ describe("resource.router", async () => {
       // Arrange
       const { site, folder } = await setupFolder()
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = caller.getIndexPage({
-        siteId: site.id,
         parentId: folder.id,
+        siteId: site.id,
       })
 
       // Assert
@@ -5163,19 +5208,19 @@ describe("resource.router", async () => {
       // Arrange
       const { site, folder } = await setupFolder()
       const { page } = await setupPageResource({
+        parentId: folder.id,
         resourceType: "IndexPage",
         siteId: site.id,
-        parentId: folder.id,
       })
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = await caller.getIndexPage({
-        siteId: site.id,
         parentId: folder.id,
+        siteId: site.id,
       })
 
       // Assert
@@ -5189,15 +5234,15 @@ describe("resource.router", async () => {
       // Arrange
       const { site, folder } = await setupFolder()
       const { page } = await setupPageResource({
+        parentId: folder.id,
         resourceType: "IndexPage",
         siteId: site.id,
-        parentId: folder.id,
       })
 
       // Act
       const result = caller.getIndexPage({
-        siteId: site.id,
         parentId: page.id,
+        siteId: site.id,
       })
 
       // Assert

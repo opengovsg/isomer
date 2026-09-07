@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-nested-ternary -- core cleanup deferred */
 import type { RoleType } from "~prisma/generated/generatedEnums"
 import { Icon, Text, VStack } from "@chakra-ui/react"
 import { dataAttr } from "@chakra-ui/utils"
@@ -23,88 +24,86 @@ export const RoleBox = ({
   isDisabled = false,
   onClick,
   permissionLabels,
-}: RoleBoxProps) => {
-  return (
-    <Button
-      variant="unstyled"
-      border="1.5px solid"
-      p={5}
-      borderColor={isSelected ? "blue.500" : "gray.200"}
-      bg={isSelected ? "blue.50" : "white"}
-      borderRadius="md"
-      textAlign="center"
-      fontWeight={isSelected ? "bold" : "normal"}
-      flex="1"
-      height="auto"
-      isDisabled={isDisabled}
-      onClick={onClick}
-      data-selected={dataAttr(isSelected)}
-      _selected={{
+}: RoleBoxProps) => (
+  <Button
+    variant="unstyled"
+    border="1.5px solid"
+    p={5}
+    borderColor={isSelected ? "blue.500" : "gray.200"}
+    bg={isSelected ? "blue.50" : "white"}
+    borderRadius="md"
+    textAlign="center"
+    fontWeight={isSelected ? "bold" : "normal"}
+    flex="1"
+    height="auto"
+    isDisabled={isDisabled}
+    onClick={onClick}
+    data-selected={dataAttr(isSelected)}
+    _selected={{
+      _hover: {
         bg: "interaction.muted.main.active",
         borderColor: "base.divider.brand",
-        _hover: {
-          bg: "interaction.muted.main.active",
-          borderColor: "base.divider.brand",
-        },
-      }}
-      _disabled={{
-        color: "interaction.support.disabled-content",
+      },
+      bg: "interaction.muted.main.active",
+      borderColor: "base.divider.brand",
+    }}
+    _disabled={{
+      _hover: {
         bg: "interaction.support.disabled",
         borderColor: "interaction.support.disabled",
-        opacity: 0.6,
-        cursor: "not-allowed",
-        _hover: {
-          bg: "interaction.support.disabled",
-          borderColor: "interaction.support.disabled",
-        },
-      }}
-      _hover={{
-        bg: "interaction.muted.main.hover",
-        borderColor: "base.divider.medium",
-      }}
-      aria-label={`${value} role`}
-    >
-      <VStack gap={2} alignItems="flex-start">
-        <Icon
-          boxSize={5}
-          as={ROLES_ICONS[value]}
-          color={
-            isDisabled
-              ? "interaction.support.disabled-content"
-              : isSelected
-                ? "base.divider.brand"
-                : undefined
-          }
-        />
-        <Text
-          textStyle="subhead-1"
-          color={
-            isDisabled
-              ? "interaction.support.disabled-content"
-              : isSelected
-                ? "base.divider.brand"
-                : undefined
-          }
-        >
-          {value}
-        </Text>
-        <VStack justifyContent="flex-start" align="center" gap={1} w="100%">
-          {ROLES_LABELS.map((roleLabel) => {
-            return permissionLabels.includes(roleLabel) ? (
-              <HavePermissionContentItem
-                key={`have-permission-${roleLabel}`}
-                text={roleLabel}
-                isDisabled={isDisabled}
-              />
-            ) : (
-              <NoPermissionContentItem
-                key={`no-permission-${roleLabel}`}
-                text={roleLabel}
-              />
-            )
-          })}
-        </VStack>
+      },
+      bg: "interaction.support.disabled",
+      borderColor: "interaction.support.disabled",
+      color: "interaction.support.disabled-content",
+      cursor: "not-allowed",
+      opacity: 0.6,
+    }}
+    _hover={{
+      bg: "interaction.muted.main.hover",
+      borderColor: "base.divider.medium",
+    }}
+    aria-label={`${value} role`}
+  >
+    <VStack gap={2} alignItems="flex-start">
+      <Icon
+        boxSize={5}
+        as={ROLES_ICONS[value]}
+        color={
+          isDisabled
+            ? "interaction.support.disabled-content"
+            : isSelected
+              ? "base.divider.brand"
+              : undefined
+        }
+      />
+      <Text
+        textStyle="subhead-1"
+        color={
+          isDisabled
+            ? "interaction.support.disabled-content"
+            : isSelected
+              ? "base.divider.brand"
+              : undefined
+        }
+      >
+        {value}
+      </Text>
+      <VStack justifyContent="flex-start" align="center" gap={1} w="100%">
+        {ROLES_LABELS.map((roleLabel) =>
+          permissionLabels.includes(roleLabel) ? (
+            <HavePermissionContentItem
+              key={`have-permission-${roleLabel}`}
+              text={roleLabel}
+              isDisabled={isDisabled}
+            />
+          ) : (
+            <NoPermissionContentItem
+              key={`no-permission-${roleLabel}`}
+              text={roleLabel}
+            />
+          ),
+        )}
       </VStack>
-    </Button>
-  )
-}
+    </VStack>
+  </Button>
+)

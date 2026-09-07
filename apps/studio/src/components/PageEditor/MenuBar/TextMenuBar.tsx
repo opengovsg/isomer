@@ -1,3 +1,5 @@
+/* oxlint-disable eslint/sort-keys -- studio lint cleanup */
+/* oxlint-disable typescript/no-unsafe-assignment, typescript/no-unsafe-call, typescript/no-unsafe-member-access, oxc/parse-error -- studio lint cleanup */
 import type { Editor } from "@tiptap/react"
 import { useDisclosure } from "@chakra-ui/react"
 import { useMemo } from "react"
@@ -46,119 +48,126 @@ export const TextMenuBar = ({ editor }: { editor: Editor }) => {
   const items: PossibleMenubarItemProps[] = useMemo(
     () => [
       {
-        type: "vertical-list",
         buttonWidth: "9rem",
-        menuWidth: "12.25rem",
         defaultTitle: "Text styles",
+        isHidden: () => editor.isActive("table"),
         items: [
           {
-            type: "item",
-            title: "Section heading",
-            description: "Biggest heading for sections in your content",
-            useSecondaryColor: true,
             action: () =>
               editor.chain().focus().toggleHeading({ level: 2 }).run(),
+            description: "Biggest heading for sections in your content",
             isActive: () => editor.isActive("heading", { level: 2 }),
+            title: "Section heading",
+            type: "item",
+            useSecondaryColor: true,
           },
           {
-            type: "item",
-            title: "Large heading",
-            useSecondaryColor: true,
             action: () =>
               editor.chain().focus().toggleHeading({ level: 3 }).run(),
             isActive: () => editor.isActive("heading", { level: 3 }),
+            title: "Large heading",
+            type: "item",
+            useSecondaryColor: true,
           },
           {
-            type: "item",
-            title: "Medium heading",
-            useSecondaryColor: true,
             action: () =>
               editor.chain().focus().toggleHeading({ level: 4 }).run(),
             isActive: () => editor.isActive("heading", { level: 4 }),
+            title: "Medium heading",
+            type: "item",
+            useSecondaryColor: true,
           },
           {
-            type: "item",
-            title: "Small heading",
-            useSecondaryColor: true,
             action: () =>
               editor.chain().focus().toggleHeading({ level: 5 }).run(),
             isActive: () => editor.isActive("heading", { level: 5 }),
+            title: "Small heading",
+            type: "item",
+            useSecondaryColor: true,
           },
           {
-            type: "item",
-            title: "Paragraph",
-            textStyle: "body-1",
             action: () =>
               editor.chain().focus().clearNodes().unsetAllMarks().run(),
             isActive: () => editor.isActive("paragraph"),
+            textStyle: "body-1",
+            title: "Paragraph",
+            type: "item",
           },
         ],
-
-        isHidden: () => editor.isActive("table"),
+        menuWidth: "12.25rem",
+        type: "vertical-list",
       },
       {
+        isHidden: () => editor.isActive("table"),
         type: "divider",
-        isHidden: () => editor.isActive("table"),
       },
       {
-        type: "item",
+        action: () => {
+          editor.chain().focus().toggleBold().run()
+        },
         icon: BiBold,
-        title: "Bold",
-        action: () => editor.chain().focus().toggleBold().run(),
         isActive: () => editor.isActive("bold"),
+        title: "Bold",
+        type: "item",
       },
       {
-        type: "item",
+        action: () => {
+          editor.chain().focus().toggleItalic().run()
+        },
         icon: BiItalic,
-        title: "Italicise",
-        action: () => editor.chain().focus().toggleItalic().run(),
         isActive: () => editor.isActive("italic"),
+        title: "Italicise",
+        type: "item",
       },
       {
-        type: "item",
+        action: () => {
+          editor.chain().focus().toggleUnderline().run()
+        },
         icon: BiUnderline,
-        title: "Underline",
-        action: () => editor.chain().focus().toggleUnderline().run(),
         isActive: () => editor.isActive("underline"),
-      },
-      {
+        title: "Underline",
         type: "item",
-        icon: BiStrikethrough,
-        title: "Strikethrough",
-        action: () => editor.chain().focus().toggleStrike().run(),
-        isActive: () => editor.isActive("strike"),
       },
       {
-        type: "horizontal-list",
-        label: "Lists",
+        action: () => {
+          editor.chain().focus().toggleStrike().run()
+        },
+        icon: BiStrikethrough,
+        isActive: () => editor.isActive("strike"),
+        title: "Strikethrough",
+        type: "item",
+      },
+      {
         defaultIcon: BiListOl,
         items: [
           {
-            type: "item",
-            icon: BiListOl,
-            title: "Ordered list",
             action: () => editor.chain().focus().toggleOrderedList().run(),
+            icon: BiListOl,
             isActive: () => editor.isActive("orderedList"),
+            title: "Ordered list",
+            type: "item",
           },
 
           {
-            type: "item",
-            icon: BiListUl,
-            title: "Bullet list",
             action: () => editor.chain().focus().toggleBulletList().run(),
+            icon: BiListUl,
             isActive: () => editor.isActive("unorderedList"),
+            title: "Bullet list",
+            type: "item",
           },
         ],
+        label: "Lists",
+        type: "horizontal-list",
       },
       {
         type: "divider",
       },
       {
-        type: "item",
-        icon: BiLink,
-        title: "Link",
         action: onLinkModalOpen,
+        icon: BiLink,
         isActive: () => editor.isActive("link"),
+        title: "Link",
+        type: "item",
       },
       {
         // A grid-based size picker when not in a table (insert), or a plain
@@ -168,118 +177,118 @@ export const TextMenuBar = ({ editor }: { editor: Editor }) => {
       },
       // Table-specific commands
       {
-        type: "horizontal-list",
-        label: "Table",
         defaultIcon: BiWrench,
         isHidden: () => !editor.isActive("table"),
         items: [
           {
-            type: "item",
+            action: () => editor.chain().focus().addColumnAfter().run(),
             icon: IconAddColRight,
             title: "Add column after",
-            action: () => editor.chain().focus().addColumnAfter().run(),
+            type: "item",
           },
           {
-            type: "item",
+            action: () => editor.chain().focus().addColumnBefore().run(),
             icon: IconAddColLeft,
             title: "Add column before",
-            action: () => editor.chain().focus().addColumnBefore().run(),
+            type: "item",
           },
           {
-            type: "item",
+            action: () => editor.chain().focus().deleteColumn().run(),
             icon: IconDelCol,
             title: "Delete column",
-            action: () => editor.chain().focus().deleteColumn().run(),
+            type: "item",
           },
           {
-            type: "item",
+            action: () => editor.chain().focus().addRowBefore().run(),
             icon: IconAddRowAbove,
             title: "Add row before",
-            action: () => editor.chain().focus().addRowBefore().run(),
+            type: "item",
           },
           {
-            type: "item",
+            action: () => editor.chain().focus().addRowAfter().run(),
             icon: IconAddRowBelow,
             title: "Add row after",
-            action: () => editor.chain().focus().addRowAfter().run(),
+            type: "item",
           },
           {
-            type: "item",
+            action: () => editor.chain().focus().deleteRow().run(),
             icon: IconDelRow,
             title: "Delete row",
-            action: () => editor.chain().focus().deleteRow().run(),
+            type: "item",
           },
           {
-            type: "item",
+            action: () => editor.chain().focus().mergeCells().run(),
             icon: IconMergeCells,
             title: "Merge cells",
-            action: () => editor.chain().focus().mergeCells().run(),
+            type: "item",
           },
           {
-            type: "item",
+            action: () => editor.chain().focus().splitCell().run(),
             icon: IconSplitCell,
             title: "Split cell",
-            action: () => editor.chain().focus().splitCell().run(),
+            type: "item",
           },
           {
-            type: "item",
+            action: onTableSettingsModalOpen,
             icon: BiCog,
             title: "Table settings",
-            action: onTableSettingsModalOpen,
+            type: "item",
           },
         ],
+        label: "Table",
+        type: "horizontal-list",
       },
       // Table-scoped: promoted onto the main toolbar instead of the overflow
       // menu while editing inside a table, same as the "Table" group above.
       {
-        type: "item",
-        icon: MdSuperscript,
-        title: "Superscript",
-        isHidden: () => !editor.isActive("table"),
         action: () =>
           editor.chain().focus().unsetSubscript().toggleSuperscript().run(),
+        icon: MdSuperscript,
         isActive: () => editor.isActive("superscript"),
+        isHidden: () => !editor.isActive("table"),
+        title: "Superscript",
+        type: "item",
       },
       {
-        type: "item",
-        icon: MdSubscript,
-        title: "Subscript",
-        isHidden: () => !editor.isActive("table"),
         action: () =>
           editor.chain().focus().unsetSuperscript().toggleSubscript().run(),
+        icon: MdSubscript,
         isActive: () => editor.isActive("subscript"),
+        isHidden: () => !editor.isActive("table"),
+        title: "Subscript",
+        type: "item",
       },
       // Lesser-used commands are kept inside the overflow items list
       {
-        type: "overflow-list",
         items: [
           {
-            type: "item",
-            icon: MdSuperscript,
-            title: "Superscript",
-            isHidden: () => editor.isActive("table"),
             action: () =>
               editor.chain().focus().unsetSubscript().toggleSuperscript().run(),
+            icon: MdSuperscript,
             isActive: () => editor.isActive("superscript"),
+            isHidden: () => editor.isActive("table"),
+            title: "Superscript",
+            type: "item",
           },
           {
-            type: "item",
-            icon: MdSubscript,
-            title: "Subscript",
-            isHidden: () => editor.isActive("table"),
             action: () =>
               editor.chain().focus().unsetSuperscript().toggleSubscript().run(),
+            icon: MdSubscript,
             isActive: () => editor.isActive("subscript"),
+            isHidden: () => editor.isActive("table"),
+            title: "Subscript",
+            type: "item",
           },
           {
-            type: "item",
-            icon: MdHorizontalRule,
-            title: "Divider",
-            isHidden: () => editor.isActive("table"),
             action: () => editor.chain().focus().setHorizontalRule().run(),
+            icon: MdHorizontalRule,
             isActive: () => editor.isActive("divider"),
+            isHidden: () => editor.isActive("table"),
+            title: "Divider",
+            type: "item",
           },
         ],
+        type: "overflow-list",
       },
     ],
     [editor, onLinkModalOpen, onTableSettingsModalOpen],

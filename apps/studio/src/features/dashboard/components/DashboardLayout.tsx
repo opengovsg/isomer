@@ -12,6 +12,12 @@ import {
 import { Breadcrumb } from "@opengovsg/design-system-react"
 import NextLink from "next/link"
 import { getFolderHref } from "~/utils/resource"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 /**
  * NOTE: This returns the path from root down to the parent of the element.
@@ -28,7 +34,7 @@ export const getBreadcrumbsFromRoot = (
   // Root -> ... -> Parent -> Folder
   const rootHref = `/sites/${siteId}`
 
-  if (resource.parent?.parentId) {
+  if (hasNonEmptyString(resource.parent?.parentId)) {
     return [
       { href: rootHref, label: "Home" },
       {
@@ -42,7 +48,7 @@ export const getBreadcrumbsFromRoot = (
     ]
   }
 
-  if (resource.parent?.id) {
+  if (hasNonEmptyString(resource.parent?.id)) {
     return [
       { href: rootHref, label: "Home" },
       {
@@ -72,7 +78,7 @@ export const DashboardLayout = ({
   children: ReactNode
 }) => {
   const allBreadcrumbsExceptLast = breadcrumbs.slice(0, -1)
-  const lastBreadcrumb = breadcrumbs[breadcrumbs.length - 1]
+  const lastBreadcrumb = breadcrumbs.at(-1)
   return (
     <VStack
       w="100%"
@@ -86,26 +92,25 @@ export const DashboardLayout = ({
         <Breadcrumb
           size="sm"
           w="100%"
-          minH="1.25rem" // maintain height even when single breadcrumb
+          minH="1.25rem"
+          // maintain height even when single breadcrumb
           display="flex"
           alignItems="center"
         >
-          {allBreadcrumbsExceptLast.map(({ href, label }) => {
-            return (
-              <BreadcrumbItem key={href ?? label}>
-                <BreadcrumbLink href={href} as={NextLink}>
-                  <Text
-                    textStyle="caption-2"
-                    color="interaction.links.default"
-                    noOfLines={1}
-                    w="max-content"
-                  >
-                    {label}
-                  </Text>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-            )
-          })}
+          {allBreadcrumbsExceptLast.map(({ href, label }) => (
+            <BreadcrumbItem key={href ?? label}>
+              <BreadcrumbLink href={href} as={NextLink}>
+                <Text
+                  textStyle="caption-2"
+                  color="interaction.links.default"
+                  noOfLines={1}
+                  w="max-content"
+                >
+                  {label}
+                </Text>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+          ))}
           <BreadcrumbItem
             key={lastBreadcrumb?.href}
             overflow="hidden"

@@ -1,7 +1,9 @@
+/* oxlint-disable unicorn/prefer-number-coercion, unicorn/prefer-spread -- studio lint cleanup */
+import type { NextPageWithLayout } from "~/lib/types"
 import { Portal, useDisclosure } from "@chakra-ui/react"
 import { Button, Menu } from "@opengovsg/design-system-react"
 import { useSetAtom } from "jotai"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
 import { BiData, BiFileBlank, BiFolder } from "react-icons/bi"
 import { z } from "zod"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
@@ -20,15 +22,14 @@ import { CreateFolderModal } from "~/features/editing-experience/components/Crea
 import { CreatePageModal } from "~/features/editing-experience/components/CreatePageModal"
 import { MoveResourceModal } from "~/features/editing-experience/components/MoveResourceModal"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { type NextPageWithLayout } from "~/lib/types"
 import { SiteEditorLayout } from "~/templates/layouts/SiteEditorLayout"
 import { getFolderHref } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 const folderPageSchema = z.object({
-  siteId: z.string(),
   folderId: z.string(),
+  siteId: z.string(),
 })
 
 const FolderPage: NextPageWithLayout = () => {
@@ -51,13 +52,13 @@ const FolderPage: NextPageWithLayout = () => {
 
   const { folderId, siteId } = useQueryParse(folderPageSchema)
   const [resource] = trpc.resource.getParentOf.useSuspenseQuery({
-    siteId: Number(siteId),
     resourceId: folderId,
+    siteId: Number(siteId),
   })
 
   const [{ title }] = trpc.folder.getMetadata.useSuspenseQuery({
-    siteId: parseInt(siteId),
-    resourceId: parseInt(folderId),
+    resourceId: Number.parseInt(folderId, 10),
+    siteId: Number.parseInt(siteId, 10),
   })
 
   return (
@@ -74,11 +75,11 @@ const FolderPage: NextPageWithLayout = () => {
             <Button
               variant="outline"
               size="md"
-              onClick={() =>
+              onClick={() => {
                 setFolderSettingsModalState({
                   folderId,
                 })
-              }
+              }}
             >
               Folder settings
             </Button>
@@ -97,9 +98,9 @@ const FolderPage: NextPageWithLayout = () => {
                     <Menu.List>
                       <Menu.Item
                         onClick={() => {
-                          posthog.capture("folder_create_modal_opened", {
-                            site_id: siteId,
+                          posthogJs.capture("folder_create_modal_opened", {
                             parent_type: "folder",
+                            site_id: siteId,
                           })
                           onFolderCreateModalOpen()
                         }}
@@ -109,9 +110,9 @@ const FolderPage: NextPageWithLayout = () => {
                       </Menu.Item>
                       <Menu.Item
                         onClick={() => {
-                          posthog.capture("page_create_modal_opened", {
-                            site_id: siteId,
+                          posthogJs.capture("page_create_modal_opened", {
                             parent_type: "folder",
+                            site_id: siteId,
                           })
                           onPageCreateModalOpen()
                         }}
@@ -121,9 +122,9 @@ const FolderPage: NextPageWithLayout = () => {
                       </Menu.Item>
                       <Menu.Item
                         onClick={() => {
-                          posthog.capture("collection_create_modal_opened", {
-                            site_id: siteId,
+                          posthogJs.capture("collection_create_modal_opened", {
                             parent_type: "folder",
+                            site_id: siteId,
                           })
                           onCollectionCreateModalOpen()
                         }}
@@ -145,42 +146,41 @@ const FolderPage: NextPageWithLayout = () => {
           resourceId={folderId}
         />
         <ResourceTable
-          siteId={parseInt(siteId)}
-          resourceId={parseInt(folderId)}
+          siteId={Number.parseInt(siteId, 10)}
+          resourceId={Number.parseInt(folderId, 10)}
         />
       </DashboardLayout>
       <CreatePageModal
         isOpen={isPageCreateModalOpen}
         onClose={onPageCreateModalClose}
-        siteId={parseInt(siteId)}
-        folderId={parseInt(folderId)}
+        siteId={Number.parseInt(siteId, 10)}
+        folderId={Number.parseInt(folderId, 10)}
       />
       <CreateFolderModal
         isOpen={isFolderCreateModalOpen}
         onClose={onFolderCreateModalClose}
-        siteId={parseInt(siteId)}
-        parentFolderId={parseInt(folderId)}
+        siteId={Number.parseInt(siteId, 10)}
+        parentFolderId={Number.parseInt(folderId, 10)}
       />
       <CreateCollectionModal
         isOpen={isCollectionCreateModalOpen}
         onClose={onCollectionCreateModalClose}
-        siteId={parseInt(siteId)}
-        parentFolderId={parseInt(folderId)}
+        siteId={Number.parseInt(siteId, 10)}
+        parentFolderId={Number.parseInt(folderId, 10)}
       />
       <FolderSettingsModal />
       <MoveResourceModal />
       <PageSettingsModal />
-      <DeleteResourceModal siteId={parseInt(siteId)} />
+      <DeleteResourceModal siteId={Number.parseInt(siteId, 10)} />
     </>
   )
 }
 
-FolderPage.getLayout = (page) => {
-  return (
-    <PermissionsBoundary
-      resourceType={ResourceType.Folder}
-      page={SiteEditorLayout(page)}
-    />
-  )
-}
+FolderPage.getLayout = (page) => (
+  <PermissionsBoundary
+    resourceType={ResourceType.Folder}
+    page={SiteEditorLayout(page)}
+  />
+)
+
 export default FolderPage

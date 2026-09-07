@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-floating-promises, eslint/no-shadow -- studio lint cleanup */
 import type { ResourceItemContent } from "~/schemas/resource"
 import type { SearchResultResource } from "~/server/modules/resource/resource.types"
 import { Box, Flex, Skeleton, Text, VStack } from "@chakra-ui/react"
@@ -83,9 +84,9 @@ const SuspensableResourceSelector = ({
     setResourceStack,
     removeFromStack,
   } = useResourceStack({
-    siteId,
-    selectedResourceId,
     existingResource,
+    selectedResourceId,
+    siteId,
   })
 
   const {
@@ -94,14 +95,14 @@ const SuspensableResourceSelector = ({
     hasNextPage,
     isFetchingNextPage,
   } = useResourceQuery({
-    siteId,
+    isResourceHighlighted,
     moveDest,
     parentDest,
-    isResourceHighlighted,
-    showOnlyContainers: interactionType === "move",
     resourceIds: isSearchQueryEmpty
       ? undefined
       : matchedResources.map((resource) => resource.id),
+    showOnlyContainers: interactionType === "move",
+    siteId,
   })
 
   const {
@@ -112,62 +113,63 @@ const SuspensableResourceSelector = ({
     handleClickBackButton,
     handleClickResourceItem,
   } = useResourceSelector({
-    interactionType,
-    siteId,
-    moveDest,
-    resourceStack,
-    isResourceHighlighted,
-    setIsResourceHighlighted,
     existingResource,
-    setResourceStack,
-    removeFromStack,
+    interactionType,
+    isResourceHighlighted,
+    moveDest,
     onChange: (resourceId: string | null, fullPermalink: string) => {
       onChange(resourceId, fullPermalink)
       clearSearchValue()
     },
+    removeFromStack,
+    resourceStack,
+    setIsResourceHighlighted,
+    setResourceStack,
+    siteId,
   })
 
-  const renderedHeader = useMemo(() => {
-    return (
+  const renderedHeader = useMemo(
+    () => (
       <Suspense fallback={<LoadingHeader />}>
         <SuspendableHeader
           viewState={{
-            isSearchQueryEmpty,
             hasParentInStack,
-            isLoading,
             isHomeHighlighted,
+            isLoading,
+            isSearchQueryEmpty,
           }}
           handleClickBackButton={handleClickBackButton}
           resourceItemsWithAncestryStack={resourceItemsWithAncestryStack}
-          handleOnClick={() =>
+          handleOnClick={() => {
             handleClickResourceItem([
               {
-                title: "Home",
-                permalink: "",
-                type: ResourceType.RootPage,
                 id: rootPage.id,
                 parentId: null,
+                permalink: "",
+                title: "Home",
+                type: ResourceType.RootPage,
               },
             ])
-          }
+          }}
           searchQuery={searchQuery}
         />
       </Suspense>
-    )
-  }, [
-    isSearchQueryEmpty,
-    hasParentInStack,
-    handleClickBackButton,
-    resourceItemsWithAncestryStack,
-    handleClickResourceItem,
-    searchQuery,
-    isLoading,
-    isHomeHighlighted,
-    rootPage.id,
-  ])
+    ),
+    [
+      isSearchQueryEmpty,
+      hasParentInStack,
+      handleClickBackButton,
+      resourceItemsWithAncestryStack,
+      handleClickResourceItem,
+      searchQuery,
+      isLoading,
+      isHomeHighlighted,
+      rootPage.id,
+    ],
+  )
 
-  const renderedContent = useMemo(() => {
-    return (
+  const renderedContent = useMemo(
+    () => (
       <Suspense fallback={<LoadingResourceItemsResults />}>
         <SuspendableContent
           resourceItemsWithAncestryStack={resourceItemsWithAncestryStack}
@@ -175,26 +177,27 @@ const SuspensableResourceSelector = ({
           isResourceItemDisabled={isResourceItemDisabled}
           viewState={{
             hasAdditionalLeftPadding,
-            isSearchQueryEmpty,
             isLoading,
+            isSearchQueryEmpty,
           }}
           handleClickResourceItem={handleClickResourceItem}
           searchQuery={searchQuery}
           clearSearchValue={clearSearchValue}
         />
       </Suspense>
-    )
-  }, [
-    resourceItemsWithAncestryStack,
-    isResourceIdHighlighted,
-    isResourceItemDisabled,
-    hasAdditionalLeftPadding,
-    handleClickResourceItem,
-    isSearchQueryEmpty,
-    searchQuery,
-    clearSearchValue,
-    isLoading,
-  ])
+    ),
+    [
+      resourceItemsWithAncestryStack,
+      isResourceIdHighlighted,
+      isResourceItemDisabled,
+      hasAdditionalLeftPadding,
+      handleClickResourceItem,
+      isSearchQueryEmpty,
+      searchQuery,
+      clearSearchValue,
+      isLoading,
+    ],
+  )
 
   return (
     <>
@@ -220,7 +223,9 @@ const SuspensableResourceSelector = ({
             pl={hasAdditionalLeftPadding ? "2.25rem" : "1rem"}
             size="xs"
             isLoading={isFetchingNextPage}
-            onClick={() => fetchNextPage()}
+            onClick={() => {
+              fetchNextPage()
+            }}
           >
             Load more
           </Button>
@@ -257,8 +262,8 @@ export const ResourceSelector = (props: ResourceSelectorProps) => {
     matchedResources,
     clearSearchValue,
   } = useSearchQuery({
-    siteId: String(props.siteId),
     resourceTypes,
+    siteId: String(props.siteId),
   })
 
   return (

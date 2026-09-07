@@ -7,12 +7,11 @@ import { createSingpassEnabledGbParameters } from "~/stories/utils/growthbook"
 import { withChromaticModes } from "@isomer/storybook-config"
 
 const meta: Meta<typeof SingpassCallbackPage> = {
-  title: "Pages/Sign In Page/Singpass Callback Page",
   component: SingpassCallbackPage,
   parameters: {
-    loginState: false,
     chromatic: withChromaticModes(["gsib", "mobile"]),
     growthbook: [createSingpassEnabledGbParameters(true)],
+    loginState: false,
     msw: {
       handlers: [
         meHandlers.unauthorized(),
@@ -22,12 +21,13 @@ const meta: Meta<typeof SingpassCallbackPage> = {
     nextjs: {
       router: {
         query: {
-          state: "state",
           code: "code",
+          state: "state",
         },
       },
     },
   },
+  title: "Pages/Sign In Page/Singpass Callback Page",
 }
 
 export default meta

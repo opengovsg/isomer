@@ -15,6 +15,7 @@ interface RedirectManagement {
   isError: boolean
 }
 
+// oxlint-disable-next-line eslint/sort-keys -- core cleanup deferred
 export const RedirectManagementContext = createContext<RedirectManagement>({
   // A dummy ability that permits nothing, so a consumer mounted outside the
   // provider falls back to read-only rather than to full access.
@@ -38,8 +39,8 @@ export const RedirectManagementProvider = ({
     isPending,
     isError,
   } = trpc.resource.getRolesFor.useQuery({
-    siteId,
     resourceId: null,
+    siteId,
   })
 
   const value = useMemo(
@@ -47,8 +48,8 @@ export const RedirectManagementProvider = ({
       ability: roles
         ? buildRedirectManagementPermissions(roles)
         : new Ability(),
-      isPending,
       isError,
+      isPending,
     }),
     [roles, isPending, isError],
   )
@@ -75,7 +76,7 @@ export const useRedirectManagement = (): UseRedirectManagementResult => {
   const { ability, isPending, isError } = useContext(RedirectManagementContext)
   return {
     canManageRedirects: ability.can("manage", "RedirectManagement"),
-    isPending,
     isError,
+    isPending,
   }
 }

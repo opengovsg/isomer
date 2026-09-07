@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
 import type { CombinatorRendererProps, RankedTester } from "@jsonforms/core"
 import {
   createCombinatorRenderInfos,

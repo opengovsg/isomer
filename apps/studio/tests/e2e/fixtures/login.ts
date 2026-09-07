@@ -1,5 +1,5 @@
 import type { Locator, Page } from "@playwright/test"
-import type { UUID } from "crypto"
+import type { UUID } from "node:crypto"
 
 import { overwriteToken } from "../utils"
 

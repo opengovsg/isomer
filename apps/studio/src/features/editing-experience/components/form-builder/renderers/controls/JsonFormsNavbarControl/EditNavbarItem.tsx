@@ -1,3 +1,5 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
+/* oxlint-disable unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type {
   JsonFormsCellRendererRegistryEntry,
   JsonFormsRendererRegistryEntry,
@@ -66,7 +68,7 @@ export const EditNavbarItem = ({
     <>
       <DeleteGroupModal
         label={label}
-        subItemsCount={!!subItems ? subItems.length : 0}
+        subItemsCount={subItems ? subItems.length : 0}
         isOpen={isDeleteGroupModalOpen}
         onClose={onDeleteGroupModalClose}
         onDelete={() => {

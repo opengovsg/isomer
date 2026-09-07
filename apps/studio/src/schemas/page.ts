@@ -36,8 +36,8 @@ const permalinkSchema = generateBasePermalinkSchema("page")
   })
 
 export const listPagesSchema = z.object({
-  siteId: z.number(),
   resourceId: z.number().optional(),
+  siteId: z.number(),
 })
 
 export const basePageSchema = z.object({
@@ -46,15 +46,15 @@ export const basePageSchema = z.object({
 })
 
 export const reorderBlobSchema = z.object({
-  pageId: z.number().min(1),
-  from: z.number().min(0),
-  to: z.number().min(0),
-  siteId: z.number().min(1),
   blocks: z.array(
     z.looseObject({
       type: z.string(),
     }),
   ),
+  from: z.number().min(0),
+  pageId: z.number().min(1),
+  siteId: z.number().min(1),
+  to: z.number().min(0),
 })
 
 export const updatePageBlobSchema = basePageSchema.extend({
@@ -65,7 +65,7 @@ export const updatePageBlobSchema = basePageSchema.extend({
       return parsed
     }
     ctx.addIssue({
-      code: z.ZodIssueCode.custom,
+      code: "custom",
       message: "Invalid page content",
     })
     return z.NEVER
@@ -74,15 +74,14 @@ export const updatePageBlobSchema = basePageSchema.extend({
 })
 
 export const createPageSchema = z.object({
-  title: pageTitleSchema,
-  permalink: permalinkSchema,
-  layout: z.enum(NEW_PAGE_LAYOUT_VALUES).default("content"),
-  siteId: z.number().min(1),
-  // NOTE: implies that top level pages are allowed
   folderId: z.number().min(1).optional(),
+  layout: z.enum(NEW_PAGE_LAYOUT_VALUES).default("content"),
+  permalink: permalinkSchema,
+  siteId: z.number().min(1),
+  title: pageTitleSchema,
 })
 
-// TODO: siteId should be taken from user's context (not input)
+// Deferred: siteId should be taken from user's context (not input)
 export const publishPageSchema = z.object({
   pageId: z.number().min(1),
   siteId: z.number().min(1),
@@ -100,8 +99,8 @@ export const createCollectionPageFormSchema = z
   .and(
     createPageSchema
       .omit({
-        layout: true,
         folderId: true,
+        layout: true,
         siteId: true,
       })
       .extend({
@@ -121,11 +120,8 @@ export const getRootPageSchema = z.object({
 })
 
 export const basePageSettingsSchema = basePageSchema.extend({
-  title: pageTitleSchema,
-  // Create a redirect from the page's old URL when its permalink changes (acted
-  // on only for Page/CollectionPage). On the base so the union destructures
-  // cleanly. Defaults on, matching the checkbox's default-checked state.
   shouldCreateRedirect: z.boolean().optional().default(true),
+  title: pageTitleSchema,
 })
 
 const rootPageSettingsSchema = basePageSettingsSchema.extend({
@@ -134,12 +130,12 @@ const rootPageSettingsSchema = basePageSettingsSchema.extend({
 
 export const pageSettingsSchema = z.discriminatedUnion("type", [
   basePageSettingsSchema.extend({
-    type: z.literal(ResourceType.Page),
     permalink: permalinkSchema,
+    type: z.literal(ResourceType.Page),
   }),
   basePageSettingsSchema.extend({
-    type: z.literal(ResourceType.CollectionPage),
     permalink: permalinkSchema,
+    type: z.literal(ResourceType.CollectionPage),
   }),
   basePageSettingsSchema.extend({
     type: z.literal(ResourceType.IndexPage),
@@ -151,33 +147,33 @@ export const pageSettingsSchema = z.discriminatedUnion("type", [
 ])
 
 export const readPageOutputSchema = z.object({
-  id: z.string(),
-  title: z.string(),
-  permalink: z.string(),
-  siteId: z.number(),
-  parentId: z.string().nullable(),
-  publishedVersionId: z.string().nullable(),
+  createdAt: z.date(),
   draftBlobId: z.string().nullable(),
-  state: z.enum(ResourceState).nullable(),
-  type: z.enum(ResourceType),
+  id: z.string(),
+  parentId: z.string().nullable(),
+  permalink: z.string(),
+  publishedVersionId: z.string().nullable(),
   scheduledAt: z.date().nullable(),
   scheduledBy: z.string().nullable(),
-  createdAt: z.date(),
+  siteId: z.number(),
+  state: z.enum(ResourceState).nullable(),
+  title: z.string(),
+  type: z.enum(ResourceType),
   updatedAt: z.date(),
 })
 
 export const updatePageMetaSchema = z.object({
   meta: z.string(),
-  siteId: z.number().min(1),
   resourceId: z.string().min(1),
+  siteId: z.number().min(1),
 })
 
 export const createIndexPageSchema = z.object({
-  siteId: z.number().min(1),
   parentId: z.string(),
+  siteId: z.number().min(1),
 })
 
 export const getPrefillSchema = z.object({
+  resourceId: z.string().regex(/^\d+$/u),
   siteId: z.number().min(1),
-  resourceId: z.string().regex(/^\d+$/),
 })

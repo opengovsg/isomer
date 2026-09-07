@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/filename-case -- FormSG brand icon filename is intentional */
 import type { IconBaseProps } from "react-icons"
 
 export const FormSGIcon = (props: IconBaseProps) => (

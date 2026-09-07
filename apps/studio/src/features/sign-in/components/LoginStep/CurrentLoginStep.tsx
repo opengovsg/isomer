@@ -10,13 +10,16 @@ export const CurrentLoginStep = (): React.ReactNode => {
 
   const stepToRender = useMemo(() => {
     switch (state) {
-      case "initial":
+      case "initial": {
         return <InitialLoginStep />
-      case "verification":
+      }
+      case "verification": {
         return <VerificationLoginStep />
-      default:
+      }
+      default: {
         const _: never = state
         return null
+      }
     }
   }, [state])
 

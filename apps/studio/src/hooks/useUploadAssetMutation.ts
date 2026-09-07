@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unsafe-argument, typescript/no-unsafe-assignment, typescript/no-invalid-void-type -- studio lint cleanup */
 import type { z } from "zod"
 import type { getPresignedPutUrlSchema } from "~/schemas/asset"
 import { useMutation } from "@tanstack/react-query"
@@ -35,10 +36,10 @@ export const useUploadAssetMutation = ({
         if (effectiveName.toLowerCase().endsWith(".svg")) {
           const content = await file.text()
           const { fileKey } = await uploadSvg({
-            siteId,
-            resourceId,
-            fileName: effectiveName,
             content,
+            fileName: effectiveName,
+            resourceId,
+            siteId,
             tags: scheduledAt
               ? [
                   {
@@ -52,10 +53,10 @@ export const useUploadAssetMutation = ({
         }
 
         const { fileKey, uploadConfig } = await getPresignedPutUrl({
-          siteId,
-          resourceId,
           fileName: effectiveName,
           fileSize: file.size,
+          resourceId,
+          siteId,
           tags: scheduledAt
             ? [
                 {

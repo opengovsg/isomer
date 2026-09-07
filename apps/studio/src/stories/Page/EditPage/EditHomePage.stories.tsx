@@ -32,7 +32,6 @@ const COMMON_HANDLERS = [
 ]
 
 const meta: Meta<typeof EditPage> = {
-  title: "Pages/Edit Page/Home Page",
   component: EditPage,
   parameters: {
     getLayout: EditPage.getLayout,
@@ -41,14 +40,15 @@ const meta: Meta<typeof EditPage> = {
     },
     nextjs: {
       router: {
-        query: {
-          siteId: "1",
-          pageId: "1",
-        },
         pathname: "/sites/[siteId]/pages/[pageId]",
+        query: {
+          pageId: "1",
+          siteId: "1",
+        },
       },
     },
   },
+  title: "Pages/Edit Page/Home Page",
 }
 
 export default meta
@@ -59,7 +59,7 @@ export const Default: Story = {}
 export const AddBlock: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const button = await canvas.findByRole("button", { name: /add block/i })
+    const button = await canvas.findByRole("button", { name: /add block/iu })
     await userEvent.click(button)
   },
 }
@@ -67,7 +67,7 @@ export const AddBlock: Story = {
 export const EditHero: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const button = await canvas.findByRole("button", { name: /hero banner/i })
+    const button = await canvas.findByRole("button", { name: /hero banner/iu })
     await userEvent.click(button)
   },
 }
@@ -77,7 +77,7 @@ export const SaveToast: Story = {
     await EditHero.play?.({ canvasElement, ...rest })
     const canvas = within(canvasElement)
     const saveButton = await canvas.findByRole("button", {
-      name: /Save changes/i,
+      name: /Save changes/iu,
     })
     await userEvent.click(saveButton)
   },
@@ -87,7 +87,7 @@ export const EditKeyStatistics: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const button = await canvas.findByRole("button", {
-      name: /Statistics/i,
+      name: /Statistics/iu,
     })
     await userEvent.click(button)
   },
@@ -98,8 +98,8 @@ export const PublishedState: Story = {
     msw: {
       handlers: [
         pageHandlers.readPage.homepage({
-          state: ResourceState.Published,
           draftBlobId: null,
+          state: ResourceState.Published,
         }),
         ...COMMON_HANDLERS,
       ],
@@ -112,12 +112,12 @@ export const NestedState: Story = {
     const canvas = within(canvasElement)
 
     const keyStatisticsButton = await canvas.findByRole("button", {
-      name: /statistics/i,
+      name: /statistics/iu,
     })
     await userEvent.click(keyStatisticsButton)
 
     const averageAllNightersButton = await canvas.findByRole("button", {
-      name: /average all nighters/i,
+      name: /average all nighters/iu,
     })
     await userEvent.click(averageAllNightersButton)
   },
@@ -125,7 +125,8 @@ export const NestedState: Story = {
 
 export const ErrorNestedState: Story = {
   parameters: {
-    disableMockDate: true, // Disable mockDateDecorator to prevent interference with error state
+    disableMockDate: true,
+    // Disable mockDateDecorator to prevent interference with error state
   },
   play: async (context) => {
     await NestedState.play?.(context)
@@ -133,11 +134,13 @@ export const ErrorNestedState: Story = {
     const { canvasElement } = context
     const canvas = within(canvasElement)
 
-    const textbox = await canvas.findByRole("textbox", { name: /description/i })
+    const textbox = await canvas.findByRole("textbox", {
+      name: /description/iu,
+    })
     await userEvent.clear(textbox)
 
     const returnToStatisticsButton =
-      await canvas.findByLabelText(/return to statistics/i)
+      await canvas.findByLabelText(/return to statistics/iu)
     await userEvent.click(returnToStatisticsButton)
   },
 }
@@ -151,12 +154,12 @@ export const FullscreenPreview: Story = {
 
     const button = await canvas.findByRole(
       "button",
-      { name: /default mode/i },
-      { timeout: 10000 },
+      { name: /default mode/iu },
+      { timeout: 10_000 },
     )
     await userEvent.click(button)
 
-    const text = await screen.findByText(/full screen/i)
+    const text = await screen.findByText(/full screen/iu)
     await userEvent.click(text)
   },
 }
@@ -165,8 +168,8 @@ export const WithBanner: Story = {
   parameters: {
     growthbook: [
       createBannerGbParameters({
-        variant: "info",
         message: "This is a test banner",
+        variant: "info",
       }),
     ],
   },
@@ -179,15 +182,15 @@ export const AddAntiScamDisclaimerSaveBlockEnabled: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const addBlockButton = await canvas.findByRole("button", {
-      name: /add block/i,
+      name: /add block/iu,
     })
     await userEvent.click(addBlockButton)
     const antiScamBlockType = await canvas.findByRole("button", {
-      name: /anti-scam disclaimer/i,
+      name: /anti-scam disclaimer/iu,
     })
     await userEvent.click(antiScamBlockType)
     const saveBlockButton = await canvas.findByRole("button", {
-      name: /save block/i,
+      name: /save block/iu,
     })
     await expect(saveBlockButton).not.toBeDisabled()
   },
@@ -204,15 +207,15 @@ export const ReopenAntiScamDisclaimerSaveBlockDisabled: Story = {
     })
     const canvas = within(canvasElement)
     const saveAfterAdd = await canvas.findByRole("button", {
-      name: /save block/i,
+      name: /save block/iu,
     })
     await userEvent.click(saveAfterAdd)
     const antiScamBlockRow = await canvas.findByRole("button", {
-      name: /anti-scam disclaimer/i,
+      name: /anti-scam disclaimer/iu,
     })
     await userEvent.click(antiScamBlockRow)
     const saveAfterReopen = await canvas.findByRole("button", {
-      name: /save block/i,
+      name: /save block/iu,
     })
     await expect(saveAfterReopen).toBeDisabled()
   },

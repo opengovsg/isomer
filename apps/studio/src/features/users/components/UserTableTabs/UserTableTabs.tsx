@@ -1,3 +1,4 @@
+/* oxlint-disable import/no-cycle -- core cleanup deferred */
 import {
   Box,
   TabList,
@@ -26,16 +27,16 @@ export const UserTableTabs = ({
   colorScheme = "blue",
 }: UserTableTabsProps) => {
   // Get Chakra UI's style configuration for Tabs
-  const styles = useMultiStyleConfig("Tabs", { variant, size, colorScheme })
+  const styles = useMultiStyleConfig("Tabs", { colorScheme, size, variant })
 
   const { data: agencyUsersCount = 0 } = trpc.user.count.useQuery({
-    siteId,
     adminType: "agency",
+    siteId,
   })
 
   const { data: isomerAdminsCount = 0 } = trpc.user.count.useQuery({
-    siteId,
     adminType: "isomer",
+    siteId,
   })
 
   return (

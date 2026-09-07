@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-void-return -- core cleanup deferred */
 import type { FooterSchemaType } from "@opengovsg/isomer-components"
 import type { IframeCallbackFnProps } from "~/types/dom"
 import { merge } from "lodash-es"

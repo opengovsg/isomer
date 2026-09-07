@@ -1,6 +1,6 @@
 import type { FullConfig } from "@playwright/test"
 import { chromium } from "@playwright/test"
-import crypto from "crypto"
+import crypto from "node:crypto"
 import { db } from "~/server/modules/database/database"
 
 import { ROLES, storageStateFor, TEST_EMAILS } from "./fixtures/auth"
@@ -31,14 +31,14 @@ const signInOnce = async (role: keyof typeof TEST_EMAILS, baseURL: string) => {
   await loginPage.fillToken(email)
   await page.getByRole("button", { name: "Sign in" }).click()
   await loginPage.mockpassLoginWith(uuid)
-  await page.waitForURL(baseURL + "/")
+  await page.waitForURL(`${baseURL}/`)
 
   await ctx.storageState({ path: storageStateFor(role) })
   await browser.close()
 }
 
 const globalSetup = async (config: FullConfig) => {
-  const baseURL = config.projects[0]?.use.baseURL ?? "http://127.0.0.1:3000"
+  const baseURL = config.projects[0]?.use.baseURL ?? "http://localhost:3000"
 
   await seedRolesForE2E()
 

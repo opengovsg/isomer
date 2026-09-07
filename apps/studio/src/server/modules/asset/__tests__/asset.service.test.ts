@@ -67,10 +67,10 @@ describe("asset.service", () => {
       const fileName = "test-file.jpg"
 
       // Act
-      const result = getFileKey({ siteId, fileName })
+      const result = getFileKey({ fileName, siteId })
 
       // Assert
-      expect(result).toMatch(/^123\/[0-9a-f-]{36}\/test-file\.jpg$/)
+      expect(result).toMatch(/^123\/[0-9a-f-]{36}\/test-file\.jpg$/u)
     })
 
     it("should handle attempts at path traversal", () => {
@@ -79,10 +79,10 @@ describe("asset.service", () => {
       const fileName = "../../test.jpg"
 
       // Act
-      const result = getFileKey({ siteId, fileName })
+      const result = getFileKey({ fileName, siteId })
 
       // Assert
-      expect(result).toMatch(/^123\/[0-9a-f-]{36}\/-..-test\.jpg$/)
+      expect(result).toMatch(/^123\/[0-9a-f-]{36}\/-..-test\.jpg$/u)
     })
 
     it("should handle unicode characters in filename", () => {
@@ -91,10 +91,10 @@ describe("asset.service", () => {
       const fileName = "测试文件.pdf"
 
       // Act
-      const result = getFileKey({ siteId, fileName })
+      const result = getFileKey({ fileName, siteId })
 
       // Assert
-      expect(result).toMatch(/^456\/[0-9a-f-]{36}\/测试文件\.pdf$/)
+      expect(result).toMatch(/^456\/[0-9a-f-]{36}\/测试文件\.pdf$/u)
     })
 
     it("should handle emoji in filename", () => {
@@ -103,10 +103,10 @@ describe("asset.service", () => {
       const fileName = "🎉celebration🎊.png"
 
       // Act
-      const result = getFileKey({ siteId, fileName })
+      const result = getFileKey({ fileName, siteId })
 
       // Assert
-      expect(result).toMatch(/^789\/[0-9a-f-]{36}\/🎉celebration🎊\.png$/)
+      expect(result).toMatch(/^789\/[0-9a-f-]{36}\/🎉celebration🎊\.png$/u)
     })
 
     it("should handle mixed unicode and ASCII characters", () => {
@@ -115,10 +115,10 @@ describe("asset.service", () => {
       const fileName = "report-2024年度.docx"
 
       // Act
-      const result = getFileKey({ siteId, fileName })
+      const result = getFileKey({ fileName, siteId })
 
       // Assert
-      expect(result).toMatch(/^101\/[0-9a-f-]{36}\/report-2024年度\.docx$/)
+      expect(result).toMatch(/^101\/[0-9a-f-]{36}\/report-2024年度\.docx$/u)
     })
 
     it("should handle cyrillic characters", () => {
@@ -127,10 +127,10 @@ describe("asset.service", () => {
       const fileName = "документ.txt"
 
       // Act
-      const result = getFileKey({ siteId, fileName })
+      const result = getFileKey({ fileName, siteId })
 
       // Assert
-      expect(result).toMatch(/^202\/[0-9a-f-]{36}\/документ\.txt$/)
+      expect(result).toMatch(/^202\/[0-9a-f-]{36}\/документ\.txt$/u)
     })
 
     it("should handle arabic characters", () => {
@@ -139,10 +139,10 @@ describe("asset.service", () => {
       const fileName = "ملف.pdf"
 
       // Act
-      const result = getFileKey({ siteId, fileName })
+      const result = getFileKey({ fileName, siteId })
 
       // Assert
-      expect(result).toMatch(/^303\/[0-9a-f-]{36}\/ملف\.pdf$/)
+      expect(result).toMatch(/^303\/[0-9a-f-]{36}\/ملف\.pdf$/u)
     })
 
     it("should handle all special characters that might need sanitization even when the characters are not consecutive", () => {
@@ -151,11 +151,11 @@ describe("asset.service", () => {
       const fileName = '<fi:l|e<>:"|?*.txt'
 
       // Act
-      const result = getFileKey({ siteId, fileName })
+      const result = getFileKey({ fileName, siteId })
 
       // Assert
       // NOTE: Special characters in consecutive runs are compressed to single character
-      expect(result).toMatch(/^404\/[0-9a-f-]{36}\/-fi-l-e-\.txt$/)
+      expect(result).toMatch(/^404\/[0-9a-f-]{36}\/-fi-l-e-\.txt$/u)
     })
 
     it("should handle special characters that might need sanitization", () => {
@@ -164,23 +164,23 @@ describe("asset.service", () => {
       const fileName = 'file<>:"|?*.txt'
 
       // Act
-      const result = getFileKey({ siteId, fileName })
+      const result = getFileKey({ fileName, siteId })
 
       // Assert
       // NOTE: Special characters in consecutive runs are compressed to single character
-      expect(result).toMatch(/^404\/[0-9a-f-]{36}\/file-\.txt$/)
+      expect(result).toMatch(/^404\/[0-9a-f-]{36}\/file-\.txt$/u)
     })
 
     it("should handle very long unicode filename", () => {
       // Arrange
       const siteId = 505
-      const longUnicodeName = "很长的文件名".repeat(20) + ".jpg"
+      const longUnicodeName = `${"很长的文件名".repeat(20)}.jpg`
 
       // Act
-      const result = getFileKey({ siteId, fileName: longUnicodeName })
+      const result = getFileKey({ fileName: longUnicodeName, siteId })
 
       // Assert
-      expect(result).toMatch(/^505\/[0-9a-f-]{36}\/很长的文件名/)
+      expect(result).toMatch(/^505\/[0-9a-f-]{36}\/很长的文件名/u)
       expect(result).toContain(".jpg")
     })
 
@@ -190,13 +190,13 @@ describe("asset.service", () => {
       const fileName = "同一个文件.pdf"
 
       // Act
-      const result1 = getFileKey({ siteId, fileName })
-      const result2 = getFileKey({ siteId, fileName })
+      const result1 = getFileKey({ fileName, siteId })
+      const result2 = getFileKey({ fileName, siteId })
 
       // Assert
       expect(result1).not.toEqual(result2)
-      expect(result1).toMatch(/同一个文件\.pdf$/)
-      expect(result2).toMatch(/同一个文件\.pdf$/)
+      expect(result1).toMatch(/同一个文件\.pdf$/u)
+      expect(result2).toMatch(/同一个文件\.pdf$/u)
     })
 
     it("should handle mixed scripts in filename", () => {
@@ -205,10 +205,10 @@ describe("asset.service", () => {
       const fileName = "English中文العربية.txt"
 
       // Act
-      const result = getFileKey({ siteId, fileName })
+      const result = getFileKey({ fileName, siteId })
 
       // Assert
-      expect(result).toMatch(/^909\/[0-9a-f-]{36}\/English中文العربية\.txt$/)
+      expect(result).toMatch(/^909\/[0-9a-f-]{36}\/English中文العربية\.txt$/u)
     })
   })
 
@@ -216,8 +216,8 @@ describe("asset.service", () => {
     it("should return true when all file keys start with the siteId prefix", () => {
       expect(
         doAllFileKeysBelongToSite({
-          siteId: 25,
           fileKeys: ["25/uuid-1/image.png", "25/uuid-2/doc.pdf"],
+          siteId: 25,
         }),
       ).toBe(true)
     })
@@ -225,8 +225,8 @@ describe("asset.service", () => {
     it("should return true for empty file keys array", () => {
       expect(
         doAllFileKeysBelongToSite({
-          siteId: 25,
           fileKeys: [],
+          siteId: 25,
         }),
       ).toBe(true)
     })
@@ -234,8 +234,8 @@ describe("asset.service", () => {
     it("should return true for single key belonging to site", () => {
       expect(
         doAllFileKeysBelongToSite({
-          siteId: 1,
           fileKeys: ["1/abc-123/file.jpg"],
+          siteId: 1,
         }),
       ).toBe(true)
     })
@@ -243,8 +243,8 @@ describe("asset.service", () => {
     it("should return false when one key belongs to another site", () => {
       expect(
         doAllFileKeysBelongToSite({
-          siteId: 25,
           fileKeys: ["25/uuid-1/image.png", "99/other-site/attacker.png"],
+          siteId: 25,
         }),
       ).toBe(false)
     })
@@ -252,8 +252,8 @@ describe("asset.service", () => {
     it("should return false when key has no site prefix", () => {
       expect(
         doAllFileKeysBelongToSite({
-          siteId: 25,
           fileKeys: ["bare-filename.png"],
+          siteId: 25,
         }),
       ).toBe(false)
     })
@@ -262,8 +262,8 @@ describe("asset.service", () => {
       // siteId 2 should not match "25/..."
       expect(
         doAllFileKeysBelongToSite({
-          siteId: 2,
           fileKeys: ["25/uuid/file.png"],
+          siteId: 2,
         }),
       ).toBe(false)
     })
@@ -272,8 +272,8 @@ describe("asset.service", () => {
       // "2/" prefix only matches siteId 2
       expect(
         doAllFileKeysBelongToSite({
-          siteId: 2,
           fileKeys: ["2/uuid/file.png"],
+          siteId: 2,
         }),
       ).toBe(true)
     })

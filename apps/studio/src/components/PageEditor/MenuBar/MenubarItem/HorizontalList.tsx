@@ -9,6 +9,7 @@ import {
 } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { BiChevronDown, BiChevronUp } from "react-icons/bi"
+import { isNullableBooleanTrue } from "~/utils/truthiness"
 
 import type { MenubarNestedItem } from "./types"
 import { MenuItem } from "../../MenuItem"
@@ -27,7 +28,7 @@ export const MenubarHorizontalList = ({
   defaultIcon,
   items,
 }: MenubarHorizontalListProps): React.ReactNode | null => {
-  if (isHidden?.()) {
+  if (isNullableBooleanTrue(isHidden?.())) {
     return null
   }
   return (

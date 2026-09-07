@@ -6,12 +6,12 @@ import {
 } from "../getSelectedCellBorderClasses"
 
 describe("getSelectedCellBorderClasses", () => {
-  const selectionRect = { left: 1, top: 1, right: 3, bottom: 3 }
+  const selectionRect = { bottom: 3, left: 1, right: 3, top: 1 }
 
   it("returns all four sides for a single-cell selection", () => {
     // Arrange
-    const singleCellSelection = { left: 0, top: 0, right: 1, bottom: 1 }
-    const cellRect = { left: 0, top: 0, right: 1, bottom: 1 }
+    const singleCellSelection = { bottom: 1, left: 0, right: 1, top: 0 }
+    const cellRect = { bottom: 1, left: 0, right: 1, top: 0 }
 
     // Act
     const classes = getSelectedCellBorderClasses(singleCellSelection, cellRect)
@@ -27,7 +27,7 @@ describe("getSelectedCellBorderClasses", () => {
 
   it("returns only outer edges for a corner cell in a multi-cell selection", () => {
     // Arrange
-    const topLeftCell = { left: 1, top: 1, right: 2, bottom: 2 }
+    const topLeftCell = { bottom: 2, left: 1, right: 2, top: 1 }
 
     // Act
     const classes = getSelectedCellBorderClasses(selectionRect, topLeftCell)
@@ -41,8 +41,8 @@ describe("getSelectedCellBorderClasses", () => {
 
   it("returns no edges for an interior cell", () => {
     // Arrange — 3x3 selection with an interior cell at (2,2)
-    const largeSelection = { left: 0, top: 0, right: 3, bottom: 3 }
-    const interiorCell = { left: 1, top: 1, right: 2, bottom: 2 }
+    const largeSelection = { bottom: 3, left: 0, right: 3, top: 0 }
+    const interiorCell = { bottom: 2, left: 1, right: 2, top: 1 }
 
     // Act
     const classes = getSelectedCellBorderClasses(largeSelection, interiorCell)
@@ -53,8 +53,8 @@ describe("getSelectedCellBorderClasses", () => {
 
   it("returns the full left edge for a leftmost cell spanning the selection height", () => {
     // Arrange — row-selection-like leftmost merged/tall cell
-    const rowSelection = { left: 0, top: 1, right: 3, bottom: 2 }
-    const leftmostCell = { left: 0, top: 1, right: 1, bottom: 2 }
+    const rowSelection = { bottom: 2, left: 0, right: 3, top: 1 }
+    const leftmostCell = { bottom: 2, left: 0, right: 1, top: 1 }
 
     // Act
     const classes = getSelectedCellBorderClasses(rowSelection, leftmostCell)
@@ -69,8 +69,8 @@ describe("getSelectedCellBorderClasses", () => {
 
   it("returns top/bottom/right for the rightmost cell in a row selection", () => {
     // Arrange
-    const rowSelection = { left: 0, top: 1, right: 3, bottom: 2 }
-    const rightmostCell = { left: 2, top: 1, right: 3, bottom: 2 }
+    const rowSelection = { bottom: 2, left: 0, right: 3, top: 1 }
+    const rightmostCell = { bottom: 2, left: 2, right: 3, top: 1 }
 
     // Act
     const classes = getSelectedCellBorderClasses(rowSelection, rightmostCell)

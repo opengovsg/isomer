@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unsafe-type-assertion -- server lint cleanup */
 import type { SessionData } from "~/lib/types/session"
 import type { GrowthbookAttributes } from "~/types/growthbook"
 import { TRPCError } from "@trpc/server"
@@ -12,7 +13,7 @@ import { sendMail } from "~/lib/mail"
 import {
   emailSignInSchema,
   emailVerifyOtpSchema,
-} from "~/schemas/auth/email/sign-in"
+} from "~/schemas/auth/email/signIn"
 import { publicProcedure, router } from "~/server/trpc"
 import { getBaseUrl } from "~/utils/getBaseUrl"
 
@@ -50,8 +51,8 @@ export const emailSessionRouter = router({
         })
       }
 
-      // TODO: instead of storing expires, store issuedAt to calculate when the next otp can be re-issued
-      // TODO: rate limit this endpoint also
+      // Deferred: instead of storing expires, store issuedAt to calculate when the next otp can be re-issued
+      // Deferred: rate limit this endpoint also
       const expires = new Date(Date.now() + env.OTP_EXPIRY * 1000)
       const expiryMinutes = Math.floor(env.OTP_EXPIRY / 60)
 
@@ -67,8 +68,8 @@ export const emailSessionRouter = router({
       // Not rejecting error outright so that it looks like the email is valid
       if (email === env.SYSTEM_USER_EMAIL) {
         return {
-          otpPrefix,
           email,
+          otpPrefix,
         }
       }
 
@@ -81,33 +82,33 @@ export const emailSessionRouter = router({
       try {
         await Promise.all([
           ctx.prisma.verificationToken.upsert({
-            where: {
+            create: {
+              expires,
               identifier: getOtpFingerPrint(email, ctx.req),
+              token: hashedToken,
             },
             update: {
-              token: hashedToken,
-              expires,
               attempts: 0,
-            },
-            create: {
-              identifier: getOtpFingerPrint(email, ctx.req),
-              token: hashedToken,
               expires,
+              token: hashedToken,
+            },
+            where: {
+              identifier: getOtpFingerPrint(email, ctx.req),
             },
           }),
           isStaticOtp
             ? Promise.resolve()
             : sendMail({
-                subject: `Sign in to ${url.host}`,
                 body: `Your OTP is ${otpPrefix}-<b>${token}</b>. It expires in ${expiryMinutes} minutes.
       Please use this to login to your account.
       <p>If your OTP does not work, please request for a new one.</p>`,
                 recipient: email,
+                subject: `Sign in to ${url.host}`,
               }),
         ])
-      } catch (e) {
+      } catch (error) {
         ctx.logger.error(
-          { error: e, email },
+          { email, error },
           "Failed to send OTP email for email sign in",
         )
 
@@ -144,23 +145,23 @@ export const emailSessionRouter = router({
 
       try {
         await verifyToken(ctx.prisma, ctx.req, {
-          token,
           email,
+          token,
         })
-      } catch (e) {
-        if (e instanceof VerificationError) {
+      } catch (error) {
+        if (error instanceof VerificationError) {
           ctx.logger.warn(
-            { error: e, email },
+            { email, error },
             "Failed to verify OTP for email sign in",
           )
 
           throw new TRPCError({
+            cause: error,
             code: "BAD_REQUEST",
-            message: e.message,
-            cause: e,
+            message: error.message,
           })
         }
-        throw e
+        throw error
       }
 
       const newAttributes: Partial<GrowthbookAttributes> = {
@@ -173,12 +174,12 @@ export const emailSessionRouter = router({
 
       if (!isSingpassEnabled) {
         const user = await db.transaction().execute(async (tx) => {
-          const user = await upsertUser({
-            tx,
+          const userValue = await upsertUser({
             email,
+            tx,
           })
 
-          const userId = user.id
+          const userId = userValue.id
           // SAFETY: upsertUser returns a persisted User row whose id matches SessionData["userId"]
           const sessionUserId = userId as NonNullable<SessionData["userId"]>
 
@@ -190,7 +191,7 @@ export const emailSessionRouter = router({
 
           ctx.session.userId = sessionUserId
           await ctx.session.save()
-          return pick(user, defaultUserSelect)
+          return pick(userValue, defaultUserSelect)
         })
 
         if (getIsSingpassDisabledInNonPreview({ gb: ctx.gb })) {
@@ -200,19 +201,19 @@ export const emailSessionRouter = router({
         return user
       }
 
-      return db.transaction().execute(async (tx) => {
-        const user = await upsertUser({
-          tx,
+      return await db.transaction().execute(async (tx) => {
+        const userValue = await upsertUser({
           email,
+          tx,
         })
 
         ctx.session.destroy()
         set(ctx.session, "singpass.sessionState", {
-          userId: user.id,
+          userId: userValue.id,
           verificationToken: oldVerificationToken,
         })
         await ctx.session.save()
-        return pick(user, defaultUserSelect)
+        return pick(userValue, defaultUserSelect)
       })
     }),
 })

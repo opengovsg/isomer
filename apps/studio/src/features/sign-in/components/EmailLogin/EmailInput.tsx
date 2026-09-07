@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-boolean-expressions, typescript/strict-void-return, typescript/switch-exhaustiveness-check, unicorn/no-useless-switch-case -- core cleanup deferred */
 import type { FieldError } from "react-hook-form"
 import { FormControl, Stack, Text } from "@chakra-ui/react"
 import {
@@ -11,7 +12,7 @@ import { useRouter } from "next/router"
 import { useEffect } from "react"
 import { ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { useZodForm } from "~/lib/form"
-import { emailSignInSchema } from "~/schemas/auth/email/sign-in"
+import { emailSignInSchema } from "~/schemas/auth/email/signIn"
 import { trpc } from "~/utils/trpc"
 
 import type { VfnStepData } from "../SignInContext"
@@ -19,7 +20,7 @@ import { useSignInContext } from "../SignInContext"
 
 const EmailInputErrorMessage = ({ type, message }: Partial<FieldError>) => {
   switch (type) {
-    case "INTERNAL_SERVER_ERROR":
+    case "INTERNAL_SERVER_ERROR": {
       return (
         <Text>
           We are having trouble sending an OTP to this email address.{" "}
@@ -35,9 +36,11 @@ const EmailInputErrorMessage = ({ type, message }: Partial<FieldError>) => {
           .
         </Text>
       )
+    }
     case "UNAUTHORIZED":
-    default:
+    default: {
       return message
+    }
   }
 }
 
@@ -59,14 +62,14 @@ export const EmailInput: React.FC<EmailInputProps> = ({ onSuccess }) => {
   const router = useRouter()
 
   const loginMutation = trpc.auth.email.login.useMutation({
-    onSuccess,
     onError: (error) => {
       if (error.data?.code === "UNAUTHORIZED") {
         setErrorState("unauthorized")
       }
 
-      setError("email", { type: error.data?.code, message: error.message })
+      setError("email", { message: error.message, type: error.data?.code })
     },
+    onSuccess,
   })
 
   useEffect(() => {
@@ -76,8 +79,9 @@ export const EmailInput: React.FC<EmailInputProps> = ({ onSuccess }) => {
   }, [router.query.error, setError])
 
   const handleSignIn = handleSubmit(({ email }) => {
-    return loginMutation.mutate({ email })
+    loginMutation.mutate({ email })
   })
+  // oxlint-disable-next-line typescript/strict-void-return -- core cleanup deferred
 
   return (
     <form onSubmit={handleSignIn} noValidate>

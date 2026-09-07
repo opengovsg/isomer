@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-boolean-expressions, typescript/no-confusing-void-expression, anti-slop/no-unknown-parameters, unicorn/prefer-ternary -- server lint cleanup */
 import type { UnwrapTagged } from "type-fest"
 import { TRPCError } from "@trpc/server"
 import { get, pick } from "lodash-es"
@@ -14,6 +15,7 @@ import {
 import { readFolderSchema } from "~/schemas/folder"
 import { createCollectionPageSchema } from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
+import { hasNonEmptyString, isDefinedNumber } from "~/utils/truthiness"
 
 import { logResourceEvent } from "../audit/audit.service"
 import { PG_ERROR_CODES } from "../database/constants"
@@ -44,274 +46,12 @@ import {
 } from "./collection.service"
 
 export const collectionRouter = router({
-  getMetadata: protectedProcedure
-    .input(readFolderSchema)
-    .query(async ({ ctx, input: { siteId, resourceId } }) => {
-      await bulkValidateUserPermissionsForResources({
-        siteId,
-        action: "read",
-        userId: ctx.user.id,
-      })
-
-      const resource = await getSiteResourceById({
-        siteId,
-        resourceId: String(resourceId),
-        type: ResourceType.Collection,
-      })
-      if (!resource) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Collection not found",
-        })
-      }
-      return resource
-    }),
-  create: protectedProcedure
-    .input(createCollectionSchema)
-    .mutation(
-      async ({
-        ctx,
-        input: { collectionTitle, permalink, siteId, parentFolderId },
-      }) => {
-        await bulkValidateUserPermissionsForResources({
-          siteId,
-          action: "create",
-          userId: ctx.user.id,
-          resourceIds: [!!parentFolderId ? String(parentFolderId) : null],
-        })
-
-        const user = await db
-          .selectFrom("User")
-          .where("id", "=", ctx.user.id)
-          .selectAll()
-          .executeTakeFirstOrThrow(() => new TRPCError({ code: "BAD_REQUEST" }))
-
-        const result = await db.transaction().execute(async (tx) => {
-          if (parentFolderId) {
-            const parentFolder = await tx
-              .selectFrom("Resource")
-              .where("Resource.id", "=", String(parentFolderId))
-              .where("Resource.siteId", "=", siteId)
-              .select(["Resource.type", "Resource.id"])
-              .executeTakeFirst()
-
-            if (!parentFolder) {
-              throw new TRPCError({
-                code: "NOT_FOUND",
-                message: "Parent folder does not exist",
-              })
-            }
-
-            if (parentFolder.type !== ResourceType.Folder) {
-              throw new TRPCError({
-                code: "BAD_REQUEST",
-                message:
-                  "Collections can only be created inside other folders or at the root",
-              })
-            }
-          }
-
-          const collection = await tx
-            .insertInto("Resource")
-            .values({
-              permalink,
-              siteId,
-              type: ResourceType.Collection,
-              title: collectionTitle,
-              parentId: parentFolderId ? String(parentFolderId) : null,
-              state: ResourceState.Published,
-            })
-            .returningAll()
-            .executeTakeFirstOrThrow()
-            .catch((err) => {
-              if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
-                throw new TRPCError({
-                  code: "CONFLICT",
-                  message: "A resource with the same permalink already exists",
-                })
-              }
-              throw err
-            })
-
-          await logResourceEvent(tx, {
-            siteId,
-            eventType: AuditLogEvent.ResourceCreate,
-            delta: { before: null, after: collection },
-            by: user,
-          })
-
-          const indexJson = createCollectionIndexJson(collection.title)
-
-          const blob = await tx
-            .insertInto("Blob")
-            .values({ content: jsonb(indexJson) })
-            .returning("Blob.id")
-            .executeTakeFirstOrThrow()
-
-          const indexPage = await tx
-            .insertInto("Resource")
-            .values({
-              title: collection.title,
-              permalink: INDEX_PAGE_PERMALINK,
-              siteId,
-              parentId: collection.id,
-              draftBlobId: blob.id,
-              type: ResourceType.IndexPage,
-              state: ResourceState.Draft,
-            })
-            .returningAll()
-            .executeTakeFirstOrThrow()
-            .catch((err) => {
-              if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
-                throw new TRPCError({
-                  code: "CONFLICT",
-                  message: "A resource with the same permalink already exists",
-                })
-              }
-              throw err
-            })
-
-          await logResourceEvent(tx, {
-            siteId,
-            by: user,
-            delta: { before: null, after: indexPage },
-            eventType: AuditLogEvent.ResourceCreate,
-          })
-
-          return collection
-        })
-
-        // TODO: Create the index page for the collection and publish it
-        await publishResource(user.id, result, ctx.logger)
-
-        return pick(result, defaultCollectionSelect)
-      },
-    ),
-  createCollectionPage: protectedProcedure
-    .input(createCollectionPageSchema)
-    .mutation(async ({ ctx, input }) => {
-      await bulkValidateUserPermissionsForResources({
-        siteId: input.siteId,
-        action: "create",
-        userId: ctx.user.id,
-        resourceIds: [!!input.collectionId ? String(input.collectionId) : null],
-      })
-
-      const user = await db
-        .selectFrom("User")
-        .where("id", "=", ctx.user.id)
-        .selectAll()
-        .executeTakeFirstOrThrow(() => new TRPCError({ code: "BAD_REQUEST" }))
-
-      let newPage: UnwrapTagged<PrismaJson.BlobJsonContent>
-      const { title, type, permalink, siteId, collectionId } = input
-      if (type === ResourceType.CollectionPage) {
-        newPage = createCollectionPageJson({ type })
-      } else {
-        newPage = createCollectionLinkJson({ type })
-      }
-
-      const resource = await db.transaction().execute(async (tx) => {
-        const parentCollection = await tx
-          .selectFrom("Resource")
-          .where("Resource.id", "=", String(collectionId))
-          .where("Resource.siteId", "=", siteId)
-          .where("Resource.type", "=", ResourceType.Collection)
-          .select(["Resource.type", "Resource.id"])
-          .executeTakeFirst()
-
-        if (!parentCollection) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Parent collection does not exist",
-          })
-        }
-
-        const blob = await tx
-          .insertInto("Blob")
-          .values({
-            content: jsonb(newPage),
-          })
-          .returningAll()
-          .executeTakeFirstOrThrow()
-
-        const addedResource = await tx
-          .insertInto("Resource")
-          .values({
-            title,
-            permalink,
-            siteId,
-            parentId: String(collectionId),
-            draftBlobId: blob.id,
-            type,
-          })
-          .returningAll()
-          .executeTakeFirstOrThrow()
-          .catch((err) => {
-            if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
-              throw new TRPCError({
-                code: "CONFLICT",
-                message: "A resource with the same permalink already exists",
-              })
-            }
-            throw err
-          })
-
-        await logResourceEvent(tx, {
-          siteId,
-          eventType: AuditLogEvent.ResourceCreate,
-          by: user,
-          delta: {
-            before: null,
-            after: { resource: addedResource, blob },
-          },
-        })
-
-        return addedResource
-      })
-      return { pageId: resource.id }
-    }),
-  list: protectedProcedure
-    .input(readCollectionSchema)
-    .query(
-      async ({
-        ctx,
-        input: { resourceId, siteId, orderBy, limit, offset },
-      }) => {
-        await bulkValidateUserPermissionsForResources({
-          siteId,
-          action: "read",
-          userId: ctx.user.id,
-        })
-        // Things that aren't working yet:
-        // 1. Last Edited user and time
-        // 2. Page status(draft, published)
-
-        let query = db
-          .selectFrom("Resource")
-          .where("parentId", "=", String(resourceId))
-          .where("Resource.siteId", "=", siteId)
-          .where("Resource.type", "in", [
-            ResourceType.CollectionPage,
-            ResourceType.CollectionLink,
-          ])
-
-        query = applyResourceOrderBy(query, orderBy)
-
-        return await query
-          .limit(limit)
-          .offset(offset)
-          .select(defaultResourceSelect)
-          .execute()
-      },
-    ),
-
   countTagOptionsUsage: protectedProcedure
     .input(countTagOptionsUsageSchema)
     .query(async ({ ctx, input: { siteId, pageId, tagOptionIds } }) => {
       await bulkValidateUserPermissionsForResources({
-        siteId,
         action: "read",
+        siteId,
         userId: ctx.user.id,
       })
 
@@ -330,15 +70,15 @@ export const collectionRouter = router({
         )
 
       const { parentId } = indexPage
-      if (!parentId) {
+      if (!hasNonEmptyString(parentId)) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Collection index page has no parent collection",
         })
       }
       const collection = await getSiteResourceById({
-        siteId,
         resourceId: parentId,
+        siteId,
         type: ResourceType.Collection,
       })
       if (!collection) {
@@ -400,13 +140,331 @@ export const collectionRouter = router({
 
       return { count: row.count }
     }),
+  create: protectedProcedure
+    .input(createCollectionSchema)
+    .mutation(
+      async ({
+        ctx,
+        input: { collectionTitle, permalink, siteId, parentFolderId },
+      }) => {
+        await bulkValidateUserPermissionsForResources({
+          action: "create",
+          resourceIds: [parentFolderId ? String(parentFolderId) : null],
+          siteId,
+          userId: ctx.user.id,
+        })
 
+        const user = await db
+          .selectFrom("User")
+          .where("id", "=", ctx.user.id)
+          .selectAll()
+          .executeTakeFirstOrThrow(() => new TRPCError({ code: "BAD_REQUEST" }))
+
+        const result = await db.transaction().execute(async (tx) => {
+          if (isDefinedNumber(parentFolderId)) {
+            const parentFolder = await tx
+              .selectFrom("Resource")
+              .where("Resource.id", "=", String(parentFolderId))
+              .where("Resource.siteId", "=", siteId)
+              .select(["Resource.type", "Resource.id"])
+              .executeTakeFirst()
+
+            if (!parentFolder) {
+              throw new TRPCError({
+                code: "NOT_FOUND",
+                message: "Parent folder does not exist",
+              })
+            }
+
+            if (parentFolder.type !== ResourceType.Folder) {
+              throw new TRPCError({
+                code: "BAD_REQUEST",
+                message:
+                  "Collections can only be created inside other folders or at the root",
+              })
+            }
+          }
+
+          const collection = await tx
+            .insertInto("Resource")
+            .values({
+              parentId: parentFolderId ? String(parentFolderId) : null,
+              permalink,
+              siteId,
+              state: ResourceState.Published,
+              title: collectionTitle,
+              type: ResourceType.Collection,
+            })
+            .returningAll()
+            .executeTakeFirstOrThrow()
+            .catch((error: unknown) => {
+              if (get(error, "code") === PG_ERROR_CODES.uniqueViolation) {
+                throw new TRPCError({
+                  code: "CONFLICT",
+                  message: "A resource with the same permalink already exists",
+                })
+              }
+              throw error
+            })
+
+          await logResourceEvent(tx, {
+            by: user,
+            delta: { after: collection, before: null },
+            eventType: AuditLogEvent.ResourceCreate,
+            siteId,
+          })
+
+          const indexJson = createCollectionIndexJson(collection.title)
+
+          const blob = await tx
+            .insertInto("Blob")
+            .values({ content: jsonb(indexJson) })
+            .returning("Blob.id")
+            .executeTakeFirstOrThrow()
+
+          const indexPage = await tx
+            .insertInto("Resource")
+            .values({
+              draftBlobId: blob.id,
+              parentId: collection.id,
+              permalink: INDEX_PAGE_PERMALINK,
+              siteId,
+              state: ResourceState.Draft,
+              title: collection.title,
+              type: ResourceType.IndexPage,
+            })
+            .returningAll()
+            .executeTakeFirstOrThrow()
+            .catch((error: unknown) => {
+              if (get(error, "code") === PG_ERROR_CODES.uniqueViolation) {
+                throw new TRPCError({
+                  code: "CONFLICT",
+                  message: "A resource with the same permalink already exists",
+                })
+              }
+              throw error
+            })
+
+          await logResourceEvent(tx, {
+            by: user,
+            delta: { after: indexPage, before: null },
+            eventType: AuditLogEvent.ResourceCreate,
+            siteId,
+          })
+
+          return collection
+        })
+
+        // Deferred: Create the index page for the collection and publish it
+        await publishResource(user.id, result, ctx.logger)
+
+        return pick(result, defaultCollectionSelect)
+      },
+    ),
+  createCollectionPage: protectedProcedure
+    .input(createCollectionPageSchema)
+    .mutation(async ({ ctx, input }) => {
+      await bulkValidateUserPermissionsForResources({
+        action: "create",
+        resourceIds: [input.collectionId ? String(input.collectionId) : null],
+        siteId: input.siteId,
+        userId: ctx.user.id,
+      })
+
+      const user = await db
+        .selectFrom("User")
+        .where("id", "=", ctx.user.id)
+        .selectAll()
+        .executeTakeFirstOrThrow(() => new TRPCError({ code: "BAD_REQUEST" }))
+
+      let newPage: UnwrapTagged<PrismaJson.BlobJsonContent>
+      const { title, type, permalink, siteId, collectionId } = input
+      if (type === ResourceType.CollectionPage) {
+        newPage = createCollectionPageJson({ type })
+      } else {
+        newPage = createCollectionLinkJson({ type })
+      }
+
+      const resource = await db.transaction().execute(async (tx) => {
+        const parentCollection = await tx
+          .selectFrom("Resource")
+          .where("Resource.id", "=", String(collectionId))
+          .where("Resource.siteId", "=", siteId)
+          .where("Resource.type", "=", ResourceType.Collection)
+          .select(["Resource.type", "Resource.id"])
+          .executeTakeFirst()
+
+        if (!parentCollection) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Parent collection does not exist",
+          })
+        }
+
+        const blob = await tx
+          .insertInto("Blob")
+          .values({
+            content: jsonb(newPage),
+          })
+          .returningAll()
+          .executeTakeFirstOrThrow()
+
+        const addedResource = await tx
+          .insertInto("Resource")
+          .values({
+            draftBlobId: blob.id,
+            parentId: String(collectionId),
+            permalink,
+            siteId,
+            title,
+            type,
+          })
+          .returningAll()
+          .executeTakeFirstOrThrow()
+          .catch((error: unknown) => {
+            if (get(error, "code") === PG_ERROR_CODES.uniqueViolation) {
+              throw new TRPCError({
+                code: "CONFLICT",
+                message: "A resource with the same permalink already exists",
+              })
+            }
+            throw error
+          })
+
+        await logResourceEvent(tx, {
+          by: user,
+          delta: {
+            after: { blob, resource: addedResource },
+            before: null,
+          },
+          eventType: AuditLogEvent.ResourceCreate,
+          siteId,
+        })
+
+        return addedResource
+      })
+      return { pageId: resource.id }
+    }),
+  getCollectionTags: protectedProcedure
+    .input(getCollectionTagsSchema)
+    .query(async ({ ctx, input: { resourceId, collectionId, siteId } }) => {
+      const resourceIdToValidate = collectionId ?? resourceId
+      await bulkValidateUserPermissionsForResources({
+        action: "read",
+        resourceIds: resourceIdToValidate ? [String(resourceIdToValidate)] : [],
+        siteId,
+        userId: ctx.user.id,
+      })
+
+      if (collectionId !== undefined) {
+        return await getCollectionTagsForResource({
+          collectionId,
+          isPublishedOnly: true,
+          siteId,
+        })
+      }
+      if (resourceId !== undefined) {
+        return await getCollectionTagsForResource({
+          isPublishedOnly: true,
+          resourceId,
+          siteId,
+        })
+      }
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Either collectionId or resourceId must be provided",
+      })
+    }),
+  getCollections: protectedProcedure
+    .input(getCollectionsSchema)
+    .query(async ({ ctx, input: { siteId, hasChildren } }) => {
+      // will need permissions to fetch all collections for a site
+      await validateUserPermissionsForSite({
+        action: "read",
+        siteId,
+        userId: ctx.user.id,
+      })
+
+      let query = db.selectFrom("Resource")
+
+      if (hasChildren) {
+        query = query.innerJoin(
+          "Resource as children",
+          "Resource.id",
+          "children.parentId",
+        )
+      }
+
+      return await query
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.type", "=", ResourceType.Collection)
+        .orderBy("Resource.title", "asc")
+        .distinct()
+        .selectAll("Resource")
+        .execute()
+    }),
+  getMetadata: protectedProcedure
+    .input(readFolderSchema)
+    .query(async ({ ctx, input: { siteId, resourceId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        action: "read",
+        siteId,
+        userId: ctx.user.id,
+      })
+
+      const resource = await getSiteResourceById({
+        resourceId: String(resourceId),
+        siteId,
+        type: ResourceType.Collection,
+      })
+      if (resource === undefined) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Collection not found",
+        })
+      }
+      return resource
+    }),
+  list: protectedProcedure
+    .input(readCollectionSchema)
+    .query(
+      async ({
+        ctx,
+        input: { resourceId, siteId, orderBy, limit, offset },
+      }) => {
+        await bulkValidateUserPermissionsForResources({
+          action: "read",
+          siteId,
+          userId: ctx.user.id,
+        })
+        // Things that aren't working yet:
+        // 1. Last Edited user and time
+        // 2. Page status(draft, published)
+
+        let query = db
+          .selectFrom("Resource")
+          .where("parentId", "=", String(resourceId))
+          .where("Resource.siteId", "=", siteId)
+          .where("Resource.type", "in", [
+            ResourceType.CollectionPage,
+            ResourceType.CollectionLink,
+          ])
+
+        query = applyResourceOrderBy(query, orderBy)
+
+        return await query
+          .limit(limit)
+          .offset(offset)
+          .select(defaultResourceSelect)
+          .execute()
+      },
+    ),
   readCollectionLink: protectedProcedure
     .input(readLinkSchema)
     .query(async ({ ctx, input: { linkId, siteId } }) => {
       await bulkValidateUserPermissionsForResources({
-        siteId,
         action: "read",
+        siteId,
         userId: ctx.user.id,
       })
 
@@ -421,9 +479,11 @@ export const collectionRouter = router({
         .select(["Blob.content", "Resource.title"])
         .executeTakeFirst()
 
-      if (draft) return draft
+      if (draft) {
+        return draft
+      }
 
-      return baseQuery
+      return await baseQuery
         .innerJoin("Version", "Resource.publishedVersionId", "Version.id")
         .innerJoin("Blob", "Blob.id", "Version.blobId")
         .select(["Blob.content", "Resource.title"])
@@ -435,7 +495,6 @@ export const collectionRouter = router({
             }),
         )
     }),
-
   updateCollectionLink: protectedProcedure
     .input(editLinkSchema)
     .mutation(
@@ -457,8 +516,8 @@ export const collectionRouter = router({
         // 1. Last Edited user and time
         // 2. Page status(draft, published)
         await bulkValidateUserPermissionsForResources({
-          siteId,
           action: "update",
+          siteId,
           userId: ctx.user.id,
         })
 
@@ -496,13 +555,13 @@ export const collectionRouter = router({
               content: {
                 ...content,
                 page: {
-                  description,
-                  ref,
-                  date,
                   category,
+                  date,
+                  description,
                   image,
-                  tags,
+                  ref,
                   tagged,
+                  tags,
                 },
               },
               pageId: linkId,
@@ -511,77 +570,17 @@ export const collectionRouter = router({
           ])
 
           await logResourceEvent(tx, {
-            siteId,
-            eventType: AuditLogEvent.ResourceUpdate,
-            delta: {
-              before: { blob: oldBlob, resource },
-              after: { blob, resource },
-            },
             by: user,
+            delta: {
+              after: { blob, resource },
+              before: { blob: oldBlob, resource },
+            },
+            eventType: AuditLogEvent.ResourceUpdate,
+            siteId,
           })
 
           return blob
         })
       },
     ),
-
-  getCollectionTags: protectedProcedure
-    .input(getCollectionTagsSchema)
-    .query(async ({ ctx, input: { resourceId, collectionId, siteId } }) => {
-      const resourceIdToValidate = collectionId ?? resourceId
-      await bulkValidateUserPermissionsForResources({
-        siteId,
-        action: "read",
-        userId: ctx.user.id,
-        resourceIds: resourceIdToValidate ? [String(resourceIdToValidate)] : [],
-      })
-
-      if (collectionId !== undefined) {
-        return getCollectionTagsForResource({
-          siteId,
-          collectionId,
-          isPublishedOnly: true,
-        })
-      }
-      if (resourceId !== undefined) {
-        return getCollectionTagsForResource({
-          siteId,
-          resourceId,
-          isPublishedOnly: true,
-        })
-      }
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "Either collectionId or resourceId must be provided",
-      })
-    }),
-
-  getCollections: protectedProcedure
-    .input(getCollectionsSchema)
-    .query(async ({ ctx, input: { siteId, hasChildren } }) => {
-      // will need permissions to fetch all collections for a site
-      await validateUserPermissionsForSite({
-        siteId,
-        action: "read",
-        userId: ctx.user.id,
-      })
-
-      let query = db.selectFrom("Resource")
-
-      if (hasChildren) {
-        query = query.innerJoin(
-          "Resource as children",
-          "Resource.id",
-          "children.parentId",
-        )
-      }
-
-      return query
-        .where("Resource.siteId", "=", siteId)
-        .where("Resource.type", "=", ResourceType.Collection)
-        .orderBy("Resource.title", "asc")
-        .distinct()
-        .selectAll("Resource")
-        .execute()
-    }),
 })

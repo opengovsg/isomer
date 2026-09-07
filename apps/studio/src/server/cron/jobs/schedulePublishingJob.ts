@@ -1,3 +1,5 @@
+/* oxlint-disable typescript/prefer-nullish-coalescing -- server lint cleanup */
+/* oxlint-disable eslint/logical-assignment-operators, eslint/no-use-before-define, typescript/strict-boolean-expressions -- server lint cleanup */
 import type { Resource } from "~/server/modules/database/types"
 import { env } from "~/env.mjs"
 import { sendFailedPublishEmail } from "~/features/mail/service"
@@ -13,11 +15,13 @@ import {
   defaultResourceSelect,
   publishPageResource,
 } from "~/server/modules/resource/resource.service"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { registerPgbossJob } from "@isomer/pgboss"
 
 const JOB_NAME = "schedule-publishing"
-const CRON_SCHEDULE = "* * * * *" // every minute
+const CRON_SCHEDULE = "* * * * *"
+// every minute
 
 const logger = createBaseLogger({ path: "cron:schedulePublishingJob" })
 
@@ -25,8 +29,8 @@ const logger = createBaseLogger({ path: "cron:schedulePublishingJob" })
  * Registers the schedule publishing job with the specified cron schedule.
  * @returns A promise that resolves when the job is registered.
  */
-export const schedulePublishingJob = async () => {
-  return await registerPgbossJob(
+export const schedulePublishingJob = async () =>
+  await registerPgbossJob(
     logger,
     JOB_NAME,
     CRON_SCHEDULE,
@@ -38,7 +42,6 @@ export const schedulePublishingJob = async () => {
       ? { heartbeatURL: env.SCHEDULED_PUBLISHING_HEARTBEAT_URL }
       : undefined,
   )
-}
 
 /**
  * Handler function for the schedule publishing job.
@@ -95,7 +98,7 @@ export const publishScheduledResources = async (
   await Promise.all(
     resourcesWithUser.map(async (resource) => {
       const { id: resourceId, siteId, scheduledBy } = resource
-      if (!scheduledBy) {
+      if (!hasNonEmptyString(scheduledBy)) {
         logger.error(
           `Resource ${resourceId} is missing user information, skipping publish`,
         )
@@ -127,8 +130,8 @@ export const publishScheduledResources = async (
         if (enableEmailsForScheduledPublishes) {
           try {
             await sendFailedPublishEmail({
-              recipientEmail: resource.email,
               isScheduled: true,
+              recipientEmail: resource.email,
               resource,
             })
             logger.warn(
@@ -155,17 +158,18 @@ export const publishScheduledSites = async (
     Object.entries(siteResourcesMap).map(async ([siteId, resources]) => {
       try {
         await publishSite(logger, {
-          siteId: Number(siteId),
           codebuildJob: enableCodebuildJobs
             ? {
                 isScheduled: true,
                 resourceWithUserIds: resources.map(
-                  ({ id: resourceId, scheduledBy }) => {
-                    return { resourceId, userId: scheduledBy }
-                  },
+                  ({ id: resourceId, scheduledBy }) => ({
+                    resourceId,
+                    userId: scheduledBy,
+                  }),
                 ),
               }
             : undefined,
+          siteId: Number(siteId),
         })
         logger.info(`Successfully published site for siteId: ${siteId}`)
       } catch (error) {
@@ -180,8 +184,8 @@ export const publishScheduledSites = async (
             }
             try {
               await sendFailedPublishEmail({
-                recipientEmail: resource.email,
                 isScheduled: true,
+                recipientEmail: resource.email,
                 resource,
               })
               logger.warn(

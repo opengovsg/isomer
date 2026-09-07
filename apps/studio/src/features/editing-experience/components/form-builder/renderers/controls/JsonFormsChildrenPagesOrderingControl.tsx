@@ -1,3 +1,5 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
+/* oxlint-disable eslint/no-shadow, unicorn/no-unnecessary-type-conversion -- core cleanup deferred */
 import type { DropResult } from "@hello-pangea/dnd"
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import { Box, FormControl, Skeleton, VStack } from "@chakra-ui/react"
@@ -30,17 +32,23 @@ const DraggableBlocks = ({
   path,
 }: ReorderingControlProps<{ title: string; id: string }>) => {
   const onDragEnd = ({ source, destination }: DropResult) => {
-    if (!destination) return
+    if (!destination) {
+      return
+    }
 
     const from = source.index
     const to = destination.index
 
-    if (from >= data.length || to >= data.length || from < 0 || to < 0) return
+    if (from >= data.length || to >= data.length || from < 0 || to < 0) {
+      return
+    }
 
-    const updatedBlocks = Array.from(data)
+    const updatedBlocks = [...data]
     const [movedBlock] = updatedBlocks.splice(from, 1)
 
-    if (!movedBlock) return
+    if (!movedBlock) {
+      return
+    }
 
     updatedBlocks.splice(to, 0, movedBlock)
 
@@ -53,48 +61,46 @@ const DraggableBlocks = ({
   return (
     <DragDropContext onDragEnd={onDragEnd}>
       <Droppable droppableId="blocks">
-        {(provided) => {
-          return (
-            <VStack
-              spacing="0.75rem"
-              {...provided.droppableProps}
-              w="100%"
-              ref={provided.innerRef}
-              h="full"
-            >
-              {data.map((resource, index) => (
-                <Draggable
-                  key={resource.id}
-                  disableInteractiveElementBlocking
-                  draggableId={resource.id}
-                  index={index}
-                >
-                  {(provided, snapshot) => {
-                    const isDragging =
-                      snapshot.isDragging || snapshot.isDropAnimating
-                    return (
-                      <VStack
-                        w="100%"
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                      >
-                        <BaseBlock
-                          dragHandle={
-                            <BaseBlockDragHandle isDragging={isDragging} />
-                          }
-                          label={resource.title}
-                          draggableProps={provided.dragHandleProps}
-                        />
-                      </VStack>
-                    )
-                  }}
-                </Draggable>
-              ))}
+        {(provided) => (
+          <VStack
+            spacing="0.75rem"
+            {...provided.droppableProps}
+            w="100%"
+            ref={provided.innerRef}
+            h="full"
+          >
+            {data.map((resource, index) => (
+              <Draggable
+                key={resource.id}
+                disableInteractiveElementBlocking
+                draggableId={resource.id}
+                index={index}
+              >
+                {(provided, snapshot) => {
+                  const isDragging =
+                    snapshot.isDragging || snapshot.isDropAnimating
+                  return (
+                    <VStack
+                      w="100%"
+                      ref={provided.innerRef}
+                      {...provided.draggableProps}
+                    >
+                      <BaseBlock
+                        dragHandle={
+                          <BaseBlockDragHandle isDragging={isDragging} />
+                        }
+                        label={resource.title}
+                        draggableProps={provided.dragHandleProps}
+                      />
+                    </VStack>
+                  )
+                }}
+              </Draggable>
+            ))}
 
-              {provided.placeholder}
-            </VStack>
-          )
-        }}
+            {provided.placeholder}
+          </VStack>
+        )}
       </Droppable>
     </DragDropContext>
   )
@@ -107,8 +113,8 @@ const SuspendableBlocks = ({
   ...rest
 }: ReorderingControlProps & { siteId: string; indexPageId: string }) => {
   const [{ childPages }] = trpc.folder.listChildPages.useSuspenseQuery({
-    siteId: String(siteId),
     indexPageId: String(indexPageId),
+    siteId: String(siteId),
   })
 
   const mappings = new Map(childPages.map(({ title, id }) => [id, title]))
@@ -116,12 +122,10 @@ const SuspendableBlocks = ({
     data,
     childPages.map(({ id }) => id),
     mappings,
-  ).map((resourceId) => {
-    return {
-      title: mappings.get(resourceId) ?? "Unknown page",
-      id: resourceId,
-    }
-  })
+  ).map((resourceId) => ({
+    id: resourceId,
+    title: mappings.get(resourceId) ?? "Unknown page",
+  }))
 
   return <DraggableBlocks data={resources} {...rest} />
 }

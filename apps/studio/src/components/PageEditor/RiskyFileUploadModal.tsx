@@ -88,7 +88,7 @@ export const RiskyFileUploadModal = ({
             isChecked={isChecked}
             isInvalid={showCheckboxError}
             onChange={(e) => {
-              const checked = e.target.checked
+              const { checked } = e.target
               setIsChecked(checked)
               if (checked) {
                 setShowCheckboxError(false)

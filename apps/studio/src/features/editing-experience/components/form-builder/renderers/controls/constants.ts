@@ -10,10 +10,10 @@ export const ACCEPTED_IMAGE_TYPES_MESSAGE = Object.keys(
 
 type TagCategory = NonNullable<CollectionPagePageProps["tagCategories"]>[number]
 export const createDefaultTagCategory = (): TagCategory => ({
-  id: crypto.randomUUID(),
-  label: "New filter",
-  isRequired: true,
   display: DEFAULT_TAG_CATEGORY_DISPLAY,
+  id: crypto.randomUUID(),
+  isRequired: true,
+  label: "New filter",
   options: [],
 })
 

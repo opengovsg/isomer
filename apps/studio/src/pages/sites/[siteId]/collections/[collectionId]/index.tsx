@@ -1,7 +1,9 @@
+/* oxlint-disable unicorn/prefer-spread, eslint/object-shorthand -- studio lint cleanup */
+import type { NextPageWithLayout } from "~/lib/types"
 import { useDisclosure } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { useSetAtom } from "jotai"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
 import { BiData } from "react-icons/bi"
 import { z } from "zod"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
@@ -21,15 +23,14 @@ import { CreateCollectionPageModal } from "~/features/editing-experience/compone
 import { MoveResourceModal } from "~/features/editing-experience/components/MoveResourceModal"
 import { useEgazetteInfo } from "~/hooks/useEgazetteInfo"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { type NextPageWithLayout } from "~/lib/types"
 import { SiteEditorLayout } from "~/templates/layouts/SiteEditorLayout"
 import { getCollectionHref } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 const collectionPageSchema = z.object({
-  siteId: z.coerce.number(),
   collectionId: z.coerce.number(),
+  siteId: z.coerce.number(),
 })
 
 const CollectionResourceListPage: NextPageWithLayout = () => {
@@ -47,13 +48,13 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
     egazetteInfo.gazettesCollectionId === String(collectionId)
 
   const [resource] = trpc.resource.getParentOf.useSuspenseQuery({
-    siteId: Number(siteId),
     resourceId: String(collectionId),
+    siteId: siteId,
   })
 
   const [metadata] = trpc.collection.getMetadata.useSuspenseQuery({
-    siteId,
     resourceId: collectionId,
+    siteId,
   })
 
   return (
@@ -70,17 +71,17 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
             <Button
               variant="outline"
               size="md"
-              onClick={() =>
+              onClick={() => {
                 setFolderSettingsModalState({
                   folderId: String(collectionId),
                 })
-              }
+              }}
             >
               Collection settings
             </Button>
             <Button
               onClick={() => {
-                posthog.capture("collection_page_create_modal_opened", {
+                posthogJs.capture("collection_page_create_modal_opened", {
                   site_id: siteId,
                 })
                 onPageCreateModalOpen()
@@ -118,13 +119,11 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
   )
 }
 
-CollectionResourceListPage.getLayout = (page) => {
-  return (
-    <PermissionsBoundary
-      resourceType={ResourceType.Collection}
-      page={SiteEditorLayout(page)}
-    />
-  )
-}
+CollectionResourceListPage.getLayout = (page) => (
+  <PermissionsBoundary
+    resourceType={ResourceType.Collection}
+    page={SiteEditorLayout(page)}
+  />
+)
 
 export default CollectionResourceListPage

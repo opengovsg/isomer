@@ -4,11 +4,11 @@ describe("normalizeSiteEntity", () => {
   it("removes blank strings alongside undefined values", () => {
     expect(
       normalizeSiteEntity({
-        description: "   ",
         address: {
-          streetAddress: "",
           addressCountry: "SG",
+          streetAddress: "",
         },
+        description: "   ",
       }),
     ).toEqual({ address: { addressCountry: "SG" } })
   })
@@ -16,11 +16,11 @@ describe("normalizeSiteEntity", () => {
   it("removes empty nested objects and undefined values", () => {
     expect(
       normalizeSiteEntity({
-        type: undefined,
         address: {
           streetAddress: undefined,
         },
         contactPoint: {},
+        type: undefined,
       }),
     ).toBeUndefined()
   })
@@ -28,19 +28,19 @@ describe("normalizeSiteEntity", () => {
   it("preserves configured values while removing empty nested objects", () => {
     expect(
       normalizeSiteEntity({
-        type: "NGO",
-        description: "Community support",
         address: {},
         contactPoint: {
           email: "hello@example.org",
         },
+        description: "Community support",
+        type: "NGO",
       }),
     ).toEqual({
-      type: "NGO",
-      description: "Community support",
       contactPoint: {
         email: "hello@example.org",
       },
+      description: "Community support",
+      type: "NGO",
     })
   })
 })

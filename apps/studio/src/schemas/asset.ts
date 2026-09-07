@@ -9,12 +9,12 @@ import {
 import { formatFileSizeLimit } from "~/utils/formatFileSizeLimit"
 
 // Combine allowed extensions from existing constants
-const ALLOWED_EXTENSIONS = [
+const ALLOWED_EXTENSIONS = new Set([
   ...Object.keys(IMAGE_ACCEPTED_MIME_TYPE_MAPPING),
   ...Object.keys(FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING),
-]
+])
 
-const fileNameStartingCharRefine = (s: string) => /^[a-zA-Z0-9\-_]/.test(s)
+const fileNameStartingCharRefine = (s: string) => /^[a-zA-Z0-9\-_]/u.test(s)
 const fileNameStartingCharMessage =
   "File name must start with a letter, number, hyphen, or underscore"
 
@@ -31,17 +31,17 @@ const fileNameSchema = z
         return false
       }
 
-      const extension = fileName
-        .toLowerCase()
-        .substring(fileName.lastIndexOf("."))
+      const extension = fileName.toLowerCase().slice(fileName.lastIndexOf("."))
 
       // SVGs must go through the dedicated uploadSvg endpoint which
       // sanitizes the content server-side before uploading to S3.
       // The presigned PUT path never sees the file bytes, so it cannot
       // validate or strip embedded scripts/event handlers.
-      if (extension === ".svg") return false
+      if (extension === ".svg") {
+        return false
+      }
 
-      return ALLOWED_EXTENSIONS.includes(extension)
+      return ALLOWED_EXTENSIONS.has(extension)
     },
     {
       message: "File type not allowed. Please upload a supported file type.",
@@ -60,21 +60,26 @@ const fileSizeRefine = (
   { fileName, fileSize }: { fileName: string; fileSize: number },
   ctx: z.RefinementCtx,
 ) => {
-  const extension = fileName.toLowerCase().substring(fileName.lastIndexOf("."))
+  const extension = fileName.toLowerCase().slice(fileName.lastIndexOf("."))
   const maxFileSize =
     extension in IMAGE_ACCEPTED_MIME_TYPE_MAPPING
       ? MAX_IMG_FILE_SIZE_BYTES
       : MAX_FILE_SIZE_BYTES
-  if (fileSize <= maxFileSize) return
+  if (fileSize <= maxFileSize) {
+    return
+  }
 
   ctx.addIssue({
     code: "custom",
-    path: ["fileSize"],
     message: `File size must not exceed ${formatFileSizeLimit({ bytes: maxFileSize })}`,
+    path: ["fileSize"],
   })
 }
 
 const getPresignedPutUrlBaseSchema = z.object({
+  fileName: fileNameSchema,
+  fileSize: fileSizeSchema,
+  resourceId: z.string().optional(),
   siteId: z.number().min(1),
   tags: z
     .array(
@@ -84,9 +89,6 @@ const getPresignedPutUrlBaseSchema = z.object({
       }),
     )
     .optional(),
-  resourceId: z.string().optional(),
-  fileSize: fileSizeSchema,
-  fileName: fileNameSchema,
 })
 
 export const getPresignedPutUrlSchema =
@@ -101,7 +103,9 @@ export const fileNameAndSizeSchema = getPresignedPutUrlBaseSchema
   .superRefine(fileSizeRefine)
 
 export const uploadSvgSchema = z.object({
-  siteId: z.number().min(1),
+  content: z.string().max(MAX_SVG_FILE_SIZE_BYTES, {
+    message: `SVG file size must not exceed ${MAX_SVG_FILE_SIZE_BYTES / 1_000_000} MB`,
+  }),
   fileName: z
     .string()
     .refine(fileNameStartingCharRefine, {
@@ -111,14 +115,8 @@ export const uploadSvgSchema = z.object({
       message: "Only .svg files are allowed",
     })
     .max(255),
-  // z.string().max() counts UTF-16 code units (JS string length), not bytes.
-  // Multi-byte characters can exceed the intended byte budget, but the difference
-  // is bounded: worst case is 3× (4-byte UTF-8 chars are 2 code units). Acceptable
-  // as a rough upper bound; use Buffer.byteLength for an exact byte check if needed.
-  content: z.string().max(MAX_SVG_FILE_SIZE_BYTES, {
-    message: `SVG file size must not exceed ${MAX_SVG_FILE_SIZE_BYTES / 1_000_000} MB`,
-  }),
   resourceId: z.string().optional(),
+  siteId: z.number().min(1),
   tags: z.array(z.object({ key: z.string(), value: z.string() })).optional(),
 })
 
@@ -129,8 +127,6 @@ export const uploadSvgSchema = z.object({
 export const MAX_DELETE_FILE_KEYS = 100
 
 export const deleteAssetsSchema = z.object({
-  siteId: z.number().min(1),
-  resourceId: z.string(),
   fileKeys: z
     .array(
       z.string({
@@ -140,11 +136,13 @@ export const deleteAssetsSchema = z.object({
     .max(MAX_DELETE_FILE_KEYS, {
       message: `You can only delete up to ${MAX_DELETE_FILE_KEYS} assets at a time`,
     }),
+  resourceId: z.string(),
+  siteId: z.number().min(1),
 })
 
 export const getPresignedGetUrlSchema = z.object({
-  siteId: z.number().min(1),
   fileKey: z.string({
     error: "Missing file key",
   }),
+  siteId: z.number().min(1),
 })

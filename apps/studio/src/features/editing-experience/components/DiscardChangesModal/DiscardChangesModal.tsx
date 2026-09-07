@@ -20,32 +20,30 @@ export const DiscardChangesModal = ({
   isOpen,
   onClose,
   onDiscard,
-}: DiscardChangesModalProps): React.ReactNode => {
-  return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader pr="4.5rem">
-          Are you sure you want to discard your changes?
-        </ModalHeader>
+}: DiscardChangesModalProps): React.ReactNode => (
+  <Modal isOpen={isOpen} onClose={onClose}>
+    <ModalOverlay />
+    <ModalContent>
+      <ModalHeader pr="4.5rem">
+        Are you sure you want to discard your changes?
+      </ModalHeader>
 
-        <ModalCloseButton size="lg" />
+      <ModalCloseButton size="lg" />
 
-        <ModalBody>
-          <Text textStyle="body-2">All edits will be lost.</Text>
-        </ModalBody>
+      <ModalBody>
+        <Text textStyle="body-2">All edits will be lost.</Text>
+      </ModalBody>
 
-        <ModalFooter>
-          <HStack spacing="1rem">
-            <Button variant="clear" colorScheme="neutral" onClick={onClose}>
-              Go back to editing
-            </Button>
-            <Button variant="solid" colorScheme="critical" onClick={onDiscard}>
-              Yes, discard changes
-            </Button>
-          </HStack>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
-  )
-}
+      <ModalFooter>
+        <HStack spacing="1rem">
+          <Button variant="clear" colorScheme="neutral" onClick={onClose}>
+            Go back to editing
+          </Button>
+          <Button variant="solid" colorScheme="critical" onClick={onDiscard}>
+            Yes, discard changes
+          </Button>
+        </HStack>
+      </ModalFooter>
+    </ModalContent>
+  </Modal>
+)

@@ -10,8 +10,10 @@ export const TiptapSimpleProseEditor = ({
 }: {
   editor: ReturnType<typeof useSimpleProseEditor>
 }) => {
-  // TODO: Add a loading state or use suspense
-  if (!editor) return null
+  // Deferred: Add a loading state or use suspense
+  if (!editor) {
+    return null
+  }
 
   return (
     <>

@@ -5,8 +5,8 @@ import DashboardPage from "~/pages/index"
 import { createBannerGbParameters } from "../utils/growthbook"
 
 const meta: Meta<typeof DashboardPage> = {
-  title: "Pages/Dashboard",
   component: DashboardPage,
+  title: "Pages/Dashboard",
 }
 
 export default meta
@@ -41,8 +41,8 @@ export const WithBanner: Story = {
     ...Dashboard.parameters,
     growthbook: [
       createBannerGbParameters({
-        variant: "error",
         message: "This is a test banner",
+        variant: "error",
       }),
     ],
   },

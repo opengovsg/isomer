@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-use-before-define, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type {
   DatabasePageSchemaType,
   IsomerSchema,
@@ -10,7 +11,7 @@ import {
   ISOMER_USABLE_PAGE_LAYOUTS,
 } from "@opengovsg/isomer-components"
 import { isEmpty, isEqual } from "lodash-es"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
 import { useCallback } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
@@ -37,7 +38,9 @@ const validateFn = ajv.compile<DatabaseFormData>(databasePageDatabaseSchema)
 const getDatabaseFormData = (
   pageState: IsomerSchema,
 ): DatabaseFormData | undefined => {
-  if (pageState.layout !== ISOMER_USABLE_PAGE_LAYOUTS.Database) return undefined
+  if (pageState.layout !== ISOMER_USABLE_PAGE_LAYOUTS.Database) {
+    return undefined
+  }
   // SAFETY: layout check confirms database page shape.
   // @ts-expect-error IsomerSchema union is wider than DatabasePageSchemaType at compile time.
   return (pageState as DatabasePageSchemaType).page.database
@@ -62,7 +65,7 @@ const DatabaseEditorStateDrawer = (): React.ReactNode => {
   const utils = trpc.useUtils()
   const { mutate, isPending } = trpc.page.updatePageBlob.useMutation({
     onSuccess: async () => {
-      posthog.capture("page_changes_saved", { site_id: siteId })
+      posthogJs.capture("page_changes_saved", { site_id: siteId })
       await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
       await utils.page.readPage.invalidate({ pageId, siteId })
       toast({
@@ -77,12 +80,14 @@ const DatabaseEditorStateDrawer = (): React.ReactNode => {
     setSavedPageState(previewPageState)
     mutate(
       {
+        content: JSON.stringify(previewPageState),
         pageId,
         siteId,
-        content: JSON.stringify(previewPageState),
       },
       {
-        onSuccess: () => setDrawerState({ state: "root" }),
+        onSuccess: () => {
+          setDrawerState({ state: "root" })
+        },
       },
     )
   }, [
@@ -95,7 +100,9 @@ const DatabaseEditorStateDrawer = (): React.ReactNode => {
   ])
 
   const handleChange = (data: DatabaseFormData) => {
-    if (previewPageState.layout !== ISOMER_USABLE_PAGE_LAYOUTS.Database) return
+    if (previewPageState.layout !== ISOMER_USABLE_PAGE_LAYOUTS.Database) {
+      return
+    }
     // SAFETY: layout check confirms database page shape.
     // @ts-expect-error IsomerSchema union is wider than DatabasePageSchemaType at compile time.
     const databasePageState = previewPageState as DatabasePageSchemaType
@@ -130,10 +137,10 @@ const DatabaseEditorStateDrawer = (): React.ReactNode => {
         <DrawerHeader
           isDisabled={isPending}
           onBackClick={() => {
-            if (!isEqual(previewPageState, savedPageState)) {
-              onDiscardChangesModalOpen()
-            } else {
+            if (isEqual(previewPageState, savedPageState)) {
               handleDiscardChanges()
+            } else {
+              onDiscardChangesModalOpen()
             }
           }}
           label="Edit database"

@@ -1,9 +1,11 @@
+/* oxlint-disable typescript/no-unnecessary-condition -- studio lint cleanup */
 import type { PropsWithChildren } from "react"
 import { useRouter } from "next/router"
 import { useMemo } from "react"
 import { useLoginState } from "~/features/auth"
 import { SIGN_IN } from "~/lib/routes"
 import { callbackUrlSchema } from "~/schemas/url"
+import { isNullableBooleanTrue } from "~/utils/truthiness"
 import { appendWithRedirect } from "~/utils/url"
 
 import { FullscreenSpinner } from "../FullscreenSpinner"
@@ -21,7 +23,9 @@ interface EnforceLoginStatePageWrapperProps {
 const Redirect = ({ redirectTo }: EnforceLoginStatePageWrapperProps) => {
   const router = useRouter()
   const redirectUrl = useMemo(() => {
-    if (globalThis.window === undefined) return encodeURIComponent("/")
+    if (globalThis.window === undefined) {
+      return encodeURIComponent("/")
+    }
     const { pathname, search, hash } = window.location
     return encodeURIComponent(`${pathname}${search}${hash}`)
   }, [])
@@ -39,7 +43,7 @@ const Redirect = ({ redirectTo }: EnforceLoginStatePageWrapperProps) => {
  * Page wrapper that renders children only if the login state localStorage flag has been set.
  * Otherwise, will redirect to the route passed into the `redirectTo` prop.
  *
- * @note 🚨 There is no authentication being performed by this component. This component is merely a wrapper that checks for the presence of the login flag in localStorage. This means that a user could add the flag and bypass the check. Any page children that require authentication should also perform authentication checks in that page itself!
+ * There is no authentication being performed by this component. This component is merely a wrapper that checks for the presence of the login flag in localStorage. This means that a user could add the flag and bypass the check. Any page children that require authentication should also perform authentication checks in that page itself!
  */
 export const EnforceLoginStatePageWrapper = ({
   redirectTo = SIGN_IN,
@@ -47,7 +51,7 @@ export const EnforceLoginStatePageWrapper = ({
 }: PropsWithChildren<EnforceLoginStatePageWrapperProps>): React.ReactElement => {
   const { hasLoginStateFlag } = useLoginState()
 
-  if (hasLoginStateFlag) {
+  if (isNullableBooleanTrue(hasLoginStateFlag)) {
     return (
       <ToppanRouteGuard>
         <Intercom />

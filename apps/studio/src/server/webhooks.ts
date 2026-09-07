@@ -9,21 +9,20 @@ import { prisma } from "~/server/prisma"
 /**
  * Creates the context for webhook handlers, based on the standard tRPC context, so that the request
  * can be formally handled by tRPC procedures
- * @param opts
- * @returns
+ * @param opts - Next.js adapter options for the incoming webhook request
+ * @returns Webhook context compatible with tRPC callers
  */
 const createWebhookContext = async (
   opts: CreateNextContextOptions,
-): Promise<Context> => {
-  return {
-    db,
-    prisma,
-    req: opts.req,
-    res: opts.res,
-    gb: await createGrowthBookContext(),
-    session: undefined, // no session since api key auth
-  }
-}
+): Promise<Context> => ({
+  db,
+  gb: await createGrowthBookContext(),
+  prisma,
+  req: opts.req,
+  res: opts.res,
+  session: undefined,
+  // no session since api key auth
+})
 
 /**
  * A mock TRPCRequestInfo object to satisfy the tRPC caller creation
@@ -31,11 +30,11 @@ const createWebhookContext = async (
  */
 const createTRPCRequestInfo: CreateNextContextOptions["info"] = {
   accept: null,
-  type: "mutation",
-  isBatchCall: false,
   calls: [],
   connectionParams: null,
+  isBatchCall: false,
   signal: new AbortController().signal,
+  type: "mutation",
   url: null,
 }
 
@@ -47,17 +46,15 @@ const createTRPCRequestInfo: CreateNextContextOptions["info"] = {
 export const webhookHandlers = {
   updateCodebuildWebhook: async (req: NextApiRequest, res: NextApiResponse) => {
     const ctx = await createWebhookContext({
+      info: createTRPCRequestInfo,
       req,
       res,
-      info: createTRPCRequestInfo,
     })
-    return (
-      webhookRouter
-        .createCaller(ctx)
-        // We disable the eslint rule here because the input is validated by the trpc procedure
-        // so we don't want to re-validate it here
-        // oxlint-disable-next-line @typescript-eslint/no-unsafe-argument
-        .updateCodebuildWebhook(req.body)
-    )
+    await webhookRouter
+      .createCaller(ctx)
+      // We disable the eslint rule here because the input is validated by the trpc procedure
+      // so we don't want to re-validate it here
+      // oxlint-disable-next-line @typescript-eslint/no-unsafe-argument
+      .updateCodebuildWebhook(req.body)
   },
 }

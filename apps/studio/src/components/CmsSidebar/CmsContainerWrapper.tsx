@@ -4,7 +4,8 @@ import type { CmsSidebarItem } from "~/components/CmsSidebar/CmsSidebarItems"
 import { Flex } from "@chakra-ui/react"
 import { useRouter } from "next/router"
 import { BiCog, BiFolder, BiGroup, BiHelpCircle, BiStar } from "react-icons/bi"
-import { CmsContainer, CmsSidebar } from "~/components/CmsSidebar"
+import { CmsContainer } from "~/components/CmsSidebar/CmsContainer"
+import { CmsSidebar } from "~/components/CmsSidebar/CmsSidebar"
 import { SearchableHeader } from "~/components/SearchableHeader"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
@@ -33,30 +34,30 @@ export const CmsContainerWrapper = ({
 
   const pageNavItems: CmsSidebarItem[] = [
     {
-      icon: BiFolder,
-      label: "Site content",
       href: `/sites/${siteId}`,
+      icon: BiFolder,
       isActive:
         router.asPath === `/sites/${siteId}` ||
         router.asPath.startsWith(`/sites/${siteId}/pages`),
+      label: "Site content",
     },
     {
+      href: `/sites/${siteId}/users`,
       icon: BiGroup,
       label: "Collaborators",
-      href: `/sites/${siteId}/users`,
     },
     {
-      icon: BiCog,
-      label: "Settings",
       href: `/sites/${siteId}/settings/agency`,
+      icon: BiCog,
       isActive: router.asPath.startsWith(`/sites/${siteId}/settings`),
+      label: "Settings",
     },
     ...(isUserIsomerAdmin
       ? [
           {
+            href: `/sites/${siteId}/admin`,
             icon: BiStar,
             label: "Isomer Admin Settings",
-            href: `/sites/${siteId}/admin`,
           },
         ]
       : []),
@@ -73,9 +74,9 @@ export const CmsContainerWrapper = ({
         ]
       : []),
     {
+      href: "https://support.isomer.gov.sg",
       icon: BiHelpCircle,
       label: "Get support",
-      href: "https://support.isomer.gov.sg",
     },
   ]
 

@@ -13,16 +13,16 @@ export const MarkdownLabel = ({ description }: { description?: string }) => {
     <Box
       sx={{
         "& a": {
-          color: linkColor,
-          textDecoration: "underline",
-          _hover: {
-            color: linkHoverColor,
-            textDecoration: "none",
-          },
           _active: {
             color: linkActiveColor,
             textDecoration: "none",
           },
+          _hover: {
+            color: linkHoverColor,
+            textDecoration: "none",
+          },
+          color: linkColor,
+          textDecoration: "underline",
         },
       }}
     >

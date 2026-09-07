@@ -11,7 +11,7 @@ interface CmsContainerProps {
 
 const getGridTemplateCols = (isGsibVariant: boolean, hasSideNav: boolean) => {
   if (isGsibVariant && hasSideNav) {
-    return { base: "auto 14rem 1fr", "2xl": "auto 20rem 1fr" }
+    return { "2xl": "auto 20rem 1fr", base: "auto 14rem 1fr" }
   }
 
   if (hasSideNav) {
@@ -28,7 +28,7 @@ export const CmsContainer = ({
   sidenav,
   variant,
 }: CmsContainerProps) => {
-  const gridTemplateAreas = !!sidenav
+  const gridTemplateAreas = sidenav
     ? `'header header header'
       'sidebar sidenav main'`
     : `'header header'

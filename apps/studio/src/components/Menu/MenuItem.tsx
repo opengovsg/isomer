@@ -1,6 +1,7 @@
 import type { MenuItemProps as ChakraMenuItemProps } from "@chakra-ui/react"
 import { MenuItem as ChakraMenuItem, cssVar, Tooltip } from "@chakra-ui/react"
 import { useMemo } from "react"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 const $bg = cssVar("menu-bg")
 
@@ -17,12 +18,12 @@ export const MenuItem = ({
   // Unable to use useMultiStyleConfig here because Menu parent still controls
   // other styles such as size and placement
   const extraStyles = useMemo(() => {
-    if (!colorScheme) return {}
+    if (!colorScheme) {
+      return {}
+    }
     return {
-      bg: $bg.reference,
-      color: "interaction.critical.default",
-      _hover: {
-        [$bg.variable]: `colors.interaction.muted.critical.hover`,
+      _active: {
+        [$bg.variable]: `colors.interaction.muted.critical.active`,
       },
       _focus: {
         [$bg.variable]: `colors.interaction.muted.critical.hover`,
@@ -35,15 +36,17 @@ export const MenuItem = ({
           [$bg.variable]: `colors.interaction.muted.critical.active`,
         },
       },
-      _active: {
-        [$bg.variable]: `colors.interaction.muted.critical.active`,
+      _hover: {
+        [$bg.variable]: `colors.interaction.muted.critical.hover`,
       },
+      bg: $bg.reference,
+      color: "interaction.critical.default",
     }
   }, [colorScheme])
 
   const menuItem = <ChakraMenuItem {...menuItemProps} sx={extraStyles} />
 
-  return tooltip ? (
+  return hasNonEmptyString(tooltip) ? (
     <Tooltip label={tooltip} placement="right">
       {menuItem}
     </Tooltip>

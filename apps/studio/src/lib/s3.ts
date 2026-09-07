@@ -1,3 +1,4 @@
+/* oxlint-disable jsdoc/empty-tags, eslint/no-shadow, typescript/consistent-return, typescript/no-unnecessary-condition, eslint/no-useless-return -- studio lint cleanup */
 import type {
   CopyObjectCommandInput,
   GetObjectCommandInput,
@@ -20,9 +21,10 @@ import { Upload } from "@aws-sdk/lib-storage"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { addDays } from "date-fns"
 import { env } from "~/env.mjs"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 const DELETE_TAG = "deletedAt"
-const EGAZETTE_COMPLIANCE_HOLD_IN_DAYS = 10000
+const EGAZETTE_COMPLIANCE_HOLD_IN_DAYS = 10_000
 
 // Unlike Key params (which the SDK URL-encodes), CopySource is sent verbatim
 // as the x-amz-copy-source header, so keys with spaces or reserved characters
@@ -33,23 +35,22 @@ const getEncodedCopySource = (Bucket: string, Key: string) =>
 // R2 credentials are only set for preview, but the choice of backend is
 // driven by their presence rather than the environment name. Exported so
 // other modules don't have to re-derive this from the raw env vars.
-export const isR2Configured = !!(
-  env.R2_ACCOUNT_ID &&
-  env.R2_ACCESS_KEY_ID &&
-  env.R2_SECRET_ACCESS_KEY
-)
+export const isR2Configured =
+  hasNonEmptyString(env.R2_ACCOUNT_ID) &&
+  hasNonEmptyString(env.R2_ACCESS_KEY_ID) &&
+  hasNonEmptyString(env.R2_SECRET_ACCESS_KEY)
 
 const createDefaultStorage = () =>
   new S3Client(
     isR2Configured
       ? {
-          region: "auto",
-          endpoint: `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-          forcePathStyle: true,
           credentials: {
             accessKeyId: env.R2_ACCESS_KEY_ID ?? "",
             secretAccessKey: env.R2_SECRET_ACCESS_KEY ?? "",
           },
+          endpoint: `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+          forcePathStyle: true,
+          region: "auto",
         }
       : { region: env.NEXT_PUBLIC_S3_REGION },
   )
@@ -58,7 +59,9 @@ let storage = createDefaultStorage()
 
 /** @internal Injects a mock S3 client for unit tests. */
 export const setS3StorageForTests = (client: Pick<S3Client, "send">) => {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   // SAFETY: test doubles only implement send(), which is all exercised s3 paths use
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   storage = client as S3Client
 }
 
@@ -82,19 +85,20 @@ export const generateSignedPutUrl = async ({
   | "ContentDisposition"
   | "ContentLength"
   | "Tagging"
->): Promise<string> => {
-  return getSignedUrl(
+>): Promise<string> =>
+  await getSignedUrl(
     storage,
     new PutObjectCommand({
       Bucket,
-      Key,
-      ContentType,
       ContentDisposition,
       ContentLength,
+      ContentType,
+      Key,
       Tagging,
     }),
     {
-      expiresIn: 60 * 5, // 5 minutes
+      expiresIn: 60 * 5,
+      // 5 minutes
       // Sign these headers so S3 rejects PUTs with different values (prevents type-confusion XSS and enforces exact upload size)
       signableHeaders: new Set([
         "content-type",
@@ -103,14 +107,13 @@ export const generateSignedPutUrl = async ({
       ]),
     },
   )
-}
 
 export const generateSignedGetUrl = async (
   { Bucket, Key }: Pick<GetObjectCommandInput, "Bucket" | "Key">,
   // Default kept at 5 minutes so all existing callers are unchanged.
   expiresIn: number = 60 * 5,
-): Promise<string> => {
-  return getSignedUrl(
+): Promise<string> =>
+  await getSignedUrl(
     storage,
     new GetObjectCommand({
       Bucket,
@@ -120,7 +123,6 @@ export const generateSignedGetUrl = async (
       expiresIn,
     },
   )
-}
 
 export const deleteFile = async ({
   Key,
@@ -130,7 +132,9 @@ export const deleteFile = async ({
   // PutObjectTagging), so this soft-delete tagging can't work there anyway.
   // It's also tied to the scheduled-publishing/gazette retention workflow,
   // which is meaningless for ephemeral preview data, so skip to a no-op.
-  if (isR2Configured) return
+  if (isR2Configured) {
+    return
+  }
   const objectTag = await storage.send(
     new GetObjectTaggingCommand({
       Bucket,
@@ -150,7 +154,7 @@ export const deleteFile = async ({
     return
   }
 
-  return storage.send(
+  return await storage.send(
     new PutObjectTaggingCommand({
       Bucket,
       Key,
@@ -187,9 +191,15 @@ export const setAssetAsPublished = async ({
   // ~27 years — applying it to a shared preview bucket would permanently
   // lock every test upload. The GuardDuty malware-scan tag check is also
   // moot, since GuardDuty is an AWS-only service that never scans R2 objects.
-  if (isR2Configured) return
-  if (!Bucket) throw new Error("Bucket must be defined")
-  if (!Key) throw new Error("Key must be defined")
+  if (isR2Configured) {
+    return
+  }
+  if (!hasNonEmptyString(Bucket)) {
+    throw new Error("Bucket must be defined")
+  }
+  if (!hasNonEmptyString(Key)) {
+    throw new Error("Key must be defined")
+  }
 
   const objectTag = await storage.send(
     new GetObjectTaggingCommand({
@@ -220,19 +230,19 @@ export const setAssetAsPublished = async ({
   // object can no longer be overwritten. REPLACE drops all existing metadata,
   // so ContentType and user metadata are read back and re-supplied; object
   // tags carry over via the default TaggingDirective (COPY).
-  if (ContentDisposition) {
+  if (hasNonEmptyString(ContentDisposition)) {
     const head = await storage.send(new HeadObjectCommand({ Bucket, Key }))
     // Skip the (paid) self-copy when the disposition is already correct,
     // e.g. on a pg-boss retry after an earlier attempt already rewrote it.
     if (head.ContentDisposition !== ContentDisposition) {
       const copyInput: CopyObjectCommandInput = {
         Bucket,
+        ContentDisposition,
         CopySource: getEncodedCopySource(Bucket, Key),
         Key,
         MetadataDirective: "REPLACE",
-        ContentDisposition,
       }
-      if (head.ContentType) {
+      if (hasNonEmptyString(head.ContentType)) {
         copyInput.ContentType = head.ContentType
       }
       if (head.Metadata && Object.keys(head.Metadata).length > 0) {
@@ -270,7 +280,7 @@ export const setAssetAsPublished = async ({
       // NOTE: We perform a soft delete here so the file can be kept available
       // until the page is published
       Tagging: {
-        TagSet: [...originalTagSet.filter(({ Key }) => Key !== "scheduledAt")],
+        TagSet: originalTagSet.filter(({ Key }) => Key !== "scheduledAt"),
       },
     }),
   )
@@ -289,7 +299,9 @@ interface AwsS3NotFoundError {
 }
 
 const isNotFoundError = (error: AwsS3NotFoundError): boolean => {
-  if (error === null || Object(error) !== error) return false
+  if (error === null || Object(error) !== error) {
+    return false
+  }
   const { name, $metadata } = error
   return (
     name === "NotFound" ||
@@ -302,11 +314,15 @@ export const getFileSize = async ({
   Key,
   Bucket,
 }: Pick<HeadObjectCommandInput, "Key" | "Bucket">): Promise<number | null> => {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   try {
     const response = await storage.send(new HeadObjectCommand({ Bucket, Key }))
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
     return response.ContentLength ?? null
   } catch (error) {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
     // SAFETY: only AWS error name and $metadata.httpStatusCode are inspected
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
     if (isNotFoundError(error as AwsS3NotFoundError)) {
       return null
     }
@@ -322,9 +338,11 @@ export const copyFile = async ({
   SourceKey: string
   DestKey: string
 }) => {
-  if (!Bucket) throw new Error("Bucket must be defined")
+  if (!hasNonEmptyString(Bucket)) {
+    throw new Error("Bucket must be defined")
+  }
 
-  return storage.send(
+  return await storage.send(
     new CopyObjectCommand({
       Bucket,
       CopySource: getEncodedCopySource(Bucket, SourceKey),
@@ -340,7 +358,9 @@ export const markScheduledAssetAsCancelled = async ({
   // R2 doesn't implement the S3 object tagging API, so this can't work
   // there anyway. It's also tied to the scheduled-publishing workflow,
   // which is meaningless for ephemeral preview data.
-  if (isR2Configured) return
+  if (isR2Configured) {
+    return
+  }
   const objectTag = await storage.send(
     new GetObjectTaggingCommand({
       Bucket,
@@ -356,7 +376,7 @@ export const markScheduledAssetAsCancelled = async ({
     ({ Key }) => Key === DELETE_TAG,
   )?.Value
 
-  return storage.send(
+  return await storage.send(
     new PutObjectTaggingCommand({
       Bucket,
       Key,
@@ -386,13 +406,13 @@ export const getBlob = async (bucketName: string, key: string) => {
       throw new Error("Error when transforming blob to byte array")
     }
     return byteArr
-  } catch (err) {
+  } catch (error) {
     console.error({
-      message: "Error when getting blob",
-      error: err,
+      error,
       merged: { bucketName, key },
+      message: "Error when getting blob",
     })
-    throw err
+    throw error
   }
 }
 
@@ -431,7 +451,7 @@ export const resetStudioAssetsBucketNameForTests = () => {
 export const getStudioAssetsBucketName = (): string => {
   const bucket =
     studioAssetsBucketNameOverride ?? env.S3_STUDIO_ASSETS_BUCKET_NAME
-  if (!bucket) {
+  if (!hasNonEmptyString(bucket)) {
     throw new Error("S3_STUDIO_ASSETS_BUCKET_NAME is not configured")
   }
   return bucket
@@ -473,11 +493,11 @@ export const uploadAuditLogExport = async ({
   const upload = new UploadClass({
     client: storage,
     params: {
-      Bucket,
-      Key: key,
       Body: body,
-      ContentType: "text/csv",
+      Bucket,
       ContentDisposition: `attachment; filename="${filename}"`,
+      ContentType: "text/csv",
+      Key: key,
     },
   })
   await upload.done()

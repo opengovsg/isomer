@@ -1,8 +1,15 @@
+/* oxlint-disable import/no-cycle, unicorn/no-nested-ternary -- core cleanup deferred */
 import { skipToken } from "@tanstack/react-query"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { sitePageSchema } from "~/pages/sites/[siteId]"
+import { sitePageSchema } from "~/schemas/sitePageSchema"
 import { isResourceMoveValid } from "~/utils/resources"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 export const useValidateResourceMove = ({
@@ -16,13 +23,15 @@ export const useValidateResourceMove = ({
   const { siteId } = useQueryParse(sitePageSchema)
   const { data: source, isLoading: isSourceLoading } =
     trpc.resource.getMetadataById.useQuery(
-      sourceId ? { siteId, resourceId: sourceId } : skipToken,
+      hasNonEmptyString(sourceId)
+        ? { resourceId: sourceId, siteId }
+        : skipToken,
     )
   const { data: destination, isLoading: isDestinationLoading } =
     trpc.resource.getMetadataById.useQuery(
-      destinationId !== null
-        ? { siteId, resourceId: destinationId }
-        : skipToken,
+      destinationId === null
+        ? skipToken
+        : { resourceId: destinationId, siteId },
     )
 
   const { data: rootPage, isLoading: isRootPageLoading } =
@@ -39,10 +48,10 @@ export const useValidateResourceMove = ({
     destinationId === null
       ? rootPage && {
           id: rootPage.id,
-          type: ResourceType.RootPage,
-          siteId,
-          permalink: "/",
           parentId: null,
+          permalink: "/",
+          siteId,
+          type: ResourceType.RootPage,
         }
       : destination
 
@@ -52,15 +61,16 @@ export const useValidateResourceMove = ({
     isResourceMoveValid(source, destinationResource)
 
   const errorMessage =
+    // oxlint-disable-next-line eslint/no-nested-ternary -- core cleanup deferred
     isValidMove instanceof Error
       ? isValidMove.message
-      : !isValidMove
-        ? "Invalid resource move"
-        : undefined
+      : isValidMove
+        ? undefined
+        : "Invalid resource move"
 
   return {
+    errorMessage,
     isLoading: isSourceLoading || isDestinationLoading || isRootPageLoading,
     isValidMove,
-    errorMessage,
   }
 }

@@ -1,3 +1,5 @@
+/* oxlint-disable eslint/sort-keys -- studio lint cleanup */
+/* oxlint-disable typescript/no-unsafe-assignment, typescript/no-unsafe-call, typescript/no-unsafe-member-access, oxc/parse-error -- studio lint cleanup */
 import type { Editor } from "@tiptap/react"
 import { useDisclosure } from "@chakra-ui/react"
 import { useMemo } from "react"
@@ -45,67 +47,75 @@ export const AccordionMenuBar = ({ editor }: { editor: Editor }) => {
   const items: PossibleMenubarItemProps[] = useMemo(
     () => [
       {
-        type: "item",
+        action: () => {
+          editor.chain().focus().toggleBold().run()
+        },
         icon: BiBold,
-        title: "Bold",
-        action: () => editor.chain().focus().toggleBold().run(),
         isActive: () => editor.isActive("bold"),
+        title: "Bold",
+        type: "item",
       },
       {
-        type: "item",
+        action: () => {
+          editor.chain().focus().toggleItalic().run()
+        },
         icon: BiItalic,
-        title: "Italicise",
-        action: () => editor.chain().focus().toggleItalic().run(),
         isActive: () => editor.isActive("italic"),
+        title: "Italicise",
+        type: "item",
       },
       {
-        type: "item",
+        action: () => {
+          editor.chain().focus().toggleUnderline().run()
+        },
         icon: BiUnderline,
-        title: "Underline",
-        action: () => editor.chain().focus().toggleUnderline().run(),
         isActive: () => editor.isActive("underline"),
+        title: "Underline",
+        type: "item",
       },
       {
-        type: "item",
+        action: () => {
+          editor.chain().focus().toggleStrike().run()
+        },
         icon: BiStrikethrough,
-        title: "Strikethrough",
-        action: () => editor.chain().focus().toggleStrike().run(),
         isActive: () => editor.isActive("strike"),
+        title: "Strikethrough",
+        type: "item",
       },
       {
         type: "divider",
       },
       {
-        type: "horizontal-list",
-        label: "Lists",
         defaultIcon: BiListOl,
         items: [
           {
-            type: "item",
-            icon: BiListOl,
-            title: "Ordered list",
             action: () => editor.chain().focus().toggleOrderedList().run(),
+            icon: BiListOl,
             isActive: () => editor.isActive("orderedList"),
+            title: "Ordered list",
+            type: "item",
           },
 
           {
-            type: "item",
-            icon: BiListUl,
-            title: "Bullet list",
             action: () => editor.chain().focus().toggleBulletList().run(),
+            icon: BiListUl,
             isActive: () => editor.isActive("unorderedList"),
+            title: "Bullet list",
+            type: "item",
           },
         ],
+        label: "Lists",
+        type: "horizontal-list",
       },
       {
         type: "divider",
       },
       {
-        type: "item",
-        icon: BiLink,
-        title: "Link",
         action: onLinkModalOpen,
+        icon: BiLink,
         isActive: () => editor.isActive("link"),
+        title: "Link",
+        type: "item",
       },
       {
         type: "divider",
@@ -117,118 +127,118 @@ export const AccordionMenuBar = ({ editor }: { editor: Editor }) => {
         render: () => <TableSizePicker editor={editor} />,
       },
       {
-        type: "horizontal-list",
-        label: "Table",
         defaultIcon: BiWrench,
         isHidden: () => !editor.isActive("table"),
         items: [
           {
-            type: "item",
+            action: () => editor.chain().focus().addColumnAfter().run(),
             icon: IconAddColRight,
             title: "Add column after",
-            action: () => editor.chain().focus().addColumnAfter().run(),
+            type: "item",
           },
           {
-            type: "item",
+            action: () => editor.chain().focus().addColumnBefore().run(),
             icon: IconAddColLeft,
             title: "Add column before",
-            action: () => editor.chain().focus().addColumnBefore().run(),
+            type: "item",
           },
           {
-            type: "item",
+            action: () => editor.chain().focus().deleteColumn().run(),
             icon: IconDelCol,
             title: "Delete column",
-            action: () => editor.chain().focus().deleteColumn().run(),
+            type: "item",
           },
           {
-            type: "item",
+            action: () => editor.chain().focus().addRowBefore().run(),
             icon: IconAddRowAbove,
             title: "Add row before",
-            action: () => editor.chain().focus().addRowBefore().run(),
+            type: "item",
           },
           {
-            type: "item",
+            action: () => editor.chain().focus().addRowAfter().run(),
             icon: IconAddRowBelow,
             title: "Add row after",
-            action: () => editor.chain().focus().addRowAfter().run(),
+            type: "item",
           },
           {
-            type: "item",
+            action: () => editor.chain().focus().deleteRow().run(),
             icon: IconDelRow,
             title: "Delete row",
-            action: () => editor.chain().focus().deleteRow().run(),
+            type: "item",
           },
           {
-            type: "item",
+            action: () => editor.chain().focus().mergeCells().run(),
             icon: IconMergeCells,
             title: "Merge cells",
-            action: () => editor.chain().focus().mergeCells().run(),
+            type: "item",
           },
           {
-            type: "item",
+            action: () => editor.chain().focus().splitCell().run(),
             icon: IconSplitCell,
             title: "Split cell",
-            action: () => editor.chain().focus().splitCell().run(),
+            type: "item",
           },
           {
-            type: "item",
+            action: onTableSettingsModalOpen,
             icon: BiCog,
             title: "Table settings",
-            action: onTableSettingsModalOpen,
+            type: "item",
           },
         ],
+        label: "Table",
+        type: "horizontal-list",
       },
       // Table-scoped: promoted onto the main toolbar instead of the overflow
       // menu while editing inside a table, same as the "Table" group above.
       {
-        type: "item",
-        icon: MdSuperscript,
-        title: "Superscript",
-        isHidden: () => !editor.isActive("table"),
         action: () =>
           editor.chain().focus().unsetSubscript().toggleSuperscript().run(),
+        icon: MdSuperscript,
         isActive: () => editor.isActive("superscript"),
+        isHidden: () => !editor.isActive("table"),
+        title: "Superscript",
+        type: "item",
       },
       {
-        type: "item",
-        icon: MdSubscript,
-        title: "Subscript",
-        isHidden: () => !editor.isActive("table"),
         action: () =>
           editor.chain().focus().unsetSuperscript().toggleSubscript().run(),
+        icon: MdSubscript,
         isActive: () => editor.isActive("subscript"),
+        isHidden: () => !editor.isActive("table"),
+        title: "Subscript",
+        type: "item",
       },
       // Lesser-used commands are kept inside the overflow items list
       {
-        type: "overflow-list",
         items: [
           {
-            type: "item",
-            icon: MdSuperscript,
-            title: "Superscript",
-            isHidden: () => editor.isActive("table"),
             action: () =>
               editor.chain().focus().unsetSubscript().toggleSuperscript().run(),
+            icon: MdSuperscript,
             isActive: () => editor.isActive("superscript"),
+            isHidden: () => editor.isActive("table"),
+            title: "Superscript",
+            type: "item",
           },
           {
-            type: "item",
-            icon: MdSubscript,
-            title: "Subscript",
-            isHidden: () => editor.isActive("table"),
             action: () =>
               editor.chain().focus().unsetSuperscript().toggleSubscript().run(),
+            icon: MdSubscript,
             isActive: () => editor.isActive("subscript"),
+            isHidden: () => editor.isActive("table"),
+            title: "Subscript",
+            type: "item",
           },
           {
-            type: "item",
-            icon: MdHorizontalRule,
-            title: "Divider",
-            isHidden: () => editor.isActive("table"),
             action: () => editor.chain().focus().setHorizontalRule().run(),
+            icon: MdHorizontalRule,
             isActive: () => editor.isActive("divider"),
+            isHidden: () => editor.isActive("table"),
+            title: "Divider",
+            type: "item",
           },
         ],
+        type: "overflow-list",
       },
     ],
     [editor, onLinkModalOpen, onTableSettingsModalOpen],

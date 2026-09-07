@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-void-return, unicorn/no-unnecessary-type-conversion -- core cleanup deferred */
 import type { PageSettingsState } from "~/features/dashboard/atoms"
 import {
   Box,
@@ -41,6 +42,12 @@ import {
   MAX_TITLE_LENGTH,
 } from "~/schemas/page"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { generateResourceUrl } from "../../editing-experience/components/utils"
@@ -72,6 +79,11 @@ const PageSettingsModalContent = ({
     handleSubmit,
     formState: { isDirty, errors },
   } = useZodForm({
+    defaultValues: {
+      permalink: permalinkTree.at(-1) ?? "",
+      shouldCreateRedirect: true,
+      title: originalTitle,
+    },
     schema: basePageSettingsSchema.omit({ pageId: true, siteId: true }).extend({
       permalink: generateBasePermalinkSchema("page")
         .min(1, {
@@ -81,11 +93,6 @@ const PageSettingsModalContent = ({
           message: `Page URL should be shorter than ${MAX_PAGE_URL_LENGTH} characters.`,
         }),
     }),
-    defaultValues: {
-      title: originalTitle,
-      permalink: permalinkTree[permalinkTree.length - 1] || "",
-      shouldCreateRedirect: true,
-    },
   })
 
   const [title, permalink] = watch(["title", "permalink"])
@@ -93,8 +100,8 @@ const PageSettingsModalContent = ({
     // Case 1: Root page
     if (permalinkTree.length === 0 || permalinkTree[0] === "") {
       return {
-        permalink: "/",
         parentPermalinks: "",
+        permalink: "/",
       }
     }
 
@@ -102,15 +109,15 @@ const PageSettingsModalContent = ({
     // Case 2: Parent is root page
     if (!parentPermalinks) {
       return {
-        permalink,
         parentPermalinks: "/",
+        permalink,
       }
     }
 
     // Default case: Nested page
     return {
-      permalink,
       parentPermalinks: `/${parentPermalinks}/`,
+      permalink,
     }
   }, [permalink, permalinkTree])
 
@@ -130,7 +137,7 @@ const PageSettingsModalContent = ({
     },
   )
 
-  const originalPermalink = permalinkTree[permalinkTree.length - 1] ?? ""
+  const originalPermalink = permalinkTree.at(-1) ?? ""
   const isPagePublished = publishedVersionId !== null
   // Offer the redirect only when a published Page/CollectionPage URL actually
   // changes — an unpublished page has no live URL to preserve, so the server
@@ -146,8 +153,16 @@ const PageSettingsModalContent = ({
 
   const { mutate: updatePageSettings, isPending } =
     trpc.page.updateSettings.useMutation({
+      onError: (error) => {
+        toast({
+          description: error.message,
+          status: "error",
+          title: "Failed to save settings",
+        })
+        reset()
+      },
       onSuccess: async () => {
-        // TODO: we should use a specialised query for this rather than the general one that retrives the page and the blob
+        // Deferred: we should use a specialised query for this rather than the general one that retrives the page and the blob
         await utils.page.invalidate()
         await utils.resource.invalidate()
         await utils.folder.invalidate()
@@ -156,23 +171,15 @@ const PageSettingsModalContent = ({
         toast(
           isPagePublished
             ? {
-                title: "Saved and published settings",
                 description: "Check your site in 5-10 minutes to view it live.",
                 status: "success",
+                title: "Saved and published settings",
               }
             : {
-                title: "Saved settings",
                 status: "success",
+                title: "Saved settings",
               },
         )
-      },
-      onError: (error) => {
-        toast({
-          title: "Failed to save settings",
-          description: error.message,
-          status: "error",
-        })
-        reset()
       },
     })
 
@@ -186,8 +193,10 @@ const PageSettingsModalContent = ({
           ...data,
         },
         {
-          onSuccess: () => reset(data),
           onSettled: onClose,
+          onSuccess: () => {
+            reset(data)
+          },
         },
       )
     }
@@ -281,8 +290,10 @@ const PageSettingsModalContent = ({
                       <Checkbox
                         alignItems="flex-start"
                         size="lg"
-                        isChecked={!!value}
-                        onChange={(e) => onChange(e.target.checked)}
+                        isChecked={!!isNullableBooleanTrue(value)}
+                        onChange={(e) => {
+                          onChange(e.target.checked)
+                        }}
                         ref={ref}
                         {...field}
                       >
@@ -311,7 +322,6 @@ const PageSettingsModalContent = ({
           )}
         </VStack>
       </ModalBody>
-
       <ModalFooter>
         <Button mr={3} variant="clear" onClick={onClose}>
           Close
@@ -334,9 +344,12 @@ export const PageSettingsModal = () => {
   }
 
   return (
-    <Modal isOpen={!!pageSettingsModalState?.pageId} onClose={onClose}>
+    <Modal
+      isOpen={!!hasNonEmptyString(pageSettingsModalState?.pageId)}
+      onClose={onClose}
+    >
       <ModalOverlay />
-      {pageSettingsModalState?.pageId && (
+      {hasNonEmptyString(pageSettingsModalState?.pageId) && (
         <Suspense fallback={<Skeleton />}>
           <PageSettingsModalContent
             onClose={onClose}

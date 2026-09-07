@@ -1,11 +1,12 @@
+/* oxlint-disable eslint/default-case, eslint/no-shadow, typescript/consistent-return -- core cleanup deferred */
 import type { PropsWithChildren } from "react"
 import { filter } from "lodash-es"
 import { createContext, useContext, useMemo } from "react"
 import { trpc } from "~/utils/trpc"
 
 import type { GazettesCategory } from "../types"
-import { GAZETTE_SUBCATEGORY_LABEL } from "../constants"
 import {
+  GAZETTE_SUBCATEGORY_LABEL,
   governmentGazetteSubcategoriesKeys,
   legislativeSupplementsSubcategoriesKeys,
   otherSupplementsSubcategoriesKeys,
@@ -34,8 +35,8 @@ export const GazetteSubcategoriesProvider = ({
   gazettesCollectionId,
 }: PropsWithChildren<GazetteSubcategoriesProviderProps>) => {
   const [tagCategories] = trpc.collection.getCollectionTags.useSuspenseQuery({
-    siteId,
     collectionId: gazettesCollectionId,
+    siteId,
   })
 
   const value = useMemo(() => {
@@ -57,30 +58,26 @@ export const GazetteSubcategoriesProvider = ({
     const getSubcategoriesForCategory = (category: GazettesCategory) => {
       switch (category) {
         case "Government Gazette": {
-          return filter(subcategories, ({ label }) => {
-            return governmentGazetteSubcategoriesKeys.some(
-              (key) => key === label,
-            )
-          })
+          return filter(subcategories, ({ label }) =>
+            governmentGazetteSubcategoriesKeys.some((key) => key === label),
+          )
         }
         case "Other Supplements": {
-          return filter(subcategories, ({ label }) => {
-            return otherSupplementsSubcategoriesKeys.some(
-              (key) => key === label,
-            )
-          })
+          return filter(subcategories, ({ label }) =>
+            otherSupplementsSubcategoriesKeys.some((key) => key === label),
+          )
         }
 
         case "Legislative Supplements": {
-          return filter(subcategories, ({ label }) => {
-            return legislativeSupplementsSubcategoriesKeys.some(
+          return filter(subcategories, ({ label }) =>
+            legislativeSupplementsSubcategoriesKeys.some(
               (key) => key === label,
-            )
-          })
+            ),
+          )
         }
       }
     }
-    return { subcategories, subcategoryMap, getSubcategoriesForCategory }
+    return { getSubcategoriesForCategory, subcategories, subcategoryMap }
   }, [tagCategories])
 
   return (

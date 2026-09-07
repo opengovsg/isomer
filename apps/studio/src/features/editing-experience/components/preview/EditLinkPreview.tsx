@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-shadow, import/no-cycle -- core cleanup deferred */
 import type { CollectionLinkProps } from "~/schemas/collection"
 import { useMemo } from "react"
 import { useSuspenseCollectionTags } from "~/features/editing-experience/hooks/useCollectionTags"
@@ -6,8 +7,14 @@ import {
   getCollectionPermalink,
 } from "~/features/editing-experience/utils/buildCollectionLinkPreviewSitemap"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { editLinkSchema } from "~/pages/sites/[siteId]/links/[linkId]"
+import { editLinkPageSchema } from "~/schemas/editLinkPageSchema"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import PreviewWithCustomSitemap from "./PreviewWithCustomSitemap"
@@ -23,7 +30,7 @@ export const EditCollectionLinkPreview = ({
   link,
   title,
 }: EditCollectionLinkPreviewProps): React.ReactNode => {
-  const { linkId, siteId } = useQueryParse(editLinkSchema)
+  const { linkId, siteId } = useQueryParse(editLinkPageSchema)
   const [permalink] = trpc.page.getFullPermalink.useSuspenseQuery(
     {
       pageId: linkId,
@@ -44,9 +51,9 @@ export const EditCollectionLinkPreview = ({
 
   // Ends at the parent collection, so drop it — the collection node is built below.
   const [ancestry] = trpc.resource.getAncestryStack.useSuspenseQuery({
+    includeSelf: false,
     resourceId: String(linkId),
     siteId: String(siteId),
-    includeSelf: false,
   })
 
   const parentPermalink = useMemo(
@@ -54,7 +61,10 @@ export const EditCollectionLinkPreview = ({
     [permalink],
   )
   const parentTitle = useMemo(
-    () => parent?.title || ResourceType.Collection,
+    () =>
+      hasNonEmptyString(parent?.title)
+        ? parent?.title
+        : ResourceType.Collection,
     [parent?.title],
   )
   const ancestorTitles = useMemo(
@@ -65,13 +75,13 @@ export const EditCollectionLinkPreview = ({
   const siteMap = useMemo(
     () =>
       buildCollectionLinkPreviewSitemap({
-        permalink,
-        title,
-        link,
-        collectionTitle: parentTitle,
         ancestorTitles,
-        tagCategories,
+        collectionTitle: parentTitle,
         lastModified: currentDate,
+        link,
+        permalink,
+        tagCategories,
+        title,
       }),
     [permalink, title, link, parentTitle, ancestorTitles, tagCategories],
   )
@@ -80,7 +90,7 @@ export const EditCollectionLinkPreview = ({
     <ViewportContainer siteId={siteId}>
       <PreviewWithCustomSitemap
         content={[]}
-        page={{ title: parentTitle, tagCategories }}
+        page={{ tagCategories, title: parentTitle }}
         layout="collection"
         siteId={siteId}
         siteMap={siteMap}

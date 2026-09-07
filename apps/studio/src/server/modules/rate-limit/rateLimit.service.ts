@@ -1,19 +1,20 @@
+/* oxlint-disable eslint/func-style, unicorn/filename-case -- server lint cleanup */
+import type { NextApiRequest } from "next"
 import type { PrismaClient } from "~prisma/generated/prisma/client"
 import { TRPCError } from "@trpc/server"
-import { type NextApiRequest } from "next"
 import {
   RateLimiterMemory,
   RateLimiterPrisma,
   RateLimiterRes,
 } from "rate-limiter-flexible"
 
-import { type RateLimitMetaOptions } from "./types"
+import type { RateLimitMetaOptions } from "./types"
 import { getRateLimitFingerprint } from "./utils"
 
 // Default 5 queries per second fallback
 const rateLimiterMemory = new RateLimiterMemory({
-  points: 5,
   duration: 1,
+  points: 5,
 })
 
 export async function checkRateLimit({
@@ -29,10 +30,11 @@ export async function checkRateLimit({
   const windowMs = rateLimitOptions.windowMs ?? 1000
 
   const store = new RateLimiterPrisma({
-    storeClient: prisma,
-    points: max,
-    duration: windowMs / 1000, // in seconds
+    duration: windowMs / 1000,
+    // in seconds
     insuranceLimiter: rateLimiterMemory,
+    points: max,
+    storeClient: prisma,
   })
 
   const fingerprint = getRateLimitFingerprint(req)

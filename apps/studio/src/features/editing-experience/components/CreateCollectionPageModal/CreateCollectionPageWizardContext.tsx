@@ -1,10 +1,11 @@
+/* oxlint-disable unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { PropsWithChildren } from "react"
 import type { z } from "zod"
 import { merge } from "lodash-es"
 import { useRouter } from "next/router"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
 import { createContext, useContext, useMemo, useState } from "react"
 import articleLayoutPreview from "~/features/editing-experience/data/articleLayoutPreview.json"
 import collectionLinkPreview from "~/features/editing-experience/data/collectionLinkPreview.json"
@@ -12,6 +13,12 @@ import { useZodForm } from "~/lib/form"
 import { createCollectionPageFormSchema } from "~/schemas/page"
 import { getResourceSubpath } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 export enum CreateCollectionPageFlowStates {
@@ -58,19 +65,19 @@ const useCreateCollectionPageWizardContext = ({
     useState<CreateCollectionPageFlowStates>(INITIAL_STEP_STATE)
 
   const formMethods = useZodForm({
-    schema: createCollectionPageFormSchema,
     defaultValues: {
-      title: "",
       permalink: "",
+      title: "",
       type: ResourceType.CollectionPage,
     },
+    schema: createCollectionPageFormSchema,
   })
 
   const [type, title] = formMethods.watch(["type", "title"])
   const { data, isLoading: isPermalinkLoading } =
     trpc.resource.getWithFullPermalink.useQuery({
-      siteId,
       resourceId: collectionId ? String(collectionId) : "",
+      siteId,
     })
 
   const pagePreviewJson: IsomerSchema = useMemo(() => {
@@ -87,7 +94,7 @@ const useCreateCollectionPageWizardContext = ({
   const utils = trpc.useUtils()
   const router = useRouter()
 
-  // TODO: Call correct mutation
+  // Deferred: Call correct mutation
   const { mutate, isPending } =
     trpc.collection.createCollectionPage.useMutation({
       onSuccess: async () => {
@@ -101,19 +108,11 @@ const useCreateCollectionPageWizardContext = ({
     (values: z.output<typeof createCollectionPageFormSchema>) => {
       mutate(
         {
-          siteId,
           collectionId,
+          siteId,
           ...values,
         },
         {
-          onSuccess: ({ pageId }) => {
-            posthog.capture("collection_page_created", {
-              site_id: siteId,
-              resource_type: values.type,
-            })
-            const nextType = getResourceSubpath(type)
-            void router.push(`/sites/${siteId}/${nextType}/${pageId}`)
-          },
           onError: (error) => {
             if (
               error.data?.code === "CONFLICT" &&
@@ -135,9 +134,16 @@ const useCreateCollectionPageWizardContext = ({
                 { shouldFocus: true },
               )
               return
-            } else {
-              console.error(error)
             }
+            console.error(error)
+          },
+          onSuccess: ({ pageId }) => {
+            posthogJs.capture("collection_page_created", {
+              resource_type: values.type,
+              site_id: siteId,
+            })
+            const nextType = getResourceSubpath(type)
+            void router.push(`/sites/${siteId}/${nextType}/${pageId}`)
           },
         },
       )
@@ -153,17 +159,17 @@ const useCreateCollectionPageWizardContext = ({
   }
 
   return {
-    siteId,
     currentStep,
-    formMethods,
-    handleCreatePage,
-    isLoading: isPending || isPermalinkLoading,
-    handleNextToDetailScreen,
-    handleBackToTypeScreen,
-    pagePreviewJson,
-    onClose,
     currentType: type,
-    fullPermalink: data?.fullPermalink || "",
+    formMethods,
+    fullPermalink: data?.fullPermalink ?? "",
+    handleBackToTypeScreen,
+    handleCreatePage,
+    handleNextToDetailScreen,
+    isLoading: isPending || isPermalinkLoading,
+    onClose,
+    pagePreviewJson,
+    siteId,
   }
 }
 

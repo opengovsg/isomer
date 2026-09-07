@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-void-return -- core cleanup deferred */
 import type { UseFormReturn } from "react-hook-form"
 import {
   Box,
@@ -18,8 +19,14 @@ import {
   FormLabel,
   Link,
 } from "@opengovsg/design-system-react"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
 import { BiBulb, BiPlus, BiRightArrowAlt, BiSearch } from "react-icons/bi"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import type { AddRedirectInput } from "../types"
 import { WILDCARD_HINT } from "../constants"
@@ -117,7 +124,7 @@ export const AddRedirectCardForm = ({
             textStyle="subhead-2"
             color="interaction.links.default"
             onClick={() => {
-              posthog.capture("redirect_bulk_upload_modal_opened", {
+              posthogJs.capture("redirect_bulk_upload_modal_opened", {
                 site_id: siteId,
               })
               onBulkUploadOpen()
@@ -128,7 +135,6 @@ export const AddRedirectCardForm = ({
           .
         </Text>
       </Flex>
-
       <HStack as="form" align="flex-start" onSubmit={handleSubmit(onSubmit)}>
         <FormControl
           flex={1}
@@ -154,7 +160,9 @@ export const AddRedirectCardForm = ({
           <FormErrorMessage>{errors.source?.message}</FormErrorMessage>
           {!errors.source && (
             <FormHelperText sx={{ mt: "0.75rem" }}>
-              {wildcardPreview ? `e.g. ${wildcardPreview}` : WILDCARD_HINT}
+              {hasNonEmptyString(wildcardPreview)
+                ? `e.g. ${wildcardPreview}`
+                : WILDCARD_HINT}
             </FormHelperText>
           )}
         </FormControl>
@@ -183,9 +191,13 @@ export const AddRedirectCardForm = ({
             <Input
               placeholder="/path-to-page or https://www.google.com"
               size="sm"
-              onFocus={() => setIsDestinationFocused(true)}
+              onFocus={() => {
+                setIsDestinationFocused(true)
+              }}
               {...register("destination", {
-                onBlur: () => setIsDestinationFocused(false),
+                onBlur: () => {
+                  setIsDestinationFocused(false)
+                },
                 onChange: clearFieldFeedback("destination"),
               })}
             />
@@ -211,7 +223,9 @@ export const AddRedirectCardForm = ({
                   spacing="0.5rem"
                   px="0.75rem"
                   py="0.5rem"
-                  onMouseDown={(e) => e.preventDefault()}
+                  onMouseDown={(e) => {
+                    e.preventDefault()
+                  }}
                   onClick={onPageModalOpen}
                   _hover={{ bgColor: "interaction.muted.main.hover" }}
                 >
@@ -250,12 +264,12 @@ export const AddRedirectCardForm = ({
         isOpen={isPageModalOpen}
         siteId={siteId}
         onClose={onPageModalClose}
-        onSelect={(permalink) =>
+        onSelect={(permalink) => {
           setValue("destination", permalink, {
-            shouldValidate: true,
             shouldDirty: true,
+            shouldValidate: true,
           })
-        }
+        }}
       />
 
       <BulkUploadRedirectsModal

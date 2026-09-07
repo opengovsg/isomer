@@ -7,6 +7,7 @@ interface SingpassConditionalTooltipProps extends Omit<TooltipProps, "label"> {
   children: React.ReactNode
 }
 
+// oxlint-disable-next-line typescript/promise-function-async -- core cleanup deferred
 export const SingpassConditionalTooltip = ({
   children,
   ...tooltipProps

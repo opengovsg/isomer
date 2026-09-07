@@ -35,7 +35,6 @@ const COMMON_HANDLERS = [
 ]
 
 const meta: Meta<typeof EditPage> = {
-  title: "Pages/Edit Page/Index Page",
   component: EditPage,
   parameters: {
     getLayout: EditPage.getLayout,
@@ -44,14 +43,15 @@ const meta: Meta<typeof EditPage> = {
     },
     nextjs: {
       router: {
-        query: {
-          siteId: "1",
-          pageId: "1",
-        },
         pathname: "/sites/[siteId]/pages/[pageId]",
+        query: {
+          pageId: "1",
+          siteId: "1",
+        },
       },
     },
   },
+  title: "Pages/Edit Page/Index Page",
 }
 
 export default meta
@@ -64,7 +64,7 @@ export const EditFixedBlockState: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const button = await canvas.findByRole("button", {
-      name: /Header/i,
+      name: /Header/iu,
     })
     await userEvent.click(button)
   },
@@ -80,7 +80,7 @@ export const SaveToast: Story = {
     await userEvent.type(textbox, "very cool summary")
 
     const saveButton = await canvas.findByRole("button", {
-      name: /Save changes/i,
+      name: /Save changes/iu,
     })
     await userEvent.click(saveButton)
   },
@@ -91,8 +91,8 @@ export const PublishedState: Story = {
     msw: {
       handlers: [
         pageHandlers.readPage.content({
-          state: ResourceState.Published,
           draftBlobId: null,
+          state: ResourceState.Published,
         }),
         ...COMMON_HANDLERS,
       ],
@@ -104,8 +104,8 @@ export const WithBanner: Story = {
   parameters: {
     growthbook: [
       createBannerGbParameters({
-        variant: "info",
         message: "This is a test banner",
+        variant: "info",
       }),
     ],
   },
@@ -115,7 +115,7 @@ export const EditChildBlockState: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const button = await canvas.findByRole("button", {
-      name: /Child pages/i,
+      name: /Child pages/iu,
     })
     await userEvent.click(button)
   },
@@ -136,7 +136,7 @@ export const ReorderSiderailState: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const button = await canvas.findByRole("button", {
-      name: /Reorder siderail for this folder/i,
+      name: /Reorder siderail for this folder/iu,
     })
     await userEvent.click(button)
 
@@ -160,29 +160,30 @@ export const EditInfocardsLinkState: Story = {
 
     // Click on the infocards block
     const infocardsBlock = await canvas.findByRole("button", {
-      name: /Info cards block/i,
+      name: /Info cards block/iu,
     })
     await userEvent.click(infocardsBlock)
 
     // Click on the first card item
     const firstCard = await canvas.findByRole("button", {
-      name: /First card/i,
+      name: /First card/iu,
     })
     await userEvent.click(firstCard)
 
     const textboxes = await canvas.findAllByRole("textbox")
     for (const textbox of textboxes) {
+      // oxlint-disable-next-line unicorn/no-await-in-loop -- core cleanup deferred
       await userEvent.clear(textbox)
     }
 
     const deleteButton = await canvas.findByRole("button", {
-      name: /Remove file/i,
+      name: /Remove file/iu,
     })
     await userEvent.click(deleteButton)
 
     // Click on the "Link something..." button to open the modal
     const linkButton = await canvas.findByRole("button", {
-      name: /Link something/i,
+      name: /Link something/iu,
     })
     await userEvent.click(linkButton)
 
@@ -192,7 +193,7 @@ export const EditInfocardsLinkState: Story = {
     await userEvent.click(page)
 
     const addLinkButton = await body.findByRole("button", {
-      name: /Add link/i,
+      name: /Add link/iu,
     })
     await userEvent.click(addLinkButton)
   },
@@ -201,7 +202,7 @@ export const EditInfocardsLinkState: Story = {
 export const AddBlockWithChildrenPagesDisabled: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const button = await canvas.findByRole("button", { name: /add block/i })
+    const button = await canvas.findByRole("button", { name: /add block/iu })
     await userEvent.click(button)
   },
 }
@@ -217,7 +218,7 @@ export const AddBlockWithChildrenPagesEnabled: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const button = await canvas.findByRole("button", { name: /add block/i })
+    const button = await canvas.findByRole("button", { name: /add block/iu })
     await userEvent.click(button)
   },
 }

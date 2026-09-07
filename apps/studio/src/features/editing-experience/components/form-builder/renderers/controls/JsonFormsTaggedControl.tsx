@@ -1,3 +1,5 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
+/* oxlint-disable eslint/no-shadow, eslint/no-use-before-define, unicorn/no-array-reduce, unicorn/no-unnecessary-type-conversion, unicorn/no-useless-collection-argument -- core cleanup deferred */
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import type { ArticlePagePageProps } from "@opengovsg/isomer-components"
 import { FormControl, Skeleton, VStack } from "@chakra-ui/react"
@@ -13,6 +15,12 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useSuspenseCollectionTags } from "~/features/editing-experience/hooks/useCollectionTags"
 import { collectionItemSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 export const jsonFormsTaggedControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.TaggedControl,
@@ -28,18 +36,16 @@ export const JsonFormsTaggedControl = ({
   path,
   description,
   handleChange,
-}: TaggedControlProps) => {
-  return (
-    <Suspense fallback={<Skeleton />}>
-      <SuspendableJsonFormsTaggedControl
-        data={data}
-        path={path}
-        description={description}
-        handleChange={handleChange}
-      />
-    </Suspense>
-  )
-}
+}: TaggedControlProps) => (
+  <Suspense fallback={<Skeleton />}>
+    <SuspendableJsonFormsTaggedControl
+      data={data}
+      path={path}
+      description={description}
+      handleChange={handleChange}
+    />
+  </Suspense>
+)
 
 type SuspendableJsonFormsTaggedControlProps = Pick<
   TaggedControlProps,
@@ -86,7 +92,8 @@ const SuspendableJsonFormsTaggedControl = ({
           const tagOptionsIds = new Set(options.map(({ id }) => id))
 
           const isInvalid =
-            !!tagIsRequired && currentTagCategoryOptions.length === 0
+            !!isNullableBooleanTrue(tagIsRequired) &&
+            currentTagCategoryOptions.length === 0
 
           return (
             <FormControl
@@ -101,12 +108,10 @@ const SuspendableJsonFormsTaggedControl = ({
                 nothingFoundLabel="No tags found."
                 values={currentTagCategoryOptions.map(({ id }) => id)}
                 name={label}
-                items={options.map(({ id, label }) => {
-                  return {
-                    value: id,
-                    label,
-                  }
-                })}
+                items={options.map(({ id, label }) => ({
+                  label,
+                  value: id,
+                }))}
                 // NOTE: `value` is the new set of selected options
                 onChange={(value) => {
                   const others =

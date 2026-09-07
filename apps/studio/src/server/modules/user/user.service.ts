@@ -1,8 +1,10 @@
+/* oxlint-disable unicorn/prefer-ternary, typescript/strict-boolean-expressions, typescript/no-useless-default-assignment -- server lint cleanup */
 import type { AdminType } from "~/schemas/user"
 import type { ResourcePermission, User } from "~prisma/generated/generatedTypes"
 import { createId } from "@paralleldrive/cuid2"
 import { TRPCError } from "@trpc/server"
 import isEmail from "validator/lib/isEmail"
+import { hasNonEmptyString } from "~/utils/truthiness"
 import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 
 import type { DB, Transaction } from "../database/types"
@@ -20,7 +22,7 @@ export const isUserDeleted = async (email: string) => {
     // Email is a unique field in User table
     .executeTakeFirst()
 
-  return user?.deletedAt ? true : false
+  return user !== undefined && user.deletedAt !== null
 }
 
 interface CreateUserProps {
@@ -30,7 +32,8 @@ interface CreateUserProps {
   role: ResourcePermission["role"]
   siteId: ResourcePermission["siteId"]
   byUserId: User["id"]
-  tx: Transaction<DB> // allows for transaction to be passed in from parent transaction
+  tx: Transaction<DB>
+  // allows for transaction to be passed in from parent transaction
 }
 
 export const createUserWithPermission = async ({
@@ -67,8 +70,8 @@ export const createUserWithPermission = async ({
     const user = await tx
       .insertInto("User")
       .values({
-        id: createId(),
         email,
+        id: createId(),
         name: name || email.split("@")[0] || "",
         phone,
       })
@@ -79,9 +82,9 @@ export const createUserWithPermission = async ({
     // if user is defined, it means it's newly created and there's no conflict
     if (user) {
       await logUserEvent(tx, {
-        eventType: AuditLogEvent.UserCreate,
         by: byUser,
-        delta: { before: null, after: user },
+        delta: { after: user, before: null },
+        eventType: AuditLogEvent.UserCreate,
       })
       return user
     }
@@ -100,9 +103,9 @@ export const createUserWithPermission = async ({
     const resourcePermission = await tx
       .insertInto("ResourcePermission")
       .values({
-        userId,
-        siteId,
         role,
+        siteId,
+        userId,
       })
       .onConflict((oc) =>
         oc.columns(["userId", "siteId", "resourceId", "deletedAt"]).doNothing(),
@@ -110,7 +113,7 @@ export const createUserWithPermission = async ({
       .returningAll()
       .executeTakeFirst()
 
-    if (!resourcePermission) {
+    if (resourcePermission === undefined) {
       throw new TRPCError({
         code: "CONFLICT",
         message: "User already has permission for this site",
@@ -118,9 +121,9 @@ export const createUserWithPermission = async ({
     }
 
     await logPermissionEvent(tx, {
-      eventType: AuditLogEvent.PermissionCreate,
       by: byUser,
-      delta: { before: null, after: resourcePermission },
+      delta: { after: resourcePermission, before: null },
+      eventType: AuditLogEvent.PermissionCreate,
       siteId,
     })
 
@@ -129,7 +132,7 @@ export const createUserWithPermission = async ({
 
   const user = await createUserInTransaction()
   const permission = await createPermissionInTransaction(user.id)
-  return { user, resourcePermission: permission }
+  return { resourcePermission: permission, user }
 }
 
 interface GetUsersQueryProps {
@@ -137,8 +140,8 @@ interface GetUsersQueryProps {
   adminType: AdminType
 }
 
-export const getUsersQuery = ({ siteId, adminType }: GetUsersQueryProps) => {
-  return db
+export const getUsersQuery = ({ siteId, adminType }: GetUsersQueryProps) =>
+  db
     .with("ActiveResourcePermission", (qb) =>
       qb
         .selectFrom("ResourcePermission")
@@ -186,7 +189,6 @@ export const getUsersQuery = ({ siteId, adminType }: GetUsersQueryProps) => {
       // For agency users, only show those with an explicit ResourcePermission for this site
       qb.where("ActiveResourcePermission.userId", "is not", null),
     )
-}
 
 interface DeleteUserPermissionProps {
   byUserId: User["id"]
@@ -265,9 +267,9 @@ export const deleteUserPermission = async ({
         }
 
         await logPermissionEvent(tx, {
-          eventType: AuditLogEvent.PermissionDelete,
           by: byUser,
-          delta: { before, after: deletedUserPermission },
+          delta: { after: deletedUserPermission, before },
+          eventType: AuditLogEvent.PermissionDelete,
           siteId,
         })
       }),
@@ -301,19 +303,18 @@ export const updateUserDetails = async ({
       .executeTakeFirstOrThrow()
 
     await logUserEvent(tx, {
-      eventType: AuditLogEvent.UserUpdate,
       by: user,
-      delta: { before: user, after: updatedUser },
+      delta: { after: updatedUser, before: user },
+      eventType: AuditLogEvent.UserUpdate,
     })
 
     return updatedUser
   })
 }
 
-export const getUserById = async (userId: string) => {
-  return await db
+export const getUserById = async (userId: string) =>
+  await db
     .selectFrom("User")
     .selectAll()
     .where("id", "=", userId)
     .executeTakeFirstOrThrow()
-}

@@ -5,13 +5,13 @@ export const BRIEF_TOAST_SETTINGS: Pick<
   UseToastOptions,
   "isClosable" | "duration"
 > = {
-  isClosable: true,
   duration: THREE_SECONDS_IN_MS,
+  isClosable: true,
 }
 
 export const SETTINGS_TOAST_MESSAGES = {
   success: {
-    title: "Changes published",
     description: "They'll appear on your site in 5-10 minutes.",
+    title: "Changes published",
   },
 }

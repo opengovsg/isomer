@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-useless-return -- server lint cleanup */
 import type {
   RedirectManagementAbility,
   UserManagementAbility,
@@ -12,9 +13,9 @@ const giveBasePermissions = (
   builder: AbilityBuilder<ResourceAbility>,
 ): void => {
   // NOTE: Users can perform every action on non root resources that they have edit access to
-  CRUD_ACTIONS.map((action) => {
+  for (const action of CRUD_ACTIONS) {
     builder.can(action, "Resource", { parentId: { $ne: null } })
-  })
+  }
   builder.can("move", "Resource", { parentId: { $ne: null } })
 
   // NOTE: For root resources, they can only update and read
@@ -27,17 +28,24 @@ export const buildPermissionsForResource = (
   builder: AbilityBuilder<ResourceAbility>,
 ) => {
   switch (role) {
-    case RoleType.Editor:
-      return giveBasePermissions(builder)
-    case RoleType.Admin:
-      ALL_ACTIONS.map((action) => {
-        builder.can(action, "Resource")
-      })
+    case RoleType.Editor: {
+      giveBasePermissions(builder)
       return
-    case RoleType.Publisher:
+    }
+    case RoleType.Admin: {
+      for (const action of ALL_ACTIONS) {
+        builder.can(action, "Resource")
+      }
+      return
+    }
+    case RoleType.Publisher: {
       giveBasePermissions(builder)
       builder.can("publish", "Resource")
       return
+    }
+    default: {
+      return
+    }
   }
 }
 

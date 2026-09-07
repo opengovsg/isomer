@@ -10,8 +10,8 @@ import { createAuditLogEnabledGbParameters } from "~/stories/utils/growthbook"
 import { ADMIN_HANDLERS } from "../handlers"
 
 const meta: Meta<typeof UsersPage> = {
-  title: "Pages/Site Management/Users Page",
   component: UsersPage,
+  decorators: [],
   parameters: {
     getLayout: UsersPage.getLayout,
     msw: {
@@ -25,7 +25,7 @@ const meta: Meta<typeof UsersPage> = {
       },
     },
   },
-  decorators: [],
+  title: "Pages/Site Management/Users Page",
 }
 
 export default meta

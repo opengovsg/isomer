@@ -20,12 +20,12 @@ describe("audit.service", () => {
       // Act
       await db.transaction().execute(async (tx) => {
         await logUserEvent(tx, {
-          eventType: AuditLogEvent.UserCreate,
-          delta: {
-            before: null,
-            after: user,
-          },
           by: user,
+          delta: {
+            after: user,
+            before: null,
+          },
+          eventType: AuditLogEvent.UserCreate,
           ip: "1.2.3.4",
         })
       })
@@ -50,12 +50,12 @@ describe("audit.service", () => {
       })
       await db.transaction().execute(async (tx) => {
         await logUserEvent(tx, {
-          eventType: AuditLogEvent.UserCreate,
-          delta: {
-            before: null,
-            after: user,
-          },
           by: user,
+          delta: {
+            after: user,
+            before: null,
+          },
+          eventType: AuditLogEvent.UserCreate,
           ip: "1.2.3.4",
         })
       })

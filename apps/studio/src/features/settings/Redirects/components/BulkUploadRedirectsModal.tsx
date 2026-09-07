@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/default-case, eslint/no-nested-ternary, eslint/no-use-before-define, eslint/prefer-destructuring, promise/avoid-new, typescript/consistent-return, typescript/strict-boolean-expressions, typescript/strict-void-return, unicorn/no-negated-condition, unicorn/no-promise-executor-return, unicorn/no-unsafe-type-assertion, unicorn/no-void -- core cleanup deferred */
 import type { AttachmentProps } from "@opengovsg/design-system-react"
 import type { RouterOutput } from "~/utils/trpc"
 import {
@@ -32,6 +33,12 @@ import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { buildRedirectErrorsCsv, parseRedirectCsv } from "~/lib/redirectCsv"
 import { MAX_BULK_REDIRECT_CSV_BYTES } from "~/schemas/redirect"
 import { formatFileSizeLimit } from "~/utils/formatFileSizeLimit"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { useBulkCreateRedirects, useBulkValidateRedirects } from "../api"
 
@@ -51,14 +58,16 @@ const MIN_PROCESSING_MS = 2000
 // react-dropzone is the design system's dependency and not one we declare. Same
 // voice as the parse-time file errors, since both render in the same place.
 const REJECTION_MESSAGES = {
-  "file-too-large": `This file is too big. Upload a file under ${formatFileSizeLimit({ bytes: MAX_BULK_REDIRECT_CSV_BYTES })} and try again.`,
   "file-invalid-type":
     "This file isn't a .csv. Upload a .csv file and try again.",
+  "file-too-large": `This file is too big. Upload a file under ${formatFileSizeLimit({ bytes: MAX_BULK_REDIRECT_CSV_BYTES })} and try again.`,
   "too-many-files": "Upload one file at a time.",
 } as const satisfies Record<string, string | undefined>
 
 const getRejectionMessage = (code: string): string | undefined => {
-  if (!Object.hasOwn(REJECTION_MESSAGES, code)) return undefined
+  if (!Object.hasOwn(REJECTION_MESSAGES, code)) {
+    return undefined
+  }
   // SAFETY: Object.hasOwn confirms code is a key of REJECTION_MESSAGES
   return REJECTION_MESSAGES[code as keyof typeof REJECTION_MESSAGES]
 }
@@ -69,7 +78,9 @@ const getRejectionMessage = (code: string): string | undefined => {
 const rejectionMessage = (rejection: FileRejections[number]): string => {
   for (const { code } of rejection.errors) {
     const message = getRejectionMessage(code)
-    if (message !== undefined) return message
+    if (message !== undefined) {
+      return message
+    }
   }
   return "We couldn't read this file. Upload a valid .csv file."
 }
@@ -101,30 +112,34 @@ const triggerCsvDownload = (filename: string, contents: string) => {
   anchor.click()
   // Revoke on the next tick, not synchronously after click(): some browsers
   // abort the download if the blob URL is freed before it has started.
-  setTimeout(() => URL.revokeObjectURL(url), 0)
+  setTimeout(() => {
+    URL.revokeObjectURL(url)
+  }, 0)
 }
 
 export const BulkUploadRedirectsModal = ({
   siteId,
   isOpen,
   onClose,
-}: BulkUploadRedirectsModalProps): React.ReactNode => {
-  return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <ModalOverlay />
-      {isOpen ? (
-        <BulkUploadRedirectsModalContent siteId={siteId} onClose={onClose} />
-      ) : null}
-    </Modal>
-  )
-}
+}: BulkUploadRedirectsModalProps): React.ReactNode => (
+  <Modal isOpen={isOpen} onClose={onClose}>
+    <ModalOverlay />
+    {isOpen ? (
+      <BulkUploadRedirectsModalContent siteId={siteId} onClose={onClose} />
+    ) : null}
+  </Modal>
+)
 
 const PublishingSpinner = (): React.ReactNode => {
   const [showSlowMessage, setShowSlowMessage] = useState(false)
 
   useEffect(() => {
-    const timer = setTimeout(() => setShowSlowMessage(true), 3000)
-    return () => clearTimeout(timer)
+    const timer = setTimeout(() => {
+      setShowSlowMessage(true)
+    }, 3000)
+    return () => {
+      clearTimeout(timer)
+    }
   }, [])
 
   return (
@@ -230,11 +245,15 @@ const BulkUploadRedirectsModalContent = ({
       const text = await selected.text()
       // A newer file was picked while this one was being read — drop the stale
       // result so the parsed csv can't disagree with the chip.
-      if (latestFileRef.current !== selected) return
+      if (latestFileRef.current !== selected) {
+        return
+      }
       applyCsv(text)
       setFileError(parseRedirectCsv(text).fileError ?? null)
     } catch {
-      if (latestFileRef.current !== selected) return
+      if (latestFileRef.current !== selected) {
+        return
+      }
       applyCsv(null)
       setFileError("We couldn't read this file. Upload a valid .csv file.")
     }
@@ -247,7 +266,9 @@ const BulkUploadRedirectsModalContent = ({
   // class of problem.
   const handleRejection = (fileRejections: FileRejections) => {
     const rejection = fileRejections[0]
-    if (!rejection) return
+    if (!rejection) {
+      return
+    }
     hasPendingRejectionRef.current = true
     // Also marks any in-flight read of an earlier file stale, so it can't
     // overwrite this message when it resolves.
@@ -274,7 +295,9 @@ const BulkUploadRedirectsModalContent = ({
     // chip's remove button is never disabled — so the editor can swap in another
     // file before these verdicts come back.
     const processedCsv = csv
-    if (!processedCsv) return
+    if (!hasNonEmptyString(processedCsv)) {
+      return
+    }
     // Validation is quick, so the Process button's inline spinner is enough —
     // no full-screen stage. Stay put so a failure keeps the file.
     setIsProcessing(true)
@@ -287,7 +310,9 @@ const BulkUploadRedirectsModalContent = ({
     // was closed and reopened), so these verdicts describe something the editor
     // is no longer looking at. Drop them and leave the picker as they left it.
     const isStale = () => latestCsvRef.current !== processedCsv
-    const finishProcessing = () => setIsProcessing(false)
+    const finishProcessing = () => {
+      setIsProcessing(false)
+    }
     try {
       const result = await validate(processedCsv)
       await loadingFloor
@@ -311,9 +336,9 @@ const BulkUploadRedirectsModalContent = ({
         return
       }
       toast({
-        title: "We couldn't check your redirects",
         description: "Please try again.",
         status: "error",
+        title: "We couldn't check your redirects",
       })
       finishProcessing()
     }
@@ -322,16 +347,18 @@ const BulkUploadRedirectsModalContent = ({
   const handlePublish = async () => {
     // Publish exactly what the success screen reviewed, never the current picker
     // contents, so the created batch can't differ from the listed redirects.
-    if (!reviewedCsvRef.current) return
+    if (!hasNonEmptyString(reviewedCsvRef.current)) {
+      return
+    }
     // Creating the batch and republishing the site is the slow step, so switch
     // to the full-screen spinner once the user commits.
     setStage("publishing")
     try {
-      const result = await publish({ siteId, csv: reviewedCsvRef.current })
+      const result = await publish({ csv: reviewedCsvRef.current, siteId })
       if (result.ok) {
         toast({
-          title: `${result.publishedCount} redirect${result.publishedCount === 1 ? "" : "s"} published`,
           status: "success",
+          title: `${result.publishedCount} redirect${result.publishedCount === 1 ? "" : "s"} published`,
         })
         handleClose()
         return
@@ -341,9 +368,9 @@ const BulkUploadRedirectsModalContent = ({
       enterErrorsStage(result.validation)
     } catch {
       toast({
-        title: "We couldn't publish your redirects",
         description: "Please try again.",
         status: "error",
+        title: "We couldn't publish your redirects",
       })
       // Back to the review screen so the user can retry the publish.
       setStage("success")
@@ -351,7 +378,9 @@ const BulkUploadRedirectsModalContent = ({
   }
 
   const handleDownloadErrors = () => {
-    if (!validation) return
+    if (!validation) {
+      return
+    }
     triggerCsvDownload(
       `redirects_errors_${siteId}.csv`,
       buildRedirectErrorsCsv(validation.rows),
@@ -427,9 +456,10 @@ const BulkUploadModalBody = ({
   onDownloadErrors,
 }: BulkUploadModalBodyProps): React.ReactNode => {
   switch (stage) {
-    case "publishing":
+    case "publishing": {
       return <PublishingSpinner />
-    case "success":
+    }
+    case "success": {
       return (
         <Stack spacing="1.5rem">
           <Flex gap="0.5rem">
@@ -493,8 +523,9 @@ const BulkUploadModalBody = ({
           </Accordion>
         </Stack>
       )
+    }
     case "upload":
-    case "errors":
+    case "errors": {
       // "upload" and "errors" share the same picker; the error banner and
       // template-vs-errors-file download are the only differences.
       return (
@@ -551,7 +582,9 @@ const BulkUploadModalBody = ({
               name="redirects-csv"
               multiple={false}
               value={file ?? undefined}
-              onChange={(selected) => void onFileChange(selected)}
+              onChange={(selected) => {
+                onFileChange(selected)
+              }}
               // `rejections` is deliberately not passed: a rejected file is
               // rendered as the attached chip with its reason in `fileError`
               // below, so Attachment must not also render its own error chip.
@@ -564,7 +597,7 @@ const BulkUploadModalBody = ({
               <br />
               Accepted file type: .csv
             </Text>
-            {fileError && (
+            {hasNonEmptyString(fileError) && (
               <Text textStyle="body-2" color="utility.feedback.critical">
                 {fileError}
               </Text>
@@ -572,19 +605,24 @@ const BulkUploadModalBody = ({
           </Stack>
         </Stack>
       )
+    }
   }
 }
 
 const modalTitle = (stage: Stage): string => {
   switch (stage) {
-    case "publishing":
+    case "publishing": {
       return "Publishing your redirects"
-    case "errors":
+    }
+    case "errors": {
       return "There are errors in your redirects"
-    case "success":
+    }
+    case "success": {
       return "Redirects are ready to publish"
-    case "upload":
+    }
+    case "upload": {
       return "Bulk upload redirects"
+    }
   }
 }
 

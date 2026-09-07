@@ -34,27 +34,25 @@ export const TiptapLinkEditorModal = ({
   editor,
   isOpen,
   onClose,
-}: LinkEditorModalProps) => {
-  return (
-    <LinkEditorModal
-      linkTypes={LINK_TYPES_MAPPING}
-      linkText={getLinkText(editor)}
-      linkHref={getLinkHref(editor)}
-      onSave={(linkText, linkHref) => {
-        editor
-          .chain()
-          .focus()
-          .extendMarkRange("link")
-          .unsetLink()
-          .deleteSelection()
-          .insertContent(`<a href="${linkHref}">${linkText}</a>`)
-          .run()
-      }}
-      onRemove={() => {
-        editor.chain().focus().extendMarkRange("link").unsetLink().run()
-      }}
-      isOpen={isOpen}
-      onClose={onClose}
-    />
-  )
-}
+}: LinkEditorModalProps) => (
+  <LinkEditorModal
+    linkTypes={LINK_TYPES_MAPPING}
+    linkText={getLinkText(editor)}
+    linkHref={getLinkHref(editor)}
+    onSave={(linkText, linkHref) => {
+      editor
+        .chain()
+        .focus()
+        .extendMarkRange("link")
+        .unsetLink()
+        .deleteSelection()
+        .insertContent(`<a href="${linkHref}">${linkText}</a>`)
+        .run()
+    }}
+    onRemove={() => {
+      editor.chain().focus().extendMarkRange("link").unsetLink().run()
+    }}
+    isOpen={isOpen}
+    onClose={onClose}
+  />
+)

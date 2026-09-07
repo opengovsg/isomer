@@ -9,96 +9,88 @@ import type { ResourceItemProps } from "./ResourceItem"
 const HomeHeader = ({
   handleOnClick,
   isHighlighted = false,
-}: Pick<ResourceItemProps, "handleOnClick"> & { isHighlighted?: boolean }) => {
-  return (
-    <Button
-      as={Flex}
-      variant="clear"
-      onClick={handleOnClick}
-      cursor="pointer"
-      w="full"
-      px="0.75rem"
-      py="0.375rem"
-      color="base.content.default"
-      alignItems="center"
-      data-selected={dataAttr(isHighlighted)}
-      _selected={{
-        color: "interaction.main.default",
+}: Pick<ResourceItemProps, "handleOnClick"> & { isHighlighted?: boolean }) => (
+  <Button
+    as={Flex}
+    variant="clear"
+    onClick={handleOnClick}
+    cursor="pointer"
+    w="full"
+    px="0.75rem"
+    py="0.375rem"
+    color="base.content.default"
+    alignItems="center"
+    data-selected={dataAttr(isHighlighted)}
+    _selected={{
+      _hover: {
         bg: "interaction.muted.main.active",
-        _hover: {
-          color: "interaction.main.default",
-          bg: "interaction.muted.main.active",
-        },
-      }}
+        color: "interaction.main.default",
+      },
+      bg: "interaction.muted.main.active",
+      color: "interaction.main.default",
+    }}
+  >
+    <HStack spacing="0.25rem">
+      <BiHomeAlt />
+      <Text textStyle="caption-1">/</Text>
+    </HStack>
+    <Spacer />
+    <Text
+      color="base.content.medium"
+      textTransform="uppercase"
+      textStyle="caption-1"
+      overflow="hidden"
+      textOverflow="ellipsis"
+      whiteSpace="nowrap"
     >
-      <HStack spacing="0.25rem">
-        <BiHomeAlt />
-        <Text textStyle="caption-1">/</Text>
-      </HStack>
-      <Spacer />
-      <Text
-        color="base.content.medium"
-        textTransform="uppercase"
-        textStyle="caption-1"
-        overflow="hidden"
-        textOverflow="ellipsis"
-        whiteSpace="nowrap"
-      >
-        Home
-      </Text>
-    </Button>
-  )
-}
+      Home
+    </Text>
+  </Button>
+)
 
 const BackButtonHeader = ({
   handleOnClick,
 }: {
   handleOnClick: SuspendableHeaderProps["handleClickBackButton"]
-}) => {
-  return (
-    <Link
-      variant="clear"
-      w="full"
-      justifyContent="flex-start"
-      color="base.content.default"
-      onClick={(e) => {
-        // Stop propagation and prevent default to avoid any focus issues
-        e.stopPropagation()
-        e.preventDefault()
-        handleOnClick()
-      }}
-      as="button"
-      py="0.375rem"
-    >
-      <HStack spacing="0.25rem" color="interaction.links.default">
-        <BiLeftArrowAlt />
-        <Text textStyle="caption-1">Back to parent folder</Text>
-      </HStack>
-    </Link>
-  )
-}
+}) => (
+  <Link
+    variant="clear"
+    w="full"
+    justifyContent="flex-start"
+    color="base.content.default"
+    onClick={(e) => {
+      // Stop propagation and prevent default to avoid any focus issues
+      e.stopPropagation()
+      e.preventDefault()
+      handleOnClick()
+    }}
+    as="button"
+    py="0.375rem"
+  >
+    <HStack spacing="0.25rem" color="interaction.links.default">
+      <BiLeftArrowAlt />
+      <Text textStyle="caption-1">Back to parent folder</Text>
+    </HStack>
+  </Link>
+)
 
 const SearchResultsHeader = ({
   resultsCount,
   searchQuery,
 }: Pick<SuspendableHeaderProps, "searchQuery"> & {
   resultsCount: number
-}) => {
-  return (
-    <Text textStyle="caption-2" px="0.5rem" pt="0.25rem" pb="0.5rem">
-      {resultsCount} result{resultsCount > 1 ? "s" : ""} with &quot;
-      {searchQuery}&quot; in title
-    </Text>
-  )
-}
+}) => (
+  <Text textStyle="caption-2" px="0.5rem" pt="0.25rem" pb="0.5rem">
+    {resultsCount} result{resultsCount > 1 ? "s" : ""} with &quot;
+    {searchQuery}&quot; in title
+  </Text>
+)
 
-export const LoadingHeader = () => {
-  return (
-    <Text textStyle="caption-2" py="0.375rem" px="0.375rem">
-      Searching your website, high and low
-    </Text>
-  )
-}
+export const LoadingHeader = () => (
+  <Text textStyle="caption-2" py="0.375rem" px="0.375rem">
+    Searching your website, high and low
+  </Text>
+)
 
 interface SuspendableHeaderViewState {
   isSearchQueryEmpty: boolean
@@ -126,18 +118,22 @@ export const SuspendableHeader = ({
   searchQuery,
   handleOnClick,
 }: SuspendableHeaderProps) => {
-  if (isLoading) return <LoadingHeader />
+  if (isLoading) {
+    return <LoadingHeader />
+  }
 
-  if (isSearchQueryEmpty && hasParentInStack)
+  if (isSearchQueryEmpty && hasParentInStack) {
     return <BackButtonHeader handleOnClick={handleClickBackButton} />
+  }
 
-  if (isSearchQueryEmpty || !resourceItemsWithAncestryStack)
+  if (isSearchQueryEmpty || !resourceItemsWithAncestryStack) {
     return (
       <HomeHeader
         handleOnClick={handleOnClick}
         isHighlighted={isHomeHighlighted}
       />
     )
+  }
 
   return (
     <SearchResultsHeader

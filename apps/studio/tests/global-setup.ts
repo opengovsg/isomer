@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-anonymous-default-export -- studio lint cleanup */
 import { stringify } from "superjson"
 
 import type { ContainerInformation } from "./common"
@@ -10,6 +11,8 @@ export default async () => {
   ])
 
   Object.defineProperty(process.env, "testcontainers", {
+    configurable: true,
+    enumerable: true,
     value: stringify(
       containers.map((container) => {
         const { container: _, ...rest } = container
@@ -17,10 +20,10 @@ export default async () => {
         return result
       }),
     ),
-    configurable: true,
     writable: true,
-    enumerable: true,
   })
 
-  return () => teardown(containers)
+  return async () => {
+    await teardown(containers)
+  }
 }

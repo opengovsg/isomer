@@ -1,4 +1,4 @@
-import { type SessionOptions } from "iron-session"
+import type { SessionOptions } from "iron-session"
 import { env } from "~/env.mjs"
 
 // The versioned iron-session password map used to seal/unseal every iron
@@ -10,22 +10,29 @@ import { env } from "~/env.mjs"
 // duplicated) so there is a single source of truth for what key material
 // Studio trusts.
 export const getIronPassword = (): SessionOptions["password"] => ({
-  "1": env.SESSION_SECRET,
+  // Read from process.env so production builds always use the runtime secret.
+  // oxlint-disable-next-line node/no-process-env -- iron-session must use live runtime secret
+  "1": process.env.SESSION_SECRET ?? env.SESSION_SECRET,
 })
 
 interface GenerateSessionOptionsProps {
   ttlInHours?: number
 }
 export const generateSessionOptions = ({
-  ttlInHours = 1, // default to 1 hour if not using Singpass
+  ttlInHours = 1,
+  // default to 1 hour if not using Singpass
 }: GenerateSessionOptionsProps = {}): SessionOptions => {
   const ONE_HOUR = 60 * 60
   return {
-    password: getIronPassword(),
     cookieName: "auth.session-token",
-    ttl: ONE_HOUR * ttlInHours,
     cookieOptions: {
-      secure: env.NODE_ENV === "production",
+      // E2E runs `next start` over plain HTTP with CI=true in .env.test.
+      secure:
+        env.NODE_ENV === "production" &&
+        env.NEXT_PUBLIC_APP_ENV !== "test" &&
+        !env.CI,
     },
+    password: getIronPassword(),
+    ttl: ONE_HOUR * ttlInHours,
   }
 }

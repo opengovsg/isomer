@@ -1,3 +1,4 @@
+/* oxlint-disable react/function-component-definition, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import {
   Box,
   Flex,
@@ -24,8 +25,14 @@ import {
 } from "react-icons/bi"
 import Suspense from "~/components/Suspense"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { sitePageSchema } from "~/pages/sites/[siteId]"
+import { sitePageSchema } from "~/schemas/sitePageSchema"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import type { LinkTypesWithHrefFormat } from "../../LinkEditor/constants"
 import type { DraggableArrayItemRenderProps } from "./types"
@@ -40,8 +47,8 @@ interface SuspendableLabelProps {
 const SuspendableLabel = ({ siteId, resourceId }: SuspendableLabelProps) => {
   const [{ fullPermalink }] =
     trpc.resource.getWithFullPermalink.useSuspenseQuery({
-      siteId,
       resourceId,
+      siteId,
     })
 
   return (
@@ -61,8 +68,9 @@ interface DraggableLinkButtonProps extends Omit<
   resetLink: () => void
 }
 
+// oxlint-disable-next-line react/display-name -- core cleanup deferred
 const DraggableLinkButton = forwardRef<DraggableLinkButtonProps, "div">(
-  function DraggableLinkButton(
+  (
     {
       draggableProps,
       dragHandleProps,
@@ -76,7 +84,7 @@ const DraggableLinkButton = forwardRef<DraggableLinkButtonProps, "div">(
       resetLink,
     },
     ref,
-  ) {
+  ) => {
     const ctx = useJsonForms()
     const label = computeChildLabel(
       ctx.core?.data,
@@ -117,27 +125,27 @@ const DraggableLinkButton = forwardRef<DraggableLinkButtonProps, "div">(
             transitionProperty="common"
             transitionDuration="normal"
             _hover={{
-              bg: "interaction.muted.main.hover",
-              borderColor: "interaction.main-subtle.hover",
               _invalid: {
                 bg: "interaction.muted.critical.hover",
                 borderColor: "utility.feedback.critical",
               },
+              bg: "interaction.muted.main.hover",
+              borderColor: "interaction.main-subtle.hover",
             }}
             _active={{
-              bg: "interaction.main-subtle.default",
-              borderColor: "interaction.main-subtle.hover",
-              shadow: "0px 1px 6px 0px #1361F026",
               _invalid: {
                 bg: "interaction.muted.critical.hover",
                 borderColor: "utility.feedback.critical",
                 shadow: "0px 1px 6px 0px #C0343426",
               },
+              bg: "interaction.main-subtle.default",
+              borderColor: "interaction.main-subtle.hover",
+              shadow: "0px 1px 6px 0px #1361F026",
             }}
             _invalid={{
-              borderWidth: "1.5px",
-              borderColor: "utility.feedback.critical",
               bgColor: "utility.feedback.critical-subtle",
+              borderColor: "utility.feedback.critical",
+              borderWidth: "1.5px",
             }}
           >
             <HStack gap="0.5rem" p="0.5rem" w="full">
@@ -155,7 +163,9 @@ const DraggableLinkButton = forwardRef<DraggableLinkButtonProps, "div">(
                   gap="0.5rem"
                   w="full"
                   textAlign="start"
-                  onClick={() => setSelectedIndex(index)}
+                  onClick={() => {
+                    setSelectedIndex(index)
+                  }}
                 >
                   <VStack gap="0.25rem" alignItems="start">
                     <Text
@@ -185,11 +195,11 @@ const DraggableLinkButton = forwardRef<DraggableLinkButtonProps, "div">(
 
                       {!isError &&
                         linkType === LINK_TYPES.Page &&
-                        displayedHref &&
+                        hasNonEmptyString(displayedHref) &&
                         displayedHref !== "" && (
                           <Suspense fallback={<Skeleton w="100%" h="100%" />}>
                             <SuspendableLabel
-                              siteId={Number(siteId)}
+                              siteId={siteId}
                               resourceId={getResourceIdFromReferenceLink(
                                 displayedHref,
                               )}
@@ -223,7 +233,11 @@ const DraggableLinkButton = forwardRef<DraggableLinkButtonProps, "div">(
                   icon={<BiDotsHorizontalRounded fontSize="1.5rem" />}
                 />
                 <MenuList>
-                  <MenuItem onClick={() => setSelectedIndex(index)}>
+                  <MenuItem
+                    onClick={() => {
+                      setSelectedIndex(index)
+                    }}
+                  >
                     <Flex
                       alignItems="center"
                       gap="0.5rem"

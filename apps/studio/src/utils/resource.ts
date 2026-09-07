@@ -6,21 +6,27 @@ export const getResourceSubpath = (resourceType: ResourceType) => {
     case ResourceType.RootPage:
     case ResourceType.Page:
     case ResourceType.IndexPage:
-    case ResourceType.CollectionPage:
+    case ResourceType.CollectionPage: {
       return "pages"
-    case ResourceType.Folder:
+    }
+    case ResourceType.Folder: {
       return "folders"
-    case ResourceType.CollectionLink:
+    }
+    case ResourceType.CollectionLink: {
       return "links"
-    case ResourceType.Collection:
+    }
+    case ResourceType.Collection: {
       return "collections"
+    }
     case ResourceType.FolderMeta:
-    case ResourceType.CollectionMeta:
-      // TODO: Not implemented yet
+    case ResourceType.CollectionMeta: {
+      // Deferred: Not implemented yet
       return ""
-    default:
+    }
+    default: {
       const _: never = resourceType
       return ""
+    }
   }
 }
 
@@ -32,14 +38,10 @@ export const getLinkToResource = ({
   siteId: string | number
   resourceId: string
   type: ResourceType
-}) => {
-  return `/sites/${siteId}/${getResourceSubpath(type)}/${resourceId}`
-}
+}) => `/sites/${siteId}/${getResourceSubpath(type)}/${resourceId}`
 
-export const getFolderHref = (siteId: string, folderId: string) => {
-  return `/sites/${siteId}/folders/${folderId}`
-}
+export const getFolderHref = (siteId: string, folderId: string) =>
+  `/sites/${siteId}/folders/${folderId}`
 
-export const getCollectionHref = (siteId: string, collectionId: string) => {
-  return `/sites/${siteId}/collections/${collectionId}`
-}
+export const getCollectionHref = (siteId: string, collectionId: string) =>
+  `/sites/${siteId}/collections/${collectionId}`

@@ -1,3 +1,5 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
+/* oxlint-disable promise/prefer-await-to-then -- core cleanup deferred */
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import { Box, FormControl, Skeleton, Text } from "@chakra-ui/react"
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
@@ -21,6 +23,12 @@ import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { MAX_IMG_FILE_SIZE_BYTES } from "~/lib/fileUpload"
 import { fileNameAndSizeSchema } from "~/schemas/asset"
 import { formatFileSizeLimit } from "~/utils/formatFileSizeLimit"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { useAssetUpload } from "../../hooks/useAssetUpload"
 import { useS3Image } from "../../hooks/useS3Image"
@@ -45,8 +53,8 @@ const JsonFormsMetaImageControl = (props: JsonFormsMetaImageControlProps) => {
   const { siteId, pageId } = useQueryParse(pageSchema)
   const toast = useToast()
   const { mutate: uploadFile } = useUploadAssetMutation({
-    siteId,
     resourceId: String(pageId),
+    siteId,
   })
 
   return (
@@ -69,12 +77,14 @@ const JsonFormsMetaImageControl = (props: JsonFormsMetaImageControlProps) => {
               fileSize: file.size,
             })
 
-            if (parseResult.success) return null
+            if (parseResult.success) {
+              return null
+            }
             // NOTE: safe assertion here because we're in error path and there's at least 1 error
-            return (
-              parseResult.error.issues[0]?.message ||
-              "Please ensure that your file begins with alphanumeric characters!"
-            )
+            const message = parseResult.error.issues[0]?.message
+            return hasNonEmptyString(message)
+              ? message
+              : "Please ensure that your file begins with alphanumeric characters!"
           }}
           onChange={(file) => {
             if (!file) {
@@ -92,9 +102,9 @@ const JsonFormsMetaImageControl = (props: JsonFormsMetaImageControlProps) => {
                     })
                     .catch(() => {
                       toast({
-                        title: "Failed to upload image",
                         description: "Please try again.",
                         status: "error",
+                        title: "Failed to upload image",
                         ...BRIEF_TOAST_SETTINGS,
                       })
                     })

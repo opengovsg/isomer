@@ -1,3 +1,5 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
+/* oxlint-disable unicorn/prefer-export-from -- core cleanup deferred */
 import type { NavbarItemBoxDragPresentation } from "./NavbarItemBoxBody"
 import { NavbarItemBoxBody } from "./NavbarItemBoxBody"
 import { useNavbarItemSubItemDrag } from "./useNavbarItemSubItemDrag"
@@ -32,8 +34,8 @@ export const NavbarItemBox = ({
     navbarItemClosestEdge,
   } = useNavbarItemSubItemDrag({
     index,
-    parentIndex,
     isSubItem: dragPresentation.isSubItem,
+    parentIndex,
   })
 
   return (

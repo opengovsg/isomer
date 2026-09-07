@@ -16,7 +16,7 @@ describe("escapeHtml", () => {
 
   it("treats undefined as an empty string", () => {
     // Act
-    const result = escapeHtml(undefined)
+    const result = escapeHtml()
 
     // Assert
     expect(result).toBe("")

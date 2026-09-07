@@ -9,13 +9,11 @@ interface ResendOtpButtonProps extends ButtonProps {
 export const ResendOtpButton = ({
   timer,
   ...buttonProps
-}: ResendOtpButtonProps): React.ReactNode => {
-  return (
-    <Button type="button" variant="link" size="xs" {...buttonProps}>
-      Resend OTP
-      <Text as="span" data-chromatic="ignore">
-        {timer > 0 && ` in ${timer}s`}
-      </Text>
-    </Button>
-  )
-}
+}: ResendOtpButtonProps): React.ReactNode => (
+  <Button type="button" variant="link" size="xs" {...buttonProps}>
+    Resend OTP
+    <Text as="span" data-chromatic="ignore">
+      {timer > 0 && ` in ${timer}s`}
+    </Text>
+  </Button>
+)

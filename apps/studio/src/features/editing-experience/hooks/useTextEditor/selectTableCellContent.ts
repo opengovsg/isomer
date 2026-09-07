@@ -9,7 +9,7 @@ export const selectTableCellContent = (editor: Editor): boolean => {
   const { state } = editor
   const { $from } = state.selection
 
-  for (let depth = $from.depth; depth > 0; depth -= 1) {
+  for (let { depth } = $from; depth > 0; depth -= 1) {
     const node = $from.node(depth)
     if (!TABLE_CELL_NODE_NAMES.has(node.type.name)) {
       continue

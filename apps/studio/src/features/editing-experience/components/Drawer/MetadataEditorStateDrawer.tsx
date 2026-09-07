@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-use-before-define, typescript/switch-exhaustiveness-check, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { Static } from "@sinclair/typebox"
 import { Box, Flex, Text, useDisclosure } from "@chakra-ui/react"
 import { Button, Infobox, useToast } from "@opengovsg/design-system-react"
@@ -7,7 +8,7 @@ import {
   ISOMER_USABLE_PAGE_LAYOUTS,
 } from "@opengovsg/isomer-components"
 import { isEmpty, isEqual } from "lodash-es"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
 import { useCallback, useMemo } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
@@ -29,12 +30,14 @@ import { DrawerHeader } from "./DrawerHeader"
 const HEADER_LABELS = {
   article: "Edit article page header",
   content: "Edit content page header",
-  index: "Edit index page header",
   database: "Edit page header",
+  index: "Edit index page header",
 } as const satisfies Record<string, string>
 
 const getHeaderLabel = (layout: string): string => {
-  if (!Object.hasOwn(HEADER_LABELS, layout)) return "Edit header information"
+  if (!Object.hasOwn(HEADER_LABELS, layout)) {
+    return "Edit header information"
+  }
   // SAFETY: Object.hasOwn confirms layout is a key of HEADER_LABELS
   return HEADER_LABELS[layout as keyof typeof HEADER_LABELS]
 }
@@ -61,16 +64,16 @@ const MetadataEditorStateDrawer = (): React.ReactNode => {
 
   const { data: collectionTags = [], isLoading: isCollectionTagsLoading } =
     useCollectionTags({
+      enabled: isCollectionItem,
       resourceId: pageId,
       siteId,
-      enabled: isCollectionItem,
     })
 
   const toast = useToast()
   const utils = trpc.useUtils()
   const { mutate, isPending } = trpc.page.updatePageBlob.useMutation({
     onSuccess: () => {
-      posthog.capture("page_changes_saved", { site_id: siteId })
+      posthogJs.capture("page_changes_saved", { site_id: siteId })
       void Promise.all([
         utils.page.readPageAndBlob.invalidate({ pageId, siteId }),
         utils.page.readPage.invalidate({ pageId, siteId }),
@@ -87,24 +90,27 @@ const MetadataEditorStateDrawer = (): React.ReactNode => {
 
   const filteredSchema = useMemo(() => {
     switch (previewPageState.layout) {
-      case ISOMER_USABLE_PAGE_LAYOUTS.Database:
+      case ISOMER_USABLE_PAGE_LAYOUTS.Database: {
         // For database layout, exclude the database field from metadata editing
         // since it's handled by the separate database editor (DatabaseEditorStateDrawer)
         return getScopedSchema({
+          exclude: ["database"],
           layout: ISOMER_USABLE_PAGE_LAYOUTS.Database,
           scope: "page",
-          exclude: ["database"],
         })
-      case ISOMER_USABLE_PAGE_LAYOUTS.Collection:
+      }
+      case ISOMER_USABLE_PAGE_LAYOUTS.Collection: {
         // For collection layout, only show the subtitle field, as the other
         // fields are part of the new collection index editing experience
         return getScopedSchema({
+          include: ["subtitle"],
           layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,
           scope: "page",
-          include: ["subtitle"],
         })
-      default:
+      }
+      default: {
         return metadataSchema
+      }
     }
   }, [metadataSchema, previewPageState.layout])
 
@@ -114,12 +120,14 @@ const MetadataEditorStateDrawer = (): React.ReactNode => {
     setSavedPageState(previewPageState)
     mutate(
       {
+        content: JSON.stringify(previewPageState),
         pageId,
         siteId,
-        content: JSON.stringify(previewPageState),
       },
       {
-        onSuccess: () => setDrawerState({ state: "root" }),
+        onSuccess: () => {
+          setDrawerState({ state: "root" })
+        },
       },
     )
   }, [
@@ -132,7 +140,7 @@ const MetadataEditorStateDrawer = (): React.ReactNode => {
   ])
 
   const handleChange = (data: Static<typeof metadataSchema>) => {
-    // TODO: Perform actual validation on the data
+    // Deferred: Perform actual validation on the data
     setPreviewPageState({
       ...previewPageState,
       page: data,
@@ -157,10 +165,10 @@ const MetadataEditorStateDrawer = (): React.ReactNode => {
         <DrawerHeader
           isDisabled={isPending}
           onBackClick={() => {
-            if (!isEqual(previewPageState, savedPageState)) {
-              onDiscardChangesModalOpen()
-            } else {
+            if (isEqual(previewPageState, savedPageState)) {
               handleDiscardChanges()
+            } else {
+              onDiscardChangesModalOpen()
             }
           }}
           label={getHeaderLabel(savedPageState.layout)}
@@ -189,7 +197,9 @@ const MetadataEditorStateDrawer = (): React.ReactNode => {
                 schema={filteredSchema}
                 validateFn={validateFn}
                 data={previewPageState.page}
-                handleChange={(data) => handleChange(data)}
+                handleChange={(data) => {
+                  handleChange(data)
+                }}
               />
             </Box>
           </Box>

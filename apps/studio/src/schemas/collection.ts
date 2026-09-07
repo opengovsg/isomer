@@ -2,6 +2,7 @@ import type { LinkRefPageSchema } from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
 import { format, parse } from "date-fns"
 import { z } from "zod"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { generateBasePermalinkSchema } from "./common"
 import { MAX_FOLDER_PERMALINK_LENGTH, MAX_FOLDER_TITLE_LENGTH } from "./folder"
@@ -19,29 +20,28 @@ const SLASH_DATE_FORMAT = "dd/MM/yyyy"
 const slashDateSchema = z
   .string()
   .nullish()
-  .transform((d) => {
-    if (!d) {
-      return undefined
-    }
-
-    return parse(d, SLASH_DATE_FORMAT, new Date())
-  })
+  .transform((d) =>
+    hasNonEmptyString(d) ? parse(d, SLASH_DATE_FORMAT, new Date()) : undefined,
+  )
   .pipe(z.date().optional())
-  .transform((d) => {
-    if (!d) {
-      return undefined
-    }
-
-    return format(d, SLASH_DATE_FORMAT)
-  })
+  .transform((d) =>
+    d === undefined ? undefined : format(d, SLASH_DATE_FORMAT),
+  )
 
 export const editLinkSchema = z.object({
-  date: slashDateSchema.optional(),
   category: z.string(),
-  linkId: z.number().min(1),
-  siteId: z.number().min(1),
+  date: slashDateSchema.optional(),
   description: z.string().optional(),
+  image: z
+    .object({
+      alt: z.string(),
+      src: z.string(),
+    })
+    .optional(),
+  linkId: z.number().min(1),
   ref: z.string().min(1),
+  siteId: z.number().min(1),
+  tagged: z.array(z.string()).optional(),
   tags: z
     .array(
       z.object({
@@ -49,13 +49,6 @@ export const editLinkSchema = z.object({
         selected: z.array(z.string()).optional(),
       }),
     )
-    .optional(),
-  tagged: z.array(z.string()).optional(),
-  image: z
-    .object({
-      src: z.string(),
-      alt: z.string(),
-    })
     .optional(),
 })
 
@@ -77,16 +70,15 @@ export const createCollectionSchema = z.object({
     .max(MAX_FOLDER_TITLE_LENGTH, {
       message: `Folder title should be shorter than ${MAX_FOLDER_TITLE_LENGTH} characters.`,
     }),
+  parentFolderId: z.number().optional(),
   permalink: permalinkSchema,
   siteId: z.number().min(1),
-  // Nullable for top level folder
-  parentFolderId: z.number().optional(),
 })
 
 export const getCollectionTagsSchema = z
   .object({
-    resourceId: z.number().min(1).optional(),
     collectionId: z.number().min(1).optional(),
+    resourceId: z.number().min(1).optional(),
     siteId: z.number().min(1),
   })
   .refine(
@@ -96,17 +88,17 @@ export const getCollectionTagsSchema = z
   )
 
 export const getCollectionsSchema = z.object({
-  siteId: z.number().min(1),
   hasChildren: z.boolean().optional().default(false),
+  siteId: z.number().min(1),
 })
 
 export const readCollectionSchema = z
   .object({
-    siteId: z.number().min(1),
-    resourceId: z.number().min(1),
     orderBy: z.enum(resourceOrderByOptions).optional().default("updated-desc"),
+    resourceId: z.number().min(1),
+    siteId: z.number().min(1),
   })
-  .extend(offsetPaginationSchema["shape"])
+  .extend(offsetPaginationSchema.shape)
 
 // Upper bound to limit request parsing and SQL cost (ANY(...) on text[]).
 // Arbitrary limit to prevent abuse; adjust if legitimate collections exceed this.
@@ -114,8 +106,9 @@ export const MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT = 100
 
 /** Counts child collection pages/links whose `tagged` includes any of these option ids. */
 export const countTagOptionsUsageSchema = z.object({
+  pageId: z.number().min(1),
+  // pageId is the collection index page resource id
   siteId: z.number().min(1),
-  pageId: z.number().min(1), // pageId is the collection index page resource id
   tagOptionIds: z.array(z.uuid()).max(MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT, {
     message: `At most ${MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT} tag options can be queried at once`,
   }),

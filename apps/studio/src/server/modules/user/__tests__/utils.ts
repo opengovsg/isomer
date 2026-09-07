@@ -16,22 +16,25 @@ export const isomerAdminsCount = ISOMER_ADMIN_TEST_EMAILS.length
 
 export const setupIsomerAdmins = async ({ siteId }: { siteId: number }) => {
   for (const email of ISOMER_ADMIN_TEST_EMAILS) {
+    // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
     const user = await setupUser({
       email,
       isDeleted: false,
     })
-    await setupAdminPermissions({ userId: user.id, siteId })
+    // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
+    await setupAdminPermissions({ siteId, userId: user.id })
 
     // Also insert into IsomerAdmin table
     const role = email.startsWith("admin")
       ? IsomerAdminRole.Core
       : IsomerAdminRole.Migrator
+    // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
     await db
       .insertInto("IsomerAdmin")
       .values({
-        userId: user.id,
-        role,
         expiry: null,
+        role,
+        userId: user.id,
       })
       .execute()
   }

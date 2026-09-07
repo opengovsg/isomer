@@ -1,3 +1,4 @@
+/* oxlint-disable promise/avoid-new, eslint/no-empty-function -- studio lint cleanup */
 import { MOCK_STORY_DATE } from "../constants"
 import { trpcMsw } from "../mockTrpc"
 
@@ -54,7 +55,7 @@ export const auditHandlers = {
     // idempotently (ADR docs/adr/0005).
     pending: () =>
       trpcMsw.audit.createExportRequest.mutation(
-        () => new Promise(() => undefined),
+        async () => await new Promise(() => {}),
       ),
   },
 }

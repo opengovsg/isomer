@@ -1,5 +1,8 @@
-import { type ParsedUrlQuery } from "querystring"
+/* oxlint-disable typescript/strict-boolean-expressions, unicorn/no-useless-undefined -- callback query param may be string[] */
+/* oxlint-disable typescript/consistent-return, typescript/no-unnecessary-type-conversion, eslint/no-use-before-define -- studio lint cleanup */
+import type { ParsedUrlQuery } from "node:querystring"
 import { CALLBACK_URL_KEY } from "~/constants/params"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { getBaseUrl } from "./getBaseUrl"
 

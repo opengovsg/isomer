@@ -1,3 +1,5 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
+/* oxlint-disable eslint/sort-keys, typescript/consistent-return, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/types"
 import type {
   BaseEventPayload,
@@ -24,6 +26,12 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { useEffect, useMemo, useRef, useState } from "react"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import {
   DEFAULT_NAVBAR_ITEM_DESCRIPTION,
@@ -35,10 +43,10 @@ import { DeleteSubItemModal } from "./DeleteSubItemModal"
 import { NavbarItemBox } from "./NavbarItemBox"
 import { getInstancePathFromNavbarItemPath, getNavbarItemPath } from "./utils"
 
-type NavbarAjvError = ErrorObject<string, Record<string, never>, unknown>
+type NavbarAjvError = ErrorObject<string, Record<string, never>>
 
 const getNumberOfErrors = (errors: NavbarAjvError[], path: string) => {
-  const instancePath = `/${path.replace(/\./g, "/")}`
+  const instancePath = `/${path.replaceAll(".", "/")}`
   return errors.filter((error) => error.instancePath.startsWith(instancePath))
     .length
 }
@@ -99,7 +107,9 @@ export const StackableNavbarItem = ({
       return NAVBAR_ITEM_ERROR_DESCRIPTION
     }
 
-    return description || DEFAULT_NAVBAR_ITEM_DESCRIPTION
+    return hasNonEmptyString(description)
+      ? description
+      : DEFAULT_NAVBAR_ITEM_DESCRIPTION
   }, [description, errors, index, numberOfErrors])
 
   // This useEffect sets up the drag and drop functionality for this particular
@@ -136,12 +146,12 @@ export const StackableNavbarItem = ({
     return combine(
       // This allows the main navbar item to be draggable via the drag handle
       draggable({
-        element: mainItemElement,
         dragHandle: mainItemDragHandleElement,
+        element: mainItemElement,
         getInitialData: () => ({
-          type: "navbar-item",
-          navbarId: mainItemElement.dataset.id,
           dropTargetId: getNavbarItemPath(index),
+          navbarId: mainItemElement.dataset.id,
+          type: "navbar-item",
         }),
         onDragStart: () => {
           mainItemElement.style.opacity = "0.5"
@@ -173,8 +183,8 @@ export const StackableNavbarItem = ({
                 dropTargetId: getNavbarItemPath(index),
               },
               {
-                input,
                 element,
+                input,
                 operations: {
                   combine: "available",
                   // We don't want reordering to happen when dropping directly
@@ -185,22 +195,26 @@ export const StackableNavbarItem = ({
               },
             ),
             {
-              input,
-              element,
               allowedEdges: ["top", "bottom"],
+              element,
+              input,
             },
           ),
         getIsSticky: () => true,
-        onDragEnter: handleDrag,
         onDrag: handleDrag,
-        onDragLeave: () => setNavbarItemClosestEdge(null),
-        onDrop: () => setNavbarItemClosestEdge(null),
+        onDragEnter: handleDrag,
+        onDragLeave: () => {
+          setNavbarItemClosestEdge(null)
+        },
+        onDrop: () => {
+          setNavbarItemClosestEdge(null)
+        },
       }),
 
       // Subitems dropzone, for subitems within the same group to be rearranged
       dropTargetForElements({
-        element: subItemsDroppableZoneElement,
         canDrop: () => true,
+        element: subItemsDroppableZoneElement,
         getIsSticky: () => true,
       }),
     )
@@ -209,7 +223,7 @@ export const StackableNavbarItem = ({
   return (
     <>
       <DeleteGroupModal
-        label={name || DEFAULT_NAVBAR_ITEM_TITLE}
+        label={hasNonEmptyString(name) ? name : DEFAULT_NAVBAR_ITEM_TITLE}
         subItemsCount={subItems ? subItems.length : 0}
         isOpen={isDeleteGroupModalOpen}
         onClose={onDeleteGroupModalClose}
@@ -255,10 +269,10 @@ export const StackableNavbarItem = ({
             index={index}
             itemDragHandleRef={mainItemDragHandleRef}
             dragPresentation={{
-              isNavbarItemDragging,
-              isItemBeingDraggedOver,
-              setIsItemBeingDraggedOver,
               isInvalid: numberOfErrors > 0,
+              isItemBeingDraggedOver,
+              isNavbarItemDragging,
+              setIsItemBeingDraggedOver,
             }}
             onEditItem={onEdit}
             onDeleteItem={onDeleteGroupModalOpen}
@@ -292,8 +306,10 @@ export const StackableNavbarItem = ({
                       }
                       index={idx}
                       parentIndex={index}
-                      dragPresentation={{ isSubItem: true, isInvalid }}
-                      onEditItem={() => onEdit(idx)}
+                      dragPresentation={{ isInvalid, isSubItem: true }}
+                      onEditItem={() => {
+                        onEdit(idx)
+                      }}
                       onDeleteItem={() => {
                         setSubItemToDelete(idx)
                         onDeleteSubItemModalOpen()

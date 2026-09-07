@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-boolean-expressions, typescript/no-unnecessary-condition -- studio lint cleanup */
 import type { NextPageWithLayout } from "~/lib/types"
 import type { Notification } from "~/schemas/site"
 import { Box } from "@chakra-ui/react"
@@ -32,6 +33,7 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { notificationValidator } from "~/schemas/site"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { trpc } from "~/utils/trpc"
+import { hasNonEmptyString } from "~/utils/truthiness"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 const validateFn = notificationValidator
@@ -48,18 +50,18 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
   const [, setIsDismissed] = useIsNotificationDismissed()
 
   const notificationMutation = trpc.site.setNotification.useMutation({
+    onError: () => {
+      toast({
+        description: `If this persists, please report this issue at ${ISOMER_SUPPORT_EMAIL}`,
+        status: "error",
+        title: "Error saving site notification!",
+      })
+    },
     onSuccess: () => {
       void trpcUtils.site.getNotification.invalidate({ siteId })
       toast({
         ...SETTINGS_TOAST_MESSAGES.success,
         status: "success",
-      })
-    },
-    onError: () => {
-      toast({
-        title: "Error saving site notification!",
-        description: `If this persists, please report this issue at ${ISOMER_SUPPORT_EMAIL}`,
-        status: "error",
       })
     },
   })
@@ -77,19 +79,22 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
 
   const isDirty = !isEqual(state, previousNotification)
 
-  useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
+  useNavigationEffect({ callback: setNextUrl, isDirty, isOpen })
 
-  const onSubmit = () =>
+  const onSubmit = () => {
     notificationMutation.mutate({
-      siteId,
       notification: state,
+      siteId,
     })
+  }
 
   return (
     <ErrorProvider>
       <UnsavedSettingModal
         isOpen={isOpen}
-        onClose={() => setNextUrl("")}
+        onClose={() => {
+          setNextUrl("")
+        }}
         nextUrl={nextUrl}
       />
       <SettingsGrid>
@@ -112,7 +117,9 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
                 // NOTE: We have to set `isDismissed` here because
                 // we need to show the notification banner again when
                 // the user toggles it on
-                if (isEmpty(data)) setIsDismissed(false)
+                if (isEmpty(data)) {
+                  setIsDismissed(false)
+                }
               }}
             />
           </Box>
@@ -128,13 +135,11 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
   )
 }
 
-NotificationSettingsPage.getLayout = (page) => {
-  return (
-    <PermissionsBoundary
-      resourceType={ResourceType.RootPage}
-      page={SiteSettingsLayout(page)}
-    />
-  )
-}
+NotificationSettingsPage.getLayout = (page) => (
+  <PermissionsBoundary
+    resourceType={ResourceType.RootPage}
+    page={SiteSettingsLayout(page)}
+  />
+)
 
 export default NotificationSettingsPage

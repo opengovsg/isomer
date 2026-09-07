@@ -1,3 +1,5 @@
+import { isNullableBooleanTrue } from "~/utils/truthiness"
+
 import type { MenuItemProps } from "../../MenuItem"
 import { MenuItem } from "../../MenuItem"
 
@@ -10,7 +12,7 @@ export const MenubarItem = ({
   isHidden,
   ...item
 }: MenubarItemProps): React.ReactNode | null => {
-  if (isHidden?.()) {
+  if (isNullableBooleanTrue(isHidden?.())) {
     return null
   }
   return <MenuItem {...item} />

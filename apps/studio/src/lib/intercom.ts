@@ -5,11 +5,12 @@ import {
   trackEvent as trackEventSdk,
 } from "@intercom/messenger-js-sdk"
 import { env } from "~/env.mjs"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 type BootIntercomProps = Omit<Parameters<typeof bootIntercomSdk>[0], "app_id">
 
 export const bootIntercom = (props: BootIntercomProps): void => {
-  if (!env.NEXT_PUBLIC_INTERCOM_APP_ID) {
+  if (!hasNonEmptyString(env.NEXT_PUBLIC_INTERCOM_APP_ID)) {
     console.log("[Intercom mock] bootIntercom", props)
     return
   }
@@ -18,7 +19,7 @@ export const bootIntercom = (props: BootIntercomProps): void => {
 }
 
 export const trackEvent = (eventName: string): void => {
-  if (!env.NEXT_PUBLIC_INTERCOM_APP_ID) {
+  if (!hasNonEmptyString(env.NEXT_PUBLIC_INTERCOM_APP_ID)) {
     console.log("[Intercom mock] trackEvent", eventName)
     return
   }
@@ -36,12 +37,14 @@ const triggerSurveyOnce = ({
   userId,
 }: TriggerSurveyOnceProps): void => {
   const key = `intercom_survey_${surveyId}_${userId}_shown`
-  if (localStorage.getItem(key)) return
+  if (hasNonEmptyString(localStorage.getItem(key))) {
+    return
+  }
 
-  if (!env.NEXT_PUBLIC_INTERCOM_APP_ID) {
-    console.log("[Intercom mock] startSurvey", surveyId)
-  } else {
+  if (hasNonEmptyString(env.NEXT_PUBLIC_INTERCOM_APP_ID)) {
     startSurvey(surveyId)
+  } else {
+    console.log("[Intercom mock] startSurvey", surveyId)
   }
   localStorage.setItem(key, "1")
 }

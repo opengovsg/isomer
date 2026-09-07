@@ -4,8 +4,8 @@ import { Type } from "@sinclair/typebox"
 import { FormBuilder } from "./formBuilder"
 
 const meta: Meta<typeof FormBuilder> = {
-  title: "Pages/Edit Page/components/JsonFormsTextAreaControl",
   component: FormBuilder,
+  title: "Pages/Edit Page/components/JsonFormsTextAreaControl",
 }
 
 export default meta
@@ -13,6 +13,7 @@ type Story = StoryObj<typeof FormBuilder>
 
 export const Default: Story = {
   args: {
+    data: {},
     schema: Type.Object({
       description: Type.Optional(
         Type.String({
@@ -23,12 +24,12 @@ export const Default: Story = {
         }),
       ),
     }),
-    data: {},
   },
 }
 
 export const MaxLength: Story = {
   args: {
+    data: { quote: "A short quote." },
     schema: Type.Object({
       quote: Type.String({
         title: "Quote",
@@ -36,6 +37,5 @@ export const MaxLength: Story = {
         format: "textarea",
       }),
     }),
-    data: { quote: "A short quote." },
   },
 }

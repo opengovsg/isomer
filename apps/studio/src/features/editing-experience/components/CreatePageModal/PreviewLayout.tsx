@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/default-case, eslint/no-use-before-define, typescript/consistent-return, typescript/switch-exhaustiveness-check -- core cleanup deferred */
 import { Box, Flex, Skeleton, Stack, Text } from "@chakra-ui/react"
 import { useIsMobile } from "@opengovsg/design-system-react"
 import { useMemo } from "react"
@@ -93,11 +94,11 @@ const SuspendableLayoutPreview = () => {
         permalink={currentPermalink}
         siteMap={{
           id: "0",
-          layout: "content",
-          title: "Root",
-          summary: "",
           lastModified: "1970-01-01T00:00:00.000Z",
+          layout: "content",
           permalink: "",
+          summary: "",
+          title: "Root",
         }}
         {...layoutPreviewJson}
       />

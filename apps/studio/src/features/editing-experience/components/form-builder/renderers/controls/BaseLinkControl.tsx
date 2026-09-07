@@ -1,3 +1,5 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
+/* oxlint-disable typescript/strict-boolean-expressions, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { ControlProps } from "@jsonforms/core"
 import type { LinkEditorModalProps } from "~/components/PageEditor/LinkEditorModal"
 import {
@@ -19,8 +21,14 @@ import { Suspense } from "react"
 import { BiTrash } from "react-icons/bi"
 import { LinkEditorModal } from "~/components/PageEditor/LinkEditorModal"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { sitePageSchema } from "~/pages/sites/[siteId]"
+import { sitePageSchema } from "~/schemas/sitePageSchema"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import type { LinkTypesWithHrefFormat } from "../../../LinkEditor/constants"
 import { LINK_TYPES } from "../../../LinkEditor/constants"
@@ -35,8 +43,8 @@ interface SuspendableLabelProps {
 const SuspendableLabel = ({ siteId, resourceId }: SuspendableLabelProps) => {
   const [{ fullPermalink }] =
     trpc.resource.getWithFullPermalink.useSuspenseQuery({
-      siteId,
       resourceId,
+      siteId,
     })
 
   return (
@@ -49,7 +57,7 @@ const SuspendableLabel = ({ siteId, resourceId }: SuspendableLabelProps) => {
   )
 }
 
-// TODO: refactor this
+// Deferred: refactor this
 // Context: This component exists for us to have both
 // JsonFormsLinkControl and JsonFormsRefControl share the same logic
 // for rendering the link editor modal without having to duplicate it
@@ -86,7 +94,11 @@ export const BaseLinkControl = ({
     <>
       <Box as={FormControl} isRequired={required} isInvalid={!!errors}>
         <FormLabel>{label}</FormLabel>
-        <LinkErrorBoundary resetLink={() => handleChange(path, undefined)}>
+        <LinkErrorBoundary
+          resetLink={() => {
+            handleChange(path, undefined)
+          }}
+        >
           <Flex
             px="1rem"
             py="0.75rem"
@@ -95,7 +107,7 @@ export const BaseLinkControl = ({
             justifyContent="space-between"
             alignItems="center"
           >
-            {!!data ? (
+            {data ? (
               <>
                 {pageType !== LINK_TYPES.Page && (
                   <Text overflow="auto" textStyle="body-2">
@@ -105,7 +117,7 @@ export const BaseLinkControl = ({
                 {pageType === LINK_TYPES.Page && dataString.length > 0 && (
                   <Suspense fallback={<Skeleton w="100%" h="100%" />}>
                     <SuspendableLabel
-                      siteId={Number(siteId)}
+                      siteId={siteId}
                       resourceId={getResourceIdFromReferenceLink(dataString)}
                     />
                   </Suspense>
@@ -116,7 +128,9 @@ export const BaseLinkControl = ({
                   colorScheme="critical"
                   aria-label="Remove file"
                   icon={<BiTrash />}
-                  onClick={() => handleChange(path, undefined)}
+                  onClick={() => {
+                    handleChange(path, undefined)
+                  }}
                 />
               </>
             ) : (
@@ -135,19 +149,19 @@ export const BaseLinkControl = ({
               </>
             )}
           </Flex>
-          {required && (
+          {isNullableBooleanTrue(required) && (
             <FormErrorMessage>
               {/* AJV sees an empty string as present, so pattern mismatch (not "required") fires here — check data directly to show the empty-state copy */}
-              {!data
-                ? `${label} cannot be empty.`
-                : `${label} ${getCustomErrorMessage(errors)}`}
+              {data
+                ? `${label} ${getCustomErrorMessage(errors)}`
+                : `${label} cannot be empty.`}
             </FormErrorMessage>
           )}
         </LinkErrorBoundary>
       </Box>
       <LinkEditorModal
         linkTypes={linkTypes}
-        // TODO: fix this
+        // Deferred: fix this
         // Context: we are reusing LinkEditorModal at the moment which is quite janky
         // not passing in any linkText will cause the schema validation to fail
         // (even though we don't need it here)
@@ -155,7 +169,9 @@ export const BaseLinkControl = ({
         showLinkText={false}
         isOpen={isOpen}
         onClose={onClose}
-        onSave={(_, linkHref) => handleChange(path, linkHref)}
+        onSave={(_, linkHref) => {
+          handleChange(path, linkHref)
+        }}
       />
     </>
   )

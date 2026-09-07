@@ -1,12 +1,29 @@
+import type { Meta, StoryObj } from "@storybook/nextjs"
 import { Box } from "@chakra-ui/react"
-import { type Meta, type StoryObj } from "@storybook/nextjs"
 import { expect, userEvent, within } from "storybook/test"
 import { RiskyFileUploadModal } from "~/components/PageEditor/RiskyFileUploadModal"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
 const meta: Meta<typeof RiskyFileUploadModal> = {
-  title: "Pages/Edit Page/RiskyFileUploadModal",
+  argTypes: {
+    file: {
+      description:
+        "File being uploaded; extension is derived for the modal copy.",
+    },
+  },
+  args: {
+    file: new File([], "document.docx", {
+      type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    }),
+    isOpen: true,
+    onClose: () => {
+      console.log("onClose")
+    },
+    onConfirm: () => {
+      console.log("onConfirm")
+    },
+  },
   component: RiskyFileUploadModal,
   decorators: [
     (storyFn) => (
@@ -16,26 +33,13 @@ const meta: Meta<typeof RiskyFileUploadModal> = {
     ),
   ],
   parameters: {
-    layout: "fullscreen",
     chromatic: {
       delay: 200,
       ...withChromaticModes(["gsib", "desktop"]),
     },
+    layout: "fullscreen",
   },
-  args: {
-    isOpen: true,
-    onClose: () => console.log("onClose"),
-    onConfirm: () => console.log("onConfirm"),
-    file: new File([], "document.docx", {
-      type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    }),
-  },
-  argTypes: {
-    file: {
-      description:
-        "File being uploaded; extension is derived for the modal copy.",
-    },
-  },
+  title: "Pages/Edit Page/RiskyFileUploadModal",
 }
 
 export default meta

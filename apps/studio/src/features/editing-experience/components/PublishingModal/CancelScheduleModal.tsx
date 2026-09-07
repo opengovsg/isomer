@@ -28,6 +28,14 @@ export const CancelScheduleModal = ({
   const utils = trpc.useUtils()
   const toast = useToast()
   const { mutate, isPending } = trpc.page.cancelSchedulePage.useMutation({
+    onError: (error) => {
+      console.error(`Error occurred when cancelling schedule: ${error.message}`)
+      toast({
+        status: "error",
+        title: "Failed to cancel schedule. Please contact Isomer support.",
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    },
     onSettled: async () => {
       await utils.page.readPage.refetch({ pageId, siteId })
       onClose()
@@ -36,14 +44,6 @@ export const CancelScheduleModal = ({
       toast({
         status: "success",
         title: "Schedule cancelled successfully",
-        ...BRIEF_TOAST_SETTINGS,
-      })
-    },
-    onError: (error) => {
-      console.error(`Error occurred when cancelling schedule: ${error.message}`)
-      toast({
-        status: "error",
-        title: "Failed to cancel schedule. Please contact Isomer support.",
         ...BRIEF_TOAST_SETTINGS,
       })
     },
@@ -69,7 +69,9 @@ export const CancelScheduleModal = ({
             No, leave it
           </Button>
           <Button
-            onClick={() => mutate({ pageId, siteId })}
+            onClick={() => {
+              mutate({ pageId, siteId })
+            }}
             isLoading={isPending}
             colorScheme="critical"
           >

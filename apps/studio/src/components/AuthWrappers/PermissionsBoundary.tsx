@@ -1,9 +1,10 @@
+/* oxlint-disable typescript/promise-function-async -- studio lint cleanup */
 import type { ReactNode } from "react"
 import type { ResourceType } from "~prisma/generated/generatedEnums"
 import { PermissionsErrorBoundary } from "~/features/dashboard/PermissionsErrorPage"
 import { Can, PermissionsProvider } from "~/features/permissions"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { sitePageSchema } from "~/pages/sites/[siteId]"
+import { sitePageSchema } from "~/schemas/sitePageSchema"
 import { DefaultLayout } from "~/templates/layouts/DefaultLayout"
 
 interface ErrorProps {
@@ -14,58 +15,58 @@ interface ErrorProps {
 
 const ERROR_COMPONENT_PROPS = {
   Collection: {
-    title: "You don't have access to edit this collection.",
+    buttonText: "Back to My Sites",
     description:
       "To have access, ask your site admins to assign this collection to you",
-    buttonText: "Back to My Sites",
-  },
-  CollectionMeta: {
     title: "You don't have access to edit this collection.",
-    description:
-      "To have access, ask your site admins to assign this collection to you",
-    buttonText: "Back to My Sites",
-  },
-  IndexPage: {
-    title: "You don't have access to edit this page.",
-    description:
-      "To have access, ask your site admins to assign this page to you",
-    buttonText: "Back to Site Content",
-  },
-  Page: {
-    title: "You don't have access to edit this page.",
-    description:
-      "To have access, ask your site admins to assign this page to you",
-    buttonText: "Back to Site Content",
   },
   CollectionLink: {
-    title: "You don't have access to edit this item.",
+    buttonText: "Back to Site Content",
     description:
       "To have access, ask your site admins to assign this item to you",
-    buttonText: "Back to Site Content",
+    title: "You don't have access to edit this item.",
+  },
+  CollectionMeta: {
+    buttonText: "Back to My Sites",
+    description:
+      "To have access, ask your site admins to assign this collection to you",
+    title: "You don't have access to edit this collection.",
   },
   CollectionPage: {
-    title: "You don't have access to edit this page.",
+    buttonText: "Back to Site Content",
     description:
       "To have access, ask your site admins to assign this page to you",
-    buttonText: "Back to Site Content",
-  },
-  RootPage: {
-    title: "You don't have access to edit this site.",
-    description:
-      "To have access, ask your site admins to add you as an editor. If they’ve already added you, you might need to refresh this page.",
-    buttonText: "Back to My Sites",
+    title: "You don't have access to edit this page.",
   },
   Folder: {
-    title: "You don't have access to edit this folder.",
+    buttonText: "Back to My Sites",
     description:
       "To have access, ask your site admins to assign this folder to you",
-    buttonText: "Back to My Sites",
+    title: "You don't have access to edit this folder.",
   },
   FolderMeta: {
-    title: "You don't have access to edit the page order of this folder.",
+    buttonText: "Back to My Sites",
     description:
       "To have access, ask your site admins to assign this folder to you",
+    title: "You don't have access to edit the page order of this folder.",
+  },
+  IndexPage: {
+    buttonText: "Back to Site Content",
+    description:
+      "To have access, ask your site admins to assign this page to you",
+    title: "You don't have access to edit this page.",
+  },
+  Page: {
+    buttonText: "Back to Site Content",
+    description:
+      "To have access, ask your site admins to assign this page to you",
+    title: "You don't have access to edit this page.",
+  },
+  RootPage: {
     buttonText: "Back to My Sites",
+    description:
+      "To have access, ask your site admins to add you as an editor. If they’ve already added you, you might need to refresh this page.",
+    title: "You don't have access to edit this site.",
   },
 } satisfies Record<ResourceType, ErrorProps>
 
@@ -81,8 +82,8 @@ export const PermissionsBoundary = ({
   return (
     <PermissionsProvider siteId={siteId}>
       <Can do="read" on={{ parentId: null }} passThrough>
-        {({ isAllowed }) => {
-          return isAllowed ? (
+        {({ isAllowed }) =>
+          isAllowed ? (
             page
           ) : (
             <DefaultLayout>
@@ -91,7 +92,7 @@ export const PermissionsBoundary = ({
               />
             </DefaultLayout>
           )
-        }}
+        }
       </Can>
     </PermissionsProvider>
   )

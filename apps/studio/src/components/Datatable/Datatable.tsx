@@ -19,6 +19,7 @@ import {
   useMultiStyleConfig,
 } from "@chakra-ui/react"
 import { flexRender } from "@tanstack/react-table"
+import { isDefinedNumber, isNullableBooleanTrue } from "~/utils/truthiness"
 
 import { DatatablePagination } from "./DatatablePagination"
 
@@ -59,7 +60,7 @@ export const Datatable = <T extends RowData>({
       layerStyle="shadow"
       pos="relative"
     >
-      {isFetching && (
+      {isNullableBooleanTrue(isFetching) && (
         <>
           <Flex
             // white alpha to denote loading
@@ -120,11 +121,13 @@ export const Datatable = <T extends RowData>({
           <Tbody>
             {rows.length === 0 && emptyPlaceholder}
             {rows.map((row) => {
-              const RowComponent = isRowLink ? LinkBox : Tr
+              const RowComponent = isNullableBooleanTrue(isRowLink)
+                ? LinkBox
+                : Tr
 
               return (
                 <RowComponent
-                  as={isRowLink ? "tr" : undefined}
+                  as={isNullableBooleanTrue(isRowLink) ? "tr" : undefined}
                   key={row.id}
                   borderBottomWidth="1px"
                   // LinkBox rows don't pick up the Table theme's `tr` styles,
@@ -132,19 +135,21 @@ export const Datatable = <T extends RowData>({
                   _last={{ borderBottomWidth: 0 }}
                   textStyle="body-2"
                   _hover={{ bgColor: "interaction.muted.main.hover" }}
-                  cursor={onRowClick || isRowLink ? "pointer" : undefined}
+                  cursor={
+                    onRowClick !== undefined || isNullableBooleanTrue(isRowLink)
+                      ? "pointer"
+                      : undefined
+                  }
                   onClick={() => onRowClick?.(row)}
                 >
-                  {row.getVisibleCells().map((cell) => {
-                    return (
-                      <Td key={cell.id} verticalAlign="center">
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </Td>
-                    )
-                  })}
+                  {row.getVisibleCells().map((cell) => (
+                    <Td key={cell.id} verticalAlign="center">
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </Td>
+                  ))}
                 </RowComponent>
               )
             })}
@@ -152,12 +157,13 @@ export const Datatable = <T extends RowData>({
         </Table>
       </Box>
       <Flex py="1rem" gap="1rem">
-        {pagination && !!totalRowCount && (
-          <DatatablePagination
-            instance={instance}
-            totalRowCount={totalRowCount}
-          />
-        )}
+        {isNullableBooleanTrue(pagination) &&
+          isDefinedNumber(totalRowCount) && (
+            <DatatablePagination
+              instance={instance}
+              totalRowCount={totalRowCount}
+            />
+          )}
       </Flex>
     </Flex>
   )

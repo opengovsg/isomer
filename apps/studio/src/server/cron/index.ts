@@ -38,13 +38,13 @@ export const stopCronJobs = () => {
   logger.info("Stopping all cron jobs...")
 
   // Stop all tracked cron jobs
-  cronJobs.forEach((job) => {
+  for (const job of cronJobs) {
     try {
       job.stop()
     } catch (error: unknown) {
       logger.error({ error }, "Error stopping cron job")
     }
-  })
+  }
 
   // Clear the array
   cronJobs.length = 0

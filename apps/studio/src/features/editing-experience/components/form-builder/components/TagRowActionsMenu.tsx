@@ -25,33 +25,33 @@ export const TagRowActionsMenu = ({
   isDisabled,
   isDragDisabled = false,
   onDelete,
-}: TagRowActionsMenuProps) => {
-  return (
-    <Menu isLazy>
-      <MenuButton
-        as={IconButton}
-        icon={<BiDotsHorizontalRounded fontSize="1.5rem" />}
-        {...ROW_ACTIONS_MENU_BUTTON_PROPS}
-        color={isDragDisabled ? "interaction.support.disabled" : undefined}
-        isDisabled={isDisabled}
-        aria-label={`${upperFirst(noun)} ${index + 1} actions`}
-        onClick={(e) => e.stopPropagation()}
-      />
-      <Portal>
-        <MenuList>
-          <MenuItem
-            colorScheme="critical"
-            icon={<BiTrash fontSize="1rem" />}
-            isDisabled={isDisabled}
-            onClick={(e) => {
-              e.stopPropagation()
-              onDelete()
-            }}
-          >
-            Delete {noun}
-          </MenuItem>
-        </MenuList>
-      </Portal>
-    </Menu>
-  )
-}
+}: TagRowActionsMenuProps) => (
+  <Menu isLazy>
+    <MenuButton
+      as={IconButton}
+      icon={<BiDotsHorizontalRounded fontSize="1.5rem" />}
+      {...ROW_ACTIONS_MENU_BUTTON_PROPS}
+      color={isDragDisabled ? "interaction.support.disabled" : undefined}
+      isDisabled={isDisabled}
+      aria-label={`${upperFirst(noun)} ${index + 1} actions`}
+      onClick={(e) => {
+        e.stopPropagation()
+      }}
+    />
+    <Portal>
+      <MenuList>
+        <MenuItem
+          colorScheme="critical"
+          icon={<BiTrash fontSize="1rem" />}
+          isDisabled={isDisabled}
+          onClick={(e) => {
+            e.stopPropagation()
+            onDelete()
+          }}
+        >
+          Delete {noun}
+        </MenuItem>
+      </MenuList>
+    </Portal>
+  </Menu>
+)

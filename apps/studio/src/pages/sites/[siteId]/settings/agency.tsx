@@ -43,6 +43,13 @@ const AgencySettingsPage: NextPageWithLayout = () => {
   const toast = useToast(BRIEF_TOAST_SETTINGS)
 
   const updateSiteConfigMutation = trpc.site.updateSiteConfig.useMutation({
+    onError: (error) => {
+      toast({
+        description: error.message,
+        status: "error",
+        title: "Failed to update site",
+      })
+    },
     onSuccess: () => {
       toast({
         ...SETTINGS_TOAST_MESSAGES.success,
@@ -51,21 +58,14 @@ const AgencySettingsPage: NextPageWithLayout = () => {
       void trpcUtils.site.getConfig.invalidate({ id: siteId })
       void trpcUtils.site.getSiteName.invalidate({ siteId })
     },
-    onError: (error) => {
-      toast({
-        title: "Failed to update site",
-        description: error.message,
-        status: "error",
-      })
-    },
   })
 
   const [nextUrl, setNextUrl] = useState("")
   const isOpen = !!nextUrl
   const initialSettings: AgencySettings = {
-    siteName,
     agencyName,
     siteEntity,
+    siteName,
   }
   const [state, setState] = useState<AgencySettings>(initialSettings)
   const isDirty = !isEqual(
@@ -79,22 +79,25 @@ const AgencySettingsPage: NextPageWithLayout = () => {
     },
   )
 
-  useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
+  useNavigationEffect({ callback: setNextUrl, isDirty, isOpen })
 
-  const onSubmit = () =>
+  const onSubmit = () => {
     updateSiteConfigMutation.mutate({
-      siteName: state.siteName,
       agencyName: state.agencyName,
       siteEntity: normalizeSiteEntity(state.siteEntity),
       siteId,
+      siteName: state.siteName,
       ...rest,
     })
+  }
 
   return (
     <ErrorProvider>
       <UnsavedSettingModal
         isOpen={isOpen}
-        onClose={() => setNextUrl("")}
+        onClose={() => {
+          setNextUrl("")
+        }}
         nextUrl={nextUrl}
       />
       <SettingsGrid>
@@ -126,13 +129,11 @@ const AgencySettingsPage: NextPageWithLayout = () => {
   )
 }
 
-AgencySettingsPage.getLayout = (page) => {
-  return (
-    <PermissionsBoundary
-      resourceType={ResourceType.RootPage}
-      page={SiteSettingsLayout(page)}
-    />
-  )
-}
+AgencySettingsPage.getLayout = (page) => (
+  <PermissionsBoundary
+    resourceType={ResourceType.RootPage}
+    page={SiteSettingsLayout(page)}
+  />
+)
 
 export default AgencySettingsPage

@@ -1,3 +1,5 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
+/* oxlint-disable unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { ControlElement, RankedTester } from "@jsonforms/core"
 import { rankWith } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
@@ -25,8 +27,6 @@ export const jsonFormsUnionRootControlTester: RankedTester = rankWith(
   },
 )
 
-const JsonFormsUnionRootControl = () => {
-  return null
-}
+const JsonFormsUnionRootControl = () => null
 
 export default withJsonFormsControlProps(JsonFormsUnionRootControl)

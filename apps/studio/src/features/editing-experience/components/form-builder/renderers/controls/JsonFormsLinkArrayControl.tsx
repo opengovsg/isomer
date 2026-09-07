@@ -1,3 +1,5 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
+/* oxlint-disable eslint/no-plusplus, eslint/no-shadow, eslint/no-useless-return, unicorn/no-new-array, unicorn/no-unnecessary-type-conversion -- core cleanup deferred */
 import type { DropResult } from "@hello-pangea/dnd"
 import type {
   ArrayLayoutProps,
@@ -46,6 +48,12 @@ import {
   BiTrash,
 } from "react-icons/bi"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import DraggableLinkButton from "../../components/DraggableLinkButton"
 import { FORM_BUILDER_PARENT_ID } from "../../constants"
@@ -91,7 +99,11 @@ const EditLinkItem = ({
   // Disable scrolling on parent container when editing a link item, as this
   // is an absolutely-positioned overlay
   useEffect(() => {
-    const parent = document.getElementById(FORM_BUILDER_PARENT_ID)
+    // SAFETY: FORM_BUILDER_PARENT_ID targets a scrollable div in the form builder
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- FORM_BUILDER_PARENT_ID targets a scrollable div
+    const parent = document.querySelector(
+      `#${FORM_BUILDER_PARENT_ID}`,
+    ) as HTMLElement | null
     if (parent) {
       parent.scrollTop = 0
       parent.style.overflow = "hidden"
@@ -276,7 +288,7 @@ const JsonFormsArrayLinkControl = ({
 
       removeItems(path, [index])()
 
-      if (!selectedIndex) {
+      if (!isDefinedNumber(selectedIndex)) {
         return
       } else if (selectedIndex === index) {
         setSelectedIndex(undefined)
@@ -305,7 +317,9 @@ const JsonFormsArrayLinkControl = ({
     [moveUp, moveDown],
   )
   const handleDeleteItem = () => {
-    if (selectedPathForDeletion === undefined) return
+    if (selectedPathForDeletion === undefined) {
+      return
+    }
 
     const index = Number(selectedPathForDeletion.split(".").pop())
     handleRemoveItem(path, index)()
@@ -334,13 +348,16 @@ const JsonFormsArrayLinkControl = ({
     const newIndex = result.destination.index
     handleMoveItem(path, originalIndex, newIndex)
   }
+  // oxlint-disable-next-line unicorn/no-unnecessary-type-conversion -- core cleanup deferred
 
   if (selectedIndex !== undefined) {
     return (
       <>
         <DeleteLinkModal
-          isOpen={!!selectedPathForDeletion}
-          onClose={() => setSelectedPathForDeletion(undefined)}
+          isOpen={!!hasNonEmptyString(selectedPathForDeletion)}
+          onClose={() => {
+            setSelectedPathForDeletion(undefined)
+          }}
           onDelete={handleDeleteItem}
           path={selectedPathForDeletion ?? ""}
           schema={schema}
@@ -354,10 +371,12 @@ const JsonFormsArrayLinkControl = ({
           schema={schema}
           uischema={getChildUiSchema(composePaths(path, `${selectedIndex}`))}
           path={composePaths(path, `${selectedIndex}`)}
-          handleRemoveItem={() =>
+          handleRemoveItem={() => {
             setSelectedPathForDeletion(composePaths(path, `${selectedIndex}`))
-          }
-          onBack={() => setSelectedIndex(undefined)}
+          }}
+          onBack={() => {
+            setSelectedIndex(undefined)
+          }}
         />
       </>
     )
@@ -366,8 +385,10 @@ const JsonFormsArrayLinkControl = ({
   return (
     <>
       <DeleteLinkModal
-        isOpen={!!selectedPathForDeletion}
-        onClose={() => setSelectedPathForDeletion(undefined)}
+        isOpen={!!hasNonEmptyString(selectedPathForDeletion)}
+        onClose={() => {
+          setSelectedPathForDeletion(undefined)
+        }}
         onDelete={handleDeleteItem}
         path={selectedPathForDeletion ?? ""}
         schema={schema}
@@ -380,13 +401,13 @@ const JsonFormsArrayLinkControl = ({
             <VStack align="start" spacing="0.25rem">
               <Text textStyle="subhead-2">{label}</Text>
 
-              {description && (
+              {hasNonEmptyString(description) && (
                 <Text textStyle="body-2" textColor="base.content.default">
                   {description}
                 </Text>
               )}
 
-              {arraySchema.maxItems && (
+              {isDefinedNumber(arraySchema.maxItems) && (
                 <Text textStyle="body-2" textColor="base.content.medium">
                   {data}/{arraySchema.maxItems} links added
                 </Text>
@@ -395,7 +416,8 @@ const JsonFormsArrayLinkControl = ({
 
             <Tooltip
               label={
-                arraySchema.maxItems && data >= arraySchema.maxItems
+                isDefinedNumber(arraySchema.maxItems) &&
+                data >= arraySchema.maxItems
                   ? `You can only place up to ${arraySchema.maxItems} links.`
                   : undefined
               }
@@ -410,7 +432,9 @@ const JsonFormsArrayLinkControl = ({
                   setSelectedIndex(data)
                 }}
                 isDisabled={
-                  arraySchema.maxItems ? data >= arraySchema.maxItems : false
+                  isDefinedNumber(arraySchema.maxItems)
+                    ? data >= arraySchema.maxItems
+                    : false
                 }
               >
                 Add a link
@@ -450,7 +474,7 @@ const JsonFormsArrayLinkControl = ({
                   </Flex>
                 )}
 
-                {[...Array(data).keys()].map((index) => {
+                {[...new Array(data).keys()].map((index) => {
                   const childPath = composePaths(path, `${index}`)
                   const hasError = hasErrorAt(childPath)
 
@@ -472,9 +496,9 @@ const JsonFormsArrayLinkControl = ({
                           schema={schema}
                           uischema={getChildUiSchema(childPath)}
                           setSelectedIndex={setSelectedIndex}
-                          onDeleteItem={() =>
+                          onDeleteItem={() => {
                             setSelectedPathForDeletion(childPath)
-                          }
+                          }}
                           resetLink={() => {
                             handleRemoveItem(path, index)()
                           }}

@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/prefer-destructuring, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { IsomerComponent } from "@opengovsg/isomer-components"
 import { VStack } from "@chakra-ui/react"
 import {
@@ -10,6 +11,12 @@ import { CanManageCollectionFilters } from "~/features/editing-experience/hooks/
 import { useSelectBlock } from "~/features/editing-experience/hooks/useSelectBlock"
 import { useNewCollectionTagsManagement } from "~/hooks/useNewCollectionTagsManagement"
 import { ajv } from "~/utils/ajv"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { TYPE_TO_ICON } from "../../constants"
 import { getIsHeroFirstBlock } from "../../utils/getIsHeroFirstBlock"
@@ -28,27 +35,29 @@ interface FixedBlockContent {
 
 const FIXED_BLOCK_CONTENT = {
   article: {
-    label: "Article page header",
     description: "Category, Date, and Summary",
+    label: "Article page header",
   },
   content: {
-    label: "Content page header",
     description: "Summary, Button label, and Button destination",
+    label: "Content page header",
   },
   database: {
-    label: "Database page header",
     description: "Summary, Button label, and Button URL",
+    label: "Database page header",
   },
   index: {
-    label: "Header",
     description: "Summary, Button label and Button URL",
+    label: "Header",
   },
 } as const satisfies Record<string, FixedBlockContent>
 
 const getFixedBlockContent = (
   layout: string,
 ): FixedBlockContent | undefined => {
-  if (!Object.hasOwn(FIXED_BLOCK_CONTENT, layout)) return undefined
+  if (!Object.hasOwn(FIXED_BLOCK_CONTENT, layout)) {
+    return undefined
+  }
   // SAFETY: Object.hasOwn confirms layout is a key of FIXED_BLOCK_CONTENT
   return FIXED_BLOCK_CONTENT[layout as keyof typeof FIXED_BLOCK_CONTENT]
 }
@@ -66,12 +75,14 @@ export const FixedBlock = () => {
     const isValid = validateHeroComponentFn(fixedBlock)
     return (
       <BaseBlock
-        onClick={() => selectBlock(0, { state: "heroEditor" })}
+        onClick={() => {
+          selectBlock(0, { state: "heroEditor" })
+        }}
         label="Hero banner"
         description="Title, subtitle, and Call-to-Action"
         icon={TYPE_TO_ICON.hero}
         invalidProps={
-          !isValid ? { description: invalidBlockDescription } : undefined
+          isValid ? undefined : { description: invalidBlockDescription }
         }
       />
     )
@@ -86,9 +97,9 @@ export const FixedBlock = () => {
       <>
         <BaseBlock
           variant="vertical"
-          onClick={() =>
+          onClick={() => {
             selectBlock(0, { state: "collectionEditor", type: "display" })
-          }
+          }}
           label="Collection display"
           description="Customise the Collection’s Summary, Layout, Sorting logic, and Thumbnail."
           icon={BiCog}
@@ -96,9 +107,9 @@ export const FixedBlock = () => {
         <CanManageCollectionFilters>
           <BaseBlock
             variant="vertical"
-            onClick={() =>
+            onClick={() => {
               selectBlock(0, { state: "collectionEditor", type: "filter" })
-            }
+            }}
             label="Filters"
             description="Define and manage filters for this Collection."
             icon={BiSlider}
@@ -111,9 +122,9 @@ export const FixedBlock = () => {
   if (pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection) {
     return (
       <BaseBlock
-        onClick={() =>
+        onClick={() => {
           selectBlock(0, { state: "collectionEditor", type: "display" })
-        }
+        }}
         label="Collection settings"
         description="Summary, style, categories and sorting"
         icon={BiPin}
@@ -144,18 +155,21 @@ export const FixedBlock = () => {
     )
   }
 
+  const fixedBlockContent = getFixedBlockContent(pageLayout)
+  const blockLabel = hasNonEmptyString(fixedBlockContent?.label)
+    ? fixedBlockContent.label
+    : "Page description and summary"
+  const blockDescription = hasNonEmptyString(fixedBlockContent?.description)
+    ? fixedBlockContent.description
+    : "Click to edit"
+
   return (
     <BaseBlock
       onClick={() => {
         setDrawerState({ state: "metadataEditor" })
       }}
-      label={
-        getFixedBlockContent(pageLayout)?.label ||
-        "Page description and summary"
-      }
-      description={
-        getFixedBlockContent(pageLayout)?.description || "Click to edit"
-      }
+      label={blockLabel}
+      description={blockDescription}
       icon={BiPin}
     />
   )

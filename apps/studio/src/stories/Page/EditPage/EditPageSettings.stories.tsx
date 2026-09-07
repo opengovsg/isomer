@@ -21,7 +21,7 @@ const imageHandler = {
   default: (delayMs?: number | "infinite") =>
     http.get(`${ASSETS_BASE_URL}/MOCK_STORYBOOK_ASSET`, async () => {
       await delay(delayMs)
-      return fetch(
+      return await fetch(
         "https://i.natgeofe.com/n/548467d8-c5f1-4551-9f58-6817a8d2c45e/NationalGeographic_2572187_3x2.jpg",
       )
     }),
@@ -40,7 +40,6 @@ const COMMON_HANDLERS = [
 ]
 
 const meta: Meta<typeof PageSettings> = {
-  title: "Pages/Edit Page/Settings",
   component: PageSettings,
   parameters: {
     getLayout: PageSettings.getLayout,
@@ -49,14 +48,15 @@ const meta: Meta<typeof PageSettings> = {
     },
     nextjs: {
       router: {
-        query: {
-          siteId: "1",
-          pageId: "1",
-        },
         pathname: "/sites/[siteId]/pages/[pageId]/settings",
+        query: {
+          pageId: "1",
+          siteId: "1",
+        },
       },
     },
   },
+  title: "Pages/Edit Page/Settings",
 }
 
 export default meta
@@ -103,8 +103,8 @@ export const WithBanner: Story = {
     ...Root.parameters,
     growthbook: [
       createBannerGbParameters({
-        variant: "warn",
         message: "This is a warning test banner",
+        variant: "warn",
       }),
     ],
   },
@@ -113,7 +113,7 @@ export const WithBanner: Story = {
 export const FilePicker: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    const button = await screen.findByRole("button", { name: /Choose file/i })
+    const button = await screen.findByRole("button", { name: /Choose file/iu })
 
     await userEvent.click(button)
   },

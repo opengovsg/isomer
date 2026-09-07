@@ -1,5 +1,5 @@
+import type { TSchema } from "@sinclair/typebox"
 import { JsonForms } from "@jsonforms/react"
-import { type TSchema } from "@sinclair/typebox"
 import { renderers } from "~/features/editing-experience/components/form-builder/FormBuilder"
 import { ajv } from "~/utils/ajv"
 
@@ -13,14 +13,12 @@ export const FormBuilder = ({
   schema,
   data,
   readonly,
-}: FormBuilderProps): React.ReactNode => {
-  return (
-    <JsonForms
-      schema={schema}
-      data={data}
-      renderers={renderers}
-      ajv={ajv}
-      readonly={readonly}
-    />
-  )
-}
+}: FormBuilderProps): React.ReactNode => (
+  <JsonForms
+    schema={schema}
+    data={data}
+    renderers={renderers}
+    ajv={ajv}
+    readonly={readonly}
+  />
+)

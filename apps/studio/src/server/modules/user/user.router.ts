@@ -50,6 +50,23 @@ const throwSingpassDisabledError = () => {
 }
 
 export const userRouter = router({
+  count: protectedProcedure
+    .input(countUsersInputSchema)
+    .output(countUsersOutputSchema)
+    .query(async ({ ctx, input: { siteId, adminType } }) => {
+      await validatePermissionsForManagingUsers({
+        action: "read",
+        siteId,
+        userId: ctx.user.id,
+      })
+
+      const result = await getUsersQuery({ adminType, siteId })
+        .select((eb) => [eb.fn.countAll().as("count")])
+        .executeTakeFirstOrThrow()
+
+      return Number(result.count)
+    }),
+
   create: protectedProcedure
     .input(createUserInputSchema)
     .output(createUserOutputSchema)
@@ -57,9 +74,9 @@ export const userRouter = router({
     .meta({ rateLimitOptions: { max: 10, windowMs: 60 * 1000 } })
     .mutation(async ({ ctx, input: { siteId, users } }) => {
       await validatePermissionsForManagingUsers({
+        action: "manage",
         siteId,
         userId: ctx.user.id,
-        action: "manage",
       })
 
       const isSingpassEnabled = getIsSingpassEnabled({
@@ -82,38 +99,39 @@ export const userRouter = router({
         )
       const actorName = possibleActor.name || possibleActor.email
 
-      const createdUsers = await db.transaction().execute(async (tx) => {
-        return await Promise.all(
-          users.map(async (user) => {
-            const { user: createdUser, resourcePermission } =
-              await createUserWithPermission({
-                ...user,
-                email: user.email.toLowerCase(),
-                siteId,
-                byUserId: ctx.user.id,
-                tx,
-              })
-            return {
-              id: createdUser.id,
-              email: createdUser.email,
-              role: resourcePermission.role,
-            }
-          }),
-        )
-      })
+      const createdUsers = await db.transaction().execute(
+        async (tx) =>
+          await Promise.all(
+            users.map(async (user) => {
+              const { user: createdUser, resourcePermission } =
+                await createUserWithPermission({
+                  ...user,
+                  byUserId: ctx.user.id,
+                  email: user.email.toLowerCase(),
+                  siteId,
+                  tx,
+                })
+              return {
+                email: createdUser.email,
+                id: createdUser.id,
+                role: resourcePermission.role,
+              }
+            }),
+          ),
+      )
 
       // Send welcome email to users
       const { name: siteName } = await getSiteNameAndCodeBuildId(siteId)
       await Promise.all(
-        createdUsers.map((createdUser) =>
-          sendInvitation({
-            isSingpassEnabled,
+        createdUsers.map(async (createdUser) => {
+          await sendInvitation({
             inviterName: actorName,
+            isSingpassEnabled,
             recipientEmail: createdUser.email,
-            siteName,
             role: createdUser.role,
-          }),
-        ),
+            siteName,
+          })
+        }),
       )
 
       return createdUsers
@@ -124,9 +142,9 @@ export const userRouter = router({
     .output(deleteUserOutputSchema)
     .mutation(async ({ ctx, input: { siteId, userId } }) => {
       await validatePermissionsForManagingUsers({
+        action: "manage",
         siteId,
         userId: ctx.user.id,
-        action: "manage",
       })
 
       const isSingpassEnabled = getIsSingpassEnabled({
@@ -170,13 +188,13 @@ export const userRouter = router({
 
       await deleteUserPermission({
         byUserId: ctx.user.id,
-        userId,
         siteId,
+        userId,
       })
 
       return {
-        id: userToDeletePermissionsFrom.id,
         email: userToDeletePermissionsFrom.email,
+        id: userToDeletePermissionsFrom.id,
       }
     }),
 
@@ -185,12 +203,12 @@ export const userRouter = router({
     .output(getUserOutputSchema)
     .query(async ({ ctx, input: { siteId, userId } }) => {
       await validatePermissionsForManagingUsers({
+        action: "read",
         siteId,
         userId: ctx.user.id,
-        action: "read",
       })
 
-      const result = await getUsersQuery({ siteId, adminType: "agency" })
+      const result = await getUsersQuery({ adminType: "agency", siteId })
         .where("ActiveUser.id", "=", userId)
         .select((eb) => [
           "ActiveUser.id",
@@ -217,17 +235,25 @@ export const userRouter = router({
       return result
     }),
 
+  isIsomerAdmin: protectedProcedure
+    .input(isIsomerAdminInputSchema)
+    .output(isIsomerAdminOutputSchema)
+    .query(
+      async ({ ctx, input: { roles } }) =>
+        await isActiveIsomerAdmin(ctx.user.id, roles),
+    ),
+
   list: protectedProcedure
     .input(listUsersInputSchema)
     .output(listUsersOutputSchema)
     .query(async ({ ctx, input: { siteId, adminType, offset, limit } }) => {
       await validatePermissionsForManagingUsers({
+        action: "read",
         siteId,
         userId: ctx.user.id,
-        action: "read",
       })
 
-      return getUsersQuery({ siteId, adminType })
+      return await getUsersQuery({ adminType, siteId })
         .orderBy("ActiveUser.email", "asc")
         .select((eb) => [
           "ActiveUser.id",
@@ -251,94 +277,6 @@ export const userRouter = router({
         .execute()
     }),
 
-  count: protectedProcedure
-    .input(countUsersInputSchema)
-    .output(countUsersOutputSchema)
-    .query(async ({ ctx, input: { siteId, adminType } }) => {
-      await validatePermissionsForManagingUsers({
-        siteId,
-        userId: ctx.user.id,
-        action: "read",
-      })
-
-      const result = await getUsersQuery({ siteId, adminType })
-        .select((eb) => [eb.fn.countAll().as("count")])
-        .executeTakeFirstOrThrow()
-
-      return Number(result.count)
-    }),
-
-  update: protectedProcedure
-    .input(updateUserInputSchema)
-    .output(updateUserOutputSchema)
-    .mutation(async ({ ctx, input: { siteId, userId, role } }) => {
-      await validatePermissionsForManagingUsers({
-        siteId,
-        userId: ctx.user.id,
-        action: "manage",
-      })
-
-      const isSingpassEnabled = getIsSingpassEnabled({
-        gb: ctx.gb,
-      })
-      if (!isSingpassEnabled) {
-        throwSingpassDisabledError()
-      }
-
-      if (userId === ctx.user.id) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "You cannot update your own role",
-        })
-      }
-
-      const user = await db
-        .selectFrom("User")
-        .where("id", "=", userId)
-        .where("deletedAt", "is", null)
-        .selectAll()
-        .executeTakeFirst()
-
-      if (!user) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "User not found",
-        })
-      }
-
-      const updatedUserPermission = await updateUserSitewidePermission({
-        byUserId: ctx.user.id,
-        userId,
-        siteId,
-        role,
-      })
-
-      return pick(updatedUserPermission, ["id", "userId", "siteId", "role"])
-    }),
-
-  updateDetails: protectedProcedure
-    .input(updateUserDetailsInputSchema)
-    .output(updateUserDetailsOutputSchema)
-    .mutation(async ({ ctx, input: { name, phone } }) => {
-      // We don't have to check if the user is admin here
-      // because we only allow users to update their own details
-      // They should be able to update their own details even without any resource permissions
-      const updatedUser = await updateUserDetails({
-        userId: ctx.user.id,
-        name,
-        phone,
-      })
-
-      return pick(updatedUser, ["name", "phone"])
-    }),
-
-  isIsomerAdmin: protectedProcedure
-    .input(isIsomerAdminInputSchema)
-    .output(isIsomerAdminOutputSchema)
-    .query(async ({ ctx, input: { roles } }) => {
-      return isActiveIsomerAdmin(ctx.user.id, roles)
-    }),
-
   resendInvite: protectedProcedure
     .input(resendInviteInputSchema)
     .output(resendInviteOutputSchema)
@@ -346,9 +284,9 @@ export const userRouter = router({
     .meta({ rateLimitOptions: { max: 10, windowMs: 60 * 1000 } })
     .mutation(async ({ ctx, input: { siteId, userId } }) => {
       await validatePermissionsForManagingUsers({
+        action: "manage",
         siteId,
         userId: ctx.user.id,
-        action: "manage",
       })
 
       const isSingpassEnabled = getIsSingpassEnabled({
@@ -398,8 +336,8 @@ export const userRouter = router({
 
       // Defensive programming to check if the user has permissions to receive invite
       const userPermission = await getResourcePermission({
-        userId: user.id,
         siteId,
+        userId: user.id,
       })
       if (userPermission.length === 0) {
         throw new TRPCError({
@@ -411,13 +349,77 @@ export const userRouter = router({
       // Send invite
       const { name: siteName } = await getSiteNameAndCodeBuildId(siteId)
       await sendInvitation({
-        isSingpassEnabled,
         inviterName: actorName,
+        isSingpassEnabled,
         recipientEmail: user.email,
-        siteName,
         role: userPermission[0]?.role ?? RoleType.Editor,
+        siteName,
       })
 
       return pick(user, ["email"])
+    }),
+
+  update: protectedProcedure
+    .input(updateUserInputSchema)
+    .output(updateUserOutputSchema)
+    .mutation(async ({ ctx, input: { siteId, userId, role } }) => {
+      await validatePermissionsForManagingUsers({
+        action: "manage",
+        siteId,
+        userId: ctx.user.id,
+      })
+
+      const isSingpassEnabled = getIsSingpassEnabled({
+        gb: ctx.gb,
+      })
+      if (!isSingpassEnabled) {
+        throwSingpassDisabledError()
+      }
+
+      if (userId === ctx.user.id) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You cannot update your own role",
+        })
+      }
+
+      const user = await db
+        .selectFrom("User")
+        .where("id", "=", userId)
+        .where("deletedAt", "is", null)
+        .selectAll()
+        .executeTakeFirst()
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        })
+      }
+
+      const updatedUserPermission = await updateUserSitewidePermission({
+        byUserId: ctx.user.id,
+        role,
+        siteId,
+        userId,
+      })
+
+      return pick(updatedUserPermission, ["id", "userId", "siteId", "role"])
+    }),
+
+  updateDetails: protectedProcedure
+    .input(updateUserDetailsInputSchema)
+    .output(updateUserDetailsOutputSchema)
+    .mutation(async ({ ctx, input: { name, phone } }) => {
+      // We don't have to check if the user is admin here
+      // because we only allow users to update their own details
+      // They should be able to update their own details even without any resource permissions
+      const updatedUser = await updateUserDetails({
+        name,
+        phone,
+        userId: ctx.user.id,
+      })
+
+      return pick(updatedUser, ["name", "phone"])
     }),
 })

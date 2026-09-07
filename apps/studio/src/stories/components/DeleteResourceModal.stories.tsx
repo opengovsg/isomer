@@ -14,9 +14,9 @@ const OpenedDeleteResourceModal = (): React.ReactNode => {
   const setState = useSetAtom(deleteResourceModalAtom)
   useEffect(() => {
     setState({
-      title: "Contact us",
       resourceId: "1",
       resourceType: ResourceType.Page,
+      title: "Contact us",
     })
   }, [setState])
   return <DeleteResourceModal siteId={1} />

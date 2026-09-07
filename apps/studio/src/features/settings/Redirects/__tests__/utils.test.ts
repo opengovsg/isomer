@@ -89,8 +89,8 @@ describe("isReferenceDestination", () => {
 describe("getDestinationDisplay", () => {
   it("shows a non-reference destination verbatim", () => {
     expect(getDestinationDisplay("/about-us", new Map())).toEqual({
-      status: "resolved",
       label: "/about-us",
+      status: "resolved",
     })
   })
 
@@ -105,8 +105,8 @@ describe("getDestinationDisplay", () => {
       ["[resource:1:2]", { permalink: "/about/contact", warn: false }],
     ])
     expect(getDestinationDisplay("[resource:1:2]", infoByDestination)).toEqual({
-      status: "resolved",
       label: "/about/contact",
+      status: "resolved",
     })
   })
 

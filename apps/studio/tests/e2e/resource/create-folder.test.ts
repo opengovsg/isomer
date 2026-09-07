@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test"
-import crypto from "crypto"
+import crypto from "node:crypto"
 import { db } from "~/server/modules/database/database"
 
 import { storageStateFor, TEST_EMAILS } from "../fixtures/auth"

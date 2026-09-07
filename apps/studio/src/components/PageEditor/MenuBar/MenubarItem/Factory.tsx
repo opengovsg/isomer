@@ -11,22 +11,30 @@ export const MenubarItemFactory = (
   item: PossibleMenubarItemProps,
 ): React.ReactNode | null => {
   switch (item.type) {
-    case "divider":
+    case "divider": {
       return <MenubarDivider {...item} />
-    case "vertical-list":
+    }
+    case "vertical-list": {
       return <MenubarVerticalList {...item} />
-    case "horizontal-list":
+    }
+    case "horizontal-list": {
       return <MenubarHorizontalList {...item} />
-    case "detailed-list":
+    }
+    case "detailed-list": {
       return <MenubarDetailedList {...item} />
-    case "item":
+    }
+    case "item": {
       return <MenubarItem {...item} />
-    case "overflow-list":
+    }
+    case "overflow-list": {
       return <MenubarOverflowList {...item} />
-    case "custom":
+    }
+    case "custom": {
       return <MenubarCustom {...item} />
-    default:
+    }
+    default: {
       const _: never = item
       return null
+    }
   }
 }

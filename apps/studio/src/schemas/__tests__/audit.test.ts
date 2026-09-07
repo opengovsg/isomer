@@ -17,10 +17,10 @@ import {
 const CURRENT_MONTH = getCurrentSingaporeMonth()
 
 const VALID_INPUT = {
-  scope: AuditLogExportScope.Site,
-  siteId: 1,
   month: CURRENT_MONTH,
   reportType: AuditLogExportRequestedReportType.Activity,
+  scope: AuditLogExportScope.Site,
+  siteId: 1,
 }
 
 describe("createAuditLogExportRequestSchema", () => {
@@ -233,13 +233,13 @@ describe("createAuditLogExportRequestSchema", () => {
         // Arrange / Act
         const future = createAuditLogExportRequestServerSchema.safeParse({
           ...VALID_INPUT,
-          reportType: AuditLogExportRequestedReportType.Access,
           month: "2999-12",
+          reportType: AuditLogExportRequestedReportType.Access,
         })
         const tooOld = createAuditLogExportRequestServerSchema.safeParse({
           ...VALID_INPUT,
-          reportType: AuditLogExportRequestedReportType.Access,
           month: "2000-01",
+          reportType: AuditLogExportRequestedReportType.Access,
         })
 
         // Assert

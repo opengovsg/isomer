@@ -1,7 +1,7 @@
 import type { ComponentType } from "react"
+import type { FallbackProps } from "react-error-boundary"
 import { useRouter } from "next/router"
 import { useEffect } from "react"
-import { type FallbackProps } from "react-error-boundary"
 import { FullscreenSpinner } from "~/components/FullscreenSpinner"
 import { SIGN_IN } from "~/lib/routes"
 

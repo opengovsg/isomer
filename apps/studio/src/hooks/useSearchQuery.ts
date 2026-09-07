@@ -19,9 +19,9 @@ export const useSearchQuery = ({
 
   const { data, isLoading } = trpc.resource.search.useInfiniteQuery(
     {
-      siteId,
       query: debouncedSearchTerm,
       resourceTypes,
+      siteId,
     },
     {
       getNextPageParam: (lastPage) => lastPage.nextOffset,
@@ -34,32 +34,35 @@ export const useSearchQuery = ({
     }
   }, [data, onSearchSuccess])
 
-  const matchedResources = useMemo((): SearchResultResource[] => {
-    return data?.pages.flatMap((page) => page.resources) ?? []
-  }, [data])
+  const matchedResources = useMemo(
+    (): SearchResultResource[] =>
+      data?.pages.flatMap((page) => page.resources) ?? [],
+    [data],
+  )
 
-  const totalResultsCount = useMemo(() => {
-    return (
-      data?.pages.reduce((acc, page) => acc + (page.totalCount ?? 0), 0) ?? 0
-    )
-  }, [data])
+  const totalResultsCount = useMemo(
+    () =>
+      data?.pages.reduce((acc, page) => acc + (page.totalCount ?? 0), 0) ?? 0,
+    [data],
+  )
 
-  const recentlyEditedResources = useMemo((): SearchResultResource[] => {
-    return data?.pages[0]?.recentlyEdited ?? []
-  }, [data])
+  const recentlyEditedResources = useMemo(
+    (): SearchResultResource[] => data?.pages[0]?.recentlyEdited ?? [],
+    [data],
+  )
 
   const clearSearchValue = useCallback(() => {
     setSearchValue("")
   }, [setSearchValue])
 
   return {
+    clearSearchValue,
+    debouncedSearchTerm,
+    isLoading,
+    matchedResources,
+    recentlyEditedResources,
     searchValue,
     setSearchValue,
-    debouncedSearchTerm,
-    matchedResources,
-    isLoading,
     totalResultsCount,
-    recentlyEditedResources,
-    clearSearchValue,
   }
 }

@@ -65,7 +65,9 @@ const InnerDrawer = ({
     <Flex flexDir="column" position="relative" h="100%" w="100%">
       {isUserIsomerAdmin && (
         <ActivateRawJsonEditorMode
-          onActivate={() => setDrawerState("rawJsonEditor")}
+          onActivate={() => {
+            setDrawerState("rawJsonEditor")
+          }}
         />
       )}
 
@@ -122,9 +124,10 @@ const RawJsonEditorDrawer = ({
   const [pendingChanges, setPendingChanges] = useState(() =>
     JSON.stringify(savedPageState, null, 2),
   )
-  const isPendingChangesValid = useMemo(() => {
-    return validateFn(safeJsonParse(pendingChanges))
-  }, [pendingChanges])
+  const isPendingChangesValid = useMemo(
+    () => validateFn(safeJsonParse(pendingChanges)),
+    [pendingChanges],
+  )
 
   const handleRawChange = (data: string) => {
     setPendingChanges(data)
@@ -167,13 +170,16 @@ const DrawerState = (
   )
 
   switch (drawerState) {
-    case "root":
+    case "root": {
       return <InnerDrawer {...props} setDrawerState={setDrawerState} />
-    case "rawJsonEditor":
+    }
+    case "rawJsonEditor": {
       return <RawJsonEditorDrawer {...props} setDrawerState={setDrawerState} />
-    default:
+    }
+    default: {
       const _: never = drawerState
       return null
+    }
   }
 }
 
@@ -198,8 +204,8 @@ export const LinkEditorDrawer = ({
         void utils.collection.countTagOptionsUsage.invalidate()
         void utils.page.readPage.invalidate()
         toast({
-          title: "Link updated!",
           status: "success",
+          title: "Link updated!",
           ...BRIEF_TOAST_SETTINGS,
         })
       },
@@ -211,8 +217,12 @@ export const LinkEditorDrawer = ({
         savedPageState={initialLinkState}
         previewPageState={link}
         isLoading={isPending}
-        handleChange={(data) => setLink(data)}
-        handleSaveChanges={() => mutate({ siteId, linkId, ...link })}
+        handleChange={(data) => {
+          setLink(data)
+        }}
+        handleSaveChanges={() => {
+          mutate({ linkId, siteId, ...link })
+        }}
       />
     </ErrorProvider>
   )

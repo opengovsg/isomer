@@ -9,6 +9,12 @@ import {
 } from "@chakra-ui/react"
 import { Button, Spinner } from "@opengovsg/design-system-react"
 import NextLink from "next/link"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 interface RowEntryProps {
   icon: IconType
@@ -54,8 +60,8 @@ export const RowEntry = ({
         iconSpacing="0.25rem"
         title={label}
         _selected={{
-          bg: "interaction.muted.main.active",
           _hover: { bg: "interaction.muted.main.active" },
+          bg: "interaction.muted.main.active",
         }}
         _focus={{
           zIndex: 1,
@@ -82,7 +88,9 @@ export const RowEntry = ({
           >
             {label}
           </Text>
-          {subLabel && <Text textStyle="caption-3">{subLabel}</Text>}
+          {hasNonEmptyString(subLabel) && (
+            <Text textStyle="caption-3">{subLabel}</Text>
+          )}
         </Flex>
       </Button>
       {isExpandable && (
@@ -100,7 +108,7 @@ export const RowEntry = ({
             zIndex: 1,
           }}
         >
-          {isFetchingChildren ? (
+          {isNullableBooleanTrue(isFetchingChildren) ? (
             <Spinner />
           ) : (
             <AccordionIcon w="1rem" color="interaction.support.unselected" />

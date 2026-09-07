@@ -50,7 +50,9 @@ export const WidgetProvider = ({
 
   const getNextWidget = useCallback(
     (curWidget: WidgetType) => {
-      if (!selectedWidget) return curWidget
+      if (!selectedWidget) {
+        return curWidget
+      }
 
       return selectedWidget === "askgov" ? "vica" : "askgov"
     },
@@ -60,8 +62,8 @@ export const WidgetProvider = ({
   const contextValue = useMemo(
     () => ({
       activeWidget: selectedWidget,
-      setActiveWidget: setSelectedWidget,
       getNextWidget,
+      setActiveWidget: setSelectedWidget,
     }),
     [selectedWidget, getNextWidget],
   )
@@ -76,8 +78,9 @@ export const WidgetProvider = ({
 export const useWidget = () => {
   const val = useContext(WidgetContext)
 
-  if (val === null)
+  if (val === null) {
     throw new Error("useWidget must be used within a WidgetProvider")
+  }
 
   return val
 }

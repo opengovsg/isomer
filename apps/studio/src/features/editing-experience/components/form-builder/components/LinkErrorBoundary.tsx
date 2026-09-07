@@ -55,12 +55,10 @@ interface LinkErrorBoundaryProps {
 export const LinkErrorBoundary = ({
   resetLink,
   children,
-}: PropsWithChildren<LinkErrorBoundaryProps>) => {
-  return (
-    <LinkErrorBoundaryResetLinkContext.Provider value={resetLink}>
-      <ErrorBoundary FallbackComponent={LinkErrorFallback}>
-        {children}
-      </ErrorBoundary>
-    </LinkErrorBoundaryResetLinkContext.Provider>
-  )
-}
+}: PropsWithChildren<LinkErrorBoundaryProps>) => (
+  <LinkErrorBoundaryResetLinkContext.Provider value={resetLink}>
+    <ErrorBoundary FallbackComponent={LinkErrorFallback}>
+      {children}
+    </ErrorBoundary>
+  </LinkErrorBoundaryResetLinkContext.Provider>
+)

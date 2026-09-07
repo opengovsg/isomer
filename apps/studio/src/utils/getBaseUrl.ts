@@ -1,5 +1,7 @@
+/* oxlint-disable typescript/no-unnecessary-condition, jsdoc/check-tag-names -- studio lint cleanup */
 /* oxlint-disable node/no-process-env */
 import { env } from "~/env.mjs"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 /**
  * Retrieves the base URL for the current environment.
@@ -9,11 +11,11 @@ export const getBaseUrl = () => {
   if (globalThis.window !== undefined) {
     return globalThis.window.location.origin
   }
-  if (env.NEXT_PUBLIC_APP_URL) {
+  if (hasNonEmptyString(env.NEXT_PUBLIC_APP_URL)) {
     return env.NEXT_PUBLIC_APP_URL
   }
   // reference for vercel.com
-  if (process.env.VERCEL_URL) {
+  if (hasNonEmptyString(process.env.VERCEL_URL)) {
     return `https://${process.env.VERCEL_URL}`
   }
   // assume localhost

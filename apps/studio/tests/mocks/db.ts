@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/import-style -- studio lint cleanup */
 import { PrismaPg } from "@prisma/adapter-pg"
 import { PostgresDialect } from "kysely"
 import { randomUUID } from "node:crypto"
@@ -9,7 +10,8 @@ import Cursor from "pg-cursor"
 import { parse } from "superjson"
 import { PrismaClient } from "~prisma/generated/prisma/client"
 
-import { Kysely, type DB } from "@isomer/db"
+import type { DB } from "@isomer/db"
+import { Kysely } from "@isomer/db"
 
 import { CONTAINER_INFORMATION_SCHEMA } from "../common"
 
@@ -68,11 +70,11 @@ const setupPgClient = async () => {
 
 // Running migrations manually; dd-trace intercepts `exec` usage and prevents runs
 const applyMigrations = async (client: Client) => {
-  const directory = readdirSync(prismaMigrationDir).sort()
+  const directory = readdirSync(prismaMigrationDir).toSorted()
   for (const file of directory) {
     const name = `${prismaMigrationDir}/${file}`
     if (statSync(name).isDirectory()) {
-      const migration = readFileSync(`${name}/migration.sql`, "utf8")
+      const migration = readFileSync(`${name}/migration.sql`, "utf-8")
       await client.query(migration)
     }
   }

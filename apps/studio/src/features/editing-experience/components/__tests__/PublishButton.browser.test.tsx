@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/promise-function-async, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { ResourceAbility } from "~/server/modules/permissions/permissions.type"
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
 import { AbilityProvider } from "@casl/react"
@@ -21,8 +22,8 @@ vi.mock("@chakra-ui/react", async (importActual) => {
     MenuButton: ({ "aria-label": ariaLabel }: { "aria-label"?: string }) => (
       <button type="button" aria-label={ariaLabel} />
     ),
-    MenuList: ({ children }: { children: React.ReactNode }) => children,
     MenuItem: ({ children }: { children: React.ReactNode }) => children,
+    MenuList: ({ children }: { children: React.ReactNode }) => children,
   }
 })
 
@@ -49,13 +50,13 @@ vi.mock("~/utils/trpc", () => {
   return {
     trpc: {
       page: {
+        publishPage: {
+          useMutation: () => ({ mutate: noop, isPending: false }),
+        },
         readPage: {
           useSuspenseQuery: () => [
             { draftBlobId: "draft-1", scheduledAt: null },
           ],
-        },
-        publishPage: {
-          useMutation: () => ({ mutate: noop, isPending: false }),
         },
       },
       useUtils: () => ({

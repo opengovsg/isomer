@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { StockFeatures } from "@tanstack/react-table"
 import { HStack, Text, useDisclosure } from "@chakra-ui/react"
 import { keepPreviousData } from "@tanstack/react-query"
@@ -13,6 +14,12 @@ import { Datatable } from "~/components/Datatable/Datatable"
 import { EmptyTablePlaceholder } from "~/components/Datatable/EmptyTablePlaceholder"
 import { useTablePagination } from "~/hooks/useTablePagination"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import type { GazetteTableData } from "./types"
 import { ModifyGazetteModal } from "../ModifyGazetteModal/ModifyGazetteModal"
@@ -26,43 +33,40 @@ const columnsHelper = createColumnHelper<StockFeatures, GazetteTableData>()
 const getColumns = (siteId: number) =>
   columnsHelper.columns([
     columnsHelper.accessor("notificationNo", {
-      size: 100,
-      header: () => <TableHeader>Notification No.</TableHeader>,
       cell: ({ getValue }) => (
         <Text textStyle="body-2" color="base.content.strong">
-          {getValue() || "-"}
+          {hasNonEmptyString(getValue()) || "-"}
         </Text>
       ),
+      header: () => <TableHeader>Notification No.</TableHeader>,
+      size: 100,
     }),
     columnsHelper.accessor("title", {
-      minSize: 250,
-      header: () => <TableHeader>Gazette title</TableHeader>,
       cell: ({ getValue }) => (
         <Text textStyle="subhead-2" color="base.content.default">
           {getValue()}
         </Text>
       ),
+      header: () => <TableHeader>Gazette title</TableHeader>,
+      minSize: 250,
     }),
     columnsHelper.display({
-      id: "category",
-      size: 200,
-      header: () => <TableHeader>Category</TableHeader>,
       cell: ({ row }) => (
         <CategoryCell
           category={row.original.category}
           subcategory={row.original.subcategory}
         />
       ),
+      header: () => <TableHeader>Category</TableHeader>,
+      id: "category",
+      size: 200,
     }),
     columnsHelper.accessor("status", {
-      size: 140,
-      header: () => <TableHeader>Status</TableHeader>,
       cell: ({ getValue }) => <StatusCell status={getValue()} />,
+      header: () => <TableHeader>Status</TableHeader>,
+      size: 140,
     }),
     columnsHelper.display({
-      id: "fileId",
-      size: 130,
-      header: () => <TableHeader>File ID</TableHeader>,
       cell: ({ row }) => (
         <FileIdCell
           fileId={row.original.fileId}
@@ -70,15 +74,18 @@ const getColumns = (siteId: number) =>
           siteId={siteId}
         />
       ),
+      header: () => <TableHeader>File ID</TableHeader>,
+      id: "fileId",
+      size: 130,
     }),
     columnsHelper.accessor("publishTime", {
-      size: 130,
-      header: () => <TableHeader>Publish time</TableHeader>,
       cell: ({ getValue }) => (
         <Text textStyle="body-2" color="base.content.strong">
           {format(getValue(), "dd/MM/yyyy, hh:mma")}
         </Text>
       ),
+      header: () => <TableHeader>Publish time</TableHeader>,
+      size: 130,
     }),
   ])
 
@@ -100,8 +107,8 @@ export const GazetteTable = ({
     useState<GazetteTableData | null>(null)
   const { data: totalCount = 0, isLoading: isCountLoading } =
     trpc.resource.countWithoutRoot.useQuery({
-      siteId,
       resourceId: collectionId,
+      siteId,
     })
 
   const { limit, onPaginationChange, skip, pagination, pageCount } =
@@ -113,18 +120,19 @@ export const GazetteTable = ({
 
   const { data: resources, isFetching } = trpc.gazette.list.useQuery(
     {
-      siteId,
       collectionId,
       limit,
       offset: skip,
+      siteId,
     },
     {
-      placeholderData: keepPreviousData, // Required for table to show previous data while fetching next page
+      placeholderData: keepPreviousData,
+      // Required for table to show previous data while fetching next page
     },
   )
 
   const tableInstance = useTable({
-    features: stockFeatures,
+    autoResetPageIndex: false,
     columns,
     data:
       resources?.map((resource) => {
@@ -137,27 +145,27 @@ export const GazetteTable = ({
         }
 
         return {
-          id: resource.id,
-          title: resource.title,
-          notificationNo: page?.description ?? null,
           category: page?.category ?? "",
-          subcategory: page?.tagged?.[0] ?? "",
-          status: resource.state === "Published" ? "published" : "scheduled",
           fileId: page?.ref?.split("/").pop() ?? "",
           fileKey: page?.ref ?? null,
           fileSize: resource.fileSize ?? null,
+          id: resource.id,
+          notificationNo: page?.description ?? null,
           publishTime: resource.scheduledAt ?? new Date(),
           publishedAt: resource.publishedAt ?? null,
+          status: resource.state === "Published" ? "published" : "scheduled",
+          subcategory: page?.tagged?.[0] ?? "",
+          title: resource.title,
         } satisfies GazetteTableData
       }) ?? [],
+    features: stockFeatures,
     manualFiltering: true,
     manualPagination: true,
-    autoResetPageIndex: false,
     onPaginationChange,
+    pageCount,
     state: {
       pagination,
     },
-    pageCount,
   })
 
   return (
@@ -201,15 +209,15 @@ export const GazetteTable = ({
           siteId={siteId}
           collectionId={collectionId}
           initialData={{
-            title: selectedGazette.title,
             category: selectedGazette.category,
-            subcategory: selectedGazette.subcategory,
-            notificationNumber: selectedGazette.notificationNo ?? undefined,
-            publishDate: selectedGazette.publishTime,
-            publishTime: format(selectedGazette.publishTime, "HH:mm"),
             fileId: selectedGazette.fileId,
             fileKey: selectedGazette.fileKey ?? undefined,
             fileSize: selectedGazette.fileSize ?? undefined,
+            notificationNumber: selectedGazette.notificationNo ?? undefined,
+            publishDate: selectedGazette.publishTime,
+            publishTime: format(selectedGazette.publishTime, "HH:mm"),
+            subcategory: selectedGazette.subcategory,
+            title: selectedGazette.title,
           }}
         />
       )}
@@ -221,12 +229,12 @@ export const GazetteTable = ({
           siteId={siteId}
           gazetteId={selectedGazette.id}
           data={{
-            title: selectedGazette.title,
             category: selectedGazette.category,
-            subcategory: selectedGazette.subcategory,
-            notificationNumber: selectedGazette.notificationNo ?? undefined,
             fileId: selectedGazette.fileId,
+            notificationNumber: selectedGazette.notificationNo ?? undefined,
             publishedAt: selectedGazette.publishedAt,
+            subcategory: selectedGazette.subcategory,
+            title: selectedGazette.title,
           }}
         />
       )}

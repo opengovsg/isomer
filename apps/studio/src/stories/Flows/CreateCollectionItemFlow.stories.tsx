@@ -8,8 +8,8 @@ import { sitesHandlers } from "tests/msw/handlers/sites"
 import CollectionListPage from "~/pages/sites/[siteId]/collections/[collectionId]"
 
 const meta: Meta<typeof CollectionListPage> = {
-  title: "Flows/Create Collection Item",
   component: CollectionListPage,
+  decorators: [],
   parameters: {
     getLayout: CollectionListPage.getLayout,
     msw: {
@@ -38,15 +38,15 @@ const meta: Meta<typeof CollectionListPage> = {
     },
     nextjs: {
       router: {
-        query: {
-          siteId: "1",
-          collectionId: "1",
-        },
         pathname: "/sites/[siteId]/collections/[collectionId]",
+        query: {
+          collectionId: "1",
+          siteId: "1",
+        },
       },
     },
   },
-  decorators: [],
+  title: "Flows/Create Collection Item",
 }
 
 export default meta
@@ -69,11 +69,11 @@ export const EnterPageDetails: Story = {
     await SelectLayout.play?.(context)
 
     await userEvent.click(
-      screen.getByRole("button", { name: /next: page details/i }),
+      screen.getByRole("button", { name: /next: page details/iu }),
     )
 
     await userEvent.type(
-      screen.getByLabelText(/page title/i),
+      screen.getByLabelText(/page title/iu),
       "My_new page WITH w@eird characters!",
     )
   },

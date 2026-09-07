@@ -6,40 +6,42 @@ import { trpcMsw } from "../mockTrpc"
 
 export const DEFAULT_COLLECTION_ITEMS = [
   {
-    id: "8",
-    permalink: "mock-link",
-    title: "Test link 1",
-    publishedVersionId: null,
-    draftBlobId: null,
-    type: ResourceType.CollectionLink,
-    parentId: "2",
-    updatedAt: new Date("2024-09-12T07:00:30.000Z"),
-    state: ResourceState.Draft,
-    siteId: 1,
     createdAt: new Date("2024-09-12T07:00:30.000Z"),
+    draftBlobId: null,
+    id: "8",
+    parentId: "2",
+    permalink: "mock-link",
+    publishedVersionId: null,
     scheduledAt: null,
     scheduledBy: null,
+    siteId: 1,
+    state: ResourceState.Draft,
+    title: "Test link 1",
+    type: ResourceType.CollectionLink,
+    updatedAt: new Date("2024-09-12T07:00:30.000Z"),
   },
   {
-    id: "5",
-    permalink: "test-page-1",
-    title: "Test page 1",
-    publishedVersionId: null,
-    draftBlobId: "4",
-    type: ResourceType.CollectionPage,
-    parentId: "2",
-    updatedAt: new Date("2024-09-12T07:00:20.000Z"),
-    state: ResourceState.Draft,
-    siteId: 1,
     createdAt: new Date("2024-09-12T07:00:30.000Z"),
+    draftBlobId: "4",
+    id: "5",
+    parentId: "2",
+    permalink: "test-page-1",
+    publishedVersionId: null,
     scheduledAt: null,
     scheduledBy: null,
+    siteId: 1,
+    state: ResourceState.Draft,
+    title: "Test page 1",
+    type: ResourceType.CollectionPage,
+    updatedAt: new Date("2024-09-12T07:00:20.000Z"),
   },
 ]
 export const collectionHandlers = {
-  list: {
+  countTagOptionsUsage: {
     default: () =>
-      trpcMsw.collection.list.query(() => DEFAULT_COLLECTION_ITEMS),
+      trpcMsw.collection.countTagOptionsUsage.query(() => ({ count: 3 })),
+    zero: () =>
+      trpcMsw.collection.countTagOptionsUsage.query(() => ({ count: 0 })),
   },
   getMetadata: {
     default: () =>
@@ -59,9 +61,13 @@ export const collectionHandlers = {
         draftBlobId: "1",
       })),
   },
+  list: {
+    default: () =>
+      trpcMsw.collection.list.query(() => DEFAULT_COLLECTION_ITEMS),
+  },
   readCollectionLink: {
-    default: () => {
-      return trpcMsw.collection.readCollectionLink.query(() => ({
+    default: () =>
+      trpcMsw.collection.readCollectionLink.query(() => ({
         content: asBlobJsonContent({
           page: {
             ref: "",
@@ -74,10 +80,9 @@ export const collectionHandlers = {
           version: "0.1.0",
         }),
         title: "yet another link",
-      }))
-    },
-    thumbnail: () => {
-      return trpcMsw.collection.readCollectionLink.query(() => ({
+      })),
+    thumbnail: () =>
+      trpcMsw.collection.readCollectionLink.query(() => ({
         content: asBlobJsonContent({
           page: {
             ref: "",
@@ -91,13 +96,6 @@ export const collectionHandlers = {
           version: "0.1.0",
         }),
         title: "Link with image",
-      }))
-    },
-  },
-  countTagOptionsUsage: {
-    default: () =>
-      trpcMsw.collection.countTagOptionsUsage.query(() => ({ count: 3 })),
-    zero: () =>
-      trpcMsw.collection.countTagOptionsUsage.query(() => ({ count: 0 })),
+      })),
   },
 }

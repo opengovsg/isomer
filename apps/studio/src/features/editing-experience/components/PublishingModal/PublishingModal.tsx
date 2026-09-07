@@ -27,37 +27,35 @@ export const PublishingModal = ({
   isPublishingNow,
   onClose,
   ...rest
-}: PublishingModalProps): React.ReactNode => {
-  return (
-    <Modal onClose={onClose} {...rest}>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader mr="3.5rem">Publish this page?</ModalHeader>
-        <ModalCloseButton size="lg" />
-        <ModalBody>
-          <Text textStyle="body-1" color="base.content.default">
-            Changes will be live on your site in approximately 5-10 minutes.
-          </Text>
-        </ModalBody>
-        <ModalFooter>
-          <Button
-            mr={3}
-            onClick={onClose}
-            variant="clear"
-            color="base.content.strong"
-          >
-            No, don&apos;t publish
-          </Button>
-          <Button
-            onClick={() => {
-              onPublishNow(pageId, siteId)
-            }}
-            isLoading={isPublishingNow}
-          >
-            Publish now
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
-  )
-}
+}: PublishingModalProps): React.ReactNode => (
+  <Modal onClose={onClose} {...rest}>
+    <ModalOverlay />
+    <ModalContent>
+      <ModalHeader mr="3.5rem">Publish this page?</ModalHeader>
+      <ModalCloseButton size="lg" />
+      <ModalBody>
+        <Text textStyle="body-1" color="base.content.default">
+          Changes will be live on your site in approximately 5-10 minutes.
+        </Text>
+      </ModalBody>
+      <ModalFooter>
+        <Button
+          mr={3}
+          onClick={onClose}
+          variant="clear"
+          color="base.content.strong"
+        >
+          No, don&apos;t publish
+        </Button>
+        <Button
+          onClick={() => {
+            onPublishNow(pageId, siteId)
+          }}
+          isLoading={isPublishingNow}
+        >
+          Publish now
+        </Button>
+      </ModalFooter>
+    </ModalContent>
+  </Modal>
+)

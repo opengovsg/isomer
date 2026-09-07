@@ -14,22 +14,20 @@ import { LoadingPreview } from "./LoadingPreview"
 import PreviewWithCustomSitemap from "./PreviewWithCustomSitemap"
 import { ViewportContainer } from "./ViewportContainer"
 
-const LoadingState = (): React.ReactNode => {
-  return (
-    <Box bg="base.canvas.backdrop" height="100%" flexDirection="column">
-      <Box
-        px="2rem"
-        pb="2rem"
-        pt="1rem"
-        overflowX="auto"
-        height="100%"
-        width="100%"
-      >
-        <LoadingPreview />
-      </Box>
+const LoadingState = (): React.ReactNode => (
+  <Box bg="base.canvas.backdrop" height="100%" flexDirection="column">
+    <Box
+      px="2rem"
+      pb="2rem"
+      pt="1rem"
+      overflowX="auto"
+      height="100%"
+      width="100%"
+    >
+      <LoadingPreview />
     </Box>
-  )
-}
+  </Box>
+)
 
 const SuspendableEditPagePreview = (): React.ReactNode => {
   const {
@@ -47,8 +45,8 @@ const SuspendableEditPagePreview = (): React.ReactNode => {
   } = useEditorDrawerContext()
 
   const [siteMap] = trpc.site.getLocalisedSitemap.useSuspenseQuery({
-    siteId,
     resourceId: pageId,
+    siteId,
   })
 
   const handleIframeMount = useCallback(
@@ -59,21 +57,20 @@ const SuspendableEditPagePreview = (): React.ReactNode => {
   )
 
   const { rect: highlightRect, label: highlightLabel } = useBlockHighlight({
-    iframeDocument,
-    hoveredBlockIndex,
     content: previewPageState.content,
+    hoveredBlockIndex,
+    iframeDocument,
   })
 
   const { rect: flashRect, label: flashLabel } = useBlockHighlight({
-    iframeDocument,
-    hoveredBlockIndex: flashBlockIndex,
     content: previewPageState.content,
+    hoveredBlockIndex: flashBlockIndex,
+    iframeDocument,
   })
 
-  const handleFlashEnd = useCallback(
-    () => setFlashBlockIndex(null),
-    [setFlashBlockIndex],
-  )
+  const handleFlashEnd = useCallback(() => {
+    setFlashBlockIndex(null)
+  }, [setFlashBlockIndex])
 
   const { isFading: isFlashFading } = useBlockFlashHighlight({
     flashBlockIndex,

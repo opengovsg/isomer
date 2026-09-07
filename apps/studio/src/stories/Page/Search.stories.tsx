@@ -18,8 +18,8 @@ const SHARED_HANDLERS = [
 ]
 
 const meta: Meta<typeof SitePage> = {
-  title: "Pages/Site Management/Search",
   component: SitePage,
+  decorators: [],
   parameters: {
     getLayout: SitePage.getLayout,
     nextjs: {
@@ -30,7 +30,7 @@ const meta: Meta<typeof SitePage> = {
       },
     },
   },
-  decorators: [],
+  title: "Pages/Site Management/Search",
 }
 
 export default meta
@@ -131,9 +131,13 @@ export const ShowHint: Story = {
     })
     await userEvent.click(searchButton)
     await userEvent.keyboard("covid")
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await new Promise((resolve) => {
+      setTimeout(resolve, 1000)
+    })
     await userEvent.keyboard(" test")
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await new Promise((resolve) => {
+      setTimeout(resolve, 1000)
+    })
     await userEvent.keyboard(" 1")
   },
 }

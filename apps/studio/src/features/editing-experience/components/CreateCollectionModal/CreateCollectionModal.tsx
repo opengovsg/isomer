@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-use-before-define, eslint/sort-keys, typescript/strict-void-return, unicorn/no-unnecessary-type-conversion -- core cleanup deferred */
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import type { z } from "zod"
 import {
@@ -21,7 +22,7 @@ import {
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
 import { useEffect } from "react"
 import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
@@ -33,6 +34,12 @@ import {
   MAX_FOLDER_TITLE_LENGTH,
 } from "~/schemas/folder"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { generateResourceUrl } from "../utils"
 
@@ -49,20 +56,18 @@ export const CreateCollectionModal = ({
   onClose,
   siteId,
   parentFolderId,
-}: CreateCollectionModalProps): React.ReactNode => {
-  return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <ModalOverlay />
-      <CreateCollectionModalContent
-        isOpen={isOpen}
-        key={String(isOpen)}
-        onClose={onClose}
-        siteId={siteId}
-        parentFolderId={parentFolderId}
-      />
-    </Modal>
-  )
-}
+}: CreateCollectionModalProps): React.ReactNode => (
+  <Modal isOpen={isOpen} onClose={onClose}>
+    <ModalOverlay />
+    <CreateCollectionModalContent
+      isOpen={isOpen}
+      key={String(isOpen)}
+      onClose={onClose}
+      siteId={siteId}
+      parentFolderId={parentFolderId}
+    />
+  </Modal>
+)
 
 const CreateCollectionModalContent = ({
   onClose,
@@ -84,29 +89,14 @@ const CreateCollectionModalContent = ({
       permalink: "",
     },
     schema: createCollectionSchema.omit({
-      siteId: true,
       parentFolderId: true,
+      siteId: true,
     }),
   })
   const { errors, isValid } = formState
   const utils = trpc.useUtils()
   const toast = useToast()
   const { mutate, isPending } = trpc.collection.create.useMutation({
-    onSuccess: async () => {
-      posthog.capture("collection_created", {
-        site_id: siteId,
-        has_parent_folder: !!parentFolderId,
-      })
-      await utils.resource.listWithoutRoot.invalidate()
-      await utils.resource.countWithoutRoot.invalidate()
-      await utils.resource.getChildrenOf.invalidate()
-      toast({
-        title: "Collection created!",
-        status: "success",
-        ...BRIEF_TOAST_SETTINGS,
-      })
-      onClose()
-    },
     onError: (err) => {
       if (err.data?.code === "CONFLICT") {
         setError("permalink", { message: err.message }, { shouldFocus: true })
@@ -115,8 +105,23 @@ const CreateCollectionModalContent = ({
       toast({
         title: "Failed to create collection",
         status: "error",
-        // TODO: check if this property is correct
+        // Deferred: check if this property is correct
         description: err.message,
+        ...BRIEF_TOAST_SETTINGS,
+      })
+      onClose()
+    },
+    onSuccess: async () => {
+      posthogJs.capture("collection_created", {
+        has_parent_folder: !!isDefinedNumber(parentFolderId),
+        site_id: siteId,
+      })
+      await utils.resource.listWithoutRoot.invalidate()
+      await utils.resource.countWithoutRoot.invalidate()
+      await utils.resource.getChildrenOf.invalidate()
+      toast({
+        status: "success",
+        title: "Collection created!",
         ...BRIEF_TOAST_SETTINGS,
       })
       onClose()
@@ -139,6 +144,7 @@ const CreateCollectionModalContent = ({
       })
     }
   }, [getFieldState, setValue, collectionTitle])
+  // oxlint-disable-next-line typescript/strict-void-return -- core cleanup deferred
 
   return (
     <ModalContent>
@@ -160,7 +166,7 @@ const CreateCollectionModalContent = ({
                 my="0.5rem"
                 {...register("collectionTitle")}
               />
-              {errors.collectionTitle?.message ? (
+              {hasNonEmptyString(errors.collectionTitle?.message) ? (
                 <FormErrorMessage>
                   {errors.collectionTitle.message}
                 </FormErrorMessage>
@@ -198,7 +204,7 @@ const CreateCollectionModalContent = ({
                   />
                 )}
               />
-              {errors.permalink?.message && (
+              {hasNonEmptyString(errors.permalink?.message) && (
                 <FormErrorMessage>{errors.permalink.message}</FormErrorMessage>
               )}
 

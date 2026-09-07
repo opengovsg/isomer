@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type {
   IsomerSiteConfigProps,
   IsomerSiteProps,
@@ -25,11 +26,18 @@ import { FOOTER_QUERY_SELECTOR } from "~/features/settings/constants"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { waitForElement } from "~/utils/dom"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { siteSchema } from "../../schema"
 import Preview from "./Preview"
 import { ViewportContainer } from "./ViewportContainer"
 
+// oxlint-disable-next-line eslint/sort-keys -- core cleanup deferred
 const SHARED_TAB_STYLES = {
   border: "1px solid",
   borderColor: "base.divider.strong",
@@ -45,43 +53,42 @@ const SHARED_TAB_STYLES = {
   textColor: "base.content.default",
   _hover: { bgColor: "interaction.muted.main.hover" },
   _selected: {
-    textTransform: "none",
-    borderColor: "interaction.main.default",
     bgColor: "muted.main.active",
+    borderColor: "interaction.main.default",
     textColor: "interaction.main.default",
+    textTransform: "none",
   },
   // SAFETY: caller invariant is checked immediately before this narrowing assertion
 } as const
 
 const BUTTON_COLOURS = ["#ff5f56", "#ffbd2e", "#27c93f"]
 
-const WindowButtons = () => {
-  return (
-    <Box
-      style={{
-        display: "flex",
-        gap: "8px",
-        paddingRight: "12px",
-        paddingTop: "0.75rem",
-        paddingBottom: "0.75rem",
-        alignItems: "center",
-      }}
-    >
-      {BUTTON_COLOURS.map((color) => (
-        <Box
-          key={color}
-          style={{
-            borderRadius: "50%",
-            background: color,
-            width: "16px",
-            height: "16px",
-          }}
-        />
-      ))}
-    </Box>
-  )
-}
+const WindowButtons = () => (
+  <Box
+    style={{
+      alignItems: "center",
+      display: "flex",
+      gap: "8px",
+      paddingBottom: "0.75rem",
+      paddingRight: "12px",
+      paddingTop: "0.75rem",
+    }}
+  >
+    {BUTTON_COLOURS.map((color) => (
+      <Box
+        key={color}
+        style={{
+          background: color,
+          borderRadius: "50%",
+          height: "16px",
+          width: "16px",
+        }}
+      />
+    ))}
+  </Box>
+)
 
+// oxlint-disable-next-line eslint/sort-keys -- core cleanup deferred
 const CHROME_TAB_BASE_STYLE = {
   display: "flex",
   paddingTop: "8px",
@@ -95,10 +102,11 @@ const CHROME_TAB_BASE_STYLE = {
 } as const
 
 // SAFETY: caller invariant is checked immediately before this narrowing assertion
-const CHROME_TAB_FAVICON_STYLE = { width: "16px", height: "16px" } as const
+const CHROME_TAB_FAVICON_STYLE = { height: "16px", width: "16px" } as const
 // SAFETY: caller invariant is checked immediately before this narrowing assertion
 const CHROME_TAB_CLOSE_ICON_STYLE = { marginLeft: "2rem" } as const
 
+// oxlint-disable-next-line eslint/sort-keys -- core cleanup deferred
 const ADDRESS_BAR_BASE_STYLE = {
   display: "flex",
   paddingTop: "8px",
@@ -117,6 +125,7 @@ const ADDRESS_BAR_NAV_ICONS_STYLE = { display: "flex", gap: "4px" } as const
 // SAFETY: caller invariant is checked immediately before this narrowing assertion
 const ADDRESS_BAR_NAV_ICON_STYLE = { margin: "8px" } as const
 
+// oxlint-disable-next-line eslint/sort-keys -- core cleanup deferred
 const ADDRESS_BAR_INPUT_STYLE = {
   borderRadius: "16777200px",
   border: "1px solid rgba(0, 0, 0, 0.00)",
@@ -142,7 +151,7 @@ const ChromeTab = ({
         ...style,
       }}
     >
-      {favicon ? (
+      {hasNonEmptyString(favicon) ? (
         <Image
           style={CHROME_TAB_FAVICON_STYLE}
           src={`https://${s3Domain}${favicon}`}
@@ -247,7 +256,11 @@ export const EditSettingsPreview = ({
       <ViewportContainer
         siteId={siteId}
         theme={theme}
-        callback={jumpToFooter ? handleSettingsPreviewIframeMount : undefined}
+        callback={
+          isNullableBooleanTrue(jumpToFooter)
+            ? handleSettingsPreviewIframeMount
+            : undefined
+        }
         header={
           previewMockContentPage && (
             <Tabs
@@ -255,7 +268,9 @@ export const EditSettingsPreview = ({
               px="2rem"
               w="full"
               display="flex"
-              onChange={(index) => setTabIndex(index)}
+              onChange={(index) => {
+                setTabIndex(index)
+              }}
             >
               <TabList w="full" gap={0} textTransform="none">
                 <Tab borderLeftRadius="4px" {...SHARED_TAB_STYLES}>
@@ -273,11 +288,11 @@ export const EditSettingsPreview = ({
           <>
             <Box
               style={{
-                display: "flex",
                 background: "#e8eaed",
-                paddingTop: "8px",
+                display: "flex",
                 paddingLeft: "12px",
                 paddingRight: "12px",
+                paddingTop: "8px",
               }}
             >
               <WindowButtons />

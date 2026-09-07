@@ -25,87 +25,20 @@ import {
 } from "./redirect.service"
 
 export const redirectRouter = router({
-  list: protectedProcedure
-    .input(listRedirectsSchema)
-    .query(async ({ ctx, input }) => {
+  bulkCreate: protectedProcedure
+    .input(bulkRedirectsCsvSchema)
+    .mutation(async ({ ctx, input }) => {
       await validateUserPermissionsForSite({
+        action: "create",
         siteId: input.siteId,
         userId: ctx.user.id,
-        action: "read",
       })
 
-      return listRedirects(input)
-    }),
-
-  count: protectedProcedure
-    .input(countRedirectsSchema)
-    .query(async ({ ctx, input }) => {
-      await validateUserPermissionsForSite({
-        siteId: input.siteId,
-        userId: ctx.user.id,
-        action: "read",
+      return await bulkCreateRedirects({
+        ...input,
+        byUserId: ctx.user.id,
+        logger: ctx.logger,
       })
-
-      return countRedirects(input)
-    }),
-
-  // Preflight a would-be redirect, returning blocking errors and non-blocking
-  // warnings so the form can surface them before the user commits. Read-only
-  // and gated on "read" like the other queries — it exposes only whether
-  // internal pages/redirects exist, which read access already covers.
-  validate: protectedProcedure
-    .input(createRedirectSchema)
-    .query(async ({ ctx, input }) => {
-      await validateUserPermissionsForSite({
-        siteId: input.siteId,
-        userId: ctx.user.id,
-        action: "read",
-      })
-
-      return validateRedirect(input)
-    }),
-
-  // Resolves stored [resource:...] destinations to display permalinks. A read
-  // is enough — it only surfaces permalinks the caller can already see.
-  resolveReferences: protectedProcedure
-    .input(resolveRedirectReferencesSchema)
-    .query(async ({ ctx, input }) => {
-      await validateUserPermissionsForSite({
-        siteId: input.siteId,
-        userId: ctx.user.id,
-        action: "read",
-      })
-
-      return resolveRedirectReferences(input)
-    }),
-
-  // Whether a path is the source of a live redirect (and where it points), for
-  // the page-settings warning. Read-only — surfaces only the redirect's
-  // destination, which read access already covers.
-  getBySource: protectedProcedure
-    .input(getRedirectBySourceSchema)
-    .query(async ({ ctx, input }) => {
-      await validateUserPermissionsForSite({
-        siteId: input.siteId,
-        userId: ctx.user.id,
-        action: "read",
-      })
-
-      return getRedirectBySource(input)
-    }),
-
-  // Counts the live redirects that point at a resource (or any descendant), so
-  // the delete-page modal can warn they will be removed. Read-only.
-  countByDestinationResource: protectedProcedure
-    .input(countRedirectsByDestinationSchema)
-    .query(async ({ ctx, input }) => {
-      await validateUserPermissionsForSite({
-        siteId: input.siteId,
-        userId: ctx.user.id,
-        action: "read",
-      })
-
-      return countRedirectsPointingToResource(input)
     }),
 
   // Validates a whole uploaded CSV without writing anything, so the bulk-upload
@@ -118,30 +51,38 @@ export const redirectRouter = router({
     .input(bulkRedirectsCsvSchema)
     .mutation(async ({ ctx, input }) => {
       await validateUserPermissionsForSite({
+        action: "read",
         siteId: input.siteId,
         userId: ctx.user.id,
-        action: "read",
       })
 
-      return bulkValidateRedirects(input)
+      return await bulkValidateRedirects(input)
     }),
 
-  // Commits a validated batch: re-validates server-side, inserts every row in
-  // one transaction, and publishes once. Site-admin only like `create`.
-  bulkCreate: protectedProcedure
-    .input(bulkRedirectsCsvSchema)
-    .mutation(async ({ ctx, input }) => {
+  count: protectedProcedure
+    .input(countRedirectsSchema)
+    .query(async ({ ctx, input }) => {
       await validateUserPermissionsForSite({
+        action: "read",
         siteId: input.siteId,
         userId: ctx.user.id,
-        action: "create",
       })
 
-      return bulkCreateRedirects({
-        ...input,
-        byUserId: ctx.user.id,
-        logger: ctx.logger,
+      return await countRedirects(input)
+    }),
+
+  // Counts the live redirects that point at a resource (or any descendant), so
+  // the delete-page modal can warn they will be removed. Read-only.
+  countByDestinationResource: protectedProcedure
+    .input(countRedirectsByDestinationSchema)
+    .query(async ({ ctx, input }) => {
+      await validateUserPermissionsForSite({
+        action: "read",
+        siteId: input.siteId,
+        userId: ctx.user.id,
       })
+
+      return await countRedirectsPointingToResource(input)
     }),
 
   // create/delete publish immediately (no separate publish step). Site-wide
@@ -150,12 +91,12 @@ export const redirectRouter = router({
     .input(createRedirectSchema)
     .mutation(async ({ ctx, input }) => {
       await validateUserPermissionsForSite({
+        action: "create",
         siteId: input.siteId,
         userId: ctx.user.id,
-        action: "create",
       })
 
-      return createRedirect({
+      return await createRedirect({
         ...input,
         byUserId: ctx.user.id,
         logger: ctx.logger,
@@ -166,9 +107,9 @@ export const redirectRouter = router({
     .input(deleteRedirectSchema)
     .mutation(async ({ ctx, input }) => {
       await validateUserPermissionsForSite({
+        action: "delete",
         siteId: input.siteId,
         userId: ctx.user.id,
-        action: "delete",
       })
 
       await deleteRedirect({
@@ -176,5 +117,62 @@ export const redirectRouter = router({
         byUserId: ctx.user.id,
         logger: ctx.logger,
       })
+    }),
+
+  // Whether a path is the source of a live redirect (and where it points), for
+  // the page-settings warning. Read-only — surfaces only the redirect's
+  // destination, which read access already covers.
+  getBySource: protectedProcedure
+    .input(getRedirectBySourceSchema)
+    .query(async ({ ctx, input }) => {
+      await validateUserPermissionsForSite({
+        action: "read",
+        siteId: input.siteId,
+        userId: ctx.user.id,
+      })
+
+      return await getRedirectBySource(input)
+    }),
+
+  list: protectedProcedure
+    .input(listRedirectsSchema)
+    .query(async ({ ctx, input }) => {
+      await validateUserPermissionsForSite({
+        action: "read",
+        siteId: input.siteId,
+        userId: ctx.user.id,
+      })
+
+      return await listRedirects(input)
+    }),
+
+  // Resolves stored [resource:...] destinations to display permalinks. A read
+  // is enough — it only surfaces permalinks the caller can already see.
+  resolveReferences: protectedProcedure
+    .input(resolveRedirectReferencesSchema)
+    .query(async ({ ctx, input }) => {
+      await validateUserPermissionsForSite({
+        action: "read",
+        siteId: input.siteId,
+        userId: ctx.user.id,
+      })
+
+      return await resolveRedirectReferences(input)
+    }),
+
+  // Preflight a would-be redirect, returning blocking errors and non-blocking
+  // warnings so the form can surface them before the user commits. Read-only
+  // and gated on "read" like the other queries — it exposes only whether
+  // internal pages/redirects exist, which read access already covers.
+  validate: protectedProcedure
+    .input(createRedirectSchema)
+    .query(async ({ ctx, input }) => {
+      await validateUserPermissionsForSite({
+        action: "read",
+        siteId: input.siteId,
+        userId: ctx.user.id,
+      })
+
+      return await validateRedirect(input)
     }),
 })

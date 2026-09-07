@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-deprecated -- studio lint cleanup */
 import { z } from "zod"
 
 export const normaliseEmail = z

@@ -1,5 +1,5 @@
 import { useToast } from "@opengovsg/design-system-react"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
 import { ISOMER_SUPPORT_EMAIL } from "~/constants/misc"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { AuditLogExportRequestedReportType } from "~/schemas/audit"
@@ -23,24 +23,28 @@ export const useCreateAuditLogExportRequest = ({
 }: UseCreateAuditLogExportRequestProps) => {
   const toast = useToast(BRIEF_TOAST_SETTINGS)
 
+  // oxlint-disable-next-line eslint/sort-keys -- core cleanup deferred
   return trpc.audit.createExportRequest.useMutation({
     onSuccess: (_data, { scope, reportType: requestedReportType, month }) => {
       if (requestedReportType === AuditLogExportRequestedReportType.Access) {
-        posthog.capture("user_access_log_requested", { site_id: siteId, scope })
-      } else {
-        posthog.capture("audit_log_requested", {
+        posthogJs.capture("user_access_log_requested", {
+          scope,
           site_id: siteId,
+        })
+      } else {
+        posthogJs.capture("audit_log_requested", {
           month,
           scope,
+          site_id: siteId,
         })
       }
 
       onSuccess?.()
       toast({
-        title: "Export requested",
         description:
           "Your export is being generated. We'll email you a download link when it's ready.",
         status: "success",
+        title: "Export requested",
       })
     },
     // The server returns typed, user-facing messages for the expected
@@ -50,19 +54,19 @@ export const useCreateAuditLogExportRequest = ({
     onError: (error) => {
       if (error.data?.code === "FORBIDDEN") {
         toast({
-          title: "You don't have permission to export audit logs",
           description: "Only site admins can request an audit log export.",
           status: "error",
+          title: "You don't have permission to export audit logs",
         })
         return
       }
 
       toast({
-        title: "Couldn't request export",
         description:
           error.message ||
           `If this persists, please report this issue at ${ISOMER_SUPPORT_EMAIL}`,
         status: "error",
+        title: "Couldn't request export",
       })
     },
   })

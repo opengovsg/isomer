@@ -13,23 +13,23 @@ export type LayoutRenderDataType = Record<
 >
 
 export const LAYOUT_RENDER_DATA = {
-  content: {
-    title: "Standard layout",
-    description: "This is the default layout for your content.",
-    imageSrc: "/assets/layout-card/default_layout_card.webp",
-    altText: "Image preview of standard layout",
-  },
   article: {
-    title: "Article layout",
+    altText: "Image preview of Article layout",
     description:
       "Designed for the perfect reading experience. Use this layout for text-heavy content, such as news, press releases, and speeches.",
     imageSrc: "/assets/layout-card/article_layout_card.webp",
-    altText: "Image preview of Article layout",
+    title: "Article layout",
+  },
+  content: {
+    altText: "Image preview of standard layout",
+    description: "This is the default layout for your content.",
+    imageSrc: "/assets/layout-card/default_layout_card.webp",
+    title: "Standard layout",
   },
   database: {
-    title: "Database layout",
+    altText: "Image preview of Database layout",
     description: "Link your dataset from Data.gov.sg.",
     imageSrc: "/assets/layout-card/database_layout_card.png",
-    altText: "Image preview of Database layout",
+    title: "Database layout",
   },
 } satisfies LayoutRenderDataType

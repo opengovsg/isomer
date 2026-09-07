@@ -27,15 +27,15 @@ const useLinkEditorContext = ({
   const [curHref, setCurHref] = useState(linkHref)
 
   return {
-    linkTypes,
     curHref,
+    curType,
+    error,
+    linkTypes,
+    setCurType,
     setHref: (value: string) => {
       onChange(value)
       setCurHref(value)
     },
-    error,
-    curType,
-    setCurType,
   }
 }
 

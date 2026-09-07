@@ -60,8 +60,8 @@ describe("ExportAccessLogsButton", () => {
 
     // Assert
     expect(store.get(exportAccessLogsModalAtom)).toEqual({
-      siteId: SITE_ID,
       isOpen: true,
+      siteId: SITE_ID,
     })
   })
 
@@ -87,8 +87,8 @@ describe("ExportAccessLogsButton", () => {
       screen.queryByRole("button", { name: "Export user access" }),
     ).toBeNull()
     expect(store.get(exportAccessLogsModalAtom)).toEqual({
-      siteId: 0,
       isOpen: false,
+      siteId: 0,
     })
   })
 })

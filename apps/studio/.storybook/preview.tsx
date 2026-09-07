@@ -1,18 +1,13 @@
 import "@fontsource/ibm-plex-mono"
-import type { EnvContextReturn } from "~/components/AppProviders"
+import type { Args, Decorator, Preview, ReactRenderer } from "@storybook/nextjs"
 import "inter-ui/inter.css"
 import "~/styles/tiptap.scss"
+import type { EnvContextReturn } from "~/components/AppProviders"
 import type { AppRouter } from "~/server/modules/_app"
 import { Skeleton, Stack } from "@chakra-ui/react"
 import { GrowthBookProvider } from "@growthbook/growthbook-react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import { withThemeFromJSXProvider } from "@storybook/addon-themes"
-import {
-  type Args,
-  type Decorator,
-  type Preview,
-  type ReactRenderer,
-} from "@storybook/nextjs"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { httpLink } from "@trpc/client"
 import { createTRPCReact } from "@trpc/react-query"
@@ -49,16 +44,18 @@ const StorybookEnvDecorator: Decorator = (story) => {
 
 const SetupDecorator: Decorator = (Story, { parameters }) => {
   // oxlint-disable-next-line @typescript-eslint/no-unsafe-argument
-  const gb = createMockGrowthBook(new Map(parameters.growthbook ?? []))
+  const gb = createMockGrowthBook(
+    parameters.growthbook ? new Map(parameters.growthbook) : new Map(),
+  )
 
   const queryClient = useMemo(
     () =>
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: Infinity,
-            retry: false,
             refetchOnWindowFocus: false,
+            retry: false,
+            staleTime: Infinity,
           },
         },
       }),
@@ -67,7 +64,7 @@ const SetupDecorator: Decorator = (Story, { parameters }) => {
   const trpcClient = useMemo(
     () =>
       trpc.createClient({
-        links: [httpLink({ url: "", transformer: superjson })],
+        links: [httpLink({ transformer: superjson, url: "" })],
       }),
     [],
   )
@@ -182,16 +179,17 @@ const decorators: Decorator[] = [
   SetupDecorator,
   StorybookEnvDecorator,
   withThemeFromJSXProvider<ReactRenderer>({
+    Provider: ThemeProvider,
     themes: {
       default: theme,
     },
-    Provider: ThemeProvider,
   }),
   LoginStateDecorator,
   conditionalMockDateDecorator,
 ]
 
 const preview: Preview = {
+  decorators,
   loaders: [
     mswLoader(async () => {
       const worker = setupWorker()
@@ -199,7 +197,6 @@ const preview: Preview = {
       return worker
     }),
   ],
-  decorators,
   parameters: {
     // More on how to position stories at: https://storybook.js.org/docs/react/configure/story-layout
     layout: "fullscreen",
@@ -224,8 +221,9 @@ const preview: Preview = {
     actions: { argTypesRegex: "^on[A-Z].*" },
     controls: {
       matchers: {
-        color: /(background|color)$/i,
-        date: /Date$/,
+        // oxlint-disable-next-line eslint/prefer-named-capture-group -- unnamed group avoids TS1503 in Storybook preview
+        color: /(background|color)$/iu,
+        date: /Date$/u,
       },
     },
   },

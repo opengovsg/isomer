@@ -1,4 +1,6 @@
+/* oxlint-disable typescript/strict-boolean-expressions -- studio lint cleanup */
 import type { GetServerSideProps } from "next"
+import type { NextPageWithLayout } from "~/lib/types"
 import {
   Box,
   Breadcrumb,
@@ -19,13 +21,13 @@ import NextLink from "next/link"
 import { useState } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { requireGodModeAdmin } from "~/features/godmode/serverSideProps"
-import { type NextPageWithLayout } from "~/lib/types"
 import { AuthenticatedLayout } from "~/templates/layouts/AuthenticatedLayout"
 import { trpc } from "~/utils/trpc"
+import { hasNonEmptyString } from "~/utils/truthiness"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
-export const getServerSideProps: GetServerSideProps = (context) =>
-  requireGodModeAdmin(context, [IsomerAdminRole.Core])
+export const getServerSideProps: GetServerSideProps = async (context) =>
+  await requireGodModeAdmin(context, [IsomerAdminRole.Core])
 
 const GodModePublishingPage: NextPageWithLayout = () => {
   const toast = useToast()
@@ -36,6 +38,14 @@ const GodModePublishingPage: NextPageWithLayout = () => {
   const { data: sites = [] } = trpc.site.listAllSites.useQuery()
 
   const { mutate: publishOneSite } = trpc.site.publish.useMutation({
+    onError: (error) => {
+      toast({
+        description: error.message,
+        status: "error",
+        title: "Failed to publish site",
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    },
     onSettled: (_, __, { siteId }) => {
       setPublishingSiteIds((prev) => {
         const next = new Set(prev)
@@ -45,16 +55,8 @@ const GodModePublishingPage: NextPageWithLayout = () => {
     },
     onSuccess: () => {
       toast({
-        title: "Site published successfully",
         status: "success",
-        ...BRIEF_TOAST_SETTINGS,
-      })
-    },
-    onError: (error) => {
-      toast({
-        title: "Failed to publish site",
-        description: error.message,
-        status: "error",
+        title: "Site published successfully",
         ...BRIEF_TOAST_SETTINGS,
       })
     },
@@ -109,7 +111,7 @@ const GodModePublishingPage: NextPageWithLayout = () => {
                 <Td>{site.config.siteName}</Td>
                 <Td>{site.codeBuildId || "-"}</Td>
                 <Td>
-                  {site.codeBuildId && (
+                  {hasNonEmptyString(site.codeBuildId) && (
                     <Button
                       size="xs"
                       colorScheme="blue"

@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-use-before-define, typescript/strict-void-return -- core cleanup deferred */
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import type { z } from "zod"
 import {
@@ -49,11 +50,11 @@ export const ScheduledPublishingModal = ({
   const [isScheduledPublishValid, setIsScheduledPublishValid] = useState(false)
 
   const methods = useZodForm<typeof schedulePublishClientSchema>({
-    schema: schedulePublishClientSchema,
     defaultValues: {
       pageId,
       siteId,
     },
+    schema: schedulePublishClientSchema,
   })
   // Validate form when the date/time selected changes
   // so the banner can be shown to the users. Do NOT use trigger() since that
@@ -63,12 +64,24 @@ export const ScheduledPublishingModal = ({
       const valid = schedulePublishClientSchema.safeParse(methods.getValues())
       setIsScheduledPublishValid(valid.success)
     }
-    const subscription = methods.watch(() => validateForm())
-    return () => subscription.unsubscribe()
+    const subscription = methods.watch(() => {
+      validateForm()
+    })
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [methods])
 
   const { mutate: schedulePageMutation, isPending: isScheduling } =
     trpc.page.schedulePage.useMutation({
+      onError: (error) => {
+        console.error(`Error occurred when scheduling page: ${error.message}`)
+        toast({
+          status: "error",
+          title: "Failed to schedule page. Please contact Isomer support.",
+          ...BRIEF_TOAST_SETTINGS,
+        })
+      },
       onSettled: async () => {
         await utils.page.readPage.refetch({ pageId, siteId })
         onClose()
@@ -81,21 +94,14 @@ export const ScheduledPublishingModal = ({
           ...BRIEF_TOAST_SETTINGS,
         })
       },
-      onError: (error) => {
-        console.error(`Error occurred when scheduling page: ${error.message}`)
-        toast({
-          status: "error",
-          title: "Failed to schedule page. Please contact Isomer support.",
-          ...BRIEF_TOAST_SETTINGS,
-        })
-      },
     })
   return (
     <Modal onClose={onClose} {...rest}>
       <form
         onSubmit={methods.handleSubmit(
-          (res: z.output<typeof schedulePublishClientSchema>) =>
-            schedulePageMutation(res),
+          (res: z.output<typeof schedulePublishClientSchema>) => {
+            schedulePageMutation(res)
+          },
         )}
       >
         <ModalOverlay />

@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-boolean-expressions -- core cleanup deferred */
 import {
   Modal,
   ModalBody,
@@ -30,9 +31,9 @@ import {
 // month server-side, so this form only ever captures the scope — `month` and
 // `reportType` are supplied directly on submit.
 const exportAccessLogsFormSchema = createAuditLogExportRequestSchema.omit({
-  siteId: true,
   month: true,
   reportType: true,
+  siteId: true,
 })
 
 export const ExportAccessLogsModal = () => {
@@ -40,8 +41,8 @@ export const ExportAccessLogsModal = () => {
   const setModalState = useSetAtom(exportAccessLogsModalAtom)
 
   const form = useZodForm({
-    schema: exportAccessLogsFormSchema,
     defaultValues: { scope: AuditLogExportScope.AllSites },
+    schema: exportAccessLogsFormSchema,
   })
 
   const onClose = () => {
@@ -52,19 +53,19 @@ export const ExportAccessLogsModal = () => {
   // Shared with the settings page's export form: same toasts, same PostHog
   // captures.
   const { mutate: createExportRequest, isPending } =
-    useCreateAuditLogExportRequest({ siteId, onSuccess: onClose })
+    useCreateAuditLogExportRequest({ onSuccess: onClose, siteId })
 
-  const onSubmit = form.handleSubmit(({ scope }) =>
+  const onSubmit = form.handleSubmit(({ scope }) => {
     createExportRequest({
-      scope,
-      siteId,
       month: getCurrentSingaporeMonth(),
       reportType: AuditLogExportRequestedReportType.Access,
-    }),
-  )
+      scope,
+      siteId,
+    })
+  })
 
   return (
-    <Modal isOpen={!!isOpen} onClose={onClose}>
+    <Modal isOpen={Boolean(isOpen)} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader mr="3.5rem">Export access history</ModalHeader>
@@ -112,7 +113,12 @@ export const ExportAccessLogsModal = () => {
           </VStack>
         </ModalBody>
         <ModalFooter>
-          <Button variant="solid" onClick={onSubmit} isLoading={isPending}>
+          <Button
+            variant="solid"
+            // oxlint-disable-next-line typescript/strict-void-return -- react-hook-form handleSubmit is valid as onClick
+            onClick={onSubmit}
+            isLoading={isPending}
+          >
             Export logs
           </Button>
         </ModalFooter>

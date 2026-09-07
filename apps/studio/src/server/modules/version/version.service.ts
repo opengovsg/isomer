@@ -1,11 +1,13 @@
+/* oxlint-disable eslint/no-shadow -- server lint cleanup */
 import type { SelectExpression } from "kysely"
+import type { DB } from "~prisma/generated/generatedTypes"
 import { TRPCError } from "@trpc/server"
+import { hasNonEmptyString } from "~/utils/truthiness"
 import { ResourceState } from "~prisma/generated/generatedEnums"
-import { type DB } from "~prisma/generated/generatedTypes"
 
 import type { SafeKysely, Transaction } from "../database/types"
 import { db } from "../database/database"
-import { getPageById, updatePageById } from "../resource/resource.service"
+import { getPageById, updatePageById } from "../resource/resource.page"
 
 interface Version {
   id: string
@@ -20,8 +22,8 @@ const defaultVersionSelect: SelectExpression<DB, "Version">[] = [
   "Version.publishedAt",
 ]
 
-const getVersionById = ({ versionId }: { versionId: string }) =>
-  db
+const getVersionById = async ({ versionId }: { versionId: string }) =>
+  await db
     .selectFrom("Version")
     .where("Version.id", "=", versionId)
     .select(defaultVersionSelect)
@@ -40,11 +42,11 @@ const createVersion = async (
   const addedVersion = await db
     .insertInto("Version")
     .values({
-      versionNum,
-      resourceId: resourceId,
       blobId,
       publishedAt: new Date(),
       publishedBy: publisherId,
+      resourceId,
+      versionNum,
     })
     .returning(["Version.id", "Version.versionNum"])
     .executeTakeFirstOrThrow()
@@ -72,11 +74,11 @@ export const incrementVersion = async ({
   newVersion: Version
 } | null> => {
   const page = await getPageById(tx, {
-    siteId,
     resourceId: Number(resourceId),
+    siteId,
   })
 
-  if (!page) {
+  if (page === undefined) {
     throw new TRPCError({
       code: "NOT_FOUND",
       message: "Page not found",
@@ -84,11 +86,13 @@ export const incrementVersion = async ({
   }
 
   // If there's no draft, we don't create a new version
-  if (!page.draftBlobId) return null
+  if (!hasNonEmptyString(page.draftBlobId)) {
+    return null
+  }
 
   let newVersionNum = 1
   let previousVersion: Version | null = null
-  if (page.publishedVersionId) {
+  if (hasNonEmptyString(page.publishedVersionId)) {
     previousVersion = await getVersionById({
       versionId: page.publishedVersionId,
     })
@@ -97,19 +101,19 @@ export const incrementVersion = async ({
 
   // Create the new version
   const newVersion = await createVersion(tx, {
-    versionNum: newVersionNum,
-    resourceId,
     blobId: page.draftBlobId,
     publisherId: userId,
+    resourceId,
+    versionNum: newVersionNum,
   })
 
   // Update resource with new versionId and draft to be null
   await updatePageById(
     {
-      id: parseInt(page.id),
-      siteId,
-      publishedVersionId: newVersion.id,
       draftBlobId: null,
+      id: Math.trunc(Number(page.id)),
+      publishedVersionId: newVersion.id,
+      siteId,
       state: ResourceState.Published,
     },
     tx,

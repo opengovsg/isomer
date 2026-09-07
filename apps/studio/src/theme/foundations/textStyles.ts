@@ -4,11 +4,11 @@ import { textStyles as generatedTextStyles } from "../generated/textStyles"
 
 const customTextStyles = {
   "h3-semibold": {
-    fontWeight: 600,
-    lineHeight: "2.25rem",
-    fontSize: "1.75rem",
-    letterSpacing: "-0.019em",
     fontFamily: "body",
+    fontSize: "1.75rem",
+    fontWeight: 600,
+    letterSpacing: "-0.019em",
+    lineHeight: "2.25rem",
   },
 }
 

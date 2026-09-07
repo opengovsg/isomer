@@ -1,14 +1,14 @@
+/* oxlint-disable import/no-named-default -- JsonForms HOC wrappers use default exports for withJsonForms*Props inference */
 import type { JsonFormsRendererRegistryEntry } from "@jsonforms/core"
+import type { TSchema } from "@sinclair/typebox"
 import type { ValidateFunction } from "ajv"
 import { rankWith } from "@jsonforms/core"
 import { JsonForms } from "@jsonforms/react"
-import { type TSchema } from "@sinclair/typebox"
 import { groupBy } from "lodash-es"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { ajv } from "~/utils/ajv"
 
 import { useBuilderErrors } from "./ErrorProvider"
-// oxlint-disable-next-line react-doctor/no-barrel-import -- internal JsonForms renderer registry; direct imports break HOC inference
 import {
   default as JsonFormsAllOfControl,
   jsonFormsAllOfControlTester,
@@ -187,12 +187,12 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
     tester: jsonFormsSearchSGControlTester,
   },
   {
-    tester: jsonFormsTagCategoriesControlTester,
     renderer: JsonFormsTagCategoriesControl,
+    tester: jsonFormsTagCategoriesControlTester,
   },
   {
-    tester: jsonFormsTagCategoryOptionsControlTester,
     renderer: JsonFormsTagCategoryOptionsControl,
+    tester: jsonFormsTagCategoryOptionsControlTester,
   },
   { renderer: JsonFormsUuidControl, tester: jsonFormsUuidControlTester },
   { renderer: JsonFormsTaggedControl, tester: jsonFormsTaggedControlTester },
@@ -213,86 +213,86 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
     tester: jsonFormsSocialMediaControlTester,
   },
   {
-    tester: jsonFormsProseControlTester,
     renderer: JsonFormsProseControl,
+    tester: jsonFormsProseControlTester,
   },
-  { tester: jsonFormsDateControlTester, renderer: JsonFormsDateControl },
-  { tester: jsonFormsObjectControlTester, renderer: JsonFormsObjectControl },
-  { tester: jsonFormsArrayControlTester, renderer: JsonFormsArrayControl },
-  { tester: jsonFormsBooleanControlTester, renderer: JsonFormsBooleanControl },
-  { tester: jsonFormsConstControlTester, renderer: JsonFormsConstControl },
+  { renderer: JsonFormsDateControl, tester: jsonFormsDateControlTester },
+  { renderer: JsonFormsObjectControl, tester: jsonFormsObjectControlTester },
+  { renderer: JsonFormsArrayControl, tester: jsonFormsArrayControlTester },
+  { renderer: JsonFormsBooleanControl, tester: jsonFormsBooleanControlTester },
+  { renderer: JsonFormsConstControl, tester: jsonFormsConstControlTester },
   {
-    tester: jsonFormsUnionRootControlTester,
     renderer: JsonFormsUnionRootControl,
+    tester: jsonFormsUnionRootControlTester,
   },
-  { tester: jsonFormsEmbedControlTester, renderer: JsonFormsEmbedControl },
+  { renderer: JsonFormsEmbedControl, tester: jsonFormsEmbedControlTester },
   {
-    tester: jsonFormsDgsDatasetIdControlTester,
     renderer: JsonFormsDgsDatasetIdControl,
+    tester: jsonFormsDgsDatasetIdControlTester,
   },
-  { tester: jsonFormsHiddenControlTester, renderer: JsonFormsHiddenControl },
-  { tester: jsonFormsIntegerControlTester, renderer: JsonFormsIntegerControl },
+  { renderer: JsonFormsHiddenControl, tester: jsonFormsHiddenControlTester },
+  { renderer: JsonFormsIntegerControl, tester: jsonFormsIntegerControlTester },
   {
-    tester: jsonFormsImageRadioControlTester,
     renderer: JsonFormsImageRadioControl,
+    tester: jsonFormsImageRadioControlTester,
   },
-  { tester: jsonFormsImageControlTester, renderer: JsonFormsImageControl },
-  { tester: jsonFormsLinkControlTester, renderer: JsonFormsLinkControl },
-  { tester: jsonFormsEnumControlTester, renderer: JsonFormsEnumControl },
+  { renderer: JsonFormsImageControl, tester: jsonFormsImageControlTester },
+  { renderer: JsonFormsLinkControl, tester: jsonFormsLinkControlTester },
+  { renderer: JsonFormsEnumControl, tester: jsonFormsEnumControlTester },
   {
-    tester: jsonFormsTextAreaControlTester,
     renderer: JsonFormsTextAreaControl,
+    tester: jsonFormsTextAreaControlTester,
   },
-  { tester: jsonFormsTextControlTester, renderer: JsonFormsTextControl },
-  { tester: jsonFormsRefControlTester, renderer: JsonFormsRefControl },
-  { tester: jsonFormsAllOfControlTester, renderer: JsonFormsAllOfControl },
-  { tester: jsonFormsAnyOfControlTester, renderer: JsonFormsAnyOfControl },
-  { tester: jsonFormsOneOfControlTester, renderer: JsonFormsOneOfControl },
+  { renderer: JsonFormsTextControl, tester: jsonFormsTextControlTester },
+  { renderer: JsonFormsRefControl, tester: jsonFormsRefControlTester },
+  { renderer: JsonFormsAllOfControl, tester: jsonFormsAllOfControlTester },
+  { renderer: JsonFormsAnyOfControl, tester: jsonFormsAnyOfControlTester },
+  { renderer: JsonFormsOneOfControl, tester: jsonFormsOneOfControlTester },
   {
-    tester: jsonFormsGroupLayoutTester,
     renderer: jsonFormsGroupLayoutRenderer,
+    tester: jsonFormsGroupLayoutTester,
   },
   {
-    tester: jsonFormsAntiScamDisclaimerBannerLayoutTester,
     renderer: jsonFormsAntiScamDisclaimerBannerLayoutRenderer,
+    tester: jsonFormsAntiScamDisclaimerBannerLayoutTester,
   },
   {
-    tester: jsonFormsVerticalLayoutTester,
     renderer: jsonFormsVerticalLayoutRenderer,
+    tester: jsonFormsVerticalLayoutTester,
   },
   {
-    tester: jsonFormsMetaImageControlTester,
     renderer: JsonFormsMetaImageControl,
+    tester: jsonFormsMetaImageControlTester,
   },
   {
-    tester: jsonFormsChildrenPagesLayoutControlTester,
     renderer: JsonFormsChildrenPagesLayoutControl,
+    tester: jsonFormsChildrenPagesLayoutControlTester,
   },
   {
-    tester: jsonFormsMaxColumnsControlTester,
     renderer: JsonFormsMaxColumnsControl,
+    tester: jsonFormsMaxColumnsControlTester,
   },
   {
-    tester: jsonFormsCollectionVariantControlTester,
     renderer: JsonFormsCollectionVariantControl,
+    tester: jsonFormsCollectionVariantControlTester,
   },
   {
     // NOTE: If we fall through all our previous testers,
     // we render null so that the users don't get visual noise
-    tester: rankWith(JSON_FORMS_RANKING.Catchall, () => true),
     renderer: () => null,
+    tester: rankWith(JSON_FORMS_RANKING.Catchall, () => true),
   },
   {
-    tester: jsonFormsCollectionDropdownControlTester,
     renderer: JsonFormsCollectionDropdownControl,
+    tester: jsonFormsCollectionDropdownControlTester,
   },
   {
-    tester: jsonFormsPrefillLinkControlTester,
     renderer: JsonFormsPrefillLinkControl,
+    tester: jsonFormsPrefillLinkControlTester,
   },
   {
-    tester: jsonFormsBoxedGroupControlTester,
     renderer: JsonFormsBoxedGroupControl,
+    tester: jsonFormsBoxedGroupControlTester,
   },
 ]
 
@@ -316,9 +316,9 @@ const FormBuilder = <T,>({
       schema={schema}
       data={data}
       renderers={renderers}
-      onChange={({ data, errors }) => {
-        if (validateFn(data)) {
-          handleChange(data)
+      onChange={({ data: formData, errors }) => {
+        if (validateFn(formData)) {
+          handleChange(formData)
         }
         setErrors(groupBy(errors, "instancePath"))
       }}

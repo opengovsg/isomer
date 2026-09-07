@@ -1,7 +1,13 @@
 // DGS Dataset ID utilities for studio form builder
 import { z } from "zod"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
-const DgsDatasetIdSchema = z.string().regex(/^d_[a-zA-Z0-9]+$/, {
+const DgsDatasetIdSchema = z.string().regex(/^d_[a-zA-Z0-9]+$/u, {
   message:
     "DGS dataset ID must start with 'd_' followed by alphanumeric characters",
 })
@@ -26,13 +32,19 @@ export const getDgsIdFromString = ({
     }
 
     // Handle full URL format: https://data.gov.sg/datasets/d_abc123/view
+    // oxlint-disable-next-line eslint/no-use-before-define -- core cleanup deferred
     const viewUrlResult = extractDatasetIdFromViewUrl(parsedUrl)
-    if (viewUrlResult) return viewUrlResult
+    if (hasNonEmptyString(viewUrlResult)) {
+      return viewUrlResult
+    }
 
     // Ideally user don't input this format, but just in case they copy from the browser URL
     // Handle resultId parameter format: https://data.gov.sg/datasets?resultId=d_8b84c4ee58e3cfc0ece0d773c8ca6abc
+    // oxlint-disable-next-line eslint/no-use-before-define -- core cleanup deferred
     const resultIdResult = extractDatasetIdFromResultId(parsedUrl)
-    if (resultIdResult) return resultIdResult
+    if (hasNonEmptyString(resultIdResult)) {
+      return resultIdResult
+    }
 
     return null
   } catch {
@@ -46,10 +58,15 @@ const extractDatasetIdFromViewUrl = (parsedUrl: URL): string | null => {
   }
 
   const pathParts = parsedUrl.pathname.split("/")
-  if (pathParts.length !== 4 || pathParts[3] !== "view" || !pathParts[2]) {
+  if (
+    pathParts.length !== 4 ||
+    pathParts[3] !== "view" ||
+    !hasNonEmptyString(pathParts[2])
+  ) {
     return null
   }
 
+  // oxlint-disable-next-line eslint/prefer-destructuring -- core cleanup deferred
   const datasetId = pathParts[2]
   if (!DgsDatasetIdSchema.safeParse(datasetId).success) {
     return null
@@ -64,7 +81,10 @@ const extractDatasetIdFromResultId = (parsedUrl: URL): string | null => {
   }
 
   const resultId = parsedUrl.searchParams.get("resultId")
-  if (!resultId || !DgsDatasetIdSchema.safeParse(resultId).success) {
+  if (
+    !hasNonEmptyString(resultId) ||
+    !DgsDatasetIdSchema.safeParse(resultId).success
+  ) {
     return null
   }
 

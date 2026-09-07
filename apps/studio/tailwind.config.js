@@ -25,13 +25,13 @@ export default {
         // Site-specific colors, will be overwritten by individual sites
         site: {
           primary: {
-            DEFAULT: "#f78f1e",
             100: "#fef4e8",
             200: "#ffeec2",
+            DEFAULT: "#f78f1e",
           },
           secondary: {
-            DEFAULT: "#4E4541",
             100: "#f4f2F1",
+            DEFAULT: "#4E4541",
           },
         },
       },

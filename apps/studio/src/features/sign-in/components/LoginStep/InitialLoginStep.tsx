@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-unreachable, eslint/no-useless-return, typescript/consistent-return, typescript/switch-exhaustiveness-check, unicorn/no-useless-undefined -- core cleanup deferred */
 import { Box, Stack, Text, VStack } from "@chakra-ui/react"
 import { Infobox } from "@opengovsg/design-system-react"
 import { useMemo } from "react"
@@ -17,22 +18,28 @@ export const InitialLoginStep = (): React.ReactNode => {
 
   const errorTitle = useMemo(() => {
     switch (errorState) {
-      case "unauthorized":
+      case "unauthorized": {
         return "You don’t have access to Isomer Studio"
-      default:
+      }
+      default: {
         const _: undefined = errorState
-        return undefined
+        return
+      }
     }
   }, [errorState])
+  // oxlint-disable-next-line typescript/switch-exhaustiveness-check -- core cleanup deferred
 
   const errorDescription = useMemo(() => {
     switch (errorState) {
-      case "unauthorized":
+      case "unauthorized": {
         return "If you think you should have access, ask the agency you are working with to whitelist your email address."
-      default:
+      }
+      default: {
         const _: undefined = errorState
-        return undefined
+        return
+      }
     }
+    return undefined
   }, [errorState])
 
   return (

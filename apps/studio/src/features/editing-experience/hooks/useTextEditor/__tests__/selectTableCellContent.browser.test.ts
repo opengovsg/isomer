@@ -14,7 +14,6 @@ import {
 import { selectTableCellContent } from "../selectTableCellContent"
 
 const TABLE_DOC: JSONContent = {
-  type: "prose",
   content: [
     {
       type: "paragraph",
@@ -76,10 +75,10 @@ const TABLE_DOC: JSONContent = {
       content: [{ type: "text", text: "after table" }],
     },
   ],
+  type: "prose",
 }
 
 const MULTI_PARAGRAPH_CELL_DOC: JSONContent = {
-  type: "prose",
   content: [
     {
       type: "table",
@@ -114,6 +113,7 @@ const MULTI_PARAGRAPH_CELL_DOC: JSONContent = {
       ],
     },
   ],
+  type: "prose",
 }
 
 const createEditor = (content: JSONContent = TABLE_DOC) => {
@@ -121,6 +121,7 @@ const createEditor = (content: JSONContent = TABLE_DOC) => {
   document.body.append(element)
 
   return new Editor({
+    content,
     element,
     extensions: [
       ...BASE_EXTENSIONS,
@@ -130,7 +131,6 @@ const createEditor = (content: JSONContent = TABLE_DOC) => {
       IsomerTableCell,
       IsomerTableHeader,
     ],
-    content,
   })
 }
 
@@ -143,6 +143,7 @@ const findTextRange = (editor: Editor, text: string) => {
       return false
     }
     if (!node.isText || node.text !== text) {
+      // oxlint-disable-next-line typescript/consistent-return -- core cleanup deferred
       return
     }
     from = pos
@@ -163,8 +164,9 @@ const selectedText = (editor: Editor) =>
   )
 
 // Click so the editable gets real browser focus (needed for clipboard checks).
-const focusEditor = (editor: Editor) =>
-  userEvent.click(page.elementLocator(editor.view.dom))
+const focusEditor = async (editor: Editor) => {
+  await userEvent.click(page.elementLocator(editor.view.dom))
+}
 
 // Copy via the browser and return clipboard text/plain.
 const copiedText = async () => {
@@ -183,16 +185,17 @@ const copiedText = async () => {
 
 // prosemirror-keymap maps Mod to Meta on Mac and Ctrl elsewhere
 // (same navigator.platform check): https://github.com/ProseMirror/prosemirror-keymap/blob/1.2.3/src/keymap.ts#L26
-const isMac = /Mac|iP(hone|[oa]d)/.test(navigator.platform)
+// oxlint-disable-next-line eslint/prefer-named-capture-group -- core cleanup deferred
+const isMac = /Mac|iP(hone|[oa]d)/u.test(navigator.platform)
 
 const dispatchModA = (editor: Editor) => {
   const event = new KeyboardEvent("keydown", {
-    key: "a",
-    code: "KeyA",
-    ctrlKey: !isMac,
-    metaKey: isMac,
     bubbles: true,
     cancelable: true,
+    code: "KeyA",
+    ctrlKey: !isMac,
+    key: "a",
+    metaKey: isMac,
   })
 
   editor.view.someProp("handleKeyDown", (handler) =>

@@ -1,3 +1,5 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
+/* oxlint-disable unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { FooterSchemaType } from "@opengovsg/isomer-components"
 import {
   Box,
@@ -18,6 +20,12 @@ import {
   BiSolidErrorCircle,
   BiTrash,
 } from "react-icons/bi"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { SOCIAL_MEDIA_LINKS } from "./constants"
 
@@ -58,27 +66,27 @@ export const SocialMediaLink = ({
       transitionProperty="common"
       transitionDuration="normal"
       _hover={{
-        bg: "interaction.muted.main.hover",
-        borderColor: "interaction.main-subtle.hover",
         _invalid: {
           bg: "interaction.muted.critical.hover",
           borderColor: "utility.feedback.critical",
         },
+        bg: "interaction.muted.main.hover",
+        borderColor: "interaction.main-subtle.hover",
       }}
       _active={{
-        bg: "interaction.main-subtle.default",
-        borderColor: "interaction.main-subtle.hover",
-        shadow: "0px 1px 6px 0px #1361F026",
         _invalid: {
           bg: "interaction.muted.critical.hover",
           borderColor: "utility.feedback.critical",
           shadow: "0px 1px 6px 0px #C0343426",
         },
+        bg: "interaction.main-subtle.default",
+        borderColor: "interaction.main-subtle.hover",
+        shadow: "0px 1px 6px 0px #1361F026",
       }}
       _invalid={{
-        borderWidth: "1.5px",
-        borderColor: "utility.feedback.critical",
         bgColor: "utility.feedback.critical-subtle",
+        borderColor: "utility.feedback.critical",
+        borderWidth: "1.5px",
       }}
     >
       <HStack gap="0.5rem" px="1rem" py="0.5rem" w="full">
@@ -100,7 +108,7 @@ export const SocialMediaLink = ({
                 </Text>
               </HStack>
 
-              {isInvalid ? (
+              {isNullableBooleanTrue(isInvalid) ? (
                 <Box as="span" display="flex" flexDir="row" gap="0.25rem">
                   <Icon
                     as={BiSolidErrorCircle}
@@ -121,7 +129,7 @@ export const SocialMediaLink = ({
                   textColor="base.content.medium"
                   noOfLines={1}
                 >
-                  {url || socialMediaLink.placeholder}
+                  {hasNonEmptyString(url) ? url : socialMediaLink.placeholder}
                 </Text>
               )}
             </HStack>

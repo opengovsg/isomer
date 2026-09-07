@@ -2,18 +2,15 @@ import { trpcMsw } from "../mockTrpc"
 
 export const assetHandler = {
   getPresignedPutUrl: {
-    default: () => {
-      return trpcMsw.asset.getPresignedPutUrl.mutation(() => {
-        return {
-          fileKey: "MOCK_STORYBOOK_ASSET",
-          uploadConfig: {
-            provider: "s3" as const,
-            presignedPutUrl: "/storybook/upload",
-            contentType: "application/octet-stream",
-            contentDisposition: "inline; filename*=UTF-8''MOCK_STORYBOOK_ASSET",
-          },
-        }
-      })
-    },
+    default: () =>
+      trpcMsw.asset.getPresignedPutUrl.mutation(() => ({
+        fileKey: "MOCK_STORYBOOK_ASSET",
+        uploadConfig: {
+          provider: "s3" as const,
+          presignedPutUrl: "/storybook/upload",
+          contentType: "application/octet-stream",
+          contentDisposition: "inline; filename*=UTF-8''MOCK_STORYBOOK_ASSET",
+        },
+      })),
   },
 }

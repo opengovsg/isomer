@@ -1,5 +1,6 @@
+/* oxlint-disable jsdoc/check-tag-names, import/consistent-type-specifier-style, typescript/no-import-type-side-effects, typescript/strict-boolean-expressions -- E2E compatibility */
+import type { PropsWithChildren, ReactNode } from "react"
 import { useRouter } from "next/router"
-import { type PropsWithChildren, type ReactNode } from "react"
 import { CALLBACK_URL_KEY } from "~/constants/params"
 import { useLoginState } from "~/features/auth"
 import { callbackUrlSchema } from "~/schemas/url"

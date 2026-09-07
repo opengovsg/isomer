@@ -8,8 +8,8 @@ const baseUrl = getBaseUrl()
 const validator = new UrlValidator({
   baseOrigin: new URL(baseUrl).origin,
   whitelist: {
-    protocols: ["http", "https"],
     hosts: [new URL(baseUrl).host],
+    protocols: ["http", "https"],
   },
 })
 
@@ -17,16 +17,10 @@ export const callbackUrlSchema = z
   .string()
   .optional()
   .default(DASHBOARD)
-  .transform((url, ctx) => {
+  .transform((url) => {
     try {
       return validator.parse(url)
-    } catch (error) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        // SAFETY: validator.parse throws a standard Error with a message string
-        message: (error as Error).message,
-      })
-      return z.NEVER
+    } catch {
+      return new URL(DASHBOARD, baseUrl)
     }
   })
-  .catch(new URL(DASHBOARD, baseUrl))

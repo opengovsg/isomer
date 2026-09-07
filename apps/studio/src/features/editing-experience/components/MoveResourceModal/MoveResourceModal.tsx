@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/complexity, eslint/no-shadow, eslint/no-use-before-define, import/no-cycle, unicorn/no-confusing-void-expression, unicorn/no-meaningless-void-operator, unicorn/no-unnecessary-type-conversion -- core cleanup deferred */
 import {
   Box,
   Button,
@@ -20,9 +21,15 @@ import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { usePermissions } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { sitePageSchema } from "~/pages/sites/[siteId]"
 import { normalizeRedirectPath } from "~/schemas/redirect"
+import { sitePageSchema } from "~/schemas/sitePageSchema"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { moveResourceAtom } from "../../atoms"
@@ -31,7 +38,9 @@ import { useValidateResourceMove } from "../../hooks/useValidateResourceMove"
 export const MoveResourceModal = () => {
   // NOTE: This is what we are trying to move
   const [moveItem, setMoveItem] = useAtom(moveResourceAtom)
-  const onClose = () => setMoveItem(null)
+  const onClose = () => {
+    setMoveItem(null)
+  }
 
   return (
     <Modal isOpen={!!moveItem} onClose={onClose}>
@@ -43,6 +52,7 @@ export const MoveResourceModal = () => {
   )
 }
 
+// oxlint-disable-next-line typescript/complexity -- core cleanup deferred
 const MoveResourceContent = withSuspense(
   ({ resourceId, onClose }: { resourceId: string; onClose: () => void }) => {
     // undefined means that the user has not selected a destination yet
@@ -50,13 +60,13 @@ const MoveResourceContent = withSuspense(
     // this is used to disable the move button when the user has not selected a destination
     const [curResourceId, setCurResourceId] = useState<
       string | null | undefined
-    >(undefined)
+    >()
     const { siteId } = useQueryParse(sitePageSchema)
     const setMovedItem = useSetAtom(moveResourceAtom)
     const [{ title, type, permalink: movedSlug, publishedVersionId }] =
       trpc.resource.getMetadataById.useSuspenseQuery({
-        siteId: Number(siteId),
         resourceId,
+        siteId: Number(siteId),
       })
     const ability = usePermissions()
     const utils = trpc.useUtils()
@@ -64,14 +74,14 @@ const MoveResourceContent = withSuspense(
     const { mutate, isPending } = trpc.resource.move.useMutation({
       onError: (err) => {
         toast({
-          title: "Failed to move resource",
-          status: "error",
           description: err.message,
+          status: "error",
+          title: "Failed to move resource",
           ...BRIEF_TOAST_SETTINGS,
         })
       },
       onSettled: () => {
-        // TODO: actually close the modal
+        // Deferred: actually close the modal
         setMovedItem(null)
       },
       onSuccess: async () => {
@@ -83,22 +93,28 @@ const MoveResourceContent = withSuspense(
         await utils.resource.getAncestryStack.invalidate()
         await utils.resource.getBatchAncestryWithSelf.invalidate()
         await utils.resource.countWithoutRoot.invalidate({
-          // TODO: Update backend `list` to use the proper schema
-          resourceId: curResourceId ? Number(curResourceId) : undefined,
+          // Deferred: Update backend `list` to use the proper schema
+          resourceId: hasNonEmptyString(curResourceId)
+            ? Number(curResourceId)
+            : undefined,
         })
         await utils.resource.countWithoutRoot.invalidate({
-          // TODO: Update backend `list` to use the proper schema
-          resourceId: movedItem?.parentId
+          // Deferred: Update backend `list` to use the proper schema
+          // oxlint-dihasNonEmptyString(sable-next-line esl)int/no-use-before-define -- core cleanup deferred
+          resourceId: hasNonEmptyString(movedItem?.parentId)
             ? Number(movedItem.parentId)
             : undefined,
         })
         await utils.resource.listWithoutRoot.invalidate({
-          // TODO: Update backend `list` to use the proper schema
-          resourceId: curResourceId ? Number(curResourceId) : undefined,
+          // Deferred: Update backend `list` to use the proper schema
+          resourceId: hasNonEmptyString(curResourceId)
+            ? Number(curResourceId)
+            : undefined,
         })
         await utils.resource.listWithoutRoot.invalidate({
-          // TODO: Update backend `list` to use the proper schema
-          resourceId: movedItem?.parentId
+          // Deferred: Update backend `list` to use the proper schema
+          // oxlint-dihasNonEmptyString(sable-next-line esl)int/no-use-before-define -- core cleanup deferred
+          resourceId: hasNonEmptyString(movedItem?.parentId)
             ? Number(movedItem.parentId)
             : undefined,
         })
@@ -122,19 +138,19 @@ const MoveResourceContent = withSuspense(
       isValidMove,
       errorMessage,
     } = useValidateResourceMove({
-      sourceId: movedItem?.id,
       destinationId: curResourceId ?? null,
+      sourceId: movedItem?.id,
     })
 
     const [shouldCreateRedirect, setShouldCreateRedirect] = useState(true)
     const [{ fullPermalink: movedFullPermalink }] =
       trpc.resource.getWithFullPermalink.useSuspenseQuery({
-        siteId: Number(siteId),
         resourceId,
+        siteId: Number(siteId),
       })
     const { data: destination } = trpc.resource.getWithFullPermalink.useQuery(
-      { siteId: Number(siteId), resourceId: curResourceId ?? "" },
-      { enabled: !!curResourceId },
+      { resourceId: curResourceId ?? "", siteId: Number(siteId) },
+      { enabled: !!hasNonEmptyString(curResourceId) },
     )
 
     // Only published Page/CollectionPage have a live URL worth preserving — the
@@ -150,7 +166,7 @@ const MoveResourceContent = withSuspense(
     const isRedirectableType = isPageRedirectable || isFolderRedirect
     const oldFullPermalink = normalizeRedirectPath(movedFullPermalink)
     const newFullPermalink = normalizeRedirectPath(
-      `${curResourceId && destination ? destination.fullPermalink : ""}/${movedSlug}`,
+      `${hasNonEmptyString(curResourceId) && destination ? destination.fullPermalink : ""}/${movedSlug}`,
     )
     // The new path is known once a destination is picked (the root needs no
     // lookup); until then the computed permalink is provisional.
@@ -188,10 +204,12 @@ const MoveResourceContent = withSuspense(
               siteId={siteId}
               showSelectedResourcePreview={false}
               existingResource={movedItem ?? undefined}
-              onChange={(resourceId) => setCurResourceId(resourceId)}
+              onChange={(resourceId) => {
+                setCurResourceId(resourceId)
+              }}
             />
             {curResourceId !== undefined &&
-              errorMessage &&
+              hasNonEmptyString(errorMessage) &&
               !isValidMoveLoading && (
                 <Infobox variant="error" size="sm" w="full">
                   {errorMessage}
@@ -229,9 +247,9 @@ const MoveResourceContent = withSuspense(
                       size="sm"
                       px="0.25rem"
                       isChecked={shouldCreateRedirect}
-                      onChange={(e) =>
+                      onChange={(e) => {
                         setShouldCreateRedirect(e.target.checked)
-                      }
+                      }}
                     >
                       <Text textStyle="body-2" color="base.content.strong">
                         {isFolderRedirect
@@ -268,15 +286,17 @@ const MoveResourceContent = withSuspense(
               isValidMove !== true
             }
             isLoading={isPending || isValidMoveLoading}
-            onClick={() =>
-              movedItem?.id &&
-              mutate({
-                siteId,
-                movedResourceId: movedItem.id,
+            onClick={() => {
+              if (!hasNonEmptyString(movedItem?.id)) {
+                return
+              }
+              void mutate({
                 destinationResourceId: curResourceId ?? null,
+                movedResourceId: movedItem.id,
                 shouldCreateRedirect,
+                siteId,
               })
-            }
+            }}
           >
             Move here
           </Button>

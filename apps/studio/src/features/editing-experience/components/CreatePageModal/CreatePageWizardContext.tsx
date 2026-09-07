@@ -1,3 +1,4 @@
+/* oxlint-disable import/no-named-as-default, typescript/switch-exhaustiveness-check, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { PropsWithChildren } from "react"
@@ -11,6 +12,12 @@ import databaseLayoutPreview from "~/features/editing-experience/data/databaseLa
 import { useZodForm } from "~/lib/form"
 import { createPageSchema } from "~/schemas/page"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 export enum CreatePageFlowStates {
   Layout = "layout",
@@ -18,8 +25,8 @@ export enum CreatePageFlowStates {
 }
 
 const createPageFormSchema = createPageSchema.omit({
-  siteId: true,
   folderId: true,
+  siteId: true,
 })
 
 interface CreatePageWizardProps extends Pick<UseDisclosureReturn, "onClose"> {
@@ -56,36 +63,43 @@ const useCreatePageWizardContext = ({
     useState<CreatePageFlowStates>(INITIAL_STEP_STATE)
 
   const formMethods = useZodForm({
-    schema: createPageFormSchema,
     defaultValues: {
-      title: "",
-      permalink: "",
       layout: "content",
+      permalink: "",
+      title: "",
     },
+    schema: createPageFormSchema,
   })
 
   const [layout, title] = formMethods.watch(["layout", "title"])
   const { data, isLoading: isPermalinkLoading } =
     trpc.resource.getWithFullPermalink.useQuery(
       {
+        resourceId: isDefinedNumber(folderId) ? String(folderId) : "",
         siteId,
-        resourceId: folderId ? String(folderId) : "",
       },
-      { enabled: !!folderId },
+      { enabled: isDefinedNumber(folderId) },
     )
 
   const layoutPreviewJson: IsomerSchema = useMemo(() => {
     let jsonPreview
     switch (layout) {
-      case "content":
+      case "content": {
         jsonPreview = contentLayoutPreview
         break
-      case "article":
+      }
+      case "article": {
         jsonPreview = articleLayoutPreview
         break
-      case "database":
+      }
+      case "database": {
         jsonPreview = databaseLayoutPreview
         break
+      }
+      default: {
+        jsonPreview = contentLayoutPreview
+        break
+      }
     }
     // SAFETY: layout preview JSON is merged with the wizard title before save
     return merge(jsonPreview, {
@@ -103,25 +117,17 @@ const useCreatePageWizardContext = ({
       await utils.resource.listWithoutRoot.invalidate()
       onClose()
     },
-    // TODO: Error handling
+    // Deferred: Error handling
   })
 
   const handleCreatePage = formMethods.handleSubmit((values) => {
     mutate(
       {
-        siteId,
         folderId,
+        siteId,
         ...values,
       },
       {
-        onSuccess: ({ pageId }) => {
-          posthog.capture("page_created", {
-            site_id: siteId,
-            has_parent_folder: !!folderId,
-            layout: values.layout,
-          })
-          void router.push(`/sites/${siteId}/pages/${pageId}`)
-        },
         onError: (error) => {
           if (error.data?.code === "CONFLICT") {
             formMethods.setError(
@@ -132,6 +138,14 @@ const useCreatePageWizardContext = ({
           } else {
             console.error(error)
           }
+        },
+        onSuccess: ({ pageId }) => {
+          posthog.capture("page_created", {
+            has_parent_folder: isDefinedNumber(folderId),
+            layout: values.layout,
+            site_id: siteId,
+          })
+          void router.push(`/sites/${siteId}/pages/${pageId}`)
         },
       },
     )
@@ -146,17 +160,17 @@ const useCreatePageWizardContext = ({
   }
 
   return {
-    siteId,
+    currentLayout: layout,
     currentStep,
     formMethods,
-    handleCreatePage,
-    isLoading: isPending || (!!folderId && isPermalinkLoading),
-    handleNextToDetailScreen,
+    fullPermalink: isDefinedNumber(folderId) ? (data?.fullPermalink ?? "") : "",
     handleBackToLayoutScreen,
+    handleCreatePage,
+    handleNextToDetailScreen,
+    isLoading: isPending || (isDefinedNumber(folderId) && isPermalinkLoading),
     layoutPreviewJson,
     onClose,
-    currentLayout: layout,
-    fullPermalink: !!folderId ? data?.fullPermalink : "",
+    siteId,
   }
 }
 

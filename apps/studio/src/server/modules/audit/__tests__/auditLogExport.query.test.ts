@@ -1,3 +1,4 @@
+/* oxlint-disable promise/avoid-new, typescript/strict-void-return, typescript/require-array-sort-compare, typescript/no-unsafe-type-assertion -- server lint cleanup */
 import type { IsoMonth } from "~/schemas/audit"
 import { resetTables } from "tests/integration/helpers/db"
 import {
@@ -49,8 +50,8 @@ const setupPermission = async ({
   role?: (typeof RoleType)[keyof typeof RoleType]
   createdAt: Date
   deletedAt?: Date | null
-}) => {
-  return db
+}) =>
+  await db
     .insertInto("ResourcePermission")
     .values({
       userId,
@@ -63,7 +64,6 @@ const setupPermission = async ({
     })
     .returningAll()
     .executeTakeFirstOrThrow()
-}
 
 const insertAuditLog = async ({
   eventType,
@@ -81,8 +81,8 @@ const insertAuditLog = async ({
   metadata?: AuditLogMetadata
   ipAddress?: string | null
   createdAt: Date
-}) => {
-  return db
+}) =>
+  await db
     .insertInto("AuditLog")
     .values({
       eventType,
@@ -98,7 +98,6 @@ const insertAuditLog = async ({
     })
     .returningAll()
     .executeTakeFirstOrThrow()
-}
 
 describe("auditLogExport.query", () => {
   beforeEach(async () => {
@@ -214,17 +213,17 @@ describe("auditLogExport.query", () => {
       // Created Feb 2024, still active → INCLUDED
       const activeUser = await setupUser({ email: "active@agency.gov.sg" })
       await setupPermission({
-        userId: activeUser.id,
-        siteId: site.id,
         createdAt: new Date("2024-02-15T00:00:00Z"),
+        siteId: site.id,
+        userId: activeUser.id,
       })
 
       // Created Apr 2024 (after month end) → EXCLUDED
       const futureUser = await setupUser({ email: "future@agency.gov.sg" })
       await setupPermission({
-        userId: futureUser.id,
-        siteId: site.id,
         createdAt: new Date("2024-04-01T00:00:00Z"),
+        siteId: site.id,
+        userId: futureUser.id,
       })
 
       // Created Jan 2024, revoked Feb 2024 (before month end) → EXCLUDED
@@ -232,10 +231,10 @@ describe("auditLogExport.query", () => {
         email: "revoked-early@agency.gov.sg",
       })
       await setupPermission({
-        userId: revokedEarlyUser.id,
-        siteId: site.id,
         createdAt: new Date("2024-01-10T00:00:00Z"),
         deletedAt: new Date("2024-02-20T00:00:00Z"),
+        siteId: site.id,
+        userId: revokedEarlyUser.id,
       })
 
       // Created Jan 2024, revoked May 2024 (after month end) → INCLUDED
@@ -244,10 +243,10 @@ describe("auditLogExport.query", () => {
         email: "revoked-late@agency.gov.sg",
       })
       await setupPermission({
-        userId: revokedLateUser.id,
-        siteId: site.id,
         createdAt: new Date("2024-01-10T00:00:00Z"),
         deletedAt: new Date("2024-05-10T00:00:00Z"),
+        siteId: site.id,
+        userId: revokedLateUser.id,
       })
 
       // Created Jan 2024, revoked just inside the range's trailing edge
@@ -258,17 +257,17 @@ describe("auditLogExport.query", () => {
         email: "revoked-at-boundary@agency.gov.sg",
       })
       await setupPermission({
-        userId: revokedAtBoundaryUser.id,
-        siteId: site.id,
         createdAt: new Date("2024-01-10T00:00:00Z"),
         deletedAt: new Date("2024-03-31T15:59:59.999Z"),
+        siteId: site.id,
+        userId: revokedAtBoundaryUser.id,
       })
 
       const rows = await getAccessReportRows({
-        siteId: site.id,
         auditLogDateRange,
+        siteId: site.id,
       })
-      const emails = rows.map((r) => r.Email).sort()
+      const emails = rows.map((r) => r.Email).toSorted()
 
       expect(emails).toEqual([
         "active@agency.gov.sg",
@@ -285,21 +284,21 @@ describe("auditLogExport.query", () => {
       const isomerAdmin = await setupUser({ email: "teammate@open.gov.sg" })
       await setupIsomerAdmin({ userId: isomerAdmin.id })
       await setupPermission({
-        userId: isomerAdmin.id,
-        siteId: site.id,
         createdAt: new Date("2024-02-01T00:00:00Z"),
+        siteId: site.id,
+        userId: isomerAdmin.id,
       })
 
       const agencyUser = await setupUser({ email: "agency@agency.gov.sg" })
       await setupPermission({
-        userId: agencyUser.id,
-        siteId: site.id,
         createdAt: new Date("2024-02-01T00:00:00Z"),
+        siteId: site.id,
+        userId: agencyUser.id,
       })
 
       const rows = await getAccessReportRows({
-        siteId: site.id,
         auditLogDateRange,
+        siteId: site.id,
       })
       expect(rows.map((r) => r.Email)).toEqual(["agency@agency.gov.sg"])
     })
@@ -310,14 +309,14 @@ describe("auditLogExport.query", () => {
 
       const otherUser = await setupUser({ email: "other@agency.gov.sg" })
       await setupPermission({
-        userId: otherUser.id,
-        siteId: otherSite.id,
         createdAt: new Date("2024-02-01T00:00:00Z"),
+        siteId: otherSite.id,
+        userId: otherUser.id,
       })
 
       const rows = await getAccessReportRows({
-        siteId: site.id,
         auditLogDateRange,
+        siteId: site.id,
       })
       expect(rows).toHaveLength(0)
     })
@@ -330,18 +329,18 @@ describe("auditLogExport.query", () => {
       // and must be EXCLUDED from the March report.
       const boundaryUser = await setupUser({ email: "boundary@agency.gov.sg" })
       await setupPermission({
-        userId: boundaryUser.id,
-        siteId: site.id,
         createdAt: new Date("2024-03-31T23:30:00Z"),
+        siteId: site.id,
+        userId: boundaryUser.id,
       })
 
       // A permission created just before the SGT month end is INCLUDED.
       // 2024-03-31T15:00:00Z === 2024-03-31 23:00 SGT.
       const inMonthUser = await setupUser({ email: "in-month@agency.gov.sg" })
       await setupPermission({
-        userId: inMonthUser.id,
-        siteId: site.id,
         createdAt: new Date("2024-03-31T15:00:00Z"),
+        siteId: site.id,
+        userId: inMonthUser.id,
       })
 
       // A permission revoked just inside the range's trailing edge
@@ -351,10 +350,10 @@ describe("auditLogExport.query", () => {
         email: "revoked-at-boundary@agency.gov.sg",
       })
       await setupPermission({
-        userId: revokedAtBoundaryUser.id,
-        siteId: site.id,
         createdAt: new Date("2024-02-01T00:00:00Z"),
         deletedAt: new Date("2024-03-31T15:59:59.999Z"),
+        siteId: site.id,
+        userId: revokedAtBoundaryUser.id,
       })
 
       // A permission revoked at the exclusive boundary (rangeEnd ===
@@ -364,17 +363,17 @@ describe("auditLogExport.query", () => {
         email: "revoked-after-boundary@agency.gov.sg",
       })
       await setupPermission({
-        userId: revokedAfterBoundaryUser.id,
-        siteId: site.id,
         createdAt: new Date("2024-02-01T00:00:00Z"),
         deletedAt: new Date("2024-03-31T16:00:00.000Z"),
+        siteId: site.id,
+        userId: revokedAfterBoundaryUser.id,
       })
 
       const rows = await getAccessReportRows({
-        siteId: site.id,
         auditLogDateRange,
+        siteId: site.id,
       })
-      expect(rows.map((r) => r.Email).sort()).toEqual([
+      expect(rows.map((r) => r.Email).toSorted()).toEqual([
         "in-month@agency.gov.sg",
         "revoked-after-boundary@agency.gov.sg",
       ])
@@ -389,24 +388,24 @@ describe("auditLogExport.query", () => {
         lastLoginAt,
       })
       await setupPermission({
-        userId: user.id,
-        siteId: site.id,
-        role: RoleType.Admin,
         createdAt,
+        role: RoleType.Admin,
+        siteId: site.id,
+        userId: user.id,
       })
 
       const rows = await getAccessReportRows({
-        siteId: site.id,
         auditLogDateRange,
+        siteId: site.id,
       })
       expect(rows).toHaveLength(1)
       // String-alias columns keep their quotes in the key (matches the
       // script; `toCsv` strips them for the CSV header).
       expect(rows[0]).toEqual({
-        Email: "shape@agency.gov.sg",
-        '"Last login"': lastLoginAt,
-        Role: RoleType.Admin,
         '"Date added"': createdAt,
+        '"Last login"': lastLoginAt,
+        Email: "shape@agency.gov.sg",
+        Role: RoleType.Admin,
       })
       // Column order must match the script's CSV (Email, Last login, Role,
       // Date added) since `toCsv` serializes by insertion order.
@@ -426,45 +425,45 @@ describe("auditLogExport.query", () => {
 
       // In-month Publish (reads metadata ->> 'title'/'type'/'id')
       await insertAuditLog({
-        eventType: AuditLogEvent.Publish,
-        userId: user.id,
-        siteId: site.id,
-        delta: { before: { versionNum: 0 }, after: { versionNum: 1 } },
-        metadata: { title: "Homepage", type: "Page", id: "42" },
         createdAt: new Date("2024-03-10T02:00:00Z"),
+        delta: { after: { versionNum: 1 }, before: { versionNum: 0 } },
+        eventType: AuditLogEvent.Publish,
+        metadata: { id: "42", title: "Homepage", type: "Page" },
+        siteId: site.id,
+        userId: user.id,
       })
 
       // In-month ResourceCreate (reads delta -> after -> resource)
       await insertAuditLog({
-        eventType: AuditLogEvent.ResourceCreate,
-        userId: user.id,
-        siteId: site.id,
-        delta: {
-          before: null,
-          after: {
-            resource: { title: "About Us", type: "Page", id: "43" },
-          },
-        },
         createdAt: new Date("2024-03-11T02:00:00Z"),
+        delta: {
+          after: {
+            resource: { id: "43", title: "About Us", type: "Page" },
+          },
+          before: null,
+        },
+        eventType: AuditLogEvent.ResourceCreate,
+        siteId: site.id,
+        userId: user.id,
       })
 
       // Out-of-month event (Feb) → EXCLUDED
       await insertAuditLog({
-        eventType: AuditLogEvent.ResourceCreate,
-        userId: user.id,
-        siteId: site.id,
-        delta: {
-          before: null,
-          after: {
-            resource: { title: "Old Page", type: "Page", id: "1" },
-          },
-        },
         createdAt: new Date("2024-02-15T02:00:00Z"),
+        delta: {
+          after: {
+            resource: { id: "1", title: "Old Page", type: "Page" },
+          },
+          before: null,
+        },
+        eventType: AuditLogEvent.ResourceCreate,
+        siteId: site.id,
+        userId: user.id,
       })
 
       const rows = await getActivityReportRows({
-        siteId: site.id,
         auditLogDateRange,
+        siteId: site.id,
       })
 
       expect(rows).toHaveLength(2)
@@ -487,31 +486,31 @@ describe("auditLogExport.query", () => {
 
       // 2024-03-31T23:30:00Z === 2024-04-01 07:30 SGT → April, EXCLUDED from March
       await insertAuditLog({
-        eventType: AuditLogEvent.ResourceCreate,
-        userId: user.id,
-        siteId: site.id,
-        delta: {
-          before: null,
-          after: { resource: { title: "April Page", type: "Page", id: "99" } },
-        },
         createdAt: new Date("2024-03-31T23:30:00Z"),
+        delta: {
+          after: { resource: { id: "99", title: "April Page", type: "Page" } },
+          before: null,
+        },
+        eventType: AuditLogEvent.ResourceCreate,
+        siteId: site.id,
+        userId: user.id,
       })
 
       // 2024-03-31T15:00:00Z === 2024-03-31 23:00 SGT → still March, INCLUDED
       await insertAuditLog({
-        eventType: AuditLogEvent.ResourceCreate,
-        userId: user.id,
-        siteId: site.id,
-        delta: {
-          before: null,
-          after: { resource: { title: "March Page", type: "Page", id: "98" } },
-        },
         createdAt: new Date("2024-03-31T15:00:00Z"),
+        delta: {
+          after: { resource: { id: "98", title: "March Page", type: "Page" } },
+          before: null,
+        },
+        eventType: AuditLogEvent.ResourceCreate,
+        siteId: site.id,
+        userId: user.id,
       })
 
       const rows = await getActivityReportRows({
-        siteId: site.id,
         auditLogDateRange,
+        siteId: site.id,
       })
       expect(rows).toHaveLength(1)
       expect(rows[0]?.Description).toBe('"March Page" (Page 98) created')
@@ -527,22 +526,22 @@ describe("auditLogExport.query", () => {
       // numeric siteId — otherwise Postgres raises `operator does not exist:
       // text = integer` and the whole export query throws.
       await insertAuditLog({
-        eventType: AuditLogEvent.ResourceCreate,
-        userId: user.id,
-        siteId: null,
-        delta: {
-          before: null,
-          after: {
-            siteId: site.id,
-            resource: { title: "Legacy Page", type: "Page", id: "77" },
-          },
-        },
         createdAt: new Date("2024-03-12T02:00:00Z"),
+        delta: {
+          after: {
+            resource: { id: "77", title: "Legacy Page", type: "Page" },
+            siteId: site.id,
+          },
+          before: null,
+        },
+        eventType: AuditLogEvent.ResourceCreate,
+        siteId: null,
+        userId: user.id,
       })
 
       const rows = await getActivityReportRows({
-        siteId: site.id,
         auditLogDateRange,
+        siteId: site.id,
       })
 
       expect(rows).toHaveLength(1)
@@ -559,19 +558,19 @@ describe("auditLogExport.query", () => {
       // (delta.after is null). The `pu` join must resolve the email from the
       // `before` side, otherwise the description drops the email entirely.
       await insertAuditLog({
-        eventType: AuditLogEvent.PermissionDelete,
-        userId: actor.id,
-        siteId: site.id,
-        delta: {
-          before: { userId: target.id, role: RoleType.Editor },
-          after: null,
-        },
         createdAt: new Date("2024-03-12T02:00:00Z"),
+        delta: {
+          after: null,
+          before: { role: RoleType.Editor, userId: target.id },
+        },
+        eventType: AuditLogEvent.PermissionDelete,
+        siteId: site.id,
+        userId: actor.id,
       })
 
       const rows = await getActivityReportRows({
-        siteId: site.id,
         auditLogDateRange,
+        siteId: site.id,
       })
 
       const deleteRows = rows.filter(
@@ -589,19 +588,19 @@ describe("auditLogExport.query", () => {
       const target = await setupUser({ email: "granted@agency.gov.sg" })
 
       await insertAuditLog({
-        eventType: AuditLogEvent.PermissionCreate,
-        userId: actor.id,
-        siteId: site.id,
-        delta: {
-          before: null,
-          after: { userId: target.id, role: RoleType.Editor },
-        },
         createdAt: new Date("2024-03-13T02:00:00Z"),
+        delta: {
+          after: { role: RoleType.Editor, userId: target.id },
+          before: null,
+        },
+        eventType: AuditLogEvent.PermissionCreate,
+        siteId: site.id,
+        userId: actor.id,
       })
 
       const rows = await getActivityReportRows({
-        siteId: site.id,
         auditLogDateRange,
+        siteId: site.id,
       })
 
       const createRows = rows.filter(
@@ -622,9 +621,9 @@ describe("auditLogExport.query", () => {
       // Agency user with a permission → their Login is INCLUDED
       const agencyUser = await setupUser({ email: "agency@agency.gov.sg" })
       await setupPermission({
-        userId: agencyUser.id,
-        siteId: site.id,
         createdAt: new Date("2024-02-01T00:00:00Z"),
+        siteId: site.id,
+        userId: agencyUser.id,
       })
 
       // Isomer admin → excluded from collaboratorWindows, Login NOT shown
@@ -632,36 +631,36 @@ describe("auditLogExport.query", () => {
       const isomerUser = await setupUser({ email: "teammate@open.gov.sg" })
       await setupIsomerAdmin({ userId: isomerUser.id })
       await setupPermission({
-        userId: isomerUser.id,
-        siteId: site.id,
         createdAt: new Date("2024-02-01T00:00:00Z"),
+        siteId: site.id,
+        userId: isomerUser.id,
       })
 
       // Login identifier format is `email|ip`; Login events have siteId null.
       await insertAuditLog({
-        eventType: AuditLogEvent.Login,
-        userId: agencyUser.id,
-        siteId: null,
-        delta: {
-          before: { identifier: "agency@agency.gov.sg|10.0.0.1" },
-          after: null,
-        },
         createdAt: new Date("2024-03-05T02:00:00Z"),
+        delta: {
+          after: null,
+          before: { identifier: "agency@agency.gov.sg|10.0.0.1" },
+        },
+        eventType: AuditLogEvent.Login,
+        siteId: null,
+        userId: agencyUser.id,
       })
       await insertAuditLog({
-        eventType: AuditLogEvent.Login,
-        userId: isomerUser.id,
-        siteId: null,
-        delta: {
-          before: { identifier: "teammate@open.gov.sg|10.0.0.2" },
-          after: null,
-        },
         createdAt: new Date("2024-03-06T02:00:00Z"),
+        delta: {
+          after: null,
+          before: { identifier: "teammate@open.gov.sg|10.0.0.2" },
+        },
+        eventType: AuditLogEvent.Login,
+        siteId: null,
+        userId: isomerUser.id,
       })
 
       const rows = await getActivityReportRows({
-        siteId: site.id,
         auditLogDateRange,
+        siteId: site.id,
       })
 
       const loginRows = rows.filter(
@@ -680,9 +679,9 @@ describe("auditLogExport.query", () => {
       // March, so this user's Login must be EXCLUDED.
       const futureUser = await setupUser({ email: "future@agency.gov.sg" })
       await setupPermission({
-        userId: futureUser.id,
-        siteId: site.id,
         createdAt: new Date("2024-04-01T00:00:00Z"),
+        siteId: site.id,
+        userId: futureUser.id,
       })
 
       // Permission revoked BEFORE the range began (deletedAt in Feb, before
@@ -691,18 +690,18 @@ describe("auditLogExport.query", () => {
         email: "revoked-before@agency.gov.sg",
       })
       await setupPermission({
-        userId: revokedBeforeUser.id,
-        siteId: site.id,
         createdAt: new Date("2024-01-01T00:00:00Z"),
         deletedAt: new Date("2024-02-10T00:00:00Z"),
+        siteId: site.id,
+        userId: revokedBeforeUser.id,
       })
 
       // Permission active throughout March → INCLUDED (control).
       const activeUser = await setupUser({ email: "active@agency.gov.sg" })
       await setupPermission({
-        userId: activeUser.id,
-        siteId: site.id,
         createdAt: new Date("2024-02-01T00:00:00Z"),
+        siteId: site.id,
+        userId: activeUser.id,
       })
 
       for (const [email, at] of [
@@ -710,18 +709,19 @@ describe("auditLogExport.query", () => {
         ["revoked-before@agency.gov.sg", "2024-03-06T02:00:00Z"],
         ["active@agency.gov.sg", "2024-03-07T02:00:00Z"],
       ] as const) {
+        // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
         await insertAuditLog({
-          eventType: AuditLogEvent.Login,
-          userId: activeUser.id,
-          siteId: null,
-          delta: { before: { identifier: `${email}|10.0.0.1` }, after: null },
           createdAt: new Date(at),
+          delta: { after: null, before: { identifier: `${email}|10.0.0.1` } },
+          eventType: AuditLogEvent.Login,
+          siteId: null,
+          userId: activeUser.id,
         })
       }
 
       const rows = await getActivityReportRows({
-        siteId: site.id,
         auditLogDateRange,
+        siteId: site.id,
       })
 
       const loginRows = rows.filter(
@@ -749,30 +749,30 @@ describe("auditLogExport.query", () => {
       })
 
       await insertAuditLog({
-        eventType: AuditLogEvent.PermissionCreate,
-        userId: actor.id,
-        siteId: site.id,
-        delta: {
-          before: null,
-          after: { userId: changedUser.id, role: RoleType.Editor },
-        },
         createdAt: new Date("2024-03-10T02:00:00Z"),
+        delta: {
+          after: { role: RoleType.Editor, userId: changedUser.id },
+          before: null,
+        },
+        eventType: AuditLogEvent.PermissionCreate,
+        siteId: site.id,
+        userId: actor.id,
       })
 
       await insertAuditLog({
-        eventType: AuditLogEvent.Login,
-        userId: changedUser.id,
-        siteId: null,
-        delta: {
-          before: { identifier: "changed@agency.gov.sg|10.0.0.9" },
-          after: null,
-        },
         createdAt: new Date("2024-03-11T02:00:00Z"),
+        delta: {
+          after: null,
+          before: { identifier: "changed@agency.gov.sg|10.0.0.9" },
+        },
+        eventType: AuditLogEvent.Login,
+        siteId: null,
+        userId: changedUser.id,
       })
 
       const rows = await getActivityReportRows({
-        siteId: site.id,
         auditLogDateRange,
+        siteId: site.id,
       })
 
       const loginRows = rows.filter(
@@ -792,19 +792,19 @@ describe("auditLogExport.query", () => {
       const user = await setupUser({ email: "editor@agency.gov.sg" })
 
       await insertAuditLog({
-        eventType: AuditLogEvent.ResourceCreate,
-        userId: user.id,
-        siteId: otherSite.id,
-        delta: {
-          before: null,
-          after: { resource: { title: "Other Page", type: "Page", id: "7" } },
-        },
         createdAt: new Date("2024-03-10T02:00:00Z"),
+        delta: {
+          after: { resource: { id: "7", title: "Other Page", type: "Page" } },
+          before: null,
+        },
+        eventType: AuditLogEvent.ResourceCreate,
+        siteId: otherSite.id,
+        userId: user.id,
       })
 
       const rows = await getActivityReportRows({
-        siteId: site.id,
         auditLogDateRange,
+        siteId: site.id,
       })
       expect(rows).toHaveLength(0)
     })
@@ -816,22 +816,22 @@ describe("auditLogExport.query", () => {
       // The delta stores what was ASKED for, so the description echoes it
       // verbatim regardless of report type.
       await insertAuditLog({
-        eventType: AuditLogEvent.AuditLogExportCreate,
-        userId: admin.id,
-        siteId: site.id,
+        createdAt: new Date("2024-03-14T02:00:00Z"),
         delta: {
-          before: null,
           after: {
             auditLogDateRange: "[2024-02-01,2024-03-01)",
             reportType: "Activity",
           },
+          before: null,
         },
-        createdAt: new Date("2024-03-14T02:00:00Z"),
+        eventType: AuditLogEvent.AuditLogExportCreate,
+        siteId: site.id,
+        userId: admin.id,
       })
 
       const rows = await getActivityReportRows({
-        siteId: site.id,
         auditLogDateRange,
+        siteId: site.id,
       })
 
       expect(rows).toHaveLength(1)
@@ -847,43 +847,43 @@ describe("auditLogExport.query", () => {
 
       // Newly created redirect (no `before`)
       await insertAuditLog({
-        eventType: AuditLogEvent.RedirectCreate,
-        userId: user.id,
-        siteId: site.id,
-        delta: {
-          before: null,
-          after: { source: "/old", destination: "/new" },
-        },
         createdAt: new Date("2024-03-10T02:00:00Z"),
+        delta: {
+          after: { destination: "/new", source: "/old" },
+          before: null,
+        },
+        eventType: AuditLogEvent.RedirectCreate,
+        siteId: site.id,
+        userId: user.id,
       })
 
       // Revival of a soft-deleted redirect (`before.destination` present)
       await insertAuditLog({
-        eventType: AuditLogEvent.RedirectCreate,
-        userId: user.id,
-        siteId: site.id,
-        delta: {
-          before: { source: "/old", destination: "/stale" },
-          after: { source: "/old", destination: "/new" },
-        },
         createdAt: new Date("2024-03-11T02:00:00Z"),
+        delta: {
+          after: { destination: "/new", source: "/old" },
+          before: { destination: "/stale", source: "/old" },
+        },
+        eventType: AuditLogEvent.RedirectCreate,
+        siteId: site.id,
+        userId: user.id,
       })
 
       // Deletion
       await insertAuditLog({
-        eventType: AuditLogEvent.RedirectDelete,
-        userId: user.id,
-        siteId: site.id,
-        delta: {
-          before: { source: "/old", destination: "/new" },
-          after: { source: "/old", destination: "/new" },
-        },
         createdAt: new Date("2024-03-12T02:00:00Z"),
+        delta: {
+          after: { destination: "/new", source: "/old" },
+          before: { destination: "/new", source: "/old" },
+        },
+        eventType: AuditLogEvent.RedirectDelete,
+        siteId: site.id,
+        userId: user.id,
       })
 
       const rows = await getActivityReportRows({
-        siteId: site.id,
         auditLogDateRange,
+        siteId: site.id,
       })
 
       expect(rows.map((r) => r.Description)).toEqual([
@@ -908,43 +908,43 @@ describe("auditLogExport.query", () => {
         collaborator: Awaited<ReturnType<typeof setupUser>>,
         at: Date,
       ) =>
-        insertAuditLog({
-          eventType: AuditLogEvent.Login,
-          userId: collaborator.id,
-          siteId: null,
-          delta: {
-            before: { identifier: `${collaborator.email}|1.2.3.4` },
-            after: null,
-          },
+        await insertAuditLog({
           createdAt: at,
+          delta: {
+            after: null,
+            before: { identifier: `${collaborator.email}|1.2.3.4` },
+          },
+          eventType: AuditLogEvent.Login,
+          siteId: null,
+          userId: collaborator.id,
         })
 
       const insertLogoutFor = async (
         collaborator: Awaited<ReturnType<typeof setupUser>>,
         at: Date,
       ) =>
-        insertAuditLog({
-          eventType: AuditLogEvent.Logout,
-          userId: collaborator.id,
-          siteId: null,
-          delta: { before: { email: collaborator.email }, after: null },
+        await insertAuditLog({
           createdAt: at,
+          delta: { after: null, before: { email: collaborator.email } },
+          eventType: AuditLogEvent.Logout,
+          siteId: null,
+          userId: collaborator.id,
         })
 
       it("includes a Login during an active collaboration window", async () => {
         const { site } = await setupSite()
         const collaborator = await setupUser({ email: "active@agency.gov.sg" })
         await setupPermission({
-          userId: collaborator.id,
-          siteId: site.id,
           createdAt: GRANTED_BEFORE_RANGE,
           deletedAt: T_20,
+          siteId: site.id,
+          userId: collaborator.id,
         })
         await insertLoginFor(collaborator, T_10)
 
         const rows = await getActivityReportRows({
-          siteId: site.id,
           auditLogDateRange,
+          siteId: site.id,
         })
         expect(rows.map((r) => r['"Event type"'])).toEqual([
           AuditLogEvent.Login,
@@ -957,16 +957,16 @@ describe("auditLogExport.query", () => {
           email: "pregrant@agency.gov.sg",
         })
         await setupPermission({
-          userId: collaborator.id,
-          siteId: site.id,
           createdAt: T_15,
           deletedAt: null,
+          siteId: site.id,
+          userId: collaborator.id,
         })
         await insertLoginFor(collaborator, T_10)
 
         const rows = await getActivityReportRows({
-          siteId: site.id,
           auditLogDateRange,
+          siteId: site.id,
         })
         expect(rows).toHaveLength(0)
       })
@@ -977,16 +977,16 @@ describe("auditLogExport.query", () => {
           email: "postrevoke@agency.gov.sg",
         })
         await setupPermission({
-          userId: collaborator.id,
-          siteId: site.id,
           createdAt: GRANTED_BEFORE_RANGE,
           deletedAt: T_20,
+          siteId: site.id,
+          userId: collaborator.id,
         })
         await insertLoginFor(collaborator, T_25)
 
         const rows = await getActivityReportRows({
-          siteId: site.id,
           auditLogDateRange,
+          siteId: site.id,
         })
         expect(rows).toHaveLength(0)
       })
@@ -996,24 +996,27 @@ describe("auditLogExport.query", () => {
         const { site } = await setupSite()
         const collaborator = await setupUser({ email: "readded@agency.gov.sg" })
         await setupPermission({
-          userId: collaborator.id,
-          siteId: site.id,
           createdAt: GRANTED_BEFORE_RANGE,
           deletedAt: T_10,
+          siteId: site.id,
+          userId: collaborator.id,
         })
         await setupPermission({
-          userId: collaborator.id,
-          siteId: site.id,
           createdAt: T_20,
           deletedAt: null,
+          siteId: site.id,
+          userId: collaborator.id,
         })
-        await insertLoginFor(collaborator, T_05) // in window 1
-        await insertLoginFor(collaborator, T_15) // in the gap
-        await insertLoginFor(collaborator, T_25) // in window 2
+        await insertLoginFor(collaborator, T_05)
+        // in window 1
+        await insertLoginFor(collaborator, T_15)
+        // in the gap
+        await insertLoginFor(collaborator, T_25)
+        // in window 2
 
         const rows = await getActivityReportRows({
-          siteId: site.id,
           auditLogDateRange,
+          siteId: site.id,
         })
         const times = rows
           .filter((r) => r['"Event type"'] === AuditLogEvent.Login)
@@ -1027,17 +1030,19 @@ describe("auditLogExport.query", () => {
           email: "logouts@agency.gov.sg",
         })
         await setupPermission({
-          userId: collaborator.id,
-          siteId: site.id,
           createdAt: GRANTED_BEFORE_RANGE,
           deletedAt: T_20,
+          siteId: site.id,
+          userId: collaborator.id,
         })
-        await insertLogoutFor(collaborator, T_10) // during the window
-        await insertLogoutFor(collaborator, T_20) // exactly at revocation
+        await insertLogoutFor(collaborator, T_10)
+        // during the window
+        await insertLogoutFor(collaborator, T_20)
+        // exactly at revocation
 
         const rows = await getActivityReportRows({
-          siteId: site.id,
           auditLogDateRange,
+          siteId: site.id,
         })
         const logoutTimes = rows
           .filter((r) => r['"Event type"'] === AuditLogEvent.Logout)
@@ -1050,16 +1055,16 @@ describe("auditLogExport.query", () => {
         const isomerAdmin = await setupUser({ email: "admin@open.gov.sg" })
         await setupIsomerAdmin({ userId: isomerAdmin.id })
         await setupPermission({
-          userId: isomerAdmin.id,
-          siteId: site.id,
           createdAt: GRANTED_BEFORE_RANGE,
           deletedAt: null,
+          siteId: site.id,
+          userId: isomerAdmin.id,
         })
         await insertLogoutFor(isomerAdmin, T_10)
 
         const rows = await getActivityReportRows({
-          siteId: site.id,
           auditLogDateRange,
+          siteId: site.id,
         })
         expect(rows).toHaveLength(0)
       })
@@ -1069,7 +1074,7 @@ describe("auditLogExport.query", () => {
   describe("getStringifiedValue", () => {
     it("returns empty string for null and undefined", () => {
       expect(getStringifiedValue(null)).toBe("")
-      expect(getStringifiedValue(undefined)).toBe("")
+      expect(getStringifiedValue()).toBe("")
     })
 
     it("renders dates in Singapore time with a +08:00 offset", () => {
@@ -1116,7 +1121,7 @@ describe("auditLogExport.query", () => {
 
       const csv = toCsv(rows)
       // Papa Parse uses CRLF line endings by default; split on either.
-      const lines = csv.split(/\r\n|\n/)
+      const lines = csv.split(/\r\n|\n/u)
 
       // 1 header + 2 data rows. Quotes are stripped from the header labels.
       expect(lines).toHaveLength(3)

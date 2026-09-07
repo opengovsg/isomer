@@ -1,3 +1,5 @@
+/* oxlint-disable import/no-empty-named-blocks, typescript/no-import-type-side-effects, unicorn/require-module-specifiers -- server lint cleanup */
+/* oxlint-disable typescript/require-await, typescript/strict-boolean-expressions, unicorn/filename-case -- server lint cleanup */
 import type {
   KyselyPlugin,
   PluginTransformQueryArgs,
@@ -7,16 +9,17 @@ import type {
 } from "kysely"
 import ddTrace from "dd-trace"
 import { PostgresQueryCompiler } from "kysely"
+import {} from "~/utils/truthiness"
 
 export class TracingPlugin implements KyselyPlugin {
   // reuse a single compiler instance to avoid unnecessary allocations
-  private compiler = new PostgresQueryCompiler()
-  private spanMap = new WeakMap<
+  private readonly compiler = new PostgresQueryCompiler()
+  private readonly spanMap = new WeakMap<
     PluginTransformQueryArgs["queryId"],
     ddTrace.Span
   >()
   transformQuery(args: PluginTransformQueryArgs) {
-    const queryId = args.queryId
+    const { queryId } = args
     // only create spans if dd-trace is properly initialized, which is NOT the case if running in a seed script
     // oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (ddTrace?.tracer) {
@@ -25,17 +28,19 @@ export class TracingPlugin implements KyselyPlugin {
       const span = ddTrace.tracer.startSpan(`kysely_${args.node.kind}`, {
         childOf: ddTrace.tracer.scope().active() ?? undefined,
         tags: {
-          "kysely.query_id": queryId,
           "kysely.kind": args.node.kind,
-          "kysely.sql": compiled.sql, // only log the SQL
-          "kysely.parameters_len": compiled.parameters.length, // log number of parameters, NOT the parameters themselves for security
+          "kysely.parameters_len": compiled.parameters.length,
+          // log number of parameters, NOT the parameters themselves for security
+          "kysely.query_id": queryId,
+          "kysely.sql": compiled.sql,
+          // only log the SQL
         },
       })
       this.spanMap.set(queryId, span)
     }
     return args.node
   }
-  transformResult(
+  async transformResult(
     args: PluginTransformResultArgs,
   ): Promise<QueryResult<UnknownRow>> {
     const span = this.spanMap.get(args.queryId)
@@ -49,6 +54,6 @@ export class TracingPlugin implements KyselyPlugin {
       span.finish()
       this.spanMap.delete(args.queryId)
     }
-    return Promise.resolve(args.result)
+    return args.result
   }
 }

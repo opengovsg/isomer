@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-empty-function, react/function-component-definition -- core cleanup deferred */
 import type { BoxProps, StackProps } from "@chakra-ui/react"
 import type {
   DraggableProvidedDraggableProps,
@@ -36,65 +37,65 @@ interface RootProps {
   children: ReactNode
 }
 
-const Root = forwardRef<RootProps, "div">(function DraggableTagButtonRoot(
-  { draggableProps, isError, isDragDisabled = false, children },
-  ref,
-) {
-  const contextValue = useMemo(() => ({ isDragDisabled }), [isDragDisabled])
+// oxlint-disable-next-line react/display-name -- core cleanup deferred
+const Root = forwardRef<RootProps, "div">(
+  ({ draggableProps, isError, isDragDisabled = false, children }, ref) => {
+    const contextValue = useMemo(() => ({ isDragDisabled }), [isDragDisabled])
 
-  return (
-    <DraggableTagButtonContext.Provider value={contextValue}>
-      <Box my="0.25rem" ref={ref} {...draggableProps} w="full">
-        <HStack
-          spacing={0}
-          border="1px solid"
-          borderColor="base.divider.medium"
-          borderRadius="6px"
-          bg="white"
-          transitionProperty="common"
-          transitionDuration="normal"
-          aria-invalid={isError}
-          {...(isDragDisabled
-            ? undefined
-            : {
-                _hover: {
-                  bg: "interaction.muted.main.hover",
-                  borderColor: "interaction.main-subtle.hover",
-                  _invalid: {
-                    bg: "interaction.muted.critical.hover",
-                    borderColor: "utility.feedback.critical",
+    return (
+      <DraggableTagButtonContext.Provider value={contextValue}>
+        <Box my="0.25rem" ref={ref} {...draggableProps} w="full">
+          <HStack
+            spacing={0}
+            border="1px solid"
+            borderColor="base.divider.medium"
+            borderRadius="6px"
+            bg="white"
+            transitionProperty="common"
+            transitionDuration="normal"
+            aria-invalid={isError}
+            {...(isDragDisabled
+              ? undefined
+              : {
+                  _active: {
+                    _invalid: {
+                      bg: "interaction.muted.critical.hover",
+                      borderColor: "utility.feedback.critical",
+                      shadow: "0px 1px 6px 0px #C0343426",
+                    },
+                    bg: "interaction.main-subtle.default",
+                    borderColor: "interaction.main-subtle.hover",
+                    shadow: "0px 1px 6px 0px #1361F026",
                   },
-                },
-                _active: {
-                  bg: "interaction.main-subtle.default",
-                  borderColor: "interaction.main-subtle.hover",
-                  shadow: "0px 1px 6px 0px #1361F026",
-                  _invalid: {
-                    bg: "interaction.muted.critical.hover",
-                    borderColor: "utility.feedback.critical",
-                    shadow: "0px 1px 6px 0px #C0343426",
+                  _hover: {
+                    _invalid: {
+                      bg: "interaction.muted.critical.hover",
+                      borderColor: "utility.feedback.critical",
+                    },
+                    bg: "interaction.muted.main.hover",
+                    borderColor: "interaction.main-subtle.hover",
                   },
-                },
-              })}
-          align="stretch"
-          overflow="hidden"
-        >
-          {isError && (
-            <Box
-              aria-hidden
-              bg="utility.feedback.critical"
-              width="6px"
-              mr="-6px"
-            />
-          )}
-          <HStack flex={1} align="stretch" spacing={0} minW={0} w="100%">
-            {children}
+                })}
+            align="stretch"
+            overflow="hidden"
+          >
+            {isError && (
+              <Box
+                aria-hidden
+                bg="utility.feedback.critical"
+                width="6px"
+                mr="-6px"
+              />
+            )}
+            <HStack flex={1} align="stretch" spacing={0} minW={0} w="100%">
+              {children}
+            </HStack>
           </HStack>
-        </HStack>
-      </Box>
-    </DraggableTagButtonContext.Provider>
-  )
-})
+        </Box>
+      </DraggableTagButtonContext.Provider>
+    )
+  },
+)
 
 interface HandleProps {
   dragHandleProps: DraggableProvidedDragHandleProps | null
@@ -128,11 +129,11 @@ interface BodyProps {
 }
 
 const BODY_BASE_STYLE: BoxProps = {
-  layerStyle: "focusRing",
-  flex: 1,
-  minW: 0,
-  display: "flex",
   alignItems: "center",
+  display: "flex",
+  flex: 1,
+  layerStyle: "focusRing",
+  minW: 0,
   pl: "0.25rem",
   pr: "1rem",
 }
@@ -218,7 +219,7 @@ type LabelProps = Pick<
 const Label = (props: LabelProps) => (
   <LabelRaw
     {...props}
-    handleSelect={() => () => undefined}
+    handleSelect={() => () => {}}
     selected={false}
     childLabelProp={undefined}
     translations={{}}
@@ -257,9 +258,13 @@ const EditableLabel = ({
   const isDirty = draft !== value
 
   const handleSave = () => {
-    if (isInvalid) return
+    if (isInvalid) {
+      return
+    }
     const trimmed = draft.trim()
-    if (trimmed !== value) onSubmit(trimmed)
+    if (trimmed !== value) {
+      onSubmit(trimmed)
+    }
     onEditingChange(false)
   }
 
@@ -310,8 +315,12 @@ const EditableLabel = ({
           onDraftChange?.(e.target.value)
         }}
         onKeyDown={(e) => {
-          if (e.key === "Enter") handleSave()
-          if (e.key === "Escape") handleDiscard()
+          if (e.key === "Enter") {
+            handleSave()
+          }
+          if (e.key === "Escape") {
+            handleDiscard()
+          }
         }}
       />
       <IconButton
@@ -381,22 +390,24 @@ const Trailing = ({ children }: { children: ReactNode }) => (
     alignItems="center"
     flexShrink={0}
     p="0.5rem"
-    onPointerDown={(e) => e.stopPropagation()}
+    onPointerDown={(e) => {
+      e.stopPropagation()
+    }}
   >
     {children}
   </Flex>
 )
 
 export const DraggableTagButton = {
-  Root,
-  Handle,
   Body,
-  Icon: IconBadge,
   Content,
-  Label,
   EditableLabel,
-  Subtitle,
   ErrorCaption,
+  Handle,
+  Icon: IconBadge,
   InfoCaption,
+  Label,
+  Root,
+  Subtitle,
   Trailing,
 }

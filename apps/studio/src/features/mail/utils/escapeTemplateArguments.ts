@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-use-before-define, unicorn/no-redundant-type-constituents, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import { isObject, isPlainObject, mapValues } from "lodash-es"
 
 import type { EmailTemplate, EmailTemplateMap } from "../templates/types"
@@ -35,11 +36,13 @@ const escapeTemplateArgument = <T extends TemplateArgumentValue>(
 ): T => {
   if (isStringValue(value)) {
     // SAFETY: isStringValue narrows value to string before HTML escaping
+    // oxlint-disable-next-line unicorn/no-unsafe-type-assertion -- core cleanup deferred
     return escapeHtml(value) as T
   }
 
   if (Array.isArray(value)) {
     // SAFETY: recursive escape preserves the array element type
+    // oxlint-disable-next-line unicorn/no-unsafe-type-assertion -- core cleanup deferred
     return value.map(escapeTemplateArgument) as T
   }
 
@@ -49,6 +52,8 @@ const escapeTemplateArgument = <T extends TemplateArgumentValue>(
 
   if (isPlainObject(value)) {
     // SAFETY: plain-object branch only recurses over own enumerable entries
+    // oxlint-disable-next-line unicorn/no-unsafe-type-assertion -- core cleanup deferred
+    // oxlint-disable-next-line unicorn/no-unsafe-type-assertion -- core cleanup deferred
     return mapValues(value as object, escapeTemplateArgument) as T
   }
 

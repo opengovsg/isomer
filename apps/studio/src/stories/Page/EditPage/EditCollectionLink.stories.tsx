@@ -36,7 +36,6 @@ const COMMON_HANDLERS = [
 ]
 
 const meta: Meta<typeof CollectionLinkPage> = {
-  title: "Pages/Edit Page/Collection Link Page",
   component: CollectionLinkPage,
   parameters: {
     getLayout: CollectionLinkPage.getLayout,
@@ -45,14 +44,15 @@ const meta: Meta<typeof CollectionLinkPage> = {
     },
     nextjs: {
       router: {
-        query: {
-          siteId: "1",
-          linkId: "1",
-        },
         pathname: "/sites/[siteId]/links/[linkId]",
+        query: {
+          linkId: "1",
+          siteId: "1",
+        },
       },
     },
   },
+  title: "Pages/Edit Page/Collection Link Page",
 }
 
 export default meta
@@ -76,8 +76,8 @@ export const PublishedState: Story = {
     msw: {
       handlers: [
         pageHandlers.readPage.article({
-          state: ResourceState.Published,
           draftBlobId: null,
+          state: ResourceState.Published,
         }),
         ...COMMON_HANDLERS,
       ],
@@ -89,8 +89,8 @@ export const WithBanner: Story = {
   parameters: {
     growthbook: [
       createBannerGbParameters({
-        variant: "info",
         message: "This is a test banner",
+        variant: "info",
       }),
     ],
   },
@@ -115,7 +115,7 @@ export const WithModal: Story = {
     const { canvasElement } = context
     const screen = within(canvasElement)
     const button = await screen.findByRole("button", {
-      name: /Link something.../i,
+      name: /Link something.../iu,
     })
     await userEvent.click(button)
   },

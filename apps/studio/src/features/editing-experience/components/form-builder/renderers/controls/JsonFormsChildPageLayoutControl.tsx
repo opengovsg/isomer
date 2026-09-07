@@ -1,3 +1,5 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
+/* oxlint-disable unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import { Box, FormControl } from "@chakra-ui/react"
 import { rankWith, schemaMatches } from "@jsonforms/core"
@@ -23,41 +25,39 @@ const JsonFormsChildrenPagesLayoutControl = ({
   handleChange,
   path,
   description,
-}: ControlProps): React.ReactNode => {
-  return (
-    <Box>
-      <FormControl isRequired gap="0.5rem">
-        <FormLabel description={description}>{label || "Variant"}</FormLabel>
-        <Radio.RadioGroup
-          display="flex"
-          flexDir="row"
-          gap={2}
-          onChange={(value) => {
-            handleChange(path, value)
-          }}
-          // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
-          value={data as string}
+}: ControlProps): React.ReactNode => (
+  <Box>
+    <FormControl isRequired gap="0.5rem">
+      <FormLabel description={description}>{label || "Variant"}</FormLabel>
+      <Radio.RadioGroup
+        display="flex"
+        flexDir="row"
+        gap={2}
+        onChange={(value) => {
+          handleChange(path, value)
+        }}
+        // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
+        value={data as string}
+      >
+        <Radio
+          value={CHILDREN_PAGES_LAYOUT_OPTIONS.Boxes}
+          allowDeselect={false}
+          size="sm"
         >
-          <Radio
-            value={CHILDREN_PAGES_LAYOUT_OPTIONS.Boxes}
-            allowDeselect={false}
-            size="sm"
-          >
-            Boxes
-            <IconBoxes mt="10px" />
-          </Radio>
-          <Radio
-            value={CHILDREN_PAGES_LAYOUT_OPTIONS.Rows}
-            allowDeselect={false}
-            size="sm"
-          >
-            Rows
-            <IconRows mt="10px" />
-          </Radio>
-        </Radio.RadioGroup>
-      </FormControl>
-    </Box>
-  )
-}
+          Boxes
+          <IconBoxes mt="10px" />
+        </Radio>
+        <Radio
+          value={CHILDREN_PAGES_LAYOUT_OPTIONS.Rows}
+          allowDeselect={false}
+          size="sm"
+        >
+          Rows
+          <IconRows mt="10px" />
+        </Radio>
+      </Radio.RadioGroup>
+    </FormControl>
+  </Box>
+)
 
 export default withJsonFormsControlProps(JsonFormsChildrenPagesLayoutControl)

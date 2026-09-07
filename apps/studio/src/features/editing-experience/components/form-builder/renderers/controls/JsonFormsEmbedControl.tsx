@@ -1,3 +1,5 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
+/* oxlint-disable typescript/strict-boolean-expressions, typescript/strict-void-return, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import {
   Box,
@@ -35,6 +37,12 @@ import { BiLink } from "react-icons/bi"
 import { z } from "zod"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useZodForm } from "~/lib/form"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import {
   EMBED_NAME_MAPPING,
@@ -53,6 +61,7 @@ const SUPPORTED_MAPS = Object.keys(MAPS_EMBED_URL_REGEXES).map(
   (key) => EMBED_NAME_MAPPING[key as keyof typeof MAPS_EMBED_URL_REGEXES],
 )
 
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
 const SUPPORTED_VIDEOS = Object.keys(VIDEO_EMBED_URL_REGEXES).map(
   // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
   (key) => EMBED_NAME_MAPPING[key as keyof typeof VIDEO_EMBED_URL_REGEXES],
@@ -86,6 +95,7 @@ const EmbedCodeModal = ({
     formState: { errors, isValid },
   } = useZodForm({
     mode: "onChange",
+    reValidateMode: "onChange",
     schema: z.object({
       embedCode: z
         .string()
@@ -94,11 +104,14 @@ const EmbedCodeModal = ({
           (value) => {
             const iframeSrc = getIframeSrc(value)
 
-            if (!urlPattern || !iframeSrc) {
-              return !!iframeSrc
+            if (
+              !hasNonEmptyString(urlPattern) ||
+              !hasNonEmptyString(iframeSrc)
+            ) {
+              return hasNonEmptyString(iframeSrc)
             }
 
-            return new RegExp(urlPattern).test(iframeSrc)
+            return new RegExp(urlPattern, "u").test(iframeSrc)
           },
           {
             message:
@@ -106,7 +119,6 @@ const EmbedCodeModal = ({
           },
         ),
     }),
-    reValidateMode: "onChange",
   })
 
   const onSubmit = handleSubmit(({ embedCode }) => {
@@ -160,7 +172,13 @@ const EmbedCodeModal = ({
               >
                 Cancel
               </Button>
-              <Button type="submit" onClick={onSubmit} isDisabled={!isValid}>
+              <Button
+                type="submit"
+                onClick={(event) => {
+                  void onSubmit(event)
+                }}
+                isDisabled={!isValid}
+              >
                 Save code
               </Button>
             </HStack>
@@ -197,7 +215,9 @@ const JsonFormsEmbedControl = ({
       <EmbedCodeModal
         isOpen={isEmbedModalOpen}
         onClose={onEmbedModalClose}
-        onSave={(embedCode) => handleEmbedCodeSave(embedCode)}
+        onSave={(embedCode) => {
+          handleEmbedCodeSave(embedCode)
+        }}
         urlPattern={schema.pattern}
       />
 

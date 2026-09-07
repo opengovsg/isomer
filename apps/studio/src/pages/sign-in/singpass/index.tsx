@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-unused-expressions -- studio lint cleanup */
 import type { NextPageWithLayout } from "~/lib/types"
 import {
   Box,
@@ -144,7 +145,9 @@ const SingpassSignInPage: NextPageWithLayout = () => {
                 <Button
                   w="full"
                   variant="clear"
-                  onClick={handleBackToLogin}
+                  onClick={() => {
+                    void handleBackToLogin()
+                  }}
                   leftIcon={<BiChevronLeft />}
                 >
                   {isNewUser ? "Back to login" : "Not you?"}

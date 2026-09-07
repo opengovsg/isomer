@@ -1,5 +1,6 @@
 import { pick } from "lodash-es"
 import { env } from "~/env.mjs"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import type { Logger } from "@isomer/logging"
 
@@ -31,7 +32,7 @@ export const publishSite = async (
   // Step 1: Get the CodeBuild ID associated with the site
   const site = await getSiteNameAndCodeBuildId(siteId)
   const { codeBuildId } = site
-  if (!codeBuildId) {
+  if (!hasNonEmptyString(codeBuildId)) {
     // NOTE: Not all sites will have a CodeBuild project, as the site may not be
     // ready for a site launch yet. Only sites that are launched will have a
     // CodeBuild project associated with the site.
@@ -52,8 +53,8 @@ export const publishSite = async (
     buildChangesWithStartedBuild = { ...buildChanges, startedBuild }
     logger.info(
       {
-        siteId,
         codeBuildId,
+        siteId,
       },
       "Started new CodeBuild project run",
     )

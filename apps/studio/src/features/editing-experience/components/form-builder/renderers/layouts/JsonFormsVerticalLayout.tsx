@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-plusplus, eslint/prefer-destructuring, unicorn/no-unsafe-type-assertion, unicorn/no-useless-collection-argument -- core cleanup deferred */
 import type {
   LayoutProps,
   RankedTester,
@@ -9,6 +10,12 @@ import { rankWith, uiTypeIs } from "@jsonforms/core"
 import { JsonFormsDispatch, withJsonFormsLayoutProps } from "@jsonforms/react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { isVerticalLayout } from "~/types/schema"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 type UISchemaElementWithScope = UISchemaElement & {
   scope?: string
@@ -26,7 +33,7 @@ const getScopedElementKey = (
   path: string,
 ): string => {
   if ("scope" in element) {
-    const scope = element.scope
+    const { scope } = element
     if (isStringValue(scope)) {
       return scope
     }
@@ -39,10 +46,10 @@ export const jsonFormsVerticalLayoutTester: RankedTester = rankWith(
   uiTypeIs("VerticalLayout"),
 )
 
-function getUiSchemaWithGroup(
+const getUiSchemaWithGroup = (
   jsonSchema: IsomerExtendedJsonSchema,
   uiSchema: UISchemaElementWithScope[],
-) {
+) => {
   const { groups } = jsonSchema
 
   if (!groups) {
@@ -76,7 +83,7 @@ function getUiSchemaWithGroup(
 
     if (
       element.scope === undefined ||
-      propertiesNotInGroup.has(element.scope.split("/").pop() || "")
+      propertiesNotInGroup.has(element.scope.split("/").pop() ?? "")
     ) {
       newUiSchema.push(element)
       tempUiSchema = tempUiSchema.slice(1)
@@ -84,20 +91,20 @@ function getUiSchemaWithGroup(
       continue
     }
 
-    const scopeSuffix = element.scope?.split("/").pop() || ""
+    const scopeSuffix = element.scope?.split("/").pop() ?? ""
     const group = groups.find(({ fields }) => fields.includes(scopeSuffix))
 
     if (group) {
       const { label } = group
       const groupFields = new Set(groupMap.get(label) ?? [])
       const groupElements = uiSchema.filter((el) =>
-        groupFields.has(el.scope?.split("/").pop() || ""),
+        groupFields.has(el.scope?.split("/").pop() ?? ""),
       )
 
       newUiSchema.push({
-        type: "Group",
-        label,
         elements: groupElements,
+        label,
+        type: "Group",
       })
 
       tempUiSchema = tempUiSchema.filter(

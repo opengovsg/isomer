@@ -11,7 +11,7 @@ export const {
   saveObjectsToSearchIndex,
   deleteObjectsFromSearchIndexByFilter,
 } = createAlgoliaClient({
-  appId: env.ALGOLIA_APP_ID,
   apiKey: env.ALGOLIA_API_KEY,
+  appId: env.ALGOLIA_APP_ID,
   indexName: env.ALGOLIA_INDEX_NAME,
 })

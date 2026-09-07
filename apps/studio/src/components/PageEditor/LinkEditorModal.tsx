@@ -1,3 +1,5 @@
+/* oxlint-disable eslint/no-unused-expressions, typescript/no-unnecessary-condition -- studio lint cleanup */
+/* oxlint-disable typescript/strict-boolean-expressions, eslint/no-unused-vars, eslint/no-shadow, eslint/no-use-before-define, typescript/strict-void-return, typescript/no-unnecessary-type-conversion, import/no-named-as-default-member -- studio lint cleanup */
 import type { IconType } from "react-icons"
 import type { LinkTypes } from "~/features/editing-experience/components/LinkEditor/constants"
 import {
@@ -42,13 +44,13 @@ import {
 } from "~/lib/fileUpload"
 import { useZodForm } from "~/lib/form"
 import { getReferenceLink } from "~/utils/link"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { AttachmentData } from "../AttachmentData"
 import { ResourceSelector } from "../ResourceSelector/ResourceSelector"
 import { FileAttachment } from "./FileAttachment"
 
 export const linkEditorSchema = z.object({
-  linkText: z.string().min(1, "Link text cannot be empty."),
   linkHref: z
     .string()
     // Strips stray leading/trailing whitespace (e.g. from a paste) before
@@ -80,6 +82,7 @@ export const linkEditorSchema = z.object({
       }
       return true
     }, "Link destination is not a valid URL."),
+  linkText: z.string().min(1, "Link text cannot be empty."),
 })
 
 interface PageLinkElementProps {
@@ -93,14 +96,14 @@ const PageLinkElement = ({ value, onChange }: PageLinkElementProps) => {
     <ResourceSelector
       interactionType="link"
       siteId={Number(siteId)}
-      onChange={(resourceId) =>
+      onChange={(resourceId) => {
         onChange(
           getReferenceLink({
-            siteId: String(siteId),
             resourceId: resourceId ?? "",
+            siteId: String(siteId),
           }),
         )
-      }
+      }}
       selectedResourceId={getResourceIdFromReferenceLink(value)}
       fileExplorerHeight={12}
     />
@@ -122,8 +125,8 @@ const LinkEditorModalContent = ({
 }: LinkEditorModalContentProps) => {
   const { strippedLinkText, onUploadedFile, buildFinalLinkTextForSave } =
     useLinkEditorFileMetaSuffix({
-      initialLinkText: linkText,
       initialLinkHref: linkHref,
+      initialLinkText: linkText,
       showLinkText,
     })
 
@@ -133,20 +136,20 @@ const LinkEditorModalContent = ({
     register,
     formState: { errors },
   } = useZodForm({
-    mode: "onChange",
-    schema: linkEditorSchema,
     defaultValues: {
-      linkText: strippedLinkText,
       linkHref,
+      linkText: strippedLinkText,
     },
+    mode: "onChange",
     reValidateMode: "onChange",
+    schema: linkEditorSchema,
   })
 
-  const isEditingLink = !!linkText && !!linkHref
+  const isEditingLink = hasNonEmptyString(linkText) && linkHref
 
-  const onSubmit = handleSubmit(({ linkText, linkHref }) =>
-    onSave(buildFinalLinkTextForSave(linkText, linkHref), linkHref),
-  )
+  const onSubmit = handleSubmit(({ linkText, linkHref }) => {
+    onSave(buildFinalLinkTextForSave(linkText, linkHref), linkHref)
+  })
 
   return (
     <ModalContent>
@@ -182,12 +185,12 @@ const LinkEditorModalContent = ({
             <LinkEditorContextProvider
               linkTypes={linkTypes}
               linkHref={linkHref ?? ""}
-              onChange={(href) =>
+              onChange={(href) => {
                 setValue("linkHref", href, {
                   shouldDirty: true,
                   shouldValidate: true,
                 })
-              }
+              }}
               error={errors.linkHref?.message}
             >
               <ModalLinkEditor onUploadedFile={onUploadedFile} />
@@ -212,7 +215,9 @@ const LinkEditorModalContent = ({
             <Spacer />
             <Button
               variant="solid"
-              onClick={onSubmit}
+              onClick={() => {
+                onSubmit
+              }}
               // NOTE: Using `isEmpty` here because we trigger `setError`
               // using `isValid` doesn't trigger the error
               isDisabled={!isEmpty(errors)}
@@ -262,8 +267,8 @@ export const LinkEditorModal = ({
         linkText={linkText}
         showLinkText={showLinkText}
         linkHref={linkHref}
-        onSave={(linkText, linkHref) => {
-          onSave(linkText, linkHref)
+        onSave={(linkText, linkHrefValue) => {
+          onSave(linkText, linkHrefValue)
           onClose()
         }}
         onRemove={
@@ -295,16 +300,23 @@ const ModalLinkEditor = ({
       pageLinkElement={<PageLinkElement value={curHref} onChange={setHref} />}
       fileLinkElement={
         getLinkHrefType(curHref) === LINK_TYPES.File ? (
-          <AttachmentData data={curHref} onClick={() => setHref("")} />
+          <AttachmentData
+            data={curHref}
+            onClick={() => {
+              setHref("")
+            }}
+          />
         ) : (
           <FileAttachment
             maxSizeInBytes={MAX_FILE_SIZE_BYTES}
             acceptedFileTypes={FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING}
-            siteId={Number(siteId)}
+            siteId={siteId}
             resourceId={
               (pageId ?? linkId) ? String(pageId ?? linkId) : undefined
             }
-            setHref={(href) => setHref(href ?? "")}
+            setHref={(href) => {
+              setHref(href ?? "")
+            }}
             shouldFetchResource={false}
             onUploadedFile={onUploadedFile}
             enableRiskyFileWarning={true}

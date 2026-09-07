@@ -1,3 +1,5 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
+/* oxlint-disable typescript/strict-boolean-expressions -- core cleanup deferred */
 import type { CombinatorRendererProps, RankedTester } from "@jsonforms/core"
 import { Box, FormControl, RadioGroup } from "@chakra-ui/react"
 import {
@@ -88,10 +90,7 @@ const JsonFormsCombinatorControl = ({
 
     const newSchema =
       renderInfos[options.findIndex((option) => option.value === value)]?.schema
-    if (!newSchema) {
-      handleChange(path, {})
-    } else {
-      // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    if (newSchema) {
       const newData = createDefaultValue(newSchema, rootSchema)
 
       if (newSchema.type === "string") {
@@ -102,6 +101,8 @@ const JsonFormsCombinatorControl = ({
           ...newData,
         })
       }
+    } else {
+      handleChange(path, {})
     }
   }
 
@@ -155,13 +156,13 @@ const JsonFormsCombinatorControl = ({
   )
 }
 
-const OneOfControl = (props: CombinatorRendererProps) => {
-  return <JsonFormsCombinatorControl {...props} combinatorType="oneOf" />
-}
+const OneOfControl = (props: CombinatorRendererProps) => (
+  <JsonFormsCombinatorControl {...props} combinatorType="oneOf" />
+)
 
-const AnyOfControl = (props: CombinatorRendererProps) => {
-  return <JsonFormsCombinatorControl {...props} combinatorType="anyOf" />
-}
+const AnyOfControl = (props: CombinatorRendererProps) => (
+  <JsonFormsCombinatorControl {...props} combinatorType="anyOf" />
+)
 
 export const JsonFormsOneOfControl = withJsonFormsOneOfProps(OneOfControl)
 export const JsonFormsAnyOfControl = withJsonFormsAnyOfProps(AnyOfControl)

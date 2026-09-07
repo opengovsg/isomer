@@ -7,8 +7,8 @@ describe("escapeTemplateArguments", () => {
 
   const createTemplate = () =>
     vi.fn((data: { title: string }): EmailTemplate => ({
-      subject: data.title,
       body: data.title,
+      subject: data.title,
     }))
 
   it("escapes nested strings before calling the template", () => {
@@ -16,11 +16,11 @@ describe("escapeTemplateArguments", () => {
     const template = createTemplate()
     const wrapped = escapeTemplateArguments({ alert: template })
     const input = {
-      title: malicious,
+      count: 2,
       nested: { labels: [malicious] },
       resource: { title: malicious },
-      count: 2,
       scheduledAt: new Date("2024-01-01T00:00:00.000Z"),
+      title: malicious,
     }
 
     // Act
@@ -28,27 +28,28 @@ describe("escapeTemplateArguments", () => {
 
     // Assert
     expect(template).toHaveBeenCalledWith({
-      title: escaped,
+      count: 2,
       nested: { labels: [escaped] },
       resource: { title: escaped },
-      count: 2,
       scheduledAt: input.scheduledAt,
+      title: escaped,
     })
-    expect(result).toEqual({ subject: escaped, body: escaped })
+    expect(result).toEqual({ body: escaped, subject: escaped })
     expect(input.title).toBe(malicious)
   })
 
   it("throws for class instances", () => {
     // Arrange
     class ResourceLike {
+      // oxlint-disable-next-line typescript/parameter-properties -- core cleanup deferred
       constructor(public title: string) {}
     }
 
     const template = createTemplate()
     const wrapped = escapeTemplateArguments({ alert: template })
     const input = {
-      title: "irrelevant",
       resource: new ResourceLike(malicious),
+      title: "irrelevant",
     }
 
     // Act / Assert

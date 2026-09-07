@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/require-await -- server lint cleanup */
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
 import {
@@ -48,18 +49,18 @@ describe("redirect.router bulk upload", async () => {
       "User",
     )
     const user = await setupUser({
-      userId: session.userId,
       email: "test@mock.com",
+      userId: session.userId,
     })
     await auth(user)
     const { site } = await setupSite()
     siteId = site.id
     userId = user.id
-    await setupAdminPermissions({ userId: user.id, siteId })
+    await setupAdminPermissions({ siteId, userId: user.id })
     caller = createCaller(createMockRequest(session))
     // Publishing goes through CodeBuild; stub it so tests never hit AWS and can
     // assert how often a batch republishes.
-    vi.spyOn(codebuildService, "publishSite").mockResolvedValue(undefined)
+    vi.spyOn(codebuildService, "publishSite").mockResolvedValue()
   })
 
   afterEach(() => {
@@ -68,15 +69,15 @@ describe("redirect.router bulk upload", async () => {
 
   const seedPublishedPageAtRoot = async (permalink: string) => {
     await setupPageResource({
-      siteId,
-      resourceType: ResourceType.RootPage,
       parentId: null,
+      resourceType: ResourceType.RootPage,
+      siteId,
     })
     await setupPageResource({
-      siteId,
-      resourceType: ResourceType.Page,
       parentId: null,
       permalink,
+      resourceType: ResourceType.Page,
+      siteId,
       state: ResourceState.Published,
       userId,
     })
@@ -94,8 +95,8 @@ describe("redirect.router bulk upload", async () => {
 
       // Act
       const result = caller.bulkValidate({
-        siteId: otherSite.id,
         csv: csvOf([["/a", "/b"]]),
+        siteId: otherSite.id,
       })
 
       // Assert
@@ -105,8 +106,8 @@ describe("redirect.router bulk upload", async () => {
     it("returns a file-level error for a missing column", async () => {
       // Arrange / Act
       const result = await caller.bulkValidate({
-        siteId,
         csv: "When someone visits\n/a",
+        siteId,
       })
 
       // Assert
@@ -117,8 +118,8 @@ describe("redirect.router bulk upload", async () => {
     it("flags a malformed row with the shared schema message", async () => {
       // Arrange: a source containing a scheme is rejected by the source rules.
       const result = await caller.bulkValidate({
-        siteId,
         csv: csvOf([["https://evil.com", "/b"]]),
+        siteId,
       })
 
       // Assert
@@ -129,11 +130,11 @@ describe("redirect.router bulk upload", async () => {
     it("flags a source listed more than once in the file", async () => {
       // Arrange / Act
       const result = await caller.bulkValidate({
-        siteId,
         csv: csvOf([
           ["/dup", "/one"],
           ["/dup", "/two"],
         ]),
+        siteId,
       })
 
       // Assert: both rows carry the duplicate error.
@@ -145,13 +146,13 @@ describe("redirect.router bulk upload", async () => {
       // Arrange
       await db
         .insertInto("Redirect")
-        .values({ siteId, source: "/taken", destination: "/elsewhere" })
+        .values({ destination: "/elsewhere", siteId, source: "/taken" })
         .execute()
 
       // Act
       const result = await caller.bulkValidate({
-        siteId,
         csv: csvOf([["/taken", "/new"]]),
+        siteId,
       })
 
       // Assert
@@ -164,8 +165,8 @@ describe("redirect.router bulk upload", async () => {
 
       // Act
       const result = await caller.bulkValidate({
-        siteId,
         csv: csvOf([["/shadowed", "/somewhere"]]),
+        siteId,
       })
 
       // Assert
@@ -178,8 +179,8 @@ describe("redirect.router bulk upload", async () => {
 
       // Act
       const result = await caller.bulkValidate({
-        siteId,
         csv: csvOf([["/news/*", "/somewhere"]]),
+        siteId,
       })
 
       // Assert
@@ -190,24 +191,24 @@ describe("redirect.router bulk upload", async () => {
       // Arrange — "/news/story" published means "news" is a live folder, so
       // "/news/*" would shadow it at the edge.
       await setupPageResource({
-        siteId,
-        resourceType: ResourceType.RootPage,
         parentId: null,
-      })
-      const { folder } = await setupFolder({ siteId, permalink: "news" })
-      await setupPageResource({
+        resourceType: ResourceType.RootPage,
         siteId,
-        resourceType: ResourceType.Page,
+      })
+      const { folder } = await setupFolder({ permalink: "news", siteId })
+      await setupPageResource({
         parentId: folder.id,
         permalink: "story",
+        resourceType: ResourceType.Page,
+        siteId,
         state: ResourceState.Published,
         userId,
       })
 
       // Act
       const result = await caller.bulkValidate({
-        siteId,
         csv: csvOf([["/news/*", "/somewhere"]]),
+        siteId,
       })
 
       // Assert
@@ -217,8 +218,8 @@ describe("redirect.router bulk upload", async () => {
     it("does not flag a wildcard source when nothing lives under its prefix", async () => {
       // Act
       const result = await caller.bulkValidate({
-        siteId,
         csv: csvOf([["/anything/*", "/somewhere"]]),
+        siteId,
       })
 
       // Assert
@@ -228,11 +229,11 @@ describe("redirect.router bulk upload", async () => {
     it("flags a loop formed within the uploaded file", async () => {
       // Arrange / Act: /a -> /b and /b -> /a in the same upload.
       const result = await caller.bulkValidate({
-        siteId,
         csv: csvOf([
           ["/a", "/b"],
           ["/b", "/a"],
         ]),
+        siteId,
       })
 
       // Assert: both rows are flagged as loops.
@@ -245,13 +246,13 @@ describe("redirect.router bulk upload", async () => {
       // Arrange: table already has /b -> /a; uploading /a -> /b closes the loop.
       await db
         .insertInto("Redirect")
-        .values({ siteId, source: "/b", destination: "/a" })
+        .values({ destination: "/a", siteId, source: "/b" })
         .execute()
 
       // Act
       const result = await caller.bulkValidate({
-        siteId,
         csv: csvOf([["/a", "/b"]]),
+        siteId,
       })
 
       // Assert
@@ -265,13 +266,13 @@ describe("redirect.router bulk upload", async () => {
       // loop check, not to a distinct "/b?ref=x" node.
       await db
         .insertInto("Redirect")
-        .values({ siteId, source: "/b", destination: "/a" })
+        .values({ destination: "/a", siteId, source: "/b" })
         .execute()
 
       // Act
       const result = await caller.bulkValidate({
-        siteId,
         csv: csvOf([["/a", "/b?ref=x"]]),
+        siteId,
       })
 
       // Assert
@@ -288,7 +289,7 @@ describe("redirect.router bulk upload", async () => {
       ])
 
       // Act
-      const result = await caller.bulkValidate({ siteId, csv: csvOf(rows) })
+      const result = await caller.bulkValidate({ csv: csvOf(rows), siteId })
 
       // Assert: the whole cycle is rejected, not silently published.
       expect(result.errorCount).toBe(size)
@@ -302,13 +303,13 @@ describe("redirect.router bulk upload", async () => {
       // /b, /c, /d are on the cycle and must be flagged. This guards that the
       // single-pass cycle detection matches the old per-row "returns to start".
       const result = await caller.bulkValidate({
-        siteId,
         csv: csvOf([
           ["/a", "/b"],
           ["/b", "/c"],
           ["/c", "/d"],
           ["/d", "/b"],
         ]),
+        siteId,
       })
 
       // Assert
@@ -325,20 +326,20 @@ describe("redirect.router bulk upload", async () => {
       // /a -> /b -> /a. The reference must be resolved when building the loop
       // graph — a path-only check would miss it and report the file clean.
       const { page } = await setupPageResource({
-        siteId,
-        resourceType: ResourceType.Page,
         parentId: null,
         permalink: "b",
+        resourceType: ResourceType.Page,
+        siteId,
       })
       const reference = `[resource:${siteId}:${page.id}]`
 
       // Act
       const result = await caller.bulkValidate({
-        siteId,
         csv: csvOf([
           ["/a", reference],
           ["/b", "/a"],
         ]),
+        siteId,
       })
 
       // Assert
@@ -352,7 +353,7 @@ describe("redirect.router bulk upload", async () => {
       const csv = `${BULK_REDIRECT_CSV_HEADERS.source},${BULK_REDIRECT_CSV_HEADERS.destination}\n/old,https://example.gov.sg/a,b`
 
       // Act
-      const result = await caller.bulkValidate({ siteId, csv })
+      const result = await caller.bulkValidate({ csv, siteId })
 
       // Assert
       expect(errorFor(result, "/old")).toContain("extra columns")
@@ -361,11 +362,11 @@ describe("redirect.router bulk upload", async () => {
     it("returns a clean result for a fully valid file", async () => {
       // Arrange / Act
       const result = await caller.bulkValidate({
-        siteId,
         csv: csvOf([
           ["/old-one", "/new-one"],
           ["/old-two", "https://example.gov.sg"],
         ]),
+        siteId,
       })
 
       // Assert
@@ -382,8 +383,8 @@ describe("redirect.router bulk upload", async () => {
 
       // Act
       const result = caller.bulkCreate({
-        siteId: otherSite.id,
         csv: csvOf([["/a", "/b"]]),
+        siteId: otherSite.id,
       })
 
       // Assert
@@ -396,8 +397,8 @@ describe("redirect.router bulk upload", async () => {
 
       // Act
       const result = await caller.bulkCreate({
-        siteId,
         csv: csvOf([["https://bad-source", "/b"]]),
+        siteId,
       })
 
       // Assert
@@ -414,11 +415,11 @@ describe("redirect.router bulk upload", async () => {
 
       // Act
       const result = await caller.bulkCreate({
-        siteId,
         csv: csvOf([
           ["/old-one", "/new-one"],
           ["/old-two", "https://example.gov.sg"],
         ]),
+        siteId,
       })
 
       // Assert
@@ -432,8 +433,8 @@ describe("redirect.router bulk upload", async () => {
         .orderBy("source")
         .execute()
       expect(live).toEqual([
-        { source: "/old-one", destination: "/new-one" },
-        { source: "/old-two", destination: "https://example.gov.sg" },
+        { destination: "/new-one", source: "/old-one" },
+        { destination: "https://example.gov.sg", source: "/old-two" },
       ])
     })
 
@@ -444,13 +445,13 @@ describe("redirect.router bulk upload", async () => {
       const publishSpy = vi.spyOn(codebuildService, "publishSite")
       await db
         .insertInto("Redirect")
-        .values({ siteId, source: "/b", destination: "/c" })
+        .values({ destination: "/c", siteId, source: "/b" })
         .execute()
 
       // Act
       const result = await caller.bulkCreate({
-        siteId,
         csv: csvOf([["/a", "/b"]]),
+        siteId,
       })
 
       // Assert
@@ -463,17 +464,17 @@ describe("redirect.router bulk upload", async () => {
       await db
         .insertInto("Redirect")
         .values({
+          deletedAt: new Date(),
+          destination: "/stale",
           siteId,
           source: "/old-one",
-          destination: "/stale",
-          deletedAt: new Date(),
         })
         .execute()
 
       // Act
       const result = await caller.bulkCreate({
-        siteId,
         csv: csvOf([["/old-one", "/fresh"]]),
+        siteId,
       })
 
       // Assert
@@ -491,11 +492,11 @@ describe("redirect.router bulk upload", async () => {
     it("logs one RedirectCreate per row plus one Publish event", async () => {
       // Arrange / Act
       await caller.bulkCreate({
-        siteId,
         csv: csvOf([
           ["/old-one", "/new-one"],
           ["/old-two", "/new-two"],
         ]),
+        siteId,
       })
 
       // Assert
@@ -521,14 +522,12 @@ describe("redirect.router bulk upload", async () => {
       vi.spyOn(
         resourceService,
         "getResourceIdsByPermalinks",
-      ).mockImplementationOnce(() =>
-        Promise.resolve(new Map<string, number | null>()),
-      )
+      ).mockImplementationOnce(async () => new Map<string, number | null>())
 
       // Act
       const result = await caller.bulkCreate({
-        siteId,
         csv: csvOf([["/shadowed", "/somewhere"]]),
+        siteId,
       })
 
       // Assert: the batch aborts instead of committing a shadowing redirect, and

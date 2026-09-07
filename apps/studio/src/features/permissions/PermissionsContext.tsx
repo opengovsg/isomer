@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-array-for-each, unicorn/prefer-export-from -- core cleanup deferred */
 import type { PropsWithChildren } from "react"
 import type { ResourceAbility } from "~/server/modules/permissions/permissions.type"
 import type { RoleType } from "~prisma/generated/generatedEnums"
@@ -25,8 +26,8 @@ export const PermissionsProvider = ({
   resourceId,
 }: PropsWithChildren<PermissionsProviderProps>) => {
   const [roles] = trpc.resource.getRolesFor.useSuspenseQuery({
-    siteId,
     resourceId: resourceId ?? null,
+    siteId,
   })
 
   const ability = getPermissions(roles)
@@ -34,8 +35,7 @@ export const PermissionsProvider = ({
   return <AbilityProvider value={ability}>{children}</AbilityProvider>
 }
 
-export const usePermissions = (): ResourceAbility => {
-  return useAbility<ResourceAbility>()
-}
+export const usePermissions = (): ResourceAbility =>
+  useAbility<ResourceAbility>()
 
 export { Can }

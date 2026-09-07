@@ -1,3 +1,5 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
+/* oxlint-disable unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import { Box, FormControl } from "@chakra-ui/react"
 import { rankWith, schemaMatches } from "@jsonforms/core"
@@ -18,42 +20,40 @@ const JsonFormsCollectionVariantControl = ({
   handleChange,
   path,
   description,
-}: ControlProps): React.ReactNode => {
-  return (
-    <Box>
-      <FormControl isRequired gap="0.5rem">
-        <FormLabel description={description}>{label || "Layout"}</FormLabel>
-        <Radio.RadioGroup
-          display="flex"
-          flexDir="row"
-          gap={2}
-          onChange={(value) => {
-            handleChange(path, value)
-          }}
-          // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
-          value={data as string}
-          defaultValue={COLLECTION_VARIANT_OPTIONS.Collection}
+}: ControlProps): React.ReactNode => (
+  <Box>
+    <FormControl isRequired gap="0.5rem">
+      <FormLabel description={description}>{label || "Layout"}</FormLabel>
+      <Radio.RadioGroup
+        display="flex"
+        flexDir="row"
+        gap={2}
+        onChange={(value) => {
+          handleChange(path, value)
+        }}
+        // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
+        value={data as string}
+        defaultValue={COLLECTION_VARIANT_OPTIONS.Collection}
+      >
+        <Radio
+          value={COLLECTION_VARIANT_OPTIONS.Collection}
+          allowDeselect={false}
+          size="sm"
         >
-          <Radio
-            value={COLLECTION_VARIANT_OPTIONS.Collection}
-            allowDeselect={false}
-            size="sm"
-          >
-            1-column
-            <IconOneColumnLayout mt="10px" />
-          </Radio>
-          <Radio
-            value={COLLECTION_VARIANT_OPTIONS.Blog}
-            allowDeselect={false}
-            size="sm"
-          >
-            2-column
-            <IconTwoColumnLayout mt="10px" />
-          </Radio>
-        </Radio.RadioGroup>
-      </FormControl>
-    </Box>
-  )
-}
+          1-column
+          <IconOneColumnLayout mt="10px" />
+        </Radio>
+        <Radio
+          value={COLLECTION_VARIANT_OPTIONS.Blog}
+          allowDeselect={false}
+          size="sm"
+        >
+          2-column
+          <IconTwoColumnLayout mt="10px" />
+        </Radio>
+      </Radio.RadioGroup>
+    </FormControl>
+  </Box>
+)
 
 export default withJsonFormsControlProps(JsonFormsCollectionVariantControl)

@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-nested-ternary, unicorn/no-nested-ternary -- studio lint cleanup */
 import { useSyncExternalStore } from "react"
 import { useMediaQuery } from "usehooks-ts"
 import { getBannerHeightInPx } from "~/hooks/useBanner"
@@ -28,5 +29,5 @@ export const useSearchStyle = () => {
   const maxWidth = isDesktop ? "42.5rem" : isTablet ? "35rem" : "30rem"
   const marginTop = `${bannerHeight + (isSmallerThanTablet ? 0 : topOffsetInPx)}px`
 
-  return { minWidth, maxWidth, marginTop }
+  return { marginTop, maxWidth, minWidth }
 }

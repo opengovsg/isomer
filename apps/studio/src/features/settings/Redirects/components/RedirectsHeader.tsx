@@ -4,32 +4,30 @@ import { BiWrench } from "react-icons/bi"
 
 import { REDIRECTS_SUPPORT_LINK } from "../constants"
 
-export const RedirectsHeader = (): React.ReactNode => {
-  return (
-    <Flex justifyContent="space-between" align="center" gap="1rem" w="full">
-      <Stack spacing="0.5rem">
-        <Flex align="center" gap="0.75rem">
-          <Center
-            w="2rem"
-            h="2rem"
-            bgColor="brand.secondary.100"
-            borderRadius="6px"
-          >
-            <Icon as={BiWrench} boxSize="1rem" />
-          </Center>
-          <Text as="h1" textStyle="h3">
-            Redirects
-          </Text>
-        </Flex>
-        <Text textStyle="body-2" color="base.content.medium">
-          Keep old links working. Redirects send anyone who visits an outdated
-          URL to the right place instead. Learn{" "}
-          <Link variant="inline" href={REDIRECTS_SUPPORT_LINK} isExternal>
-            how to use redirects
-          </Link>
-          .
+export const RedirectsHeader = (): React.ReactNode => (
+  <Flex justifyContent="space-between" align="center" gap="1rem" w="full">
+    <Stack spacing="0.5rem">
+      <Flex align="center" gap="0.75rem">
+        <Center
+          w="2rem"
+          h="2rem"
+          bgColor="brand.secondary.100"
+          borderRadius="6px"
+        >
+          <Icon as={BiWrench} boxSize="1rem" />
+        </Center>
+        <Text as="h1" textStyle="h3">
+          Redirects
         </Text>
-      </Stack>
-    </Flex>
-  )
-}
+      </Flex>
+      <Text textStyle="body-2" color="base.content.medium">
+        Keep old links working. Redirects send anyone who visits an outdated URL
+        to the right place instead. Learn{" "}
+        <Link variant="inline" href={REDIRECTS_SUPPORT_LINK} isExternal>
+          how to use redirects
+        </Link>
+        .
+      </Text>
+    </Stack>
+  </Flex>
+)

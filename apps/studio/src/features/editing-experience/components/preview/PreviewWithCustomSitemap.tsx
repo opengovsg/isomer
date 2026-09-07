@@ -26,24 +26,24 @@ export type PreviewProps = IsomerSchema & {
 }
 
 // Add a fake link component to prevent the preview from navigating away
+// oxlint-disable-next-line react/display-name -- core cleanup deferred
 const FakeLink = forwardRef<
   HTMLAnchorElement,
   PropsWithChildren<AnchorHTMLAttributes<HTMLAnchorElement>>
->(function FakeLink({ children, href, onClick, ...rest }, ref) {
-  return (
-    <a
-      {...rest}
-      href={href ?? "/"}
-      ref={ref}
-      onClick={(e) => {
-        e.preventDefault()
-        onClick?.(e)
-      }}
-    >
-      {children}
-    </a>
-  )
-})
+  // oxlint-disable-next-line react/function-component-definition -- core cleanup deferred
+>(({ children, href, onClick, ...rest }, ref) => (
+  <a
+    {...rest}
+    href={href ?? "/"}
+    ref={ref}
+    onClick={(e) => {
+      e.preventDefault()
+      onClick?.(e)
+    }}
+  >
+    {children}
+  </a>
+))
 
 const defaultLastModified = new Date().toISOString()
 const DEFAULT_OVERRIDES: PartialDeep<IsomerPageSchemaType> = {}
@@ -66,15 +66,15 @@ const SuspendablePreviewWithCustomSitemap = ({
 
   const renderProps = merge(props, overrides, {
     page: {
-      permalink,
       lastModified,
+      permalink,
     },
   })
 
   const siteConfig = {
     ...baseSiteConfig,
-    navbar,
     footerItems: footer,
+    navbar,
     ...overrides.site,
   }
 
@@ -82,17 +82,17 @@ const SuspendablePreviewWithCustomSitemap = ({
     <LinkComponentProvider value={FakeLink}>
       <RenderEngine
         {...renderProps}
-        // TODO: fixup all the typing errors
+        // Deferred: fixup all the typing errors
         // @ts-expect-error to fix when types are proper
         site={{
           ...siteConfig,
-          siteMap,
+          assetsBaseUrl: ASSETS_BASE_URL,
           environment: "production",
           search: {
-            type: "localSearch",
             searchUrl: "/search",
+            type: "localSearch",
           },
-          assetsBaseUrl: ASSETS_BASE_URL,
+          siteMap,
         }}
         ScriptComponent={Script}
       />

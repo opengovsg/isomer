@@ -31,7 +31,7 @@ describe("editing-experience schemas", () => {
   describe("pageSchema", () => {
     it("should validate a valid page with siteId and pageId", () => {
       // Arrange + Act
-      const result = pageSchema.safeParse({ siteId: "123", pageId: "456" })
+      const result = pageSchema.safeParse({ pageId: "456", siteId: "123" })
 
       // Assert
       expect(result.success).toBe(true)
@@ -39,17 +39,17 @@ describe("editing-experience schemas", () => {
 
     it("should coerce string IDs to numbers", () => {
       // Arrange + Act
-      const result = pageSchema.safeParse({ siteId: "789", pageId: "101" })
+      const result = pageSchema.safeParse({ pageId: "101", siteId: "789" })
 
       // Assert
       if (result.success) {
-        expect(result.data).toEqual({ siteId: 789, pageId: 101 })
+        expect(result.data).toEqual({ pageId: 101, siteId: 789 })
       }
     })
 
     it("should reject undefined siteId", () => {
       // Arrange + Act
-      const result = pageSchema.safeParse({ siteId: undefined, pageId: "456" })
+      const result = pageSchema.safeParse({ pageId: "456", siteId: undefined })
 
       // Assert
       expect(result.success).toBe(false)
@@ -57,7 +57,7 @@ describe("editing-experience schemas", () => {
 
     it("should reject undefined pageId", () => {
       // Arrange + Act
-      const result = pageSchema.safeParse({ siteId: "789", pageId: undefined })
+      const result = pageSchema.safeParse({ pageId: undefined, siteId: "789" })
 
       // Assert
       expect(result.success).toBe(false)
@@ -68,9 +68,9 @@ describe("editing-experience schemas", () => {
     it("should validate with both pageId and linkId", () => {
       // Arrange + Act
       const result = collectionItemSchema.safeParse({
-        siteId: "123",
-        pageId: "456",
         linkId: "789",
+        pageId: "456",
+        siteId: "123",
       })
 
       // Assert
@@ -80,42 +80,42 @@ describe("editing-experience schemas", () => {
     it("should coerce string IDs to numbers", () => {
       // Arrange + Act
       const result = collectionItemSchema.safeParse({
-        siteId: "123",
-        pageId: "456",
         linkId: "789",
+        pageId: "456",
+        siteId: "123",
       })
 
       // Assert
       if (result.success) {
-        expect(result.data).toEqual({ siteId: 123, pageId: 456, linkId: 789 })
+        expect(result.data).toEqual({ linkId: 789, pageId: 456, siteId: 123 })
       }
     })
 
     it("should validate with only pageId", () => {
       // Arrange + Act
       const result = collectionItemSchema.safeParse({
-        siteId: "123",
         pageId: "456",
+        siteId: "123",
       })
 
       // Assert
       expect(result.success).toBe(true)
       if (result.success) {
-        expect(result.data).toEqual({ siteId: 123, pageId: 456 })
+        expect(result.data).toEqual({ pageId: 456, siteId: 123 })
       }
     })
 
     it("should validate with only linkId", () => {
       // Arrange + Act
       const result = collectionItemSchema.safeParse({
-        siteId: "123",
         linkId: "789",
+        siteId: "123",
       })
 
       // Assert
       expect(result.success).toBe(true)
       if (result.success) {
-        expect(result.data).toEqual({ siteId: 123, linkId: 789 })
+        expect(result.data).toEqual({ linkId: 789, siteId: 123 })
       }
     })
 
@@ -137,8 +137,8 @@ describe("editing-experience schemas", () => {
     it("should validate with only pageId", () => {
       // Arrange + Act
       const result = pageOrLinkSchema.safeParse({
-        siteId: "123",
         pageId: "456",
+        siteId: "123",
       })
 
       // Assert
@@ -148,42 +148,42 @@ describe("editing-experience schemas", () => {
     it("should coerce string IDs to numbers", () => {
       // Arrange + Act
       const result = pageOrLinkSchema.safeParse({
-        siteId: "123",
-        pageId: "456",
         linkId: "789",
+        pageId: "456",
+        siteId: "123",
       })
 
       // Assert
       if (result.success) {
-        expect(result.data).toEqual({ siteId: 123, pageId: 456, linkId: 789 })
+        expect(result.data).toEqual({ linkId: 789, pageId: 456, siteId: 123 })
       }
     })
 
     it("should validate with only pageId", () => {
       // Arrange + Act
       const result = pageOrLinkSchema.safeParse({
-        siteId: "123",
         pageId: "456",
+        siteId: "123",
       })
 
       // Assert
       expect(result.success).toBe(true)
       if (result.success) {
-        expect(result.data).toEqual({ siteId: 123, pageId: 456 })
+        expect(result.data).toEqual({ pageId: 456, siteId: 123 })
       }
     })
 
     it("should validate with only linkId", () => {
       // Arrange + Act
       const result = pageOrLinkSchema.safeParse({
-        siteId: "123",
         linkId: "789",
+        siteId: "123",
       })
 
       // Assert
       expect(result.success).toBe(true)
       if (result.success) {
-        expect(result.data).toEqual({ siteId: 123, linkId: 789 })
+        expect(result.data).toEqual({ linkId: 789, siteId: 123 })
       }
     })
 
@@ -203,9 +203,9 @@ describe("editing-experience schemas", () => {
     it("should still pass when both pageId and linkId are undefined", () => {
       // Arrange + Act
       const result = pageOrLinkSchema.safeParse({
-        siteId: "123",
-        pageId: undefined,
         linkId: undefined,
+        pageId: undefined,
+        siteId: "123",
       })
 
       // Assert

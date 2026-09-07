@@ -1,3 +1,5 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
+/* oxlint-disable eslint/no-shadow, typescript/consistent-return, unicorn/no-new-array, unicorn/no-unnecessary-type-conversion, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/closest-edge"
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import type { PartialDeep } from "type-fest"
@@ -30,6 +32,12 @@ import { get } from "lodash-es"
 import { useCallback, useEffect, useState } from "react"
 import { BiPlusCircle } from "react-icons/bi"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import type { NavbarItems } from "./types"
 import { getParentPath } from "../utils/getParentPath"
@@ -93,7 +101,10 @@ const JsonFormsNavbarControl = ({
           handleMoveItem(
             // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
             prevData as NavbarItems["items"],
-            !!(arraySchema.maxItems && data >= arraySchema.maxItems),
+            !!(
+              isDefinedNumber(arraySchema.maxItems) &&
+              data >= arraySchema.maxItems
+            ),
             originalPath,
             newPath,
             instruction,
@@ -125,11 +136,13 @@ const JsonFormsNavbarControl = ({
     if (!droppableZoneElement) {
       return
     }
+    // oxlint-disable-next-line typescript/consistent-return -- core cleanup deferred
 
     return combine(
       // Navbar dropzone
       dropTargetForElements({
         element: droppableZoneElement,
+        getIsSticky: () => true,
         onDrop: (args) => {
           // NOTE: The data on the navbar can be obtained from args.source.data.*
           // The dropzone can be found at args.location.current.dropTargets[0]
@@ -140,6 +153,7 @@ const JsonFormsNavbarControl = ({
           if (!newDestination) {
             return
           }
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
 
           // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
           const newPath = newDestination.dropTargetId as string | undefined
@@ -152,7 +166,6 @@ const JsonFormsNavbarControl = ({
 
           handleMove(originalPath, newPath, instruction?.operation, closestEdge)
         },
-        getIsSticky: () => true,
       }),
     )
   }, [droppableZoneElement, handleMove])
@@ -166,7 +179,9 @@ const JsonFormsNavbarControl = ({
         schema={schema}
         uischema={getChildUiSchema(selectedPath)}
         path={selectedPath}
-        onBack={() => setSelectedPath(undefined)}
+        onBack={() => {
+          setSelectedPath(undefined)
+        }}
         handleRemoveItem={() => {
           handleRemove(
             getParentPath(selectedPath),
@@ -219,7 +234,7 @@ const JsonFormsNavbarControl = ({
                       : "base.content.medium"
                   }
                 >
-                  {arraySchema.maxItems ? (
+                  {isDefinedNumber(arraySchema.maxItems) ? (
                     <>
                       {data}/{arraySchema.maxItems} first-level links added
                     </>
@@ -261,12 +276,13 @@ const JsonFormsNavbarControl = ({
                 gap="0.75rem"
                 allowToggle
               >
-                {[...Array(data).keys()].map((index) => {
+                {[...new Array(data).keys()].map((index) => {
                   const childPath = composePaths(path, String(index))
                   const arrayErrors = getSubErrorsAt(
                     childPath,
                     schema,
                   )({ jsonforms: ctx })
+                  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
 
                   // SAFETY: JSON Forms child path resolves a navbar item subtree
                   const childItem = get(
@@ -287,25 +303,25 @@ const JsonFormsNavbarControl = ({
                       }
                       description={childItem.description}
                       onEdit={(subItemIndex) => {
-                        if (subItemIndex !== undefined) {
+                        if (subItemIndex === undefined) {
+                          setSelectedPath(childPath)
+                        } else {
                           setSelectedPath(
                             composePaths(
                               [childPath, "items"].join("."),
                               String(subItemIndex),
                             ),
                           )
-                        } else {
-                          setSelectedPath(childPath)
                         }
                       }}
                       removeItem={(subItemIndex) => {
-                        if (subItemIndex !== undefined) {
+                        if (subItemIndex === undefined) {
+                          handleRemove(path, index)
+                        } else {
                           handleRemove(
                             [childPath, "items"].join("."),
                             subItemIndex,
                           )
-                        } else {
-                          handleRemove(path, index)
                         }
                       }}
                       subItems={childItem.items}

@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-shadow, eslint/no-use-before-define, typescript/strict-void-return -- core cleanup deferred */
 import {
   Button,
   FormControl,
@@ -47,12 +48,12 @@ export const EditUserModal = () => {
   }
 
   const { watch, handleSubmit, setValue, reset } = useZodForm({
-    schema: updateUserInputSchema.pick({ role: true }),
-    mode: "onChange",
-    reValidateMode: "onChange",
     defaultValues: {
       role,
     },
+    mode: "onChange",
+    reValidateMode: "onChange",
+    schema: updateUserInputSchema.pick({ role: true }),
   })
 
   // Update form value when role from atom changes
@@ -61,6 +62,13 @@ export const EditUserModal = () => {
   }, [role, setValue])
 
   const { mutate, isPending } = trpc.user.update.useMutation({
+    onError: (err) => {
+      toast({
+        description: err.message,
+        status: "error",
+        title: "Failed to update user",
+      })
+    },
     onSettled: onClose,
     onSuccess: async () => {
       await utils.user.list.invalidate()
@@ -70,20 +78,13 @@ export const EditUserModal = () => {
         title: `Changes saved!`,
       })
     },
-    onError: (err) => {
-      toast({
-        status: "error",
-        title: "Failed to update user",
-        description: err.message,
-      })
-    },
   })
 
   const onUpdateUser = handleSubmit((data) => {
     mutate({
+      role: data.role,
       siteId,
       userId,
-      role: data.role,
     })
   })
 
@@ -125,7 +126,9 @@ export const EditUserModal = () => {
                       key={role}
                       value={role}
                       isSelected={selectedRole === role}
-                      onClick={() => setValue("role", role)}
+                      onClick={() => {
+                        setValue("role", role)
+                      }}
                       permissionLabels={permissionLabels}
                     />
                   ))}

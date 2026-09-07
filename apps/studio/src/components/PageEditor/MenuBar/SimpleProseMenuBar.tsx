@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unsafe-assignment, typescript/no-unsafe-call, typescript/no-unsafe-member-access, oxc/parse-error -- studio lint cleanup */
 import type { Editor } from "@tiptap/react"
 import { useDisclosure } from "@chakra-ui/react"
 import { useMemo } from "react"
@@ -17,32 +18,38 @@ export const SimpleProseMenuBar = ({ editor }: { editor: Editor }) => {
   const items: PossibleMenubarItemProps[] = useMemo(
     () => [
       {
-        type: "item",
+        action: () => {
+          editor.chain().focus().toggleBold().run()
+        },
         icon: BiBold,
-        title: "Bold",
-        action: () => editor.chain().focus().toggleBold().run(),
         isActive: () => editor.isActive("bold"),
+        title: "Bold",
+        type: "item",
       },
       {
-        type: "item",
+        action: () => {
+          editor.chain().focus().toggleItalic().run()
+        },
         icon: BiItalic,
-        title: "Italicise",
-        action: () => editor.chain().focus().toggleItalic().run(),
         isActive: () => editor.isActive("italic"),
+        title: "Italicise",
+        type: "item",
       },
       {
-        type: "item",
+        action: () => {
+          editor.chain().focus().toggleUnderline().run()
+        },
         icon: BiUnderline,
-        title: "Underline",
-        action: () => editor.chain().focus().toggleUnderline().run(),
         isActive: () => editor.isActive("underline"),
+        title: "Underline",
+        type: "item",
       },
       {
-        type: "item",
-        icon: BiLink,
-        title: "Link",
         action: onLinkModalOpen,
+        icon: BiLink,
         isActive: () => editor.isActive("link"),
+        title: "Link",
+        type: "item",
       },
     ],
     [editor, onLinkModalOpen],

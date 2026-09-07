@@ -1,6 +1,11 @@
 import type { Client } from "openid-client"
 import { generators, Issuer } from "openid-client"
 import { env } from "~/env.mjs"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+} from "~/utils/truthiness"
 
 import {
   SINGPASS_ENCRYPTION_JWK,
@@ -30,9 +35,9 @@ const getSingpassClient = async (): Promise<Client> => {
     singpassClient = new singpassIssuer.Client(
       {
         client_id: env.SINGPASS_CLIENT_ID,
+        id_token_signed_response_alg: "ES256",
         response_types: ["code"],
         token_endpoint_auth_method: "private_key_jwt",
-        id_token_signed_response_alg: "ES256",
       },
       {
         keys: [SINGPASS_SIGNING_JWK, SINGPASS_ENCRYPTION_JWK],
@@ -50,12 +55,12 @@ export const getAuthorizationUrl = async () => {
   const state = generators.state()
 
   const authorizationUrl = client.authorizationUrl({
-    redirect_uri: SINGPASS_REDIRECT_URI,
-    code_challenge_method: "S256",
     code_challenge: codeChallenge,
+    code_challenge_method: "S256",
     nonce,
-    state,
+    redirect_uri: SINGPASS_REDIRECT_URI,
     scope: SINGPASS_SCOPES.join(" "),
+    state,
   })
   const session = {
     codeVerifier,
@@ -88,15 +93,15 @@ export const login = async ({
         state: stringifiedState,
       },
       {
-        state: stringifiedState,
         code_verifier: codeVerifier,
         nonce,
+        state: stringifiedState,
       },
     )
     const uuid = extractUuid(tokens)
     return { uuid }
-  } catch (e) {
-    console.trace(e)
-    throw e
+  } catch (error) {
+    console.trace(error)
+    throw error
   }
 }

@@ -1,3 +1,5 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
+/* oxlint-disable unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import type { ComponentsWithProse } from "@opengovsg/isomer-components"
 import type {
@@ -16,6 +18,12 @@ import {
   useProseEditor,
 } from "~/features/editing-experience/hooks/useTextEditor"
 import { useSimpleProseEditor } from "~/features/editing-experience/hooks/useTextEditor/useTextEditor"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { TiptapAccordionEditor } from "../TipTapEditor/TiptapAccordionEditor"
 import { TiptapCalloutEditor } from "../TipTapEditor/TiptapCalloutEditor"
@@ -47,22 +55,28 @@ const getEditorHookAndEditor = (
   format: ComponentsWithProse,
 ): EditorHookAndEditor => {
   switch (format) {
-    case "simple-prose":
+    case "simple-prose": {
       return {
-        EditorHook: useSimpleProseEditor,
         Editor: TiptapSimpleProseEditor,
+        EditorHook: useSimpleProseEditor,
       }
-    case "accordion":
-      return { EditorHook: useAccordionEditor, Editor: TiptapAccordionEditor }
-    case "callout":
-      return { EditorHook: useCalloutEditor, Editor: TiptapCalloutEditor }
-    case "contentpic":
-      return { EditorHook: useProseEditor, Editor: TiptapProseEditor }
-    case "prose":
-      return { EditorHook: useProseEditor, Editor: TiptapProseEditor }
-    default:
+    }
+    case "accordion": {
+      return { Editor: TiptapAccordionEditor, EditorHook: useAccordionEditor }
+    }
+    case "callout": {
+      return { Editor: TiptapCalloutEditor, EditorHook: useCalloutEditor }
+    }
+    case "contentpic": {
+      return { Editor: TiptapProseEditor, EditorHook: useProseEditor }
+    }
+    case "prose": {
+      return { Editor: TiptapProseEditor, EditorHook: useProseEditor }
+    }
+    default: {
       const _: never = format
-      return { EditorHook: useProseEditor, Editor: TiptapProseEditor }
+      return { Editor: TiptapProseEditor, EditorHook: useProseEditor }
+    }
   }
 }
 
@@ -86,11 +100,10 @@ const JsonFormsProseControl = ({
   )
 
   const editor = EditorHook({
-    // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
     data,
     handleChange: useCallback(
       (content) => {
-        if (required && isTiptapEditorEmpty(content)) {
+        if (isNullableBooleanTrue(required) && isTiptapEditorEmpty(content)) {
           handleChange(path, undefined)
         } else {
           handleChange(path, content)
@@ -105,8 +118,9 @@ const JsonFormsProseControl = ({
   useEffect(() => {
     if (data !== undefined) {
       const selection = editor?.state.selection
-      if (!selection) return
-      // oxlint-disable-next-line @typescript-eslint/no-unsafe-argument
+      if (!selection) {
+        return
+      }
       editor.commands.setContent(data, { emitUpdate: false })
       editor.commands.setTextSelection(selection)
     }

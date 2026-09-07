@@ -1,3 +1,4 @@
+/* oxlint-disable jsdoc/check-tag-names, unicorn/no-confusing-void-expression -- core cleanup deferred */
 import { Box } from "@chakra-ui/react"
 import { useAutoAnimate } from "@formkit/auto-animate/react"
 
@@ -9,6 +10,7 @@ import { CreatePageDetailsScreen } from "./DetailsScreen"
 import { CreatePageLayoutScreen } from "./LayoutScreen"
 
 /**
+ // oxlint-disable-next-line jsdoc/check-tag-names -- core cleanup deferred
  * @preconditions Requires CreateFormWizardProvider parent
  * Display screen content depending on the current step (with animation).
  */

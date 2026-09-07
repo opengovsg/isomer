@@ -20,8 +20,8 @@ const BASE_HANDLERS = [
 ]
 
 const meta: Meta<typeof NavbarSettingsPage> = {
-  title: "Pages/Site Management/Navbar Settings Page",
   component: NavbarSettingsPage,
+  decorators: [],
   parameters: {
     getLayout: NavbarSettingsPage.getLayout,
     nextjs: {
@@ -32,7 +32,7 @@ const meta: Meta<typeof NavbarSettingsPage> = {
       },
     },
   },
-  decorators: [],
+  title: "Pages/Site Management/Navbar Settings Page",
 }
 
 export default meta
@@ -49,7 +49,7 @@ export const Default: Story = {
 const goToCustomiseTab = async (canvasElement: HTMLElement) => {
   const rootScreen = within(canvasElement.ownerDocument.body)
   const customiseTab = await rootScreen.findByRole("tab", {
-    name: /customise/i,
+    name: /customise/iu,
   })
   await userEvent.click(customiseTab)
 }
@@ -60,7 +60,9 @@ export const CustomiseTab: Story = {
       handlers: [...BASE_HANDLERS, sitesHandlers.getNavbar.default()],
     },
   },
-  play: ({ canvasElement }) => goToCustomiseTab(canvasElement),
+  play: async ({ canvasElement }) => {
+    await goToCustomiseTab(canvasElement)
+  },
 }
 
 export const CustomiseTabWithCTAEnabled: Story = {
@@ -69,7 +71,9 @@ export const CustomiseTabWithCTAEnabled: Story = {
       handlers: [...BASE_HANDLERS, sitesHandlers.getNavbar.withCTA()],
     },
   },
-  play: ({ canvasElement }) => goToCustomiseTab(canvasElement),
+  play: async ({ canvasElement }) => {
+    await goToCustomiseTab(canvasElement)
+  },
 }
 
 export const CustomiseTabWithUtilityLinksEnabled: Story = {
@@ -78,5 +82,7 @@ export const CustomiseTabWithUtilityLinksEnabled: Story = {
       handlers: [...BASE_HANDLERS, sitesHandlers.getNavbar.withUtilityLinks()],
     },
   },
-  play: ({ canvasElement }) => goToCustomiseTab(canvasElement),
+  play: async ({ canvasElement }) => {
+    await goToCustomiseTab(canvasElement)
+  },
 }

@@ -38,7 +38,12 @@ const Custom404 = () => {
           <Text textStyle="h5" as="h1">
             This page could not be found
           </Text>
-          <Button variant="link" onClick={() => router.back()}>
+          <Button
+            variant="link"
+            onClick={() => {
+              router.back()
+            }}
+          >
             Go back
           </Button>
         </Stack>

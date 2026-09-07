@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
 import type { RankedTester } from "@jsonforms/core"
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
@@ -11,8 +12,6 @@ export const jsonFormsConstControlTester: RankedTester = rankWith(
   ),
 )
 
-const JsonFormsConstControl = () => {
-  return null
-}
+const JsonFormsConstControl = () => null
 
 export default withJsonFormsControlProps(JsonFormsConstControl)

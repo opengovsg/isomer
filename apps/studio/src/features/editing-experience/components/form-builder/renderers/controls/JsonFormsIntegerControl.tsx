@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-useless-undefined, typescript/strict-boolean-expressions -- JSON Forms handleChange requires explicit undefined */
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import {
   Box,
@@ -22,6 +23,12 @@ import {
   NumberInput,
 } from "@opengovsg/design-system-react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { getCustomErrorMessage } from "./utils/getCustomErrorMessage"
 
@@ -32,10 +39,10 @@ export const jsonFormsIntegerControlTester: RankedTester = rankWith(
     or(schemaTypeIs("integer"), schemaTypeIs("number")),
     schemaMatches(
       (schema) =>
-        (Object.prototype.hasOwnProperty.call(schema, "maximum") ||
-          Object.prototype.hasOwnProperty.call(schema, "exclusiveMaximum")) &&
-        (Object.prototype.hasOwnProperty.call(schema, "minimum") ||
-          Object.prototype.hasOwnProperty.call(schema, "exclusiveMinimum")),
+        (Object.hasOwn(schema, "maximum") ||
+          Object.hasOwn(schema, "exclusiveMaximum")) &&
+        (Object.hasOwn(schema, "minimum") ||
+          Object.hasOwn(schema, "exclusiveMinimum")),
     ),
   ),
 )
@@ -54,7 +61,6 @@ const JsonFormsIntegerControl = ({
     exclusiveMinimum,
     maximum,
     minimum,
-    // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
     default: defaultValue,
   } = schema
   const min = Number(exclusiveMinimum) + 1 || minimum || 0
@@ -73,7 +79,6 @@ const JsonFormsIntegerControl = ({
       <FormControl isRequired={required} isInvalid={!!errors}>
         <FormLabel description={description}>{label}</FormLabel>
         <NumberInput
-          // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
           defaultValue={defaultValue ?? min}
           min={min}
           max={max}

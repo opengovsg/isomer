@@ -1,10 +1,11 @@
+/* oxlint-disable eslint/no-use-before-define, typescript/strict-void-return, unicorn/no-array-reduce, unicorn/prefer-structured-clone -- core cleanup deferred */
 import type { IsomerComponent } from "@opengovsg/isomer-components"
 import type { ModifiedAsset } from "~/types/assets"
 import { Box, Flex, useDisclosure } from "@chakra-ui/react"
 import { Button, useToast } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
 import { cloneDeep, isEmpty, isEqual } from "lodash-es"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
 import { useCallback } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
@@ -56,7 +57,7 @@ const HeroEditorDrawer = (): React.ReactNode => {
   const { mutate, isPending: isSavingPage } =
     trpc.page.updatePageBlob.useMutation({
       onSuccess: async () => {
-        posthog.capture("page_changes_saved", { site_id: siteId })
+        posthogJs.capture("page_changes_saved", { site_id: siteId })
         await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
         await utils.page.readPage.invalidate({ pageId, siteId })
         toast({
@@ -67,7 +68,7 @@ const HeroEditorDrawer = (): React.ReactNode => {
       },
     })
   const { mutateAsync: uploadAsset, isPending: isUploadingAsset } =
-    useUploadAssetMutation({ siteId, resourceId: String(pageId) })
+    useUploadAssetMutation({ resourceId: String(pageId), siteId })
   const { mutate: deleteAssets, isPending: isDeletingAssets } =
     trpc.asset.deleteAssets.useMutation()
 
@@ -79,7 +80,7 @@ const HeroEditorDrawer = (): React.ReactNode => {
     let assetsToDelete: string[] = []
 
     if (modifiedAssets.length > 0) {
-      const updatedBlocks = Array.from(previewPageState.content)
+      const updatedBlocks = [...previewPageState.content]
       const newBlock = cloneDeep(updatedBlocks[currActiveIdx])
 
       if (!newBlock) {
@@ -89,22 +90,14 @@ const HeroEditorDrawer = (): React.ReactNode => {
       const isUploadingSuccessful = await uploadModifiedAssets({
         block: newBlock,
         modifiedAssets,
-        uploadAsset,
-        onSuccess: (block: IsomerComponent) => {
-          updatedBlocks[currActiveIdx] = block
-          newPageState = {
-            ...previewPageState,
-            content: updatedBlocks,
-          }
-        },
         onError: (failedUploads: ModifiedAsset[]) => {
           const failedUploadsCount = failedUploads.length
           const totalUploadsCount = modifiedAssets.length
 
           toast({
-            title: "Error uploading files/images",
             description: `An error occurred while uploading ${failedUploadsCount}/${totalUploadsCount} files/images. Please try again later.`,
             status: "error",
+            title: "Error uploading files/images",
             ...BRIEF_TOAST_SETTINGS,
           })
 
@@ -112,6 +105,14 @@ const HeroEditorDrawer = (): React.ReactNode => {
           setModifiedAssets(failedUploads)
           setPreviewPageState(newPageState)
         },
+        onSuccess: (block: IsomerComponent) => {
+          updatedBlocks[currActiveIdx] = block
+          newPageState = {
+            ...previewPageState,
+            content: updatedBlocks,
+          }
+        },
+        uploadAsset,
       })
 
       if (!isUploadingSuccessful) {
@@ -131,9 +132,9 @@ const HeroEditorDrawer = (): React.ReactNode => {
 
     mutate(
       {
+        content: JSON.stringify(newPageState),
         pageId,
         siteId,
-        content: JSON.stringify(newPageState),
       },
       {
         onSuccess: () => {
@@ -143,9 +144,9 @@ const HeroEditorDrawer = (): React.ReactNode => {
           setDrawerState({ state: "root" })
           if (assetsToDelete.length > 0) {
             deleteAssets({
-              siteId,
-              resourceId: String(pageId),
               fileKeys: assetsToDelete,
+              resourceId: String(pageId),
+              siteId,
             })
           }
         },
@@ -181,7 +182,7 @@ const HeroEditorDrawer = (): React.ReactNode => {
   const handleChange = useCallback(
     (data: IsomerComponent) => {
       setPreviewPageState((oldPageState) => {
-        const updatedBlocks = Array.from(oldPageState.content)
+        const updatedBlocks = [...oldPageState.content]
         updatedBlocks[currActiveIdx] = data
         return { ...oldPageState, content: updatedBlocks }
       })
@@ -201,10 +202,10 @@ const HeroEditorDrawer = (): React.ReactNode => {
         <DrawerHeader
           isDisabled={isLoading}
           onBackClick={() => {
-            if (!isEqual(previewPageState, savedPageState)) {
-              onDiscardChangesModalOpen()
-            } else {
+            if (isEqual(previewPageState, savedPageState)) {
               handleDiscardChanges()
+            } else {
+              onDiscardChangesModalOpen()
             }
           }}
           label="Edit Hero banner"

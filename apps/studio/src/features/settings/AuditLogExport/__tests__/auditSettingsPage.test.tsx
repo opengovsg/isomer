@@ -13,7 +13,6 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 // jsdom has no `matchMedia`; Chakra's `FullscreenSpinner` (rendered on the
 // non-admin / loading paths) reads it via `useMediaQuery`.
 Object.defineProperty(window, "matchMedia", {
-  writable: true,
   value: (query: string) => ({
     matches: false,
     media: query,
@@ -24,6 +23,7 @@ Object.defineProperty(window, "matchMedia", {
     removeEventListener: vi.fn(),
     dispatchEvent: vi.fn(),
   }),
+  writable: true,
 })
 
 const replace = vi.fn()
@@ -42,9 +42,9 @@ vi.mock("next/router", () => ({
 let isGbReady = true
 let isAuditLogFlagOn = true
 vi.mock("@growthbook/growthbook-react", () => ({
-  useGrowthBook: () => ({ ready: isGbReady }),
   useFeatureValue: (_key: string, fallback: boolean) =>
     isGbReady ? isAuditLogFlagOn : fallback,
+  useGrowthBook: () => ({ ready: isGbReady }),
 }))
 
 // The page reads `getRolesFor` only for its loading signal; the ability itself
@@ -52,17 +52,17 @@ vi.mock("@growthbook/growthbook-react", () => ({
 let isRolesPending = false
 vi.mock("~/utils/trpc", () => ({
   trpc: {
-    resource: {
-      getRolesFor: {
-        useQuery: () => ({ isPending: isRolesPending }),
-      },
-    },
     audit: {
+      createExportRequest: {
+        useMutation: () => ({ mutate: vi.fn(), isPending: false }),
+      },
       getExportWindow: {
         useQuery: () => ({ data: { maxMonths: 12 } }),
       },
-      createExportRequest: {
-        useMutation: () => ({ mutate: vi.fn(), isPending: false }),
+    },
+    resource: {
+      getRolesFor: {
+        useQuery: () => ({ isPending: isRolesPending }),
       },
     },
   },
@@ -104,9 +104,9 @@ describe("AuditLogExportSettingsPage", () => {
     renderWith(editorAbility)
 
     // Assert
-    await waitFor(() =>
-      expect(replace).toHaveBeenCalledWith(`/sites/${SITE_ID}/settings/agency`),
-    )
+    await waitFor(() => {
+      expect(replace).toHaveBeenCalledWith(`/sites/${SITE_ID}/settings/agency`)
+    })
     expect(screen.queryByRole("heading", { name: "Audit logs" })).toBeNull()
   })
 
@@ -130,9 +130,9 @@ describe("AuditLogExportSettingsPage", () => {
     renderWith(adminAbility)
 
     // Assert: gated identically to the non-admin path
-    await waitFor(() =>
-      expect(replace).toHaveBeenCalledWith(`/sites/${SITE_ID}/settings/agency`),
-    )
+    await waitFor(() => {
+      expect(replace).toHaveBeenCalledWith(`/sites/${SITE_ID}/settings/agency`)
+    })
     expect(screen.queryByRole("heading", { name: "Audit logs" })).toBeNull()
   })
 

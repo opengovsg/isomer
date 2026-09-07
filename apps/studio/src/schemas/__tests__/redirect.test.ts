@@ -10,9 +10,9 @@ import {
 } from "../redirect"
 
 const VALID_REDIRECT = {
+  destination: "/new-page",
   siteId: 1,
   source: "/old-page",
-  destination: "/new-page",
 }
 
 describe("createRedirectSchema", () => {
@@ -257,12 +257,14 @@ describe("createRedirectSchema", () => {
 
   describe("wildcard sources", () => {
     const parseSource = (source: string) =>
-      createRedirectSchema.safeParse({ siteId: 1, source, destination: "/x" })
+      createRedirectSchema.safeParse({ destination: "/x", siteId: 1, source })
 
     it("accepts a single trailing /*", () => {
       const r = parseSource("/news/*")
       expect(r.success).toBe(true)
-      if (r.success) expect(r.data.source).toBe("/news/*")
+      if (r.success) {
+        expect(r.data.source).toBe("/news/*")
+      }
     })
 
     it("lowercases the path but keeps the /*", () => {
@@ -290,7 +292,7 @@ describe("createRedirectSchema", () => {
 
   describe("query sources are not supported", () => {
     const parseSource = (source: string) =>
-      createRedirectSchema.safeParse({ siteId: 1, source, destination: "/x" })
+      createRedirectSchema.safeParse({ destination: "/x", siteId: 1, source })
 
     it("rejects a source containing a query string", () => {
       // "?" is outside the source character whitelist, so a query-based source
@@ -380,6 +382,7 @@ describe("createRedirectSchema", () => {
       // Arrange
       const invalidDestinations = [
         "http://example.com",
+        // oxlint-disable-next-line eslint/no-script-url -- intentional invalid destination fixture
         "javascript:alert(1)",
         "example.com/page",
         "link with space",
@@ -525,13 +528,16 @@ describe("createRedirectSchema", () => {
       // Location header) where it could inject a response header.
       const cases = [
         {
-          input: "https://evil.gov.sg/\r\npath",
           expected: "https://evil.gov.sg/path",
+          input: "https://evil.gov.sg/\r\npath",
         },
-        { input: "https://evil.gov.sg/\x00", expected: "https://evil.gov.sg/" },
         {
-          input: "https://evil.gov.sg/\ttab",
+          expected: "https://evil.gov.sg/",
+          input: "https://evil.gov.sg/\u0000",
+        },
+        {
           expected: "https://evil.gov.sg/tab",
+          input: "https://evil.gov.sg/\ttab",
         },
       ]
 
@@ -543,7 +549,8 @@ describe("createRedirectSchema", () => {
         })
 
         // Assert
-        expect(result.destination).not.toMatch(/[\x00-\x1f\x7f]/)
+        // oxlint-disable-next-line eslint/no-control-regex -- verifying control chars are stripped
+        expect(result.destination).not.toMatch(/[\u0000-\u001F\u007F]/u)
         expect(result.destination).toBe(expected)
       })
     })
@@ -574,8 +581,8 @@ describe("createRedirectSchema", () => {
       // Arrange / Act
       const result = createRedirectSchema.safeParse({
         ...VALID_REDIRECT,
-        source: "/same",
         destination: "/same",
+        source: "/same",
       })
 
       // Assert
@@ -593,8 +600,8 @@ describe("createRedirectSchema", () => {
       // must not let an identical redirect through.
       const result = createRedirectSchema.safeParse({
         ...VALID_REDIRECT,
-        source: "same//",
         destination: "/same/",
+        source: "same//",
       })
 
       // Assert
@@ -605,8 +612,8 @@ describe("createRedirectSchema", () => {
       // Arrange / Act
       const result = createRedirectSchema.safeParse({
         ...VALID_REDIRECT,
-        source: "/here",
         destination: "/there",
+        source: "/here",
       })
 
       // Assert
@@ -619,8 +626,8 @@ describe("createRedirectSchema", () => {
       // check does not apply.
       const result = createRedirectSchema.safeParse({
         ...VALID_REDIRECT,
-        source: "/same",
         destination: "https://example.gov.sg/same",
+        source: "/same",
       })
 
       // Assert
@@ -633,8 +640,8 @@ describe("bulkRedirectsCsvSchema", () => {
   it("accepts a small valid CSV", () => {
     // Arrange / Act
     const result = bulkRedirectsCsvSchema.safeParse({
-      siteId: 1,
       csv: "When someone visits,Redirect them to\n/old,/new",
+      siteId: 1,
     })
 
     // Assert
@@ -652,7 +659,7 @@ describe("bulkRedirectsCsvSchema", () => {
     )
 
     // Act
-    const result = bulkRedirectsCsvSchema.safeParse({ siteId: 1, csv })
+    const result = bulkRedirectsCsvSchema.safeParse({ csv, siteId: 1 })
 
     // Assert
     expect(result.success).toBe(false)

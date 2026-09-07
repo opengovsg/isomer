@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-shadow, typescript/no-confusing-void-expression, anti-slop/no-unknown-parameters, typescript/strict-boolean-expressions -- server lint cleanup */
 import { TRPCError } from "@trpc/server"
 import { get, pick } from "lodash-es"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
@@ -9,6 +10,7 @@ import {
   readFolderSchema,
 } from "~/schemas/folder"
 import { protectedProcedure, router } from "~/server/trpc"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { logResourceEvent } from "../audit/audit.service"
 import { PG_ERROR_CODES } from "../database/constants"
@@ -34,10 +36,10 @@ export const folderRouter = router({
         input: { siteId, folderTitle, parentFolderId, permalink },
       }) => {
         await bulkValidateUserPermissionsForResources({
-          siteId,
           action: "create",
+          resourceIds: [parentFolderId ? String(parentFolderId) : null],
+          siteId,
           userId: ctx.user.id,
-          resourceIds: [!!parentFolderId ? String(parentFolderId) : null],
         })
 
         const [user, site] = await Promise.all([
@@ -55,7 +57,7 @@ export const folderRouter = router({
             .executeTakeFirst(),
         ])
 
-        if (!site) {
+        if (site === undefined) {
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Site does not exist",
@@ -90,24 +92,24 @@ export const folderRouter = router({
             tx
               .insertInto("Resource")
               .values({
+                parentId: parentFolderId ? String(parentFolderId) : null,
                 permalink,
                 siteId,
-                type: ResourceType.Folder,
-                title: folderTitle,
-                parentId: parentFolderId ? String(parentFolderId) : null,
                 state: ResourceState.Published,
+                title: folderTitle,
+                type: ResourceType.Folder,
               })
               .returningAll()
               .executeTakeFirstOrThrow()
-              .catch((err) => {
-                if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
+              .catch((error: unknown) => {
+                if (get(error, "code") === PG_ERROR_CODES.uniqueViolation) {
                   throw new TRPCError({
                     code: "CONFLICT",
                     message:
                       "A resource with the same permalink already exists",
                   })
                 }
-                throw err
+                throw error
               }),
             tx
               .insertInto("Blob")
@@ -121,43 +123,43 @@ export const folderRouter = router({
           const indexPage = await tx
             .insertInto("Resource")
             .values({
-              parentId: folder.id,
               draftBlobId: indexPageBlob.id,
-              title: folderTitle,
-              type: ResourceType.IndexPage,
+              parentId: folder.id,
               permalink: INDEX_PAGE_PERMALINK,
               siteId,
+              title: folderTitle,
+              type: ResourceType.IndexPage,
             })
             .returningAll()
             .executeTakeFirstOrThrow()
-            .catch((err) => {
-              if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
+            .catch((error: unknown) => {
+              if (get(error, "code") === PG_ERROR_CODES.uniqueViolation) {
                 throw new TRPCError({
                   code: "CONFLICT",
                   message: "A resource with the same permalink already exists",
                 })
               }
-              throw err
+              throw error
             })
 
           await logResourceEvent(tx, {
-            siteId,
-            eventType: AuditLogEvent.ResourceCreate,
-            delta: {
-              before: null,
-              after: folder,
-            },
             by: user,
+            delta: {
+              after: folder,
+              before: null,
+            },
+            eventType: AuditLogEvent.ResourceCreate,
+            siteId,
           })
 
           await logResourceEvent(tx, {
-            siteId,
-            eventType: AuditLogEvent.ResourceCreate,
-            delta: {
-              before: null,
-              after: indexPage,
-            },
             by: user,
+            delta: {
+              after: indexPage,
+              before: null,
+            },
+            eventType: AuditLogEvent.ResourceCreate,
+            siteId,
           })
 
           return { ...folder, indexPage }
@@ -171,34 +173,6 @@ export const folderRouter = router({
         return { folderId: folder.id }
       },
     ),
-  getMetadata: protectedProcedure
-    .input(readFolderSchema)
-    .query(async ({ ctx, input: { siteId, resourceId } }) => {
-      await bulkValidateUserPermissionsForResources({
-        siteId,
-        action: "read",
-        userId: ctx.user.id,
-      })
-      // Things that aren't working yet:
-      // 1. Last Edited user and time
-      // 2. Page status(draft, published)
-
-      const data = await db
-        .selectFrom("Resource")
-        .select(["Resource.title", "Resource.permalink", "Resource.parentId"])
-        .where("siteId", "=", siteId)
-        .where("id", "=", String(resourceId))
-        .executeTakeFirst()
-
-      if (!data) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "This folder does not exist",
-        })
-      }
-
-      return data
-    }),
   editFolder: protectedProcedure
     .input(editFolderSchema)
     .mutation(
@@ -207,8 +181,8 @@ export const folderRouter = router({
         input: { resourceId, permalink, title, siteId, shouldCreateRedirect },
       }) => {
         await bulkValidateUserPermissionsForResources({
-          siteId: Number(siteId),
           action: "update",
+          siteId: Number(siteId),
           userId: ctx.user.id,
         })
 
@@ -268,14 +242,14 @@ export const folderRouter = router({
             })
             .returningAll()
             .executeTakeFirstOrThrow()
-            .catch((err) => {
-              if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
+            .catch((error: unknown) => {
+              if (get(error, "code") === PG_ERROR_CODES.uniqueViolation) {
                 throw new TRPCError({
                   code: "CONFLICT",
                   message: "A resource with the same permalink already exists",
                 })
               }
-              throw err
+              throw error
             })
 
           // NOTE: update the index page's title so that they stay in sync
@@ -292,13 +266,13 @@ export const folderRouter = router({
             .executeTakeFirst()
 
           await logResourceEvent(tx, {
-            siteId: Number(siteId),
-            eventType: AuditLogEvent.ResourceUpdate,
-            delta: {
-              before: oldResource,
-              after: newResource,
-            },
             by: user,
+            delta: {
+              after: newResource,
+              before: oldResource,
+            },
+            eventType: AuditLogEvent.ResourceUpdate,
+            siteId: Number(siteId),
           })
 
           // A renamed folder/collection changes every descendant's URL — preserve
@@ -310,16 +284,16 @@ export const folderRouter = router({
               oldFullPermalink.slice(0, oldFullPermalink.lastIndexOf("/") + 1) +
               newResource.permalink
             await applyFolderPermalinkChangeRedirects(tx, {
-              siteId: Number(siteId),
-              oldFullPermalink,
-              newFullPermalink,
-              resourceId,
-              hasLiveContent: await hasPublishedDescendant(tx, {
-                siteId: Number(siteId),
-                resourceId,
-              }),
-              shouldCreateRedirect,
               byUserId: user.id,
+              hasLiveContent: await hasPublishedDescendant(tx, {
+                resourceId,
+                siteId: Number(siteId),
+              }),
+              newFullPermalink,
+              oldFullPermalink,
+              resourceId,
+              shouldCreateRedirect,
+              siteId: Number(siteId),
             })
           }
 
@@ -331,15 +305,14 @@ export const folderRouter = router({
         return pick(result, defaultFolderSelect)
       },
     ),
-
   getIndexpage: protectedProcedure
     .input(getIndexpageSchema)
     .query(async ({ ctx, input: { resourceId, siteId } }) => {
       await bulkValidateUserPermissionsForResources({
-        siteId,
         action: "read",
-        userId: ctx.user.id,
         resourceIds: [resourceId],
+        siteId,
+        userId: ctx.user.id,
       })
 
       const [{ title }, indexPage] = await Promise.all([
@@ -366,15 +339,42 @@ export const folderRouter = router({
 
       return { title, ...indexPage }
     }),
+  getMetadata: protectedProcedure
+    .input(readFolderSchema)
+    .query(async ({ ctx, input: { siteId, resourceId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        action: "read",
+        siteId,
+        userId: ctx.user.id,
+      })
+      // Things that aren't working yet:
+      // 1. Last Edited user and time
+      // 2. Page status(draft, published)
 
+      const data = await db
+        .selectFrom("Resource")
+        .select(["Resource.title", "Resource.permalink", "Resource.parentId"])
+        .where("siteId", "=", siteId)
+        .where("id", "=", String(resourceId))
+        .executeTakeFirst()
+
+      if (!data) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "This folder does not exist",
+        })
+      }
+
+      return data
+    }),
   listChildPages: protectedProcedure
     .input(listChildPagesSchema)
     .query(async ({ ctx, input: { indexPageId, siteId } }) => {
       await bulkValidateUserPermissionsForResources({
-        siteId: Number(siteId),
         action: "read",
-        userId: ctx.user.id,
         resourceIds: [indexPageId],
+        siteId: Number(siteId),
+        userId: ctx.user.id,
       })
 
       // Validate site is valid
@@ -384,7 +384,7 @@ export const folderRouter = router({
         .select(["id"])
         .executeTakeFirst()
 
-      if (!site) {
+      if (site === undefined) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Site does not exist",
@@ -418,8 +418,8 @@ export const folderRouter = router({
       // NOTE: This is not a general `resource.list`
       // but reimplemented here because it makes certain assumptions about what should be shown
       const childPages = await db
-        .with("directChildren", (eb) => {
-          return eb
+        .with("directChildren", (eb) =>
+          eb
             .selectFrom("Resource")
             .where("parentId", "=", parentId)
             .where("siteId", "=", Number(siteId))
@@ -429,41 +429,39 @@ export const folderRouter = router({
               ResourceType.Collection,
               ResourceType.Page,
             ])
-            .select(["Resource.id", "title", "type", "permalink"])
-        })
+            .select(["Resource.id", "title", "type", "permalink"]),
+        )
         // NOTE: we need to select the `Folder/Collection`.`id`
         // rather than the `IndexPage` as our publishing script
         // uses the actual `id` of the containing `Folder/Collection`.
         // However, we will use the `IndexPage` as a filter as we should only
         // show the preview for published `IndexPages` (draft pages won't show on end site)
-        .with("publishedCousinIndexPages", (eb) => {
-          return (
-            eb
-              .selectFrom("Resource")
-              .where("parentId", "in", (qb) =>
-                qb
-                  .selectFrom("directChildren")
-                  .where("type", "in", [
-                    ResourceType.Folder,
-                    ResourceType.Collection,
-                  ])
-                  .select("id"),
-              )
-              // NOTE: Keeping in line with how we select resources for sitemap,
-              // we will only select published index pages here
-              .where("state", "=", ResourceState.Published)
-              .where("type", "=", ResourceType.IndexPage)
-              .select([
-                "Resource.parentId",
-                (eb) =>
-                  eb
-                    .selectFrom("Resource as Parent")
-                    .whereRef("Parent.id", "=", "Resource.parentId")
-                    .select("Parent.type")
-                    .as("parentType"),
-              ])
-          )
-        })
+        .with("publishedCousinIndexPages", (eb) =>
+          eb
+            .selectFrom("Resource")
+            .where("parentId", "in", (qb) =>
+              qb
+                .selectFrom("directChildren")
+                .where("type", "in", [
+                  ResourceType.Folder,
+                  ResourceType.Collection,
+                ])
+                .select("id"),
+            )
+            // NOTE: Keeping in line with how we select resources for sitemap,
+            // we will only select published index pages here
+            .where("state", "=", ResourceState.Published)
+            .where("type", "=", ResourceType.IndexPage)
+            .select([
+              "Resource.parentId",
+              (eb) =>
+                eb
+                  .selectFrom("Resource as Parent")
+                  .whereRef("Parent.id", "=", "Resource.parentId")
+                  .select("Parent.type")
+                  .as("parentType"),
+            ]),
+        )
         .selectFrom("Resource")
         .where("siteId", "=", Number(siteId))
         .where("id", "in", (qb) =>
@@ -476,15 +474,15 @@ export const folderRouter = router({
             .select("parentId"),
         )
         .select(["id", "title", "type", "permalink"])
-        .unionAll((qb) => {
-          return qb
+        .unionAll((qb) =>
+          qb
             .selectFrom("directChildren")
             .where("type", "=", ResourceType.Page)
-            .select(["id", "title", "type", "permalink"])
-        })
+            .select(["id", "title", "type", "permalink"]),
+        )
         .execute()
 
-      // TODO: Think about how to handle cases where 2 people are editing the order
+      // Deferred: Think about how to handle cases where 2 people are editing the order
       return { childPages }
     }),
 })

@@ -8,8 +8,10 @@ export const TiptapProseEditor = ({
 }: {
   editor: TiptapEditor | null
 }) => {
-  // TODO: Add a loading state or use suspense
-  if (!editor) return null
+  // Deferred: Add a loading state or use suspense
+  if (!editor) {
+    return null
+  }
 
   return <Editor isNested menubar={ProseMenuBar} editor={editor} />
 }

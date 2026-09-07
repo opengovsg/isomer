@@ -20,12 +20,12 @@ export const handleAssetUpload = async ({
   contentDisposition,
 }: HandleUploadParams) => {
   const response = await fetch(presignedPutUrl, {
+    body: file,
     headers: {
-      "Content-Type": contentType,
       "Content-Disposition": contentDisposition,
+      "Content-Type": contentType,
     },
     method: "PUT",
-    body: file,
   })
 
   if (!response.ok) {

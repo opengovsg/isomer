@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unnecessary-type-conversion, typescript/no-unsafe-type-assertion -- server lint cleanup */
 import { TRPCError } from "@trpc/server"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
@@ -42,14 +43,14 @@ describe("redirect.router", async () => {
       "User",
     )
     const user = await setupUser({
-      userId: session.userId,
       email: "test@mock.com",
+      userId: session.userId,
     })
     await auth(user)
     const { site } = await setupSite()
     siteId = site.id
     userId = user.id
-    await setupAdminPermissions({ userId: user.id, siteId })
+    await setupAdminPermissions({ siteId, userId: user.id })
     caller = createCaller(createMockRequest(session))
     unauthedCaller = createCaller(createMockRequest(applySession()))
   })
@@ -71,15 +72,15 @@ describe("redirect.router", async () => {
     // are NOT children of the RootPage's id), so seed them that way — otherwise
     // getResourceByFullPermalink can't resolve them.
     await setupPageResource({
-      siteId,
-      resourceType: ResourceType.RootPage,
       parentId: null,
+      resourceType: ResourceType.RootPage,
+      siteId,
     })
     const { page } = await setupPageResource({
-      siteId,
-      resourceType: ResourceType.Page,
       parentId: null,
       permalink,
+      resourceType: ResourceType.Page,
+      siteId,
       ...(published
         ? { state: ResourceState.Published, userId }
         : { state: ResourceState.Draft }),
@@ -93,7 +94,7 @@ describe("redirect.router", async () => {
       const result = unauthedCaller.list({ siteId })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -106,7 +107,7 @@ describe("redirect.router", async () => {
       const result = caller.list({ siteId: otherSite.id })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -127,7 +128,7 @@ describe("redirect.router", async () => {
       // Arrange
       await db
         .insertInto("Redirect")
-        .values({ siteId, source: "/old", destination: "/new" })
+        .values({ destination: "/new", siteId, source: "/old" })
         .execute()
 
       // Act
@@ -136,8 +137,8 @@ describe("redirect.router", async () => {
       // Assert
       expect(result).toHaveLength(1)
       expect(result[0]).toMatchObject({
-        source: "/old",
         destination: "/new",
+        source: "/old",
       })
       expect(result[0]!.publishedAt).toBeInstanceOf(Date)
       expect(result[0]!.id).toEqual(expect.any(String))
@@ -148,10 +149,10 @@ describe("redirect.router", async () => {
       await db
         .insertInto("Redirect")
         .values({
+          deletedAt: new Date(),
+          destination: "/gone",
           siteId,
           source: "/removed",
-          destination: "/gone",
-          deletedAt: new Date(),
         })
         .execute()
 
@@ -168,9 +169,9 @@ describe("redirect.router", async () => {
       await db
         .insertInto("Redirect")
         .values({
+          destination: "/elsewhere",
           siteId: otherSite.id,
           source: "/other",
-          destination: "/elsewhere",
         })
         .execute()
 
@@ -187,22 +188,22 @@ describe("redirect.router", async () => {
         .insertInto("Redirect")
         .values([
           {
+            createdAt: new Date("2026-01-01"),
+            destination: "/a",
             siteId,
             source: "/oldest",
-            destination: "/a",
-            createdAt: new Date("2026-01-01"),
           },
           {
+            createdAt: new Date("2026-03-01"),
+            destination: "/b",
             siteId,
             source: "/newest",
-            destination: "/b",
-            createdAt: new Date("2026-03-01"),
           },
           {
+            createdAt: new Date("2026-02-01"),
+            destination: "/c",
             siteId,
             source: "/middle",
-            destination: "/c",
-            createdAt: new Date("2026-02-01"),
           },
         ])
         .execute()
@@ -224,18 +225,18 @@ describe("redirect.router", async () => {
         .insertInto("Redirect")
         .values(
           Array.from({ length: 5 }, (_, index) => ({
+            createdAt: new Date(2026, 0, index + 1),
+            destination: `/dest-${index}`,
             siteId,
             source: `/page-${index}`,
-            destination: `/dest-${index}`,
-            createdAt: new Date(2026, 0, index + 1),
           })),
         )
         .execute()
 
       // Act
-      const firstPage = await caller.list({ siteId, limit: 2, offset: 0 })
-      const secondPage = await caller.list({ siteId, limit: 2, offset: 2 })
-      const lastPage = await caller.list({ siteId, limit: 2, offset: 4 })
+      const firstPage = await caller.list({ limit: 2, offset: 0, siteId })
+      const secondPage = await caller.list({ limit: 2, offset: 2, siteId })
+      const lastPage = await caller.list({ limit: 2, offset: 4, siteId })
 
       // Assert
       expect(firstPage).toHaveLength(2)
@@ -255,22 +256,22 @@ describe("redirect.router", async () => {
           // createdAt deliberately disagrees with the alphabetical order so
           // the sort provably happens on the requested field
           {
+            createdAt: new Date("2026-03-01"),
+            destination: "/1",
             siteId,
             source: "/banana",
-            destination: "/1",
-            createdAt: new Date("2026-03-01"),
           },
           {
+            createdAt: new Date("2026-01-01"),
+            destination: "/2",
             siteId,
             source: "/apple",
-            destination: "/2",
-            createdAt: new Date("2026-01-01"),
           },
           {
+            createdAt: new Date("2026-02-01"),
+            destination: "/3",
             siteId,
             source: "/cherry",
-            destination: "/3",
-            createdAt: new Date("2026-02-01"),
           },
         ])
         .execute()
@@ -307,7 +308,7 @@ describe("redirect.router", async () => {
       const result = unauthedCaller.count({ siteId })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -320,7 +321,7 @@ describe("redirect.router", async () => {
       const result = caller.count({ siteId: otherSite.id })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -335,15 +336,15 @@ describe("redirect.router", async () => {
       await db
         .insertInto("Redirect")
         .values([
-          { siteId, source: "/one", destination: "/a" },
-          { siteId, source: "/two", destination: "/b" },
+          { destination: "/a", siteId, source: "/one" },
+          { destination: "/b", siteId, source: "/two" },
           {
+            deletedAt: new Date(),
+            destination: "/c",
             siteId,
             source: "/deleted",
-            destination: "/c",
-            deletedAt: new Date(),
           },
-          { siteId: otherSite.id, source: "/other", destination: "/d" },
+          { destination: "/d", siteId: otherSite.id, source: "/other" },
         ])
         .execute()
 
@@ -359,13 +360,13 @@ describe("redirect.router", async () => {
     it("should throw 401 if not logged in", async () => {
       // Arrange / Act
       const result = unauthedCaller.validate({
+        destination: "/new",
         siteId,
         source: "/old",
-        destination: "/new",
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -376,13 +377,13 @@ describe("redirect.router", async () => {
 
       // Act
       const result = caller.validate({
+        destination: "/new",
         siteId: otherSite.id,
         source: "/old",
-        destination: "/new",
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -394,9 +395,9 @@ describe("redirect.router", async () => {
     it("should report no issues for a redirect to an external URL", async () => {
       // Arrange / Act
       const result = await caller.validate({
+        destination: "https://www.example.gov.sg/new",
         siteId,
         source: "/old",
-        destination: "https://www.example.gov.sg/new",
       })
 
       // Assert
@@ -409,9 +410,9 @@ describe("redirect.router", async () => {
 
       // Act
       const result = await caller.validate({
+        destination: "/published-page",
         siteId,
         source: "/old",
-        destination: "/published-page",
       })
 
       // Assert
@@ -422,14 +423,14 @@ describe("redirect.router", async () => {
       // Arrange
       await db
         .insertInto("Redirect")
-        .values({ siteId, source: "/old", destination: "/somewhere" })
+        .values({ destination: "/somewhere", siteId, source: "/old" })
         .execute()
 
       // Act
       const result = await caller.validate({
+        destination: "https://www.example.gov.sg",
         siteId,
         source: "/old",
-        destination: "https://www.example.gov.sg",
       })
 
       // Assert
@@ -444,22 +445,22 @@ describe("redirect.router", async () => {
       // /b already redirects to /a, so adding /a -> /b bounces straight back
       await db
         .insertInto("Redirect")
-        .values({ siteId, source: "/b", destination: "/a" })
+        .values({ destination: "/a", siteId, source: "/b" })
         .execute()
 
       // Act
       const result = await caller.validate({
+        destination: "/b",
         siteId,
         source: "/a",
-        destination: "/b",
       })
 
       // Assert
       expect(result.errors).toContainEqual({
         code: "REDIRECT_LOOP",
-        message: "This will trap visitors in a never-ending loop.",
         description:
           "/b already redirects to /a. Visitors will get stuck in between pages. Delete existing redirects or direct to a different page.",
+        message: "This will trap visitors in a never-ending loop.",
       })
     })
 
@@ -469,14 +470,14 @@ describe("redirect.router", async () => {
       // stored destination is normalised for comparison.
       await db
         .insertInto("Redirect")
-        .values({ siteId, source: "/b", destination: "/a/" })
+        .values({ destination: "/a/", siteId, source: "/b" })
         .execute()
 
       // Act
       const result = await caller.validate({
+        destination: "/b",
         siteId,
         source: "/a",
-        destination: "/b",
       })
 
       // Assert
@@ -492,16 +493,16 @@ describe("redirect.router", async () => {
       await db
         .insertInto("Redirect")
         .values([
-          { siteId, source: "/b", destination: "/c" },
-          { siteId, source: "/c", destination: "/a" },
+          { destination: "/c", siteId, source: "/b" },
+          { destination: "/a", siteId, source: "/c" },
         ])
         .execute()
 
       // Act
       const result = await caller.validate({
+        destination: "/b",
         siteId,
         source: "/a",
-        destination: "/b",
       })
 
       // Assert
@@ -516,16 +517,16 @@ describe("redirect.router", async () => {
       await db
         .insertInto("Redirect")
         .values([
-          { siteId, source: "/b", destination: "/c" },
-          { siteId, source: "/c", destination: "/d" },
+          { destination: "/c", siteId, source: "/b" },
+          { destination: "/d", siteId, source: "/c" },
         ])
         .execute()
 
       // Act
       const result = await caller.validate({
+        destination: "/b",
         siteId,
         source: "/a",
-        destination: "/b",
       })
 
       // Assert
@@ -539,18 +540,18 @@ describe("redirect.router", async () => {
       await db
         .insertInto("Redirect")
         .values({
+          deletedAt: new Date(),
+          destination: "/x",
           siteId,
           source: "/old",
-          destination: "/x",
-          deletedAt: new Date(),
         })
         .execute()
 
       // Act
       const result = await caller.validate({
+        destination: "https://www.example.gov.sg",
         siteId,
         source: "/old",
-        destination: "https://www.example.gov.sg",
       })
 
       // Assert
@@ -564,9 +565,9 @@ describe("redirect.router", async () => {
 
       // Act
       const result = await caller.validate({
+        destination: "/somewhere",
         siteId,
         source: "/live-page",
-        destination: "/somewhere",
       })
 
       // Assert
@@ -584,9 +585,9 @@ describe("redirect.router", async () => {
 
       // Act
       const result = await caller.validate({
+        destination: "/somewhere",
         siteId,
         source: "/draft-page",
-        destination: "/somewhere",
       })
 
       // Assert
@@ -598,28 +599,28 @@ describe("redirect.router", async () => {
       // so a redirect there would shadow it. Regression test: the source guard
       // must resolve top-level containers (parentId = null), not only pages.
       await setupPageResource({
-        siteId,
-        resourceType: ResourceType.RootPage,
         parentId: null,
+        resourceType: ResourceType.RootPage,
+        siteId,
       })
       const { folder } = await setupFolder({
-        siteId,
-        permalink: "folder",
         parentId: null,
+        permalink: "folder",
+        siteId,
       })
       await setupPageResource({
-        siteId,
-        resourceType: ResourceType.IndexPage,
         parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        siteId,
         state: ResourceState.Published,
         userId,
       })
 
       // Act
       const result = await caller.validate({
+        destination: "/somewhere",
         siteId,
         source: "/folder",
-        destination: "/somewhere",
       })
 
       // Assert
@@ -635,13 +636,13 @@ describe("redirect.router", async () => {
     it("should throw 401 if not logged in", async () => {
       // Arrange / Act
       const result = unauthedCaller.create({
+        destination: "/new",
         siteId,
         source: "/old",
-        destination: "/new",
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -652,13 +653,13 @@ describe("redirect.router", async () => {
 
       // Act
       const result = caller.create({
+        destination: "/new",
         siteId: otherSite.id,
         source: "/old",
-        destination: "/new",
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -672,26 +673,26 @@ describe("redirect.router", async () => {
       // An external destination is stored verbatim (only internal paths are
       // resolved to a page reference)
       await caller.create({
+        destination: "https://example.com/new",
         siteId,
         source: "/old",
-        destination: "https://example.com/new",
       })
 
       // Assert
       const result = await caller.list({ siteId })
       expect(result).toHaveLength(1)
       expect(result[0]).toMatchObject({
-        source: "/old",
         destination: "https://example.com/new",
+        source: "/old",
       })
     })
 
     it("should normalise the source before persisting", async () => {
       // Arrange / Act
       await caller.create({
+        destination: "https://example.com/new",
         siteId,
         source: "old//path/",
-        destination: "https://example.com/new",
       })
 
       // Assert
@@ -702,9 +703,9 @@ describe("redirect.router", async () => {
     it("should persist an external destination unchanged", async () => {
       // Arrange / Act
       await caller.create({
+        destination: "https://www.example.gov.sg/path/",
         siteId,
         source: "/old",
-        destination: "https://www.example.gov.sg/path/",
       })
 
       // Assert
@@ -716,18 +717,18 @@ describe("redirect.router", async () => {
       // Arrange
       await db
         .insertInto("Redirect")
-        .values({ siteId, source: "/page", destination: "/old-dest" })
+        .values({ destination: "/old-dest", siteId, source: "/page" })
         .execute()
 
       // Act
       const result = caller.create({
+        destination: "https://example.com/new-dest",
         siteId,
         source: "/page",
-        destination: "https://example.com/new-dest",
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "CONFLICT",
           message: "A redirect already exists for /page",
@@ -747,26 +748,26 @@ describe("redirect.router", async () => {
       await db
         .insertInto("Redirect")
         .values({
+          deletedAt: new Date(),
+          destination: "/old",
           siteId,
           source: "/revived",
-          destination: "/old",
-          deletedAt: new Date(),
         })
         .execute()
 
       // Act
       await caller.create({
+        destination: "https://example.com/new",
         siteId,
         source: "/revived",
-        destination: "https://example.com/new",
       })
 
       // Assert
       const result = await caller.list({ siteId })
       expect(result).toHaveLength(1)
       expect(result[0]).toMatchObject({
-        source: "/revived",
         destination: "https://example.com/new",
+        source: "/revived",
       })
     })
 
@@ -775,14 +776,14 @@ describe("redirect.router", async () => {
       // /b already redirects to /a, so creating /a -> /b would bounce back
       await db
         .insertInto("Redirect")
-        .values({ siteId, source: "/b", destination: "/a" })
+        .values({ destination: "/a", siteId, source: "/b" })
         .execute()
 
       // Act
-      const result = caller.create({ siteId, source: "/a", destination: "/b" })
+      const result = caller.create({ destination: "/b", siteId, source: "/a" })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         "This will trap visitors in a never-ending loop.",
       )
       const rows = await db
@@ -801,13 +802,13 @@ describe("redirect.router", async () => {
       await db
         .insertInto("Redirect")
         .values([
-          { siteId, source: "/b", destination: "/c" },
-          { siteId, source: "/c", destination: "/a" },
+          { destination: "/c", siteId, source: "/b" },
+          { destination: "/a", siteId, source: "/c" },
         ])
         .execute()
 
       // Act
-      await caller.create({ siteId, source: "/a", destination: "/b" })
+      await caller.create({ destination: "/b", siteId, source: "/a" })
 
       // Assert
       const rows = await db
@@ -826,13 +827,13 @@ describe("redirect.router", async () => {
 
       // Act
       const result = caller.create({
+        destination: "/somewhere",
         siteId,
         source: "/live-page",
-        destination: "/somewhere",
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "PRECONDITION_FAILED",
           message:
@@ -855,9 +856,9 @@ describe("redirect.router", async () => {
 
       // Act
       const result = caller.create({
+        destination: "https://example.com/somewhere",
         siteId,
         source: "/Live-Page",
-        destination: "https://example.com/somewhere",
       })
 
       // Assert
@@ -875,17 +876,17 @@ describe("redirect.router", async () => {
 
       // Act
       await caller.create({
+        destination: "https://www.example.gov.sg",
         siteId,
         source: "/draft-page",
-        destination: "https://www.example.gov.sg",
       })
 
       // Assert
       const result = await caller.list({ siteId })
       expect(result).toContainEqual(
         expect.objectContaining({
-          source: "/draft-page",
           destination: "https://www.example.gov.sg",
+          source: "/draft-page",
         }),
       )
     })
@@ -896,19 +897,19 @@ describe("redirect.router", async () => {
       // reference), but also already redirects to /c. /a -> /b is a chain (a
       // warning, not a loop), so the create proceeds.
       await setupPageResource({
-        siteId,
-        resourceType: ResourceType.Page,
         permalink: "b",
+        resourceType: ResourceType.Page,
+        siteId,
         state: ResourceState.Published,
         userId,
       })
       await db
         .insertInto("Redirect")
-        .values({ siteId, source: "/b", destination: "/c" })
+        .values({ destination: "/c", siteId, source: "/b" })
         .execute()
 
       // Act
-      await caller.create({ siteId, source: "/a", destination: "/b" })
+      await caller.create({ destination: "/b", siteId, source: "/a" })
 
       // Assert
       const result = await caller.list({ siteId })
@@ -918,9 +919,9 @@ describe("redirect.router", async () => {
     it("should write a RedirectCreate audit log entry with the created row", async () => {
       // Arrange / Act
       await caller.create({
+        destination: "https://example.com/world",
         siteId,
         source: "/hello",
-        destination: "https://example.com/world",
       })
 
       // Assert
@@ -932,8 +933,8 @@ describe("redirect.router", async () => {
         .executeTakeFirstOrThrow()
       expect(auditEntry.userId).toBe(session.userId)
       expect(auditEntry.delta).toMatchObject({
+        after: { destination: "https://example.com/world", source: "/hello" },
         before: null,
-        after: { source: "/hello", destination: "https://example.com/world" },
       })
       // The site publish triggered by the create is audited separately
       const publishEntry = await db
@@ -954,13 +955,13 @@ describe("redirect.router", async () => {
 
       // Act
       const result = caller.create({
+        destination: "https://example.com/new",
         siteId,
         source: "/old",
-        destination: "https://example.com/new",
       })
 
       // Assert
-      await expect(result).rejects.toThrowError("CodeBuild unavailable")
+      await expect(result).rejects.toThrow("CodeBuild unavailable")
       expect(publishSpy).toHaveBeenCalledOnce()
       const rows = await db
         .selectFrom("Redirect")
@@ -970,8 +971,8 @@ describe("redirect.router", async () => {
         .execute()
       expect(rows).toHaveLength(1)
       expect(rows[0]).toMatchObject({
-        source: "/old",
         destination: "https://example.com/new",
+        source: "/old",
       })
     })
 
@@ -980,18 +981,18 @@ describe("redirect.router", async () => {
       await db
         .insertInto("Redirect")
         .values({
+          deletedAt: new Date(),
+          destination: "/old",
           siteId,
           source: "/revived",
-          destination: "/old",
-          deletedAt: new Date(),
         })
         .execute()
 
       // Act
       await caller.create({
+        destination: "https://example.com/new",
         siteId,
         source: "/revived",
-        destination: "https://example.com/new",
       })
 
       // Assert
@@ -1002,8 +1003,8 @@ describe("redirect.router", async () => {
         .where("eventType", "=", "RedirectCreate")
         .executeTakeFirstOrThrow()
       expect(auditEntry.delta).toMatchObject({
-        before: { source: "/revived", destination: "/old" },
-        after: { source: "/revived", destination: "https://example.com/new" },
+        after: { destination: "https://example.com/new", source: "/revived" },
+        before: { destination: "/old", source: "/revived" },
       })
     })
   })
@@ -1012,18 +1013,18 @@ describe("redirect.router", async () => {
     it("should store an internal-path destination as a page reference", async () => {
       // Arrange
       const { page } = await setupPageResource({
-        siteId,
-        resourceType: ResourceType.Page,
         permalink: "target-page",
+        resourceType: ResourceType.Page,
+        siteId,
         state: ResourceState.Published,
         userId: session.userId,
       })
 
       // Act
       await caller.create({
+        destination: "/target-page",
         siteId,
         source: "/from",
-        destination: "/target-page",
       })
 
       // Assert — the path is resolved to a [resource:...] reference so the
@@ -1040,23 +1041,23 @@ describe("redirect.router", async () => {
     it("should resolve a nested internal path to the child page reference", async () => {
       // Arrange
       const { folder } = await setupFolder({
-        siteId,
         permalink: "parent-folder",
+        siteId,
       })
       const { page } = await setupPageResource({
-        siteId,
-        resourceType: ResourceType.Page,
-        permalink: "child-page",
         parentId: folder.id,
+        permalink: "child-page",
+        resourceType: ResourceType.Page,
+        siteId,
         state: ResourceState.Published,
         userId: session.userId,
       })
 
       // Act
       await caller.create({
+        destination: "/parent-folder/child-page",
         siteId,
         source: "/from",
-        destination: "/parent-folder/child-page",
       })
 
       // Assert — the reverse walk matches each segment against its parent
@@ -1072,16 +1073,16 @@ describe("redirect.router", async () => {
     it("should keep an internal path with a query suffix as a literal path", async () => {
       // Arrange
       await setupPageResource({
-        siteId,
-        resourceType: ResourceType.Page,
         permalink: "target-page",
+        resourceType: ResourceType.Page,
+        siteId,
       })
 
       // Act — a path with a query string can't map to a single resource
       await caller.create({
+        destination: "/target-page?ref=footer",
         siteId,
         source: "/from",
-        destination: "/target-page?ref=footer",
       })
 
       // Assert
@@ -1098,9 +1099,9 @@ describe("redirect.router", async () => {
       // Arrange / Act — no page lives at /no-such-page. The preflight warns, but
       // create keeps the literal path so an admin can pre-create the redirect.
       await caller.create({
+        destination: "/no-such-page",
         siteId,
         source: "/from",
-        destination: "/no-such-page",
       })
 
       // Assert
@@ -1117,17 +1118,17 @@ describe("redirect.router", async () => {
       // Arrange — a draft page exists at /draft-page; it has no live URL yet, but
       // the redirect references it so it starts working once the page publishes
       const { page } = await setupPageResource({
-        siteId,
-        resourceType: ResourceType.Page,
         permalink: "draft-page",
+        resourceType: ResourceType.Page,
+        siteId,
         state: ResourceState.Draft,
       })
 
       // Act
       await caller.create({
+        destination: "/draft-page",
         siteId,
         source: "/from",
-        destination: "/draft-page",
       })
 
       // Assert — resolved to a [resource:...] reference, not kept literal
@@ -1143,15 +1144,15 @@ describe("redirect.router", async () => {
     it("should resolve the site root '/' to the RootPage reference", async () => {
       // Arrange — the published homepage (RootPage has an empty permalink)
       const { page: rootPage } = await setupPageResource({
-        siteId,
-        resourceType: ResourceType.RootPage,
         permalink: "",
+        resourceType: ResourceType.RootPage,
+        siteId,
         state: ResourceState.Published,
         userId: session.userId,
       })
 
       // Act
-      await caller.create({ siteId, source: "/from", destination: "/" })
+      await caller.create({ destination: "/", siteId, source: "/from" })
 
       // Assert
       const row = await db
@@ -1167,18 +1168,18 @@ describe("redirect.router", async () => {
       // Arrange — a folder is served by its published IndexPage child, but the
       // published site keys the URL on the folder's id, so the redirect must
       // reference the folder itself.
-      const { folder } = await setupFolder({ siteId, permalink: "about" })
+      const { folder } = await setupFolder({ permalink: "about", siteId })
       await setupPageResource({
-        siteId,
-        resourceType: ResourceType.IndexPage,
-        permalink: "_index",
         parentId: folder.id,
+        permalink: "_index",
+        resourceType: ResourceType.IndexPage,
+        siteId,
         state: ResourceState.Published,
         userId: session.userId,
       })
 
       // Act
-      await caller.create({ siteId, source: "/from", destination: "/about" })
+      await caller.create({ destination: "/about", siteId, source: "/from" })
 
       // Assert
       const row = await db
@@ -1193,20 +1194,20 @@ describe("redirect.router", async () => {
     it("stores the folder reference for a folder destination whose index page is unpublished", async () => {
       // Arrange — a folder whose index page is still a draft has no live URL yet,
       // but the redirect references the folder so it works once it's published
-      const { folder } = await setupFolder({ siteId, permalink: "about" })
+      const { folder } = await setupFolder({ permalink: "about", siteId })
       await setupPageResource({
-        siteId,
-        resourceType: ResourceType.IndexPage,
-        permalink: "_index",
         parentId: folder.id,
+        permalink: "_index",
+        resourceType: ResourceType.IndexPage,
+        siteId,
         state: ResourceState.Draft,
       })
 
       // Act
       await caller.create({
+        destination: "/about",
         siteId,
         source: "/from",
-        destination: "/about",
       })
 
       // Assert — resolved to the folder reference, not kept literal
@@ -1227,8 +1228,8 @@ describe("redirect.router", async () => {
 
       // Act
       const result = caller.resolveReferences({
-        siteId: otherSite.id,
         references: [],
+        siteId: otherSite.id,
       })
 
       // Assert
@@ -1238,9 +1239,9 @@ describe("redirect.router", async () => {
     it("should resolve a reference to the page's current permalink", async () => {
       // Arrange
       const { page } = await setupPageResource({
-        siteId,
-        resourceType: ResourceType.Page,
         permalink: "target-page",
+        resourceType: ResourceType.Page,
+        siteId,
         state: ResourceState.Published,
         userId: session.userId,
       })
@@ -1248,13 +1249,13 @@ describe("redirect.router", async () => {
 
       // Act
       const result = await caller.resolveReferences({
-        siteId,
         references: [reference],
+        siteId,
       })
 
       // Assert
       expect(result).toEqual([
-        { reference, permalink: "/target-page", warn: false },
+        { permalink: "/target-page", reference, warn: false },
       ])
     })
 
@@ -1262,35 +1263,35 @@ describe("redirect.router", async () => {
       // Arrange — a draft page resolves to its permalink for display, but has no
       // live page behind it yet, so the redirect currently leads nowhere.
       const { page } = await setupPageResource({
-        siteId,
-        resourceType: ResourceType.Page,
         permalink: "draft-page",
+        resourceType: ResourceType.Page,
+        siteId,
       })
       const reference = `[resource:${siteId}:${page.id}]`
 
       // Act
       const result = await caller.resolveReferences({
-        siteId,
         references: [reference],
+        siteId,
       })
 
       // Assert
       expect(result).toEqual([
-        { reference, permalink: "/draft-page", warn: true },
+        { permalink: "/draft-page", reference, warn: true },
       ])
     })
 
     it("should resolve a nested reference to its full permalink", async () => {
       // Arrange
       const { folder } = await setupFolder({
-        siteId,
         permalink: "parent-folder",
+        siteId,
       })
       const { page } = await setupPageResource({
-        siteId,
-        resourceType: ResourceType.Page,
-        permalink: "child-page",
         parentId: folder.id,
+        permalink: "child-page",
+        resourceType: ResourceType.Page,
+        siteId,
         state: ResourceState.Published,
         userId: session.userId,
       })
@@ -1298,25 +1299,25 @@ describe("redirect.router", async () => {
 
       // Act
       const result = await caller.resolveReferences({
-        siteId,
         references: [reference],
+        siteId,
       })
 
       // Assert
       expect(result).toEqual([
-        { reference, permalink: "/parent-folder/child-page", warn: false },
+        { permalink: "/parent-folder/child-page", reference, warn: false },
       ])
     })
 
     it("should resolve an index page reference to its folder's permalink", async () => {
       // Arrange — an _index page represents its folder, so its segment is
       // dropped from the resolved permalink
-      const { folder } = await setupFolder({ siteId, permalink: "info" })
+      const { folder } = await setupFolder({ permalink: "info", siteId })
       const { page: indexPage } = await setupPageResource({
-        siteId,
-        resourceType: ResourceType.IndexPage,
-        permalink: "_index",
         parentId: folder.id,
+        permalink: "_index",
+        resourceType: ResourceType.IndexPage,
+        siteId,
         state: ResourceState.Published,
         userId: session.userId,
       })
@@ -1324,12 +1325,12 @@ describe("redirect.router", async () => {
 
       // Act
       const result = await caller.resolveReferences({
-        siteId,
         references: [reference],
+        siteId,
       })
 
       // Assert
-      expect(result).toEqual([{ reference, permalink: "/info", warn: false }])
+      expect(result).toEqual([{ permalink: "/info", reference, warn: false }])
     })
 
     it("should resolve a deleted page's reference to null and warn", async () => {
@@ -1338,32 +1339,32 @@ describe("redirect.router", async () => {
 
       // Act
       const result = await caller.resolveReferences({
-        siteId,
         references: [reference],
+        siteId,
       })
 
       // Assert
-      expect(result).toEqual([{ reference, permalink: null, warn: true }])
+      expect(result).toEqual([{ permalink: null, reference, warn: true }])
     })
 
     it("should resolve a reference whose embedded siteId is not this site to null and warn", async () => {
       // Arrange — the resourceId exists on this site, but the reference claims a
       // different site, so it must not resolve here.
       const { page } = await setupPageResource({
-        siteId,
-        resourceType: ResourceType.Page,
         permalink: "target-page",
+        resourceType: ResourceType.Page,
+        siteId,
       })
       const reference = `[resource:${siteId + 1}:${page.id}]`
 
       // Act
       const result = await caller.resolveReferences({
-        siteId,
         references: [reference],
+        siteId,
       })
 
       // Assert
-      expect(result).toEqual([{ reference, permalink: null, warn: true }])
+      expect(result).toEqual([{ permalink: null, reference, warn: true }])
     })
 
     it("should not resolve or warn for an external URL destination", async () => {
@@ -1372,40 +1373,40 @@ describe("redirect.router", async () => {
 
       // Act
       const result = await caller.resolveReferences({
-        siteId,
         references: [reference],
+        siteId,
       })
 
       // Assert
-      expect(result).toEqual([{ reference, permalink: null, warn: false }])
+      expect(result).toEqual([{ permalink: null, reference, warn: false }])
     })
 
     it("should not warn for a literal path to a published page (no permalink echoed)", async () => {
       // Arrange — a literal "/path" destination shows as typed (permalink stays
       // null), and only warns when it has no published page behind it.
       await setupPageResource({
-        siteId,
-        resourceType: ResourceType.RootPage,
         parentId: null,
+        resourceType: ResourceType.RootPage,
+        siteId,
       })
       await setupPageResource({
-        siteId,
-        resourceType: ResourceType.Page,
         parentId: null,
         permalink: "leaf",
+        resourceType: ResourceType.Page,
+        siteId,
         state: ResourceState.Published,
         userId,
       })
 
       // Act
       const result = await caller.resolveReferences({
-        siteId,
         references: ["/leaf"],
+        siteId,
       })
 
       // Assert
       expect(result).toEqual([
-        { reference: "/leaf", permalink: null, warn: false },
+        { permalink: null, reference: "/leaf", warn: false },
       ])
     })
 
@@ -1413,67 +1414,67 @@ describe("redirect.router", async () => {
       // Arrange — a literal destination may keep a "#fragment"; resolution must
       // strip it and still find the underlying published page.
       await setupPageResource({
-        siteId,
-        resourceType: ResourceType.RootPage,
         parentId: null,
+        resourceType: ResourceType.RootPage,
+        siteId,
       })
       await setupPageResource({
-        siteId,
-        resourceType: ResourceType.Page,
         parentId: null,
         permalink: "leaf",
+        resourceType: ResourceType.Page,
+        siteId,
         state: ResourceState.Published,
         userId,
       })
 
       // Act
       const result = await caller.resolveReferences({
-        siteId,
         references: ["/leaf#section"],
+        siteId,
       })
 
       // Assert
       expect(result).toEqual([
-        { reference: "/leaf#section", permalink: null, warn: false },
+        { permalink: null, reference: "/leaf#section", warn: false },
       ])
     })
 
     it("should warn for a literal path to an unpublished page", async () => {
       // Arrange
       await setupPageResource({
-        siteId,
-        resourceType: ResourceType.RootPage,
         parentId: null,
+        resourceType: ResourceType.RootPage,
+        siteId,
       })
       await setupPageResource({
-        siteId,
-        resourceType: ResourceType.Page,
         parentId: null,
         permalink: "draft-leaf",
+        resourceType: ResourceType.Page,
+        siteId,
       })
 
       // Act
       const result = await caller.resolveReferences({
-        siteId,
         references: ["/draft-leaf"],
+        siteId,
       })
 
       // Assert
       expect(result).toEqual([
-        { reference: "/draft-leaf", permalink: null, warn: true },
+        { permalink: null, reference: "/draft-leaf", warn: true },
       ])
     })
 
     it("should warn for a literal path that matches no page", async () => {
       // Arrange / Act
       const result = await caller.resolveReferences({
-        siteId,
         references: ["/missing"],
+        siteId,
       })
 
       // Assert
       expect(result).toEqual([
-        { reference: "/missing", permalink: null, warn: true },
+        { permalink: null, reference: "/missing", warn: true },
       ])
     })
 
@@ -1481,32 +1482,32 @@ describe("redirect.router", async () => {
       // Arrange — "/folder" is served by the folder's published IndexPage, so it
       // resolves as published (exercises the folder -> IndexPage branch).
       await setupPageResource({
-        siteId,
-        resourceType: ResourceType.RootPage,
         parentId: null,
+        resourceType: ResourceType.RootPage,
+        siteId,
       })
       const { folder } = await setupFolder({
-        siteId,
-        permalink: "folder",
         parentId: null,
+        permalink: "folder",
+        siteId,
       })
       await setupPageResource({
-        siteId,
-        resourceType: ResourceType.IndexPage,
         parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        siteId,
         state: ResourceState.Published,
         userId,
       })
 
       // Act
       const result = await caller.resolveReferences({
-        siteId,
         references: ["/folder"],
+        siteId,
       })
 
       // Assert
       expect(result).toEqual([
-        { reference: "/folder", permalink: null, warn: false },
+        { permalink: null, reference: "/folder", warn: false },
       ])
     })
 
@@ -1514,30 +1515,30 @@ describe("redirect.router", async () => {
       // Arrange — a folder with an unpublished IndexPage has no live page at its
       // URL, so it warns.
       await setupPageResource({
-        siteId,
-        resourceType: ResourceType.RootPage,
         parentId: null,
+        resourceType: ResourceType.RootPage,
+        siteId,
       })
       const { folder } = await setupFolder({
-        siteId,
-        permalink: "folder",
         parentId: null,
+        permalink: "folder",
+        siteId,
       })
       await setupPageResource({
-        siteId,
-        resourceType: ResourceType.IndexPage,
         parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        siteId,
       })
 
       // Act
       const result = await caller.resolveReferences({
-        siteId,
         references: ["/folder"],
+        siteId,
       })
 
       // Assert
       expect(result).toEqual([
-        { reference: "/folder", permalink: null, warn: true },
+        { permalink: null, reference: "/folder", warn: true },
       ])
     })
 
@@ -1549,19 +1550,19 @@ describe("redirect.router", async () => {
       // Reached by id through a stored reference, which skips the path walk a
       // cycle would otherwise fail.
       await setupPageResource({
-        siteId,
-        resourceType: ResourceType.RootPage,
         parentId: null,
+        resourceType: ResourceType.RootPage,
+        siteId,
       })
       const { folder } = await setupFolder({
-        siteId,
-        permalink: "folder",
         parentId: null,
+        permalink: "folder",
+        siteId,
       })
       const { folder: child } = await setupFolder({
-        siteId,
-        permalink: "child",
         parentId: folder.id,
+        permalink: "child",
+        siteId,
       })
       await db
         .updateTable("Resource")
@@ -1571,8 +1572,8 @@ describe("redirect.router", async () => {
 
       // Act
       const result = await caller.resolveReferences({
-        siteId,
         references: [`[resource:${siteId}:${folder.id}]`],
+        siteId,
       })
 
       // Assert — the point is that it returns at all rather than hanging, and
@@ -1587,10 +1588,10 @@ describe("redirect.router", async () => {
   describe("delete", () => {
     it("should throw 401 if not logged in", async () => {
       // Arrange / Act
-      const result = unauthedCaller.delete({ siteId, id: "1" })
+      const result = unauthedCaller.delete({ id: "1", siteId })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -1600,10 +1601,10 @@ describe("redirect.router", async () => {
       const { site: otherSite } = await setupSite()
 
       // Act
-      const result = caller.delete({ siteId: otherSite.id, id: "1" })
+      const result = caller.delete({ id: "1", siteId: otherSite.id })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1616,12 +1617,12 @@ describe("redirect.router", async () => {
       // Arrange
       const inserted = await db
         .insertInto("Redirect")
-        .values({ siteId, source: "/remove-me", destination: "/dest" })
+        .values({ destination: "/dest", siteId, source: "/remove-me" })
         .returning("id")
         .executeTakeFirstOrThrow()
 
       // Act
-      await caller.delete({ siteId, id: inserted.id })
+      await caller.delete({ id: inserted.id, siteId })
 
       // Assert
       const result = await caller.list({ siteId })
@@ -1636,10 +1637,10 @@ describe("redirect.router", async () => {
 
     it("should throw 404 if the redirect does not exist", async () => {
       // Arrange / Act
-      const result = caller.delete({ siteId, id: "999999" })
+      const result = caller.delete({ id: "999999", siteId })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "NOT_FOUND", message: "Redirect not found" }),
       )
     })
@@ -1648,7 +1649,7 @@ describe("redirect.router", async () => {
       // Arrange / Act
       // Redirect.id is a bigint, so a non-numeric id must be rejected by
       // validation instead of becoming a DB cast error (500)
-      const result = caller.delete({ siteId, id: "not-a-number" })
+      const result = caller.delete({ id: "not-a-number", siteId })
 
       // Assert
       // Assert the code, not the message — a future refactor that swaps the
@@ -1661,19 +1662,19 @@ describe("redirect.router", async () => {
       const inserted = await db
         .insertInto("Redirect")
         .values({
+          deletedAt: new Date(),
+          destination: "/dest",
           siteId,
           source: "/gone",
-          destination: "/dest",
-          deletedAt: new Date(),
         })
         .returning("id")
         .executeTakeFirstOrThrow()
 
       // Act
-      const result = caller.delete({ siteId, id: inserted.id })
+      const result = caller.delete({ id: inserted.id, siteId })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "NOT_FOUND", message: "Redirect not found" }),
       )
     })
@@ -1684,18 +1685,18 @@ describe("redirect.router", async () => {
       const inserted = await db
         .insertInto("Redirect")
         .values({
+          destination: "/dest",
           siteId: otherSite.id,
           source: "/safe",
-          destination: "/dest",
         })
         .returning("id")
         .executeTakeFirstOrThrow()
 
       // Act
-      const result = caller.delete({ siteId, id: inserted.id })
+      const result = caller.delete({ id: inserted.id, siteId })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "NOT_FOUND", message: "Redirect not found" }),
       )
       const row = await db
@@ -1710,7 +1711,7 @@ describe("redirect.router", async () => {
       // Arrange: publish runs after the delete transaction commits.
       const inserted = await db
         .insertInto("Redirect")
-        .values({ siteId, source: "/remove-me", destination: "/dest" })
+        .values({ destination: "/dest", siteId, source: "/remove-me" })
         .returning("id")
         .executeTakeFirstOrThrow()
       const publishSpy = vi
@@ -1718,10 +1719,10 @@ describe("redirect.router", async () => {
         .mockRejectedValueOnce(new Error("CodeBuild unavailable"))
 
       // Act
-      const result = caller.delete({ siteId, id: inserted.id })
+      const result = caller.delete({ id: inserted.id, siteId })
 
       // Assert
-      await expect(result).rejects.toThrowError("CodeBuild unavailable")
+      await expect(result).rejects.toThrow("CodeBuild unavailable")
       expect(publishSpy).toHaveBeenCalledOnce()
       const row = await db
         .selectFrom("Redirect")
@@ -1735,12 +1736,12 @@ describe("redirect.router", async () => {
       // Arrange
       const inserted = await db
         .insertInto("Redirect")
-        .values({ siteId, source: "/bye", destination: "/x" })
+        .values({ destination: "/x", siteId, source: "/bye" })
         .returning("id")
         .executeTakeFirstOrThrow()
 
       // Act
-      await caller.delete({ siteId, id: inserted.id })
+      await caller.delete({ id: inserted.id, siteId })
 
       // Assert
       const auditEntry = await db
@@ -1755,7 +1756,7 @@ describe("redirect.router", async () => {
         before: { source: string; deletedAt: string | null }
         after: { source: string; deletedAt: string | null }
       }
-      expect(delta.before).toMatchObject({ source: "/bye", deletedAt: null })
+      expect(delta.before).toMatchObject({ deletedAt: null, source: "/bye" })
       expect(delta.after.source).toBe("/bye")
       expect(delta.after.deletedAt).not.toBeNull()
       // The site publish triggered by the delete is audited separately
@@ -1781,7 +1782,7 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1806,9 +1807,9 @@ describe("redirect.router", async () => {
       await db
         .insertInto("Redirect")
         .values({
+          destination: "https://www.example.gov.sg",
           siteId,
           source: "/old",
-          destination: "https://www.example.gov.sg",
         })
         .execute()
 
@@ -1825,18 +1826,18 @@ describe("redirect.router", async () => {
     it("should resolve a reference destination to the page's current permalink", async () => {
       // Arrange
       const { page } = await setupPageResource({
-        siteId,
-        resourceType: ResourceType.Page,
         permalink: "target-page",
+        resourceType: ResourceType.Page,
+        siteId,
         state: ResourceState.Published,
         userId,
       })
       await db
         .insertInto("Redirect")
         .values({
+          destination: `[resource:${siteId}:${page.id}]`,
           siteId,
           source: "/old",
-          destination: `[resource:${siteId}:${page.id}]`,
         })
         .execute()
 
@@ -1856,9 +1857,9 @@ describe("redirect.router", async () => {
       await db
         .insertInto("Redirect")
         .values({
+          destination: "https://www.example.gov.sg",
           siteId,
           source: "/old",
-          destination: "https://www.example.gov.sg",
         })
         .execute()
 
@@ -1877,10 +1878,10 @@ describe("redirect.router", async () => {
       await db
         .insertInto("Redirect")
         .values({
+          deletedAt: new Date(),
+          destination: "https://www.example.gov.sg",
           siteId,
           source: "/old",
-          destination: "https://www.example.gov.sg",
-          deletedAt: new Date(),
         })
         .execute()
 
@@ -1899,12 +1900,12 @@ describe("redirect.router", async () => {
 
       // Act
       const result = caller.countByDestinationResource({
-        siteId: otherSite.id,
         resourceId: "1",
+        siteId: otherSite.id,
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1916,9 +1917,9 @@ describe("redirect.router", async () => {
     it("should count live redirects pointing to the resource", async () => {
       // Arrange
       const { page } = await setupPageResource({
-        siteId,
-        resourceType: ResourceType.Page,
         permalink: "target",
+        resourceType: ResourceType.Page,
+        siteId,
         state: ResourceState.Published,
         userId,
       })
@@ -1926,22 +1927,22 @@ describe("redirect.router", async () => {
         .insertInto("Redirect")
         .values([
           {
+            destination: `[resource:${siteId}:${page.id}]`,
             siteId,
             source: "/a",
-            destination: `[resource:${siteId}:${page.id}]`,
           },
           {
+            destination: `[resource:${siteId}:${page.id}]`,
             siteId,
             source: "/b",
-            destination: `[resource:${siteId}:${page.id}]`,
           },
         ])
         .execute()
 
       // Act
       const count = await caller.countByDestinationResource({
-        siteId,
         resourceId: String(page.id),
+        siteId,
       })
 
       // Assert
@@ -1950,28 +1951,28 @@ describe("redirect.router", async () => {
 
     it("should count redirects pointing to a descendant page of a folder", async () => {
       // Arrange — a redirect to a page nested inside the folder being counted
-      const { folder } = await setupFolder({ siteId, permalink: "folder" })
+      const { folder } = await setupFolder({ permalink: "folder", siteId })
       const { page } = await setupPageResource({
-        siteId,
-        resourceType: ResourceType.Page,
         parentId: folder.id,
         permalink: "leaf",
+        resourceType: ResourceType.Page,
+        siteId,
         state: ResourceState.Published,
         userId,
       })
       await db
         .insertInto("Redirect")
         .values({
+          destination: `[resource:${siteId}:${page.id}]`,
           siteId,
           source: "/a",
-          destination: `[resource:${siteId}:${page.id}]`,
         })
         .execute()
 
       // Act
       const count = await caller.countByDestinationResource({
-        siteId,
         resourceId: String(folder.id),
+        siteId,
       })
 
       // Assert
@@ -1982,21 +1983,21 @@ describe("redirect.router", async () => {
       // Arrange — a literal-path destination that happens to match the page's
       // path is not a reference, so it is intentionally not counted
       const { page } = await setupPageResource({
-        siteId,
-        resourceType: ResourceType.Page,
         permalink: "target",
+        resourceType: ResourceType.Page,
+        siteId,
         state: ResourceState.Published,
         userId,
       })
       await db
         .insertInto("Redirect")
-        .values({ siteId, source: "/a", destination: "/target" })
+        .values({ destination: "/target", siteId, source: "/a" })
         .execute()
 
       // Act
       const count = await caller.countByDestinationResource({
-        siteId,
         resourceId: String(page.id),
+        siteId,
       })
 
       // Assert
@@ -2006,26 +2007,26 @@ describe("redirect.router", async () => {
     it("should not count soft-deleted redirects", async () => {
       // Arrange
       const { page } = await setupPageResource({
-        siteId,
-        resourceType: ResourceType.Page,
         permalink: "target",
+        resourceType: ResourceType.Page,
+        siteId,
         state: ResourceState.Published,
         userId,
       })
       await db
         .insertInto("Redirect")
         .values({
+          deletedAt: new Date(),
+          destination: `[resource:${siteId}:${page.id}]`,
           siteId,
           source: "/a",
-          destination: `[resource:${siteId}:${page.id}]`,
-          deletedAt: new Date(),
         })
         .execute()
 
       // Act
       const count = await caller.countByDestinationResource({
-        siteId,
         resourceId: String(page.id),
+        siteId,
       })
 
       // Assert
@@ -2037,8 +2038,8 @@ describe("redirect.router", async () => {
       // empty; the count must short-circuit rather than emit an empty `in ()`.
       // Act
       const count = await caller.countByDestinationResource({
-        siteId,
         resourceId: "999999",
+        siteId,
       })
 
       // Assert
@@ -2050,18 +2051,18 @@ describe("redirect.router", async () => {
     it("stores a wildcard whose internal destination becomes a page reference", async () => {
       // Arrange
       const { page } = await setupPageResource({
-        siteId,
-        resourceType: ResourceType.Page,
         permalink: "new-section",
+        resourceType: ResourceType.Page,
+        siteId,
         state: ResourceState.Published,
         userId: session.userId,
       })
 
       // Act
       await caller.create({
+        destination: "/new-section",
         siteId,
         source: "/old-section/*",
-        destination: "/new-section",
       })
 
       // Assert — the destination resolves to a [resource:…] reference so it
@@ -2081,9 +2082,9 @@ describe("redirect.router", async () => {
       // published under it either; the create must succeed.
       await expect(
         caller.create({
+          destination: "/home",
           siteId,
           source: "/anything/*",
-          destination: "/home",
         }),
       ).resolves.toBeDefined()
     })
@@ -2092,21 +2093,21 @@ describe("redirect.router", async () => {
       // Arrange — "/news/story" is published, so "/news" is a live folder.
       // "/news/*" would shadow it: the edge resolver's prefix walk would
       // intercept "/news/story" and redirect it away instead of serving it.
-      const { folder } = await setupFolder({ siteId, permalink: "news" })
+      const { folder } = await setupFolder({ permalink: "news", siteId })
       await setupPageResource({
-        siteId,
-        resourceType: ResourceType.Page,
         parentId: folder.id,
         permalink: "story",
+        resourceType: ResourceType.Page,
+        siteId,
         state: ResourceState.Published,
         userId: session.userId,
       })
 
       // Act
       const result = caller.create({
+        destination: "/home",
         siteId,
         source: "/news/*",
-        destination: "/home",
       })
 
       // Assert
@@ -2118,18 +2119,18 @@ describe("redirect.router", async () => {
     it("blocks a wildcard source when the prefix itself is a published page", async () => {
       // Arrange
       await setupPageResource({
-        siteId,
-        resourceType: ResourceType.Page,
         permalink: "news",
+        resourceType: ResourceType.Page,
+        siteId,
         state: ResourceState.Published,
         userId: session.userId,
       })
 
       // Act
       const result = caller.create({
+        destination: "/home",
         siteId,
         source: "/news/*",
-        destination: "/home",
       })
 
       // Assert

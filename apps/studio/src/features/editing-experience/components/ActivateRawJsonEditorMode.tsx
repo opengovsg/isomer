@@ -1,5 +1,11 @@
 import { Box, Text } from "@chakra-ui/react"
 import { useEffect, useRef, useState } from "react"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 const COMBO: KeyboardEvent["key"][] = [
   "ArrowUp",
@@ -29,7 +35,7 @@ export const ActivateRawJsonEditorMode = ({
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      const currentCombo = COMBO[comboIndex] || ""
+      const currentCombo = COMBO[comboIndex] ?? ""
       if (event.key.toLowerCase() === currentCombo.toLowerCase()) {
         setComboIndex((prev) => prev + 1)
         setShowCounter(true)

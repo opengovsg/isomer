@@ -33,24 +33,28 @@ export const DraggableBlock = ({
 }: DraggableBlockProps): React.ReactNode => {
   const { setHoveredBlockIndex } = useEditorDrawerContext()
 
-  useEffect(() => {
-    // If this row unmounts while hovered (e.g. clicking it navigates the
-    // drawer away, or the block is deleted), no `mouseleave` fires — clear
-    // the hover state directly so the preview highlight doesn't get stuck.
-    return () => {
-      setHoveredBlockIndex((prev) => (prev === index ? null : prev))
-    }
-  }, [index, setHoveredBlockIndex])
+  useEffect(
+    () =>
+      // If this row unmounts while hovered (e.g. clicking it navigates the
+      // drawer away, or the block is deleted), no `mouseleave` fires — clear
+      // the hover state directly so the preview highlight doesn't get stuck.
+      () => {
+        setHoveredBlockIndex((prev) => (prev === index ? null : prev))
+      },
+    [index, setHoveredBlockIndex],
+  )
 
   const icon = TYPE_TO_ICON[block.type]
 
-  const blockComponentName = useMemo(() => {
-    // NOTE: Because we use `Type.Ref` for prose,
-    // this gets a `$Ref` only and not the concrete values
-    return block.type === "prose"
-      ? PROSE_COMPONENT_NAME
-      : (getComponentSchema({ component: block.type }).title ?? "Unknown")
-  }, [block.type])
+  const blockComponentName = useMemo(
+    () =>
+      // NOTE: Because we use `Type.Ref` for prose,
+      // this gets a `$Ref` only and not the concrete values
+      block.type === "prose"
+        ? PROSE_COMPONENT_NAME
+        : (getComponentSchema({ component: block.type }).title ?? "Unknown"),
+    [block.type],
+  )
 
   const previewText: string = renderComponentPreviewText({
     component: block,
@@ -65,7 +69,7 @@ export const DraggableBlock = ({
       {(provided, snapshot) => {
         const isDragging = snapshot.isDragging || snapshot.isDropAnimating
         return (
-          // TODO: Add image per block, extra menu for block
+          // Deferred: Add image per block, extra menu for block
           // according to design
           <VStack
             my="0.25rem"
@@ -76,8 +80,12 @@ export const DraggableBlock = ({
             <BaseBlock
               isHidden={isHidden}
               onClick={onClick}
-              onMouseEnter={() => setHoveredBlockIndex(index)}
-              onMouseLeave={() => setHoveredBlockIndex(null)}
+              onMouseEnter={() => {
+                setHoveredBlockIndex(index)
+              }}
+              onMouseLeave={() => {
+                setHoveredBlockIndex(null)
+              }}
               dragHandle={
                 <BaseBlockDragHandle
                   isDragging={isDragging}

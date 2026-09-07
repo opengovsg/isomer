@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-use-before-define, unicorn/no-useless-undefined, eslint/curly, eslint/sort-keys, typescript/strict-boolean-expressions -- E2E compatibility */
 import type { PropsWithChildren } from "react"
 import {
   createContext,

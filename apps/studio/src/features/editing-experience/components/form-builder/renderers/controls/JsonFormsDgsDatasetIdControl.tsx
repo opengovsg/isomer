@@ -1,3 +1,5 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
+/* oxlint-disable eslint/no-nested-ternary, typescript/strict-void-return, unicorn/no-unnecessary-type-conversion -- core cleanup deferred */
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import {
   Box,
@@ -35,6 +37,12 @@ import { z } from "zod"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { getDgsIdFromString } from "~/features/editing-experience/utils"
 import { useZodForm } from "~/lib/form"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { getCustomErrorMessage } from "./utils/getCustomErrorMessage"
 
@@ -47,7 +55,9 @@ export const jsonFormsDgsDatasetIdControlTester: RankedTester = rankWith(
 )
 
 const generateDgsDatasetUrl = (datasetId: string | null) => {
-  if (!datasetId) return ""
+  if (!hasNonEmptyString(datasetId)) {
+    return ""
+  }
   return `https://data.gov.sg/datasets/${datasetId}/view`
 }
 
@@ -57,12 +67,13 @@ interface DgsDatasetFeedbackMessageProps {
   isValidDataset: boolean
 }
 
+// oxlint-disable-next-line typescript/consistent-return -- core cleanup deferred
 const DgsDatasetFeedbackMessage = ({
   errorMessage,
   isLoading,
   isValidDataset,
 }: DgsDatasetFeedbackMessageProps): React.ReactNode | undefined => {
-  if (errorMessage) {
+  if (hasNonEmptyString(errorMessage)) {
     return <FormErrorMessage>{errorMessage}</FormErrorMessage>
   }
   if (isLoading) {
@@ -103,8 +114,8 @@ const DgsDatasetIdModal = ({
   const datasetId = getDgsIdFromString({ string: debouncedInputValue })
 
   const { metadata, isLoading: isValidatingDataset } = useDgsMetadata({
+    enabled: !!hasNonEmptyString(datasetId),
     resourceId: datasetId ?? "",
-    enabled: !!datasetId,
   })
   const format = metadata?.format
   // Datasets above 4MB require server-side search via the DGS "q" parameter,
@@ -124,6 +135,7 @@ const DgsDatasetIdModal = ({
     formState: { errors, isValid },
   } = useZodForm({
     mode: "onChange",
+    reValidateMode: "onChange",
     schema: z.object({
       datasetId: z
         .string()
@@ -133,12 +145,13 @@ const DgsDatasetIdModal = ({
             "This doesn't look like a valid link from data.gov.sg. Check that you have the correct link and try again.",
         }),
     }),
-    reValidateMode: "onChange",
   })
 
   // Handle dataset validation
   useEffect(() => {
-    if (isValidatingDataset || !datasetId) return
+    if (isValidatingDataset || !hasNonEmptyString(datasetId)) {
+      return
+    }
 
     if (isValidDataset) {
       clearErrors("datasetId")
@@ -146,12 +159,12 @@ const DgsDatasetIdModal = ({
     }
 
     setError("datasetId", {
-      type: "manual",
       message: isDatasetTooLarge
         ? "This dataset exceeds the 4MB size limit and cannot be used. Please use a smaller dataset."
-        : format
+        : hasNonEmptyString(format)
           ? "You can only link CSV datasets. Please check the dataset ID and try again."
           : "This doesn’t look like a valid link from data.gov.sg. Check that you have the correct link and try again.",
+      type: "manual",
     })
   }, [
     datasetId,
@@ -165,9 +178,10 @@ const DgsDatasetIdModal = ({
 
   const onSubmit = handleSubmit(() => {
     const extractedId = getDgsIdFromString({ string: debouncedInputValue })
-    if (extractedId) {
+    if (hasNonEmptyString(extractedId)) {
       onClose()
-      onSave(extractedId) // Save only the ID, not the full URL
+      onSave(extractedId)
+      // Save only the ID, not the full URL
     }
   })
 
@@ -217,7 +231,9 @@ const DgsDatasetIdModal = ({
               </Button>
               <Button
                 type="submit"
-                onClick={onSubmit}
+                onClick={(event) => {
+                  void onSubmit(event)
+                }}
                 isDisabled={!isValid || isLoading || !isValidDataset}
                 isLoading={isLoading}
               >
@@ -260,7 +276,9 @@ const JsonFormsDgsDatasetIdControl = ({
         <DgsDatasetIdModal
           isOpen={isDgsModalOpen}
           onClose={onDgsModalClose}
-          onSave={(datasetId) => handleDatasetIdSave(datasetId)}
+          onSave={(datasetId) => {
+            handleDatasetIdSave(datasetId)
+          }}
           initialValue={data || ""}
         />
       )}

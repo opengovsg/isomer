@@ -1,5 +1,6 @@
+/* oxlint-disable typescript/no-unnecessary-type-conversion -- studio lint cleanup */
 import { test as base, expect } from "@playwright/test"
-import crypto from "crypto"
+import crypto from "node:crypto"
 import { env } from "~/env.mjs"
 import { db } from "~/server/modules/database/database"
 
@@ -103,9 +104,9 @@ test.skip("subsequent login should succeed when the uuid matches", async ({
   await db
     .updateTable("User")
     .set({
-      singpassUuid: uuid,
       name: "test-e2e",
       phone: "82345678",
+      singpassUuid: uuid,
     })
     .where("email", "=", editorEmail)
     .execute()

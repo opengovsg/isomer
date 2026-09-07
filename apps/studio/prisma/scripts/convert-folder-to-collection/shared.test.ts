@@ -1,13 +1,11 @@
+/* oxlint-disable typescript/no-unsafe-assignment, eslint/prefer-destructuring, unicorn/import-style, unicorn/no-useless-undefined -- studio lint cleanup */
 import type { IsomerSchema } from "@opengovsg/isomer-components"
-import { mkdtempSync, readFileSync, rmSync } from "fs"
-import { tmpdir } from "os"
-import { join } from "path"
+import type { Transaction, DB } from "~/server/modules/database/types"
+import { mkdtempSync, readFileSync, rmSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
 import { afterEach, describe, expect, it, vi } from "vitest"
-import {
-  ResourceState,
-  type Transaction,
-  type DB,
-} from "~/server/modules/database/types"
+import { ResourceState } from "~/server/modules/database/types"
 
 import type { ConversionPlan } from "./helpers"
 import {
@@ -36,19 +34,20 @@ interface TestBlobFixture {
   }[]
 }
 
-const asTestIsomerSchema = (blob: TestBlobFixture): IsomerSchema => {
+const asTestIsomerSchema = (blob: TestBlobFixture): IsomerSchema =>
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   // SAFETY: fixture matches conversion-plan blob layout shapes under test.
-  return blob as IsomerSchema
-}
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
+  blob as IsomerSchema
 
 type GetBlobDb = Parameters<typeof getBlobOfResource>[0]["db"]
 
-const asGetBlobDb = (db: {
-  selectFrom: ReturnType<typeof vi.fn>
-}): GetBlobDb => {
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
+const asGetBlobDb = (db: { selectFrom: ReturnType<typeof vi.fn> }): GetBlobDb =>
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   // SAFETY: test double implements only the selectFrom chain used by getBlobOfResource.
-  return db as GetBlobDb
-}
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
+  db as GetBlobDb
 
 interface TransactionTestDouble {
   selectFrom: ReturnType<typeof vi.fn>
@@ -75,16 +74,16 @@ interface ChainMock {
 
 const createChain = (): ChainMock => {
   const chain: ChainMock = {
-    where: vi.fn(),
+    execute: vi.fn(),
+    executeTakeFirst: vi.fn(),
+    executeTakeFirstOrThrow: vi.fn(),
+    returning: vi.fn(),
+    returningAll: vi.fn(),
     select: vi.fn(),
     selectAll: vi.fn(),
     set: vi.fn(),
     values: vi.fn(),
-    returningAll: vi.fn(),
-    returning: vi.fn(),
-    executeTakeFirstOrThrow: vi.fn(),
-    executeTakeFirst: vi.fn(),
-    execute: vi.fn(),
+    where: vi.fn(),
   }
   chain.where.mockReturnValue(chain)
   chain.select.mockReturnValue(chain)
@@ -97,18 +96,14 @@ const createChain = (): ChainMock => {
 }
 
 const makeConversionPlan = (): ConversionPlan => ({
+  defaultCategory: "Feature Articles",
   folder: {
     id: "159351",
+    permalink: "folder-is-cool",
     siteId: 1,
     title: "folder is cool",
-    permalink: "folder-is-cool",
   },
-  defaultCategory: "Feature Articles",
   indexPage: {
-    resourceId: "159352",
-    title: "folder is cool",
-    permalink: "_index",
-    currentBlobId: "158085",
     currentBlob: asTestIsomerSchema({
       layout: "index",
       version: "0.1.0",
@@ -118,6 +113,8 @@ const makeConversionPlan = (): ConversionPlan => ({
       },
       content: [],
     }),
+    currentBlobId: "158085",
+    disallowedBlocks: [],
     nextBlob: asTestIsomerSchema({
       layout: "collection",
       version: "0.1.0",
@@ -128,7 +125,9 @@ const makeConversionPlan = (): ConversionPlan => ({
       },
       content: [],
     }),
-    disallowedBlocks: [],
+    permalink: "_index",
+    resourceId: "159352",
+    title: "folder is cool",
   },
   pages: [
     {
@@ -214,7 +213,9 @@ describe("plan file I/O", () => {
   let tempDir: string
 
   afterEach(() => {
-    if (tempDir) rmSync(tempDir, { recursive: true, force: true })
+    if (tempDir) {
+      rmSync(tempDir, { recursive: true, force: true })
+    }
   })
 
   it("round-trips a conversion plan through write and load helpers", () => {
@@ -290,7 +291,7 @@ describe("getBlobOfResource", () => {
     // Arrange
     const resourceChain = createChain()
     const blobChain = createChain()
-    const draftBlob = { id: "draft-1", content: { layout: "content" } }
+    const draftBlob = { content: { layout: "content" }, id: "draft-1" }
 
     resourceChain.executeTakeFirstOrThrow.mockResolvedValue({
       draftBlobId: "draft-1",
@@ -317,7 +318,7 @@ describe("getBlobOfResource", () => {
     // Arrange
     const resourceChain = createChain()
     const blobChain = createChain()
-    const publishedBlob = { id: "pub-blob", content: { layout: "content" } }
+    const publishedBlob = { content: { layout: "content" }, id: "pub-blob" }
 
     resourceChain.executeTakeFirstOrThrow.mockResolvedValue({
       draftBlobId: null,
@@ -359,10 +360,10 @@ describe("getBlobOfResource", () => {
 
 describe("updateBlobById", () => {
   const nextContent = asTestIsomerSchema({
-    layout: "article",
-    version: "0.1.0",
-    page: { category: "News", articlePageHeader: { summary: "x" } },
     content: [],
+    layout: "article",
+    page: { articlePageHeader: { summary: "x" }, category: "News" },
+    version: "0.1.0",
   })
 
   it("creates a draft blob and links it when the resource has no draft", async () => {
@@ -370,23 +371,23 @@ describe("updateBlobById", () => {
     const selectChain = createChain()
     const insertChain = createChain()
     const updateChain = createChain()
-    const newBlob = { id: "new-blob", content: nextContent }
+    const newBlob = { content: nextContent, id: "new-blob" }
 
     selectChain.executeTakeFirst.mockResolvedValue({ draftBlobId: null })
     insertChain.executeTakeFirstOrThrow.mockResolvedValue(newBlob)
     updateChain.execute.mockResolvedValue(undefined)
 
     const tx = asTransaction({
-      selectFrom: vi.fn(() => selectChain),
       insertInto: vi.fn(() => insertChain),
+      selectFrom: vi.fn(() => selectChain),
       updateTable: vi.fn(() => updateChain),
     })
 
     // Act
     const result = await updateBlobById(tx, {
-      pageId: 159536,
-      siteId: 1,
       content: nextContent,
+      pageId: 159_536,
+      siteId: 1,
     })
 
     // Assert
@@ -400,7 +401,7 @@ describe("updateBlobById", () => {
     // Arrange
     const selectChain = createChain()
     const updateChain = createChain()
-    const updatedBlob = { id: "existing-blob", content: nextContent }
+    const updatedBlob = { content: nextContent, id: "existing-blob" }
 
     selectChain.executeTakeFirst.mockResolvedValue({
       draftBlobId: "existing-blob",
@@ -408,16 +409,16 @@ describe("updateBlobById", () => {
     updateChain.executeTakeFirstOrThrow.mockResolvedValue(updatedBlob)
 
     const tx = asTransaction({
-      selectFrom: vi.fn(() => selectChain),
       insertInto: vi.fn(),
+      selectFrom: vi.fn(() => selectChain),
       updateTable: vi.fn(() => updateChain),
     })
 
     // Act
     const result = await updateBlobById(tx, {
-      pageId: 159536,
-      siteId: 1,
       content: nextContent,
+      pageId: 159_536,
+      siteId: 1,
     })
 
     // Assert
@@ -442,9 +443,9 @@ describe("updateBlobById", () => {
     // Act + Assert
     await expect(
       updateBlobById(tx, {
+        content: nextContent,
         pageId: 999,
         siteId: 1,
-        content: nextContent,
       }),
     ).rejects.toThrow("Resource 999 not found")
   })
@@ -465,9 +466,9 @@ describe("incrementVersion", () => {
 
     // Act
     const result = await incrementVersion({
-      tx,
-      siteId: 1,
       resourceId: "159536",
+      siteId: 1,
+      tx,
       userId: "user-1",
     })
 
@@ -490,35 +491,35 @@ describe("incrementVersion", () => {
     updateChain.execute.mockResolvedValue(undefined)
 
     const tx = asTransaction({
-      selectFrom: vi.fn(() => selectChain),
       insertInto: vi.fn(() => insertChain),
+      selectFrom: vi.fn(() => selectChain),
       updateTable: vi.fn(() => updateChain),
     })
 
     // Act
     const result = await incrementVersion({
-      tx,
-      siteId: 1,
       resourceId: "159536",
+      siteId: 1,
+      tx,
       userId: "user-1",
     })
 
     // Assert
     expect(result).toEqual({
-      previousVersion: null,
       newVersion,
+      previousVersion: null,
     })
     expect(insertChain.values).toHaveBeenCalledWith(
       expect.objectContaining({
-        versionNum: 1,
-        resourceId: "159536",
         blobId: "draft-1",
         publishedBy: "user-1",
+        resourceId: "159536",
+        versionNum: 1,
       }),
     )
     expect(updateChain.set).toHaveBeenCalledWith({
-      publishedVersionId: "v1",
       draftBlobId: null,
+      publishedVersionId: "v1",
       state: ResourceState.Published,
     })
   })
@@ -541,25 +542,25 @@ describe("incrementVersion", () => {
     updateChain.execute.mockResolvedValue(undefined)
 
     const tx = asTransaction({
+      insertInto: vi.fn(() => insertChain),
       selectFrom: vi.fn((table: string) =>
         table === "Resource" ? selectChain : versionChain,
       ),
-      insertInto: vi.fn(() => insertChain),
       updateTable: vi.fn(() => updateChain),
     })
 
     // Act
     const result = await incrementVersion({
-      tx,
-      siteId: 1,
       resourceId: "159536",
+      siteId: 1,
+      tx,
       userId: "user-1",
     })
 
     // Assert
     expect(result).toEqual({
-      previousVersion,
       newVersion,
+      previousVersion,
     })
     expect(insertChain.values).toHaveBeenCalledWith(
       expect.objectContaining({ versionNum: 3 }),

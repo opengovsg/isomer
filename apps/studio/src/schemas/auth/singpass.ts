@@ -7,6 +7,6 @@ export const singpassLoginSchema = z.object({
 })
 
 export const singpassCallbackSchema = z.object({
-  state: z.string(),
   code: z.string(),
+  state: z.string(),
 })

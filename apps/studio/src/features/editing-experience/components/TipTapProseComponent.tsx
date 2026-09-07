@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-use-before-define, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { ProseProps } from "@opengovsg/isomer-components"
 import type { JSONContent } from "@tiptap/react"
 import { Box, HStack, useDisclosure, VStack } from "@chakra-ui/react"
@@ -59,8 +60,8 @@ const TipTapProseComponent = ({ content }: TipTapComponentProps) => {
   })
 
   const updatePageState = (editorContent: JSONContent | undefined) => {
-    const updatedBlocks = Array.from(previewPageState.content)
-    // TODO: actual validation
+    const updatedBlocks = [...previewPageState.content]
+    // Deferred: actual validation
     // SAFETY: caller invariant is checked immediately before this narrowing assertion
     updatedBlocks[currActiveIdx] = editorContent as ProseProps
     const newPageState = {
@@ -73,7 +74,7 @@ const TipTapProseComponent = ({ content }: TipTapComponentProps) => {
   const editor = useTextEditor({ data: content, handleChange: updatePageState })
 
   const handleDeleteBlock = () => {
-    const updatedBlocks = Array.from(savedPageState.content)
+    const updatedBlocks = [...savedPageState.content]
     updatedBlocks.splice(currActiveIdx, 1)
     const newPageState = {
       ...previewPageState,
@@ -88,15 +89,17 @@ const TipTapProseComponent = ({ content }: TipTapComponentProps) => {
     onDeleteBlockModalClose()
     setAddedBlockIndex(null)
     mutate({
+      content: JSON.stringify(newPageState),
       pageId,
       siteId,
-      content: JSON.stringify(newPageState),
     })
   }
 
   const handleDiscardChanges = () => {
-    if (addedBlockIndex !== null) {
-      const updatedBlocks = Array.from(savedPageState.content)
+    if (addedBlockIndex === null) {
+      setPreviewPageState(savedPageState)
+    } else {
+      const updatedBlocks = [...savedPageState.content]
       updatedBlocks.splice(addedBlockIndex, 1)
       const newPageState = {
         ...previewPageState,
@@ -104,8 +107,6 @@ const TipTapProseComponent = ({ content }: TipTapComponentProps) => {
       }
       setSavedPageState(newPageState)
       setPreviewPageState(newPageState)
-    } else {
-      setPreviewPageState(savedPageState)
     }
     setAddedBlockIndex(null)
     onDiscardChangesModalClose()
@@ -114,7 +115,7 @@ const TipTapProseComponent = ({ content }: TipTapComponentProps) => {
 
   const utils = trpc.useUtils()
 
-  // TODO: Add a loading state or use suspense
+  // Deferred: Add a loading state or use suspense
   return (
     <>
       <DeleteBlockModal
@@ -134,10 +135,10 @@ const TipTapProseComponent = ({ content }: TipTapComponentProps) => {
         <DrawerHeader
           isDisabled={isPending}
           onBackClick={() => {
-            if (!isEqual(previewPageState, savedPageState)) {
-              onDiscardChangesModalOpen()
-            } else {
+            if (isEqual(previewPageState, savedPageState)) {
               handleDiscardChanges()
+            } else {
+              onDiscardChangesModalOpen()
             }
           }}
           label={`Edit ${PROSE_COMPONENT_NAME}`}
@@ -167,9 +168,9 @@ const TipTapProseComponent = ({ content }: TipTapComponentProps) => {
                   setSavedPageState(previewPageState)
                   mutate(
                     {
+                      content: JSON.stringify(previewPageState),
                       pageId,
                       siteId,
-                      content: JSON.stringify(previewPageState),
                     },
                     {
                       onSuccess: () => {

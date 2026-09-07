@@ -1,4 +1,5 @@
 import { Divider } from "@chakra-ui/react"
+import { isNullableBooleanTrue } from "~/utils/truthiness"
 
 export interface MenubarDividerProps {
   type: "divider"
@@ -8,7 +9,7 @@ export interface MenubarDividerProps {
 export const MenubarDivider = ({
   isHidden,
 }: MenubarDividerProps): React.ReactNode | null => {
-  if (isHidden?.()) {
+  if (isNullableBooleanTrue(isHidden?.())) {
     return null
   }
   return (

@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-void-return -- core cleanup deferred */
 import {
   Box,
   Center,
@@ -64,13 +65,13 @@ export const AuditLogExportSection = ({
   // same one the tRPC procedure uses (minus `siteId` and `reportType`, see
   // schema.ts), so client and server validation cannot drift.
   const form = useZodForm({
-    schema: auditLogExportFormSchema,
     defaultValues: {
       month: monthOptions[0]?.value ?? "",
       // Defaults to the narrower scope — exporting across every admin site is
       // an explicit, opt-in choice rather than the pre-selected default.
       scope: AuditLogExportScope.Site,
     },
+    schema: auditLogExportFormSchema,
   })
 
   // The "to date" caveat only makes sense for the current (partial) month;
@@ -82,25 +83,29 @@ export const AuditLogExportSection = ({
   // error toasts plus the per-log-type PostHog captures live in the hook.
   const { mutate: createExportRequest, isPending } =
     useCreateAuditLogExportRequest({
+      onSuccess: () => {
+        form.reset()
+      },
       siteId,
-      onSuccess: () => form.reset(),
     })
 
-  if (!canManageUsers) return null
+  if (!canManageUsers) {
+    return null
+  }
 
   // This section only ever requests the Activity log — the Access (user
   // review) log moved to its own one-click button on the Users page, which
   // the Infobox below links out to. `siteId` is always sent regardless of
   // scope; the server ignores it and resolves the site list itself when
   // `scope` is "allSites" (see audit.router.ts).
-  const onSubmit = form.handleSubmit(({ month, scope }) =>
+  const onSubmit = form.handleSubmit(({ month, scope }) => {
     createExportRequest({
-      scope,
-      siteId,
       month,
       reportType: AuditLogExportRequestedReportType.Activity,
-    }),
-  )
+      scope,
+      siteId,
+    })
+  })
 
   return (
     <Stack spacing="1.5rem" align="flex-start">
@@ -163,7 +168,7 @@ export const AuditLogExportSection = ({
             </Text>
             <TouchableTooltip
               label="You can download logs from the past year."
-              wrapperStyles={{ display: "flex", alignItems: "center" }}
+              wrapperStyles={{ alignItems: "center", display: "flex" }}
             >
               <Icon as={BiSolidHelpCircle} />
             </TouchableTooltip>

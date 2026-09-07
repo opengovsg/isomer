@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-nested-ternary -- core cleanup deferred */
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { getComponentSchema } from "@opengovsg/isomer-components"
 import { useEffect, useState } from "react"
@@ -33,6 +34,7 @@ export const useBlockHighlight = ({
   const shouldTrack = hoveredBlockIndex !== null && iframeDocument !== null
 
   useEffect(() => {
+    // oxlint-disable-next-line typescript/strict-boolean-expressions -- core cleanup deferred
     if (!shouldTrack || hoveredBlockIndex === null || !iframeDocument) {
       return
     }
@@ -49,10 +51,10 @@ export const useBlockHighlight = ({
       const domRect = blockEl.getBoundingClientRect()
 
       setRect({
-        top: domRect.top + scrollY,
-        left: domRect.left + scrollX,
-        width: domRect.width,
         height: domRect.height,
+        left: domRect.left + scrollX,
+        top: domRect.top + scrollY,
+        width: domRect.width,
       })
     }
 
@@ -65,19 +67,21 @@ export const useBlockHighlight = ({
     const resizeObserver = new ResizeObserver(updateRect)
     resizeObserver.observe(blockEl)
 
+    // oxlint-disable-next-line typescript/consistent-return -- core cleanup deferred
     return () => {
       resizeObserver.disconnect()
     }
   }, [shouldTrack, hoveredBlockIndex, iframeDocument, content])
 
   const block =
-    hoveredBlockIndex !== null ? content[hoveredBlockIndex] : undefined
+    hoveredBlockIndex === null ? undefined : content[hoveredBlockIndex]
 
+  // oxlint-disable-next-line eslint/no-nested-ternary -- core cleanup deferred
   const label = block
     ? block.type === "prose"
       ? PROSE_COMPONENT_NAME
       : (getComponentSchema({ component: block.type }).title ?? "Unknown")
     : undefined
 
-  return { rect: shouldTrack ? rect : null, label }
+  return { label, rect: shouldTrack ? rect : null }
 }

@@ -1,7 +1,7 @@
 import type { ButtonProps } from "@chakra-ui/react"
 import { Button, Tooltip } from "@chakra-ui/react"
 import { useSetAtom } from "jotai"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
 import { useContext } from "react"
 import { BiPlus } from "react-icons/bi"
 import { UserManagementContext } from "~/features/users"
@@ -35,7 +35,7 @@ export const AddNewUserButton = ({
       variant="solid"
       leftIcon={<BiPlus />}
       onClick={() => {
-        posthog.capture("add_user_modal_opened", { site_id: siteId })
+        posthogJs.capture("add_user_modal_opened", { site_id: siteId })
         setAddUserModalState({ ...DEFAULT_ADD_USER_MODAL_STATE, siteId })
       }}
       isDisabled={isButtonDisabled}

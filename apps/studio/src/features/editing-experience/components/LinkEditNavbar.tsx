@@ -1,3 +1,4 @@
+/* oxlint-disable import/no-cycle, unicorn/no-unnecessary-type-conversion -- core cleanup deferred */
 import {
   BreadcrumbItem,
   BreadcrumbLink,
@@ -9,9 +10,15 @@ import { Breadcrumb } from "@opengovsg/design-system-react"
 import Link from "next/link"
 import { ADMIN_NAVBAR_HEIGHT } from "~/constants/layouts"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { editLinkSchema } from "~/pages/sites/[siteId]/links/[linkId]"
+import { editLinkPageSchema } from "~/schemas/editLinkPageSchema"
 import { getResourceSubpath } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import PublishButton from "./PublishButton"
 
@@ -26,21 +33,22 @@ const NavigationBreadcrumbs = ({
 }: NavigationBreadcrumbsProps): React.ReactNode => {
   const { data: resource, isLoading: isResourceLoading } =
     trpc.resource.getMetadataById.useQuery({
-      siteId: Number(siteId),
       resourceId: pageId,
+      siteId: Number(siteId),
     })
 
   const { data: parentResource, isLoading: isParentResourceLoading } =
     trpc.resource.getMetadataById.useQuery(
       {
-        siteId: Number(siteId),
         resourceId: resource?.parentId ?? "",
+        siteId: Number(siteId),
       },
-      { enabled: !!resource?.parentId },
+      { enabled: !!hasNonEmptyString(resource?.parentId) },
     )
 
   const isBreadcrumbLoaded =
-    (!resource?.parentId || !isParentResourceLoading) && !isResourceLoading
+    (!hasNonEmptyString(resource?.parentId) || !isParentResourceLoading) &&
+    !isResourceLoading
 
   return (
     <Breadcrumb size="sm" flex={1}>
@@ -93,7 +101,7 @@ const NavigationBreadcrumbs = ({
 }
 
 export const LinkEditNavbar = (): React.ReactNode => {
-  const { linkId, siteId } = useQueryParse(editLinkSchema)
+  const { linkId, siteId } = useQueryParse(editLinkPageSchema)
 
   return (
     <Flex

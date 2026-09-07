@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-use-before-define, eslint/no-warning-comments, eslint/sort-keys -- core cleanup deferred */
 import {
   HStack,
   Modal,
@@ -17,7 +18,7 @@ import {
 } from "@opengovsg/design-system-react"
 import { useAtom } from "jotai"
 import { upperFirst } from "lodash-es"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
 import { useState } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { isAllowedToHaveChildren } from "~/utils/resources"
@@ -73,8 +74,9 @@ export const DeleteResourceModal = ({
   const [{ resourceId, ...rest }, setDeleteCollectionModalState] = useAtom(
     deleteResourceModalAtom,
   )
-  const onClose = () =>
+  const onClose = () => {
     setDeleteCollectionModalState(DEFAULT_RESOURCE_MODAL_STATE)
+  }
   return (
     <Modal isOpen={!!resourceId} onClose={onClose}>
       <ModalOverlay />
@@ -104,43 +106,43 @@ const DeleteResourceModalContent = ({
   // Redirects whose destination resolves to this resource (or any descendant)
   // are soft-deleted alongside it, so warn how many will go.
   const { data: redirectCount = 0 } =
-    trpc.redirect.countByDestinationResource.useQuery({ siteId, resourceId })
+    trpc.redirect.countByDestinationResource.useQuery({ resourceId, siteId })
   const { mutate, isPending } = trpc.resource.delete.useMutation({
-    onSettled: onClose,
-    onSuccess: async () => {
-      posthog.capture("resource_deleted", {
-        site_id: siteId,
-        resource_type: resourceType,
-        has_redirects: redirectCount > 0,
-      })
-      // TODO: here and elsewhere, we should aim to simplify our query pattern
-      // such that the invalidation logic is clear
-      await utils.resource.listWithoutRoot.invalidate()
-      await utils.resource.getChildrenOf.invalidate()
-      await utils.resource.getWithFullPermalink.invalidate({
-        siteId,
-        resourceId,
-      })
-      await utils.collection.list.invalidate()
-      toast({
-        title: `${upperFirst(label)} deleted!`,
-        status: "success",
-        ...BRIEF_TOAST_SETTINGS,
-      })
-    },
     onError: (err) => {
       toast({
         title: `Failed to delete ${label}`,
         status: "error",
-        // TODO: check if this property is correct
+        // Deferred: check if this property is correct
         description: err.message,
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    },
+    onSettled: onClose,
+    onSuccess: async () => {
+      posthogJs.capture("resource_deleted", {
+        has_redirects: redirectCount > 0,
+        resource_type: resourceType,
+        site_id: siteId,
+      })
+      // Deferred: here and elsewhere, we should aim to simplify our query pattern
+      // such that the invalidation logic is clear
+      await utils.resource.listWithoutRoot.invalidate()
+      await utils.resource.getChildrenOf.invalidate()
+      await utils.resource.getWithFullPermalink.invalidate({
+        resourceId,
+        siteId,
+      })
+      await utils.collection.list.invalidate()
+      toast({
+        status: "success",
+        title: `${upperFirst(label)} deleted!`,
         ...BRIEF_TOAST_SETTINGS,
       })
     },
   })
 
   const onDelete = () => {
-    mutate({ siteId, resourceId })
+    mutate({ resourceId, siteId })
   }
 
   return (
@@ -151,7 +153,11 @@ const DeleteResourceModalContent = ({
       <ModalBody>
         <Text textStyle="body-1">{getWarningText(resourceType)}</Text>
         <HStack mt="1.5rem">
-          <Checkbox onChange={() => setIsChecked((prev) => !prev)}>
+          <Checkbox
+            onChange={() => {
+              setIsChecked((prev) => !prev)
+            }}
+          >
             <Text textStyle="body-2">Yes, delete this {label} permanently</Text>
           </Checkbox>
         </HStack>

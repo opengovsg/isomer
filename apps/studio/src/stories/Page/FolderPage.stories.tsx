@@ -10,8 +10,8 @@ import FolderPage from "~/pages/sites/[siteId]/folders/[folderId]"
 import { createBannerGbParameters } from "../utils/growthbook"
 
 const meta: Meta<typeof FolderPage> = {
-  title: "Pages/Site Management/Folder Page",
   component: FolderPage,
+  decorators: [],
   parameters: {
     getLayout: FolderPage.getLayout,
     msw: {
@@ -34,13 +34,13 @@ const meta: Meta<typeof FolderPage> = {
     nextjs: {
       router: {
         query: {
-          siteId: "1",
           folderId: "1",
+          siteId: "1",
         },
       },
     },
   },
-  decorators: [],
+  title: "Pages/Site Management/Folder Page",
 }
 
 export default meta
@@ -74,9 +74,9 @@ export const WithBanner: Story = {
   parameters: {
     growthbook: [
       createBannerGbParameters({
-        variant: "info",
         message:
           "This is a test banner that is very long. This is a test banner that is very long. This is a test banner that is very long. This is a test banner that is very long. This is a test banner that is very long.",
+        variant: "info",
       }),
     ],
   },
@@ -98,7 +98,7 @@ export const PageSettings: Story = {
 export const ExpandedProfileDropdown: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    const testUserSelector = await screen.findByText(/TU/i)
+    const testUserSelector = await screen.findByText(/TU/iu)
     const testUserSelectorButton = testUserSelector.closest("button")
     if (testUserSelectorButton) {
       await userEvent.click(testUserSelectorButton)

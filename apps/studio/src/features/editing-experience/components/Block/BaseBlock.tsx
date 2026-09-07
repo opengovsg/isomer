@@ -1,9 +1,17 @@
+/* oxlint-disable typescript/strict-boolean-expressions -- core cleanup deferred */
 import type { ButtonProps, StackProps } from "@chakra-ui/react"
 import type { DraggableProvidedDragHandleProps } from "@hello-pangea/dnd"
 import type { IconType } from "react-icons"
 import { chakra, Flex, HStack, Icon, Stack, Text } from "@chakra-ui/react"
 import { BiGridVertical, BiSolidErrorCircle } from "react-icons/bi"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
+// oxlint-disable-next-line typescript/consistent-return -- core cleanup deferred
 const BaseBlockDescription = ({
   invalidProps,
   description,
@@ -30,7 +38,7 @@ const BaseBlockDescription = ({
     )
   }
 
-  if (description) {
+  if (hasNonEmptyString(description)) {
     return (
       <Text
         textStyle="caption-2"
@@ -85,7 +93,7 @@ export const BaseBlock = ({
 }: BaseBlockProps): React.ReactNode | null => {
   const actualDraggableProps = draggableProps ?? {}
 
-  if (isHidden) {
+  if (isNullableBooleanTrue(isHidden)) {
     return null
   }
 
@@ -101,11 +109,11 @@ export const BaseBlock = ({
       transitionDuration="normal"
       aria-invalid={!!invalidProps}
       _hover={{
-        bg: "interaction.muted.main.hover",
-        borderColor: "interaction.main-subtle.hover",
         _invalid: {
           shadow: "0px 1px 6px 0px #C0343426",
         },
+        bg: "interaction.muted.main.hover",
+        borderColor: "interaction.main-subtle.hover",
       }}
       _active={{
         bg: "interaction.main-subtle.default",
@@ -191,21 +199,19 @@ interface BaseBlockDragHandleProps extends ButtonProps {
 export const BaseBlockDragHandle = ({
   isDragging,
   ...handleProps
-}: BaseBlockDragHandleProps): React.ReactNode => {
-  return (
-    <chakra.button
-      display="flex"
-      tabIndex={0}
-      layerStyle="focusRing"
-      borderRadius="4px"
-      transition="color 0.2s ease"
-      _hover={{
-        color: "slate.400",
-      }}
-      color={isDragging ? "slate.400" : "slate.300"}
-      {...handleProps}
-    >
-      <Icon as={BiGridVertical} fontSize="1.5rem" />
-    </chakra.button>
-  )
-}
+}: BaseBlockDragHandleProps): React.ReactNode => (
+  <chakra.button
+    display="flex"
+    tabIndex={0}
+    layerStyle="focusRing"
+    borderRadius="4px"
+    transition="color 0.2s ease"
+    _hover={{
+      color: "slate.400",
+    }}
+    color={isDragging ? "slate.400" : "slate.300"}
+    {...handleProps}
+  >
+    <Icon as={BiGridVertical} fontSize="1.5rem" />
+  </chakra.button>
+)

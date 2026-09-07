@@ -1,9 +1,11 @@
+/* oxlint-disable typescript/promise-function-async -- studio lint cleanup */
 import type { PropsWithChildren } from "react"
 import { useRouter } from "next/router"
 import { useEffect } from "react"
 import { TOPPAN_EMAIL_DOMAIN } from "~/constants/toppan"
 import { useMe } from "~/features/me/api"
 import { useEgazetteInfo } from "~/hooks/useEgazetteInfo"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { FullscreenSpinner } from "../FullscreenSpinner"
 
@@ -28,7 +30,11 @@ export const ToppanRouteGuard = ({ children }: PropsWithChildren) => {
     (gazettesPath !== null && router.asPath.startsWith(gazettesPath))
 
   useEffect(() => {
-    if (shouldRestrictToGazettesPath && !isGazettesOnlyRoute && gazettesPath) {
+    if (
+      shouldRestrictToGazettesPath &&
+      !isGazettesOnlyRoute &&
+      hasNonEmptyString(gazettesPath)
+    ) {
       void router.replace(gazettesPath)
     }
   }, [shouldRestrictToGazettesPath, isGazettesOnlyRoute, router, gazettesPath])

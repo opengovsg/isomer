@@ -5,7 +5,8 @@ import { registerPgbossJob } from "@isomer/pgboss"
 
 import { createBaseLogger } from "../../../lib/logger"
 
-const CRON_SCHEDULE = "0 0 * * *" // every day at 00:00 (midnight)
+const CRON_SCHEDULE = "0 0 * * *"
+// every day at 00:00 (midnight)
 
 const logger = createBaseLogger({
   path: "cron:sendAccountDeactivationWarningEmailsJob",
@@ -20,7 +21,9 @@ export const sendAccountDeactivationWarningEmailsJob = async ({
     logger,
     JOB_NAME,
     CRON_SCHEDULE,
-    () => bulkSendAccountDeactivationWarningEmails({ inHowManyDays }),
+    async () => {
+      await bulkSendAccountDeactivationWarningEmails({ inHowManyDays })
+    },
     // It's sent on best-effort basis, so don't retry failed jobs or heartbeat monitoring
     { retryLimit: 0, singletonKey: JOB_NAME },
   )

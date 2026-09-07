@@ -6,7 +6,26 @@ import { ModifyGazetteModal } from "~/features/gazettes"
 import { GazetteSubcategoriesProvider } from "~/features/gazettes/contexts/GazetteSubcategoriesContext"
 
 const meta: Meta<typeof ModifyGazetteModal> = {
-  title: "Pages/eGazette/Modify Gazette Modal",
+  args: {
+    collectionId: 30,
+    gazetteId: "gazette-123",
+    initialData: {
+      category: "government-gazette",
+      fileId: "sample-gazette.pdf",
+      fileName: "sample-gazette.pdf",
+      fileSize: 1_024_000,
+      notificationNumber: "123/2025",
+      publishDate: new Date("2025-06-15"),
+      publishTime: "09:00",
+      subcategory: "advertisements",
+      title: "Sample Gazette Title",
+    },
+    isOpen: true,
+    onClose: () => {
+      console.log("close")
+    },
+    siteId: 1,
+  },
   component: ModifyGazetteModal,
   decorators: [
     (storyFn, { args }) => (
@@ -23,30 +42,13 @@ const meta: Meta<typeof ModifyGazetteModal> = {
     ),
   ],
   parameters: {
-    layout: "fullscreen",
     chromatic: { delay: 200 },
+    layout: "fullscreen",
     msw: {
       handlers: [gazetteHandlers.collectionTags.default()],
     },
   },
-  args: {
-    isOpen: true,
-    onClose: () => console.log("close"),
-    gazetteId: "gazette-123",
-    siteId: 1,
-    collectionId: 30,
-    initialData: {
-      title: "Sample Gazette Title",
-      category: "government-gazette",
-      subcategory: "advertisements",
-      notificationNumber: "123/2025",
-      publishDate: new Date("2025-06-15"),
-      publishTime: "09:00",
-      fileId: "sample-gazette.pdf",
-      fileName: "sample-gazette.pdf",
-      fileSize: 1024000,
-    },
-  },
+  title: "Pages/eGazette/Modify Gazette Modal",
 }
 
 export default meta
@@ -58,15 +60,15 @@ export const Default: Story = {
 }
 
 export const WithoutNotificationNumber: Story = {
-  name: "Without Notification Number",
   args: {
     initialData: {
-      title: "Another Gazette",
       category: "government-gazette",
-      subcategory: "notices-under-other-acts",
+      fileId: "another-gazette.pdf",
       publishDate: new Date("2025-07-01"),
       publishTime: "14:00",
-      fileId: "another-gazette.pdf",
+      subcategory: "notices-under-other-acts",
+      title: "Another Gazette",
     },
   },
+  name: "Without Notification Number",
 }

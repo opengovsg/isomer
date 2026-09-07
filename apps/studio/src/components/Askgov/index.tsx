@@ -1,45 +1,45 @@
+/* oxlint-disable eslint/no-use-before-define -- studio lint cleanup */
 const ASKGOV_WIDGET_STYLE = {
-  position: "fixed",
-  bottom: "1rem",
-  right: "1rem",
-  zIndex: 999998,
-  display: "flex",
-  height: "72px",
-  flexDirection: "row",
   alignItems: "center",
-  justifyContent: "center",
-  gap: "0.5rem",
-  borderRadius: "32px",
-  border: "2px solid #c1d2ef",
-  backgroundColor: "rgba(255, 255, 255, 0.5)",
-  padding: "1rem",
-  boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
   backdropFilter: "blur(16px)",
+  backgroundColor: "rgba(255, 255, 255, 0.5)",
+  border: "2px solid #c1d2ef",
+  borderRadius: "32px",
+  bottom: "1rem",
+  boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+  display: "flex",
+  flexDirection: "row",
+  gap: "0.5rem",
+  height: "72px",
+  justifyContent: "center",
+  padding: "1rem",
+  position: "fixed",
+  right: "1rem",
+  zIndex: 999_998,
 } as const
 
 const ASKGOV_ICON_CONTAINER_STYLE = {
-  position: "relative",
-  display: "flex",
-  width: "50px",
-  height: "50px",
-  flexShrink: 0,
-  flexDirection: "column",
   alignItems: "center",
-  justifyContent: "center",
+  display: "flex",
+  flexDirection: "column",
+  flexShrink: 0,
   gap: "5px",
+  height: "50px",
+  justifyContent: "center",
+  position: "relative",
+  width: "50px",
 } as const
 
 const ASKGOV_ICON_STYLE = { color: "#064cbd" } as const
 
-export const AskgovWidget = () => {
-  return (
-    <div style={ASKGOV_WIDGET_STYLE}>
-      <div style={ASKGOV_ICON_CONTAINER_STYLE}>
-        <ChatButtonIcon />
-      </div>
+export const AskgovWidget = () => (
+  <div style={ASKGOV_WIDGET_STYLE}>
+    <div style={ASKGOV_ICON_CONTAINER_STYLE}>
+      deferred
+      <ChatButtonIcon />
     </div>
-  )
-}
+  </div>
+)
 
 const ChatButtonIcon = () => (
   <svg

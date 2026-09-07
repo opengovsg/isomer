@@ -26,13 +26,13 @@ interface HoveredCell {
 }
 
 const TABLE_BUTTON_PROPS = {
-  variant: "clear",
   colorScheme: "neutral",
   h: "1.75rem",
-  w: "1.75rem",
   minH: "1.75rem",
   minW: "1.75rem",
   p: "0.25rem",
+  variant: "clear",
+  w: "1.75rem",
 } as const
 
 // While a table is selected, this stays a plain delete-table button — the
@@ -52,7 +52,9 @@ const DeleteTableButton = ({ editor }: { editor: Editor }) => (
       bg: "interaction.muted.main.active",
     }}
     aria-label="Delete table"
-    onClick={() => editor.chain().focus().deleteTable().run()}
+    onClick={() => {
+      void editor.chain().focus().deleteTable().run()
+    }}
   >
     <Icon as={BiTable} fontSize="1.25rem" color="base.content.medium" />
   </IconButton>
@@ -65,7 +67,7 @@ const TableSizeGridPicker = ({ editor }: { editor: Editor }) => {
     editor
       .chain()
       .focus()
-      .insertTable({ rows: row + 1, cols: col + 1, withHeaderRow: true })
+      .insertTable({ cols: col + 1, rows: row + 1, withHeaderRow: true })
       .run()
     setHoveredCell(null)
     onClose()
@@ -93,7 +95,9 @@ const TableSizeGridPicker = ({ editor }: { editor: Editor }) => {
           </PopoverTrigger>
           <PopoverContent
             w="fit-content"
-            onMouseLeave={() => setHoveredCell(null)}
+            onMouseLeave={() => {
+              setHoveredCell(null)
+            }}
           >
             <PopoverBody>
               <VStack spacing="0.5rem">
@@ -136,8 +140,12 @@ const TableSizeGridPicker = ({ editor }: { editor: Editor }) => {
                             : "transparent"
                         }
                         cursor="pointer"
-                        onMouseEnter={() => setHoveredCell({ row, col })}
-                        onClick={() => insertTable(row, col, onClose)}
+                        onMouseEnter={() => {
+                          setHoveredCell({ col, row })
+                        }}
+                        onClick={() => {
+                          insertTable(row, col, onClose)
+                        }}
                       />
                     )
                   })}

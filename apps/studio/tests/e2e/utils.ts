@@ -1,4 +1,5 @@
-import { scryptSync } from "crypto"
+/* oxlint-disable eslint/func-style -- studio lint cleanup */
+import { scryptSync } from "node:crypto"
 import { db } from "~/server/modules/database/database"
 
 export async function overwriteToken({
@@ -19,7 +20,7 @@ export async function overwriteToken({
   // socket, 127.0.0.1), so any hardcoded value breaks in one of the two.
   const result = await db
     .updateTable("VerificationToken")
-    .set({ token: hash, expires, attempts: 0 })
+    .set({ attempts: 0, expires, token: hash })
     .where("identifier", "like", `${identifier}|%`)
     .executeTakeFirst()
 

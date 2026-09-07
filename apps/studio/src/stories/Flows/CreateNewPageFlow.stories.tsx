@@ -7,8 +7,8 @@ import { sitesHandlers } from "tests/msw/handlers/sites"
 import SitePage from "~/pages/sites/[siteId]"
 
 const meta: Meta<typeof SitePage> = {
-  title: "Flows/Create New Page",
   component: SitePage,
+  decorators: [],
   parameters: {
     getLayout: SitePage.getLayout,
     msw: {
@@ -34,7 +34,7 @@ const meta: Meta<typeof SitePage> = {
       },
     },
   },
-  decorators: [],
+  title: "Flows/Create New Page",
 }
 
 export default meta
@@ -51,7 +51,7 @@ export const SelectPageLayout: Story = {
     await userEvent.click(button)
 
     const menuItem = await rootScreen.findByRole("menuitem", {
-      name: /page/i,
+      name: /page/iu,
     })
     await userEvent.click(menuItem)
   },
@@ -63,7 +63,7 @@ export const SelectArticleLayout: Story = {
     const screen = within(canvasElement.ownerDocument.body)
     await SelectPageLayout.play?.(context)
 
-    const articleLayoutCard = await screen.findByText(/Article layout/i)
+    const articleLayoutCard = await screen.findByText(/Article layout/iu)
     await userEvent.click(articleLayoutCard)
   },
 }
@@ -74,7 +74,7 @@ export const SelectDatabaseLayout: Story = {
     const screen = within(canvasElement.ownerDocument.body)
     await SelectPageLayout.play?.(context)
 
-    const databaseLayoutCard = await screen.findByText(/Database layout/i)
+    const databaseLayoutCard = await screen.findByText(/Database layout/iu)
     await userEvent.click(databaseLayoutCard)
   },
 }
@@ -86,11 +86,11 @@ export const EnterPageDetails: Story = {
     await SelectPageLayout.play?.(context)
 
     const button = await screen.findByRole("button", {
-      name: /next: page title and url/i,
+      name: /next: page title and url/iu,
     })
     await userEvent.click(button)
 
-    const input = await screen.findByLabelText(/page title/i)
+    const input = await screen.findByLabelText(/page title/iu)
     await userEvent.type(input, "My_new page WITH w@eird characters!")
   },
 }

@@ -1,8 +1,8 @@
-import {
-  type GroupLayout,
-  type JsonSchema,
-  type UISchemaElement,
-  type VerticalLayout,
+import type {
+  GroupLayout,
+  JsonSchema,
+  UISchemaElement,
+  VerticalLayout,
 } from "@jsonforms/core"
 
 export type IsomerExtendedJsonSchema = JsonSchema & {
@@ -12,14 +12,12 @@ export type IsomerExtendedJsonSchema = JsonSchema & {
   }[]
 }
 
-export function isGroupLayout(
+export const isGroupLayout = (
   uischema: UISchemaElement,
-): uischema is GroupLayout {
-  return uischema.type === "Group" && "elements" in uischema
-}
+): uischema is GroupLayout =>
+  uischema.type === "Group" && "elements" in uischema
 
-export function isVerticalLayout(
+export const isVerticalLayout = (
   uischema: UISchemaElement,
-): uischema is VerticalLayout {
-  return uischema.type === "VerticalLayout" && "elements" in uischema
-}
+): uischema is VerticalLayout =>
+  uischema.type === "VerticalLayout" && "elements" in uischema

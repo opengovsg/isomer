@@ -43,21 +43,19 @@ const SuspendableUserInfoContent = ({
   )
 }
 
-export const UserInfoContent = (props: UserInfoContentProps) => {
-  return (
-    <Box
-      backgroundColor="base.canvas.alt"
-      borderRadius="0.25rem"
-      py="0.75rem"
-      px="1rem"
-      display="flex"
-      justifyContent="space-between"
-      alignItems="center"
-      w="100%"
-    >
-      <Suspense fallback={<Skeleton w="100%" h="2rem" mt="0.5rem" />}>
-        <SuspendableUserInfoContent {...props} />
-      </Suspense>
-    </Box>
-  )
-}
+export const UserInfoContent = (props: UserInfoContentProps) => (
+  <Box
+    backgroundColor="base.canvas.alt"
+    borderRadius="0.25rem"
+    py="0.75rem"
+    px="1rem"
+    display="flex"
+    justifyContent="space-between"
+    alignItems="center"
+    w="100%"
+  >
+    <Suspense fallback={<Skeleton w="100%" h="2rem" mt="0.5rem" />}>
+      <SuspendableUserInfoContent {...props} />
+    </Suspense>
+  </Box>
+)

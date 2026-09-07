@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-boolean-expressions -- server lint cleanup */
 import { TRPCError } from "@trpc/server"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
@@ -16,6 +17,7 @@ import {
 } from "tests/integration/helpers/seed"
 import { createCallerFactory } from "~/server/trpc"
 import { getReferenceLink } from "~/utils/link"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { db } from "../../database/database"
 import {
@@ -46,9 +48,9 @@ describe("folder.router", async () => {
     const unauthedSession = applySession()
     unauthedCaller = createCaller(createMockRequest(unauthedSession))
     const user = await setupUser({
-      userId: session.userId,
       email: "test@mock.com",
       isDeleted: false,
+      userId: session.userId,
     })
     await auth(user)
   })
@@ -58,8 +60,8 @@ describe("folder.router", async () => {
       // Act
       const result = unauthedCaller.create({
         folderTitle: "test folder",
-        siteId: 1,
         permalink: "test-folder",
+        siteId: 1,
       })
 
       // Assert
@@ -76,15 +78,15 @@ describe("folder.router", async () => {
       const duplicatePermalink = "duplicate-permalink"
       const { site } = await setupFolder({ permalink: duplicatePermalink })
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = caller.create({
         folderTitle: "test folder",
-        siteId: site.id,
         permalink: duplicatePermalink,
+        siteId: site.id,
       })
 
       // Assert
@@ -104,16 +106,16 @@ describe("folder.router", async () => {
       const invalidSiteId = 999
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       expect(site.id).not.toEqual(invalidSiteId)
 
       // Act
       const result = caller.create({
         folderTitle: "test folder",
-        siteId: invalidSiteId,
         permalink: "test-folder",
+        siteId: invalidSiteId,
       })
 
       // Assert
@@ -130,16 +132,16 @@ describe("folder.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = caller.create({
         folderTitle: "test folder",
-        siteId: site.id,
-        permalink: "test-folder",
         parentFolderId: 999,
+        permalink: "test-folder",
+        siteId: site.id,
       })
 
       // Assert
@@ -160,16 +162,16 @@ describe("folder.router", async () => {
         resourceType: "Page",
       })
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = caller.create({
         folderTitle: "test folder",
-        siteId: site.id,
-        permalink: "test-folder",
         parentFolderId: Number(page.id),
+        permalink: "test-folder",
+        siteId: site.id,
       })
 
       // Assert
@@ -192,21 +194,21 @@ describe("folder.router", async () => {
       })
       const { site: secondSite } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: secondSite.id,
+        userId: session.userId,
       })
 
       // Act
       const result = await caller.create({
         folderTitle: "test folder",
-        siteId: secondSite.id,
         permalink: duplicatePermalink,
+        siteId: secondSite.id,
       })
 
       // Assert
       const actualFolder = await getFolderWithPermalink({
-        siteId: secondSite.id,
         permalink: duplicatePermalink,
+        siteId: secondSite.id,
       })
       expect(result).toEqual({ folderId: actualFolder.id })
       const auditLogs = await db
@@ -223,15 +225,15 @@ describe("folder.router", async () => {
       const permalinkToUse = "test-folder-999"
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = await caller.create({
         folderTitle: "test folder 999",
-        siteId: site.id,
         permalink: permalinkToUse,
+        siteId: site.id,
       })
 
       // Assert
@@ -254,16 +256,16 @@ describe("folder.router", async () => {
       const permalinkToUse = "test-folder-777"
       const { folder: parentFolder, site } = await setupFolder()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = await caller.create({
         folderTitle: "test folder",
-        siteId: site.id,
-        permalink: permalinkToUse,
         parentFolderId: Number(parentFolder.id),
+        permalink: permalinkToUse,
+        siteId: site.id,
       })
 
       // Assert
@@ -286,13 +288,13 @@ describe("folder.router", async () => {
       // Arrange
       const permalinkToUse = "test-folder-777"
       const { site } = await setupSite()
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
 
       // Act
       const result = caller.create({
         folderTitle: "test folder",
-        siteId: site.id,
         permalink: permalinkToUse,
+        siteId: site.id,
       })
 
       // Assert
@@ -316,9 +318,9 @@ describe("folder.router", async () => {
       // Act
       const result = caller.create({
         folderTitle: "test folder",
-        siteId: site.id,
-        permalink: permalinkToUse,
         parentFolderId: Number(parentFolder.id),
+        permalink: permalinkToUse,
+        siteId: site.id,
       })
 
       // Assert
@@ -341,8 +343,8 @@ describe("folder.router", async () => {
     it("should throw 401 if not logged in", async () => {
       // Act
       const result = unauthedCaller.getMetadata({
-        siteId: 1,
         resourceId: -1,
+        siteId: 1,
       })
 
       // Assert
@@ -356,15 +358,15 @@ describe("folder.router", async () => {
       const invalidSiteId = 999
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       expect(site.id).not.toEqual(invalidSiteId)
 
       // Act
       const result = caller.getMetadata({
-        siteId: invalidSiteId,
         resourceId: 1,
+        siteId: invalidSiteId,
       })
 
       // Assert
@@ -381,14 +383,14 @@ describe("folder.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = caller.getMetadata({
-        siteId: site.id,
         resourceId: 999,
+        siteId: site.id,
       })
 
       // Assert
@@ -406,8 +408,8 @@ describe("folder.router", async () => {
 
       // Act
       const result = caller.getMetadata({
-        siteId: site.id,
         resourceId: Number(folder.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -423,12 +425,12 @@ describe("folder.router", async () => {
     it("should return 200 if the folder exists", async () => {
       // Arrange
       const { folder, site } = await setupFolder()
-      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      await setupAdminPermissions({ siteId: site.id, userId: session.userId })
 
       // Act
       const result = await caller.getMetadata({
-        siteId: site.id,
         resourceId: Number(folder.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -446,10 +448,10 @@ describe("folder.router", async () => {
       // Act
       const { folder, site } = await setupFolder()
       const result = unauthedCaller.editFolder({
-        siteId: String(site.id),
-        resourceId: folder.id,
-        title: "fake",
         permalink: "news",
+        resourceId: folder.id,
+        siteId: String(site.id),
+        title: "fake",
       })
 
       // Assert
@@ -469,16 +471,16 @@ describe("folder.router", async () => {
       })
       const { folder } = await setupFolder({ siteId: site.id })
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = caller.editFolder({
-        title: "test folder",
-        siteId: String(site.id),
         permalink: duplicatePermalink,
         resourceId: folder.id,
+        siteId: String(site.id),
+        title: "test folder",
       })
 
       // Assert
@@ -501,16 +503,16 @@ describe("folder.router", async () => {
       })
       const { folder, site } = await setupFolder()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = await caller.editFolder({
-        title: "test folder",
-        siteId: String(site.id),
         permalink: duplicatePermalink,
         resourceId: folder.id,
+        siteId: String(site.id),
+        title: "test folder",
       })
       const expected = { permalink: duplicatePermalink, siteId: site.id }
 
@@ -530,17 +532,17 @@ describe("folder.router", async () => {
       const invalidSiteId = 999
       const { site, folder } = await setupFolder()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       expect(site.id).not.toEqual(invalidSiteId)
 
       // Act
       const result = caller.editFolder({
-        siteId: String(invalidSiteId),
         permalink: "test-folder",
-        title: "fake",
         resourceId: folder.id,
+        siteId: String(invalidSiteId),
+        title: "fake",
       })
 
       // Assert
@@ -560,12 +562,12 @@ describe("folder.router", async () => {
       // Arrange
       const { site, folder } = await setupFolder()
       const { page } = await setupPageResource({
-        siteId: site.id,
         resourceType: "Page",
+        siteId: site.id,
       })
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       await db
         .updateTable("Resource")
@@ -576,9 +578,9 @@ describe("folder.router", async () => {
 
       // Act
       const result = await caller.editFolder({
-        siteId: String(site.id),
         permalink,
         resourceId: folder.id,
+        siteId: String(site.id),
         title: folder.title,
       })
 
@@ -589,9 +591,9 @@ describe("folder.router", async () => {
       })
       expect(result).toMatchObject({
         id: expected.id,
-        title: expected.title,
-        permalink: expected.permalink,
         parentId: page.id,
+        permalink: expected.permalink,
+        title: expected.title,
       })
       const auditLogs = await db
         .selectFrom("AuditLog")
@@ -609,9 +611,9 @@ describe("folder.router", async () => {
 
       // Act
       const result = caller.editFolder({
-        siteId: String(site.id),
         permalink,
         resourceId: folder.id,
+        siteId: String(site.id),
         title: folder.title,
       })
 
@@ -636,10 +638,10 @@ describe("folder.router", async () => {
 
       // Act
       const result = caller.editFolder({
-        siteId: String(site.id),
-        resourceId: page.id,
-        title: "fake",
         permalink: "news",
+        resourceId: page.id,
+        siteId: String(site.id),
+        title: "fake",
       })
 
       // Assert
@@ -661,10 +663,10 @@ describe("folder.router", async () => {
 
       // Act
       const result = caller.editFolder({
-        siteId: String(site.id),
-        resourceId: "0",
-        title: "fake",
         permalink: "news",
+        resourceId: "0",
+        siteId: String(site.id),
+        title: "fake",
       })
 
       // Assert
@@ -683,24 +685,24 @@ describe("folder.router", async () => {
       // Arrange
       const permalink = "test-folder-777"
       const { site, folder } = await setupFolder()
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
 
       // Act
       const result = await caller.editFolder({
-        siteId: String(site.id),
         permalink,
         resourceId: folder.id,
+        siteId: String(site.id),
         title: folder.title,
       })
 
       // Assert
       const expected = await getFolderWithPermalink({
-        siteId: site.id,
         permalink,
+        siteId: site.id,
       })
       expect(result).toMatchObject({
-        permalink: expected.permalink,
         id: expected.id,
+        permalink: expected.permalink,
       })
       const auditLogs = await db
         .selectFrom("AuditLog")
@@ -716,27 +718,27 @@ describe("folder.router", async () => {
       const permalink = "test-folder-777"
       const { site, folder: parentFolder } = await setupFolder()
       const { folder } = await setupFolder({
-        siteId: site.id,
         parentId: parentFolder.id,
+        siteId: site.id,
       })
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
 
       // Act
       const result = await caller.editFolder({
-        siteId: String(site.id),
         permalink,
         resourceId: folder.id,
+        siteId: String(site.id),
         title: folder.title,
       })
 
       // Assert
       const expected = await getFolderWithPermalink({
-        siteId: site.id,
         permalink,
+        siteId: site.id,
       })
       expect(result).toMatchObject({
-        permalink: expected.permalink,
         id: expected.id,
+        permalink: expected.permalink,
       })
       const auditLogs = await db
         .selectFrom("AuditLog")
@@ -758,15 +760,15 @@ describe("folder.router", async () => {
           permalink: folderPermalink,
         })
         const { page: child } = await setupPageResource({
-          siteId: site.id,
           parentId: folder.id,
-          resourceType: ResourceType.Page,
           permalink: childPermalink,
+          resourceType: ResourceType.Page,
+          siteId: site.id,
           state: ResourceState.Published,
           userId: session.userId,
         })
-        await setupAdminPermissions({ userId: session.userId, siteId: site.id })
-        return { site, folder, child }
+        await setupAdminPermissions({ siteId: site.id, userId: session.userId })
+        return { child, folder, site }
       }
 
       it("blocks the rename when a published descendant would land under an existing redirect", async () => {
@@ -778,18 +780,18 @@ describe("folder.router", async () => {
         await db
           .insertInto("Redirect")
           .values({
+            destination: "/somewhere-else",
             siteId: site.id,
             source: "/new-folder/child",
-            destination: "/somewhere-else",
           })
           .execute()
 
         // Act
         const result = caller.editFolder({
-          siteId: String(site.id),
-          resourceId: folder.id,
-          title: "new folder",
           permalink: "new-folder",
+          resourceId: folder.id,
+          siteId: String(site.id),
+          title: "new folder",
         })
 
         // Assert — the move is rejected and rolled back (folder keeps its old
@@ -811,10 +813,10 @@ describe("folder.router", async () => {
 
         // Act
         await caller.editFolder({
-          siteId: String(site.id),
-          resourceId: folder.id,
-          title: "new folder",
           permalink: "new-folder",
+          resourceId: folder.id,
+          siteId: String(site.id),
+          title: "new folder",
         })
 
         // Assert — the wildcard source is the folder's OLD full permalink
@@ -828,8 +830,8 @@ describe("folder.router", async () => {
         expect(redirect.source).toBe("/old-folder/*")
         expect(redirect.destination).toBe(
           getReferenceLink({
-            siteId: String(site.id),
             resourceId: folder.id,
+            siteId: String(site.id),
           }),
         )
         expect(redirect.deletedAt).toBeNull()
@@ -839,20 +841,20 @@ describe("folder.router", async () => {
         // Arrange — the only child is a draft, so nothing is live to preserve.
         const { site, folder } = await setupFolder({ permalink: "old-folder" })
         await setupPageResource({
-          siteId: site.id,
           parentId: folder.id,
-          resourceType: ResourceType.Page,
           permalink: "child",
+          resourceType: ResourceType.Page,
+          siteId: site.id,
           state: ResourceState.Draft,
         })
-        await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+        await setupAdminPermissions({ siteId: site.id, userId: session.userId })
 
         // Act
         await caller.editFolder({
-          siteId: String(site.id),
-          resourceId: folder.id,
-          title: "new folder",
           permalink: "new-folder",
+          resourceId: folder.id,
+          siteId: String(site.id),
+          title: "new folder",
         })
 
         // Assert
@@ -870,11 +872,11 @@ describe("folder.router", async () => {
 
         // Act
         await caller.editFolder({
-          siteId: String(site.id),
-          resourceId: folder.id,
-          title: "new folder",
           permalink: "new-folder",
+          resourceId: folder.id,
           shouldCreateRedirect: false,
+          siteId: String(site.id),
+          title: "new folder",
         })
 
         // Assert
@@ -892,14 +894,14 @@ describe("folder.router", async () => {
         // /students/... redirects to those pages. Renaming the new folder back
         // to /students makes those sources the pages' live URLs again.
         const { site, folder, child } = await setupFolderWithPublishedChild({
-          folderPermalink: "students1",
           childPermalink: "class-exam-timetable",
+          folderPermalink: "students1",
         })
         const { page: sibling } = await setupPageResource({
-          siteId: site.id,
           parentId: folder.id,
-          resourceType: ResourceType.Page,
           permalink: "quick-links-information",
+          resourceType: ResourceType.Page,
+          siteId: site.id,
           state: ResourceState.Published,
           userId: session.userId,
         })
@@ -907,23 +909,23 @@ describe("folder.router", async () => {
           .insertInto("Redirect")
           .values(
             [child, sibling].map((page) => ({
-              siteId: site.id,
-              source: `/students/${page.permalink}`,
               destination: getReferenceLink({
                 siteId: String(site.id),
                 resourceId: page.id,
               }),
+              siteId: site.id,
+              source: `/students/${page.permalink}`,
             })),
           )
           .execute()
 
         // Act
         await caller.editFolder({
-          siteId: String(site.id),
-          resourceId: folder.id,
-          title: "Students",
           permalink: "students",
+          resourceId: folder.id,
           shouldCreateRedirect: false,
+          siteId: String(site.id),
+          title: "Students",
         })
 
         // Assert — both self-referential redirects are soft-deleted in the
@@ -936,12 +938,12 @@ describe("folder.router", async () => {
           .execute()
         expect(redirects).toEqual([
           {
-            source: "/students/class-exam-timetable",
             deletedAt: expect.any(Date),
+            source: "/students/class-exam-timetable",
           },
           {
-            source: "/students/quick-links-information",
             deletedAt: expect.any(Date),
+            source: "/students/quick-links-information",
           },
         ])
       })
@@ -951,24 +953,24 @@ describe("folder.router", async () => {
         // /old-folder/* -> folder.
         const { site, folder } = await setupFolderWithPublishedChild()
         await caller.editFolder({
-          siteId: String(site.id),
-          resourceId: folder.id,
-          title: "new folder",
           permalink: "new-folder",
+          resourceId: folder.id,
+          siteId: String(site.id),
+          title: "new folder",
         })
         const folderRef = getReferenceLink({
-          siteId: String(site.id),
           resourceId: folder.id,
+          siteId: String(site.id),
         })
 
         // Act — roll back /new-folder -> /old-folder. The folder's own
         // /old-folder/* wildcard from the first move must be reclaimed, not
         // treated as a descendant shadow that blocks the move.
         const result = caller.editFolder({
-          siteId: String(site.id),
-          resourceId: folder.id,
-          title: "old folder",
           permalink: "old-folder",
+          resourceId: folder.id,
+          siteId: String(site.id),
+          title: "old folder",
         })
 
         // Assert — the rollback succeeds and the folder is back at /old-folder.
@@ -983,7 +985,7 @@ describe("folder.router", async () => {
           .where("deletedAt", "is", null)
           .execute()
         expect(live).toEqual([
-          { source: "/new-folder/*", destination: folderRef },
+          { destination: folderRef, source: "/new-folder/*" },
         ])
       })
     })
@@ -993,8 +995,8 @@ describe("folder.router", async () => {
     it("should throw 401 if not logged in", async () => {
       // Act
       const result = unauthedCaller.getIndexpage({
-        siteId: 1,
         resourceId: "1",
+        siteId: 1,
       })
 
       // Assert
@@ -1007,15 +1009,15 @@ describe("folder.router", async () => {
       // Arrange
       const { folder, site } = await setupFolder()
       await setupPageResource({
+        parentId: folder.id,
         resourceType: ResourceType.IndexPage,
         siteId: site.id,
-        parentId: folder.id,
       })
 
       // Act
       const result = caller.getIndexpage({
-        siteId: site.id,
         resourceId: folder.id,
+        siteId: site.id,
       })
 
       // Assert
@@ -1032,23 +1034,23 @@ describe("folder.router", async () => {
       // Arrange
       const { folder, site } = await setupFolder()
       const { page, blob } = await setupPageResource({
+        parentId: folder.id,
         resourceType: ResourceType.IndexPage,
         siteId: site.id,
-        parentId: folder.id,
       })
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
 
       // Act
       const result = await caller.getIndexpage({
-        siteId: site.id,
         resourceId: folder.id,
+        siteId: site.id,
       })
 
       // Assert
       expect(result).toEqual({
-        title: folder.title,
-        id: page.id,
         draftBlobId: blob.id,
+        id: page.id,
+        title: folder.title,
       })
       await expect(
         db.selectFrom("AuditLog").selectAll().execute(),
@@ -1062,20 +1064,20 @@ describe("folder.router", async () => {
       const { folder, site } = await setupFolder()
       const { page: indexPage } = await setupPageResource({
         parentId: folder.id,
-        siteId: site.id,
         resourceType: "IndexPage",
+        siteId: site.id,
       })
       await createChildPages({
+        numFolders: 5,
+        numPages: 3,
         parentId: folder.id,
         siteId: site.id,
-        numPages: 3,
-        numFolders: 5,
       })
 
       // Act
       const result = unauthedCaller.listChildPages({
-        siteId: String(site.id),
         indexPageId: indexPage.id,
+        siteId: String(site.id),
       })
 
       // Assert
@@ -1089,26 +1091,26 @@ describe("folder.router", async () => {
       const invalidSiteId = 999
       const { site, folder } = await setupFolder()
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       expect(site.id).not.toEqual(invalidSiteId)
       const { page: indexPage } = await setupPageResource({
         parentId: folder.id,
-        siteId: site.id,
         resourceType: "IndexPage",
+        siteId: site.id,
       })
       await createChildPages({
+        numFolders: 5,
+        numPages: 3,
         parentId: folder.id,
         siteId: site.id,
-        numPages: 3,
-        numFolders: 5,
       })
 
       // Act
       const result = await caller.listChildPages({
-        siteId: String(site.id),
         indexPageId: indexPage.id,
+        siteId: String(site.id),
       })
 
       // Assert
@@ -1120,14 +1122,14 @@ describe("folder.router", async () => {
       const { site, folder } = await setupFolder()
       const { page: indexPage } = await setupPageResource({
         parentId: folder.id,
-        siteId: site.id,
         resourceType: "IndexPage",
+        siteId: site.id,
       })
 
       // Act
       const result = caller.listChildPages({
-        siteId: String(site.id),
         indexPageId: indexPage.id,
+        siteId: String(site.id),
       })
 
       // Assert
@@ -1145,15 +1147,15 @@ describe("folder.router", async () => {
       const { site, folder } = await setupFolder()
       await setupEditorPermissions({ siteId: site.id, userId: session.userId })
       const { page } = await setupPageResource({
-        siteId: site.id,
-        resourceType: "Page",
         parentId: folder.id,
+        resourceType: "Page",
+        siteId: site.id,
       })
 
       // Act
       const result = caller.listChildPages({
-        siteId: String(site.id),
         indexPageId: page.id,
+        siteId: String(site.id),
       })
 
       // Assert
@@ -1175,8 +1177,8 @@ describe("folder.router", async () => {
 
       // Act
       const result = caller.listChildPages({
-        siteId: String(site.id),
         indexPageId: "1234",
+        siteId: String(site.id),
       })
 
       // Assert
@@ -1197,30 +1199,30 @@ describe("folder.router", async () => {
       await setupEditorPermissions({ siteId: site.id, userId: session.userId })
       const { page: indexPage } = await setupPageResource({
         parentId: folder.id,
-        siteId: site.id,
         resourceType: "IndexPage",
+        siteId: site.id,
       })
       const { pages, folders } = await createChildPages({
+        numFolders: 4,
+        numPages: 3,
         parentId: folder.id,
         siteId: site.id,
-        numPages: 3,
-        numFolders: 4,
         state: "Published",
         userId: session.userId,
       })
 
       // NOTE: Not `published`
       await createChildPages({
+        numFolders: 4,
+        numPages: 3,
         parentId: folder.id,
         siteId: site.id,
-        numPages: 3,
-        numFolders: 4,
       })
 
       // Act
       const result = await caller.listChildPages({
-        siteId: String(site.id),
         indexPageId: indexPage.id,
+        siteId: String(site.id),
       })
 
       // Assert
@@ -1235,21 +1237,20 @@ describe("folder.router", async () => {
 })
 
 // Test util functions
-const getFolderWithPermalink = ({
+const getFolderWithPermalink = async ({
   siteId,
   permalink,
 }: {
   siteId: number
   permalink: string
-}) => {
-  return db
+}) =>
+  await db
     .selectFrom("Resource")
     .where("type", "=", ResourceType.Folder)
     .where("siteId", "=", siteId)
     .where("permalink", "=", permalink)
     .selectAll()
     .executeTakeFirstOrThrow()
-}
 
 const createChildPages = async ({
   parentId,
@@ -1278,11 +1279,11 @@ const createChildPages = async ({
       .map(async () => {
         const permalink = crypto.randomUUID()
         const { page } = await setupPageResource({
+          parentId,
+          permalink,
           resourceType: "Page",
           siteId,
-          parentId,
           state,
-          permalink,
           userId,
         })
         return page
@@ -1294,19 +1295,19 @@ const createChildPages = async ({
       .fill(null)
       .map(async () => {
         const { folder } = await setupFolder({
-          siteId,
           parentId,
           permalink: crypto.randomUUID(),
+          siteId,
           state: ResourceState.Published,
         })
 
         const permalink = crypto.randomUUID()
         await setupPageResource({
+          parentId: folder.id,
+          permalink,
           resourceType: "IndexPage",
           siteId,
-          parentId: folder.id,
           state,
-          permalink,
           userId,
         })
 
@@ -1314,5 +1315,5 @@ const createChildPages = async ({
       }),
   )
 
-  return { pages, folders }
+  return { folders, pages }
 }

@@ -1,3 +1,5 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
+/* oxlint-disable eslint/no-nested-ternary, eslint/no-shadow, unicorn/no-new-array, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { DropResult } from "@hello-pangea/dnd"
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import { Box, HStack, Skeleton, Text, VStack } from "@chakra-ui/react"
@@ -12,6 +14,12 @@ import { useCanManageCollectionFilters } from "~/features/editing-experience/hoo
 import { pageSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { AddItemButton } from "../../components/AddItemButton"
 import { DeleteConfirmModal } from "../../components/DeleteConfirmModal"
@@ -44,8 +52,8 @@ const DeleteOptionWarningBody = ({
   tagId: string
 }) => {
   const [{ count }] = trpc.collection.countTagOptionsUsage.useSuspenseQuery({
-    siteId,
     pageId,
+    siteId,
     tagOptionIds: [tagId],
   })
 
@@ -93,19 +101,19 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
   const isAnyRowEditing = editingIndex !== null
 
   const { blank: blankOptionIndices, duplicate: duplicateOptionIndices } =
-    useLiveLabelIssues({ path, editingIndex, editingDraftLabel })
+    useLiveLabelIssues({ editingDraftLabel, editingIndex, path })
 
   const arrayResult = useArray({
-    data,
-    path,
     arraySchema,
-    schema,
-    rootSchema,
-    uischemas,
-    uischema,
-    removeItems,
-    moveUp,
+    data,
     moveDown,
+    moveUp,
+    path,
+    removeItems,
+    rootSchema,
+    schema,
+    uischema,
+    uischemas,
   })
   const { isAddItemDisabled, isRemoveItemDisabled, onDragEnd } = arrayResult
 
@@ -130,7 +138,9 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
     committedLabel: string,
     isEditing: boolean,
   ) => {
-    if (isEditing && editingIndex !== null && editingIndex !== index) return
+    if (isEditing && editingIndex !== null && editingIndex !== index) {
+      return
+    }
     setEditingIndex(isEditing ? index : null)
     setEditingDraftLabel(isEditing ? committedLabel : "")
   }
@@ -141,12 +151,13 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
     closeDeleteModal,
     handleConfirmDelete,
   } = useDeleteTarget<{ label: string; tagId: string }>({
+    isRemoveItemDisabled,
     path,
     removeItems,
-    isRemoveItemDisabled,
     resolveTarget: (index) => ({
       label: items?.[index]?.label?.trim() ?? "",
-      tagId: items?.[index]?.id ?? "", // always set by createDefaultTagOption()
+      tagId: items?.[index]?.id ?? "",
+      // always set by createDefaultTagOption()
     }),
   })
 
@@ -165,13 +176,16 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
               Add option
             </AddItemButton>
           </HStack>
-          {description && (
+          {hasNonEmptyString(description) && (
             <Text textStyle="body-2" textColor="base.content.default">
               {description}
             </Text>
           )}
         </VStack>
-        <Box w="full" mt={description ? "0.75rem" : "0.25rem"}>
+        <Box
+          w="full"
+          mt={hasNonEmptyString(description) ? "0.75rem" : "0.25rem"}
+        >
           <DragDropContext onDragEnd={handleDragEnd}>
             <Droppable droppableId="blocks">
               {({ droppableProps, innerRef, placeholder }) => (
@@ -187,7 +201,7 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
                     <EmptyCategory title="Add an option to save this filter" />
                   )}
 
-                  {[...Array(data).keys()].map((index) => {
+                  {[...new Array(data).keys()].map((index) => {
                     const childPath = composePaths(path, `${index}`)
                     const isDuplicate = duplicateOptionIndices.has(index)
                     const isBlank = blankOptionIndices.has(index)
@@ -233,16 +247,16 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
                                     !enabled || (isAnyRowEditing && !isEditing)
                                   }
                                   isEditing={isEditing}
-                                  onSubmit={(value) =>
+                                  onSubmit={(value) => {
                                     submitLabel(childPath, value)
-                                  }
-                                  onEditingChange={(nextIsEditing) =>
+                                  }}
+                                  onEditingChange={(nextIsEditing) => {
                                     handleEditingChange(
                                       index,
                                       committedLabel,
                                       nextIsEditing,
                                     )
-                                  }
+                                  }}
                                   onDraftChange={setEditingDraftLabel}
                                 />
                                 {hasError ? (

@@ -1,8 +1,8 @@
+import type { NextPageWithLayout } from "~/lib/types"
 import { Portal, useDisclosure } from "@chakra-ui/react"
 import { Button, Menu, TouchableTooltip } from "@opengovsg/design-system-react"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
 import { BiData, BiFileBlank, BiFolder, BiHomeAlt } from "react-icons/bi"
-import { z } from "zod"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { DashboardLayout } from "~/features/dashboard/components/DashboardLayout"
 import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal"
@@ -16,13 +16,9 @@ import { CreatePageModal } from "~/features/editing-experience/components/Create
 import { MoveResourceModal } from "~/features/editing-experience/components/MoveResourceModal"
 import { Can } from "~/features/permissions"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { type NextPageWithLayout } from "~/lib/types"
+import { sitePageSchema } from "~/schemas/sitePageSchema"
 import { SiteEditorLayout } from "~/templates/layouts/SiteEditorLayout"
 import { ResourceType } from "~prisma/generated/generatedEnums"
-
-export const sitePageSchema = z.object({
-  siteId: z.coerce.number(),
-})
 
 interface HomepageMenuButtonProps {
   onCollectionCreateModalOpen: () => void
@@ -33,56 +29,52 @@ const HomepageMenuButton = ({
   onCollectionCreateModalOpen,
   onPageCreateModalOpen,
   onFolderCreateModalOpen,
-}: HomepageMenuButtonProps) => {
-  return (
-    <Can do="create" on={{ parentId: null }} passThrough>
-      {({ isAllowed }) => {
-        return (
-          <Menu isLazy size="sm">
-            {({ isOpen }) => (
-              <TouchableTooltip
-                label="You need to be an Admin to create items under Home."
-                hidden={isAllowed}
-              >
-                <Menu.Button
-                  isOpen={isOpen}
-                  as={Button}
-                  size="md"
-                  justifySelf="flex-end"
-                  isDisabled={!isAllowed}
+}: HomepageMenuButtonProps) => (
+  <Can do="create" on={{ parentId: null }} passThrough>
+    {({ isAllowed }) => (
+      <Menu isLazy size="sm">
+        {({ isOpen }) => (
+          <TouchableTooltip
+            label="You need to be an Admin to create items under Home."
+            hidden={isAllowed}
+          >
+            <Menu.Button
+              isOpen={isOpen}
+              as={Button}
+              size="md"
+              justifySelf="flex-end"
+              isDisabled={!isAllowed}
+            >
+              Create new...
+            </Menu.Button>
+            <Portal>
+              <Menu.List>
+                <Menu.Item
+                  onClick={onFolderCreateModalOpen}
+                  icon={<BiFolder fontSize="1rem" />}
                 >
-                  Create new...
-                </Menu.Button>
-                <Portal>
-                  <Menu.List>
-                    <Menu.Item
-                      onClick={onFolderCreateModalOpen}
-                      icon={<BiFolder fontSize="1rem" />}
-                    >
-                      Folder
-                    </Menu.Item>
-                    <Menu.Item
-                      onClick={onPageCreateModalOpen}
-                      icon={<BiFileBlank fontSize="1rem" />}
-                    >
-                      Page
-                    </Menu.Item>
-                    <Menu.Item
-                      onClick={onCollectionCreateModalOpen}
-                      icon={<BiData fontSize="1rem" />}
-                    >
-                      Collection
-                    </Menu.Item>
-                  </Menu.List>
-                </Portal>
-              </TouchableTooltip>
-            )}
-          </Menu>
-        )
-      }}
-    </Can>
-  )
-}
+                  Folder
+                </Menu.Item>
+                <Menu.Item
+                  onClick={onPageCreateModalOpen}
+                  icon={<BiFileBlank fontSize="1rem" />}
+                >
+                  Page
+                </Menu.Item>
+                <Menu.Item
+                  onClick={onCollectionCreateModalOpen}
+                  icon={<BiData fontSize="1rem" />}
+                >
+                  Collection
+                </Menu.Item>
+              </Menu.List>
+            </Portal>
+          </TouchableTooltip>
+        )}
+      </Menu>
+    )}
+  </Can>
+)
 
 const SitePage: NextPageWithLayout = () => {
   const {
@@ -117,23 +109,23 @@ const SitePage: NextPageWithLayout = () => {
         buttons={
           <HomepageMenuButton
             onPageCreateModalOpen={() => {
-              posthog.capture("page_create_modal_opened", {
-                site_id: siteId,
+              posthogJs.capture("page_create_modal_opened", {
                 parent_type: "site",
+                site_id: siteId,
               })
               onPageCreateModalOpen()
             }}
             onFolderCreateModalOpen={() => {
-              posthog.capture("folder_create_modal_opened", {
-                site_id: siteId,
+              posthogJs.capture("folder_create_modal_opened", {
                 parent_type: "site",
+                site_id: siteId,
               })
               onFolderCreateModalOpen()
             }}
             onCollectionCreateModalOpen={() => {
-              posthog.capture("collection_create_modal_opened", {
-                site_id: siteId,
+              posthogJs.capture("collection_create_modal_opened", {
                 parent_type: "site",
+                site_id: siteId,
               })
               onCollectionCreateModalOpen()
             }}
@@ -166,13 +158,11 @@ const SitePage: NextPageWithLayout = () => {
   )
 }
 
-SitePage.getLayout = (page) => {
-  return (
-    <PermissionsBoundary
-      resourceType={ResourceType.RootPage}
-      page={SiteEditorLayout(page)}
-    />
-  )
-}
+SitePage.getLayout = (page) => (
+  <PermissionsBoundary
+    resourceType={ResourceType.RootPage}
+    page={SiteEditorLayout(page)}
+  />
+)
 
 export default SitePage

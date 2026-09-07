@@ -1,3 +1,4 @@
+import type { RouterOutput } from "~/utils/trpc"
 import { useJsonForms } from "@jsonforms/react"
 import { getResourceIdFromReferenceLink } from "@opengovsg/isomer-components"
 import { get } from "lodash-es"
@@ -5,7 +6,13 @@ import { useEffect, useMemo, useState } from "react"
 import { DEFAULT_BLOCKS } from "~/components/PageEditor/constants"
 import { siteSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { type RouterOutput, trpc } from "~/utils/trpc"
+import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { AUTOPOPULATED_FIELDS } from "../constants"
 
@@ -19,7 +26,9 @@ const PLACEHOLDER_VALUES = new Set(
 )
 
 const isEmptyOrPlaceholder = (value: string | undefined): boolean => {
-  if (!value?.trim()) return true
+  if (!hasNonEmptyString(value?.trim())) {
+    return true
+  }
   return PLACEHOLDER_VALUES.has(value)
 }
 
@@ -28,7 +37,7 @@ interface UsePrefillParams {
   path: string
 }
 
-export function usePrefillForCards({ data, path }: UsePrefillParams) {
+export const usePrefillForCards = ({ data, path }: UsePrefillParams) => {
   const { siteId } = useQueryParse(siteSchema)
   const ctx = useJsonForms()
   const utils = trpc.useUtils()
@@ -37,20 +46,28 @@ export function usePrefillForCards({ data, path }: UsePrefillParams) {
   >(null)
 
   // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
-  const resourceId = getResourceIdFromReferenceLink(data as string)
+  const resourceId = getResourceIdFromReferenceLink(
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON Forms data is a reference link string
+    data as string,
+  )
 
   // NOTE: Omit last item because that points to this link control
   const parts = path.split(".").slice(0, -1)
   const basePath = parts.join(".")
+  // oxlint-disable-next-line eslint/prefer-destructuring -- core cleanup deferred
   const parent = parts[0]
 
   const shouldFetch = useMemo(() => {
-    if (!resourceId || parent !== "cards") return false
+    if (!hasNonEmptyString(resourceId) || parent !== "cards") {
+      return false
+    }
     return (
+      // oxlint-disable-next-line typescript/strict-boolean-expressions -- core cleanup deferred
       data &&
       AUTOPOPULATED_FIELDS.some((field) =>
         isEmptyOrPlaceholder(
           // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
+          // oxlint-disable-next-line unicorn/no-unsafe-type-assertion -- core cleanup deferred
           get(ctx.core?.data, `${basePath}.${field}`) as string | undefined,
         ),
       )
@@ -58,24 +75,34 @@ export function usePrefillForCards({ data, path }: UsePrefillParams) {
   }, [resourceId, parent, ctx.core?.data, basePath, data])
 
   useEffect(() => {
-    if (!shouldFetch || !resourceId) return
+    // oxlint-disable-next-line typescript/strict-boolean-expressions -- core cleanup deferred
+    if (!shouldFetch || !resourceId) {
+      return
+    }
 
     void utils.page.getPrefill
       .fetch({ resourceId, siteId: Number(siteId) })
+      // oxlint-disable-next-line promise/prefer-await-to-then -- core cleanup deferred
       .then(setPrefillData)
+      // oxlint-disable-next-line promise/prefer-await-to-then -- core cleanup deferred
       .catch(() => {
         // Silently fail if the linked page cannot be fetched
       })
   }, [shouldFetch, resourceId, siteId, utils.page.getPrefill])
 
-  if (!shouldFetch || !prefillData) return undefined
+  // oxlint-disable-next-line typescript/strict-boolean-expressions -- core cleanup deferred
+  if (!shouldFetch || !prefillData) {
+    return
+  }
 
   const needsConfirmation = !AUTOPOPULATED_FIELDS.every((field) =>
     isEmptyOrPlaceholder(
       // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
+      // oxlint-disable-next-line unicorn/no-unsafe-type-assertion -- core cleanup deferred
       get(ctx.core?.data, `${basePath}.${field}`) as string | undefined,
     ),
   )
 
-  return { needsConfirmation, basePath, data: prefillData }
+  // oxlint-disable-next-line typescript/consistent-return -- core cleanup deferred
+  return { basePath, data: prefillData, needsConfirmation }
 }

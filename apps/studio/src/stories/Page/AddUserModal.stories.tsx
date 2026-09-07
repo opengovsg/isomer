@@ -19,8 +19,8 @@ const COMMON_HANDLERS = [
 ]
 
 const meta: Meta<typeof UsersPage> = {
-  title: "Pages/Site Management/Users Page/Add User Modal",
   component: UsersPage,
+  decorators: [ResetAddUserModalDecorator],
   parameters: {
     getLayout: UsersPage.getLayout,
     growthbook: [createSingpassEnabledGbParameters(true)],
@@ -35,7 +35,7 @@ const meta: Meta<typeof UsersPage> = {
       },
     },
   },
-  decorators: [ResetAddUserModalDecorator],
+  title: "Pages/Site Management/Users Page/Add User Modal",
 }
 
 export default meta
@@ -46,10 +46,13 @@ export const Default: Story = {
     const screen = within(canvasElement.ownerDocument.body)
 
     // Wait for 1 seconds before proceeding
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await new Promise((resolve) => {
+      setTimeout(resolve, 1000)
+    })
 
     const addUserButtons = await screen.findAllByText("Add new user")
-    const addUserButton = addUserButtons[0] // take the first one
+    const addUserButton = addUserButtons[0]
+    // take the first one
     if (addUserButton) {
       await userEvent.click(addUserButton, {
         pointerEventsCheck: 0,
@@ -63,11 +66,11 @@ export const InvalidEmail: Story = {
     const { canvasElement } = context
     await Default.play?.(context)
 
-    const emailInput = Array.from(
-      canvasElement.ownerDocument.querySelectorAll(
+    const emailInput = [
+      ...canvasElement.ownerDocument.querySelectorAll(
         'input[name="email"][required]',
       ),
-    )[0]
+    ][0]
     if (emailInput) {
       await userEvent.type(emailInput, "invalid-email")
     }
@@ -119,11 +122,11 @@ export const AdminSelectionDoesNotBypassWhitelistGate: Story = {
     const AdminRoleButton = await screen.findByText("Admin")
     await userEvent.click(AdminRoleButton)
 
-    const emailInput = Array.from(
-      canvasElement.ownerDocument.querySelectorAll(
+    const emailInput = [
+      ...canvasElement.ownerDocument.querySelectorAll(
         'input[name="email"][required]',
       ),
-    )[0]
+    ][0]
     if (emailInput) {
       await userEvent.type(emailInput, "someone@non-whitelisted-domain.com")
     }
@@ -139,7 +142,9 @@ export const AdminSelectionDoesNotBypassWhitelistGate: Story = {
     await expect(whitelistErrorText).toBeVisible()
 
     const sendInviteButton = await screen.findByText("Send invite")
-    await waitFor(() => expect(sendInviteButton).toBeDisabled())
+    await waitFor(async () => {
+      await expect(sendInviteButton).toBeDisabled()
+    })
   },
 }
 
@@ -161,11 +166,11 @@ export const NonGovEmailWhitelistedForAdmin: Story = {
 
     const screen = within(canvasElement.ownerDocument.body)
 
-    const emailInput = Array.from(
-      canvasElement.ownerDocument.querySelectorAll(
+    const emailInput = [
+      ...canvasElement.ownerDocument.querySelectorAll(
         'input[name="email"][required]',
       ),
-    )[0]
+    ][0]
     if (emailInput) {
       await userEvent.type(emailInput, "someone@whitelisted-non-gov-domain.com")
     }
@@ -181,7 +186,9 @@ export const NonGovEmailWhitelistedForAdmin: Story = {
     await expect(adminWarningText).toBeVisible()
 
     const sendInviteButton = await screen.findByText("Send invite")
-    await waitFor(() => expect(sendInviteButton).not.toBeDisabled())
+    await waitFor(async () => {
+      await expect(sendInviteButton).not.toBeDisabled()
+    })
   },
 }
 
@@ -200,11 +207,11 @@ export const EmailIsNotWhitelisted: Story = {
 
     const screen = within(canvasElement.ownerDocument.body)
 
-    const emailInput = Array.from(
-      canvasElement.ownerDocument.querySelectorAll(
+    const emailInput = [
+      ...canvasElement.ownerDocument.querySelectorAll(
         'input[name="email"][required]',
       ),
-    )[0]
+    ][0]
     if (emailInput) {
       await userEvent.type(emailInput, "blink@ifyouneed.help")
     }
@@ -227,11 +234,11 @@ export const Loading: Story = {
     await Default.play?.(context)
 
     const screen = within(canvasElement.ownerDocument.body)
-    const emailInput = Array.from(
-      canvasElement.ownerDocument.querySelectorAll(
+    const emailInput = [
+      ...canvasElement.ownerDocument.querySelectorAll(
         'input[name="email"][required]',
       ),
-    )[0]
+    ][0]
 
     if (emailInput) {
       await userEvent.type(emailInput, EMAIL)
@@ -242,7 +249,9 @@ export const Loading: Story = {
 
     // Wait for 1 seconds before proceeding
     // As there is a 300ms debounce on the email input
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await new Promise((resolve) => {
+      setTimeout(resolve, 1000)
+    })
 
     // Wait for the button to be enabled
     await expect(sendInviteButton).not.toBeDisabled()
@@ -266,11 +275,11 @@ export const ToastAfterAddingUser: Story = {
     await Default.play?.(context)
 
     const screen = within(canvasElement.ownerDocument.body)
-    const emailInput = Array.from(
-      canvasElement.ownerDocument.querySelectorAll(
+    const emailInput = [
+      ...canvasElement.ownerDocument.querySelectorAll(
         'input[name="email"][required]',
       ),
-    )[0]
+    ][0]
 
     if (emailInput) {
       await userEvent.type(emailInput, EMAIL)
@@ -281,7 +290,9 @@ export const ToastAfterAddingUser: Story = {
 
     // Wait for 1 seconds before proceeding
     // As there is a 300ms debounce on the email input
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await new Promise((resolve) => {
+      setTimeout(resolve, 1000)
+    })
 
     // Wait for the button to be enabled
     await expect(sendInviteButton).not.toBeDisabled()

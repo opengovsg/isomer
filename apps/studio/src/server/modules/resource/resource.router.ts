@@ -29,6 +29,7 @@ import {
 } from "~/schemas/resource"
 import { protectedProcedure, router } from "~/server/trpc"
 import { isResourceMoveValid } from "~/utils/resources"
+import { hasNonEmptyString, isDefinedNumber } from "~/utils/truthiness"
 import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 
 import type { PermissionsProps } from "../permissions/permissions.type"
@@ -61,7 +62,9 @@ import {
 } from "./resource.service"
 
 const fetchResource = async (resourceId: string | null) => {
-  if (resourceId === null) return { parentId: null }
+  if (resourceId === null) {
+    return { parentId: null }
+  }
 
   const resource = await db
     .selectFrom("Resource")
@@ -86,7 +89,7 @@ const validateUserPermissionsForMove = async ({
   from: string
   to: string | null
 }) => {
-  // TODO: this is using site wide permissions for now
+  // Deferred: this is using site wide permissions for now
   // we should fetch the oldest `parent` of this resource eventually.
   // Putting this in here first because eventually we'll have to lookup both
   // even though for now they are the same thing
@@ -110,103 +113,182 @@ const validateUserPermissionsForMove = async ({
 }
 
 export const resourceRouter = router({
-  getMetadataById: protectedProcedure
-    .input(getMetadataSchema)
+  countWithoutRoot: protectedProcedure
+    .input(countResourceSchema)
     .query(async ({ ctx, input: { siteId, resourceId } }) => {
       await bulkValidateUserPermissionsForResources({
         action: "read",
-        resourceIds: [resourceId],
+        resourceIds: [isDefinedNumber(resourceId) ? String(resourceId) : null],
+        siteId,
         userId: ctx.user.id,
-        siteId: Number(siteId),
       })
 
-      const resource = await db
-        .selectFrom("Resource")
-        .where("Resource.siteId", "=", siteId)
-        .where("Resource.id", "=", String(resourceId))
-        .select([
-          "Resource.id",
-          "Resource.type",
-          "Resource.title",
-          "Resource.permalink",
-          "Resource.parentId",
-          "Resource.siteId",
-          "Resource.publishedVersionId",
-        ])
-        .executeTakeFirst()
-
-      if (!resource) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Resource not found",
-        })
+      // Throw not found if the provided resourceId does not exist
+      if (isDefinedNumber(resourceId)) {
+        await db
+          .selectFrom("Resource")
+          .where("id", "=", String(resourceId))
+          .select("type")
+          .executeTakeFirstOrThrow(
+            () =>
+              new TRPCError({
+                code: "NOT_FOUND",
+                message: "Resource not found",
+              }),
+          )
       }
 
-      return resource
+      // Deferred(perf): If too slow, consider caching this count, but 4-5 million rows should be fine
+      let query = db
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.type", "!=", ResourceType.RootPage)
+        .where("Resource.type", "!=", ResourceType.FolderMeta)
+        .where("Resource.type", "!=", ResourceType.CollectionMeta)
+        .where("Resource.type", "!=", ResourceType.IndexPage)
+        .select((eb) => [eb.fn.countAll().as("totalCount")])
+
+      query = isDefinedNumber(resourceId)
+        ? query.where("Resource.parentId", "=", String(resourceId))
+        : query
+            .where("Resource.parentId", "is", null)
+            .where("Resource.permalink", "!=", SEARCH_PAGE_PERMALINK)
+
+      const result = await query.executeTakeFirst()
+      return Number(result?.totalCount ?? 0)
     }),
 
-  getFolderChildrenOf: protectedProcedure
-    .input(getChildrenSchema)
-    .output(getChildrenOutputSchema)
-    .query(
-      async ({ ctx, input: { siteId, resourceId, cursor: offset, limit } }) => {
-        await bulkValidateUserPermissionsForResources({
-          action: "read",
-          resourceIds: [resourceId],
-          userId: ctx.user.id,
-          siteId: Number(siteId),
+  delete: protectedProcedure
+    .input(deleteResourceSchema)
+    .mutation(async ({ ctx, input: { siteId, resourceId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        action: "delete",
+        resourceIds: [resourceId],
+        siteId,
+        userId: ctx.user.id,
+      })
+
+      const user = await db
+        .selectFrom("User")
+        .selectAll()
+        .where("id", "=", ctx.user.id)
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Please ensure that you are logged in",
+            }),
+        )
+
+      const result = await db.transaction().execute(async (tx) => {
+        const before = await tx
+          .selectFrom("Resource")
+          .where("siteId", "=", siteId)
+          .where("id", "=", resourceId)
+          .select(defaultResourceSelect)
+          .executeTakeFirst()
+
+        if (!before) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "The resource to be deleted could not be found",
+          })
+        }
+
+        // Prevent users from deleting the search page (permalink /search, no parent)
+        // This is a special page that is used to display the SearchSG results
+        if (
+          before.permalink === SEARCH_PAGE_PERMALINK &&
+          before.parentId === null
+        ) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "The search page cannot be deleted",
+          })
+        }
+
+        await logResourceEvent(tx, {
+          by: user,
+          delta: {
+            after: null,
+            before,
+          },
+          eventType: AuditLogEvent.ResourceDelete,
+          siteId,
         })
 
-        // Validate site and resourceId exists and is a Folder
-        if (resourceId !== null) {
-          const resource = await db
-            .selectFrom("Resource")
-            .where("siteId", "=", Number(siteId))
-            .where("id", "=", String(resourceId))
-            .where("Resource.type", "in", [
-              ResourceType.Folder,
-              ResourceType.Collection,
-            ])
-            .executeTakeFirst()
+        // Soft-delete redirects pointing at this resource (or any descendant)
+        // in the same transaction — once the page is gone they resolve to
+        // nothing. Run before the delete while the subtree is still resolvable;
+        // the delete's site publish covers the removal.
+        await softDeleteRedirectsPointingToResource(tx, {
+          byUserId: user.id,
+          resourceId,
+          siteId,
+        })
 
-          if (!resource) {
-            throw new TRPCError({ code: "NOT_FOUND" })
-          }
-        }
+        return await tx
+          .deleteFrom("Resource")
+          .where("Resource.id", "=", resourceId)
+          .where("Resource.siteId", "=", siteId)
+          .where("Resource.type", "!=", ResourceType.RootPage)
+          .returningAll()
+          .executeTakeFirst()
+      })
 
-        let query = db
-          .selectFrom("Resource")
-          .select(["title", "permalink", "type", "id", "parentId"])
-          .where("Resource.type", "in", [
-            ResourceType.Folder,
-            ResourceType.Collection,
-          ])
-          .where("Resource.siteId", "=", Number(siteId))
-          .orderBy("type", "asc")
-          .orderBy("title", "asc")
-          .offset(offset)
-          .limit(limit + 1)
-        if (resourceId === null) {
-          query = query.where("parentId", "is", null)
-        } else {
-          query = query.where("Resource.parentId", "=", String(resourceId))
-        }
+      if (!result) {
+        throw new TRPCError({ code: "BAD_REQUEST" })
+      }
 
-        const result = await query.execute()
-        if (result.length > limit) {
-          // Dont' return the last element, it's just for checking if there are more
-          result.pop()
-          return {
-            items: result,
-            nextOffset: offset + limit,
-          }
-        }
-        return {
-          items: result,
-          nextOffset: null,
-        }
-      },
-    ),
+      await publishResource(user.id, result, ctx.logger)
+
+      // NOTE: We need to do this cast as the property is a `bigint`
+      // and trpc cannot serialise it, which leads to errors
+      return result
+    }),
+
+  getAncestryStack: protectedProcedure
+    .input(getAncestryStackSchema)
+    .output(getAncestryStackOutputSchema)
+    .query(async ({ ctx, input: { siteId, resourceId, includeSelf } }) => {
+      await bulkValidateUserPermissionsForResources({
+        action: "read",
+        resourceIds: [resourceId ?? null],
+        siteId: Number(siteId),
+        userId: ctx.user.id,
+      })
+
+      if (!hasNonEmptyString(resourceId)) {
+        return []
+      }
+      const batchAncestry = await getBatchAncestryWithSelfQuery({
+        resourceIds: [resourceId],
+        siteId: Number(siteId),
+      })
+      return includeSelf
+        ? (batchAncestry[0] ?? [])
+        : (batchAncestry[0]?.slice(0, -1) ?? [])
+    }),
+
+  getBatchAncestryWithSelf: protectedProcedure
+    .input(getBatchAncestryWithSelfSchema)
+    .output(getBatchAncestryWithSelfOutputSchema)
+    .query(async ({ ctx, input: { siteId, resourceIds } }) => {
+      await bulkValidateUserPermissionsForResources({
+        action: "read",
+        resourceIds: resourceIds.map((id) => id ?? null),
+        siteId: Number(siteId),
+        userId: ctx.user.id,
+      })
+
+      if (resourceIds.length === 0) {
+        return []
+      }
+      return await getBatchAncestryWithSelfQuery({
+        resourceIds,
+        siteId: Number(siteId),
+      })
+    }),
 
   getChildrenOf: protectedProcedure
     .input(getChildrenSchema)
@@ -219,8 +301,8 @@ export const resourceRouter = router({
         await bulkValidateUserPermissionsForResources({
           action: "read",
           resourceIds: [resourceId],
-          userId: ctx.user.id,
           siteId: Number(siteId),
+          userId: ctx.user.id,
         })
 
         // Validate site and resourceId exists and is a folder
@@ -228,7 +310,7 @@ export const resourceRouter = router({
           const resource = await db
             .selectFrom("Resource")
             .where("siteId", "=", Number(siteId))
-            .where("id", "=", String(resourceId))
+            .where("id", "=", resourceId)
             .where("Resource.type", "in", [
               ResourceType.RootPage,
               ResourceType.Collection,
@@ -264,7 +346,7 @@ export const resourceRouter = router({
             )
           }
         } else {
-          query = query.where("Resource.parentId", "=", String(resourceId))
+          query = query.where("Resource.parentId", "=", resourceId)
         }
         const result = await query.execute()
         if (result.length > limit) {
@@ -282,6 +364,129 @@ export const resourceRouter = router({
       },
     ),
 
+  getFolderChildrenOf: protectedProcedure
+    .input(getChildrenSchema)
+    .output(getChildrenOutputSchema)
+    .query(
+      async ({ ctx, input: { siteId, resourceId, cursor: offset, limit } }) => {
+        await bulkValidateUserPermissionsForResources({
+          action: "read",
+          resourceIds: [resourceId],
+          siteId: Number(siteId),
+          userId: ctx.user.id,
+        })
+
+        // Validate site and resourceId exists and is a Folder
+        if (resourceId !== null) {
+          const resource = await db
+            .selectFrom("Resource")
+            .where("siteId", "=", Number(siteId))
+            .where("id", "=", resourceId)
+            .where("Resource.type", "in", [
+              ResourceType.Folder,
+              ResourceType.Collection,
+            ])
+            .executeTakeFirst()
+
+          if (!resource) {
+            throw new TRPCError({ code: "NOT_FOUND" })
+          }
+        }
+
+        let query = db
+          .selectFrom("Resource")
+          .select(["title", "permalink", "type", "id", "parentId"])
+          .where("Resource.type", "in", [
+            ResourceType.Folder,
+            ResourceType.Collection,
+          ])
+          .where("Resource.siteId", "=", Number(siteId))
+          .orderBy("type", "asc")
+          .orderBy("title", "asc")
+          .offset(offset)
+          .limit(limit + 1)
+        query =
+          resourceId === null
+            ? query.where("parentId", "is", null)
+            : query.where("Resource.parentId", "=", resourceId)
+
+        const result = await query.execute()
+        if (result.length > limit) {
+          // Dont' return the last element, it's just for checking if there are more
+          result.pop()
+          return {
+            items: result,
+            nextOffset: offset + limit,
+          }
+        }
+        return {
+          items: result,
+          nextOffset: null,
+        }
+      },
+    ),
+
+  getIndexPage: protectedProcedure
+    .input(getIndexPageSchema)
+    .output(getIndexPageOutputSchema)
+    .query(async ({ ctx, input: { siteId, parentId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        action: "read",
+        resourceIds: [parentId],
+        siteId,
+        userId: ctx.user.id,
+      })
+
+      const parent = await db
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.parentId", "=", parentId)
+        .where("Resource.type", "=", ResourceType.IndexPage)
+        .select(["Resource.id"])
+        .executeTakeFirst()
+
+      if (!parent) {
+        throw new TRPCError({ code: "NOT_FOUND" })
+      }
+
+      return parent
+    }),
+
+  getMetadataById: protectedProcedure
+    .input(getMetadataSchema)
+    .query(async ({ ctx, input: { siteId, resourceId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        action: "read",
+        resourceIds: [resourceId],
+        siteId,
+        userId: ctx.user.id,
+      })
+
+      const resource = await db
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.id", "=", resourceId)
+        .select([
+          "Resource.id",
+          "Resource.type",
+          "Resource.title",
+          "Resource.permalink",
+          "Resource.parentId",
+          "Resource.siteId",
+          "Resource.publishedVersionId",
+        ])
+        .executeTakeFirst()
+
+      if (!resource) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Resource not found",
+        })
+      }
+
+      return resource
+    }),
+
   getNestedFolderChildrenOf: protectedProcedure
     .input(getNestedFolderChildrenSchema)
     .output(getNestedFolderChildrenOutputSchema)
@@ -289,14 +494,14 @@ export const resourceRouter = router({
       await bulkValidateUserPermissionsForResources({
         action: "read",
         resourceIds: [resourceId],
-        userId: ctx.user.id,
         siteId: Number(siteId),
+        userId: ctx.user.id,
       })
 
       const resource = await db
         .selectFrom("Resource")
         .where("siteId", "=", Number(siteId))
-        .where("id", "=", String(resourceId))
+        .where("id", "=", resourceId)
         .where("Resource.type", "=", ResourceType.Folder)
         .executeTakeFirst()
 
@@ -312,11 +517,11 @@ export const resourceRouter = router({
               .select(["title", "permalink", "type", "id", "parentId"])
               .where("Resource.type", "in", [ResourceType.Folder])
               .where("Resource.siteId", "=", Number(siteId))
-              .where("Resource.parentId", "=", String(resourceId))
+              .where("Resource.parentId", "=", resourceId)
               // Use UNION (distinct) so recursion terminates even when
               // legacy cyclic resource graphs exist in production data.
-              .union((eb) =>
-                eb
+              .union((unionEb) =>
+                unionEb
                   .selectFrom("Resource")
                   .innerJoin(
                     "NestedResources",
@@ -333,11 +538,132 @@ export const resourceRouter = router({
               ),
           )
           .selectFrom("NestedResources")
-          .where("id", "!=", String(resourceId))
+          .where("id", "!=", resourceId)
           .select(["title", "permalink", "type", "id", "parentId"])
           .execute(),
       }
     }),
+
+  getParentOf: protectedProcedure
+    .input(getParentSchema)
+    .query(async ({ ctx, input: { siteId, resourceId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        action: "read",
+        resourceIds: [resourceId],
+        siteId,
+        userId: ctx.user.id,
+      })
+
+      const resource = await db
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.id", "=", resourceId)
+        .select(["Resource.type", "Resource.id", "Resource.title"])
+        .select((eb) =>
+          jsonObjectFrom(
+            eb
+              .selectFrom("Resource")
+              .innerJoin("Resource as parent", "parent.id", "Resource.parentId")
+              .where("Resource.id", "=", resourceId)
+              .where("parent.id", "is not", null)
+              .select([
+                "parent.type",
+                "parent.id",
+                "parent.parentId",
+                "parent.title",
+              ]),
+          ).as("parent"),
+        )
+        .executeTakeFirst()
+
+      if (!resource) {
+        throw new TRPCError({ code: "NOT_FOUND" })
+      }
+
+      return resource
+    }),
+
+  getRolesFor: protectedProcedure.input(getRolesForSchema).query(
+    async ({ ctx, input: { resourceId, siteId } }) =>
+      await getResourcePermission({
+        resourceId: resourceId ?? null,
+        siteId,
+        userId: ctx.user.id,
+      }),
+  ),
+
+  getWithFullPermalink: protectedProcedure
+    .input(getFullPermalinkSchema)
+    .query(async ({ ctx, input: { siteId, resourceId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        action: "read",
+        resourceIds: [resourceId],
+        siteId,
+        userId: ctx.user.id,
+      })
+
+      const result = await getWithFullPermalink({
+        resourceIds: [resourceId],
+        siteId,
+      })
+
+      if (result.length === 0 || !result[0]) {
+        throw new TRPCError({ code: "NOT_FOUND" })
+      }
+
+      return result[0]
+    }),
+
+  listWithoutRoot: protectedProcedure
+    .input(listResourceSchema)
+    .query(
+      async ({
+        ctx,
+        input: { siteId, resourceId, offset, limit, orderBy },
+      }) => {
+        await bulkValidateUserPermissionsForResources({
+          action: "read",
+          resourceIds: [
+            isDefinedNumber(resourceId) ? String(resourceId) : null,
+          ],
+          siteId,
+          userId: ctx.user.id,
+        })
+
+        let query = db
+          .selectFrom("Resource")
+          .where("Resource.siteId", "=", siteId)
+          .where("Resource.type", "!=", ResourceType.RootPage)
+          .where("Resource.type", "!=", ResourceType.IndexPage)
+          .where("Resource.type", "!=", ResourceType.FolderMeta)
+          .where("Resource.type", "!=", ResourceType.CollectionMeta)
+
+        query = isDefinedNumber(resourceId)
+          ? query.where("Resource.parentId", "=", String(resourceId))
+          : query
+              .where("Resource.parentId", "is", null)
+              .where("Resource.permalink", "!=", SEARCH_PAGE_PERMALINK)
+
+        query = applyResourceOrderBy(query, orderBy)
+
+        // Deferred: Add pagination support
+        return await query
+          .offset(offset)
+          .limit(limit)
+          .select([
+            "Resource.id",
+            "Resource.permalink",
+            "Resource.title",
+            "Resource.publishedVersionId",
+            "Resource.draftBlobId",
+            "Resource.type",
+            "Resource.parentId",
+            "Resource.updatedAt",
+            "Resource.scheduledAt",
+          ])
+          .execute()
+      },
+    ),
 
   move: protectedProcedure
     .input(moveSchema)
@@ -353,9 +679,9 @@ export const resourceRouter = router({
       }) => {
         const isValid = await validateUserPermissionsForMove({
           from: movedResourceId,
+          siteId,
           to: destinationResourceId,
           userId: ctx.user.id,
-          siteId,
         })
 
         if (!isValid) {
@@ -378,9 +704,9 @@ export const resourceRouter = router({
               }),
           )
 
-        const result = await db
-          .transaction()
-          .execute(async (tx) => {
+        let result
+        try {
+          result = await db.transaction().execute(async (tx) => {
             const toMove = await tx
               .selectFrom("Resource")
               .where("id", "=", movedResourceId)
@@ -392,7 +718,7 @@ export const resourceRouter = router({
             }
 
             let query = tx.selectFrom("Resource")
-            query = !!destinationResourceId
+            query = hasNonEmptyString(destinationResourceId)
               ? query.where("id", "=", destinationResourceId)
               : query
                   .where("type", "=", ResourceType.RootPage)
@@ -430,8 +756,8 @@ export const resourceRouter = router({
                     .where("Resource.parentId", "=", movedResourceId)
                     // Use UNION (distinct) so recursive traversal terminates
                     // even if legacy cyclic resource graphs exist.
-                    .union((eb) =>
-                      eb
+                    .union((unionEb) =>
+                      unionEb
                         .selectFrom("Resource")
                         .innerJoin(
                           "Descendants",
@@ -447,7 +773,7 @@ export const resourceRouter = router({
 
               const descendantIds = descendants.map((d) => d.id)
               if (
-                destinationResourceId &&
+                hasNonEmptyString(destinationResourceId) &&
                 descendantIds.includes(destinationResourceId)
               ) {
                 throw new TRPCError({
@@ -463,7 +789,9 @@ export const resourceRouter = router({
               siteId,
               Number(movedResourceId),
             )
-            const destinationFullPermalink = destinationResourceId
+            const destinationFullPermalink = hasNonEmptyString(
+              destinationResourceId,
+            )
               ? await getResourceFullPermalink(
                   siteId,
                   Number(destinationResourceId),
@@ -473,8 +801,8 @@ export const resourceRouter = router({
 
             await tx
               .updateTable("Resource")
-              .where("siteId", "=", Number(siteId))
-              .where("id", "=", String(movedResourceId))
+              .where("siteId", "=", siteId)
+              .where("id", "=", movedResourceId)
               .where("Resource.type", "in", [
                 ResourceType.Page,
                 ResourceType.CollectionPage,
@@ -483,15 +811,15 @@ export const resourceRouter = router({
                 ResourceType.CollectionLink,
               ])
               .set({
-                parentId: !!destinationResourceId
-                  ? String(destinationResourceId)
+                parentId: hasNonEmptyString(destinationResourceId)
+                  ? destinationResourceId
                   : null,
               })
               .execute()
 
             const moved = await tx
               .selectFrom("Resource")
-              .where("siteId", "=", Number(siteId))
+              .where("siteId", "=", siteId)
               .where("id", "=", movedResourceId)
               .select(defaultResourceSelect)
               .executeTakeFirst()
@@ -507,10 +835,10 @@ export const resourceRouter = router({
             }
 
             await logResourceEvent(tx, {
-              siteId,
-              eventType: AuditLogEvent.ResourceUpdate,
-              delta: { before: toMove, after: moved },
               by: user,
+              delta: { after: moved, before: toMove },
+              eventType: AuditLogEvent.ResourceUpdate,
+              siteId,
             })
 
             // Keep redirects consistent with the new URL. Page/CollectionPage
@@ -521,13 +849,13 @@ export const resourceRouter = router({
               oldFullPermalink !== null
             ) {
               await applyPermalinkChangeRedirects(tx, {
-                siteId,
-                oldFullPermalink,
-                newFullPermalink,
-                resourceId: movedResourceId,
-                isPublished: toMove.publishedVersionId !== null,
-                shouldCreateRedirect,
                 byUserId: user.id,
+                isPublished: toMove.publishedVersionId !== null,
+                newFullPermalink,
+                oldFullPermalink,
+                resourceId: movedResourceId,
+                shouldCreateRedirect,
+                siteId,
               })
             }
 
@@ -540,339 +868,39 @@ export const resourceRouter = router({
                 toMove.type === ResourceType.Collection) &&
               oldFullPermalink !== null
             ) {
-              await applyFolderPermalinkChangeRedirects(tx, {
+              const hasLiveContent = await hasPublishedDescendant(tx, {
+                resourceId: movedResourceId,
                 siteId,
-                oldFullPermalink,
+              })
+              await applyFolderPermalinkChangeRedirects(tx, {
+                byUserId: user.id,
+                hasLiveContent,
                 newFullPermalink,
+                oldFullPermalink,
                 resourceId: movedResourceId,
                 shouldCreateRedirect,
-                hasLiveContent: await hasPublishedDescendant(tx, {
-                  siteId,
-                  resourceId: movedResourceId,
-                }),
-                byUserId: user.id,
+                siteId,
               })
             }
 
             return moved
           })
-          .catch((err) => {
-            if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
-              throw new TRPCError({
-                code: "CONFLICT",
-                message: "A resource with the same permalink already exists",
-              })
-            }
-            throw err
-          })
+        } catch (error: unknown) {
+          // oxlint-disable-next-line anti-slop/no-unknown-parameters, typescript/no-confusing-void-expression -- PG error code check at driver boundary
+          if (get(error, "code") === PG_ERROR_CODES.uniqueViolation) {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "A resource with the same permalink already exists",
+            })
+          }
+
+          throw error
+        }
 
         await publishResource(user.id, result, ctx.logger)
         return result
       },
     ),
-
-  countWithoutRoot: protectedProcedure
-    .input(countResourceSchema)
-    .query(async ({ ctx, input: { siteId, resourceId } }) => {
-      await bulkValidateUserPermissionsForResources({
-        action: "read",
-        resourceIds: [resourceId ? String(resourceId) : null],
-        userId: ctx.user.id,
-        siteId: Number(siteId),
-      })
-
-      // Throw not found if the provided resourceId does not exist
-      if (resourceId) {
-        await db
-          .selectFrom("Resource")
-          .where("id", "=", String(resourceId))
-          .select("type")
-          .executeTakeFirstOrThrow(
-            () =>
-              new TRPCError({
-                code: "NOT_FOUND",
-                message: "Resource not found",
-              }),
-          )
-      }
-
-      // TODO(perf): If too slow, consider caching this count, but 4-5 million rows should be fine
-      let query = db
-        .selectFrom("Resource")
-        .where("Resource.siteId", "=", siteId)
-        .where("Resource.type", "!=", ResourceType.RootPage)
-        .where("Resource.type", "!=", ResourceType.FolderMeta)
-        .where("Resource.type", "!=", ResourceType.CollectionMeta)
-        .where("Resource.type", "!=", ResourceType.IndexPage)
-        .select((eb) => [eb.fn.countAll().as("totalCount")])
-
-      if (resourceId) {
-        query = query.where("Resource.parentId", "=", String(resourceId))
-      } else {
-        query = query
-          .where("Resource.parentId", "is", null)
-          .where("Resource.permalink", "!=", SEARCH_PAGE_PERMALINK)
-      }
-
-      const result = await query.executeTakeFirst()
-      return Number(result?.totalCount ?? 0)
-    }),
-
-  listWithoutRoot: protectedProcedure
-    .input(listResourceSchema)
-    .query(
-      async ({
-        ctx,
-        input: { siteId, resourceId, offset, limit, orderBy },
-      }) => {
-        await bulkValidateUserPermissionsForResources({
-          action: "read",
-          resourceIds: [resourceId ? String(resourceId) : null],
-          userId: ctx.user.id,
-          siteId: Number(siteId),
-        })
-
-        let query = db
-          .selectFrom("Resource")
-          .where("Resource.siteId", "=", siteId)
-          .where("Resource.type", "!=", ResourceType.RootPage)
-          .where("Resource.type", "!=", ResourceType.IndexPage)
-          .where("Resource.type", "!=", ResourceType.FolderMeta)
-          .where("Resource.type", "!=", ResourceType.CollectionMeta)
-
-        if (resourceId) {
-          query = query.where("Resource.parentId", "=", String(resourceId))
-        } else {
-          query = query
-            .where("Resource.parentId", "is", null)
-            .where("Resource.permalink", "!=", SEARCH_PAGE_PERMALINK)
-        }
-
-        query = applyResourceOrderBy(query, orderBy)
-
-        // TODO: Add pagination support
-        return query
-          .offset(offset)
-          .limit(limit)
-          .select([
-            "Resource.id",
-            "Resource.permalink",
-            "Resource.title",
-            "Resource.publishedVersionId",
-            "Resource.draftBlobId",
-            "Resource.type",
-            "Resource.parentId",
-            "Resource.updatedAt",
-            "Resource.scheduledAt",
-          ])
-          .execute()
-      },
-    ),
-
-  delete: protectedProcedure
-    .input(deleteResourceSchema)
-    .mutation(async ({ ctx, input: { siteId, resourceId } }) => {
-      await bulkValidateUserPermissionsForResources({
-        action: "delete",
-        resourceIds: [resourceId],
-        userId: ctx.user.id,
-        siteId: Number(siteId),
-      })
-
-      const user = await db
-        .selectFrom("User")
-        .selectAll()
-        .where("id", "=", ctx.user.id)
-        .executeTakeFirstOrThrow(
-          () =>
-            new TRPCError({
-              code: "BAD_REQUEST",
-              message: "Please ensure that you are logged in",
-            }),
-        )
-
-      const result = await db.transaction().execute(async (tx) => {
-        const before = await tx
-          .selectFrom("Resource")
-          .where("siteId", "=", Number(siteId))
-          .where("id", "=", resourceId)
-          .select(defaultResourceSelect)
-          .executeTakeFirst()
-
-        if (!before) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "The resource to be deleted could not be found",
-          })
-        }
-
-        // Prevent users from deleting the search page (permalink /search, no parent)
-        // This is a special page that is used to display the SearchSG results
-        if (
-          before.permalink === SEARCH_PAGE_PERMALINK &&
-          before.parentId === null
-        ) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "The search page cannot be deleted",
-          })
-        }
-
-        await logResourceEvent(tx, {
-          siteId,
-          delta: {
-            after: null,
-            before,
-          },
-          by: user,
-          eventType: AuditLogEvent.ResourceDelete,
-        })
-
-        // Soft-delete redirects pointing at this resource (or any descendant)
-        // in the same transaction — once the page is gone they resolve to
-        // nothing. Run before the delete while the subtree is still resolvable;
-        // the delete's site publish covers the removal.
-        await softDeleteRedirectsPointingToResource(tx, {
-          siteId: Number(siteId),
-          resourceId: String(resourceId),
-          byUserId: user.id,
-        })
-
-        return tx
-          .deleteFrom("Resource")
-          .where("Resource.id", "=", String(resourceId))
-          .where("Resource.siteId", "=", siteId)
-          .where("Resource.type", "!=", ResourceType.RootPage)
-          .returningAll()
-          .executeTakeFirst()
-      })
-
-      if (!result) {
-        throw new TRPCError({ code: "BAD_REQUEST" })
-      }
-
-      await publishResource(user.id, result, ctx.logger)
-
-      // NOTE: We need to do this cast as the property is a `bigint`
-      // and trpc cannot serialise it, which leads to errors
-      return result
-    }),
-
-  getParentOf: protectedProcedure
-    .input(getParentSchema)
-    .query(async ({ ctx, input: { siteId, resourceId } }) => {
-      await bulkValidateUserPermissionsForResources({
-        action: "read",
-        resourceIds: [resourceId],
-        userId: ctx.user.id,
-        siteId: Number(siteId),
-      })
-
-      const resource = await db
-        .selectFrom("Resource")
-        .where("Resource.siteId", "=", siteId)
-        .where("Resource.id", "=", resourceId)
-        .select(["Resource.type", "Resource.id", "Resource.title"])
-        .select((eb) =>
-          jsonObjectFrom(
-            eb
-              .selectFrom("Resource")
-              .innerJoin("Resource as parent", "parent.id", "Resource.parentId")
-              .where("Resource.id", "=", resourceId)
-              .where("parent.id", "is not", null)
-              .select([
-                "parent.type",
-                "parent.id",
-                "parent.parentId",
-                "parent.title",
-              ]),
-          ).as("parent"),
-        )
-        .executeTakeFirst()
-
-      if (!resource) {
-        throw new TRPCError({ code: "NOT_FOUND" })
-      }
-
-      return resource
-    }),
-
-  getWithFullPermalink: protectedProcedure
-    .input(getFullPermalinkSchema)
-    .query(async ({ ctx, input: { siteId, resourceId } }) => {
-      await bulkValidateUserPermissionsForResources({
-        action: "read",
-        resourceIds: [resourceId],
-        userId: ctx.user.id,
-        siteId: Number(siteId),
-      })
-
-      const result = await getWithFullPermalink({
-        resourceIds: [resourceId],
-        siteId: Number(siteId),
-      })
-
-      if (result.length === 0 || !result[0]) {
-        throw new TRPCError({ code: "NOT_FOUND" })
-      }
-
-      return result[0]
-    }),
-
-  getRolesFor: protectedProcedure
-    .input(getRolesForSchema)
-    .query(async ({ ctx, input: { resourceId, siteId } }) => {
-      return await getResourcePermission({
-        userId: ctx.user.id,
-        siteId,
-        resourceId: resourceId ? String(resourceId) : null,
-      })
-    }),
-
-  getAncestryStack: protectedProcedure
-    .input(getAncestryStackSchema)
-    .output(getAncestryStackOutputSchema)
-    .query(async ({ ctx, input: { siteId, resourceId, includeSelf } }) => {
-      await bulkValidateUserPermissionsForResources({
-        action: "read",
-        resourceIds: [resourceId ? String(resourceId) : null],
-        userId: ctx.user.id,
-        siteId: Number(siteId),
-      })
-
-      if (!resourceId) {
-        return []
-      }
-      const batchAncestry = await getBatchAncestryWithSelfQuery({
-        siteId: Number(siteId),
-        resourceIds: [resourceId],
-      })
-      return includeSelf
-        ? (batchAncestry[0] ?? [])
-        : (batchAncestry[0]?.slice(0, -1) ?? [])
-    }),
-
-  getBatchAncestryWithSelf: protectedProcedure
-    .input(getBatchAncestryWithSelfSchema)
-    .output(getBatchAncestryWithSelfOutputSchema)
-    .query(async ({ ctx, input: { siteId, resourceIds } }) => {
-      await bulkValidateUserPermissionsForResources({
-        action: "read",
-        resourceIds: resourceIds.map((resourceId) =>
-          resourceId ? String(resourceId) : null,
-        ),
-        userId: ctx.user.id,
-        siteId: Number(siteId),
-      })
-
-      if (resourceIds.length === 0) {
-        return []
-      }
-      return await getBatchAncestryWithSelfQuery({
-        siteId: Number(siteId),
-        resourceIds,
-      })
-    }),
 
   search: protectedProcedure
     .input(searchSchema)
@@ -883,37 +911,37 @@ export const resourceRouter = router({
         input: { siteId, query, resourceTypes, cursor: offset, limit },
       }) => {
         await validateUserPermissionsForSite({
+          action: "read",
           siteId: Number(siteId),
           userId: ctx.user.id,
-          action: "read",
         })
 
-        if (!query) {
+        if (!hasNonEmptyString(query)) {
           return {
-            totalCount: null,
-            resources: [],
+            nextOffset: null,
             recentlyEdited: await getSearchRecentlyEdited({
               siteId: Number(siteId),
             }),
-            nextOffset: null,
+            resources: [],
+            totalCount: null,
           }
         }
 
         const searchResults = await getSearchResults({
-          siteId: Number(siteId),
-          query,
-          offset,
           limit,
+          offset,
+          query,
           resourceTypes,
+          siteId: Number(siteId),
         })
 
         const totalCount = Number(searchResults.totalCount)
         const nextOffset = totalCount > offset + limit ? offset + limit : null
         return {
-          totalCount: Number(searchResults.totalCount),
-          resources: searchResults.resources,
-          recentlyEdited: [],
           nextOffset,
+          recentlyEdited: [],
+          resources: searchResults.resources,
+          totalCount: Number(searchResults.totalCount),
         }
       },
     ),
@@ -924,50 +952,21 @@ export const resourceRouter = router({
     .query(async ({ ctx, input: { siteId, resourceIds } }) => {
       await bulkValidateUserPermissionsForResources({
         action: "read",
-        resourceIds: resourceIds.map((resourceId) =>
-          resourceId ? String(resourceId) : null,
-        ),
-        userId: ctx.user.id,
+        resourceIds: resourceIds.map((id) => id ?? null),
         siteId: Number(siteId),
+        userId: ctx.user.id,
       })
 
       if (resourceIds.length === 0) {
         return []
       }
-      return (
-        await getSearchWithResourceIds({
-          siteId: Number(siteId),
-          resourceIds,
-        })
-      ).sort(
+      const resources = await getSearchWithResourceIds({
+        resourceIds,
+        siteId: Number(siteId),
+      })
+      return resources.toSorted(
         // Sort resources to match order of input resourceIds
         (a, b) => resourceIds.indexOf(a.id) - resourceIds.indexOf(b.id),
       )
-    }),
-
-  getIndexPage: protectedProcedure
-    .input(getIndexPageSchema)
-    .output(getIndexPageOutputSchema)
-    .query(async ({ ctx, input: { siteId, parentId } }) => {
-      await bulkValidateUserPermissionsForResources({
-        action: "read",
-        resourceIds: [parentId],
-        userId: ctx.user.id,
-        siteId: Number(siteId),
-      })
-
-      const parent = await db
-        .selectFrom("Resource")
-        .where("Resource.siteId", "=", siteId)
-        .where("Resource.parentId", "=", parentId)
-        .where("Resource.type", "=", ResourceType.IndexPage)
-        .select(["Resource.id"])
-        .executeTakeFirst()
-
-      if (!parent) {
-        throw new TRPCError({ code: "NOT_FOUND" })
-      }
-
-      return parent
     }),
 })

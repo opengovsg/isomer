@@ -33,7 +33,6 @@ const COMMON_HANDLERS = [
 ]
 
 const meta: Meta<typeof EditPage> = {
-  title: "Pages/Edit Page/Collection Index Page",
   component: EditPage,
   parameters: {
     getLayout: EditPage.getLayout,
@@ -42,14 +41,15 @@ const meta: Meta<typeof EditPage> = {
     },
     nextjs: {
       router: {
-        query: {
-          siteId: "1",
-          pageId: "1",
-        },
         pathname: "/sites/[siteId]/pages/[pageId]",
+        query: {
+          pageId: "1",
+          siteId: "1",
+        },
       },
     },
   },
+  title: "Pages/Edit Page/Collection Index Page",
 }
 
 export default meta
@@ -62,7 +62,7 @@ export const EditFixedBlockState: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const button = await canvas.findByRole("button", {
-      name: /Collection settings/i,
+      name: /Collection settings/iu,
     })
     await userEvent.click(button)
   },
@@ -78,7 +78,7 @@ export const SaveToast: Story = {
     await userEvent.type(textbox, "very cool summary")
 
     const saveButton = await canvas.findByRole("button", {
-      name: /Save changes/i,
+      name: /Save changes/iu,
     })
     await userEvent.click(saveButton)
   },
@@ -89,8 +89,8 @@ export const PublishedState: Story = {
     msw: {
       handlers: [
         pageHandlers.readPage.content({
-          state: ResourceState.Published,
           draftBlobId: null,
+          state: ResourceState.Published,
         }),
         ...COMMON_HANDLERS,
       ],
@@ -102,8 +102,8 @@ export const WithBanner: Story = {
   parameters: {
     growthbook: [
       createBannerGbParameters({
-        variant: "info",
         message: "This is a test banner",
+        variant: "info",
       }),
     ],
   },
@@ -115,8 +115,8 @@ export const NewCollectionIndexEditingExperienceAsAdmin: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await canvas.findByText(/Manage Collection/i)
-    await canvas.findByRole("button", { name: /Filters/i })
+    await canvas.findByText(/Manage Collection/iu)
+    await canvas.findByRole("button", { name: /Filters/iu })
   },
 }
 
@@ -129,10 +129,10 @@ export const NewCollectionIndexEditingExperienceAsEditor: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await canvas.findByText(/Manage Collection/i)
-    await canvas.findByRole("button", { name: /Collection display/i })
+    await canvas.findByText(/Manage Collection/iu)
+    await canvas.findByRole("button", { name: /Collection display/iu })
     await expect(
-      canvas.queryByRole("button", { name: /Filters/i }),
+      canvas.queryByRole("button", { name: /Filters/iu }),
     ).not.toBeInTheDocument()
   },
 }
@@ -143,7 +143,7 @@ export const NewCollectionIndexEditingExperienceForDisplay: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await canvas.findByText(/Manage Collection/i)
+    await canvas.findByText(/Manage Collection/iu)
   },
 }
 
@@ -154,9 +154,9 @@ export const NewCollectionIndexEditingExperienceForFilters: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const button = await canvas.findByRole("button", {
-      name: /Filters/i,
+      name: /Filters/iu,
     })
     await userEvent.click(button)
-    await canvas.findByText(/Manage filters/i)
+    await canvas.findByText(/Manage filters/iu)
   },
 }

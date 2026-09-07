@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-void-return, eslint/no-shadow -- studio lint cleanup */
 import type { Editor } from "@tiptap/react"
 import { Box, HStack } from "@chakra-ui/react"
 import { BubbleMenu } from "@tiptap/react/menus"

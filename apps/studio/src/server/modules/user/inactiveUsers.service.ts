@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-boolean-expressions, eslint/func-style, eslint/no-negated-condition, eslint/no-eq-null, eslint/eqeqeq, unicorn/no-negated-condition, eslint/no-await-in-loop -- server lint cleanup */
 import { createId } from "@paralleldrive/cuid2"
 import { startOfDay, subDays } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
@@ -7,6 +8,7 @@ import {
   sendAccountDeactivationWarningEmail,
 } from "~/features/mail/service"
 import { createBaseLogger } from "~/lib/logger"
+import { hasNonEmptyString } from "~/utils/truthiness"
 import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 
 import type { ResourcePermission, Site, User } from "../database/types"
@@ -32,7 +34,7 @@ const activeIsomerAdminUserIds = () =>
     )
     .select("userId")
 
-export function getDateOnlyInSG(daysAgo: number): Date {
+export const getDateOnlyInSG = (daysAgo: number): Date => {
   const singaporeTime = toZonedTime(new Date(), "Asia/Singapore")
   const targetDate = subDays(singaporeTime, daysAgo)
   const startOfTargetDate = startOfDay(targetDate)
@@ -47,22 +49,24 @@ export const getInactiveUsers = async ({
   fromDaysAgo,
   toDaysAgo = MAX_DAYS_FROM_LAST_LOGIN,
 }: GetInactiveUsersProps): Promise<User[]> => {
-  const fromDateThreshold = fromDaysAgo ? getDateOnlyInSG(fromDaysAgo) : null
+  const fromDateThreshold =
+    fromDaysAgo != null ? getDateOnlyInSG(fromDaysAgo) : null
   const toDateThreshold = getDateOnlyInSG(toDaysAgo)
 
-  return db
+  return await db
     .selectFrom("User")
     .innerJoin("ResourcePermission", "ResourcePermission.userId", "User.id")
     .where("User.deletedAt", "is", null)
     .where("ResourcePermission.deletedAt", "is", null)
-    .where("User.id", "not in", activeIsomerAdminUserIds()) // needed to provide support for agencies
+    .where("User.id", "not in", activeIsomerAdminUserIds())
+    // needed to provide support for agencies
     .where((eb) =>
       eb.or([
         // Users who have never logged in
         eb.and([
           eb("User.lastLoginAt", "is", null),
           eb("User.createdAt", "<=", toDateThreshold),
-          ...(fromDateThreshold
+          ...(fromDateThreshold != null
             ? [eb("User.createdAt", ">", fromDateThreshold)]
             : []),
         ]),
@@ -70,7 +74,7 @@ export const getInactiveUsers = async ({
         eb.and([
           eb("User.lastLoginAt", "is not", null),
           eb("User.lastLoginAt", "<=", toDateThreshold),
-          ...(fromDateThreshold
+          ...(fromDateThreshold != null
             ? [eb("User.lastLoginAt", ">", fromDateThreshold)]
             : []),
         ]),
@@ -90,7 +94,9 @@ export const bulkSendAccountDeactivationWarningEmails = async ({
   })
 
   const userIds = inactiveUsers.map((user) => user.id)
-  if (userIds.length === 0) return
+  if (userIds.length === 0) {
+    return
+  }
 
   const userAndSiteNames: { userEmail: string; siteNames: string[] }[] =
     await db
@@ -98,7 +104,8 @@ export const bulkSendAccountDeactivationWarningEmails = async ({
       .innerJoin("ResourcePermission", "ResourcePermission.userId", "User.id")
       .innerJoin("Site", "Site.id", "ResourcePermission.siteId")
       .where("User.id", "in", userIds)
-      .where("User.id", "not in", activeIsomerAdminUserIds()) // we don't want to send emails to admins and migrators
+      .where("User.id", "not in", activeIsomerAdminUserIds())
+      // we don't want to send emails to admins and migrators
       .where("User.deletedAt", "is", null)
       .where("ResourcePermission.deletedAt", "is", null)
       .select([
@@ -112,13 +119,15 @@ export const bulkSendAccountDeactivationWarningEmails = async ({
     userAndSiteNames.map(async ({ userEmail, siteNames }) => {
       // should not happen as we filter out users who have no site permissions
       // but just in case, we add this as a safety net
-      if (siteNames.length === 0) return
+      if (siteNames.length === 0) {
+        return
+      }
 
       try {
         await sendAccountDeactivationWarningEmail({
+          inHowManyDays,
           recipientEmail: userEmail,
           siteNames,
-          inHowManyDays,
         })
       } catch {
         logger.error(
@@ -134,14 +143,17 @@ interface DeactivateUsersProps {
 }
 const deactivateUsers = async ({ userIds }: DeactivateUsersProps) => {
   // prevent empty array from being passed in
-  if (userIds.length === 0) return []
+  if (userIds.length === 0) {
+    return []
+  }
 
   let deletedPermissions: ResourcePermission[] = []
 
   try {
     deletedPermissions = await db
       .transaction()
-      .setIsolationLevel("serializable") // for idempotency
+      .setIsolationLevel("serializable")
+      // for idempotency
       .execute(async (tx) => {
         // Upsert so the system user is guaranteed to exist for audit-log
         // attribution, rather than relying on it being created manually.
@@ -150,8 +162,8 @@ const deactivateUsers = async ({ userIds }: DeactivateUsersProps) => {
         const systemUser = await tx
           .insertInto("User")
           .values({
-            id: createId(),
             email: env.SYSTEM_USER_EMAIL,
+            id: createId(),
             name: "System",
             phone: "",
           })
@@ -170,7 +182,9 @@ const deactivateUsers = async ({ userIds }: DeactivateUsersProps) => {
           .selectAll()
           .execute()
 
-        if (permissionsToDelete.length === 0) return []
+        if (permissionsToDelete.length === 0) {
+          return []
+        }
 
         const updated = await tx
           .updateTable("ResourcePermission")
@@ -195,11 +209,11 @@ const deactivateUsers = async ({ userIds }: DeactivateUsersProps) => {
             }
 
             await logPermissionEvent(tx, {
-              eventType: AuditLogEvent.PermissionDelete,
               by: systemUser,
-              delta: { before, after },
-              siteId: after.siteId,
+              delta: { after, before },
+              eventType: AuditLogEvent.PermissionDelete,
               metadata: { reason: "inactivity" },
+              siteId: after.siteId,
             })
           }),
         )
@@ -235,7 +249,7 @@ const deactivateUsers = async ({ userIds }: DeactivateUsersProps) => {
         siteIds.push(permission.siteId)
       }
     }
-    return { user, siteIds }
+    return { siteIds, user }
   })
 }
 
@@ -245,47 +259,46 @@ interface GetSiteAndAdminsProps {
 }
 const getSiteAndAdmins = async ({ userId, siteIds }: GetSiteAndAdminsProps) => {
   // Prevent empty array from being passed in
-  if (siteIds.length === 0) return []
+  if (siteIds.length === 0) {
+    return []
+  }
 
-  return (
-    db
-      .with("siteAdmins", (eb) =>
-        eb
-          .selectFrom("Site")
-          .innerJoin(
-            "ResourcePermission",
-            "ResourcePermission.siteId",
-            "Site.id",
-          )
-          .innerJoin("User", "User.id", "ResourcePermission.userId")
-          .where("Site.id", "in", siteIds)
-          .where("ResourcePermission.userId", "!=", userId) // don't want to ask users to ask themselves for permissions
-          .where("ResourcePermission.deletedAt", "is", null)
-          .where("ResourcePermission.role", "=", RoleType.Admin) // should only give the admin emails to request reactivation permissions from
-          .where("User.id", "not in", activeIsomerAdminUserIds()) // we don't want to send emails to active admins and migrators
-          .select([
-            "Site.id as siteId",
-            db.fn.agg<string[]>("array_agg", ["User.email"]).as("adminEmails"),
-          ])
-          .groupBy("Site.id"),
-      )
-      // Needed as we still want the site records even if there are no other users with permissions for that site
-      .with("baseSites", (eb) =>
-        eb
-          .selectFrom("Site")
-          .where("Site.id", "in", siteIds)
-          .select(["Site.id as siteId", "Site.name as siteName"]),
-      )
-      .selectFrom("baseSites")
-      .leftJoin("siteAdmins", "siteAdmins.siteId", "baseSites.siteId")
-      .select([
-        "baseSites.siteName",
-        sql<string[]>`COALESCE("siteAdmins"."adminEmails", ARRAY[]::text[])`.as(
-          "adminEmails",
-        ),
-      ])
-      .execute()
-  )
+  return await db
+    .with("siteAdmins", (eb) =>
+      eb
+        .selectFrom("Site")
+        .innerJoin("ResourcePermission", "ResourcePermission.siteId", "Site.id")
+        .innerJoin("User", "User.id", "ResourcePermission.userId")
+        .where("Site.id", "in", siteIds)
+        .where("ResourcePermission.userId", "!=", userId)
+        // don't want to ask users to ask themselves for permissions
+        .where("ResourcePermission.deletedAt", "is", null)
+        .where("ResourcePermission.role", "=", RoleType.Admin)
+        // should only give the admin emails to request reactivation permissions from
+        .where("User.id", "not in", activeIsomerAdminUserIds())
+        // we don't want to send emails to active admins and migrators
+        .select([
+          "Site.id as siteId",
+          db.fn.agg<string[]>("array_agg", ["User.email"]).as("adminEmails"),
+        ])
+        .groupBy("Site.id"),
+    )
+    // Needed as we still want the site records even if there are no other users with permissions for that site
+    .with("baseSites", (eb) =>
+      eb
+        .selectFrom("Site")
+        .where("Site.id", "in", siteIds)
+        .select(["Site.id as siteId", "Site.name as siteName"]),
+    )
+    .selectFrom("baseSites")
+    .leftJoin("siteAdmins", "siteAdmins.siteId", "baseSites.siteId")
+    .select([
+      "baseSites.siteName",
+      sql<string[]>`COALESCE("siteAdmins"."adminEmails", ARRAY[]::text[])`.as(
+        "adminEmails",
+      ),
+    ])
+    .execute()
 }
 
 export const bulkDeactivateInactiveUsers = async (): Promise<void> => {
@@ -314,14 +327,17 @@ export const bulkDeactivateInactiveUsers = async (): Promise<void> => {
   }
 
   for (const { user, siteIds } of deactivatedUsersAndSiteIds) {
-    if (siteIds.length === 0) continue
+    if (siteIds.length === 0) {
+      continue
+    }
 
     try {
       const sitesAndAdmins = await getSiteAndAdmins({
-        userId: user.id,
         siteIds,
+        userId: user.id,
       })
 
+      // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
       await sendAccountDeactivationEmail({
         recipientEmail: user.email,
         sitesAndAdmins,

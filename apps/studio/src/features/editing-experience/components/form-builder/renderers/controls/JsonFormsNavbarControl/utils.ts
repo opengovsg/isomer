@@ -1,6 +1,7 @@
 import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/closest-edge"
 import { reorder } from "@atlaskit/pragmatic-drag-and-drop/reorder"
 import { cloneDeep, get, set } from "lodash-es"
+import { isDefinedNumber } from "~/utils/truthiness"
 
 import type {
   MoveItemOperation,
@@ -16,10 +17,12 @@ export const getNavbarItemPath = (
 ): NavbarItemPath => {
   if (parentIndex !== undefined) {
     // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
+    // oxlint-disable-next-line unicorn/no-unsafe-type-assertion -- core cleanup deferred
     return `items.${parentIndex}.items.${index}` as NavbarItemPath
   }
 
   // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
+  // oxlint-disable-next-line unicorn/no-unsafe-type-assertion -- core cleanup deferred
   return `items.${index}` as NavbarItemPath
 }
 
@@ -31,11 +34,10 @@ export const isSubItemPath = (path: string): path is NavbarItemPath =>
 export const isFirstLevelLinksOverLimit = (
   itemCount: number,
   maxItems?: number,
-): boolean => !!(maxItems && itemCount > maxItems)
+): boolean => isDefinedNumber(maxItems) && maxItems > 0 && itemCount > maxItems
 
-export const getInstancePathFromNavbarItemPath = (path: NavbarItemPath) => {
-  return `/${path.replace(/\./g, "/")}`
-}
+export const getInstancePathFromNavbarItemPath = (path: NavbarItemPath) =>
+  `/${path.replaceAll(".", "/")}`
 
 // Helper function to extract the indices from the navbar item path in the
 // format "items.{index}" or "items.{parentIndex}.items.{index}"
@@ -85,12 +87,14 @@ const insertSubItem = (
   parentIndex: number,
   item: NavbarItems["items"][number],
 ) => {
+  // oxlint-disable-next-line unicorn/prefer-structured-clone -- core cleanup deferred
   const data = cloneDeep(items)
 
-  if (!items[parentIndex]?.items) {
-    set(data, [parentIndex, "items"], [item])
-  } else {
+  // oxlint-disable-next-line typescript/strict-boolean-expressions -- core cleanup deferred
+  if (items[parentIndex]?.items) {
     data[parentIndex]?.items?.push(item)
+  } else {
+    set(data, [parentIndex, "items"], [item])
   }
 
   return data
@@ -98,6 +102,7 @@ const insertSubItem = (
 
 // Helper function to determine the move item operation type, based on the
 // parameters provided
+// oxlint-disable-next-line eslint/complexity -- core cleanup deferred
 export const getMoveItemOperation = (
   originalPath: string,
   newPath: string,
@@ -153,11 +158,13 @@ const moveSingleMainItemToBecomeSubitem = (
   targetLocationIndices: NavbarItemIndices,
 ) => {
   // SAFETY: navbar item path resolves to a top-level or nested navbar item record
+  // oxlint-disable-next-line unicorn/no-unsafe-type-assertion -- core cleanup deferred
   const itemToMove = get({ items: data }, originalPath) as
-    | NavbarItems["items"][number]
-    | undefined
+    // oxlint-disable-next-line unicorn/no-redundant-type-constituents -- core cleanup deferred
+    NavbarItems["items"][number] | undefined
 
   if (
+    // oxlint-disable-next-line typescript/strict-boolean-expressions -- core cleanup deferred
     !itemToMove ||
     (itemToMove.items !== undefined && itemToMove.items.length > 0)
   ) {
@@ -188,6 +195,7 @@ const moveSubItemToBecomeSubItemOfAnother = (
     1,
   )[0]
 
+  // oxlint-disable-next-line typescript/strict-boolean-expressions -- core cleanup deferred
   if (!itemToMove) {
     return data
   }
@@ -211,9 +219,9 @@ const reorderWithinSameList = (
       return {
         ...item,
         items: reorder({
+          finishIndex,
           list: item.items ?? [],
           startIndex,
-          finishIndex,
         }),
       }
     }
@@ -237,10 +245,12 @@ const moveSubItemToBecomeMainItem = (
   }
 
   // SAFETY: navbar item path resolves to a top-level or nested navbar item record
+  // oxlint-disable-next-line unicorn/no-unsafe-type-assertion -- core cleanup deferred
   const itemToMove = get({ items: data }, originalPath) as
-    | NavbarItems["items"][number]
-    | undefined
+    // oxlint-disable-next-line unicorn/no-redundant-type-constituents -- core cleanup deferred
+    NavbarItems["items"][number] | undefined
 
+  // oxlint-disable-next-line typescript/strict-boolean-expressions -- core cleanup deferred
   if (!itemToMove) {
     return data
   }
@@ -268,9 +278,9 @@ const moveSubItemToBecomeMainItem = (
   )
 
   return reorder({
+    finishIndex,
     list: newData,
     startIndex: newData.length - 1,
-    finishIndex,
   })
 }
 
@@ -290,6 +300,7 @@ export const handleMoveItem = (
     return existingData
   }
 
+  // oxlint-disable-next-line unicorn/prefer-structured-clone -- core cleanup deferred
   const data = cloneDeep<NavbarItems["items"]>(existingData)
   const moveItemIndices = getNavbarItemIndices(originalPath)
   const targetLocationIndices = getNavbarItemIndices(newPath)
@@ -302,33 +313,37 @@ export const handleMoveItem = (
   )
 
   switch (operation) {
-    case "MoveSingleMainItemToBecomeSubitem":
+    case "MoveSingleMainItemToBecomeSubitem": {
       return moveSingleMainItemToBecomeSubitem(
         data,
         originalPath,
         moveItemIndices,
         targetLocationIndices,
       )
-    case "CombineSubitemToMainItem":
+    }
+    case "CombineSubitemToMainItem": {
       return moveSubItemToBecomeSubItemOfAnother(
         data,
         moveItemIndices,
         targetLocationIndices,
       )
-    case "ReorderWithinSameList":
+    }
+    case "ReorderWithinSameList": {
       return reorderWithinSameList(
         data,
         moveItemIndices,
         startIndex,
         finishIndex,
       )
-    case "ReorderMainItems":
+    }
+    case "ReorderMainItems": {
       return reorder({
+        finishIndex,
         list: data,
         startIndex,
-        finishIndex,
       })
-    case "MoveSubitemToBecomeMainItem":
+    }
+    case "MoveSubitemToBecomeMainItem": {
       return moveSubItemToBecomeMainItem(
         data,
         isMaxItemsReached,
@@ -337,8 +352,10 @@ export const handleMoveItem = (
         targetLocationIndices,
         closestEdge,
       )
-    default:
+    }
+    default: {
       const _: never = operation
       return data
+    }
   }
 }

@@ -8,9 +8,9 @@ import type {
 
 export const DEFAULT_RESOURCE_MODAL_STATE = {
   isOpen: false,
-  title: "",
   resourceId: "",
   resourceType: ResourceType.Collection,
+  title: "",
 }
 export const deleteResourceModalAtom = atom<DeleteResourceModalState>(
   DEFAULT_RESOURCE_MODAL_STATE,

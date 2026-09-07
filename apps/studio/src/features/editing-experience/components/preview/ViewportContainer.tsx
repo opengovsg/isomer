@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-boolean-expressions -- core cleanup deferred */
 import type { FlexProps } from "@chakra-ui/react"
 import type { IsomerSiteThemeProps } from "@opengovsg/isomer-components"
 import type { PropsWithChildren } from "react"
@@ -11,6 +12,7 @@ import type { ViewportOptions } from "./IframeToolbar"
 import { IframeToolbar } from "./IframeToolbar"
 import { PreviewIframe } from "./PreviewIframe"
 
+// oxlint-disable-next-line typescript/promise-function-async -- core cleanup deferred
 const PortalIfFullscreen = ({
   viewport,
   children,
@@ -45,11 +47,11 @@ export const ViewportContainer = ({
   const containerProps: Partial<FlexProps> = useMemo(() => {
     if (viewport === "fullscreen") {
       return {
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
         bottom: 0,
+        left: 0,
+        position: "fixed",
+        right: 0,
+        top: 0,
       }
     }
 

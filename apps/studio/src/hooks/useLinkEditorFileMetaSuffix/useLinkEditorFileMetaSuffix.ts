@@ -12,11 +12,11 @@ interface UseLinkEditorFileMetaSuffixParams {
 }
 
 /** Tracks file-link `[type, size]` suffix state for the link editor modal. */
-export function useLinkEditorFileMetaSuffix({
+export const useLinkEditorFileMetaSuffix = ({
   initialLinkText,
   initialLinkHref,
   showLinkText,
-}: UseLinkEditorFileMetaSuffixParams) {
+}: UseLinkEditorFileMetaSuffixParams) => {
   const isInitialFileLink =
     showLinkText && getLinkHrefType(initialLinkHref) === LINK_TYPES.File
 
@@ -32,7 +32,9 @@ export function useLinkEditorFileMetaSuffix({
 
   const onUploadedFile = useCallback((file: File) => {
     const suffix = buildFileUploadMetaSuffix(file)
-    if (!suffix) return
+    if (!suffix) {
+      return
+    }
     setFileMetaSuffix(suffix)
   }, [])
 
@@ -49,8 +51,8 @@ export function useLinkEditorFileMetaSuffix({
   )
 
   return {
-    strippedLinkText,
-    onUploadedFile: showLinkText ? onUploadedFile : undefined,
     buildFinalLinkTextForSave,
+    onUploadedFile: showLinkText ? onUploadedFile : undefined,
+    strippedLinkText,
   }
 }

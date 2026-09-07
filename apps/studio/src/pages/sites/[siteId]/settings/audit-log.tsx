@@ -26,8 +26,8 @@ const AuditLogExportSettingsPage: NextPageWithLayout = () => {
   const ability = useContext(UserManagementContext)
   const canManageUsers = ability.can("manage", "UserManagement")
   const { isPending: isRolesPending } = trpc.resource.getRolesFor.useQuery({
-    siteId: Number(siteId),
     resourceId: null,
+    siteId: Number(siteId),
   })
 
   // Feature-flagged alongside the admin gate. GrowthBook loads features
@@ -48,7 +48,9 @@ const AuditLogExportSettingsPage: NextPageWithLayout = () => {
   // mirroring how `/settings` redirects. Server-side authorization is
   // enforced independently by the mutation.
   useEffect(() => {
-    if (isRolesPending || !isGbReady) return
+    if (isRolesPending || !isGbReady) {
+      return
+    }
     if (!canManageUsers || !isAuditLogEnabled) {
       void router.replace(getAgencySettingsHref(siteId))
     }
@@ -72,13 +74,11 @@ const AuditLogExportSettingsPage: NextPageWithLayout = () => {
   )
 }
 
-AuditLogExportSettingsPage.getLayout = (page) => {
-  return (
-    <PermissionsBoundary
-      resourceType={ResourceType.RootPage}
-      page={SiteSettingsLayout(page)}
-    />
-  )
-}
+AuditLogExportSettingsPage.getLayout = (page) => (
+  <PermissionsBoundary
+    resourceType={ResourceType.RootPage}
+    page={SiteSettingsLayout(page)}
+  />
+)
 
 export default AuditLogExportSettingsPage

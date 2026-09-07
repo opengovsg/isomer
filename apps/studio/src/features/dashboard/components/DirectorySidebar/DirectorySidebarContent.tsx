@@ -1,9 +1,16 @@
+/* oxlint-disable anti-slop/require-safety-comment-for-type-assertion, eslint/no-shadow, typescript/strict-void-return, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import { Accordion, AccordionItem, AccordionPanel } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { useMemo, useState } from "react"
 import { getResourceSubpath } from "~/utils/resource"
 import { getIcon } from "~/utils/resources"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { RowEntry } from "./RowEntry"
@@ -52,14 +59,14 @@ export const DirectorySidebarContent = ({
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     trpc.resource.getChildrenOf.useInfiniteQuery(
       {
+        includeSearchPage: false,
+        limit: 25,
         resourceId,
         siteId,
-        limit: 25,
-        includeSearchPage: false,
       },
       {
-        getNextPageParam: (lastPage) => lastPage.nextOffset,
         enabled: isEnabled,
+        getNextPageParam: (lastPage) => lastPage.nextOffset,
       },
     )
 
@@ -74,7 +81,9 @@ export const DirectorySidebarContent = ({
       <Accordion
         index={accordionIndex}
         // SAFETY: caller invariant is checked immediately before this narrowing assertion
-        onChange={(expandedIndex) => setExpandedIndex(expandedIndex as number)}
+        onChange={(expandedIndex) => {
+          setExpandedIndex(expandedIndex as number)
+        }}
         allowToggle
       >
         <AccordionItem
@@ -93,7 +102,7 @@ export const DirectorySidebarContent = ({
             level={level}
             subLabel={subLabel}
           />
-          {hasChildren && (
+          {isNullableBooleanTrue(hasChildren) && (
             <AccordionPanel
               p={0}
               display="flex"
@@ -101,17 +110,15 @@ export const DirectorySidebarContent = ({
               gap="2px"
             >
               {data?.pages.map((page) =>
-                page.items.map((item) => {
-                  return (
-                    <DirectorySidebarContent
-                      key={item.id}
-                      siteId={siteId}
-                      resourceId={item.id}
-                      item={item}
-                      level={level + 1}
-                    />
-                  )
-                }),
+                page.items.map((item) => (
+                  <DirectorySidebarContent
+                    key={item.id}
+                    siteId={siteId}
+                    resourceId={item.id}
+                    item={item}
+                    level={level + 1}
+                  />
+                )),
               )}
               {hasNextPage && (
                 <Button
@@ -119,7 +126,9 @@ export const DirectorySidebarContent = ({
                   pl="2.75rem"
                   size="xs"
                   isLoading={isFetchingNextPage}
-                  onClick={() => fetchNextPage()}
+                  onClick={async () => {
+                    void (await fetchNextPage())
+                  }}
                 >
                   Load more
                 </Button>

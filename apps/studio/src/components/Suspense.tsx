@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/promise-function-async -- studio lint cleanup */
 import type { ComponentProps } from "react"
 import { useRouter } from "next/router"
 import { Suspense as ReactSuspense } from "react"

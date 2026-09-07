@@ -1,3 +1,5 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
+/* oxlint-disable unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import { Box, FormControl } from "@chakra-ui/react"
 import { rankWith, schemaMatches } from "@jsonforms/core"
@@ -50,7 +52,9 @@ const JsonFormsMaxColumnsControl = ({
           name={label || "Maximum columns"}
           items={MAX_COLUMNS_OPTIONS}
           isClearable={false}
-          onChange={(value) => handleChange(path, value)}
+          onChange={(value) => {
+            handleChange(path, value)
+          }}
         />
       </FormControl>
     </Box>

@@ -19,9 +19,9 @@ const COMMON_HANDLERS = [
 ]
 
 const meta: Meta<typeof ColoursSettingsPage> = {
-  title: "Pages/Site Management/Agency Settings Page/Colours",
   component: ColoursSettingsPage,
   parameters: {
+    decorators: [],
     getLayout: ColoursSettingsPage.getLayout,
     msw: {
       handlers: COMMON_HANDLERS,
@@ -34,8 +34,8 @@ const meta: Meta<typeof ColoursSettingsPage> = {
         },
       },
     },
-    decorators: [],
   },
+  title: "Pages/Site Management/Agency Settings Page/Colours",
 }
 
 export default meta
@@ -50,7 +50,7 @@ export const ContentPagePreview: Story = {
     const rootScreen = within(canvasElement.ownerDocument.body)
 
     const menuItem = await rootScreen.findByRole("tab", {
-      name: /content page/i,
+      name: /content page/iu,
     })
 
     await userEvent.click(menuItem)

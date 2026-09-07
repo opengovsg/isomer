@@ -38,28 +38,26 @@ const getRequestRows = async ({
 }: {
   siteId: number
   userId: string
-}) => {
-  return db
+}) =>
+  await db
     .selectFrom("AuditLogExportRequest")
     .where("siteId", "=", siteId)
     .where("userId", "=", userId)
     .orderBy("id", "asc")
     .selectAll()
     .execute()
-}
 
 // Every accepted ask — including an idempotent-accepted duplicate — must be
 // recorded as an AuditLogExportCreate event. Rejected asks (FORBIDDEN/
 // BAD_REQUEST) must leave no event behind.
-const getExportCreateEvents = async ({ siteId }: { siteId: number }) => {
-  return db
+const getExportCreateEvents = async ({ siteId }: { siteId: number }) =>
+  await db
     .selectFrom("AuditLog")
     .where("siteId", "=", siteId)
     .where("eventType", "=", "AuditLogExportCreate")
     .orderBy("id", "asc")
     .selectAll()
     .execute()
-}
 
 describe("audit.router", async () => {
   let caller: ReturnType<typeof createCaller>
@@ -80,8 +78,8 @@ describe("audit.router", async () => {
       "User",
     )
     user = await setupUser({
-      userId: session.userId,
       email: "test@mock.com",
+      userId: session.userId,
     })
     await auth(user)
     caller = createCaller(createMockRequest(session))
@@ -96,10 +94,10 @@ describe("audit.router", async () => {
 
       // Act
       const result = unauthedCaller.createExportRequest({
-        scope: "site",
-        siteId: site.id,
         month: VALID_MONTH,
         reportType: "Access",
+        scope: "site",
+        siteId: site.id,
       })
 
       // Assert
@@ -112,16 +110,16 @@ describe("audit.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = await caller.createExportRequest({
-        scope: "site",
-        siteId: site.id,
         month: VALID_MONTH,
         reportType: "Access",
+        scope: "site",
+        siteId: site.id,
       })
 
       // Assert: one inserted row, stored as the daterange derived from the
@@ -129,12 +127,12 @@ describe("audit.router", async () => {
       const auditLogDateRange = getMonthDateRange(VALID_MONTH, new Date())
       expect(result).toHaveLength(1)
       expect(result[0]).toMatchObject({
-        siteId: site.id,
-        userId: session.userId,
+        attempts: 0,
         auditLogDateRange,
         reportType: "Access",
+        siteId: site.id,
         status: "Pending",
-        attempts: 0,
+        userId: session.userId,
       })
       expect(result[0]?.id).toBeDefined()
 
@@ -149,12 +147,12 @@ describe("audit.router", async () => {
       const events = await getExportCreateEvents({ siteId: site.id })
       expect(events).toHaveLength(1)
       expect(events[0]).toMatchObject({
-        userId: session.userId,
-        siteId: site.id,
         delta: {
-          before: null,
           after: { auditLogDateRange, reportType: "Access" },
+          before: null,
         },
+        siteId: site.id,
+        userId: session.userId,
       })
     })
 
@@ -165,19 +163,19 @@ describe("audit.router", async () => {
 
       // Act
       const result = await caller.createExportRequest({
-        scope: "site",
-        siteId: site.id,
         month: VALID_MONTH,
         reportType: "Access",
+        scope: "site",
+        siteId: site.id,
       })
 
       // Assert
       expect(result).toHaveLength(1)
       expect(result[0]).toMatchObject({
-        siteId: site.id,
-        userId: session.userId,
         reportType: "Access",
+        siteId: site.id,
         status: "Pending",
+        userId: session.userId,
       })
     })
 
@@ -186,22 +184,22 @@ describe("audit.router", async () => {
       // way our edge/proxy sets it in production (see getClientIp).
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       const ipCaller = createCaller(
         createMockRequest(session, {
-          method: "GET",
           headers: { "x-forwarded-for": "203.0.113.7" },
+          method: "GET",
         }),
       )
 
       // Act
       await ipCaller.createExportRequest({
-        scope: "site",
-        siteId: site.id,
         month: VALID_MONTH,
         reportType: "Access",
+        scope: "site",
+        siteId: site.id,
       })
 
       // Assert: the event captures the requester IP, not null — matching the
@@ -209,9 +207,9 @@ describe("audit.router", async () => {
       const events = await getExportCreateEvents({ siteId: site.id })
       expect(events).toHaveLength(1)
       expect(events[0]).toMatchObject({
-        userId: session.userId,
-        siteId: site.id,
         ipAddress: "203.0.113.7",
+        siteId: site.id,
+        userId: session.userId,
       })
     })
 
@@ -219,16 +217,16 @@ describe("audit.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = caller.createExportRequest({
-        scope: "site",
-        siteId: site.id,
         month: VALID_MONTH,
         reportType: "Access",
+        scope: "site",
+        siteId: site.id,
       })
 
       // Assert
@@ -246,10 +244,10 @@ describe("audit.router", async () => {
 
       // Act
       const result = caller.createExportRequest({
-        scope: "site",
-        siteId: site.id,
         month: VALID_MONTH,
         reportType: "Activity",
+        scope: "site",
+        siteId: site.id,
       })
 
       // Assert
@@ -265,24 +263,24 @@ describe("audit.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act — first request queues a row
       const first = await caller.createExportRequest({
-        scope: "site",
-        siteId: site.id,
         month: VALID_MONTH,
         reportType: "Access",
+        scope: "site",
+        siteId: site.id,
       })
 
       // Act — second identical request succeeds instead of erroring
       const second = await caller.createExportRequest({
-        scope: "site",
-        siteId: site.id,
         month: VALID_MONTH,
         reportType: "Access",
+        scope: "site",
+        siteId: site.id,
       })
 
       // Assert: the duplicate resolves to the SAME in-flight row (no second
@@ -304,16 +302,16 @@ describe("audit.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = caller.createExportRequest({
-        scope: "site",
-        siteId: site.id,
         month: "2999-12",
         reportType: "Activity",
+        scope: "site",
+        siteId: site.id,
       })
 
       // Assert
@@ -329,17 +327,17 @@ describe("audit.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       const tooOldMonth = "2000-01"
 
       // Act
       const result = caller.createExportRequest({
-        scope: "site",
-        siteId: site.id,
         month: tooOldMonth,
         reportType: "Activity",
+        scope: "site",
+        siteId: site.id,
       })
 
       // Assert
@@ -358,26 +356,26 @@ describe("audit.router", async () => {
         const { site: adminSiteB } = await setupSite()
         const { site: otherSite } = await setupSite()
         await setupAdminPermissions({
-          userId: session.userId,
           siteId: adminSiteA.id,
+          userId: session.userId,
         })
         await setupAdminPermissions({
-          userId: session.userId,
           siteId: adminSiteB.id,
+          userId: session.userId,
         })
 
         // Act
         const result = await caller.createExportRequest({
-          scope: "allSites",
           month: VALID_MONTH,
           reportType: "Activity",
+          scope: "allSites",
         })
 
         // Assert: one row per admin site, none for the site without permission.
         expect(result).toHaveLength(2)
-        expect(result.map((row) => row.siteId).sort((a, b) => a - b)).toEqual(
-          [adminSiteA.id, adminSiteB.id].sort((a, b) => a - b),
-        )
+        expect(
+          result.map((row) => row.siteId).toSorted((a, b) => a - b),
+        ).toEqual([adminSiteA.id, adminSiteB.id].toSorted((a, b) => a - b))
 
         const otherSiteRows = await getRequestRows({
           siteId: otherSite.id,
@@ -402,16 +400,16 @@ describe("audit.router", async () => {
 
         // Act
         const result = await caller.createExportRequest({
-          scope: "allSites",
           month: VALID_MONTH,
           reportType: "Activity",
+          scope: "allSites",
         })
 
         // Assert
         expect(result).toHaveLength(2)
-        expect(result.map((row) => row.siteId).sort((a, b) => a - b)).toEqual(
-          [siteA.id, siteB.id].sort((a, b) => a - b),
-        )
+        expect(
+          result.map((row) => row.siteId).toSorted((a, b) => a - b),
+        ).toEqual([siteA.id, siteB.id].toSorted((a, b) => a - b))
       })
 
       it("throws FORBIDDEN when the caller is not an Admin on any site", async () => {
@@ -421,9 +419,9 @@ describe("audit.router", async () => {
 
         // Act
         const result = caller.createExportRequest({
-          scope: "allSites",
           month: VALID_MONTH,
           reportType: "Activity",
+          scope: "allSites",
         })
 
         // Assert

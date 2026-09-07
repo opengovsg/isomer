@@ -44,8 +44,10 @@ describe("asset.router", async () => {
     vi.spyOn(s3Lib, "generateSignedPutUrl").mockResolvedValue(
       "https://example.com/signed-url",
     )
-    vi.spyOn(s3Lib, "putObjectDirect").mockResolvedValue(undefined)
-    vi.spyOn(s3Lib, "deleteFile").mockResolvedValue(undefined)
+    // oxlint-disable-next-line unicorn/no-useless-undefined, typescript/require-await -- vitest mock void return
+    vi.spyOn(s3Lib, "putObjectDirect").mockImplementation(async () => undefined)
+    // oxlint-disable-next-line unicorn/no-useless-undefined, typescript/require-await -- vitest mock void return
+    vi.spyOn(s3Lib, "deleteFile").mockImplementation(async () => undefined)
   })
 
   afterEach(() => {
@@ -60,10 +62,10 @@ describe("asset.router", async () => {
 
       // Act
       const result = unauthedCaller.getPresignedPutUrl({
-        siteId: 1,
-        resourceId: "1",
         fileName: "test.png",
         fileSize: 1,
+        resourceId: "1",
+        siteId: 1,
       })
 
       // Assert
@@ -80,10 +82,10 @@ describe("asset.router", async () => {
 
       // Act
       const result = caller.getPresignedPutUrl({
-        siteId: site.id + 1,
-        resourceId: page.id,
         fileName: "test.png",
         fileSize: 1,
+        resourceId: page.id,
+        siteId: site.id + 1,
       })
 
       // Assert
@@ -99,17 +101,17 @@ describe("asset.router", async () => {
       // Arrange
       const { site, folder } = await setupFolder({})
       const { page } = await setupPageResource({
-        resourceType: ResourceType.Page,
         parentId: folder.id,
+        resourceType: ResourceType.Page,
         siteId: site.id,
       })
 
       // Act
       const result = caller.getPresignedPutUrl({
-        siteId: site.id,
-        resourceId: page.id,
         fileName: "test.png",
         fileSize: 1,
+        resourceId: page.id,
+        siteId: site.id,
       })
 
       // Assert
@@ -126,8 +128,8 @@ describe("asset.router", async () => {
       // Arrange
       const { site, folder } = await setupFolder({})
       const { page } = await setupPageResource({
-        resourceType: ResourceType.Page,
         parentId: folder.id,
+        resourceType: ResourceType.Page,
         siteId: site.id,
       })
       await setupEditorPermissions({
@@ -137,10 +139,10 @@ describe("asset.router", async () => {
 
       // Act
       const result = caller.getPresignedPutUrl({
-        siteId: site.id,
-        resourceId: page.id,
         fileName: "test.png",
         fileSize: 1,
+        resourceId: page.id,
+        siteId: site.id,
       })
 
       // Assert
@@ -161,19 +163,19 @@ describe("asset.router", async () => {
 
       // Act
       await caller.getPresignedPutUrl({
-        siteId: site.id,
-        resourceId: page.id,
         fileName,
         fileSize,
+        resourceId: page.id,
+        siteId: site.id,
       })
 
       // Assert: backend-derived ContentType and ContentDisposition are signed (not client-controlled)
       expect(s3Lib.generateSignedPutUrl).toHaveBeenCalledWith({
         Bucket: expect.any(String),
-        Key: expect.stringContaining("test-image.png"),
-        ContentType: "image/png",
-        ContentDisposition: expect.stringMatching(/^inline; filename=.+/),
+        ContentDisposition: expect.stringMatching(/^inline; filename=.+/u),
         ContentLength: fileSize,
+        ContentType: "image/png",
+        Key: expect.stringContaining("test-image.png"),
       })
     })
 
@@ -189,19 +191,19 @@ describe("asset.router", async () => {
 
       // Act
       const result = await caller.getPresignedPutUrl({
-        siteId: site.id,
-        resourceId: page.id,
         fileName: "doc.pdf",
         fileSize: 1,
+        resourceId: page.id,
+        siteId: site.id,
       })
 
       // Assert
       expect(result).toMatchObject({
         fileKey: expect.any(String),
         uploadConfig: {
-          presignedPutUrl: "https://example.com/signed-url",
+          contentDisposition: expect.stringMatching(/^inline; filename=.+/u),
           contentType: "application/pdf",
-          contentDisposition: expect.stringMatching(/^inline; filename=.+/),
+          presignedPutUrl: "https://example.com/signed-url",
         },
       })
     })
@@ -218,10 +220,10 @@ describe("asset.router", async () => {
 
       // Act
       const result = caller.getPresignedPutUrl({
-        siteId: site.id,
-        resourceId: page.id,
         fileName: "test.svg",
         fileSize: 1,
+        resourceId: page.id,
+        siteId: site.id,
       })
 
       // Assert
@@ -239,9 +241,9 @@ describe("asset.router", async () => {
 
       // Act
       const result = unauthedCaller.deleteAssets({
-        siteId: 1,
-        resourceId: "1",
         fileKeys: ["test.png"],
+        resourceId: "1",
+        siteId: 1,
       })
 
       // Assert
@@ -258,9 +260,9 @@ describe("asset.router", async () => {
 
       // Act
       const result = caller.deleteAssets({
-        siteId: site.id + 1,
-        resourceId: page.id,
         fileKeys: ["test.png"],
+        resourceId: page.id,
+        siteId: site.id + 1,
       })
 
       // Assert
@@ -276,16 +278,16 @@ describe("asset.router", async () => {
       // Arrange
       const { site, folder } = await setupFolder({})
       const { page } = await setupPageResource({
-        resourceType: ResourceType.Page,
         parentId: folder.id,
+        resourceType: ResourceType.Page,
         siteId: site.id,
       })
 
       // Act
       const result = caller.deleteAssets({
-        siteId: site.id,
-        resourceId: page.id,
         fileKeys: ["test.png"],
+        resourceId: page.id,
+        siteId: site.id,
       })
 
       // Assert
@@ -302,8 +304,8 @@ describe("asset.router", async () => {
       // Arrange
       const { site, folder } = await setupFolder({})
       const { page } = await setupPageResource({
-        resourceType: ResourceType.Page,
         parentId: folder.id,
+        resourceType: ResourceType.Page,
         siteId: site.id,
       })
       await setupEditorPermissions({
@@ -314,9 +316,9 @@ describe("asset.router", async () => {
 
       // Act
       const result = caller.deleteAssets({
-        siteId: site.id,
-        resourceId: page.id,
         fileKeys: [fileKey],
+        resourceId: page.id,
+        siteId: site.id,
       })
 
       // Assert
@@ -335,9 +337,9 @@ describe("asset.router", async () => {
 
       // Act
       const result = caller.deleteAssets({
-        siteId: site.id,
-        resourceId: page.id,
         fileKeys: ["test.png"],
+        resourceId: page.id,
+        siteId: site.id,
       })
 
       // Assert
@@ -354,8 +356,8 @@ describe("asset.router", async () => {
       // Arrange
       const { site, folder } = await setupFolder({})
       const { page } = await setupPageResource({
-        resourceType: ResourceType.Page,
         parentId: folder.id,
+        resourceType: ResourceType.Page,
         siteId: site.id,
       })
       await setupPublisherPermissions({
@@ -366,9 +368,9 @@ describe("asset.router", async () => {
 
       // Act
       const result = caller.deleteAssets({
-        siteId: site.id,
-        resourceId: page.id,
         fileKeys: [fileKey],
+        resourceId: page.id,
+        siteId: site.id,
       })
 
       // Assert
@@ -387,9 +389,9 @@ describe("asset.router", async () => {
 
       // Act
       const result = caller.deleteAssets({
-        siteId: site.id,
-        resourceId: page.id,
         fileKeys: ["test.png"],
+        resourceId: page.id,
+        siteId: site.id,
       })
 
       // Assert
@@ -415,9 +417,9 @@ describe("asset.router", async () => {
 
       // Act
       const result = caller.deleteAssets({
-        siteId: site.id,
-        resourceId: page.id,
         fileKeys: [fileKey],
+        resourceId: page.id,
+        siteId: site.id,
       })
 
       // Assert
@@ -441,9 +443,9 @@ describe("asset.router", async () => {
 
       // Act
       await caller.deleteAssets({
-        siteId: site.id,
-        resourceId: page.id,
         fileKeys,
+        resourceId: page.id,
+        siteId: site.id,
       })
 
       // Assert
@@ -470,9 +472,9 @@ describe("asset.router", async () => {
 
       // Act: pass authorized siteId but fileKey belonging to another site
       const result = caller.deleteAssets({
-        siteId: site.id,
-        resourceId: page.id,
         fileKeys: [fileKeysFromOtherSite],
+        resourceId: page.id,
+        siteId: site.id,
       })
 
       // Assert: request rejected, no delete performed
@@ -502,9 +504,9 @@ describe("asset.router", async () => {
 
       // Act
       const result = caller.deleteAssets({
-        siteId: site.id,
-        resourceId: page.id,
         fileKeys: tooManyFileKeys,
+        resourceId: page.id,
+        siteId: site.id,
       })
 
       // Assert: input validation rejects before any S3 call. The Zod-derived
@@ -529,9 +531,9 @@ describe("asset.router", async () => {
 
       // Act
       const result = unauthedCaller.uploadSvg({
-        siteId: 1,
-        fileName: "test.svg",
         content: VALID_SVG,
+        fileName: "test.svg",
+        siteId: 1,
       })
 
       // Assert
@@ -548,10 +550,10 @@ describe("asset.router", async () => {
 
       // Act
       const result = caller.uploadSvg({
-        siteId: site.id + 1,
-        fileName: "test.svg",
         content: VALID_SVG,
+        fileName: "test.svg",
         resourceId: page.id,
+        siteId: site.id + 1,
       })
 
       // Assert
@@ -571,9 +573,9 @@ describe("asset.router", async () => {
 
       // Act
       const result = caller.uploadSvg({
-        siteId: site.id,
-        fileName: "test.svg",
         content: VALID_SVG,
+        fileName: "test.svg",
+        siteId: site.id,
       })
 
       // Assert
@@ -598,10 +600,10 @@ describe("asset.router", async () => {
 
       // Act
       const result = caller.uploadSvg({
-        siteId: site.id,
-        fileName: "test.svg",
         content: "not valid svg",
+        fileName: "test.svg",
         resourceId: page.id,
+        siteId: site.id,
       })
 
       // Assert
@@ -623,10 +625,10 @@ describe("asset.router", async () => {
 
       // Act
       const result = caller.uploadSvg({
-        siteId: site.id,
-        fileName: "test.svg",
         content: entityBomb,
+        fileName: "test.svg",
         resourceId: page.id,
+        siteId: site.id,
       })
 
       // Assert
@@ -647,10 +649,10 @@ describe("asset.router", async () => {
 
       // Act
       const result = caller.uploadSvg({
-        siteId: site.id,
-        fileName: "test.svg",
         content: VALID_SVG,
+        fileName: "test.svg",
         resourceId: page.id,
+        siteId: site.id,
       })
 
       // Assert
@@ -672,10 +674,10 @@ describe("asset.router", async () => {
 
       // Act
       const result = caller.uploadSvg({
-        siteId: site.id,
-        fileName: "test.png",
         content: VALID_SVG,
+        fileName: "test.png",
         resourceId: page.id,
+        siteId: site.id,
       })
 
       // Assert

@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-boolean-expressions, typescript/strict-void-return, unicorn/no-confusing-void-expression -- core cleanup deferred */
 import {
   chakra,
   Flex,
@@ -21,6 +22,12 @@ import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
 import { MAX_PAGE_URL_LENGTH, MAX_TITLE_LENGTH } from "~/schemas/page"
 import { AppGrid } from "~/templates/AppGrid"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { generateResourceUrl } from "../utils"
 import { useCreatePageWizard } from "./CreatePageWizardContext"
@@ -132,7 +139,7 @@ export const CreatePageDetailsScreen = () => {
                     my="0.5rem"
                     {...register("title")}
                   />
-                  {errors.title?.message ? (
+                  {hasNonEmptyString(errors.title?.message) ? (
                     <FormErrorMessage>{errors.title.message}</FormErrorMessage>
                   ) : (
                     <FormHelperText mt="0.5rem" color="base.content.medium">
@@ -183,7 +190,7 @@ export const CreatePageDetailsScreen = () => {
                       /{url}
                     </Text>
                   </Infobox>
-                  {errors.permalink?.message ? (
+                  {hasNonEmptyString(errors.permalink?.message) ? (
                     <FormErrorMessage>
                       {errors.permalink.message}
                     </FormErrorMessage>

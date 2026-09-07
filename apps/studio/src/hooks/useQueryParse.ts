@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-deprecated -- studio lint cleanup */
 import type { ZodTypeAny } from "zod"
 import { useRouter } from "next/router"
 

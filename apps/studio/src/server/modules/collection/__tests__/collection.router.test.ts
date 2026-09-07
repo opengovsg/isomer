@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/func-style, typescript/no-unsafe-type-assertion, unicorn/no-await-expression-member, typescript/no-deprecated -- server lint cleanup */
 import type { MockInstance } from "vitest"
 import { TRPCError } from "@trpc/server"
 import { omit } from "lodash-es"
@@ -59,9 +60,9 @@ describe("collection.router", async () => {
     const unauthedSession = applySession()
     unauthedCaller = createCaller(createMockRequest(unauthedSession))
     const user = await setupUser({
-      userId: session.userId,
       email: "test@mock.com",
       isDeleted: false,
+      userId: session.userId,
     })
     await auth(user)
     auditSpy = vitest.spyOn(auditService, "logResourceEvent")
@@ -73,8 +74,8 @@ describe("collection.router", async () => {
       // Act
       const result = unauthedCaller.create({
         collectionTitle: "test collection",
-        siteId: 1,
         permalink: "test-collection",
+        siteId: 1,
       })
 
       // Assert
@@ -90,15 +91,15 @@ describe("collection.router", async () => {
       const duplicatePermalink = "duplicate-permalink"
       const { site } = await setupCollection({ permalink: duplicatePermalink })
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = caller.create({
         collectionTitle: "test folder",
-        siteId: site.id,
         permalink: duplicatePermalink,
+        siteId: site.id,
       })
 
       // Assert
@@ -117,16 +118,16 @@ describe("collection.router", async () => {
       const invalidSiteId = 999
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       expect(site.id).not.toEqual(invalidSiteId)
 
       // Act
       const result = caller.create({
         collectionTitle: "test collection",
-        siteId: invalidSiteId,
         permalink: "test-collection",
+        siteId: invalidSiteId,
       })
 
       // Assert
@@ -145,16 +146,16 @@ describe("collection.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = caller.create({
         collectionTitle: "test collection",
-        siteId: site.id,
-        permalink: "test-collection",
         parentFolderId: 999,
+        permalink: "test-collection",
+        siteId: site.id,
       })
 
       // Assert
@@ -174,16 +175,16 @@ describe("collection.router", async () => {
         resourceType: "Page",
       })
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = caller.create({
         collectionTitle: "test collection",
-        siteId: site.id,
-        permalink: "test-collection",
         parentFolderId: Number(page.id),
+        permalink: "test-collection",
+        siteId: site.id,
       })
 
       // Assert
@@ -206,21 +207,21 @@ describe("collection.router", async () => {
       })
       const { site: secondSite } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: secondSite.id,
+        userId: session.userId,
       })
 
       // Act
       const result = await caller.create({
         collectionTitle: "test collection",
-        siteId: secondSite.id,
         permalink: duplicatePermalink,
+        siteId: secondSite.id,
       })
 
       // Assert
       const actualCollection = await getCollectionWithPermalink({
-        siteId: secondSite.id,
         permalink: duplicatePermalink,
+        siteId: secondSite.id,
       })
       expect(result).toMatchObject({ id: actualCollection.id })
       expect(auditSpy).toHaveBeenCalled()
@@ -240,15 +241,15 @@ describe("collection.router", async () => {
       const { site } = await setupSite()
 
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = await caller.create({
         collectionTitle: "test collection 999",
-        siteId: site.id,
         permalink: permalinkToUse,
+        siteId: site.id,
       })
 
       // Assert
@@ -273,16 +274,16 @@ describe("collection.router", async () => {
       const permalinkToUse = "test-collection-777"
       const { folder: parent, site } = await setupFolder()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = await caller.create({
         collectionTitle: "test collection",
-        siteId: site.id,
-        permalink: permalinkToUse,
         parentFolderId: Number(parent.id),
+        permalink: permalinkToUse,
+        siteId: site.id,
       })
 
       // Assert
@@ -308,16 +309,16 @@ describe("collection.router", async () => {
       const permalinkToUse = "test-collection-777"
       const { folder: parent, site } = await setupFolder()
       await setupEditorPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = await caller.create({
         collectionTitle: "test collection",
-        siteId: site.id,
-        permalink: permalinkToUse,
         parentFolderId: Number(parent.id),
+        permalink: permalinkToUse,
+        siteId: site.id,
       })
 
       // Assert
@@ -342,13 +343,13 @@ describe("collection.router", async () => {
       // Arrange
       const permalinkToUse = "test-collection-777"
       const { site } = await setupSite()
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
 
       // Act
       const result = caller.create({
         collectionTitle: "test collection",
-        siteId: site.id,
         permalink: permalinkToUse,
+        siteId: site.id,
       })
 
       // Assert
@@ -370,9 +371,9 @@ describe("collection.router", async () => {
       // Act
       const result = caller.create({
         collectionTitle: "test collection",
-        siteId: site.id,
-        permalink: permalinkToUse,
         parentFolderId: Number(parentFolder.id),
+        permalink: permalinkToUse,
+        siteId: site.id,
       })
 
       // Assert
@@ -396,11 +397,11 @@ describe("collection.router", async () => {
 
       // Act
       const result = unauthedCaller.createCollectionPage({
-        title: "test collection",
-        type: "CollectionPage",
-        siteId: site.id,
         collectionId: Number(collection.id),
         permalink: "test-collection",
+        siteId: site.id,
+        title: "test collection",
+        type: "CollectionPage",
       })
 
       // Assert
@@ -418,24 +419,24 @@ describe("collection.router", async () => {
         permalink: "parent",
       })
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       await setupPageResource({
-        title: "test folder",
-        resourceType: "CollectionPage",
-        siteId: site.id,
         parentId: collection.id,
         permalink: duplicatePermalink,
+        resourceType: "CollectionPage",
+        siteId: site.id,
+        title: "test folder",
       })
 
       // Act
       const result = caller.createCollectionPage({
-        title: "test folder",
-        type: "CollectionPage",
-        siteId: site.id,
         collectionId: Number(collection.id),
         permalink: duplicatePermalink,
+        siteId: site.id,
+        title: "test folder",
+        type: "CollectionPage",
       })
 
       // Assert
@@ -454,18 +455,18 @@ describe("collection.router", async () => {
       const invalidSiteId = 999
       const { collection, site } = await setupCollection()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       expect(site.id).not.toEqual(invalidSiteId)
 
       // Act
       const result = caller.createCollectionPage({
-        title: "test collection",
-        type: "CollectionPage",
-        siteId: 999,
         collectionId: Number(collection.id),
         permalink: "test-collection",
+        siteId: 999,
+        title: "test collection",
+        type: "CollectionPage",
       })
 
       // Assert
@@ -484,17 +485,17 @@ describe("collection.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = caller.createCollectionPage({
-        title: "test collection",
-        type: "CollectionPage",
-        siteId: site.id,
         collectionId: 999,
         permalink: "test-collection",
+        siteId: site.id,
+        title: "test collection",
+        type: "CollectionPage",
       })
 
       // Assert
@@ -514,17 +515,17 @@ describe("collection.router", async () => {
         resourceType: "Page",
       })
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = caller.createCollectionPage({
-        title: "test collection",
-        type: "CollectionPage",
-        siteId: site.id,
         collectionId: Number(page.id),
         permalink: "test-collection",
+        siteId: site.id,
+        title: "test collection",
+        type: "CollectionPage",
       })
 
       // Assert
@@ -547,28 +548,28 @@ describe("collection.router", async () => {
       const { site: secondSite, collection: secondCollection } =
         await setupCollection({ permalink: duplicatePermalink })
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: secondSite.id,
+        userId: session.userId,
       })
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       await setupPageResource({
-        title: "test collection",
-        resourceType: "CollectionPage",
-        siteId: secondSite.id,
         parentId: secondCollection.id,
         permalink: "test-collection",
+        resourceType: "CollectionPage",
+        siteId: secondSite.id,
+        title: "test collection",
       })
 
       // Act
       const result = await caller.createCollectionPage({
-        title: "test collection",
-        type: "CollectionPage",
-        siteId: site.id,
         collectionId: Number(collection.id),
         permalink: "test-collection",
+        siteId: site.id,
+        title: "test collection",
+        type: "CollectionPage",
       })
 
       // Assert
@@ -596,17 +597,17 @@ describe("collection.router", async () => {
       const { collection, site } = await setupCollection()
 
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = await caller.createCollectionPage({
-        title: "test collection",
-        type: "CollectionPage",
-        siteId: site.id,
         collectionId: Number(collection.id),
         permalink,
+        siteId: site.id,
+        title: "test collection",
+        type: "CollectionPage",
       })
 
       // Assert
@@ -634,11 +635,11 @@ describe("collection.router", async () => {
 
       // Act
       const result = caller.createCollectionPage({
-        title: "test collection",
-        type: "CollectionPage",
-        siteId: site.id,
         collectionId: Number(collection.id),
         permalink: permalinkToUse,
+        siteId: site.id,
+        title: "test collection",
+        type: "CollectionPage",
       })
 
       // Assert
@@ -659,8 +660,8 @@ describe("collection.router", async () => {
     it("should throw 401 if not logged in", async () => {
       // Act
       const result = unauthedCaller.list({
-        siteId: 1,
         resourceId: -1,
+        siteId: 1,
       })
 
       // Assert
@@ -675,8 +676,8 @@ describe("collection.router", async () => {
 
       // Act
       const result = caller.list({
-        siteId: site.id,
         resourceId: Number(collection.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -692,12 +693,12 @@ describe("collection.router", async () => {
     it("should return 200", async () => {
       // Arrange
       const { collection, site } = await setupCollection()
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
 
       // Act
       const result = await caller.list({
-        siteId: site.id,
         resourceId: Number(collection.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -708,40 +709,41 @@ describe("collection.router", async () => {
       // Arrange: Create 4 CollectionPages with identical title to trigger non-deterministic
       // ordering without a tie-breaker. Tests regression of offset/limit pagination bug.
       const { collection, site } = await setupCollection()
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
 
       const sharedTitle = "Identical Title"
       const permalinks = ["page-1", "page-2", "page-3", "page-4"]
       const pages = await Promise.all(
-        permalinks.map((permalink) =>
-          setupPageResource({
-            siteId: site.id,
-            resourceType: ResourceType.CollectionPage,
-            parentId: collection.id,
-            title: sharedTitle,
-            permalink,
-          }),
+        permalinks.map(
+          async (permalink) =>
+            await setupPageResource({
+              parentId: collection.id,
+              permalink,
+              resourceType: ResourceType.CollectionPage,
+              siteId: site.id,
+              title: sharedTitle,
+            }),
         ),
       )
 
       // Act: Fetch two pages with limit=2
       const page1First = await caller.list({
-        siteId: site.id,
-        resourceId: Number(collection.id),
         limit: 2,
         offset: 0,
+        resourceId: Number(collection.id),
+        siteId: site.id,
       })
       const page1Second = await caller.list({
-        siteId: site.id,
-        resourceId: Number(collection.id),
         limit: 2,
         offset: 0,
+        resourceId: Number(collection.id),
+        siteId: site.id,
       })
       const page2Result = await caller.list({
-        siteId: site.id,
-        resourceId: Number(collection.id),
         limit: 2,
         offset: 2,
+        resourceId: Number(collection.id),
+        siteId: site.id,
       })
 
       // Assert: Repeated page 1 calls return identical results (deterministic ordering)
@@ -762,35 +764,35 @@ describe("collection.router", async () => {
     it("should sort by title ascending when orderBy is title-asc", async () => {
       // Arrange
       const { collection, site } = await setupCollection()
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
 
       await setupPageResource({
-        siteId: site.id,
-        resourceType: ResourceType.CollectionPage,
         parentId: collection.id,
-        title: "Charlie",
         permalink: "charlie",
+        resourceType: ResourceType.CollectionPage,
+        siteId: site.id,
+        title: "Charlie",
       })
       await setupPageResource({
-        siteId: site.id,
-        resourceType: ResourceType.CollectionPage,
         parentId: collection.id,
-        title: "Alpha",
         permalink: "alpha",
+        resourceType: ResourceType.CollectionPage,
+        siteId: site.id,
+        title: "Alpha",
       })
       await setupPageResource({
-        siteId: site.id,
-        resourceType: ResourceType.CollectionPage,
         parentId: collection.id,
-        title: "Bravo",
         permalink: "bravo",
+        resourceType: ResourceType.CollectionPage,
+        siteId: site.id,
+        title: "Bravo",
       })
 
       // Act
       const result = await caller.list({
-        siteId: site.id,
-        resourceId: Number(collection.id),
         orderBy: "title-asc",
+        resourceId: Number(collection.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -804,35 +806,35 @@ describe("collection.router", async () => {
       // ["Banana", "apple", "cherry"], which isn't what a user means by
       // "Alphabetical".
       const { collection, site } = await setupCollection()
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
 
       await setupPageResource({
-        siteId: site.id,
-        resourceType: ResourceType.CollectionPage,
         parentId: collection.id,
-        title: "cherry",
         permalink: "cherry",
+        resourceType: ResourceType.CollectionPage,
+        siteId: site.id,
+        title: "cherry",
       })
       await setupPageResource({
-        siteId: site.id,
-        resourceType: ResourceType.CollectionPage,
         parentId: collection.id,
-        title: "apple",
         permalink: "apple",
+        resourceType: ResourceType.CollectionPage,
+        siteId: site.id,
+        title: "apple",
       })
       await setupPageResource({
-        siteId: site.id,
-        resourceType: ResourceType.CollectionPage,
         parentId: collection.id,
-        title: "Banana",
         permalink: "banana",
+        resourceType: ResourceType.CollectionPage,
+        siteId: site.id,
+        title: "Banana",
       })
 
       // Act
       const result = await caller.list({
-        siteId: site.id,
-        resourceId: Number(collection.id),
         orderBy: "title-asc",
+        resourceId: Number(collection.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -843,35 +845,35 @@ describe("collection.router", async () => {
     it("should sort by permalink ascending when orderBy is permalink-asc", async () => {
       // Arrange: titles are intentionally out of permalink order
       const { collection, site } = await setupCollection()
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
 
       await setupPageResource({
-        siteId: site.id,
-        resourceType: ResourceType.CollectionPage,
         parentId: collection.id,
-        title: "Zulu",
         permalink: "charlie",
+        resourceType: ResourceType.CollectionPage,
+        siteId: site.id,
+        title: "Zulu",
       })
       await setupPageResource({
-        siteId: site.id,
-        resourceType: ResourceType.CollectionPage,
         parentId: collection.id,
-        title: "Alpha",
         permalink: "alpha",
+        resourceType: ResourceType.CollectionPage,
+        siteId: site.id,
+        title: "Alpha",
       })
       await setupPageResource({
-        siteId: site.id,
-        resourceType: ResourceType.CollectionPage,
         parentId: collection.id,
-        title: "Mike",
         permalink: "bravo",
+        resourceType: ResourceType.CollectionPage,
+        siteId: site.id,
+        title: "Mike",
       })
 
       // Act
       const result = await caller.list({
-        siteId: site.id,
-        resourceId: Number(collection.id),
         orderBy: "permalink-asc",
+        resourceId: Number(collection.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -882,35 +884,35 @@ describe("collection.router", async () => {
     it("should sort case-insensitively when orderBy is permalink-asc", async () => {
       // Arrange
       const { collection, site } = await setupCollection()
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
 
       await setupPageResource({
-        siteId: site.id,
-        resourceType: ResourceType.CollectionPage,
         parentId: collection.id,
-        title: "Page C",
         permalink: "Cherry",
+        resourceType: ResourceType.CollectionPage,
+        siteId: site.id,
+        title: "Page C",
       })
       await setupPageResource({
-        siteId: site.id,
-        resourceType: ResourceType.CollectionPage,
         parentId: collection.id,
-        title: "Page A",
         permalink: "apple",
+        resourceType: ResourceType.CollectionPage,
+        siteId: site.id,
+        title: "Page A",
       })
       await setupPageResource({
-        siteId: site.id,
-        resourceType: ResourceType.CollectionPage,
         parentId: collection.id,
-        title: "Page B",
         permalink: "Banana",
+        resourceType: ResourceType.CollectionPage,
+        siteId: site.id,
+        title: "Page B",
       })
 
       // Act
       const result = await caller.list({
-        siteId: site.id,
-        resourceId: Number(collection.id),
         orderBy: "permalink-asc",
+        resourceId: Number(collection.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -921,34 +923,34 @@ describe("collection.router", async () => {
     it("should sort CollectionLinks by title and CollectionPages by permalink when orderBy is permalink-asc", async () => {
       // Arrange: link permalink is hidden and random; ordering must use title
       const { collection, site } = await setupCollection()
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
 
       await setupPageResource({
-        siteId: site.id,
-        resourceType: ResourceType.CollectionPage,
         parentId: collection.id,
-        title: "Zulu",
         permalink: "alpha",
+        resourceType: ResourceType.CollectionPage,
+        siteId: site.id,
+        title: "Zulu",
       })
       await setupCollectionLink({
-        siteId: site.id,
         collectionId: collection.id,
-        title: "Bravo",
         permalink: "zzz-hidden-link-permalink",
+        siteId: site.id,
+        title: "Bravo",
       })
       await setupPageResource({
-        siteId: site.id,
-        resourceType: ResourceType.CollectionPage,
         parentId: collection.id,
-        title: "Alpha",
         permalink: "charlie",
+        resourceType: ResourceType.CollectionPage,
+        siteId: site.id,
+        title: "Alpha",
       })
 
       // Act
       const result = await caller.list({
-        siteId: site.id,
-        resourceId: Number(collection.id),
         orderBy: "permalink-asc",
+        resourceId: Number(collection.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -963,22 +965,22 @@ describe("collection.router", async () => {
     it("should sort by updatedAt descending when orderBy is updated-desc", async () => {
       // Arrange
       const { collection, site } = await setupCollection()
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
 
       const page1 = await setupPageResource({
-        siteId: site.id,
-        resourceType: ResourceType.CollectionPage,
         parentId: collection.id,
-        title: "First",
         permalink: "first",
+        resourceType: ResourceType.CollectionPage,
+        siteId: site.id,
+        title: "First",
       })
 
       await setupPageResource({
-        siteId: site.id,
-        resourceType: ResourceType.CollectionPage,
         parentId: collection.id,
-        title: "Second",
         permalink: "second",
+        resourceType: ResourceType.CollectionPage,
+        siteId: site.id,
+        title: "Second",
       })
 
       // Update the first page so it has a newer updatedAt
@@ -990,9 +992,9 @@ describe("collection.router", async () => {
 
       // Act
       const result = await caller.list({
-        siteId: site.id,
-        resourceId: Number(collection.id),
         orderBy: "updated-desc",
+        resourceId: Number(collection.id),
+        siteId: site.id,
       })
 
       // Assert: First Updated should appear before Second since it was updated more recently
@@ -1003,22 +1005,22 @@ describe("collection.router", async () => {
     it("should default to updated-desc ordering when orderBy is not specified", async () => {
       // Arrange
       const { collection, site } = await setupCollection()
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
 
       const page1 = await setupPageResource({
-        siteId: site.id,
-        resourceType: ResourceType.CollectionPage,
         parentId: collection.id,
-        title: "Older",
         permalink: "older",
+        resourceType: ResourceType.CollectionPage,
+        siteId: site.id,
+        title: "Older",
       })
 
       await setupPageResource({
-        siteId: site.id,
-        resourceType: ResourceType.CollectionPage,
         parentId: collection.id,
-        title: "Newer",
         permalink: "newer",
+        resourceType: ResourceType.CollectionPage,
+        siteId: site.id,
+        title: "Newer",
       })
 
       // Update the first page so it has a newer updatedAt
@@ -1030,8 +1032,8 @@ describe("collection.router", async () => {
 
       // Act - no orderBy specified, should default to updated-desc
       const result = await caller.list({
-        siteId: site.id,
         resourceId: Number(collection.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -1042,29 +1044,29 @@ describe("collection.router", async () => {
     it("should break ties using resource id ascending", async () => {
       // Arrange
       const { collection, site } = await setupCollection()
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
 
       // Create pages with the same title so the primary sort (title-asc) ties
       const pageA = await setupPageResource({
-        siteId: site.id,
-        resourceType: ResourceType.CollectionPage,
         parentId: collection.id,
-        title: "Same Title",
         permalink: "same-title-1",
+        resourceType: ResourceType.CollectionPage,
+        siteId: site.id,
+        title: "Same Title",
       })
       const pageB = await setupPageResource({
-        siteId: site.id,
-        resourceType: ResourceType.CollectionPage,
         parentId: collection.id,
-        title: "Same Title",
         permalink: "same-title-2",
+        resourceType: ResourceType.CollectionPage,
+        siteId: site.id,
+        title: "Same Title",
       })
 
       // Act
       const result = await caller.list({
-        siteId: site.id,
-        resourceId: Number(collection.id),
         orderBy: "title-asc",
+        resourceId: Number(collection.id),
+        siteId: site.id,
       })
 
       // Assert: both have the same title, so tie-break by id ascending
@@ -1079,8 +1081,8 @@ describe("collection.router", async () => {
     it("should throw 401 if not logged in", async () => {
       // Act
       const result = unauthedCaller.readCollectionLink({
-        siteId: 1,
         linkId: 999,
+        siteId: 1,
       })
 
       // Assert
@@ -1095,8 +1097,8 @@ describe("collection.router", async () => {
 
       // Act
       const result = caller.readCollectionLink({
-        siteId: site.id,
         linkId: Number(collection.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -1113,23 +1115,23 @@ describe("collection.router", async () => {
       // Arrange
       const { collection, site } = await setupCollection()
       const { collectionLink, blob } = await setupCollectionLink({
-        siteId: site.id,
         collectionId: collection.id,
+        siteId: site.id,
         state: ResourceState.Published,
         userId: (await setupUser({})).id,
       })
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
 
       // Act
       const result = await caller.readCollectionLink({
-        siteId: site.id,
         linkId: Number(collectionLink.id),
+        siteId: site.id,
       })
 
       // Assert
       expect(result).toMatchObject({
-        title: collectionLink.title,
         content: blob.content,
+        title: collectionLink.title,
       })
     })
   })
@@ -1138,8 +1140,8 @@ describe("collection.router", async () => {
     it("should throw 401 if not logged in", async () => {
       // Act
       const result = unauthedCaller.getMetadata({
-        siteId: 1,
         resourceId: -1,
+        siteId: 1,
       })
 
       // Assert
@@ -1153,15 +1155,15 @@ describe("collection.router", async () => {
       const invalidSiteId = 999
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       expect(site.id).not.toEqual(invalidSiteId)
 
       // Act
       const result = caller.getMetadata({
-        siteId: invalidSiteId,
         resourceId: 1,
+        siteId: invalidSiteId,
       })
 
       // Assert
@@ -1178,14 +1180,14 @@ describe("collection.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = caller.getMetadata({
-        siteId: site.id,
         resourceId: 999,
+        siteId: site.id,
       })
 
       // Assert
@@ -1203,8 +1205,8 @@ describe("collection.router", async () => {
 
       // Act
       const result = caller.getMetadata({
-        siteId: site.id,
         resourceId: Number(collection.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -1220,12 +1222,12 @@ describe("collection.router", async () => {
     it("should return 200", async () => {
       // Arrange
       const { collection, site } = await setupCollection()
-      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      await setupAdminPermissions({ siteId: site.id, userId: session.userId })
 
       // Act
       const result = await caller.getMetadata({
-        siteId: site.id,
         resourceId: Number(collection.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -1243,8 +1245,8 @@ describe("collection.router", async () => {
       // Act
       const { site } = await setupCollection()
       const result = unauthedCaller.readCollectionLink({
-        siteId: site.id,
         linkId: 999,
+        siteId: site.id,
       })
 
       // Assert
@@ -1257,12 +1259,12 @@ describe("collection.router", async () => {
     it("should throw 404 if reading a non-existent `linkId`", async () => {
       // Arrange
       const { site } = await setupCollection()
-      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      await setupAdminPermissions({ siteId: site.id, userId: session.userId })
 
       // Act
       const expected = caller.readCollectionLink({
-        siteId: site.id,
         linkId: 999,
+        siteId: site.id,
       })
 
       // Assert
@@ -1278,12 +1280,12 @@ describe("collection.router", async () => {
     it("should throw 404 if the resource type is not a `CollectionLink`", async () => {
       // Arrange
       const { site, collection } = await setupCollection()
-      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      await setupAdminPermissions({ siteId: site.id, userId: session.userId })
 
       // Act
       const expected = caller.readCollectionLink({
-        siteId: site.id,
         linkId: Number(collection.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -1304,8 +1306,8 @@ describe("collection.router", async () => {
 
       // Act
       const expected = caller.readCollectionLink({
-        siteId: 999,
         linkId: Number(page.id),
+        siteId: 999,
       })
 
       // Assert
@@ -1327,8 +1329,8 @@ describe("collection.router", async () => {
 
       // Act
       const expected = caller.readCollectionLink({
-        siteId: site.id,
         linkId: Number(page.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -1349,12 +1351,12 @@ describe("collection.router", async () => {
         resourceType: ResourceType.CollectionLink,
         siteId: site.id,
       })
-      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      await setupAdminPermissions({ siteId: site.id, userId: session.userId })
 
       // Act
       const expected = await caller.readCollectionLink({
-        siteId: site.id,
         linkId: Number(page.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -1368,10 +1370,10 @@ describe("collection.router", async () => {
       // Act
       const { site } = await setupCollection()
       const result = unauthedCaller.updateCollectionLink({
-        siteId: site.id,
         category: "category",
-        ref: "1",
         linkId: 999,
+        ref: "1",
+        siteId: site.id,
       })
 
       // Assert
@@ -1385,14 +1387,14 @@ describe("collection.router", async () => {
     it("should throw 404 if updating a non-existent `linkId`", async () => {
       // Arrange
       const { site } = await setupCollection()
-      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      await setupAdminPermissions({ siteId: site.id, userId: session.userId })
 
       // Act
       const expected = caller.updateCollectionLink({
-        siteId: site.id,
         category: "category",
-        ref: "1",
         linkId: 999,
+        ref: "1",
+        siteId: site.id,
       })
 
       // Assert
@@ -1409,14 +1411,14 @@ describe("collection.router", async () => {
     it("should throw 404 if the resource type is not a `CollectionLink`", async () => {
       // Arrange
       const { site, collection } = await setupCollection()
-      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      await setupAdminPermissions({ siteId: site.id, userId: session.userId })
 
       // Act
       const expected = caller.updateCollectionLink({
-        siteId: site.id,
         category: "category",
-        ref: "1",
         linkId: Number(collection.id),
+        ref: "1",
+        siteId: site.id,
       })
 
       // Assert
@@ -1438,10 +1440,10 @@ describe("collection.router", async () => {
 
       // Act
       const expected = caller.updateCollectionLink({
-        siteId: 999,
         category: "category",
-        ref: "1",
         linkId: Number(page.id),
+        ref: "1",
+        siteId: 999,
       })
 
       // Assert
@@ -1464,10 +1466,10 @@ describe("collection.router", async () => {
 
       // Act
       const expected = caller.updateCollectionLink({
-        siteId: site.id,
         category: "category",
-        ref: "1",
         linkId: Number(page.id),
+        ref: "1",
+        siteId: site.id,
       })
 
       // Assert
@@ -1489,20 +1491,23 @@ describe("collection.router", async () => {
         state: "Published",
         userId: session.userId,
       })
-      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      await setupAdminPermissions({ siteId: site.id, userId: session.userId })
       expect(page.draftBlobId).toBe(null)
 
       // Act
       const originalBlob = await db
         .transaction()
-        .execute((tx) => getBlobOfResource({ db: tx, resourceId: page.id }))
+        .execute(
+          async (tx) =>
+            await getBlobOfResource({ db: tx, resourceId: page.id }),
+        )
 
       // Assert
       const expected = await caller.updateCollectionLink({
-        siteId: site.id,
         category: "category",
-        ref: "1",
         linkId: Number(page.id),
+        ref: "1",
+        siteId: site.id,
       })
 
       expect(auditSpy).toHaveBeenCalled()
@@ -1536,15 +1541,18 @@ describe("collection.router", async () => {
       })
       const originalBlob = await db
         .transaction()
-        .execute((tx) => getBlobOfResource({ db: tx, resourceId: page.id }))
-      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+        .execute(
+          async (tx) =>
+            await getBlobOfResource({ db: tx, resourceId: page.id }),
+        )
+      await setupAdminPermissions({ siteId: site.id, userId: session.userId })
 
       // Act
       const expected = await caller.updateCollectionLink({
-        siteId: site.id,
         category: "category",
-        ref: "1",
         linkId: Number(page.id),
+        ref: "1",
+        siteId: site.id,
       })
 
       // Assert
@@ -1577,15 +1585,15 @@ describe("collection.router", async () => {
       const { page, site } = await setupPageResource({
         resourceType: "CollectionLink",
       })
-      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      await setupAdminPermissions({ siteId: site.id, userId: session.userId })
 
       // Act
       const expected = await caller.updateCollectionLink({
-        siteId: site.id,
         category: "category",
-        ref: "1",
-        linkId: Number(page.id),
         date: "31/01/2024",
+        linkId: Number(page.id),
+        ref: "1",
+        siteId: site.id,
       })
 
       // Assert
@@ -1600,16 +1608,16 @@ describe("collection.router", async () => {
       const { page, site } = await setupPageResource({
         resourceType: "CollectionLink",
       })
-      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      await setupAdminPermissions({ siteId: site.id, userId: session.userId })
 
       // Act
       // 29 Feb 2023 is invalid as 2023 is not a leap year.
       const result = caller.updateCollectionLink({
-        siteId: site.id,
         category: "category",
-        ref: "1",
-        linkId: Number(page.id),
         date: "29/02/2023",
+        linkId: Number(page.id),
+        ref: "1",
+        siteId: site.id,
       })
 
       // Assert
@@ -1656,7 +1664,7 @@ describe("collection.router", async () => {
     it("should return empty array when no collections exist", async () => {
       // Arrange
       const { site } = await setupSite()
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
 
       // Act
       const result = await caller.getCollections({
@@ -1670,23 +1678,23 @@ describe("collection.router", async () => {
     it("should return all collections for the site ordered by title (default behavior)", async () => {
       // Arrange
       const { site } = await setupSite()
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
 
       // Create collections with different titles to test ordering
       const { collection: collection1 } = await setupCollection({
+        permalink: "zebra-collection",
         siteId: site.id,
         title: "Zebra Collection",
-        permalink: "zebra-collection",
       })
       const { collection: collection2 } = await setupCollection({
+        permalink: "alpha-collection",
         siteId: site.id,
         title: "Alpha Collection",
-        permalink: "alpha-collection",
       })
       const { collection: collection3 } = await setupCollection({
+        permalink: "beta-collection",
         siteId: site.id,
         title: "Beta Collection",
-        permalink: "beta-collection",
       })
 
       // Act
@@ -1712,8 +1720,8 @@ describe("collection.router", async () => {
       // Arrange
       const { site: site1 } = await setupSite()
       const { site: site2 } = await setupSite()
-      await setupEditorPermissions({ userId: session.userId, siteId: site1.id })
-      await setupEditorPermissions({ userId: session.userId, siteId: site2.id })
+      await setupEditorPermissions({ siteId: site1.id, userId: session.userId })
+      await setupEditorPermissions({ siteId: site2.id, userId: session.userId })
 
       // Create collections in different sites
       const { collection } = await setupCollection({
@@ -1739,7 +1747,7 @@ describe("collection.router", async () => {
     it("should only return resources of type Collection", async () => {
       // Arrange
       const { site } = await setupSite()
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
 
       // Create a collection and other resource types
       const { collection } = await setupCollection({
@@ -1747,8 +1755,8 @@ describe("collection.router", async () => {
         title: "Test Collection",
       })
       await setupPageResource({
-        siteId: site.id,
         resourceType: "Page",
+        siteId: site.id,
         title: "Test Page",
       })
       await setupFolder({
@@ -1771,30 +1779,30 @@ describe("collection.router", async () => {
     it("should return only collections that have children when hasChildren is true", async () => {
       // Arrange
       const { site } = await setupSite()
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
 
       // Create collections
       const { collection: collectionWithChildren } = await setupCollection({
-        siteId: site.id,
         permalink: "collection-with-children",
+        siteId: site.id,
       })
       const { collection: _emptyCollection } = await setupCollection({
-        siteId: site.id,
         permalink: "empty-collection",
+        siteId: site.id,
       })
 
       // Add children to the first collection
       await setupPageResource({
-        siteId: site.id,
-        resourceType: ResourceType.CollectionPage,
         parentId: collectionWithChildren.id,
         permalink: "child-page",
+        resourceType: ResourceType.CollectionPage,
+        siteId: site.id,
       })
 
       // Act
       const result = await caller.getCollections({
-        siteId: site.id,
         hasChildren: true,
+        siteId: site.id,
       })
 
       // Assert
@@ -1810,27 +1818,27 @@ describe("collection.router", async () => {
     async function setupCollectionWithIndexPage() {
       const { collection, site } = await setupCollection()
       const { page: indexPage } = await setupPageResource({
-        siteId: site.id,
-        resourceType: ResourceType.IndexPage,
         parentId: collection.id,
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
       })
-      return { collection, site, indexPage }
+      return { collection, indexPage, site }
     }
 
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const { site, indexPage } = await setupCollectionWithIndexPage()
-      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      await setupAdminPermissions({ siteId: site.id, userId: session.userId })
 
       // Act
       const result = unauthedCaller.countTagOptionsUsage({
-        siteId: site.id,
         pageId: Number(indexPage.id),
+        siteId: site.id,
         tagOptionIds: [TAG_OPTION_ID],
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -1841,13 +1849,13 @@ describe("collection.router", async () => {
 
       // Act
       const result = caller.countTagOptionsUsage({
-        siteId: site.id,
         pageId: Number(indexPage.id),
+        siteId: site.id,
         tagOptionIds: [TAG_OPTION_ID],
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1859,12 +1867,12 @@ describe("collection.router", async () => {
     it("should reject when tagOptionIds exceeds the maximum length", async () => {
       // Arrange
       const { site, indexPage } = await setupCollectionWithIndexPage()
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
 
       // Act
       const result = caller.countTagOptionsUsage({
-        siteId: site.id,
         pageId: Number(indexPage.id),
+        siteId: site.id,
         tagOptionIds: Array.from({ length: 100 + 1 }, () => randomUUID()),
       })
 
@@ -1875,17 +1883,17 @@ describe("collection.router", async () => {
     it("should throw 404 if index page does not exist", async () => {
       // Arrange
       const { site } = await setupSite()
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
 
       // Act
       const result = caller.countTagOptionsUsage({
+        pageId: 99_999,
         siteId: site.id,
-        pageId: 99999,
         tagOptionIds: [TAG_OPTION_ID],
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Collection index page not found",
@@ -1896,17 +1904,17 @@ describe("collection.router", async () => {
     it("should throw 404 if indexPageId is not a collection index page", async () => {
       // Arrange
       const { site, page } = await setupPageResource({ resourceType: "Page" })
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
 
       // Act
       const result = caller.countTagOptionsUsage({
-        siteId: site.id,
         pageId: Number(page.id),
+        siteId: site.id,
         tagOptionIds: [TAG_OPTION_ID],
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Collection index page not found",
@@ -1918,18 +1926,18 @@ describe("collection.router", async () => {
       // Arrange
       const { site: siteA, indexPage } = await setupCollectionWithIndexPage()
       const { site: siteB } = await setupSite()
-      await setupEditorPermissions({ userId: session.userId, siteId: siteA.id })
-      await setupEditorPermissions({ userId: session.userId, siteId: siteB.id })
+      await setupEditorPermissions({ siteId: siteA.id, userId: session.userId })
+      await setupEditorPermissions({ siteId: siteB.id, userId: session.userId })
 
       // Act
       const result = caller.countTagOptionsUsage({
-        siteId: siteB.id,
         pageId: Number(indexPage.id),
+        siteId: siteB.id,
         tagOptionIds: [TAG_OPTION_ID],
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Collection index page not found",
@@ -1940,7 +1948,7 @@ describe("collection.router", async () => {
     it("should throw 404 when index page has no parent collection", async () => {
       // Arrange
       const { site, indexPage } = await setupCollectionWithIndexPage()
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
       await db
         .updateTable("Resource")
         .set({ parentId: null })
@@ -1949,13 +1957,13 @@ describe("collection.router", async () => {
 
       // Act
       const result = caller.countTagOptionsUsage({
-        siteId: site.id,
         pageId: Number(indexPage.id),
+        siteId: site.id,
         tagOptionIds: [TAG_OPTION_ID],
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Collection index page has no parent collection",
@@ -1966,12 +1974,12 @@ describe("collection.router", async () => {
     it("should return 0 when there are no child items", async () => {
       // Arrange
       const { site, indexPage } = await setupCollectionWithIndexPage()
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
 
       // Act
       const result = await caller.countTagOptionsUsage({
-        siteId: site.id,
         pageId: Number(indexPage.id),
+        siteId: site.id,
         tagOptionIds: [TAG_OPTION_ID],
       })
 
@@ -1983,18 +1991,18 @@ describe("collection.router", async () => {
       // Arrange
       const { collection, site, indexPage } =
         await setupCollectionWithIndexPage()
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
       await setupPageResource({
-        siteId: site.id,
-        resourceType: ResourceType.CollectionPage,
         parentId: collection.id,
         permalink: "page-a",
+        resourceType: ResourceType.CollectionPage,
+        siteId: site.id,
       })
 
       // Act
       const result = await caller.countTagOptionsUsage({
-        siteId: site.id,
         pageId: Number(indexPage.id),
+        siteId: site.id,
         tagOptionIds: [TAG_OPTION_ID],
       })
 
@@ -2006,18 +2014,18 @@ describe("collection.router", async () => {
       // Arrange
       const { collection, site, indexPage } =
         await setupCollectionWithIndexPage()
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
       await setupCollectionPage({
-        siteId: site.id,
         parentId: collection.id,
         permalink: "tagged-page",
+        siteId: site.id,
         tagged: [TAG_OPTION_ID],
       })
 
       // Act
       const result = await caller.countTagOptionsUsage({
-        siteId: site.id,
         pageId: Number(indexPage.id),
+        siteId: site.id,
         tagOptionIds: [TAG_OPTION_ID],
       })
 
@@ -2029,12 +2037,12 @@ describe("collection.router", async () => {
       // Arrange
       const { collection, site, indexPage } =
         await setupCollectionWithIndexPage()
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
       const { page } = await setupPageResource({
-        siteId: site.id,
-        resourceType: ResourceType.CollectionPage,
         parentId: collection.id,
         permalink: "pub-only",
+        resourceType: ResourceType.CollectionPage,
+        siteId: site.id,
       })
 
       const draftContent = collectionPageBlobContent()
@@ -2053,10 +2061,10 @@ describe("collection.router", async () => {
       const version = await db
         .insertInto("Version")
         .values({
-          versionNum: 1,
-          resourceId: page.id,
           blobId: publishedBlob.id,
           publishedBy: session.userId!,
+          resourceId: page.id,
+          versionNum: 1,
         })
         .returning("id")
         .executeTakeFirstOrThrow()
@@ -2072,8 +2080,8 @@ describe("collection.router", async () => {
 
       // Act
       const result = await caller.countTagOptionsUsage({
-        siteId: site.id,
         pageId: Number(indexPage.id),
+        siteId: site.id,
         tagOptionIds: [TAG_OPTION_ID],
       })
 
@@ -2085,12 +2093,12 @@ describe("collection.router", async () => {
       // Arrange
       const { collection, site, indexPage } =
         await setupCollectionWithIndexPage()
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
       const { page } = await setupPageResource({
-        siteId: site.id,
-        resourceType: ResourceType.CollectionPage,
         parentId: collection.id,
         permalink: "both-blobs",
+        resourceType: ResourceType.CollectionPage,
+        siteId: site.id,
       })
 
       const taggedBlob = collectionPageBlobContent([TAG_OPTION_ID])
@@ -2107,10 +2115,10 @@ describe("collection.router", async () => {
       const version = await db
         .insertInto("Version")
         .values({
-          versionNum: 1,
-          resourceId: page.id,
           blobId: publishedBlob.id,
           publishedBy: session.userId!,
+          resourceId: page.id,
+          versionNum: 1,
         })
         .returning("id")
         .executeTakeFirstOrThrow()
@@ -2126,8 +2134,8 @@ describe("collection.router", async () => {
 
       // Act
       const result = await caller.countTagOptionsUsage({
-        siteId: site.id,
         pageId: Number(indexPage.id),
+        siteId: site.id,
         tagOptionIds: [TAG_OPTION_ID],
       })
 
@@ -2139,18 +2147,18 @@ describe("collection.router", async () => {
       // Arrange
       const { collection, site, indexPage } =
         await setupCollectionWithIndexPage()
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
       const { blob: blobA } = await setupPageResource({
-        siteId: site.id,
-        resourceType: ResourceType.CollectionPage,
         parentId: collection.id,
         permalink: "page-1",
+        resourceType: ResourceType.CollectionPage,
+        siteId: site.id,
       })
       const { blob: blobB } = await setupPageResource({
-        siteId: site.id,
-        resourceType: ResourceType.CollectionLink,
         parentId: collection.id,
         permalink: "page-2",
+        resourceType: ResourceType.CollectionLink,
+        siteId: site.id,
       })
 
       const taggedBlob = collectionPageBlobContent([TAG_OPTION_ID])
@@ -2167,8 +2175,8 @@ describe("collection.router", async () => {
 
       // Act
       const result = await caller.countTagOptionsUsage({
-        siteId: site.id,
         pageId: Number(indexPage.id),
+        siteId: site.id,
         tagOptionIds: [TAG_OPTION_ID],
       })
 
@@ -2178,11 +2186,11 @@ describe("collection.router", async () => {
 
     it("should return 0 when tagOptionIds is empty", async () => {
       const { site, indexPage } = await setupCollectionWithIndexPage()
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
 
       const result = await caller.countTagOptionsUsage({
-        siteId: site.id,
         pageId: Number(indexPage.id),
+        siteId: site.id,
         tagOptionIds: [],
       })
 
@@ -2192,17 +2200,17 @@ describe("collection.router", async () => {
     it("should return 1 when a child item lists one of several queried tag options", async () => {
       const { collection, site, indexPage } =
         await setupCollectionWithIndexPage()
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
       await setupCollectionPage({
-        siteId: site.id,
         parentId: collection.id,
         permalink: "tagged-page",
+        siteId: site.id,
         tagged: [TAG_OPTION_ID],
       })
 
       const result = await caller.countTagOptionsUsage({
-        siteId: site.id,
         pageId: Number(indexPage.id),
+        siteId: site.id,
         tagOptionIds: [TAG_OPTION_ID, TAG_OPTION_B],
       })
 
@@ -2212,17 +2220,17 @@ describe("collection.router", async () => {
     it("should count a resource once when tagged lists multiple of the queried option ids", async () => {
       const { collection, site, indexPage } =
         await setupCollectionWithIndexPage()
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
       await setupCollectionPage({
-        siteId: site.id,
         parentId: collection.id,
         permalink: "multi-tag-page",
+        siteId: site.id,
         tagged: [TAG_OPTION_ID, TAG_OPTION_B],
       })
 
       const result = await caller.countTagOptionsUsage({
-        siteId: site.id,
         pageId: Number(indexPage.id),
+        siteId: site.id,
         tagOptionIds: [TAG_OPTION_ID, TAG_OPTION_B],
       })
 
@@ -2235,9 +2243,9 @@ describe("collection.router", async () => {
     const TAG_OPTION_ID = "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
 
     const indexPageBlobWithTags = () => ({
+      content: [],
       layout: "collection" as const,
       page: {
-        title: "Test Collection",
         subtitle: "Test subtitle",
         tagCategories: [
           {
@@ -2247,19 +2255,19 @@ describe("collection.router", async () => {
             options: [{ id: TAG_OPTION_ID, label: "Technology" }],
           },
         ],
+        title: "Test Collection",
       },
-      content: [],
       version: "0.1.0",
     })
 
     async function setupCollectionWithIndexPage() {
       const { collection, site } = await setupCollection()
       const { page: indexPage, blob: indexBlob } = await setupPageResource({
-        siteId: site.id,
-        resourceType: ResourceType.IndexPage,
         parentId: collection.id,
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
       })
-      return { collection, site, indexPage, indexBlob }
+      return { collection, indexBlob, indexPage, site }
     }
 
     async function publishIndexPageWithTags(indexPageId: string) {
@@ -2271,10 +2279,10 @@ describe("collection.router", async () => {
       const version = await db
         .insertInto("Version")
         .values({
-          versionNum: 1,
-          resourceId: indexPageId,
           blobId: publishedBlob.id,
           publishedBy: session.userId!,
+          resourceId: indexPageId,
+          versionNum: 1,
         })
         .returning("id")
         .executeTakeFirstOrThrow()
@@ -2289,15 +2297,15 @@ describe("collection.router", async () => {
       // Arrange
       const { collection, site } = await setupCollection()
       const { page: collectionPage } = await setupPageResource({
-        siteId: site.id,
-        resourceType: ResourceType.CollectionPage,
         parentId: collection.id,
+        resourceType: ResourceType.CollectionPage,
+        siteId: site.id,
       })
 
       // Act
       const result = unauthedCaller.getCollectionTags({
-        siteId: site.id,
         resourceId: Number(collectionPage.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -2310,15 +2318,15 @@ describe("collection.router", async () => {
       // Arrange
       const { collection, site } = await setupCollection()
       const { page: collectionPage } = await setupPageResource({
-        siteId: site.id,
-        resourceType: ResourceType.CollectionPage,
         parentId: collection.id,
+        resourceType: ResourceType.CollectionPage,
+        siteId: site.id,
       })
 
       // Act
       const result = caller.getCollectionTags({
-        siteId: site.id,
         resourceId: Number(collectionPage.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -2335,18 +2343,18 @@ describe("collection.router", async () => {
       // Arrange
       const { collection, site, indexPage } =
         await setupCollectionWithIndexPage()
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
       await publishIndexPageWithTags(indexPage.id)
       const { page: collectionPage } = await setupPageResource({
-        siteId: site.id,
-        resourceType: ResourceType.CollectionPage,
         parentId: collection.id,
+        resourceType: ResourceType.CollectionPage,
+        siteId: site.id,
       })
 
       // Act
       const result = await caller.getCollectionTags({
-        siteId: site.id,
         resourceId: Number(collectionPage.id),
+        siteId: site.id,
       })
 
       // Assert
@@ -2358,7 +2366,7 @@ describe("collection.router", async () => {
       // Arrange
       const { collection, site, indexBlob } =
         await setupCollectionWithIndexPage()
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
       // Put tags in draft only — no published version
       await db
         .updateTable("Blob")
@@ -2366,15 +2374,15 @@ describe("collection.router", async () => {
         .where("id", "=", indexBlob.id)
         .execute()
       const { page: collectionPage } = await setupPageResource({
-        siteId: site.id,
-        resourceType: ResourceType.CollectionPage,
         parentId: collection.id,
+        resourceType: ResourceType.CollectionPage,
+        siteId: site.id,
       })
 
       // Act
       const result = await caller.getCollectionTags({
-        siteId: site.id,
         resourceId: Number(collectionPage.id),
+        siteId: site.id,
       })
 
       // Assert: always published-only, no draft fallback

@@ -28,7 +28,9 @@ export const QuickSelectTimeSection = ({
   // filter out the time if it is before the earliest allowable time
   // since both are kept as {hours, minutes}, we don't need to convert them to Date objects
   const optionsToShow = QUICK_SELECT_TIMES.filter(({ hours, minutes }) => {
-    if (!earliestAllowableTime) return true
+    if (!earliestAllowableTime) {
+      return true
+    }
     const date = new Date()
     date.setHours(hours, minutes, 0, 0)
     return date >= earliestAllowableTime
@@ -56,7 +58,9 @@ export const QuickSelectTimeSection = ({
               cursor="pointer"
               borderWidth="1px"
               borderColor="blue.200"
-              onClick={() => setValue("publishTime", valueFormatted)}
+              onClick={() => {
+                setValue("publishTime", valueFormatted)
+              }}
             >
               <Text textStyle="legal" color="interaction.main.default">
                 {displayFormatted}

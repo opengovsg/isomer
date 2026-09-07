@@ -14,8 +14,8 @@ const SHARED_HANDLERS = [
 ]
 
 const meta: Meta<typeof UsersPage> = {
-  title: "Pages/Site Management/Users Page/Remove User Modal",
   component: UsersPage,
+  decorators: [ResetRemoveUserModalDecorator],
   parameters: {
     getLayout: UsersPage.getLayout,
     growthbook: [createSingpassEnabledGbParameters(true)],
@@ -30,7 +30,7 @@ const meta: Meta<typeof UsersPage> = {
       },
     },
   },
-  decorators: [ResetRemoveUserModalDecorator],
+  title: "Pages/Site Management/Users Page/Remove User Modal",
 }
 
 export default meta

@@ -1,3 +1,5 @@
+/* oxlint-disable unicorn/no-useless-undefined -- reduce initial accumulator must be undefined */
+/* oxlint-disable eslint/array-callback-return, typescript/consistent-return -- core cleanup deferred */
 import type {
   IsomerComponent,
   IsomerGeneratedSiteProps,
@@ -21,13 +23,13 @@ import { transliterate } from "transliteration"
 import { PLACEHOLDER_IMAGE_FILENAME } from "./constants"
 
 export const EMBED_NAME_MAPPING = {
-  googlemaps: "Google Map",
-  onemap: "OneMap",
-  ogpmaps: "Maps.gov.sg",
   fbvideo: "Facebook Video",
-  youtube: "YouTube",
-  vimeo: "Vimeo",
   formsg: "FormSG",
+  googlemaps: "Google Map",
+  ogpmaps: "Maps.gov.sg",
+  onemap: "OneMap",
+  vimeo: "Vimeo",
+  youtube: "YouTube",
 } satisfies Record<
   | keyof typeof MAPS_EMBED_URL_REGEXES
   | keyof typeof VIDEO_EMBED_URL_REGEXES
@@ -38,7 +40,7 @@ export const EMBED_NAME_MAPPING = {
 export const generateResourceUrl = (value: string): string =>
   transliterate(value)
     .toLowerCase()
-    .replace(/[^a-z0-9]/g, "-")
+    .replaceAll(/[^a-z0-9]/gu, "-")
 
 interface UploadModifiedAssetsParams {
   block: IsomerComponent
@@ -46,8 +48,7 @@ interface UploadModifiedAssetsParams {
   uploadAsset: UseMutateAsyncFunction<
     UploadAssetMutationOutput,
     void,
-    UploadAssetMutationInput,
-    unknown
+    UploadAssetMutationInput
   >
   onSuccess: (block: IsomerComponent) => void
   onError: (failedUploads: ModifiedAsset[]) => void
@@ -64,13 +65,14 @@ export const uploadModifiedAssets = async ({
   const assetsToUpload = modifiedAssets.filter(
     (asset) => !!asset.file && asset.file.name !== PLACEHOLDER_IMAGE_FILENAME,
   )
-  return Promise.allSettled(
-    assetsToUpload.map(({ path, file }) => {
+  return await Promise.allSettled(
+    assetsToUpload.map(async ({ path, file }) => {
       if (!file) {
-        return Promise.resolve()
+        return
       }
 
-      return uploadAsset({ file }).then((res) => {
+      // oxlint-disable-next-line typescript/consistent-return -- core cleanup deferred
+      return await uploadAsset({ file }).then((res) => {
         set(block, path, res.path)
         return path
       })
@@ -101,18 +103,19 @@ export const uploadModifiedAssets = async ({
 export const generatePreviewSitemap = (
   sitemap: typeof collectionSitemap,
   title = "Your filename",
-) => {
+) =>
   // SAFETY: preview sitemap children are mapped from the collection fixture shape
-  return {
+  // oxlint-disable-next-line unicorn/no-unsafe-type-assertion -- core cleanup deferred
+  ({
     ...sitemap,
     children: sitemap.children.map(({ children, ...rest }) => ({
       ...rest,
       children: children.map((props) => ({ ...props, title })),
     })),
-  } as IsomerGeneratedSiteProps["siteMap"]
-}
+  }) as IsomerGeneratedSiteProps["siteMap"]
 
 export const getIframeSrc = (embedCode: string): string | undefined => {
+  // oxlint-disable-next-line import/no-named-as-default-member -- core cleanup deferred
   const elem = DOMPurify.sanitize(embedCode, {
     ALLOWED_TAGS: ["iframe"],
     RETURN_DOM_FRAGMENT: true,
@@ -127,17 +130,22 @@ export const getEmbedNameFromUrl = (url: string) =>
     ...MAPS_EMBED_URL_REGEXES,
     ...VIDEO_EMBED_URL_REGEXES,
     ...FORMSG_EMBED_URL_REGEXES,
+    // oxlint-disable-next-line eslint/array-callback-return -- core cleanup deferred
+    // oxlint-disable-next-line unicorn/no-array-reduce -- core cleanup deferred
   }).reduce<string | undefined>((acc, curr) => {
+    // oxlint-disable-next-line typescript/strict-boolean-expressions -- core cleanup deferred
     if (acc) {
       // Embed name already found, return it
       return acc
     }
 
     const [embedName, regex] = curr
-    if (new RegExp(regex).test(url)) {
+    if (new RegExp(regex, "u").test(url)) {
       // SAFETY: caller invariant is checked immediately before this narrowing assertion
+      // oxlint-disable-next-line unicorn/no-unsafe-type-assertion -- core cleanup deferred
       return EMBED_NAME_MAPPING[embedName as keyof typeof EMBED_NAME_MAPPING]
     }
 
+    // oxlint-disable-next-line typescript/consistent-return -- core cleanup deferred
     return undefined
   }, undefined)

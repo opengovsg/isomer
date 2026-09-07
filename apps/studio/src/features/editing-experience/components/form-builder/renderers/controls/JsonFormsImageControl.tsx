@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
 import type { ControlProps, JsonSchema, RankedTester } from "@jsonforms/core"
 import { Box, FormControl } from "@chakra-ui/react"
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
@@ -10,6 +11,12 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { pageOrLinkSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { MAX_IMG_FILE_SIZE_BYTES } from "~/lib/fileUpload"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { getCustomErrorMessage } from "./utils/getCustomErrorMessage"
 
@@ -45,7 +52,9 @@ const JsonFormsImageControl = ({
       {data ? (
         <AttachmentData
           data={data.split("/").pop() ?? "Unknown"}
-          onClick={() => handleChange(path, undefined)}
+          onClick={() => {
+            handleChange(path, undefined)
+          }}
         />
       ) : (
         <FileAttachment
@@ -54,8 +63,14 @@ const JsonFormsImageControl = ({
             schema.allowedMimeTypeMappings ?? IMAGE_ACCEPTED_MIME_TYPE_MAPPING
           }
           siteId={siteId}
-          resourceId={(pageId ?? linkId) ? String(pageId ?? linkId) : undefined}
-          setHref={(src) => handleChange(path, src)}
+          resourceId={
+            isDefinedNumber(pageId ?? linkId)
+              ? String(pageId ?? linkId)
+              : undefined
+          }
+          setHref={(src) => {
+            handleChange(path, src)
+          }}
           shouldFetchResource={true}
         />
       )}

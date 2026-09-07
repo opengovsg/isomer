@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-boolean-expressions, typescript/no-unsafe-member-access, typescript/no-unnecessary-condition -- studio lint cleanup */
 import type { NextPageWithLayout } from "~/lib/types"
 import type { SiteTheme } from "~/schemas/site"
 import { Box } from "@chakra-ui/react"
@@ -28,6 +29,7 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { siteThemeValidator } from "~/schemas/site"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { trpc } from "~/utils/trpc"
+import { hasNonEmptyString } from "~/utils/truthiness"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 const ColoursSettingsPage: NextPageWithLayout = () => {
@@ -51,6 +53,13 @@ const ColoursSettingsPage: NextPageWithLayout = () => {
   const isDirty = !isEqual(theme, siteTheme)
 
   const setThemeMutation = trpc.site.setTheme.useMutation({
+    onError: (error) => {
+      toast({
+        description: error.message,
+        status: "error",
+        title: "Failed to update site",
+      })
+    },
     onSuccess: async () => {
       toast({
         ...SETTINGS_TOAST_MESSAGES.success,
@@ -59,19 +68,14 @@ const ColoursSettingsPage: NextPageWithLayout = () => {
       await trpcUtils.site.getConfig.invalidate({ id: siteId })
       await trpcUtils.site.getTheme.invalidate({ id: siteId })
     },
-    onError: (error) => {
-      toast({
-        title: "Failed to update site",
-        description: error.message,
-        status: "error",
-      })
-    },
   })
 
-  useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
+  useNavigationEffect({ callback: setNextUrl, isDirty, isOpen })
 
   const onSubmit = () => {
-    if (!siteTheme) return
+    if (!siteTheme) {
+      return
+    }
 
     setThemeMutation.mutate({ siteId, theme: siteTheme })
   }
@@ -80,7 +84,9 @@ const ColoursSettingsPage: NextPageWithLayout = () => {
     <ErrorProvider>
       <UnsavedSettingModal
         isOpen={isOpen}
-        onClose={() => setNextUrl("")}
+        onClose={() => {
+          setNextUrl("")
+        }}
         nextUrl={nextUrl}
       />
       <SettingsGrid>
@@ -115,13 +121,11 @@ const ColoursSettingsPage: NextPageWithLayout = () => {
   )
 }
 
-ColoursSettingsPage.getLayout = (page) => {
-  return (
-    <PermissionsBoundary
-      resourceType={ResourceType.RootPage}
-      page={SiteSettingsLayout(page)}
-    />
-  )
-}
+ColoursSettingsPage.getLayout = (page) => (
+  <PermissionsBoundary
+    resourceType={ResourceType.RootPage}
+    page={SiteSettingsLayout(page)}
+  />
+)
 
 export default ColoursSettingsPage

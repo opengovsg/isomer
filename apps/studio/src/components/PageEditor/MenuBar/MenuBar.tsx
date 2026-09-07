@@ -1,6 +1,7 @@
 import type { Editor } from "@tiptap/react"
 import { HStack } from "@chakra-ui/react"
 import { useMemo } from "react"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import type { PossibleMenubarItemProps } from "./MenubarItem/types"
 import { MenubarItemFactory } from "./MenubarItem"
@@ -11,7 +12,7 @@ const withMenubarItemKeys = (items: PossibleMenubarItemProps[]) => {
   const typeCounts = new Map<string, number>()
 
   return items.map((item) => {
-    if ("title" in item && item.title) {
+    if ("title" in item && hasNonEmptyString(item.title)) {
       return { item, key: `${item.type}-${item.title}` }
     }
 

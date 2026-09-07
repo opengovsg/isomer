@@ -5,8 +5,11 @@ import { trpc } from "~/utils/trpc"
 export const useSiteThemeCssVars = ({ siteId }: { siteId: number }) => {
   const [theme] = trpc.site.getTheme.useSuspenseQuery({ id: siteId })
   const themeCssVars = useMemo(() => {
-    if (!theme) return
+    if (!theme) {
+      return
+    }
     // convert theme to css vars
+    // oxlint-disable-next-line typescript/consistent-return -- core cleanup deferred
     return convertThemeToCss(theme)
   }, [theme])
 

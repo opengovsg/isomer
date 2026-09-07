@@ -10,7 +10,6 @@ import { singpassRouter } from "./singpass/singpass.router"
 
 export const authRouter = router({
   email: emailSessionRouter,
-  singpass: singpassRouter,
   logout: publicProcedure.mutation(async ({ ctx }) => {
     const { userId } = ctx.session
     ctx.session.destroy()
@@ -33,17 +32,18 @@ export const authRouter = router({
 
       const ip = getIP(ctx.req)
 
-      return logAuthEvent(tx, {
-        eventType: AuditLogEvent.Logout,
-        delta: {
-          before: user,
-          after: null,
-        },
+      await logAuthEvent(tx, {
         by: user,
+        delta: {
+          after: null,
+          before: user,
+        },
+        eventType: AuditLogEvent.Logout,
         ip,
       })
     })
 
     return { isLoggedIn: false }
   }),
+  singpass: singpassRouter,
 })

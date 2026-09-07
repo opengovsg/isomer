@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-boolean-expressions -- studio lint cleanup */
 import type {
   ComplexIntegrationsSettings,
   SimpleIntegrationsSettings,
@@ -67,13 +68,13 @@ const IntegrationsSettingsPage: NextPageWithLayout = () => {
   const [nextUrl, setNextUrl] = useState("")
   const isOpen = !!nextUrl
   const [simpleIntegrationSettings, setSimpleIntegrationSettings] =
-    useState<SimpleIntegrationsSettings>({ siteGtmId, search })
+    useState<SimpleIntegrationsSettings>({ search, siteGtmId })
 
   const [complexIntegrationSettings, setComplexIntegrationSettings] =
     useState<ComplexIntegrationsSettings>({ askgov, vica })
 
   const isDirty = !isEqual(
-    pickBy({ siteGtmId, search, askgov, vica }, (val) => !!val),
+    pickBy({ askgov, search, siteGtmId, vica }, (val) => !!val),
     pickBy(
       { ...simpleIntegrationSettings, ...complexIntegrationSettings },
       (val) => !!val,
@@ -82,6 +83,13 @@ const IntegrationsSettingsPage: NextPageWithLayout = () => {
 
   const updateSiteIntegrationsMutation =
     trpc.site.updateSiteIntegrations.useMutation({
+      onError: (error) => {
+        toast({
+          description: error.message,
+          status: "error",
+          title: "Failed to update site",
+        })
+      },
       onSuccess: async (updatedSite) => {
         setComplexIntegrationSettings({
           askgov: updatedSite.config.askgov,
@@ -93,20 +101,12 @@ const IntegrationsSettingsPage: NextPageWithLayout = () => {
         })
         await trpcUtils.site.getConfig.invalidate({ id: siteId })
       },
-      onError: (error) => {
-        toast({
-          title: "Failed to update site",
-          description: error.message,
-          status: "error",
-        })
-      },
     })
 
-  useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
+  useNavigationEffect({ callback: setNextUrl, isDirty, isOpen })
 
-  const onSubmit = () =>
+  const onSubmit = () => {
     updateSiteIntegrationsMutation.mutate({
-      siteId,
       data: {
         ...rest,
         ...simpleIntegrationSettings,
@@ -115,13 +115,17 @@ const IntegrationsSettingsPage: NextPageWithLayout = () => {
         url: url || `https://sample.isomer.gov.sg`,
         ...(agencyName !== undefined && { agencyName }),
       },
+      siteId,
     })
+  }
 
   return (
     <ErrorProvider>
       <UnsavedSettingModal
         isOpen={isOpen}
-        onClose={() => setNextUrl("")}
+        onClose={() => {
+          setNextUrl("")
+        }}
         nextUrl={nextUrl}
       />
       <SettingsGrid>
@@ -171,13 +175,13 @@ const IntegrationsSettingsPage: NextPageWithLayout = () => {
                     "app-name": agencyName ?? siteName,
                   }
 
-                  if (!isEqual(newVicaState, data.vica)) {
+                  if (isEqual(newVicaState, data.vica)) {
+                    setComplexIntegrationSettings(data)
+                  } else {
                     setComplexIntegrationSettings({
                       ...data,
                       vica: newVicaState,
                     })
-                  } else {
-                    setComplexIntegrationSettings(data)
                   }
                 } else {
                   setComplexIntegrationSettings(data)
@@ -198,13 +202,11 @@ const IntegrationsSettingsPage: NextPageWithLayout = () => {
   )
 }
 
-IntegrationsSettingsPage.getLayout = (page) => {
-  return (
-    <PermissionsBoundary
-      resourceType={ResourceType.RootPage}
-      page={SiteSettingsLayout(page)}
-    />
-  )
-}
+IntegrationsSettingsPage.getLayout = (page) => (
+  <PermissionsBoundary
+    resourceType={ResourceType.RootPage}
+    page={SiteSettingsLayout(page)}
+  />
+)
 
 export default IntegrationsSettingsPage

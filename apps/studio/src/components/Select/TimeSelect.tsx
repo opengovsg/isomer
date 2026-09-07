@@ -1,3 +1,4 @@
+/* oxlint-disable react/function-component-definition, react/display-name -- studio lint cleanup */
 import type {
   FormatOptionLabelMeta,
   PlaceholderProps,
@@ -15,8 +16,10 @@ import { BaseSelect } from "./BaseSelect"
 
 interface TimeSelectProps extends Omit<BaseSelectProps<string>, "options"> {
   size: "sm" | "md" | "lg"
-  earliestAllowableTime?: Date | null // the earliest time that can be selected, if any
-  minutesStep?: 5 | 10 | 15 | 20 | 30 | 60 // determines granularity of time options
+  earliestAllowableTime?: Date | null
+  // the earliest time that can be selected, if any
+  minutesStep?: 5 | 10 | 15 | 20 | 30 | 60
+  // determines granularity of time options
 }
 
 const TimeSelectTimezoneBadge = (): React.ReactNode => (
@@ -71,61 +74,67 @@ const formatTimeSelectOptionLabel = (
 export const TimeSelect = React.forwardRef<
   SelectInstance<BaseSelectOption<string>>,
   TimeSelectProps
->(function TimeSelect(
-  { value, earliestAllowableTime, minutesStep = 15, ...rest }: TimeSelectProps,
-  ref,
-) {
-  const totalSlots = (24 * 60) / minutesStep
+>(
+  (
+    {
+      value,
+      earliestAllowableTime,
+      minutesStep = 15,
+      ...rest
+    }: TimeSelectProps,
+    ref,
+  ) => {
+    const totalSlots = (24 * 60) / minutesStep
 
-  // Generate all time slots in a day
-  const options = (() => {
-    const slots: {
-      optionTime: Date
-      value: string
-      label: string
-    }[] = []
-    for (let i = 0; i < totalSlots; i++) {
-      const minutesOfDay = i * minutesStep
-      const optionTime = set(new Date(), {
-        hours: Math.floor(minutesOfDay / 60),
-        minutes: minutesOfDay % 60,
-        seconds: 0,
-        milliseconds: 0,
-      })
-      if (earliestAllowableTime && optionTime < earliestAllowableTime) {
-        continue
+    // Generate all time slots in a day
+    const options = (() => {
+      const slots: {
+        optionTime: Date
+        value: string
+        label: string
+      }[] = []
+      for (let i = 0; i < totalSlots; i += 1) {
+        const minutesOfDay = i * minutesStep
+        const optionTime = set(new Date(), {
+          hours: Math.floor(minutesOfDay / 60),
+          milliseconds: 0,
+          minutes: minutesOfDay % 60,
+          seconds: 0,
+        })
+        if (earliestAllowableTime && optionTime < earliestAllowableTime) {
+          continue
+        }
+        slots.push({
+          label: format(optionTime, "hh:mm a"),
+          optionTime,
+          value: format(optionTime, "HH:mm"),
+        })
       }
-      slots.push({
-        optionTime,
-        value: format(optionTime, "HH:mm"),
-        label: format(optionTime, "hh:mm a"),
-      })
-    }
-    return slots
-  })()
+      return slots
+    })()
 
-  return (
-    <BaseSelect
-      ref={ref}
-      value={value}
-      options={options}
-      placeholder="Select time"
-      formatOptionLabel={formatTimeSelectOptionLabel}
-      customComponents={{
-        DropdownIndicator: TimeSelectDropdownIndicator,
-        IndicatorSeparator: TimeSelectIndicatorSeparator,
-        Placeholder: TimeSelectPlaceholder,
-      }}
-      {...rest}
-    />
-  )
-})
+    return (
+      <BaseSelect
+        ref={ref}
+        value={value}
+        options={options}
+        placeholder="Select time"
+        formatOptionLabel={formatTimeSelectOptionLabel}
+        customComponents={{
+          DropdownIndicator: TimeSelectDropdownIndicator,
+          IndicatorSeparator: TimeSelectIndicatorSeparator,
+          Placeholder: TimeSelectPlaceholder,
+        }}
+        {...rest}
+      />
+    )
+  },
+)
 
 /**
  * Parses a time string in the format "HH:mm" to a Date object set to today's date
  * @param time Time string in the format "HH:mm"
- * @returns
+ * @returns A Date set to today with the parsed time
  */
-export const parseTimeStringToDate = (time: string): Date => {
-  return parse(time, "HH:mm", new Date())
-}
+export const parseTimeStringToDate = (time: string): Date =>
+  parse(time, "HH:mm", new Date())

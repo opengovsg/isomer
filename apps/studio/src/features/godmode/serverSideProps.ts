@@ -1,8 +1,8 @@
 import type { GetServerSidePropsContext, GetServerSidePropsResult } from "next"
+import type { SessionData } from "~/lib/types/session"
 import type { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 import { getIronSession } from "iron-session"
 import { DASHBOARD } from "~/lib/routes"
-import { type SessionData } from "~/lib/types/session"
 import { generateSessionOptions } from "~/server/modules/auth/session"
 import { isActiveIsomerAdmin } from "~/server/modules/permissions/permissions.service"
 
@@ -23,7 +23,7 @@ export const requireGodModeAdmin = async (
   const userGodModeRoles: IsomerAdminRole[] = []
 
   if (session.userId) {
-    const userId = session.userId
+    const { userId } = session
     const roles = await Promise.all(
       allowedRoles.map(async (role) =>
         (await isActiveIsomerAdmin(userId, [role])) ? role : null,

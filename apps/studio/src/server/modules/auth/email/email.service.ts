@@ -37,11 +37,12 @@ export const upsertUser = async ({
   const newUser = await tx
     .insertInto("User")
     .values({
-      id: createId(),
       email,
-      phone: "", // NOTE: The phone number is added in a later step by the user
-      name: emailName,
+      id: createId(),
       lastLoginAt: null,
+      name: emailName,
+      phone: "",
+      // NOTE: The phone number is added in a later step by the user,
     })
     .returningAll()
     .executeTakeFirst()
@@ -56,8 +57,8 @@ export const upsertUser = async ({
   await logUserEvent(tx, {
     by: newUser,
     delta: {
-      before: null,
       after: newUser,
+      before: null,
     },
     eventType: AuditLogEvent.UserCreate,
   })
@@ -106,16 +107,16 @@ export const alertPublishWhenSingpassDisabled = async ({
   await Promise.all([
     sendPublishAlertContentPublisherEmail({
       recipientEmail: publisherEmail,
-      siteName: site.name,
       resource,
+      siteName: site.name,
     }),
-    ...allSiteAdminsMinusCurrentUser.map((admin) =>
-      sendPublishAlertSiteAdminEmail({
-        recipientEmail: admin.email,
+    ...allSiteAdminsMinusCurrentUser.map(async (admin) => {
+      await sendPublishAlertSiteAdminEmail({
         publisherEmail,
-        siteName: site.name,
+        recipientEmail: admin.email,
         resource,
-      }),
-    ),
+        siteName: site.name,
+      })
+    }),
   ])
 }

@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/prefer-named-capture-group -- studio lint cleanup */
 const getDiffInDays = (date: Date): number => {
   const now = new Date()
   const diffInMs = now.getTime() - date.getTime()
@@ -12,7 +13,7 @@ const displayDateInDDMMMYYYY = (date: Date): string => {
   }
   return date
     .toLocaleDateString("en-GB", options)
-    .replace(/(\d{2}) (\w{3}) (\d{4})/, "$1 $2 $3")
+    .replace(/(\d{2}) (\w{3}) (\d{4})/u, "$1 $2 $3")
 }
 
 export const formatDate = (date: Date): string => {

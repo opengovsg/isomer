@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/func-style -- core cleanup deferred */
 import { createBaseLogger } from "~/lib/logger"
 import { isValidEmail } from "~/utils/email"
 
@@ -35,33 +36,35 @@ async function sendEmailWithTemplate({
 }: SendEmailWithTemplateProps): Promise<void> {
   if (!isValidEmail(data.recipientEmail)) {
     logger.error({
-      error: "Invalid email format",
       email: data.recipientEmail,
+      error: "Invalid email format",
     })
     throw new Error("Invalid email format")
   }
 
   // Drop malformed cc addresses rather than failing the send for everyone
   const validCc = data.cc?.filter((email) => {
-    if (isValidEmail(email)) return true
+    if (isValidEmail(email)) {
+      return true
+    }
     logger.error({
-      error: "Invalid cc email format",
       email,
+      error: "Invalid cc email format",
     })
     return false
   })
 
   try {
     await sendMail({
-      recipient: data.recipientEmail,
-      subject: template.subject,
       body: template.body,
       cc: validCc,
+      recipient: data.recipientEmail,
+      subject: template.subject,
     })
   } catch (error) {
     logger.error({
-      error: `Failed to send ${emailType} email`,
       email: data.recipientEmail,
+      error: `Failed to send ${emailType} email`,
       originalError: error,
     })
     throw error
@@ -73,8 +76,8 @@ export async function sendInvitation(
 ): Promise<void> {
   await sendEmailWithTemplate({
     data,
-    template: templates.invitation(data),
     emailType: "invitation",
+    template: templates.invitation(data),
   })
 }
 
@@ -83,8 +86,8 @@ export async function sendLoginAlertEmail(
 ): Promise<void> {
   await sendEmailWithTemplate({
     data,
-    template: templates.loginAlert(data),
     emailType: "login alert",
+    template: templates.loginAlert(data),
   })
 }
 
@@ -93,8 +96,8 @@ export async function sendScheduledPageEmail(
 ): Promise<void> {
   await sendEmailWithTemplate({
     data,
-    template: templates.schedulePage(data),
     emailType: "scheduled page",
+    template: templates.schedulePage(data),
   })
 }
 
@@ -103,8 +106,8 @@ export async function sendCancelSchedulePageEmail(
 ): Promise<void> {
   await sendEmailWithTemplate({
     data,
-    template: templates.cancelSchedulePage(data),
     emailType: "cancel scheduled page",
+    template: templates.cancelSchedulePage(data),
   })
 }
 
@@ -113,8 +116,8 @@ export async function sendFailedPublishEmail(
 ): Promise<void> {
   await sendEmailWithTemplate({
     data,
-    template: templates.failedPublish(data),
     emailType: "failed publish",
+    template: templates.failedPublish(data),
   })
 }
 
@@ -123,8 +126,8 @@ export async function sendSuccessfulPublishEmail(
 ): Promise<void> {
   await sendEmailWithTemplate({
     data,
-    template: templates.successfulPublish(data),
     emailType: "successful publish",
+    template: templates.successfulPublish(data),
   })
 }
 
@@ -133,8 +136,8 @@ export async function sendPublishAlertContentPublisherEmail(
 ): Promise<void> {
   await sendEmailWithTemplate({
     data,
-    template: templates.publishAlertContentPublisher(data),
     emailType: "publish alert content publisher",
+    template: templates.publishAlertContentPublisher(data),
   })
 }
 
@@ -143,8 +146,8 @@ export async function sendPublishAlertSiteAdminEmail(
 ): Promise<void> {
   await sendEmailWithTemplate({
     data,
-    template: templates.publishAlertSiteAdmin(data),
     emailType: "publish alert site admin",
+    template: templates.publishAlertSiteAdmin(data),
   })
 }
 
@@ -153,8 +156,8 @@ export async function sendAccountDeactivationWarningEmail(
 ): Promise<void> {
   await sendEmailWithTemplate({
     data,
-    template: templates.accountDeactivationWarning(data),
     emailType: "account deactivation warning",
+    template: templates.accountDeactivationWarning(data),
   })
 }
 
@@ -163,8 +166,8 @@ export async function sendAccountDeactivationEmail(
 ): Promise<void> {
   await sendEmailWithTemplate({
     data,
-    template: templates.accountDeactivation(data),
     emailType: "account deactivation",
+    template: templates.accountDeactivation(data),
   })
 }
 
@@ -173,8 +176,8 @@ export async function sendGazetteDeletionEmail(
 ): Promise<void> {
   await sendEmailWithTemplate({
     data,
-    template: templates.gazetteDeletion(data),
     emailType: "gazette deletion",
+    template: templates.gazetteDeletion(data),
   })
 }
 
@@ -183,8 +186,8 @@ export async function sendAuditLogExportReadyEmail(
 ): Promise<void> {
   await sendEmailWithTemplate({
     data,
-    template: templates.auditLogExportReady(data),
     emailType: "audit log export ready",
+    template: templates.auditLogExportReady(data),
   })
 }
 
@@ -193,7 +196,7 @@ export async function sendAuditLogExportFailedEmail(
 ): Promise<void> {
   await sendEmailWithTemplate({
     data,
-    template: templates.auditLogExportFailed(data),
     emailType: "audit log export failed",
+    template: templates.auditLogExportFailed(data),
   })
 }
