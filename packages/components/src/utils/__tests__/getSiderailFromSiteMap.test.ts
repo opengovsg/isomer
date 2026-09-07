@@ -5,6 +5,7 @@ import { getSiderailFromSiteMap } from "../getSiderailFromSiteMap"
 
 describe("getSiderailFromSiteMap", () => {
   it("excludes file and link layouts from the siderail", () => {
+    // Arrange
     const sitemap: IsomerSitemap = {
       id: "root",
       title: "Home",
@@ -53,7 +54,11 @@ describe("getSiderailFromSiteMap", () => {
       ],
     }
 
-    expect(getSiderailFromSiteMap(sitemap, "/collection/page")).toEqual({
+    // Act
+    const result = getSiderailFromSiteMap(sitemap, "/collection/page")
+
+    // Assert
+    expect(result).toEqual({
       parentTitle: "Collection",
       parentUrl: "/collection",
       pages: [
