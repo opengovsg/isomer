@@ -141,4 +141,34 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
       .poll(async () => (await getResource(seededPage.id))?.title)
       .toBe(newTitle)
   })
+
+  test("editor can update published page title via PageSettingsModal", async ({
+    page,
+  }) => {
+    // Arrange
+    const pageTitle = `Editor Published Page ${crypto.randomUUID().slice(0, 8)}`
+    const publisherId = await getE2EUserId(TEST_EMAILS.publisher)
+    const { page: seededPage } = await seedRootPage({
+      siteId,
+      pageTitle,
+      state: ResourceState.Published,
+      userId: publisherId,
+    })
+    const newTitle = `Editor Published Renamed ${crypto.randomUUID().slice(0, 8)}`
+
+    // Act
+    const dashboard = new DashboardPO(page)
+    await dashboard.gotoSite(siteId)
+    await dashboard.openPageSettings(pageTitle)
+
+    const settings = new PageSettingsPO(page)
+    await settings.expectLoaded()
+    await settings.fillTitle(newTitle)
+    await settings.saveAndPublish()
+
+    // Assert
+    await expect
+      .poll(async () => (await getResource(seededPage.id))?.title)
+      .toBe(newTitle)
+  })
 })
