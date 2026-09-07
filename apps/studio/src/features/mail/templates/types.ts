@@ -26,9 +26,20 @@ export interface SchedulePageTemplateData extends BaseEmailTemplateData {
   scheduledAt: Date
 }
 
-export interface SuccessfulPublishTemplateData extends BaseEmailTemplateData {
-  resource: Resource // the resource that was published
-  isScheduled: boolean // whether the publish was scheduled or manual
+// Sent when a CodeBuild job completes successfully — the only call site
+// (webhook.utils.ts) doesn't know whether the build was triggered by a
+// publish or an unpublish, so this covers both.
+export interface SiteUpdatedTemplateData extends BaseEmailTemplateData {
+  resource: Resource // the resource whose change triggered the site update
+  isScheduled: boolean // whether the triggering action was scheduled or manual
+}
+
+// Sent when a CodeBuild job fails — same ambiguity as SiteUpdatedTemplateData
+// above: the only call site (webhook.utils.ts) doesn't know if the build was
+// triggered by a publish or an unpublish.
+export interface SiteUpdateFailedTemplateData extends BaseEmailTemplateData {
+  isScheduled: boolean // whether the triggering action was scheduled or manual
+  resource: Resource // the resource whose change triggered the failed build
 }
 
 export interface FailedPublishTemplateData extends BaseEmailTemplateData {
