@@ -234,10 +234,12 @@ const SiderailOrderingEditorStateDrawer = (): React.ReactNode => {
     return previewPageState.content[childrenPagesBlockIndex]
   }, [previewPageState.content, childrenPagesBlockIndex])
 
-  const currentOrdering = useMemo(
-    () => childrenPagesBlock?.childrenPagesOrdering ?? [],
-    [childrenPagesBlock],
-  )
+  const currentOrdering = useMemo(() => {
+    if (childrenPagesBlock && childrenPagesBlock.type === "childrenpages") {
+      return childrenPagesBlock.childrenPagesOrdering ?? []
+    }
+    return []
+  }, [childrenPagesBlock])
 
   const handleOrderingChange = useCallback(
     (newOrdering: string[]) => {

@@ -254,7 +254,7 @@ export const resourceRouter = router({
       await bulkValidateUserPermissionsForResources({
         action: "read",
         resourceIds: [resourceId ?? null],
-        siteId,
+        siteId: Number(siteId),
         userId: ctx.user.id,
       })
 
@@ -263,7 +263,7 @@ export const resourceRouter = router({
       }
       const batchAncestry = await getBatchAncestryWithSelfQuery({
         resourceIds: [resourceId],
-        siteId,
+        siteId: Number(siteId),
       })
       return includeSelf
         ? (batchAncestry[0] ?? [])
@@ -277,7 +277,7 @@ export const resourceRouter = router({
       await bulkValidateUserPermissionsForResources({
         action: "read",
         resourceIds: resourceIds.map((id) => id ?? null),
-        siteId,
+        siteId: Number(siteId),
         userId: ctx.user.id,
       })
 
@@ -286,7 +286,7 @@ export const resourceRouter = router({
       }
       return await getBatchAncestryWithSelfQuery({
         resourceIds,
-        siteId,
+        siteId: Number(siteId),
       })
     }),
 
@@ -301,7 +301,7 @@ export const resourceRouter = router({
         await bulkValidateUserPermissionsForResources({
           action: "read",
           resourceIds: [resourceId],
-          siteId,
+          siteId: Number(siteId),
           userId: ctx.user.id,
         })
 
@@ -309,7 +309,7 @@ export const resourceRouter = router({
         if (resourceId !== null) {
           const resource = await db
             .selectFrom("Resource")
-            .where("siteId", "=", siteId)
+            .where("siteId", "=", Number(siteId))
             .where("id", "=", resourceId)
             .where("Resource.type", "in", [
               ResourceType.RootPage,
@@ -327,7 +327,7 @@ export const resourceRouter = router({
           .selectFrom("Resource")
           .select(["title", "permalink", "type", "id", "parentId"])
           .where("Resource.type", "in", USER_LINKABLE_RESOURCE_TYPES)
-          .where("Resource.siteId", "=", siteId)
+          .where("Resource.siteId", "=", Number(siteId))
           .$narrowType<{
             type: (typeof USER_LINKABLE_RESOURCE_TYPES)[number]
           }>()
@@ -372,7 +372,7 @@ export const resourceRouter = router({
         await bulkValidateUserPermissionsForResources({
           action: "read",
           resourceIds: [resourceId],
-          siteId,
+          siteId: Number(siteId),
           userId: ctx.user.id,
         })
 
@@ -380,7 +380,7 @@ export const resourceRouter = router({
         if (resourceId !== null) {
           const resource = await db
             .selectFrom("Resource")
-            .where("siteId", "=", siteId)
+            .where("siteId", "=", Number(siteId))
             .where("id", "=", resourceId)
             .where("Resource.type", "in", [
               ResourceType.Folder,
@@ -400,7 +400,7 @@ export const resourceRouter = router({
             ResourceType.Folder,
             ResourceType.Collection,
           ])
-          .where("Resource.siteId", "=", siteId)
+          .where("Resource.siteId", "=", Number(siteId))
           .orderBy("type", "asc")
           .orderBy("title", "asc")
           .offset(offset)
@@ -494,13 +494,13 @@ export const resourceRouter = router({
       await bulkValidateUserPermissionsForResources({
         action: "read",
         resourceIds: [resourceId],
-        siteId,
+        siteId: Number(siteId),
         userId: ctx.user.id,
       })
 
       const resource = await db
         .selectFrom("Resource")
-        .where("siteId", "=", siteId)
+        .where("siteId", "=", Number(siteId))
         .where("id", "=", resourceId)
         .where("Resource.type", "=", ResourceType.Folder)
         .executeTakeFirst()
@@ -516,7 +516,7 @@ export const resourceRouter = router({
               .selectFrom("Resource")
               .select(["title", "permalink", "type", "id", "parentId"])
               .where("Resource.type", "in", [ResourceType.Folder])
-              .where("Resource.siteId", "=", siteId)
+              .where("Resource.siteId", "=", Number(siteId))
               .where("Resource.parentId", "=", resourceId)
               // Use UNION (distinct) so recursion terminates even when
               // legacy cyclic resource graphs exist in production data.
@@ -912,7 +912,7 @@ export const resourceRouter = router({
       }) => {
         await validateUserPermissionsForSite({
           action: "read",
-          siteId,
+          siteId: Number(siteId),
           userId: ctx.user.id,
         })
 
@@ -920,7 +920,7 @@ export const resourceRouter = router({
           return {
             nextOffset: null,
             recentlyEdited: await getSearchRecentlyEdited({
-              siteId,
+              siteId: Number(siteId),
             }),
             resources: [],
             totalCount: null,
@@ -932,7 +932,7 @@ export const resourceRouter = router({
           offset,
           query,
           resourceTypes,
-          siteId,
+          siteId: Number(siteId),
         })
 
         const totalCount = Number(searchResults.totalCount)
@@ -953,7 +953,7 @@ export const resourceRouter = router({
       await bulkValidateUserPermissionsForResources({
         action: "read",
         resourceIds: resourceIds.map((id) => id ?? null),
-        siteId,
+        siteId: Number(siteId),
         userId: ctx.user.id,
       })
 
@@ -962,7 +962,7 @@ export const resourceRouter = router({
       }
       const resources = await getSearchWithResourceIds({
         resourceIds,
-        siteId,
+        siteId: Number(siteId),
       })
       return resources.toSorted(
         // Sort resources to match order of input resourceIds

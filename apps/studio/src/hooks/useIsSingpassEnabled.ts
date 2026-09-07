@@ -4,7 +4,6 @@ import {
   IS_SINGPASS_ENABLED_FEATURE_KEY,
   IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE,
 } from "~/lib/growthbook"
-import { hasNonEmptyString } from "~/utils/truthiness"
 
 export const useIsSingpassEnabled = () => {
   const featureValue = useFeatureValue<boolean>(
@@ -17,9 +16,8 @@ export const useIsSingpassEnabled = () => {
     // Whether singpass-off side effects (e.g. email-on-publish) should activate.
     // False when SingPass is skipped (preview) even though SingPass is also
     // disabled there for the UI.
-    isSingpassDisabledInNonPreview:
-      !hasNonEmptyString(skipSingpass) && !featureValue,
+    isSingpassDisabledInNonPreview: !skipSingpass && !featureValue,
     // Whether to show the SingPass login option in the UI.
-    isSingpassEnabled: !hasNonEmptyString(skipSingpass) && featureValue,
+    isSingpassEnabled: !skipSingpass && featureValue,
   }
 }

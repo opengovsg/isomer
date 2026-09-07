@@ -16,7 +16,8 @@ import { AuditLogExportReportType } from "~prisma/generated/generatedEnums"
 
 const SINGAPORE_TIME_ZONE = "Asia/Singapore"
 
-const MONTH_REGEX = /^(?<year>\d{4})-(?<month>0[1-9]|1[0-2])$/u
+/* oxlint-disable eslint/prefer-named-capture-group, eslint/require-unicode-regexp -- ES2017 target */
+const MONTH_REGEX = /^\d{4}-(0[1-9]|1[0-2])$/
 
 // A calendar month in ISO `yyyy-MM` form, e.g. "2026-03". This is the shape
 // every month value in the audit-export flow is passed around in (picker →

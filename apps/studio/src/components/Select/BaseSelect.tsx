@@ -80,7 +80,7 @@ const BaseSelectComponent = <T,>(
       isSearchable={isSearchable}
       value={transformSelect.input(value)}
       onChange={(valueValue) => {
-        onChange(transformSelect.output(value))
+        onChange(transformSelect.output(valueValue))
       }}
       formatOptionLabel={formatOptionLabel}
       options={options}

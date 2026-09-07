@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
 /* oxlint-disable promise/prefer-await-to-then -- core cleanup deferred */
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import { Box, FormControl, Skeleton, Text } from "@chakra-ui/react"
@@ -80,14 +81,14 @@ const JsonFormsMetaImageControl = (props: JsonFormsMetaImageControlProps) => {
               return null
             }
             // NOTE: safe assertion here because we're in error path and there's at least 1 error
-            return (
-              hasNonEmptyString(parseResult.error.issues[0]?.message) ||
-              "Please ensure that your file begins with alphanumeric characters!"
-            )
+            const message = parseResult.error.issues[0]?.message
+            return hasNonEmptyString(message)
+              ? message
+              : "Please ensure that your file begins with alphanumeric characters!"
           }}
           onChange={(file) => {
             if (!file) {
-              handleChange(props.path)
+              handleChange(props.path, undefined)
               return
             }
 

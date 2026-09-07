@@ -3,23 +3,26 @@ import {
   HEADING_TYPE,
   PARAGRAPH_TYPE,
 } from "~/features/editing-experience/hooks/useTextEditor"
-import { isDefinedNumber } from "~/utils/truthiness"
 
-export const isTiptapEditorEmpty = (json: JSONContent | undefined): boolean => {
+export const isTiptapEditorEmpty = (json?: JSONContent): boolean => {
   if (!json) {
     return true
   }
   if (json.type !== "prose") {
     return false
   }
-  if (!isDefinedNumber(json.content?.length) || json.content.length === 0) {
+  const { content } = json
+  if (content === undefined) {
     return true
   }
-  if (json.content.length > 1) {
+  if (content.length === 0) {
+    return true
+  }
+  if (content.length > 1) {
     return false
   }
 
-  const { type, content } = json.content[0] ?? {}
+  const { type, content: blockContent } = content[0] ?? {}
   const isTextContent = type === PARAGRAPH_TYPE || type === HEADING_TYPE
-  return isTextContent ? !content : false
+  return isTextContent ? !blockContent : false
 }

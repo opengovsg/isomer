@@ -83,7 +83,7 @@ const extractResourceData = async ({
   }
 } | null> => {
   const parsed = pushDocumentContentSchema.safeParse(content)
-  if (!hasNonEmptyString(parsed.success)) {
+  if (!parsed.success) {
     logger.error(
       { content, resourceId },
       "Invalid content structure for push document",
@@ -123,7 +123,7 @@ const extractResourceData = async ({
   // NOTE: Derive the subcategory from the tagged mapping
   const indexParsed =
     collectionIndexPageContentSchema.safeParse(indexPageContent)
-  if (!hasNonEmptyString(indexParsed.success)) {
+  if (!indexParsed.success) {
     logger.error(
       { indexPageContent, resourceId },
       "Invalid index page content structure",
@@ -226,9 +226,7 @@ export const schedulePushDocumentJobHandler = async () => {
               title,
               url: encodeURI(`https://${env.S3_GAZETTE_DOMAIN_NAME}${ref}`),
               date: scheduledAt.toISOString(),
-              categories: hasNonEmptyString(subcategoryLabel)
-                ? [subcategoryLabel]
-                : [],
+              categories: subcategoryLabel ? [subcategoryLabel] : [],
               contentType: parsedPage.category,
             }
           } catch (error) {

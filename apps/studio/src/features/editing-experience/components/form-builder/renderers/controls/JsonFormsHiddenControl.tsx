@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
 import type { RankedTester } from "@jsonforms/core"
 import { rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"

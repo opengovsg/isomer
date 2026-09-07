@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
 /* oxlint-disable eslint/no-nested-ternary, eslint/no-shadow, unicorn/no-new-array, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { DropResult } from "@hello-pangea/dnd"
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"

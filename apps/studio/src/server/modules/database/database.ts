@@ -6,7 +6,7 @@ import { createDb } from "@isomer/db"
 import { TracingPlugin } from "./tracingPlugin"
 
 export const db: Kysely<DB> = createDb({
-  connectionString: `${env.DATABASE_URL}`,
+  connectionString: env.DATABASE_URL,
   // oxlint-disable-next-line node/no-process-env
   log: process.env.NODE_ENV === "development" ? ["error"] : undefined,
   // add tracing plugin for dd-spans to intercept kysely queries

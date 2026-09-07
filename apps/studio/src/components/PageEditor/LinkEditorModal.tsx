@@ -147,7 +147,7 @@ const LinkEditorModalContent = ({
 
   const isEditingLink = hasNonEmptyString(linkText) && linkHref
 
-  const onSubmit = handleSubmit(({ linkTextValue, linkHref }) => {
+  const onSubmit = handleSubmit(({ linkText, linkHref }) => {
     onSave(buildFinalLinkTextForSave(linkText, linkHref), linkHref)
   })
 
@@ -175,7 +175,7 @@ const LinkEditorModalContent = ({
                 {...register("linkText")}
               />
 
-              {hasNonEmptyString(errors.linkText)?.message && (
+              {errors.linkText?.message && (
                 <FormErrorMessage>{errors.linkText.message}</FormErrorMessage>
               )}
             </FormControl>
@@ -194,7 +194,7 @@ const LinkEditorModalContent = ({
               error={errors.linkHref?.message}
             >
               <ModalLinkEditor onUploadedFile={onUploadedFile} />
-              {hasNonEmptyString(errors.linkHref)?.message && (
+              {errors.linkHref?.message && (
                 <FormErrorMessage>{errors.linkHref.message}</FormErrorMessage>
               )}
             </LinkEditorContextProvider>
@@ -268,7 +268,7 @@ export const LinkEditorModal = ({
         showLinkText={showLinkText}
         linkHref={linkHref}
         onSave={(linkText, linkHrefValue) => {
-          onSave(linkText, linkHref)
+          onSave(linkText, linkHrefValue)
           onClose()
         }}
         onRemove={

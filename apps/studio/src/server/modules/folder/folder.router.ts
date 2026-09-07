@@ -65,7 +65,7 @@ export const folderRouter = router({
         }
 
         // Validate parentFolderId is a folder
-        if (hasNonEmptyString(parentFolderId)) {
+        if (parentFolderId) {
           const parentFolder = await db
             .selectFrom("Resource")
             .where("Resource.id", "=", String(parentFolderId))
@@ -73,7 +73,7 @@ export const folderRouter = router({
             .select(["Resource.type", "Resource.id"])
             .executeTakeFirst()
 
-          if (!hasNonEmptyString(parentFolder)) {
+          if (!parentFolder) {
             throw new TRPCError({
               code: "NOT_FOUND",
               message: "Parent folder does not exist",
@@ -182,7 +182,7 @@ export const folderRouter = router({
       }) => {
         await bulkValidateUserPermissionsForResources({
           action: "update",
-          siteId,
+          siteId: Number(siteId),
           userId: ctx.user.id,
         })
 
@@ -197,14 +197,14 @@ export const folderRouter = router({
             .selectFrom("Resource")
             .selectAll()
             .where("Resource.id", "=", resourceId)
-            .where("Resource.siteId", "=", siteId)
+            .where("Resource.siteId", "=", Number(siteId))
             .where("Resource.type", "in", [
               ResourceType.Folder,
               ResourceType.Collection,
             ])
             .executeTakeFirst()
 
-          if (!hasNonEmptyString(oldResource)) {
+          if (!oldResource) {
             throw new TRPCError({
               code: "NOT_FOUND",
               message: "Resource does not exist",
@@ -221,7 +221,11 @@ export const folderRouter = router({
           const permalinkChanged =
             !!permalink && permalink !== oldResource.permalink
           const oldFullPermalink = permalinkChanged
-            ? await getResourceFullPermalink(siteId, Number(resourceId), tx)
+            ? await getResourceFullPermalink(
+                Number(siteId),
+                Number(resourceId),
+                tx,
+              )
             : null
 
           const newResource = await tx
@@ -268,7 +272,7 @@ export const folderRouter = router({
               before: oldResource,
             },
             eventType: AuditLogEvent.ResourceUpdate,
-            siteId,
+            siteId: Number(siteId),
           })
 
           // A renamed folder/collection changes every descendant's URL — preserve
@@ -283,13 +287,13 @@ export const folderRouter = router({
               byUserId: user.id,
               hasLiveContent: await hasPublishedDescendant(tx, {
                 resourceId,
-                siteId,
+                siteId: Number(siteId),
               }),
               newFullPermalink,
               oldFullPermalink,
               resourceId,
               shouldCreateRedirect,
-              siteId,
+              siteId: Number(siteId),
             })
           }
 
@@ -354,7 +358,7 @@ export const folderRouter = router({
         .where("id", "=", String(resourceId))
         .executeTakeFirst()
 
-      if (!hasNonEmptyString(data)) {
+      if (!data) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "This folder does not exist",
@@ -369,14 +373,14 @@ export const folderRouter = router({
       await bulkValidateUserPermissionsForResources({
         action: "read",
         resourceIds: [indexPageId],
-        siteId,
+        siteId: Number(siteId),
         userId: ctx.user.id,
       })
 
       // Validate site is valid
       const site = await db
         .selectFrom("Site")
-        .where("id", "=", siteId)
+        .where("id", "=", Number(siteId))
         .select(["id"])
         .executeTakeFirst()
 
@@ -390,7 +394,7 @@ export const folderRouter = router({
       // of the folder, not the actual folder itself
       const { parentId, type } = await db
         .selectFrom("Resource")
-        .where("siteId", "=", siteId)
+        .where("siteId", "=", Number(siteId))
         .where("id", "=", indexPageId)
         .select(["parentId", "type"])
         // NOTE: Technically we'll already throw
@@ -418,7 +422,7 @@ export const folderRouter = router({
           eb
             .selectFrom("Resource")
             .where("parentId", "=", parentId)
-            .where("siteId", "=", siteId)
+            .where("siteId", "=", Number(siteId))
             .where("state", "=", ResourceState.Published)
             .where("type", "in", [
               ResourceType.Folder,
@@ -459,7 +463,7 @@ export const folderRouter = router({
             ]),
         )
         .selectFrom("Resource")
-        .where("siteId", "=", siteId)
+        .where("siteId", "=", Number(siteId))
         .where("id", "in", (qb) =>
           qb
             .selectFrom("publishedCousinIndexPages")

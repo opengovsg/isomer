@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
 /* oxlint-disable typescript/strict-boolean-expressions -- core cleanup deferred */
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import { Box, FormControl } from "@chakra-ui/react"
@@ -65,7 +66,7 @@ const JsonFormsTextAreaControl = ({
     const { value } = e.target
 
     if (value === "") {
-      handleChange(path)
+      handleChange(path, undefined)
     } else {
       handleChange(path, value)
     }

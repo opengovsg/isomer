@@ -202,7 +202,7 @@ const deactivateUsers = async ({ userIds }: DeactivateUsersProps) => {
           updated.map(async (after) => {
             const before = permissionsByUserId.get(after.id)
             // Not expected: same tx/isolation level as the read above.
-            if (!hasNonEmptyString(before)) {
+            if (!before) {
               throw new Error(
                 `Could not find pre-update state for ResourcePermission ${after.id}`,
               )

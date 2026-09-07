@@ -26,7 +26,7 @@ const getSingpassClient = async (): Promise<Client> => {
   // this code path should never be reached. Guard explicitly anyway to avoid a
   // DNS lookup against the placeholder SINGPASS_ISSUER_ENDPOINT value set in
   // preview.
-  if (hasNonEmptyString(env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS)) {
+  if (env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS) {
     throw new Error("SingPass is disabled in this environment")
   }
 

@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
 /* oxlint-disable eslint/no-nested-ternary, typescript/strict-void-return, unicorn/no-unnecessary-type-conversion -- core cleanup deferred */
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import {

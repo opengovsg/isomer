@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
 /* oxlint-disable unicorn/no-array-for-each, unicorn/no-misused-spread, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import {
@@ -86,7 +87,7 @@ const JsonFormsColourPickerControl = ({
                 onChange={(e) => {
                   const rawString = e.target.value
                   if (!rawString) {
-                    handleChange(path)
+                    handleChange(path, undefined)
                     setDisplayedColour(undefined)
                     return
                   }

@@ -57,7 +57,7 @@ export const updatePageById = async (
 ) => {
   const kysely = dbInstance ?? db
   const { id, parentId, ...rest } = page
-  const updateValues = { ...rest }
+  const updateValues: typeof rest & { parentId?: string } = { ...rest }
   if (isDefinedNumber(parentId)) {
     updateValues.parentId = String(parentId)
   }

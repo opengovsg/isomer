@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
 /* oxlint-disable unicorn/filename-case -- SearchSG acronym is intentional in component filename */
 import type { CombinatorRendererProps, RankedTester } from "@jsonforms/core"
 import { Box } from "@chakra-ui/react"

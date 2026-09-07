@@ -4,6 +4,7 @@ import { addDays, addMonths, format, startOfMonth } from "date-fns"
 import { formatInTimeZone, fromZonedTime, toZonedTime } from "date-fns-tz"
 import { Transform } from "node:stream"
 import Papa from "papaparse"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import type { AccessReportRow, AuditReportQueryParams } from "./audit.types"
 import { db } from "../database/database"
@@ -21,8 +22,10 @@ const SINGAPORE_TIME_ZONE = "Asia/Singapore"
 // lower, exclusive upper. The bounds are SGT (Asia/Singapore) CALENDAR DATES,
 // and the DB CHECK guarantees the stored range is non-empty and bounded.
 // Postgres always echoes ranges back in this canonical form.
+/* oxlint-disable eslint/require-unicode-regexp, eslint/prefer-named-capture-group -- ES2017 target */
 const AUDIT_LOG_DATE_RANGE_REGEX =
-  /^\[(?<lowerInclusive>\d{4}-\d{2}-\d{2}),(?<upperExclusive>\d{4}-\d{2}-\d{2})\)$/u
+  /^\[(\d{4}-\d{2}-\d{2}),(\d{4}-\d{2}-\d{2})\)$/
+/* oxlint-enable eslint/require-unicode-regexp, eslint/prefer-named-capture-group */
 
 /**
  * Serialize SGT calendar-date bounds into the canonical daterange string,
@@ -47,21 +50,16 @@ export const parseAuditLogDateRange = (
   auditLogDateRange: string,
 ): AuditLogDateRangeBounds => {
   const match = AUDIT_LOG_DATE_RANGE_REGEX.exec(auditLogDateRange)
-  if (
-    match?.groups?.lowerInclusive === undefined ||
-    match.groups.upperExclusive === undefined
-  ) {
+  if (!hasNonEmptyString(match?.[1]) || !hasNonEmptyString(match[2])) {
     throw new Error(
       `Invalid audit log date range, expected "[YYYY-MM-DD,YYYY-MM-DD)" but got: ${auditLogDateRange}`,
     )
   }
-  return {
-    lowerInclusive: match.groups.lowerInclusive,
-    upperExclusive: match.groups.upperExclusive,
-  }
+  return { lowerInclusive: match[1], upperExclusive: match[2] }
 }
 
-const ISO_MONTH_REGEX = /^(?<year>\d{4})-(?<month>0[1-9]|1[0-2])$/u
+/* oxlint-disable eslint/prefer-named-capture-group, eslint/require-unicode-regexp -- ES2017 target */
+const ISO_MONTH_REGEX = /^\d{4}-(0[1-9]|1[0-2])$/
 // yyyy-MM pattern
 
 /**
@@ -78,21 +76,14 @@ const ISO_MONTH_REGEX = /^(?<year>\d{4})-(?<month>0[1-9]|1[0-2])$/u
  * (no internal clock reads) for testability.
  */
 export const getMonthDateRange = (month: IsoMonth, now: Date): string => {
-  if (!ISO_MONTH_REGEX.test(month)) {
+  const monthMatch = ISO_MONTH_REGEX.exec(month)
+  if (!monthMatch) {
     throw new Error(`Invalid month, expected "yyyy-MM" but got: ${month}`)
   }
-  // Safe after the regex test above: the pattern guarantees exactly two numeric
-  // segments in `yyyy-MM` form.
-  const monthMatch = ISO_MONTH_REGEX.exec(month)
-  const year =
-    monthMatch?.groups?.year === undefined
-      ? undefined
-      : Number(monthMatch.groups.year)
-  const monthIndex =
-    monthMatch?.groups?.month === undefined
-      ? undefined
-      : Number(monthMatch.groups.month)
-  if (year === undefined || monthIndex === undefined) {
+  const [, yearStr, monthStr] = monthMatch
+  const year = Number(yearStr)
+  const monthIndex = Number(monthStr)
+  if (yearStr === undefined || monthStr === undefined) {
     throw new Error(`Invalid month, expected "yyyy-MM" but got: ${month}`)
   }
 
@@ -486,7 +477,7 @@ type CsvRow = Record<string, CsvSerializableValue>
  * the script's UTC `toISOString`) keeps the file coherent with the SGT month it
  * is scoped to and shows timestamps in the auditor's local wall-clock time.
  */
-export const getStringifiedValue = (value: CsvSerializableValue): string => {
+export const getStringifiedValue = (value?: CsvSerializableValue): string => {
   if (value === null || value === undefined) {
     return ""
   }

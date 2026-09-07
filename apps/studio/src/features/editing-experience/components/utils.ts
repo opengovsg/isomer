@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-useless-undefined -- reduce initial accumulator must be undefined */
 /* oxlint-disable eslint/array-callback-return, typescript/consistent-return -- core cleanup deferred */
 import type {
   IsomerComponent,
@@ -29,7 +30,12 @@ export const EMBED_NAME_MAPPING = {
   onemap: "OneMap",
   vimeo: "Vimeo",
   youtube: "YouTube",
-} satisfies Record<keyof typeof MAPS_EMBED_URL_REGEXES, string>
+} satisfies Record<
+  | keyof typeof MAPS_EMBED_URL_REGEXES
+  | keyof typeof VIDEO_EMBED_URL_REGEXES
+  | keyof typeof FORMSG_EMBED_URL_REGEXES,
+  string
+>
 
 export const generateResourceUrl = (value: string): string =>
   transliterate(value)
@@ -141,6 +147,5 @@ export const getEmbedNameFromUrl = (url: string) =>
     }
 
     // oxlint-disable-next-line typescript/consistent-return -- core cleanup deferred
-    // oxlint-disable-next-line eslint/no-useless-return -- core cleanup deferred
-    return
-  })
+    return undefined
+  }, undefined)

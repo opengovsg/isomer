@@ -11,10 +11,11 @@ import { BuildStatusType } from "~prisma/generated/generatedEnums"
  * @param arn The ARN string to extract the build ID from
  * @returns The extracted build ID, or null if not found
  */
+/* oxlint-disable eslint/prefer-named-capture-group, eslint/require-unicode-regexp -- ES2017 target */
 export const buildIdFromArn = (arn: string) => {
-  const regex = /build\/(?<buildId>.+)$/u
+  const regex = /build\/(.+)$/
   const match = regex.exec(arn)
-  return match?.groups?.buildId ?? null
+  return match ? match[1] : null
 }
 
 /**

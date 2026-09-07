@@ -13,7 +13,7 @@ export const LinkEditingLayout: GetLayout = (page) => {
 
   return (
     <EnforceLoginStatePageWrapper>
-      <PermissionsProvider siteId={siteId} resourceId={linkId}>
+      <PermissionsProvider siteId={siteId} resourceId={String(linkId)}>
         <LayoutHead />
         <Tabs flex={1} height={0}>
           <Flex

@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-useless-undefined, typescript/strict-boolean-expressions -- JSON Forms handleChange requires explicit undefined */
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import {
   Box,
@@ -62,12 +63,12 @@ const JsonFormsIntegerControl = ({
     minimum,
     default: defaultValue,
   } = schema
-  const min = Number(exclusiveMinimum) + 1 || isDefinedNumber(minimum) || 0
-  const max = Number(exclusiveMaximum) - 1 || isDefinedNumber(maximum) || 0
+  const min = Number(exclusiveMinimum) + 1 || minimum || 0
+  const max = Number(exclusiveMaximum) - 1 || maximum || 0
 
   const onChange = (valueAsString: string, valueAsNumber: number) => {
     if (valueAsString === "") {
-      handleChange(path)
+      handleChange(path, undefined)
     } else {
       handleChange(path, valueAsNumber)
     }

@@ -34,8 +34,7 @@ export const isSubItemPath = (path: string): path is NavbarItemPath =>
 export const isFirstLevelLinksOverLimit = (
   itemCount: number,
   maxItems?: number,
-): boolean =>
-  isDefinedNumber(maxItems) && maxItems > 0 && itemCount > maxItems
+): boolean => isDefinedNumber(maxItems) && maxItems > 0 && itemCount > maxItems
 
 export const getInstancePathFromNavbarItemPath = (path: NavbarItemPath) =>
   `/${path.replaceAll(".", "/")}`

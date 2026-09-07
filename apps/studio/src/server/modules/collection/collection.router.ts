@@ -161,7 +161,7 @@ export const collectionRouter = router({
           .executeTakeFirstOrThrow(() => new TRPCError({ code: "BAD_REQUEST" }))
 
         const result = await db.transaction().execute(async (tx) => {
-          if (hasNonEmptyString(parentFolderId)) {
+          if (isDefinedNumber(parentFolderId)) {
             const parentFolder = await tx
               .selectFrom("Resource")
               .where("Resource.id", "=", String(parentFolderId))
@@ -169,7 +169,7 @@ export const collectionRouter = router({
               .select(["Resource.type", "Resource.id"])
               .executeTakeFirst()
 
-            if (!hasNonEmptyString(parentFolder)) {
+            if (!parentFolder) {
               throw new TRPCError({
                 code: "NOT_FOUND",
                 message: "Parent folder does not exist",
@@ -294,7 +294,7 @@ export const collectionRouter = router({
           .select(["Resource.type", "Resource.id"])
           .executeTakeFirst()
 
-        if (!hasNonEmptyString(parentCollection)) {
+        if (!parentCollection) {
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Parent collection does not exist",

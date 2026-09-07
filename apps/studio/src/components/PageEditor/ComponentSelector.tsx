@@ -165,7 +165,8 @@ const ComponentSelector = () => {
       sectionType === "prose" ? "nativeEditor" : "complexEditor"
     const newComponent =
       // SAFETY: DEFAULT_BLOCKS keys align with sectionType and return valid Isomer components
-      DEFAULT_BLOCKS[sectionType]
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- DEFAULT_BLOCKS keys align with sectionType
+      DEFAULT_BLOCKS[sectionType] as IsomerComponent | undefined
 
     const updatedBlocks = newComponent
       ? [...savedPageState.content, newComponent]
@@ -263,9 +264,9 @@ const ComponentSelector = () => {
             <SectionTitle title={section.label} />
             <BlockList>
               {section.types.map((typeValue) => {
-                const blockMeta = BLOCK_TO_META[type]
+                const blockMeta = BLOCK_TO_META[typeValue]
                 const isDisabled =
-                  type === "childrenpages" &&
+                  typeValue === "childrenpages" &&
                   savedPageState.content.some(
                     (block) =>
                       block.type === "childrenpages" && !block.isHidden,
@@ -273,10 +274,10 @@ const ComponentSelector = () => {
 
                 return (
                   <BlockItem
-                    key={type}
-                    icon={TYPE_TO_ICON[type]}
+                    key={typeValue}
+                    icon={TYPE_TO_ICON[typeValue]}
                     onProceed={onProceed}
-                    sectionType={type}
+                    sectionType={typeValue}
                     isDisabled={isDisabled}
                     disabledText="This page already has a child pages block."
                     {...blockMeta}

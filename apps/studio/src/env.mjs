@@ -1,6 +1,7 @@
 /* oxlint-disable typescript/no-unnecessary-condition -- studio lint cleanup */
 import { z } from "zod"
 
+/** @param {string | null | undefined} value - The string value to test for non-emptiness. */
 const hasNonEmptyString = (value) =>
   value !== undefined && value !== null && value !== ""
 
@@ -236,8 +237,8 @@ const processEnv = {
 /** @typedef {z.infer<typeof server>} MergedOutput */
 /** @typedef {z.ZodSafeParseResult<MergedOutput>} MergedSafeParseReturn */
 
-// @ts-expect-error Types are wonky from refinement
-let { env } = process
+const processEnvRef = process.env
+let env = /** @type {MergedOutput} */ (/** @type {unknown} */ (processEnvRef))
 
 if (!hasNonEmptyString(process.env.SKIP_ENV_VALIDATION)) {
   const isServer = globalThis.window === undefined

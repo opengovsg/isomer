@@ -91,7 +91,7 @@ const getSitemapTreeFromArray = (
     const permalink = `${path}${resource.permalink}`
     // Null when the body has no image block at all; `src` is null only when a
     // block exists but omits it
-    const firstImage = hasNonEmptyString(resource.firstImage)?.src
+    const firstImage = resource.firstImage?.src
       ? { alt: resource.firstImage.alt ?? "", src: resource.firstImage.src }
       : undefined
 
@@ -174,7 +174,7 @@ const getSitemapTreeFromArray = (
         .toISOString(),
       // NOTE: This permalink is unused in the preview
       permalink,
-      image: hasNonEmptyString(indexPage)?.thumbnail
+      image: indexPage?.thumbnail
         ? { alt: "", src: indexPage.thumbnail }
         : undefined,
       firstImage,
@@ -269,9 +269,12 @@ export const injectTagMappings = async (
   ])
 
   // SAFETY: collection items validated upstream only expose collection child page props
-  const childPageProps = draftBlobOfResource.content.page
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- collection items expose child page props
+  const childPageProps = draftBlobOfResource.content.page as
+    | ArticlePagePageProps
+    | FileRefPageProps
+    | LinkRefPageProps
 
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   // SAFETY: parent index blob for a collection item is always a collection page layout
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   const collectionPageProps = publishedIndexBlob.content

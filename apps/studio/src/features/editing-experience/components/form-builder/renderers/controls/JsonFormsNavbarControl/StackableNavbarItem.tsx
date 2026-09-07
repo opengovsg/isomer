@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
 /* oxlint-disable eslint/sort-keys, typescript/consistent-return, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/types"
 import type {
@@ -106,7 +107,9 @@ export const StackableNavbarItem = ({
       return NAVBAR_ITEM_ERROR_DESCRIPTION
     }
 
-    return hasNonEmptyString(description) || DEFAULT_NAVBAR_ITEM_DESCRIPTION
+    return hasNonEmptyString(description)
+      ? description
+      : DEFAULT_NAVBAR_ITEM_DESCRIPTION
   }, [description, errors, index, numberOfErrors])
 
   // This useEffect sets up the drag and drop functionality for this particular
@@ -220,7 +223,7 @@ export const StackableNavbarItem = ({
   return (
     <>
       <DeleteGroupModal
-        label={hasNonEmptyString(name) || DEFAULT_NAVBAR_ITEM_TITLE}
+        label={hasNonEmptyString(name) ? name : DEFAULT_NAVBAR_ITEM_TITLE}
         subItemsCount={subItems ? subItems.length : 0}
         isOpen={isDeleteGroupModalOpen}
         onClose={onDeleteGroupModalClose}

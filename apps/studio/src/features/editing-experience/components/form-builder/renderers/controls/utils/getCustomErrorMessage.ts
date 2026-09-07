@@ -5,7 +5,7 @@ import {
   isNullableBooleanTrue,
   isNonEmptyArray,
 } from "~/utils/truthiness"
-export const getCustomErrorMessage = (error: string | undefined): string => {
+export const getCustomErrorMessage = (error?: string): string => {
   if (!hasNonEmptyString(error)) {
     return ""
   }

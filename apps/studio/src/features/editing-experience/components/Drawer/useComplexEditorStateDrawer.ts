@@ -306,7 +306,7 @@ export const useComplexEditorStateDrawer = () => {
     component?.type === "antiscambanner" &&
     !(addedBlockIndex !== null && addedBlockIndex === currActiveIdx)
 
-  const componentName = hasNonEmptyString(subSchema?.title) || "component"
+  const componentName = subSchema?.title ?? "component"
 
   const isInvalidIndex =
     currActiveIdx === -1 || currActiveIdx > previewPageState.content.length

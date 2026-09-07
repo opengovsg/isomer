@@ -51,7 +51,7 @@ export const MenubarVerticalList = ({
                 bg: "interaction.muted.main.active",
               }}
             >
-              {hasNonEmptyString(activeItem)?.title || defaultTitle}
+              {activeItem?.title || defaultTitle}
             </Menu.Button>
 
             <Menu.List width="12.25rem">

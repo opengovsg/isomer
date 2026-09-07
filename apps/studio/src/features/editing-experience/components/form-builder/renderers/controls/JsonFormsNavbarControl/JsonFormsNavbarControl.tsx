@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
 /* oxlint-disable eslint/no-shadow, typescript/consistent-return, unicorn/no-new-array, unicorn/no-unnecessary-type-conversion, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/closest-edge"
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"

@@ -62,11 +62,7 @@ export const addCodeBuildAndMarkSupersededBuild = async ({
       )
       .execute()
     // If a new build was started, mark the stopped build (if any) as being superseded by the new build
-    if (
-      hasNonEmptyString(
-        buildChanges.isNewBuildNeeded && buildChanges.stoppedBuild?.id,
-      )
-    ) {
+    if (buildChanges.isNewBuildNeeded && buildChanges.stoppedBuild?.id) {
       await updateStoppedBuild({
         startedBuildId: buildChanges.startedBuild.id,
         stoppedBuildId: buildChanges.stoppedBuild.id,

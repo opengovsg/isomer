@@ -21,7 +21,7 @@ export const parseHref = (href: string, pageType: LinkTypesWithHrefFormat) => {
   }
 }
 
-export const getLinkHrefType = (href: string | undefined): LinkTypes => {
+export const getLinkHrefType = (href?: string): LinkTypes => {
   if (!hasNonEmptyString(href)) {
     // We default to page if no href is provided, as that is the first option
     return LINK_TYPES.Page

@@ -155,19 +155,21 @@ export const FixedBlock = () => {
     )
   }
 
+  const fixedBlockContent = getFixedBlockContent(pageLayout)
+  const blockLabel = hasNonEmptyString(fixedBlockContent?.label)
+    ? fixedBlockContent.label
+    : "Page description and summary"
+  const blockDescription = hasNonEmptyString(fixedBlockContent?.description)
+    ? fixedBlockContent.description
+    : "Click to edit"
+
   return (
     <BaseBlock
       onClick={() => {
         setDrawerState({ state: "metadataEditor" })
       }}
-      label={
-        hasNonEmptyString(getFixedBlockContent(pageLayout)?.label) ||
-        "Page description and summary"
-      }
-      description={
-        hasNonEmptyString(getFixedBlockContent(pageLayout)?.description) ||
-        "Click to edit"
-      }
+      label={blockLabel}
+      description={blockDescription}
       icon={BiPin}
     />
   )

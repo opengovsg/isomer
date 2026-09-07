@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
 import type { ControlWithDetailProps, RankedTester } from "@jsonforms/core"
 import { FormControl, HStack, Text, VStack } from "@chakra-ui/react"
 import {
@@ -46,7 +47,7 @@ const JsonFormsObjectControl = ({
   const handleToggle = () => {
     if (isChecked) {
       dataSnapshotRef.current = data
-      handleChange(path)
+      handleChange(path, undefined)
     } else {
       handleChange(path, dataSnapshotRef.current)
     }

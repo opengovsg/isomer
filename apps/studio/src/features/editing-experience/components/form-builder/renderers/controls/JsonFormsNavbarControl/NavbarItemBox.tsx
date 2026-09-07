@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
 /* oxlint-disable unicorn/prefer-export-from -- core cleanup deferred */
 import type { NavbarItemBoxDragPresentation } from "./NavbarItemBoxBody"
 import { NavbarItemBoxBody } from "./NavbarItemBoxBody"

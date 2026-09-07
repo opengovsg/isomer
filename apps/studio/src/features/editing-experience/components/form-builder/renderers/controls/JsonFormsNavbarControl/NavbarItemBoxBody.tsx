@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
 /* oxlint-disable typescript/strict-boolean-expressions, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge"
 import type { Dispatch, SetStateAction } from "react"

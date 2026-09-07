@@ -387,11 +387,7 @@ const BulkUploadRedirectsModalContent = ({
     )
   }
 
-  const isProcessDisabled = !hasNonEmptyString(file)
-    ? file
-    : hasNonEmptyString(hasNonEmptyString)(fileError)
-      ? fileError
-      : !csv
+  const isProcessDisabled = !file || !!fileError || !csv
   const validRows = validation?.rows.filter((row) => row.error === null) ?? []
 
   return (

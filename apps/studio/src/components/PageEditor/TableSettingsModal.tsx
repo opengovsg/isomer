@@ -93,7 +93,7 @@ export const TableSettingsModal = ({
               {...register("caption")}
             />
 
-            {hasNonEmptyString(errors.caption)?.message ? (
+            {errors.caption?.message ? (
               <FormErrorMessage>{errors.caption.message}</FormErrorMessage>
             ) : (
               <FormHelperText mt="0.5rem" color="base.content.medium">

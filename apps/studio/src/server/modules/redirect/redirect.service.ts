@@ -138,7 +138,8 @@ const resolveDestinationForStorage = async (
       })
     }
     default: {
-      return parsed.value
+      const _exhaustive: never = parsed
+      return _exhaustive
     }
   }
 }
@@ -1188,7 +1189,7 @@ const runBulkValidation = async (
         if (
           rootId !== null &&
           rootId !== undefined &&
-          shadowedRootIds.has(rootId)
+          shadowedRootIds.has(String(rootId))
         ) {
           shadowedSources.add(source)
         }
@@ -1687,7 +1688,7 @@ const assertDescendantsNotShadowed = async (
         newFullPermalink,
         reference: getReferenceLink({
           resourceId: descendantId,
-          siteId,
+          siteId: String(siteId),
         }),
       },
     ]

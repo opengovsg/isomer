@@ -3,7 +3,7 @@ import type { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
 import { TRPCError } from "@trpc/server"
 import { get, partition } from "lodash-es"
-import { isDefinedNumber } from "~/utils/truthiness"
+import { hasNonEmptyString, isDefinedNumber } from "~/utils/truthiness"
 import { AuditLogEvent, RoleType } from "~prisma/generated/generatedEnums"
 
 import type {
@@ -57,7 +57,7 @@ export const definePermissionsForResource = async ({
     .where("siteId", "=", siteId)
     .where("deletedAt", "is", null)
 
-  if (isDefinedNumber(resourceId)) {
+  if (hasNonEmptyString(resourceId)) {
     query = query.where("resourceId", "=", resourceId)
   } else {
     query = query.where("resourceId", "is", null)
@@ -156,7 +156,7 @@ export const bulkValidateUserPermissionsForResources = async ({
         throw new TRPCError({
           code: "NOT_FOUND",
           message:
-            resourceIds.length === 1
+            (resourceIds ?? []).length === 1
               ? "Resource not found"
               : "Resources not found",
         })

@@ -5,8 +5,11 @@ import { BANNER_FEATURE_KEY } from "~/lib/growthbook"
 
 export const APP_BANNER_ID = "app-banner"
 
+const getOffsetHeight = (element: Element | null): number =>
+  element instanceof HTMLElement ? element.offsetHeight : 0
+
 export const getBannerHeightInPx = (): number =>
-  document.querySelector(`#${APP_BANNER_ID}`)?.offsetHeight ?? 0
+  getOffsetHeight(document.querySelector(`#${APP_BANNER_ID}`))
 
 type BannerFeature = Pick<BannerProps, "variant"> & {
   message: BannerProps["children"]

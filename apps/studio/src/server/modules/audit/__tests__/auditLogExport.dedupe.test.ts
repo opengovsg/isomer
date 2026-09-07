@@ -225,7 +225,8 @@ const expectExportCreateEvent = (
 describe("createAuditLogExportRequestsForSites — idempotent accept", () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mockValidatePermissions.mockResolvedValue()
+    // oxlint-disable-next-line unicorn/no-useless-undefined, typescript/require-await -- vitest mock void return
+    mockValidatePermissions.mockImplementation(async () => undefined)
   })
 
   it("resolves a race-losing insert to the winner's in-flight row (returned, not thrown)", async () => {

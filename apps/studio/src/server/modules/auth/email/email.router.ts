@@ -191,7 +191,7 @@ export const emailSessionRouter = router({
 
           ctx.session.userId = sessionUserId
           await ctx.session.save()
-          return pick(user, defaultUserSelect)
+          return pick(userValue, defaultUserSelect)
         })
 
         if (getIsSingpassDisabledInNonPreview({ gb: ctx.gb })) {

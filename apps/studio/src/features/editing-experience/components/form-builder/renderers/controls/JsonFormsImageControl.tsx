@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
 import type { ControlProps, JsonSchema, RankedTester } from "@jsonforms/core"
 import { Box, FormControl } from "@chakra-ui/react"
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
@@ -52,7 +53,7 @@ const JsonFormsImageControl = ({
         <AttachmentData
           data={data.split("/").pop() ?? "Unknown"}
           onClick={() => {
-            handleChange(path)
+            handleChange(path, undefined)
           }}
         />
       ) : (

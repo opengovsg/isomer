@@ -61,7 +61,10 @@ export const EditCollectionLinkPreview = ({
     [permalink],
   )
   const parentTitle = useMemo(
-    () => hasNonEmptyString(parent?.title) || ResourceType.Collection,
+    () =>
+      hasNonEmptyString(parent?.title)
+        ? parent?.title
+        : ResourceType.Collection,
     [parent?.title],
   )
   const ancestorTitles = useMemo(

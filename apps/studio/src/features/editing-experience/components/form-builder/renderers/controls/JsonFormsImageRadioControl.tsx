@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
 /* oxlint-disable eslint/sort-keys, typescript/strict-boolean-expressions, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { UseRadioProps } from "@chakra-ui/react"
 import type { ControlProps, RankedTester } from "@jsonforms/core"

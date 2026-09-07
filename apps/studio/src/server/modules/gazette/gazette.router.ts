@@ -132,7 +132,7 @@ export const gazetteRouter = router({
           ),
       ])
 
-      if (!hasNonEmptyString(existingResource.scheduledAt)) {
+      if (!existingResource.scheduledAt) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Cannot cancel a gazette that is not scheduled",
@@ -320,7 +320,7 @@ export const gazetteRouter = router({
             .select(["Resource.id"])
             .executeTakeFirst()
 
-          if (!hasNonEmptyString(parentCollection)) {
+          if (!parentCollection) {
             throw new TRPCError({
               code: "NOT_FOUND",
               message: "Parent collection does not exist",
@@ -445,7 +445,7 @@ export const gazetteRouter = router({
         differenceInMinutes(new Date(), publishedAt) <=
           ALLOWED_GAZETTE_DELETION_TIMEFRAME_IN_MINUTES
 
-      if (!hasNonEmptyString(isWithinGracePeriod)) {
+      if (!isWithinGracePeriod) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: `Gazettes are unable to be deleted after the given grace period of ${ALLOWED_GAZETTE_DELETION_TIMEFRAME_IN_MINUTES} minutes`,
@@ -931,7 +931,7 @@ export const gazetteRouter = router({
               },
               tx,
             )
-            if (!hasNonEmptyString(updated)) {
+            if (!updated) {
               throw new TRPCError({
                 code: "INTERNAL_SERVER_ERROR",
                 message: "Failed to update gazette",

@@ -16,7 +16,7 @@ import {
   putObjectDirect,
 } from "~/lib/s3"
 import { getServerDomPurify } from "~/lib/server-dom-purify"
-import { isDefinedNumber } from "~/utils/truthiness"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import type { AssetPermissionsProps } from "../permissions/permissions.type"
 import { db } from "../database/database"
@@ -81,7 +81,7 @@ export const validateUserPermissionsForAsset = async ({
   userId,
   siteId,
 }: AssetPermissionsProps) => {
-  if (!isDefinedNumber(resourceId)) {
+  if (!hasNonEmptyString(resourceId)) {
     // No resourceId means that this is a site-level asset
     // so we check for site-level permissions
     await bulkValidateUserPermissionsForResources({

@@ -5,7 +5,7 @@ import type { CollectionTags } from "../hooks/useCollectionTags"
 
 export const validateRequiredTags = (
   tags: CollectionTags,
-  tagged: ArticlePagePageProps["tagged"],
+  tagged: ArticlePagePageProps["tagged"] = [],
 ) => {
   // oxlint-disable-next-line unicorn/no-useless-collection-argument -- core cleanup deferred
   const taggedSet = new Set(tagged ?? [])

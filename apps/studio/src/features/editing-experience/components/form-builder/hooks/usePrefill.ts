@@ -46,7 +46,10 @@ export const usePrefillForCards = ({ data, path }: UsePrefillParams) => {
   >(null)
 
   // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
-  const resourceId = getResourceIdFromReferenceLink(data)
+  const resourceId = getResourceIdFromReferenceLink(
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON Forms data is a reference link string
+    data as string,
+  )
 
   // NOTE: Omit last item because that points to this link control
   const parts = path.split(".").slice(0, -1)
@@ -55,7 +58,7 @@ export const usePrefillForCards = ({ data, path }: UsePrefillParams) => {
   const parent = parts[0]
 
   const shouldFetch = useMemo(() => {
-    if (!resourceId || parent !== "cards") {
+    if (!hasNonEmptyString(resourceId) || parent !== "cards") {
       return false
     }
     return (

@@ -80,7 +80,7 @@ const PageSettingsModalContent = ({
     formState: { isDirty, errors },
   } = useZodForm({
     defaultValues: {
-      permalink: hasNonEmptyString(permalinkTree.at(-1)) || "",
+      permalink: permalinkTree.at(-1) ?? "",
       shouldCreateRedirect: true,
       title: originalTitle,
     },

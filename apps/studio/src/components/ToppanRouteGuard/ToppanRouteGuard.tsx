@@ -31,9 +31,9 @@ export const ToppanRouteGuard = ({ children }: PropsWithChildren) => {
 
   useEffect(() => {
     if (
-      hasNonEmptyString(
-        shouldRestrictToGazettesPath && !isGazettesOnlyRoute && gazettesPath,
-      )
+      shouldRestrictToGazettesPath &&
+      !isGazettesOnlyRoute &&
+      hasNonEmptyString(gazettesPath)
     ) {
       void router.replace(gazettesPath)
     }

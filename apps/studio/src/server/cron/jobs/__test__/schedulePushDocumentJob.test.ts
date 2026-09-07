@@ -513,7 +513,7 @@ describe("schedulePushDocumentJobHandler", async () => {
       // SAFETY: empty blob content is enough for the draft-version fixture setup
       const draftBlob = await db
         .insertInto("Blob")
-        .values({ content: {} })
+        .values({ content: {} as never })
         .returning("id")
         .executeTakeFirstOrThrow()
       await setBlobContentForPushDocument(

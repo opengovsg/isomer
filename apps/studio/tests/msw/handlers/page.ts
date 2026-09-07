@@ -13,7 +13,11 @@ const getRootPageQuery = (wait?: DelayMode | number) =>
     if (wait !== undefined) {
       await delay(wait)
     }
-    return { title: "A mock page", id: "1", draftBlobId: "1" } as RouterOutput["page"]["getRootPage"]
+    return {
+      title: "A mock page",
+      id: "1",
+      draftBlobId: "1",
+    }
   })
 
 export const DEFAULT_PAGE_ITEMS: RouterOutput["resource"]["listWithoutRoot"] = [
@@ -382,1148 +386,1176 @@ export const pageHandlers = {
   },
   readPageAndBlob: {
     article: () =>
-
-      trpcMsw.page.readPageAndBlob.query(() => ({
-        title: "Article page",
-        updatedAt: new Date("2024-09-12T07:00:00.000Z"),
-        permalink: "article-layout",
-        navbar: {
-          id: 1,
-          siteId: 1,
-          content: {
-            items: [
-              {
-                url: "/item-one",
-                name: "Expandable nav item",
+      trpcMsw.page.readPageAndBlob.query(
+        () =>
+          ({
+            title: "Article page",
+            updatedAt: new Date("2024-09-12T07:00:00.000Z"),
+            permalink: "article-layout",
+            navbar: {
+              id: 1,
+              siteId: 1,
+              content: {
                 items: [
                   {
-                    url: "/item-one/pa-network-one",
-                    name: "PA's network one",
-                    description:
-                      "Click here and brace yourself for mild disappointment.",
-                  },
-                  {
-                    url: "/item-one/pa-network-two",
-                    name: "PA's network two",
-                    description:
-                      "Click here and brace yourself for mild disappointment.",
-                  },
-                  {
-                    url: "/item-one/pa-network-three",
-                    name: "PA's network three",
-                  },
-                  {
-                    url: "/item-one/pa-network-four",
-                    name: "PA's network four",
-                    description:
-                      "Click here and brace yourself for mild disappointment. This one has a pretty long one",
-                  },
-                  {
-                    url: "/item-one/pa-network-five",
-                    name: "PA's network five",
-                    description:
-                      "Click here and brace yourself for mild disappointment. This one has a pretty long one",
-                  },
-                  {
-                    url: "/item-one/pa-network-six",
-                    name: "PA's network six",
-                    description:
-                      "Click here and brace yourself for mild disappointment.",
-                  },
-                ],
-              },
-            ],
-          },
-        },
-        footer: {
-          id: 1,
-          siteId: 1,
-          content: {
-            siteNavItems: [
-              { url: "/about", title: "About us" },
-              { url: "/partners", title: "Our partners" },
-              {
-                url: "/grants-and-programmes",
-                title: "Grants and programmes",
-              },
-              { url: "/contact-us", title: "Contact us" },
-              { url: "/something-else", title: "Something else" },
-              { url: "/resources", title: "Resources" },
-            ],
-            contactUsLink: "/contact-us",
-            termsOfUseLink: "/terms-of-use",
-            feedbackFormLink: "https://www.form.gov.sg",
-            privacyStatementLink: "/privacy",
-          },
-        },
-        content: {
-          page: {
-            date: "11-09-2024",
-            title: "article layout",
-            category: "Feature Articles",
-            articlePageHeader: { summary: "" },
-          },
-          layout: "article",
-          content: [
-            {
-              type: "prose",
-              content: [
-                {
-                  type: "paragraph",
-                  content: [{ text: "This is a prose block", type: "text" }],
-                },
-              ],
-            },
-            {
-              type: "prose",
-              content: [
-                {
-                  type: "paragraph",
-                  content: [],
-                },
-              ],
-            },
-            {
-              type: "prose",
-              content: [
-                {
-                  type: "paragraph",
-                  content: [
-                    {
-                      text: "Thisisaproseblockthathasnospacesandshouldautomaticallytruncatetopreventoverflow",
-                      type: "text",
-                    },
-                  ],
-                },
-              ],
-            },
-            {
-              type: "image",
-              src: "https://placehold.co/600x400",
-              alt: "This is an image",
-            },
-            {
-              type: "callout",
-              content: {
-                type: "prose",
-                content: [
-                  {
-                    type: "paragraph",
-                    content: [
-                      { text: "This is a callout block", type: "text" },
+                    url: "/item-one",
+                    name: "Expandable nav item",
+                    items: [
+                      {
+                        url: "/item-one/pa-network-one",
+                        name: "PA's network one",
+                        description:
+                          "Click here and brace yourself for mild disappointment.",
+                      },
+                      {
+                        url: "/item-one/pa-network-two",
+                        name: "PA's network two",
+                        description:
+                          "Click here and brace yourself for mild disappointment.",
+                      },
+                      {
+                        url: "/item-one/pa-network-three",
+                        name: "PA's network three",
+                      },
+                      {
+                        url: "/item-one/pa-network-four",
+                        name: "PA's network four",
+                        description:
+                          "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+                      },
+                      {
+                        url: "/item-one/pa-network-five",
+                        name: "PA's network five",
+                        description:
+                          "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+                      },
+                      {
+                        url: "/item-one/pa-network-six",
+                        name: "PA's network six",
+                        description:
+                          "Click here and brace yourself for mild disappointment.",
+                      },
                     ],
                   },
                 ],
               },
             },
-            {
-              type: "callout",
+            footer: {
+              id: 1,
+              siteId: 1,
               content: {
-                type: "prose",
-                content: [
+                siteNavItems: [
+                  { url: "/about", title: "About us" },
+                  { url: "/partners", title: "Our partners" },
                   {
-                    type: "paragraph",
-                    content: [],
+                    url: "/grants-and-programmes",
+                    title: "Grants and programmes",
                   },
+                  { url: "/contact-us", title: "Contact us" },
+                  { url: "/something-else", title: "Something else" },
+                  { url: "/resources", title: "Resources" },
                 ],
+                contactUsLink: "/contact-us",
+                termsOfUseLink: "/terms-of-use",
+                feedbackFormLink: "https://www.form.gov.sg",
+                privacyStatementLink: "/privacy",
               },
             },
-          ],
-          version: "0.1.0",
-        },
-        type: "Page",
-        theme: "isomer-next",
-        url: "https://www.isomer.gov.sg",
-        logoUrl: "",
-        siteName: "MTI",
-        isGovernment: true,
-      }) as unknown as RouterOutput["page"]["readPageAndBlob"]),
+            content: {
+              page: {
+                date: "11-09-2024",
+                title: "article layout",
+                category: "Feature Articles",
+                articlePageHeader: { summary: "" },
+              },
+              layout: "article",
+              content: [
+                {
+                  type: "prose",
+                  content: [
+                    {
+                      type: "paragraph",
+                      content: [
+                        { text: "This is a prose block", type: "text" },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: "prose",
+                  content: [
+                    {
+                      type: "paragraph",
+                      content: [],
+                    },
+                  ],
+                },
+                {
+                  type: "prose",
+                  content: [
+                    {
+                      type: "paragraph",
+                      content: [
+                        {
+                          text: "Thisisaproseblockthathasnospacesandshouldautomaticallytruncatetopreventoverflow",
+                          type: "text",
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: "image",
+                  src: "https://placehold.co/600x400",
+                  alt: "This is an image",
+                },
+                {
+                  type: "callout",
+                  content: {
+                    type: "prose",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [
+                          { text: "This is a callout block", type: "text" },
+                        ],
+                      },
+                    ],
+                  },
+                },
+                {
+                  type: "callout",
+                  content: {
+                    type: "prose",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [],
+                      },
+                    ],
+                  },
+                },
+              ],
+              version: "0.1.0",
+            },
+            type: "Page",
+            theme: "isomer-next",
+            url: "https://www.isomer.gov.sg",
+            logoUrl: "",
+            siteName: "MTI",
+            isGovernment: true,
+          }) as unknown as RouterOutput["page"]["readPageAndBlob"],
+      ),
     collection: () =>
-
-      trpcMsw.page.readPageAndBlob.query(() => ({
-        title: "Index page",
-        updatedAt: new Date("2024-09-12T07:00:00.000Z"),
-        permalink: "_index",
-        navbar: {
-          id: 1,
-          siteId: 1,
-          content: [
-            {
-              url: "/item-one",
-              name: "Expandable nav item",
-              items: [
-                {
-                  url: "/item-one/pa-network-one",
-                  name: "PA's network one",
-                  description:
-                    "Click here and brace yourself for mild disappointment.",
-                },
-                {
-                  url: "/item-one/pa-network-two",
-                  name: "PA's network two",
-                  description:
-                    "Click here and brace yourself for mild disappointment.",
-                },
-                {
-                  url: "/item-one/pa-network-three",
-                  name: "PA's network three",
-                },
-                {
-                  url: "/item-one/pa-network-four",
-                  name: "PA's network four",
-                  description:
-                    "Click here and brace yourself for mild disappointment. This one has a pretty long one",
-                },
-                {
-                  url: "/item-one/pa-network-five",
-                  name: "PA's network five",
-                  description:
-                    "Click here and brace yourself for mild disappointment. This one has a pretty long one",
-                },
-                {
-                  url: "/item-one/pa-network-six",
-                  name: "PA's network six",
-                  description:
-                    "Click here and brace yourself for mild disappointment.",
-                },
-              ],
-            },
-          ],
-        },
-        footer: {
-          id: 1,
-          siteId: 1,
-          content: {
-            siteNavItems: [
-              { url: "/about", title: "About us" },
-              { url: "/partners", title: "Our partners" },
-              {
-                url: "/grants-and-programmes",
-                title: "Grants and programmes",
-              },
-              { url: "/contact-us", title: "Contact us" },
-              { url: "/something-else", title: "Something else" },
-              { url: "/resources", title: "Resources" },
-            ],
-            contactUsLink: "/contact-us",
-            termsOfUseLink: "/terms-of-use",
-            feedbackFormLink: "https://www.form.gov.sg",
-            privacyStatementLink: "/privacy",
-          },
-        },
-        content: {
-          page: {
-            date: "11-09-2024",
-            title: "article layout",
-            category: "Feature Articles",
-            subtitle: "This is a subtitle for the collection page",
-          },
-          layout: "collection",
-          content: [],
-          version: "0.1.0",
-        },
-        type: "IndexPage",
-        theme: "isomer-next",
-        url: "https://www.isomer.gov.sg",
-        logoUrl: "",
-        siteName: "MTI",
-        isGovernment: true,
-      }) as unknown as RouterOutput["page"]["readPageAndBlob"]),
-    collectionWithManyFilterOptions: () =>
-
-      trpcMsw.page.readPageAndBlob.query(() => ({
-        title: "Index page",
-        updatedAt: new Date("2024-09-12T07:00:00.000Z"),
-        permalink: "_index",
-        navbar: { id: 1, siteId: 1, content: [] },
-        footer: {
-          id: 1,
-          siteId: 1,
-          content: {
-            siteNavItems: [],
-            contactUsLink: "/contact-us",
-            termsOfUseLink: "/terms-of-use",
-            feedbackFormLink: "https://www.form.gov.sg",
-            privacyStatementLink: "/privacy",
-          },
-        },
-        content: {
-          page: {
-            date: "11-09-2024",
-            title: "article layout",
-            category: "Feature Articles",
-            subtitle: "This is a subtitle for the collection page",
-            tagCategories: [
-              {
-                id: "a1b2c3d4-0000-4000-8000-000000000001",
-                label: "Test filter",
-                isRequired: false,
-                options: Array.from({ length: 101 }, (_, i) => ({
-                  id: `a1b2c3d4-0001-4000-8000-${String(i + 1).padStart(12, "0")}`,
-                  label: `Option ${i + 1}`,
-                })),
-              },
-            ],
-          },
-          layout: "collection",
-          content: [],
-          version: "0.1.0",
-        },
-        type: "IndexPage",
-        theme: "isomer-next",
-        url: "https://www.isomer.gov.sg",
-        logoUrl: "",
-        siteName: "MTI",
-        isGovernment: true,
-      }) as unknown as RouterOutput["page"]["readPageAndBlob"]),
-    content: () =>
-
-      trpcMsw.page.readPageAndBlob.query(() => ({
-        permalink: "page-title-here",
-        title: "Content page",
-        updatedAt: new Date("2024-09-12T07:00:00.000Z"),
-        navbar: {
-          id: 1,
-          siteId: 1,
-          content: {
-            items: [
-              {
-                url: "/item-one",
-                name: "Expandable nav item",
-                items: [
-                  {
-                    url: "/item-one/pa-network-one",
-                    name: "PA's network one",
-                    description:
-                      "Click here and brace yourself for mild disappointment.",
-                  },
-                  {
-                    url: "/item-one/pa-network-two",
-                    name: "PA's network two",
-                    description:
-                      "Click here and brace yourself for mild disappointment.",
-                  },
-                  {
-                    url: "/item-one/pa-network-three",
-                    name: "PA's network three",
-                  },
-                  {
-                    url: "/item-one/pa-network-four",
-                    name: "PA's network four",
-                    description:
-                      "Click here and brace yourself for mild disappointment. This one has a pretty long one",
-                  },
-                  {
-                    url: "/item-one/pa-network-five",
-                    name: "PA's network five",
-                    description:
-                      "Click here and brace yourself for mild disappointment. This one has a pretty long one",
-                  },
-                  {
-                    url: "/item-one/pa-network-six",
-                    name: "PA's network six",
-                    description:
-                      "Click here and brace yourself for mild disappointment.",
-                  },
-                ],
-              },
-            ],
-          },
-        },
-        footer: {
-          id: 1,
-          siteId: 1,
-          content: {
-            siteNavItems: [
-              { url: "/about", title: "About us" },
-              { url: "/partners", title: "Our partners" },
-              {
-                url: "/grants-and-programmes",
-                title: "Grants and programmes",
-              },
-              { url: "/contact-us", title: "Contact us" },
-              { url: "/something-else", title: "Something else" },
-              { url: "/resources", title: "Resources" },
-            ],
-            contactUsLink: "/contact-us",
-            termsOfUseLink: "/terms-of-use",
-            feedbackFormLink: "https://www.form.gov.sg",
-            privacyStatementLink: "/privacy",
-          },
-        },
-        content: {
-          page: {
-            title: "Page title here",
-            permalink: "page-title-here",
-            lastModified:
-              "Wed Sep 11 2024 16:32:44 GMT+0800 (Singapore Standard Time)",
-            contentPageHeader: { summary: "" },
-          },
-          layout: "content",
-          content: [
-            {
-              type: "prose",
+      trpcMsw.page.readPageAndBlob.query(
+        () =>
+          ({
+            title: "Index page",
+            updatedAt: new Date("2024-09-12T07:00:00.000Z"),
+            permalink: "_index",
+            navbar: {
+              id: 1,
+              siteId: 1,
               content: [
                 {
-                  type: "paragraph",
-                  content: [{ text: "This is a prose block", type: "text" }],
-                },
-              ],
-            },
-            {
-              type: "prose",
-              content: [
-                {
-                  type: "paragraph",
-                  content: [
+                  url: "/item-one",
+                  name: "Expandable nav item",
+                  items: [
                     {
-                      text: "Thisisaproseblockthathasnospacesandshouldautomaticallytruncatetopreventoverflow",
-                      type: "text",
+                      url: "/item-one/pa-network-one",
+                      name: "PA's network one",
+                      description:
+                        "Click here and brace yourself for mild disappointment.",
+                    },
+                    {
+                      url: "/item-one/pa-network-two",
+                      name: "PA's network two",
+                      description:
+                        "Click here and brace yourself for mild disappointment.",
+                    },
+                    {
+                      url: "/item-one/pa-network-three",
+                      name: "PA's network three",
+                    },
+                    {
+                      url: "/item-one/pa-network-four",
+                      name: "PA's network four",
+                      description:
+                        "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+                    },
+                    {
+                      url: "/item-one/pa-network-five",
+                      name: "PA's network five",
+                      description:
+                        "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+                    },
+                    {
+                      url: "/item-one/pa-network-six",
+                      name: "PA's network six",
+                      description:
+                        "Click here and brace yourself for mild disappointment.",
                     },
                   ],
                 },
               ],
             },
-            {
-              type: "prose",
-              content: [
-                {
-                  type: "paragraph",
-                  content: [],
-                },
-              ],
-            },
-            {
-              type: "image",
-              src: "https://placehold.co/600x400",
-              alt: "This is an image",
-            },
-            {
-              type: "callout",
+            footer: {
+              id: 1,
+              siteId: 1,
               content: {
-                type: "prose",
-                content: [
+                siteNavItems: [
+                  { url: "/about", title: "About us" },
+                  { url: "/partners", title: "Our partners" },
                   {
-                    type: "paragraph",
-                    content: [
-                      { text: "This is a callout block", type: "text" },
+                    url: "/grants-and-programmes",
+                    title: "Grants and programmes",
+                  },
+                  { url: "/contact-us", title: "Contact us" },
+                  { url: "/something-else", title: "Something else" },
+                  { url: "/resources", title: "Resources" },
+                ],
+                contactUsLink: "/contact-us",
+                termsOfUseLink: "/terms-of-use",
+                feedbackFormLink: "https://www.form.gov.sg",
+                privacyStatementLink: "/privacy",
+              },
+            },
+            content: {
+              page: {
+                date: "11-09-2024",
+                title: "article layout",
+                category: "Feature Articles",
+                subtitle: "This is a subtitle for the collection page",
+              },
+              layout: "collection",
+              content: [],
+              version: "0.1.0",
+            },
+            type: "IndexPage",
+            theme: "isomer-next",
+            url: "https://www.isomer.gov.sg",
+            logoUrl: "",
+            siteName: "MTI",
+            isGovernment: true,
+          }) as unknown as RouterOutput["page"]["readPageAndBlob"],
+      ),
+    collectionWithManyFilterOptions: () =>
+      trpcMsw.page.readPageAndBlob.query(
+        () =>
+          ({
+            title: "Index page",
+            updatedAt: new Date("2024-09-12T07:00:00.000Z"),
+            permalink: "_index",
+            navbar: { id: 1, siteId: 1, content: [] },
+            footer: {
+              id: 1,
+              siteId: 1,
+              content: {
+                siteNavItems: [],
+                contactUsLink: "/contact-us",
+                termsOfUseLink: "/terms-of-use",
+                feedbackFormLink: "https://www.form.gov.sg",
+                privacyStatementLink: "/privacy",
+              },
+            },
+            content: {
+              page: {
+                date: "11-09-2024",
+                title: "article layout",
+                category: "Feature Articles",
+                subtitle: "This is a subtitle for the collection page",
+                tagCategories: [
+                  {
+                    id: "a1b2c3d4-0000-4000-8000-000000000001",
+                    label: "Test filter",
+                    isRequired: false,
+                    options: Array.from({ length: 101 }, (_, i) => ({
+                      id: `a1b2c3d4-0001-4000-8000-${String(i + 1).padStart(12, "0")}`,
+                      label: `Option ${i + 1}`,
+                    })),
+                  },
+                ],
+              },
+              layout: "collection",
+              content: [],
+              version: "0.1.0",
+            },
+            type: "IndexPage",
+            theme: "isomer-next",
+            url: "https://www.isomer.gov.sg",
+            logoUrl: "",
+            siteName: "MTI",
+            isGovernment: true,
+          }) as unknown as RouterOutput["page"]["readPageAndBlob"],
+      ),
+    content: () =>
+      trpcMsw.page.readPageAndBlob.query(
+        () =>
+          ({
+            permalink: "page-title-here",
+            title: "Content page",
+            updatedAt: new Date("2024-09-12T07:00:00.000Z"),
+            navbar: {
+              id: 1,
+              siteId: 1,
+              content: {
+                items: [
+                  {
+                    url: "/item-one",
+                    name: "Expandable nav item",
+                    items: [
+                      {
+                        url: "/item-one/pa-network-one",
+                        name: "PA's network one",
+                        description:
+                          "Click here and brace yourself for mild disappointment.",
+                      },
+                      {
+                        url: "/item-one/pa-network-two",
+                        name: "PA's network two",
+                        description:
+                          "Click here and brace yourself for mild disappointment.",
+                      },
+                      {
+                        url: "/item-one/pa-network-three",
+                        name: "PA's network three",
+                      },
+                      {
+                        url: "/item-one/pa-network-four",
+                        name: "PA's network four",
+                        description:
+                          "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+                      },
+                      {
+                        url: "/item-one/pa-network-five",
+                        name: "PA's network five",
+                        description:
+                          "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+                      },
+                      {
+                        url: "/item-one/pa-network-six",
+                        name: "PA's network six",
+                        description:
+                          "Click here and brace yourself for mild disappointment.",
+                      },
                     ],
                   },
                 ],
               },
             },
-            {
-              type: "callout",
+            footer: {
+              id: 1,
+              siteId: 1,
               content: {
-                type: "prose",
-                content: [
+                siteNavItems: [
+                  { url: "/about", title: "About us" },
+                  { url: "/partners", title: "Our partners" },
                   {
-                    type: "paragraph",
+                    url: "/grants-and-programmes",
+                    title: "Grants and programmes",
+                  },
+                  { url: "/contact-us", title: "Contact us" },
+                  { url: "/something-else", title: "Something else" },
+                  { url: "/resources", title: "Resources" },
+                ],
+                contactUsLink: "/contact-us",
+                termsOfUseLink: "/terms-of-use",
+                feedbackFormLink: "https://www.form.gov.sg",
+                privacyStatementLink: "/privacy",
+              },
+            },
+            content: {
+              page: {
+                title: "Page title here",
+                permalink: "page-title-here",
+                lastModified:
+                  "Wed Sep 11 2024 16:32:44 GMT+0800 (Singapore Standard Time)",
+                contentPageHeader: { summary: "" },
+              },
+              layout: "content",
+              content: [
+                {
+                  type: "prose",
+                  content: [
+                    {
+                      type: "paragraph",
+                      content: [
+                        { text: "This is a prose block", type: "text" },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: "prose",
+                  content: [
+                    {
+                      type: "paragraph",
+                      content: [
+                        {
+                          text: "Thisisaproseblockthathasnospacesandshouldautomaticallytruncatetopreventoverflow",
+                          type: "text",
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: "prose",
+                  content: [
+                    {
+                      type: "paragraph",
+                      content: [],
+                    },
+                  ],
+                },
+                {
+                  type: "image",
+                  src: "https://placehold.co/600x400",
+                  alt: "This is an image",
+                },
+                {
+                  type: "callout",
+                  content: {
+                    type: "prose",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [
+                          { text: "This is a callout block", type: "text" },
+                        ],
+                      },
+                    ],
+                  },
+                },
+                {
+                  type: "callout",
+                  content: {
+                    type: "prose",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [],
+                      },
+                    ],
+                  },
+                },
+                {
+                  type: "contentpic",
+                  content: {
+                    type: "prose",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [
+                          { text: "This is a contentpic block", type: "text" },
+                        ],
+                      },
+                    ],
+                  },
+                },
+                {
+                  type: "contentpic",
+                  content: {
+                    type: "prose",
                     content: [],
                   },
+                  imageSrc: "https://placehold.co/600x400",
+                },
+                {
+                  type: "infocards",
+                  title: "This is an infocards block",
+                  variant: "cardsWithoutImages",
+                  cards: [],
+                },
+                {
+                  type: "accordion",
+                  summary: "This is an accordion block",
+                  details: {
+                    type: "prose",
+                    content: [],
+                  },
+                },
+                {
+                  type: "infocols",
+                  title: "This is an infocols block",
+                  infoBoxes: [],
+                },
+                {
+                  type: "map",
+                  title: "Singapore region",
+                  url: "https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d127639.0647119137!2d103.79481771806647!3d1.343949056391766!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2ssg!4v1731681854346!5m2!1sen!2ssg",
+                },
+                {
+                  type: "video",
+                  title: "Rick Astley - Never Gonna Give You Up",
+                  url: "https://www.youtube.com/embed/dQw4w9WgXcQ?si=ggGGn4uvFWAIelWD",
+                },
+              ],
+              version: "0.1.0",
+            },
+            type: "Page",
+            theme: "isomer-next",
+            url: "https://www.isomer.gov.sg",
+            logoUrl: "",
+            siteName: "MTI",
+            isGovernment: true,
+          }) as unknown as RouterOutput["page"]["readPageAndBlob"],
+      ),
+    customIndex: () =>
+      trpcMsw.page.readPageAndBlob.query(
+        () =>
+          ({
+            title: "Index page",
+            updatedAt: new Date("2024-09-12T07:00:00.000Z"),
+            permalink: "_index",
+            navbar: {
+              id: 1,
+              siteId: 1,
+              content: [
+                {
+                  url: "/item-one",
+                  name: "Expandable nav item",
+                  items: [
+                    {
+                      url: "/item-one/pa-network-one",
+                      name: "PA's network one",
+                      description:
+                        "Click here and brace yourself for mild disappointment.",
+                    },
+                    {
+                      url: "/item-one/pa-network-two",
+                      name: "PA's network two",
+                      description:
+                        "Click here and brace yourself for mild disappointment.",
+                    },
+                    {
+                      url: "/item-one/pa-network-three",
+                      name: "PA's network three",
+                    },
+                    {
+                      url: "/item-one/pa-network-four",
+                      name: "PA's network four",
+                      description:
+                        "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+                    },
+                    {
+                      url: "/item-one/pa-network-five",
+                      name: "PA's network five",
+                      description:
+                        "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+                    },
+                    {
+                      url: "/item-one/pa-network-six",
+                      name: "PA's network six",
+                      description:
+                        "Click here and brace yourself for mild disappointment.",
+                    },
+                  ],
+                },
+              ],
+            },
+            footer: {
+              id: 1,
+              siteId: 1,
+              content: {
+                siteNavItems: [
+                  { url: "/about", title: "About us" },
+                  { url: "/partners", title: "Our partners" },
+                  {
+                    url: "/grants-and-programmes",
+                    title: "Grants and programmes",
+                  },
+                  { url: "/contact-us", title: "Contact us" },
+                  { url: "/something-else", title: "Something else" },
+                  { url: "/resources", title: "Resources" },
                 ],
+                contactUsLink: "/contact-us",
+                termsOfUseLink: "/terms-of-use",
+                feedbackFormLink: "https://www.form.gov.sg",
+                privacyStatementLink: "/privacy",
               },
             },
-            {
-              type: "contentpic",
+            content: {
+              page: {
+                date: "11-09-2024",
+                title: "article layout",
+                category: "Feature Articles",
+                articlePageHeader: { summary: "" },
+              },
+              childpages: {
+                layout: "boxes",
+                summary: false,
+                thumbnail: false,
+              },
+              layout: "content",
+              content: [],
+              version: "0.1.0",
+            },
+            type: "IndexPage",
+            theme: "isomer-next",
+            url: "https://www.isomer.gov.sg",
+            logoUrl: "",
+            siteName: "MTI",
+            isGovernment: true,
+          }) as unknown as RouterOutput["page"]["readPageAndBlob"],
+      ),
+    database: () =>
+      trpcMsw.page.readPageAndBlob.query(
+        () =>
+          ({
+            permalink: "database-layout",
+            title: "Database layout",
+            updatedAt: new Date("2024-09-12T07:00:00.000Z"),
+            navbar: {
+              id: 1,
+              siteId: 1,
               content: {
-                type: "prose",
-                content: [
+                items: [
                   {
-                    type: "paragraph",
-                    content: [
-                      { text: "This is a contentpic block", type: "text" },
+                    url: "/item-one",
+                    name: "Expandable nav item",
+                    items: [
+                      {
+                        url: "/item-one/pa-network-one",
+                        name: "PA's network one",
+                        description:
+                          "Click here and brace yourself for mild disappointment.",
+                      },
+                      {
+                        url: "/item-one/pa-network-two",
+                        name: "PA's network two",
+                        description:
+                          "Click here and brace yourself for mild disappointment.",
+                      },
+                      {
+                        url: "/item-one/pa-network-three",
+                        name: "PA's network three",
+                      },
+                      {
+                        url: "/item-one/pa-network-four",
+                        name: "PA's network four",
+                        description:
+                          "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+                      },
+                      {
+                        url: "/item-one/pa-network-five",
+                        name: "PA's network five",
+                        description:
+                          "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+                      },
+                      {
+                        url: "/item-one/pa-network-six",
+                        name: "PA's network six",
+                        description:
+                          "Click here and brace yourself for mild disappointment.",
+                      },
                     ],
                   },
                 ],
               },
             },
-            {
-              type: "contentpic",
+            footer: {
+              id: 1,
+              siteId: 1,
               content: {
-                type: "prose",
-                content: [],
-              },
-              imageSrc: "https://placehold.co/600x400",
-            },
-            {
-              type: "infocards",
-              title: "This is an infocards block",
-              variant: "cardsWithoutImages",
-              cards: [],
-            },
-            {
-              type: "accordion",
-              summary: "This is an accordion block",
-              details: {
-                type: "prose",
-                content: [],
-              },
-            },
-            {
-              type: "infocols",
-              title: "This is an infocols block",
-              infoBoxes: [],
-            },
-            {
-              type: "map",
-              title: "Singapore region",
-              url: "https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d127639.0647119137!2d103.79481771806647!3d1.343949056391766!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2ssg!4v1731681854346!5m2!1sen!2ssg",
-            },
-            {
-              type: "video",
-              title: "Rick Astley - Never Gonna Give You Up",
-              url: "https://www.youtube.com/embed/dQw4w9WgXcQ?si=ggGGn4uvFWAIelWD",
-            },
-          ],
-          version: "0.1.0",
-        },
-        type: "Page",
-        theme: "isomer-next",
-        url: "https://www.isomer.gov.sg",
-        logoUrl: "",
-        siteName: "MTI",
-        isGovernment: true,
-      }) as unknown as RouterOutput["page"]["readPageAndBlob"]),
-    customIndex: () =>
-
-      trpcMsw.page.readPageAndBlob.query(() => ({
-        title: "Index page",
-        updatedAt: new Date("2024-09-12T07:00:00.000Z"),
-        permalink: "_index",
-        navbar: {
-          id: 1,
-          siteId: 1,
-          content: [
-            {
-              url: "/item-one",
-              name: "Expandable nav item",
-              items: [
-                {
-                  url: "/item-one/pa-network-one",
-                  name: "PA's network one",
-                  description:
-                    "Click here and brace yourself for mild disappointment.",
-                },
-                {
-                  url: "/item-one/pa-network-two",
-                  name: "PA's network two",
-                  description:
-                    "Click here and brace yourself for mild disappointment.",
-                },
-                {
-                  url: "/item-one/pa-network-three",
-                  name: "PA's network three",
-                },
-                {
-                  url: "/item-one/pa-network-four",
-                  name: "PA's network four",
-                  description:
-                    "Click here and brace yourself for mild disappointment. This one has a pretty long one",
-                },
-                {
-                  url: "/item-one/pa-network-five",
-                  name: "PA's network five",
-                  description:
-                    "Click here and brace yourself for mild disappointment. This one has a pretty long one",
-                },
-                {
-                  url: "/item-one/pa-network-six",
-                  name: "PA's network six",
-                  description:
-                    "Click here and brace yourself for mild disappointment.",
-                },
-              ],
-            },
-          ],
-        },
-        footer: {
-          id: 1,
-          siteId: 1,
-          content: {
-            siteNavItems: [
-              { url: "/about", title: "About us" },
-              { url: "/partners", title: "Our partners" },
-              {
-                url: "/grants-and-programmes",
-                title: "Grants and programmes",
-              },
-              { url: "/contact-us", title: "Contact us" },
-              { url: "/something-else", title: "Something else" },
-              { url: "/resources", title: "Resources" },
-            ],
-            contactUsLink: "/contact-us",
-            termsOfUseLink: "/terms-of-use",
-            feedbackFormLink: "https://www.form.gov.sg",
-            privacyStatementLink: "/privacy",
-          },
-        },
-        content: {
-          page: {
-            date: "11-09-2024",
-            title: "article layout",
-            category: "Feature Articles",
-            articlePageHeader: { summary: "" },
-          },
-          childpages: {
-            layout: "boxes",
-            summary: false,
-            thumbnail: false,
-          },
-          layout: "content",
-          content: [],
-          version: "0.1.0",
-        },
-        type: "IndexPage",
-        theme: "isomer-next",
-        url: "https://www.isomer.gov.sg",
-        logoUrl: "",
-        siteName: "MTI",
-        isGovernment: true,
-      }) as unknown as RouterOutput["page"]["readPageAndBlob"]),
-    database: () =>
-
-      trpcMsw.page.readPageAndBlob.query(() => ({
-        permalink: "database-layout",
-        title: "Database layout",
-        updatedAt: new Date("2024-09-12T07:00:00.000Z"),
-        navbar: {
-          id: 1,
-          siteId: 1,
-          content: {
-            items: [
-              {
-                url: "/item-one",
-                name: "Expandable nav item",
-                items: [
+                siteNavItems: [
+                  { url: "/about", title: "About us" },
+                  { url: "/partners", title: "Our partners" },
                   {
-                    url: "/item-one/pa-network-one",
-                    name: "PA's network one",
-                    description:
-                      "Click here and brace yourself for mild disappointment.",
+                    url: "/grants-and-programmes",
+                    title: "Grants and programmes",
                   },
-                  {
-                    url: "/item-one/pa-network-two",
-                    name: "PA's network two",
-                    description:
-                      "Click here and brace yourself for mild disappointment.",
-                  },
-                  {
-                    url: "/item-one/pa-network-three",
-                    name: "PA's network three",
-                  },
-                  {
-                    url: "/item-one/pa-network-four",
-                    name: "PA's network four",
-                    description:
-                      "Click here and brace yourself for mild disappointment. This one has a pretty long one",
-                  },
-                  {
-                    url: "/item-one/pa-network-five",
-                    name: "PA's network five",
-                    description:
-                      "Click here and brace yourself for mild disappointment. This one has a pretty long one",
-                  },
-                  {
-                    url: "/item-one/pa-network-six",
-                    name: "PA's network six",
-                    description:
-                      "Click here and brace yourself for mild disappointment.",
-                  },
+                  { url: "/contact-us", title: "Contact us" },
+                  { url: "/something-else", title: "Something else" },
+                  { url: "/resources", title: "Resources" },
                 ],
-              },
-            ],
-          },
-        },
-        footer: {
-          id: 1,
-          siteId: 1,
-          content: {
-            siteNavItems: [
-              { url: "/about", title: "About us" },
-              { url: "/partners", title: "Our partners" },
-              {
-                url: "/grants-and-programmes",
-                title: "Grants and programmes",
-              },
-              { url: "/contact-us", title: "Contact us" },
-              { url: "/something-else", title: "Something else" },
-              { url: "/resources", title: "Resources" },
-            ],
-            contactUsLink: "/contact-us",
-            termsOfUseLink: "/terms-of-use",
-            feedbackFormLink: "https://www.form.gov.sg",
-            privacyStatementLink: "/privacy",
-          },
-        },
-        content: {
-          page: {
-            title: "Page title here",
-            permalink: "database-layout",
-            lastModified:
-              "Wed Sep 11 2024 16:32:44 GMT+0800 (Singapore Standard Time)",
-            contentPageHeader: { summary: "" },
-            database: {
-              dataSource: {
-                type: "dgs",
-                resourceId: "d_3c55210de27fcccda2ed0c63fdd2b352",
-                // hardcoded
+                contactUsLink: "/contact-us",
+                termsOfUseLink: "/terms-of-use",
+                feedbackFormLink: "https://www.form.gov.sg",
+                privacyStatementLink: "/privacy",
               },
             },
-          },
-          layout: "database",
-          content: [
-            {
-              type: "prose",
+            content: {
+              page: {
+                title: "Page title here",
+                permalink: "database-layout",
+                lastModified:
+                  "Wed Sep 11 2024 16:32:44 GMT+0800 (Singapore Standard Time)",
+                contentPageHeader: { summary: "" },
+                database: {
+                  dataSource: {
+                    type: "dgs",
+                    resourceId: "d_3c55210de27fcccda2ed0c63fdd2b352",
+                    // hardcoded
+                  },
+                },
+              },
+              layout: "database",
               content: [
                 {
-                  type: "heading",
-                  attrs: {
-                    level: 2,
-                  },
+                  type: "prose",
                   content: [
                     {
-                      type: "text",
-                      marks: [],
-                      text: "How to use this layout",
+                      type: "heading",
+                      attrs: {
+                        level: 2,
+                      },
+                      content: [
+                        {
+                          type: "text",
+                          marks: [],
+                          text: "How to use this layout",
+                        },
+                      ],
                     },
-                  ],
-                },
-                {
-                  type: "paragraph",
-                  content: [
                     {
-                      type: "text",
-                      marks: [],
-                      text: "Link a dataset you own from Data.gov.sg in the Data table block below. Users can search through large datasets without having to leave your website.",
+                      type: "paragraph",
+                      content: [
+                        {
+                          type: "text",
+                          marks: [],
+                          text: "Link a dataset you own from Data.gov.sg in the Data table block below. Users can search through large datasets without having to leave your website.",
+                        },
+                      ],
                     },
                   ],
                 },
               ],
+              version: "0.1.0",
             },
-          ],
-          version: "0.1.0",
-        },
-        type: "Page",
-        theme: "isomer-next",
-        url: "https://www.isomer.gov.sg",
-        logoUrl: "",
-        siteName: "MTI",
-        isGovernment: true,
-      }) as unknown as RouterOutput["page"]["readPageAndBlob"]),
+            type: "Page",
+            theme: "isomer-next",
+            url: "https://www.isomer.gov.sg",
+            logoUrl: "",
+            siteName: "MTI",
+            isGovernment: true,
+          }) as unknown as RouterOutput["page"]["readPageAndBlob"],
+      ),
     homepage: () =>
-
-      trpcMsw.page.readPageAndBlob.query(() => ({
-        type: "RootPage",
-        permalink: "home",
-        title: "Home",
-        updatedAt: new Date("2024-09-12T07:00:00.000Z"),
-        navbar: {
-          id: 1,
-          siteId: 1,
-          content: {
-            items: [
-              {
-                url: "/item-one",
-                name: "Expandable nav item",
+      trpcMsw.page.readPageAndBlob.query(
+        () =>
+          ({
+            type: "RootPage",
+            permalink: "home",
+            title: "Home",
+            updatedAt: new Date("2024-09-12T07:00:00.000Z"),
+            navbar: {
+              id: 1,
+              siteId: 1,
+              content: {
                 items: [
                   {
-                    url: "/item-one/pa-network-one",
-                    name: "PA's network one",
-                    description:
-                      "Click here and brace yourself for mild disappointment.",
-                  },
-                  {
-                    url: "/item-one/pa-network-two",
-                    name: "PA's network two",
-                    description:
-                      "Click here and brace yourself for mild disappointment.",
-                  },
-                  {
-                    url: "/item-one/pa-network-three",
-                    name: "PA's network three",
-                  },
-                  {
-                    url: "/item-one/pa-network-four",
-                    name: "PA's network four",
-                    description:
-                      "Click here and brace yourself for mild disappointment. This one has a pretty long one",
-                  },
-                  {
-                    url: "/item-one/pa-network-five",
-                    name: "PA's network five",
-                    description:
-                      "Click here and brace yourself for mild disappointment. This one has a pretty long one",
-                  },
-                  {
-                    url: "/item-one/pa-network-six",
-                    name: "PA's network six",
-                    description:
-                      "Click here and brace yourself for mild disappointment.",
+                    url: "/item-one",
+                    name: "Expandable nav item",
+                    items: [
+                      {
+                        url: "/item-one/pa-network-one",
+                        name: "PA's network one",
+                        description:
+                          "Click here and brace yourself for mild disappointment.",
+                      },
+                      {
+                        url: "/item-one/pa-network-two",
+                        name: "PA's network two",
+                        description:
+                          "Click here and brace yourself for mild disappointment.",
+                      },
+                      {
+                        url: "/item-one/pa-network-three",
+                        name: "PA's network three",
+                      },
+                      {
+                        url: "/item-one/pa-network-four",
+                        name: "PA's network four",
+                        description:
+                          "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+                      },
+                      {
+                        url: "/item-one/pa-network-five",
+                        name: "PA's network five",
+                        description:
+                          "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+                      },
+                      {
+                        url: "/item-one/pa-network-six",
+                        name: "PA's network six",
+                        description:
+                          "Click here and brace yourself for mild disappointment.",
+                      },
+                    ],
                   },
                 ],
               },
-            ],
-          },
-        },
-        footer: {
-          id: 1,
-          siteId: 1,
-          content: {
-            siteNavItems: [
-              { url: "/about", title: "About us" },
-              { url: "/partners", title: "Our partners" },
-              {
-                url: "/grants-and-programmes",
-                title: "Grants and programmes",
+            },
+            footer: {
+              id: 1,
+              siteId: 1,
+              content: {
+                siteNavItems: [
+                  { url: "/about", title: "About us" },
+                  { url: "/partners", title: "Our partners" },
+                  {
+                    url: "/grants-and-programmes",
+                    title: "Grants and programmes",
+                  },
+                  { url: "/contact-us", title: "Contact us" },
+                  { url: "/something-else", title: "Something else" },
+                  { url: "/resources", title: "Resources" },
+                ],
+                contactUsLink: "/contact-us",
+                termsOfUseLink: "/terms-of-use",
+                feedbackFormLink: "https://www.form.gov.sg",
+                privacyStatementLink: "/privacy",
               },
-              { url: "/contact-us", title: "Contact us" },
-              { url: "/something-else", title: "Something else" },
-              { url: "/resources", title: "Resources" },
-            ],
-            contactUsLink: "/contact-us",
-            termsOfUseLink: "/terms-of-use",
-            feedbackFormLink: "https://www.form.gov.sg",
-            privacyStatementLink: "/privacy",
-          },
-        },
-        content: {
-          page: { title: "Home" },
-          layout: "homepage",
-          content: [
-            {
-              type: "hero",
-              title: "Ministry of Trade and Industry",
-              variant: "gradient",
-              subtitle:
-                "A leading global city of enterprise and talent, a vibrant nation of innovation and opportunity",
-              buttonUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-              buttonLabel: "Main CTA",
-              backgroundUrl:
-                "https://ohno.isomer.gov.sg/images/hero-banner.png",
-              secondaryButtonUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-              secondaryButtonLabel: "Sub CTA",
             },
-            {
-              type: "keystatistics",
-              title: "Irrationality in numbers",
-              statistics: [
+            content: {
+              page: { title: "Home" },
+              layout: "homepage",
+              content: [
                 {
-                  label:
-                    "Average all nighters pulled in a typical calendar month",
-                  value: "3",
+                  type: "hero",
+                  title: "Ministry of Trade and Industry",
+                  variant: "gradient",
+                  subtitle:
+                    "A leading global city of enterprise and talent, a vibrant nation of innovation and opportunity",
+                  buttonUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+                  buttonLabel: "Main CTA",
+                  backgroundUrl:
+                    "https://ohno.isomer.gov.sg/images/hero-banner.png",
+                  secondaryButtonUrl:
+                    "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+                  secondaryButtonLabel: "Sub CTA",
                 },
                 {
-                  label: "Growth in tasks assigned Q4 2024 (YoY)",
-                  value: "+12.2%",
+                  type: "keystatistics",
+                  title: "Irrationality in numbers",
+                  statistics: [
+                    {
+                      label:
+                        "Average all nighters pulled in a typical calendar month",
+                      value: "3",
+                    },
+                    {
+                      label: "Growth in tasks assigned Q4 2024 (YoY)",
+                      value: "+12.2%",
+                    },
+                    {
+                      label: "Creative blocks met per single evening",
+                      value: "89",
+                    },
+                    {
+                      label: "Number of lies in this stat block",
+                      value: "4.0",
+                    },
+                  ],
                 },
                 {
-                  label: "Creative blocks met per single evening",
-                  value: "89",
+                  type: "infobar",
+                  title: "This is an infobar",
+                  description:
+                    "This is the description that goes into the Infobar section",
                 },
-                { label: "Number of lies in this stat block", value: "4.0" },
+                {
+                  type: "infopic",
+                  title: "This is an infopic",
+                  imageSrc: "https://placehold.co/600x400",
+                },
+                {
+                  type: "infocards",
+                  title: "This is an infocards block",
+                  variant: "cardsWithoutImages",
+                  cards: [],
+                },
+                {
+                  type: "infocols",
+                  title: "This is an infocols block",
+                  infoBoxes: [],
+                },
               ],
+              version: "0.1.0",
             },
-            {
-              type: "infobar",
-              title: "This is an infobar",
-              description:
-                "This is the description that goes into the Infobar section",
-            },
-            {
-              type: "infopic",
-              title: "This is an infopic",
-              imageSrc: "https://placehold.co/600x400",
-            },
-            {
-              type: "infocards",
-              title: "This is an infocards block",
-              variant: "cardsWithoutImages",
-              cards: [],
-            },
-            {
-              type: "infocols",
-              title: "This is an infocols block",
-              infoBoxes: [],
-            },
-          ],
-          version: "0.1.0",
-        },
-        theme: "isomer-next",
-        url: "https://www.isomer.gov.sg",
-        logoUrl: "",
-        siteName: "MTI",
-        isGovernment: true,
-      }) as unknown as RouterOutput["page"]["readPageAndBlob"]),
+            theme: "isomer-next",
+            url: "https://www.isomer.gov.sg",
+            logoUrl: "",
+            siteName: "MTI",
+            isGovernment: true,
+          }) as unknown as RouterOutput["page"]["readPageAndBlob"],
+      ),
     index: () =>
-
-      trpcMsw.page.readPageAndBlob.query(() => ({
-        title: "Index page",
-        updatedAt: new Date("2024-09-12T07:00:00.000Z"),
-        permalink: "_index",
-        navbar: {
-          id: 1,
-          siteId: 1,
-          content: [
-            {
-              url: "/item-one",
-              name: "Expandable nav item",
-              items: [
+      trpcMsw.page.readPageAndBlob.query(
+        () =>
+          ({
+            title: "Index page",
+            updatedAt: new Date("2024-09-12T07:00:00.000Z"),
+            permalink: "_index",
+            navbar: {
+              id: 1,
+              siteId: 1,
+              content: [
                 {
-                  url: "/item-one/pa-network-one",
-                  name: "PA's network one",
-                  description:
-                    "Click here and brace yourself for mild disappointment.",
-                },
-                {
-                  url: "/item-one/pa-network-two",
-                  name: "PA's network two",
-                  description:
-                    "Click here and brace yourself for mild disappointment.",
-                },
-                {
-                  url: "/item-one/pa-network-three",
-                  name: "PA's network three",
-                },
-                {
-                  url: "/item-one/pa-network-four",
-                  name: "PA's network four",
-                  description:
-                    "Click here and brace yourself for mild disappointment. This one has a pretty long one",
-                },
-                {
-                  url: "/item-one/pa-network-five",
-                  name: "PA's network five",
-                  description:
-                    "Click here and brace yourself for mild disappointment. This one has a pretty long one",
-                },
-                {
-                  url: "/item-one/pa-network-six",
-                  name: "PA's network six",
-                  description:
-                    "Click here and brace yourself for mild disappointment.",
+                  url: "/item-one",
+                  name: "Expandable nav item",
+                  items: [
+                    {
+                      url: "/item-one/pa-network-one",
+                      name: "PA's network one",
+                      description:
+                        "Click here and brace yourself for mild disappointment.",
+                    },
+                    {
+                      url: "/item-one/pa-network-two",
+                      name: "PA's network two",
+                      description:
+                        "Click here and brace yourself for mild disappointment.",
+                    },
+                    {
+                      url: "/item-one/pa-network-three",
+                      name: "PA's network three",
+                    },
+                    {
+                      url: "/item-one/pa-network-four",
+                      name: "PA's network four",
+                      description:
+                        "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+                    },
+                    {
+                      url: "/item-one/pa-network-five",
+                      name: "PA's network five",
+                      description:
+                        "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+                    },
+                    {
+                      url: "/item-one/pa-network-six",
+                      name: "PA's network six",
+                      description:
+                        "Click here and brace yourself for mild disappointment.",
+                    },
+                  ],
                 },
               ],
             },
-          ],
-        },
-        footer: {
-          id: 1,
-          siteId: 1,
-          content: {
-            siteNavItems: [
-              { url: "/about", title: "About us" },
-              { url: "/partners", title: "Our partners" },
-              {
-                url: "/grants-and-programmes",
-                title: "Grants and programmes",
+            footer: {
+              id: 1,
+              siteId: 1,
+              content: {
+                siteNavItems: [
+                  { url: "/about", title: "About us" },
+                  { url: "/partners", title: "Our partners" },
+                  {
+                    url: "/grants-and-programmes",
+                    title: "Grants and programmes",
+                  },
+                  { url: "/contact-us", title: "Contact us" },
+                  { url: "/something-else", title: "Something else" },
+                  { url: "/resources", title: "Resources" },
+                ],
+                contactUsLink: "/contact-us",
+                termsOfUseLink: "/terms-of-use",
+                feedbackFormLink: "https://www.form.gov.sg",
+                privacyStatementLink: "/privacy",
               },
-              { url: "/contact-us", title: "Contact us" },
-              { url: "/something-else", title: "Something else" },
-              { url: "/resources", title: "Resources" },
-            ],
-            contactUsLink: "/contact-us",
-            termsOfUseLink: "/terms-of-use",
-            feedbackFormLink: "https://www.form.gov.sg",
-            privacyStatementLink: "/privacy",
-          },
-        },
-        content: {
-          page: {
-            date: "11-09-2024",
-            title: "article layout",
-            category: "Feature Articles",
-            articlePageHeader: { summary: "" },
-          },
-          layout: "index",
-          content: [
-            {
-              type: "childrenpages",
-              variant: "boxes",
-              showSummary: false,
-              showThumbnail: true,
-              imageFit: "contain",
-              childrenPagesOrdering: ["5", "4"],
             },
-          ],
-          version: "0.1.0",
-        },
-        type: "IndexPage",
-        theme: "isomer-next",
-        url: "https://www.isomer.gov.sg",
-        logoUrl: "",
-        siteName: "MTI",
-        isGovernment: true,
-      }) as unknown as RouterOutput["page"]["readPageAndBlob"]),
+            content: {
+              page: {
+                date: "11-09-2024",
+                title: "article layout",
+                category: "Feature Articles",
+                articlePageHeader: { summary: "" },
+              },
+              layout: "index",
+              content: [
+                {
+                  type: "childrenpages",
+                  variant: "boxes",
+                  showSummary: false,
+                  showThumbnail: true,
+                  imageFit: "contain",
+                  childrenPagesOrdering: ["5", "4"],
+                },
+              ],
+              version: "0.1.0",
+            },
+            type: "IndexPage",
+            theme: "isomer-next",
+            url: "https://www.isomer.gov.sg",
+            logoUrl: "",
+            siteName: "MTI",
+            isGovernment: true,
+          }) as unknown as RouterOutput["page"]["readPageAndBlob"],
+      ),
     indexWithInfocards: () =>
-
-      trpcMsw.page.readPageAndBlob.query(() => ({
-        title: "Index page",
-        updatedAt: new Date("2024-09-12T07:00:00.000Z"),
-        permalink: "_index",
-        navbar: {
-          id: 1,
-          siteId: 1,
-          content: [
-            {
-              url: "/item-one",
-              name: "Expandable nav item",
-              items: [
+      trpcMsw.page.readPageAndBlob.query(
+        () =>
+          ({
+            title: "Index page",
+            updatedAt: new Date("2024-09-12T07:00:00.000Z"),
+            permalink: "_index",
+            navbar: {
+              id: 1,
+              siteId: 1,
+              content: [
                 {
-                  url: "/item-one/pa-network-one",
-                  name: "PA's network one",
-                  description:
-                    "Click here and brace yourself for mild disappointment.",
+                  url: "/item-one",
+                  name: "Expandable nav item",
+                  items: [
+                    {
+                      url: "/item-one/pa-network-one",
+                      name: "PA's network one",
+                      description:
+                        "Click here and brace yourself for mild disappointment.",
+                    },
+                  ],
                 },
               ],
             },
-          ],
-        },
-        footer: {
-          id: 1,
-          siteId: 1,
-          content: {
-            siteNavItems: [
-              { url: "/about", title: "About us" },
-              { url: "/partners", title: "Our partners" },
-            ],
-            contactUsLink: "/contact-us",
-            termsOfUseLink: "/terms-of-use",
-            feedbackFormLink: "https://www.form.gov.sg",
-            privacyStatementLink: "/privacy",
-          },
-        },
-        content: {
-          page: {
-            title: "Index page with infocards",
-          },
-          childpages: {
-            layout: "boxes",
-            summary: false,
-            thumbnail: false,
-          },
-          layout: "content",
-          content: [
-            {
-              type: "infocards",
-              title: "Info cards block",
-              variant: "cardsWithImages",
-              cards: [
-                {
-                  title: "First card",
-                  description: "Description for first card",
-                  imageUrl: "https://placehold.co/600x400",
-                  imageAlt: "Placeholder image for first card",
-                },
-                {
-                  title: "Second card",
-                  description: "Description for second card",
-                  imageUrl: "https://placehold.co/600x400",
-                  imageAlt: "Placeholder image for second card",
-                },
-              ],
-            },
-          ],
-          version: "0.1.0",
-        },
-        type: "IndexPage",
-        theme: "isomer-next",
-        url: "https://www.isomer.gov.sg",
-        logoUrl: "",
-        siteName: "MTI",
-        isGovernment: true,
-      }) as unknown as RouterOutput["page"]["readPageAndBlob"]),
-    indexWithoutChildrenPages: () =>
-
-      trpcMsw.page.readPageAndBlob.query(() => ({
-        title: "Index page",
-        updatedAt: new Date("2024-09-12T07:00:00.000Z"),
-        permalink: "_index",
-        navbar: {
-          id: 1,
-          siteId: 1,
-          content: [
-            {
-              url: "/item-one",
-              name: "Expandable nav item",
-              items: [
-                {
-                  url: "/item-one/pa-network-one",
-                  name: "PA's network one",
-                  description:
-                    "Click here and brace yourself for mild disappointment.",
-                },
-                {
-                  url: "/item-one/pa-network-two",
-                  name: "PA's network two",
-                  description:
-                    "Click here and brace yourself for mild disappointment.",
-                },
-                {
-                  url: "/item-one/pa-network-three",
-                  name: "PA's network three",
-                },
-                {
-                  url: "/item-one/pa-network-four",
-                  name: "PA's network four",
-                  description:
-                    "Click here and brace yourself for mild disappointment. This one has a pretty long one",
-                },
-                {
-                  url: "/item-one/pa-network-five",
-                  name: "PA's network five",
-                  description:
-                    "Click here and brace yourself for mild disappointment. This one has a pretty long one",
-                },
-                {
-                  url: "/item-one/pa-network-six",
-                  name: "PA's network six",
-                  description:
-                    "Click here and brace yourself for mild disappointment.",
-                },
-              ],
-            },
-          ],
-        },
-        footer: {
-          id: 1,
-          siteId: 1,
-          content: {
-            siteNavItems: [
-              { url: "/about", title: "About us" },
-              { url: "/partners", title: "Our partners" },
-              {
-                url: "/grants-and-programmes",
-                title: "Grants and programmes",
+            footer: {
+              id: 1,
+              siteId: 1,
+              content: {
+                siteNavItems: [
+                  { url: "/about", title: "About us" },
+                  { url: "/partners", title: "Our partners" },
+                ],
+                contactUsLink: "/contact-us",
+                termsOfUseLink: "/terms-of-use",
+                feedbackFormLink: "https://www.form.gov.sg",
+                privacyStatementLink: "/privacy",
               },
-              { url: "/contact-us", title: "Contact us" },
-              { url: "/something-else", title: "Something else" },
-              { url: "/resources", title: "Resources" },
-            ],
-            contactUsLink: "/contact-us",
-            termsOfUseLink: "/terms-of-use",
-            feedbackFormLink: "https://www.form.gov.sg",
-            privacyStatementLink: "/privacy",
-          },
-        },
-        content: {
-          page: {
-            date: "11-09-2024",
-            title: "article layout",
-            category: "Feature Articles",
-            articlePageHeader: { summary: "" },
-          },
-          layout: "index",
-          content: [],
-          version: "0.1.0",
-        },
-        type: "IndexPage",
-        theme: "isomer-next",
-        url: "https://www.isomer.gov.sg",
-        logoUrl: "",
-        siteName: "MTI",
-        isGovernment: true,
-      }) as unknown as RouterOutput["page"]["readPageAndBlob"]),
+            },
+            content: {
+              page: {
+                title: "Index page with infocards",
+              },
+              childpages: {
+                layout: "boxes",
+                summary: false,
+                thumbnail: false,
+              },
+              layout: "content",
+              content: [
+                {
+                  type: "infocards",
+                  title: "Info cards block",
+                  variant: "cardsWithImages",
+                  cards: [
+                    {
+                      title: "First card",
+                      description: "Description for first card",
+                      imageUrl: "https://placehold.co/600x400",
+                      imageAlt: "Placeholder image for first card",
+                    },
+                    {
+                      title: "Second card",
+                      description: "Description for second card",
+                      imageUrl: "https://placehold.co/600x400",
+                      imageAlt: "Placeholder image for second card",
+                    },
+                  ],
+                },
+              ],
+              version: "0.1.0",
+            },
+            type: "IndexPage",
+            theme: "isomer-next",
+            url: "https://www.isomer.gov.sg",
+            logoUrl: "",
+            siteName: "MTI",
+            isGovernment: true,
+          }) as unknown as RouterOutput["page"]["readPageAndBlob"],
+      ),
+    indexWithoutChildrenPages: () =>
+      trpcMsw.page.readPageAndBlob.query(
+        () =>
+          ({
+            title: "Index page",
+            updatedAt: new Date("2024-09-12T07:00:00.000Z"),
+            permalink: "_index",
+            navbar: {
+              id: 1,
+              siteId: 1,
+              content: [
+                {
+                  url: "/item-one",
+                  name: "Expandable nav item",
+                  items: [
+                    {
+                      url: "/item-one/pa-network-one",
+                      name: "PA's network one",
+                      description:
+                        "Click here and brace yourself for mild disappointment.",
+                    },
+                    {
+                      url: "/item-one/pa-network-two",
+                      name: "PA's network two",
+                      description:
+                        "Click here and brace yourself for mild disappointment.",
+                    },
+                    {
+                      url: "/item-one/pa-network-three",
+                      name: "PA's network three",
+                    },
+                    {
+                      url: "/item-one/pa-network-four",
+                      name: "PA's network four",
+                      description:
+                        "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+                    },
+                    {
+                      url: "/item-one/pa-network-five",
+                      name: "PA's network five",
+                      description:
+                        "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+                    },
+                    {
+                      url: "/item-one/pa-network-six",
+                      name: "PA's network six",
+                      description:
+                        "Click here and brace yourself for mild disappointment.",
+                    },
+                  ],
+                },
+              ],
+            },
+            footer: {
+              id: 1,
+              siteId: 1,
+              content: {
+                siteNavItems: [
+                  { url: "/about", title: "About us" },
+                  { url: "/partners", title: "Our partners" },
+                  {
+                    url: "/grants-and-programmes",
+                    title: "Grants and programmes",
+                  },
+                  { url: "/contact-us", title: "Contact us" },
+                  { url: "/something-else", title: "Something else" },
+                  { url: "/resources", title: "Resources" },
+                ],
+                contactUsLink: "/contact-us",
+                termsOfUseLink: "/terms-of-use",
+                feedbackFormLink: "https://www.form.gov.sg",
+                privacyStatementLink: "/privacy",
+              },
+            },
+            content: {
+              page: {
+                date: "11-09-2024",
+                title: "article layout",
+                category: "Feature Articles",
+                articlePageHeader: { summary: "" },
+              },
+              layout: "index",
+              content: [],
+              version: "0.1.0",
+            },
+            type: "IndexPage",
+            theme: "isomer-next",
+            url: "https://www.isomer.gov.sg",
+            logoUrl: "",
+            siteName: "MTI",
+            isGovernment: true,
+          }) as unknown as RouterOutput["page"]["readPageAndBlob"],
+      ),
   },
   updatePageBlob: {
     default: () =>

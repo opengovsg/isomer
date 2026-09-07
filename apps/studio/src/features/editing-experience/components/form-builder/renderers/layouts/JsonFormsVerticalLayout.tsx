@@ -83,9 +83,7 @@ const getUiSchemaWithGroup = (
 
     if (
       element.scope === undefined ||
-      propertiesNotInGroup.has(
-        hasNonEmptyString(element.scope.split("/").pop()) || "",
-      )
+      propertiesNotInGroup.has(element.scope.split("/").pop() ?? "")
     ) {
       newUiSchema.push(element)
       tempUiSchema = tempUiSchema.slice(1)
@@ -93,14 +91,14 @@ const getUiSchemaWithGroup = (
       continue
     }
 
-    const scopeSuffix = hasNonEmptyString(element.scope?.split("/").pop()) || ""
+    const scopeSuffix = element.scope?.split("/").pop() ?? ""
     const group = groups.find(({ fields }) => fields.includes(scopeSuffix))
 
     if (group) {
       const { label } = group
       const groupFields = new Set(groupMap.get(label) ?? [])
       const groupElements = uiSchema.filter((el) =>
-        groupFields.has(hasNonEmptyString(el.scope?.split("/").pop()) || ""),
+        groupFields.has(el.scope?.split("/").pop() ?? ""),
       )
 
       newUiSchema.push({

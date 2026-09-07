@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
 /* oxlint-disable eslint/no-use-before-define, typescript/strict-boolean-expressions, unicorn/no-unnecessary-type-conversion -- core cleanup deferred */
 import type { ControlWithDetailProps, RankedTester } from "@jsonforms/core"
 import { Box, Collapse, Flex, Spacer, Text, VStack } from "@chakra-ui/react"
@@ -74,7 +75,7 @@ const JsonFormsWidgetIntegrationControl = ({
     }
 
     if (!isChecked) {
-      handleChange(path)
+      handleChange(path, undefined)
     }
   }, [isChecked, data, handleChange, path])
 

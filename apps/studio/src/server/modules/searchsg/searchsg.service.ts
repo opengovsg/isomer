@@ -47,7 +47,7 @@ interface SearchSGSiteResponse {
 
 const findWebsiteSearchApp = (apps: SearchSGAppDetail[]): SearchSGAppDetail => {
   const app = apps.find((a) => a.appType === "websiteSearch")
-  if (!hasNonEmptyString(app)) {
+  if (!app) {
     logger.error(
       { apps },
       `[ERROR] No websiteSearch app found in SearchSG site applications`,

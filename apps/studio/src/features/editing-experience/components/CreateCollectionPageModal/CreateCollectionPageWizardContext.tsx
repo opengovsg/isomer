@@ -162,7 +162,7 @@ const useCreateCollectionPageWizardContext = ({
     currentStep,
     currentType: type,
     formMethods,
-    fullPermalink: hasNonEmptyString(data?.fullPermalink) || "",
+    fullPermalink: data?.fullPermalink ?? "",
     handleBackToTypeScreen,
     handleCreatePage,
     handleNextToDetailScreen,

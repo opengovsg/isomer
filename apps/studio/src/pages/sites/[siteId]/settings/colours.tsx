@@ -96,10 +96,7 @@ const ColoursSettingsPage: NextPageWithLayout = () => {
             title="Colours"
             icon={BiPaint}
             isLoading={setThemeMutation.isPending}
-            isDisabled={
-              !isDirty ||
-              !hasNonEmptyString(siteTheme)?.colors.brand.canvas.inverse
-            }
+            isDisabled={!isDirty || !siteTheme?.colors.brand.canvas.inverse}
           />
           <Box w="100%">
             <FormBuilder<SiteTheme>

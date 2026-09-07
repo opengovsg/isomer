@@ -179,7 +179,7 @@ const config = {
     remotePatterns: hasNonEmptyString(s3AssetsDomain)
       ? [
           {
-            hostname: String(s3AssetsDomain),
+            hostname: s3AssetsDomain,
             protocol: "https",
           },
         ]

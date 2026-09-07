@@ -91,7 +91,7 @@ const SEARCHSG_SEARCH_TYPE = "searchSG"
 export const normalizeAskgovConfig = (
   config: IsomerSiteConfigProps,
 ): IsomerSiteConfigProps => {
-  if (!hasNonEmptyString(config.askgov)) {
+  if (!config.askgov) {
     return config
   }
 
@@ -224,9 +224,7 @@ export const getSiteNameAndCodeBuildId = async (siteId: number) => {
 
   return {
     codeBuildId: site.codeBuildId,
-    name: hasNonEmptyString(siteConfig?.siteName)
-      ? siteConfig.siteName
-      : site.name,
+    name: siteConfig?.siteName || site.name,
   }
 }
 
@@ -250,7 +248,7 @@ export const getNotification = async (
   // NOTE: Handle no notification case
   // We need to return an object because the json result
   // will default to `null` if the key doesn't exist
-  if (!hasNonEmptyString(result.notification)) {
+  if (!result.notification) {
     return {}
   }
 
@@ -310,7 +308,7 @@ export const setSiteNotification = async ({
       .selectAll()
       .executeTakeFirst()
 
-    if (!hasNonEmptyString(oldSite)) {
+    if (!oldSite) {
       throw new TRPCError({
         code: "NOT_FOUND",
         message: "The site could not be found",
@@ -330,7 +328,7 @@ export const setSiteNotification = async ({
       .returningAll()
       .executeTakeFirst()
 
-    if (!hasNonEmptyString(newSite)) {
+    if (!newSite) {
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
         message: "Failed to update site configuration",

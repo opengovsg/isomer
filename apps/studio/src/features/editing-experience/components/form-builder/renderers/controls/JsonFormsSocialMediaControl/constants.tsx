@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
 import type { FooterSchemaType } from "@opengovsg/isomer-components"
 import { Icon } from "@chakra-ui/react"
 import { AiFillTikTok } from "react-icons/ai"

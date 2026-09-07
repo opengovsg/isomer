@@ -29,8 +29,7 @@ const generateSidebarItem = (
   { icon: Icon, ...item }: CmsSidebarItem,
   asPath: string,
 ) => {
-  const isActive =
-    hasNonEmptyString(item.isActive) ?? (!!item.href && asPath === item.href)
+  const isActive = item.isActive ?? (!!item.href && asPath === item.href)
   const itemKey = item.href ?? item.label
   const handleClick = item.onClick
     ? () => {

@@ -143,7 +143,7 @@ export const pageRouter = router({
             message: "Resource not found",
           })
         }
-        if (!hasNonEmptyString(resource.scheduledAt)) {
+        if (!resource.scheduledAt) {
           throw new TRPCError({
             code: "BAD_REQUEST",
             message:
@@ -210,7 +210,7 @@ export const pageRouter = router({
           .executeTakeFirst(),
       ])
 
-      if (!hasNonEmptyString(parent)) {
+      if (!parent) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Parent resource not found or is not a folder/collection",
@@ -306,16 +306,22 @@ export const pageRouter = router({
         const resource = await db
           .transaction()
           .execute(async (tx) => {
-            const { resource: addedResource, blob } =
-              await createResourceWithBlob({
-                blobContent: newPage,
-                kysely: tx,
-                parentId: isDefinedNumber(folderId) ? String(folderId) : null,
-                permalink,
-                siteId,
-                title,
-                type: ResourceType.Page,
+            const created = await createResourceWithBlob({
+              blobContent: newPage,
+              kysely: tx,
+              parentId: isDefinedNumber(folderId) ? String(folderId) : null,
+              permalink,
+              siteId,
+              title,
+              type: ResourceType.Page,
+            })
+            const { resource: addedResource, blob } = created
+            if (!addedResource) {
+              throw new TRPCError({
+                code: "INTERNAL_SERVER_ERROR",
+                message: "Failed to create page resource",
               })
+            }
 
             await logResourceEvent(tx, {
               by,
@@ -402,7 +408,7 @@ export const pageRouter = router({
       })
 
       const permalink = await getResourceFullPermalink(siteId, pageId)
-      if (!hasNonEmptyString(permalink)) {
+      if (!permalink) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "No permalink could be found for the given page",
@@ -474,7 +480,7 @@ export const pageRouter = router({
         .select(["id", "title", "draftBlobId"])
         .executeTakeFirst()
 
-      if (!hasNonEmptyString(rootPage)) {
+      if (!rootPage) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Root page not found",
@@ -557,7 +563,7 @@ export const pageRouter = router({
         siteId,
       })
 
-      if (!hasNonEmptyString(retrievedPage)) {
+      if (!retrievedPage) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Resource not found",
@@ -615,8 +621,6 @@ export const pageRouter = router({
           title,
           type,
           updatedAt,
-          // oxlint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-expect-error type instantiation is excessively deep and possibly infinite
           ...siteMeta,
         }
       })
@@ -681,14 +685,10 @@ export const pageRouter = router({
         }
 
         const [movedBlock] = actualBlocks.splice(from, 1)
-        if (!hasNonEmptyString(movedBlock)) {
+        if (!movedBlock) {
           return blocks
         }
-        if (
-          hasNonEmptyString(
-            !fullPage.draftBlobId && !fullPage.publishedVersionId,
-          )
-        ) {
+        if (!fullPage.draftBlobId && !fullPage.publishedVersionId) {
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Please ensure that you have selected a valid page",
@@ -860,7 +860,7 @@ export const pageRouter = router({
         // otherwise, the meta never existed and we don't need to validate anyways
         const isValid = !meta || validateFn(parsedMeta)
 
-        if (!hasNonEmptyString(isValid)) {
+        if (!isValid) {
           throw new TRPCError({
             cause: validateFn.errors,
             code: "BAD_REQUEST",

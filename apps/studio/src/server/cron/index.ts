@@ -13,7 +13,7 @@ const logger = createBaseLogger({ path: "cron:index" })
 const cronJobs: { stop: () => void }[] = []
 
 export const initializeCronJobs = async () => {
-  if (env.ENABLE_CRON_WORKERS !== true) {
+  if (!env.ENABLE_CRON_WORKERS) {
     logger.info("Cron workers are disabled. Skipping initialization.")
     return
   }

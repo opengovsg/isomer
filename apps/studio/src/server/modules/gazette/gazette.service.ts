@@ -68,7 +68,7 @@ export const assertGazetteAccess = async (userId: string): Promise<void> => {
     IsomerAdminRole.Core,
     IsomerAdminRole.Migrator,
   ])
-  if (!hasNonEmptyString(isCoreAdmin)) {
+  if (!isCoreAdmin) {
     throw new TRPCError({
       code: "FORBIDDEN",
       message: "You do not have access to the gazette feature",
@@ -216,7 +216,7 @@ const getSearchSGAuthToken = async () => {
     method: "POST",
   })
 
-  if (!hasNonEmptyString(response.ok)) {
+  if (!response.ok) {
     throw new Error(`Failed to get SearchSG auth token: ${response.statusText}`)
   }
 
@@ -251,7 +251,7 @@ export const removeGazetteFromSearchIndex = async (
     },
   )
 
-  if (!hasNonEmptyString(response.ok)) {
+  if (!response.ok) {
     const errorText = await response.text()
     logger.warn(
       { documentId, error: errorText, status: response.status },
@@ -345,7 +345,7 @@ export const pushDocumentsForIngestion = async (documents: PushDocument[]) => {
     },
   )
 
-  if (!hasNonEmptyString(response.ok)) {
+  if (!response.ok) {
     const errorText = await response.text()
     logger.error(
       { documents, error: errorText, status: response.status },
@@ -417,7 +417,7 @@ export const hasDuplicateNotificationNumber = async ({
     .select("Resource.id")
 
   // Government gazettes are unique within category, not subcategory.
-  if (!hasNonEmptyString(isGovernmentGazette)) {
+  if (!isGovernmentGazette) {
     query = query.where(
       sql<boolean>`${content}->'page'->'tagged'->>0 = ${subCategory}`,
     )

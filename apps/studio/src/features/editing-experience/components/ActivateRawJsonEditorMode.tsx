@@ -35,7 +35,7 @@ export const ActivateRawJsonEditorMode = ({
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      const currentCombo = hasNonEmptyString(COMBO[comboIndex]) || ""
+      const currentCombo = COMBO[comboIndex] ?? ""
       if (event.key.toLowerCase() === currentCombo.toLowerCase()) {
         setComboIndex((prev) => prev + 1)
         setShowCounter(true)

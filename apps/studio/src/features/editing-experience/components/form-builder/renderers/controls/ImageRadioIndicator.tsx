@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
 import type { BoxProps } from "@chakra-ui/react"
 import { Box, chakra } from "@chakra-ui/react"
 

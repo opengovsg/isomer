@@ -169,7 +169,7 @@ export const publishScheduledSites = async (
                 ),
               }
             : undefined,
-          siteId,
+          siteId: Number(siteId),
         })
         logger.info(`Successfully published site for siteId: ${siteId}`)
       } catch (error) {

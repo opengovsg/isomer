@@ -32,7 +32,7 @@ describe("auth.email", () => {
     it("should throw BAD_REQUEST and not log auth event if user row is missing while logging out", async () => {
       // Arrange
       const spy = vi.spyOn(authService, "logAuthEvent")
-      await db.deleteFrom("User").where("id", "=", session.userId).execute()
+      await db.deleteFrom("User").where("id", "=", session.userId!).execute()
 
       // Act
       const result = caller.logout()
@@ -57,7 +57,7 @@ describe("auth.email", () => {
       expect(result.isLoggedIn).toBeFalsy()
       const user = db
         .selectFrom("User")
-        .where("id", "=", session.userId)
+        .where("id", "=", session.userId!)
         .selectAll()
         .executeTakeFirstOrThrow()
       const log = await db

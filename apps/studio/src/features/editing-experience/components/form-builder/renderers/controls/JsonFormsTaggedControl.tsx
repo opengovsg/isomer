@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
 /* oxlint-disable eslint/no-shadow, eslint/no-use-before-define, unicorn/no-array-reduce, unicorn/no-unnecessary-type-conversion, unicorn/no-useless-collection-argument -- core cleanup deferred */
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import type { ArticlePagePageProps } from "@opengovsg/isomer-components"

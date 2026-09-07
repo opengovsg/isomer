@@ -44,8 +44,10 @@ describe("asset.router", async () => {
     vi.spyOn(s3Lib, "generateSignedPutUrl").mockResolvedValue(
       "https://example.com/signed-url",
     )
-    vi.spyOn(s3Lib, "putObjectDirect").mockResolvedValue()
-    vi.spyOn(s3Lib, "deleteFile").mockResolvedValue()
+    // oxlint-disable-next-line unicorn/no-useless-undefined, typescript/require-await -- vitest mock void return
+    vi.spyOn(s3Lib, "putObjectDirect").mockImplementation(async () => undefined)
+    // oxlint-disable-next-line unicorn/no-useless-undefined, typescript/require-await -- vitest mock void return
+    vi.spyOn(s3Lib, "deleteFile").mockImplementation(async () => undefined)
   })
 
   afterEach(() => {

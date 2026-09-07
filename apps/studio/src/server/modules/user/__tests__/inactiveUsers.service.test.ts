@@ -93,7 +93,7 @@ const setupUserWrapper = async ({
     lastLoginAt: lastLoginDaysAgo ? getDateOnlyInSG(lastLoginDaysAgo) : null,
   })
 
-  if (hasNonEmptyString(siteId)) {
+  if (siteId) {
     switch (sitePermission) {
       case RoleType.Admin: {
         await setupAdminPermissions({ siteId, userId: user.id, isDeleted })
@@ -114,7 +114,7 @@ const setupUserWrapper = async ({
     }
   }
 
-  if (!hasNonEmptyString(createdDaysAgo)) {
+  if (createdDaysAgo === null) {
     return user
   }
 

@@ -42,7 +42,7 @@ export const getTimezoneAbbreviation = (
   formatValue: "short" | "long" = "short",
 ) =>
   new Intl.DateTimeFormat("en", {
-    timeZoneName: format,
+    timeZoneName: formatValue,
   })
     .formatToParts(new Date())
     .find((part) => part.type === "timeZoneName")?.value

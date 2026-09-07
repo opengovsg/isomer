@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
 /* oxlint-disable eslint/no-plusplus, eslint/no-shadow, eslint/no-useless-return, unicorn/no-new-array, unicorn/no-unnecessary-type-conversion -- core cleanup deferred */
 import type { DropResult } from "@hello-pangea/dnd"
 import type {
@@ -98,7 +99,11 @@ const EditLinkItem = ({
   // Disable scrolling on parent container when editing a link item, as this
   // is an absolutely-positioned overlay
   useEffect(() => {
-    const parent = document.querySelector(`#${FORM_BUILDER_PARENT_ID}`)
+    // SAFETY: FORM_BUILDER_PARENT_ID targets a scrollable div in the form builder
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- FORM_BUILDER_PARENT_ID targets a scrollable div
+    const parent = document.querySelector(
+      `#${FORM_BUILDER_PARENT_ID}`,
+    ) as HTMLElement | null
     if (parent) {
       parent.scrollTop = 0
       parent.style.overflow = "hidden"

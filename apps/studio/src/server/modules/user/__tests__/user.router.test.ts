@@ -1130,7 +1130,7 @@ describe("user.router", () => {
       await setupEditorPermissions({ siteId, userId: session.userId })
       await db
         .updateTable("User")
-        .where("id", "=", session.userId)
+        .where("id", "=", session.userId!)
         .set({ lastLoginAt: MOCK_STORY_DATE })
         .execute()
 
@@ -2038,7 +2038,7 @@ describe("user.router", () => {
         // Assert
         const updatedUser = await db
           .selectFrom("User")
-          .where("id", "=", session.userId)
+          .where("id", "=", session.userId!)
           .selectAll()
           .executeTakeFirstOrThrow()
         expect(updatedUser.name).toBe("John Doe")
@@ -2139,7 +2139,7 @@ describe("user.router", () => {
 
           const updatedUser = await db
             .selectFrom("User")
-            .where("id", "=", session.userId)
+            .where("id", "=", session.userId!)
             .selectAll()
             .executeTakeFirstOrThrow()
           expect(updatedUser).toMatchObject(result)
@@ -2178,7 +2178,7 @@ describe("user.router", () => {
         // Verify in database
         const updatedUser = await db
           .selectFrom("User")
-          .where("id", "=", session.userId)
+          .where("id", "=", session.userId!)
           .selectAll()
           .executeTakeFirstOrThrow()
         expect(updatedUser).toMatchObject(result)
@@ -2216,7 +2216,7 @@ describe("user.router", () => {
 
           const updatedUser = await db
             .selectFrom("User")
-            .where("id", "=", session.userId)
+            .where("id", "=", session.userId!)
             .selectAll()
             .executeTakeFirstOrThrow()
           expect(updatedUser).toMatchObject(result)
@@ -2258,7 +2258,7 @@ describe("user.router", () => {
       // Assert: Verify in database
       const updatedUser = await db
         .selectFrom("User")
-        .where("id", "=", session.userId)
+        .where("id", "=", session.userId!)
         .selectAll()
         .executeTakeFirstOrThrow()
       expect(updatedUser).toMatchObject(result)

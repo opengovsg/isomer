@@ -116,13 +116,11 @@ const CollectionEditorStateDrawer = (): React.ReactNode => {
 
   const handleSaveChanges = useCallback(() => {
     // SAFETY: editor drawer state is narrowed to the active layout-specific page shape
-    const hadNoTagsBefore = !isDefinedNumber(
-      savedPageState.page as CollectionPagePageProps,
-    ).tagCategories?.length
+    const hadNoTagsBefore = !(savedPageState.page as CollectionPagePageProps)
+      .tagCategories?.length
     // SAFETY: editor drawer state is narrowed to the active layout-specific page shape
-    const hasTagsNow = !!isDefinedNumber(
-      previewPageState.page as CollectionPagePageProps,
-    ).tagCategories?.length
+    const hasTagsNow = !!(previewPageState.page as CollectionPagePageProps)
+      .tagCategories?.length
 
     setSavedPageState(previewPageState)
     mutate(

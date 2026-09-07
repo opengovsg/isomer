@@ -71,9 +71,7 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
   })
 
   const [state, setState] = useState<Notification>(
-    hasNonEmptyString(previousNotification.notification)?.title
-      ? previousNotification
-      : {},
+    previousNotification.notification?.title ? previousNotification : {},
   )
 
   const [nextUrl, setNextUrl] = useState("")

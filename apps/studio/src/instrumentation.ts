@@ -11,7 +11,7 @@ export const register = async () => {
     // oxlint-disable-next-line node/no-process-env
     initTracer({ service: process.env.DD_SERVICE ?? "isomer-next" })
 
-    if (env.ENABLE_CRON_WORKERS === true) {
+    if (env.ENABLE_CRON_WORKERS) {
       // Import only if runtime is nodejs. This avoids running it on the browser, build time etc.
       const { initializeCronJobs, stopCronJobs } = await import("~/server/cron")
       await initializeCronJobs()

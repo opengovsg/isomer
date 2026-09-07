@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-useless-undefined -- JSON Forms handleChange requires explicit undefined */
 /* oxlint-disable unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { FooterSchemaType } from "@opengovsg/isomer-components"
 import {
@@ -128,7 +129,7 @@ export const SocialMediaLink = ({
                   textColor="base.content.medium"
                   noOfLines={1}
                 >
-                  {hasNonEmptyString(url) || socialMediaLink.placeholder}
+                  {hasNonEmptyString(url) ? url : socialMediaLink.placeholder}
                 </Text>
               )}
             </HStack>

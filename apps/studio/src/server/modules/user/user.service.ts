@@ -53,7 +53,7 @@ export const createUserWithPermission = async ({
   }
 
   const isWhitelisted = await isEmailWhitelisted(email)
-  if (!hasNonEmptyString(isWhitelisted)) {
+  if (!isWhitelisted) {
     throw new TRPCError({
       code: "FORBIDDEN",
       message: "There are non-gov.sg domains that need to be whitelisted.",
@@ -258,7 +258,7 @@ export const deleteUserPermission = async ({
 
         // Note: this is technically impossible because we're executing
         // inside a tx and we have checked previously that the user permission existed
-        if (!hasNonEmptyString(before)) {
+        if (!before) {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
             message:
