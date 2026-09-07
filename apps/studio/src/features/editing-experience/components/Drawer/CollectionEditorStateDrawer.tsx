@@ -1,4 +1,7 @@
-import type { getLayoutPageSchema } from "@opengovsg/isomer-components"
+import type {
+  CollectionPagePageProps,
+  getLayoutPageSchema,
+} from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
 import { Box, Flex, Text, useDisclosure } from "@chakra-ui/react"
 import { Button, Infobox, useToast } from "@opengovsg/design-system-react"
@@ -12,7 +15,9 @@ import { useCallback, useMemo } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useCanManageCollectionFilters } from "~/features/editing-experience/hooks/canManageCollectionFilters"
+import { useMe } from "~/features/me/api"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { trackEvent, triggerCollectionTagCsatSurveyOnce } from "~/lib/intercom"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 
@@ -41,6 +46,7 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
     setPreviewPageState,
   } = useEditorDrawerContext()
 
+  const { me } = useMe()
   const canManageFilters = useCanManageCollectionFilters()
   const { pageId, siteId } = useQueryParse(pageSchema)
   const toast = useToast()
@@ -102,6 +108,11 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
   )
 
   const handleSaveChanges = useCallback(() => {
+    const hadNoTagsBefore = !(savedPageState.page as CollectionPagePageProps)
+      .tagCategories?.length
+    const hasTagsNow = !!(previewPageState.page as CollectionPagePageProps)
+      .tagCategories?.length
+
     setSavedPageState(previewPageState)
     mutate(
       {
@@ -112,6 +123,10 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
       {
         onSuccess: () => {
           setDrawerState({ state: "root" })
+          if (hadNoTagsBefore && hasTagsNow) {
+            trackEvent("first_tag_added")
+            triggerCollectionTagCsatSurveyOnce({ userId: me.id })
+          }
         },
       },
     )
@@ -119,9 +134,11 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
     mutate,
     pageId,
     previewPageState,
+    savedPageState,
     setDrawerState,
     setSavedPageState,
     siteId,
+    me.id,
   ])
 
   const handleChange = (data: unknown) => {
