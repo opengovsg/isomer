@@ -43,9 +43,14 @@ export const EditCollectionLinkPreview = ({
     siteId,
   })
 
+  const [indexPage] = trpc.folder.getIndexpage.useSuspenseQuery({
+    resourceId: String(parent?.id ?? ""),
+    siteId,
+  })
+
   const [{ content: collectionIndexContent }] =
     trpc.page.readPageAndBlob.useSuspenseQuery({
-      pageId: Number(parent?.id ?? 0),
+      pageId: Number(indexPage.id),
       siteId,
     })
 
