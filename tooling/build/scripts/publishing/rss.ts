@@ -1,6 +1,7 @@
 import type {
   IsomerCollectionPageSitemap,
   IsomerSiteProps,
+  IsomerSitemap,
 } from "@opengovsg/isomer-components/build-utils"
 // Imported from the React-free `build-utils` entrypoint so this build script
 // never pulls the component library's React barrel. Reusing getCollectionItems
@@ -9,9 +10,14 @@ import type {
 import {
   getCollectionItems,
   getReferenceLinkHref,
+  getSitemapAsArray,
 } from "@opengovsg/isomer-components/build-utils"
 import { format } from "date-fns"
 import { formatInTimeZone, fromZonedTime } from "date-fns-tz"
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
+import { dirname, join } from "node:path"
+import { argv } from "node:process"
+import { pathToFileURL } from "node:url"
 
 const SINGAPORE_TIME_ZONE = "Asia/Singapore"
 // RFC-822 datetime required by RSS 2.0 <pubDate>/<lastBuildDate>, e.g.
@@ -63,13 +69,8 @@ const toAbsoluteUrl = (href: string, siteUrl?: string): string => {
   }
 }
 
-const getEffectiveTime = (item: CollectionFeedItem): number => {
-  if (item.date) {
-    return item.date.getTime()
-  }
-  const parsed = Date.parse(item.lastModified)
-  return Number.isNaN(parsed) ? 0 : parsed
-}
+const getEffectiveTime = (item: CollectionFeedItem): number =>
+  item.date?.getTime() ?? (Date.parse(item.lastModified) || 0)
 
 // Feeds are always newest-first regardless of the collection page's configured
 // sort order, matching reader expectations. Dateless items fall back to
@@ -85,25 +86,6 @@ export const getFeedItems = (
     .sort((a, b) => getEffectiveTime(b) - getEffectiveTime(a))
     .slice(0, MAX_FEED_ITEMS)
 
-// Permalinks are editable in Studio, so keying the guid on one would make every
-// reader resurface a renamed item as new. The sitemap node's `id` is the
-// database resource id, which survives renames — hence isPermaLink="false".
-const getItemGuid = (
-  item: CollectionFeedItem,
-  site: IsomerSiteProps,
-  resourceIdByPermalink: Map<string, string>,
-): { value: string; isPermaLink: boolean } => {
-  const resourceId = resourceIdByPermalink.get(item.id)
-  if (resourceId) {
-    return { value: `urn:isomer:resource:${resourceId}`, isPermaLink: false }
-  }
-  // No sitemap node for this permalink; fall back to the permalink itself.
-  return {
-    value: toAbsoluteUrl(item.id, site.url),
-    isPermaLink: item.variant === "article",
-  }
-}
-
 const buildItemXml = (
   item: CollectionFeedItem,
   site: IsomerSiteProps,
@@ -118,7 +100,10 @@ const buildItemXml = (
     site.siteMapArray,
     site.assetsBaseUrl,
   )
-  const guid = getItemGuid(item, site, resourceIdByPermalink)
+  const resourceId = resourceIdByPermalink.get(item.id)
+  if (!resourceId) {
+    throw new Error(`Missing resource ID for collection item: ${item.id}`)
+  }
 
   const parts = [`<title>${escapeXml(item.title)}</title>`]
   if (resolvedHref) {
@@ -127,7 +112,7 @@ const buildItemXml = (
     )
   }
   parts.push(
-    `<guid isPermaLink="${guid.isPermaLink}">${escapeXml(guid.value)}</guid>`,
+    `<guid isPermaLink="false">urn:isomer:resource:${escapeXml(resourceId)}</guid>`,
   )
   if (item.description) {
     parts.push(`<description>${escapeXml(item.description)}</description>`)
@@ -192,3 +177,49 @@ export const buildFeedXml = ({
     `</rss>`,
   ].join("\n")
 }
+
+const requireEnv = (name: string): string => {
+  const value = process.env[name]
+  if (!value) throw new Error(`Missing required environment variable: ${name}`)
+  return value
+}
+
+interface SiteConfigFile {
+  site: Omit<IsomerSiteProps, "siteMap" | "siteMapArray">
+}
+
+const main = (): void => {
+  const sitemap = JSON.parse(
+    readFileSync(requireEnv("SITEMAP_JSON"), "utf-8"),
+  ) as IsomerSitemap
+  const config = JSON.parse(
+    readFileSync(requireEnv("CONFIG_JSON"), "utf-8"),
+  ) as SiteConfigFile
+  const outDir = requireEnv("OUT_DIR")
+  const siteMapArray = getSitemapAsArray(sitemap)
+  const site = {
+    ...config.site,
+    siteMap: sitemap,
+    siteMapArray,
+    assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,
+  } as unknown as IsomerSiteProps
+  const collections = siteMapArray.filter(
+    (node): node is IsomerCollectionPageSitemap => node.layout === "collection",
+  )
+  const buildDate = new Date()
+
+  for (const collectionNode of collections) {
+    const feedPath = join(outDir, collectionNode.permalink, "rss.xml")
+    mkdirSync(dirname(feedPath), { recursive: true })
+    writeFileSync(
+      feedPath,
+      buildFeedXml({ site, collectionNode, buildDate }),
+      "utf-8",
+    )
+    console.log(`Wrote ${feedPath}`)
+  }
+
+  console.log(`Generated ${collections.length} RSS feed(s).`)
+}
+
+if (argv[1] && import.meta.url === pathToFileURL(argv[1]).href) main()

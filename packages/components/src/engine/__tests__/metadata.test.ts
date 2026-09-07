@@ -448,12 +448,12 @@ const makeProps = ({
   ({
     layout,
     site: {
+      ...baseSite,
       siteName: "Test Agency",
       url,
-      logoUrl: "/images/logo.svg",
-      favicon: "/favicon.ico",
     },
     page: {
+      ...basePage,
       title,
       permalink,
       subtitle: "Latest updates",

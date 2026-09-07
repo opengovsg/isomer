@@ -270,28 +270,6 @@ export const getPageJsonLd = (props: GetPageJsonLdProps) => {
   }
 }
 
-// Advertise the collection's RSS feed for auto-discovery by browsers and feed
-// readers. The feed itself is written to `<permalink>/rss.xml` by the build.
-const getFeedAlternates = (props: IsomerPageSchemaType) => {
-  if (props.layout !== ISOMER_PAGE_LAYOUTS.Collection) {
-    return undefined
-  }
-
-  const permalinkWithTrailingSlash = props.page.permalink.endsWith("/")
-    ? props.page.permalink
-    : `${props.page.permalink}/`
-  const feedPath = `${permalinkWithTrailingSlash}rss.xml`
-  const feedUrl = props.site.url
-    ? new URL(feedPath, props.site.url).toString()
-    : feedPath
-
-  return {
-    "application/rss+xml": [
-      { url: feedUrl, title: `${props.site.siteName} — ${props.page.title}` },
-    ],
-  }
-}
-
 export const getMetadata = (props: IsomerPageSchemaType) => {
   const faviconUrl = `${props.site.assetsBaseUrl ?? ""}${props.site.favicon || "/favicon.ico"}`
   const canonicalUrl = getCanonicalUrl(props)
@@ -336,7 +314,17 @@ export const getMetadata = (props: IsomerPageSchemaType) => {
     },
     alternates: {
       canonical: canonicalUrl,
-      types: getFeedAlternates(props),
+      types:
+        props.layout === ISOMER_PAGE_LAYOUTS.Collection
+          ? {
+              "application/rss+xml": [
+                {
+                  url: `${canonicalUrl.replace(/\/?$/, "/")}rss.xml`,
+                  title: `${props.site.siteName} — ${props.page.title}`,
+                },
+              ],
+            }
+          : undefined,
     },
   }
 
