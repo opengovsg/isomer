@@ -7,7 +7,7 @@ import {
   getCollectionPermalink,
 } from "~/features/editing-experience/utils/buildCollectionLinkPreviewSitemap"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { editLinkPageSchema } from "~/pages/sites/[siteId]/links/[linkId]/editLinkPageSchema"
+import { editLinkPageSchema } from "~/schemas/editLinkPageSchema"
 import { trpc } from "~/utils/trpc"
 import {
   hasNonEmptyString,

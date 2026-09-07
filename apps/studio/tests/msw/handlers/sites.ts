@@ -4,7 +4,7 @@ import { DEFAULT_TAG_CATEGORY_DISPLAY } from "@opengovsg/isomer-components"
 import { delay } from "msw"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
-import { isNullableBooleanTrue } from "../../src/utils/truthiness"
+import { isNullableBooleanTrue } from "~/utils/truthiness"
 import { MOCK_STORY_DATE } from "../constants"
 import { trpcMsw } from "../mockTrpc"
 

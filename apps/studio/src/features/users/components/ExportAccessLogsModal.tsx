@@ -13,6 +13,7 @@ import {
 import { Button, Radio } from "@opengovsg/design-system-react"
 import { useAtomValue, useSetAtom } from "jotai"
 import { Controller } from "react-hook-form"
+import { isNullableBooleanTrue } from "~/utils/truthiness"
 import { useCreateAuditLogExportRequest } from "~/features/settings/AuditLogExport/useCreateAuditLogExportRequest"
 import { useZodForm } from "~/lib/form"
 import {

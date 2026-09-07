@@ -16,7 +16,7 @@ import { CreatePageModal } from "~/features/editing-experience/components/Create
 import { MoveResourceModal } from "~/features/editing-experience/components/MoveResourceModal"
 import { Can } from "~/features/permissions"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { sitePageSchema } from "~/pages/sites/[siteId]/sitePageSchema"
+import { sitePageSchema } from "~/schemas/sitePageSchema"
 import { SiteEditorLayout } from "~/templates/layouts/SiteEditorLayout"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 

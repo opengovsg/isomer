@@ -1267,7 +1267,7 @@ const createChildPages = async ({
   state?: ResourceState
   userId?: string
 }) => {
-  if (hasNonEmptyString(state === ResourceState.Published && !userId)) {
+  if (state === ResourceState.Published && !userId) {
     throw new Error(
       "Precondition failed for `createChildPages`: a valid `userId` is required in order to publish a resource",
     )

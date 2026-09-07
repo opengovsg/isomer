@@ -1,3 +1,4 @@
+/** @param {string | null | undefined} value */
 const hasNonEmptyString = (value) =>
   value !== undefined && value !== null && value !== ""
 
@@ -6,6 +7,8 @@ const hasNonEmptyString = (value) =>
  * for Docker builds.
  */
 const { env } = await import("./src/env.mjs")
+
+const s3AssetsDomain = env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME
 
 // NOTE: Keep the `unsafe-eval` for `script-src` as the removal
 // led to nextjs crashing on start
@@ -173,10 +176,10 @@ const config = {
     "@opengovsg/validators",
   ],
   images: {
-    remotePatterns: hasNonEmptyString(env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME)
+    remotePatterns: hasNonEmptyString(s3AssetsDomain)
       ? [
           {
-            hostname: env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME,
+            hostname: /** @type {string} */ (s3AssetsDomain),
             protocol: "https",
           },
         ]

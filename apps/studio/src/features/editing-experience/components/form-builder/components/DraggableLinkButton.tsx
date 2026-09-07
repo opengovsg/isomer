@@ -25,7 +25,7 @@ import {
 } from "react-icons/bi"
 import Suspense from "~/components/Suspense"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { sitePageSchema } from "~/pages/sites/[siteId]/sitePageSchema"
+import { sitePageSchema } from "~/schemas/sitePageSchema"
 import { trpc } from "~/utils/trpc"
 import {
   hasNonEmptyString,

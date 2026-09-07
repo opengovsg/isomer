@@ -6,7 +6,7 @@ import { LayoutHead } from "~/components/LayoutHead"
 import { LinkEditNavbar } from "~/features/editing-experience/components/LinkEditNavbar"
 import { PermissionsProvider } from "~/features/permissions"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { editLinkPageSchema } from "~/pages/sites/[siteId]/links/[linkId]/editLinkPageSchema"
+import { editLinkPageSchema } from "~/schemas/editLinkPageSchema"
 
 export const LinkEditingLayout: GetLayout = (page) => {
   const { linkId, siteId } = useQueryParse(editLinkPageSchema)

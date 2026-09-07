@@ -15,8 +15,7 @@ import { db, jsonb } from "~server/db"
 
 import {
   hasNonEmptyString,
-  isNullableBooleanTrue,
-} from "../../src/utils/truthiness"
+} from "~/utils/truthiness"
 
 interface SetupPermissionsProps {
   userId?: string
@@ -66,7 +65,7 @@ export const setupAdminPermissions = async (
 ) => await setupPermissions({ ...props, role: RoleType.Admin })
 
 export const setupSite = async (siteId?: number, fetch?: boolean) => {
-  if (isNullableBooleanTrue(siteId !== undefined && fetch)) {
+  if (siteId !== undefined && fetch) {
     return await db.transaction().execute(async (tx) => {
       const site = await tx
         .selectFrom("Site")
@@ -315,13 +314,13 @@ export const setupPageResource = async ({
     .returningAll()
     .executeTakeFirstOrThrow()
 
-  if (hasNonEmptyString(state === ResourceState.Published && !userId)) {
+  if (state === ResourceState.Published && !userId) {
     throw new Error(
       "Precondition failed, we need a valid `userId` in order to publish",
     )
   }
 
-  if (hasNonEmptyString(state === ResourceState.Published && userId)) {
+  if (state === ResourceState.Published && userId) {
     const version = await db
       .insertInto("Version")
       .values({
@@ -501,13 +500,13 @@ export const setupCollectionLink = async ({
     .returningAll()
     .executeTakeFirstOrThrow()
 
-  if (hasNonEmptyString(state === ResourceState.Published && !userId)) {
+  if (state === ResourceState.Published && !userId) {
     throw new Error(
       "Precondition failed, we need a valid `userId` in order to publish",
     )
   }
 
-  if (hasNonEmptyString(state === ResourceState.Published && userId)) {
+  if (state === ResourceState.Published && userId) {
     const version = await db
       .insertInto("Version")
       .values({

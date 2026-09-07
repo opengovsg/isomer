@@ -12,7 +12,7 @@ const withMenubarItemKeys = (items: PossibleMenubarItemProps[]) => {
   const typeCounts = new Map<string, number>()
 
   return items.map((item) => {
-    if (hasNonEmptyString("title" in item && item.title)) {
+    if ("title" in item && hasNonEmptyString(item.title)) {
       return { item, key: `${item.type}-${item.title}` }
     }
 

@@ -1,7 +1,7 @@
 /* oxlint-disable import/no-cycle, unicorn/no-nested-ternary -- core cleanup deferred */
 import { skipToken } from "@tanstack/react-query"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { sitePageSchema } from "~/pages/sites/[siteId]/sitePageSchema"
+import { sitePageSchema } from "~/schemas/sitePageSchema"
 import { isResourceMoveValid } from "~/utils/resources"
 import { trpc } from "~/utils/trpc"
 import {

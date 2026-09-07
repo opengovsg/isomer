@@ -21,7 +21,7 @@ import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { usePermissions } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { sitePageSchema } from "~/pages/sites/[siteId]/sitePageSchema"
+import { sitePageSchema } from "~/schemas/sitePageSchema"
 import { normalizeRedirectPath } from "~/schemas/redirect"
 import { trpc } from "~/utils/trpc"
 import {

@@ -38,3 +38,17 @@ export const asBlobJsonContent = (content: {
   // SAFETY: MSW fixture matches blob layout shapes used by collection/gazette handlers.
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   content as PrismaJson.BlobJsonContent
+
+export const asFooterJsonContent = (
+  content: object,
+): PrismaJson.FooterJsonContent =>
+  // SAFETY: MSW fixture matches FooterJsonContent fields used in Storybook/tests.
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
+  content as PrismaJson.FooterJsonContent
+
+export const asNavbarJsonContent = (
+  content: object,
+): PrismaJson.NavbarJsonContent =>
+  // SAFETY: MSW fixture matches NavbarJsonContent fields used in Storybook/tests.
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
+  content as PrismaJson.NavbarJsonContent

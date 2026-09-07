@@ -12,7 +12,7 @@ const getRootPageQuery = (wait?: DelayMode | number) =>
     if (wait !== undefined) {
       await delay(wait)
     }
-    return { title: "A mock page", id: "1", draftBlobId: "1" }
+    return { title: "A mock page", id: "1", draftBlobId: "1" } as RouterOutput["page"]["getRootPage"]
   })
 
 export const DEFAULT_PAGE_ITEMS: RouterOutput["resource"]["listWithoutRoot"] = [
@@ -381,7 +381,7 @@ export const pageHandlers = {
   },
   readPageAndBlob: {
     article: () =>
-      // @ts-expect-error incomplete types
+
       trpcMsw.page.readPageAndBlob.query(() => ({
         title: "Article page",
         updatedAt: new Date("2024-09-12T07:00:00.000Z"),
@@ -536,9 +536,9 @@ export const pageHandlers = {
         logoUrl: "",
         siteName: "MTI",
         isGovernment: true,
-      })),
+      }) as unknown as RouterOutput["page"]["readPageAndBlob"]),
     collection: () =>
-      // @ts-expect-error incomplete types
+
       trpcMsw.page.readPageAndBlob.query(() => ({
         title: "Index page",
         updatedAt: new Date("2024-09-12T07:00:00.000Z"),
@@ -627,9 +627,9 @@ export const pageHandlers = {
         logoUrl: "",
         siteName: "MTI",
         isGovernment: true,
-      })),
+      }) as unknown as RouterOutput["page"]["readPageAndBlob"]),
     collectionWithManyFilterOptions: () =>
-      // @ts-expect-error incomplete types
+
       trpcMsw.page.readPageAndBlob.query(() => ({
         title: "Index page",
         updatedAt: new Date("2024-09-12T07:00:00.000Z"),
@@ -674,9 +674,9 @@ export const pageHandlers = {
         logoUrl: "",
         siteName: "MTI",
         isGovernment: true,
-      })),
+      }) as unknown as RouterOutput["page"]["readPageAndBlob"]),
     content: () =>
-      // @ts-expect-error incomplete types
+
       trpcMsw.page.readPageAndBlob.query(() => ({
         permalink: "page-title-here",
         title: "Content page",
@@ -883,9 +883,9 @@ export const pageHandlers = {
         logoUrl: "",
         siteName: "MTI",
         isGovernment: true,
-      })),
+      }) as unknown as RouterOutput["page"]["readPageAndBlob"]),
     customIndex: () =>
-      // @ts-expect-error incomplete types
+
       trpcMsw.page.readPageAndBlob.query(() => ({
         title: "Index page",
         updatedAt: new Date("2024-09-12T07:00:00.000Z"),
@@ -979,9 +979,9 @@ export const pageHandlers = {
         logoUrl: "",
         siteName: "MTI",
         isGovernment: true,
-      })),
+      }) as unknown as RouterOutput["page"]["readPageAndBlob"]),
     database: () =>
-      // @ts-expect-error incomplete types
+
       trpcMsw.page.readPageAndBlob.query(() => ({
         permalink: "database-layout",
         title: "Database layout",
@@ -1109,9 +1109,9 @@ export const pageHandlers = {
         logoUrl: "",
         siteName: "MTI",
         isGovernment: true,
-      })),
+      }) as unknown as RouterOutput["page"]["readPageAndBlob"]),
     homepage: () =>
-      // @ts-expect-error incomplete types
+
       trpcMsw.page.readPageAndBlob.query(() => ({
         type: "RootPage",
         permalink: "home",
@@ -1253,9 +1253,9 @@ export const pageHandlers = {
         logoUrl: "",
         siteName: "MTI",
         isGovernment: true,
-      })),
+      }) as unknown as RouterOutput["page"]["readPageAndBlob"]),
     index: () =>
-      // @ts-expect-error incomplete types
+
       trpcMsw.page.readPageAndBlob.query(() => ({
         title: "Index page",
         updatedAt: new Date("2024-09-12T07:00:00.000Z"),
@@ -1353,9 +1353,9 @@ export const pageHandlers = {
         logoUrl: "",
         siteName: "MTI",
         isGovernment: true,
-      })),
+      }) as unknown as RouterOutput["page"]["readPageAndBlob"]),
     indexWithInfocards: () =>
-      // @ts-expect-error incomplete types
+
       trpcMsw.page.readPageAndBlob.query(() => ({
         title: "Index page",
         updatedAt: new Date("2024-09-12T07:00:00.000Z"),
@@ -1431,9 +1431,9 @@ export const pageHandlers = {
         logoUrl: "",
         siteName: "MTI",
         isGovernment: true,
-      })),
+      }) as unknown as RouterOutput["page"]["readPageAndBlob"]),
     indexWithoutChildrenPages: () =>
-      // @ts-expect-error incomplete types
+
       trpcMsw.page.readPageAndBlob.query(() => ({
         title: "Index page",
         updatedAt: new Date("2024-09-12T07:00:00.000Z"),
@@ -1522,7 +1522,7 @@ export const pageHandlers = {
         logoUrl: "",
         siteName: "MTI",
         isGovernment: true,
-      })),
+      }) as unknown as RouterOutput["page"]["readPageAndBlob"]),
   },
   updatePageBlob: {
     default: () =>

@@ -375,7 +375,7 @@ describe("updateBlobById", () => {
 
     selectChain.executeTakeFirst.mockResolvedValue({ draftBlobId: null })
     insertChain.executeTakeFirstOrThrow.mockResolvedValue(newBlob)
-    updateChain.execute.mockResolvedValue()
+    updateChain.execute.mockResolvedValue(undefined)
 
     const tx = asTransaction({
       insertInto: vi.fn(() => insertChain),
@@ -434,7 +434,7 @@ describe("updateBlobById", () => {
   it("throws when the resource is not found on the site", async () => {
     // Arrange
     const selectChain = createChain()
-    selectChain.executeTakeFirst.mockResolvedValue()
+    selectChain.executeTakeFirst.mockResolvedValue(undefined)
 
     const tx = asTransaction({
       selectFrom: vi.fn(() => selectChain),
@@ -488,7 +488,7 @@ describe("incrementVersion", () => {
       publishedVersionId: null,
     })
     insertChain.executeTakeFirstOrThrow.mockResolvedValue(newVersion)
-    updateChain.execute.mockResolvedValue()
+    updateChain.execute.mockResolvedValue(undefined)
 
     const tx = asTransaction({
       insertInto: vi.fn(() => insertChain),
@@ -539,7 +539,7 @@ describe("incrementVersion", () => {
     })
     versionChain.executeTakeFirstOrThrow.mockResolvedValue(previousVersion)
     insertChain.executeTakeFirstOrThrow.mockResolvedValue(newVersion)
-    updateChain.execute.mockResolvedValue()
+    updateChain.execute.mockResolvedValue(undefined)
 
     const tx = asTransaction({
       insertInto: vi.fn(() => insertChain),

@@ -19,10 +19,10 @@ beforeEach(() => {
   setStudioAssetsBucketNameForTests("audit-export-bucket")
   setUploadClassForTests(
     // @ts-expect-error test stub implements only the Upload constructor surface used by uploadAuditLogExport
-    vi.fn((options: ConstructorParameters<typeof UploadType>[0]) => {
+    function MockUpload(options: ConstructorParameters<typeof UploadType>[0]) {
       uploadCtorMock(options)
       return { done: doneMock, on: vi.fn() }
-    }),
+    },
   )
   vi.clearAllMocks()
   doneMock.mockResolvedValue({})

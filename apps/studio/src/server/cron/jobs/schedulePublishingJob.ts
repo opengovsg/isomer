@@ -121,7 +121,7 @@ export const publishScheduledResources = async (
           { error },
           `Failed to publish page for resource: ${resourceId}`,
         )
-        if (hasNonEmptyString(resource.userDeletedAt || !resource.email)) {
+        if (resource.userDeletedAt || !resource.email) {
           logger.warn(
             `Resource ${resourceId} is missing user email information or deleted, cannot send failed publish email`,
           )
@@ -176,7 +176,7 @@ export const publishScheduledSites = async (
         logger.error({ error }, `Failed to publish site for siteId: ${siteId}`)
         await Promise.all(
           resources.map(async (resource) => {
-            if (hasNonEmptyString(resource.userDeletedAt || !resource.email)) {
+            if (resource.userDeletedAt || !resource.email) {
               logger.warn(
                 `Resource ${resource.id} is missing user email information or deleted, cannot send failed publish email`,
               )

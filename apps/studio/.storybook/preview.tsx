@@ -221,7 +221,7 @@ const preview: Preview = {
     actions: { argTypesRegex: "^on[A-Z].*" },
     controls: {
       matchers: {
-        color: /(?<token>background|color)$/iu,
+        color: /(background|color)$/iu,
         date: /Date$/u,
       },
     },

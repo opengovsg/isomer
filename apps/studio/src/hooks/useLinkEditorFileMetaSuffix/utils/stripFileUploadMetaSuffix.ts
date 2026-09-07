@@ -21,7 +21,7 @@ const isFormattedSize = (value: string): boolean => {
   }
 
   const [num, unit] = parts
-  if (!hasNonEmptyString(num || !unit)) {
+  if (!hasNonEmptyString(num) || !hasNonEmptyString(unit)) {
     return false
   }
   // defensive programming
@@ -50,7 +50,7 @@ const isFileUploadMetaSuffix = (content: string): boolean => {
   // Two segments: type then size (e.g. "PDF, 1.00 MB").
   if (parts.length === 2) {
     const [type, size] = parts
-    if (!hasNonEmptyString(type || !size)) {
+    if (!hasNonEmptyString(type) || !hasNonEmptyString(size)) {
       return false
     }
     // defensive programming

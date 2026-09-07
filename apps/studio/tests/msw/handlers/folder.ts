@@ -1,3 +1,4 @@
+import type { RouterOutput } from "~/utils/trpc"
 import { trpcMsw } from "../mockTrpc"
 
 export const folderHandlers = {
@@ -11,11 +12,14 @@ export const folderHandlers = {
   },
   getMetadata: {
     default: () =>
-      trpcMsw.folder.getMetadata.query(() => ({
-        title: "a folder",
-        permalink: "folder",
-        parentId: "1",
-      })),
+      trpcMsw.folder.getMetadata.query(
+        () =>
+          ({
+            title: "a folder",
+            permalink: "folder",
+            parentId: "1",
+          }) as RouterOutput["folder"]["getMetadata"],
+      ),
   },
   listChildPages: {
     default: () =>

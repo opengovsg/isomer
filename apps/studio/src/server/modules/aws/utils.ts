@@ -176,7 +176,7 @@ export const computeBuildChanges = async (
         })
         .at(0)
 
-      if (hasNonEmptyString(!latestBuild?.id || !latestBuild.startTime)) {
+      if (!latestBuild?.id || !latestBuild.startTime) {
         logger.error(
           { projectId },
           "Unable to determine the latest build to stop",
@@ -200,7 +200,7 @@ export const computeBuildChanges = async (
 
     // Any other case, we should not start a new build
     const [runningBuild] = runningBuilds ?? []
-    if (hasNonEmptyString(!runningBuild?.id || !runningBuild.startTime)) {
+    if (!runningBuild?.id || !runningBuild.startTime) {
       logger.error(
         { projectId },
         "Unable to determine the latest running build",
@@ -232,7 +232,7 @@ export const startProjectById = async (
     const command = new StartBuildCommand({ projectName: projectId })
     const { build } = await client.send(command)
     // in theory build should always be defined, but adding a check just in case
-    if (hasNonEmptyString(!build?.id || !build.startTime)) {
+    if (!build?.id || !build.startTime) {
       logger.error(
         { build },
         `Failed to obtain codebuild metadata for ${projectId}`,

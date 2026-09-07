@@ -4,7 +4,7 @@ import type { ResourceType } from "~prisma/generated/generatedEnums"
 import { PermissionsErrorBoundary } from "~/features/dashboard/PermissionsErrorPage"
 import { Can, PermissionsProvider } from "~/features/permissions"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { sitePageSchema } from "~/pages/sites/[siteId]/sitePageSchema"
+import { sitePageSchema } from "~/schemas/sitePageSchema"
 import { DefaultLayout } from "~/templates/layouts/DefaultLayout"
 
 interface ErrorProps {

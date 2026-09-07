@@ -20,7 +20,7 @@ import { Suspense } from "react"
 import { BiTrash } from "react-icons/bi"
 import { LinkEditorModal } from "~/components/PageEditor/LinkEditorModal"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { sitePageSchema } from "~/pages/sites/[siteId]/sitePageSchema"
+import { sitePageSchema } from "~/schemas/sitePageSchema"
 import { trpc } from "~/utils/trpc"
 import {
   hasNonEmptyString,

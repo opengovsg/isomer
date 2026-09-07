@@ -5,7 +5,7 @@ import { useMemo, useState } from "react"
 import { LinkEditorDrawer } from "~/features/editing-experience/components/Drawer/LinkEditorDrawer"
 import { EditCollectionLinkPreview } from "~/features/editing-experience/components/preview/EditLinkPreview"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { editLinkPageSchema } from "~/pages/sites/[siteId]/links/[linkId]/editLinkPageSchema"
+import { editLinkPageSchema } from "~/schemas/editLinkPageSchema"
 import { LinkEditingLayout } from "~/templates/layouts/LinkEditingLayout"
 import { trpc } from "~/utils/trpc"
 

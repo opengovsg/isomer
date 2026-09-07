@@ -34,7 +34,9 @@ export default function getIP(request: Request | NextApiRequest) {
     : request.headers["cf-connecting-ip"]
   const remoteAddress = isRequest(request)
     ? undefined
-    : hasNonEmptyString(request.socket.remoteAddress)?.trim() || undefined
+    : hasNonEmptyString(request.socket.remoteAddress)
+      ? request.socket.remoteAddress.trim()
+      : undefined
   const xForwardedFor = isRequest(request)
     ? request.headers.get("x-forwarded-for")
     : request.headers["x-forwarded-for"]

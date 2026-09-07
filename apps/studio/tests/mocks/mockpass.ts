@@ -1,6 +1,6 @@
 import { parse } from "superjson"
 
-import { isDefinedNumber } from "../../src/utils/truthiness"
+import { isDefinedNumber } from "~/utils/truthiness"
 import { CONTAINER_INFORMATION_SCHEMA } from "../common"
 
 const parsed = CONTAINER_INFORMATION_SCHEMA.parse(
