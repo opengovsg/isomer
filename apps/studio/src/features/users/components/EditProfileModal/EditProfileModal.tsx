@@ -167,8 +167,8 @@ export const EditProfileModal = () => {
           <ModalFooter>
             <Button
               variant="solid"
-              onClick={() => {
-                void onSubmit
+              onClick={(event) => {
+                void onSubmit(event)
               }}
               isDisabled={!isDirty || Object.keys(errors).length > 0}
               isLoading={isPending}

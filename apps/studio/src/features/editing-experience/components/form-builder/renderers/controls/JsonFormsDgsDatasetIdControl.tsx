@@ -231,8 +231,8 @@ const DgsDatasetIdModal = ({
               </Button>
               <Button
                 type="submit"
-                onClick={() => {
-                  void onSubmit
+                onClick={(event) => {
+                  void onSubmit(event)
                 }}
                 isDisabled={!isValid || isLoading || !isValidDataset}
                 isLoading={isLoading}

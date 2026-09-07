@@ -256,8 +256,8 @@ export const AddUserModal = () => {
           <SingpassConditionalTooltip>
             <Button
               variant="solid"
-              onClick={() => {
-                void onSendInvite
+              onClick={(event) => {
+                void onSendInvite(event)
               }}
               isLoading={isPending}
               isDisabled={

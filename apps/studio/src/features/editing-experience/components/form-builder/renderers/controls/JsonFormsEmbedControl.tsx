@@ -174,8 +174,8 @@ const EmbedCodeModal = ({
               </Button>
               <Button
                 type="submit"
-                onClick={() => {
-                  void onSubmit
+                onClick={(event) => {
+                  void onSubmit(event)
                 }}
                 isDisabled={!isValid}
               >
