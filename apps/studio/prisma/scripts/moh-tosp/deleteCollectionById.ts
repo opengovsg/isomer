@@ -1,8 +1,8 @@
 /* oxlint-disable typescript/no-unsafe-call -- studio lint cleanup */
 import { db } from "~/server/modules/database/database"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { FileLogger } from "../FileLogger"
-import { hasNonEmptyString } from "../src/utils/truthiness"
 
 // Update the logger path if required
 const logger = new FileLogger("./deleteCollectionById.log")

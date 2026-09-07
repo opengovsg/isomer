@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/func-style -- core cleanup deferred */
 import { createBaseLogger } from "~/lib/logger"
 import { isValidEmail } from "~/utils/email"
 
@@ -28,8 +29,11 @@ interface SendEmailWithTemplateProps {
   template: EmailTemplate
   emailType: string
 }
-// oxlint-disable-next-line eslint/func-style -- core cleanup deferred
-async function sendEmailWithTemplate($2): Promise<void> {
+async function sendEmailWithTemplate({
+  data,
+  template,
+  emailType,
+}: SendEmailWithTemplateProps): Promise<void> {
   if (!isValidEmail(data.recipientEmail)) {
     logger.error({
       email: data.recipientEmail,
@@ -67,8 +71,9 @@ async function sendEmailWithTemplate($2): Promise<void> {
   }
 }
 
-// oxlint-disable-next-line eslint/func-style -- core cleanup deferred
-export async function sendInvitation($2): Promise<void> {
+export async function sendInvitation(
+  data: InvitationEmailTemplateData,
+): Promise<void> {
   await sendEmailWithTemplate({
     data,
     emailType: "invitation",
@@ -76,8 +81,9 @@ export async function sendInvitation($2): Promise<void> {
   })
 }
 
-// oxlint-disable-next-line eslint/func-style -- core cleanup deferred
-export async function sendLoginAlertEmail($2): Promise<void> {
+export async function sendLoginAlertEmail(
+  data: LoginAlertEmailTemplateData,
+): Promise<void> {
   await sendEmailWithTemplate({
     data,
     emailType: "login alert",
@@ -85,8 +91,9 @@ export async function sendLoginAlertEmail($2): Promise<void> {
   })
 }
 
-// oxlint-disable-next-line eslint/func-style -- core cleanup deferred
-export async function sendScheduledPageEmail($2): Promise<void> {
+export async function sendScheduledPageEmail(
+  data: SchedulePageTemplateData,
+): Promise<void> {
   await sendEmailWithTemplate({
     data,
     emailType: "scheduled page",
@@ -94,8 +101,9 @@ export async function sendScheduledPageEmail($2): Promise<void> {
   })
 }
 
-// oxlint-disable-next-line eslint/func-style -- core cleanup deferred
-export async function sendCancelSchedulePageEmail($2): Promise<void> {
+export async function sendCancelSchedulePageEmail(
+  data: CancelSchedulePageTemplateData,
+): Promise<void> {
   await sendEmailWithTemplate({
     data,
     emailType: "cancel scheduled page",
@@ -103,8 +111,9 @@ export async function sendCancelSchedulePageEmail($2): Promise<void> {
   })
 }
 
-// oxlint-disable-next-line eslint/func-style -- core cleanup deferred
-export async function sendFailedPublishEmail($2): Promise<void> {
+export async function sendFailedPublishEmail(
+  data: FailedPublishTemplateData,
+): Promise<void> {
   await sendEmailWithTemplate({
     data,
     emailType: "failed publish",
@@ -112,8 +121,9 @@ export async function sendFailedPublishEmail($2): Promise<void> {
   })
 }
 
-// oxlint-disable-next-line eslint/func-style -- core cleanup deferred
-export async function sendSuccessfulPublishEmail($2): Promise<void> {
+export async function sendSuccessfulPublishEmail(
+  data: SuccessfulPublishTemplateData,
+): Promise<void> {
   await sendEmailWithTemplate({
     data,
     emailType: "successful publish",
@@ -121,8 +131,9 @@ export async function sendSuccessfulPublishEmail($2): Promise<void> {
   })
 }
 
-// oxlint-disable-next-line eslint/func-style -- core cleanup deferred
-export async function sendPublishAlertContentPublisherEmail($2): Promise<void> {
+export async function sendPublishAlertContentPublisherEmail(
+  data: PublishAlertContentPublisherEmailTemplateData,
+): Promise<void> {
   await sendEmailWithTemplate({
     data,
     emailType: "publish alert content publisher",
@@ -130,8 +141,9 @@ export async function sendPublishAlertContentPublisherEmail($2): Promise<void> {
   })
 }
 
-// oxlint-disable-next-line eslint/func-style -- core cleanup deferred
-export async function sendPublishAlertSiteAdminEmail($2): Promise<void> {
+export async function sendPublishAlertSiteAdminEmail(
+  data: PublishAlertSiteAdminEmailTemplateData,
+): Promise<void> {
   await sendEmailWithTemplate({
     data,
     emailType: "publish alert site admin",
@@ -139,8 +151,9 @@ export async function sendPublishAlertSiteAdminEmail($2): Promise<void> {
   })
 }
 
-// oxlint-disable-next-line eslint/func-style -- core cleanup deferred
-export async function sendAccountDeactivationWarningEmail($2): Promise<void> {
+export async function sendAccountDeactivationWarningEmail(
+  data: AccountDeactivationWarningEmailTemplateData,
+): Promise<void> {
   await sendEmailWithTemplate({
     data,
     emailType: "account deactivation warning",
@@ -148,8 +161,9 @@ export async function sendAccountDeactivationWarningEmail($2): Promise<void> {
   })
 }
 
-// oxlint-disable-next-line eslint/func-style -- core cleanup deferred
-export async function sendAccountDeactivationEmail($2): Promise<void> {
+export async function sendAccountDeactivationEmail(
+  data: AccountDeactivationEmailTemplateData,
+): Promise<void> {
   await sendEmailWithTemplate({
     data,
     emailType: "account deactivation",
@@ -157,8 +171,9 @@ export async function sendAccountDeactivationEmail($2): Promise<void> {
   })
 }
 
-// oxlint-disable-next-line eslint/func-style -- core cleanup deferred
-export async function sendGazetteDeletionEmail($2): Promise<void> {
+export async function sendGazetteDeletionEmail(
+  data: GazetteDeletionEmailTemplateData,
+): Promise<void> {
   await sendEmailWithTemplate({
     data,
     emailType: "gazette deletion",
@@ -166,8 +181,9 @@ export async function sendGazetteDeletionEmail($2): Promise<void> {
   })
 }
 
-// oxlint-disable-next-line eslint/func-style -- core cleanup deferred
-export async function sendAuditLogExportReadyEmail($2): Promise<void> {
+export async function sendAuditLogExportReadyEmail(
+  data: AuditLogExportReadyEmailTemplateData,
+): Promise<void> {
   await sendEmailWithTemplate({
     data,
     emailType: "audit log export ready",
@@ -175,8 +191,9 @@ export async function sendAuditLogExportReadyEmail($2): Promise<void> {
   })
 }
 
-// oxlint-disable-next-line eslint/func-style -- core cleanup deferred
-export async function sendAuditLogExportFailedEmail($2): Promise<void> {
+export async function sendAuditLogExportFailedEmail(
+  data: AuditLogExportFailedEmailTemplateData,
+): Promise<void> {
   await sendEmailWithTemplate({
     data,
     emailType: "audit log export failed",

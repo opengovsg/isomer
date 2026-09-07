@@ -39,6 +39,7 @@ import {
   MAX_FOLDER_TITLE_LENGTH,
 } from "~/schemas/folder"
 import { trpc } from "~/utils/trpc"
+import { hasNonEmptyString, isNullableBooleanTrue } from "~/utils/truthiness"
 
 import {
   DEFAULT_FOLDER_SETTINGS_MODAL_STATE,

@@ -1,6 +1,7 @@
 import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/closest-edge"
 import { reorder } from "@atlaskit/pragmatic-drag-and-drop/reorder"
 import { cloneDeep, get, set } from "lodash-es"
+import { isDefinedNumber } from "~/utils/truthiness"
 
 import type {
   MoveItemOperation,
@@ -33,8 +34,7 @@ export const isSubItemPath = (path: string): path is NavbarItemPath =>
 export const isFirstLevelLinksOverLimit = (
   itemCount: number,
   maxItems?: number,
-  // oxlint-disable-next-line typescript/strict-boolean-expressions -- core cleanup deferred
-): boolean => !!(isDefinedNumber(maxItems) && itemCount > maxItems)
+): boolean => isDefinedNumber(maxItems) && itemCount > maxItems
 
 export const getInstancePathFromNavbarItemPath = (path: NavbarItemPath) =>
   `/${path.replaceAll(".", "/")}`

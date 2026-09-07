@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url"
 import { db } from "~/server/modules/database/database"
 import { ResourceState, ResourceType } from "~/server/modules/database/types"
 import { jsonb } from "~/server/modules/database/utils"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import type {
   ConversionPlan,
@@ -14,7 +15,6 @@ import type {
   FolderPlan,
   PagePlan,
 } from "./helpers"
-import { hasNonEmptyString } from "../src/utils/truthiness"
 import { buildConversionReport, toFolderPlan } from "./helpers"
 
 // ---------------------------------------------------------------------------

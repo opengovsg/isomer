@@ -3,6 +3,7 @@ import {
   HEADING_TYPE,
   PARAGRAPH_TYPE,
 } from "~/features/editing-experience/hooks/useTextEditor"
+import { isDefinedNumber } from "~/utils/truthiness"
 
 export const isTiptapEditorEmpty = (json: JSONContent | undefined): boolean => {
   if (!json) {

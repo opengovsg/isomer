@@ -1,9 +1,9 @@
-import { TRPCError } from "@trpc/server"
 import { isDefinedNumber } from "~/utils/truthiness"
 
 import type { SafeKysely, ResourceState } from "../database/types"
 import type { Page } from "./resource.types"
-import { ResourceType, db } from "../database/types"
+import { db } from "../database/database"
+import { ResourceType } from "../database/types"
 import { defaultResourceSelect } from "./resource.select"
 
 // NOTE: Base method for retrieving a resource - no distinction made on whether `blobId` exists

@@ -1,24 +1,14 @@
 import { defineConfig } from "@isomer/oxlint-config"
 import base from "@isomer/oxlint-config/base"
-import {
-  antiSlop,
-  core,
-  jsPluginSettings,
-  react,
-  reactDoctor,
-  reactDoctorJsPluginEntries,
-} from "@isomer/oxlint-config/presets"
+// import { react, vitest } from "@isomer/oxlint-config/presets"
 
 export default defineConfig({
-  extends: [base, core, react, reactDoctor, antiSlop],
-  settings: jsPluginSettings,
-  jsPlugins: [...reactDoctorJsPluginEntries, ...(antiSlop.jsPlugins ?? [])],
-  ignorePatterns: [
-    "dist",
-    "**/*.config.*",
-    "!.storybook",
-    "public/mockServiceWorker.js",
+  extends: [
+    base,
+    // To enable this in following stacked PRs
+    // react, vitest
   ],
+  ignorePatterns: ["dist", "**/*.config.*", "!.storybook"],
   overrides: [
     {
       files: ["**/*.ts", "**/*.tsx"],
@@ -37,15 +27,6 @@ export default defineConfig({
           "error",
           {
             ignorePrimitives: true,
-          },
-        ],
-        "unicorn/filename-case": [
-          "error",
-          {
-            cases: {
-              camelCase: true,
-              pascalCase: true,
-            },
           },
         ],
         "no-restricted-imports": [
@@ -84,29 +65,12 @@ export default defineConfig({
             ],
           },
         ],
-        "eslint/prefer-arrow-callback": "off",
         "no-unused-vars": "warn",
       },
       globals: {
         React: "writable",
       },
       plugins: ["react", "typescript"],
-    },
-    {
-      files: ["src/presets/**/*.ts"],
-      rules: {
-        "eslint/sort-keys": "off",
-      },
-    },
-    {
-      files: ["**/*.test.ts", "**/*.test.tsx", "**/__tests__/**"],
-      rules: {
-        "eslint/no-plusplus": "off",
-        "eslint/no-shadow": "off",
-        "eslint/no-use-before-define": "off",
-        "eslint/sort-keys": "off",
-        "unicorn/consistent-function-scoping": "off",
-      },
     },
     {
       files: [
@@ -124,10 +88,6 @@ export default defineConfig({
         "**/*.story.cjs",
       ],
       rules: {
-        "eslint/prefer-destructuring": "off",
-        "eslint/no-shadow": "off",
-        "eslint/sort-keys": "off",
-        "promise/avoid-new": "off",
         "react-hooks/rules-of-hooks": "off",
         "import/no-anonymous-default-export": "off",
         "storybook/await-interactions": "error",
