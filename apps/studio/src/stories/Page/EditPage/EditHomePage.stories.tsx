@@ -140,7 +140,7 @@ export const ErrorNestedState: Story = {
     await userEvent.clear(textbox)
 
     const returnToStatisticsButton =
-      await canvas.findByLabelText(/return to statistics/i)
+      await canvas.findByLabelText(/return to statistics/iu)
     await userEvent.click(returnToStatisticsButton)
   },
 }
@@ -154,12 +154,12 @@ export const FullscreenPreview: Story = {
 
     const button = await canvas.findByRole(
       "button",
-      { name: /default mode/i },
+      { name: /default mode/iu },
       { timeout: 10_000 },
     )
     await userEvent.click(button)
 
-    const text = await screen.findByText(/full screen/i)
+    const text = await screen.findByText(/full screen/iu)
     await userEvent.click(text)
   },
 }

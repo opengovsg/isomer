@@ -121,7 +121,9 @@ export const UnpublishedPageHidesRedirectOption: Story = {
     // The "Redirect page automatically" option must not appear.
     await expect(body.queryByText("Redirect page automatically")).toBeNull()
     // The publish warning must not appear for a page that hasn't been published.
-    await expect(body.queryByText(/will get published immediately/)).toBeNull()
+    await expect(
+      body.queryByText(/will get published immediately/iu),
+    ).toBeNull()
     // The confirm button should say "Save", not "Publish immediately".
     await body.findByRole("button", { name: "Save" })
   },

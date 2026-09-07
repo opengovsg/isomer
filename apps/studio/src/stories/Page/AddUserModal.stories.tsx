@@ -46,7 +46,9 @@ export const Default: Story = {
     const screen = within(canvasElement.ownerDocument.body)
 
     // Wait for 1 seconds before proceeding
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await new Promise((resolve) => {
+      setTimeout(resolve, 1000)
+    })
 
     const addUserButtons = await screen.findAllByText("Add new user")
     const addUserButton = addUserButtons[0]
@@ -247,7 +249,9 @@ export const Loading: Story = {
 
     // Wait for 1 seconds before proceeding
     // As there is a 300ms debounce on the email input
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await new Promise((resolve) => {
+      setTimeout(resolve, 1000)
+    })
 
     // Wait for the button to be enabled
     await expect(sendInviteButton).not.toBeDisabled()
@@ -286,7 +290,9 @@ export const ToastAfterAddingUser: Story = {
 
     // Wait for 1 seconds before proceeding
     // As there is a 300ms debounce on the email input
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await new Promise((resolve) => {
+      setTimeout(resolve, 1000)
+    })
 
     // Wait for the button to be enabled
     await expect(sendInviteButton).not.toBeDisabled()

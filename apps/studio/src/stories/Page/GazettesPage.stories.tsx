@@ -180,6 +180,7 @@ export const DuplicateNotificationNumber: Story = {
     // seeded table row, so matching the option by its visible text stays
     // unambiguous. Government Gazette duplicates are detected by category and
     // year regardless of subcategory, so this is still a duplicate.
+    // oxlint-disable-next-line unicorn/no-await-expression-member -- core cleanup deferred
     const subcategoryCombobox = (await screen.findAllByRole("combobox"))[1]
     if (!subcategoryCombobox) {
       throw new Error("Expected a subcategory combobox to be rendered")

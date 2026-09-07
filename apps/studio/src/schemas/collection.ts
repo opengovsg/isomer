@@ -21,12 +21,12 @@ const slashDateSchema = z
   .string()
   .nullish()
   .transform((d) =>
-    hasNonEmptyString(d)
-      ? parse(d, SLASH_DATE_FORMAT, new Date())
-      : undefined,
+    hasNonEmptyString(d) ? parse(d, SLASH_DATE_FORMAT, new Date()) : undefined,
   )
   .pipe(z.date().optional())
-  .transform((d) => (d === undefined ? undefined : format(d, SLASH_DATE_FORMAT)))
+  .transform((d) =>
+    d === undefined ? undefined : format(d, SLASH_DATE_FORMAT),
+  )
 
 export const editLinkSchema = z.object({
   category: z.string(),

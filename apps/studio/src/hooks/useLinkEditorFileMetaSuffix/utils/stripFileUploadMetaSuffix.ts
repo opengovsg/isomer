@@ -64,7 +64,7 @@ const isFileUploadMetaSuffix = (content: string): boolean => {
  * Removes a trailing auto-generated `[type]` / `[type, size]` / `[size]` suffix
  * from link text so re-uploading a file does not stack duplicates.
  */
-export function stripFileUploadMetaSuffix(text: string): string {
+export const stripFileUploadMetaSuffix = (text: string): string => {
   // Opening delimiter of the upload meta suffix from `buildFileUploadMetaSuffix`.
   const META_SUFFIX_OPEN = " ["
 

@@ -88,7 +88,9 @@ async function clickOptionRowToEdit(
   index0Based: number,
 ) {
   const canvas = within(canvasElement)
-  const namedRow = canvas.queryByText(new RegExp(`^Option ${index0Based + 1}$`))
+  const namedRow = canvas.queryByText(
+    new RegExp(`^Option ${index0Based + 1}$`, "u"),
+  )
   if (namedRow) {
     await userEvent.click(namedRow)
     return
@@ -118,6 +120,7 @@ async function playOpenInlineOptionEdit(
 /** Manage filters → first filter editor with a single default option row. */
 async function playOpenFilterEditorWithOneOption(canvasElement: HTMLElement) {
   await playOpenManageFilters(canvasElement)
+  // oxlint-disable-next-line unicorn/no-use-before-define -- core cleanup deferred
   await playOpenFirstFilterEditor(canvasElement)
   const canvas = within(canvasElement)
   await userEvent.click(
@@ -183,6 +186,7 @@ async function playFillFilterNameAndAddThreeOptions(
   const addOption = await canvas.findByRole("button", {
     name: /^Add option$/iu,
   })
+  // oxlint-disable-next-line unicorn/no-await-in-loop -- core cleanup deferred
   for (let i = 0; i < 3; i += 1) {
     await userEvent.click(addOption)
   }
@@ -226,7 +230,7 @@ async function playOpenDeleteFilterModal(canvasElement: HTMLElement) {
   await playFillFilterNameAndAddThreeOptions(canvasElement)
   const canvas = within(canvasElement)
   await userEvent.click(
-    await canvas.findByRole("button", { name: /Return to Filters/i }),
+    await canvas.findByRole("button", { name: /Return to Filters/iu }),
   )
   await userEvent.click(
     await canvas.findByRole("button", { name: /Filter 1 actions/iu }),
@@ -235,7 +239,7 @@ async function playOpenDeleteFilterModal(canvasElement: HTMLElement) {
   await userEvent.click(
     await portals.findByRole("menuitem", { name: /Delete filter/iu }),
   )
-  await portals.findByText(/You are deleting an entire filter\./i)
+  await portals.findByText(/You are deleting an entire filter\./iu)
   return portals
 }
 
@@ -349,10 +353,10 @@ export const FiltersDeleteOptionModalZeroUsage: Story = {
   play: async ({ canvasElement }) => {
     const portals = await playOpenDeleteOptionModal(canvasElement)
     await expect(
-      portals.queryByText(/This option is being used in/i),
+      portals.queryByText(/This option is being used in/iu),
     ).not.toBeInTheDocument()
     await portals.findByText(
-      /To undo this change, you will need to create and re-assign this option to all items\./i,
+      /To undo this change, you will need to create and re-assign this option to all items\./iu,
     )
   },
 }
@@ -365,7 +369,7 @@ export const FiltersBackShowsOptionCount: Story = {
     await playFillFilterNameAndAddThreeOptions(canvasElement)
     const canvas = within(canvasElement)
     await userEvent.click(
-      await canvas.findByRole("button", { name: /Return to Filters/i }),
+      await canvas.findByRole("button", { name: /Return to Filters/iu }),
     )
     await canvas.findByText(/Manage filters/iu)
     await canvas.findByText(/3 options/iu)
@@ -380,7 +384,7 @@ export const FiltersOpenFilterRowMenu: Story = {
     await playFillFilterNameAndAddThreeOptions(canvasElement)
     const canvas = within(canvasElement)
     await userEvent.click(
-      await canvas.findByRole("button", { name: /Return to Filters/i }),
+      await canvas.findByRole("button", { name: /Return to Filters/iu }),
     )
     await userEvent.click(
       await canvas.findByRole("button", { name: /Filter 1 actions/iu }),
@@ -396,7 +400,7 @@ export const FiltersDeleteFilterModalDisabledCta: Story = {
   parameters: newCollectionFiltersParameters,
   play: async ({ canvasElement }) => {
     const portals = await playOpenDeleteFilterModal(canvasElement)
-    await portals.findByText(/It’s being used on/i)
+    await portals.findByText(/It’s being used on/iu)
     await expect(
       await portals.findByRole("button", { name: /^Delete filter$/iu }),
     ).toBeDisabled()
@@ -424,10 +428,10 @@ export const FiltersDeleteFilterModalZeroUsage: Story = {
   play: async ({ canvasElement }) => {
     const portals = await playOpenDeleteFilterModal(canvasElement)
     await expect(
-      portals.queryByText(/It’s being used on/i),
+      portals.queryByText(/It’s being used on/iu),
     ).not.toBeInTheDocument()
     await portals.findByText(
-      /To undo this change, you will need to recreate this filter and assign options to each item individually\./i,
+      /To undo this change, you will need to recreate this filter and assign options to each item individually\./iu,
     )
   },
 }
@@ -452,11 +456,11 @@ export const FiltersDeleteFilterModalManyOptions: Story = {
     await userEvent.click(
       await portals.findByRole("menuitem", { name: /Delete filter/iu }),
     )
-    await portals.findByText(/You are deleting an entire filter\./i)
+    await portals.findByText(/You are deleting an entire filter\./iu)
     // A filter with 100+ options skips the usage-count query entirely (see
     // MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT) rather than showing a misleading
     // capped number.
-    await portals.findByText(/a large number of results/i)
+    await portals.findByText(/a large number of results/iu)
   },
 }
 
@@ -479,7 +483,7 @@ export const CollectionDisplaySaveToast: Story = {
       () => {
         void expect(
           withinPortals(canvasElement).getByText(
-            /Collection display saved\. Remember to publish the changes so that other users can see your updates\./,
+            /Collection display saved\. Remember to publish the changes so that other users can see your updates\./u,
           ),
         ).toBeVisible()
       },
@@ -502,7 +506,7 @@ export const ManageFiltersSaveToast: Story = {
       () => {
         void expect(
           withinPortals(canvasElement).getByText(
-            /Filter saved\. Remember to publish the changes so that other users can use the new filter options\./,
+            /Filter saved\. Remember to publish the changes so that other users can use the new filter options\./u,
           ),
         ).toBeVisible()
       },

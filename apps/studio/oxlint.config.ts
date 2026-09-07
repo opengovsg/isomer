@@ -24,6 +24,7 @@ export default defineConfig({
     "!.storybook/**",
     "./next-env.d.ts",
     "prisma/generated/prisma/**",
+    "public/mockServiceWorker.js",
     "scripts/fix-*.mjs",
   ],
   jsPlugins: [

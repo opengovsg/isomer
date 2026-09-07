@@ -172,6 +172,7 @@ export const EditInfocardsLinkState: Story = {
 
     const textboxes = await canvas.findAllByRole("textbox")
     for (const textbox of textboxes) {
+      // oxlint-disable-next-line unicorn/no-await-in-loop -- core cleanup deferred
       await userEvent.clear(textbox)
     }
 

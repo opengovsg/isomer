@@ -304,7 +304,7 @@ describe("auditLogExport processor", () => {
     const labels = vi
       .mocked(mailService.sendAuditLogExportReadyEmail)
       .mock.calls.map(([arg]) => arg.link.label)
-      .toSorted()
+      .toSorted((a, b) => a.localeCompare(b))
     expect(labels).toEqual(["access", "audit"])
 
     const updatedAccess = await getRequest(accessRequest.id)

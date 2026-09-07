@@ -1,6 +1,6 @@
 import { env } from "~/env.mjs"
 
-export async function register() {
+export const register = async () => {
   // make sure you only run on nodejs runtime or you will have errors with built-in modules not being defined
   // oxlint-disable-next-line node/no-process-env
   if (process.env.NEXT_RUNTIME === "nodejs") {
@@ -11,7 +11,7 @@ export async function register() {
     // oxlint-disable-next-line node/no-process-env
     initTracer({ service: process.env.DD_SERVICE ?? "isomer-next" })
 
-    if (env.ENABLE_CRON_WORKERS) {
+    if (env.ENABLE_CRON_WORKERS === true) {
       // Import only if runtime is nodejs. This avoids running it on the browser, build time etc.
       const { initializeCronJobs, stopCronJobs } = await import("~/server/cron")
       await initializeCronJobs()

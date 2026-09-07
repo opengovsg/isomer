@@ -2,20 +2,15 @@
 import type { CollectionLinkProps } from "~/schemas/collection"
 import { Grid, GridItem } from "@chakra-ui/react"
 import { useMemo, useState } from "react"
-import { z } from "zod"
 import { LinkEditorDrawer } from "~/features/editing-experience/components/Drawer/LinkEditorDrawer"
 import { EditCollectionLinkPreview } from "~/features/editing-experience/components/preview/EditLinkPreview"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { editLinkPageSchema } from "~/pages/sites/[siteId]/links/[linkId]/editLinkPageSchema"
 import { LinkEditingLayout } from "~/templates/layouts/LinkEditingLayout"
 import { trpc } from "~/utils/trpc"
 
-export const editLinkSchema = z.object({
-  linkId: z.coerce.number().min(1),
-  siteId: z.coerce.number().min(1),
-})
-
 export const EditLink = () => {
-  const { linkId, siteId } = useQueryParse(editLinkSchema)
+  const { linkId, siteId } = useQueryParse(editLinkPageSchema)
 
   const [{ content, title }] =
     trpc.collection.readCollectionLink.useSuspenseQuery(

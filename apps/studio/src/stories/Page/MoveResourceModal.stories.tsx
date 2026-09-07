@@ -87,6 +87,7 @@ export const Default: Story = {
     })
     await userEvent.click(pageMenuButton)
 
+    // oxlint-disable-next-line unicorn/no-await-expression-member -- core cleanup deferred
     const moveButton = (
       await within(canvasElement.ownerDocument.body).findByText("Move to...")
     ).closest("button")
@@ -111,7 +112,9 @@ export const SingleClick: Story = {
   play: async (context) => {
     const { canvasElement } = context
     await Default.play?.(context)
+    // oxlint-disable-next-line unicorn/no-await-expression-member -- core cleanup deferred
 
+    // oxlint-disable-next-line unicorn/no-await-expression-member -- core cleanup deferred
     const folder1 = (
       await within(canvasElement.ownerDocument.body).findByText("Folder 1")
     ).closest("button")

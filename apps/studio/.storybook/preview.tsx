@@ -44,7 +44,9 @@ const StorybookEnvDecorator: Decorator = (story) => {
 
 const SetupDecorator: Decorator = (Story, { parameters }) => {
   // oxlint-disable-next-line @typescript-eslint/no-unsafe-argument
-  const gb = createMockGrowthBook(new Map(parameters.growthbook ?? []))
+  const gb = createMockGrowthBook(
+    parameters.growthbook ? new Map(parameters.growthbook) : new Map(),
+  )
 
   const queryClient = useMemo(
     () =>
@@ -219,7 +221,7 @@ const preview: Preview = {
     actions: { argTypesRegex: "^on[A-Z].*" },
     controls: {
       matchers: {
-        color: /(background|color)$/i,
+        color: /(?<token>background|color)$/iu,
         date: /Date$/u,
       },
     },

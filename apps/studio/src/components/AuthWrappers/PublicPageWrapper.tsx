@@ -15,7 +15,7 @@ type PublicPageWrapperProps =
  * Page wrapper that renders children only if the login cookie is NOT found.
  * Otherwise, will redirect to the route passed into the `CALLBACK_URL_KEY` URL parameter.
  *
- * @note There is no authentication being performed by this component. This component is merely a wrapper that checks for the presence of the login flag in localStorage.
+ * There is no authentication being performed by this component. This component is merely a wrapper that checks for the presence of the login flag in localStorage.
  */
 export const PublicPageWrapper = ({
   children,

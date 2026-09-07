@@ -1,7 +1,7 @@
 import { program } from "commander"
 import * as jose from "jose"
 import { mkdirSync, writeFileSync } from "node:fs"
-import { dirname, join } from "node:path"
+import path from "node:path"
 import { fileURLToPath } from "node:url"
 import { z } from "zod"
 
@@ -57,9 +57,20 @@ const opts = z
   })
   .parse(program.opts())
 
-const OUTPUT_FOLDER = join(import.meta.dirname, "..", "keys", opts.environment)
+const OUTPUT_FOLDER = path.join(
+  import.meta.dirname,
+  "..",
+  "keys",
+  opts.environment,
+)
 
-async function generateSigningKey({ alg, crv }: { alg: string; crv: string }) {
+const generateSigningKey = async ({
+  alg,
+  crv,
+}: {
+  alg: string
+  crv: string
+}) => {
   const keyPair = await jose.generateKeyPair(alg, { crv, extractable: true })
   const jwk = await jose.exportJWK(keyPair.publicKey)
   const [privateKey, publicKey, kid] = await Promise.all([
@@ -71,13 +82,13 @@ async function generateSigningKey({ alg, crv }: { alg: string; crv: string }) {
   return { jwk: json, privateKey, publicKey }
 }
 
-async function generateEncryptionKey({
+const generateEncryptionKey = async ({
   alg,
   crv,
 }: {
   alg: string
   crv: string
-}) {
+}) => {
   const keyPair = await jose.generateKeyPair(alg, { crv, extractable: true })
   const jwk = await jose.exportJWK(keyPair.publicKey)
   const [privateKey, publicKey, kid] = await Promise.all([
@@ -103,26 +114,26 @@ const [encryption, signing] = await Promise.all([
 mkdirSync(OUTPUT_FOLDER, { recursive: true })
 
 writeFileSync(
-  join(OUTPUT_FOLDER, `encryption-${new Date().toISOString()}.pem`),
+  path.join(OUTPUT_FOLDER, `encryption-${new Date().toISOString()}.pem`),
   encryption.privateKey,
 )
 writeFileSync(
-  join(OUTPUT_FOLDER, `encryption-${new Date().toISOString()}.pub`),
+  path.join(OUTPUT_FOLDER, `encryption-${new Date().toISOString()}.pub`),
   encryption.publicKey,
 )
 writeFileSync(
-  join(OUTPUT_FOLDER, `encryption-${new Date().toISOString()}.jwk`),
+  path.join(OUTPUT_FOLDER, `encryption-${new Date().toISOString()}.jwk`),
   JSON.stringify(encryption.jwk, null, 2),
 )
 writeFileSync(
-  join(OUTPUT_FOLDER, `signing-${new Date().toISOString()}.pem`),
+  path.join(OUTPUT_FOLDER, `signing-${new Date().toISOString()}.pem`),
   signing.privateKey,
 )
 writeFileSync(
-  join(OUTPUT_FOLDER, `signing-${new Date().toISOString()}.pub`),
+  path.join(OUTPUT_FOLDER, `signing-${new Date().toISOString()}.pub`),
   signing.publicKey,
 )
 writeFileSync(
-  join(OUTPUT_FOLDER, `signing-${new Date().toISOString()}.jwk`),
+  path.join(OUTPUT_FOLDER, `signing-${new Date().toISOString()}.jwk`),
   JSON.stringify(signing.jwk, null, 2),
 )

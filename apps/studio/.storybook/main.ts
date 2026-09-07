@@ -23,8 +23,8 @@ const config: StorybookConfig = {
     disableTelemetry: true,
   },
 
-  env: (config) => ({
-    ...config,
+  env: (storybookEnv) => ({
+    ...storybookEnv,
     SKIP_ENV_VALIDATION: "true",
     STORYBOOK_ENVIRONMENT: JSON.stringify(process.env),
   }),
@@ -40,7 +40,7 @@ const config: StorybookConfig = {
   // react-input-mask used by OGP's design system, which uses findDOMNode which
   // has been removed in React 19.
   // Ref: https://github.com/storybookjs/storybook/issues/30646
-  webpackFinal: (config) => {
+  webpackFinal: (webpackConfig) => {
     const unaliases = [
       "react",
       "react-dom/test-utils",
@@ -48,13 +48,12 @@ const config: StorybookConfig = {
       "react-dom/client",
       "react-dom/server",
     ]
-    if (config.resolve?.alias) {
+    if (webpackConfig.resolve?.alias) {
       for (const unalias of unaliases) {
-        // @ts-expect-error to fix when types are proper
-        delete config.resolve.alias[unalias]
+        Reflect.deleteProperty(webpackConfig.resolve.alias, unalias)
       }
     }
-    return config
+    return webpackConfig
   },
 }
 export default config

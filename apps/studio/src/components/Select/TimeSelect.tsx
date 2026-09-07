@@ -134,7 +134,7 @@ export const TimeSelect = React.forwardRef<
 /**
  * Parses a time string in the format "HH:mm" to a Date object set to today's date
  * @param time Time string in the format "HH:mm"
- * @returns
+ * @returns A Date set to today with the parsed time
  */
 export const parseTimeStringToDate = (time: string): Date =>
   parse(time, "HH:mm", new Date())

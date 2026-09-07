@@ -49,7 +49,7 @@ export const Default: Story = {
 const goToCustomiseTab = async (canvasElement: HTMLElement) => {
   const rootScreen = within(canvasElement.ownerDocument.body)
   const customiseTab = await rootScreen.findByRole("tab", {
-    name: /customise/i,
+    name: /customise/iu,
   })
   await userEvent.click(customiseTab)
 }

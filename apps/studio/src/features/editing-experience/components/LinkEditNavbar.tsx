@@ -10,7 +10,7 @@ import { Breadcrumb } from "@opengovsg/design-system-react"
 import Link from "next/link"
 import { ADMIN_NAVBAR_HEIGHT } from "~/constants/layouts"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { editLinkSchema } from "~/pages/sites/[siteId]/links/[linkId]"
+import { editLinkPageSchema } from "~/pages/sites/[siteId]/links/[linkId]/editLinkPageSchema"
 import { getResourceSubpath } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
 import {
@@ -101,7 +101,7 @@ const NavigationBreadcrumbs = ({
 }
 
 export const LinkEditNavbar = (): React.ReactNode => {
-  const { linkId, siteId } = useQueryParse(editLinkSchema)
+  const { linkId, siteId } = useQueryParse(editLinkPageSchema)
 
   return (
     <Flex

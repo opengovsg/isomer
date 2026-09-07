@@ -1,4 +1,4 @@
-import type { Attributes, ComponentType, ReactNode } from "react"
+import type { ComponentType, ReactNode } from "react"
 import Suspense from "~/components/Suspense"
 
 /**
@@ -18,18 +18,14 @@ import Suspense from "~/components/Suspense"
  * ```
  *
  */
-export function withSuspense<P>(
+export const withSuspense = <P,>(
   WrappedComponent: ComponentType<P>,
   FallbackComponent: ReactNode | null = null,
-) {
-  const WithSuspense = (props: P) => {
-    // SAFETY: Suspense wrapper forwards the wrapped component's props unchanged
-    const forwardedProps = props as P & Attributes
-    return (
-      <Suspense fallback={FallbackComponent}>
-        <WrappedComponent {...forwardedProps} />
-      </Suspense>
-    )
-  }
+) => {
+  const WithSuspense = (props: P) => (
+    <Suspense fallback={FallbackComponent}>
+      <WrappedComponent {...props} />
+    </Suspense>
+  )
   return WithSuspense
 }

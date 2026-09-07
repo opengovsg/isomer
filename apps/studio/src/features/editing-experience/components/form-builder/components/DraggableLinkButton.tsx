@@ -25,7 +25,7 @@ import {
 } from "react-icons/bi"
 import Suspense from "~/components/Suspense"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { sitePageSchema } from "~/pages/sites/[siteId]"
+import { sitePageSchema } from "~/pages/sites/[siteId]/sitePageSchema"
 import { trpc } from "~/utils/trpc"
 import {
   hasNonEmptyString,
@@ -199,7 +199,7 @@ const DraggableLinkButton = forwardRef<DraggableLinkButtonProps, "div">(
                         displayedHref !== "" && (
                           <Suspense fallback={<Skeleton w="100%" h="100%" />}>
                             <SuspendableLabel
-                              siteId={Number(siteId)}
+                              siteId={siteId}
                               resourceId={getResourceIdFromReferenceLink(
                                 displayedHref,
                               )}

@@ -63,7 +63,7 @@ export const SelectArticleLayout: Story = {
     const screen = within(canvasElement.ownerDocument.body)
     await SelectPageLayout.play?.(context)
 
-    const articleLayoutCard = await screen.findByText(/Article layout/i)
+    const articleLayoutCard = await screen.findByText(/Article layout/iu)
     await userEvent.click(articleLayoutCard)
   },
 }
@@ -74,7 +74,7 @@ export const SelectDatabaseLayout: Story = {
     const screen = within(canvasElement.ownerDocument.body)
     await SelectPageLayout.play?.(context)
 
-    const databaseLayoutCard = await screen.findByText(/Database layout/i)
+    const databaseLayoutCard = await screen.findByText(/Database layout/iu)
     await userEvent.click(databaseLayoutCard)
   },
 }
@@ -86,7 +86,7 @@ export const EnterPageDetails: Story = {
     await SelectPageLayout.play?.(context)
 
     const button = await screen.findByRole("button", {
-      name: /next: page title and url/i,
+      name: /next: page title and url/iu,
     })
     await userEvent.click(button)
 

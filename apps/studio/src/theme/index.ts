@@ -8,15 +8,14 @@ import { textStyles } from "./foundations/textStyles"
 import { layerStyles } from "./layerStyles"
 
 export const theme = extendTheme(ogpDsTheme, {
-  shadows,
+  colors: colours,
   // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
   components: {
     ...ogpDsTheme.components,
     ...components,
   },
-  colors: colours,
-  textStyles,
   layerStyles,
+  shadows,
   styles: {
     global: {
       // Removes the unnecessary default overflow hidden setting on Collapse components
@@ -26,4 +25,5 @@ export const theme = extendTheme(ogpDsTheme, {
       },
     },
   },
+  textStyles,
 })

@@ -124,7 +124,7 @@ const openBulkUploadModal = async (canvasElement: HTMLElement) => {
   const { body } = canvasElement.ownerDocument
   const screen = within(body)
   await userEvent.click(
-    await screen.findByRole("button", { name: /bulk upload with a \.csv/i }),
+    await screen.findByRole("button", { name: /bulk upload with a \.csv/iu }),
   )
   return { body, screen }
 }
@@ -176,7 +176,7 @@ export const BulkUploadModal: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement.ownerDocument.body)
     await userEvent.click(
-      await screen.findByRole("button", { name: /bulk upload with a \.csv/i }),
+      await screen.findByRole("button", { name: /bulk upload with a \.csv/iu }),
     )
     // Finding the template download confirms the modal opened. Presence (not a
     // one-shot toBeVisible) is used deliberately: asserting visibility during
@@ -271,7 +271,7 @@ export const BulkUploadFileSwappedWhileProcessing: Story = {
       ).toBeEnabled()
     }, AFTER_PROCESSING)
     await expect(screen.queryByText(/good to go/u)).toBeNull()
-    await expect(screen.queryByRole("button", { name: /^Publish/ })).toBeNull()
+    await expect(screen.queryByRole("button", { name: /^Publish/u })).toBeNull()
     await expect(screen.getByText("second.csv")).toBeVisible()
   },
 }

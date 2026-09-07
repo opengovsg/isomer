@@ -7,7 +7,7 @@ import {
   getCollectionPermalink,
 } from "~/features/editing-experience/utils/buildCollectionLinkPreviewSitemap"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { editLinkSchema } from "~/pages/sites/[siteId]/links/[linkId]"
+import { editLinkPageSchema } from "~/pages/sites/[siteId]/links/[linkId]/editLinkPageSchema"
 import { trpc } from "~/utils/trpc"
 import {
   hasNonEmptyString,
@@ -30,7 +30,7 @@ export const EditCollectionLinkPreview = ({
   link,
   title,
 }: EditCollectionLinkPreviewProps): React.ReactNode => {
-  const { linkId, siteId } = useQueryParse(editLinkSchema)
+  const { linkId, siteId } = useQueryParse(editLinkPageSchema)
   const [permalink] = trpc.page.getFullPermalink.useSuspenseQuery(
     {
       pageId: linkId,

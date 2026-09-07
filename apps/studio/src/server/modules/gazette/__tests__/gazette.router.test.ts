@@ -1352,8 +1352,12 @@ describe("gazette.router", async () => {
         .calls[0]?.[0]
       expect(call?.recipientEmail).toBe(env.DD_DELETION_EMAIL)
       // The admins query has no ORDER BY, so compare cc as a sorted set
-      expect([...(call?.cc ?? [])].toSorted()).toEqual(
-        ["admin2@agency.gov.sg", "user@toppannext.com"].toSorted(),
+      expect(
+        [...(call?.cc ?? [])].toSorted((a, b) => a.localeCompare(b)),
+      ).toEqual(
+        ["admin2@agency.gov.sg", "user@toppannext.com"].toSorted((a, b) =>
+          a.localeCompare(b),
+        ),
       )
     })
 

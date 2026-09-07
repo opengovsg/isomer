@@ -178,9 +178,9 @@ export const ActiveTableToolbar: Story = {
       throw new Error("Overflow trigger not found")
     }
     await userEvent.click(overflowTrigger)
-    await canvas.findByRole("button", { name: /^superscript$/i })
+    await canvas.findByRole("button", { name: /^superscript$/iu })
     await expect(
-      canvas.queryAllByRole("button", { name: /^superscript$/i }),
+      canvas.queryAllByRole("button", { name: /^superscript$/iu }),
     ).toHaveLength(1)
     await userEvent.keyboard("{Escape}")
 
@@ -194,10 +194,10 @@ export const ActiveTableToolbar: Story = {
 
     // Inside a table: promoted directly onto the main toolbar, and no longer
     // duplicated under "More options" (removed from that list entirely).
-    await canvas.findByRole("button", { name: /^superscript$/i })
-    await canvas.findByRole("button", { name: /^subscript$/i })
+    await canvas.findByRole("button", { name: /^superscript$/iu })
+    await canvas.findByRole("button", { name: /^subscript$/iu })
     await expect(
-      canvas.getAllByRole("button", { name: /^superscript$/i }),
+      canvas.getAllByRole("button", { name: /^superscript$/iu }),
     ).toHaveLength(1)
 
     // Divider is also table-inapplicable, so "More options" has nothing left

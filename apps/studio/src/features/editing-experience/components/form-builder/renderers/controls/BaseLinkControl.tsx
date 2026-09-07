@@ -20,7 +20,7 @@ import { Suspense } from "react"
 import { BiTrash } from "react-icons/bi"
 import { LinkEditorModal } from "~/components/PageEditor/LinkEditorModal"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { sitePageSchema } from "~/pages/sites/[siteId]"
+import { sitePageSchema } from "~/pages/sites/[siteId]/sitePageSchema"
 import { trpc } from "~/utils/trpc"
 import {
   hasNonEmptyString,
@@ -116,7 +116,7 @@ export const BaseLinkControl = ({
                 {pageType === LINK_TYPES.Page && dataString.length > 0 && (
                   <Suspense fallback={<Skeleton w="100%" h="100%" />}>
                     <SuspendableLabel
-                      siteId={Number(siteId)}
+                      siteId={siteId}
                       resourceId={getResourceIdFromReferenceLink(dataString)}
                     />
                   </Suspense>

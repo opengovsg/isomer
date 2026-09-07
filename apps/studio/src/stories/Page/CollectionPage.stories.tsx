@@ -143,7 +143,7 @@ export const NewCollectionTagsManagement: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await canvas.findByText(
-      /Manage the Collection’s layout, filters, and sorting./i,
+      /Manage the Collection’s layout, filters, and sorting./iu,
     )
   },
 }

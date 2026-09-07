@@ -1,20 +1,15 @@
 import type { GetLayout } from "~/lib/types"
 import { Flex, Grid } from "@chakra-ui/react"
 import { Tabs } from "@opengovsg/design-system-react"
-import { z } from "zod"
 import { EnforceLoginStatePageWrapper } from "~/components/AuthWrappers"
 import { LayoutHead } from "~/components/LayoutHead"
 import { LinkEditNavbar } from "~/features/editing-experience/components/LinkEditNavbar"
 import { PermissionsProvider } from "~/features/permissions"
 import { useQueryParse } from "~/hooks/useQueryParse"
-
-const editLinkSchema = z.object({
-  linkId: z.string(),
-  siteId: z.coerce.number().min(1),
-})
+import { editLinkPageSchema } from "~/pages/sites/[siteId]/links/[linkId]/editLinkPageSchema"
 
 export const LinkEditingLayout: GetLayout = (page) => {
-  const { linkId, siteId } = useQueryParse(editLinkSchema)
+  const { linkId, siteId } = useQueryParse(editLinkPageSchema)
 
   return (
     <EnforceLoginStatePageWrapper>

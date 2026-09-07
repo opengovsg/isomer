@@ -131,9 +131,13 @@ export const ShowHint: Story = {
     })
     await userEvent.click(searchButton)
     await userEvent.keyboard("covid")
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await new Promise((resolve) => {
+      setTimeout(resolve, 1000)
+    })
     await userEvent.keyboard(" test")
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await new Promise((resolve) => {
+      setTimeout(resolve, 1000)
+    })
     await userEvent.keyboard(" 1")
   },
 }

@@ -32,7 +32,7 @@ import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { generateResourceUrl } from "~/features/editing-experience/components/utils"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
-import { sitePageSchema } from "~/pages/sites/[siteId]"
+import { sitePageSchema } from "~/pages/sites/[siteId]/sitePageSchema"
 import {
   baseEditFolderSchema,
   MAX_FOLDER_PERMALINK_LENGTH,
