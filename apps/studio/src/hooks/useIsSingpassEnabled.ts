@@ -3,7 +3,6 @@ import { env } from "~/env.mjs"
 import {
   IS_SINGPASS_ENABLED_FEATURE_KEY,
   IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE,
-  shouldSkipSingpassAuth,
 } from "~/lib/growthbook"
 
 export const useIsSingpassEnabled = () => {
@@ -11,7 +10,7 @@ export const useIsSingpassEnabled = () => {
     IS_SINGPASS_ENABLED_FEATURE_KEY,
     IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE,
   )
-  const skipSingpass = shouldSkipSingpassAuth()
+  const skipSingpass = env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS
 
   return {
     // Whether singpass-off side effects (e.g. email-on-publish) should activate.
