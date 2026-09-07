@@ -1,5 +1,6 @@
 import type { MouseEvent as ReactMouseEvent } from "react"
 import { Box } from "@chakra-ui/react"
+import { IconTableDragDots, IconTableDragPlus } from "~/components/icons"
 import { TABLE_CHROME_GAP_PX } from "~/features/editing-experience/utils/tableEditorChrome"
 
 import type { Rect } from "./axisMath"
@@ -10,7 +11,6 @@ import {
   ADD_PILL_RADIUS_PX,
   HANDLE_BORDER_RADIUS_PX,
 } from "./chrome"
-import { DotsIcon, PlusIcon } from "./icons"
 
 const handleBaseStyle = {
   display: "flex",
@@ -97,7 +97,7 @@ export const AxisHandle = ({
       data-table-pos={tablePos}
       data-index={index}
     >
-      <DotsIcon orientation={isRow ? "vertical" : "horizontal"} />
+      <IconTableDragDots orientation={isRow ? "vertical" : "horizontal"} />
     </Box>
   )
 }
@@ -144,6 +144,6 @@ export const AddPillButton = ({
     onMouseDown={(event: ReactMouseEvent) => event.preventDefault()}
     onClick={onClick}
   >
-    <PlusIcon size={ADD_PILL_ICON_SIZE_PX} />
+    <IconTableDragPlus size={ADD_PILL_ICON_SIZE_PX} />
   </Box>
 )
