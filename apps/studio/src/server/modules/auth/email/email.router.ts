@@ -210,7 +210,7 @@ export const emailSessionRouter = router({
           tx,
         })
 
-        ctx.session.userId = undefined
+        ctx.session.destroy()
         set(ctx.session, "singpass.sessionState", {
           userId: userValue.id,
           verificationToken: oldVerificationToken,

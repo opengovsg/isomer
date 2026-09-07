@@ -19,6 +19,7 @@ import { Controller } from "react-hook-form"
 import { useInterval } from "usehooks-ts"
 import { CALLBACK_URL_KEY } from "~/constants/params"
 import { useLoginState } from "~/features/auth"
+import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
 import { OTP_LENGTH } from "~/lib/auth"
 import { useZodForm } from "~/lib/form"
 import { SIGN_IN_SINGPASS } from "~/lib/routes"
@@ -42,6 +43,8 @@ export const VerificationInput = (): React.ReactNode | null => {
   const utils = trpc.useUtils()
 
   const { vfnStepData, timer, setVfnStepData, resetTimer } = useSignInContext()
+
+  const { isSingpassEnabled } = useIsSingpassEnabled()
 
   useInterval(
     () => {
@@ -88,8 +91,8 @@ export const VerificationInput = (): React.ReactNode | null => {
         }
       }
     },
-    onSuccess: async ({ requiresSingpass }) => {
-      if (requiresSingpass) {
+    onSuccess: async () => {
+      if (isSingpassEnabled) {
         await router.push(SIGN_IN_SINGPASS)
       } else {
         posthogJs.capture("user_logged_in", { method: "email" })
