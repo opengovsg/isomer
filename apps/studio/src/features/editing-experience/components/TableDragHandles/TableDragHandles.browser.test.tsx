@@ -224,13 +224,13 @@ describe("TableDragHandles", () => {
     )
   })
 
-  it("shows a row handle for the header row so it can be selected", async () => {
+  it("shows a row handle for the header row so it can be selected or reordered", async () => {
     // Arrange / Act
     const { container } = await renderHarness()
     const handle = await waitForHandle(container, "row", 0)
 
     // Assert
-    expect(handle.getAttribute("aria-label")).toBe("Select row")
+    expect(handle.getAttribute("aria-label")).toBe("Drag to reorder row")
     expect(handle.tagName).toBe("BUTTON")
   })
 
@@ -505,40 +505,7 @@ describe("TableDragHandles", () => {
     })
   })
 
-  it("does not reorder when dragging the header row, and click still selects it", async () => {
-    // Arrange
-    const { editor, container } = await renderHarness()
-    const before = getCellText(editor)
-    const handle = await waitForHandle(container, "row", 0)
-    const handleCentre = centreOf(handle)
-    const thirdBodyCell = findByCellText(container, "Row 3, A")
-    const targetPos = centreOf(thirdBodyCell)
-
-    // Act
-    act(() => {
-      fireEvent.mouseDown(handle, {
-        clientX: handleCentre.x,
-        clientY: handleCentre.y,
-      })
-      fireEvent.mouseMove(document, {
-        clientX: handleCentre.x,
-        clientY: targetPos.y + 15,
-      })
-      fireEvent.mouseUp(document, {
-        clientX: handleCentre.x,
-        clientY: targetPos.y + 15,
-      })
-    })
-
-    // Assert
-    expect(getCellText(editor)).toEqual(before)
-    expect(editor.state.selection).toBeInstanceOf(CellSelection)
-    expect((editor.state.selection as CellSelection).isRowSelection()).toBe(
-      true,
-    )
-  })
-
-  it("does not drop a data row into the header row", async () => {
+  it("swaps the header row when a body row is dragged above it", async () => {
     // Arrange
     const { editor, container } = await renderHarness()
     const handle = await waitForHandle(container, "row", 1)
@@ -565,6 +532,50 @@ describe("TableDragHandles", () => {
     // Assert
     await waitFor(() => {
       expect(getCellText(editor).slice(0, 3)).toEqual([
+        "Row 1, A",
+        "Row 1, B",
+        "Row 1, C",
+      ])
+      expect(getCellText(editor).slice(3, 6)).toEqual([
+        "Column A",
+        "Column B",
+        "Column C",
+      ])
+    })
+  })
+
+  it("reorders when dragging the header row into the table body", async () => {
+    // Arrange
+    const { editor, container } = await renderHarness()
+    const handle = await waitForHandle(container, "row", 0)
+    const handleCentre = centreOf(handle)
+    const thirdBodyCell = findByCellText(container, "Row 3, A")
+    const targetPos = centreOf(thirdBodyCell)
+
+    // Act
+    act(() => {
+      fireEvent.mouseDown(handle, {
+        clientX: handleCentre.x,
+        clientY: handleCentre.y,
+      })
+      fireEvent.mouseMove(document, {
+        clientX: handleCentre.x,
+        clientY: targetPos.y + 15,
+      })
+      fireEvent.mouseUp(document, {
+        clientX: handleCentre.x,
+        clientY: targetPos.y + 15,
+      })
+    })
+
+    // Assert
+    await waitFor(() => {
+      expect(getCellText(editor).slice(0, 3)).toEqual([
+        "Row 3, A",
+        "Row 3, B",
+        "Row 3, C",
+      ])
+      expect(getCellText(editor).slice(9, 12)).toEqual([
         "Column A",
         "Column B",
         "Column C",
@@ -728,8 +739,7 @@ describe("TableDragHandles", () => {
     expect(icon && getComputedStyle(icon).height).toBe(
       `${ADD_PILL_ICON_SIZE_PX}px`,
     )
-    const path = icon?.querySelector("path")
-    expect(path?.getAttribute("fill")).toBe("#2C2E34")
+    expect(icon && getComputedStyle(icon).color).toBe("rgb(44, 46, 52)")
   })
 
   it("renders a rectangular 20px-thick row handle with no border", async () => {

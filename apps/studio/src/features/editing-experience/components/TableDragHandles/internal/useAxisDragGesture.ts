@@ -16,10 +16,14 @@ import type {
   GestureIntent,
   GestureState,
 } from "./dragMachine"
-import { AXIS_TABLE_OPS, getAxisLockMinIndex } from "./axisTableOps"
+import { AXIS_TABLE_OPS, getTableAt } from "./axisTableOps"
 import { AXIS_VIEW } from "./axisView"
 import { IDLE_GESTURE, reduceGesture } from "./dragMachine"
 import { viewportPointToContainerPoint } from "./measure"
+import {
+  applyHeaderAxisNormalization,
+  shouldNormalizeHeaderAxis,
+} from "./normalizeHeaderAxis"
 import { selectWholeSlot } from "./selection"
 
 export const TABLE_DRAGGING_ATTR = "data-table-drag-handles-dragging"
@@ -70,12 +74,33 @@ export const useAxisDragGesture = ({
         selectWholeSlot(editor, intent.tablePos, intent.axis, intent.index)
         return
       }
-      // The move commands need a position inside the table node.
-      AXIS_TABLE_OPS[intent.axis].move({
-        from: intent.from,
-        to: intent.to,
-        pos: intent.tablePos + 1,
-      })(editor.state, editor.view.dispatch)
+      if (intent.type === "moveSlot") {
+        const tableBefore = getTableAt(editor.state.doc, intent.tablePos)
+        const normalize =
+          !!tableBefore && shouldNormalizeHeaderAxis(tableBefore, intent.axis)
+        const move = AXIS_TABLE_OPS[intent.axis].move({
+          from: intent.from,
+          to: intent.to,
+          pos: intent.tablePos + 1,
+        })
+        const { state, schema } = editor
+        let transaction = state.tr
+        const moved = move(state, (tr) => {
+          transaction = tr
+          return true
+        })
+        if (!moved) return
+        if (normalize) {
+          transaction = applyHeaderAxisNormalization(
+            transaction,
+            intent.tablePos,
+            intent.axis,
+            schema,
+          )
+        }
+        editor.view.dispatch(transaction)
+        return
+      }
     },
     [editor],
   )
@@ -115,7 +140,7 @@ export const useAxisDragGesture = ({
           index,
           rects,
           projection: AXIS_VIEW[axis],
-          lockMinIndex: getAxisLockMinIndex(editor.state.doc, tablePos, axis),
+          lockMinIndex: 0,
           clientX: event.clientX,
           clientY: event.clientY,
         })

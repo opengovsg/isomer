@@ -15,7 +15,6 @@ import {
   getTableBounds,
   nearestBoundaryIndex,
 } from "./internal/axisMath"
-import { getAxisLockMinIndex } from "./internal/axisTableOps"
 import { AXES, AXIS_VIEW } from "./internal/axisView"
 import { ADD_PILL_MIN_LENGTH_PX } from "./internal/chrome"
 import { AddPillButton, AxisHandle } from "./internal/handles"
@@ -83,11 +82,6 @@ export const TableDragHandles = ({
   }
 
   const renderAxisHandles = (geometry: TableGeometry, axis: Axis) => {
-    const lockMinIndex = getAxisLockMinIndex(
-      editor.state.doc,
-      geometry.pos,
-      axis,
-    )
     const selected = selectedIndexesFor(selectionTarget, geometry.pos, axis)
     const rects = AXIS_VIEW[axis].rectsOf(geometry)
 
@@ -107,7 +101,7 @@ export const TableDragHandles = ({
           isActive={isActive}
           tablePos={geometry.pos}
           index={index}
-          isLocked={index < lockMinIndex}
+          isLocked={false}
           onMouseDown={beginGesture(axis, geometry.pos, index, rects)}
           onClick={() => onHandleClick(axis, geometry.pos, index)}
         />

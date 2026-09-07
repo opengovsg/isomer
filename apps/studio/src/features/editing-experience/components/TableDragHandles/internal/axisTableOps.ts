@@ -13,15 +13,11 @@ import {
   moveTableRow,
   TableMap,
 } from "@tiptap/pm/tables"
-import {
-  hasHeaderColumn,
-  hasHeaderRow,
-} from "~/features/editing-experience/utils/tableHeaderAxis"
 
 import type { Axis } from "./axisView"
 
 export interface AxisTableOps {
-  /** First index that may not be reordered. 1 when the axis has a header. */
+  /** Drop floor for reordering. Header axes swap at index 0 instead of locking. */
   lockMinIndex: (table: ProseMirrorNode) => number
   /** Offset of the first cell in slot `index`, relative to the table start. */
   cellOffsetAt: (map: TableMap, table: ProseMirrorNode, index: number) => number
@@ -33,16 +29,14 @@ export interface AxisTableOps {
 
 export const AXIS_TABLE_OPS: Record<Axis, AxisTableOps> = {
   row: {
-    lockMinIndex: (table) =>
-      hasHeaderRow({ map: TableMap.get(table), table }) ? 1 : 0,
+    lockMinIndex: () => 0,
     cellOffsetAt: (map, table, index) => map.positionAt(index, 0, table),
     lastCellOffset: (map, table) => map.positionAt(map.height - 1, 0, table),
     cellSelection: ($cell) => CellSelection.rowSelection($cell),
     move: moveTableRow,
   },
   column: {
-    lockMinIndex: (table) =>
-      hasHeaderColumn({ map: TableMap.get(table), table }) ? 1 : 0,
+    lockMinIndex: () => 0,
     cellOffsetAt: (map, table, index) => map.positionAt(0, index, table),
     lastCellOffset: (map, table) => map.positionAt(0, map.width - 1, table),
     cellSelection: ($cell) => CellSelection.colSelection($cell),

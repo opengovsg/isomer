@@ -143,12 +143,13 @@ describe("move", () => {
     })
   })
 
-  it("never drags a locked header slot, however far the pointer travels", () => {
-    const pending = run(pressOn(0, { lockMinIndex: 1 }))
+  it("becomes a drag from the header row once the pointer clears the threshold", () => {
+    const { state } = reduceGesture(
+      run(pressOn(0, { lockMinIndex: 1 })),
+      moveTo(400, { x: 10, y: 355 }),
+    )
 
-    const { state } = reduceGesture(pending, moveTo(400, { x: 10, y: 355 }))
-
-    expect(state).toBe(pending)
+    expect(state).toMatchObject({ phase: "dragging", from: 0 })
   })
 
   it("projects the pointer onto the column axis for a column gesture", () => {
@@ -310,9 +311,9 @@ describe("release", () => {
     ])
   })
 
-  it("never drops a slot onto a locked header", () => {
+  it("can drop a slot onto the header boundary when lockMinIndex is 0", () => {
     const dragging = run(
-      pressOn(2, { lockMinIndex: 1 }),
+      pressOn(2, { lockMinIndex: 0 }),
       moveTo(210, { x: 10, y: 90 }),
     )
 
@@ -320,8 +321,8 @@ describe("release", () => {
 
     expect(intents).toEqual([
       { type: "suppressNextClick" },
-      { type: "moveSlot", axis: "row", tablePos: TABLE_POS, from: 2, to: 1 },
-      { type: "selectSlot", axis: "row", tablePos: TABLE_POS, index: 1 },
+      { type: "moveSlot", axis: "row", tablePos: TABLE_POS, from: 2, to: 0 },
+      { type: "selectSlot", axis: "row", tablePos: TABLE_POS, index: 0 },
     ])
   })
 
