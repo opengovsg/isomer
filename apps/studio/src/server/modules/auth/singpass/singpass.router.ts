@@ -167,8 +167,8 @@ export const singpassRouter = router({
       )
 
     return {
-      isNewUser: !hasNonEmptyString(user.singpassUuid),
-      name: hasNonEmptyString(user.name) ? user.name : user.email,
+      isNewUser: !user.singpassUuid,
+      name: user.name || user.email,
     }
   }),
 
