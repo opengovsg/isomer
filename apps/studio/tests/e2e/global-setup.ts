@@ -40,10 +40,6 @@ const signInOnce = async (role: keyof typeof TEST_EMAILS, baseURL: string) => {
   })
 
   if (page.url().includes("/sign-in/singpass")) {
-    await page.waitForResponse(
-      (response) =>
-        response.url().includes("auth.singpass.getUserProps") && response.ok(),
-    )
     await loginPage.singpassButton.waitFor({ state: "visible" })
     await loginPage.mockpassLoginWith(uuid)
     await page.waitForURL(`${baseURL}/`)
