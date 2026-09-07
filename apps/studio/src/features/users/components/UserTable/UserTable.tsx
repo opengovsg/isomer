@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/sort-keys, import/no-cycle -- core cleanup deferred */
 import type { StockFeatures } from "@tanstack/react-table"
 import type { AdminType } from "~/schemas/user"
 import { Text, VStack } from "@chakra-ui/react"

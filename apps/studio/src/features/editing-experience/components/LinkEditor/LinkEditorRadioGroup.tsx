@@ -1,3 +1,4 @@
+/* oxlint-disable anti-slop/require-safety-comment-for-type-assertion, eslint/sort-keys, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { UseRadioProps } from "@chakra-ui/react"
 import type { PropsWithChildren } from "react"
 import {

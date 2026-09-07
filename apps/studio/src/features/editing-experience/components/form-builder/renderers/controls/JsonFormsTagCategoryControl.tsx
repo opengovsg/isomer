@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-shadow, unicorn/no-new-array, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import type { CollectionPagePageProps } from "@opengovsg/isomer-components"
 import { Box, HStack, Text, VStack } from "@chakra-ui/react"
@@ -9,6 +10,12 @@ import { BiPurchaseTag } from "react-icons/bi"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { pageSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { AddItemButton } from "../../components/AddItemButton"
 import { DeleteFilterModal } from "../../components/DeleteFilterModal"
@@ -107,13 +114,16 @@ const JsonFormsTagCategoriesArrayLayoutInner = (props: ArrayLayoutProps) => {
               Add a filter
             </AddItemButton>
           </HStack>
-          {description && (
+          {hasNonEmptyString(description) && (
             <Text textStyle="body-2" textColor="base.content.default">
               {description}
             </Text>
           )}
         </VStack>
-        <Box w="full" mt={description ? "0.75rem" : "0.25rem"}>
+        <Box
+          w="full"
+          mt={hasNonEmptyString(description) ? "0.75rem" : "0.25rem"}
+        >
           <DragDropContext onDragEnd={onDragEnd}>
             <Droppable droppableId="blocks">
               {({ droppableProps, innerRef, placeholder }) => (
@@ -132,7 +142,7 @@ const JsonFormsTagCategoriesArrayLayoutInner = (props: ArrayLayoutProps) => {
                     />
                   )}
 
-                  {[...Array(data).keys()].map((index) => {
+                  {[...new Array(data).keys()].map((index) => {
                     const childPath = composePaths(path, `${index}`)
                     const isDuplicate = duplicateFilterIndices.has(index)
                     const hasError = hasErrorAt(childPath) || isDuplicate

@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type {
   JsonFormsCellRendererRegistryEntry,
   JsonFormsRendererRegistryEntry,

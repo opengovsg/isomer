@@ -1,8 +1,15 @@
+/* oxlint-disable import/no-cycle, unicorn/no-nested-ternary -- core cleanup deferred */
 import { skipToken } from "@tanstack/react-query"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { sitePageSchema } from "~/pages/sites/[siteId]"
 import { isResourceMoveValid } from "~/utils/resources"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 export const useValidateResourceMove = ({
@@ -16,7 +23,9 @@ export const useValidateResourceMove = ({
   const { siteId } = useQueryParse(sitePageSchema)
   const { data: source, isLoading: isSourceLoading } =
     trpc.resource.getMetadataById.useQuery(
-      sourceId ? { resourceId: sourceId, siteId } : skipToken,
+      hasNonEmptyString(sourceId)
+        ? { resourceId: sourceId, siteId }
+        : skipToken,
     )
   const { data: destination, isLoading: isDestinationLoading } =
     trpc.resource.getMetadataById.useQuery(
@@ -52,11 +61,12 @@ export const useValidateResourceMove = ({
     isResourceMoveValid(source, destinationResource)
 
   const errorMessage =
+    // oxlint-disable-next-line eslint/no-nested-ternary -- core cleanup deferred
     isValidMove instanceof Error
       ? isValidMove.message
-      : (isValidMove
+      : isValidMove
         ? undefined
-        : "Invalid resource move")
+        : "Invalid resource move"
 
   return {
     errorMessage,

@@ -8,6 +8,7 @@ interface UseDeleteTargetArgs<T> {
   resolveTarget: (index: number) => T
 }
 
+// oxlint-disable-next-line eslint/func-style -- core cleanup deferred
 export function useDeleteTarget<T extends { label: string }>({
   path,
   removeItems,

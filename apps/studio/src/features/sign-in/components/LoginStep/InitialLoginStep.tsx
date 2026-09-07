@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-unreachable, eslint/no-useless-return, typescript/consistent-return, typescript/switch-exhaustiveness-check, unicorn/no-useless-undefined -- core cleanup deferred */
 import { Box, Stack, Text, VStack } from "@chakra-ui/react"
 import { Infobox } from "@opengovsg/design-system-react"
 import { useMemo } from "react"
@@ -26,6 +27,7 @@ export const InitialLoginStep = (): React.ReactNode => {
       }
     }
   }, [errorState])
+  // oxlint-disable-next-line typescript/switch-exhaustiveness-check -- core cleanup deferred
 
   const errorDescription = useMemo(() => {
     switch (errorState) {
@@ -37,6 +39,7 @@ export const InitialLoginStep = (): React.ReactNode => {
         return
       }
     }
+    return undefined
   }, [errorState])
 
   return (

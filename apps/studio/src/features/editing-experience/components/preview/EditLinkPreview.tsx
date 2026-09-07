@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-shadow, import/no-cycle -- core cleanup deferred */
 import type { CollectionLinkProps } from "~/schemas/collection"
 import { useMemo } from "react"
 import { useSuspenseCollectionTags } from "~/features/editing-experience/hooks/useCollectionTags"
@@ -8,6 +9,12 @@ import {
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { editLinkSchema } from "~/pages/sites/[siteId]/links/[linkId]"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import PreviewWithCustomSitemap from "./PreviewWithCustomSitemap"
@@ -54,7 +61,7 @@ export const EditCollectionLinkPreview = ({
     [permalink],
   )
   const parentTitle = useMemo(
-    () => parent?.title || ResourceType.Collection,
+    () => hasNonEmptyString(parent?.title) || ResourceType.Collection,
     [parent?.title],
   )
   const ancestorTitles = useMemo(

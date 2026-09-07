@@ -52,7 +52,9 @@ const DeleteTableButton = ({ editor }: { editor: Editor }) => (
       bg: "interaction.muted.main.active",
     }}
     aria-label="Delete table"
-    onClick={() => editor.chain().focus().deleteTable().run()}
+    onClick={() => {
+      void editor.chain().focus().deleteTable().run()
+    }}
   >
     <Icon as={BiTable} fontSize="1.25rem" color="base.content.medium" />
   </IconButton>

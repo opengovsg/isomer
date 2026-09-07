@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-boolean-expressions -- core cleanup deferred */
 import type { CombinatorRendererProps, RankedTester } from "@jsonforms/core"
 import { Box, FormControl, RadioGroup } from "@chakra-ui/react"
 import {
@@ -89,7 +90,6 @@ const JsonFormsCombinatorControl = ({
     const newSchema =
       renderInfos[options.findIndex((option) => option.value === value)]?.schema
     if (newSchema) {
-      // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const newData = createDefaultValue(newSchema, rootSchema)
 
       if (newSchema.type === "string") {

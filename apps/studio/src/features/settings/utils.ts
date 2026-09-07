@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-array-reverse, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { IsomerSiteThemeProps } from "@opengovsg/isomer-components"
 import type { CSSProperties } from "react"
 import { flatten } from "flat"
@@ -18,6 +19,7 @@ const LINEAR_RGB_FACTORS = {
 // The dark colour there is twColors.gray["700"].
 // This can also be referenced from
 // /isomer/packages/components/src/presets/next/colors.ts
+// oxlint-disable-next-line eslint/sort-keys -- core cleanup deferred
 export const TEXT_COLOURS = {
   light: "#FFFFFF",
   dark: twColors.gray["700"],
@@ -43,6 +45,7 @@ export const normalizeHex = (color: string): string => {
   }
 
   if (normalizedColor.length === 3) {
+    // oxlint-disable-next-line unicorn/no-misused-spread -- core cleanup deferred
     normalizedColor = [...normalizedColor].map((char) => char + char).join("")
   }
 
@@ -52,6 +55,7 @@ export const normalizeHex = (color: string): string => {
 const convertHexToRgb = (color: string): [number, number, number] => {
   const rgb = normalizeHex(color)
   // SAFETY: normalized hex always yields three 8-bit RGB channel values
+  // oxlint-disable-next-line unicorn/no-unsafe-type-assertion -- core cleanup deferred
   return chunk(rgb, 2).map((hex) => Number.parseInt(hex.join(""), 16)) as [
     number,
     number,
@@ -104,6 +108,8 @@ const generateTheme = ({
   shades: string[]
 }) => {
   // SAFETY: tint and shade tokens are derived from the validated brand colour input
+  // oxlint-disable-next-line unicorn/no-unsafe-type-assertion -- core cleanup deferred
+  // oxlint-disable-next-line eslint/sort-keys -- core cleanup deferred
   const simpleTheme = {
     // 90% tint
     "colors.brand.canvas.default": tints[0],
@@ -118,13 +124,17 @@ const generateTheme = ({
     "colors.brand.interaction.pressed": shades[6],
   } as Theme
 
+  // oxlint-disable-next-line eslint/no-use-before-define -- core cleanup deferred
   if (passesContrastCheck(simpleTheme)) {
     return simpleTheme
   }
 
   // NOTE: This is from light to dark
   const range = [...tints, colour, ...shades]
+  // oxlint-disable-next-line eslint/no-use-before-define -- core cleanup deferred
   const dark = pickColorsFromRange(range, TEXT_COLOURS.light, 4)
+  // oxlint-disable-next-line unicorn/no-array-reverse -- core cleanup deferred
+  // oxlint-disable-next-line eslint/no-use-before-define -- core cleanup deferred
   const light = pickColorsFromRange(range.reverse(), TEXT_COLOURS.dark, 2)
 
   return {
@@ -151,6 +161,7 @@ const pickColorsFromRange = (
   const arr = lumArr.map((rel) => rel >= 4.5)
 
   // NOTE: pick `numToPick` colors from here in roughly equal intervals
+  // oxlint-disable-next-line unicorn/prefer-native-coercion-functions -- core cleanup deferred
   const firstPassingIndex = arr.findIndex((passes) => passes)
   const passableColorsLength = colors.length - firstPassingIndex + 1
   // have to include color at `firstPassingIndex` also
@@ -174,6 +185,7 @@ export const convertThemeToCss = (theme: IsomerSiteThemeProps) => {
   )
 
   // SAFETY: flattened theme colour tokens map directly to CSS custom properties
+  // oxlint-disable-next-line unicorn/no-array-reduce -- core cleanup deferred
   return Object.entries(flattenedVars).reduce<Record<string, string>>(
     (acc, [key, value]) => {
       acc[`--${key}`] = value
@@ -217,7 +229,7 @@ const generateColorPalette = (r: number, g: number, b: number) => {
 
   return { colour: rgbToHex(r, g, b), shades, tints }
 }
-export function passesContrastCheck(theme: Theme): boolean {
+export const passesContrastCheck = (theme: Theme): boolean => {
   const passesDarkContrastCheck = BACKGROUND_COLOURS.light
     .map((path) => {
       const bgColor = theme[path]

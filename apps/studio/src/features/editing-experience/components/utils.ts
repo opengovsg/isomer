@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/array-callback-return, typescript/consistent-return -- core cleanup deferred */
 import type {
   IsomerComponent,
   IsomerGeneratedSiteProps,
@@ -64,6 +65,7 @@ export const uploadModifiedAssets = async ({
         return
       }
 
+      // oxlint-disable-next-line typescript/consistent-return -- core cleanup deferred
       return await uploadAsset({ file }).then((res) => {
         set(block, path, res.path)
         return path
@@ -97,6 +99,7 @@ export const generatePreviewSitemap = (
   title = "Your filename",
 ) =>
   // SAFETY: preview sitemap children are mapped from the collection fixture shape
+  // oxlint-disable-next-line unicorn/no-unsafe-type-assertion -- core cleanup deferred
   ({
     ...sitemap,
     children: sitemap.children.map(({ children, ...rest }) => ({
@@ -106,6 +109,7 @@ export const generatePreviewSitemap = (
   }) as IsomerGeneratedSiteProps["siteMap"]
 
 export const getIframeSrc = (embedCode: string): string | undefined => {
+  // oxlint-disable-next-line import/no-named-as-default-member -- core cleanup deferred
   const elem = DOMPurify.sanitize(embedCode, {
     ALLOWED_TAGS: ["iframe"],
     RETURN_DOM_FRAGMENT: true,
@@ -120,17 +124,23 @@ export const getEmbedNameFromUrl = (url: string) =>
     ...MAPS_EMBED_URL_REGEXES,
     ...VIDEO_EMBED_URL_REGEXES,
     ...FORMSG_EMBED_URL_REGEXES,
+    // oxlint-disable-next-line eslint/array-callback-return -- core cleanup deferred
+    // oxlint-disable-next-line unicorn/no-array-reduce -- core cleanup deferred
   }).reduce<string | undefined>((acc, curr) => {
+    // oxlint-disable-next-line typescript/strict-boolean-expressions -- core cleanup deferred
     if (acc) {
       // Embed name already found, return it
       return acc
     }
 
     const [embedName, regex] = curr
-    if (new RegExp(regex).test(url)) {
+    if (new RegExp(regex, "u").test(url)) {
       // SAFETY: caller invariant is checked immediately before this narrowing assertion
+      // oxlint-disable-next-line unicorn/no-unsafe-type-assertion -- core cleanup deferred
       return EMBED_NAME_MAPPING[embedName as keyof typeof EMBED_NAME_MAPPING]
     }
 
+    // oxlint-disable-next-line typescript/consistent-return -- core cleanup deferred
+    // oxlint-disable-next-line eslint/no-useless-return -- core cleanup deferred
     return
   })

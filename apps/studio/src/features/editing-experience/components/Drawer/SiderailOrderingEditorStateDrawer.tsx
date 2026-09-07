@@ -1,10 +1,11 @@
+/* oxlint-disable unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { DropResult } from "@hello-pangea/dnd"
 import type { IsomerComponent } from "@opengovsg/isomer-components"
 import { Box, Flex, Icon, Skeleton, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import { Button, useToast } from "@opengovsg/design-system-react"
 import { isEqual } from "lodash-es"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
 import { useCallback, useMemo } from "react"
 import { BiInfoCircle } from "react-icons/bi"
 import { UsageTooltip } from "~/components/PageEditor/UsageTooltip"
@@ -14,6 +15,12 @@ import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { getIcon } from "~/utils/resources"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { pageSchema } from "../../schema"
@@ -138,7 +145,7 @@ const SiderailOrderingContent = ({
       const updatedOrdering = [...mergedOrdering]
       const [movedItem] = updatedOrdering.splice(from, 1)
 
-      if (!movedItem) {
+      if (!hasNonEmptyString(movedItem)) {
         return
       }
 
@@ -200,7 +207,7 @@ const SiderailOrderingEditorStateDrawer = (): React.ReactNode => {
       })
     },
     onSuccess: async () => {
-      posthog.capture("page_changes_saved", { site_id: siteId })
+      posthogJs.capture("page_changes_saved", { site_id: siteId })
       await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
       await utils.page.readPage.invalidate({ pageId, siteId })
       toast({

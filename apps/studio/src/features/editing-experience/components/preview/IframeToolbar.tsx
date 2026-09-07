@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/default-case, typescript/consistent-return, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import {
   Flex,
   Icon,

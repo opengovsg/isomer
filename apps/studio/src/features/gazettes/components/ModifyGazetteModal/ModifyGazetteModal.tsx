@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-use-before-define, typescript/strict-void-return -- core cleanup deferred */
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import {
   HStack,
@@ -23,6 +24,12 @@ import { useUploadGazetteMutation } from "~/hooks/useUploadGazetteMutation"
 import { useZodForm } from "~/lib/form"
 import { createGazetteSchema } from "~/schemas/gazette"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { useGazetteSubcategoriesContext } from "../../contexts/GazetteSubcategoriesContext"
 import { GazetteFormFields } from "../GazetteModal"
@@ -143,7 +150,10 @@ const ModifyGazetteModalContent = ({
           year: data.publishDate.getFullYear(),
         })
         newRef = path
-      } else if (initialData.fileKey && initialData.fileId !== data.fileId) {
+      } else if (
+        hasNonEmptyString(initialData.fileKey) &&
+        initialData.fileId !== data.fileId
+      ) {
         desiredFileName = data.fileId
       }
 

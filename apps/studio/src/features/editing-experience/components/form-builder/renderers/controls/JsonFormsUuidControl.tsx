@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import { rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"

@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type {
   IsomerSiteConfigProps,
   IsomerSiteProps,
@@ -25,11 +26,18 @@ import { FOOTER_QUERY_SELECTOR } from "~/features/settings/constants"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { waitForElement } from "~/utils/dom"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { siteSchema } from "../../schema"
 import Preview from "./Preview"
 import { ViewportContainer } from "./ViewportContainer"
 
+// oxlint-disable-next-line eslint/sort-keys -- core cleanup deferred
 const SHARED_TAB_STYLES = {
   border: "1px solid",
   borderColor: "base.divider.strong",
@@ -80,6 +88,7 @@ const WindowButtons = () => (
   </Box>
 )
 
+// oxlint-disable-next-line eslint/sort-keys -- core cleanup deferred
 const CHROME_TAB_BASE_STYLE = {
   display: "flex",
   paddingTop: "8px",
@@ -97,6 +106,7 @@ const CHROME_TAB_FAVICON_STYLE = { height: "16px", width: "16px" } as const
 // SAFETY: caller invariant is checked immediately before this narrowing assertion
 const CHROME_TAB_CLOSE_ICON_STYLE = { marginLeft: "2rem" } as const
 
+// oxlint-disable-next-line eslint/sort-keys -- core cleanup deferred
 const ADDRESS_BAR_BASE_STYLE = {
   display: "flex",
   paddingTop: "8px",
@@ -115,6 +125,7 @@ const ADDRESS_BAR_NAV_ICONS_STYLE = { display: "flex", gap: "4px" } as const
 // SAFETY: caller invariant is checked immediately before this narrowing assertion
 const ADDRESS_BAR_NAV_ICON_STYLE = { margin: "8px" } as const
 
+// oxlint-disable-next-line eslint/sort-keys -- core cleanup deferred
 const ADDRESS_BAR_INPUT_STYLE = {
   borderRadius: "16777200px",
   border: "1px solid rgba(0, 0, 0, 0.00)",
@@ -140,7 +151,7 @@ const ChromeTab = ({
         ...style,
       }}
     >
-      {favicon ? (
+      {hasNonEmptyString(favicon) ? (
         <Image
           style={CHROME_TAB_FAVICON_STYLE}
           src={`https://${s3Domain}${favicon}`}
@@ -245,7 +256,11 @@ export const EditSettingsPreview = ({
       <ViewportContainer
         siteId={siteId}
         theme={theme}
-        callback={jumpToFooter ? handleSettingsPreviewIframeMount : undefined}
+        callback={
+          isNullableBooleanTrue(jumpToFooter)
+            ? handleSettingsPreviewIframeMount
+            : undefined
+        }
         header={
           previewMockContentPage && (
             <Tabs

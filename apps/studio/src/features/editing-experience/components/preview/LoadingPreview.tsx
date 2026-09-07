@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-new-array -- core cleanup deferred */
 import { Box, Grid, GridItem, Skeleton, VStack } from "@chakra-ui/react"
 
 export const LoadingPreview = (): React.ReactNode => (
@@ -28,22 +29,19 @@ export const LoadingPreview = (): React.ReactNode => (
       endColor="gray.100"
       mb="2rem"
     />
-
     <Grid templateColumns="1fr 4fr" gap="2rem" alignItems="start">
       <GridItem>
         <VStack gap="1rem">
-          {Array(3)
-            .fill(0)
-            .map((_, n) => (
-              <Skeleton
-                key={n}
-                width="100%"
-                height="18rem"
-                borderRadius="lg"
-                startColor="gray.50"
-                endColor="gray.100"
-              />
-            ))}
+          {new Array(3).fill(0).map((_, n) => (
+            <Skeleton
+              key={n}
+              width="100%"
+              height="18rem"
+              borderRadius="lg"
+              startColor="gray.50"
+              endColor="gray.100"
+            />
+          ))}
         </VStack>
       </GridItem>
 
@@ -57,18 +55,16 @@ export const LoadingPreview = (): React.ReactNode => (
             endColor="gray.200"
           />
 
-          {Array(5)
-            .fill(0)
-            .map((_, n) => (
-              <Skeleton
-                key={n}
-                width="100%"
-                height="12rem"
-                borderRadius="lg"
-                startColor="gray.50"
-                endColor="gray.100"
-              />
-            ))}
+          {new Array(5).fill(0).map((_, n) => (
+            <Skeleton
+              key={n}
+              width="100%"
+              height="12rem"
+              borderRadius="lg"
+              startColor="gray.50"
+              endColor="gray.100"
+            />
+          ))}
         </VStack>
       </GridItem>
     </Grid>

@@ -11,13 +11,14 @@ interface UseLiveLabelIssuesArgs {
   editingDraftLabel?: string
 }
 
-export function useLiveLabelIssues({
+export const useLiveLabelIssues = ({
   path,
   editingIndex = null,
   editingDraftLabel = "",
-}: UseLiveLabelIssuesArgs): { blank: Set<number>; duplicate: Set<number> } {
+}: UseLiveLabelIssuesArgs): { blank: Set<number>; duplicate: Set<number> } => {
   const { core } = useJsonForms()
   // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
+  // oxlint-disable-next-line unicorn/no-unsafe-type-assertion -- core cleanup deferred
   const items = get(core?.data, path) as { label?: string }[] | undefined
 
   return useMemo(() => {

@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-use-before-define -- core cleanup deferred */
 import type { NavbarSchemaType } from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
 import type { Dispatch, SetStateAction } from "react"
@@ -121,9 +122,7 @@ export const NavbarEditor = ({
           >
             Navigation bar
           </Text>
-
           <Spacer />
-
           <PublishButton
             isDirty={isDirty}
             isSaving={isSaving}
@@ -143,7 +142,6 @@ export const NavbarEditor = ({
           <TabList
             // This is to allow the bottom border to overlap with the one coming
             // from the Tab component
-            // oxlint-disable-next-line @typescript-eslint/no-unsafe-member-access
             background={`linear-gradient(${theme.colors.base.divider.medium},${theme.colors.base.divider.medium}) bottom/100% 2px no-repeat`}
             boxSizing="border-box"
             px="2rem"

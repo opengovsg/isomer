@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-warning-comments, react-doctor/no-array-index-as-key, unicorn/no-array-index-as-key -- core cleanup deferred */
 import type { DropResult } from "@hello-pangea/dnd"
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { Box, Button, Flex, Icon, Text, VStack } from "@chakra-ui/react"
@@ -257,7 +258,6 @@ export const RootStateDrawerBlocksSection = ({
                             <DraggableBlock
                               block={block}
                               // Deferred: Generate a block ID instead of index
-                              // oxlint-disable-next-line react-doctor/no-array-index-as-key -- blocks lack stable ids; draggableId still uses index per @dnd-kit.
                               key={`${block.type}-${index}`}
                               // Deferred: Use block ID when instead of index for uniquely identifying blocks
                               draggableId={`${block.type}-${index}`}

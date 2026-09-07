@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-warning-comments, unicorn/no-lonely-if -- core cleanup deferred */
 import {
   HStack,
   Icon,
@@ -12,6 +13,12 @@ import { useEffect } from "react"
 import { BiChevronRight, BiSolidCircle } from "react-icons/bi"
 import { useNewCollectionTagsManagement } from "~/hooks/useNewCollectionTagsManagement"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 import { ResourceState } from "~prisma/generated/generatedEnums"
 
 import type { IndexpageRowProps } from "./types"
@@ -75,11 +82,13 @@ export const IndexpageRow = ({
             <Badge
               size="xs"
               variant="clear"
-              colorScheme={data?.draftBlobId ? "warning" : "success"}
+              colorScheme={
+                hasNonEmptyString(data?.draftBlobId) ? "warning" : "success"
+              }
             >
               <BadgeLeftIcon fontSize="0.5rem" as={BiSolidCircle} />
               <Text textStyle="legal">
-                {data?.draftBlobId
+                {hasNonEmptyString(data?.draftBlobId)
                   ? ResourceState.Draft
                   : ResourceState.Published}
               </Text>

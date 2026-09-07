@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-nested-ternary -- core cleanup deferred */
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { getComponentSchema } from "@opengovsg/isomer-components"
 import { useEffect, useState } from "react"
@@ -33,6 +34,7 @@ export const useBlockHighlight = ({
   const shouldTrack = hoveredBlockIndex !== null && iframeDocument !== null
 
   useEffect(() => {
+    // oxlint-disable-next-line typescript/strict-boolean-expressions -- core cleanup deferred
     if (!shouldTrack || hoveredBlockIndex === null || !iframeDocument) {
       return
     }
@@ -65,6 +67,7 @@ export const useBlockHighlight = ({
     const resizeObserver = new ResizeObserver(updateRect)
     resizeObserver.observe(blockEl)
 
+    // oxlint-disable-next-line typescript/consistent-return -- core cleanup deferred
     return () => {
       resizeObserver.disconnect()
     }
@@ -73,10 +76,11 @@ export const useBlockHighlight = ({
   const block =
     hoveredBlockIndex === null ? undefined : content[hoveredBlockIndex]
 
+  // oxlint-disable-next-line eslint/no-nested-ternary -- core cleanup deferred
   const label = block
-    ? (block.type === "prose"
+    ? block.type === "prose"
       ? PROSE_COMPONENT_NAME
-      : (getComponentSchema({ component: block.type }).title ?? "Unknown"))
+      : (getComponentSchema({ component: block.type }).title ?? "Unknown")
     : undefined
 
   return { label, rect: shouldTrack ? rect : null }

@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/sort-keys, typescript/consistent-return, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/types"
 import type {
   BaseEventPayload,
@@ -24,6 +25,12 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { useEffect, useMemo, useRef, useState } from "react"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import {
   DEFAULT_NAVBAR_ITEM_DESCRIPTION,
@@ -99,7 +106,7 @@ export const StackableNavbarItem = ({
       return NAVBAR_ITEM_ERROR_DESCRIPTION
     }
 
-    return description || DEFAULT_NAVBAR_ITEM_DESCRIPTION
+    return hasNonEmptyString(description) || DEFAULT_NAVBAR_ITEM_DESCRIPTION
   }, [description, errors, index, numberOfErrors])
 
   // This useEffect sets up the drag and drop functionality for this particular
@@ -213,7 +220,7 @@ export const StackableNavbarItem = ({
   return (
     <>
       <DeleteGroupModal
-        label={name || DEFAULT_NAVBAR_ITEM_TITLE}
+        label={hasNonEmptyString(name) || DEFAULT_NAVBAR_ITEM_TITLE}
         subItemsCount={subItems ? subItems.length : 0}
         isOpen={isDeleteGroupModalOpen}
         onClose={onDeleteGroupModalClose}

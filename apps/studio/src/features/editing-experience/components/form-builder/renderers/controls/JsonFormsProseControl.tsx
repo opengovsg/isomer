@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import type { ComponentsWithProse } from "@opengovsg/isomer-components"
 import type {
@@ -16,6 +17,12 @@ import {
   useProseEditor,
 } from "~/features/editing-experience/hooks/useTextEditor"
 import { useSimpleProseEditor } from "~/features/editing-experience/hooks/useTextEditor/useTextEditor"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { TiptapAccordionEditor } from "../TipTapEditor/TiptapAccordionEditor"
 import { TiptapCalloutEditor } from "../TipTapEditor/TiptapCalloutEditor"
@@ -92,11 +99,10 @@ const JsonFormsProseControl = ({
   )
 
   const editor = EditorHook({
-    // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
     data,
     handleChange: useCallback(
       (content) => {
-        if (required && isTiptapEditorEmpty(content)) {
+        if (isNullableBooleanTrue(required) && isTiptapEditorEmpty(content)) {
           handleChange(path)
         } else {
           handleChange(path, content)
@@ -114,7 +120,6 @@ const JsonFormsProseControl = ({
       if (!selection) {
         return
       }
-      // oxlint-disable-next-line @typescript-eslint/no-unsafe-argument
       editor.commands.setContent(data, { emitUpdate: false })
       editor.commands.setTextSelection(selection)
     }

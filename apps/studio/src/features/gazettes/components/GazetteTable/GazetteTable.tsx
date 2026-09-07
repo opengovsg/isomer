@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { StockFeatures } from "@tanstack/react-table"
 import { HStack, Text, useDisclosure } from "@chakra-ui/react"
 import { keepPreviousData } from "@tanstack/react-query"
@@ -13,6 +14,12 @@ import { Datatable } from "~/components/Datatable/Datatable"
 import { EmptyTablePlaceholder } from "~/components/Datatable/EmptyTablePlaceholder"
 import { useTablePagination } from "~/hooks/useTablePagination"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import type { GazetteTableData } from "./types"
 import { ModifyGazetteModal } from "../ModifyGazetteModal/ModifyGazetteModal"
@@ -28,7 +35,7 @@ const getColumns = (siteId: number) =>
     columnsHelper.accessor("notificationNo", {
       cell: ({ getValue }) => (
         <Text textStyle="body-2" color="base.content.strong">
-          {getValue() || "-"}
+          {hasNonEmptyString(getValue()) || "-"}
         </Text>
       ),
       header: () => <TableHeader>Notification No.</TableHeader>,

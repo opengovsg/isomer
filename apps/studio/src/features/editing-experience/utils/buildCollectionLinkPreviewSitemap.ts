@@ -67,6 +67,7 @@ export const buildCollectionLinkPreviewSitemap = ({
   }))
 
   // Fold innermost-first, so the outermost ancestor ends up directly under the root.
+  // oxlint-disable-next-line unicorn/no-array-reduce -- core cleanup deferred
   const node = ancestors.reduceRight<IsomerSitemap>(
     (child, ancestor, index) => ({
       children: [child],

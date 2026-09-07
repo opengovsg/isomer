@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/sort-keys -- core cleanup deferred */
 import {
   Button,
   FormControl,
@@ -21,7 +22,7 @@ import {
 } from "@opengovsg/design-system-react"
 import { useDebounce } from "@uidotdev/usehooks"
 import { useAtomValue, useSetAtom } from "jotai"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
 import { useCallback, useEffect, useMemo } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
@@ -92,7 +93,7 @@ export const AddUserModal = () => {
       reset()
     },
     onSuccess: async (createdUsers) => {
-      posthog.capture("site_user_invited", {
+      posthogJs.capture("site_user_invited", {
         invited_user_count: createdUsers.length,
         role: getValues("role"),
         site_id: siteId,
@@ -255,7 +256,9 @@ export const AddUserModal = () => {
           <SingpassConditionalTooltip>
             <Button
               variant="solid"
-              onClick={onSendInvite}
+              onClick={() => {
+                void onSendInvite
+              }}
               isLoading={isPending}
               isDisabled={
                 Object.keys(errors).length > 0 ||

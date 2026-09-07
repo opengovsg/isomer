@@ -1,6 +1,7 @@
+/* oxlint-disable eslint/no-shadow, typescript/switch-exhaustiveness-check -- core cleanup deferred */
 import { useDisclosure } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
 import { useState } from "react"
 import { REDIRECT_MESSAGES } from "~/constants/redirect"
 import {
@@ -9,6 +10,12 @@ import {
 } from "~/constants/toast"
 import { useZodForm } from "~/lib/form"
 import { normalizeRedirectSource, redirectKind } from "~/schemas/redirect"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import type { AddRedirectInput } from "../types"
 import { useCreateRedirect } from "../api"
@@ -66,10 +73,12 @@ export const AddRedirectCard = ({
 
   const trimmedSource = source?.trim()
   const normalizedSource = trimmedSource ? safeNormalize(trimmedSource) : null
-  const kind = normalizedSource ? redirectKind(normalizedSource) : "exact"
+  const kind = hasNonEmptyString(normalizedSource)
+    ? redirectKind(normalizedSource)
+    : "exact"
 
   const wildcardPreview =
-    kind === "wildcard" && normalizedSource && destination
+    kind === "wildcard" && hasNonEmptyString(normalizedSource) && destination
       ? buildWildcardPreview(normalizedSource, destination)
       : null
 
@@ -105,7 +114,7 @@ export const AddRedirectCard = ({
           }
         },
         onSuccess: () => {
-          posthog.capture("redirect_created", {
+          posthogJs.capture("redirect_created", {
             destination_type: destination.startsWith("/")
               ? "internal"
               : "external",

@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-use-before-define -- core cleanup deferred */
 import type { Dispatch, PropsWithChildren, SetStateAction } from "react"
 import { useGrowthBook } from "@growthbook/growthbook-react"
 import {

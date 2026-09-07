@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-shadow -- core cleanup deferred */
 import type { z } from "zod"
 import type { schedulePublishClientSchema } from "~/schemas/schedule"
 import { FormControl, HStack, VStack } from "@chakra-ui/react"

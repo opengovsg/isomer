@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/promise-function-async, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { ResourceAbility } from "~/server/modules/permissions/permissions.type"
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
 import { AbilityProvider } from "@casl/react"

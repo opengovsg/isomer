@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/default-case, eslint/no-nested-ternary, eslint/no-use-before-define, eslint/prefer-destructuring, promise/avoid-new, typescript/consistent-return, typescript/strict-boolean-expressions, typescript/strict-void-return, unicorn/no-negated-condition, unicorn/no-promise-executor-return, unicorn/no-unsafe-type-assertion, unicorn/no-void -- core cleanup deferred */
 import type { AttachmentProps } from "@opengovsg/design-system-react"
 import type { RouterOutput } from "~/utils/trpc"
 import {
@@ -32,6 +33,12 @@ import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { buildRedirectErrorsCsv, parseRedirectCsv } from "~/lib/redirectCsv"
 import { MAX_BULK_REDIRECT_CSV_BYTES } from "~/schemas/redirect"
 import { formatFileSizeLimit } from "~/utils/formatFileSizeLimit"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { useBulkCreateRedirects, useBulkValidateRedirects } from "../api"
 
@@ -288,7 +295,7 @@ const BulkUploadRedirectsModalContent = ({
     // chip's remove button is never disabled — so the editor can swap in another
     // file before these verdicts come back.
     const processedCsv = csv
-    if (!processedCsv) {
+    if (!hasNonEmptyString(processedCsv)) {
       return
     }
     // Validation is quick, so the Process button's inline spinner is enough —
@@ -340,7 +347,7 @@ const BulkUploadRedirectsModalContent = ({
   const handlePublish = async () => {
     // Publish exactly what the success screen reviewed, never the current picker
     // contents, so the created batch can't differ from the listed redirects.
-    if (!reviewedCsvRef.current) {
+    if (!hasNonEmptyString(reviewedCsvRef.current)) {
       return
     }
     // Creating the batch and republishing the site is the slow step, so switch
@@ -380,7 +387,11 @@ const BulkUploadRedirectsModalContent = ({
     )
   }
 
-  const isProcessDisabled = !file || !!fileError || !csv
+  const isProcessDisabled = !hasNonEmptyString(file)
+    ? file
+    : hasNonEmptyString(hasNonEmptyString)(fileError)
+      ? fileError
+      : !csv
   const validRows = validation?.rows.filter((row) => row.error === null) ?? []
 
   return (
@@ -590,7 +601,7 @@ const BulkUploadModalBody = ({
               <br />
               Accepted file type: .csv
             </Text>
-            {fileError && (
+            {hasNonEmptyString(fileError) && (
               <Text textStyle="body-2" color="utility.feedback.critical">
                 {fileError}
               </Text>

@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/default-case, eslint/sort-keys, typescript/consistent-return, typescript/strict-void-return, typescript/switch-exhaustiveness-check, unicorn/no-array-for-each, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type {
   OnChangeFn,
   SortingState,

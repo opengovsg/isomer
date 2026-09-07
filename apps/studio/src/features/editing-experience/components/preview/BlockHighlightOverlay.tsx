@@ -1,5 +1,11 @@
 import { useToken } from "@chakra-ui/react"
 import { BLOCK_FLASH_FADE_DURATION_MS } from "~/features/editing-experience/hooks/useBlockFlashHighlight"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 interface BlockHighlightOverlayProps {
   top: number
@@ -48,7 +54,7 @@ export const BlockHighlightOverlay = ({
         zIndex: 9999,
       }}
     >
-      {label && (
+      {hasNonEmptyString(label) && (
         <div
           style={{
             backgroundColor: outlineColor,

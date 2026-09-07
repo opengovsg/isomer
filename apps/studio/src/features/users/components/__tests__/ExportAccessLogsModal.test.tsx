@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 // @vitest-environment jsdom
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"

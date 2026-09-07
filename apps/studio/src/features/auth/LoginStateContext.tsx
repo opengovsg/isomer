@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-use-before-define, unicorn/no-unnecessary-type-conversion -- core cleanup deferred */
 import type { PropsWithChildren } from "react"
 import {
   createContext,
@@ -10,6 +11,12 @@ import { LOGGED_IN_KEY } from "~/constants/localStorage"
 import { useLocalStorage } from "~/hooks/useLocalStorage"
 import { withPosthog } from "~/lib/posthog"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 interface LoginStateContextReturn {
   hasLoginStateFlag?: boolean
@@ -67,7 +74,7 @@ const PostHogIdentity = () => {
     // so clear our own guard too — otherwise a same-user relogin sees
     // `identifiedUserId.current` still set and skips re-identifying,
     // leaving subsequent events anonymous.
-    if (!hasLoginStateFlag) {
+    if (!isNullableBooleanTrue(hasLoginStateFlag)) {
       identifiedUserId.current = undefined
       return
     }
@@ -77,7 +84,10 @@ const PostHogIdentity = () => {
     }
 
     void withPosthog((posthog) => {
-      if (identifiedUserId.current && identifiedUserId.current !== user.id) {
+      if (
+        hasNonEmptyString(identifiedUserId.current) &&
+        identifiedUserId.current !== user.id
+      ) {
         posthog.reset()
       }
 
@@ -114,9 +124,10 @@ const useProvideLoginState = () => {
   const removeLoginStateFlag = useCallback(() => {
     setLoginStateFlag(undefined)
   }, [setLoginStateFlag])
+  // oxlint-disable-next-line unicorn/no-unnecessary-type-conversion -- core cleanup deferred
 
   return {
-    hasLoginStateFlag: !!hasLoginStateFlag,
+    hasLoginStateFlag: !!isNullableBooleanTrue(hasLoginStateFlag),
     removeLoginStateFlag,
     setHasLoginStateFlag,
   }

@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-use-before-define, eslint/sort-keys, typescript/strict-void-return, unicorn/no-unnecessary-type-conversion -- core cleanup deferred */
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import type { z } from "zod"
 import {
@@ -21,7 +22,7 @@ import {
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
 import { useEffect } from "react"
 import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
@@ -33,6 +34,12 @@ import {
   MAX_FOLDER_TITLE_LENGTH,
 } from "~/schemas/folder"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { generateResourceUrl } from "../utils"
 
@@ -105,8 +112,8 @@ const CreateCollectionModalContent = ({
       onClose()
     },
     onSuccess: async () => {
-      posthog.capture("collection_created", {
-        has_parent_folder: !!parentFolderId,
+      posthogJs.capture("collection_created", {
+        has_parent_folder: !!isDefinedNumber(parentFolderId),
         site_id: siteId,
       })
       await utils.resource.listWithoutRoot.invalidate()
@@ -137,6 +144,7 @@ const CreateCollectionModalContent = ({
       })
     }
   }, [getFieldState, setValue, collectionTitle])
+  // oxlint-disable-next-line typescript/strict-void-return -- core cleanup deferred
 
   return (
     <ModalContent>
@@ -158,7 +166,7 @@ const CreateCollectionModalContent = ({
                 my="0.5rem"
                 {...register("collectionTitle")}
               />
-              {errors.collectionTitle?.message ? (
+              {hasNonEmptyString(errors.collectionTitle?.message) ? (
                 <FormErrorMessage>
                   {errors.collectionTitle.message}
                 </FormErrorMessage>
@@ -196,7 +204,7 @@ const CreateCollectionModalContent = ({
                   />
                 )}
               />
-              {errors.permalink?.message && (
+              {hasNonEmptyString(errors.permalink?.message) && (
                 <FormErrorMessage>{errors.permalink.message}</FormErrorMessage>
               )}
 

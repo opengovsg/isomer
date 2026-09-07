@@ -1,3 +1,4 @@
+/* oxlint-disable import/no-cycle, unicorn/no-unnecessary-type-conversion -- core cleanup deferred */
 import {
   BreadcrumbItem,
   BreadcrumbLink,
@@ -12,6 +13,12 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { editLinkSchema } from "~/pages/sites/[siteId]/links/[linkId]"
 import { getResourceSubpath } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import PublishButton from "./PublishButton"
 
@@ -36,11 +43,12 @@ const NavigationBreadcrumbs = ({
         resourceId: resource?.parentId ?? "",
         siteId: Number(siteId),
       },
-      { enabled: !!resource?.parentId },
+      { enabled: !!hasNonEmptyString(resource?.parentId) },
     )
 
   const isBreadcrumbLoaded =
-    (!resource?.parentId || !isParentResourceLoading) && !isResourceLoading
+    (!hasNonEmptyString(resource?.parentId) || !isParentResourceLoading) &&
+    !isResourceLoading
 
   return (
     <Breadcrumb size="sm" flex={1}>

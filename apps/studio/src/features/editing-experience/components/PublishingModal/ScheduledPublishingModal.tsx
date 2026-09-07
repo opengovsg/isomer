@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-use-before-define, typescript/strict-void-return -- core cleanup deferred */
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import type { z } from "zod"
 import {

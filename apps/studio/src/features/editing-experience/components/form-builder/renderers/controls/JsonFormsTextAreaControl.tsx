@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-boolean-expressions -- core cleanup deferred */
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import { Box, FormControl } from "@chakra-ui/react"
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
@@ -14,6 +15,12 @@ import {
   TEXTAREA_DEFAULT_ROWS,
   TEXTAREA_MAX_ROWS,
 } from "~/constants/formBuilder"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { getCustomErrorMessage } from "./utils/getCustomErrorMessage"
 
@@ -26,7 +33,7 @@ export const jsonFormsTextAreaControlTester: RankedTester = rankWith(
 )
 
 const getRemainingCharacterCount = (maxLength: number, data?: string) => {
-  if (!data) {
+  if (!hasNonEmptyString(data)) {
     return maxLength
   }
 
@@ -44,10 +51,10 @@ const JsonFormsTextAreaControl = ({
   schema,
 }: ControlProps) => {
   const { maxLength } = schema
-  const remainingCharacterCount = maxLength
+  const remainingCharacterCount = isDefinedNumber(maxLength)
     ? getRemainingCharacterCount(maxLength, data ? String(data) : undefined)
     : -1
-  const numOfRows = maxLength
+  const numOfRows = isDefinedNumber(maxLength)
     ? Math.min(
         TEXTAREA_MAX_ROWS,
         Math.ceil(maxLength / TEXTAREA_CHARACTERS_PER_ROW),
@@ -79,7 +86,7 @@ const JsonFormsTextAreaControl = ({
           maxAutosizeRows={numOfRows}
           my="0.5rem"
         />
-        {maxLength && !errors && (
+        {isDefinedNumber(maxLength) && !errors && (
           <FormHelperText>
             {remainingCharacterCount}{" "}
             {remainingCharacterCount === 1 ? "character" : "characters"} left

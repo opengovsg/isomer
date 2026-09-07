@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-empty-function, react/function-component-definition -- core cleanup deferred */
 import type { BoxProps, StackProps } from "@chakra-ui/react"
 import type {
   DraggableProvidedDraggableProps,
@@ -36,6 +37,7 @@ interface RootProps {
   children: ReactNode
 }
 
+// oxlint-disable-next-line react/display-name -- core cleanup deferred
 const Root = forwardRef<RootProps, "div">(
   ({ draggableProps, isError, isDragDisabled = false, children }, ref) => {
     const contextValue = useMemo(() => ({ isDragDisabled }), [isDragDisabled])

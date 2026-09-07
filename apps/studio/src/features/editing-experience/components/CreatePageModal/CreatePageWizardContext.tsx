@@ -1,3 +1,4 @@
+/* oxlint-disable import/no-named-as-default, typescript/switch-exhaustiveness-check, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { PropsWithChildren } from "react"
@@ -11,6 +12,12 @@ import databaseLayoutPreview from "~/features/editing-experience/data/databaseLa
 import { useZodForm } from "~/lib/form"
 import { createPageSchema } from "~/schemas/page"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 export enum CreatePageFlowStates {
   Layout = "layout",
@@ -68,10 +75,10 @@ const useCreatePageWizardContext = ({
   const { data, isLoading: isPermalinkLoading } =
     trpc.resource.getWithFullPermalink.useQuery(
       {
-        resourceId: folderId ? String(folderId) : "",
+        resourceId: isDefinedNumber(folderId) ? String(folderId) : "",
         siteId,
       },
-      { enabled: !!folderId },
+      { enabled: isDefinedNumber(folderId) },
     )
 
   const layoutPreviewJson: IsomerSchema = useMemo(() => {
@@ -87,6 +94,10 @@ const useCreatePageWizardContext = ({
       }
       case "database": {
         jsonPreview = databaseLayoutPreview
+        break
+      }
+      default: {
+        jsonPreview = contentLayoutPreview
         break
       }
     }
@@ -130,7 +141,7 @@ const useCreatePageWizardContext = ({
         },
         onSuccess: ({ pageId }) => {
           posthog.capture("page_created", {
-            has_parent_folder: !!folderId,
+            has_parent_folder: isDefinedNumber(folderId),
             layout: values.layout,
             site_id: siteId,
           })
@@ -152,11 +163,11 @@ const useCreatePageWizardContext = ({
     currentLayout: layout,
     currentStep,
     formMethods,
-    fullPermalink: folderId ? data?.fullPermalink : "",
+    fullPermalink: isDefinedNumber(folderId) ? (data?.fullPermalink ?? "") : "",
     handleBackToLayoutScreen,
     handleCreatePage,
     handleNextToDetailScreen,
-    isLoading: isPending || (!!folderId && isPermalinkLoading),
+    isLoading: isPending || (isDefinedNumber(folderId) && isPermalinkLoading),
     layoutPreviewJson,
     onClose,
     siteId,

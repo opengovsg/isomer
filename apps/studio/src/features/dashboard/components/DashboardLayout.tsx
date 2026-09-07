@@ -12,6 +12,12 @@ import {
 import { Breadcrumb } from "@opengovsg/design-system-react"
 import NextLink from "next/link"
 import { getFolderHref } from "~/utils/resource"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 /**
  * NOTE: This returns the path from root down to the parent of the element.
@@ -28,7 +34,7 @@ export const getBreadcrumbsFromRoot = (
   // Root -> ... -> Parent -> Folder
   const rootHref = `/sites/${siteId}`
 
-  if (resource.parent?.parentId) {
+  if (hasNonEmptyString(resource.parent?.parentId)) {
     return [
       { href: rootHref, label: "Home" },
       {
@@ -42,7 +48,7 @@ export const getBreadcrumbsFromRoot = (
     ]
   }
 
-  if (resource.parent?.id) {
+  if (hasNonEmptyString(resource.parent?.id)) {
     return [
       { href: rootHref, label: "Home" },
       {

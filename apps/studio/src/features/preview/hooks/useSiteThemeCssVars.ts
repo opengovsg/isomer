@@ -9,6 +9,7 @@ export const useSiteThemeCssVars = ({ siteId }: { siteId: number }) => {
       return
     }
     // convert theme to css vars
+    // oxlint-disable-next-line typescript/consistent-return -- core cleanup deferred
     return convertThemeToCss(theme)
   }, [theme])
 

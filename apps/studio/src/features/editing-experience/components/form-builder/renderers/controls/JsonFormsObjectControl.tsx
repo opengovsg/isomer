@@ -11,6 +11,12 @@ import { Switch } from "@opengovsg/design-system-react"
 import { isEmpty } from "lodash-es"
 import { useMemo, useRef, useState } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { withJsonFormsControlWithDetailProps } from "../../contexts/JsonFormsContext"
 
@@ -36,11 +42,9 @@ const JsonFormsObjectControl = ({
   handleChange,
 }: ControlWithDetailProps) => {
   const [isChecked, setIsChecked] = useState(!isEmpty(data))
-  // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const dataSnapshotRef = useRef(data)
   const handleToggle = () => {
     if (isChecked) {
-      // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment -- JsonForms data is schema-driven
       dataSnapshotRef.current = data
       handleChange(path)
     } else {
@@ -67,7 +71,7 @@ const JsonFormsObjectControl = ({
     return null
   }
 
-  if (!required) {
+  if (!isNullableBooleanTrue(required)) {
     return (
       <HStack spacing="0.5rem" alignItems="flex-start" w="full">
         <VStack w="full" gap="0.75rem" pt="0.5rem" alignItems="start">
@@ -82,7 +86,7 @@ const JsonFormsObjectControl = ({
                   {label}
                 </Text>
 
-                {description && (
+                {hasNonEmptyString(description) && (
                   <Text textStyle="body-2" textColor="base.content.medium">
                     {description}
                   </Text>

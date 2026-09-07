@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-boolean-expressions, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge"
 import type { Dispatch, SetStateAction } from "react"
 import {
@@ -24,6 +25,12 @@ import {
   BiSolidErrorCircle,
   BiTrash,
 } from "react-icons/bi"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import {
   DEFAULT_NAVBAR_ITEM_DESCRIPTION,
@@ -55,6 +62,7 @@ interface NavbarItemBoxBodyProps {
   onDeleteItem: () => void
 }
 
+// oxlint-disable-next-line eslint/complexity -- core cleanup deferred
 export const NavbarItemBoxBody = ({
   index,
   parentIndex,
@@ -77,25 +85,27 @@ export const NavbarItemBoxBody = ({
   onDeleteItem,
 }: NavbarItemBoxBodyProps) => (
   <>
-    {isSubItem &&
+    {isNullableBooleanTrue(isSubItem) &&
       navbarItemClosestEdge === "top" &&
-      !isItemBeingDraggedOver && (
+      !isNullableBooleanTrue(isItemBeingDraggedOver) && (
         <Divider borderColor="base.divider.brand" borderWidth="2px" />
       )}
 
     <Box
       // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
       ref={itemRef as React.Ref<HTMLDivElement>}
-      aria-invalid={isInvalid && !isItemBeingDraggedOver}
+      aria-invalid={isNullableBooleanTrue(isInvalid) && !isItemBeingDraggedOver}
       data-id={getNavbarItemPath(index, parentIndex)}
       borderWidth="1.5px"
       borderStyle="solid"
       borderColor={
-        isItemBeingDraggedOver ? "base.divider.brand" : "base.divider.medium"
+        isNullableBooleanTrue(isItemBeingDraggedOver)
+          ? "base.divider.brand"
+          : "base.divider.medium"
       }
       borderRadius="0.375rem"
       bgColor={
-        isItemBeingDraggedOver
+        isNullableBooleanTrue(isItemBeingDraggedOver)
           ? "interaction.main-subtle.default"
           : "utility.ui"
       }
@@ -108,7 +118,7 @@ export const NavbarItemBoxBody = ({
         borderColor: "interaction.main-subtle.hover",
       }}
       _active={
-        isNavbarItemDragging || isSubItemDragging
+        isNullableBooleanTrue(isNavbarItemDragging) || isSubItemDragging
           ? {
               bg: "utility.ui",
               borderColor: "utility.ui",
@@ -137,7 +147,7 @@ export const NavbarItemBoxBody = ({
         setIsItemBeingDraggedOver?.(false)
       }}
     >
-      {isSubItem && (
+      {isNullableBooleanTrue(isSubItem) && (
         <Box
           position="absolute"
           left="-1.5rem"
@@ -156,7 +166,7 @@ export const NavbarItemBoxBody = ({
         p="0.5rem"
         w="full"
         _before={
-          isSubItem
+          isNullableBooleanTrue(isSubItem)
             ? {
                 bg: "base.divider.strong",
                 content: '""',
@@ -205,7 +215,7 @@ export const NavbarItemBoxBody = ({
               </Text>
 
               <HStack gap="0.25rem" justifyContent="center">
-                {isInvalid && (
+                {isNullableBooleanTrue(isInvalid) && (
                   <Icon
                     as={BiSolidErrorCircle}
                     fontSize="1rem"
@@ -216,7 +226,7 @@ export const NavbarItemBoxBody = ({
                 <Text
                   textStyle="caption-2"
                   textColor={
-                    isInvalid
+                    isNullableBooleanTrue(isInvalid)
                       ? "utility.feedback.critical"
                       : "interaction.support.placeholder"
                   }
@@ -231,7 +241,9 @@ export const NavbarItemBoxBody = ({
 
             <Box flexShrink={0}>
               <Text textStyle="caption-2" textColor="base.content.medium">
-                {!isSubItem && !!subItems && subItems.length > 0
+                {!isNullableBooleanTrue(isSubItem) &&
+                !!subItems &&
+                subItems.length > 0
                   ? `${subItems.length} nested ${subItems.length > 1 ? "links" : "link"}`
                   : "Single link"}
               </Text>
@@ -274,7 +286,9 @@ export const NavbarItemBoxBody = ({
                 <Icon as={BiTrash} />
                 <Text textStyle="body-2">
                   Delete{" "}
-                  {isSubItem || !subItems || subItems.length === 0
+                  {isNullableBooleanTrue(isSubItem) ||
+                  !subItems ||
+                  subItems.length === 0
                     ? "link"
                     : "group"}
                 </Text>
@@ -301,9 +315,9 @@ export const NavbarItemBoxBody = ({
       </HStack>
     </Box>
 
-    {isSubItem &&
+    {isNullableBooleanTrue(isSubItem) &&
       navbarItemClosestEdge === "bottom" &&
-      !isItemBeingDraggedOver && (
+      !isNullableBooleanTrue(isItemBeingDraggedOver) && (
         <Divider borderColor="base.divider.brand" borderWidth="2px" />
       )}
   </>

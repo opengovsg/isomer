@@ -41,6 +41,7 @@ describe("escapeTemplateArguments", () => {
   it("throws for class instances", () => {
     // Arrange
     class ResourceLike {
+      // oxlint-disable-next-line typescript/parameter-properties -- core cleanup deferred
       constructor(public title: string) {}
     }
 

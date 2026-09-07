@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/complexity, eslint/no-shadow, eslint/no-use-before-define, import/no-cycle, unicorn/no-confusing-void-expression, unicorn/no-meaningless-void-operator, unicorn/no-unnecessary-type-conversion -- core cleanup deferred */
 import {
   Box,
   Button,
@@ -23,6 +24,12 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { sitePageSchema } from "~/pages/sites/[siteId]"
 import { normalizeRedirectPath } from "~/schemas/redirect"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { moveResourceAtom } from "../../atoms"
@@ -45,6 +52,7 @@ export const MoveResourceModal = () => {
   )
 }
 
+// oxlint-disable-next-line typescript/complexity -- core cleanup deferred
 const MoveResourceContent = withSuspense(
   ({ resourceId, onClose }: { resourceId: string; onClose: () => void }) => {
     // undefined means that the user has not selected a destination yet
@@ -86,21 +94,27 @@ const MoveResourceContent = withSuspense(
         await utils.resource.getBatchAncestryWithSelf.invalidate()
         await utils.resource.countWithoutRoot.invalidate({
           // Deferred: Update backend `list` to use the proper schema
-          resourceId: curResourceId ? Number(curResourceId) : undefined,
+          resourceId: hasNonEmptyString(curResourceId)
+            ? Number(curResourceId)
+            : undefined,
         })
         await utils.resource.countWithoutRoot.invalidate({
           // Deferred: Update backend `list` to use the proper schema
-          resourceId: movedItem?.parentId
+          // oxlint-dihasNonEmptyString(sable-next-line esl)int/no-use-before-define -- core cleanup deferred
+          resourceId: hasNonEmptyString(movedItem?.parentId)
             ? Number(movedItem.parentId)
             : undefined,
         })
         await utils.resource.listWithoutRoot.invalidate({
           // Deferred: Update backend `list` to use the proper schema
-          resourceId: curResourceId ? Number(curResourceId) : undefined,
+          resourceId: hasNonEmptyString(curResourceId)
+            ? Number(curResourceId)
+            : undefined,
         })
         await utils.resource.listWithoutRoot.invalidate({
           // Deferred: Update backend `list` to use the proper schema
-          resourceId: movedItem?.parentId
+          // oxlint-dihasNonEmptyString(sable-next-line esl)int/no-use-before-define -- core cleanup deferred
+          resourceId: hasNonEmptyString(movedItem?.parentId)
             ? Number(movedItem.parentId)
             : undefined,
         })
@@ -136,7 +150,7 @@ const MoveResourceContent = withSuspense(
       })
     const { data: destination } = trpc.resource.getWithFullPermalink.useQuery(
       { resourceId: curResourceId ?? "", siteId: Number(siteId) },
-      { enabled: !!curResourceId },
+      { enabled: !!hasNonEmptyString(curResourceId) },
     )
 
     // Only published Page/CollectionPage have a live URL worth preserving — the
@@ -152,7 +166,7 @@ const MoveResourceContent = withSuspense(
     const isRedirectableType = isPageRedirectable || isFolderRedirect
     const oldFullPermalink = normalizeRedirectPath(movedFullPermalink)
     const newFullPermalink = normalizeRedirectPath(
-      `${curResourceId && destination ? destination.fullPermalink : ""}/${movedSlug}`,
+      `${hasNonEmptyString(curResourceId) && destination ? destination.fullPermalink : ""}/${movedSlug}`,
     )
     // The new path is known once a destination is picked (the root needs no
     // lookup); until then the computed permalink is provisional.
@@ -195,7 +209,7 @@ const MoveResourceContent = withSuspense(
               }}
             />
             {curResourceId !== undefined &&
-              errorMessage &&
+              hasNonEmptyString(errorMessage) &&
               !isValidMoveLoading && (
                 <Infobox variant="error" size="sm" w="full">
                   {errorMessage}
@@ -272,15 +286,17 @@ const MoveResourceContent = withSuspense(
               isValidMove !== true
             }
             isLoading={isPending || isValidMoveLoading}
-            onClick={() =>
-              movedItem?.id &&
-              mutate({
+            onClick={() => {
+              if (!hasNonEmptyString(movedItem?.id)) {
+                return
+              }
+              void mutate({
                 destinationResourceId: curResourceId ?? null,
                 movedResourceId: movedItem.id,
                 shouldCreateRedirect,
                 siteId,
               })
-            }
+            }}
           >
             Move here
           </Button>

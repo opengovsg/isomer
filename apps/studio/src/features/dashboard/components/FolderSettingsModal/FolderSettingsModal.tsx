@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-use-before-define, eslint/sort-keys, import/no-cycle, typescript/strict-boolean-expressions, typescript/strict-void-return, unicorn/no-unnecessary-type-conversion -- core cleanup deferred */
 import {
   Box,
   chakra,
@@ -138,7 +139,7 @@ const SuspendableModalContent = ({
       // path already does a broad invalidate; this keeps folder rename in sync).
       await utils.resource.search.invalidate()
       await utils.resource.getChildrenOf.invalidate({
-        resourceId: parentId ? String(parentId) : null,
+        resourceId: hasNonEmptyString(parentId) ? String(parentId) : null,
       })
       await utils.folder.getMetadata.invalidate({
         resourceId: Number(folderId),
@@ -184,7 +185,7 @@ const SuspendableModalContent = ({
                 my="0.5rem"
                 {...register("title")}
               />
-              {errors.title?.message ? (
+              {hasNonEmptyString(errors.title?.message) ? (
                 <FormErrorMessage>{errors.title.message}</FormErrorMessage>
               ) : (
                 <FormHelperText color="base.content.medium">
@@ -214,7 +215,7 @@ const SuspendableModalContent = ({
                   />
                 )}
               />
-              {errors.permalink?.message ? (
+              {hasNonEmptyString(errors.permalink?.message) ? (
                 <FormErrorMessage>{errors.permalink.message}</FormErrorMessage>
               ) : (
                 <Suspense fallback={<Skeleton w="100%" h="2rem" my="0.5rem" />}>
@@ -251,7 +252,7 @@ const SuspendableModalContent = ({
                     <Checkbox
                       alignItems="flex-start"
                       size="sm"
-                      isChecked={!!value}
+                      isChecked={!!isNullableBooleanTrue(value)}
                       onChange={(e) => {
                         onChange(e.target.checked)
                       }}

@@ -108,6 +108,7 @@ export const PROSE_EXTENSIONS: Extensions = [
   Subscript,
 ]
 
+// oxlint-disable-next-line eslint/sort-keys -- core cleanup deferred
 export const IsomerTable = Table.extend({
   // Higher than TipTap's default keymap so Mod-a is handled here first.
   priority: 101,
@@ -138,6 +139,7 @@ export const IsomerTableHeader = TableHeader.extend({
   content: "paragraph+",
 })
 
+// oxlint-disable-next-line eslint/sort-keys -- core cleanup deferred
 export const IsomerHeading = Heading.extend({
   content: "text*",
   marks: "",
@@ -149,6 +151,7 @@ export const IsomerHeading = Heading.extend({
   addInputRules() {
     return HEADING_LEVELS.map((level) =>
       textblockTypeInputRule({
+        // oxlint-disable-next-line eslint/require-unicode-regexp -- core cleanup deferred
         find: new RegExp(`^(#{1,${level - 1}})\\s$`),
         getAttributes: {
           level,

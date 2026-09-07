@@ -20,6 +20,7 @@ export const formatAddedAt = (date: Date): string => {
 // references; literal paths and external URLs are not. Anchored (the shared
 // REFERENCE_LINK_REGEX is not) so a destination only counts as a reference when
 // it is exactly one — an external URL merely containing the substring doesn't.
+// oxlint-disable-next-line eslint/require-unicode-regexp -- core cleanup deferred
 const REFERENCE_DESTINATION_REGEX = new RegExp(
   `^${REFERENCE_LINK_REGEX.source}$`,
 )

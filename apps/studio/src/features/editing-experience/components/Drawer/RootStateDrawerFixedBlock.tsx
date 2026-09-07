@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/prefer-destructuring, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { IsomerComponent } from "@opengovsg/isomer-components"
 import { VStack } from "@chakra-ui/react"
 import {
@@ -10,6 +11,12 @@ import { CanManageCollectionFilters } from "~/features/editing-experience/hooks/
 import { useSelectBlock } from "~/features/editing-experience/hooks/useSelectBlock"
 import { useNewCollectionTagsManagement } from "~/hooks/useNewCollectionTagsManagement"
 import { ajv } from "~/utils/ajv"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { TYPE_TO_ICON } from "../../constants"
 import { getIsHeroFirstBlock } from "../../utils/getIsHeroFirstBlock"
@@ -154,11 +161,12 @@ export const FixedBlock = () => {
         setDrawerState({ state: "metadataEditor" })
       }}
       label={
-        getFixedBlockContent(pageLayout)?.label ||
+        hasNonEmptyString(getFixedBlockContent(pageLayout)?.label) ||
         "Page description and summary"
       }
       description={
-        getFixedBlockContent(pageLayout)?.description || "Click to edit"
+        hasNonEmptyString(getFixedBlockContent(pageLayout)?.description) ||
+        "Click to edit"
       }
       icon={BiPin}
     />

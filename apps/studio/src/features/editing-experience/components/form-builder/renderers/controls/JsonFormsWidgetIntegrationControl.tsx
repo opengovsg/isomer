@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-use-before-define, typescript/strict-boolean-expressions, unicorn/no-unnecessary-type-conversion -- core cleanup deferred */
 import type { ControlWithDetailProps, RankedTester } from "@jsonforms/core"
 import { Box, Collapse, Flex, Spacer, Text, VStack } from "@chakra-ui/react"
 import {
@@ -10,6 +11,12 @@ import { JsonFormsDispatch } from "@jsonforms/react"
 import { Switch } from "@opengovsg/design-system-react"
 import { useEffect, useMemo, useRef } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import type { WidgetType } from "../../contexts/WidgetContext"
 import { withJsonFormsControlWithDetailProps } from "../../contexts/JsonFormsContext"
@@ -17,7 +24,10 @@ import { useWidget, WIDGET_CONFIG } from "../../contexts/WidgetContext"
 
 export const jsonFormsWidgetIntegrationControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.WidgetControl,
-  schemaMatches((schema) => !!schema.format?.startsWith("widget-integration/")),
+  schemaMatches(
+    (schema) =>
+      !!isNullableBooleanTrue(schema.format?.startsWith("widget-integration/")),
+  ),
 )
 
 const JsonFormsWidgetIntegrationControl = ({
@@ -51,7 +61,6 @@ const JsonFormsWidgetIntegrationControl = ({
 
   useEffect(() => {
     if (data) {
-      // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
       snapshotRef.current = data
     }
   }, [data])
@@ -113,9 +122,9 @@ export default withJsonFormsControlWithDetailProps(
   JsonFormsWidgetIntegrationControl,
 )
 
-function extractVariantFromFormat(format?: string): WidgetType {
+const extractVariantFromFormat = (format?: string): WidgetType => {
   const possibleFormat = format?.split("/")[1]
-  if (!possibleFormat) {
+  if (!hasNonEmptyString(possibleFormat)) {
     return "askgov"
   }
 

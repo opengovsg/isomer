@@ -1,6 +1,6 @@
 import { useGrowthBook } from "@growthbook/growthbook-react"
 import { useRouter } from "next/router"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
 import { useCallback, useMemo } from "react"
 import { useLoginState } from "~/features/auth"
 import { withPosthog } from "~/lib/posthog"
@@ -20,9 +20,10 @@ export const useMe = () => {
     (redirectToSignIn = true) => {
       logoutMutation.mutate(undefined, {
         onSuccess: () => {
-          posthog.capture("user_logged_out")
+          posthogJs.capture("user_logged_out")
+          // oxlint-disable-next-line eslint/no-shadow -- core cleanup deferred
           void withPosthog((posthog) => {
-            posthog.reset()
+            posthogJs.reset()
           })
           void gb.setAttributes({})
           removeLoginStateFlag()

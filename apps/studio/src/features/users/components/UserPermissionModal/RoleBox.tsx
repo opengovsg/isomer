@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-nested-ternary -- core cleanup deferred */
 import type { RoleType } from "~prisma/generated/generatedEnums"
 import { Icon, Text, VStack } from "@chakra-ui/react"
 import { dataAttr } from "@chakra-ui/utils"
@@ -70,9 +71,9 @@ export const RoleBox = ({
         color={
           isDisabled
             ? "interaction.support.disabled-content"
-            : (isSelected
+            : isSelected
               ? "base.divider.brand"
-              : undefined)
+              : undefined
         }
       />
       <Text
@@ -80,9 +81,9 @@ export const RoleBox = ({
         color={
           isDisabled
             ? "interaction.support.disabled-content"
-            : (isSelected
+            : isSelected
               ? "base.divider.brand"
-              : undefined)
+              : undefined
         }
       >
         {value}

@@ -86,7 +86,11 @@ export const DeleteRedirectModal = ({
             variant="solid"
             colorScheme="critical"
             isLoading={isPending}
-            onClick={() => redirect && onDelete(redirect)}
+            onClick={() => {
+              if (redirect) {
+                onDelete(redirect)
+              }
+            }}
           >
             Delete redirect
           </Button>

@@ -1,6 +1,12 @@
 import type { Resource } from "~/server/modules/database/types"
 import { ISOMER_SUPPORT_EMAIL, ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { env } from "~/env.mjs"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 import { ResourceType, RoleType } from "~prisma/generated/generatedEnums"
 
 import { templates } from "../templates"
@@ -28,7 +34,7 @@ describe("invitationTemplate", () => {
     expect(template.body).toContain(
       "edit and publish the content, as well as manage users and site settings",
     )
-    if (env.NEXT_PUBLIC_APP_URL) {
+    if (hasNonEmptyString(env.NEXT_PUBLIC_APP_URL)) {
       expect(template.body).toContain(env.NEXT_PUBLIC_APP_URL)
     }
   })
@@ -56,6 +62,7 @@ describe("invitationTemplate", () => {
       templates.invitation({
         ...mockData,
         // SAFETY: test fixture supplies only the fields required by the assertion under test
+        // oxlint-disable-next-line unicorn/no-unsafe-type-assertion -- core cleanup deferred
         role: "InvalidRole" as RoleType,
       }),
     ).toThrow("Unknown role. Please check the role type.")
@@ -106,7 +113,7 @@ describe("accountDeactivationWarningTemplate", () => {
 
     // Assert
     expect(template.body).toContain("please log in within the next 7 days")
-    if (env.NEXT_PUBLIC_APP_URL) {
+    if (hasNonEmptyString(env.NEXT_PUBLIC_APP_URL)) {
       expect(template.body).toContain(env.NEXT_PUBLIC_APP_URL)
     }
   })

@@ -1,3 +1,4 @@
+/* oxlint-disable promise/prefer-await-to-then -- core cleanup deferred */
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import { Box, FormControl, Skeleton, Text } from "@chakra-ui/react"
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
@@ -21,6 +22,12 @@ import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { MAX_IMG_FILE_SIZE_BYTES } from "~/lib/fileUpload"
 import { fileNameAndSizeSchema } from "~/schemas/asset"
 import { formatFileSizeLimit } from "~/utils/formatFileSizeLimit"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { useAssetUpload } from "../../hooks/useAssetUpload"
 import { useS3Image } from "../../hooks/useS3Image"
@@ -74,7 +81,7 @@ const JsonFormsMetaImageControl = (props: JsonFormsMetaImageControlProps) => {
             }
             // NOTE: safe assertion here because we're in error path and there's at least 1 error
             return (
-              parseResult.error.issues[0]?.message ||
+              hasNonEmptyString(parseResult.error.issues[0]?.message) ||
               "Please ensure that your file begins with alphanumeric characters!"
             )
           }}

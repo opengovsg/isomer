@@ -4,7 +4,7 @@ import { useDisclosure } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
 import { cloneDeep, isEqual } from "lodash-es"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
 import { useCallback, useMemo } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
@@ -12,6 +12,12 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { pageSchema } from "../../schema"
@@ -53,7 +59,7 @@ export const useComplexEditorStateDrawer = () => {
   const { mutate: savePage, isPending: isSavingPage } =
     trpc.page.updatePageBlob.useMutation({
       onSuccess: async () => {
-        posthog.capture("page_changes_saved", { site_id: siteId })
+        posthogJs.capture("page_changes_saved", { site_id: siteId })
         await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
         await utils.page.readPage.invalidate({ pageId, siteId })
         if (type === ResourceType.CollectionPage) {
@@ -170,6 +176,7 @@ export const useComplexEditorStateDrawer = () => {
 
     if (modifiedAssets.length > 0) {
       const updatedBlocks = [...previewPageState.content]
+      // oxlint-disable-next-line unicorn/prefer-structured-clone -- core cleanup deferred
       const newBlock = cloneDeep(updatedBlocks[currActiveIdx])
 
       if (!newBlock) {
@@ -207,6 +214,7 @@ export const useComplexEditorStateDrawer = () => {
         return
       }
 
+      // oxlint-disable-next-line unicorn/no-array-reduce -- core cleanup deferred
       assetsToDelete = modifiedAssets.reduce<string[]>((acc, { src }) => {
         const fileKey = src?.slice(1)
         if (fileKey !== undefined && fileKey !== PLACEHOLDER_IMAGE_FILENAME) {
@@ -298,7 +306,7 @@ export const useComplexEditorStateDrawer = () => {
     component?.type === "antiscambanner" &&
     !(addedBlockIndex !== null && addedBlockIndex === currActiveIdx)
 
-  const componentName = subSchema?.title || "component"
+  const componentName = hasNonEmptyString(subSchema?.title) || "component"
 
   const isInvalidIndex =
     currActiveIdx === -1 || currActiveIdx > previewPageState.content.length

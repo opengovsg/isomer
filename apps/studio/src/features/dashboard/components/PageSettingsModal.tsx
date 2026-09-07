@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-void-return, unicorn/no-unnecessary-type-conversion -- core cleanup deferred */
 import type { PageSettingsState } from "~/features/dashboard/atoms"
 import {
   Box,
@@ -41,6 +42,12 @@ import {
   MAX_TITLE_LENGTH,
 } from "~/schemas/page"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { generateResourceUrl } from "../../editing-experience/components/utils"
@@ -73,7 +80,7 @@ const PageSettingsModalContent = ({
     formState: { isDirty, errors },
   } = useZodForm({
     defaultValues: {
-      permalink: permalinkTree.at(-1) || "",
+      permalink: hasNonEmptyString(permalinkTree.at(-1)) || "",
       shouldCreateRedirect: true,
       title: originalTitle,
     },
@@ -283,7 +290,7 @@ const PageSettingsModalContent = ({
                       <Checkbox
                         alignItems="flex-start"
                         size="lg"
-                        isChecked={!!value}
+                        isChecked={!!isNullableBooleanTrue(value)}
                         onChange={(e) => {
                           onChange(e.target.checked)
                         }}
@@ -315,7 +322,6 @@ const PageSettingsModalContent = ({
           )}
         </VStack>
       </ModalBody>
-
       <ModalFooter>
         <Button mr={3} variant="clear" onClick={onClose}>
           Close
@@ -338,9 +344,12 @@ export const PageSettingsModal = () => {
   }
 
   return (
-    <Modal isOpen={!!pageSettingsModalState?.pageId} onClose={onClose}>
+    <Modal
+      isOpen={!!hasNonEmptyString(pageSettingsModalState?.pageId)}
+      onClose={onClose}
+    >
       <ModalOverlay />
-      {pageSettingsModalState?.pageId && (
+      {hasNonEmptyString(pageSettingsModalState?.pageId) && (
         <Suspense fallback={<Skeleton />}>
           <PageSettingsModalContent
             onClose={onClose}

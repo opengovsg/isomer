@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/prefer-export-from -- core cleanup deferred */
 import type { NavbarItemBoxDragPresentation } from "./NavbarItemBoxBody"
 import { NavbarItemBoxBody } from "./NavbarItemBoxBody"
 import { useNavbarItemSubItemDrag } from "./useNavbarItemSubItemDrag"

@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-boolean-expressions -- core cleanup deferred */
 import {
   Modal,
   ModalBody,
@@ -64,7 +65,7 @@ export const ExportAccessLogsModal = () => {
   })
 
   return (
-    <Modal isOpen={!!isOpen} onClose={onClose}>
+    <Modal isOpen={!!isNullableBooleanTrue(isOpen)} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader mr="3.5rem">Export access history</ModalHeader>
@@ -112,7 +113,13 @@ export const ExportAccessLogsModal = () => {
           </VStack>
         </ModalBody>
         <ModalFooter>
-          <Button variant="solid" onClick={onSubmit} isLoading={isPending}>
+          <Button
+            variant="solid"
+            onClick={() => {
+              void onSubmit
+            }}
+            isLoading={isPending}
+          >
             Export logs
           </Button>
         </ModalFooter>

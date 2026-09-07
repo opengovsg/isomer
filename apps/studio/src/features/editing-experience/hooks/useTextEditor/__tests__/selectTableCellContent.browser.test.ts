@@ -143,6 +143,7 @@ const findTextRange = (editor: Editor, text: string) => {
       return false
     }
     if (!node.isText || node.text !== text) {
+      // oxlint-disable-next-line typescript/consistent-return -- core cleanup deferred
       return
     }
     from = pos
@@ -184,6 +185,7 @@ const copiedText = async () => {
 
 // prosemirror-keymap maps Mod to Meta on Mac and Ctrl elsewhere
 // (same navigator.platform check): https://github.com/ProseMirror/prosemirror-keymap/blob/1.2.3/src/keymap.ts#L26
+// oxlint-disable-next-line eslint/prefer-named-capture-group -- core cleanup deferred
 const isMac = /Mac|iP(hone|[oa]d)/u.test(navigator.platform)
 
 const dispatchModA = (editor: Editor) => {

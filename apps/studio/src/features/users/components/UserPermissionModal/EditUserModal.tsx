@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-shadow, eslint/no-use-before-define, typescript/strict-void-return -- core cleanup deferred */
 import {
   Button,
   FormControl,

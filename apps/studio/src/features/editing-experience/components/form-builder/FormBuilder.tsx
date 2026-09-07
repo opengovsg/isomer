@@ -1,3 +1,4 @@
+/* oxlint-disable import/no-named-default -- JsonForms HOC wrappers use default exports for withJsonForms*Props inference */
 import type { JsonFormsRendererRegistryEntry } from "@jsonforms/core"
 import type { TSchema } from "@sinclair/typebox"
 import type { ValidateFunction } from "ajv"
@@ -8,7 +9,6 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { ajv } from "~/utils/ajv"
 
 import { useBuilderErrors } from "./ErrorProvider"
-// oxlint-disable-next-line react-doctor/no-barrel-import -- internal JsonForms renderer registry; direct imports break HOC inference
 import {
   default as JsonFormsAllOfControl,
   jsonFormsAllOfControlTester,
@@ -279,8 +279,8 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   {
     // NOTE: If we fall through all our previous testers,
     // we render null so that the users don't get visual noise
-    tester: rankWith(JSON_FORMS_RANKING.Catchall, () => true),
     renderer: () => null,
+    tester: rankWith(JSON_FORMS_RANKING.Catchall, () => true),
   },
   {
     renderer: JsonFormsCollectionDropdownControl,
@@ -316,9 +316,9 @@ const FormBuilder = <T,>({
       schema={schema}
       data={data}
       renderers={renderers}
-      onChange={({ data, errors }) => {
-        if (validateFn(data)) {
-          handleChange(data)
+      onChange={({ data: formData, errors }) => {
+        if (validateFn(formData)) {
+          handleChange(formData)
         }
         setErrors(groupBy(errors, "instancePath"))
       }}

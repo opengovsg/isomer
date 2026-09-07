@@ -9,6 +9,12 @@ import { formatScheduledAtDate } from "~/lib/dates"
 import { ONE_MB_IN_BYTES } from "~/lib/fileUpload"
 import { MAX_DAYS_FROM_LAST_LOGIN } from "~/server/modules/user/constants"
 import { getStudioResourceUrl } from "~/utils/resources"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import type {
@@ -89,7 +95,7 @@ const invitationTemplate = (
 <p>${inviterName} has invited you to edit ${siteName} on Isomer Studio as ${role}. As a ${role}, you can ${roleAction}.</p>
 <p></p>
 <p>To start editing, log in to Isomer Studio and activate your account: ${constructStudioRedirect()}</p>`,
-    ...(isSingpassEnabled
+    ...(isNullableBooleanTrue(isSingpassEnabled)
       ? [
           `<p>You will need to set up Two-Factor Authentication (2FA) using Singpass. Please have your Singpass ready to complete activation.</p>`,
         ]
@@ -150,11 +156,13 @@ const cancelSchedulePageTemplate = (
   }
 }
 
+// oxlint-disable-next-line typescript/consistent-return -- core cleanup deferred
 const failedPublishTemplate = (
   data: FailedPublishTemplateData,
 ): EmailTemplate => {
   const { recipientEmail, isScheduled, resource } = data
   const studioResourceUrl = getStudioResourceUrl(resource)
+  // oxlint-disable-next-line eslint/default-case -- core cleanup deferred
   switch (isScheduled) {
     case true: {
       return {
@@ -179,11 +187,13 @@ const failedPublishTemplate = (
   }
 }
 
+// oxlint-disable-next-line typescript/consistent-return -- core cleanup deferred
 const successfulPublishTemplate = (
   data: SuccessfulPublishTemplateData,
 ): EmailTemplate => {
   const { recipientEmail, resource, ...rest } = data
   const studioResourceUrl = getStudioResourceUrl(resource)
+  // oxlint-disable-next-line eslint/default-case -- core cleanup deferred
   switch (rest.isScheduled) {
     case true: {
       return {
@@ -305,7 +315,7 @@ const auditLogExportReadyTemplate = (
 
   const logName = link.label === "access" ? "Access" : "Audit"
 
-  const downloadLink = `<a href="${link.url}">${getDownloadLinkLabel(link.label, month, sizeInBytes ? (sizeInBytes / ONE_MB_IN_BYTES).toFixed(2) : "-")}</a>`
+  const downloadLink = `<a href="${link.url}">${getDownloadLinkLabel(link.label, month, isDefinedNumber(sizeInBytes) ? (sizeInBytes / ONE_MB_IN_BYTES).toFixed(2) : "-")}</a>`
 
   return {
     body: `<p>Hi ${recipientEmail},</p>

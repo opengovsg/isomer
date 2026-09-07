@@ -15,6 +15,7 @@ describe("getMonthOptions", () => {
 
     const values = options.map((o) => o.value)
     expect(values.every((v) => v <= "2026-06")).toBe(true)
+    // oxlint-disable-next-line eslint/prefer-named-capture-group -- core cleanup deferred
     expect(/^\d{4}-(0[1-9]|1[0-2])$/u.test(values[0]!)).toBe(true)
   })
 

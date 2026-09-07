@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-array-for-each, unicorn/no-misused-spread, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import {
   Box,
@@ -20,6 +21,12 @@ import { useState } from "react"
 import { isHexadecimal } from "validator"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { getPalette, normalizeHex } from "~/features/settings/utils"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 export const jsonFormsColourPickerControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ColourPickerControl,
@@ -83,6 +90,7 @@ const JsonFormsColourPickerControl = ({
                     setDisplayedColour(undefined)
                     return
                   }
+                  // oxlint-disable-next-line unicorn/no-misused-spread -- core cleanup deferred
 
                   const parsedHex = [...rawString]
                     .filter((c) => isHexadecimal(c))
@@ -108,7 +116,7 @@ const JsonFormsColourPickerControl = ({
               border="1px solid"
               borderColor="base.divider.strong"
               bgColor={
-                displayedColour
+                hasNonEmptyString(displayedColour)
                   ? `#${normalizeHex(displayedColour)}`
                   : `#${DEFAULT_CONTENT_INVERSE_COLOUR}`
               }
@@ -116,7 +124,7 @@ const JsonFormsColourPickerControl = ({
               h="2rem"
             />
           </HStack>
-          {!data && (
+          {!hasNonEmptyString(data) && (
             <FormErrorMessage>
               Enter a hex code to generate a colour palette.
             </FormErrorMessage>

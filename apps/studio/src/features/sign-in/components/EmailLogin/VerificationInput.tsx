@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-void-return -- core cleanup deferred */
 import {
   FormControl,
   InputGroup,
@@ -12,7 +13,7 @@ import {
   Input,
 } from "@opengovsg/design-system-react"
 import { useRouter } from "next/router"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
 import { useState } from "react"
 import { Controller } from "react-hook-form"
 import { useInterval } from "usehooks-ts"
@@ -25,6 +26,12 @@ import { SIGN_IN_SINGPASS } from "~/lib/routes"
 import { emailVerifyOtpSchema } from "~/schemas/auth/email/signIn"
 import { callbackUrlSchema } from "~/schemas/url"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { useSignInContext } from "../SignInContext"
 import { ResendOtpButton } from "./ResendOtpButton"
@@ -88,7 +95,7 @@ export const VerificationInput = (): React.ReactNode | null => {
       if (isSingpassEnabled) {
         await router.push(SIGN_IN_SINGPASS)
       } else {
-        posthog.capture("user_logged_in", { method: "email" })
+        posthogJs.capture("user_logged_in", { method: "email" })
         setHasLoginStateFlag()
         await utils.me.get.invalidate()
         // accessing router.query values returns decoded URI params automatically,
@@ -111,7 +118,7 @@ export const VerificationInput = (): React.ReactNode | null => {
   })
 
   const handleResendOtp = () => {
-    if (timer > 0 || !vfnStepData?.email) {
+    if (timer > 0 || !hasNonEmptyString(vfnStepData?.email)) {
       return
     }
     resendOtpMutation.mutate(

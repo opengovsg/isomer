@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-extra-boolean-cast, eslint/prefer-named-capture-group, unicorn/no-array-reduce -- core cleanup deferred */
 import type { DropResult } from "@hello-pangea/dnd"
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { Flex, Text, useDisclosure, VStack } from "@chakra-ui/react"
@@ -6,7 +7,7 @@ import {
   ISOMER_USABLE_PAGE_LAYOUTS,
   schema,
 } from "@opengovsg/isomer-components"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
 import { useCallback, useState } from "react"
 import { Disable } from "~/components/Disable"
 import { DEFAULT_BLOCKS } from "~/components/PageEditor/constants"
@@ -17,6 +18,12 @@ import { useNewCollectionTagsManagement } from "~/hooks/useNewCollectionTagsMana
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 import { IsomerAdminRole, ResourceType } from "~prisma/generated/generatedEnums"
 
 import { pageSchema } from "../../schema"
@@ -89,7 +96,7 @@ const RootStateDrawer = () => {
   const { mutate: savePage, isPending: isSavingPage } =
     trpc.page.updatePageBlob.useMutation({
       onSuccess: async () => {
-        posthog.capture("page_changes_saved", { site_id: siteId })
+        posthogJs.capture("page_changes_saved", { site_id: siteId })
         await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
         await utils.page.readPage.invalidate({ pageId, siteId })
         if (type === ResourceType.CollectionPage) {
@@ -200,12 +207,13 @@ const RootStateDrawer = () => {
     pageLayout !== "collection"
 
   validateFn(savedPageState)
+  // oxlint-disable-next-line eslint/prefer-named-capture-group -- core cleanup deferred
 
   const contentIndexRegex = /^\/content\/(\d+)/u
   const invalidBlockIndexes = new Set(
     (validateFn.errors ?? []).reduce<number[]>((indexes, error) => {
       const match = contentIndexRegex.exec(error.instancePath)?.[1]
-      if (match) {
+      if (hasNonEmptyString(match)) {
         indexes.push(Number(match))
       }
       return indexes

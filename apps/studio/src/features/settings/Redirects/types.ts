@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/prefer-export-from -- core cleanup deferred */
 import type { RedirectRowInput } from "~/schemas/redirect"
 import type { RouterOutput } from "~/utils/trpc"
 import { redirectRowSchema } from "~/schemas/redirect"

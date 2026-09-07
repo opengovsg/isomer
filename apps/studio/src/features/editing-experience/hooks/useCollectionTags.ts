@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/arrow-body-style -- core cleanup deferred */
 import type { RouterOutput } from "~/utils/trpc"
 import { trpc } from "~/utils/trpc"
 
@@ -13,21 +14,23 @@ interface UseCollectionTagsInput {
   enabled?: boolean
 }
 
-export function useCollectionTags({
+export const useCollectionTags = ({
   resourceId,
   siteId,
   enabled = true,
-}: UseCollectionTagsInput) {
+  // oxlint-disable-next-line eslint(arrow-body-style -- core cleanup deferred
+}: UseCollectionTagsInput) => {
   return trpc.collection.getCollectionTags.useQuery(
     { resourceId, siteId },
     { enabled },
   )
 }
 
-export function useSuspenseCollectionTags({
+export const useSuspenseCollectionTags = ({
   resourceId,
   siteId,
-}: Omit<UseCollectionTagsInput, "enabled">) {
+  // oxlint-disable-next-line eslint(arrow-body-style -- core cleanup deferred
+}: Omit<UseCollectionTagsInput, "enabled">) => {
   return trpc.collection.getCollectionTags.useSuspenseQuery({
     resourceId,
     siteId,

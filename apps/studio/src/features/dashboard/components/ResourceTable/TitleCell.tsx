@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-misused-spread -- core cleanup deferred */
 import type { IconType } from "react-icons"
 import {
   Badge,
@@ -15,6 +16,12 @@ import { useMemo } from "react"
 import { BiTimeFive } from "react-icons/bi"
 import { getLinkToResource } from "~/utils/resource"
 import { getIcon } from "~/utils/resources"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import type { ResourceTableData } from "./types"
 
@@ -71,7 +78,7 @@ export const TitleCell = ({
           >
             {title}
           </LinkOverlay>
-          {scheduledAtLabel && (
+          {hasNonEmptyString(scheduledAtLabel) && (
             <Tooltip label={scheduledAtLabel} placement="bottom" hasArrow>
               <Badge
                 as={NextLink}

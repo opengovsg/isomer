@@ -1,9 +1,16 @@
+/* oxlint-disable anti-slop/require-safety-comment-for-type-assertion, eslint/no-shadow, typescript/strict-void-return, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import { Accordion, AccordionItem, AccordionPanel } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { useMemo, useState } from "react"
 import { getResourceSubpath } from "~/utils/resource"
 import { getIcon } from "~/utils/resources"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { RowEntry } from "./RowEntry"
@@ -95,7 +102,7 @@ export const DirectorySidebarContent = ({
             level={level}
             subLabel={subLabel}
           />
-          {hasChildren && (
+          {isNullableBooleanTrue(hasChildren) && (
             <AccordionPanel
               p={0}
               display="flex"
@@ -119,7 +126,9 @@ export const DirectorySidebarContent = ({
                   pl="2.75rem"
                   size="xs"
                   isLoading={isFetchingNextPage}
-                  onClick={async () => await fetchNextPage()}
+                  onClick={async () => {
+                    void (await fetchNextPage())
+                  }}
                 >
                   Load more
                 </Button>

@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-unnecessary-type-conversion -- core cleanup deferred */
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import { FormControl, Skeleton } from "@chakra-ui/react"
 import { and, rankWith, schemaMatches } from "@jsonforms/core"

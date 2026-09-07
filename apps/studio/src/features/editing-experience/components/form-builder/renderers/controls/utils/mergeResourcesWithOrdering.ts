@@ -14,6 +14,7 @@ export const mergeResourcesWithOrdering = (
   const toAdd = difference(all, base)
   const toRemoveFromBaseSet = new Set(toRemoveFromBase)
 
+  // oxlint-disable-next-line unicorn/prefer-spread -- core cleanup deferred
   return base
     .filter((resourceId) => !toRemoveFromBaseSet.has(resourceId))
     .concat(

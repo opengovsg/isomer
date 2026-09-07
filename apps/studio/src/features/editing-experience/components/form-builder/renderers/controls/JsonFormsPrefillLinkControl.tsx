@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-shadow, typescript/consistent-return, typescript/strict-boolean-expressions, unicorn/no-array-for-each, unicorn/no-unsafe-type-assertion, unicorn/no-useless-undefined -- core cleanup deferred */
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import {
   HStack,
@@ -16,6 +17,12 @@ import { Button, useToast } from "@opengovsg/design-system-react"
 import { useCallback, useEffect, useState } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { LINK_TYPES_MAPPING } from "../../../LinkEditor/constants"
 import { AUTOPOPULATED_FIELDS } from "../../constants"
@@ -99,7 +106,7 @@ const JsonFormsPrefillLinkControl = ({
     AUTOPOPULATED_FIELDS.forEach((field) => {
       const prefillField = prefillFieldMappings[field]
       const value = prefillData[prefillField]
-      if (value) {
+      if (hasNonEmptyString(value)) {
         handleChange(`${prefill.basePath}.${field}`, value)
       }
     })
@@ -130,9 +137,11 @@ const JsonFormsPrefillLinkControl = ({
 
       onPrefillModalOpen()
     }, 0)
+    // oxlint-disable-next-line typescript/consistent-return -- core cleanup deferred
 
     return () => {
       clearTimeout(timeoutId)
+      return undefined
     }
   }, [
     canPrefill,

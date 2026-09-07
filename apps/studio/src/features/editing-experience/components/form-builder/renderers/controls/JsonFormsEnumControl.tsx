@@ -12,6 +12,12 @@ import {
   SingleSelect,
 } from "@opengovsg/design-system-react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { formatEnumLabel } from "./utils/formatEnumLabel"
 import { getCustomErrorMessage } from "./utils/getCustomErrorMessage"
@@ -37,17 +43,15 @@ const JsonFormsEnumControl = ({
       <FormLabel description={description}>{label}</FormLabel>
 
       <SingleSelect
-        // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
         value={data}
         name={label}
         items={
           options?.map((option) => ({
             label: formatEnumLabel(option.label),
-            // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
             value: option.value,
           })) ?? []
         }
-        isClearable={!required}
+        isClearable={!isNullableBooleanTrue(required)}
         isDisabled={!enabled}
         onChange={(value) => {
           handleChange(path, value || undefined)

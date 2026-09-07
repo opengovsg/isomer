@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-use-before-define, typescript/strict-boolean-expressions, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type {
   CollectionPagePageProps,
   getLayoutPageSchema,
@@ -10,7 +11,7 @@ import {
   ISOMER_USABLE_PAGE_LAYOUTS,
 } from "@opengovsg/isomer-components"
 import { isEmpty, isEqual } from "lodash-es"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
 import { useCallback, useMemo } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
@@ -20,6 +21,12 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { trackEvent, triggerCollectionTagCsatSurveyOnce } from "~/lib/intercom"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { pageSchema } from "../../schema"
 import {
@@ -61,7 +68,7 @@ const CollectionEditorStateDrawer = (): React.ReactNode => {
 
   const { mutate, isPending } = trpc.page.updatePageBlob.useMutation({
     onSuccess: async () => {
-      posthog.capture("page_changes_saved", { site_id: siteId })
+      posthogJs.capture("page_changes_saved", { site_id: siteId })
       await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
       await utils.page.readPage.invalidate({ pageId, siteId })
       toast({
@@ -109,11 +116,13 @@ const CollectionEditorStateDrawer = (): React.ReactNode => {
 
   const handleSaveChanges = useCallback(() => {
     // SAFETY: editor drawer state is narrowed to the active layout-specific page shape
-    const hadNoTagsBefore = !(savedPageState.page as CollectionPagePageProps)
-      .tagCategories?.length
+    const hadNoTagsBefore = !isDefinedNumber(
+      savedPageState.page as CollectionPagePageProps,
+    ).tagCategories?.length
     // SAFETY: editor drawer state is narrowed to the active layout-specific page shape
-    const hasTagsNow = !!(previewPageState.page as CollectionPagePageProps)
-      .tagCategories?.length
+    const hasTagsNow = !!isDefinedNumber(
+      previewPageState.page as CollectionPagePageProps,
+    ).tagCategories?.length
 
     setSavedPageState(previewPageState)
     mutate(

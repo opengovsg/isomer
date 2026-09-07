@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-use-before-define -- core cleanup deferred */
 import type { FooterSchemaType } from "@opengovsg/isomer-components"
 import type { Dispatch, SetStateAction } from "react"
 import {
@@ -89,9 +90,7 @@ export const FooterEditor = ({
           >
             Footer
           </Text>
-
           <Spacer />
-
           <PublishButton
             isDirty={isDirty}
             isSaving={isSaving}

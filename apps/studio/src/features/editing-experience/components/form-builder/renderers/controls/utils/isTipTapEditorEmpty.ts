@@ -12,7 +12,8 @@ export const isTiptapEditorEmpty = (json: JSONContent | undefined): boolean => {
     return false
   }
   // fail-safe check: it should always be prose type
-  if (!json.content?.length) {
+  // oxlint-disable-next-line typescript/strict-boolean-expressions -- core cleanup deferred
+  if (!isDefinedNumber(json.content?.length)) {
     return true
   }
   if (json.content.length > 1) {

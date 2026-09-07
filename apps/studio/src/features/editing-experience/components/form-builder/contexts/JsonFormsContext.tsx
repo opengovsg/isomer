@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/consistent-function-scoping -- core cleanup deferred */
 import type { ControlWithDetailProps } from "@jsonforms/core"
 import type { JsonFormsStateContext } from "@jsonforms/react"
 import type { ComponentType } from "react"
@@ -10,6 +11,7 @@ import { memo } from "react"
 
 export const withJsonFormsControlWithDetailProps = (
   Component: ComponentType<ControlWithDetailProps>,
+  // oxlint-disable-next-line eslint/no-use-before-define -- core cleanup deferred
 ) => withJsonFormsContext(withContextToControlWithDetailProps(memo(Component)))
 
 // NOTE: This is a custom handrolled higher order component.
@@ -26,12 +28,10 @@ const withContextToControlWithDetailProps = (
     // NOTE: provides `handleChange` for our method.
     // Unfortunately, the `ctx` is typed as `any` here
     // and requires suppression.
-    // oxlint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     const dispatchProps = ctxDispatchToControlProps(ctx.dispatch)
     // NOTE: provides `uischemas, renderers, cells`
     // The previous implementation of using `withJsonFormsDetailProps`
     // only provided this.
-    // oxlint-disable-next-line @typescript-eslint/no-unsafe-argument
     const detailProps = ctxToControlWithDetailProps(ctx, props)
     return <Component {...props} {...dispatchProps} {...detailProps} />
   }

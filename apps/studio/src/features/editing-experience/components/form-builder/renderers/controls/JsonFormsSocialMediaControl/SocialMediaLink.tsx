@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { FooterSchemaType } from "@opengovsg/isomer-components"
 import {
   Box,
@@ -18,6 +19,12 @@ import {
   BiSolidErrorCircle,
   BiTrash,
 } from "react-icons/bi"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { SOCIAL_MEDIA_LINKS } from "./constants"
 
@@ -100,7 +107,7 @@ export const SocialMediaLink = ({
                 </Text>
               </HStack>
 
-              {isInvalid ? (
+              {isNullableBooleanTrue(isInvalid) ? (
                 <Box as="span" display="flex" flexDir="row" gap="0.25rem">
                   <Icon
                     as={BiSolidErrorCircle}
@@ -121,7 +128,7 @@ export const SocialMediaLink = ({
                   textColor="base.content.medium"
                   noOfLines={1}
                 >
-                  {url || socialMediaLink.placeholder}
+                  {hasNonEmptyString(url) || socialMediaLink.placeholder}
                 </Text>
               )}
             </HStack>

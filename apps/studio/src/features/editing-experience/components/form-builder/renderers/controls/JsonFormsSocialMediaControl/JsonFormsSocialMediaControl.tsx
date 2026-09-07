@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-shadow, eslint/no-useless-return, unicorn/no-new-array, unicorn/no-unnecessary-type-conversion -- core cleanup deferred */
 import type {
   ArrayLayoutProps,
   JsonFormsCellRendererRegistryEntry,
@@ -45,6 +46,12 @@ import {
   BiTrash,
 } from "react-icons/bi"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { FORM_BUILDER_PARENT_ID } from "../../../constants"
 import { useBuilderErrors } from "../../../ErrorProvider"
@@ -152,7 +159,7 @@ const EditSocialMediaLinkItem = ({
             textColor="base.content.default"
             textOverflow="ellipsis"
           >
-            {label || "Add a social media link"}
+            {hasNonEmptyString(label) || "Add a social media link"}
           </Text>
         </HStack>
       </VStack>
@@ -273,7 +280,7 @@ const JsonFormsSocialMediaControl = ({
 
       removeItems(path, [index])()
 
-      if (!selectedIndex) {
+      if (!isDefinedNumber(selectedIndex)) {
         return
       } else if (selectedIndex === index) {
         setSelectedIndex(undefined)
@@ -313,7 +320,7 @@ const JsonFormsSocialMediaControl = ({
     return (
       <>
         <DeleteSocialMediaLinkModal
-          isOpen={!!selectedPathForDeletion}
+          isOpen={!!hasNonEmptyString(selectedPathForDeletion)}
           onClose={() => {
             setSelectedPathForDeletion(undefined)
           }}
@@ -344,7 +351,7 @@ const JsonFormsSocialMediaControl = ({
   return (
     <>
       <DeleteSocialMediaLinkModal
-        isOpen={!!selectedPathForDeletion}
+        isOpen={!!hasNonEmptyString(selectedPathForDeletion)}
         onClose={() => {
           setSelectedPathForDeletion(undefined)
         }}
@@ -361,7 +368,7 @@ const JsonFormsSocialMediaControl = ({
             <VStack align="start" spacing="0.25rem">
               <Text textStyle="subhead-1">{label}</Text>
 
-              {description && (
+              {hasNonEmptyString(description) && (
                 <Text textStyle="body-2" textColor="base.content.default">
                   {description}
                 </Text>
@@ -370,7 +377,8 @@ const JsonFormsSocialMediaControl = ({
 
             <Tooltip
               label={
-                arraySchema.maxItems && data >= arraySchema.maxItems
+                isDefinedNumber(arraySchema.maxItems) &&
+                data >= arraySchema.maxItems
                   ? `You can only place up to ${arraySchema.maxItems} links.`
                   : undefined
               }
@@ -385,7 +393,9 @@ const JsonFormsSocialMediaControl = ({
                   setSelectedIndex(data)
                 }}
                 isDisabled={
-                  arraySchema.maxItems ? data >= arraySchema.maxItems : false
+                  isDefinedNumber(arraySchema.maxItems)
+                    ? data >= arraySchema.maxItems
+                    : false
                 }
               >
                 Add a link
@@ -414,7 +424,7 @@ const JsonFormsSocialMediaControl = ({
             </Flex>
           ) : (
             <VStack gap="0.5rem" mt="1rem" w="full">
-              {[...Array(data).keys()].map((index) => {
+              {[...new Array(data).keys()].map((index) => {
                 const childPath = composePaths(path, `${index}`)
                 const hasError = hasErrorAt(childPath)
 

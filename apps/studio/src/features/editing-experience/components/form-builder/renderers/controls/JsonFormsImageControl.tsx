@@ -10,6 +10,12 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { pageOrLinkSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { MAX_IMG_FILE_SIZE_BYTES } from "~/lib/fileUpload"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { getCustomErrorMessage } from "./utils/getCustomErrorMessage"
 
@@ -56,7 +62,11 @@ const JsonFormsImageControl = ({
             schema.allowedMimeTypeMappings ?? IMAGE_ACCEPTED_MIME_TYPE_MAPPING
           }
           siteId={siteId}
-          resourceId={(pageId ?? linkId) ? String(pageId ?? linkId) : undefined}
+          resourceId={
+            isDefinedNumber(pageId ?? linkId)
+              ? String(pageId ?? linkId)
+              : undefined
+          }
           setHref={(src) => {
             handleChange(path, src)
           }}

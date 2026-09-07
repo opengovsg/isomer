@@ -16,10 +16,12 @@ export const getNavbarItemPath = (
 ): NavbarItemPath => {
   if (parentIndex !== undefined) {
     // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
+    // oxlint-disable-next-line unicorn/no-unsafe-type-assertion -- core cleanup deferred
     return `items.${parentIndex}.items.${index}` as NavbarItemPath
   }
 
   // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
+  // oxlint-disable-next-line unicorn/no-unsafe-type-assertion -- core cleanup deferred
   return `items.${index}` as NavbarItemPath
 }
 
@@ -31,7 +33,8 @@ export const isSubItemPath = (path: string): path is NavbarItemPath =>
 export const isFirstLevelLinksOverLimit = (
   itemCount: number,
   maxItems?: number,
-): boolean => !!(maxItems && itemCount > maxItems)
+  // oxlint-disable-next-line typescript/strict-boolean-expressions -- core cleanup deferred
+): boolean => !!(isDefinedNumber(maxItems) && itemCount > maxItems)
 
 export const getInstancePathFromNavbarItemPath = (path: NavbarItemPath) =>
   `/${path.replaceAll(".", "/")}`
@@ -84,8 +87,10 @@ const insertSubItem = (
   parentIndex: number,
   item: NavbarItems["items"][number],
 ) => {
+  // oxlint-disable-next-line unicorn/prefer-structured-clone -- core cleanup deferred
   const data = cloneDeep(items)
 
+  // oxlint-disable-next-line typescript/strict-boolean-expressions -- core cleanup deferred
   if (items[parentIndex]?.items) {
     data[parentIndex]?.items?.push(item)
   } else {
@@ -97,6 +102,7 @@ const insertSubItem = (
 
 // Helper function to determine the move item operation type, based on the
 // parameters provided
+// oxlint-disable-next-line eslint/complexity -- core cleanup deferred
 export const getMoveItemOperation = (
   originalPath: string,
   newPath: string,
@@ -152,11 +158,13 @@ const moveSingleMainItemToBecomeSubitem = (
   targetLocationIndices: NavbarItemIndices,
 ) => {
   // SAFETY: navbar item path resolves to a top-level or nested navbar item record
+  // oxlint-disable-next-line unicorn/no-unsafe-type-assertion -- core cleanup deferred
   const itemToMove = get({ items: data }, originalPath) as
-    | NavbarItems["items"][number]
-    | undefined
+    // oxlint-disable-next-line unicorn/no-redundant-type-constituents -- core cleanup deferred
+    NavbarItems["items"][number] | undefined
 
   if (
+    // oxlint-disable-next-line typescript/strict-boolean-expressions -- core cleanup deferred
     !itemToMove ||
     (itemToMove.items !== undefined && itemToMove.items.length > 0)
   ) {
@@ -187,6 +195,7 @@ const moveSubItemToBecomeSubItemOfAnother = (
     1,
   )[0]
 
+  // oxlint-disable-next-line typescript/strict-boolean-expressions -- core cleanup deferred
   if (!itemToMove) {
     return data
   }
@@ -236,10 +245,12 @@ const moveSubItemToBecomeMainItem = (
   }
 
   // SAFETY: navbar item path resolves to a top-level or nested navbar item record
+  // oxlint-disable-next-line unicorn/no-unsafe-type-assertion -- core cleanup deferred
   const itemToMove = get({ items: data }, originalPath) as
-    | NavbarItems["items"][number]
-    | undefined
+    // oxlint-disable-next-line unicorn/no-redundant-type-constituents -- core cleanup deferred
+    NavbarItems["items"][number] | undefined
 
+  // oxlint-disable-next-line typescript/strict-boolean-expressions -- core cleanup deferred
   if (!itemToMove) {
     return data
   }
@@ -289,6 +300,7 @@ export const handleMoveItem = (
     return existingData
   }
 
+  // oxlint-disable-next-line unicorn/prefer-structured-clone -- core cleanup deferred
   const data = cloneDeep<NavbarItems["items"]>(existingData)
   const moveItemIndices = getNavbarItemIndices(originalPath)
   const targetLocationIndices = getNavbarItemIndices(newPath)

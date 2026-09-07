@@ -1,3 +1,4 @@
+/* oxlint-disable import/no-cycle -- core cleanup deferred */
 import { Flex, Td, Text, Tr, VStack } from "@chakra-ui/react"
 import { AddNewUserButton } from "~/features/users/components"
 

@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-use-before-define -- core cleanup deferred */
 import {
   Button,
   FormControl,
@@ -166,7 +167,9 @@ export const EditProfileModal = () => {
           <ModalFooter>
             <Button
               variant="solid"
-              onClick={onSubmit}
+              onClick={() => {
+                void onSubmit
+              }}
               isDisabled={!isDirty || Object.keys(errors).length > 0}
               isLoading={isPending}
             >

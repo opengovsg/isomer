@@ -11,7 +11,7 @@ import {
 } from "@chakra-ui/react"
 import { Button, useToast } from "@opengovsg/design-system-react"
 import { useAtomValue, useSetAtom } from "jotai"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
 import { trpc } from "~/utils/trpc"
@@ -46,7 +46,7 @@ export const RemoveUserModal = () => {
     },
     onSettled: onClose,
     onSuccess: async (result) => {
-      posthog.capture("site_user_removed", { site_id: siteId })
+      posthogJs.capture("site_user_removed", { site_id: siteId })
       await utils.user.list.invalidate()
       await utils.user.count.invalidate()
       toast({

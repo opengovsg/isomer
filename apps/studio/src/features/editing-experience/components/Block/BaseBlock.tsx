@@ -1,9 +1,17 @@
+/* oxlint-disable typescript/strict-boolean-expressions -- core cleanup deferred */
 import type { ButtonProps, StackProps } from "@chakra-ui/react"
 import type { DraggableProvidedDragHandleProps } from "@hello-pangea/dnd"
 import type { IconType } from "react-icons"
 import { chakra, Flex, HStack, Icon, Stack, Text } from "@chakra-ui/react"
 import { BiGridVertical, BiSolidErrorCircle } from "react-icons/bi"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
+// oxlint-disable-next-line typescript/consistent-return -- core cleanup deferred
 const BaseBlockDescription = ({
   invalidProps,
   description,
@@ -30,7 +38,7 @@ const BaseBlockDescription = ({
     )
   }
 
-  if (description) {
+  if (hasNonEmptyString(description)) {
     return (
       <Text
         textStyle="caption-2"
@@ -85,7 +93,7 @@ export const BaseBlock = ({
 }: BaseBlockProps): React.ReactNode | null => {
   const actualDraggableProps = draggableProps ?? {}
 
-  if (isHidden) {
+  if (isNullableBooleanTrue(isHidden)) {
     return null
   }
 

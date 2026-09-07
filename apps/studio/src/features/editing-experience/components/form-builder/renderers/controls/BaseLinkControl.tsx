@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-boolean-expressions, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { ControlProps } from "@jsonforms/core"
 import type { LinkEditorModalProps } from "~/components/PageEditor/LinkEditorModal"
 import {
@@ -21,6 +22,12 @@ import { LinkEditorModal } from "~/components/PageEditor/LinkEditorModal"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { sitePageSchema } from "~/pages/sites/[siteId]"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import type { LinkTypesWithHrefFormat } from "../../../LinkEditor/constants"
 import { LINK_TYPES } from "../../../LinkEditor/constants"
@@ -141,7 +148,7 @@ export const BaseLinkControl = ({
               </>
             )}
           </Flex>
-          {required && (
+          {isNullableBooleanTrue(required) && (
             <FormErrorMessage>
               {/* AJV sees an empty string as present, so pattern mismatch (not "required") fires here — check data directly to show the empty-state copy */}
               {data

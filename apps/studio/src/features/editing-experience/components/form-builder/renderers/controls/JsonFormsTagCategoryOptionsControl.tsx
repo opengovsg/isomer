@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-nested-ternary, eslint/no-shadow, unicorn/no-new-array, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { DropResult } from "@hello-pangea/dnd"
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import { Box, HStack, Skeleton, Text, VStack } from "@chakra-ui/react"
@@ -12,6 +13,12 @@ import { useCanManageCollectionFilters } from "~/features/editing-experience/hoo
 import { pageSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { AddItemButton } from "../../components/AddItemButton"
 import { DeleteConfirmModal } from "../../components/DeleteConfirmModal"
@@ -168,13 +175,16 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
               Add option
             </AddItemButton>
           </HStack>
-          {description && (
+          {hasNonEmptyString(description) && (
             <Text textStyle="body-2" textColor="base.content.default">
               {description}
             </Text>
           )}
         </VStack>
-        <Box w="full" mt={description ? "0.75rem" : "0.25rem"}>
+        <Box
+          w="full"
+          mt={hasNonEmptyString(description) ? "0.75rem" : "0.25rem"}
+        >
           <DragDropContext onDragEnd={handleDragEnd}>
             <Droppable droppableId="blocks">
               {({ droppableProps, innerRef, placeholder }) => (
@@ -190,7 +200,7 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
                     <EmptyCategory title="Add an option to save this filter" />
                   )}
 
-                  {[...Array(data).keys()].map((index) => {
+                  {[...new Array(data).keys()].map((index) => {
                     const childPath = composePaths(path, `${index}`)
                     const isDuplicate = duplicateOptionIndices.has(index)
                     const isBlank = blankOptionIndices.has(index)
@@ -201,9 +211,9 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
                     const optionName = `Option ${index + 1}`
                     const errorMessage = isDuplicate
                       ? "An option with this name already exists."
-                      : (isBlank
+                      : isBlank
                         ? "Option name cannot be empty."
-                        : undefined)
+                        : undefined
 
                     return (
                       <Draggable

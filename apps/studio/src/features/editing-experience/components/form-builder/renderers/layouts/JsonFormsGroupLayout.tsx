@@ -1,3 +1,4 @@
+/* oxlint-disable react/function-component-definition, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type {
   LayoutProps,
   RankedTester,
@@ -30,6 +31,7 @@ export const jsonFormsGroupLayoutTester: RankedTester = rankWith(
   uiTypeIs("Group"),
 )
 
+// oxlint-disable-next-line react/display-name -- core cleanup deferred
 const GroupComponent = React.memo(
   ({
     visible,

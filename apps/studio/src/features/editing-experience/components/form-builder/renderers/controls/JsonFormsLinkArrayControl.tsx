@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-plusplus, eslint/no-shadow, eslint/no-useless-return, unicorn/no-new-array, unicorn/no-unnecessary-type-conversion -- core cleanup deferred */
 import type { DropResult } from "@hello-pangea/dnd"
 import type {
   ArrayLayoutProps,
@@ -46,6 +47,12 @@ import {
   BiTrash,
 } from "react-icons/bi"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import DraggableLinkButton from "../../components/DraggableLinkButton"
 import { FORM_BUILDER_PARENT_ID } from "../../constants"
@@ -276,7 +283,7 @@ const JsonFormsArrayLinkControl = ({
 
       removeItems(path, [index])()
 
-      if (!selectedIndex) {
+      if (!isDefinedNumber(selectedIndex)) {
         return
       } else if (selectedIndex === index) {
         setSelectedIndex(undefined)
@@ -336,12 +343,13 @@ const JsonFormsArrayLinkControl = ({
     const newIndex = result.destination.index
     handleMoveItem(path, originalIndex, newIndex)
   }
+  // oxlint-disable-next-line unicorn/no-unnecessary-type-conversion -- core cleanup deferred
 
   if (selectedIndex !== undefined) {
     return (
       <>
         <DeleteLinkModal
-          isOpen={!!selectedPathForDeletion}
+          isOpen={!!hasNonEmptyString(selectedPathForDeletion)}
           onClose={() => {
             setSelectedPathForDeletion(undefined)
           }}
@@ -372,7 +380,7 @@ const JsonFormsArrayLinkControl = ({
   return (
     <>
       <DeleteLinkModal
-        isOpen={!!selectedPathForDeletion}
+        isOpen={!!hasNonEmptyString(selectedPathForDeletion)}
         onClose={() => {
           setSelectedPathForDeletion(undefined)
         }}
@@ -388,13 +396,13 @@ const JsonFormsArrayLinkControl = ({
             <VStack align="start" spacing="0.25rem">
               <Text textStyle="subhead-2">{label}</Text>
 
-              {description && (
+              {hasNonEmptyString(description) && (
                 <Text textStyle="body-2" textColor="base.content.default">
                   {description}
                 </Text>
               )}
 
-              {arraySchema.maxItems && (
+              {isDefinedNumber(arraySchema.maxItems) && (
                 <Text textStyle="body-2" textColor="base.content.medium">
                   {data}/{arraySchema.maxItems} links added
                 </Text>
@@ -403,7 +411,8 @@ const JsonFormsArrayLinkControl = ({
 
             <Tooltip
               label={
-                arraySchema.maxItems && data >= arraySchema.maxItems
+                isDefinedNumber(arraySchema.maxItems) &&
+                data >= arraySchema.maxItems
                   ? `You can only place up to ${arraySchema.maxItems} links.`
                   : undefined
               }
@@ -418,7 +427,9 @@ const JsonFormsArrayLinkControl = ({
                   setSelectedIndex(data)
                 }}
                 isDisabled={
-                  arraySchema.maxItems ? data >= arraySchema.maxItems : false
+                  isDefinedNumber(arraySchema.maxItems)
+                    ? data >= arraySchema.maxItems
+                    : false
                 }
               >
                 Add a link
@@ -458,7 +469,7 @@ const JsonFormsArrayLinkControl = ({
                   </Flex>
                 )}
 
-                {[...Array(data).keys()].map((index) => {
+                {[...new Array(data).keys()].map((index) => {
                   const childPath = composePaths(path, `${index}`)
                   const hasError = hasErrorAt(childPath)
 

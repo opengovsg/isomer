@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/default-case, eslint/no-shadow, typescript/consistent-return -- core cleanup deferred */
 import type { PropsWithChildren } from "react"
 import { filter } from "lodash-es"
 import { createContext, useContext, useMemo } from "react"

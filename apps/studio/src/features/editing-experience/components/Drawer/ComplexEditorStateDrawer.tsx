@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-void-return -- core cleanup deferred */
 import { Box, Flex } from "@chakra-ui/react"
 
 import { DeleteBlockModal } from "../DeleteBlockModal"

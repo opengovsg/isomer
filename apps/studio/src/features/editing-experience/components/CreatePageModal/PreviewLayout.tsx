@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/default-case, eslint/no-use-before-define, typescript/consistent-return, typescript/switch-exhaustiveness-check -- core cleanup deferred */
 import { Box, Flex, Skeleton, Stack, Text } from "@chakra-ui/react"
 import { useIsMobile } from "@opengovsg/design-system-react"
 import { useMemo } from "react"

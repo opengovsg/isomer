@@ -5,13 +5,19 @@ import type { EditorMenuBar } from "~/components/PageEditor/MenuBar/MenuBar"
 import { Box, VStack } from "@chakra-ui/react"
 import { EditorContent } from "@tiptap/react"
 import { useMemo } from "react"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 const EditorContainer = ({
   children,
   isNested,
 }: PropsWithChildren<{ isNested?: boolean }>) => {
   const containerProps: Partial<BoxProps> = useMemo(() => {
-    if (isNested) {
+    if (isNullableBooleanTrue(isNested)) {
       return {
         _groupFocusWithin: {
           borderColor: "utility.focus-default",
@@ -54,7 +60,9 @@ const EditorContentWrapper = ({
     overflowX="hidden"
     overflowY="auto"
     backgroundColor="white"
-    onClick={() => editor?.chain().focus().run()}
+    onClick={() => {
+      void editor?.chain().focus().run()
+    }}
     cursor="text"
   />
 )

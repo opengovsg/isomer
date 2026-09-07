@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type {
   Control,
   FieldErrors,
@@ -18,6 +19,12 @@ import { useState } from "react"
 import { Controller, useWatch } from "react-hook-form"
 import { TimeSelect } from "~/components/Select/TimeSelect"
 import { MAX_FILE_SIZE_BYTES } from "~/lib/fileUpload"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import type { GazettesCategory } from "../../types"
 import { GAZETTE_CATEGORIES } from "../../constants"
@@ -61,7 +68,7 @@ export const GazetteFormFields = ({
   onFileChange,
 }: GazetteFormFieldsProps) => {
   const [file, setFile] = useState<File | undefined>(() =>
-    initialFileName
+    hasNonEmptyString(initialFileName)
       ? buildPlaceholderFile(initialFileName, initialFileSize)
       : undefined,
   )
@@ -75,7 +82,7 @@ export const GazetteFormFields = ({
           Title
         </FormLabel>
         <Textarea placeholder="Enter a title" {...register("title")} />
-        {errors.title?.message && (
+        {hasNonEmptyString(errors.title?.message) && (
           <FormErrorMessage>{errors.title.message}</FormErrorMessage>
         )}
       </FormControl>
@@ -100,7 +107,7 @@ export const GazetteFormFields = ({
             />
           )}
         />
-        {errors.category?.message && (
+        {hasNonEmptyString(errors.category?.message) && (
           <FormErrorMessage>{errors.category.message}</FormErrorMessage>
         )}
       </FormControl>
@@ -123,7 +130,7 @@ export const GazetteFormFields = ({
             />
           )}
         />
-        {errors.subcategory?.message && (
+        {hasNonEmptyString(errors.subcategory?.message) && (
           <FormErrorMessage>{errors.subcategory.message}</FormErrorMessage>
         )}
       </FormControl>
@@ -136,7 +143,7 @@ export const GazetteFormFields = ({
           placeholder="Enter Notification Number"
           {...register("notificationNumber")}
         />
-        {errors.notificationNumber?.message && (
+        {hasNonEmptyString(errors.notificationNumber?.message) && (
           <FormErrorMessage>
             {errors.notificationNumber.message}
           </FormErrorMessage>
@@ -155,7 +162,7 @@ export const GazetteFormFields = ({
               <DatePicker {...field} size="md" allowManualInput={false} />
             )}
           />
-          {errors.publishDate?.message && (
+          {hasNonEmptyString(errors.publishDate?.message) && (
             <FormErrorMessage>{errors.publishDate.message}</FormErrorMessage>
           )}
         </FormControl>
@@ -171,7 +178,7 @@ export const GazetteFormFields = ({
               <TimeSelect minutesStep={5} size="md" {...field} />
             )}
           />
-          {errors.publishTime?.message && (
+          {hasNonEmptyString(errors.publishTime?.message) && (
             <FormErrorMessage>{errors.publishTime.message}</FormErrorMessage>
           )}
         </FormControl>
@@ -209,7 +216,7 @@ export const GazetteFormFields = ({
           File ID
         </FormLabel>
         <Input placeholder="Enter File ID" {...register("fileId")} />
-        {errors.fileId?.message && (
+        {hasNonEmptyString(errors.fileId?.message) && (
           <FormErrorMessage>{errors.fileId?.message}</FormErrorMessage>
         )}
       </FormControl>

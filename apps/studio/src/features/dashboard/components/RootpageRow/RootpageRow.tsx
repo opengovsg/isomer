@@ -1,8 +1,15 @@
+/* oxlint-disable eslint/no-warning-comments -- core cleanup deferred */
 import { HStack, IconButton, Text, VStack } from "@chakra-ui/react"
 import { Badge, BadgeLeftIcon } from "@opengovsg/design-system-react"
 import Link from "next/link"
 import { BiChevronRight, BiHomeAlt, BiSolidCircle } from "react-icons/bi"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 import { ResourceState } from "~prisma/generated/generatedEnums"
 
 interface RootpageRowProps {
@@ -36,11 +43,13 @@ export const RootpageRow = ({ siteId }: RootpageRowProps) => {
           <Badge
             size="xs"
             variant="clear"
-            colorScheme={draftBlobId ? "warning" : "success"}
+            colorScheme={hasNonEmptyString(draftBlobId) ? "warning" : "success"}
           >
             <BadgeLeftIcon fontSize="0.5rem" as={BiSolidCircle} />
             <Text textStyle="legal">
-              {draftBlobId ? ResourceState.Draft : ResourceState.Published}
+              {hasNonEmptyString(draftBlobId)
+                ? ResourceState.Draft
+                : ResourceState.Published}
             </Text>
           </Badge>
         </HStack>

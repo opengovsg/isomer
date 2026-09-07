@@ -26,9 +26,11 @@ export type PreviewProps = IsomerSchema & {
 }
 
 // Add a fake link component to prevent the preview from navigating away
+// oxlint-disable-next-line react/display-name -- core cleanup deferred
 const FakeLink = forwardRef<
   HTMLAnchorElement,
   PropsWithChildren<AnchorHTMLAttributes<HTMLAnchorElement>>
+  // oxlint-disable-next-line react/function-component-definition -- core cleanup deferred
 >(({ children, href, onClick, ...rest }, ref) => (
   <a
     {...rest}

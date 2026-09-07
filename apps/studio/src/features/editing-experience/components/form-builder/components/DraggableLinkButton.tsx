@@ -1,3 +1,4 @@
+/* oxlint-disable react/function-component-definition, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import {
   Box,
   Flex,
@@ -26,6 +27,12 @@ import Suspense from "~/components/Suspense"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { sitePageSchema } from "~/pages/sites/[siteId]"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import type { LinkTypesWithHrefFormat } from "../../LinkEditor/constants"
 import type { DraggableArrayItemRenderProps } from "./types"
@@ -61,6 +68,7 @@ interface DraggableLinkButtonProps extends Omit<
   resetLink: () => void
 }
 
+// oxlint-disable-next-line react/display-name -- core cleanup deferred
 const DraggableLinkButton = forwardRef<DraggableLinkButtonProps, "div">(
   (
     {
@@ -187,7 +195,7 @@ const DraggableLinkButton = forwardRef<DraggableLinkButtonProps, "div">(
 
                       {!isError &&
                         linkType === LINK_TYPES.Page &&
-                        displayedHref &&
+                        hasNonEmptyString(displayedHref) &&
                         displayedHref !== "" && (
                           <Suspense fallback={<Skeleton w="100%" h="100%" />}>
                             <SuspendableLabel

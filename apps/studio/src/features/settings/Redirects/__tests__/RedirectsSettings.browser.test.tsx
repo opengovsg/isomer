@@ -77,6 +77,7 @@ const renderAs = (role: RoleType) => {
 }
 
 const DELETE_LABEL = `Delete redirect for ${REDIRECT_ROW.source}`
+// oxlint-disable-next-line eslint/require-unicode-regexp -- core cleanup deferred
 const PERMISSION_ERROR = /We couldn't check your permissions/
 
 describe("RedirectsSettings", () => {

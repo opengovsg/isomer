@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-unnecessary-type-conversion -- core cleanup deferred */
 import { Badge, Tab, Text, useTab } from "@chakra-ui/react"
 import React from "react"
 
@@ -9,6 +10,7 @@ interface UserTableTabProps {
 export const UserTableTab = React.forwardRef<
   HTMLButtonElement,
   UserTableTabProps
+  // oxlint-disable-next-line react/function-component-definition -- core cleanup deferred
 >(({ label, count, ...props }, ref) => {
   const tabProps = useTab({ ...props, ref })
   const isSelected = !!tabProps["aria-selected"]

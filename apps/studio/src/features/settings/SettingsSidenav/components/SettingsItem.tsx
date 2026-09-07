@@ -1,5 +1,11 @@
 import { Link, Text } from "@chakra-ui/react"
 import NextLink from "next/link"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 interface SettingsItemProps {
   label: string
@@ -21,7 +27,7 @@ export const SettingsItem = ({ isActive, label, href }: SettingsItemProps) => (
   >
     <Text
       textStyle="subhead-2"
-      aria-current={isActive && "page"}
+      aria-current={isNullableBooleanTrue(isActive) && "page"}
       _activeLink={{
         textColor: "interaction.main.default",
       }}

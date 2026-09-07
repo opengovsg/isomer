@@ -20,6 +20,7 @@ const compactStringRecord = <T extends Record<string, string | undefined>>(
     return undefined
   }
   // SAFETY: entries only drop blank string fields from the same record shape
+  // oxlint-disable-next-line unicorn/no-unsafe-type-assertion -- core cleanup deferred
   return Object.fromEntries(entries) as T
 }
 

@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-boolean-expressions, unicorn/no-redundant-type-constituents, unicorn/no-unnecessary-type-conversion, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import { Box, FormControl } from "@chakra-ui/react"
 import { isStringControl, rankWith } from "@jsonforms/core"
@@ -10,6 +11,12 @@ import {
 } from "@opengovsg/design-system-react"
 import { MarkdownLabel } from "~/components/MarkdownLabel"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { getCustomErrorMessage } from "./utils/getCustomErrorMessage"
 
@@ -19,7 +26,7 @@ export const jsonFormsTextControlTester: RankedTester = rankWith(
 )
 
 const getRemainingCharacterCount = (maxLength: number, data?: string) => {
-  if (!data) {
+  if (!hasNonEmptyString(data)) {
     return maxLength
   }
 
@@ -29,7 +36,7 @@ const getRemainingCharacterCount = (maxLength: number, data?: string) => {
 const isSchemaWithTooltip = (
   schema: ControlProps["schema"],
 ): schema is ControlProps["schema"] & { tooltip: string } => {
-  if (!schema || !("tooltip" in schema)) {
+  if (schema === undefined || !("tooltip" in schema)) {
     return false
   }
   // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
@@ -49,8 +56,11 @@ export const JsonFormsTextControl = ({
   enabled,
 }: ControlProps) => {
   const { maxLength } = schema
-  const remainingCharacterCount = maxLength
-    ? getRemainingCharacterCount(maxLength, data ? String(data) : undefined)
+  const remainingCharacterCount = isDefinedNumber(maxLength)
+    ? getRemainingCharacterCount(
+        maxLength,
+        hasNonEmptyString(data) ? String(data) : undefined,
+      )
     : -1
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target
@@ -77,13 +87,13 @@ export const JsonFormsTextControl = ({
         <Input
           isDisabled={!enabled}
           type="text"
-          value={String(data || "")}
+          value={hasNonEmptyString(data) ? String(data) : ""}
           onChange={onChange}
           placeholder={label}
           maxLength={maxLength}
           my="0.5rem"
         />
-        {maxLength && !errors && (
+        {isDefinedNumber(maxLength) && !errors && (
           <FormHelperText>
             {remainingCharacterCount}{" "}
             {remainingCharacterCount === 1 ? "character" : "characters"} left

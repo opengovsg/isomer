@@ -29,6 +29,7 @@ const otherRequiredCategory: CollectionTags[number] = {
 describe("validateRequiredTags", () => {
   it("returns valid when there are no tag categories", () => {
     // Act
+    // oxlint-disable-next-line unicorn/no-confusing-void-expression -- core cleanup deferred
     const result = validateRequiredTags([], ["anything"])
 
     // Assert
@@ -38,6 +39,7 @@ describe("validateRequiredTags", () => {
 
   it("returns valid when no categories are required", () => {
     // Act
+    // oxlint-disable-next-line unicorn/no-confusing-void-expression -- core cleanup deferred
     const result = validateRequiredTags([optionalCategory])
 
     // Assert
@@ -47,6 +49,7 @@ describe("validateRequiredTags", () => {
 
   it("returns valid when every required category has a selected option", () => {
     // Act
+    // oxlint-disable-next-line unicorn/no-confusing-void-expression -- core cleanup deferred
     const result = validateRequiredTags(
       [requiredCategory, optionalCategory],
       [REQUIRED_OPTION_ID],
@@ -59,6 +62,7 @@ describe("validateRequiredTags", () => {
 
   it("returns invalid when a required category has no selection", () => {
     // Act
+    // oxlint-disable-next-line unicorn/no-confusing-void-expression -- core cleanup deferred
     const result = validateRequiredTags([requiredCategory], [])
 
     // Assert
@@ -68,6 +72,7 @@ describe("validateRequiredTags", () => {
 
   it("returns invalid when tagged is undefined and a category is required", () => {
     // Act
+    // oxlint-disable-next-line unicorn/no-confusing-void-expression -- core cleanup deferred
     const result = validateRequiredTags([requiredCategory])
 
     // Assert
@@ -77,6 +82,7 @@ describe("validateRequiredTags", () => {
 
   it("does not require selections for optional categories", () => {
     // Act
+    // oxlint-disable-next-line unicorn/no-confusing-void-expression -- core cleanup deferred
     const result = validateRequiredTags(
       [requiredCategory, optionalCategory],
       [REQUIRED_OPTION_ID],
@@ -89,6 +95,7 @@ describe("validateRequiredTags", () => {
 
   it("returns only unfilled required categories when multiple are configured", () => {
     // Act
+    // oxlint-disable-next-line unicorn/no-confusing-void-expression -- core cleanup deferred
     const result = validateRequiredTags(
       [requiredCategory, otherRequiredCategory, optionalCategory],
       [REQUIRED_OPTION_ID],
@@ -109,6 +116,7 @@ describe("validateRequiredTags", () => {
     }
 
     // Act
+    // oxlint-disable-next-line unicorn/no-confusing-void-expression -- core cleanup deferred
     const result = validateRequiredTags(
       [emptyRequiredCategory, requiredCategory],
       [],
@@ -128,6 +136,7 @@ describe("validateRequiredTags", () => {
     }
 
     // Act
+    // oxlint-disable-next-line unicorn/no-confusing-void-expression -- core cleanup deferred
     const result = validateRequiredTags([categoryWithoutRequiredFlag])
 
     // Assert

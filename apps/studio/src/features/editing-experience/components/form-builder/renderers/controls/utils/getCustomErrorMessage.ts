@@ -1,5 +1,12 @@
+/* oxlint-disable import/newline-after-import -- core cleanup deferred */
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 export const getCustomErrorMessage = (error: string | undefined): string => {
-  if (!error) {
+  if (!hasNonEmptyString(error)) {
     return ""
   }
 

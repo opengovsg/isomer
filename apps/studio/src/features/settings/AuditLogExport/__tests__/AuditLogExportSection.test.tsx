@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 // @vitest-environment jsdom
 import type { UserManagementAbility } from "~/server/modules/permissions/permissions.type"
 import { ThemeProvider } from "@opengovsg/design-system-react"

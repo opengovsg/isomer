@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-boolean-expressions -- core cleanup deferred */
 import type { FlexProps } from "@chakra-ui/react"
 import type { IsomerSiteThemeProps } from "@opengovsg/isomer-components"
 import type { PropsWithChildren } from "react"
@@ -11,6 +12,7 @@ import type { ViewportOptions } from "./IframeToolbar"
 import { IframeToolbar } from "./IframeToolbar"
 import { PreviewIframe } from "./PreviewIframe"
 
+// oxlint-disable-next-line typescript/promise-function-async -- core cleanup deferred
 const PortalIfFullscreen = ({
   viewport,
   children,

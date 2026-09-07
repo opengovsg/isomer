@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-boolean-expressions, typescript/strict-void-return, typescript/switch-exhaustiveness-check, unicorn/no-useless-switch-case -- core cleanup deferred */
 import type { FieldError } from "react-hook-form"
 import { FormControl, Stack, Text } from "@chakra-ui/react"
 import {
@@ -80,6 +81,7 @@ export const EmailInput: React.FC<EmailInputProps> = ({ onSuccess }) => {
   const handleSignIn = handleSubmit(({ email }) => {
     loginMutation.mutate({ email })
   })
+  // oxlint-disable-next-line typescript/strict-void-return -- core cleanup deferred
 
   return (
     <form onSubmit={handleSignIn} noValidate>

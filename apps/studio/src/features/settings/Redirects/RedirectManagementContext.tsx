@@ -15,6 +15,7 @@ interface RedirectManagement {
   isError: boolean
 }
 
+// oxlint-disable-next-line eslint/sort-keys -- core cleanup deferred
 export const RedirectManagementContext = createContext<RedirectManagement>({
   // A dummy ability that permits nothing, so a consumer mounted outside the
   // provider falls back to read-only rather than to full access.

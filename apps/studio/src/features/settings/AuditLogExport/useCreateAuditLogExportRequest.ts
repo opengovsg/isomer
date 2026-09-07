@@ -1,5 +1,5 @@
 import { useToast } from "@opengovsg/design-system-react"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
 import { ISOMER_SUPPORT_EMAIL } from "~/constants/misc"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { AuditLogExportRequestedReportType } from "~/schemas/audit"
@@ -23,12 +23,16 @@ export const useCreateAuditLogExportRequest = ({
 }: UseCreateAuditLogExportRequestProps) => {
   const toast = useToast(BRIEF_TOAST_SETTINGS)
 
+  // oxlint-disable-next-line eslint/sort-keys -- core cleanup deferred
   return trpc.audit.createExportRequest.useMutation({
     onSuccess: (_data, { scope, reportType: requestedReportType, month }) => {
       if (requestedReportType === AuditLogExportRequestedReportType.Access) {
-        posthog.capture("user_access_log_requested", { scope, site_id: siteId })
+        posthogJs.capture("user_access_log_requested", {
+          scope,
+          site_id: siteId,
+        })
       } else {
-        posthog.capture("audit_log_requested", {
+        posthogJs.capture("audit_log_requested", {
           month,
           scope,
           site_id: siteId,

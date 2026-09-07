@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-use-before-define, typescript/strict-void-return -- core cleanup deferred */
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import {
   Modal,
@@ -13,7 +14,7 @@ import {
   useToast,
 } from "@opengovsg/design-system-react"
 import { format, parse } from "date-fns"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
 import { useState } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useUploadGazetteMutation } from "~/hooks/useUploadGazetteMutation"
@@ -126,7 +127,7 @@ const CreateGazetteModalContent = ({
         title: data.title,
       })
 
-      posthog.capture("gazette_created", {
+      posthogJs.capture("gazette_created", {
         category: data.category,
         has_subcategory: !!data.subcategory,
         is_scheduled: scheduledAt > new Date(),

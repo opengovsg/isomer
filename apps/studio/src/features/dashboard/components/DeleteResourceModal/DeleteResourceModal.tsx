@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-use-before-define, eslint/no-warning-comments, eslint/sort-keys -- core cleanup deferred */
 import {
   HStack,
   Modal,
@@ -17,7 +18,7 @@ import {
 } from "@opengovsg/design-system-react"
 import { useAtom } from "jotai"
 import { upperFirst } from "lodash-es"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
 import { useState } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { isAllowedToHaveChildren } from "~/utils/resources"
@@ -118,7 +119,7 @@ const DeleteResourceModalContent = ({
     },
     onSettled: onClose,
     onSuccess: async () => {
-      posthog.capture("resource_deleted", {
+      posthogJs.capture("resource_deleted", {
         has_redirects: redirectCount > 0,
         resource_type: resourceType,
         site_id: siteId,

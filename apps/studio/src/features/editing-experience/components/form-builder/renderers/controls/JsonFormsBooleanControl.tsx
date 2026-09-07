@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-boolean-expressions -- core cleanup deferred */
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import { Box, Flex, FormControl } from "@chakra-ui/react"
 import { isBooleanControl, rankWith } from "@jsonforms/core"

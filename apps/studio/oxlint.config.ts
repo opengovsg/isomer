@@ -164,6 +164,15 @@ export default defineConfig({
       },
     },
     {
+      files: [
+        "src/features/editing-experience/components/form-builder/renderers/controls/JsonFormsSearchSGControl.tsx",
+        "src/features/editing-experience/components/icons/FormSG.tsx",
+      ],
+      rules: {
+        "unicorn/filename-case": "off",
+      },
+    },
+    {
       files: ["src/schemas/**/*.ts"],
       rules: {
         "anti-slop/no-shape-in-symbol-names": "off",

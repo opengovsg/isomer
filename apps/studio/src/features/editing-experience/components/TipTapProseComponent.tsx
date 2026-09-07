@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-use-before-define, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { ProseProps } from "@opengovsg/isomer-components"
 import type { JSONContent } from "@tiptap/react"
 import { Box, HStack, useDisclosure, VStack } from "@chakra-ui/react"

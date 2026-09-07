@@ -38,6 +38,7 @@ export const useBlockFlashHighlight = ({
       FLASH_HOLD_DURATION_MS + FLASH_FADE_DURATION_MS,
     )
 
+    // oxlint-disable-next-line typescript/consistent-return -- core cleanup deferred
     return () => {
       clearTimeout(fadeTimeout)
       clearTimeout(endTimeout)

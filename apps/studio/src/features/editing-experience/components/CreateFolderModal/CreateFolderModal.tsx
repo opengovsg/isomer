@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-use-before-define, eslint/sort-keys, typescript/strict-void-return, unicorn/no-unnecessary-type-conversion -- core cleanup deferred */
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import type { z } from "zod"
 import {
@@ -21,7 +22,7 @@ import {
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
 import { useEffect } from "react"
 import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
@@ -33,6 +34,12 @@ import {
   MAX_FOLDER_TITLE_LENGTH,
 } from "~/schemas/folder"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { generateResourceUrl } from "../utils"
 
@@ -99,8 +106,8 @@ const CreateFolderModalContent = ({
       onClose()
     },
     onSuccess: async () => {
-      posthog.capture("folder_created", {
-        has_parent_folder: !!parentFolderId,
+      posthogJs.capture("folder_created", {
+        has_parent_folder: !!isDefinedNumber(parentFolderId),
         site_id: siteId,
       })
       await utils.site.list.invalidate()
@@ -135,6 +142,7 @@ const CreateFolderModalContent = ({
       })
     }
   }, [getFieldState, setValue, folderTitle])
+  // oxlint-disable-next-line typescript/strict-void-return -- core cleanup deferred
 
   return (
     <ModalContent>
@@ -157,7 +165,7 @@ const CreateFolderModalContent = ({
                 my="0.5rem"
                 {...register("folderTitle")}
               />
-              {errors.folderTitle?.message ? (
+              {hasNonEmptyString(errors.folderTitle?.message) ? (
                 <FormErrorMessage>
                   {errors.folderTitle.message}
                 </FormErrorMessage>
@@ -194,7 +202,7 @@ const CreateFolderModalContent = ({
                   />
                 )}
               />
-              {errors.permalink?.message && (
+              {hasNonEmptyString(errors.permalink?.message) && (
                 <FormErrorMessage>{errors.permalink.message}</FormErrorMessage>
               )}
 

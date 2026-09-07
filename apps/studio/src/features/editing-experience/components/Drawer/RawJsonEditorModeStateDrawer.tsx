@@ -2,7 +2,7 @@ import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { useToast } from "@opengovsg/design-system-react"
 import { schema } from "@opengovsg/isomer-components"
 import { isEqual } from "lodash-es"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
 import { useCallback, useMemo, useState } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
@@ -34,7 +34,7 @@ const RawJsonEditorModeStateDrawer = (): React.ReactNode => {
   const utils = trpc.useUtils()
   const { mutate, isPending } = trpc.page.updatePageBlob.useMutation({
     onSuccess: async () => {
-      posthog.capture("page_changes_saved", { site_id: siteId })
+      posthogJs.capture("page_changes_saved", { site_id: siteId })
       await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
       await utils.page.readPage.invalidate({ pageId, siteId })
       toast({

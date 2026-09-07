@@ -1,4 +1,10 @@
 import type { User } from "~prisma/generated/generatedTypes"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 export type isUserOnboardedProps = Pick<User, "name" | "phone">
 
@@ -7,7 +13,10 @@ export type isUserOnboardedProps = Pick<User, "name" | "phone">
 // At current stage, we don't do 2FA to validate if it's a valid phone number too
 // Not including +65 since OGPDS is not using it too
 const isSingaporePhoneNumber = (phone: string | null) => {
-  if (!phone || Object.prototype.toString.call(phone) !== "[object String]") {
+  if (
+    !hasNonEmptyString(phone) ||
+    Object.prototype.toString.call(phone) !== "[object String]"
+  ) {
     return false
   }
 

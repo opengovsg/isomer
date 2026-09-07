@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-warning-comments, typescript/strict-boolean-expressions -- core cleanup deferred */
 import { MenuButton, MenuList, Portal } from "@chakra-ui/react"
 import { IconButton, Menu } from "@opengovsg/design-system-react"
 import { useSetAtom } from "jotai"

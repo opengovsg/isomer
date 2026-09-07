@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/default-case, react/display-name, react/function-component-definition, typescript/consistent-return -- core cleanup deferred */
 import type { UseRadioGroupProps, UseRadioProps } from "@chakra-ui/react"
 import {
   Box,

@@ -3,6 +3,12 @@ import { IconButton, Link } from "@opengovsg/design-system-react"
 import NextLink from "next/link"
 import { BiRightArrowAlt, BiX } from "react-icons/bi"
 import { useLocalStorage } from "~/hooks/useLocalStorage"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { BannerSvgr } from "./BannerSvgr"
 
@@ -12,7 +18,7 @@ export const CollectionBanner = (): React.ReactNode | null => {
     false,
   )
 
-  if (isBannerDismissed) {
+  if (isNullableBooleanTrue(isBannerDismissed)) {
     return null
   }
 

@@ -2,6 +2,12 @@ import { Icon, Text } from "@chakra-ui/react"
 import { Link } from "@opengovsg/design-system-react"
 import { BiLinkExternal } from "react-icons/bi"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 interface FileIdCellProps {
   fileId: string
@@ -22,7 +28,7 @@ export const FileIdCell = ({
     // and showing the modal
     e.preventDefault()
     e.stopPropagation()
-    if (!fileKey || isPending) {
+    if (!hasNonEmptyString(fileKey) || isPending) {
       return
     }
 
@@ -35,11 +41,13 @@ export const FileIdCell = ({
     }
   }
 
-  if (fileKey) {
+  if (hasNonEmptyString(fileKey)) {
     return (
       <Link
         href="#"
-        onClick={handleClick}
+        onClick={() => {
+          void handleClick
+        }}
         textStyle="body-2"
         color="interaction.links.default"
         textDecoration="underline"

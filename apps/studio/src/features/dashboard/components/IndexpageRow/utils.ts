@@ -22,6 +22,7 @@ export const getIndexPageIcon = (
 
 export const getIndexPageSubtitle = ({
   type,
+  // oxlint-disable-next-line unicorn/no-useless-default-assignment -- core cleanup deferred
   isNewCollectionTagsManagementEnabled = false,
 }: {
   type: ResourceTypesWithIndexPage

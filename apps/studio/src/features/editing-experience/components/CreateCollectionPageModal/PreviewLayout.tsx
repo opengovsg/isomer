@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/default-case, eslint/no-use-before-define, typescript/consistent-return -- core cleanup deferred */
 import { Box, Flex, Skeleton, Stack } from "@chakra-ui/react"
 import { useIsMobile } from "@opengovsg/design-system-react"
 import { format } from "date-fns"

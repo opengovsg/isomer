@@ -1,10 +1,11 @@
+/* oxlint-disable eslint/no-use-before-define, typescript/strict-void-return, unicorn/no-array-reduce, unicorn/prefer-structured-clone -- core cleanup deferred */
 import type { IsomerComponent } from "@opengovsg/isomer-components"
 import type { ModifiedAsset } from "~/types/assets"
 import { Box, Flex, useDisclosure } from "@chakra-ui/react"
 import { Button, useToast } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
 import { cloneDeep, isEmpty, isEqual } from "lodash-es"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
 import { useCallback } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
@@ -56,7 +57,7 @@ const HeroEditorDrawer = (): React.ReactNode => {
   const { mutate, isPending: isSavingPage } =
     trpc.page.updatePageBlob.useMutation({
       onSuccess: async () => {
-        posthog.capture("page_changes_saved", { site_id: siteId })
+        posthogJs.capture("page_changes_saved", { site_id: siteId })
         await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
         await utils.page.readPage.invalidate({ pageId, siteId })
         toast({

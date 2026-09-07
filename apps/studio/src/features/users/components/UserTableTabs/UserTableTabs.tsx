@@ -1,3 +1,4 @@
+/* oxlint-disable import/no-cycle -- core cleanup deferred */
 import {
   Box,
   TabList,

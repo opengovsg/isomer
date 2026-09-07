@@ -1,3 +1,4 @@
+/* oxlint-disable anti-slop/require-safety-comment-for-type-assertion, unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { ResourceOrderByOption } from "~/schemas/resource"
 import { HStack, Text } from "@chakra-ui/react"
 import { Menu } from "@opengovsg/design-system-react"

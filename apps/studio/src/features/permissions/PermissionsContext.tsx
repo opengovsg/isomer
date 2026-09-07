@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-array-for-each, unicorn/prefer-export-from -- core cleanup deferred */
 import type { PropsWithChildren } from "react"
 import type { ResourceAbility } from "~/server/modules/permissions/permissions.type"
 import type { RoleType } from "~prisma/generated/generatedEnums"

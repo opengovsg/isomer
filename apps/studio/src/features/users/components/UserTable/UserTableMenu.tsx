@@ -7,7 +7,7 @@ import {
 } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
 import { useSetAtom } from "jotai"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
 import { useContext } from "react"
 import {
   BiDotsVerticalRounded,
@@ -63,7 +63,7 @@ export const UserTableMenu = ({
         })
       },
       onSuccess: (result) => {
-        posthog.capture("user_invite_resent", { site_id: siteId })
+        posthogJs.capture("user_invite_resent", { site_id: siteId })
         toast({
           status: "success",
           title: `Invite resent to ${result.email}`,

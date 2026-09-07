@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-use-before-define, typescript/strict-void-return -- core cleanup deferred */
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import {
   Box,
@@ -25,6 +26,12 @@ import { BiInfoCircle, BiTrash } from "react-icons/bi"
 import { ALLOWED_GAZETTE_DELETION_TIMEFRAME_IN_MINUTES } from "~/constants/gazette"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { useGazetteSubcategoriesContext } from "../../contexts/GazetteSubcategoriesContext"
 
@@ -118,19 +125,15 @@ export const ViewGazetteModal = ({
             <ModalBody pb="2rem">
               <VStack alignItems="flex-start" spacing="1.5rem">
                 <DataField label="Title" value={data.title} />
-
                 <HStack spacing="2.5rem" w="100%" alignItems="flex-start">
                   <DataField label="Category" value={data.category} />
                   <DataField label="Subcategory" value={subcategoryLabel} />
                 </HStack>
-
                 <DataField
                   label="Notification Number"
                   value={data.notificationNumber ?? "-"}
                 />
-
                 <DataField label="File ID" value={data.fileId} />
-
                 <DataField
                   label="Date of Publication"
                   value={
@@ -191,7 +194,7 @@ export const ViewGazetteModal = ({
                     label="Category / Subcategory"
                     value={`${data.category} / ${subcategoryLabel}`}
                   />
-                  {data.notificationNumber && (
+                  {hasNonEmptyString(data.notificationNumber) && (
                     <DeleteDataField
                       label="Notification Number"
                       value={data.notificationNumber}

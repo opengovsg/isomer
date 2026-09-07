@@ -22,6 +22,12 @@ import {
   NumberInput,
 } from "@opengovsg/design-system-react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { getCustomErrorMessage } from "./utils/getCustomErrorMessage"
 
@@ -54,11 +60,10 @@ const JsonFormsIntegerControl = ({
     exclusiveMinimum,
     maximum,
     minimum,
-    // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
     default: defaultValue,
   } = schema
-  const min = Number(exclusiveMinimum) + 1 || minimum || 0
-  const max = Number(exclusiveMaximum) - 1 || maximum || 0
+  const min = Number(exclusiveMinimum) + 1 || isDefinedNumber(minimum) || 0
+  const max = Number(exclusiveMaximum) - 1 || isDefinedNumber(maximum) || 0
 
   const onChange = (valueAsString: string, valueAsNumber: number) => {
     if (valueAsString === "") {
@@ -73,7 +78,6 @@ const JsonFormsIntegerControl = ({
       <FormControl isRequired={required} isInvalid={!!errors}>
         <FormLabel description={description}>{label}</FormLabel>
         <NumberInput
-          // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
           defaultValue={defaultValue ?? min}
           min={min}
           max={max}

@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-shadow, typescript/strict-boolean-expressions, unicorn/no-unnecessary-type-conversion -- core cleanup deferred */
 import type { ButtonProps } from "@opengovsg/design-system-react"
 import {
   Divider,
@@ -17,12 +18,18 @@ import {
   TouchableTooltip,
   useToast,
 } from "@opengovsg/design-system-react"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
 import { BiChevronDown, BiTimeFive } from "react-icons/bi"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { Can } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 
 import { PUBLISHED_AFTER_EDITING_EVENT } from "../constants"
 import { useFireContentEditSurveyEvent } from "../hooks/useContentEditSurvey"
@@ -48,7 +55,7 @@ const SuspendablePublishButton = ({
   const scheduledPublishingDisclosure = useDisclosure()
 
   const [currPage] = trpc.page.readPage.useSuspenseQuery({ pageId, siteId })
-  const isChangesPendingPublish = !!currPage.draftBlobId
+  const isChangesPendingPublish = !!hasNonEmptyString(currPage.draftBlobId)
 
   const { mutate, isPending } = trpc.page.publishPage.useMutation({
     onError: (error) => {
@@ -74,7 +81,7 @@ const SuspendablePublishButton = ({
       ])
     },
     onSuccess: () => {
-      posthog.capture("page_published", { site_id: siteId })
+      posthogJs.capture("page_published", { site_id: siteId })
       fireContentEditSurveyEvent(PUBLISHED_AFTER_EDITING_EVENT)
       toast({
         status: "success",
@@ -133,7 +140,7 @@ const SuspendablePublishButton = ({
                   isLoading={isPending}
                   borderRightRadius={0}
                   onClick={() => {
-                    posthog.capture("publish_modal_opened", {
+                    posthogJs.capture("publish_modal_opened", {
                       site_id: siteId,
                     })
                     publishNowDisclosure.onOpen()
@@ -163,7 +170,7 @@ const SuspendablePublishButton = ({
                     <MenuList>
                       <MenuItem
                         onClick={() => {
-                          posthog.capture("scheduled_publish_modal_opened", {
+                          posthogJs.capture("scheduled_publish_modal_opened", {
                             site_id: siteId,
                           })
                           scheduledPublishingDisclosure.onOpen()

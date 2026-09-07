@@ -32,7 +32,7 @@ export interface UseArrayReturn {
   onDragEnd: (result: DropResult) => void
 }
 
-export function useArray({
+export const useArray = ({
   data,
   path,
   arraySchema,
@@ -43,7 +43,7 @@ export function useArray({
   removeItems,
   moveUp,
   moveDown,
-}: UseArrayArgs): UseArrayReturn {
+}: UseArrayArgs): UseArrayReturn => {
   const [selectedIndex, setSelectedIndex] = useState<number>()
 
   const isRemoveItemDisabled =
@@ -52,6 +52,7 @@ export function useArray({
     arraySchema.maxItems !== undefined && data >= arraySchema.maxItems
 
   const handleRemoveSelectedItem = useCallback(
+    // oxlint-disable-next-line eslint/no-shadow -- core cleanup deferred
     (path: string, index: number) => () => {
       if (selectedIndex === undefined || !removeItems || isRemoveItemDisabled) {
         return
@@ -69,16 +70,19 @@ export function useArray({
   )
 
   const handleMoveItem = useCallback(
+    // oxlint-disable-next-line eslint/no-shadow -- core cleanup deferred
     (path: string, originalIndex: number, newIndex: number) => {
       if (originalIndex === newIndex || !moveDown || !moveUp) {
         return
       }
 
       if (originalIndex < newIndex) {
+        // oxlint-disable-next-line eslint/no-plusplus -- core cleanup deferred
         for (let i = originalIndex; i < newIndex; i++) {
           moveDown(path, i)()
         }
       } else {
+        // oxlint-disable-next-line eslint/no-plusplus -- core cleanup deferred
         for (let i = originalIndex; i > newIndex; i--) {
           moveUp(path, i)()
         }

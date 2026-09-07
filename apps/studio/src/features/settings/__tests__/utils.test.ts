@@ -16,6 +16,7 @@ describe("settings.utils.ts", () => {
 
       // Assert
       // SAFETY: test fixture supplies only the fields required by the assertion under test
+      // oxlint-disable-next-line unicorn/no-unsafe-type-assertion -- core cleanup deferred
       const actual = passesContrastCheck(palette as Theme)
       expect(actual).toBeTruthy()
     })
@@ -32,6 +33,7 @@ describe("settings.utils.ts", () => {
       expect(palette).toHaveProperty("colors.brand.interaction.hover")
       expect(palette).toHaveProperty("colors.brand.interaction.pressed")
       // SAFETY: test fixture supplies only the fields required by the assertion under test
+      // oxlint-disable-next-line unicorn/no-unsafe-type-assertion -- core cleanup deferred
       expect(passesContrastCheck(palette as Theme)).toBeTruthy()
     })
 
@@ -41,6 +43,7 @@ describe("settings.utils.ts", () => {
 
       // Assert
       // SAFETY: test fixture supplies only the fields required by the assertion under test
+      // oxlint-disable-next-line unicorn/no-unsafe-type-assertion -- core cleanup deferred
       expect(passesContrastCheck(palette as Theme)).toBeTruthy()
     })
 
@@ -50,6 +53,7 @@ describe("settings.utils.ts", () => {
 
       // Assert
       // SAFETY: test fixture supplies only the fields required by the assertion under test
+      // oxlint-disable-next-line unicorn/no-unsafe-type-assertion -- core cleanup deferred
       expect(passesContrastCheck(palette as Theme)).toBeTruthy()
     })
 
@@ -59,6 +63,7 @@ describe("settings.utils.ts", () => {
 
       // Assert
       // SAFETY: test fixture supplies only the fields required by the assertion under test
+      // oxlint-disable-next-line unicorn/no-unsafe-type-assertion -- core cleanup deferred
       expect(passesContrastCheck(palette as Theme)).toBeTruthy()
     })
 
@@ -68,6 +73,7 @@ describe("settings.utils.ts", () => {
 
       // Assert
       // SAFETY: test fixture supplies only the fields required by the assertion under test
+      // oxlint-disable-next-line unicorn/no-unsafe-type-assertion -- core cleanup deferred
       expect(passesContrastCheck(palette as Theme)).toBeTruthy()
     })
 
@@ -77,6 +83,7 @@ describe("settings.utils.ts", () => {
 
       // Assert
       // SAFETY: test fixture supplies only the fields required by the assertion under test
+      // oxlint-disable-next-line unicorn/no-unsafe-type-assertion -- core cleanup deferred
       expect(passesContrastCheck(palette as Theme)).toBeTruthy()
     })
 
@@ -99,6 +106,7 @@ describe("settings.utils.ts", () => {
 
       // Assert
       // SAFETY: test fixture supplies only the fields required by the assertion under test
+      // oxlint-disable-next-line unicorn/no-unsafe-type-assertion -- core cleanup deferred
       expect(passesContrastCheck(palette as Theme)).toBeTruthy()
     })
   })

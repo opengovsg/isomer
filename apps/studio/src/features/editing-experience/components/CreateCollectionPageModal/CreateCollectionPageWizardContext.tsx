@@ -1,10 +1,11 @@
+/* oxlint-disable unicorn/no-unsafe-type-assertion -- core cleanup deferred */
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { PropsWithChildren } from "react"
 import type { z } from "zod"
 import { merge } from "lodash-es"
 import { useRouter } from "next/router"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
 import { createContext, useContext, useMemo, useState } from "react"
 import articleLayoutPreview from "~/features/editing-experience/data/articleLayoutPreview.json"
 import collectionLinkPreview from "~/features/editing-experience/data/collectionLinkPreview.json"
@@ -12,6 +13,12 @@ import { useZodForm } from "~/lib/form"
 import { createCollectionPageFormSchema } from "~/schemas/page"
 import { getResourceSubpath } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 export enum CreateCollectionPageFlowStates {
@@ -131,7 +138,7 @@ const useCreateCollectionPageWizardContext = ({
             console.error(error)
           },
           onSuccess: ({ pageId }) => {
-            posthog.capture("collection_page_created", {
+            posthogJs.capture("collection_page_created", {
               resource_type: values.type,
               site_id: siteId,
             })
@@ -155,7 +162,7 @@ const useCreateCollectionPageWizardContext = ({
     currentStep,
     currentType: type,
     formMethods,
-    fullPermalink: data?.fullPermalink || "",
+    fullPermalink: hasNonEmptyString(data?.fullPermalink) || "",
     handleBackToTypeScreen,
     handleCreatePage,
     handleNextToDetailScreen,

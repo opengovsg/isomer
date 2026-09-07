@@ -12,6 +12,7 @@ type NestedDrawerSwitchProps = ArrayLayoutProps &
 /**
  * Renders the nested item drawer when a row is selected, the list otherwise.
  */
+// oxlint-disable-next-line typescript/promise-function-async -- core cleanup deferred
 export const NestedDrawerSwitch = ({
   children,
   selectedIndex,
