@@ -33,9 +33,6 @@ export const getIsSingpassEnabled = ({
   if (env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS) {
     return false
   }
-  if (env.NEXT_PUBLIC_APP_ENV === "test") {
-    return false
-  }
   return gb.getFeatureValue(
     IS_SINGPASS_ENABLED_FEATURE_KEY,
     IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE,
@@ -49,9 +46,6 @@ export const getIsSingpassDisabledInNonPreview = ({
   gb,
 }: GetIsSingpassEnabledProps): boolean => {
   if (env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS) {
-    return false
-  }
-  if (env.NEXT_PUBLIC_APP_ENV === "test") {
     return false
   }
   return !gb.getFeatureValue(
