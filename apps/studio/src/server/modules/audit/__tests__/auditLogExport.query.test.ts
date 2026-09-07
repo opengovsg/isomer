@@ -1097,7 +1097,7 @@ describe("auditLogExport.query", () => {
       expect(getStringifiedValue({ a: 1 })).toBe('{"a":1}')
       expect(getStringifiedValue([1, 2])).toBe("[1,2]")
       expect(
-        getStringifiedValue({ after: null, before: { email: "a@b.com" } }),
+        getStringifiedValue({ before: { email: "a@b.com" }, after: null }),
       ).toBe('{"before":{"email":"a@b.com"},"after":null}')
     })
   })
@@ -1106,16 +1106,16 @@ describe("auditLogExport.query", () => {
     it("produces a header row plus one data row per input row", () => {
       const rows = [
         {
-          "Date added": new Date("2024-02-15T00:00:00Z"),
           Email: "a@agency.gov.sg",
-          "Last login": null,
           Role: "Admin",
+          "Date added": new Date("2024-02-15T00:00:00Z"),
+          "Last login": null,
         },
         {
-          "Date added": new Date("2024-02-16T00:00:00Z"),
           Email: "b@agency.gov.sg",
-          "Last login": new Date("2024-03-01T00:00:00Z"),
           Role: "Editor",
+          "Date added": new Date("2024-02-16T00:00:00Z"),
+          "Last login": new Date("2024-03-01T00:00:00Z"),
         },
       ]
 
@@ -1163,16 +1163,16 @@ describe("auditLogExport.query", () => {
     it("streams byte-for-byte the same CSV as the buffered toCsv", async () => {
       const rows = [
         {
-          "Date added": new Date("2024-02-15T00:00:00Z"),
           Email: "a@agency.gov.sg",
-          "Last login": null,
           Role: "Admin",
+          "Date added": new Date("2024-02-15T00:00:00Z"),
+          "Last login": null,
         },
         {
-          "Date added": new Date("2024-02-16T00:00:00Z"),
           Email: "b@agency.gov.sg",
-          "Last login": new Date("2024-03-01T00:00:00Z"),
           Role: "Editor",
+          "Date added": new Date("2024-02-16T00:00:00Z"),
+          "Last login": new Date("2024-03-01T00:00:00Z"),
         },
       ]
 
