@@ -1,4 +1,4 @@
-import type { FullConfig } from "@playwright/test"
+import type { BrowserContext, Cookie, FullConfig } from "@playwright/test"
 import { chromium } from "@playwright/test"
 import crypto from "node:crypto"
 import { db } from "~/server/modules/database/database"
@@ -15,6 +15,50 @@ const setSingpassUuidFor = async (email: string, uuid: string) => {
     .execute()
 }
 
+const addCookiesFromResponse = async (
+  ctx: BrowserContext,
+  baseURL: string,
+  setCookieHeader: string | string[],
+) => {
+  const cookieStrings = Array.isArray(setCookieHeader)
+    ? setCookieHeader
+    : [setCookieHeader]
+
+  await ctx.addCookies(
+    cookieStrings.map((cookieString) => {
+      const [nameValue, ...attributeParts] = cookieString.split(";")
+      const [name, ...valueParts] = nameValue.trim().split("=")
+
+      let httpOnly = false
+      let secure = false
+      let sameSite: Cookie["sameSite"]
+
+      for (const attribute of attributeParts) {
+        const [rawKey, ...rawValueParts] = attribute.trim().split("=")
+        const key = rawKey.toLowerCase()
+        const attributeValue = rawValueParts.join("=")
+
+        if (key === "httponly") {
+          httpOnly = true
+        } else if (key === "secure") {
+          secure = true
+        } else if (key === "samesite") {
+          sameSite = attributeValue as Cookie["sameSite"]
+        }
+      }
+
+      return {
+        httpOnly,
+        name,
+        sameSite,
+        secure,
+        url: baseURL,
+        value: valueParts.join("="),
+      } satisfies Cookie
+    }),
+  )
+}
+
 const signInOnce = async (role: keyof typeof TEST_EMAILS, baseURL: string) => {
   const email = TEST_EMAILS[role]
   const uuid = crypto.randomUUID()
@@ -29,7 +73,21 @@ const signInOnce = async (role: keyof typeof TEST_EMAILS, baseURL: string) => {
   await loginPage.fillEmail(email)
   await page.getByText("Enter OTP").waitFor()
   await loginPage.fillToken(email)
-  await page.getByRole("button", { name: "Sign in" }).click()
+
+  const [verifyOtpResponse] = await Promise.all([
+    page.waitForResponse(
+      (response) =>
+        response.url().includes("verifyOtp") && response.status() === 200,
+    ),
+    page.getByRole("button", { name: "Sign in" }).click(),
+  ])
+
+  const setCookieHeader = verifyOtpResponse.headers()["set-cookie"]
+  if (setCookieHeader) {
+    await addCookiesFromResponse(ctx, baseURL, setCookieHeader)
+  }
+
+  await page.goto("/sign-in/singpass")
   await loginPage.mockpassLoginWith(uuid)
   await page.waitForURL(`${baseURL}/`)
 
