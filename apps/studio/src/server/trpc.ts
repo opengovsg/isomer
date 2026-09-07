@@ -137,11 +137,9 @@ const loggerWithVersionMiddleware = loggerMiddleware.unstable_pipe(
 )
 
 const contentTypeHeaderMiddleware = t.middleware(async ({ ctx, next }) => {
-  if (
-    ctx.req.body !== undefined &&
-    ctx.req.body !== null &&
-    ctx.req.headers["content-type"] !== "application/json"
-  ) {
+  // Only validate Content-Type when a body is present. Next.js can set `req.body`
+  // to "" on GET requests; an explicit null/undefined check would reject those.
+  if (ctx.req.body && ctx.req.headers["content-type"] !== "application/json") {
     throw new TRPCError({
       code: "BAD_REQUEST",
       message: "Invalid Content-Type",
