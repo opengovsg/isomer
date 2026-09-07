@@ -31,7 +31,8 @@ import type {
   PublishAlertSiteAdminEmailTemplateData,
   SchedulePageTemplateData,
   ScheduleUnpublishTemplateData,
-  SuccessfulPublishTemplateData,
+  SiteUpdateFailedTemplateData,
+  SiteUpdatedTemplateData,
 } from "./types"
 import { escapeHtml, escapeTemplateArguments, unescapeHtml } from "../utils"
 
@@ -255,13 +256,11 @@ const failedSiteRebuildTemplate = (
   }
 }
 
-// NOTE: this is sent for both publish and unpublish scheduled/manual actions
-// (this is the only call site, in webhook.utils.ts, and it doesn't know which
-// action a given CodeBuild job was for), so the copy is intentionally generic
-// rather than claiming the page is now live.
-const successfulPublishTemplate = (
-  data: SuccessfulPublishTemplateData,
-): EmailTemplate => {
+// Sent for both publish- and unpublish-triggered CodeBuild jobs (this is the
+// only call site, in webhook.utils.ts, and it doesn't know which action a
+// given job was for), so the copy is intentionally generic rather than
+// claiming the page is now live.
+const siteUpdatedTemplate = (data: SiteUpdatedTemplateData): EmailTemplate => {
   const { recipientEmail, resource, ...rest } = data
   const studioResourceUrl = getStudioResourceUrl(resource)
   switch (rest.isScheduled) {
@@ -280,6 +279,37 @@ const successfulPublishTemplate = (
         body: `<p>Hi ${recipientEmail},</p>
         <p>Your changes to page ${resource.title} have been successfully updated.</p>
         <p> You can view the current status of your page on Isomer Studio at ${studioResourceUrl}.</p>
+        <p>Best,</p>
+        <p>Isomer team</p>`,
+      }
+  }
+}
+
+// Failure counterpart to siteUpdatedTemplate above — same ambiguity (webhook.
+// utils.ts doesn't know if the failed build was for a publish or an
+// unpublish), so this uses generic "update" copy instead of failedPublish's
+// "publish" wording, which would be wrong for an unpublish-triggered build.
+const siteUpdateFailedTemplate = (
+  data: SiteUpdateFailedTemplateData,
+): EmailTemplate => {
+  const { recipientEmail, isScheduled, resource } = data
+  const studioResourceUrl = getStudioResourceUrl(resource)
+  switch (isScheduled) {
+    case true:
+      return {
+        subject: `[Isomer Studio] We couldn't update your site as scheduled`,
+        body: `<p>Hi ${recipientEmail},</p>
+        <p>We couldn't update your site to reflect the scheduled change to ${resource.title}.</p>
+        <p>Please log in to Isomer Studio at ${studioResourceUrl} and try the action again.</p>
+        <p>Best,</p>
+        <p>Isomer team</p>`,
+      }
+    case false:
+      return {
+        subject: `[Isomer Studio] We couldn't update your site`,
+        body: `<p>Hi ${recipientEmail},</p>
+        <p>We couldn't update your site to reflect your change to ${resource.title}.</p>
+        <p>Please log in to Isomer Studio at ${studioResourceUrl} and try the action again.</p>
         <p>Best,</p>
         <p>Isomer team</p>`,
       }
@@ -433,8 +463,10 @@ const _templates = {
     failedUnpublishTemplate satisfies EmailTemplateFunction<FailedUnpublishTemplateData>,
   failedSiteRebuild:
     failedSiteRebuildTemplate satisfies EmailTemplateFunction<FailedSiteRebuildTemplateData>,
-  successfulPublish:
-    successfulPublishTemplate satisfies EmailTemplateFunction<SuccessfulPublishTemplateData>,
+  siteUpdated:
+    siteUpdatedTemplate satisfies EmailTemplateFunction<SiteUpdatedTemplateData>,
+  siteUpdateFailed:
+    siteUpdateFailedTemplate satisfies EmailTemplateFunction<SiteUpdateFailedTemplateData>,
   schedulePage:
     schedulePageTemplate satisfies EmailTemplateFunction<SchedulePageTemplateData>,
   publishAlertSiteAdmin:
