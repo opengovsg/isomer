@@ -128,6 +128,33 @@ const signInOnce = async (role: keyof typeof TEST_EMAILS, baseURL: string) => {
   await seedSingpassSessionCookie(ctx, baseURL, email)
 
   await page.goto("/sign-in/singpass")
+
+  const getUserPropsDiagnostics = await page.evaluate(
+    async ({ appVersion, headersKey }) => {
+      const response = await fetch("/api/trpc/auth.singpass.getUserProps", {
+        credentials: "include",
+        headers: {
+          [headersKey]: appVersion,
+        },
+      })
+
+      return {
+        status: response.status,
+        text: await response.text(),
+      }
+    },
+    {
+      appVersion: env.NEXT_PUBLIC_APP_VERSION,
+      headersKey: APP_VERSION_HEADER_KEY,
+    },
+  )
+
+  if (!getUserPropsDiagnostics.text.includes('"name"')) {
+    throw new Error(
+      `getUserProps failed: ${JSON.stringify(getUserPropsDiagnostics)}`,
+    )
+  }
+
   await loginPage.singpassButton.waitFor({ state: "visible" })
   await loginPage.mockpassLoginWith(uuid)
   await page.waitForURL(`${baseURL}/`)
