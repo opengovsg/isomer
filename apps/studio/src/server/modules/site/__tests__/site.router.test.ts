@@ -101,7 +101,9 @@ const generateNotification = ({
     },
   }
 
-  if (!content) {return baseNotification satisfies Notification}
+  if (!content) {
+    return baseNotification satisfies Notification
+  }
 
   return {
     notification: {
@@ -265,7 +267,7 @@ describe("site.router", async () => {
       // Assert
       expect(result).toEqual(
         [site1, site2]
-          .sort((a, b) => a.id - b.id)
+          .toSorted((a, b) => a.id - b.id)
           .map((site) => ({
             config: site.config,
             id: site.id,
@@ -776,7 +778,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message:
@@ -803,7 +805,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message:
@@ -840,7 +842,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message:
@@ -1121,7 +1123,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message:
@@ -1158,7 +1160,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message:
@@ -1211,7 +1213,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message:
@@ -1248,7 +1250,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message:
@@ -1663,20 +1665,16 @@ describe("site.router", async () => {
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog).toHaveLength(2)
       expect(
-        auditLog.some(({ eventType }) => 
-          eventType === AuditLogEvent.FooterUpdate
+        auditLog.some(
+          ({ eventType }) => eventType === AuditLogEvent.FooterUpdate,
         ),
       ).toEqual(true)
       expect(
-        auditLog.some(({ eventType }) => 
-          eventType === AuditLogEvent.Publish
-        ),
+        auditLog.some(({ eventType }) => eventType === AuditLogEvent.Publish),
       ).toEqual(true)
-      expect(
-        auditLog.every(({ userId }) => 
-          userId === session.userId
-        ),
-      ).toEqual(true)
+      expect(auditLog.every(({ userId }) => userId === session.userId)).toEqual(
+        true,
+      )
     })
   })
 
@@ -1825,20 +1823,16 @@ describe("site.router", async () => {
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog).toHaveLength(2)
       expect(
-        auditLog.some(({ eventType }) => 
-          eventType === AuditLogEvent.NavbarUpdate
+        auditLog.some(
+          ({ eventType }) => eventType === AuditLogEvent.NavbarUpdate,
         ),
       ).toEqual(true)
       expect(
-        auditLog.some(({ eventType }) => 
-          eventType === AuditLogEvent.Publish
-        ),
+        auditLog.some(({ eventType }) => eventType === AuditLogEvent.Publish),
       ).toEqual(true)
-      expect(
-        auditLog.every(({ userId }) => 
-          userId === session.userId
-        ),
-      ).toEqual(true)
+      expect(auditLog.every(({ userId }) => userId === session.userId)).toEqual(
+        true,
+      )
     })
   })
 
@@ -1868,7 +1862,7 @@ describe("site.router", async () => {
 
       // Act
       const result = caller.getLocalisedSitemap({
-        resourceId: parseInt(page.id),
+        resourceId: Number.parseInt(page.id),
         siteId: site.id,
       })
 
@@ -1888,7 +1882,8 @@ describe("site.router", async () => {
         resourceType: ResourceType.Page,
       })
       await setupPageResource({
-        resourceType: ResourceType.RootPage, // prerequisite
+        resourceType: ResourceType.RootPage,
+        // prerequisite
         siteId: site.id,
       })
       await setupEditorPermissions({
@@ -1898,7 +1893,7 @@ describe("site.router", async () => {
 
       // Act
       const result = await caller.getLocalisedSitemap({
-        resourceId: parseInt(page.id),
+        resourceId: Number.parseInt(page.id),
         siteId: site.id,
       })
 
@@ -2109,20 +2104,16 @@ describe("site.router", async () => {
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog).toHaveLength(2)
       expect(
-        auditLog.some(({ eventType }) => 
-          eventType === AuditLogEvent.SiteConfigUpdate
+        auditLog.some(
+          ({ eventType }) => eventType === AuditLogEvent.SiteConfigUpdate,
         ),
       ).toEqual(true)
       expect(
-        auditLog.some(({ eventType }) => 
-          eventType === AuditLogEvent.Publish
-        ),
+        auditLog.some(({ eventType }) => eventType === AuditLogEvent.Publish),
       ).toEqual(true)
-      expect(
-        auditLog.every(({ userId }) => 
-          userId === session.userId
-        ),
-      ).toEqual(true)
+      expect(auditLog.every(({ userId }) => userId === session.userId)).toEqual(
+        true,
+      )
     })
 
     it("should add the site notification successfully if one did exist before", async () => {
@@ -2502,7 +2493,8 @@ describe("site.router", async () => {
       })
 
       // Assert
-      expect(result).toBeUndefined() // does not return anything
+      expect(result).toBeUndefined()
+      // does not return anything
     })
   })
 })
@@ -2511,18 +2503,12 @@ const assertAuditLog = async (sessionUserId?: string) => {
   const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
   expect(auditLog).toHaveLength(2)
   expect(
-    auditLog.some(({ eventType }) => 
-      eventType === AuditLogEvent.SiteConfigUpdate
+    auditLog.some(
+      ({ eventType }) => eventType === AuditLogEvent.SiteConfigUpdate,
     ),
   ).toEqual(true)
   expect(
-    auditLog.some(({ eventType }) => 
-      eventType === AuditLogEvent.Publish
-    ),
+    auditLog.some(({ eventType }) => eventType === AuditLogEvent.Publish),
   ).toEqual(true)
-  expect(
-    auditLog.every(({ userId }) => 
-      userId === sessionUserId
-    ),
-  ).toEqual(true)
+  expect(auditLog.every(({ userId }) => userId === sessionUserId)).toEqual(true)
 }

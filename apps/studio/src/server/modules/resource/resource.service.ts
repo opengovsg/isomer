@@ -1,11 +1,13 @@
+import type { IsomerSitemap } from "@opengovsg/isomer-components"
 import type { SelectExpression, SelectQueryBuilder } from "kysely"
 import type { UnwrapTagged } from "type-fest"
 import type {
   ResourceItemContent,
   ResourceOrderByOption,
 } from "~/schemas/resource"
-import { createChildrenPagesComparator } from '@opengovsg/isomer-components';
-import type { IsomerSitemap } from '@opengovsg/isomer-components';
+import type { FirstImage } from "~/utils/sitemap"
+import type { DB } from "~prisma/generated/generatedTypes"
+import { createChildrenPagesComparator } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import chunk from "lodash-es/chunk"
 import get from "lodash-es/get"
@@ -14,10 +16,13 @@ import {
   normalizeRedirectPath,
   normalizeRedirectSource,
 } from "~/schemas/redirect"
-import { getSitemapTree, injectTagMappings, isCollectionItem, overwriteCollectionChildrenForCollectionBlock } from '~/utils/sitemap';
-import type { FirstImage } from '~/utils/sitemap';
+import {
+  getSitemapTree,
+  injectTagMappings,
+  isCollectionItem,
+  overwriteCollectionChildrenForCollectionBlock,
+} from "~/utils/sitemap"
 import { AuditLogEvent } from "~prisma/generated/generatedEnums"
-import type { DB } from "~prisma/generated/generatedTypes"
 
 import type { Logger } from "@isomer/logging"
 
@@ -31,7 +36,7 @@ import type {
   Transaction,
   User,
 } from "../database/types"
-import { type SearchResultResource,type Page } from "./resource.types"
+import type { SearchResultResource, Page } from "./resource.types"
 import { logPublishEvent, logRedirectEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
 import { PG_ERROR_CODES } from "../database/constants"
@@ -109,7 +114,7 @@ const defaultFooterSelect = [
   "Footer.content",
 ] satisfies SelectExpression<DB, "Footer">[]
 
-export const getSiteResourceById =  async ({
+export const getSiteResourceById = async ({
   siteId,
   resourceId,
   type,
@@ -127,7 +132,7 @@ export const getSiteResourceById =  async ({
     query = query.where("Resource.type", "=", type)
   }
 
-  return query.executeTakeFirst()
+  return await query.executeTakeFirst()
 }
 
 // NOTE: Base method for retrieving a resource - no distinction made on whether `blobId` exists
@@ -195,11 +200,11 @@ export const getFullPageById = async (
 
 // There are 7 types of pages this get query supports:
 // Page, CollectionPage, RootPage, IndexPage, CollectionLink, FolderMeta, CollectionMeta
-export const getPageById =  async (
+export const getPageById = async (
   db: SafeKysely,
   args: { resourceId: number; siteId: number },
-) => 
-  getById(db, args)
+) =>
+  await getById(db, args)
     .where((eb) =>
       eb.or([
         eb("type", "=", ResourceType.Page),
@@ -214,8 +219,7 @@ export const getPageById =  async (
     .select(defaultResourceSelect)
     .executeTakeFirst()
 
-
-export const updatePageById =  async (
+export const updatePageById = async (
   page: {
     id: number
     siteId: number
@@ -236,7 +240,7 @@ export const updatePageById =  async (
   const dbObj = dbInstance ?? db
   const { id, parentId, ...rest } = page
 
-  return dbObj
+  return await dbObj
     .updateTable("Resource")
     .set({ ...rest, ...(parentId && { parentId: String(parentId) }) })
     .where("siteId", "=", page.siteId)
@@ -264,14 +268,12 @@ export const getBlobOfResource = async ({ db, resourceId }: GetBlobProps) => {
     )
 
   if (draftBlobId) {
-    return (
-      await db
-        .selectFrom("Blob")
-        .where("id", "=", draftBlobId)
-        .selectAll()
-        // NOTE: Guaranteed to exist since this is a foreign key
-        .executeTakeFirstOrThrow()
-    )
+    return await db
+      .selectFrom("Blob")
+      .where("id", "=", draftBlobId)
+      .selectAll()
+      // NOTE: Guaranteed to exist since this is a foreign key
+      .executeTakeFirstOrThrow()
   }
 
   return await db
@@ -319,14 +321,12 @@ export const getPublishedIndexBlobByParentId = async ({
       .executeTakeFirstOrThrow()
   }
 
-  return (
-    await db
-      .selectFrom("Blob")
-      .where("id", "=", draftBlobId)
-      .selectAll()
-      // NOTE: Guaranteed to exist since this is a foreign key
-      .executeTakeFirstOrThrow()
-  )
+  return await db
+    .selectFrom("Blob")
+    .where("id", "=", draftBlobId)
+    .selectAll()
+    // NOTE: Guaranteed to exist since this is a foreign key
+    .executeTakeFirstOrThrow()
 }
 
 export const updateBlobById = async (
@@ -371,18 +371,16 @@ export const updateBlobById = async (
       .execute()
   }
 
-  return (
-    await tx
-      .updateTable("Blob")
-      // NOTE: This works because a page has a 1-1 relation with a blob
-      .set({ content: jsonb(content) })
-      .where("Blob.id", "=", blobIdToUpdate)
-      .returningAll()
-      .executeTakeFirstOrThrow()
-  )
+  return await tx
+    .updateTable("Blob")
+    // NOTE: This works because a page has a 1-1 relation with a blob
+    .set({ content: jsonb(content) })
+    .where("Blob.id", "=", blobIdToUpdate)
+    .returningAll()
+    .executeTakeFirstOrThrow()
 }
 
-// TODO: should be selecting from new table
+// Deferred: should be selecting from new table
 export const getNavBar = async (db: SafeKysely, siteId: number) => {
   const { content, ...rest } = await db
     .selectFrom("Navbar")
@@ -571,7 +569,7 @@ export const getLocalisedSitemap = async (
               "nestedResources.id",
               "Resource.parentId",
             )
-            .where("Resource.siteId", "=", Number(siteId))
+            .where("Resource.siteId", "=", siteId)
             .where("Resource.type", "in", [
               ResourceType.Folder,
               ResourceType.Collection,
@@ -687,8 +685,8 @@ const updateOrderingForResource = async (
   }
 
   // NOTE: Next, get the content and see if we have defined a `childrenPagesOrdering`
-  const childrenPages = indexBlob.content.content.find(({ type }) => 
-    type === "childrenpages"
+  const childrenPages = indexBlob.content.content.find(
+    ({ type }) => type === "childrenpages",
   )
   // No need to do anything
   // NOTE: Need to narrow type for inference hence the duplicate check on `type`
@@ -768,7 +766,7 @@ export const getResourcePermalinkTree = async (
 
     return resourcePermalinks
       .map((r) => r.permalink)
-      .reverse()
+      .toReversed()
       .filter((v) => v !== INDEX_PAGE_PERMALINK)
   }
 
@@ -879,7 +877,7 @@ export const getResourceByFullPermalink = async ({
   // A redirect destination may keep a literal "?query"/"#fragment" suffix, which
   // isn't part of the resource path — strip it before walking segments so
   // "/page#section" still resolves to the "/page" resource.
-  const segments = (fullPermalink.split(/[?#]/)[0] ?? "")
+  const segments = (fullPermalink.split(/[?#]/u)[0] ?? "")
     .split("/")
     .filter(Boolean)
 
@@ -1036,7 +1034,7 @@ export const getResourceFullPermalinks = async (
     // segments are leaf→root; reverse to root→leaf and drop the `_index`
     // segments (an index page represents its parent folder, not a path).
     const permalink = segments
-      .reverse()
+      .toReversed()
       .filter((segment) => segment !== INDEX_PAGE_PERMALINK)
       .join("/")
     result.set(resourceId, `/${permalink}`)
@@ -1168,13 +1166,14 @@ export const getResourceIdsByPermalinks = async (
           .executeTakeFirst()
       : Promise.resolve(),
     Promise.all(
-      chunk(allSegments, SEGMENT_LOOKUP_CHUNK_SIZE).map( async (segments) =>
-        db
-          .selectFrom("Resource")
-          .where("Resource.siteId", "=", siteId)
-          .where("Resource.permalink", "in", segments)
-          .select(["Resource.id", "Resource.permalink", "Resource.parentId"])
-          .execute(),
+      chunk(allSegments, SEGMENT_LOOKUP_CHUNK_SIZE).map(
+        async (segments) =>
+          await db
+            .selectFrom("Resource")
+            .where("Resource.siteId", "=", siteId)
+            .where("Resource.permalink", "in", segments)
+            .select(["Resource.id", "Resource.permalink", "Resource.parentId"])
+            .execute(),
       ),
     ),
   ])
@@ -1366,16 +1365,17 @@ export const publishPageResource = async ({
   })
 
   // Step 2: Trigger a publish of the site
-  if (sitePublish)
-    {await publishSite(logger, {
-      siteId,
+  if (sitePublish) {
+    await publishSite(logger, {
       codebuildJob: sitePublish.enableCodebuildJobs
         ? {
-            resourceWithUserIds: [{ resourceId, userId }],
             isScheduled: sitePublish.isScheduled,
+            resourceWithUserIds: [{ resourceId, userId }],
           }
         : undefined,
-    })}
+      siteId,
+    })
+  }
 }
 
 /**
@@ -1404,7 +1404,7 @@ export const publishResource = async (
         }),
     )
 
-  return await db.transaction().execute(async (tx) => {
+  await db.transaction().execute(async (tx) => {
     await logPublishEvent(tx, {
       by: byUser,
       delta: { after: null, before: null },
@@ -1437,7 +1437,7 @@ export const publishSiteConfig = async (
         }),
     )
 
-  return await db.transaction().execute(async (tx) => {
+  await db.transaction().execute(async (tx) => {
     await logPublishEvent(tx, {
       by: byUser,
       delta: { after: null, before: null },
@@ -1476,7 +1476,7 @@ export const getBatchAncestryWithSelfQuery = async ({
             "groupedByPath",
           ),
         ])
-        .where("Resource.siteId", "=", Number(siteId))
+        .where("Resource.siteId", "=", siteId)
         .where("Resource.id", "in", resourceIds)
         .where("Resource.type", "!=", ResourceType.RootPage)
         .where("Resource.type", "!=", ResourceType.IndexPage)
@@ -1555,7 +1555,7 @@ export const getWithFullPermalink = async ({
   return result
 }
 
-const getResourcesWithLastUpdatedAt = ({ siteId }: { siteId: number }) => 
+const getResourcesWithLastUpdatedAt = ({ siteId }: { siteId: number }) =>
   db
     .selectFrom("Resource")
     .select([
@@ -1570,7 +1570,6 @@ const getResourcesWithLastUpdatedAt = ({ siteId }: { siteId: number }) =>
     ])
     .leftJoin("Blob", "Resource.draftBlobId", "Blob.id")
     .where("Resource.siteId", "=", siteId)
-
 
 const getResourcesWithFullPermalink = async ({
   resources,
@@ -1615,7 +1614,7 @@ export const getSearchResults = async ({
   const searchTerms = tokenizeSearchQuery(query)
 
   const queriedResources = getResourcesWithLastUpdatedAt({
-    siteId: Number(siteId),
+    siteId,
   })
     .where("Resource.type", "in", resourceTypes)
     .where((eb) =>
@@ -1644,8 +1643,8 @@ export const getSearchResults = async ({
               sql`
                 CASE
                   WHEN (
-                    "Resource"."title" ILIKE ${`${searchTerm  }%`} OR
-                    "Resource"."title" ILIKE ${`% ${  searchTerm  }%`}
+                    "Resource"."title" ILIKE ${`${searchTerm}%`} OR
+                    "Resource"."title" ILIKE ${`% ${searchTerm}%`}
                   )
                   THEN ${searchTerm.length}
                   ELSE 0
@@ -1664,14 +1663,15 @@ export const getSearchResults = async ({
     db
       .with("queriedResources", () => queriedResources)
       .selectFrom("queriedResources")
-      .select(db.fn.countAll<number>().as("total_count")) // needed to cast as the type can be `bigint`
+      .select(db.fn.countAll<number>().as("total_count"))
+      // needed to cast as the type can be `bigint`
       .executeTakeFirstOrThrow(),
   ])
 
   return {
     resources: await getResourcesWithFullPermalink({
       resources: resourcesToReturn,
-      siteId: Number(siteId),
+      siteId,
     }),
     totalCount: totalCountResult.total_count,
   }
@@ -1679,14 +1679,14 @@ export const getSearchResults = async ({
 
 export const getSearchRecentlyEdited = async ({
   siteId,
-  limit = 5, // Hardcoded for now to be 5
+  limit = 5,
+  // Hardcoded for now to be 5
 }: {
   siteId: number
   limit?: number
-}): Promise<SearchResultResource[]> => 
+}): Promise<SearchResultResource[]> =>
   await getResourcesWithFullPermalink({
-    siteId: Number(siteId),
-    resources: await getResourcesWithLastUpdatedAt({ siteId: Number(siteId) })
+    resources: await getResourcesWithLastUpdatedAt({ siteId })
       .where("Resource.type", "in", [
         // only show page-ish resources
         ResourceType.Page,
@@ -1696,8 +1696,8 @@ export const getSearchRecentlyEdited = async ({
       .limit(limit)
       .orderBy("lastUpdatedAt", "desc")
       .execute(),
+    siteId,
   })
-
 
 export const getSearchWithResourceIds = async ({
   siteId,
@@ -1708,7 +1708,7 @@ export const getSearchWithResourceIds = async ({
 }): Promise<SearchResultResource[]> => {
   const resources = await db
     .selectFrom("Resource")
-    .where("Resource.siteId", "=", Number(siteId))
+    .where("Resource.siteId", "=", siteId)
     .where("Resource.id", "in", resourceIds)
     .select([
       "Resource.id",
@@ -1723,7 +1723,7 @@ export const getSearchWithResourceIds = async ({
       ...resource,
       lastUpdatedAt: null,
     })),
-    siteId: Number(siteId),
+    siteId,
   })
 }
 
@@ -1785,7 +1785,7 @@ export const createResourceWithBlob = async ({
     })
     .returningAll()
     .executeTakeFirstOrThrow()
-    .catch((error) => {
+    .catch((error: unknown) => {
       if (get(error, "code") === PG_ERROR_CODES.uniqueViolation) {
         throw new TRPCError({
           code: "CONFLICT",

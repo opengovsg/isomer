@@ -17,7 +17,8 @@ import { processPendingAuditLogExports } from "../auditLogExport.service"
 // A fixed past month, so the stored range is the full calendar month (the
 // current-month clamp is a no-op) and the expected S3 slug is deterministic.
 const MONTH = "2024-03"
-const AUDIT_LOG_DATE_RANGE = getMonthDateRange(MONTH, new Date()) // [2024-03-01,2024-04-01)
+const AUDIT_LOG_DATE_RANGE = getMonthDateRange(MONTH, new Date())
+// [2024-03-01,2024-04-01)
 
 // Each row produces exactly one report.
 type ReportType = "Access" | "Activity"
@@ -83,13 +84,12 @@ const seedRequest = async ({
     .executeTakeFirstOrThrow()
 }
 
-const getRequest = async (id: string) => 
+const getRequest = async (id: string) =>
   await db
     .selectFrom("AuditLogExportRequest")
     .where("id", "=", id)
     .selectAll()
     .executeTakeFirstOrThrow()
-
 
 describe("auditLogExport processor", () => {
   beforeEach(async () => {
@@ -124,10 +124,8 @@ describe("auditLogExport processor", () => {
     )
     // By default every candidate artifact still exists in S3.
     vi.spyOn(s3Lib, "getFileSize").mockResolvedValue(1024)
-    vi.spyOn(mailService, "sendAuditLogExportReadyEmail").mockResolvedValue(
-      )
-    vi.spyOn(mailService, "sendAuditLogExportFailedEmail").mockResolvedValue(
-      )
+    vi.spyOn(mailService, "sendAuditLogExportReadyEmail").mockResolvedValue()
+    vi.spyOn(mailService, "sendAuditLogExportFailedEmail").mockResolvedValue()
   })
 
   it("processes an Access request: one upload with an inclusive-end key, one link, status Done", async () => {
@@ -304,7 +302,7 @@ describe("auditLogExport processor", () => {
     const labels = vi
       .mocked(mailService.sendAuditLogExportReadyEmail)
       .mock.calls.map(([arg]) => arg.link.label)
-      .sort()
+      .toSorted()
     expect(labels).toEqual(["access", "audit"])
 
     const updatedAccess = await getRequest(accessRequest.id)
@@ -437,7 +435,8 @@ describe("auditLogExport processor", () => {
     const admin = await setupUser({ email: "stale@vendor.com.sg" })
     await setupAdminPermissions({ siteId: site.id, userId: admin.id })
 
-    const staleUpdatedAt = new Date(Date.now() - 30 * 60 * 1000) // 30 min ago
+    const staleUpdatedAt = new Date(Date.now() - 30 * 60 * 1000)
+    // 30 min ago
     const request = await seedRequest({
       reportType: "Access",
       siteId: site.id,
@@ -479,7 +478,8 @@ describe("auditLogExport processor", () => {
       new Error("s3 down"),
     )
 
-    const staleUpdatedAt = new Date(Date.now() - 30 * 60 * 1000) // 30 min ago
+    const staleUpdatedAt = new Date(Date.now() - 30 * 60 * 1000)
+    // 30 min ago
     const request = await seedRequest({
       attempts: 1,
       reportType: "Access",
@@ -508,7 +508,8 @@ describe("auditLogExport processor", () => {
     const admin = await setupUser({ email: "fresh@vendor.com.sg" })
     await setupAdminPermissions({ siteId: site.id, userId: admin.id })
 
-    const freshUpdatedAt = new Date(Date.now() - 60 * 1000) // 1 min ago
+    const freshUpdatedAt = new Date(Date.now() - 60 * 1000)
+    // 1 min ago
     const request = await seedRequest({
       reportType: "Access",
       siteId: site.id,

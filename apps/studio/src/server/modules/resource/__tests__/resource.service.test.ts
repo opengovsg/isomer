@@ -33,7 +33,7 @@ import {
 import { PAGE_BLOB } from "./constants"
 
 describe("resource.service", () => {
-  // TODO: Implement tests when publish works
+  // Deferred: Implement tests when publish works
   describe.skip("publishPage", () => {
     it.skip("should trigger a publish automatically on creation of a folder", () => {})
     it.skip("should trigger a publish automatically on deletion of a folder", () => {})
@@ -55,7 +55,8 @@ describe("resource.service", () => {
 
       // Act
       const result = await getBatchAncestryWithSelfQuery({
-        resourceIds: ["99999"], // non-existent id
+        resourceIds: ["99999"],
+        // non-existent id
         siteId: site.id,
       })
 
@@ -349,7 +350,7 @@ describe("resource.service", () => {
       // Act
       const result = await getSiteResourceById({
         resourceId: actualPage.id,
-        siteId: 99999,
+        siteId: 99_999,
       })
 
       // Assert
@@ -423,7 +424,7 @@ describe("resource.service", () => {
 
       // Act
       const result = await getFullPageById(db, {
-        resourceId: 99999,
+        resourceId: 99_999,
         siteId: site.id,
       })
 
@@ -441,7 +442,7 @@ describe("resource.service", () => {
       // Act
       const result = await getFullPageById(db, {
         resourceId: Number(page.id),
-        siteId: 99999,
+        siteId: 99_999,
       })
 
       // Assert
@@ -522,7 +523,7 @@ describe("resource.service", () => {
 
       // Act
       const result = await getPageById(db, {
-        resourceId: 99999,
+        resourceId: 99_999,
         siteId: site.id,
       })
 
@@ -539,7 +540,7 @@ describe("resource.service", () => {
       // Act
       const result = await getPageById(db, {
         resourceId: Number(page.id),
-        siteId: 99999,
+        siteId: 99_999,
       })
 
       // Assert
@@ -557,7 +558,7 @@ describe("resource.service", () => {
       // Act
       const result = await updatePageById(
         {
-          id: 99999,
+          id: 99_999,
           siteId: site.id,
           title: "Updated Title",
         },
@@ -644,12 +645,13 @@ describe("resource.service", () => {
 
     it("should throw an error if no matching `id` can be found for the page", async () => {
       // Act
-      const result = db.transaction().execute( async (tx) => 
-        updateBlobById(tx, {
-          siteId: site.id,
-          pageId: 99999,
-          content: PAGE_BLOB,
-        })
+      const result = db.transaction().execute(
+        async (tx) =>
+          await updateBlobById(tx, {
+            siteId: site.id,
+            pageId: 99_999,
+            content: PAGE_BLOB,
+          }),
       )
 
       // Assert
@@ -674,12 +676,13 @@ describe("resource.service", () => {
       })
 
       // Act
-      await db.transaction().execute( async (tx) => 
-        updateBlobById(tx, {
-          siteId: site.id,
-          pageId: Number(page.id),
-          content: PAGE_BLOB,
-        })
+      await db.transaction().execute(
+        async (tx) =>
+          await updateBlobById(tx, {
+            siteId: site.id,
+            pageId: Number(page.id),
+            content: PAGE_BLOB,
+          }),
       )
 
       // Assert
@@ -708,12 +711,13 @@ describe("resource.service", () => {
       await linkDraftBlobToPage({ blobId: blob.id, pageId: page.id })
 
       // Act
-      await db.transaction().execute( async (tx) => 
-        updateBlobById(tx, {
-          siteId: site.id,
-          pageId: Number(page.id),
-          content: PAGE_BLOB,
-        })
+      await db.transaction().execute(
+        async (tx) =>
+          await updateBlobById(tx, {
+            siteId: site.id,
+            pageId: Number(page.id),
+            content: PAGE_BLOB,
+          }),
       )
 
       // Assert
@@ -731,12 +735,13 @@ describe("resource.service", () => {
         siteId: site.id,
       })
       // Act
-      const result = db.transaction().execute( async (tx) => 
-        updateBlobById(tx, {
-          siteId: 99999,
-          pageId: Number(page.id),
-          content: PAGE_BLOB,
-        })
+      const result = db.transaction().execute(
+        async (tx) =>
+          await updateBlobById(tx, {
+            siteId: 99_999,
+            pageId: Number(page.id),
+            content: PAGE_BLOB,
+          }),
       )
 
       // Assert
@@ -818,7 +823,8 @@ describe("resource.service", () => {
         parentId: parentFolder.id,
         resourceType: "Page",
         siteId: site.id,
-        state: ResourceState.Draft, // explicitly set to draft,
+        state: ResourceState.Draft,
+        // explicitly set to draft,
       })
       // Act
       const result = await getLocalisedSitemap(site.id, Number(childPage.id))
@@ -917,7 +923,8 @@ describe("resource.service", () => {
       // Arrange
       const { site } = await setupSite()
       await setupPageResource({
-        resourceType: ResourceType.RootPage, // Pre-requisite
+        resourceType: ResourceType.RootPage,
+        // Pre-requisite
         siteId: site.id,
       })
       const { folder } = await setupFolder({
@@ -953,15 +960,18 @@ describe("resource.service", () => {
       const child = result.children?.at(0)
       expect(child?.id).toBe(folder.id)
       expect(child?.permalink).toBe(`/${folder.permalink}`)
-      expect(child?.title).toBe(folder.title) // should be from the folder
-      expect(child?.summary).toBe(`Pages in ${folder.title}`) // should not be from the index page
+      expect(child?.title).toBe(folder.title)
+      // should be from the folder
+      expect(child?.summary).toBe(`Pages in ${folder.title}`)
+      // should not be from the index page
     })
 
     it("should return folder indexpage's title when resourceId is a IndexPage (PUBLISHED)", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupPageResource({
-        resourceType: ResourceType.RootPage, // Pre-requisite
+        resourceType: ResourceType.RootPage,
+        // Pre-requisite
         siteId: site.id,
       })
       const { folder } = await setupFolder({
@@ -996,15 +1006,18 @@ describe("resource.service", () => {
       const child = result.children?.at(0)
       expect(child?.id).toBe(folder.id)
       expect(child?.permalink).toBe(`/${folder.permalink}`)
-      expect(child?.title).toBe(indexPage.title) // should be from the index page
-      expect(child?.summary).toBe("Hello im the index page") // should be from the index page
+      expect(child?.title).toBe(indexPage.title)
+      // should be from the index page
+      expect(child?.summary).toBe("Hello im the index page")
+      // should be from the index page
     })
 
     it("should not return collection indexpage's title when resourceId is a IndexPage (DRAFT)", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupPageResource({
-        resourceType: ResourceType.RootPage, // Pre-requisite
+        resourceType: ResourceType.RootPage,
+        // Pre-requisite
         siteId: site.id,
       })
       const { collection } = await setupCollection({
@@ -1038,17 +1051,21 @@ describe("resource.service", () => {
 
       // Assert
       const child = result.children?.at(0)
-      expect(child?.id).toBe(collection.id) // should be from the collection regardless
+      expect(child?.id).toBe(collection.id)
+      // should be from the collection regardless
       expect(child?.permalink).toBe(`/${collection.permalink}`)
-      expect(child?.title).toBe(collection.title) // should be from the collection
-      expect(child?.summary).toBe(`Pages in ${collection.title}`) // should not be from the index page
+      expect(child?.title).toBe(collection.title)
+      // should be from the collection
+      expect(child?.summary).toBe(`Pages in ${collection.title}`)
+      // should not be from the index page
     })
 
     it("should return collection indexpage's title when resourceId is a IndexPage (PUBLISHED)", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupPageResource({
-        resourceType: ResourceType.RootPage, // Pre-requisite
+        resourceType: ResourceType.RootPage,
+        // Pre-requisite
         siteId: site.id,
       })
       const { collection } = await setupCollection({
@@ -1081,17 +1098,21 @@ describe("resource.service", () => {
 
       // Assert
       const child = result.children?.at(0)
-      expect(child?.id).toBe(collection.id) // should be from the collection regardless
+      expect(child?.id).toBe(collection.id)
+      // should be from the collection regardless
       expect(child?.permalink).toBe(`/${collection.permalink}`)
-      expect(child?.title).toBe(indexPage.title) // should be from the index page
-      expect(child?.summary).toBe("Hello im the index page") // should be from the index page
+      expect(child?.title).toBe(indexPage.title)
+      // should be from the index page
+      expect(child?.summary).toBe("Hello im the index page")
+      // should be from the index page
     })
 
     it("should include children resources when resourceId is a IndexPage (PUBLISHED)", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupPageResource({
-        resourceType: ResourceType.RootPage, // Pre-requisite
+        resourceType: ResourceType.RootPage,
+        // Pre-requisite
         siteId: site.id,
       })
 
@@ -1213,7 +1234,8 @@ describe("resource.service", () => {
       const { site } = await setupSite()
 
       const { page: rootPage } = await setupPageResource({
-        resourceType: ResourceType.RootPage, // Pre-requisite
+        resourceType: ResourceType.RootPage,
+        // Pre-requisite
         siteId: site.id,
       })
 
@@ -1636,10 +1658,14 @@ describe("resource.service", () => {
         node: SitemapNode,
         id: string,
       ): SitemapNode | undefined => {
-        if (node.id === id) {return node}
+        if (node.id === id) {
+          return node
+        }
         for (const child of node.children ?? []) {
           const found = findNode(child, id)
-          if (found) {return found}
+          if (found) {
+            return found
+          }
         }
         return undefined
       }
@@ -1879,21 +1905,20 @@ describe("resource.service", () => {
   describe.skip("getSearchWithResourceIds", () => {})
 })
 
-const linkDraftBlobToPage =  async ({
+const linkDraftBlobToPage = async ({
   blobId,
   pageId,
 }: {
   blobId: string
   pageId: string
-}) => 
-  db
+}) =>
+  await db
     .updateTable("Resource")
     .where("id", "=", pageId)
     .set({
       draftBlobId: blobId,
     })
     .executeTakeFirstOrThrow()
-
 
 const linkPublishedBlobToPage = async ({
   blobId,

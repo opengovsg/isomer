@@ -45,7 +45,8 @@ export const createDefaultPage = ({
           contentPageHeader: { summary: "This is the page summary" },
           database: {
             dataSource: {
-              type: "dgs", // we only support DGS creation on studio for now
+              type: "dgs",
+              // we only support DGS creation on studio for now
               // Hardcoded: One of the most popular datasets on Data.gov.sg, so unlikely to be removed
               // Either way, this is just a placeholder, unlikely agency will publish with this
               resourceId: "d_3c55210de27fcccda2ed0c63fdd2b352",
@@ -65,18 +66,17 @@ export const createDefaultPage = ({
   }
 }
 
-export const createFolderIndexPage = (title: string) => (
-  {
+export const createFolderIndexPage = (title: string) =>
+  ({
     version: "0.1.0",
     layout: ISOMER_USABLE_PAGE_LAYOUTS.Index,
     // NOTE: cannot use placeholder values here
     // because this are used for generation of breadcrumbs
     // and the page title
     page: {
-      title,
-      lastModified: new Date().toISOString(),
       contentPageHeader: { summary: `Pages in ${title}` },
+      lastModified: new Date().toISOString(),
+      title,
     },
     content: [DEFAULT_CHILDREN_PAGES_BLOCK],
-  } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
-)
+  }) satisfies UnwrapTagged<PrismaJson.BlobJsonContent>

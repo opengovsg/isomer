@@ -20,7 +20,8 @@ import {
 import { registerPgbossJob } from "@isomer/pgboss"
 
 const JOB_NAME = "schedule-push-document"
-const CRON_SCHEDULE = "* * * * *" // every minute
+const CRON_SCHEDULE = "* * * * *"
+// every minute
 const SEARCHSG_CONTENT_LENGTH = 50_000
 
 const logger = createBaseLogger({ path: "cron:schedulePushDocumentJob" })
@@ -88,7 +89,7 @@ const extractResourceData = async ({
     return null
   }
 
-  const {ref} = parsed.data.page
+  const { ref } = parsed.data.page
   // objectGroup is the S3 key (no leading slash), matching egazette's
   // objectKey convention.
   const objectGroup = ref.slice(1)
@@ -131,8 +132,7 @@ const extractResourceData = async ({
   }
   const { tagCategories } = indexParsed.data.page
   // reduce the tag category options into a single array then we find
-  const options =
-    tagCategories?.flatMap((category) => category.options) ?? []
+  const options = tagCategories?.flatMap((category) => category.options) ?? []
   const subcategory = options.find(
     (option) => option.id === parsed.data.page.tagged[0],
   )
@@ -149,7 +149,7 @@ const extractResourceData = async ({
   }
 }
 
-export const schedulePushDocumentJob = async () => 
+export const schedulePushDocumentJob = async () =>
   await registerPgbossJob(
     logger,
     JOB_NAME,
@@ -160,7 +160,6 @@ export const schedulePushDocumentJob = async () =>
       ? { heartbeatURL: env.SCHEDULE_PUSH_DOCUMENT_JOB_HEARTBEAT_URL }
       : undefined,
   )
-
 
 export const schedulePushDocumentJobHandler = async () => {
   const scheduledAtCutoff = new Date()
@@ -209,7 +208,9 @@ export const schedulePushDocumentJobHandler = async () => {
               resourceId,
               title,
             })
-            if (extracted === null) {return null}
+            if (extracted === null) {
+              return null
+            }
 
             const { ref, pdfTextContent, subcategoryLabel, parsedPage } =
               extracted
@@ -218,7 +219,7 @@ export const schedulePushDocumentJobHandler = async () => {
               // SearchSG dedupes on documentId, so derive a stable id from the
               // S3 key + resourceId. Re-uploads of the same key produce the
               // same id, avoiding duplicate search hits.
-              documentId: generateDocumentId(ref, String(resourceId)),
+              documentId: generateDocumentId(ref, resourceId),
               content: pdfTextContent.slice(0, SEARCHSG_CONTENT_LENGTH),
               title,
               url: encodeURI(`https://${env.S3_GAZETTE_DOMAIN_NAME}${ref}`),
@@ -265,7 +266,9 @@ export const schedulePushDocumentJobHandler = async () => {
             resourceId,
             title,
           })
-          if (extracted === null) {continue}
+          if (extracted === null) {
+            continue
+          }
 
           const {
             objectGroup,

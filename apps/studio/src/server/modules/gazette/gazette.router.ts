@@ -101,10 +101,10 @@ export const gazetteRouter = router({
     .mutation(async ({ ctx, input: { siteId, gazetteId } }) => {
       await assertGazetteAccess(ctx.user.id)
       await bulkValidateUserPermissionsForResources({
-        siteId,
         action: "delete",
-        userId: ctx.user.id,
         resourceIds: [String(gazetteId)],
+        siteId,
+        userId: ctx.user.id,
       })
 
       const [user, existingResource] = await Promise.all([
@@ -188,22 +188,22 @@ export const gazetteRouter = router({
             ...job
           } = deletedJob
           await logResourceEvent(tx, {
-            siteId,
-            eventType: AuditLogEvent.CancelSchedulePublish,
             by: user,
-            delta: { before: job, after: null },
+            delta: { after: null, before: job },
+            eventType: AuditLogEvent.CancelSchedulePublish,
+            siteId,
           })
         }
 
         // 5. Log the resource deletion audit event
         await logResourceEvent(tx, {
-          siteId,
-          eventType: AuditLogEvent.ResourceDelete,
           by: user,
           delta: {
-            before: { resource: existingResource, blob: existingBlob },
             after: null,
+            before: { blob: existingBlob, resource: existingResource },
           },
+          eventType: AuditLogEvent.ResourceDelete,
+          siteId,
         })
 
         return deletedResources
@@ -215,12 +215,13 @@ export const gazetteRouter = router({
       if (ref) {
         try {
           await markScheduledAssetAsCancelled({
-            Key: ref.slice(1), // Remove leading slash
             Bucket: env.S3_GAZETTE_BUCKET_NAME,
+            Key: ref.slice(1),
+            // Remove leading slash,
           })
-        } catch (err) {
+        } catch (error) {
           ctx.logger.warn(
-            { err, key: ref },
+            { error, key: ref },
             "Failed to mark cancelled gazette file in S3",
           )
         }
@@ -249,10 +250,10 @@ export const gazetteRouter = router({
       }) => {
         await assertGazetteAccess(ctx.user.id)
         await bulkValidateUserPermissionsForResources({
-          siteId,
           action: "create",
-          userId: ctx.user.id,
           resourceIds: [String(collectionId)],
+          siteId,
+          userId: ctx.user.id,
         })
 
         const user = await db
@@ -262,10 +263,10 @@ export const gazetteRouter = router({
           .executeTakeFirstOrThrow(() => new TRPCError({ code: "BAD_REQUEST" }))
 
         const blobContent = buildGazetteBlobContent({
-          ref,
           category,
           date,
           description,
+          ref,
           tagged,
         })
 
@@ -275,10 +276,10 @@ export const gazetteRouter = router({
           const filename = ref.split("/").pop()
           if (filename) {
             const duplicate = await findCollectionLinkWithFilename({
-              trx: tx,
-              siteId,
-              parentId: String(collectionId),
               filename,
+              parentId: String(collectionId),
+              siteId,
+              trx: tx,
             })
             if (duplicate) {
               throw new TRPCError({
@@ -293,13 +294,13 @@ export const gazetteRouter = router({
           if (
             description &&
             (await hasDuplicateNotificationNumber({
-              trx: tx,
-              siteId,
-              parentId: String(collectionId),
-              notificationNumber: description,
-              publishDate: date,
               category,
+              notificationNumber: description,
+              parentId: String(collectionId),
+              publishDate: date,
+              siteId,
               subCategory: tagged[0] ?? "",
+              trx: tx,
             }))
           ) {
             throw new TRPCError({
@@ -333,25 +334,25 @@ export const gazetteRouter = router({
           const resource = await tx
             .insertInto("Resource")
             .values({
-              title,
-              permalink,
-              siteId,
-              parentId: String(collectionId),
               draftBlobId: blob.id,
-              type: ResourceType.CollectionLink,
+              parentId: String(collectionId),
+              permalink,
               scheduledAt,
               scheduledBy: user.id,
+              siteId,
+              title,
+              type: ResourceType.CollectionLink,
             })
             .returningAll()
             .executeTakeFirstOrThrow()
-            .catch((err: PgCaughtError) => {
-              if (err.code === PG_ERROR_CODES.uniqueViolation) {
+            .catch((error: PgCaughtError) => {
+              if (error.code === PG_ERROR_CODES.uniqueViolation) {
                 throw new TRPCError({
                   code: "CONFLICT",
                   message: "A resource with the same permalink already exists",
                 })
               }
-              throw err
+              throw error
             })
 
           // NOTE: Schedule the document to be ingested into searchsg later
@@ -365,23 +366,23 @@ export const gazetteRouter = router({
             .executeTakeFirstOrThrow()
 
           await logResourceEvent(tx, {
-            siteId,
-            eventType: AuditLogEvent.ResourceCreate,
             by: user,
             delta: {
+              after: { blob, resource },
               before: null,
-              after: { resource, blob },
             },
+            eventType: AuditLogEvent.ResourceCreate,
+            siteId,
           })
 
           await logResourceEvent(tx, {
-            siteId,
-            eventType: AuditLogEvent.SchedulePublish,
             by: user,
             delta: {
-              before: { ...resource, scheduledAt: null, scheduledBy: null },
               after: resource,
+              before: { ...resource, scheduledAt: null, scheduledBy: null },
             },
+            eventType: AuditLogEvent.SchedulePublish,
+            siteId,
           })
 
           return resource
@@ -391,9 +392,9 @@ export const gazetteRouter = router({
         // immediate-publish path used by eGazette.
         if (!isBefore(scheduledAt, new Date())) {
           await sendScheduledPageEmail({
+            recipientEmail: user.email,
             resource: created,
             scheduledAt,
-            recipientEmail: user.email,
           })
         }
 
@@ -407,10 +408,10 @@ export const gazetteRouter = router({
       // First, make sure that the users are from Toppan and can actually delete gazettes
       await assertGazetteAccess(ctx.user.id)
       await bulkValidateUserPermissionsForResources({
-        siteId,
         action: "delete",
-        userId: ctx.user.id,
         resourceIds: [String(gazetteId)],
+        siteId,
+        userId: ctx.user.id,
       })
 
       const [user, gazette] = await Promise.all([
@@ -430,9 +431,9 @@ export const gazetteRouter = router({
           .executeTakeFirstOrThrow(
             () =>
               new TRPCError({
+                code: "NOT_FOUND",
                 message:
                   "The gazette you are trying to delete could not be found",
-                code: "NOT_FOUND",
               }),
           ),
       ])
@@ -444,8 +445,8 @@ export const gazetteRouter = router({
 
       if (!isWithinGracePeriod) {
         throw new TRPCError({
-          message: `Gazettes are unable to be deleted after the given grace period of ${ALLOWED_GAZETTE_DELETION_TIMEFRAME_IN_MINUTES} minutes`,
           code: "FORBIDDEN",
+          message: `Gazettes are unable to be deleted after the given grace period of ${ALLOWED_GAZETTE_DELETION_TIMEFRAME_IN_MINUTES} minutes`,
         })
       }
 
@@ -504,13 +505,13 @@ export const gazetteRouter = router({
           .execute()
 
         await logResourceEvent(tx, {
-          siteId,
-          eventType: AuditLogEvent.ResourceDelete,
           by: user,
           delta: {
-            before: { resource: gazette, blob },
             after: null,
+            before: { blob, resource: gazette },
           },
+          eventType: AuditLogEvent.ResourceDelete,
+          siteId,
         })
       })
       // NOTE: Send email out to IMDA so that they get visibility on what gazettes are deleted.
@@ -561,15 +562,15 @@ export const gazetteRouter = router({
       await assertGazetteAccess(ctx.user.id)
 
       await bulkValidateUserPermissionsForResources({
-        siteId,
         action: "read",
+        siteId,
         userId: ctx.user.id,
       })
 
       const presignedGetUrl = await getPresignedGetUrl({ key: fileKey })
 
       ctx.logger.info(
-        { userId: ctx.session?.userId, siteId, fileKey },
+        { fileKey, siteId, userId: ctx.session?.userId },
         `Generated presigned GET URL for gazette ${fileKey}`,
       )
 
@@ -594,9 +595,9 @@ export const gazetteRouter = router({
       }) => {
         await assertGazetteAccess(ctx.user.id)
         await validateUserPermissionsForAsset({
-          siteId,
-          resourceId,
           action: "create",
+          resourceId,
+          siteId,
           userId: ctx.user.id,
         })
 
@@ -605,26 +606,26 @@ export const gazetteRouter = router({
 
         const { presignedPutUrl, contentType, contentDisposition } =
           await getPresignedPutUrl({
-            key: fileKey,
             fileSize,
+            key: fileKey,
             tags,
           })
 
         ctx.logger.info(
           {
-            userId: ctx.session?.userId,
-            siteId,
-            fileName,
             fileKey,
+            fileName,
+            siteId,
+            userId: ctx.session?.userId,
           },
           `Generated presigned PUT URL for ${fileKey} for site ${siteId}`,
         )
 
         return {
+          contentDisposition,
+          contentType,
           fileKey,
           presignedPutUrl,
-          contentType,
-          contentDisposition,
         }
       },
     ),
@@ -634,8 +635,8 @@ export const gazetteRouter = router({
     .query(async ({ ctx, input: { siteId, collectionId, limit, offset } }) => {
       await assertGazetteAccess(ctx.user.id)
       await bulkValidateUserPermissionsForResources({
-        siteId,
         action: "read",
+        siteId,
         userId: ctx.user.id,
       })
 
@@ -738,8 +739,8 @@ export const gazetteRouter = router({
           return {
             ...result,
             fileSize,
-            scheduledAt: result.scheduledAt ?? result.publishedAt,
             publishedAt: result.publishedAt,
+            scheduledAt: result.scheduledAt ?? result.publishedAt,
           }
         }),
       )
@@ -765,10 +766,10 @@ export const gazetteRouter = router({
       }) => {
         await assertGazetteAccess(ctx.user.id)
         await bulkValidateUserPermissionsForResources({
-          siteId,
           action: "update",
-          userId: ctx.user.id,
           resourceIds: [String(gazetteId)],
+          siteId,
+          userId: ctx.user.id,
         })
 
         const [user, existingResource] = await Promise.all([
@@ -821,7 +822,7 @@ export const gazetteRouter = router({
           // a re-upload that keeps the same metadata lands on the SAME key as
           // the existing ref — cleaning up would tombstone the live file.
           if (existingRef && existingRef !== newRef) {
-            oldRefToCleanUp = existingRef.replace(/^\//, "")
+            oldRefToCleanUp = existingRef.replace(/^\//u, "")
           }
         } else if (
           desiredFileName &&
@@ -831,10 +832,10 @@ export const gazetteRouter = router({
           newFilename = desiredFileName
 
           const duplicate = await findCollectionLinkWithFilename({
-            siteId,
-            parentId: existingResource.parentId,
-            filename: newFilename,
             excludeId: String(gazetteId),
+            filename: newFilename,
+            parentId: existingResource.parentId,
+            siteId,
           })
           if (duplicate) {
             throw new TRPCError({
@@ -843,20 +844,20 @@ export const gazetteRouter = router({
             })
           }
 
-          const sourceKey = existingRef.replace(/^\//, "")
+          const sourceKey = existingRef.replace(/^\//u, "")
           const newKey = await copyFileWithNewName({
-            sourceKey,
             newFileName: desiredFileName,
+            sourceKey,
           })
           finalRef = `/${newKey}`
           oldRefToCleanUp = sourceKey
         }
 
         const newBlobContent = buildGazetteBlobContent({
-          ref: finalRef,
           category,
           date,
           description,
+          ref: finalRef,
           tagged,
         })
 
@@ -866,11 +867,11 @@ export const gazetteRouter = router({
             // Authoritative duplicate check inside the tx for atomicity.
             if (newFilename && newFilename !== oldFilename) {
               const duplicate = await findCollectionLinkWithFilename({
-                trx: tx,
-                siteId,
-                parentId: existingResource.parentId,
-                filename: newFilename,
                 excludeId: String(gazetteId),
+                filename: newFilename,
+                parentId: existingResource.parentId,
+                siteId,
+                trx: tx,
               })
               if (duplicate) {
                 throw new TRPCError({
@@ -886,14 +887,14 @@ export const gazetteRouter = router({
             if (
               description &&
               (await hasDuplicateNotificationNumber({
-                trx: tx,
-                siteId,
-                parentId: existingResource.parentId,
-                notificationNumber: description,
-                publishDate: date,
                 category,
-                subCategory: tagged[0] ?? "",
                 excludeId: String(gazetteId),
+                notificationNumber: description,
+                parentId: existingResource.parentId,
+                publishDate: date,
+                siteId,
+                subCategory: tagged[0] ?? "",
+                trx: tx,
               }))
             ) {
               throw new TRPCError({
@@ -919,12 +920,12 @@ export const gazetteRouter = router({
             const updated = await updatePageById(
               {
                 id: gazetteId,
-                siteId,
-                title,
                 scheduledAt,
                 scheduledBy: scheduledAtChanged
                   ? user.id
                   : existingResource.scheduledBy,
+                siteId,
+                title,
               },
               tx,
             )
@@ -936,13 +937,13 @@ export const gazetteRouter = router({
             }
 
             await logResourceEvent(tx, {
-              siteId,
-              eventType: AuditLogEvent.ResourceUpdate,
               by: user,
               delta: {
-                before: { blob: existingBlob, resource: existingResource },
                 after: { blob: updatedBlob, resource: updated },
+                before: { blob: existingBlob, resource: existingResource },
               },
+              eventType: AuditLogEvent.ResourceUpdate,
+              siteId,
             })
 
             if (scheduledAtChanged) {
@@ -972,10 +973,10 @@ export const gazetteRouter = router({
                 )
 
               await logResourceEvent(tx, {
-                siteId,
-                eventType: AuditLogEvent.SchedulePublish,
                 by: user,
-                delta: { before: existingResource, after: updated },
+                delta: { after: updated, before: existingResource },
+                eventType: AuditLogEvent.SchedulePublish,
+                siteId,
               })
             }
 
@@ -987,9 +988,9 @@ export const gazetteRouter = router({
         if (oldRefToCleanUp) {
           try {
             await markFileAsDeleted({ key: oldRefToCleanUp })
-          } catch (err) {
+          } catch (error) {
             ctx.logger.warn(
-              { err, key: oldRefToCleanUp },
+              { error, key: oldRefToCleanUp },
               "Failed to soft-delete superseded gazette file",
             )
           }
@@ -1001,9 +1002,9 @@ export const gazetteRouter = router({
           !isBefore(updatedResource.scheduledAt, new Date())
         ) {
           await sendScheduledPageEmail({
+            recipientEmail: user.email,
             resource: updatedResource,
             scheduledAt: updatedResource.scheduledAt,
-            recipientEmail: user.email,
           })
         }
 

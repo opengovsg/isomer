@@ -49,7 +49,7 @@ const setupPermission = async ({
   role?: (typeof RoleType)[keyof typeof RoleType]
   createdAt: Date
   deletedAt?: Date | null
-}) => 
+}) =>
   await db
     .insertInto("ResourcePermission")
     .values({
@@ -63,7 +63,6 @@ const setupPermission = async ({
     })
     .returningAll()
     .executeTakeFirstOrThrow()
-
 
 const insertAuditLog = async ({
   eventType,
@@ -81,7 +80,7 @@ const insertAuditLog = async ({
   metadata?: AuditLogMetadata
   ipAddress?: string | null
   createdAt: Date
-}) => 
+}) =>
   await db
     .insertInto("AuditLog")
     .values({
@@ -98,7 +97,6 @@ const insertAuditLog = async ({
     })
     .returningAll()
     .executeTakeFirstOrThrow()
-
 
 describe("auditLogExport.query", () => {
   beforeEach(async () => {
@@ -268,7 +266,7 @@ describe("auditLogExport.query", () => {
         auditLogDateRange,
         siteId: site.id,
       })
-      const emails = rows.map((r) => r.Email).sort()
+      const emails = rows.map((r) => r.Email).toSorted()
 
       expect(emails).toEqual([
         "active@agency.gov.sg",
@@ -374,7 +372,7 @@ describe("auditLogExport.query", () => {
         auditLogDateRange,
         siteId: site.id,
       })
-      expect(rows.map((r) => r.Email).sort()).toEqual([
+      expect(rows.map((r) => r.Email).toSorted()).toEqual([
         "in-month@agency.gov.sg",
         "revoked-after-boundary@agency.gov.sg",
       ])
@@ -1007,9 +1005,12 @@ describe("auditLogExport.query", () => {
           siteId: site.id,
           userId: collaborator.id,
         })
-        await insertLoginFor(collaborator, T_05) // in window 1
-        await insertLoginFor(collaborator, T_15) // in the gap
-        await insertLoginFor(collaborator, T_25) // in window 2
+        await insertLoginFor(collaborator, T_05)
+        // in window 1
+        await insertLoginFor(collaborator, T_15)
+        // in the gap
+        await insertLoginFor(collaborator, T_25)
+        // in window 2
 
         const rows = await getActivityReportRows({
           auditLogDateRange,
@@ -1032,8 +1033,10 @@ describe("auditLogExport.query", () => {
           siteId: site.id,
           userId: collaborator.id,
         })
-        await insertLogoutFor(collaborator, T_10) // during the window
-        await insertLogoutFor(collaborator, T_20) // exactly at revocation
+        await insertLogoutFor(collaborator, T_10)
+        // during the window
+        await insertLogoutFor(collaborator, T_20)
+        // exactly at revocation
 
         const rows = await getActivityReportRows({
           auditLogDateRange,
@@ -1116,7 +1119,7 @@ describe("auditLogExport.query", () => {
 
       const csv = toCsv(rows)
       // Papa Parse uses CRLF line endings by default; split on either.
-      const lines = csv.split(/\r\n|\n/)
+      const lines = csv.split(/\r\n|\n/u)
 
       // 1 header + 2 data rows. Quotes are stripped from the header labels.
       expect(lines).toHaveLength(3)

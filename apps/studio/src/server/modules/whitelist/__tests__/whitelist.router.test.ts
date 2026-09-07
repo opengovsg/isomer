@@ -181,7 +181,8 @@ describe("whitelist.router", async () => {
 
       expect(whitelistEntry).toBeDefined()
       expect(whitelistEntry?.email).toBe(adminEmail)
-      expect(whitelistEntry?.expiry).toBeNull() // Admin emails have no expiry
+      expect(whitelistEntry?.expiry).toBeNull()
+      // Admin emails have no expiry
     })
 
     it("should whitelist vendor emails with 90-day expiry if user is an Isomer Core Admin", async () => {

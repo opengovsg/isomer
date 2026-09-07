@@ -18,9 +18,9 @@ describe("email.service", () => {
       await setupUser({ email: TEST_EMAIL })
 
       // Act
-      const user = await db.transaction().execute(async (tx) => 
-        await upsertUser({ tx, email: TEST_EMAIL })
-      )
+      const user = await db
+        .transaction()
+        .execute(async (tx) => await upsertUser({ tx, email: TEST_EMAIL }))
 
       // Assert
       expect(user).toBeDefined()
@@ -35,9 +35,9 @@ describe("email.service", () => {
       await setupUser({ email: "someone-else@example.com" })
 
       // Act
-      const user = await db.transaction().execute(async (tx) => 
-        await upsertUser({ tx, email: TEST_EMAIL })
-      )
+      const user = await db
+        .transaction()
+        .execute(async (tx) => await upsertUser({ tx, email: TEST_EMAIL }))
 
       // Assert
       expect(user).toBeDefined()

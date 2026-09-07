@@ -20,7 +20,7 @@ export const isUserDeleted = async (email: string) => {
     // Email is a unique field in User table
     .executeTakeFirst()
 
-  return user?.deletedAt ? true : false
+  return user?.deletedAt
 }
 
 interface CreateUserProps {
@@ -30,7 +30,8 @@ interface CreateUserProps {
   role: ResourcePermission["role"]
   siteId: ResourcePermission["siteId"]
   byUserId: User["id"]
-  tx: Transaction<DB> // allows for transaction to be passed in from parent transaction
+  tx: Transaction<DB>
+  // allows for transaction to be passed in from parent transaction
 }
 
 export const createUserWithPermission = async ({
@@ -137,7 +138,7 @@ interface GetUsersQueryProps {
   adminType: AdminType
 }
 
-export const getUsersQuery = ({ siteId, adminType }: GetUsersQueryProps) => 
+export const getUsersQuery = ({ siteId, adminType }: GetUsersQueryProps) =>
   db
     .with("ActiveResourcePermission", (qb) =>
       qb
@@ -186,7 +187,6 @@ export const getUsersQuery = ({ siteId, adminType }: GetUsersQueryProps) =>
       // For agency users, only show those with an explicit ResourcePermission for this site
       qb.where("ActiveResourcePermission.userId", "is not", null),
     )
-
 
 interface DeleteUserPermissionProps {
   byUserId: User["id"]
@@ -310,10 +310,9 @@ export const updateUserDetails = async ({
   })
 }
 
-export const getUserById = async (userId: string) => 
+export const getUserById = async (userId: string) =>
   await db
     .selectFrom("User")
     .selectAll()
     .where("id", "=", userId)
     .executeTakeFirstOrThrow()
-

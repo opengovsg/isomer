@@ -6,7 +6,7 @@ import { createBaseLogger } from "~/lib/logger"
 const logger = createBaseLogger({ path: "searchsg.service" })
 
 export const SEARCHSG_BASE_URL = "https://api.services.search.gov.sg/admin"
-export const {EGAZETTE_DOCUMENT_INDEX} = env
+export const { EGAZETTE_DOCUMENT_INDEX } = env
 export const ISOMER_UA =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) isomer"
 const SearchSgApi = {
@@ -139,7 +139,7 @@ export const updateSearchSGConfig = async (
       return await client
         .url(SearchSgApi.app(searchsgClientId, app.appId))
         .json({
-          config: { theme: { primary: props.colour, fontFamily: "Inter" } },
+          config: { theme: { fontFamily: "Inter", primary: props.colour } },
         })
         .patch()
         .res()

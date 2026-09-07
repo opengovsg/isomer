@@ -48,9 +48,7 @@ describe("permissions.service", () => {
       const page = { parentId: "2" }
 
       // Act
-      const results = CRUD_ACTIONS.map((action) => 
-        perms.can(action, page)
-      )
+      const results = CRUD_ACTIONS.map((action) => perms.can(action, page))
 
       // Assert
       expect(results.every((v) => v)).toBe(expected)
@@ -64,9 +62,7 @@ describe("permissions.service", () => {
       const expected = true
 
       // Act
-      const results = actions.map((action) => 
-        perms.can(action, rootPage)
-      )
+      const results = actions.map((action) => perms.can(action, rootPage))
 
       // Assert
       expect(results.every((v) => v)).toBe(expected)
@@ -80,9 +76,7 @@ describe("permissions.service", () => {
       const expected = false
 
       // Act
-      const results = actions.map((action) => 
-        perms.can(action, rootPage)
-      )
+      const results = actions.map((action) => perms.can(action, rootPage))
 
       // Assert
       expect(results.every((v) => v)).toBe(expected)
@@ -96,9 +90,7 @@ describe("permissions.service", () => {
       const expected = true
 
       // Act
-      const results = actions.map((action) => 
-        perms.can(action, rootPage)
-      )
+      const results = actions.map((action) => perms.can(action, rootPage))
 
       // Assert
       expect(results.every((v) => v)).toBe(expected)
@@ -113,13 +105,13 @@ describe("permissions.service", () => {
       // the later role's permissions don't overwrite the earlier one
       const roles = [RoleType.Admin, RoleType.Editor] as const
       const builder = new AbilityBuilder<ResourceAbility>(createMongoAbility)
-      roles.forEach((role) =>{  buildPermissionsForResource(role, builder); })
+      roles.forEach((role) => {
+        buildPermissionsForResource(role, builder)
+      })
       const perms = builder.build({ detectSubjectType: () => "Resource" })
 
       // Act
-      const results = actions.map((action) => 
-        perms.can(action, rootPage)
-      )
+      const results = actions.map((action) => perms.can(action, rootPage))
 
       // Assert
       expect(results.every((v) => v)).toBe(expected)
@@ -1152,7 +1144,7 @@ describe("getResourcePermission", () => {
     expect(permissions[0]?.role).toBe(RoleType.Admin)
   })
 
-  // TODO: add this back in when we have resource-specific permissions
+  // Deferred: add this back in when we have resource-specific permissions
   it.skip("should return resource-specific permissions when resourceId is provided", async () => {
     // Arrange
     const user = await setupUser({ email: "test@example.com" })
@@ -1217,7 +1209,7 @@ describe("getResourcePermission", () => {
     expect(permissions).toHaveLength(0)
   })
 
-  // TODO: add this back in when we have resource-specific permissions
+  // Deferred: add this back in when we have resource-specific permissions
   it.skip("should not return site-wide permissions when resourceId is provided and is not null", async () => {
     // Arrange
     const user = await setupUser({ email: "test@example.com" })

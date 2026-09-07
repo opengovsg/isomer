@@ -10,53 +10,51 @@ import { db } from "../database/database"
 import { ResourceType, sql } from "../database/types"
 
 export const createCollectionPageJson = ({}: {
-  type: typeof ResourceType.CollectionPage // Act as soft typeguard
-}) => (
-  {
+  type: typeof ResourceType.CollectionPage
+  // Act as soft typeguard
+}) =>
+  ({
+    content: [],
     layout: "article",
     page: {
       date: format(new Date(), "dd/MM/yyyy"),
-      // TODO: this is actually supposed to be passed from the frontend
+      // Deferred: this is actually supposed to be passed from the frontend
       // which is not done at present
       category: "Feature Articles",
       articlePageHeader: {
         summary: "A concise summary of the main points regarding this article.",
       },
     },
-    content: [],
     version: "0.1.0",
-  } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
-)
+  }) satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
 
 export const createCollectionLinkJson = ({}: {
-  type: typeof ResourceType.CollectionLink // Act as soft typeguard
-}) => (
-  {
+  type: typeof ResourceType.CollectionLink
+  // Act as soft typeguard
+}) =>
+  ({
     layout: "link",
     page: {
-      ref: "",
-      summary: "",
       category: "",
       date: format(new Date(), "dd/MM/yyyy"),
+      ref: "",
+      summary: "",
     },
     content: [],
-    // TODO: Add pdf blob to content
+    // Deferred: Add pdf blob to content
     version: "0.1.0",
-  } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
-)
-export const createCollectionIndexJson = (title: string) => (
-  {
-    layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,
-    // SAFETY: collection index pages use Collection layout defaults validated by schema
-    page: {
-      title,
-      subtitle: `Read up-to-date news articles, speeches, and press releases here.`,
-      sortOrder: "date-desc",
-    } as CollectionPagePageProps,
-    content: [],
-    version: "0.1.0",
-  }
-)
+  }) satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
+export const createCollectionIndexJson = (title: string) => ({
+  layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,
+  // SAFETY: collection index pages use Collection layout defaults validated by schema
+  page: {
+    sortOrder: "date-desc",
+    subtitle: `Read up-to-date news articles, speeches, and press releases here.`,
+    title,
+  } as CollectionPagePageProps,
+  content: [],
+  version: "0.1.0",
+})
 
 export const getCollectionTagsForResource = async ({
   resourceId,

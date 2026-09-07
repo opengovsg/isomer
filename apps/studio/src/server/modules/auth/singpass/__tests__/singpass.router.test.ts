@@ -24,15 +24,13 @@ type SingpassSessionUserId = NonNullable<
   NonNullable<SessionData["singpass"]>["sessionState"]
 >["userId"]
 
-const asSingpassSessionUserId = (userId: string): SingpassSessionUserId => 
+const asSingpassSessionUserId = (userId: string): SingpassSessionUserId =>
   // SAFETY: singpass session fixtures use persisted user id strings from test seeds
   userId as SingpassSessionUserId
 
-
-const emptyVerificationToken = () => (
+const emptyVerificationToken = () =>
   // SAFETY: getUserProps only needs sessionState.userId; other fields are unused in these tests
-  {} as never
-)
+  ({}) as never
 
 describe("auth.singpass", () => {
   let caller: ReturnType<typeof createCaller>

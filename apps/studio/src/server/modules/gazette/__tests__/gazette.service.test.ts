@@ -20,8 +20,7 @@ describe("gazette.service", () => {
     env.ALGOLIA_APP_ID = "test-app-id"
     env.ALGOLIA_API_KEY = "test-api-key"
     env.ALGOLIA_INDEX_NAME = "test-index"
-    vi.spyOn(algoliaLib, "saveObjectsToSearchIndex").mockResolvedValue(
-      )
+    vi.spyOn(algoliaLib, "saveObjectsToSearchIndex").mockResolvedValue()
     vi.spyOn(
       algoliaLib,
       "deleteObjectsFromSearchIndexByFilter",
@@ -61,7 +60,7 @@ describe("gazette.service", () => {
 
     it("rejects a user who is neither Toppan nor a qualifying admin", async () => {
       const user = await setupUser({ email: "user@example.com" })
-      await expect(assertGazetteAccess(user.id)).rejects.toThrowError(
+      await expect(assertGazetteAccess(user.id)).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message: "You do not have access to the gazette feature",
@@ -72,7 +71,7 @@ describe("gazette.service", () => {
     it("throws INTERNAL_SERVER_ERROR if the user row is missing", async () => {
       await expect(
         assertGazetteAccess("11111111-1111-1111-1111-111111111111"),
-      ).rejects.toThrowError(new TRPCError({ code: "INTERNAL_SERVER_ERROR" }))
+      ).rejects.toThrow(new TRPCError({ code: "INTERNAL_SERVER_ERROR" }))
     })
   })
 
@@ -83,7 +82,7 @@ describe("gazette.service", () => {
           newFileName: "renamed.pdf",
           sourceKey: "too/few/parts",
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message: "Invalid source key format",
@@ -177,7 +176,7 @@ describe("gazette.service", () => {
       )
 
       // Assert
-      await expect(act).rejects.toThrowError(
+      await expect(act).rejects.toThrow(
         new TRPCError({
           code: "PRECONDITION_FAILED",
           message: "Failed to remove gazette from search index",

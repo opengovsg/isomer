@@ -1,7 +1,7 @@
 import type { SelectExpression } from "kysely"
+import type { DB } from "~prisma/generated/generatedTypes"
 import { TRPCError } from "@trpc/server"
 import { ResourceState } from "~prisma/generated/generatedEnums"
-import type { DB } from "~prisma/generated/generatedTypes"
 
 import type { SafeKysely, Transaction } from "../database/types"
 import { db } from "../database/database"
@@ -20,8 +20,8 @@ const defaultVersionSelect: SelectExpression<DB, "Version">[] = [
   "Version.publishedAt",
 ]
 
-const getVersionById =  async ({ versionId }: { versionId: string }) =>
-  db
+const getVersionById = async ({ versionId }: { versionId: string }) =>
+  await db
     .selectFrom("Version")
     .where("Version.id", "=", versionId)
     .select(defaultVersionSelect)
@@ -43,7 +43,7 @@ const createVersion = async (
       blobId,
       publishedAt: new Date(),
       publishedBy: publisherId,
-      resourceId: resourceId,
+      resourceId,
       versionNum,
     })
     .returning(["Version.id", "Version.versionNum"])
@@ -84,7 +84,9 @@ export const incrementVersion = async ({
   }
 
   // If there's no draft, we don't create a new version
-  if (!page.draftBlobId) {return null}
+  if (!page.draftBlobId) {
+    return null
+  }
 
   let newVersionNum = 1
   let previousVersion: Version | null = null
@@ -107,7 +109,7 @@ export const incrementVersion = async ({
   await updatePageById(
     {
       draftBlobId: null,
-      id: parseInt(page.id),
+      id: Number.parseInt(page.id),
       publishedVersionId: newVersion.id,
       siteId,
       state: ResourceState.Published,

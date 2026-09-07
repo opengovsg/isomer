@@ -14,10 +14,12 @@ describe("updateStoppedBuild", () => {
   let user: User
   const FIXED_NOW = new Date("2024-01-01T00:15:00.000Z")
   afterEach(() => {
-    MockDate.reset() // Reset time after each test
+    MockDate.reset()
+    // Reset time after each test
   })
   beforeEach(async () => {
-    MockDate.set(FIXED_NOW) // Freeze time before each test
+    MockDate.set(FIXED_NOW)
+    // Freeze time before each test
     vi.clearAllMocks()
     await resetTables("CodeBuildJobs", "User", "Resource", "Site")
     user = await setupUser({})
@@ -58,7 +60,8 @@ describe("updateStoppedBuild", () => {
       .selectAll()
       .where("supersededByBuildId", "=", NEWLY_STARTED_BUILD_ID)
       .execute()
-    expect(allSupersededBuilds.length).toEqual(NUMBER_SUPERSEDED_BUILDS + 1) // +1 for the main build
+    expect(allSupersededBuilds.length).toEqual(NUMBER_SUPERSEDED_BUILDS + 1)
+    // +1 for the main build
     // expect all superseded builds to have status STOPPED
     allSupersededBuilds.forEach((build) => {
       expect(build.status).toEqual("STOPPED")

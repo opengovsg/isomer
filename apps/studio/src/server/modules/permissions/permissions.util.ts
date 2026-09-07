@@ -12,9 +12,9 @@ const giveBasePermissions = (
   builder: AbilityBuilder<ResourceAbility>,
 ): void => {
   // NOTE: Users can perform every action on non root resources that they have edit access to
-  CRUD_ACTIONS.map((action) => {
+  for (const action of CRUD_ACTIONS) {
     builder.can(action, "Resource", { parentId: { $ne: null } })
-  })
+  }
   builder.can("move", "Resource", { parentId: { $ne: null } })
 
   // NOTE: For root resources, they can only update and read
@@ -28,17 +28,21 @@ export const buildPermissionsForResource = (
 ) => {
   switch (role) {
     case RoleType.Editor: {
-       giveBasePermissions(builder); return;
+      giveBasePermissions(builder)
+      return
     }
     case RoleType.Admin: {
-      ALL_ACTIONS.map((action) => {
+      for (const action of ALL_ACTIONS) {
         builder.can(action, "Resource")
-      })
+      }
       return
     }
     case RoleType.Publisher: {
       giveBasePermissions(builder)
       builder.can("publish", "Resource")
+      return
+    }
+    default: {
       return
     }
   }

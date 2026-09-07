@@ -97,43 +97,41 @@ const makeTx = (script: TxScript) => {
     insertInto: (table: string) => {
       let payload: unknown
       return {
-        values: function (v: unknown) {
+        values(v: unknown) {
           payload = v
           return this
         },
-        onConflict: function (cb: (oc: Record<string, unknown>) => unknown) {
+        onConflict(cb: (oc: Record<string, unknown>) => unknown) {
           // Exercise the conflict-target builder so a broken callback fails
           // loudly, without modelling the SQL it produces.
           const oc = {
-            columns: function () {
+            columns() {
               return this
             },
-            where: function () {
+            where() {
               return this
             },
-            doNothing: function () {
+            doNothing() {
               return this
             },
           }
           cb(oc)
           return this
         },
-        returningAll: function () {
+        returningAll() {
           return this
         },
-        execute:  async () => {
+        execute: async () => {
           if (table === "AuditLog") {
             const events = payload as
               | Record<string, unknown>
               | Record<string, unknown>[]
             auditLogValues.push(...(Array.isArray(events) ? events : [events]))
-            return Promise.resolve([])
+            return []
           }
 
           if (table !== "AuditLogExportRequest") {
-            return Promise.reject(
-              new Error(`Unexpected execute() INSERT into ${table}`),
-            )
+            throw new Error(`Unexpected execute() INSERT into ${table}`)
           }
 
           const rows = payload as { siteId: number }[]
@@ -144,7 +142,7 @@ const makeTx = (script: TxScript) => {
             .map((row) => outcomeBySite.get(row.siteId))
             .find((o) => o?.outcome === "error")
           if (errorOutcome?.outcome === "error") {
-            return Promise.reject(errorOutcome.error)
+            throw errorOutcome.error
           }
 
           const returned = rows
@@ -155,35 +153,31 @@ const makeTx = (script: TxScript) => {
               insertedValues.push(row)
               return { id: `row-${i}`, ...row }
             })
-          return Promise.resolve(returned)
+          return returned
         },
       }
     },
     insertedValues,
     selectFrom: (table: string) => ({
-      where: function () {
+      where() {
         return this
       },
-      selectAll: function () {
+      selectAll() {
         return this
       },
-      execute:  async () => {
+      execute: async () => {
         if (table !== "AuditLogExportRequest") {
-          return Promise.reject(
-            new Error(`Unexpected execute() SELECT on ${table}`),
-          )
+          throw new Error(`Unexpected execute() SELECT on ${table}`)
         }
         const result = script.selects?.[selectCall] ?? []
         selectCall += 1
-        return Promise.resolve(result)
+        return result
       },
-      executeTakeFirstOrThrow:  async () => {
+      executeTakeFirstOrThrow: async () => {
         if (table === "User") {
-          return Promise.resolve(FAKE_USER)
+          return FAKE_USER
         }
-        return Promise.reject(
-          new Error(`Unexpected executeTakeFirstOrThrow SELECT on ${table}`),
-        )
+        throw new Error(`Unexpected executeTakeFirstOrThrow SELECT on ${table}`)
       },
     }),
   }
@@ -195,8 +189,8 @@ const makeTx = (script: TxScript) => {
 // transaction back (nothing committed) and re-surfaces the error.
 const useTx = (tx: ReturnType<typeof makeTx>) => {
   mockDb.transaction.mockReturnValue({
-    execute:  async (cb: (tx: unknown) => unknown) =>
-      Promise.resolve().then(() => cb(tx)),
+    execute: async (cb: (tx: unknown) => unknown) =>
+      await Promise.resolve().then(() => cb(tx)),
   })
 }
 
@@ -223,7 +217,7 @@ const expectExportCreateEvent = (
   })
   const delta = value?.delta as { after: { auditLogDateRange: string } }
   expect(delta.after.auditLogDateRange).toMatch(
-    /^\[\d{4}-\d{2}-\d{2},\d{4}-\d{2}-\d{2}\)$/,
+    /^\[\d{4}-\d{2}-\d{2},\d{4}-\d{2}-\d{2}\)$/u,
   )
 }
 
@@ -387,7 +381,7 @@ describe("createAuditLogExportRequestsForSites — idempotent accept", () => {
     expect(tx.insertedValues).toHaveLength(1)
     expect(tx.insertedValues[0]).toMatchObject({ siteId: 1 })
     expect(tx.auditLogValues).toHaveLength(2)
-    const siteIdsLogged = tx.auditLogValues.map((v) => v.siteId).sort()
+    const siteIdsLogged = tx.auditLogValues.map((v) => v.siteId).toSorted()
     expect(siteIdsLogged).toEqual([1, 2])
   })
 })

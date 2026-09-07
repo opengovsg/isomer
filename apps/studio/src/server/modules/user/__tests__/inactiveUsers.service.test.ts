@@ -87,7 +87,7 @@ const setupUserWrapper = async ({
   sitePermission = RoleType.Admin,
 }: SetupUserWrapperProps): Promise<User> => {
   const user = await setupUser({
-    email: email ?? crypto.randomUUID() + "@user.com",
+    email: email ?? `${crypto.randomUUID()}@user.com`,
     isDeleted,
     lastLoginAt: lastLoginDaysAgo ? getDateOnlyInSG(lastLoginDaysAgo) : null,
   })
@@ -113,7 +113,9 @@ const setupUserWrapper = async ({
     }
   }
 
-  if (!createdDaysAgo) {return user}
+  if (!createdDaysAgo) {
+    return user
+  }
 
   return await db
     .updateTable("User")
@@ -130,8 +132,7 @@ describe("inactiveUsers.service", () => {
 
     beforeEach(async () => {
       vi.clearAllMocks()
-      vi.spyOn(mailService, "sendAccountDeactivationEmail").mockResolvedValue(
-        )
+      vi.spyOn(mailService, "sendAccountDeactivationEmail").mockResolvedValue()
       vi.spyOn(
         mailService,
         "sendAccountDeactivationWarningEmail",
@@ -229,7 +230,9 @@ describe("inactiveUsers.service", () => {
       expect(auditLogs.map((log) => log.siteId)).toEqual(
         expect.arrayContaining([site.id, otherSite.id]),
       )
-      auditLogs.forEach((log) =>{  expect(log.userId).toBe(systemUser.id); })
+      auditLogs.forEach((log) => {
+        expect(log.userId).toBe(systemUser.id)
+      })
     })
 
     it("should recreate the system user and continue deactivating if it does not exist", async () => {
@@ -303,7 +306,9 @@ describe("inactiveUsers.service", () => {
 
       // Act
       await Promise.all(
-        Array.from({ length: 5 },  async () => bulkDeactivateInactiveUsers()),
+        Array.from({ length: 5 }, async () => {
+          await bulkDeactivateInactiveUsers()
+        }),
       )
 
       // Assert
@@ -556,13 +561,14 @@ describe("inactiveUsers.service", () => {
         siteId: site.id,
       })
       await Promise.all(
-        TEST_ISOMER_ADMIN_EMAILS.map( async (email) =>
-          setupIsomerAdminUser({
-            createdDaysAgo: 91,
-            email,
-            lastLoginDaysAgo: null,
-            siteId: site.id,
-          }),
+        TEST_ISOMER_ADMIN_EMAILS.map(
+          async (email) =>
+            await setupIsomerAdminUser({
+              createdDaysAgo: 91,
+              email,
+              lastLoginDaysAgo: null,
+              siteId: site.id,
+            }),
         ),
       )
 
@@ -595,7 +601,8 @@ describe("inactiveUsers.service", () => {
         recipientEmail: user.email,
         sitesAndAdmins: [
           {
-            adminEmails: [], // does not include themselves
+            adminEmails: [],
+            // does not include themselves
             siteName: site.name,
           },
         ],
@@ -895,13 +902,14 @@ describe("inactiveUsers.service", () => {
     it("should NOT select isomer admins and migrators", async () => {
       // Arrange
       await Promise.all(
-        TEST_ISOMER_ADMIN_EMAILS.map( async (email) =>
-          setupIsomerAdminUser({
-            createdDaysAgo: 91,
-            email,
-            lastLoginDaysAgo: null,
-            siteId: site.id,
-          }),
+        TEST_ISOMER_ADMIN_EMAILS.map(
+          async (email) =>
+            await setupIsomerAdminUser({
+              createdDaysAgo: 91,
+              email,
+              lastLoginDaysAgo: null,
+              siteId: site.id,
+            }),
         ),
       )
 
@@ -925,7 +933,8 @@ describe("inactiveUsers.service", () => {
       await db
         .insertInto("IsomerAdmin")
         .values({
-          expiry: new Date(Date.now() - 24 * 60 * 60 * 1000), // expired yesterday
+          expiry: new Date(Date.now() - 24 * 60 * 60 * 1000),
+          // expired yesterday
           role: IsomerAdminRole.Core,
           userId: expiredAdmin.id,
         })
@@ -1102,7 +1111,8 @@ describe("inactiveUsers.service", () => {
       it("1 day", async () => {
         // Arrange
         const user = await setupUserWrapper({
-          createdDaysAgo: 89, // Will be inactive in 1 day (90 - 1 = 89)
+          createdDaysAgo: 89,
+          // Will be inactive in 1 day (90 - 1 = 89)
           lastLoginDaysAgo: null,
           siteId: site.id,
         })
@@ -1126,7 +1136,8 @@ describe("inactiveUsers.service", () => {
       it("7 days", async () => {
         // Arrange
         const user = await setupUserWrapper({
-          createdDaysAgo: 83, // Will be inactive in 7 days (90 - 7 = 83)
+          createdDaysAgo: 83,
+          // Will be inactive in 7 days (90 - 7 = 83)
           lastLoginDaysAgo: null,
           siteId: site.id,
         })
@@ -1150,7 +1161,8 @@ describe("inactiveUsers.service", () => {
       it("14 days", async () => {
         // Arrange
         const user = await setupUserWrapper({
-          createdDaysAgo: 76, // Will be inactive in 14 days (90 - 14 = 76)
+          createdDaysAgo: 76,
+          // Will be inactive in 14 days (90 - 14 = 76)
           lastLoginDaysAgo: null,
           siteId: site.id,
         })
@@ -1242,12 +1254,14 @@ describe("inactiveUsers.service", () => {
     it("should send warning emails to all inactive users", async () => {
       // Arrange
       const user1 = await setupUserWrapper({
-        createdDaysAgo: 89, // Will be inactive in 1 day
+        createdDaysAgo: 89,
+        // Will be inactive in 1 day
         lastLoginDaysAgo: null,
         siteId: site.id,
       })
       const user2 = await setupUserWrapper({
-        createdDaysAgo: 89, // Will be inactive in 1 day
+        createdDaysAgo: 89,
+        // Will be inactive in 1 day
         lastLoginDaysAgo: null,
         siteId: site.id,
       })
@@ -1362,7 +1376,8 @@ describe("inactiveUsers.service", () => {
       // Arrange
       const user = await setupUserWrapper({
         createdDaysAgo: 89,
-        lastLoginDaysAgo: null, // Never logged in
+        lastLoginDaysAgo: null,
+        // Never logged in
         siteId: site.id,
       })
 
@@ -1383,7 +1398,8 @@ describe("inactiveUsers.service", () => {
       // Arrange
       const user = await setupUserWrapper({
         createdDaysAgo: 91,
-        lastLoginDaysAgo: 89, // Logged in 89 days ago
+        lastLoginDaysAgo: 89,
+        // Logged in 89 days ago
         siteId: site.id,
       })
 

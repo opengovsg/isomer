@@ -113,7 +113,9 @@ export const assetRouter = router({
       }
 
       await Promise.allSettled(
-        fileKeys.map( async (fileKey) => markFileAsDeleted({ key: fileKey })),
+        fileKeys.map(async (fileKey) => {
+          await markFileAsDeleted({ key: fileKey })
+        }),
       ).then((results) => {
         const deleteFailedCounts = results.filter(
           (result) => result.status === "rejected",

@@ -161,7 +161,7 @@ export const computeBuildChanges = async (
     if (runningBuilds?.length === 2 && recentRunningBuilds?.length === 0) {
       // Stop the latest build
       const latestBuild = runningBuilds
-        .sort((a, b) => {
+        .toSorted((a, b) => {
           const aStartTime = new Date(a.startTime ?? "")
           const bStartTime = new Date(b.startTime ?? "")
           return bStartTime.getTime() - aStartTime.getTime()

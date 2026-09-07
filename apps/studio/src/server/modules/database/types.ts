@@ -1,3 +1,4 @@
+/* oxlint-disable oxc/no-barrel-file -- intentional re-export surface for Studio DB types */
 /**
  * All DB types — generated Kysely types, the branded Kysely subclass,
  * Transaction/SafeKysely helpers, and the `sql` template tag — are owned

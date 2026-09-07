@@ -3,8 +3,8 @@ import type { getPresignedPutUrlSchema } from "~/schemas/asset"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { create as createContentDisposition } from "content-disposition"
-import { randomUUID } from "node:crypto"
 import filenamify from "filenamify"
+import { randomUUID } from "node:crypto"
 import { env } from "~/env.mjs"
 import { FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING } from "~/lib/fileUpload"
 import { createBaseLogger } from "~/lib/logger"
@@ -67,9 +67,8 @@ export const getContentTypeFromKey = (key: string): string => {
 /**
  * Build Content-Disposition for signed upload (inline; filename for download hint).
  */
-export const getContentDispositionForKey = (key: string): string => 
+export const getContentDispositionForKey = (key: string): string =>
   createContentDisposition(getFilenameFromKey(key), { type: "inline" })
-
 
 // Permissions for assets share the same permissions as resources preferentially
 // because the underlying assumption is that the asset is tied to the resource,
@@ -80,7 +79,7 @@ export const validateUserPermissionsForAsset = async ({
   userId,
   siteId,
 }: AssetPermissionsProps) => {
-  if (!resourceId) {
+  if (!isDefinedNumber(resourceId)) {
     // No resourceId means that this is a site-level asset
     // so we check for site-level permissions
     await bulkValidateUserPermissionsForResources({
@@ -131,9 +130,7 @@ export const doAllFileKeysBelongToSite = ({
 }: {
   fileKeys: string[]
   siteId: number
-}) => 
-  fileKeys.every((key) => key.startsWith(`${siteId}/`))
-
+}) => fileKeys.every((key) => key.startsWith(`${siteId}/`))
 
 export const getPresignedPutUrl = async ({
   key,
@@ -165,15 +162,13 @@ export const getPresignedGetUrl = async ({
   key,
 }: {
   key: string
-}): Promise<string> => 
-  await generateSignedGetUrl({ Bucket: bucket, Key: key })
-
+}): Promise<string> => await generateSignedGetUrl({ Bucket: bucket, Key: key })
 
 export const sanitizeSvg = (content: string): string => {
   // Must run BEFORE parsing. Entity expansion (e.g. billion-laughs) happens
   // inside DOMParser.parseFromString — DOMPurify only sees the resulting DOM
   // and cannot intercept it. No sanitization library operates at this layer.
-  if (/<!ENTITY/i.test(content)) {
+  if (/<!ENTITY/iu.test(content)) {
     logger.error("SVG rejected: contains disallowed XML entities")
     throw new TRPCError({
       code: "BAD_REQUEST",

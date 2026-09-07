@@ -1,9 +1,10 @@
 import type { TokenSet } from "openid-client"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
-export const extractUuid = (tokens: TokenSet) => {
-  if (!tokens.id_token) {
+export const extractUuid = (tokens: TokenSet): string | undefined => {
+  if (!hasNonEmptyString(tokens.id_token)) {
     // No ID token happens when there is an error in communicating with Singpass
-    return
+    return undefined
   }
 
   const data = tokens.claims()
@@ -14,9 +15,9 @@ export const extractUuid = (tokens: TokenSet) => {
   const subParts = data.sub.split(",")
   const uuidPart = subParts.find((part) => part.startsWith("u="))
 
-  if (!uuidPart) {
+  if (!hasNonEmptyString(uuidPart)) {
     // Failed to extract the UUID from the ID token
-    return
+    return undefined
   }
 
   return uuidPart.slice(2)

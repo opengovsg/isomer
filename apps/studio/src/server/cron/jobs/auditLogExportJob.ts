@@ -4,7 +4,8 @@ import { processPendingAuditLogExports } from "~/server/modules/audit/auditLogEx
 import { registerPgbossJob } from "@isomer/pgboss"
 
 const JOB_NAME = "audit-log-export"
-const CRON_SCHEDULE = "* * * * *" // every minute
+const CRON_SCHEDULE = "* * * * *"
+// every minute
 
 const logger = createBaseLogger({ path: "cron:auditLogExportJob" })
 
@@ -12,7 +13,7 @@ export const auditLogExportJobHandler = async () => {
   await processPendingAuditLogExports()
 }
 
-export const auditLogExportJob = async () => 
+export const auditLogExportJob = async () =>
   await registerPgbossJob(
     logger,
     JOB_NAME,
@@ -20,4 +21,3 @@ export const auditLogExportJob = async () =>
     auditLogExportJobHandler,
     { retryLimit: 3, singletonKey: JOB_NAME },
   )
-

@@ -36,7 +36,8 @@ describe("schedulePublishingJob", async () => {
   let user: User
   beforeEach(async () => {
     vi.restoreAllMocks()
-    MockDate.set(FIXED_NOW) // Freeze time before each test
+    MockDate.set(FIXED_NOW)
+    // Freeze time before each test
     await resetTables(
       "AuditLog",
       "ResourcePermission",
@@ -55,7 +56,8 @@ describe("schedulePublishingJob", async () => {
   })
 
   afterEach(() => {
-    MockDate.reset() // Reset time after each test
+    MockDate.reset()
+    // Reset time after each test
   })
 
   describe("schedulePublishJobHandler", () => {
@@ -205,7 +207,8 @@ describe("schedulePublishingJob", async () => {
           throw new Error("Mock error for resource 1")
         } else {
           // second call uses original implementation
-           await originalPublishPageResource(args); return;
+          await originalPublishPageResource(args)
+          return
         }
       })
 
@@ -253,7 +256,8 @@ describe("schedulePublishingJob", async () => {
         permalink: "page-1",
         resourceType: ResourceType.Page,
         scheduledAt: FIXED_NOW,
-        scheduledBy: null, // no user info,
+        scheduledBy: null,
+        // no user info,
       })
       // setup a second resource which should be published successfully
       const { page: page2, site: site2 } = await setupPageResource({
@@ -334,7 +338,8 @@ describe("schedulePublishingJob", async () => {
           throw new Error("Mock error for resource 1")
         } else {
           // second call uses original implementation
-           await originalPublishPageResource(args); return;
+          await originalPublishPageResource(args)
+          return
         }
       })
 
@@ -559,7 +564,8 @@ describe("schedulePublishingJob", async () => {
               ...page,
               email: user.email,
               scheduledBy: String(session.userId),
-              userDeletedAt: FIXED_NOW, // simulate deleted user
+              userDeletedAt: FIXED_NOW,
+              // simulate deleted user
             },
           ],
         },
@@ -597,7 +603,8 @@ describe("schedulePublishingJob", async () => {
           [site.id]: [
             {
               ...page,
-              email: null, // simulate missing email
+              email: null,
+              // simulate missing email
               scheduledBy: String(session.userId),
               userDeletedAt: null,
             },

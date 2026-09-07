@@ -48,8 +48,8 @@ export const collectionRouter = router({
     .input(countTagOptionsUsageSchema)
     .query(async ({ ctx, input: { siteId, pageId, tagOptionIds } }) => {
       await bulkValidateUserPermissionsForResources({
-        siteId,
         action: "read",
+        siteId,
         userId: ctx.user.id,
       })
 
@@ -75,8 +75,8 @@ export const collectionRouter = router({
         })
       }
       const collection = await getSiteResourceById({
-        siteId,
         resourceId: parentId,
+        siteId,
         type: ResourceType.Collection,
       })
       if (!collection) {
@@ -146,10 +146,10 @@ export const collectionRouter = router({
         input: { collectionTitle, permalink, siteId, parentFolderId },
       }) => {
         await bulkValidateUserPermissionsForResources({
-          siteId,
           action: "create",
+          resourceIds: [parentFolderId ? String(parentFolderId) : null],
+          siteId,
           userId: ctx.user.id,
-          resourceIds: [!!parentFolderId ? String(parentFolderId) : null],
         })
 
         const user = await db
@@ -186,30 +186,30 @@ export const collectionRouter = router({
           const collection = await tx
             .insertInto("Resource")
             .values({
+              parentId: parentFolderId ? String(parentFolderId) : null,
               permalink,
               siteId,
-              type: ResourceType.Collection,
-              title: collectionTitle,
-              parentId: parentFolderId ? String(parentFolderId) : null,
               state: ResourceState.Published,
+              title: collectionTitle,
+              type: ResourceType.Collection,
             })
             .returningAll()
             .executeTakeFirstOrThrow()
-            .catch((err) => {
-              if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
+            .catch((error: unknown) => {
+              if (get(error, "code") === PG_ERROR_CODES.uniqueViolation) {
                 throw new TRPCError({
                   code: "CONFLICT",
                   message: "A resource with the same permalink already exists",
                 })
               }
-              throw err
+              throw error
             })
 
           await logResourceEvent(tx, {
-            siteId,
-            eventType: AuditLogEvent.ResourceCreate,
-            delta: { before: null, after: collection },
             by: user,
+            delta: { after: collection, before: null },
+            eventType: AuditLogEvent.ResourceCreate,
+            siteId,
           })
 
           const indexJson = createCollectionIndexJson(collection.title)
@@ -223,37 +223,37 @@ export const collectionRouter = router({
           const indexPage = await tx
             .insertInto("Resource")
             .values({
-              title: collection.title,
+              draftBlobId: blob.id,
+              parentId: collection.id,
               permalink: INDEX_PAGE_PERMALINK,
               siteId,
-              parentId: collection.id,
-              draftBlobId: blob.id,
-              type: ResourceType.IndexPage,
               state: ResourceState.Draft,
+              title: collection.title,
+              type: ResourceType.IndexPage,
             })
             .returningAll()
             .executeTakeFirstOrThrow()
-            .catch((err) => {
-              if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
+            .catch((error: unknown) => {
+              if (get(error, "code") === PG_ERROR_CODES.uniqueViolation) {
                 throw new TRPCError({
                   code: "CONFLICT",
                   message: "A resource with the same permalink already exists",
                 })
               }
-              throw err
+              throw error
             })
 
           await logResourceEvent(tx, {
-            siteId,
             by: user,
-            delta: { before: null, after: indexPage },
+            delta: { after: indexPage, before: null },
             eventType: AuditLogEvent.ResourceCreate,
+            siteId,
           })
 
           return collection
         })
 
-        // TODO: Create the index page for the collection and publish it
+        // Deferred: Create the index page for the collection and publish it
         await publishResource(user.id, result, ctx.logger)
 
         return pick(result, defaultCollectionSelect)
@@ -263,10 +263,10 @@ export const collectionRouter = router({
     .input(createCollectionPageSchema)
     .mutation(async ({ ctx, input }) => {
       await bulkValidateUserPermissionsForResources({
-        siteId: input.siteId,
         action: "create",
+        resourceIds: [input.collectionId ? String(input.collectionId) : null],
+        siteId: input.siteId,
         userId: ctx.user.id,
-        resourceIds: [!!input.collectionId ? String(input.collectionId) : null],
       })
 
       const user = await db
@@ -310,33 +310,33 @@ export const collectionRouter = router({
         const addedResource = await tx
           .insertInto("Resource")
           .values({
-            title,
+            draftBlobId: blob.id,
+            parentId: String(collectionId),
             permalink,
             siteId,
-            parentId: String(collectionId),
-            draftBlobId: blob.id,
+            title,
             type,
           })
           .returningAll()
           .executeTakeFirstOrThrow()
-          .catch((err) => {
-            if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
+          .catch((error: unknown) => {
+            if (get(error, "code") === PG_ERROR_CODES.uniqueViolation) {
               throw new TRPCError({
                 code: "CONFLICT",
                 message: "A resource with the same permalink already exists",
               })
             }
-            throw err
+            throw error
           })
 
         await logResourceEvent(tx, {
-          siteId,
-          eventType: AuditLogEvent.ResourceCreate,
           by: user,
           delta: {
+            after: { blob, resource: addedResource },
             before: null,
-            after: { resource: addedResource, blob },
           },
+          eventType: AuditLogEvent.ResourceCreate,
+          siteId,
         })
 
         return addedResource
@@ -348,24 +348,24 @@ export const collectionRouter = router({
     .query(async ({ ctx, input: { resourceId, collectionId, siteId } }) => {
       const resourceIdToValidate = collectionId ?? resourceId
       await bulkValidateUserPermissionsForResources({
-        siteId,
         action: "read",
-        userId: ctx.user.id,
         resourceIds: resourceIdToValidate ? [String(resourceIdToValidate)] : [],
+        siteId,
+        userId: ctx.user.id,
       })
 
       if (collectionId !== undefined) {
         return await getCollectionTagsForResource({
-          siteId,
           collectionId,
           isPublishedOnly: true,
+          siteId,
         })
       }
       if (resourceId !== undefined) {
         return await getCollectionTagsForResource({
-          siteId,
-          resourceId,
           isPublishedOnly: true,
+          resourceId,
+          siteId,
         })
       }
       throw new TRPCError({
@@ -378,8 +378,8 @@ export const collectionRouter = router({
     .query(async ({ ctx, input: { siteId, hasChildren } }) => {
       // will need permissions to fetch all collections for a site
       await validateUserPermissionsForSite({
-        siteId,
         action: "read",
+        siteId,
         userId: ctx.user.id,
       })
 
@@ -405,14 +405,14 @@ export const collectionRouter = router({
     .input(readFolderSchema)
     .query(async ({ ctx, input: { siteId, resourceId } }) => {
       await bulkValidateUserPermissionsForResources({
-        siteId,
         action: "read",
+        siteId,
         userId: ctx.user.id,
       })
 
       const resource = await getSiteResourceById({
-        siteId,
         resourceId: String(resourceId),
+        siteId,
         type: ResourceType.Collection,
       })
       if (!resource) {
@@ -431,8 +431,8 @@ export const collectionRouter = router({
         input: { resourceId, siteId, orderBy, limit, offset },
       }) => {
         await bulkValidateUserPermissionsForResources({
-          siteId,
           action: "read",
+          siteId,
           userId: ctx.user.id,
         })
         // Things that aren't working yet:
@@ -461,8 +461,8 @@ export const collectionRouter = router({
     .input(readLinkSchema)
     .query(async ({ ctx, input: { linkId, siteId } }) => {
       await bulkValidateUserPermissionsForResources({
-        siteId,
         action: "read",
+        siteId,
         userId: ctx.user.id,
       })
 
@@ -477,7 +477,9 @@ export const collectionRouter = router({
         .select(["Blob.content", "Resource.title"])
         .executeTakeFirst()
 
-      if (draft) return draft
+      if (draft) {
+        return draft
+      }
 
       return await baseQuery
         .innerJoin("Version", "Resource.publishedVersionId", "Version.id")
@@ -512,8 +514,8 @@ export const collectionRouter = router({
         // 1. Last Edited user and time
         // 2. Page status(draft, published)
         await bulkValidateUserPermissionsForResources({
-          siteId,
           action: "update",
+          siteId,
           userId: ctx.user.id,
         })
 
@@ -551,13 +553,13 @@ export const collectionRouter = router({
               content: {
                 ...content,
                 page: {
-                  description,
-                  ref,
-                  date,
                   category,
+                  date,
+                  description,
                   image,
-                  tags,
+                  ref,
                   tagged,
+                  tags,
                 },
               },
               pageId: linkId,
@@ -566,13 +568,13 @@ export const collectionRouter = router({
           ])
 
           await logResourceEvent(tx, {
-            siteId,
-            eventType: AuditLogEvent.ResourceUpdate,
-            delta: {
-              before: { blob: oldBlob, resource },
-              after: { blob, resource },
-            },
             by: user,
+            delta: {
+              after: { blob, resource },
+              before: { blob: oldBlob, resource },
+            },
+            eventType: AuditLogEvent.ResourceUpdate,
+            siteId,
           })
 
           return blob

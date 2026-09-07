@@ -17,7 +17,8 @@ interface GenerateSessionOptionsProps {
   ttlInHours?: number
 }
 export const generateSessionOptions = ({
-  ttlInHours = 1, // default to 1 hour if not using Singpass
+  ttlInHours = 1,
+  // default to 1 hour if not using Singpass
 }: GenerateSessionOptionsProps = {}): SessionOptions => {
   const ONE_HOUR = 60 * 60
   return {

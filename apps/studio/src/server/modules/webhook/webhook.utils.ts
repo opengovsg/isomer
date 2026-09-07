@@ -27,11 +27,11 @@ const updateCurrentAndSupersededBuilds = async (
   await db
     .updateTable("CodeBuildJobs")
     .set({ status: buildStatus })
-    .where((eb) => 
+    .where((eb) =>
       eb.or([
         eb("CodeBuildJobs.buildId", "=", buildId),
         eb("CodeBuildJobs.supersededByBuildId", "=", buildId),
-      ])
+      ]),
     )
     .execute()
 }
@@ -94,15 +94,17 @@ const sendEmails = async (
     .selectFrom("CodeBuildJobs")
     .innerJoin("User", "User.id", "CodeBuildJobs.userId")
     .innerJoin("Resource", "Resource.id", "CodeBuildJobs.resourceId")
-    .where((eb) => 
+    .where((eb) =>
       eb.and([
         eb.or([
           eb("CodeBuildJobs.buildId", "=", buildId),
           eb("CodeBuildJobs.supersededByBuildId", "=", buildId),
         ]),
-        eb("CodeBuildJobs.emailSent", "=", false), // only consider builds that haven't had an email sent yet
-        eb("User.email", "is not", null), // only consider users with an email
-      ])
+        eb("CodeBuildJobs.emailSent", "=", false),
+        // only consider builds that haven't had an email sent yet
+        eb("User.email", "is not", null),
+        // only consider users with an email
+      ]),
     )
     .selectAll()
     .select(["CodeBuildJobs.id as codeBuildJobId"])
@@ -131,7 +133,8 @@ const sendEmails = async (
             return acc
           }
           acc.push({
-            id: info.codeBuildJobId, // codebuild job id
+            id: info.codeBuildJobId,
+            // codebuild job id
             promise: sendSuccessfulPublishEmail({
               isScheduled: info.isScheduled,
               recipientEmail: info.email,
@@ -142,7 +145,8 @@ const sendEmails = async (
         }
         case "FAILED": {
           acc.push({
-            id: info.codeBuildJobId, // codebuild job id
+            id: info.codeBuildJobId,
+            // codebuild job id
             promise: sendFailedPublishEmail({
               isScheduled: info.isScheduled,
               recipientEmail: info.email,
@@ -153,12 +157,13 @@ const sendEmails = async (
         }
         default: {
           return acc
-        } // no emails for other statuses
+        }
+        // no emails for other statuses
       }
     }, []),
   )
   const emailPromisesSettled = await Promise.allSettled(
-    emailPromisesWithCodebuildJobId.map( async (t) => t.promise),
+    emailPromisesWithCodebuildJobId.map(async (t) => await t.promise),
   )
   // get the codebuildJobIds for which the email was successfully sent
   const codebuildJobIdsForSentEmails: string[] = []
@@ -185,6 +190,5 @@ const isEmailFunctionalityActive = (gb: GrowthBook, isScheduled: boolean) => {
   if (isScheduled) {
     return gb.isOn(ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY)
   }
-    return gb.isOn(ENABLE_EMAILS_FOR_REGULAR_PUBLISHES_FEATURE_KEY)
-  
+  return gb.isOn(ENABLE_EMAILS_FOR_REGULAR_PUBLISHES_FEATURE_KEY)
 }

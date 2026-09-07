@@ -170,7 +170,7 @@ describe("asset.router", async () => {
       // Assert: backend-derived ContentType and ContentDisposition are signed (not client-controlled)
       expect(s3Lib.generateSignedPutUrl).toHaveBeenCalledWith({
         Bucket: expect.any(String),
-        ContentDisposition: expect.stringMatching(/^inline; filename=.+/),
+        ContentDisposition: expect.stringMatching(/^inline; filename=.+/u),
         ContentLength: fileSize,
         ContentType: "image/png",
         Key: expect.stringContaining("test-image.png"),
@@ -199,7 +199,7 @@ describe("asset.router", async () => {
       expect(result).toMatchObject({
         fileKey: expect.any(String),
         uploadConfig: {
-          contentDisposition: expect.stringMatching(/^inline; filename=.+/),
+          contentDisposition: expect.stringMatching(/^inline; filename=.+/u),
           contentType: "application/pdf",
           presignedPutUrl: "https://example.com/signed-url",
         },

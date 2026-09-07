@@ -12,7 +12,7 @@ import { sendMail } from "~/lib/mail"
 import {
   emailSignInSchema,
   emailVerifyOtpSchema,
-} from "~/schemas/auth/email/sign-in"
+} from "~/schemas/auth/email/signIn"
 import { publicProcedure, router } from "~/server/trpc"
 import { getBaseUrl } from "~/utils/getBaseUrl"
 
@@ -50,8 +50,8 @@ export const emailSessionRouter = router({
         })
       }
 
-      // TODO: instead of storing expires, store issuedAt to calculate when the next otp can be re-issued
-      // TODO: rate limit this endpoint also
+      // Deferred: instead of storing expires, store issuedAt to calculate when the next otp can be re-issued
+      // Deferred: rate limit this endpoint also
       const expires = new Date(Date.now() + env.OTP_EXPIRY * 1000)
       const expiryMinutes = Math.floor(env.OTP_EXPIRY / 60)
 
@@ -107,7 +107,7 @@ export const emailSessionRouter = router({
         ])
       } catch (error) {
         ctx.logger.error(
-          { error: error, email },
+          { email, error },
           "Failed to send OTP email for email sign in",
         )
 
@@ -150,14 +150,14 @@ export const emailSessionRouter = router({
       } catch (error) {
         if (error instanceof VerificationError) {
           ctx.logger.warn(
-            { error: error, email },
+            { email, error },
             "Failed to verify OTP for email sign in",
           )
 
           throw new TRPCError({
+            cause: error,
             code: "BAD_REQUEST",
             message: error.message,
-            cause: error,
           })
         }
         throw error

@@ -1,3 +1,3 @@
 export const tokenizeSearchQuery = (query: string): string[] => [
-  ...new Set(query.trim().toLowerCase().split(/\s+/).filter(Boolean)),
+  ...new Set(query.trim().toLowerCase().split(/\s+/u).filter(Boolean)),
 ]

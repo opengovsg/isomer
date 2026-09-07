@@ -32,13 +32,13 @@ export const authRouter = router({
 
       const ip = getIP(ctx.req)
 
-      return await logAuthEvent(tx, {
-        eventType: AuditLogEvent.Logout,
-        delta: {
-          before: user,
-          after: null,
-        },
+      await logAuthEvent(tx, {
         by: user,
+        delta: {
+          after: null,
+          before: user,
+        },
+        eventType: AuditLogEvent.Logout,
         ip,
       })
     })

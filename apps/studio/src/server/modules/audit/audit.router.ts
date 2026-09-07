@@ -15,19 +15,6 @@ import {
 } from "./auditLogExport.service"
 
 export const auditRouter = router({
-  // How many months back the export picker may offer for this site — see
-  // `getAuditLogExportWindow`. Same Site Admin gate as creating an export,
-  // since this is purely a read used to size that same form.
-  getExportWindow: protectedProcedure
-    .input(getAuditLogExportWindowSchema)
-    .query(async ({ ctx, input: { siteId } }) => {
-      await validateUserIsSiteAdmin({
-        siteId,
-        userId: ctx.user.id,
-      })
-
-      return await getAuditLogExportWindow(siteId)
-    }),
   createExportRequest: protectedProcedure
     .input(createAuditLogExportRequestServerSchema)
     // Rate-limited because each accepted request eventually triggers downstream
@@ -93,5 +80,18 @@ export const auditRouter = router({
           message: "Failed to create audit log export request",
         })
       }
+    }),
+  // How many months back the export picker may offer for this site — see
+  // `getAuditLogExportWindow`. Same Site Admin gate as creating an export,
+  // since this is purely a read used to size that same form.
+  getExportWindow: protectedProcedure
+    .input(getAuditLogExportWindowSchema)
+    .query(async ({ ctx, input: { siteId } }) => {
+      await validateUserIsSiteAdmin({
+        siteId,
+        userId: ctx.user.id,
+      })
+
+      return await getAuditLogExportWindow(siteId)
     }),
 })

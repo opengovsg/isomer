@@ -91,7 +91,7 @@ const isPageContentInput = (
   return Object.prototype.toString.call(record.content) === "[object String]"
 }
 
-// TODO: Need to do validation like checking for existence of the page
+// Deferred: Need to do validation like checking for existence of the page
 // and whether the user has write-access to said page: replace protectorProcedure in this with the new procedure
 const validatedPageProcedure = protectedProcedure.use(
   async ({ next, getRawInput }) => {
@@ -124,8 +124,8 @@ export const pageRouter = router({
     .input(basePageSchema)
     .mutation(async ({ ctx, input: { siteId, pageId } }) => {
       await bulkValidateUserPermissionsForResources({
-        siteId,
         action: "publish",
+        siteId,
         userId: ctx.user.id,
       })
       const by = await db
@@ -151,7 +151,7 @@ export const pageRouter = router({
 
         // update the resource's scheduled field
         const updatedPage = await updatePageById(
-          { id: pageId, siteId, scheduledAt: null, scheduledBy: null },
+          { id: pageId, scheduledAt: null, scheduledBy: null, siteId },
           tx,
         )
         if (!updatedPage) {
@@ -161,16 +161,16 @@ export const pageRouter = router({
           })
         }
         await logResourceEvent(tx, {
-          siteId,
           by,
-          delta: { before: resource, after: updatedPage },
+          delta: { after: updatedPage, before: resource },
           eventType: AuditLogEvent.CancelSchedulePublish,
+          siteId,
         })
         return updatedPage
       })
       await sendCancelSchedulePageEmail({
-        resource: updatedPage,
         recipientEmail: by.email,
+        resource: updatedPage,
       })
     }),
 
@@ -178,10 +178,10 @@ export const pageRouter = router({
     .input(createIndexPageSchema)
     .mutation(async ({ ctx, input: { siteId, parentId } }) => {
       await bulkValidateUserPermissionsForResources({
-        siteId,
         action: "create",
-        userId: ctx.user.id,
         resourceIds: [String(parentId)],
+        siteId,
+        userId: ctx.user.id,
       })
 
       const [by, parent] = await Promise.all([
@@ -218,14 +218,14 @@ export const pageRouter = router({
       const blobContent =
         parent.type === ResourceType.Collection
           ? {
+              content: [],
               layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,
               page: {
-                title: parent.title,
-                subtitle: `Read more on ${parent.title.toLowerCase()} here.`,
                 sortOrder: "date-desc",
+                subtitle: `Read more on ${parent.title.toLowerCase()} here.`,
+                title: parent.title,
                 variant: COLLECTION_VARIANT_OPTIONS.Collection,
               },
-              content: [],
               version: "0.1.0",
             }
           : createFolderIndexPage(parent.title)
@@ -240,31 +240,31 @@ export const pageRouter = router({
         const addedResource = await tx
           .insertInto("Resource")
           .values({
-            title: parent.title,
+            draftBlobId: blob.id,
+            parentId,
             permalink: INDEX_PAGE_PERMALINK,
             siteId,
-            parentId,
-            draftBlobId: blob.id,
-            type: ResourceType.IndexPage,
             state: ResourceState.Draft,
+            title: parent.title,
+            type: ResourceType.IndexPage,
           })
           .returningAll()
           .executeTakeFirstOrThrow()
-          .catch((err) => {
-            if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
+          .catch((error: unknown) => {
+            if (get(error, "code") === PG_ERROR_CODES.uniqueViolation) {
               throw new TRPCError({
                 code: "CONFLICT",
                 message: "A resource with the same permalink already exists",
               })
             }
-            throw err
+            throw error
           })
 
         await logResourceEvent(tx, {
-          siteId,
           by,
-          delta: { before: null, after: addedResource },
+          delta: { after: addedResource, before: null },
           eventType: AuditLogEvent.ResourceCreate,
+          siteId,
         })
 
         return { pageId: addedResource.id }
@@ -281,10 +281,10 @@ export const pageRouter = router({
         input: { permalink, siteId, folderId, title, layout },
       }) => {
         await bulkValidateUserPermissionsForResources({
-          siteId,
           action: "create",
+          resourceIds: [folderId ? String(folderId) : null],
+          siteId,
           userId: ctx.user.id,
-          resourceIds: [!!folderId ? String(folderId) : null],
         })
 
         const newPage = createDefaultPage({ layout })
@@ -306,39 +306,39 @@ export const pageRouter = router({
           .execute(async (tx) => {
             const { resource: addedResource, blob } =
               await createResourceWithBlob({
+                blobContent: newPage,
                 db: tx,
-                title,
+                parentId: folderId ? String(folderId) : null,
                 permalink,
                 siteId,
-                parentId: folderId ? String(folderId) : null,
-                blobContent: newPage,
+                title,
                 type: ResourceType.Page,
               })
 
             await logResourceEvent(tx, {
-              siteId,
               by,
-              delta: { before: null, after: { blob, resource: addedResource } },
+              delta: { after: { blob, resource: addedResource }, before: null },
               eventType: AuditLogEvent.ResourceCreate,
+              siteId,
             })
 
             return addedResource
           })
-          .catch((err) => {
-            if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
+          .catch((error: unknown) => {
+            if (get(error, "code") === PG_ERROR_CODES.uniqueViolation) {
               throw new TRPCError({
                 code: "CONFLICT",
                 message: "A resource with the same permalink already exists",
               })
             }
             // Foreign key violation error
-            if (get(err, "code") === "23503") {
+            if (get(error, "code") === "23503") {
               throw new TRPCError({
                 code: "NOT_FOUND",
                 message: "Site not found",
               })
             }
-            throw err
+            throw error
           })
 
         return { pageId: resource.id }
@@ -349,8 +349,8 @@ export const pageRouter = router({
     .input(basePageSchema)
     .query(async ({ ctx, input: { pageId, siteId } }) => {
       await bulkValidateUserPermissionsForResources({
-        siteId,
         action: "read",
+        siteId,
         userId: ctx.user.id,
       })
 
@@ -368,20 +368,20 @@ export const pageRouter = router({
         .leftJoin("Blob as vb", "v.blobId", "vb.id")
         .where("r.siteId", "=", siteId)
         .where("r.parentId", "=", String(parentId))
-        .select((eb) => {
-          return eb.fn
+        .select((eb) =>
+          eb.fn
             .coalesce(
               sql<string>`b.content->'page'->>'category'`,
               sql<string>`vb.content->'page'->>'category'`,
             )
-            .as("category")
-        })
+            .as("category"),
+        )
         .distinct()
         .execute()
 
       const categories: string[] = []
       for (const blob of blobs) {
-        const category = blob.category
+        const { category } = blob
         if (category && category.trim()) {
           categories.push(category)
         }
@@ -394,8 +394,8 @@ export const pageRouter = router({
     .input(basePageSchema)
     .query(async ({ ctx, input: { pageId, siteId } }) => {
       await bulkValidateUserPermissionsForResources({
-        siteId,
         action: "read",
+        siteId,
         userId: ctx.user.id,
       })
 
@@ -414,8 +414,8 @@ export const pageRouter = router({
     .input(basePageSchema)
     .query(async ({ ctx, input: { pageId, siteId } }) => {
       await bulkValidateUserPermissionsForResources({
-        siteId,
         action: "read",
+        siteId,
         userId: ctx.user.id,
       })
 
@@ -433,8 +433,8 @@ export const pageRouter = router({
     .input(getPrefillSchema)
     .query(async ({ ctx, input: { siteId, resourceId } }) => {
       await bulkValidateUserPermissionsForResources({
-        siteId,
         action: "read",
+        siteId,
         userId: ctx.user.id,
       })
 
@@ -459,14 +459,14 @@ export const pageRouter = router({
     .input(getRootPageSchema)
     .query(async ({ ctx, input: { siteId } }) => {
       await bulkValidateUserPermissionsForResources({
-        siteId,
         action: "read",
+        siteId,
         userId: ctx.user.id,
       })
 
       const rootPage = await db
         .selectFrom("Resource")
-        // TODO: Only return sites that the user has access to
+        // Deferred: Only return sites that the user has access to
         .where("Resource.siteId", "=", siteId)
         .where("Resource.type", "=", ResourceType.RootPage)
         .select(["id", "title", "draftBlobId"])
@@ -485,8 +485,8 @@ export const pageRouter = router({
     .input(listPagesSchema)
     .query(async ({ ctx, input: { siteId, resourceId } }) => {
       await bulkValidateUserPermissionsForResources({
-        siteId,
         action: "read",
+        siteId,
         userId: ctx.user.id,
       })
 
@@ -494,7 +494,7 @@ export const pageRouter = router({
         .selectFrom("Resource")
         .where("Resource.siteId", "=", siteId)
 
-      if (resourceId) {
+      if (isDefinedNumber(resourceId)) {
         query = query.where("Resource.parentId", "=", String(resourceId))
       }
       return await query
@@ -514,27 +514,27 @@ export const pageRouter = router({
     .mutation(
       async ({ ctx: { user, gb, logger }, input: { siteId, pageId } }) => {
         await bulkValidateUserPermissionsForResources({
-          siteId,
           action: "publish",
+          siteId,
           userId: user.id,
         })
         await publishPageResource({
           logger,
-          siteId,
           resourceId: String(pageId),
-          userId: user.id,
+          siteId,
           sitePublish: {
-            isScheduled: false,
             enableCodebuildJobs: gb.isOn(ENABLE_CODEBUILD_JOBS),
+            isScheduled: false,
           },
+          userId: user.id,
         })
         // Send publish alert emails to all site admins minus the current user if Singpass has been disabled
         if (getIsSingpassDisabledInNonPreview({ gb })) {
           await alertPublishWhenSingpassDisabled({
-            siteId,
-            resourceId: String(pageId),
-            publisherId: user.id,
             publisherEmail: user.email,
+            publisherId: user.id,
+            resourceId: String(pageId),
+            siteId,
           })
         }
       },
@@ -545,8 +545,8 @@ export const pageRouter = router({
     .output(readPageOutputSchema)
     .query(async ({ ctx, input: { pageId, siteId } }) => {
       await bulkValidateUserPermissionsForResources({
-        siteId,
         action: "read",
+        siteId,
         userId: ctx.user.id,
       })
 
@@ -569,8 +569,8 @@ export const pageRouter = router({
     .input(basePageSchema)
     .query(async ({ ctx, input: { pageId, siteId } }) => {
       await bulkValidateUserPermissionsForResources({
-        siteId,
         action: "read",
+        siteId,
         userId: ctx.user.id,
       })
 
@@ -610,7 +610,7 @@ export const pageRouter = router({
           navbar,
           footer,
           // oxlint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore type instantiation is excessively deep and possibly infinite
+          // @ts-expect-error type instantiation is excessively deep and possibly infinite
           content,
           title,
           type,
@@ -624,8 +624,8 @@ export const pageRouter = router({
     .input(reorderBlobSchema)
     .mutation(async ({ ctx, input: { pageId, from, to, blocks, siteId } }) => {
       await bulkValidateUserPermissionsForResources({
-        siteId,
         action: "update",
+        siteId,
         userId: ctx.user.id,
       })
 
@@ -649,7 +649,7 @@ export const pageRouter = router({
           siteId,
         })
         if (!fullPage?.content) {
-          // TODO: we should probably ping on call
+          // Deferred: we should probably ping on call
           throw new TRPCError({
             code: "NOT_FOUND",
             message:
@@ -679,7 +679,9 @@ export const pageRouter = router({
         }
 
         const [movedBlock] = actualBlocks.splice(from, 1)
-        if (!movedBlock) return blocks
+        if (!movedBlock) {
+          return blocks
+        }
         if (!fullPage.draftBlobId && !fullPage.publishedVersionId) {
           throw new TRPCError({
             code: "NOT_FOUND",
@@ -696,19 +698,19 @@ export const pageRouter = router({
             resourceId: String(pageId),
           }),
           updateBlobById(tx, {
-            pageId,
             content: { ...fullPage.content, content: actualBlocks },
+            pageId,
             siteId,
           }),
         ])
         await logResourceEvent(tx, {
-          siteId,
-          eventType: AuditLogEvent.ResourceUpdate,
-          delta: {
-            before: { blob: oldBlob, resource: fullPage },
-            after: { blob: updatedBlob, resource: fullPage },
-          },
           by,
+          delta: {
+            after: { blob: updatedBlob, resource: fullPage },
+            before: { blob: oldBlob, resource: fullPage },
+          },
+          eventType: AuditLogEvent.ResourceUpdate,
+          siteId,
         })
 
         // NOTE: user given content and db state is the same at this point
@@ -720,8 +722,8 @@ export const pageRouter = router({
     .input(scheduledPublishServerSchema)
     .mutation(async ({ ctx, input: { scheduledAt, siteId, pageId } }) => {
       await bulkValidateUserPermissionsForResources({
-        siteId,
         action: "publish",
+        siteId,
         userId: ctx.user.id,
       })
 
@@ -758,7 +760,7 @@ export const pageRouter = router({
         }
         // update the resource's scheduled field
         const updatedPage = await updatePageById(
-          { id: pageId, siteId, scheduledAt, scheduledBy: by.id },
+          { id: pageId, scheduledAt, scheduledBy: by.id, siteId },
           tx,
         )
         // verify that the update was successful
@@ -769,17 +771,17 @@ export const pageRouter = router({
           })
         }
         await logResourceEvent(tx, {
-          siteId,
           by,
-          delta: { before: resource, after: updatedPage },
+          delta: { after: updatedPage, before: resource },
           eventType: AuditLogEvent.SchedulePublish,
+          siteId,
         })
         return updatedPage
       })
       await sendScheduledPageEmail({
+        recipientEmail: by.email,
         resource: updatedPage,
         scheduledAt,
-        recipientEmail: by.email,
       })
     }),
 
@@ -787,8 +789,8 @@ export const pageRouter = router({
     .input(updatePageMetaSchema)
     .mutation(async ({ ctx, input: { meta, siteId, resourceId } }) => {
       await bulkValidateUserPermissionsForResources({
-        siteId,
         action: "update",
+        siteId,
         userId: ctx.user.id,
       })
 
@@ -804,7 +806,7 @@ export const pageRouter = router({
             }),
         )
 
-      return await db.transaction().execute(async (tx) => {
+      await db.transaction().execute(async (tx) => {
         const fullPage = await getFullPageById(tx, {
           resourceId: Number(resourceId),
           siteId,
@@ -819,8 +821,8 @@ export const pageRouter = router({
         }
 
         const resource = await getPageById(tx, {
-          siteId,
           resourceId: Number(resourceId),
+          siteId,
         })
 
         if (!resource) {
@@ -854,37 +856,37 @@ export const pageRouter = router({
 
         if (!isValid) {
           throw new TRPCError({
+            cause: validateFn.errors,
             code: "BAD_REQUEST",
             message: "Invalid metadata",
-            cause: validateFn.errors,
           })
         }
 
         // SAFETY: parsedMeta passed validateFn for this page's layout metadata schema
-        const newContent = !parsedMeta
-          ? rest
-          : ({
+        const newContent = parsedMeta
+          ? ({
               ...rest,
               meta: parsedMeta,
             } as PrismaJson.BlobJsonContent)
+          : rest
 
         const [oldBlob, newBlob] = await Promise.all([
           getBlobOfResource({ db: tx, resourceId }),
           updateBlobById(tx, {
-            pageId: Number(resourceId),
             content: newContent,
+            pageId: Number(resourceId),
             siteId,
           }),
         ])
 
         await logResourceEvent(tx, {
-          siteId,
           by,
           delta: {
-            before: { resource, blob: oldBlob },
-            after: { resource, blob: newBlob },
+            after: { blob: newBlob, resource },
+            before: { blob: oldBlob, resource },
           },
           eventType: AuditLogEvent.ResourceUpdate,
+          siteId,
         })
       })
     }),
@@ -893,8 +895,8 @@ export const pageRouter = router({
     .input(updatePageBlobSchema)
     .mutation(async ({ input, ctx }) => {
       await bulkValidateUserPermissionsForResources({
-        siteId: input.siteId,
         action: "update",
+        siteId: input.siteId,
         userId: ctx.user.id,
       })
 
@@ -932,13 +934,13 @@ export const pageRouter = router({
         ])
 
         await logResourceEvent(tx, {
-          siteId: input.siteId,
           by,
           delta: {
-            before: { blob: oldBlob, resource },
             after: { blob: updatedBlob, resource },
+            before: { blob: oldBlob, resource },
           },
           eventType: AuditLogEvent.ResourceUpdate,
+          siteId: input.siteId,
         })
         return updatedBlob
       })
@@ -961,8 +963,8 @@ export const pageRouter = router({
         },
       }) => {
         await bulkValidateUserPermissionsForResources({
-          siteId,
           action: "update",
+          siteId,
           userId: ctx.user.id,
         })
 
@@ -1030,22 +1032,22 @@ export const pageRouter = router({
               .set({ title, ...settings })
               .returningAll()
               .executeTakeFirstOrThrow()
-              .catch((err) => {
-                if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
+              .catch((error: unknown) => {
+                if (get(error, "code") === PG_ERROR_CODES.uniqueViolation) {
                   throw new TRPCError({
                     code: "CONFLICT",
                     message:
                       "A resource with the same permalink already exists",
                   })
                 }
-                throw err
+                throw error
               })
 
             await logResourceEvent(tx, {
-              siteId,
               by,
-              delta: { before: resource, after: updatedResource },
+              delta: { after: updatedResource, before: resource },
               eventType: AuditLogEvent.ResourceUpdate,
+              siteId,
             })
 
             // Keep redirects consistent when a Page/CollectionPage URL changes
@@ -1065,13 +1067,13 @@ export const pageRouter = router({
               const newFullPermalink = `${parentFullPermalink ?? ""}/${updatedResource.permalink}`
 
               await applyPermalinkChangeRedirects(tx, {
-                siteId,
-                oldFullPermalink,
-                newFullPermalink,
-                resourceId: String(pageId),
-                isPublished: updatedResource.publishedVersionId !== null,
-                shouldCreateRedirect,
                 byUserId: ctx.user.id,
+                isPublished: updatedResource.publishedVersionId !== null,
+                newFullPermalink,
+                oldFullPermalink,
+                resourceId: String(pageId),
+                shouldCreateRedirect,
+                siteId,
               })
             }
 
@@ -1090,15 +1092,15 @@ export const pageRouter = router({
               "permalink",
               "draftBlobId",
             ])
-          } catch (err) {
-            if (err instanceof TRPCError) {
-              throw err
+          } catch (error) {
+            if (error instanceof TRPCError) {
+              throw error
             }
             throw new TRPCError({
+              cause: error,
               code: "BAD_REQUEST",
               message:
                 "We're unable to update the settings for this page, please try again later",
-              cause: err,
             })
           }
         })

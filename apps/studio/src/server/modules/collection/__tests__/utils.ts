@@ -3,14 +3,14 @@ import { ResourceType } from "~prisma/generated/prisma/client"
 import { db } from "../../database/database"
 
 // Test util functions
-export const getCollectionWithPermalink =  async ({
+export const getCollectionWithPermalink = async ({
   siteId,
   permalink,
 }: {
   siteId: number
   permalink: string
-}) => 
-  db
+}) =>
+  await db
     .selectFrom("Resource")
     .where("type", "=", ResourceType.Collection)
     .where("siteId", "=", siteId)
@@ -18,13 +18,12 @@ export const getCollectionWithPermalink =  async ({
     .selectAll()
     .executeTakeFirstOrThrow()
 
-
-export const getCollectionItemByPermalink =  async (
+export const getCollectionItemByPermalink = async (
   permalink: string,
   parentId?: string | null,
 ) => {
   if (parentId) {
-    return db
+    return await db
       .selectFrom("Resource")
       .where("parentId", "=", parentId)
       .where("permalink", "=", permalink)
@@ -32,7 +31,7 @@ export const getCollectionItemByPermalink =  async (
       .executeTakeFirstOrThrow()
   }
 
-  return db
+  return await db
     .selectFrom("Resource")
     .where("parentId", "is", null)
     .where("permalink", "=", permalink)

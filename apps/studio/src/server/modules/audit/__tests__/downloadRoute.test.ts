@@ -90,8 +90,8 @@ describe("GET /api/audit-log-exports/download", () => {
       "Site",
     )
     vi.clearAllMocks()
-    vi.spyOn(s3Lib, "generateSignedGetUrl").mockImplementation( async ({ Key }) =>
-      Promise.resolve(signedUrlFor(Key ?? "")),
+    vi.spyOn(s3Lib, "generateSignedGetUrl").mockImplementation(
+      async ({ Key }) => signedUrlFor(Key ?? ""),
     )
     vi.spyOn(s3Lib, "getStudioAssetsBucketName").mockReturnValue(BUCKET)
   })

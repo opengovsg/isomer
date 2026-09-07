@@ -238,7 +238,8 @@ describe("resource.router", async () => {
 
       // Act
       const result = await caller.getFolderChildrenOf({
-        cursor: 600, // does not exist
+        cursor: 600,
+        // does not exist
         resourceId: folder.id,
         siteId: String(site.id),
       })
@@ -289,9 +290,12 @@ describe("resource.router", async () => {
       // Assert
       const expected = {
         items: rootLevelFolders
-          .sort((a, b) => a.title.localeCompare(b.title)) // should be sorted by title
-          .slice(0, 10), // should only have 10 items
-        nextOffset: 10, // default limit is 10
+          .toSorted((a, b) => a.title.localeCompare(b.title))
+          // should be sorted by title
+          .slice(0, 10),
+        // should only have 10 items
+        nextOffset: 10,
+        // default limit is 10
       }
       await expect(result).resolves.toMatchObject(expected)
     })
@@ -330,9 +334,12 @@ describe("resource.router", async () => {
       // Assert
       const expected = {
         items: childFolders
-          .sort((a, b) => a.title.localeCompare(b.title)) // should be sorted by title
-          .slice(0, 10), // should only have 10 items
-        nextOffset: 10, // default limit is 10
+          .toSorted((a, b) => a.title.localeCompare(b.title))
+          // should be sorted by title
+          .slice(0, 10),
+        // should only have 10 items
+        nextOffset: 10,
+        // default limit is 10
       }
       await expect(result).resolves.toMatchObject(expected)
     })
@@ -373,9 +380,12 @@ describe("resource.router", async () => {
       // Assert
       const expected = {
         items: childFolders
-          .sort((a, b) => a.title.localeCompare(b.title)) // should be sorted by title
-          .slice(0, setLimit), // should only have 5 items
-        nextOffset: setLimit, // limit is 5
+          .toSorted((a, b) => a.title.localeCompare(b.title))
+          // should be sorted by title
+          .slice(0, setLimit),
+        // should only have 5 items
+        nextOffset: setLimit,
+        // limit is 5
       }
       await expect(result).resolves.toMatchObject(expected)
     })
@@ -418,9 +428,12 @@ describe("resource.router", async () => {
       // Assert
       const expected = {
         items: childFolders
-          .sort((a, b) => a.title.localeCompare(b.title)) // should be sorted by title
-          .slice(cursor, cursor + nextLimit), // should only have 5 items
-        nextOffset: cursor + nextLimit, // limit is 5
+          .toSorted((a, b) => a.title.localeCompare(b.title))
+          // should be sorted by title
+          .slice(cursor, cursor + nextLimit),
+        // should only have 5 items
+        nextOffset: cursor + nextLimit,
+        // limit is 5
       }
       expect(result).toMatchObject(expected)
     })
@@ -461,7 +474,8 @@ describe("resource.router", async () => {
 
       // Assert
       const expected = {
-        items: childFolders.sort((a, b) => a.title.localeCompare(b.title)), // should be sorted by title
+        items: childFolders.toSorted((a, b) => a.title.localeCompare(b.title)),
+        // should be sorted by title
         nextOffset: null,
       }
       expect(result).toMatchObject(expected)
@@ -588,7 +602,7 @@ describe("resource.router", async () => {
       // Assert
       const expected = {
         // should not have rootPage returned
-        items: childPages.sort((a, b) => a.title.localeCompare(b.title)),
+        items: childPages.toSorted((a, b) => a.title.localeCompare(b.title)),
         nextOffset: null,
       }
       expect(result).toMatchObject(expected)
@@ -705,11 +719,11 @@ describe("resource.router", async () => {
 
       // Assert
       const expectedFolder = {
-        items: childPages.sort((a, b) => a.title.localeCompare(b.title)),
+        items: childPages.toSorted((a, b) => a.title.localeCompare(b.title)),
         nextOffset: null,
       }
       const expectedCollection = {
-        items: childCollectionPages.sort((a, b) =>
+        items: childCollectionPages.toSorted((a, b) =>
           a.title.localeCompare(b.title),
         ),
         nextOffset: null,
@@ -734,7 +748,8 @@ describe("resource.router", async () => {
 
       // Act
       const result = await caller.getChildrenOf({
-        cursor: 600, // does not exist
+        cursor: 600,
+        // does not exist
         resourceId: folder.id,
         siteId: String(site.id),
       })
@@ -793,9 +808,11 @@ describe("resource.router", async () => {
           pick(rootLevelPage, ["title", "permalink", "type", "id"]),
         ]
           // case sensitive sort to follow db order
-          .sort((a, b) => a.title.localeCompare(b.title))
-          .slice(0, 10), // should only have 10 items
-        nextOffset: 10, // default limit is 10
+          .toSorted((a, b) => a.title.localeCompare(b.title))
+          .slice(0, 10),
+        // should only have 10 items
+        nextOffset: 10,
+        // default limit is 10
       }
       expect(result).toMatchObject(expected)
     })
@@ -858,9 +875,12 @@ describe("resource.router", async () => {
       // Assert
       const expected = {
         items: [...childFolders, ...childPages]
-          .sort((a, b) => a.title.localeCompare(b.title)) // should be sorted by title
-          .slice(0, 10), // should only have 10 items
-        nextOffset: 10, // default limit is 10
+          .toSorted((a, b) => a.title.localeCompare(b.title))
+          // should be sorted by title
+          .slice(0, 10),
+        // should only have 10 items
+        nextOffset: 10,
+        // default limit is 10
       }
       await expect(result).resolves.toMatchObject(expected)
     })
@@ -913,9 +933,12 @@ describe("resource.router", async () => {
       // Assert
       const expected = {
         items: [...childFolders, ...childPages]
-          .sort((a, b) => a.title.localeCompare(b.title)) // should be sorted by title
-          .slice(0, setLimit), // should only have 5 items
-        nextOffset: setLimit, // limit is 5
+          .toSorted((a, b) => a.title.localeCompare(b.title))
+          // should be sorted by title
+          .slice(0, setLimit),
+        // should only have 5 items
+        nextOffset: setLimit,
+        // limit is 5
       }
       await expect(result).resolves.toMatchObject(expected)
     })
@@ -970,9 +993,12 @@ describe("resource.router", async () => {
       // Assert
       const expected = {
         items: [...childFolders, ...childPages]
-          .sort((a, b) => a.title.localeCompare(b.title)) // should be sorted by title
-          .slice(cursor, cursor + nextLimit), // should only have 5 items
-        nextOffset: cursor + nextLimit, // limit is 5
+          .toSorted((a, b) => a.title.localeCompare(b.title))
+          // should be sorted by title
+          .slice(cursor, cursor + nextLimit),
+        // should only have 5 items
+        nextOffset: cursor + nextLimit,
+        // limit is 5
       }
       expect(result).toMatchObject(expected)
     })
@@ -1028,9 +1054,10 @@ describe("resource.router", async () => {
 
       // Assert
       const expected = {
-        items: [...childFolders, ...childPages].sort((a, b) =>
+        items: [...childFolders, ...childPages].toSorted((a, b) =>
           a.title.localeCompare(b.title),
-        ), // should be sorted by title
+        ),
+        // should be sorted by title
         nextOffset: null,
       }
       expect(result).toMatchObject(expected)
@@ -1283,7 +1310,8 @@ describe("resource.router", async () => {
       // Act
       const result = caller.move({
         destinationResourceId: folder.id,
-        movedResourceId: "99999", // should not exist
+        movedResourceId: "99999",
+        // should not exist
         siteId: site.id,
       })
 
@@ -1306,7 +1334,8 @@ describe("resource.router", async () => {
 
       // Act
       const result = caller.move({
-        destinationResourceId: "99999", // should not exist
+        destinationResourceId: "99999",
+        // should not exist
         movedResourceId: folder.id,
         siteId: site.id,
       })
@@ -1453,7 +1482,7 @@ describe("resource.router", async () => {
 
       // Assert
       expect(auditSpy).not.toHaveBeenCalled()
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message: "The search page cannot be moved",
@@ -1880,7 +1909,7 @@ describe("resource.router", async () => {
 
       // Assert
       expect(auditSpy).not.toHaveBeenCalled()
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message: "Folder items can only be moved to another folder",
@@ -1906,8 +1935,8 @@ describe("resource.router", async () => {
         return { folder, rootPage, site }
       }
 
-      const liveRedirects =  async (siteId: number) =>
-        db
+      const liveRedirects = async (siteId: number) =>
+        await db
           .selectFrom("Redirect")
           .selectAll()
           .where("siteId", "=", siteId)
@@ -2217,7 +2246,8 @@ describe("resource.router", async () => {
 
       // Act
       const result = caller.countWithoutRoot({
-        resourceId: 99_999, // should not exist
+        resourceId: 99_999,
+        // should not exist
         siteId: site.id,
       })
 
@@ -2233,8 +2263,10 @@ describe("resource.router", async () => {
     it("should return 404 if site does not exist", async () => {
       // Act
       const result = caller.countWithoutRoot({
-        resourceId: 99_999, // should not exist
-        siteId: 99_999, // should not exist also
+        resourceId: 99_999,
+        // should not exist
+        siteId: 99_999,
+        // should not exist also
       })
 
       // Assert
@@ -2494,7 +2526,8 @@ describe("resource.router", async () => {
       // Act
       const result = caller.listWithoutRoot({
         limit: 25,
-        siteId: 99999, // should not exist,
+        siteId: 99_999,
+        // should not exist,
       })
 
       // Assert
@@ -2556,7 +2589,8 @@ describe("resource.router", async () => {
       // Act
       const result = caller.listWithoutRoot({
         limit: 25,
-        resourceId: 99999, // should not exist
+        resourceId: 99_999,
+        // should not exist
         siteId: site.id,
       })
 
@@ -2649,7 +2683,7 @@ describe("resource.router", async () => {
 
       // Assert
       const expected = [...pages, ...folders]
-        .sort(testListComparable)
+        .toSorted(testListComparable)
         .slice(0, 10)
       expect(expected).toMatchObject(result)
     })
@@ -2727,7 +2761,7 @@ describe("resource.router", async () => {
 
       // Assert
       const expected = [...pages, ...folders]
-        .sort(testListComparable)
+        .toSorted(testListComparable)
         .slice(0, 10)
       expect(expected).toMatchObject(result)
     })
@@ -2745,13 +2779,14 @@ describe("resource.router", async () => {
       const sharedTitle = "Identical title"
       const permalinks = ["page-1", "page-2", "page-3", "page-4"]
       const pages = await Promise.all(
-        permalinks.map( async (permalink) =>
-          setupPageResource({
-            permalink,
-            resourceType: "Page",
-            siteId: site.id,
-            title: sharedTitle,
-          }),
+        permalinks.map(
+          async (permalink) =>
+            await setupPageResource({
+              permalink,
+              resourceType: "Page",
+              siteId: site.id,
+              title: sharedTitle,
+            }),
         ),
       )
 
@@ -2983,7 +3018,8 @@ describe("resource.router", async () => {
 
       // Act
       const result = caller.delete({
-        resourceId: "99999", // should not exist
+        resourceId: "99999",
+        // should not exist
         siteId: site.id,
       })
 
@@ -3315,7 +3351,8 @@ describe("resource.router", async () => {
 
       // Act
       const result = caller.getParentOf({
-        resourceId: "99999", // should not exist
+        resourceId: "99999",
+        // should not exist
         siteId: site.id,
       })
 
@@ -4074,7 +4111,8 @@ describe("resource.router", async () => {
 
     it("should return totalCount as a number", async () => {
       // Arrange
-      const numberOfPages = 15 // arbitrary number above the default limit of 10
+      const numberOfPages = 15
+      // arbitrary number above the default limit of 10
       const { site } = await setupSite()
       await setupAdminPermissions({
         siteId: site.id,
@@ -4128,19 +4166,22 @@ describe("resource.router", async () => {
         permalink: "apple-banana-cherry-durian",
         resourceType: "Page",
         siteId: site.id,
-        title: "apple banana cherry durian", // matches all search terms,
+        title: "apple banana cherry durian",
+        // matches all search terms,
       })
       await setupPageResource({
         permalink: "apple-banana-cherry",
         resourceType: "Page",
         siteId: site.id,
-        title: "apple banana cherry", // missing durian,
+        title: "apple banana cherry",
+        // missing durian,
       })
       await setupPageResource({
         permalink: "banana",
         resourceType: "Page",
         siteId: site.id,
-        title: "banana", // missing apple and durian,
+        title: "banana",
+        // missing apple and durian,
       })
 
       // Act
@@ -4818,7 +4859,7 @@ describe("resource.router", async () => {
           nextOffset: 10,
           recentlyEdited: [],
           resources: pages
-            .reverse()
+            .toReversed()
             .slice(0, 10)
             .map((page) => {
               const { page: pageX } = page
@@ -4976,7 +5017,7 @@ describe("resource.router", async () => {
           nextOffset: 20,
           recentlyEdited: [],
           resources: pages
-            .reverse()
+            .toReversed()
             .slice(10, 20)
             .map((page) => {
               const { page: pageX } = page

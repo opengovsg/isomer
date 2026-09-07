@@ -55,8 +55,7 @@ describe("webhook.router", async () => {
   let user: User
   beforeEach(async () => {
     vi.clearAllMocks()
-    vi.spyOn(mailService, "sendSuccessfulPublishEmail").mockResolvedValue(
-      )
+    vi.spyOn(mailService, "sendSuccessfulPublishEmail").mockResolvedValue()
     vi.spyOn(mailService, "sendFailedPublishEmail").mockResolvedValue()
     await resetTables("CodeBuildJobs", "User", "Resource", "Site")
     user = await setupUser({
@@ -69,10 +68,12 @@ describe("webhook.router", async () => {
 
   describe("updateCodebuildWebhook", () => {
     beforeEach(() => {
-      MockDate.set(FIXED_NOW) // Freeze time before each test
+      MockDate.set(FIXED_NOW)
+      // Freeze time before each test
     })
     afterEach(() => {
-      MockDate.reset() // Reset time after each test
+      MockDate.reset()
+      // Reset time after each test
     })
     it("it should update the codebuildjobs table if the received build status is successful", async () => {
       // Arrange
@@ -86,7 +87,8 @@ describe("webhook.router", async () => {
 
       // Act
       await caller.updateCodebuildWebhook({
-        arn: "build/test-id", // saved in the db
+        arn: "build/test-id",
+        // saved in the db
         projectName: "test-project",
         status: "SUCCEEDED",
       })
@@ -128,7 +130,8 @@ describe("webhook.router", async () => {
 
       // Act
       await caller.updateCodebuildWebhook({
-        arn: "build/test-id", // saved in the db
+        arn: "build/test-id",
+        // saved in the db
         projectName: "test-project",
         status: "SUCCEEDED",
       })
@@ -143,7 +146,8 @@ describe("webhook.router", async () => {
         .executeTakeFirstOrThrow()
       expect(job).toEqual(
         expect.objectContaining({
-          emailSent: false, // emailSent should remain false
+          emailSent: false,
+          // emailSent should remain false
           status: "SUCCEEDED",
         }),
       )
@@ -179,7 +183,8 @@ describe("webhook.router", async () => {
         await setupCodeBuildJob({
           arn: ARN,
           isScheduled: true,
-          permalink: `test-page-${i}`, // so that the resource is unique
+          permalink: `test-page-${i}`,
+          // so that the resource is unique
           siteId: site.id,
           startedAt: FIXED_NOW,
           userId: user.id,
@@ -189,7 +194,8 @@ describe("webhook.router", async () => {
 
       // Act
       await caller.updateCodebuildWebhook({
-        arn: "build/test-id", // saved in the db
+        arn: "build/test-id",
+        // saved in the db
         projectName: "test-project",
         status: "SUCCEEDED",
       })
@@ -223,7 +229,8 @@ describe("webhook.router", async () => {
 
       // Act
       await caller.updateCodebuildWebhook({
-        arn: "build/test-id", // saved in the db
+        arn: "build/test-id",
+        // saved in the db
         projectName: "test-project",
         status: "FAILED",
       })
@@ -254,10 +261,12 @@ describe("webhook.router", async () => {
       // Arrange
       await setupCodeBuildJob({
         arn: "build/test-id",
-        emailSent: true, // email already sent
+        emailSent: true,
+        // email already sent
         isScheduled: true,
         startedAt: FIXED_NOW,
-        status: "SUCCEEDED", // initial status is SUCCEEDED
+        status: "SUCCEEDED",
+        // initial status is SUCCEEDED
         userId: user.id,
       })
       const caller = getCallerWithMockGrowthbook(session)
@@ -266,7 +275,8 @@ describe("webhook.router", async () => {
       await caller.updateCodebuildWebhook({
         arn: "build/test-id",
         projectName: "test-project",
-        status: "SUCCEEDED", // same status as before
+        status: "SUCCEEDED",
+        // same status as before
       })
 
       // Assert
@@ -276,7 +286,8 @@ describe("webhook.router", async () => {
       // Arrange
       const { page } = await setupCodeBuildJob({
         arn: "build/test-id",
-        isScheduled: false, // not a scheduled publish
+        isScheduled: false,
+        // not a scheduled publish
         startedAt: FIXED_NOW,
         status: "IN_PROGRESS",
         userId: user.id,
@@ -302,7 +313,8 @@ describe("webhook.router", async () => {
       // Arrange
       const { page } = await setupCodeBuildJob({
         arn: "build/test-id",
-        isScheduled: false, // not a scheduled publish
+        isScheduled: false,
+        // not a scheduled publish
         startedAt: FIXED_NOW,
         status: "IN_PROGRESS",
         userId: user.id,
@@ -333,7 +345,8 @@ describe("webhook.router", async () => {
         status: "IN_PROGRESS",
         userId: user.id,
       })
-      const caller = getCallerWithMockGrowthbook(session, false) // feature flag disabled
+      const caller = getCallerWithMockGrowthbook(session, false)
+      // feature flag disabled
 
       // Act
       await caller.updateCodebuildWebhook({
@@ -354,7 +367,8 @@ describe("webhook.router", async () => {
         status: "IN_PROGRESS",
         userId: user.id,
       })
-      const caller = getCallerWithMockGrowthbook(session, false) // feature flag disabled
+      const caller = getCallerWithMockGrowthbook(session, false)
+      // feature flag disabled
 
       // Act
       await caller.updateCodebuildWebhook({
@@ -398,20 +412,17 @@ describe("webhook.router", async () => {
       })
 
       // Assert
-      expect(mailService.sendSuccessfulPublishEmail).toHaveBeenCalledTimes(5) // once for the original build + 4 for the superseded builds
-      const {calls} = vi.mocked(mailService.sendSuccessfulPublishEmail).mock
+      expect(mailService.sendSuccessfulPublishEmail).toHaveBeenCalledTimes(5)
+      // once for the original build + 4 for the superseded builds
+      const { calls } = vi.mocked(mailService.sendSuccessfulPublishEmail).mock
       // check that an email was sent to the original user
       const callsWithOriginalUser = calls
         .map(([arg]) => arg)
-        .filter((call) => 
-          call.recipientEmail === user.email
-        )
+        .filter((call) => call.recipientEmail === user.email)
       // check that emails were sent to the user with the superseded builds
       const callsWithSupersededUser = calls
         .map(([arg]) => arg)
-        .filter((call) => 
-          call.recipientEmail === userForSupersededBuilds.email
-        )
+        .filter((call) => call.recipientEmail === userForSupersededBuilds.email)
       expect(callsWithOriginalUser.length).toEqual(1)
       expect(callsWithSupersededUser.length).toEqual(NUMBER_SUPERSEDED_BUILDS)
       // assert that the calls contain the correct parameters
@@ -434,9 +445,11 @@ describe("webhook.router", async () => {
         .selectFrom("CodeBuildJobs")
         .selectAll()
         .execute()
-      expect(updatedCodebuildJob.length).toBe(NUMBER_SUPERSEDED_BUILDS + 1) // +1 for the original build
+      expect(updatedCodebuildJob.length).toBe(NUMBER_SUPERSEDED_BUILDS + 1)
+      // +1 for the original build
       updatedCodebuildJob.forEach((job) => {
-        expect(job.emailSent).toBe(true) // all jobs should have emailSent = true
+        expect(job.emailSent).toBe(true)
+        // all jobs should have emailSent = true
       })
     })
     it("does not send an email if the publish is a site-level publish", async () => {
@@ -444,7 +457,8 @@ describe("webhook.router", async () => {
       const { codebuildJob } = await setupCodeBuildJob({
         arn: "build/test-id",
         isScheduled: true,
-        omitResourceId: true, // this will create a codebuild job without a resourceId, simulating a site publish
+        omitResourceId: true,
+        // this will create a codebuild job without a resourceId, simulating a site publish
         startedAt: FIXED_NOW,
         userId: user.id,
       })
@@ -452,7 +466,8 @@ describe("webhook.router", async () => {
 
       // Act
       await caller.updateCodebuildWebhook({
-        arn: "build/test-id", // saved in the db
+        arn: "build/test-id",
+        // saved in the db
         projectName: "test-project",
         status: "SUCCEEDED",
       })
@@ -469,7 +484,8 @@ describe("webhook.router", async () => {
           // expect the job status to be updated to SUCCEEDED
           expect(job).toEqual(
             expect.objectContaining({
-              emailSent: false, // emailSent should remain false
+              emailSent: false,
+              // emailSent should remain false
               status: "SUCCEEDED",
             }),
           )

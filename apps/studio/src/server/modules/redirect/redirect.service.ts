@@ -199,7 +199,7 @@ const getPublishedStateByResourceIds = async (
 // first "?" or "#". A redirect source is always a clean path, so a destination
 // like "/b?x" has to compare as "/b" — both when resolving it for display and
 // when matching it against sources for loop detection.
-const stripQueryFragment = (value: string) => value.split(/[?#]/)[0] ?? value
+const stripQueryFragment = (value: string) => value.split(/[?#]/u)[0] ?? value
 
 // Resolves stored internal destinations (both [resource:...] references and
 // literal "/paths") for the table. For references it returns the destination
@@ -248,7 +248,7 @@ export const resolveRedirectReferences = async ({
   const parsed = classified.map(({ reference, kind, resourceId, path }) => ({
     kind,
     reference,
-    resourceId: path !== null ? (idByPath.get(path) ?? null) : resourceId,
+    resourceId: path === null ? resourceId : (idByPath.get(path) ?? null),
   }))
 
   const resourceIds = parsed
@@ -296,11 +296,11 @@ const getByUser = async (dbInstance: SafeKysely, byUserId: string) =>
         }),
     )
 
-const getLiveRedirectBySource =  async (
+const getLiveRedirectBySource = async (
   dbInstance: SafeKysely,
   { siteId, source }: { siteId: number; source: string },
 ) =>
-  dbInstance
+  await dbInstance
     .selectFrom("Redirect")
     .selectAll()
     .where("siteId", "=", siteId)
@@ -343,7 +343,9 @@ const resolveShadowingMatch = <
   }
   for (const candidate of wildcardCandidates) {
     const match = bySource.get(candidate)
-    if (match) {return match}
+    if (match) {
+      return match
+    }
   }
   return null
 }
@@ -463,7 +465,8 @@ const hasLivePageAtSource = async (
     return !!pageAtSource && pageAtSource.publishedVersionId !== null
   }
 
-  const prefix = source.slice(0, -2) // strip trailing "/*"
+  const prefix = source.slice(0, -2)
+  // strip trailing "/*"
   const segments = prefix.split("/").filter(Boolean)
   // The root wildcard ("/*") is already rejected by the schema, so this can't
   // be empty in practice — guarded anyway since an empty prefix has no single
@@ -756,7 +759,8 @@ const BULK_REDIRECT_INSERT_CHUNK_SIZE = 500
 // each other. There is no other advisory-lock user, but the two-key form keeps
 // this from ever colliding with a future one; pg_advisory_xact_lock releases
 // automatically when the transaction ends.
-const REDIRECT_WRITE_LOCK_NAMESPACE = 0x52_44 // "RD"
+const REDIRECT_WRITE_LOCK_NAMESPACE = 0x52_44
+// "RD"
 
 // Cap how long a redirect write waits for the per-site advisory lock. A writer
 // that waits longer aborts (Postgres 55P03) rather than blocking indefinitely on
@@ -1333,13 +1337,14 @@ export const bulkCreateRedirects = async ({
       // bind-parameter cap.
       const existingRows = (
         await Promise.all(
-          chunk(sources, BULK_REDIRECT_INSERT_CHUNK_SIZE).map( async (batch) =>
-            tx
-              .selectFrom("Redirect")
-              .selectAll()
-              .where("siteId", "=", siteId)
-              .where("source", "in", batch)
-              .execute(),
+          chunk(sources, BULK_REDIRECT_INSERT_CHUNK_SIZE).map(
+            async (batch) =>
+              await tx
+                .selectFrom("Redirect")
+                .selectAll()
+                .where("siteId", "=", siteId)
+                .where("source", "in", batch)
+                .execute(),
           ),
         )
       ).flat()
@@ -1444,8 +1449,8 @@ export const bulkCreateRedirects = async ({
       // holding locks and a connection far longer than needed.
       const auditValues = insertedRows.map((row) => ({
         delta: toAuditLogDelta({
-          before: existingBySource.get(row.source) ?? null,
           after: row,
+          before: existingBySource.get(row.source) ?? null,
         }),
         eventType: AuditLogEvent.RedirectCreate,
         metadata: {},
@@ -1544,7 +1549,7 @@ export const createRedirectForPermalinkChange = async (
     wildcard ? `${oldFullPermalink}/*` : oldFullPermalink,
   )
   const destination = getReferenceLink({
-    resourceId: String(resourceId),
+    resourceId,
     siteId: String(siteId),
   })
   const [byUser, existing, created] = await Promise.all([
@@ -1599,7 +1604,7 @@ export const assertPermalinkNotShadowed = async (
   }: { siteId: number; newFullPermalink: string; resourceId: string },
 ) => {
   const reference = getReferenceLink({
-    resourceId: String(resourceId),
+    resourceId,
     siteId: String(siteId),
   })
   const shadowing = await findShadowingRedirect(tx, {
@@ -1661,8 +1666,8 @@ const assertDescendantsNotShadowed = async (
         candidates: shadowingSourceCandidates(newFullPermalink),
         newFullPermalink,
         reference: getReferenceLink({
-          siteId: String(siteId),
           resourceId: String(descendantId),
+          siteId: String(siteId),
         }),
       },
     ]
@@ -1679,14 +1684,15 @@ const assertDescendantsNotShadowed = async (
   ]
   const rows = (
     await Promise.all(
-      chunk(allCandidates, BULK_REDIRECT_INSERT_CHUNK_SIZE).map( async (batch) =>
-        tx
-          .selectFrom("Redirect")
-          .selectAll()
-          .where("siteId", "=", siteId)
-          .where("source", "in", batch)
-          .where("deletedAt", "is", null)
-          .execute(),
+      chunk(allCandidates, BULK_REDIRECT_INSERT_CHUNK_SIZE).map(
+        async (batch) =>
+          await tx
+            .selectFrom("Redirect")
+            .selectAll()
+            .where("siteId", "=", siteId)
+            .where("source", "in", batch)
+            .where("deletedAt", "is", null)
+            .execute(),
       ),
     )
   ).flat()
@@ -1717,13 +1723,14 @@ const assertDescendantsNotShadowed = async (
   const reclaimedIds = reclaimed.map((row) => row.id)
   const afterRows = (
     await Promise.all(
-      chunk(reclaimedIds, BULK_REDIRECT_INSERT_CHUNK_SIZE).map( async (batch) =>
-        tx
-          .updateTable("Redirect")
-          .set({ deletedAt: dbNow })
-          .where("id", "in", batch)
-          .returningAll()
-          .execute(),
+      chunk(reclaimedIds, BULK_REDIRECT_INSERT_CHUNK_SIZE).map(
+        async (batch) =>
+          await tx
+            .updateTable("Redirect")
+            .set({ deletedAt: dbNow })
+            .where("id", "in", batch)
+            .returningAll()
+            .execute(),
       ),
     )
   ).flat()
@@ -1733,7 +1740,7 @@ const assertDescendantsNotShadowed = async (
     return before
       ? [
           {
-            delta: toAuditLogDelta({ before, after }),
+            delta: toAuditLogDelta({ after, before }),
             eventType: AuditLogEvent.RedirectDelete,
             metadata: {},
             siteId,
@@ -1811,8 +1818,8 @@ export const clearReclaimedRedirect = async (
   await softDeleteReclaimedRedirect(tx, {
     byUserId,
     reference: getReferenceLink({
+      resourceId,
       siteId: String(siteId),
-      resourceId: String(resourceId),
     }),
     siteId,
     source: normalizeRedirectSource(newFullPermalink),
@@ -1842,8 +1849,8 @@ const clearReclaimedFolderWildcard = async (
   await softDeleteReclaimedRedirect(tx, {
     byUserId,
     reference: getReferenceLink({
+      resourceId,
       siteId: String(siteId),
-      resourceId: String(resourceId),
     }),
     siteId,
     source: normalizeRedirectSource(`${newFullPermalink}/*`),
@@ -2161,10 +2168,12 @@ export const softDeleteRedirectsPointingToResource = async (
 
   const afterById = new Map(deleted.map((after) => [after.id, after]))
   await Promise.all(
-    toDelete.map( async (before) => {
+    toDelete.map(async (before) => {
       const after = afterById.get(before.id)
-      if (!after) {return Promise.resolve()}
-      return logRedirectEvent(tx, {
+      if (!after) {
+        return
+      }
+      await logRedirectEvent(tx, {
         by: byUser,
         delta: { after, before },
         eventType: AuditLogEvent.RedirectDelete,

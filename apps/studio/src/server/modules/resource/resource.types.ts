@@ -1,5 +1,5 @@
-import type { Resource, ResourceType } from "~server/db"
 import type { IsomerSiteProps } from "@opengovsg/isomer-components"
+import type { Resource, ResourceType } from "~server/db"
 
 export type Page = Resource
 

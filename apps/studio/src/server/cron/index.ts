@@ -13,7 +13,7 @@ const logger = createBaseLogger({ path: "cron:index" })
 const cronJobs: { stop: () => void }[] = []
 
 export const initializeCronJobs = async () => {
-  if (!env.ENABLE_CRON_WORKERS) {
+  if (env.ENABLE_CRON_WORKERS !== true) {
     logger.info("Cron workers are disabled. Skipping initialization.")
     return
   }
@@ -38,13 +38,13 @@ export const stopCronJobs = () => {
   logger.info("Stopping all cron jobs...")
 
   // Stop all tracked cron jobs
-  cronJobs.forEach((job) => {
+  for (const job of cronJobs) {
     try {
       job.stop()
     } catch (error: unknown) {
       logger.error({ error }, "Error stopping cron job")
     }
-  })
+  }
 
   // Clear the array
   cronJobs.length = 0

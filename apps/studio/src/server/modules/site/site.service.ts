@@ -38,7 +38,7 @@ export const validateUserPermissionsForSite = async ({
     userId,
   })
 
-  // TODO: create should check against the current resource id
+  // Deferred: create should check against the current resource id
   if (perms.cannot(action, "Site")) {
     throw new TRPCError({
       code: "FORBIDDEN",
@@ -85,7 +85,9 @@ const SEARCHSG_SEARCH_TYPE = "searchSG"
 export const normalizeAskgovConfig = (
   config: IsomerSiteConfigProps,
 ): IsomerSiteConfigProps => {
-  if (!config.askgov) {return config}
+  if (!config.askgov) {
+    return config
+  }
 
   const agencyId = getAskgovIdFromString(config.askgov["data-agency"])
 
@@ -156,7 +158,9 @@ const resolveSearchSGSearchConfig = (
   existing: SiteSearchConfig,
   incoming: SiteSearchConfig,
 ): SiteSearchConfig => {
-  if (incoming?.type !== SEARCHSG_SEARCH_TYPE) {return incoming}
+  if (incoming?.type !== SEARCHSG_SEARCH_TYPE) {
+    return incoming
+  }
 
   if (existing?.type !== SEARCHSG_SEARCH_TYPE) {
     throw new TRPCError({
@@ -251,11 +255,11 @@ export const getNotification = async (
         content: {
           content: [
             {
-              content: result.notification.content,
-              type: "paragraph",
               attrs: {
                 dir: "ltr",
               },
+              content: result.notification.content,
+              type: "paragraph",
             },
           ],
           type: "prose",
@@ -276,7 +280,7 @@ export const setSiteNotification = async ({
   siteId,
   userId,
   notification,
-}: SetSiteNotificationParams) => 
+}: SetSiteNotificationParams) =>
   await db.transaction().execute(async (tx) => {
     const user = await tx
       .selectFrom("User")
@@ -326,18 +330,17 @@ export const setSiteNotification = async ({
     }
 
     await logConfigEvent(tx, {
-      siteId,
-      eventType: AuditLogEvent.SiteConfigUpdate,
-      delta: {
-        before: oldSite,
-        after: newSite,
-      },
       by: user,
+      delta: {
+        after: newSite,
+        before: oldSite,
+      },
+      eventType: AuditLogEvent.SiteConfigUpdate,
+      siteId,
     })
 
     return newSite
   })
-
 
 interface CreateSiteProps {
   siteName: string
@@ -355,12 +358,12 @@ export const createSite = async ({ siteName, userId }: CreateSiteProps) => {
       .insertInto("Site")
       .values({
         config: jsonb({
-          theme: "isomer-next",
-          siteName,
-          url: "https://www.isomer.gov.sg",
+          isGovernment: true,
           logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
           search: undefined,
-          isGovernment: true,
+          siteName,
+          theme: "isomer-next",
+          url: "https://www.isomer.gov.sg",
         }),
         name: siteName,
         theme: jsonb({
@@ -368,13 +371,13 @@ export const createSite = async ({ siteName, userId }: CreateSiteProps) => {
             brand: {
               canvas: {
                 alt: "#bfcfd7",
+                backdrop: "#80a0af",
                 default: "#e6ecef",
                 inverse: "#00405f",
-                backdrop: "#80a0af",
               },
               interaction: {
-                hover: "#002e44",
                 default: "#00405f",
+                hover: "#002e44",
                 pressed: "#00283b",
               },
             },

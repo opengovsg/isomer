@@ -17,7 +17,8 @@ import {
 import { registerPgbossJob } from "@isomer/pgboss"
 
 const JOB_NAME = "schedule-publishing"
-const CRON_SCHEDULE = "* * * * *" // every minute
+const CRON_SCHEDULE = "* * * * *"
+// every minute
 
 const logger = createBaseLogger({ path: "cron:schedulePublishingJob" })
 
@@ -25,7 +26,7 @@ const logger = createBaseLogger({ path: "cron:schedulePublishingJob" })
  * Registers the schedule publishing job with the specified cron schedule.
  * @returns A promise that resolves when the job is registered.
  */
-export const schedulePublishingJob = async () => 
+export const schedulePublishingJob = async () =>
   await registerPgbossJob(
     logger,
     JOB_NAME,
@@ -38,7 +39,6 @@ export const schedulePublishingJob = async () =>
       ? { heartbeatURL: env.SCHEDULED_PUBLISHING_HEARTBEAT_URL }
       : undefined,
   )
-
 
 /**
  * Handler function for the schedule publishing job.
@@ -159,13 +159,14 @@ export const publishScheduledSites = async (
             ? {
                 isScheduled: true,
                 resourceWithUserIds: resources.map(
-                  ({ id: resourceId, scheduledBy }) => {
-                    return { resourceId, userId: scheduledBy }
-                  },
+                  ({ id: resourceId, scheduledBy }) => ({
+                    resourceId,
+                    userId: scheduledBy,
+                  }),
                 ),
               }
             : undefined,
-          siteId: Number(siteId),
+          siteId,
         })
         logger.info(`Successfully published site for siteId: ${siteId}`)
       } catch (error) {

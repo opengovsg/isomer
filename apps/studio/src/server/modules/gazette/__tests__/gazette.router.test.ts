@@ -58,8 +58,7 @@ describe("gazette.router", async () => {
       "User",
     )
     caller = createCaller(createMockRequest(session))
-    vi.spyOn(algoliaLib, "saveObjectsToSearchIndex").mockResolvedValue(
-      )
+    vi.spyOn(algoliaLib, "saveObjectsToSearchIndex").mockResolvedValue()
   })
 
   afterEach(() => {
@@ -111,7 +110,7 @@ describe("gazette.router", async () => {
           offset: 0,
           siteId: site.id,
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message: "You do not have access to the gazette feature",
@@ -174,7 +173,7 @@ describe("gazette.router", async () => {
           offset: 0,
           siteId: 1,
         }),
-      ).rejects.toThrowError(new TRPCError({ code: "UNAUTHORIZED" }))
+      ).rejects.toThrow(new TRPCError({ code: "UNAUTHORIZED" }))
     })
   })
 
@@ -254,7 +253,7 @@ describe("gazette.router", async () => {
           tagged: ["sub-1"],
           title: "Notice 123",
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message: "You do not have access to the gazette feature",
@@ -290,13 +289,14 @@ describe("gazette.router", async () => {
           collectionId: Number(collection.id),
           date: "30/04/2026",
           permalink: crypto.randomUUID(),
-          ref: "/sites/1/gazettes/uuid2/duplicate-file.pdf", // Same filename
+          ref: "/sites/1/gazettes/uuid2/duplicate-file.pdf",
+          // Same filename
           scheduledAt: PAST_DATE,
           siteId: site.id,
           tagged: ["sub-1"],
           title: "Second Notice",
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "CONFLICT",
           message: "A gazette with the same file ID already exists",
@@ -328,15 +328,17 @@ describe("gazette.router", async () => {
           category: "Government Gazette",
           collectionId: Number(collection.id),
           date: "30/04/2026",
-          description: "N-2026-001", // Same notification number
+          description: "N-2026-001",
+          // Same notification number
           permalink: crypto.randomUUID(),
-          ref: "/sites/1/gazettes/uuid2/second-file.pdf", // Different filename
+          ref: "/sites/1/gazettes/uuid2/second-file.pdf",
+          // Different filename
           scheduledAt: PAST_DATE,
           siteId: site.id,
           tagged: ["sub-1"],
           title: "Second Notice",
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "CONFLICT",
           message: "A gazette with the same notification number already exists",
@@ -367,15 +369,18 @@ describe("gazette.router", async () => {
           category: "Legislative Supplements",
           collectionId: Number(collection.id),
           date: "30/04/2026",
-          description: "N-2026-001", // Same notification number
+          description: "N-2026-001",
+          // Same notification number
           permalink: crypto.randomUUID(),
-          ref: "/sites/1/gazettes/uuid2/second-file.pdf", // Different filename
+          ref: "/sites/1/gazettes/uuid2/second-file.pdf",
+          // Different filename
           scheduledAt: PAST_DATE,
           siteId: site.id,
-          tagged: ["Acts Supplement"], // Same subcategory
+          tagged: ["Acts Supplement"],
+          // Same subcategory
           title: "Second Supplement",
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "CONFLICT",
           message: "A gazette with the same notification number already exists",
@@ -407,12 +412,14 @@ describe("gazette.router", async () => {
         category: "Legislative Supplements",
         collectionId: Number(collection.id),
         date: "30/04/2026",
-        description: "N-2026-001", // Same notification number
+        description: "N-2026-001",
+        // Same notification number
         permalink: crypto.randomUUID(),
         ref: "/sites/1/gazettes/uuid2/second-file.pdf",
         scheduledAt: PAST_DATE,
         siteId: site.id,
-        tagged: ["Bills Supplement"], // Different subcategory
+        tagged: ["Bills Supplement"],
+        // Different subcategory
         title: "Second Supplement",
       })
 
@@ -620,13 +627,14 @@ describe("gazette.router", async () => {
           category: "Government Gazette",
           date: "30/04/2026",
           gazetteId: Number(gazetteId),
-          newRef: "/sites/1/gazettes/uuid3/existing-file.pdf", // Same filename as first
+          newRef: "/sites/1/gazettes/uuid3/existing-file.pdf",
+          // Same filename as first
           scheduledAt: PAST_DATE,
           siteId: site.id,
           tagged: ["sub-1"],
           title: "Second Notice",
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "CONFLICT",
           message: "A gazette with the same file ID already exists",
@@ -671,14 +679,15 @@ describe("gazette.router", async () => {
         caller.update({
           category: "Government Gazette",
           date: "30/04/2026",
-          description: "N-2026-001", // Same notification number as first
+          description: "N-2026-001",
+          // Same notification number as first
           gazetteId: Number(gazetteId),
           scheduledAt: PAST_DATE,
           siteId: site.id,
           tagged: ["sub-1"],
           title: "Second Notice",
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "CONFLICT",
           message: "A gazette with the same notification number already exists",
@@ -707,7 +716,8 @@ describe("gazette.router", async () => {
       await caller.update({
         category: "Government Gazette",
         date: "30/04/2026",
-        description: "N-2026-001", // Unchanged
+        description: "N-2026-001",
+        // Unchanged
         gazetteId: Number(gazetteId),
         scheduledAt: PAST_DATE,
         siteId: site.id,
@@ -847,7 +857,7 @@ describe("gazette.router", async () => {
           gazetteId: Number(collectionLink.id),
           siteId: site.id,
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message: "Cannot cancel a gazette that is not scheduled",
@@ -910,7 +920,7 @@ describe("gazette.router", async () => {
 
       expect(result.presignedPutUrl).toBe("https://signed.example/put")
       expect(result.fileKey).toMatch(
-        /^2026\/Government Gazette\/Public\/notice-1\.pdf$/,
+        /^2026\/Government Gazette\/Public\/notice-1\.pdf$/u,
       )
       expect(signedPutSpy).toHaveBeenCalledTimes(1)
       const signerArgs = signedPutSpy.mock.calls[0]![0]
@@ -1047,16 +1057,13 @@ describe("gazette.router", async () => {
       // The flag ENABLE_SEARCHSG_GAZETTE_INGESTION is OFF by default in tests
       // (not in mockFeatureFlags), so the Algolia path is exercised here.
       // SearchSG is mocked too so tests that enable the flag don't hit the network.
-      vi.spyOn(gazetteService, "removeGazetteFromAlgolia").mockResolvedValue(
-        )
+      vi.spyOn(gazetteService, "removeGazetteFromAlgolia").mockResolvedValue()
       vi.spyOn(
         gazetteService,
         "removeGazetteFromSearchIndex",
       ).mockResolvedValue()
-      vi.spyOn(gazetteService, "deleteGazetteAsset").mockResolvedValue(
-        )
-      vi.spyOn(mailService, "sendGazetteDeletionEmail").mockResolvedValue(
-        )
+      vi.spyOn(gazetteService, "deleteGazetteAsset").mockResolvedValue()
+      vi.spyOn(mailService, "sendGazetteDeletionEmail").mockResolvedValue()
     })
 
     afterEach(() => {
@@ -1070,7 +1077,8 @@ describe("gazette.router", async () => {
 
     it("deletes a gazette within the 15-minute grace period", async () => {
       const { site, collection, user } = await seedToppanWithCollection()
-      const publishedAt = subMinutes(FIXED_NOW, 10) // 10 minutes ago
+      const publishedAt = subMinutes(FIXED_NOW, 10)
+      // 10 minutes ago
 
       const { gazetteId } = await seedPublishedGazette({
         collectionId: collection.id,
@@ -1108,7 +1116,8 @@ describe("gazette.router", async () => {
 
     it("deletes a gazette published exactly 15 minutes ago", async () => {
       const { site, collection, user } = await seedToppanWithCollection()
-      const publishedAt = subMinutes(FIXED_NOW, 15) // exactly 15 minutes ago
+      const publishedAt = subMinutes(FIXED_NOW, 15)
+      // exactly 15 minutes ago
 
       const { gazetteId } = await seedPublishedGazette({
         collectionId: collection.id,
@@ -1133,7 +1142,8 @@ describe("gazette.router", async () => {
 
     it("rejects deletion after the 30-minute grace period", async () => {
       const { site, collection, user } = await seedToppanWithCollection()
-      const publishedAt = subMinutes(FIXED_NOW, 31) // 31 minutes ago
+      const publishedAt = subMinutes(FIXED_NOW, 31)
+      // 31 minutes ago
 
       const { gazetteId } = await seedPublishedGazette({
         collectionId: collection.id,
@@ -1147,7 +1157,7 @@ describe("gazette.router", async () => {
           gazetteId,
           siteId: site.id,
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1193,7 +1203,7 @@ describe("gazette.router", async () => {
           gazetteId,
           siteId: site.id,
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message: "You do not have access to the gazette feature",
@@ -1206,10 +1216,10 @@ describe("gazette.router", async () => {
 
       await expect(
         caller.delete({
-          gazetteId: 999999,
+          gazetteId: 999_999,
           siteId: site.id,
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Resource not found",
@@ -1232,7 +1242,7 @@ describe("gazette.router", async () => {
           gazetteId: Number(collectionLink.id),
           siteId: site.id,
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "The gazette you are trying to delete could not be found",
@@ -1339,8 +1349,8 @@ describe("gazette.router", async () => {
         .calls[0]?.[0]
       expect(call?.recipientEmail).toBe(env.DD_DELETION_EMAIL)
       // The admins query has no ORDER BY, so compare cc as a sorted set
-      expect([...(call?.cc ?? [])].sort()).toEqual(
-        ["admin2@agency.gov.sg", "user@toppannext.com"].sort(),
+      expect([...(call?.cc ?? [])].toSorted()).toEqual(
+        ["admin2@agency.gov.sg", "user@toppannext.com"].toSorted(),
       )
     })
 

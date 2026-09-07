@@ -70,7 +70,7 @@ describe("asset.service", () => {
       const result = getFileKey({ fileName, siteId })
 
       // Assert
-      expect(result).toMatch(/^123\/[0-9a-f-]{36}\/test-file\.jpg$/)
+      expect(result).toMatch(/^123\/[0-9a-f-]{36}\/test-file\.jpg$/u)
     })
 
     it("should handle attempts at path traversal", () => {
@@ -82,7 +82,7 @@ describe("asset.service", () => {
       const result = getFileKey({ fileName, siteId })
 
       // Assert
-      expect(result).toMatch(/^123\/[0-9a-f-]{36}\/-..-test\.jpg$/)
+      expect(result).toMatch(/^123\/[0-9a-f-]{36}\/-..-test\.jpg$/u)
     })
 
     it("should handle unicode characters in filename", () => {
@@ -94,7 +94,7 @@ describe("asset.service", () => {
       const result = getFileKey({ fileName, siteId })
 
       // Assert
-      expect(result).toMatch(/^456\/[0-9a-f-]{36}\/测试文件\.pdf$/)
+      expect(result).toMatch(/^456\/[0-9a-f-]{36}\/测试文件\.pdf$/u)
     })
 
     it("should handle emoji in filename", () => {
@@ -106,7 +106,7 @@ describe("asset.service", () => {
       const result = getFileKey({ fileName, siteId })
 
       // Assert
-      expect(result).toMatch(/^789\/[0-9a-f-]{36}\/🎉celebration🎊\.png$/)
+      expect(result).toMatch(/^789\/[0-9a-f-]{36}\/🎉celebration🎊\.png$/u)
     })
 
     it("should handle mixed unicode and ASCII characters", () => {
@@ -118,7 +118,7 @@ describe("asset.service", () => {
       const result = getFileKey({ fileName, siteId })
 
       // Assert
-      expect(result).toMatch(/^101\/[0-9a-f-]{36}\/report-2024年度\.docx$/)
+      expect(result).toMatch(/^101\/[0-9a-f-]{36}\/report-2024年度\.docx$/u)
     })
 
     it("should handle cyrillic characters", () => {
@@ -130,7 +130,7 @@ describe("asset.service", () => {
       const result = getFileKey({ fileName, siteId })
 
       // Assert
-      expect(result).toMatch(/^202\/[0-9a-f-]{36}\/документ\.txt$/)
+      expect(result).toMatch(/^202\/[0-9a-f-]{36}\/документ\.txt$/u)
     })
 
     it("should handle arabic characters", () => {
@@ -142,7 +142,7 @@ describe("asset.service", () => {
       const result = getFileKey({ fileName, siteId })
 
       // Assert
-      expect(result).toMatch(/^303\/[0-9a-f-]{36}\/ملف\.pdf$/)
+      expect(result).toMatch(/^303\/[0-9a-f-]{36}\/ملف\.pdf$/u)
     })
 
     it("should handle all special characters that might need sanitization even when the characters are not consecutive", () => {
@@ -155,7 +155,7 @@ describe("asset.service", () => {
 
       // Assert
       // NOTE: Special characters in consecutive runs are compressed to single character
-      expect(result).toMatch(/^404\/[0-9a-f-]{36}\/-fi-l-e-\.txt$/)
+      expect(result).toMatch(/^404\/[0-9a-f-]{36}\/-fi-l-e-\.txt$/u)
     })
 
     it("should handle special characters that might need sanitization", () => {
@@ -168,19 +168,19 @@ describe("asset.service", () => {
 
       // Assert
       // NOTE: Special characters in consecutive runs are compressed to single character
-      expect(result).toMatch(/^404\/[0-9a-f-]{36}\/file-\.txt$/)
+      expect(result).toMatch(/^404\/[0-9a-f-]{36}\/file-\.txt$/u)
     })
 
     it("should handle very long unicode filename", () => {
       // Arrange
       const siteId = 505
-      const longUnicodeName = `${"很长的文件名".repeat(20)  }.jpg`
+      const longUnicodeName = `${"很长的文件名".repeat(20)}.jpg`
 
       // Act
       const result = getFileKey({ fileName: longUnicodeName, siteId })
 
       // Assert
-      expect(result).toMatch(/^505\/[0-9a-f-]{36}\/很长的文件名/)
+      expect(result).toMatch(/^505\/[0-9a-f-]{36}\/很长的文件名/u)
       expect(result).toContain(".jpg")
     })
 
@@ -195,8 +195,8 @@ describe("asset.service", () => {
 
       // Assert
       expect(result1).not.toEqual(result2)
-      expect(result1).toMatch(/同一个文件\.pdf$/)
-      expect(result2).toMatch(/同一个文件\.pdf$/)
+      expect(result1).toMatch(/同一个文件\.pdf$/u)
+      expect(result2).toMatch(/同一个文件\.pdf$/u)
     })
 
     it("should handle mixed scripts in filename", () => {
@@ -208,7 +208,7 @@ describe("asset.service", () => {
       const result = getFileKey({ fileName, siteId })
 
       // Assert
-      expect(result).toMatch(/^909\/[0-9a-f-]{36}\/English中文العربية\.txt$/)
+      expect(result).toMatch(/^909\/[0-9a-f-]{36}\/English中文العربية\.txt$/u)
     })
   })
 

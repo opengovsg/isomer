@@ -93,7 +93,7 @@ describe("redirect.router", async () => {
       const result = unauthedCaller.list({ siteId })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -106,7 +106,7 @@ describe("redirect.router", async () => {
       const result = caller.list({ siteId: otherSite.id })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -307,7 +307,7 @@ describe("redirect.router", async () => {
       const result = unauthedCaller.count({ siteId })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -320,7 +320,7 @@ describe("redirect.router", async () => {
       const result = caller.count({ siteId: otherSite.id })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -365,7 +365,7 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -382,7 +382,7 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -641,7 +641,7 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -658,7 +658,7 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -727,7 +727,7 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "CONFLICT",
           message: "A redirect already exists for /page",
@@ -782,7 +782,7 @@ describe("redirect.router", async () => {
       const result = caller.create({ destination: "/b", siteId, source: "/a" })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         "This will trap visitors in a never-ending loop.",
       )
       const rows = await db
@@ -832,7 +832,7 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "PRECONDITION_FAILED",
           message:
@@ -960,7 +960,7 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError("CodeBuild unavailable")
+      await expect(result).rejects.toThrow("CodeBuild unavailable")
       expect(publishSpy).toHaveBeenCalledOnce()
       const rows = await db
         .selectFrom("Redirect")
@@ -1590,7 +1590,7 @@ describe("redirect.router", async () => {
       const result = unauthedCaller.delete({ id: "1", siteId })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -1603,7 +1603,7 @@ describe("redirect.router", async () => {
       const result = caller.delete({ id: "1", siteId: otherSite.id })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1639,7 +1639,7 @@ describe("redirect.router", async () => {
       const result = caller.delete({ id: "999999", siteId })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "NOT_FOUND", message: "Redirect not found" }),
       )
     })
@@ -1673,7 +1673,7 @@ describe("redirect.router", async () => {
       const result = caller.delete({ id: inserted.id, siteId })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "NOT_FOUND", message: "Redirect not found" }),
       )
     })
@@ -1695,7 +1695,7 @@ describe("redirect.router", async () => {
       const result = caller.delete({ id: inserted.id, siteId })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "NOT_FOUND", message: "Redirect not found" }),
       )
       const row = await db
@@ -1721,7 +1721,7 @@ describe("redirect.router", async () => {
       const result = caller.delete({ id: inserted.id, siteId })
 
       // Assert
-      await expect(result).rejects.toThrowError("CodeBuild unavailable")
+      await expect(result).rejects.toThrow("CodeBuild unavailable")
       expect(publishSpy).toHaveBeenCalledOnce()
       const row = await db
         .selectFrom("Redirect")
@@ -1781,7 +1781,7 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1904,7 +1904,7 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:

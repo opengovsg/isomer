@@ -55,12 +55,12 @@ export const userRouter = router({
     .output(countUsersOutputSchema)
     .query(async ({ ctx, input: { siteId, adminType } }) => {
       await validatePermissionsForManagingUsers({
+        action: "read",
         siteId,
         userId: ctx.user.id,
-        action: "read",
       })
 
-      const result = await getUsersQuery({ siteId, adminType })
+      const result = await getUsersQuery({ adminType, siteId })
         .select((eb) => [eb.fn.countAll().as("count")])
         .executeTakeFirstOrThrow()
 
@@ -74,9 +74,9 @@ export const userRouter = router({
     .meta({ rateLimitOptions: { max: 10, windowMs: 60 * 1000 } })
     .mutation(async ({ ctx, input: { siteId, users } }) => {
       await validatePermissionsForManagingUsers({
+        action: "manage",
         siteId,
         userId: ctx.user.id,
-        action: "manage",
       })
 
       const isSingpassEnabled = getIsSingpassEnabled({
@@ -99,38 +99,39 @@ export const userRouter = router({
         )
       const actorName = possibleActor.name || possibleActor.email
 
-      const createdUsers = await db.transaction().execute(async (tx) => {
-        return await Promise.all(
-          users.map(async (user) => {
-            const { user: createdUser, resourcePermission } =
-              await createUserWithPermission({
-                ...user,
-                email: user.email.toLowerCase(),
-                siteId,
-                byUserId: ctx.user.id,
-                tx,
-              })
-            return {
-              id: createdUser.id,
-              email: createdUser.email,
-              role: resourcePermission.role,
-            }
-          }),
-        )
-      })
+      const createdUsers = await db.transaction().execute(
+        async (tx) =>
+          await Promise.all(
+            users.map(async (user) => {
+              const { user: createdUser, resourcePermission } =
+                await createUserWithPermission({
+                  ...user,
+                  byUserId: ctx.user.id,
+                  email: user.email.toLowerCase(),
+                  siteId,
+                  tx,
+                })
+              return {
+                email: createdUser.email,
+                id: createdUser.id,
+                role: resourcePermission.role,
+              }
+            }),
+          ),
+      )
 
       // Send welcome email to users
       const { name: siteName } = await getSiteNameAndCodeBuildId(siteId)
       await Promise.all(
-        createdUsers.map( async (createdUser) =>
-          sendInvitation({
-            isSingpassEnabled,
+        createdUsers.map(async (createdUser) => {
+          await sendInvitation({
             inviterName: actorName,
+            isSingpassEnabled,
             recipientEmail: createdUser.email,
-            siteName,
             role: createdUser.role,
-          }),
-        ),
+            siteName,
+          })
+        }),
       )
 
       return createdUsers
@@ -141,9 +142,9 @@ export const userRouter = router({
     .output(deleteUserOutputSchema)
     .mutation(async ({ ctx, input: { siteId, userId } }) => {
       await validatePermissionsForManagingUsers({
+        action: "manage",
         siteId,
         userId: ctx.user.id,
-        action: "manage",
       })
 
       const isSingpassEnabled = getIsSingpassEnabled({
@@ -187,13 +188,13 @@ export const userRouter = router({
 
       await deleteUserPermission({
         byUserId: ctx.user.id,
-        userId,
         siteId,
+        userId,
       })
 
       return {
-        id: userToDeletePermissionsFrom.id,
         email: userToDeletePermissionsFrom.email,
+        id: userToDeletePermissionsFrom.id,
       }
     }),
 
@@ -202,12 +203,12 @@ export const userRouter = router({
     .output(getUserOutputSchema)
     .query(async ({ ctx, input: { siteId, userId } }) => {
       await validatePermissionsForManagingUsers({
+        action: "read",
         siteId,
         userId: ctx.user.id,
-        action: "read",
       })
 
-      const result = await getUsersQuery({ siteId, adminType: "agency" })
+      const result = await getUsersQuery({ adminType: "agency", siteId })
         .where("ActiveUser.id", "=", userId)
         .select((eb) => [
           "ActiveUser.id",
@@ -237,21 +238,22 @@ export const userRouter = router({
   isIsomerAdmin: protectedProcedure
     .input(isIsomerAdminInputSchema)
     .output(isIsomerAdminOutputSchema)
-    .query(async ({ ctx, input: { roles } }) => {
-      return await isActiveIsomerAdmin(ctx.user.id, roles)
-    }),
+    .query(
+      async ({ ctx, input: { roles } }) =>
+        await isActiveIsomerAdmin(ctx.user.id, roles),
+    ),
 
   list: protectedProcedure
     .input(listUsersInputSchema)
     .output(listUsersOutputSchema)
     .query(async ({ ctx, input: { siteId, adminType, offset, limit } }) => {
       await validatePermissionsForManagingUsers({
+        action: "read",
         siteId,
         userId: ctx.user.id,
-        action: "read",
       })
 
-      return await getUsersQuery({ siteId, adminType })
+      return await getUsersQuery({ adminType, siteId })
         .orderBy("ActiveUser.email", "asc")
         .select((eb) => [
           "ActiveUser.id",
@@ -282,9 +284,9 @@ export const userRouter = router({
     .meta({ rateLimitOptions: { max: 10, windowMs: 60 * 1000 } })
     .mutation(async ({ ctx, input: { siteId, userId } }) => {
       await validatePermissionsForManagingUsers({
+        action: "manage",
         siteId,
         userId: ctx.user.id,
-        action: "manage",
       })
 
       const isSingpassEnabled = getIsSingpassEnabled({
@@ -334,8 +336,8 @@ export const userRouter = router({
 
       // Defensive programming to check if the user has permissions to receive invite
       const userPermission = await getResourcePermission({
-        userId: user.id,
         siteId,
+        userId: user.id,
       })
       if (userPermission.length === 0) {
         throw new TRPCError({
@@ -347,11 +349,11 @@ export const userRouter = router({
       // Send invite
       const { name: siteName } = await getSiteNameAndCodeBuildId(siteId)
       await sendInvitation({
-        isSingpassEnabled,
         inviterName: actorName,
+        isSingpassEnabled,
         recipientEmail: user.email,
-        siteName,
         role: userPermission[0]?.role ?? RoleType.Editor,
+        siteName,
       })
 
       return pick(user, ["email"])
@@ -362,9 +364,9 @@ export const userRouter = router({
     .output(updateUserOutputSchema)
     .mutation(async ({ ctx, input: { siteId, userId, role } }) => {
       await validatePermissionsForManagingUsers({
+        action: "manage",
         siteId,
         userId: ctx.user.id,
-        action: "manage",
       })
 
       const isSingpassEnabled = getIsSingpassEnabled({
@@ -397,9 +399,9 @@ export const userRouter = router({
 
       const updatedUserPermission = await updateUserSitewidePermission({
         byUserId: ctx.user.id,
-        userId,
-        siteId,
         role,
+        siteId,
+        userId,
       })
 
       return pick(updatedUserPermission, ["id", "userId", "siteId", "role"])
@@ -413,9 +415,9 @@ export const userRouter = router({
       // because we only allow users to update their own details
       // They should be able to update their own details even without any resource permissions
       const updatedUser = await updateUserDetails({
-        userId: ctx.user.id,
         name,
         phone,
+        userId: ctx.user.id,
       })
 
       return pick(updatedUser, ["name", "phone"])

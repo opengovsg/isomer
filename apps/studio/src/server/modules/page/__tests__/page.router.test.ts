@@ -56,17 +56,15 @@ interface RedirectCreateAuditDelta {
 
 const asRedirectDeleteAuditDelta = (
   delta: PrismaJson.AuditLogDeltaJsonContent,
-): RedirectDeleteAuditDelta => 
+): RedirectDeleteAuditDelta =>
   // SAFETY: audit log row was written by redirect retirement in the same test.
   delta as RedirectDeleteAuditDelta
 
-
 const asRedirectCreateAuditDelta = (
   delta: PrismaJson.AuditLogDeltaJsonContent,
-): RedirectCreateAuditDelta => 
+): RedirectCreateAuditDelta =>
   // SAFETY: audit log row was written by redirect adoption in the same test.
   delta as RedirectCreateAuditDelta
-
 
 describe("page.router", async () => {
   let caller: ReturnType<typeof createCaller>
@@ -1172,7 +1170,8 @@ describe("page.router", async () => {
       const result = caller.reorderBlock({
         blocks: pageToReorder.blob.content.content,
         from: 0,
-        pageId: 999999, // should not exist
+        pageId: 999_999,
+        // should not exist
         siteId: pageToReorder.site.id,
         to: 1,
       })
@@ -1242,7 +1241,8 @@ describe("page.router", async () => {
       // Act
       const result = caller.reorderBlock({
         blocks: pageToReorder.blob.content.content,
-        from: fromArg, // should not exist
+        from: fromArg,
+        // should not exist
         pageId: Number(pageToReorder.page.id),
         siteId: pageToReorder.site.id,
         to: 1,
@@ -1289,7 +1289,8 @@ describe("page.router", async () => {
         from: 1,
         pageId: Number(pageToReorder.page.id),
         siteId: pageToReorder.site.id,
-        to: toArg, // should not exist,
+        to: toArg,
+        // should not exist,
       })
 
       // Assert
@@ -1345,7 +1346,7 @@ describe("page.router", async () => {
         .where("id", "=", pageToReorder.blob.id)
         .select("content")
         .executeTakeFirstOrThrow()
-      const expectedBlocks = pageToReorder.blob.content.content.reverse()
+      const expectedBlocks = pageToReorder.blob.content.content.toReversed()
       expect(actual.content.content).toEqual(expectedBlocks)
       expect(result).toEqual(expectedBlocks)
       await assertAuditLogRows(1)
@@ -1394,18 +1395,16 @@ describe("page.router", async () => {
     type Page = Awaited<ReturnType<typeof setupPageResource>>["page"]
     let pageToUpdate: Page
     type UpdatePageOutput = z.output<typeof updatePageBlobSchema>
-    const createPageUpdateArgs = (page: Page) => (
-      {
-        pageId: Number(page.id),
-        siteId: page.siteId,
-        content: JSON.stringify({
-          content: NEW_PAGE_BLOCKS,
-          layout: "content",
-          page: pick(page, ["title", "permalink"]),
-          version: "0.1.0",
-        } satisfies UpdatePageOutput["content"]),
-      }
-    )
+    const createPageUpdateArgs = (page: Page) => ({
+      pageId: Number(page.id),
+      siteId: page.siteId,
+      content: JSON.stringify({
+        content: NEW_PAGE_BLOCKS,
+        layout: "content",
+        page: pick(page, ["title", "permalink"]),
+        version: "0.1.0",
+      } satisfies UpdatePageOutput["content"]),
+    })
 
     beforeEach(async () => {
       const { page } = await setupPageResource({ resourceType: "Page" })
@@ -1456,7 +1455,8 @@ describe("page.router", async () => {
       // Act
       const result = caller.updatePageBlob({
         ...pageUpdateArgs,
-        pageId: 999_999, // should not exist
+        pageId: 999_999,
+        // should not exist
       })
 
       // Assert
@@ -1494,8 +1494,9 @@ describe("page.router", async () => {
       })
       const oldBlob = await db
         .transaction()
-        .execute( async (tx) =>
-          getBlobOfResource({ db: tx, resourceId: pageToUpdate.id }),
+        .execute(
+          async (tx) =>
+            await getBlobOfResource({ db: tx, resourceId: pageToUpdate.id }),
         )
 
       // Act
@@ -1541,8 +1542,12 @@ describe("page.router", async () => {
       const pageUpdateArgs = createPageUpdateArgs(publishedPageToUpdate)
       const oldBlob = await db
         .transaction()
-        .execute( async (tx) =>
-          getBlobOfResource({ db: tx, resourceId: publishedPageToUpdate.id }),
+        .execute(
+          async (tx) =>
+            await getBlobOfResource({
+              db: tx,
+              resourceId: publishedPageToUpdate.id,
+            }),
         )
 
       // Act
@@ -1633,7 +1638,8 @@ describe("page.router", async () => {
       const result = caller.createPage({
         layout: "content",
         permalink: "test-page",
-        siteId: 999999, // should not exist
+        siteId: 999_999,
+        // should not exist
         title: "Test Page",
       })
 
@@ -1879,7 +1885,8 @@ describe("page.router", async () => {
       // Arrange
       const { site } = await setupSite()
       const expectedPageArgs = {
-        folderId: 999999, // should not exist
+        folderId: 999_999,
+        // should not exist
         permalink: "test-page",
         siteId: site.id,
         title: "Test Page",
@@ -1931,7 +1938,7 @@ describe("page.router", async () => {
       await assertAuditLogRows()
     })
 
-    // TODO: Implement tests when permissions are implemented
+    // Deferred: Implement tests when permissions are implemented
     it.skip("should throw 403 if user does not have write access to folder", async () => {})
     it.skip("should throw 403 if user does not have write access to root", async () => {})
   })
@@ -1951,7 +1958,8 @@ describe("page.router", async () => {
     it("should return 404 if site does not exist", async () => {
       // Act
       const result = caller.getRootPage({
-        siteId: 999_999, // should not exist
+        siteId: 999_999,
+        // should not exist
       })
 
       // Assert
@@ -2389,7 +2397,8 @@ describe("page.router", async () => {
       })
 
       // Assert
-      expect(result).toBeUndefined() // not returning anything
+      expect(result).toBeUndefined()
+      // not returning anything
 
       // Assert - DB (AuditLog)
       const auditLogs = await db
@@ -2403,8 +2412,8 @@ describe("page.router", async () => {
 
   describe("updateSettings", () => {
     describe("redirect on settings change", () => {
-      const liveRedirects =  async (siteId: number) =>
-        db
+      const liveRedirects = async (siteId: number) =>
+        await db
           .selectFrom("Redirect")
           .selectAll()
           .where("siteId", "=", siteId)
@@ -2862,7 +2871,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message: "The search page settings cannot be edited",
@@ -2889,7 +2898,10 @@ describe("page.router", async () => {
       await setupAdminPermissions({ siteId: site.id, userId: session.userId })
 
       // Act
-      const result = caller.getFullPermalink({ pageId: 99999, siteId: site.id })
+      const result = caller.getFullPermalink({
+        pageId: 99_999,
+        siteId: site.id,
+      })
 
       // Assert
       await expect(result).rejects.toThrow(
@@ -3001,7 +3013,8 @@ describe("page.router", async () => {
       // Act
       const result = caller.getPermalinkTree({
         pageId: 1,
-        siteId: 999_999, // should not exist
+        siteId: 999_999,
+        // should not exist
       })
 
       // Assert
@@ -3019,7 +3032,10 @@ describe("page.router", async () => {
       const { site } = await setupSite()
 
       // Act
-      const result = caller.getPermalinkTree({ pageId: 99999, siteId: site.id })
+      const result = caller.getPermalinkTree({
+        pageId: 99_999,
+        siteId: site.id,
+      })
 
       // Assert
       await expect(result).rejects.toThrow(
@@ -3151,10 +3167,12 @@ describe("page.router", async () => {
   describe("schedulePage", () => {
     const FIXED_NOW = new Date("2024-01-01T00:00:00.000Z")
     beforeEach(() => {
-      MockDate.set(FIXED_NOW) // Freeze time before each test
+      MockDate.set(FIXED_NOW)
+      // Freeze time before each test
     })
     afterEach(() => {
-      MockDate.reset() // Reset time after each test
+      MockDate.reset()
+      // Reset time after each test
     })
     it("should throw 403 if user does not have publish access to the site", async () => {
       //  Arrange
@@ -3327,7 +3345,8 @@ describe("page.router", async () => {
       })
       // Act
       const scheduleCaller = caller.schedulePage({
-        pageId: Number(expectedPage.id) + 1, // Invalid pageId should lead to an error being thrown
+        pageId: Number(expectedPage.id) + 1,
+        // Invalid pageId should lead to an error being thrown
         scheduledAt: addDays(FIXED_NOW, 1),
         siteId: site.id,
       })
@@ -3341,12 +3360,14 @@ describe("page.router", async () => {
   describe("cancelSchedulePage", () => {
     const FIXED_NOW = new Date("2024-01-01T00:00:00.000Z")
     beforeEach(() => {
-      MockDate.set(FIXED_NOW) // Freeze time before each test
+      MockDate.set(FIXED_NOW)
+      // Freeze time before each test
     })
     afterEach(() => {
-      MockDate.reset() // Reset time after each test
+      MockDate.reset()
+      // Reset time after each test
     })
-    // TODO: check that the request fails if the job is already active - requires mocking the job queue
+    // Deferred: check that the request fails if the job is already active - requires mocking the job queue
     it("cancelling a scheduled publish works correctly", async () => {
       // Arrange
       const scheduledAt = set(addDays(FIXED_NOW, 1), {
@@ -3476,7 +3497,8 @@ describe("page.router", async () => {
 
       // Act
       const cancelScheduleCaller = caller.cancelSchedulePage({
-        pageId: Number(expectedPage.id) + 1, // Invalid pageId should lead to an error being thrown
+        pageId: Number(expectedPage.id) + 1,
+        // Invalid pageId should lead to an error being thrown
         siteId: site.id,
       })
 

@@ -4,9 +4,7 @@ import { isValidEmail } from "~/utils/email"
 import type { DB, Transaction } from "../database/types"
 import { db } from "../database/database"
 
-const normalise = (email: string) => 
-  email.toLowerCase().trim()
-
+const normalise = (email: string) => email.toLowerCase().trim()
 
 const getBaseQuery = (
   emails: string[],
@@ -14,7 +12,9 @@ const getBaseQuery = (
   expiry: Date | null = null,
 ) => {
   const dedupedEmails = [...new Set(emails)]
-  if (dedupedEmails.length === 0) {return}
+  if (dedupedEmails.length === 0) {
+    return
+  }
 
   return tx.insertInto("Whitelist").values(
     dedupedEmails.map((email) => ({
@@ -26,7 +26,9 @@ const getBaseQuery = (
 
 const insertAdminEmails = async (emails: string[], tx: Transaction<DB>) => {
   const query = getBaseQuery(emails, tx)
-  if (!query) {return}
+  if (query === undefined) {
+    return
+  }
 
   return await query
     .onConflict((oc) =>
@@ -42,7 +44,9 @@ const insertVendorEmails = async (
   tx: Transaction<DB>,
 ) => {
   const query = getBaseQuery(emails, tx, expiry)
-  if (!query) {return}
+  if (query === undefined) {
+    return
+  }
 
   return await query
     .onConflict((oc) =>
@@ -133,20 +137,21 @@ export const isEmailWhitelisted = async (email: string) => {
 
   // Step 3: Check if the suffix of the email domain is whitelisted
   const domainParts = emailDomain.split(".")
-  for (let i = 1; i < domainParts.length; i++) {
-    // Suffices should start with a dot (e.g. ".gov.sg")
-    const suffix = `.${domainParts.slice(i).join(".")}`
+  const suffixes = domainParts
+    .slice(1)
+    .map((_, index) => `.${domainParts.slice(index + 1).join(".")}`)
 
+  if (suffixes.length > 0) {
     const suffixMatch = await db
       .selectFrom("Whitelist")
-      .where("email", "=", suffix)
+      .where("email", "in", suffixes)
       .where(({ eb }) =>
         eb.or([eb("expiry", "is", null), eb("expiry", ">", new Date())]),
       )
       .select(["id"])
       .executeTakeFirst()
 
-    if (suffixMatch) {
+    if (suffixMatch !== undefined) {
       return true
     }
   }

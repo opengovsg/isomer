@@ -63,7 +63,7 @@ const seedDocumentReadyForIngestion = async ({
   description?: string
 }) => {
   const { page: parent, site } = await setupPageResource({
-    permalink: parentTitle.toLowerCase().replace(/\s+/g, "-"),
+    permalink: parentTitle.toLowerCase().replaceAll(/\s+/gu, "-"),
     resourceType: ResourceType.Folder,
     title: parentTitle,
   })
@@ -193,8 +193,7 @@ describe("schedulePushDocumentJobHandler", async () => {
       makeMockGb(false),
     )
 
-    vi.spyOn(algoliaLib, "saveObjectsToSearchIndex").mockResolvedValue(
-      )
+    vi.spyOn(algoliaLib, "saveObjectsToSearchIndex").mockResolvedValue()
 
     // Two sequential fetches: auth token, then ingest POST.
     vi.spyOn(global, "fetch").mockImplementation(
@@ -231,7 +230,7 @@ describe("schedulePushDocumentJobHandler", async () => {
       await db
         .insertInto("PushDocumentJob")
         .values({
-          resourceId: String(resourceId),
+          resourceId,
           scheduledAt: FIXED_NOW,
           scheduledBy: user.id,
         })
@@ -246,7 +245,8 @@ describe("schedulePushDocumentJobHandler", async () => {
         .calls[0]!
       expect(records.length).toBeGreaterThan(0)
       // objectGroup is the S3 key WITHOUT the leading slash.
-      const expectedObjectGroup = ref.slice(1) // "some-bucket-key/file.pdf"
+      const expectedObjectGroup = ref.slice(1)
+      // "some-bucket-key/file.pdf"
       expect(records[0]).toMatchObject({
         category: "Government Gazettes",
         objectGroup: expectedObjectGroup,
@@ -255,7 +255,7 @@ describe("schedulePushDocumentJobHandler", async () => {
         title: "Document Title",
       })
       // fileUrl is the public URL (with scheme + domain).
-      expect(records[0]!.fileUrl).toMatch(/^https:\/\//)
+      expect(records[0]!.fileUrl).toMatch(/^https:\/\//u)
       expect(records[0]!.fileUrl).toContain(ref)
 
       // SearchSG was NOT called.
@@ -287,8 +287,10 @@ describe("schedulePushDocumentJobHandler", async () => {
       // Build text longer than the 50k SearchSG truncation limit, using
       // whitespace-delimited words so the 7 000-char chunk regex can split it
       // into multiple records (a run with no whitespace produces only 1 record).
-      const word = "gazette " // 8 chars including trailing space
-      const longText = word.repeat(8000) // 64 000 chars, > 50 000
+      const word = "gazette "
+      // 8 chars including trailing space
+      const longText = word.repeat(8000)
+      // 64 000 chars, > 50 000
       vi.spyOn(algoliaPkg, "parseFullTextFromPDF").mockResolvedValue(longText)
       const { resourceId } = await seedDocumentReadyForIngestion({
         category: "Government Gazettes",
@@ -299,7 +301,7 @@ describe("schedulePushDocumentJobHandler", async () => {
       await db
         .insertInto("PushDocumentJob")
         .values({
-          resourceId: String(resourceId),
+          resourceId,
           scheduledAt: FIXED_NOW,
           scheduledBy: user.id,
         })
@@ -340,7 +342,7 @@ describe("schedulePushDocumentJobHandler", async () => {
       await db
         .insertInto("PushDocumentJob")
         .values({
-          resourceId: String(resourceId),
+          resourceId,
           scheduledAt: FIXED_NOW,
           scheduledBy: user.id,
         })
@@ -368,7 +370,7 @@ describe("schedulePushDocumentJobHandler", async () => {
       await db
         .insertInto("PushDocumentJob")
         .values({
-          resourceId: String(resourceId),
+          resourceId,
           scheduledAt: FIXED_NOW,
           scheduledBy: user.id,
         })
@@ -420,12 +422,12 @@ describe("schedulePushDocumentJobHandler", async () => {
 
       // Make saveObjectsToSearchIndex throw for the bad resource's objectGroup.
       vi.spyOn(algoliaLib, "saveObjectsToSearchIndex").mockImplementation(
-         async (records) => {
+        async (records) => {
           const firstRecord = records[0]
           if (firstRecord?.objectGroup === badRef.slice(1)) {
             throw new Error("Algolia error")
           }
-          return Promise.resolve()
+          return
         },
       )
 
@@ -456,18 +458,18 @@ describe("schedulePushDocumentJobHandler", async () => {
       })
       const version = await db
         .selectFrom("Version")
-        .where("resourceId", "=", String(resourceId))
+        .where("resourceId", "=", resourceId)
         .select("id")
         .executeTakeFirstOrThrow()
       await db
         .updateTable("Resource")
         .set({ draftBlobId: null, publishedVersionId: version.id })
-        .where("id", "=", String(resourceId))
+        .where("id", "=", resourceId)
         .execute()
       await db
         .insertInto("PushDocumentJob")
         .values({
-          resourceId: String(resourceId),
+          resourceId,
           scheduledAt: FIXED_NOW,
           scheduledBy: user.id,
         })
@@ -504,13 +506,13 @@ describe("schedulePushDocumentJobHandler", async () => {
       })
       const version = await db
         .selectFrom("Version")
-        .where("resourceId", "=", String(resourceId))
+        .where("resourceId", "=", resourceId)
         .select("id")
         .executeTakeFirstOrThrow()
       // SAFETY: empty blob content is enough for the draft-version fixture setup
       const draftBlob = await db
         .insertInto("Blob")
-        .values({ content: {} as never })
+        .values({ content: {} })
         .returning("id")
         .executeTakeFirstOrThrow()
       await setBlobContentForPushDocument(
@@ -522,12 +524,12 @@ describe("schedulePushDocumentJobHandler", async () => {
       await db
         .updateTable("Resource")
         .set({ draftBlobId: draftBlob.id, publishedVersionId: version.id })
-        .where("id", "=", String(resourceId))
+        .where("id", "=", resourceId)
         .execute()
       await db
         .insertInto("PushDocumentJob")
         .values({
-          resourceId: String(resourceId),
+          resourceId,
           scheduledAt: FIXED_NOW,
           scheduledBy: user.id,
         })
@@ -557,7 +559,7 @@ describe("schedulePushDocumentJobHandler", async () => {
       await db
         .insertInto("PushDocumentJob")
         .values({
-          resourceId: String(resourceId),
+          resourceId,
           scheduledAt: futureAt,
           scheduledBy: user.id,
         })
@@ -654,7 +656,7 @@ describe("schedulePushDocumentJobHandler", async () => {
       await db
         .insertInto("PushDocumentJob")
         .values({
-          resourceId: String(resourceId),
+          resourceId,
           scheduledAt: FIXED_NOW,
           scheduledBy: user.id,
         })
@@ -722,7 +724,7 @@ describe("schedulePushDocumentJobHandler", async () => {
       await db
         .insertInto("PushDocumentJob")
         .values({
-          resourceId: String(resourceId),
+          resourceId,
           scheduledAt: futureAt,
           scheduledBy: user.id,
         })

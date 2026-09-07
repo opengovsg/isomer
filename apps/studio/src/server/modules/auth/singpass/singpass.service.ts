@@ -1,6 +1,11 @@
 import type { Client } from "openid-client"
 import { generators, Issuer } from "openid-client"
 import { env } from "~/env.mjs"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+} from "~/utils/truthiness"
 
 import {
   SINGPASS_ENCRYPTION_JWK,
@@ -21,7 +26,7 @@ const getSingpassClient = async (): Promise<Client> => {
   // this code path should never be reached. Guard explicitly anyway to avoid a
   // DNS lookup against the placeholder SINGPASS_ISSUER_ENDPOINT value set in
   // preview.
-  if (env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS) {
+  if (hasNonEmptyString(env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS)) {
     throw new Error("SingPass is disabled in this environment")
   }
 

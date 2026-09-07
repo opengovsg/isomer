@@ -1,26 +1,27 @@
 import { env } from "~/env.mjs"
 import { bulkDeactivateInactiveUsers } from "~/server/modules/user/inactiveUsers.service"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { registerPgbossJob } from "@isomer/pgboss"
 
 import { createBaseLogger } from "../../../lib/logger"
 
 const JOB_NAME = "deactivate-inactive-users"
-const CRON_SCHEDULE = "0 0 * * *" // every day at 00:00 (midnight)
+const CRON_SCHEDULE = "0 0 * * *"
+// every day at 00:00 (midnight)
 
 const logger = createBaseLogger({
   path: "cron:deactivateInactiveUsersJob",
 })
 
-export const deactivateInactiveUsersJob = async () => 
+export const deactivateInactiveUsersJob = async () =>
   await registerPgbossJob(
     logger,
     JOB_NAME,
     CRON_SCHEDULE,
     bulkDeactivateInactiveUsers,
     { retryLimit: 2, singletonKey: JOB_NAME },
-    env.DEACTIVATE_INACTIVE_USERS_HEARTBEAT_URL
+    hasNonEmptyString(env.DEACTIVATE_INACTIVE_USERS_HEARTBEAT_URL)
       ? { heartbeatURL: env.DEACTIVATE_INACTIVE_USERS_HEARTBEAT_URL }
       : undefined,
   )
-

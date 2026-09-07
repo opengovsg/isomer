@@ -713,14 +713,15 @@ describe("collection.router", async () => {
       const sharedTitle = "Identical Title"
       const permalinks = ["page-1", "page-2", "page-3", "page-4"]
       const pages = await Promise.all(
-        permalinks.map( async (permalink) =>
-          setupPageResource({
-            parentId: collection.id,
-            permalink,
-            resourceType: ResourceType.CollectionPage,
-            siteId: site.id,
-            title: sharedTitle,
-          }),
+        permalinks.map(
+          async (permalink) =>
+            await setupPageResource({
+              parentId: collection.id,
+              permalink,
+              resourceType: ResourceType.CollectionPage,
+              siteId: site.id,
+              title: sharedTitle,
+            }),
         ),
       )
 
@@ -1495,7 +1496,10 @@ describe("collection.router", async () => {
       // Act
       const originalBlob = await db
         .transaction()
-        .execute( async (tx) => getBlobOfResource({ db: tx, resourceId: page.id }))
+        .execute(
+          async (tx) =>
+            await getBlobOfResource({ db: tx, resourceId: page.id }),
+        )
 
       // Assert
       const expected = await caller.updateCollectionLink({
@@ -1536,7 +1540,10 @@ describe("collection.router", async () => {
       })
       const originalBlob = await db
         .transaction()
-        .execute( async (tx) => getBlobOfResource({ db: tx, resourceId: page.id }))
+        .execute(
+          async (tx) =>
+            await getBlobOfResource({ db: tx, resourceId: page.id }),
+        )
       await setupAdminPermissions({ siteId: site.id, userId: session.userId })
 
       // Act
@@ -1830,7 +1837,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -1847,7 +1854,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1879,13 +1886,13 @@ describe("collection.router", async () => {
 
       // Act
       const result = caller.countTagOptionsUsage({
-        pageId: 99999,
+        pageId: 99_999,
         siteId: site.id,
         tagOptionIds: [TAG_OPTION_ID],
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Collection index page not found",
@@ -1906,7 +1913,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Collection index page not found",
@@ -1929,7 +1936,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Collection index page not found",
@@ -1955,7 +1962,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Collection index page has no parent collection",

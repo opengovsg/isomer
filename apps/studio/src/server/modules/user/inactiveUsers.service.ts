@@ -55,7 +55,8 @@ export const getInactiveUsers = async ({
     .innerJoin("ResourcePermission", "ResourcePermission.userId", "User.id")
     .where("User.deletedAt", "is", null)
     .where("ResourcePermission.deletedAt", "is", null)
-    .where("User.id", "not in", activeIsomerAdminUserIds()) // needed to provide support for agencies
+    .where("User.id", "not in", activeIsomerAdminUserIds())
+    // needed to provide support for agencies
     .where((eb) =>
       eb.or([
         // Users who have never logged in
@@ -90,7 +91,9 @@ export const bulkSendAccountDeactivationWarningEmails = async ({
   })
 
   const userIds = inactiveUsers.map((user) => user.id)
-  if (userIds.length === 0) {return}
+  if (userIds.length === 0) {
+    return
+  }
 
   const userAndSiteNames: { userEmail: string; siteNames: string[] }[] =
     await db
@@ -98,7 +101,8 @@ export const bulkSendAccountDeactivationWarningEmails = async ({
       .innerJoin("ResourcePermission", "ResourcePermission.userId", "User.id")
       .innerJoin("Site", "Site.id", "ResourcePermission.siteId")
       .where("User.id", "in", userIds)
-      .where("User.id", "not in", activeIsomerAdminUserIds()) // we don't want to send emails to admins and migrators
+      .where("User.id", "not in", activeIsomerAdminUserIds())
+      // we don't want to send emails to admins and migrators
       .where("User.deletedAt", "is", null)
       .where("ResourcePermission.deletedAt", "is", null)
       .select([
@@ -112,7 +116,9 @@ export const bulkSendAccountDeactivationWarningEmails = async ({
     userAndSiteNames.map(async ({ userEmail, siteNames }) => {
       // should not happen as we filter out users who have no site permissions
       // but just in case, we add this as a safety net
-      if (siteNames.length === 0) {return}
+      if (siteNames.length === 0) {
+        return
+      }
 
       try {
         await sendAccountDeactivationWarningEmail({
@@ -134,14 +140,17 @@ interface DeactivateUsersProps {
 }
 const deactivateUsers = async ({ userIds }: DeactivateUsersProps) => {
   // prevent empty array from being passed in
-  if (userIds.length === 0) {return []}
+  if (userIds.length === 0) {
+    return []
+  }
 
   let deletedPermissions: ResourcePermission[] = []
 
   try {
     deletedPermissions = await db
       .transaction()
-      .setIsolationLevel("serializable") // for idempotency
+      .setIsolationLevel("serializable")
+      // for idempotency
       .execute(async (tx) => {
         // Upsert so the system user is guaranteed to exist for audit-log
         // attribution, rather than relying on it being created manually.
@@ -170,7 +179,9 @@ const deactivateUsers = async ({ userIds }: DeactivateUsersProps) => {
           .selectAll()
           .execute()
 
-        if (permissionsToDelete.length === 0) {return []}
+        if (permissionsToDelete.length === 0) {
+          return []
+        }
 
         const updated = await tx
           .updateTable("ResourcePermission")
@@ -245,47 +256,46 @@ interface GetSiteAndAdminsProps {
 }
 const getSiteAndAdmins = async ({ userId, siteIds }: GetSiteAndAdminsProps) => {
   // Prevent empty array from being passed in
-  if (siteIds.length === 0) {return []}
+  if (siteIds.length === 0) {
+    return []
+  }
 
-  return (
-    await db
-      .with("siteAdmins", (eb) =>
-        eb
-          .selectFrom("Site")
-          .innerJoin(
-            "ResourcePermission",
-            "ResourcePermission.siteId",
-            "Site.id",
-          )
-          .innerJoin("User", "User.id", "ResourcePermission.userId")
-          .where("Site.id", "in", siteIds)
-          .where("ResourcePermission.userId", "!=", userId) // don't want to ask users to ask themselves for permissions
-          .where("ResourcePermission.deletedAt", "is", null)
-          .where("ResourcePermission.role", "=", RoleType.Admin) // should only give the admin emails to request reactivation permissions from
-          .where("User.id", "not in", activeIsomerAdminUserIds()) // we don't want to send emails to active admins and migrators
-          .select([
-            "Site.id as siteId",
-            db.fn.agg<string[]>("array_agg", ["User.email"]).as("adminEmails"),
-          ])
-          .groupBy("Site.id"),
-      )
-      // Needed as we still want the site records even if there are no other users with permissions for that site
-      .with("baseSites", (eb) =>
-        eb
-          .selectFrom("Site")
-          .where("Site.id", "in", siteIds)
-          .select(["Site.id as siteId", "Site.name as siteName"]),
-      )
-      .selectFrom("baseSites")
-      .leftJoin("siteAdmins", "siteAdmins.siteId", "baseSites.siteId")
-      .select([
-        "baseSites.siteName",
-        sql<string[]>`COALESCE("siteAdmins"."adminEmails", ARRAY[]::text[])`.as(
-          "adminEmails",
-        ),
-      ])
-      .execute()
-  )
+  return await db
+    .with("siteAdmins", (eb) =>
+      eb
+        .selectFrom("Site")
+        .innerJoin("ResourcePermission", "ResourcePermission.siteId", "Site.id")
+        .innerJoin("User", "User.id", "ResourcePermission.userId")
+        .where("Site.id", "in", siteIds)
+        .where("ResourcePermission.userId", "!=", userId)
+        // don't want to ask users to ask themselves for permissions
+        .where("ResourcePermission.deletedAt", "is", null)
+        .where("ResourcePermission.role", "=", RoleType.Admin)
+        // should only give the admin emails to request reactivation permissions from
+        .where("User.id", "not in", activeIsomerAdminUserIds())
+        // we don't want to send emails to active admins and migrators
+        .select([
+          "Site.id as siteId",
+          db.fn.agg<string[]>("array_agg", ["User.email"]).as("adminEmails"),
+        ])
+        .groupBy("Site.id"),
+    )
+    // Needed as we still want the site records even if there are no other users with permissions for that site
+    .with("baseSites", (eb) =>
+      eb
+        .selectFrom("Site")
+        .where("Site.id", "in", siteIds)
+        .select(["Site.id as siteId", "Site.name as siteName"]),
+    )
+    .selectFrom("baseSites")
+    .leftJoin("siteAdmins", "siteAdmins.siteId", "baseSites.siteId")
+    .select([
+      "baseSites.siteName",
+      sql<string[]>`COALESCE("siteAdmins"."adminEmails", ARRAY[]::text[])`.as(
+        "adminEmails",
+      ),
+    ])
+    .execute()
 }
 
 export const bulkDeactivateInactiveUsers = async (): Promise<void> => {
@@ -314,7 +324,9 @@ export const bulkDeactivateInactiveUsers = async (): Promise<void> => {
   }
 
   for (const { user, siteIds } of deactivatedUsersAndSiteIds) {
-    if (siteIds.length === 0) {continue}
+    if (siteIds.length === 0) {
+      continue
+    }
 
     try {
       const sitesAndAdmins = await getSiteAndAdmins({

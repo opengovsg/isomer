@@ -521,9 +521,7 @@ describe("redirect.router bulk upload", async () => {
       vi.spyOn(
         resourceService,
         "getResourceIdsByPermalinks",
-      ).mockImplementationOnce( async () =>
-        Promise.resolve(new Map<string, number | null>()),
-      )
+      ).mockImplementationOnce(async () => new Map<string, number | null>())
 
       // Act
       const result = await caller.bulkCreate({

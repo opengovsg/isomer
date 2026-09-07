@@ -41,7 +41,8 @@ export const upsertUser = async ({
       id: createId(),
       lastLoginAt: null,
       name: emailName,
-      phone: "", // NOTE: The phone number is added in a later step by the user,
+      phone: "",
+      // NOTE: The phone number is added in a later step by the user,
     })
     .returningAll()
     .executeTakeFirst()
@@ -109,13 +110,13 @@ export const alertPublishWhenSingpassDisabled = async ({
       resource,
       siteName: site.name,
     }),
-    ...allSiteAdminsMinusCurrentUser.map( async (admin) =>
-      sendPublishAlertSiteAdminEmail({
+    ...allSiteAdminsMinusCurrentUser.map(async (admin) => {
+      await sendPublishAlertSiteAdminEmail({
         publisherEmail,
         recipientEmail: admin.email,
         resource,
         siteName: site.name,
-      }),
-    ),
+      })
+    }),
   ])
 }

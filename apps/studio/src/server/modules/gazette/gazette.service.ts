@@ -1,4 +1,5 @@
 import type { Kysely, Transaction } from "kysely"
+import type { DB } from "~prisma/generated/generatedTypes"
 import { TRPCError } from "@trpc/server"
 import filenamify from "filenamify"
 import { TOPPAN_EMAIL_DOMAIN } from "~/constants/toppan"
@@ -13,7 +14,6 @@ import {
   generateSignedPutUrl,
 } from "~/lib/s3"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
-import type { DB } from "~prisma/generated/generatedTypes"
 
 import {
   buildGazetteObjectGroupFilter,
@@ -58,7 +58,9 @@ export const assertGazetteAccess = async (userId: string): Promise<void> => {
     throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" })
   }
 
-  if (user.email.endsWith(TOPPAN_EMAIL_DOMAIN)) {return}
+  if (user.email.endsWith(TOPPAN_EMAIL_DOMAIN)) {
+    return
+  }
 
   const isCoreAdmin = await isActiveIsomerAdmin(userId, [
     IsomerAdminRole.Core,
@@ -150,12 +152,11 @@ export const getPresignedGetUrl = async ({
   key,
 }: {
   key: string
-}): Promise<string> => 
+}): Promise<string> =>
   await generateSignedGetUrl({
     Bucket: S3_GAZETTE_BUCKET_NAME,
     Key: key,
   })
-
 
 /**
  * Copy `sourceKey` to a new key derived by replacing the filename segment with
@@ -249,7 +250,8 @@ export const removeGazetteFromSearchIndex = async (
  * deindexed but still reachable at this URL until the soft-delete completes.
  */
 export const deleteGazetteAsset = async (ref: string): Promise<void> => {
-  const key = ref.slice(1) // Remove leading slash
+  const key = ref.slice(1)
+  // Remove leading slash
   try {
     await markFileAsDeleted({ key })
   } catch (error) {

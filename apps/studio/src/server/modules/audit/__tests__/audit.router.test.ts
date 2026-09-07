@@ -38,7 +38,7 @@ const getRequestRows = async ({
 }: {
   siteId: number
   userId: string
-}) => 
+}) =>
   await db
     .selectFrom("AuditLogExportRequest")
     .where("siteId", "=", siteId)
@@ -47,11 +47,10 @@ const getRequestRows = async ({
     .selectAll()
     .execute()
 
-
 // Every accepted ask — including an idempotent-accepted duplicate — must be
 // recorded as an AuditLogExportCreate event. Rejected asks (FORBIDDEN/
 // BAD_REQUEST) must leave no event behind.
-const getExportCreateEvents = async ({ siteId }: { siteId: number }) => 
+const getExportCreateEvents = async ({ siteId }: { siteId: number }) =>
   await db
     .selectFrom("AuditLog")
     .where("siteId", "=", siteId)
@@ -59,7 +58,6 @@ const getExportCreateEvents = async ({ siteId }: { siteId: number }) =>
     .orderBy("id", "asc")
     .selectAll()
     .execute()
-
 
 describe("audit.router", async () => {
   let caller: ReturnType<typeof createCaller>
@@ -375,9 +373,9 @@ describe("audit.router", async () => {
 
         // Assert: one row per admin site, none for the site without permission.
         expect(result).toHaveLength(2)
-        expect(result.map((row) => row.siteId).sort((a, b) => a - b)).toEqual(
-          [adminSiteA.id, adminSiteB.id].sort((a, b) => a - b),
-        )
+        expect(
+          result.map((row) => row.siteId).toSorted((a, b) => a - b),
+        ).toEqual([adminSiteA.id, adminSiteB.id].toSorted((a, b) => a - b))
 
         const otherSiteRows = await getRequestRows({
           siteId: otherSite.id,
@@ -409,9 +407,9 @@ describe("audit.router", async () => {
 
         // Assert
         expect(result).toHaveLength(2)
-        expect(result.map((row) => row.siteId).sort((a, b) => a - b)).toEqual(
-          [siteA.id, siteB.id].sort((a, b) => a - b),
-        )
+        expect(
+          result.map((row) => row.siteId).toSorted((a, b) => a - b),
+        ).toEqual([siteA.id, siteB.id].toSorted((a, b) => a - b))
       })
 
       it("throws FORBIDDEN when the caller is not an Admin on any site", async () => {

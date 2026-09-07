@@ -517,7 +517,8 @@ describe("auth.email", () => {
       // Arrange
       await prisma.verificationToken.create({
         data: {
-          attempts: 6, // Currently hardcoded to 5 attempts.
+          attempts: 6,
+          // Currently hardcoded to 5 attempts.
           expires: new Date(Date.now() + env.OTP_EXPIRY * 1000),
           identifier: TEST_OTP_FINGERPRINT,
           token: VALID_TOKEN_HASH,

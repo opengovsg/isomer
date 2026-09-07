@@ -38,7 +38,7 @@ interface AuditLogExportTokenPayload {
  */
 export const sealAuditLogExportToken = async (
   requestId: string,
-): Promise<string> => 
+): Promise<string> =>
   await sealData(
     { purpose: AUDIT_LOG_EXPORT_TOKEN_PURPOSE, requestId },
     {
@@ -46,7 +46,6 @@ export const sealAuditLogExportToken = async (
       ttl: AUDIT_LOG_EXPORT_TOKEN_TTL_SECONDS,
     },
   )
-
 
 /**
  * Unseal a Download Token, returning its request id, or `null` if the token is
@@ -85,7 +84,7 @@ export const unsealAuditLogExportToken = async (
   // SAFETY: [object String] tag confirms a string primitive.
   // oxlint-disable-next-line typescript/non-nullable-type-assertion-style -- string tag guard above
   const requestId = payload.requestId as string
-  if (!/^[1-9]\d*$/.test(requestId)) {
+  if (!/^[1-9]\d*$/u.test(requestId)) {
     return null
   }
 

@@ -16,7 +16,7 @@ export class TracingPlugin implements KyselyPlugin {
     ddTrace.Span
   >()
   transformQuery(args: PluginTransformQueryArgs) {
-    const {queryId} = args
+    const { queryId } = args
     // only create spans if dd-trace is properly initialized, which is NOT the case if running in a seed script
     // oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (ddTrace?.tracer) {
@@ -26,16 +26,18 @@ export class TracingPlugin implements KyselyPlugin {
         childOf: ddTrace.tracer.scope().active() ?? undefined,
         tags: {
           "kysely.kind": args.node.kind,
-          "kysely.parameters_len": compiled.parameters.length, // log number of parameters, NOT the parameters themselves for security
+          "kysely.parameters_len": compiled.parameters.length,
+          // log number of parameters, NOT the parameters themselves for security
           "kysely.query_id": queryId,
-          "kysely.sql": compiled.sql, // only log the SQL
+          "kysely.sql": compiled.sql,
+          // only log the SQL
         },
       })
       this.spanMap.set(queryId, span)
     }
     return args.node
   }
-   async transformResult(
+  async transformResult(
     args: PluginTransformResultArgs,
   ): Promise<QueryResult<UnknownRow>> {
     const span = this.spanMap.get(args.queryId)
@@ -49,6 +51,6 @@ export class TracingPlugin implements KyselyPlugin {
       span.finish()
       this.spanMap.delete(args.queryId)
     }
-    return Promise.resolve(args.result)
+    return args.result
   }
 }

@@ -7,6 +7,7 @@ import {
   singpassLoginSchema,
 } from "~/schemas/auth/singpass"
 import { publicProcedure, router } from "~/server/trpc"
+import { hasNonEmptyString } from "~/utils/truthiness"
 import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 
 import { logUserEvent } from "../../audit/audit.service"
@@ -30,7 +31,12 @@ export const singpassRouter = router({
       const { codeVerifier, nonce, userId, verificationToken } =
         ctx.session.singpass.sessionState
 
-      if (!code || !codeVerifier || !nonce || !userId) {
+      if (
+        !hasNonEmptyString(code) ||
+        !hasNonEmptyString(codeVerifier) ||
+        !hasNonEmptyString(nonce) ||
+        !hasNonEmptyString(userId)
+      ) {
         // Do not log `code`, `codeVerifier`, or `nonce` — they are OAuth/OIDC secrets
         // (PKCE verifier + auth code complete the token exchange; nonce binds the ID token).
         ctx.logger.error(
@@ -56,7 +62,7 @@ export const singpassRouter = router({
         state,
       })
 
-      if (!uuid) {
+      if (!hasNonEmptyString(uuid)) {
         // Do not log `code`, `codeVerifier`, or `nonce` — see comment above.
         ctx.logger.error(
           {
@@ -69,7 +75,7 @@ export const singpassRouter = router({
         )
 
         throw new TRPCError({
-          // TODO: Change to SERVICE_UNAVAILABLE when TRPC is upgraded to 11.x
+          // Deferred: Change to SERVICE_UNAVAILABLE when TRPC is upgraded to 11.x
           code: "INTERNAL_SERVER_ERROR",
           message: "Singpass login failed",
         })
@@ -83,7 +89,7 @@ export const singpassRouter = router({
           () => new TRPCError({ code: "NOT_FOUND", message: "User not found" }),
         )
 
-      if (!possibleUser.singpassUuid) {
+      if (!hasNonEmptyString(possibleUser.singpassUuid)) {
         await ctx.db.transaction().execute(async (tx) => {
           const newUser = await tx
             .updateTable("User")
@@ -99,12 +105,12 @@ export const singpassRouter = router({
             )
 
           await logUserEvent(tx, {
-            eventType: AuditLogEvent.UserUpdate,
             by: newUser,
             delta: {
-              before: possibleUser,
               after: newUser,
+              before: possibleUser,
             },
+            eventType: AuditLogEvent.UserUpdate,
           })
         })
       } else if (possibleUser.singpassUuid !== uuid) {
@@ -134,7 +140,7 @@ export const singpassRouter = router({
       await ctx.session.save()
 
       return {
-        isNewUser: !possibleUser.singpassUuid,
+        isNewUser: !hasNonEmptyString(possibleUser.singpassUuid),
         redirectUrl: DASHBOARD,
       }
     }),
@@ -160,8 +166,8 @@ export const singpassRouter = router({
       )
 
     return {
-      name: user.name || user.email,
-      isNewUser: !user.singpassUuid,
+      isNewUser: !hasNonEmptyString(user.singpassUuid),
+      name: hasNonEmptyString(user.name) ? user.name : user.email,
     }
   }),
 

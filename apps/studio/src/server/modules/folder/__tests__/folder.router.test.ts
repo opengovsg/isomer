@@ -1235,21 +1235,20 @@ describe("folder.router", async () => {
 })
 
 // Test util functions
-const getFolderWithPermalink =  async ({
+const getFolderWithPermalink = async ({
   siteId,
   permalink,
 }: {
   siteId: number
   permalink: string
-}) => 
-  db
+}) =>
+  await db
     .selectFrom("Resource")
     .where("type", "=", ResourceType.Folder)
     .where("siteId", "=", siteId)
     .where("permalink", "=", permalink)
     .selectAll()
     .executeTakeFirstOrThrow()
-
 
 const createChildPages = async ({
   parentId,

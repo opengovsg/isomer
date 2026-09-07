@@ -2,6 +2,7 @@ import type { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
 import { TRPCError } from "@trpc/server"
 import { get, partition } from "lodash-es"
+import { isDefinedNumber } from "~/utils/truthiness"
 import { AuditLogEvent, RoleType } from "~prisma/generated/generatedEnums"
 
 import type {
@@ -21,6 +22,24 @@ import {
   buildUserManagementPermissions,
 } from "./permissions.util"
 
+export const isActiveIsomerAdmin = async (
+  userId: string,
+  roles?: IsomerAdminRole[],
+): Promise<boolean> => {
+  const now = new Date()
+  let query = db
+    .selectFrom("IsomerAdmin")
+    .where("userId", "=", userId)
+    .where((eb) => eb.or([eb("expiry", "is", null), eb("expiry", ">", now)]))
+
+  if (roles !== undefined && roles.length > 0) {
+    query = query.where("role", "in", roles)
+  }
+
+  const result = await query.select("id").executeTakeFirst()
+  return result !== undefined
+}
+
 // NOTE: Fetches roles for the given resource
 // and returns the permissions wihch the user has for the given resource.
 // If the resourceId is `null` or `undefined`,
@@ -37,7 +56,7 @@ export const definePermissionsForResource = async ({
     .where("siteId", "=", siteId)
     .where("deletedAt", "is", null)
 
-  if (resourceId) {
+  if (isDefinedNumber(resourceId)) {
     query = query.where("resourceId", "=", resourceId)
   } else {
     query = query.where("resourceId", "is", null)
@@ -45,7 +64,9 @@ export const definePermissionsForResource = async ({
 
   const roles = await query.select("role").execute()
 
-  roles.map(({ role }) =>{  buildPermissionsForResource(role, builder); })
+  for (const { role } of roles) {
+    buildPermissionsForResource(role, builder)
+  }
 
   const isUserIsomerAdmin = await isActiveIsomerAdmin(userId)
 
@@ -77,16 +98,16 @@ export const definePermissionsForSite = async ({
   }
 
   if (roles.some(({ role }) => role === RoleType.Admin) || isUserIsomerAdmin) {
-    CRUD_ACTIONS.map((action) => {
+    for (const action of CRUD_ACTIONS) {
       builder.can(action, "Site")
-    })
+    }
   }
 
   return builder.build({ detectSubjectType: () => "Site" })
 }
 
 // We do bulk validation to reduce the number of DB queries: currently at max. 1-2 queries
-// TODO: this is using site wide permissions for now
+// Deferred: this is using site wide permissions for now
 // we should fetch the oldest `parent` of this resource eventually
 interface BulkValidateUserPermissionsForResourcesProps extends BulkPermissionsProps {
   action: CrudResourceActions | "publish"
@@ -98,9 +119,9 @@ export const bulkValidateUserPermissionsForResources = async ({
   userId,
 }: BulkValidateUserPermissionsForResourcesProps) => {
   const generateResources = async (
-    resourceIds: NonNullable<BulkPermissionsProps["resourceIds"]>,
+    requestedResourceIds: NonNullable<BulkPermissionsProps["resourceIds"]>,
   ): Promise<{ parentId: string | null }[]> => {
-    if (resourceIds.length === 0) {
+    if (requestedResourceIds.length === 0) {
       return [{ parentId: null }]
     }
 
@@ -110,11 +131,13 @@ export const bulkValidateUserPermissionsForResources = async ({
       // we want to create is the resource passed in.
       // However, because we don't have root level permissions for now,
       // we will pass in `null` to signify the site level permissions
-      return resourceIds.map((resourceId) => ({ parentId: resourceId }))
+      return requestedResourceIds.map((resourceId) => ({
+        parentId: resourceId,
+      }))
     }
 
     const [nullResourceIds, nonNullResourceIds] = partition(
-      resourceIds,
+      requestedResourceIds,
       (resourceId) => resourceId === null,
     )
 
@@ -139,7 +162,7 @@ export const bulkValidateUserPermissionsForResources = async ({
       }
     }
 
-    return resources.concat(nullResourceIds.map(() => ({ parentId: null })))
+    return [...resources, ...nullResourceIds.map(() => ({ parentId: null }))]
   }
 
   // This executes 1 DB query
@@ -150,17 +173,14 @@ export const bulkValidateUserPermissionsForResources = async ({
   ])
 
   await Promise.all(
-    resources.map( async (resource) => {
+    resources.map((resource) => {
       if (perms.cannot(action, resource)) {
-        return Promise.reject(
-          new TRPCError({
-            code: "FORBIDDEN",
-            message:
-              "You do not have sufficient permissions to perform this action",
-          }),
-        )
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        })
       }
-      return Promise.resolve()
     }),
   )
 }
@@ -235,8 +255,10 @@ export const updateUserSitewidePermission = async ({
       .selectFrom("ResourcePermission")
       .where("userId", "=", userId)
       .where("siteId", "=", siteId)
-      .where("resourceId", "is", null) // because we are updating site-wide permissions
-      .where("deletedAt", "is", null) // ensure deleted persmission deletedAt is not overwritten
+      .where("resourceId", "is", null)
+      // because we are updating site-wide permissions
+      .where("deletedAt", "is", null)
+      // ensure deleted persmission deletedAt is not overwritten
       .selectAll()
       .executeTakeFirst()
 
@@ -250,7 +272,8 @@ export const updateUserSitewidePermission = async ({
     const deletedSitePermission = await tx
       .updateTable("ResourcePermission")
       .where("id", "=", sitePermissionToRemove.id)
-      .set({ deletedAt: new Date() }) // soft delete the old permission
+      .set({ deletedAt: new Date() })
+      // soft delete the old permission
       .returningAll()
       .executeTakeFirst()
 
@@ -273,10 +296,11 @@ export const updateUserSitewidePermission = async ({
 
     const createdSitePermission = await tx
       .insertInto("ResourcePermission")
-      .values({ resourceId: null, role, siteId, userId }) // because we are updating site-wide permissions
+      .values({ resourceId: null, role, siteId, userId })
+      // because we are updating site-wide permissions
       .returningAll()
       .executeTakeFirstOrThrow()
-      .catch((error) => {
+      .catch((error: unknown) => {
         if (get(error, "code") === PG_ERROR_CODES.uniqueViolation) {
           throw new TRPCError({
             code: "CONFLICT",
@@ -295,24 +319,6 @@ export const updateUserSitewidePermission = async ({
 
     return createdSitePermission
   })
-}
-
-export const isActiveIsomerAdmin = async (
-  userId: string,
-  roles?: IsomerAdminRole[],
-): Promise<boolean> => {
-  const now = new Date()
-  let query = db
-    .selectFrom("IsomerAdmin")
-    .where("userId", "=", userId)
-    .where((eb) => eb.or([eb("expiry", "is", null), eb("expiry", ">", now)]))
-
-  if (roles && roles.length > 0) {
-    query = query.where("role", "in", roles)
-  }
-
-  const result = await query.select("id").executeTakeFirst()
-  return !!result
 }
 
 interface ValidateUserIsIsomerAdminProps {

@@ -1,6 +1,6 @@
+import type { NextApiRequest } from "next"
 import type { PrismaClient } from "~prisma/generated/prisma/client"
 import { TRPCError } from "@trpc/server"
-import type { NextApiRequest } from "next"
 import {
   RateLimiterMemory,
   RateLimiterPrisma,
@@ -29,7 +29,8 @@ export async function checkRateLimit({
   const windowMs = rateLimitOptions.windowMs ?? 1000
 
   const store = new RateLimiterPrisma({
-    duration: windowMs / 1000, // in seconds
+    duration: windowMs / 1000,
+    // in seconds
     insuranceLimiter: rateLimiterMemory,
     points: max,
     storeClient: prisma,

@@ -55,8 +55,8 @@ export const siteRouter = router({
     .input(createSiteSchema)
     .mutation(async ({ ctx, input: { siteName } }) => {
       await validateUserIsIsomerAdmin({
-        userId: ctx.user.id,
         roles: [IsomerAdminRole.Core],
+        userId: ctx.user.id,
       })
 
       return await createSite({ siteName, userId: ctx.user.id })
@@ -65,9 +65,9 @@ export const siteRouter = router({
     .input(getConfigSchema)
     .query(async ({ ctx, input: { id } }) => {
       await validateUserPermissionsForSite({
+        action: "read",
         siteId: id,
         userId: ctx.user.id,
-        action: "read",
       })
       return await getSiteConfig(db, id)
     }),
@@ -75,9 +75,9 @@ export const siteRouter = router({
     .input(getConfigSchema)
     .query(async ({ ctx, input: { id } }) => {
       await validateUserPermissionsForSite({
+        action: "read",
         siteId: id,
         userId: ctx.user.id,
-        action: "read",
       })
       return await getFooter(db, id)
     }),
@@ -85,9 +85,9 @@ export const siteRouter = router({
     .input(getLocalisedSitemapSchema)
     .query(async ({ ctx, input: { siteId, resourceId } }) => {
       await validateUserPermissionsForSite({
+        action: "read",
         siteId,
         userId: ctx.user.id,
-        action: "read",
       })
       return await getLocalisedSitemap(siteId, resourceId)
     }),
@@ -95,9 +95,9 @@ export const siteRouter = router({
     .input(getConfigSchema)
     .query(async ({ ctx, input: { id } }) => {
       await validateUserPermissionsForSite({
+        action: "read",
         siteId: id,
         userId: ctx.user.id,
-        action: "read",
       })
       return await getNavBar(db, id)
     }),
@@ -105,9 +105,9 @@ export const siteRouter = router({
     .input(getNotificationSchema)
     .query(async ({ ctx, input: { siteId } }) => {
       await validateUserPermissionsForSite({
+        action: "read",
         siteId,
         userId: ctx.user.id,
-        action: "read",
       })
 
       return await getNotification(siteId)
@@ -116,9 +116,9 @@ export const siteRouter = router({
     .input(getNameSchema)
     .query(async ({ ctx, input: { siteId } }) => {
       await validateUserPermissionsForSite({
+        action: "read",
         siteId,
         userId: ctx.user.id,
-        action: "read",
       })
 
       const { config } = await db
@@ -133,9 +133,9 @@ export const siteRouter = router({
     .input(getConfigSchema)
     .query(async ({ ctx, input: { id } }) => {
       await validateUserPermissionsForSite({
+        action: "read",
         siteId: id,
         userId: ctx.user.id,
-        action: "read",
       })
       const theme = await getSiteTheme(id)
       return theme
@@ -169,8 +169,8 @@ export const siteRouter = router({
   }),
   listAllSites: protectedProcedure.query(async ({ ctx }) => {
     await validateUserIsIsomerAdmin({
-      userId: ctx.user.id,
       roles: [IsomerAdminRole.Core],
+      userId: ctx.user.id,
     })
 
     return await db
@@ -183,8 +183,8 @@ export const siteRouter = router({
     .input(publishSiteSchema)
     .mutation(async ({ ctx, input: { siteId } }) => {
       await validateUserIsIsomerAdmin({
-        userId: ctx.user.id,
         roles: [IsomerAdminRole.Core],
+        userId: ctx.user.id,
       })
 
       const byUser = await db
@@ -199,24 +199,24 @@ export const siteRouter = router({
             }),
         )
 
-      return await db.transaction().execute(async (tx) => {
+      await db.transaction().execute(async (tx) => {
         await logPublishEvent(tx, {
           by: byUser,
+          delta: { after: null, before: null },
           eventType: AuditLogEvent.Publish,
-          delta: { before: null, after: null },
           metadata: {},
           siteId,
         })
-        await publishSite(ctx.logger, { siteId: siteId })
+        await publishSite(ctx.logger, { siteId })
       })
     }),
   setFooter: protectedProcedure
     .input(setFooterSchema)
     .mutation(async ({ ctx, input: { siteId, footer } }) => {
       await validateUserPermissionsForSite({
+        action: "update",
         siteId,
         userId: ctx.user.id,
-        action: "update",
       })
 
       await db.transaction().execute(async (tx) => {
@@ -282,15 +282,15 @@ export const siteRouter = router({
         }
 
         await logConfigEvent(tx, {
-          siteId,
-          eventType: AuditLogEvent.FooterUpdate,
-          delta: { before: oldFooter, after: newFooter },
           by: user,
+          delta: { after: newFooter, before: oldFooter },
+          eventType: AuditLogEvent.FooterUpdate,
+          siteId,
         })
 
         await publishSiteConfig(
           ctx.user.id,
-          { site, footer: newFooter },
+          { footer: newFooter, site },
           ctx.logger,
         )
       })
@@ -299,9 +299,9 @@ export const siteRouter = router({
     .input(setNavbarSchema)
     .mutation(async ({ ctx, input: { siteId, navbar } }) => {
       await validateUserPermissionsForSite({
+        action: "update",
         siteId,
         userId: ctx.user.id,
-        action: "update",
       })
 
       await db.transaction().execute(async (tx) => {
@@ -366,15 +366,15 @@ export const siteRouter = router({
         }
 
         await logConfigEvent(tx, {
-          siteId,
-          eventType: AuditLogEvent.NavbarUpdate,
-          delta: { before: oldNavbar, after: newNavbar },
           by: user,
+          delta: { after: newNavbar, before: oldNavbar },
+          eventType: AuditLogEvent.NavbarUpdate,
+          siteId,
         })
 
         await publishSiteConfig(
           ctx.user.id,
-          { site, navbar: newNavbar },
+          { navbar: newNavbar, site },
           ctx.logger,
         )
       })
@@ -388,15 +388,15 @@ export const siteRouter = router({
       },
     }) => {
       await validateUserPermissionsForSite({
+        action: "update",
         siteId,
         userId: ctx.user.id,
-        action: "update",
       })
 
       const site = await setSiteNotification({
+        notification,
         siteId,
         userId: ctx.user.id,
-        notification,
       })
 
       await publishSiteConfig(ctx.user.id, { site }, ctx.logger)
@@ -407,13 +407,13 @@ export const siteRouter = router({
   setSiteConfigByAdmin: protectedProcedure
     .input(setSiteConfigByAdminSchema)
     .mutation(
-      // TODO: Make use of the site config, navbar and footer JSON schemas to
+      // Deferred: Make use of the site config, navbar and footer JSON schemas to
       // validate the input JSON before parsing. Also ensure that existing site
       // configs in the database meets the schema requirements
       async ({ ctx, input: { siteId, config, theme, navbar, footer } }) => {
         await validateUserIsIsomerAdmin({
-          userId: ctx.user.id,
           roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
+          userId: ctx.user.id,
         })
 
         await db.transaction().execute(async (tx) => {
@@ -465,10 +465,10 @@ export const siteRouter = router({
           }
 
           await logConfigEvent(tx, {
-            siteId,
-            eventType: AuditLogEvent.SiteConfigUpdate,
-            delta: { before: oldSite, after: newSite },
             by: user,
+            delta: { after: newSite, before: oldSite },
+            eventType: AuditLogEvent.SiteConfigUpdate,
+            siteId,
           })
 
           // Update Navbar contents
@@ -507,10 +507,10 @@ export const siteRouter = router({
           }
 
           await logConfigEvent(tx, {
-            siteId,
-            eventType: AuditLogEvent.NavbarUpdate,
-            delta: { before: oldNavbar, after: newNavbar },
             by: user,
+            delta: { after: newNavbar, before: oldNavbar },
+            eventType: AuditLogEvent.NavbarUpdate,
+            siteId,
           })
 
           // Update Footer contents
@@ -549,15 +549,15 @@ export const siteRouter = router({
           }
 
           await logConfigEvent(tx, {
-            siteId,
-            eventType: AuditLogEvent.FooterUpdate,
-            delta: { before: oldFooter, after: newFooter },
             by: user,
+            delta: { after: newFooter, before: oldFooter },
+            eventType: AuditLogEvent.FooterUpdate,
+            siteId,
           })
 
           await publishSiteConfig(
             ctx.user.id,
-            { site: newSite, navbar: newNavbar, footer: newFooter },
+            { footer: newFooter, navbar: newNavbar, site: newSite },
             ctx.logger,
           )
         })
@@ -567,9 +567,9 @@ export const siteRouter = router({
     .input(setThemeSchema)
     .mutation(async ({ ctx, input: { siteId, theme } }) => {
       await validateUserPermissionsForSite({
+        action: "update",
         siteId,
         userId: ctx.user.id,
-        action: "update",
       })
 
       const site = await db
@@ -616,17 +616,18 @@ export const siteRouter = router({
           .returningAll()
           .executeTakeFirst()
 
-        if (!newSite)
+        if (!newSite) {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
             message: "Failed to update site theme.",
           })
+        }
 
         await logConfigEvent(tx, {
-          siteId,
-          eventType: AuditLogEvent.SiteConfigUpdate,
-          delta: { before: site, after: newSite },
           by: user,
+          delta: { after: newSite, before: site },
+          eventType: AuditLogEvent.SiteConfigUpdate,
+          siteId,
         })
 
         await publishSiteConfig(ctx.user.id, { site }, ctx.logger)
@@ -642,12 +643,12 @@ export const siteRouter = router({
       ) {
         // IMPORTANT: clientId must always come from the DB, not user input (path traversal risk)
         void updateSearchSGConfig(
-          { colour: theme.colors.brand.canvas.inverse, _kind: "colour" },
+          { _kind: "colour", colour: theme.colors.brand.canvas.inverse },
           site.config.search.clientId,
           site.config.url,
-        ).catch((error) =>{ 
-          ctx.logger.error({ error }, "[ERROR] updateSearchSGConfig failed"); },
-        )
+        ).catch((error: unknown) => {
+          ctx.logger.error({ error }, "[ERROR] updateSearchSGConfig failed")
+        })
       }
 
       return updatedSite
@@ -656,9 +657,9 @@ export const siteRouter = router({
     .input(updateSiteConfigSchema)
     .mutation(async ({ ctx, input: { siteId, siteName, ...rest } }) => {
       await validateUserPermissionsForSite({
+        action: "update",
         siteId,
         userId: ctx.user.id,
-        action: "update",
       })
 
       const [user, site] = await Promise.all([
@@ -688,17 +689,17 @@ export const siteRouter = router({
         const updatedSite = await tx
           .updateTable("Site")
           .set({
-            name: siteName,
             config: jsonb({ ...normalizedConfig, search: searchConfig }),
+            name: siteName,
           })
           .where("id", "=", siteId)
           .returningAll()
           .executeTakeFirstOrThrow()
 
         await logConfigEvent(tx, {
-          eventType: AuditLogEvent.SiteConfigUpdate,
-          delta: { before: site, after: updatedSite },
           by: user,
+          delta: { after: updatedSite, before: site },
+          eventType: AuditLogEvent.SiteConfigUpdate,
           siteId,
         })
 
@@ -715,15 +716,16 @@ export const siteRouter = router({
         updatedConfig.search?.type === "searchSG" &&
         (config.search?.type !== "searchSG" ||
           config.siteName !== updatedConfig.siteName)
-      )
-        // IMPORTANT: clientId must always come from the DB, not user input (path traversal risk)
+      ) // IMPORTANT: clientId must always come from the DB, not user input (path traversal risk)
+      {
         void updateSearchSGConfig(
-          { name: siteName, _kind: "name" },
+          { _kind: "name", name: siteName },
           updatedConfig.search.clientId,
           updatedConfig.url,
-        ).catch((error) =>{ 
-          ctx.logger.error({ error }, "[ERROR] updateSearchSGConfig failed"); },
-        )
+        ).catch((error: unknown) => {
+          ctx.logger.error({ error }, "[ERROR] updateSearchSGConfig failed")
+        })
+      }
 
       return updatedConfig
     }),
@@ -731,9 +733,9 @@ export const siteRouter = router({
     .input(updateSiteIntegrationsSchema)
     .mutation(async ({ ctx, input: { siteId, data } }) => {
       await validateUserPermissionsForSite({
+        action: "update",
         siteId,
         userId: ctx.user.id,
-        action: "update",
       })
       const user = await db
         .selectFrom("User")
@@ -778,9 +780,9 @@ export const siteRouter = router({
           .executeTakeFirstOrThrow()
 
         await logConfigEvent(tx, {
-          eventType: AuditLogEvent.SiteConfigUpdate,
-          delta: { before: site, after: updatedSite },
           by: user,
+          delta: { after: updatedSite, before: site },
+          eventType: AuditLogEvent.SiteConfigUpdate,
           siteId,
         })
 
