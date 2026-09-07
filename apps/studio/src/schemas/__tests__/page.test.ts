@@ -24,7 +24,7 @@ const noImageInfocardsPage = {
 }
 
 describe("updatePageBlobSchema", () => {
-  it("accepts no-image infocards that still have leftover image fields and strips them", () => {
+  it("accepts leftover combinator fields without rewriting them", () => {
     // Arrange
     const input = {
       pageId: 1,
@@ -37,10 +37,7 @@ describe("updatePageBlobSchema", () => {
 
     // Assert
     const block = parsed.content.content[0]
-    expect(block).toMatchObject({
-      type: "infocards",
-      variant: "cardsWithoutImages",
-    })
+    expect(block?.type).toBe("infocards")
     if (block?.type !== "infocards") {
       return
     }
@@ -48,6 +45,9 @@ describe("updatePageBlobSchema", () => {
       title: "Card 1",
       description: "A description",
       url: "https://www.google.com",
+      imageUrl: "/placeholder_no_image.png",
+      imageAlt: "A photo of the office building",
+      imageFit: "cover",
     })
   })
 })

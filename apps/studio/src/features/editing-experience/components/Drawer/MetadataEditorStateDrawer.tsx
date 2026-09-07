@@ -14,6 +14,7 @@ import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { ajv } from "~/utils/ajv"
+import { serializePageBlob } from "~/utils/combinatorArrayFields"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
@@ -111,7 +112,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
       {
         pageId,
         siteId,
-        content: JSON.stringify(previewPageState),
+        content: serializePageBlob(previewPageState),
       },
       {
         onSuccess: () => setDrawerState({ state: "root" }),

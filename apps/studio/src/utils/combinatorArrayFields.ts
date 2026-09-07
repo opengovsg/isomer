@@ -146,3 +146,9 @@ export function stripInactiveCombinatorFields(
     }),
   }
 }
+
+// Serializes page content for `updatePageBlob`. Extra combinator fields stay
+// in editor state; only the payload is projected onto the active variant.
+export function serializePageBlob(page: IsomerSchema): string {
+  return JSON.stringify(stripInactiveCombinatorFields(page))
+}

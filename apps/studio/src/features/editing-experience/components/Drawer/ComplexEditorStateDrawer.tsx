@@ -12,6 +12,7 @@ import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { ajv } from "~/utils/ajv"
+import { serializePageBlob } from "~/utils/combinatorArrayFields"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
@@ -102,7 +103,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     savePage({
       pageId,
       siteId,
-      content: JSON.stringify(newPageState),
+      content: serializePageBlob(newPageState),
     })
     // NOTE: This chunk needs to be AFTER `setDrawerState`.
     // This is because we set the state of the drawer and then
@@ -230,7 +231,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
       {
         pageId,
         siteId,
-        content: JSON.stringify(newPageState),
+        content: serializePageBlob(newPageState),
       },
       {
         onSuccess: () => {

@@ -3,6 +3,7 @@ import type { IsomerSchema } from "@opengovsg/isomer-components"
 import {
   keepMatchingArrayFields,
   pickMatchingArrayFields,
+  serializePageBlob,
   stripInactiveCombinatorFields,
 } from "../combinatorArrayFields"
 
@@ -235,5 +236,44 @@ describe("stripInactiveCombinatorFields", () => {
 
     // Assert
     expect(result.content[0]).toEqual({ type: "prose", content: [] })
+  })
+})
+
+describe("serializePageBlob", () => {
+  it("stringifies the stripped page without mutating the editor copy", () => {
+    // Arrange
+    const page = pageWith({
+      type: "infocards",
+      title: "Cards",
+      variant: "cardsWithoutImages",
+      cards: [
+        {
+          title: "Card 1",
+          imageUrl: "/img.png",
+          imageAlt: "alt text",
+        },
+      ],
+    })
+
+    // Act
+    const payload = JSON.parse(serializePageBlob(page)) as IsomerSchema
+
+    // Assert
+    const payloadBlock = payload.content[0]
+    expect(payloadBlock?.type).toBe("infocards")
+    if (payloadBlock?.type !== "infocards") {
+      return
+    }
+    expect(payloadBlock.cards[0]).toEqual({ title: "Card 1" })
+    const originalBlock = page.content[0]
+    expect(originalBlock?.type).toBe("infocards")
+    if (originalBlock?.type !== "infocards") {
+      return
+    }
+    expect(originalBlock.cards[0]).toMatchObject({
+      title: "Card 1",
+      imageUrl: "/img.png",
+      imageAlt: "alt text",
+    })
   })
 })
