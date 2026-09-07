@@ -33,7 +33,6 @@ const LinkHubLinksSchema = Type.Array(LinkHubLinkSchema, {
   title: "Links",
   minItems: 1,
   maxItems: LINK_HUB_MAX_LINKS,
-  default: [],
 })
 
 const LinkHubBaseSchema = Type.Object({
@@ -63,6 +62,7 @@ const LinkHubHorizontalSchema = Type.Object(
   {
     variant: Type.Literal(LINK_HUB_VARIANT.horizontal, {
       title: "Horizontal",
+      default: LINK_HUB_VARIANT.horizontal,
     }),
     links: LinkHubLinksSchema,
   },

@@ -87,8 +87,9 @@ function JsonFormsCombinatorControl({
         handleChange(path, newSchema.const || "")
       } else {
         handleChange(path, {
-          ...data,
           ...newData,
+          ...data,
+          variant: newData.variant,
         })
       }
     }
