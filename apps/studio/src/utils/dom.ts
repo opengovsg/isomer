@@ -5,15 +5,13 @@ export const waitForElement = async (
   querySelector: string,
 ) =>
   await new Promise((resolve) => {
-    const observerValueValueValueValueValueValueValue = new MutationObserver(
-      (mutationsList, observerValueValueValueValueValueValueValueValue) => {
-        const element = document.querySelector(querySelector)
-        if (element) {
-          observer.disconnect()
-          resolve(element)
-        }
-      },
-    )
+    const observer = new MutationObserver(() => {
+      const element = document.querySelector(querySelector)
+      if (element) {
+        observer.disconnect()
+        resolve(element)
+      }
+    })
 
     observer.observe(document.body, {
       childList: true,

@@ -221,6 +221,7 @@ const preview: Preview = {
     actions: { argTypesRegex: "^on[A-Z].*" },
     controls: {
       matchers: {
+        // oxlint-disable-next-line eslint/prefer-named-capture-group -- unnamed group avoids TS1503 in Storybook preview
         color: /(background|color)$/iu,
         date: /Date$/u,
       },

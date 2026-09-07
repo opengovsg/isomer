@@ -179,7 +179,7 @@ export const emailSessionRouter = router({
             tx,
           })
 
-          const userId = user.id
+          const userId = userValue.id
           // SAFETY: upsertUser returns a persisted User row whose id matches SessionData["userId"]
           const sessionUserId = userId as NonNullable<SessionData["userId"]>
 

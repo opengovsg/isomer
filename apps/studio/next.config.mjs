@@ -1,4 +1,4 @@
-/** @param {string | null | undefined} value */
+/** @param {string | null | undefined} value - String to test for non-empty content. */
 const hasNonEmptyString = (value) =>
   value !== undefined && value !== null && value !== ""
 
@@ -179,7 +179,7 @@ const config = {
     remotePatterns: hasNonEmptyString(s3AssetsDomain)
       ? [
           {
-            hostname: /** @type {string} */ (s3AssetsDomain),
+            hostname: String(s3AssetsDomain),
             protocol: "https",
           },
         ]

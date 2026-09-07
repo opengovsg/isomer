@@ -13,7 +13,6 @@ import {
 import { Button, Radio } from "@opengovsg/design-system-react"
 import { useAtomValue, useSetAtom } from "jotai"
 import { Controller } from "react-hook-form"
-import { isNullableBooleanTrue } from "~/utils/truthiness"
 import { useCreateAuditLogExportRequest } from "~/features/settings/AuditLogExport/useCreateAuditLogExportRequest"
 import { useZodForm } from "~/lib/form"
 import {
@@ -66,7 +65,7 @@ export const ExportAccessLogsModal = () => {
   })
 
   return (
-    <Modal isOpen={!!isNullableBooleanTrue(isOpen)} onClose={onClose}>
+    <Modal isOpen={Boolean(isOpen)} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader mr="3.5rem">Export access history</ModalHeader>
@@ -116,9 +115,8 @@ export const ExportAccessLogsModal = () => {
         <ModalFooter>
           <Button
             variant="solid"
-            onClick={() => {
-              void onSubmit
-            }}
+            // oxlint-disable-next-line typescript/strict-void-return -- react-hook-form handleSubmit is valid as onClick
+            onClick={onSubmit}
             isLoading={isPending}
           >
             Export logs

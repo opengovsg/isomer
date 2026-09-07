@@ -1,4 +1,4 @@
-/* oxlint-disable typescript/no-unsafe-assignment, eslint/prefer-destructuring, unicorn/import-style -- studio lint cleanup */
+/* oxlint-disable typescript/no-unsafe-assignment, eslint/prefer-destructuring, unicorn/import-style, unicorn/no-useless-undefined -- studio lint cleanup */
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { Transaction, DB } from "~/server/modules/database/types"
 import { mkdtempSync, readFileSync, rmSync } from "node:fs"

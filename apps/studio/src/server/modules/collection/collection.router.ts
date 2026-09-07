@@ -81,7 +81,7 @@ export const collectionRouter = router({
         siteId,
         type: ResourceType.Collection,
       })
-      if (!hasNonEmptyString(collection)) {
+      if (!collection) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Collection not found",

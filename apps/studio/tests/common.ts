@@ -137,7 +137,7 @@ export const setup = async (
       }
 
       if (wait) {
-        const { typeValue, timeout = 60 * 1000 } = wait
+        const { type, timeout = 60 * 1000 } = wait
         switch (type) {
           case "PORT": {
             container = container
@@ -166,7 +166,7 @@ export const setup = async (
         z.number(),
         z
           .object({ container: z.number(), host: z.number() })
-          .transform(({ container }) => containerValue),
+          .transform(({ container }) => container),
       ])
 
       const getExposedPort = (

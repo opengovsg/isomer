@@ -1,3 +1,4 @@
+/* oxlint-disable anti-slop/no-chained-type-assertions -- MSW handler fixtures use partial RouterOutput shapes */
 import type { DelayMode } from "msw"
 import type { getPageById } from "~/server/modules/resource/resource.service"
 import type { RouterOutput } from "~/utils/trpc"

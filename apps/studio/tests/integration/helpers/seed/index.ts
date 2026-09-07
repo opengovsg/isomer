@@ -5,6 +5,7 @@ import { nanoid } from "nanoid"
 import { INDEX_PAGE_PERMALINK } from "src/constants/sitemap"
 import { MOCK_STORY_DATE } from "tests/msw/constants"
 import { buildIdFromArn } from "~/schemas/webhook"
+import { hasNonEmptyString } from "~/utils/truthiness"
 import {
   IsomerAdminRole,
   ResourceState,
@@ -12,10 +13,6 @@ import {
   RoleType,
 } from "~prisma/generated/generatedEnums"
 import { db, jsonb } from "~server/db"
-
-import {
-  hasNonEmptyString,
-} from "~/utils/truthiness"
 
 interface SetupPermissionsProps {
   userId?: string
@@ -46,7 +43,7 @@ const setupPermissions = async ({
       role,
       siteId,
       updatedAt: time,
-      userId: String(userId),
+      userId,
     })
     .returningAll()
     .executeTakeFirstOrThrow()

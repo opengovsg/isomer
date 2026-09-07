@@ -9,8 +9,6 @@ import { hasNonEmptyString, isNullableBooleanTrue } from "~/utils/truthiness"
 import type {
   DB,
   Resource,
-  ResourceState,
-  ResourceType,
   SafeKysely,
   Transaction,
   Version,
@@ -18,7 +16,12 @@ import type {
 import type { UserPermissionsProps } from "../permissions/permissions.type"
 import { logConfigEvent } from "../audit/audit.service"
 import { db } from "../database/database"
-import { AuditLogEvent, RoleType } from "../database/types"
+import {
+  AuditLogEvent,
+  ResourceState,
+  ResourceType,
+  RoleType,
+} from "../database/types"
 import { jsonb } from "../database/utils"
 import {
   definePermissionsForSite,
