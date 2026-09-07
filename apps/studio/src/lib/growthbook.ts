@@ -27,10 +27,14 @@ interface GetIsSingpassEnabledProps {
   gb: GrowthBook
 }
 
+export const shouldSkipSingpassAuth = (): boolean =>
+  env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS ||
+  env.NEXT_PUBLIC_APP_ENV === "test"
+
 export const getIsSingpassEnabled = ({
   gb,
 }: GetIsSingpassEnabledProps): boolean => {
-  if (env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS) {
+  if (shouldSkipSingpassAuth()) {
     return false
   }
   return gb.getFeatureValue(
@@ -45,7 +49,7 @@ export const getIsSingpassEnabled = ({
 export const getIsSingpassDisabledInNonPreview = ({
   gb,
 }: GetIsSingpassEnabledProps): boolean => {
-  if (env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS) {
+  if (shouldSkipSingpassAuth()) {
     return false
   }
   return !gb.getFeatureValue(

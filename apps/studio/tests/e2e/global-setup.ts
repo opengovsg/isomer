@@ -1,24 +1,13 @@
 import type { FullConfig } from "@playwright/test"
 import { chromium } from "@playwright/test"
-import crypto from "node:crypto"
 import { db } from "~/server/modules/database/database"
 
 import { ROLES, storageStateFor, TEST_EMAILS } from "./fixtures/auth"
 import { LoginPage } from "./fixtures/login"
 import { seedRolesForE2E } from "./fixtures/seed"
 
-const setSingpassUuidFor = async (email: string, uuid: string) => {
-  await db
-    .updateTable("User")
-    .set({ name: "test-e2e", phone: "82345678", singpassUuid: uuid })
-    .where("email", "=", email)
-    .execute()
-}
-
 const signInOnce = async (role: keyof typeof TEST_EMAILS, baseURL: string) => {
   const email = TEST_EMAILS[role]
-  const uuid = crypto.randomUUID()
-  await setSingpassUuidFor(email, uuid)
 
   const browser = await chromium.launch()
   const ctx = await browser.newContext({ baseURL })
@@ -30,9 +19,7 @@ const signInOnce = async (role: keyof typeof TEST_EMAILS, baseURL: string) => {
   await page.getByText("Enter OTP").waitFor()
   await loginPage.fillToken(email)
   await page.getByRole("button", { name: "Sign in" }).click()
-  await page.waitForURL(/\/sign-in\/singpass/u)
-  await loginPage.singpassButton.waitFor({ state: "visible" })
-  await loginPage.mockpassLoginWith(uuid)
+  // Singpass is disabled in NEXT_PUBLIC_APP_ENV=test, so OTP completes login.
   await page.waitForURL(`${baseURL}/`)
 
   await ctx.storageState({ path: storageStateFor(role) })
