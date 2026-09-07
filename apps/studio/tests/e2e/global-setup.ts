@@ -1,25 +1,24 @@
 /* oxlint-disable anti-slop/no-runtime-typeof, anti-slop/no-unsafe-dictionary-type -- Playwright evaluate I/O boundary */
 import type { APIRequestContext, FullConfig } from "@playwright/test"
 import type { z } from "zod"
+import type { SessionData } from "~/lib/types/session"
 import { chromium } from "@playwright/test"
+import { sealData } from "iron-session"
 import crypto from "node:crypto"
 import { APP_VERSION_HEADER_KEY } from "~/constants/version"
 import { env } from "~/env.mjs"
+import { emailSignInSchema } from "~/schemas/auth/email/signIn"
 import {
-  emailSignInSchema,
-  emailVerifyOtpSchema,
-} from "~/schemas/auth/email/signIn"
+  generateSessionOptions,
+  getIronPassword,
+} from "~/server/modules/auth/session"
 import { db } from "~/server/modules/database/database"
 
 import { ROLES, storageStateFor, TEST_EMAILS } from "./fixtures/auth"
 import { LoginPage } from "./fixtures/login"
 import { seedRolesForE2E } from "./fixtures/seed"
-import { overwriteToken } from "./utils"
 
 type EmailLoginInput = z.infer<typeof emailSignInSchema>
-type EmailVerifyOtpInput = z.infer<typeof emailVerifyOtpSchema>
-
-const SESSION_COOKIE_NAME = "auth.session-token"
 
 const trpcHeaders = () => ({
   "content-type": "application/json",
@@ -34,7 +33,7 @@ const isTrpcErrorResponse = (
 const trpcMutate = async (
   request: APIRequestContext,
   procedure: string,
-  input: EmailLoginInput | EmailVerifyOtpInput,
+  input: EmailLoginInput,
 ) => {
   const response = await request.post(`/api/trpc/${procedure}`, {
     data: { json: input },
@@ -54,52 +53,64 @@ const trpcMutate = async (
   }
 }
 
-const verifyOtpInBrowser = async (
-  page: Awaited<
-    ReturnType<Awaited<ReturnType<typeof chromium.launch>>["newPage"]>
-  >,
-  input: EmailVerifyOtpInput,
-) => {
-  await page.evaluate(
-    async ({ appVersion, headersKey, verifyInput }) => {
-      const response = await fetch("/api/trpc/auth.email.verifyOtp", {
-        body: JSON.stringify({ json: verifyInput }),
-        credentials: "include",
-        headers: {
-          "content-type": "application/json",
-          [headersKey]: appVersion,
-        },
-        method: "POST",
-      })
-
-      const body: unknown = await response.json()
-      if (
-        typeof body === "object" &&
-        body !== null &&
-        "error" in body &&
-        body.error !== undefined
-      ) {
-        throw new Error(JSON.stringify(body.error))
-      }
-
-      if (!response.ok) {
-        throw new Error(`${response.status} ${JSON.stringify(body)}`)
-      }
-    },
-    {
-      appVersion: env.NEXT_PUBLIC_APP_VERSION,
-      headersKey: APP_VERSION_HEADER_KEY,
-      verifyInput: input,
-    },
-  )
-}
-
 const setSingpassUuidFor = async (email: string, uuid: string) => {
   await db
     .updateTable("User")
     .set({ singpassUuid: uuid, name: "test-e2e", phone: "82345678" })
     .where("email", "=", email)
     .execute()
+}
+
+const seedSingpassSessionCookie = async (
+  ctx: Awaited<
+    ReturnType<Awaited<ReturnType<typeof chromium.launch>>["newContext"]>
+  >,
+  baseURL: string,
+  email: string,
+) => {
+  const user = await db
+    .selectFrom("User")
+    .select(["id"])
+    .where("email", "=", email)
+    .executeTakeFirstOrThrow()
+
+  const verificationToken = await db
+    .selectFrom("VerificationToken")
+    .selectAll()
+    .where("identifier", "like", `${email}|%`)
+    .executeTakeFirstOrThrow()
+
+  const sessionOptions = generateSessionOptions({ ttlInHours: 12 })
+  const sessionData: SessionData = {
+    singpass: {
+      sessionState: {
+        codeVerifier: "",
+        userId: user.id as NonNullable<
+          NonNullable<SessionData["singpass"]>["sessionState"]
+        >["userId"],
+        verificationToken,
+      },
+    },
+  }
+
+  const sealedSession = await sealData(sessionData, {
+    password: getIronPassword(),
+    ttl: sessionOptions.ttl,
+  })
+
+  const { hostname, protocol } = new URL(baseURL)
+  await ctx.addCookies([
+    {
+      domain: hostname,
+      expires: Math.floor(Date.now() / 1000) + 43_200,
+      httpOnly: true,
+      name: sessionOptions.cookieName,
+      path: "/",
+      sameSite: "Lax",
+      secure: protocol === "https:",
+      value: sealedSession,
+    },
+  ])
 }
 
 const signInOnce = async (role: keyof typeof TEST_EMAILS, baseURL: string) => {
@@ -114,19 +125,7 @@ const signInOnce = async (role: keyof typeof TEST_EMAILS, baseURL: string) => {
   const loginPage = new LoginPage(page)
 
   await trpcMutate(request, "auth.email.login", { email })
-  const token = await overwriteToken({
-    factory: () => "123456",
-    identifier: email,
-  })
-
-  // Seed the session cookie in the browser jar (not just APIRequestContext).
-  await page.goto("/sign-in")
-  await verifyOtpInBrowser(page, { email, token })
-
-  const cookies = await ctx.cookies()
-  if (!cookies.some((cookie) => cookie.name === SESSION_COOKIE_NAME)) {
-    throw new Error(`Missing ${SESSION_COOKIE_NAME} after verifyOtp`)
-  }
+  await seedSingpassSessionCookie(ctx, baseURL, email)
 
   await page.goto("/sign-in/singpass")
   await loginPage.singpassButton.waitFor({ state: "visible" })
