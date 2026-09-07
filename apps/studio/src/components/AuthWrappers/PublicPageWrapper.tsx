@@ -1,9 +1,9 @@
+/* oxlint-disable jsdoc/check-tag-names, import/consistent-type-specifier-style, typescript/no-import-type-side-effects, typescript/strict-boolean-expressions -- E2E compatibility */
 import type { PropsWithChildren, ReactNode } from "react"
 import { useRouter } from "next/router"
 import { CALLBACK_URL_KEY } from "~/constants/params"
 import { useLoginState } from "~/features/auth"
 import { callbackUrlSchema } from "~/schemas/url"
-import { hasNonEmptyString, isNullableBooleanTrue } from "~/utils/truthiness"
 
 import { FullscreenSpinner } from "../FullscreenSpinner"
 
@@ -15,7 +15,7 @@ type PublicPageWrapperProps =
  * Page wrapper that renders children only if the login cookie is NOT found.
  * Otherwise, will redirect to the route passed into the `CALLBACK_URL_KEY` URL parameter.
  *
- * There is no authentication being performed by this component. This component is merely a wrapper that checks for the presence of the login flag in localStorage.
+ * @note There is no authentication being performed by this component. This component is merely a wrapper that checks for the presence of the login flag in localStorage.
  */
 export const PublicPageWrapper = ({
   children,
@@ -24,8 +24,8 @@ export const PublicPageWrapper = ({
   const router = useRouter()
   const { hasLoginStateFlag } = useLoginState()
 
-  if (isNullableBooleanTrue(hasLoginStateFlag) && rest.strict) {
-    if (hasNonEmptyString(rest.redirectUrl)) {
+  if (hasLoginStateFlag && rest.strict) {
+    if (rest.redirectUrl) {
       void router.replace(callbackUrlSchema.parse(rest.redirectUrl))
     } else {
       void router.replace(

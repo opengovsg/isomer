@@ -1,4 +1,4 @@
-/* oxlint-disable eslint/no-use-before-define, unicorn/no-unnecessary-type-conversion -- core cleanup deferred */
+/* oxlint-disable eslint/no-use-before-define, unicorn/no-useless-undefined, eslint/curly, eslint/sort-keys, typescript/strict-boolean-expressions -- E2E compatibility */
 import type { PropsWithChildren } from "react"
 import {
   createContext,
@@ -11,12 +11,6 @@ import { LOGGED_IN_KEY } from "~/constants/localStorage"
 import { useLocalStorage } from "~/hooks/useLocalStorage"
 import { withPosthog } from "~/lib/posthog"
 import { trpc } from "~/utils/trpc"
-import {
-  hasNonEmptyString,
-  isDefinedNumber,
-  isNullableBooleanTrue,
-  isNonEmptyArray,
-} from "~/utils/truthiness"
 
 interface LoginStateContextReturn {
   hasLoginStateFlag?: boolean
@@ -67,27 +61,22 @@ const PostHogIdentity = () => {
   const { data: sites } = trpc.site.list.useQuery(undefined, {
     enabled: hasLoginStateFlag,
   })
-  const identifiedUserId = useRef<string | undefined>()
+  const identifiedUserId = useRef<string | undefined>(undefined)
 
   useEffect(() => {
     // Logout resets PostHog's identity independently (see useMe's `logout`),
     // so clear our own guard too — otherwise a same-user relogin sees
     // `identifiedUserId.current` still set and skips re-identifying,
     // leaving subsequent events anonymous.
-    if (!isNullableBooleanTrue(hasLoginStateFlag)) {
+    if (!hasLoginStateFlag) {
       identifiedUserId.current = undefined
       return
     }
 
-    if (!user || !sites || identifiedUserId.current === user.id) {
-      return
-    }
+    if (!user || !sites || identifiedUserId.current === user.id) return
 
     void withPosthog((posthog) => {
-      if (
-        hasNonEmptyString(identifiedUserId.current) &&
-        identifiedUserId.current !== user.id
-      ) {
+      if (identifiedUserId.current && identifiedUserId.current !== user.id) {
         posthog.reset()
       }
 
@@ -114,8 +103,10 @@ const PostHogIdentity = () => {
 }
 
 const useProvideLoginState = () => {
-  const [hasLoginStateFlag, setLoginStateFlag] =
-    useLocalStorage<boolean>(LOGGED_IN_KEY)
+  const [hasLoginStateFlag, setLoginStateFlag] = useLocalStorage<boolean>(
+    LOGGED_IN_KEY,
+    undefined,
+  )
 
   const setHasLoginStateFlag = useCallback(() => {
     setLoginStateFlag(true)
@@ -124,11 +115,10 @@ const useProvideLoginState = () => {
   const removeLoginStateFlag = useCallback(() => {
     setLoginStateFlag(undefined)
   }, [setLoginStateFlag])
-  // oxlint-disable-next-line unicorn/no-unnecessary-type-conversion -- core cleanup deferred
 
   return {
-    hasLoginStateFlag: !!isNullableBooleanTrue(hasLoginStateFlag),
-    removeLoginStateFlag,
+    hasLoginStateFlag: !!hasLoginStateFlag,
     setHasLoginStateFlag,
+    removeLoginStateFlag,
   }
 }

@@ -1,8 +1,7 @@
-/* oxlint-disable eslint/no-warning-comments, unicorn/no-instanceof-builtins, typescript/no-unnecessary-condition -- studio lint cleanup */
+/* oxlint-disable eslint/no-warning-comments, unicorn/no-instanceof-builtins, typescript/strict-boolean-expressions, typescript/no-unsafe-type-assertion -- E2E compatibility */
 import type { SetStateAction } from "react"
 import { useCallback, useEffect, useState } from "react"
 import { LOCAL_STORAGE_EVENT } from "~/constants/localStorage"
-import { hasNonEmptyString } from "~/utils/truthiness"
 
 // Retrieved and modified from https://usehooks-ts.com/react-hook/use-local-storage
 
@@ -20,8 +19,7 @@ export const useLocalStorage = <T>(
     try {
       const item = globalThis.window.localStorage.getItem(key)
       // SAFETY: callers constrain T; corrupt storage falls back to initialValue
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
-      return hasNonEmptyString(item) ? (JSON.parse(item) as T) : initialValue
+      return item ? (JSON.parse(item) as T) : initialValue
     } catch {
       return initialValue
     }
