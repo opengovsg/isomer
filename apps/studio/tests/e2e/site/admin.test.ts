@@ -46,7 +46,7 @@ for (const role of deniedRoles) {
       const adminResponse = await adminResponsePromise
 
       expect(adminResponse.status()).toBe(307)
-      await expect(page).toHaveURL(new RegExp(`/sites/uuuuu${siteId}$`, "u"))
+      await expect(page).toHaveURL(new RegExp(`/sites/${siteId}$`, "u"))
       await expect(
         page.getByText("Manage site configurations"),
       ).not.toBeVisible()

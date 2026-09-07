@@ -40,7 +40,7 @@ const createPageViaWizard = async (
 
   // Router pushes to /sites/{siteId}/pages/{pageId}.
   await page.waitForURL(
-    new RegExp(`/sites/u${getSeedSiteId()}/pages/uuuuu\\d+$`),
+    new RegExp(`/sites/${getSeedSiteId()}/pages/\\d+$`, "u"),
   )
 }
 
