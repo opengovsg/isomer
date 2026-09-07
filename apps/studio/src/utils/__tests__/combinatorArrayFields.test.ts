@@ -2,7 +2,6 @@ import type { IsomerSchema } from "@opengovsg/isomer-components"
 
 import {
   keepMatchingArrayFields,
-  pickMatchingArrayFields,
   serializePageBlob,
   stripInactiveCombinatorFields,
 } from "../combinatorArrayFields"
@@ -42,95 +41,62 @@ const pageWith = (block: Record<string, unknown>): IsomerSchema =>
     content: [block],
   }) as unknown as IsomerSchema
 
+function infocardsFrom(page: IsomerSchema) {
+  const block = page.content[0]
+  expect(block?.type).toBe("infocards")
+  if (block?.type !== "infocards") {
+    throw new Error("expected infocards block")
+  }
+  return block
+}
+
 describe("keepMatchingArrayFields", () => {
-  it("keeps existing items and their shared fields when switching to a variant with more fields", () => {
-    // Arrange
+  it("keeps array items when the variant schema grows", () => {
     const oldData = {
       variant: "compact",
       widgets: [{ label: "One" }, { label: "Two" }],
     }
 
-    // Act
-    const preserved = keepMatchingArrayFields(oldData, detailedVariantSchema)
-
-    // Assert
-    expect(preserved).toStrictEqual({
+    expect(
+      keepMatchingArrayFields(oldData, detailedVariantSchema),
+    ).toStrictEqual({
       widgets: [{ label: "One" }, { label: "Two" }],
     })
   })
 
-  it("retains extra fields when switching to a variant with fewer fields", () => {
-    // Arrange
+  it("keeps extra item fields when the variant schema shrinks", () => {
     const oldData = {
       variant: "detailed",
       widgets: [{ label: "One", icon: "star" }],
     }
 
-    // Act
-    const preserved = keepMatchingArrayFields(oldData, compactVariantSchema)
-
-    // Assert
-    expect(preserved).toStrictEqual({
+    expect(
+      keepMatchingArrayFields(oldData, compactVariantSchema),
+    ).toStrictEqual({
       widgets: [{ label: "One", icon: "star" }],
     })
   })
 
-  it("restores extra fields when switching back to a variant that uses them", () => {
-    // Arrange
+  it("round-trips extra fields across two variant switches", () => {
     const detailed = {
       variant: "detailed",
       widgets: [{ label: "One", icon: "star" }],
     }
 
-    // Act
     const onCompact = keepMatchingArrayFields(detailed, compactVariantSchema)
     const backToDetailed = keepMatchingArrayFields(
       { variant: "compact", ...onCompact },
       detailedVariantSchema,
     )
 
-    // Assert
     expect(backToDetailed).toStrictEqual({
       widgets: detailed.widgets,
-    })
-  })
-
-  it("never resets the array to empty when switching variants", () => {
-    // Arrange
-    const oldData = {
-      variant: "compact",
-      widgets: [{ label: "Only" }],
-    }
-
-    // Act
-    const preserved = keepMatchingArrayFields(oldData, detailedVariantSchema)
-
-    // Assert
-    expect(preserved.widgets).toHaveLength(1)
-  })
-})
-
-describe("pickMatchingArrayFields", () => {
-  it("drops array-item fields that the target schema does not list", () => {
-    // Arrange
-    const data = {
-      variant: "compact",
-      widgets: [{ label: "One", icon: "star" }],
-    }
-
-    // Act
-    const picked = pickMatchingArrayFields(data, compactVariantSchema)
-
-    // Assert
-    expect(picked).toStrictEqual({
-      widgets: [{ label: "One" }],
     })
   })
 })
 
 describe("stripInactiveCombinatorFields", () => {
-  it("strips extra item fields using the matching component combinator branch", () => {
-    // Arrange
+  it("drops image fields for cardsWithoutImages", () => {
     const page = pageWith({
       type: "infocards",
       title: "Cards",
@@ -147,24 +113,16 @@ describe("stripInactiveCombinatorFields", () => {
       ],
     })
 
-    // Act
-    const result = stripInactiveCombinatorFields(page)
-    const block = result.content[0]
-
-    // Assert
-    expect(block?.type).toBe("infocards")
-    if (block?.type !== "infocards") {
-      return
-    }
-    expect(block.cards[0]).toEqual({
-      title: "Card 1",
-      description: "Desc 1",
-      url: "/a",
-    })
+    expect(infocardsFrom(stripInactiveCombinatorFields(page)).cards[0]).toEqual(
+      {
+        title: "Card 1",
+        description: "Desc 1",
+        url: "/a",
+      },
+    )
   })
 
-  it("strips fields omitted by a different combinator branch of the same component", () => {
-    // Arrange
+  it("drops description for cardsWithFullImages", () => {
     const page = pageWith({
       type: "infocards",
       title: "Cards",
@@ -179,24 +137,16 @@ describe("stripInactiveCombinatorFields", () => {
       ],
     })
 
-    // Act
-    const result = stripInactiveCombinatorFields(page)
-    const block = result.content[0]
-
-    // Assert
-    expect(block?.type).toBe("infocards")
-    if (block?.type !== "infocards") {
-      return
-    }
-    expect(block.cards[0]).toEqual({
-      title: "Card 1",
-      imageUrl: "/img.png",
-      imageAlt: "alt text",
-    })
+    expect(infocardsFrom(stripInactiveCombinatorFields(page)).cards[0]).toEqual(
+      {
+        title: "Card 1",
+        imageUrl: "/img.png",
+        imageAlt: "alt text",
+      },
+    )
   })
 
-  it("leaves the matching branch's own fields in place", () => {
-    // Arrange
+  it("keeps fields that belong to the active branch", () => {
     const cards = [
       {
         title: "Card 1",
@@ -212,36 +162,26 @@ describe("stripInactiveCombinatorFields", () => {
       cards,
     })
 
-    // Act
-    const result = stripInactiveCombinatorFields(page)
-    const block = result.content[0]
-
-    // Assert
-    expect(block?.type).toBe("infocards")
-    if (block?.type !== "infocards") {
-      return
-    }
-    expect(block.cards).toEqual(cards)
+    expect(infocardsFrom(stripInactiveCombinatorFields(page)).cards).toEqual(
+      cards,
+    )
   })
 
-  it("leaves blocks without a combinator variant unchanged", () => {
-    // Arrange
+  it("ignores blocks without a combinator variant", () => {
     const page = pageWith({
       type: "prose",
       content: [],
     })
 
-    // Act
-    const result = stripInactiveCombinatorFields(page)
-
-    // Assert
-    expect(result.content[0]).toEqual({ type: "prose", content: [] })
+    expect(stripInactiveCombinatorFields(page).content[0]).toEqual({
+      type: "prose",
+      content: [],
+    })
   })
 })
 
 describe("serializePageBlob", () => {
-  it("stringifies the stripped page without mutating the editor copy", () => {
-    // Arrange
+  it("strips the save payload but leaves editor state alone", () => {
     const page = pageWith({
       type: "infocards",
       title: "Cards",
@@ -255,22 +195,10 @@ describe("serializePageBlob", () => {
       ],
     })
 
-    // Act
     const payload = JSON.parse(serializePageBlob(page)) as IsomerSchema
 
-    // Assert
-    const payloadBlock = payload.content[0]
-    expect(payloadBlock?.type).toBe("infocards")
-    if (payloadBlock?.type !== "infocards") {
-      return
-    }
-    expect(payloadBlock.cards[0]).toEqual({ title: "Card 1" })
-    const originalBlock = page.content[0]
-    expect(originalBlock?.type).toBe("infocards")
-    if (originalBlock?.type !== "infocards") {
-      return
-    }
-    expect(originalBlock.cards[0]).toMatchObject({
+    expect(infocardsFrom(payload).cards[0]).toEqual({ title: "Card 1" })
+    expect(infocardsFrom(page).cards[0]).toMatchObject({
       title: "Card 1",
       imageUrl: "/img.png",
       imageAlt: "alt text",

@@ -24,18 +24,13 @@ const noImageInfocardsPage = {
 }
 
 describe("updatePageBlobSchema", () => {
-  it("accepts leftover combinator fields without rewriting them", () => {
-    // Arrange
-    const input = {
+  it("does not strip leftover combinator fields on parse", () => {
+    const parsed = updatePageBlobSchema.parse({
       pageId: 1,
       siteId: 1,
       content: JSON.stringify(noImageInfocardsPage),
-    }
+    })
 
-    // Act
-    const parsed = updatePageBlobSchema.parse(input)
-
-    // Assert
     const block = parsed.content.content[0]
     expect(block?.type).toBe("infocards")
     if (block?.type !== "infocards") {

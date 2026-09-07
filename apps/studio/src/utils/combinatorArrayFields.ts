@@ -13,8 +13,6 @@ type JsonSchema = {
 }
 
 function objectArrayItemSchema(propSchema: JsonSchema): JsonSchema | undefined {
-  // `items` is a tuple-form array only for positional tuple validation,
-  // which none of our schemas use.
   const itemSchema = Array.isArray(propSchema.items)
     ? undefined
     : propSchema.items
@@ -40,9 +38,6 @@ function mapObjectArrayFields(
   return mapped
 }
 
-// Keeps existing array items instead of letting schema defaults reset them
-// to `[]`. Extra fields the new variant does not use stay on the item so
-// switching back can restore them.
 export function keepMatchingArrayFields(
   oldData: Record<string, unknown> | undefined,
   newSchema: object,
@@ -54,9 +49,7 @@ export function keepMatchingArrayFields(
   )
 }
 
-// Drops array-item fields that the given combinator branch's schema does not
-// list, so persisted JSON matches the active variant.
-export function pickMatchingArrayFields(
+function pickMatchingArrayFields(
   data: Record<string, unknown> | undefined,
   schema: object,
 ): Record<string, unknown> {
@@ -97,17 +90,17 @@ function matchesCombinatorBranch(
   data: Record<string, unknown>,
   branch: JsonSchema,
 ): boolean {
-  let sawConst = false
+  let hasConstField = false
   for (const [key, propSchema] of Object.entries(branch.properties ?? {})) {
     if (propSchema.const === undefined) {
       continue
     }
-    sawConst = true
+    hasConstField = true
     if (data[key] !== propSchema.const) {
       return false
     }
   }
-  return sawConst
+  return hasConstField
 }
 
 function matchingCombinatorBranch(
@@ -125,30 +118,23 @@ export function stripInactiveCombinatorFields(
   return {
     ...page,
     content: page.content.map((block) => {
+      const blockData = block as unknown as Record<string, unknown>
       const schema = getComponentSchema({
         component: block.type,
         layout: page.layout,
       }) as JsonSchema
-      const branch = matchingCombinatorBranch(
-        schema,
-        block as unknown as Record<string, unknown>,
-      )
+      const branch = matchingCombinatorBranch(schema, blockData)
       if (!branch) {
         return block
       }
       return {
         ...block,
-        ...pickMatchingArrayFields(
-          block as unknown as Record<string, unknown>,
-          branch,
-        ),
+        ...pickMatchingArrayFields(blockData, branch),
       }
     }),
   }
 }
 
-// Serializes page content for `updatePageBlob`. Extra combinator fields stay
-// in editor state; only the payload is projected onto the active variant.
 export function serializePageBlob(page: IsomerSchema): string {
   return JSON.stringify(stripInactiveCombinatorFields(page))
 }
