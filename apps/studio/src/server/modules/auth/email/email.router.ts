@@ -204,7 +204,7 @@ export const emailSessionRouter = router({
         }
       }
 
-      return db.transaction().execute(async (tx) => {
+      return await db.transaction().execute(async (tx) => {
         const userValue = await upsertUser({
           email,
           tx,
