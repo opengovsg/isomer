@@ -166,11 +166,8 @@ export const trpc = createTRPCNext<AppRouter, SSRContext>({
            * window.fetch. We do this to pick up any changes to fetch
            * at runtime, eg, by Datadog RUM
            */
-          async fetch(url, options) {
-            return await fetch(url, {
-              ...options,
-              credentials: "include",
-            })
+          fetch(url, options) {
+            return fetch(url, options)
           },
           /**
            * Set custom request headers on every request from tRPC

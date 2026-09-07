@@ -24,10 +24,11 @@ export const generateSessionOptions = ({
   return {
     cookieName: "auth.session-token",
     cookieOptions: {
-      // E2E runs `next start` (NODE_ENV=production) over plain HTTP; Secure
-      // cookies would not persist in the browser between tRPC requests.
+      // E2E runs `next start` over plain HTTP with CI=true in .env.test.
       secure:
-        env.NODE_ENV === "production" && env.NEXT_PUBLIC_APP_ENV !== "test",
+        env.NODE_ENV === "production" &&
+        env.NEXT_PUBLIC_APP_ENV !== "test" &&
+        !env.CI,
     },
     password: getIronPassword(),
     ttl: ONE_HOUR * ttlInHours,
