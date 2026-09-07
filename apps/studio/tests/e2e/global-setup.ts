@@ -1,6 +1,12 @@
-import type { FullConfig } from "@playwright/test"
+import type { BrowserContext, FullConfig } from "@playwright/test"
+import type { VerificationToken } from "~/server/modules/database/types"
 import { chromium } from "@playwright/test"
+import { sealData } from "iron-session"
 import crypto from "node:crypto"
+import {
+  generateSessionOptions,
+  getIronPassword,
+} from "~/server/modules/auth/session"
 import { db } from "~/server/modules/database/database"
 
 import { ROLES, storageStateFor, TEST_EMAILS } from "./fixtures/auth"
@@ -13,6 +19,48 @@ const setSingpassUuidFor = async (email: string, uuid: string) => {
     .set({ name: "test-e2e", phone: "82345678", singpassUuid: uuid })
     .where("email", "=", email)
     .execute()
+}
+
+const injectSingpassSessionCookie = async (
+  ctx: BrowserContext,
+  baseURL: string,
+  email: string,
+  verificationToken: VerificationToken,
+) => {
+  const user = await db
+    .selectFrom("User")
+    .select(["id"])
+    .where("email", "=", email)
+    .executeTakeFirstOrThrow()
+
+  const sessionOptions = generateSessionOptions({ ttlInHours: 1 })
+  const sealed = await sealData(
+    {
+      singpass: {
+        sessionState: {
+          userId: user.id,
+          verificationToken,
+        },
+      },
+    },
+    {
+      password: getIronPassword(),
+      ttl: sessionOptions.ttl,
+    },
+  )
+
+  const hostname = new URL(baseURL).hostname
+  await ctx.addCookies([
+    {
+      domain: hostname,
+      httpOnly: true,
+      name: sessionOptions.cookieName,
+      path: "/",
+      sameSite: "Lax",
+      secure: hostname !== "localhost" && hostname !== "127.0.0.1",
+      value: sealed,
+    },
+  ])
 }
 
 const signInOnce = async (role: keyof typeof TEST_EMAILS, baseURL: string) => {
@@ -29,7 +77,24 @@ const signInOnce = async (role: keyof typeof TEST_EMAILS, baseURL: string) => {
   await loginPage.fillEmail(email)
   await page.getByText("Enter OTP").waitFor()
   await loginPage.fillToken(email)
+  const verificationToken = await db
+    .selectFrom("VerificationToken")
+    .selectAll()
+    .where("identifier", "like", `${email}|%`)
+    .executeTakeFirst()
+
+  if (!verificationToken) {
+    throw new Error(`No verification token found for ${email}`)
+  }
+
   await page.getByRole("button", { name: "Sign in" }).click()
+  await page.waitForResponse(
+    (response) =>
+      response.url().includes("verifyOtp") && response.status() === 200,
+  )
+  await injectSingpassSessionCookie(ctx, baseURL, email, verificationToken)
+  await page.goto("/sign-in/singpass")
+  await loginPage.singpassButton.waitFor({ state: "visible" })
   await loginPage.mockpassLoginWith(uuid)
   await page.waitForURL(`${baseURL}/`)
 
