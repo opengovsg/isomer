@@ -74,8 +74,9 @@ export const FolderSettingsModal = () => {
   const { folderId } = useAtomValue(folderSettingsModalAtom)
   const { siteId } = useQueryParse(sitePageSchema)
   const setFolderSettingsModalState = useSetAtom(folderSettingsModalAtom)
-  const onClose = () =>{ 
-    setFolderSettingsModalState(DEFAULT_FOLDER_SETTINGS_MODAL_STATE); }
+  const onClose = () => {
+    setFolderSettingsModalState(DEFAULT_FOLDER_SETTINGS_MODAL_STATE)
+  }
 
   return (
     <Modal isOpen={!!folderId} onClose={onClose}>
@@ -114,7 +115,7 @@ const SuspendableModalContent = ({
       title: originalTitle,
     },
     mode: "onChange",
-    schema: baseEditFolderSchema.omit({ siteId: true, resourceId: true }),
+    schema: baseEditFolderSchema.omit({ resourceId: true, siteId: true }),
   })
   const { errors, isValid } = formState
   const utils = trpc.useUtils()
@@ -124,7 +125,7 @@ const SuspendableModalContent = ({
       toast({
         title: "Failed to update folder",
         status: "error",
-        // TODO: check if this property is correct
+        // Deferred: check if this property is correct
         description: err.message,
         ...BRIEF_TOAST_SETTINGS,
       })
@@ -149,8 +150,8 @@ const SuspendableModalContent = ({
         resourceId: Number(folderId),
       })
       toast({
-        title: "Folder updated!",
         status: "success",
+        title: "Folder updated!",
         ...BRIEF_TOAST_SETTINGS,
       })
     },
@@ -251,7 +252,9 @@ const SuspendableModalContent = ({
                       alignItems="flex-start"
                       size="sm"
                       isChecked={!!value}
-                      onChange={(e) =>{  onChange(e.target.checked); }}
+                      onChange={(e) => {
+                        onChange(e.target.checked)
+                      }}
                       ref={ref}
                       {...field}
                     >

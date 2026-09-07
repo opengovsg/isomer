@@ -1,6 +1,6 @@
-import crypto from "node:crypto"
-import { calculateJwkThumbprint, exportJWK } from "jose"
 import type { NextApiRequest, NextApiResponse } from "next"
+import { calculateJwkThumbprint, exportJWK } from "jose"
+import crypto from "node:crypto"
 import { env } from "~/env.mjs"
 import { createBaseLogger } from "~/lib/logger"
 
@@ -38,11 +38,11 @@ export default async function handler(
         use: "sig",
       })
 
-       response.status(200).json({ keys: [encryptionKey, signingKey] }); return;
+      response.status(200).json({ keys: [encryptionKey, signingKey] })
+      return
     }
-      response.setHeader("Allow", "GET")
-      return response.status(405).end()
-    
+    response.setHeader("Allow", "GET")
+    return response.status(405).end()
   } catch (error) {
     logger.error({
       action: "handler",

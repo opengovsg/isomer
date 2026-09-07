@@ -40,12 +40,10 @@ export const getNestedFolderChildrenOutputSchema = z.object({
 })
 
 export const moveSchema = z.object({
-  siteId: z.number(),
-  movedResourceId: bigIntSchema,
   destinationResourceId: bigIntSchema.nullable(),
-  // Create a redirect from the resource's old URL on move. Defaults on,
-  // matching the checkbox's default-checked state.
+  movedResourceId: bigIntSchema,
   shouldCreateRedirect: z.boolean().optional().default(true),
+  siteId: z.number(),
 })
 
 export const countResourceSchema = z.object({

@@ -31,7 +31,7 @@ const signInOnce = async (role: keyof typeof TEST_EMAILS, baseURL: string) => {
   await loginPage.fillToken(email)
   await page.getByRole("button", { name: "Sign in" }).click()
   await loginPage.mockpassLoginWith(uuid)
-  await page.waitForURL(`${baseURL  }/`)
+  await page.waitForURL(`${baseURL}/`)
 
   await ctx.storageState({ path: storageStateFor(role) })
   await browser.close()

@@ -35,7 +35,7 @@ test("admin can update site name on the agency settings page", async ({
 }) => {
   const site = new SitePO(page)
   await page.goto(`/sites/${getSeedSiteId()}/settings/agency`)
-  await page.waitForURL(/\/settings\/agency$/)
+  await page.waitForURL(/\/settings\/agency$/u)
 
   const nameField = page.getByLabel("Site name")
   await expect(nameField).toBeVisible()
@@ -65,7 +65,7 @@ test.describe("publisher", () => {
     page,
   }) => {
     await page.goto(`/sites/${getSeedSiteId()}/settings/agency`)
-    await page.waitForURL(/\/settings\/agency$/)
+    await page.waitForURL(/\/settings\/agency$/u)
 
     // Form input is visible (settings page rendered)…
     await expect(page.getByLabel("Site name")).toBeVisible()

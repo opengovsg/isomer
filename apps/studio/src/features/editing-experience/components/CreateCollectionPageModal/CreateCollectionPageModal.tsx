@@ -17,20 +17,18 @@ export const CreateCollectionPageModal = ({
   onClose,
   siteId,
   collectionId,
-}: CreateCollectionPageModalProps): React.ReactNode => 
-  (
-    <Modal size="full" isOpen={isOpen} onClose={onClose}>
-      <ModalOverlay />
-      <ModalContent height="$100vh" overflow="hidden">
-        <CreateCollectionPageWizardProvider
-          onClose={onClose}
-          siteId={siteId}
-          collectionId={collectionId}
-          key={String(isOpen)}
-        >
-          <CreateCollectionPageModalScreen />
-        </CreateCollectionPageWizardProvider>
-      </ModalContent>
-    </Modal>
-  )
-
+}: CreateCollectionPageModalProps): React.ReactNode => (
+  <Modal size="full" isOpen={isOpen} onClose={onClose}>
+    <ModalOverlay />
+    <ModalContent height="$100vh" overflow="hidden">
+      <CreateCollectionPageWizardProvider
+        onClose={onClose}
+        siteId={siteId}
+        collectionId={collectionId}
+        key={String(isOpen)}
+      >
+        <CreateCollectionPageModalScreen />
+      </CreateCollectionPageWizardProvider>
+    </ModalContent>
+  </Modal>
+)

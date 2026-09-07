@@ -29,7 +29,7 @@ test.beforeEach(async () => {
 test("admin can save a notification title", async ({ page }) => {
   const site = new SitePO(page)
   await page.goto(`/sites/${getSeedSiteId()}/settings/notification`)
-  await page.waitForURL(/\/settings\/notification$/)
+  await page.waitForURL(/\/settings\/notification$/u)
 
   // The notification object is optional. FormBuilder renders optional objects
   // with a Switch (Chakra UI). The Switch renders a <label> wrapping a hidden
@@ -49,7 +49,7 @@ test("admin can save a notification title", async ({ page }) => {
 
   // Stretch: reload and confirm persistence.
   await page.reload()
-  await page.waitForURL(/\/settings\/notification$/)
+  await page.waitForURL(/\/settings\/notification$/u)
   // After reload, the toggle should still be checked (notification persisted).
   const reloadedCheckbox = page.getByRole("checkbox")
   await expect(reloadedCheckbox).toBeChecked()

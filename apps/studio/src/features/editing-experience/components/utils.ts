@@ -28,17 +28,12 @@ export const EMBED_NAME_MAPPING = {
   onemap: "OneMap",
   vimeo: "Vimeo",
   youtube: "YouTube",
-} satisfies Record<
-  | keyof typeof MAPS_EMBED_URL_REGEXES
-  | keyof typeof VIDEO_EMBED_URL_REGEXES
-  | keyof typeof FORMSG_EMBED_URL_REGEXES,
-  string
->
+} satisfies Record<keyof typeof MAPS_EMBED_URL_REGEXES, string>
 
 export const generateResourceUrl = (value: string): string =>
   transliterate(value)
     .toLowerCase()
-    .replaceAll(/[^a-z0-9]/g, "-")
+    .replaceAll(/[^a-z0-9]/gu, "-")
 
 interface UploadModifiedAssetsParams {
   block: IsomerComponent
@@ -64,12 +59,12 @@ export const uploadModifiedAssets = async ({
     (asset) => !!asset.file && asset.file.name !== PLACEHOLDER_IMAGE_FILENAME,
   )
   return await Promise.allSettled(
-    assetsToUpload.map( async ({ path, file }) => {
+    assetsToUpload.map(async ({ path, file }) => {
       if (!file) {
-        return Promise.resolve()
+        return
       }
 
-      return uploadAsset({ file }).then((res) => {
+      return await uploadAsset({ file }).then((res) => {
         set(block, path, res.path)
         return path
       })
@@ -100,16 +95,15 @@ export const uploadModifiedAssets = async ({
 export const generatePreviewSitemap = (
   sitemap: typeof collectionSitemap,
   title = "Your filename",
-) => (
+) =>
   // SAFETY: preview sitemap children are mapped from the collection fixture shape
-  {
+  ({
     ...sitemap,
     children: sitemap.children.map(({ children, ...rest }) => ({
       ...rest,
       children: children.map((props) => ({ ...props, title })),
     })),
-  } as IsomerGeneratedSiteProps["siteMap"]
-)
+  }) as IsomerGeneratedSiteProps["siteMap"]
 
 export const getIframeSrc = (embedCode: string): string | undefined => {
   const elem = DOMPurify.sanitize(embedCode, {

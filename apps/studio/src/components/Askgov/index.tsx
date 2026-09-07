@@ -14,7 +14,7 @@ const ASKGOV_WIDGET_STYLE = {
   padding: "1rem",
   position: "fixed",
   right: "1rem",
-  zIndex: 999998,
+  zIndex: 999_998,
 } as const
 
 const ASKGOV_ICON_CONTAINER_STYLE = {
@@ -31,15 +31,13 @@ const ASKGOV_ICON_CONTAINER_STYLE = {
 
 const ASKGOV_ICON_STYLE = { color: "#064cbd" } as const
 
-export const AskgovWidget = () => 
-  (
-    <div style={ASKGOV_WIDGET_STYLE}>
-      <div style={ASKGOV_ICON_CONTAINER_STYLE}>
-        <ChatButtonIcon />
-      </div>
+export const AskgovWidget = () => (
+  <div style={ASKGOV_WIDGET_STYLE}>
+    <div style={ASKGOV_ICON_CONTAINER_STYLE}>
+      <ChatButtonIcon />
     </div>
-  )
-
+  </div>
+)
 
 const ChatButtonIcon = () => (
   <svg

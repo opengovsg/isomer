@@ -55,9 +55,10 @@ export const NavbarEditor = ({
   isSaving,
 }: NavbarEditorProps) => {
   const theme = useTheme()
-  const isDirty = useMemo(() => 
-    !isEqual(previewNavbarState, savedNavbarState)
-  , [previewNavbarState, savedNavbarState])
+  const isDirty = useMemo(
+    () => !isEqual(previewNavbarState, savedNavbarState),
+    [previewNavbarState, savedNavbarState],
+  )
 
   const handleItemsChange = useCallback(
     (data: Static<typeof NavbarItemsSchema>) => {

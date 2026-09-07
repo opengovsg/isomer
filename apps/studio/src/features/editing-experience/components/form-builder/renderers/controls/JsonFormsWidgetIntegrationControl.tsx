@@ -115,7 +115,9 @@ export default withJsonFormsControlWithDetailProps(
 
 function extractVariantFromFormat(format?: string): WidgetType {
   const possibleFormat = format?.split("/")[1]
-  if (!possibleFormat) {return "askgov"}
+  if (!possibleFormat) {
+    return "askgov"
+  }
 
   switch (possibleFormat) {
     case "askgov":

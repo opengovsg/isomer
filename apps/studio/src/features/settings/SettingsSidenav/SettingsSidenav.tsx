@@ -109,28 +109,26 @@ export const SettingsSidenav = ({ onSidenavClose }: SettingsSidenavProps) => {
       title="Site settings"
       onSidenavClose={onSidenavClose}
     >
-      {SIDENAV_ITEMS.map(({ header, items }) => 
-        (
-          <VStack key={header.label} align="start">
-            <HeaderRow {...header} />
-            <VStack
-              borderLeft="1px solid"
-              borderColor="base.divider.medium"
-              px="0.75rem"
-              align="start"
-              w="100%"
-            >
-              {items.map((item) => (
-                <SettingsItem
-                  {...item}
-                  isActive={router.asPath === item.href}
-                  key={item.href}
-                />
-              ))}
-            </VStack>
+      {SIDENAV_ITEMS.map(({ header, items }) => (
+        <VStack key={header.label} align="start">
+          <HeaderRow {...header} />
+          <VStack
+            borderLeft="1px solid"
+            borderColor="base.divider.medium"
+            px="0.75rem"
+            align="start"
+            w="100%"
+          >
+            {items.map((item) => (
+              <SettingsItem
+                {...item}
+                isActive={router.asPath === item.href}
+                key={item.href}
+              />
+            ))}
           </VStack>
-        )
-      )}
+        </VStack>
+      ))}
     </CmsCollapsibleSidenav>
   )
 }

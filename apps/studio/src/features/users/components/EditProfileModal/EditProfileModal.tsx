@@ -47,18 +47,18 @@ export const EditProfileModal = () => {
     trpc.user.updateDetails.useMutation({
       onError: (error) => {
         toast({
+          description: error.message,
           status: "error",
           title: "Failed to update profile",
-          description: error.message,
         })
         reset()
       },
       onSuccess: () => {
         void utils.me.get.invalidate()
         toast({
+          description: "Your profile has been updated successfully",
           status: "success",
           title: "Profile updated",
-          description: "Your profile has been updated successfully",
         })
         handleClose()
       },
@@ -100,7 +100,9 @@ export const EditProfileModal = () => {
         phone: data.phone,
       },
       {
-        onSuccess: () =>{  reset(data); },
+        onSuccess: () => {
+          reset(data)
+        },
       },
     )
   })
@@ -132,7 +134,8 @@ export const EditProfileModal = () => {
                 </FormLabel>
                 <Input
                   noOfLines={1}
-                  maxLength={256} // arbitrary limit
+                  maxLength={256}
+                  // arbitrary limit
                   {...register("name")}
                 />
                 {errors.name && (

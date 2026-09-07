@@ -23,18 +23,16 @@ const VICA_IMAGE_STYLE = {
   width: "55px",
 } as const
 
-export const VicaWidget = () => 
-  (
-    <div id="webchat-container">
-      <div style={VICA_LAUNCHER_STYLE}>
-        <div style={VICA_BUTTON_STYLE}>
-          <img
-            style={VICA_IMAGE_STYLE}
-            alt="Bot Launcher"
-            src="https://bucket-common.vica.gov.sg/unified_webchat_image_launcher.webp"
-          />
-        </div>
+export const VicaWidget = () => (
+  <div id="webchat-container">
+    <div style={VICA_LAUNCHER_STYLE}>
+      <div style={VICA_BUTTON_STYLE}>
+        <img
+          style={VICA_IMAGE_STYLE}
+          alt="Bot Launcher"
+          src="https://bucket-common.vica.gov.sg/unified_webchat_image_launcher.webp"
+        />
       </div>
     </div>
-  )
-
+  </div>
+)

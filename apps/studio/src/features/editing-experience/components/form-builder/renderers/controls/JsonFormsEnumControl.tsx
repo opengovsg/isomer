@@ -31,38 +31,34 @@ const JsonFormsEnumControl = ({
   path,
   enabled,
   handleChange,
-}: ControlProps & OwnPropsOfEnum) => 
-  (
-    <Box>
-      <FormControl isRequired={required} isInvalid={!!errors}>
-        <FormLabel description={description}>{label}</FormLabel>
+}: ControlProps & OwnPropsOfEnum) => (
+  <Box>
+    <FormControl isRequired={required} isInvalid={!!errors}>
+      <FormLabel description={description}>{label}</FormLabel>
 
-        <SingleSelect
-          // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          value={data}
-          name={label}
-          items={
-            options?.map((option) => {
-              return {
-                label: formatEnumLabel(option.label),
-                // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                value: option.value,
-              }
-            }) ?? []
-          }
-          isClearable={!required}
-          isDisabled={!enabled}
-          onChange={(value) => {
-            handleChange(path, value || undefined)
-          }}
-        />
+      <SingleSelect
+        // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        value={data}
+        name={label}
+        items={
+          options?.map((option) => ({
+            label: formatEnumLabel(option.label),
+            // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            value: option.value,
+          })) ?? []
+        }
+        isClearable={!required}
+        isDisabled={!enabled}
+        onChange={(value) => {
+          handleChange(path, value || undefined)
+        }}
+      />
 
-        <FormErrorMessage>
-          {label} {getCustomErrorMessage(errors)}
-        </FormErrorMessage>
-      </FormControl>
-    </Box>
-  )
-
+      <FormErrorMessage>
+        {label} {getCustomErrorMessage(errors)}
+      </FormErrorMessage>
+    </FormControl>
+  </Box>
+)
 
 export default withJsonFormsEnumProps(JsonFormsEnumControl)

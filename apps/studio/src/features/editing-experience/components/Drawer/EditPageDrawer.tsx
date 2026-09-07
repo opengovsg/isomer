@@ -51,7 +51,9 @@ export const EditPageDrawer = (): React.ReactNode => {
     }
     case "nativeEditor": {
       const component = previewPageState.content[currActiveIdx]
-      if (!component) {return <div />}
+      if (!component) {
+        return <div />
+      }
       return <TipTapProseComponent content={inferAsProse(component)} />
     }
     case "complexEditor": {

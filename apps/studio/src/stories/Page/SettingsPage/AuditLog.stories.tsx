@@ -54,11 +54,11 @@ type Story = StoryObj<typeof meta>
 export const Default: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement.ownerDocument.body)
-    await waitFor(async () =>
+    await waitFor(async () => {
       await expect(
         await screen.findByRole("button", { name: "Export logs" }),
-      ).toBeEnabled(),
-    )
+      ).toBeEnabled()
+    })
     await expect(
       screen.getByRole("link", { name: "User management" }),
     ).toBeVisible()

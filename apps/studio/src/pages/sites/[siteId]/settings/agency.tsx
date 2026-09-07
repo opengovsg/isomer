@@ -45,9 +45,9 @@ const AgencySettingsPage: NextPageWithLayout = () => {
   const updateSiteConfigMutation = trpc.site.updateSiteConfig.useMutation({
     onError: (error) => {
       toast({
-        title: "Failed to update site",
         description: error.message,
         status: "error",
+        title: "Failed to update site",
       })
     },
     onSuccess: () => {
@@ -81,20 +81,23 @@ const AgencySettingsPage: NextPageWithLayout = () => {
 
   useNavigationEffect({ callback: setNextUrl, isDirty, isOpen })
 
-  const onSubmit = () =>{ 
+  const onSubmit = () => {
     updateSiteConfigMutation.mutate({
       agencyName: state.agencyName,
       siteEntity: normalizeSiteEntity(state.siteEntity),
       siteId,
       siteName: state.siteName,
       ...rest,
-    }); }
+    })
+  }
 
   return (
     <ErrorProvider>
       <UnsavedSettingModal
         isOpen={isOpen}
-        onClose={() =>{  setNextUrl(""); }}
+        onClose={() => {
+          setNextUrl("")
+        }}
         nextUrl={nextUrl}
       />
       <SettingsGrid>
@@ -126,13 +129,11 @@ const AgencySettingsPage: NextPageWithLayout = () => {
   )
 }
 
-AgencySettingsPage.getLayout = (page) => 
-  (
-    <PermissionsBoundary
-      resourceType={ResourceType.RootPage}
-      page={SiteSettingsLayout(page)}
-    />
-  )
-
+AgencySettingsPage.getLayout = (page) => (
+  <PermissionsBoundary
+    resourceType={ResourceType.RootPage}
+    page={SiteSettingsLayout(page)}
+  />
+)
 
 export default AgencySettingsPage

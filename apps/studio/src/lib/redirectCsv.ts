@@ -56,7 +56,7 @@ export const parseRedirectCsv = (csv: string): ParseRedirectCsvResult => {
   // Strip a leading UTF-8 BOM (spreadsheet exports add one) so it doesn't become
   // part of the first header cell. `\uFEFF` rather than a literal BOM so the
   // intent is visible and editors/formatters can't silently drop it.
-  const cleaned = csv.replace(/^\uFEFF/, "")
+  const cleaned = csv.replace(/^\uFEFF/u, "")
   // Catch an empty (or whitespace-only) file up front — papaparse reports it as
   // a parse error rather than empty data, and we want the clearer "empty" copy.
   if (cleaned.trim().length === 0) {

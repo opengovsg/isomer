@@ -22,5 +22,7 @@ export default async () => {
     writable: true,
   })
 
-  return  async () => teardown(containers)
+  return async () => {
+    await teardown(containers)
+  }
 }

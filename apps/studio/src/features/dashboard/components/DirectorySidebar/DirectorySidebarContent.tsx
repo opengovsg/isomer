@@ -74,7 +74,9 @@ export const DirectorySidebarContent = ({
       <Accordion
         index={accordionIndex}
         // SAFETY: caller invariant is checked immediately before this narrowing assertion
-        onChange={(expandedIndex) =>{  setExpandedIndex(expandedIndex as number); }}
+        onChange={(expandedIndex) => {
+          setExpandedIndex(expandedIndex as number)
+        }}
         allowToggle
       >
         <AccordionItem
@@ -101,17 +103,15 @@ export const DirectorySidebarContent = ({
               gap="2px"
             >
               {data?.pages.map((page) =>
-                page.items.map((item) => 
-                  (
-                    <DirectorySidebarContent
-                      key={item.id}
-                      siteId={siteId}
-                      resourceId={item.id}
-                      item={item}
-                      level={level + 1}
-                    />
-                  )
-                ),
+                page.items.map((item) => (
+                  <DirectorySidebarContent
+                    key={item.id}
+                    siteId={siteId}
+                    resourceId={item.id}
+                    item={item}
+                    level={level + 1}
+                  />
+                )),
               )}
               {hasNextPage && (
                 <Button
@@ -119,7 +119,7 @@ export const DirectorySidebarContent = ({
                   pl="2.75rem"
                   size="xs"
                   isLoading={isFetchingNextPage}
-                  onClick={ async () => fetchNextPage()}
+                  onClick={async () => await fetchNextPage()}
                 >
                   Load more
                 </Button>

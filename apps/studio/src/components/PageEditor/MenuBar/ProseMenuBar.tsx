@@ -31,44 +31,44 @@ export const ProseMenuBar = ({ editor }: { editor: Editor }) => {
         isHidden: () => editor.isActive("table"),
         items: [
           {
-            type: "item",
-            title: "Section heading",
-            description: "Biggest heading for sections in your content",
-            useSecondaryColor: true,
             action: () =>
               editor.chain().focus().toggleHeading({ level: 2 }).run(),
+            description: "Biggest heading for sections in your content",
             isActive: () => editor.isActive("heading", { level: 2 }),
+            title: "Section heading",
+            type: "item",
+            useSecondaryColor: true,
           },
           {
-            type: "item",
-            title: "Large heading",
-            useSecondaryColor: true,
             action: () =>
               editor.chain().focus().toggleHeading({ level: 3 }).run(),
             isActive: () => editor.isActive("heading", { level: 3 }),
+            title: "Large heading",
+            type: "item",
+            useSecondaryColor: true,
           },
           {
-            type: "item",
-            title: "Medium heading",
-            useSecondaryColor: true,
             action: () =>
               editor.chain().focus().toggleHeading({ level: 4 }).run(),
             isActive: () => editor.isActive("heading", { level: 4 }),
+            title: "Medium heading",
+            type: "item",
+            useSecondaryColor: true,
           },
           {
-            type: "item",
-            title: "Small heading",
-            useSecondaryColor: true,
             action: () =>
               editor.chain().focus().toggleHeading({ level: 5 }).run(),
             isActive: () => editor.isActive("heading", { level: 5 }),
+            title: "Small heading",
+            type: "item",
+            useSecondaryColor: true,
           },
           {
-            type: "item",
-            title: "Paragraph",
             action: () =>
               editor.chain().focus().clearNodes().unsetAllMarks().run(),
             isActive: () => editor.isActive("paragraph"),
+            title: "Paragraph",
+            type: "item",
           },
         ],
         menuWidth: "12.25rem",
@@ -110,19 +110,19 @@ export const ProseMenuBar = ({ editor }: { editor: Editor }) => {
         defaultIcon: BiListOl,
         items: [
           {
-            type: "item",
-            icon: BiListOl,
-            title: "Ordered list",
             action: () => editor.chain().focus().toggleOrderedList().run(),
+            icon: BiListOl,
             isActive: () => editor.isActive("orderedList"),
+            title: "Ordered list",
+            type: "item",
           },
 
           {
-            type: "item",
-            icon: BiListUl,
-            title: "Bullet list",
             action: () => editor.chain().focus().toggleBulletList().run(),
+            icon: BiListUl,
             isActive: () => editor.isActive("unorderedList"),
+            title: "Bullet list",
+            type: "item",
           },
         ],
         label: "Lists",
@@ -139,27 +139,27 @@ export const ProseMenuBar = ({ editor }: { editor: Editor }) => {
       {
         items: [
           {
-            type: "item",
-            icon: MdSuperscript,
-            title: "Superscript",
             action: () =>
               editor.chain().focus().unsetSubscript().toggleSuperscript().run(),
+            icon: MdSuperscript,
             isActive: () => editor.isActive("superscript"),
+            title: "Superscript",
+            type: "item",
           },
           {
-            type: "item",
-            icon: MdSubscript,
-            title: "Subscript",
             action: () =>
               editor.chain().focus().unsetSuperscript().toggleSubscript().run(),
+            icon: MdSubscript,
             isActive: () => editor.isActive("subscript"),
+            title: "Subscript",
+            type: "item",
           },
           {
-            type: "item",
-            icon: MdHorizontalRule,
-            title: "Divider",
             action: () => editor.chain().focus().setHorizontalRule().run(),
+            icon: MdHorizontalRule,
             isActive: () => editor.isActive("divider"),
+            title: "Divider",
+            type: "item",
           },
         ],
         type: "overflow-list",

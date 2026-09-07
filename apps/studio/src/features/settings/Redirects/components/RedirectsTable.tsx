@@ -378,7 +378,9 @@ const getColumns = (
                   variant="clear"
                   colorScheme="critical"
                   size="sm"
-                  onClick={() =>{  onDeleteClick(row.original); }}
+                  onClick={() => {
+                    onDeleteClick(row.original)
+                  }}
                 />
               </Box>
             ),
@@ -437,7 +439,7 @@ export const RedirectsTable = ({
   const internalDestinations = useMemo(() => {
     const destinations = new Set<string>()
     for (const redirect of redirects) {
-      const {destination} = redirect
+      const { destination } = redirect
       if (isReferenceDestination(destination) || destination.startsWith("/")) {
         destinations.add(destination)
       }
@@ -479,7 +481,7 @@ export const RedirectsTable = ({
     }
   }, [pagination.pageIndex, pageCount, onPaginationChange])
 
-  const handleDelete = (redirect: RedirectRow) =>{ 
+  const handleDelete = (redirect: RedirectRow) => {
     deleteRedirect(
       { id: redirect.id, siteId },
       {
@@ -488,7 +490,8 @@ export const RedirectsTable = ({
           toast({ ...SETTINGS_TOAST_MESSAGES.success, status: "success" })
         },
       },
-    ); }
+    )
+  }
 
   const tableInstance = useTable({
     features: stockFeatures,
@@ -536,7 +539,9 @@ export const RedirectsTable = ({
             : ""
         }
         isPending={isPending}
-        onClose={() =>{  setRedirectToDelete(null); }}
+        onClose={() => {
+          setRedirectToDelete(null)
+        }}
         onDelete={handleDelete}
       />
     </Stack>

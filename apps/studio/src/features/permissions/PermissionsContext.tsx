@@ -34,8 +34,7 @@ export const PermissionsProvider = ({
   return <AbilityProvider value={ability}>{children}</AbilityProvider>
 }
 
-export const usePermissions = (): ResourceAbility => 
+export const usePermissions = (): ResourceAbility =>
   useAbility<ResourceAbility>()
-
 
 export { Can }

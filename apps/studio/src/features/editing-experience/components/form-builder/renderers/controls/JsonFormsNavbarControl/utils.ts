@@ -33,9 +33,8 @@ export const isFirstLevelLinksOverLimit = (
   maxItems?: number,
 ): boolean => !!(maxItems && itemCount > maxItems)
 
-export const getInstancePathFromNavbarItemPath = (path: NavbarItemPath) => 
-  `/${path.replace(/\./g, "/")}`
-
+export const getInstancePathFromNavbarItemPath = (path: NavbarItemPath) =>
+  `/${path.replaceAll(".", "/")}`
 
 // Helper function to extract the indices from the navbar item path in the
 // format "items.{index}" or "items.{parentIndex}.items.{index}"
@@ -327,9 +326,9 @@ export const handleMoveItem = (
     }
     case "ReorderMainItems": {
       return reorder({
+        finishIndex,
         list: data,
         startIndex,
-        finishIndex,
       })
     }
     case "MoveSubitemToBecomeMainItem": {

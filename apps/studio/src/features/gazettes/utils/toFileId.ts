@@ -7,11 +7,11 @@
  * schema regex `^[_\-a-zA-Z0-9]+\.pdf$`.
  */
 export const toFileId = (filename: string): string => {
-  const base = filename.replace(/\.pdf$/i, "")
+  const base = filename.replace(/\.pdf$/iu, "")
   const sanitized =
     base
-      .replaceAll(/[/\\:*?"<>|]/g, "-")
-      .replaceAll(/\s+/g, "-")
-      .replaceAll(/[^_\-a-zA-Z0-9]/g, "") || "file"
+      .replaceAll(/[/u\\:*?"<>|]/g, "-")
+      .replaceAll(/\s+/gu, "-")
+      .replaceAll(/[^_\-a-zA-Z0-9]/gu, "") || "file"
   return `${sanitized}.pdf`
 }

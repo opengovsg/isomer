@@ -12,15 +12,15 @@ import { getSeedSiteId } from "../fixtures/seed"
 
 const siteId = getSeedSiteId()
 
-const dismissWelcomeModal =  async (email: string) =>
-  db
+const dismissWelcomeModal = async (email: string) =>
+  await db
     .updateTable("User")
     .set({ name: "test-e2e", phone: "82345678" })
     .where("email", "=", email)
     .execute()
 
-const seedCollection =  async () =>
-  createCollectionWithTagCategories([
+const seedCollection = async () =>
+  await createCollectionWithTagCategories([
     {
       id: crypto.randomUUID(),
       isRequired: false,

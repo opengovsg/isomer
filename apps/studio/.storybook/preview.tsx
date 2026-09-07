@@ -1,18 +1,13 @@
 import "@fontsource/ibm-plex-mono"
-import type { EnvContextReturn } from "~/components/AppProviders"
+import type { Args, Decorator, Preview, ReactRenderer } from "@storybook/nextjs"
 import "inter-ui/inter.css"
 import "~/styles/tiptap.scss"
+import type { EnvContextReturn } from "~/components/AppProviders"
 import type { AppRouter } from "~/server/modules/_app"
 import { Skeleton, Stack } from "@chakra-ui/react"
 import { GrowthBookProvider } from "@growthbook/growthbook-react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import { withThemeFromJSXProvider } from "@storybook/addon-themes"
-import type {
-  Args,
-  Decorator,
-  Preview,
-  ReactRenderer,
-} from "@storybook/nextjs"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { httpLink } from "@trpc/client"
 import { createTRPCReact } from "@trpc/react-query"
@@ -225,7 +220,7 @@ const preview: Preview = {
     controls: {
       matchers: {
         color: /(background|color)$/i,
-        date: /Date$/,
+        date: /Date$/u,
       },
     },
   },

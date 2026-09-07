@@ -8,7 +8,7 @@ export const getReferenceLink = ({
   resourceId,
 }: GetReferenceLinkParams): string => {
   // Check if siteId and resourceId are numbers
-  const NUMERIC_REGEX = /^\d+$/
+  const NUMERIC_REGEX = /^\d+$/u
   if (!NUMERIC_REGEX.test(siteId) || !NUMERIC_REGEX.test(resourceId)) {
     return ""
   }

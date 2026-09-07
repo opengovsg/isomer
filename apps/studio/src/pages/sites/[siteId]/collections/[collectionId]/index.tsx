@@ -1,3 +1,4 @@
+import type { NextPageWithLayout } from "~/lib/types"
 import { useDisclosure } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { useSetAtom } from "jotai"
@@ -21,7 +22,6 @@ import { CreateCollectionPageModal } from "~/features/editing-experience/compone
 import { MoveResourceModal } from "~/features/editing-experience/components/MoveResourceModal"
 import { useEgazetteInfo } from "~/hooks/useEgazetteInfo"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import type { NextPageWithLayout } from "~/lib/types"
 import { SiteEditorLayout } from "~/templates/layouts/SiteEditorLayout"
 import { getCollectionHref } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
@@ -70,11 +70,11 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
             <Button
               variant="outline"
               size="md"
-              onClick={() =>{ 
+              onClick={() => {
                 setFolderSettingsModalState({
                   folderId: String(collectionId),
-                }); }
-              }
+                })
+              }}
             >
               Collection settings
             </Button>
@@ -118,13 +118,11 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
   )
 }
 
-CollectionResourceListPage.getLayout = (page) => 
-  (
-    <PermissionsBoundary
-      resourceType={ResourceType.Collection}
-      page={SiteEditorLayout(page)}
-    />
-  )
-
+CollectionResourceListPage.getLayout = (page) => (
+  <PermissionsBoundary
+    resourceType={ResourceType.Collection}
+    page={SiteEditorLayout(page)}
+  />
+)
 
 export default CollectionResourceListPage

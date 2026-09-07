@@ -13,7 +13,9 @@ export const DefaultFallback: ComponentType<FallbackProps> = ({
 
   const res = TRPCWithErrorCodeSchema.safeParse(error)
 
-  if (!res.success) {return <UnexpectedErrorCard />}
+  if (!res.success) {
+    return <UnexpectedErrorCard />
+  }
 
   return (
     <DefaultTrpcError code={res.data} resetErrorBoundary={resetErrorBoundary} />

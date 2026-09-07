@@ -1,4 +1,6 @@
 import type { GetServerSideProps } from "next"
+import type { NextPageWithLayout } from "~/lib/types"
+import type { SessionData } from "~/lib/types/session"
 import {
   Button,
   Center,
@@ -23,8 +25,6 @@ import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
 import { useNavigationEffect } from "~/hooks/useNavigationEffect"
 import { useZodForm } from "~/lib/form"
-import type { NextPageWithLayout } from "~/lib/types"
-import type { SessionData } from "~/lib/types/session"
 import { setSiteConfigByAdminSchema } from "~/schemas/site"
 import { generateSessionOptions } from "~/server/modules/auth/session"
 import { isActiveIsomerAdmin } from "~/server/modules/permissions/permissions.service"
@@ -140,9 +140,9 @@ const SiteAdminPage: NextPageWithLayout<SiteAdminPageProps> = ({ siteId }) => {
   const { mutate, isPending } = trpc.site.setSiteConfigByAdmin.useMutation({
     onError: () => {
       toast({
-        title: "Error saving site config!",
         description: `If this persists, please report this issue at ${ISOMER_SUPPORT_EMAIL}`,
         status: "error",
+        title: "Error saving site config!",
         ...BRIEF_TOAST_SETTINGS,
       })
     },
@@ -154,9 +154,9 @@ const SiteAdminPage: NextPageWithLayout<SiteAdminPageProps> = ({ siteId }) => {
       // Reset the form's isDirty but use the latest values provided by the user
       reset(watch())
       toast({
-        title: "Saved site config!",
         description: "Check your site in 5-10 minutes to view it live.",
         status: "success",
+        title: "Saved site config!",
         ...BRIEF_TOAST_SETTINGS,
       })
     },
@@ -178,7 +178,9 @@ const SiteAdminPage: NextPageWithLayout<SiteAdminPageProps> = ({ siteId }) => {
     <>
       <UnsavedSettingModal
         isOpen={isOpen}
-        onClose={() =>{  setNextUrl(""); }}
+        onClose={() => {
+          setNextUrl("")
+        }}
         nextUrl={nextUrl}
       />
       <chakra.form
@@ -236,13 +238,11 @@ const SiteAdminPage: NextPageWithLayout<SiteAdminPageProps> = ({ siteId }) => {
   )
 }
 
-SiteAdminPage.getLayout = (page) => 
-  (
-    <PermissionsBoundary
-      resourceType={ResourceType.RootPage}
-      page={SiteBasicLayout(page)}
-    />
-  )
-
+SiteAdminPage.getLayout = (page) => (
+  <PermissionsBoundary
+    resourceType={ResourceType.RootPage}
+    page={SiteBasicLayout(page)}
+  />
+)
 
 export default SiteAdminPage

@@ -73,7 +73,7 @@ const PageSettingsModalContent = ({
     formState: { isDirty, errors },
   } = useZodForm({
     defaultValues: {
-      permalink: permalinkTree[permalinkTree.length - 1] || "",
+      permalink: permalinkTree.at(-1) || "",
       shouldCreateRedirect: true,
       title: originalTitle,
     },
@@ -148,14 +148,14 @@ const PageSettingsModalContent = ({
     trpc.page.updateSettings.useMutation({
       onError: (error) => {
         toast({
-          title: "Failed to save settings",
           description: error.message,
           status: "error",
+          title: "Failed to save settings",
         })
         reset()
       },
       onSuccess: async () => {
-        // TODO: we should use a specialised query for this rather than the general one that retrives the page and the blob
+        // Deferred: we should use a specialised query for this rather than the general one that retrives the page and the blob
         await utils.page.invalidate()
         await utils.resource.invalidate()
         await utils.folder.invalidate()
@@ -164,13 +164,13 @@ const PageSettingsModalContent = ({
         toast(
           isPagePublished
             ? {
-                title: "Saved and published settings",
                 description: "Check your site in 5-10 minutes to view it live.",
                 status: "success",
+                title: "Saved and published settings",
               }
             : {
-                title: "Saved settings",
                 status: "success",
+                title: "Saved settings",
               },
         )
       },
@@ -187,7 +187,9 @@ const PageSettingsModalContent = ({
         },
         {
           onSettled: onClose,
-          onSuccess: () =>{  reset(data); },
+          onSuccess: () => {
+            reset(data)
+          },
         },
       )
     }
@@ -282,7 +284,9 @@ const PageSettingsModalContent = ({
                         alignItems="flex-start"
                         size="lg"
                         isChecked={!!value}
-                        onChange={(e) =>{  onChange(e.target.checked); }}
+                        onChange={(e) => {
+                          onChange(e.target.checked)
+                        }}
                         ref={ref}
                         {...field}
                       >

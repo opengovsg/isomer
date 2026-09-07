@@ -13,7 +13,7 @@ const getImageAsFile = async (imageUrl: string): Promise<File> => {
 export const useS3Image = (imagePath: string) => {
   const { data: image } = useQuery({
     enabled: Boolean(imagePath),
-    queryFn:  async () => getImageAsFile(`${ASSETS_BASE_URL}${imagePath}`),
+    queryFn: async () => await getImageAsFile(`${ASSETS_BASE_URL}${imagePath}`),
     queryKey: ["s3-image", imagePath],
   })
 

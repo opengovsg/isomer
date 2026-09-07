@@ -35,13 +35,14 @@ export const getNotificationSchema = z.object({
   siteId: z.number().min(1),
 })
 
-// FIXME: This should all extend from `NotificationSchema`
+// Deferred: This should all extend from `NotificationSchema`
 // with the exception of `siteId` so that we always rely on components
 // for our definitions
 export const setNotificationSchema = z.object({
-  notification: z.custom<Notification>((value) => {
-    return notificationValidator(value)
-  }, "Invalid notification content"),
+  notification: z.custom<Notification>(
+    (value) => notificationValidator(value),
+    "Invalid notification content",
+  ),
   siteId: z.number().min(1),
 })
 

@@ -34,40 +34,38 @@ interface DraggablePageItemProps {
   index: number
 }
 
-const DraggablePageItem = ({ page, index }: DraggablePageItemProps) => 
-  (
-    <Draggable
-      draggableId={page.id}
-      index={index}
-      disableInteractiveElementBlocking
-    >
-      {(provided, snapshot) => {
-        const isDragging = snapshot.isDragging || snapshot.isDropAnimating
-        return (
-          <Box
-            ref={provided.innerRef}
-            {...provided.draggableProps}
-            w="100%"
-            position="relative"
-            role="group"
-          >
-            <BaseBlock
-              icon={getIcon(page.type)}
-              label={page.title}
-              description={page.permalink}
-              dragHandle={
-                <BaseBlockDragHandle
-                  isDragging={isDragging}
-                  {...provided.dragHandleProps}
-                />
-              }
-            />
-          </Box>
-        )
-      }}
-    </Draggable>
-  )
-
+const DraggablePageItem = ({ page, index }: DraggablePageItemProps) => (
+  <Draggable
+    draggableId={page.id}
+    index={index}
+    disableInteractiveElementBlocking
+  >
+    {(provided, snapshot) => {
+      const isDragging = snapshot.isDragging || snapshot.isDropAnimating
+      return (
+        <Box
+          ref={provided.innerRef}
+          {...provided.draggableProps}
+          w="100%"
+          position="relative"
+          role="group"
+        >
+          <BaseBlock
+            icon={getIcon(page.type)}
+            label={page.title}
+            description={page.permalink}
+            dragHandle={
+              <BaseBlockDragHandle
+                isDragging={isDragging}
+                {...provided.dragHandleProps}
+              />
+            }
+          />
+        </Box>
+      )
+    }}
+  </Draggable>
+)
 
 interface SiderailOrderingContentProps {
   ordering: string[]
@@ -123,19 +121,26 @@ const SiderailOrderingContent = ({
 
   const handleDragEnd = useCallback(
     ({ source, destination }: DropResult) => {
-      if (!destination) {return}
+      if (!destination) {
+        return
+      }
 
       const from = source.index
       const to = destination.index
 
-      if (from === to) {return}
-      if (from >= pages.length || to >= pages.length || from < 0 || to < 0)
-        {return}
+      if (from === to) {
+        return
+      }
+      if (from >= pages.length || to >= pages.length || from < 0 || to < 0) {
+        return
+      }
 
       const updatedOrdering = [...mergedOrdering]
       const [movedItem] = updatedOrdering.splice(from, 1)
 
-      if (!movedItem) {return}
+      if (!movedItem) {
+        return
+      }
 
       updatedOrdering.splice(to, 0, movedItem)
       onOrderingChange(updatedOrdering)
@@ -188,9 +193,9 @@ const SiderailOrderingEditorStateDrawer = (): React.ReactNode => {
   const { mutate, isPending } = trpc.page.updatePageBlob.useMutation({
     onError: (error) => {
       toast({
+        description: error.message,
         status: "error",
         title: "Failed to save changes",
-        description: error.message,
         ...BRIEF_TOAST_SETTINGS,
       })
     },
@@ -215,11 +220,11 @@ const SiderailOrderingEditorStateDrawer = (): React.ReactNode => {
   )
 
   const childrenPagesBlock = useMemo(() => {
-    if (childrenPagesBlockIndex === -1) {return null}
+    if (childrenPagesBlockIndex === -1) {
+      return null
+    }
     // SAFETY: childrenPagesBlockIndex points at a childrenpages block in content
-    return previewPageState.content[childrenPagesBlockIndex] as
-      | (IsomerComponent & { type: "childrenpages" })
-      | undefined
+    return previewPageState.content[childrenPagesBlockIndex]
   }, [previewPageState.content, childrenPagesBlockIndex])
 
   const currentOrdering = useMemo(
@@ -229,7 +234,9 @@ const SiderailOrderingEditorStateDrawer = (): React.ReactNode => {
 
   const handleOrderingChange = useCallback(
     (newOrdering: string[]) => {
-      if (childrenPagesBlockIndex === -1) {return}
+      if (childrenPagesBlockIndex === -1) {
+        return
+      }
 
       const updatedContent = [...previewPageState.content]
       const updatedBlock = {

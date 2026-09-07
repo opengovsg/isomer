@@ -17,14 +17,13 @@ const isStringValue = (value: EmailInput): value is string =>
 /**
  * Returns whether the passed value is a valid government email.
  */
-export const isGovEmail = (value: EmailInput) => 
+export const isGovEmail = (value: EmailInput) =>
   isStringValue(value) && isEmail(value) && value.endsWith(".gov.sg")
-
 
 /**
  * Returns whether the passed value is a valid email.
  */
-export const isValidEmail = (value: EmailInput) => 
+export const isValidEmail = (value: EmailInput) =>
   isStringValue(value) && isEmail(value)
 
 /*

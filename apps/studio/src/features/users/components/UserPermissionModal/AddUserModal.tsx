@@ -85,23 +85,23 @@ export const AddUserModal = () => {
   const { mutate: createUser, isPending } = trpc.user.create.useMutation({
     onError: (error) => {
       toast({
+        description: error.message,
         status: "error",
         title: "Failed to create user",
-        description: error.message,
       })
       reset()
     },
     onSuccess: async (createdUsers) => {
       posthog.capture("site_user_invited", {
-        site_id: siteId,
         invited_user_count: createdUsers.length,
         role: getValues("role"),
+        site_id: siteId,
       })
       await utils.user.list.invalidate()
       await utils.user.count.invalidate()
       toast({
+        description: `Sent invite to ${createdUsers.length === 1 ? createdUsers[0]?.email : `${createdUsers.length} users`}. They'll receive an email in a few minutes.`,
         status: "success",
-        description: `Sent invite to ${createdUsers.length === 1 ? createdUsers[0]?.email : createdUsers.length + " users"}. They'll receive an email in a few minutes.`,
       })
     },
   })
@@ -145,7 +145,9 @@ export const AddUserModal = () => {
   // Check whitelist when email changes
   useEffect(() => {
     // no need to check whitelist if email is not entered or already invalid
-    if (!debouncedEmail || errors.email) {return}
+    if (!debouncedEmail || errors.email) {
+      return
+    }
 
     void checkWhitelist()
   }, [debouncedEmail, errors.email, checkWhitelist])
@@ -170,7 +172,9 @@ export const AddUserModal = () => {
         onSettled: () => {
           handleOnClose()
         },
-        onSuccess: () =>{  reset(); },
+        onSuccess: () => {
+          reset()
+        },
       },
     )
   })
@@ -228,7 +232,9 @@ export const AddUserModal = () => {
                       key={role}
                       value={role}
                       isSelected={watch("role") === role}
-                      onClick={() =>{  setValue("role", role); }}
+                      onClick={() => {
+                        setValue("role", role)
+                      }}
                       permissionLabels={permissionLabels}
                     />
                   ))}
@@ -255,7 +261,8 @@ export const AddUserModal = () => {
                 Object.keys(errors).length > 0 ||
                 email === "" ||
                 additionalEmailError ||
-                email !== debouncedEmail || // check if email has changed
+                email !== debouncedEmail ||
+                // check if email has changed
                 !isSingpassEnabled
               }
             >

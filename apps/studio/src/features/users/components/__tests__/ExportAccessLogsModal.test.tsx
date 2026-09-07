@@ -87,7 +87,9 @@ describe("ExportAccessLogsModal", () => {
     fireEvent.click(screen.getByRole("button", { name: "Export logs" }))
 
     // Assert
-    await waitFor(() =>{  expect(mutate).toHaveBeenCalledTimes(1); })
+    await waitFor(() => {
+      expect(mutate).toHaveBeenCalledTimes(1)
+    })
     expect(mutate).toHaveBeenCalledWith({
       month: getCurrentSingaporeMonth(),
       reportType: "Access",
@@ -105,7 +107,9 @@ describe("ExportAccessLogsModal", () => {
     fireEvent.click(screen.getByRole("button", { name: "Export logs" }))
 
     // Assert
-    await waitFor(() =>{  expect(mutate).toHaveBeenCalledTimes(1); })
+    await waitFor(() => {
+      expect(mutate).toHaveBeenCalledTimes(1)
+    })
     expect(mutate).toHaveBeenCalledWith(
       expect.objectContaining({ scope: "site" }),
     )
@@ -117,7 +121,9 @@ describe("ExportAccessLogsModal", () => {
 
     // Act
     fireEvent.click(screen.getByRole("button", { name: "Export logs" }))
-    await waitFor(() =>{  expect(capturedOptions?.onSuccess).toBeDefined(); })
+    await waitFor(() => {
+      expect(capturedOptions?.onSuccess).toBeDefined()
+    })
     capturedOptions?.onSuccess?.(undefined, mutate.mock.lastCall?.[0])
 
     // Assert
@@ -132,7 +138,7 @@ describe("ExportAccessLogsModal", () => {
     const { store } = renderOpen()
 
     // Act
-    fireEvent.click(screen.getByRole("button", { name: /close/i }))
+    fireEvent.click(screen.getByRole("button", { name: /close/iu }))
 
     // Assert
     expect(store.get(exportAccessLogsModalAtom)).toEqual({

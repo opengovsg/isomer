@@ -1,3 +1,4 @@
+import type { NextPageWithLayout } from "~/lib/types"
 import { Portal, useDisclosure } from "@chakra-ui/react"
 import { Button, Menu } from "@opengovsg/design-system-react"
 import { useSetAtom } from "jotai"
@@ -20,7 +21,6 @@ import { CreateFolderModal } from "~/features/editing-experience/components/Crea
 import { CreatePageModal } from "~/features/editing-experience/components/CreatePageModal"
 import { MoveResourceModal } from "~/features/editing-experience/components/MoveResourceModal"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import type { NextPageWithLayout } from "~/lib/types"
 import { SiteEditorLayout } from "~/templates/layouts/SiteEditorLayout"
 import { getFolderHref } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
@@ -56,8 +56,8 @@ const FolderPage: NextPageWithLayout = () => {
   })
 
   const [{ title }] = trpc.folder.getMetadata.useSuspenseQuery({
-    resourceId: parseInt(folderId),
-    siteId: parseInt(siteId),
+    resourceId: Number.parseInt(folderId),
+    siteId: Number.parseInt(siteId),
   })
 
   return (
@@ -74,11 +74,11 @@ const FolderPage: NextPageWithLayout = () => {
             <Button
               variant="outline"
               size="md"
-              onClick={() =>{ 
+              onClick={() => {
                 setFolderSettingsModalState({
                   folderId,
-                }); }
-              }
+                })
+              }}
             >
               Folder settings
             </Button>
@@ -175,12 +175,11 @@ const FolderPage: NextPageWithLayout = () => {
   )
 }
 
-FolderPage.getLayout = (page) => 
-  (
-    <PermissionsBoundary
-      resourceType={ResourceType.Folder}
-      page={SiteEditorLayout(page)}
-    />
-  )
+FolderPage.getLayout = (page) => (
+  <PermissionsBoundary
+    resourceType={ResourceType.Folder}
+    page={SiteEditorLayout(page)}
+  />
+)
 
 export default FolderPage

@@ -28,11 +28,11 @@ export const CmsContainer = ({
   sidenav,
   variant,
 }: CmsContainerProps) => {
-  const gridTemplateAreas = !sidenav
-    ? `'header header'
-      'sidebar main'`
-    : `'header header header'
+  const gridTemplateAreas = sidenav
+    ? `'header header header'
       'sidebar sidenav main'`
+    : `'header header'
+      'sidebar main'`
   const gridTemplateColumns = getGridTemplateCols(variant === "gsib", !!sidenav)
 
   return (

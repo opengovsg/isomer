@@ -51,11 +51,11 @@ type Story = StoryObj<typeof meta>
 export const Default: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await waitFor(async () =>
+    await waitFor(async () => {
       await expect(
         await canvas.findByRole("button", { name: "Export logs" }),
-      ).toBeEnabled(),
-    )
+      ).toBeEnabled()
+    })
     await expect(
       canvas.getByRole("link", { name: "User management" }),
     ).toBeVisible()
@@ -75,11 +75,11 @@ export const AllSitesScopeSelected: Story = {
     await userEvent.click(
       await canvas.findByRole("button", { name: "Export logs" }),
     )
-    await waitFor(async () =>
+    await waitFor(async () => {
       await expect(
         await within(document.body).findByText("Export requested"),
-      ).toBeVisible(),
-    )
+      ).toBeVisible()
+    })
   },
 }
 
@@ -97,7 +97,9 @@ export const Submitting: Story = {
     const canvas = within(canvasElement)
     const button = await canvas.findByRole("button", { name: "Export logs" })
     await userEvent.click(button)
-    await waitFor( async () => expect(button).toBeDisabled())
+    await waitFor(async () => {
+      await expect(button).toBeDisabled()
+    })
   },
 }
 

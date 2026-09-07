@@ -44,33 +44,29 @@ const EditorContainer = ({
 
 const EditorContentWrapper = ({
   editor,
-}: Pick<EditorContentProps, "editor">) => 
-  (
-    <Box
-      as={EditorContent}
-      editor={editor}
-      w="100%"
-      p="1rem"
-      flex="1 1 auto"
-      overflowX="hidden"
-      overflowY="auto"
-      backgroundColor="white"
-      onClick={() => editor?.chain().focus().run()}
-      cursor="text"
-    />
-  )
-
+}: Pick<EditorContentProps, "editor">) => (
+  <Box
+    as={EditorContent}
+    editor={editor}
+    w="100%"
+    p="1rem"
+    flex="1 1 auto"
+    overflowX="hidden"
+    overflowY="auto"
+    backgroundColor="white"
+    onClick={() => editor?.chain().focus().run()}
+    cursor="text"
+  />
+)
 
 interface EditorProps {
   menubar: EditorMenuBar
   editor: TiptapEditor
   isNested?: boolean
 }
-export const Editor = ({ editor, menubar, isNested }: EditorProps) => 
-  (
-    <EditorContainer isNested={isNested}>
-      {menubar({ editor })}
-      <EditorContentWrapper editor={editor} />
-    </EditorContainer>
-  )
-
+export const Editor = ({ editor, menubar, isNested }: EditorProps) => (
+  <EditorContainer isNested={isNested}>
+    {menubar({ editor })}
+    <EditorContentWrapper editor={editor} />
+  </EditorContainer>
+)

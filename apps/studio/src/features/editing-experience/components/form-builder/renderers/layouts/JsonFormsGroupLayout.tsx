@@ -16,7 +16,7 @@ const getScopedElementKey = (
 ): string => {
   if ("scope" in element) {
     // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
-    const {scope} = (element as { scope?: unknown })
+    const { scope } = element as { scope?: unknown }
     if (Object.prototype.toString.call(scope) === "[object String]") {
       // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
       return scope as string
@@ -30,49 +30,51 @@ export const jsonFormsGroupLayoutTester: RankedTester = rankWith(
   uiTypeIs("Group"),
 )
 
-const GroupComponent = React.memo(({
-  visible,
-  enabled,
-  uischema,
-  label,
-  schema,
-  path,
-  renderers,
-  cells,
-}: LayoutProps) => {
-  // Note: We have to perform this check here due to inaccuracies in JSONForms'
-  // type definitions.
-  // Ref: https://github.com/eclipsesource/jsonforms/blob/c3cead71d08ff11837bdeb5fbea66e5313137218/packages/material-renderers/src/layouts/MaterialGroupLayout.tsx#L52
-  const elements = isGroupLayout(uischema) ? uischema.elements : []
+const GroupComponent = React.memo(
+  ({
+    visible,
+    enabled,
+    uischema,
+    label,
+    schema,
+    path,
+    renderers,
+    cells,
+  }: LayoutProps) => {
+    // Note: We have to perform this check here due to inaccuracies in JSONForms'
+    // type definitions.
+    // Ref: https://github.com/eclipsesource/jsonforms/blob/c3cead71d08ff11837bdeb5fbea66e5313137218/packages/material-renderers/src/layouts/MaterialGroupLayout.tsx#L52
+    const elements = isGroupLayout(uischema) ? uischema.elements : []
 
-  if (!visible) {
-    return null
-  }
+    if (!visible) {
+      return null
+    }
 
-  return (
-    <Box display="flex" flexDirection="column" gap="1.25rem">
-      <Divider borderColor="base.divider.medium" />
+    return (
+      <Box display="flex" flexDirection="column" gap="1.25rem">
+        <Divider borderColor="base.divider.medium" />
 
-      <Box w="100%">
-        <Heading textStyle="h6" as="h6" size="m" fontWeight="500">
-          {label}
-        </Heading>
+        <Box w="100%">
+          <Heading textStyle="h6" as="h6" size="m" fontWeight="500">
+            {label}
+          </Heading>
+        </Box>
+
+        {elements.map((element) => (
+          <JsonFormsDispatch
+            key={getScopedElementKey(element, path)}
+            uischema={element}
+            schema={schema}
+            path={path}
+            enabled={enabled}
+            renderers={renderers}
+            cells={cells}
+          />
+        ))}
       </Box>
-
-      {elements.map((element) => (
-        <JsonFormsDispatch
-          key={getScopedElementKey(element, path)}
-          uischema={element}
-          schema={schema}
-          path={path}
-          enabled={enabled}
-          renderers={renderers}
-          cells={cells}
-        />
-      ))}
-    </Box>
-  )
-})
+    )
+  },
+)
 
 const JsonFormsGroupLayoutRenderer = ({
   uischema,
@@ -84,20 +86,18 @@ const JsonFormsGroupLayoutRenderer = ({
   cells,
   direction,
   label,
-}: LayoutProps) => 
-  (
-    <GroupComponent
-      schema={schema}
-      path={path}
-      direction={direction}
-      visible={visible}
-      enabled={enabled}
-      uischema={uischema}
-      renderers={renderers}
-      cells={cells}
-      label={label}
-    />
-  )
-
+}: LayoutProps) => (
+  <GroupComponent
+    schema={schema}
+    path={path}
+    direction={direction}
+    visible={visible}
+    enabled={enabled}
+    uischema={uischema}
+    renderers={renderers}
+    cells={cells}
+    label={label}
+  />
+)
 
 export default withJsonFormsLayoutProps(JsonFormsGroupLayoutRenderer)

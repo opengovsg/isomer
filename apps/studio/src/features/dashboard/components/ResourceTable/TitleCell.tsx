@@ -38,13 +38,12 @@ export const TitleCell = ({
     variant: "standalone",
   })
 
-  const linkToResource: string = useMemo(() => 
-    getLinkToResource({ resourceId: id, siteId, type })
-  , [id, siteId, type])
+  const linkToResource: string = useMemo(
+    () => getLinkToResource({ resourceId: id, siteId, type }),
+    [id, siteId, type],
+  )
 
-  const ResourceTypeIcon: IconType = useMemo(() => 
-    getIcon(type)
-  , [type])
+  const ResourceTypeIcon: IconType = useMemo(() => getIcon(type), [type])
   const scheduledAtLabel = scheduledAt
     ? format(scheduledAt, "MMMM d, yyyy h:mm a")
     : undefined

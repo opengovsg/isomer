@@ -22,7 +22,9 @@ export const FileIdCell = ({
     // and showing the modal
     e.preventDefault()
     e.stopPropagation()
-    if (!fileKey || isPending) {return}
+    if (!fileKey || isPending) {
+      return
+    }
 
     const { presignedGetUrl } = await getPresignedGetUrl({
       fileKey: fileKey.slice(1),

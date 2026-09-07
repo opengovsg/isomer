@@ -37,8 +37,9 @@ export const ResourceTableMenu = ({
   parentId,
 }: ResourceTableMenuProps) => {
   const setMoveResource = useSetAtom(moveResourceAtom)
-  const handleMoveResourceClick = () =>{ 
-    setMoveResource({ id: resourceId, parentId, permalink, title, type }); }
+  const handleMoveResourceClick = () => {
+    setMoveResource({ id: resourceId, parentId, permalink, title, type })
+  }
   const setResourceModalState = useSetAtom(deleteResourceModalAtom)
   const setFolderSettingsModalState = useSetAtom(folderSettingsModalAtom)
   const setPageSettingsModalState = useSetAtom(pageSettingsModalAtom)
@@ -61,12 +62,12 @@ export const ResourceTableMenu = ({
             type === ResourceType.CollectionPage ||
             type === ResourceType.CollectionLink) && (
             <MenuItem
-              onClick={() =>{ 
+              onClick={() => {
                 setPageSettingsModalState({
                   pageId: resourceId,
                   type,
-                }); }
-              }
+                })
+              }}
               icon={<BiCog fontSize="1rem" />}
             >
               Edit settings
@@ -74,11 +75,11 @@ export const ResourceTableMenu = ({
           )}
           {type === ResourceType.Folder && (
             <MenuItem
-              onClick={() =>{ 
+              onClick={() => {
                 setFolderSettingsModalState({
                   folderId: resourceId,
-                }); }
-              }
+                })
+              }}
               icon={<BiCog fontSize="1rem" />}
             >
               Edit folder settings
@@ -89,7 +90,7 @@ export const ResourceTableMenu = ({
             type === ResourceType.CollectionLink ||
             type === ResourceType.Folder ||
             type === ResourceType.Collection) && (
-            // TODO: we need to change the resourceid next time when we implement root level permissions
+            // Deferred: we need to change the resourceid next time when we implement root level permissions
             <Can do="move" on={{ parentId }} passThrough>
               {({ isAllowed }) => (
                 <MenuItem

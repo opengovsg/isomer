@@ -1,5 +1,5 @@
-import { Box } from "@chakra-ui/react"
 import type { Meta, StoryObj } from "@storybook/nextjs"
+import { Box } from "@chakra-ui/react"
 import { VersionModal } from "~/components/VersionWrapper/VersionModal"
 
 import { withChromaticModes } from "@isomer/storybook-config"
@@ -24,7 +24,9 @@ const meta: Meta<typeof VersionModal> = {
   },
   args: {
     isOpen: true,
-    onClose: () =>{  console.log("close"); },
+    onClose: () => {
+      console.log("close")
+    },
   },
 }
 

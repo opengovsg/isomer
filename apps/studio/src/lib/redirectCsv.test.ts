@@ -158,7 +158,7 @@ describe("buildRedirectErrorsCsv", () => {
     const reparsed = parseRedirectCsv(csv)
 
     // Assert: failed row is first, and the Error column is ignored on re-parse.
-    const lines = csv.split(/\r?\n/)
+    const lines = csv.split(/\r?\n/u)
     expect(lines[0]).toContain(BULK_REDIRECT_CSV_ERROR_HEADER)
     expect(lines[1]).toContain("Enter a valid URL.")
     expect(csv).toContain(BULK_REDIRECT_CSV_NO_ERROR)
@@ -183,7 +183,7 @@ describe("redirects template file", () => {
 
     // Act
     const contents = readFileSync(templatePath, "utf-8")
-    const firstLine = contents.replace(/^\uFEFF/, "").split(/\r?\n/)[0]
+    const firstLine = contents.replace(/^\uFEFF/u, "").split(/\r?\n/u)[0]
 
     // Assert
     expect(firstLine).toBe(`${SOURCE_HEADER},${DESTINATION_HEADER}`)

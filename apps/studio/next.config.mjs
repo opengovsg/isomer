@@ -7,7 +7,7 @@ const { env } = await import("./src/env.mjs")
 // NOTE: Keep the `unsafe-eval` for `script-src` as the removal
 // led to nextjs crashing on start
 
-// TODO: Stricten the CSP for images
+// Deferred: Stricten the CSP for images
 // Intercom CSP: https://www.intercom.com/help/en/articles/3894-using-intercom-with-content-security-policy
 const ContentSecurityPolicy = `
   default-src 'none';
@@ -91,9 +91,9 @@ const ContentSecurityPolicy = `
     https://placehold.co
     https://cdn.growthbook.io
     ${
-      !env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME
-        ? "https://*.by.gov.sg"
-        : `https://${env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}`
+      env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME
+        ? `https://${env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}`
+        : "https://*.by.gov.sg"
     }
     https://${env.S3_GAZETTE_DOMAIN_NAME}
     https://via.intercom.io
@@ -185,7 +185,7 @@ const config = {
         headers: [
           {
             key: "Content-Security-Policy",
-            value: ContentSecurityPolicy.replace(/\s{2,}/g, " ").trim(),
+            value: ContentSecurityPolicy.replaceAll(/\s{2,}/gu, " ").trim(),
           },
           {
             key: "Cross-Origin-Opener-Policy",

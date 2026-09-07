@@ -1540,15 +1540,13 @@ describe("page.router", async () => {
       expect(publishedPageToUpdate.publishedVersionId).not.toBeNull()
       expect(publishedPageToUpdate.draftBlobId).toBeNull()
       const pageUpdateArgs = createPageUpdateArgs(publishedPageToUpdate)
-      const oldBlob = await db
-        .transaction()
-        .execute(
-          async (tx) =>
-            await getBlobOfResource({
-              db: tx,
-              resourceId: publishedPageToUpdate.id,
-            }),
-        )
+      const oldBlob = await db.transaction().execute(
+        async (tx) =>
+          await getBlobOfResource({
+            db: tx,
+            resourceId: publishedPageToUpdate.id,
+          }),
+      )
 
       // Act
       const result = await caller.updatePageBlob(pageUpdateArgs)

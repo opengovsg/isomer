@@ -34,7 +34,9 @@ const HEADER_LABELS = {
 } as const satisfies Record<string, string>
 
 const getHeaderLabel = (layout: string): string => {
-  if (!Object.hasOwn(HEADER_LABELS, layout)) {return "Edit header information"}
+  if (!Object.hasOwn(HEADER_LABELS, layout)) {
+    return "Edit header information"
+  }
   // SAFETY: Object.hasOwn confirms layout is a key of HEADER_LABELS
   return HEADER_LABELS[layout as keyof typeof HEADER_LABELS]
 }
@@ -91,18 +93,18 @@ const MetadataEditorStateDrawer = (): React.ReactNode => {
         // For database layout, exclude the database field from metadata editing
         // since it's handled by the separate database editor (DatabaseEditorStateDrawer)
         return getScopedSchema({
+          exclude: ["database"],
           layout: ISOMER_USABLE_PAGE_LAYOUTS.Database,
           scope: "page",
-          exclude: ["database"],
         })
       }
       case ISOMER_USABLE_PAGE_LAYOUTS.Collection: {
         // For collection layout, only show the subtitle field, as the other
         // fields are part of the new collection index editing experience
         return getScopedSchema({
+          include: ["subtitle"],
           layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,
           scope: "page",
-          include: ["subtitle"],
         })
       }
       default: {
@@ -122,7 +124,9 @@ const MetadataEditorStateDrawer = (): React.ReactNode => {
         siteId,
       },
       {
-        onSuccess: () =>{  setDrawerState({ state: "root" }); },
+        onSuccess: () => {
+          setDrawerState({ state: "root" })
+        },
       },
     )
   }, [
@@ -135,7 +139,7 @@ const MetadataEditorStateDrawer = (): React.ReactNode => {
   ])
 
   const handleChange = (data: Static<typeof metadataSchema>) => {
-    // TODO: Perform actual validation on the data
+    // Deferred: Perform actual validation on the data
     setPreviewPageState({
       ...previewPageState,
       page: data,
@@ -192,7 +196,9 @@ const MetadataEditorStateDrawer = (): React.ReactNode => {
                 schema={filteredSchema}
                 validateFn={validateFn}
                 data={previewPageState.page}
-                handleChange={(data) =>{  handleChange(data); }}
+                handleChange={(data) => {
+                  handleChange(data)
+                }}
               />
             </Box>
           </Box>

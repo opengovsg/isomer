@@ -43,7 +43,7 @@ export const getIsActiveForResource = (
     }
     case ResourceType.FolderMeta:
     case ResourceType.CollectionMeta: {
-      // TODO: Not implemented yet
+      // Deferred: Not implemented yet
       return false
     }
     default: {

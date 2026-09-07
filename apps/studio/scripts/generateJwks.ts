@@ -1,6 +1,6 @@
 import { program } from "commander"
-import { mkdirSync, writeFileSync } from "node:fs"
 import * as jose from "jose"
+import { mkdirSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { z } from "zod"
@@ -57,12 +57,7 @@ const opts = z
   })
   .parse(program.opts())
 
-const OUTPUT_FOLDER = join(
-  import.meta.dirname,
-  "..",
-  "keys",
-  opts.environment,
-)
+const OUTPUT_FOLDER = join(import.meta.dirname, "..", "keys", opts.environment)
 
 async function generateSigningKey({ alg, crv }: { alg: string; crv: string }) {
   const keyPair = await jose.generateKeyPair(alg, { crv, extractable: true })

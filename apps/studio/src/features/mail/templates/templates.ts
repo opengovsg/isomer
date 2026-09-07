@@ -36,9 +36,7 @@ const getDownloadLinkLabel = (
   label: AuditLogExportDownloadLink["label"],
   longMonth: string,
   sizeInMb: string,
-) => 
-  `Download ${label} review logs for ${longMonth} [.csv, ${sizeInMb}MB]`
-
+) => `Download ${label} review logs for ${longMonth} [.csv, ${sizeInMb}MB]`
 
 const constructStudioRedirect = () =>
   `<a target="_blank" href="${escapeHtml(env.NEXT_PUBLIC_APP_URL)}">${escapeHtml(env.NEXT_PUBLIC_APP_URL?.replace("https://", ""))}</a>`
@@ -160,22 +158,22 @@ const failedPublishTemplate = (
   switch (isScheduled) {
     case true: {
       return {
-        subject: `[Isomer Studio] We couldn’t publish your page that was scheduled`,
         body: `<p>Hi ${recipientEmail},</p>
         <p>We couldn’t publish the page ${resource.title} that you scheduled.</p>
         <p>Please log in to Isomer Studio at ${studioResourceUrl} and try publishing the page again.</p>
         <p>Best,</p>
         <p>Isomer team</p>`,
+        subject: `[Isomer Studio] We couldn’t publish your page that was scheduled`,
       }
     }
     case false: {
       return {
-        subject: `[Isomer Studio] We couldn’t publish your page`,
         body: `<p>Hi ${recipientEmail},</p>
         <p>We couldn’t publish the page ${resource.title} that you tried to publish.</p>
         <p>Please log in to Isomer Studio at ${studioResourceUrl} and try publishing the page again.</p>
         <p>Best,</p>
         <p>Isomer team</p>`,
+        subject: `[Isomer Studio] We couldn’t publish your page`,
       }
     }
   }
@@ -189,22 +187,22 @@ const successfulPublishTemplate = (
   switch (rest.isScheduled) {
     case true: {
       return {
-        subject: `[Isomer Studio] Your scheduled page was published`,
         body: `<p>Hi ${recipientEmail},</p>
         <p>Your page ${resource.title} was successfully published as scheduled. It will be live on your site in approximately 5-10 minutes.</p>
         <p> You can view or edit your published content on Isomer Studio at ${studioResourceUrl}.</p>
         <p>Best,</p>
         <p>Isomer team</p>`,
+        subject: `[Isomer Studio] Your scheduled page was published`,
       }
     }
     case false: {
       return {
-        subject: `[Isomer Studio] Changes you published are now live`,
         body: `<p>Hi ${recipientEmail},</p>
         <p>Your changes to page ${resource.title} have been successfully published and will be live on your site in approximately 5-10 minutes.</p>
         <p> You can view or edit your published content on Isomer Studio at ${studioResourceUrl}.</p>
         <p>Best,</p>
         <p>Isomer team</p>`,
+        subject: `[Isomer Studio] Changes you published are now live`,
       }
     }
   }

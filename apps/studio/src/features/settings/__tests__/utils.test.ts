@@ -107,12 +107,18 @@ describe("settings.utils.ts", () => {
     it("should pass for a theme with sufficient contrast ratios", () => {
       // Arrange - A theme that should pass
       const theme: Theme = {
-        "colors.brand.canvas.alt": "#e0e0e0", // Light background
-        "colors.brand.canvas.default": "#f5f5f5", // Light background
-        "colors.brand.canvas.inverse": "#1a1a1a", // Dark background
-        "colors.brand.interaction.default": "#0d47a1", // Dark blue
-        "colors.brand.interaction.hover": "#01579b", // Darker blue
-        "colors.brand.interaction.pressed": "#003c8f", // Even darker blue
+        "colors.brand.canvas.alt": "#e0e0e0",
+        // Light background
+        "colors.brand.canvas.default": "#f5f5f5",
+        // Light background
+        "colors.brand.canvas.inverse": "#1a1a1a",
+        // Dark background
+        "colors.brand.interaction.default": "#0d47a1",
+        // Dark blue
+        "colors.brand.interaction.hover": "#01579b",
+        // Darker blue
+        "colors.brand.interaction.pressed": "#003c8f",
+        // Even darker blue
       }
 
       // Act
@@ -125,12 +131,18 @@ describe("settings.utils.ts", () => {
     it("should fail for a theme with insufficient contrast on light backgrounds", () => {
       // Arrange - Light backgrounds with light text would fail
       const theme: Theme = {
-        "colors.brand.canvas.alt": "#e0e0e0", // Light background
-        "colors.brand.canvas.default": "#f5f5f5", // Light background
-        "colors.brand.canvas.inverse": "#1a1a1a", // Dark background
-        "colors.brand.interaction.default": "#90caf9", // Too light blue (low contrast)
-        "colors.brand.interaction.hover": "#64b5f6", // Too light blue
-        "colors.brand.interaction.pressed": "#42a5f5", // Too light blue
+        "colors.brand.canvas.alt": "#e0e0e0",
+        // Light background
+        "colors.brand.canvas.default": "#f5f5f5",
+        // Light background
+        "colors.brand.canvas.inverse": "#1a1a1a",
+        // Dark background
+        "colors.brand.interaction.default": "#90caf9",
+        // Too light blue (low contrast)
+        "colors.brand.interaction.hover": "#64b5f6",
+        // Too light blue
+        "colors.brand.interaction.pressed": "#42a5f5",
+        // Too light blue
       }
 
       // Act
@@ -143,12 +155,18 @@ describe("settings.utils.ts", () => {
     it("should fail for a theme with insufficient contrast on dark backgrounds", () => {
       // Arrange - Dark backgrounds with dark text would fail
       const theme: Theme = {
-        "colors.brand.canvas.alt": "#2a2a2a", // Too dark
-        "colors.brand.canvas.default": "#3a3a3a", // Too dark (low contrast with dark text)
-        "colors.brand.canvas.inverse": "#1a1a1a", // Dark background
-        "colors.brand.interaction.default": "#0d47a1", // Dark blue
-        "colors.brand.interaction.hover": "#01579b", // Darker blue
-        "colors.brand.interaction.pressed": "#003c8f", // Even darker blue
+        "colors.brand.canvas.alt": "#2a2a2a",
+        // Too dark
+        "colors.brand.canvas.default": "#3a3a3a",
+        // Too dark (low contrast with dark text)
+        "colors.brand.canvas.inverse": "#1a1a1a",
+        // Dark background
+        "colors.brand.interaction.default": "#0d47a1",
+        // Dark blue
+        "colors.brand.interaction.hover": "#01579b",
+        // Darker blue
+        "colors.brand.interaction.pressed": "#003c8f",
+        // Even darker blue
       }
 
       // Act
@@ -161,7 +179,8 @@ describe("settings.utils.ts", () => {
     it("should check contrast for all light background colors", () => {
       // Arrange
       const theme: Theme = {
-        "colors.brand.canvas.alt": "#000000", // Black on white = bad for this test
+        "colors.brand.canvas.alt": "#000000",
+        // Black on white = bad for this test
         "colors.brand.canvas.default": "#ffffff",
         "colors.brand.canvas.inverse": "#000000",
         "colors.brand.interaction.default": "#000000",
@@ -181,7 +200,8 @@ describe("settings.utils.ts", () => {
       const theme: Theme = {
         "colors.brand.canvas.alt": "#f0f0f0",
         "colors.brand.canvas.default": "#ffffff",
-        "colors.brand.canvas.inverse": "#ffffff", // White background, needs dark text (will fail)
+        "colors.brand.canvas.inverse": "#ffffff",
+        // White background, needs dark text (will fail)
         "colors.brand.interaction.default": "#000000",
         "colors.brand.interaction.hover": "#1a1a1a",
         "colors.brand.interaction.pressed": "#2a2a2a",
@@ -223,7 +243,8 @@ describe("settings.utils.ts", () => {
         "colors.brand.canvas.alt": "#f0f0f0",
         "colors.brand.canvas.default": "#ffffff",
         "colors.brand.canvas.inverse": "#000000",
-        "colors.brand.interaction.default": "#767676", // This is approximately 4.5:1 with white
+        "colors.brand.interaction.default": "#767676",
+        // This is approximately 4.5:1 with white
         "colors.brand.interaction.hover": "#5a5a5a",
         "colors.brand.interaction.pressed": "#3a3a3a",
       }

@@ -119,7 +119,8 @@ export const GazetteTable = ({
       siteId,
     },
     {
-      placeholderData: keepPreviousData, // Required for table to show previous data while fetching next page
+      placeholderData: keepPreviousData,
+      // Required for table to show previous data while fetching next page
     },
   )
 
@@ -137,17 +138,17 @@ export const GazetteTable = ({
         }
 
         return {
-          id: resource.id,
-          title: resource.title,
-          notificationNo: page?.description ?? null,
           category: page?.category ?? "",
-          subcategory: page?.tagged?.[0] ?? "",
-          status: resource.state === "Published" ? "published" : "scheduled",
           fileId: page?.ref?.split("/").pop() ?? "",
           fileKey: page?.ref ?? null,
           fileSize: resource.fileSize ?? null,
+          id: resource.id,
+          notificationNo: page?.description ?? null,
           publishTime: resource.scheduledAt ?? new Date(),
           publishedAt: resource.publishedAt ?? null,
+          status: resource.state === "Published" ? "published" : "scheduled",
+          subcategory: page?.tagged?.[0] ?? "",
+          title: resource.title,
         } satisfies GazetteTableData
       }) ?? [],
     features: stockFeatures,

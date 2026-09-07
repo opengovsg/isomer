@@ -17,19 +17,21 @@ export const useMe = () => {
   const logoutMutation = trpc.auth.logout.useMutation()
 
   const logout = useCallback(
-    (redirectToSignIn = true) =>{  
+    (redirectToSignIn = true) => {
       logoutMutation.mutate(undefined, {
         onSuccess: () => {
           posthog.capture("user_logged_out")
-          void withPosthog((posthog) => posthog.reset())
+          void withPosthog((posthog) => {
+            posthog.reset()
+          })
           void gb.setAttributes({})
           removeLoginStateFlag()
           if (redirectToSignIn) {
             void router.push("/sign-in")
           }
         },
-      }); }
-    ,
+      })
+    },
     [gb, logoutMutation, removeLoginStateFlag, router],
   )
 

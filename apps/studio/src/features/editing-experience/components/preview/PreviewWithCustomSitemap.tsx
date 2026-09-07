@@ -29,21 +29,19 @@ export type PreviewProps = IsomerSchema & {
 const FakeLink = forwardRef<
   HTMLAnchorElement,
   PropsWithChildren<AnchorHTMLAttributes<HTMLAnchorElement>>
->(({ children, href, onClick, ...rest }, ref) => {
-  return (
-    <a
-      {...rest}
-      href={href ?? "/"}
-      ref={ref}
-      onClick={(e) => {
-        e.preventDefault()
-        onClick?.(e)
-      }}
-    >
-      {children}
-    </a>
-  )
-})
+>(({ children, href, onClick, ...rest }, ref) => (
+  <a
+    {...rest}
+    href={href ?? "/"}
+    ref={ref}
+    onClick={(e) => {
+      e.preventDefault()
+      onClick?.(e)
+    }}
+  >
+    {children}
+  </a>
+))
 
 const defaultLastModified = new Date().toISOString()
 const DEFAULT_OVERRIDES: PartialDeep<IsomerPageSchemaType> = {}
@@ -82,7 +80,7 @@ const SuspendablePreviewWithCustomSitemap = ({
     <LinkComponentProvider value={FakeLink}>
       <RenderEngine
         {...renderProps}
-        // TODO: fixup all the typing errors
+        // Deferred: fixup all the typing errors
         // @ts-expect-error to fix when types are proper
         site={{
           ...siteConfig,

@@ -60,7 +60,7 @@ export const Wordbreak: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const button = await canvas.findByRole("button", {
-      name: /This is a prose block/i,
+      name: /This is a prose block/iu,
     })
     await userEvent.click(button)
 
@@ -76,7 +76,7 @@ export const EditFixedBlockState: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const button = await canvas.findByRole("button", {
-      name: /Article page header/i,
+      name: /Article page header/iu,
     })
     await userEvent.click(button)
   },
@@ -87,7 +87,7 @@ export const SaveToast: Story = {
     await EditFixedBlockState.play?.({ canvasElement, ...rest })
     const canvas = within(canvasElement)
     const saveButton = await canvas.findByRole("button", {
-      name: /Save changes/i,
+      name: /Save changes/iu,
     })
     await userEvent.click(saveButton)
   },
@@ -96,7 +96,7 @@ export const SaveToast: Story = {
 export const AddBlock: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const button = await canvas.findByRole("button", { name: /add block/i })
+    const button = await canvas.findByRole("button", { name: /add block/iu })
     await userEvent.click(button)
   },
 }
@@ -132,7 +132,7 @@ export const AddTextBlock: Story = {
     const canvas = within(canvasElement)
     await AddBlock.play?.(context)
 
-    await userEvent.click(canvas.getByRole("button", { name: /text/i }))
+    await userEvent.click(canvas.getByRole("button", { name: /text/iu }))
   },
 }
 
@@ -142,7 +142,7 @@ export const LinkModal: Story = {
     const canvas = within(canvasElement)
     await AddTextBlock.play?.(context)
 
-    await userEvent.click(canvas.getByRole("button", { name: /link/i }))
+    await userEvent.click(canvas.getByRole("button", { name: /link/iu }))
   },
 }
 
@@ -159,7 +159,7 @@ export const WithTags: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const button = await canvas.findByRole("button", {
-      name: /article page header/i,
+      name: /article page header/iu,
     })
 
     await userEvent.click(button)

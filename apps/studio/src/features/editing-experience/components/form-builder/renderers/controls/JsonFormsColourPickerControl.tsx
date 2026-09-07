@@ -87,7 +87,8 @@ const JsonFormsColourPickerControl = ({
                   const parsedHex = [...rawString]
                     .filter((c) => isHexadecimal(c))
                     .join("")
-                    .slice(0, 6) // limit to 6 characters
+                    .slice(0, 6)
+                  // limit to 6 characters
 
                   setDisplayedColour(parsedHex)
 

@@ -49,20 +49,18 @@ export const CreateCollectionModal = ({
   onClose,
   siteId,
   parentFolderId,
-}: CreateCollectionModalProps): React.ReactNode => 
-  (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <ModalOverlay />
-      <CreateCollectionModalContent
-        isOpen={isOpen}
-        key={String(isOpen)}
-        onClose={onClose}
-        siteId={siteId}
-        parentFolderId={parentFolderId}
-      />
-    </Modal>
-  )
-
+}: CreateCollectionModalProps): React.ReactNode => (
+  <Modal isOpen={isOpen} onClose={onClose}>
+    <ModalOverlay />
+    <CreateCollectionModalContent
+      isOpen={isOpen}
+      key={String(isOpen)}
+      onClose={onClose}
+      siteId={siteId}
+      parentFolderId={parentFolderId}
+    />
+  </Modal>
+)
 
 const CreateCollectionModalContent = ({
   onClose,
@@ -100,7 +98,7 @@ const CreateCollectionModalContent = ({
       toast({
         title: "Failed to create collection",
         status: "error",
-        // TODO: check if this property is correct
+        // Deferred: check if this property is correct
         description: err.message,
         ...BRIEF_TOAST_SETTINGS,
       })
@@ -108,15 +106,15 @@ const CreateCollectionModalContent = ({
     },
     onSuccess: async () => {
       posthog.capture("collection_created", {
-        site_id: siteId,
         has_parent_folder: !!parentFolderId,
+        site_id: siteId,
       })
       await utils.resource.listWithoutRoot.invalidate()
       await utils.resource.countWithoutRoot.invalidate()
       await utils.resource.getChildrenOf.invalidate()
       toast({
-        title: "Collection created!",
         status: "success",
+        title: "Collection created!",
         ...BRIEF_TOAST_SETTINGS,
       })
       onClose()

@@ -57,21 +57,19 @@ export const ModifyGazetteModal = ({
   siteId,
   collectionId,
   initialData,
-}: ModifyGazetteModalProps): React.ReactNode => 
-  (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <ModalOverlay />
-      <ModifyGazetteModalContent
-        key={String(isOpen)}
-        onClose={onClose}
-        gazetteId={gazetteId}
-        siteId={siteId}
-        collectionId={collectionId}
-        initialData={initialData}
-      />
-    </Modal>
-  )
-
+}: ModifyGazetteModalProps): React.ReactNode => (
+  <Modal isOpen={isOpen} onClose={onClose}>
+    <ModalOverlay />
+    <ModifyGazetteModalContent
+      key={String(isOpen)}
+      onClose={onClose}
+      gazetteId={gazetteId}
+      siteId={siteId}
+      collectionId={collectionId}
+      initialData={initialData}
+    />
+  </Modal>
+)
 
 type ModifyGazetteModalContentProps = Pick<
   ModifyGazetteModalProps,
@@ -242,7 +240,9 @@ const ModifyGazetteModalContent = ({
               <Button
                 variant="clear"
                 color="base.content.strong"
-                onClick={() =>{  setIsConfirmingCancel(false); }}
+                onClick={() => {
+                  setIsConfirmingCancel(false)
+                }}
               >
                 No
               </Button>
@@ -256,7 +256,9 @@ const ModifyGazetteModalContent = ({
             variant="outline"
             colorScheme="critical"
             leftIcon={<BiBlock />}
-            onClick={() =>{  setIsConfirmingCancel(true); }}
+            onClick={() => {
+              setIsConfirmingCancel(true)
+            }}
           >
             Cancel publish
           </Button>

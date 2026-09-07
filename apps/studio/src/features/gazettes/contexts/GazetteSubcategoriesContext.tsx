@@ -4,10 +4,12 @@ import { createContext, useContext, useMemo } from "react"
 import { trpc } from "~/utils/trpc"
 
 import type { GazettesCategory } from "../types"
-import { GAZETTE_SUBCATEGORY_LABEL,
+import {
+  GAZETTE_SUBCATEGORY_LABEL,
   governmentGazetteSubcategoriesKeys,
   legislativeSupplementsSubcategoriesKeys,
-  otherSupplementsSubcategoriesKeys } from "../constants"
+  otherSupplementsSubcategoriesKeys,
+} from "../constants"
 
 interface GazetteSubcategoriesContextValue {
   subcategories: { label: string; value: string }[]
@@ -55,25 +57,21 @@ export const GazetteSubcategoriesProvider = ({
     const getSubcategoriesForCategory = (category: GazettesCategory) => {
       switch (category) {
         case "Government Gazette": {
-          return filter(subcategories, ({ label }) => 
-            governmentGazetteSubcategoriesKeys.some(
-              (key) => key === label,
-            )
+          return filter(subcategories, ({ label }) =>
+            governmentGazetteSubcategoriesKeys.some((key) => key === label),
           )
         }
         case "Other Supplements": {
-          return filter(subcategories, ({ label }) => 
-            otherSupplementsSubcategoriesKeys.some(
-              (key) => key === label,
-            )
+          return filter(subcategories, ({ label }) =>
+            otherSupplementsSubcategoriesKeys.some((key) => key === label),
           )
         }
 
         case "Legislative Supplements": {
-          return filter(subcategories, ({ label }) => 
+          return filter(subcategories, ({ label }) =>
             legislativeSupplementsSubcategoriesKeys.some(
               (key) => key === label,
-            )
+            ),
           )
         }
       }

@@ -18,7 +18,9 @@ const meta: Meta<typeof ViewGazetteModal> = {
     gazetteId: "gazette-123",
     initialView: "delete",
     isOpen: true,
-    onClose: () =>{  console.log("close"); },
+    onClose: () => {
+      console.log("close")
+    },
     siteId: 1,
   },
   component: ViewGazetteModal,

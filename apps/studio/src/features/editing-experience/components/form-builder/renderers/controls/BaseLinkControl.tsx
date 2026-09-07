@@ -49,7 +49,7 @@ const SuspendableLabel = ({ siteId, resourceId }: SuspendableLabelProps) => {
   )
 }
 
-// TODO: refactor this
+// Deferred: refactor this
 // Context: This component exists for us to have both
 // JsonFormsLinkControl and JsonFormsRefControl share the same logic
 // for rendering the link editor modal without having to duplicate it
@@ -86,7 +86,11 @@ export const BaseLinkControl = ({
     <>
       <Box as={FormControl} isRequired={required} isInvalid={!!errors}>
         <FormLabel>{label}</FormLabel>
-        <LinkErrorBoundary resetLink={() =>{  handleChange(path); }}>
+        <LinkErrorBoundary
+          resetLink={() => {
+            handleChange(path)
+          }}
+        >
           <Flex
             px="1rem"
             py="0.75rem"
@@ -95,21 +99,7 @@ export const BaseLinkControl = ({
             justifyContent="space-between"
             alignItems="center"
           >
-            {!data ? (
-              <>
-                <Text textStyle="body-2">{description}</Text>
-                <Button
-                  onClick={onOpen}
-                  variant="link"
-                  aria-labelledby="button-label"
-                  py="0.5rem"
-                >
-                  <Text id="button-label" textStyle="subhead-2">
-                    Link something...
-                  </Text>
-                </Button>
-              </>
-            ) : (
+            {data ? (
               <>
                 {pageType !== LINK_TYPES.Page && (
                   <Text overflow="auto" textStyle="body-2">
@@ -130,8 +120,24 @@ export const BaseLinkControl = ({
                   colorScheme="critical"
                   aria-label="Remove file"
                   icon={<BiTrash />}
-                  onClick={() =>{  handleChange(path, undefined); }}
+                  onClick={() => {
+                    handleChange(path)
+                  }}
                 />
+              </>
+            ) : (
+              <>
+                <Text textStyle="body-2">{description}</Text>
+                <Button
+                  onClick={onOpen}
+                  variant="link"
+                  aria-labelledby="button-label"
+                  py="0.5rem"
+                >
+                  <Text id="button-label" textStyle="subhead-2">
+                    Link something...
+                  </Text>
+                </Button>
               </>
             )}
           </Flex>
@@ -147,7 +153,7 @@ export const BaseLinkControl = ({
       </Box>
       <LinkEditorModal
         linkTypes={linkTypes}
-        // TODO: fix this
+        // Deferred: fix this
         // Context: we are reusing LinkEditorModal at the moment which is quite janky
         // not passing in any linkText will cause the schema validation to fail
         // (even though we don't need it here)
@@ -155,7 +161,9 @@ export const BaseLinkControl = ({
         showLinkText={false}
         isOpen={isOpen}
         onClose={onClose}
-        onSave={(_, linkHref) =>{  handleChange(path, linkHref); }}
+        onSave={(_, linkHref) => {
+          handleChange(path, linkHref)
+        }}
       />
     </>
   )

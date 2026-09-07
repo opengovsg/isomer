@@ -166,7 +166,9 @@ const JsonFormsNavbarControl = ({
         schema={schema}
         uischema={getChildUiSchema(selectedPath)}
         path={selectedPath}
-        onBack={() =>{  setSelectedPath(undefined); }}
+        onBack={() => {
+          setSelectedPath(undefined)
+        }}
         handleRemoveItem={() => {
           handleRemove(
             getParentPath(selectedPath),

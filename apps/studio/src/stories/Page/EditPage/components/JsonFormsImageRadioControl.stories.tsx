@@ -1,6 +1,10 @@
+import type { TagCategoryDisplay } from "@opengovsg/isomer-components"
 import type { Meta, StoryObj } from "@storybook/nextjs"
-import { CalloutSchema, DEFAULT_TAG_CATEGORY_DISPLAY, TAG_CATEGORY_DISPLAY_OPTIONS } from '@opengovsg/isomer-components';
-import type { TagCategoryDisplay } from '@opengovsg/isomer-components';
+import {
+  CalloutSchema,
+  DEFAULT_TAG_CATEGORY_DISPLAY,
+  TAG_CATEGORY_DISPLAY_OPTIONS,
+} from "@opengovsg/isomer-components"
 import { Type } from "@sinclair/typebox"
 
 import { FormBuilder } from "./formBuilder"

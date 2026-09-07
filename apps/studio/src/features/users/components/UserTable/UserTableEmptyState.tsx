@@ -9,24 +9,22 @@ interface UserTableEmptyStateProps {
 export const UserTableEmptyState = ({
   siteId,
   promptAddUser = true,
-}: UserTableEmptyStateProps) => 
-  (
-    <Tr aria-hidden>
-      <Td colSpan={4}>
-        <Flex align="center" justify="center" minHeight="50vh" py="4rem">
-          <VStack align="center" gap="1.5rem">
-            <VStack align="center" gap="0.5rem">
-              <Text textStyle="h5">No users yet</Text>
-              {promptAddUser && (
-                <Text textStyle="body-2">
-                  Add users to start working with you on this site
-                </Text>
-              )}
-            </VStack>
-            {promptAddUser && <AddNewUserButton siteId={siteId} size="sm" />}
+}: UserTableEmptyStateProps) => (
+  <Tr aria-hidden>
+    <Td colSpan={4}>
+      <Flex align="center" justify="center" minHeight="50vh" py="4rem">
+        <VStack align="center" gap="1.5rem">
+          <VStack align="center" gap="0.5rem">
+            <Text textStyle="h5">No users yet</Text>
+            {promptAddUser && (
+              <Text textStyle="body-2">
+                Add users to start working with you on this site
+              </Text>
+            )}
           </VStack>
-        </Flex>
-      </Td>
-    </Tr>
-  )
-
+          {promptAddUser && <AddNewUserButton siteId={siteId} size="sm" />}
+        </VStack>
+      </Flex>
+    </Td>
+  </Tr>
+)

@@ -163,8 +163,9 @@ const selectedText = (editor: Editor) =>
   )
 
 // Click so the editable gets real browser focus (needed for clipboard checks).
-const focusEditor =  async (editor: Editor) =>
-  userEvent.click(page.elementLocator(editor.view.dom))
+const focusEditor = async (editor: Editor) => {
+  await userEvent.click(page.elementLocator(editor.view.dom))
+}
 
 // Copy via the browser and return clipboard text/plain.
 const copiedText = async () => {
@@ -183,7 +184,7 @@ const copiedText = async () => {
 
 // prosemirror-keymap maps Mod to Meta on Mac and Ctrl elsewhere
 // (same navigator.platform check): https://github.com/ProseMirror/prosemirror-keymap/blob/1.2.3/src/keymap.ts#L26
-const isMac = /Mac|iP(hone|[oa]d)/.test(navigator.platform)
+const isMac = /Mac|iP(hone|[oa]d)/u.test(navigator.platform)
 
 const dispatchModA = (editor: Editor) => {
   const event = new KeyboardEvent("keydown", {

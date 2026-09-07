@@ -127,47 +127,48 @@ const SuspensableResourceSelector = ({
     siteId,
   })
 
-  const renderedHeader = useMemo(() => 
-    (
+  const renderedHeader = useMemo(
+    () => (
       <Suspense fallback={<LoadingHeader />}>
         <SuspendableHeader
           viewState={{
-            isSearchQueryEmpty,
             hasParentInStack,
-            isLoading,
             isHomeHighlighted,
+            isLoading,
+            isSearchQueryEmpty,
           }}
           handleClickBackButton={handleClickBackButton}
           resourceItemsWithAncestryStack={resourceItemsWithAncestryStack}
-          handleOnClick={() =>{ 
+          handleOnClick={() => {
             handleClickResourceItem([
               {
-                title: "Home",
-                permalink: "",
-                type: ResourceType.RootPage,
                 id: rootPage.id,
                 parentId: null,
+                permalink: "",
+                title: "Home",
+                type: ResourceType.RootPage,
               },
-            ]); }
-          }
+            ])
+          }}
           searchQuery={searchQuery}
         />
       </Suspense>
-    )
-  , [
-    isSearchQueryEmpty,
-    hasParentInStack,
-    handleClickBackButton,
-    resourceItemsWithAncestryStack,
-    handleClickResourceItem,
-    searchQuery,
-    isLoading,
-    isHomeHighlighted,
-    rootPage.id,
-  ])
+    ),
+    [
+      isSearchQueryEmpty,
+      hasParentInStack,
+      handleClickBackButton,
+      resourceItemsWithAncestryStack,
+      handleClickResourceItem,
+      searchQuery,
+      isLoading,
+      isHomeHighlighted,
+      rootPage.id,
+    ],
+  )
 
-  const renderedContent = useMemo(() => 
-    (
+  const renderedContent = useMemo(
+    () => (
       <Suspense fallback={<LoadingResourceItemsResults />}>
         <SuspendableContent
           resourceItemsWithAncestryStack={resourceItemsWithAncestryStack}
@@ -175,26 +176,27 @@ const SuspensableResourceSelector = ({
           isResourceItemDisabled={isResourceItemDisabled}
           viewState={{
             hasAdditionalLeftPadding,
-            isSearchQueryEmpty,
             isLoading,
+            isSearchQueryEmpty,
           }}
           handleClickResourceItem={handleClickResourceItem}
           searchQuery={searchQuery}
           clearSearchValue={clearSearchValue}
         />
       </Suspense>
-    )
-  , [
-    resourceItemsWithAncestryStack,
-    isResourceIdHighlighted,
-    isResourceItemDisabled,
-    hasAdditionalLeftPadding,
-    handleClickResourceItem,
-    isSearchQueryEmpty,
-    searchQuery,
-    clearSearchValue,
-    isLoading,
-  ])
+    ),
+    [
+      resourceItemsWithAncestryStack,
+      isResourceIdHighlighted,
+      isResourceItemDisabled,
+      hasAdditionalLeftPadding,
+      handleClickResourceItem,
+      isSearchQueryEmpty,
+      searchQuery,
+      clearSearchValue,
+      isLoading,
+    ],
+  )
 
   return (
     <>

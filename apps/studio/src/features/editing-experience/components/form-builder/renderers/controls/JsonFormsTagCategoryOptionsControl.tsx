@@ -130,7 +130,9 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
     committedLabel: string,
     isEditing: boolean,
   ) => {
-    if (isEditing && editingIndex !== null && editingIndex !== index) {return}
+    if (isEditing && editingIndex !== null && editingIndex !== index) {
+      return
+    }
     setEditingIndex(isEditing ? index : null)
     setEditingDraftLabel(isEditing ? committedLabel : "")
   }
@@ -146,7 +148,8 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
     removeItems,
     resolveTarget: (index) => ({
       label: items?.[index]?.label?.trim() ?? "",
-      tagId: items?.[index]?.id ?? "", // always set by createDefaultTagOption()
+      tagId: items?.[index]?.id ?? "",
+      // always set by createDefaultTagOption()
     }),
   })
 
@@ -233,16 +236,16 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
                                     !enabled || (isAnyRowEditing && !isEditing)
                                   }
                                   isEditing={isEditing}
-                                  onSubmit={(value) =>{ 
-                                    submitLabel(childPath, value); }
-                                  }
-                                  onEditingChange={(nextIsEditing) =>{ 
+                                  onSubmit={(value) => {
+                                    submitLabel(childPath, value)
+                                  }}
+                                  onEditingChange={(nextIsEditing) => {
                                     handleEditingChange(
                                       index,
                                       committedLabel,
                                       nextIsEditing,
-                                    ); }
-                                  }
+                                    )
+                                  }}
                                   onDraftChange={setEditingDraftLabel}
                                 />
                                 {hasError ? (

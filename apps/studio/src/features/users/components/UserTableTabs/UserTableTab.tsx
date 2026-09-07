@@ -19,16 +19,16 @@ export const UserTableTab = React.forwardRef<
       textTransform="none"
       transition="all 0.2s"
       _hover={{
-        color: "base.content.brand",
         borderBottomColor: isSelected ? "base.content.brand" : "gray.200",
+        color: "base.content.brand",
       }}
       _selected={{
-        color: "base.content.brand",
         borderBottomColor: "base.content.brand",
+        color: "base.content.brand",
       }}
       _focus={{
-        outline: "none",
         boxShadow: "none",
+        outline: "none",
       }}
       _focusVisible={{
         boxShadow: "outline",

@@ -1,8 +1,8 @@
-import { expect, test } from '@playwright/test';
-import type { Browser, Page } from '@playwright/test';
+import type { Browser, Page } from "@playwright/test"
+import { expect, test } from "@playwright/test"
 
-import { storageStateFor } from '../fixtures/auth';
-import type { Role } from '../fixtures/auth';
+import type { Role } from "../fixtures/auth"
+import { storageStateFor } from "../fixtures/auth"
 
 const GODMODE_ROUTES = [
   { heading: "Create a new site", path: "/godmode/create-site" },
@@ -26,7 +26,7 @@ const openAs = async (
 const expectRedirectToDashboard = async (page: Page, path: string) => {
   await page.goto(path)
   await page.waitForURL("/")
-  await expect(page).toHaveURL(/\/$/)
+  await expect(page).toHaveURL(/\/$/u)
 }
 
 test.describe("godmode access", () => {
@@ -37,7 +37,7 @@ test.describe("godmode access", () => {
     const { ctx, page } = await openAs(browser, baseURL, "core")
 
     await page.goto("/godmode")
-    await expect(page.getByRole("heading", { name: /God Mode/ })).toBeVisible()
+    await expect(page.getByRole("heading", { name: /God Mode/u })).toBeVisible()
     await expect(
       page.getByRole("link", { name: "Create a new site" }),
     ).toBeVisible()
@@ -61,7 +61,7 @@ test.describe("godmode access", () => {
     const { ctx, page } = await openAs(browser, baseURL, "migrator")
 
     await page.goto("/godmode")
-    await expect(page.getByRole("heading", { name: /God Mode/ })).toBeVisible()
+    await expect(page.getByRole("heading", { name: /God Mode/u })).toBeVisible()
     await expect(page.getByRole("link", { name: "Whitelist" })).toBeVisible()
     await expect(
       page.getByRole("link", { name: "Create a new site" }),

@@ -26,7 +26,7 @@ const getScopedElementKey = (
   path: string,
 ): string => {
   if ("scope" in element) {
-    const {scope} = element
+    const { scope } = element
     if (isStringValue(scope)) {
       return scope
     }

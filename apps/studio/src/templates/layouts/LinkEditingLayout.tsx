@@ -1,3 +1,4 @@
+import type { GetLayout } from "~/lib/types"
 import { Flex, Grid } from "@chakra-ui/react"
 import { Tabs } from "@opengovsg/design-system-react"
 import { z } from "zod"
@@ -6,7 +7,6 @@ import { LayoutHead } from "~/components/LayoutHead"
 import { LinkEditNavbar } from "~/features/editing-experience/components/LinkEditNavbar"
 import { PermissionsProvider } from "~/features/permissions"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import type { GetLayout } from "~/lib/types"
 
 const editLinkSchema = z.object({
   linkId: z.string(),

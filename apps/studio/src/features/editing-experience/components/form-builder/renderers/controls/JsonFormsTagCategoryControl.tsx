@@ -82,7 +82,9 @@ const JsonFormsTagCategoriesArrayLayoutInner = (props: ArrayLayoutProps) => {
   })
 
   const deleteTargetTagOptionIds = useMemo(() => {
-    if (!deleteTarget) {return []}
+    if (!deleteTarget) {
+      return []
+    }
     return (
       page?.tagCategories?.[deleteTarget.index]?.options
         ?.map((option) => option.id)
@@ -156,7 +158,9 @@ const JsonFormsTagCategoriesArrayLayoutInner = (props: ArrayLayoutProps) => {
                               dragHandleProps={dragHandleProps}
                             />
                             <DraggableTagButton.Body
-                              onClick={() =>{  setSelectedIndex(index); }}
+                              onClick={() => {
+                                setSelectedIndex(index)
+                              }}
                             >
                               <DraggableTagButton.Icon icon={BiPurchaseTag} />
                               <DraggableTagButton.Content>
@@ -185,7 +189,9 @@ const JsonFormsTagCategoriesArrayLayoutInner = (props: ArrayLayoutProps) => {
                                 noun="filter"
                                 index={index}
                                 isDisabled={isRemoveItemDisabled}
-                                onDelete={() =>{  openDeleteModal(index); }}
+                                onDelete={() => {
+                                  openDeleteModal(index)
+                                }}
                               />
                             </DraggableTagButton.Trailing>
                           </DraggableTagButton.Root>

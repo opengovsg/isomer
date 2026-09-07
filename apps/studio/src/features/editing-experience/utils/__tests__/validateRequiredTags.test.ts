@@ -128,9 +128,7 @@ describe("validateRequiredTags", () => {
     }
 
     // Act
-    const result = validateRequiredTags(
-      [categoryWithoutRequiredFlag],
-    )
+    const result = validateRequiredTags([categoryWithoutRequiredFlag])
 
     // Assert
     expect(result.isValid).toBe(true)

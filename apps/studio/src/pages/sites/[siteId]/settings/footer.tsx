@@ -1,4 +1,5 @@
 import type { FooterSchemaType } from "@opengovsg/isomer-components"
+import type { NextPageWithLayout } from "~/lib/types"
 import { useToast } from "@opengovsg/design-system-react"
 import { isEqual } from "lodash-es"
 import { useState } from "react"
@@ -19,7 +20,6 @@ import { EditFooterPreview } from "~/features/settings/EditFooterPreview"
 import { FooterEditor } from "~/features/settings/FooterEditor"
 import { useNavigationEffect } from "~/hooks/useNavigationEffect"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import type { NextPageWithLayout } from "~/lib/types"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
@@ -37,9 +37,9 @@ const FooterSettingsPage: NextPageWithLayout = () => {
     trpc.site.setFooter.useMutation({
       onError: () => {
         toast({
+          description: `If this persists, please report this issue at ${ISOMER_SUPPORT_EMAIL}`,
           status: "error",
           title: "Error saving footer.",
-          description: `If this persists, please report this issue at ${ISOMER_SUPPORT_EMAIL}`,
           ...BRIEF_TOAST_SETTINGS,
         })
       },
@@ -60,7 +60,9 @@ const FooterSettingsPage: NextPageWithLayout = () => {
   const isDirty = !isEqual(previewFooterState, content)
 
   const handleSaveFooter = (data?: FooterSchemaType) => {
-    if (!data) {return}
+    if (!data) {
+      return
+    }
     saveFooter({ footer: JSON.stringify(data), siteId: Number(siteId) })
   }
 
@@ -70,7 +72,9 @@ const FooterSettingsPage: NextPageWithLayout = () => {
     <>
       <UnsavedSettingModal
         isOpen={isOpen}
-        onClose={() =>{  setNextUrl(""); }}
+        onClose={() => {
+          setNextUrl("")
+        }}
         nextUrl={nextUrl}
       />
 
@@ -95,13 +99,11 @@ const FooterSettingsPage: NextPageWithLayout = () => {
   )
 }
 
-FooterSettingsPage.getLayout = (page) => 
-  (
-    <PermissionsBoundary
-      resourceType={ResourceType.RootPage}
-      page={SiteSettingsLayout(page)}
-    />
-  )
-
+FooterSettingsPage.getLayout = (page) => (
+  <PermissionsBoundary
+    resourceType={ResourceType.RootPage}
+    page={SiteSettingsLayout(page)}
+  />
+)
 
 export default FooterSettingsPage

@@ -12,7 +12,7 @@ const displayDateInDDMMMYYYY = (date: Date): string => {
   }
   return date
     .toLocaleDateString("en-GB", options)
-    .replace(/(\d{2}) (\w{3}) (\d{4})/, "$1 $2 $3")
+    .replace(/(\d{2}) (\w{3}) (\d{4})/u, "$1 $2 $3")
 }
 
 export const formatDate = (date: Date): string => {

@@ -1,3 +1,4 @@
+import type { GetLayout } from "~/lib/types"
 import { Flex, Grid } from "@chakra-ui/react"
 import { Tabs } from "@opengovsg/design-system-react"
 import { EnforceLoginStatePageWrapper } from "~/components/AuthWrappers"
@@ -6,7 +7,6 @@ import { PageEditNavbar } from "~/features/editing-experience/components/PageEdi
 import { pageSchema } from "~/features/editing-experience/schema"
 import { PermissionsProvider } from "~/features/permissions"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import type { GetLayout } from "~/lib/types"
 
 export const PageEditingLayout: GetLayout = (page) => {
   const { pageId, siteId } = useQueryParse(pageSchema)

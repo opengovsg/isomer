@@ -38,9 +38,9 @@ const NavbarSettingsPage: NextPageWithLayout = () => {
     trpc.site.setNavbar.useMutation({
       onError: () => {
         toast({
+          description: `If this persists, please report this issue at ${ISOMER_SUPPORT_EMAIL}`,
           status: "error",
           title: "Error saving navigation bar.",
-          description: `If this persists, please report this issue at ${ISOMER_SUPPORT_EMAIL}`,
         })
       },
       onSuccess: async () => {
@@ -59,7 +59,9 @@ const NavbarSettingsPage: NextPageWithLayout = () => {
   const isDirty = !isEqual(previewNavbarState, content)
 
   const handleSaveNavbar = (data: NavbarSchemaType | undefined) => {
-    if (!data) {return}
+    if (!data) {
+      return
+    }
     saveNavbar({ navbar: JSON.stringify(data), siteId: Number(siteId) })
   }
 
@@ -69,7 +71,9 @@ const NavbarSettingsPage: NextPageWithLayout = () => {
     <>
       <UnsavedSettingModal
         isOpen={isOpen}
-        onClose={() =>{  setNextUrl(""); }}
+        onClose={() => {
+          setNextUrl("")
+        }}
         nextUrl={nextUrl}
       />
 
@@ -94,13 +98,11 @@ const NavbarSettingsPage: NextPageWithLayout = () => {
   )
 }
 
-NavbarSettingsPage.getLayout = (page) => 
-  (
-    <PermissionsBoundary
-      resourceType={ResourceType.RootPage}
-      page={SiteSettingsLayout(page)}
-    />
-  )
-
+NavbarSettingsPage.getLayout = (page) => (
+  <PermissionsBoundary
+    resourceType={ResourceType.RootPage}
+    page={SiteSettingsLayout(page)}
+  />
+)
 
 export default NavbarSettingsPage

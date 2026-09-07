@@ -38,9 +38,10 @@ export const FooterEditor = ({
   onSave,
   isSaving,
 }: FooterEditorProps) => {
-  const isDirty = useMemo(() => 
-    !isEqual(previewFooterState, savedFooterState)
-  , [previewFooterState, savedFooterState])
+  const isDirty = useMemo(
+    () => !isEqual(previewFooterState, savedFooterState),
+    [previewFooterState, savedFooterState],
+  )
 
   const validateFn = ajv.compile<FooterSchemaType>(FooterSchema)
 

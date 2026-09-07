@@ -29,7 +29,9 @@ const IMAGE_RADIO_ICONS = {
 } as const satisfies Record<string, typeof IconTagCategoryPills>
 
 const getImageRadioIcon = (image: string): typeof IconTagCategoryPills => {
-  if (!Object.hasOwn(IMAGE_RADIO_ICONS, image)) {return IconTagCategoryPills}
+  if (!Object.hasOwn(IMAGE_RADIO_ICONS, image)) {
+    return IconTagCategoryPills
+  }
   // SAFETY: Object.hasOwn confirms image is a key of IMAGE_RADIO_ICONS
   return IMAGE_RADIO_ICONS[image as keyof typeof IMAGE_RADIO_ICONS]
 }

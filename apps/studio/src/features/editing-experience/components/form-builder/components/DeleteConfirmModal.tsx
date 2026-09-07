@@ -56,7 +56,9 @@ export const DeleteConfirmModal = ({
             <HStack align="start">
               <Checkbox
                 isChecked={isChecked}
-                onChange={(e) =>{  setIsChecked(e.target.checked); }}
+                onChange={(e) => {
+                  setIsChecked(e.target.checked)
+                }}
               >
                 <Text textStyle="body-2">
                   Yes, delete this {noun} permanently

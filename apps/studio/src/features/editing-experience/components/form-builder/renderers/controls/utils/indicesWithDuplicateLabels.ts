@@ -8,7 +8,9 @@ function normalizedLabelKey(label: string | undefined): string {
 export function indicesWithDuplicateLabels(
   items: { label?: string }[] | undefined,
 ): Set<number> {
-  if (!items?.length) {return new Set()}
+  if (!items?.length) {
+    return new Set()
+  }
 
   const withKey = items.flatMap((item, index) => {
     const key = normalizedLabelKey(item.label)

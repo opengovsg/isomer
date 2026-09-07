@@ -40,7 +40,9 @@ export const SelectDestinationPageModal = ({
   }
 
   const handleConfirm = () => {
-    if (!selectedResourceId) {return}
+    if (!selectedResourceId) {
+      return
+    }
     // ResourceSelector's permalink has no leading slash; destinations are stored
     // as rooted paths, and conversion to a reference happens on save.
     onSelect(`/${selectedPermalinkRef.current}`)

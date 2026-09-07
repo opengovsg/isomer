@@ -14,27 +14,25 @@ export const CmsCollapsibleSidenav = ({
   title,
   onSidenavClose,
   children,
-}: PropsWithChildren<CmsCollapsibleSidenavProps>) => 
-  (
-    <Flex flexDir="column" px="1.25rem" py="1.5rem" gap="1.25rem">
-      <Flex justify="space-between" align="center">
-        <Text as="h2" textStyle="subhead-1">
-          {title}
-        </Text>
+}: PropsWithChildren<CmsCollapsibleSidenavProps>) => (
+  <Flex flexDir="column" px="1.25rem" py="1.5rem" gap="1.25rem">
+    <Flex justify="space-between" align="center">
+      <Text as="h2" textStyle="subhead-1">
+        {title}
+      </Text>
 
-        <Tooltip label="Collapse sidebar" placement="right" gutter={20}>
-          <IconButton
-            variant="clear"
-            aria-label="Collapse sidebar"
-            icon={<Icon as={CloseSidebarIcon} fill="base.content.default" />}
-            onClick={onSidenavClose}
-            mt="-16px"
-            mb="-16px"
-          />
-        </Tooltip>
-      </Flex>
-
-      {children}
+      <Tooltip label="Collapse sidebar" placement="right" gutter={20}>
+        <IconButton
+          variant="clear"
+          aria-label="Collapse sidebar"
+          icon={<Icon as={CloseSidebarIcon} fill="base.content.default" />}
+          onClick={onSidenavClose}
+          mt="-16px"
+          mb="-16px"
+        />
+      </Tooltip>
     </Flex>
-  )
 
+    {children}
+  </Flex>
+)

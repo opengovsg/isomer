@@ -37,17 +37,17 @@ const SuspendableJsonFormsCollectionDropdownControl = ({
     <SingleSelect
       value={data}
       name={label}
-      items={collections.map((collection) => (
-        {
-          label: collection.title,
-          value: getReferenceLink({
-            siteId: siteId.toString(),
-            resourceId: collection.id.toString(),
-          }),
-        }
-      ))}
+      items={collections.map((collection) => ({
+        label: collection.title,
+        value: getReferenceLink({
+          resourceId: collection.id.toString(),
+          siteId: siteId.toString(),
+        }),
+      }))}
       isClearable={false}
-      onChange={(value) =>{  handleChange(path, value); }}
+      onChange={(value) => {
+        handleChange(path, value)
+      }}
     />
   )
 }
@@ -57,18 +57,13 @@ const JsonFormsCollectionDropdownControl = ({
   required,
   label,
   ...props
-}: ControlProps) => 
-  (
-    <FormControl isRequired={required} gap="0.5rem">
-      <FormLabel description={description}>{label}</FormLabel>
-      <Suspense fallback={<Skeleton />}>
-        <SuspendableJsonFormsCollectionDropdownControl
-          {...props}
-          label={label}
-        />
-      </Suspense>
-    </FormControl>
-  )
-
+}: ControlProps) => (
+  <FormControl isRequired={required} gap="0.5rem">
+    <FormLabel description={description}>{label}</FormLabel>
+    <Suspense fallback={<Skeleton />}>
+      <SuspendableJsonFormsCollectionDropdownControl {...props} label={label} />
+    </Suspense>
+  </FormControl>
+)
 
 export default withJsonFormsControlProps(JsonFormsCollectionDropdownControl)

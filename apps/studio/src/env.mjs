@@ -107,7 +107,7 @@ const server = z
     ]
     if (r2Vars.some(Boolean) && !r2Vars.every(Boolean)) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message:
           "R2_ACCOUNT_ID, R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY must be set together",
         path: ["R2_ACCOUNT_ID"],
@@ -120,7 +120,7 @@ const server = z
       data.DANGEROUSLY_SET_STATIC_OTP
     ) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message:
           "DANGEROUSLY_SET_STATIC_OTP may only be set in preview environments",
         path: ["DANGEROUSLY_SET_STATIC_OTP"],
@@ -134,7 +134,7 @@ const server = z
       data.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS
     ) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message:
           "NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS may only be set in preview environments",
         path: ["NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS"],
@@ -223,15 +223,17 @@ const processEnv = {
 /** @typedef {z.ZodSafeParseResult<MergedOutput>} MergedSafeParseReturn */
 
 // @ts-expect-error Types are wonky from refinement
-let {env} = process
+let { env } = process
 
-if (!(!!process.env.SKIP_ENV_VALIDATION)) {
+if (!!!process.env.SKIP_ENV_VALIDATION) {
   const isServer = globalThis.window === undefined
 
   const parsed = /** @type {MergedSafeParseReturn} */ (
     isServer
-      ? server.safeParse(processEnv) // on server we can validate all env vars
-      : client.safeParse(processEnv) // on client we can only validate the ones that are exposed
+      ? server.safeParse(processEnv)
+      : // on server we can validate all env vars
+        client.safeParse(processEnv)
+    // on client we can only validate the ones that are exposed
   )
 
   if (!parsed.success) {
@@ -244,17 +246,19 @@ if (!(!!process.env.SKIP_ENV_VALIDATION)) {
 
   env = new Proxy(parsed.data, {
     get(target, prop) {
-      if (Object.prototype.toString.call(prop) !== "[object String]")
-        {return undefined}
+      if (Object.prototype.toString.call(prop) !== "[object String]") {
+        return
+      }
       const key = /** @type {string} */ (prop)
       // Throw a descriptive error if a server-side env var is accessed on the client
       // Otherwise it would just be returning `undefined` and be annoying to debug
-      if (!isServer && !key.startsWith("NEXT_PUBLIC_"))
-        {throw new Error(
+      if (!isServer && !key.startsWith("NEXT_PUBLIC_")) {
+        throw new Error(
           process.env.NODE_ENV === "production"
             ? "❌ Attempted to access a server-side environment variable on the client"
             : `❌ Attempted to access server-side environment variable '${key}' on the client`,
-        )}
+        )
+      }
       return target[/** @type {keyof typeof target} */ (key)]
     },
   })

@@ -39,7 +39,9 @@ type ResourceDto = Omit<
 }
 
 const parseTagged = (raw: string | null | undefined): string[] | undefined => {
-  if (!raw) {return undefined}
+  if (!raw) {
+    return undefined
+  }
   const parsed = z.array(z.string()).safeParse(JSON.parse(raw))
   return parsed.success ? parsed.data : undefined
 }
@@ -51,13 +53,10 @@ type CollectionItemResourceDto = Omit<ResourceDto, "type" | "parentId"> & {
 
 export const isCollectionItem = (
   resource: ResourceDto,
-): resource is CollectionItemResourceDto => 
-  (
-    (resource.type === ResourceType.CollectionPage ||
-      resource.type === ResourceType.CollectionLink) &&
-    !!resource.parentId
-  )
-
+): resource is CollectionItemResourceDto =>
+  (resource.type === ResourceType.CollectionPage ||
+    resource.type === ResourceType.CollectionLink) &&
+  !!resource.parentId
 
 const getSitemapTreeFromArray = (
   resources: ResourceDto[],
@@ -84,7 +83,7 @@ const getSitemapTreeFromArray = (
     )
   })
 
-  // TODO: Sort the children by the page ordering if the FolderMeta resource exists
+  // Deferred: Sort the children by the page ordering if the FolderMeta resource exists
   return children.map((resource) => {
     const permalink = `${path}${resource.permalink}`
     // Null when the body has no image block at all; `src` is null only when a
@@ -161,17 +160,20 @@ const getSitemapTreeFromArray = (
       id: resource.id,
       layout:
         resource.type === ResourceType.Collection
-          ? ISOMER_USABLE_PAGE_LAYOUTS.Collection // Needed for collectionblock component to fetch the correct collection
-          : ISOMER_USABLE_PAGE_LAYOUTS.Content, // Note: We are not using the layout field in our previews
+          ? ISOMER_USABLE_PAGE_LAYOUTS.Collection
+          : // Needed for collectionblock component to fetch the correct collection
+            ISOMER_USABLE_PAGE_LAYOUTS.Content,
+      // Note: We are not using the layout field in our previews
       title: titleOfPage || resource.title,
       summary: summaryOfPage ?? `Pages in ${resource.title}`,
-      lastModified: new Date() // TODO: Update this to the updated_at field in DB
+      lastModified: new Date()
+        // Deferred: Update this to the updated_at field in DB
         .toISOString(),
       // NOTE: This permalink is unused in the preview
       permalink,
-      image: !indexPage?.thumbnail
-        ? undefined
-        : { src: indexPage.thumbnail, alt: "" },
+      image: indexPage?.thumbnail
+        ? { alt: "", src: indexPage.thumbnail }
+        : undefined,
       firstImage,
       children: getSitemapTreeFromArray(
         resources,
@@ -186,19 +188,20 @@ const getSitemapTreeFromArray = (
 export const getSitemapTree = (
   rootResource: ResourceDto,
   resources: ResourceDto[],
-): IsomerSitemap => (
-  {
-    id: String(rootResource.id),
-    layout: "homepage", // Note: We are not using the layout field in our previews
-    title: rootResource.title,
-    summary: "", // Note: We are not using the summary field in our previews
-    lastModified: new Date() // TODO: Update this to the updated_at field in DB
-      .toISOString(),
-    // NOTE: This permalink is unused in the preview
-    permalink: "/",
-    children: getSitemapTreeFromArray(resources, null, "/"),
-  }
-)
+): IsomerSitemap => ({
+  id: String(rootResource.id),
+  layout: "homepage",
+  // Note: We are not using the layout field in our previews
+  title: rootResource.title,
+  summary: "",
+  // Note: We are not using the summary field in our previews
+  lastModified: new Date()
+    // Deferred: Update this to the updated_at field in DB
+    .toISOString(),
+  // NOTE: This permalink is unused in the preview
+  permalink: "/",
+  children: getSitemapTreeFromArray(resources, null, "/"),
+})
 
 const NUMBER_OF_CARDS_IN_COLLECTION_BLOCK = 3
 
@@ -263,10 +266,7 @@ export const injectTagMappings = async (
   ])
 
   // SAFETY: collection items validated upstream only expose collection child page props
-  const childPageProps = draftBlobOfResource.content.page as
-    | ArticlePagePageProps
-    | FileRefPageProps
-    | LinkRefPageProps
+  const childPageProps = draftBlobOfResource.content.page
 
   // SAFETY: parent index blob for a collection item is always a collection page layout
   const collectionPageProps = publishedIndexBlob.content

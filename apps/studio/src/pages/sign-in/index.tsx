@@ -1,3 +1,4 @@
+import type { NextPageWithLayout } from "~/lib/types"
 import { Flex } from "@chakra-ui/react"
 import { RestrictedGovtMasthead } from "@opengovsg/design-system-react"
 import { PublicPageWrapper } from "~/components/AuthWrappers"
@@ -13,35 +14,32 @@ import {
   NonMobileSidebarGridArea,
   SignInContextProvider,
 } from "~/features/sign-in/components"
-import type { NextPageWithLayout } from "~/lib/types"
 
-const SignIn: NextPageWithLayout = () => 
-  (
-    <PublicPageWrapper strict>
-      <Flex w="100%" flexDir="column" h="inherit" minH="$100vh">
-        <RestrictedGovtMasthead />
-        <BaseGridLayout flex={1}>
-          <NonMobileSidebarGridArea>
-            <LoginImageSvgr aria-hidden />
-          </NonMobileSidebarGridArea>
+const SignIn: NextPageWithLayout = () => (
+  <PublicPageWrapper strict>
+    <Flex w="100%" flexDir="column" h="inherit" minH="$100vh">
+      <RestrictedGovtMasthead />
+      <BaseGridLayout flex={1}>
+        <NonMobileSidebarGridArea>
+          <LoginImageSvgr aria-hidden />
+        </NonMobileSidebarGridArea>
 
-          <LoginGridArea>
-            <SignInContextProvider>
-              <CurrentLoginStep />
-            </SignInContextProvider>
-          </LoginGridArea>
+        <LoginGridArea>
+          <SignInContextProvider>
+            <CurrentLoginStep />
+          </SignInContextProvider>
+        </LoginGridArea>
 
-          <NonMobileFooterLeftGridArea>
-            <RestrictedMiniFooter />
-          </NonMobileFooterLeftGridArea>
+        <NonMobileFooterLeftGridArea>
+          <RestrictedMiniFooter />
+        </NonMobileFooterLeftGridArea>
 
-          <FooterGridArea>
-            <LandingLinks />
-          </FooterGridArea>
-        </BaseGridLayout>
-      </Flex>
-    </PublicPageWrapper>
-  )
-
+        <FooterGridArea>
+          <LandingLinks />
+        </FooterGridArea>
+      </BaseGridLayout>
+    </Flex>
+  </PublicPageWrapper>
+)
 
 export default SignIn

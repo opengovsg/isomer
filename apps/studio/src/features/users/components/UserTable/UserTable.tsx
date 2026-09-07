@@ -125,7 +125,8 @@ export const UserTable = ({ siteId, adminType }: UserTableProps) => {
       siteId,
     },
     {
-      placeholderData: keepPreviousData, // Required for table to show previous data while fetching next page
+      placeholderData: keepPreviousData,
+      // Required for table to show previous data while fetching next page
     },
   )
 

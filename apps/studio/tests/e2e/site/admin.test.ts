@@ -12,7 +12,7 @@ for (const role of allowedRoles) {
 
     test("can view the site admin config page", async ({ page }) => {
       await page.goto(`/sites/${getSeedSiteId()}/admin`)
-      await page.waitForURL(/\/admin$/)
+      await page.waitForURL(/\/admin$/u)
 
       await expect(page.getByText("Manage site configurations")).toBeVisible()
       await expect(page.getByText("Site config", { exact: true })).toBeVisible()
@@ -46,7 +46,7 @@ for (const role of deniedRoles) {
       const adminResponse = await adminResponsePromise
 
       expect(adminResponse.status()).toBe(307)
-      await expect(page).toHaveURL(new RegExp(`/sites/${siteId}$`))
+      await expect(page).toHaveURL(new RegExp(`/sites/u${siteId}$`))
       await expect(
         page.getByText("Manage site configurations"),
       ).not.toBeVisible()

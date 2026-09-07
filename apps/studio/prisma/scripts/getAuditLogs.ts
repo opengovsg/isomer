@@ -27,138 +27,270 @@ const __dirname = import.meta.dirname
 
 // Sites requiring audit logs
 const SITES_WITH_AUDIT_LOGS = [
-  1, // stb.gov.sg
-  30, // avs.nparks.gov.sg
-  32, // cuge.nparks.gov.sg
-  41, // ssg.gov.sg
-  46, // sportsingapore.gov.sg
-  48, // muis.gov.sg
-  50, // knowledgehub.clc.gov.sg
-  53, // clc.gov.sg
-  61, // ipos.gov.sg
-  109, // agc.gov.sg
-  145, // ite.edu.sg
-  152, // sbg.nparks.gov.sg
-  157, // pmo.gov.sg
-  166, // mti.gov.sg
-  176, // colombo.mfa.gov.sg
-  177, // prague.mfa.gov.sg
-  178, // casablanca.mfa.gov.sg
-  179, // santiago.mfa.gov.sg
-  180, // vienna.mfa.gov.sg
-  181, // mexico-city.mfa.gov.sg
-  182, // lisbon.mfa.gov.sg
-  183, // hamburg.mfa.gov.sg
-  184, // copenhagen.mfa.gov.sg
-  185, // miami.mfa.gov.sg
-  186, // karachi.mfa.gov.sg
-  187, // barcelona.mfa.gov.sg
-  188, // warsaw.mfa.gov.sg
-  189, // toronto.mfa.gov.sg
-  190, // port-moresby.mfa.gov.sg
-  191, // frankfurt.mfa.gov.sg
-  192, // amman.mfa.gov.sg
-  193, // rome.mfa.gov.sg
-  194, // helsinki.mfa.gov.sg
-  195, // madrid.mfa.gov.sg
-  196, // lagos.mfa.gov.sg
-  197, // osaka.mfa.gov.sg
-  198, // munich.mfa.gov.sg
-  199, // istanbul.mfa.gov.sg
-  200, // athens.mfa.gov.sg
-  201, // oslo.mfa.gov.sg
-  202, // beirut.mfa.gov.sg
-  203, // bogota.mfa.gov.sg
-  204, // dublin.mfa.gov.sg
-  205, // budapest.mfa.gov.sg
-  206, // lima.mfa.gov.sg
-  207, // vancouver.mfa.gov.sg
-  208, // astana.mfa.gov.sg
-  209, // canberra.mfa.gov.sg
-  210, // dhaka.mfa.gov.sg
-  211, // brussels.mfa.gov.sg
-  212, // brasilia.mfa.gov.sg
-  213, // brunei.mfa.gov.sg
-  214, // phnompenh.mfa.gov.sg
-  215, // beijing.mfa.gov.sg
-  216, // chengdu.mfa.gov.sg
-  217, // guangzhou.mfa.gov.sg
-  218, // hongkong.mfa.gov.sg
-  219, // shanghai.mfa.gov.sg
-  220, // xiamen.mfa.gov.sg
-  221, // cairo.mfa.gov.sg
-  222, // paris.mfa.gov.sg
-  223, // berlin.mfa.gov.sg
-  224, // chennai.mfa.gov.sg
-  225, // mumbai.mfa.gov.sg
-  226, // new-delhi.mfa.gov.sg
-  227, // batam.mfa.gov.sg
-  228, // jakarta.mfa.gov.sg
-  229, // medan.mfa.gov.sg
-  230, // asean.mfa.gov.sg
-  231, // geneva-un.mfa.gov.sg
-  232, // newyork-un.mfa.gov.sg
-  233, // vienna-un.mfa.gov.sg
-  234, // geneva-wto.mfa.gov.sg
-  235, // tel-aviv.mfa.gov.sg
-  236, // tokyo.mfa.gov.sg
-  237, // seoul.mfa.gov.sg
-  238, // vientiane.mfa.gov.sg
-  239, // jb.mfa.gov.sg
-  240, // kl.mfa.gov.sg
-  241, // yangon.mfa.gov.sg
-  242, // wellington.mfa.gov.sg
-  243, // muscat.mfa.gov.sg
-  244, // manila.mfa.gov.sg
-  245, // doha.mfa.gov.sg
-  246, // moscow.mfa.gov.sg
-  247, // jeddah.mfa.gov.sg
-  248, // riyadh.mfa.gov.sg
-  249, // pretoria.mfa.gov.sg
-  250, // taipei.mfa.gov.sg
-  251, // bangkok.mfa.gov.sg
-  252, // dili.mfa.gov.sg
-  253, // ankara.mfa.gov.sg
-  254, // abudhabi.mfa.gov.sg
-  255, // dubai.mfa.gov.sg
-  256, // london.mfa.gov.sg
-  257, // newyork-consulate.mfa.gov.sg
-  258, // sanfrancisco.mfa.gov.sg
-  259, // washington.mfa.gov.sg
-  260, // hanoi.mfa.gov.sg
-  261, // hochiminhcity.mfa.gov.sg
-  262, // mfa.gov.sg
-  263, // nagoya.mfa.gov.sg
-  278, // istana.gov.sg
-  283, // biodiversitysg.nparks.gov.sg
-  284, // ptc.gov.sg
-  287, // mot.gov.sg
-  289, // toteboard.gov.sg
-  301, // space.gov.sg
-  314, // fotp.nparks.gov.sg
-  315, // gardencityfund.gov.sg
-  316, // gardeningsg.nparks.gov.sg
-  317, // heritagetrees.nparks.gov.sg
-  318, // juronglakegardens.nparks.gov.sg
-  319, // lightsbythelake.nparks.gov.sg
-  320, // naturekakis.nparks.gov.sg
-  321, // pcn.nparks.gov.sg
-  322, // railcorridor.nparks.gov.sg
-  323, // sgf.nparks.gov.sg
-  324, // pulau-ubin.nparks.gov.sg
-  334, // seab.gov.sg
-  336, // caringcommuters.gov.sg
-  343, // motawardsceremony.gov.sg
-  357, // ago.gov.sg
-  378, // osir.gov.sg
-  397, // rp.edu.sg
-  406, // svc.gov.sg
-  409, // hsa.gov.sg
-  467, // ura.gov.sg
-  484, // hpb.gov.sg
-  492, // oneservice.gov.sg
-  511, // skyrisegreenery.nparks.gov.sg
-  512, // cap.gov.sg
+  1,
+  // stb.gov.sg
+  30,
+  // avs.nparks.gov.sg
+  32,
+  // cuge.nparks.gov.sg
+  41,
+  // ssg.gov.sg
+  46,
+  // sportsingapore.gov.sg
+  48,
+  // muis.gov.sg
+  50,
+  // knowledgehub.clc.gov.sg
+  53,
+  // clc.gov.sg
+  61,
+  // ipos.gov.sg
+  109,
+  // agc.gov.sg
+  145,
+  // ite.edu.sg
+  152,
+  // sbg.nparks.gov.sg
+  157,
+  // pmo.gov.sg
+  166,
+  // mti.gov.sg
+  176,
+  // colombo.mfa.gov.sg
+  177,
+  // prague.mfa.gov.sg
+  178,
+  // casablanca.mfa.gov.sg
+  179,
+  // santiago.mfa.gov.sg
+  180,
+  // vienna.mfa.gov.sg
+  181,
+  // mexico-city.mfa.gov.sg
+  182,
+  // lisbon.mfa.gov.sg
+  183,
+  // hamburg.mfa.gov.sg
+  184,
+  // copenhagen.mfa.gov.sg
+  185,
+  // miami.mfa.gov.sg
+  186,
+  // karachi.mfa.gov.sg
+  187,
+  // barcelona.mfa.gov.sg
+  188,
+  // warsaw.mfa.gov.sg
+  189,
+  // toronto.mfa.gov.sg
+  190,
+  // port-moresby.mfa.gov.sg
+  191,
+  // frankfurt.mfa.gov.sg
+  192,
+  // amman.mfa.gov.sg
+  193,
+  // rome.mfa.gov.sg
+  194,
+  // helsinki.mfa.gov.sg
+  195,
+  // madrid.mfa.gov.sg
+  196,
+  // lagos.mfa.gov.sg
+  197,
+  // osaka.mfa.gov.sg
+  198,
+  // munich.mfa.gov.sg
+  199,
+  // istanbul.mfa.gov.sg
+  200,
+  // athens.mfa.gov.sg
+  201,
+  // oslo.mfa.gov.sg
+  202,
+  // beirut.mfa.gov.sg
+  203,
+  // bogota.mfa.gov.sg
+  204,
+  // dublin.mfa.gov.sg
+  205,
+  // budapest.mfa.gov.sg
+  206,
+  // lima.mfa.gov.sg
+  207,
+  // vancouver.mfa.gov.sg
+  208,
+  // astana.mfa.gov.sg
+  209,
+  // canberra.mfa.gov.sg
+  210,
+  // dhaka.mfa.gov.sg
+  211,
+  // brussels.mfa.gov.sg
+  212,
+  // brasilia.mfa.gov.sg
+  213,
+  // brunei.mfa.gov.sg
+  214,
+  // phnompenh.mfa.gov.sg
+  215,
+  // beijing.mfa.gov.sg
+  216,
+  // chengdu.mfa.gov.sg
+  217,
+  // guangzhou.mfa.gov.sg
+  218,
+  // hongkong.mfa.gov.sg
+  219,
+  // shanghai.mfa.gov.sg
+  220,
+  // xiamen.mfa.gov.sg
+  221,
+  // cairo.mfa.gov.sg
+  222,
+  // paris.mfa.gov.sg
+  223,
+  // berlin.mfa.gov.sg
+  224,
+  // chennai.mfa.gov.sg
+  225,
+  // mumbai.mfa.gov.sg
+  226,
+  // new-delhi.mfa.gov.sg
+  227,
+  // batam.mfa.gov.sg
+  228,
+  // jakarta.mfa.gov.sg
+  229,
+  // medan.mfa.gov.sg
+  230,
+  // asean.mfa.gov.sg
+  231,
+  // geneva-un.mfa.gov.sg
+  232,
+  // newyork-un.mfa.gov.sg
+  233,
+  // vienna-un.mfa.gov.sg
+  234,
+  // geneva-wto.mfa.gov.sg
+  235,
+  // tel-aviv.mfa.gov.sg
+  236,
+  // tokyo.mfa.gov.sg
+  237,
+  // seoul.mfa.gov.sg
+  238,
+  // vientiane.mfa.gov.sg
+  239,
+  // jb.mfa.gov.sg
+  240,
+  // kl.mfa.gov.sg
+  241,
+  // yangon.mfa.gov.sg
+  242,
+  // wellington.mfa.gov.sg
+  243,
+  // muscat.mfa.gov.sg
+  244,
+  // manila.mfa.gov.sg
+  245,
+  // doha.mfa.gov.sg
+  246,
+  // moscow.mfa.gov.sg
+  247,
+  // jeddah.mfa.gov.sg
+  248,
+  // riyadh.mfa.gov.sg
+  249,
+  // pretoria.mfa.gov.sg
+  250,
+  // taipei.mfa.gov.sg
+  251,
+  // bangkok.mfa.gov.sg
+  252,
+  // dili.mfa.gov.sg
+  253,
+  // ankara.mfa.gov.sg
+  254,
+  // abudhabi.mfa.gov.sg
+  255,
+  // dubai.mfa.gov.sg
+  256,
+  // london.mfa.gov.sg
+  257,
+  // newyork-consulate.mfa.gov.sg
+  258,
+  // sanfrancisco.mfa.gov.sg
+  259,
+  // washington.mfa.gov.sg
+  260,
+  // hanoi.mfa.gov.sg
+  261,
+  // hochiminhcity.mfa.gov.sg
+  262,
+  // mfa.gov.sg
+  263,
+  // nagoya.mfa.gov.sg
+  278,
+  // istana.gov.sg
+  283,
+  // biodiversitysg.nparks.gov.sg
+  284,
+  // ptc.gov.sg
+  287,
+  // mot.gov.sg
+  289,
+  // toteboard.gov.sg
+  301,
+  // space.gov.sg
+  314,
+  // fotp.nparks.gov.sg
+  315,
+  // gardencityfund.gov.sg
+  316,
+  // gardeningsg.nparks.gov.sg
+  317,
+  // heritagetrees.nparks.gov.sg
+  318,
+  // juronglakegardens.nparks.gov.sg
+  319,
+  // lightsbythelake.nparks.gov.sg
+  320,
+  // naturekakis.nparks.gov.sg
+  321,
+  // pcn.nparks.gov.sg
+  322,
+  // railcorridor.nparks.gov.sg
+  323,
+  // sgf.nparks.gov.sg
+  324,
+  // pulau-ubin.nparks.gov.sg
+  334,
+  // seab.gov.sg
+  336,
+  // caringcommuters.gov.sg
+  343,
+  // motawardsceremony.gov.sg
+  357,
+  // ago.gov.sg
+  378,
+  // osir.gov.sg
+  397,
+  // rp.edu.sg
+  406,
+  // svc.gov.sg
+  409,
+  // hsa.gov.sg
+  467,
+  // ura.gov.sg
+  484,
+  // hpb.gov.sg
+  492,
+  // oneservice.gov.sg
+  511,
+  // skyrisegreenery.nparks.gov.sg
+  512,
+  // cap.gov.sg
 ]
 
 // Month and year to get audit logs for, in the format of YYYY-MM,
@@ -218,4 +350,6 @@ const getAuditLogsForSite = async () => {
 
 // Only run when executed directly, not when imported by tests
 const isMain = process.argv[1] === import.meta.filename
-if (isMain) {await getAuditLogsForSite()}
+if (isMain) {
+  await getAuditLogsForSite()
+}

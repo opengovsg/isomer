@@ -38,15 +38,15 @@ const createPage = async ({
         content: jsonb({
           content: [
             {
-              type: "prose",
               content: [
                 {
-                  type: "paragraph",
                   content: [
-                    { type: "text", text: `Welcome to the ${title} page.` },
+                    { text: `Welcome to the ${title} page.`, type: "text" },
                   ],
+                  type: "paragraph",
                 },
               ],
+              type: "prose",
             },
           ],
           layout: "content",

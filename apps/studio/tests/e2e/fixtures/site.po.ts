@@ -16,12 +16,12 @@ export class SitePO {
   async openSite(siteName: string) {
     await this.page.goto("/")
     await this.page.getByRole("link", { name: siteName }).click()
-    await this.page.waitForURL(/\/sites\/\d+$/)
+    await this.page.waitForURL(/\/sites\/\d+$/u)
   }
 
   async openSettings() {
     await this.page.getByRole("link", { name: "Settings" }).click()
-    await this.page.waitForURL(/\/sites\/\d+\/settings\//)
+    await this.page.waitForURL(/\/sites\/\d+\/settings\//u)
   }
 
   async openSettingsSection(section: SettingsSection) {
@@ -30,7 +30,7 @@ export class SitePO {
     // Labels sourced from apps/studio/src/features/settings/SettingsSidenav/SettingsSidenav.tsx
     const label = SETTINGS_SECTION_LABELS[section]
     await this.page.getByRole("link", { name: label }).click()
-    await this.page.waitForURL(new RegExp(`/settings/${section}$`))
+    await this.page.waitForURL(new RegExp(`/settings/u${section}$`))
   }
 
   /**
@@ -63,8 +63,11 @@ const SETTINGS_SECTION_LABELS = {
   colours: "Colours",
   footer: "Footer",
   integrations: "Integrations",
-  logo: "Logos and favicon", // spec said "Logo" — actual label is "Logos and favicon"
-  navbar: "Navigation bar", // spec said "Navbar" — actual label is "Navigation bar"
-  notification: "Notification banner", // spec said "Notification" — actual label is "Notification banner"
+  logo: "Logos and favicon",
+  // spec said "Logo" — actual label is "Logos and favicon"
+  navbar: "Navigation bar",
+  // spec said "Navbar" — actual label is "Navigation bar"
+  notification: "Notification banner",
+  // spec said "Notification" — actual label is "Notification banner"
   redirects: "Redirects",
 } satisfies Record<SettingsSection, string>

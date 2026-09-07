@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { hasNonEmptyString } from "~/utils/truthiness"
 import { BuildStatusType } from "~prisma/generated/generatedEnums"
 
 /**
@@ -11,9 +12,9 @@ import { BuildStatusType } from "~prisma/generated/generatedEnums"
  * @returns The extracted build ID, or null if not found
  */
 export const buildIdFromArn = (arn: string) => {
-  const regex = /build\/(.+)$/
+  const regex = /build\/(?<buildId>.+)$/u
   const match = regex.exec(arn)
-  return match ? match[1] : null
+  return match?.groups?.buildId ?? null
 }
 
 /**
@@ -29,9 +30,9 @@ export const codeBuildWebhookSchema = z
   })
   .transform(({ arn, ...rest }, ctx) => {
     const extractedBuildId = buildIdFromArn(arn)
-    if (!extractedBuildId) {
+    if (!hasNonEmptyString(extractedBuildId)) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message: `Invalid buildId format: ${arn}`,
       })
       return z.NEVER

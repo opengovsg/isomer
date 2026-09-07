@@ -13,9 +13,8 @@ const isSingaporePhoneNumber = (phone: string | null) => {
 
   // Check if it's exactly 8 digits with valid starting number
   // This also checks if it contains any whitespace
-  return /^[689]\d{7}$/.test(phone)
+  return /^[689]\d{7}$/u.test(phone)
 }
 
-export const isUserOnboarded = ({ name, phone }: isUserOnboardedProps) => 
+export const isUserOnboarded = ({ name, phone }: isUserOnboardedProps) =>
   !!name && !!phone && isSingaporePhoneNumber(phone)
-

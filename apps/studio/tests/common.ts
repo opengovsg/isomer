@@ -53,16 +53,16 @@ const baseContainerConfiguration = z.object({
     .optional(),
   wait: z
     .union([
-      z.object({ type: z.literal("PORT"), timeout: z.number().optional() }),
+      z.object({ timeout: z.number().optional(), type: z.literal("PORT") }),
       z.object({
-        type: z.literal("LOG"),
         message: z.string(),
-        times: z.number().optional(),
         timeout: z.number().optional(),
+        times: z.number().optional(),
+        type: z.literal("LOG"),
       }),
       z.object({
-        type: z.literal("HEALTHCHECK"),
         timeout: z.number().optional(),
+        type: z.literal("HEALTHCHECK"),
       }),
     ])
     .optional(),
@@ -211,6 +211,8 @@ export const teardown = async (
   containers: { container: StartedTestContainer }[],
 ) => {
   await Promise.all(
-    containers.map( async (container) => container.container.stop({ remove: true })),
+    containers.map(
+      async (container) => await container.container.stop({ remove: true }),
+    ),
   )
 }

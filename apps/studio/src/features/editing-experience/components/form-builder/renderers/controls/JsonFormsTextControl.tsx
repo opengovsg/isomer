@@ -29,7 +29,9 @@ const getRemainingCharacterCount = (maxLength: number, data?: string) => {
 const isSchemaWithTooltip = (
   schema: ControlProps["schema"],
 ): schema is ControlProps["schema"] & { tooltip: string } => {
-  if (!schema || !("tooltip" in schema)) {return false}
+  if (!schema || !("tooltip" in schema)) {
+    return false
+  }
   // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
   const { tooltip } = schema as { tooltip?: unknown }
   return Object.prototype.toString.call(tooltip) === "[object String]"

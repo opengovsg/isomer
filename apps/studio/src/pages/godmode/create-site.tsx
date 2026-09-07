@@ -1,4 +1,5 @@
 import type { GetServerSideProps } from "next"
+import type { NextPageWithLayout } from "~/lib/types"
 import {
   Box,
   Breadcrumb,
@@ -23,14 +24,13 @@ import { useRouter } from "next/router"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { requireGodModeAdmin } from "~/features/godmode/serverSideProps"
 import { useZodForm } from "~/lib/form"
-import type { NextPageWithLayout } from "~/lib/types"
 import { createSiteSchema } from "~/schemas/site"
 import { AuthenticatedLayout } from "~/templates/layouts/AuthenticatedLayout"
 import { trpc } from "~/utils/trpc"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
-export const getServerSideProps: GetServerSideProps =  async (context) =>
-  requireGodModeAdmin(context, [IsomerAdminRole.Core])
+export const getServerSideProps: GetServerSideProps = async (context) =>
+  await requireGodModeAdmin(context, [IsomerAdminRole.Core])
 
 const GodModeCreateSitePage: NextPageWithLayout = () => {
   const toast = useToast()
@@ -39,16 +39,16 @@ const GodModeCreateSitePage: NextPageWithLayout = () => {
   const createSiteMutation = trpc.site.create.useMutation({
     onError: (error) => {
       toast({
-        title: "Failed to create site",
         description: error.message,
         status: "error",
+        title: "Failed to create site",
         ...BRIEF_TOAST_SETTINGS,
       })
     },
     onSuccess: ({ siteId, siteName }) => {
       toast({
-        title: `Site ${siteName} (id: ${siteId}) created successfully`,
         status: "success",
+        title: `Site ${siteName} (id: ${siteId}) created successfully`,
         ...BRIEF_TOAST_SETTINGS,
       })
       void router.push(`/sites/${siteId}`)

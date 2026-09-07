@@ -66,8 +66,8 @@ export const collectionHandlers = {
       trpcMsw.collection.list.query(() => DEFAULT_COLLECTION_ITEMS),
   },
   readCollectionLink: {
-    default: () => {
-      return trpcMsw.collection.readCollectionLink.query(() => ({
+    default: () =>
+      trpcMsw.collection.readCollectionLink.query(() => ({
         content: asBlobJsonContent({
           page: {
             ref: "",
@@ -80,10 +80,9 @@ export const collectionHandlers = {
           version: "0.1.0",
         }),
         title: "yet another link",
-      }))
-    },
-    thumbnail: () => {
-      return trpcMsw.collection.readCollectionLink.query(() => ({
+      })),
+    thumbnail: () =>
+      trpcMsw.collection.readCollectionLink.query(() => ({
         content: asBlobJsonContent({
           page: {
             ref: "",
@@ -97,7 +96,6 @@ export const collectionHandlers = {
           version: "0.1.0",
         }),
         title: "Link with image",
-      }))
-    },
+      })),
   },
 }

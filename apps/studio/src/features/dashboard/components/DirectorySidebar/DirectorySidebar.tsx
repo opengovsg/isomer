@@ -9,17 +9,15 @@ interface DirectorySidebarProps {
 
 export const DirectorySidebar = ({
   siteId,
-}: DirectorySidebarProps): React.ReactNode => 
-  (
-    <Flex flexDir="column" px="1.25rem" py="1.75rem">
-      <DirectorySidebarContent
-        siteId={siteId}
-        resourceId={null}
-        item={{ permalink: "", type: ResourceType.RootPage }}
-        defaultIndex={0}
-        level={0}
-        subLabel="Home"
-      />
-    </Flex>
-  )
-
+}: DirectorySidebarProps): React.ReactNode => (
+  <Flex flexDir="column" px="1.25rem" py="1.75rem">
+    <DirectorySidebarContent
+      siteId={siteId}
+      resourceId={null}
+      item={{ permalink: "", type: ResourceType.RootPage }}
+      defaultIndex={0}
+      level={0}
+      subLabel="Home"
+    />
+  </Flex>
+)

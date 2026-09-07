@@ -19,11 +19,11 @@ export const SingpassLoginButton = (): React.ReactNode | null => {
 
   const landingUrl = getRedirectUrl(router.query)
 
-  const handleSingpassLogin = () =>{  
+  const handleSingpassLogin = () => {
     singpassLoginMutation.mutate({
       landingUrl,
-    }); }
-  
+    })
+  }
 
   return (
     <Button

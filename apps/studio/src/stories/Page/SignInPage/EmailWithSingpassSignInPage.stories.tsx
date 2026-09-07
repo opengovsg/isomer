@@ -39,11 +39,11 @@ export const InputValidation: Story = {
     const canvas = within(canvasElement)
 
     await step("Enter invalid email address", async () => {
-      await userEvent.type(await canvas.findByLabelText(/email/i), "test")
+      await userEvent.type(await canvas.findByLabelText(/email/iu), "test")
     })
 
     await step("Attempt log in", async () => {
-      const submitBtn = await canvas.findByText(/send/i)
+      const submitBtn = await canvas.findByText(/send/iu)
       await expect(submitBtn).toBeDisabled()
     })
   },
@@ -55,15 +55,15 @@ export const VerifyOTP: Story = {
 
     await step("Enter valid email address", async () => {
       await userEvent.type(
-        await canvas.findByLabelText(/email/i),
+        await canvas.findByLabelText(/email/iu),
         VALID_AUTH_EMAIL,
       )
     })
 
     await step("Attempt log in", async () => {
-      await userEvent.click(await canvas.findByText(/send/i))
-      const expectedLabel = await canvas.findByText(/sent an OTP to/i)
-      const otpSubmitBtn = await canvas.findByText(/sign in/i)
+      await userEvent.click(await canvas.findByText(/send/iu))
+      const expectedLabel = await canvas.findByText(/sent an OTP to/iu)
+      const otpSubmitBtn = await canvas.findByText(/sign in/iu)
       await expect(expectedLabel).toBeInTheDocument()
       await expect(otpSubmitBtn).toBeDisabled()
     })

@@ -77,7 +77,9 @@ export const sendMail = async (params: SendMailParams): Promise<void> => {
       })
       return
     } catch (error) {
-      if (error instanceof PostmanApiStatusError) {throw error}
+      if (error instanceof PostmanApiStatusError) {
+        throw error
+      }
 
       logger.error({
         error: "Postman API call failed",

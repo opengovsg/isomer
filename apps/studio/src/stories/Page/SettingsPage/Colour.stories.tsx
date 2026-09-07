@@ -50,7 +50,7 @@ export const ContentPagePreview: Story = {
     const rootScreen = within(canvasElement.ownerDocument.body)
 
     const menuItem = await rootScreen.findByRole("tab", {
-      name: /content page/i,
+      name: /content page/iu,
     })
 
     await userEvent.click(menuItem)

@@ -29,16 +29,18 @@ export const RemoveUserModal = () => {
 
   const { siteId, userId } = useAtomValue(removeUserModalAtom)
   const setRemoveUserModalState = useSetAtom(removeUserModalAtom)
-  const onClose = () =>{  setRemoveUserModalState(DEFAULT_REMOVE_USER_MODAL_STATE); }
+  const onClose = () => {
+    setRemoveUserModalState(DEFAULT_REMOVE_USER_MODAL_STATE)
+  }
 
   const { isSingpassEnabled } = useIsSingpassEnabled()
 
   const { mutate, isPending } = trpc.user.delete.useMutation({
     onError: (err) => {
       toast({
+        description: err.message,
         status: "error",
         title: "Failed to remove user",
-        description: err.message,
         ...BRIEF_TOAST_SETTINGS,
       })
     },

@@ -42,7 +42,7 @@ export const schedulePublishClientSchema = basePageSchema
     // if the scheduled date is before the earliest allowable date, show error on publishDate
     if (isBefore(scheduledAt, earliestScheduleTime)) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message: "Date can't be in the past",
         path: isDateBeforeToday ? ["publishDate"] : ["publishTime"],
       })

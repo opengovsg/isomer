@@ -49,8 +49,7 @@ describe("webhook", () => {
   beforeEach(async () => {
     env.STUDIO_SSM_WEBHOOK_API_KEY = WEBHOOK_API_KEY
     env.GROWTHBOOK_CLIENT_KEY = "test-growthbook-client-key"
-    vi.spyOn(mailService, "sendSuccessfulPublishEmail").mockResolvedValue(
-      )
+    vi.spyOn(mailService, "sendSuccessfulPublishEmail").mockResolvedValue()
     vi.spyOn(mailService, "sendFailedPublishEmail").mockResolvedValue()
     await resetTables("CodeBuildJobs", "Resource", "Site")
   })

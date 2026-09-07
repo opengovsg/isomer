@@ -166,7 +166,7 @@ export const DuplicateNotificationNumber: Story = {
     const screen = within(canvasElement.ownerDocument.body)
 
     await userEvent.click(
-      await screen.findByRole("button", { name: /Add a new Gazette/i }),
+      await screen.findByRole("button", { name: /Add a new Gazette/iu }),
     )
 
     await userEvent.type(
@@ -204,7 +204,7 @@ export const DuplicateNotificationNumber: Story = {
     )
 
     await userEvent.click(
-      await screen.findByRole("button", { name: /Add Gazette/i }),
+      await screen.findByRole("button", { name: /Add Gazette/iu }),
     )
 
     // The CONFLICT message is surfaced in the error toast's description.

@@ -87,7 +87,9 @@ export const IframeToolbar = ({
       </Flex>
       {viewport === "fullscreen" ? (
         <Button
-          onClick={() =>{  setViewport("responsive"); }}
+          onClick={() => {
+            setViewport("responsive")
+          }}
           variant="outline"
           colorScheme="neutral"
           size="xs"
@@ -105,10 +107,10 @@ export const IframeToolbar = ({
               <MenuOptionGroup
                 value={viewport}
                 type="radio"
-                onChange={(nextValue) =>{ 
+                onChange={(nextValue) => {
                   // SAFETY: caller invariant is checked immediately before this narrowing assertion
-                  setViewport(nextValue as ViewportOptions); }
-                }
+                  setViewport(nextValue as ViewportOptions)
+                }}
               >
                 <MenuItemOption value="responsive">
                   <Text color="base.content.strong" textStyle="body-1">

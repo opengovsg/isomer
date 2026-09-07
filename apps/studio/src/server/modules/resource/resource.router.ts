@@ -583,15 +583,14 @@ export const resourceRouter = router({
       return resource
     }),
 
-  getRolesFor: protectedProcedure
-    .input(getRolesForSchema)
-    .query(async ({ ctx, input: { resourceId, siteId } }) => 
+  getRolesFor: protectedProcedure.input(getRolesForSchema).query(
+    async ({ ctx, input: { resourceId, siteId } }) =>
       await getResourcePermission({
         resourceId: resourceId ?? null,
         siteId,
         userId: ctx.user.id,
-      })
-    ),
+      }),
+  ),
 
   getWithFullPermalink: protectedProcedure
     .input(getFullPermalinkSchema)

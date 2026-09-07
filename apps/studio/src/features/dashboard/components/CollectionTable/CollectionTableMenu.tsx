@@ -59,12 +59,12 @@ export const CollectionTableMenu = ({
             resourceType === ResourceType.CollectionLink) && (
             <MenuItem
               icon={<BiCog fontSize="1rem" />}
-              onClick={() =>{ 
+              onClick={() => {
                 setPageSettingsModalState({
                   pageId: resourceId,
                   type: resourceType,
-                }); }
-              }
+                })
+              }}
             >
               Edit settings
             </MenuItem>

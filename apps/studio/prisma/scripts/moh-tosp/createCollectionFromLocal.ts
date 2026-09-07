@@ -12,8 +12,10 @@ const logger = new FileLogger("./createCollectionFromLocal.log")
 interface CreateCollectionFromLocalInput {
   collectionName: string
   contentDir: string
-  indexPageName: string // should be placed outside the folder e.g. "cost-financing.json"
-  indexPageTitle: string // title of the index page e.g. "Cost financing"
+  indexPageName: string
+  // should be placed outside the folder e.g. "cost-financing.json"
+  indexPageTitle: string
+  // title of the index page e.g. "Cost financing"
   nameOfNewCollectionToCreate: string
   siteId: number
 }
@@ -37,7 +39,7 @@ export const createCollectionFromLocal = async ({
         .values({
           createdAt: new Date(),
           permalink: nameOfNewCollectionToCreate,
-          siteId: siteId,
+          siteId,
           state: ResourceState.Draft,
           title: nameOfNewCollectionToCreate,
           type: ResourceType.Collection,
@@ -66,7 +68,7 @@ export const createCollectionFromLocal = async ({
           draftBlobId: indexPageBlob.id,
           parentId: collectionId,
           permalink: "_index",
-          siteId: siteId,
+          siteId,
           state: ResourceState.Draft,
           title: indexPageTitle,
           type: ResourceType.IndexPage,
@@ -121,8 +123,10 @@ export const createCollectionFromLocal = async ({
           .values({
             // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             title: parsedFileContent.page.title,
-            permalink: file.replace(/\.json$/, ""), // remove the .json at the back on permalinks
-            siteId, // Replace with appropriate site ID
+            permalink: file.replace(/\.json$/u, ""),
+            // remove the .json at the back on permalinks
+            siteId,
+            // Replace with appropriate site ID
             type: ResourceType.CollectionPage,
             parentId: collectionId,
             state: "Draft",
@@ -154,7 +158,8 @@ const contentDir = "/Users/XYZ/<your-path>"
 const indexPageName = "cost-financing.json"
 const indexPageTitle = "Cost financing"
 const collectionName = "cost-financing"
-const nameOfNewCollectionToCreate = "cost-financing-new" // will also be the permalink
+const nameOfNewCollectionToCreate = "cost-financing-new"
+// will also be the permalink
 const siteId = 0
 
 await createCollectionFromLocal({

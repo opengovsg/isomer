@@ -80,7 +80,9 @@ const submitNewRedirect = async (canvasElement: HTMLElement) => {
     "/new-page",
   )
   const addButton = screen.getByRole("button", { name: "Add" })
-  await waitFor( async () => expect(addButton).toBeEnabled())
+  await waitFor(async () => {
+    await expect(addButton).toBeEnabled()
+  })
   await userEvent.click(addButton, { pointerEventsCheck: 0 })
   return screen
 }
@@ -119,7 +121,7 @@ const SWAPPED_CSV =
 const AFTER_PROCESSING = { timeout: 10_000 }
 
 const openBulkUploadModal = async (canvasElement: HTMLElement) => {
-  const {body} = canvasElement.ownerDocument
+  const { body } = canvasElement.ownerDocument
   const screen = within(body)
   await userEvent.click(
     await screen.findByRole("button", { name: /bulk upload with a \.csv/i }),
@@ -136,7 +138,9 @@ const pickFileInModal = async (body: HTMLElement, file: File) => {
     const input = body.querySelector<HTMLInputElement>(
       "[role='dialog'] input[type='file']",
     )
-    if (!input) {throw new Error("file input not found")}
+    if (!input) {
+      throw new Error("file input not found")
+    }
     return input
   })
   await userEvent.upload(fileInput, file)
@@ -151,7 +155,9 @@ const openModalAndUpload = async (canvasElement: HTMLElement) => {
   const processButton = await screen.findByRole("button", {
     name: "Process redirects",
   })
-  await waitFor( async () => expect(processButton).toBeEnabled())
+  await waitFor(async () => {
+    await expect(processButton).toBeEnabled()
+  })
   await userEvent.click(processButton, { pointerEventsCheck: 0 })
   return screen
 }
@@ -242,7 +248,9 @@ export const BulkUploadFileSwappedWhileProcessing: Story = {
     const processButton = await screen.findByRole("button", {
       name: "Process redirects",
     })
-    await waitFor( async () => expect(processButton).toBeEnabled())
+    await waitFor(async () => {
+      await expect(processButton).toBeEnabled()
+    })
     await userEvent.click(processButton, { pointerEventsCheck: 0 })
 
     // Still inside the floor: drop the file being processed and attach another.
@@ -257,14 +265,12 @@ export const BulkUploadFileSwappedWhileProcessing: Story = {
     // Once the floor elapses the spinner clears, and the stale verdicts are
     // dropped: the modal stays on the upload step with the newly attached file
     // instead of showing the first file's review screen.
-    await waitFor(
-       async () =>
-        expect(
-          screen.getByRole("button", { name: "Process redirects" }),
-        ).toBeEnabled(),
-      AFTER_PROCESSING,
-    )
-    await expect(screen.queryByText(/good to go/)).toBeNull()
+    await waitFor(async () => {
+      await expect(
+        screen.getByRole("button", { name: "Process redirects" }),
+      ).toBeEnabled()
+    }, AFTER_PROCESSING)
+    await expect(screen.queryByText(/good to go/u)).toBeNull()
     await expect(screen.queryByRole("button", { name: /^Publish/ })).toBeNull()
     await expect(screen.getByText("second.csv")).toBeVisible()
   },
@@ -285,7 +291,7 @@ export const BulkUploadWithErrors: Story = {
   play: async ({ canvasElement }) => {
     const screen = await openModalAndUpload(canvasElement)
     await expect(
-      await screen.findByText(/1 redirect has errors/, {}, AFTER_PROCESSING),
+      await screen.findByText(/1 redirect has errors/u, {}, AFTER_PROCESSING),
     ).toBeVisible()
     await expect(
       screen.getByRole("button", { name: "Download errors file (.csv)" }),
@@ -335,7 +341,9 @@ export const BulkUploadOversizeFile: Story = {
     await userEvent.click(screen.getByRole("button", { name: "Remove file" }), {
       pointerEventsCheck: 0,
     })
-    await waitFor( async () => expect(screen.queryByText(OVERSIZE_MESSAGE)).toBeNull())
+    await waitFor(async () => {
+      await expect(screen.queryByText(OVERSIZE_MESSAGE)).toBeNull()
+    })
 
     // Re-picking lands back on the same state, which is what this story shows.
     await pickFileInModal(body, tooBig)
@@ -365,7 +373,7 @@ export const AdvancedWildcardPreview: Story = {
       "/newsroom",
     )
     await expect(
-      await screen.findByText(/old-news\/example → \/newsroom\/example/),
+      await screen.findByText(/old-news\/example → \/newsroom\/example/u),
     ).toBeVisible()
   },
 }
@@ -393,7 +401,7 @@ export const AdvancedWildcardPreviewTrimsDestination: Story = {
       "  /newsroom  ",
     )
     await expect(
-      await screen.findByText(/old-news\/example → \/newsroom\/example/),
+      await screen.findByText(/old-news\/example → \/newsroom\/example/u),
     ).toBeVisible()
   },
 }

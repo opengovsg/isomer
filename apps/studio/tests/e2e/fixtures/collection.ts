@@ -105,8 +105,8 @@ export const createCollectionWithTagCategories = async (
 
 // Cascades to the index page and any collection items (Resource.parent is
 // onDelete: Cascade).
-export const deleteCollection =  async (collectionId: string) =>
-  db.deleteFrom("Resource").where("id", "=", collectionId).execute()
+export const deleteCollection = async (collectionId: string) =>
+  await db.deleteFrom("Resource").where("id", "=", collectionId).execute()
 
 export const createCollectionLink = async ({
   collectionId,
@@ -188,10 +188,9 @@ export const createCollectionPage = async ({
 
 const readBlobPageContent = (
   content: PrismaJson.BlobJsonContent,
-): { page: { tagged?: string[] } } => 
+): { page: { tagged?: string[] } } =>
   // SAFETY: e2e fixtures only read optional tagged tags from article page blobs.
   content as { page: { tagged?: string[] } }
-
 
 export const readBlobContent = async (blobId: string) => {
   const blob = await db

@@ -1,5 +1,5 @@
-import { TRPCError } from "@trpc/server"
 import type { User } from "~prisma/generated/prisma/client"
+import { TRPCError } from "@trpc/server"
 
 import {
   MOCK_STORY_DATE,
@@ -21,27 +21,19 @@ export const defaultUser: User = {
   updatedAt: MOCK_STORY_DATE,
 }
 
-const defaultMeGetQuery = () => 
-  trpcMsw.me.get.query(() => {
-    return defaultUser
-  })
+const defaultMeGetQuery = () => trpcMsw.me.get.query(() => defaultUser)
 
+const notOnboardedMeGetQuery = () =>
+  trpcMsw.me.get.query(() => ({
+    ...defaultUser,
+    name: "",
+    phone: "",
+  }))
 
-const notOnboardedMeGetQuery = () => 
-  trpcMsw.me.get.query(() => {
-    return {
-      ...defaultUser,
-      name: "",
-      phone: "",
-    }
-  })
-
-
-const unauthorizedMeGetQuery = () => 
+const unauthorizedMeGetQuery = () =>
   trpcMsw.me.get.query(() => {
     throw new TRPCError({ code: "UNAUTHORIZED" })
   })
-
 
 export const meHandlers = {
   me: defaultMeGetQuery,

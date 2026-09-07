@@ -10,9 +10,9 @@ const emailSchema = z
   .superRefine((val, ctx) => {
     const result = _emailValidator.safeParse(val)
     if (!result.success) {
-      result.error.issues.forEach((issue) => {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: issue.message })
-      })
+      for (const issue of result.error.issues) {
+        ctx.addIssue({ code: "custom", message: issue.message })
+      }
     }
   })
   .transform((val) => val.trim().toLowerCase())
@@ -104,10 +104,11 @@ export const updateUserDetailsInputSchema = z.object({
     .string()
     .trim()
     .min(1, "Phone number is required")
-    .transform((phone) => phone.replaceAll(/\s+/g, ""))
-    .transform((phone) => (phone.startsWith("+65") ? phone.slice(3) : phone)) // Remove country code if present
+    .transform((phone) => phone.replaceAll(/\s+/gu, ""))
+    .transform((phone) => (phone.startsWith("+65") ? phone.slice(3) : phone))
+    // Remove country code if present
     .refine(
-      (phone) => !isNaN(Number(phone)) && phone.length === 8,
+      (phone) => !Number.isNaN(Number(phone)) && phone.length === 8,
       "Phone number must be exactly 8 digits",
     )
     .refine(

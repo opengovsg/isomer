@@ -5,25 +5,25 @@ import { formatFileSizeLimit } from "~/utils/formatFileSizeLimit"
 import { offsetPaginationSchema } from "./pagination"
 
 export const createGazetteSchema = z.object({
-  title: z
-    .string()
-    .min(1, { message: "Title is required" })
-    .max(255, { message: "Title should be shorter than 255 characters" }),
   category: z.string().min(1, { message: "Category is required" }),
-  subcategory: z.string().min(1, { message: "Subcategory is required" }),
+  fileId: z
+    .string()
+    .min(1, { message: "File ID is required" })
+    .regex(/^[_\-a-zA-Z0-9]+\.pdf$/u, {
+      message:
+        "File ID must end in .pdf and consist of alphanumeric characters, underscores and hyphens",
+    }),
   // NOTE: Not required for advertisements
   notificationNumber: z.string().optional(),
   publishDate: z.date({ error: "Date of publication is required" }),
   publishTime: z
     .string()
     .min(1, { message: "Time of publication is required" }),
-  fileId: z
+  subcategory: z.string().min(1, { message: "Subcategory is required" }),
+  title: z
     .string()
-    .min(1, { message: "File ID is required" })
-    .regex(/^[_\-a-zA-Z0-9]+\.pdf$/, {
-      message:
-        "File ID must end in .pdf and consist of alphanumeric characters, underscores and hyphens",
-    }),
+    .min(1, { message: "Title is required" })
+    .max(255, { message: "Title should be shorter than 255 characters" }),
 })
 
 export type CreateGazetteInput = z.infer<typeof createGazetteSchema>
@@ -32,7 +32,7 @@ const gazetteMetadataSchema = z.object({
   category: z.string().min(1),
   date: z
     .string()
-    .regex(/^\d{2}\/\d{2}\/\d{4}$/, { message: "Date must be dd/MM/yyyy" }),
+    .regex(/^\d{2}\/\d{2}\/\d{4}$/u, { message: "Date must be dd/MM/yyyyu" }),
   description: z.string().optional(),
   scheduledAt: z.date(),
   tagged: z.array(z.string()).min(1),
@@ -47,25 +47,25 @@ export const gazetteListSchema = z
   .extend(offsetPaginationSchema.shape)
 
 export const createGazetteServerSchema = gazetteMetadataSchema.extend({
-  siteId: z.number().min(1),
   collectionId: z.number().min(1),
   permalink: z.string().min(1),
   // The S3 key produced by the client-side presigned upload.
   ref: z.string().min(1),
+  siteId: z.number().min(1),
 })
 
 export const updateGazetteServerSchema = gazetteMetadataSchema.extend({
-  siteId: z.number().min(1),
+  desiredFileName: z
+    .string()
+    .min(1)
+    .regex(/^[_\-a-zA-Z0-9]+\.pdf$/u)
+    .optional(),
   gazetteId: z.number().min(1),
   // Exactly one of `newRef` (a fresh upload) or `desiredFileName` (rename the
   // existing file) is meaningful per call. If both are absent, the existing
   // ref is kept as-is.
   newRef: z.string().min(1).optional(),
-  desiredFileName: z
-    .string()
-    .min(1)
-    .regex(/^[_\-a-zA-Z0-9]+\.pdf$/)
-    .optional(),
+  siteId: z.number().min(1),
 })
 
 export const cancelScheduledPublishSchema = z.object({
@@ -97,7 +97,7 @@ export const getPresignedPutUrlSchema = z.object({
     .string({
       error: "Missing file name",
     })
-    .refine((s) => /^[a-zA-Z0-9-_]/.test(s), {
+    .refine((s) => /^[a-zA-Z0-9-_]/u.test(s), {
       message:
         "File name must start with a letter, number, hyphen, or underscore",
     })

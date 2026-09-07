@@ -12,8 +12,11 @@ import { fileNameAndSizeSchema, uploadSvgSchema } from "~/schemas/asset"
 import { formatFileSizeLimit } from "~/utils/formatFileSizeLimit"
 import { getFileExtension } from "~/utils/getFileExtension"
 
-const RiskyFileUploadModal = dynamic( async () =>
-  import("./RiskyFileUploadModal").then((mod) => mod.RiskyFileUploadModal),
+const RiskyFileUploadModal = dynamic(
+  async () =>
+    await import("./RiskyFileUploadModal").then(
+      (mod) => mod.RiskyFileUploadModal,
+    ),
 )
 
 interface FileAttachmentProps {
@@ -44,7 +47,7 @@ export const FileAttachment = ({
   const [pendingAckRiskyFile, setPendingAckRiskyFile] = useState<File | null>(
     null,
   )
-  // TODO: Add a mutation for deletion next time of s3 resources
+  // Deferred: Add a mutation for deletion next time of s3 resources
   const { mutate: uploadFile } = useUploadAssetMutation({
     resourceId,
     siteId,
@@ -54,7 +57,9 @@ export const FileAttachment = ({
 
   useEffect(() => {
     // NOTE: The outer link modal uses this to disable the button
-    if (isLoading) {setHref("")}
+    if (isLoading) {
+      setHref("")
+    }
   }, [isLoading, setHref])
 
   const doUpload = (file: File) => {
@@ -65,7 +70,9 @@ export const FileAttachment = ({
           onUploadedFile?.(file)
           if (shouldFetchResource) {
             void handleAssetUpload(path)
-              .then((src) =>{  setHref(src); })
+              .then((src) => {
+                setHref(src)
+              })
               .catch(() => {
                 toast({
                   description: "Please try again.",
@@ -74,7 +81,9 @@ export const FileAttachment = ({
                   ...BRIEF_TOAST_SETTINGS,
                 })
               })
-          } else {setHref(path)}
+          } else {
+            setHref(path)
+          }
         },
       },
     )
@@ -125,7 +134,9 @@ export const FileAttachment = ({
                     fileSize: file.size,
                   })
 
-              if (parseResult.success) {return null}
+              if (parseResult.success) {
+                return null
+              }
               // NOTE: safe assertion here because we're in error path and there's at least 1 error
               return (
                 parseResult.error.issues[0]?.message ||
@@ -145,8 +156,12 @@ export const FileAttachment = ({
         <RiskyFileUploadModal
           isOpen={!!pendingAckRiskyFile}
           file={pendingAckRiskyFile}
-          onConfirm={() =>{  doUpload(pendingAckRiskyFile); }}
-          onClose={() =>{  setPendingAckRiskyFile(null); }}
+          onConfirm={() => {
+            doUpload(pendingAckRiskyFile)
+          }}
+          onClose={() => {
+            setPendingAckRiskyFile(null)
+          }}
         />
       )}
     </>

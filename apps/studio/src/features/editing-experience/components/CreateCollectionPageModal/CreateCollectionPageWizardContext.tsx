@@ -87,7 +87,7 @@ const useCreateCollectionPageWizardContext = ({
   const utils = trpc.useUtils()
   const router = useRouter()
 
-  // TODO: Call correct mutation
+  // Deferred: Call correct mutation
   const { mutate, isPending } =
     trpc.collection.createCollectionPage.useMutation({
       onSuccess: async () => {
@@ -127,14 +127,13 @@ const useCreateCollectionPageWizardContext = ({
                 { shouldFocus: true },
               )
               return
-            } else {
-              console.error(error)
             }
+            console.error(error)
           },
           onSuccess: ({ pageId }) => {
             posthog.capture("collection_page_created", {
-              site_id: siteId,
               resource_type: values.type,
+              site_id: siteId,
             })
             const nextType = getResourceSubpath(type)
             void router.push(`/sites/${siteId}/${nextType}/${pageId}`)

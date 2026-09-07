@@ -4,8 +4,25 @@ import type {
 } from "@opengovsg/isomer-components"
 import { describe, expect, it } from "vitest"
 
-import { ARTICLE_TYPES, asContentBlob, asIndexBlob, asPageBlob, buildArticleBlob, buildCollectionIndexBlob, buildConversionReport, CONTENT_ONLY_TYPES, CONTENT_TYPES, findDisallowedBlocks, toFolderPlan } from './helpers';
-import type { ArticleBlob, ContentBlob, ConversionPlan, IndexBlob } from './helpers';
+import type {
+  ArticleBlob,
+  ContentBlob,
+  ConversionPlan,
+  IndexBlob,
+} from "./helpers"
+import {
+  ARTICLE_TYPES,
+  asContentBlob,
+  asIndexBlob,
+  asPageBlob,
+  buildArticleBlob,
+  buildCollectionIndexBlob,
+  buildConversionReport,
+  CONTENT_ONLY_TYPES,
+  CONTENT_TYPES,
+  findDisallowedBlocks,
+  toFolderPlan,
+} from "./helpers"
 
 // Shape used purely for asserting on builder output without TypeScript
 // narrowing on the `IsomerSchema` union for every property access.
@@ -31,11 +48,10 @@ const asResult = (s: IsomerSchema): BuilderResult => s
 
 const toIsomerSchema = (
   blob: IndexBlob | ContentBlob | ArticleBlob,
-): IsomerSchema => 
+): IsomerSchema =>
   // SAFETY: test fixtures are valid page blobs without the render-time site field.
   // @ts-expect-error test blobs omit render-time site props required by IsomerSchema.
   blob as IsomerSchema
-
 
 const proseBlock: IsomerComponent = {
   content: [{ type: "paragraph", content: [{ type: "text", text: "hi" }] }],
@@ -88,7 +104,7 @@ const makeIndexBlob = (overrides?: PageOverrides): IndexBlob => {
   }
   // SAFETY: test fixture matches IndexBlob layout discriminator.
   // @ts-expect-error test fixture uses string layout literal without full IndexBlob typing.
-  return blob as IndexBlob
+  return blob
 }
 
 const makeContentBlob = (
@@ -113,7 +129,7 @@ const makeContentBlob = (
   }
   // SAFETY: test fixture matches ContentBlob layout discriminator.
   // @ts-expect-error test fixture uses string layout literal without full ContentBlob typing.
-  return blob as ContentBlob
+  return blob
 }
 
 const makeArticleBlob = (
@@ -139,7 +155,7 @@ const makeArticleBlob = (
   }
   // SAFETY: test fixture matches ArticleBlob layout discriminator.
   // @ts-expect-error test fixture uses string layout literal without full ArticleBlob typing.
-  return blob as ArticleBlob
+  return blob
 }
 
 const withIndexContent = (

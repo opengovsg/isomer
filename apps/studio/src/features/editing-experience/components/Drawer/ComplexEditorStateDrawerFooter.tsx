@@ -16,25 +16,23 @@ export const ComplexEditorStateDrawerFooter = ({
   onDeleteBlockModalOpen,
   onSave,
   isNonEditableBlock,
-}: ComplexEditorStateDrawerFooterProps) => 
-  (
-    <Box bgColor="base.canvas.default" boxShadow="md" py="1.5rem" px="2rem">
-      <HStack spacing="0.75rem">
-        <IconButton
-          icon={<BiTrash fontSize="1.25rem" />}
-          variant="outline"
-          colorScheme="critical"
-          aria-label="Delete block"
-          onClick={onDeleteBlockModalOpen}
+}: ComplexEditorStateDrawerFooterProps) => (
+  <Box bgColor="base.canvas.default" boxShadow="md" py="1.5rem" px="2rem">
+    <HStack spacing="0.75rem">
+      <IconButton
+        icon={<BiTrash fontSize="1.25rem" />}
+        variant="outline"
+        colorScheme="critical"
+        aria-label="Delete block"
+        onClick={onDeleteBlockModalOpen}
+      />
+      <Box w="100%">
+        <ComplexEditorStateDrawerSaveButton
+          onClick={onSave}
+          isLoading={isLoading}
+          isNonEditableBlock={isNonEditableBlock}
         />
-        <Box w="100%">
-          <ComplexEditorStateDrawerSaveButton
-            onClick={onSave}
-            isLoading={isLoading}
-            isNonEditableBlock={isNonEditableBlock}
-          />
-        </Box>
-      </HStack>
-    </Box>
-  )
-
+      </Box>
+    </HStack>
+  </Box>
+)

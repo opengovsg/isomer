@@ -94,9 +94,9 @@ const HeroEditorDrawer = (): React.ReactNode => {
           const totalUploadsCount = modifiedAssets.length
 
           toast({
-            title: "Error uploading files/images",
             description: `An error occurred while uploading ${failedUploadsCount}/${totalUploadsCount} files/images. Please try again later.`,
             status: "error",
+            title: "Error uploading files/images",
             ...BRIEF_TOAST_SETTINGS,
           })
 

@@ -1,7 +1,10 @@
-import "@fontsource/ibm-plex-mono" // Import if using code textStyles.
-import "inter-ui/inter.css" // Strongly recommended.
+import "@fontsource/ibm-plex-mono"
+// Import if using code textStyles.
+import "inter-ui/inter.css"
+// Strongly recommended.
 import "../styles/tiptap.scss"
 import type { AppProps, AppType } from "next/app"
+import type { NextPageWithLayout } from "~/lib/types"
 import { Skeleton, Stack } from "@chakra-ui/react"
 import { datadogRum } from "@datadog/browser-rum"
 import { GrowthBook } from "@growthbook/growthbook"
@@ -16,7 +19,6 @@ import Suspense from "~/components/Suspense"
 import { VersionWrapper } from "~/components/VersionWrapper"
 import { env } from "~/env.mjs"
 import { LoginStateProvider } from "~/features/auth"
-import type { NextPageWithLayout } from "~/lib/types"
 import { DefaultLayout } from "~/templates/layouts/DefaultLayout"
 import { theme } from "~/theme"
 import { trpc } from "~/utils/trpc"
@@ -63,33 +65,31 @@ void gb.init({
   streaming: true,
 })
 
-const MyApp: AppType = (props: AppPropsWithAuthAndLayout) => 
-  (
-    <EnvProvider env={env}>
-      <LoginStateProvider>
-        <ThemeProvider theme={theme}>
-          <GrowthBookProvider growthbook={gb}>
-            <ErrorBoundary FallbackComponent={DefaultFallback}>
-              <Suspense fallback={<Skeleton width="100%" height="$100vh" />}>
-                <Stack spacing={0} height="$100vh" flexDirection="column">
-                  <AppBanner />
-                  <VersionWrapper />
-                  <ChildWithLayout {...props} />
-                  {
-                    // oxlint-disable-next-line node/no-process-env
-                    process.env.NODE_ENV !== "production" && (
-                      <ReactQueryDevtools initialIsOpen={false} />
-                    )
-                  }
-                </Stack>
-              </Suspense>
-            </ErrorBoundary>
-          </GrowthBookProvider>
-        </ThemeProvider>
-      </LoginStateProvider>
-    </EnvProvider>
-  )
-
+const MyApp: AppType = (props: AppPropsWithAuthAndLayout) => (
+  <EnvProvider env={env}>
+    <LoginStateProvider>
+      <ThemeProvider theme={theme}>
+        <GrowthBookProvider growthbook={gb}>
+          <ErrorBoundary FallbackComponent={DefaultFallback}>
+            <Suspense fallback={<Skeleton width="100%" height="$100vh" />}>
+              <Stack spacing={0} height="$100vh" flexDirection="column">
+                <AppBanner />
+                <VersionWrapper />
+                <ChildWithLayout {...props} />
+                {
+                  // oxlint-disable-next-line node/no-process-env
+                  process.env.NODE_ENV !== "production" && (
+                    <ReactQueryDevtools initialIsOpen={false} />
+                  )
+                }
+              </Stack>
+            </Suspense>
+          </ErrorBoundary>
+        </GrowthBookProvider>
+      </ThemeProvider>
+    </LoginStateProvider>
+  </EnvProvider>
+)
 
 // This is needed so suspense will be triggered for anything within the LayoutComponents which uses useSuspenseQuery
 const ChildWithLayout = ({

@@ -81,7 +81,9 @@ const SuspendablePublishButton = ({
         title: "Page published successfully",
         ...BRIEF_TOAST_SETTINGS,
       })
-      if (publishNowDisclosure.isOpen) publishNowDisclosure.onClose()
+      if (publishNowDisclosure.isOpen) {
+        publishNowDisclosure.onClose()
+      }
     },
   })
 
@@ -109,7 +111,9 @@ const SuspendablePublishButton = ({
               <PublishingModal
                 pageId={pageId}
                 siteId={siteId}
-                onPublishNow={(pageId, siteId) =>{  mutate({ pageId, siteId }); }}
+                onPublishNow={(pageId, siteId) => {
+                  mutate({ pageId, siteId })
+                }}
                 isPublishingNow={isPending}
                 {...publishNowDisclosure}
               />

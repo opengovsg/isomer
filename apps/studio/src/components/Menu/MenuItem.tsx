@@ -17,7 +17,9 @@ export const MenuItem = ({
   // Unable to use useMultiStyleConfig here because Menu parent still controls
   // other styles such as size and placement
   const extraStyles = useMemo(() => {
-    if (!colorScheme) {return {}}
+    if (!colorScheme) {
+      return {}
+    }
     return {
       _active: {
         [$bg.variable]: `colors.interaction.muted.critical.active`,

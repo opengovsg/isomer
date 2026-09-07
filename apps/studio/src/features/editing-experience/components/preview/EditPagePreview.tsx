@@ -14,22 +14,20 @@ import { LoadingPreview } from "./LoadingPreview"
 import PreviewWithCustomSitemap from "./PreviewWithCustomSitemap"
 import { ViewportContainer } from "./ViewportContainer"
 
-const LoadingState = (): React.ReactNode => 
-  (
-    <Box bg="base.canvas.backdrop" height="100%" flexDirection="column">
-      <Box
-        px="2rem"
-        pb="2rem"
-        pt="1rem"
-        overflowX="auto"
-        height="100%"
-        width="100%"
-      >
-        <LoadingPreview />
-      </Box>
+const LoadingState = (): React.ReactNode => (
+  <Box bg="base.canvas.backdrop" height="100%" flexDirection="column">
+    <Box
+      px="2rem"
+      pb="2rem"
+      pt="1rem"
+      overflowX="auto"
+      height="100%"
+      width="100%"
+    >
+      <LoadingPreview />
     </Box>
-  )
-
+  </Box>
+)
 
 const SuspendableEditPagePreview = (): React.ReactNode => {
   const {
@@ -70,10 +68,9 @@ const SuspendableEditPagePreview = (): React.ReactNode => {
     iframeDocument,
   })
 
-  const handleFlashEnd = useCallback(
-    () =>{  setFlashBlockIndex(null); },
-    [setFlashBlockIndex],
-  )
+  const handleFlashEnd = useCallback(() => {
+    setFlashBlockIndex(null)
+  }, [setFlashBlockIndex])
 
   const { isFading: isFlashFading } = useBlockFlashHighlight({
     flashBlockIndex,

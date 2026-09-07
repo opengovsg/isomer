@@ -1,3 +1,4 @@
+import type { NextPageWithLayout } from "~/lib/types"
 import { Portal, useDisclosure } from "@chakra-ui/react"
 import { Button, Menu, TouchableTooltip } from "@opengovsg/design-system-react"
 import posthog from "posthog-js"
@@ -16,7 +17,6 @@ import { CreatePageModal } from "~/features/editing-experience/components/Create
 import { MoveResourceModal } from "~/features/editing-experience/components/MoveResourceModal"
 import { Can } from "~/features/permissions"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import type { NextPageWithLayout } from "~/lib/types"
 import { SiteEditorLayout } from "~/templates/layouts/SiteEditorLayout"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
@@ -33,56 +33,52 @@ const HomepageMenuButton = ({
   onCollectionCreateModalOpen,
   onPageCreateModalOpen,
   onFolderCreateModalOpen,
-}: HomepageMenuButtonProps) => 
-  (
-    <Can do="create" on={{ parentId: null }} passThrough>
-      {({ isAllowed }) => {
-        return (
-          <Menu isLazy size="sm">
-            {({ isOpen }) => (
-              <TouchableTooltip
-                label="You need to be an Admin to create items under Home."
-                hidden={isAllowed}
-              >
-                <Menu.Button
-                  isOpen={isOpen}
-                  as={Button}
-                  size="md"
-                  justifySelf="flex-end"
-                  isDisabled={!isAllowed}
+}: HomepageMenuButtonProps) => (
+  <Can do="create" on={{ parentId: null }} passThrough>
+    {({ isAllowed }) => (
+      <Menu isLazy size="sm">
+        {({ isOpen }) => (
+          <TouchableTooltip
+            label="You need to be an Admin to create items under Home."
+            hidden={isAllowed}
+          >
+            <Menu.Button
+              isOpen={isOpen}
+              as={Button}
+              size="md"
+              justifySelf="flex-end"
+              isDisabled={!isAllowed}
+            >
+              Create new...
+            </Menu.Button>
+            <Portal>
+              <Menu.List>
+                <Menu.Item
+                  onClick={onFolderCreateModalOpen}
+                  icon={<BiFolder fontSize="1rem" />}
                 >
-                  Create new...
-                </Menu.Button>
-                <Portal>
-                  <Menu.List>
-                    <Menu.Item
-                      onClick={onFolderCreateModalOpen}
-                      icon={<BiFolder fontSize="1rem" />}
-                    >
-                      Folder
-                    </Menu.Item>
-                    <Menu.Item
-                      onClick={onPageCreateModalOpen}
-                      icon={<BiFileBlank fontSize="1rem" />}
-                    >
-                      Page
-                    </Menu.Item>
-                    <Menu.Item
-                      onClick={onCollectionCreateModalOpen}
-                      icon={<BiData fontSize="1rem" />}
-                    >
-                      Collection
-                    </Menu.Item>
-                  </Menu.List>
-                </Portal>
-              </TouchableTooltip>
-            )}
-          </Menu>
-        )
-      }}
-    </Can>
-  )
-
+                  Folder
+                </Menu.Item>
+                <Menu.Item
+                  onClick={onPageCreateModalOpen}
+                  icon={<BiFileBlank fontSize="1rem" />}
+                >
+                  Page
+                </Menu.Item>
+                <Menu.Item
+                  onClick={onCollectionCreateModalOpen}
+                  icon={<BiData fontSize="1rem" />}
+                >
+                  Collection
+                </Menu.Item>
+              </Menu.List>
+            </Portal>
+          </TouchableTooltip>
+        )}
+      </Menu>
+    )}
+  </Can>
+)
 
 const SitePage: NextPageWithLayout = () => {
   const {
@@ -166,13 +162,11 @@ const SitePage: NextPageWithLayout = () => {
   )
 }
 
-SitePage.getLayout = (page) => 
-  (
-    <PermissionsBoundary
-      resourceType={ResourceType.RootPage}
-      page={SiteEditorLayout(page)}
-    />
-  )
-
+SitePage.getLayout = (page) => (
+  <PermissionsBoundary
+    resourceType={ResourceType.RootPage}
+    page={SiteEditorLayout(page)}
+  />
+)
 
 export default SitePage

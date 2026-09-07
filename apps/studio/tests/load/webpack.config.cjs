@@ -4,12 +4,12 @@ const GlobEntries = require("webpack-glob-entries")
 
 module.exports = {
   entry: GlobEntries(path.join(__dirname, "*.test.ts")),
-  externals: /^(k6|https?:\/\/)(\/.*)?(?!-trpc)/,
+  externals: /^(k6|https?:\/\/)(\/.*)?(?!-trpc)/u,
   mode: "production",
   module: {
     rules: [
       {
-        test: /\.ts$/,
+        test: /\.ts$/u,
         use: {
           loader: "babel-loader",
           options: {

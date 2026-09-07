@@ -106,7 +106,7 @@ const useCreatePageWizardContext = ({
       await utils.resource.listWithoutRoot.invalidate()
       onClose()
     },
-    // TODO: Error handling
+    // Deferred: Error handling
   })
 
   const handleCreatePage = formMethods.handleSubmit((values) => {
@@ -130,9 +130,9 @@ const useCreatePageWizardContext = ({
         },
         onSuccess: ({ pageId }) => {
           posthog.capture("page_created", {
-            site_id: siteId,
             has_parent_folder: !!folderId,
             layout: values.layout,
+            site_id: siteId,
           })
           void router.push(`/sites/${siteId}/pages/${pageId}`)
         },
@@ -152,7 +152,7 @@ const useCreatePageWizardContext = ({
     currentLayout: layout,
     currentStep,
     formMethods,
-    fullPermalink: !!folderId ? data?.fullPermalink : "",
+    fullPermalink: folderId ? data?.fullPermalink : "",
     handleBackToLayoutScreen,
     handleCreatePage,
     handleNextToDetailScreen,

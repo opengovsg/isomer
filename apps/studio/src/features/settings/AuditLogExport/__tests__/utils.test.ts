@@ -15,7 +15,7 @@ describe("getMonthOptions", () => {
 
     const values = options.map((o) => o.value)
     expect(values.every((v) => v <= "2026-06")).toBe(true)
-    expect(/^\d{4}-(0[1-9]|1[0-2])$/.test(values[0]!)).toBe(true)
+    expect(/^\d{4}-(0[1-9]|1[0-2])$/u.test(values[0]!)).toBe(true)
   })
 
   it("uses Singapore time at the UTC day boundary", () => {

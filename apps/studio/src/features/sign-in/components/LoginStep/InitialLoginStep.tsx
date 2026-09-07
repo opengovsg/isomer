@@ -22,7 +22,7 @@ export const InitialLoginStep = (): React.ReactNode => {
       }
       default: {
         const _: undefined = errorState
-        return undefined
+        return
       }
     }
   }, [errorState])
@@ -34,7 +34,7 @@ export const InitialLoginStep = (): React.ReactNode => {
       }
       default: {
         const _: undefined = errorState
-        return undefined
+        return
       }
     }
   }, [errorState])

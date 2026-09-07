@@ -29,84 +29,81 @@ const Site = ({
   siteId?: number
   siteName?: string
   siteLogoUrl?: string
-}): React.ReactNode => 
-  (
-    <LinkBox cursor="pointer" role="group">
-      <LinkOverlay
-        href={`/sites/${siteId}`}
-        as={NextLink}
-        onClick={() => posthog.capture("site_selected", { site_id: siteId })}
-      >
-        <Flex key={siteId} flexDirection="column" gap="1rem" width="100%">
-          <Box position="relative">
-            <Image
-              src={siteLogoUrl}
-              alt={siteName}
-              borderRadius="0.5rem"
-              border="1.5px solid"
-              borderColor="base.divider.medium"
-              width="100%"
-              height="100%"
-              objectFit="contain"
-              aspectRatio="1/1"
-              backgroundColor="white"
-              fallbackSrc="/isomer-sites-placeholder.png"
-              padding="1rem" // Leave some space so that logo won't be flush with the border
-            />
-            <Box
-              position="absolute"
-              top="0"
-              left="0"
-              right="0"
-              bottom="0"
-              backgroundColor="base.canvas.overlay"
-              borderRadius="0.5rem"
-              display="flex"
-              justifyContent="center"
-              alignItems="center"
-              opacity="0"
-              transition="opacity 0.2s"
-              _groupHover={{ opacity: 1 }}
-            >
-              <Button backgroundColor="interaction.main.default">
-                <Text textStyle="subhead-1">Start editing site</Text>
-              </Button>
-            </Box>
-          </Box>
-          <Text
-            textStyle="subhead-2"
-            noOfLines={2}
-            overflow="hidden"
-            textOverflow="ellipsis"
+}): React.ReactNode => (
+  <LinkBox cursor="pointer" role="group">
+    <LinkOverlay
+      href={`/sites/${siteId}`}
+      as={NextLink}
+      onClick={() => posthog.capture("site_selected", { site_id: siteId })}
+    >
+      <Flex key={siteId} flexDirection="column" gap="1rem" width="100%">
+        <Box position="relative">
+          <Image
+            src={siteLogoUrl}
+            alt={siteName}
+            borderRadius="0.5rem"
+            border="1.5px solid"
+            borderColor="base.divider.medium"
+            width="100%"
+            height="100%"
+            objectFit="contain"
+            aspectRatio="1/1"
+            backgroundColor="white"
+            fallbackSrc="/isomer-sites-placeholder.png"
+            padding="1rem"
+            // Leave some space so that logo won't be flush with the border
+          />
+          <Box
+            position="absolute"
+            top="0"
+            left="0"
+            right="0"
+            bottom="0"
+            backgroundColor="base.canvas.overlay"
+            borderRadius="0.5rem"
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            opacity="0"
+            transition="opacity 0.2s"
+            _groupHover={{ opacity: 1 }}
           >
-            {siteName}
-          </Text>
-        </Flex>
-      </LinkOverlay>
-    </LinkBox>
-  )
-
+            <Button backgroundColor="interaction.main.default">
+              <Text textStyle="subhead-1">Start editing site</Text>
+            </Button>
+          </Box>
+        </Box>
+        <Text
+          textStyle="subhead-2"
+          noOfLines={2}
+          overflow="hidden"
+          textOverflow="ellipsis"
+        >
+          {siteName}
+        </Text>
+      </Flex>
+    </LinkOverlay>
+  </LinkBox>
+)
 
 const SiteListSection = ({
   children,
 }: {
   children: React.ReactNode
-}): React.ReactNode => 
-  (
-    <Flex flexDirection="column" gap="1.5rem" marginTop="0.75rem">
-      <Text textStyle="body-2">
-        Don&apos;t see a site that you&apos;re supposed to have access to?{" "}
-        <Link variant="inline" href={ISOMER_SUPPORT_LINK}>
-          Let us know
-        </Link>
-        .
-      </Text>
-      <SimpleGrid columns={3} gap="2.5rem" width="100%">
-        {children}
-      </SimpleGrid>
-    </Flex>
-  )
-
+}): React.ReactNode => (
+  <Flex flexDirection="column" gap="1.5rem" marginTop="0.75rem">
+    <Text textStyle="body-2">
+      Don&apos;t see a site that you&apos;re supposed to have access to?{" "}
+      <Link variant="inline" href={ISOMER_SUPPORT_LINK}>
+        Let us know
+      </Link>
+      .
+    </Text>
+    <SimpleGrid columns={3} gap="2.5rem" width="100%">
+      {children}
+    </SimpleGrid>
+  </Flex>
+)
 
 const SuspendableSiteList = (): React.ReactNode => {
   const [sites] = trpc.site.list.useSuspenseQuery()
@@ -154,18 +151,16 @@ const SuspendableSiteList = (): React.ReactNode => {
   )
 }
 
-const SiteListSkeleton = (): React.ReactNode => 
-  (
-    <SiteListSection>
-      {[1, 2, 3].map((index) => (
-        <Card key={index} width="100%">
-          <Skeleton>
-            <Site />
-          </Skeleton>
-        </Card>
-      ))}
-    </SiteListSection>
-  )
-
+const SiteListSkeleton = (): React.ReactNode => (
+  <SiteListSection>
+    {[1, 2, 3].map((index) => (
+      <Card key={index} width="100%">
+        <Skeleton>
+          <Site />
+        </Skeleton>
+      </Card>
+    ))}
+  </SiteListSection>
+)
 
 export const SiteList = withSuspense(SuspendableSiteList, <SiteListSkeleton />)

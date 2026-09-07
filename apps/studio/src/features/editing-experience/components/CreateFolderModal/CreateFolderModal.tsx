@@ -46,20 +46,18 @@ export const CreateFolderModal = ({
   onClose,
   siteId,
   parentFolderId,
-}: CreateFolderModalProps): React.ReactNode => 
-  (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <ModalOverlay />
-      <CreateFolderModalContent
-        key={String(isOpen)}
-        isOpen={isOpen}
-        onClose={onClose}
-        siteId={siteId}
-        parentFolderId={parentFolderId}
-      />
-    </Modal>
-  )
-
+}: CreateFolderModalProps): React.ReactNode => (
+  <Modal isOpen={isOpen} onClose={onClose}>
+    <ModalOverlay />
+    <CreateFolderModalContent
+      key={String(isOpen)}
+      isOpen={isOpen}
+      onClose={onClose}
+      siteId={siteId}
+      parentFolderId={parentFolderId}
+    />
+  </Modal>
+)
 
 const CreateFolderModalContent = ({
   onClose,
@@ -94,7 +92,7 @@ const CreateFolderModalContent = ({
       toast({
         title: "Failed to create folder",
         status: "error",
-        // TODO: check if this property is correct
+        // Deferred: check if this property is correct
         description: err.message,
         ...BRIEF_TOAST_SETTINGS,
       })
@@ -102,16 +100,16 @@ const CreateFolderModalContent = ({
     },
     onSuccess: async () => {
       posthog.capture("folder_created", {
-        site_id: siteId,
         has_parent_folder: !!parentFolderId,
+        site_id: siteId,
       })
       await utils.site.list.invalidate()
       await utils.resource.listWithoutRoot.invalidate()
       await utils.resource.countWithoutRoot.invalidate()
       await utils.resource.getChildrenOf.invalidate()
       toast({
-        title: "Folder created!",
         status: "success",
+        title: "Folder created!",
         ...BRIEF_TOAST_SETTINGS,
       })
       onClose()

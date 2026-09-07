@@ -50,9 +50,9 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
   const notificationMutation = trpc.site.setNotification.useMutation({
     onError: () => {
       toast({
-        title: "Error saving site notification!",
         description: `If this persists, please report this issue at ${ISOMER_SUPPORT_EMAIL}`,
         status: "error",
+        title: "Error saving site notification!",
       })
     },
     onSuccess: () => {
@@ -79,17 +79,20 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
 
   useNavigationEffect({ callback: setNextUrl, isDirty, isOpen })
 
-  const onSubmit = () =>{ 
+  const onSubmit = () => {
     notificationMutation.mutate({
       notification: state,
       siteId,
-    }); }
+    })
+  }
 
   return (
     <ErrorProvider>
       <UnsavedSettingModal
         isOpen={isOpen}
-        onClose={() =>{  setNextUrl(""); }}
+        onClose={() => {
+          setNextUrl("")
+        }}
         nextUrl={nextUrl}
       />
       <SettingsGrid>
@@ -112,7 +115,9 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
                 // NOTE: We have to set `isDismissed` here because
                 // we need to show the notification banner again when
                 // the user toggles it on
-                if (isEmpty(data)) {setIsDismissed(false)}
+                if (isEmpty(data)) {
+                  setIsDismissed(false)
+                }
               }}
             />
           </Box>
@@ -128,13 +133,11 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
   )
 }
 
-NotificationSettingsPage.getLayout = (page) => 
-  (
-    <PermissionsBoundary
-      resourceType={ResourceType.RootPage}
-      page={SiteSettingsLayout(page)}
-    />
-  )
-
+NotificationSettingsPage.getLayout = (page) => (
+  <PermissionsBoundary
+    resourceType={ResourceType.RootPage}
+    page={SiteSettingsLayout(page)}
+  />
+)
 
 export default NotificationSettingsPage

@@ -24,6 +24,7 @@ export default defineConfig({
     "!.storybook/**",
     "./next-env.d.ts",
     "prisma/generated/prisma/**",
+    "scripts/fix-*.mjs",
   ],
   jsPlugins: [
     ...(reactDoctorJsPluginEntries ?? []),

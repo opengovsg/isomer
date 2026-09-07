@@ -314,7 +314,9 @@ const JsonFormsSocialMediaControl = ({
       <>
         <DeleteSocialMediaLinkModal
           isOpen={!!selectedPathForDeletion}
-          onClose={() =>{  setSelectedPathForDeletion(undefined); }}
+          onClose={() => {
+            setSelectedPathForDeletion(undefined)
+          }}
           onDelete={handleDeleteItem}
           path={selectedPathForDeletion ?? ""}
           schema={schema}
@@ -328,10 +330,12 @@ const JsonFormsSocialMediaControl = ({
           schema={schema}
           uischema={getChildUiSchema(composePaths(path, `${selectedIndex}`))}
           path={composePaths(path, `${selectedIndex}`)}
-          handleRemoveItem={() =>{ 
-            setSelectedPathForDeletion(composePaths(path, `${selectedIndex}`)); }
-          }
-          onBack={() =>{  setSelectedIndex(undefined); }}
+          handleRemoveItem={() => {
+            setSelectedPathForDeletion(composePaths(path, `${selectedIndex}`))
+          }}
+          onBack={() => {
+            setSelectedIndex(undefined)
+          }}
         />
       </>
     )
@@ -341,7 +345,9 @@ const JsonFormsSocialMediaControl = ({
     <>
       <DeleteSocialMediaLinkModal
         isOpen={!!selectedPathForDeletion}
-        onClose={() =>{  setSelectedPathForDeletion(undefined); }}
+        onClose={() => {
+          setSelectedPathForDeletion(undefined)
+        }}
         onDelete={handleDeleteItem}
         path={selectedPathForDeletion ?? ""}
         schema={schema}
@@ -417,8 +423,12 @@ const JsonFormsSocialMediaControl = ({
                     key={index}
                     path={childPath}
                     isInvalid={hasError}
-                    onDelete={() =>{  setSelectedPathForDeletion(childPath); }}
-                    onEdit={() =>{  setSelectedIndex(index); }}
+                    onDelete={() => {
+                      setSelectedPathForDeletion(childPath)
+                    }}
+                    onEdit={() => {
+                      setSelectedIndex(index)
+                    }}
                   />
                 )
               })}

@@ -19,8 +19,14 @@ import { input } from "@inquirer/prompts"
 import { db } from "~/server/modules/database/database"
 import { ResourceType } from "~/server/modules/database/types"
 
-import { asIndexBlob, asPageBlob, buildArticleBlob, buildCollectionIndexBlob, findDisallowedBlocks } from './helpers';
-import type { ConversionPlan, PagePlan } from './helpers';
+import type { ConversionPlan, PagePlan } from "./helpers"
+import {
+  asIndexBlob,
+  asPageBlob,
+  buildArticleBlob,
+  buildCollectionIndexBlob,
+  findDisallowedBlocks,
+} from "./helpers"
 import {
   getBlobOfResource,
   printPlan,
@@ -67,7 +73,9 @@ const buildConversionPlan = async (
   }
 
   const [indexPage] = indexPages
-  if (!indexPage) {throw new Error("Index page missing after guard check")}
+  if (!indexPage) {
+    throw new Error("Index page missing after guard check")
+  }
 
   const indexBlob = await getBlobOfResource({ db, resourceId: indexPage.id })
   const indexCurrent = asIndexBlob(indexBlob.content)
@@ -141,7 +149,9 @@ const main = async () => {
   const jsonPaths = writePlanFiles(plan)
   const reportPath = writeReportFile(plan)
   console.log(`\nPlans written (${jsonPaths.length} files):`)
-  for (const p of jsonPaths) {console.log(`  ${p}`)}
+  for (const p of jsonPaths) {
+    console.log(`  ${p}`)
+  }
   console.log(`\nReport written to: ${reportPath}`)
   console.log(
     `\nNext step: review the report, then run applyConversionPlan.ts to write back to DB.`,

@@ -545,7 +545,8 @@ describe("handleMoveItem", () => {
     const isMaxItemsReached = false
     const originalPath = "items.0.items.0"
     const newPath = "items.1.items.1"
-    const instruction = "combine" // Invalid for this case
+    const instruction = "combine"
+    // Invalid for this case
     const closestEdge = "bottom"
 
     // Act

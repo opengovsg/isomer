@@ -93,7 +93,9 @@ const TableSizeGridPicker = ({ editor }: { editor: Editor }) => {
           </PopoverTrigger>
           <PopoverContent
             w="fit-content"
-            onMouseLeave={() =>{  setHoveredCell(null); }}
+            onMouseLeave={() => {
+              setHoveredCell(null)
+            }}
           >
             <PopoverBody>
               <VStack spacing="0.5rem">
@@ -136,8 +138,12 @@ const TableSizeGridPicker = ({ editor }: { editor: Editor }) => {
                             : "transparent"
                         }
                         cursor="pointer"
-                        onMouseEnter={() =>{  setHoveredCell({ col, row }); }}
-                        onClick={() =>{  insertTable(row, col, onClose); }}
+                        onMouseEnter={() => {
+                          setHoveredCell({ col, row })
+                        }}
+                        onClick={() => {
+                          insertTable(row, col, onClose)
+                        }}
                       />
                     )
                   })}

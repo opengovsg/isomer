@@ -10,31 +10,23 @@ interface ContentItemProps {
 export const HavePermissionContentItem = ({
   text,
   isDisabled = false,
-}: ContentItemProps & { isDisabled?: boolean }) => 
-  (
-    <HStack gap={1} w="100%">
-      <Icon
-        as={BiCheck}
-        color={isDisabled ? "gray.400" : "green.500"}
-        size={4}
-      />
-      <Text
-        textStyle="caption-1"
-        {...(isDisabled && { color: "interaction.support.disabled-content" })}
-      >
-        {text}
-      </Text>
-    </HStack>
-  )
+}: ContentItemProps & { isDisabled?: boolean }) => (
+  <HStack gap={1} w="100%">
+    <Icon as={BiCheck} color={isDisabled ? "gray.400" : "green.500"} size={4} />
+    <Text
+      textStyle="caption-1"
+      {...(isDisabled && { color: "interaction.support.disabled-content" })}
+    >
+      {text}
+    </Text>
+  </HStack>
+)
 
-
-export const NoPermissionContentItem = ({ text }: ContentItemProps) => 
-  (
-    <HStack gap={1} w="100%">
-      <Icon as={BiX} color="gray.400" size={4} />
-      <Text textStyle="caption-2" color="interaction.support.disabled-content">
-        {text}
-      </Text>
-    </HStack>
-  )
-
+export const NoPermissionContentItem = ({ text }: ContentItemProps) => (
+  <HStack gap={1} w="100%">
+    <Icon as={BiX} color="gray.400" size={4} />
+    <Text textStyle="caption-2" color="interaction.support.disabled-content">
+      {text}
+    </Text>
+  </HStack>
+)

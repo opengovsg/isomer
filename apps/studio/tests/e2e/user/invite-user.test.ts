@@ -1,8 +1,8 @@
-import { expect, test } from '@playwright/test';
-import type { Page } from '@playwright/test';
+import type { Page } from "@playwright/test"
+import type { RoleType } from "~prisma/generated/generatedEnums"
+import { expect, test } from "@playwright/test"
 import crypto from "node:crypto"
 import { db } from "~/server/modules/database/database"
-import type { RoleType } from "~prisma/generated/generatedEnums"
 
 import { storageStateFor, TEST_EMAILS } from "../fixtures/auth"
 import { getSeedSiteId } from "../fixtures/seed"
@@ -53,7 +53,7 @@ const inviteCollaborator = async (
   // The form debounces email + runs a whitelist check before enabling Send.
   await expect(sendBtn).toBeEnabled({ timeout: 10_000 })
   await sendBtn.click()
-  await expect(page.getByText(/Sent invite to/)).toBeVisible({
+  await expect(page.getByText(/Sent invite to/u)).toBeVisible({
     timeout: 10_000,
   })
 }
@@ -95,7 +95,9 @@ const deleteUsersByEmail = async (emailPattern: string) => {
     .where("email", "like", emailPattern)
     .select(["id"])
     .execute()
-  if (users.length === 0) {return}
+  if (users.length === 0) {
+    return
+  }
   const ids = users.map((u) => u.id)
   await db.deleteFrom("ResourcePermission").where("userId", "in", ids).execute()
   await db.deleteFrom("User").where("id", "in", ids).execute()
@@ -168,10 +170,10 @@ test("admin cannot invite a non-whitelisted vendor collaborator, even as Admin",
   // distinction between Admin and any other role. The role box is never
   // disabled; the block comes purely from the general "needs whitelisting"
   // gate that applies to every role.
-  await page.getByRole("button", { name: /^Admin/ }).click()
+  await page.getByRole("button", { name: /^Admin/u }).click()
   await page.getByLabel("Email address").fill(vendorEmail)
 
-  await expect(page.getByRole("button", { name: /^Admin/ })).toBeEnabled()
+  await expect(page.getByRole("button", { name: /^Admin/u })).toBeEnabled()
   await expect(
     page.getByText("There are non-gov.sg domains that need to be whitelisted"),
   ).toBeVisible({ timeout: 10_000 })

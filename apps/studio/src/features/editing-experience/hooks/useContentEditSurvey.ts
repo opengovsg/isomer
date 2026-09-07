@@ -16,7 +16,9 @@ export const useFireContentEditSurveyEvent = (): ((
 
   return useCallback(
     (eventName: ContentEditSurveyEvent) => {
-      if (!store.get(hasContentEditAtom)) {return}
+      if (!store.get(hasContentEditAtom)) {
+        return
+      }
       store.set(hasContentEditAtom, false)
       trackEvent(eventName)
     },
@@ -36,10 +38,18 @@ export const useContentEditTracker = (): void => {
 
     // Raw JSON mode is a staff-only surface excluded from the survey by design
     // (docs/adr/0003-editing-survey-measuring-points.md)
-    if (drawerState.state === "rawJsonEditor") {return}
-    if (store.get(hasContentEditAtom)) {return}
-    if (previousContent === nextContent) {return}
-    if (isEqual(previousContent, nextContent)) {return}
+    if (drawerState.state === "rawJsonEditor") {
+      return
+    }
+    if (store.get(hasContentEditAtom)) {
+      return
+    }
+    if (previousContent === nextContent) {
+      return
+    }
+    if (isEqual(previousContent, nextContent)) {
+      return
+    }
 
     store.set(hasContentEditAtom, true)
   }, [previewPageState.content, drawerState, store])

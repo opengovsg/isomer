@@ -24,13 +24,11 @@ export type RedirectValidationCode =
 // path (the loop detail) are produced in the service since they aren't reused.
 export const REDIRECT_MESSAGES = {
   alreadyExists: "This page is already being redirected.",
+  destinationNotPublished:
+    "This page or folder you're redirecting to hasn't been published yet.",
   loop: "This will trap visitors in a never-ending loop.",
   sourceIsExistingPage:
     "A live page already uses this URL. The redirect would hide it. Move or unpublish that page first.",
-  // Shown on a table row whose destination points at a page/folder that isn't
-  // published yet, so the redirect currently leads nowhere.
-  destinationNotPublished:
-    "This page or folder you're redirecting to hasn't been published yet.",
 } as const
 
 // Bulk-upload row errors with no single-create equivalent. Kept beside

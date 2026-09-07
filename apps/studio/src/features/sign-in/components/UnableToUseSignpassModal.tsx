@@ -18,34 +18,30 @@ interface UnableToUseSignpassModalProps {
 export const UnableToUseSignpassModal = ({
   isOpen,
   onClose,
-}: UnableToUseSignpassModalProps): React.ReactNode => 
-  (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <ModalOverlay />
+}: UnableToUseSignpassModalProps): React.ReactNode => (
+  <Modal isOpen={isOpen} onClose={onClose}>
+    <ModalOverlay />
 
-      <ModalContent>
-        <ModalHeader mr="3.5rem">
-          Can’t use Singpass to authenticate?
-        </ModalHeader>
+    <ModalContent>
+      <ModalHeader mr="3.5rem">Can’t use Singpass to authenticate?</ModalHeader>
 
-        <ModalCloseButton size="lg" />
+      <ModalCloseButton size="lg" />
 
-        <ModalBody>
-          <Text>
-            You can only access Isomer Studio with Singpass. If you need to
-            access Isomer Studio urgently, ask your colleagues to help you.
-            <br />
-            <br />
-            For any issues with Singpass, you may refer to{" "}
-            <Link href="https://ask.gov.sg/singpass" target="_blank">
-              Singpass FAQs
-            </Link>
-            .
-          </Text>
-        </ModalBody>
+      <ModalBody>
+        <Text>
+          You can only access Isomer Studio with Singpass. If you need to access
+          Isomer Studio urgently, ask your colleagues to help you.
+          <br />
+          <br />
+          For any issues with Singpass, you may refer to{" "}
+          <Link href="https://ask.gov.sg/singpass" target="_blank">
+            Singpass FAQs
+          </Link>
+          .
+        </Text>
+      </ModalBody>
 
-        <ModalFooter />
-      </ModalContent>
-    </Modal>
-  )
-
+      <ModalFooter />
+    </ModalContent>
+  </Modal>
+)

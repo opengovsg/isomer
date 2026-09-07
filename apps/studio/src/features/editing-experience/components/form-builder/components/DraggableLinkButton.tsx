@@ -117,27 +117,27 @@ const DraggableLinkButton = forwardRef<DraggableLinkButtonProps, "div">(
             transitionProperty="common"
             transitionDuration="normal"
             _hover={{
-              bg: "interaction.muted.main.hover",
-              borderColor: "interaction.main-subtle.hover",
               _invalid: {
                 bg: "interaction.muted.critical.hover",
                 borderColor: "utility.feedback.critical",
               },
+              bg: "interaction.muted.main.hover",
+              borderColor: "interaction.main-subtle.hover",
             }}
             _active={{
-              bg: "interaction.main-subtle.default",
-              borderColor: "interaction.main-subtle.hover",
-              shadow: "0px 1px 6px 0px #1361F026",
               _invalid: {
                 bg: "interaction.muted.critical.hover",
                 borderColor: "utility.feedback.critical",
                 shadow: "0px 1px 6px 0px #C0343426",
               },
+              bg: "interaction.main-subtle.default",
+              borderColor: "interaction.main-subtle.hover",
+              shadow: "0px 1px 6px 0px #1361F026",
             }}
             _invalid={{
-              borderWidth: "1.5px",
-              borderColor: "utility.feedback.critical",
               bgColor: "utility.feedback.critical-subtle",
+              borderColor: "utility.feedback.critical",
+              borderWidth: "1.5px",
             }}
           >
             <HStack gap="0.5rem" p="0.5rem" w="full">
@@ -155,7 +155,9 @@ const DraggableLinkButton = forwardRef<DraggableLinkButtonProps, "div">(
                   gap="0.5rem"
                   w="full"
                   textAlign="start"
-                  onClick={() =>{  setSelectedIndex(index); }}
+                  onClick={() => {
+                    setSelectedIndex(index)
+                  }}
                 >
                   <VStack gap="0.25rem" alignItems="start">
                     <Text
@@ -223,7 +225,11 @@ const DraggableLinkButton = forwardRef<DraggableLinkButtonProps, "div">(
                   icon={<BiDotsHorizontalRounded fontSize="1.5rem" />}
                 />
                 <MenuList>
-                  <MenuItem onClick={() =>{  setSelectedIndex(index); }}>
+                  <MenuItem
+                    onClick={() => {
+                      setSelectedIndex(index)
+                    }}
+                  >
                     <Flex
                       alignItems="center"
                       gap="0.5rem"

@@ -191,21 +191,19 @@ interface BaseBlockDragHandleProps extends ButtonProps {
 export const BaseBlockDragHandle = ({
   isDragging,
   ...handleProps
-}: BaseBlockDragHandleProps): React.ReactNode => 
-  (
-    <chakra.button
-      display="flex"
-      tabIndex={0}
-      layerStyle="focusRing"
-      borderRadius="4px"
-      transition="color 0.2s ease"
-      _hover={{
-        color: "slate.400",
-      }}
-      color={isDragging ? "slate.400" : "slate.300"}
-      {...handleProps}
-    >
-      <Icon as={BiGridVertical} fontSize="1.5rem" />
-    </chakra.button>
-  )
-
+}: BaseBlockDragHandleProps): React.ReactNode => (
+  <chakra.button
+    display="flex"
+    tabIndex={0}
+    layerStyle="focusRing"
+    borderRadius="4px"
+    transition="color 0.2s ease"
+    _hover={{
+      color: "slate.400",
+    }}
+    color={isDragging ? "slate.400" : "slate.300"}
+    {...handleProps}
+  >
+    <Icon as={BiGridVertical} fontSize="1.5rem" />
+  </chakra.button>
+)

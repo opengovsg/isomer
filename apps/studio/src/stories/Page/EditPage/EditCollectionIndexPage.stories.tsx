@@ -62,7 +62,7 @@ export const EditFixedBlockState: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const button = await canvas.findByRole("button", {
-      name: /Collection settings/i,
+      name: /Collection settings/iu,
     })
     await userEvent.click(button)
   },
@@ -78,7 +78,7 @@ export const SaveToast: Story = {
     await userEvent.type(textbox, "very cool summary")
 
     const saveButton = await canvas.findByRole("button", {
-      name: /Save changes/i,
+      name: /Save changes/iu,
     })
     await userEvent.click(saveButton)
   },
@@ -115,8 +115,8 @@ export const NewCollectionIndexEditingExperienceAsAdmin: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await canvas.findByText(/Manage Collection/i)
-    await canvas.findByRole("button", { name: /Filters/i })
+    await canvas.findByText(/Manage Collection/iu)
+    await canvas.findByRole("button", { name: /Filters/iu })
   },
 }
 
@@ -129,10 +129,10 @@ export const NewCollectionIndexEditingExperienceAsEditor: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await canvas.findByText(/Manage Collection/i)
-    await canvas.findByRole("button", { name: /Collection display/i })
+    await canvas.findByText(/Manage Collection/iu)
+    await canvas.findByRole("button", { name: /Collection display/iu })
     await expect(
-      canvas.queryByRole("button", { name: /Filters/i }),
+      canvas.queryByRole("button", { name: /Filters/iu }),
     ).not.toBeInTheDocument()
   },
 }
@@ -143,7 +143,7 @@ export const NewCollectionIndexEditingExperienceForDisplay: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await canvas.findByText(/Manage Collection/i)
+    await canvas.findByText(/Manage Collection/iu)
   },
 }
 
@@ -154,9 +154,9 @@ export const NewCollectionIndexEditingExperienceForFilters: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const button = await canvas.findByRole("button", {
-      name: /Filters/i,
+      name: /Filters/iu,
     })
     await userEvent.click(button)
-    await canvas.findByText(/Manage filters/i)
+    await canvas.findByText(/Manage filters/iu)
   },
 }

@@ -65,7 +65,9 @@ const InnerDrawer = ({
     <Flex flexDir="column" position="relative" h="100%" w="100%">
       {isUserIsomerAdmin && (
         <ActivateRawJsonEditorMode
-          onActivate={() =>{  setDrawerState("rawJsonEditor"); }}
+          onActivate={() => {
+            setDrawerState("rawJsonEditor")
+          }}
         />
       )}
 
@@ -122,9 +124,10 @@ const RawJsonEditorDrawer = ({
   const [pendingChanges, setPendingChanges] = useState(() =>
     JSON.stringify(savedPageState, null, 2),
   )
-  const isPendingChangesValid = useMemo(() => 
-    validateFn(safeJsonParse(pendingChanges))
-  , [pendingChanges])
+  const isPendingChangesValid = useMemo(
+    () => validateFn(safeJsonParse(pendingChanges)),
+    [pendingChanges],
+  )
 
   const handleRawChange = (data: string) => {
     setPendingChanges(data)
@@ -214,8 +217,12 @@ export const LinkEditorDrawer = ({
         savedPageState={initialLinkState}
         previewPageState={link}
         isLoading={isPending}
-        handleChange={(data) =>{  setLink(data); }}
-        handleSaveChanges={() =>{  mutate({ linkId, siteId, ...link }); }}
+        handleChange={(data) => {
+          setLink(data)
+        }}
+        handleSaveChanges={() => {
+          mutate({ linkId, siteId, ...link })
+        }}
       />
     </ErrorProvider>
   )

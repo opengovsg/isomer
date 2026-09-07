@@ -58,7 +58,9 @@ describe("Datatable linked rows", () => {
     const row = link.closest("tr")
 
     expect(row).not.toBeNull()
-    if (!row) {throw new Error("Expected link to be inside a table row")}
+    if (!row) {
+      throw new Error("Expected link to be inside a table row")
+    }
 
     expect(row.parentElement?.tagName).toBe("TBODY")
     expect(link.getAttribute("href")).toBe("/test-page")

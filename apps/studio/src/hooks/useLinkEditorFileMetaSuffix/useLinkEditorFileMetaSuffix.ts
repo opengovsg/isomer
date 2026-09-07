@@ -32,7 +32,9 @@ export function useLinkEditorFileMetaSuffix({
 
   const onUploadedFile = useCallback((file: File) => {
     const suffix = buildFileUploadMetaSuffix(file)
-    if (!suffix) {return}
+    if (!suffix) {
+      return
+    }
     setFileMetaSuffix(suffix)
   }, [])
 

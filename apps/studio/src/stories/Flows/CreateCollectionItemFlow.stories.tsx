@@ -69,11 +69,11 @@ export const EnterPageDetails: Story = {
     await SelectLayout.play?.(context)
 
     await userEvent.click(
-      screen.getByRole("button", { name: /next: page details/i }),
+      screen.getByRole("button", { name: /next: page details/iu }),
     )
 
     await userEvent.type(
-      screen.getByLabelText(/page title/i),
+      screen.getByLabelText(/page title/iu),
       "My_new page WITH w@eird characters!",
     )
   },

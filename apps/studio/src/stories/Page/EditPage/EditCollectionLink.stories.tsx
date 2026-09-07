@@ -115,7 +115,7 @@ export const WithModal: Story = {
     const { canvasElement } = context
     const screen = within(canvasElement)
     const button = await screen.findByRole("button", {
-      name: /Link something.../i,
+      name: /Link something.../iu,
     })
     await userEvent.click(button)
   },

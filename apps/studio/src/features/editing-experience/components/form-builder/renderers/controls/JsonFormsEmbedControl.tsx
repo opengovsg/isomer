@@ -197,7 +197,9 @@ const JsonFormsEmbedControl = ({
       <EmbedCodeModal
         isOpen={isEmbedModalOpen}
         onClose={onEmbedModalClose}
-        onSave={(embedCode) =>{  handleEmbedCodeSave(embedCode); }}
+        onSave={(embedCode) => {
+          handleEmbedCodeSave(embedCode)
+        }}
         urlPattern={schema.pattern}
       />
 

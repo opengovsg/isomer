@@ -75,9 +75,9 @@ const RootStateDrawer = () => {
         content: variables.blocks,
       }))
       toast({
-        title: "Failed to update blocks",
         description: error.message,
         status: "error",
+        title: "Failed to update blocks",
         ...BRIEF_TOAST_SETTINGS,
       })
     },
@@ -105,14 +105,17 @@ const RootStateDrawer = () => {
 
   const onDragEnd = useCallback(
     (result: DropResult) => {
-      if (!result.destination) {return}
+      if (!result.destination) {
+        return
+      }
 
       const from = result.source.index
       const to = result.destination.index
       const contentLength = savedPageState.content.length
 
-      if (from >= contentLength || to >= contentLength || from < 0 || to < 0)
-        {return}
+      if (from >= contentLength || to >= contentLength || from < 0 || to < 0) {
+        return
+      }
 
       // NOTE: We eagerly update their page state here
       // and if it fails on the backend,
@@ -198,7 +201,7 @@ const RootStateDrawer = () => {
 
   validateFn(savedPageState)
 
-  const contentIndexRegex = /^\/content\/(\d+)/
+  const contentIndexRegex = /^\/content\/(\d+)/u
   const invalidBlockIndexes = new Set(
     (validateFn.errors ?? []).reduce<number[]>((indexes, error) => {
       const match = contentIndexRegex.exec(error.instancePath)?.[1]
@@ -222,7 +225,9 @@ const RootStateDrawer = () => {
       <VStack gap="1.5rem" p="1.5rem" flex={1}>
         {isUserIsomerAdmin && (
           <ActivateRawJsonEditorMode
-            onActivate={() =>{  setDrawerState({ state: "rawJsonEditor" }); }}
+            onActivate={() => {
+              setDrawerState({ state: "rawJsonEditor" })
+            }}
           />
         )}
 

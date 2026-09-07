@@ -22,7 +22,7 @@ import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
 import { OTP_LENGTH } from "~/lib/auth"
 import { useZodForm } from "~/lib/form"
 import { SIGN_IN_SINGPASS } from "~/lib/routes"
-import { emailVerifyOtpSchema } from "~/schemas/auth/email/sign-in"
+import { emailVerifyOtpSchema } from "~/schemas/auth/email/signIn"
 import { callbackUrlSchema } from "~/schemas/url"
 import { trpc } from "~/utils/trpc"
 
@@ -40,7 +40,9 @@ export const VerificationInput = (): React.ReactNode | null => {
   const { isSingpassEnabled } = useIsSingpassEnabled()
 
   useInterval(
-    () =>{  setShowOtpDelayMessage(true); },
+    () => {
+      setShowOtpDelayMessage(true)
+    },
     // Show otp delay info message after 15 seconds.
     showOtpDelayMessage ? null : 15_000,
   )
@@ -63,20 +65,23 @@ export const VerificationInput = (): React.ReactNode | null => {
   const verifyOtpMutation = trpc.auth.email.verifyOtp.useMutation({
     onError: (error) => {
       switch (error.message) {
-        case "Token is invalid or has expired":
+        case "Token is invalid or has expired": {
           setError("token", {
             message:
               "This OTP is invalid or has expired, click resend OTP to get a new one",
           })
           break
-        case "Too many attempts":
+        }
+        case "Too many attempts": {
           setError("token", {
             message:
               "You have attempted the wrong OTP too many times, click resend OTP to get a new one",
           })
           break
-        default:
+        }
+        default: {
           setError("token", { message: error.message })
+        }
       }
     },
     onSuccess: async () => {
@@ -96,16 +101,20 @@ export const VerificationInput = (): React.ReactNode | null => {
   })
 
   const resendOtpMutation = trpc.auth.email.login.useMutation({
-    onError: (error) =>{  setError("token", { message: error.message }); },
+    onError: (error) => {
+      setError("token", { message: error.message })
+    },
   })
 
-  const handleVerifyOtp = handleSubmit(({ email, token }) =>{  
-    verifyOtpMutation.mutate({ email, token }); }
-  )
+  const handleVerifyOtp = handleSubmit(({ email, token }) => {
+    verifyOtpMutation.mutate({ email, token })
+  })
 
   const handleResendOtp = () => {
-    if (timer > 0 || !vfnStepData?.email) {return}
-     resendOtpMutation.mutate(
+    if (timer > 0 || !vfnStepData?.email) {
+      return
+    }
+    resendOtpMutation.mutate(
       { email: vfnStepData.email },
       {
         onSuccess: ({ email, otpPrefix }) => {
@@ -119,7 +128,9 @@ export const VerificationInput = (): React.ReactNode | null => {
     )
   }
 
-  if (!vfnStepData) {return null}
+  if (!vfnStepData) {
+    return null
+  }
 
   return (
     <form onSubmit={handleVerifyOtp}>
@@ -151,7 +162,9 @@ export const VerificationInput = (): React.ReactNode | null => {
                   maxLength={OTP_LENGTH}
                   {...field}
                   value={value}
-                  onChange={(e) =>{  onChange(e.target.value.toUpperCase()); }}
+                  onChange={(e) => {
+                    onChange(e.target.value.toUpperCase())
+                  }}
                 />
               </InputGroup>
             )}

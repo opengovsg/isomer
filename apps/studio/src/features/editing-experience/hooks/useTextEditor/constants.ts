@@ -147,14 +147,14 @@ export const IsomerHeading = Heading.extend({
   // eg: # -> h2
   //     ## -> h3
   addInputRules() {
-    return HEADING_LEVELS.map((level) => 
+    return HEADING_LEVELS.map((level) =>
       textblockTypeInputRule({
         find: new RegExp(`^(#{1,${level - 1}})\\s$`),
-        type: this.type,
         getAttributes: {
           level,
         },
-      })
+        type: this.type,
+      }),
     )
   },
 }).configure({

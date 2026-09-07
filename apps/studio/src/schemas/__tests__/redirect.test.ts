@@ -262,7 +262,9 @@ describe("createRedirectSchema", () => {
     it("accepts a single trailing /*", () => {
       const r = parseSource("/news/*")
       expect(r.success).toBe(true)
-      if (r.success) {expect(r.data.source).toBe("/news/*")}
+      if (r.success) {
+        expect(r.data.source).toBe("/news/*")
+      }
     })
 
     it("lowercases the path but keeps the /*", () => {
@@ -380,6 +382,7 @@ describe("createRedirectSchema", () => {
       // Arrange
       const invalidDestinations = [
         "http://example.com",
+        // oxlint-disable-next-line eslint/no-script-url -- intentional invalid destination fixture
         "javascript:alert(1)",
         "example.com/page",
         "link with space",
@@ -528,7 +531,10 @@ describe("createRedirectSchema", () => {
           expected: "https://evil.gov.sg/path",
           input: "https://evil.gov.sg/\r\npath",
         },
-        { expected: "https://evil.gov.sg/", input: "https://evil.gov.sg/\x00" },
+        {
+          expected: "https://evil.gov.sg/",
+          input: "https://evil.gov.sg/\u0000",
+        },
         {
           expected: "https://evil.gov.sg/tab",
           input: "https://evil.gov.sg/\ttab",
@@ -543,7 +549,8 @@ describe("createRedirectSchema", () => {
         })
 
         // Assert
-        expect(result.destination).not.toMatch(/[\x00-\x1F\x7F]/)
+        // oxlint-disable-next-line eslint/no-control-regex -- verifying control chars are stripped
+        expect(result.destination).not.toMatch(/[\u0000-\u001F\u007F]/u)
         expect(result.destination).toBe(expected)
       })
     })

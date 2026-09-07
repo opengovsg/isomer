@@ -113,7 +113,7 @@ export const WithBanner: Story = {
 export const FilePicker: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    const button = await screen.findByRole("button", { name: /Choose file/i })
+    const button = await screen.findByRole("button", { name: /Choose file/iu })
 
     await userEvent.click(button)
   },

@@ -59,7 +59,7 @@ export const Wordbreak: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const button = await canvas.findByRole("button", {
-      name: /This is a prose block/i,
+      name: /This is a prose block/iu,
     })
     await userEvent.click(button)
 
@@ -75,7 +75,7 @@ export const EditFixedBlockState: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const button = await canvas.findByRole("button", {
-      name: /Content page header/i,
+      name: /Content page header/iu,
     })
     await userEvent.click(button)
   },
@@ -86,7 +86,7 @@ export const SaveToast: Story = {
     await EditFixedBlockState.play?.({ canvasElement, ...rest })
     const canvas = within(canvasElement)
     const saveButton = await canvas.findByRole("button", {
-      name: /Save changes/i,
+      name: /Save changes/iu,
     })
     await userEvent.click(saveButton)
   },
@@ -95,7 +95,7 @@ export const SaveToast: Story = {
 export const AddBlock: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const button = await canvas.findByRole("button", { name: /add block/i })
+    const button = await canvas.findByRole("button", { name: /add block/iu })
     await userEvent.click(button)
   },
 }
@@ -133,7 +133,7 @@ export const AddTextBlock: Story = {
 
     await userEvent.click(
       canvas.getByRole("button", {
-        name: /Add text, links, lists, and tables./i,
+        name: /Add text, links, lists, and tables./iu,
       }),
     )
   },
@@ -145,7 +145,7 @@ export const LinkModal: Story = {
     const canvas = within(canvasElement)
     await AddTextBlock.play?.(context)
 
-    await userEvent.click(canvas.getByRole("button", { name: /link/i }))
+    await userEvent.click(canvas.getByRole("button", { name: /link/iu }))
   },
 }
 
@@ -156,7 +156,7 @@ export const AddTable: Story = {
     await AddTextBlock.play?.(context)
 
     await userEvent.click(
-      await canvas.findByRole("button", { name: /^table$/i }),
+      await canvas.findByRole("button", { name: /^table$/iu }),
     )
   },
 }
@@ -172,9 +172,11 @@ export const ActiveTableToolbar: Story = {
     // button; the RTE toolbar's overflow list is a `Popover`, so
     // disambiguate on aria-haspopup.)
     const overflowTrigger = canvas
-      .getAllByRole("button", { name: /more options/i })
+      .getAllByRole("button", { name: /more options/iu })
       .find((button) => button.getAttribute("aria-haspopup") === "dialog")
-    if (!overflowTrigger) {throw new Error("Overflow trigger not found")}
+    if (!overflowTrigger) {
+      throw new Error("Overflow trigger not found")
+    }
     await userEvent.click(overflowTrigger)
     await canvas.findByRole("button", { name: /^superscript$/i })
     await expect(
@@ -185,9 +187,9 @@ export const ActiveTableToolbar: Story = {
     // Clicking "Table" only opens the size-picker popover — a cell still
     // needs to be picked to actually insert a table and put the cursor
     // inside it (see TableSizePicker.tsx).
-    await userEvent.click(canvas.getByRole("button", { name: /^table$/i }))
+    await userEvent.click(canvas.getByRole("button", { name: /^table$/iu }))
     await userEvent.click(
-      await canvas.findByRole("button", { name: /^1 by 1 table$/i }),
+      await canvas.findByRole("button", { name: /^1 by 1 table$/iu }),
     )
 
     // Inside a table: promoted directly onto the main toolbar, and no longer
@@ -202,7 +204,7 @@ export const ActiveTableToolbar: Story = {
     // to show and disappears entirely — only the unrelated page-actions menu
     // button remains.
     await expect(
-      canvas.getAllByRole("button", { name: /more options/i }),
+      canvas.getAllByRole("button", { name: /more options/iu }),
     ).toHaveLength(1)
   },
 }

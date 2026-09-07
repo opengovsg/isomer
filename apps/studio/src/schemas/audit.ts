@@ -16,6 +16,77 @@ import { AuditLogExportReportType } from "~prisma/generated/generatedEnums"
 
 const SINGAPORE_TIME_ZONE = "Asia/Singapore"
 
+const MONTH_REGEX = /^(?<year>\d{4})-(?<month>0[1-9]|1[0-2])$/u
+
+// A calendar month in ISO `yyyy-MM` form, e.g. "2026-03". This is the shape
+// every month value in the audit-export flow is passed around in (picker →
+// zod input → service → query layer), so it gets a real type rather than a
+// bare `string`. The month segment is a closed union because TypeScript's
+// `${number}` does not match zero-padded strings like "03".
+type IsoMonthSegment =
+  | "01"
+  | "02"
+  | "03"
+  | "04"
+  | "05"
+  | "06"
+  | "07"
+  | "08"
+  | "09"
+  | "10"
+  | "11"
+  | "12"
+type YearPrefix = "2"
+type YearSuffix = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+type IsoYear = `${YearPrefix}${YearSuffix}${YearSuffix}${YearSuffix}`
+export type IsoMonth = `${IsoYear}-${IsoMonthSegment}`
+
+// The export window: a Site Admin may request the current Singapore-time month
+// plus the 11 months before it (12 months inclusive of the current month).
+export const AUDIT_LOG_EXPORT_MAX_MONTHS = 12
+
+// The current calendar month in Singapore time as "yyyy-MM". SGT is UTC+8 all
+// year (no DST); we format in that zone explicitly so the window check is
+// correct wherever this runs — the server in any timezone, or the user's
+// browser. We use date-fns-tz's explicit "yyyy-MM" token rather than an
+// Intl locale trick (e.g. "en-CA"), which depends on ICU locale data and can
+// silently format differently on minimal-ICU runtimes.
+const toIsoMonth = (month: string): IsoMonth => {
+  if (!MONTH_REGEX.test(month)) {
+    throw new Error(`Invalid month: ${month}`)
+  }
+  // SAFETY: MONTH_REGEX guarantees yyyy-MM shape at runtime
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowed after regex check
+  return month as IsoMonth
+}
+
+export const getCurrentSingaporeMonth = (): IsoMonth =>
+  // SAFETY: date-fns-tz format with "yyyy-MM" always returns a zero-padded ISO month
+  toIsoMonth(formatInTimeZone(new Date(), SINGAPORE_TIME_ZONE, "yyyy-MM"))
+
+// Given the current calendar month, return the earliest month still
+// exportable under the window. Pure: the caller passes in the current month
+// rather than reading the clock here.
+export const getEarliestExportableMonth = (
+  currentMonth: IsoMonth,
+): IsoMonth => {
+  const [year, month] = currentMonth.split("-").map(Number)
+  if (year === undefined || month === undefined) {
+    throw new Error(
+      `Invalid month, expected "yyyy-MM" but got: ${currentMonth}`,
+    )
+  }
+  // Subtract the window with date-fns, keeping the current month inclusive.
+  // Construct and format in the same (local) frame so the resulting calendar
+  // month is unaffected by the runtime's zone.
+  const earliest = subMonths(
+    new Date(year, month - 1, 1),
+    AUDIT_LOG_EXPORT_MAX_MONTHS - 1,
+  )
+  // SAFETY: date-fns format with "yyyy-MM" always returns a zero-padded ISO month
+  return toIsoMonth(format(earliest, "yyyy-MM"))
+}
+
 export const validateIsNotFutureMonth = (
   requestedMonth: string,
 ): FutureMonthError | true => {
@@ -64,74 +135,6 @@ export const AuditLogExportScope = {
 export type AuditLogExportScope =
   (typeof AuditLogExportScope)[keyof typeof AuditLogExportScope]
 
-// A calendar month in ISO `yyyy-MM` form, e.g. "2026-03". This is the shape
-// every month value in the audit-export flow is passed around in (picker →
-// zod input → service → query layer), so it gets a real type rather than a
-// bare `string`. The month segment is a closed union because TypeScript's
-// `${number}` does not match zero-padded strings like "03".
-type IsoMonthSegment =
-  | "01"
-  | "02"
-  | "03"
-  | "04"
-  | "05"
-  | "06"
-  | "07"
-  | "08"
-  | "09"
-  | "10"
-  | "11"
-  | "12"
-type YearPrefix = "2"
-type YearSuffix = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
-type IsoYear = `${YearPrefix}${YearSuffix}${YearSuffix}${YearSuffix}`
-export type IsoMonth = `${IsoYear}-${IsoMonthSegment}`
-
-// Matches a calendar month like "2026-03" — the runtime counterpart of
-// `IsoMonth`, used where values cross from untyped input into the type.
-const MONTH_REGEX = /^\d{4}-(0[1-9]|1[0-2])$/
-
-// The export window: a Site Admin may request the current Singapore-time month
-// plus the 11 months before it (12 months inclusive of the current month).
-// This schema enforces the window directly (so both the client form and the
-// server's input validation reject out-of-window months); the service keeps an
-// equivalent guard as defense-in-depth, and the month picker derives its range
-// from the same constant — one source of truth across all three.
-export const AUDIT_LOG_EXPORT_MAX_MONTHS = 12
-
-// Given the current calendar month, return the earliest month still
-// exportable under the window. Pure: the caller passes in the current month
-// rather than reading the clock here.
-export const getEarliestExportableMonth = (
-  currentMonth: IsoMonth,
-): IsoMonth => {
-  const [year, month] = currentMonth.split("-").map(Number)
-  if (year === undefined || month === undefined) {
-    throw new Error(
-      `Invalid month, expected "yyyy-MM" but got: ${currentMonth}`,
-    )
-  }
-  // Subtract the window with date-fns, keeping the current month inclusive.
-  // Construct and format in the same (local) frame so the resulting calendar
-  // month is unaffected by the runtime's zone.
-  const earliest = subMonths(
-    new Date(year, month - 1, 1),
-    AUDIT_LOG_EXPORT_MAX_MONTHS - 1,
-  )
-  // SAFETY: date-fns format with "yyyy-MM" always returns a zero-padded ISO month
-  return format(earliest, "yyyy-MM") as IsoMonth
-}
-
-// The current calendar month in Singapore time as "yyyy-MM". SGT is UTC+8 all
-// year (no DST); we format in that zone explicitly so the window check is
-// correct wherever this runs — the server in any timezone, or the user's
-// browser. We use date-fns-tz's explicit "yyyy-MM" token rather than an
-// Intl locale trick (e.g. "en-CA"), which depends on ICU locale data and can
-// silently format differently on minimal-ICU runtimes.
-export const getCurrentSingaporeMonth = (): IsoMonth =>
-  // SAFETY: date-fns-tz format with "yyyy-MM" always returns a zero-padded ISO month
-  formatInTimeZone(new Date(), SINGAPORE_TIME_ZONE, "yyyy-MM") as IsoMonth
-
 // Input for the query that tells the client how many months back the picker
 // may offer (see `getMaxExportableMonths` in auditLogExport.service.ts).
 export const getAuditLogExportWindowSchema = z.object({
@@ -139,6 +142,15 @@ export const getAuditLogExportWindowSchema = z.object({
 })
 
 export const createAuditLogExportRequestSchema = z.object({
+  month: z
+    .string()
+    .regex(MONTH_REGEX, {
+      message: "Enter a month in the format YYYY-MM, e.g. 2026-03",
+    })
+    .transform(toIsoMonth),
+  reportType: z.enum(AuditLogExportRequestedReportType, {
+    message: "Select a report type",
+  }),
   scope: z.enum(AuditLogExportScope, {
     message: "Select which sites to export",
   }),
@@ -153,7 +165,7 @@ export const createAuditLogExportRequestSchema = z.object({
   // use. The union guards against JS numeric coercion quirks — a bare
   // z.coerce.number() would turn non-ID values like true or [1] into 1.
   siteId: z
-    .union([z.number(), z.string().regex(/^\d+$/)])
+    .union([z.number(), z.string().regex(/^\d+$/u)])
     .transform(Number)
     .pipe(
       z
@@ -162,24 +174,6 @@ export const createAuditLogExportRequestSchema = z.object({
         .positive({ message: "Select a valid site" }),
     )
     .optional(),
-  // The future/past-year window is enforced below, on
-  // `createAuditLogExportRequestServerSchema`, scoped to Activity exports
-  // only — an Access export always uses the server's current month
-  // regardless of what's submitted here (see `resolveAuditLogDateRange`), so
-  // bounding this field unconditionally would reject an otherwise-fine
-  // Access request over nothing more than browser clock skew.
-  month: z
-    .string()
-    .regex(MONTH_REGEX, {
-      message: "Enter a month in the format YYYY-MM, e.g. 2026-03",
-    })
-    .transform((month) => 
-      // SAFETY: MONTH_REGEX guarantees yyyy-MM shape at runtime; narrow to IsoMonth for consumers
-      month as IsoMonth
-    ),
-  reportType: z.enum(AuditLogExportRequestedReportType, {
-    message: "Select a report type",
-  }),
 })
 
 // Server-only: enforces that `siteId` is present when `scope` is "site". Kept

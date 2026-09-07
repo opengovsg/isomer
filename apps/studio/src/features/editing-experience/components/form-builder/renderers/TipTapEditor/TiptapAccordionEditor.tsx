@@ -8,8 +8,10 @@ export const TiptapAccordionEditor = ({
 }: {
   editor: ReturnType<typeof useAccordionEditor>
 }) => {
-  // TODO: Add a loading state or use suspense
-  if (!editor) {return null}
+  // Deferred: Add a loading state or use suspense
+  if (!editor) {
+    return null
+  }
 
   return <Editor isNested menubar={AccordionMenuBar} editor={editor} />
 }

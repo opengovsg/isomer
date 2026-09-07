@@ -1,6 +1,6 @@
 import type { GridProps } from "@chakra-ui/react"
-import { GridItem } from "@chakra-ui/react"
 import type { FC, PropsWithChildren } from "react"
+import { GridItem } from "@chakra-ui/react"
 import { AppGrid } from "~/templates/AppGrid"
 
 // Component that controls the various grid areas according to responsive breakpoints.

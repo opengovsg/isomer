@@ -20,7 +20,9 @@ const meta: Meta<typeof ViewGazetteModal> = {
     },
     gazetteId: "gazette-123",
     isOpen: true,
-    onClose: () =>{  console.log("close"); },
+    onClose: () => {
+      console.log("close")
+    },
     siteId: 1,
   },
   component: ViewGazetteModal,

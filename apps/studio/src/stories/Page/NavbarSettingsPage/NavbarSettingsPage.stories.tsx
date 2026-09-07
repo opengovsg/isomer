@@ -60,7 +60,9 @@ export const CustomiseTab: Story = {
       handlers: [...BASE_HANDLERS, sitesHandlers.getNavbar.default()],
     },
   },
-  play:  async ({ canvasElement }) => goToCustomiseTab(canvasElement),
+  play: async ({ canvasElement }) => {
+    await goToCustomiseTab(canvasElement)
+  },
 }
 
 export const CustomiseTabWithCTAEnabled: Story = {
@@ -69,7 +71,9 @@ export const CustomiseTabWithCTAEnabled: Story = {
       handlers: [...BASE_HANDLERS, sitesHandlers.getNavbar.withCTA()],
     },
   },
-  play:  async ({ canvasElement }) => goToCustomiseTab(canvasElement),
+  play: async ({ canvasElement }) => {
+    await goToCustomiseTab(canvasElement)
+  },
 }
 
 export const CustomiseTabWithUtilityLinksEnabled: Story = {
@@ -78,5 +82,7 @@ export const CustomiseTabWithUtilityLinksEnabled: Story = {
       handlers: [...BASE_HANDLERS, sitesHandlers.getNavbar.withUtilityLinks()],
     },
   },
-  play:  async ({ canvasElement }) => goToCustomiseTab(canvasElement),
+  play: async ({ canvasElement }) => {
+    await goToCustomiseTab(canvasElement)
+  },
 }

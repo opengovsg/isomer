@@ -1,5 +1,5 @@
-import type { FallbackProps } from "react-error-boundary"
 import type { TRPC_ERROR_CODE_KEY } from "@trpc/server/rpc"
+import type { FallbackProps } from "react-error-boundary"
 import { useRouter } from "next/router"
 import { trpc } from "~/utils/trpc"
 
@@ -20,7 +20,7 @@ const UnauthorizedError = ({
   return <FullscreenSpinner />
 }
 
-// TODO: Make custom components for these
+// Deferred: Make custom components for these
 export const DefaultTrpcError = ({
   code,
   resetErrorBoundary,
@@ -34,7 +34,7 @@ export const DefaultTrpcError = ({
     }
 
     case "UNAUTHORIZED": {
-      // TODO: add the default error boundary for perms here
+      // Deferred: add the default error boundary for perms here
       return <UnauthorizedError resetErrorBoundary={resetErrorBoundary} />
     }
 

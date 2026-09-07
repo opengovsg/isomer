@@ -65,11 +65,8 @@ export const SchedulePublishDetails = () => {
                 {...field}
                 size="sm"
                 shouldSetDateOnTodayButtonClick={true}
-                isDateUnavailable={(date) => 
-                  isBefore(
-                    startOfDay(date),
-                    startOfDay(earliestSchedule),
-                  )
+                isDateUnavailable={(date) =>
+                  isBefore(startOfDay(date), startOfDay(earliestSchedule))
                 }
               />
             )}

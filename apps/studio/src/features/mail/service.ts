@@ -43,7 +43,9 @@ async function sendEmailWithTemplate({
 
   // Drop malformed cc addresses rather than failing the send for everyone
   const validCc = data.cc?.filter((email) => {
-    if (isValidEmail(email)) {return true}
+    if (isValidEmail(email)) {
+      return true
+    }
     logger.error({
       email,
       error: "Invalid cc email format",

@@ -51,7 +51,7 @@ export const SelectPageLayout: Story = {
     await userEvent.click(button)
 
     const menuItem = await rootScreen.findByRole("menuitem", {
-      name: /page/i,
+      name: /page/iu,
     })
     await userEvent.click(menuItem)
   },
@@ -90,7 +90,7 @@ export const EnterPageDetails: Story = {
     })
     await userEvent.click(button)
 
-    const input = await screen.findByLabelText(/page title/i)
+    const input = await screen.findByLabelText(/page title/iu)
     await userEvent.type(input, "My_new page WITH w@eird characters!")
   },
 }

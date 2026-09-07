@@ -8,8 +8,10 @@ export const TiptapTextEditor = ({
 }: {
   editor: ReturnType<typeof useTextEditor>
 }) => {
-  // TODO: Add a loading state or use suspense
-  if (!editor) {return null}
+  // Deferred: Add a loading state or use suspense
+  if (!editor) {
+    return null
+  }
 
   return <Editor menubar={TextMenuBar} editor={editor} />
 }

@@ -37,7 +37,9 @@ vi.mock("next/router", () => ({
     events: {
       off: (_event: string, handler: () => void) => {
         const index = routeChangeStartHandlers.indexOf(handler)
-        if (index !== -1) routeChangeStartHandlers.splice(index, 1)
+        if (index !== -1) {
+          routeChangeStartHandlers.splice(index, 1)
+        }
       },
       on: (_event: string, handler: () => void) => {
         routeChangeStartHandlers.push(handler)
@@ -106,7 +108,9 @@ describe("useFireContentEditSurveyEvent", () => {
     })
 
     // Act
-    act(() =>{  result.current(PUBLISHED_AFTER_EDITING_EVENT); })
+    act(() => {
+      result.current(PUBLISHED_AFTER_EDITING_EVENT)
+    })
 
     // Assert
     expect(trackEventMock).not.toHaveBeenCalled()
@@ -122,7 +126,9 @@ describe("useFireContentEditSurveyEvent", () => {
     })
 
     // Act
-    act(() =>{  result.current(PUBLISHED_AFTER_EDITING_EVENT); })
+    act(() => {
+      result.current(PUBLISHED_AFTER_EDITING_EVENT)
+    })
 
     // Assert
     expect(trackEventMock).toHaveBeenCalledTimes(1)
@@ -137,10 +143,14 @@ describe("useFireContentEditSurveyEvent", () => {
     const { result } = renderHook(() => useFireContentEditSurveyEvent(), {
       wrapper: jotaiWrapper(store),
     })
-    act(() =>{  result.current(PUBLISHED_AFTER_EDITING_EVENT); })
+    act(() => {
+      result.current(PUBLISHED_AFTER_EDITING_EVENT)
+    })
 
     // Act
-    act(() =>{  result.current(PUBLISHED_AFTER_EDITING_EVENT); })
+    act(() => {
+      result.current(PUBLISHED_AFTER_EDITING_EVENT)
+    })
 
     // Assert
     expect(trackEventMock).toHaveBeenCalledTimes(1)
@@ -156,7 +166,9 @@ describe("useFireContentEditSurveyEvent", () => {
     })
 
     // Act
-    act(() =>{  result.current(PUBLISHED_AFTER_EDITING_EVENT); })
+    act(() => {
+      result.current(PUBLISHED_AFTER_EDITING_EVENT)
+    })
 
     // Assert
     expect(trackEventMock).not.toHaveBeenCalled()
@@ -173,12 +185,12 @@ describe("useContentEditTracker", () => {
     // Act
     // setPreviewPageState uses flushSync internally, so state changes must be
     // wrapped in act() to flush the resulting effects deterministically
-    act(() =>{ 
+    act(() => {
       drawerContextRef.current!.setPreviewPageState((previous) => ({
         ...previous,
         content: [...previous.content, { content: [], type: "prose" }],
-      })); },
-    )
+      }))
+    })
 
     // Assert
     expect(store.get(hasContentEditAtom)).toBe(true)
@@ -190,12 +202,12 @@ describe("useContentEditTracker", () => {
     renderTracker(store)
 
     // Act
-    act(() =>{ 
+    act(() => {
       drawerContextRef.current!.setPreviewPageState((previous) => ({
         ...previous,
         content: [...previous.content],
-      })); },
-    )
+      }))
+    })
 
     // Assert
     expect(store.get(hasContentEditAtom)).toBe(false)
@@ -205,17 +217,17 @@ describe("useContentEditTracker", () => {
     // Arrange
     const store = createStore()
     renderTracker(store)
-    act(() =>{ 
-      drawerContextRef.current!.setDrawerState({ state: "rawJsonEditor" }); },
-    )
+    act(() => {
+      drawerContextRef.current!.setDrawerState({ state: "rawJsonEditor" })
+    })
 
     // Act
-    act(() =>{ 
+    act(() => {
       drawerContextRef.current!.setPreviewPageState((previous) => ({
         ...previous,
         content: [...previous.content, { content: [], type: "prose" }],
-      })); },
-    )
+      }))
+    })
 
     // Assert
     expect(store.get(hasContentEditAtom)).toBe(false)
@@ -223,7 +235,9 @@ describe("useContentEditTracker", () => {
     // Act: leaving raw JSON mode must not retroactively arm the flag
     // (docs/adr/0003-editing-survey-measuring-points.md) — pins that the
     // baseline ref is advanced before the rawJsonEditor guard
-    act(() =>{  drawerContextRef.current!.setDrawerState({ state: "root" }); })
+    act(() => {
+      drawerContextRef.current!.setDrawerState({ state: "root" })
+    })
 
     // Assert
     expect(store.get(hasContentEditAtom)).toBe(false)
@@ -238,31 +252,35 @@ describe("useContentEditTracker", () => {
     })
 
     // Act: first burst — diverge content, then fire
-    act(() =>{ 
+    act(() => {
       drawerContextRef.current!.setPreviewPageState((previous) => ({
         ...previous,
         content: [...previous.content, { content: [], type: "prose" }],
-      })); },
-    )
-    act(() =>{  result.current(PUBLISHED_AFTER_EDITING_EVENT); })
+      }))
+    })
+    act(() => {
+      result.current(PUBLISHED_AFTER_EDITING_EVENT)
+    })
 
     // Assert
     expect(trackEventMock).toHaveBeenCalledTimes(1)
     expect(store.get(hasContentEditAtom)).toBe(false)
 
     // Act: second burst — a fresh divergence
-    act(() =>{ 
+    act(() => {
       drawerContextRef.current!.setPreviewPageState((previous) => ({
         ...previous,
         content: [...previous.content, { content: [], type: "prose" }],
-      })); },
-    )
+      }))
+    })
 
     // Assert: the consumed flag is re-armed
     expect(store.get(hasContentEditAtom)).toBe(true)
 
     // Act: fire the second burst
-    act(() =>{  result.current(PUBLISHED_AFTER_EDITING_EVENT); })
+    act(() => {
+      result.current(PUBLISHED_AFTER_EDITING_EVENT)
+    })
 
     // Assert
     expect(trackEventMock).toHaveBeenCalledTimes(2)
@@ -274,12 +292,21 @@ describe("useLeftEditorSurveyTracker", () => {
     // Arrange
     const store = createStore()
     store.set(hasContentEditAtom, true)
-    renderHook(() =>{  useLeftEditorSurveyTracker(); }, {
-      wrapper: jotaiWrapper(store),
-    })
+    renderHook(
+      () => {
+        useLeftEditorSurveyTracker()
+      },
+      {
+        wrapper: jotaiWrapper(store),
+      },
+    )
 
     // Act
-    act(() =>{  routeChangeStartHandlers.forEach((handler) => handler()); })
+    act(() => {
+      routeChangeStartHandlers.forEach((handler) => {
+        handler()
+      })
+    })
 
     // Assert
     expect(trackEventMock).toHaveBeenCalledTimes(1)
@@ -290,9 +317,14 @@ describe("useLeftEditorSurveyTracker", () => {
   it("unsubscribes from route changes on unmount", () => {
     // Arrange
     const store = createStore()
-    const { unmount } = renderHook(() =>{  useLeftEditorSurveyTracker(); }, {
-      wrapper: jotaiWrapper(store),
-    })
+    const { unmount } = renderHook(
+      () => {
+        useLeftEditorSurveyTracker()
+      },
+      {
+        wrapper: jotaiWrapper(store),
+      },
+    )
 
     // Act
     unmount()

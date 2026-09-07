@@ -45,19 +45,24 @@ export const useResourceStack = ({
       : (pendingMovedItemAncestryStack ?? []),
   )
 
-  useEffect(() => 
-    () =>{  setResourceStack([]); }
-  , [])
+  useEffect(
+    () => () => {
+      setResourceStack([])
+    },
+    [],
+  )
 
   const [isResourceHighlighted, setIsResourceHighlighted] =
     useState<boolean>(!!selectedResourceId)
 
   const moveDest = useMemo(
-    () => resourceStack.at(-1), // last item in stack
+    () => resourceStack.at(-1),
+    // last item in stack
     [resourceStack],
   )
   const parentDest = useMemo(
-    () => resourceStack.at(-2), // second last item in stack
+    () => resourceStack.at(-2),
+    // second last item in stack
     [resourceStack],
   )
 
@@ -73,9 +78,10 @@ export const useResourceStack = ({
     [],
   )
 
-  const fullPermalink = useMemo(() => 
-    resourceStack.map((resource) => resource.permalink).join("/")
-  , [resourceStack])
+  const fullPermalink = useMemo(
+    () => resourceStack.map((resource) => resource.permalink).join("/"),
+    [resourceStack],
+  )
 
   const moveDestPermalink = useMemo(() => {
     const resourcesForPath = [...resourceStack]

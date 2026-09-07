@@ -73,7 +73,7 @@ export function useDeleteRedirect() {
 export function useBulkValidateRedirects(siteId: number) {
   const { mutateAsync } = trpc.redirect.bulkValidate.useMutation()
   return {
-    validate:  async (csv: string) => mutateAsync({ csv, siteId }),
+    validate: async (csv: string) => await mutateAsync({ csv, siteId }),
   }
 }
 
@@ -84,7 +84,9 @@ export function useBulkCreateRedirects() {
   const utils = trpc.useUtils()
   const { mutateAsync, isPending } = trpc.redirect.bulkCreate.useMutation({
     onSuccess: (result) => {
-      if (result.ok) {void utils.redirect.invalidate()}
+      if (result.ok) {
+        void utils.redirect.invalidate()
+      }
     },
   })
   return { isPending, mutateAsync }

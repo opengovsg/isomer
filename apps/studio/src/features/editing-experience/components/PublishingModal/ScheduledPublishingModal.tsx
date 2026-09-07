@@ -63,8 +63,12 @@ export const ScheduledPublishingModal = ({
       const valid = schedulePublishClientSchema.safeParse(methods.getValues())
       setIsScheduledPublishValid(valid.success)
     }
-    const subscription = methods.watch(() =>{  validateForm(); })
-    return () =>{  subscription.unsubscribe(); }
+    const subscription = methods.watch(() => {
+      validateForm()
+    })
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [methods])
 
   const { mutate: schedulePageMutation, isPending: isScheduling } =
@@ -94,8 +98,9 @@ export const ScheduledPublishingModal = ({
     <Modal onClose={onClose} {...rest}>
       <form
         onSubmit={methods.handleSubmit(
-          (res: z.output<typeof schedulePublishClientSchema>) =>{ 
-            schedulePageMutation(res); },
+          (res: z.output<typeof schedulePublishClientSchema>) => {
+            schedulePageMutation(res)
+          },
         )}
       >
         <ModalOverlay />

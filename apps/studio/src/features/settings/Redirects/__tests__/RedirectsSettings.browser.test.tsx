@@ -119,7 +119,7 @@ describe("RedirectsSettings", () => {
     // layout, hence Browser Mode.
     const rowHeightsFor = (role: RoleType) => {
       const { unmount } = renderAs(role)
-      const heights = [...document.querySelectorAll('tbody tr')].map(
+      const heights = [...document.querySelectorAll("tbody tr")].map(
         (row) => row.getBoundingClientRect().height,
       )
       unmount()

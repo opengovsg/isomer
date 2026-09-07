@@ -33,7 +33,7 @@ export const getLinkHrefType = (href: string | undefined): LinkTypes => {
     // Relative path or invalid URL
   }
   if (!isFullUrl) {
-    const fileLinkMatch = /^\/(\d+)\/[0-9a-fA-F-]{36}\//.exec(href)
+    const fileLinkMatch = /^\/(\d+)\/[0-9a-fA-F-]{36}\//u.exec(href)
     if (fileLinkMatch?.length === 2) {
       return LINK_TYPES.File
     }

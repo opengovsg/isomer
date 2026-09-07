@@ -64,7 +64,7 @@ export const EditFixedBlockState: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const button = await canvas.findByRole("button", {
-      name: /Header/i,
+      name: /Header/iu,
     })
     await userEvent.click(button)
   },
@@ -80,7 +80,7 @@ export const SaveToast: Story = {
     await userEvent.type(textbox, "very cool summary")
 
     const saveButton = await canvas.findByRole("button", {
-      name: /Save changes/i,
+      name: /Save changes/iu,
     })
     await userEvent.click(saveButton)
   },
@@ -115,7 +115,7 @@ export const EditChildBlockState: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const button = await canvas.findByRole("button", {
-      name: /Child pages/i,
+      name: /Child pages/iu,
     })
     await userEvent.click(button)
   },
@@ -136,7 +136,7 @@ export const ReorderSiderailState: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const button = await canvas.findByRole("button", {
-      name: /Reorder siderail for this folder/i,
+      name: /Reorder siderail for this folder/iu,
     })
     await userEvent.click(button)
 
@@ -160,13 +160,13 @@ export const EditInfocardsLinkState: Story = {
 
     // Click on the infocards block
     const infocardsBlock = await canvas.findByRole("button", {
-      name: /Info cards block/i,
+      name: /Info cards block/iu,
     })
     await userEvent.click(infocardsBlock)
 
     // Click on the first card item
     const firstCard = await canvas.findByRole("button", {
-      name: /First card/i,
+      name: /First card/iu,
     })
     await userEvent.click(firstCard)
 
@@ -176,13 +176,13 @@ export const EditInfocardsLinkState: Story = {
     }
 
     const deleteButton = await canvas.findByRole("button", {
-      name: /Remove file/i,
+      name: /Remove file/iu,
     })
     await userEvent.click(deleteButton)
 
     // Click on the "Link something..." button to open the modal
     const linkButton = await canvas.findByRole("button", {
-      name: /Link something/i,
+      name: /Link something/iu,
     })
     await userEvent.click(linkButton)
 
@@ -192,7 +192,7 @@ export const EditInfocardsLinkState: Story = {
     await userEvent.click(page)
 
     const addLinkButton = await body.findByRole("button", {
-      name: /Add link/i,
+      name: /Add link/iu,
     })
     await userEvent.click(addLinkButton)
   },
@@ -201,7 +201,7 @@ export const EditInfocardsLinkState: Story = {
 export const AddBlockWithChildrenPagesDisabled: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const button = await canvas.findByRole("button", { name: /add block/i })
+    const button = await canvas.findByRole("button", { name: /add block/iu })
     await userEvent.click(button)
   },
 }
@@ -217,7 +217,7 @@ export const AddBlockWithChildrenPagesEnabled: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const button = await canvas.findByRole("button", { name: /add block/i })
+    const button = await canvas.findByRole("button", { name: /add block/iu })
     await userEvent.click(button)
   },
 }

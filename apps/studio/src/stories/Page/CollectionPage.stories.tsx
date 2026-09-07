@@ -128,7 +128,7 @@ export const LinkSettings: Story = {
 export const ExpandedProfileDropdown: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    const testUserSelector = await screen.findByText(/TU/i)
+    const testUserSelector = await screen.findByText(/TU/iu)
     const testUserSelectorButton = testUserSelector.closest("button")
     if (testUserSelectorButton) {
       await userEvent.click(testUserSelectorButton)

@@ -9,8 +9,8 @@ import Cursor from "pg-cursor"
 import { parse } from "superjson"
 import { PrismaClient } from "~prisma/generated/prisma/client"
 
-import { Kysely } from '@isomer/db';
-import type { DB } from '@isomer/db';
+import type { DB } from "@isomer/db"
+import { Kysely } from "@isomer/db"
 
 import { CONTAINER_INFORMATION_SCHEMA } from "../common"
 

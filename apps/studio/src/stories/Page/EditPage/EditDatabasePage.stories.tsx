@@ -56,7 +56,7 @@ export const EditFixedBlockHeader: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const button = await canvas.findByRole("button", {
-      name: /Page header/i,
+      name: /Page header/iu,
     })
     await userEvent.click(button)
   },
@@ -66,7 +66,7 @@ export const EditFixedBlockDatabase: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const button = await canvas.findByRole("button", {
-      name: /Database/i,
+      name: /Database/iu,
     })
     await userEvent.click(button)
   },
@@ -77,10 +77,10 @@ export const DatabaseModal: Story = {
     await EditFixedBlockDatabase.play?.({ canvasElement, ...rest })
     const screen = within(canvasElement.ownerDocument.body)
 
-    const editButton = await screen.findByRole("button", { name: /edit/i })
+    const editButton = await screen.findByRole("button", { name: /edit/iu })
     await userEvent.click(editButton)
 
-    await waitFor( async () => screen.findByText(/Valid CSV dataset/), {
+    await waitFor(async () => await screen.findByText(/Valid CSV dataset/u), {
       timeout: 3000,
     })
   },
@@ -91,7 +91,11 @@ export const DatabaseModalEmptyString: Story = {
     await DatabaseModal.play?.({ canvasElement, ...rest })
     const screen = within(canvasElement.ownerDocument.body)
 
-    const input = [...canvasElement.ownerDocument.querySelectorAll('input[name="datasetId"][required]')][0]
+    const input = [
+      ...canvasElement.ownerDocument.querySelectorAll(
+        'input[name="datasetId"][required]',
+      ),
+    ][0]
     if (input) {
       await waitFor(
         async () => {
@@ -102,9 +106,12 @@ export const DatabaseModalEmptyString: Story = {
       await userEvent.clear(input)
     }
 
-    await waitFor( async () => screen.findByText("Dataset URL is required"), {
-      timeout: 3000,
-    })
+    await waitFor(
+      async () => await screen.findByText("Dataset URL is required"),
+      {
+        timeout: 3000,
+      },
+    )
   },
 }
 
@@ -116,10 +123,11 @@ export const DatabaseModalInvalidDatasetUrl: Story = {
     const input = await screen.findByPlaceholderText("Paste dataset URL here")
     await userEvent.type(input, "https://studio.isomer.gov.sg/")
 
-    await waitFor( async () =>
-      screen.findByText(
-        "This doesn't look like a valid link from data.gov.sg. Check that you have the correct link and try again.",
-      ),
+    await waitFor(
+      async () =>
+        await screen.findByText(
+          "This doesn't look like a valid link from data.gov.sg. Check that you have the correct link and try again.",
+        ),
     )
   },
 }
@@ -135,7 +143,7 @@ export const DatabaseModalValidSearchUrl: Story = {
       "https://data.gov.sg/datasets?sort=downloadsCount&resultId=d_11e68bba3b3c76733475a72d09759eeb&page=1",
     )
 
-    await waitFor( async () => screen.findByText(/Valid CSV dataset/), {
+    await waitFor(async () => await screen.findByText(/Valid CSV dataset/u), {
       timeout: 3000,
     })
   },
@@ -149,7 +157,7 @@ export const DatabaseModalValidDatasetId: Story = {
     const input = await screen.findByPlaceholderText("Paste dataset URL here")
     await userEvent.type(input, "d_3c55210de27fcccda2ed0c63fdd2b352")
 
-    await waitFor( async () => screen.findByText(/Valid CSV dataset/), {
+    await waitFor(async () => await screen.findByText(/Valid CSV dataset/u), {
       timeout: 3000,
     })
   },
@@ -180,15 +188,15 @@ export const DatabaseModalLargeDataset: Story = {
     await EditFixedBlockDatabase.play?.({ canvasElement, ...rest })
     const screen = within(canvasElement.ownerDocument.body)
 
-    const editButton = await screen.findByRole("button", { name: /edit/i })
+    const editButton = await screen.findByRole("button", { name: /edit/iu })
     await userEvent.click(editButton)
 
     const input = await screen.findByPlaceholderText("Paste dataset URL here")
     await userEvent.type(input, "d_3c55210de27fcccda2ed0c63fdd2b352")
 
     await waitFor(
-       async () =>
-        screen.findByText(
+      async () =>
+        await screen.findByText(
           "This dataset exceeds the 4MB size limit and cannot be used. Please use a smaller dataset.",
         ),
       { timeout: 3000 },
@@ -208,8 +216,8 @@ export const DatabaseModalNonCsvDataset: Story = {
     )
 
     await waitFor(
-       async () =>
-        screen.findByText(
+      async () =>
+        await screen.findByText(
           "You can only link CSV datasets. Please check the dataset ID and try again.",
         ),
       { timeout: 3000 },

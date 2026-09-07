@@ -1,10 +1,10 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
+import type { Transaction, DB } from "~/server/modules/database/types"
 import { mkdtempSync, readFileSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { ResourceState } from '~/server/modules/database/types';
-import type { Transaction, DB } from '~/server/modules/database/types';
+import { ResourceState } from "~/server/modules/database/types"
 
 import type { ConversionPlan } from "./helpers"
 import {
@@ -33,19 +33,15 @@ interface TestBlobFixture {
   }[]
 }
 
-const asTestIsomerSchema = (blob: TestBlobFixture): IsomerSchema => 
+const asTestIsomerSchema = (blob: TestBlobFixture): IsomerSchema =>
   // SAFETY: fixture matches conversion-plan blob layout shapes under test.
   blob as IsomerSchema
 
-
 type GetBlobDb = Parameters<typeof getBlobOfResource>[0]["db"]
 
-const asGetBlobDb = (db: {
-  selectFrom: ReturnType<typeof vi.fn>
-}): GetBlobDb => 
+const asGetBlobDb = (db: { selectFrom: ReturnType<typeof vi.fn> }): GetBlobDb =>
   // SAFETY: test double implements only the selectFrom chain used by getBlobOfResource.
   db as GetBlobDb
-
 
 interface TransactionTestDouble {
   selectFrom: ReturnType<typeof vi.fn>
@@ -211,7 +207,9 @@ describe("plan file I/O", () => {
   let tempDir: string
 
   afterEach(() => {
-    if (tempDir) {rmSync(tempDir, { recursive: true, force: true })}
+    if (tempDir) {
+      rmSync(tempDir, { recursive: true, force: true })
+    }
   })
 
   it("round-trips a conversion plan through write and load helpers", () => {
@@ -382,7 +380,7 @@ describe("updateBlobById", () => {
     // Act
     const result = await updateBlobById(tx, {
       content: nextContent,
-      pageId: 159536,
+      pageId: 159_536,
       siteId: 1,
     })
 
@@ -413,7 +411,7 @@ describe("updateBlobById", () => {
     // Act
     const result = await updateBlobById(tx, {
       content: nextContent,
-      pageId: 159536,
+      pageId: 159_536,
       siteId: 1,
     })
 

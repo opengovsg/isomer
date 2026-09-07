@@ -37,19 +37,17 @@ export const CreateGazetteModal = ({
   onClose,
   siteId,
   collectionId,
-}: CreateGazetteModalProps): React.ReactNode => 
-  (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <ModalOverlay />
-      <CreateGazetteModalContent
-        key={String(isOpen)}
-        onClose={onClose}
-        siteId={siteId}
-        collectionId={collectionId}
-      />
-    </Modal>
-  )
-
+}: CreateGazetteModalProps): React.ReactNode => (
+  <Modal isOpen={isOpen} onClose={onClose}>
+    <ModalOverlay />
+    <CreateGazetteModalContent
+      key={String(isOpen)}
+      onClose={onClose}
+      siteId={siteId}
+      collectionId={collectionId}
+    />
+  </Modal>
+)
 
 const CreateGazetteModalContent = ({
   onClose,

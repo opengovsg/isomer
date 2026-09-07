@@ -64,14 +64,14 @@ const PageSettings: NextPageWithLayout = () => {
   const { mutate: updateMeta } = trpc.page.updateMeta.useMutation({
     onError: (error) => {
       toast({
-        title: "Failed to save page metadata",
         description: error.message,
         status: "error",
+        title: "Failed to save page metadata",
       })
       reset()
     },
     onSuccess: async () => {
-      // TODO: we should use a specialised query for this rather than the general one that retrives the page and the blob
+      // Deferred: we should use a specialised query for this rather than the general one that retrives the page and the blob
       await utils.page.invalidate()
       await utils.resource.invalidate()
       await utils.folder.invalidate()
@@ -79,10 +79,10 @@ const PageSettings: NextPageWithLayout = () => {
         toast.close(SUCCESS_TOAST_ID)
       }
       toast({
-        id: SUCCESS_TOAST_ID,
-        title: "Saved page metadata",
         description: "Publish this page for your changes to go live.",
+        id: SUCCESS_TOAST_ID,
         status: "success",
+        title: "Saved page metadata",
       })
     },
   })
@@ -96,7 +96,9 @@ const PageSettings: NextPageWithLayout = () => {
           siteId,
         },
         {
-          onSuccess: () =>{  reset({ meta, ...rest }); },
+          onSuccess: () => {
+            reset({ meta, ...rest })
+          },
         },
       )
     }
@@ -150,13 +152,11 @@ const PageSettings: NextPageWithLayout = () => {
   )
 }
 
-PageSettings.getLayout = (page) => 
-  (
-    <PermissionsBoundary
-      resourceType={ResourceType.Page}
-      page={PageEditingLayout(page)}
-    />
-  )
-
+PageSettings.getLayout = (page) => (
+  <PermissionsBoundary
+    resourceType={ResourceType.Page}
+    page={PageEditingLayout(page)}
+  />
+)
 
 export default PageSettings

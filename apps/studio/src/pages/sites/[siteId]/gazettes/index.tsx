@@ -1,3 +1,4 @@
+import type { NextPageWithLayout } from "~/lib/types"
 import { Center, Text, useDisclosure, Link, VStack } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { useRouter } from "next/router"
@@ -18,7 +19,6 @@ import { useMe } from "~/features/me/api/useMe"
 import { useEgazetteInfo } from "~/hooks/useEgazetteInfo"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import type { NextPageWithLayout } from "~/lib/types"
 import { SiteMinimalLayout } from "~/templates/layouts/SiteMinimalLayout"
 import { IsomerAdminRole, ResourceType } from "~prisma/generated/generatedEnums"
 
@@ -121,13 +121,11 @@ const GazettesPage: NextPageWithLayout = () => {
   )
 }
 
-GazettesPage.getLayout = (page) => 
-  (
-    <PermissionsBoundary
-      resourceType={ResourceType.Collection}
-      page={SiteMinimalLayout(page)}
-    />
-  )
-
+GazettesPage.getLayout = (page) => (
+  <PermissionsBoundary
+    resourceType={ResourceType.Collection}
+    page={SiteMinimalLayout(page)}
+  />
+)
 
 export default GazettesPage

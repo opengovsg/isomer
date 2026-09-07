@@ -1,18 +1,18 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
 import { DEFAULT_CHILDREN_PAGES_BLOCK } from "@opengovsg/isomer-components"
 
-// TODO: add in default blocks for remaining
+// Deferred: add in default blocks for remaining
 export const DEFAULT_BLOCKS = {
   prose: {
     content: [
       {
-        type: "paragraph",
         content: [
           {
-            type: "text",
             text: "",
+            type: "text",
           },
         ],
+        type: "paragraph",
       },
     ],
     type: "prose",
@@ -42,13 +42,13 @@ export const DEFAULT_BLOCKS = {
     content: {
       content: [
         {
-          type: "paragraph",
           content: [
             {
-              type: "text",
               text: "We’re closing applications for this position on Thursday, July 3rd. Make sure to apply by then.",
+              type: "text",
             },
           ],
+          type: "paragraph",
         },
       ],
       type: "prose",
@@ -81,25 +81,25 @@ export const DEFAULT_BLOCKS = {
   infocards: {
     cards: [
       {
+        imageAlt: "Enter a descriptive alt text.",
+        imageFit: "cover",
+        imageUrl: "/placeholder_no_image.png",
         title: "Enter a title for your first card.",
         url: "https://www.google.com",
-        imageUrl: "/placeholder_no_image.png",
-        imageAlt: "Enter a descriptive alt text.",
-        imageFit: "cover",
       },
       {
+        imageAlt: "Enter a descriptive alt text.",
+        imageFit: "cover",
+        imageUrl: "/placeholder_no_image.png",
         title: "Enter a title for your second card.",
         url: "https://www.google.com",
-        imageUrl: "/placeholder_no_image.png",
-        imageAlt: "Enter a descriptive alt text.",
-        imageFit: "cover",
       },
       {
-        title: "Enter a title for your third card.",
-        url: "https://www.google.com",
-        imageUrl: "/placeholder_no_image.png",
         imageAlt: "Enter a descriptive alt text.",
         imageFit: "cover",
+        imageUrl: "/placeholder_no_image.png",
+        title: "Enter a title for your third card.",
+        url: "https://www.google.com",
       },
     ],
     maxColumns: "3",
@@ -111,19 +111,19 @@ export const DEFAULT_BLOCKS = {
   infocols: {
     infoBoxes: [
       {
-        title: "Enter a title for your first column.",
         description: "Elaborate on the title.",
         icon: "office-building",
+        title: "Enter a title for your first column.",
       },
       {
-        title: "Enter a title for your second column.",
         description: "Elaborate on the title.",
         icon: "stars",
+        title: "Enter a title for your second column.",
       },
       {
-        title: "Enter a title for your third column.",
         description: "Elaborate on the title.",
         icon: "globe",
+        title: "Enter a title for your third column.",
       },
     ],
     subtitle: "Elaborate on the title.",
@@ -141,13 +141,13 @@ export const DEFAULT_BLOCKS = {
     content: {
       content: [
         {
-          type: "paragraph",
           content: [
             {
               text: "Enter content to place beside the image.",
               type: "text",
             },
           ],
+          type: "paragraph",
         },
       ],
       type: "prose",
@@ -194,39 +194,39 @@ export const DEFAULT_BLOCKS = {
     type: "video",
     url: "https://www.youtube.com/embed/GzQiJ091g7Q?si=GePcnmUmvmGk77fz",
   },
-  // TODO: Replace with actual working API endpoint
+  // Deferred: Replace with actual working API endpoint
   dynamicdatabanner: {
     apiEndpoint: "https://jsonplaceholder.com/muis_prayers_time",
     data: [
       {
-        label: "Subuh",
         key: "subuh",
+        label: "Subuh",
       },
       {
-        label: "Syuruk",
         key: "syuruk",
+        label: "Syuruk",
       },
       {
-        label: "Zohor",
         key: "zohor",
+        label: "Zohor",
       },
       {
-        label: "Asar",
         key: "asar",
+        label: "Asar",
       },
       {
-        label: "Maghrib",
         key: "maghrib",
+        label: "Maghrib",
       },
       {
-        label: "Ishak",
         key: "isyak",
+        label: "Ishak",
       },
     ],
     errorMessage: [
       {
-        type: "text",
         text: "Oops! Having trouble loading the data. Try refreshing — that usually does the trick!",
+        type: "text",
       },
     ],
     label: "View all dates",
@@ -240,16 +240,16 @@ export const DEFAULT_BLOCKS = {
   logocloud: {
     images: [
       {
-        src: "/placeholder_no_image.png",
         alt: "Enter a descriptive alt text.",
+        src: "/placeholder_no_image.png",
       },
       {
-        src: "/placeholder_no_image.png",
         alt: "Enter a descriptive alt text.",
+        src: "/placeholder_no_image.png",
       },
       {
-        src: "/placeholder_no_image.png",
         alt: "Enter a descriptive alt text.",
+        src: "/placeholder_no_image.png",
       },
     ],
     title: "Our partners",
@@ -257,7 +257,8 @@ export const DEFAULT_BLOCKS = {
   },
   collectionblock: {
     buttonLabel: "Read all latest news",
-    collectionReferenceLink: "", // TODO: placeholder for now as we cannot select a collection beforehand but it's required by the schema
+    collectionReferenceLink: "",
+    // Deferred: placeholder for now as we cannot select a collection beforehand but it's required by the schema
     displayCategory: true,
     displayThumbnail: true,
     type: "collectionblock",
@@ -265,19 +266,19 @@ export const DEFAULT_BLOCKS = {
   imagegallery: {
     images: [
       {
+        alt: "Enter a descriptive alt text.",
         caption: "Enter a caption to describe the image or attribute it.",
         src: "/placeholder_no_image.png",
-        alt: "Enter a descriptive alt text.",
       },
       {
+        alt: "Enter a descriptive alt text.",
         caption: "Enter a caption to describe the image or attribute it.",
         src: "/placeholder_no_image.png",
-        alt: "Enter a descriptive alt text.",
       },
       {
+        alt: "Enter a descriptive alt text.",
         caption: "Enter a caption to describe the image or attribute it.",
         src: "/placeholder_no_image.png",
-        alt: "Enter a descriptive alt text.",
       },
     ],
     type: "imagegallery",
@@ -285,8 +286,8 @@ export const DEFAULT_BLOCKS = {
   contactinformation: {
     methods: [
       {
-        method: "email",
         label: "Email",
+        method: "email",
         values: ["contact@example.com"],
       },
     ],
@@ -388,7 +389,7 @@ export const BLOCK_TO_META = {
     label: "Map",
     usageText: "Direct people to your office or an event location.",
   },
-  // TODO: Add image source (skipped because component not available on studio yet)
+  // Deferred: Add image source (skipped because component not available on studio yet)
   audio: {
     description: "Embed an audio from Spotify or Apple Podcast.",
     imageSrc: "/assets/block-images/Podcast.png",
@@ -457,7 +458,7 @@ export const BLOCK_TO_META = {
     label: "Dynamic component list",
     description: "Display a list of dynamic components.",
     usageText: "Showcase a list of dynamic components.",
-    // TODO: Add imageSrc
+    // Deferred: Add imageSrc
   },
   formsg: {
     description: "Embed a form to collect data.",

@@ -51,7 +51,9 @@ const JsonFormsBooleanControl = ({
             id={id}
             isDisabled={!enabled}
             isChecked={!!data}
-            onChange={(e) =>{  handleChange(path, e.target.checked); }}
+            onChange={(e) => {
+              handleChange(path, e.target.checked)
+            }}
           />
           <FormErrorMessage>{getCustomErrorMessage(errors)}</FormErrorMessage>
         </Flex>

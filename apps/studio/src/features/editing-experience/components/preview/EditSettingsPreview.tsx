@@ -55,32 +55,30 @@ const SHARED_TAB_STYLES = {
 
 const BUTTON_COLOURS = ["#ff5f56", "#ffbd2e", "#27c93f"]
 
-const WindowButtons = () => 
-  (
-    <Box
-      style={{
-        display: "flex",
-        gap: "8px",
-        paddingRight: "12px",
-        paddingTop: "0.75rem",
-        paddingBottom: "0.75rem",
-        alignItems: "center",
-      }}
-    >
-      {BUTTON_COLOURS.map((color) => (
-        <Box
-          key={color}
-          style={{
-            borderRadius: "50%",
-            background: color,
-            width: "16px",
-            height: "16px",
-          }}
-        />
-      ))}
-    </Box>
-  )
-
+const WindowButtons = () => (
+  <Box
+    style={{
+      alignItems: "center",
+      display: "flex",
+      gap: "8px",
+      paddingBottom: "0.75rem",
+      paddingRight: "12px",
+      paddingTop: "0.75rem",
+    }}
+  >
+    {BUTTON_COLOURS.map((color) => (
+      <Box
+        key={color}
+        style={{
+          background: color,
+          borderRadius: "50%",
+          height: "16px",
+          width: "16px",
+        }}
+      />
+    ))}
+  </Box>
+)
 
 const CHROME_TAB_BASE_STYLE = {
   display: "flex",
@@ -255,7 +253,9 @@ export const EditSettingsPreview = ({
               px="2rem"
               w="full"
               display="flex"
-              onChange={(index) =>{  setTabIndex(index); }}
+              onChange={(index) => {
+                setTabIndex(index)
+              }}
             >
               <TabList w="full" gap={0} textTransform="none">
                 <Tab borderLeftRadius="4px" {...SHARED_TAB_STYLES}>

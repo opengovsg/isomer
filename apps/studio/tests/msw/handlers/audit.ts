@@ -54,7 +54,7 @@ export const auditHandlers = {
     // idempotently (ADR docs/adr/0005).
     pending: () =>
       trpcMsw.audit.createExportRequest.mutation(
-         async () => new Promise(() => {}),
+        async () => await new Promise(() => {}),
       ),
   },
 }

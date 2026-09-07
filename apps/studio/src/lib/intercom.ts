@@ -36,7 +36,9 @@ const triggerSurveyOnce = ({
   userId,
 }: TriggerSurveyOnceProps): void => {
   const key = `intercom_survey_${surveyId}_${userId}_shown`
-  if (localStorage.getItem(key)) {return}
+  if (localStorage.getItem(key)) {
+    return
+  }
 
   if (env.NEXT_PUBLIC_INTERCOM_APP_ID) {
     startSurvey(surveyId)

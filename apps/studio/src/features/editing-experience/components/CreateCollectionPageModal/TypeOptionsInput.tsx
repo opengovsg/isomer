@@ -35,22 +35,22 @@ const TypeOptionRadio = forwardRef<HTMLInputElement, TypeTileProps>(
         case ResourceType.CollectionPage: {
           return {
             TileIcon: getIcon(value),
-            title: "Page",
-            description:
-              "Select this option if you want an empty page where you can place article content.",
             badge: (
               <Badge variant="subtle" colorScheme="success" size="xs">
                 Default
               </Badge>
             ),
+            description:
+              "Select this option if you want an empty page where you can place article content.",
+            title: "Page",
           }
         }
         case ResourceType.CollectionLink: {
           return {
             TileIcon: getIcon(value),
-            title: "Link or file",
             description:
               "Select this option if you want to link to an existing page on your site, link an external page, or upload a PDF file.",
+            title: "Link or file",
           }
         }
       }

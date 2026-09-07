@@ -43,9 +43,7 @@ export const normalizeHex = (color: string): string => {
   }
 
   if (normalizedColor.length === 3) {
-    normalizedColor = [...normalizedColor]
-      .map((char) => char + char)
-      .join("")
+    normalizedColor = [...normalizedColor].map((char) => char + char).join("")
   }
 
   return normalizedColor.padStart(6, "0")
@@ -72,8 +70,7 @@ const normaliseRsRgb = (value: number) => {
   if (value <= 0.03928) {
     return value / 12.92
   }
-    return ((value + 0.055) / 1.055) ** 2.4
-  
+  return ((value + 0.055) / 1.055) ** 2.4
 }
 
 const calculateRelativeLuminance = (color: string) => {
@@ -121,7 +118,9 @@ const generateTheme = ({
     "colors.brand.interaction.pressed": shades[6],
   } as Theme
 
-  if (passesContrastCheck(simpleTheme)) {return simpleTheme}
+  if (passesContrastCheck(simpleTheme)) {
+    return simpleTheme
+  }
 
   // NOTE: This is from light to dark
   const range = [...tints, colour, ...shades]
@@ -153,7 +152,8 @@ const pickColorsFromRange = (
 
   // NOTE: pick `numToPick` colors from here in roughly equal intervals
   const firstPassingIndex = arr.findIndex((passes) => passes)
-  const passableColorsLength = colors.length - firstPassingIndex + 1 // have to include color at `firstPassingIndex` also
+  const passableColorsLength = colors.length - firstPassingIndex + 1
+  // have to include color at `firstPassingIndex` also
   const interval = Math.floor(passableColorsLength / numToPick)
   const selected: string[] = []
 
@@ -174,7 +174,7 @@ export const convertThemeToCss = (theme: IsomerSiteThemeProps) => {
   )
 
   // SAFETY: flattened theme colour tokens map directly to CSS custom properties
-  return Object.entries(flattenedVars).reduce< Record<string, string>>(
+  return Object.entries(flattenedVars).reduce<Record<string, string>>(
     (acc, [key, value]) => {
       acc[`--${key}`] = value
       return acc
@@ -185,7 +185,7 @@ export const convertThemeToCss = (theme: IsomerSiteThemeProps) => {
 
 const PALETTE_SCALES = [0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
 
-const toHexValue = (value: number) => 
+const toHexValue = (value: number) =>
   Math.min(Math.max(Math.round(value), 0), 255)
     .toString(16)
     .padStart(2, "0")
@@ -195,13 +195,10 @@ const rgbToHex = (r: number, g: number, b: number) => {
   return `#${rgb.map(toHexValue).join("")}`
 }
 
-const tint = (value: number, scale: number) => 
+const tint = (value: number, scale: number) =>
   Math.round(value + (255 - value) * scale)
 
-
-const shade = (value: number, scale: number) => 
-  Math.round(value * scale)
-
+const shade = (value: number, scale: number) => Math.round(value * scale)
 
 const generateColorPalette = (r: number, g: number, b: number) => {
   const tints = PALETTE_SCALES.map((scale) => {

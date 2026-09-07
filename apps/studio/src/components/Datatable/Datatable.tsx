@@ -135,16 +135,14 @@ export const Datatable = <T extends RowData>({
                   cursor={onRowClick || isRowLink ? "pointer" : undefined}
                   onClick={() => onRowClick?.(row)}
                 >
-                  {row.getVisibleCells().map((cell) => 
-                    (
-                      <Td key={cell.id} verticalAlign="center">
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </Td>
-                    )
-                  )}
+                  {row.getVisibleCells().map((cell) => (
+                    <Td key={cell.id} verticalAlign="center">
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </Td>
+                  ))}
                 </RowComponent>
               )
             })}

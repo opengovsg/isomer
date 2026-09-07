@@ -124,7 +124,7 @@ export const useComplexEditorStateDrawer = () => {
     if (addedBlockIndex === null) {
       setPreviewPageState(savedPageState)
     } else {
-      const updatedBlocks = Array.from(savedPageState.content)
+      const updatedBlocks = [...savedPageState.content]
       updatedBlocks.splice(addedBlockIndex, 1)
       const newPageState = {
         ...previewPageState,
@@ -184,9 +184,9 @@ export const useComplexEditorStateDrawer = () => {
           const totalUploadsCount = modifiedAssets.length
 
           toast({
-            title: "Error uploading files/images",
             description: `An error occurred while uploading ${failedUploadsCount}/${totalUploadsCount} files/images. Please try again later.`,
             status: "error",
+            title: "Error uploading files/images",
             ...BRIEF_TOAST_SETTINGS,
           })
 
@@ -281,7 +281,9 @@ export const useComplexEditorStateDrawer = () => {
   // prop. Async writes (e.g. uploaded image src, which arrives ~10ms later via
   // JsonForms' debounced onChange) get silently erased before reaching us.
   const { subSchema, validateFn } = useMemo(() => {
-    if (!componentType) {return { subSchema: undefined, validateFn: undefined }}
+    if (!componentType) {
+      return { subSchema: undefined, validateFn: undefined }
+    }
     const schema = getComponentSchema({
       component: componentType,
       layout: pageLayout,

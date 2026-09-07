@@ -21,10 +21,9 @@ export const createFolderSchema = z.object({
     .max(MAX_FOLDER_TITLE_LENGTH, {
       message: `Folder title should be shorter than ${MAX_FOLDER_TITLE_LENGTH} characters.`,
     }),
+  parentFolderId: z.number().optional(),
   permalink: permalinkSchema,
   siteId: z.number().min(1),
-  // Nullable for top level folder
-  parentFolderId: z.number().optional(),
 })
 
 export const readFolderSchema = z
@@ -41,23 +40,20 @@ const baseFolderSchema = z.object({
 
 export const baseEditFolderSchema = baseFolderSchema.extend({
   permalink: permalinkSchema,
+  shouldCreateRedirect: z.boolean().optional().default(true),
   title: z
     .string()
     .min(1, { message: "Enter a title for this folder" })
     .max(MAX_FOLDER_TITLE_LENGTH, {
       message: `Folder title should be shorter than ${MAX_FOLDER_TITLE_LENGTH} characters.`,
     }),
-  // When the permalink changes, preserve the old URLs of everything under this
-  // folder with a wildcard redirect. Defaults true (matches the move flow); the
-  // UI only surfaces the choice when the permalink actually changes.
-  shouldCreateRedirect: z.boolean().optional().default(true),
 })
 
 export const editFolderSchema = baseEditFolderSchema.superRefine(
   ({ permalink, title }, ctx) => {
     if (!permalink && !title) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message: "Either permalink or title must be provided.",
         path: ["permalink", "title"],
       })

@@ -21,11 +21,11 @@ export const ErrorProvider = ({ children }: PropsWithChildren) => {
   const hasErrorAt = useCallback(
     (path: string) => {
       // Convert path in the form of x.y to /x/y.
-      const convertedPath = `/${path.replaceAll('.', "/")}`
+      const convertedPath = `/${path.replaceAll(".", "/")}`
       return Object.keys(errors).some(
         (errorPath) =>
           errorPath === convertedPath ||
-          errorPath.startsWith(`${convertedPath  }/`),
+          errorPath.startsWith(`${convertedPath}/`),
       )
     },
     [errors],

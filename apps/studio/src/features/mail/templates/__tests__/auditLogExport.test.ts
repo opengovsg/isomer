@@ -46,7 +46,7 @@ describe("auditLogExportReady template", () => {
 
     // Assert
     const hrefCount = (
-      template.body.match(/<a href="https:\/\/s3\.example/g) ?? []
+      template.body.match(/<a href="https:\/\/s3\.example/gu) ?? []
     ).length
     expect(hrefCount).toBe(1)
     expect(template.body).toContain(

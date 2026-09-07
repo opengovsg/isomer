@@ -111,7 +111,9 @@ export const DeleteFilterModal = ({
             <HStack align="start">
               <Checkbox
                 isChecked={isChecked}
-                onChange={(e) =>{  setIsChecked(e.target.checked); }}
+                onChange={(e) => {
+                  setIsChecked(e.target.checked)
+                }}
               >
                 <Text textStyle="body-2">
                   Yes, delete the entire filter permanently

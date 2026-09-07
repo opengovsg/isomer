@@ -82,25 +82,29 @@ export const AuditLogExportSection = ({
   // error toasts plus the per-log-type PostHog captures live in the hook.
   const { mutate: createExportRequest, isPending } =
     useCreateAuditLogExportRequest({
-      onSuccess: () =>{  form.reset(); },
+      onSuccess: () => {
+        form.reset()
+      },
       siteId,
     })
 
-  if (!canManageUsers) {return null}
+  if (!canManageUsers) {
+    return null
+  }
 
   // This section only ever requests the Activity log — the Access (user
   // review) log moved to its own one-click button on the Users page, which
   // the Infobox below links out to. `siteId` is always sent regardless of
   // scope; the server ignores it and resolves the site list itself when
   // `scope` is "allSites" (see audit.router.ts).
-  const onSubmit = form.handleSubmit(({ month, scope }) =>{ 
+  const onSubmit = form.handleSubmit(({ month, scope }) => {
     createExportRequest({
       month,
       reportType: AuditLogExportRequestedReportType.Activity,
       scope,
       siteId,
-    }); },
-  )
+    })
+  })
 
   return (
     <Stack spacing="1.5rem" align="flex-start">

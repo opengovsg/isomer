@@ -1,4 +1,5 @@
-import fs from "node:fs/promises" // Use the promise-based version of fs for async/await
+import fs from "node:fs/promises"
+// Use the promise-based version of fs for async/await
 import path from "node:path"
 import { db } from "~/server/modules/database/database"
 
@@ -62,7 +63,8 @@ export async function backupCollection({
       logger.info(`Writing backup for child with ID ${child.id}`)
 
       // Parse blob content and write to a file
-      const blobBuffer = blob.content // Assuming blob.content is a buffer
+      const blobBuffer = blob.content
+      // Assuming blob.content is a buffer
       const blobJsonPath = path.join(backupDir, `${child.permalink}.json`)
       await fs.writeFile(blobJsonPath, JSON.stringify(blobBuffer, null, 2))
     }

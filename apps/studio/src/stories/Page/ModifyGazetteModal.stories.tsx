@@ -13,7 +13,7 @@ const meta: Meta<typeof ModifyGazetteModal> = {
       category: "government-gazette",
       fileId: "sample-gazette.pdf",
       fileName: "sample-gazette.pdf",
-      fileSize: 1024000,
+      fileSize: 1_024_000,
       notificationNumber: "123/2025",
       publishDate: new Date("2025-06-15"),
       publishTime: "09:00",
@@ -21,7 +21,9 @@ const meta: Meta<typeof ModifyGazetteModal> = {
       title: "Sample Gazette Title",
     },
     isOpen: true,
-    onClose: () =>{  console.log("close"); },
+    onClose: () => {
+      console.log("close")
+    },
     siteId: 1,
   },
   component: ModifyGazetteModal,

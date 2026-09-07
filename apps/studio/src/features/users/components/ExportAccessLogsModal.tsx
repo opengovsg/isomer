@@ -54,14 +54,14 @@ export const ExportAccessLogsModal = () => {
   const { mutate: createExportRequest, isPending } =
     useCreateAuditLogExportRequest({ onSuccess: onClose, siteId })
 
-  const onSubmit = form.handleSubmit(({ scope }) =>{ 
+  const onSubmit = form.handleSubmit(({ scope }) => {
     createExportRequest({
       month: getCurrentSingaporeMonth(),
       reportType: AuditLogExportRequestedReportType.Access,
       scope,
       siteId,
-    }); },
-  )
+    })
+  })
 
   return (
     <Modal isOpen={!!isOpen} onClose={onClose}>

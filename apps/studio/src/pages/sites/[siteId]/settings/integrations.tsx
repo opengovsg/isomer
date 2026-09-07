@@ -84,9 +84,9 @@ const IntegrationsSettingsPage: NextPageWithLayout = () => {
     trpc.site.updateSiteIntegrations.useMutation({
       onError: (error) => {
         toast({
-          title: "Failed to update site",
           description: error.message,
           status: "error",
+          title: "Failed to update site",
         })
       },
       onSuccess: async (updatedSite) => {
@@ -104,7 +104,7 @@ const IntegrationsSettingsPage: NextPageWithLayout = () => {
 
   useNavigationEffect({ callback: setNextUrl, isDirty, isOpen })
 
-  const onSubmit = () =>{ 
+  const onSubmit = () => {
     updateSiteIntegrationsMutation.mutate({
       data: {
         ...rest,
@@ -115,13 +115,16 @@ const IntegrationsSettingsPage: NextPageWithLayout = () => {
         ...(agencyName !== undefined && { agencyName }),
       },
       siteId,
-    }); }
+    })
+  }
 
   return (
     <ErrorProvider>
       <UnsavedSettingModal
         isOpen={isOpen}
-        onClose={() =>{  setNextUrl(""); }}
+        onClose={() => {
+          setNextUrl("")
+        }}
         nextUrl={nextUrl}
       />
       <SettingsGrid>
@@ -198,13 +201,11 @@ const IntegrationsSettingsPage: NextPageWithLayout = () => {
   )
 }
 
-IntegrationsSettingsPage.getLayout = (page) => 
-  (
-    <PermissionsBoundary
-      resourceType={ResourceType.RootPage}
-      page={SiteSettingsLayout(page)}
-    />
-  )
-
+IntegrationsSettingsPage.getLayout = (page) => (
+  <PermissionsBoundary
+    resourceType={ResourceType.RootPage}
+    page={SiteSettingsLayout(page)}
+  />
+)
 
 export default IntegrationsSettingsPage

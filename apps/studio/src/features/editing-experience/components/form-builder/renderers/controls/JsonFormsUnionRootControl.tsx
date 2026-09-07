@@ -25,8 +25,6 @@ export const jsonFormsUnionRootControlTester: RankedTester = rankWith(
   },
 )
 
-const JsonFormsUnionRootControl = () => 
-  null
-
+const JsonFormsUnionRootControl = () => null
 
 export default withJsonFormsControlProps(JsonFormsUnionRootControl)

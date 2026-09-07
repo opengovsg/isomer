@@ -27,7 +27,9 @@ const setupPermissions = async ({
   isDeleted = false,
   useCurrentTime = false,
 }: SetupPermissionsProps) => {
-  if (!userId) {throw new Error("userId is a required field")}
+  if (!userId) {
+    throw new Error("userId is a required field")
+  }
 
   const time = useCurrentTime ? new Date() : MOCK_STORY_DATE
   return await db
@@ -47,21 +49,15 @@ const setupPermissions = async ({
 
 export const setupPublisherPermissions = async (
   props: Omit<SetupPermissionsProps, "role">,
-) => 
-  await setupPermissions({ ...props, role: RoleType.Publisher })
-
+) => await setupPermissions({ ...props, role: RoleType.Publisher })
 
 export const setupEditorPermissions = async (
   props: Omit<SetupPermissionsProps, "role">,
-) => 
-  await setupPermissions({ ...props, role: RoleType.Editor })
-
+) => await setupPermissions({ ...props, role: RoleType.Editor })
 
 export const setupAdminPermissions = async (
   props: Omit<SetupPermissionsProps, "role">,
-) => 
-  await setupPermissions({ ...props, role: RoleType.Admin })
-
+) => await setupPermissions({ ...props, role: RoleType.Admin })
 
 export const setupSite = async (siteId?: number, fetch?: boolean) => {
   if (siteId !== undefined && fetch) {
@@ -601,7 +597,7 @@ export const setUpWhitelist = async ({
 }: {
   email: string
   expiry?: Date
-}) => 
+}) =>
   await db
     .insertInto("Whitelist")
     .values({
@@ -616,7 +612,6 @@ export const setUpWhitelist = async ({
     .returningAll()
     .executeTakeFirstOrThrow()
 
-
 export const setupIsomerAdmin = async ({
   userId,
   role = IsomerAdminRole.Core,
@@ -625,13 +620,12 @@ export const setupIsomerAdmin = async ({
   userId: string
   role?: IsomerAdminRole
   expiry?: Date | null
-}) => 
+}) =>
   await db
     .insertInto("IsomerAdmin")
     .values({ userId, role, expiry })
     .returningAll()
     .executeTakeFirstOrThrow()
-
 
 export const setupUser = async ({
   name = "Test User",
@@ -647,20 +641,19 @@ export const setupUser = async ({
   phone?: string
   isDeleted?: boolean
   lastLoginAt?: Date | null
-}) => 
+}) =>
   await db
     .insertInto("User")
     .values({
       id: userId,
       name,
       email: email ?? `${nanoid()}@test.com`,
-      phone: phone,
+      phone,
       deletedAt: isDeleted ? MOCK_STORY_DATE : null,
       lastLoginAt,
     })
     .returningAll()
     .executeTakeFirstOrThrow()
-
 
 export const setupFullSite = async () => {
   const { site, folder: parentFolder } = await setupFolder({})
@@ -760,15 +753,17 @@ export const createSupersededBuildRows = async ({
   numberOfSupersededBuilds = 1,
 }: {
   supersedingBuild: Omit<CodeBuildJobs, "resourceId" | "userId" | "id">
-  resourceId: string // the resourceId does NOT need to be the same as the superseding build
-  userId: string // the userId does NOT need to be the same as the superseding build
+  resourceId: string
+  // the resourceId does NOT need to be the same as the superseding build
+  userId: string
+  // the userId does NOT need to be the same as the superseding build
   numberOfSupersededBuilds?: number
 }) => {
   await db
     .insertInto("CodeBuildJobs")
     .values(
       Array.from({ length: numberOfSupersededBuilds }).map((_, i) => ({
-        buildId: "test-build-id-superseded-" + i,
+        buildId: `test-build-id-superseded-${i}`,
         isScheduled: supersedingBuild.isScheduled,
         resourceId,
         siteId: supersedingBuild.siteId,

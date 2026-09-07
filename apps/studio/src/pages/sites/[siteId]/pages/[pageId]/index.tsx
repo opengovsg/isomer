@@ -69,13 +69,11 @@ const PageEditingView = () => {
   )
 }
 
-EditPage.getLayout = (page) => 
-  (
-    <PermissionsBoundary
-      resourceType={ResourceType.Page}
-      page={PageEditingLayout(page)}
-    />
-  )
-
+EditPage.getLayout = (page) => (
+  <PermissionsBoundary
+    resourceType={ResourceType.Page}
+    page={PageEditingLayout(page)}
+  />
+)
 
 export default EditPage

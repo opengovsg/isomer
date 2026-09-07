@@ -28,27 +28,27 @@ const JsonFormsDateControl = ({
   required,
   errors,
   enabled,
-}: ControlProps) => 
-  (
-    <Box>
-      <FormControl isRequired={required} isInvalid={!!errors}>
-        <FormLabel description={description}>{label}</FormLabel>
-        <DatePicker
-          isDisabled={!enabled}
-          inputValue={
-            Object.prototype.toString.call(data) === "[object String]"
-              ? String(data)
-              : undefined
-          }
-          allowManualInput={true}
-          onInputValueChange={(date) =>{  handleChange(path, date); }}
-        />
-        <FormErrorMessage>
-          {label} {getCustomErrorMessage(errors)}
-        </FormErrorMessage>
-      </FormControl>
-    </Box>
-  )
-
+}: ControlProps) => (
+  <Box>
+    <FormControl isRequired={required} isInvalid={!!errors}>
+      <FormLabel description={description}>{label}</FormLabel>
+      <DatePicker
+        isDisabled={!enabled}
+        inputValue={
+          Object.prototype.toString.call(data) === "[object String]"
+            ? String(data)
+            : undefined
+        }
+        allowManualInput={true}
+        onInputValueChange={(date) => {
+          handleChange(path, date)
+        }}
+      />
+      <FormErrorMessage>
+        {label} {getCustomErrorMessage(errors)}
+      </FormErrorMessage>
+    </FormControl>
+  </Box>
+)
 
 export default withJsonFormsControlProps(JsonFormsDateControl)

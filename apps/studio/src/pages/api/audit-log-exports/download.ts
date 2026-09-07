@@ -29,14 +29,16 @@ export default async function handler(
   res: NextApiResponse,
 ) {
   if (req.method !== "GET") {
-     res.status(405).send("Method Not Allowed"); return;
+    res.status(405).send("Method Not Allowed")
+    return
   }
 
   // `token` may arrive as a repeated query param (string[]) — only a single
   // string is ever a valid token.
   const { token } = req.query
   if (Object.prototype.toString.call(token) !== "[object String]") {
-     redirectToExpired(res); return;
+    redirectToExpired(res)
+    return
   }
 
   // Infrastructure failures (DB down, bucket env unset, S3 presign error)
@@ -48,7 +50,8 @@ export default async function handler(
     const sealedToken = token as string
     const requestId = await unsealAuditLogExportToken(sealedToken)
     if (requestId === null) {
-       redirectToExpired(res); return;
+      redirectToExpired(res)
+      return
     }
 
     const request = await db
@@ -64,7 +67,8 @@ export default async function handler(
       request.objectKey === null ||
       request.completedAt === null
     ) {
-       redirectToExpired(res); return;
+      redirectToExpired(res)
+      return
     }
 
     // Window anchors to THIS request's completedAt, never the CSV object's
@@ -76,7 +80,8 @@ export default async function handler(
       AUDIT_LOG_EXPORT_URL_EXPIRY_DAYS,
     )
     if (!isAfter(windowEnd, new Date())) {
-       redirectToExpired(res); return;
+      redirectToExpired(res)
+      return
     }
 
     // Mint a fresh presigned URL at CLICK time with the short default expiry
@@ -91,6 +96,7 @@ export default async function handler(
   } catch (error) {
     // Never log the token itself — it is a live bearer credential.
     logger.error({ error }, "Failed to redeem audit log export download token")
-     redirectToExpired(res); return;
+    redirectToExpired(res)
+    return
   }
 }

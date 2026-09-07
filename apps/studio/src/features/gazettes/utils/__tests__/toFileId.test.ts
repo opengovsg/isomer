@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { toFileId } from "../toFileId"
 
-const FILE_ID_REGEX = /^[_\-a-zA-Z0-9]+\.pdf$/
+const FILE_ID_REGEX = /^[_\-a-zA-Z0-9]+\.pdf$/u
 
 describe("toFileId", () => {
   it("passes through an already-valid file ID unchanged", () => {

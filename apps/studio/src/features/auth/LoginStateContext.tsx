@@ -72,7 +72,9 @@ const PostHogIdentity = () => {
       return
     }
 
-    if (!user || !sites || identifiedUserId.current === user.id) {return}
+    if (!user || !sites || identifiedUserId.current === user.id) {
+      return
+    }
 
     void withPosthog((posthog) => {
       if (identifiedUserId.current && identifiedUserId.current !== user.id) {
@@ -102,9 +104,8 @@ const PostHogIdentity = () => {
 }
 
 const useProvideLoginState = () => {
-  const [hasLoginStateFlag, setLoginStateFlag] = useLocalStorage<boolean>(
-    LOGGED_IN_KEY,
-  )
+  const [hasLoginStateFlag, setLoginStateFlag] =
+    useLocalStorage<boolean>(LOGGED_IN_KEY)
 
   const setHasLoginStateFlag = useCallback(() => {
     setLoginStateFlag(true)

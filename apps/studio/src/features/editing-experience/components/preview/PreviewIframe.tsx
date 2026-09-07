@@ -30,27 +30,28 @@ export const PreviewIframe = ({
     : {}
 
   const containerStyles = useMemo(() => {
-    if (!viewport)
-      {return {
+    if (!viewport) {
+      return {
         width: "100%",
-      }}
+      }
+    }
     switch (viewport) {
       case "tablet": {
         return {
-          width: "768px",
           borderRadius: "8px",
+          width: "768px",
         }
       }
       case "mobile": {
         return {
-          width: "480px",
           borderRadius: "8px",
+          width: "480px",
         }
       }
       case "responsive": {
         return {
-          width: "100%",
           borderRadius: "8px",
+          width: "100%",
         }
       }
       case "fullscreen": {

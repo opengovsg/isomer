@@ -65,7 +65,7 @@ export const updatePageBlobSchema = basePageSchema.extend({
       return parsed
     }
     ctx.addIssue({
-      code: z.ZodIssueCode.custom,
+      code: "custom",
       message: "Invalid page content",
     })
     return z.NEVER
@@ -74,15 +74,14 @@ export const updatePageBlobSchema = basePageSchema.extend({
 })
 
 export const createPageSchema = z.object({
-  title: pageTitleSchema,
-  permalink: permalinkSchema,
-  layout: z.enum(NEW_PAGE_LAYOUT_VALUES).default("content"),
-  siteId: z.number().min(1),
-  // NOTE: implies that top level pages are allowed
   folderId: z.number().min(1).optional(),
+  layout: z.enum(NEW_PAGE_LAYOUT_VALUES).default("content"),
+  permalink: permalinkSchema,
+  siteId: z.number().min(1),
+  title: pageTitleSchema,
 })
 
-// TODO: siteId should be taken from user's context (not input)
+// Deferred: siteId should be taken from user's context (not input)
 export const publishPageSchema = z.object({
   pageId: z.number().min(1),
   siteId: z.number().min(1),
@@ -121,11 +120,8 @@ export const getRootPageSchema = z.object({
 })
 
 export const basePageSettingsSchema = basePageSchema.extend({
-  title: pageTitleSchema,
-  // Create a redirect from the page's old URL when its permalink changes (acted
-  // on only for Page/CollectionPage). On the base so the union destructures
-  // cleanly. Defaults on, matching the checkbox's default-checked state.
   shouldCreateRedirect: z.boolean().optional().default(true),
+  title: pageTitleSchema,
 })
 
 const rootPageSettingsSchema = basePageSettingsSchema.extend({
@@ -178,6 +174,6 @@ export const createIndexPageSchema = z.object({
 })
 
 export const getPrefillSchema = z.object({
-  resourceId: z.string().regex(/^\d+$/),
+  resourceId: z.string().regex(/^\d+$/u),
   siteId: z.number().min(1),
 })

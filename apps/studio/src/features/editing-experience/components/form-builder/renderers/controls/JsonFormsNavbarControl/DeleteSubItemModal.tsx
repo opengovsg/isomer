@@ -22,33 +22,31 @@ export const DeleteSubItemModal = ({
   isOpen,
   onClose,
   onDelete,
-}: DeleteSubItemModalProps): React.ReactNode => 
-  (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader mr="3.5rem">Delete “{label}”?</ModalHeader>
+}: DeleteSubItemModalProps): React.ReactNode => (
+  <Modal isOpen={isOpen} onClose={onClose}>
+    <ModalOverlay />
+    <ModalContent>
+      <ModalHeader mr="3.5rem">Delete “{label}”?</ModalHeader>
 
-        <ModalCloseButton size="lg" />
+      <ModalCloseButton size="lg" />
 
-        <ModalBody>
-          <Text textStyle="body-1">
-            You’re about to delete 1 link from the navigation bar. This doesn’t
-            remove any actual pages.
-          </Text>
-        </ModalBody>
+      <ModalBody>
+        <Text textStyle="body-1">
+          You’re about to delete 1 link from the navigation bar. This doesn’t
+          remove any actual pages.
+        </Text>
+      </ModalBody>
 
-        <ModalFooter>
-          <HStack spacing="1rem">
-            <Button variant="clear" colorScheme="neutral" onClick={onClose}>
-              No, don’t delete
-            </Button>
-            <Button variant="solid" colorScheme="critical" onClick={onDelete}>
-              Delete link
-            </Button>
-          </HStack>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
-  )
-
+      <ModalFooter>
+        <HStack spacing="1rem">
+          <Button variant="clear" colorScheme="neutral" onClick={onClose}>
+            No, don’t delete
+          </Button>
+          <Button variant="solid" colorScheme="critical" onClick={onDelete}>
+            Delete link
+          </Button>
+        </HStack>
+      </ModalFooter>
+    </ModalContent>
+  </Modal>
+)

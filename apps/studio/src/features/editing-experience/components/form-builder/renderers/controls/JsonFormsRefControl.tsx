@@ -19,20 +19,18 @@ const JsonFormsRefControl = ({
   label,
   required,
   errors,
-}: ControlProps) => 
-  (
-    <BaseLinkControl
-      // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
-      data={data as string}
-      label={label}
-      required={required}
-      handleChange={handleChange}
-      path={path}
-      linkTypes={omit(LINK_TYPES_MAPPING, LINK_TYPES.Email)}
-      description="Choose a page or file to link this Collection item to"
-      errors={errors}
-    />
-  )
-
+}: ControlProps) => (
+  <BaseLinkControl
+    // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
+    data={data as string}
+    label={label}
+    required={required}
+    handleChange={handleChange}
+    path={path}
+    linkTypes={omit(LINK_TYPES_MAPPING, LINK_TYPES.Email)}
+    description="Choose a page or file to link this Collection item to"
+    errors={errors}
+  />
+)
 
 export default withJsonFormsControlProps(JsonFormsRefControl)

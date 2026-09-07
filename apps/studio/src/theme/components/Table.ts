@@ -48,27 +48,25 @@ const getSubtleVariantThStyles = (): SystemStyleObject => {
   }
 }
 
-const variantSubtle = definePartsStyle(() => (
-  {
-    container: {
-      bg: "white",
-      borderRadius: "8px",
-      border: "1px solid",
-      borderColor: "base.divider.medium",
-    },
-    table: {
-      bg: "white",
-    },
-    thead: {
-      opacity: 1,
-      zIndex: 1,
-    },
-    th: getSubtleVariantThStyles(),
-    td: {
-      color: "base.content.default",
-    },
-  }
-))
+const variantSubtle = definePartsStyle(() => ({
+  container: {
+    bg: "white",
+    border: "1px solid",
+    borderColor: "base.divider.medium",
+    borderRadius: "8px",
+  },
+  table: {
+    bg: "white",
+  },
+  td: {
+    color: "base.content.default",
+  },
+  th: getSubtleVariantThStyles(),
+  thead: {
+    opacity: 1,
+    zIndex: 1,
+  },
+}))
 
 const variants = {
   subtle: variantSubtle,

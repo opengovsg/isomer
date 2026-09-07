@@ -47,7 +47,9 @@ export const jsonFormsDgsDatasetIdControlTester: RankedTester = rankWith(
 )
 
 const generateDgsDatasetUrl = (datasetId: string | null) => {
-  if (!datasetId) {return ""}
+  if (!datasetId) {
+    return ""
+  }
   return `https://data.gov.sg/datasets/${datasetId}/view`
 }
 
@@ -138,7 +140,9 @@ const DgsDatasetIdModal = ({
 
   // Handle dataset validation
   useEffect(() => {
-    if (isValidatingDataset || !datasetId) {return}
+    if (isValidatingDataset || !datasetId) {
+      return
+    }
 
     if (isValidDataset) {
       clearErrors("datasetId")
@@ -148,9 +152,9 @@ const DgsDatasetIdModal = ({
     setError("datasetId", {
       message: isDatasetTooLarge
         ? "This dataset exceeds the 4MB size limit and cannot be used. Please use a smaller dataset."
-        : format
+        : (format
           ? "You can only link CSV datasets. Please check the dataset ID and try again."
-          : "This doesn’t look like a valid link from data.gov.sg. Check that you have the correct link and try again.",
+          : "This doesn’t look like a valid link from data.gov.sg. Check that you have the correct link and try again."),
       type: "manual",
     })
   }, [
@@ -167,7 +171,8 @@ const DgsDatasetIdModal = ({
     const extractedId = getDgsIdFromString({ string: debouncedInputValue })
     if (extractedId) {
       onClose()
-      onSave(extractedId) // Save only the ID, not the full URL
+      onSave(extractedId)
+      // Save only the ID, not the full URL
     }
   })
 
@@ -260,7 +265,9 @@ const JsonFormsDgsDatasetIdControl = ({
         <DgsDatasetIdModal
           isOpen={isDgsModalOpen}
           onClose={onDgsModalClose}
-          onSave={(datasetId) =>{  handleDatasetIdSave(datasetId); }}
+          onSave={(datasetId) => {
+            handleDatasetIdSave(datasetId)
+          }}
           initialValue={data || ""}
         />
       )}

@@ -49,25 +49,25 @@ const getEditorHookAndEditor = (
   switch (format) {
     case "simple-prose": {
       return {
-        EditorHook: useSimpleProseEditor,
         Editor: TiptapSimpleProseEditor,
+        EditorHook: useSimpleProseEditor,
       }
     }
     case "accordion": {
-      return { EditorHook: useAccordionEditor, Editor: TiptapAccordionEditor }
+      return { Editor: TiptapAccordionEditor, EditorHook: useAccordionEditor }
     }
     case "callout": {
-      return { EditorHook: useCalloutEditor, Editor: TiptapCalloutEditor }
+      return { Editor: TiptapCalloutEditor, EditorHook: useCalloutEditor }
     }
     case "contentpic": {
-      return { EditorHook: useProseEditor, Editor: TiptapProseEditor }
+      return { Editor: TiptapProseEditor, EditorHook: useProseEditor }
     }
     case "prose": {
-      return { EditorHook: useProseEditor, Editor: TiptapProseEditor }
+      return { Editor: TiptapProseEditor, EditorHook: useProseEditor }
     }
     default: {
       const _: never = format
-      return { EditorHook: useProseEditor, Editor: TiptapProseEditor }
+      return { Editor: TiptapProseEditor, EditorHook: useProseEditor }
     }
   }
 }
@@ -111,7 +111,9 @@ const JsonFormsProseControl = ({
   useEffect(() => {
     if (data !== undefined) {
       const selection = editor?.state.selection
-      if (!selection) {return}
+      if (!selection) {
+        return
+      }
       // oxlint-disable-next-line @typescript-eslint/no-unsafe-argument
       editor.commands.setContent(data, { emitUpdate: false })
       editor.commands.setTextSelection(selection)

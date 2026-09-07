@@ -10,9 +10,9 @@ import {
 import { useZodForm } from "~/lib/form"
 import { normalizeRedirectSource, redirectKind } from "~/schemas/redirect"
 
+import type { AddRedirectInput } from "../types"
 import { useCreateRedirect } from "../api"
-import { addRedirectSchema } from '../types';
-import type { AddRedirectInput } from '../types';
+import { addRedirectSchema } from "../types"
 import { AddRedirectCardForm } from "./AddRedirectCardForm"
 
 const safeNormalize = (raw: string): string | null => {
@@ -27,7 +27,9 @@ const buildWildcardPreview = (
   normalizedSource: string,
   destination: string,
 ): string | null => {
-  if (!normalizedSource.endsWith("/*")) {return null}
+  if (!normalizedSource.endsWith("/*")) {
+    return null
+  }
   const prefix = normalizedSource.slice(0, -2)
   const trimmed = destination.trim()
   const base = trimmed.endsWith("/") ? trimmed.slice(0, -1) : trimmed
@@ -79,31 +81,35 @@ export const AddRedirectCard = ({
       {
         onError: (error) => {
           switch (error.data?.code) {
-            case "CONFLICT":
+            case "CONFLICT": {
               setError("source", { message: REDIRECT_MESSAGES.alreadyExists })
               break
-            case "PRECONDITION_FAILED":
+            }
+            case "PRECONDITION_FAILED": {
               setError("source", {
                 message: REDIRECT_MESSAGES.sourceIsExistingPage,
               })
               break
-            case "UNPROCESSABLE_CONTENT":
+            }
+            case "UNPROCESSABLE_CONTENT": {
               setError("destination", { message: REDIRECT_MESSAGES.loop })
               break
-            default:
+            }
+            default: {
               toast({
-                title: "Failed to add redirect",
                 description: error.message,
                 status: "error",
+                title: "Failed to add redirect",
               })
+            }
           }
         },
         onSuccess: () => {
           posthog.capture("redirect_created", {
-            site_id: siteId,
             destination_type: destination.startsWith("/")
               ? "internal"
               : "external",
+            site_id: siteId,
           })
           reset()
           toast({ ...SETTINGS_TOAST_MESSAGES.success, status: "success" })

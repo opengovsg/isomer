@@ -93,14 +93,14 @@ const PageLinkElement = ({ value, onChange }: PageLinkElementProps) => {
     <ResourceSelector
       interactionType="link"
       siteId={Number(siteId)}
-      onChange={(resourceId) =>{ 
+      onChange={(resourceId) => {
         onChange(
           getReferenceLink({
             resourceId: resourceId ?? "",
             siteId: String(siteId),
           }),
-        ); }
-      }
+        )
+      }}
       selectedResourceId={getResourceIdFromReferenceLink(value)}
       fileExplorerHeight={12}
     />
@@ -144,9 +144,9 @@ const LinkEditorModalContent = ({
 
   const isEditingLink = !!linkText && !!linkHref
 
-  const onSubmit = handleSubmit(({ linkText, linkHref }) =>{ 
-    onSave(buildFinalLinkTextForSave(linkText, linkHref), linkHref); },
-  )
+  const onSubmit = handleSubmit(({ linkText, linkHref }) => {
+    onSave(buildFinalLinkTextForSave(linkText, linkHref), linkHref)
+  })
 
   return (
     <ModalContent>
@@ -182,12 +182,12 @@ const LinkEditorModalContent = ({
             <LinkEditorContextProvider
               linkTypes={linkTypes}
               linkHref={linkHref ?? ""}
-              onChange={(href) =>{ 
+              onChange={(href) => {
                 setValue("linkHref", href, {
                   shouldDirty: true,
                   shouldValidate: true,
-                }); }
-              }
+                })
+              }}
               error={errors.linkHref?.message}
             >
               <ModalLinkEditor onUploadedFile={onUploadedFile} />
@@ -295,7 +295,12 @@ const ModalLinkEditor = ({
       pageLinkElement={<PageLinkElement value={curHref} onChange={setHref} />}
       fileLinkElement={
         getLinkHrefType(curHref) === LINK_TYPES.File ? (
-          <AttachmentData data={curHref} onClick={() =>{  setHref(""); }} />
+          <AttachmentData
+            data={curHref}
+            onClick={() => {
+              setHref("")
+            }}
+          />
         ) : (
           <FileAttachment
             maxSizeInBytes={MAX_FILE_SIZE_BYTES}
@@ -304,7 +309,9 @@ const ModalLinkEditor = ({
             resourceId={
               (pageId ?? linkId) ? String(pageId ?? linkId) : undefined
             }
-            setHref={(href) =>{  setHref(href ?? ""); }}
+            setHref={(href) => {
+              setHref(href ?? "")
+            }}
             shouldFetchResource={false}
             onUploadedFile={onUploadedFile}
             enableRiskyFileWarning={true}

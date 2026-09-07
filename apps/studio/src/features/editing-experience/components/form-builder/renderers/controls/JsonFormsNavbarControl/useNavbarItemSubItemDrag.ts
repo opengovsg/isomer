@@ -66,9 +66,9 @@ export const useNavbarItemSubItemDrag = ({
         dragHandle: dragHandleElement,
         element: itemElement,
         getInitialData: () => ({
-          type: "navbar-item",
-          navbarId: itemElement.dataset.id,
           dropTargetId: getNavbarItemPath(index, parentIndex),
+          navbarId: itemElement.dataset.id,
+          type: "navbar-item",
         }),
         onDragStart: () => {
           itemElement.style.opacity = "0.5"
@@ -95,16 +95,20 @@ export const useNavbarItemSubItemDrag = ({
               dropTargetId: getNavbarItemPath(index, parentIndex),
             },
             {
-              input,
-              element,
               allowedEdges: ["top", "bottom"],
+              element,
+              input,
             },
           ),
         getIsSticky: () => true,
         onDrag: handleDrag,
         onDragEnter: handleDrag,
-        onDragLeave: () =>{  setNavbarItemClosestEdge(null); },
-        onDrop: () =>{  setNavbarItemClosestEdge(null); },
+        onDragLeave: () => {
+          setNavbarItemClosestEdge(null)
+        },
+        onDrop: () => {
+          setNavbarItemClosestEdge(null)
+        },
       }),
     )
   }, [index, isSubItem, parentIndex])

@@ -69,9 +69,10 @@ const generateSidebarItem = (
 export const CmsSidebarItems = ({ navItems }: CmsSidebarItemsProps) => {
   const router = useRouter()
 
-  const renderedSidebarItems = useMemo(() => 
-    navItems.map((item) => generateSidebarItem(item, router.asPath))
-  , [navItems, router.asPath])
+  const renderedSidebarItems = useMemo(
+    () => navItems.map((item) => generateSidebarItem(item, router.asPath)),
+    [navItems, router.asPath],
+  )
 
   return <List spacing={3}>{renderedSidebarItems}</List>
 }

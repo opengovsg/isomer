@@ -60,19 +60,19 @@ export const CalloutMenuBar = ({ editor }: { editor: Editor }) => {
         defaultIcon: BiListOl,
         items: [
           {
-            type: "item",
-            icon: BiListOl,
-            title: "Ordered list",
             action: () => editor.chain().focus().toggleOrderedList().run(),
+            icon: BiListOl,
             isActive: () => editor.isActive("orderedList"),
+            title: "Ordered list",
+            type: "item",
           },
 
           {
-            type: "item",
-            icon: BiListUl,
-            title: "Bullet list",
             action: () => editor.chain().focus().toggleBulletList().run(),
+            icon: BiListUl,
             isActive: () => editor.isActive("unorderedList"),
+            title: "Bullet list",
+            type: "item",
           },
         ],
         label: "Lists",
@@ -92,27 +92,27 @@ export const CalloutMenuBar = ({ editor }: { editor: Editor }) => {
       {
         items: [
           {
-            type: "item",
-            icon: MdSuperscript,
-            title: "Superscript",
             action: () =>
               editor.chain().focus().unsetSubscript().toggleSuperscript().run(),
+            icon: MdSuperscript,
             isActive: () => editor.isActive("superscript"),
+            title: "Superscript",
+            type: "item",
           },
           {
-            type: "item",
-            icon: MdSubscript,
-            title: "Subscript",
             action: () =>
               editor.chain().focus().unsetSuperscript().toggleSubscript().run(),
+            icon: MdSubscript,
             isActive: () => editor.isActive("subscript"),
+            title: "Subscript",
+            type: "item",
           },
           {
-            type: "item",
-            icon: MdHorizontalRule,
-            title: "Divider",
             action: () => editor.chain().focus().setHorizontalRule().run(),
+            icon: MdHorizontalRule,
             isActive: () => editor.isActive("divider"),
+            title: "Divider",
+            type: "item",
           },
         ],
         type: "overflow-list",

@@ -69,7 +69,9 @@ export const CancelScheduleModal = ({
             No, leave it
           </Button>
           <Button
-            onClick={() =>{  mutate({ pageId, siteId }); }}
+            onClick={() => {
+              mutate({ pageId, siteId })
+            }}
             isLoading={isPending}
             colorScheme="critical"
           >

@@ -1,5 +1,5 @@
-import { Box } from "@chakra-ui/react"
 import type { Meta, StoryObj } from "@storybook/nextjs"
+import { Box } from "@chakra-ui/react"
 import { expect, userEvent, within } from "storybook/test"
 import { RiskyFileUploadModal } from "~/components/PageEditor/RiskyFileUploadModal"
 
@@ -17,8 +17,12 @@ const meta: Meta<typeof RiskyFileUploadModal> = {
       type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     }),
     isOpen: true,
-    onClose: () =>{  console.log("onClose"); },
-    onConfirm: () =>{  console.log("onConfirm"); },
+    onClose: () => {
+      console.log("onClose")
+    },
+    onConfirm: () => {
+      console.log("onConfirm")
+    },
   },
   component: RiskyFileUploadModal,
   decorators: [

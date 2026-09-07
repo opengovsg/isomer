@@ -2,7 +2,7 @@
 export const waitForElement = async (
   document: Document,
   querySelector: string,
-) => 
+) =>
   await new Promise((resolve) => {
     const observer = new MutationObserver((mutationsList, observer) => {
       const element = document.querySelector(querySelector)
@@ -20,6 +20,5 @@ export const waitForElement = async (
     // Timeout after 30 seconds to avoid hanging indefinitely
     setTimeout(() => {
       observer.disconnect()
-    }, 30000)
+    }, 30_000)
   })
-

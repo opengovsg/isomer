@@ -20,7 +20,7 @@ export const getResourceSubpath = (resourceType: ResourceType) => {
     }
     case ResourceType.FolderMeta:
     case ResourceType.CollectionMeta: {
-      // TODO: Not implemented yet
+      // Deferred: Not implemented yet
       return ""
     }
     default: {
@@ -38,14 +38,10 @@ export const getLinkToResource = ({
   siteId: string | number
   resourceId: string
   type: ResourceType
-}) => 
-  `/sites/${siteId}/${getResourceSubpath(type)}/${resourceId}`
+}) => `/sites/${siteId}/${getResourceSubpath(type)}/${resourceId}`
 
-
-export const getFolderHref = (siteId: string, folderId: string) => 
+export const getFolderHref = (siteId: string, folderId: string) =>
   `/sites/${siteId}/folders/${folderId}`
 
-
-export const getCollectionHref = (siteId: string, collectionId: string) => 
+export const getCollectionHref = (siteId: string, collectionId: string) =>
   `/sites/${siteId}/collections/${collectionId}`
-

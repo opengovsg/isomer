@@ -50,8 +50,12 @@ const LayoutOptionRadio = forwardRef<HTMLInputElement, LayoutTileProps>(
           role="group"
           {...checkbox}
           cursor="pointer"
-          onMouseEnter={() =>{  setIsHover(true); }}
-          onMouseLeave={() =>{  setIsHover(false); }}
+          onMouseEnter={() => {
+            setIsHover(true)
+          }}
+          onMouseLeave={() => {
+            setIsHover(false)
+          }}
         >
           <Box
             borderWidth="2px"
@@ -59,8 +63,8 @@ const LayoutOptionRadio = forwardRef<HTMLInputElement, LayoutTileProps>(
             bg="interaction.muted.main.hover"
             borderColor="base.divider.medium"
             _groupChecked={{
-              borderColor: "base.divider.brand",
               bg: "interaction.muted.main.active",
+              borderColor: "base.divider.brand",
             }}
             transitionProperty="common"
             transitionDuration="normal"

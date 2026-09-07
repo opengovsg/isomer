@@ -53,9 +53,9 @@ const ColoursSettingsPage: NextPageWithLayout = () => {
   const setThemeMutation = trpc.site.setTheme.useMutation({
     onError: (error) => {
       toast({
-        title: "Failed to update site",
         description: error.message,
         status: "error",
+        title: "Failed to update site",
       })
     },
     onSuccess: async () => {
@@ -71,7 +71,9 @@ const ColoursSettingsPage: NextPageWithLayout = () => {
   useNavigationEffect({ callback: setNextUrl, isDirty, isOpen })
 
   const onSubmit = () => {
-    if (!siteTheme) {return}
+    if (!siteTheme) {
+      return
+    }
 
     setThemeMutation.mutate({ siteId, theme: siteTheme })
   }
@@ -80,7 +82,9 @@ const ColoursSettingsPage: NextPageWithLayout = () => {
     <ErrorProvider>
       <UnsavedSettingModal
         isOpen={isOpen}
-        onClose={() =>{  setNextUrl(""); }}
+        onClose={() => {
+          setNextUrl("")
+        }}
         nextUrl={nextUrl}
       />
       <SettingsGrid>
@@ -115,13 +119,11 @@ const ColoursSettingsPage: NextPageWithLayout = () => {
   )
 }
 
-ColoursSettingsPage.getLayout = (page) => 
-  (
-    <PermissionsBoundary
-      resourceType={ResourceType.RootPage}
-      page={SiteSettingsLayout(page)}
-    />
-  )
-
+ColoursSettingsPage.getLayout = (page) => (
+  <PermissionsBoundary
+    resourceType={ResourceType.RootPage}
+    page={SiteSettingsLayout(page)}
+  />
+)
 
 export default ColoursSettingsPage

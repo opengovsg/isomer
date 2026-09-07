@@ -2,37 +2,28 @@ import { trpcMsw } from "../mockTrpc"
 
 export const folderHandlers = {
   getIndexpage: {
-    default: () => {
-      return trpcMsw.folder.getIndexpage.query(() => {
-        return {
-          title: "a folder",
-          id: "1",
-          draftBlobId: null,
-        }
-      })
-    },
+    default: () =>
+      trpcMsw.folder.getIndexpage.query(() => ({
+        title: "a folder",
+        id: "1",
+        draftBlobId: null,
+      })),
   },
   getMetadata: {
-    default: () => {
-      return trpcMsw.folder.getMetadata.query(() => {
-        return {
-          title: "a folder",
-          permalink: "folder",
-          parentId: "1",
-        }
-      })
-    },
+    default: () =>
+      trpcMsw.folder.getMetadata.query(() => ({
+        title: "a folder",
+        permalink: "folder",
+        parentId: "1",
+      })),
   },
   listChildPages: {
-    default: () => {
-      return trpcMsw.folder.listChildPages.query(() => {
-        return {
-          childPages: [
-            { id: "5", title: "sibling1", type: "Page", permalink: "tsx" },
-            { id: "4", title: "sibling2", type: "Page", permalink: "tsc" },
-          ],
-        }
-      })
-    },
+    default: () =>
+      trpcMsw.folder.listChildPages.query(() => ({
+        childPages: [
+          { id: "5", title: "sibling1", type: "Page", permalink: "tsx" },
+          { id: "4", title: "sibling2", type: "Page", permalink: "tsc" },
+        ],
+      })),
   },
 }

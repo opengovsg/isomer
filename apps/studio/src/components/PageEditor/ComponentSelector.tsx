@@ -1,5 +1,6 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
 import type { RequireAllOrNone } from "type-fest"
+import type { DrawerState } from "~/types/editorDrawer"
 import { chakra, Flex, Icon, Stack, Text, VStack } from "@chakra-ui/react"
 import { useFeatureValue } from "@growthbook/growthbook-react"
 import { Button, TouchableTooltip } from "@opengovsg/design-system-react"
@@ -7,9 +8,9 @@ import { useMemo } from "react"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { TYPE_TO_ICON } from "~/features/editing-experience/constants"
 import { IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
-import type { DrawerState } from "~/types/editorDrawer"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
+import type { SectionType } from "./types"
 import type { UsageTooltipProps } from "./UsageTooltip"
 import {
   ARTICLE_ALLOWED_BLOCKS,
@@ -20,28 +21,23 @@ import {
   getHomepageAllowedBlocks,
   INDEX_ALLOWED_BLOCKS,
 } from "./constants"
-import type { SectionType } from "./types"
 import { UsageTooltip } from "./UsageTooltip"
 
-const Section = ({ children }: React.PropsWithChildren) => 
-  (
-    <VStack gap="1rem" alignItems="start" w="full">
-      {children}
-    </VStack>
-  )
+const Section = ({ children }: React.PropsWithChildren) => (
+  <VStack gap="1rem" alignItems="start" w="full">
+    {children}
+  </VStack>
+)
 
+const SectionTitle = ({ title }: { title: string }) => (
+  <Text textStyle="subhead-2" textColor="base.content.medium">
+    {title}
+  </Text>
+)
 
-const SectionTitle = ({ title }: { title: string }) => 
-  (
-    <Text textStyle="subhead-2" textColor="base.content.medium">
-      {title}
-    </Text>
-  )
-
-
-const BlockList = ({ children }: React.PropsWithChildren) => 
+const BlockList = ({ children }: React.PropsWithChildren) => (
   <Stack w="full">{children}</Stack>
-
+)
 
 type BlockItemProps = UsageTooltipProps & {
   onProceed: (sectionType: SectionType) => void
@@ -80,7 +76,9 @@ const BlockItem = ({
       display="flex"
       alignItems="start"
       gap="0.75rem"
-      onClick={() =>{  onProceed(sectionType); }}
+      onClick={() => {
+        onProceed(sectionType)
+      }}
       _disabled={{
         bg: "interaction.support.disabled",
         borderColor: "base.divider.medium",
@@ -158,14 +156,14 @@ const ComponentSelector = () => {
       return
     }
 
-    // TODO: add new section to page/editor state
+    // Deferred: add new section to page/editor state
     // NOTE: Only paragraph should go to tiptap editor
     // the rest should use json forms
     const nextState: DrawerState["state"] =
       sectionType === "prose" ? "nativeEditor" : "complexEditor"
     const newComponent =
       // SAFETY: DEFAULT_BLOCKS keys align with sectionType and return valid Isomer components
-      DEFAULT_BLOCKS[sectionType] as IsomerComponent | undefined
+      DEFAULT_BLOCKS[sectionType]
 
     const updatedBlocks = newComponent
       ? [...savedPageState.content, newComponent]

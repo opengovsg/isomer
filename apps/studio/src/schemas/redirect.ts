@@ -37,14 +37,15 @@ export const MAX_REDIRECT_PAGE_SIZE = 100
 // pass; the wildcard-shape refine below constrains where it may appear.
 // Whitelisting keeps spaces, control chars, "?", "#", "\\", and non-ASCII out up
 // front — a query string is not a supported redirect source.
-const SOURCE_ALLOWED_CHARS_REGEX = /^[A-Za-z0-9\-._~!$&'()*+,;=:@%/]+$/
+const SOURCE_ALLOWED_CHARS_REGEX = /^[A-Za-z0-9\-._~!$&'()*+,;=:@%/]+$/u
 
 // ASCII control characters (0x00-0x1f, 0x7f). A destination is persisted verbatim
 // and later emitted into the published site's redirect rules (S3 object metadata
 // and ultimately the CloudFront Location header), so a CR/LF/NUL must never reach
 // it. These are stripped (not rejected) — the global flag strips every match.
 // (Source paths use the stricter whitelist above instead.)
-const CONTROL_CHARS_REGEX = /[\x00-\x1F\x7F]/g
+// oxlint-disable-next-line eslint/no-control-regex -- intentional control-char stripping
+const CONTROL_CHARS_REGEX = /[\u0000-\u001F\u007F]/gu
 
 // Anchored form of the shared [resource:siteId:resourceId] reference (the shared
 // regex is unanchored, so a value only counts as a reference when it is exactly
@@ -53,6 +54,7 @@ const CONTROL_CHARS_REGEX = /[\x00-\x1F\x7F]/g
 // permalink changes.
 const REFERENCE_DESTINATION_REGEX = new RegExp(
   `^${REFERENCE_LINK_REGEX.source}$`,
+  "u",
 )
 
 // A prefix check ("https://") is too lax: "https://https://www.isomer.gov.sg"
@@ -79,13 +81,13 @@ export const redirectKind = (source: string): RedirectKind =>
 
 // Strips slashes from both ends of a path so "/foo/", "foo" and "foo//"
 // all normalise to the same inner segments before validation.
-const trimSlashes = (value: string) => value.replaceAll(/^\/+|\/+$/g, "")
+const trimSlashes = (value: string) => value.replaceAll(/^\/+|\/+$/gu, "")
 
 // Normalises a path to a single leading slash, no trailing slash, collapsed
 // runs ("/foo/", "foo", "foo//" -> "/foo"). Exported so the server can compare
 // a destination path against stored sources, persisted in this form.
 export const normalizeRedirectPath = (value: string) =>
-  `/${trimSlashes(value).replaceAll(/\/{2,}/g, "/")}`
+  `/${trimSlashes(value).replaceAll(/\/{2,}/gu, "/")}`
 
 // Sources are additionally lowercased — page permalinks are lowercase-only, so
 // a source must lowercase to compare against (and not shadow) a real page. A
@@ -125,10 +127,16 @@ const sourceSchema = z
   // collapsing "//" or a "." segment can't smuggle a root wildcard through.
   .refine(
     (value) => {
-      if (!value.includes("*")) {return true}
-      if (!value.endsWith("/*")) {return false}
+      if (!value.includes("*")) {
+        return true
+      }
+      if (!value.endsWith("/*")) {
+        return false
+      }
       const prefix = value.slice(0, -2)
-      if (prefix.includes("*")) {return false}
+      if (prefix.includes("*")) {
+        return false
+      }
       return trimSlashes(prefix)
         .split("/")
         .some((segment) => segment !== "" && segment !== ".")
@@ -210,7 +218,7 @@ export const refineSourceDestinationDiffer = (
     normalizeRedirectSource(destination) === source
   ) {
     ctx.addIssue({
-      code: z.ZodIssueCode.custom,
+      code: "custom",
       message: "You can't redirect a URL to itself.",
       path: ["destination"],
     })
@@ -293,10 +301,8 @@ export const bulkRedirectsCsvSchema = z.object({
 export type BulkRedirectsCsvInput = z.infer<typeof bulkRedirectsCsvSchema>
 
 export const deleteRedirectSchema = z.object({
-  siteId: z.number().min(1),
-  // Redirect.id is a bigint in the DB, surfaced as a string by kysely — reject
-  // non-numeric ids here instead of letting them blow up as a DB cast error
   id: generateBigIntSchema("redirect ID"),
+  siteId: z.number().min(1),
 })
 export type DeleteRedirectInput = z.infer<typeof deleteRedirectSchema>
 
@@ -306,9 +312,6 @@ const redirectSortFieldSchema = z.enum(["source", "destination", "publishedAt"])
 export type RedirectSortField = z.infer<typeof redirectSortFieldSchema>
 
 export const listRedirectsSchema = offsetPaginationSchema.extend({
-  siteId: z.number().min(1),
-  sortBy: redirectSortFieldSchema.default("publishedAt"),
-  sortDirection: z.enum(["asc", "desc"]).default("desc"),
   // Override the shared (uncapped) limit with a bounded one — see
   // MAX_REDIRECT_PAGE_SIZE.
   limit: z
@@ -317,6 +320,9 @@ export const listRedirectsSchema = offsetPaginationSchema.extend({
     .positive()
     .max(MAX_REDIRECT_PAGE_SIZE, { message: "Page size is too large" })
     .default(25),
+  siteId: z.number().min(1),
+  sortBy: redirectSortFieldSchema.default("publishedAt"),
+  sortDirection: z.enum(["asc", "desc"]).default("desc"),
 })
 export type ListRedirectsInput = z.infer<typeof listRedirectsSchema>
 

@@ -49,7 +49,8 @@ export const Default: Story = {
     await new Promise((resolve) => setTimeout(resolve, 1000))
 
     const addUserButtons = await screen.findAllByText("Add new user")
-    const addUserButton = addUserButtons[0] // take the first one
+    const addUserButton = addUserButtons[0]
+    // take the first one
     if (addUserButton) {
       await userEvent.click(addUserButton, {
         pointerEventsCheck: 0,
@@ -63,7 +64,11 @@ export const InvalidEmail: Story = {
     const { canvasElement } = context
     await Default.play?.(context)
 
-    const emailInput = [...canvasElement.ownerDocument.querySelectorAll('input[name="email"][required]')][0]
+    const emailInput = [
+      ...canvasElement.ownerDocument.querySelectorAll(
+        'input[name="email"][required]',
+      ),
+    ][0]
     if (emailInput) {
       await userEvent.type(emailInput, "invalid-email")
     }
@@ -115,7 +120,11 @@ export const AdminSelectionDoesNotBypassWhitelistGate: Story = {
     const AdminRoleButton = await screen.findByText("Admin")
     await userEvent.click(AdminRoleButton)
 
-    const emailInput = [...canvasElement.ownerDocument.querySelectorAll('input[name="email"][required]')][0]
+    const emailInput = [
+      ...canvasElement.ownerDocument.querySelectorAll(
+        'input[name="email"][required]',
+      ),
+    ][0]
     if (emailInput) {
       await userEvent.type(emailInput, "someone@non-whitelisted-domain.com")
     }
@@ -131,7 +140,9 @@ export const AdminSelectionDoesNotBypassWhitelistGate: Story = {
     await expect(whitelistErrorText).toBeVisible()
 
     const sendInviteButton = await screen.findByText("Send invite")
-    await waitFor( async () => expect(sendInviteButton).toBeDisabled())
+    await waitFor(async () => {
+      await expect(sendInviteButton).toBeDisabled()
+    })
   },
 }
 
@@ -153,7 +164,11 @@ export const NonGovEmailWhitelistedForAdmin: Story = {
 
     const screen = within(canvasElement.ownerDocument.body)
 
-    const emailInput = [...canvasElement.ownerDocument.querySelectorAll('input[name="email"][required]')][0]
+    const emailInput = [
+      ...canvasElement.ownerDocument.querySelectorAll(
+        'input[name="email"][required]',
+      ),
+    ][0]
     if (emailInput) {
       await userEvent.type(emailInput, "someone@whitelisted-non-gov-domain.com")
     }
@@ -169,7 +184,9 @@ export const NonGovEmailWhitelistedForAdmin: Story = {
     await expect(adminWarningText).toBeVisible()
 
     const sendInviteButton = await screen.findByText("Send invite")
-    await waitFor( async () => expect(sendInviteButton).not.toBeDisabled())
+    await waitFor(async () => {
+      await expect(sendInviteButton).not.toBeDisabled()
+    })
   },
 }
 
@@ -188,7 +205,11 @@ export const EmailIsNotWhitelisted: Story = {
 
     const screen = within(canvasElement.ownerDocument.body)
 
-    const emailInput = [...canvasElement.ownerDocument.querySelectorAll('input[name="email"][required]')][0]
+    const emailInput = [
+      ...canvasElement.ownerDocument.querySelectorAll(
+        'input[name="email"][required]',
+      ),
+    ][0]
     if (emailInput) {
       await userEvent.type(emailInput, "blink@ifyouneed.help")
     }
@@ -211,7 +232,11 @@ export const Loading: Story = {
     await Default.play?.(context)
 
     const screen = within(canvasElement.ownerDocument.body)
-    const emailInput = [...canvasElement.ownerDocument.querySelectorAll('input[name="email"][required]')][0]
+    const emailInput = [
+      ...canvasElement.ownerDocument.querySelectorAll(
+        'input[name="email"][required]',
+      ),
+    ][0]
 
     if (emailInput) {
       await userEvent.type(emailInput, EMAIL)
@@ -246,7 +271,11 @@ export const ToastAfterAddingUser: Story = {
     await Default.play?.(context)
 
     const screen = within(canvasElement.ownerDocument.body)
-    const emailInput = [...canvasElement.ownerDocument.querySelectorAll('input[name="email"][required]')][0]
+    const emailInput = [
+      ...canvasElement.ownerDocument.querySelectorAll(
+        'input[name="email"][required]',
+      ),
+    ][0]
 
     if (emailInput) {
       await userEvent.type(emailInput, EMAIL)

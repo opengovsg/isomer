@@ -59,7 +59,7 @@ export const Default: Story = {}
 export const AddBlock: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const button = await canvas.findByRole("button", { name: /add block/i })
+    const button = await canvas.findByRole("button", { name: /add block/iu })
     await userEvent.click(button)
   },
 }
@@ -67,7 +67,7 @@ export const AddBlock: Story = {
 export const EditHero: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const button = await canvas.findByRole("button", { name: /hero banner/i })
+    const button = await canvas.findByRole("button", { name: /hero banner/iu })
     await userEvent.click(button)
   },
 }
@@ -77,7 +77,7 @@ export const SaveToast: Story = {
     await EditHero.play?.({ canvasElement, ...rest })
     const canvas = within(canvasElement)
     const saveButton = await canvas.findByRole("button", {
-      name: /Save changes/i,
+      name: /Save changes/iu,
     })
     await userEvent.click(saveButton)
   },
@@ -87,7 +87,7 @@ export const EditKeyStatistics: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const button = await canvas.findByRole("button", {
-      name: /Statistics/i,
+      name: /Statistics/iu,
     })
     await userEvent.click(button)
   },
@@ -112,12 +112,12 @@ export const NestedState: Story = {
     const canvas = within(canvasElement)
 
     const keyStatisticsButton = await canvas.findByRole("button", {
-      name: /statistics/i,
+      name: /statistics/iu,
     })
     await userEvent.click(keyStatisticsButton)
 
     const averageAllNightersButton = await canvas.findByRole("button", {
-      name: /average all nighters/i,
+      name: /average all nighters/iu,
     })
     await userEvent.click(averageAllNightersButton)
   },
@@ -125,7 +125,8 @@ export const NestedState: Story = {
 
 export const ErrorNestedState: Story = {
   parameters: {
-    disableMockDate: true, // Disable mockDateDecorator to prevent interference with error state
+    disableMockDate: true,
+    // Disable mockDateDecorator to prevent interference with error state
   },
   play: async (context) => {
     await NestedState.play?.(context)
@@ -133,7 +134,9 @@ export const ErrorNestedState: Story = {
     const { canvasElement } = context
     const canvas = within(canvasElement)
 
-    const textbox = await canvas.findByRole("textbox", { name: /description/i })
+    const textbox = await canvas.findByRole("textbox", {
+      name: /description/iu,
+    })
     await userEvent.clear(textbox)
 
     const returnToStatisticsButton =
@@ -179,15 +182,15 @@ export const AddAntiScamDisclaimerSaveBlockEnabled: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const addBlockButton = await canvas.findByRole("button", {
-      name: /add block/i,
+      name: /add block/iu,
     })
     await userEvent.click(addBlockButton)
     const antiScamBlockType = await canvas.findByRole("button", {
-      name: /anti-scam disclaimer/i,
+      name: /anti-scam disclaimer/iu,
     })
     await userEvent.click(antiScamBlockType)
     const saveBlockButton = await canvas.findByRole("button", {
-      name: /save block/i,
+      name: /save block/iu,
     })
     await expect(saveBlockButton).not.toBeDisabled()
   },
@@ -204,15 +207,15 @@ export const ReopenAntiScamDisclaimerSaveBlockDisabled: Story = {
     })
     const canvas = within(canvasElement)
     const saveAfterAdd = await canvas.findByRole("button", {
-      name: /save block/i,
+      name: /save block/iu,
     })
     await userEvent.click(saveAfterAdd)
     const antiScamBlockRow = await canvas.findByRole("button", {
-      name: /anti-scam disclaimer/i,
+      name: /anti-scam disclaimer/iu,
     })
     await userEvent.click(antiScamBlockRow)
     const saveAfterReopen = await canvas.findByRole("button", {
-      name: /save block/i,
+      name: /save block/iu,
     })
     await expect(saveAfterReopen).toBeDisabled()
   },

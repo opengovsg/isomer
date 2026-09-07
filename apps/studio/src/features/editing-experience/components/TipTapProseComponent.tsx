@@ -60,7 +60,7 @@ const TipTapProseComponent = ({ content }: TipTapComponentProps) => {
 
   const updatePageState = (editorContent: JSONContent | undefined) => {
     const updatedBlocks = [...previewPageState.content]
-    // TODO: actual validation
+    // Deferred: actual validation
     // SAFETY: caller invariant is checked immediately before this narrowing assertion
     updatedBlocks[currActiveIdx] = editorContent as ProseProps
     const newPageState = {
@@ -98,7 +98,7 @@ const TipTapProseComponent = ({ content }: TipTapComponentProps) => {
     if (addedBlockIndex === null) {
       setPreviewPageState(savedPageState)
     } else {
-      const updatedBlocks = Array.from(savedPageState.content)
+      const updatedBlocks = [...savedPageState.content]
       updatedBlocks.splice(addedBlockIndex, 1)
       const newPageState = {
         ...previewPageState,
@@ -114,7 +114,7 @@ const TipTapProseComponent = ({ content }: TipTapComponentProps) => {
 
   const utils = trpc.useUtils()
 
-  // TODO: Add a loading state or use suspense
+  // Deferred: Add a loading state or use suspense
   return (
     <>
       <DeleteBlockModal

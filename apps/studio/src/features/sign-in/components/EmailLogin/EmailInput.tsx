@@ -11,7 +11,7 @@ import { useRouter } from "next/router"
 import { useEffect } from "react"
 import { ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { useZodForm } from "~/lib/form"
-import { emailSignInSchema } from "~/schemas/auth/email/sign-in"
+import { emailSignInSchema } from "~/schemas/auth/email/signIn"
 import { trpc } from "~/utils/trpc"
 
 import type { VfnStepData } from "../SignInContext"
@@ -66,7 +66,7 @@ export const EmailInput: React.FC<EmailInputProps> = ({ onSuccess }) => {
         setErrorState("unauthorized")
       }
 
-      setError("email", { type: error.data?.code, message: error.message })
+      setError("email", { message: error.message, type: error.data?.code })
     },
     onSuccess,
   })
@@ -77,9 +77,9 @@ export const EmailInput: React.FC<EmailInputProps> = ({ onSuccess }) => {
     }
   }, [router.query.error, setError])
 
-  const handleSignIn = handleSubmit(({ email }) =>{  
-    loginMutation.mutate({ email }); }
-  )
+  const handleSignIn = handleSubmit(({ email }) => {
+    loginMutation.mutate({ email })
+  })
 
   return (
     <form onSubmit={handleSignIn} noValidate>

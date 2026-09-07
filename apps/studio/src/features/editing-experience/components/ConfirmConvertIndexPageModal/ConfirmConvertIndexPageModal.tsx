@@ -20,32 +20,30 @@ export const ConfirmConvertIndexPageModal = ({
   isOpen,
   onClose,
   onProceed,
-}: ConfirmConvertIndexPageModalProps): React.ReactNode => 
-  (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader pr="4.5rem">
-          Are you sure you want to accept these changes?
-        </ModalHeader>
+}: ConfirmConvertIndexPageModalProps): React.ReactNode => (
+  <Modal isOpen={isOpen} onClose={onClose}>
+    <ModalOverlay />
+    <ModalContent>
+      <ModalHeader pr="4.5rem">
+        Are you sure you want to accept these changes?
+      </ModalHeader>
 
-        <ModalCloseButton size="lg" />
+      <ModalCloseButton size="lg" />
 
-        <ModalBody>
-          <Text textStyle="body-2">This cannot be undone.</Text>
-        </ModalBody>
+      <ModalBody>
+        <Text textStyle="body-2">This cannot be undone.</Text>
+      </ModalBody>
 
-        <ModalFooter>
-          <HStack spacing="1rem">
-            <Button variant="clear" colorScheme="neutral" onClick={onClose}>
-              No, cancel
-            </Button>
-            <Button variant="solid" onClick={onProceed}>
-              Accept changes
-            </Button>
-          </HStack>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
-  )
-
+      <ModalFooter>
+        <HStack spacing="1rem">
+          <Button variant="clear" colorScheme="neutral" onClick={onClose}>
+            No, cancel
+          </Button>
+          <Button variant="solid" onClick={onProceed}>
+            Accept changes
+          </Button>
+        </HStack>
+      </ModalFooter>
+    </ModalContent>
+  </Modal>
+)

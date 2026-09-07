@@ -1,3 +1,4 @@
+import type { RouterOutput } from "~/utils/trpc"
 import { useJsonForms } from "@jsonforms/react"
 import { getResourceIdFromReferenceLink } from "@opengovsg/isomer-components"
 import { get } from "lodash-es"
@@ -5,8 +6,7 @@ import { useEffect, useMemo, useState } from "react"
 import { DEFAULT_BLOCKS } from "~/components/PageEditor/constants"
 import { siteSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { trpc } from '~/utils/trpc';
-import type { RouterOutput } from '~/utils/trpc';
+import { trpc } from "~/utils/trpc"
 
 import { AUTOPOPULATED_FIELDS } from "../constants"
 
@@ -20,7 +20,9 @@ const PLACEHOLDER_VALUES = new Set(
 )
 
 const isEmptyOrPlaceholder = (value: string | undefined): boolean => {
-  if (!value?.trim()) {return true}
+  if (!value?.trim()) {
+    return true
+  }
   return PLACEHOLDER_VALUES.has(value)
 }
 
@@ -38,7 +40,7 @@ export function usePrefillForCards({ data, path }: UsePrefillParams) {
   >(null)
 
   // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
-  const resourceId = getResourceIdFromReferenceLink(data as string)
+  const resourceId = getResourceIdFromReferenceLink(data)
 
   // NOTE: Omit last item because that points to this link control
   const parts = path.split(".").slice(0, -1)
@@ -46,7 +48,9 @@ export function usePrefillForCards({ data, path }: UsePrefillParams) {
   const parent = parts[0]
 
   const shouldFetch = useMemo(() => {
-    if (!resourceId || parent !== "cards") {return false}
+    if (!resourceId || parent !== "cards") {
+      return false
+    }
     return (
       data &&
       AUTOPOPULATED_FIELDS.some((field) =>
@@ -59,7 +63,9 @@ export function usePrefillForCards({ data, path }: UsePrefillParams) {
   }, [resourceId, parent, ctx.core?.data, basePath, data])
 
   useEffect(() => {
-    if (!shouldFetch || !resourceId) {return}
+    if (!shouldFetch || !resourceId) {
+      return
+    }
 
     void utils.page.getPrefill
       .fetch({ resourceId, siteId: Number(siteId) })
@@ -69,7 +75,9 @@ export function usePrefillForCards({ data, path }: UsePrefillParams) {
       })
   }, [shouldFetch, resourceId, siteId, utils.page.getPrefill])
 
-  if (!shouldFetch || !prefillData) {return undefined}
+  if (!shouldFetch || !prefillData) {
+    return
+  }
 
   const needsConfirmation = !AUTOPOPULATED_FIELDS.every((field) =>
     isEmptyOrPlaceholder(

@@ -63,9 +63,9 @@ export const EditUserModal = () => {
   const { mutate, isPending } = trpc.user.update.useMutation({
     onError: (err) => {
       toast({
+        description: err.message,
         status: "error",
         title: "Failed to update user",
-        description: err.message,
       })
     },
     onSettled: onClose,
@@ -125,7 +125,9 @@ export const EditUserModal = () => {
                       key={role}
                       value={role}
                       isSelected={selectedRole === role}
-                      onClick={() =>{  setValue("role", role); }}
+                      onClick={() => {
+                        setValue("role", role)
+                      }}
                       permissionLabels={permissionLabels}
                     />
                   ))}

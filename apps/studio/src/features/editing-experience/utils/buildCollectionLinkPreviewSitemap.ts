@@ -41,11 +41,11 @@ export const buildCollectionLinkPreviewSitemap = ({
     children: [
       {
         id: "9999999",
-        title,
-        summary: link.description ?? "",
+        lastModified,
         layout: ISOMER_USABLE_PAGE_LAYOUTS.Link,
         permalink,
-        lastModified,
+        summary: link.description ?? "",
+        title,
         ...link,
       },
     ],

@@ -73,8 +73,9 @@ export const DeleteResourceModal = ({
   const [{ resourceId, ...rest }, setDeleteCollectionModalState] = useAtom(
     deleteResourceModalAtom,
   )
-  const onClose = () =>{ 
-    setDeleteCollectionModalState(DEFAULT_RESOURCE_MODAL_STATE); }
+  const onClose = () => {
+    setDeleteCollectionModalState(DEFAULT_RESOURCE_MODAL_STATE)
+  }
   return (
     <Modal isOpen={!!resourceId} onClose={onClose}>
       <ModalOverlay />
@@ -110,7 +111,7 @@ const DeleteResourceModalContent = ({
       toast({
         title: `Failed to delete ${label}`,
         status: "error",
-        // TODO: check if this property is correct
+        // Deferred: check if this property is correct
         description: err.message,
         ...BRIEF_TOAST_SETTINGS,
       })
@@ -118,22 +119,22 @@ const DeleteResourceModalContent = ({
     onSettled: onClose,
     onSuccess: async () => {
       posthog.capture("resource_deleted", {
-        site_id: siteId,
-        resource_type: resourceType,
         has_redirects: redirectCount > 0,
+        resource_type: resourceType,
+        site_id: siteId,
       })
-      // TODO: here and elsewhere, we should aim to simplify our query pattern
+      // Deferred: here and elsewhere, we should aim to simplify our query pattern
       // such that the invalidation logic is clear
       await utils.resource.listWithoutRoot.invalidate()
       await utils.resource.getChildrenOf.invalidate()
       await utils.resource.getWithFullPermalink.invalidate({
-        siteId,
         resourceId,
+        siteId,
       })
       await utils.collection.list.invalidate()
       toast({
-        title: `${upperFirst(label)} deleted!`,
         status: "success",
+        title: `${upperFirst(label)} deleted!`,
         ...BRIEF_TOAST_SETTINGS,
       })
     },
@@ -151,7 +152,11 @@ const DeleteResourceModalContent = ({
       <ModalBody>
         <Text textStyle="body-1">{getWarningText(resourceType)}</Text>
         <HStack mt="1.5rem">
-          <Checkbox onChange={() =>{  setIsChecked((prev) => !prev); }}>
+          <Checkbox
+            onChange={() => {
+              setIsChecked((prev) => !prev)
+            }}
+          >
             <Text textStyle="body-2">Yes, delete this {label} permanently</Text>
           </Checkbox>
         </HStack>

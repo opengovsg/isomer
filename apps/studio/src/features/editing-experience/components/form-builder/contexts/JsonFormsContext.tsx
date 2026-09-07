@@ -10,11 +10,7 @@ import { memo } from "react"
 
 export const withJsonFormsControlWithDetailProps = (
   Component: ComponentType<ControlWithDetailProps>,
-) => 
-  withJsonFormsContext(
-    withContextToControlWithDetailProps(memo(Component)),
-  )
-
+) => withJsonFormsContext(withContextToControlWithDetailProps(memo(Component)))
 
 // NOTE: This is a custom handrolled higher order component.
 // It is needed to provide both `uischemas` as well as the `handleChange` prop.

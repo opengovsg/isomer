@@ -32,7 +32,7 @@ export type AuditLogMetadata = AuditLogEntitySnapshot
 declare global {
   // oxlint-disable-next-line @typescript-eslint/no-namespace
   namespace PrismaJson {
-    // TODO: Rename all with XXXYYYJson instead of XXXJsonYYY
+    // Deferred: Rename all with XXXYYYJson instead of XXXJsonYYY
     type SiteJsonConfig = Tagged<_IsomerSiteConfigProps, "JSONB">
     type SiteThemeJson = Tagged<_IsomerSiteThemeProps, "JSONB">
     type BlobJsonContent = Tagged<_IsomerSchema, "JSONB">

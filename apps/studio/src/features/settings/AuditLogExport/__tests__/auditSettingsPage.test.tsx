@@ -104,9 +104,9 @@ describe("AuditLogExportSettingsPage", () => {
     renderWith(editorAbility)
 
     // Assert
-    await waitFor(() =>{ 
-      expect(replace).toHaveBeenCalledWith(`/sites/${SITE_ID}/settings/agency`); },
-    )
+    await waitFor(() => {
+      expect(replace).toHaveBeenCalledWith(`/sites/${SITE_ID}/settings/agency`)
+    })
     expect(screen.queryByRole("heading", { name: "Audit logs" })).toBeNull()
   })
 
@@ -130,9 +130,9 @@ describe("AuditLogExportSettingsPage", () => {
     renderWith(adminAbility)
 
     // Assert: gated identically to the non-admin path
-    await waitFor(() =>{ 
-      expect(replace).toHaveBeenCalledWith(`/sites/${SITE_ID}/settings/agency`); },
-    )
+    await waitFor(() => {
+      expect(replace).toHaveBeenCalledWith(`/sites/${SITE_ID}/settings/agency`)
+    })
     expect(screen.queryByRole("heading", { name: "Audit logs" })).toBeNull()
   })
 

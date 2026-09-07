@@ -1,6 +1,7 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { Dispatch, PropsWithChildren, SetStateAction } from "react"
 import type { ModifiedAsset } from "~/types/assets"
+import type { DrawerState } from "~/types/editorDrawer"
 import type { ResourceType } from "~prisma/generated/generatedEnums"
 import {
   createContext,
@@ -11,7 +12,6 @@ import {
 } from "react"
 // oxlint-disable-next-line react-doctor/no-flush-sync -- JSONForms preview updates must flush synchronously; see commitPreviewPageState.
 import { flushSync } from "react-dom"
-import type { DrawerState } from "~/types/editorDrawer"
 
 // Preview-iframe interaction state: which block is hovered/active in the
 // editor, and a reference to the preview iframe's document to act on it.

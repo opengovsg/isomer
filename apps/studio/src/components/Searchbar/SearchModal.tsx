@@ -85,7 +85,9 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
         <ModalHeader p={0}>
           <OgpSearchBar
             defaultIsExpanded
-            onChange={({ target }) =>{  setSearchValue(target.value); }}
+            onChange={({ target }) => {
+              setSearchValue(target.value)
+            }}
             minW={minWidth}
             maxW={maxWidth}
             // border={0}

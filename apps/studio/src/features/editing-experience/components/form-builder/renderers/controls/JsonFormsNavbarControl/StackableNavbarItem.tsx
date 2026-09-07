@@ -38,7 +38,7 @@ import { getInstancePathFromNavbarItemPath, getNavbarItemPath } from "./utils"
 type NavbarAjvError = ErrorObject<string, Record<string, never>>
 
 const getNumberOfErrors = (errors: NavbarAjvError[], path: string) => {
-  const instancePath = `/${path.replaceAll('.', "/")}`
+  const instancePath = `/${path.replaceAll(".", "/")}`
   return errors.filter((error) => error.instancePath.startsWith(instancePath))
     .length
 }
@@ -139,9 +139,9 @@ export const StackableNavbarItem = ({
         dragHandle: mainItemDragHandleElement,
         element: mainItemElement,
         getInitialData: () => ({
-          type: "navbar-item",
-          navbarId: mainItemElement.dataset.id,
           dropTargetId: getNavbarItemPath(index),
+          navbarId: mainItemElement.dataset.id,
+          type: "navbar-item",
         }),
         onDragStart: () => {
           mainItemElement.style.opacity = "0.5"
@@ -173,8 +173,8 @@ export const StackableNavbarItem = ({
                 dropTargetId: getNavbarItemPath(index),
               },
               {
-                input,
                 element,
+                input,
                 operations: {
                   combine: "available",
                   // We don't want reordering to happen when dropping directly
@@ -185,16 +185,20 @@ export const StackableNavbarItem = ({
               },
             ),
             {
-              input,
-              element,
               allowedEdges: ["top", "bottom"],
+              element,
+              input,
             },
           ),
         getIsSticky: () => true,
         onDrag: handleDrag,
         onDragEnter: handleDrag,
-        onDragLeave: () =>{  setNavbarItemClosestEdge(null); },
-        onDrop: () =>{  setNavbarItemClosestEdge(null); },
+        onDragLeave: () => {
+          setNavbarItemClosestEdge(null)
+        },
+        onDrop: () => {
+          setNavbarItemClosestEdge(null)
+        },
       }),
 
       // Subitems dropzone, for subitems within the same group to be rearranged
@@ -293,7 +297,9 @@ export const StackableNavbarItem = ({
                       index={idx}
                       parentIndex={index}
                       dragPresentation={{ isInvalid, isSubItem: true }}
-                      onEditItem={() =>{  onEdit(idx); }}
+                      onEditItem={() => {
+                        onEdit(idx)
+                      }}
                       onDeleteItem={() => {
                         setSubItemToDelete(idx)
                         onDeleteSubItemModalOpen()

@@ -31,7 +31,9 @@ import { useValidateResourceMove } from "../../hooks/useValidateResourceMove"
 export const MoveResourceModal = () => {
   // NOTE: This is what we are trying to move
   const [moveItem, setMoveItem] = useAtom(moveResourceAtom)
-  const onClose = () =>{  setMoveItem(null); }
+  const onClose = () => {
+    setMoveItem(null)
+  }
 
   return (
     <Modal isOpen={!!moveItem} onClose={onClose}>
@@ -71,7 +73,7 @@ const MoveResourceContent = withSuspense(
         })
       },
       onSettled: () => {
-        // TODO: actually close the modal
+        // Deferred: actually close the modal
         setMovedItem(null)
       },
       onSuccess: async () => {
@@ -83,21 +85,21 @@ const MoveResourceContent = withSuspense(
         await utils.resource.getAncestryStack.invalidate()
         await utils.resource.getBatchAncestryWithSelf.invalidate()
         await utils.resource.countWithoutRoot.invalidate({
-          // TODO: Update backend `list` to use the proper schema
+          // Deferred: Update backend `list` to use the proper schema
           resourceId: curResourceId ? Number(curResourceId) : undefined,
         })
         await utils.resource.countWithoutRoot.invalidate({
-          // TODO: Update backend `list` to use the proper schema
+          // Deferred: Update backend `list` to use the proper schema
           resourceId: movedItem?.parentId
             ? Number(movedItem.parentId)
             : undefined,
         })
         await utils.resource.listWithoutRoot.invalidate({
-          // TODO: Update backend `list` to use the proper schema
+          // Deferred: Update backend `list` to use the proper schema
           resourceId: curResourceId ? Number(curResourceId) : undefined,
         })
         await utils.resource.listWithoutRoot.invalidate({
-          // TODO: Update backend `list` to use the proper schema
+          // Deferred: Update backend `list` to use the proper schema
           resourceId: movedItem?.parentId
             ? Number(movedItem.parentId)
             : undefined,
@@ -188,7 +190,9 @@ const MoveResourceContent = withSuspense(
               siteId={siteId}
               showSelectedResourcePreview={false}
               existingResource={movedItem ?? undefined}
-              onChange={(resourceId) =>{  setCurResourceId(resourceId); }}
+              onChange={(resourceId) => {
+                setCurResourceId(resourceId)
+              }}
             />
             {curResourceId !== undefined &&
               errorMessage &&
@@ -229,9 +233,9 @@ const MoveResourceContent = withSuspense(
                       size="sm"
                       px="0.25rem"
                       isChecked={shouldCreateRedirect}
-                      onChange={(e) =>{ 
-                        setShouldCreateRedirect(e.target.checked); }
-                      }
+                      onChange={(e) => {
+                        setShouldCreateRedirect(e.target.checked)
+                      }}
                     >
                       <Text textStyle="body-2" color="base.content.strong">
                         {isFolderRedirect

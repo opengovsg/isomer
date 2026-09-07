@@ -46,11 +46,11 @@ export const Admin: Story = {
   parameters: handlersForRole(resourceHandlers.getRolesFor.admin()),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await waitFor(async () =>
+    await waitFor(async () => {
       await expect(
         await canvas.findByRole("button", { name: "Publish" }),
-      ).toBeVisible(),
-    )
+      ).toBeVisible()
+    })
   },
 }
 
@@ -59,11 +59,11 @@ export const Publisher: Story = {
   parameters: handlersForRole(resourceHandlers.getRolesFor.publisher()),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await waitFor(async () =>
+    await waitFor(async () => {
       await expect(
         await canvas.findByRole("button", { name: "Publish" }),
-      ).toBeVisible(),
-    )
+      ).toBeVisible()
+    })
   },
 }
 
@@ -72,10 +72,10 @@ export const Editor: Story = {
   parameters: handlersForRole(resourceHandlers.getRolesFor.editor()),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await waitFor( async () =>
-      expect(
+    await waitFor(async () => {
+      await expect(
         canvas.queryByRole("button", { name: "Publish" }),
-      ).not.toBeInTheDocument(),
-    )
+      ).not.toBeInTheDocument()
+    })
   },
 }

@@ -86,26 +86,25 @@ export const DashboardLayout = ({
         <Breadcrumb
           size="sm"
           w="100%"
-          minH="1.25rem" // maintain height even when single breadcrumb
+          minH="1.25rem"
+          // maintain height even when single breadcrumb
           display="flex"
           alignItems="center"
         >
-          {allBreadcrumbsExceptLast.map(({ href, label }) => 
-            (
-              <BreadcrumbItem key={href ?? label}>
-                <BreadcrumbLink href={href} as={NextLink}>
-                  <Text
-                    textStyle="caption-2"
-                    color="interaction.links.default"
-                    noOfLines={1}
-                    w="max-content"
-                  >
-                    {label}
-                  </Text>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-            )
-          )}
+          {allBreadcrumbsExceptLast.map(({ href, label }) => (
+            <BreadcrumbItem key={href ?? label}>
+              <BreadcrumbLink href={href} as={NextLink}>
+                <Text
+                  textStyle="caption-2"
+                  color="interaction.links.default"
+                  noOfLines={1}
+                  w="max-content"
+                >
+                  {label}
+                </Text>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+          ))}
           <BreadcrumbItem
             key={lastBreadcrumb?.href}
             overflow="hidden"

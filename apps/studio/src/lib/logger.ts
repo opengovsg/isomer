@@ -2,8 +2,8 @@ import type { NextApiRequest } from "next"
 import { env } from "~/env.mjs"
 import getIP from "~/utils/getClientIp"
 
-import { createBaseLogger as createBaseLoggerPkg } from '@isomer/logging';
-import type { Logger } from '@isomer/logging';
+import type { Logger } from "@isomer/logging"
+import { createBaseLogger as createBaseLoggerPkg } from "@isomer/logging"
 
 interface LoggerOptions {
   path: string

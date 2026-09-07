@@ -82,19 +82,20 @@ export const generateSignedPutUrl = async ({
   | "ContentDisposition"
   | "ContentLength"
   | "Tagging"
->): Promise<string> => 
+>): Promise<string> =>
   await getSignedUrl(
     storage,
     new PutObjectCommand({
       Bucket,
-      Key,
-      ContentType,
       ContentDisposition,
       ContentLength,
+      ContentType,
+      Key,
       Tagging,
     }),
     {
-      expiresIn: 60 * 5, // 5 minutes
+      expiresIn: 60 * 5,
+      // 5 minutes
       // Sign these headers so S3 rejects PUTs with different values (prevents type-confusion XSS and enforces exact upload size)
       signableHeaders: new Set([
         "content-type",
@@ -104,12 +105,11 @@ export const generateSignedPutUrl = async ({
     },
   )
 
-
 export const generateSignedGetUrl = async (
   { Bucket, Key }: Pick<GetObjectCommandInput, "Bucket" | "Key">,
   // Default kept at 5 minutes so all existing callers are unchanged.
   expiresIn: number = 60 * 5,
-): Promise<string> => 
+): Promise<string> =>
   await getSignedUrl(
     storage,
     new GetObjectCommand({
@@ -121,7 +121,6 @@ export const generateSignedGetUrl = async (
     },
   )
 
-
 export const deleteFile = async ({
   Key,
   Bucket,
@@ -130,7 +129,9 @@ export const deleteFile = async ({
   // PutObjectTagging), so this soft-delete tagging can't work there anyway.
   // It's also tied to the scheduled-publishing/gazette retention workflow,
   // which is meaningless for ephemeral preview data, so skip to a no-op.
-  if (isR2Configured) {return}
+  if (isR2Configured) {
+    return
+  }
   const objectTag = await storage.send(
     new GetObjectTaggingCommand({
       Bucket,
@@ -187,9 +188,15 @@ export const setAssetAsPublished = async ({
   // ~27 years — applying it to a shared preview bucket would permanently
   // lock every test upload. The GuardDuty malware-scan tag check is also
   // moot, since GuardDuty is an AWS-only service that never scans R2 objects.
-  if (isR2Configured) {return}
-  if (!Bucket) {throw new Error("Bucket must be defined")}
-  if (!Key) {throw new Error("Key must be defined")}
+  if (isR2Configured) {
+    return
+  }
+  if (!Bucket) {
+    throw new Error("Bucket must be defined")
+  }
+  if (!Key) {
+    throw new Error("Key must be defined")
+  }
 
   const objectTag = await storage.send(
     new GetObjectTaggingCommand({
@@ -289,7 +296,9 @@ interface AwsS3NotFoundError {
 }
 
 const isNotFoundError = (error: AwsS3NotFoundError): boolean => {
-  if (error === null || Object(error) !== error) {return false}
+  if (error === null || Object(error) !== error) {
+    return false
+  }
   const { name, $metadata } = error
   return (
     name === "NotFound" ||
@@ -322,7 +331,9 @@ export const copyFile = async ({
   SourceKey: string
   DestKey: string
 }) => {
-  if (!Bucket) {throw new Error("Bucket must be defined")}
+  if (!Bucket) {
+    throw new Error("Bucket must be defined")
+  }
 
   return await storage.send(
     new CopyObjectCommand({
@@ -340,7 +351,9 @@ export const markScheduledAssetAsCancelled = async ({
   // R2 doesn't implement the S3 object tagging API, so this can't work
   // there anyway. It's also tied to the scheduled-publishing workflow,
   // which is meaningless for ephemeral preview data.
-  if (isR2Configured) {return}
+  if (isR2Configured) {
+    return
+  }
   const objectTag = await storage.send(
     new GetObjectTaggingCommand({
       Bucket,
@@ -388,9 +401,9 @@ export const getBlob = async (bucketName: string, key: string) => {
     return byteArr
   } catch (error) {
     console.error({
-      message: "Error when getting blob",
-      error: error,
+      error,
       merged: { bucketName, key },
+      message: "Error when getting blob",
     })
     throw error
   }

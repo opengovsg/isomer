@@ -69,7 +69,9 @@ const JsonFormsMetaImageControl = (props: JsonFormsMetaImageControlProps) => {
               fileSize: file.size,
             })
 
-            if (parseResult.success) {return null}
+            if (parseResult.success) {
+              return null
+            }
             // NOTE: safe assertion here because we're in error path and there's at least 1 error
             return (
               parseResult.error.issues[0]?.message ||

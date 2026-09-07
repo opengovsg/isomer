@@ -4,7 +4,8 @@ interface PosthogModule {
   default: typeof PostHogInstance
 }
 
-let loadPosthogModule: () => Promise<PosthogModule> =  async () => import("posthog-js")
+let loadPosthogModule: () => Promise<PosthogModule> = async () =>
+  await import("posthog-js")
 
 let queue: Promise<void> = Promise.resolve()
 
@@ -17,7 +18,7 @@ export const setPosthogModuleLoaderForTests = (
 
 /** @internal Restores the default posthog-js module loader after unit tests. */
 export const resetPosthogModuleLoaderForTests = () => {
-  loadPosthogModule =  async () => import("posthog-js")
+  loadPosthogModule = async () => await import("posthog-js")
 }
 
 /**
@@ -28,11 +29,13 @@ export const resetPosthogModuleLoaderForTests = () => {
  * import takes to resolve — e.g. a logout's `reset()` can never run after a
  * later login's `identify()` just because its import happened to be slower.
  */
-export const withPosthog =  async (fn: (posthog: typeof PostHogInstance) => void) => {
+export const withPosthog = async (
+  fn: (posthog: typeof PostHogInstance) => void,
+) => {
   queue = queue
-    .then( async () => loadPosthogModule())
+    .then(async () => await loadPosthogModule())
     .then(({ default: posthog }) => {
       fn(posthog)
     })
-  return queue
+  await queue
 }

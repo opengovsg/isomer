@@ -246,7 +246,9 @@ const SaveButton = ({
       isLoading={isLoading}
       isDisabled={!isEmpty(errors)}
       onClick={() => {
-        if (!isEmpty(errors)) {return}
+        if (!isEmpty(errors)) {
+          return
+        }
         onClick()
       }}
     >

@@ -31,32 +31,30 @@ const ReplaceContentModal = ({
   isOpen,
   onClose,
   onProceed,
-}: ReplaceContentModalProps) => 
-  (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>
-          Replace content with details from the linked page?
-        </ModalHeader>
-        <ModalBody>
-          <Text>
-            If the linked page has a title, summary or thumbnail, they&apos;ll
-            be copied over.
-          </Text>
-        </ModalBody>
-        <ModalFooter>
-          <HStack spacing={2}>
-            <Button variant="clear" onClick={onClose}>
-              No, keep my content
-            </Button>
-            <Button onClick={onProceed}>Yes, replace</Button>
-          </HStack>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
-  )
-
+}: ReplaceContentModalProps) => (
+  <Modal isOpen={isOpen} onClose={onClose}>
+    <ModalOverlay />
+    <ModalContent>
+      <ModalHeader>
+        Replace content with details from the linked page?
+      </ModalHeader>
+      <ModalBody>
+        <Text>
+          If the linked page has a title, summary or thumbnail, they&apos;ll be
+          copied over.
+        </Text>
+      </ModalBody>
+      <ModalFooter>
+        <HStack spacing={2}>
+          <Button variant="clear" onClick={onClose}>
+            No, keep my content
+          </Button>
+          <Button onClick={onProceed}>Yes, replace</Button>
+        </HStack>
+      </ModalFooter>
+    </ModalContent>
+  </Modal>
+)
 
 export const jsonFormsPrefillLinkControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.LinkControl,
@@ -93,13 +91,17 @@ const JsonFormsPrefillLinkControl = ({
     onOpen: onPrefillModalOpen,
   } = useDisclosure()
   const overrideFields = useCallback(() => {
-    if (!prefill?.data) {return}
+    if (!prefill?.data) {
+      return
+    }
     // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
     const prefillData = prefill.data as Record<string, string | undefined>
     AUTOPOPULATED_FIELDS.forEach((field) => {
       const prefillField = prefillFieldMappings[field]
       const value = prefillData[prefillField]
-      if (value) {handleChange(`${prefill.basePath}.${field}`, value)}
+      if (value) {
+        handleChange(`${prefill.basePath}.${field}`, value)
+      }
     })
     toast({
       status: "success",
@@ -110,9 +112,15 @@ const JsonFormsPrefillLinkControl = ({
   }, [handleChange, prefill, toast])
 
   useEffect(() => {
-    if (!prefill?.data) {return}
-    if (!canPrefill) {return}
-    if (!data) {return}
+    if (!prefill?.data) {
+      return
+    }
+    if (!canPrefill) {
+      return
+    }
+    if (!data) {
+      return
+    }
 
     const timeoutId = setTimeout(() => {
       if (!prefill.needsConfirmation) {
@@ -123,7 +131,9 @@ const JsonFormsPrefillLinkControl = ({
       onPrefillModalOpen()
     }, 0)
 
-    return () =>{  clearTimeout(timeoutId); }
+    return () => {
+      clearTimeout(timeoutId)
+    }
   }, [
     canPrefill,
     data,

@@ -22,7 +22,7 @@ export const useValidateResourceMove = ({
     trpc.resource.getMetadataById.useQuery(
       destinationId === null
         ? skipToken
-        : { siteId, resourceId: destinationId },
+        : { resourceId: destinationId, siteId },
     )
 
   const { data: rootPage, isLoading: isRootPageLoading } =
@@ -54,9 +54,9 @@ export const useValidateResourceMove = ({
   const errorMessage =
     isValidMove instanceof Error
       ? isValidMove.message
-      : (!isValidMove
-        ? "Invalid resource move"
-        : undefined)
+      : (isValidMove
+        ? undefined
+        : "Invalid resource move")
 
   return {
     errorMessage,

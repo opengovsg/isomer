@@ -1,14 +1,19 @@
 import type { UnwrapTagged } from "type-fest"
+import type { DB, Transaction } from "~/server/modules/database/types"
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { db } from "~/server/modules/database/database"
-import { ResourceState, ResourceType } from '~/server/modules/database/types';
-import type { DB, Transaction } from '~/server/modules/database/types';
+import { ResourceState, ResourceType } from "~/server/modules/database/types"
 import { jsonb } from "~/server/modules/database/utils"
 
-import { buildConversionReport, toFolderPlan } from './helpers';
-import type { ConversionPlan, ConversionReportEntry, FolderPlan, PagePlan } from './helpers';
+import type {
+  ConversionPlan,
+  ConversionReportEntry,
+  FolderPlan,
+  PagePlan,
+} from "./helpers"
+import { buildConversionReport, toFolderPlan } from "./helpers"
 
 // ---------------------------------------------------------------------------
 // Blob helpers (local copies — avoid resource.service, which imports
@@ -133,7 +138,9 @@ export const incrementVersion = async ({
   if (!page) {
     throw new Error(`Resource ${resourceId} not found`)
   }
-  if (!page.draftBlobId) {return null}
+  if (!page.draftBlobId) {
+    return null
+  }
 
   let newVersionNum = 1
   let previousVersion: ScriptVersion | null = null
@@ -182,7 +189,9 @@ export const verifySite = async (siteId: number) => {
     .where("id", "=", siteId)
     .select(["id", "name"])
     .executeTakeFirst()
-  if (!site) {throw new Error(`Site ${siteId} not found`)}
+  if (!site) {
+    throw new Error(`Site ${siteId} not found`)
+  }
   return site
 }
 
@@ -210,7 +219,9 @@ export const verifyUser = async (userId: string) => {
     .where("id", "=", userId)
     .select("id")
     .executeTakeFirst()
-  if (!user) {throw new Error(`User ${userId} not found`)}
+  if (!user) {
+    throw new Error(`User ${userId} not found`)
+  }
   return user
 }
 
@@ -218,8 +229,7 @@ export const verifyUser = async (userId: string) => {
 // Plan + report I/O
 // ---------------------------------------------------------------------------
 
-const defaultOutDir = () =>
-  join(import.meta.dirname, ".out")
+const defaultOutDir = () => join(import.meta.dirname, ".out")
 
 export const folderPlanFileName = (folderId: string) =>
   `convert-folder-${folderId}.json`
@@ -264,12 +274,11 @@ export const loadConversionPlan = (
   // SAFETY: plan files are written by writePlanFiles using the same FolderPlan shape.
   const folderPlan = JSON.parse(readFileSync(folderPath, "utf-8")) as FolderPlan
 
-  const readResource = (resourceId: string): PagePlan => 
+  const readResource = (resourceId: string): PagePlan =>
     // SAFETY: resource plan files are written by writePlanFiles using PagePlan.
     JSON.parse(
       readFileSync(join(baseDir, resourcePlanFileName(resourceId)), "utf-8"),
     ) as PagePlan
-  
 
   return {
     defaultCategory: folderPlan.defaultCategory,
@@ -311,7 +320,7 @@ export const writeReportFile = (
   baseDir: string = defaultOutDir(),
 ): string => {
   const fileName = folderPlanFileName(plan.folder.id).replace(
-    /\.json$/,
+    /\.json$/u,
     ".report.json",
   )
   mkdirSync(baseDir, { recursive: true })
@@ -360,7 +369,9 @@ export const printPlan = (plan: ConversionPlan) => {
     console.log(
       `\n⚠  Article layout does not list these as allowed editor blocks:`,
     )
-    for (const [t, n] of flaggedTypes) {console.log(`     - ${t}: ${n}`)}
+    for (const [t, n] of flaggedTypes) {
+      console.log(`     - ${t}: ${n}`)
+    }
     console.log(
       "   The blocks will be preserved in the blob — they will continue to render —",
     )
@@ -375,4 +386,4 @@ export const printPlan = (plan: ConversionPlan) => {
 // ---------------------------------------------------------------------------
 
 export const validateNumericId = (label: string) => (v: string) =>
-  /^\d+$/.test(v.trim()) || `${label} must be a numeric string`
+  /^\d+$/u.test(v.trim()) || `${label} must be a numeric string`

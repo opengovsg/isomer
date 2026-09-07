@@ -90,7 +90,9 @@ export const Default: Story = {
     const moveButton = (
       await within(canvasElement.ownerDocument.body).findByText("Move to...")
     ).closest("button")
-    if (!moveButton) {throw new Error("Move button not found")}
+    if (!moveButton) {
+      throw new Error("Move button not found")
+    }
     await userEvent.click(moveButton)
   },
 }
@@ -113,7 +115,9 @@ export const SingleClick: Story = {
     const folder1 = (
       await within(canvasElement.ownerDocument.body).findByText("Folder 1")
     ).closest("button")
-    if (!folder1) {throw new Error("Folder 1 not found")}
+    if (!folder1) {
+      throw new Error("Folder 1 not found")
+    }
     await userEvent.click(folder1)
   },
 }
@@ -213,7 +217,7 @@ export const RedirectShadowWarning: Story = {
     await SingleClick.play?.(context)
 
     await within(canvasElement.ownerDocument.body).findByText(
-      /This URL already redirects to/,
+      /This URL already redirects to/u,
     )
   },
 }
@@ -264,7 +268,7 @@ export const CollectionItemInvalidDestination: Story = {
     // The destination is invalid, so the resulting page URL must not be shown
     // alongside the error. (ISOM-2556)
     await expect(
-      within(canvasElement.ownerDocument.body).queryByText(/will change to/i),
+      within(canvasElement.ownerDocument.body).queryByText(/will change to/iu),
     ).toBeNull()
   },
 }

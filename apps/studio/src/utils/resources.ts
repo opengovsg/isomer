@@ -13,15 +13,10 @@ import { SEARCH_PAGE_PERMALINK } from "~/constants/sitemap"
 import { env } from "~/env.mjs"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
-export const isAllowedToHaveChildren = (
-  resourceType: ResourceType,
-): boolean => 
-  (
-    resourceType === ResourceType.Folder ||
-    resourceType === ResourceType.Collection ||
-    resourceType === ResourceType.RootPage
-  )
-
+export const isAllowedToHaveChildren = (resourceType: ResourceType): boolean =>
+  resourceType === ResourceType.Folder ||
+  resourceType === ResourceType.Collection ||
+  resourceType === ResourceType.RootPage
 
 export const getIcon = (resourceType: ResourceType): IconType => {
   switch (resourceType) {
@@ -49,7 +44,8 @@ export const getIcon = (resourceType: ResourceType): IconType => {
       return BiCog
     }
     default: {
-      const _: never = resourceType // exhaustive check
+      const _: never = resourceType
+      // exhaustive check
       return BiData
     }
   }
@@ -57,13 +53,10 @@ export const getIcon = (resourceType: ResourceType): IconType => {
 
 export const isAllowedToHaveLastEditedText = (
   resourceType: ResourceType,
-): boolean => 
-  (
-    resourceType === ResourceType.Page ||
-    resourceType === ResourceType.CollectionLink ||
-    resourceType === ResourceType.CollectionPage
-  )
-
+): boolean =>
+  resourceType === ResourceType.Page ||
+  resourceType === ResourceType.CollectionLink ||
+  resourceType === ResourceType.CollectionPage
 
 export const getStudioResourceUrl = (resource: Resource): string => {
   const siteUrlPrefix = `${env.NEXT_PUBLIC_APP_URL}/sites/${resource.siteId}`
@@ -89,7 +82,8 @@ export const getStudioResourceUrl = (resource: Resource): string => {
     case ResourceType.FolderMeta:
     case ResourceType.CollectionMeta: {
       return siteUrlPrefix
-    } // they aren't accessible by users but we should return a valid url
+    }
+    // they aren't accessible by users but we should return a valid url
     default: {
       const exhaustiveCheck: never = resource.type
       return exhaustiveCheck

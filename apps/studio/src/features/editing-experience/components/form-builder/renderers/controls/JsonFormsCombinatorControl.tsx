@@ -155,13 +155,13 @@ const JsonFormsCombinatorControl = ({
   )
 }
 
-const OneOfControl = (props: CombinatorRendererProps) => 
+const OneOfControl = (props: CombinatorRendererProps) => (
   <JsonFormsCombinatorControl {...props} combinatorType="oneOf" />
+)
 
-
-const AnyOfControl = (props: CombinatorRendererProps) => 
+const AnyOfControl = (props: CombinatorRendererProps) => (
   <JsonFormsCombinatorControl {...props} combinatorType="anyOf" />
-
+)
 
 export const JsonFormsOneOfControl = withJsonFormsOneOfProps(OneOfControl)
 export const JsonFormsAnyOfControl = withJsonFormsAnyOfProps(AnyOfControl)
