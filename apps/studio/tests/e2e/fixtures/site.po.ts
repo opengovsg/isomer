@@ -31,7 +31,7 @@ export class SitePO {
     // Labels sourced from apps/studio/src/features/settings/SettingsSidenav/SettingsSidenav.tsx
     const label = SETTINGS_SECTION_LABELS[section]
     await this.page.getByRole("link", { name: label }).click()
-    await this.page.waitForURL(new RegExp(`/settings/uuuuuu${section}$`, "u"))
+    await this.page.waitForURL(new RegExp(`/settings/${section}$`, "u"))
   }
 
   /**
