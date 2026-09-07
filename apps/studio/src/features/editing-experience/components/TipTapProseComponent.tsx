@@ -209,7 +209,7 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
                   )
                 }}
                 isLoading={isPending}
-                isDisabled={!isContentValid}
+                isDisabled={!isContentValid || hasTipTapSchemaError}
               >
                 Save changes
               </Button>
