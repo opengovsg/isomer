@@ -53,7 +53,6 @@ const createAuthenticatedStorageState = async (
     {
       httpOnly: true,
       name: sessionOptions.cookieName,
-      path: "/",
       sameSite: "Lax",
       secure: protocol === "https:",
       url: baseURL,
