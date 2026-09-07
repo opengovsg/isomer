@@ -10,7 +10,9 @@ export const useIsSingpassEnabled = () => {
     IS_SINGPASS_ENABLED_FEATURE_KEY,
     IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE,
   )
-  const skipSingpass = env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS
+  const skipSingpass =
+    env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS ||
+    env.NEXT_PUBLIC_APP_ENV === "test"
 
   return {
     // Whether singpass-off side effects (e.g. email-on-publish) should activate.

@@ -286,6 +286,15 @@ describe("auth.email", () => {
     })
 
     describe("when singpass is enabled", () => {
+      beforeEach(() => {
+        vi.spyOn(growthbookLib, "getIsSingpassEnabled").mockReturnValue(true)
+        caller = createCaller(createMockRequest(session))
+      })
+
+      afterEach(() => {
+        vi.restoreAllMocks()
+      })
+
       it("should successfully set session on first valid OTP", async () => {
         // Arrange
         await setupUser({ email: TEST_VALID_EMAIL })
