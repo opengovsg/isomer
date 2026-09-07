@@ -23,7 +23,6 @@ export const RootpageRow = ({ siteId }: RootpageRowProps) => {
       publishedVersionId,
       scheduledAt,
       scheduledAction,
-      lastPublishedAt,
     },
   ] = trpc.page.getRootPage.useSuspenseQuery({
     siteId,
@@ -52,7 +51,6 @@ export const RootpageRow = ({ siteId }: RootpageRowProps) => {
             liveStatus={publishedVersionId !== null ? "live" : "notLive"}
             scheduledAt={scheduledAt}
             scheduledAction={scheduledAction}
-            lastPublishedAt={lastPublishedAt}
           />
           <DraftIndicator draftBlobId={draftBlobId} />
         </HStack>

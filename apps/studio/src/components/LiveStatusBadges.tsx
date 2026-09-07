@@ -1,5 +1,5 @@
 import type { RouterOutput } from "~/utils/trpc"
-import { Badge, Box, HStack, Icon, Text, Tooltip } from "@chakra-ui/react"
+import { Badge, HStack, Icon, Text, Tooltip } from "@chakra-ui/react"
 import {
   Badge as PillBadge,
   BadgeLeftIcon,
@@ -15,9 +15,6 @@ interface LiveStatusBadgesProps {
   liveStatus: LiveStatus
   scheduledAt: Date | null
   scheduledAction: ScheduledAction | null
-  // The resource's most recent publish, regardless of current live status —
-  // null if it's never been published.
-  lastPublishedAt: Date | null
 }
 
 // liveTemplate (a Folder/Collection whose own landing page isn't published,
@@ -48,7 +45,6 @@ export const LiveStatusBadges = ({
   liveStatus,
   scheduledAt,
   scheduledAction,
-  lastPublishedAt,
 }: LiveStatusBadgesProps): JSX.Element => {
   const { label, colorScheme, bgColor, color } = LIVE_STATUS_CONFIG[liveStatus]
 
@@ -67,22 +63,7 @@ export const LiveStatusBadges = ({
 
   return (
     <HStack spacing="0.5rem">
-      {liveStatus !== "notLive" && lastPublishedAt ? (
-        <Tooltip
-          label={`Last published on ${format(lastPublishedAt, "d MMM yyyy, h:mma")}`}
-          placement="bottom"
-          hasArrow
-        >
-          {/* PillBadge (design-system-react's Badge) doesn't forward its ref,
-          so Tooltip can't measure it for positioning without this wrapper —
-          without it the tooltip renders pinned to the viewport's top-left. */}
-          <Box as="span" display="inline-block">
-            {livePill}
-          </Box>
-        </Tooltip>
-      ) : (
-        livePill
-      )}
+      {livePill}
       {scheduledAt && (
         <Tooltip
           label={

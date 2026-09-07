@@ -50,7 +50,6 @@ const getColumns = ({ siteId }: CollectionTableProps) => [
         liveStatus={row.original.liveStatus}
         scheduledAt={row.original.scheduledAt}
         scheduledAction={row.original.scheduledAction}
-        lastPublishedAt={row.original.lastPublishedAt}
       />
     ),
   }),
