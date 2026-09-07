@@ -22,7 +22,7 @@ export const isUserDeleted = async (email: string) => {
     // Email is a unique field in User table
     .executeTakeFirst()
 
-  return user?.deletedAt
+  return user !== undefined && user.deletedAt !== null
 }
 
 interface CreateUserProps {

@@ -76,14 +76,13 @@ const ISO_MONTH_REGEX = /^\d{4}-(0[1-9]|1[0-2])$/
  * (no internal clock reads) for testability.
  */
 export const getMonthDateRange = (month: IsoMonth, now: Date): string => {
-  const monthMatch = ISO_MONTH_REGEX.exec(month)
-  if (!monthMatch) {
+  if (!ISO_MONTH_REGEX.test(month)) {
     throw new Error(`Invalid month, expected "yyyy-MM" but got: ${month}`)
   }
-  const [, yearStr, monthStr] = monthMatch
-  const year = Number(yearStr)
-  const monthIndex = Number(monthStr)
-  if (yearStr === undefined || monthStr === undefined) {
+  // Safe after the regex test above: the pattern guarantees exactly two numeric
+  // segments in `yyyy-MM` form.
+  const [year, monthIndex] = month.split("-").map(Number)
+  if (year === undefined || monthIndex === undefined) {
     throw new Error(`Invalid month, expected "yyyy-MM" but got: ${month}`)
   }
 

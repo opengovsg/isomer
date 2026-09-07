@@ -146,7 +146,7 @@ const SingpassSignInPage: NextPageWithLayout = () => {
                   w="full"
                   variant="clear"
                   onClick={() => {
-                    handleBackToLogin
+                    void handleBackToLogin()
                   }}
                   leftIcon={<BiChevronLeft />}
                 >
