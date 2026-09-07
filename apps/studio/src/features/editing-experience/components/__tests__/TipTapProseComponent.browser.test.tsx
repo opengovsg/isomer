@@ -58,12 +58,12 @@ vi.mock("../form-builder/renderers/TipTapEditor", () => ({
   TiptapTextEditor: () => <div data-testid="tiptap-editor" />,
 }))
 
-const VALID_PROSE: ProseProps = {
-  type: "prose",
+const VALID_PROSE = {
+  type: "prose" as const,
   content: [
     {
-      type: "paragraph",
-      content: [{ type: "text", text: "Hello world" }],
+      type: "paragraph" as const,
+      content: [{ type: "text" as const, text: "Hello world" }],
     },
   ],
 }
@@ -87,7 +87,7 @@ const renderComponent = () =>
         updatedAt={new Date()}
         title="About us"
       >
-        <TipTapProseComponent content={VALID_PROSE} />
+        <TipTapProseComponent content={VALID_PROSE as ProseProps} />
       </EditorDrawerProvider>
     </ThemeProvider>,
   )
