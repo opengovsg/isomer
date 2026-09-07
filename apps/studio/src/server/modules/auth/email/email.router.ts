@@ -198,13 +198,10 @@ export const emailSessionRouter = router({
           await sendLoginAlertEmail({ recipientEmail: email })
         }
 
-        return {
-          ...pick(user, defaultUserSelect),
-          requiresSingpass: false,
-        }
+        return user
       }
 
-      const user = await db.transaction().execute(async (tx) => {
+      return await db.transaction().execute(async (tx) => {
         const userValue = await upsertUser({
           email,
           tx,
@@ -218,10 +215,5 @@ export const emailSessionRouter = router({
         await ctx.session.save()
         return pick(userValue, defaultUserSelect)
       })
-
-      return {
-        ...user,
-        requiresSingpass: true,
-      }
     }),
 })

@@ -139,7 +139,6 @@ describe("auth.email", () => {
         const expectedUser = {
           email: TEST_VALID_EMAIL,
           id: expect.any(String),
-          requiresSingpass: false,
         }
         // Should return logged in user.
         await expect(result).resolves.toMatchObject(expectedUser)
@@ -182,7 +181,6 @@ describe("auth.email", () => {
         const expectedUser = {
           email: TEST_VALID_EMAIL,
           id: expect.any(String),
-          requiresSingpass: false,
         }
         // Should return logged in user.
         await expect(result).resolves.toMatchObject(expectedUser)
@@ -316,7 +314,6 @@ describe("auth.email", () => {
         const expectedUser = {
           email: TEST_VALID_EMAIL,
           id: expect.any(String),
-          requiresSingpass: true,
         }
         // Should return logged in user.
         await expect(result).resolves.toMatchObject(expectedUser)
@@ -357,7 +354,6 @@ describe("auth.email", () => {
         const expectedUser = {
           email: TEST_VALID_EMAIL,
           id: expect.any(String),
-          requiresSingpass: true,
         }
         // Should return logged in user.
         await expect(result).resolves.toMatchObject(expectedUser)
