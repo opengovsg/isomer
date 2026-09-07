@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unnecessary-type-conversion, typescript/no-unsafe-type-assertion -- server lint cleanup */
 import { TRPCError } from "@trpc/server"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"

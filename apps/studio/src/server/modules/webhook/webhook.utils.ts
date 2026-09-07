@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/switch-exhaustiveness-check, eslint/no-use-before-define, unicorn/no-array-reduce, typescript/no-unnecessary-type-conversion -- server lint cleanup */
 import type { GrowthBook } from "@growthbook/growthbook"
 import type { BuildStatusType } from "~prisma/generated/prisma/client"
 import { compact } from "lodash-es"
@@ -167,7 +168,7 @@ const sendEmails = async (
   )
   // get the codebuildJobIds for which the email was successfully sent
   const codebuildJobIdsForSentEmails: string[] = []
-  for (let idx = 0; idx < emailPromisesWithCodebuildJobId.length; idx++) {
+  for (let idx = 0; idx < emailPromisesWithCodebuildJobId.length; idx += 1) {
     const emailPromise = emailPromisesSettled[idx]
     if (emailPromise?.status === "fulfilled") {
       const entry = emailPromisesWithCodebuildJobId[idx]

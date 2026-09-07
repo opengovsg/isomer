@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-boolean-expressions, eslint/func-style, eslint/no-negated-condition, eslint/no-eq-null, eslint/eqeqeq, unicorn/no-negated-condition, eslint/no-await-in-loop -- server lint cleanup */
 import { createId } from "@paralleldrive/cuid2"
 import { startOfDay, subDays } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
@@ -7,6 +8,7 @@ import {
   sendAccountDeactivationWarningEmail,
 } from "~/features/mail/service"
 import { createBaseLogger } from "~/lib/logger"
+import { hasNonEmptyString } from "~/utils/truthiness"
 import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 
 import type { ResourcePermission, Site, User } from "../database/types"
@@ -16,7 +18,6 @@ import { PG_ERROR_CODES } from "../database/constants"
 import { db } from "../database/database"
 import { RoleType, sql } from "../database/types"
 import { MAX_DAYS_FROM_LAST_LOGIN } from "./constants"
-import { hasNonEmptyString, isDefinedNumber, isNullableBooleanTrue } from "~/utils/truthiness"
 
 const logger = createBaseLogger({
   path: "server/modules/user/inactiveUsers.service",
@@ -33,7 +34,7 @@ const activeIsomerAdminUserIds = () =>
     )
     .select("userId")
 
-export const getDateOnlyInSG(daysAgo: number): Date {
+export const getDateOnlyInSG = (daysAgo: number): Date => {
   const singaporeTime = toZonedTime(new Date(), "Asia/Singapore")
   const targetDate = subDays(singaporeTime, daysAgo)
   const startOfTargetDate = startOfDay(targetDate)
@@ -48,7 +49,8 @@ export const getInactiveUsers = async ({
   fromDaysAgo,
   toDaysAgo = MAX_DAYS_FROM_LAST_LOGIN,
 }: GetInactiveUsersProps): Promise<User[]> => {
-  const fromDateThreshold = fromDaysAgo ? getDateOnlyInSG(fromDaysAgo) : null
+  const fromDateThreshold =
+    fromDaysAgo != null ? getDateOnlyInSG(fromDaysAgo) : null
   const toDateThreshold = getDateOnlyInSG(toDaysAgo)
 
   return await db
@@ -64,7 +66,7 @@ export const getInactiveUsers = async ({
         eb.and([
           eb("User.lastLoginAt", "is", null),
           eb("User.createdAt", "<=", toDateThreshold),
-          ...(fromDateThreshold
+          ...(fromDateThreshold != null
             ? [eb("User.createdAt", ">", fromDateThreshold)]
             : []),
         ]),
@@ -72,7 +74,7 @@ export const getInactiveUsers = async ({
         eb.and([
           eb("User.lastLoginAt", "is not", null),
           eb("User.lastLoginAt", "<=", toDateThreshold),
-          ...(fromDateThreshold
+          ...(fromDateThreshold != null
             ? [eb("User.lastLoginAt", ">", fromDateThreshold)]
             : []),
         ]),

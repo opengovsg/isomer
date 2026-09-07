@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-confusing-void-expression -- server lint cleanup */
 import type { Notification } from "~/schemas/site"
 import { TRPCError } from "@trpc/server"
 import { pick } from "lodash-es"
@@ -21,11 +22,7 @@ import { beforeAll, vi } from "vitest"
 import { env } from "~/env.mjs"
 import * as searchSgService from "~/server/modules/searchsg/searchsg.service"
 import { createCallerFactory } from "~/server/trpc"
-import {
-  hasNonEmptyString,
-  isDefinedNumber,
-  isNullableBooleanTrue,
-} from "~/utils/truthiness"
+import { hasNonEmptyString } from "~/utils/truthiness"
 import { IsomerAdminRole, RoleType } from "~prisma/generated/generatedEnums"
 
 import type { User } from "../../database/types"
@@ -1867,7 +1864,7 @@ describe("site.router", async () => {
 
       // Act
       const result = caller.getLocalisedSitemap({
-        resourceId: Number.parseInt(page.id),
+        resourceId: Math.trunc(Number(page.id)),
         siteId: site.id,
       })
 
@@ -1898,7 +1895,7 @@ describe("site.router", async () => {
 
       // Act
       const result = await caller.getLocalisedSitemap({
-        resourceId: Number.parseInt(page.id),
+        resourceId: Math.trunc(Number(page.id)),
         siteId: site.id,
       })
 

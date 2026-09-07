@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-loop-func, eslint/prefer-destructuring -- server lint cleanup */
 import { TRPCError } from "@trpc/server"
 import { omit } from "lodash-es"
 import { resetTables } from "tests/integration/helpers/db"

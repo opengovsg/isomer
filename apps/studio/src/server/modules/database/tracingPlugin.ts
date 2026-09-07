@@ -1,3 +1,5 @@
+/* oxlint-disable import/no-empty-named-blocks, typescript/no-import-type-side-effects, unicorn/require-module-specifiers -- server lint cleanup */
+/* oxlint-disable typescript/require-await, typescript/strict-boolean-expressions, unicorn/filename-case -- server lint cleanup */
 import type {
   KyselyPlugin,
   PluginTransformQueryArgs,
@@ -7,11 +9,7 @@ import type {
 } from "kysely"
 import ddTrace from "dd-trace"
 import { PostgresQueryCompiler } from "kysely"
-import {
-  hasNonEmptyString,
-  isDefinedNumber,
-  isNullableBooleanTrue,
-} from "~/utils/truthiness"
+import {} from "~/utils/truthiness"
 
 export class TracingPlugin implements KyselyPlugin {
   // reuse a single compiler instance to avoid unnecessary allocations

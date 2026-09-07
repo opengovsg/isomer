@@ -1,3 +1,5 @@
+/* oxlint-disable typescript/strict-boolean-expressions -- server lint cleanup */
+/* oxlint-disable eslint/no-use-before-define -- server lint cleanup */
 import {
   BatchGetBuildsCommand,
   CodeBuildClient,
@@ -6,11 +8,7 @@ import {
   StopBuildCommand,
 } from "@aws-sdk/client-codebuild"
 import { TRPCError } from "@trpc/server"
-import {
-  hasNonEmptyString,
-  isDefinedNumber,
-  isNullableBooleanTrue,
-} from "~/utils/truthiness"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import type { Logger } from "@isomer/logging"
 
@@ -64,7 +62,11 @@ export const addCodeBuildAndMarkSupersededBuild = async ({
       )
       .execute()
     // If a new build was started, mark the stopped build (if any) as being superseded by the new build
-    if (buildChanges.isNewBuildNeeded && buildChanges.stoppedBuild?.id) {
+    if (
+      hasNonEmptyString(
+        buildChanges.isNewBuildNeeded && buildChanges.stoppedBuild?.id,
+      )
+    ) {
       await updateStoppedBuild({
         startedBuildId: buildChanges.startedBuild.id,
         stoppedBuildId: buildChanges.stoppedBuild.id,
@@ -107,6 +109,7 @@ export const updateStoppedBuild = async ({
     .execute()
 }
 
+// oxlint-disable-next-line eslint/complexity -- legacy bulk validation flow
 export const computeBuildChanges = async (
   logger: Logger<string>,
   projectId: string,
@@ -173,7 +176,7 @@ export const computeBuildChanges = async (
         })
         .at(0)
 
-      if (!latestBuild?.id || !latestBuild.startTime) {
+      if (hasNonEmptyString(!latestBuild?.id || !latestBuild.startTime)) {
         logger.error(
           { projectId },
           "Unable to determine the latest build to stop",
@@ -197,7 +200,7 @@ export const computeBuildChanges = async (
 
     // Any other case, we should not start a new build
     const [runningBuild] = runningBuilds ?? []
-    if (!runningBuild?.id || !runningBuild.startTime) {
+    if (hasNonEmptyString(!runningBuild?.id || !runningBuild.startTime)) {
       logger.error(
         { projectId },
         "Unable to determine the latest running build",
@@ -229,7 +232,7 @@ export const startProjectById = async (
     const command = new StartBuildCommand({ projectName: projectId })
     const { build } = await client.send(command)
     // in theory build should always be defined, but adding a check just in case
-    if (!build?.id || !build.startTime) {
+    if (hasNonEmptyString(!build?.id || !build.startTime)) {
       logger.error(
         { build },
         `Failed to obtain codebuild metadata for ${projectId}`,

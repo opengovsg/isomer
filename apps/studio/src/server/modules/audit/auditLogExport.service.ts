@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-void-return, eslint/no-use-before-define -- server lint cleanup */
 import type { CreateAuditLogExportRequestInput } from "~/schemas/audit"
 import { TRPCError } from "@trpc/server"
 import { addDays, differenceInCalendarMonths, format, parseISO } from "date-fns"

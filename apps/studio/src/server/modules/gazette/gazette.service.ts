@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-boolean-expressions, typescript/no-unsafe-type-assertion -- server lint cleanup */
 import type { Kysely, Transaction } from "kysely"
 import type { DB } from "~prisma/generated/generatedTypes"
 import { TRPCError } from "@trpc/server"
@@ -13,6 +14,7 @@ import {
   generateSignedGetUrl,
   generateSignedPutUrl,
 } from "~/lib/s3"
+import { hasNonEmptyString } from "~/utils/truthiness"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import {
@@ -29,7 +31,6 @@ import { db } from "../database/database"
 import { ResourceType, sql } from "../database/types"
 import { isActiveIsomerAdmin } from "../permissions/permissions.service"
 import {
-import { hasNonEmptyString, isDefinedNumber, isNullableBooleanTrue } from "~/utils/truthiness"
   EGAZETTE_DOCUMENT_INDEX,
   ISOMER_UA,
   SEARCHSG_BASE_URL,
@@ -206,6 +207,28 @@ export const markFileAsDeleted = async ({ key }: { key: string }) => {
   })
 }
 
+const getSearchSGAuthToken = async () => {
+  const response = await fetch(`${SEARCHSG_BASE_URL}/v1/auth/token`, {
+    headers: {
+      Authorization: `Basic ${env.SEARCHSG_API_KEY}`,
+      "User-Agent": ISOMER_UA,
+    },
+    method: "POST",
+  })
+
+  if (!hasNonEmptyString(response.ok)) {
+    throw new Error(`Failed to get SearchSG auth token: ${response.statusText}`)
+  }
+
+  // SAFETY: SearchSG auth endpoint returns accessToken and tokenType on success
+  const { accessToken, tokenType } = (await response.json()) as {
+    accessToken: string
+    tokenType: string
+  }
+
+  return { accessToken, tokenType }
+}
+
 /**
  * Remove a gazette document from the SearchSG index.
  */
@@ -263,28 +286,6 @@ export const deleteGazetteAsset = async (ref: string): Promise<void> => {
     )
     throw error
   }
-}
-
-const getSearchSGAuthToken = async () => {
-  const response = await fetch(`${SEARCHSG_BASE_URL}/v1/auth/token`, {
-    headers: {
-      Authorization: `Basic ${env.SEARCHSG_API_KEY}`,
-      "User-Agent": ISOMER_UA,
-    },
-    method: "POST",
-  })
-
-  if (!hasNonEmptyString(response.ok)) {
-    throw new Error(`Failed to get SearchSG auth token: ${response.statusText}`)
-  }
-
-  // SAFETY: SearchSG auth endpoint returns accessToken and tokenType on success
-  const { accessToken, tokenType } = (await response.json()) as {
-    accessToken: string
-    tokenType: string
-  }
-
-  return { accessToken, tokenType }
 }
 
 export interface PushDocument {

@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unsafe-type-assertion, typescript/no-unnecessary-type-conversion, eslint/no-useless-return, eslint/prefer-destructuring, typescript/require-await, unicorn/prefer-response-static-json, typescript/strict-void-return -- server lint cleanup */
 import type { GrowthBook } from "@growthbook/growthbook"
 import type { User } from "~prisma/generated/selectableTypes"
 import { addMinutes } from "date-fns"

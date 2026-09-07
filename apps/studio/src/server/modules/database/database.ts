@@ -3,7 +3,7 @@ import { env } from "~/env.mjs"
 import type { Kysely, DB } from "@isomer/db"
 import { createDb } from "@isomer/db"
 
-import { TracingPlugin } from "./tracing-plugin"
+import { TracingPlugin } from "./tracingPlugin"
 
 export const db: Kysely<DB> = createDb({
   connectionString: `${env.DATABASE_URL}`,

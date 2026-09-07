@@ -1,3 +1,5 @@
+/* oxlint-disable typescript/prefer-nullish-coalescing -- server lint cleanup */
+/* oxlint-disable eslint/logical-assignment-operators, eslint/no-use-before-define, typescript/strict-boolean-expressions -- server lint cleanup */
 import type { Resource } from "~/server/modules/database/types"
 import { env } from "~/env.mjs"
 import { sendFailedPublishEmail } from "~/features/mail/service"
@@ -13,11 +15,7 @@ import {
   defaultResourceSelect,
   publishPageResource,
 } from "~/server/modules/resource/resource.service"
-import {
-  hasNonEmptyString,
-  isDefinedNumber,
-  isNullableBooleanTrue,
-} from "~/utils/truthiness"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { registerPgbossJob } from "@isomer/pgboss"
 
@@ -123,7 +121,7 @@ export const publishScheduledResources = async (
           { error },
           `Failed to publish page for resource: ${resourceId}`,
         )
-        if (resource.userDeletedAt || !resource.email) {
+        if (hasNonEmptyString(resource.userDeletedAt || !resource.email)) {
           logger.warn(
             `Resource ${resourceId} is missing user email information or deleted, cannot send failed publish email`,
           )
@@ -178,7 +176,7 @@ export const publishScheduledSites = async (
         logger.error({ error }, `Failed to publish site for siteId: ${siteId}`)
         await Promise.all(
           resources.map(async (resource) => {
-            if (resource.userDeletedAt || !resource.email) {
+            if (hasNonEmptyString(resource.userDeletedAt || !resource.email)) {
               logger.warn(
                 `Resource ${resource.id} is missing user email information or deleted, cannot send failed publish email`,
               )

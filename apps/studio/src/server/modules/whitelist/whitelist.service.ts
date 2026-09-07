@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/consistent-return -- server lint cleanup */
 import { TRPCError } from "@trpc/server"
 import { isValidEmail } from "~/utils/email"
 

@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-useless-return -- server lint cleanup */
 import type { MockInstance } from "vitest"
 import type { User } from "~prisma/generated/prisma/client"
 import { addSeconds } from "date-fns"

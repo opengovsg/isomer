@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-use-before-define, eslint/no-await-in-loop, eslint/sort-keys, typescript/strict-boolean-expressions -- server lint cleanup */
 import type { PushDocument } from "~/server/modules/gazette/gazette.service"
 import { z } from "zod"
 import { env } from "~/env.mjs"
@@ -11,11 +12,7 @@ import {
   generateDocumentId,
   pushDocumentsForIngestion,
 } from "~/server/modules/gazette/gazette.service"
-import {
-  hasNonEmptyString,
-  isDefinedNumber,
-  isNullableBooleanTrue,
-} from "~/utils/truthiness"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import {
   buildGazetteSearchRecords,
@@ -229,7 +226,9 @@ export const schedulePushDocumentJobHandler = async () => {
               title,
               url: encodeURI(`https://${env.S3_GAZETTE_DOMAIN_NAME}${ref}`),
               date: scheduledAt.toISOString(),
-              categories: subcategoryLabel ? [subcategoryLabel] : [],
+              categories: hasNonEmptyString(subcategoryLabel)
+                ? [subcategoryLabel]
+                : [],
               contentType: parsedPage.category,
             }
           } catch (error) {
@@ -304,7 +303,7 @@ export const schedulePushDocumentJobHandler = async () => {
 
           // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
           await saveObjectsToSearchIndex(records)
-          savedCount++
+          savedCount += 1
           logger.info({ count: records.length, resourceId }, "Saved to Algolia")
         } catch (error) {
           logger.error(

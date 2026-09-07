@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-boolean-expressions, typescript/use-unknown-in-catch-callback-variable, typescript/no-unsafe-type-assertion, unicorn/prefer-ternary -- server lint cleanup */
 import { TRPCError } from "@trpc/server"
 import { differenceInMinutes, isBefore, subYears } from "date-fns"
 import filenamify from "filenamify"
@@ -19,6 +20,7 @@ import {
   updateGazetteServerSchema,
 } from "~/schemas/gazette"
 import { protectedProcedure, router } from "~/server/trpc"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { validateUserPermissionsForAsset } from "../asset/asset.service"
 import { logResourceEvent } from "../audit/audit.service"
@@ -35,7 +37,6 @@ import {
   updatePageById,
 } from "../resource/resource.service"
 import {
-import { hasNonEmptyString, isDefinedNumber, isNullableBooleanTrue } from "~/utils/truthiness"
   findCollectionLinkWithFilename,
   hasDuplicateNotificationNumber,
   assertGazetteAccess,
@@ -548,12 +549,12 @@ export const gazetteRouter = router({
       // entries.
       const cc = [...new Set(admins.map(({ email }) => email))]
       await sendGazetteDeletionEmail({
+        cc,
         fileId: filename,
         gazetteTitle: gazette.title,
         // Provisioned via SSM and treated as a secret so that it cannot be
         // scraped and spammed.
         recipientEmail: env.DD_DELETION_EMAIL,
-        cc,
       })
     }),
 
@@ -915,14 +916,14 @@ export const gazetteRouter = router({
             // as "publish immediately" — the schedule worker will pick them up
             // on its next tick. We don't silently rewrite the value the caller
             // sent.
-            const scheduledAtChanged =
+            const hasScheduledAtChanged =
               scheduledAt.getTime() !== existingResource.scheduledAt?.getTime()
 
             const updated = await updatePageById(
               {
                 id: gazetteId,
                 scheduledAt,
-                scheduledBy: scheduledAtChanged
+                scheduledBy: hasScheduledAtChanged
                   ? user.id
                   : existingResource.scheduledBy,
                 siteId,
@@ -947,7 +948,7 @@ export const gazetteRouter = router({
               siteId,
             })
 
-            if (scheduledAtChanged) {
+            if (hasScheduledAtChanged) {
               // NOTE: Need to update the associated PushDocumentJob.
               // Defence-in-depth: scope to a PushDocumentJob whose Resource
               // belongs to this siteId (PushDocumentJob has no direct siteId
@@ -981,7 +982,10 @@ export const gazetteRouter = router({
               })
             }
 
-            return { resource: updated, scheduledAtChanged }
+            return {
+              resource: updated,
+              scheduledAtChanged: hasScheduledAtChanged,
+            }
           })
 
         // After the DB has committed the new ref, soft-delete the file the

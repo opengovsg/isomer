@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/func-style, unicorn/filename-case -- server lint cleanup */
 import type { NextApiRequest } from "next"
 import type { PrismaClient } from "~prisma/generated/prisma/client"
 import { TRPCError } from "@trpc/server"

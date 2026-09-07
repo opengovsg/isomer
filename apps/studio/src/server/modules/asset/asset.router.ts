@@ -29,7 +29,7 @@ export const assetRouter = router({
         userId: ctx.user.id,
       })
 
-      if (doAllFileKeysBelongToSite({ fileKeys, siteId }) !== true) {
+      if (!doAllFileKeysBelongToSite({ fileKeys, siteId })) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -76,7 +76,7 @@ export const assetRouter = router({
         userId: ctx.user.id,
       })
 
-      if (doAllFileKeysBelongToSite({ fileKeys: [fileKey], siteId }) !== true) {
+      if (!doAllFileKeysBelongToSite({ fileKeys: [fileKey], siteId })) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message:

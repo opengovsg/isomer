@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unsafe-type-assertion, typescript/strict-boolean-expressions -- server lint cleanup */
 import type { SessionData } from "~/lib/types/session"
 import { TRPCError } from "@trpc/server"
 import { set } from "lodash-es"

@@ -1,11 +1,8 @@
+/* oxlint-disable eslint/no-shadow -- server lint cleanup */
 import type { SelectExpression } from "kysely"
 import type { DB } from "~prisma/generated/generatedTypes"
 import { TRPCError } from "@trpc/server"
-import {
-  hasNonEmptyString,
-  isDefinedNumber,
-  isNullableBooleanTrue,
-} from "~/utils/truthiness"
+import { hasNonEmptyString } from "~/utils/truthiness"
 import { ResourceState } from "~prisma/generated/generatedEnums"
 
 import type { SafeKysely, Transaction } from "../database/types"
@@ -95,7 +92,7 @@ export const incrementVersion = async ({
 
   let newVersionNum = 1
   let previousVersion: Version | null = null
-  if (page.publishedVersionId) {
+  if (hasNonEmptyString(page.publishedVersionId)) {
     previousVersion = await getVersionById({
       versionId: page.publishedVersionId,
     })
@@ -114,7 +111,7 @@ export const incrementVersion = async ({
   await updatePageById(
     {
       draftBlobId: null,
-      id: Number.parseInt(page.id),
+      id: Math.trunc(Number(page.id)),
       publishedVersionId: newVersion.id,
       siteId,
       state: ResourceState.Published,

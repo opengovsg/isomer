@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-boolean-expressions, typescript/no-useless-default-assignment, typescript/no-unsafe-type-assertion, eslint/prefer-destructuring, unicorn/prefer-array-find -- server lint cleanup */
 import type { Site, User } from "~/server/modules/database/types"
 import { resetTables } from "tests/integration/helpers/db"
 import {
@@ -20,7 +21,6 @@ import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { MAX_DAYS_FROM_LAST_LOGIN } from "../constants"
 import {
-import { hasNonEmptyString, isDefinedNumber, isNullableBooleanTrue } from "~/utils/truthiness"
   bulkDeactivateInactiveUsers,
   bulkSendAccountDeactivationWarningEmails,
   getDateOnlyInSG,

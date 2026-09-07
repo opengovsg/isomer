@@ -1,13 +1,10 @@
+/* oxlint-disable unicorn/prefer-ternary, typescript/strict-boolean-expressions, typescript/no-useless-default-assignment -- server lint cleanup */
 import type { AdminType } from "~/schemas/user"
 import type { ResourcePermission, User } from "~prisma/generated/generatedTypes"
 import { createId } from "@paralleldrive/cuid2"
 import { TRPCError } from "@trpc/server"
 import isEmail from "validator/lib/isEmail"
-import {
-  hasNonEmptyString,
-  isDefinedNumber,
-  isNullableBooleanTrue,
-} from "~/utils/truthiness"
+import { hasNonEmptyString } from "~/utils/truthiness"
 import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 
 import type { DB, Transaction } from "../database/types"

@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unsafe-type-assertion, unicorn/no-await-expression-member, eslint/complexity -- server lint cleanup */
 import { pick } from "lodash-es"
 import { resetTables } from "tests/integration/helpers/db"
 import {

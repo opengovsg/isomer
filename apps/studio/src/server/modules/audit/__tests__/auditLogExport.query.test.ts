@@ -1,3 +1,4 @@
+/* oxlint-disable promise/avoid-new, typescript/strict-void-return, typescript/require-array-sort-compare, typescript/no-unsafe-type-assertion -- server lint cleanup */
 import type { IsoMonth } from "~/schemas/audit"
 import { resetTables } from "tests/integration/helpers/db"
 import {

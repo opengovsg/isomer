@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unsafe-type-assertion, eslint/sort-keys, eslint/no-empty-pattern -- server lint cleanup */
 import type {
   CollectionPagePageProps,
   CollectionPageSchemaType,

@@ -1,3 +1,5 @@
+/* oxlint-disable import/no-empty-named-blocks, typescript/no-import-type-side-effects, unicorn/require-module-specifiers -- server lint cleanup */
+/* oxlint-disable typescript/strict-boolean-expressions, typescript/no-unsafe-type-assertion -- server lint cleanup */
 import type { SessionData } from "~/lib/types/session"
 import { TRPCError } from "@trpc/server"
 import { resetTables } from "tests/integration/helpers/db"
@@ -11,11 +13,7 @@ import { env } from "~/env.mjs"
 import { db } from "~/server/modules/database/database"
 import { AuditLogEvent } from "~/server/modules/database/types"
 import { createCallerFactory } from "~/server/trpc"
-import {
-  hasNonEmptyString,
-  isDefinedNumber,
-  isNullableBooleanTrue,
-} from "~/utils/truthiness"
+import {} from "~/utils/truthiness"
 
 import { singpassRouter } from "../singpass.router"
 import * as SingpassService from "../singpass.service"

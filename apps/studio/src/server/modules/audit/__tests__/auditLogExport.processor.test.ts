@@ -1,3 +1,4 @@
+/* oxlint-disable promise/avoid-new, eslint/no-promise-executor-return, typescript/strict-void-return, eslint/prefer-destructuring, unicorn/no-await-expression-member, typescript/no-unsafe-type-assertion, unicorn/new-for-builtins -- server lint cleanup */
 import { resetTables } from "tests/integration/helpers/db"
 import {
   setupAdminPermissions,
@@ -9,11 +10,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import * as mailService from "~/features/mail/service"
 import * as s3Lib from "~/lib/s3"
 import { getCurrentSingaporeMonth } from "~/schemas/audit"
-import {
-  hasNonEmptyString,
-  isDefinedNumber,
-  isNullableBooleanTrue,
-} from "~/utils/truthiness"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { db } from "../../database/database"
 import { getMonthDateRange } from "../auditLogExport.query"
@@ -75,7 +72,7 @@ const seedRequest = async ({
   if (updatedAt) {
     values.updatedAt = updatedAt
   }
-  if (objectKey) {
+  if (hasNonEmptyString(objectKey)) {
     values.objectKey = objectKey
   }
   if (completedAt) {

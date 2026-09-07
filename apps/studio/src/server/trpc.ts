@@ -22,7 +22,7 @@ import type { Context } from "./context"
 import type { RateLimitMetaOptions } from "./modules/rate-limit/types"
 import { db } from "./modules/database/database"
 import { defaultUserSelect } from "./modules/me/me.select"
-import { checkRateLimit } from "./modules/rate-limit/rate-limit.service"
+import { checkRateLimit } from "./modules/rate-limit/rateLimit.service"
 import { isEmailWhitelisted } from "./modules/whitelist/whitelist.service"
 
 interface Meta {

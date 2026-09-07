@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/require-await, typescript/no-unsafe-type-assertion -- server lint cleanup */
 import type { NextApiRequest, NextApiResponse } from "next"
 import { addMinutes, subDays } from "date-fns"
 import { sealData } from "iron-session"

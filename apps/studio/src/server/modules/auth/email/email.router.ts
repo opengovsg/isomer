@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unsafe-type-assertion -- server lint cleanup */
 import type { SessionData } from "~/lib/types/session"
 import type { GrowthbookAttributes } from "~/types/growthbook"
 import { TRPCError } from "@trpc/server"
@@ -173,7 +174,7 @@ export const emailSessionRouter = router({
 
       if (!isSingpassEnabled) {
         const user = await db.transaction().execute(async (tx) => {
-          const user = await upsertUser({
+          const userValue = await upsertUser({
             email,
             tx,
           })

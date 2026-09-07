@@ -1,3 +1,4 @@
+/* oxlint-disable oxc/parse-error -- server lint cleanup */
 import type { z } from "zod"
 import type { getPresignedPutUrlSchema } from "~/schemas/asset"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
@@ -15,11 +16,11 @@ import {
   putObjectDirect,
 } from "~/lib/s3"
 import { getServerDomPurify } from "~/lib/server-dom-purify"
+import { isDefinedNumber } from "~/utils/truthiness"
 
 import type { AssetPermissionsProps } from "../permissions/permissions.type"
 import { db } from "../database/database"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
-import { hasNonEmptyString, isDefinedNumber, isNullableBooleanTrue } from "~/utils/truthiness"
 
 const logger = createBaseLogger({ path: "asset.service" })
 const bucket = env.NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME
@@ -48,9 +49,7 @@ export const generateTagsQueryString = (
 const getFilenameFromKey = (key: string): string => key.split("/").pop() ?? ""
 
 const getExtensionFromFilename = (filename: string): string =>
-  return filename.includes(".")
-    ? filename.slice(filename.lastIndexOf("."))
-    : ""
+  filename.includes(".") ? filename.slice(filename.lastIndexOf(".")) : ""
 
 /**
  * Derive trusted Content-Type from key. Key is only produced after schema validation,

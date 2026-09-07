@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unnecessary-type-conversion, typescript/no-confusing-void-expression, typescript/no-unsafe-type-assertion -- server lint cleanup */
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { z } from "zod"
 import type { reorderBlobSchema, updatePageBlobSchema } from "~/schemas/page"

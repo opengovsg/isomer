@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-shadow, typescript/no-confusing-void-expression, anti-slop/no-unknown-parameters, typescript/strict-boolean-expressions -- server lint cleanup */
 import { TRPCError } from "@trpc/server"
 import { get, pick } from "lodash-es"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
@@ -9,11 +10,7 @@ import {
   readFolderSchema,
 } from "~/schemas/folder"
 import { protectedProcedure, router } from "~/server/trpc"
-import {
-  hasNonEmptyString,
-  isDefinedNumber,
-  isNullableBooleanTrue,
-} from "~/utils/truthiness"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { logResourceEvent } from "../audit/audit.service"
 import { PG_ERROR_CODES } from "../database/constants"

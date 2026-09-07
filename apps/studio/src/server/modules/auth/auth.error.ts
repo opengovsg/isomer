@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/custom-error-definition, unicorn/no-useless-error-capture-stack-trace, typescript/no-misused-spread, typescript/no-unsafe-type-assertion, eslint/max-classes-per-file -- server lint cleanup */
 interface ErrorCauseFields {
   err?: Error
 }

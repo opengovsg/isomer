@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unsafe-type-assertion, typescript/strict-void-return -- server lint cleanup */
 import type { GrowthBook } from "@growthbook/growthbook"
 import type { Session } from "~/lib/types/session"
 import type { User } from "~prisma/generated/prisma/client"

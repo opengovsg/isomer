@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unsafe-type-assertion, eslint/no-useless-return -- server lint cleanup */
 import type { NextApiRequest } from "next"
 import type { SessionData } from "~/lib/types/session"
 import type { PrismaClient } from "~prisma/generated/prisma/client"

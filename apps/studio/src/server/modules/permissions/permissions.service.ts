@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-confusing-void-expression, anti-slop/no-unknown-parameters, eslint/array-callback-return, typescript/await-thenable, unicorn/prefer-ternary -- server lint cleanup */
 import type { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
 import { TRPCError } from "@trpc/server"

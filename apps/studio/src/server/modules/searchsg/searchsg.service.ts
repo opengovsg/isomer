@@ -1,12 +1,9 @@
+/* oxlint-disable typescript/consistent-return -- server lint cleanup */
 import wretch from "wretch"
 import { z } from "zod"
 import { env } from "~/env.mjs"
 import { createBaseLogger } from "~/lib/logger"
-import {
-  hasNonEmptyString,
-  isDefinedNumber,
-  isNullableBooleanTrue,
-} from "~/utils/truthiness"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 const logger = createBaseLogger({ path: "searchsg.service" })
 

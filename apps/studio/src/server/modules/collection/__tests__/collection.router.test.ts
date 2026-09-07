@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/func-style, typescript/no-unsafe-type-assertion, unicorn/no-await-expression-member, typescript/no-deprecated -- server lint cleanup */
 import type { MockInstance } from "vitest"
 import { TRPCError } from "@trpc/server"
 import { omit } from "lodash-es"

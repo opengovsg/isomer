@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/require-array-sort-compare, typescript/no-unsafe-type-assertion, promise/no-callback-in-promise, promise/prefer-await-to-callbacks, typescript/require-await -- server lint cleanup */
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { getCurrentSingaporeMonth } from "~/schemas/audit"
 

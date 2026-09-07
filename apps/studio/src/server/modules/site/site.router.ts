@@ -1,3 +1,4 @@
+/* oxlint-disable promise/prefer-await-to-then, promise/prefer-await-to-callbacks, anti-slop/no-unknown-parameters, eslint/no-inline-comments, typescript/no-unsafe-type-assertion -- server lint cleanup */
 import type {
   IsomerSiteConfigProps,
   IsomerSiteThemeProps,

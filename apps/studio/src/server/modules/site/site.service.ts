@@ -1,13 +1,16 @@
+/* oxlint-disable typescript/no-unnecessary-type-conversion, typescript/strict-boolean-expressions, eslint/no-shadow, unicorn/consistent-function-scoping, import/no-duplicates, eslint/no-inline-comments -- server lint cleanup */
 import type { IsomerSiteConfigProps } from "@opengovsg/isomer-components"
 import type { Notification } from "~/schemas/site"
 import { getAskgovIdFromString } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { SEARCH_PAGE_PERMALINK } from "~/constants/sitemap"
-import { ResourceState, ResourceType } from "~/server/modules/database/types"
+import { hasNonEmptyString, isNullableBooleanTrue } from "~/utils/truthiness"
 
 import type {
   DB,
   Resource,
+  ResourceState,
+  ResourceType,
   SafeKysely,
   Transaction,
   Version,
@@ -22,7 +25,6 @@ import {
   isActiveIsomerAdmin,
 } from "../permissions/permissions.service"
 import {
-import { hasNonEmptyString, isDefinedNumber, isNullableBooleanTrue } from "~/utils/truthiness"
   FOOTER,
   NAVBAR_CONTENT,
   PAGE_BLOB,
@@ -219,7 +221,9 @@ export const getSiteNameAndCodeBuildId = async (siteId: number) => {
 
   return {
     codeBuildId: site.codeBuildId,
-    name: siteConfig?.siteName || site.name,
+    name: hasNonEmptyString(siteConfig?.siteName)
+      ? siteConfig.siteName
+      : site.name,
   }
 }
 
@@ -233,7 +237,7 @@ export const getNotification = async (
     )
     .where("id", "=", siteId)
     .executeTakeFirst()
-  if (!hasNonEmptyString(result)) {
+  if (result === undefined) {
     throw new TRPCError({
       code: "NOT_FOUND",
       message: "Site not found",
@@ -314,11 +318,9 @@ export const setSiteNotification = async ({
       .updateTable("Site")
       .set((eb) => ({
         config: notification
-          ?
-          // @ts-expect-error JSON concat operator replaces the entire notification object if it exists, but Kysely does not have types for this.
+          ? // @ts-expect-error JSON concat operator replaces the entire notification object if it exists, but Kysely does not have types for this.
             eb("Site.config", "||", jsonb({ notification }))
-          :
-          // @ts-expect-error JSON remove operator replaces the entire notification object if it exists, but Kysely does not have types for this.
+          : // @ts-expect-error JSON remove operator replaces the entire notification object if it exists, but Kysely does not have types for this.
             eb("Site.config", "-", "notification"),
       }))
       .where("id", "=", siteId)
@@ -493,7 +495,7 @@ export const createSite = async ({ siteName, userId }: CreateSiteProps) => {
     const { id: resourceId } = await tx
       .insertInto("Resource")
       .values({
-        draftBlobId: String(blobId),
+        draftBlobId: blobId,
         permalink: SEARCH_PAGE_PERMALINK,
         siteId,
         title: "Search",

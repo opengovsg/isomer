@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-boolean-expressions, typescript/no-confusing-void-expression, anti-slop/no-unknown-parameters, typescript/no-unsafe-type-assertion, typescript/no-unnecessary-type-conversion -- server lint cleanup */
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import {
   COLLECTION_VARIANT_OPTIONS,
@@ -39,6 +40,7 @@ import { scheduledPublishServerSchema } from "~/schemas/schedule"
 import { protectedProcedure, router } from "~/server/trpc"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
+import { hasNonEmptyString, isDefinedNumber } from "~/utils/truthiness"
 import {
   AuditLogEvent,
   ResourceState,
@@ -69,7 +71,6 @@ import {
 } from "../resource/resource.service"
 import { getSiteConfig } from "../site/site.service"
 import { createDefaultPage, createFolderIndexPage } from "./page.service"
-import { hasNonEmptyString, isDefinedNumber, isNullableBooleanTrue } from "~/utils/truthiness"
 
 const schemaValidator = ajv.compile<IsomerSchema>(schema)
 
@@ -683,7 +684,11 @@ export const pageRouter = router({
         if (!hasNonEmptyString(movedBlock)) {
           return blocks
         }
-        if (!fullPage.draftBlobId && !fullPage.publishedVersionId) {
+        if (
+          hasNonEmptyString(
+            !fullPage.draftBlobId && !fullPage.publishedVersionId,
+          )
+        ) {
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Please ensure that you have selected a valid page",

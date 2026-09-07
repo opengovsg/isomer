@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unnecessary-type-conversion -- server lint cleanup */
 import { TRPCError } from "@trpc/server"
 import { omit, pick } from "lodash-es"
 import { auth } from "tests/integration/helpers/auth"

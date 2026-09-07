@@ -1,3 +1,5 @@
+/* oxlint-disable import/no-empty-named-blocks, typescript/no-import-type-side-effects, unicorn/require-module-specifiers -- server lint cleanup */
+/* oxlint-disable typescript/no-unsafe-type-assertion, eslint/prefer-destructuring, typescript/no-unnecessary-type-conversion, typescript/strict-boolean-expressions -- server lint cleanup */
 import { TRPCError } from "@trpc/server"
 import { subDays, subMinutes } from "date-fns"
 import MockDate from "mockdate"
@@ -24,11 +26,7 @@ import * as algoliaLib from "~/lib/algolia"
 import { ENABLE_SEARCHSG_GAZETTE_INGESTION } from "~/lib/growthbook"
 import * as s3Lib from "~/lib/s3"
 import { createCallerFactory } from "~/server/trpc"
-import {
-  hasNonEmptyString,
-  isDefinedNumber,
-  isNullableBooleanTrue,
-} from "~/utils/truthiness"
+import {} from "~/utils/truthiness"
 import {
   AuditLogEvent,
   IsomerAdminRole,

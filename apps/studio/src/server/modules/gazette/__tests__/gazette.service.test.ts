@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/prefer-destructuring, typescript/no-unsafe-type-assertion -- server lint cleanup */
 import { TRPCError } from "@trpc/server"
 import { resetTables } from "tests/integration/helpers/db"
 import { setupIsomerAdmin, setupUser } from "tests/integration/helpers/seed"

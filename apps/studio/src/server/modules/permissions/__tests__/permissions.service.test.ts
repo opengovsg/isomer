@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/prefer-native-coercion-functions -- server lint cleanup */
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
 import { TRPCError } from "@trpc/server"
 import { resetTables } from "tests/integration/helpers/db"

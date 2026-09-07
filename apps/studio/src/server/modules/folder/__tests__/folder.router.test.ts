@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-boolean-expressions -- server lint cleanup */
 import { TRPCError } from "@trpc/server"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
@@ -16,11 +17,7 @@ import {
 } from "tests/integration/helpers/seed"
 import { createCallerFactory } from "~/server/trpc"
 import { getReferenceLink } from "~/utils/link"
-import {
-  hasNonEmptyString,
-  isDefinedNumber,
-  isNullableBooleanTrue,
-} from "~/utils/truthiness"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { db } from "../../database/database"
 import {
@@ -1270,7 +1267,7 @@ const createChildPages = async ({
   state?: ResourceState
   userId?: string
 }) => {
-  if (state === ResourceState.Published && !userId) {
+  if (hasNonEmptyString(state === ResourceState.Published && !userId)) {
     throw new Error(
       "Precondition failed for `createChildPages`: a valid `userId` is required in order to publish a resource",
     )

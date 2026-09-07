@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-boolean-expressions, typescript/no-confusing-void-expression, anti-slop/no-unknown-parameters, unicorn/prefer-ternary -- server lint cleanup */
 import type { UnwrapTagged } from "type-fest"
 import { TRPCError } from "@trpc/server"
 import { get, pick } from "lodash-es"
@@ -14,6 +15,7 @@ import {
 import { readFolderSchema } from "~/schemas/folder"
 import { createCollectionPageSchema } from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
+import { hasNonEmptyString, isDefinedNumber } from "~/utils/truthiness"
 
 import { logResourceEvent } from "../audit/audit.service"
 import { PG_ERROR_CODES } from "../database/constants"
@@ -37,7 +39,6 @@ import {
 import { validateUserPermissionsForSite } from "../site/site.service"
 import { defaultCollectionSelect } from "./collection.select"
 import {
-import { hasNonEmptyString, isDefinedNumber, isNullableBooleanTrue } from "~/utils/truthiness"
   createCollectionIndexJson,
   createCollectionLinkJson,
   createCollectionPageJson,

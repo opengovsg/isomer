@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-useless-return -- server lint cleanup */
 import type {
   RedirectManagementAbility,
   UserManagementAbility,

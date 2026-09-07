@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/require-await -- server lint cleanup */
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
 import {
