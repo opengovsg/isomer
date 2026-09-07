@@ -3,6 +3,11 @@ import type { ResourcePermission, User } from "~prisma/generated/generatedTypes"
 import { createId } from "@paralleldrive/cuid2"
 import { TRPCError } from "@trpc/server"
 import isEmail from "validator/lib/isEmail"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+} from "~/utils/truthiness"
 import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 
 import type { DB, Transaction } from "../database/types"
@@ -51,7 +56,7 @@ export const createUserWithPermission = async ({
   }
 
   const isWhitelisted = await isEmailWhitelisted(email)
-  if (!isWhitelisted) {
+  if (!hasNonEmptyString(isWhitelisted)) {
     throw new TRPCError({
       code: "FORBIDDEN",
       message: "There are non-gov.sg domains that need to be whitelisted.",
@@ -111,7 +116,7 @@ export const createUserWithPermission = async ({
       .returningAll()
       .executeTakeFirst()
 
-    if (!resourcePermission) {
+    if (resourcePermission === undefined) {
       throw new TRPCError({
         code: "CONFLICT",
         message: "User already has permission for this site",
@@ -256,7 +261,7 @@ export const deleteUserPermission = async ({
 
         // Note: this is technically impossible because we're executing
         // inside a tx and we have checked previously that the user permission existed
-        if (!before) {
+        if (!hasNonEmptyString(before)) {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
             message:

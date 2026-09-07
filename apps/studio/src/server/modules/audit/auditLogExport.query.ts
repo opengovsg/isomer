@@ -22,7 +22,7 @@ const SINGAPORE_TIME_ZONE = "Asia/Singapore"
 // and the DB CHECK guarantees the stored range is non-empty and bounded.
 // Postgres always echoes ranges back in this canonical form.
 const AUDIT_LOG_DATE_RANGE_REGEX =
-  /^\[(\d{4}-\d{2}-\d{2}),(\d{4}-\d{2}-\d{2})\)$/u
+  /^\[(?<lowerInclusive>\d{4}-\d{2}-\d{2}),(?<upperExclusive>\d{4}-\d{2}-\d{2})\)$/u
 
 /**
  * Serialize SGT calendar-date bounds into the canonical daterange string,
@@ -47,15 +47,21 @@ export const parseAuditLogDateRange = (
   auditLogDateRange: string,
 ): AuditLogDateRangeBounds => {
   const match = AUDIT_LOG_DATE_RANGE_REGEX.exec(auditLogDateRange)
-  if (!match?.[1] || !match[2]) {
+  if (
+    match?.groups?.lowerInclusive === undefined ||
+    match.groups.upperExclusive === undefined
+  ) {
     throw new Error(
       `Invalid audit log date range, expected "[YYYY-MM-DD,YYYY-MM-DD)" but got: ${auditLogDateRange}`,
     )
   }
-  return { lowerInclusive: match[1], upperExclusive: match[2] }
+  return {
+    lowerInclusive: match.groups.lowerInclusive,
+    upperExclusive: match.groups.upperExclusive,
+  }
 }
 
-const ISO_MONTH_REGEX = /^\d{4}-(0[1-9]|1[0-2])$/u
+const ISO_MONTH_REGEX = /^(?<year>\d{4})-(?<month>0[1-9]|1[0-2])$/u
 // yyyy-MM pattern
 
 /**
@@ -77,9 +83,15 @@ export const getMonthDateRange = (month: IsoMonth, now: Date): string => {
   }
   // Safe after the regex test above: the pattern guarantees exactly two numeric
   // segments in `yyyy-MM` form.
-  const monthParts = month.split("-").map(Number)
-  const year = monthParts[0]
-  const monthIndex = monthParts[1]
+  const monthMatch = ISO_MONTH_REGEX.exec(month)
+  const year =
+    monthMatch?.groups?.year === undefined
+      ? undefined
+      : Number(monthMatch.groups.year)
+  const monthIndex =
+    monthMatch?.groups?.month === undefined
+      ? undefined
+      : Number(monthMatch.groups.month)
   if (year === undefined || monthIndex === undefined) {
     throw new Error(`Invalid month, expected "yyyy-MM" but got: ${month}`)
   }
@@ -216,25 +228,24 @@ type DisplayableAuditLogEvent = Exclude<
 >
 
 const AUDIT_LOGS_EVENTS_QUERIES = {
-  ResourceCreate: sql<string>`CONCAT('"', al.delta -> 'after' -> 'resource' ->> 'title', '" (', al.delta -> 'after' -> 'resource' ->> 'type', ' ', al.delta -> 'after' -> 'resource' ->> 'id', ') created')`,
-  ResourceUpdate: sql<string>`CONCAT('"', al.delta -> 'before' -> 'resource' ->> 'title', '" (', al.delta -> 'before' -> 'resource' ->> 'type', ' ', al.delta -> 'before' -> 'resource' ->> 'id', ') updated')`,
-  ResourceDelete: sql<string>`CONCAT('"', al.delta -> 'before' ->> 'title', '" (', al.delta -> 'before' ->> 'type', ' ', al.delta -> 'before' ->> 'id', ') deleted')`,
-  Publish: sql<string>`CONCAT('"', al.metadata ->> 'title', '" (', al.metadata ->> 'type', ' ', al.metadata ->> 'id', ') published to Version No. ', al.delta -> 'after' ->> 'versionNum')`,
-  NavbarUpdate: sql<string>`'Navbar has been updated'`,
+  AuditLogExportCreate: sql<string>`CONCAT('Audit log export requested for ', al.delta -> 'after' ->> 'auditLogDateRange', ' (', al.delta -> 'after' ->> 'reportType', ')')`,
   FooterUpdate: sql<string>`'Footer has been updated'`,
-  SiteConfigUpdate: sql<string>`'Site configuration has been updated'`,
-  RedirectCreate: sql<string>`CONCAT('Redirect from "', al.delta -> 'after' ->> 'source', '" to "', al.delta -> 'after' ->> 'destination', '" ', CASE WHEN al.delta -> 'before' ->> 'destination' IS NOT NULL THEN CONCAT('revived (was: "', al.delta -> 'before' ->> 'destination', '")') ELSE 'created' END)`,
-  RedirectDelete: sql<string>`CONCAT('Redirect from "', al.delta -> 'before' ->> 'source', '" to "', al.delta -> 'before' ->> 'destination', '" deleted')`,
-  PermissionCreate: sql<string>`CONCAT('Permission (', al.delta -> 'after' ->> 'role', ') granted to ', pu.email)`,
-  PermissionDelete: sql<string>`CONCAT('Permission (', al.delta -> 'before' ->> 'role', ') revoked from ', pu.email)`,
   Login: sql<string>`CONCAT('Login attempt by ', SPLIT_PART(al.delta -> 'before' ->> 'identifier', '|', 1), ' from IP address ', SPLIT_PART(al.delta -> 'before' ->> 'identifier', '|', 2))`,
   Logout: sql<string>`CONCAT('Logout attempt by ', al.delta -> 'before' ->> 'email', ' from IP address ', al."ipAddress")`,
-  // The delta stores the REQUESTED report type, so the description reflects
-  // the user's ask verbatim.
-  AuditLogExportCreate: sql<string>`CONCAT('Audit log export requested for ', al.delta -> 'after' ->> 'auditLogDateRange', ' (', al.delta -> 'after' ->> 'reportType', ')')`,
+  NavbarUpdate: sql<string>`'Navbar has been updated'`,
+  PermissionCreate: sql<string>`CONCAT('Permission (', al.delta -> 'after' ->> 'role', ') granted to ', pu.email)`,
+  PermissionDelete: sql<string>`CONCAT('Permission (', al.delta -> 'before' ->> 'role', ') revoked from ', pu.email)`,
+  Publish: sql<string>`CONCAT('"', al.metadata ->> 'title', '" (', al.metadata ->> 'type', ' ', al.metadata ->> 'id', ') published to Version No. ', al.delta -> 'after' ->> 'versionNum')`,
+  RedirectCreate: sql<string>`CONCAT('Redirect from "', al.delta -> 'after' ->> 'source', '" to "', al.delta -> 'after' ->> 'destination', '" ', CASE WHEN al.delta -> 'before' ->> 'destination' IS NOT NULL THEN CONCAT('revived (was: "', al.delta -> 'before' ->> 'destination', '")') ELSE 'created' END)`,
+  RedirectDelete: sql<string>`CONCAT('Redirect from "', al.delta -> 'before' ->> 'source', '" to "', al.delta -> 'before' ->> 'destination', '" deleted')`,
+  ResourceCreate: sql<string>`CONCAT('"', al.delta -> 'after' -> 'resource' ->> 'title', '" (', al.delta -> 'after' -> 'resource' ->> 'type', ' ', al.delta -> 'after' -> 'resource' ->> 'id', ') created')`,
+  ResourceDelete: sql<string>`CONCAT('"', al.delta -> 'before' ->> 'title', '" (', al.delta -> 'before' ->> 'type', ' ', al.delta -> 'before' ->> 'id', ') deleted')`,
+  ResourceUpdate: sql<string>`CONCAT('"', al.delta -> 'before' -> 'resource' ->> 'title', '" (', al.delta -> 'before' -> 'resource' ->> 'type', ' ', al.delta -> 'before' -> 'resource' ->> 'id', ') updated')`,
+  SiteConfigUpdate: sql<string>`'Site configuration has been updated'`,
 } satisfies Record<DisplayableAuditLogEvent, RawBuilder<string>>
 
 // SAFETY: keys are drawn from a map typed as Record<DisplayableAuditLogEvent, RawBuilder<string>>
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- keys originate from exhaustive event map
 const DISPLAYABLE_AUDIT_LOG_EVENTS = Object.keys(
   AUDIT_LOGS_EVENTS_QUERIES,
 ) as DisplayableAuditLogEvent[]
@@ -324,6 +335,7 @@ export const activityReportQuery = ({
     .select((eb) => [
       'al.createdAt as "Date and time"',
       'al.eventType as "Event type"',
+      // oxlint-disable promise/prefer-await-to-then -- Kysely CaseBuilder API uses .then(), not Promise#then
       eb
         .case()
         // Special cases
@@ -485,9 +497,11 @@ export const getStringifiedValue = (value: CsvSerializableValue): string => {
       "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
     )
   }
-  if (Object.prototype.toString.call(value) === "[object String]") {
-    // SAFETY: [object String] tag confirms a string primitive.
-    return value as string
+  if (
+    // oxlint-disable-next-line anti-slop/no-runtime-typeof -- CSV cells may be string primitives from SQL
+    typeof value === "string"
+  ) {
+    return value
   }
   return JSON.stringify(value)
 }
@@ -516,7 +530,7 @@ const csvDataFields = (row: CsvRow): string[] =>
 // specification the streaming transform reuses via the shared helpers above,
 // so its unit test also pins the streamed output byte-for-byte.
 export const toCsv = (rows: CsvRow[]): string => {
-  const first = rows[0]
+  const [first] = rows
   if (first === undefined) {
     return ""
   }
@@ -535,6 +549,7 @@ export const toCsv = (rows: CsvRow[]): string => {
 export const createCsvTransform = (): Transform => {
   let headerWritten = false
   return new Transform({
+    // oxlint-disable promise/prefer-await-to-callbacks, node/callback-return -- Node stream transform API
     transform(row: CsvRow, _encoding, callback) {
       try {
         if (!headerWritten) {

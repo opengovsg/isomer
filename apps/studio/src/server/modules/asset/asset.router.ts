@@ -19,6 +19,85 @@ import {
 } from "./asset.service"
 
 export const assetRouter = router({
+  deleteAssets: protectedProcedure
+    .input(deleteAssetsSchema)
+    .mutation(async ({ ctx, input: { siteId, resourceId, fileKeys } }) => {
+      await validateUserPermissionsForAsset({
+        action: "delete",
+        resourceId,
+        siteId,
+        userId: ctx.user.id,
+      })
+
+      if (doAllFileKeysBelongToSite({ fileKeys, siteId }) !== true) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "One or more file keys do not belong to the specified site. You may only delete assets for the site you are authorized for.",
+        })
+      }
+
+      await Promise.allSettled(
+        fileKeys.map(async (fileKey) => {
+          await markFileAsDeleted({ key: fileKey })
+        }),
+      ).then((results) => {
+        const deleteFailedCounts = results.filter(
+          (result) => result.status === "rejected",
+        ).length
+        const totalDeleteCounts = fileKeys.length
+
+        if (deleteFailedCounts > 0) {
+          ctx.logger.error({
+            merged: {
+              deleteFailedCounts,
+              fileKeys,
+              totalDeleteCounts,
+            },
+            message: `Failed to delete files/images`,
+          })
+
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to delete files/images",
+          })
+        }
+      })
+    }),
+
+  getPresignedGetUrl: protectedProcedure
+    .input(getPresignedGetUrlSchema)
+    // Modelled as a mutation rather than a query: it has user-visible side
+    // effects (logs, expiring URL) and is invoked imperatively per click.
+    .mutation(async ({ ctx, input: { siteId, fileKey } }) => {
+      await validateUserPermissionsForAsset({
+        action: "read",
+        siteId,
+        userId: ctx.user.id,
+      })
+
+      if (doAllFileKeysBelongToSite({ fileKeys: [fileKey], siteId }) !== true) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "The file key does not belong to the specified site. You may only access assets for the site you are authorized for.",
+        })
+      }
+
+      const presignedGetUrl = await getPresignedGetUrl({ key: fileKey })
+
+      ctx.logger.info(
+        {
+          fileKey,
+          siteId,
+          userId: ctx.session?.userId,
+        },
+        `Generated presigned GET URL for ${fileKey} for site ${siteId}`,
+      )
+
+      return { presignedGetUrl }
+    }),
+
   getPresignedPutUrl: protectedProcedure
     .input(getPresignedPutUrlSchema)
     .mutation(
@@ -54,91 +133,6 @@ export const assetRouter = router({
         return { fileKey, uploadConfig }
       },
     ),
-
-  // Modelled as a mutation rather than a query: it has user-visible side
-  // effects (logs, expiring URL) and is invoked imperatively per click.
-  getPresignedGetUrl: protectedProcedure
-    .input(getPresignedGetUrlSchema)
-    .mutation(async ({ ctx, input: { siteId, fileKey } }) => {
-      await validateUserPermissionsForAsset({
-        action: "read",
-        siteId,
-        userId: ctx.user.id,
-      })
-
-      if (!doAllFileKeysBelongToSite({ fileKeys: [fileKey], siteId })) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message:
-            "The file key does not belong to the specified site. You may only access assets for the site you are authorized for.",
-        })
-      }
-
-      const presignedGetUrl = await getPresignedGetUrl({ key: fileKey })
-
-      ctx.logger.info(
-        {
-          fileKey,
-          siteId,
-          userId: ctx.session?.userId,
-        },
-        `Generated presigned GET URL for ${fileKey} for site ${siteId}`,
-      )
-
-      return { presignedGetUrl }
-    }),
-
-  // No rate limit: all agency editors reach Studio through a single shared
-  // egress IP (remote browser isolation), and the limiter keys on IP, so any
-  // limit here would be shared across every editor. Abuse risk is already low
-  // since permissions are validated before any S3 call and the per-request
-  // cap in deleteAssetsSchema bounds fan-out. Revisit if the rate-limit
-  // fingerprint gains a per-device/per-user component.
-  deleteAssets: protectedProcedure
-    .input(deleteAssetsSchema)
-    .mutation(async ({ ctx, input: { siteId, resourceId, fileKeys } }) => {
-      await validateUserPermissionsForAsset({
-        action: "delete",
-        resourceId,
-        siteId,
-        userId: ctx.user.id,
-      })
-
-      if (!doAllFileKeysBelongToSite({ fileKeys, siteId })) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message:
-            "One or more file keys do not belong to the specified site. You may only delete assets for the site you are authorized for.",
-        })
-      }
-
-      await Promise.allSettled(
-        fileKeys.map(async (fileKey) => {
-          await markFileAsDeleted({ key: fileKey })
-        }),
-      ).then((results) => {
-        const deleteFailedCounts = results.filter(
-          (result) => result.status === "rejected",
-        ).length
-        const totalDeleteCounts = fileKeys.length
-
-        if (deleteFailedCounts > 0) {
-          ctx.logger.error({
-            merged: {
-              deleteFailedCounts,
-              fileKeys,
-              totalDeleteCounts,
-            },
-            message: `Failed to delete files/images`,
-          })
-
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Failed to delete files/images",
-          })
-        }
-      })
-    }),
 
   uploadSvg: protectedProcedure
     .input(uploadSvgSchema)

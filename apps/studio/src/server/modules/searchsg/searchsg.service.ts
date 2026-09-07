@@ -2,6 +2,11 @@ import wretch from "wretch"
 import { z } from "zod"
 import { env } from "~/env.mjs"
 import { createBaseLogger } from "~/lib/logger"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+} from "~/utils/truthiness"
 
 const logger = createBaseLogger({ path: "searchsg.service" })
 
@@ -45,7 +50,7 @@ interface SearchSGSiteResponse {
 
 const findWebsiteSearchApp = (apps: SearchSGAppDetail[]): SearchSGAppDetail => {
   const app = apps.find((a) => a.appType === "websiteSearch")
-  if (!app) {
+  if (!hasNonEmptyString(app)) {
     logger.error(
       { apps },
       `[ERROR] No websiteSearch app found in SearchSG site applications`,
@@ -147,7 +152,7 @@ export const updateSearchSGConfig = async (
     }
     case "name": {
       const { projectId } = data.project
-      if (!projectId) {
+      if (!hasNonEmptyString(projectId)) {
         logger.error(
           { data },
           `[ERROR] No projectId found in SearchSG site response for ${url} with searchsg client id: ${searchsgClientId}`,

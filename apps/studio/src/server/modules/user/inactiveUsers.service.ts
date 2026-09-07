@@ -16,6 +16,7 @@ import { PG_ERROR_CODES } from "../database/constants"
 import { db } from "../database/database"
 import { RoleType, sql } from "../database/types"
 import { MAX_DAYS_FROM_LAST_LOGIN } from "./constants"
+import { hasNonEmptyString, isDefinedNumber, isNullableBooleanTrue } from "~/utils/truthiness"
 
 const logger = createBaseLogger({
   path: "server/modules/user/inactiveUsers.service",
@@ -32,7 +33,7 @@ const activeIsomerAdminUserIds = () =>
     )
     .select("userId")
 
-export function getDateOnlyInSG(daysAgo: number): Date {
+export const getDateOnlyInSG(daysAgo: number): Date {
   const singaporeTime = toZonedTime(new Date(), "Asia/Singapore")
   const targetDate = subDays(singaporeTime, daysAgo)
   const startOfTargetDate = startOfDay(targetDate)
@@ -199,7 +200,7 @@ const deactivateUsers = async ({ userIds }: DeactivateUsersProps) => {
           updated.map(async (after) => {
             const before = permissionsByUserId.get(after.id)
             // Not expected: same tx/isolation level as the read above.
-            if (!before) {
+            if (!hasNonEmptyString(before)) {
               throw new Error(
                 `Could not find pre-update state for ResourcePermission ${after.id}`,
               )
@@ -334,6 +335,7 @@ export const bulkDeactivateInactiveUsers = async (): Promise<void> => {
         userId: user.id,
       })
 
+      // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
       await sendAccountDeactivationEmail({
         recipientEmail: user.email,
         sitesAndAdmins,

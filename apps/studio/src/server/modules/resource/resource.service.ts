@@ -22,6 +22,7 @@ import {
   isCollectionItem,
   overwriteCollectionChildrenForCollectionBlock,
 } from "~/utils/sitemap"
+import { hasNonEmptyString, isDefinedNumber } from "~/utils/truthiness"
 import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 
 import type { Logger } from "@isomer/logging"
@@ -45,24 +46,20 @@ import { ResourceState, ResourceType, sql } from "../database/types"
 import { jsonb } from "../database/utils"
 import { getUserById } from "../user/user.service"
 import { incrementVersion } from "../version/version.service"
+import { getPublishedIndexBlobByParentId } from "./resource.blob"
+import { getById } from "./resource.page"
+import {
+  defaultResourceSelect,
+  defaultResourceWithBlobSelect,
+} from "./resource.select"
 import { tokenizeSearchQuery } from "./resource.utils"
 
-// Specify the default columns to return from the Resource table
-export const defaultResourceSelect = [
-  "Resource.id",
-  "Resource.title",
-  "Resource.permalink",
-  "Resource.siteId",
-  "Resource.parentId",
-  "Resource.publishedVersionId",
-  "Resource.draftBlobId",
-  "Resource.type",
-  "Resource.state",
-  "Resource.createdAt",
-  "Resource.updatedAt",
-  "Resource.scheduledAt",
-  "Resource.scheduledBy",
-] satisfies SelectExpression<DB, "Resource">[]
+export {
+  getBlobOfResource,
+  getPublishedIndexBlobByParentId,
+} from "./resource.blob"
+export { getPageById, updatePageById } from "./resource.page"
+export { defaultResourceSelect } from "./resource.select"
 
 // Shared by any query listing rows from the `Resource` table (e.g. folder/root
 // listings, collection item listings) so they sort identically and paginate
@@ -87,7 +84,11 @@ export const applyResourceOrderBy = <O>(
         )
         .orderBy("Resource.id", "asc")
     }
-    case "updated-desc":
+    case "updated-desc": {
+      return query
+        .orderBy("Resource.updatedAt", "desc")
+        .orderBy("Resource.id", "asc")
+    }
     default: {
       return query
         .orderBy("Resource.updatedAt", "desc")
@@ -95,12 +96,6 @@ export const applyResourceOrderBy = <O>(
     }
   }
 }
-
-const defaultResourceWithBlobSelect = [
-  ...defaultResourceSelect,
-  "Blob.content",
-  "Blob.updatedAt",
-] satisfies SelectExpression<DB, "Resource" | "Blob">[]
 
 const defaultNavbarSelect = [
   "Navbar.id",
@@ -135,23 +130,13 @@ export const getSiteResourceById = async ({
   return await query.executeTakeFirst()
 }
 
-// NOTE: Base method for retrieving a resource - no distinction made on whether `blobId` exists
-const getById = (
-  db: SafeKysely,
-  { resourceId, siteId }: { resourceId: number; siteId: number },
-) =>
-  db
-    .selectFrom("Resource")
-    .where("Resource.id", "=", String(resourceId))
-    .where("siteId", "=", siteId)
-
 // NOTE: Throw here to fail early if our invariant that a page has a `blobId` is violated
 export const getFullPageById = async (
-  db: SafeKysely,
+  kysely: SafeKysely,
   args: { resourceId: number; siteId: number },
 ) => {
   // Check if the resource is a Collection or Folder, and if so, use its IndexPage
-  const resource = await getById(db, args)
+  const resource = await getById(kysely, args)
     .select(["Resource.id", "Resource.type"])
     .executeTakeFirst()
 
@@ -161,7 +146,7 @@ export const getFullPageById = async (
     resource?.type === ResourceType.Collection ||
     resource?.type === ResourceType.Folder
   ) {
-    const indexPage = await db
+    const indexPage = await kysely
       .selectFrom("Resource")
       .where("Resource.parentId", "=", String(args.resourceId))
       .where("Resource.siteId", "=", args.siteId)
@@ -177,7 +162,7 @@ export const getFullPageById = async (
   const targetArgs = { ...args, resourceId: targetResourceId }
 
   // Check if draft blob exists and return that preferentially
-  const draftBlob = await getById(db, targetArgs)
+  const draftBlob = await getById(kysely, targetArgs)
     .where("Resource.draftBlobId", "is not", null)
     .innerJoin("Blob", "Resource.draftBlobId", "Blob.id")
     .select(defaultResourceWithBlobSelect)
@@ -187,7 +172,7 @@ export const getFullPageById = async (
     return draftBlob
   }
 
-  const publishedBlob = await getById(db, targetArgs)
+  const publishedBlob = await getById(kysely, targetArgs)
     .where("Resource.publishedVersionId", "is not", null)
     .innerJoin("Version", "Resource.publishedVersionId", "Version.id")
     .innerJoin("Blob", "Version.blobId", "Blob.id")
@@ -196,137 +181,6 @@ export const getFullPageById = async (
     .executeTakeFirst()
 
   return publishedBlob
-}
-
-// There are 7 types of pages this get query supports:
-// Page, CollectionPage, RootPage, IndexPage, CollectionLink, FolderMeta, CollectionMeta
-export const getPageById = async (
-  db: SafeKysely,
-  args: { resourceId: number; siteId: number },
-) =>
-  await getById(db, args)
-    .where((eb) =>
-      eb.or([
-        eb("type", "=", ResourceType.Page),
-        eb("type", "=", ResourceType.CollectionPage),
-        eb("type", "=", ResourceType.RootPage),
-        eb("type", "=", ResourceType.IndexPage),
-        eb("type", "=", ResourceType.CollectionLink),
-        eb("type", "=", ResourceType.FolderMeta),
-        eb("type", "=", ResourceType.CollectionMeta),
-      ]),
-    )
-    .select(defaultResourceSelect)
-    .executeTakeFirst()
-
-export const updatePageById = async (
-  page: {
-    id: number
-    siteId: number
-    state?: ResourceState
-    parentId?: number
-  } & Partial<
-    Pick<
-      Page,
-      | "title"
-      | "scheduledAt"
-      | "scheduledBy"
-      | "publishedVersionId"
-      | "draftBlobId"
-    >
-  >,
-  dbInstance?: SafeKysely,
-) => {
-  const dbObj = dbInstance ?? db
-  const { id, parentId, ...rest } = page
-
-  return await dbObj
-    .updateTable("Resource")
-    .set({ ...rest, ...(parentId && { parentId: String(parentId) }) })
-    .where("siteId", "=", page.siteId)
-    .where("id", "=", String(id))
-    .returningAll()
-    .executeTakeFirst()
-}
-
-interface GetBlobProps {
-  db: SafeKysely
-  resourceId: string
-}
-
-export const getBlobOfResource = async ({ db, resourceId }: GetBlobProps) => {
-  const { draftBlobId, publishedVersionId } = await db
-    .selectFrom("Resource")
-    .where("id", "=", resourceId)
-    .select(["draftBlobId", "publishedVersionId"])
-    .executeTakeFirstOrThrow(
-      () =>
-        new TRPCError({
-          code: "NOT_FOUND",
-          message: "The specified resource could not be found",
-        }),
-    )
-
-  if (draftBlobId) {
-    return await db
-      .selectFrom("Blob")
-      .where("id", "=", draftBlobId)
-      .selectAll()
-      // NOTE: Guaranteed to exist since this is a foreign key
-      .executeTakeFirstOrThrow()
-  }
-
-  return await db
-    .selectFrom("Blob")
-    .selectAll()
-    .where("Blob.id", "=", (eb) =>
-      eb
-        .selectFrom("Version")
-        .where("id", "=", publishedVersionId)
-        .select("blobId"),
-    )
-    .executeTakeFirstOrThrow()
-}
-
-// NOTE: This function gets the published blob preferentially,
-// and if it fails to get a published blob (because the resource has never been published),
-// it will fall back to the draft blob
-export const getPublishedIndexBlobByParentId = async ({
-  db,
-  resourceId,
-}: GetBlobProps) => {
-  const { draftBlobId, publishedVersionId } = await db
-    .selectFrom("Resource")
-    .where("parentId", "=", resourceId)
-    .where("type", "=", ResourceType.IndexPage)
-    .select(["draftBlobId", "publishedVersionId"])
-    .executeTakeFirstOrThrow(
-      () =>
-        new TRPCError({
-          code: "NOT_FOUND",
-          message: "The specified resource could not be found",
-        }),
-    )
-
-  if (publishedVersionId) {
-    return await db
-      .selectFrom("Blob")
-      .selectAll()
-      .where("Blob.id", "=", (eb) =>
-        eb
-          .selectFrom("Version")
-          .where("id", "=", publishedVersionId)
-          .select("blobId"),
-      )
-      .executeTakeFirstOrThrow()
-  }
-
-  return await db
-    .selectFrom("Blob")
-    .where("id", "=", draftBlobId)
-    .selectAll()
-    // NOTE: Guaranteed to exist since this is a foreign key
-    .executeTakeFirstOrThrow()
 }
 
 export const updateBlobById = async (
@@ -356,7 +210,7 @@ export const updateBlobById = async (
 
   let blobIdToUpdate = page.draftBlobId
 
-  if (!page.draftBlobId) {
+  if (!hasNonEmptyString(page.draftBlobId)) {
     // NOTE: no draft for this yet, need to create a new one
     const newBlob = await tx
       .insertInto("Blob")
@@ -381,8 +235,8 @@ export const updateBlobById = async (
 }
 
 // Deferred: should be selecting from new table
-export const getNavBar = async (db: SafeKysely, siteId: number) => {
-  const { content, ...rest } = await db
+export const getNavBar = async (kysely: SafeKysely, siteId: number) => {
+  const { content, ...rest } = await kysely
     .selectFrom("Navbar")
     .where("siteId", "=", siteId)
     .select(defaultNavbarSelect)
@@ -392,8 +246,8 @@ export const getNavBar = async (db: SafeKysely, siteId: number) => {
   return { ...rest, content }
 }
 
-export const getFooter = async (db: SafeKysely, siteId: number) => {
-  const { content, ...rest } = await db
+export const getFooter = async (kysely: SafeKysely, siteId: number) => {
+  const { content, ...rest } = await kysely
     .selectFrom("Footer")
     .where("siteId", "=", siteId)
     .select(defaultFooterSelect)
@@ -401,6 +255,61 @@ export const getFooter = async (db: SafeKysely, siteId: number) => {
     .executeTakeFirstOrThrow()
 
   return { ...rest, content }
+}
+
+const _updateOrderingForResource = (
+  sitemap: IsomerSitemap,
+  parentId: string,
+  comparator: (a: IsomerSitemap, b: IsomerSitemap) => number,
+): IsomerSitemap => {
+  if (sitemap.id === parentId) {
+    return {
+      ...sitemap,
+      children: sitemap.children?.toSorted(comparator),
+    }
+  }
+
+  return {
+    ...sitemap,
+    children: sitemap.children?.map((child) =>
+      _updateOrderingForResource(child, parentId, comparator),
+    ),
+  }
+}
+
+const updateOrderingForResource = async (
+  sitemap: IsomerSitemap,
+  parentId: string,
+) => {
+  // NOTE: First, try to find the published index blob of the parent
+  let indexBlob
+
+  // NOTE: early return if no index blob
+  // as that means that there is no ordering defined
+  try {
+    indexBlob = await getPublishedIndexBlobByParentId({
+      db,
+      resourceId: parentId,
+    })
+  } catch {
+    return sitemap
+  }
+
+  // NOTE: Next, get the content and see if we have defined a `childrenPagesOrdering`
+  const childrenPages = indexBlob.content.content.find(
+    ({ type }) => type === "childrenpages",
+  )
+  // No need to do anything
+  // NOTE: Need to narrow type for inference hence the duplicate check on `type`
+  if (!childrenPages || childrenPages.type !== "childrenpages") {
+    return sitemap
+  }
+
+  const comparator = createChildrenPagesComparator(
+    childrenPages.childrenPagesOrdering ?? [],
+  )
+
+  return _updateOrderingForResource(sitemap, parentId, comparator)
 }
 
 // Returns a sparse IsomerSitemap object that revolves around the given
@@ -499,15 +408,17 @@ export const getLocalisedSitemap = async (
               ResourceType.Collection,
             ])
             .innerJoin("ancestors", "ancestors.parentId", "Resource.id")
-            .select(({ eb }) => [
-              eb.cast<string>(eb.val(""), "text").as("summary"),
-              eb.cast<string>(eb.val(""), "text").as("thumbnail"),
-              eb.cast<string>(eb.val(""), "text").as("category"),
-              eb.cast<string>(eb.val(""), "text").as("date"),
-              eb
-                .cast<FirstImage | null>(eb.val(null), "jsonb")
+            .select(({ eb: selectEb }) => [
+              selectEb.cast<string>(selectEb.val(""), "text").as("summary"),
+              selectEb.cast<string>(selectEb.val(""), "text").as("thumbnail"),
+              selectEb.cast<string>(selectEb.val(""), "text").as("category"),
+              selectEb.cast<string>(selectEb.val(""), "text").as("date"),
+              selectEb
+                .cast<FirstImage | null>(selectEb.val(null), "jsonb")
                 .as("firstImage"),
-              eb.cast<string | null>(eb.val(null), "text").as("tagged"),
+              selectEb
+                .cast<string | null>(selectEb.val(null), "text")
+                .as("tagged"),
               ...defaultResourceSelect,
             ]),
         ),
@@ -522,7 +433,7 @@ export const getLocalisedSitemap = async (
           if (resource.parentId === null) {
             return fb("Resource.parentId", "is", null)
           }
-          return fb("Resource.parentId", "=", String(resource.parentId))
+          return fb("Resource.parentId", "=", resource.parentId)
         })
         .where("Resource.type", "!=", ResourceType.FolderMeta)
         .where("Resource.type", "!=", ResourceType.CollectionMeta)
@@ -552,13 +463,13 @@ export const getLocalisedSitemap = async (
         .where("Resource.state", "=", ResourceState.Published)
         .leftJoin("Version", "Version.id", "Resource.publishedVersionId")
         .leftJoin("Blob as published", "Version.blobId", "published.id")
-        .select(({ eb }) => [
+        .select(({ eb: selectEb }) => [
           headerSql,
           thumbnailSql,
           categorySql,
           dateSql,
           firstImageSql,
-          eb.cast<string | null>(eb.val(null), "text").as("tagged"),
+          selectEb.cast<string | null>(selectEb.val(null), "text").as("tagged"),
           ...defaultResourceSelect,
         ])
         .unionAll((fb) =>
@@ -578,13 +489,15 @@ export const getLocalisedSitemap = async (
             .where("Resource.state", "=", ResourceState.Published)
             .leftJoin("Version", "Version.id", "Resource.publishedVersionId")
             .leftJoin("Blob as published", "Version.blobId", "published.id")
-            .select(({ eb }) => [
+            .select(({ eb: selectEb }) => [
               headerSql,
               thumbnailSql,
               categorySql,
               dateSql,
               firstImageSql,
-              eb.cast<string | null>(eb.val(null), "text").as("tagged"),
+              selectEb
+                .cast<string | null>(selectEb.val(null), "text")
+                .as("tagged"),
               ...defaultResourceSelect,
             ]),
         ),
@@ -626,7 +539,7 @@ export const getLocalisedSitemap = async (
           ...defaultResourceSelect,
         ]),
     )
-    .orderBy("title asc")
+    .orderBy("title", "asc")
     .execute()
 
   // Step 5: Construct the localised sitemap object
@@ -659,66 +572,14 @@ export const getLocalisedSitemap = async (
   }
 
   // NOTE: Need to override ordering for this resource
-  if (resource.type === ResourceType.Page && !!resource.parentId) {
+  if (
+    resource.type === ResourceType.Page &&
+    hasNonEmptyString(resource.parentId)
+  ) {
     return await updateOrderingForResource(sitemapTree, resource.parentId)
   }
 
   return sitemapTree
-}
-
-const updateOrderingForResource = async (
-  sitemap: IsomerSitemap,
-  parentId: string,
-) => {
-  // NOTE: First, try to find the published index blob of the parent
-  let indexBlob
-
-  // NOTE: early return if no index blob
-  // as that means that there is no ordering defined
-  try {
-    indexBlob = await getPublishedIndexBlobByParentId({
-      db,
-      resourceId: parentId,
-    })
-  } catch {
-    return sitemap
-  }
-
-  // NOTE: Next, get the content and see if we have defined a `childrenPagesOrdering`
-  const childrenPages = indexBlob.content.content.find(
-    ({ type }) => type === "childrenpages",
-  )
-  // No need to do anything
-  // NOTE: Need to narrow type for inference hence the duplicate check on `type`
-  if (!childrenPages || childrenPages.type !== "childrenpages") {
-    return sitemap
-  }
-
-  const comparator = createChildrenPagesComparator(
-    childrenPages.childrenPagesOrdering ?? [],
-  )
-
-  return _updateOrderingForResource(sitemap, parentId, comparator)
-}
-
-const _updateOrderingForResource = (
-  sitemap: IsomerSitemap,
-  parentId: string,
-  comparator: (a: IsomerSitemap, b: IsomerSitemap) => number,
-): IsomerSitemap => {
-  if (sitemap.id === parentId) {
-    return {
-      ...sitemap,
-      children: sitemap.children?.toSorted(comparator),
-    }
-  }
-
-  return {
-    ...sitemap,
-    children: sitemap.children?.map((child) =>
-      _updateOrderingForResource(child, parentId, comparator),
-    ),
-  }
 }
 
 // Accepts an optional `trx` so callers inside a transaction (e.g. the publish
@@ -818,7 +679,7 @@ export const getDescendantResourceIds = async (
     .selectFrom("subtree")
     .select("id")
     .execute()
-  return rows.map((row) => String(row.id))
+  return rows.map((row) => row.id)
 }
 
 // True when `resourceId` or any descendant is published — the folder analogue of
@@ -858,7 +719,7 @@ export const getPublishedDescendantResourceIds = async (
     .where("Resource.publishedVersionId", "is not", null)
     .select("Resource.id")
     .execute()
-  return rows.map((row) => String(row.id))
+  return rows.map((row) => row.id)
 }
 
 // Resolves a full permalink path (e.g. "/foo/bar") to the resource that serves
@@ -867,6 +728,7 @@ export const getPublishedDescendantResourceIds = async (
 // container's URL (mirroring getFullPageById). Returns undefined when no
 // resource exists at the path. Best-effort: intended for non-blocking
 // validation (e.g. checking a redirect destination), not access control.
+// oxlint-disable-next-line typescript(consistent-return) -- not-found paths return undefined
 export const getResourceByFullPermalink = async ({
   siteId,
   fullPermalink,
@@ -914,18 +776,27 @@ export const getResourceByFullPermalink = async ({
 
   let parentId: string | null = null
   let current: (typeof candidates)[number] | undefined
-  for (const segment of segments) {
-    current = candidates.find(
+  const findCandidate = (
+    segment: string,
+    currentParentId: string | null,
+  ): (typeof candidates)[number] | undefined =>
+    candidates.find(
       (candidate) =>
-        candidate.permalink === segment && candidate.parentId === parentId,
+        candidate.permalink === segment &&
+        candidate.parentId === currentParentId,
     )
+
+  for (const segment of segments) {
+    current = findCandidate(segment, parentId)
     if (!current) {
-      return
+      // oxlint-disable-next-line unicorn/no-useless-undefined -- not-found path
+      return undefined
     }
-    parentId = String(current.id)
+    parentId = current.id
   }
-  if (!current) {
-    return
+  if (current === undefined) {
+    // oxlint-disable-next-line unicorn/no-useless-undefined -- not-found path
+    return undefined
   }
 
   if (
@@ -1004,8 +875,8 @@ export const getResourceFullPermalinks = async (
     { permalink: string; parentId: string | null }
   >()
   for (const row of rows) {
-    nodeById.set(String(row.id), {
-      parentId: row.parentId === null ? null : String(row.parentId),
+    nodeById.set(row.id, {
+      parentId: row.parentId,
       permalink: row.permalink,
     })
   }
@@ -1084,16 +955,23 @@ export const getResourceIdByPermalink = async (
 
   let parentId: string | null = null
   let leaf: (typeof candidates)[number] | null = null
-  for (const segment of segments) {
-    const match = candidates.find(
+  const findLeafCandidate = (
+    segment: string,
+    currentParentId: string | null,
+  ): (typeof candidates)[number] | undefined =>
+    candidates.find(
       (candidate) =>
-        candidate.permalink === segment && candidate.parentId === parentId,
+        candidate.permalink === segment &&
+        candidate.parentId === currentParentId,
     )
+
+  for (const segment of segments) {
+    const match = findLeafCandidate(segment, parentId)
     if (!match) {
       return null
     }
     leaf = match
-    parentId = String(match.id)
+    parentId = match.id
   }
 
   if (leaf === null) {
@@ -1112,7 +990,7 @@ export const getResourceIdByPermalink = async (
     const indexPage = await db
       .selectFrom("Resource")
       .where("Resource.siteId", "=", siteId)
-      .where("Resource.parentId", "=", String(leaf.id))
+      .where("Resource.parentId", "=", leaf.id)
       .where("Resource.type", "=", ResourceType.IndexPage)
       .select("Resource.id")
       .executeTakeFirst()
@@ -1190,7 +1068,7 @@ export const getResourceIdsByPermalinks = async (
     const key = `${candidate.parentId ?? ""}/${candidate.permalink}`
     // Keep the first match, mirroring the previous `Array.find` semantics.
     if (!idByParentAndPermalink.has(key)) {
-      idByParentAndPermalink.set(key, String(candidate.id))
+      idByParentAndPermalink.set(key, candidate.id)
     }
   }
 
@@ -1265,7 +1143,7 @@ export const publishPageResource = async ({
     // would let the redirect shadow it. Mirror of the redirect-create
     // SOURCE_IS_EXISTING_PAGE guard. The Redirect table is queried directly to
     // avoid a circular import (redirect.service already depends on this module).
-    if (isFirstPublish && fullPermalink) {
+    if (isFirstPublish && hasNonEmptyString(fullPermalink)) {
       const blockingRedirect = await tx
         .selectFrom("Redirect")
         .select("Redirect.id")
@@ -1297,12 +1175,12 @@ export const publishPageResource = async ({
     // so they track the resource from here on. An IndexPage renders at its
     // container's URL, and creation stores the container id for that path, so
     // reference the container (parent) id rather than the index page's own id.
-    if (isFirstPublish && fullPermalink) {
+    if (isFirstPublish && hasNonEmptyString(fullPermalink)) {
       const referenceId =
         fullResource.type === ResourceType.IndexPage
           ? fullResource.parentId
           : resourceId
-      if (referenceId) {
+      if (hasNonEmptyString(referenceId)) {
         const literalDestination = normalizeRedirectPath(fullPermalink)
         const backfilled = await tx
           .updateTable("Redirect")
@@ -1385,7 +1263,7 @@ export const publishPageResource = async ({
  * @param by The user who is publishing the resource
  * @param resource Resource to be published
  * @param logger Logger instance
- * @returns
+ * @returns Promise that resolves when the publish event is logged
  */
 export const publishResource = async (
   by: User["id"],
@@ -1728,7 +1606,7 @@ export const getSearchWithResourceIds = async ({
 }
 
 interface CreatePageWithBlobProps {
-  db: SafeKysely
+  kysely: SafeKysely
   title: string
   permalink: string
   siteId: number
@@ -1737,8 +1615,20 @@ interface CreatePageWithBlobProps {
   type: keyof typeof ResourceType
 }
 
+// oxlint-disable-next-line anti-slop/no-unknown-parameters -- pg driver error shape at insert boundary
+const rethrowResourceUniqueViolation = (error: unknown): never => {
+  // oxlint-disable-next-line typescript/no-confusing-void-expression -- PG error code check at driver boundary
+  if (get(error, "code") === PG_ERROR_CODES.uniqueViolation) {
+    throw new TRPCError({
+      code: "CONFLICT",
+      message: "A resource with the same permalink already exists",
+    })
+  }
+  throw error
+}
+
 export const createResourceWithBlob = async ({
-  db,
+  kysely,
   title,
   permalink,
   siteId,
@@ -1747,8 +1637,8 @@ export const createResourceWithBlob = async ({
   type,
 }: CreatePageWithBlobProps) => {
   // Validate whether parent is a folder/collection
-  if (parentId) {
-    const parent = await db
+  if (hasNonEmptyString(parentId)) {
+    const parent = await kysely
       .selectFrom("Resource")
       .where("Resource.id", "=", parentId)
       .where("Resource.siteId", "=", siteId)
@@ -1767,33 +1657,29 @@ export const createResourceWithBlob = async ({
     }
   }
 
-  const blob = await db
+  const blob = await kysely
     .insertInto("Blob")
     .values({ content: jsonb(blobContent) })
     .returningAll()
     .executeTakeFirstOrThrow()
 
-  const resource = await db
-    .insertInto("Resource")
-    .values({
-      draftBlobId: blob.id,
-      parentId,
-      permalink,
-      siteId,
-      title,
-      type,
-    })
-    .returningAll()
-    .executeTakeFirstOrThrow()
-    .catch((error: unknown) => {
-      if (get(error, "code") === PG_ERROR_CODES.uniqueViolation) {
-        throw new TRPCError({
-          code: "CONFLICT",
-          message: "A resource with the same permalink already exists",
-        })
-      }
-      throw error
-    })
+  let resource
+  try {
+    resource = await kysely
+      .insertInto("Resource")
+      .values({
+        draftBlobId: blob.id,
+        parentId,
+        permalink,
+        siteId,
+        title,
+        type,
+      })
+      .returningAll()
+      .executeTakeFirstOrThrow()
+  } catch (error: unknown) {
+    rethrowResourceUniqueViolation(error)
+  }
 
   return { blob, resource }
 }

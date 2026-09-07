@@ -13,6 +13,7 @@ vi.mock("~/env.mjs", () => ({
   },
 }))
 
+// oxlint-disable-next-line import/first -- vitest hoisted mocks must run before service import
 import { updateSearchSGConfig } from "../searchsg.service"
 
 const VALID_UUID = "550e8400-e29b-41d4-a716-446655440000"

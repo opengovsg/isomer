@@ -22,6 +22,7 @@ import {
   isActiveIsomerAdmin,
 } from "../permissions/permissions.service"
 import {
+import { hasNonEmptyString, isDefinedNumber, isNullableBooleanTrue } from "~/utils/truthiness"
   FOOTER,
   NAVBAR_CONTENT,
   PAGE_BLOB,
@@ -55,7 +56,7 @@ export const validateUserPermissionsForSite = async ({
 // scope — can't be pointed at a site the caller doesn't actually administer.
 export const getAdminSiteIds = async (userId: string): Promise<number[]> => {
   const isIsomerAdmin = await isActiveIsomerAdmin(userId)
-  if (isIsomerAdmin) {
+  if (isNullableBooleanTrue(isIsomerAdmin)) {
     const sites = await db
       .selectFrom("Site")
       .select("id")
@@ -85,7 +86,7 @@ const SEARCHSG_SEARCH_TYPE = "searchSG"
 export const normalizeAskgovConfig = (
   config: IsomerSiteConfigProps,
 ): IsomerSiteConfigProps => {
-  if (!config.askgov) {
+  if (!hasNonEmptyString(config.askgov)) {
     return config
   }
 
@@ -232,7 +233,7 @@ export const getNotification = async (
     )
     .where("id", "=", siteId)
     .executeTakeFirst()
-  if (!result) {
+  if (!hasNonEmptyString(result)) {
     throw new TRPCError({
       code: "NOT_FOUND",
       message: "Site not found",
@@ -242,7 +243,7 @@ export const getNotification = async (
   // NOTE: Handle no notification case
   // We need to return an object because the json result
   // will default to `null` if the key doesn't exist
-  if (!result.notification) {
+  if (!hasNonEmptyString(result.notification)) {
     return {}
   }
 
@@ -288,7 +289,7 @@ export const setSiteNotification = async ({
       .selectAll()
       .executeTakeFirst()
 
-    if (!user) {
+    if (user === undefined) {
       // NOTE: This shouldn't happen as the user is already logged in
       throw new TRPCError({
         code: "NOT_FOUND",
@@ -302,7 +303,7 @@ export const setSiteNotification = async ({
       .selectAll()
       .executeTakeFirst()
 
-    if (!oldSite) {
+    if (!hasNonEmptyString(oldSite)) {
       throw new TRPCError({
         code: "NOT_FOUND",
         message: "The site could not be found",
@@ -313,16 +314,18 @@ export const setSiteNotification = async ({
       .updateTable("Site")
       .set((eb) => ({
         config: notification
-          ? // @ts-expect-error JSON concat operator replaces the entire notification object if it exists, but Kysely does not have types for this.
+          ?
+          // @ts-expect-error JSON concat operator replaces the entire notification object if it exists, but Kysely does not have types for this.
             eb("Site.config", "||", jsonb({ notification }))
-          : // @ts-expect-error JSON remove operator replaces the entire notification object if it exists, but Kysely does not have types for this.
+          :
+          // @ts-expect-error JSON remove operator replaces the entire notification object if it exists, but Kysely does not have types for this.
             eb("Site.config", "-", "notification"),
       }))
       .where("id", "=", siteId)
       .returningAll()
       .executeTakeFirst()
 
-    if (!newSite) {
+    if (!hasNonEmptyString(newSite)) {
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
         message: "Failed to update site configuration",

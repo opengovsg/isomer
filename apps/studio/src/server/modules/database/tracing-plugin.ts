@@ -7,6 +7,11 @@ import type {
 } from "kysely"
 import ddTrace from "dd-trace"
 import { PostgresQueryCompiler } from "kysely"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+} from "~/utils/truthiness"
 
 export class TracingPlugin implements KyselyPlugin {
   // reuse a single compiler instance to avoid unnecessary allocations

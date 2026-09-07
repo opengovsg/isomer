@@ -11,6 +11,11 @@ import { env } from "~/env.mjs"
 import { db } from "~/server/modules/database/database"
 import { AuditLogEvent } from "~/server/modules/database/types"
 import { createCallerFactory } from "~/server/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+} from "~/utils/truthiness"
 
 import { singpassRouter } from "../singpass.router"
 import * as SingpassService from "../singpass.service"

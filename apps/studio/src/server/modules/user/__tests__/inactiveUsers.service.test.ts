@@ -20,6 +20,7 @@ import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { MAX_DAYS_FROM_LAST_LOGIN } from "../constants"
 import {
+import { hasNonEmptyString, isDefinedNumber, isNullableBooleanTrue } from "~/utils/truthiness"
   bulkDeactivateInactiveUsers,
   bulkSendAccountDeactivationWarningEmails,
   getDateOnlyInSG,
@@ -92,7 +93,7 @@ const setupUserWrapper = async ({
     lastLoginAt: lastLoginDaysAgo ? getDateOnlyInSG(lastLoginDaysAgo) : null,
   })
 
-  if (siteId) {
+  if (hasNonEmptyString(siteId)) {
     switch (sitePermission) {
       case RoleType.Admin: {
         await setupAdminPermissions({ siteId, userId: user.id, isDeleted })
@@ -113,7 +114,7 @@ const setupUserWrapper = async ({
     }
   }
 
-  if (!createdDaysAgo) {
+  if (!hasNonEmptyString(createdDaysAgo)) {
     return user
   }
 

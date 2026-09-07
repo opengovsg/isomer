@@ -29,6 +29,7 @@ import { db } from "../database/database"
 import { ResourceType, sql } from "../database/types"
 import { isActiveIsomerAdmin } from "../permissions/permissions.service"
 import {
+import { hasNonEmptyString, isDefinedNumber, isNullableBooleanTrue } from "~/utils/truthiness"
   EGAZETTE_DOCUMENT_INDEX,
   ISOMER_UA,
   SEARCHSG_BASE_URL,
@@ -52,7 +53,7 @@ export const assertGazetteAccess = async (userId: string): Promise<void> => {
     .select("email")
     .executeTakeFirst()
 
-  if (!user) {
+  if (user === undefined) {
     // protectedProcedure already validated the session above us, so a missing
     // User row here is server-state inconsistency, not an auth failure.
     throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" })
@@ -66,7 +67,7 @@ export const assertGazetteAccess = async (userId: string): Promise<void> => {
     IsomerAdminRole.Core,
     IsomerAdminRole.Migrator,
   ])
-  if (!isCoreAdmin) {
+  if (!hasNonEmptyString(isCoreAdmin)) {
     throw new TRPCError({
       code: "FORBIDDEN",
       message: "You do not have access to the gazette feature",
@@ -109,7 +110,7 @@ export const findCollectionLinkWithFilename = async ({
     )
     .select("Resource.id")
 
-  if (excludeId) {
+  if (hasNonEmptyString(excludeId)) {
     query = query.where("Resource.id", "!=", excludeId)
   }
 
@@ -227,7 +228,7 @@ export const removeGazetteFromSearchIndex = async (
     },
   )
 
-  if (!response.ok) {
+  if (!hasNonEmptyString(response.ok)) {
     const errorText = await response.text()
     logger.warn(
       { documentId, error: errorText, status: response.status },
@@ -273,7 +274,7 @@ const getSearchSGAuthToken = async () => {
     method: "POST",
   })
 
-  if (!response.ok) {
+  if (!hasNonEmptyString(response.ok)) {
     throw new Error(`Failed to get SearchSG auth token: ${response.statusText}`)
   }
 
@@ -343,7 +344,7 @@ export const pushDocumentsForIngestion = async (documents: PushDocument[]) => {
     },
   )
 
-  if (!response.ok) {
+  if (!hasNonEmptyString(response.ok)) {
     const errorText = await response.text()
     logger.error(
       { documents, error: errorText, status: response.status },
@@ -415,13 +416,13 @@ export const hasDuplicateNotificationNumber = async ({
     .select("Resource.id")
 
   // Government gazettes are unique within category, not subcategory.
-  if (!isGovernmentGazette) {
+  if (!hasNonEmptyString(isGovernmentGazette)) {
     query = query.where(
       sql<boolean>`${content}->'page'->'tagged'->>0 = ${subCategory}`,
     )
   }
 
-  if (excludeId) {
+  if (hasNonEmptyString(excludeId)) {
     query = query.where("Resource.id", "!=", excludeId)
   }
 

@@ -21,6 +21,11 @@ import { beforeAll, vi } from "vitest"
 import { env } from "~/env.mjs"
 import * as searchSgService from "~/server/modules/searchsg/searchsg.service"
 import { createCallerFactory } from "~/server/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+} from "~/utils/truthiness"
 import { IsomerAdminRole, RoleType } from "~prisma/generated/generatedEnums"
 
 import type { User } from "../../database/types"
@@ -101,7 +106,7 @@ const generateNotification = ({
     },
   }
 
-  if (!content) {
+  if (!hasNonEmptyString(content)) {
     return baseNotification satisfies Notification
   }
 

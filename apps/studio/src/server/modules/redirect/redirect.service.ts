@@ -36,6 +36,7 @@ import {
   redirectRowSchema,
 } from "~/schemas/redirect"
 import { getReferenceLink } from "~/utils/link"
+import { hasNonEmptyString, isNullableBooleanTrue } from "~/utils/truthiness"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { Logger } from "@isomer/logging"
@@ -76,6 +77,7 @@ const SORT_FIELD_TO_COLUMN = {
 // reference when it is exactly one.
 const REFERENCE_DESTINATION_REGEX = new RegExp(
   `^${REFERENCE_LINK_REGEX.source}$`,
+  "u",
 )
 
 // Write timestamps with the database clock, matching the columns' @default(now()).
@@ -135,6 +137,9 @@ const resolveDestinationForStorage = async (
         siteId: String(siteId),
       })
     }
+    default: {
+      return parsed.value
+    }
   }
 }
 
@@ -161,7 +166,7 @@ const getPublishedStateByResourceIds = async (
   const containerIds: string[] = []
   for (const r of resources) {
     if (r.type === ResourceType.Folder || r.type === ResourceType.Collection) {
-      containerIds.push(String(r.id))
+      containerIds.push(r.id)
     }
   }
   const publishedByContainerId = new Map<string, boolean>()
@@ -188,7 +193,7 @@ const getPublishedStateByResourceIds = async (
     result.set(
       Number(resource.id),
       isContainer
-        ? (publishedByContainerId.get(String(resource.id)) ?? false)
+        ? (publishedByContainerId.get(resource.id) ?? false)
         : resource.publishedVersionId !== null,
     )
   }
@@ -319,7 +324,7 @@ export const shadowingSourceCandidates = (permalink: string): string[] => {
   const source = normalizeRedirectSource(permalink)
   const segments = source.split("/").filter((segment) => segment.length > 0)
   const candidates = [source]
-  for (let depth = segments.length - 1; depth >= 1; depth--) {
+  for (let depth = segments.length - 1; depth >= 1; depth -= 1) {
     candidates.push(`/${segments.slice(0, depth).join("/")}/*`)
   }
   return [...new Set(candidates)]
@@ -337,7 +342,9 @@ const resolveShadowingMatch = <
   excludeDestination?: string,
 ): T | null => {
   const [exactSource, ...wildcardCandidates] = candidates
-  const exactMatch = exactSource ? bySource.get(exactSource) : undefined
+  const exactMatch = hasNonEmptyString(exactSource)
+    ? bySource.get(exactSource)
+    : undefined
   if (exactMatch && exactMatch.destination !== excludeDestination) {
     return exactMatch
   }
@@ -491,16 +498,23 @@ const hasLivePageAtSource = async (
     .execute()
   let parentId: string | null = null
   let current: (typeof candidates)[number] | undefined
-  for (const segment of segments) {
-    current = candidates.find(
+  const findPrefixResource = (
+    segment: string,
+    currentParentId: string | null,
+  ): (typeof candidates)[number] | undefined =>
+    candidates.find(
       (candidate) =>
-        candidate.permalink === segment && candidate.parentId === parentId,
+        candidate.permalink === segment &&
+        candidate.parentId === currentParentId,
     )
+
+  for (const segment of segments) {
+    current = findPrefixResource(segment, parentId)
     if (!current) {
       // Nothing lives at the prefix, so nothing can be published under it.
       return false
     }
-    parentId = String(current.id)
+    parentId = current.id
   }
   if (!current) {
     return false
@@ -564,7 +578,7 @@ export const validateRedirect = async ({
   }
 
   const chained = await getChainedRedirect(db, { destination, siteId, source })
-  if (chained?.isLoop) {
+  if (isNullableBooleanTrue(chained?.isLoop)) {
     errors.push({
       code: RedirectValidationCode.RedirectLoop,
       description: `${chained.normalizedDestination} already redirects to ${source}. Visitors will get stuck in between pages. Delete existing redirects or direct to a different page.`,
@@ -631,6 +645,7 @@ export const createRedirect = async ({
       // So a single create and a concurrent bulk create can't each miss the
       // other's uncommitted row in the loop/shadow guards below and both publish
       // a loop. The timed-out wait aborts as a CONFLICT (see the .catch).
+      // oxlint-disable-next-line eslint/no-use-before-define -- hoisting would split lock helpers from bulk section
       await acquireRedirectWriteLock(tx, siteId)
 
       // Reject creating over a live redirect. A soft-deleted row for the same
@@ -658,7 +673,7 @@ export const createRedirect = async ({
         siteId,
         source,
       })
-      if (chained?.isLoop) {
+      if (isNullableBooleanTrue(chained?.isLoop)) {
         // UNPROCESSABLE_CONTENT is reserved for the loop guard — the form maps it
         // to the loop message on the destination field; don't reuse it elsewhere.
         throw new TRPCError({
@@ -688,18 +703,16 @@ export const createRedirect = async ({
         destination,
       )
 
-      const created = await tx
+      const insertedRedirect = await tx
         .insertInto("Redirect")
         .values({ destination: storedDestination, siteId, source })
         .onConflict((oc) =>
           oc
             .columns(["siteId", "source"])
             .doUpdateSet({
-              destination: storedDestination,
-              deletedAt: null,
-              // Revived rows republish now, so refresh createdAt (the publish
-              // time shown to users).
               createdAt: dbNow,
+              deletedAt: null,
+              destination: storedDestination,
             })
             // Only soft-deleted rows may be revived; a concurrent live create
             // must surface as a conflict, not silently overwrite.
@@ -718,7 +731,7 @@ export const createRedirect = async ({
       // delta holds the real before/after rows committed.
       await logRedirectEvent(tx, {
         by: byUser,
-        delta: { after: created, before: existing ?? null },
+        delta: { after: insertedRedirect, before: existing ?? null },
         eventType: AuditLogEvent.RedirectCreate,
         siteId,
       })
@@ -728,12 +741,15 @@ export const createRedirect = async ({
         by: byUser,
         delta: { after: null, before: null },
         eventType: AuditLogEvent.Publish,
-        metadata: toRepublishMetadata({ redirects: { created: [created] } }),
+        metadata: toRepublishMetadata({
+          redirects: { created: [insertedRedirect] },
+        }),
         siteId,
       })
 
-      return created
+      return insertedRedirect
     })
+    // oxlint-disable-next-line eslint/no-use-before-define -- hoisting would split lock helpers from bulk section
     .catch(rethrowLockTimeoutAsConflict)
 
   // Publish after the transaction commits so the external CodeBuild call is off
@@ -778,12 +794,15 @@ const REDIRECT_WRITE_BUSY_MESSAGE =
 // lock_timeout firing.
 type PgCaughtError = Error | { code?: string }
 
-const isLockTimeoutError = (error: PgCaughtError): boolean =>
+// oxlint-disable-next-line anti-slop/no-unknown-parameters -- pg driver error shape at query boundary
+const isLockTimeoutError = (error: unknown): boolean =>
+  // oxlint-disable-next-line typescript/no-confusing-void-expression -- PG error code check at driver boundary
   get(error, "code") === PG_ERROR_CODES.lockTimeout
 
 // Rethrow a lock-timeout wait as a retryable CONFLICT; pass everything else
 // through unchanged (so the transaction's own TRPCErrors keep their codes).
-const rethrowLockTimeoutAsConflict = (error: PgCaughtError): never => {
+// oxlint-disable-next-line anti-slop/no-unknown-parameters -- pg driver error shape at query boundary
+const rethrowLockTimeoutAsConflict = (error: unknown): never => {
   if (isLockTimeoutError(error)) {
     throw new TRPCError({
       code: "CONFLICT",
@@ -817,7 +836,9 @@ const acquireRedirectWriteLock = async (
 // skipped it, a shortfall) or a page was published at it (the in-txn recheck).
 // bulkCreate catches it to re-validate and return fresh row verdicts rather than
 // surface a generic failure.
-class BulkRedirectRaceError extends Error {}
+class BulkRedirectRaceError extends Error {
+  override name = "BulkRedirectRaceError"
+}
 
 // One row after evaluation: the values as the editor typed them (for the errors
 // file + preview), the normalized values (for the DB checks + insert), and the
@@ -887,7 +908,7 @@ const resolveStoredDestinationsToSources = async (
     const permalink = permalinks.get(resourceId)
     result.set(
       destination,
-      permalink ? normalizeRedirectSource(permalink) : null,
+      hasNonEmptyString(permalink) ? normalizeRedirectSource(permalink) : null,
     )
   }
   return result
@@ -995,6 +1016,7 @@ const findCycleNodes = (edges: Map<string, string | null>): Set<string> => {
 // precedence order: format → duplicate-in-file → already-on-table → shadows a
 // page → loop. Returns the internal rows (with normalized values) so the caller
 // can both build the public verdict and insert the surviving rows.
+// oxlint-disable-next-line eslint/complexity -- legacy bulk validation flow
 const runBulkValidation = async (
   siteId: number,
   csv: string,
@@ -1115,7 +1137,7 @@ const runBulkValidation = async (
     )
     for (const source of exactSources) {
       const resourceId = idByPermalink.get(source) ?? null
-      if (resourceId !== null && publishedState.get(resourceId)) {
+      if (resourceId !== null && publishedState.get(resourceId) === true) {
         shadowedSources.add(source)
       }
     }
@@ -1160,15 +1182,13 @@ const runBulkValidation = async (
         .select("subtree.rootId")
         .distinct()
         .execute()
-      const shadowedRootIds = new Set(
-        shadowedRoots.map((row) => String(row.rootId)),
-      )
+      const shadowedRootIds = new Set(shadowedRoots.map((row) => row.rootId))
       for (const [source, prefix] of wildcardPrefixBySource) {
         const rootId = rootIdByPrefix.get(prefix)
         if (
           rootId !== null &&
           rootId !== undefined &&
-          shadowedRootIds.has(String(rootId))
+          shadowedRootIds.has(rootId)
         ) {
           shadowedSources.add(source)
         }
@@ -1335,19 +1355,18 @@ export const bulkCreateRedirects = async ({
       // first, so each audit entry's `before` is the real committed row. Chunked
       // so a large batch's WHERE source IN (...) can't exceed Postgres' 65535
       // bind-parameter cap.
-      const existingRows = (
-        await Promise.all(
-          chunk(sources, BULK_REDIRECT_INSERT_CHUNK_SIZE).map(
-            async (batch) =>
-              await tx
-                .selectFrom("Redirect")
-                .selectAll()
-                .where("siteId", "=", siteId)
-                .where("source", "in", batch)
-                .execute(),
-          ),
-        )
-      ).flat()
+      const existingRowChunks = await Promise.all(
+        chunk(sources, BULK_REDIRECT_INSERT_CHUNK_SIZE).map(
+          async (batch) =>
+            await tx
+              .selectFrom("Redirect")
+              .selectAll()
+              .where("siteId", "=", siteId)
+              .where("source", "in", batch)
+              .execute(),
+        ),
+      )
+      const existingRows = existingRowChunks.flat()
       const existingBySource = new Map(
         existingRows.map((row) => [row.source, row]),
       )
@@ -1382,6 +1401,7 @@ export const bulkCreateRedirects = async ({
         valuesToInsert,
         BULK_REDIRECT_INSERT_CHUNK_SIZE,
       )) {
+        // oxlint-disable-next-line eslint/no-await-in-loop -- chunked inserts must stay ordered for shortfall detection
         const inserted = await tx
           .insertInto("Redirect")
           .values(batch)
@@ -1389,11 +1409,9 @@ export const bulkCreateRedirects = async ({
             oc
               .columns(["siteId", "source"])
               .doUpdateSet((eb) => ({
-                destination: eb.ref("excluded.destination"),
-                deletedAt: null,
-                // Revived rows republish now, so refresh createdAt (the publish
-                // time shown to users).
                 createdAt: dbNow,
+                deletedAt: null,
+                destination: eb.ref("excluded.destination"),
               }))
               // Only soft-deleted rows may be revived; a live one must not be
               // silently overwritten.
@@ -1458,6 +1476,7 @@ export const bulkCreateRedirects = async ({
         userId: byUser.id,
       }))
       for (const batch of chunk(auditValues, BULK_REDIRECT_INSERT_CHUNK_SIZE)) {
+        // oxlint-disable-next-line eslint/no-await-in-loop -- audit batches are intentionally sequential
         await tx.insertInto("AuditLog").values(batch).execute()
       }
 
@@ -1485,7 +1504,7 @@ export const bulkCreateRedirects = async ({
   } catch (error) {
     const caughtError: unknown = error
     // SAFETY: lock-timeout detection only reads postgres error fields.
-    if (isLockTimeoutError(caughtError as PgCaughtError)) {
+    if (isLockTimeoutError(caughtError)) {
       throw new TRPCError({
         code: "CONFLICT",
         message: REDIRECT_WRITE_BUSY_MESSAGE,
@@ -1496,8 +1515,9 @@ export const bulkCreateRedirects = async ({
       // and the insert. Re-validate against the now-current table so the modal
       // shows the offending row(s) rather than a generic failure — this keeps
       // the ok:false contract.
-      const { fileError, rows } = await runBulkValidation(siteId, csv)
-      const validation = toValidationResult(fileError, rows)
+      const { fileError: validationFileError, rows: validationRows } =
+        await runBulkValidation(siteId, csv)
+      const validation = toValidationResult(validationFileError, validationRows)
       // The race may have cleared by the time we re-validate (e.g. the
       // conflicting redirect was deleted). With nothing left to flag, ok:false
       // would strand the modal on an errors screen listing no rows, so surface a
@@ -1666,8 +1686,8 @@ const assertDescendantsNotShadowed = async (
         candidates: shadowingSourceCandidates(newFullPermalink),
         newFullPermalink,
         reference: getReferenceLink({
-          resourceId: String(descendantId),
-          siteId: String(siteId),
+          resourceId: descendantId,
+          siteId,
         }),
       },
     ]
@@ -1682,20 +1702,19 @@ const assertDescendantsNotShadowed = async (
   const allCandidates = [
     ...new Set(descendants.flatMap(({ candidates }) => candidates)),
   ]
-  const rows = (
-    await Promise.all(
-      chunk(allCandidates, BULK_REDIRECT_INSERT_CHUNK_SIZE).map(
-        async (batch) =>
-          await tx
-            .selectFrom("Redirect")
-            .selectAll()
-            .where("siteId", "=", siteId)
-            .where("source", "in", batch)
-            .where("deletedAt", "is", null)
-            .execute(),
-      ),
-    )
-  ).flat()
+  const redirectRowChunks = await Promise.all(
+    chunk(allCandidates, BULK_REDIRECT_INSERT_CHUNK_SIZE).map(
+      async (batch) =>
+        await tx
+          .selectFrom("Redirect")
+          .selectAll()
+          .where("siteId", "=", siteId)
+          .where("source", "in", batch)
+          .where("deletedAt", "is", null)
+          .execute(),
+    ),
+  )
+  const rows = redirectRowChunks.flat()
   const bySource = new Map(rows.map((row) => [row.source, row]))
 
   for (const { newFullPermalink, reference, candidates } of descendants) {
@@ -1712,8 +1731,10 @@ const assertDescendantsNotShadowed = async (
   // at itself) is a self-loop otherwise — soft-delete every one in one update
   // plus one audit insert, instead of a select+update+insert per descendant.
   const reclaimed = descendants.flatMap(({ candidates, reference }) => {
-    const exactSource = candidates[0]
-    const match = exactSource ? bySource.get(exactSource) : undefined
+    const [exactSource] = candidates
+    const match = hasNonEmptyString(exactSource)
+      ? bySource.get(exactSource)
+      : undefined
     return match && match.destination === reference ? [match] : []
   })
   if (reclaimed.length === 0) {
@@ -1721,19 +1742,18 @@ const assertDescendantsNotShadowed = async (
   }
   const byUser = await getByUser(tx, byUserId)
   const reclaimedIds = reclaimed.map((row) => row.id)
-  const afterRows = (
-    await Promise.all(
-      chunk(reclaimedIds, BULK_REDIRECT_INSERT_CHUNK_SIZE).map(
-        async (batch) =>
-          await tx
-            .updateTable("Redirect")
-            .set({ deletedAt: dbNow })
-            .where("id", "in", batch)
-            .returningAll()
-            .execute(),
-      ),
-    )
-  ).flat()
+  const reclaimedUpdateChunks = await Promise.all(
+    chunk(reclaimedIds, BULK_REDIRECT_INSERT_CHUNK_SIZE).map(
+      async (batch) =>
+        await tx
+          .updateTable("Redirect")
+          .set({ deletedAt: dbNow })
+          .where("id", "in", batch)
+          .returningAll()
+          .execute(),
+    ),
+  )
+  const afterRows = reclaimedUpdateChunks.flat()
   const beforeById = new Map(reclaimed.map((row) => [row.id, row]))
   const auditValues = afterRows.flatMap((after) => {
     const before = beforeById.get(after.id)
@@ -1750,6 +1770,7 @@ const assertDescendantsNotShadowed = async (
       : []
   })
   for (const batch of chunk(auditValues, BULK_REDIRECT_INSERT_CHUNK_SIZE)) {
+    // oxlint-disable-next-line eslint/no-await-in-loop -- audit batches are intentionally sequential
     await tx.insertInto("AuditLog").values(batch).execute()
   }
 }

@@ -19,6 +19,7 @@ import { getServerDomPurify } from "~/lib/server-dom-purify"
 import type { AssetPermissionsProps } from "../permissions/permissions.type"
 import { db } from "../database/database"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
+import { hasNonEmptyString, isDefinedNumber, isNullableBooleanTrue } from "~/utils/truthiness"
 
 const logger = createBaseLogger({ path: "asset.service" })
 const bucket = env.NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME
@@ -47,7 +48,9 @@ export const generateTagsQueryString = (
 const getFilenameFromKey = (key: string): string => key.split("/").pop() ?? ""
 
 const getExtensionFromFilename = (filename: string): string =>
-  filename.includes(".") ? filename.substring(filename.lastIndexOf(".")) : ""
+  return filename.includes(".")
+    ? filename.slice(filename.lastIndexOf("."))
+    : ""
 
 /**
  * Derive trusted Content-Type from key. Key is only produced after schema validation,
@@ -97,7 +100,7 @@ export const validateUserPermissionsForAsset = async ({
     .where("siteId", "=", siteId)
     .executeTakeFirst()
 
-  if (!resource) {
+  if (resource === undefined) {
     throw new TRPCError({
       code: "NOT_FOUND",
       message: "The requested resource does not exist",

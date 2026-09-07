@@ -37,6 +37,7 @@ import {
 import { validateUserPermissionsForSite } from "../site/site.service"
 import { defaultCollectionSelect } from "./collection.select"
 import {
+import { hasNonEmptyString, isDefinedNumber, isNullableBooleanTrue } from "~/utils/truthiness"
   createCollectionIndexJson,
   createCollectionLinkJson,
   createCollectionPageJson,
@@ -68,7 +69,7 @@ export const collectionRouter = router({
         )
 
       const { parentId } = indexPage
-      if (!parentId) {
+      if (!hasNonEmptyString(parentId)) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Collection index page has no parent collection",
@@ -79,7 +80,7 @@ export const collectionRouter = router({
         siteId,
         type: ResourceType.Collection,
       })
-      if (!collection) {
+      if (!hasNonEmptyString(collection)) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Collection not found",
@@ -159,7 +160,7 @@ export const collectionRouter = router({
           .executeTakeFirstOrThrow(() => new TRPCError({ code: "BAD_REQUEST" }))
 
         const result = await db.transaction().execute(async (tx) => {
-          if (parentFolderId) {
+          if (hasNonEmptyString(parentFolderId)) {
             const parentFolder = await tx
               .selectFrom("Resource")
               .where("Resource.id", "=", String(parentFolderId))
@@ -167,7 +168,7 @@ export const collectionRouter = router({
               .select(["Resource.type", "Resource.id"])
               .executeTakeFirst()
 
-            if (!parentFolder) {
+            if (!hasNonEmptyString(parentFolder)) {
               throw new TRPCError({
                 code: "NOT_FOUND",
                 message: "Parent folder does not exist",
@@ -292,7 +293,7 @@ export const collectionRouter = router({
           .select(["Resource.type", "Resource.id"])
           .executeTakeFirst()
 
-        if (!parentCollection) {
+        if (!hasNonEmptyString(parentCollection)) {
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Parent collection does not exist",
@@ -415,7 +416,7 @@ export const collectionRouter = router({
         siteId,
         type: ResourceType.Collection,
       })
-      if (!resource) {
+      if (resource === undefined) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Collection not found",

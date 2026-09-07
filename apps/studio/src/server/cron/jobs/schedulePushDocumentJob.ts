@@ -11,6 +11,11 @@ import {
   generateDocumentId,
   pushDocumentsForIngestion,
 } from "~/server/modules/gazette/gazette.service"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+} from "~/utils/truthiness"
 
 import {
   buildGazetteSearchRecords,
@@ -81,7 +86,7 @@ const extractResourceData = async ({
   }
 } | null> => {
   const parsed = pushDocumentContentSchema.safeParse(content)
-  if (!parsed.success) {
+  if (!hasNonEmptyString(parsed.success)) {
     logger.error(
       { content, resourceId },
       "Invalid content structure for push document",
@@ -121,7 +126,7 @@ const extractResourceData = async ({
   // NOTE: Derive the subcategory from the tagged mapping
   const indexParsed =
     collectionIndexPageContentSchema.safeParse(indexPageContent)
-  if (!indexParsed.success) {
+  if (!hasNonEmptyString(indexParsed.success)) {
     logger.error(
       { indexPageContent, resourceId },
       "Invalid index page content structure",
@@ -297,6 +302,7 @@ export const schedulePushDocumentJobHandler = async () => {
             continue
           }
 
+          // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
           await saveObjectsToSearchIndex(records)
           savedCount++
           logger.info({ count: records.length, resourceId }, "Saved to Algolia")

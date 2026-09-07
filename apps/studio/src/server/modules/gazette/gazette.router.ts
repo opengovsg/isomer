@@ -35,6 +35,7 @@ import {
   updatePageById,
 } from "../resource/resource.service"
 import {
+import { hasNonEmptyString, isDefinedNumber, isNullableBooleanTrue } from "~/utils/truthiness"
   findCollectionLinkWithFilename,
   hasDuplicateNotificationNumber,
   assertGazetteAccess,
@@ -130,7 +131,7 @@ export const gazetteRouter = router({
           ),
       ])
 
-      if (!existingResource.scheduledAt) {
+      if (!hasNonEmptyString(existingResource.scheduledAt)) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Cannot cancel a gazette that is not scheduled",
@@ -318,7 +319,7 @@ export const gazetteRouter = router({
             .select(["Resource.id"])
             .executeTakeFirst()
 
-          if (!parentCollection) {
+          if (!hasNonEmptyString(parentCollection)) {
             throw new TRPCError({
               code: "NOT_FOUND",
               message: "Parent collection does not exist",
@@ -443,7 +444,7 @@ export const gazetteRouter = router({
         differenceInMinutes(new Date(), publishedAt) <=
           ALLOWED_GAZETTE_DELETION_TIMEFRAME_IN_MINUTES
 
-      if (!isWithinGracePeriod) {
+      if (!hasNonEmptyString(isWithinGracePeriod)) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: `Gazettes are unable to be deleted after the given grace period of ${ALLOWED_GAZETTE_DELETION_TIMEFRAME_IN_MINUTES} minutes`,
@@ -454,7 +455,7 @@ export const gazetteRouter = router({
       const blob = await getBlobOfResource({ db, resourceId: gazette.id })
       const ref = readGazettePageRef(blob.content)
 
-      if (!ref) {
+      if (!hasNonEmptyString(ref)) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Gazette does not have a valid S3 reference",
@@ -722,7 +723,7 @@ export const gazetteRouter = router({
         results.map(async (result) => {
           const ref = readGazettePageRef(result.content)
 
-          if (!ref) {
+          if (!hasNonEmptyString(ref)) {
             return {
               ...result,
               fileSize: null,
@@ -929,7 +930,7 @@ export const gazetteRouter = router({
               },
               tx,
             )
-            if (!updated) {
+            if (!hasNonEmptyString(updated)) {
               throw new TRPCError({
                 code: "INTERNAL_SERVER_ERROR",
                 message: "Failed to update gazette",

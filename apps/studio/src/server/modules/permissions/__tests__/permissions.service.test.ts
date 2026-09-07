@@ -408,6 +408,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await expect(validation).resolves.not.toThrow()
           }
 
@@ -439,6 +440,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await expect(validation).resolves.not.toThrow()
           }
 
@@ -470,6 +472,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await expect(validation).resolves.not.toThrow()
           }
 
@@ -498,6 +501,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await expect(validation).rejects.toThrow(
               "You do not have sufficient permissions to perform this action",
             )
@@ -579,6 +583,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await expect(validation).resolves.not.toThrow()
           }
 
@@ -610,6 +615,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await expect(validation).resolves.not.toThrow()
           }
 
@@ -641,6 +647,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await expect(validation).resolves.not.toThrow()
           }
 
@@ -669,6 +676,7 @@ describe("permissions.service", () => {
             })
 
             // Assert
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await expect(validation).rejects.toThrow(
               "You do not have sufficient permissions to perform this action",
             )
@@ -722,6 +730,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await expect(validation).resolves.not.toThrow()
           }
 
@@ -754,6 +763,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await expect(validation).resolves.not.toThrow()
           }
 
@@ -789,6 +799,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await expect(validation).rejects.toThrow(
               "You do not have sufficient permissions to perform this action",
             )
@@ -825,6 +836,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await expect(validation).resolves.not.toThrow()
           }
 
@@ -860,6 +872,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await expect(validation).rejects.toThrow(
               "You do not have sufficient permissions to perform this action",
             )
@@ -892,6 +905,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await expect(validation).rejects.toThrow(
               "You do not have sufficient permissions to perform this action",
             )
@@ -945,6 +959,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await expect(validation).resolves.not.toThrow()
           }
 
@@ -976,6 +991,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await expect(validation).resolves.not.toThrow()
           }
 
@@ -1007,6 +1023,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await expect(validation).rejects.toThrow(
               "You do not have sufficient permissions to perform this action",
             )
@@ -1039,6 +1056,7 @@ describe("permissions.service", () => {
             })
 
             // Assert (single resource)
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await expect(validation).rejects.toThrow(
               "You do not have sufficient permissions to perform this action",
             )
@@ -1095,6 +1113,7 @@ describe("permissions.service", () => {
           })
 
           // Assert
+          // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
           await expect(validation).resolves.not.toThrow()
         }
       })

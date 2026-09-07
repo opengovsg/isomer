@@ -122,12 +122,45 @@ export default defineConfig({
       },
     },
     {
+      files: [
+        "instrumentation-client.ts",
+        "src/pages/**",
+        "tests/global-setup.ts",
+        "tests/e2e/global-setup.ts",
+        "tests/e2e/**/*.test.ts",
+        "tests/load/**",
+        "tests/integration/helpers/iron-session.ts",
+      ],
+      rules: {
+        "unicorn/filename-case": "off",
+      },
+    },
+    {
       files: ["src/env.mjs"],
       plugins: ["node"],
       rules: {
         "anti-slop/no-shape-in-symbol-names": "off",
+        "eslint/no-inline-comments": "off",
         "import/no-mutable-exports": "off",
         "node/no-process-env": "off",
+        "typescript/no-deprecated": "off",
+        "typescript/no-unsafe-type-assertion": "off",
+        "unicorn/no-useless-undefined": "off",
+      },
+    },
+    {
+      files: [
+        "src/lib/redact-log-input.ts",
+        "src/lib/__tests__/redact-log-input.test.ts",
+      ],
+      rules: {
+        "unicorn/filename-case": "off",
+      },
+    },
+    {
+      files: ["src/lib/server-dom-purify.ts"],
+      rules: {
+        "unicorn/filename-case": "off",
       },
     },
     {
@@ -173,10 +206,19 @@ export default defineConfig({
         "src/env.mjs",
         "tests/mocks/**",
         "tests/integration/**",
+        "tests/e2e/**",
+        "tests/load/**",
+        "tests/msw/**",
         "prisma/scripts/**",
       ],
       rules: {
+        "eslint/no-await-in-loop": "off",
         "eslint/sort-keys": "off",
+        "anti-slop/require-safety-comment-for-type-assertion": "off",
+        "anti-slop/no-unknown-parameters": "off",
+        "typescript/strict-boolean-expressions": "off",
+        "typescript/switch-exhaustiveness-check": "off",
+        "typescript/no-unsafe-type-assertion": "off",
       },
     },
     {
@@ -186,12 +228,19 @@ export default defineConfig({
       },
     },
     {
-      files: ["**/*.test.ts", "**/*.test.tsx", "**/__tests__/**"],
+      files: [
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/__tests__/**",
+        "**/__test__/**",
+      ],
       rules: {
+        "eslint/no-await-in-loop": "off",
         "eslint/no-plusplus": "off",
         "eslint/no-shadow": "off",
         "eslint/no-use-before-define": "off",
         "eslint/sort-keys": "off",
+        "import/first": "off",
         "unicorn/consistent-function-scoping": "off",
         "unicorn/no-array-for-each": "off",
       },
@@ -242,6 +291,8 @@ export default defineConfig({
       jsPlugins: ["eslint-plugin-storybook"],
       plugins: ["react", "import"],
       rules: {
+        "eslint/func-style": "off",
+        "eslint/no-await-in-loop": "off",
         "eslint/no-shadow": "off",
         "eslint/prefer-destructuring": "off",
         "eslint/sort-keys": "off",

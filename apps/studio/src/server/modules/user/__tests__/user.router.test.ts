@@ -1210,6 +1210,7 @@ describe("user.router", () => {
           email: `editor.user.${i}@open.gov.sg`,
           isDeleted: false,
         })
+        // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
         await setupEditorPermissions({ siteId, userId: editorUser.id })
       }
 
@@ -1229,6 +1230,7 @@ describe("user.router", () => {
           email: `editor.user.${i}@open.gov.sg`,
           isDeleted: false,
         })
+        // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
         await setupEditorPermissions({ siteId, userId: editorUser.id })
       }
 

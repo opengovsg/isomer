@@ -9,6 +9,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import * as mailService from "~/features/mail/service"
 import * as s3Lib from "~/lib/s3"
 import { getCurrentSingaporeMonth } from "~/schemas/audit"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+} from "~/utils/truthiness"
 
 import { db } from "../../database/database"
 import { getMonthDateRange } from "../auditLogExport.query"

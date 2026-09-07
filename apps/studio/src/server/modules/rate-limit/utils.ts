@@ -1,5 +1,10 @@
 import type { NextApiRequest } from "next"
 import getIP from "~/utils/getClientIp"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+} from "~/utils/truthiness"
 
 export const getRateLimitFingerprint = (req: NextApiRequest) => {
   const requestedPath =

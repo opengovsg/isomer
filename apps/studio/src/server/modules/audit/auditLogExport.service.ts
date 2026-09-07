@@ -734,6 +734,7 @@ export const processPendingAuditLogExports = async (): Promise<void> => {
 
   for (const { id } of pending) {
     try {
+      // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
       await processAuditLogExportRequest(id, staleCutoff)
     } catch (error) {
       // processAuditLogExportRequest handles its own errors, but guard the

@@ -4119,6 +4119,7 @@ describe("resource.router", async () => {
         userId: session.userId,
       })
       for (let index = 0; index < numberOfPages; index++) {
+        // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
         await setupPageResource({
           permalink: `page-${index + 1}`,
           resourceType: "Page",
@@ -4840,6 +4841,7 @@ describe("resource.router", async () => {
         const pages = []
         for (let index = 0; index < 11; index++) {
           pages.push(
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await setupPageResource({
               permalink: `page-${index + 1}`,
               resourceType: "Page",
@@ -4997,6 +4999,7 @@ describe("resource.router", async () => {
         const pages = []
         for (let index = 0; index < 31; index++) {
           pages.push(
+            // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
             await setupPageResource({
               permalink: `page-${index + 1}`,
               resourceType: "Page",

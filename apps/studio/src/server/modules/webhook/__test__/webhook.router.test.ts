@@ -180,6 +180,7 @@ describe("webhook.router", async () => {
       // create another 2 builds with the same buildId to simulate multiple resources being published with the same build
       // NOTE: these don't have to be for the same site
       for (let i = 0; i < NUM_RESOURCES_WITH_SAME_BUILD_ID; i++) {
+        // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
         await setupCodeBuildJob({
           arn: ARN,
           isScheduled: true,

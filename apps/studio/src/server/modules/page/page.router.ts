@@ -69,6 +69,7 @@ import {
 } from "../resource/resource.service"
 import { getSiteConfig } from "../site/site.service"
 import { createDefaultPage, createFolderIndexPage } from "./page.service"
+import { hasNonEmptyString, isDefinedNumber, isNullableBooleanTrue } from "~/utils/truthiness"
 
 const schemaValidator = ajv.compile<IsomerSchema>(schema)
 
@@ -135,13 +136,13 @@ export const pageRouter = router({
         .executeTakeFirstOrThrow()
       const updatedPage = await db.transaction().execute(async (tx) => {
         const resource = await getPageById(tx, { resourceId: pageId, siteId })
-        if (!resource) {
+        if (resource === undefined) {
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Resource not found",
           })
         }
-        if (!resource.scheduledAt) {
+        if (!hasNonEmptyString(resource.scheduledAt)) {
           throw new TRPCError({
             code: "BAD_REQUEST",
             message:
@@ -150,11 +151,11 @@ export const pageRouter = router({
         }
 
         // update the resource's scheduled field
-        const updatedPage = await updatePageById(
+        const savedPage = await updatePageById(
           { id: pageId, scheduledAt: null, scheduledBy: null, siteId },
           tx,
         )
-        if (!updatedPage) {
+        if (savedPage === undefined) {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
             message: "Failed to cancel page schedule",
@@ -162,11 +163,11 @@ export const pageRouter = router({
         }
         await logResourceEvent(tx, {
           by,
-          delta: { after: updatedPage, before: resource },
+          delta: { after: savedPage, before: resource },
           eventType: AuditLogEvent.CancelSchedulePublish,
           siteId,
         })
-        return updatedPage
+        return savedPage
       })
       await sendCancelSchedulePageEmail({
         recipientEmail: by.email,
@@ -208,7 +209,7 @@ export const pageRouter = router({
           .executeTakeFirst(),
       ])
 
-      if (!parent) {
+      if (!hasNonEmptyString(parent)) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Parent resource not found or is not a folder/collection",
@@ -282,7 +283,7 @@ export const pageRouter = router({
       }) => {
         await bulkValidateUserPermissionsForResources({
           action: "create",
-          resourceIds: [folderId ? String(folderId) : null],
+          resourceIds: [isDefinedNumber(folderId) ? String(folderId) : null],
           siteId,
           userId: ctx.user.id,
         })
@@ -307,8 +308,8 @@ export const pageRouter = router({
             const { resource: addedResource, blob } =
               await createResourceWithBlob({
                 blobContent: newPage,
-                db: tx,
-                parentId: folderId ? String(folderId) : null,
+                kysely: tx,
+                parentId: isDefinedNumber(folderId) ? String(folderId) : null,
                 permalink,
                 siteId,
                 title,
@@ -400,7 +401,7 @@ export const pageRouter = router({
       })
 
       const permalink = await getResourceFullPermalink(siteId, pageId)
-      if (!permalink) {
+      if (!hasNonEmptyString(permalink)) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "No permalink could be found for the given page",
@@ -443,7 +444,7 @@ export const pageRouter = router({
         siteId,
       })
 
-      if (!resource) {
+      if (resource === undefined) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Resource not found",
@@ -472,7 +473,7 @@ export const pageRouter = router({
         .select(["id", "title", "draftBlobId"])
         .executeTakeFirst()
 
-      if (!rootPage) {
+      if (!hasNonEmptyString(rootPage)) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Root page not found",
@@ -555,7 +556,7 @@ export const pageRouter = router({
         siteId,
       })
 
-      if (!retrievedPage) {
+      if (!hasNonEmptyString(retrievedPage)) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Resource not found",
@@ -576,7 +577,7 @@ export const pageRouter = router({
 
       return await db.transaction().execute(async (tx) => {
         const page = await getFullPageById(tx, { resourceId: pageId, siteId })
-        if (!page) {
+        if (page === undefined) {
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Resource not found",
@@ -606,15 +607,15 @@ export const pageRouter = router({
         ])
 
         return {
-          permalink,
-          navbar,
-          footer,
-          // oxlint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-expect-error type instantiation is excessively deep and possibly infinite
           content,
+          footer,
+          navbar,
+          permalink,
           title,
           type,
           updatedAt,
+          // oxlint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-expect-error type instantiation is excessively deep and possibly infinite
           ...siteMeta,
         }
       })
@@ -679,7 +680,7 @@ export const pageRouter = router({
         }
 
         const [movedBlock] = actualBlocks.splice(from, 1)
-        if (!movedBlock) {
+        if (!hasNonEmptyString(movedBlock)) {
           return blocks
         }
         if (!fullPage.draftBlobId && !fullPage.publishedVersionId) {
@@ -743,7 +744,7 @@ export const pageRouter = router({
       const updatedPage = await db.transaction().execute(async (tx) => {
         // fetch the resource to be scheduled inside the transaction, to guard against concurrent update issues (race conditions)
         const resource = await getPageById(tx, { resourceId: pageId, siteId })
-        if (!resource) {
+        if (resource === undefined) {
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Resource not found",
@@ -759,12 +760,12 @@ export const pageRouter = router({
           })
         }
         // update the resource's scheduled field
-        const updatedPage = await updatePageById(
+        const savedPage = await updatePageById(
           { id: pageId, scheduledAt, scheduledBy: by.id, siteId },
           tx,
         )
         // verify that the update was successful
-        if (!updatedPage) {
+        if (savedPage === undefined) {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
             message: "Failed to schedule page",
@@ -772,11 +773,11 @@ export const pageRouter = router({
         }
         await logResourceEvent(tx, {
           by,
-          delta: { after: updatedPage, before: resource },
+          delta: { after: savedPage, before: resource },
           eventType: AuditLogEvent.SchedulePublish,
           siteId,
         })
-        return updatedPage
+        return savedPage
       })
       await sendScheduledPageEmail({
         recipientEmail: by.email,
@@ -825,7 +826,7 @@ export const pageRouter = router({
           siteId,
         })
 
-        if (!resource) {
+        if (resource === undefined) {
           //  NOTE: This is technically impossible since
           // we use the same resource as previously fetched
           throw new TRPCError({
@@ -854,7 +855,7 @@ export const pageRouter = router({
         // otherwise, the meta never existed and we don't need to validate anyways
         const isValid = !meta || validateFn(parsedMeta)
 
-        if (!isValid) {
+        if (!hasNonEmptyString(isValid)) {
           throw new TRPCError({
             cause: validateFn.errors,
             code: "BAD_REQUEST",
@@ -905,7 +906,7 @@ export const pageRouter = router({
         siteId: input.siteId,
       })
 
-      if (!resource) {
+      if (resource === undefined) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Resource not found",
@@ -998,7 +999,7 @@ export const pageRouter = router({
 
           // NOTE: This is technically impossible since
           // we already load the `fullPage` above
-          if (!resource) {
+          if (resource === undefined) {
             throw new TRPCError({
               code: "NOT_FOUND",
               message:

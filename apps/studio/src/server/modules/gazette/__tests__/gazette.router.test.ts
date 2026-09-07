@@ -25,6 +25,11 @@ import { ENABLE_SEARCHSG_GAZETTE_INGESTION } from "~/lib/growthbook"
 import * as s3Lib from "~/lib/s3"
 import { createCallerFactory } from "~/server/trpc"
 import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+} from "~/utils/truthiness"
+import {
   AuditLogEvent,
   IsomerAdminRole,
   ResourceType,

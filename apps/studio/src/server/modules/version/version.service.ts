@@ -1,11 +1,16 @@
 import type { SelectExpression } from "kysely"
 import type { DB } from "~prisma/generated/generatedTypes"
 import { TRPCError } from "@trpc/server"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+} from "~/utils/truthiness"
 import { ResourceState } from "~prisma/generated/generatedEnums"
 
 import type { SafeKysely, Transaction } from "../database/types"
 import { db } from "../database/database"
-import { getPageById, updatePageById } from "../resource/resource.service"
+import { getPageById, updatePageById } from "../resource/resource.page"
 
 interface Version {
   id: string
@@ -76,7 +81,7 @@ export const incrementVersion = async ({
     siteId,
   })
 
-  if (!page) {
+  if (page === undefined) {
     throw new TRPCError({
       code: "NOT_FOUND",
       message: "Page not found",
@@ -84,7 +89,7 @@ export const incrementVersion = async ({
   }
 
   // If there's no draft, we don't create a new version
-  if (!page.draftBlobId) {
+  if (!hasNonEmptyString(page.draftBlobId)) {
     return null
   }
 

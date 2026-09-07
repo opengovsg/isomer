@@ -1,3 +1,8 @@
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+} from "~/utils/truthiness"
 import { ResourceType } from "~prisma/generated/prisma/client"
 
 import { db } from "../../database/database"
@@ -22,7 +27,7 @@ export const getCollectionItemByPermalink = async (
   permalink: string,
   parentId?: string | null,
 ) => {
-  if (parentId) {
+  if (hasNonEmptyString(parentId)) {
     return await db
       .selectFrom("Resource")
       .where("parentId", "=", parentId)

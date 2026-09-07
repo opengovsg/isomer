@@ -13,6 +13,11 @@ import {
   defaultResourceSelect,
   publishPageResource,
 } from "~/server/modules/resource/resource.service"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+} from "~/utils/truthiness"
 
 import { registerPgbossJob } from "@isomer/pgboss"
 
@@ -95,7 +100,7 @@ export const publishScheduledResources = async (
   await Promise.all(
     resourcesWithUser.map(async (resource) => {
       const { id: resourceId, siteId, scheduledBy } = resource
-      if (!scheduledBy) {
+      if (!hasNonEmptyString(scheduledBy)) {
         logger.error(
           `Resource ${resourceId} is missing user information, skipping publish`,
         )

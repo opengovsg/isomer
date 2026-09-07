@@ -708,6 +708,7 @@ describe("auditLogExport.query", () => {
         ["revoked-before@agency.gov.sg", "2024-03-06T02:00:00Z"],
         ["active@agency.gov.sg", "2024-03-07T02:00:00Z"],
       ] as const) {
+        // oxlint-disable-next-line eslint/no-await-in-loop -- sequential integration setup
         await insertAuditLog({
           createdAt: new Date(at),
           delta: { after: null, before: { identifier: `${email}|10.0.0.1` } },

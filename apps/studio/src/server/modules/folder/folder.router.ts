@@ -9,6 +9,11 @@ import {
   readFolderSchema,
 } from "~/schemas/folder"
 import { protectedProcedure, router } from "~/server/trpc"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+} from "~/utils/truthiness"
 
 import { logResourceEvent } from "../audit/audit.service"
 import { PG_ERROR_CODES } from "../database/constants"
@@ -55,7 +60,7 @@ export const folderRouter = router({
             .executeTakeFirst(),
         ])
 
-        if (!site) {
+        if (site === undefined) {
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Site does not exist",
@@ -63,7 +68,7 @@ export const folderRouter = router({
         }
 
         // Validate parentFolderId is a folder
-        if (parentFolderId) {
+        if (hasNonEmptyString(parentFolderId)) {
           const parentFolder = await db
             .selectFrom("Resource")
             .where("Resource.id", "=", String(parentFolderId))
@@ -71,7 +76,7 @@ export const folderRouter = router({
             .select(["Resource.type", "Resource.id"])
             .executeTakeFirst()
 
-          if (!parentFolder) {
+          if (!hasNonEmptyString(parentFolder)) {
             throw new TRPCError({
               code: "NOT_FOUND",
               message: "Parent folder does not exist",
@@ -202,7 +207,7 @@ export const folderRouter = router({
             ])
             .executeTakeFirst()
 
-          if (!oldResource) {
+          if (!hasNonEmptyString(oldResource)) {
             throw new TRPCError({
               code: "NOT_FOUND",
               message: "Resource does not exist",
@@ -352,7 +357,7 @@ export const folderRouter = router({
         .where("id", "=", String(resourceId))
         .executeTakeFirst()
 
-      if (!data) {
+      if (!hasNonEmptyString(data)) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "This folder does not exist",
@@ -378,7 +383,7 @@ export const folderRouter = router({
         .select(["id"])
         .executeTakeFirst()
 
-      if (!site) {
+      if (site === undefined) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Site does not exist",

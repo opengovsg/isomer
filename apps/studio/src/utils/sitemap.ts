@@ -14,7 +14,13 @@ import { db } from "~/server/modules/database/database"
 import {
   getBlobOfResource,
   getPublishedIndexBlobByParentId,
-} from "~/server/modules/resource/resource.service"
+} from "~/server/modules/resource/resource.blob"
+import {
+  hasNonEmptyString,
+  isDefinedNumber,
+  isNullableBooleanTrue,
+  isNonEmptyArray,
+} from "~/utils/truthiness"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 // Projected in SQL from the first top-level image block of the page body, so
@@ -39,7 +45,7 @@ type ResourceDto = Omit<
 }
 
 const parseTagged = (raw: string | null | undefined): string[] | undefined => {
-  if (!raw) {
+  if (!hasNonEmptyString(raw)) {
     return undefined
   }
   const parsed = z.array(z.string()).safeParse(JSON.parse(raw))
@@ -84,11 +90,12 @@ const getSitemapTreeFromArray = (
   })
 
   // Deferred: Sort the children by the page ordering if the FolderMeta resource exists
+  // oxlint-disable-next-line eslint/complexity -- core cleanup deferred
   return children.map((resource) => {
     const permalink = `${path}${resource.permalink}`
     // Null when the body has no image block at all; `src` is null only when a
     // block exists but omits it
-    const firstImage = resource.firstImage?.src
+    const firstImage = hasNonEmptyString(resource.firstImage)?.src
       ? { alt: resource.firstImage.alt ?? "", src: resource.firstImage.src }
       : undefined
 
@@ -171,7 +178,7 @@ const getSitemapTreeFromArray = (
         .toISOString(),
       // NOTE: This permalink is unused in the preview
       permalink,
-      image: indexPage?.thumbnail
+      image: hasNonEmptyString(indexPage)?.thumbnail
         ? { alt: "", src: indexPage.thumbnail }
         : undefined,
       firstImage,
@@ -268,10 +275,14 @@ export const injectTagMappings = async (
   // SAFETY: collection items validated upstream only expose collection child page props
   const childPageProps = draftBlobOfResource.content.page
 
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   // SAFETY: parent index blob for a collection item is always a collection page layout
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   const collectionPageProps = publishedIndexBlob.content
     .page as CollectionPagePageProps
+  // oxlint-disable-next-line unicorn/no-use-before-define -- core cleanup deferred
 
+  // oxlint-disable-next-line unicorn/no-use-before-define -- core cleanup deferred
   return _injectTagMappings(
     sitemapTree,
     // NOTE: This cast is abit overkill,
