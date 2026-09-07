@@ -81,7 +81,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     await ensureUserOnboarded(TEST_EMAILS.publisher)
   })
 
-  test("publisher does not see the Create new button on the site homepage", async ({
+  test("publisher does not see the Create new button on the site root", async ({
     page,
   }) => {
     await page.goto(`/sites/${siteId}`)
@@ -96,7 +96,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await ensureUserOnboarded(TEST_EMAILS.editor)
   })
 
-  test("editor does not see the Create new button on the site homepage", async ({
+  test("editor does not see the Create new button on the site root", async ({
     page,
   }) => {
     await page.goto(`/sites/${siteId}`)
