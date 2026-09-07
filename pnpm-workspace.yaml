@@ -176,6 +176,7 @@ catalogs:
   "aws-sdk":
     "@aws-sdk/client-acm": ^3.1103.0
     "@aws-sdk/client-amplify": ^3.1103.0
+    "@aws-sdk/client-bedrock-runtime": ^3.1103.0
     "@aws-sdk/client-cloudfront": ^3.1103.0
     "@aws-sdk/client-codebuild": ^3.1103.0
     "@aws-sdk/client-s3": ^3.1103.0

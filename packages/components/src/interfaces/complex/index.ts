@@ -10,6 +10,7 @@ export { IframeSchema, type IframeProps } from "./Iframe"
 export {
   generateImageSrcSchema,
   ImageSrcSchema,
+  ALT_TEXT_REGEX_PATTERN,
   AltTextSchema,
   ImageSchema,
   type ImageProps,

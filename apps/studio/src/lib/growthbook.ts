@@ -20,6 +20,11 @@ export const IS_AUDIT_LOG_ENABLED_FEATURE_KEY = "is-audit-log-enabled"
 // When ON: gazette ingestion is routed to SearchSG instead.
 export const ENABLE_SEARCHSG_GAZETTE_INGESTION =
   "enable-searchsg-gazette-ingestion"
+// Gates the live Bedrock call in generateAltText.ts. OFF by default so the
+// AI-suggestion feature can be rolled out per-environment/site without a
+// code change.
+export const ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY =
+  "enable-ai-alt-text-generation"
 
 export const IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE = true
 
