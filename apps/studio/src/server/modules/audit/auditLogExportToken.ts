@@ -1,4 +1,5 @@
 import { sealData, unsealData } from "iron-session"
+import { z } from "zod"
 import { AUDIT_LOG_EXPORT_URL_EXPIRY_DAYS } from "~/constants/misc"
 
 import { getIronPassword } from "../auth/session"
@@ -81,12 +82,14 @@ export const unsealAuditLogExportToken = async (
   if (Object.prototype.toString.call(payload.requestId) !== "[object String]") {
     return null
   }
-  // SAFETY: [object String] tag confirms a string primitive.
-  // oxlint-disable-next-line typescript/non-nullable-type-assertion-style -- string tag guard above
-  const requestId = payload.requestId as string
-  if (!/^[1-9]\d*$/u.test(requestId)) {
+
+  const requestIdResult = z
+    .string()
+    .regex(/^[1-9]\d*$/u)
+    .safeParse(payload.requestId)
+  if (!requestIdResult.success) {
     return null
   }
 
-  return requestId
+  return requestIdResult.data
 }

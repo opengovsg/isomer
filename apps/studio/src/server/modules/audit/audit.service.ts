@@ -302,7 +302,7 @@ export const logPublishEvent: AuditLogger<
   | ResourcePublishEventLogProps
   | ConfigPublishEventLogProps
   | RepublishEventLogProps
-> = async (tx, { by, delta, eventType, ip, siteId, metadata = {} }) => {
+> = async (tx, { by, delta, eventType, ip, siteId, metadata }) => {
   await tx
     .insertInto("AuditLog")
     .values({

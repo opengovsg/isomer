@@ -887,12 +887,12 @@ export const resourceRouter = router({
             return moved
           })
         } catch (error: unknown) {
+          // oxlint-disable-next-line anti-slop/no-unknown-parameters, typescript/no-confusing-void-expression -- PG error code check at driver boundary
           if (get(error, "code") === PG_ERROR_CODES.uniqueViolation) {
-            const conflictError = new TRPCError({
+            throw new TRPCError({
               code: "CONFLICT",
               message: "A resource with the same permalink already exists",
             })
-            throw conflictError
           }
 
           throw error

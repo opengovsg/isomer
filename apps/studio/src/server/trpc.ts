@@ -69,9 +69,11 @@ const loggerMiddleware = t.middleware(
     const unparsedInput: unknown = await getRawInput()
     // SAFETY: procedure inputs are JSON-serializable values at log time.
     const rawInput = redactLogInput(
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion
       unparsedInput as Parameters<typeof redactLogInput>[0],
     )
 
+    // oxlint-disable-next-line node/callback-return
     const result = await next({
       ctx: { logger },
     })
@@ -205,6 +207,7 @@ const isValidWebhookApiKey = (
     return false
   }
   // SAFETY: [object String] tag confirms a string primitive.
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
   const key = apiKey as string
   return (
     key.length === expectedApiKey.length &&
