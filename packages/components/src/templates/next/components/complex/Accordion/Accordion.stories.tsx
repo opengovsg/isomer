@@ -28,6 +28,7 @@ const meta: Meta<typeof Accordion> = {
   },
   args: {
     site: generateSiteConfig(),
+    headingLevel: 2,
   },
 }
 export default meta

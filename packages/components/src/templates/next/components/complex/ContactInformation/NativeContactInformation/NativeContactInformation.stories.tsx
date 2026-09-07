@@ -24,6 +24,7 @@ type Story = StoryObj<typeof NativeContactInformation>
 
 export const Default: Story = {
   args: {
+    headingLevel: 2,
     type: "contactinformation",
     title: "Sentosa",
     description:
@@ -106,6 +107,7 @@ export const Default: Story = {
 export const Homepage2Methods: Story = {
   name: "Homepage (2 Methods)",
   args: {
+    headingLevel: 2,
     type: "contactinformation",
     layout: "homepage",
     title: "Contact the High Commission of Canberra",
@@ -132,6 +134,7 @@ export const Homepage2Methods: Story = {
 export const Homepage3Methods: Story = {
   name: "Homepage (3 Methods)",
   args: {
+    headingLevel: 2,
     type: "contactinformation",
     layout: "homepage",
     title: "Contact the High Commission of Canberra",

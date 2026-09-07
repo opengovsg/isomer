@@ -106,4 +106,5 @@ export type InfobarProps = Static<typeof InfobarHomepageSchema> & {
   subtitle?: string // Subtitle that is only used in the classic theme
   layout: IsomerPageLayoutType
   site: IsomerSiteProps
+  headingLevel: number
 }

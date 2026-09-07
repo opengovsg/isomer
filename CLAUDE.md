@@ -2,6 +2,11 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Scoped context
+
+Before working in a directory, read and follow every `CLAUDE.md` in or above
+that directory. Nested files add area-specific guidance to this root file.
+
 ## Project Overview
 
 Isomer Next is a monorepo for a government CMS/site builder platform (Open Government Products, Singapore). It uses Turborepo with pnpm workspaces.
@@ -39,13 +44,29 @@ pnpm typecheck        # TypeScript type checking
 
 ### Database (from apps/studio)
 ```bash
-pnpm setup            # Full setup: docker, migrations, seed
+pnpm run setup        # Full setup: docker, migrations, seed
 pnpm services:setup   # Start PostgreSQL and Mockpass containers
 pnpm migrate:dev      # Create new migration
 pnpm db:seed          # Seed database
 pnpm db:reset         # Reset database
 pnpm generate         # Regenerate Prisma client
 ```
+
+### Production database safety
+
+- **Never run `pnpm db:connect`, `pnpm run db:connect`, or an equivalent
+  production database connection command.** This is an absolute prohibition
+  for agents and automation, including read-only work and attempts to inspect
+  the command with `--help` or `--dry-run`.
+- Do not invoke `apps/studio/scripts/connectRds.sh prod` directly or create an
+  equivalent SSH, bastion, port-forwarding, or assumed-role connection to the
+  production database.
+- If production database access appears necessary, stop and ask the developer
+  to perform the operation themselves or provide a safe local/non-production
+  alternative.
+- Access to any other remote environment, credentials, secrets, decrypted
+  parameters, database, or tunnel requires the user's explicit permission in
+  advance, even for read-only work.
 
 ### Building
 ```bash
@@ -100,7 +121,7 @@ pnpm clean            # Clean build artifacts
 
 1. Copy `apps/studio/.env.example` to `apps/studio/.env`
 2. Get secrets from 1Password (search "Isomer Next")
-3. Run `pnpm setup` from `apps/studio` to start services and seed DB
+3. Run `pnpm run setup` from `apps/studio` to start services and seed DB
 
 ## Formatting Configuration
 

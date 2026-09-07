@@ -7,6 +7,8 @@ import {
   AddNewUserButton,
   AddUserModal,
   EditUserModal,
+  ExportAccessLogsButton,
+  ExportAccessLogsModal,
   RemoveUserModal,
   UserTableTabs,
 } from "~/features/users/components"
@@ -65,7 +67,10 @@ const SiteUsersPage: NextPageWithLayout = () => {
               </HStack>
               <CollaboratorsDescription />
             </VStack>
-            <AddNewUserButton siteId={siteId} />
+            <HStack gap="0.75rem">
+              <ExportAccessLogsButton siteId={siteId} />
+              <AddNewUserButton siteId={siteId} />
+            </HStack>
           </HStack>
         </VStack>
         <UserTableTabs siteId={siteId} />
@@ -73,6 +78,7 @@ const SiteUsersPage: NextPageWithLayout = () => {
       <AddUserModal />
       <EditUserModal />
       <RemoveUserModal />
+      <ExportAccessLogsModal />
     </>
   )
 }

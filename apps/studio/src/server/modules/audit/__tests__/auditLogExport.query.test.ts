@@ -801,8 +801,8 @@ describe("auditLogExport.query", () => {
       const { site } = await setupSite()
       const admin = await setupUser({ email: "exporter@agency.gov.sg" })
 
-      // The delta stores what was ASKED for — the requested report type may
-      // be "Both", which never exists as a DB row type.
+      // The delta stores what was ASKED for, so the description echoes it
+      // verbatim regardless of report type.
       await insertAuditLog({
         eventType: AuditLogEvent.AuditLogExportCreate,
         userId: admin.id,
@@ -811,7 +811,7 @@ describe("auditLogExport.query", () => {
           before: null,
           after: {
             auditLogDateRange: "[2024-02-01,2024-03-01)",
-            reportType: "Both",
+            reportType: "Activity",
           },
         },
         createdAt: new Date("2024-03-14T02:00:00Z"),
@@ -825,7 +825,7 @@ describe("auditLogExport.query", () => {
       expect(rows).toHaveLength(1)
       expect(rows[0]?.['"Event type"']).toBe(AuditLogEvent.AuditLogExportCreate)
       expect(rows[0]?.Description).toBe(
-        "Audit log export requested for [2024-02-01,2024-03-01) (Both)",
+        "Audit log export requested for [2024-02-01,2024-03-01) (Activity)",
       )
     })
 

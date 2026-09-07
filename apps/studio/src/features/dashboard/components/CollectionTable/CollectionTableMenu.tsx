@@ -50,6 +50,8 @@ export const CollectionTableMenu = ({
         colorScheme="neutral"
         icon={<BiDotsHorizontalRounded />}
         variant="clear"
+        position="relative"
+        zIndex={1}
       />
       <Portal>
         <MenuList>

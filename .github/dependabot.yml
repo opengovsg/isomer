@@ -76,6 +76,11 @@ updates:
           - "vitest"
           - "@vitest/*"
           - "@vitejs/*"
+      growthbook:
+        applies-to: version-updates
+        patterns:
+          - "@growthbook/growthbook"
+          - "@growthbook/growthbook-react"
       jsonforms:
         applies-to: version-updates
         patterns:

@@ -127,6 +127,7 @@
     "ajv": "catalog:",
     "ajv-errors": "catalog:",
     "chakra-react-select": "catalog:",
+    "content-disposition": "catalog:",
     "date-fns": "catalog:",
     "date-fns-tz": "catalog:",
     "dd-trace": "catalog:",

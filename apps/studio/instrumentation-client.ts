@@ -10,6 +10,7 @@ if (posthogProjectToken && posthogHost) {
   posthog.init(posthogProjectToken, {
     api_host: posthogHost,
     asset_host: env.NEXT_PUBLIC_POSTHOG_ASSETS_HOST,
+    cross_subdomain_cookie: false,
     defaults: "2026-01-30",
     capture_exceptions: true,
     ...(env.NEXT_PUBLIC_APP_URL

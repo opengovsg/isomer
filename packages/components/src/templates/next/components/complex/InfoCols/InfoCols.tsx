@@ -3,6 +3,7 @@ import type { InfoColsProps } from "~/interfaces"
 import { BiRightArrowAlt } from "react-icons/bi"
 import { SUPPORTED_ICONS_MAP } from "~/common/icons"
 import { tv } from "~/lib/tv"
+import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
 import { isExternalUrl } from "~/utils/isExternalUrl"
@@ -96,6 +97,7 @@ const InfoBoxes = ({
         ({ title, icon, description, buttonUrl, buttonLabel }, idx) => {
           const hasLink = !!buttonUrl
           const isExternalLink = isExternalUrl(buttonUrl)
+          const showTitleArrow = hasLink && !buttonLabel
           return (
             <Link
               href={getReferenceLinkHref(
@@ -115,6 +117,14 @@ const InfoBoxes = ({
                 })}
               >
                 {title}
+                {showTitleArrow && (
+                  <BiRightArrowAlt
+                    aria-hidden
+                    className={compoundStyles.infoBoxButtonIcon({
+                      isExternalLink,
+                    })}
+                  />
+                )}
               </h3>
 
               {description && (
@@ -123,7 +133,7 @@ const InfoBoxes = ({
                 </p>
               )}
 
-              {buttonLabel && hasLink && (
+              {hasLink && !showTitleArrow && (
                 <div className={compoundStyles.infoBoxButton()}>
                   {buttonLabel}
                   <BiRightArrowAlt
@@ -148,8 +158,10 @@ export const InfoCols = ({
   infoBoxes,
   layout,
   site,
+  headingLevel,
 }: InfoColsProps) => {
   const simplifiedLayout = getTailwindVariantLayout(layout)
+  const Tag = getHeadingTag(headingLevel)
 
   return (
     <section id={id} className={compoundStyles.section()}>
@@ -158,7 +170,7 @@ export const InfoCols = ({
       >
         <div className={compoundStyles.innerContainer()}>
           <div className={compoundStyles.header({ layout: simplifiedLayout })}>
-            <h2 className={compoundStyles.headerTitle()}>{title}</h2>
+            <Tag className={compoundStyles.headerTitle()}>{title}</Tag>
 
             {subtitle && (
               <p

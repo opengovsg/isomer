@@ -23,6 +23,7 @@
     "lint:ws": "pnpm exec sherif",
     "lint:ws:fix": "pnpm exec sherif --fix",
     "postinstall": "pnpm run lint:ws",
+    "setup": "pnpm --filter isomer-studio run setup",
     "setup:test": "turbo setup:test",
     "storybook": "dotenv -- turbo run storybook --parallel",
     "teardown": "turbo teardown",

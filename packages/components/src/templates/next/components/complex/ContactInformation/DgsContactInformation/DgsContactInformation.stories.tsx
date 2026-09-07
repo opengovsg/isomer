@@ -171,6 +171,7 @@ const EmptyFieldsParameters = {
 export const Default: Story = {
   parameters: DgsParameters,
   args: {
+    headingLevel: 2,
     dataSource: {
       type: "dgs",
       resourceId: "PLACEHOLDER_RESOURCE_ID",
@@ -192,6 +193,7 @@ export const DefaultEmptyFields: Story = {
   name: "Default (Empty Fields)",
   parameters: EmptyFieldsParameters,
   args: {
+    headingLevel: 2,
     dataSource: {
       type: "dgs",
       resourceId: "PLACEHOLDER_RESOURCE_ID",
@@ -213,6 +215,7 @@ export const Partial: Story = {
   name: "Part Native, Part DGS",
   parameters: DgsParameters,
   args: {
+    headingLevel: 2,
     dataSource: {
       type: "dgs",
       resourceId: "PLACEHOLDER_RESOURCE_ID",
@@ -237,6 +240,7 @@ export const Partial: Story = {
 export const Homepage: Story = {
   parameters: DgsParameters,
   args: {
+    headingLevel: 2,
     layout: "homepage",
     whitelistedMethods: ["telephone", "emergency_contact", "email"],
     dataSource: {
@@ -260,6 +264,7 @@ export const HomepageEmptyFields: Story = {
   name: "Homepage (Empty Fields)",
   parameters: EmptyFieldsParameters,
   args: {
+    headingLevel: 2,
     layout: "homepage",
     whitelistedMethods: ["telephone", "emergency_contact", "email"],
     dataSource: {
@@ -293,6 +298,7 @@ export const LoadingDefault: Story = {
     },
   },
   args: {
+    headingLevel: 2,
     dataSource: {
       type: "dgs",
       resourceId: "PLACEHOLDER_RESOURCE_ID",
@@ -324,6 +330,7 @@ export const LoadingHomepage: Story = {
     },
   },
   args: {
+    headingLevel: 2,
     layout: "homepage",
     dataSource: {
       type: "dgs",
@@ -361,6 +368,7 @@ export const Error: Story = {
     },
   },
   args: {
+    headingLevel: 2,
     dataSource: {
       type: "dgs",
       resourceId: "PLACEHOLDER_RESOURCE_ID",

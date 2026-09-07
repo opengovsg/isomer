@@ -26,6 +26,7 @@ import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { moveResourceAtom } from "../../atoms"
+import { useValidateResourceMove } from "../../hooks/useValidateResourceMove"
 
 export const MoveResourceModal = () => {
   // NOTE: This is what we are trying to move
@@ -116,6 +117,14 @@ const MoveResourceContent = withSuspense(
     })
 
     const movedItem = useAtomValue(moveResourceAtom)
+    const {
+      isLoading: isValidMoveLoading,
+      isValidMove,
+      errorMessage,
+    } = useValidateResourceMove({
+      sourceId: movedItem?.id,
+      destinationId: curResourceId ?? null,
+    })
 
     const [shouldCreateRedirect, setShouldCreateRedirect] = useState(true)
     const [{ fullPermalink: movedFullPermalink }] =
@@ -149,14 +158,20 @@ const MoveResourceContent = withSuspense(
       curResourceId === null || (curResourceId !== undefined && !!destination)
     // Moving a page into its current parent leaves the URL unchanged, so there's
     // nothing to redirect — only offer the option when the URL actually changes.
+    // An invalid destination has no resulting URL, so gate on a valid move too.
     const showRedirectOption =
+      isValidMove === true &&
       isRedirectableType &&
       isDestinationResolved &&
       oldFullPermalink !== newFullPermalink
-    // The URL-change notice shows for any resource once a picked destination
-    // actually changes its URL; the redirect checkbox is the published subset.
+    // CollectionLinks have no URL of their own (their permalink is a hidden
+    // random UUID), so skip the notice even though their permalink changes.
+    // An invalid destination has no resulting URL, so gate on a valid move too.
     const showUrlChangeNotice =
-      isDestinationResolved && oldFullPermalink !== newFullPermalink
+      isValidMove === true &&
+      type !== ResourceType.CollectionLink &&
+      isDestinationResolved &&
+      oldFullPermalink !== newFullPermalink
     const { data: existingRedirect } = trpc.redirect.getBySource.useQuery(
       { siteId: Number(siteId), source: newFullPermalink },
       { enabled: showRedirectOption },
@@ -175,6 +190,13 @@ const MoveResourceContent = withSuspense(
               existingResource={movedItem ?? undefined}
               onChange={(resourceId) => setCurResourceId(resourceId)}
             />
+            {curResourceId !== undefined &&
+              errorMessage &&
+              !isValidMoveLoading && (
+                <Infobox variant="error" size="sm" w="full">
+                  {errorMessage}
+                </Infobox>
+              )}
             {showUrlChangeNotice && (
               <VStack alignItems="flex-start" spacing="0.75rem" w="full">
                 <Box
@@ -240,9 +262,12 @@ const MoveResourceContent = withSuspense(
               ability.cannot("move", {
                 parentId: curResourceId ?? null,
               }) ||
-              ability.cannot("move", { parentId: movedItem?.parentId ?? null })
+              ability.cannot("move", {
+                parentId: movedItem?.parentId ?? null,
+              }) ||
+              isValidMove !== true
             }
-            isLoading={isPending}
+            isLoading={isPending || isValidMoveLoading}
             onClick={() =>
               movedItem?.id &&
               mutate({

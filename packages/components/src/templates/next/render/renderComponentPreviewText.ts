@@ -69,6 +69,8 @@ export function renderComponentPreviewText({
       return component.summary
     case "blockquote":
       return component.quote
+    case "button":
+      return component.buttonLabel || "Button"
     case "callout":
       return getTextContentOfProse(component.content.content)
     case "formsg":

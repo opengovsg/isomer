@@ -21,6 +21,7 @@ const meta: Meta<ContentpicProps> = {
   },
   args: {
     site: generateSiteConfig(),
+    headingLevel: 2,
     imageAlt:
       "Two rhinos. A rhino is peacefully grazing on grass in a field in front of the other rhino.",
     imageSrc:

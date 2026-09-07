@@ -12,7 +12,10 @@ import {
 import { TRPCError } from "@trpc/server"
 import { format, isBefore } from "date-fns"
 import { get, isEmpty, isEqual, pick } from "lodash-es"
-import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
+import {
+  INDEX_PAGE_PERMALINK,
+  SEARCH_PAGE_PERMALINK,
+} from "~/constants/sitemap"
 import {
   sendCancelSchedulePageEmail,
   sendScheduledPageEmail,
@@ -820,7 +823,10 @@ export const pageRouter = router({
 
           // The search page (permalink /search, no parent) is a default page
           // whose settings cannot be edited.
-          if (resource.permalink === "search" && resource.parentId === null) {
+          if (
+            resource.permalink === SEARCH_PAGE_PERMALINK &&
+            resource.parentId === null
+          ) {
             throw new TRPCError({
               code: "BAD_REQUEST",
               message: "The search page settings cannot be edited",

@@ -132,7 +132,10 @@ export function BaseLinkControl({
           </Flex>
           {required && (
             <FormErrorMessage>
-              {label} {getCustomErrorMessage(errors)}
+              {/* AJV sees an empty string as present, so pattern mismatch (not "required") fires here — check data directly to show the empty-state copy */}
+              {!data
+                ? `${label} cannot be empty.`
+                : `${label} ${getCustomErrorMessage(errors)}`}
             </FormErrorMessage>
           )}
         </LinkErrorBoundary>

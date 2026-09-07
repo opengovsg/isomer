@@ -60,6 +60,16 @@ export const emailSessionRouter = router({
       const otpPrefix = isStaticOtp ? "OTP" : createVfnPrefix()
       const hashedToken = createTokenHash(token, email)
 
+      // NOTE: Skip issuing the OTP and saving to database so that
+      // the person can never log in to the system user email.
+      // Not rejecting error outright so that it looks like the email is valid
+      if (email === env.SYSTEM_USER_EMAIL) {
+        return {
+          otpPrefix,
+          email,
+        }
+      }
+
       const url = new URL(getBaseUrl())
 
       ctx.logger.info({ email, expires }, "Generated OTP for email sign in")

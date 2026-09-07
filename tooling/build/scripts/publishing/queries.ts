@@ -74,7 +74,10 @@ SELECT name, config, theme FROM public."Site" WHERE "id" = $1;
 // stripped to match getConvertedPermalink in index.ts. Non-reference
 // destinations (literal paths, external https URLs) pass through untouched. A
 // reference resolves to NULL — and the redirect is dropped — when nothing live
-// matches (deleted/unpublished target, or a reference to another site).
+// matches (deleted/unpublished target, or a reference to another site). A
+// redirect whose resolved destination is its own source is also dropped: this
+// can happen when a later folder rename moves the referenced page back onto the
+// URL the redirect originally preserved (ISOM-2525).
 export const GET_REDIRECTS = `
 WITH RECURSIVE
     -- Distinct resourceIds referenced by this site's own redirects. The
@@ -134,5 +137,22 @@ SELECT source, destination FROM (
         AND root."resourceId" = CAST(substring(redirect.destination from '\\[resource:\\d+:(\\d+)\\]') AS bigint)
     WHERE redirect."siteId" = $1 AND redirect."deletedAt" IS NULL
 ) resolved_redirects
-WHERE resolved_redirects.destination IS NOT NULL;
+WHERE resolved_redirects.destination IS NOT NULL
+    -- Compare exact sources directly. For a wildcard, compare its prefix: the
+    -- edge resolver appends the matched remainder to the destination, so
+    -- "/students/*" -> "/students" loops too. Query/fragment suffixes are not
+    -- sent in the S3 object path and therefore cannot make a self-redirect safe.
+    AND LOWER(
+        CASE
+            WHEN RIGHT(resolved_redirects.source, 2) = '/*'
+            THEN LEFT(resolved_redirects.source, LENGTH(resolved_redirects.source) - 2)
+            ELSE resolved_redirects.source
+        END
+    ) <> LOWER(
+        REGEXP_REPLACE(
+            REGEXP_REPLACE(resolved_redirects.destination, '[?#].*$', ''),
+            '/+$',
+            ''
+        )
+    );
 `

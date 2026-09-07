@@ -219,6 +219,7 @@ export const HeroSchema = Type.Intersect(
 type CommonProps = Static<typeof HeroBaseSchema> & {
   site: IsomerSiteProps
   theme?: "default" | "inverse"
+  headingLevel: number
 }
 
 export type HeroGradientProps = Simplify<

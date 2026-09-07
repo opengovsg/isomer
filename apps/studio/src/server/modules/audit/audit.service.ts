@@ -404,18 +404,28 @@ interface AuditLogExportEventLogProps {
   siteId: Site["id"]
 }
 
-export const logAuditLogExportEvent: AuditLogger<
-  AuditLogExportEventLogProps
-> = async (tx, { eventType, delta, by, ip, siteId }) => {
+// Batched: an "allSites" ask (see auditLogExport.service.ts) can cover every
+// site the caller Admins, and each site's request gets its own event —
+// inserting all of them in one multi-row statement avoids holding that ask's
+// transaction open for one extra round trip per site.
+export const logAuditLogExportEvents: AuditLogger<
+  AuditLogExportEventLogProps[]
+> = async (tx, events) => {
+  if (events.length === 0) {
+    return
+  }
+
   await tx
     .insertInto("AuditLog")
-    .values({
-      siteId,
-      eventType,
-      delta,
-      userId: by.id,
-      ipAddress: ip,
-      metadata: {},
-    })
+    .values(
+      events.map(({ eventType, delta, by, ip, siteId }) => ({
+        siteId,
+        eventType,
+        delta,
+        userId: by.id,
+        ipAddress: ip,
+        metadata: {},
+      })),
+    )
     .execute()
 }

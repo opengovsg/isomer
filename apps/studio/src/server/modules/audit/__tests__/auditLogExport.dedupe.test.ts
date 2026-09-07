@@ -1,7 +1,5 @@
-import { subMonths } from "date-fns"
-import { formatInTimeZone } from "date-fns-tz"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { getCurrentSingaporeMonth, type IsoMonth } from "~/schemas/audit"
+import { getCurrentSingaporeMonth } from "~/schemas/audit"
 
 // This file deliberately mocks the DB (unlike the sibling integration tests) so
 // it can drive the ONE code path that a real-Postgres test cannot deterministic-
@@ -10,20 +8,18 @@ import { getCurrentSingaporeMonth, type IsoMonth } from "~/schemas/audit"
 // would also be seen by the SELECT — meaning the race-loser branch only runs
 // when a concurrent ask slips in between our SELECT and INSERT. Duplicate asks
 // are accepted IDEMPOTENTLY (ADR docs/adr/0005): losing that race must resolve
-// to the winner's in-flight row, never to an error. The INSERT targets the
-// partial unique index with ON CONFLICT DO NOTHING — a raised unique-violation
-// would abort the whole Postgres transaction and roll back the other fan-out
-// half, so the losing insert instead returns NO ROW and the service selects
-// the winner's row. Vitest isolates module mocks per test file, so mocking
-// `../database` here does not affect the real-DB integration tests in
-// audit.router.test.ts.
+// to the winner's in-flight row, never to an error. The batch INSERT targets
+// the partial unique index with ON CONFLICT DO NOTHING for every site in one
+// statement — Postgres evaluates the conflict per row, so a losing site's row
+// just comes back missing from the INSERT's RETURNING set (not a raised
+// unique-violation aborting the whole statement), and the service selects the
+// winner's row for exactly those sites. Vitest isolates module mocks per test
+// file, so mocking `../database` here does not affect the real-DB integration
+// tests in audit.router.test.ts.
 //
-// It also pins the `Both` fan-out contract (TWO inserts — Access + Activity —
-// through the SAME transaction) and the audit trail contract: EVERY ask
-// records one AuditLogExportCreate event PER fanned-out report type in that
-// transaction — never a single ambiguous "Both" event (review feedback on
-// #2832) — even when all halves were idempotent-accepted and nothing was
-// inserted.
+// It also pins the audit trail contract: every ask records one
+// AuditLogExportCreate event per site in the same transaction, even when the
+// ask was idempotent-accepted and nothing was inserted for that site.
 
 const { mockDb, mockValidatePermissions } = vi.hoisted(() => ({
   mockDb: { transaction: vi.fn() },
@@ -52,54 +48,49 @@ vi.mock("../../permissions/permissions.service", () => ({
 }))
 
 // Import after mocks are registered so the service binds to the mocked modules.
-const { createAuditLogExportRequest } =
+const { createAuditLogExportRequestsForSites } =
   await import("../auditLogExport.service")
 
 const VALID_MONTH = getCurrentSingaporeMonth()
-// A month inside the export window but distinct from the current one, so
-// tests can tell apart a range built from the REQUESTED month (Activity)
-// from one always pinned to the CURRENT month (Access) — see
-// createAuditLogExportRequest's per-report-type range comment.
-const PAST_MONTH = formatInTimeZone(
-  subMonths(new Date(), 1),
-  "Asia/Singapore",
-  "yyyy-MM",
-) as IsoMonth
 
 // The requesting user, as the service's in-transaction `User` lookup returns
 // it (the actor of the AuditLogExportCreate event).
 const FAKE_USER = { id: "user-1", email: "admin@vendor.com.sg" }
 
-// One scripted outcome per AuditLogExportRequest INSERT the service issues,
-// in order:
-// - "inserted": the row is inserted and returned.
-// - "conflict": the race was lost — ON CONFLICT DO NOTHING swallowed the
-//   insert, so no row comes back (what Postgres does when a concurrent ask's
-//   in-flight row already occupies the partial unique index).
-// - "error": the insert rejects (any non-conflict DB failure).
-type InsertStep =
-  | { outcome: "inserted" }
-  | { outcome: "conflict" }
-  | { outcome: "error"; error: Error }
+// What the batch INSERT does with one row of its multi-row `values(...)`:
+// - "inserted": the row comes back in the INSERT's RETURNING set.
+// - "conflict": ON CONFLICT DO NOTHING swallowed this row (a concurrent ask's
+//   in-flight row already occupies the partial unique index for this site) —
+//   it simply does not appear in the returned rows.
+// - "error": the whole INSERT statement rejects (a genuine, non-conflict DB
+//   failure), matching Postgres aborting the statement.
+type InsertOutcome =
+  | { site: number; outcome: "inserted" | "conflict" }
+  | { site: number; outcome: "error"; error: Error }
 
 interface TxScript {
-  // What each AuditLogExportRequest SELECT resolves with, in call order. The
-  // service issues one fast-path SELECT per half, plus one winner SELECT per
-  // race-losing insert — they consume this queue in sequence.
-  selects?: (Record<string, unknown> | undefined)[]
-  inserts?: InsertStep[]
+  // What each `AuditLogExportRequest` SELECT (`.execute()`) resolves with, in
+  // call order: [0] is the fast-path existing-rows SELECT, [1] (if present)
+  // is the race-loser SELECT.
+  selects?: Record<string, unknown>[][]
+  // One outcome per site in the batch INSERT's `values(...)` array, matched
+  // by the `siteId` on each scripted outcome.
+  inserts?: InsertOutcome[]
 }
 
-// Build a fake Kysely transaction. AuditLogExportRequest SELECTs consume
-// `script.selects`; AuditLogExportRequest INSERTs consume `script.inserts`
-// (recording the `values` payload of successful inserts in `insertedValues`);
-// the `User` SELECT always resolves with FAKE_USER; AuditLog INSERTs always
-// succeed and record their payload in `auditLogValues`.
+// Build a fake Kysely transaction driving `createAuditLogExportRequestsForSites`.
+// `AuditLogExportRequest` SELECTs consume `script.selects` in order; the
+// `AuditLogExportRequest` batch INSERT resolves per `script.inserts`
+// (recording every attempted row in `insertedValues`, keyed by the ones that
+// actually "inserted"); the `User` SELECT always resolves with FAKE_USER; the
+// one `AuditLog` INSERT (a single multi-row statement covering every site,
+// via `logAuditLogExportEvents`) always succeeds — its rows are flattened
+// into `auditLogValues`, one entry per site, so assertions don't need to care
+// whether it was one row or many.
 const makeTx = (script: TxScript) => {
   const insertedValues: Record<string, unknown>[] = []
   const auditLogValues: Record<string, unknown>[] = []
   let selectCall = 0
-  let insertCall = 0
 
   const tx = {
     insertedValues,
@@ -108,36 +99,33 @@ const makeTx = (script: TxScript) => {
       where: function () {
         return this
       },
-      select: function () {
-        return this
-      },
       selectAll: function () {
         return this
       },
-      orderBy: function () {
-        return this
-      },
-      executeTakeFirst: () => {
-        if (table === "User") {
-          return Promise.resolve(FAKE_USER)
+      execute: () => {
+        if (table !== "AuditLogExportRequest") {
+          return Promise.reject(
+            new Error(`Unexpected execute() SELECT on ${table}`),
+          )
         }
-        const result = script.selects?.[selectCall]
+        const result = script.selects?.[selectCall] ?? []
         selectCall += 1
         return Promise.resolve(result)
       },
-      executeTakeFirstOrThrow: async function () {
-        const row: unknown = await this.executeTakeFirst()
-        if (!row) {
-          throw new Error(`No row returned from SELECT on ${table}`)
+      executeTakeFirstOrThrow: () => {
+        if (table === "User") {
+          return Promise.resolve(FAKE_USER)
         }
-        return row
+        return Promise.reject(
+          new Error(`Unexpected executeTakeFirstOrThrow SELECT on ${table}`),
+        )
       },
     }),
     insertInto: (table: string) => {
-      let values: Record<string, unknown> = {}
+      let payload: unknown
       return {
-        values: function (v: Record<string, unknown>) {
-          values = v
+        values: function (v: unknown) {
+          payload = v
           return this
         },
         onConflict: function (cb: (oc: Record<string, unknown>) => unknown) {
@@ -160,39 +148,41 @@ const makeTx = (script: TxScript) => {
         returningAll: function () {
           return this
         },
-        // AuditLogExportRequest inserts end with executeTakeFirst (no row on
-        // a DO NOTHING conflict).
-        executeTakeFirst: () => {
-          if (table !== "AuditLogExportRequest") {
-            return Promise.reject(
-              new Error(`Unexpected executeTakeFirst INSERT into ${table}`),
-            )
-          }
-          const step = script.inserts?.[insertCall]
-          insertCall += 1
-          if (!step) {
-            return Promise.reject(
-              new Error(`Unexpected INSERT #${insertCall} (not scripted)`),
-            )
-          }
-          if (step.outcome === "error") {
-            return Promise.reject(step.error)
-          }
-          if (step.outcome === "conflict") {
-            return Promise.resolve(undefined)
-          }
-          insertedValues.push(values)
-          return Promise.resolve({ id: `row-${insertCall}`, ...values })
-        },
-        // AuditLog inserts end with execute().
         execute: () => {
-          if (table !== "AuditLog") {
+          if (table === "AuditLog") {
+            const events = payload as
+              | Record<string, unknown>
+              | Record<string, unknown>[]
+            auditLogValues.push(...(Array.isArray(events) ? events : [events]))
+            return Promise.resolve([])
+          }
+
+          if (table !== "AuditLogExportRequest") {
             return Promise.reject(
               new Error(`Unexpected execute() INSERT into ${table}`),
             )
           }
-          auditLogValues.push(values)
-          return Promise.resolve([])
+
+          const rows = payload as { siteId: number }[]
+          const outcomeBySite = new Map(
+            (script.inserts ?? []).map((o) => [o.site, o]),
+          )
+          const errorOutcome = rows
+            .map((row) => outcomeBySite.get(row.siteId))
+            .find((o) => o?.outcome === "error")
+          if (errorOutcome?.outcome === "error") {
+            return Promise.reject(errorOutcome.error)
+          }
+
+          const returned = rows
+            .filter(
+              (row) => outcomeBySite.get(row.siteId)?.outcome !== "conflict",
+            )
+            .map((row, i) => {
+              insertedValues.push(row)
+              return { id: `row-${i}`, ...row }
+            })
+          return Promise.resolve(returned)
         },
       }
     },
@@ -210,40 +200,34 @@ const useTx = (tx: ReturnType<typeof makeTx>) => {
   })
 }
 
-// The AuditLogExportCreate events every ask must record: ONE per fanned-out
-// DB report type, never a "Both" event — which would be ambiguous about
-// exactly which reports were produced (review feedback on #2832). Shaped per
-// the audit.service.ts pattern: actor = requesting user, delta.after carries
-// the concrete DB report type.
-const expectExportCreateEvents = (
-  tx: ReturnType<typeof makeTx>,
-  expectedReportTypes: string[],
+// The AuditLogExportCreate event every ask must record. Shaped per the
+// audit.service.ts pattern: actor = requesting user, delta.after carries the
+// report type.
+const expectExportCreateEvent = (
+  value: Record<string, unknown> | undefined,
+  expectedSiteId: number,
+  expectedReportType: string,
   ipAddress?: string,
 ) => {
-  expect(tx.auditLogValues).toHaveLength(expectedReportTypes.length)
-  const loggedReportTypes = tx.auditLogValues.map(
-    (value) =>
-      (value.delta as { after: { reportType: string } }).after.reportType,
+  expect(value).toMatchObject({
+    eventType: "AuditLogExportCreate",
+    userId: FAKE_USER.id,
+    siteId: expectedSiteId,
+    // The requester IP threaded from the router is recorded on the event,
+    // matching sibling resource/permission/login events.
+    ipAddress,
+    delta: {
+      before: null,
+      after: { reportType: expectedReportType },
+    },
+  })
+  const delta = value?.delta as { after: { auditLogDateRange: string } }
+  expect(delta.after.auditLogDateRange).toMatch(
+    /^\[\d{4}-\d{2}-\d{2},\d{4}-\d{2}-\d{2}\)$/,
   )
-  expect(loggedReportTypes.sort()).toEqual([...expectedReportTypes].sort())
-  for (const value of tx.auditLogValues) {
-    expect(value).toMatchObject({
-      eventType: "AuditLogExportCreate",
-      userId: FAKE_USER.id,
-      siteId: 1,
-      // The requester IP threaded from the router is recorded on the event,
-      // matching sibling resource/permission/login events.
-      ipAddress,
-      delta: { before: null },
-    })
-    const delta = value.delta as { after: { auditLogDateRange: string } }
-    expect(delta.after.auditLogDateRange).toMatch(
-      /^\[\d{4}-\d{2}-\d{2},\d{4}-\d{2}-\d{2}\)$/,
-    )
-  }
 }
 
-describe("createAuditLogExportRequest — idempotent accept + fan-out", () => {
+describe("createAuditLogExportRequestsForSites — idempotent accept", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockValidatePermissions.mockResolvedValue(undefined)
@@ -253,16 +237,16 @@ describe("createAuditLogExportRequest — idempotent accept + fan-out", () => {
     // Arrange: the fast-path SELECT sees no in-flight row, the INSERT loses
     // the race (ON CONFLICT DO NOTHING → no row), and the follow-up SELECT
     // finds the winner's now-visible in-flight row.
-    const winnerRow = { id: "winner-row", reportType: "Access" }
+    const winnerRow = { id: "winner-row", siteId: 1, reportType: "Access" }
     const tx = makeTx({
-      selects: [undefined, winnerRow],
-      inserts: [{ outcome: "conflict" }],
+      selects: [[], [winnerRow]],
+      inserts: [{ site: 1, outcome: "conflict" }],
     })
     useTx(tx)
 
     // Act
-    const result = await createAuditLogExportRequest({
-      siteId: 1,
+    const result = await createAuditLogExportRequestsForSites({
+      siteIds: [1],
       userId: "user-1",
       month: VALID_MONTH,
       reportType: "Access",
@@ -270,25 +254,68 @@ describe("createAuditLogExportRequest — idempotent accept + fan-out", () => {
     })
 
     // Assert: the caller gets the winner's row as a plain success; nothing of
-    // ours was inserted, and the ask is still recorded as an event carrying the
-    // requester IP.
+    // ours was inserted, and the ask is still recorded as an event carrying
+    // the requester IP.
     expect(result).toEqual([winnerRow])
     expect(tx.insertedValues).toHaveLength(0)
-    expectExportCreateEvents(tx, ["Access"], "203.0.113.7")
+    expect(tx.auditLogValues).toHaveLength(1)
+    expectExportCreateEvent(tx.auditLogValues[0], 1, "Access", "203.0.113.7")
+  })
+
+  it("resolves a race-losing insert to the winner's row even if it has already finished processing", async () => {
+    // Arrange: the winner's row raced past Pending/Processing to Done between
+    // our INSERT losing the conflict and the follow-up SELECT running (e.g. a
+    // cron sweep claimed and finished it in that gap) — it must still be
+    // picked up, not dropped for no longer being "in-flight". A stale Done row
+    // from an earlier, unrelated duplicate ask for the same site/month/type is
+    // also visible to that SELECT; the more recent `createdAt` disambiguates
+    // the real race winner from it.
+    const staleRow = {
+      id: "stale-row",
+      siteId: 1,
+      reportType: "Access",
+      createdAt: new Date("2026-01-01T00:00:00Z"),
+    }
+    const winnerRowNowDone = {
+      id: "winner-row",
+      siteId: 1,
+      reportType: "Access",
+      status: "Done",
+      createdAt: new Date("2026-06-01T00:00:00Z"),
+    }
+    const tx = makeTx({
+      selects: [[], [staleRow, winnerRowNowDone]],
+      inserts: [{ site: 1, outcome: "conflict" }],
+    })
+    useTx(tx)
+
+    // Act
+    const result = await createAuditLogExportRequestsForSites({
+      siteIds: [1],
+      userId: "user-1",
+      month: VALID_MONTH,
+      reportType: "Access",
+    })
+
+    // Assert: the newer (winner's) row wins over the stale one, and it is
+    // still recorded as accepted rather than silently dropped.
+    expect(result).toEqual([winnerRowNowDone])
+    expect(tx.auditLogValues).toHaveLength(1)
+    expectExportCreateEvent(tx.auditLogValues[0], 1, "Access")
   })
 
   it("re-throws a non-conflict INSERT error unchanged", async () => {
     // Arrange: a genuine DB error must not be masked as an idempotent accept.
     const otherError = new Error("connection reset")
     const tx = makeTx({
-      selects: [undefined],
-      inserts: [{ outcome: "error", error: otherError }],
+      selects: [[]],
+      inserts: [{ site: 1, outcome: "error", error: otherError }],
     })
     useTx(tx)
 
     // Act
-    const result = createAuditLogExportRequest({
-      siteId: 1,
+    const result = createAuditLogExportRequestsForSites({
+      siteIds: [1],
       userId: "user-1",
       month: VALID_MONTH,
       reportType: "Access",
@@ -299,118 +326,20 @@ describe("createAuditLogExportRequest — idempotent accept + fan-out", () => {
     await expect(result).rejects.toBe(otherError)
   })
 
-  it("fans a Both request out into exactly two inserts (Activity + Access) in one transaction", async () => {
-    // Arrange: no in-flight rows; both inserts succeed.
-    const tx = makeTx({
-      selects: [undefined, undefined],
-      inserts: [{ outcome: "inserted" }, { outcome: "inserted" }],
-    })
-    useTx(tx)
-
-    // Act
-    const result = await createAuditLogExportRequest({
-      siteId: 1,
-      userId: "user-1",
-      month: VALID_MONTH,
-      reportType: "Both",
-    })
-
-    // Assert: one transaction, two rows — one per concrete DB report type.
-    // Both happen to share the same auditLogDateRange here because the
-    // requested month IS the current month; see the next test for what
-    // happens when it isn't.
-    expect(mockDb.transaction).toHaveBeenCalledTimes(1)
-    expect(tx.insertedValues).toHaveLength(2)
-    expect(tx.insertedValues.map((v) => v.reportType)).toEqual([
-      "Activity",
-      "Access",
-    ])
-    for (const values of tx.insertedValues) {
-      expect(values).toMatchObject({
-        siteId: 1,
-        userId: "user-1",
-        status: "Pending",
-        attempts: 0,
-      })
-      expect(values.auditLogDateRange).toMatch(
-        /^\[\d{4}-\d{2}-\d{2},\d{4}-\d{2}-\d{2}\)$/,
-      )
-    }
-    // The service returns every row backing the ask, and the event records
-    // the REQUESTED type ("Both"), not the fanned-out halves.
-    expect(result).toHaveLength(2)
-    expectExportCreateEvents(tx, ["Access", "Activity"])
-  })
-
-  it("pins Access to the current month even when a past month is requested for Activity", async () => {
-    // Arrange: a Both request for a past month. The Access card has no month
-    // picker in the UI at all, so its export must reflect CURRENT access
-    // regardless of whatever past month was picked for Activity.
-    const tx = makeTx({
-      selects: [undefined, undefined],
-      inserts: [{ outcome: "inserted" }, { outcome: "inserted" }],
-    })
-    useTx(tx)
-
-    // Act
-    await createAuditLogExportRequest({
-      siteId: 1,
-      userId: "user-1",
-      month: PAST_MONTH,
-      reportType: "Both",
-    })
-
-    // Assert: Activity's range starts in the requested (past) month; Access's
-    // starts in the current month instead — the two rows do NOT share a range.
-    const activityRange = tx.insertedValues.find(
-      (v) => v.reportType === "Activity",
-    )?.auditLogDateRange
-    const accessRange = tx.insertedValues.find(
-      (v) => v.reportType === "Access",
-    )?.auditLogDateRange
-    expect(activityRange).toMatch(new RegExp(`^\\[${PAST_MONTH}-01,`))
-    expect(accessRange).toMatch(new RegExp(`^\\[${VALID_MONTH}-01,`))
-    expect(accessRange).not.toBe(activityRange)
-  })
-
-  it("accepts a Both request whose second half loses its race, committing the first half AND the winner's half", async () => {
-    // Arrange: the Activity insert wins; the Access insert loses a race
-    // against a concurrent in-flight Access request, whose row the
-    // follow-up SELECT then returns. (Both fans out as [Activity, Access].)
-    const winnerRow = { id: "winner-access", reportType: "Access" }
-    const tx = makeTx({
-      selects: [undefined, undefined, winnerRow],
-      inserts: [{ outcome: "inserted" }, { outcome: "conflict" }],
-    })
-    useTx(tx)
-
-    // Act
-    const result = await createAuditLogExportRequest({
-      siteId: 1,
-      userId: "user-1",
-      month: VALID_MONTH,
-      reportType: "Both",
-    })
-
-    // Assert: no all-or-nothing rollback any more — the ask resolves with our
-    // freshly inserted Activity row plus the winner's Access row.
-    expect(result).toHaveLength(2)
-    expect(result[1]).toEqual(winnerRow)
-    expect(tx.insertedValues).toHaveLength(1)
-    expect(tx.insertedValues[0]).toMatchObject({ reportType: "Activity" })
-    expectExportCreateEvents(tx, ["Access", "Activity"])
-  })
-
   it("idempotent-accepts an in-flight duplicate from the fast-path SELECT without attempting any insert", async () => {
     // Arrange: the SELECT already sees an in-flight row for the same
     // (siteId, userId, range, reportType).
-    const existingRow = { id: "existing-row", reportType: "Activity" }
-    const tx = makeTx({ selects: [existingRow], inserts: [] })
+    const existingRow = {
+      id: "existing-row",
+      siteId: 1,
+      reportType: "Activity",
+    }
+    const tx = makeTx({ selects: [[existingRow]] })
     useTx(tx)
 
     // Act
-    const result = await createAuditLogExportRequest({
-      siteId: 1,
+    const result = await createAuditLogExportRequestsForSites({
+      siteIds: [1],
       userId: "user-1",
       month: VALID_MONTH,
       reportType: "Activity",
@@ -420,6 +349,45 @@ describe("createAuditLogExportRequest — idempotent accept + fan-out", () => {
     // crucially — the pure idempotent-accept still records the ask's event.
     expect(result).toEqual([existingRow])
     expect(tx.insertedValues).toHaveLength(0)
-    expectExportCreateEvents(tx, ["Activity"])
+    expect(tx.auditLogValues).toHaveLength(1)
+    expectExportCreateEvent(tx.auditLogValues[0], 1, "Activity")
+  })
+
+  it("batches an allSites-style ask across multiple sites in one INSERT, mixing an idempotent-accept with a fresh insert", async () => {
+    // Arrange: site 2 already has an in-flight ask (fast-path SELECT), site 1
+    // does not and gets freshly inserted — both in the same batch statement.
+    const existingRow = {
+      id: "existing-row-2",
+      siteId: 2,
+      reportType: "Activity",
+    }
+    const tx = makeTx({
+      selects: [[existingRow]],
+      inserts: [{ site: 1, outcome: "inserted" }],
+    })
+    useTx(tx)
+
+    // Act
+    const result = await createAuditLogExportRequestsForSites({
+      siteIds: [1, 2],
+      userId: "user-1",
+      month: VALID_MONTH,
+      reportType: "Activity",
+    })
+
+    // Assert: one row per site, one INSERT row (only for site 1), one audit
+    // event per site.
+    expect(result).toHaveLength(2)
+    expect(result).toEqual(
+      expect.arrayContaining([
+        existingRow,
+        expect.objectContaining({ siteId: 1 }),
+      ]),
+    )
+    expect(tx.insertedValues).toHaveLength(1)
+    expect(tx.insertedValues[0]).toMatchObject({ siteId: 1 })
+    expect(tx.auditLogValues).toHaveLength(2)
+    const siteIdsLogged = tx.auditLogValues.map((v) => v.siteId).sort()
+    expect(siteIdsLogged).toEqual([1, 2])
   })
 })

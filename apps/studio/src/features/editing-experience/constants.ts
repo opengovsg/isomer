@@ -38,6 +38,7 @@ export const TYPE_TO_ICON: Record<
   infopic: InfopicIcon,
   keystatistics: BiHash,
   contentpic: ContentpicIcon,
+  button: BiPointer,
   callout: BiSolidQuoteAltLeft,
   infocards: InfocardsIcon,
   infobar: BiPointer,

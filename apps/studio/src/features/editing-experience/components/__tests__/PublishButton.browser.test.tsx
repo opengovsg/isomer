@@ -100,8 +100,10 @@ describe("PublishButton permission gating", () => {
   // `{ isAllowed }` object instead of a positional boolean. Destructuring it as a
   // positional boolean made `allowed` an always-truthy object, leaking the button
   // to editors regardless of their permissions.
-  it("does NOT render the Publish button for editors", () => {
+  it("renders the Publish button disabled for editors", () => {
     renderForRole(RoleType.Editor)
-    expect(screen.queryByRole("button", { name: "Publish" })).toBeNull()
+    const button = screen.queryByRole("button", { name: "Publish" })
+    expect(button).not.toBeNull()
+    expect(button).toBeDisabled()
   })
 })

@@ -71,7 +71,10 @@ function JsonFormsArrayControl(props: ArrayLayoutProps) {
               {label}
             </Text>
             <AddItemButton
-              onClick={addItem(path, createDefaultValue(schema, rootSchema))}
+              onClick={() => {
+                addItem(path, createDefaultValue(schema, rootSchema))()
+                setSelectedIndex(data)
+              }}
               isDisabled={isAddItemDisabled}
             >
               Add item

@@ -120,6 +120,7 @@ export const CollectionClient = ({
               totalCount={totalCount}
               shouldShowDate={shouldShowDate}
               siteAssetsBaseUrl={siteAssetsBaseUrl}
+              headingLevel={2}
             />
           </div>
           <div className="flex w-full flex-col-reverse items-center justify-between gap-4 lg:flex-row">

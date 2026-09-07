@@ -29,10 +29,9 @@ const createCaller = createCallerFactory(auditRouter)
 const VALID_MONTH = getCurrentSingaporeMonth()
 
 // All AuditLogExportRequest rows for a (site, user), oldest-id first. Tables
-// are reset per test, so this is every row the test created — including the
-// fan-out rows a `Both` request produces. Deliberately not filtered by the
-// stored daterange: rejected inputs (e.g. a future month) must leave ZERO rows
-// of any shape behind.
+// are reset per test, so this is every row the test created. Deliberately not
+// filtered by the stored daterange: rejected inputs (e.g. a future month) must
+// leave ZERO rows behind.
 const getRequestRows = async ({
   siteId,
   userId,
@@ -50,8 +49,8 @@ const getRequestRows = async ({
 }
 
 // Every accepted ask — including an idempotent-accepted duplicate — must be
-// recorded as an AuditLogExportCreate event (one per ask, not per fanned-out
-// row). Rejected asks (FORBIDDEN/BAD_REQUEST) must leave no event behind.
+// recorded as an AuditLogExportCreate event. Rejected asks (FORBIDDEN/
+// BAD_REQUEST) must leave no event behind.
 const getExportCreateEvents = async ({ siteId }: { siteId: number }) => {
   return db
     .selectFrom("AuditLog")
@@ -97,6 +96,7 @@ describe("audit.router", async () => {
 
       // Act
       const result = unauthedCaller.createExportRequest({
+        scope: "site",
         siteId: site.id,
         month: VALID_MONTH,
         reportType: "Access",
@@ -118,6 +118,7 @@ describe("audit.router", async () => {
 
       // Act
       const result = await caller.createExportRequest({
+        scope: "site",
         siteId: site.id,
         month: VALID_MONTH,
         reportType: "Access",
@@ -164,6 +165,7 @@ describe("audit.router", async () => {
 
       // Act
       const result = await caller.createExportRequest({
+        scope: "site",
         siteId: site.id,
         month: VALID_MONTH,
         reportType: "Access",
@@ -196,6 +198,7 @@ describe("audit.router", async () => {
 
       // Act
       await ipCaller.createExportRequest({
+        scope: "site",
         siteId: site.id,
         month: VALID_MONTH,
         reportType: "Access",
@@ -212,56 +215,6 @@ describe("audit.router", async () => {
       })
     })
 
-    it("should fan a Both request out into two Pending rows (Access + Activity)", async () => {
-      // Arrange
-      const { site } = await setupSite()
-      await setupAdminPermissions({
-        userId: session.userId,
-        siteId: site.id,
-      })
-
-      // Act
-      const result = await caller.createExportRequest({
-        siteId: site.id,
-        month: VALID_MONTH,
-        reportType: "Both",
-      })
-
-      // Assert: `Both` is UX vocabulary only — it becomes two independent
-      // rows, one per concrete DB report type, sharing the same range.
-      const auditLogDateRange = getMonthDateRange(VALID_MONTH, new Date())
-      expect(result).toHaveLength(2)
-      expect(result.map((row) => row.reportType).sort()).toEqual([
-        "Access",
-        "Activity",
-      ])
-      for (const row of result) {
-        expect(row).toMatchObject({
-          siteId: site.id,
-          userId: session.userId,
-          auditLogDateRange,
-          status: "Pending",
-          attempts: 0,
-        })
-      }
-
-      const rows = await getRequestRows({
-        siteId: site.id,
-        userId: session.userId!,
-      })
-      expect(rows).toHaveLength(2)
-
-      // ONE event per fanned-out half — never a "Both" event, which would be
-      // ambiguous about exactly which reports were produced (review feedback
-      // on #2832). Each event's delta names a concrete DB report type.
-      const events = await getExportCreateEvents({ siteId: site.id })
-      expect(events).toHaveLength(2)
-      const eventReportTypes = events.map(
-        (event) => (event.delta.after as { reportType: string }).reportType,
-      )
-      expect(eventReportTypes.sort()).toEqual(["Access", "Activity"])
-    })
-
     it("should throw FORBIDDEN when the caller is only an Editor", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -272,6 +225,7 @@ describe("audit.router", async () => {
 
       // Act
       const result = caller.createExportRequest({
+        scope: "site",
         siteId: site.id,
         month: VALID_MONTH,
         reportType: "Access",
@@ -292,6 +246,7 @@ describe("audit.router", async () => {
 
       // Act
       const result = caller.createExportRequest({
+        scope: "site",
         siteId: site.id,
         month: VALID_MONTH,
         reportType: "Activity",
@@ -316,6 +271,7 @@ describe("audit.router", async () => {
 
       // Act — first request queues a row
       const first = await caller.createExportRequest({
+        scope: "site",
         siteId: site.id,
         month: VALID_MONTH,
         reportType: "Access",
@@ -323,6 +279,7 @@ describe("audit.router", async () => {
 
       // Act — second identical request succeeds instead of erroring
       const second = await caller.createExportRequest({
+        scope: "site",
         siteId: site.id,
         month: VALID_MONTH,
         reportType: "Access",
@@ -343,46 +300,6 @@ describe("audit.router", async () => {
       expect(events).toHaveLength(2)
     })
 
-    it("should accept a Both request when one of its report types is already in flight, inserting only the missing half", async () => {
-      // Arrange
-      const { site } = await setupSite()
-      await setupAdminPermissions({
-        userId: session.userId,
-        siteId: site.id,
-      })
-
-      // Act — an Access request is already in flight
-      const first = await caller.createExportRequest({
-        siteId: site.id,
-        month: VALID_MONTH,
-        reportType: "Access",
-      })
-
-      // Act — a Both request for the same range overlaps it on Access
-      const result = await caller.createExportRequest({
-        siteId: site.id,
-        month: VALID_MONTH,
-        reportType: "Both",
-      })
-
-      // Assert: the Access half resolves to the existing in-flight row and
-      // only the Activity half inserts a new one — two rows total, never
-      // three, and no error anywhere.
-      expect(result).toHaveLength(2)
-      expect(result.map((row) => row.reportType).sort()).toEqual([
-        "Access",
-        "Activity",
-      ])
-      expect(result.find((row) => row.reportType === "Access")?.id).toBe(
-        first[0]?.id,
-      )
-      const rows = await getRequestRows({
-        siteId: site.id,
-        userId: session.userId!,
-      })
-      expect(rows).toHaveLength(2)
-    })
-
     it("should throw BAD_REQUEST when the month is in the future", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -393,9 +310,10 @@ describe("audit.router", async () => {
 
       // Act
       const result = caller.createExportRequest({
+        scope: "site",
         siteId: site.id,
         month: "2999-12",
-        reportType: "Both",
+        reportType: "Activity",
       })
 
       // Assert
@@ -418,9 +336,10 @@ describe("audit.router", async () => {
 
       // Act
       const result = caller.createExportRequest({
+        scope: "site",
         siteId: site.id,
         month: tooOldMonth,
-        reportType: "Both",
+        reportType: "Activity",
       })
 
       // Assert
@@ -430,6 +349,86 @@ describe("audit.router", async () => {
         userId: session.userId!,
       })
       expect(rows).toHaveLength(0)
+    })
+
+    describe("allSites scope", () => {
+      it("fans out across every site the caller Admins, skipping sites without permission", async () => {
+        // Arrange: caller is Admin on two sites, has no permission on a third.
+        const { site: adminSiteA } = await setupSite()
+        const { site: adminSiteB } = await setupSite()
+        const { site: otherSite } = await setupSite()
+        await setupAdminPermissions({
+          userId: session.userId,
+          siteId: adminSiteA.id,
+        })
+        await setupAdminPermissions({
+          userId: session.userId,
+          siteId: adminSiteB.id,
+        })
+
+        // Act
+        const result = await caller.createExportRequest({
+          scope: "allSites",
+          month: VALID_MONTH,
+          reportType: "Activity",
+        })
+
+        // Assert: one row per admin site, none for the site without permission.
+        expect(result).toHaveLength(2)
+        expect(result.map((row) => row.siteId).sort((a, b) => a - b)).toEqual(
+          [adminSiteA.id, adminSiteB.id].sort((a, b) => a - b),
+        )
+
+        const otherSiteRows = await getRequestRows({
+          siteId: otherSite.id,
+          userId: session.userId!,
+        })
+        expect(otherSiteRows).toHaveLength(0)
+
+        // One AuditLogExportCreate event per site, not one ambiguous event
+        // for the whole ask.
+        const eventsA = await getExportCreateEvents({ siteId: adminSiteA.id })
+        const eventsB = await getExportCreateEvents({ siteId: adminSiteB.id })
+        expect(eventsA).toHaveLength(1)
+        expect(eventsB).toHaveLength(1)
+      })
+
+      it("fans out across every site in the DB for an Isomer Admin", async () => {
+        // Arrange: two sites exist; the caller has no explicit permission on
+        // either, only their (implicit, Isomer-wide) Admin status.
+        const { site: siteA } = await setupSite()
+        const { site: siteB } = await setupSite()
+        await setupIsomerAdmin({ userId: session.userId! })
+
+        // Act
+        const result = await caller.createExportRequest({
+          scope: "allSites",
+          month: VALID_MONTH,
+          reportType: "Activity",
+        })
+
+        // Assert
+        expect(result).toHaveLength(2)
+        expect(result.map((row) => row.siteId).sort((a, b) => a - b)).toEqual(
+          [siteA.id, siteB.id].sort((a, b) => a - b),
+        )
+      })
+
+      it("throws FORBIDDEN when the caller is not an Admin on any site", async () => {
+        // Arrange: a site exists, but the caller has no permission on it and
+        // is not an Isomer Admin.
+        await setupSite()
+
+        // Act
+        const result = caller.createExportRequest({
+          scope: "allSites",
+          month: VALID_MONTH,
+          reportType: "Activity",
+        })
+
+        // Assert
+        await expect(result).rejects.toMatchObject({ code: "FORBIDDEN" })
+      })
     })
   })
 })

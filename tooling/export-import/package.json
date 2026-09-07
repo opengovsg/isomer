@@ -18,6 +18,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/credential-providers": "catalog:aws-sdk",
+    "@aws-sdk/rds-signer": "catalog:aws-sdk",
     "@inquirer/prompts": "catalog:",
     "dotenv": "catalog:",
     "pg": "catalog:pg"

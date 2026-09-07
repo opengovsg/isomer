@@ -1,5 +1,6 @@
 export { getBreadcrumbFromSiteMap } from "./getBreadcrumbFromSiteMap"
 export { getFormattedDate } from "./getFormattedDate"
+export { getAskgovIdFromString } from "./getAskgovIdFromString"
 export { getNodeFromSiteMap } from "./getNodeFromSiteMap"
 export { getParsedDate } from "./getParsedDate"
 export { getReferenceLinkHref } from "./getReferenceLinkHref"

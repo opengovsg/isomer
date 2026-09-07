@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
 import {
+  CalloutSchema,
   DEFAULT_TAG_CATEGORY_DISPLAY,
   TAG_CATEGORY_DISPLAY_OPTIONS,
   type TagCategoryDisplay,
@@ -16,7 +17,7 @@ const meta: Meta<typeof FormBuilder> = {
 export default meta
 type Story = StoryObj<typeof FormBuilder>
 
-const schema = Type.Object({
+const twoColumnSchema = Type.Object({
   display: Type.Unsafe<TagCategoryDisplay>({
     oneOf: [
       {
@@ -29,21 +30,37 @@ const schema = Type.Object({
       },
     ],
     title: "Show as",
-    format: "image-radio",
+    format: "image-radio/2col",
     default: DEFAULT_TAG_CATEGORY_DISPLAY,
   }),
 })
 
-export const Default: Story = {
+const oneColumnSchema = Type.Pick(CalloutSchema, ["variant"])
+
+export const TwoColumns: Story = {
   args: {
-    schema,
+    schema: twoColumnSchema,
     data: {},
   },
 }
 
-export const PlaintextSelected: Story = {
+export const TwoColumnsPlaintextSelected: Story = {
   args: {
-    schema,
+    schema: twoColumnSchema,
     data: { display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext },
+  },
+}
+
+export const OneColumn: Story = {
+  args: {
+    schema: oneColumnSchema,
+    data: {},
+  },
+}
+
+export const OneColumnWarningSelected: Story = {
+  args: {
+    schema: oneColumnSchema,
+    data: { variant: "warning" },
   },
 }

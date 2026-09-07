@@ -89,8 +89,7 @@ import { processPendingAuditLogExports } from "../auditLogExport.service"
 const MONTH = "2024-03"
 const AUDIT_LOG_DATE_RANGE = getMonthDateRange(MONTH, new Date()) // [2024-03-01,2024-04-01)
 
-// Each row produces exactly one report; `Both` no longer exists at the DB
-// layer (a "Both" user request is fanned out into one row per type).
+// Each row produces exactly one report.
 type ReportType = "Access" | "Activity"
 
 const seedRequest = async ({
@@ -298,9 +297,9 @@ describe("auditLogExport processor", () => {
     expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
   })
 
-  it("processes a fanned-out Both request (two rows): two uploads, two single-link emails, both Done", async () => {
-    // Arrange: a "Both" user request is stored as two independent rows — one
-    // Access, one Activity — each fulfilled as its own job with its own email.
+  it("processes two independent pending rows in one sweep: two uploads, two single-link emails, both Done", async () => {
+    // Arrange: an Access row and an Activity row for the same site, each
+    // fulfilled as its own job with its own email — no cross-job coordination.
     const { site } = await setupSite()
     const admin = await setupUser({ email: "admin2@vendor.com.sg" })
     await setupAdminPermissions({ userId: admin.id, siteId: site.id })

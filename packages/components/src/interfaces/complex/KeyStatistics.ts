@@ -64,4 +64,5 @@ export const KeyStatisticsSchema = Type.Object(
 export type KeyStatisticsProps = Static<typeof KeyStatisticsSchema> & {
   layout: IsomerPageLayoutType
   site: IsomerSiteProps
+  headingLevel: number
 }

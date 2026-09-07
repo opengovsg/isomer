@@ -10,6 +10,7 @@ export const doesComponentHaveImage = ({
   // TODO: Do separate optimization for them to improve lighthouse SEO score
   switch (component.type) {
     case "accordion":
+    case "button":
     case "keystatistics":
     case "callout":
     case "infobar":

@@ -28,6 +28,7 @@ import { TableSizePicker } from "~/features/editing-experience/components/TableS
 import type { PossibleMenubarItemProps } from "./MenubarItem/types"
 import { TableSettingsModal } from "../TableSettingsModal"
 import { MenuBar } from "./MenuBar"
+import { TiptapLinkBubbleMenu } from "./TiptapLinkBubbleMenu"
 import { TiptapLinkEditorModal } from "./TiptapLinkEditorModal"
 
 export const TextMenuBar = ({ editor }: { editor: Editor }) => {
@@ -299,6 +300,12 @@ export const TextMenuBar = ({ editor }: { editor: Editor }) => {
         editor={editor}
         isOpen={isLinkModalOpen}
         onClose={onLinkModalClose}
+      />
+
+      <TiptapLinkBubbleMenu
+        editor={editor}
+        onEdit={onLinkModalOpen}
+        isLinkModalOpen={isLinkModalOpen}
       />
 
       <MenuBar items={items} />

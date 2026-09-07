@@ -1,11 +1,11 @@
+import type { StockFeatures } from "@tanstack/react-table"
 import type { AdminType } from "~/schemas/user"
 import { Text, VStack } from "@chakra-ui/react"
 import { keepPreviousData } from "@tanstack/react-query"
 import {
   createColumnHelper,
-  getCoreRowModel,
-  getPaginationRowModel,
-  useReactTable,
+  stockFeatures,
+  useTable,
 } from "@tanstack/react-table"
 import { useContext, useMemo } from "react"
 import { TableHeader } from "~/components/Datatable"
@@ -24,7 +24,7 @@ export interface UserTableProps {
   adminType: AdminType
 }
 
-const columnsHelper = createColumnHelper<UserTableData>()
+const columnsHelper = createColumnHelper<StockFeatures, UserTableData>()
 
 const getColumns = ({
   siteId,
@@ -129,14 +129,13 @@ export const UserTable = ({ siteId, adminType }: UserTableProps) => {
     },
   )
 
-  const tableInstance = useReactTable<UserTableData>({
+  const tableInstance = useTable({
+    features: stockFeatures,
     columns,
     data: users ?? [],
-    getCoreRowModel: getCoreRowModel(),
     manualFiltering: true,
     manualPagination: true,
     autoResetPageIndex: false,
-    getPaginationRowModel: getPaginationRowModel(),
     onPaginationChange,
     state: {
       pagination,

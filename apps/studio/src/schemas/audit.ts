@@ -47,15 +47,22 @@ export const validateIsMonthInPastYear = (
   return true
 }
 
-// What the user may ask for. `Both` is UX vocabulary only — the service
-// fans it out into two AuditLogExportRequest rows (Access + Activity);
-// the DB enum has no Both member.
-export const AuditLogExportRequestedReportType = {
-  ...AuditLogExportReportType,
-  Both: "Both",
+// What the user may ask for — matches the DB enum 1:1. Kept as a distinct
+// alias (rather than importing `AuditLogExportReportType` everywhere) so
+// client/service code isn't coupled directly to the Prisma-generated enum.
+export const AuditLogExportRequestedReportType = AuditLogExportReportType
+export type AuditLogExportRequestedReportType = AuditLogExportReportType
+
+// Which site(s) a request covers. `AllSites` is resolved server-side into
+// every site the caller may Admin (see `getAdminSiteIds`) and fanned out into
+// one independent export per site — mirroring how the removed `Both` report
+// type used to fan out into one row per report type.
+export const AuditLogExportScope = {
+  Site: "site",
+  AllSites: "allSites",
 } as const
-export type AuditLogExportRequestedReportType =
-  (typeof AuditLogExportRequestedReportType)[keyof typeof AuditLogExportRequestedReportType]
+export type AuditLogExportScope =
+  (typeof AuditLogExportScope)[keyof typeof AuditLogExportScope]
 
 // A calendar month in ISO `yyyy-MM` form, e.g. "2026-03". This is the shape
 // every month value in the audit-export flow is passed around in (picker →
@@ -133,6 +140,15 @@ export const getAuditLogExportWindowSchema = z.object({
 })
 
 export const createAuditLogExportRequestSchema = z.object({
+  scope: z.enum(AuditLogExportScope, {
+    message: "Select which sites to export",
+  }),
+  // Required when `scope` is "site"; ignored when `scope` is "allSites" (the
+  // site list is resolved server-side from the caller's own Admin access —
+  // see `createAuditLogExportRequestServerSchema` — never trusted from client
+  // input). Optionality lives here, on the plain object, so this schema stays
+  // composable via `.omit()`/`.extend()` for client-side forms.
+  //
   // Accept a real number or a numeric form string (a native input yields e.g.
   // "1"), then convert to the numeric site ID the database and service contract
   // use. The union guards against JS numeric coercion quirks — a bare
@@ -145,29 +161,19 @@ export const createAuditLogExportRequestSchema = z.object({
         .number()
         .int({ message: "Select a valid site" })
         .positive({ message: "Select a valid site" }),
-    ),
+    )
+    .optional(),
+  // The future/past-year window is enforced below, on
+  // `createAuditLogExportRequestServerSchema`, scoped to Activity exports
+  // only — an Access export always uses the server's current month
+  // regardless of what's submitted here (see `resolveAuditLogDateRange`), so
+  // bounding this field unconditionally would reject an otherwise-fine
+  // Access request over nothing more than browser clock skew.
   month: z
     .string()
     .regex(MONTH_REGEX, {
       message: "Enter a month in the format YYYY-MM, e.g. 2026-03",
     })
-    .refine(
-      (month) => {
-        const possibleError = validateIsNotFutureMonth(month)
-        return possibleError === true
-      },
-      {
-        message:
-          "You cannot export audit logs for a month that is in the future",
-      },
-    )
-    .refine(
-      (month) => {
-        const possibleError = validateIsMonthInPastYear(month)
-        return possibleError === true
-      },
-      { message: "You can only export audit logs from the past 12 months" },
-    )
     // The regex above guarantees the shape at runtime; narrow the inferred
     // output from `string` to `IsoMonth` so consumers get the real type.
     .transform((month) => month as IsoMonth),
@@ -175,6 +181,41 @@ export const createAuditLogExportRequestSchema = z.object({
     message: "Select a report type",
   }),
 })
+
+// Server-only: enforces that `siteId` is present when `scope` is "site". Kept
+// separate from the plain object above (which client-side forms compose via
+// `.omit()`/`.extend()`, e.g. features/settings/AuditLogExport/schema.ts)
+// because `.refine()` no longer returns an object schema.
+export const createAuditLogExportRequestServerSchema =
+  createAuditLogExportRequestSchema
+    .refine(
+      (input) =>
+        input.scope !== AuditLogExportScope.Site || input.siteId !== undefined,
+      { message: "Select a valid site", path: ["siteId"] },
+    )
+    // Scoped to Activity: an Access export always uses the server's current
+    // month regardless of what's submitted (see `resolveAuditLogDateRange`),
+    // so this window check must not apply to it — see the `month` field's
+    // comment above.
+    .refine(
+      (input) =>
+        input.reportType !== AuditLogExportRequestedReportType.Activity ||
+        validateIsNotFutureMonth(input.month) === true,
+      {
+        message:
+          "You cannot export audit logs for a month that is in the future",
+        path: ["month"],
+      },
+    )
+    .refine(
+      (input) =>
+        input.reportType !== AuditLogExportRequestedReportType.Activity ||
+        validateIsMonthInPastYear(input.month) === true,
+      {
+        message: "You can only export audit logs from the past 12 months",
+        path: ["month"],
+      },
+    )
 
 export type CreateAuditLogExportRequestInput = z.infer<
   typeof createAuditLogExportRequestSchema

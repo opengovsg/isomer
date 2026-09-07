@@ -22,6 +22,11 @@ interface Resource {
   blobId: number | null;
 }
 
+interface Redirect {
+  source: string;
+  destination: string;
+}
+
 dotenv.config();
 
 export async function migrate(
@@ -29,8 +34,14 @@ export async function migrate(
   sourceSiteId: number,
   destinationSiteId: number
 ) {
+  const redirects = readRedirects();
   await seedDatabase(client, destinationSiteId);
-  await studioifySite(client, sourceSiteId, destinationSiteId);
+  const resourcesMap = await studioifySite(
+    client,
+    sourceSiteId,
+    destinationSiteId
+  );
+  await importRedirects(client, destinationSiteId, redirects, resourcesMap);
 }
 
 async function seedDatabase(client: Client, siteId: number) {
@@ -303,6 +314,61 @@ async function importFooter(client: Client, siteId: number) {
   );
 }
 
+function readRedirects(): Redirect[] {
+  const redirectsPath = path.join(process.cwd(), "temp", "redirects.json");
+  return parseRedirects(JSON.parse(fs.readFileSync(redirectsPath, "utf-8")));
+}
+
+async function importRedirects(
+  client: Client,
+  siteId: number,
+  redirects: Redirect[],
+  resourcesMap: Record<string, Resource>
+) {
+  console.log("Importing redirects");
+  const studioifiedRedirects = redirects.map((redirect) => ({
+    ...redirect,
+    destination: studioifyRedirectDestination(
+      redirect.destination,
+      siteId,
+      resourcesMap
+    ),
+  }));
+
+  if (studioifiedRedirects.length > 0) {
+    await client.query(
+      `INSERT INTO public."Redirect" ("siteId", source, destination)
+       SELECT $1, redirect.source, redirect.destination
+       FROM jsonb_to_recordset($2::jsonb)
+         AS redirect(source text, destination text)
+       ON CONFLICT ("siteId", source) DO UPDATE
+       SET destination = EXCLUDED.destination,
+           "deletedAt" = NULL,
+           "createdAt" = CURRENT_TIMESTAMP`,
+      [siteId, JSON.stringify(studioifiedRedirects)]
+    );
+  }
+}
+
+function parseRedirects(value: unknown): Redirect[] {
+  if (
+    !Array.isArray(value) ||
+    !value.every(
+      (redirect): redirect is Redirect =>
+        typeof redirect === "object" &&
+        redirect !== null &&
+        "source" in redirect &&
+        typeof redirect.source === "string" &&
+        "destination" in redirect &&
+        typeof redirect.destination === "string"
+    )
+  ) {
+    throw new Error("Exported redirects.json has an invalid format");
+  }
+
+  return value;
+}
+
 async function studioifySite(
   client: Client,
   sourceSiteId: number,
@@ -353,6 +419,7 @@ async function studioifySite(
     resourcesMap
   );
   await updateSiteConfig(client, destinationSiteId, updatedSiteConfig);
+  return resourcesMap;
 }
 
 async function getResourceMapping(client: Client, siteId: number) {
@@ -500,6 +567,20 @@ function studioifyContent(
   newContent = newContent.replace(regex, `/${destinationSiteId}/$1/`);
 
   return newContent;
+}
+
+function studioifyRedirectDestination(
+  destination: string,
+  destinationSiteId: number,
+  resourcesMap: Record<string, Pick<Resource, "id">>
+): string {
+  const resource = resourcesMap[destination];
+
+  if (!resource) {
+    return destination;
+  }
+
+  return `[resource:${String(destinationSiteId)}:${String(resource.id)}]`;
 }
 
 function getProperTitle(slug: string) {

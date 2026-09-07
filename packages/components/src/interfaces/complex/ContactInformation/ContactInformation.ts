@@ -138,6 +138,7 @@ export const ContactInformationSchema = Type.Intersect([
 
 interface AdditionalContactInformationTypeProps {
   layout: IsomerPageLayoutType
+  headingLevel: number
 }
 
 type BaseContactInformationType = SimplifyDeep<

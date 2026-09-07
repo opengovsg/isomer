@@ -76,6 +76,7 @@ const CreateCollectionModalContent = ({
     watch,
     formState,
     setValue,
+    setError,
     getFieldState,
   } = useZodForm({
     defaultValues: {
@@ -91,7 +92,6 @@ const CreateCollectionModalContent = ({
   const utils = trpc.useUtils()
   const toast = useToast()
   const { mutate, isPending } = trpc.collection.create.useMutation({
-    onSettled: onClose,
     onSuccess: async () => {
       posthog.capture("collection_created", {
         site_id: siteId,
@@ -105,8 +105,13 @@ const CreateCollectionModalContent = ({
         status: "success",
         ...BRIEF_TOAST_SETTINGS,
       })
+      onClose()
     },
     onError: (err) => {
+      if (err.data?.code === "CONFLICT") {
+        setError("permalink", { message: err.message }, { shouldFocus: true })
+        return
+      }
       toast({
         title: "Failed to create collection",
         status: "error",
@@ -114,6 +119,7 @@ const CreateCollectionModalContent = ({
         description: err.message,
         ...BRIEF_TOAST_SETTINGS,
       })
+      onClose()
     },
   })
 

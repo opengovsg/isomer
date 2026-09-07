@@ -81,6 +81,7 @@ const ContentSecurityPolicy = `
   connect-src
     'self'
     ${env.NEXT_PUBLIC_POSTHOG_HOST ?? ""}
+    ${env.NEXT_PUBLIC_POSTHOG_ASSETS_HOST ?? ""}
     https://browser-intake-datadoghq.com
     https://*.browser-intake-datadoghq.com
     https://vitals.vercel-insights.com

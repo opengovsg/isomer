@@ -48,14 +48,15 @@ describe("asset.service", () => {
   describe("getContentDispositionForKey", () => {
     it("should return inline with filename from key segment", () => {
       const result = getContentDispositionForKey("1/abc-uuid/test.png")
-      expect(result).toMatch(/^inline; filename\*=UTF-8''/)
-      expect(result).toContain(encodeURIComponent("test.png"))
+      expect(result).toBe(`inline; filename=test.png`)
     })
 
-    it("should encode special characters in filename", () => {
+    it("should encode non-latin1 characters via RFC 5987 with a latin1 fallback", () => {
       const result = getContentDispositionForKey("1/abc/测试文件.pdf")
-      expect(result).toMatch(/^inline; filename\*=UTF-8''/)
-      expect(result).toContain(encodeURIComponent("测试文件.pdf"))
+      // filename= fallback for legacy clients, plus a correctly-encoded filename*
+      expect(result).toBe(
+        `inline; filename="????.pdf"; filename*=UTF-8''%E6%B5%8B%E8%AF%95%E6%96%87%E4%BB%B6.pdf`,
+      )
     })
   })
 

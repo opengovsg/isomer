@@ -72,6 +72,7 @@ const SuspensableResourceSelector = ({
   const hasAdditionalLeftPadding: boolean = isSearchQueryEmpty
 
   const {
+    rootPage,
     fullPermalink,
     moveDestPermalink,
     moveDest,
@@ -105,6 +106,7 @@ const SuspensableResourceSelector = ({
 
   const {
     isResourceIdHighlighted,
+    isHomeHighlighted,
     isResourceItemDisabled,
     hasParentInStack,
     handleClickBackButton,
@@ -133,8 +135,20 @@ const SuspensableResourceSelector = ({
           hasParentInStack={hasParentInStack}
           handleClickBackButton={handleClickBackButton}
           resourceItemsWithAncestryStack={resourceItemsWithAncestryStack}
+          handleOnClick={() =>
+            handleClickResourceItem([
+              {
+                title: "Home",
+                permalink: "",
+                type: ResourceType.RootPage,
+                id: rootPage.id,
+                parentId: null,
+              },
+            ])
+          }
           searchQuery={searchQuery}
           isLoading={isLoading}
+          isHomeHighlighted={isHomeHighlighted}
         />
       </Suspense>
     )
@@ -143,8 +157,11 @@ const SuspensableResourceSelector = ({
     hasParentInStack,
     handleClickBackButton,
     resourceItemsWithAncestryStack,
+    handleClickResourceItem,
     searchQuery,
     isLoading,
+    isHomeHighlighted,
+    rootPage.id,
   ])
 
   const renderedContent = useMemo(() => {
