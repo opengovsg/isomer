@@ -30,11 +30,8 @@ const sealUserSessionCookie = async (userId: string) => {
     req: NextApiRequest
     res: NextApiResponse
   }
-  const session = await getIronSession<SessionData>(
-    req,
-    res,
-    generateSessionOptions({ ttlInHours: 12 }),
-  )
+  const sessionOptions = generateSessionOptions({ ttlInHours: 12 })
+  const session = await getIronSession<SessionData>(req, res, sessionOptions)
   session.userId = userId as NonNullable<SessionData["userId"]>
   await session.save()
 
@@ -44,19 +41,19 @@ const sealUserSessionCookie = async (userId: string) => {
   }
 
   const cookieStrings = Array.isArray(setCookieHeader)
-    ? setCookieHeader
-    : [setCookieHeader]
-  const { cookieName } = generateSessionOptions({ ttlInHours: 12 })
+    ? setCookieHeader.map(String)
+    : [String(setCookieHeader)]
+
   const sessionCookie = cookieStrings.find((cookie) =>
-    cookie.startsWith(`${cookieName}=`),
+    cookie.startsWith(`${sessionOptions.cookieName}=`),
   )
   if (!sessionCookie) {
-    throw new Error(`Missing ${cookieName} in Set-Cookie header`)
+    throw new Error(`Missing ${sessionOptions.cookieName} in Set-Cookie header`)
   }
 
   const [cookiePair] = sessionCookie.split(";")
   if (!cookiePair) {
-    throw new Error(`Invalid ${cookieName} Set-Cookie header`)
+    throw new Error(`Invalid ${sessionOptions.cookieName} Set-Cookie header`)
   }
   const [, ...valueParts] = cookiePair.split("=")
   return valueParts.join("=")
@@ -75,28 +72,36 @@ const createAuthenticatedStorageState = async (
     .where("email", "=", email)
     .executeTakeFirstOrThrow()
 
-  const { cookieName } = generateSessionOptions({ ttlInHours: 12 })
+  const sessionOptions = generateSessionOptions({ ttlInHours: 12 })
   const sessionCookieValue = await sealUserSessionCookie(user.id)
-  const { protocol } = new URL(baseURL)
+  const { hostname, origin, protocol } = new URL(baseURL)
 
   const browser = await chromium.launch()
-  const ctx = await browser.newContext({ baseURL })
-  await ctx.addCookies([
-    {
-      httpOnly: true,
-      name: cookieName,
-      sameSite: "Lax",
-      secure: protocol === "https:",
-      url: baseURL,
-      value: sessionCookieValue,
+  const ctx = await browser.newContext({
+    baseURL,
+    storageState: {
+      cookies: [
+        {
+          domain: hostname,
+          expires: Math.floor(Date.now() / 1000) + 43_200,
+          httpOnly: true,
+          name: sessionOptions.cookieName,
+          path: "/",
+          sameSite: "Lax",
+          secure: protocol === "https:",
+          value: sessionCookieValue,
+        },
+      ],
+      origins: [
+        {
+          localStorage: [{ name: LOGGED_IN_KEY, value: JSON.stringify(true) }],
+          origin,
+        },
+      ],
     },
-  ])
+  })
 
   const page = await ctx.newPage()
-  await page.addInitScript((storageKey) => {
-    globalThis.localStorage.setItem(storageKey, JSON.stringify(true))
-  }, LOGGED_IN_KEY)
-
   await page.goto("/")
   await page.getByText("Your sites").waitFor({ state: "visible" })
 
