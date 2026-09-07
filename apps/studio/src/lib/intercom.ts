@@ -1,7 +1,6 @@
 // oxlint-disable-next-line no-restricted-imports
 import {
   Intercom as bootIntercomSdk,
-  startSurvey,
   trackEvent as trackEventSdk,
 } from "@intercom/messenger-js-sdk"
 import { env } from "~/env.mjs"
@@ -24,27 +23,4 @@ export const trackEvent = (eventName: string): void => {
   }
 
   trackEventSdk(eventName)
-}
-
-export const COLLECTION_TAG_CSAT_SURVEY_ID = "65029624"
-
-export const getFirstTagEditedTrackedStorageKey = ({
-  userId,
-}: {
-  userId: string
-}): string => `intercom_event_first_tag_edited_${userId}_tracked`
-
-export const getCollectionTagCsatSurveyStorageKey = ({
-  userId,
-}: {
-  userId: string
-}): string => `intercom_survey_${COLLECTION_TAG_CSAT_SURVEY_ID}_${userId}_shown`
-
-export const startCollectionTagCsatSurvey = (): void => {
-  if (!env.NEXT_PUBLIC_INTERCOM_APP_ID) {
-    console.log("[Intercom mock] startSurvey", COLLECTION_TAG_CSAT_SURVEY_ID)
-    return
-  }
-
-  startSurvey(COLLECTION_TAG_CSAT_SURVEY_ID)
 }

@@ -1,7 +1,4 @@
-import type {
-  CollectionPagePageProps,
-  getLayoutPageSchema,
-} from "@opengovsg/isomer-components"
+import type { getLayoutPageSchema } from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
 import { Box, Flex, Text, useDisclosure } from "@chakra-ui/react"
 import { Button, Infobox, useToast } from "@opengovsg/design-system-react"
@@ -15,15 +12,7 @@ import { useCallback, useMemo } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useCanManageCollectionFilters } from "~/features/editing-experience/hooks/canManageCollectionFilters"
-import { useMe } from "~/features/me/api"
-import { useLocalStorage } from "~/hooks/useLocalStorage"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import {
-  getCollectionTagCsatSurveyStorageKey,
-  getFirstTagEditedTrackedStorageKey,
-  startCollectionTagCsatSurvey,
-  trackEvent,
-} from "~/lib/intercom"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 
@@ -52,15 +41,6 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
     setPreviewPageState,
   } = useEditorDrawerContext()
 
-  const { me } = useMe()
-  const [hasTrackedFirstTagEdit, setHasTrackedFirstTagEdit] = useLocalStorage(
-    getFirstTagEditedTrackedStorageKey({ userId: me.id }),
-    false,
-  )
-  const [hasShownTagCsatSurvey, setHasShownTagCsatSurvey] = useLocalStorage(
-    getCollectionTagCsatSurveyStorageKey({ userId: me.id }),
-    false,
-  )
   const canManageFilters = useCanManageCollectionFilters()
   const { pageId, siteId } = useQueryParse(pageSchema)
   const toast = useToast()
@@ -122,12 +102,6 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
   )
 
   const handleSaveChanges = useCallback(() => {
-    const savedTags = (savedPageState.page as CollectionPagePageProps)
-      .tagCategories
-    const previewTags = (previewPageState.page as CollectionPagePageProps)
-      .tagCategories
-    const tagCategoriesChanged = !isEqual(savedTags, previewTags)
-
     setSavedPageState(previewPageState)
     mutate(
       {
@@ -138,30 +112,14 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
       {
         onSuccess: () => {
           setDrawerState({ state: "root" })
-          if (drawerStateType === "filter" && tagCategoriesChanged) {
-            if (!hasTrackedFirstTagEdit) {
-              trackEvent("first_tag_edited")
-              setHasTrackedFirstTagEdit(true)
-            }
-            if (!hasShownTagCsatSurvey) {
-              startCollectionTagCsatSurvey()
-              setHasShownTagCsatSurvey(true)
-            }
-          }
         },
       },
     )
   }, [
-    drawerStateType,
-    hasShownTagCsatSurvey,
-    hasTrackedFirstTagEdit,
     mutate,
     pageId,
     previewPageState,
-    savedPageState,
     setDrawerState,
-    setHasShownTagCsatSurvey,
-    setHasTrackedFirstTagEdit,
     setSavedPageState,
     siteId,
   ])
