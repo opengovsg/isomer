@@ -212,13 +212,8 @@ async function seedDatabase(client: Client, siteId: number, siteName: string) {
       const permalink = isRootPage
         ? "" // FIXME: This should be "_index" but Studio is not fully ready for this yet
         : path.basename(page.name, ".json").toLowerCase(); // Only use the file name without extension
-      const isCollectionLink =
-        content.layout === "link" || content.layout === "file";
+      const isCollectionLink = content.layout === "link";
       const isPageOrder = page.name === "_meta.json";
-
-      if (content.layout === "file") {
-        content.layout = "link";
-      }
 
       const blobId = await createBlob(client, content);
       const resourceId = await createResource(client, {

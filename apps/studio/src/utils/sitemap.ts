@@ -1,7 +1,6 @@
 import type {
   ArticlePagePageProps,
   CollectionPagePageProps,
-  FileRefPageProps,
   IsomerSitemap,
   LinkRefPageProps,
 } from "@opengovsg/isomer-components"
@@ -266,7 +265,6 @@ export const injectTagMappings = async (
 
   const childPageProps = draftBlobOfResource.content.page as
     | ArticlePagePageProps
-    | FileRefPageProps
     | LinkRefPageProps
 
   const collectionPageProps = publishedIndexBlob.content
