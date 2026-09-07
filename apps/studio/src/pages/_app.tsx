@@ -8,6 +8,7 @@ import { GrowthBook } from "@growthbook/growthbook"
 import { GrowthBookProvider } from "@growthbook/growthbook-react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
+import { useRouter } from "next/router"
 import { ErrorBoundary } from "react-error-boundary"
 import { AppBanner } from "~/components/AppBanner"
 import { EnvProvider } from "~/components/AppProviders"
@@ -64,12 +65,22 @@ void gb.init({
 })
 
 const MyApp = ((props: AppPropsWithAuthAndLayout) => {
+  // Once it catches, react-error-boundary renders the fallback until either
+  // `resetErrorBoundary()` runs or an entry in `resetKeys` changes. Keying on
+  // the path means a client-side navigation out of an error screen (the CTAs
+  // on DefaultNotFound and DefaultServerError) re-mounts the children for the
+  // new route; without it the URL changes while the fallback stays on screen.
+  const { asPath } = useRouter()
+
   return (
     <EnvProvider env={env}>
       <LoginStateProvider>
         <ThemeProvider theme={theme}>
           <GrowthBookProvider growthbook={gb}>
-            <ErrorBoundary FallbackComponent={DefaultFallback}>
+            <ErrorBoundary
+              FallbackComponent={DefaultFallback}
+              resetKeys={[asPath]}
+            >
               <Suspense fallback={<Skeleton width="100%" height="$100vh" />}>
                 <Stack spacing={0} height="$100vh" flexDirection="column">
                   <AppBanner />
