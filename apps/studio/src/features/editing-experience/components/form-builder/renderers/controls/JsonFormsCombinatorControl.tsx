@@ -1,8 +1,4 @@
-import type {
-  CombinatorRendererProps,
-  JsonSchema7,
-  RankedTester,
-} from "@jsonforms/core"
+import type { CombinatorRendererProps, RankedTester } from "@jsonforms/core"
 import { Box, FormControl, RadioGroup } from "@chakra-ui/react"
 import {
   createCombinatorRenderInfos,
@@ -20,6 +16,7 @@ import { FormLabel, Radio, SingleSelect } from "@opengovsg/design-system-react"
 import { ARRAY_RADIO_FORMAT } from "@opengovsg/isomer-components"
 import { useEffect, useState } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { keepMatchingArrayFields } from "~/utils/combinatorArrayFields"
 
 export const jsonFormsOneOfControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.OneOfControl,
@@ -33,32 +30,6 @@ export const jsonFormsAnyOfControlTester: RankedTester = rankWith(
 
 interface JsonFormsCombinatorControlProps extends CombinatorRendererProps {
   combinatorType: "oneOf" | "anyOf"
-}
-
-// Keeps existing array items (e.g. `cards`) instead of letting schema
-// defaults reset them to `[]`. Extra fields the new variant does not use
-// (e.g. imageUrl on a no-image card) stay on the item so switching back
-// can restore them. They are stripped on save.
-export function keepMatchingArrayFields(
-  oldData: Record<string, unknown> | undefined,
-  newSchema: JsonSchema7,
-): Record<string, unknown> {
-  const preserved: Record<string, unknown> = {}
-
-  for (const [key, propSchema] of Object.entries(newSchema.properties ?? {})) {
-    // `items` is a tuple-form array only for positional tuple validation,
-    // which none of our schemas use.
-    const itemSchema = Array.isArray(propSchema.items)
-      ? undefined
-      : propSchema.items
-    const oldItems = oldData?.[key]
-    if (!itemSchema?.properties || !Array.isArray(oldItems)) {
-      continue
-    }
-
-    preserved[key] = oldItems
-  }
-  return preserved
 }
 
 function JsonFormsCombinatorControl({
@@ -119,7 +90,7 @@ function JsonFormsCombinatorControl({
         ...newData,
         ...keepMatchingArrayFields(
           data as Record<string, unknown> | undefined,
-          newSchema as JsonSchema7,
+          newSchema,
         ),
       })
     }

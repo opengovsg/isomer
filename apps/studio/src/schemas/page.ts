@@ -2,8 +2,8 @@ import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { schema } from "@opengovsg/isomer-components"
 import { z } from "zod"
 import { ajv } from "~/utils/ajv"
+import { stripInactiveCombinatorFields } from "~/utils/combinatorArrayFields"
 import { safeJsonParse } from "~/utils/safeJsonParse"
-import { stripInactiveInfoCardFields } from "~/utils/stripInactiveInfoCardFields"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 
 import { generateBasePermalinkSchema } from "./common"
@@ -65,7 +65,7 @@ export const updatePageBlobSchema = basePageSchema.extend({
     // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const parsed = safeJsonParse(value)
     if (schemaValidator(parsed)) {
-      return stripInactiveInfoCardFields(parsed)
+      return stripInactiveCombinatorFields(parsed)
     }
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
