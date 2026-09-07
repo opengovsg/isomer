@@ -101,8 +101,7 @@ const reducePendingMove = (
   const dx = event.clientX - state.startClientX
   const dy = event.clientY - state.startClientY
   if (Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) return unchanged(state)
-  // Header rows and columns stay put; the press still selects them.
-  if (state.from < state.lockMinIndex) return unchanged(state)
+  // Header rows and columns reorder like body slots; types are normalized on drop.
   if (!event.containerPoint) return unchanged(state)
 
   const { startClientX: _x, startClientY: _y, ...subject } = state
