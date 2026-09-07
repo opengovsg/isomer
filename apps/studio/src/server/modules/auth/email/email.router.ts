@@ -164,13 +164,16 @@ export const emailSessionRouter = router({
         throw error
       }
 
+      // Evaluate Singpass before setting email on GrowthBook so this matches the
+      // client-side hook, which does not have the email attribute during OTP
+      // verification.
+      const isSingpassEnabled = getIsSingpassEnabled({ gb: ctx.gb })
+
       const newAttributes: Partial<GrowthbookAttributes> = {
         email,
       }
 
       await ctx.gb.setAttributes(newAttributes)
-
-      const isSingpassEnabled = getIsSingpassEnabled({ gb: ctx.gb })
 
       if (!isSingpassEnabled) {
         const user = await db.transaction().execute(async (tx) => {
@@ -204,23 +207,20 @@ export const emailSessionRouter = router({
         }
       }
 
-      return await db.transaction().execute(async (tx) => {
-        const userValue = await upsertUser({
-          email,
-          tx,
-        })
+      const userValue = await db
+        .transaction()
+        .execute(async (tx) => await upsertUser({ email, tx }))
 
-        ctx.session.destroy()
-        set(ctx.session, "singpass.sessionState", {
-          userId: userValue.id,
-          verificationToken: oldVerificationToken,
-        })
-        await ctx.session.save()
-
-        return {
-          ...pick(userValue, defaultUserSelect),
-          requiresSingpass: true,
-        }
+      ctx.session.destroy()
+      set(ctx.session, "singpass.sessionState", {
+        userId: userValue.id,
+        verificationToken: oldVerificationToken,
       })
+      await ctx.session.save()
+
+      return {
+        ...pick(userValue, defaultUserSelect),
+        requiresSingpass: true,
+      }
     }),
 })
