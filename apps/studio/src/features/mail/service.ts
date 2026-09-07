@@ -20,7 +20,8 @@ import type {
   PublishAlertSiteAdminEmailTemplateData,
   SchedulePageTemplateData,
   ScheduleUnpublishTemplateData,
-  SuccessfulPublishTemplateData,
+  SiteUpdateFailedTemplateData,
+  SiteUpdatedTemplateData,
 } from "./templates"
 import { sendMail } from "../../lib/mail"
 import { templates } from "./templates"
@@ -162,13 +163,23 @@ export async function sendFailedSiteRebuildEmail(
   })
 }
 
-export async function sendSuccessfulPublishEmail(
-  data: SuccessfulPublishTemplateData,
+export async function sendSiteUpdatedEmail(
+  data: SiteUpdatedTemplateData,
 ): Promise<void> {
   await sendEmailWithTemplate({
     data,
-    template: templates.successfulPublish(data),
-    emailType: "successful publish",
+    template: templates.siteUpdated(data),
+    emailType: "site updated",
+  })
+}
+
+export async function sendSiteUpdateFailedEmail(
+  data: SiteUpdateFailedTemplateData,
+): Promise<void> {
+  await sendEmailWithTemplate({
+    data,
+    template: templates.siteUpdateFailed(data),
+    emailType: "site update failed",
   })
 }
 
