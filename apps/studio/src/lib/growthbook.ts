@@ -29,6 +29,12 @@ export const IS_UNPUBLISH_ENABLED_FEATURE_KEY = "is-unpublish-enabled"
 export const IS_DATE_FILTERS_ENABLED_FEATURE_KEY = "is-date-filters-enabled"
 export const IS_DATE_FILTERS_ENABLED_FEATURE_KEY_FALLBACK_VALUE = false
 
+// Gates the live Bedrock call in generateAltText.ts. OFF by default so the
+// AI-suggestion feature can be rolled out per-environment/site without a
+// code change.
+export const ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY =
+  "enable-ai-alt-text-generation"
+
 export const IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE = true
 
 interface GetIsSingpassEnabledProps {
