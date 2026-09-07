@@ -2,7 +2,7 @@
 import type { SessionData } from "~/lib/types/session"
 import type { GrowthbookAttributes } from "~/types/growthbook"
 import { TRPCError } from "@trpc/server"
-import { pick } from "lodash-es"
+import { pick, set } from "lodash-es"
 import { env } from "~/env.mjs"
 import { sendLoginAlertEmail } from "~/features/mail/service"
 import {
@@ -212,12 +212,10 @@ export const emailSessionRouter = router({
         .execute(async (tx) => await upsertUser({ email, tx }))
 
       ctx.session.userId = undefined
-      ctx.session.singpass = {
-        sessionState: {
-          userId: userValue.id,
-          verificationToken: oldVerificationToken,
-        },
-      }
+      set(ctx.session, "singpass.sessionState", {
+        userId: userValue.id,
+        verificationToken: oldVerificationToken,
+      })
       await ctx.session.save()
 
       return {
