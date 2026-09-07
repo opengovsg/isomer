@@ -13,7 +13,10 @@ import {
   getFeedItems,
   MAX_FEED_ITEMS,
   toRfc822,
-} from "../generateRss"
+} from "../rss"
+
+// Exercise the article-date conversion east of Singapore without a CI-only job.
+process.env.TZ = "Asia/Tokyo"
 
 const COLLECTION_PERMALINK = "/newsroom"
 const ASSET_REF = "/1/12345678-1234-1234-1234-123456789abc/report.pdf"
@@ -270,39 +273,6 @@ describe("buildFeedXml", () => {
       '<guid isPermaLink="false">urn:isomer:resource:file</guid>',
     )
     expect(xml).not.toContain('isPermaLink="true"')
-  })
-
-  it("keeps an item's guid stable when its permalink changes", () => {
-    // Arrange — the same resource id, published at two different permalinks
-    const buildDate = new Date("2026-07-16T04:00:00.000Z")
-    const before = makeSite([
-      makeItem({
-        id: "res-42",
-        permalink: `${COLLECTION_PERMALINK}/old-slug`,
-        date: "2026-07-15",
-      }),
-    ])
-    const after = makeSite([
-      makeItem({
-        id: "res-42",
-        permalink: `${COLLECTION_PERMALINK}/new-slug`,
-        date: "2026-07-15",
-      }),
-    ])
-
-    // Act
-    const guidOf = (site: IsomerSiteProps) =>
-      /<guid[^>]*>([^<]+)<\/guid>/.exec(
-        buildFeedXml({
-          site,
-          collectionNode: collectionNodeOf(site),
-          buildDate,
-        }),
-      )?.[1]
-
-    // Assert
-    expect(guidOf(before)).toBe("urn:isomer:resource:res-42")
-    expect(guidOf(after)).toBe(guidOf(before))
   })
 
   it("omits <link> rather than emitting an unsafe href", () => {

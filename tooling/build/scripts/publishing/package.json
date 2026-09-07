@@ -7,6 +7,7 @@
   "author": "",
   "main": "index.ts",
   "scripts": {
+    "generate-rss": "tsx rss.ts",
     "start": "tsx index.ts ",
     "test": "vitest run",
     "test-ci:build": "vitest run --config vitest.build.config.ts",
@@ -17,6 +18,9 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "catalog:aws-sdk",
+    "@opengovsg/isomer-components": "workspace:*",
+    "date-fns": "catalog:",
+    "date-fns-tz": "catalog:",
     "dotenv": "catalog:",
     "pg": "catalog:pg",
     "tsx": "catalog:"

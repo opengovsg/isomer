@@ -3,10 +3,7 @@
 // breaks under a plain Node/tsx script. This subpath re-exports only the pure
 // utilities the static-site build needs, via direct module paths so the runtime
 // graph never reaches a React module.
-export {
-  getCollectionItems,
-  type GetCollectionItemsProps,
-} from "~/templates/next/layouts/Collection/utils/getCollectionItems"
+export { getCollectionItems } from "~/templates/next/layouts/Collection/utils/getCollectionItems"
 export { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 export { getSitemapAsArray } from "~/utils/getSitemapAsArray"
 // The types build scripts need alongside the utilities above. Taking them from

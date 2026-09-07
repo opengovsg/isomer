@@ -221,12 +221,11 @@ RSS_SITEMAP_JSON="$(realpath sitemap.json)"
 RSS_CONFIG_JSON="$(realpath data/config.json)"
 RSS_OUT_DIR="$(realpath out)"
 (
-  cd ../build/scripts/rss
-  pnpm install --frozen-lockfile
+  cd ../build/scripts/publishing
   SITEMAP_JSON="$RSS_SITEMAP_JSON" \
     CONFIG_JSON="$RSS_CONFIG_JSON" \
     OUT_DIR="$RSS_OUT_DIR" \
-    pnpm run start
+    pnpm run generate-rss
 )
 calculate_duration $start_time
 
