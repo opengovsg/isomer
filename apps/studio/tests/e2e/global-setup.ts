@@ -29,21 +29,18 @@ const signInOnce = async (role: keyof typeof TEST_EMAILS, baseURL: string) => {
   await loginPage.fillEmail(email)
   await page.getByText("Enter OTP").waitFor()
   await loginPage.fillToken(email)
-  await page.getByRole("button", { name: "Sign in" }).click()
-  await page.waitForResponse(
-    (response) =>
-      response.url().includes("auth.email.verifyOtp") && response.ok(),
-  )
-  await page.waitForURL((url) => {
-    const path = url.pathname
-    return path === "/" || path === "/sign-in/singpass"
-  })
 
-  if (page.url().includes("/sign-in/singpass")) {
-    await loginPage.singpassButton.waitFor({ state: "visible" })
-    await loginPage.mockpassLoginWith(uuid)
-    await page.waitForURL(`${baseURL}/`)
-  }
+  const getUserPropsResponse = page.waitForResponse(
+    (response) =>
+      response.url().includes("auth.singpass.getUserProps") &&
+      response.ok(),
+  )
+
+  await page.getByRole("button", { name: "Sign in" }).click()
+  await page.waitForURL(/\/sign-in\/singpass/u)
+  await getUserPropsResponse
+  await loginPage.mockpassLoginWith(uuid)
+  await page.waitForURL(`${baseURL}/`)
 
   await ctx.storageState({ path: storageStateFor(role) })
   await browser.close()
