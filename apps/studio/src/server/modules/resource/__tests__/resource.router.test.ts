@@ -2375,6 +2375,44 @@ describe("resource.router", async () => {
         ).resolves.not.toThrow()
       })
 
+      it("throws when moving a page that isn't live yet but is scheduled to publish, into a folder with a pending scheduled unpublish", async () => {
+        const { site, folder: destinationFolder } = await setupFolder({
+          permalink: "destination",
+        })
+        await setupPageResource({
+          siteId: site.id,
+          parentId: destinationFolder.id,
+          resourceType: ResourceType.IndexPage,
+          state: ResourceState.Published,
+          userId: session.userId,
+          scheduledAt: new Date("2999-01-01T00:00:00Z"),
+          scheduledBy: session.userId,
+          scheduledAction: ScheduledAction.Unpublish,
+        })
+        const { page: pageToMove } = await setupPageResource({
+          siteId: site.id,
+          resourceType: ResourceType.Page,
+          permalink: "page-to-move",
+          scheduledAt: new Date("2999-06-01T00:00:00Z"),
+          scheduledBy: session.userId,
+          scheduledAction: ScheduledAction.Publish,
+        })
+        await setupAdminPermissions({
+          userId: session.userId,
+          siteId: site.id,
+        })
+
+        const result = caller.move({
+          siteId: site.id,
+          movedResourceId: pageToMove.id,
+          destinationResourceId: destinationFolder.id,
+        })
+
+        await expect(result).rejects.toThrow(
+          expect.objectContaining({ code: "PRECONDITION_FAILED" }),
+        )
+      })
+
       it("allows moving into a folder whose IndexPage has a pending scheduled publish (wrong direction)", async () => {
         const { site, folder: destinationFolder } = await setupFolder({
           permalink: "destination",

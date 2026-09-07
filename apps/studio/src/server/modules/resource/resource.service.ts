@@ -867,6 +867,30 @@ export const hasPublishedDescendant = async (
   return published !== undefined
 }
 
+// True when `resourceId` itself, or any descendant, has a pending scheduled
+// Publish — self-inclusive (unlike hasDescendantWithPendingScheduledUnpublish,
+// which excludes a given id for the cancel-guard use case, this checks the
+// resource passed in too). A null scheduledAction is legacy data and
+// defaults to Publish, matching the convention used throughout this module.
+export const hasPendingScheduledPublish = async (
+  trx: SafeKysely,
+  { siteId, resourceId }: { siteId: number; resourceId: string },
+): Promise<boolean> => {
+  const row = await withResourceSubtree(trx, { siteId, resourceId })
+    .selectFrom("subtree")
+    .innerJoin("Resource", "Resource.id", "subtree.id")
+    .where("Resource.scheduledAt", "is not", null)
+    .where((eb) =>
+      eb.or([
+        eb("Resource.scheduledAction", "is", null),
+        eb("Resource.scheduledAction", "=", ScheduledAction.Publish),
+      ]),
+    )
+    .select("Resource.id")
+    .executeTakeFirst()
+  return row !== undefined
+}
+
 // Ids of the published resources strictly within `resourceId`'s subtree (the
 // container itself is excluded — its own URL is validated separately). Used to
 // check that a folder move/rename doesn't drop a live descendant onto a path an
@@ -1158,15 +1182,16 @@ export const getLockingAncestorIndexPages = (rows: AncestorIndexPage[]) =>
         (a.scheduledAt?.getTime() ?? 0) - (b.scheduledAt?.getTime() ?? 0),
     )
 
-// A published/live resource can't be moved into a container that's scheduled
-// to go dark — it would either go live at a URL about to disappear, or (for
-// a container being moved) sit on live content underneath a container that's
-// about to unpublish. Walks the destination's own IndexPage AND every
-// ancestor above it (getAncestorIndexPages is self-inclusive when
-// `destinationId` is itself a container), since a lock further up the tree
-// is just as disqualifying as one on the immediate destination. RootPage has
-// no separate landing IndexPage and can never itself have a scheduled
-// unpublish, so callers pass its type through and this is a no-op for it.
+// A resource that's published (or scheduled to publish) can't be moved into
+// a container that's scheduled to go dark — it would either go/come live at
+// a URL about to disappear, or (for a container being moved) sit on live or
+// soon-to-be-live content underneath a container that's about to unpublish.
+// Walks the destination's own IndexPage AND every ancestor above it
+// (getAncestorIndexPages is self-inclusive when `destinationId` is itself a
+// container), since a lock further up the tree is just as disqualifying as
+// one on the immediate destination. RootPage has no separate landing
+// IndexPage and can never itself have a scheduled unpublish, so callers pass
+// its type through and this is a no-op for it.
 export const assertMoveDestinationUnlocked = async (
   tx: SafeKysely,
   {
@@ -1196,15 +1221,19 @@ export const assertMoveDestinationUnlocked = async (
 
   if (
     lockingAncestor &&
-    (await hasPublishedDescendant(tx, {
+    ((await hasPublishedDescendant(tx, {
       siteId,
       resourceId: movedResourceId,
-    }))
+    })) ||
+      (await hasPendingScheduledPublish(tx, {
+        siteId,
+        resourceId: movedResourceId,
+      })))
   ) {
     throw new TRPCError({
       code: "PRECONDITION_FAILED",
       message:
-        "Cannot move a resource that is published (or has published pages inside it) into a folder or collection that is scheduled to be unpublished, or into one nested under such a folder or collection.",
+        "Cannot move a resource that is published, scheduled to publish, or has such pages inside it, into a folder or collection that is scheduled to be unpublished, or into one nested under such a folder or collection.",
     })
   }
 }
